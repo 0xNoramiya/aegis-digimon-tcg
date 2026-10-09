@@ -26,6 +26,17 @@ type Layout = { players: readonly [PlayerLayout, PlayerLayout]; memory?: number 
 
 // Reduced boards for reported issues. Each runs in the ordinary turn loop.
 const ISSUE_LAYOUTS = {
+  "arena-github-5422-magnamon-timed-security": {
+    memory: 5,
+    players: [
+      {
+        field: [{ card: "BT13-040", under: ["ST9-02"] }],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      { security: ["EX13-035", "BT1-009", "BT1-009"], deck: Array(12).fill("BT1-009") },
+    ],
+  },
   "arena-github-5425-craniamon-guardromon": {
     memory: 10,
     players: [

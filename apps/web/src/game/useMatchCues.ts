@@ -1275,7 +1275,20 @@ export function useMatchCues({
     setDecisionBarrier(null);
     // Catch up cosmetic tracks without truncating a security verdict or a later
     // check queued before those tracks become idle. Explicit user skips stay broad.
-    fastForwardWithFilter((step) => !step.id.startsWith("security-"));
+    // A beat from a batch after an unfinished security scene waits for it too: skipping
+    // it would draw the card and announce the effect over the reveal (GitHub #5422).
+    const versionOf = (step: AnimationStep) => (step.origin ?? stepBatchesRef.current.get(step))?.stateVersion;
+    fastForwardWithFilter((step) => {
+      if (step.id.startsWith("security-")) return false;
+      const version = versionOf(step);
+      return (
+        version === undefined ||
+        !queue.hasPendingStep((pending) => {
+          const pendingVersion = versionOf(pending);
+          return pending.id.startsWith("security-") && pendingVersion !== undefined && pendingVersion < version;
+        })
+      );
+    });
     // The queue and progress are stable; the other helpers read current refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [

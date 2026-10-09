@@ -97,6 +97,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Evolua ZeigGreymon para Shoutmon X7 por 2 via Blue Flare. Recuse efeitos opcionais. Fontes mantêm ordem; memória 8.",
   },
 
+  "arena-github-5422-magnamon-timed-security": {
+    en: "Timed match. Attack with Magnamon. KingEtemon (13000 DP) is revealed from security first; only after the reveal does Magnamon's [All Turns] effect draw 1 and offer to play Veemon.",
+    ptBR: "Partida com relógio. Ataque com Magnamon. KingEtemon (13000 DP) é revelado da segurança primeiro; só depois da revelação o efeito [All Turns] de Magnamon compra 1 e oferece jogar Veemon.",
+  },
   "arena-github-5425-craniamon-guardromon": {
     en: "End your turn. The opponent plays GrapLeomon, and its effect makes Gotsumon attack. Block with Craniamon and resolve Guardromon's inherited unsuspend first: Craniamon's +3000 DP resolves right away, before its delete effect and before the battle.",
     ptBR: "Termine o turno. O oponente joga GrapLeomon, e o efeito faz Gotsumon atacar. Bloqueie com Craniamon e resolva primeiro o efeito herdado de Guardromon: o +3000 DP de Craniamon resolve na hora, antes do efeito de exclusão e antes da batalha.",
@@ -2652,6 +2656,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-github-5430-gankoomon-noir-no-sistermon", "#5430 · Gankoomon uses Sistermon Noir with no Sistermon"],
   ["arena-github-5427-gomimon-detach", "#5427 · Gomimon Detach after a security loss"],
   ["arena-github-5425-craniamon-guardromon", "#5425 · Craniamon boost during an effect attack"],
+  ["arena-github-5422-magnamon-timed-security", "#5422 · Magnamon would-leave in a timed match"],
   ["arena-github-5408-ruin-mode-hatch", "#5408 · Ruin Mode recovery and hatch"],
   ["arena-github-5372-progress-protection", "#5372 · Progress protection control"],
   ["arena-growlmon-deletion-5361", "#5361 Growlmon X · security deletion / stack Guilmon"],

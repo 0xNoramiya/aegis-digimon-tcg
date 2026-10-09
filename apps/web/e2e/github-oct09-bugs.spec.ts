@@ -1,5 +1,29 @@
 import { test, expect } from "./scenario-page";
 
+test("GitHub #5422: a timed Magnamon would-leave prompt waits for the security reveal", async ({ scenario }) => {
+  await scenario.open("arena-github-5422-magnamon-timed-security");
+  await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
+  await scenario.attack("arena-github-5422-magnamon-timed-security-0-field-0");
+  await scenario.resolveUntil(
+    (s) => !s.pendingDecision && !s.combatWindow && s.players[0]!.battleArea.some((p) => p.topCard.cardId === "ST9-02"),
+  );
+  const { steps } = await scenario.presentation();
+  const revealEnd = Math.max(
+    ...steps.filter((s) => s.phase === "finished" && /^security-(break|clash)-\d/.test(s.id)).map((s) => s.at),
+  );
+  const early = steps
+    .filter(
+      (s) =>
+        s.phase === "finished" &&
+        s.at < revealEnd &&
+        (s.id.startsWith("draw-flight-") || s.id.startsWith("effect-unit-announce-")),
+    )
+    .map((s) => s.id);
+  expect(Number.isFinite(revealEnd)).toBe(true);
+  expect(early).toEqual([]);
+  await scenario.healthy({ timedCatchUp: true });
+});
+
 test.describe("GitHub #5425: Craniamon's unsuspend boost during an effect-ordered attack", () => {
   test.use({
     holdBotAfterTurn: 3,
