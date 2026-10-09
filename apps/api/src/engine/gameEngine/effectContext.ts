@@ -71,7 +71,7 @@ import {
   shouldDeferNestedTiming,
   takeLeaveReplacementPending,
 } from "./windows.js";
-import { withPendingSubTriggers } from "./subTriggers.js";
+import { prepareOptionUsed, withPendingSubTriggers } from "./subTriggers.js";
 import type { GameEngine } from "../GameEngine.js";
 
 export function effectAccess(engine: GameEngine): GameAccess {
@@ -163,7 +163,18 @@ async function playForKeywordEffect(
     .map(({ instanceId, cardId, ownerSeat }) => ({ instanceId, cardId, ownerSeat }));
   if (source === undefined) return engine.primitives.playInstances([...instanceIds], { ...opts, payCost: false });
   const ctx = buildEffectContext(engine, cardSourceOf(engine, source), {});
-  return playEffectInstances(ctx, playedCards, { ...opts, payCost: false });
+  // Partition interrupts another player's removal effect. Attribute its plays to the
+  // keyword owner so restrictions such as Crimson Blaze see the player performing them.
+  ctx.fx.enterEffectResolution?.(
+    ctx.source.ownerSeat,
+    getCardDefinition(source.cardId)?.kinds ?? [],
+    ctx.source.permanent()?.permanentId,
+  );
+  try {
+    return await playEffectInstances(ctx, playedCards, { ...opts, payCost: false });
+  } finally {
+    ctx.fx.leaveEffectResolution?.();
+  }
 }
 
 /** Resolve the CardSource for a CardInstance against live state (placement/turn lookup). */
@@ -258,6 +269,7 @@ export async function engineConsultLeavePrevention(
   resolvingSeat?: Seat,
   opts?: {
     isBounce?: boolean;
+    destination?: ZoneRef;
     insteadOnly?: boolean;
     playerAction?: boolean;
     isDigiXros?: boolean;
@@ -465,6 +477,7 @@ export async function engineConsultLeavePrevention(
     resolvingSeat,
     {
       isBounce: opts?.isBounce,
+      destination: opts?.destination,
       playerAction: opts?.playerAction,
       isDigiXros: opts?.isDigiXros,
       insteadOnly: opts?.insteadOnly,
@@ -625,6 +638,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
             : fireTiming(engine, EffectTiming.OnDestroyedAnyone, deletionTrigger, transientCandidates),
         transientCandidates,
       ),
+    prepareOptionUsed: (usedInstanceId, usedOptionCost) => prepareOptionUsed(engine, usedInstanceId, usedOptionCost),
     fireSubTrigger: (event, payload, sourceScope) => engine.fireSubTrigger(event, payload, sourceScope),
     trashTopSecurityForBarrier: (seat) => payBarrierSecurityCost(engine, seat, false),
     recomputeContinuousEffects: () => engine.recomputeContinuousEffects(),

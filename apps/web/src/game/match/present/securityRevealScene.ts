@@ -167,7 +167,11 @@ export function securityRevealScene(deps: SecurityRevealSceneDeps) {
     // coming, holding it would pin the board for the whole check and a Digimon deleted
     // while it runs would stand there as though it had never left.
     setHeldBlowState(battlePending ? blowHoldState() : undefined);
-    const replace = revealOnStageRef.current !== null || queuedSecurityKeyRef.current === null;
+    // A protection cost can trash security immediately before Piercing checks.
+    // That paid card must finish its scene before the check takes the centre.
+    const replace =
+      !queue.hasPendingStep((step) => step.id.startsWith("security-destroyed-")) &&
+      (revealOnStageRef.current !== null || queuedSecurityKeyRef.current === null);
     if (revealOnStageRef.current !== null) flushHeldNotices();
     queuedSecurityKeyRef.current = key;
     // A dock belongs to the check that opened it. Its hold no longer shares a track with
@@ -257,7 +261,7 @@ export function securityRevealScene(deps: SecurityRevealSceneDeps) {
    * Parks the revealed card at the side of the screen and LEAVES it there. The reference
    * client docks a card with a `[Security]` effect in its brainstorm slot and resolves the
    * effect — every target pick, every optional yes/no — with the card still on screen,
-   * closing the slot only once the card is disposed (`CardController.cs:4062-4232`).
+   * closing the slot only once the card is disposed.
    *
    * The dock is therefore open-ended, and the centre-stage track is serial, so it is
    * bounded in every direction it can be: it ends on the matching `securityChecked`, on a

@@ -802,6 +802,26 @@ function permOf(cardId: string): Permanent {
   } as unknown as Permanent;
 }
 
+it("GitHub #5385 keeps Neptunemon's TS route index onto Holy instead of an invalid Aqua route", () => {
+  const base = permOf("BT26-029");
+  const options = getDigivolveCostOptions("BT24-030", base, undefined, undefined, [
+    { permanentId: base.permanentId, alternateRequirementIndex: -1, projectedCost: 4 },
+    { permanentId: base.permanentId, alternateRequirementIndex: 2, projectedCost: 3 },
+  ]);
+  expect(options.filter((option) => option.type === "alternate")).toEqual([
+    expect.objectContaining({ cost: 3, alternateRequirementIndex: 2 }),
+  ]);
+});
+
+it.each(["BT10-023", "BT2-029", "BT24-028"])(
+  "GitHub #5385 preserves Neptunemon's Aqua substring route onto %s",
+  (cardId) => {
+    expect(getDigivolveCostOptions("BT24-030", permOf(cardId))).toContainEqual(
+      expect.objectContaining({ type: "alternate", cost: 3, alternateRequirementIndex: 0 }),
+    );
+  },
+);
+
 function permWithStack(cardId: string, under: string[]): Permanent {
   return {
     ...permOf(cardId),
@@ -1531,9 +1551,19 @@ describe("exact vs substring name gates on digivolution routes (Q2868)", () => {
     expect(effectiveExactNames(getCardDefinition("EX4-030")!)).toEqual(["Kuzuhamon"]);
   });
 
-  it("offers LM-023's substring [Sakuyamon] route onto EX4-030", () => {
-    const options = getDigivolveCostOptions("LM-023", permOf("EX4-030"));
-    expect(options.some((option) => option.type === "alternate" && option.cost === 1)).toBe(true);
+  it("limits LM-023's cost-1 route to exact [Sakuyamon] (Q3475)", () => {
+    // LM-023 prints "[Digivolve] [Sakuyamon]: Cost 1", without "in its name".
+    expect(getDigivolveCostOptions("LM-023", permOf("EX4-030"))).toEqual([]);
+    expect(getDigivolveCostOptions("LM-023", permOf("LM-023"))).toEqual([]);
+    expect(getDigivolveCostOptions("LM-023", permOf("BT5-044"))).toContainEqual(
+      expect.objectContaining({ type: "alternate", cost: 1 }),
+    );
+  });
+
+  it("keeps LM-023's yellow level-5 cost-3 route independent of its exact-name route", () => {
+    const options = getDigivolveCostOptions("LM-023", permOf("EX2-023"));
+    expect(options).toContainEqual(expect.objectContaining({ type: "normal", cost: 3 }));
+    expect(options).not.toContainEqual(expect.objectContaining({ type: "alternate", cost: 1 }));
   });
 
   it("refuses an exact-name route to a base that only carries the alias in its name", () => {

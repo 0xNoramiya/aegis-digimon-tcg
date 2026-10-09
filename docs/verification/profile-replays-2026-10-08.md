@@ -26,7 +26,7 @@
 - After the mobile identity layout adjustment, all nine profile/browser cases passed again; the name and edit action use separate space on narrow screens.
 - Workspace TypeScript checking, production web build and targeted lint passed. Validation environment: Node 24.21.0 (repository declares Node 26); the build retains its existing large-chunk warning.
 
-Production application deployment and reopening PR #5329 are outside this change. The new additive database migration is `025-replay-sharing-history` and runs through the existing migrator when the updated API starts.
+Production application deployment and reopening PR #5329 are outside this change. The new additive database migration is `027-replay-sharing-history` and runs through the existing migrator when the updated API starts.
 
 ## Follow-up: profile scroll and Execute source
 

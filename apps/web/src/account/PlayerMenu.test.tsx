@@ -44,3 +44,13 @@ it("dismisses outside without blocking the page", () => {
   fireEvent.pointerDown(document.body);
   expect(props.onClose).toHaveBeenCalled();
 });
+
+it("shows the feedback inbox only to signed-in administrators", () => {
+  open({ signedIn: true });
+  expect(screen.queryByRole("button", { name: "Player feedback" })).toBeNull();
+  cleanup();
+  const props = open({ signedIn: true, isAdmin: true });
+  fireEvent.click(screen.getByRole("button", { name: "Player feedback" }));
+  expect(props.onNav).toHaveBeenCalledWith("feedback");
+  expect(props.onClose).toHaveBeenCalled();
+});

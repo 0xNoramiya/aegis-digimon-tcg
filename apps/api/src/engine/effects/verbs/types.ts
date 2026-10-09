@@ -104,6 +104,8 @@ export interface PrimitivesEngine {
     ascensionCandidates: readonly { instanceId: string; seat: Seat }[],
     transientCandidates?: readonly CardInstance[],
   ) => Promise<void>;
+  /** Snapshot the Option-use event before Main; return its deferred activation. */
+  prepareOptionUsed?(usedInstanceId: string, usedOptionCost?: number): () => Promise<void>;
   /**
    * Fire the SubTrigger bus (System B) for an event, running armed watchers whose captured
    * sourceFilter matches the payload (delayed-and-rule-effects). Optional on the port so the
@@ -117,7 +119,7 @@ export interface PrimitivesEngine {
   ) => Promise<void>;
   /** Pay Barrier's security cost through the generic removal bus before deletion continues. */
   trashTopSecurityForBarrier?(seat: Seat): Promise<void>;
-  /** Reset the per-turn effect uses of these cards (CR 8-2-2-1-6 DNA digivolution). */
+  /** Reset uses for new cards: source plays (CR 7-1-1) and DNA digivolution (8-2-2-1-6). */
   forgetCardUses?: (instanceIds: readonly string[]) => void;
   /** Reinstall continuous effects after a permanent enters play, before its entry timing. */
   recomputeContinuousEffects?: () => Promise<void>;
@@ -264,7 +266,13 @@ export interface PrimitivesEngine {
     permanentIds: string[],
     cause: import("../EffectContext.js").RemovalCause,
     resolvingSeat?: Seat,
-    opts?: { isBounce?: boolean; playerAction?: boolean; includeEvade?: boolean; includeArmorPurge?: boolean },
+    opts?: {
+      isBounce?: boolean;
+      destination?: ZoneRef;
+      playerAction?: boolean;
+      includeEvade?: boolean;
+      includeArmorPurge?: boolean;
+    },
   ) => Promise<Set<string>>;
   /** The shared memory gauge (memory-gauge subsystem); single owner of memory math. */
   readonly memory: MemoryPort;

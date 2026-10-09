@@ -510,6 +510,7 @@ export async function runDigivolve(ctx: EffectContext, action: Extract<Action, {
   const permanentIds = await resolvePermanentTargets(ctx, action.target, {
     allowPendingRotationHost: ctx.pendingRotationHostPermanentId !== undefined,
     eligible: (pid) => intoTarget === undefined || legalIntoForBase(pid, availableIntoPool).length > 0,
+    promptKey: "digivolveHost",
   });
   if (permanentIds.length === 0) return;
   // `bindAs` on the digivolve TARGET records which Digimon was chosen to digivolve, so a
@@ -528,9 +529,11 @@ export async function runDigivolve(ctx: EffectContext, action: Extract<Action, {
     if (candidates.length === 0) continue;
     const chosen = await pickLoose(
       ctx,
-      // A private search followed by "may digivolve" must remain declinable
-      // after inspection, including when there is only one legal evolution.
-      action.amongPreviousSearch && ctx.pickingAcceptedOptional ? { ...intoTarget, upTo: true } : intoTarget,
+      // "May digivolve" preserves the destination choice after a processing
+      // cost is paid, including a private hand containing one legal card.
+      action.optional === true || (action.amongPreviousSearch && ctx.pickingAcceptedOptional)
+        ? { ...intoTarget, upTo: true }
+        : intoTarget,
       candidates,
       undefined,
       ctx.ask,

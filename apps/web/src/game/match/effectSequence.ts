@@ -214,6 +214,8 @@ export interface EffectSequence {
   deferClause(notice: object): void;
   /** The clause is on screen, including an own-card toast returned after its dialog. */
   showClause(notice: object | undefined): void;
+  /** Discarded clauses cannot be owed again when their answered effect resumes. */
+  skipClauses(): void;
   /** A returned clause, or the same effect's dialog still open, makes its resume readable. */
   resumedClauseReady(unit: EffectUnit, decisionPending: boolean): PresentationGate;
   /**
@@ -238,8 +240,9 @@ export interface EffectSequence {
    * The cause of a change a watcher sees across batches already observed: several batches can
    * reach the screen in one frame, and their board with them. The change is pinned to the
    * earliest of them an effect owns, the one the watcher's previous board had not seen yet.
+   * A retained snapshot supplies `throughVersion` so a later effect cannot own its change.
    */
-  causeOfObservedChange(sinceVersion: number): PresentationGate | undefined;
+  causeOfObservedChange(sinceVersion: number, throughVersion?: number): PresentationGate | undefined;
   /** The newest batch revision observed, so a watcher can tell a change whose batch is still ahead. */
   observedVersion(): number;
   /** A batch at this revision was presented, whatever the pacing: the causes it carried are known. */
@@ -472,6 +475,10 @@ export function createEffectSequence(options: EffectSequenceOptions = {}): Effec
     showClause(notice) {
       if (notice) notices.get(notice)?.clauseVisible.release();
     },
+    skipClauses() {
+      for (const unit of new Set([...open, ...pending])) unit.clauseVisible.release();
+      for (const ready of resumedClauses.values()) ready.release();
+    },
     resumedClauseReady(unit, decisionPending) {
       const ready = createPresentationGate();
       if (unit.clauseVisible.open || (decisionPending && askingCardId === unit.sourceCardId)) ready.release();
@@ -504,10 +511,14 @@ export function createEffectSequence(options: EffectSequenceOptions = {}): Effec
       causes.set(version, { gate, started });
       return gate;
     },
-    causeOfObservedChange(sinceVersion) {
+    causeOfObservedChange(sinceVersion, throughVersion = latestVersion) {
       let earliest: number | undefined;
       for (const version of ownerByVersion.keys())
-        if (version > sinceVersion && version <= latestVersion && (earliest === undefined || version < earliest))
+        if (
+          version > sinceVersion &&
+          version <= Math.min(throughVersion, latestVersion) &&
+          (earliest === undefined || version < earliest)
+        )
           earliest = version;
       return earliest === undefined ? undefined : ownerByVersion.get(earliest)!.announced;
     },
@@ -587,6 +598,11 @@ function resultsPendingOf(unit: EffectUnit, deps: EffectUnitStepsDeps): () => bo
     queue.hasPendingStep((step) => {
       if (step.track === EFFECT_UNIT_TRACK || sequence.isClauseStep(step.id)) return false;
       if (step.track === CueTrack.SecurityDock || step.track === CueTrack.SecurityHold) return false;
+      // An effect-used Option waits in its dock for the viewer's next answer.
+      // That decision waits for this unit to settle, so waiting for the hold
+      // here would make both wait until the results ceiling expires. The dock's
+      // entrance still counts as a result and must finish before the handoff.
+      if (step.track === CueTrack.OptionDockHold) return false;
       // A turn or phase ribbon the unit's closing batch also carried is the turn moving on,
       // not a result of the effect.
       if (TURN_TRACKS.has(step.track ?? "") || step.track?.startsWith("turnDrawFlight-")) return false;

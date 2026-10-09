@@ -1,3 +1,4 @@
+import { isDeckFormat, type DeckFormat } from "@aegis/shared";
 import { randomBytes } from "node:crypto";
 import { ReplayLibrary } from "../replays/ReplayLibrary.js";
 import { installReplayRoutes } from "../replays/routes.js";
@@ -28,6 +29,7 @@ import { SwissProgram } from "../tournaments/swiss/index.js";
 import { BotSeatingStore } from "../tournaments/bots/index.js";
 import { EliminationStore } from "../tournaments/elimination/index.js";
 import { ArbitrationService, installArbitrationRoutes } from "../tournaments/arbitration/index.js";
+import { FeedbackStore } from "../bugs/FeedbackStore.js";
 import { installBugReportRoutes, type IssueTracker } from "../bugs/index.js";
 import { CommunityDeckStore } from "../community/CommunityDeckStore.js";
 import type { DeckReportTracker } from "../community/deckReports.js";
@@ -90,8 +92,8 @@ export function installAccountRoutes(
     arbitration,
     session: sessionFromRequest,
   });
-  // Player bug reports, filed straight to the project's GitHub issues. See src/bugs.
-  installBugReportRoutes({ app, tracker: bugTracker, session: sessionFromRequest });
+  // Feedback is stored locally, with an optional copy in GitHub.
+  installBugReportRoutes({ app, store: new FeedbackStore(store), tracker: bugTracker, session: sessionFromRequest });
   // Public decks, likes and copies. See src/community.
   installCommunityDeckRoutes({
     app,
@@ -219,17 +221,20 @@ export function installAccountRoutes(
   put("/account/decks{/:id}", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
-    const { name, mainDeck, eggDeck, mainDeckArts, eggDeckArts, coverCardId, sleeveId, eggSleeveId } = req.body as {
-      name?: unknown;
-      mainDeck?: unknown;
-      eggDeck?: unknown;
-      mainDeckArts?: unknown;
-      eggDeckArts?: unknown;
-      coverCardId?: unknown;
-      sleeveId?: unknown;
-      eggSleeveId?: unknown;
-    };
+    const { name, mainDeck, eggDeck, mainDeckArts, eggDeckArts, coverCardId, sleeveId, eggSleeveId, format } =
+      req.body as {
+        name?: unknown;
+        mainDeck?: unknown;
+        eggDeck?: unknown;
+        mainDeckArts?: unknown;
+        eggDeckArts?: unknown;
+        coverCardId?: unknown;
+        sleeveId?: unknown;
+        eggSleeveId?: unknown;
+        format?: unknown;
+      };
     if (
+      (format !== undefined && !isDeckFormat(format)) ||
       typeof name !== "string" ||
       !Array.isArray(mainDeck) ||
       !Array.isArray(eggDeck) ||
@@ -262,6 +267,7 @@ export function installAccountRoutes(
           coverCardId: (coverCardId as string | null | undefined) ?? undefined,
           sleeveId: (sleeveId as string | null | undefined) ?? undefined,
           eggSleeveId: (eggSleeveId as string | null | undefined) ?? undefined,
+          format: format as DeckFormat | undefined,
         }),
       );
     } catch (error) {
@@ -789,12 +795,11 @@ function isSleeveId(value: unknown): value is string {
  */
 function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
-  const { darkMode, locale, sleeve, eggSleeve, deckShare, deckView, deckSort, ...unknownKeys } = value as Record<
-    string,
-    unknown
-  >;
+  const { autoHatch, darkMode, locale, sleeve, eggSleeve, deckShare, deckView, deckSort, ...unknownKeys } =
+    value as Record<string, unknown>;
   if (Object.keys(unknownKeys).length > 0) return undefined;
   const isShortText = (text: unknown) => typeof text === "string" && text.length <= MAX_PREFERENCE_LENGTH;
+  if (autoHatch !== undefined && typeof autoHatch !== "boolean") return undefined;
   if (darkMode !== undefined && typeof darkMode !== "boolean") return undefined;
   if (locale !== undefined && !isShortText(locale)) return undefined;
   if (sleeve !== undefined && !isShortText(sleeve)) return undefined;
@@ -803,6 +808,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (deckView !== undefined && deckView !== "grid" && deckView !== "list") return undefined;
   if (deckSort !== undefined && !isShortText(deckSort)) return undefined;
   return {
+    ...(autoHatch !== undefined && { autoHatch }),
     ...(darkMode !== undefined && { darkMode }),
     ...(locale !== undefined && { locale: locale as string }),
     ...(sleeve !== undefined && { sleeve: sleeve as string }),

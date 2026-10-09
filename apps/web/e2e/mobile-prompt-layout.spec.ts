@@ -136,18 +136,20 @@ test("viewing the board preserves the selected pending effect", async ({ page })
   await expect(panel.getByRole("button", { name: /resolve next effect/i })).toBeEnabled();
 });
 
-test("hand selection keeps every card undimmed and preserves picks when viewing the board", async ({ page }) => {
+test("hand selection dims only the cards it cannot take and preserves picks when viewing the board", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const panel = await new MobilePromptPreview(page).open("select-cost-budget");
   const cards = page.locator(".game-hand-card");
   for (const card of await cards.all()) {
     await expect(card).toBeInViewport({ ratio: 1 });
-    await expect(card).toHaveCSS("opacity", "1");
+    const blocked = (await card.getAttribute("aria-disabled")) === "true";
     expect(
       await card.evaluate((element) =>
         [...element.children].every((child) => getComputedStyle(child).filter === "none"),
       ),
-    ).toBe(true);
+    ).toBe(!blocked);
   }
   await expect(page.locator('.board-prompt-scrim[data-variant="selection"]')).toBeHidden();
   const eligible = page.locator('[data-hand-instance-id="hand-0"]');
@@ -420,4 +422,28 @@ for (const viewport of [
     await expect(empty.getByRole("button", { name: "Não bloquear", exact: true })).toBeVisible();
     expect((await empty.boundingBox())!.height).toBeLessThan(300);
   });
+}
+
+for (const width of [390, 720, 1440]) {
+  for (const dark of [false, true]) {
+    test(`Paildramon's attack clause and pending attack notice do not overlap (${width}px, dark=${dark})`, async ({
+      page,
+    }, info) => {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.addInitScript((enabled) => localStorage.setItem("aegis:darkMode", String(enabled)), dark);
+      const panel = await new MobilePromptPreview(page).open("optional-attack-resolving", "en");
+      await page.evaluate((enabled) => document.documentElement.classList.toggle("dark", enabled), dark);
+      const paragraphs = panel.locator(".decision-overlay__effect-text");
+      await expect(paragraphs).toHaveCount(2);
+      await expect(paragraphs.nth(0)).toHaveText("Then, this Digimon may attack.");
+      const clause = (await paragraphs.nth(0).boundingBox())!;
+      const notice = (await paragraphs.nth(1).boundingBox())!;
+      expect(clause.y + clause.height, "notice must sit below the printed clause").toBeLessThanOrEqual(notice.y);
+      const art = (await panel.locator(".decision-overlay__source-art").boundingBox())!;
+      for (const text of [clause, notice]) {
+        expect(text.x + text.width, "text must leave room for the card artwork").toBeLessThanOrEqual(art.x + 1);
+      }
+      await page.screenshot({ path: info.outputPath("paildramon-prompt.png") });
+    });
+  }
 }

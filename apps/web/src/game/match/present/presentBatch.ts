@@ -411,6 +411,7 @@ export function presentServerBatch({
   enqueuePhaseOrderRef.current = phaseOrderFor(fresh);
   // Sequential pacing: which effect unit this batch announces or carries the results of.
   const sequential = presentationPacingRef.current === "sequential" && !replayingHistory;
+  const precedingAnnouncement = effectAnnounceGateRef.current;
   const earlierUnitsSettled = sequential ? effectSequence.unsettled() : null;
   const sequenced = sequential ? effectSequence.observeBatch(batchId, stateVersion, fresh) : undefined;
   const unitGate = sequenced?.owner?.announced ?? null;
@@ -580,9 +581,13 @@ export function presentServerBatch({
   );
   const routedUnderPermanentId =
     optionRoutedUnder?.kind === "cardsMoved" ? optionRoutedUnder.placedUnder?.permanentId : undefined;
+  const routedToBattle = fresh.some(
+    (event) => event.kind === "cardsMoved" && event.optionUsed === true && event.to === "battleArea",
+  );
   if (optionRouted && optionDockRef.current && !optionDockRef.current.closed) {
     optionDockRef.current.closed = true;
     optionDockRef.current.routedAtVersion = stateVersion;
+    if (routedToBattle) optionDockRef.current.routedToBattle = true;
     if (routedUnderPermanentId !== undefined) optionDockRef.current.routedUnderPermanentId = routedUnderPermanentId;
   }
   // A permanent that lost a battle takes the claw and the shake first, and its
@@ -818,7 +823,9 @@ export function presentServerBatch({
       setPermanentBursts,
       arrivalHoldIds,
       arrivalPresentations,
-      causingEffectGate: precedingArrivalCause,
+      // A newly used Option must arrive before its own Main clause can focus it.
+      // Results after the opener already wait on unitGate via effectResults.
+      causingEffectGate: sequenced?.opened.length ? precedingAnnouncement : precedingArrivalCause,
       deckReturn: landingDeckReturn(removalChainRef),
       releaseArrivalHoldsWhenIdle,
       narrate,
@@ -926,6 +933,7 @@ export function presentServerBatch({
       revealed: usedOption ? arrivalPresentations.get(usedOption)?.revealed : undefined,
       optionRouted,
       routedUnderPermanentId,
+      routedToBattle,
       viewerSeat,
       optionDockKeyRef,
       optionDockRef,
@@ -987,13 +995,25 @@ export function presentServerBatch({
     cardSiteRef,
     securityAttackerRef,
   });
+  if (securityAttack && attackReady && securityAttackerRef.current)
+    securityAttackerRef.current.presentationReady = attackReady;
   // Shield, reveal and dock share the serial centre-stage track. The source clause
   // reads after docking, then deferred arrivals present what it played. This order
   // holds for split, same-batch and close-only checks; ordinary battles retain their
   // outcome beat. A first shield break replaces the preceding central showcase.
   const stage = securityRevealScene({
     queue,
-    enqueue,
+    enqueue: (step) =>
+      enqueue(
+        securityAttackerRef.current?.presentationReady && step.track === CueTrack.CenterStage
+          ? afterGate(
+              step,
+              securityAttackerRef.current.presentationReady,
+              CONSEQUENCE_GATE_MAX_MS,
+              "security/attackReady",
+            )
+          : step,
+      ),
     viewerSeat,
     replayingHistory,
     stateVersion,

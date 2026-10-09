@@ -29,6 +29,8 @@ export type NewBugReport = {
   cardIds: readonly string[];
   description: string;
   opponentDeck?: string;
+  /** Correlates the report with the server match log; absent outside a match. */
+  matchId?: string;
   clientRevision?: string;
   userAgent?: string;
 };
@@ -78,6 +80,7 @@ export class GitHubIssueTracker implements IssueTracker {
    * local run without a token still boots, and the route answers that reports are unavailable.
    */
   static fromEnvironment(env: NodeJS.ProcessEnv = process.env): GitHubIssueTracker | undefined {
+    if (env.FEEDBACK_GITHUB_ENABLED?.trim().toLowerCase() === "false") return undefined;
     const token = env.GITHUB_TOKEN;
     const repository = env.GITHUB_BUG_REPOSITORY;
     if (!token || !repository) return undefined;
@@ -96,6 +99,7 @@ export class GitHubIssueTracker implements IssueTracker {
   async file(report: NewBugReport): Promise<FiledBugReport> {
     const response = await this.fetch(`${GITHUB_API}/repos/${this.options.repository}/issues`, {
       method: "POST",
+      signal: AbortSignal.timeout(10_000),
       headers: githubHeaders(this.options.token),
       body: JSON.stringify({
         title: issueTitle(report),
@@ -143,6 +147,7 @@ export function issueBody(report: NewBugReport, serverRevision?: string, publicV
   }
   sections.push(isBug ? "### Steps to reproduce" : "### Details", neutralizeMarkdownRefs(description));
   if (opponentDeck) sections.push("", "### Opponent's deck", neutralizeMarkdownRefs(opponentDeck));
+  if (report.matchId) sections.push("", "### Match ID", `\`${code(report.matchId)}\``);
   const credit = reporterName ? `**${neutralizeMarkdownRefs(reporterName)}**` : "an anonymous player";
   sections.push("", "---", `Reported in-game by ${credit}.`, reportContext(report, serverRevision, publicVersion));
   return sections.join("\n");

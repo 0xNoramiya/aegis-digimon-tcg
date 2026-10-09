@@ -60,6 +60,7 @@ import {
   retainHandOrder,
   reorderedHandInstanceIds,
 } from "./screen/model/handEntries";
+import { useAutoHatch } from "./screen/hooks/useAutoHatch";
 import { useHandAutoSort } from "./handAutoSort";
 import { dnaFieldChoice, dnaMaterialPicks, toggleDnaMaterial } from "./screen/model/dnaMaterialSelection";
 import { presentedSeats } from "./screen/model/presentedSeats";
@@ -95,6 +96,7 @@ import { type Screen } from "../design/primitives";
 import type { DigimonWorldAvatarId } from "../account/avatars";
 import type { ColorName } from "../design/theme";
 import { playSound } from "../design/sound";
+import { useTurnAttentionSound } from "./useTurnAttentionSound";
 import { usePresentationAudio, useReadoutAudio } from "./usePresentationAudio";
 import { audioBoardFromPresentedSeats } from "./match/present/presentationAudio";
 import { areActionConfirmationsEnabled } from "../design/actionConfirmation";
@@ -137,6 +139,7 @@ export function GameScreen({
   onRematch,
   onResetScenario,
   signedIn = false,
+  autoHatchReady = true,
   demoConnection,
   replayMode = false,
   devProbe,
@@ -161,9 +164,16 @@ export function GameScreen({
   /** Restart a server-backed development scenario from the match controls. */
   onResetScenario?: () => void;
   /** Receives the private room code, so a private match can return to its room. */
-  onRematch?: (privateRoomCode?: string, unlimited?: boolean, privateHost?: boolean) => void;
+  onRematch?: (
+    privateRoomCode?: string,
+    unlimited?: boolean,
+    privateHost?: boolean,
+    format?: import("@aegis/shared").DeckFormat,
+  ) => void;
   /** Only shapes what the report dialog says about follow-up questions; reporting needs no account. */
   signedIn?: boolean;
+  /** Automated hatching waits for the current account’s preferences to load. */
+  autoHatchReady?: boolean;
   demoConnection?: Pick<
     UseRoomResult,
     "room" | "status" | "state" | "events" | "decision" | "acknowledgeDecision" | "error" | "sessionId" | "roomCode"
@@ -432,8 +442,8 @@ export function GameScreen({
   // `pendingDecision` is, but it answers through its own intent rather than the decision
   // channel — computed here, ahead of `cues`, purely as the barrier's input signal (the actual
   // per-kind payloads used to render the overlays are derived again below). The two can never
-  // both be open at once (the server never opens one of these while a decision is unanswered),
-  // so folding it into the same `decisionPending`/`decisionStateVersion` inputs below is safe.
+  // both require a combat answer at once. An accepted Counter may retain its window while
+  // its effect asks a normal decision; that decision takes priority for the barrier below.
   const openCombatWindowForBarrier = state ? openCombatWindow(events, state, viewerSeat) : null;
   useEffect(() => {
     if (!openCombatWindowForBarrier?.key.startsWith("counter:")) setCounterHandChoice(undefined);
@@ -444,7 +454,7 @@ export function GameScreen({
   // an answer the server refused.
   const mirroredWindow = state ? mirroredCombatWindow(state, viewerSeat) : null;
   const decisionPendingForViewer = decision?.seat === viewerSeat && decision.kind !== "mulligan";
-  const timedViewerAnswer =
+  const timedViewerQuestion =
     state?.matchTimer === true && (decisionPendingForViewer || openCombatWindowForBarrier !== null);
 
   // Every cue the server provokes: sounds, panels, banners, the security clash,
@@ -468,6 +478,9 @@ export function GameScreen({
       ? decision.stateVersion
       : (openCombatWindowForBarrier?.stateVersion ?? undefined),
     ...(decisionPendingForViewer && decision.sourceCardId ? { decisionSourceCardId: decision.sourceCardId } : {}),
+    ...(decisionPendingForViewer && typeof decision.options?.timing === "string"
+      ? { decisionTiming: decision.options.timing }
+      : {}),
     targetDecision:
       decisionPendingForViewer &&
       isFieldTargetDecision(
@@ -512,6 +525,9 @@ export function GameScreen({
   });
   // Answering on the live board also requires live cards: presentation holds can
   // hide a newly played target or paint a security reveal over the selection.
+  // An end-of-turn answer belongs after the preceding attack. Keep its finite
+  // security scene visible before offering Engage, even when the match is timed.
+  const timedViewerAnswer = timedViewerQuestion && !presentationCues.securityRevealPending;
   const cues = timedViewerAnswer
     ? {
         ...presentationCues,
@@ -579,6 +595,7 @@ export function GameScreen({
         })
       : undefined;
   usePresentationAudio(cues, seats ? audioBoardFromPresentedSeats(seats, viewerSeat) : undefined);
+  useTurnAttentionSound(!spectating && !!state && !state.gameOver && state.turnSeat === viewerSeat);
   const viewerTimerRunning =
     !spectating && state?.matchTimer === true && !state.gameOver && state.timerActiveSeat === viewerSeat;
   const viewerPromptKey = cues.decisionAnimationsPending
@@ -773,6 +790,17 @@ export function GameScreen({
     opponentSecurityRef: oppSecRef,
   });
 
+  useAutoHatch({
+    room,
+    state,
+    viewer: you,
+    viewerSeat,
+    ready: autoHatchReady && status === "connected" && !!state && bothSeated(state),
+    decisionOpen: Boolean(decision || state?.pendingDecision),
+    presenting: cues.presenting,
+    phasePresentationPending: cues.phaseTransitionPending || turnTransition !== null || phaseBanner !== null,
+  });
+
   // ----- pre-match / connection gates -----
   const presentedHand = seats?.handHeld ? seats.shownHand : you?.hand;
   const presentedHandKey = presentedHand?.map((card) => `${card.instanceId}\u0001${card.cardId}`).join("\0");
@@ -936,6 +964,7 @@ export function GameScreen({
     viewerSeat,
     isMyTurn,
     mirroredWindow,
+    decisionPending: Boolean(decision || state.pendingDecision),
     openCombatWindow: openCombatWindowForBarrier,
     answeredCombatWindowKeyRef,
     rolledBackRejectionSeqRef,
@@ -1461,6 +1490,7 @@ export function GameScreen({
                   isPrivateMatch ? state?.roomCode || hostRoomCode || roomCode : undefined,
                   state?.unlimited,
                   isPrivateMatch ? viewerSeat === 0 : undefined,
+                  state?.format as import("@aegis/shared").DeckFormat | undefined,
                 )
             : () => onExit("lobby")
       }

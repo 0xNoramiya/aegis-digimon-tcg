@@ -8,8 +8,10 @@ import {
   resolveCardArt,
   famousDeckGroups,
   getCardDefinition,
-  effectiveCopyLimit as banlistLimit,
   type CardDefinition,
+  type DeckFormat,
+  formatCopyLimit,
+  isDeckFormat,
   type FamousDeck,
 } from "@aegis/shared";
 import { colorKey, kindOf, type ColorName } from "../design/theme";
@@ -85,6 +87,7 @@ export interface DeckListing {
   sleeveId?: string;
   /** This deck's Digi-Egg sleeve; absent means the global egg sleeve from Settings. */
   eggSleeveId?: string;
+  format?: DeckFormat;
 }
 
 export interface FamousDeckListingGroup {
@@ -92,7 +95,21 @@ export interface FamousDeckListingGroup {
   decks: readonly DeckListing[];
 }
 
+function exceedsStandardCopyLimits(cards: readonly string[]): boolean {
+  const counts = new Map<string, number>();
+  for (const cardId of cards) counts.set(cardId, (counts.get(cardId) ?? 0) + 1);
+  return [...counts].some(([cardId, count]) => count > formatCopyLimit(cardId, "standard"));
+}
+
+/** A preset that later restrictions made illegal stays playable under its anchor set's historical rules. */
+function famousDeckFormat(deck: FamousDeck): DeckFormat | undefined {
+  const cards = [...deck.decklist.mainDeck, ...deck.decklist.eggDeck];
+  if (!exceedsStandardCopyLimits(cards) || !isDeckFormat(deck.anchorProduct)) return undefined;
+  return deck.anchorProduct;
+}
+
 function famousDeckListing(deck: FamousDeck): DeckListing {
+  const format = famousDeckFormat(deck);
   const coverCardId = [...deck.decklist.mainDeck]
     .reverse()
     .find((cardId) => getCardDefinition(cardId)?.level !== undefined);
@@ -104,6 +121,7 @@ function famousDeckListing(deck: FamousDeck): DeckListing {
     mainDeck: [...deck.decklist.mainDeck],
     eggDeck: [...deck.decklist.eggDeck],
     coverCardId,
+    ...(format ? { format } : {}),
   };
 }
 
@@ -384,7 +402,7 @@ function textEntries(text: string): ImportEntry[] {
  * banlist-aware per-card limit across the whole list. Main deck is capped at 50,
  * egg deck at 5.
  */
-export function parseDeckList(text: string): DeckParseResult {
+export function parseDeckList(text: string, format: DeckFormat = "standard"): DeckParseResult {
   const trimmedText = text.trim();
   const entries = tabletopEntries(trimmedText) ?? textEntries(trimmedText);
   const mainDeck: string[] = [];
@@ -403,7 +421,7 @@ export function parseDeckList(text: string): DeckParseResult {
       continue;
     }
     const artId = resolveCardArt(cardId, artCode).artId;
-    const cap = Math.min(def.maxCountInDeck, banlistLimit(cardId));
+    const cap = Math.min(def.maxCountInDeck, formatCopyLimit(cardId, format));
     const isEgg = kindOf(def) === "DigiEgg";
     const [target, targetArts, targetLimit] = isEgg
       ? [eggDeck, eggDeckArts, IMPORT_EGG_LIMIT]

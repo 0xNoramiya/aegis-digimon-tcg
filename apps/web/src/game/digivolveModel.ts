@@ -9,6 +9,7 @@ import {
   effectiveStaticNames,
   effectiveStaticTraits,
   nameIncludesToken,
+  sameTrait,
   textMatchesToken,
   tamerOntoDigivolveSpec,
   baseGrantedDigivolveFor,
@@ -65,7 +66,7 @@ export function findDnaMaterialCombination(cardId: string, permanents: readonly 
         if (!spec.namesInText.some((token) => text.includes(token.toLowerCase()))) return false;
       }
       const traits = effectiveStaticTraits(def);
-      if (spec.traits?.length && !spec.traits.some((trait) => traits.includes(trait))) return false;
+      if (spec.traits?.length && !spec.traits.some((trait) => traits.some((t) => sameTrait(t, trait)))) return false;
       return true;
     };
     const assign = (slot: number, used: Set<string>, result: string[]): string[] | undefined => {
@@ -169,13 +170,12 @@ export function digivolveBasePermanentIds(
   return battleArea.filter((permanent) => bases.has(permanent.permanentId)).map((permanent) => permanent.permanentId);
 }
 
-/** True when `def` has `trait` in its printed or Rule traits. Case-insensitive to tolerate
- * printed-text vs card-data casing drift (e.g. "[NSP]" vs "NSp"); mirrors the server's
- * cardHasTrait. Trait values are whole-token identities, so case folding cannot over-match. */
+/** True when `def` has `trait` in its printed or Rule traits. Tolerates printed-text vs card-data
+ * casing and spacing drift ("[NSP]" vs "NSp", "[Blue Flare]" vs "BlueFlare"); mirrors the server's
+ * cardHasTrait. Trait values are whole-token identities, so this folding cannot over-match. */
 function cardHasTrait(def: ReturnType<typeof getCardDefinition>, trait: string): boolean {
   if (!def) return false;
-  const want = trait.toLowerCase();
-  return effectiveStaticTraits(def).some((t) => t.toLowerCase() === want);
+  return effectiveStaticTraits(def).some((t) => sameTrait(t, trait));
 }
 
 /** How many of `player`'s hand+trash cards satisfy an alternate requirement's `placementCost`
@@ -211,6 +211,7 @@ function requirementHasGate(req: DigivolutionRequirement): boolean {
     req.levelMin !== undefined ||
     req.levelMax !== undefined ||
     (req.traits !== undefined && req.traits.length > 0) ||
+    (req.traitSubstrings !== undefined && req.traitSubstrings.length > 0) ||
     (req.names !== undefined && req.names.length > 0) ||
     (req.namesExact !== undefined && req.namesExact.length > 0) ||
     (req.texts !== undefined && req.texts.length > 0) ||
@@ -231,7 +232,8 @@ function requirementHasIdentityGate(req: DigivolutionRequirement): boolean {
     (req.names !== undefined && req.names.length > 0) ||
     (req.namesExact !== undefined && req.namesExact.length > 0) ||
     (req.texts !== undefined && req.texts.length > 0) ||
-    (req.traits !== undefined && req.traits.length > 0)
+    (req.traits !== undefined && req.traits.length > 0) ||
+    (req.traitSubstrings !== undefined && req.traitSubstrings.length > 0)
   );
 }
 
@@ -312,6 +314,11 @@ function altRequirementMatches(
   if (req.levelMin !== undefined && (baseLevel === undefined || baseLevel < req.levelMin)) return false;
   if (req.levelMax !== undefined && (baseLevel === undefined || baseLevel > req.levelMax)) return false;
   if (req.traits && req.traits.length > 0 && !req.traits.some((t) => cardHasTrait(baseDef, t))) return false;
+  if (
+    req.traitSubstrings?.length &&
+    !req.traitSubstrings.some((token) => effectiveStaticTraits(baseDef).some((trait) => trait.includes(token)))
+  )
+    return false;
   // Name gates read the base's EFFECTIVE names (printed name + aliases such as AD1-020's
   // "Tommy, Takuya, & Zoe" answering to [Takuya Kanbara]) — same source as the server.
   // The substring gate reads the alias union; the exact gate reads the exact channel only, so a
@@ -735,11 +742,13 @@ function alternateCostLabel(req: DigivolutionRequirement, baseLevel: number | un
     ? "onto a Tamer"
     : req.traits && req.traits.length > 0
       ? `[${req.traits.join("/")}] trait`
-      : req.names && req.names.length > 0
-        ? req.names.join("/")
-        : req.namesExact && req.namesExact.length > 0
-          ? req.namesExact.join("/")
-          : "alternate";
+      : req.traitSubstrings?.length
+        ? `[${req.traitSubstrings.join("/")}] in trait`
+        : req.names && req.names.length > 0
+          ? req.names.join("/")
+          : req.namesExact && req.namesExact.length > 0
+            ? req.namesExact.join("/")
+            : "alternate";
   const levelLabel = req.baseIsTamer
     ? ""
     : req.level !== undefined

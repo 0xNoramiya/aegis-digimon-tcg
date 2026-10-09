@@ -6,7 +6,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import { Button } from "../design/primitives";
 import { CardMini } from "../design/cards";
 import { Icons } from "../design/icons";
-import { useTranslation } from "../i18n";
+import { useTranslation, type TranslationKey } from "../i18n";
 import { en } from "../i18n/en";
 import { cardDisplayName, useCardOpener } from "./cardLinks";
 import { DecisionBoardReturn } from "./overlay/choice/DecisionBoardReturn";
@@ -435,7 +435,7 @@ export function BoardSourceHostPrompt({
 export function BoardOptionalPrompt({
   sourceCardId,
   sourcePermanentId,
-  prompt,
+  contextText,
   clause,
   onUse,
   onDecline,
@@ -443,8 +443,8 @@ export function BoardOptionalPrompt({
 }: {
   sourceCardId?: string;
   sourcePermanentId?: string;
-  /** The engine's question, already filtered of internal summaries; falls back to a generic one. */
-  prompt?: string;
+  /** Additional decision context belongs below the standard activation heading. */
+  contextText?: string;
   clause?: string;
   onUse: () => void;
   onDecline: () => void;
@@ -462,8 +462,9 @@ export function BoardOptionalPrompt({
       // The art is the card, so the name below it would only repeat the picture. The link
       // is kept when there is no art to show instead.
       art={sourceCardId}
-      prompt={prompt ?? t("overlay.useEffectPrompt")}
-      clause={clause}
+      prompt={t("overlay.useEffectPrompt")}
+      clause={clause ?? contextText}
+      detail={clause ? contextText : undefined}
       // The dialog shows nothing the rail does not, so Escape is the only way back to it.
       onOpenDialog={onOpenDialog}
     >
@@ -479,11 +480,11 @@ export function BoardOptionalPrompt({
 }
 
 /**
- * The opponent has a decision open. Their seat is public in the synchronized
- * state (only the decision's payload is view-gated), so this needs no extra
- * server signal and leaks nothing about what they are choosing.
+ * The game is waiting on the opponent. The status comes from public
+ * synchronized state (see `opponentStatusKey`), so it needs no extra server
+ * signal and leaks nothing about which cards they are choosing.
  */
-export function OpponentSelectingPill() {
+export function OpponentSelectingPill({ status = "game.opponentIsSelecting" }: { status?: TranslationKey }) {
   const { t } = useTranslation();
   return (
     <div className="board-opponent-pill" role="status" data-testid="opponent-selecting-pill">
@@ -492,7 +493,7 @@ export function OpponentSelectingPill() {
         <i />
         <i />
       </span>
-      {t("game.opponentIsSelecting")}
+      {t(status)}
     </div>
   );
 }

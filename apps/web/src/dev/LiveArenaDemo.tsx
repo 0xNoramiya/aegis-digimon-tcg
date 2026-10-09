@@ -1,3 +1,4 @@
+import { CARDS_TURNS_SCENARIO_NOTES, CARDS_TURNS_SCENARIO_OPTIONS } from "./cardsTurnsScenarioNotes";
 import { useMemo, useState } from "react";
 import { CATALOG_DECKS } from "@aegis/shared";
 import { colorKey } from "../design/theme";
@@ -17,6 +18,291 @@ const DEFAULT_NOTE: ScenarioCopy = {
 };
 
 export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
+  "arena-github-5374-up-to-four-trash": {
+    en: "Attack with Fanglongmon and select zero, one, or four Deva cards from trash. All allowed counts must finish without a stuck decision. This exercises the generic chooser; the reported Lucemon card was not identified.",
+    ptBR: "Ataque com Fanglongmon e selecione zero, um ou quatro cartas Deva do lixo. Todas as quantidades permitidas devem resolver sem decisão travada. Este é um teste do seletor; a carta Lucemon relatada não foi identificada.",
+  },
+  "arena-github-5410-tamer-inherited-deletion": {
+    en: "Play All Delete and return Omnimon to delete your own Rie. DarkKnightmon under the Tamer must not activate its inherited On Deletion effect.",
+    ptBR: "Jogue All Delete e devolva Omnimon para deletar sua própria Rie. DarkKnightmon sob o Tamer não deve ativar On Deletion herdado.",
+  },
+  "arena-github-5412-kapurimon-illegal-colors": {
+    en: "Attack Omnimon with MetalGreymon. The reported MetalMamemon pair lacks Purple/Yellow and cannot DNA evolve into MetalGarurumon.",
+    ptBR: "Ataque Omnimon com MetalGreymon. A dupla relatada com MetalMamemon não tem Roxo/Amarelo e não pode evoluir por DNA para MetalGarurumon.",
+  },
+  "arena-github-5416-ulforce-unsuspend": {
+    en: "Attack security with UlforceVeedramon and accept its own unsuspend effect. Its attack continues and checks security.",
+    ptBR: "Ataque segurança com UlforceVeedramon e aceite o efeito de desvirar. O ataque continua e verifica segurança.",
+  },
+  "arena-github-5417-mobile-assembly": {
+    en: "At a narrow viewport, play UlforceVeedramon by Assembly with Veemon, Veedramon and AeroVeedramon. The page width and scale must remain stable.",
+    ptBR: "Em tela estreita, jogue UlforceVeedramon via Assembly com Veemon, Veedramon e AeroVeedramon. A largura e a escala da página devem permanecer estáveis.",
+  },
+
+  "arena-github-5378-imperialdramon-no-bounce": {
+    en: "Attack security with Imperialdramon. It remains on the field with both sources. This is a control: the original report provides no card number or match ID.",
+    ptBR: "Ataque segurança com Imperialdramon. Ele permanece em campo com as duas fontes. Este é um controle: o relato original não informa número da carta nem ID da partida.",
+  },
+  "arena-github-5378-imperialdramon-security-bounce": {
+    en: "Attack into Cocytus Breath in security. Its printed Security effect returns Imperialdramon to hand and trashes both sources. This legitimate return is a comparative control.",
+    ptBR: "Ataque Cocytus Breath na segurança. O efeito impresso devolve Imperialdramon à mão e descarta as duas fontes. Esse retorno legítimo é um controle comparativo.",
+  },
+  ...CARDS_TURNS_SCENARIO_NOTES,
+  "arena-github-5371-examon-battle-before-raid": {
+    en: "DNA digivolve Rosemon and MetalGarurumon into Examon for 0. Attack security; accept the immediate battle against Monodramon, then accept Raid against Agumon. The effect battle precedes Raid; Piercing checks two security cards.",
+    ptBR: "Evolua Rosemon e MetalGarurumon por DNA para Examon por 0. Ataque segurança; aceite a batalha imediata com Monodramon, depois Raid em Agumon. A batalha do efeito precede Raid; Piercing verifica duas seguranças.",
+  },
+  "arena-github5399-cerberus-first-option": {
+    en: "Digivolve Dobermon into Cerberusmon (3). Accept; trash Dark Field, then use that same copy for 1. Decline free play. Dark Field stays face up in security; memory 6.",
+    ptBR: "Evolua Dobermon para Cerberusmon (3). Aceite; descarte Dark Field e use a mesma cópia por 1. Recuse jogar. Dark Field fica aberta na segurança; memória 6.",
+  },
+  "arena-github5400-dark-field-replacement": {
+    en: "Use Dark Field with another face-up copy in security; decline play. Old copy returns to hand; new copy stays face up in security; memory 2.",
+    ptBR: "Use Dark Field com outra cópia aberta na segurança; recuse jogar. A antiga volta à mão; a nova fica na segurança; memória 2.",
+  },
+  "arena-github5403-rie-any-card": {
+    en: "Play Knightmon; accept Rie and place either Rie Kishibe BT22-090 or Fist of Athena BT18-099 from trash. Draw 1; unrelated Monodramon remains in trash.",
+    ptBR: "Jogue Knightmon; aceite Rie e coloque Rie Kishibe BT22-090 ou Fist of Athena BT18-099 do lixo sob ela. Compre 1; Monodramon permanece no lixo.",
+  },
+  "arena-github5411-savior-empty-hand-selection": {
+    en: "End turn; accept SaviorHuckmon and suspend Monodramon. Pass the Jesmon selection. Cost stays paid; Savior does not evolve; Jesmon stays in hand.",
+    ptBR: "Encerre turno; aceite SaviorHuckmon e suspenda Monodramon. Passe a seleção de Jesmon. Custo pago; Savior não evolui; Jesmon fica na mão.",
+  },
+  "arena-github5419-dark-masters-security": {
+    en: "Attack security with Puppetmon, then Machinedramon. Each loses to MetalEtemon and becomes the bottom face-up security card; purple Piedmon does not prevent either.",
+    ptBR: "Ataque a segurança com Puppetmon e depois Machinedramon. Cada um perde para MetalEtemon e vira a segurança inferior aberta; o Piedmon roxo não impede.",
+  },
+  "arena-github5419-kongou-prevention": {
+    en: "First attack with Agumon to reveal Kongou, then attack with Puppetmon and Machinedramon. Both On Deletion effects activate, but Kongou keeps both in trash.",
+    ptBR: "Ataque primeiro com Agumon para revelar Kongou; depois com Puppetmon e Machinedramon. Os efeitos de exclusão ativam, mas Kongou mantém ambos no lixo.",
+  },
+  "arena-github5420-metalgaruru-gallantmon": {
+    en: "Evolve WereGarurumon into MetalGarurumon. Trash four Gallantmon sources, then return Gallantmon to deck bottom and trash its remaining egg.",
+    ptBR: "Evolua WereGarurumon para MetalGarurumon. Descarte quatro fontes de Gallantmon, devolva-o ao fundo do deck e descarte o ovo restante.",
+  },
+  "arena-github5420-omnimon-gallantmon": {
+    en: "Evolve MetalGarurumon into Omnimon. Gallantmon has five sources, Omnimon six: return Gallantmon to deck bottom and trash all five sources.",
+    ptBR: "Evolua MetalGarurumon para Omnimon. Gallantmon tem cinco fontes e Omnimon seis: Gallantmon volta ao fundo do deck e as cinco fontes vão ao lixo.",
+  },
+  "arena-github5421-skullmammoth-hand": {
+    en: "Play Fangmon and discard Agumon. SkullMammothmon in hand must stay inactive.",
+    ptBR: "Jogue Fangmon e descarte Agumon. SkullMammothmon na mão não deve ativar.",
+  },
+  "arena-github5421-skullmammoth-field": {
+    en: "Play Fangmon and discard Agumon. SkullMammothmon in the battle area offers the free level-four purple play.",
+    ptBR: "Jogue Fangmon e descarte Agumon. SkullMammothmon na batalha oferece jogar o roxo nível quatro sem custo.",
+  },
+  "arena-github5418-zeig-shoutmon-evolution": {
+    en: "Digivolve ZeigGreymon into Shoutmon X7 using Blue Flare cost 2. Decline optional effects. Sources stay in order; memory 8.",
+    ptBR: "Evolua ZeigGreymon para Shoutmon X7 por 2 via Blue Flare. Recuse efeitos opcionais. Fontes mantêm ordem; memória 8.",
+  },
+
+  "arena-github-5408-ruin-mode-hatch": {
+    en: "End breeding without hatching. Attack with Ruin Mode; delete the opposing Digimon, recover, and hatch the egg while Tai remains in play.",
+    ptBR: "Termine a criação sem chocar. Ataque com Ruin Mode; exclua o Digimon oponente, recupere e choque o ovo enquanto Tai permanece em campo.",
+  },
+  "arena-github-5372-progress-protection": {
+    en: "Attack with the Progress Digimon. Accept Blastmon's deletion effect: its source is trashed, but the attacker survives and checks security. This is a protection control, since the report names no attacking card.",
+    ptBR: "Ataque com o Digimon com Progress. Aceite a exclusão de Blastmon: a fonte vai ao lixo, mas o atacante sobrevive e verifica segurança. Este é um controle de proteção, pois o relato não identifica o atacante.",
+  },
+  "arena-raid-immune-atratusmon": {
+    en: "Raid into immune Atratusmon; security must stay at five.",
+    ptBR: "Raid em Atratusmon imune; a segurança deve permanecer em cinco.",
+  },
+  "arena-shota-start-main-once": {
+    en: "Each of two Shota copies pays once at Main entry. No activation remains afterward.",
+    ptBR: "Cada cópia de Shota paga uma vez na entrada de Main. Nenhuma ativação fica disponível depois.",
+  },
+  "arena-heat-training-option-freeze": {
+    en: "Use Heat Training, select a revealed card, then play Monodramon. Animations and input must finish normally.",
+    ptBR: "Use Heat Training, escolha uma carta revelada e jogue Monodramon. As animações devem terminar e liberar os controles.",
+  },
+  "arena-crescemon-hexeblaumon-cost": {
+    en: "Evolve Crescemon with three sources into Hexeblaumon: pay four, leaving two memory.",
+    ptBR: "Evolua Crescemon com três fontes em Hexeblaumon: pague quatro, ficando com duas memórias.",
+  },
+
+  "arena-chuuchuumon-opponent-blocker": {
+    en: "End turn and block with Astamon: ChuuChuumon grants Blocker only on the opponent turn, just like Tuwarmon.",
+    ptBR: "Encerre o turno e bloqueie com Astamon: ChuuChuumon concede Blocker apenas no turno adversário, assim como Tuwarmon.",
+  },
+  "arena-neptunemon-holy-cost": {
+    en: "Evolve Neptunemon onto Aegiochusmon: Holy for 3 using TS.",
+    ptBR: "Evolua Neptunemon sobre Aegiochusmon: Holy por 3 pela rota TS.",
+  },
+  "arena-wargrowlmon-evaded-block": {
+    en: "Attack security. Ulforce blocks, Rina unsuspends it, then it evades. End of Attack plays Takato.",
+    ptBR: "Ataque a segurança. Ulforce bloqueia, Rina o desvira e ele usa Evade. Fim do Ataque joga Takato.",
+  },
+  "arena-toropiamon-vortex-control": {
+    en: "End turn and accept Vortex. Attack suspension is by the rules, so Toropiamon does not free-evolve.",
+    ptBR: "Encerre o turno e aceite Vortex. Suspender para atacar ocorre pelas regras e não ativa a evolução gratuita de Toropiamon.",
+  },
+  "arena-climbmon-pistmon-play": {
+    en: "Evolve into Climbmon, trash a filler, and play Pistmon. At 3 security both printed branches resolve, including Pistmon On Play.",
+    ptBR: "Evolua em Climbmon, descarte uma carta comum e jogue Pistmon. Com 3 seguranças ambas as condições resolvem, incluindo Ao Jogar de Pistmon.",
+  },
+  "arena-sukamon-opponent-cost": {
+    en: "End turn. When Gaia Force targets Gallantmon, pay its inherited prevention with the opposing PlatinumSukamon.",
+    ptBR: "Encerre o turno. Quando Gaia Force escolher Gallantmon, pague a proteção herdada com o PlatinumSukamon adversário.",
+  },
+  "arena-tuwarmon-opponent-blocker": {
+    en: "Astamon has no inherited Blocker on your turn. End turn and use it to block during the opponent turn.",
+    ptBR: "Astamon não tem Blocker herdado no seu turno. Encerre o turno e bloqueie com ele no turno adversário.",
+  },
+
+  "arena-growlmon-deletion-5361": {
+    en: "#5361: End breeding. Evolve Growlmon into Growlmon (X Antibody) for 0, then trash a non-Guilmon card after drawing. Attack the opponent's security: the 12000 DP Digimon deletes your 6000 DP attacker. Accept its gained On Deletion and choose the Guilmon that just entered trash from its stack; Guilmon is played for free. Reset and decline to leave Guilmon in trash. A Guilmon held only in hand cannot be chosen.",
+    ptBR: "#5361: Encerre a criação. Evolua Growlmon para Growlmon (X Antibody) por 0 e descarte uma carta sem Guilmon no nome depois da compra. Ataque a segurança adversária: o Digimon de 12000 DP deleta seu atacante de 6000 DP. Aceite o Ao Deletar recebido e escolha o Guilmon que acabou de ir da pilha ao lixo; ele entra em campo sem custo. Reinicie e recuse para deixar Guilmon no lixo. Guilmon apenas na mão não pode ser escolhido.",
+  },
+  "arena-ravemon-burst-hand": {
+    ptBR: "Faça Burst Digivolve de Ravemon em Ravemon: Burst Mode por 0, devolvendo Keenan Crier à mão. Veja as duas cartas da mão adversária e escolha uma para descartar. A carta escolhida vai ao lixo e o topo da segurança adversária vai à mão, sem revelar sua identidade.",
+    en: "Burst Digivolve Ravemon into Ravemon: Burst Mode for 0 by returning Keenan Crier to hand. Inspect both opponent hand cards and choose one to trash. The chosen card enters trash, then the opponent adds top security to hand without revealing its identity.",
+  },
+  "arena-github5326-sistermon-zero-security": {
+    en: "GitHub #5326, current behavior control. You start with 0 security and 6 memory. End breeding, then play either BT23 Sistermon Blanc for 3. Its mandatory On Play recovers 1 from the deck even though no security card could be added to hand; security becomes 1 and memory becomes 3. Play the second Blanc for 3: the previous security card goes to hand, then the next deck card becomes your face-down security. Security stays 1 and memory becomes 0. No payment or optional confirmation is required for either On Play effect.",
+    ptBR: "GitHub #5326, controle do comportamento atual. Você começa com 0 segurança e 6 de memória. Encerre a criação e jogue qualquer Sistermon Blanc BT23 por 3. O Ao Jogar obrigatório recupera 1 do deck mesmo sem segurança para adicionar à mão; a segurança passa a 1 e a memória a 3. Jogue a segunda Blanc por 3: a segurança anterior vai para a mão e a próxima carta do deck vira sua segurança virada para baixo. A segurança continua em 1 e a memória passa a 0. Nenhum pagamento ou confirmação opcional é necessário para os efeitos Ao Jogar.",
+  },
+  "arena-lanamon-tamer-cost": {
+    en: "GitHub #5340: end breeding, then evolve the three hand Lanamon onto Rina, the blue level 3, and Calmaramon in that order. Costs are 2, 2, and 0; memory goes 10 → 8 → 6 → 6. The red Takuya is not a legal target. This reduced reproduction does not reconstruct the unavailable reported game.",
+    ptBR: "GitHub #5340: encerre a criação e evolua os três Lanamon da mão sobre Rina, o nível 3 azul e Calmaramon, nessa ordem. Os custos são 2, 2 e 0; a memória vai de 10 → 8 → 6 → 6. O Takuya vermelho não é um alvo válido. Esta reprodução reduzida não reconstrói a partida relatada, que está indisponível.",
+  },
+  "arena-github5362-shellmon-ts": {
+    ptBR: "#5362: Encerre a criação sem mover Salamon. Evolua Shellmon sobre Salamon na criação por 2 (memória 10 → 8). No campo, evolua outro Shellmon sobre Salamon por 1 graças à redução de Salamon (8 → 7). Evolua sobre Shamanmon vermelho/roxo por 2 (7 → 5) e Elecmon azul sem TS por 2 (5 → 3). Tsukaimon amarelo sem TS e Cyclonemon TS de nível 4 não são bases legais. Cada evolução compra 1 carta.",
+    en: "#5362: End breeding without moving Salamon. Evolve Shellmon over breeding Salamon for 2 (memory 10 → 8). On the battlefield, evolve another Shellmon over Salamon for 1 thanks to Salamon's reduction (8 → 7). Evolve over red/purple Shamanmon for 2 (7 → 5) and blue non-TS Elecmon for 2 (5 → 3). Yellow non-TS Tsukaimon and level-4 TS Cyclonemon are illegal bases. Each evolution draws 1 card.",
+  },
+  "arena-github5331-offense-hand": {
+    en: "End breeding. Activate the established Offense Training Delay, accept, and choose either of your two Tyrannomon copies. Opposing BetelGammamon must never be offered or consumed. Reset to first use Offense Training from hand, finish its search, then activate the established Delay: choose an own legal red card afresh. Blue Gorillamon and level-5 MetalGreymon are ineligible; the newly placed Training cannot Delay this turn.",
+    ptBR: "Encerre a criação. Ative o Delay do Offense Training já em campo, aceite e escolha uma das suas duas cópias de Tyrannomon. BetelGammamon do oponente nunca deve aparecer como opção nem ser usado. Reinicie para primeiro usar Offense Training da mão, concluir a busca e então ativar o Delay já estabelecido: escolha novamente uma carta vermelha válida sua. Gorillamon azul e MetalGreymon nível 5 são inválidos; o Training recém-colocado não pode usar Delay neste turno.",
+  },
+  "arena-github5332-kekkomon-cost": {
+    en: "GitHub #5332, current behavior control; the reported phone stall remains unconfirmed. End breeding and decline ST23-13's deck placement. First attack security with Liollmon. Accept its Kekkomon inherited, select ST23-13 to pay, then DECLINE evolution. Accept ST23-13's suspension/DP offer and give Liollmon +3000 DP. Accept BT25-090's suspension/place-under offer. The helper attack completes and both Tamers are suspended with face-down sources remaining. Now attack security with the fresh Gekkomon and accept its Kekkomon inherited. Select either suspended Tamer on the field and confirm targets: this pays its bottom face-down card, not a hand evolution card. Accept the separate evolution offer, select a hand Armalizamon and end selection. Gekkomon evolves for zero memory, checks one security and finishes the attack. Reset to compare the other Tamer. Observe normal effect presentation; this reduced setup is not the complete historical match.",
+    ptBR: "GitHub #5332, controle atual; o travamento relatado no celular ainda não foi confirmado. Encerre a criação e recuse colocar carta sob ST23-13. Primeiro ataque a segurança com Liollmon. Aceite a herdada de Kekkomon, selecione ST23-13 para pagar e RECUSE evoluir. Aceite suspender ST23-13 e dê +3000 DP a Liollmon. Aceite suspender BT25-090 e colocar cartas sob ele. O ataque auxiliar termina e ambos os Tamers ficam suspensos com fontes viradas para baixo restantes. Agora ataque a segurança com Gekkomon e aceite a herdada de Kekkomon. Selecione um Tamer suspenso no campo e confirme os alvos: isso paga a carta inferior dele, não uma evolução da mão. Aceite a oferta separada de evolução, selecione Armalizamon da mão e encerre a seleção. Gekkomon evolui por zero memória, verifica uma segurança e termina o ataque. Reinicie para comparar o outro Tamer. Observe a apresentação normal; este cenário reduzido não é a partida histórica completa.",
+  },
+  "arena-github-5324-omnimon-traits": {
+    en: "End breeding. Open the field details for Omnimon (X Antibody): all four types must appear — Holy Warrior, X Antibody, Royal Knight and LIBERATOR. Compare regular Omnimon: Holy Warrior and Royal Knight only. Play Cool Boy for 2 and select the revealed Omnimon (X Antibody); regular Omnimon and Agumon cannot be selected. Then evolve regular Omnimon into the copy of Omnimon (X Antibody) already in hand for 2. Choose the evolved Digimon as your survivor for the deletion effect; the other field Omnimon X is deleted. Accept Cool Boy's suspension to gain 1 memory and draw 1. Open the evolved Digimon's details and check all four types again.",
+    ptBR: "Encerre a criação. Abra os detalhes de Omnimon (X Antibody) em campo: os quatro tipos devem aparecer — Holy Warrior, X Antibody, Royal Knight e LIBERATOR. Compare Omnimon normal: apenas Holy Warrior e Royal Knight. Jogue Cool Boy por 2 e selecione Omnimon (X Antibody) revelado; Omnimon normal e Agumon não podem ser selecionados. Depois evolua Omnimon normal na cópia de Omnimon (X Antibody) que já estava na mão por 2. Escolha o Digimon evoluído como sobrevivente do efeito de deleção; o outro Omnimon X em campo é deletado. Aceite virar Cool Boy para ganhar 1 memória e comprar 1 carta. Abra os detalhes do Digimon evoluído e confira os quatro tipos novamente.",
+  },
+  "arena-github5333-tesla-source-replay": {
+    en: "#5333: End breeding. Activate TeslaJellymon Main, choose Use an Option and EX8-068. Its Main is now spent. Evolve that Tesla into EX8-024, then BT20-026 using its cost-0 alternate route, then EX8-027. Accept Plesiomon's source play and choose the original Tesla. Open the newly played Tesla: Main must be available again. Use the remaining EX8-068; a third Main activation on that new Digimon must be unavailable.",
+    ptBR: "#5333: Encerre a criação. Ative Main de TeslaJellymon, escolha usar uma Opção e EX8-068. O Main fica gasto. Evolua essa Tesla em EX8-024, depois BT20-026 pela rota alternativa de custo 0 e EX8-027. Aceite jogar uma fonte de Plesiomon e escolha a Tesla original. Abra a Tesla recém-jogada: Main deve estar disponível novamente. Use o EX8-068 restante; uma terceira ativação de Main nesse novo Digimon deve ficar indisponível.",
+  },
+  "arena-github5344-revelation-expiry": {
+    en: "GitHub #5344. End breeding, then digivolve Wizardmon into Mistymon using its alternate cost of 3. Decline the optional security addition, then accept trashing your top security to attack with Mistymon. Resolve Revelation and Mistymon's DP reduction on the opposing MetalGarurumon. During the pending attack, MetalGarurumon is at 1000 DP and the checked MetalTyrannomon has 5000 security DP. After the turn passes, MetalGarurumon returns to 12000 DP and the opponent's security DP penalty is gone. A MetalTyrannomon played next has its normal 10000 DP. Revelation belongs to you, so its duration ends with your turn even though its effect resolved after memory crossed.",
+    ptBR: "GitHub #5344. Encerre a criação e digivolua Wizardmon para Mistymon pelo custo alternativo de 3. Recuse adicionar segurança e aceite descartar o topo da sua segurança para atacar com Mistymon. Resolva Revelation e a redução de DP de Mistymon no MetalGarurumon adversário. Durante o ataque pendente, MetalGarurumon fica com 1000 DP e o MetalTyrannomon verificado tem 5000 DP de segurança. Após a passagem de turno, MetalGarurumon volta a 12000 DP e a penalidade de DP da segurança adversária termina. Um MetalTyrannomon jogado depois tem seus 10000 DP normais. Revelation é sua: a duração termina com seu turno mesmo tendo resolvido após a memória cruzar.",
+  },
+  "arena-discord1558122159-drasil-turn-handoff": {
+    en: "Discord 1558122159975567360 (Lagging between turns). It is the bot's turn: its Gallantmon has Takato Matsuki in its digivolution cards, so it has 17000 DP during its turn. Let the bot attack or pass. When its turn ends, Gallantmon drops to 12000 DP, and your turn starts with King Drasil_7D6 in breeding. Its [Start of Your Main Phase] effect places the top Digi-Egg under it. Expected: Active, Draw and Breeding banners, the draw, the Gallantmon DP drop and the King Drasil effect play in order without a 20–30 second stall. Production v1.18.0 stalled about 28 seconds here.",
+    ptBR: "Discord 1558122159975567360 (travamento entre turnos). É o turno do bot: o Gallantmon dele tem Takato Matsuki nas cartas de digivolução, então fica com 17000 DP no turno dele. Deixe o bot atacar ou passar. Quando o turno dele termina, Gallantmon cai para 12000 DP e o seu turno começa com King Drasil_7D6 na criação. O efeito [Início da sua Fase Principal] coloca o Digi-Ovo do topo embaixo dele. Esperado: os banners de Ativa, Compra e Criação, a compra, a queda de DP do Gallantmon e o efeito do King Drasil aparecem em ordem, sem pausa de 20–30 segundos. A produção v1.18.0 travou cerca de 28 segundos aqui.",
+  },
+  "arena-turn-end-dp-expiry": {
+    en: "Skip breeding. Evolve Kokatorimon into EX13 WarGrowlmon for 3 (4→1 memory): with no opposing Digimon to delete, it reaches 11000 DP for the turn. Use Wall Training for 2 and select either revealed Monodramon. Decline Engage at end of turn. WarGrowlmon returns to 8000 DP; opposing Davis sets memory to 3. Active, Draw and Breeding must proceed in order without an idle stall. Use normal sequential effects without skipping. This diagnoses a turn-end DP presentation cycle, not a confirmed replay of the Freezing reporter's match.",
+    ptBR: "Pule a criação. Evolua Kokatorimon em WarGrowlmon EX13 por 3 (memória 4→1): sem Digimon adversário para deletar, ele fica com 11000 DP neste turno. Use Wall Training por 2 e escolha qualquer Monodramon revelado. Recuse Engage no fim do turno. WarGrowlmon volta a 8000 DP; Davis adversário ajusta a memória para 3. Ativa, Compra e Criação devem avançar em ordem, sem pausa travada. Use efeitos sequenciais normais, sem pular animações. Este cenário diagnostica um ciclo na apresentação da expiração de DP, não reproduz uma partida confirmada do autor de Freezing.",
+  },
+  "arena-github5307-larva-bt18-breeding": {
+    en: "GitHub #5307, current behavior control. End breeding without moving Larva. Attack the suspended opposing Satan Mode with your BT18 Satan Mode. Both have 16000 DP. Accept Larva's prevention: Larva moves from breeding, your Satan Mode stays, and the opposing Satan Mode is deleted. Reset and decline to compare: your Satan Mode is deleted and Larva stays in breeding.",
+    ptBR: "GitHub #5307, controle do comportamento atual. Encerre a criação sem mover Larva. Ataque o Satan Mode adversário suspenso com seu Satan Mode BT18. Ambos têm 16000 DP. Aceite a proteção de Larva: ela sai da criação, seu Satan Mode fica e o adversário é deletado. Reinicie e recuse para comparar: seu Satan Mode é deletado e Larva fica na criação.",
+  },
+  "arena-github5307-larva-ex10-breeding": {
+    en: "GitHub #5307, EX10 current behavior control. End breeding without moving Larva. Attack the suspended opposing Satan Mode with EX10 Satan Mode. The opponent must decline deleting its Digimon for EX10's When Attacking effect; its top security is trashed and your Satan Mode unsuspends. At the equal-DP battle, accept Larva's prevention: Larva moves from breeding, your Satan Mode stays, and the opponent is deleted. Reset and decline Larva to compare.",
+    ptBR: "GitHub #5307, controle atual do EX10. Encerre a criação sem mover Larva. Ataque o Satan Mode adversário suspenso com Satan Mode EX10. O oponente deve recusar deletar seu Digimon pelo Quando Ataca do EX10; o topo da segurança dele é descartado e seu Satan Mode desvira. Na batalha de DP igual, aceite Larva: ela sai da criação, seu Satan Mode fica e o adversário é deletado. Reinicie e recuse Larva para comparar.",
+  },
+  "arena-github5308-greymon-security-destination": {
+    en: "GitHub #5308. End breeding. Use Chaos Degradation on opposing BT1 Greymon and choose the bottom of security: BT11 Greymon X cannot prevent this move. Greymon goes to security, its sources go to trash, and X Antibody is not bottom-decked. Reset for the legal control: use Cocytus Breath instead; the opponent may bottom-deck X Antibody to keep Greymon. Then Gaia Force deletes it because that payment is no longer available.",
+    ptBR: "GitHub #5308. Encerre a criação. Use Chaos Degradation no Greymon BT1 adversário e escolha o fundo da segurança: Greymon X BT11 não pode impedir esse movimento. Greymon vai para a segurança, suas fontes vão para o lixo e X Antibody não volta ao fundo do deck. Reinicie para o controle legal: use Cocytus Breath; o oponente pode devolver X Antibody ao fundo do deck para manter Greymon. Depois Gaia Force o deleta, pois esse pagamento não está mais disponível.",
+  },
+  "arena-bt21-satellamon-cost-control": {
+    en: "Freezing report: candidate-match control, not a confirmed reproducer. End breeding, then play one hand Satellamon for 7 (memory 10 to 3). Accept its optional On Play effect. Its cost panel shows 13 hand/trash cards, with 9 eligible Appmon/Three Musketeers cards. Choose the other Satellamon from hand and confirm; choose Monodramon as the receiving Digimon. That copy becomes Monodramon's bottom source, while the played Satellamon stays on the field. The choice closes, and Monodramon gains return/De-Digivolve protection until the opponent's turn ends. You can attack with Monodramon or end the phase. Reload the arena to repeat with an EX7-071 from trash or decline the optional effect; declining leaves every cost card in place. Observe normal effect presentation without skipping; report the exact action, duration and connection status if it stops progressing.",
+    ptBR: "Relato de travamento: controle da partida candidata, sem reprodução confirmada. Encerre a criação e jogue um Satellamon da mão por 7 (memória de 10 para 3). Aceite o efeito opcional On Play. O painel de custo mostra 13 cartas da mão/lixo, com 9 Appmon/Three Musketeers elegíveis. Escolha o outro Satellamon da mão e confirme; escolha Monodramon para receber a carta. Essa cópia vira a fonte inferior de Monodramon; o Satellamon jogado continua em campo. A escolha fecha e Monodramon recebe proteção contra retorno/De-Digivolve até o fim do turno adversário. Você pode atacar com Monodramon ou encerrar a fase. Reinicie a arena para repetir com EX7-071 do lixo ou recusar o efeito opcional; recusar mantém as cartas de custo em seus lugares. Observe a apresentação normal sem pular; se parar, registre ação exata, duração e estado da conexão.",
+  },
+  "arena-github5319-bt25-murasamemon-security-option": {
+    en: "GitHub #5319, separately reproduced same-name BT25-041 defect. End breeding. Evolve Cougarmon into BT25-041 Murasamemon for 3 (memory 10 to 7). Accept its When Digivolving effect with top-security payment: e-Pulse must move from security into hand, then be selectable for use with cost reduced by 3 to 0. Choose e-Pulse and play Liollmon from trash for free. Both cards remain in the battle area, security becomes empty, and memory stays 7. BT25-041 has this security payment; ST23-04 instead requires a face-down Tamer card. The original anonymous report's card attribution is unconfirmed.",
+    ptBR: "GitHub #5319, defeito separado reproduzido no BT25-041 de mesmo nome. Encerre a criação. Evolua Cougarmon em Murasamemon BT25-041 por 3 (memória de 10 para 7). Aceite Quando Digievolui pagando com o topo da segurança: e-Pulse deve sair da segurança para a mão e ficar disponível para usar com redução de 3, custo final 0. Escolha e-Pulse e jogue Liollmon do lixo grátis. Ambas as cartas ficam na área de batalha, a segurança fica vazia e a memória permanece 7. BT25-041 tem esse pagamento com segurança; ST23-04 exige uma carta virada para baixo sob um Tamer. A identificação da carta no relato anônimo original não foi confirmada.",
+  },
+  "arena-github5319-murasamemon-e-pulse": {
+    en: "GitHub #5319, current behavior control. End breeding and accept Tomoro & Kyo's deck placement: memory reaches 10 and two face-down cards are under the Tamer. Evolve Liollmon into Cougarmon for 1; its effect adds e-Pulse from security to hand and recovers 1. Evolve Cougarmon into Murasamemon, accepting the under-Tamer reduction (cost 1). Accept Murasamemon's effect and choose Use a Glowing Dawn Option, then e-Pulse: trash the remaining face-down card and use it for 0. Play Liollmon from trash for free; e-Pulse remains in the battle area. Memory ends at 8. MetalGreymon loses 5000 DP. Compare the spent-cost scenario.",
+    ptBR: "GitHub #5319, controle do comportamento atual. Encerre a criação e aceite colocar o topo do deck sob Tomoro & Kyo: a memória chega a 10 e o Tamer tem duas cartas viradas para baixo. Evolua Liollmon em Cougarmon por 1; o efeito adiciona e-Pulse da segurança à mão e recupera 1. Evolua Cougarmon em Murasamemon, aceitando a redução por descartar sob o Tamer (custo 1). Aceite o efeito de Murasamemon, escolha Usar uma Opção Glowing Dawn e depois e-Pulse: descarte a carta restante sob o Tamer e use por 0. Jogue Liollmon do lixo grátis; e-Pulse fica na área de batalha. A memória termina em 8. MetalGreymon perde 5000 DP. Compare o cenário de custo já gasto.",
+  },
+  "arena-github5319-murasamemon-spent-cost": {
+    en: "GitHub #5319, printed-cost negative control. End breeding and accept Tomoro & Kyo's deck placement: memory reaches 10 and there is only one face-down card under the Tamer. Evolve Liollmon into Cougarmon for 1 to add e-Pulse from security and recover 1. Evolve Cougarmon into Murasamemon and accept the reduction to 1: this consumes the only under-Tamer card. Murasamemon still gives the opponent -5000 DP, but cannot use e-Pulse through its effect because its separate printed cost is unavailable. e-Pulse stays in hand, Liollmon stays in trash, memory ends at 8. Restart and decline Cougarmon's reduction to preserve the card for Murasamemon's effect instead.",
+    ptBR: "GitHub #5319, controle negativo do custo impresso. Encerre a criação e aceite colocar o topo do deck sob Tomoro & Kyo: a memória chega a 10 e há só uma carta virada para baixo sob o Tamer. Evolua Liollmon em Cougarmon por 1 para adicionar e-Pulse da segurança e recuperar 1. Evolua Cougarmon em Murasamemon e aceite reduzir para 1: isso consome a única carta sob o Tamer. Murasamemon ainda dá -5000 DP ao adversário, mas não pode usar e-Pulse pelo efeito porque o custo impresso separado está indisponível. e-Pulse fica na mão, Liollmon no lixo, memória final 8. Reinicie e recuse a redução de Cougarmon para preservar a carta para o efeito de Murasamemon.",
+  },
+  "arena-github5311-imperialdramon-cost-scope": {
+    en: "GitHub #5311 same-defect sweep. End breeding. First evolve one Paildramon into the hand BT3-111 Imperialdramon for 3 (printed 5 minus 2): memory goes from 8 to 5. Then evolve the remaining Paildramon into MetalGarurumon for its full printed 3: memory ends at 2. The Imperialdramon copies already in play must not discount this unrelated evolution, and they keep Piercing.",
+    ptBR: "GitHub #5311, varredura do mesmo defeito. Encerre a criação. Primeiro evolua um Paildramon em Imperialdramon BT3-111 da mão por 3 (custo impresso 5 menos 2): a memória vai de 8 para 5. Depois evolua o outro Paildramon em MetalGarurumon pelo custo impresso completo 3: a memória termina em 2. As cópias de Imperialdramon já em campo não podem reduzir essa evolução diferente e mantêm Piercing.",
+  },
+  "arena-github5311-crescemon-cost-scope": {
+    en: "GitHub #5311. End breeding. First evolve EX5-017 Lekismon into the hand Crescemon for 1: the separate Crescemon with three sources qualifies as support, and memory goes from 6 to 5. Then evolve that original Crescemon into BT1-044 MetalGarurumon for its full printed cost 3: memory ends at 2. Q3569 allows the discount into Crescemon, never from Crescemon.",
+    ptBR: "GitHub #5311. Encerre a criação. Primeiro evolua Lekismon EX5-017 no Crescemon da mão por 1: o outro Crescemon com três fontes atende à condição, e a memória vai de 6 para 5. Depois evolua esse Crescemon original em MetalGarurumon BT1-044 pelo custo impresso completo 3: a memória termina em 2. A Q3569 permite reduzir ao evoluir em Crescemon, nunca a partir dele.",
+  },
+  "arena-github5365-jesmon-token": {
+    en: "GitHub #5365. End breeding, evolve SaviorHuckmon into BT20-017 Jesmon, accept the Atho, René & Por token, and decline the optional attack. Pass the turn. The opponent can play EX9-018 MetalMamemon and pay with Patamon from trash: it strips one Jesmon source, then removes the source-less token. The token must never enter any deck, hand, trash, or security; after surrender, the final deck reveal must contain no token.",
+    ptBR: "GitHub #5365. Encerre a criação, evolua SaviorHuckmon em Jesmon BT20-017, aceite o token Atho, René & Por e recuse o ataque opcional. Passe o turno. O oponente pode jogar MetalMamemon EX9-018 e pagar com Patamon da lixeira: remove uma evolução de Jesmon e depois remove o token sem evoluções. O token não entra em deck, mão, lixeira ou segurança; após desistir, a revelação final dos decks não deve mostrar nenhum token.",
+  },
+  "arena-github5365-jesmon-token-mirrored": {
+    en: "GitHub #5365, reversed seats. The opponent starts with SaviorHuckmon and BT20-017 Jesmon in hand. After it evolves and creates the token, end your breeding phase, play EX9-018 MetalMamemon and accept placing Patamon from trash face down underneath. Strip any one Jesmon source, then remove its token. Finish the match and check the opponent's revealed deck: the token must be absent.",
+    ptBR: "GitHub #5365, posições invertidas. O oponente começa com SaviorHuckmon e Jesmon BT20-017 na mão. Depois que evoluir e criar o token, encerre sua criação, jogue MetalMamemon EX9-018 e aceite colocar Patamon da lixeira por baixo, virado para baixo. Remova uma evolução de Jesmon e depois seu token. Termine a partida e confira o deck revelado do oponente: o token deve estar ausente.",
+  },
+  "arena-github5322-metalmamemon-no-cost": {
+    ptBR: "Encerre a criação. Jogue MetalMamemon EX9-018 ou evolua o Gorillamon para ele. A lixeira contém somente uma Opção: o custo exige uma carta de Digimon. Nenhuma carta é colocada por baixo, nenhuma evolução do oponente é descartada e nenhum Digimon volta ao fundo do deck, inclusive o Monodramon sem evoluções.",
+    en: "End breeding. Play EX9-018 MetalMamemon or digivolve Gorillamon into it. Trash contains only an Option: the cost requires a Digimon card. No card is placed underneath, no opposing digivolution card is trashed, and no Digimon returns to the deck bottom, including the Monodramon with no digivolution cards.",
+  },
+  "arena-github5322-metalmamemon-paid": {
+    ptBR: "Encerre a criação. Jogue MetalMamemon EX9-018 ou evolua o Gorillamon para ele. Aceite colocar o Patamon da lixeira por baixo, virado para baixo. O Greymon do oponente perde seu Agumon; depois escolha um dos Digimon sem evoluções para voltar ao fundo do deck. Reinicie e recuse o custo: o Patamon fica na lixeira e os dois Digimon do oponente permanecem intactos.",
+    en: "End breeding. Play EX9-018 MetalMamemon or digivolve Gorillamon into it. Accept placing Patamon from trash face down underneath. The opposing Greymon loses its Agumon; then choose either Digimon with no digivolution cards to return to the deck bottom. Reset and decline the cost: Patamon stays in trash and both opposing Digimon stay intact.",
+  },
+  "arena-github5322-metalmamemon-strip-zero": {
+    ptBR: "Encerre a criação. Jogue MetalMamemon EX9-018 ou evolua o Gorillamon para ele. Aceite colocar o Patamon da lixeira por baixo, virado para baixo. O Monodramon do oponente já está sem evoluções: nenhuma carta é descartada, mas ele deve voltar ao fundo do deck. O Tamer permanece em campo.",
+    en: "End breeding. Play EX9-018 MetalMamemon or digivolve Gorillamon into it. Accept placing Patamon from trash face down underneath. The opposing Monodramon already has no digivolution cards: no card is trashed, but it must return to the deck bottom. The Tamer stays in play.",
+  },
+  "arena-github5318-junomon-printed-cost": {
+    en: "GitHub #5318, current behavior control. End breeding. Evolve LadyDevimon into Junomon using the ordinary cost 4 (memory 10 to 6). Accept placing the opponent's Monodramon in security and trashing both top security cards. Accept Junomon's security-removal play and choose either Angemon from hand or trash for free; both Venusmon copies must be excluded from that choice. Venusmon's printed play cost is 12, even when its own play payment would be reduced to 7. Memory remains 6.",
+    ptBR: "GitHub #5318, controle do comportamento atual. Encerre a criação. Evolua LadyDevimon em Junomon pelo custo normal 4 (memória de 10 para 6). Aceite colocar Monodramon adversário na segurança e descartar o topo das duas seguranças. Aceite jogar pelo efeito de Junomon e escolha Angemon da mão ou do lixo grátis; ambas as Venusmon devem ficar fora dessa escolha. O custo impresso de Venusmon é 12, mesmo quando o pagamento dela seria reduzido para 7. A memória permanece em 6.",
+  },
+  "arena-ex12-metalgreymon-forced-attack-play": {
+    en: "Skip breeding and play EX12 MetalGreymon without Assembly. Agumon Expert is deleted. Choose the opposing BT1 MetalGreymon for the mandatory attack grant: its badge and Start of Your Main Phase clause appear immediately. End Main; after the opponent skips breeding, that Digimon must attack before normal Main actions. Its controller chooses a legal attack target. The grant expires at that opponent turn's end. Restart to compare the digivolve scenario. Discord 1557600224011096104.",
+    ptBR: "Pule a criação e jogue MetalGreymon EX12 sem Assembly. Agumon Expert é deletado. Escolha MetalGreymon BT1 adversário para receber o ataque obrigatório: o indicador e o texto Início da sua Fase Principal aparecem imediatamente. Encerre a Principal; depois da criação adversária, esse Digimon deve atacar antes das ações normais da Principal. Seu controlador escolhe um alvo legal. O efeito expira no fim desse turno adversário. Reinicie para comparar o cenário de digievolução. Discord 1557600224011096104.",
+  },
+  "arena-ex12-metalgreymon-forced-attack-digivolve": {
+    en: "Skip breeding and evolve EX12 Greymon into hand EX12 MetalGreymon for 3 using the alternate cost. The opposing Agumon Expert is deleted. Choose opposing BT1 MetalGreymon: its badge and granted Start of Your Main Phase clause appear. End Main; the recipient must attack at the opponent's Main start, with a mandatory legal-target choice by its controller. Breeding Digimon cannot receive the grant. It expires at the opponent's turn end. Discord 1557600224011096104.",
+    ptBR: "Pule a criação e digievolua Greymon EX12 em MetalGreymon EX12 da mão pelo custo alternativo 3. Agumon Expert adversário é deletado. Escolha MetalGreymon BT1 adversário: o indicador e o texto concedido de Início da sua Fase Principal aparecem. Encerre a Principal; o alvo deve atacar no início da Principal adversária, com escolha obrigatória de alvo legal pelo controlador. Digimons na criação não podem receber o efeito. Ele expira no fim do turno adversário. Discord 1557600224011096104.",
+  },
+  "arena-github-5302-kunlun-security-check": {
+    en: "Skip breeding and end Main. Accept Shishimamon's Execute attack against security. When security is removed, evolve into Kaguyamon for 1; decline the other optional plays. Kunlun must remain unsuspended and Sanmyojin Arrival stays in hand: this evolution is after the pre-counter end-of-turn window closed. An evolution before counter timing has a different ruling (Q7190).",
+    ptBR: "Pule a criação e encerre a Principal. Aceite o ataque Execute do Shishimamon contra a segurança. Quando a segurança sair, evolua em Kaguyamon por 1; recuse as outras jogadas opcionais. Kunlun deve continuar desvirado e Sanmyojin Arrival fica na mão: essa evolução ocorre após fechar a janela de fim do turno anterior ao contra-ataque. Uma evolução antes do contra-ataque tem outra regra (Q7190).",
+  },
+  "arena-github-5305-gravity-order": {
+    en: "Skip breeding: Dan and Kanan give you 4 memory. Use Gravity Crush for 0 to reach 6, then play Vulcanusmon for 7 (fewer Digimon than the opponent); decline linking. At -1, choose Gravity Crush's delayed loss before Dan and Kanan. At -3, suspend the Tamer and use Factorial Area for free, then play Marsmon for 4 (both printed reductions apply because Wrath Mode has 16000 DP). Decline battles and attacks. Factorial Area grants Blocker and the opponent starts at 7. Reset and choose Dan and Kanan first: Factorial Area is unavailable at -1 and remains in hand.",
+    ptBR: "Pule a criação: Dan e Kanan deixam você com 4 memórias. Use Gravity Crush por 0 para chegar a 6 e jogue Vulcanusmon por 7 (menos Digimon que o adversário); recuse os links. Em -1, escolha a perda adiada de Gravity Crush antes de Dan e Kanan. Em -3, vire o Tamer e use Factorial Area de graça; jogue Marsmon por 4 (as duas reduções impressas se aplicam porque Wrath Mode tem 16000 DP). Recuse batalhas e ataques. Factorial Area concede Blocker e o adversário começa com 7. Reinicie e escolha Dan e Kanan primeiro: Factorial Area não está disponível em -1 e fica na mão.",
+  },
+  "arena-github-5315-homeros-unused": {
+    en: "Skip breeding and end Main. Suspend Homeros to activate Wrath Mode's unused When Digivolving effect. Trash your top security and recover 2: security increases from 2 to 3. Junomon underneath does not prevent activation.",
+    ptBR: "Pule a criação e encerre a Principal. Vire Homeros para ativar o Quando Digievolui ainda não usado de Wrath Mode. Descarte o topo da segurança e recupere 2: a segurança sobe de 2 para 3. Junomon nas fontes não impede a ativação.",
+  },
+  "arena-github-5315-homeros-spent": {
+    en: "Skip breeding and evolve Junomon into Wrath Mode for 5, crossing from 4 to -1. Its mandatory recovery resolves once and security increases from 2 to 3. At end of turn Homeros cannot repeat that spent Once Per Turn effect (Q6029); security stays at 3. Compare the unused scenario.",
+    ptBR: "Pule a criação e evolua Junomon em Wrath Mode por 5, passando de 4 para -1. A recuperação obrigatória resolve uma vez e a segurança sobe de 2 para 3. No fim do turno, Homeros não pode repetir esse efeito Uma Vez Por Turno já gasto (Q6029); a segurança continua em 3. Compare o cenário de efeito ainda não usado.",
+  },
+  "arena-github5313-inori-memory-four": {
+    en: "End breeding: Inori gains 1 memory at the start of YOUR Main, from 4 to 5. Play Monodramon for 2: memory becomes 3, with no extra Inori gain. Attack security with P-194 Aegiomon, accept Barrier, then suspend Inori and choose hand Aegiochusmon. This free evolution and the extra security check leave memory at 3. Pass: Inori must not gain memory at the start of the opponent's Main. Reset to compare the 5-memory control.",
+    ptBR: "Encerre a criação: Inori ganha 1 memória no início da SUA Principal, de 4 para 5. Jogue Monodramon por 2: a memória fica em 3, sem novo ganho de Inori. Ataque a segurança com Aegiomon P-194, aceite Barrier, suspenda Inori e escolha Aegiochusmon da mão. A evolução gratuita e a checagem extra mantêm a memória em 3. Passe: Inori não deve ganhar memória no início da Principal adversária. Reinicie para comparar o controle com 5 memórias.",
+  },
+  "arena-github5313-inori-memory-five": {
+    en: "End breeding: starting at 5 memory, Inori gains nothing. Play Monodramon for 2: falling to 3 during Main does not retrigger Inori. Attack security with P-194 Aegiomon, accept Barrier and Inori's suspend cost, and choose Aegiochusmon from hand. Memory stays at 3 through the free evolution and extra security check. Pass: the opponent's Main does not activate Inori's memory effect. Compare the 4-memory arena for the positive control.",
+    ptBR: "Encerre a criação: começando com 5 memórias, Inori não ganha nada. Jogue Monodramon por 2: cair para 3 durante a Principal não reativa Inori. Ataque a segurança com Aegiomon P-194, aceite Barrier e o custo de suspender Inori, e escolha Aegiochusmon da mão. A memória permanece em 3 durante a evolução gratuita e a checagem extra. Passe: a Principal adversária não ativa o efeito de memória de Inori. Compare com a arena de 4 memórias para o controle positivo.",
+  },
+  "arena-github5303-magnamon-printed-dp": {
+    en: "End breeding and play Magnamon without Assembly for 7. Three distinct colors across both trashes give +3000 DP: Magnamon reaches 10000. Choose BT12-112 Shoutmon X7: Superior Mode: it falls from 17000 to 9000 (-4000 twice); Groundramon stays at 6000. Pass without attacking again: the modifiers remain through the opponent's turn and expire when that turn ends. Restart to compare the other target.",
+    ptBR: "Encerre a criação e jogue Magnamon sem Assembly por 7. Três cores diferentes nos dois lixos dão +3000 DP: Magnamon chega a 10000. Escolha Shoutmon X7: Superior Mode BT12-112: ele cai de 17000 para 9000 (-4000 duas vezes); Groundramon permanece com 6000. Passe sem atacar novamente: os modificadores duram até o fim do turno adversário. Reinicie para comparar o outro alvo.",
+  },
+  "arena-terriermon-granted-alliance": {
+    en: "Skip breeding. Activate Lopmon ST17-03 to give Kabuterimon Alliance, then attack security with Kabuterimon and suspend Lopmon for Alliance. Accept Terriermon EX4-032's inherited effect and evolve the attacker into Antylamon BT17-049 for 2 memory: it checks two security cards and memory ends at 8. Restart and decline the inherited evolution to keep Kabuterimon and 10 memory, or decline Alliance to make one check without an inherited evolution.",
+    ptBR: "Pule a criação. Ative Lopmon ST17-03 para conceder Alliance a Kabuterimon, ataque a segurança com Kabuterimon e suspenda Lopmon por Alliance. Aceite o herdado de Terriermon EX4-032 e evolua o atacante em Antylamon BT17-049 por 2 memórias: ele verifica duas seguranças e a memória termina em 8. Reinicie e recuse a evolução herdada para manter Kabuterimon e 10 memórias, ou recuse Alliance para verificar uma segurança sem evolução herdada.",
+  },
+  "arena-github5320-alliance-after-evolution": {
+    en: "GitHub #5320. Skip breeding, then evolve Hakubamon into Sanzomon for 3. Add your top security to hand, recover 1, and use Sanzomon to play Cho-Hakkaimon for 5; decline DigiXros. Resolve Cho-Hakkaimon before Mococomon, give Sanzomon Alliance, and attack the player. In the attack's effect order, resolve Mococomon before Alliance and evolve the attacker into Erlangmon for 1; accept its Kotenken Token. The pending Alliance must still work: suspend Cho-Hakkaimon for 19000 DP and two security checks. Memory ends at 1. Restart and choose Mococomon before Cho-Hakkaimon to compare, or decline Alliance for one check.",
+    ptBR: "GitHub #5320. Pule a criação e evolua Hakubamon em Sanzomon por 3. Adicione o topo da segurança à mão, recupere 1 e use Sanzomon para jogar Cho-Hakkaimon por 5; recuse DigiXros. Resolva Cho-Hakkaimon antes de Mococomon, conceda Alliance a Sanzomon e ataque o jogador. Na ordem dos efeitos do ataque, resolva Mococomon antes de Alliance e evolua o atacante em Erlangmon por 1; aceite a Ficha Kotenken. Alliance pendente deve funcionar: vire Cho-Hakkaimon para atingir 19000 DP e dois testes de segurança. A memória termina em 1. Reinicie e escolha Mococomon antes de Cho-Hakkaimon para comparar, ou recuse Alliance para um teste.",
+  },
   "arena-github-5297-omnimon-main-dna": {
     en: "Skip breeding. During Main, select EX13-016 Omnimon and WarGreymon. Choose DNA and select the MetalGarurumon with Gabumon underneath, then confirm. Pay 0: those two stacks merge into an unsuspended Omnimon and the other MetalGarurumon stays in play. Also try with action confirmations disabled. EX13-077 Merciful Mode has no DNA route; evolve it normally after Omnimon instead.",
     ptBR: "Pule a criação. Na Principal, selecione Omnimon EX13-016 e WarGreymon. Escolha DNA e selecione o MetalGarurumon com Gabumon nas fontes; confirme. Custo 0: as duas pilhas viram um Omnimon não suspenso e o outro MetalGarurumon continua em campo. Teste também com as confirmações de ação desativadas. Merciful Mode EX13-077 não tem rota de DNA; digievolua-o normalmente após Omnimon.",
@@ -266,6 +552,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
   "arena-issue-5169-demidevimon-native": {
     ptBR: "Jogue Arukenimon e delete DemiDevimon para reduzir o custo. Resolva o efeito nativo de DemiDevimon: coloque-o sob Arukenimon e evolua para MaloMyotismon. Seu efeito herdado não pode ativar retroativamente; Agumon adversário e sua carta na mão permanecem.",
     en: "Play Arukenimon and delete DemiDevimon to reduce its cost. Resolve DemiDevimon’s native effect: place it under Arukenimon and evolve into MaloMyotismon. Its inherited effect cannot activate retroactively; the opposing Agumon and your hand card remain.",
+  },
+  "arena-issue-5353-imperialdramon-nested-blitz": {
+    en: "End breeding. DNA digivolve Flamedramon + Shadramon into BT16-077. Play BT20-016 from trash, grant it Rush, and attack security; give it the Paildramon boost and accept its second attack (already suspended, so no extra attack). Play Titamon for 10 to move memory from 2 to -8. Accept Flamedramon's inherited End of Your Turn DNA into EX3-063. Accept Blitz, then select Imperialdramon and attack security before the turn changes. Accepting Blitz alone does not declare the attack. Repeat and decline Blitz to pass without attacking.",
+    ptBR: "Encerre a criação. Faça DNA de Flamedramon + Shadramon para BT16-077. Jogue BT20-016 do lixo, dê-lhe Rush e ataque a segurança; aplique o bônus de Paildramon nele e aceite o segundo ataque (já suspenso, sem outro ataque). Jogue Titamon por 10 para mover a memória de 2 para -8. Aceite o DNA herdado de Flamedramon no fim do turno para EX3-063. Aceite Blitz, depois selecione Imperialdramon e ataque a segurança antes da troca de turno. Aceitar Blitz sozinho não declara o ataque. Repita recusando Blitz para passar sem atacar.",
   },
   "arena-issue-5179-imperialdramon-blitz": {
     ptBR: "Encerre a criação. Evolua Paildramon para Imperialdramon EX3-063 por 4, passando a memória ao oponente. Aceite Blitz e ataque a segurança. Os dois Digimon adversários devem permanecer: a remoção exige DNA, Blitz não.",
@@ -943,6 +1233,18 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Mesa de fim de partida: 21 permanentes por lado, 12 fontes no Vulcanusmon, 2 links e 8 cartas salvas no Watchmaker. Cada lado conserva as 50 cartas do deck principal. Role as duas fileiras, inspecione as fontes e gire a tela.",
     en: "Late-game board: 21 permanents per side, 12 Vulcanusmon sources, 2 links and 8 saved Watchmaker cards. Each side conserves its 50-card main deck. Scroll both lanes, inspect sources and rotate the screen.",
   },
+  "arena-tai-kari-ukkomon-hatch": {
+    ptBR: "Discord 1557959345033969705. Mova Monodramon da criação ao campo. Resolva Ukkomon BT16: adicione uma das 3 cartas reveladas e aceite chocar. Tai & Kari BT17 devem oferecer suspender para ganhar 1 memória: aceite. O ovo fica na criação, o Tamer suspenso e a memória termina em 4, sem travar a animação.",
+    en: "Discord 1557959345033969705. Move Monodramon from breeding to battle. Resolve BT16 Ukkomon: add one of the 3 revealed cards and accept hatching. BT17 Tai & Kari must offer to suspend for 1 memory: accept. The egg remains in breeding, the Tamer is suspended and memory ends at 4 with no animation stall.",
+  },
+  "arena-tai-kari-promo-ukkomon-hatch": {
+    ptBR: "Mova Monodramon da criação ao campo. Aceite chocar pelo Ukkomon P-123 e suspender Tai & Kari BT17. A memória termina em 5: 1 de Tai & Kari e 1 do Ukkomon. Recusando chocar, só Ukkomon ganha memória e Tai & Kari permanecem desuspensos.",
+    en: "Move Monodramon from breeding to battle. Accept P-123 Ukkomon's hatch and suspend BT17 Tai & Kari. Memory ends at 5: 1 from Tai & Kari and 1 from Ukkomon. Declining the hatch gains only Ukkomon's memory and leaves Tai & Kari unsuspended.",
+  },
+  "arena-chronomon-engage-order": {
+    ptBR: "Discord 1557926494536466514, partida com cronômetro. Encerre a criação. Evolua Musyamon para Butenmon pelo custo alternativo 3. Aceite devolver 1 card do lixo e resolva Butenmon antes de Yokomon; ataque a segurança. Então aceite Yokomon e evolua para Chronomon: Holy Mode. Resolva Hyokomon devolvendo uma carta da mão, aceite a recuperação de Holy Mode devolvendo 3 do lixo e aceite desvirar por Butenmon herdado. O primeiro check de segurança precisa terminar na tela antes da pergunta de Engage. Aceite Engage para fazer o segundo ataque: a segurança do bot termina em 3, e só então o turno passa.",
+    en: "Discord 1557926494536466514, timed match. End breeding. Digivolve Musyamon into Butenmon for its alternate cost of 3. Accept returning 1 trash card and resolve Butenmon before Yokomon; attack security. Then accept Yokomon and digivolve into Chronomon: Holy Mode. Resolve Hyokomon by returning a hand card, accept Holy Mode recovery by returning 3 trash cards and accept inherited Butenmon unsuspending. The first security check must finish on screen before the Engage prompt opens. Accept Engage for the second attack: the bot ends with 3 security, then the turn passes.",
+  },
   "arena-match-timer": {
     ptBR: "Timer real: 300 s iniciais por jogador, +60 s no seu turno e +30 s no turno do oponente, até 300 s. Encerre a criação e jogue contra o bot. Só conta o tempo de quem precisa responder; efeitos e animações pausam a contagem. Fique sem agir para testar a derrota por timeout. Reiniciar combate restaura os relógios.",
     en: "Live timer: 300 sec initially per player, +60 sec on your turn and +30 sec on the opponent's, capped at 300 sec. End breeding and play against the bot. Only the required responder's time counts; effects and animations pause it. Stop acting to test defeat by timeout. Reset combat restores the clocks.",
@@ -974,6 +1276,22 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
   "arena-ex12-virus-busters-effect-attack": {
     ptBR: "Encerre seu turno. A fonte EX12-001 Nyaromon oferece a DNA: aceite e junte BetelGammamon com Garurumon em EX12-032 WereGarurumon, depois aceite atacar. A escolha de ordem deve listar juntos o Virus Busters EX12-069 da segurança, o [Quando Evolui] e o [Ao Atacar] de WereGarurumon e o [Ao Atacar] herdado de Garurumon. Resolva o Virus Busters por último: ele ainda deve oferecer jogar um Digimon [VB] do mesmo nível.",
     en: "End your turn. The EX12-001 Nyaromon source offers its DNA: accept, combine BetelGammamon and Garurumon into EX12-032 WereGarurumon, then accept the attack. The order prompt must list together EX12-069 Virus Busters from security, WereGarurumon's [When Digivolving] and [When Attacking], and Garurumon's inherited [When Attacking]. Resolve Virus Busters last: it must still offer to play a same-level [VB] Digimon.",
+  },
+  "arena-github-5316-shoutmon-rush": {
+    ptBR: "Entre na Principal. Jogue BT15-012 Shoutmon X2 com DigiXros usando BT21-021 OmniShoutmon e BT19-051 AtlurBallistamon da mão. Suspenda o Digimon do bot. O custo é 3 (DigiXros −1 por material), deixando 7 de memória. X2 não pode atacar neste turno: seu tipo é Enhancement, sem Xros Heart, exigido pelo Rush herdado de OmniShoutmon. Reprodução #5316; resultado esperado pelas regras.",
+    en: "Enter Main. Play BT15-012 Shoutmon X2 by DigiXros using BT21-021 OmniShoutmon and BT19-051 AtlurBallistamon from hand. Suspend the bot's Digimon. Pay 3 (DigiXros −1 per material), leaving 7 memory. X2 cannot attack this turn: it is Enhancement and lacks Xros Heart, which OmniShoutmon's inherited Rush requires. Report #5316; this result follows the printed rules.",
+  },
+  "arena-github-5316-shoutmon-rush-control": {
+    ptBR: "Entre na Principal. Jogue BT21-027 Shoutmon DX por DigiXros com BT21-021 OmniShoutmon e AD1-013 ZeigGreymon. Resolva os efeitos de entrada e ataque a segurança. DX tem Xros Heart, portanto recebe Rush herdado e pode atacar no turno em que foi jogado. Controle positivo de #5316.",
+    en: "Enter Main. Play BT21-027 Shoutmon DX by DigiXros using BT21-021 OmniShoutmon and AD1-013 ZeigGreymon. Resolve its entry effects and attack security. DX has Xros Heart, so it inherits Rush and can attack the turn it was played. Positive control for #5316.",
+  },
+  "arena-github-5317-shoutmon-material-save-evolved": {
+    ptBR: "No início do turno, aceite eliminar BT15-012 Shoutmon X2 para ganhar 1 de memória (3 → 4). OmniShoutmon e AtlurBallistamon vão à lixeira junto com X2: não haverá Material Save. Seus nomes Shoutmon/Ballistamon valem somente para DigiXros, não para Material Save (Q3105). Os efeitos principais [Ao Ser Eliminado] das fontes não ativam. Entre na Principal para inspecionar a lixeira e Taiki sem fontes. Reprodução #5317; resultado esperado pelas regras.",
+    en: "At turn start, accept deleting BT15-012 Shoutmon X2 to gain 1 memory (3 → 4). OmniShoutmon and AtlurBallistamon go to trash with X2; Material Save is not offered. Their Shoutmon/Ballistamon names apply only to DigiXros, not Material Save (Q3105). The sources' main [On Deletion] effects do not activate. Enter Main to inspect trash and Taiki's empty sources. Report #5317; this result follows the printed rules.",
+  },
+  "arena-github-5317-shoutmon-material-save-printed": {
+    ptBR: "No início do turno, aceite eliminar BT15-012 Shoutmon X2. Aceite Material Save 2 e escolha BT10-008 Shoutmon e BT10-049 Ballistamon para colocar sob Taiki. X2 vai à lixeira, os dois materiais ficam sob Taiki e a memória passa de 3 para 4. Entre na Principal e confira as fontes. Controle positivo de #5317: os nomes impressos qualificam os materiais.",
+    en: "At turn start, accept deleting BT15-012 Shoutmon X2. Accept Material Save 2 and choose BT10-008 Shoutmon and BT10-049 Ballistamon to place under Taiki. X2 goes to trash, both materials remain under Taiki, and memory rises from 3 to 4. Enter Main and inspect the sources. Positive control for #5317: the printed names qualify these materials.",
   },
   "arena-bt10-taiki-x7-xros-heart": {
     ptBR: "Entre na Fase Principal e jogue BT10-087 Taiki Kudo da mão. Na revelação de BT21-083, P-224, AD1-006 e BT8-097, escolha P-224 Kotone Amano para a mão. AD1-006 Shoutmon X7 deve ser colocado sob o Taiki jogado, mesmo sendo o único Digimon Xros Heart revelado. Ordene BT21-083 e BT8-097 para o fundo. A memória termina em 2. Reprodução da partida 802ba658, bug 1555932180322975924.",
@@ -1011,6 +1329,14 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Encerre a fase de criação e ataque a segurança com Greymon BT12-062. Koromon BT5-001 está na base da pilha: seu efeito herdado deve brilhar e comprar 1 carta antes do escudo quebrar e Gaogamon EX4-017 ser revelado. A compra da fase de compra ocorre antes desse ataque e é separada da compra do Koromon.",
     en: "End breeding and attack security with BT12-062 Greymon. BT5-001 Koromon is at the bottom of its stack: its inherited effect must glow and draw 1 card before the shield breaks and EX4-017 Gaogamon is revealed. The draw-phase card arrives before this attack and is separate from Koromon's draw.",
   },
+  "arena-bt21-metalgreymon-one-target-two-colors": {
+    ptBR: "Encerre a criação. Com duas cores distintas de Tamers, jogue MetalGreymon BT21-061 e escolha um dos dois Digimon do bot: somente ele perde uma carta do topo. Depois evolua o Greymon BT21-057 para o segundo MetalGreymon e escolha o outro alvo: uma nova ativação pode escolher outro Digimon. Recuse o ataque opcional. Cada ativação oferece um único alvo.",
+    en: "End breeding. With two distinct Tamer colors, play BT21-061 MetalGreymon and choose either opposing Digimon: only that Digimon loses one top card. Then digivolve BT21-057 Greymon into the second MetalGreymon and choose the other opponent: a separate activation may choose a different Digimon. Decline the optional attack. Each activation offers one target choice.",
+  },
+  "arena-bt21-metalgreymon-one-target-four-colors": {
+    ptBR: "Encerre a criação. Os Tamers têm quatro cores distintas. Jogue MetalGreymon BT21-061 e escolha um Digimon do bot: ele sofre De-Digivolve 1 duas vezes e fica em GeoGreymon de nível 4; o outro permanece intacto. Não deve aparecer uma segunda seleção de alvo. Recuse os efeitos opcionais dos Tamers. Depois evolua Greymon para o segundo MetalGreymon e escolha o outro Digimon: esta nova ativação também aplica as duas etapas ao único alvo escolhido. Recuse o ataque opcional.",
+    en: "End breeding. Your Tamers have four distinct colors. Play BT21-061 MetalGreymon and choose one opposing Digimon: De-Digivolve 1 applies twice to it, leaving level 4 GeoGreymon; the other Digimon stays intact. No second target picker should appear. Decline optional Tamer effects. Then digivolve Greymon into the second MetalGreymon and choose the other opponent: this new activation also applies both processes to its one chosen target. Decline the optional attack.",
+  },
   "arena-ex7-seventh-fascination-turn": {
     ptBR: "Jogue EX7-072 Seventh Fascination e encerre seu turno. O Digimon do bot deve permanecer em campo, sem pedido de deleção nesse momento. O efeito concedido só deve ativar no fim do turno do bot.",
     en: "Play EX7-072 Seventh Fascination and end your turn. The bot's Digimon should stay in play, with no deletion prompt yet. The granted effect should activate only at the end of the bot's turn.",
@@ -1022,6 +1348,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
   "arena-st15-trident-arm-forced-attack-text": {
     ptBR: 'Encerre a criação. Com seu Digimon preto BT12-061 em campo, jogue ST15-16 Trident Arm: aplique De-Digivolve 3 e conceda o ataque forçado ao Digimon do bot. Encerre seu turno. No início da Fase Principal do bot, o aviso do efeito deve mostrar "[Start of Your Main Phase] This Digimon attacks.", não um texto genérico nem o texto do próprio Digimon, e o Digimon do bot deve atacar.',
     en: "End breeding. With your black BT12-061 Digimon in play, play ST15-16 Trident Arm: apply De-Digivolve 3 and grant the forced attack to the bot's Digimon. End your turn. At the start of the bot's Main phase, the effect notice must read \"[Start of Your Main Phase] This Digimon attacks.\", not generic text or the Digimon's own text, and the bot's Digimon must attack.",
+  },
+  "arena-ex13-veemon-protection-5363": {
+    ptBR: "Encerre a criação. Evolua o primeiro MetalGreymon para AD1-004 WarGreymon e escolha o UlforceVeedramon X não suspenso do bot para deletar. Aceite a proteção herdada de EX13-017 Veemon: o Ulforce fica suspenso e permanece no campo. Evolua o segundo MetalGreymon para o outro WarGreymon e escolha o Ulforce que já começou suspenso. Ele deve ser deletado sem oferecer proteção, pois não pode pagar o custo de suspensão.",
+    en: "End breeding. Digivolve the first MetalGreymon into AD1-004 WarGreymon and select the bot's unsuspended UlforceVeedramon X for deletion. Accept EX13-017 Veemon's inherited protection: Ulforce suspends and stays in play. Digivolve the second MetalGreymon into the other WarGreymon and select the Ulforce that started suspended. It must be deleted without a protection prompt because it cannot pay the suspension cost.",
   },
   "arena-bt17-dexdoru-exact-name": {
     ptBR: "Encerre a criação. 1) Jogue BT5-106 Demonic Disaster e delete o DexDoruGreymon BT17-067 do campo. O DexDoruGreymon da lixeira não deve oferecer seu efeito [Trash]: o nome exigido é exatamente [DoruGreymon]. 2) Jogue o segundo Demonic Disaster e delete o DoruGreymon BT16-061. Agora o efeito [Trash] deve ser oferecido; aceite: o DoruGreymon evolui para DexDoruGreymon da lixeira sem pagar o custo e não é deletado.",
@@ -1071,9 +1401,29 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Encerre a criação e ataque a segurança com Examon EX13-045. Na ordem dos efeitos [Ao Atacar], marque Sim para ＜Raid＞ e EX2-040, e Não para BT6-071 e BT9-006. Sem clicar em cada efeito, toque em Resolver: tudo resolve sem outro clique. O ataque muda para o Agumon BT1-013, as 2 cartas do topo do deck vão para a lixeira e sua mão não muda.",
     en: "End breeding and attack security with EX13-045 Examon. In the [When Attacking] order, set Yes for ＜Raid＞ and EX2-040, and No for BT6-071 and BT9-006. Without clicking each effect, press Resolve: everything resolves with no further click. The attack switches to the BT1-013 Agumon, the top 2 deck cards go to trash, and your hand is unchanged.",
   },
+  "arena-raid-after-dedigivolve": {
+    ptBR: "Encerre a criação e ataque o jogador com Omnimon AD1-025. Resolva primeiro a exclusão herdada de WarGreymon AD1-004, escolhendo BT22-052. O oponente usa Guard de Gladimon EX13-052 e escolhe Omnimon para De-Digivolve 1. WarGreymon fica no topo com 14000 DP e Raid, mas o Raid pendente de Omnimon não pode ativar: o ataque continua no jogador e BT22-052 sobrevive. Controle: reinicie e resolva Raid primeiro; a mudança de alvo já realizada permanece após De-Digivolve.",
+    en: "End breeding and attack the player with AD1-025 Omnimon. Resolve AD1-004 WarGreymon's inherited deletion first, choosing BT22-052. The opponent uses EX13-052 Gladimon's Guard and chooses Omnimon for De-Digivolve 1. WarGreymon becomes the top card with 14000 DP and Raid, but Omnimon's pending Raid cannot activate: the attack continues at the player and BT22-052 survives. Control: restart and resolve Raid first; the completed target switch remains after De-Digivolve.",
+  },
   "arena-raid-optional-preset": {
     ptBR: "Encerre a criação e ataque a segurança com Examon EX13-045. Na ordem dos efeitos [Ao Atacar], ＜Raid＞ deve mostrar Sim/Não/Perguntar, não Obrigatório. Marque Não: o ataque continua na segurança, sem pedido de Raid, e o Agumon BT1-013 do bot sobrevive. Reinicie e marque Sim: o alvo muda para o Agumon sem pedido extra, e ele é deletado na batalha.",
     en: "End breeding and attack security with EX13-045 Examon. In the [When Attacking] order, ＜Raid＞ must show Yes/No/Ask, not Mandatory. Set No: the attack stays on security with no Raid prompt, and the bot's BT1-013 Agumon survives. Reset and set Yes: the target switches to the Agumon with no extra prompt, and it is deleted in battle.",
+  },
+  "arena-bt22-vademon-return-tamer": {
+    ptBR: "Encerre a criação e ataque a segurança com Vademon BT22-061. Aceite pagar seu BlitzGreymon ACE EX9-013 virado para baixo e escolha o Tai Kamiya BT1-085 do bot (custo 4). Tai volta à mão do bot e a fonte vai para sua lixeira. A memória continua 3: a fonte virada para baixo não tem Overflow.",
+    en: "End breeding and attack security with BT22-061 Vademon. Accept trashing your face-down EX9-013 BlitzGreymon ACE and choose the bot’s cost-4 BT1-085 Tai Kamiya. Tai returns to the bot’s hand and the source goes to your trash. Memory stays at 3: the face-down source has no Overflow.",
+  },
+  "arena-bt22-vademon-return-ace": {
+    ptBR: "Encerre a criação e ataque o MetalGreymon ACE BT14-014 suspenso do bot com Vademon BT22-061. Aceite pagar sua fonte EX9-013 virada para baixo e devolver o alvo. O ataque termina sem checar a segurança, a memória sobe de 3 para 6 pelo Overflow -3 do ACE do bot, e sua fonte não cobra Overflow.",
+    en: "End breeding and attack the bot’s suspended BT14-014 MetalGreymon ACE with BT22-061 Vademon. Accept trashing your face-down EX9-013 source and returning the target. The attack ends without security checks, memory rises from 3 to 6 from the bot’s ACE Overflow -3, and your source charges no Overflow.",
+  },
+  "arena-bt22-shinmonzaemon-own-security": {
+    ptBR: "Encerre a criação e evolua Monzaemon BT22-038 para ShinMonzaemon BT22-076 (custo 3 após a redução Ver.1). Aceite descartar a fonte EX9-013 virada para baixo e escolha seu Muchomon BT1-013. Muchomon fica no topo da sua segurança virado para baixo, sua fonte Monodramon vai para sua lixeira e a segurança do bot não muda. Memória final: 5.",
+    en: "End breeding and digivolve BT22-038 Monzaemon into BT22-076 ShinMonzaemon (cost 3 after the Ver.1 reduction). Accept trashing the face-down EX9-013 source and choose your BT1-013 Muchomon. Muchomon goes face down to the top of your security, its Monodramon source goes to your trash, and the bot’s security stays unchanged. Final memory: 5.",
+  },
+  "arena-bt22-shinmonzaemon-opponent-security": {
+    ptBR: "Encerre a criação e evolua Monzaemon BT22-038 para ShinMonzaemon BT22-076 (custo 3 após a redução Ver.1). Aceite descartar a fonte EX9-013 virada para baixo e escolha o Muchomon BT1-013 do bot. Muchomon fica no topo da segurança do bot virado para baixo, sua fonte Monodramon vai para a lixeira do bot e sua segurança não muda. Memória final: 5.",
+    en: "End breeding and digivolve BT22-038 Monzaemon into BT22-076 ShinMonzaemon (cost 3 after the Ver.1 reduction). Accept trashing the face-down EX9-013 source and choose the bot’s BT1-013 Muchomon. Muchomon goes face down to the top of the bot’s security, its Monodramon source goes to the bot’s trash, and your security stays unchanged. Final memory: 5.",
   },
   "arena-face-down-ace-no-overflow": {
     ptBR: "Encerre a fase de criação. Seu MetalTyrannomon EX9-043 tem BlitzGreymon EX9-013 (ACE, Overflow -4) virado para baixo embaixo. Ataque o Digimon suspenso de 13000 DP do bot. MetalTyrannomon perde a batalha e as duas cartas vão para a lixeira. A memória não deve mudar: uma carta virada para baixo não tem informação, então não há Overflow.",
@@ -1127,6 +1477,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: 'Jogue o BT20-084 Sistermon Ciel (Awakened) da mão (custo 5). O [Ao Jogar] pede 1 Digimon ou Tamer do bot: escolha a EX13-069 Rina Shinomiya. Ela não pode suspender até o fim do turno do bot. Encerre seu turno. Na fase de desuspender do bot, o BT3-021 Veemon dele desuspende. A Rina não pode pagar "suspendendo este Tamer": o efeito dela não é oferecido nem ativado, o log não mostra "efeito da Rina Shinomiya resolvido", a Rina continua desvirada e o bot só compra a carta normal do turno.',
     en: "Play BT20-084 Sistermon Ciel (Awakened) from hand (cost 5). Its [On Play] asks for 1 of the bot's Digimon or Tamers: choose EX13-069 Rina Shinomiya. She can't suspend until the end of the bot's turn. End your turn. In the bot's unsuspend phase, its BT3-021 Veemon unsuspends. Rina can't pay \"by suspending this Tamer\": her effect is neither offered nor activated, the log shows no \"Rina Shinomiya's effect resolved\", Rina stays unsuspended, and the bot draws only its normal turn card.",
   },
+  "arena-ex13-rina-modal-title": {
+    ptBR: "Encerre a criação. Ataque a segurança com Veemon BT3-021 (Jamming). Use Victory Sword ST8-11 (custo 3) para desvirar o único Veemon. No modal de Rina, o título deve ser a pergunta localizada normal e o corpo deve mostrar apenas o trecho de virar a Tamer/comprar 1. Aceite: Rina vira e compra 1. No segundo modal, o corpo deve mostrar apenas o trecho de evolução. Aceite: o único Veemon evolui para Veedramon BT1-115 na mão e o custo 3 cai para 1. Recarregue para recusar Rina (sem virar/comprar) ou recusar a evolução após a compra (Veedramon fica na mão).",
+    en: "End breeding. Attack security with BT3-021 Veemon (Jamming). Use ST8-11 Victory Sword (cost 3) to unsuspend the sole Veemon. Rina's modal must keep the normal localized question as its title and show only the suspend-Tamer/draw-1 passage in the body. Accept: Rina suspends and draws 1. The second modal must show only the evolution passage in its body. Accept: the sole Veemon evolves into BT1-115 Veedramon in hand and its cost 3 becomes 1. Reload to decline Rina (no suspend/draw) or decline evolution after drawing (Veedramon stays in hand).",
+  },
   "arena-ex11-vortex-effect-attack": {
     ptBR: "Digivolva o ST20-10 Agumon no ST21-08 Togemon da mão (custo 2). O [Seu Turno] do ST21-09 Lillymon dispara: dê ＜Aliança＞ ao Togemon e ataque o jogador com ele. Na ＜Aliança＞, escolha a Lillymon. O Togemon e a Lillymon suspendem, e o [Todos os Turnos] do seu EX11-074 Vortexdramon (desvirado) pergunta Battle duas vezes. Recuse a primeira. Aceite a segunda e escolha o BT1-009 Monodramon do bot: ele é deletado. Recusar não gasta o [Uma Vez Por Turno], mesmo com o ataque ordenado por um efeito.",
     en: "Digivolve ST20-10 Agumon into ST21-08 Togemon from hand (cost 2). ST21-09 Lillymon's [Your Turn] effect triggers: give Togemon ＜Alliance＞ and attack the player with it. For ＜Alliance＞, choose Lillymon. Togemon and Lillymon suspend, and the [All Turns] effect of your unsuspended EX11-074 Vortexdramon asks Battle twice. Decline the first. Accept the second and choose the bot's BT1-009 Monodramon: it is deleted. Declining does not spend the [Once Per Turn], even when an effect ordered the attack.",
@@ -1178,6 +1532,22 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
   "arena-discord-1557575147119054889-shakkoumon-yellow-only": {
     ptBR: "Encerre a criação. Seus dois EX13-028 Sukamon são amarelos Nv.4. Selecione BT23-032 Shakkoumon: nenhuma combinação de DNA deve aparecer, pois falta um material preto ou azul Nv.4. Uma única carta multicolorida também não ocupa os dois lugares do DNA. A mão, os dois Sukamon e a memória devem permanecer sem alterações. Use o cenário Shakkoumon DNA · materiais do relato para comparar com pares válidos.",
     en: "End breeding. Both of your EX13-028 Sukamon are yellow Lv.4. Select BT23-032 Shakkoumon: no DNA combination should appear because a black or blue Lv.4 material is missing. A single multicolor card also cannot fill both DNA slots. Your hand, both Sukamon, and memory should remain unchanged. Use Shakkoumon DNA · reported materials to compare with legal pairs.",
+  },
+  "arena-discord-1557631388650315826-sukamon-dna-materials": {
+    en: "Let the opponent play KingSukamon and turn Wingdramon into a white 3000 DP Sukamon. On your turn, Examon must offer no DNA route with Breakdramon: Wingdramon still counts as Lv.6 for Examon, but is no longer blue. End the turn; the inherited DNA effect must leave both materials in play. The rewrite expires afterward.",
+    ptBR: "Deixe o oponente jogar KingSukamon e transformar Wingdramon em Sukamon branco de 3000 DP. No seu turno, Examon não deve oferecer DNA com Breakdramon: Wingdramon ainda conta como Nv.6 para Examon, mas não é azul. Encerre o turno; o efeito herdado de DNA deve manter os dois materiais em campo. A transformação termina depois disso.",
+  },
+  "arena-discord-1557631388650315826-sukamon-dna-control": {
+    en: "Healthy control: Wingdramon is blue/red and Breakdramon is green/red. DNA digivolve into Examon for 0, or end the turn and accept Dracomon's inherited DNA. Both materials must merge; Examon's mandatory attack resolves. White Sukamon can still DNA when a printed recipe admits it, such as Kimeramon's color-free Lv.4 + Lv.4 recipe.",
+    ptBR: "Controle: Wingdramon é azul/vermelho e Breakdramon é verde/vermelho. Faça DNA para Examon por 0, ou encerre o turno e aceite o DNA herdado de Dracomon. Os materiais devem se unir; o ataque obrigatório de Examon resolve. Sukamon branco ainda pode fazer DNA quando o requisito permite, como Nv.4 + Nv.4 sem cor de Kimeramon.",
+  },
+  "arena-discord-1557790296379625482-loweemon-hosts": {
+    ptBR: "Estado parcial observado: 2 de memória, Ai & Mako, Ignitemon sobre DemiMeramon e Loweemon sobre Koichi. Ataque com Loweemon; resolva Loweemon antes do efeito herdado de Koichi. Aceite e selecione um dos três alvos no campo. Loweemon evolui no KaiserLeomon do lixo por 1; os outros alvos oferecem Velgrmon ou KaiserLeomon por 4. Recuse os efeitos de Ai & Mako e Koichi para isolar o custo. Use Selecionar no campo para escolher o Digimon ou Tamer antes de escolher o card do lixo.",
+    en: "Observed partial state: 2 memory, Ai & Mako, Ignitemon over DemiMeramon, and Loweemon over Koichi. Attack with Loweemon; resolve Loweemon before Koichi’s inherited effect. Accept and select one of the three board hosts. Loweemon evolves into KaiserLeomon from trash for 1; the other hosts offer Velgrmon or KaiserLeomon for 4. Decline Ai & Mako and Koichi effects to isolate the cost. Use Select on board to choose the Digimon or Tamer before choosing the trash card.",
+  },
+  "arena-discord-1557790296379625482-trash-hybrids": {
+    ptBR: "Com 2 de memória, ataque com Duskmon e selecione o próprio Duskmon no campo: Velgrmon do lixo evolui por 0. Recuse o efeito de fim de ataque do Velgrmon. Depois ataque com Loweemon e selecione o próprio Loweemon: KaiserLeomon evolui por 1. Ukkomon não é um alvo válido. Reinicie e selecione DemiDevimon como alvo para abrir a escolha entre os dois cards do lixo; o custo normal é 4, reduzido a 3 pelo Duskmon. O primeiro seletor escolhe o Digimon no campo, não o card do lixo.",
+    en: "At 2 memory, attack with Duskmon and select Duskmon itself on the board: Velgrmon from trash evolves for 0. Decline Velgrmon’s end-of-attack effect. Then attack with Loweemon and select Loweemon itself: KaiserLeomon evolves for 1. Ukkomon is not a legal host. Restart and select DemiDevimon as the host to open the choice between both trash cards; the normal cost is 4, reduced to 3 by Duskmon. The first picker selects the board Digimon, not the trash card.",
   },
   "arena-discord-1557565628439724032-duskmon-dna-colors": {
     ptBR: "Espere o bot jogar Duskmon BT18-078 e mudar Wingdramon EX13-021 para vermelho. Encerre a criação: Examon BT13-059 não deve oferecer DNA com Wingdramon + HerculesKabuterimon, pois falta azul. Evolua Wingdramon em Slayerdramon EX3-024 pela condição de nome (3 memória): ele continua vermelho e a DNA continua indisponível. Encerre o turno: o Dracomon herdado não deve oferecer DNA ilegal. Para comparar, abra o cenário Duskmon DNA · controle: sem mudança de cor, a mesma dupla pode fazer DNA por 0.",
@@ -1247,9 +1617,29 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Reproduz a partida do Discord. É o turno do bot. Você não tem Digimon em campo, tem 2 cards de segurança, BT13-007 King Drasil_7D6 na criação com BT20-083 Omekamon embaixo, e BT20-102 Omnimon (X Antibody) na mão. O WarGreymon do bot ataca você. Quando sua segurança for removida, aceite jogar o Omekamon. No [Ao Jogar] dele, aceite evoluir para o Omnimon (X Antibody). Seu Omnimon é o seu único Digimon, então ele é o seu escolhido; a escolha seguinte deve listar só os Digimon do bot, sem selo de deletar. Escolha um: o outro é deletado, depois devolva o escolhido ao fundo do deck. Seu Omnimon (X Antibody) deve continuar em campo.",
     en: "Reproduces the Discord match. It is the bot's turn. You have no Digimon in play, 2 security cards, BT13-007 King Drasil_7D6 in the breeding area with BT20-083 Omekamon under it, and BT20-102 Omnimon (X Antibody) in hand. The bot's WarGreymon attacks you. When your security is removed, accept playing Omekamon. On its [On Play], accept digivolving into Omnimon (X Antibody). Your Omnimon is your only Digimon, so it is your chosen one; the next choice must list only the bot's Digimon, with no delete badge. Choose one: the other is deleted, then return the chosen one to the deck bottom. Your Omnimon (X Antibody) must stay in play.",
   },
+  "arena-github-5350-dedigivolve-egg": {
+    en: "GitHub #5350: end breeding, then evolve MetalGreymon BT1-021 into BlitzGreymon AD1-009 using its Greymon route (cost 3). Choose De-Digivolve 3. The opponent's stack reproduces the reported Assembly order: Destroy Mode, Giant Slayer, the egg, then buried level 3–6 cards. Only the two top cards are trashed, legally exposing the egg above the buried rookie. At the Garurumon protection choice, inspect the egg, then select either Garurumon. After the effect ends, the egg and remaining sources are trashed by rule; this is not deletion. The buried level 3 does not change the physical stack order.",
+    ptBR: "GitHub #5350: encerre a criação e evolua MetalGreymon BT1-021 para BlitzGreymon AD1-009 pela rota de Greymon (custo 3). Escolha De-Digivolve 3. A pilha adversária reproduz a ordem de Assembly reportada: Destroy Mode, Giant Slayer, o ovo e os cards de nível 3–6 abaixo. Apenas os dois cards do topo são descartados, expondo legalmente o ovo acima do nível 3. Na escolha de proteção de Garurumon, observe o ovo e selecione qualquer Garurumon. Ao terminar o efeito, o ovo e as fontes restantes são descartados por regra; isso não é deleção. O nível 3 enterrado não altera a ordem física da pilha.",
+  },
+  "arena-github-5349-collision-immunity": {
+    en: "GitHub #5349: evolve EX13-020 into Magnamon X BT16-102; its Armor Form source activates immunity. Attack with Monodramon and decline the opponent's block; Omnimon in security deletes Monodramon and the security removal refreshes Magnamon X's effect. End your turn. On the opponent's turn, play BT1-012 and use LordKnightmon EX13-064 to give Knightmon EX13-058 Rush/Collision and attack. Use Alliance with LordKnightmon, then Blast evolve Magnamon X into Paladin ACE BT17-077. Return the opponent's trash. Paladin retains immunity and has no Blocker: no forced block opens, and Alliance checks two security cards. Control: pass Counter to keep Magnamon X; its printed Blocker still forces a block. Use manual control of both seats for this sequence.",
+    ptBR: "GitHub #5349: evolua EX13-020 para Magnamon X BT16-102; a fonte Armor Form ativa a imunidade. Ataque com Monodramon e recuse o bloqueio adversário; Omnimon na segurança deleta Monodramon e a remoção da segurança reativa o efeito de Magnamon X. Encerre o turno. No turno adversário, jogue BT1-012 e use LordKnightmon EX13-064 para dar Rush/Collision ao Knightmon EX13-058 e atacar. Use Alliance com LordKnightmon, depois faça Blast de Magnamon X para Paladin ACE BT17-077. Retorne o lixo adversário. Paladin mantém a imunidade e não tem Blocker: não há bloqueio obrigatório, e Alliance verifica duas seguranças. Controle: passe o Counter para manter Magnamon X; seu Blocker impresso ainda obriga bloquear. Controle manualmente os dois lados nesta sequência.",
+  },
+  "arena-github-5346-blast-dna-decision": {
+    en: "End breeding, pass the turn, and decline WarGreymon's end-of-turn DNA. When the opponent attacks, decline Blocker and choose Omnimon ACE for Counter. Choose field WarGreymon + a MetalGarurumon from hand. Three physical DNA routes are available before activation. After DNA, Counter must disappear and Omnimon must ask for the opponent's Digimon: select it and confirm to return it to the deck bottom. Alternatively skip that return; the sole remaining Digimon is then deleted automatically. A repeated Counter answer must not restore the consumed material choices. This focused scenario uses a passive attacker; the regression also covers the reported Shoutmon EX6.",
+    ptBR: "Encerre a criação, passe o turno e recuse o DNA de fim de turno do WarGreymon. Quando o oponente atacar, recuse Bloqueador e escolha Omnimon ACE no Contra-ataque. Escolha WarGreymon do campo + um MetalGarurumon da mão. Há três rotas físicas de DNA antes da ativação. Após o DNA, o Contra-ataque deve desaparecer e Omnimon deve pedir o Digimon oponente: selecione e confirme para devolvê-lo ao fundo do deck. Ou pule essa devolução; o único Digimon restante será excluído automaticamente. Uma resposta repetida de Contra-ataque não deve restaurar materiais consumidos. Este cenário usa um atacante sem efeitos; a regressão também cobre o Shoutmon EX6 reportado.",
+  },
   "arena-bt20-ouryuken-blast-dna-counter": {
     ptBR: "Reproduz o Counter da partida de zeroxbass: Alphamon EX13-060 em campo, duas cópias de Ouryuken ACE BT20-060 e duas de Ouryumon BT20-018 na mão. Pule a criação e encerre o turno, recusando jogar Ouryumon pelo Alphamon. O Lanamon BT12-024 do bot ataca: recuse o redirecionamento herdado do Grademon. Escolha um ACE destacado na mão e clique no botão Blast DNA no painel de Counter, sem precisar tocar no Alphamon do campo. As cópias idênticas de Ouryumon aparecem em uma única opção. Só o ACE escolhido e uma cópia de Ouryumon são consumidos; o outro par fica na mão. O When Digivolving aplica -15000 no Lanamon, descarta uma segurança do bot e recupera uma sua antes de deletar o atacante. Não ocorre security check. Passar Counter recusa a evolução e deixa o ataque continuar.",
     en: "Reproduces zeroxbass's Counter: EX13-060 Alphamon in play, two BT20-060 Ouryuken ACEs and two BT20-018 Ouryumons in hand. Skip breeding and end your turn, declining Alphamon's optional Ouryumon play. The bot's BT12-024 Lanamon attacks: decline Grademon's inherited attack redirection. Choose a highlighted ACE in your hand and click Blast DNA in the Counter rail, without tapping Alphamon on the field. Identical Ouryumon copies share one option. Only the selected ACE and one Ouryumon copy are consumed; the other pair stays in hand. When Digivolving applies -15000 to Lanamon, trashes one bot security and recovers one of yours before deleting the attacker. No security check occurs. Pass Counter declines evolution and lets the attack continue.",
+  },
+  "arena-github-5323-alphamon-main-dna": {
+    en: "GitHub #5323 current-behavior check: end breeding, select BT20-060 Ouryuken in hand, choose DNA and both field Digimon (EX13-060 Alphamon and BT20-018 Ouryumon). Confirm the printed cost-0 route. Both materials merge, Lanamon gets -15000 DP, one bot security is trashed and you recover one. Memory rises from 7 to 10. Reset for the paid control: ordinary Digivolve onto Alphamon costs 6, leaves Ouryumon in play and memory at 1, with no security trash or Recovery. These are two separate printed routes.",
+    ptBR: "GitHub #5323, verificação do comportamento atual: encerre a criação, selecione Ouryuken BT20-060 na mão, escolha DNA e os dois Digimon do campo (Alphamon EX13-060 e Ouryumon BT20-018). Confirme a rota impressa de custo 0. Os materiais se unem, Lanamon recebe -15000 DP, uma segurança do bot é descartada e você recupera uma. A memória vai de 7 para 10. Reinicie para o controle pago: Digivolver normalmente sobre Alphamon custa 6, mantém Ouryumon no campo e deixa 1 de memória, sem descartar segurança nem recuperar. São duas rotas impressas diferentes.",
+  },
+  "arena-github-5323-alphamon-blast-dna": {
+    en: "GitHub #5323 current-behavior check: Alphamon EX13-060 is in the battle area; Ouryumon BT20-018 and Ouryuken BT20-060 are in hand. Main DNA is unavailable with only one field material. End breeding and your turn, declining Alphamon's optional play. The bot's Lanamon attacks. Select the highlighted Ouryuken in hand and use Blast DNA in the Counter panel: it consumes field Alphamon and hand Ouryumon at no cost, trashes one bot security and recovers one before Lanamon is deleted; no security check occurs. Pass Counter instead to keep both hand cards and let the attack continue. A breeding-area Alphamon cannot be used.",
+    ptBR: "GitHub #5323, verificação do comportamento atual: Alphamon EX13-060 está na área de batalha; Ouryumon BT20-018 e Ouryuken BT20-060 estão na mão. DNA na fase principal fica indisponível com apenas um material no campo. Encerre a criação e o turno, recusando jogar pelo Alphamon. O Lanamon do bot ataca. Selecione Ouryuken destacado na mão e use Blast DNA no painel de Counter: consome Alphamon do campo e Ouryumon da mão sem custo, descarta uma segurança do bot e recupera uma antes de deletar Lanamon; não ocorre verificação de segurança. Passe o Counter para manter as duas cartas na mão e deixar o ataque continuar. Alphamon na criação não pode ser usado.",
   },
   "arena-bt20-ouryuken-reduction-resumes": {
     ptBR: "O bot tem BT26-016 Chronomon: Holy Mode (12000 DP) sobre BT26-029 Aegiochusmon: Holy, protegido contra redução de DP pelos seus efeitos até o fim do seu turno. Você tem 3 de memória, BT13-007 King Drasil_7D6 no breeding com 5 cartas de digivolução (uma delas é BT20-060 Alphamon: Ouryuken), BT13-110 Royal Knights of the Purge no campo e outro Ouryuken na mão. Rota 1: jogue o Ouryuken da mão e aceite a redução da King Drasil (custo 9 → 0). O On Play aplica -15000, bloqueado pela proteção; termine o turno e o Chronomon vai a 0 DP no turno do bot e é deletado (ele pode usar o próprio efeito uma vez para ficar, mas sai na verificação seguinte). Rota 2: ative o ＜Delay＞ do Royal Knights of the Purge para jogar o Ouryuken das cartas de digivolução da King Drasil. Pelo texto da option, o On Play do Ouryuken não ativa: nenhum -15000 é aplicado e o Chronomon continua com 12000.",
@@ -1266,6 +1656,14 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
   "arena-bt2-kurisarimon-repeat-memory": {
     ptBR: "Reproduz o bug de Oxxo: você tem 1 de memória, Infermon com Kurisarimon BT2-059 nas fontes, Arata BT5-090 em campo e Diaboromon EX6-043 na mão. Pule a criação e evolua o Infermon para Diaboromon (custo 3). Resolva primeiro o [Quando Evolui], aceitando o token, e depois aceite suspender Arata para jogar outro token. Kurisarimon deve ganhar 1 de memória por cada token: -2 → -1 → 0. Seu turno continua com dois tokens e Arata suspenso.",
     en: "Reproduces Oxxo's bug: you have 1 memory, Infermon with BT2-059 Kurisarimon in its sources, BT5-090 Arata in play, and EX6-043 Diaboromon in hand. Skip breeding and digivolve Infermon into Diaboromon (cost 3). Resolve [When Digivolving] first, accepting its token, then accept suspending Arata to play another token. Kurisarimon must gain 1 memory for each token: -2 → -1 → 0. Your turn continues with two tokens and a suspended Arata.",
+  },
+  "arena-github5310-okuwamon-grandis-memory": {
+    ptBR: "Pule a criação. Com 3 de memória, evolua Okuwamon P-075 para GrandisKuwagamon BT9-055 pelo custo impresso de 4. Escolha o Monodramon do bot no [Quando Evolui]. Okuwamon concede o efeito antes de evoluir: a suspensão deve ganhar exatamente 1 de memória, de -1 para 0, mantendo seu turno. Grandis fica com 16000 DP e não deve repetir a suspensão. Este cenário verifica o contrato atual; o relato de 56 ativações ainda não foi reproduzido.",
+    en: "Skip breeding. With 3 memory, digivolve P-075 Okuwamon into BT9-055 GrandisKuwagamon for its printed cost of 4. Choose the bot's Monodramon for [When Digivolving]. Okuwamon grants the effect before digivolving: that suspension must gain exactly 1 memory, from -1 to 0, keeping your turn. Grandis stays at 16000 DP and must not repeat the suspension. This scenario verifies the current contract; the reported 56 activations remain unproven.",
+  },
+  "arena-github5310-grandis-end-of-attack": {
+    ptBR: "Pule a criação e ataque a segurança com GrandisKuwagamon BT9-055, que tem GranKuwagamon e Okuwamon P-075 nas fontes. Grandis deve continuar suspenso durante a checagem de segurança e só depois, no [Fim do Ataque], suspender o Monodramon do bot e voltar à posição ativa. Ataque a segurança uma segunda vez: o limite de uma vez por turno deve deixá-lo suspenso ao final. O efeito de memória de Okuwamon não está armado neste cenário; sua herdada concede Perfurante.",
+    en: "Skip breeding and attack security with BT9-055 GrandisKuwagamon, with GranKuwagamon and P-075 Okuwamon in its sources. Grandis must stay suspended during the security check, then suspend the bot's Monodramon and unsuspend only at [End of Attack]. Attack security a second time: the once-per-turn limit must leave Grandis suspended afterward. Okuwamon's memory effect is not armed in this scenario; its inherited effect grants Piercing.",
   },
   "arena-bt2-kurisarimon-start-main-memory": {
     ptBR: "Você tem 3 de memória e dois Diaboromon EX6-043, um com Kurisarimon BT2-059 nas fontes. Pule a criação e aceite os dois efeitos de início da Fase Principal para jogar um token de cada vez. Resolva a herdada de Kurisarimon após cada token: a memória deve subir de 3 para 4 e depois para 5. Dois efeitos separados geram dois ganhos; dois tokens simultâneos de um único efeito geram apenas um.",
@@ -1338,6 +1736,14 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
   "arena-bt25-ceresmon-homeros-suspend": {
     ptBR: "Discord 1556518401655054436. Encerre a criação e resolva Homeros: memória de 6 para 7, ele suspende e compra 1. Nenhuma Ceresmon deve ativar, nem a BT25-059 nem a recebida por Succession da BT26-032; Omnimon continua com 17000 DP. Ataque a segurança com Muchomon BT1-013: agora as duas Ceresmon ativam. Escolha Omnimon para ambas. Há 2 Digimon suspensos (Muchomon e Omnimon), então cada efeito dá -6000 DP e Omnimon fica com 5000 DP. Homeros não conta nem consome o uma vez por turno.",
     en: "Discord 1556518401655054436. End breeding and resolve Homeros: memory rises from 6 to 7, it suspends and draws 1. Neither BT25-059 Ceresmon nor its effect received through BT26-032 Succession should trigger; Omnimon stays at 17000 DP. Attack security with Muchomon BT1-013: both Ceresmon effects now trigger. Choose Omnimon for both. With 2 suspended Digimon (Muchomon and Omnimon), each effect gives -6000 DP, leaving Omnimon at 5000 DP. Homeros does not count or spend the once-per-turn effects.",
+  },
+  "arena-kanan-jupiter-pomumon": {
+    ptBR: "Encerre a criação sem mover o Agumon. Com 5 de memória, jogue Titamon BT1-080 da mão pelo custo 10: o adversário recebe 5. Aceite suspender Kanan Yuki no Fim do Seu Turno. As duas Jupitermon BT26-033 e Central Town devem aparecer como escolhas, mesmo com Pomumon em campo. Selecione uma Jupitermon para usar Wide Plasment: custo 2 + 3 seguranças − 5 de memória adversária = 0. O Monochromon do bot é deletado, sua segurança sobe para 4, a Option vai ao lixo e a outra Jupitermon permanece na mão. Pomumon continua em campo.",
+    en: "End breeding without moving Agumon. At 5 memory, play BT1-080 Titamon from hand for 10: the opponent gets 5. Accept suspending Kanan Yuki at End of Your Turn. Both BT26-033 Jupitermon copies and Central Town must be offered despite Pomumon on the field. Choose one Jupitermon to use Wide Plasment: cost 2 + 3 security − 5 opponent memory = 0. The bot's Monochromon is deleted, your security increases to 4, the Option goes to trash, and the other Jupitermon remains in hand. Pomumon stays in play.",
+  },
+  "arena-bt22-akemi-battle-mother": {
+    ptBR: "GitHub #5370. Aguarde a Principal: a criação avança automaticamente porque Mother Eater não tem DP para sair. Ative o [Principal] de Akemi Suedou. Somente os dois Mother Eater no campo podem ser escolhidos; a cópia na criação fica excluída. Escolha o Mother Eater com Eater (Species Form) nas fontes. Akemi deve ficar como a fonte inferior, abaixo de Eater (Species Form), enquanto a pilha na criação fica intacta.",
+    en: "GitHub #5370. Wait for Main: breeding skips automatically because Mother Eater has no DP to move. Activate Akemi Suedou's [Main]. Only the two battle-area Mother Eaters are eligible; the breeding copy is excluded. Choose the Mother Eater with Eater (Species Form) in its sources. Akemi must become its bottom source, below Eater (Species Form), while the breeding stack stays intact.",
   },
   "arena-p224-kotone-own-source": {
     ptBR: "Entre na Principal com 3 de memória. Jogue P-224 Kotone Amano da mão e, no [Ao Jogar], coloque AD1-006 Shoutmon X7 sob ela para comprar 1. Com memória 0, ative o [Principal] da Kotone e aceite suspendê-la. X7 deve aparecer para seleção. Escolha X7 e use BT11-015 OmniShoutmon da mão como material de DigiXros. O custo é 10 (13 − 1 da Kotone − 2 do DigiXros), e o turno passa com 10 de memória para o bot. Reprodução do bug 1556113288599834624 e da condição de custo da partida 9b9ea6cc.",
@@ -1427,6 +1833,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Encerre a criação. Jogue Bagramon da mão por DigiXros, com SkullKnightmon do campo como material. DigiXros não é um efeito, então o efeito de Tactimon (impedir a saída por efeitos) não deve ser oferecido. SkullKnightmon vai para baixo de Bagramon, Tactimon mantém as 2 fontes e a memória vai de 12 para 1.",
     en: "End breeding. Play Bagramon from hand by DigiXros, with SkullKnightmon from the field as the material. A DigiXros is not an effect, so Tactimon's effect (prevent leaving by effects) must not be offered. SkullKnightmon goes under Bagramon, Tactimon keeps its 2 sources, and memory goes from 12 to 1.",
   },
+  "arena-ex10-bagramon-materials-destination": {
+    ptBR: "Encerre a criação e recuse colocar uma carta sob Yuu & Nene no início da Principal. Jogue EX10-056 Bagramon usando DigiXros: suspenda EX10-064 Yuu & Nene, escolha EX10-058 sob esse Domador e BT10-073 da lixeira. Apenas essas duas cartas vão para Bagramon; BT10-073 sob Yuu & Nene permanece lá. O custo é 9 (memória 2 para -7). Aceite o Ao Jogar e escolha Monodramon do bot. A próxima escolha deve oferecer apenas Kokatorimon e Izzy Izumi do bot: escolha Izzy, ou reinicie para escolher Kokatorimon. Monodramon vai ao fundo das fontes do escolhido e sua fonte vai para a lixeira. Aceite o Todos os Turnos de Bagramon: suas duas fontes são descartadas e a segurança do bot cai de 5 para 4. Reinicie e recuse esse efeito: ambas as fontes e a segurança devem permanecer.",
+    en: "End breeding and decline placing a card under Yuu & Nene at Start of Main. Play EX10-056 Bagramon with DigiXros: suspend EX10-064 Yuu & Nene, select EX10-058 under that Tamer and BT10-073 from trash. Only those two physical cards move under Bagramon; BT10-073 under Yuu & Nene stays there. Pay 9 (memory 2 to -7). Accept On Play and choose the bot's Monodramon. The next choice must offer only the bot's Kokatorimon and Izzy Izumi: choose Izzy, or reset to choose Kokatorimon. Monodramon goes to the chosen host's bottom and its source goes to trash. Accept Bagramon's All Turns: its two sources are trashed and the bot's security falls from 5 to 4. Reset and decline that effect: both sources and security must remain.",
+  },
   "arena-bt21-dracomon-start-main": {
     ptBR: "Mova Dracomon X da criação: os dois efeitos devem aparecer juntos. Resolva BT20-007 primeiro, descarte Dracomon EX13-008 e compre Coredramon. Depois resolva BT21-046 e aceite evoluir de graça. Reinicie para testar a ordem inversa: resolver BT21-046 antes da compra consome sua oportunidade.",
     en: "Move Dracomon X out of breeding: both effects should appear together. Resolve BT20-007 first, trash Dracomon EX13-008 and draw Coredramon. Then resolve BT21-046 and accept the free evolution. Reset to try the reverse order: resolving BT21-046 before the draw consumes its opportunity.",
@@ -1466,6 +1876,18 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
   "arena-bt26-cerberusmon-breeding-arts": {
     ptBR: "Encerre a criação e use o lado Opção de Cerberusmon: Werewolf Mode (Inferno Divide). Descarte 1 carta e De-Digivolva 3 o Digimon do bot. Depois, a Digievolução Arts deve oferecer o Guardromon da sua área de criação: escolha-o. Cerberusmon fica na área de criação e não vai para o lixo.",
     en: "End breeding and use Cerberusmon: Werewolf Mode's Option side (Inferno Divide). Trash 1 card and De-Digivolve 3 the bot's Digimon. Arts Digivolve must then offer Guardromon in your breeding area: choose it. Cerberusmon stays in the breeding area and is not trashed.",
+  },
+  "arena-github-5301-bacchusmon-arts": {
+    en: "End breeding. Use BT26-080 Bacchusmon's Option side (Reversal of the Dead) for 5; Deramon's TS trait waives the Purple color requirement. Unsuspend the bot's Monodramon: it is then deleted as the lowest-DP unsuspended Digimon. Arts Digivolve must offer only Deramon, not the red Groundramon. Choose Deramon: Bacchusmon evolves for free and draws 1; decline its optional When Digivolving attack. Restart and decline Arts instead: the Option is trashed and Deramon stays.",
+    ptBR: "Encerre a criação. Use o lado Opção de Bacchusmon BT26-080 (Reversal of the Dead) por 5; o traço TS de Deramon dispensa a cor roxa. Desvire Monodramon do bot: ele é deletado como o Digimon desvirado de menor DP. Digievolução Arts deve oferecer só Deramon, não Groundramon vermelho. Escolha Deramon: Bacchusmon evolui de graça e compra 1; recuse o ataque opcional de Quando Digivolve. Reinicie e recuse Arts: a Opção vai ao lixo e Deramon fica.",
+  },
+  "arena-github-5301-bacchusmon-breeding-arts": {
+    en: "End breeding without moving Deramon. Use BT26-080's Option side for 5; Deramon's TS trait in breeding waives the Purple requirement. Unsuspend the bot's Monodramon and resolve its deletion. Arts Digivolve must offer Deramon in breeding, excluding the red Groundramon. Choose Deramon: Bacchusmon stays in breeding, draws 1, and is not trashed. Its When Digivolving effect does not activate in breeding.",
+    ptBR: "Encerre a criação sem mover Deramon. Use o lado Opção de BT26-080 por 5; o traço TS de Deramon na criação dispensa a cor roxa. Desvire Monodramon do bot e resolva sua deleção. Digievolução Arts deve oferecer Deramon na criação, excluindo Groundramon vermelho. Escolha Deramon: Bacchusmon fica na criação, compra 1 e não vai ao lixo. Seu Quando Digivolve não ativa na criação.",
+  },
+  "arena-github-5301-bacchusmon-no-arts-base": {
+    en: "End breeding. Use BT26-080's Option side for 5; Dan Yuki's TS trait waives the Purple requirement. Unsuspend the bot's Monodramon, which is then deleted. Groundramon is red Lv.5 and Dan is a Tamer: neither meets Bacchusmon's printed evolution requirement. No Arts choice is offered; the Option is trashed. Compare with the legal-base scenarios.",
+    ptBR: "Encerre a criação. Use o lado Opção de BT26-080 por 5; o traço TS de Dan Yuki dispensa a cor roxa. Desvire Monodramon do bot, que é deletado em seguida. Groundramon é nível 5 vermelho e Dan é Domador: nenhum atende ao requisito impresso de Bacchusmon. Arts não é oferecida; a Opção vai ao lixo. Compare com os cenários de base válida.",
   },
   "arena-bt15-leviamon-x-played-subject-left": {
     ptBR: "Encerre a criação e use Night Raid para jogar DemiDevimon do lixo. O ＜Atraso＞ do Biting Crush do bot joga Leviamon, cujo Ao Jogar apaga seus Digimon (DemiDevimon incluso). Mesmo assim, o Leviamon (X Antibody) do lixo do bot deve digievoluir Leviamon (Q4735).",
@@ -1543,6 +1965,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Ataque com Jesmon tendo um token Atho, René & Por em jogo. O modal não deve oferecer a rota do token: apenas Sistermon Ciel, e nenhum segundo token pode entrar em jogo.",
     en: "Attack with Jesmon while an Atho, René & Por token is in play. The modal must not offer the token route: only Sistermon Ciel, and no second token may enter play.",
   },
+  "arena-sakuyamon-maid-option-timing": {
+    ptBR: "Encerre a criação. Evolua Kyubimon em Taomon BT17-035, aceite usar Yellow Scramble e evolua Taomon em Sakuyamon: Maid Mode ST22-06. Os dois Digimon adversários devem permanecer: a nova Maid não reage à Opção que a evoluiu. Depois use Blade of the True; aceite All Turns da Maid para colocar o menor Digimon na segurança e descartar o topo.",
+    en: "End breeding. Evolve Kyubimon into BT17-035 Taomon, accept Yellow Scramble and evolve Taomon into ST22-06 Sakuyamon: Maid Mode. Both opposing Digimon must remain: the new Maid does not react to the Option that evolved it. Then use Blade of the True; accept Maid's All Turns to place the lowest-DP Digimon into security and trash the top card.",
+  },
   "arena-jesmon-scramble-dp-blocked": {
     ptBR: "Encerre a criação e use Red Scramble. O adversário tem Garurumon com 5000 DP e Analog Youth: Jesmon não deve ser oferecido para evoluir Huckmon. Red Scramble fica no campo, Jesmon na mão e a memória cai de 5 para 3.",
     en: "End breeding and use Red Scramble. The opponent has Garurumon at 5000 DP and Analog Youth: Jesmon must not be offered to evolve Huckmon. Red Scramble stays in play, Jesmon stays in hand, and memory goes from 5 to 3.",
@@ -1583,9 +2009,17 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Compre a carta do turno e encerre a criação. Jogue Craniamon (EX13-062): selecione WereGarurumon BT23-056 (Lv.5), Guardromon EX13-051 (Lv.4) e Gotsumon EX13-047 (Lv.3) no lixo. WereGarurumon deve estar habilitado. Bokomon (Blocker só herdado) e Monmon (azul) não podem ser selecionados. Confirme Assembly: Craniamon custa 7, recebe os três materiais e a memória vai para 7 do oponente.",
     en: "Draw the turn card and end breeding. Play Craniamon (EX13-062): select WereGarurumon BT23-056 (Lv.5), Guardromon EX13-051 (Lv.4), and Gotsumon EX13-047 (Lv.3) from the trash. WereGarurumon must be selectable. Bokomon (inherited-only Blocker) and Monmon (blue) must stay disabled. Confirm Assembly: Craniamon costs 7, receives all three materials, and memory goes to 7 on the opponent's side.",
   },
+  "arena-crimson-partition": {
+    ptBR: "Encerre a criação. Use Crimson Blaze e jogue Monodramon BT1-009. Aceite o efeito de Atho, René & Por EX13-014 para deletar Imperialdramon ST9-06. Mesmo aceitando Partition herdado de Paildramon BT16-025, ExVeemon e Stingmon não podem ser jogados e vão para o lixo com Imperialdramon. O efeito de Atho ainda pode jogar seu próprio Token. Reinicie e pule Crimson Blaze para o controle: Partition deve jogar os dois materiais.",
+    en: "End breeding. Use Crimson Blaze, then play BT1-009 Monodramon. Accept EX13-014 Atho, René & Por's effect to delete ST9-06 Imperialdramon. Even if you accept BT16-025 Paildramon's inherited Partition, ExVeemon and Stingmon cannot be played and go to trash with Imperialdramon. Atho's effect may still play its own Token. Restart and skip Crimson Blaze for the control: Partition must play both materials.",
+  },
   "arena-ex13-magnamon-partition-assembly": {
     ptBR: "Encerre a criação e ataque a segurança com Paildramon (AD1-011). Gaia Force na segurança tentará deletá-lo. Aceite Partition para jogar Magnamon EX13-020 e Vegiemon sem pagar custo. Na escolha de Assembly do Magnamon, selecione o Veemon do seu lixo; Monodramon não deve ser elegível. Magnamon entra com Veemon em suas cartas de digievolução e a memória continua em 5. Você também pode recusar Assembly: Magnamon entra sem Veemon e continua gratuito.",
     en: "End breeding and attack security with Paildramon (AD1-011). The security Gaia Force attempts to delete it. Accept Partition to play EX13-020 Magnamon and Vegiemon without paying their costs. For Magnamon's Assembly, select the Veemon in your trash; Monodramon must not be eligible. Magnamon enters with Veemon in its digivolution cards and memory stays at 5. You may also decline Assembly: Magnamon enters without Veemon and remains free.",
+  },
+  "arena-yuugo-omnimon-assembly": {
+    ptBR: "Encerre a criação. Jogue Omnimon EX13-016 com Assembly usando WarGreymon, MetalGarurumon, Agumon e Gabumon do lixo. Aceite os dois Yuugos: ambos voltam ao fundo do deck, o custo é 4 e a memória fica em 0 antes dos efeitos de entrada. Resolva os efeitos de Omnimon e digievolua para Omnimon (X Antibody) BT20-102 por 2. Escolha os sobreviventes: o campo oponente deve ficar vazio. Reinicie para aceitar só um Yuugo (custo 6) ou recusar ambos (custo 8).",
+    en: "End breeding. Play EX13-016 Omnimon with Assembly using WarGreymon, MetalGarurumon, Agumon and Gabumon from trash. Accept both Yuugos: both return to deck bottom, the cost is 4, and memory reaches 0 before On Play. Resolve Omnimon, then digivolve into BT20-102 Omnimon (X Antibody) for 2. Choose the survivors: the opposing field should end empty. Restart to accept one Yuugo (cost 6) or decline both (cost 8).",
   },
   "arena-ex13-craniamon-assembly": {
     ptBR: "Compre a carta do turno e encerre a criação. Jogue Craniamon (EX13-062) com a memória em 0: o seletor de Assembly deve abrir. Somente Bulbmon (Lv.5), Guardromon (Lv.4) e Gotsumon (Lv.3) devem ser elegíveis; Bokomon (Blocker só herdado) e Monmon (azul) não. Escolha os três: Craniamon custa 7 e a memória vai para 7 do oponente.",
@@ -1651,6 +2085,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Discord 1556544429438013471, partida f659486e de taurusfire110 contra bageko3 (05:47:53 UTC). Encerre a criação e evolua o Digimon Nv.4 TS em Cerberusmon BT26-074 pela rota alternativa (custo 3). Na seleção do descarte, confirme sem escolher cartas: a mão e a lixeira ficam iguais e a memória fica em 7. Ataque o bot com Cerberusmon: a seleção volta porque recusar não gastou o Uma Vez Por Turno. Descarte uma carta, aceite usar a Opção e escolha Cerberusmon: Werewolf Mode BT26-056 da lixeira. Inferno Divide custa 1 (3 menos 2); descarte outra carta para a Opção e o DarkTyrannomon Nv.4 do bot regride para Monodramon Nv.3. Reinicie para testar Ao Jogar (custo 7), ou recuse usar a Opção depois de pagar: o descarte continua pago e consome o uso do turno.",
     en: "Discord 1556544429438013471, match f659486e: taurusfire110 vs bageko3 (05:47:53 UTC). End breeding and digivolve the level 4 TS Digimon into BT26-074 Cerberusmon through its alternate route (cost 3). Confirm the trash selection with no cards: hand and trash stay unchanged and memory stays at 7. Attack the bot with Cerberusmon: the selection returns because declining preserved Once Per Turn. Trash a card, accept using the Option and select BT26-056 Cerberusmon: Werewolf Mode from the trash. Inferno Divide costs 1 (3 minus 2); trash another hand card for the Option and the bot's level 4 DarkTyrannomon de-digivolves into level 3 Monodramon. Restart to test On Play (cost 7), or decline using the Option after paying: the card stays trashed and the turn's use is consumed.",
   },
+  "arena-bt18-lucemon-optional-hand-cost": {
+    ptBR: "Pule a criação. No início da fase principal, escolha Nenhuma seleção para recusar o custo do Lucemon: nenhuma carta vai ao lixo, o oponente não escolhe e você não recupera segurança. Reinicie e descarte Monodramon: se o oponente recusar descartar segurança, você recupera 1; se aceitar, ele descarta a segurança do topo e você não recupera. Depois jogue o Lucemon da mão por 10 e repita o teste do On Play.",
+    en: "Skip breeding. At Start of Main, choose No Selection to decline Lucemon's cost: no card is trashed, the opponent gets no choice, and you recover no security. Reset and discard Monodramon: if the opponent declines to trash security, recover 1; if they accept, they trash their top security and you do not recover. Then play the Lucemon in hand for 10 and repeat the On Play test.",
+  },
   "arena-ex13-flamewizardmon-optional-cost": {
     ptBR: "Evolua o BT18-030 em EX13-029 FlameWizardmon (custo 2). O [Quando Evolui] deve perguntar se você quer descartar a carta do topo da segurança: recuse. Sua segurança continua com 4 cartas e o Digimon do bot continua com 6000 DP. Depois ataque o bot com o FlameWizardmon: a mesma pergunta volta, porque a recusa não gastou o [Uma Vez Por Turno]. Aceite: o topo da segurança vai para a lixeira, o Digimon do bot cai para 2000 DP e, com 3 cartas na segurança, é deletado.",
     en: "Digivolve BT18-030 into EX13-029 FlameWizardmon (cost 2). Its [When Digivolving] must ask whether to trash your top security card: decline. Your security stays at 4 cards and the bot's Digimon stays at 6000 DP. Then attack the bot with FlameWizardmon: the same question comes back, because declining did not spend the [Once Per Turn]. Accept: the top security card goes to the trash, the bot's Digimon drops to 2000 DP and, with 3 security cards left, it is deleted.",
@@ -1686,6 +2124,22 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
   "arena-p108-training-delay-no-target": {
     ptBR: "Wisdom Training está no campo desde um turno anterior e você não tem Digimon. Ative o ＜Delay＞: a carta vai para o lixo e o efeito não faz nada.",
     en: "Wisdom Training has been in the battle area since an earlier turn and you have no Digimon. Activate its ＜Delay＞: the card goes to the trash and the effect does nothing.",
+  },
+  "arena-github5306-training-use-memory": {
+    ptBR: "#5306: controle do comportamento atual. Encerre a criação com 1 de memória e use Treadmill Training da mão. O custo 2 leva a memória a 1 do oponente antes da escolha. Escolha Reppamon entre as duas cartas reveladas; Muchomon vai para o fundo e Training fica no campo. Após resolver tudo, o turno passa ao oponente com 1. O Delay não pode ser ativado no turno em que Training foi colocado.",
+    en: "#5306: current-behavior control. End breeding at 1 memory and use Treadmill Training from hand. Its cost of 2 moves memory to the opponent's 1 before the selection. Choose Reppamon among the two revealed cards; Muchomon goes to the bottom and Training stays in play. After everything resolves, the opponent's turn starts at 1. Delay cannot activate on the turn Training was placed.",
+  },
+  "arena-github5306-training-delay-paid": {
+    ptBR: "#5306: controle do comportamento atual. Encerre a criação com 3 de memória. Ative o Delay de Treadmill Training e digievolua Kudamon em Liamon: custo impresso 3 menos 2 = 1, deixando 2 de memória. Training vai para o lixo, Liamon fica sobre Kudamon e você compra 1 carta. Reinicie e recuse a digievolução: Training vai para o lixo, Kudamon fica e a memória continua em 3.",
+    en: "#5306: current-behavior control. End breeding at 3 memory. Activate Treadmill Training's Delay and digivolve Kudamon into Liamon: printed cost 3 minus 2 = 1, leaving 2 memory. Training is trashed, Liamon sits over Kudamon, and you draw 1. Restart and decline digivolution: Training is trashed, Kudamon stays, and memory remains at 3.",
+  },
+  "arena-github5306-training-delay-free": {
+    ptBR: "#5306: controle do comportamento atual. Encerre a criação e ative o Delay para digievoluir Kudamon em Reppamon. O custo 2 menos 2 = 0 mantém a memória em 3; não há ganho de memória. Training vai para o lixo, Reppamon fica sobre Kudamon e você compra 1 carta.",
+    en: "#5306: current-behavior control. End breeding and activate Delay to digivolve Kudamon into Reppamon. Cost 2 minus 2 = 0 keeps memory at 3; no memory is gained. Training is trashed, Reppamon sits over Kudamon, and you draw 1.",
+  },
+  "arena-github5306-training-delay-cost-choice": {
+    ptBR: "#5306: controle com a combinação vista nos logs, sem atribuição ao jogador. Encerre a criação com 3 de memória e ative o Delay para digievoluir Etemon em MetalEtemon. Escolha a exigência impressa de custo 4: paga 2 e deixa 1. Reinicie e escolha a exigência alternativa de custo 3: paga 1 e deixa 2. Training vai para o lixo e a digievolução compra 1 carta; nenhuma opção ganha memória.",
+    en: "#5306: control using a pair observed in logs, without player attribution. End breeding at 3 memory and activate Delay to digivolve Etemon into MetalEtemon. Choose the printed cost-4 requirement: pay 2 and leave 1. Restart and choose the alternate cost-3 requirement: pay 1 and leave 2. Training is trashed and digivolution draws 1; neither choice gains memory.",
   },
   "arena-bt20-dragon-gene-delay-no-dna": {
     ptBR: "Unleash the Dragon Gene está no campo desde um turno anterior ao lado de Slayerdramon, e você não tem [Examon] na mão. Encerre a criação e jogue Aqua Viper (BT4-102), devolvendo Slayerdramon. O ＜Delay＞ deve ser oferecido mesmo sem DNA possível: aceite, Unleash the Dragon Gene vai para o lixo e Slayerdramon volta para a mão.",
@@ -1738,6 +2192,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
   "arena-marcus-alliance": {
     ptBR: "Pule a criação. No início da Principal, aceite pagar 1 de memória para transformar BT12-092 Marcus Damon em um Digimon de 3000 DP (a memória fica em 4). Ataque a segurança do bot com BT23-020 Seadramon. No Alliance, escolha Marcus: a resposta deve ser aceita, Marcus suspende e Seadramon fica com 8000 DP durante o ataque, checando 2 cartas. A segurança do bot cai de 5 para 3. Ao terminar o ataque, Seadramon volta a 5000 DP. Se recusar a transformação no início da Principal, Marcus não deve aparecer como aliado de Alliance.",
     en: "Skip breeding. At the start of Main, accept paying 1 memory to treat BT12-092 Marcus Damon as a 3000 DP Digimon (memory becomes 4). Attack the bot's security with BT23-020 Seadramon. Choose Marcus for Alliance: the answer must be accepted, Marcus suspends, and Seadramon has 8000 DP during the attack and checks 2 cards. The bot's security drops from 5 to 3. Seadramon returns to 5000 DP after the attack. If you decline the transformation at the start of Main, Marcus must not appear as an Alliance ally.",
+  },
+  "arena-rizegreymon-marcus-security": {
+    ptBR: "Pule a criação. Aceite pagar 1 de memória para cada um dos dois BT12-092 Marcus virar um Digimon de 3000 DP. Ataque a segurança de 11000 DP com o primeiro Marcus: ele é deletado, e o herdado de RizeGreymon o coloca no topo da sua segurança virado para baixo (5 → 6). Ataque com o segundo: ele fica no lixo, pois o mesmo herdado já foi usado neste turno. No seu próximo turno, use o efeito Principal de Agumon para transformar BT4-092 Marcus, ataque a segurança e escolha um Marcus do lixo para segurança: o limite por turno foi renovado.",
+    en: "Skip breeding. Accept paying 1 memory for each of the two BT12-092 Marcus to become a 3000 DP Digimon. Attack the 11000 DP security with the first Marcus: he is deleted, and RizeGreymon's inherited effect places him on top of your security face down (5 → 6). Attack with the second: he stays in trash because that inherited effect was already used this turn. On your next turn, use Agumon's Main effect to transform BT4-092 Marcus, attack security, and choose a Marcus from trash for security: the once-per-turn limit has reset.",
   },
   "arena-alliance-20": {
     ptBR: "Encerre a criação, ataque com Seadramon e escolha 1 dos outros 19 Digimon para Alliance.",
@@ -1856,8 +2314,16 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     en: "End breeding, open the trash viewer, and activate MaloMyotismon's [Main] effect by deleting Arukenimon and Mummymon. The trash card must be offered at memory 1 and play for 3.",
   },
   "arena-ex10-blastmon-digixros": {
-    ptBR: "Encerre a criação e jogue Blastmon da mão com DigiXros. A seleção de materiais deve aceitar 3 cartas [Bagra Army] e parar na terceira: escolha SkullKnightmon, DeadlyAxemon e ChuuChuumon. O custo 13 cai 2 por material, então a memória vai de 7 para 0 e as 3 cartas ficam sob Blastmon. Damemon fica na mão.",
-    en: "End breeding and play Blastmon from hand with DigiXros. Material selection must accept 3 [Bagra Army] cards and stop at the third: choose SkullKnightmon, DeadlyAxemon, and ChuuChuumon. The cost of 13 falls by 2 per material, so memory goes from 7 to 0 and all 3 cards end under Blastmon. Damemon stays in hand.",
+    ptBR: "Encerre a criação e jogue Blastmon da mão com DigiXros. A seleção de materiais deve aceitar 3 cartas [Bagra Army] e parar na terceira: escolha SkullKnightmon, DeadlyAxemon e ChuuChuumon. O custo 13 cai 2 por material, então a memória vai de 7 para 0 e as 3 cartas ficam sob Blastmon. Blastmon fica na mão.",
+    en: "End breeding and play Blastmon from hand with DigiXros. Material selection must accept 3 [Bagra Army] cards and stop at the third: choose SkullKnightmon, DeadlyAxemon, and ChuuChuumon. The cost of 13 falls by 2 per material, so memory goes from 7 to 0 and all 3 cards end under Blastmon. Blastmon stays in hand.",
+  },
+  "arena-koto-grademon-pending-piercing": {
+    en: "Reduced Koto control for both seats. End breeding; decline the Tamer's optional placement. Use BT25-057 as Final Judgment on Armalizamon; accept its cost reduction and the Tamer's +3000 DP, then attack the player and Arts Digivolve that attacker into Monarchlizamon. Decline De-Digivolve; accept Battle against BT20-053 Grademon. The defender declines the first EX13-057 prevention, so that Grademon is deleted. Then block with Alphamon and accept EX13-057 prevention: trash exactly one security as payment, keep Alphamon, and perform two checks from the earlier battle's pending Piercing. This is a reduced sequence, not a full historical replay.",
+    ptBR: "Controle reduzido de Koto para os dois assentos. Encerre a criação; recuse colocar carta sob o Tamer. Use BT25-057 como Final Judgment em Armalizamon; aceite a redução de custo e +3000 DP do Tamer, ataque o jogador e faça Arts Digivolve do atacante para Monarchlizamon. Recuse De-Digivolve; aceite Battle contra Grademon BT20-053. O defensor recusa a primeira prevenção EX13-057, deletando esse Grademon. Depois bloqueie com Alphamon e aceite a prevenção EX13-057: descarte só uma segurança como pagamento, mantenha Alphamon e faça duas checagens pelo Piercing pendente da batalha anterior. É uma sequência reduzida, não uma reprodução histórica completa.",
+  },
+  "arena-koto-grademon-no-prior-battle": {
+    en: "Use the same Final Judgment → Arts Digivolve sequence as the pending-Piercing control, but decline Monarchlizamon's Battle effect. Block with Alphamon and accept EX13-057 prevention. Only the top security is trashed as payment; Alphamon survives and there are zero security checks because no opposing Digimon was deleted in battle during this attack.",
+    ptBR: "Faça a mesma sequência Final Judgment → Arts Digivolve do controle de Piercing pendente, mas recuse Battle de Monarchlizamon. Bloqueie com Alphamon e aceite a prevenção EX13-057. Só a segurança do topo vai ao lixo como pagamento; Alphamon sobrevive e não há checagens, pois nenhum Digimon adversário foi deletado em batalha durante este ataque.",
   },
   "arena-suspend-lock-block": {
     ptBR: "Seu Blocker já começa impedido de suspender. O ataque do bot não deve poder ser bloqueado.",
@@ -2126,6 +2592,66 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
 };
 
 const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
+  ["arena-github-5374-up-to-four-trash", "#5374 · Up to four trash selection control"],
+  ["arena-github-5410-tamer-inherited-deletion", "Rie deletion inherited gate"],
+  ["arena-github-5412-kapurimon-illegal-colors", "Kapurimon DNA color refusal"],
+  ["arena-github-5416-ulforce-unsuspend", "Ulforce attack after unsuspend"],
+  ["arena-github-5417-mobile-assembly", "Mobile Assembly viewport"],
+
+  ["arena-github-5378-imperialdramon-no-bounce", "#5378 · Imperialdramon remains in play"],
+  ["arena-github-5378-imperialdramon-security-bounce", "#5378 · Imperialdramon lawful security return"],
+  ...CARDS_TURNS_SCENARIO_OPTIONS,
+  ["arena-github-5371-examon-battle-before-raid", "#5371 · Examon immediate battle before Raid"],
+  ["arena-github5399-cerberus-first-option", "Cerberusmon: discard then use Titan Option"],
+  ["arena-github5400-dark-field-replacement", "Dark Field: exact-copy replacement"],
+  ["arena-github5403-rie-any-card", "Rie: Knightmon-text card placement"],
+  ["arena-github5411-savior-empty-hand-selection", "SaviorHuckmon: decline after payment"],
+  ["arena-github5418-zeig-shoutmon-evolution", "ZeigGreymon → Shoutmon X7 (2)"],
+  ["arena-github5419-dark-masters-security", "GitHub #5419 · Dark Masters security"],
+  ["arena-github5419-kongou-prevention", "GitHub #5419 · Kongou prevention"],
+  ["arena-github5420-metalgaruru-gallantmon", "GitHub #5420 · MetalGarurumon vs Gallantmon"],
+  ["arena-github5420-omnimon-gallantmon", "GitHub #5420 · Omnimon vs Gallantmon"],
+  ["arena-github5421-skullmammoth-hand", "GitHub #5421 · SkullMammothmon in hand"],
+  ["arena-github5421-skullmammoth-field", "GitHub #5421 · SkullMammothmon in battle"],
+
+  ["arena-github-5408-ruin-mode-hatch", "#5408 · Ruin Mode recovery and hatch"],
+  ["arena-github-5372-progress-protection", "#5372 · Progress protection control"],
+  ["arena-growlmon-deletion-5361", "#5361 Growlmon X · security deletion / stack Guilmon"],
+  ["arena-ravemon-burst-hand", "Ravemon: Burst Mode · inspect opponent hand"],
+  ["arena-github5326-sistermon-zero-security", "GitHub #5326 · Sistermon Blanc / zero security control"],
+  ["arena-lanamon-tamer-cost", "GitHub #5340 · Lanamon Tamer cost"],
+  ["arena-github5362-shellmon-ts", "#5362 Shellmon · TS evolution in breeding and battle"],
+  ["arena-github5331-offense-hand", "GitHub #5331 · Offense Training hand ownership"],
+  ["arena-github5332-kekkomon-cost", "GitHub #5332 · Kekkomon Tamer cost selection"],
+  ["arena-github5333-tesla-source-replay", "GitHub #5333 · Tesla Main after source replay"],
+  ["arena-github5307-larva-bt18-breeding", "GitHub #5307 · Larva breeding / BT18 Satan Mode"],
+  ["arena-github5307-larva-ex10-breeding", "GitHub #5307 · Larva breeding / EX10 Satan Mode"],
+  ["arena-github5308-greymon-security-destination", "GitHub #5308 · Greymon X / security versus hand"],
+  ["arena-bt21-satellamon-cost-control", "BT21 Satellamon · 13-card cost control (Freezing unresolved)"],
+  ["arena-github5319-bt25-murasamemon-security-option", "GitHub #5319 · BT25-041 security payment supplies e-Pulse"],
+  ["arena-github5319-murasamemon-e-pulse", "GitHub #5319 · Murasamemon uses e-Pulse after security pickup"],
+  ["arena-github5319-murasamemon-spent-cost", "GitHub #5319 · Cougarmon spent-cost control"],
+  ["arena-github5344-revelation-expiry", "Revelation of Light · owner-turn security DP expiry"],
+  ["arena-turn-end-dp-expiry", "Turn-end DP expiry · Active phase handoff"],
+  ["arena-discord1558122159-drasil-turn-handoff", "Discord 1558122159 · King Drasil turn handoff stall"],
+  ["arena-github5311-crescemon-cost-scope", "GitHub #5311 · Crescemon incoming versus outgoing cost"],
+  ["arena-github5311-imperialdramon-cost-scope", "GitHub #5311 sweep · Imperialdramon intrinsic discount"],
+  ["arena-github5365-jesmon-token", "#5365 Jesmon token · generate then bottom deck"],
+  ["arena-github5365-jesmon-token-mirrored", "#5365 Jesmon token · reversed seats"],
+  ["arena-github5322-metalmamemon-no-cost", "#5322 MetalMamemon · no trash Digimon"],
+  ["arena-github5322-metalmamemon-paid", "#5322 MetalMamemon · pay or decline placement"],
+  ["arena-github5322-metalmamemon-strip-zero", "#5322 MetalMamemon · paid placement, no sources to strip"],
+  ["arena-github5318-junomon-printed-cost", "GitHub #5318 · Junomon printed play-cost control"],
+  ["arena-github-5302-kunlun-security-check", "GitHub #5302 · Kunlun after security check"],
+  ["arena-github-5305-gravity-order", "GitHub #5305 · Gravity Crush end-turn ordering"],
+  ["arena-github-5315-homeros-unused", "GitHub #5315 · Homeros / unused Wrath Mode"],
+  ["arena-github-5315-homeros-spent", "GitHub #5315 · Homeros / spent Wrath Mode"],
+  ["arena-github5313-inori-memory-four", "GitHub #5313 · Inori 4-memory timing"],
+  ["arena-github5313-inori-memory-five", "GitHub #5313 · Inori 5-memory control"],
+  ["arena-github5303-magnamon-printed-dp", "GitHub #5303 · Magnamon printed DP and expiry"],
+  ["arena-github-5324-omnimon-traits", "GitHub #5324 · Omnimon X full traits and Cool Boy search"],
+  ["arena-terriermon-granted-alliance", "Terriermon EX4-032 · granted Alliance"],
+  ["arena-github5320-alliance-after-evolution", "GitHub #5320 · Alliance after Mococomon evolution"],
   ["arena-github-5297-omnimon-main-dna", "GitHub #5297 · Omnimon Main DNA and physical materials"],
   ["arena-github-5297-omnimon-agumon-dna", "GitHub #5297 · Omnimon Agumon end-of-turn DNA"],
   ["arena-github-5286-lordknightmon-knightmon", "GitHub #5286 · LordKnightmon EX13 Knightmon picker"],
@@ -2190,6 +2716,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-issue-5127-opponent-survival", "GitHub #5127 · Opposing survival cost"],
   ["arena-issue-5168-alter-s-simultaneous", "GitHub #5168 · alter-s-simultaneous"],
   ["arena-issue-5169-demidevimon-native", "GitHub #5169 · demidevimon-native"],
+  ["arena-issue-5353-imperialdramon-nested-blitz", "GitHub #5353 · Imperialdramon nested end-turn Blitz"],
   ["arena-issue-5179-imperialdramon-blitz", "GitHub #5179 \u00b7 Imperialdramon ordinary-evolution Blitz"],
   ["arena-issue-5190-tapmon-bootmon", "GitHub #5190 / #5192 \u00b7 Tapmon, Bootmon and Shutmon"],
   ["arena-issue-5232-icemon-egg", "GitHub #5232 \u00b7 icemon-egg"],
@@ -2349,16 +2876,36 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-issue-4912-deep-savers-battle", "#4912 · Deep Savers · memory protection"],
   ["arena-issue-4911-mervamon-multiple-checks", "#4911 · Mervamon · consecutive large attacks"],
   ["arena-issue-4907-takato-end-turn", "#4907 · Takato · end-turn cost choice"],
+  ["arena-github-5350-dedigivolve-egg", "GitHub #5350 · De-Digivolve exposes Assembly egg"],
+  ["arena-github-5349-collision-immunity", "GitHub #5349 · Collision vs immune Paladin ACE"],
+  ["arena-github-5346-blast-dna-decision", "GitHub #5346 · Blast DNA to Omnimon target decision"],
   ["arena-bt20-ouryuken-blast-dna-counter", "BT20 Ouryuken ACE · Blast DNA Counter with duplicate hand cards"],
+  ["arena-github-5323-alphamon-main-dna", "GitHub #5323 · Alphamon + Ouryumon Main DNA / paid control"],
+  ["arena-github-5323-alphamon-blast-dna", "GitHub #5323 · Alphamon + hand Ouryumon Blast DNA"],
   ["arena-bt11-hades-force-target-selection", "BT11 Hades Force · escolha dos alvos"],
   ["arena-bt23-examon-partition-return", "BT23 Examon · Partition on deck return"],
   ["arena-bt23-examon-piercing-end-turn", "BT23 Examon · end-turn DNA and Piercing"],
   ["arena", "Attack steps · Counter/Blocker"],
   ["arena-field-grouping-dense", "Field grouping · late-game density, deep sources and links"],
+  ["arena-raid-immune-atratusmon", "#5391 Raid / Atratusmon"],
+  ["arena-shota-start-main-once", "#5389 Shota / Main"],
+  ["arena-heat-training-option-freeze", "#5388 Heat Training / freezing"],
+  ["arena-crescemon-hexeblaumon-cost", "#5387 Crescemon / Hexeblaumon"],
+  ["arena-neptunemon-holy-cost", "#5385 Neptunemon / Holy"],
+  ["arena-wargrowlmon-evaded-block", "#5384 WarGrowlmon / Evade"],
+  ["arena-toropiamon-vortex-control", "#5382 Toropiamon / Vortex"],
+  ["arena-climbmon-pistmon-play", "#5381 Climbmon / Pistmon"],
+  ["arena-sukamon-opponent-cost", "#5379 Sukamon / opposing payment"],
+  ["arena-chuuchuumon-opponent-blocker", "ChuuChuumon / opponent Blocker"],
+  ["arena-tuwarmon-opponent-blocker", "Discord Tuwarmon / opponent Blocker"],
+  ["arena-tai-kari-ukkomon-hatch", "Tai & Kari · Hatch por Ukkomon BT16"],
+  ["arena-tai-kari-promo-ukkomon-hatch", "Tai & Kari · Hatch por Ukkomon promo"],
+  ["arena-chronomon-engage-order", "Chronomon · Engage depois do check / after security (timed)"],
   ["arena-match-timer", "Timer · vs bot (300s + 60s/30s)"],
   ["arena-aegiochus-dark-assembly", "Aegiochus Dark · Wizardmon Assembly"],
   ["arena-alliance-20", "Alliance · 20 Digimon"],
   ["arena-marcus-alliance", "Alliance · Marcus treated as a Digimon"],
+  ["arena-rizegreymon-marcus-security", "BT13 RizeGreymon · Marcus security + once per turn"],
   ["arena-bt11-analogman-redirect-timing", "BT11 Analogman · redirect timing"],
   ["arena-bt11-rina-ulforce-effect-choice", "BT11 Rina · EX13 Ulforce effect choice"],
   ["arena-bt11-rina-mailmon-suspended-subject", "BT11 Rina · Mailmon and suspended Digimon"],
@@ -2366,6 +2913,9 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-bt11-rina-ulforce-immunity", "BT11 Rina · Ulforce return vs Digimon immunity"],
   ["arena-ex12-diarbbitmon-option-trigger-timing", "EX12 Diarbbitmon · Option triggers wait for Arts"],
   ["arena-bt26-cerberusmon-breeding-arts", "BT26 Cerberusmon · Arts Digivolve in breeding"],
+  ["arena-github-5301-bacchusmon-arts", "#5301 Bacchusmon · Option to Arts / decline"],
+  ["arena-github-5301-bacchusmon-breeding-arts", "#5301 Bacchusmon · Arts in breeding"],
+  ["arena-github-5301-bacchusmon-no-arts-base", "#5301 Bacchusmon · no legal Arts base"],
   ["arena-bt15-leviamon-x-played-subject-left", "BT15 Leviamon X · trigger survives a deleted played Digimon"],
   ["arena-ex3-wingdramon-evade-suspend-lock", "EX3 Wingdramon · Evade cannot pay suspend"],
   ["arena-ex13-wingdramon-evade-suspend-lock", "EX13 Wingdramon · Evade cannot pay suspend"],
@@ -2387,6 +2937,10 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-github-5299-ravemon-bottom-security", "GitHub #5299 · Ravemon face-up bottom security"],
   ["arena-bt20-invisimon-security-count", "BT20 Invisimon · face-up security count"],
   ["arena-ex13-grademon-immunity", "EX13 Alphamon · Assembly from trash"],
+  ["arena-github-5316-shoutmon-rush", "#5316 Shoutmon X2 · Rush trait requirement"],
+  ["arena-github-5316-shoutmon-rush-control", "#5316 Shoutmon DX · legal inherited Rush"],
+  ["arena-github-5317-shoutmon-material-save-evolved", "#5317 Shoutmon X2 · DigiXros-only names"],
+  ["arena-github-5317-shoutmon-material-save-printed", "#5317 Shoutmon X2 · legal Material Save 2"],
   ["arena-bt10-taiki-x7-xros-heart", "BT10 Taiki · Shoutmon X7 Xros Heart"],
   ["arena-bt22-gabumon-eot-dna", "BT22 Gabumon · DNA no fim do turno"],
   ["arena-5292-hawkmon-craniamon-priority", "#5292 Hawkmon / Craniamon · prioridade no fim do turno"],
@@ -2398,10 +2952,17 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-kotone-digixros-any-tamer-effect", "Kotone · effect DigiXros under any Tamer"],
   ["arena-mervamon-trash-digixros", "Mervamon · DigiXros materials from trash"],
   ["arena-bt5-koromon-attack-draw", "BT5 Koromon · draw before security"],
+  ["arena-bt21-metalgreymon-one-target-two-colors", "BT21 MetalGreymon · one target / two colors"],
+  ["arena-bt21-metalgreymon-one-target-four-colors", "BT21 MetalGreymon · one target / four colors"],
   ["arena-ex7-seventh-fascination-turn", "EX7 Seventh Fascination · opponent turn end"],
   ["arena-st15-trident-arm-forced-attack-text", "ST15 Trident Arm · granted forced attack text"],
+  ["arena-bt22-vademon-return-tamer", "BT22 Vademon · cost-4 Tamer return"],
+  ["arena-bt22-vademon-return-ace", "BT22 Vademon · opponent ACE Overflow"],
+  ["arena-bt22-shinmonzaemon-own-security", "BT22 ShinMonzaemon · own security"],
+  ["arena-bt22-shinmonzaemon-opponent-security", "BT22 ShinMonzaemon · opponent security"],
   ["arena-face-down-ace-no-overflow", "Face-down ACE · no Overflow on deletion"],
   ["arena-ex11-vortex-effect-attack-block", "EX11 Vortexdramon · block after declined battle"],
+  ["arena-ex13-veemon-protection-5363", "EX13 Veemon · WarGreymon protection and suspension cost (#5363)"],
   ["arena-bt17-dexdoru-exact-name", "BT17 DexDoruGreymon · exact [DoruGreymon] from trash"],
   ["arena-open-bugs-veemon-decline", "Open bugs · veemon decline"],
   ["arena-open-bugs-lavorvomon-search", "Open bugs · lavorvomon search"],
@@ -2421,6 +2982,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex12-siriusmon-group-placement", "EX12 Siriusmon · place two cards at one end"],
   ["arena-ex12-virus-busters-effect-attack", "EX12 Virus Busters · ordered with an effect-driven attack"],
   ["arena-ex7-seventh-fascination-trash-turn", "EX7 Seventh Fascination · trash activation"],
+  ["arena-raid-after-dedigivolve", "Omnimon · pending Raid after Gladimon De-Digivolve"],
   ["arena-raid-optional-preset", "EX13 Examon · Raid Yes/No preset in effect order"],
   ["arena-preset-order-no-clicks", "EX13 Examon · preset effect order resolves in one submit"],
   ["arena-ex13-leopardmon-suspended-target", "EX13 Leopardmon · suspend an already suspended Digimon"],
@@ -2434,6 +2996,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex10-close-sunarizamon-without-close", "EX10 Close · play Sunarizamon with no Close in hand"],
   ["arena-ex11-pyramidimon-fragment-recovery", "EX11 Pyramidimon · Fragment trash triggers its recovery"],
   ["arena-ex13-rina-suspend-lock", "EX13 Rina · locked Tamer can't pay the suspend cost"],
+  ["arena-ex13-rina-modal-title", "EX13 Rina · localized heading and printed effect body"],
   ["arena-ex11-vortex-effect-attack", "EX11 Vortexdramon · retrigger after a decline in an effect attack"],
   ["arena-ex13-breakdramon-zero-security-check", "EX13 Breakdramon · Security Attack -1 attack checks no card"],
   ["arena-decoy-protect-choice", "Decoy · choose which Digimon to protect"],
@@ -2461,7 +3024,11 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-lm-gundramon-simultaneous-delete", "LM Gundramon · trash 3, then delete 3 together"],
   ["arena-bt24-fugamon-self-trash", "BT24 Fugamon · draw only when this card is trashed"],
   ["arena-bt2-kurisarimon-repeat-memory", "BT2 Kurisarimon · Diaboromon + Arata memory"],
+  ["arena-github5310-okuwamon-grandis-memory", "GitHub #5310 · Okuwamon → Grandis · one memory gain"],
+  ["arena-github5310-grandis-end-of-attack", "GitHub #5310 · Grandis · End of Attack timing"],
   ["arena-bt2-kurisarimon-start-main-memory", "BT2 Kurisarimon · two start-of-main token effects"],
+  ["arena-ex12-metalgreymon-forced-attack-play", "EX12 MetalGreymon · play and mandatory StartMain attack"],
+  ["arena-ex12-metalgreymon-forced-attack-digivolve", "EX12 MetalGreymon · digivolve and mandatory StartMain attack"],
   ["arena-ex12-metalgarurumon-trash-then-return", "EX12 MetalGarurumon · trash sources, then choose the return"],
   ["arena-bt22-palmon-cs-restack", "BT22 Palmon · [CS] restack only on a [CS] host"],
   ["arena-bt22-mirei-play-cost-floor", "BT22 Mirei Mikagura · play cost 4 or higher only"],
@@ -2473,7 +3040,9 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
     "BT20 Alphamon: Ouryuken via King Drasil or Royal Knights of the Purge vs BT26 Aegiochusmon: Holy",
   ],
   ["arena-ex13-gotsumon-blocker-search", "EX13 Gotsumon · printed Blocker search"],
+  ["arena-crimson-partition", "#5354/#5355 Crimson Blaze · inherited Partition"],
   ["arena-ex13-magnamon-partition-assembly", "#5294 Magnamon · Partition + free Assembly"],
+  ["arena-yuugo-omnimon-assembly", "Yuugo · Omnimon Assembly cost (#5341)"],
   ["arena-ex13-craniamon-assembly", "EX13 Craniamon · Assembly with printed Blocker"],
   ["arena-ex13-craniamon-weregarurumon-assembly", "EX13 Craniamon · WereGarurumon Assembly"],
   ["arena-p220-millenniummon-assembly", "P-220 Millenniummon · Assembly with different levels"],
@@ -2503,6 +3072,10 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex13-examon", "EX13 Examon · Lv.5 DNA + battle timing"],
   ["arena-ex13-examon-option-dp", "EX13 Examon · DP bonus excludes Options/Tamers"],
   ["arena-ex13-examon-battle-win-timing", "EX13 Examon · win-battle trigger order"],
+  ["arena-discord-1557631388650315826-sukamon-dna-materials", "KingSukamon · white material rejects Examon DNA"],
+  ["arena-discord-1557631388650315826-sukamon-dna-control", "KingSukamon DNA · healthy control"],
+  ["arena-discord-1557790296379625482-loweemon-hosts", "Loweemon · observed three-host prompt"],
+  ["arena-discord-1557790296379625482-trash-hybrids", "Duskmon / Loweemon · attack evolution from trash"],
   ["arena-discord-1557565628439724032-duskmon-dna-colors", "Duskmon DNA · changed colors persist through evolution"],
   ["arena-discord-1557565628439724032-duskmon-dna-control", "Duskmon DNA · control"],
   ["arena-discord-1557575147119054889-shakkoumon-sukamon", "Shakkoumon DNA · reported materials"],
@@ -2513,6 +3086,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-bt18-candlemon-data-selection", "BT18 Candlemon · yellow Data / Witchelny selection"],
   ["arena-bt26-monimon-optional-cost", "BT26 Monimon · optional source-trash cost"],
   ["arena-ex13-flamewizardmon-optional-cost", "EX13 FlameWizardmon · optional security cost"],
+  ["arena-bt18-lucemon-optional-hand-cost", "BT18 Lucemon · optional hand cost (#5312)"],
   ["arena-bt26-cerberusmon-optional-cost", "BT26 Cerberusmon · optional hand-trash cost"],
   ["arena-sukamon-transform-digivolve", "EX13 KingSukamon · white Sukamon can't take green digivolve"],
   ["arena-sukamon-transform-digivolve-viewer", "Sukamon rewrite · your Blossomon refused"],
@@ -2524,6 +3098,10 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex5-attack-priority", "EX5 Etemon · attack trigger priority"],
   ["arena-ex5-biting-crush-delay", "EX5 Biting Crush · Delay on effect play"],
   ["arena-p108-training-delay-no-target", "P-108 Wisdom Training · Delay with no target"],
+  ["arena-github5306-training-use-memory", "#5306 Treadmill Training · use cost and turn pass"],
+  ["arena-github5306-training-delay-paid", "#5306 Treadmill Training · Delay pays 1"],
+  ["arena-github5306-training-delay-free", "#5306 Treadmill Training · Delay costs 0"],
+  ["arena-github5306-training-delay-cost-choice", "#5306 Treadmill Training · printed or alternate cost"],
   ["arena-bt20-dragon-gene-delay-no-dna", "BT20-093 Unleash the Dragon Gene · Delay with no DNA"],
   ["arena-bt20-dragon-gene-security", "BT20-093 Unleash the Dragon Gene · Security hand/trash"],
   ["arena-bt13-royal-purge-delay-rush", "BT13 Royal Knights of the Purge · Delay Rush"],
@@ -2556,6 +3134,8 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-vikemon-live-source-lock", "Vikemon ACE · live source-count lock"],
   ["arena-bt25-ceresmon-homeros-suspend", "BT25 Ceresmon · Homeros e Succession / suspension"],
   ["arena-bt24-homeros-neptunemon-timing-choice", "BT24 Homeros · Neptunemon timing choice"],
+  ["arena-kanan-jupiter-pomumon", "Kanan · Jupitermon Option com Pomumon / under Pomumon"],
+  ["arena-bt22-akemi-battle-mother", "BT22 Akemi · Mother Eater no campo / battle area"],
   ["arena-p224-kotone-own-source", "P-224 Kotone · X7 das próprias fontes / own sources"],
   ["arena-kotone-digixros-pending-attack", "Kotone · DigiXros + EX6 pending attack"],
   ["arena-bt6-beelstarmon-duplicate-cost", "BT6 BeelStarmon · duplicate hand cost"],
@@ -2578,6 +3158,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-bt24-hyogamon-pending-trash-digivolve", "BT24 Hyogamon · pending inherited digivolve after Plutomon"],
   ["arena-ex10-darkness-bagramon-digixros-interrupt", "EX10 DarknessBagramon · DigiXros material interrupt"],
   ["arena-ex10-tactimon-digixros-material", "EX10 Tactimon · DigiXros material is not an effect"],
+  ["arena-ex10-bagramon-materials-destination", "EX10 Bagramon · DigiXros materials and destination choice"],
   ["arena-hellscythe-onplay-priority", "Flame Hellscythe · MagnaAngemon priority"],
   ["arena-rizegreymon-derived-priority", "RizeGreymon X · derived effect priority"],
   ["arena-trident-derived-priority", "Trident Revolver · deletion and On Play"],
@@ -2586,6 +3167,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-piedmon-declined-opt", "Piedmon · declined OPT retriggers"],
   ["arena-issue-4893-seiten-evo-cost", "#4893 · SeitenGokuumon evo cost"],
   ["arena-issue-4894-jesmon-token-limit", "#4894 · Jesmon token limit"],
+  ["arena-sakuyamon-maid-option-timing", "Sakuyamon: Maid Mode · Option trigger timing"],
   ["arena-jesmon-scramble-dp-blocked", "Jesmon · Red Scramble vs 5000 DP (blocked)"],
   ["arena-jesmon-scramble-dp-allowed", "Jesmon · Red Scramble vs 10000 DP (allowed)"],
   ["arena-junomon-opponent-target", "Junomon · opponent target"],
@@ -2601,6 +3183,8 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-sagasol-etemon-protected-dp", "SagaSol · Etemon vs protected DP"],
   ["arena-sagasol-guard-source", "SagaSol · granted Guard source"],
   ["arena-seven-code-link-dp", "Seven Code · Link DP comparison"],
+  ["arena-koto-grademon-pending-piercing", "Koto · Grademon protected block with pending Piercing"],
+  ["arena-koto-grademon-no-prior-battle", "Koto · Grademon protected block without prior battle"],
   ["arena-suspend-lock-block", "Suspend lock · Blocker legality"],
   ["arena-vortex-target-legality", "Vortex · target legality"],
   ["arena-vortexdramon", "Vortexdramon · optional OPT"],

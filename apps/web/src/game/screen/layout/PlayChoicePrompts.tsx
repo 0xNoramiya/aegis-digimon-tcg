@@ -29,6 +29,7 @@ import type { PendingActionConfirmation } from "../types";
 export function PlayChoicePrompts({
   dualPlay,
   actionConfirm,
+  actionBlocked,
   dnaRoutes,
   dnaPermanents,
   dnaPickedPermanentIds,
@@ -56,6 +57,7 @@ export function PlayChoicePrompts({
 }: {
   dualPlay: { instanceId: string; cardId: string } | null;
   actionConfirm: PendingActionConfirmation | null;
+  actionBlocked: boolean;
   dnaRoutes: readonly ProjectedDnaDigivolveRoute[];
   dnaPermanents: readonly Permanent[];
   dnaPickedPermanentIds: readonly string[];
@@ -70,8 +72,14 @@ export function PlayChoicePrompts({
   evoCostChoice: { handCardId: string; baseCardId: string; options: EvoCostOption[] } | null;
   /** The viewer's memory, signed from the viewer's side, so a cost can show where it lands. */
   memory: number;
-  assemblyPick: { cardId: string; requirements: AssemblyRequirement[]; candidates: AssemblyCandidate[] } | null;
+  assemblyPick: {
+    cardId: string;
+    requirements: AssemblyRequirement[];
+    candidates: AssemblyCandidate[];
+    playCostReductionBlocked?: boolean;
+  } | null;
   digiXrosPick: {
+    playCostReductionBlocked?: boolean;
     instanceId: string;
     cardId: string;
     requirements: DigiXrosRequirement[];
@@ -112,6 +120,7 @@ export function PlayChoicePrompts({
           routes={dnaRoutes}
           permanents={dnaPermanents}
           pickedPermanentIds={dnaPickedPermanentIds}
+          disabled={actionBlocked}
           onConfirm={onConfirmAction}
           onNormalEvolution={onDigivolveNormally}
           onCancel={onConfirmCancel}
@@ -162,6 +171,7 @@ export function PlayChoicePrompts({
         <AssemblyMaterialOverlay
           playingCardId={assemblyPick.cardId}
           requirements={assemblyPick.requirements}
+          playCostReductionBlocked={assemblyPick.playCostReductionBlocked}
           candidates={assemblyPick.candidates}
           onConfirm={onAssembly}
           onSkip={onAssemblySkip}
@@ -173,6 +183,7 @@ export function PlayChoicePrompts({
         <DigiXrosMaterialOverlay
           key={digiXrosPick.instanceId}
           playingCardId={digiXrosPick.cardId}
+          playCostReductionBlocked={digiXrosPick.playCostReductionBlocked}
           requirements={digiXrosPick.requirements}
           candidates={digiXrosPick.candidates}
           lockedCandidates={digiXrosPick.lockedCandidates}

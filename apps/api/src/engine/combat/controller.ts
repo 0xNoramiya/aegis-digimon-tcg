@@ -15,6 +15,7 @@ import type { GameStateAccess } from "../state/access.js";
 import type { SubTriggerEventName, TriggerInfo } from "../effects/EffectContext.js";
 import { canPaySuspendCost, eligibleBlockers, hasCollision } from "./legality.js";
 import { fragmentCountOf } from "./keywords.js";
+import { inheritedDigimonHost } from "../effects/kernel.js";
 import { resolvePermanentBattle } from "./resolve.js";
 import { recordDigimonAttack } from "../turnActivity.js";
 import type {
@@ -631,15 +632,16 @@ export class CombatController {
               await this.fireSuspended(ally, allySuspended);
               // Alliance suspends its chosen ally as an effect cost (§16-24), so the
               // effect-suspension bus must observe the actual transition after the keyword's
-              // DP/security benefit has been installed. Carry the attacking card as the
-              // producer so watchers such as EX4-032/033/034 can distinguish Alliance from
-              // an unrelated suspension effect.
+              // DP/security benefit has been installed. Carry the resolving keyword as the
+              // cause so inherited watchers also recognize granted Alliance, without confusing
+              // an unrelated suspension effect on an Alliance card for the keyword itself.
               if (allySuspended) {
                 await this.hooks.fireSubTrigger?.("whenEffectSuspends", {
                   subjectPermanentId: ally.permanentId,
                   suspendedPermanentId: ally.permanentId,
                   effectSuspendSeat: attackerSeat,
                   byEffectCardId: attacker.topCard.cardId,
+                  byEffectKeyword: "Alliance",
                 });
               }
             }
@@ -1137,6 +1139,7 @@ export class CombatController {
         suspendedPermanentId: ally.permanentId,
         effectSuspendSeat: attacker.controllerSeat,
         byEffectCardId: attacker.topCard.cardId,
+        byEffectKeyword: "Alliance",
       });
     }
   }
@@ -1632,6 +1635,12 @@ export class CombatController {
               permanentId,
               controllerSeat: permanent.controllerSeat,
               topCardId: permanent.topCard.cardId,
+              inheritedHostIsDigimon: inheritedDigimonHost({
+                definition: getCardDefinition(permanent.topCard.cardId)!,
+                effectiveKinds: this.effectiveKindsOf(permanent),
+                inBattleArea: !permanent.inBreeding,
+              }),
+              stackInstanceIds: permanent.stack.map((card) => card.instanceId),
               faceDownSourceInstanceIds: [...permanent.stack, ...permanent.linked]
                 .filter((card) => !card.faceUp)
                 .map((card) => card.instanceId),

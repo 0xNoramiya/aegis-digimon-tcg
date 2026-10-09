@@ -28,6 +28,8 @@ import { useEndTurnConfirmation } from "../hooks/useEndTurnConfirmation";
 import { SurrenderDialog } from "./SurrenderDialog";
 import { useTranslation } from "../../../i18n";
 import { CardOpenerProvider } from "../../cardLinks";
+import { OpponentSelectingPill } from "../../BoardDecisionRail";
+import { opponentStatusKey } from "../../opponentStatus";
 import { NarrationStack } from "../../NarrationStack";
 import { AttackAnnouncementBanner } from "../../SidePanelStack";
 import { TargetingSpotlight } from "../../TargetingSpotlight";
@@ -56,7 +58,7 @@ import { DragGhost } from "./DragGhost";
 import { FieldClashGhosts } from "./FieldClashGhosts";
 import { LeftPileColumn } from "./LeftPileColumn";
 import { LogTicker } from "./LogTicker";
-import { DecisionMatchTimer, MatchTimer, SeriesBadge } from "../../MatchTimer";
+import { DecisionMatchTimer, MatchTimer, SeriesBadge, viewerDecisionTimed } from "../../MatchTimer";
 import { MemoryBand } from "./MemoryBand";
 import { OpponentBar } from "./OpponentBar";
 import { OpponentBattleRow } from "./OpponentBattleRow";
@@ -279,6 +281,10 @@ export function BoardStage({
     />
   );
   const resultShown = state.gameOver && !cues.resultPending;
+  const opponentStatus = opponentStatusKey(state, viewerSeat);
+  // An open turn reads as thinking only once the board has caught up; while the
+  // opponent's last action still plays, the board itself is the feedback.
+  const opponentIdle = !!state.pendingDecision || !!state.combatWindow || !cues.presenting;
 
   return (
     // Every surface that names a card — notices, side panels, combat prompts,
@@ -301,7 +307,7 @@ export function BoardStage({
           className="game-board aegis-arena-surface"
           ref={anchors.board}
           data-art={look.hasArt || undefined}
-          data-timer-decision={(state.matchTimer && !state.gameOver && !!state.pendingDecision) || undefined}
+          data-timer-decision={viewerDecisionTimed(state, viewerSeat) || undefined}
           style={{
             ...({
               "--arena-raising-width": `${layout.arenaRaisingWidth}px`,
@@ -360,18 +366,23 @@ export function BoardStage({
           {/* One moment at a time. The portrait phone folds both sides into a single
               centred slot; everywhere else the viewer reads the left corner and the
               opponent's moments arrive in the right one. */}
-          {!resultShown ? (
-            <NarrationStack
-              narration={cues.narration}
-              rejection={cues.rejection}
-              compact={layout.collapseNotices}
-              promptSourceCardId={promptSourceCardId}
-              securityDockActive={cues.securityBranch !== null || cues.optionBranch !== null}
-              onAdvance={cues.advanceNarration}
-              onDismissRejection={cues.dismissRejection}
-              onHold={cues.holdNarration}
-            />
-          ) : null}
+          <div className="game-board-notices">
+            {opponentStatus && opponentIdle && !cues.zoneShowcase && !cues.revealShowcase ? (
+              <OpponentSelectingPill status={opponentStatus} />
+            ) : null}
+            {!resultShown ? (
+              <NarrationStack
+                narration={cues.narration}
+                rejection={cues.rejection}
+                compact={layout.collapseNotices}
+                promptSourceCardId={promptSourceCardId}
+                securityDockActive={cues.securityBranch !== null || cues.optionBranch !== null}
+                onAdvance={cues.advanceNarration}
+                onDismissRejection={cues.dismissRejection}
+                onHold={cues.holdNarration}
+              />
+            ) : null}
+          </div>
 
           {cues.attackAnnouncement && !resultShown ? (
             <AttackAnnouncementBanner announcement={cues.attackAnnouncement} />

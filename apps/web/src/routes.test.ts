@@ -10,6 +10,7 @@ describe("application routes", () => {
     ["/collection", { screen: "collection" }],
     ["/community", { screen: "community" }],
     ["/community/decks/abc-123", { screen: "community", communityDeckId: "abc-123" }],
+    ["/admin/feedback", { screen: "feedback" }],
     ["/settings", { screen: "settings" }],
     ["/profile", { screen: "settings", profile: true }],
     ["/profile/replays", { screen: "settings", profile: true, profileTab: "replays" }],

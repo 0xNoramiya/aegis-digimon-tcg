@@ -460,7 +460,7 @@ export const DNA_DIGIVOLUTION_REQUIREMENT_OVERRIDES: Record<string, DnaDigivolve
   // (TakaOtaku/Digimon-Card-App), which the pre-EX9 imports dropped. Each entry transcribes the
   // printed [DNA Digivolve] line; a slashed color list ("Blue/Yellow Lv.5") expands into one
   // requirement per color pair, because a material spec holds a single color.
-  // See docs/audits/engine/dna-digivolve-into-filter.md.
+  // See docs/engine/dna-digivolve-into-filter.md.
   // Paildramon — [DNA Digivolve] Blue Lv.4 + Green Lv.4
   "AD1-011": [
     {
@@ -962,12 +962,6 @@ export const ALTERNATE_DIGIVOLUTION_OVERRIDES: Record<string, DigivolutionRequir
   "BT12-012": [
     { names: ["BurningGreymon"], cost: 1, isAlternate: true },
     { names: ["Takuya Kanbara"], cost: 2, isAlternate: true, baseIsTamer: true },
-  ],
-  // BT12-025: Calmaramon's Tamer route is limited to blue Tamers; the generated
-  // fallback lost the printed color qualifier.
-  "BT12-025": [
-    { names: ["Lanamon"], cost: 1, isAlternate: true },
-    { cost: 0, isAlternate: true, baseIsTamer: true, baseColors: ["Blue"] },
   ],
   // BT24-059: "[Aqua] or [Sea Animal] in any trait" is substring matching, not exact traits.
   "BT24-059": [

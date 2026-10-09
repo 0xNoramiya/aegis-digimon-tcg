@@ -1,7 +1,7 @@
 import { ContinuousEffectScope } from "./effects/ContinuousEffectScope.js";
 import { CardKind, EffectTiming, GameState, type CardInstance, type Seat } from "@aegis/shared";
 import { buildCombatHooks } from "./gameEngine/combatHooks.js";
-import type { CardColor, Permanent } from "@aegis/shared";
+import type { CardColor, Permanent, ZoneRef } from "@aegis/shared";
 import type { Client } from "colyseus";
 import type { DevScenarioId } from "./devScenario.js";
 import type { VisibilityZone } from "./state/access.js";
@@ -35,7 +35,7 @@ import type { VisibilityPort } from "./state/access.js";
 import { GameStateAccess, markRoutedUsedOption } from "./state/access.js";
 import { CombatController } from "./combat/controller.js";
 import { printedKeywordsOf } from "./combat/keywords.js";
-import { hasCollision } from "./combat/legality.js";
+import { canGainCollisionBlocker } from "./combat/legality.js";
 import { WinCheck } from "./security/index.js";
 import { SecurityDpLedger } from "./security/securityDp.js";
 import { DeletionMaxDpLedger } from "./deletionMaxDp.js";
@@ -457,7 +457,7 @@ export class GameEngine {
         this.hooks.requestDecision(seat, req);
       },
     });
-    this.decisionApi = createDecisionApi(this.decisions);
+    this.decisionApi = createDecisionApi(this.decisions, (seat) => this.continuous.blocksCostReduction(seat, "play"));
     this.resolverDecisions = createResolverDecisions(
       this.decisions,
       () => this.recomputeContinuousEffects(),
@@ -734,6 +734,7 @@ export class GameEngine {
     resolvingSeat?: Seat,
     opts?: {
       isBounce?: boolean;
+      destination?: ZoneRef;
       insteadOnly?: boolean;
       playerAction?: boolean;
       isDigiXros?: boolean;
@@ -907,7 +908,7 @@ export class GameEngine {
   }
 }
 
-/** ＜Collision＞ (§16-30): during its attack, every Digimon of the attacker's opponent has ＜Blocker＞ (Q2601). */
+/** ＜Collision＞ (§16-30): during its attack, affected opposing Digimon gain ＜Blocker＞ (CR 16-30-4). */
 function collisionGrantsBlocker(engine: GameEngine, permanentId: string): boolean {
   const attackerId = engine.combat?.currentAttackerId;
   if (attackerId === undefined || attackerId === permanentId) return false;
@@ -916,5 +917,7 @@ function collisionGrantsBlocker(engine: GameEngine, permanentId: string): boolea
   if (attacker === undefined || permanent === undefined) return false;
   if (permanent.controllerSeat === attacker.controllerSeat) return false;
   const definition = lookupDefinition(permanent.topCard.cardId);
-  return definition !== undefined && isDigimon(definition) && hasCollision(attacker, engine.continuous);
+  return (
+    definition !== undefined && isDigimon(definition) && canGainCollisionBlocker(attacker, permanent, engine.continuous)
+  );
 }

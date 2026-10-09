@@ -18,7 +18,6 @@ import {
 import type { AegisJoinOptions } from "./net/types";
 import type { SeriesGameTicket } from "./net/useRoom";
 import type { PrivateRoom, StartMode } from "./screens/Lobby";
-import { loadMatchTimerPreference } from "./screens/matchTimerPreference";
 import { loadMatchFormatPreference } from "./screens/matchFormatPreference";
 import { Settings } from "./screens/Settings";
 import { loadIdentity, saveIdentity, loadDecks, saveDecks, loadActiveDeckId, saveActiveDeckId } from "./identity";
@@ -45,6 +44,7 @@ import { clearReconnectSession, loadReconnectSession } from "./net/reconnectSess
 
 const ProfileScreen = lazy(() => import("./account/ProfileScreen").then((m) => ({ default: m.ProfileScreen })));
 const ReplaysScreen = lazy(() => import("./replays/ReplaysScreen").then((m) => ({ default: m.ReplaysScreen })));
+const FeedbackScreen = lazy(() => import("./bugs/FeedbackScreen").then((m) => ({ default: m.FeedbackScreen })));
 const Home = lazy(() => import("./screens/Home").then((m) => ({ default: m.Home })));
 const ReleasesScreen = lazy(() => import("./releases/ReleasesScreen").then((m) => ({ default: m.ReleasesScreen })));
 const Login = lazy(() => import("./screens/Login").then((m) => ({ default: m.Login })));
@@ -106,7 +106,17 @@ function ScreenFallback() {
   );
 }
 
-const NAV_SCREENS: Screen[] = ["home", "lobby", "deck", "community", "collection", "settings", "releases", "replays"];
+const NAV_SCREENS: Screen[] = [
+  "home",
+  "lobby",
+  "deck",
+  "community",
+  "collection",
+  "settings",
+  "releases",
+  "replays",
+  "feedback",
+];
 
 export function withAccountAvatar(player: PlayerIdentity, account: RemoteAccount | null): PlayerIdentity {
   return {
@@ -218,7 +228,7 @@ function AppShell() {
   useEffect(applyDarkMode, []);
   useEffect(applyTextScale, []);
 
-  usePreferencesSync({ accountId: account?.id, dark, setDark });
+  const preferencesReady = usePreferencesSync({ accountId: account?.id, dark, setDark });
 
   const saveDeck = (deck: DeckListing, setActive: boolean) => {
     const filtered = { ...filterDeckToKnownCards(deck), updatedAt: Date.now() };
@@ -241,6 +251,7 @@ function AppShell() {
   };
 
   const shared = {
+    preferencesReady: account !== undefined && preferencesReady,
     player,
     setPlayer,
     account,
@@ -258,6 +269,7 @@ function AppShell() {
 }
 
 interface ClientProps {
+  preferencesReady?: boolean;
   player: PlayerIdentity;
   setPlayer: (update: (p: PlayerIdentity) => PlayerIdentity) => void;
   account?: RemoteAccount | null;
@@ -273,6 +285,7 @@ interface ClientProps {
 }
 
 export function AegisClient({
+  preferencesReady = true,
   player,
   setPlayer,
   account = null,
@@ -314,7 +327,7 @@ export function AegisClient({
     });
   });
   const [timerOptions, setTimerOptions] = useState(() => ({
-    matchTimer: loadMatchTimerPreference(),
+    matchTimer: true,
     timerStartSeconds: 300,
     timerRefillSeconds: 60,
   }));
@@ -329,6 +342,7 @@ export function AegisClient({
   const [privateRoom, setPrivateRoom] = useState<PrivateRoom>();
   const [botDeckId, setBotDeckId] = useState<string>();
   const [unlimited, setUnlimited] = useState(false);
+  const [deckFormat, setDeckFormat] = useState<import("@aegis/shared").DeckFormat>("standard");
   const [betaBattleMode, setBetaBattleMode] = useState(false);
   const [matchDeckId, setMatchDeckId] = useState<string>();
   const [matchNumber, setMatchNumber] = useState(0);
@@ -428,6 +442,7 @@ export function AegisClient({
     () => ({
       ...timerOptions,
       bestOf,
+      format: deckFormat,
       displayName: effectivePlayer.name,
       avatarId: effectivePlayer.avatarId ?? undefined,
       deckId: matchDeck?.id,
@@ -447,7 +462,7 @@ export function AegisClient({
         eggDeckArts: matchDeck?.eggDeckArts,
       },
     }),
-    [effectivePlayer.name, effectivePlayer.avatarId, matchDeck, timerOptions, bestOf, customBotDeck],
+    [effectivePlayer.name, effectivePlayer.avatarId, matchDeck, timerOptions, bestOf, customBotDeck, deckFormat],
   );
 
   const showNav = NAV_SCREENS.includes(screen) && !(screen === "replays" && replayViewing);
@@ -494,6 +509,7 @@ export function AegisClient({
             />
           )}
 
+          {screen === "feedback" && <FeedbackScreen key={account?.id ?? "guest"} isAdmin={account?.isAdmin === true} />}
           {screen === "login" && <Login onBack={() => navigateScreen("home")} />}
 
           {screen === "lobby" && (
@@ -539,6 +555,7 @@ export function AegisClient({
                 requestedBetaBattleMode,
                 requestedDeckId,
                 requestedUnlimited,
+                requestedFormat,
               ) => {
                 // A lobby start explicitly requests a new match, even if a page
                 // reload left a resumable seat from the previous match in storage.
@@ -550,6 +567,9 @@ export function AegisClient({
                 setBotDeckId(requestedBotDeckId);
                 setBetaBattleMode(requestedBetaBattleMode === true);
                 setUnlimited(requestedUnlimited === true);
+                setDeckFormat(
+                  requestedFormat ?? (mode === "unlimited" || requestedUnlimited ? "unlimited" : "standard"),
+                );
                 setMatchDeckId(requestedDeckId);
                 navigateScreen("game");
               }}
@@ -636,6 +656,7 @@ export function AegisClient({
 
           {screen === "game" && (
             <GameScreen
+              autoHatchReady={preferencesReady}
               key={matchNumber}
               joinOptions={joinOptions}
               identityColor={identityColor}
@@ -660,7 +681,7 @@ export function AegisClient({
                 setSeriesGame(undefined);
                 navigateScreen(next);
               }}
-              onRematch={(privateRoomCode, roomUnlimited, roomHost) => {
+              onRematch={(privateRoomCode, roomUnlimited, roomHost, roomFormat) => {
                 clearReconnectSession();
                 setSeriesGame(undefined);
                 if (privateRoomCode) {
@@ -668,6 +689,7 @@ export function AegisClient({
                     code: privateRoomCode,
                     host: roomHost ?? startMode === "private_host",
                     unlimited: roomUnlimited,
+                    format: roomFormat,
                   });
                   navigateScreen("lobby");
                   return;
@@ -684,6 +706,7 @@ export function AegisClient({
           player={effectivePlayer}
           signedIn={!!account}
           anchor={playerMenuAnchor}
+          isAdmin={account?.isAdmin === true}
           onNav={navigateScreen}
           onSignOut={
             account

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { effectiveCopyLimit } from "@aegis/shared";
+import { formatCopyLimit } from "@aegis/shared";
 import {
   activeCollectionCards,
   copyDeckPreset,
@@ -25,7 +25,7 @@ function copyLimitViolations(deck: DeckListing): string[] {
     counts.set(cardId, (counts.get(cardId) ?? 0) + 1);
   }
   return [...counts]
-    .filter(([cardId, count]) => count > effectiveCopyLimit(cardId))
+    .filter(([cardId, count]) => count > formatCopyLimit(cardId, deck.format ?? "standard"))
     .map(([cardId, count]) => `${deck.id}: ${cardId} has ${count} copies`);
 }
 
@@ -61,15 +61,26 @@ describe("active card pool deck filtering", () => {
 });
 
 describe("famous deck presets", () => {
+  it("GitHub #5390: available presets use the printed Olympos XII spelling", () => {
+    const decks = FAMOUS_DECKS.filter((d) => d.id.includes("olympus-xii"));
+    expect(decks).toHaveLength(2);
+    expect(decks.map((d) => d.name)).toEqual(Array(2).fill("Olympos XII"));
+  });
   it("uses only the deck archetype as the displayed name", () => {
     expect(FAMOUS_DECKS.find((deck) => deck.id === "ex2-gallantmon-eto")?.name).toBe("Gallantmon");
     expect(FAMOUS_DECKS.every((deck) => !deck.name.includes(" — "))).toBe(true);
   });
 
-  it("keeps every selectable example and famous deck within current copy limits", () => {
+  it("keeps every selectable example and famous deck within its format's copy limits", () => {
     const violations = [...DECKS, ...FAMOUS_DECKS].flatMap(copyLimitViolations);
 
     expect(violations).toEqual([]);
+  });
+
+  it("gives presets broken by later restrictions their anchor set's historical format", () => {
+    const imperialdramon = FAMOUS_DECKS.find((deck) => deck.id === "bt4-dgo-2021-06-26-3-imperialdramon");
+    expect(imperialdramon?.format).toBe("BT4");
+    expect(FAMOUS_DECKS.find((deck) => deck.id === "ex2-gallantmon-eto")?.format).toBeUndefined();
   });
 
   it("keeps every selectable example and famous deck structurally complete", () => {

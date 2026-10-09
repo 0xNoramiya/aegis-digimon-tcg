@@ -43,6 +43,7 @@ export type Screen =
   | "settings"
   | "replays"
   | "releases"
+  | "feedback"
   | "game";
 
 export function Stage({ children }: { children: ReactNode }) {
@@ -536,7 +537,7 @@ export function TopNav({
     { key: "collection", label: t("nav.collection"), icon: Icons.BookOpen },
   ];
   const signIn = signedIn ? null : (
-    <button className="aegis-sign-in-button" onClick={() => navTo("login")} aria-current={undefined}>
+    <button className="aegis-sign-in-button" onClick={() => navTo("login")} aria-label={t("nav.signIn")}>
       <Icons.LogIn size={16} />
       <span>{t("nav.signIn")}</span>
     </button>

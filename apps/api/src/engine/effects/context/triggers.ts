@@ -102,6 +102,10 @@ export interface TriggerInfo {
     permanentId: string;
     controllerSeat: Seat;
     topCardId: string;
+    /** Whether this host conferred inherited effects at deletion (effective Digimon or DP-bearing Digi-Egg). */
+    inheritedHostIsDigimon?: boolean;
+    /** Physical cards under this host before it was deleted. */
+    stackInstanceIds?: string[];
     /** Sources with no card information at deletion, before trash makes them face up (§4-7-9). */
     faceDownSourceInstanceIds?: string[];
   }>;
@@ -254,6 +258,8 @@ export interface TriggerInfo {
   byEffectSeat?: Seat;
   /** Printed card ID of the effect that produced the event, when known. */
   byEffectCardId?: string;
+  /** Keyword that actually caused this event, including granted or inherited abilities. */
+  byEffectKeyword?: Keyword;
   /** Printed identity before a Digimon top is trashed and its next source promoted. */
   trashedDigimonTop?: { permanentId: string; controllerSeat: Seat; cardId: string };
   /** Whether the trashed digivolution card was the top card of its stack. */

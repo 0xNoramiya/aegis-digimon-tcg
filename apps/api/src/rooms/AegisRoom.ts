@@ -36,6 +36,10 @@ import {
   SERIES_CHANNEL,
   matchBestOf,
   type MatchBestOf,
+  type DeckFormat,
+  deckFormat,
+  isDeckFormat,
+  formatIsUnlimited,
 } from "@aegis/shared";
 import { isDevScenarioId, type DevScenarioId } from "../engine/devScenario.js";
 import { createIssueReproBotPolicy } from "../engine/issueReproBotPolicy.js";
@@ -86,6 +90,8 @@ interface RoomCreateOptions extends Partial<SeriesContinuationOptions> {
   /** Only the registered bot/private handlers grant this capability. */
   allowUnlimitedSelection?: boolean;
   unlimited?: boolean;
+  format?: DeckFormat;
+  allowFormatSelection?: boolean;
   tournamentRoom?: boolean;
   devScenario?: unknown;
 }
@@ -230,7 +236,7 @@ interface OpenBatch {
  * forwards intents to the GameEngine, relays decision requests, and broadcasts the
  * event log. All rules live in the engine (API-CONTRACT.md section 1).
  */
-export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: boolean } }> {
+export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: boolean; format: DeckFormat } }> {
   override maxClients = 2;
   private engine!: GameEngine;
   private spectatorClients = new Set<string>();
@@ -377,6 +383,8 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // public room types have to agree with the joiner's beta flag.
     if (!this.isPrivate && (options.betaBattleMode === true) !== this.isBetaBattleRoom) return false;
     if ((options.unlimited === true) !== this.isUnlimitedRoom) return false;
+    if (options.format !== undefined && !isDeckFormat(options.format)) return false;
+    if (!this.isPrivate && deckFormat(options.format, options.unlimited) !== this.state.format) return false;
     if (options.botDeck && (!this.isBotRoom || !this.validCustomBotDeck(options.botDeck))) return false;
     // A guest of a private room plays whatever the host set; a public joiner must have asked for it.
     if (!this.isPrivate && this.offersSeries() && matchBestOf(options.bestOf) !== this.bestOf) return false;
@@ -420,6 +428,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     options.ranked = false;
     options.betaBattleMode = this.isBetaBattleRoom;
     options.unlimited = this.isUnlimitedRoom;
+    options.format = this.state.format as DeckFormat;
     this.seriesSeatByClient.set(client.sessionId, seat);
     if (entry.accountId) this.accountByClient.set(client.sessionId, entry.accountId);
     return true;
@@ -538,6 +547,8 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       unlimitedRoom: options.unlimitedRoom,
       allowUnlimitedSelection: options.allowUnlimitedSelection,
       unlimited: record.unlimited === true,
+      format: record.format,
+      allowFormatSelection: options.allowFormatSelection,
       tournamentRoom: options.tournamentRoom,
       matchTimer: record.matchTimer,
       timerStartSeconds: record.timerStartSeconds,
@@ -586,6 +597,21 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         (options.allowUnlimitedSelection === true &&
           (options.botRoom === true || options.private === true) &&
           options.unlimited === true));
+    if (options.format !== undefined && !isDeckFormat(options.format))
+      throw new ServerError(400, "Unknown deck format");
+    const format = deckFormat(options.format, this.isUnlimitedRoom);
+    if (
+      (options.rankedRoom ||
+        options.tournamentRoom ||
+        (options.betaBattleRoom && !options.private && !options.botRoom)) &&
+      format !== "standard"
+    )
+      throw new ServerError(400, "This room requires Standard format");
+    if (format !== "standard" && format !== "unlimited" && options.allowFormatSelection !== true)
+      throw new ServerError(400, "Format selection is unavailable in this room");
+    if (formatIsUnlimited(format) !== this.isUnlimitedRoom)
+      throw new ServerError(400, "Format does not match this room type");
+    this.state.format = format;
     this.state.unlimited = this.isUnlimitedRoom;
     this.isTournamentRoom = options.tournamentRoom === true;
     if (options.private) {
@@ -611,6 +637,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         this.casualSeries = CasualSeries.begin(this.seriesPort(), {
           bestOf: this.bestOf,
           unlimited: this.isUnlimitedRoom,
+          format: this.state.format as DeckFormat,
           matchTimer: options.matchTimer === true,
           timerStartSeconds: options.timerStartSeconds ?? 300,
           ...(this.isPrivate ? { roomCode: this.state.roomCode } : {}),
@@ -743,7 +770,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     });
 
     // Optional clocks belong to casual/private rooms. Ignore crafted ranked/tournament options.
-    const devTimer = this.devScenario === "arena-match-timer";
+    const devTimer = this.devScenario === "arena-match-timer" || this.devScenario === "arena-chronomon-engage-order";
     this.matchClock = new MatchClock(
       this.state,
       {
@@ -1090,12 +1117,14 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private async publishRoomRules(): Promise<void> {
     // Standalone room lifecycle consumers have no matchmaker listing to publish into.
     if (!Reflect.get(this, "_listing")) return;
-    await this.setMatchmaking({ metadata: { ...this.metadata, unlimited: this.isUnlimitedRoom } });
+    await this.setMatchmaking({
+      metadata: { ...this.metadata, unlimited: this.isUnlimitedRoom, format: this.state.format as DeckFormat },
+    });
   }
 
   /** Fixed host rules, read by the private-code lookup across processes. */
-  privateRoomInfo(): { unlimited: boolean } {
-    return { unlimited: this.isUnlimitedRoom };
+  privateRoomInfo(): { unlimited: boolean; format: DeckFormat } {
+    return { unlimited: this.isUnlimitedRoom, format: this.state.format as DeckFormat };
   }
 
   /** Public information only; the HTTP gateway calls this through cluster RPC. */
@@ -1134,7 +1163,12 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     this.debug("player.join", { sessionId: client.sessionId, deck: options.deck });
     // The room type, not the payload, decides whether unreleased cards are legal: a private
     // room accepts them and its clients never send the flag (onAuth already vetted the pair).
-    options = { ...options, betaBattleMode: this.isBetaBattleRoom, unlimited: this.isUnlimitedRoom };
+    options = {
+      ...options,
+      betaBattleMode: this.isBetaBattleRoom,
+      unlimited: this.isUnlimitedRoom,
+      format: this.state.format as DeckFormat,
+    };
     if (options.botDeck) {
       if (!this.isBotRoom || !this.validCustomBotDeck(options.botDeck))
         throw new ServerError(400, "Illegal custom bot deck");
@@ -1374,7 +1408,11 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       deck.eggDeck.length <= 5 &&
       deck.mainDeck.every((id) => typeof id === "string") &&
       deck.eggDeck.every((id) => typeof id === "string") &&
-      validateDecklist(deck, { betaBattleMode: this.isBetaBattleRoom, unlimited: this.isUnlimitedRoom }).ok
+      validateDecklist(deck, {
+        betaBattleMode: this.isBetaBattleRoom,
+        unlimited: this.isUnlimitedRoom,
+        format: this.state.format as DeckFormat,
+      }).ok
     );
   }
 
@@ -1396,7 +1434,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // exactly as it was rather than half-seated.
     let deck;
     try {
-      deck = this.customBotDeck ?? playableBotDeck(botDeckId, this.isBetaBattleRoom);
+      deck = this.customBotDeck ?? playableBotDeck(botDeckId, this.isBetaBattleRoom, this.state.format as DeckFormat);
     } catch (error) {
       logError("[AegisRoom] addBot could not resolve a legal bot deck", error);
       return false;
@@ -1441,6 +1479,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
           deck,
           betaBattleMode: this.isBetaBattleRoom,
           unlimited: this.isUnlimitedRoom,
+          format: this.state.format as DeckFormat,
         }),
       );
     } catch (error) {
@@ -1457,7 +1496,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // has no seatByClient entry for applyIntent to route through) — starting the
     // match directly here is the bot seat's stand-in for readiness.
     // Legacy bot joins can promote a waiting casual room to practice mode.
-    if (this.devScenario !== "arena-match-timer") {
+    if (this.devScenario !== "arena-match-timer" && this.devScenario !== "arena-chronomon-engage-order") {
       this.state.matchTimer = false;
       this.state.timerActiveSeat = -1;
       this.matchClockInterval?.clear();

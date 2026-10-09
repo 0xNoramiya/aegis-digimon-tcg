@@ -14,6 +14,7 @@ import {
 type FieldCard = { card: string; under?: string[]; linked?: string[]; faceDownUnder?: boolean; suspended?: boolean };
 type PlayerLayout = {
   deck?: string[];
+  eggDeck?: string[];
   field?: FieldCard[];
   breeding?: FieldCard;
   hand?: string[];
@@ -25,6 +26,148 @@ type Layout = { players: readonly [PlayerLayout, PlayerLayout]; memory?: number 
 
 // Reduced boards for reported issues. Each runs in the ordinary turn loop.
 const ISSUE_LAYOUTS = {
+  "arena-github-5374-up-to-four-trash": {
+    memory: 5,
+    players: [
+      {
+        field: [{ card: "EX5-074" }],
+        hand: ["EX10-013"],
+        trash: ["EX5-009", "EX5-010", "EX5-011", "EX5-019"],
+        deck: Array(12).fill("BT1-009"),
+      },
+      { security: Array(3).fill("BT1-009"), deck: Array(12).fill("BT1-009") },
+    ],
+  },
+  "arena-github-5410-tamer-inherited-deletion": {
+    memory: 10,
+    players: [
+      {
+        field: [{ card: "EX13-074", under: ["BT19-063"] }, { card: "BT1-084" }],
+        hand: ["BT5-110"],
+        trash: ["BT18-058"],
+        deck: Array(12).fill("BT1-009"),
+      },
+      { security: Array(3).fill("BT1-009"), deck: Array(12).fill("BT1-009") },
+    ],
+  },
+  "arena-github-5412-kapurimon-illegal-colors": {
+    memory: 5,
+    players: [
+      {
+        field: [
+          { card: "EX12-016", under: ["EX12-053"] },
+          { card: "EX9-018" },
+          { card: "EX12-008", under: ["EX12-003"] },
+        ],
+        hand: ["EX12-035"],
+        deck: Array(12).fill("BT1-009"),
+      },
+      {
+        field: [{ card: "BT1-084", suspended: true }],
+        security: Array(3).fill("BT1-009"),
+        deck: Array(12).fill("BT1-009"),
+      },
+    ],
+  },
+  "arena-github-5416-ulforce-unsuspend": {
+    memory: 5,
+    players: [
+      { field: [{ card: "EX13-023", under: ["EX13-022"] }], deck: Array(12).fill("BT1-009") },
+      { security: Array(3).fill("BT1-009"), deck: Array(12).fill("BT1-009") },
+    ],
+  },
+  "arena-github-5417-mobile-assembly": {
+    memory: 10,
+    players: [
+      { hand: ["EX13-023"], trash: ["EX13-017", "EX13-019", "EX13-022"], deck: Array(12).fill("BT1-009") },
+      { security: Array(3).fill("BT1-009"), deck: Array(12).fill("BT1-009") },
+    ],
+  },
+  "arena-github-5378-imperialdramon-no-bounce": {
+    memory: 5,
+    players: [
+      { field: [{ card: "BT3-111", under: ["ST9-06", "BT1-009"] }], deck: Array(12).fill("BT1-009") },
+      { security: Array(5).fill("BT1-009"), deck: Array(12).fill("BT1-009") },
+    ],
+  },
+  "arena-github-5378-imperialdramon-security-bounce": {
+    memory: 5,
+    players: [
+      { field: [{ card: "BT3-111", under: ["ST9-06", "BT1-009"] }], deck: Array(12).fill("BT1-009") },
+      { security: ["ST2-16", "BT1-009", "BT1-009"], deck: Array(12).fill("BT1-009") },
+    ],
+  },
+  "arena-github-5371-examon-battle-before-raid": {
+    memory: 5,
+    players: [
+      { field: [{ card: "BT1-080" }, { card: "ST2-10" }], hand: ["EX13-045"], deck: Array(12).fill("BT1-009") },
+      {
+        field: [{ card: "BT1-013" }, { card: "BT1-010" }],
+        security: Array(5).fill("BT1-009"),
+        deck: Array(12).fill("BT1-009"),
+      },
+    ],
+  },
+  "arena-github-5408-ruin-mode-hatch": {
+    memory: 5,
+    players: [
+      {
+        field: [{ card: "EX4-074" }, { card: "BT1-085" }],
+        eggDeck: ["BT1-006"],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      { field: [{ card: "BT1-013" }], security: Array(5).fill("BT1-009"), deck: Array(12).fill("BT1-009") },
+    ],
+  },
+  "arena-github-5372-progress-protection": {
+    memory: 5,
+    players: [
+      {
+        field: [{ card: "P-189" }, { card: "BT1-010" }],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(5).fill("BT1-009"),
+      },
+      {
+        field: [{ card: "BT10-070", under: ["BT1-009"] }],
+        security: Array(5).fill("BT1-009"),
+        deck: Array(12).fill("BT1-009"),
+      },
+    ],
+  },
+  "arena-github-5350-dedigivolve-egg": {
+    memory: 10,
+    players: [
+      {
+        field: [{ card: "BT1-021" }, { card: "BT1-036" }, { card: "BT1-036" }],
+        hand: ["AD1-009"],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(5).fill("BT1-009"),
+      },
+      {
+        field: [{ card: "BT26-060", under: ["BT26-016", "BT26-015", "BT26-011", "BT26-009", "BT26-001", "BT26-085"] }],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(5).fill("BT1-009"),
+      },
+    ],
+  },
+  "arena-github-5349-collision-immunity": {
+    memory: 10,
+    players: [
+      {
+        field: [{ card: "EX13-020", under: ["BT21-036"] }, { card: "BT1-009" }],
+        hand: ["BT16-102", "BT17-077", "BT1-009"],
+        deck: Array(12).fill("BT1-001"),
+        security: Array(5).fill("BT1-001"),
+      },
+      {
+        field: [{ card: "EX13-064" }, { card: "EX13-058", under: ["BT1-009"] }],
+        hand: ["BT1-012", "BT1-009"],
+        deck: Array(12).fill("BT1-001"),
+        security: ["BT1-084", ...Array(4).fill("BT1-001")],
+      },
+    ],
+  },
   "arena-github-5289-ulforce-rina": {
     memory: 10,
     players: [
@@ -382,6 +525,18 @@ const ISSUE_LAYOUTS = {
         deck: ["BT1-009", "BT1-010", "ST22-05", "BT1-011", "BT1-013"],
       },
       {},
+    ],
+  },
+  "arena-issue-5353-imperialdramon-nested-blitz": {
+    memory: 2,
+    players: [
+      {
+        field: [{ card: "EX3-008" }, { card: "P-110" }],
+        hand: ["BT16-077", "EX3-063", "BT1-080"],
+        trash: ["BT20-016"],
+        deck: ["BT1-009", "BT1-010", "BT1-011", "BT1-012"],
+      },
+      { field: [{ card: "BT1-028" }], security: ["BT1-009", "BT1-010", "BT1-011"] },
     ],
   },
   "arena-issue-5179-imperialdramon-blitz": {
@@ -2003,6 +2158,11 @@ export function layIssueReproScenario(
       clearZone(player, Zone.Deck);
       for (const [index, cardId] of spec.deck.entries())
         insertCard(player, Zone.Deck, card(cardId, seat, "deck", index, false));
+    }
+    if (spec.eggDeck !== undefined) {
+      clearZone(player, Zone.EggDeck);
+      for (const [index, cardId] of spec.eggDeck.entries())
+        insertCard(player, Zone.EggDeck, card(cardId, seat, "egg", index, false));
     }
     clearZone(player, Zone.Hand);
     clearZone(player, Zone.Trash);

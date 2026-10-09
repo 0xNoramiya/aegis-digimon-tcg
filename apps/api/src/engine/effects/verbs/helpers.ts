@@ -13,6 +13,8 @@ import type { Restriction } from "../EffectContext.js";
 import { normalizeCost } from "../verbs/cardPlacement.js";
 import { hostOfStackInstance } from "../verbs/looseInstances.js";
 
+import { inheritedDigimonHost } from "../kernel.js";
+import { effectiveKinds } from "../continuous/effective.js";
 import type { PrimitivesContext } from "./context.js";
 
 /**
@@ -118,6 +120,16 @@ export function createSharedHelpers(pc: PrimitivesContext) {
               permanentId,
               controllerSeat: permanent.controllerSeat,
               topCardId: permanent.topCard.cardId,
+              inheritedHostIsDigimon: inheritedDigimonHost({
+                definition: requireCardDefinition(permanent.topCard.cardId),
+                effectiveKinds: effectiveKinds(
+                  continuous,
+                  permanentId,
+                  requireCardDefinition(permanent.topCard.cardId).kinds,
+                ),
+                inBattleArea: !permanent.inBreeding,
+              }),
+              stackInstanceIds: permanent.stack.map((card) => card.instanceId),
               faceDownSourceInstanceIds: [...permanent.stack, ...permanent.linked]
                 .filter((card) => !card.faceUp)
                 .map((card) => card.instanceId),
@@ -127,7 +139,7 @@ export function createSharedHelpers(pc: PrimitivesContext) {
 
   const filterBouncePrevented = async (
     instanceIds: string[],
-    destination: "handOrDeck" | "security" = "handOrDeck",
+    destination: "hand" | "deck" | "security",
   ): Promise<string[]> => {
     const permByInstance = new Map<string, string>();
     for (const owner of state.players) {
@@ -158,7 +170,7 @@ export function createSharedHelpers(pc: PrimitivesContext) {
       [...permByInstance.values()],
       "byEffect",
       effectSeatStack.at(-1) ?? engine.controllerSeat(),
-      { isBounce: true },
+      { isBounce: true, destination },
     );
     const notPrevented = instanceIds.filter((id) => {
       const permId = permByInstance.get(id);
@@ -236,7 +248,7 @@ export function createSharedHelpers(pc: PrimitivesContext) {
     opts?: { silent?: boolean; byEffectSeat?: Seat },
   ): Promise<CardInstance[]> => {
     instanceIds = filterLockedStackReturns(instanceIds, opts?.byEffectSeat ?? effectSeatStack.at(-1));
-    instanceIds = await filterBouncePrevented(instanceIds);
+    instanceIds = await filterBouncePrevented(instanceIds, "hand");
     // Preserve the ordinary pre-move bounce reaction window. A replacement may move the
     // selected top card into another permanent, so bind each selection to its original permanent
     // and revalidate that identity before detaching. Unlike a whole-permanent bounce, the

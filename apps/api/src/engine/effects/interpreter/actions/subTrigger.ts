@@ -8,7 +8,7 @@ import { runAction } from "../dispatch.js";
 import { trashDelaySource } from "../optionTrash.js";
 import { unsupported } from "../errors.js";
 import { quotedGrantedClause, soleLinkingClause, triggerLabel } from "../describe.js";
-import { DefinitionFacts, definitionHasKeyword, definitionMatches, matchNameOrTrait } from "../matching/definition.js";
+import { DefinitionFacts, definitionMatches, matchNameOrTrait } from "../matching/definition.js";
 import { matchingSubjectPermanentIds, subjectMatchesFilter, triggerAddedSecurityMatches } from "../matching/trigger.js";
 import { isPermanentUnaffectable, permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
 import { candidatePermanents, resolvePermanentTargets } from "../targeting/permanents.js";
@@ -838,19 +838,13 @@ export async function runSubTrigger(
           const def = subCtx.game.definitionOf({ cardId } as never);
           return definitionMatches(action.effectSourceFilter!, def as DefinitionFacts);
         };
-  // Some effect-driven events are caused specifically by a keyword ability (EX4-032/033/034:
-  // "when <Alliance> suspends ..."). The suspension seam carries the resolving effect's card
-  // identity as `byEffectCardId`; inspect its printed keyword text rather than the suspended
-  // subject, whose own abilities are unrelated to the event cause.
+  // Match the effect that caused the event, not the source card's printed abilities.
+  // Alliance can be granted or inherited; an unrelated effect on an Alliance card
+  // must not activate "when Alliance suspends" watchers.
   const bySourceKeywordGate =
     action.bySourceKeyword === undefined
       ? undefined
-      : (subCtx: EffectContext): boolean => {
-          const cardId = subCtx.trigger?.byEffectCardId;
-          if (cardId === undefined) return false;
-          const def = subCtx.game.definitionOf({ cardId } as never);
-          return definitionHasKeyword(def, action.bySourceKeyword!);
-        };
+      : (subCtx: EffectContext): boolean => subCtx.trigger?.byEffectKeyword === action.bySourceKeyword;
   // `triggerFilter` on an `onAddDigivolutionCards` watcher (LANE-F-15, BT20-080/BT21-080):
   // restricts WHICH permanent's digivolution-card additions fire this watcher. The event's
   // `subjectPermanentId` is the RECEIVER permanent (the Digimon whose stack grew). Gate on that
@@ -1440,6 +1434,7 @@ export async function runGainTriggeredEffect(
   const targetIds = await resolvePermanentTargets(ctx, action.target, { preserveUnaffectableSelection: true });
   const attacksAtStartOfMainPhase =
     action.gainedTrigger === "StartOfYourMainPhase" && action.gainedActions.some((gained) => gained.kind === "Attack");
+  const forcedAttackClause = "[Start of Your Main Phase] This Digimon attacks.";
   const grantingSeat = ctx.source.ownerSeat;
   const grantingKinds = (ctx.effectSourceKinds ?? effectProvenanceKinds(ctx)).filter(
     (kind) => kind === "Digimon" || kind === "Option",
@@ -1534,7 +1529,10 @@ export async function runGainTriggeredEffect(
             printedClause: `[Granted] ${triggerLabel(action.gainedTrigger)}: ${ctx.source.definition.nameEn}`,
           }),
       ...(matches ? { matches } : {}),
-      ...(grantedPermanentDeletionGate !== undefined ? { watchesSelf: true } : {}),
+      // A gained [On Deletion] activates after the recipient and its stack reach
+      // trash (CR 15-13-3), alongside the ordinary deletion effects. watchesSelf
+      // instead denotes a "when this Digimon is deleted" reaction that runs before
+      // leave prevention (Q2212); using it here makes stack cards unavailable.
       ...(expiresOnTurnEndOf !== undefined ? { expiresOnTurnEndOf } : {}),
       ...(attacksAtStartOfMainPhase
         ? {
@@ -1545,11 +1543,17 @@ export async function runGainTriggeredEffect(
             // This clause belongs to the effect granted onto the recipient, not to the
             // recipient's own printed text. The client strips the marker and presents the
             // supplied clause beside the recipient instead of looking it up on the wrong card.
-            printedClause: "[Granted] [Start of Your Main Phase] This Digimon attacks.",
+            printedClause: `[Granted] ${forcedAttackClause}`,
           }
         : {}),
       description: action.raw ?? `GainTriggeredEffect(${action.gainedTrigger}) on ${targetPermanentId}`,
       run: async (subCtx) => {
+        // The target prompt belongs to the recipient's granted effect. Subscription
+        // labels alone do not reach decisions opened by its nested Attack action.
+        if (attacksAtStartOfMainPhase) {
+          subCtx.activeTiming = "[Start of Your Main Phase]";
+          subCtx.activeEffectText = forcedAttackClause;
+        }
         for (const a of gainedActions) {
           const abort = await runAction(subCtx, a);
           if (abort) break;

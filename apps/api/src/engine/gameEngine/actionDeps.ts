@@ -1,4 +1,4 @@
-import { EffectTiming, type CardInstance, type ServerEvent } from "@aegis/shared";
+import { EffectTiming, type CardDefinition, type CardInstance, type Permanent, type ServerEvent } from "@aegis/shared";
 import { rollTurnActivity } from "../turnActivity.js";
 import { lookupDefinition, definitionOf, isDigimon, intrinsicDigivolutionCostReduction } from "../cards/cardData.js";
 import { type IntentRouterDeps } from "../intentRouter.js";
@@ -53,6 +53,7 @@ import {
   wouldBePlayedRuleTrashMaterials,
 } from "./timing.js";
 import {
+  prepareOptionUsed,
   nestedTriggerSourceStillResident,
   parkedEntryCollected,
   pendingWindowCollected,
@@ -681,6 +682,7 @@ export function playCardDeps(engine: GameEngine): PlayCardDeps {
         engine.optionResolutionDepth = Math.max(0, engine.optionResolutionDepth - 1);
       }
     },
+    prepareOptionUsed: (usedInstanceId, usedOptionCost) => prepareOptionUsed(engine, usedInstanceId, usedOptionCost),
     fireOptionUsed: async (usedInstanceId, usedOptionCost) =>
       engine.primitives.fireOptionUsed(usedInstanceId, usedOptionCost),
     // CR §4-19 Arts Digivolve (Task 4): a rule on DUAL cards, not a per-card effect —
@@ -898,11 +900,17 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
  */
 export function assemblyDeps(engine: GameEngine): AssemblyDeps {
   const mem = memoryDepsFromGauge(engine.memory);
+  const play = playCardDeps(engine);
   return {
     maxAffordable: mem.maxAffordable,
     payMemory: mem.payMemory,
     adjustedPlayCost: (_state, seat, definition, base) =>
       engine.modifiers.playCostFor({ def: definition, controllerSeat: seat }, base),
+    canReducePlayCost: (_state, seat) => !engine.continuous.blocksCostReduction(seat, "play"),
+    finalizePlayCost: play.finalizePlayCost,
+    hasBeforePayCost: play.hasBeforePayCost,
+    minimumDeferredPlayCost: play.minimumDeferredPlayCost,
+    placePendingDigivolution: play.placePendingDigivolution,
     nextPermanentId: () => nextPermanentId(engine),
     placeUnder: (targetPermanentId, instanceIds) => engine.primitives.placeUnder(targetPermanentId, instanceIds),
     fireTiming: async (_state, _seat, timing, sourceInstanceId) =>
@@ -963,6 +971,23 @@ export function linkCardDeps(engine: GameEngine): LinkCardDeps {
   };
 }
 
+/** A field DNA material as its current colors, DNA level and names present it (CR 8-2). */
+export function effectiveDnaMaterialDefinition(
+  engine: GameEngine,
+  material: Permanent,
+  result: CardDefinition,
+): CardDefinition {
+  const printed = lookupDefinition(material.topCard!.cardId)!;
+  const effectiveLevel = engine.continuous.dnaLevelFor(material.permanentId, result);
+  const names = effectiveNames(engine.continuous, material, printed.nameEn ?? printed.cardId);
+  return {
+    ...printed,
+    colors: effectiveColors(engine.continuous, material.permanentId, printed.colors) as typeof printed.colors,
+    ...(effectiveLevel === undefined ? {} : { level: effectiveLevel }),
+    nameEn: names.join(" | "),
+  };
+}
+
 /** Main DNA requires printed DNA requirements; effect-driven DNA keeps its separate cost rules. */
 export function dnaDigivolveDeps(engine: GameEngine): DnaDigivolveDeps {
   const mem = memoryDepsFromGauge(engine.memory);
@@ -970,17 +995,7 @@ export function dnaDigivolveDeps(engine: GameEngine): DnaDigivolveDeps {
     maxAffordable: mem.maxAffordable,
     matchingCost: (definition, materials) => matchingDnaDigivolveCost(definition, materials),
     effectiveMaterialDefinitions: (_state, materials, definition) =>
-      materials.map((material) => {
-        const printed = lookupDefinition(material.topCard!.cardId)!;
-        const effectiveLevel = engine.continuous.dnaLevelFor(material.permanentId, definition);
-        const names = effectiveNames(engine.continuous, material, printed.nameEn ?? printed.cardId);
-        return {
-          ...printed,
-          colors: effectiveColors(engine.continuous, material.permanentId, printed.colors) as typeof printed.colors,
-          ...(effectiveLevel === undefined ? {} : { level: effectiveLevel }),
-          nameEn: names.join(" | "),
-        };
-      }),
+      materials.map((material) => effectiveDnaMaterialDefinition(engine, material, definition)),
     adjustedCost: (_state, materials, definition, printedCost) => {
       let cost = printedCost;
       const target = materials[0];

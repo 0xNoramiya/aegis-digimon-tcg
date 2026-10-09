@@ -1,12 +1,69 @@
 import { profileReplayIt } from "./profileReplays";
 import { replayIt } from "./replays";
+import releaseMessages from "../releases/messages.json";
 import { en } from "./en";
 
-// Historical release notes keep their published English text. All interface
+// Release notes before v1.19.0 keep their published English text. All interface
 // messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
   ...profileReplayIt,
   ...replayIt,
+  "feedback.title": "Feedback dei giocatori",
+  "feedback.subtitle": "Segnalazioni inviate da Aegis, dalle più recenti.",
+  "feedback.restricted": "Solo gli amministratori possono vedere i feedback.",
+  "feedback.error": "Impossibile caricare i feedback. Prova ad aggiornare.",
+  "feedback.empty": "Nessun feedback in questa pagina.",
+  "feedback.refresh": "Aggiorna",
+  "feedback.page": "Pagina {page}",
+  "feedback.pagination": "Pagine dei feedback",
+  "feedback.newer": "Più recenti",
+  "feedback.older": "Più vecchi",
+  "feedback.anonymous": "Giocatore anonimo",
+  "feedback.context": "Dettagli tecnici",
+  "feedback.match": "ID della partita",
+  "feedback.version": "Versione",
+  "feedback.client": "Client",
+  "feedback.server": "Server",
+  "feedback.browser": "Browser",
+  "feedback.github": "Apri issue #{number} su GitHub",
+  "feedback.mirror.pending": "In attesa di conferma",
+  "feedback.mirror.sent": "Inviato",
+  "feedback.mirror.failed": "Copia non riuscita; feedback salvato",
+  "feedback.mirror.disabled": "Copia disattivata",
+
+  "deckFormat.label": "Regole",
+  "deckFormat.title": "Carte e regole",
+  "deckFormat.pool": "Carte fino a",
+  "deckFormat.allSets": "Tutte le espansioni",
+  "deckFormat.allSetsShort": "Tutti",
+  "deckFormat.pauperShort": "Pauper C/U",
+  "redesign.decks.editor.expandSheet": "Espandi pannello del mazzo",
+  "redesign.decks.editor.collapseSheet": "Riduci pannello del mazzo",
+  "redesign.decks.editor.openSheet": "Vedi mazzo",
+  "redesign.decks.editor.closeSheet": "Chiudi pannello del mazzo",
+  "deckFormat.poolHint": "Carte fino a {set}.",
+  "deckFormat.allSetsHint": "Tutte le espansioni disponibili.",
+  "deckFormat.banlistHint": "Lista restrizioni: {date}.",
+  "deckFormat.banlistTitle": "Lista restrizioni · {date}",
+  "deckFormat.banlistEmpty": "Nessuna carta vietata o limitata in questa data.",
+  "deckFormat.banlistBanned": "Vietata",
+  "deckFormat.banlistLimited": "Limite {count}",
+  "deckFormat.banlistPairs": "Combinazioni vietate",
+  "deckFormat.noBanlist": "Senza restrizioni; restano i limiti stampati.",
+  "deckFormat.rarityHint": "Solo Comuni e Non Comuni, inclusi Digi-Uova.",
+  "deckFormat.current": "attuale",
+  "deckFormat.standard": "Standard",
+  "deckFormat.pauper": "Pauper · C / U",
+  "deckFormat.historical": "Espansioni storiche",
+  "deckFormat.snapshot":
+    "Carte fino a {set} · Lista restrizioni: {date}. Include espansioni precedenti, starter e promo idonee.",
+  "deckFormat.pauperHint":
+    "Solo carte Comuni e Non Comuni, incluse le Digi-Uova. Si applica la lista restrizioni attuale.",
+  "deckFormat.unlimitedHint": "Tutte le carte con i limiti stampati. Nessuna lista restrizioni.",
+  "deckFormat.standardHint": "Tutte le carte con la lista restrizioni attuale.",
+  "deckFormat.outside": "Fuori da questo formato",
+  "deckFormat.violations":
+    "{count} carta/e di questo mazzo sono fuori dal formato selezionato. Rimuovile o cambia formato.",
   "game.leaveConfirmTitle": "Lasciare questa partita?",
   "game.leaveConfirmBody": "Se esci, la partita termina e conta come una sconfitta.",
   "library.japaneseArt": "{label}, edizione giapponese",
@@ -42,6 +99,9 @@ const interfaceMessages = {
   "settings.sortHand": "Ordina la mano",
   "settings.sortHandDesc":
     "Ordina la mano attuale per livello dei Digimon, poi Tamer e Option. Le nuove carte restano in fondo finché non ordini di nuovo.",
+  "settings.autoHatch": "Schiusa automatica",
+  "settings.autoHatchDesc":
+    "Schiude automaticamente un Digi-Uovo durante la tua fase di allevamento quando l’area è vuota. Salvato nel tuo account.",
   "settings.handAutoSort": "Mantieni la mano ordinata",
   "settings.handAutoSortDesc":
     "Riordina la mano ogni volta che una carta entra o esce: Digimon per livello, poi Tamer, poi Option, dal costo più basso. Le carte che trascini restano al loro posto finché la mano non cambia.",
@@ -544,6 +604,13 @@ const interfaceMessages = {
   "game.emptySlot": "vuoto",
   "game.selectCard": "Seleziona {card}",
   "game.opponentIsSelecting": "L'avversario sta selezionando le carte.",
+  "game.opponentIsResponding": "L'avversario sta facendo una scelta di combattimento.",
+  "game.opponentIsThinking": "L'avversario sta pensando…",
+  "game.opponentIsTargeting": "L'avversario sta scegliendo i bersagli.",
+  "game.opponentIsDecidingEffect": "L'avversario sta decidendo se usare un effetto.",
+  "game.opponentIsOrdering": "L'avversario sta scegliendo l'ordine degli effetti.",
+  "game.opponentIsChoosingOption": "L'avversario sta scegliendo un'opzione.",
+  "game.opponentIsMulligan": "L'avversario sta decidendo se pescare una nuova mano.",
   "game.pickCard": "Scegli {card}",
   "game.pickPosition": "scegli {position}",
   "game.inspectCard": "Leggi {card}",
@@ -818,6 +885,7 @@ const interfaceMessages = {
   "overlay.confirmTargets": "Conferma i bersagli",
   "overlay.activatePartitionPrompt": "Vuoi attivare Partition?",
   "overlay.activateBlitzPrompt": "Vuoi attivare Blitz?",
+  "overlay.digivolveHostPrompt": "Scegli la carta che digievolverà.",
   "overlay.attackAlreadyResolving": "Non puoi iniziare un altro attacco mentre questo attacco è in corso.",
   "overlay.deckTop": "Cima del mazzo",
   "overlay.deckBottom": "Fondo del mazzo",
@@ -1483,9 +1551,10 @@ const interfaceMessages = {
   "account.avatar.error": "Impossibile salvare l'avatar. Riprova.",
   "bugReport.button": "Invia un feedback",
   "bugReport.title": "Invia un feedback",
-  "bugReport.notice.signed": "Diventerà una issue pubblica su GitHub con il tuo nome. Scrivi in inglese.",
+  "bugReport.notice.signed":
+    "Il feedback verrà salvato con il tuo nome e potrà essere pubblicato su GitHub. Scrivi in inglese.",
   "bugReport.notice.anonymous":
-    "Diventerà una issue pubblica su GitHub. Scrivi in inglese e accedi prima se vuoi ricevere una risposta.",
+    "Il feedback verrà salvato e potrà essere pubblicato su GitHub. Scrivi in inglese e accedi prima se vuoi una risposta.",
   "bugReport.kindLabel": "Tipo",
   "bugReport.kind.bug": "Bug",
   "bugReport.kind.improvement": "Miglioramento",
@@ -1514,8 +1583,7 @@ const interfaceMessages = {
   "bugReport.submit": "Invia",
   "bugReport.submitting": "Invio…",
   "bugReport.success": "Feedback inviato",
-  "bugReport.successDescription": "Grazie. Ora è una issue su GitHub.",
-  "bugReport.successLink": "Apri la issue #{number}",
+  "bugReport.successDescription": "Grazie. Il team lo esaminerà.",
   "bugReport.error.emptySummary": "Aggiungi un titolo di una riga.",
   "bugReport.error.summaryTooLong": "Il titolo è troppo lungo. Limitati a una riga.",
   "bugReport.error.emptyDescription": "Aggiungi dei dettagli prima di inviare.",
@@ -1619,6 +1687,8 @@ const interfaceMessages = {
   "redesign.play.draft": "Bozza",
   "redesign.play.banlistIssue": "Violazione della banlist",
   "redesign.play.setupTitle": "Configurazione della partita",
+  "redesign.play.advancedSettings": "Impostazioni avanzate",
+  "redesign.play.timerOff": "Timer disattivato",
   "redesign.play.short.queue": "Coda",
   "redesign.play.short.bot": "Gioca",
   "redesign.play.short.reopen": "Riapri",
@@ -1836,4 +1906,8 @@ const interfaceMessages = {
   "overlay.series.reason.aborted": "Impossibile avviare la prossima partita.",
 } satisfies Record<Exclude<keyof typeof en, `releases.${string}`>, string>;
 
-export const it: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+const releaseTranslations = Object.fromEntries(
+  Object.entries(releaseMessages).flatMap(([key, message]) => ("it" in message ? [[key, message.it]] : [])),
+);
+
+export const it: Record<keyof typeof en, string> = { ...en, ...interfaceMessages, ...releaseTranslations };
