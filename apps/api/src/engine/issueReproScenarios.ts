@@ -26,6 +26,18 @@ type Layout = { players: readonly [PlayerLayout, PlayerLayout]; memory?: number 
 
 // Reduced boards for reported issues. Each runs in the ordinary turn loop.
 const ISSUE_LAYOUTS = {
+  "arena-github-5431-yao-suspend-without-placement": {
+    memory: 3,
+    players: [
+      {
+        field: [{ card: "BT22-096" }, { card: "BT19-082" }, { card: "BT24-029" }],
+        hand: ["BT22-027"],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      { security: Array(3).fill("BT1-009"), deck: Array(12).fill("BT1-009") },
+    ],
+  },
   "arena-github-5428-megakabuterimon-insectoid": {
     memory: 6,
     players: [

@@ -27,6 +27,26 @@ async function passToOpponentMain(s: Awaited<ReturnType<typeof start>>["s"]) {
   await advance(s.engine).waitForMainPhase(1);
 }
 
+it("GitHub #5431: Yao Qinglan pays its By-cost with nothing to place, and Poseidia Lagoon answers", async () => {
+  const { s, loop } = await start("arena-github-5431-yao-suspend-without-placement");
+  try {
+    const human = s.state.players[0]!;
+    const [lagoon, yao, whamon] = human.battleArea;
+    expect(
+      s.engine.applyIntent(0, { type: "attack", attackerPermanentId: whamon!.permanentId, target: { kind: "player" } }),
+    ).toEqual({ ok: true });
+    await settle(() => !observe(s.engine).isAttacking() && s.state.pendingDecision === undefined);
+    expect(yao!.isSuspended).toBe(true);
+    expect(whamon!.topCard.cardId).toBe("BT22-027");
+    expect(s.state.memory).toBe(3);
+    expect(human.trash.some((card) => card.instanceId === lagoon!.topCard.instanceId)).toBe(true);
+    assertNoLoudGap(s);
+  } finally {
+    s.engine.applyIntent(0, { type: "surrender" });
+    await loop;
+  }
+});
+
 it("GitHub #5428: MegaKabuterimon digivolves onto [Insectoid] trait Lv.4s for its alternate cost 3", async () => {
   const { s, loop } = await start("arena-github-5428-megakabuterimon-insectoid");
   try {

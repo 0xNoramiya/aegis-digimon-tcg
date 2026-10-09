@@ -1,5 +1,26 @@
 import { test, expect } from "./scenario-page";
 
+test("GitHub #5431: Yao Qinglan suspends with nothing to place and Poseidia Lagoon digivolves", async ({
+  scenario,
+}) => {
+  await scenario.open("arena-github-5431-yao-suspend-without-placement");
+  await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
+  await scenario.attack("arena-github-5431-yao-suspend-without-placement-0-field-2");
+  await scenario.resolveUntil(
+    (s) =>
+      s.players[0]!.battleArea.some((p) => p.topCard.cardId === "BT22-027") &&
+      !s.pendingDecision &&
+      !s.combatWindow &&
+      s.players[1]!.securityCount === 2,
+    (d) => (d.kind === "selectCards" || d.kind === "chooseTargets" ? { cardId: "BT22-027" } : {}),
+  );
+  const final = await scenario.snapshot();
+  const yao = final.players[0]!.battleArea.find((p) => p.topCard.cardId === "BT19-082")!;
+  expect(yao.isSuspended).toBe(true);
+  expect(final.memory).toBe(3);
+  await scenario.healthy();
+});
+
 test("GitHub #5428: MegaKabuterimon offers and pays its [Insectoid] trait cost 3", async ({ scenario }) => {
   const { page } = scenario;
   await scenario.open("arena-github-5428-megakabuterimon-insectoid");
