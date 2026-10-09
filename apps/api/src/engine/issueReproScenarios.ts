@@ -26,6 +26,30 @@ type Layout = { players: readonly [PlayerLayout, PlayerLayout]; memory?: number 
 
 // Reduced boards for reported issues. Each runs in the ordinary turn loop.
 const ISSUE_LAYOUTS = {
+  "arena-github-5428-megakabuterimon-insectoid": {
+    memory: 6,
+    players: [
+      {
+        field: [{ card: "BT15-047" }, { card: "BT26-041" }],
+        hand: ["P-140", "P-140"],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      { security: Array(3).fill("BT1-009"), deck: Array(12).fill("BT1-009") },
+    ],
+  },
+  "arena-github-5423-knightmon-opponent-attack": {
+    memory: 3,
+    players: [
+      {
+        field: [{ card: "BT1-062", under: ["P-111"] }],
+        hand: ["BT2-054"],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      { field: [{ card: "BT1-019" }], security: Array(3).fill("BT1-009"), deck: Array(12).fill("BT1-009") },
+    ],
+  },
   "arena-github-5374-up-to-four-trash": {
     memory: 5,
     players: [

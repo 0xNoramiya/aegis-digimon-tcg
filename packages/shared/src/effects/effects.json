@@ -198309,7 +198309,7 @@
           {
             "kind": "SubTrigger",
             "event": "whenAttacking",
-            "sourceFilter": { "controllerDefault": "mine", "excludeSelf": true, "kind": ["Digimon"] },
+            "sourceFilter": { "excludeSelf": true, "kind": ["Digimon"] },
             "actions": [
               {
                 "kind": "PlayWithoutCost",
@@ -199872,7 +199872,7 @@
     ],
     "coverage": "full",
     "residual": [],
-    "digivolutionRequirement": [{ "level": 4, "names": ["Insectoid"], "cost": 3, "isAlternate": true }]
+    "digivolutionRequirement": [{ "level": 4, "traits": ["Insectoid"], "cost": 3, "isAlternate": true }]
   },
   "P-141": {
     "effects": [

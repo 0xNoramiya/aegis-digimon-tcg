@@ -97550,7 +97550,7 @@
     "forms": ["Ultimate"],
     "attributes": ["Data"],
     "types": ["Insectoid"],
-    "effectText": "[Digivolve]Lv.4 w/[Insectoid] in its name: Cost 3 \n\n＜Evade＞ \n[All Turns] While this Digimon is suspended, it isn’t affected by the effects of your opponent's Digimon.",
+    "effectText": "[Digivolve]Lv.4 w/[Insectoid] trait: Cost 3 \n\n＜Evade＞ \n[All Turns] While this Digimon is suspended, it isn’t affected by the effects of your opponent's Digimon.",
     "inheritedEffectText": "[All Turns] [Once Per Turn] When this Digimon deletes an opponent's Digimon in battle, trash the top card of your opponent's security stack.",
     "rarity": "P",
     "maxCountInDeck": 4,

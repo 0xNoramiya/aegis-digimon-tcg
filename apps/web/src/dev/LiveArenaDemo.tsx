@@ -97,6 +97,14 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Evolua ZeigGreymon para Shoutmon X7 por 2 via Blue Flare. Recuse efeitos opcionais. Fontes mantêm ordem; memória 8.",
   },
 
+  "arena-github-5428-megakabuterimon-insectoid": {
+    en: "Digivolve MegaKabuterimon onto Kabuterimon and choose the [Insectoid] trait cost 3: memory 6 → 3. Hudiemon offers the same cost 3 path.",
+    ptBR: "Evolua MegaKabuterimon sobre Kabuterimon e escolha o custo 3 do traço [Insectoid]: memória 6 → 3. Hudiemon oferece o mesmo custo 3.",
+  },
+  "arena-github-5423-knightmon-opponent-attack": {
+    en: "End your turn. When the opponent's Agumon attacks, accept Knightmon's inherited effect and play Gotsumon. Block with Gotsumon: no security card is checked.",
+    ptBR: "Termine o turno. Quando o Agumon oponente atacar, aceite o efeito herdado de Knightmon e jogue Gotsumon. Bloqueie com Gotsumon: nenhuma carta de segurança é verificada.",
+  },
   "arena-github-5408-ruin-mode-hatch": {
     en: "End breeding without hatching. Attack with Ruin Mode; delete the opposing Digimon, recover, and hatch the egg while Tai remains in play.",
     ptBR: "Termine a criação sem chocar. Ataque com Ruin Mode; exclua o Digimon oponente, recupere e choque o ovo enquanto Tai permanece em campo.",
@@ -2622,6 +2630,8 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-github5421-skullmammoth-hand", "GitHub #5421 · SkullMammothmon in hand"],
   ["arena-github5421-skullmammoth-field", "GitHub #5421 · SkullMammothmon in battle"],
 
+  ["arena-github-5423-knightmon-opponent-attack", "#5423 · Knightmon on an opposing attack"],
+  ["arena-github-5428-megakabuterimon-insectoid", "#5428 · MegaKabuterimon Insectoid cost"],
   ["arena-github-5408-ruin-mode-hatch", "#5408 · Ruin Mode recovery and hatch"],
   ["arena-github-5372-progress-protection", "#5372 · Progress protection control"],
   ["arena-growlmon-deletion-5361", "#5361 Growlmon X · security deletion / stack Guilmon"],

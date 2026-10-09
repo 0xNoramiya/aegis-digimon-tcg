@@ -7,6 +7,7 @@ import { observe } from "../../engine/testkit/observe.js";
 import "./P-111.js";
 import "../BT1/BT1-045.js";
 import "../BT1/BT1-051.js";
+import "../BT2/BT2-054.js";
 
 describe("P-111 Knightmon", () => {
   it("gives exactly one opposing Digimon -3000 DP per allied Digimon", async () => {
@@ -162,6 +163,40 @@ describe("P-111 Knightmon — KB Q&A rulings", () => {
     const targetChoice = s.decisions.find(({ req }) => req.kind === "chooseTargets");
     expect(targetChoice?.req.options?.max).toBe(1);
     expect([s.perm("first").currentDP, s.perm("second").currentDP].sort((a, b) => a - b)).toEqual([8000, 11000]);
+    assertNoLoudGap(s);
+  });
+});
+
+describe("P-111 Knightmon — opposing attacks", () => {
+  it("plays a level 3 Blocker before blocker timing when an opposing Digimon attacks (GitHub #5423)", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: "BT1-019", as: "attacker" }], security: ["BT1-009"] },
+        1: {
+          battleArea: [{ card: "BT1-062", as: "host", under: [{ card: "P-111", as: "source" }] }],
+          hand: [{ card: "BT2-054", as: "gotsumon" }],
+          security: ["BT1-009", "BT1-010"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some((event) => event.kind === "blockWindowOpened"));
+    const gotsumon = s.state.players[1]!.battleArea.find((p) => p.topCard.instanceId === s.inst("gotsumon").instanceId);
+    expect(gotsumon).toBeDefined();
+    expect(s.engine.applyIntent(1, { type: "declareBlock", blockerPermanentId: gotsumon!.permanentId })).toEqual({
+      ok: true,
+    });
+    await settle(() => !observe(s.engine).isAttacking() && s.state.pendingDecision === undefined);
+    expect(s.events.some((event) => event.kind === "securityChecked")).toBe(false);
+    expect(s.state.players[1]!.security).toHaveLength(2);
     assertNoLoudGap(s);
   });
 });

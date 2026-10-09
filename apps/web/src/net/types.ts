@@ -60,6 +60,8 @@ export interface AegisJoinOptions {
     | "arena-github5420-omnimon-gallantmon"
     | "arena-github5421-skullmammoth-hand"
     | "arena-github5421-skullmammoth-field"
+    | "arena-github-5423-knightmon-opponent-attack"
+    | "arena-github-5428-megakabuterimon-insectoid"
     | "arena-github-5408-ruin-mode-hatch"
     | "arena-github-5372-progress-protection"
     | "arena-github5326-sistermon-zero-security"
