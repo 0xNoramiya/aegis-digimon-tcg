@@ -7,7 +7,6 @@ import { describeSync, syncCardImages } from "./card-images.mjs";
 import { FIXED_SLOTS, isDeploymentSlot, readManifest, validateManifest, assertEmptySlot } from "./shared.mjs";
 import { API_MEMORY_MIB, REDIS_MEMORY_MIB, sampleHostCapacity, waitForHostCapacity } from "./resources.mjs";
 import { retainArtifacts } from "./retention.mjs";
-import { readReplayStorageEnvironment } from "./replay-storage.mjs";
 
 // Reserve the new services' full limits plus headroom for builds and host services.
 const OVERFLOW_REQUIRED_KIB = (3 * API_MEMORY_MIB + REDIS_MEMORY_MIB + 2048) * 1024;
@@ -275,6 +274,8 @@ export async function controller({
         `VITE_AEGIS_PUBLIC_VERSION=${publicVersion ?? "development"}`,
         "--build-arg",
         "VITE_AEGIS_DEPLOYMENT_MODE=slots",
+        "--build-arg",
+        `VITE_GOOGLE_CLIENT_ID=${config.services.web?.build?.args?.VITE_GOOGLE_CLIENT_ID ?? ""}`,
         "-t",
         `aegis-static:${webRevision}`,
         "-f",
@@ -509,10 +510,7 @@ export async function controller({
     });
     await checkCapacity("before-build");
     const config = await composeConfig();
-    const apiEnvironment = {
-      ...restoreComposeEnvironment(config.services.api.environment),
-      ...readReplayStorageEnvironment(state),
-    };
+    const apiEnvironment = restoreComposeEnvironment(config.services.api.environment);
     if (existsSync(`${source}/package.json`)) {
       apiEnvironment.AEGIS_PUBLIC_VERSION = JSON.parse(readFileSync(`${source}/package.json`, "utf8")).version;
     }

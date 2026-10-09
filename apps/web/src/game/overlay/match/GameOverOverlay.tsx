@@ -5,7 +5,7 @@ import { useTranslation } from "../../../i18n";
 import { gameOverSplash, type GameOverOutcome } from "../../gameOverSplash";
 import type { SeriesView } from "../../seriesModel";
 import { SeriesNextGame, SeriesScore } from "./SeriesStatus";
-import { ReplaySaveButton, type ReplaySaveProps } from "../../../replays/ReplaySaveButton";
+import { ReplaySavePrompt, type ReplaySaveProps } from "../../../replays/ReplaySavePrompt";
 
 /** The best-of-three this game belongs to, for a seated player. */
 export interface SeriesResultProps {
@@ -90,9 +90,9 @@ function placeBar(bar: HTMLElement): BarPlacement | undefined {
 export function GameOverOverlay({
   spectatorResult,
   onDownloadReplay,
+  replayFile,
   replayStatus,
-  onSaveReplay,
-  replaySave,
+  signedIn,
   result,
   reason,
   stats,
@@ -103,8 +103,6 @@ export function GameOverOverlay({
   series,
 }: ReplaySaveProps & {
   spectatorResult?: string;
-  onDownloadReplay?: () => void;
-  replayStatus?: "preparing" | "unavailable";
   result: GameOverOutcome;
   reason: string;
   stats: { value: number | string; label: string }[];
@@ -217,23 +215,13 @@ export function GameOverOverlay({
             </Button>
           </div>
         )}
-        {onDownloadReplay || replayStatus ? (
-          <div className="game-result__replay">
-            <Icons.PlayCircle size={28} />
-            <div className="game-result__replay-copy">
-              <strong>{t("replay.match")}</strong>
-              <small>{t("replay.saveHint")}</small>
-            </div>
-            {onDownloadReplay ? (
-              <Button size="sm" icon={Icons.Download} onClick={onDownloadReplay}>
-                {t("replay.download")}
-              </Button>
-            ) : (
-              <small role="status">{t(replayStatus === "preparing" ? "replay.preparing" : "replay.unavailable")}</small>
-            )}
-          </div>
-        ) : null}
-        <ReplaySaveButton onSaveReplay={onSaveReplay} replaySave={replaySave} />
+        <ReplaySavePrompt
+          onDownloadReplay={onDownloadReplay}
+          replayFile={replayFile}
+          replayStatus={replayStatus}
+          signedIn={signedIn}
+          keepsMatchOpen={seriesRunning}
+        />
         <Button
           className="game-result__view-board"
           variant="ghost"

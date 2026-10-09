@@ -37,6 +37,7 @@ import { setHandAutoSortEnabled, useHandAutoSort } from "../game/handAutoSort";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../game/noticeDuration";
 import { LOCALES, LOCALE_LABELS, useTranslation, type TranslationKey } from "../i18n";
 import type { RemoteAccount } from "../account/client";
+import { CloudReplaySettings } from "../replays/cloud/CloudReplaySettings";
 import "./settings.css";
 
 const TEXT_SCALE_LABELS: Record<TextScale, TranslationKey> = {
@@ -99,13 +100,16 @@ export function Settings({
         </Panel>
 
         <div className="settings-grid">
-          <section className="settings-card settings-card--profile" aria-labelledby="settings-profile-title">
-            <SectionHeading id="settings-profile-title" title={t("redesign.settings.profile")} />
-            <p>{t("profile.previewHint")}</p>
-            <a className="settings-profile-link" href="/profile/customize">
-              {t("profile.customize")} →
-            </a>
-          </section>
+          <div className="settings-column settings-column--side">
+            <section className="settings-card settings-card--profile" aria-labelledby="settings-profile-title">
+              <SectionHeading id="settings-profile-title" title={t("redesign.settings.profile")} />
+              <p>{t("profile.previewHint")}</p>
+              <a className="settings-profile-link" href="/profile/customize">
+                {t("profile.customize")} →
+              </a>
+            </section>
+            <CloudReplaySettings />
+          </div>
 
           <section className="settings-card settings-card--appearance" aria-labelledby="settings-appearance-title">
             <SectionHeading id="settings-appearance-title" title={t("settings.sectionAppearance")} />

@@ -5,24 +5,37 @@ import type { SequencedServerEvent } from "./protocol/events.js";
 export const REPLAY_CHANNEL = "replay";
 export const REPLAY_FORMAT_VERSION = 1;
 export const MAX_REPLAY_BYTES = 32 * 1024 * 1024;
-export const MAX_SAVED_REPLAYS = 10;
-export const REPLAY_SAVE_CHANNEL = "replaySave";
-/** Compressed file bound for account storage; larger files can still be downloaded. */
-export const MAX_SAVED_REPLAY_BYTES = 2 * 1024 * 1024;
-export const MAX_REPLAY_STORAGE_BYTES = 20 * 1000 * 1000 * 1000;
+/** Default and largest page of `GET /account/replays`. */
+export const REPLAY_PAGE_SIZE = 20;
+export const MAX_REPLAY_PAGE_SIZE = 50;
 
+/**
+ * One entry of the player's replay index. The file itself lives only in the player's Google
+ * Drive (`driveFileId`); the server keeps the metadata so every device can list the library.
+ */
 export interface SavedReplay {
   id: string;
+  matchId: string;
   summary: ReplaySummary;
   viewerSeat: Seat;
   bytes: number;
   savedAt: number;
-  status: "pending" | "ready" | "deleting";
+  driveFileId: string;
   visibility: "private" | "public";
 }
 
-export type ReplaySaveError = "sign_in" | "limit" | "size" | "unavailable" | "storage_full";
-export type ReplaySaveMessage = { kind: "saved"; replay: SavedReplay } | { kind: "failed"; reason: ReplaySaveError };
+export interface ReplayLibraryPage {
+  replays: SavedReplay[];
+  /** Present while older saved replays remain. */
+  nextCursor?: string;
+  /** The server can serve public replays from Drive; without it the share control is hidden. */
+  sharing: boolean;
+}
+
+/** `GET /replays/:id`: the owner reads the file from Drive with their own token; others use the proxy. */
+export interface SharedReplay extends SavedReplay {
+  owned: boolean;
+}
 
 /** Plain serialized state; consumers read fields and never call Schema methods. */
 export interface ReplayFrame {
@@ -56,7 +69,8 @@ export type ReplayDownloadMessage =
       kind: "ready";
       summary: ReplaySummary;
       viewerSeat: Seat;
-      canSave?: boolean;
+      /** The server-side index entry, sent only to a signed-in participant, so the client can attach its Drive copy. */
+      indexId?: string;
       /** gzip-compressed UTF-8 JSON, base64 encoded for the Colyseus channel. */
       data: string;
     }

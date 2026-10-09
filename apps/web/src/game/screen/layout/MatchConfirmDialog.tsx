@@ -11,6 +11,7 @@ export function MatchConfirmDialog({
   confirmLabel,
   cancelLabel,
   tone = "danger",
+  className,
   children,
   onConfirm,
   onClose,
@@ -22,13 +23,18 @@ export function MatchConfirmDialog({
   confirmLabel: string;
   cancelLabel?: string;
   tone?: "primary" | "danger";
+  className?: string;
   onConfirm: () => void;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
   const titleId = useId();
   return (
-    <Dialog className={`game-confirm-dialog game-confirm-dialog--${tone}`} labelledBy={titleId} onClose={onClose}>
+    <Dialog
+      className={`game-confirm-dialog game-confirm-dialog--${tone}${className ? ` ${className}` : ""}`}
+      labelledBy={titleId}
+      onClose={onClose}
+    >
       <span className="game-confirm-dialog__icon" aria-hidden="true">
         {icon}
       </span>

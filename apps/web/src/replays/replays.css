@@ -464,14 +464,6 @@
   font-size: 13px;
   line-height: 1.5;
 }
-.replay-library__count {
-  white-space: nowrap;
-  color: var(--ds-accent);
-  background: var(--ds-accent-soft);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-weight: 700;
-}
 .replay-library ul {
   list-style: none;
   padding: 0;
@@ -491,9 +483,13 @@
 }
 .replay-library__match {
   display: grid;
+  flex: 1;
   gap: 6px;
   min-width: 0;
   overflow-wrap: anywhere;
+}
+.replay-library__actions > a.aegis-button {
+  text-decoration: none;
 }
 .replay-library__match span,
 .replay-library__match small {
@@ -505,21 +501,6 @@
   flex-wrap: wrap;
   gap: 8px;
   flex: none;
-}
-.replay-save {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  margin-top: 12px;
-}
-.replay-save p {
-  margin: 0;
-  color: var(--ds-danger);
-  font-size: 12px;
-  line-height: 1.5;
-}
-.replay-save small {
-  color: var(--ds-text-2);
 }
 @media (max-width: 959px) {
   .aegis-screen-region--replays {
@@ -657,4 +638,37 @@
     top: 62px;
     right: 8px;
   }
+}
+
+.replay-library header > svg {
+  flex: none;
+  box-sizing: content-box;
+  padding: 8px;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-accent);
+  background: var(--ds-accent-soft);
+}
+.replay-cloud-library__connect {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+.replay-library__trash {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--ds-line);
+  border-radius: 12px;
+  background: var(--ds-fill);
+}
+.replay-library__trash p {
+  flex: 1 1 16rem;
+  margin: 0;
+}
+.replay-library > .aegis-button {
+  margin-top: 16px;
 }

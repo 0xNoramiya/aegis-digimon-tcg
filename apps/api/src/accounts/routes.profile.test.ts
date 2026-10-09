@@ -206,13 +206,7 @@ describe("/account/preferences", () => {
 it("links a recent match only to the authenticated owner's saved recording", async () => {
   const session = await harness.store.session(harness.cookie.split("=")[1]);
   const owner = session!.account;
-  const library = new ReplayLibrary(harness.store, {
-    async put() {},
-    async get() {
-      return Buffer.from("archive");
-    },
-    async remove() {},
-  });
+  const library = new ReplayLibrary(harness.store);
   const summary = {
     id: "recording-id",
     players: [owner.displayName, "Opponent"] as [string, string],
@@ -232,24 +226,25 @@ it("links a recent match only to the authenticated owner's saved recording", asy
     finishedAt: 2,
   });
   const other = await harness.store.accountForIdentity("email", "other-replay@test.invalid", "Other");
-  await library.save(other.id, {
-    kind: "ready",
+  const ready = (viewerSeat: 0 | 1) => ({
+    kind: "ready" as const,
     summary,
-    viewerSeat: 1,
+    viewerSeat,
     data: Buffer.from("archive").toString("base64"),
   });
+  const foreign = await library.record(other.id, ready(1));
+  await library.attachDrive(other.id, foreign, "foreignDriveFile01");
   const profile = () => fetch(`${harness.url}/account/profile`, { headers: { Cookie: harness.cookie } });
   expect(await (await profile()).json()).toMatchObject({ matches: [{ replay: null }] });
-  const saved = await library.save(owner.id, {
-    kind: "ready",
-    summary,
-    viewerSeat: 0,
-    data: Buffer.from("archive").toString("base64"),
-  });
+  const indexId = await library.record(owner.id, ready(0));
+  expect(await (await profile()).json()).toMatchObject({ matches: [{ replay: null }] });
+  await library.attachDrive(owner.id, indexId, "ownerDriveFile0001");
   const response = await profile();
   expect(response.headers.get("cache-control")).toContain("no-store");
-  expect(await response.json()).toMatchObject({ matches: [{ replay: { id: saved.id, visibility: "private" } }] });
-  await library.remove(owner.id, saved.id);
+  expect(await response.json()).toMatchObject({
+    matches: [{ replay: { id: indexId, driveFileId: "ownerDriveFile0001", visibility: "private" } }],
+  });
+  await library.remove(owner.id, indexId);
   expect(await (await profile()).json()).toMatchObject({ matches: [{ replay: null }] });
 });
 

@@ -1,13 +1,15 @@
 import { Component, useEffect, useRef, useState, type ReactNode } from "react";
-import type { MatchReplay } from "@aegis/shared";
-import { useTranslation } from "../i18n";
+import type { MatchReplay, SharedReplay } from "@aegis/shared";
+import { useTranslation, type TranslationKey } from "../i18n";
 import { Icons } from "../design/icons";
 import { CardFull } from "../design/cards";
 import { Button } from "../design/primitives";
 import { readReplay, ReplayFileError, type ReplayFileErrorCode } from "./files";
 import { ReplayPlayer } from "./ReplayPlayer";
 import { replayApi } from "./library";
-import { ReplayLibraryPanel } from "./ReplayLibraryPanel";
+import { cloudErrorKey, ReplayLibraryPanel } from "./ReplayLibraryPanel";
+import { useCloudReplays, withCloudSession } from "./cloud";
+import { DriveConnectCard } from "./cloud/DriveOnboarding";
 import "./replays.css";
 
 class ReplayRenderBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> {
@@ -24,15 +26,20 @@ export function ReplaysScreen({
   onViewingChange,
   replayId,
   onCloseLink,
+  signedIn = false,
 }: {
   onViewingChange?: (viewing: boolean) => void;
   replayId?: string;
   onCloseLink?: () => void;
+  signedIn?: boolean;
 }) {
   const { t } = useTranslation();
   const [replay, setReplay] = useState<MatchReplay>();
   const [error, setError] = useState<ReplayFileErrorCode>();
-  const [linkError, setLinkError] = useState(false);
+  const [linkError, setLinkError] = useState<TranslationKey>();
+  /** The owner's own replay waiting for a click, because Drive needs a sign-in pop-up. */
+  const [ownReplay, setOwnReplay] = useState<SharedReplay>();
+  const { provider } = useCloudReplays();
   const [loading, setLoading] = useState(false);
   const pending = useRef(0);
   const input = useRef<HTMLInputElement>(null);
@@ -55,20 +62,49 @@ export function ReplaysScreen({
       if (pending.current === generation) setLoading(false);
     }
   }
+  async function openOwn(saved: SharedReplay) {
+    if (!provider) return;
+    setLoading(true);
+    setLinkError(undefined);
+    try {
+      const file = await withCloudSession(provider, () =>
+        provider.download({ id: saved.driveFileId, bytes: saved.bytes }),
+      );
+      setOwnReplay(undefined);
+      setReplay(await readReplay(file));
+    } catch (cause) {
+      setLinkError(cloudErrorKey(cause));
+    } finally {
+      setLoading(false);
+    }
+  }
   useEffect(() => {
     if (!replayId) return;
     let active = true;
     setLoading(true);
-    setLinkError(false);
+    setLinkError(undefined);
+    setOwnReplay(undefined);
     setReplay(undefined);
-    void replayApi
-      .sharedFile(replayId)
+    // The owner reads the file from their own Drive; everyone else gets a public copy through our API.
+    const load = async () => {
+      const saved = await replayApi.shared(replayId).catch(() => undefined);
+      const ownDrive = saved?.owned && provider;
+      if (ownDrive && provider.isConnected()) return provider.download({ id: saved.driveFileId, bytes: saved.bytes });
+      if (ownDrive && saved.visibility === "private") {
+        if (active) setOwnReplay(saved);
+        void provider.prepare().catch(() => undefined);
+        return undefined;
+      }
+      return replayApi.sharedFile(replayId);
+    };
+    void load()
       .then(async (file) => {
+        if (!file) return;
         const parsed = await readReplay(file);
         if (active) setReplay(parsed);
       })
       .catch(() => {
-        if (active) setLinkError(true);
+        if (active) setLinkError("replay.linkError");
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -104,7 +140,15 @@ export function ReplaysScreen({
     return (
       <section className="replay-import replay-link-state">
         <h1>{t("replay.title")}</h1>
-        <p role={linkError ? "alert" : "status"}>{t(linkError ? "replay.linkError" : "replay.loading")}</p>
+        {ownReplay && !loading ? (
+          <>
+            <p>{t("replay.driveSignInToWatch")}</p>
+            <Button icon={Icons.Cloud} onClick={() => void openOwn(ownReplay)}>
+              {t("replay.prompt.watch")}
+            </Button>
+          </>
+        ) : null}
+        <p role={linkError ? "alert" : "status"}>{linkError ? t(linkError) : loading ? t("replay.loading") : null}</p>
         <a href="/profile">{t("profile.title")}</a>
         <Button onClick={close}>{t("replay.back")}</Button>
       </section>
@@ -179,6 +223,7 @@ export function ReplaysScreen({
             </li>
           ))}
         </ol>
+        <DriveConnectCard signedIn={signedIn} />
         <ReplayLibraryPanel onOpen={open} />
       </div>
     </section>

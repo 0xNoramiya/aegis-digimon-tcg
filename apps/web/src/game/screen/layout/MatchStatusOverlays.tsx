@@ -10,7 +10,7 @@ import type { LogLine } from "../../matchLog";
 import type { GameOverOutcome } from "../../gameOverSplash";
 import type { ArenaDeckColors } from "../../../design/arenaPalette";
 import { ArenaLookDialog } from "./ArenaLookDialog";
-import type { ReplaySaveProps } from "../../../replays/ReplaySaveButton";
+import type { ReplaySaveProps } from "../../../replays/ReplaySavePrompt";
 
 export function MatchStatusOverlays({
   log,
@@ -85,9 +85,9 @@ export function MatchStatusOverlays({
         <GameOverOverlay
           spectatorResult={gameOver.spectatorResult}
           onDownloadReplay={gameOver.onDownloadReplay}
+          replayFile={gameOver.replayFile}
           replayStatus={gameOver.replayStatus}
-          onSaveReplay={gameOver.onSaveReplay}
-          replaySave={gameOver.replaySave}
+          signedIn={signedIn}
           result={gameOver.result}
           reason={gameOver.reason}
           stats={gameOver.stats}

@@ -32,7 +32,11 @@ for (const viewport of [
     await page.setViewportSize(viewport);
     const sockets: string[] = [];
     const pageErrors: string[] = [];
-    page.on("websocket", (socket) => new URL(socket.url()).port !== "4175" && sockets.push(socket.url()));
+    page.on(
+      "websocket",
+      (socket) =>
+        new URL(socket.url()).port !== (process.env.AEGIS_E2E_WEB_PORT ?? "4175") && sockets.push(socket.url()),
+    );
     page.on("pageerror", (error) => pageErrors.push(error.message));
     const replay = new ReplayPage(page);
     await replay.open();

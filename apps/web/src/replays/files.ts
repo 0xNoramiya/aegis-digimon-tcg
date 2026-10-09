@@ -18,11 +18,15 @@ export function replayBlob(message: ReadyReplay): Blob {
   return new Blob([bytes], { type: "application/gzip" });
 }
 
+export function replayFileName(message: ReadyReplay): string {
+  return `aegis-${message.summary.id}-player-${message.viewerSeat + 1}.aegis-replay`;
+}
+
 export function downloadReplay(message: ReadyReplay): void {
   const url = URL.createObjectURL(replayBlob(message));
   const link = document.createElement("a");
   link.href = url;
-  link.download = `aegis-${message.summary.id}-player-${message.viewerSeat + 1}.aegis-replay`;
+  link.download = replayFileName(message);
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

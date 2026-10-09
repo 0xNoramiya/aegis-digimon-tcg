@@ -86,9 +86,9 @@ installAccountRoutes(
   replayLibrary,
 );
 if (discordAvatarBackfill) void backfillDiscordAvatars(accountStore, discordAvatarBackfill).catch(() => undefined);
-if (replayLibrary.enabled) {
+function scheduleReplayCleanup() {
   let cleaning = false;
-  const cleanup = async () => {
+  const cleanupReplays = async () => {
     if (cleaning) return;
     cleaning = true;
     try {
@@ -100,10 +100,11 @@ if (replayLibrary.enabled) {
     }
   };
   setInterval(() => {
-    void cleanup();
-  }, 60000).unref();
-  void cleanup();
+    void cleanupReplays();
+  }, 15 * 60_000).unref();
+  void cleanupReplays();
 }
+scheduleReplayCleanup();
 
 const cluster = createClusterRuntime();
 setRoomCodeDirectory(cluster.roomCodes);

@@ -1,14 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { SavedReplay } from "@aegis/shared";
 import { Avatar, Badge, Button, type PlayerIdentity } from "../design/primitives";
 import { useTranslation } from "../i18n";
 import { accountApi, type AccountProfile, type RemoteAccount } from "./client";
 import { AccountPanel } from "./AccountPanel";
 import { ProfileCustomize } from "./ProfileCustomize";
 import type { DigimonWorldAvatarId } from "./avatars";
-import { ReplaySharing } from "../replays/ReplaySharing";
 import { ReplayLibraryPanel } from "../replays/ReplayLibraryPanel";
-import { downloadSavedReplay, replayApi, replayPath } from "../replays/library";
+import { replayPath } from "../replays/library";
 import "./profile.css";
 import "../replays/replays.css";
 
@@ -33,8 +31,6 @@ export function ProfileScreen({
   const [profile, setProfile] = useState<AccountProfile>();
   const [error, setError] = useState(false);
   const [reload, setReload] = useState(0);
-  const [libraryRevision, setLibraryRevision] = useState(0);
-  const [quota, setQuota] = useState<{ count: number; limit: number }>();
   const page = useRef<HTMLElement>(null);
   const positions = useRef({ matches: 0, replays: 0, customize: 0 });
   useLayoutEffect(() => {
@@ -45,20 +41,6 @@ export function ProfileScreen({
       positions.current[tab] = element.scrollTop;
     };
   }, [tab]);
-  useEffect(() => {
-    let active = true;
-    setQuota(undefined);
-    if (account)
-      void replayApi
-        .list()
-        .then((list) => {
-          if (active && list.enabled) setQuota({ count: list.replays.length, limit: list.limit });
-        })
-        .catch(() => undefined);
-    return () => {
-      active = false;
-    };
-  }, [account?.id, reload, libraryRevision]);
   function tabLink(next: "matches" | "replays" | "customize", label: string) {
     return (
       <a
@@ -76,7 +58,6 @@ export function ProfileScreen({
       </a>
     );
   }
-  const [busy, setBusy] = useState<string>();
   useEffect(() => {
     let active = true;
     setProfile(undefined);
@@ -94,27 +75,6 @@ export function ProfileScreen({
       active = false;
     };
   }, [account?.id, reload]);
-  function changed(replay: SavedReplay) {
-    setLibraryRevision((value) => value + 1);
-    setProfile((current) =>
-      current
-        ? {
-            ...current,
-            matches: current.matches.map((match) => (match.replay?.id === replay.id ? { ...match, replay } : match)),
-          }
-        : current,
-    );
-  }
-  async function download(replay: SavedReplay) {
-    setBusy(replay.id);
-    try {
-      downloadSavedReplay(replay.id, await replayApi.file(replay.id));
-    } catch {
-      setError(true);
-    } finally {
-      setBusy(undefined);
-    }
-  }
   const matches = profile?.matches.slice(0, 10) ?? [];
   return (
     <main ref={page} className="profile-page">
@@ -154,7 +114,7 @@ export function ProfileScreen({
       </section>
       <nav className="profile-tabs" aria-label={t("profile.navigation")}>
         {tabLink("matches", t("profile.matches"))}
-        {tabLink("replays", `${t("replay.title")}${quota ? ` ${quota.count}/${quota.limit}` : ""}`)}
+        {tabLink("replays", t("replay.title"))}
         {tabLink("customize", t("profile.customize"))}
       </nav>
       {account === undefined ? (
@@ -231,15 +191,6 @@ export function ProfileScreen({
                         <a className="profile-mp4" href={`${replayPath(match.replay.id)}?export=mp4`}>
                           MP4
                         </a>
-                        <ReplaySharing replay={match.replay} onChange={changed} />
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          disabled={busy !== undefined}
-                          onClick={() => void download(match.replay!)}
-                        >
-                          {t("replay.download")}
-                        </Button>
                       </div>
                     ) : (
                       <span className="profile-matches__missing" title={t("profile.saveHint")}>
@@ -252,13 +203,7 @@ export function ProfileScreen({
             </section>
           </div>
           <div id="saved-replays" hidden={tab !== "replays"}>
-            <ReplayLibraryPanel
-              refreshKey={libraryRevision}
-              onOpen={async (_file, id) => {
-                if (id) location.href = replayPath(id);
-              }}
-              onChange={() => setReload((value) => value + 1)}
-            />
+            <ReplayLibraryPanel onChange={() => setReload((value) => value + 1)} />
           </div>
         </>
       )}

@@ -285,14 +285,18 @@ export function installAccountRoutes(
   get("/account/profile", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (session) {
-      const [profile, saved] = await Promise.all([store.profile(session.account.id), replays.list(session.account.id)]);
+      const profile = await store.profile(session.account.id);
+      const saved = await replays.forMatches(
+        session.account.id,
+        profile.matches.map((match) => match.id),
+      );
       res.setHeader("Cache-Control", "private, no-store");
       res.json({
         account: session.account,
         ...profile,
         matches: profile.matches.map((match) => ({
           ...match,
-          replay: saved.find((item) => item.summary.id === match.id && item.status === "ready") ?? null,
+          replay: saved.find((item) => item.matchId === match.id) ?? null,
         })),
       });
     }

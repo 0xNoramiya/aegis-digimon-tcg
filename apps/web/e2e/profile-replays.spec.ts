@@ -7,16 +7,43 @@ const recording = replayFixture();
 const archive = gzipSync(JSON.stringify(recording));
 const saved = {
   id,
+  matchId: "match-0",
   summary: recording,
   viewerSeat: 0,
   bytes: archive.length,
   savedAt: Date.now(),
-  status: "ready",
+  driveFileId: "profileDriveFile01",
   visibility: "private",
 };
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Authorization, Content-Type",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+};
 const account = { id: "account-id", displayName: "Vinicius", avatarUrl: null, avatarId: null, isAdmin: false };
+/** The Aegis API answers `/replays/:id`; the web server answers the same path for the page itself. */
+const apiOnly = (handler: Parameters<import("@playwright/test").Page["route"]>[1]) =>
+  ((route, request) =>
+    request.resourceType() === "document" ? route.fallback() : handler(route, request)) as typeof handler;
 async function setup(page: import("@playwright/test").Page) {
   let visibility = "private";
+  const drive: { method: string; path: string }[] = [];
+  await page.addInitScript(() => {
+    localStorage.setItem("aegis.drive.linked", "1");
+    sessionStorage.setItem(
+      "aegis.drive.token",
+      JSON.stringify({ token: "e2e-token", expiresAt: Date.now() + 3_600_000 }),
+    );
+  });
+  await page.route("https://www.googleapis.com/**", (route) => {
+    const request = route.request();
+    if (request.method() === "OPTIONS") return route.fulfill({ status: 204, headers: CORS });
+    const url = new URL(request.url());
+    drive.push({ method: request.method(), path: url.pathname });
+    if (url.searchParams.get("alt") === "media")
+      return route.fulfill({ headers: CORS, contentType: "application/gzip", body: archive });
+    return route.fulfill({ headers: CORS, json: {} });
+  });
   await page.route("**/auth/me", (route) => route.fulfill({ json: account }));
   await page.route("**/account/decks", (route) => route.fulfill({ json: [] }));
   await page.route("**/account/preferences", (route) => route.fulfill({ json: {} }));
@@ -42,47 +69,46 @@ async function setup(page: import("@playwright/test").Page) {
       visibility = route.request().postDataJSON().visibility;
       return route.fulfill({ json: { ...saved, visibility } });
     }
-    if (route.request().url().endsWith("/file"))
-      return route.fulfill({ contentType: "application/gzip", body: archive });
-    return route.fulfill({ json: { enabled: true, limit: 10, replays: [{ ...saved, visibility }] } });
+    return route.fulfill({ json: { replays: [{ ...saved, visibility }], sharing: true } });
   });
+  await page.route(
+    `**/replays/${id}`,
+    apiOnly((route) => route.fulfill({ json: { ...saved, visibility, owned: true } })),
+  );
   await page.route(`**/replays/${id}/file`, (route) =>
     route.fulfill({ contentType: "application/gzip", body: archive }),
   );
+  return { drive };
 }
 test.describe.configure({ mode: "parallel" });
 for (const width of [320, 768, 1024, 1440])
   test(`profile history and sharing at ${width}px`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height: 1000 });
-    await setup(page);
+    const { drive } = await setup(page);
     await page.goto("/profile");
     await expect(page.getByRole("heading", { name: "My profile" })).toBeVisible();
     await expect(page.locator(".profile-matches > li")).toHaveCount(10);
     await expect(page.getByText("Replay not saved", { exact: true })).toHaveCount(7);
     const first = page.locator(".profile-matches > li").first();
-    await first.getByRole("button", { name: "Private · Sharing" }).click();
+    await page
+      .getByRole("navigation", { name: "Profile sections" })
+      .getByRole("link", { name: /^Replays/ })
+      .click();
+    const library = page.locator(".replay-library");
+    await library.getByRole("button", { name: "Private · Sharing" }).click();
     const dialog = page.getByRole("dialog");
     await dialog.getByRole("radio", { name: /Public/ }).check();
     await dialog.getByRole("button", { name: "Save", exact: true }).click();
-    await expect(first.getByRole("button", { name: "Public · Sharing" })).toBeVisible();
-    await page
-      .getByRole("navigation", { name: "Profile sections" })
-      .getByRole("link", { name: /^Replays/ })
-      .click();
-    await expect(page.locator(".replay-library").getByRole("button", { name: "Public · Sharing" })).toBeVisible();
-    await page
-      .getByRole("navigation", { name: "Profile sections" })
-      .getByRole("link", { name: "Matches", exact: true })
-      .click();
-    await first.getByRole("button", { name: "Public · Sharing" }).click();
+    await expect(library.getByRole("button", { name: "Public · Sharing" })).toBeVisible();
+    expect(drive).toContainEqual({ method: "POST", path: "/drive/v3/files/profileDriveFile01/permissions" });
+    await library.getByRole("button", { name: "Public · Sharing" }).click();
     await dialog.getByRole("radio", { name: /Private/ }).check();
     await dialog.getByRole("button", { name: "Save", exact: true }).click();
-    await expect(first.getByRole("button", { name: "Private · Sharing" })).toBeVisible();
-    await page
-      .getByRole("navigation", { name: "Profile sections" })
-      .getByRole("link", { name: /^Replays/ })
-      .click();
-    await expect(page.locator(".replay-library").getByRole("button", { name: "Private · Sharing" })).toBeVisible();
+    await expect(library.getByRole("button", { name: "Private · Sharing" })).toBeVisible();
+    expect(drive).toContainEqual({
+      method: "DELETE",
+      path: "/drive/v3/files/profileDriveFile01/permissions/anyoneWithLink",
+    });
     await page
       .getByRole("navigation", { name: "Profile sections" })
       .getByRole("link", { name: "Matches", exact: true })
@@ -98,9 +124,14 @@ for (const width of [320, 768, 1024, 1440])
     await first.getByRole("link", { name: "Watch", exact: true }).click();
     await expect(page.locator(".replay-player")).toBeVisible();
     await expect(page.locator(".aegis-topnav")).toHaveCount(0);
+    expect(drive).toContainEqual({ method: "GET", path: "/drive/v3/files/profileDriveFile01" });
   });
 test("private or removed links show a recoverable state without exposing the board", async ({ page }) => {
   await page.route("**/auth/me", (route) => route.fulfill({ json: null }));
+  await page.route(
+    `**/replays/${id}`,
+    apiOnly((route) => route.fulfill({ status: 404 })),
+  );
   await page.route(`**/replays/${id}/file`, (route) => route.fulfill({ status: 404 }));
   await page.goto(`/replays/${id}`);
   await expect(page.getByRole("alert")).toContainText("Replay unavailable");
@@ -109,14 +140,43 @@ test("private or removed links show a recoverable state without exposing the boa
   await expect(page).toHaveURL(/\/replays$/);
 });
 test("a public link opens without signing in and MP4 opens the export dialog", async ({ page }) => {
-  await setup(page);
+  const { drive } = await setup(page);
   await page.route("**/auth/me", (route) => route.fulfill({ json: null }));
+  await page.route(
+    `**/replays/${id}`,
+    apiOnly((route) => route.fulfill({ json: { ...saved, visibility: "public", owned: false } })),
+  );
   await page.goto(`/replays/${id}?export=mp4`);
   await expect(page.locator(".replay-player")).toBeVisible();
   await expect(page.getByRole("dialog")).toContainText("Download MP4");
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await page.getByRole("button", { name: "Play", exact: true }).click();
   await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
+  expect(drive.filter((request) => request.method === "GET")).toEqual([]);
+});
+
+test("the owner signs in to Drive with a click before watching a private replay on a new device", async ({ page }) => {
+  await setup(page);
+  await page.addInitScript(() => {
+    sessionStorage.removeItem("aegis.drive.token");
+    (window as unknown as { google: unknown }).google = {
+      accounts: {
+        oauth2: {
+          initTokenClient: (config: { callback: (response: object) => void }) => ({
+            requestAccessToken: () => config.callback({ access_token: "e2e-token", expires_in: 3599 }),
+          }),
+          hasGrantedAllScopes: () => true,
+          revoke: () => undefined,
+        },
+      },
+    };
+  });
+  await page.goto(`/replays/${id}`);
+  await expect(
+    page.getByText("This replay is in your Google Drive. Sign in to Google Drive to watch it."),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Watch now" }).click();
+  await expect(page.locator(".replay-player")).toBeVisible();
 });
 
 test("Portuguese mobile profile routes editing without a dialog", async ({ page }, testInfo) => {

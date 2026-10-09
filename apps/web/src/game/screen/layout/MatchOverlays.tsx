@@ -1,4 +1,4 @@
-import type { ReplaySaveProps } from "../../../replays/ReplaySaveButton";
+import type { ReplaySaveProps } from "../../../replays/ReplaySavePrompt";
 /* Everything the board can put over itself, in the order it stacks.
 
    The mulligan and the hand-card preview come first because they are about the hand, not

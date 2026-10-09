@@ -1,38 +1,20 @@
 import { randomUUID } from "node:crypto";
 import { createServer, type Server } from "node:http";
 import express from "express";
-import { afterEach, describe, expect, it } from "vitest";
-import { MAX_REPLAY_STORAGE_BYTES, MAX_SAVED_REPLAY_BYTES, type ReplayDownloadMessage } from "@aegis/shared";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { MAX_REPLAY_BYTES, type ReplayDownloadMessage, type ReplayLibraryPage } from "@aegis/shared";
 import { AccountStore } from "../accounts/AccountStore.js";
 import { createMemoryPool } from "../db/memoryPool.fixture.js";
-import { ReplayLibrary } from "./ReplayLibrary.js";
+import { ReplayLibrary, UNSAVED_RETENTION_MS } from "./ReplayLibrary.js";
 import { installReplayRoutes } from "./routes.js";
-import type { ReplayStorage } from "./storage.js";
 
-export class MemoryReplayStorage implements ReplayStorage {
-  readonly files = new Map<string, Buffer>();
-  failWrite = false;
-  failDelete = false;
-  async put(key: string, bytes: Buffer): Promise<void> {
-    this.files.set(key, Buffer.from(bytes));
-    if (this.failWrite) throw new Error("ambiguous storage failure after PUT");
-  }
-  async get(key: string): Promise<Buffer> {
-    const file = this.files.get(key);
-    if (!file) throw new Error("missing object");
-    return Buffer.from(file);
-  }
-  async remove(key: string): Promise<void> {
-    if (this.failDelete) throw new Error("storage deletion failure");
-    this.files.delete(key);
-  }
-}
+const FILE_ID = "1AbCdEfGhIjKlMnOp_-";
 
-function message(id = randomUUID()): Extract<ReplayDownloadMessage, { kind: "ready" }> {
+function message(id = randomUUID(), viewerSeat: 0 | 1 = 0): Extract<ReplayDownloadMessage, { kind: "ready" }> {
   return {
     kind: "ready",
     data: Buffer.from("server-authoritative gzip bytes").toString("base64"),
-    viewerSeat: 0,
+    viewerSeat,
     summary: {
       id,
       players: ["Agumon", "Gabumon"],
@@ -47,188 +29,290 @@ function message(id = randomUUID()): Extract<ReplayDownloadMessage, { kind: "rea
 const accountsToClose: AccountStore[] = [];
 const servers: Server[] = [];
 afterEach(async () => {
+  vi.useRealTimers();
   for (const server of servers.splice(0)) await new Promise<void>((resolve) => server.close(() => resolve()));
   for (const accounts of accountsToClose.splice(0)) await accounts.close();
 });
-async function setup() {
+async function setup(drive: ConstructorParameters<typeof ReplayLibrary>[1] = {}) {
   const accounts = new AccountStore(createMemoryPool());
   accountsToClose.push(accounts);
   const owner = await accounts.accountForIdentity("email", `${randomUUID()}@test.invalid`, "Replay Player");
   const other = await accounts.accountForIdentity("email", `${randomUUID()}@test.invalid`, "Other Player");
-  const storage = new MemoryReplayStorage();
-  const library = new ReplayLibrary(accounts, storage);
-  return { accounts, owner, other, storage, library };
+  const library = new ReplayLibrary(accounts, drive);
+  return { accounts, owner, other, library };
+}
+async function serve(accounts: AccountStore, library: ReplayLibrary) {
+  const app = express();
+  app.use(express.json());
+  installReplayRoutes({ app, library, session: (req) => accounts.session(req.headers.cookie?.split("=")[1]) });
+  const server = createServer(app);
+  servers.push(server);
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  return (path: string, init: RequestInit & { session?: string } = {}) =>
+    fetch(base + path, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        ...(init.session ? { Cookie: `aegis_session=${init.session}` } : {}),
+      },
+    });
+}
+async function savedReplay(library: ReplayLibrary, accountId: string, fileId = FILE_ID) {
+  const id = await library.record(accountId, message());
+  return (await library.attachDrive(accountId, id, fileId))!;
 }
 
-describe("private account replay library", () => {
-  it("retains ten slots, refuses an eleventh, and deduplicates retries even when full", async () => {
+describe("server-trusted replay index", () => {
+  it("records one unsaved row per account, match and seat and keeps it out of the library", async () => {
     const { accounts, owner, library } = await setup();
-    const first = message();
-    const saved = await library.save(owner.id, first);
-    for (let index = 1; index < 10; index++) await library.save(owner.id, message());
-    expect(await library.list(owner.id)).toHaveLength(10);
-    await expect(library.save(owner.id, message())).rejects.toMatchObject({ code: "limit" });
-    expect((await library.save(owner.id, first)).id).toBe(saved.id);
-    const usage = await accounts.pool.query("SELECT bytes FROM replay_storage_usage");
-    expect(Number(usage.rows[0].bytes)).toBe(10 * Buffer.from(first.data, "base64").length);
-  });
-  it("filters files and deletes by owner and recovers a slot only after object deletion", async () => {
-    const { owner, other, storage, library } = await setup();
     const file = message();
-    const saved = await library.save(owner.id, file);
-    expect(await library.file(other.id, saved.id)).toBeUndefined();
-    expect(await library.remove(other.id, saved.id)).toBe(false);
-    expect(await library.list(other.id)).toEqual([]);
-    expect((await library.file(owner.id, saved.id))?.bytes).toEqual(Buffer.from(file.data, "base64"));
-    expect(await library.remove(owner.id, saved.id)).toBe(true);
-    expect(storage.files.size).toBe(0);
-    expect(await library.list(owner.id)).toEqual([]);
+    const id = await library.record(owner.id, file);
+    expect(await library.record(owner.id, file)).toBe(id);
+    expect(await library.record(owner.id, { ...file, viewerSeat: 1 })).not.toBe(id);
+    const rows = await accounts.pool.query("SELECT * FROM account_replays WHERE account_id=$1", [owner.id]);
+    expect(rows.rows).toHaveLength(2);
+    expect(rows.rows[0]).toMatchObject({ drive_file_id: null, saved_at: null, visibility: "private" });
+    expect(Number(rows.rows[0].byte_size)).toBe(Buffer.from(file.data, "base64").length);
+    expect((await library.list(owner.id)).replays).toEqual([]);
   });
-  it("keeps an interrupted write recoverable with one reservation and stable object key", async () => {
-    const { owner, storage, library } = await setup();
+
+  it("attaches a Drive file idempotently and only for the owner", async () => {
+    const { owner, other, library } = await setup();
     const file = message();
-    storage.failWrite = true;
-    await expect(library.save(owner.id, file)).rejects.toThrow("storage failure");
-    const pending = (await library.list(owner.id))[0]!;
-    expect(pending.status).toBe("pending");
-    expect(await library.file(owner.id, pending.id)).toBeUndefined();
-    storage.failWrite = false;
-    expect((await library.save(owner.id, file)).id).toBe(pending.id);
-    expect(storage.files.size).toBe(1);
-    expect((await library.list(owner.id))[0]!.status).toBe("ready");
+    const id = await library.record(owner.id, file);
+    expect(await library.attachDrive(other.id, id, FILE_ID)).toBeUndefined();
+    const first = await library.attachDrive(owner.id, id, FILE_ID);
+    expect(first).toMatchObject({ id, matchId: file.summary.id, driveFileId: FILE_ID, visibility: "private" });
+    expect(first!.summary).toEqual(file.summary);
+    await library.setVisibility(owner.id, id, "public");
+    const again = await library.attachDrive(owner.id, id, FILE_ID);
+    expect(again).toEqual({ ...first, visibility: "public" });
+    const replaced = await library.attachDrive(owner.id, id, "2ZyXwVuTsRqPoNmLk_-");
+    expect(replaced).toMatchObject({ driveFileId: "2ZyXwVuTsRqPoNmLk_-", savedAt: first!.savedAt });
+    expect(replaced!.visibility).toBe("private");
+    expect((await library.list(owner.id)).replays).toHaveLength(1);
   });
-  it("keeps failed deletions reserved and retries them without deleting completed files", async () => {
-    const { accounts, owner, storage, library } = await setup();
-    const first = await library.save(owner.id, message());
-    const keep = await library.save(owner.id, message());
-    storage.failDelete = true;
-    await expect(library.remove(owner.id, first.id)).rejects.toThrow("deletion failure");
-    expect((await library.list(owner.id)).find((item) => item.id === first.id)?.status).toBe("deleting");
-    storage.failDelete = false;
-    await library.cleanup();
-    expect((await library.list(owner.id)).map((item) => item.id)).toEqual([keep.id]);
-    expect(Number((await accounts.pool.query("SELECT bytes FROM replay_storage_usage")).rows[0].bytes)).toBe(
-      keep.bytes,
-    );
-  });
-  it("reclaims only stale interrupted uploads and releases their global reservation", async () => {
-    const { accounts, owner, storage, library } = await setup();
-    storage.failWrite = true;
-    await expect(library.save(owner.id, message())).rejects.toThrow("storage failure");
-    await library.cleanup();
-    expect(await library.list(owner.id)).toHaveLength(1);
-    await library.cleanup(Date.now() + 25 * 60 * 60 * 1000);
-    expect(await library.list(owner.id)).toEqual([]);
-    expect(storage.files.size).toBe(0);
-    expect(Number((await accounts.pool.query("SELECT bytes FROM replay_storage_usage")).rows[0].bytes)).toBe(0);
-  });
-  it("bounds compressed files and global storage before writing objects", async () => {
-    const { accounts, owner, storage, library } = await setup();
-    await expect(
-      library.save(owner.id, { ...message(), data: Buffer.alloc(MAX_SAVED_REPLAY_BYTES + 1).toString("base64") }),
-    ).rejects.toMatchObject({ code: "size" });
-    await accounts.pool.query("UPDATE replay_storage_usage SET bytes=$1 WHERE id=1", [MAX_REPLAY_STORAGE_BYTES]);
-    await expect(library.save(owner.id, message())).rejects.toMatchObject({ code: "storage_full" });
-    expect(storage.files.size).toBe(0);
-    expect(await library.list(owner.id)).toEqual([]);
-  });
-  it("rejects changed content for the same match and detects corrupted stored bytes", async () => {
-    const { owner, storage, library } = await setup();
-    const file = message();
-    const saved = await library.save(owner.id, file);
-    await expect(
-      library.save(owner.id, { ...file, data: Buffer.from("modified").toString("base64") }),
-    ).rejects.toMatchObject({ code: "unavailable" });
-    storage.files.set([...storage.files.keys()][0]!, Buffer.from("corrupted"));
-    await expect(library.file(owner.id, saved.id)).rejects.toThrow("integrity");
-  });
-  it("requires authentication on every endpoint and never exposes another owner's replay", async () => {
-    const { accounts, owner, other, library } = await setup();
-    const saved = await library.save(owner.id, message());
-    const ownerSession = await accounts.issueSession(owner);
-    const otherSession = await accounts.issueSession(other);
-    const app = express();
-    installReplayRoutes({ app, library, session: (req) => accounts.session(req.headers.cookie?.split("=")[1]) });
-    const server = createServer(app);
-    servers.push(server);
-    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
-    const address = server.address() as { port: number };
-    const base = `http://127.0.0.1:${address.port}`;
-    for (const [path, method] of [
-      ["/account/replays", "GET"],
-      [`/account/replays/${saved.id}/file`, "GET"],
-      [`/account/replays/${saved.id}`, "DELETE"],
-    ]) {
-      expect((await fetch(base + path, { method })).status).toBe(401);
+
+  it("pages saved replays newest first with a stable keyset cursor", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const { owner, other, library } = await setup();
+    const ids: string[] = [];
+    for (let index = 0; index < 7; index++) {
+      // Four replays share one timestamp, so the id breaks the tie.
+      vi.setSystemTime(1_000 + Math.min(index, 3));
+      ids.push((await savedReplay(library, owner.id)).id);
     }
-    const foreign = { headers: { Cookie: `aegis_session=${otherSession.id}` } };
-    expect((await fetch(`${base}/account/replays/${saved.id}/file`, foreign)).status).toBe(404);
-    expect((await fetch(`${base}/account/replays/${saved.id}`, { ...foreign, method: "DELETE" })).status).toBe(404);
-    const response = await fetch(`${base}/account/replays/${saved.id}/file`, {
-      headers: { Cookie: `aegis_session=${ownerSession.id}` },
+    await savedReplay(library, other.id);
+    await library.record(owner.id, message());
+    const expected = [...ids.slice(3).sort().reverse(), ...ids.slice(0, 3).reverse()];
+    const seen: string[] = [];
+    let cursor: string | undefined;
+    let pages = 0;
+    do {
+      const page: ReplayLibraryPage = await library.list(owner.id, { cursor, limit: 2 });
+      seen.push(...page.replays.map((replay) => replay.id));
+      cursor = page.nextCursor;
+      pages++;
+    } while (cursor);
+    expect(pages).toBe(4);
+    expect(seen).toEqual(expected);
+    expect((await library.list(owner.id)).replays).toHaveLength(7);
+    expect((await library.list(owner.id, { limit: 500 })).replays).toHaveLength(7);
+    expect((await library.list(owner.id, { limit: 0 })).replays).toHaveLength(1);
+    await expect(library.list(owner.id, { cursor: "not-a-cursor" })).rejects.toMatchObject({
+      code: "invalid_cursor",
     });
-    expect(response.status).toBe(200);
-    expect(response.headers.get("Cache-Control")).toContain("no-store");
-    expect(response.headers.get("Content-Type")).toContain("application/gzip");
-    const list = (await (
-      await fetch(`${base}/account/replays`, { headers: { Cookie: `aegis_session=${ownerSession.id}` } })
-    ).json()) as { limit: number; replays: unknown[] };
-    expect(list.limit).toBe(10);
-    expect(list.replays).toHaveLength(1);
+  });
+
+  it("deletes only the caller's index entry", async () => {
+    const { owner, other, library } = await setup();
+    const replay = await savedReplay(library, owner.id);
+    expect(await library.remove(other.id, replay.id)).toBe(false);
+    expect(await library.remove(owner.id, replay.id)).toBe(true);
+    expect((await library.list(owner.id)).replays).toEqual([]);
+    expect(await library.remove(owner.id, replay.id)).toBe(false);
+  });
+
+  it("removes unsaved entries after seven days and never saved ones", async () => {
+    const { accounts, owner, library } = await setup();
+    const kept = await savedReplay(library, owner.id);
+    await library.record(owner.id, message());
+    expect(await library.cleanup(Date.now() + UNSAVED_RETENTION_MS - 60_000)).toBe(0);
+    expect(await library.cleanup(Date.now() + UNSAVED_RETENTION_MS + 60_000)).toBe(1);
+    const rows = await accounts.pool.query("SELECT id FROM account_replays");
+    expect(rows.rows.map((row) => row.id)).toEqual([kept.id]);
+  });
+
+  it("joins saved replays to the profile's matches", async () => {
+    const { owner, other, library } = await setup();
+    const replay = await savedReplay(library, owner.id);
+    await savedReplay(library, other.id);
+    const unsaved = message();
+    await library.record(owner.id, unsaved);
+    expect(await library.forMatches(owner.id, [replay.matchId, unsaved.summary.id, "missing"])).toEqual([replay]);
+    expect(await library.forMatches(owner.id, [])).toEqual([]);
   });
 });
 
-describe("replay link visibility", () => {
-  it("defaults to private, allows public reads and immediately revokes future reads", async () => {
-    const { owner, other, library, storage } = await setup();
-    const saved = await library.save(owner.id, message());
-    expect(saved.visibility).toBe("private");
-    expect(await library.accessible(undefined, saved.id)).toBeUndefined();
-    expect(await library.file(other.id, saved.id)).toBeUndefined();
-    expect(await library.setVisibility(other.id, saved.id, "public")).toBeUndefined();
-    expect((await library.setVisibility(owner.id, saved.id, "public"))?.visibility).toBe("public");
-    expect((await library.file(undefined, saved.id))?.bytes).toBeTruthy();
-    const get = storage.get.bind(storage);
-    storage.get = async (key) => {
-      const bytes = await get(key);
-      await library.setVisibility(owner.id, saved.id, "private");
-      return bytes;
-    };
-    expect(await library.file(undefined, saved.id)).toBeUndefined();
-    expect(await library.accessible(other.id, saved.id)).toBeUndefined();
-    expect((await library.file(owner.id, saved.id))?.bytes).toBeTruthy();
-    await library.remove(owner.id, saved.id);
-    expect(await library.accessible(owner.id, saved.id)).toBeUndefined();
-  });
-  it("authorizes both public endpoints and owner-only mutations with no-store responses", async () => {
+describe("replay routes", () => {
+  it("requires a session and validates ids and Drive file ids", async () => {
     const { accounts, owner, other, library } = await setup();
-    const saved = await library.save(owner.id, message());
-    const ownerSession = await accounts.issueSession(owner);
-    const otherSession = await accounts.issueSession(other);
-    const app = express();
-    app.use(express.json());
-    installReplayRoutes({ app, library, session: (req) => accounts.session(req.headers.cookie?.split("=")[1]) });
-    const server = createServer(app);
-    servers.push(server);
-    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
-    const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-    const update = (session: string | undefined, visibility: string) =>
-      fetch(`${base}/account/replays/${saved.id}/visibility`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...(session ? { Cookie: `aegis_session=${session}` } : {}) },
-        body: JSON.stringify({ visibility }),
-      });
-    expect((await update(undefined, "public")).status).toBe(401);
-    expect((await update(otherSession.id, "public")).status).toBe(404);
-    expect((await update(ownerSession.id, "invalid")).status).toBe(400);
-    for (const suffix of ["", "/file"]) expect((await fetch(`${base}/replays/${saved.id}${suffix}`)).status).toBe(404);
-    expect((await update(ownerSession.id, "public")).status).toBe(200);
-    for (const suffix of ["", "/file"]) {
-      const response = await fetch(`${base}/replays/${saved.id}${suffix}`);
-      expect(response.status).toBe(200);
-      expect(response.headers.get("cache-control")).toContain("no-store");
-    }
-    expect((await update(ownerSession.id, "private")).status).toBe(200);
-    for (const suffix of ["", "/file"]) expect((await fetch(`${base}/replays/${saved.id}${suffix}`)).status).toBe(404);
+    const id = await library.record(owner.id, message());
+    const ownerSession = (await accounts.issueSession(owner)).id;
+    const otherSession = (await accounts.issueSession(other)).id;
+    const call = await serve(accounts, library);
+    for (const [path, method] of [
+      ["/account/replays", "GET"],
+      [`/account/replays/${id}/drive`, "PUT"],
+      [`/account/replays/${id}/visibility`, "PUT"],
+      [`/account/replays/${id}`, "DELETE"],
+    ] as const)
+      expect((await call(path, { method })).status).toBe(401);
+    const attach = (session: string, fileId: unknown, target = id) =>
+      call(`/account/replays/${target}/drive`, { method: "PUT", session, body: JSON.stringify({ fileId }) });
+    for (const invalid of ["short", "a/b/c/d/e/f/g", "x".repeat(201), 42, undefined])
+      expect((await attach(ownerSession, invalid)).status).toBe(400);
+    expect((await attach(ownerSession, FILE_ID, "not-a-uuid")).status).toBe(404);
+    expect((await attach(otherSession, FILE_ID)).status).toBe(404);
+    const first = await attach(ownerSession, FILE_ID);
+    expect(first.status).toBe(200);
+    expect(first.headers.get("cache-control")).toContain("no-store");
+    const saved = await first.json();
+    expect(await (await attach(ownerSession, FILE_ID)).json()).toEqual(saved);
+    const list = await call("/account/replays", { session: ownerSession });
+    expect(await list.json()).toEqual({ replays: [saved], sharing: false });
+    expect((await call("/account/replays?cursor=%%", { session: ownerSession })).status).toBe(400);
+    expect(await (await call("/account/replays", { session: otherSession })).json()).toEqual({
+      replays: [],
+      sharing: false,
+    });
+    expect((await call(`/account/replays/${id}`, { method: "DELETE", session: otherSession })).status).toBe(404);
+    expect((await call(`/account/replays/${id}`, { method: "DELETE", session: ownerSession })).status).toBe(200);
+    expect((await call(`/account/replays/${id}`, { method: "DELETE", session: ownerSession })).status).toBe(404);
+  });
+
+  it("follows nextCursor through the HTTP API", async () => {
+    const { accounts, owner, library } = await setup();
+    for (let index = 0; index < 5; index++) await savedReplay(library, owner.id);
+    const session = (await accounts.issueSession(owner)).id;
+    const call = await serve(accounts, library);
+    const first = (await (await call("/account/replays?limit=3", { session })).json()) as ReplayLibraryPage;
+    expect(first.replays).toHaveLength(3);
+    const second = (await (
+      await call(`/account/replays?limit=3&cursor=${encodeURIComponent(first.nextCursor!)}`, { session })
+    ).json()) as ReplayLibraryPage;
+    expect(second.replays).toHaveLength(2);
+    expect(second.nextCursor).toBeUndefined();
+    expect(new Set([...first.replays, ...second.replays].map((replay) => replay.id)).size).toBe(5);
+  });
+});
+
+describe("public replay sharing through Drive", () => {
+  const archive = Buffer.concat([Buffer.from([0x1f, 0x8b]), Buffer.from("public gzip archive")]);
+  function driveFetch(response: () => Response) {
+    return vi.fn<typeof fetch>(async () => response());
+  }
+
+  it("lets only the owner change visibility and reports sharing as enabled", async () => {
+    const drive = driveFetch(() => new Response(archive));
+    const { accounts, owner, other, library } = await setup({ apiKey: "server-key", fetch: drive });
+    const replay = await savedReplay(library, owner.id);
+    const unsaved = await library.record(owner.id, message());
+    const ownerSession = (await accounts.issueSession(owner)).id;
+    const otherSession = (await accounts.issueSession(other)).id;
+    const call = await serve(accounts, library);
+    const update = (session: string, visibility: string, id = replay.id) =>
+      call(`/account/replays/${id}/visibility`, { method: "PUT", session, body: JSON.stringify({ visibility }) });
+    expect((await update(otherSession, "public")).status).toBe(404);
+    expect((await update(ownerSession, "invalid")).status).toBe(400);
+    expect((await update(ownerSession, "public", unsaved)).status).toBe(404);
+    expect((await call(`/replays/${replay.id}`)).status).toBe(404);
+    expect((await call(`/replays/${replay.id}/file`)).status).toBe(404);
+    expect(drive).not.toHaveBeenCalled();
+    expect(await (await call(`/replays/${replay.id}`, { session: ownerSession })).json()).toMatchObject({
+      id: replay.id,
+      owned: true,
+    });
+    expect((await update(ownerSession, "public")).status).toBe(200);
+    expect(await (await call("/account/replays", { session: ownerSession })).json()).toMatchObject({ sharing: true });
+    expect(await (await call(`/replays/${replay.id}`, { session: otherSession })).json()).toMatchObject({
+      id: replay.id,
+      owned: false,
+      visibility: "public",
+    });
+    const file = await call(`/replays/${replay.id}/file`);
+    expect(file.status).toBe(200);
+    expect(Buffer.from(await file.arrayBuffer())).toEqual(archive);
+    expect(file.headers.get("cache-control")).toBe("private, no-store");
+    expect(file.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(file.headers.get("content-disposition")).toContain("attachment");
+    expect(drive.mock.calls[0]![0]).toBe(
+      `https://www.googleapis.com/drive/v3/files/${FILE_ID}?alt=media&key=server-key`,
+    );
+    expect((await update(ownerSession, "private")).status).toBe(200);
+    expect((await call(`/replays/${replay.id}`)).status).toBe(404);
+    expect((await call(`/replays/${replay.id}/file`)).status).toBe(404);
+  });
+
+  it("maps Drive failures, oversized files and a missing key", async () => {
+    let next = () => new Response(archive);
+    const drive = vi.fn<typeof fetch>(async () => next());
+    const { accounts, owner, library } = await setup({ apiKey: "server-key", fetch: drive });
+    const replay = await savedReplay(library, owner.id);
+    await library.setVisibility(owner.id, replay.id, "public");
+    const call = await serve(accounts, library);
+    const file = () => call(`/replays/${replay.id}/file`);
+    next = () => new Response("missing", { status: 404 });
+    expect((await file()).status).toBe(404);
+    next = () => new Response("forbidden", { status: 403 });
+    expect((await file()).status).toBe(404);
+    next = () => new Response("unavailable", { status: 500 });
+    expect((await file()).status).toBe(502);
+    next = () => new Response("<html>not a replay</html>");
+    expect(await (await file()).json()).toEqual({ error: "drive_unavailable" });
+    next = () => new Response(archive, { headers: { "Content-Length": String(MAX_REPLAY_BYTES + 1) } });
+    expect(await (await file()).json()).toEqual({ error: "too_large" });
+    next = () =>
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(new Uint8Array(MAX_REPLAY_BYTES));
+            controller.enqueue(new Uint8Array(1));
+            controller.close();
+          },
+        }),
+      );
+    expect((await file()).status).toBe(502);
+
+    const keyless = new ReplayLibrary(accounts, { fetch: drive });
+    const calls = drive.mock.calls.length;
+    const disabled = await serve(accounts, keyless);
+    const response = await disabled(`/replays/${replay.id}/file`);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "sharing_disabled" });
+    expect(drive.mock.calls.length).toBe(calls);
+    const session = (await accounts.issueSession(owner)).id;
+    const publish = await disabled(`/account/replays/${replay.id}/visibility`, {
+      method: "PUT",
+      session,
+      body: JSON.stringify({ visibility: "public" }),
+    });
+    expect(publish.status).toBe(503);
+  });
+
+  it("refuses a file whose replay turned private during the Drive download", async () => {
+    let library!: ReplayLibrary;
+    let owner!: { id: string };
+    let replayId = "";
+    const drive = vi.fn<typeof fetch>(async () => {
+      await library.setVisibility(owner.id, replayId, "private");
+      return new Response(archive);
+    });
+    ({ library, owner } = await setup({ apiKey: "server-key", fetch: drive }));
+    replayId = (await savedReplay(library, owner.id)).id;
+    await library.setVisibility(owner.id, replayId, "public");
+    expect(await library.publicFile(replayId)).toBeUndefined();
+    expect(drive).toHaveBeenCalledOnce();
   });
 });

@@ -1,27 +1,29 @@
 import type { Migration } from "../migrator.js";
 
+/**
+ * An index of replays kept in each player's own Google Drive. The server never stores the
+ * file: a row starts unsaved when the room exports a finished match and becomes saved once
+ * the client reports the Drive file id. Unsaved rows are removed after seven days.
+ */
 export const accountReplays: Migration = {
   id: "026-account-replays",
   up: `
     CREATE TABLE account_replays (
       id uuid PRIMARY KEY,
       account_id uuid NOT NULL REFERENCES accounts(id),
-      slot integer NOT NULL CHECK (slot BETWEEN 1 AND 10),
       match_id text NOT NULL,
       viewer_seat integer NOT NULL CHECK (viewer_seat IN (0,1)),
       summary jsonb NOT NULL,
-      byte_size integer NOT NULL CHECK (byte_size BETWEEN 1 AND 2097152),
-      checksum text NOT NULL,
-      saved_at bigint NOT NULL,
-      status text NOT NULL CHECK (status IN ('pending','ready','deleting')),
-      UNIQUE (account_id, slot),
+      byte_size integer NOT NULL CHECK (byte_size BETWEEN 1 AND 33554432),
+      created_at bigint NOT NULL,
+      drive_file_id text,
+      saved_at bigint,
+      visibility text NOT NULL DEFAULT 'private' CHECK (visibility IN ('private','public')),
+      CHECK ((drive_file_id IS NULL) = (saved_at IS NULL)),
+      CHECK (visibility = 'private' OR drive_file_id IS NOT NULL),
       UNIQUE (account_id, match_id, viewer_seat)
     );
-    CREATE INDEX account_replays_cleanup ON account_replays(status, saved_at);
-    CREATE TABLE replay_storage_usage (
-      id integer PRIMARY KEY CHECK (id = 1),
-      bytes bigint NOT NULL CHECK (bytes >= 0 AND bytes <= 20000000000)
-    );
-    INSERT INTO replay_storage_usage (id, bytes) VALUES (1, 0);
+    CREATE INDEX account_replays_library ON account_replays(account_id, saved_at DESC, id DESC);
+    CREATE INDEX account_replays_unsaved ON account_replays(created_at);
   `,
 };

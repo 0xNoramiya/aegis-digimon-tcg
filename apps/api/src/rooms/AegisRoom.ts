@@ -6,12 +6,10 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { ReplayRecording } from "../replays/recording.js";
 import { replayDownload } from "../replays/download.js";
 import { replayLibrary } from "../replays/runtime.js";
-import { ReplayLibraryError, type ReplayLibrary } from "../replays/ReplayLibrary.js";
+import type { ReplayLibrary } from "../replays/ReplayLibrary.js";
 import {
   GameState,
   REPLAY_CHANNEL,
-  REPLAY_SAVE_CHANNEL,
-  type ReplaySaveMessage,
   type ReplaySummary,
   type ReplayDownloadMessage,
   RECONNECT_GRACE_SECONDS,
@@ -254,7 +252,8 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private replayDownloads = new Map<Seat, Promise<ReplayDownloadMessage>>();
   private replayFinished = false;
   private replayRequestTimes = new WeakMap<Client, number>();
-  private replaySaveRequests = new WeakSet<Client>();
+  /** Index entries per `seat:account`, so repeated replay requests write the row once. */
+  private replayIndexes = new Map<string, Promise<string | undefined>>();
   private rankedByClient = new Map<string, boolean>();
   /** Clients that pace chains of triggered effects themselves (`presentationPacing: "sequential"`). */
   private chainPacingClients = new Set<string>();
@@ -741,10 +740,6 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // mutates state, and emits events. Rejections are surfaced as an
     // "actionRejected" event to the offending client only.
     this.onMessage("*", (client, type, payload) => {
-      if (type === REPLAY_SAVE_CHANNEL) {
-        void this.saveParticipantReplay(client);
-        return;
-      }
       if (type === REPLAY_CHANNEL) {
         const now = performance.now();
         if (now - (this.replayRequestTimes.get(client) ?? -Infinity) >= 10_000) {
@@ -1707,50 +1702,44 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         replay ? replayDownload(replay, seat) : Promise.resolve({ kind: "unavailable", reason: "recording_limit" }),
       );
     }
+    // Snapshot the account before I/O: onLeave clears accountByClient synchronously.
+    const owner = this.accountByClient.get(client.sessionId);
     void this.replayDownloads
       .get(seat)!
+      .then(async (message) => {
+        if (message.kind !== "ready" || !owner) return message;
+        const indexId = await this.replayIndex(seat, owner, message);
+        return indexId ? { ...message, indexId } : message;
+      })
       .then((message) => {
-        if (this.clients.includes(client))
-          client.send(
-            REPLAY_CHANNEL,
-            message.kind === "ready"
-              ? { ...message, canSave: this.replays().enabled && this.accountByClient.has(client.sessionId) }
-              : message,
-          );
+        if (this.clients.includes(client)) client.send(REPLAY_CHANNEL, message);
       })
       .catch((error: unknown) => this.debugError("[AegisRoom] failed to export replay", error));
   }
 
-  protected replays(): ReplayLibrary {
+  protected replays(): Pick<ReplayLibrary, "record"> {
     return replayLibrary;
   }
 
-  private async saveParticipantReplay(client: Client): Promise<void> {
-    if (this.replaySaveRequests.has(client)) return;
-    this.replaySaveRequests.add(client);
-    let result: ReplaySaveMessage;
-    try {
-      const seat = this.seatByClient.get(client.sessionId);
-      const owner = this.accountByClient.get(client.sessionId);
-      if (
-        seat === undefined ||
-        this.spectatorClients.has(client.sessionId) ||
-        !this.state.gameOver ||
-        !this.replayFinished
-      )
-        throw new ReplayLibraryError("unavailable");
-      if (!owner) throw new ReplayLibraryError("sign_in");
-      this.sendReplayDownload(client);
-      const message = await this.replayDownloads.get(seat);
-      if (message?.kind !== "ready") throw new ReplayLibraryError("unavailable");
-      result = { kind: "saved", replay: await this.replays().save(owner, message) };
-    } catch (error) {
-      result = { kind: "failed", reason: error instanceof ReplayLibraryError ? error.code : "unavailable" };
-      if (!(error instanceof ReplayLibraryError)) this.debugError("[AegisRoom] failed to save replay", error);
-    } finally {
-      this.replaySaveRequests.delete(client);
+  /** A failed index write still delivers the file; the player can download it or save it to Drive as a guest would. */
+  private replayIndex(
+    seat: Seat,
+    owner: string,
+    message: Extract<ReplayDownloadMessage, { kind: "ready" }>,
+  ): Promise<string | undefined> {
+    const key = `${seat}:${owner}`;
+    let pending = this.replayIndexes.get(key);
+    if (!pending) {
+      pending = this.replays()
+        .record(owner, message)
+        .catch((error: unknown) => {
+          this.replayIndexes.delete(key);
+          this.debugError("[AegisRoom] failed to index replay", error);
+          return undefined;
+        });
+      this.replayIndexes.set(key, pending);
     }
-    if (this.clients.includes(client)) client.send(REPLAY_SAVE_CHANNEL, result);
+    return pending;
   }
 
   /** The close is part of the batch it ends, so it takes the next `seq` and that batch's id. */

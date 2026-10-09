@@ -497,6 +497,18 @@ const Upload = (p: IconProps) => (
     <line x1="12" y1="3" x2="12" y2="15" />
   </Svg>
 );
+const Cloud = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" />
+  </Svg>
+);
+const ExternalLink = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M15 3h6v6" />
+    <path d="M10 14 21 3" />
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+  </Svg>
+);
 const Download = (p: IconProps) => (
   <Svg {...p}>
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -668,6 +680,8 @@ export const Icons = {
   StarOutline,
   Upload,
   Download,
+  Cloud,
+  ExternalLink,
   Ban,
   Bug,
   Discord,

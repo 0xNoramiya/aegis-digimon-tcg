@@ -7,7 +7,8 @@ test("downloads a finished live match and opens it locally after leaving the roo
   await match.start("reconnect");
   match.opponent.room.onMessage("replay", () => {});
   match.opponent.room.send("surrender", {});
-  const downloadButton = page.getByRole("button", { name: "Download replay", exact: true });
+  await expect(page.getByRole("heading", { name: "Save this match's replay?" })).toBeVisible();
+  const downloadButton = page.getByRole("button", { name: "Download file", exact: true });
   await expect(downloadButton).toBeVisible();
   const pendingDownload = page.waitForEvent("download");
   await downloadButton.click();

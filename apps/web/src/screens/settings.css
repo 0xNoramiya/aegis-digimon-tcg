@@ -67,6 +67,17 @@
   background: var(--ds-sheet);
 }
 
+.settings-column {
+  display: grid;
+  align-content: start;
+  gap: inherit;
+  min-width: 0;
+}
+
+.settings-card--replays small[role="alert"] {
+  color: var(--ds-danger);
+}
+
 .settings-row,
 .settings-block {
   min-width: 0;
@@ -341,7 +352,7 @@
       "arena arena";
   }
 
-  .settings-card--profile {
+  .settings-column--side {
     grid-area: profile;
   }
 

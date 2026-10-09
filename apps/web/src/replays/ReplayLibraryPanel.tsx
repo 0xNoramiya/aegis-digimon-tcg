@@ -1,105 +1,191 @@
 import { useEffect, useRef, useState } from "react";
-import { MAX_SAVED_REPLAYS, type SavedReplay } from "@aegis/shared";
+import type { SavedReplay } from "@aegis/shared";
 import { AccountApiError } from "../account/client";
 import { Button } from "../design/primitives";
 import { Icons } from "../design/icons";
-import { useTranslation } from "../i18n";
+import { useTranslation, type TranslationKey } from "../i18n";
 import { ReplaySharing } from "./ReplaySharing";
-import { downloadSavedReplay, replayApi, replayPath, type ReplayLibraryView } from "./library";
+import { ReplayFileError } from "./files";
+import { replayApi, replayPath } from "./library";
+import { CloudAuthError, CloudRequestError, useCloudReplays, withCloudSession } from "./cloud";
+import { CloudReplayLibrary } from "./cloud/CloudReplayLibrary";
+import { driveViewLink } from "./cloud/googleDrive";
 
+type LibraryState =
+  | { kind: "loading" }
+  | { kind: "guest" }
+  | { kind: "failed" }
+  | { kind: "ready"; replays: SavedReplay[]; nextCursor?: string; sharing: boolean };
+
+export function cloudErrorKey(cause: unknown): TranslationKey {
+  if (cause instanceof ReplayFileError) return `replay.error.${cause.code}`;
+  if (cause instanceof CloudAuthError) return "replay.drive.authFailed";
+  if (cause instanceof CloudRequestError && cause.status === 404) return "replay.driveMissing";
+  return "replay.drive.error";
+}
+
+/**
+ * The signed-in player's replays, listed from the account index and played from their own
+ * Google Drive. Guests see the files in their Drive instead, read straight from Google.
+ */
 export function ReplayLibraryPanel({
   onOpen,
   onChange,
-  refreshKey = 0,
 }: {
-  refreshKey?: number;
-  onOpen: (file: Blob, id?: string) => Promise<void>;
+  /** Plays a file in place. Without it, Watch opens the replay's own page. */
+  onOpen?: (file: Blob) => Promise<void>;
   onChange?: () => void;
 }) {
   const { t, locale } = useTranslation();
-  const [library, setLibrary] = useState<ReplayLibraryView>();
-  const [guest, setGuest] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const { provider } = useCloudReplays();
+  const [library, setLibrary] = useState<LibraryState>({ kind: "loading" });
+  const [loadingMore, setLoadingMore] = useState(false);
   const [busy, setBusy] = useState<string>();
   const [confirmDelete, setConfirmDelete] = useState<string>();
-  const alive = useRef(true);
-  const request = useRef(0);
-  async function refresh() {
-    const generation = ++request.current;
-    setError(false);
-    setLoading(true);
+  const [trashOffer, setTrashOffer] = useState<SavedReplay>();
+  const [notice, setNotice] = useState<{ key: TranslationKey; alert: boolean }>();
+  const generation = useRef(0);
+
+  async function load() {
+    const current = ++generation.current;
+    setLibrary({ kind: "loading" });
     try {
-      const next = await replayApi.list();
-      if (alive.current && request.current === generation) {
-        setLibrary(next);
-        setGuest(false);
-      }
+      const page = await replayApi.list();
+      if (generation.current === current) setLibrary({ kind: "ready", ...page });
     } catch (cause) {
-      if (alive.current && request.current === generation) {
-        if (cause instanceof AccountApiError && cause.status === 401) setGuest(true);
-        else setError(true);
-      }
-    } finally {
-      if (alive.current && request.current === generation) setLoading(false);
+      if (generation.current === current)
+        setLibrary({ kind: cause instanceof AccountApiError && cause.status === 401 ? "guest" : "failed" });
     }
   }
+
   useEffect(() => {
-    alive.current = true;
-    void refresh();
+    void load();
     return () => {
-      alive.current = false;
+      generation.current++;
     };
-  }, [refreshKey]);
-  async function act(item: SavedReplay, action: "open" | "download" | "delete") {
-    setBusy(item.id);
-    setError(false);
+  }, []);
+
+  useEffect(() => {
+    if (provider && library.kind === "ready" && library.replays.length) void provider.prepare().catch(() => undefined);
+  }, [provider, library.kind]);
+
+  if (library.kind === "guest")
+    return onOpen ? <CloudReplayLibrary onOpen={onOpen} /> : <p>{t("replay.librarySignIn")}</p>;
+
+  async function loadMore() {
+    if (library.kind !== "ready" || !library.nextCursor) return;
+    const current = generation.current;
+    setLoadingMore(true);
+    setNotice(undefined);
     try {
-      if (action === "delete") {
-        await replayApi.remove(item.id);
-        setConfirmDelete(undefined);
-        await refresh();
-        onChange?.();
-      } else {
-        const file = await replayApi.file(item.id);
-        if (action === "open") await onOpen(file, item.id);
-        else downloadSavedReplay(item.id, file);
-      }
+      const page = await replayApi.list(library.nextCursor);
+      if (generation.current === current)
+        setLibrary((state) =>
+          state.kind === "ready" ? { kind: "ready", ...page, replays: [...state.replays, ...page.replays] } : state,
+        );
     } catch {
-      if (alive.current) {
-        setError(true);
-        await refresh();
-        setError(true);
-      }
+      setNotice({ key: "replay.libraryError", alert: true });
     } finally {
-      if (alive.current) setBusy(undefined);
+      setLoadingMore(false);
     }
   }
+
+  function update(change: (replays: SavedReplay[]) => SavedReplay[]) {
+    setLibrary((state) => (state.kind === "ready" ? { ...state, replays: change(state.replays) } : state));
+    onChange?.();
+  }
+
+  async function watch(item: SavedReplay) {
+    if (!provider || !onOpen) return;
+    setBusy(item.id);
+    setNotice(undefined);
+    try {
+      const file = await withCloudSession(provider, () =>
+        provider.download({ id: item.driveFileId, bytes: item.bytes }),
+      );
+      await onOpen(file);
+    } catch (cause) {
+      setNotice({ key: cloudErrorKey(cause), alert: true });
+    } finally {
+      setBusy(undefined);
+    }
+  }
+
+  async function remove(item: SavedReplay) {
+    setBusy(item.id);
+    setNotice(undefined);
+    try {
+      await replayApi.remove(item.id);
+      setConfirmDelete(undefined);
+      update((replays) => replays.filter((entry) => entry.id !== item.id));
+      if (provider) setTrashOffer(item);
+    } catch (cause) {
+      if (cause instanceof AccountApiError && cause.status === 404)
+        update((replays) => replays.filter((entry) => entry.id !== item.id));
+      else setNotice({ key: "replay.libraryError", alert: true });
+    } finally {
+      setBusy(undefined);
+    }
+  }
+
+  async function trash(item: SavedReplay) {
+    if (!provider) return;
+    setBusy(item.id);
+    setNotice(undefined);
+    try {
+      await withCloudSession(provider, () => provider.trash(item.driveFileId));
+      setTrashOffer(undefined);
+      setNotice({ key: "replay.trashDone", alert: false });
+    } catch (cause) {
+      setNotice({
+        key: cause instanceof CloudAuthError ? "replay.drive.authFailed" : "replay.trashFailed",
+        alert: true,
+      });
+    } finally {
+      setBusy(undefined);
+    }
+  }
+
+  const replays = library.kind === "ready" ? library.replays : [];
   return (
     <section className="replay-library" aria-labelledby="replay-library-title">
       <header>
         <div>
           <h2 id="replay-library-title">{t("replay.library")}</h2>
-          <p>{t("replay.libraryHint", { limit: MAX_SAVED_REPLAYS })}</p>
+          <p>{t("replay.libraryHint")}</p>
         </div>
-        <span className="replay-library__count">
-          {library?.replays.length ?? 0} / {MAX_SAVED_REPLAYS}
-        </span>
+        <Icons.Cloud size={22} aria-hidden="true" />
       </header>
-      {loading ? <p role="status">{t("replay.libraryLoading")}</p> : null}
-      {guest ? <p>{t("replay.librarySignIn")}</p> : null}
-      {error ? (
+      {library.kind === "loading" ? <p role="status">{t("replay.libraryLoading")}</p> : null}
+      {library.kind === "failed" ? (
         <div role="alert">
           <p>{t("replay.libraryError")}</p>
-          <Button size="sm" variant="secondary" onClick={() => void refresh()}>
+          <Button size="sm" variant="secondary" onClick={() => void load()}>
             {t("replay.retry")}
           </Button>
         </div>
       ) : null}
-      {library && !loading && !library.enabled ? <p>{t("replay.libraryDisabled")}</p> : null}
-      {library?.enabled && !loading && !library.replays.length ? <p>{t("replay.libraryEmpty")}</p> : null}
+      {trashOffer ? (
+        <div className="replay-library__trash" role="status">
+          <p>{t("replay.trashOffer")}</p>
+          <Button
+            size="sm"
+            variant="secondary"
+            icon={Icons.Trash}
+            disabled={busy !== undefined}
+            onClick={() => void trash(trashOffer)}
+          >
+            {t("replay.trashConfirm")}
+          </Button>
+          <Button size="sm" variant="ghost" disabled={busy !== undefined} onClick={() => setTrashOffer(undefined)}>
+            {t("replay.trashKeep")}
+          </Button>
+        </div>
+      ) : null}
+      {notice ? <p role={notice.alert ? "alert" : "status"}>{t(notice.key)}</p> : null}
+      {library.kind === "ready" && !replays.length ? <p>{t("replay.libraryEmpty")}</p> : null}
       <ul>
-        {library?.replays.map((item) => (
+        {replays.map((item) => (
           <li key={item.id}>
             <div className="replay-library__match">
               <strong>
@@ -111,15 +197,12 @@ export function ReplayLibraryPanel({
                   ? t("replay.draw")
                   : t("replay.winner", { name: item.summary.players[item.summary.winnerSeat] ?? "" })}
               </small>
-              {item.status !== "ready" ? (
-                <small role="status">{t(item.status === "pending" ? "replay.pending" : "replay.deleting")}</small>
-              ) : null}
             </div>
             <div className="replay-library__actions">
               {confirmDelete === item.id ? (
                 <>
                   <span>{t("replay.deleteConfirm")}</span>
-                  <Button size="sm" disabled={busy !== undefined} onClick={() => void act(item, "delete")}>
+                  <Button size="sm" disabled={busy !== undefined} onClick={() => void remove(item)}>
                     {t("replay.delete")}
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(undefined)}>
@@ -128,50 +211,48 @@ export function ReplayLibraryPanel({
                 </>
               ) : (
                 <>
-                  {item.status === "ready" ? (
-                    <>
-                      <Button
-                        size="sm"
-                        icon={Icons.Play}
-                        disabled={busy !== undefined}
-                        onClick={() => void act(item, "open")}
-                      >
-                        {t("replay.openAction")}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => {
-                          location.href = `${replayPath(item.id)}?export=mp4`;
-                        }}
-                      >
-                        MP4
-                      </Button>
-                      <ReplaySharing
-                        replay={item}
-                        onChange={(updated) => {
-                          setLibrary((current) =>
-                            current
-                              ? {
-                                  ...current,
-                                  replays: current.replays.map((entry) => (entry.id === updated.id ? updated : entry)),
-                                }
-                              : current,
-                          );
-                          onChange?.();
-                        }}
-                      />
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        icon={Icons.Download}
-                        disabled={busy !== undefined}
-                        onClick={() => void act(item, "download")}
-                      >
-                        {t("replay.download")}
-                      </Button>
-                    </>
+                  {onOpen && provider ? (
+                    <Button
+                      size="sm"
+                      icon={Icons.Play}
+                      disabled={busy !== undefined}
+                      aria-label={`${t("replay.prompt.watch")}: ${item.summary.players.join(" vs ")}`}
+                      onClick={() => void watch(item)}
+                    >
+                      {t("replay.prompt.watch")}
+                    </Button>
+                  ) : (
+                    <a className="aegis-button aegis-button--primary aegis-button--sm" href={replayPath(item.id)}>
+                      <Icons.Play size={16} aria-hidden="true" />
+                      {t("replay.prompt.watch")}
+                    </a>
+                  )}
+                  <a
+                    className="aegis-button aegis-button--secondary aegis-button--sm"
+                    href={driveViewLink(item.driveFileId)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <Icons.ExternalLink size={16} aria-hidden="true" />
+                    {t("replay.drive.open")}
+                  </a>
+                  {library.kind === "ready" && library.sharing ? (
+                    <ReplaySharing
+                      replay={item}
+                      onChange={(changed) =>
+                        update((entries) => entries.map((entry) => (entry.id === changed.id ? changed : entry)))
+                      }
+                    />
                   ) : null}
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      location.href = `${replayPath(item.id)}?export=mp4`;
+                    }}
+                  >
+                    MP4
+                  </Button>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -187,6 +268,11 @@ export function ReplayLibraryPanel({
           </li>
         ))}
       </ul>
+      {library.kind === "ready" && library.nextCursor ? (
+        <Button size="sm" variant="secondary" disabled={loadingMore} onClick={() => void loadMore()}>
+          {t(loadingMore ? "replay.libraryLoading" : "replay.loadMore")}
+        </Button>
+      ) : null}
     </section>
   );
 }

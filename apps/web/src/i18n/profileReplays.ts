@@ -33,7 +33,8 @@ export const profileReplayEn = {
   "replay.private": "Private",
   "replay.public": "Public",
   "replay.privateHint": "Only you can open this link while signed in.",
-  "replay.publicHint": "Anyone with the link can watch and download this replay, including both recorded hands.",
+  "replay.publicHint":
+    "Anyone with the link can watch and download this replay, including both recorded hands. The Google Drive file also becomes readable by anyone with its Drive link.",
   "replay.revokeHint":
     "Switching to private blocks future access. Files already downloaded remain with their recipients.",
   "replay.copyLink": "Copy link",
@@ -92,7 +93,7 @@ export const profileReplayPtBR = {
   "replay.public": "Público",
   "replay.privateHint": "Só você pode abrir este link, conectado à sua conta.",
   "replay.publicHint":
-    "Qualquer pessoa com o link pode assistir e baixar este replay, incluindo as duas mãos gravadas.",
+    "Qualquer pessoa com o link pode assistir e baixar este replay, incluindo as duas mãos gravadas. O arquivo no Google Drive também passa a poder ser lido por quem tiver o link dele no Drive.",
   "replay.revokeHint":
     "Voltar para privado bloqueia novos acessos. Arquivos já baixados continuam com quem os recebeu.",
   "replay.copyLink": "Copiar link",
@@ -150,7 +151,8 @@ export const profileReplayEs = {
   "replay.private": "Privado",
   "replay.public": "Público",
   "replay.privateHint": "Solo tú puedes abrir este enlace con tu sesión iniciada.",
-  "replay.publicHint": "Cualquiera con el enlace puede ver y descargar este replay, incluidas ambas manos grabadas.",
+  "replay.publicHint":
+    "Cualquiera con el enlace puede ver y descargar este replay, incluidas ambas manos grabadas. El archivo de Google Drive también podrá leerlo cualquiera que tenga su enlace de Drive.",
   "replay.revokeHint":
     "Volver a privado bloquea nuevos accesos. Los archivos ya descargados permanecen con sus destinatarios.",
   "replay.copyLink": "Copiar enlace",
@@ -208,7 +210,8 @@ export const profileReplayIt = {
   "replay.private": "Privato",
   "replay.public": "Pubblico",
   "replay.privateHint": "Solo tu puoi aprire questo link dopo aver effettuato l’accesso.",
-  "replay.publicHint": "Chiunque abbia il link può vedere e scaricare il replay, incluse entrambe le mani registrate.",
+  "replay.publicHint":
+    "Chiunque abbia il link può vedere e scaricare il replay, incluse entrambe le mani registrate. Anche il file su Google Drive diventa leggibile da chiunque abbia il suo link di Drive.",
   "replay.revokeHint": "Tornare a privato blocca gli accessi futuri. I file già scaricati restano ai destinatari.",
   "replay.copyLink": "Copia link",
   "replay.copied": "Link copiato",

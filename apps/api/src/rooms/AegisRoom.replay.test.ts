@@ -1,9 +1,8 @@
 import { gunzipSync } from "node:zlib";
 import { CloseCode, type Client } from "colyseus";
-import { REPLAY_CHANNEL, REPLAY_SAVE_CHANNEL, type MatchReplay, type ReplayDownloadMessage } from "@aegis/shared";
+import { REPLAY_CHANNEL, type MatchReplay, type ReplayDownloadMessage } from "@aegis/shared";
 import type { AccountStore } from "../accounts/AccountStore.js";
 import type { ReplayLibrary } from "../replays/ReplayLibrary.js";
-import { ReplayLibraryError } from "../replays/ReplayLibrary.js";
 import type { SeriesRecord } from "./series/SeriesDirectory.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AegisRoom } from "./AegisRoom.js";
@@ -23,6 +22,7 @@ async function start(bestOf = 1) {
   Reflect.set(room, "accounts", () => ({
     recordRecentMatch: vi.fn<AccountStore["recordRecentMatch"]>(async () => {}),
   }));
+  Reflect.set(room, "replays", () => ({ record: vi.fn<ReplayLibrary["record"]>(async () => "index-id") }));
   await room.onCreate({ seed: 1, bestOf });
   const players = ["a", "b"].map((sessionId) => ({ sessionId, send: vi.fn<Client["send"]>() }) as unknown as Client);
   for (const [seat, client] of players.entries()) {
@@ -33,6 +33,20 @@ async function start(bestOf = 1) {
   send(players[0]!, "ready");
   send(players[1]!, "ready");
   return { room, players, send };
+}
+function readyMessage(client: Client): Extract<ReplayDownloadMessage, { kind: "ready" }> | undefined {
+  const message = vi.mocked(client.send).mock.calls.find(([channel]) => channel === REPLAY_CHANNEL)?.[1] as
+    | ReplayDownloadMessage
+    | undefined;
+  return message?.kind === "ready" ? message : undefined;
+}
+function signIn(room: AegisRoom, client: Client, accountId: string) {
+  (Reflect.get(room, "accountByClient") as Map<string, string>).set(client.sessionId, accountId);
+}
+function indexWith(room: AegisRoom, record: ReplayLibrary["record"]) {
+  const spy = vi.fn<ReplayLibrary["record"]>(record);
+  Reflect.set(room, "replays", () => ({ record: spy }));
+  return spy;
 }
 function replayOf(client: Client): MatchReplay | undefined {
   const message = vi.mocked(client.send).mock.calls.find(([channel]) => channel === REPLAY_CHANNEL)?.[1] as
@@ -61,58 +75,59 @@ describe("room replay delivery", () => {
     release();
   });
 
-  it("saves only the seated account's authoritative completed export and reports the limit", async () => {
+  it("indexes the finished export only for signed-in seated participants and sends the index id", async () => {
     const { room, players, send } = await start();
-    const client = players[0]!;
-    (Reflect.get(room, "accountByClient") as Map<string, string>).set(client.sessionId, "trusted-owner");
-    const save = vi.fn<ReplayLibrary["save"]>(async () => {
-      throw new ReplayLibraryError("limit");
-    });
-    Reflect.set(room, "replays", () => ({ enabled: true, save }));
-    const request = () => Reflect.get(room, "saveParticipantReplay").call(room, client) as Promise<void>;
-    await request();
-    expect(save).not.toHaveBeenCalled();
-    send(players[1]!, "surrender");
-    await vi.waitFor(() => expect(replayOf(client)).toBeDefined());
-    await request();
-    expect(save).toHaveBeenCalledWith("trusted-owner", expect.objectContaining({ kind: "ready", viewerSeat: 0 }));
-    const exported = save.mock.calls[0]![1];
-    expect(JSON.parse(gunzipSync(Buffer.from(exported.data, "base64")).toString())).toEqual(replayOf(client));
-    expect(
-      vi
-        .mocked(client.send)
-        .mock.calls.filter(([channel]) => channel === REPLAY_SAVE_CHANNEL)
-        .at(-1)?.[1],
-    ).toEqual({ kind: "failed", reason: "limit" });
-  });
-  it("refuses guest and spectator saves and coalesces concurrent save requests", async () => {
-    const { room, players, send } = await start();
-    send(players[1]!, "surrender");
-    await vi.waitFor(() => expect(replayOf(players[0]!)).toBeDefined());
-    const save = vi.fn<ReplayLibrary["save"]>(async () => ({
-      id: "saved-id",
-      summary: { ...replayOf(players[0]!)!, frames: undefined } as never,
-      viewerSeat: 0,
-      bytes: 1,
-      savedAt: 1,
-      status: "ready",
-      visibility: "private",
-    }));
-    Reflect.set(room, "replays", () => ({ enabled: true, save }));
-    const request = (client: Client) => Reflect.get(room, "saveParticipantReplay").call(room, client) as Promise<void>;
-    await request(players[0]!);
-    expect(save).not.toHaveBeenCalled();
+    const [signedIn, guest] = players as [Client, Client];
+    signIn(room, signedIn, "trusted-owner");
     const spectator = { sessionId: "observer", send: vi.fn<Client["send"]>() } as unknown as Client;
     room.clients.push(spectator);
     (Reflect.get(room, "spectatorClients") as Set<string>).add(spectator.sessionId);
-    (Reflect.get(room, "accountByClient") as Map<string, string>).set(spectator.sessionId, "observer-owner");
-    await request(spectator);
-    expect(save).not.toHaveBeenCalled();
-    (Reflect.get(room, "accountByClient") as Map<string, string>).set(players[0]!.sessionId, "trusted-owner");
-    await Promise.all([request(players[0]!), request(players[0]!), request(players[0]!)]);
-    expect(save).toHaveBeenCalledTimes(1);
+    signIn(room, spectator, "observer-owner");
+    const record = indexWith(room, async () => "index-id");
+    Reflect.get(room, "sendReplayDownload").call(room, signedIn);
+    expect(record).not.toHaveBeenCalled();
+    send(guest, "surrender");
+    await vi.waitFor(() => expect(readyMessage(signedIn)).toBeDefined());
+    await vi.waitFor(() => expect(readyMessage(guest)).toBeDefined());
+    expect(readyMessage(signedIn)!.indexId).toBe("index-id");
+    expect(readyMessage(guest)!.indexId).toBeUndefined();
+    expect(spectator.send).not.toHaveBeenCalled();
+    expect(record).toHaveBeenCalledOnce();
+    const [owner, exported] = record.mock.calls[0]!;
+    expect(owner).toBe("trusted-owner");
+    expect(exported).toMatchObject({ kind: "ready", viewerSeat: 0 });
+    expect(JSON.parse(gunzipSync(Buffer.from(exported.data, "base64")).toString())).toEqual(replayOf(signedIn));
+    Reflect.get(room, "sendReplayDownload").call(room, signedIn);
+    await vi.waitFor(() =>
+      expect(vi.mocked(signedIn.send).mock.calls.filter(([channel]) => channel === REPLAY_CHANNEL)).toHaveLength(2),
+    );
+    expect(record).toHaveBeenCalledOnce();
   });
-  it("restores the server-owned account identity for continuation games before saving", async () => {
+  it("still delivers the file without an index id when the index write fails, and retries later", async () => {
+    const { room, players, send } = await start();
+    const client = players[0]!;
+    signIn(room, client, "trusted-owner");
+    let fail = true;
+    const record = indexWith(room, async () => {
+      if (fail) throw new Error("database offline");
+      return "index-id";
+    });
+    send(players[1]!, "surrender");
+    await vi.waitFor(() => expect(readyMessage(client)).toBeDefined());
+    expect(readyMessage(client)!.indexId).toBeUndefined();
+    fail = false;
+    Reflect.get(room, "sendReplayDownload").call(room, client);
+    await vi.waitFor(() => expect(record).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() =>
+      expect(
+        vi
+          .mocked(client.send)
+          .mock.calls.filter(([channel]) => channel === REPLAY_CHANNEL)
+          .at(-1)?.[1],
+      ).toMatchObject({ indexId: "index-id" }),
+    );
+  });
+  it("restores the server-owned account identity for continuation games before indexing", async () => {
     const { room, players, send } = await start(3);
     const client = players[0]!;
     const series = Reflect.get(room, "casualSeries");
@@ -127,17 +142,10 @@ describe("room replay delivery", () => {
     const options = { seriesToken: "trusted-series-token", accountId: "forged-client-account" };
     expect(Reflect.get(room, "authorizeSeriesSeat").call(room, client, options, record)).toBe(true);
     series.seatForToken = original;
-    expect((Reflect.get(room, "accountByClient") as Map<string, string>).get(client.sessionId)).toBe(
-      "original-account",
-    );
-    const save = vi.fn<ReplayLibrary["save"]>(async () => {
-      throw new ReplayLibraryError("limit");
-    });
-    Reflect.set(room, "replays", () => ({ enabled: true, save }));
+    const index = indexWith(room, async () => "index-id");
     send(players[1]!, "surrender");
-    await vi.waitFor(() => expect(replayOf(client)).toBeDefined());
-    await Reflect.get(room, "saveParticipantReplay").call(room, client);
-    expect(save).toHaveBeenCalledWith("original-account", expect.objectContaining({ kind: "ready" }));
+    await vi.waitFor(() => expect(readyMessage(client)?.indexId).toBe("index-id"));
+    expect(index).toHaveBeenCalledWith("original-account", expect.objectContaining({ kind: "ready" }));
   });
   it("starts at the ready-gated match, captures surrender, and sends each player a different file, never the observer", async () => {
     const { room, players, send } = await start();

@@ -626,6 +626,7 @@ export function AegisClient({
               replayId={route.replayId}
               onCloseLink={() => navigate({ screen: "replays" })}
               onViewingChange={setReplayViewing}
+              signedIn={!!account}
             />
           )}
 
