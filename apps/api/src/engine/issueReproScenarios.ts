@@ -26,6 +26,22 @@ type Layout = { players: readonly [PlayerLayout, PlayerLayout]; memory?: number 
 
 // Reduced boards for reported issues. Each runs in the ordinary turn loop.
 const ISSUE_LAYOUTS = {
+  "arena-github-5425-craniamon-guardromon": {
+    memory: 10,
+    players: [
+      {
+        field: [{ card: "EX13-062", under: ["P-144", "EX13-051"] }],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      {
+        field: [{ card: "BT4-065" }, { card: "BT1-009" }],
+        hand: ["BT25-016"],
+        security: Array(3).fill("BT1-009"),
+        deck: Array(12).fill("BT1-009"),
+      },
+    ],
+  },
   "arena-github-5427-gomimon-detach": {
     memory: 5,
     players: [

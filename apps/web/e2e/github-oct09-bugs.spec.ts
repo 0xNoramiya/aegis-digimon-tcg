@@ -1,5 +1,46 @@
 import { test, expect } from "./scenario-page";
 
+test.describe("GitHub #5425: Craniamon's unsuspend boost during an effect-ordered attack", () => {
+  test.use({
+    holdBotAfterTurn: 3,
+    // A list option must use Playwright's [value, options] form, or it is read as that pair.
+    botMainIntents: [
+      [{ type: "playCard", instanceId: "arena-github-5425-craniamon-guardromon-1-hand-0" }, { type: "endPhase" }],
+      { scope: "test" },
+    ],
+    botOptionalScript: { sourceCardId: "BT25-016", answers: [true] },
+  });
+
+  test("the derived boost resolves before the older sweep and the battle", async ({ scenario }) => {
+    const { page } = scenario;
+    const craniamon = "arena-github-5425-craniamon-guardromon-0-field-0";
+    await scenario.open("arena-github-5425-craniamon-guardromon");
+    await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
+    await page.getByRole("button", { name: /^End turn$/i }).click();
+    const prompt = page.getByRole("region", { name: "Block window", exact: true });
+    // The bot paces its own turn: phase narration and think time come before its play.
+    await expect(prompt).toBeVisible({ timeout: 40_000 });
+    await page.locator(`[data-drop="perm-you"][data-id="${craniamon}"]`).click();
+    await scenario.resolveUntil(
+      (s) => !s.pendingDecision && !s.combatWindow && s.turnSeat === 0,
+      (d) => (d.kind === "orderTriggers" ? { triggerCardId: "EX13-051" } : {}),
+    );
+    const events = (await scenario.presentation()).events;
+    const resolved = (pattern: RegExp) =>
+      events.findIndex(
+        (e) => e.kind === "effectResolved" && e.sourceCardId === "EX13-062" && pattern.test(e.description ?? ""),
+      );
+    const boost = resolved(/unsuspends/i);
+    const sweep = resolved(/suspends, you may/i);
+    const battle = events.findIndex((e) => e.kind === "battleCompared");
+    expect(boost).toBeGreaterThanOrEqual(0);
+    expect(boost).toBeLessThan(sweep);
+    expect(boost).toBeLessThan(battle);
+    expect((await scenario.snapshot()).players[0]!.battleArea.some((p) => p.permanentId === craniamon)).toBe(true);
+    await scenario.healthy();
+  });
+});
+
 test("GitHub #5427: Detach asks yes/no after a security loss and keeps the linked Gomimon", async ({ scenario }) => {
   const { page } = scenario;
   const gomimon = "arena-github-5427-gomimon-detach-0-field-0";
