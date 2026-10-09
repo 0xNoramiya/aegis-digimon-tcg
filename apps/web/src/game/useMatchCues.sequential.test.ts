@@ -426,8 +426,10 @@ describe("resumed effect results", () => {
         question: true,
       });
       await advance(10_000);
-      const securityEnd = steps.findLastIndex(
-        (step) => step.phase === "finished" && step.id.startsWith("security-") && step.version === 2,
+      const securityEnd = steps.reduce(
+        (last, step, index) =>
+          step.phase === "finished" && step.id.startsWith("security-") && step.version === 2 ? index : last,
+        -1,
       );
       const early = steps
         .slice(0, Math.max(securityEnd, 0))
