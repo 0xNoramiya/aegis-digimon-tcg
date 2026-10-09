@@ -143,6 +143,10 @@ export function PlayerMenu({
             <Icons.Github size={18} />
             GitHub
           </a>
+          <a href="/privacy">
+            <Icons.ShieldCheck size={18} />
+            {t("privacy.title")}
+          </a>
         </details>
         {signedIn && onSignOut ? (
           <button className="player-menu__sign-out" onClick={onSignOut}>

@@ -45,6 +45,7 @@ import { clearReconnectSession, loadReconnectSession } from "./net/reconnectSess
 const ProfileScreen = lazy(() => import("./account/ProfileScreen").then((m) => ({ default: m.ProfileScreen })));
 const ReplaysScreen = lazy(() => import("./replays/ReplaysScreen").then((m) => ({ default: m.ReplaysScreen })));
 const FeedbackScreen = lazy(() => import("./bugs/FeedbackScreen").then((m) => ({ default: m.FeedbackScreen })));
+const PrivacyScreen = lazy(() => import("./legal/PrivacyScreen").then((m) => ({ default: m.PrivacyScreen })));
 const Home = lazy(() => import("./screens/Home").then((m) => ({ default: m.Home })));
 const ReleasesScreen = lazy(() => import("./releases/ReleasesScreen").then((m) => ({ default: m.ReleasesScreen })));
 const Login = lazy(() => import("./screens/Login").then((m) => ({ default: m.Login })));
@@ -116,6 +117,7 @@ const NAV_SCREENS: Screen[] = [
   "releases",
   "replays",
   "feedback",
+  "privacy",
 ];
 
 export function withAccountAvatar(player: PlayerIdentity, account: RemoteAccount | null): PlayerIdentity {
@@ -631,6 +633,7 @@ export function AegisClient({
           )}
 
           {screen === "releases" && <ReleasesScreen />}
+          {screen === "privacy" && <PrivacyScreen />}
 
           {screen === "settings" && route.profile && (
             <ProfileScreen

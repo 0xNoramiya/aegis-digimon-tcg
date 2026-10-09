@@ -45,6 +45,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "feedback.mirror.failed": "Falha na cópia; feedback salvo",
   "feedback.mirror.disabled": "Cópia desativada",
 
+  "privacy.title": "Política de privacidade",
   "game.dragIntent.reorder": "REORDENAR MÃO",
   "settings.sortHand": "Ordenar mão",
   "settings.sortHandDesc":

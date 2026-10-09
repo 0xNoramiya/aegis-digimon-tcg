@@ -42,6 +42,7 @@ export const es: Record<keyof typeof en, string> = {
   "feedback.mirror.failed": "Falló la copia; comentario guardado",
   "feedback.mirror.disabled": "Copia desactivada",
 
+  "privacy.title": "Política de privacidad",
   "game.dragIntent.reorder": "REORDENAR MANO",
   "settings.sortHand": "Ordenar mano",
   "settings.sortHandDesc":

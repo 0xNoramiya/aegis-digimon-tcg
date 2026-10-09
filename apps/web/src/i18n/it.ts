@@ -95,6 +95,7 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "Nascosto",
   "community.moderation.hiddenOwnerBadge": "Nascosto da un moderatore",
   "community.moderation.hiddenOwnerNote": "Segnalato dai giocatori. Gli altri non possono vederlo.",
+  "privacy.title": "Informativa sulla privacy",
   "game.dragIntent.reorder": "RIORDINA LA MANO",
   "settings.sortHand": "Ordina la mano",
   "settings.sortHandDesc":

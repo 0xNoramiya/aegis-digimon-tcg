@@ -43,6 +43,7 @@ export const en = {
   "feedback.mirror.failed": "Copy failed; feedback saved",
   "feedback.mirror.disabled": "Copy disabled",
 
+  "privacy.title": "Privacy policy",
   "game.dragIntent.reorder": "REORDER HAND",
   "settings.sortHand": "Sort hand",
   "settings.sortHandDesc":

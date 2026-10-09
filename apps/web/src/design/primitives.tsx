@@ -44,6 +44,7 @@ export type Screen =
   | "replays"
   | "releases"
   | "feedback"
+  | "privacy"
   | "game";
 
 export function Stage({ children }: { children: ReactNode }) {
