@@ -27,6 +27,54 @@ async function passToOpponentMain(s: Awaited<ReturnType<typeof start>>["s"]) {
   await advance(s.engine).waitForMainPhase(1);
 }
 
+it("GitHub #5430: Gankoomon's Sistermon Noir with no Sistermon labels the De-Digivolve target prompt", async () => {
+  const { s, loop } = await start("arena-github-5430-gankoomon-noir-no-sistermon", {
+    autoSelectCards: false,
+    preferInstanceIds: [],
+  });
+  try {
+    const gankoomon = s.state.players[0]!.battleArea[0]!;
+    const [victim, bystander] = s.state.players[1]!.battleArea;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: gankoomon.permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    for (let answered = 0; answered < 10; answered++) {
+      await settle(() => s.state.pendingDecision !== undefined || !observe(s.engine).isAttacking());
+      const request = s.decisions.at(-1)?.req;
+      if (s.state.pendingDecision === undefined || request === undefined) break;
+      if (request.kind === "selectCards") {
+        const noir = gankoomon.stack.find((card) => card.cardId === "EX13-066")!;
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: request.decisionId,
+          response: { kind: "selectCards", instanceIds: [noir.instanceId] },
+        } as never);
+      } else if (request.kind === "chooseTargets" && request.sourceCardId === "EX13-066") {
+        expect(request.options?.effectTextPart).toBe(
+          "Then, to 1 of your opponent's Digimon, ＜De-Digivolve 1＞ for each of your Digimon.",
+        );
+        expect(request.options?.candidateInstanceIds).toEqual([victim!.permanentId, bystander!.permanentId]);
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: request.decisionId,
+          response: { kind: "chooseTargets", instanceIds: [victim!.permanentId] },
+        } as never);
+      } else break;
+    }
+    await settle(() => !observe(s.engine).isAttacking() && s.state.pendingDecision === undefined);
+    expect(victim!.stack).toHaveLength(1);
+    expect(s.state.players[0]!.trash.some((card) => card.cardId === "EX13-066")).toBe(true);
+    assertNoLoudGap(s);
+  } finally {
+    s.engine.applyIntent(0, { type: "surrender" });
+    await loop;
+  }
+});
+
 it("GitHub #5431: Yao Qinglan pays its By-cost with nothing to place, and Poseidia Lagoon answers", async () => {
   const { s, loop } = await start("arena-github-5431-yao-suspend-without-placement");
   try {

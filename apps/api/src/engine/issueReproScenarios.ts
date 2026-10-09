@@ -26,6 +26,24 @@ type Layout = { players: readonly [PlayerLayout, PlayerLayout]; memory?: number 
 
 // Reduced boards for reported issues. Each runs in the ordinary turn loop.
 const ISSUE_LAYOUTS = {
+  "arena-github-5430-gankoomon-noir-no-sistermon": {
+    memory: 5,
+    players: [
+      {
+        field: [{ card: "EX13-061", under: ["EX13-066"] }],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      {
+        field: [
+          { card: "BT1-080", under: ["BT1-013", "BT1-020"] },
+          { card: "BT1-080", under: ["BT1-013"] },
+        ],
+        security: Array(3).fill("BT1-009"),
+        deck: Array(12).fill("BT1-009"),
+      },
+    ],
+  },
   "arena-github-5431-yao-suspend-without-placement": {
     memory: 3,
     players: [

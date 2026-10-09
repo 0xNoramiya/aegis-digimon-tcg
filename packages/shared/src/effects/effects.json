@@ -96632,6 +96632,7 @@
           },
           {
             "kind": "SelectBind",
+            "effectTextPart": "Then, to 1 of your opponent's Digimon, ＜De-Digivolve 1＞ for each of your Digimon.",
             "condition": { "kind": "youHave", "filter": { "controller": "mine", "kind": ["Digimon"] } },
             "target": {
               "filter": { "controller": "opponent", "kind": ["Digimon"] },
@@ -96672,6 +96673,7 @@
           },
           {
             "kind": "SelectBind",
+            "effectTextPart": "Then, to 1 of your opponent's Digimon, ＜De-Digivolve 1＞ for each of your Digimon.",
             "condition": { "kind": "youHave", "filter": { "controller": "mine", "kind": ["Digimon"] } },
             "target": {
               "filter": { "controller": "opponent", "kind": ["Digimon"] },
@@ -96712,6 +96714,7 @@
           },
           {
             "kind": "SelectBind",
+            "effectTextPart": "Then, to 1 of your opponent's Digimon, ＜De-Digivolve 1＞ for each of your Digimon.",
             "condition": { "kind": "youHave", "filter": { "controller": "mine", "kind": ["Digimon"] } },
             "target": {
               "filter": { "controller": "opponent", "kind": ["Digimon"] },
@@ -236906,7 +236909,8 @@
               "filter": { "controller": "opponent", "kind": ["Digimon"] },
               "count": 1,
               "bindAs": "noirOpponent"
-            }
+            },
+            "effectTextPart": "Then, to 1 of your opponent's Digimon, ＜De-Digivolve 1＞ for each of your Digimon."
           },
           {
             "kind": "DeDigivolve",

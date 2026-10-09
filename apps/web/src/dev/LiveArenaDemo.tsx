@@ -97,6 +97,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Evolua ZeigGreymon para Shoutmon X7 por 2 via Blue Flare. Recuse efeitos opcionais. Fontes mantêm ordem; memória 8.",
   },
 
+  "arena-github-5430-gankoomon-noir-no-sistermon": {
+    en: "Attack with Gankoomon and use Sistermon Noir (Awakened) from its sources. No [Sistermon] card can be played, so the next prompt asks only for the De-Digivolve target and shows that clause. Pick an opposing Digimon: it loses 1 source.",
+    ptBR: "Ataque com Gankoomon e use Sistermon Noir (Awakened) das fontes. Nenhuma carta [Sistermon] pode ser jogada, então o próximo pedido pede só o alvo do De-Digivolve e mostra essa cláusula. Escolha um Digimon oponente: ele perde 1 fonte.",
+  },
   "arena-github-5431-yao-suspend-without-placement": {
     en: "Attack with Whamon. Accept Yao Qinglan's effect: no Lv.5 or lower card is in hand, but Yao still suspends. Poseidia Lagoon's Delay then digivolves Whamon into Ryugumon for 0 memory.",
     ptBR: "Ataque com Whamon. Aceite o efeito de Yao Qinglan: não há carta de nível 5 ou menor na mão, mas Yao ainda é suspensa. O Delay de Poseidia Lagoon então evolui Whamon para Ryugumon por 0 de memória.",
@@ -2637,6 +2641,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-github-5423-knightmon-opponent-attack", "#5423 · Knightmon on an opposing attack"],
   ["arena-github-5428-megakabuterimon-insectoid", "#5428 · MegaKabuterimon Insectoid cost"],
   ["arena-github-5431-yao-suspend-without-placement", "#5431 · Yao Qinglan suspends with nothing to place"],
+  ["arena-github-5430-gankoomon-noir-no-sistermon", "#5430 · Gankoomon uses Sistermon Noir with no Sistermon"],
   ["arena-github-5408-ruin-mode-hatch", "#5408 · Ruin Mode recovery and hatch"],
   ["arena-github-5372-progress-protection", "#5372 · Progress protection control"],
   ["arena-growlmon-deletion-5361", "#5361 Growlmon X · security deletion / stack Guilmon"],

@@ -1,5 +1,31 @@
 import { test, expect } from "./scenario-page";
 
+test("GitHub #5430: Gankoomon's Sistermon Noir with no Sistermon asks only for the De-Digivolve target", async ({
+  scenario,
+}) => {
+  const { page } = scenario;
+  await scenario.open("arena-github-5430-gankoomon-noir-no-sistermon");
+  await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
+  await scenario.attack("arena-github-5430-gankoomon-noir-no-sistermon-0-field-0");
+  const victim = "arena-github-5430-gankoomon-noir-no-sistermon-1-field-0";
+  let targetPromptSeen = false;
+  await scenario.resolveUntil(
+    (s) => !s.pendingDecision && !s.combatWindow && s.players[0]!.trash.some((c) => c.cardId === "EX13-066"),
+    async (d) => {
+      if (d.kind === "selectCards") return { cardId: "EX13-066" };
+      if (d.kind !== "chooseTargets" || d.sourceCardId !== "EX13-066") return {};
+      await expect(page.getByText("＜De-Digivolve 1＞ for each of your Digimon").first()).toBeVisible();
+      await expect(page.getByText(/You may play 1 play cost 4 or lower card/)).toHaveCount(0);
+      targetPromptSeen = true;
+      return { instanceId: victim };
+    },
+  );
+  expect(targetPromptSeen).toBe(true);
+  const final = await scenario.snapshot();
+  expect(final.players[1]!.battleArea.find((p) => p.permanentId === victim)!.stack).toHaveLength(1);
+  await scenario.healthy();
+});
+
 test("GitHub #5431: Yao Qinglan suspends with nothing to place and Poseidia Lagoon digivolves", async ({
   scenario,
 }) => {
