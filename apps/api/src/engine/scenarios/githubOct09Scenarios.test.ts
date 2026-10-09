@@ -1,4 +1,4 @@
-import { Phase } from "@aegis/shared";
+import { Phase, type DecisionRequest } from "@aegis/shared";
 import { expect, it } from "vitest";
 import "../../cards/index.js";
 import { layDevScenario, type DevScenarioId } from "../devScenario.js";
@@ -42,6 +42,7 @@ it("GitHub #5430: Gankoomon's Sistermon Noir with no Sistermon labels the De-Dig
         target: { kind: "player" },
       }),
     ).toEqual({ ok: true });
+    let targetPrompt: DecisionRequest | undefined;
     for (let answered = 0; answered < 10; answered++) {
       await settle(() => s.state.pendingDecision !== undefined || !observe(s.engine).isAttacking());
       const request = s.decisions.at(-1)?.req;
@@ -54,10 +55,7 @@ it("GitHub #5430: Gankoomon's Sistermon Noir with no Sistermon labels the De-Dig
           response: { kind: "selectCards", instanceIds: [noir.instanceId] },
         } as never);
       } else if (request.kind === "chooseTargets" && request.sourceCardId === "EX13-066") {
-        expect(request.options?.effectTextPart).toBe(
-          "Then, to 1 of your opponent's Digimon, ＜De-Digivolve 1＞ for each of your Digimon.",
-        );
-        expect(request.options?.candidateInstanceIds).toEqual([victim!.permanentId, bystander!.permanentId]);
+        targetPrompt = request;
         s.engine.applyIntent(0, {
           type: "respondDecision",
           decisionId: request.decisionId,
@@ -66,6 +64,10 @@ it("GitHub #5430: Gankoomon's Sistermon Noir with no Sistermon labels the De-Dig
       } else break;
     }
     await settle(() => !observe(s.engine).isAttacking() && s.state.pendingDecision === undefined);
+    expect(targetPrompt?.options?.effectTextPart).toBe(
+      "Then, to 1 of your opponent's Digimon, ＜De-Digivolve 1＞ for each of your Digimon.",
+    );
+    expect(targetPrompt?.options?.candidateInstanceIds).toEqual([victim!.permanentId, bystander!.permanentId]);
     expect(victim!.stack).toHaveLength(1);
     expect(s.state.players[0]!.trash.some((card) => card.cardId === "EX13-066")).toBe(true);
     assertNoLoudGap(s);
