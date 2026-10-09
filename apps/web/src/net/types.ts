@@ -64,6 +64,7 @@ export interface AegisJoinOptions {
     | "arena-github-5428-megakabuterimon-insectoid"
     | "arena-github-5431-yao-suspend-without-placement"
     | "arena-github-5430-gankoomon-noir-no-sistermon"
+    | "arena-github-5427-gomimon-detach"
     | "arena-github-5408-ruin-mode-hatch"
     | "arena-github-5372-progress-protection"
     | "arena-github5326-sistermon-zero-security"

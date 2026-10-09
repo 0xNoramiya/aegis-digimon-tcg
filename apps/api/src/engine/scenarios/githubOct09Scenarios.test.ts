@@ -27,6 +27,29 @@ async function passToOpponentMain(s: Awaited<ReturnType<typeof start>>["s"]) {
   await advance(s.engine).waitForMainPhase(1);
 }
 
+it("GitHub #5427: Detach asks yes/no after a security loss and keeps Gomimon", async () => {
+  const { s, loop } = await start("arena-github-5427-gomimon-detach");
+  try {
+    const human = s.state.players[0]!;
+    const gomimon = human.battleArea[0]!;
+    expect(
+      s.engine.applyIntent(0, { type: "attack", attackerPermanentId: gomimon.permanentId, target: { kind: "player" } }),
+    ).toEqual({ ok: true });
+    await settle(() => !observe(s.engine).isAttacking() && s.state.pendingDecision === undefined);
+    expect(human.battleArea.map((p) => p.permanentId)).toContain(gomimon.permanentId);
+    expect(gomimon.linked).toHaveLength(0);
+    expect(human.trash.some((card) => card.cardId === "BT26-063")).toBe(true);
+    const detach = s.decisions.filter(
+      ({ req }) => req.kind === "optional" && req.promptText.includes("Gomimon doesn't leave the battle area"),
+    );
+    expect(detach).toHaveLength(1);
+    assertNoLoudGap(s);
+  } finally {
+    s.engine.applyIntent(0, { type: "surrender" });
+    await loop;
+  }
+});
+
 it("GitHub #5430: Gankoomon's Sistermon Noir with no Sistermon labels the De-Digivolve target prompt", async () => {
   const { s, loop } = await start("arena-github-5430-gankoomon-noir-no-sistermon", {
     autoSelectCards: false,

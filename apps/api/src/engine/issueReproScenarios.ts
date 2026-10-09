@@ -26,6 +26,18 @@ type Layout = { players: readonly [PlayerLayout, PlayerLayout]; memory?: number 
 
 // Reduced boards for reported issues. Each runs in the ordinary turn loop.
 const ISSUE_LAYOUTS = {
+  "arena-github-5427-gomimon-detach": {
+    memory: 5,
+    players: [
+      {
+        field: [{ card: "BT26-051", under: ["BT26-007"] }],
+        hand: ["BT26-063"],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      { security: ["BT20-102", "BT1-009", "BT1-009"], deck: Array(12).fill("BT1-009") },
+    ],
+  },
   "arena-github-5430-gankoomon-noir-no-sistermon": {
     memory: 5,
     players: [

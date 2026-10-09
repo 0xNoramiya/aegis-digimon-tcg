@@ -91,21 +91,26 @@ export function detachLeaveReplacements(
           if (live === undefined || !deps.hasDetach(id)) return false;
           const traits = deps.traitTokens(id);
           const eligible = detachableLinkedCards(live, traits, deps.definitionOf);
+          const name = deps.definitionOf(live.topCard).nameEn;
+          const question = `Trash 1 link card so ${name} doesn't leave the battle area?`;
           const askCtx = {
             ...ctx,
-            activeEffectText: `＜Detach${traits.length > 0 ? " (" + traits.map((trait) => "[" + trait + "] trait").join("/") + ")" : ""}＞`,
+            activeEffectText: `＜Detach${traits.length > 0 ? " (" + traits.map((trait) => "[" + trait + "] trait").join("/") + ")" : ""}＞: trash 1 link card so ${name} doesn't leave the battle area.`,
           };
           if (eligible.length === 0) {
             // An unexecutable optional processing condition cannot be chosen (§15-7-4).
             return false;
           }
           if (ctx.presetOptionalAnswer === false) return false;
+          // Ask yes/no first: a bare "up to 1" link picker let an empty Confirm decline Detach
+          // while the player was still reading it (GitHub #5427).
+          if (ctx.presetOptionalAnswer !== true && !(await askCtx.ask.optional(askCtx, question))) return false;
           const selected =
-            ctx.presetOptionalAnswer === true && eligible.length === 1
+            eligible.length === 1
               ? [eligible[0]!.instanceId]
               : await askCtx.ask.selectCards(askCtx, {
                   candidates: eligible.map((card) => card.instanceId),
-                  min: 0,
+                  min: 1,
                   max: 1,
                 });
           if (selected.length !== 1) return false;

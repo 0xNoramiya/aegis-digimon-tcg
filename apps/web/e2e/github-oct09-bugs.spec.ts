@@ -1,5 +1,33 @@
 import { test, expect } from "./scenario-page";
 
+test("GitHub #5427: Detach asks yes/no after a security loss and keeps the linked Gomimon", async ({ scenario }) => {
+  const { page } = scenario;
+  const gomimon = "arena-github-5427-gomimon-detach-0-field-0";
+  await scenario.open("arena-github-5427-gomimon-detach");
+  await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
+  await scenario.attack(gomimon);
+  let detachSeen = false;
+  await scenario.resolveUntil(
+    (s) =>
+      !s.pendingDecision &&
+      !s.combatWindow &&
+      s.players[0]!.trash.some((c) => c.cardId === "BT26-063") &&
+      s.players[0]!.battleArea.some((p) => p.permanentId === gomimon),
+    async (d) => {
+      if (d.kind === "selectCards") return { cardId: "BT26-063" };
+      if (d.kind === "optional" && d.promptText.includes("doesn't leave the battle area")) {
+        await expect(page.getByText(/trash 1 link card so Gomimon doesn't leave the battle area/)).toBeVisible();
+        detachSeen = true;
+      }
+      return {};
+    },
+  );
+  expect(detachSeen).toBe(true);
+  const final = await scenario.snapshot();
+  expect(final.players[0]!.battleArea.find((p) => p.permanentId === gomimon)!.linked).toHaveLength(0);
+  await scenario.healthy();
+});
+
 test("GitHub #5430: Gankoomon's Sistermon Noir with no Sistermon asks only for the De-Digivolve target", async ({
   scenario,
 }) => {

@@ -97,6 +97,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Evolua ZeigGreymon para Shoutmon X7 por 2 via Blue Flare. Recuse efeitos opcionais. Fontes mantêm ordem; memória 8.",
   },
 
+  "arena-github-5427-gomimon-detach": {
+    en: "Attack with Gomimon. Use Swipemon's inherited effect to link Tellermon. Omnimon in security wins the battle. Answer Yes to Detach: Tellermon goes to the trash and Gomimon stays in play.",
+    ptBR: "Ataque com Gomimon. Use o efeito herdado de Swipemon para vincular Tellermon. Omnimon na segurança vence a batalha. Responda Sim ao Detach: Tellermon vai ao lixo e Gomimon permanece em campo.",
+  },
   "arena-github-5430-gankoomon-noir-no-sistermon": {
     en: "Attack with Gankoomon and use Sistermon Noir (Awakened) from its sources. No [Sistermon] card can be played, so the next prompt asks only for the De-Digivolve target and shows that clause. Pick an opposing Digimon: it loses 1 source.",
     ptBR: "Ataque com Gankoomon e use Sistermon Noir (Awakened) das fontes. Nenhuma carta [Sistermon] pode ser jogada, então o próximo pedido pede só o alvo do De-Digivolve e mostra essa cláusula. Escolha um Digimon oponente: ele perde 1 fonte.",
@@ -2642,6 +2646,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-github-5428-megakabuterimon-insectoid", "#5428 · MegaKabuterimon Insectoid cost"],
   ["arena-github-5431-yao-suspend-without-placement", "#5431 · Yao Qinglan suspends with nothing to place"],
   ["arena-github-5430-gankoomon-noir-no-sistermon", "#5430 · Gankoomon uses Sistermon Noir with no Sistermon"],
+  ["arena-github-5427-gomimon-detach", "#5427 · Gomimon Detach after a security loss"],
   ["arena-github-5408-ruin-mode-hatch", "#5408 · Ruin Mode recovery and hatch"],
   ["arena-github-5372-progress-protection", "#5372 · Progress protection control"],
   ["arena-growlmon-deletion-5361", "#5361 Growlmon X · security deletion / stack Guilmon"],
