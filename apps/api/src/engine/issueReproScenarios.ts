@@ -26,6 +26,17 @@ type Layout = { players: readonly [PlayerLayout, PlayerLayout]; memory?: number 
 
 // Reduced boards for reported issues. Each runs in the ordinary turn loop.
 const ISSUE_LAYOUTS = {
+  "arena-github-5429-examon-piercing-barrier": {
+    memory: 5,
+    players: [
+      { field: [{ card: "BT1-080" }, { card: "ST2-10" }], hand: ["EX13-045"], deck: Array(12).fill("BT1-009") },
+      {
+        field: [{ card: "BT1-013" }, { card: "BT13-041" }],
+        security: Array(5).fill("BT1-009"),
+        deck: Array(12).fill("BT1-009"),
+      },
+    ],
+  },
   "arena-github-5422-magnamon-timed-security": {
     memory: 5,
     players: [

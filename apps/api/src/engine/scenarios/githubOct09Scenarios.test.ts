@@ -27,6 +27,53 @@ async function passToOpponentMain(s: Awaited<ReturnType<typeof start>>["s"]) {
   await advance(s.engine).waitForMainPhase(1);
 }
 
+it("GitHub #5429 (Q7365): Examon's Piercing still checks after Barrier saves the attack target", async () => {
+  const prefer: string[] = [];
+  const s = setupEngine(
+    {
+      0: {
+        battleArea: [
+          { card: "BT1-080", as: "green" },
+          { card: "ST2-10", as: "blue" },
+        ],
+        hand: [{ card: "EX13-045", as: "examon" }],
+        deck: Array(12).fill("BT1-009"),
+      },
+      1: {
+        battleArea: [
+          { card: "BT1-013", as: "first" },
+          { card: "BT13-041", as: "barrier" },
+        ],
+        security: Array(5).fill("BT1-009"),
+      },
+    },
+    { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true, preferInstanceIds: prefer },
+  );
+  s.state.memory = 5;
+  await s.ready();
+  const firstCardId = s.perm("first").topCard.instanceId;
+  prefer.push(firstCardId, s.perm("first").permanentId);
+  const barrierId = s.perm("barrier").permanentId;
+  expect(
+    s.engine.applyIntent(0, {
+      type: "dnaDigivolve",
+      instanceId: s.inst("examon").instanceId,
+      materialPermanentIds: [s.perm("green").permanentId, s.perm("blue").permanentId],
+    }),
+  ).toEqual({ ok: true });
+  await settle(() => s.events.some((event) => event.kind === "barrierPrompt"));
+  expect(s.engine.applyIntent(1, { type: "respondBarrier", permanentId: barrierId, accept: true })).toEqual({
+    ok: true,
+  });
+  await settle(() => !observe(s.engine).isAttacking() && !s.state.pendingDecision);
+  expect(s.state.players[1]!.battleArea.map((p) => p.permanentId)).toEqual([barrierId]);
+  expect(s.state.players[1]!.trash.some((card) => card.instanceId === firstCardId)).toBe(true);
+  // One security card paid for Barrier, then one Piercing check of 2 cards (Security A. +1).
+  expect(s.state.players[1]!.security).toHaveLength(2);
+  expect(s.events.filter((event) => event.kind === "securityChecked")).toHaveLength(2);
+  assertNoLoudGap(s);
+});
+
 it("GitHub #5427: Detach asks yes/no after a security loss and keeps Gomimon", async () => {
   const { s, loop } = await start("arena-github-5427-gomimon-detach");
   try {

@@ -67,6 +67,7 @@ export interface AegisJoinOptions {
     | "arena-github-5427-gomimon-detach"
     | "arena-github-5425-craniamon-guardromon"
     | "arena-github-5422-magnamon-timed-security"
+    | "arena-github-5429-examon-piercing-barrier"
     | "arena-github-5408-ruin-mode-hatch"
     | "arena-github-5372-progress-protection"
     | "arena-github5326-sistermon-zero-security"

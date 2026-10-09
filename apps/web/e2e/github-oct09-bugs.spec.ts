@@ -1,5 +1,38 @@
 import { test, expect } from "./scenario-page";
 
+test("GitHub #5429 (Q7365): Examon's Piercing still checks after Barrier saves the attack target", async ({
+  scenario,
+  page,
+}) => {
+  const barrier = "arena-github-5429-examon-piercing-barrier-1-field-1";
+  await scenario.open("arena-github-5429-examon-piercing-barrier");
+  await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
+  const before = await scenario.snapshot();
+  await scenario.hand("Examon");
+  await page.getByRole("button", { name: "Digivolve", exact: true }).click();
+  for (const material of before.players[0]!.battleArea) {
+    const card = page.locator(`[data-id="${material.permanentId}"][role="button"]`);
+    if (!(await card.locator(".game-permanent__material-order").count())) {
+      await card.focus();
+      await card.press("Enter");
+    }
+  }
+  await page
+    .getByRole("region", { name: /DNA Digivolution available/i })
+    .getByRole("button", { name: "DNA Digivolve", exact: true })
+    .click();
+  await scenario.resolveUntil(
+    (s) => !s.pendingDecision && !s.combatWindow && s.players[1]!.securityCount === 2,
+    (d) => ({ accept: true, ...(d.promptText.includes("battle") ? { cardId: "BT1-013" } : {}) }),
+  );
+  const final = await scenario.snapshot();
+  expect(final.players[1]!.battleArea.map((p) => p.permanentId)).toEqual([barrier]);
+  const events = (await scenario.presentation()).events;
+  expect(events.some((e) => e.kind === "barrierResolved" && e.permanentId === barrier && e.accepted)).toBe(true);
+  expect(events.filter((e) => e.kind === "securityChecked")).toHaveLength(2);
+  await scenario.healthy();
+});
+
 test("GitHub #5422: a timed Magnamon would-leave prompt waits for the security reveal", async ({ scenario }) => {
   await scenario.open("arena-github-5422-magnamon-timed-security");
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
