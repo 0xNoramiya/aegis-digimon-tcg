@@ -36,7 +36,7 @@ describe("portable replay files", () => {
         replay.frames[0]!.events[0] = { kind: "attackDeclared", seq: 1, batch: "batch-0", stateVersion: 1 } as never;
       },
       (replay: ReturnType<typeof replayFixture>) => {
-        replay.frames[0]!.state.series = {} as never;
+        replay.frames[0]!.state.series = { bestOf: "3" } as never;
       },
     ]) {
       const replay = replayFixture();
@@ -44,6 +44,13 @@ describe("portable replay files", () => {
       await expect(readReplay(new Blob([JSON.stringify(replay)]))).rejects.toMatchObject({ code: "invalid" });
     }
   });
+  it("opens files recorded before newer schema fields existed", async () => {
+    const replay = replayFixture();
+    for (const frame of replay.frames) delete (frame.state as Partial<typeof frame.state>).format;
+    const opened = await readReplay(new Blob([JSON.stringify(replay)]));
+    expect(opened.frames[0]!.state.format).toBe(replayFixture().frames[0]!.state.format);
+  });
+
   it("limits gzip expansion so a small compressed file cannot allocate unlimited memory", async () => {
     const bomb = gzipSync(" ".repeat(MAX_REPLAY_BYTES + 1));
     await expect(readReplay(new Blob([bomb]))).rejects.toMatchObject({ code: "size" });

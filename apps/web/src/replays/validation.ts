@@ -12,7 +12,12 @@ const stateDefaults = new GameState().toJSON();
 const playerDefaults = new PlayerState().toJSON();
 const permanentDefaults = new Permanent().toJSON();
 const cardDefaults = new CardInstance().toJSON();
+/**
+ * Files recorded before a schema field existed lack it, so a missing field takes its current
+ * default (mutating the parsed file) instead of rejecting every older replay.
+ */
 function defaultFields(value: RecordValue, defaults: RecordValue): boolean {
+  for (const [key, item] of Object.entries(defaults)) if (!(key in value)) value[key] = structuredClone(item);
   return Object.entries(defaults).every(([key, item]) =>
     Array.isArray(item)
       ? Array.isArray(value[key])
