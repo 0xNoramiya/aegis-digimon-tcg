@@ -536,6 +536,7 @@ export function TopNav({
     { key: "deck", label: t("nav.decks"), icon: Icons.LayoutDashboard },
     { key: "community", label: t("nav.community"), icon: Icons.Users },
     { key: "collection", label: t("nav.collection"), icon: Icons.BookOpen },
+    { key: "replays", label: t("replay.title"), icon: Icons.PlayCircle },
   ];
   const signIn = signedIn ? null : (
     <button className="aegis-sign-in-button" onClick={() => navTo("login")} aria-label={t("nav.signIn")}>
