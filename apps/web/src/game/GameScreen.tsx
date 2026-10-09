@@ -85,6 +85,7 @@ import {
 } from "@aegis/shared";
 import { rejectionMessage } from "../rejectionMessages";
 import { useTranslation } from "../i18n";
+import { intents } from "../net/intents";
 import { useRoom, type MatchMode, type SeriesGameTicket, type UseRoomResult } from "../net/useRoom";
 import { seriesView } from "./seriesModel";
 import { singleServerBatch, type ServerBatch } from "../net/serverBatches";
@@ -196,8 +197,12 @@ export function GameScreen({
   seriesGame?: SeriesGameTicket;
   /** The series opened its next game; the caller remounts this screen on that ticket. */
   onSeriesNext?: (ticket: SeriesGameTicket) => void;
-  /** Whether leaving now would concede a live match; must be a stable callback. */
-  onLeaveForfeitsChange?: (forfeits: boolean) => void;
+  /**
+   * Receives a way to concede while leaving would forfeit a live match, and `undefined` once it
+   * would not. Conceding keeps the player on the result so they can still keep the replay.
+   * Must be a stable callback.
+   */
+  onLeaveForfeitsChange?: (concede: (() => void) | undefined) => void;
 }) {
   const { t } = useTranslation();
   const [handOrder, setHandOrder] = useState<readonly string[]>([]);
@@ -269,9 +274,11 @@ export function GameScreen({
   const leaveForfeits = !demoConnection && !spectating && !!state && bothSeated(state) && !state.gameOver;
   useEffect(() => {
     if (!leaveForfeits || !onLeaveForfeitsChange) return;
-    onLeaveForfeitsChange(true);
-    return () => onLeaveForfeitsChange(false);
-  }, [leaveForfeits, onLeaveForfeitsChange]);
+    onLeaveForfeitsChange(() => {
+      if (connectedRoom) intents.surrender(connectedRoom);
+    });
+    return () => onLeaveForfeitsChange(undefined);
+  }, [leaveForfeits, onLeaveForfeitsChange, connectedRoom]);
 
   const vsBot = startMode === "bot";
   const isPrivateMatch = startMode === "private_host" || startMode === "private_guest" || !!state?.roomCode;

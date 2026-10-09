@@ -971,7 +971,7 @@ export const en = {
   "game.surrenderConfirmTitle": "Surrender this match?",
   "game.surrenderConfirmBody": "The match ends now and counts as a loss.",
   "game.leaveConfirmTitle": "Leave this match?",
-  "game.leaveConfirmBody": "Leaving ends the match and counts as a loss.",
+  "game.leaveConfirmBody": "Leaving ends the match and counts as a loss. You can still save its replay.",
   "game.stats.turns": "Turns",
   "game.stats.oppBoard": "Opp. board",
   "game.stats.yourSecurity": "Your security",

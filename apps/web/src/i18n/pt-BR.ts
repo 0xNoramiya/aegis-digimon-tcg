@@ -995,7 +995,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.surrenderConfirmTitle": "Desistir desta partida?",
   "game.surrenderConfirmBody": "A partida termina agora e conta como derrota.",
   "game.leaveConfirmTitle": "Sair desta partida?",
-  "game.leaveConfirmBody": "Sair encerra a partida e conta como derrota.",
+  "game.leaveConfirmBody": "Sair encerra a partida e conta como derrota. Você ainda pode salvar o replay.",
   "game.stats.turns": "Turnos",
   "game.stats.oppBoard": "Mesa do opon.",
   "game.stats.yourSecurity": "Sua segurança",

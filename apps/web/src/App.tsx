@@ -354,11 +354,10 @@ export function AegisClient({
   const [themeOpen, setThemeOpen] = useState(false);
   const [bugReportOpen, setBugReportOpen] = useState(false);
   const [leaveMatchPromptOpen, setLeaveMatchPromptOpen] = useState(false);
-  const leaveForfeitsMatchRef = useRef(false);
-  const leaveMatchConfirmedRef = useRef(false);
-  const setLeaveForfeitsMatch = useCallback((forfeits: boolean) => {
-    leaveForfeitsMatchRef.current = forfeits;
-    if (!forfeits) setLeaveMatchPromptOpen(false);
+  const concedeMatchRef = useRef<(() => void) | undefined>(undefined);
+  const setLeaveForfeitsMatch = useCallback((concede: (() => void) | undefined) => {
+    concedeMatchRef.current = concede;
+    if (!concede) setLeaveMatchPromptOpen(false);
   }, []);
   const screen = route.screen;
   useEffect(() => {
@@ -393,14 +392,13 @@ export function AegisClient({
         nextRoute?.screen === "game" && !loadReconnectSession()
           ? { screen: "lobby" }
           : (nextRoute ?? { screen: "home" });
-      /* The browser has already moved off the match URL, so the guard restores it and
-         asks. Confirming steps back again, which lands on the route the player chose. */
-      if (leaveForfeitsMatchRef.current && resolvedRoute.screen !== "game" && !leaveMatchConfirmedRef.current) {
+      /* The browser has already moved off the match URL, so the guard restores it and asks.
+         Confirming concedes in place: the result screen then offers to keep the replay. */
+      if (concedeMatchRef.current && resolvedRoute.screen !== "game") {
         window.history.pushState(null, "", pathForRoute({ screen: "game" }));
         setLeaveMatchPromptOpen(true);
         return;
       }
-      leaveMatchConfirmedRef.current = false;
       setRoute(resolvedRoute);
     };
     window.addEventListener("popstate", onPopState);
@@ -408,9 +406,8 @@ export function AegisClient({
   }, [initialScreen]);
 
   const confirmLeaveMatch = () => {
-    leaveMatchConfirmedRef.current = true;
     setLeaveMatchPromptOpen(false);
-    window.history.back();
+    concedeMatchRef.current?.();
   };
 
   const navigate = (nextRoute: AppRoute) => {
