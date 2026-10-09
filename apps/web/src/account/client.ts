@@ -2,7 +2,9 @@ import type { DeckListing } from "../game/decks";
 import { dominantColor } from "../game/decks";
 import type { DigimonWorldAvatarId } from "./avatars";
 
-const apiBase = (import.meta.env.VITE_AEGIS_API_URL ?? `http://${location.hostname}:2567`).replace(/^ws/, "http");
+// The match overlay imports this module, so it must also load where `location` is absent (Node tests).
+const fallbackHost = typeof location === "undefined" ? "localhost" : location.hostname;
+const apiBase = (import.meta.env.VITE_AEGIS_API_URL ?? `http://${fallbackHost}:2567`).replace(/^ws/, "http");
 
 export type RemoteAccount = {
   id: string;
