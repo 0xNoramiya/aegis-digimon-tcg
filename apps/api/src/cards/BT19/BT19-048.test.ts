@@ -683,6 +683,37 @@ describe("BT19-048 ForgeBeemon — KB Q&A rulings", () => {
     expect(s.perm("royal").currentDP).toBe(2000);
   });
 
+  it("does not save the target when another copy keeps the paying copy on the field (Q7247)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT19-048", as: "forgeOne" },
+            { card: "BT19-048", as: "forgeTwo" },
+            { card: "BT19-045", as: "royal" },
+          ],
+          security: INERT_SECURITY,
+          deck: INERT_DECK,
+        },
+        1: { security: INERT_SECURITY, deck: INERT_DECK },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    const forgeIds = [s.inst("forgeOne").instanceId, s.inst("forgeTwo").instanceId];
+
+    await advance(s.engine).verb.deletePermanent([s.perm("royal").permanentId], "byEffect");
+    await settle(() => s.state.pendingDecision === undefined);
+
+    const human = s.state.players[0]!;
+    expect(human.trash.map((card) => card.instanceId)).toContain(s.inst("royal").instanceId);
+    const forgesInSecurity = human.security.filter((card) => forgeIds.includes(card.instanceId));
+    const forgesOnField = human.battleArea.filter((permanent) => forgeIds.includes(permanent.topCard.instanceId));
+    expect(forgesInSecurity).toHaveLength(1);
+    expect(forgesOnField).toHaveLength(1);
+    assertNoLoudGap(s);
+  });
+
   it("triggers a face-up security card's [Security] effect when it is checked (Q3102)", async () => {
     const s = setupEngine({
       0: {
