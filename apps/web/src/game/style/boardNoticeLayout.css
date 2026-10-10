@@ -16,6 +16,11 @@
     flex-direction: column;
     gap: 4px;
     min-width: 0;
+    /* Stops just above the viewer's own egg, security, deck and trash row, which sits
+       about 16rem above the screen's bottom edge. The opened column shrinks into what
+       the waiting pill leaves, instead of a fixed viewport share that left half of it
+       unused. */
+    max-height: calc(100dvh - var(--arena-header-height) - 18.5rem);
     padding-inline: max(8px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-right, 0px));
     z-index: var(--ds-z-notice);
     pointer-events: none;
@@ -29,7 +34,7 @@
     position: relative;
     inset: auto;
     width: 100%;
-    max-height: min(31rem, 30dvh);
+    max-height: 31rem;
     overflow-y: auto;
     animation: none;
   }
