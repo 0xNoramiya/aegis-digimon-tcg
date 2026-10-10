@@ -483,6 +483,7 @@ export interface AegisJoinOptions {
     | "arena-ex7-seventh-fascination-trash-turn"
     | "arena-raid-after-dedigivolve"
     | "arena-lm007-publimon-end-of-attack"
+    | "arena-feedback4-shellmon-targets"
     | "arena-raid-optional-preset"
     | "arena-preset-order-no-clicks"
     | "arena-ex13-leopardmon-suspended-target"

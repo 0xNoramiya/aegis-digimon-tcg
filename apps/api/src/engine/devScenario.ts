@@ -81,6 +81,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-ravemon-burst-hand",
   "arena-raid-after-dedigivolve",
   "arena-lm007-publimon-end-of-attack",
+  "arena-feedback4-shellmon-targets",
   "arena-github5331-offense-hand",
   "arena-github5362-shellmon-ts",
   "arena-lanamon-tamer-cost",
@@ -1465,6 +1466,28 @@ function layEx7SeventhFascinationTurnScenario(
   state.turnCount = 0;
   state.isFirstPlayersFirstTurn = false;
   state.memory = fromTrash ? 10 : 7;
+}
+
+/** Feedback report 4: Shellmon's trash and restriction clauses each ask for their own target. */
+function layFeedback4ShellmonTargetsScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback4-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback4-deck-${seat}-${index}`, "BT1-009", seat));
+    }
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback4-security-${seat}-${index}`, "BT1-009", seat));
+    }
+  }
+  insertCard(state.players[0]!, Zone.Hand, faceUpCard("dev-feedback4-shellmon", "EX12-026", 0));
+  const bot = state.players[1]!;
+  placePermanent(bot, establishedDigimon(1, ["BT1-009", "BT1-010", "BT1-011", "EX12-032"], "-feedback4-stripped"));
+  placePermanent(bot, establishedDigimon(1, ["BT1-009", "EX12-025"], "-feedback4-restricted"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 5;
 }
 
 /** Discord 1558210190376050858: Publimon's [End of Attack] fires only after its own attack. */
@@ -9710,6 +9733,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
     layShakkoumonSukamonDnaScenario(state, decks, true),
   "arena-raid-after-dedigivolve": layRaidAfterDeDigivolveScenario,
   "arena-lm007-publimon-end-of-attack": layLm007PublimonEndOfAttackScenario,
+  "arena-feedback4-shellmon-targets": layFeedback4ShellmonTargetsScenario,
   "arena-raid-optional-preset": layRaidOptionalPresetScenario,
   "arena-preset-order-no-clicks": layPresetOrderNoClicksScenario,
   "arena-oct06-king-sukamon-assembly": (state, decks) => layOct06LatestScenario(state, decks, "king-sukamon-assembly"),
