@@ -159,9 +159,17 @@ describe("GitHub #5348 — SeitenGokuumon attack contract", () => {
           permanentId: s.perm("base").permanentId,
         }),
       ).toEqual({ ok: true });
-      await settle(() => s.state.pendingDecision?.kind === "optional");
+      await settle(
+        () =>
+          s.state.pendingDecision?.kind === "optional" ||
+          (s.perm("target").currentDP === originalDP - 11000 && s.state.pendingDecision === undefined),
+      );
       expect(s.perm("target").currentDP).toBe(originalDP - 11000);
-      await answerOptional(s, "EX12-048", suspended);
+      if (s.state.pendingDecision !== undefined) await answerOptional(s, "EX12-048", false);
+      // A suspended Digimon can't attack, so the "may attack" is offered only when unsuspended.
+      expect(s.decisions.filter(({ req }) => req.kind === "optional" && req.sourceCardId === "EX12-048")).toHaveLength(
+        suspended ? 0 : 1,
+      );
       expect(s.perm("target").currentDP).toBe(originalDP - 11000);
       expect(s.events.filter((event) => event.kind === "attackDeclared")).toHaveLength(0);
       expect(s.perm("base").isSuspended).toBe(suspended);

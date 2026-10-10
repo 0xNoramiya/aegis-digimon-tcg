@@ -12,30 +12,26 @@ import type { PrimitivesContext } from "./context.js";
 export function createCombatVerbs(pc: PrimitivesContext) {
   const { engine, access, continuous, effectSeatStack, player, state } = pc;
 
-  const forceAttack = async (
-    attackerPermanentId: string,
-    opts?: ForceAttackOptions & {
-      /** Replaces the target prompt; `undefined` declines the attack before declaration. */
-      chooseTarget?: (candidates: string[]) => Promise<string | undefined>;
-    },
-  ): Promise<void> => {
+  const PLAYER = "player";
+
+  /** The attack targets `forceAttack` would offer right now; empty when it would do nothing. */
+  const forceAttackCandidates = (attackerPermanentId: string, opts?: ForceAttackOptions): string[] => {
     const combat = engine.combat;
-    if (combat === undefined) return; // no combat port (test engine): narrate nothing
-    if (combat.isAttacking) return; // do not nest an effect-driven attack inside another
+    if (combat === undefined) return []; // no combat port (test engine): narrate nothing
+    if (combat.isAttacking) return []; // do not nest an effect-driven attack inside another
     const attacker = access.permanentById(attackerPermanentId);
-    if (attacker === undefined) return;
+    if (attacker === undefined) return [];
     const controllerSeat = attacker.controllerSeat;
     if (
       canAttackerDeclare(access, controllerSeat, attacker, continuous, opts?.vortex, opts?.withoutSuspending) !== null
     ) {
-      return;
+      return [];
     }
     const opponentSeat = access.opponentOf(controllerSeat);
 
     // Reuse declared-attack target legality so forced attacks cannot offer a
     // protected defender, an unsuspended defender without a matching grant, or a
     // player forbidden by the effect/restriction (BT9-100, KB Q1904/Q1905).
-    const PLAYER = "player";
     const playerTarget: AttackTarget = { kind: "player" };
     const legalEnemyIds = access
       .battleAreaPermanents(opponentSeat)
@@ -51,14 +47,30 @@ export function createCombatVerbs(pc: PrimitivesContext) {
           ) === null,
       )
       .map((permanent) => permanent.permanentId);
-    const candidates = [
+    return [
       ...(opts?.attackPlayer !== false &&
       canAttackTarget(access, controllerSeat, attacker, playerTarget, continuous, opts?.vortex) === null
         ? [PLAYER]
         : []),
       ...(opts?.attackPlayerOnly === true ? [] : legalEnemyIds),
     ];
-    if (candidates.length === 0) return;
+  };
+
+  const canForceAttack = (attackerPermanentId: string, opts?: ForceAttackOptions): boolean =>
+    forceAttackCandidates(attackerPermanentId, opts).length > 0;
+
+  const forceAttack = async (
+    attackerPermanentId: string,
+    opts?: ForceAttackOptions & {
+      /** Replaces the target prompt; `undefined` declines the attack before declaration. */
+      chooseTarget?: (candidates: string[]) => Promise<string | undefined>;
+    },
+  ): Promise<void> => {
+    const combat = engine.combat;
+    const attacker = access.permanentById(attackerPermanentId);
+    const candidates = forceAttackCandidates(attackerPermanentId, opts);
+    if (combat === undefined || attacker === undefined || candidates.length === 0) return;
+    const controllerSeat = attacker.controllerSeat;
     const promptTarget = async (): Promise<string> => {
       const chosen = await engine.ask.selectInstances(
         controllerSeat,
@@ -187,5 +199,5 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     }
   };
 
-  return { forceAttack, blitzAttack, isAttackResolving, redirectAttack };
+  return { forceAttack, canForceAttack, blitzAttack, isAttackResolving, redirectAttack };
 }

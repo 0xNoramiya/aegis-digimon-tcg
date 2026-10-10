@@ -41,6 +41,8 @@ export interface CombatPrimitives {
    * mid-resolution and the engine cannot safely nest (the gap is then narrated).
    */
   forceAttack(attackerPermanentId: string, opts?: ForceAttackOptions): Promise<void>;
+  /** Whether `forceAttack` with the same arguments would declare an attack right now. */
+  canForceAttack?(attackerPermanentId: string, opts?: ForceAttackOptions): boolean;
   /**
    * Process ＜Blitz＞ (CR §16-16) for `attackerPermanentId` inside the resolving effect: when
    * the controller's opponent has 1 or more memory and the Digimon can attack normally, the

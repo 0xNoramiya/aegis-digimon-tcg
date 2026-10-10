@@ -91,6 +91,36 @@ describe("BT25-017 Flaremon", () => {
     const s = setupEngine(
       {
         0: {
+          battleArea: [{ card: "BT25-017", as: "source" }],
+          hand: [{ card: "BT1-001", as: "cost" }],
+        },
+        1: { battleArea: [{ card: "BT1-010", as: "target", dp: 7000 }], security: ["BT1-001", "BT1-002"] },
+      },
+      { autoSelectCards: true, autoAcceptOptional: false },
+    );
+    await s.ready();
+    const resolving = advance(s.engine).fire(EffectTiming.WhenDigivolving, s.perm("source"));
+    await settle(() => s.state.pendingDecision?.kind === "optional");
+    const attackDecision = s.state.pendingDecision!;
+    expect(
+      s.engine.applyIntent(attackDecision.seat, {
+        type: "respondDecision",
+        decisionId: attackDecision.decisionId,
+        response: { kind: "optional", accept: false },
+      }),
+    ).toEqual({ ok: true });
+    await resolving;
+    await settle(() => !s.state.players[1]!.battleArea.some((perm) => perm.topCard.cardId === "BT1-010"));
+    expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toContain(s.inst("cost").instanceId);
+    expect(s.state.players[1]!.battleArea).toHaveLength(0);
+    expect(s.perm("source").isSuspended).toBe(false);
+    expect(s.state.players[1]!.security).toHaveLength(2);
+  });
+
+  it("skips the impossible same-turn attack prompt and still accepts the paid deletion", async () => {
+    const s = setupEngine(
+      {
+        0: {
           hand: [
             { card: "BT25-017", as: "source" },
             { card: "BT1-001", as: "cost" },
@@ -105,23 +135,15 @@ describe("BT25-017 Flaremon", () => {
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("source").instanceId })).toEqual({
       ok: true,
     });
-    await settle(() => s.state.pendingDecision?.kind === "optional");
-    const attackDecision = s.state.pendingDecision!;
-    expect(
-      s.engine.applyIntent(attackDecision.seat, {
-        type: "respondDecision",
-        decisionId: attackDecision.decisionId,
-        response: { kind: "optional", accept: false },
-      }),
-    ).toEqual({ ok: true });
     await settle(() => !s.state.players[1]!.battleArea.some((perm) => perm.topCard.cardId === "BT1-010"));
+    expect(s.decisions.filter(({ req }) => req.kind === "optional" && req.sourceCardId === "BT25-017")).toEqual([]);
     expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toContain(s.inst("cost").instanceId);
     expect(s.state.players[1]!.battleArea).toHaveLength(0);
     expect(s.perm("source").isSuspended).toBe(false);
     expect(s.state.players[1]!.security).toHaveLength(2);
   });
 
-  it("accepting an illegal same-turn attack still allows refusing the independent paid deletion", async () => {
+  it("skips the impossible same-turn attack prompt and still allows refusing the paid deletion", async () => {
     const s = setupEngine(
       {
         0: {
@@ -139,16 +161,8 @@ describe("BT25-017 Flaremon", () => {
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("source").instanceId })).toEqual({
       ok: true,
     });
-    await settle(() => s.state.pendingDecision?.kind === "optional");
-    const attackDecision = s.state.pendingDecision!;
-    expect(
-      s.engine.applyIntent(attackDecision.seat, {
-        type: "respondDecision",
-        decisionId: attackDecision.decisionId,
-        response: { kind: "optional", accept: true },
-      }),
-    ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    expect(s.decisions.filter(({ req }) => req.kind === "optional" && req.sourceCardId === "BT25-017")).toEqual([]);
     const deleteDecision = s.state.pendingDecision!;
     expect(
       s.engine.applyIntent(deleteDecision.seat, {
@@ -157,7 +171,7 @@ describe("BT25-017 Flaremon", () => {
         response: { kind: "selectCards", instanceIds: [] },
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "BT25-017"));
+    await settle(() => s.state.pendingDecision === undefined);
     expect(s.state.players[1]!.battleArea.map((perm) => perm.topCard.cardId)).toEqual(["BT1-010"]);
     expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toContain(s.inst("cost").instanceId);
     expect(s.perm("source").isSuspended).toBe(false);

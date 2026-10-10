@@ -682,6 +682,7 @@ export interface AegisJoinOptions {
     | "arena-feedback40-rie-kishibe-security-gate"
     | "arena-bt26-029-single-removal-trigger"
     | "arena-bt22-101-kyoko-alphamon-on-unsuspend"
+    | "arena-may-attack-suspended-creepymon"
     | "arena-prevented-cost-lucemon-jupitermon"
     | "arena-security-leak-known-card-face-down"
     | "arena-discord-keenan-trigger-order"

@@ -435,6 +435,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback40-rie-kishibe-security-gate",
   "arena-bt26-029-single-removal-trigger",
   "arena-bt22-101-kyoko-alphamon-on-unsuspend",
+  "arena-may-attack-suspended-creepymon",
   "arena-prevented-cost-lucemon-jupitermon",
   "arena-security-leak-known-card-face-down",
   "arena-discord-keenan-trigger-order",
@@ -8000,6 +8001,29 @@ function layBt22101KyokoAlphamonOnUnsuspendScenario(state: GameState): void {
 }
 
 /**
+ * Follow-up to feedback #5: an "[End of Your Turn] This Digimon may attack" effect (Creepymon,
+ * EX10-009) is not offered once Creepymon is suspended, because it can't attack (Q2490). Ending
+ * the turn with Creepymon unsuspended still offers the attack.
+ */
+function layMayAttackSuspendedCreepymonScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-may-attack-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-may-attack-deck-${seat}-${index}`, "BT1-009", seat));
+    }
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-may-attack-security-${seat}-${index}`, "BT1-010", seat));
+    }
+  }
+  placePermanent(state.players[0]!, establishedDigimon(0, ["EX10-009"], "-may-attack-creepymon"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
  * Follow-up to feedback #36: Lucemon (BT18-034) pays "by placing 1 of your level 6 Digimon on top
  * of your security stack" at the end of the turn. Jupitermon (BT24-101) is the only level 6
  * Digimon, and it can keep itself on the field by trashing the top security card. If it does, the
@@ -11282,6 +11306,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback40-rie-kishibe-security-gate": layFeedback40RieKishibeSecurityGateScenario,
   "arena-bt26-029-single-removal-trigger": layBt26029SingleRemovalTriggerScenario,
   "arena-bt22-101-kyoko-alphamon-on-unsuspend": layBt22101KyokoAlphamonOnUnsuspendScenario,
+  "arena-may-attack-suspended-creepymon": layMayAttackSuspendedCreepymonScenario,
   "arena-prevented-cost-lucemon-jupitermon": layPreventedCostLucemonJupitermonScenario,
   "arena-security-leak-known-card-face-down": laySecurityLeakKnownCardFaceDownScenario,
   "arena-discord-keenan-trigger-order": layDiscordKeenanTriggerOrderScenario,
