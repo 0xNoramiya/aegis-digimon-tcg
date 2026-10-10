@@ -426,6 +426,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-lordknightmon-bt22-skullknightmon",
   "arena-feedback18-sukamon-inherited-protection",
   "arena-feedback19-burst-tamer-choice",
+  "arena-discord-vemmon-add-or-place",
   "arena-discord-speed-security-scene-stuck",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
@@ -7716,6 +7717,35 @@ function layFeedback19BurstTamerChoiceScenario(state: GameState): void {
   state.memory = 5;
 }
 
+/**
+ * Discord 1557855696114946230: BT18 Vemmon (BT18-060) reveals the reported cards in order,
+ * Snatchmon (BT18-065), Xeno (EX11-066), and BT11 Vemmon (BT11-061). Q2992 requires adding to
+ * hand and placing a source as much as possible, so the only [Vemmon] is kept for the source.
+ */
+function layDiscordVemmonAddOrPlaceScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-vemmon-egg-${seat}`, "BT1-001", seat));
+    insertCard(player, Zone.Deck, faceDownCard(`dev-vemmon-draw-${seat}`, "BT1-085", seat));
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-vemmon-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  insertCard(human, Zone.Deck, faceDownCard("dev-vemmon-reveal-snatchmon", "BT18-065", 0));
+  insertCard(human, Zone.Deck, faceDownCard("dev-vemmon-reveal-xeno", "EX11-066", 0));
+  insertCard(human, Zone.Deck, faceDownCard("dev-vemmon-reveal-bt11", "BT11-061", 0));
+  for (let index = 0; index < 4; index += 1) {
+    insertCard(human, Zone.Deck, faceDownCard(`dev-vemmon-deck-0-${index}`, "BT1-085", 0));
+    insertCard(state.players[1]!, Zone.Deck, faceDownCard(`dev-vemmon-deck-1-${index}`, "BT1-085", 1));
+  }
+  insertCard(human, Zone.Hand, faceDownCard("dev-vemmon-bt18", "BT18-060", 0));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 5;
+}
+
 function layP224KotoneOwnSourceScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
   prepareIssueScenario(state, decks, 3);
   const human = state.players[0];
@@ -10767,6 +10797,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-lordknightmon-bt22-skullknightmon": layDiscordLordKnightmonBt22SkullKnightmonScenario,
   "arena-feedback18-sukamon-inherited-protection": layFeedback18SukamonInheritedProtectionScenario,
   "arena-feedback19-burst-tamer-choice": layFeedback19BurstTamerChoiceScenario,
+  "arena-discord-vemmon-add-or-place": layDiscordVemmonAddOrPlaceScenario,
   "arena-discord-speed-security-scene-stuck": layDiscordSpeedSecuritySceneStuckScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,

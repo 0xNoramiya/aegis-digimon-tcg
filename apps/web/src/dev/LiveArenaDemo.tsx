@@ -1873,6 +1873,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Feedback #19. Encerre a criação. Faça a Digivolução Explosiva de ShineGreymon (ST7-10) em ShineGreymon: Burst Mode (BT13-020). Você tem dois [Marcus Damon]: BT4-092 em pé e BT17-087 suspenso, com uma carta virada para baixo embaixo dele. O jogo pergunta qual Tamer volta para a mão. Escolha o BT17-087 suspenso: ele volta para a mão, a carta embaixo dele vai para a lixeira, e o BT4-092 fica no campo. Recuse jogar Marcus Damon pelo [Ao Digivolver].",
     en: "Feedback #19. End breeding. Burst digivolve ShineGreymon (ST7-10) into ShineGreymon: Burst Mode (BT13-020). You have two [Marcus Damon] Tamers: an unsuspended BT4-092 and a suspended BT17-087 with a face-down card under it. The game asks which Tamer returns to hand. Choose the suspended BT17-087: it returns to hand, the card under it goes to the trash, and BT4-092 stays in play. Decline to play Marcus Damon with [When Digivolving].",
   },
+  "arena-discord-vemmon-add-or-place": {
+    ptBR: "Discord 1557855696114946230. Encerre a criação. Jogue Vemmon (BT18-060) da mão. O [Ao Jogar] revela Snatchmon (BT18-065), Xeno (EX11-066) e Vemmon (BT11-061). As três têm [Vemmon] no texto, mas o BT11 Vemmon é o único [Vemmon]. A Q2992 manda adicionar à mão e colocar como fonte o máximo possível, então a primeira escolha oferece só Snatchmon e Xeno. Escolha Snatchmon. Depois, o BT11 Vemmon vira a fonte inferior do BT18 Vemmon, e Xeno vai para o fundo do deck.",
+    en: "Discord 1557855696114946230. End breeding. Play Vemmon (BT18-060) from hand. Its [On Play] reveals Snatchmon (BT18-065), Xeno (EX11-066), and Vemmon (BT11-061). All three have [Vemmon] in their text, but BT11 Vemmon is the only [Vemmon]. Q2992 says to add to hand and place a source as much as possible, so the first choice offers only Snatchmon and Xeno. Choose Snatchmon. Then BT11 Vemmon becomes the bottom source of BT18 Vemmon, and Xeno goes to the bottom of the deck.",
+  },
   "arena-discord-speed-security-scene-stuck": {
     ptBR: "Partida com relógio. Encerre a criação e o turno. O bot ataca você com Monodramon e Magnamon (7000 DP) é revelado da sua segurança. Antes da batalha, o [Todos os Turnos] de Dynasmon oferece excluir o Digimon de menor DP do oponente: escolha Monodramon. A checagem termina sem batalha, e Magnamon sai do centro da tela e vai para a lixeira. A cena não fica presa nos turnos seguintes.",
     en: "Timed match. End breeding and your turn. The bot attacks you with Monodramon, and Magnamon (7000 DP) is revealed from your security. Before the battle, Dynasmon's [All Turns] effect offers to delete your opponent's lowest DP Digimon: choose Monodramon. The check ends with no battle, and Magnamon leaves the centre of the screen for the trash. The scene does not stay on screen in later turns.",
@@ -3316,6 +3320,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-discord-lordknightmon-bt22-skullknightmon", "BT22 LordKnightmon · plays a revealed SkullKnightmon"],
   ["arena-feedback18-sukamon-inherited-protection", "Feedback #18 · Sukamon inherited protection keeps host"],
   ["arena-feedback19-burst-tamer-choice", "Feedback #19 · Burst Digivolve · choose which Tamer returns"],
+  ["arena-discord-vemmon-add-or-place", "Discord · BT18 Vemmon keeps the only [Vemmon] for the source"],
   ["arena-discord-speed-security-scene-stuck", "Discord · timed security check closes without a battle"],
   ["arena-p224-kotone-own-source", "P-224 Kotone · X7 das próprias fontes / own sources"],
   ["arena-kotone-digixros-pending-attack", "Kotone · DigiXros + EX6 pending attack"],
