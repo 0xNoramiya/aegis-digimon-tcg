@@ -420,6 +420,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback26-zephagamon-suspend-own",
   "arena-feedback25-alter-s-unsuspend-lock",
   "arena-feedback27-chuumon-opponent-turn",
+  "arena-feedback28-security-reveal-before-prompt",
   "arena-discord-speed-security-scene-stuck",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
@@ -7528,6 +7529,37 @@ function layFeedback27ChuumonOpponentTurnScenario(state: GameState): void {
   state.memory = 2;
 }
 
+/**
+ * Feedback #28 (match cf59b069, timed): the attacker was asked to use ＜Decoy＞ before the client
+ * had shown the security card whose effect was deleting its Digimon. Sinduramon attacks; the
+ * bot's top security card is BT8-097, whose [Security] effect deletes Sandiramon (6000 DP).
+ * Sinduramon's ＜Decoy (Deva/Four Sovereigns)＞ then asks whether to save it.
+ */
+function layFeedback28SecurityRevealBeforePromptScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback28-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback28-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  for (let index = 0; index < 3; index += 1) {
+    insertCard(human, Zone.Security, faceDownCard(`dev-feedback28-security-0-${index}`, "BT1-085", 0));
+  }
+  placePermanent(human, establishedDigimon(0, ["EX5-050"], "-feedback28-sinduramon"));
+  placePermanent(human, establishedDigimon(0, ["BT10-079"], "-feedback28-sandiramon"));
+  const bot = state.players[1]!;
+  insertCard(bot, Zone.Security, faceDownCard("dev-feedback28-security-option", "BT8-097", 1));
+  for (let index = 0; index < 2; index += 1) {
+    insertCard(bot, Zone.Security, faceDownCard(`dev-feedback28-security-1-${index}`, "BT1-085", 1));
+  }
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
 function layP224KotoneOwnSourceScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
   prepareIssueScenario(state, decks, 3);
   const human = state.players[0];
@@ -10573,6 +10605,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback26-zephagamon-suspend-own": layFeedback26ZephagamonSuspendOwnScenario,
   "arena-feedback25-alter-s-unsuspend-lock": layFeedback25AlterSUnsuspendLockScenario,
   "arena-feedback27-chuumon-opponent-turn": layFeedback27ChuumonOpponentTurnScenario,
+  "arena-feedback28-security-reveal-before-prompt": layFeedback28SecurityRevealBeforePromptScenario,
   "arena-discord-speed-security-scene-stuck": layDiscordSpeedSecuritySceneStuckScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,
