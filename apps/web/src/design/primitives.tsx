@@ -266,11 +266,13 @@ export function Dialog({
   className,
   labelledBy,
   onClose,
+  style,
 }: {
   children: ReactNode;
   className?: string;
   labelledBy: string;
   onClose?: () => void;
+  style?: CSSProperties;
 }) {
   const dialogRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -313,6 +315,7 @@ export function Dialog({
         aria-modal="true"
         aria-labelledby={labelledBy}
         tabIndex={-1}
+        style={style}
         onKeyDown={handleKeyDown}
         onClick={(event) => event.stopPropagation()}
       >
@@ -536,7 +539,6 @@ export function TopNav({
     { key: "deck", label: t("nav.decks"), icon: Icons.LayoutDashboard },
     { key: "community", label: t("nav.community"), icon: Icons.Users },
     { key: "collection", label: t("nav.collection"), icon: Icons.BookOpen },
-    { key: "replays", label: t("replay.title"), icon: Icons.PlayCircle },
   ];
   const signIn = signedIn ? null : (
     <button className="aegis-sign-in-button" onClick={() => navTo("login")} aria-label={t("nav.signIn")}>

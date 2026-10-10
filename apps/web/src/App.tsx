@@ -33,7 +33,6 @@ import { communityDeckListing } from "./community/communityDeckListing";
 import { usePreferencesSync } from "./account/usePreferencesSync";
 import { BugReportDialog } from "./bugs/BugReportDialog";
 import { LeaveMatchDialog } from "./game/screen/layout/LeaveMatchDialog";
-import { allowProfileNavigation } from "./account/ProfileCustomize";
 import { PlayerMenu } from "./account/PlayerMenu";
 import { pathForRoute, routeFromPathname, type AppRoute } from "./routes";
 import { roomCodeFromSearch } from "./roomInvite";
@@ -386,10 +385,6 @@ export function AegisClient({
   useEffect(() => {
     if (initialScreen) return;
     const onPopState = () => {
-      if (!allowProfileNavigation()) {
-        window.history.pushState(null, "", "/profile/customize");
-        return;
-      }
       const nextRoute = routeFromPathname(window.location.pathname);
       const resolvedRoute: AppRoute =
         nextRoute?.screen === "game" && !loadReconnectSession()
@@ -402,6 +397,8 @@ export function AegisClient({
         setLeaveMatchPromptOpen(true);
         return;
       }
+      const resolvedPath = pathForRoute(resolvedRoute);
+      if (window.location.pathname !== resolvedPath) window.history.replaceState(null, "", resolvedPath);
       setRoute(resolvedRoute);
     };
     window.addEventListener("popstate", onPopState);
@@ -414,7 +411,6 @@ export function AegisClient({
   };
 
   const navigate = (nextRoute: AppRoute) => {
-    if (!allowProfileNavigation()) return;
     setPlayerMenuAnchor(null);
     if (!initialScreen) {
       const path = pathForRoute(nextRoute);
@@ -467,7 +463,7 @@ export function AegisClient({
     [effectivePlayer.name, effectivePlayer.avatarId, matchDeck, timerOptions, bestOf, customBotDeck, deckFormat],
   );
 
-  const showNav = NAV_SCREENS.includes(screen) && !(screen === "replays" && replayViewing);
+  const showNav = NAV_SCREENS.includes(screen) && !replayViewing;
 
   const refreshDiscordAvatar = async () => {
     const updated = await accountApi.refreshDiscordAvatar();
@@ -623,13 +619,12 @@ export function AegisClient({
 
           {screen === "collection" && <Collection />}
 
-          {screen === "replays" && (
+          {screen === "replays" && route.replayId && (
             <ReplaysScreen
-              key={route.replayId ?? "library"}
+              key={route.replayId}
               replayId={route.replayId}
-              onCloseLink={() => navigate({ screen: "replays" })}
+              onCloseLink={() => navigate({ screen: "settings", profile: true })}
               onViewingChange={setReplayViewing}
-              signedIn={!!account}
             />
           )}
 
@@ -640,8 +635,7 @@ export function AegisClient({
             <ProfileScreen
               account={account}
               player={effectivePlayer}
-              tab={route.profileTab ?? "matches"}
-              onTabChange={(profileTab) => navigate({ screen: "settings", profile: true, profileTab })}
+              onViewingChange={setReplayViewing}
               onAccountChange={(updated) => setAccount?.({ ...account, ...updated })}
               onGuestChange={(name, avatarId) =>
                 setPlayer((current) => ({
@@ -712,10 +706,11 @@ export function AegisClient({
           anchor={playerMenuAnchor}
           isAdmin={account?.isAdmin === true}
           onNav={navigateScreen}
+          onProfile={() => navigate({ screen: "settings", profile: true })}
           onSignOut={
             account
               ? () => {
-                  if (allowProfileNavigation()) void accountApi.logout().then(() => location.reload());
+                  void accountApi.logout().then(() => location.reload());
                 }
               : undefined
           }

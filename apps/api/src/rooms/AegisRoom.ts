@@ -38,6 +38,7 @@ import {
   deckFormat,
   isDeckFormat,
   formatIsUnlimited,
+  isDigimonWorldAvatarId,
 } from "@aegis/shared";
 import { isDevScenarioId, type DevScenarioId } from "../engine/devScenario.js";
 import { createIssueReproBotPolicy } from "../engine/issueReproBotPolicy.js";
@@ -842,6 +843,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
             mode: this.replayMode(),
             opponentName: opponent?.displayName ?? "Opponent",
             opponentKind: this.bots[seat === 0 ? 1 : 0] ? ("bot" as const) : ("human" as const),
+            ...(isDigimonWorldAvatarId(opponent?.avatarId) ? { opponentAvatarId: opponent.avatarId } : {}),
             result:
               event.result.outcome === "draw"
                 ? ("draw" as const)

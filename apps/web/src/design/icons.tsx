@@ -441,6 +441,24 @@ const MoreVertical = (p: IconProps) => (
     <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none" />
   </Svg>
 );
+const MoreHorizontal = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+    <circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" />
+    <circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" />
+  </Svg>
+);
+const Pencil = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+    <path d="m15 5 4 4" />
+  </Svg>
+);
+const Folder = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+  </Svg>
+);
 const Bot = (p: IconProps) => (
   <Svg {...p}>
     <path d="M12 8V4H8" />
@@ -670,6 +688,9 @@ export const Icons = {
   FileText,
   BookOpen,
   MoreVertical,
+  MoreHorizontal,
+  Pencil,
+  Folder,
   Bot,
   Palette,
   Calendar,

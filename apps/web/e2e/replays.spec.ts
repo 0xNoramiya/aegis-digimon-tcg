@@ -6,8 +6,7 @@ class ReplayPage {
   constructor(readonly page: Page) {}
   async open(recording = replayFixture()) {
     await this.page.route("**/auth/me", (route) => route.fulfill({ contentType: "application/json", body: "null" }));
-    await this.page.route("**/account/replays", (route) => route.fulfill({ status: 401, body: "Unauthorized" }));
-    await this.page.goto("/replays");
+    await this.page.goto("/profile");
     await this.page.getByLabel("Open replay file").setInputFiles({
       name: "match.aegis-replay",
       mimeType: "application/gzip",
@@ -98,14 +97,15 @@ test("autoplay, pause, speed and restart from the final frame", async ({ page })
 test("rejects malformed files and permits selecting the same file again", async ({ page }) => {
   await page.route("**/auth/me", (route) => route.fulfill({ contentType: "application/json", body: "null" }));
   await page.goto("/replays");
+  await expect(page).toHaveURL(/\/profile$/);
   const input = page.getByLabel("Open replay file");
   const badFile = { name: "invalid.json", mimeType: "application/json", buffer: Buffer.from("{broken") };
   await input.setInputFiles(badFile);
-  await expect(page.locator(".replay-import__drop").getByRole("alert")).toHaveText(
+  await expect(page.locator(".profile-guest-replays").getByRole("alert")).toHaveText(
     "This file is not a valid, complete Aegis replay.",
   );
   await input.setInputFiles(badFile);
-  await expect(page.locator(".replay-import__drop").getByRole("alert")).toHaveText(
+  await expect(page.locator(".profile-guest-replays").getByRole("alert")).toHaveText(
     "This file is not a valid, complete Aegis replay.",
   );
   await input.setInputFiles({
@@ -113,7 +113,7 @@ test("rejects malformed files and permits selecting the same file again", async 
     mimeType: "application/json",
     buffer: Buffer.from('{"format":"aegis-replay","version":999}'),
   });
-  await expect(page.locator(".replay-import__drop").getByRole("alert")).toHaveText(
+  await expect(page.locator(".profile-guest-replays").getByRole("alert")).toHaveText(
     "This replay uses a format this version of Aegis cannot open.",
   );
 });
@@ -147,19 +147,4 @@ test("autoplay resolves a security battle after its attacker has left the record
   await expect(page.getByText("Replay finished", { exact: true })).toBeVisible();
   await expect(page.locator('[data-permanent-id="agumon"]')).toHaveCount(0);
   expect(errors).toEqual([]);
-});
-
-test("opens a replay dropped on the file area", async ({ page }) => {
-  await page.route("**/auth/me", (route) => route.fulfill({ contentType: "application/json", body: "null" }));
-  await page.goto("/replays");
-  const data = await page.evaluateHandle((contents) => {
-    const transfer = new DataTransfer();
-    transfer.items.add(new File([contents], "match.json", { type: "application/json" }));
-    return transfer;
-  }, JSON.stringify(replayFixture()));
-  await page.locator(".replay-import__drop").dispatchEvent("dragover", { dataTransfer: data });
-  await expect(page.locator(".replay-import__drop")).toHaveClass(/--active/);
-  await page.locator(".replay-import__drop").dispatchEvent("drop", { dataTransfer: data });
-  await expect(page.getByRole("heading", { name: "Agumon Player vs Gabumon Player" })).toBeVisible();
-  await data.dispose();
 });

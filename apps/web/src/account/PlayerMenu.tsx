@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { Avatar, type PlayerIdentity, type Screen } from "../design/primitives";
 import { Icons } from "../design/icons";
@@ -13,6 +13,7 @@ export function PlayerMenu({
   isAdmin = false,
   anchor,
   onNav,
+  onProfile,
   onSignOut,
   onReportBug,
   onClose,
@@ -22,6 +23,7 @@ export function PlayerMenu({
   isAdmin?: boolean;
   anchor?: HTMLElement | null;
   onNav: (screen: Screen) => void;
+  onProfile: () => void;
   onSignOut?: () => void;
   onReportBug?: () => void;
   onClose: () => void;
@@ -64,6 +66,15 @@ export function PlayerMenu({
     onClose();
     onNav(screen);
   }
+  /** Keeps real links for new-tab use, but a plain click navigates inside the app without a reload. */
+  function inApp(navigate: () => void) {
+    return (event: MouseEvent) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      onClose();
+      navigate();
+    };
+  }
   return createPortal(
     <section
       ref={root}
@@ -94,20 +105,10 @@ export function PlayerMenu({
         </div>
       </header>
       <nav aria-label={t("playerMenu.linksAria")}>
-        <a href="/profile">
+        <a href="/profile" onClick={inApp(onProfile)}>
           <Icons.User size={18} />
           {t("profile.title")}
         </a>
-        <a href={signedIn ? "/profile/replays" : "/replays"}>
-          <Icons.PlayCircle size={18} />
-          {t("replay.title")}
-        </a>
-        {!signedIn ? (
-          <a href="/profile/customize">
-            <Icons.User size={18} />
-            {t("profile.customize")}
-          </a>
-        ) : null}
         <button onClick={() => go("settings")}>
           <Icons.Settings size={18} />
           {t("menu.settings")}
@@ -143,7 +144,7 @@ export function PlayerMenu({
             <Icons.Github size={18} />
             GitHub
           </a>
-          <a href="/privacy">
+          <a href="/privacy" onClick={inApp(() => onNav("privacy"))}>
             <Icons.ShieldCheck size={18} />
             {t("privacy.title")}
           </a>

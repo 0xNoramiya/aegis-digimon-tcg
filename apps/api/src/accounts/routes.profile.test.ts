@@ -1,3 +1,4 @@
+import type { MatchHistoryPage } from "@aegis/shared";
 import { ReplayLibrary } from "../replays/ReplayLibrary.js";
 import type { AddressInfo } from "node:net";
 import express from "express";
@@ -234,7 +235,7 @@ it("links a recent match only to the authenticated owner's saved recording", asy
   });
   const foreign = await library.record(other.id, ready(1));
   await library.attachDrive(other.id, foreign, "foreignDriveFile01");
-  const profile = () => fetch(`${harness.url}/account/profile`, { headers: { Cookie: harness.cookie } });
+  const profile = () => fetch(`${harness.url}/account/matches`, { headers: { Cookie: harness.cookie } });
   expect(await (await profile()).json()).toMatchObject({ matches: [{ replay: null }] });
   const indexId = await library.record(owner.id, ready(0));
   expect(await (await profile()).json()).toMatchObject({ matches: [{ replay: null }] });
@@ -246,6 +247,118 @@ it("links a recent match only to the authenticated owner's saved recording", asy
   });
   await library.remove(owner.id, indexId);
   expect(await (await profile()).json()).toMatchObject({ matches: [{ replay: null }] });
+});
+
+describe("GET /account/matches", () => {
+  const matches = (query = "", authenticated = true) =>
+    fetch(`${harness.url}/account/matches${query}`, { headers: authenticated ? { Cookie: harness.cookie } : {} });
+  const ownerId = async () => (await harness.store.session(harness.cookie.split("=")[1]))!.account.id;
+  async function seed(count: number) {
+    const id = await ownerId();
+    for (let index = 0; index < count; index++)
+      await harness.store.recordRecentMatch(id, `room-${index}`, {
+        id: `match-${index}`,
+        mode: "casual",
+        opponentName: "Opponent",
+        opponentKind: "human",
+        result: index % 2 ? "loss" : "win",
+        reason: "surrender",
+        finishedAt: index,
+      });
+    return id;
+  }
+
+  it("pages the history newest first with the total for the filter", async () => {
+    await seed(30);
+    const first = await matches();
+    expect(first.headers.get("cache-control")).toContain("no-store");
+    const body = (await first.json()) as MatchHistoryPage;
+    expect(body).toMatchObject({ total: 30, page: 1, limit: 25, sharing: false });
+    expect(body.matches).toHaveLength(25);
+    expect(body.matches[0]).toMatchObject({ id: "match-29", replay: null });
+    const second = (await (await matches("?page=2&limit=25")).json()) as MatchHistoryPage;
+    expect(second.matches.map((match) => match.id)).toEqual(["match-4", "match-3", "match-2", "match-1", "match-0"]);
+    expect(await (await matches("?result=loss&limit=5")).json()).toMatchObject({ total: 15, limit: 5 });
+    expect(await (await matches("?mode=ranked")).json()).toMatchObject({ matches: [], total: 0 });
+    const searched = (await (
+      await matches("?opponent=%20OPPONENT%20&mode=casual&result=win")
+    ).json()) as MatchHistoryPage;
+    expect(searched.total).toBe(15);
+    expect(await (await matches(`?opponent=${"x".repeat(32)}`)).json()).toMatchObject({ total: 0 });
+  });
+
+  it.each([
+    "?page=0",
+    "?page=-1",
+    "?page=1.5",
+    "?page=abc",
+    "?limit=0",
+    "?limit=51",
+    "?page=1&page=2",
+    "?result=wins",
+    "?result=win&result=loss",
+    "?mode=arena",
+    `?opponent=${"x".repeat(33)}`,
+    "?opponent=a&opponent=b",
+  ])("rejects %s", async (query) => {
+    const response = await matches(query);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "invalid_query" });
+  });
+
+  it("requires a session", async () => {
+    expect((await matches("", false)).status).toBe(401);
+  });
+
+  it("summarizes the history in the profile instead of listing it", async () => {
+    await seed(3);
+    const response = await fetch(`${harness.url}/account/profile`, { headers: { Cookie: harness.cookie } });
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(body.summary).toEqual({ matches: 3, wins: 2, losses: 1, draws: 0, replaysSaved: 0 });
+    expect(body).not.toHaveProperty("matches");
+  });
+});
+
+describe("avatar sources", () => {
+  const me = async () => (await fetch(`${harness.url}/auth/me`, { headers: { Cookie: harness.cookie } })).json();
+  it("shows the Discord picture until the player picks a Digimon or their initials", async () => {
+    expect(await me()).toMatchObject({
+      avatarId: null,
+      avatarSource: "discord",
+      avatarUrl: "https://example.com/provider.png",
+    });
+    expect(await (await putAvatar("greymon")).json()).toMatchObject({ avatarId: "greymon", avatarSource: "digimon" });
+    const initials = await putAvatar("initials");
+    expect(initials.status).toBe(200);
+    expect(await initials.json()).toMatchObject({ avatarId: null, avatarUrl: null, avatarSource: "initials" });
+    expect(await me()).toMatchObject({ avatarId: null, avatarUrl: null, avatarSource: "initials" });
+    expect(await (await putAvatar(null)).json()).toMatchObject({
+      avatarId: null,
+      avatarUrl: "https://example.com/provider.png",
+      avatarSource: "discord",
+    });
+  });
+
+  it("accepts initials in the combined profile update", async () => {
+    const response = await fetch(`${harness.url}/account/profile`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Cookie: harness.cookie },
+      body: JSON.stringify({ displayName: "Tamer", avatarId: "initials" }),
+    });
+    expect(await response.json()).toMatchObject({ avatarId: null, avatarUrl: null, avatarSource: "initials" });
+  });
+
+  it("keeps initials when the Discord picture is refreshed", async () => {
+    await putAvatar("initials");
+    const id = (await harness.store.session(harness.cookie.split("=")[1]))!.account.id;
+    await harness.store.setAvatarUrl(id, "https://example.com/refreshed.png");
+    expect(await harness.store.account(id)).toMatchObject({ avatarUrl: null, avatarSource: "initials" });
+    await putAvatar(null);
+    expect(await harness.store.account(id)).toMatchObject({
+      avatarUrl: "https://example.com/refreshed.png",
+      avatarSource: "discord",
+    });
+  });
 });
 
 describe("atomic profile customization", () => {

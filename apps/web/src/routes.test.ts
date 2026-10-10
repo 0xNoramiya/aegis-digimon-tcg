@@ -13,8 +13,9 @@ describe("application routes", () => {
     ["/admin/feedback", { screen: "feedback" }],
     ["/settings", { screen: "settings" }],
     ["/profile", { screen: "settings", profile: true }],
-    ["/profile/replays", { screen: "settings", profile: true, profileTab: "replays" }],
-    ["/profile/customize", { screen: "settings", profile: true, profileTab: "customize" }],
+    ["/profile/replays", { screen: "settings", profile: true }],
+    ["/profile/customize", { screen: "settings", profile: true }],
+    ["/replays", { screen: "settings", profile: true }],
     ["/replays/saved-id", { screen: "replays", replayId: "saved-id" }],
     ["/whats-new", { screen: "releases" }],
   ])("parses %s", (pathname, expected) => {
@@ -24,6 +25,7 @@ describe("application routes", () => {
   it("round-trips profile and saved replay links", () => {
     expect(pathForRoute({ screen: "settings", profile: true })).toBe("/profile");
     expect(pathForRoute({ screen: "replays", replayId: "saved-id" })).toBe("/replays/saved-id");
+    expect(pathForRoute({ screen: "replays" })).toBe("/profile");
   });
 
   it("round-trips a community deck path", () => {

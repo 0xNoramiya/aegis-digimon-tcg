@@ -1,67 +1,43 @@
-import { Component, useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import type { MatchReplay, SharedReplay } from "@aegis/shared";
 import { useTranslation, type TranslationKey } from "../i18n";
 import { Icons } from "../design/icons";
-import { CardFull } from "../design/cards";
 import { Button } from "../design/primitives";
-import { readReplay, ReplayFileError, type ReplayFileErrorCode } from "./files";
-import { ReplayPlayer } from "./ReplayPlayer";
+import { readReplay, replayBlob, ReplayFileError } from "./files";
+import { findLocalReplay, localReplayFile } from "./local";
 import { replayApi } from "./library";
-import { cloudErrorKey, ReplayLibraryPanel } from "./ReplayLibraryPanel";
-import { useCloudReplays, withCloudSession } from "./cloud";
-import { DriveConnectCard } from "./cloud/DriveOnboarding";
+import { ReplayViewer } from "./ReplayViewer";
+import { CloudAuthError, CloudRequestError, useCloudReplays, withCloudSession } from "./cloud";
 import "./replays.css";
 
-class ReplayRenderBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> {
-  override state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  override render() {
-    return this.state.failed ? this.props.fallback : this.props.children;
-  }
+function cloudErrorKey(cause: unknown): TranslationKey {
+  if (cause instanceof ReplayFileError) return `replay.error.${cause.code}`;
+  if (cause instanceof CloudAuthError) return "replay.drive.authFailed";
+  if (cause instanceof CloudRequestError && cause.status === 404) return "replay.driveMissing";
+  return "replay.drive.error";
 }
 
+/** A shared replay link. The library itself lives on the profile. */
 export function ReplaysScreen({
   onViewingChange,
   replayId,
   onCloseLink,
-  signedIn = false,
 }: {
   onViewingChange?: (viewing: boolean) => void;
-  replayId?: string;
+  replayId: string;
   onCloseLink?: () => void;
-  signedIn?: boolean;
 }) {
   const { t } = useTranslation();
   const [replay, setReplay] = useState<MatchReplay>();
-  const [error, setError] = useState<ReplayFileErrorCode>();
   const [linkError, setLinkError] = useState<TranslationKey>();
   /** The owner's own replay waiting for a click, because Drive needs a sign-in pop-up. */
   const [ownReplay, setOwnReplay] = useState<SharedReplay>();
   const { provider } = useCloudReplays();
   const [loading, setLoading] = useState(false);
-  const pending = useRef(0);
-  const input = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = useState(false);
   useEffect(() => {
     onViewingChange?.(replay !== undefined);
     return () => onViewingChange?.(false);
   }, [replay, onViewingChange]);
-  async function open(file: Blob | undefined) {
-    if (!file) return;
-    const generation = ++pending.current;
-    setLoading(true);
-    setError(undefined);
-    try {
-      const parsed = await readReplay(file);
-      if (pending.current === generation) setReplay(parsed);
-    } catch (cause) {
-      if (pending.current === generation) setError(cause instanceof ReplayFileError ? cause.code : "invalid");
-    } finally {
-      if (pending.current === generation) setLoading(false);
-    }
-  }
   async function openOwn(saved: SharedReplay) {
     if (!provider) return;
     setLoading(true);
@@ -79,14 +55,16 @@ export function ReplaysScreen({
     }
   }
   useEffect(() => {
-    if (!replayId) return;
     let active = true;
     setLoading(true);
     setLinkError(undefined);
     setOwnReplay(undefined);
     setReplay(undefined);
-    // The owner reads the file from their own Drive; everyone else gets a public copy through our API.
+    // A copy in this browser plays first. Otherwise the owner reads the file from their own Drive,
+    // and everyone else gets a public copy through our API.
     const load = async () => {
+      const local = await findLocalReplay(replayId);
+      if (local) return replayBlob(localReplayFile(local));
       const saved = await replayApi.shared(replayId).catch(() => undefined);
       const ownDrive = saved?.owned && provider;
       if (ownDrive && provider.isConnected()) return provider.download({ id: saved.driveFileId, bytes: saved.bytes });
@@ -115,117 +93,22 @@ export function ReplaysScreen({
   }, [replayId]);
   const close = () => {
     setReplay(undefined);
-    setError(undefined);
-    if (replayId) onCloseLink?.();
+    onCloseLink?.();
   };
-  if (replay)
-    return (
-      <ReplayRenderBoundary
-        key={replay.id}
-        fallback={
-          <div className="replay-import">
-            <p role="alert">{t("replay.error.invalid")}</p>
-            <Button onClick={close}>{t("replay.openAnother")}</Button>
-          </div>
-        }
-      >
-        <ReplayPlayer
-          replay={replay}
-          onClose={close}
-          exportRequested={new URLSearchParams(location.search).get("export") === "mp4"}
-        />
-      </ReplayRenderBoundary>
-    );
-  if (replayId)
-    return (
-      <section className="replay-import replay-link-state">
-        <h1>{t("replay.title")}</h1>
-        {ownReplay && !loading ? (
-          <>
-            <p>{t("replay.driveSignInToWatch")}</p>
-            <Button icon={Icons.Cloud} onClick={() => void openOwn(ownReplay)}>
-              {t("replay.prompt.watch")}
-            </Button>
-          </>
-        ) : null}
-        <p role={linkError ? "alert" : "status"}>{linkError ? t(linkError) : loading ? t("replay.loading") : null}</p>
-        <a href="/profile">{t("profile.title")}</a>
-        <Button onClick={close}>{t("replay.back")}</Button>
-      </section>
-    );
+  if (replay) return <ReplayViewer replay={replay} onClose={close} />;
   return (
-    <section className="replay-import">
-      <div className="replay-import__layout">
-        <div className="replay-import__intro">
-          <div className="replay-import__preview" aria-hidden="true">
-            {["BT1-010", "BT1-029", "BT1-084"].map((cardId) => (
-              <div key={cardId}>
-                <CardFull cardId={cardId} width={132} zoomOnHover={false} />
-              </div>
-            ))}
-            <span>
-              <Icons.Play size={28} />
-            </span>
-          </div>
-          <span className="replay-import__eyebrow">{t("replay.title")}</span>
-          <h1>{t("replay.headline")}</h1>
-          <p>{t("replay.intro")}</p>
-        </div>
-        <div className="replay-import__upload">
-          <div
-            className={`replay-import__drop${dragging ? " replay-import__drop--active" : ""}`}
-            onDragOver={(event) => {
-              event.preventDefault();
-              if (!loading) setDragging(true);
-            }}
-            onDragLeave={(event) => {
-              if (!(event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)))
-                setDragging(false);
-            }}
-            onDrop={(event) => {
-              event.preventDefault();
-              setDragging(false);
-              if (!loading) void open(event.dataTransfer.files[0]);
-            }}
-          >
-            <Icons.FileText size={38} />
-            <h2>{t("replay.drop")}</h2>
-            <Button icon={Icons.FileText} disabled={loading} onClick={() => input.current?.click()}>
-              {t("replay.openAction")}
-            </Button>
-            <input
-              ref={input}
-              tabIndex={-1}
-              className="aegis-sr-only"
-              aria-label={t("replay.open")}
-              type="file"
-              accept=".aegis-replay,.json,.gz,application/json,application/gzip"
-              disabled={loading}
-              onChange={(event) => {
-                void open(event.target.files?.[0]);
-                event.target.value = "";
-              }}
-            />
-            <small>.aegis-replay · JSON · GZIP</small>
-            {loading ? <p role="status">{t("replay.loading")}</p> : null}
-            {error ? <p role="alert">{t(`replay.error.${error}`)}</p> : null}
-          </div>
-          <p className="replay-import__privacy">
-            <Icons.ShieldCheck size={18} />
-            <span>{t("replay.local")}</span>
-          </p>
-        </div>
-        <ol className="replay-import__steps">
-          {(["replay.download", "replay.openAction", "replay.watch"] as const).map((step, index) => (
-            <li key={step}>
-              <span>{index + 1}</span>
-              <strong>{t(step)}</strong>
-            </li>
-          ))}
-        </ol>
-        <DriveConnectCard signedIn={signedIn} />
-        <ReplayLibraryPanel onOpen={open} />
-      </div>
+    <section className="replay-import replay-link-state">
+      <h1>{t("replay.title")}</h1>
+      {ownReplay && !loading ? (
+        <>
+          <p>{t("replay.driveSignInToWatch")}</p>
+          <Button icon={Icons.Cloud} onClick={() => void openOwn(ownReplay)}>
+            {t("replay.prompt.watch")}
+          </Button>
+        </>
+      ) : null}
+      <p role={linkError ? "alert" : "status"}>{linkError ? t(linkError) : loading ? t("replay.loading") : null}</p>
+      <Button onClick={close}>{t("replay.back")}</Button>
     </section>
   );
 }

@@ -12,8 +12,7 @@ class ReplayPacingPage {
   constructor(readonly page: Page) {}
   async open(recording = securityReplayFixture(), speed = "1", instrumented = false) {
     await this.page.route("**/auth/me", (route) => route.fulfill({ contentType: "application/json", body: "null" }));
-    await this.page.route("**/account/replays", (route) => route.fulfill({ status: 401, body: "Unauthorized" }));
-    await this.page.goto(instrumented ? "/e2e/replay-harness.html" : "/replays");
+    await this.page.goto(instrumented ? "/e2e/replay-harness.html" : "/profile");
     await this.page.getByLabel("Open replay file").setInputFiles({
       name: "pacing.aegis-replay",
       mimeType: "application/gzip",

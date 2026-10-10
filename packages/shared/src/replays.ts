@@ -1,6 +1,7 @@
 import type { GameState } from "./schema/GameState.js";
 import type { Seat } from "./schema/enums.js";
 import type { SequencedServerEvent } from "./protocol/events.js";
+import type { DigimonWorldAvatarId } from "./account/avatars.js";
 
 export const REPLAY_CHANNEL = "replay";
 export const REPLAY_FORMAT_VERSION = 1;
@@ -35,6 +36,65 @@ export interface ReplayLibraryPage {
 /** `GET /replays/:id`: the owner reads the file from Drive with their own token; others use the proxy. */
 export interface SharedReplay extends SavedReplay {
   owned: boolean;
+}
+
+/** Finished matches kept per account. Matches with a saved replay stay even beyond it. */
+export const MATCH_HISTORY_LIMIT = 100;
+/** Default and largest page of `GET /account/matches`. */
+export const MATCH_PAGE_SIZE = 25;
+export const MAX_MATCH_PAGE_SIZE = 50;
+export const MATCH_RESULTS = ["win", "loss", "draw"] as const;
+export const MATCH_MODES = [
+  "casual",
+  "private",
+  "ranked",
+  "bot",
+  "tournament",
+  "unlimited",
+  "beta",
+] as const satisfies readonly ReplaySummary["mode"][];
+/** Longest opponent search `GET /account/matches` accepts, the longest display name. */
+export const MATCH_OPPONENT_SEARCH_MAX = 32;
+/** Optional narrowing of the history; an absent field matches everything. */
+export interface MatchHistoryFilter {
+  result?: (typeof MATCH_RESULTS)[number];
+  mode?: ReplaySummary["mode"];
+  opponent?: string;
+}
+
+/** One finished match from the account's point of view. */
+export interface MatchHistoryRecord {
+  id: string;
+  mode: ReplaySummary["mode"];
+  opponentName: string;
+  opponentKind: "human" | "bot";
+  opponentAvatarId?: DigimonWorldAvatarId;
+  result: (typeof MATCH_RESULTS)[number];
+  reason: string;
+  finishedAt: number;
+}
+
+export interface MatchHistoryEntry extends MatchHistoryRecord {
+  replay: SavedReplay | null;
+}
+
+/** `GET /account/matches`: one numbered page; `total` counts the matches the filter selects. */
+export interface MatchHistoryPage {
+  matches: MatchHistoryEntry[];
+  total: number;
+  page: number;
+  limit: number;
+  /** The server can serve public replays from Drive; without it the share control is hidden. */
+  sharing: boolean;
+}
+
+/** Totals over the kept match history, for the profile header. */
+export interface MatchHistorySummary {
+  matches: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  replaysSaved: number;
 }
 
 /** Plain serialized state; consumers read fields and never call Schema methods. */
