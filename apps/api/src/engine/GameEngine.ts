@@ -12,6 +12,7 @@ import {
   effectiveColorsOf,
   expireCombatWindow,
   exposeCardToView,
+  forgetWithheldCards,
   handleDisconnect,
   handleReconnect,
   installVisibility,
@@ -836,6 +837,10 @@ export class GameEngine {
 
   refreshStateView(view: Client["view"], seat: Seat | undefined): void {
     return refreshStateView(this, view, seat);
+  }
+
+  forgetWithheldCards(view: Client["view"], seat: Seat | undefined): void {
+    return forgetWithheldCards(this, view, seat);
   }
 
   installVisibility(notify: VisibilityPort): void {

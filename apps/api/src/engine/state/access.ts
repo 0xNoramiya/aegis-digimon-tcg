@@ -64,6 +64,8 @@ export type CardZone = Zone.Deck | Zone.Hand | Zone.Security | Zone.Trash | Zone
  * Insert-only by design. A view that already knows a card keeps knowing it (`unlockInto` is
  * add-only and `StateView` never forgets), and that memory is exactly what lets the encoder
  * emit the DELETE when the card leaves. So removals need no notification; only arrivals do.
+ * The one exception is an arrival where a viewer may not read the card: the room releases
+ * that view's memory of it after the patch (`forgetWithheldCards`).
  */
 export type VisibilityPort = (ownerSeat: Seat, zone: VisibilityZone, card: CardInstance) => void;
 
