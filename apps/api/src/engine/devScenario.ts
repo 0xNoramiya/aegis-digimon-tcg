@@ -414,6 +414,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-kanan-jupiter-pomumon",
   "arena-bt22-akemi-battle-mother",
   "arena-feedback9-akemi-inherited-mother-eater",
+  "arena-feedback20-ruin-mode-on-play",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
   "arena-bt24-homeros-neptunemon-timing-choice",
@@ -7293,6 +7294,37 @@ function layFeedback9AkemiInheritedScenario(state: GameState, decks: readonly [D
   setBreeding(human, breeding);
 }
 
+/**
+ * Feedback #20: an Option deletes the opponent's ShineGreymon: Ruin Mode, and its [On Deletion]
+ * -5000 DP also covers Digimon played later. Kuwagamon (4000 DP) is deleted before its [On Play]
+ * can activate (Q3523). Lillymon (8000 DP) stays at 3000 DP and its [On Play] resolves. Lillymon
+ * spends the last memory, so the turn passes after its effect.
+ */
+function layFeedback20RuinModeOnPlayScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback20-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback20-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback20-security-${seat}-${index}`, "BT1-010", seat));
+    }
+  }
+  const human = state.players[0]!;
+  const opponent = state.players[1]!;
+  placePermanent(human, establishedDigimon(0, ["BT1-085"], "-feedback20-tai"));
+  insertCard(human, Zone.Hand, faceUpCard("dev-feedback20-delete-option", "BT3-098", 0));
+  insertCard(human, Zone.Hand, faceUpCard("dev-feedback20-kuwagamon", "BT1-070", 0));
+  insertCard(human, Zone.Hand, faceUpCard("dev-feedback20-lillymon", "BT14-049", 0));
+  placePermanent(opponent, establishedDigimon(1, ["EX4-074"], "-feedback20-ruin-mode"));
+  placePermanent(opponent, establishedDigimon(1, ["BT1-009"], "-feedback20-monodramon"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 10;
+}
+
 function layP224KotoneOwnSourceScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
   prepareIssueScenario(state, decks, 3);
   const human = state.players[0];
@@ -10332,6 +10364,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-kanan-jupiter-pomumon": layKananJupiterPomumonScenario,
   "arena-bt22-akemi-battle-mother": layBt22AkemiBattleMotherScenario,
   "arena-feedback9-akemi-inherited-mother-eater": layFeedback9AkemiInheritedScenario,
+  "arena-feedback20-ruin-mode-on-play": layFeedback20RuinModeOnPlayScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,
   "arena-bt24-homeros-neptunemon-timing-choice": layBt24HomerosNeptunemonTimingChoiceScenario,
