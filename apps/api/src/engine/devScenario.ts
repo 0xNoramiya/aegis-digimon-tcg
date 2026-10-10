@@ -427,6 +427,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-lordknightmon-bt22-skullknightmon",
   "arena-feedback18-sukamon-inherited-protection",
   "arena-feedback19-burst-tamer-choice",
+  "arena-discord-x7-digixros-zones",
   "arena-security-leak-known-card-face-down",
   "arena-discord-richard-main-materials-face-down",
   "arena-discord-richard-main-fresh-materials",
@@ -7755,6 +7756,38 @@ function layFeedback19BurstTamerChoiceScenario(state: GameState): void {
 }
 
 /**
+ * Discord 1558458433970380820: Shoutmon X7 (AD1-006) holds Shoutmon X4 (BT10-009), Starmons
+ * (BT10-029), and Ballistamon (BT10-049). Tai Kamiya (BT1-085) already has an older Dorulumon
+ * (BT10-034) under it, and another Dorulumon is in hand. X7 attacks the bot's suspended Omnimon
+ * (BT1-084, 15000 DP) and loses. Its [All Turns] effect places Starmons and Ballistamon under Tai
+ * and plays X4. The DigiXros materials for X4 come from the hand, the battle area (X7 itself,
+ * Q6061), and the cards this effect just placed (Q6060), but never the older Dorulumon.
+ */
+function layDiscordX7DigiXrosZonesScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-discord-x7-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-discord-x7-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-discord-x7-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT10-009", "BT10-029", "BT10-049", "AD1-006"], "-discord-x7"));
+  placePermanent(human, establishedDigimon(0, ["BT10-034", "BT1-085"], "-discord-x7-tai"));
+  insertCard(human, Zone.Hand, faceDownCard("dev-discord-x7-hand-dorulumon", "BT10-034", 0));
+  const omnimon = establishedDigimon(1, ["BT1-084"], "-discord-x7-omnimon");
+  omnimon.isSuspended = true;
+  placePermanent(state.players[1]!, omnimon);
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
  * Hidden-information check, no player report: the bot's security stack already shows one card
  * face up, so the player's client holds part of it. Lónkhē Adistakto (BT10-101) places the bot's
  * Monodramon, which both players saw on the field, face down on top of that stack. The player
@@ -10970,6 +11003,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-lordknightmon-bt22-skullknightmon": layDiscordLordKnightmonBt22SkullKnightmonScenario,
   "arena-feedback18-sukamon-inherited-protection": layFeedback18SukamonInheritedProtectionScenario,
   "arena-feedback19-burst-tamer-choice": layFeedback19BurstTamerChoiceScenario,
+  "arena-discord-x7-digixros-zones": layDiscordX7DigiXrosZonesScenario,
   "arena-security-leak-known-card-face-down": laySecurityLeakKnownCardFaceDownScenario,
   "arena-discord-richard-main-materials-face-down": layDiscordRichardMainMaterialsFaceDownScenario,
   "arena-discord-richard-main-fresh-materials": layDiscordRichardMainFreshMaterialsScenario,
