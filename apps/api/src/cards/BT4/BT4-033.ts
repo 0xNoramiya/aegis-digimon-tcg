@@ -28,6 +28,8 @@ const compiled: CompiledCard = {
             },
             raw: "＜Digi-Burst 2＞",
           },
+          optional: true,
+          abortOnDecline: true,
         },
       ],
       keywords: [

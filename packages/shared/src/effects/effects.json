@@ -7500,7 +7500,9 @@
                   "kind": "trash",
                   "target": { "filter": { "zone": "digivolutionCards", "isSelfRef": true }, "count": 1 },
                   "raw": "by trashing 1 of this Digimon's digivolution cards"
-                }
+                },
+                "optional": true,
+                "abortOnDecline": true
               }
             ]
           }
@@ -13157,8 +13159,11 @@
             },
             "cost": {
               "kind": "deleteOwn",
-              "target": { "filter": { "controller": "mine", "excludeSelf": true, "kind": ["Digimon"] }, "count": 1 }
-            }
+              "target": { "filter": { "controller": "mine", "excludeSelf": true, "kind": ["Digimon"] }, "count": 1 },
+              "raw": "By deleting 1 of your other Digimon"
+            },
+            "optional": true,
+            "abortOnDecline": true
           }
         ]
       },
@@ -19980,7 +19985,9 @@
                   "kind": "suspend",
                   "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
                   "raw": "by suspending this Tamer"
-                }
+                },
+                "optional": true,
+                "abortOnDecline": true
               }
             ]
           }
@@ -30095,7 +30102,9 @@
               {
                 "kind": "GainMemory",
                 "amount": 1,
-                "cost": { "kind": "suspend", "target": { "filter": { "isSelfRef": true }, "count": 1 } }
+                "cost": { "kind": "suspend", "target": { "filter": { "isSelfRef": true }, "count": 1 } },
+                "optional": true,
+                "abortOnDecline": true
               }
             ]
           }
@@ -36464,7 +36473,9 @@
                 "count": 1
               },
               "raw": "By trashing 1 Digimon card with the [Machine]/[Cyborg]/[SoC] trait in your hand"
-            }
+            },
+            "optional": true,
+            "abortOnDecline": true
           }
         ]
       },
@@ -36563,6 +36574,8 @@
               "target": { "filter": { "controller": "mine", "zone": "hand", "kind": ["Digimon"] }, "count": 1 },
               "storeAs": "trashedDigimonLevel"
             },
+            "optional": true,
+            "abortOnDecline": true,
             "actions": [
               {
                 "kind": "Delete",
@@ -36594,6 +36607,8 @@
               "target": { "filter": { "controller": "mine", "zone": "hand", "kind": ["Digimon"] }, "count": 1 },
               "storeAs": "trashedDigimonLevel"
             },
+            "optional": true,
+            "abortOnDecline": true,
             "actions": [
               {
                 "kind": "Delete",
@@ -49179,6 +49194,8 @@
                   "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
                   "raw": "by suspending this Tamer"
                 },
+                "optional": true,
+                "abortOnDecline": true,
                 "actions": [{ "kind": "GainMemory", "amount": 1 }]
               }
             ]
@@ -85095,6 +85112,8 @@
                   "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
                   "raw": "by suspending this Tamer"
                 },
+                "optional": true,
+                "abortOnDecline": true,
                 "actions": [
                   {
                     "effectTextPart": "[Your Turn] When any of your Digimon get linked, by suspending this Tamer, 1 of your opponent's Digimon gets -2000 DP for the turn.",
@@ -113331,7 +113350,9 @@
               "kind": "trash",
               "target": { "filter": { "isSelfRef": true, "zone": "digivolutionCards" }, "count": 2 },
               "raw": "＜Digi-Burst 2＞"
-            }
+            },
+            "optional": true,
+            "abortOnDecline": true
           }
         ],
         "keywords": [{ "keyword": "DigiBurst", "amount": 2, "raw": "＜Digi-Burst 2＞" }]
@@ -113631,7 +113652,9 @@
               "kind": "trash",
               "target": { "filter": { "isSelfRef": true, "zone": "digivolutionCards" }, "count": 2 },
               "raw": "＜Digi-Burst 2＞"
-            }
+            },
+            "optional": true,
+            "abortOnDecline": true
           }
         ],
         "keywords": [{ "keyword": "DigiBurst", "amount": 2, "raw": "＜Digi-Burst 2＞" }]
@@ -114124,27 +114147,34 @@
         "trigger": "WhenDigivolving",
         "actions": [
           {
-            "effectTextPart": "[When Digivolving] ＜Digi-Burst 4＞ (Trash 4 of this Digimon's digivolution cards to activate the effect below.)・Suspend all of your opponent's Digimon with 5000 DP or less.",
-            "kind": "Suspend",
-            "target": {
-              "filter": { "controller": "opponent", "kind": ["Digimon"], "dp": { "op": "lte", "value": 5000 } },
-              "count": "all"
-            },
+            "kind": "CostGatedBlock",
             "cost": {
               "kind": "trash",
               "target": { "filter": { "isSelfRef": true, "zone": "digivolutionCards" }, "count": 4 },
               "raw": "＜Digi-Burst 4＞"
-            }
-          },
-          {
-            "effectTextPart": "Then, place all of your opponent's suspended Digimon at the bottom of their owners' decks in any order. Trash all of the digivolution cards of those Digimon.",
-            "kind": "Return",
-            "target": {
-              "filter": { "controller": "opponent", "suspended": true, "kind": ["Digimon"] },
-              "count": "all"
             },
-            "to": "deckBottom",
-            "order": "any"
+            "optional": true,
+            "abortOnDecline": true,
+            "actions": [
+              {
+                "effectTextPart": "[When Digivolving] ＜Digi-Burst 4＞ (Trash 4 of this Digimon's digivolution cards to activate the effect below.)・Suspend all of your opponent's Digimon with 5000 DP or less.",
+                "kind": "Suspend",
+                "target": {
+                  "filter": { "controller": "opponent", "kind": ["Digimon"], "dp": { "op": "lte", "value": 5000 } },
+                  "count": "all"
+                }
+              },
+              {
+                "effectTextPart": "Then, place all of your opponent's suspended Digimon at the bottom of their owners' decks in any order. Trash all of the digivolution cards of those Digimon.",
+                "kind": "Return",
+                "target": {
+                  "filter": { "controller": "opponent", "suspended": true, "kind": ["Digimon"] },
+                  "count": "all"
+                },
+                "to": "deckBottom",
+                "order": "any"
+              }
+            ]
           }
         ],
         "keywords": [{ "keyword": "DigiBurst", "amount": 4, "raw": "＜Digi-Burst 4＞" }]
@@ -163763,7 +163793,9 @@
                     "from": ["hand"]
                   },
                   "raw": "by revealing 1 card of the same level in your hand"
-                }
+                },
+                "optional": true,
+                "abortOnDecline": true
               }
             ]
           }
@@ -179294,7 +179326,9 @@
                     "count": 1
                   },
                   "raw": "by deleting 1 of your other Digimon, end the attack"
-                }
+                },
+                "optional": true,
+                "abortOnDecline": true
               }
             ]
           }
@@ -179407,7 +179441,9 @@
                     "count": 1
                   },
                   "raw": "by deleting 1 of your other Digimon, end that attack"
-                }
+                },
+                "optional": true,
+                "abortOnDecline": true
               }
             ]
           }
@@ -183279,8 +183315,11 @@
                   "placedInBattleAreaByEffect": true
                 },
                 "count": 1
-              }
-            }
+              },
+              "raw": "By trashing 1 of your Option cards in the battle area"
+            },
+            "optional": true,
+            "abortOnDecline": true
           }
         ],
         "isInherited": true,

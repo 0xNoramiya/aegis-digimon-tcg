@@ -8,7 +8,12 @@ describe("BT4-062 Nidhoggmon", () => {
     const whenDigivolving = runtimeCompiledCard("BT4-062")!.effects.find(
       (effect) => effect.trigger === "WhenDigivolving",
     )!;
-    expect(whenDigivolving.actions.map((action) => action.kind)).toEqual(["Suspend", "Return"]);
+    expect(whenDigivolving.actions).toMatchObject([{ kind: "CostGatedBlock", optional: true, abortOnDecline: true }]);
+    const [digiBurst] = whenDigivolving.actions;
+    expect(digiBurst?.kind === "CostGatedBlock" && digiBurst.actions.map((action) => action.kind)).toEqual([
+      "Suspend",
+      "Return",
+    ]);
   });
 
   it("Digi-Bursts 4 to bottom-deck all suspended opposing Digimon", async () => {
@@ -26,7 +31,7 @@ describe("BT4-062 Nidhoggmon", () => {
           ],
         },
       },
-      { autoSelectCards: true, autoOrderCards: false },
+      { autoSelectCards: true, autoAcceptOptional: true, autoOrderCards: false },
     );
     const opp = s.state.players[1] as PlayerState;
     s.state.memory = 5;
@@ -75,7 +80,7 @@ describe("BT4-062 Nidhoggmon — KB Q&A rulings", () => {
           ],
         },
       },
-      { autoSelectCards: true },
+      { autoSelectCards: true, autoAcceptOptional: true },
     );
     const opponent = s.state.players[1] as PlayerState;
     s.state.memory = 5;
@@ -94,5 +99,40 @@ describe("BT4-062 Nidhoggmon — KB Q&A rulings", () => {
     expect(opponent.deck.at(-1)?.instanceId).toBe(alreadySuspendedId);
     expect(opponent.battleArea.map((p) => p.topCard?.instanceId)).toEqual([activeHighDpId]);
     expect(s.perm("activeHighDp").isSuspended).toBe(false);
+  });
+});
+
+describe("BT4-062 — optional By cost (Discord 1558408701633757194)", () => {
+  it("keeps its digivolution cards and the opponent's Digimon when Digi-Burst is declined", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "AD1-011", under: ["BT1-010", "BT1-011", "BT1-012"], as: "base" }],
+          hand: [{ card: "BT4-062", as: "evolving" }],
+        },
+        1: {
+          deck: ["BT1-013"],
+          battleArea: [
+            { card: "BT2-024", as: "low" },
+            { card: "BT3-017", as: "already", suspended: true },
+          ],
+        },
+      },
+      { autoSelectCards: true, autoDeclineOptional: true },
+    );
+    s.state.memory = 5;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("evolving").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("base").topCard?.cardId === "BT4-062" && s.state.pendingDecision === undefined);
+
+    expect(s.decisions.some(({ req }) => req.kind === "optional")).toBe(true);
+    expect(s.perm("base").stack).toHaveLength(4);
+    expect(s.perm("low").isSuspended).toBe(false);
+    expect(s.state.players[1]!.battleArea).toHaveLength(2);
   });
 });

@@ -30,6 +30,8 @@ export const compiled: CompiledCard = {
                 },
                 raw: "by revealing 1 card of the same level in your hand",
               },
+              optional: true,
+              abortOnDecline: true,
             },
           ],
         },

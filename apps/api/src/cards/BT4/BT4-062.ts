@@ -7,20 +7,7 @@ const compiled: CompiledCard = {
       trigger: "WhenDigivolving",
       actions: [
         {
-          effectTextPart:
-            "[When Digivolving] ＜Digi-Burst 4＞ (Trash 4 of this Digimon's digivolution cards to activate the effect below.)・Suspend all of your opponent's Digimon with 5000 DP or less.",
-          kind: "Suspend",
-          target: {
-            filter: {
-              controller: "opponent",
-              kind: ["Digimon"],
-              dp: {
-                op: "lte",
-                value: 5000,
-              },
-            },
-            count: "all",
-          },
+          kind: "CostGatedBlock",
           cost: {
             kind: "trash",
             target: {
@@ -32,21 +19,41 @@ const compiled: CompiledCard = {
             },
             raw: "＜Digi-Burst 4＞",
           },
-        },
-        {
-          effectTextPart:
-            "Then, place all of your opponent's suspended Digimon at the bottom of their owners' decks in any order. Trash all of the digivolution cards of those Digimon.",
-          kind: "Return",
-          target: {
-            filter: {
-              controller: "opponent",
-              suspended: true,
-              kind: ["Digimon"],
+          optional: true,
+          abortOnDecline: true,
+          actions: [
+            {
+              effectTextPart:
+                "[When Digivolving] ＜Digi-Burst 4＞ (Trash 4 of this Digimon's digivolution cards to activate the effect below.)・Suspend all of your opponent's Digimon with 5000 DP or less.",
+              kind: "Suspend",
+              target: {
+                filter: {
+                  controller: "opponent",
+                  kind: ["Digimon"],
+                  dp: {
+                    op: "lte",
+                    value: 5000,
+                  },
+                },
+                count: "all",
+              },
             },
-            count: "all",
-          },
-          to: "deckBottom",
-          order: "any",
+            {
+              effectTextPart:
+                "Then, place all of your opponent's suspended Digimon at the bottom of their owners' decks in any order. Trash all of the digivolution cards of those Digimon.",
+              kind: "Return",
+              target: {
+                filter: {
+                  controller: "opponent",
+                  suspended: true,
+                  kind: ["Digimon"],
+                },
+                count: "all",
+              },
+              to: "deckBottom",
+              order: "any",
+            },
+          ],
         },
       ],
       keywords: [

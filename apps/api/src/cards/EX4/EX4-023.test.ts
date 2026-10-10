@@ -44,7 +44,7 @@ describe("EX4-023 Agumon Expert", () => {
         },
       ],
     });
-    expect(JSON.stringify(compiled.effects?.[0]?.actions?.[0])).not.toContain('"optional":true');
+    expect(compiled.effects?.[0]?.actions?.[0]).toMatchObject({ actions: [{ optional: true, abortOnDecline: true }] });
     expect(compiled.residual).toEqual([]);
   });
 
@@ -181,7 +181,7 @@ describe("EX4-023 Agumon Expert", () => {
         },
         1: { hand: [{ card: "BT1-010", as: "played" }] },
       },
-      { autoSelectCards: true },
+      { autoSelectCards: true, autoAcceptOptional: true },
     );
     s.state.turnSeat = 1;
     s.state.memory = 10;
@@ -334,5 +334,33 @@ describe("EX4-023 Agumon Expert", () => {
     expect(s.state.players[0]!.security.map((card) => card.cardId)).toEqual(["BT1-012"]);
     expect(s.state.players[0]!.hand).toHaveLength(0);
     expect(s.state.players[0]!.trash.some((card) => card.cardId === "BT1-009")).toBe(true);
+  });
+});
+
+describe("EX4-023 — optional By cost (Discord 1558408701633757194)", () => {
+  it("keeps the same-level card in hand when the reveal cost is declined", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "EX4-023", as: "expert" }],
+          hand: [{ card: "BT1-009", as: "sameLevel" }],
+          security: ["BT1-012"],
+        },
+        1: { hand: [{ card: "BT1-010", as: "played" }] },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    s.state.turnSeat = 1;
+    s.state.memory = 10;
+    await s.ready();
+
+    expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("played").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.players[1]!.battleArea.length === 1 && s.state.pendingDecision === undefined);
+
+    expect(s.decisions.some(({ req }) => req.kind === "optional")).toBe(true);
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual([s.inst("sameLevel").instanceId]);
+    expect(s.state.players[0]!.security.map((card) => card.cardId)).toEqual(["BT1-012"]);
   });
 });

@@ -20,7 +20,10 @@ export const compiled: CompiledCard = {
           cost: {
             kind: "deleteOwn",
             target: { filter: { controller: "mine", excludeSelf: true, kind: ["Digimon"] }, count: 1 },
+            raw: "By deleting 1 of your other Digimon",
           },
+          optional: true,
+          abortOnDecline: true,
         },
       ],
     },

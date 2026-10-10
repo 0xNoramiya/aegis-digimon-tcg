@@ -297,3 +297,33 @@ describe("EX7-052 Tsukaimon — KB Q&A rulings", () => {
     expect(s.perm("attacker").isSuspended).toBe(true);
   });
 });
+
+describe("EX7-052 — optional By cost (Discord 1558408701633757194)", () => {
+  it("keeps the other Digimon when the cost is declined", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "EX7-042", as: "host", under: ["EX7-052"] },
+            { card: "EX7-038", as: "cost" },
+          ],
+          security: ["BT1-009"],
+        },
+        1: { battleArea: [{ card: "BT1-009", as: "attacker" }] },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    s.state.turnSeat = 1;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(1, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.decisions.some(({ req }) => req.kind === "optional") && s.state.pendingDecision === undefined);
+
+    expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.cardId === "EX7-038")).toBe(true);
+  });
+});

@@ -277,3 +277,41 @@ describe("BT17-090 Tomonori Ryusenji — [Security] play self", () => {
     assertNoLoudGap(s);
   });
 });
+
+describe("BT17-090 — optional By cost (Discord 1558408701633757194)", () => {
+  it("stays unsuspended and gains no memory when the cost is declined", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: TOMONORI, as: "tomonori" },
+            { card: "BT17-086", as: "leon" },
+            { card: "BT17-030", as: "pulsemon" },
+          ],
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true, autoOrderTriggers: true },
+    );
+    const leonId = s.inst("leon").instanceId;
+    s.state.turnSeat = 0;
+    s.state.memory = 0;
+    await s.ready();
+
+    const [effect] = observe(s.engine).activatableEffects(s.perm("leon")) as { effectKey: string }[];
+    expect(
+      s.engine.applyIntent(0, {
+        type: "activateEffect",
+        sourceInstanceId: s.perm("leon").topCard.instanceId,
+        effectKey: effect!.effectKey,
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () =>
+        s.perm("pulsemon").stack.some((card) => card.instanceId === leonId) && s.state.pendingDecision === undefined,
+    );
+
+    expect(s.decisions.some(({ req }) => req.kind === "optional")).toBe(true);
+    expect(s.perm("tomonori").isSuspended).toBe(false);
+    expect(s.state.memory).toBe(0);
+  });
+});
