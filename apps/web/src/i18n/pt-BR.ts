@@ -215,6 +215,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.timer.opponent": "Oponente",
   "game.timer.active": "Sua ação",
   "game.timer.paused": "Pausado",
+  "game.timer.mulligan": "Mulligan",
   "game.timer.low": "Tempo acabando",
   "game.timer.refill": "+{seconds}s / turno",
   "overlay.reason.win.timeout": "O tempo do seu oponente acabou.",
@@ -252,7 +253,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "nav.skipToContent": "Ir para o conteúdo principal",
   "brand.subtitle": "JOGO DE CARTAS",
 
-  "browser.outdated": "Este navegador está desatualizado, então algumas cores e painéis podem não aparecer. Atualize para Safari 16.4, Chrome 111, Firefox 113 ou mais recente.",
+  "browser.outdated":
+    "Este navegador está desatualizado, então algumas cores e painéis podem não aparecer. Atualize para Safari 16.4, Chrome 111, Firefox 113 ou mais recente.",
   "beta.tag": "Beta",
   "lobby.betaBattleMode": "Modo de batalha beta",
   "lobby.betaBattleHint":

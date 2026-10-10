@@ -3,6 +3,9 @@ import {
   CombatWindow,
   EFFECT_UNIT_MS,
   EVENT_CHANNEL,
+  MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN,
+  MATCH_TIMER_DECISION_BONUS_SECONDS,
+  MULLIGAN_TIMER_SECONDS,
   PendingDecision,
   Phase,
   eventAnimationMs,
@@ -12,6 +15,7 @@ import {
 import type { Client } from "colyseus";
 import type { GameEngine } from "../engine/GameEngine.js";
 import { AegisRoom } from "./AegisRoom.js";
+import { RED_DECK } from "../engine/testDecks.js";
 
 const rooms: AegisRoom[] = [];
 afterEach(() => {
@@ -70,7 +74,7 @@ describe("room clock enforcement", () => {
     );
   });
 
-  it("closes the actual opening mulligan and refuses late answers after expiry", async () => {
+  it("keeps the hand when the mulligan window runs out and refuses late answers", async () => {
     const now = vi.spyOn(performance, "now").mockReturnValue(0);
     const game = room();
     (game as unknown as { matchStartRequested: boolean }).matchStartRequested = true;
@@ -78,7 +82,9 @@ describe("room clock enforcement", () => {
     sync(game);
     now.mockReturnValue(60_000);
     sync(game);
-    await waiting;
+    await expect(waiting).resolves.toBe(true);
+    expect(game.state.gameOver).toBe(false);
+    expect(game.state.timerRemaining0).toBe(60);
     expect(engine(game).mulligan.isOpen).toBe(false);
     expect(game.state.pendingDecision).toBeUndefined();
     expect(engine(game).applyIntent(0, { type: "mulligan", keep: false }).ok).toBe(false);
@@ -283,5 +289,178 @@ describe("room clock enforcement", () => {
     expect(game.state.timerStartSeconds).toBe(60);
     expect(game.state.timerRefillSeconds).toBe(60);
     expect(room({ matchTimer: true, timerStartSeconds: 60, timerRefillSeconds: 0 }).state.timerStartSeconds).toBe(300);
+  });
+});
+
+/**
+ * Discord suggestion "Timer improvement" (thread 1558298610754527232): a separate mulligan
+ * window, no clock before the player's own decision, no clock while the opponent is away,
+ * and combo time for effect decisions.
+ */
+describe("timer improvements from the Discord suggestion", () => {
+  type Internals = {
+    handleIntent(client: Client, intent: { type: string; keep?: boolean }): void;
+    requestDecision(seat: Seat, request: { decisionId: string; seat: Seat; kind: string; promptText: string }): void;
+  };
+
+  function player(sessionId: string): Client {
+    return { sessionId, send: vi.fn(), view: undefined } as unknown as Client;
+  }
+
+  async function settleRounds(predicate: () => boolean, rounds = 400): Promise<void> {
+    for (let round = 0; round < rounds && !predicate(); round += 1)
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  }
+
+  async function startedMatch() {
+    const now = vi.spyOn(performance, "now").mockReturnValue(0);
+    const game = room();
+    const internals = game as unknown as Internals;
+    const clients = [player("host"), player("guest")] as const;
+    game.clients.push(clients[0]);
+    game.onJoin(clients[0], { displayName: "Host", deck: RED_DECK });
+    game.clients.push(clients[1]);
+    game.onJoin(clients[1], { displayName: "Guest", deck: RED_DECK, roomCode: game.state.roomCode });
+    internals.handleIntent(clients[0], { type: "ready" });
+    internals.handleIntent(clients[1], { type: "ready" });
+    await settleRounds(() => game.state.pendingDecision?.kind === "mulligan");
+    let time = 0;
+    const advance = (ms: number) => {
+      time += ms;
+      now.mockReturnValue(time);
+      sync(game);
+    };
+    /** Moves to the end of the deciding seat's animations, where its clock starts. */
+    const finishPresentation = () => {
+      const seat = engine(game).inputSeat;
+      const ends = (game as unknown as { matchClock: { presentEnd: [number, number] } }).matchClock.presentEnd;
+      advance(Math.max(0, (seat === undefined ? time : ends[seat]) - time));
+    };
+    finishPresentation();
+    return { game, internals, clients, advance, finishPresentation };
+  }
+
+  function mulliganRemaining(game: AegisRoom, seat: Seat): number {
+    return seat === 0 ? game.state.mulliganTimerRemaining0 : game.state.mulliganTimerRemaining1;
+  }
+  function remaining(game: AegisRoom, seat: Seat): number {
+    return seat === 0 ? game.state.timerRemaining0 : game.state.timerRemaining1;
+  }
+
+  it("A: runs a separate 30 s mulligan window and keeps the hand when it runs out", async () => {
+    const { game, advance, finishPresentation } = await startedMatch();
+    const first = game.state.pendingDecision!.seat as Seat;
+    const hand = [...game.state.players[first]!.hand].map((card) => card.instanceId);
+    advance(10_000);
+    expect(game.state.timerActiveSeat).toBe(first);
+    expect(mulliganRemaining(game, first)).toBe(MULLIGAN_TIMER_SECONDS - 10);
+    expect(remaining(game, first)).toBe(60);
+    advance(MULLIGAN_TIMER_SECONDS * 1000);
+    expect(game.state.gameOver).toBe(false);
+    expect(remaining(game, first)).toBe(60);
+    expect([...game.state.players[first]!.hand].map((card) => card.instanceId)).toEqual(hand);
+    await settleRounds(() => game.state.pendingDecision?.seat === 1 - first);
+    const second = (1 - first) as Seat;
+    expect(game.state.pendingDecision?.kind).toBe("mulligan");
+    finishPresentation();
+    advance(5000);
+    expect(mulliganRemaining(game, second)).toBe(MULLIGAN_TIMER_SECONDS - 5);
+    expect(remaining(game, second)).toBe(60);
+  });
+
+  async function inMainPhase() {
+    const match = await startedMatch();
+    const { game, internals, clients, advance } = match;
+    for (let index = 0; index < 2; index += 1) {
+      const seat = game.state.pendingDecision!.seat as Seat;
+      internals.handleIntent(clients[seat], { type: "mulligan", keep: true });
+      await settleRounds(() => game.state.pendingDecision?.kind === "mulligan" || engine(game).inputSeat !== undefined);
+    }
+    const turnSeat = game.state.turnSeat as Seat;
+    await settleRounds(() => engine(game).mainPhase.isOpen || engine(game).breeding.isOpen);
+    if (!engine(game).mainPhase.isOpen) {
+      internals.handleIntent(clients[turnSeat], { type: "endPhase" });
+      await settleRounds(() => engine(game).mainPhase.isOpen);
+    }
+    match.finishPresentation();
+    return { ...match, turnSeat };
+  }
+
+  it("B: never charges the next player before they hold a decision of their own", async () => {
+    const { game, internals, clients, advance, finishPresentation, turnSeat } = await inMainPhase();
+    const next = (1 - turnSeat) as Seat;
+    const before = remaining(game, next);
+    internals.handleIntent(clients[turnSeat], { type: "endPhase" });
+    let ownDecisionAt: number | undefined;
+    for (let round = 0; round < 400 && ownDecisionAt === undefined; round += 1) {
+      const deciding = engine(game).inputSeat;
+      if (deciding === next) ownDecisionAt = round;
+      else {
+        const left = remaining(game, next);
+        advance(1000);
+        expect(game.state.timerActiveSeat).not.toBe(next);
+        expect(remaining(game, next)).toBeGreaterThanOrEqual(left);
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+      }
+    }
+    expect(ownDecisionAt).toBeDefined();
+    expect(game.state.turnSeat).toBe(next);
+    expect(remaining(game, next)).toBeGreaterThanOrEqual(before);
+    finishPresentation();
+    advance(1000);
+    expect(game.state.timerActiveSeat).toBe(next);
+    expect(remaining(game, next)).toBe(before - 1);
+  });
+
+  it("C: freezes the waiting player's clock while the opponent is disconnected", async () => {
+    const { game, clients, advance, finishPresentation, turnSeat } = await inMainPhase();
+    const away = (1 - turnSeat) as Seat;
+    let reconnect!: (client: Client) => void;
+    game.allowReconnection = vi.fn(
+      () => new Promise<Client>((resolve) => (reconnect = resolve)),
+    ) as unknown as AegisRoom["allowReconnection"];
+    advance(5000);
+    const waiting = remaining(game, turnSeat);
+    const leaving = game.onLeave(clients[away], 1006);
+    await settleRounds(() => reconnect !== undefined);
+    advance(40_000);
+    expect(game.state.timerActiveSeat).toBe(-1);
+    expect(remaining(game, turnSeat)).toBe(waiting);
+    const back = player("guest-back");
+    game.clients.push(back);
+    reconnect(back);
+    await leaving;
+    finishPresentation();
+    advance(4000);
+    expect(game.state.timerActiveSeat).toBe(turnSeat);
+    expect(remaining(game, turnSeat)).toBe(waiting - 4);
+  });
+
+  it("C: keeps charging a disconnected player who holds the decision", async () => {
+    const { game, clients, advance, finishPresentation, turnSeat } = await inMainPhase();
+    game.allowReconnection = vi.fn(() => new Promise<Client>(() => {})) as unknown as AegisRoom["allowReconnection"];
+    void game.onLeave(clients[turnSeat], 1006);
+    await settleRounds(() => game.state.players[turnSeat]?.connected === false);
+    finishPresentation();
+    const before = remaining(game, turnSeat);
+    advance(10_000);
+    expect(remaining(game, turnSeat)).toBe(before - 10);
+  });
+
+  it("D: adds 3 s per effect decision, up to 30 s per player per turn, and none for the mulligan", async () => {
+    const { game, internals, advance, turnSeat } = await inMainPhase();
+    const request = (kind: string, id: string) =>
+      internals.requestDecision(turnSeat, { decisionId: id, seat: turnSeat, kind, promptText: "" });
+    advance(50_000);
+    expect(remaining(game, turnSeat)).toBe(10);
+    request("mulligan", "m");
+    expect(remaining(game, turnSeat)).toBe(10);
+    request("orderTriggers", "a");
+    expect(remaining(game, turnSeat)).toBe(10 + MATCH_TIMER_DECISION_BONUS_SECONDS);
+    for (let index = 0; index < 20; index += 1) request("chooseTargets", `t${index}`);
+    expect(remaining(game, turnSeat)).toBe(10 + MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN);
+    game.state.turnCount += 1;
+    request("optional", "next-turn");
+    expect(remaining(game, turnSeat)).toBe(10 + MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN + 3);
   });
 });

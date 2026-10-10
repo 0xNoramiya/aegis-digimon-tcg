@@ -272,6 +272,7 @@ const interfaceMessages = {
   "game.timer.opponent": "Avversario",
   "game.timer.active": "Tocca a te",
   "game.timer.paused": "In pausa",
+  "game.timer.mulligan": "Mulligan",
   "game.timer.low": "Tempo quasi esaurito",
   "game.timer.refill": "+{seconds}s / turno",
   "overlay.reason.win.timeout": "L'avversario ha esaurito il tempo.",
@@ -306,7 +307,8 @@ const interfaceMessages = {
   "nav.primaryAria": "Navigazione principale",
   "nav.skipToContent": "Vai al contenuto principale",
   "brand.subtitle": "GIOCO DI CARTE",
-  "browser.outdated": "Questo browser non è aggiornato, quindi alcuni colori e pannelli potrebbero non comparire. Aggiorna a Safari 16.4, Chrome 111, Firefox 113 o versioni successive.",
+  "browser.outdated":
+    "Questo browser non è aggiornato, quindi alcuni colori e pannelli potrebbero non comparire. Aggiorna a Safari 16.4, Chrome 111, Firefox 113 o versioni successive.",
   "beta.tag": "Beta",
   "lobby.betaBattleMode": "Modalità di gioco beta",
   "lobby.betaBattleHint":
