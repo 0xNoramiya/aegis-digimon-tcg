@@ -427,6 +427,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-lordknightmon-bt22-skullknightmon",
   "arena-feedback18-sukamon-inherited-protection",
   "arena-feedback19-burst-tamer-choice",
+  "arena-discord-keenan-trigger-order",
   "arena-discord-richard-main-materials-face-down",
   "arena-discord-richard-main-fresh-materials",
   "arena-davis-both-colors",
@@ -7754,6 +7755,37 @@ function layFeedback19BurstTamerChoiceScenario(state: GameState): void {
 }
 
 /**
+ * Discord 1558478403219488899 (match b4b8e39b): on your turn, digivolve Guardromon into
+ * GreatGrizzlymon (BT25-054) and give the bot's Peckmon "[Start of Your Main Phase] This
+ * Digimon attacks." That forced attack opens your Counter timing on the bot's turn. Blast
+ * Digivolve into Leopardmon (BT22-052) and play Gotsumon (EX13-047). Keenan Crier's (BT13-102)
+ * [Opponent's Turn] watcher and Gotsumon's [On Play] trigger together, so you choose the order.
+ */
+function layDiscordKeenanTriggerOrderScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-discord-keenan-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-discord-keenan-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-discord-keenan-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT16-005", "EX13-047", "EX13-051"], "-discord-keenan-guardromon"));
+  placePermanent(human, establishedDigimon(0, ["BT13-102"], "-discord-keenan-tamer"));
+  insertCard(human, Zone.Hand, faceDownCard("dev-discord-keenan-greatgrizzlymon", "BT25-054", 0));
+  insertCard(human, Zone.Hand, faceDownCard("dev-discord-keenan-leopardmon", "BT22-052", 0));
+  insertCard(human, Zone.Hand, faceDownCard("dev-discord-keenan-gotsumon", "EX13-047", 0));
+  placePermanent(state.players[1]!, establishedDigimon(1, ["BT26-072"], "-discord-keenan-peckmon"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 4;
+}
+
+/**
  * Discord 1558451244815880332: Richard Sampson (EX13-071) has 3 face-down cards under it, and two
  * of them are the level 4 and level 5 [Holy Beast] materials. Q7447 requires one of each material
  * in the trash before the [Main] effect can activate. `materialsInTrash` adds Reppamon (BT1-051)
@@ -10936,6 +10968,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-lordknightmon-bt22-skullknightmon": layDiscordLordKnightmonBt22SkullKnightmonScenario,
   "arena-feedback18-sukamon-inherited-protection": layFeedback18SukamonInheritedProtectionScenario,
   "arena-feedback19-burst-tamer-choice": layFeedback19BurstTamerChoiceScenario,
+  "arena-discord-keenan-trigger-order": layDiscordKeenanTriggerOrderScenario,
   "arena-discord-richard-main-materials-face-down": layDiscordRichardMainMaterialsFaceDownScenario,
   "arena-discord-richard-main-fresh-materials": layDiscordRichardMainFreshMaterialsScenario,
   "arena-davis-both-colors": layDavisBothColorsScenario,
