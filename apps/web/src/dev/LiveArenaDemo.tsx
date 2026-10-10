@@ -1409,6 +1409,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Encerre a criação. 1) Ataque o jogador com Armadillomon BT1-027. A segurança do topo do bot é Publimon LM-007: ele vence a batalha, Armadillomon é deletado e o Publimon do bot entra na área de batalha. Ao fim do ataque, nenhum [Fim do Ataque] de Publimon ativa: o Publimon do bot e o seu continuam na área de batalha. 2) Ataque o jogador com seu Publimon. Ele vence o Agumon BT1-010 da segurança e, ao fim do próprio ataque, vai para o topo da sua segurança (5 cartas). O Publimon do bot continua em campo.",
     en: "End breeding. 1) Attack the player with BT1-027 Armadillomon. The bot's top security card is LM-007 Publimon: it wins the battle, Armadillomon is deleted, and the bot's Publimon enters the battle area. At the end of the attack, no Publimon [End of Attack] activates: both the bot's Publimon and yours stay in the battle area. 2) Attack the player with your Publimon. It beats the BT1-010 Agumon from security and, at the end of its own attack, goes to the top of your security (5 cards). The bot's Publimon stays on the field.",
   },
+  "arena-feedback5-execute-suspended": {
+    ptBR: "Encerre a criação. 1) Ataque o jogador com Amaterasumon EX12-047 (Onibimon EX12-004 embaixo dá ＜Execute＞). Duas seguranças são checadas e Amaterasumon fica suspenso. 2) Encerre o turno. Nenhum pedido de ＜Execute＞ aparece, porque Amaterasumon já está suspenso e não pode atacar. O turno passa ao bot e Amaterasumon continua na área de batalha com Onibimon e Karakurumon embaixo. Controle: reinicie e encerre o turno sem atacar. O pedido de ＜Execute＞ aparece; recuse e Amaterasumon continua em campo, sem suspender.",
+    en: "End breeding. 1) Attack the player with EX12-047 Amaterasumon (EX12-004 Onibimon under it grants ＜Execute＞). Two security cards are checked and Amaterasumon is suspended. 2) End your turn. No ＜Execute＞ prompt appears, because Amaterasumon is already suspended and can't attack. The turn passes to the bot and Amaterasumon stays in the battle area with Onibimon and Karakurumon under it. Control: reset and end your turn without attacking. The ＜Execute＞ prompt appears; decline it and Amaterasumon stays on the field, unsuspended.",
+  },
   "arena-raid-optional-preset": {
     ptBR: "Encerre a criação e ataque a segurança com Examon EX13-045. Na ordem dos efeitos [Ao Atacar], ＜Raid＞ deve mostrar Sim/Não/Perguntar, não Obrigatório. Marque Não: o ataque continua na segurança, sem pedido de Raid, e o Agumon BT1-013 do bot sobrevive. Reinicie e marque Sim: o alvo muda para o Agumon sem pedido extra, e ele é deletado na batalha.",
     en: "End breeding and attack security with EX13-045 Examon. In the [When Attacking] order, ＜Raid＞ must show Yes/No/Ask, not Mandatory. Set No: the attack stays on security with no Raid prompt, and the bot's BT1-013 Agumon survives. Reset and set Yes: the target switches to the Agumon with no extra prompt, and it is deleted in battle.",
@@ -2996,6 +3000,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex7-seventh-fascination-trash-turn", "EX7 Seventh Fascination · trash activation"],
   ["arena-raid-after-dedigivolve", "Omnimon · pending Raid after Gladimon De-Digivolve"],
   ["arena-lm007-publimon-end-of-attack", "LM-007 Publimon · End of Attack only after its own attack"],
+  ["arena-feedback5-execute-suspended", "EX12-004 Onibimon · no Execute prompt after attacking"],
   ["arena-raid-optional-preset", "EX13 Examon · Raid Yes/No preset in effect order"],
   ["arena-preset-order-no-clicks", "EX13 Examon · preset effect order resolves in one submit"],
   ["arena-ex13-leopardmon-suspended-target", "EX13 Leopardmon · suspend an already suspended Digimon"],

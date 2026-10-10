@@ -81,6 +81,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-ravemon-burst-hand",
   "arena-raid-after-dedigivolve",
   "arena-lm007-publimon-end-of-attack",
+  "arena-feedback5-execute-suspended",
   "arena-github5331-offense-hand",
   "arena-github5362-shellmon-ts",
   "arena-lanamon-tamer-cost",
@@ -1483,6 +1484,25 @@ function layLm007PublimonEndOfAttackScenario(state: GameState): void {
   placePermanent(human, establishedDigimon(0, ["LM-007"], "-publimon-own"));
   placePermanent(human, establishedDigimon(0, ["BT1-027"], "-publimon-attacker"));
   insertCard(state.players[1]!, Zone.Security, faceDownCard("dev-publimon-bot-security", "LM-007", 1), "top");
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/** Feedback #5: an ＜Execute＞ host that already attacked this turn can't attack again, so it stays. */
+function layFeedback5ExecuteSuspendedScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-execute-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-execute-deck-${seat}-${index}`, "BT1-009", seat));
+    }
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-execute-security-${seat}-${index}`, "BT1-010", seat));
+    }
+  }
+  placePermanent(state.players[0]!, establishedDigimon(0, ["EX12-004", "EX12-063", "EX12-047"], "-execute-host"));
   state.turnSeat = 0;
   state.turnCount = 0;
   state.isFirstPlayersFirstTurn = false;
@@ -9710,6 +9730,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
     layShakkoumonSukamonDnaScenario(state, decks, true),
   "arena-raid-after-dedigivolve": layRaidAfterDeDigivolveScenario,
   "arena-lm007-publimon-end-of-attack": layLm007PublimonEndOfAttackScenario,
+  "arena-feedback5-execute-suspended": layFeedback5ExecuteSuspendedScenario,
   "arena-raid-optional-preset": layRaidOptionalPresetScenario,
   "arena-preset-order-no-clicks": layPresetOrderNoClicksScenario,
   "arena-oct06-king-sukamon-assembly": (state, decks) => layOct06LatestScenario(state, decks, "king-sukamon-assembly"),
