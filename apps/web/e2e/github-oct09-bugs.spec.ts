@@ -54,7 +54,7 @@ test("GitHub #5422: a timed Magnamon would-leave prompt waits for the security r
     .map((s) => s.id);
   expect(Number.isFinite(revealEnd)).toBe(true);
   expect(early).toEqual([]);
-  await scenario.healthy({ timedCatchUp: true });
+  await scenario.healthy();
 });
 
 test.describe("GitHub #5425: Craniamon's unsuspend boost during an effect-ordered attack", () => {

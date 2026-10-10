@@ -41,6 +41,6 @@ test.describe("Discord game-speed report: a timed security check that closes wit
       resolution: "trashed",
     });
     await expect(page.locator(".battle-clash")).toHaveCount(0);
-    await scenario.healthy({ timedCatchUp: true });
+    await scenario.healthy();
   });
 });

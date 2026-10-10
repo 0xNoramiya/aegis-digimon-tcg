@@ -39,5 +39,5 @@ test("Chronomon presents the first security check before Engage and ends the tur
   expect(probe.events.map((e) => e.kind).lastIndexOf("attackEnded")).toBeLessThan(
     probe.events.map((e) => e.kind).lastIndexOf("turnEnded"),
   );
-  await scenario.healthy({ timedCatchUp: true });
+  await scenario.healthy();
 });

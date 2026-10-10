@@ -260,22 +260,20 @@ export class ScenarioPage {
     }
     throw new Error("Scenario exceeded 40 decisions");
   }
-  async healthy({
-    timedCatchUp = false,
-    resumedEffectBudgets = {},
-  }: { timedCatchUp?: boolean; resumedEffectBudgets?: Record<string, number> } = {}) {
+  async healthy({ resumedEffectBudgets = {} }: { resumedEffectBudgets?: Record<string, number> } = {}) {
     await this.idle();
     const probe = await this.presentation();
     expect(this.errors).toEqual([]);
     expect(probe.pending).toBe(0);
     expect(probe.gateExpiries).toEqual([]);
     expect(probe.steps.filter((s) => s.failed || s.cancelled)).toEqual([]);
+    expect(probe.steps.filter((s) => s.skipping).map((s) => s.id)).toEqual([]);
     expect(probe.counters).toEqual({
       boardBudgetHits: 0,
       decisionBudgetHits: 0,
       decisionStallHits: 0,
-      // Timed matches intentionally catch cosmetic tracks up at each decision.
-      skips: timedCatchUp ? probe.counters.skips : 0,
+      // A match timer does not fast-forward anything either.
+      skips: 0,
       manualAdvances: 0,
     });
     const finished = probe.steps.filter((s) => s.phase === "finished");

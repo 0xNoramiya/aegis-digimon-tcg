@@ -48,6 +48,7 @@ const presentationSteps: {
   durationMs?: number;
   failed: boolean;
   cancelled: boolean;
+  skipping: boolean;
 }[] = [];
 const boards: { at: number; visible: VisibleBoard }[] = [];
 const gateExpiries: GateExpiry[] = [];
@@ -73,6 +74,7 @@ const presentationProbe: PresentationProbe = {
       durationMs: event.durationMs,
       failed: event.failed,
       cancelled: event.cancelled,
+      skipping: event.skipping,
     });
   },
   onBoard(board) {
