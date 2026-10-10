@@ -52,9 +52,14 @@ export function FieldEffectsIndicator({
   const [portalHost, setPortalHost] = useState<HTMLElement>();
   const [corner, setCorner] = useState<{ right: number; top: number }>();
   useLayoutEffect(() => {
-    // Share the board dialogs' stacking context while escaping battle-row clipping.
-    // Standalone boards without an application stage still use the viewport.
-    setPortalHost(anchor.current?.closest<HTMLElement>("#aegis-stage") ?? document.body);
+    // Fixed positioning escapes battle-row clipping. The badge must stay inside the
+    // board: the arena board isolates its own stacking context, so a badge portalled
+    // beside it would paint over every notice and prompt inside it.
+    setPortalHost(
+      anchor.current?.closest<HTMLElement>(".game-board") ??
+        anchor.current?.closest<HTMLElement>("#aegis-stage") ??
+        document.body,
+    );
     const field = anchor.current?.closest(".game-field");
     const row = field?.querySelector(ownField ? ".game-battle-row--you" : ".game-battle-row--opp");
     if (!row || !field) return;
