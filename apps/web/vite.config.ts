@@ -58,9 +58,24 @@ export default defineConfig({
       },
     },
   },
+  css: {
+    // Lightning CSS adds the vendor prefixes older iOS still needs
+    // (-webkit-user-select, -webkit-backdrop-filter). Versions are encoded as
+    // major << 16 | minor << 8, matching the browsers color-mix() requires.
+    lightningcss: {
+      targets: {
+        safari: (16 << 16) | (4 << 8),
+        ios_saf: (16 << 16) | (4 << 8),
+        chrome: 111 << 16,
+        android: 111 << 16,
+        firefox: 115 << 16,
+        samsung: 22 << 16,
+      },
+    },
+  },
   build: {
     target: "es2022",
-    cssMinify: true,
+    cssMinify: "lightningcss",
     rollupOptions: {
       output: {
         manualChunks(id) {

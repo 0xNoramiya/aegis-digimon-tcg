@@ -111,7 +111,7 @@ export function CardBack({
           draggable={false}
           src={sleeve.src}
           alt=""
-          style={{ width: "100%", height: "100%", objectFit: "cover", userSelect: "none" }}
+          style={{ width: "100%", height: "100%", objectFit: "cover", userSelect: "none", WebkitUserSelect: "none" }}
         />
       ) : (
         <svg
