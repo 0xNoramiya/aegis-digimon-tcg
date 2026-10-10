@@ -1091,4 +1091,59 @@ describe("BT20-037 Chaosmon: Valdur Arm — KB Q&A rulings", () => {
     expect(placedUnderMachinedramon(unlocked)).toBe(true);
     expect(unlocked.perm("victim").isSuspended).toBe(true);
   });
+
+  it("keeps the [On Play] lock after Valdur is deleted, then ends it with the opponent's next turn (feedback #21)", async () => {
+    const s = setupEngine(
+      valdurBoard({
+        battleArea: [{ card: "BT1-085", as: "tamer" }],
+        hand: [
+          { card: "BT14-075", as: "lockedDevimon" },
+          { card: "BT14-075", as: "unlockedDevimon" },
+        ],
+        security: ["BT10-086"],
+      }),
+      { autoSelectCards: true, autoAcceptOptional: true },
+    );
+    await digivolveIntoValdurArm(s, 1);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("valdurBase").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => !observe(s.engine).isAttacking() && s.state.pendingDecision === undefined);
+    expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.cardId === "BT20-037")).toBe(false);
+    expect(s.state.players[0]!.trash.map((card) => card.cardId)).toContain("BT20-037");
+
+    const playDevimon = async (alias: string) => {
+      expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst(alias).instanceId })).toEqual({
+        ok: true,
+      });
+      await settle(() =>
+        s.state.players[1]!.battleArea.some((permanent) => permanent.topCard.instanceId === s.inst(alias).instanceId),
+      );
+      await settle(() => s.state.pendingDecision === undefined);
+      await drainMicrotasks();
+    };
+
+    const lockedTurn = await startOpponentMainPhase(s);
+    const trashBeforeLockedPlay = s.state.players[1]!.trash.length;
+    await playDevimon("lockedDevimon");
+    expect(s.state.players[1]!.trash).toHaveLength(trashBeforeLockedPlay);
+    await lockedTurn.finish();
+
+    s.state.turnSeat = 0;
+    s.state.memory = 3;
+    const ownTurn = s.engine.runOneTurn();
+    await advance(s.engine).waitForMainPhase(0);
+    advance(s.engine).endMainPhaseIfOpen(0);
+    await ownTurn;
+
+    const unlockedTurn = await startOpponentMainPhase(s);
+    const trashBeforeUnlockedPlay = s.state.players[1]!.trash.length;
+    await playDevimon("unlockedDevimon");
+    expect(s.state.players[1]!.trash).toHaveLength(trashBeforeUnlockedPlay + 3);
+    await unlockedTurn.finish();
+  });
 });
