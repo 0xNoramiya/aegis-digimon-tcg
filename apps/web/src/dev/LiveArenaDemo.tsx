@@ -163,6 +163,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     en: "GitHub #5326, current behavior control. You start with 0 security and 6 memory. End breeding, then play either BT23 Sistermon Blanc for 3. Its mandatory On Play recovers 1 from the deck even though no security card could be added to hand; security becomes 1 and memory becomes 3. Play the second Blanc for 3: the previous security card goes to hand, then the next deck card becomes your face-down security. Security stays 1 and memory becomes 0. No payment or optional confirmation is required for either On Play effect.",
     ptBR: "GitHub #5326, controle do comportamento atual. Você começa com 0 segurança e 6 de memória. Encerre a criação e jogue qualquer Sistermon Blanc BT23 por 3. O Ao Jogar obrigatório recupera 1 do deck mesmo sem segurança para adicionar à mão; a segurança passa a 1 e a memória a 3. Jogue a segunda Blanc por 3: a segurança anterior vai para a mão e a próxima carta do deck vira sua segurança virada para baixo. A segurança continua em 1 e a memória passa a 0. Nenhum pagamento ou confirmação opcional é necessário para os efeitos Ao Jogar.",
   },
+  "arena-feedback3-kakkinmon-craniamon": {
+    en: "Feedback #3: end breeding, then end your turn. Accept Kakkinmon's inherited [End of All Turns] offer and choose Craniamon to suspend. You draw 1, and Craniamon must visibly turn sideways. Its [When this Digimon suspends] trigger has no effect: Atratusmon and Monarchlizamon are DUAL cards, which have no play cost. Craniamon stays sideways until the opponent's Unsuspend ribbon, where ＜Reboot＞ stands it up. Reset combat and repeat: the second match must show the same rotation.",
+    ptBR: "Feedback #3: encerre a criação e encerre o turno. Aceite a herdada [Fim de Todos os Turnos] de Kakkinmon e escolha Craniamon para suspender. Você compra 1, e Craniamon deve virar de lado visivelmente. O gatilho [Quando este Digimon suspende] não tem efeito: Atratusmon e Monarchlizamon são cartas DUAL, sem custo de jogo. Craniamon fica de lado até a faixa de Reativação do oponente, quando ＜Reboot＞ o desvira. Reinicie o combate e repita: a segunda partida deve mostrar a mesma rotação.",
+  },
   "arena-lanamon-tamer-cost": {
     en: "GitHub #5340: end breeding, then evolve the three hand Lanamon onto Rina, the blue level 3, and Calmaramon in that order. Costs are 2, 2, and 0; memory goes 10 → 8 → 6 → 6. The red Takuya is not a legal target. This reduced reproduction does not reconstruct the unavailable reported game.",
     ptBR: "GitHub #5340: encerre a criação e evolua os três Lanamon da mão sobre Rina, o nível 3 azul e Calmaramon, nessa ordem. Os custos são 2, 2 e 0; a memória vai de 10 → 8 → 6 → 6. O Takuya vermelho não é um alvo válido. Esta reprodução reduzida não reconstrói a partida relatada, que está indisponível.",
@@ -2628,6 +2632,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ravemon-burst-hand", "Ravemon: Burst Mode · inspect opponent hand"],
   ["arena-github5326-sistermon-zero-security", "GitHub #5326 · Sistermon Blanc / zero security control"],
   ["arena-lanamon-tamer-cost", "GitHub #5340 · Lanamon Tamer cost"],
+  ["arena-feedback3-kakkinmon-craniamon", "Feedback #3 · Kakkinmon suspends Craniamon"],
   ["arena-github5362-shellmon-ts", "#5362 Shellmon · TS evolution in breeding and battle"],
   ["arena-github5331-offense-hand", "GitHub #5331 · Offense Training hand ownership"],
   ["arena-github5332-kekkomon-cost", "GitHub #5332 · Kekkomon Tamer cost selection"],

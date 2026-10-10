@@ -232,6 +232,7 @@ export interface AegisJoinOptions {
     | "arena-growlmon-deletion-5361"
     | "arena-github5362-shellmon-ts"
     | "arena-lanamon-tamer-cost"
+    | "arena-feedback3-kakkinmon-craniamon"
     | "arena-github5332-kekkomon-cost"
     | "battle"
     | "field-grouping"
