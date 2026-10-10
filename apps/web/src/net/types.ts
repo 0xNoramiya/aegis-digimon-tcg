@@ -674,6 +674,7 @@ export interface AegisJoinOptions {
     | "arena-discord-lordknightmon-bt22-skullknightmon"
     | "arena-feedback18-sukamon-inherited-protection"
     | "arena-feedback19-burst-tamer-choice"
+    | "arena-feedback36-hiroko-kept-by-jupitermon"
     | "arena-discord-x7-digixros-zones"
     | "arena-feedback31-dorugreymon-block-digivolve"
     | "arena-feedback33-kakkinmon-opponent-turn-end"
