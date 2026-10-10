@@ -148,6 +148,13 @@ export interface SubTriggerAction extends ActionBase {
    * it fails, so the body's mandatory tail never runs on an off-gate event.
    */
   fireCondition?: Condition;
+  /**
+   * Processing condition of the watcher body ("When X, if Y, ...", CR 15-6-1). Unlike
+   * `fireCondition`, a false value never stops the watcher from triggering: it stays pending and
+   * activates only if the condition holds when it would activate (CR 15-8-3-9-2), for example
+   * after a simultaneous effect resolved first changes the board.
+   */
+  activationCondition?: Condition;
   /** For whenDigivolutionTrashed, require that the trashed card was the stack's top card. */
   requireTrashedDigivolutionCardWasTop?: boolean;
   /** For a discard batch, require at least one card that was face down before it was trashed. */
