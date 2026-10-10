@@ -1,5 +1,5 @@
-import { CARD_ID_VIEW_TAG, Zone, type CardInstance, type Permanent } from "@aegis/shared";
-import { Encoder } from "@colyseus/schema";
+import { GameState, Zone, type CardInstance, type Permanent, type Seat } from "@aegis/shared";
+import { Decoder, Encoder } from "@colyseus/schema";
 import { settle, type EngineSetup } from "../../engine/testkit/harness.js";
 
 /** Digivolution-card instance ids, bottom first. */
@@ -7,14 +7,46 @@ export function stackIds(permanent: Permanent): string[] {
   return permanent.stack.map(({ instanceId }) => instanceId);
 }
 
-/** Whether each seat's synchronized view carries the card's identity. */
+/**
+ * Whether each seat's client receives the card's identity, decoded from the full snapshot that
+ * seat's StateView sends. It looks anywhere in that seat's copy of the state, including the
+ * public `securityView` projection, through which an opponent sees a face-up security card.
+ */
 export function identityVisibility(s: EngineSetup, card: CardInstance): { owner: boolean; opponent: boolean } {
-  // eslint-disable-next-line no-new -- a StateView only tracks state attached to an encoder, as a room's is.
-  new Encoder(s.state);
+  const ownerSeat = card.ownerSeat as Seat;
+  const [ownerState, opponentState] = decodeSnapshotsForSeats(s, [ownerSeat, (1 - ownerSeat) as Seat]);
   return {
-    owner: s.engine.makeStateView(card.ownerSeat as 0 | 1)!.hasTag(card, CARD_ID_VIEW_TAG),
-    opponent: s.engine.makeStateView((1 - card.ownerSeat) as 0 | 1)!.hasTag(card, CARD_ID_VIEW_TAG),
+    owner: decodedStateHasIdentity(ownerState!, card),
+    opponent: decodedStateHasIdentity(opponentState!, card),
   };
+}
+
+function decodeSnapshotsForSeats(s: EngineSetup, seats: readonly Seat[]): GameState[] {
+  s.engine.syncCounts();
+  const encoder = new Encoder(s.state);
+  const iterator = { offset: 0 };
+  encoder.encodeAll(iterator);
+  const sharedOffset = iterator.offset;
+  const decoded = seats.map((seat) => {
+    const decoder = new Decoder(new GameState());
+    iterator.offset = sharedOffset;
+    decoder.decode(encoder.encodeAllView(s.engine.makeStateView(seat)!, sharedOffset, iterator));
+    return decoder.state;
+  });
+  encoder.discardChanges();
+  return decoded;
+}
+
+function decodedStateHasIdentity(decoded: GameState, card: CardInstance): boolean {
+  const pending: unknown[] = [decoded.toJSON()];
+  while (pending.length > 0) {
+    const node = pending.pop();
+    if (node === null || typeof node !== "object") continue;
+    const fields = node as Record<string, unknown>;
+    if (fields.instanceId === card.instanceId && fields.cardId === card.cardId) return true;
+    pending.push(...Object.values(fields));
+  }
+  return false;
 }
 
 /**
