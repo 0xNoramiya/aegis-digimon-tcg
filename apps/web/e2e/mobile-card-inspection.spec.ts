@@ -98,14 +98,49 @@ class MobileInspectionArena {
   async hold(target: Locator, cardName = "Alphamon") {
     const bounds = await target.boundingBox();
     expect(bounds).not.toBeNull();
+    const point = { x: bounds!.x + bounds!.width * 0.7, y: bounds!.y + bounds!.height * 0.3 };
+    const dialog = this.page.getByRole("dialog", { name: cardName, exact: true });
+    if (this.page.context().browser()?.browserType().name() !== "chromium") {
+      // Playwright keeps a trusted finger down only through Chromium's CDP. Elsewhere
+      // the same touch pointer sequence is dispatched at the same point, which runs
+      // the app's hold logic in that engine (it does not check isTrusted).
+      await this.page.evaluate(({ x, y }) => {
+        const init = {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          pointerId: 41,
+          pointerType: "touch",
+          isPrimary: true,
+          clientX: x,
+          clientY: y,
+        };
+        document.elementFromPoint(x, y)!.dispatchEvent(new PointerEvent("pointerdown", init));
+      }, point);
+      try {
+        await expect(dialog).toBeVisible({ timeout: 2000 });
+      } finally {
+        await this.page.evaluate(({ x, y }) => {
+          const init = {
+            bubbles: true,
+            cancelable: true,
+            composed: true,
+            pointerId: 41,
+            pointerType: "touch",
+            isPrimary: true,
+            clientX: x,
+            clientY: y,
+          };
+          (document.elementFromPoint(x, y) ?? document.body).dispatchEvent(new PointerEvent("pointerup", init));
+        }, point);
+      }
+      return;
+    }
     const session = await this.page.context().newCDPSession(this.page);
-    await session.send("Input.dispatchTouchEvent", {
-      type: "touchStart",
-      touchPoints: [{ x: bounds!.x + bounds!.width * 0.7, y: bounds!.y + bounds!.height * 0.3 }],
-    });
+    await session.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [point] });
     try {
       // Wait for the hold gesture's actual result while the finger remains down.
-      await expect(this.page.getByRole("dialog", { name: cardName, exact: true })).toBeVisible({ timeout: 2000 });
+      await expect(dialog).toBeVisible({ timeout: 2000 });
     } finally {
       await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
       await session.detach();
@@ -113,7 +148,13 @@ class MobileInspectionArena {
   }
 }
 
-test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+// Gecko has no isMobile emulation; requesting it leaves Playwright's Firefox page
+// blank after a viewport resize.
+test.use({
+  viewport: { width: 390, height: 844 },
+  hasTouch: true,
+  isMobile: async ({ browserName }, use) => use(browserName !== "firefox"),
+});
 
 for (const viewport of [
   { width: 2048, height: 1191 },
