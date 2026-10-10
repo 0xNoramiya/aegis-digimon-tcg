@@ -1849,6 +1849,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Feedback #27. Encerre a criação. Jogue Chuumon (EX5-045) da mão: é o seu turno, então o [Ao Jogar] não revela nada e o deck não muda. Jogar Chuumon (custo 3 com 2 de memória) passa a memória para o lado do bot, então o turno passa. No início do turno do bot, o Sukamon dele é ativado e perde o +1000 DP do Mikemon; com o -3000 DP do KingEtemon ele fica com 0 DP e é excluído. O [Todos os Turnos] herdado do KingSukamon revela 3 cartas: jogue o Chuumon. Agora é o turno do oponente, então o [Ao Jogar] do Chuumon revela 3 cartas: jogue o Sukamon (BT3-063).",
     en: "Feedback #27. End breeding. Play Chuumon (EX5-045) from hand: it is your turn, so its [On Play] reveals nothing and your deck does not change. Playing Chuumon (cost 3 with 2 memory) moves memory to the bot's side, so the turn passes. At the start of the bot's turn, its Sukamon unsuspends and loses Mikemon's +1000 DP. With KingEtemon's -3000 DP it drops to 0 DP and is deleted. KingSukamon's inherited [All Turns] effect reveals 3 cards: play the Chuumon. It is now your opponent's turn, so Chuumon's [On Play] reveals 3 cards: play the Sukamon (BT3-063).",
   },
+  "arena-discord-speed-security-scene-stuck": {
+    ptBR: "Partida com relógio. Encerre a criação e o turno. O bot ataca você com Monodramon e Magnamon (7000 DP) é revelado da sua segurança. Antes da batalha, o [Todos os Turnos] de Dynasmon oferece excluir o Digimon de menor DP do oponente: escolha Monodramon. A checagem termina sem batalha, e Magnamon sai do centro da tela e vai para a lixeira. A cena não fica presa nos turnos seguintes.",
+    en: "Timed match. End breeding and your turn. The bot attacks you with Monodramon, and Magnamon (7000 DP) is revealed from your security. Before the battle, Dynasmon's [All Turns] effect offers to delete your opponent's lowest DP Digimon: choose Monodramon. The check ends with no battle, and Magnamon leaves the centre of the screen for the trash. The scene does not stay on screen in later turns.",
+  },
   "arena-bt22-akemi-battle-mother": {
     ptBR: "GitHub #5370. Aguarde a Principal: a criação avança automaticamente porque Mother Eater não tem DP para sair. Ative o [Principal] de Akemi Suedou. Somente os dois Mother Eater no campo podem ser escolhidos; a cópia na criação fica excluída. Escolha o Mother Eater com Eater (Species Form) nas fontes. Akemi deve ficar como a fonte inferior, abaixo de Eater (Species Form), enquanto a pilha na criação fica intacta.",
     en: "GitHub #5370. Wait for Main: breeding skips automatically because Mother Eater has no DP to move. Activate Akemi Suedou's [Main]. Only the two battle-area Mother Eaters are eligible; the breeding copy is excluded. Choose the Mother Eater with Eater (Species Form) in its sources. Akemi must become its bottom source, below Eater (Species Form), while the breeding stack stays intact.",
@@ -3282,6 +3286,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-feedback26-zephagamon-suspend-own", "Feedback #26 · Zephagamon · suspend your own Digimon"],
   ["arena-feedback25-alter-s-unsuspend-lock", "Feedback #25 · Alter-S · Kuwagamon re-lock while suspended"],
   ["arena-feedback27-chuumon-opponent-turn", "Feedback #27 · Chuumon · On Play only on opponent's turn"],
+  ["arena-discord-speed-security-scene-stuck", "Discord · timed security check closes without a battle"],
   ["arena-p224-kotone-own-source", "P-224 Kotone · X7 das próprias fontes / own sources"],
   ["arena-kotone-digixros-pending-attack", "Kotone · DigiXros + EX6 pending attack"],
   ["arena-bt6-beelstarmon-duplicate-cost", "BT6 BeelStarmon · duplicate hand cost"],
