@@ -897,28 +897,48 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
       const pfzChosen = await pickLoose(ctx, action.target, pfzCandidates);
       if (pfzChosen.length > 0) {
         let digiXrosMaterialInstanceIds: string[] | undefined;
-        if (action.digiXrosMaterialsFrom !== undefined && pfzChosen.length === 1) {
+        if (
+          (action.digiXrosMaterialsFrom !== undefined || action.digiXrosMaterialsPlacedThisEffect === true) &&
+          pfzChosen.length === 1
+        ) {
           const chosenCard = pfzCandidates.find((card) => card.instanceId === pfzChosen[0]);
           const requirement = chosenCard === undefined ? undefined : digiXrosRequirementFor(chosenCard.cardId)?.[0];
-          if (requirement !== undefined) {
-            const allMaterialCandidates = action.digiXrosMaterialsFrom
-              .flatMap((zone) =>
-                zone === "battleArea"
-                  ? Array.from(ctx.game.player(ctx.source.ownerSeat).battleArea).flatMap((permanent) =>
-                      permanent.inBreeding || permanent.topCard === undefined
-                        ? []
-                        : [
-                            {
-                              instanceId: permanent.topCard.instanceId,
-                              cardId: permanent.topCard.cardId,
-                              ownerSeat: permanent.topCard.ownerSeat,
-                              hostPermanentId: permanent.permanentId,
-                            },
-                          ],
-                    )
-                  : looseCardsInZone(ctx, ctx.source.ownerSeat, zone),
-              )
-              .filter((card) => card.instanceId !== pfzChosen[0]);
+          if (chosenCard !== undefined && requirement !== undefined) {
+            const ownerSeat = ctx.source.ownerSeat;
+            const battleAreaMaterials = Array.from(ctx.game.player(ownerSeat).battleArea).flatMap((permanent) =>
+              permanent.inBreeding || permanent.topCard === undefined
+                ? []
+                : [
+                    {
+                      instanceId: permanent.topCard.instanceId,
+                      cardId: permanent.topCard.cardId,
+                      ownerSeat: permanent.topCard.ownerSeat,
+                      hostPermanentId: permanent.permanentId,
+                    },
+                  ],
+            );
+            const extraZoneMaterials = (action.digiXrosMaterialsFrom ?? [])
+              .filter((zone) => zone !== "hand" && zone !== "battleArea")
+              .flatMap((zone) => looseCardsInZone(ctx, ownerSeat, zone));
+            // Q6060 permits only the cards this effect placed under a Tamer, not older ones.
+            const placedThisEffect = new Set(ctx.placedUnderInstanceIdsThisEffect ?? []);
+            const placedThisEffectMaterials =
+              action.digiXrosMaterialsPlacedThisEffect === true
+                ? looseCardsInZone(ctx, ownerSeat, "underTamers").filter((card) =>
+                    placedThisEffect.has(card.instanceId),
+                  )
+                : [];
+            const seenMaterialIds = new Set([chosenCard.instanceId]);
+            const allMaterialCandidates = [
+              ...looseCardsInZone(ctx, ownerSeat, "hand"),
+              ...battleAreaMaterials,
+              ...extraZoneMaterials,
+              ...placedThisEffectMaterials,
+            ].filter((card) => {
+              if (seenMaterialIds.has(card.instanceId)) return false;
+              seenMaterialIds.add(card.instanceId);
+              return true;
+            });
             // Keep the selection prompt faithful to the chosen DigiXros recipe.  The normal
             // hand-play path filters each candidate before prompting; cards assembled from
             // another loose zone need the same guard or an auto-selection can consume invalid
@@ -939,6 +959,7 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
               candidates: materialCandidates.map((card) => card.instanceId),
               min: 0,
               max: materialCap,
+              digiXrosCardId: chosenCard.cardId,
             });
             const selectedDefinitions = selected.map((id) =>
               materialDefinition(materialCandidates.find((card) => card.instanceId === id)!),
