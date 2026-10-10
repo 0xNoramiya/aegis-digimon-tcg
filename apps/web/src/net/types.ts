@@ -500,6 +500,7 @@ export interface AegisJoinOptions {
     | "arena-feedback17-ex11-006-linked-attack"
     | "arena-feedback29-black-sabbath-trash"
     | "arena-feedback21-valdur-on-play-lock"
+    | "arena-feedback23-ulforce-x-royal-knight"
     | "arena-raid-optional-preset"
     | "arena-preset-order-no-clicks"
     | "arena-ex13-leopardmon-suspended-target"
