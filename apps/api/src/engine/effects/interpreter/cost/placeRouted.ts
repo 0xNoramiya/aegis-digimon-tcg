@@ -269,9 +269,10 @@ export async function payRoutedPlaceCost(
     } else {
       toTop = cost.position !== "bottom";
     }
+    // Security cards are face down unless the card prints "face up" (BT18-004: faceDown false).
     await ctx.fx.addSecurity(ctx.source.ownerSeat, picked, {
       toTop,
-      faceUp: cost.faceDown !== true,
+      faceUp: cost.faceDown === false,
     });
     if (out) out.paidCount = picked.length;
     return true;

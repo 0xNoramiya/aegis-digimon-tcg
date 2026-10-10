@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCardDefinition } from "@aegis/shared";
+import { Phase, getCardDefinition } from "@aegis/shared";
 import { advance } from "../../engine/testkit/advance.js";
 import { assertNoLoudGap, settle, setupEngine } from "../../engine/testkit/harness.js";
 import { compiled } from "./EX11-065.js";
@@ -37,6 +37,50 @@ describe("EX11-065 Close", () => {
     expect(s.state.memory).toBe(1);
     expect(s.state.players[0]!.trash.some((card) => card.cardId === "EX8-051")).toBe(true);
     expect(s.perm("host").stack).toHaveLength(0);
+    advance(s.engine).endMainPhaseIfOpen(0);
+    await advance(s.engine).waitForMainPhase(1);
+    expect(s.engine.applyIntent(1, { type: "surrender" })).toEqual({ ok: true });
+    await loop;
+    assertNoLoudGap(s);
+  });
+
+  // Discord 1557413340161253496: Close alone on the field forced a trash, and the cost offered
+  // the Tumblemon under the breeding-area Digimon (CR 3-4-7-3).
+  it("lets the controller decline the start-of-main cost and never offers breeding-area sources", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "EX11-065", as: "close" },
+            { card: "EX8-048", as: "host", under: [{ card: "EX8-047", as: "battleSource" }] },
+          ],
+          breeding: { card: "EX10-025", as: "bred", under: [{ card: "EX8-005", as: "egg" }] },
+          deck: ["BT1-009", "BT1-013", "BT1-019"],
+        },
+        1: { deck: ["BT1-009", "BT1-013", "BT1-019"] },
+      },
+      { autoSelectCards: false, autoAcceptOptional: false },
+    );
+    s.state.memory = 0;
+    const loop = s.engine.startTurnLoop();
+    await settle(() => s.state.phase === Phase.Breeding && s.state.turnSeat === 0);
+    expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    const request = s.state.pendingDecision!;
+    const options = JSON.parse(request.payloadJson) as { candidateInstanceIds: string[]; min: number };
+    expect(options.candidateInstanceIds).toEqual([s.inst("battleSource").instanceId]);
+    expect(options.min).toBe(0);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: request.decisionId,
+        response: { kind: "selectCards", instanceIds: [] },
+      }),
+    ).toEqual({ ok: true });
+    await advance(s.engine).waitForMainPhase(0);
+    expect(s.state.memory).toBe(0);
+    expect(s.perm("host").stack.map(({ instanceId }) => instanceId)).toEqual([s.inst("battleSource").instanceId]);
+    expect(s.perm("bred").stack.map(({ instanceId }) => instanceId)).toEqual([s.inst("egg").instanceId]);
     advance(s.engine).endMainPhaseIfOpen(0);
     await advance(s.engine).waitForMainPhase(1);
     expect(s.engine.applyIntent(1, { type: "surrender" })).toEqual({ ok: true });

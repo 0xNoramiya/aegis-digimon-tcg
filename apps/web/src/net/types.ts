@@ -668,6 +668,8 @@ export interface AegisJoinOptions {
     | "arena-rock-pyramidimon-breeding-sources"
     | "arena-rock-magneticdramon-breeding-sources"
     | "arena-rock-gravel-hearts-tumblemon-memory"
+    | "arena-ex11-close-start-main-decline"
+    | "arena-p146-reload-plug-in-face-down"
     | "arena-bt25-beelstarmon-option-trash-trigger"
     | "arena-bt20-last-guardian-omnimon-wipe"
     | "arena-ex7-deputymon-option-trash-trigger"
