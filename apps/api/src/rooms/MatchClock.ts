@@ -5,13 +5,22 @@ import {
   type MatchTimerOptions,
   MATCH_TIMER_OPPONENT_REFILL_SECONDS,
 } from "@aegis/shared";
+import { PRESENTATION_BACKLOG_MAX_MS } from "./presentationBudget.js";
 
-/** Server monotonic-time accounting. Client animation reports cannot extend a pause. */
+/**
+ * Server monotonic-time accounting.
+ *
+ * Each seat has its own presentation pause: the seat is not charged while its client still
+ * plays the batches that came before its question. The server sets the pause's length from
+ * the batches themselves (presentationBudget.ts). A client report can only shorten it.
+ */
 export class MatchClock {
   private remaining: [number, number];
   private lastTime: number;
   private runningSeat: Seat | undefined;
-  private pauseUntil = 0;
+  private pausedUntil: [number, number] = [0, 0];
+  /** The revision a seat must report having presented to end its pause. */
+  private awaitedVersion: [number, number] = [0, 0];
   private lastTurn = 0;
 
   constructor(
@@ -39,7 +48,7 @@ export class MatchClock {
     }
     const chargedSeat = this.runningSeat;
     if (chargedSeat !== undefined) {
-      const elapsed = Math.max(0, now - Math.max(this.lastTime, this.pauseUntil));
+      const elapsed = Math.max(0, now - Math.max(this.lastTime, this.pausedUntil[chargedSeat]));
       this.remaining[chargedSeat] = Math.max(0, this.remaining[chargedSeat] - elapsed);
     }
     this.lastTime = now;
@@ -63,13 +72,26 @@ export class MatchClock {
     }
     this.runningSeat = inputSeat;
     this.publish();
-    this.state.timerActiveSeat = inputSeat !== undefined && now >= this.pauseUntil ? inputSeat : -1;
+    this.state.timerActiveSeat = inputSeat !== undefined && now >= this.pausedUntil[inputSeat] ? inputSeat : -1;
   }
 
-  /** A fixed server-granted grace period for the just-published animation batch. */
-  pauseForPresentation(now: number): void {
-    this.pauseUntil = now + 2000;
+  /**
+   * Both seats watch the batch that closed at `stateVersion`, so both get its allowance on
+   * top of what they still have to watch. Only the seat asked to act is ever charged.
+   */
+  pauseForPresentation(now: number, allowanceMs: number, stateVersion: number): void {
+    for (const seat of [0, 1] as const) {
+      const backlog = Math.max(this.pausedUntil[seat], now) + allowanceMs;
+      this.pausedUntil[seat] = Math.min(backlog, now + PRESENTATION_BACKLOG_MAX_MS);
+      this.awaitedVersion[seat] = stateVersion;
+    }
     this.state.timerActiveSeat = -1;
+  }
+
+  /** The seat's client has presented everything up to `stateVersion`; charge it from now. */
+  presentationCaughtUp(seat: Seat, stateVersion: number, now: number): void {
+    if (stateVersion < this.awaitedVersion[seat]) return;
+    this.pausedUntil[seat] = Math.min(this.pausedUntil[seat], now);
   }
 
   private publish(): void {

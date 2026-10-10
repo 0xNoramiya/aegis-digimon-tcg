@@ -250,6 +250,10 @@ export interface MatchCues {
   decisionBarrierPending: boolean;
   /** Finite visual beats must finish before any new decision is displayed. */
   decisionAnimationsPending: boolean;
+  /** The queue still owes a finite beat; open-ended security and Option docks do not count. */
+  playbackPending: boolean;
+  /** The revision of the newest batch the queue has been handed, once the first batch arrives. */
+  consumedStateVersion: number | undefined;
   /**
    * The server revision the queue is presenting, or undefined when it is caught up and
    * the live state is what to show. `GameScreen` renders the snapshot at this revision
