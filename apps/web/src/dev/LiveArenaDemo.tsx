@@ -1877,6 +1877,14 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Feedback #19. Encerre a criação. Faça a Digivolução Explosiva de ShineGreymon (ST7-10) em ShineGreymon: Burst Mode (BT13-020). Você tem dois [Marcus Damon]: BT4-092 em pé e BT17-087 suspenso, com uma carta virada para baixo embaixo dele. O jogo pergunta qual Tamer volta para a mão. Escolha o BT17-087 suspenso: ele volta para a mão, a carta embaixo dele vai para a lixeira, e o BT4-092 fica no campo. Recuse jogar Marcus Damon pelo [Ao Digivolver].",
     en: "Feedback #19. End breeding. Burst digivolve ShineGreymon (ST7-10) into ShineGreymon: Burst Mode (BT13-020). You have two [Marcus Damon] Tamers: an unsuspended BT4-092 and a suspended BT17-087 with a face-down card under it. The game asks which Tamer returns to hand. Choose the suspended BT17-087: it returns to hand, the card under it goes to the trash, and BT4-092 stays in play. Decline to play Marcus Damon with [When Digivolving].",
   },
+  "arena-discord-richard-main-materials-face-down": {
+    ptBR: "Discord 1558451244815880332. Encerre a criação. No início da sua fase principal, recuse colocar a carta do topo do deck embaixo de Richard Sampson (EX13-071). Richard tem 3 cartas viradas para baixo, e duas delas são Reppamon (EX13-030) e Chirinmon (EX13-032). A lixeira está vazia. Clique em Richard: não há botão de [Principal]. Pela Q7447, o efeito só ativa se a lixeira já tiver 1 Digimon [Holy Beast] amarelo de nível 4 e 1 de nível 5 antes de pagar o custo.",
+    en: "Discord 1558451244815880332. End breeding. At the start of your main phase, decline to place your deck's top card under Richard Sampson (EX13-071). Richard has 3 face-down cards, and two of them are Reppamon (EX13-030) and Chirinmon (EX13-032). Your trash is empty. Click Richard: there is no [Main] button. Per Q7447, the effect activates only if your trash already has 1 level 4 and 1 level 5 yellow [Holy Beast] Digimon before you pay the cost.",
+  },
+  "arena-discord-richard-main-fresh-materials": {
+    ptBR: "Discord 1558451244815880332. Encerre a criação. No início da sua fase principal, recuse colocar a carta do topo do deck embaixo de Richard Sampson (EX13-071). A lixeira tem Reppamon (BT1-051) e Chirinmon (BT1-058), então o [Principal] de Richard aparece. Ative e aceite. As 3 cartas viradas para baixo vão para a lixeira. Pela Q7447, escolha o Reppamon (EX13-030) e o Chirinmon (EX13-032) que acabaram de ir para a lixeira. Os dois ficam embaixo de Kudamon (EX13-026), que digivolve em Kentaurosmon (BT3-043) por 2 de memória. BT1-051 e BT1-058 ficam na lixeira.",
+    en: "Discord 1558451244815880332. End breeding. At the start of your main phase, decline to place your deck's top card under Richard Sampson (EX13-071). Your trash has Reppamon (BT1-051) and Chirinmon (BT1-058), so Richard's [Main] is offered. Activate it and accept. The 3 face-down cards go to the trash. Per Q7447, choose the Reppamon (EX13-030) and Chirinmon (EX13-032) you just trashed. Both go under Kudamon (EX13-026), which digivolves into Kentaurosmon (BT3-043) for 2 memory. BT1-051 and BT1-058 stay in the trash.",
+  },
   "arena-discord-taiki-keeps-xros-digimon": {
     ptBR: "Discord 1558457266485731358. Encerre a criação. Jogue Taiki Kudo (BT10-087) da mão. O [Ao Jogar] revela Taiki Kudo (BT21-083), Kotone Amano (P-224), Shoutmon X7 (AD1-006) e Crimson Blaze (BT8-097). Shoutmon X7 é o único Digimon [Xros Heart]. As duas partes do efeito são obrigatórias, e a Q3113 manda adicionar à mão e colocar embaixo o máximo possível, então a primeira escolha oferece só os dois Tamers. Escolha Kotone. Depois, Shoutmon X7 vai para baixo do Taiki jogado, e o resto vai para o fundo do deck.",
     en: "Discord 1558457266485731358. End breeding. Play Taiki Kudo (BT10-087) from hand. Its [On Play] reveals Taiki Kudo (BT21-083), Kotone Amano (P-224), Shoutmon X7 (AD1-006), and Crimson Blaze (BT8-097). Shoutmon X7 is the only [Xros Heart] Digimon. Both parts of the effect are mandatory, and Q3113 says to add to hand and place under as much as possible, so the first choice offers only the two Tamers. Choose Kotone. Then Shoutmon X7 goes under the played Taiki, and the rest go to the bottom of the deck.",
@@ -3329,6 +3337,14 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-discord-lordknightmon-bt22-skullknightmon", "BT22 LordKnightmon · plays a revealed SkullKnightmon"],
   ["arena-feedback18-sukamon-inherited-protection", "Feedback #18 · Sukamon inherited protection keeps host"],
   ["arena-feedback19-burst-tamer-choice", "Feedback #19 · Burst Digivolve · choose which Tamer returns"],
+  [
+    "arena-discord-richard-main-materials-face-down",
+    "Discord · EX13 Richard Sampson · no [Main] without trash materials",
+  ],
+  [
+    "arena-discord-richard-main-fresh-materials",
+    "Discord · EX13 Richard Sampson · [Main] stacks the cards it just trashed",
+  ],
   ["arena-discord-taiki-keeps-xros-digimon", "Discord · BT10 Taiki keeps the only Xros Heart Digimon to place under"],
   ["arena-discord-vemmon-add-or-place", "Discord · BT18 Vemmon keeps the only [Vemmon] for the source"],
   ["arena-discord-speed-security-scene-stuck", "Discord · timed security check closes without a battle"],
