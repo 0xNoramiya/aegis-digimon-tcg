@@ -61,9 +61,9 @@ for (const [slug, name, count] of [
           await selectAll.click();
           await page.getByRole("button", { name: /resolve/i }).click();
         }
-        const decline = page.getByRole("button", { name: /^(decline|don.t use)$/i });
+        const decline = page.getByRole("button", { name: /^(no, decline|don.t use)$/i });
         if (await decline.isVisible()) await decline.click();
-        await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
+        await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled({ timeout: 1000 });
       }).toPass({ timeout: 30000 });
       expect(scenario).toContain(slug);
     } finally {
@@ -88,7 +88,7 @@ for (const width of [1440, 390]) {
       await page.locator('[data-drop="breeding-you"]').click();
       await expect(page.locator(`[data-drop="perm-you"][data-id="${id}-0-field-1"]`)).toBeVisible();
       await expect(async () => {
-        const decline = page.getByRole("button", { name: /^(decline|don.t use)$/i });
+        const decline = page.getByRole("button", { name: /^(no, decline|don.t use)$/i });
         if (await decline.isVisible()) await decline.click();
         const noSelection = page.getByRole("button", { name: /^no selection$/i });
         if (await noSelection.isVisible()) await noSelection.click();
@@ -123,7 +123,7 @@ for (const slug of ["5129-hyogamon-trash", "5129-goblimon-trash", "5115-melting-
         await discard.press("Enter");
         await page.getByRole("button", { name: /^end selection$/i }).click();
       }
-      await page.getByRole("button", { name: /^use$/i }).click();
+      await page.getByRole("button", { name: "Yes, activate", exact: true }).click();
       if (slug.includes("melting")) {
         await page.getByRole("button", { name: "Yes, activate", exact: true }).click();
       }
@@ -138,7 +138,7 @@ for (const slug of ["5129-hyogamon-trash", "5129-goblimon-trash", "5115-melting-
       const name = slug.includes("melting") ? "QueenBeemon" : "Titamon";
       await expect(page.locator('[data-drop="perm-you"]').getByRole("img", { name, exact: true })).toBeVisible();
       await expect(async () => {
-        const decline = page.getByRole("button", { name: /^(decline|don.t use)$/i });
+        const decline = page.getByRole("button", { name: /^(no, decline|don.t use)$/i });
         if (await decline.isVisible()) await decline.click();
         const noSelection = page.getByRole("button", { name: /^no selection$/i });
         if (await noSelection.isVisible()) await noSelection.click();
@@ -163,7 +163,7 @@ test("#5104: manually select both digivolution cards after End of Attack", async
     await page.locator(`[data-drop="perm-you"][data-id="${id}-0-field-0"]`).click();
     await page.getByRole("button", { name: "Attack", exact: true }).click();
     await page.locator('[data-drop="opp-security"]').click();
-    await page.getByRole("button", { name: "Use", exact: true }).click();
+    await page.getByRole("button", { name: "Yes, activate", exact: true }).click();
     for (const source of [0, 2]) {
       const panel = page.getByRole("dialog");
       const candidate = panel.locator(`[data-instance-id="${id}-0-source-0-${source}"]`);
