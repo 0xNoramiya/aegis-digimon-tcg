@@ -90,6 +90,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback17-ex11-006-linked-attack",
   "arena-feedback29-black-sabbath-trash",
   "arena-feedback21-valdur-on-play-lock",
+  "arena-feedback23-ulforce-x-royal-knight",
   "arena-github5331-offense-hand",
   "arena-github5362-shellmon-ts",
   "arena-lanamon-tamer-cost",
@@ -1705,6 +1706,35 @@ function layFeedback21ValdurOnPlayLockScenario(state: GameState): void {
   state.turnCount = 0;
   state.isFirstPlayersFirstTurn = false;
   state.memory = 10;
+}
+
+/**
+ * Feedback #23: EX13-017 Veemon's [On Play] reveal offers UlforceVeedramon (X Antibody), which has
+ * the [Royal Knight] trait and [Veedramon] in its name. Below the turn's draw, the next 3 cards
+ * match the production reveal.
+ */
+function layFeedback23UlforceXRoyalKnightScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback23-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 5; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback23-security-${seat}-${index}`, "BT1-027", seat));
+    }
+  }
+  const human = state.players[0]!;
+  insertCard(human, Zone.Deck, faceDownCard("dev-feedback23-draw", "BT1-027", 0));
+  insertCard(human, Zone.Deck, faceDownCard("dev-feedback23-aeroveedramon", "BT22-023", 0));
+  insertCard(human, Zone.Deck, faceDownCard("dev-feedback23-veedramon", "P-138", 0));
+  insertCard(human, Zone.Deck, faceDownCard("dev-feedback23-ulforce-x", "BT12-029", 0));
+  for (let index = 0; index < 12; index += 1) {
+    insertCard(human, Zone.Deck, faceDownCard(`dev-feedback23-deck-0-${index}`, "BT1-027", 0));
+    insertCard(state.players[1]!, Zone.Deck, faceDownCard(`dev-feedback23-deck-1-${index}`, "BT1-027", 1));
+  }
+  insertCard(human, Zone.Hand, faceUpCard("dev-feedback23-veemon", "EX13-017", 0));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
 }
 
 /** Discord 1557815179218128896: Guard removes a queued Raid's printed source. */
@@ -10048,6 +10078,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback17-ex11-006-linked-attack": layFeedback17FlickmonLinkedAttackScenario,
   "arena-feedback29-black-sabbath-trash": layFeedback29BlackSabbathTrashScenario,
   "arena-feedback21-valdur-on-play-lock": layFeedback21ValdurOnPlayLockScenario,
+  "arena-feedback23-ulforce-x-royal-knight": layFeedback23UlforceXRoyalKnightScenario,
   "arena-raid-optional-preset": layRaidOptionalPresetScenario,
   "arena-preset-order-no-clicks": layPresetOrderNoClicksScenario,
   "arena-oct06-king-sukamon-assembly": (state, decks) => layOct06LatestScenario(state, decks, "king-sukamon-assembly"),
