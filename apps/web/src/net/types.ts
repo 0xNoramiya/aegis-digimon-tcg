@@ -675,6 +675,7 @@ export interface AegisJoinOptions {
     | "arena-feedback18-sukamon-inherited-protection"
     | "arena-feedback19-burst-tamer-choice"
     | "arena-security-leak-known-card-face-down"
+    | "arena-discord-keenan-trigger-order"
     | "arena-discord-richard-main-materials-face-down"
     | "arena-discord-richard-main-fresh-materials"
     | "arena-davis-both-colors"
