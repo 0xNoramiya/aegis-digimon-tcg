@@ -678,6 +678,7 @@ export interface AegisJoinOptions {
     | "arena-discord-x7-digixros-zones"
     | "arena-feedback31-dorugreymon-block-digivolve"
     | "arena-feedback33-kakkinmon-opponent-turn-end"
+    | "arena-prevented-cost-lucemon-jupitermon"
     | "arena-security-leak-known-card-face-down"
     | "arena-discord-keenan-trigger-order"
     | "arena-discord-richard-main-materials-face-down"

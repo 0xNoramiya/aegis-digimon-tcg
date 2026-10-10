@@ -431,6 +431,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-x7-digixros-zones",
   "arena-feedback31-dorugreymon-block-digivolve",
   "arena-feedback33-kakkinmon-opponent-turn-end",
+  "arena-prevented-cost-lucemon-jupitermon",
   "arena-security-leak-known-card-face-down",
   "arena-discord-keenan-trigger-order",
   "arena-discord-richard-main-materials-face-down",
@@ -7877,6 +7878,34 @@ function layFeedback33KakkinmonOpponentTurnEndScenario(state: GameState): void {
 }
 
 /**
+ * Follow-up to feedback #36: Lucemon (BT18-034) pays "by placing 1 of your level 6 Digimon on top
+ * of your security stack" at the end of the turn. Jupitermon (BT24-101) is the only level 6
+ * Digimon, and it can keep itself on the field by trashing the top security card. If it does, the
+ * placement did not happen, so Lucemon does not digivolve into Lucemon: Chaos Mode (BT18-082) in
+ * the trash (Q7247, Q5169).
+ */
+function layPreventedCostLucemonJupitermonScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-prevented-cost-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-prevented-cost-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-prevented-cost-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT18-034"], "-prevented-cost-lucemon"));
+  placePermanent(human, establishedDigimon(0, ["BT24-101"], "-prevented-cost-jupitermon"));
+  insertCard(human, Zone.Trash, faceUpCard("dev-prevented-cost-chaos-mode", "BT18-082", 0));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
  * Hidden-information check, no player report: the bot's security stack already shows one card
  * face up, so the player's client holds part of it. Lónkhē Adistakto (BT10-101) places the bot's
  * Monodramon, which both players saw on the field, face down on top of that stack. The player
@@ -11127,6 +11156,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-x7-digixros-zones": layDiscordX7DigiXrosZonesScenario,
   "arena-feedback31-dorugreymon-block-digivolve": layFeedback31DoruGreymonBlockScenario,
   "arena-feedback33-kakkinmon-opponent-turn-end": layFeedback33KakkinmonOpponentTurnEndScenario,
+  "arena-prevented-cost-lucemon-jupitermon": layPreventedCostLucemonJupitermonScenario,
   "arena-security-leak-known-card-face-down": laySecurityLeakKnownCardFaceDownScenario,
   "arena-discord-keenan-trigger-order": layDiscordKeenanTriggerOrderScenario,
   "arena-discord-richard-main-materials-face-down": layDiscordRichardMainMaterialsFaceDownScenario,
