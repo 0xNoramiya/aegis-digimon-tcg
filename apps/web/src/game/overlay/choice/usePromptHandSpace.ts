@@ -1,8 +1,18 @@
 import { useLayoutEffect, type RefObject } from "react";
 import { useMediaQuery } from "../../../design/useMediaQuery";
 
-/** Reserve the physical hand only while its cards are used to answer a mobile decision. */
-export function usePromptHandSpace(panelRef: RefObject<HTMLElement | null>, active = true) {
+/**
+ * `whenPickable` reserves the hand only while its cards answer the decision.
+ * `keepVisible` reserves it whatever the hand offers, for prompts the hand informs.
+ */
+export type PromptHandSpace = "whenPickable" | "keepVisible";
+
+/** Reserve the physical hand on phones so a mobile decision never covers it when it matters. */
+export function usePromptHandSpace(
+  panelRef: RefObject<HTMLElement | null>,
+  active = true,
+  handSpace: PromptHandSpace = "whenPickable",
+) {
   const mobile = useMediaQuery("(width < 768px), (height < 520px) and (orientation: landscape)");
   useLayoutEffect(() => {
     const panel = panelRef.current;
@@ -14,7 +24,10 @@ export function usePromptHandSpace(panelRef: RefObject<HTMLElement | null>, acti
     const surfaces = [panel, backdrop, layer].filter((surface): surface is HTMLElement => surface !== null);
     const update = () => {
       // A hand locked with nothing to pick (DNA material choice) answers nothing here.
-      if (!hand.querySelector(".game-hand--selecting :is(.game-hand-card--pickable, .game-hand-card--picked)")) {
+      if (
+        handSpace === "whenPickable" &&
+        !hand.querySelector(".game-hand--selecting :is(.game-hand-card--pickable, .game-hand-card--picked)")
+      ) {
         for (const surface of surfaces) surface.style.setProperty("--mobile-prompt-hand-clearance", "0px");
         return;
       }
@@ -44,5 +57,5 @@ export function usePromptHandSpace(panelRef: RefObject<HTMLElement | null>, acti
       hand.removeEventListener("transitionend", update);
       for (const surface of surfaces) surface.style.removeProperty("--mobile-prompt-hand-clearance");
     };
-  }, [active, mobile, panelRef]);
+  }, [active, handSpace, mobile, panelRef]);
 }

@@ -192,6 +192,7 @@ export function CounterOverlay({
     <BoardPromptRail
       variant={variant}
       className="board-prompt--counter"
+      handSpace="keepVisible"
       label={t("overlay.counterTiming")}
       eyebrow={selectedBlast ? blastLabel : "[Counter]"}
       art={sourceCardId}

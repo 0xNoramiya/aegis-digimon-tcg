@@ -215,11 +215,6 @@
     "url": "/dev/effect-prompts?case=counter-field&controls=0"
   },
   {
-    "id": "counter-empty",
-    "title": "Counter · no remaining action",
-    "url": "/dev/effect-prompts?case=counter-empty&controls=0"
-  },
-  {
     "id": "barrier",
     "title": "Barrier · use / decline",
     "url": "/dev/effect-prompts?case=barrier&controls=0"

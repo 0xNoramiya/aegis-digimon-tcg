@@ -35,7 +35,6 @@ const specimens = [
   "counter-sources",
   "counter-blast",
   "counter-field",
-  "counter-empty",
   "barrier",
   "evade",
   "source-host",

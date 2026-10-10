@@ -91,7 +91,6 @@ export const EFFECT_PROMPT_CASES = [
   ["counter-sources", "Counter · choose source", "center"],
   ["counter-blast", "Counter · multiple Blast routes", "center"],
   ["counter-field", "Counter · single field action", "left"],
-  ["counter-empty", "Counter · no remaining action", "left"],
   ["barrier", "Barrier · use / decline", "left"],
   ["evade", "Evade · use / decline", "left"],
   ["source-host", "Digivolution cards · choose host on field", "left"],
@@ -409,41 +408,39 @@ function GalleryPrompt({
   }
   if (caseId.startsWith("counter-")) {
     const eligibleCounters =
-      caseId === "counter-empty"
-        ? []
-        : caseId === "counter-field"
+      caseId === "counter-field"
+        ? [
+            {
+              instanceId: "field-counter",
+              effectKey: "gallery/counter",
+              description: getCardDefinition("BT10-083")?.effectText ?? "[Counter] Activate this effect.",
+            },
+          ]
+        : caseId === "counter-blast"
           ? [
+              {
+                instanceId: "blast-hand",
+                effectKey: "blast-digivolve:gallery-host-1",
+                description: "Blast Digivolve",
+              },
+              {
+                instanceId: "blast-hand",
+                effectKey: "blast-digivolve:gallery-host-2",
+                description: "Blast Digivolve",
+              },
+            ]
+          : [
+              {
+                instanceId: "blast-hand",
+                effectKey: "blast-digivolve:gallery-host-1",
+                description: "Blast Digivolve",
+              },
               {
                 instanceId: "field-counter",
                 effectKey: "gallery/counter",
-                description: getCardDefinition("BT10-083")?.effectText ?? "[Counter] Activate this effect.",
+                description: "[Counter] Activate this effect.",
               },
-            ]
-          : caseId === "counter-blast"
-            ? [
-                {
-                  instanceId: "blast-hand",
-                  effectKey: "blast-digivolve:gallery-host-1",
-                  description: "Blast Digivolve",
-                },
-                {
-                  instanceId: "blast-hand",
-                  effectKey: "blast-digivolve:gallery-host-2",
-                  description: "Blast Digivolve",
-                },
-              ]
-            : [
-                {
-                  instanceId: "blast-hand",
-                  effectKey: "blast-digivolve:gallery-host-1",
-                  description: "Blast Digivolve",
-                },
-                {
-                  instanceId: "field-counter",
-                  effectKey: "gallery/counter",
-                  description: "[Counter] Activate this effect.",
-                },
-              ];
+            ];
     return (
       <CounterOverlay
         eligibleCounters={eligibleCounters}

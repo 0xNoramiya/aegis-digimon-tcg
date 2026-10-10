@@ -33,6 +33,8 @@ import { DecisionTriggerChooser, type WaitingTrigger } from "./DecisionTriggerCh
 import type { DecisionCandidate } from "./decisionTypes";
 import "../effectPromptFamily.css";
 import { usePromptHandSpace } from "./usePromptHandSpace";
+import { useSourceClearPlacement } from "./useSourceClearPlacement";
+import { useNoticeBandPassThrough } from "./useNoticeBandPassThrough";
 
 /** The art of the card asking the question, big enough to recognise beside its clause. */
 const DECISION_SOURCE_ART_WIDTH = 72;
@@ -54,8 +56,13 @@ function dialogWidth({ docksOnRail, isResolutionPlan, wideDialog, itemCount }: D
 
 /** Sibling of the scrolling sheet, so its entrance transform cannot crop the arena shade. */
 function DecisionBackdrop({ side = false }: { side?: boolean }) {
+  const noticeBand = useNoticeBandPassThrough();
   return (
-    <div className={`decision-overlay-backdrop${side ? " decision-overlay-backdrop--side" : ""}`} aria-hidden="true" />
+    <div
+      className={`decision-overlay-backdrop${side ? " decision-overlay-backdrop--side" : ""}`}
+      style={noticeBand}
+      aria-hidden="true"
+    />
   );
 }
 
@@ -153,6 +160,10 @@ export function DecisionOverlay({
   const returnControlRef = useRef<HTMLDivElement>(null);
   const drag = useDraggableWindow(panelRef, { viewportGutter: 16, resetKey: `${request.decisionId}:${surface}` });
   usePromptHandSpace(panelRef, !isViewingBoard);
+  const sourceClear = useSourceClearPlacement(
+    request.sourcePermanentId,
+    draggableActivation && !isViewingBoard && drag.position === undefined,
+  );
   useEffect(() => {
     setIsViewingBoard(false);
   }, [request.decisionId]);
@@ -286,6 +297,7 @@ export function DecisionOverlay({
           data-prompt-surface={surface}
           data-effect-activation={draggableActivation || undefined}
           data-prompt-dragged={(draggableActivation && drag.position !== undefined) || undefined}
+          data-source-clear={sourceClear?.["data-source-clear"]}
           className={`game-modal__panel game-modal__panel--bare decision-overlay effect-prompt-family${wideDialog ? " decision-overlay--wide" : ""}${isCardChoice ? " decision-overlay--card-choice" : ""}${isOrdering ? " decision-overlay--ordering" : ""}${isSecurityChoice ? " decision-overlay--security-choice" : ""}${isSelect ? " decision-overlay--selection" : ""}${isOrderTriggers ? " decision-overlay--trigger-chooser" : ""}${isResolutionPlan ? " decision-overlay--resolution-plan" : ""}${docksOnRail ? " decision-overlay--side" : ""}`}
           onKeyDown={(event) => trapDialogFocus({ event, panelRef })}
           /* Geometry, surface and entrance all live in game.css: inline values could not be
@@ -304,6 +316,7 @@ export function DecisionOverlay({
                   "--effect-prompt-drag-top": `${drag.position.top}px`,
                 } as CSSProperties)
               : {}),
+            ...sourceClear?.style,
           }}
         >
           {/* Artwork and the question share the same compact header as combat prompts. */}

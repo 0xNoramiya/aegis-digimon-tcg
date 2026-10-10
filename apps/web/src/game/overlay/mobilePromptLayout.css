@@ -376,6 +376,39 @@
   }
 }
 
+/* A phone activation prompt stays clear of the permanent whose effect asks
+   (useSourceClearPlacement). Its height is capped to the room beside that card; the
+   question and clause scroll, and the answers stay in view. */
+@media (width < 768px), (height < 520px) and (orientation: landscape) {
+  .game-modal__panel.effect-prompt-family[data-effect-activation="true"][data-source-clear][data-prompt-surface]:not(
+      [data-prompt-dragged]
+    ) {
+    left: var(--ds-space-4) !important;
+    right: auto !important;
+    max-height: var(--effect-prompt-source-space) !important;
+    translate: none !important;
+  }
+  .game-modal__panel.effect-prompt-family[data-effect-activation="true"][data-source-clear="below"][data-prompt-surface]:not(
+      [data-prompt-dragged]
+    ) {
+    top: auto !important;
+    bottom: max(var(--ds-space-4), env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .game-modal__panel.effect-prompt-family[data-effect-activation="true"][data-source-clear="above"][data-prompt-surface]:not(
+      [data-prompt-dragged]
+    ) {
+    top: var(--effect-prompt-source-top) !important;
+    bottom: auto !important;
+  }
+  .game-modal__panel.effect-prompt-family[data-effect-activation="true"][data-source-clear][data-prompt-surface]
+    .decision-overlay__header {
+    flex: 0 1 auto;
+    min-height: 2.75rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
 /* Once moved, activation prompts use viewport coordinates while retaining their responsive size. */
 .game-modal__panel.effect-prompt-family[data-effect-activation="true"][data-prompt-dragged="true"][data-prompt-surface] {
   top: var(--effect-prompt-drag-top) !important;

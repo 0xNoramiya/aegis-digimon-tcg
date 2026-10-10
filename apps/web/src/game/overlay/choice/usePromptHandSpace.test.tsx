@@ -56,3 +56,9 @@ it("does not reserve a locked hand that offers no card, so a field prompt can dr
   renderHook(() => usePromptHandSpace({ current: panel }));
   expect(clearance(panel)).toBe("0px");
 });
+
+it("keeps a locked hand visible when the prompt asks for it (Counter window)", () => {
+  const panel = mountHand("game-hand-card--unpickable");
+  renderHook(() => usePromptHandSpace({ current: panel }, true, "keepVisible"));
+  expect(clearance(panel)).toBe("132px");
+});

@@ -12,8 +12,9 @@ import { cardDisplayName, useCardOpener } from "./cardLinks";
 import { DecisionBoardReturn } from "./overlay/choice/DecisionBoardReturn";
 import { useEffectPromptFocus } from "./overlay/choice/useEffectPromptFocus";
 import "./overlay/fieldDecisionRail.css";
-import { usePromptHandSpace } from "./overlay/choice/usePromptHandSpace";
+import { usePromptHandSpace, type PromptHandSpace } from "./overlay/choice/usePromptHandSpace";
 import { useDecisionSourceMask } from "./overlay/choice/useDecisionSourceMask";
+import { useNoticeBandPassThrough } from "./overlay/choice/useNoticeBandPassThrough";
 
 function useEscapeToDialog(onOpenDialog: (() => void) | undefined) {
   useEffect(() => {
@@ -72,6 +73,7 @@ export function BoardPromptRail({
   detail,
   budgetText,
   handClearance,
+  handSpace,
   className,
   onOpenDialog,
   showDialogButton,
@@ -90,6 +92,8 @@ export function BoardPromptRail({
   detail?: string;
   budgetText?: string;
   handClearance?: number;
+  /** On phones, whether the rail stays above the hand only while its cards answer, or always. */
+  handSpace?: PromptHandSpace;
   className?: string;
   /** Escape hands the decision back to its dialog whenever this is set. */
   onOpenDialog?: () => void;
@@ -101,15 +105,16 @@ export function BoardPromptRail({
   useEscapeToDialog(onOpenDialog);
   const modal = variant === "prompt";
   const sourceMask = useDecisionSourceMask(modal ? sourcePermanentId : undefined);
-  const focusProps = useEffectPromptFocus(!modal);
-  usePromptHandSpace(focusProps.ref, !modal);
+  const noticeBand = useNoticeBandPassThrough();
+  const focusProps = useEffectPromptFocus(!modal, handSpace);
+  usePromptHandSpace(focusProps.ref, !modal, handSpace);
   return (
     <>
       <div
         className={modal ? "decision-overlay-backdrop" : "board-prompt-scrim"}
         data-variant={variant}
         data-source-permanent-id={sourceMask ? sourcePermanentId : undefined}
-        style={sourceMask}
+        style={modal ? { ...sourceMask, ...noticeBand } : sourceMask}
         aria-hidden
       />
       <section
