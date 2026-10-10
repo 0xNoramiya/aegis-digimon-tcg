@@ -13,7 +13,8 @@ export function usePromptHandSpace(panelRef: RefObject<HTMLElement | null>, acti
     const layer = panel.closest<HTMLElement>(".effect-prompt-layer");
     const surfaces = [panel, backdrop, layer].filter((surface): surface is HTMLElement => surface !== null);
     const update = () => {
-      if (!hand.querySelector(".game-hand--selecting")) {
+      // A hand locked with nothing to pick (DNA material choice) answers nothing here.
+      if (!hand.querySelector(".game-hand--selecting :is(.game-hand-card--pickable, .game-hand-card--picked)")) {
         for (const surface of surfaces) surface.style.setProperty("--mobile-prompt-hand-clearance", "0px");
         return;
       }
