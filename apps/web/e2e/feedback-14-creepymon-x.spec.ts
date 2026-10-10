@@ -21,6 +21,11 @@ test("feedback #14: Creepymon (X Antibody) digivolves from the trash on the end-
       !s.pendingDecision,
     (decision) => {
       if (decision.kind === "optional" && decision.sourceCardId) offered.push(decision.sourceCardId);
+      // The order prompt arrives in the same batch as the attack declaration and EX10-046's
+      // [When Attacking], which play back to back before it can show: the attack announcement
+      // (~1.8 s), the effect announcement (~0.9 s) and the showcase of the opponent's revealed
+      // deck card (2.5 s). That is ~5.5 s, so the default 6 s budget left no headroom.
+      if (decision.kind === "orderTriggers") return { decisionBudgetMs: 8_000 };
       return {};
     },
   );
