@@ -1261,12 +1261,17 @@ export function useMatchCues({
   // may be almost empty. Catch the board up and release the security hold as soon
   // as the question arrives, without asking the server for additional free time.
   const timedDecisionPending = state?.matchTimer === true && decisionPending;
-  const timedSecurityPending = timedDecisionPending && decisionTiming === "EndOfYourTurn" && pendingRevealKey !== null;
+  // A security check's revealed card is public before anything it causes asks a question
+  // (DB feedback #28), so its finite reveal still plays first. The question releases it
+  // through the `security-decision-` step, as in an untimed match.
+  const securityCheckRevealPending = pendingRevealKey !== null && revealOnStageRef.current?.key === pendingRevealKey;
+  const keepsSecurityPresentation = decisionTiming === "EndOfYourTurn" || securityCheckRevealPending;
+  const timedSecurityPending = timedDecisionPending && keepsSecurityPresentation && pendingRevealKey !== null;
   useEffect(() => {
     if (!timedDecisionPending) return;
     const revision = decisionStateVersion ?? state?.stateVersion;
     if (revision !== undefined) progress.raiseFloor(revision);
-    if (pendingRevealKey !== null && decisionTiming !== "EndOfYourTurn") {
+    if (pendingRevealKey !== null && !keepsSecurityPresentation) {
       handOverSecurityBlow(pendingRevealKey);
       const held = securityHoldRef.current;
       if (held?.key === pendingRevealKey) held.handedOver = true;
@@ -1293,7 +1298,7 @@ export function useMatchCues({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     timedDecisionPending,
-    decisionTiming,
+    keepsSecurityPresentation,
     decisionStateVersion,
     state?.stateVersion,
     pendingRevealKey,

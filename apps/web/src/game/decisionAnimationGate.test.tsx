@@ -326,3 +326,77 @@ it("makes a newly played target selectable on the field while a timed security s
   fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
   expect(respondDecision).toHaveBeenCalledWith({ kind: "chooseTargets", instanceIds: [target.permanentId] });
 });
+
+it.each([false, true])(
+  "DB feedback #28: a timed prompt a security effect raises waits for the revealed card (split: %s)",
+  async (split) => {
+    vi.useFakeTimers();
+    const state = createArenaDemoState();
+    state.matchTimer = true;
+    const attacker = state.players[0]!.battleArea[0]!;
+    const decision: DecisionRequest = {
+      decisionId: "decoy-after-reveal",
+      seat: 0,
+      kind: "optional",
+      stateVersion: 2,
+      promptText: "Decoy: delete this Digimon to prevent the other Digimon's deletion?",
+    };
+    const events: ServerEvent[] = [
+      {
+        kind: "securityRevealed",
+        seat: 1,
+        revealedCardId: "BT8-097",
+        attackerPermanentId: attacker.permanentId,
+        attackerDP: 16000,
+        securityCountBefore: 5,
+        isDigimon: false,
+        hasSecurityEffect: true,
+      },
+    ];
+    const view = (batches: readonly ServerBatch[], pending?: DecisionRequest) => (
+      <I18nProvider>
+        <GameScreen
+          joinOptions={{ displayName: "You", deck: { mainDeck: [], eggDeck: [] } }}
+          identityColor="Red"
+          onExit={() => {}}
+          demoConnection={{
+            room: undefined,
+            status: "connected",
+            state,
+            batches,
+            events: batches.flatMap((batch) => batch.events),
+            decision: pending,
+            acknowledgeDecision: () => {},
+            error: undefined,
+            sessionId: state.players[0]!.sessionId,
+            roomCode: "",
+          }}
+        />
+      </I18nProvider>
+    );
+    const rendered = render(view([]));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    const batches = [singleServerBatch(events, 1)];
+    rendered.rerender(view(batches, split ? undefined : decision));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
+    if (split) rendered.rerender(view(batches, decision));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(screen.queryByText(decision.promptText!)).toBeNull();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(SECURITY_BREAK_TOTAL_MS);
+    });
+    expect(screen.getByTestId("security-clash")).toBeTruthy();
+    expect(screen.queryByText(decision.promptText!)).toBeNull();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(screen.getByText(decision.promptText!)).toBeTruthy();
+    expect(screen.getByTestId("security-branch")).toBeTruthy();
+  },
+);

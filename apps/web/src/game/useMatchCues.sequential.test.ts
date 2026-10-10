@@ -426,9 +426,16 @@ describe("resumed effect results", () => {
         question: true,
       });
       await advance(10_000);
+      // The battle hold ends on a poll after the question has taken the board, so its own
+      // finish is bookkeeping rather than the end of what the viewer sees.
       const securityEnd = steps.reduce(
         (last, step, index) =>
-          step.phase === "finished" && step.id.startsWith("security-") && step.version === 2 ? index : last,
+          step.phase === "finished" &&
+          step.id.startsWith("security-") &&
+          !step.id.startsWith("security-clash-hold-") &&
+          step.version === 2
+            ? index
+            : last,
         -1,
       );
       const early = steps
@@ -437,6 +444,10 @@ describe("resumed effect results", () => {
         .map((step) => step.id);
       expect(securityEnd).toBeGreaterThanOrEqual(0);
       expect(early).toEqual([]);
+      const handOver = steps.findIndex((step) => step.phase === "started" && step.id.startsWith("security-decision-"));
+      const drawShown = steps.findIndex((step) => step.phase === "started" && step.id.startsWith("draw-presentation-"));
+      expect(handOver).toBeGreaterThanOrEqual(0);
+      expect(drawShown).toBeGreaterThan(handOver);
     },
   );
   it.each([true, false])(
