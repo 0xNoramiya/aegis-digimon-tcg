@@ -424,6 +424,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-metaletemon-redirect-player",
   "arena-discord-lordknightmon-ex13-darkknightmon",
   "arena-discord-lordknightmon-bt22-skullknightmon",
+  "arena-feedback18-sukamon-inherited-protection",
   "arena-discord-speed-security-scene-stuck",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
@@ -7652,6 +7653,37 @@ function layDiscordLordKnightmonBt22SkullKnightmonScenario(state: GameState): vo
   placePermanent(state.players[0]!, establishedDigimon(0, ["BT22-067"], "-lordknightmon-bt22-lordknightmon"));
 }
 
+/**
+ * Feedback #18: the EX13 Chuumon and Sukamon inherited clauses ("When this Digimon would leave
+ * the battle area other than by your effects, by deleting 1 other Digimon with [Sukamon] in its
+ * name, it doesn't leave") must keep the Digimon in play after the cost is paid. KingSukamon
+ * carries both cards and attacks into a 15000 DP Omnimon on top of the bot's security stack.
+ */
+function layFeedback18SukamonInheritedProtectionScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback18-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback18-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  for (let index = 0; index < 3; index += 1) {
+    insertCard(human, Zone.Security, faceDownCard(`dev-feedback18-security-0-${index}`, "BT1-085", 0));
+  }
+  placePermanent(human, establishedDigimon(0, ["EX13-027", "EX13-028", "EX13-031"], "-feedback18-kingsukamon"));
+  placePermanent(human, establishedDigimon(0, ["EX13-027", "EX13-028"], "-feedback18-sukamon"));
+  const bot = state.players[1]!;
+  insertCard(bot, Zone.Security, faceDownCard("dev-feedback18-security-omnimon", "BT1-084", 1));
+  for (let index = 0; index < 2; index += 1) {
+    insertCard(bot, Zone.Security, faceDownCard(`dev-feedback18-security-1-${index}`, "BT1-085", 1));
+  }
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
 function layP224KotoneOwnSourceScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
   prepareIssueScenario(state, decks, 3);
   const human = state.players[0];
@@ -10701,6 +10733,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-metaletemon-redirect-player": layDiscordMetalEtemonRedirectPlayerScenario,
   "arena-discord-lordknightmon-ex13-darkknightmon": layDiscordLordKnightmonEx13DarkKnightmonScenario,
   "arena-discord-lordknightmon-bt22-skullknightmon": layDiscordLordKnightmonBt22SkullKnightmonScenario,
+  "arena-feedback18-sukamon-inherited-protection": layFeedback18SukamonInheritedProtectionScenario,
   "arena-discord-speed-security-scene-stuck": layDiscordSpeedSecuritySceneStuckScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,

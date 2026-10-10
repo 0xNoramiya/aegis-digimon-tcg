@@ -1865,6 +1865,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Discord 1558289910425985055. Encerre a criação. Ataque o jogador com LordKnightmon (BT22-067). O [Todos os Turnos] revela 3 cartas: SkullKnightmon (EX10-026, preto/roxo, custo 4) e dois Knightmon de custo 7. Só o SkullKnightmon pode ser escolhido: ele é preto, e uma carta de várias cores conta como cada uma das suas cores. Escolha-o: ele é jogado sem pagar o custo e as outras duas cartas vão para a lixeira.",
     en: "Discord 1558289910425985055. End breeding. Attack the player with LordKnightmon (BT22-067). Its [All Turns] effect reveals 3 cards: SkullKnightmon (EX10-026, Black/Purple, cost 4) and two cost-7 Knightmon. Only SkullKnightmon can be chosen: it is black, and a multicolor card counts as each of its colors. Choose it: it is played without paying the cost, and the other two cards go to the trash.",
   },
+  "arena-feedback18-sukamon-inherited-protection": {
+    ptBR: "Feedback #18. Encerre a criação. Ataque o jogador com KingSukamon (EX13-031). Ele tem Chuumon (EX13-027) e Sukamon (EX13-028) nas fontes. A segurança do bot revela Omnimon (15000 DP), e KingSukamon perde a batalha. Os dois efeitos herdados ativam: resolva Chuumon primeiro e aceite. O custo exclui o seu outro Sukamon. KingSukamon fica no campo com as duas fontes. O Sukamon herdado não pergunta de novo, porque não sobra outro Digimon com [Sukamon] no nome.",
+    en: "Feedback #18. End breeding. Attack the player with KingSukamon (EX13-031). It has Chuumon (EX13-027) and Sukamon (EX13-028) in its sources. The bot's security reveals Omnimon (15000 DP), and KingSukamon loses the battle. Both inherited effects activate: resolve Chuumon first and accept. The cost deletes your other Sukamon. KingSukamon stays in play with both sources. The inherited Sukamon effect does not ask again, because no other Digimon with [Sukamon] in its name is left.",
+  },
   "arena-discord-speed-security-scene-stuck": {
     ptBR: "Partida com relógio. Encerre a criação e o turno. O bot ataca você com Monodramon e Magnamon (7000 DP) é revelado da sua segurança. Antes da batalha, o [Todos os Turnos] de Dynasmon oferece excluir o Digimon de menor DP do oponente: escolha Monodramon. A checagem termina sem batalha, e Magnamon sai do centro da tela e vai para a lixeira. A cena não fica presa nos turnos seguintes.",
     en: "Timed match. End breeding and your turn. The bot attacks you with Monodramon, and Magnamon (7000 DP) is revealed from your security. Before the battle, Dynasmon's [All Turns] effect offers to delete your opponent's lowest DP Digimon: choose Monodramon. The check ends with no battle, and Magnamon leaves the centre of the screen for the trash. The scene does not stay on screen in later turns.",
@@ -3306,6 +3310,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-discord-metaletemon-redirect-player", "Discord · MetalEtemon switches the attack to your own security"],
   ["arena-discord-lordknightmon-ex13-darkknightmon", "EX13 LordKnightmon · plays DarkKnightmon from hand or trash"],
   ["arena-discord-lordknightmon-bt22-skullknightmon", "BT22 LordKnightmon · plays a revealed SkullKnightmon"],
+  ["arena-feedback18-sukamon-inherited-protection", "Feedback #18 · Sukamon inherited protection keeps host"],
   ["arena-discord-speed-security-scene-stuck", "Discord · timed security check closes without a battle"],
   ["arena-p224-kotone-own-source", "P-224 Kotone · X7 das próprias fontes / own sources"],
   ["arena-kotone-digixros-pending-attack", "Kotone · DigiXros + EX6 pending attack"],
