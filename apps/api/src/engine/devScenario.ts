@@ -81,6 +81,8 @@ export const DEV_SCENARIO_IDS = [
   "arena-ravemon-burst-hand",
   "arena-raid-after-dedigivolve",
   "arena-lm007-publimon-end-of-attack",
+  "arena-feedback6-deramon-breeding-level",
+  "arena-feedback15-gryphonmon-deramon",
   "arena-github5331-offense-hand",
   "arena-github5362-shellmon-ts",
   "arena-lanamon-tamer-cost",
@@ -1487,6 +1489,44 @@ function layLm007PublimonEndOfAttackScenario(state: GameState): void {
   state.turnCount = 0;
   state.isFirstPlayersFirstTurn = false;
   state.memory = 3;
+}
+
+function seedDeramonFeedbackZones(state: GameState, prefix: string): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-${prefix}-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-${prefix}-deck-${seat}-${index}`, "BT1-009", seat));
+    }
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-${prefix}-security-${seat}-${index}`, "BT1-010", seat));
+    }
+  }
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/** Feedback #6: Deramon's [Digivolve] Lv.4 w/[WG] route refuses Pomumon (Lv.3) over Yokomon in breeding. */
+function layFeedback6DeramonBreedingScenario(state: GameState): void {
+  seedDeramonFeedbackZones(state, "feedback6");
+  const human = state.players[0]!;
+  const breeding = establishedDigimon(0, ["BT21-003", "EX9-036"], "-feedback6-pomumon");
+  breeding.inBreeding = true;
+  setBreeding(human, breeding);
+  placePermanent(human, establishedDigimon(0, ["EX9-040"], "-feedback6-parasaurmon"));
+  insertCard(human, Zone.Hand, faceUpCard("dev-feedback6-deramon", "BT21-038", 0));
+}
+
+/** Feedback #15: Gryphonmon's [When Attacking] offers Deramon to a Parasaurmon host. */
+function layFeedback15GryphonmonDeramonScenario(state: GameState): void {
+  seedDeramonFeedbackZones(state, "feedback15");
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT21-039"], "-feedback15-gryphonmon"));
+  placePermanent(human, establishedDigimon(0, ["EX9-040"], "-feedback15-parasaurmon"));
+  insertCard(human, Zone.Hand, faceUpCard("dev-feedback15-deramon", "BT21-038", 0));
+  insertCard(human, Zone.Hand, faceUpCard("dev-feedback15-toropiamon", "EX9-042", 0));
 }
 
 /** Discord 1557815179218128896: Guard removes a queued Raid's printed source. */
@@ -9710,6 +9750,8 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
     layShakkoumonSukamonDnaScenario(state, decks, true),
   "arena-raid-after-dedigivolve": layRaidAfterDeDigivolveScenario,
   "arena-lm007-publimon-end-of-attack": layLm007PublimonEndOfAttackScenario,
+  "arena-feedback6-deramon-breeding-level": layFeedback6DeramonBreedingScenario,
+  "arena-feedback15-gryphonmon-deramon": layFeedback15GryphonmonDeramonScenario,
   "arena-raid-optional-preset": layRaidOptionalPresetScenario,
   "arena-preset-order-no-clicks": layPresetOrderNoClicksScenario,
   "arena-oct06-king-sukamon-assembly": (state, decks) => layOct06LatestScenario(state, decks, "king-sukamon-assembly"),
