@@ -433,6 +433,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback33-kakkinmon-opponent-turn-end",
   "arena-feedback32-omnimon-x-raid-piercing",
   "arena-feedback40-rie-kishibe-security-gate",
+  "arena-bt26-029-single-removal-trigger",
   "arena-bt22-101-kyoko-alphamon-on-unsuspend",
   "arena-prevented-cost-lucemon-jupitermon",
   "arena-security-leak-known-card-face-down",
@@ -7938,6 +7939,37 @@ function layFeedback40RieKishibeSecurityGateScenario(state: GameState): void {
 }
 
 /**
+ * Feedback #20 follow-up (match 023effb9): one security trash put BT26-029 Aegiochusmon: Holy's
+ * "[All Turns] [Once Per Turn] When your security stack is removed from" effect in the order
+ * prompt twice. The human plays Holy and pays its [On Play] by trashing the top security card.
+ * Kari Kamiya (BT15-084) reacts to the same removal, so the order prompt lists Holy and Kari once
+ * each. Holy's effect then gives the bot's 3 Monodramon -5000 DP and deletes them.
+ */
+function layBt26029SingleRemovalTriggerScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-bt26-029-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 10; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-bt26-029-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-bt26-029-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  const opponent = state.players[1]!;
+  placePermanent(human, establishedDigimon(0, ["BT15-084"], "-bt26-029-kari"));
+  insertCard(human, Zone.Hand, faceUpCard("dev-bt26-029-holy", "BT26-029", 0));
+  for (let index = 0; index < 3; index += 1) {
+    placePermanent(opponent, establishedDigimon(1, ["BT1-009"], `-bt26-029-monodramon-${index}`));
+  }
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 10;
+}
+
+/**
  * BT22-101 Kyoko Kuremi follow-up: "[Your Turn] [Once Per Turn] When this Tamer unsuspends, if you
  * don't have [Alphamon], this Tamer may digivolve into [Alphamon] in the hand with the digivolution
  * cost reduced by 2." The card has no security check of its own. BT22-063 Alphamon's requirement
@@ -11248,6 +11280,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback33-kakkinmon-opponent-turn-end": layFeedback33KakkinmonOpponentTurnEndScenario,
   "arena-feedback32-omnimon-x-raid-piercing": layFeedback32OmnimonXRaidPiercingScenario,
   "arena-feedback40-rie-kishibe-security-gate": layFeedback40RieKishibeSecurityGateScenario,
+  "arena-bt26-029-single-removal-trigger": layBt26029SingleRemovalTriggerScenario,
   "arena-bt22-101-kyoko-alphamon-on-unsuspend": layBt22101KyokoAlphamonOnUnsuspendScenario,
   "arena-prevented-cost-lucemon-jupitermon": layPreventedCostLucemonJupitermonScenario,
   "arena-security-leak-known-card-face-down": laySecurityLeakKnownCardFaceDownScenario,
