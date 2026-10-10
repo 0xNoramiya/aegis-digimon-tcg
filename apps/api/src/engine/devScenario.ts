@@ -421,6 +421,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback25-alter-s-unsuspend-lock",
   "arena-feedback27-chuumon-opponent-turn",
   "arena-feedback28-security-reveal-before-prompt",
+  "arena-discord-metaletemon-redirect-player",
   "arena-discord-lordknightmon-ex13-darkknightmon",
   "arena-discord-lordknightmon-bt22-skullknightmon",
   "arena-discord-speed-security-scene-stuck",
@@ -7562,6 +7563,40 @@ function layFeedback28SecurityRevealBeforePromptScenario(state: GameState): void
   state.memory = 3;
 }
 
+/**
+ * Discord 1558441146781536346: MetalEtemon (EX5-054) may switch an opponent's attack "to this
+ * Digimon or the player". The player is MetalEtemon's controller (Q3647), but the redirect
+ * prompt labelled that choice as the opponent's security. The match opens on the bot's turn.
+ * Its Agumon attacks the suspended MetalEtemon; you pay with Etemon from hand and switch the
+ * attack to your own security, where that Etemon (7000 DP) is revealed and beats Agumon.
+ */
+function layDiscordMetalEtemonRedirectPlayerScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-discord-metaletemon-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-discord-metaletemon-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(
+        player,
+        Zone.Security,
+        faceDownCard(`dev-discord-metaletemon-security-${seat}-${index}`, "BT1-009", seat),
+      );
+    }
+  }
+  const human = state.players[0]!;
+  const metalEtemon = establishedDigimon(0, ["BT11-041", "EX5-054"], "-discord-metaletemon");
+  metalEtemon.isSuspended = true;
+  placePermanent(human, metalEtemon);
+  insertCard(human, Zone.Hand, faceUpCard("dev-discord-metaletemon-hand-etemon", "BT11-041", 0));
+  placePermanent(state.players[1]!, establishedDigimon(1, ["BT1-010"], "-discord-metaletemon-agumon"));
+  state.turnSeat = 1;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 0;
+}
+
 function layDiscordLordKnightmonBoard(state: GameState, prefix: string, humanDeck: readonly string[]): void {
   for (const seat of [0, 1] as const) {
     const player = state.players[seat]!;
@@ -10663,6 +10698,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback25-alter-s-unsuspend-lock": layFeedback25AlterSUnsuspendLockScenario,
   "arena-feedback27-chuumon-opponent-turn": layFeedback27ChuumonOpponentTurnScenario,
   "arena-feedback28-security-reveal-before-prompt": layFeedback28SecurityRevealBeforePromptScenario,
+  "arena-discord-metaletemon-redirect-player": layDiscordMetalEtemonRedirectPlayerScenario,
   "arena-discord-lordknightmon-ex13-darkknightmon": layDiscordLordKnightmonEx13DarkKnightmonScenario,
   "arena-discord-lordknightmon-bt22-skullknightmon": layDiscordLordKnightmonBt22SkullKnightmonScenario,
   "arena-discord-speed-security-scene-stuck": layDiscordSpeedSecuritySceneStuckScenario,

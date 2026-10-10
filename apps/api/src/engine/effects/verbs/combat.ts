@@ -142,7 +142,7 @@ export function createCombatVerbs(pc: PrimitivesContext) {
   /**
    * Redirect the currently-resolving attack onto one of `candidatePermanentIds`
    * (chosen by the source's controller). The reserved id `"player"` represents the
-   * opponent player, allowing cards that say "another opponent's Digimon or the player".
+   * defending player, allowing cards that say "another opponent's Digimon or the player".
    */
   const redirectAttack: Primitives["redirectAttack"] = async (candidatePermanentIds, opts) => {
     const combat = engine.combat;
@@ -154,13 +154,20 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     // chooser may decline (min 0) and the attack proceeds unchanged.
     const chooserSeat = opts?.chooserSeat ?? effectSeatStack.at(-1) ?? engine.controllerSeat();
     const optional = opts?.optional ?? false;
+    const attackerId = combat.currentAttackerId;
+    const attackerSeat = attackerId === undefined ? undefined : access.permanentById(attackerId)?.controllerSeat;
+    // "player" is always the defending player. Clients label the sentinel from the chooser's
+    // side ("player" = opponent's security, "mine" = your security), so a defending chooser
+    // (EX5-054 "this Digimon or the player") must be offered "mine".
+    const playerPromptId = attackerSeat !== undefined && chooserSeat !== attackerSeat ? "mine" : "player";
+    const promptCandidates = candidates.map((id) => (id === "player" ? playerPromptId : id));
     let chosen: string[];
     if (candidates.length === 1 && !optional) {
-      chosen = candidates;
+      chosen = promptCandidates;
     } else {
       chosen = await engine.ask.selectInstances(
         chooserSeat,
-        candidates,
+        promptCandidates,
         optional ? 0 : 1,
         1,
         "Choose the new target of the attack.",
@@ -168,8 +175,7 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     }
     const pick = chosen[0];
     if (pick === undefined) return; // declined (or no pick): attack proceeds unchanged
-    const attackerId = combat.currentAttackerId;
-    combat.redirectTarget(pick === "player" ? { kind: "player" } : { kind: "permanent", permanentId: pick });
+    combat.redirectTarget(pick === playerPromptId ? { kind: "player" } : { kind: "permanent", permanentId: pick });
     // The attack target was just switched — notify reactive watchers ("when this Digimon's
     // attack target is switched", BT11-008). The attacker is the event subject; a watcher's
     // sourceFilter isSelfRef gates it to its own attack.

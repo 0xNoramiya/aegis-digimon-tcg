@@ -295,4 +295,52 @@ describe("EX5-054 MetalEtemon", () => {
     ).toBe(true);
     expect(s.state.pendingDecision).toBeUndefined();
   });
+  it("offers its own controller's security, not the attacker's, as the player target (Discord 1558441146781536346, Q3647)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: CARD, as: "source", suspended: true }],
+          hand: [{ card: "BT11-041", as: "paid" }],
+          security: ["BT1-009", "BT1-010"],
+        },
+        1: { battleArea: [{ card: "BT1-010", as: "attacker" }], security: ["BT1-011", "BT1-012"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: false },
+    );
+    s.state.turnSeat = 1;
+    await s.ready();
+    const sourceId = s.perm("source").permanentId;
+    expect(
+      s.engine.applyIntent(1, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "permanent", permanentId: sourceId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () =>
+        s.state.pendingDecision?.kind === "selectCards" &&
+        s.decisions.at(-1)?.req.options?.candidateInstanceIds?.includes(sourceId) === true,
+    );
+    const redirect = s.decisions.at(-1)!.req;
+    expect(redirect.seat).toBe(0);
+    expect(redirect.options?.candidateInstanceIds).toEqual([sourceId, "mine"]);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: redirect.decisionId,
+        response: { kind: "selectCards", instanceIds: ["mine"] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => !observe(s.engine).isAttacking());
+    expect(s.events.filter((event) => event.kind === "attackDeclared").at(-1)).toMatchObject({
+      seat: 1,
+      target: { kind: "player" },
+      redirected: true,
+    });
+    expect(s.state.players[0]!.security.map((card) => card.cardId)).toEqual(["BT1-009", "BT1-010"]);
+    expect(s.state.players[1]!.security.map((card) => card.cardId)).toEqual(["BT1-011", "BT1-012"]);
+    expect(s.state.players[0]!.battleArea.some((p) => p.permanentId === sourceId)).toBe(true);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
 });
