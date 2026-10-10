@@ -63,4 +63,23 @@ describe("physical printing presentation", () => {
     expect(buildInstanceArtIndex(snapshot).get("visible")).toBe("BT1-010_P1");
     expect(buildInstanceArtIndex(snapshot).has("hidden")).toBe(false);
   });
+  it("indexes the art of face-up security cards from the public projection", () => {
+    const state = {
+      players: [
+        {
+          hand: [],
+          security: [],
+          securityView: [
+            { instanceId: "", cardId: "", artId: "", faceUp: false },
+            { instanceId: "face-up", cardId: "BT1-010", artId: "BT1-010_P1", faceUp: true },
+          ],
+          trash: [],
+          battleArea: [],
+        },
+      ],
+    } as unknown as GameState;
+    const index = buildInstanceArtIndex(state);
+    expect(index.get("face-up")).toBe("BT1-010_P1");
+    expect(index.size).toBe(1);
+  });
 });

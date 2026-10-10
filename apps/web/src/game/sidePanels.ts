@@ -110,6 +110,8 @@ export function buildInstanceArtIndex(state: GameState): Map<string, string> {
   };
   for (const player of state.players) {
     for (const zone of [player.hand, player.trash, player.delayZone, player.security]) zone?.forEach(add);
+    // The opponent's face-up security cards reach this client only through the public projection.
+    player.securityView?.forEach(add);
     add(player.resolvingOption);
     for (const permanent of [...player.battleArea, ...(player.breeding ? [player.breeding] : [])]) {
       add(permanent.topCard);

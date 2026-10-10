@@ -11,7 +11,6 @@ export {
   buildStateView,
   refreshStateView,
   syncPublicCounts,
-  revealSecurityCardToOpponent,
   privateZoneSnapshot,
   exposeCardInZone,
   forgetWithheldCards,

@@ -88,6 +88,10 @@ export function buildInstanceZoneIndex(
     player.trash.forEach((ci) => add(ci, mine ? "trash" : "opponentTrash"));
     player.delayZone?.forEach((ci) => add(ci, "delay"));
     player.security?.forEach((ci) => add(ci, "security"));
+    // The opponent's face-up security cards reach this client only through the public projection.
+    player.securityView?.forEach((entry) => {
+      if (entry?.instanceId) zones.set(entry.instanceId, "security");
+    });
     if (mine) player.hand?.forEach((ci) => add(ci, "hand"));
   });
   return zones;
