@@ -27,6 +27,42 @@ describe("ST22-09 High-Speed Plug-In H", () => {
     expect(s.state.players[0]!.hand.some((card) => card.instanceId === option)).toBe(true);
     expect(observe(s.engine).isRestricted(opponent, "beSuspended")).toBe(true);
   });
+
+  it.each([false, true])(
+    "Main always applies the suspend restriction whether or not the link is taken (link=%s) (Discord 1558589221843771433)",
+    async (acceptLink) => {
+      const s = setupEngine(
+        {
+          0: {
+            hand: [{ card: "ST22-09", as: "option" }],
+            battleArea: [{ card: "BT1-010", as: "host" }, { card: "ST22-07" }],
+          },
+          1: { battleArea: [{ card: "BT1-009", as: "opponent" }] },
+        },
+        { autoSelectCards: true },
+      );
+      s.state.memory = 10;
+      await s.ready();
+      const option = s.inst("option").instanceId;
+      const opponent = s.perm("opponent");
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: option })).toEqual({ ok: true });
+      await settle(() => s.state.pendingDecision?.promptText === "Link");
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: s.state.pendingDecision!.decisionId,
+          response: { kind: "optional", accept: acceptLink },
+        }),
+      ).toEqual({ ok: true });
+      await settle(
+        () => s.state.pendingDecision !== undefined || observe(s.engine).isRestricted(opponent, "beSuspended"),
+      );
+
+      expect(s.state.pendingDecision).toBeUndefined();
+      expect(observe(s.engine).isRestricted(opponent, "beSuspended")).toBe(true);
+      expect(s.perm("host").linked.some((card) => card.instanceId === option)).toBe(acceptLink);
+    },
+  );
 });
 
 describe("ST22-09 High-Speed Plug-In H — KB Q&A rulings", () => {

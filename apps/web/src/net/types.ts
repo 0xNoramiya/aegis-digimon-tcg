@@ -680,6 +680,7 @@ export interface AegisJoinOptions {
     | "arena-feedback33-kakkinmon-opponent-turn-end"
     | "arena-feedback32-omnimon-x-raid-piercing"
     | "arena-feedback40-rie-kishibe-security-gate"
+    | "arena-plugin-high-speed-optional-link"
     | "arena-lordknightmon-bt22-effect-attack-reveal"
     | "arena-lordknightmon-bt22-opponent-attack-reveal"
     | "arena-lordknightmon-ex13-darkknightmon-digixros"

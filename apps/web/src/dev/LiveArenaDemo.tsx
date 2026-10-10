@@ -1901,6 +1901,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Feedback #40. Você tem 5 cartas de segurança, Rie Kishibe (BT22-090) e Yuuko Kamishiro (BT22-083) em campo, e 2 LordKnightmon (EX13-064) na mão. Encerre a criação e encerre o turno. O [Fim do Seu Turno] de Rie pergunta se você quer pagar o custo: aceite e exclua Yuuko. Nenhuma pergunta 'Digivolver' aparece, porque nenhuma LordKnightmon pode digivolver. Resultado esperado: Yuuko vai para o lixo, Rie continua como Tamer e os 2 LordKnightmon ficam na mão. O requisito de EX13-064 a partir de [Rie Kishibe] só vale com 3 ou menos cartas de segurança (Q4959). Com 3 cartas de segurança, veja o cenário arena-bt22-rie-kishibe-legal-digivolve.",
     en: "Feedback #40. You have 5 security cards, Rie Kishibe (BT22-090) and Yuuko Kamishiro (BT22-083) on the field, and 2 LordKnightmon (EX13-064) in hand. End breeding, then end your turn. Rie's [End of Your Turn] effect asks whether to pay the cost: accept and delete Yuuko. No 'Digivolve' prompt appears, because no LordKnightmon can digivolve. Expected: Yuuko goes to the trash, Rie stays a Tamer, and both LordKnightmon stay in hand. EX13-064 can digivolve from [Rie Kishibe] only while you have 3 or fewer security cards (Q4959). For the 3-security case, see arena-bt22-rie-kishibe-legal-digivolve.",
   },
+  "arena-plugin-high-speed-optional-link": {
+    ptBR: "Discord 1558589221843771433. Você tem Agumon (BT1-010), Tai Kamiya (BT1-085) e 2 High-Speed Plug-In H (ST22-09) na mão. O bot tem Monodramon (BT1-009). Encerre a criação. Use o primeiro Plug-In H e recuse 'Link': o Plug-In vai para a lixeira e o Monodramon do bot fica sem poder suspender até o fim do turno dele, sem outra pergunta. Use o segundo Plug-In H e aceite 'Link': ele fica ligado ao Agumon e a mesma restrição se aplica. Só o link é opcional; a parte 'Então' sempre resolve.",
+    en: "Discord 1558589221843771433. You have Agumon (BT1-010), Tai Kamiya (BT1-085), and 2 High-Speed Plug-In H (ST22-09) in hand. The bot has Monodramon (BT1-009). End breeding. Use the first Plug-In H and decline 'Link': the Plug-In goes to the trash and the bot's Monodramon can't suspend until the end of its turn, with no further prompt. Use the second Plug-In H and accept 'Link': it links to Agumon and the same restriction applies. Only the link is optional; the 'Then' part always resolves.",
+  },
   "arena-lordknightmon-bt22-effect-attack-reveal": {
     ptBR: "Discord 1558289910425985055. Encerre a criação. Digivolva RizeGreymon em LordKnightmon (BT22-067) pelo custo 3 da rota [CS]. No [Ao Digivolver], dê +3000 DP e ataque o jogador com LordKnightmon. O [Todos os Turnos] revela SkullKnightmon (EX10-026, custo 4) e dois Knightmon de custo 7. Escolha SkullKnightmon: ele é jogado sem pagar o custo e os outros vão para a lixeira.",
     en: "Discord 1558289910425985055. End breeding. Digivolve RizeGreymon into LordKnightmon (BT22-067) for the [CS] route's cost of 3. In its [When Digivolving] effect, give +3000 DP and attack the player with LordKnightmon. Its [All Turns] effect reveals SkullKnightmon (EX10-026, cost 4) and two cost-7 Knightmon. Choose SkullKnightmon: it is played without paying the cost, and the others go to the trash.",
@@ -3413,6 +3417,10 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   [
     "arena-feedback40-rie-kishibe-security-gate",
     "Feedback #40 · Rie Kishibe needs 3 or fewer security for LordKnightmon",
+  ],
+  [
+    "arena-plugin-high-speed-optional-link",
+    "Discord · High-Speed Plug-In H · Then part resolves with or without the link",
   ],
   ["arena-lordknightmon-bt22-effect-attack-reveal", "BT22 LordKnightmon · reveal during its own effect attack"],
   ["arena-lordknightmon-bt22-opponent-attack-reveal", "BT22 LordKnightmon · reveal on the opponent's attack"],
