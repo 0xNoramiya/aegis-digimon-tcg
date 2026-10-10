@@ -1901,6 +1901,18 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Feedback #40. Você tem 5 cartas de segurança, Rie Kishibe (BT22-090) e Yuuko Kamishiro (BT22-083) em campo, e 2 LordKnightmon (EX13-064) na mão. Encerre a criação e encerre o turno. O [Fim do Seu Turno] de Rie pergunta se você quer pagar o custo: aceite e exclua Yuuko. Nenhuma pergunta 'Digivolver' aparece, porque nenhuma LordKnightmon pode digivolver. Resultado esperado: Yuuko vai para o lixo, Rie continua como Tamer e os 2 LordKnightmon ficam na mão. O requisito de EX13-064 a partir de [Rie Kishibe] só vale com 3 ou menos cartas de segurança (Q4959). Com 3 cartas de segurança, veja o cenário arena-bt22-rie-kishibe-legal-digivolve.",
     en: "Feedback #40. You have 5 security cards, Rie Kishibe (BT22-090) and Yuuko Kamishiro (BT22-083) on the field, and 2 LordKnightmon (EX13-064) in hand. End breeding, then end your turn. Rie's [End of Your Turn] effect asks whether to pay the cost: accept and delete Yuuko. No 'Digivolve' prompt appears, because no LordKnightmon can digivolve. Expected: Yuuko goes to the trash, Rie stays a Tamer, and both LordKnightmon stay in hand. EX13-064 can digivolve from [Rie Kishibe] only while you have 3 or fewer security cards (Q4959). For the 3-security case, see arena-bt22-rie-kishibe-legal-digivolve.",
   },
+  "arena-lordknightmon-bt22-effect-attack-reveal": {
+    ptBR: "Discord 1558289910425985055. Encerre a criação. Digivolva RizeGreymon em LordKnightmon (BT22-067) pelo custo 3 da rota [CS]. No [Ao Digivolver], dê +3000 DP e ataque o jogador com LordKnightmon. O [Todos os Turnos] revela SkullKnightmon (EX10-026, custo 4) e dois Knightmon de custo 7. Escolha SkullKnightmon: ele é jogado sem pagar o custo e os outros vão para a lixeira.",
+    en: "Discord 1558289910425985055. End breeding. Digivolve RizeGreymon into LordKnightmon (BT22-067) for the [CS] route's cost of 3. In its [When Digivolving] effect, give +3000 DP and attack the player with LordKnightmon. Its [All Turns] effect reveals SkullKnightmon (EX10-026, cost 4) and two cost-7 Knightmon. Choose SkullKnightmon: it is played without paying the cost, and the others go to the trash.",
+  },
+  "arena-lordknightmon-bt22-opponent-attack-reveal": {
+    ptBR: "Discord 1558289910425985055. É o turno do bot. O Agumon dele ataca você. O [Todos os Turnos] do seu LordKnightmon (BT22-067) revela SkullKnightmon (EX10-026, custo 4) e dois Knightmon de custo 7. Escolha SkullKnightmon: ele é jogado sem pagar o custo no turno do oponente.",
+    en: "Discord 1558289910425985055. It is the bot's turn. Its Agumon attacks you. Your LordKnightmon's (BT22-067) [All Turns] effect reveals SkullKnightmon (EX10-026, cost 4) and two cost-7 Knightmon. Choose SkullKnightmon: it is played without paying the cost during the opponent's turn.",
+  },
+  "arena-lordknightmon-ex13-darkknightmon-digixros": {
+    ptBR: "Discord 1558289219074654299. Encerre a criação. Digivolva o Knightmon amarelo em LordKnightmon (EX13-064) pelo custo 3. O [Ao Digivolver] oferece DarkKnightmon (EX10-031) da lixeira e SkullKnightmon e DeadlyAxemon da mão. Escolha DarkKnightmon. Depois, a DigiXros oferece SkullKnightmon e DeadlyAxemon da mão: escolha os dois. DarkKnightmon entra com os dois como cartas de digivolução.",
+    en: "Discord 1558289219074654299. End breeding. Digivolve the yellow Knightmon into LordKnightmon (EX13-064) for 3. Its [When Digivolving] effect offers DarkKnightmon (EX10-031) from the trash, and SkullKnightmon and DeadlyAxemon from hand. Choose DarkKnightmon. The DigiXros picker then offers SkullKnightmon and DeadlyAxemon from hand: choose both. DarkKnightmon enters with both as digivolution cards.",
+  },
   "arena-bt26-029-single-removal-trigger": {
     ptBR: "Continuação do feedback #20. Encerre a criação. Jogue Aegiochusmon: Holy (BT26-029) por 8 de memória. Aceite o [Ao Jogar], descarte a carta do topo da sua segurança e proteja Holy. Holy e Kari Kamiya (BT15-084) reagem à mesma remoção da segurança. Resultado esperado: a pergunta de ordem mostra Holy uma vez e Kari uma vez, não Holy duas vezes. Recuse o efeito de Kari. O efeito de Holy dá -5000 DP aos 3 Monodramon do bot e exclui todos. Holy resolve esse efeito uma vez só, e você fica com 3 cartas de segurança e 2 de memória.",
     en: "Follow-up to feedback #20. End breeding. Play Aegiochusmon: Holy (BT26-029) for 8 memory. Accept its [On Play], trash your top security card, and protect Holy. Holy and Kari Kamiya (BT15-084) both react to the same security removal. Expected: the order prompt lists Holy once and Kari once, not Holy twice. Decline Kari's effect. Holy's effect gives the bot's 3 Monodramon -5000 DP and deletes them. Holy resolves that effect only once, and you have 3 security cards and 2 memory left.",
@@ -3398,6 +3410,9 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
     "arena-feedback40-rie-kishibe-security-gate",
     "Feedback #40 · Rie Kishibe needs 3 or fewer security for LordKnightmon",
   ],
+  ["arena-lordknightmon-bt22-effect-attack-reveal", "BT22 LordKnightmon · reveal during its own effect attack"],
+  ["arena-lordknightmon-bt22-opponent-attack-reveal", "BT22 LordKnightmon · reveal on the opponent's attack"],
+  ["arena-lordknightmon-ex13-darkknightmon-digixros", "EX13 LordKnightmon · DarkKnightmon from trash with DigiXros"],
   ["arena-bt26-029-single-removal-trigger", "Feedback #20 · Aegiochusmon: Holy triggers once per security removal"],
   [
     "arena-bt22-101-kyoko-alphamon-on-unsuspend",
