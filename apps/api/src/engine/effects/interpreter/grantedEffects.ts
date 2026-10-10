@@ -121,7 +121,10 @@ export const GRANTED_EFFECT_LIBRARY: Record<string, CardEffect | readonly CardEf
   Execute: [
     {
       ...executeActivatedEffect(),
-      condition: { kind: "selfHasKeyword", keyword: "Execute" },
+      condition: {
+        kind: "allOf",
+        conditions: [{ kind: "selfHasKeyword", keyword: "Execute" }, { kind: "selfCanDeclareAttack" }],
+      },
     },
     executeDeleteEffect(),
   ],
