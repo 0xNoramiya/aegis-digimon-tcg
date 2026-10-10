@@ -8,7 +8,7 @@ const ALICE = "00000000-0000-4000-8000-0000000000a1";
 const BOB = "00000000-0000-4000-8000-0000000000b0";
 const matchId = (index: number) => `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`;
 
-describe("027-replay-sharing-history", () => {
+describe("030-replay-sharing-history", () => {
   let pool: Pool;
   beforeEach(async () => {
     pool = createMemoryPool();
@@ -82,7 +82,7 @@ describe("027-replay-sharing-history", () => {
   });
 
   it("applies on an empty database", async () => {
-    expect(await runMigrations(pool, migrations)).toContain("027-replay-sharing-history");
+    expect(await runMigrations(pool, migrations)).toContain("030-replay-sharing-history");
     expect((await pool.query("SELECT * FROM account_recent_matches")).rows).toEqual([]);
   });
 });

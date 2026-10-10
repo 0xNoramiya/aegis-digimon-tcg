@@ -124,16 +124,24 @@ describe.each([0, 1] as const)("Discord 1557855696114946230 — public reveal se
   }
 
   it.each([0, 1])(
-    "Q2992 reserves the only Vemmon in the logged reveal while hand choice %s remains legal",
+    "places the only Vemmon after hand choice %s takes another card with Vemmon in its text",
     async (hand) => {
       const s = await play(["BT18-065", "EX11-066", "BT11-061"]);
-      // Exact reported pool: BT11 matches text, but taking it would prevent the mandatory source placement.
-      await pick(s, [0, 1], hand, [2]);
-      await pick(s, [2], 2, [hand]);
+      await pick(s, [0, 1, 2], hand);
+      await pick(s, [2], 2, [1 - hand]);
       await finish(s, [hand], [2], [1 - hand]);
       expect(s.decisions.filter(({ req }) => req.kind === "selectCards")).toHaveLength(2);
     },
   );
+
+  it("adds the only Vemmon to hand by player choice and places nothing in the logged reveal", async () => {
+    // Product decision for Discord 1557855696114946230: the hand pick is free, and the place step
+    // then uses only the cards that remain. No official ruling covers this exact reveal.
+    const s = await play(["BT18-065", "EX11-066", "BT11-061"]);
+    await pick(s, [0, 1, 2], 2);
+    await finish(s, [2], [], [1, 0]);
+    expect(s.decisions.filter(({ req }) => req.kind === "selectCards")).toHaveLength(1);
+  });
 
   it.each([0, 1])("allows BT11-061 copy %s into hand when the other copy can fill the source slot", async (hand) => {
     const s = await play(["BT11-061", "BT11-061", "BT1-009"]);

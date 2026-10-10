@@ -92,14 +92,11 @@ export function inheritedDigimonHost({
   effectiveKinds,
   inBattleArea,
 }: {
-  definition: Pick<CardDefinition, "kinds" | "dp">;
+  definition: Pick<CardDefinition, "kinds">;
   effectiveKinds: readonly CardKind[];
   inBattleArea: boolean;
 }): boolean {
-  return (
-    effectiveKinds.includes(CardKind.Digimon) ||
-    (inBattleArea && definition.kinds.includes(CardKind.DigiEgg) && (definition.dp ?? 0) > 0)
-  );
+  return effectiveKinds.includes(CardKind.Digimon) || (inBattleArea && definition.kinds.includes(CardKind.DigiEgg));
 }
 
 /** An inherited card's host had to confer the effect before deletion moved both cards. */
@@ -235,9 +232,9 @@ export function passesPlacementGuard(effect: Effect, ctx: EffectContext): boolea
     });
     // The breeding area has one rules-defined exception to the ordinary Digimon-host
     // requirement: BT13-007 King Drasil_7D6 is a Digi-Egg whose inherited effect is active
-    // from its digivolution cards while it remains in breeding. In the battle area, the
-    // separate DP-bearing Digi-Egg exception represents a legal Digimon such as EX2-007
-    // Mother D-Reaper (official Q3276), so its stack can also provide inherited effects.
+    // from its digivolution cards while it remains in breeding. In the battle area, a
+    // Digi-Egg is a Digimon (CR 4-3-1) whether or not it prints DP, so its stack provides
+    // inherited effects (EX2-007 Mother D-Reaper Q3276, BT22-007 Mother Eater).
     return isBattleAreaDigimon || ctx.source.isOnBreedingArea?.() === true;
   }
   // An Option used from a stack still checks its own printed use requirement.

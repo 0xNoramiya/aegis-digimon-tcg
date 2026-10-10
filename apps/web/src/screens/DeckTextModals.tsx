@@ -60,10 +60,14 @@ export function DeckExportModal({
   const [copied, setCopied] = useState(false);
   const [tab, setTab] = useState<ExportTab>("text");
   const copy = () => {
-    navigator.clipboard.writeText(deckText).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+    navigator.clipboard
+      .writeText(deckText)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      // Denied permission or an insecure origin: the text stays selectable in the field.
+      .catch(() => setCopied(false));
   };
   return (
     <div className="deck-modal-layer" role="dialog" aria-modal="true" aria-labelledby="deck-export-title">

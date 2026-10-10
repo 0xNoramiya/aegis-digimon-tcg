@@ -426,6 +426,72 @@ describe("AD1-006 Shoutmon X7", () => {
     expect(s.perm("tamer").stack[0]?.cardId).toBe("BT10-049");
   });
 
+  it("Discord 1558458433970380820: offers hand and newly placed DigiXros materials, not older Tamer cards", async () => {
+    const preferred: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            {
+              card: "AD1-006",
+              dp: 13000,
+              suspended: true,
+              as: "x7",
+              under: [
+                { card: "BT10-009", as: "x4" },
+                { card: "BT10-029", as: "placedStarmons" },
+                { card: "BT10-049", as: "placedBallistamon" },
+                { card: "BT10-029", as: "extraStarmons" },
+                { card: "BT10-049", as: "extraBallistamon" },
+              ],
+            },
+            { card: "BT1-085", as: "tamer", under: [{ card: "BT10-034", as: "olderDorulumon" }] },
+          ],
+          hand: [{ card: "BT10-034", as: "handDorulumon" }],
+        },
+        1: { battleArea: [{ card: "BT1-010", dp: 14000, as: "attacker" }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, declineDigiXros: true, preferInstanceIds: preferred },
+    );
+    preferred.push(
+      s.inst("placedStarmons").instanceId,
+      s.inst("placedBallistamon").instanceId,
+      s.inst("extraStarmons").instanceId,
+      s.inst("extraBallistamon").instanceId,
+    );
+    s.state.turnSeat = 1;
+    const x7InstanceId = s.perm("x7").topCard!.instanceId;
+
+    expect(
+      s.engine.applyIntent(1, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("x7").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () => s.state.players[0]!.battleArea.some((permanent) => permanent.topCard?.cardId === "BT10-009"),
+      5000,
+    );
+
+    const materialPrompt = s.decisions.find(
+      ({ seat, req }) =>
+        seat === 0 && req.kind === "selectCards" && req.options?.candidateInstanceIds?.includes(x7InstanceId),
+    );
+    expect(materialPrompt).toBeDefined();
+    expect([...(materialPrompt!.req.options?.candidateInstanceIds ?? [])].sort()).toEqual(
+      [
+        x7InstanceId,
+        s.inst("handDorulumon").instanceId,
+        s.inst("placedStarmons").instanceId,
+        s.inst("placedBallistamon").instanceId,
+        s.inst("extraStarmons").instanceId,
+        s.inst("extraBallistamon").instanceId,
+      ].sort(),
+    );
+    expect(s.perm("tamer").stack.some((card) => card.instanceId === s.inst("olderDorulumon").instanceId)).toBe(true);
+  });
+
   it("may decline the leave effect and lets the whole stack go to trash", async () => {
     const s = setupEngine(
       {

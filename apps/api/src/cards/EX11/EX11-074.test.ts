@@ -930,8 +930,10 @@ describe("EX11-074 Vortexdramon", () => {
       ).toEqual({ ok: true });
       await settle(() => s.state.pendingDecision === undefined);
     };
+    // A suspended Vortexdramon gets no end-of-turn Vortex prompt, so a decision may not come.
     const resolveTurnEntry = async () => {
-      await settle(() => s.state.pendingDecision !== undefined);
+      const turnSeat = s.state.turnSeat;
+      await settle(() => s.state.pendingDecision !== undefined || s.state.turnSeat !== turnSeat);
       if (s.state.pendingDecision?.kind === "optional") await optional(s.state.pendingDecision.seat as 0 | 1, false);
     };
     const loop = s.engine.startTurnLoop();

@@ -1,5 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CombatWindow, EVENT_CHANNEL, PendingDecision, Phase, type Seat } from "@aegis/shared";
+import {
+  CombatWindow,
+  EFFECT_UNIT_MS,
+  EVENT_CHANNEL,
+  PendingDecision,
+  Phase,
+  eventAnimationMs,
+  type Seat,
+  type ServerEvent,
+} from "@aegis/shared";
+import type { Client } from "colyseus";
 import type { GameEngine } from "../engine/GameEngine.js";
 import { AegisRoom } from "./AegisRoom.js";
 
@@ -163,6 +173,82 @@ describe("room clock enforcement", () => {
     now.mockReturnValue(230_000);
     sync(game);
     expect(game.state.timerRemaining0).toBe(230);
+  });
+
+  function presentingRoom() {
+    const now = vi.spyOn(performance, "now").mockReturnValue(0);
+    const game = room();
+    begin(game, 0);
+    const internals = game as unknown as {
+      seatByClient: Map<string, Seat>;
+      stamp(event: ServerEvent): void;
+      closeBatch(): void;
+      handleAnimationSpeed(client: Client, payload: unknown): void;
+    };
+    internals.seatByClient.set("seat-0", 0);
+    internals.seatByClient.set("seat-1", 1);
+    const seats = [{ sessionId: "seat-0" } as Client, { sessionId: "seat-1" } as Client] as const;
+    const effectBatch = () => {
+      internals.stamp({ kind: "effectTriggered" } as ServerEvent);
+      internals.closeBatch();
+    };
+    sync(game);
+    return { now, game, internals, seats, effectBatch };
+  }
+
+  it("holds a Slow deciding seat until both back-to-back batches have played at Slow", () => {
+    const { now, game, internals, seats, effectBatch } = presentingRoom();
+    internals.handleAnimationSpeed(seats[0], { speed: "slow" });
+    effectBatch();
+    effectBatch();
+    const slowEffectMs = Math.round(EFFECT_UNIT_MS * 1.4);
+    now.mockReturnValue(2 * slowEffectMs - 100);
+    sync(game);
+    expect(game.state.timerActiveSeat).toBe(-1);
+    expect(game.state.timerRemaining0).toBe(60);
+    now.mockReturnValue(2 * slowEffectMs + 3000);
+    sync(game);
+    expect(game.state.timerActiveSeat).toBe(0);
+    expect(game.state.timerRemaining0).toBe(57);
+  });
+
+  it("starts a Fast seat's clock earlier than a Slow seat's for the same batches", () => {
+    const { now, game, internals, seats, effectBatch } = presentingRoom();
+    internals.handleAnimationSpeed(seats[0], { speed: "fast" });
+    internals.handleAnimationSpeed(seats[1], { speed: "slow" });
+    effectBatch();
+    effectBatch();
+    const fastEnd = 2 * eventAnimationMs({ kind: "effectTriggered" }, 0, "fast");
+    const slowEnd = 2 * eventAnimationMs({ kind: "effectTriggered" }, 1, "slow");
+    expect(fastEnd).toBeLessThan(slowEnd);
+    now.mockReturnValue(fastEnd + 1000);
+    sync(game);
+    expect(game.state.timerActiveSeat).toBe(0);
+    expect(game.state.timerRemaining0).toBe(59);
+
+    game.state.pendingDecision = new PendingDecision();
+    game.state.pendingDecision.seat = 1;
+    sync(game);
+    now.mockReturnValue(slowEnd - 100);
+    sync(game);
+    expect(game.state.timerActiveSeat).toBe(-1);
+    expect(game.state.timerRemaining1).toBe(60);
+    now.mockReturnValue(slowEnd + 2000);
+    sync(game);
+    expect(game.state.timerRemaining1).toBe(58);
+  });
+
+  it("defaults to Normal and ignores speeds from spectators and malformed reports", () => {
+    const { now, game, internals, effectBatch } = presentingRoom();
+    const spectator = { sessionId: "spectator" } as Client;
+    internals.handleAnimationSpeed(spectator, { speed: "slow" });
+    internals.handleAnimationSpeed({ sessionId: "seat-0" } as Client, { speed: "turbo" });
+    internals.handleAnimationSpeed({ sessionId: "seat-0" } as Client, null);
+    effectBatch();
+    now.mockReturnValue(EFFECT_UNIT_MS + 1000);
+    sync(game);
+    expect(game.state.timerActiveSeat).toBe(0);
+    expect(game.state.timerRemaining0).toBe(59);
   });
 
   it("never runs before both seats are ready", () => {

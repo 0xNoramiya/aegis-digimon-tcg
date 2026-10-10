@@ -17,7 +17,13 @@ export async function payTrashCost(ctx: EffectContext, cost: Cost, out?: { paidC
     const candidates = candidateTrashCostInstances(ctx, { ...cost.target, filter }, ["hand", "digivolutionCards"]);
     const want = cost.target.count === "all" ? candidates.length : (cost.target.count ?? 1);
     if (want <= 0 || candidates.length < want) return false;
-    const chosen = await pickLoose(ctx, { ...cost.target, filter, count: want }, candidates);
+    const chosen = ctx.costIsTheQuestion
+      ? await ctx.ask.selectCards(ctx, {
+          candidates: candidates.map((candidate) => candidate.instanceId),
+          min: 0,
+          max: want,
+        })
+      : await pickLoose(ctx, { ...cost.target, filter, count: want }, candidates);
     if (chosen.length !== want) return false;
     const chosenCandidates = chosen.map((instanceId) =>
       candidates.find((candidate) => candidate.instanceId === instanceId),
@@ -330,6 +336,8 @@ export async function payTrashCost(ctx: EffectContext, cost: Cost, out?: { paidC
   }
   const ids = topInstanceIds(ctx, await resolvePermanentTargets(ctx, cost.target));
   if (ids.length === 0) return false;
-  await ctx.fx.trash(ids, { byEffectSeat: ctx.source.ownerSeat });
-  return true;
+  // The trash verb skips a permanent that can't be trashed, so it stays in the battle area.
+  // The "by trashing" condition is then unmet and the rest of the effect does not run (Q7247).
+  const moved = await ctx.fx.trash(ids, { byEffectSeat: ctx.source.ownerSeat });
+  return moved.length >= ids.length;
 }

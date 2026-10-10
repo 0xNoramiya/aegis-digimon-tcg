@@ -26,8 +26,8 @@ describe("BT3-093 Davis Motomiya [On Play] reveals deck and adds Digimon to hand
               kind: "RevealAdd",
               revealCount: 3,
               add: [
-                { filter: { colors: ["Blue"] }, optional: true },
-                { filter: { colors: ["Green"] }, optional: true },
+                { filter: { colors: ["Blue"] }, count: 1, to: "hand" },
+                { filter: { colors: ["Green"] }, count: 1, to: "hand" },
               ],
             },
           ],
@@ -35,6 +35,12 @@ describe("BT3-093 Davis Motomiya [On Play] reveals deck and adds Digimon to hand
         { trigger: "Security", actions: [{ kind: "PlayWithoutCost" }] },
       ],
     });
+  });
+
+  it("makes both color slots mandatory (Q1123)", () => {
+    const onPlay = getCompiledCard("BT3-093")!.effects.find((effect) => effect.trigger === "OnPlay")!;
+    const reveal = onPlay.actions[0] as { add: { optional?: boolean; upTo?: boolean }[] };
+    expect(reveal.add.map((slot) => slot.optional === true || slot.upTo === true)).toEqual([false, false]);
   });
 
   it("sets memory to 3 at the start of the turn", async () => {
@@ -150,7 +156,7 @@ describe("BT3-093 Davis Motomiya [On Play] reveals deck and adds Digimon to hand
     );
   });
 
-  it("lets the UI decline both colors and order every revealed card on the deck bottom", async () => {
+  it("refuses to skip a color while a matching card is revealed (Q1123)", async () => {
     const s = setup(
       {
         0: {
@@ -174,11 +180,20 @@ describe("BT3-093 Davis Motomiya [On Play] reveals deck and adds Digimon to hand
     ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision?.kind === "selectCards");
     const blueDecision = s.decisions.at(-1)!.req;
+    expect(blueDecision.options?.min).toBe(1);
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
         decisionId: blueDecision.decisionId,
         response: { kind: "selectCards", instanceIds: [] },
+      }).ok,
+    ).toBe(false);
+    expect(s.state.pendingDecision?.decisionId).toBe(blueDecision.decisionId);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: blueDecision.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("blue").instanceId] },
       }),
     ).toEqual({ ok: true });
     await settle(() => {
@@ -190,37 +205,53 @@ describe("BT3-093 Davis Motomiya [On Play] reveals deck and adds Digimon to hand
       );
     });
     const greenDecision = s.decisions.at(-1)!.req;
+    expect(greenDecision.options?.min).toBe(1);
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
         decisionId: greenDecision.decisionId,
         response: { kind: "selectCards", instanceIds: [] },
-      }),
-    ).toEqual({ ok: true });
-    await settle(() => s.state.pendingDecision?.kind === "orderCards");
-
-    const ordering = s.decisions.at(-1)!.req;
-    const bottomOrder = [s.inst("option").instanceId, s.inst("blue").instanceId, s.inst("green").instanceId];
-    expect(ordering.sourceCardId).toBe("BT3-093");
-    expect(ordering.options?.visibleCards).toEqual([
-      { instanceId: s.inst("blue").instanceId, cardId: "AD1-010" },
-      { instanceId: s.inst("green").instanceId, cardId: "BT1-064" },
-      { instanceId: s.inst("option").instanceId, cardId: "BT1-090" },
-    ]);
+      }).ok,
+    ).toBe(false);
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
-        decisionId: ordering.decisionId,
-        response: { kind: "orderCards", order: bottomOrder },
+        decisionId: greenDecision.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("green").instanceId] },
       }),
     ).toEqual({ ok: true });
-    await settle(
-      () =>
-        s.state.pendingDecision === undefined &&
-        s.state.players[0]!.deck.map((card) => card.instanceId).join(",") === bottomOrder.join(","),
-    );
+    await settle(() => s.state.pendingDecision === undefined && s.state.players[0]!.deck.length === 1);
 
-    expect(s.state.players[0]!.deck.map((card) => card.instanceId)).toEqual(bottomOrder);
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual(
+      expect.arrayContaining([s.inst("blue").instanceId, s.inst("green").instanceId]),
+    );
+    expect(s.state.players[0]!.deck.map((card) => card.instanceId)).toEqual([s.inst("option").instanceId]);
+  });
+
+  it("still requires the green card when no blue Digimon is revealed", async () => {
+    const s = setup({
+      0: {
+        hand: [{ card: "BT3-093", as: "davis" }],
+        deck: [
+          { card: "BT1-090", as: "option" },
+          { card: "BT1-064", as: "green" },
+          { card: "BT1-090", as: "secondOption" },
+        ],
+      },
+    });
+    s.state.memory = 10;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("davis").instanceId })).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    const greenDecision = s.decisions.at(-1)!.req;
+    expect(greenDecision.options?.candidateInstanceIds).toEqual([s.inst("green").instanceId]);
+    expect(greenDecision.options?.min).toBe(1);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: greenDecision.decisionId,
+        response: { kind: "selectCards", instanceIds: [] },
+      }).ok,
+    ).toBe(false);
   });
 
   it("plays itself from security", async () => {
@@ -292,6 +323,40 @@ describe("BT3-093 Davis Motomiya — KB Q&A rulings", () => {
     expect(handIds).toEqual(expect.arrayContaining([blueId, greenId]));
     expect(handIds).not.toContain(secondBlueId);
     expect(s.state.players[0]!.deck.map((card) => card.instanceId)).toEqual([secondBlueId]);
+  });
+
+  it("may hold a lone blue and green Lighdramon for the green slot, which must then take it (Q4704)", async () => {
+    const s = setup({
+      0: {
+        hand: [{ card: "BT3-093", as: "davis" }],
+        deck: [
+          { card: "BT8-053", as: "lighdramon" },
+          { card: "BT1-090", as: "option" },
+          { card: "BT1-090", as: "secondOption" },
+        ],
+      },
+    });
+    const lighdramonId = s.inst("lighdramon").instanceId;
+
+    const bluePick = await playDavisAndAwaitBluePick(s);
+    expect(bluePick.options?.candidateInstanceIds).toEqual([lighdramonId]);
+    expect(bluePick.options?.min).toBe(0);
+    answerPick(s, bluePick.decisionId, []);
+
+    const greenPick = await nextPendingPickAfter(s, bluePick.decisionId);
+    expect(greenPick?.options?.candidateInstanceIds).toEqual([lighdramonId]);
+    expect(greenPick?.options?.min).toBe(1);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: greenPick!.decisionId,
+        response: { kind: "selectCards", instanceIds: [] },
+      }).ok,
+    ).toBe(false);
+    answerPick(s, greenPick!.decisionId, [lighdramonId]);
+    await settle(() => s.state.pendingDecision === undefined && s.state.players[0]!.deck.length === 2);
+
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toContain(lighdramonId);
   });
 
   it("may take Lighdramon as the blue card and leave Veemon unadded (Q4704)", async () => {

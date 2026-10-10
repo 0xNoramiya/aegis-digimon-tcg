@@ -238,7 +238,7 @@ describe("P-117 Veemon — KB Q&A rulings", () => {
     await settle(() => s.state.pendingDecision?.kind === "selectCards");
     const bluePick = s.decisions.at(-1)!.req;
     expect(bluePick.options?.candidateInstanceIds).toEqual(expect.arrayContaining([lighdramonId, veemonId]));
-    expect(bluePick.options?.min ?? 0).toBe(0);
+    expect(bluePick.options?.min).toBe(1);
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",

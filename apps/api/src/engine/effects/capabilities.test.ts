@@ -5936,6 +5936,9 @@ describe("CAP-C-02: cost.kind placeAsSecurity + position faceUpBottom (BT19-048)
       },
       addSecurity: async (seat: Seat, instanceIds: string[], opts: unknown) => {
         addSecurityCalls.push({ seat, instanceIds, opts });
+        const battleArea = players[seat]!.battleArea;
+        const placed = battleArea.findIndex((permanent) => instanceIds.includes(permanent.topCard!.instanceId));
+        if (placed >= 0) battleArea.splice(placed, 1);
       },
     } as unknown as Primitives;
     const ask: DecisionApi = {

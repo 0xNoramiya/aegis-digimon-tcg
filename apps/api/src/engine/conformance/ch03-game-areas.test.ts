@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ArraySchema, Encoder } from "@colyseus/schema";
+import { ArraySchema, Decoder, Encoder } from "@colyseus/schema";
 import { GameState, PlayerState, CardInstance, Permanent, PRIVATE_VIEW_TAG, type Seat } from "@aegis/shared";
 import { cite } from "./_kb.js";
 import "./not-testable.js";
@@ -483,8 +483,7 @@ describe("§3-7 The Security Stack (comprehensive-0066)", () => {
     expect(opponentView.has(state.players[1]!.security)).toBe(false); // hidden while face-down
   });
 
-  it("3-7-4: a face-up security card becomes public information (revealed to the opponent's view)", async () => {
-    const { revealSecurityCardToOpponent } = await import("../state/visibility.js");
+  it("3-7-4: a face-up security card becomes public information (revealed to the opponent's view)", () => {
     const state = new GameState();
     state.players = new ArraySchema<PlayerState>();
     for (const seat of [0, 1] as const) {
@@ -499,23 +498,25 @@ describe("§3-7 The Security Stack (comprehensive-0066)", () => {
     card.ownerSeat = 1;
     card.faceUp = true; // already flipped face-up by a prior effect
     state.players[1]!.security.push(card);
-    // eslint-disable-next-line no-new
-    new Encoder(state);
+    const faceDown = new CardInstance();
+    faceDown.instanceId = "sec-still-hidden";
+    faceDown.cardId = "AD1-002";
+    faceDown.ownerSeat = 1;
+    faceDown.faceUp = false;
+    state.players[1]!.security.push(faceDown);
+    syncPublicCounts(state);
+    const encoder = new Encoder(state);
 
+    // The opponent reads face-up security from the public projection; the owner's raw
+    // security array, which also holds the face-down cards, never reaches them.
     const opponentView = buildStateView(state, 0);
-    // buildStateView already reveals any pre-existing face-up security card to the opponent.
-    expect(opponentView.has(card)).toBe(true);
-
-    // The incremental-reveal helper is also directly callable (the flip-time seam).
-    const freshCard = new CardInstance();
-    freshCard.instanceId = "sec-flip-now";
-    freshCard.cardId = "AD1-001";
-    freshCard.ownerSeat = 1;
-    freshCard.faceUp = false;
-    state.players[1]!.security.push(freshCard);
-    const view2 = buildStateView(state, 0);
-    expect(view2.has(freshCard)).toBe(false);
-    revealSecurityCardToOpponent(view2, freshCard);
-    expect(view2.has(freshCard)).toBe(true);
+    const decoder = new Decoder(new GameState());
+    const iterator = { offset: 0 };
+    encoder.encodeAll(iterator);
+    decoder.decode(encoder.encodeAllView(opponentView, iterator.offset, iterator));
+    const seen = decoder.state.players[1]!;
+    expect(seen.securityView[0]).toMatchObject({ instanceId: "sec-flipped", cardId: "AD1-001", faceUp: true });
+    expect(seen.securityView[1]).toMatchObject({ instanceId: "", cardId: "", faceUp: false });
+    expect(seen.security).toHaveLength(0);
   });
 });

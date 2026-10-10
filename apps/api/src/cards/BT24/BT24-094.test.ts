@@ -1,9 +1,9 @@
-import { CARD_ID_VIEW_TAG, EffectTiming, getCardDefinition } from "@aegis/shared";
-import { Encoder } from "@colyseus/schema";
+import { EffectTiming, getCardDefinition } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import { advance } from "../../engine/testkit/advance.js";
 import { observe } from "../../engine/testkit/observe.js";
+import { identityVisibility } from "../ST24/tamerStack.testSupport.js";
 import { compiled } from "./BT24-094.js";
 import "../index.js";
 
@@ -257,9 +257,7 @@ describe("BT24-094 Central Town: Throne Room — KB Q&A rulings", () => {
     expect(s.state.players[0]!.security.map(({ instanceId, faceUp }) => ({ instanceId, faceUp }))).toEqual([
       { instanceId: townId, faceUp: true },
     ]);
-    // eslint-disable-next-line no-new -- a StateView only tracks state attached to an encoder, as a room's is.
-    new Encoder(s.state);
-    expect(s.engine.makeStateView(1)!.hasTag(s.inst("town"), CARD_ID_VIEW_TAG)).toBe(true);
+    expect(identityVisibility(s, s.inst("town"))).toEqual({ owner: true, opponent: true });
 
     s.state.turnSeat = 1;
     expect(

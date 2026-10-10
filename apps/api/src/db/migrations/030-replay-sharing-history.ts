@@ -2,9 +2,10 @@ import type { Migration, Queryable } from "../migrator.js";
 
 // Shapes driven by pg-mem, the in-memory Postgres the tests run on: statements run one per query
 // (see migration 002), and the backfill ranks and serializes rows in JavaScript because pg-mem has
-// neither window functions nor JSON builders.
+// neither window functions nor JSON builders. Numbered 027 before the merge with main; `IF NOT EXISTS`
+// lets a database that ran it under that id start.
 const STATEMENTS = [
-  `CREATE TABLE account_recent_matches (
+  `CREATE TABLE IF NOT EXISTS account_recent_matches (
      account_id uuid NOT NULL REFERENCES accounts(id),
      room_id text NOT NULL,
      match_id text NOT NULL,
@@ -12,7 +13,7 @@ const STATEMENTS = [
      record jsonb NOT NULL,
      PRIMARY KEY (account_id, room_id)
    )`,
-  "CREATE INDEX account_recent_matches_order ON account_recent_matches(account_id, finished_at DESC, room_id DESC)",
+  "CREATE INDEX IF NOT EXISTS account_recent_matches_order ON account_recent_matches(account_id, finished_at DESC, room_id DESC)",
 ];
 
 /** Matches kept per account when the history starts. Mirrors `MATCH_HISTORY_LIMIT` as it was at release. */
@@ -44,7 +45,7 @@ type CompetitiveMatch = {
 type HistoryRow = { accountId: string; roomId: string; matchId: string; finishedAt: number; record: string };
 
 export const replaySharingHistory: Migration = {
-  id: "027-replay-sharing-history",
+  id: "030-replay-sharing-history",
   up: async (db) => {
     for (const statement of STATEMENTS) await db.query(statement);
     await backfillCompetitiveHistory(db);

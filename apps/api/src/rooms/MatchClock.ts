@@ -6,12 +6,27 @@ import {
   MATCH_TIMER_OPPONENT_REFILL_SECONDS,
 } from "@aegis/shared";
 
-/** Server monotonic-time accounting. Client animation reports cannot extend a pause. */
+/**
+ * The furthest ahead a seat's presentation timeline may run. Honest play never comes near
+ * it: it takes a minute of animation queued faster than it plays. It stops a client that
+ * fires actions far faster than anyone can watch them from banking unlimited free time.
+ */
+export const PRESENTATION_BACKLOG_MAX_MS = 60_000;
+
+/**
+ * Server monotonic-time accounting.
+ *
+ * Each seat has its own presentation timeline, `presentEnd`: when that seat's screen
+ * finishes the batches sent so far, at the seat's own Effect speed. A seat asked to act is
+ * charged from `max(now, presentEnd[seat])`, so it never pays for animations still playing.
+ * The server computes the timeline from the shared animation table; the client reports
+ * nothing but its speed.
+ */
 export class MatchClock {
   private remaining: [number, number];
   private lastTime: number;
   private runningSeat: Seat | undefined;
-  private pauseUntil = 0;
+  private presentEnd: [number, number] = [0, 0];
   private lastTurn = 0;
 
   constructor(
@@ -39,7 +54,7 @@ export class MatchClock {
     }
     const chargedSeat = this.runningSeat;
     if (chargedSeat !== undefined) {
-      const elapsed = Math.max(0, now - Math.max(this.lastTime, this.pauseUntil));
+      const elapsed = Math.max(0, now - Math.max(this.lastTime, this.presentEnd[chargedSeat]));
       this.remaining[chargedSeat] = Math.max(0, this.remaining[chargedSeat] - elapsed);
     }
     this.lastTime = now;
@@ -63,13 +78,21 @@ export class MatchClock {
     }
     this.runningSeat = inputSeat;
     this.publish();
-    this.state.timerActiveSeat = inputSeat !== undefined && now >= this.pauseUntil ? inputSeat : -1;
+    this.state.timerActiveSeat = inputSeat !== undefined && now >= this.presentEnd[inputSeat] ? inputSeat : -1;
   }
 
-  /** A fixed server-granted grace period for the just-published animation batch. */
-  pauseForPresentation(now: number): void {
-    this.pauseUntil = now + 2000;
+  /** Each seat's screen plays the batch that just closed, after what it still has queued. */
+  presentBatch(now: number, durationMs: readonly [number, number]): void {
+    for (const seat of [0, 1] as const) {
+      const end = Math.max(this.presentEnd[seat], now) + durationMs[seat];
+      this.presentEnd[seat] = Math.min(end, now + PRESENTATION_BACKLOG_MAX_MS);
+    }
     this.state.timerActiveSeat = -1;
+  }
+
+  /** A reconnecting client catches up without replaying, so its screen is current now. */
+  resetPresentation(seat: Seat, now: number): void {
+    this.presentEnd[seat] = Math.min(this.presentEnd[seat], now);
   }
 
   private publish(): void {

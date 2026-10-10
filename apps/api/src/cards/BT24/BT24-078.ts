@@ -18,7 +18,7 @@ export const compiled: CompiledCard = {
               },
             ],
           },
-          fireCondition: {
+          activationCondition: {
             kind: "zoneCount",
             seat: "opponent",
             zone: "trash",

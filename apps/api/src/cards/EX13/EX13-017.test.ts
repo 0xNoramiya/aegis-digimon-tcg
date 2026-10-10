@@ -208,6 +208,51 @@ describe("EX13-017 Veemon", () => {
     assertNoLoudGap(s);
   });
 
+  it("feedback #23: offers UlforceVeedramon (X Antibody) beside the production reveal and adds it", async () => {
+    const ulforceX = getCardDefinition("BT12-029")!;
+    expect(ulforceX.nameEn).toBe("UlforceVeedramon (X Antibody)");
+    expect(ulforceX.types).toEqual(["Holy Warrior", "Royal Knight", "X Antibody"]);
+
+    const s = setupEngine({
+      0: {
+        hand: [{ card: cardId, as: "source" }],
+        deck: [
+          { card: "BT22-023", as: "aeroVeedramon" },
+          { card: "P-138", as: "veedramon" },
+          { card: "BT12-029", as: "ulforceX" },
+        ],
+      },
+    });
+    s.state.memory = 3;
+    await s.ready();
+
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("source").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    const pick = s.state.pendingDecision!;
+    const payload = JSON.parse(pick.payloadJson) as { candidateInstanceIds?: string[]; max?: number };
+    expect([...(payload.candidateInstanceIds ?? [])].sort()).toEqual(
+      [s.inst("aeroVeedramon").instanceId, s.inst("veedramon").instanceId, s.inst("ulforceX").instanceId].sort(),
+    );
+    expect(payload.max).toBe(1);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: pick.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("ulforceX").instanceId] },
+      }),
+    ).toEqual({ ok: true });
+
+    await settle(() => s.state.pendingDecision === undefined);
+
+    expect(s.state.players[0]!.hand.map(({ instanceId }) => instanceId)).toEqual([s.inst("ulforceX").instanceId]);
+    expect(s.state.players[0]!.deck.map(({ instanceId }) => instanceId).sort()).toEqual(
+      [s.inst("aeroVeedramon").instanceId, s.inst("veedramon").instanceId].sort(),
+    );
+    assertNoLoudGap(s);
+  });
+
   it("discriminates the filter: a [Royal Base] trait and plain Digimon are all bottomed", async () => {
     const s = setupEngine(
       {

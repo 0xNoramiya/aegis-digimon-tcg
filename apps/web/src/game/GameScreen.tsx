@@ -77,6 +77,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CardKind,
   PRESENTATION_CHANNEL,
+  ANIMATION_SPEED_CHANNEL,
+  type AnimationSpeedReport,
   SERIES_CHANNEL,
   getCardDefinition,
   type DecisionResponse,
@@ -121,6 +123,7 @@ import { buildInstanceIndex, instancePermanentId } from "./decisionModel";
 import { digivolveBasePermanentIds } from "./digivolveModel";
 import { buildMatchLog, type LogLine } from "./matchLog";
 import { useMatchCues } from "./useMatchCues";
+import { useAnimationSpeedReport } from "./useAnimationSpeedReport";
 import type { PresentationPacing, PresentationProbe } from "./presentationProbe";
 import { TIMINGS } from "./timings";
 import { loadReconnectSession } from "../net/reconnectSession";
@@ -461,13 +464,12 @@ export function GameScreen({
   // an answer the server refused.
   const mirroredWindow = state ? mirroredCombatWindow(state, viewerSeat) : null;
   const decisionPendingForViewer = decision?.seat === viewerSeat && decision.kind !== "mulligan";
-  const timedViewerQuestion =
-    state?.matchTimer === true && (decisionPendingForViewer || openCombatWindowForBarrier !== null);
+  const viewerQuestionPending = decisionPendingForViewer || openCombatWindowForBarrier !== null;
 
   // Every cue the server provokes: sounds, panels, banners, the security clash,
   // the draw flights. The hook sequences them on the animation queue; this
   // component only renders what it reports.
-  const presentationCues = useMatchCues({
+  const cues = useMatchCues({
     snapshots,
     batches: cueBatches,
     phaseEvents: events,
@@ -478,16 +480,13 @@ export function GameScreen({
     collapseNarration: collapseNotices,
     // A security check the server stopped to ask the viewer something cannot close until it
     // is answered, so the cue sequence needs to know a question is waiting.
-    decisionPending: decisionPendingForViewer || openCombatWindowForBarrier !== null,
+    decisionPending: viewerQuestionPending,
     // The barrier catches the presentation up to the board the question was asked about
     // before the prompt opens. An older server sends no revision, and no barrier is raised.
     decisionStateVersion: decisionPendingForViewer
       ? decision.stateVersion
       : (openCombatWindowForBarrier?.stateVersion ?? undefined),
     ...(decisionPendingForViewer && decision.sourceCardId ? { decisionSourceCardId: decision.sourceCardId } : {}),
-    ...(decisionPendingForViewer && typeof decision.options?.timing === "string"
-      ? { decisionTiming: decision.options.timing }
-      : {}),
     targetDecision:
       decisionPendingForViewer &&
       isFieldTargetDecision(
@@ -530,37 +529,6 @@ export function GameScreen({
     devProbe,
     presentationPacing,
   });
-  // Answering on the live board also requires live cards: presentation holds can
-  // hide a newly played target or paint a security reveal over the selection.
-  // An end-of-turn answer belongs after the preceding attack. Keep its finite
-  // security scene visible before offering Engage, even when the match is timed.
-  const timedViewerAnswer = timedViewerQuestion && !presentationCues.securityRevealPending;
-  const cues = timedViewerAnswer
-    ? {
-        ...presentationCues,
-        securityBreak: null,
-        securityClash: null,
-        securityBranch: null,
-        optionBranch: null,
-        zoneShowcase: null,
-        revealShowcase: null,
-        fieldClash: null,
-        phaseBanner: null,
-        pendingPermanentIds: new Set<string>(),
-        heldPhaseState: undefined,
-        heldBlowState: undefined,
-        heldSecurityEffectState: undefined,
-        heldDrawState: undefined,
-        heldBreedingState: undefined,
-        heldMemory: undefined,
-        heldDeletions: new Map<number, never>(),
-        heldStackStrips: new Map<number, never>(),
-        heldTrashArrivals: new Map<number, never>(),
-        heldHandArrivals: new Map<number, never>(),
-        heldSuspendedIds: new Set<string>(),
-        heldSecurityCounts: new Map<Seat, number>(),
-      }
-    : presentationCues;
   const you = state?.players[viewerSeat];
   const opp = state?.players[otherSeat(viewerSeat)];
   /**
@@ -573,13 +541,11 @@ export function GameScreen({
    * server changes independently of narration, except during the turn-start draw hold.
    * They are the same object whenever the queue is caught up.
    */
-  const shownState = timedViewerAnswer
-    ? state
-    : selectPresentedState({
-        live: state,
-        snapshots: snapshots ?? [],
-        presentedStateVersion: cues.presentedStateVersion,
-      });
+  const shownState = selectPresentedState({
+    live: state,
+    snapshots: snapshots ?? [],
+    presentedStateVersion: cues.presentedStateVersion,
+  });
 
   const seats =
     shownState && you && opp
@@ -610,6 +576,11 @@ export function GameScreen({
     : decisionPendingForViewer
       ? decision.decisionId
       : openCombatWindowForBarrier?.key;
+  const sendAnimationSpeed = useMemo(
+    () => (room ? (report: AnimationSpeedReport) => room.send(ANIMATION_SPEED_CHANNEL, report) : undefined),
+    [room],
+  );
+  useAnimationSpeedReport({ enabled: !spectating, send: sendAnimationSpeed });
   useReadoutAudio({
     memory: shownState
       ? displayMemory(
@@ -971,7 +942,7 @@ export function GameScreen({
     viewerSeat,
     isMyTurn,
     mirroredWindow,
-    decisionPending: Boolean(decision || state.pendingDecision),
+    decision,
     openCombatWindow: openCombatWindowForBarrier,
     answeredCombatWindowKeyRef,
     rolledBackRejectionSeqRef,

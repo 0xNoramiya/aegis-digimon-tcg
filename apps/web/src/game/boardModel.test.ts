@@ -22,6 +22,7 @@ import {
   mirroredCombatWindow,
   lastRejectedCombatAnswer,
   ownAlliancePromptCardId,
+  type MirroredCombatWindow,
 } from "./combatWindowModel";
 import {
   decisionCardColors,
@@ -153,6 +154,28 @@ describe("buildInstanceZoneIndex", () => {
     expect(zones.get("greymon-card")).toBe("opponentBattle");
     expect(zones.get("agumon-card")).toBe("opponentDigivolutionCards");
   });
+
+  it("files the opponent's face-up security cards from the public projection", () => {
+    const state = {
+      players: [
+        { battleArea: [], trash: [], hand: [], security: [], securityView: [] },
+        {
+          battleArea: [],
+          trash: [],
+          hand: [],
+          security: [],
+          securityView: [
+            { instanceId: "", cardId: "", artId: "", faceUp: false },
+            { instanceId: "face-up-security", cardId: "BT1-010", artId: "BT1-010", faceUp: true },
+          ],
+        },
+      ],
+    } as unknown as import("@aegis/shared").GameState;
+
+    const zones = buildInstanceZoneIndex(state, 0);
+    expect(zones.get("face-up-security")).toBe("security");
+    expect(zones.has("")).toBe(false);
+  });
 });
 
 describe("activeBlockWindow", () => {
@@ -227,6 +250,27 @@ describe("activeCounterWindow", () => {
         false,
       ),
     ).toBeNull();
+  });
+
+  it("does not render a mirrored Counter window that offers nothing", () => {
+    const mirrored: MirroredCombatWindow = {
+      key: "counter:attacker",
+      kind: "counter",
+      seat: 1,
+      attackerPermanentId: "attacker",
+      permanentId: "",
+      eligiblePermanentIds: [],
+      eligibleCounters: [],
+      mustBlock: false,
+    };
+    expect(activeCounterWindow([], 1, false, { ...mirrored, eligibleCounters: [] })).toBeNull();
+    expect(activeCounterWindow([], 1, true, { ...mirrored, eligibleCounters: [] })).toBeNull();
+    expect(
+      activeCounterWindow([], 1, false, {
+        ...mirrored,
+        eligibleCounters: [{ instanceId: "ace", effectKey: "counter", description: "Blast Digivolve" }],
+      }),
+    ).toMatchObject({ eligibleCounters: [{ instanceId: "ace" }] });
   });
 
   it("returns a real Counter choice only to its defending seat", () => {

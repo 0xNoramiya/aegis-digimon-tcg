@@ -54,6 +54,35 @@ limited to 2048 MB; Chromium consumes additional memory. No CI is configured.
 
 These cover desktop Chromium. They do not claim full lobby/account coverage,
 mobile-device validation, cross-browser parity, or screenshot baseline comparison.
+
+## Mobile cross-browser lane
+
+`playwright.mobile.config.ts` runs every `mobile-*.spec.ts` under four emulated
+phones: `mobile-chrome` and `mobile-brave` (Pixel 7, Chromium engines),
+`mobile-firefox` (Gecko with a Firefox Android user agent) and `mobile-safari`
+(iPhone 15, WebKit). Run one project per invocation so only one engine is in
+memory:
+
+```sh
+pnpm --filter @aegis/web exec playwright install chromium firefox webkit
+NODE_OPTIONS=--max-old-space-size=2048 pnpm --filter @aegis/web exec playwright test \
+  -c playwright.mobile.config.ts --project=mobile-safari
+```
+
+Brave must be installed; set `AEGIS_BRAVE_PATH` when it is not at the default
+macOS path. Set `AEGIS_E2E_WEB_PORT`, `AEGIS_E2E_EDGE_PORT` and
+`AEGIS_E2E_SERVER_PORT` to run beside another copy of the suite.
+
+`mobile-performance.spec.ts` records frame pacing (requestAnimationFrame deltas,
+so it works in every engine), load timing, DOM size, Chromium heap and horizontal
+overflow for the deck builder, the effect prompt gallery and a live match, and
+fails on page errors. Each run prints `[perf]` JSON lines. Budgets catch freezes,
+not small regressions: the host is a desktop running a dev build.
+
+Limits: Gecko has no `isMobile` emulation, and Playwright WebKit on macOS draws
+classic scrollbars where iOS overlays them. Long-press inspection needs Chromium's
+CDP touch input, so those steps are skipped in Firefox and WebKit after the steps
+before them have run. Emulation does not replace a real device.
 Card artwork uses the application's normal external image URLs.
 
 Failure screenshots, traces, and DOM context are in `apps/web/test-results/` and

@@ -82,14 +82,6 @@ export const compiled: CompiledCard = {
           sourceFilter: {
             isSelfRef: true,
           },
-          fireCondition: {
-            kind: "zoneCount",
-            seat: "mine",
-            zone: "security",
-            op: "lte",
-            value: 3,
-            raw: "the [Alphamon] digivolution requirement is available",
-          },
           actions: [
             {
               kind: "Digivolve",

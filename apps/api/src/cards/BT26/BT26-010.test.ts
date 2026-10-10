@@ -240,7 +240,7 @@ describe("BT26-010 Roleplaymon", () => {
           security: ["BT1-009"],
         },
       },
-      { autoSelectCards: true, autoDeclineOptional: true },
+      { autoSelectCards: true, autoAcceptOptional: true },
     );
     await s.ready();
     const defenderId = s.perm("defender").permanentId;
@@ -277,16 +277,12 @@ describe("BT26-010 Roleplaymon", () => {
         target: { kind: "permanent", permanentId: defenderId },
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.pendingDecision?.kind === "selectCards");
-    const pending = s.state.pendingDecision!;
-    expect(
-      s.engine.applyIntent(0, {
-        type: "respondDecision",
-        decisionId: pending.decisionId,
-        response: { kind: "selectCards", instanceIds: [] },
-      }),
-    ).toEqual({ ok: true });
     await settle(() => s.state.players[0]!.battleArea.length === 0 && s.state.players[1]!.battleArea.length === 0);
+    expect(
+      s.decisions.filter(
+        ({ req }) => req.kind === "optional" && req.promptText.includes("doesn't leave the battle area"),
+      ),
+    ).toHaveLength(1);
   });
 
   it("an equal-DP battle offers each eligible loser its own Detach and both can survive", async () => {
@@ -297,7 +293,7 @@ describe("BT26-010 Roleplaymon", () => {
           battleArea: [{ card: "BT26-019", as: "defender", dp: 4000, suspended: true, linked: [{ card: CARD_ID }] }],
         },
       },
-      { autoSelectCards: true },
+      { autoSelectCards: true, autoAcceptOptional: true },
     );
     expect(
       s.engine.applyIntent(0, {
@@ -309,7 +305,46 @@ describe("BT26-010 Roleplaymon", () => {
     await settle(() => s.perm("attacker").linked.length === 0 && s.perm("defender").linked.length === 0);
     expect(s.state.players[0]!.battleArea).toHaveLength(1);
     expect(s.state.players[1]!.battleArea).toHaveLength(1);
-    expect(s.decisions.filter(({ req }) => req.kind === "selectCards")).toHaveLength(2);
+    expect(
+      s.decisions.filter(
+        ({ req }) => req.kind === "optional" && req.promptText.includes("doesn't leave the battle area"),
+      ),
+    ).toHaveLength(2);
+  });
+
+  it("asks for exactly 1 of two eligible links after Detach is accepted (GitHub #5427)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            {
+              card: "BT26-019",
+              as: "attacker",
+              dp: 2000,
+              linked: [
+                { card: CARD_ID, as: "first" },
+                { card: "BT26-063", as: "second" },
+              ],
+            },
+          ],
+        },
+        1: { battleArea: [{ card: "BT26-019", as: "defender", dp: 7000, suspended: true }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("defender").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("attacker").linked.length === 1 && s.state.pendingDecision === undefined);
+    const pick = s.decisions.find(({ req }) => req.kind === "selectCards")!.req;
+    expect(pick.options?.min).toBe(1);
+    expect(pick.options?.max).toBe(1);
+    expect(s.state.players[0]!.battleArea).toHaveLength(1);
   });
 
   it("does not allow Detach payment with a link without the noted Seven Code trait", async () => {

@@ -449,10 +449,12 @@ export function installAudioLifecycle(): () => void {
   const gesture = (event: Event) => {
     if (event.isTrusted) unlockAudio();
   };
-  // Touch activation is granted at pointerup; native Opera media may reject
-  // playback attempted by the earlier pointerdown capture listener.
-  const mediaGesture = (event: Event) => {
-    if (mediaAudio && event.isTrusted) unlockAudio();
+  // A touch grants user activation at pointerup/touchend, not pointerdown, so a
+  // first tap would otherwise leave the context suspended (Android) and native
+  // Opera media may reject playback attempted by the earlier capture listener.
+  const touchGesture = (event: Event) => {
+    if (!event.isTrusted) return;
+    if (mediaAudio || (event as PointerEvent).pointerType !== "mouse") unlockAudio();
   };
   const visibility = () => {
     if (mediaAudio) {
@@ -471,7 +473,8 @@ export function installAudioLifecycle(): () => void {
         .catch(() => undefined);
   };
   document.addEventListener("pointerdown", gesture, true);
-  document.addEventListener("pointerup", mediaGesture, true);
+  document.addEventListener("pointerup", touchGesture, true);
+  document.addEventListener("touchend", touchGesture, true);
   document.addEventListener("keydown", gesture, true);
   document.addEventListener("visibilitychange", visibility);
   let restoreMusic = false;
@@ -489,7 +492,8 @@ export function installAudioLifecycle(): () => void {
   window.addEventListener("pageshow", pageShow);
   return () => {
     document.removeEventListener("pointerdown", gesture, true);
-    document.removeEventListener("pointerup", mediaGesture, true);
+    document.removeEventListener("pointerup", touchGesture, true);
+    document.removeEventListener("touchend", touchGesture, true);
     document.removeEventListener("keydown", gesture, true);
     document.removeEventListener("visibilitychange", visibility);
     window.removeEventListener("pagehide", pageHide);

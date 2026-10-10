@@ -119,18 +119,8 @@ describe("BT20-072 Phantomon", () => {
         }),
       ).toEqual({ ok: true });
       await settle(() => s.perm("subject").isSuspended);
+      // The attacker is already suspended, so its ＜Execute＞ has no attack to offer (feedback #5).
       advance(s.engine).endMainPhaseIfOpen(0);
-      const refusalResult = inherited
-        ? undefined
-        : await (async () => {
-            await settle(() => s.state.pendingDecision?.kind === "optional");
-            return s.engine.applyIntent(0, {
-              type: "respondDecision",
-              decisionId: s.state.pendingDecision!.decisionId,
-              response: { kind: "optional", accept: false },
-            });
-          })();
-      expect(refusalResult).toEqual(inherited ? undefined : { ok: true });
       await advance(s.engine).waitForMainPhase(1);
       expect(
         s.engine.applyIntent(1, {
@@ -184,14 +174,6 @@ describe("BT20-072 Phantomon", () => {
     ).toEqual({ ok: true });
     await settle(() => s.perm("phantomon").isSuspended);
     advance(s.engine).endMainPhaseIfOpen(0);
-    await settle(() => s.state.pendingDecision?.kind === "optional");
-    expect(
-      s.engine.applyIntent(0, {
-        type: "respondDecision",
-        decisionId: s.state.pendingDecision!.decisionId,
-        response: { kind: "optional", accept: false },
-      }),
-    ).toEqual({ ok: true });
     await advance(s.engine).waitForMainPhase(1);
     expect(
       s.engine.applyIntent(1, {

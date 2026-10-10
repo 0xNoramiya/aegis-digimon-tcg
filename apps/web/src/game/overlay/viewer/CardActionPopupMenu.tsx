@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
@@ -70,21 +70,14 @@ export function CardActionPopupMenu({
           animation: "aegis-pop 120ms ease-out",
         }}
       >
-        <button
-          autoFocus
-          style={item}
-          onClick={onViewStack}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ds-fill)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-        >
+        <button autoFocus style={item} onClick={onViewStack} {...hoverBackground("var(--ds-fill)")}>
           <Icons.Search size={15} /> {t("overlay.viewStack")}
         </button>
         {canAttack ? (
           <button
             style={{ ...item, color: "var(--ds-danger)" }}
             onClick={onAttack}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ds-danger-soft)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            {...hoverBackground("var(--ds-danger-soft)")}
           >
             <Icons.Swords size={15} /> {t("overlay.attack")}
           </button>
@@ -93,19 +86,13 @@ export function CardActionPopupMenu({
           <button
             style={{ ...item, color: "var(--ds-danger)" }}
             onClick={onVortex}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ds-danger-soft)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            {...hoverBackground("var(--ds-danger-soft)")}
           >
             <Icons.Swords size={15} /> {t("overlay.vortexAttack")}
           </button>
         ) : null}
         {link ? (
-          <button
-            style={item}
-            onClick={link.onLink}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ds-fill)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
+          <button style={item} onClick={link.onLink} {...hoverBackground("var(--ds-fill)")}>
             <Icons.Link2 size={15} /> {t("overlay.link")}
           </button>
         ) : null}
@@ -116,8 +103,7 @@ export function CardActionPopupMenu({
             onClick={effect.onActivate}
             title={effect.label}
             aria-label={`${t("game.activateEffect")}: ${effect.label}`}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ds-fill)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            {...hoverBackground("var(--ds-fill)")}
           >
             <span aria-hidden="true">⚡</span> {t("game.activateMainEffect")}
           </button>
@@ -126,4 +112,16 @@ export function CardActionPopupMenu({
     </>,
     document.body,
   );
+}
+
+// Touch taps emulate mouseenter without a matching leave, so only a mouse highlights.
+function hoverBackground(color: string) {
+  return {
+    onPointerEnter: (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (event.pointerType === "mouse") event.currentTarget.style.background = color;
+    },
+    onPointerLeave: (event: ReactPointerEvent<HTMLButtonElement>) => {
+      event.currentTarget.style.background = "transparent";
+    },
+  };
 }

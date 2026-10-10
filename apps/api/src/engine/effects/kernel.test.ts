@@ -387,7 +387,7 @@ describe("passesPlacementGuard (inherited/linked vs printed)", () => {
     expect(passesPlacementGuard(eff, ctx)).toBe(true);
   });
 
-  it("only treats a DP-bearing Digi-Egg host in the battle area as a Digimon", () => {
+  it("treats any Digi-Egg host in the battle area as a Digimon (CR 4-3-1, feedback #9)", () => {
     const stackSource = fakeSource({ instanceId: "ess#1", permanent: () => permanent });
     const eff = staticModifier({
       source: stackSource,
@@ -398,7 +398,7 @@ describe("passesPlacementGuard (inherited/linked vs printed)", () => {
     });
     const ctx = fakeContext(stackSource, digiEggTop);
 
-    expect(passesPlacementGuard(eff, ctx)).toBe(false);
+    expect(passesPlacementGuard(eff, ctx)).toBe(true);
 
     const motherTop: Partial<GameAccess> = {
       definitionOf: () => ({
@@ -452,12 +452,11 @@ describe("builders carry flags through to the Effect", () => {
 });
 
 it.each([
-  { kinds: [CardKind.Tamer], dp: undefined, allowed: false },
-  { kinds: [CardKind.Digimon], dp: 4000, allowed: true },
-  { kinds: [CardKind.Tamer, CardKind.Digimon], dp: undefined, allowed: true },
-  { kinds: [CardKind.DigiEgg], dp: 15000, allowed: true },
-  { kinds: [CardKind.DigiEgg], dp: undefined, allowed: false },
-])("#5410: deleted host effective kinds $kinds preserve inherited eligibility=$allowed", ({ kinds, dp, allowed }) => {
+  { kinds: [CardKind.Tamer], allowed: false },
+  { kinds: [CardKind.Digimon], allowed: true },
+  { kinds: [CardKind.Tamer, CardKind.Digimon], allowed: true },
+  { kinds: [CardKind.DigiEgg], allowed: true },
+])("#5410: deleted host effective kinds $kinds preserve inherited eligibility=$allowed", ({ kinds, allowed }) => {
   const source = fakeSource({ instanceId: "ess", permanent: () => undefined });
   const effect = onPlay({
     source,
@@ -477,7 +476,7 @@ it.each([
         topCardId: "EX13-074",
         stackInstanceIds: ["ess"],
         inheritedHostIsDigimon: inheritedDigimonHost({
-          definition: { kinds, dp: dp ?? 0 },
+          definition: { kinds },
           effectiveKinds: kinds,
           inBattleArea: true,
         }),
@@ -488,12 +487,12 @@ it.each([
 });
 
 it("#5410: the Digi-Egg exception preserves native identity when effective kinds change", () => {
-  const definition = { kinds: [CardKind.DigiEgg], dp: 15000 };
+  const definition = { kinds: [CardKind.DigiEgg] };
   expect(inheritedDigimonHost({ definition, effectiveKinds: [CardKind.Tamer], inBattleArea: true })).toBe(true);
   expect(inheritedDigimonHost({ definition, effectiveKinds: [CardKind.Tamer], inBattleArea: false })).toBe(false);
   expect(
     inheritedDigimonHost({
-      definition: { kinds: [CardKind.Tamer], dp: 0 },
+      definition: { kinds: [CardKind.Tamer] },
       effectiveKinds: [CardKind.Digimon],
       inBattleArea: true,
     }),

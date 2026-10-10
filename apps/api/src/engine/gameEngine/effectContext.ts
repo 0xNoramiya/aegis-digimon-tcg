@@ -596,11 +596,13 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       engine.effectResolutionDepth = 0;
       engine.optionResolutionDepth = 0;
       engine.optionMainDepth = 0;
+      engine.attackStepPauseDepth += 1;
       try {
         await flushDeferredTimingWindows(engine);
         await body();
         await settleBetweenEffects(engine);
       } finally {
+        engine.attackStepPauseDepth -= 1;
         engine.effectResolutionDepth = pausedDepth;
         engine.optionResolutionDepth = pausedOptionDepth;
         engine.optionMainDepth = pausedOptionMainDepth;

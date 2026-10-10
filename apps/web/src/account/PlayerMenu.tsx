@@ -113,6 +113,12 @@ export function PlayerMenu({
           <Icons.Settings size={18} />
           {t("menu.settings")}
         </button>
+        {signedIn ? (
+          <button onClick={() => go("myFeedback")}>
+            <Icons.Megaphone size={18} />
+            {t("myFeedback.title")}
+          </button>
+        ) : null}
         {signedIn && isAdmin ? (
           <button onClick={() => go("feedback")}>
             <Icons.MessageSquare size={18} />

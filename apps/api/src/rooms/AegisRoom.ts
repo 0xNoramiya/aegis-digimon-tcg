@@ -23,6 +23,11 @@ import {
   EVENT_CHANNEL,
   DECISION_CHANNEL,
   PRESENTATION_CHANNEL,
+  ANIMATION_SPEED_CHANNEL,
+  DEFAULT_EFFECT_SPEED,
+  eventAnimationMs,
+  isEffectSpeed,
+  type EffectSpeed,
   CHAT_CHANNEL,
   CHAT_COOLDOWN_MS,
   parseChatMessage,
@@ -60,6 +65,14 @@ import { hasBlockedWord, maskBlockedWords } from "../moderation/blockedWords.js"
 
 /** Hand-laid boards must never be reachable by a real player. */
 const DEV_SCENARIOS_ENABLED = process.env.NODE_ENV !== "production";
+/** Dev scenarios that reproduce timed-match presentation, so they keep the match clock against a bot. */
+const TIMED_DEV_SCENARIOS: ReadonlySet<DevScenarioId> = new Set<DevScenarioId>([
+  "arena-match-timer",
+  "arena-chronomon-engage-order",
+  "arena-github-5422-magnamon-timed-security",
+  "arena-discord-speed-security-scene-stuck",
+  "arena-feedback28-security-reveal-before-prompt",
+]);
 const WAITING_ROOM_TIMEOUT_SECONDS = positiveSeconds(process.env.AEGIS_WAITING_ROOM_TIMEOUT_SECONDS, 30 * 60);
 
 const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
@@ -225,8 +238,9 @@ interface OpenBatch {
   emitted: number;
   lastSeq: number;
   recipient?: Client;
-  presentation?: boolean;
   events: SequencedServerEvent[];
+  /** How long each seat's screen spends on the events, at that seat's Effect speed. */
+  presentationMs: [number, number];
 }
 
 /**
@@ -240,6 +254,8 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private engine!: GameEngine;
   private spectatorClients = new Set<string>();
   private seatByClient = new Map<string, Seat>(); // sessionId -> seat
+  /** Each seat's Effect speed, which sets how long the seat's clock waits for a batch to play. */
+  private animationSpeed: [EffectSpeed, EffectSpeed] = [DEFAULT_EFFECT_SPEED, DEFAULT_EFFECT_SPEED];
   private presentationLogWindows = new Map<Seat, { start: number; count: number }>();
   /** Keyed by `seat:<n>` for players and by session id for spectators. */
   private lastChatAtBySender = new Map<string, number>();
@@ -753,6 +769,10 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         this.handlePresentationReport(client, payload);
         return;
       }
+      if (type === ANIMATION_SPEED_CHANNEL) {
+        this.handleAnimationSpeed(client, payload);
+        return;
+      }
       if (type === CHAT_CHANNEL) {
         this.handleChat(client, payload);
         return;
@@ -766,7 +786,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     });
 
     // Optional clocks belong to casual/private rooms. Ignore crafted ranked/tournament options.
-    const devTimer = this.devScenario === "arena-match-timer" || this.devScenario === "arena-chronomon-engage-order";
+    const devTimer = this.devScenario !== undefined && TIMED_DEV_SCENARIOS.has(this.devScenario);
     this.matchClock = new MatchClock(
       this.state,
       {
@@ -1346,6 +1366,9 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       const reconnectedClient = await this.allowReconnection(client, this.RECONNECT_GRACE_SECONDS);
       this.debug(`[AegisRoom] reconnected sessionId=${client.sessionId} seat=${seat}`);
       this.withBatch(() => this.engine.handleReconnect(seat));
+      this.syncMatchClock();
+      this.matchClock?.resetPresentation(seat, performance.now());
+      this.syncMatchClock();
       if (!this.matchStartRequested) {
         // Unlocking a full room lists it in matchmaking, where every join fails with "already full".
         if (this.seatByClient.size + this.occupiedBotSeats().length < 2) await this.unlock();
@@ -1493,7 +1516,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // has no seatByClient entry for applyIntent to route through) — starting the
     // match directly here is the bot seat's stand-in for readiness.
     // Legacy bot joins can promote a waiting casual room to practice mode.
-    if (this.devScenario !== "arena-match-timer" && this.devScenario !== "arena-chronomon-engage-order") {
+    if (this.devScenario === undefined || !TIMED_DEV_SCENARIOS.has(this.devScenario)) {
       this.state.matchTimer = false;
       this.state.timerActiveSeat = -1;
       this.matchClockInterval?.clear();
@@ -1571,6 +1594,22 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   }
 
   /**
+   * After each patch, each view forgets the cards whose move out of its sight that patch
+   * carried (into a deck, or into the opponent's hand or face-down security). Otherwise a
+   * later change to such a card, such as a deck reveal, is encoded for a refId the client
+   * already dropped. Colyseus has no after-patch hook, and its patch timer calls this method.
+   */
+  override broadcastPatch(): boolean {
+    const hasChanges = super.broadcastPatch();
+    if (!this.engine) return hasChanges;
+    for (const client of this.clients) {
+      if (client.view === undefined) continue;
+      this.engine.forgetWithheldCards(client.view, this.seatByClient.get(client.sessionId));
+    }
+    return hasChanges;
+  }
+
+  /**
    * Run one entry into the engine as a single batch of events.
    *
    * Every path from this room into `GameEngine` that can emit goes through here, so the
@@ -1591,7 +1630,14 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
 
   private openBatch(recipient?: Client): OpenBatch {
     this.batchSeq += 1;
-    this.currentBatch = { id: `batch-${this.batchSeq}`, emitted: 0, lastSeq: 0, recipient, events: [] };
+    this.currentBatch = {
+      id: `batch-${this.batchSeq}`,
+      emitted: 0,
+      lastSeq: 0,
+      recipient,
+      events: [],
+      presentationMs: [0, 0],
+    };
     return this.currentBatch;
   }
 
@@ -1606,20 +1652,8 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     const batch = this.currentBatch ?? this.openImplicitBatch();
     this.eventSeq += 1;
     batch.emitted += 1;
-    if (
-      [
-        "phaseChanged",
-        "cardPlayed",
-        "cardsMoved",
-        "digivolved",
-        "attackDeclared",
-        "securityRevealed",
-        "securityChecked",
-        "matchStarted",
-      ].includes(event.kind)
-    ) {
-      batch.presentation = true;
-    }
+    for (const seat of [0, 1] as const)
+      batch.presentationMs[seat] += eventAnimationMs(event, seat, this.animationSpeed[seat]);
     batch.lastSeq = this.eventSeq;
     const stamped = { ...event, seq: this.eventSeq, batch: batch.id, stateVersion: this.state.stateVersion };
     if (!batch.recipient && this.replayRecording) batch.events.push(stamped);
@@ -1655,8 +1689,8 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     if (!batch || batch.emitted === 0) return;
     if (!batch.recipient) {
       this.syncMatchClock();
-      if (batch.presentation) this.matchClock?.pauseForPresentation(performance.now());
       this.state.stateVersion += 1;
+      this.matchClock?.presentBatch(performance.now(), batch.presentationMs);
     }
     const closed: ServerEvent = {
       kind: "batchClosed",
@@ -1827,6 +1861,14 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
 
   private debug(...data: unknown[]): void {
     withMatchLog(this.state.matchLogId, this.roomId, () => log(...data));
+  }
+
+  /** Spectators and unseated clients have no clock; an unknown speed is ignored. */
+  private handleAnimationSpeed(client: Client, payload: unknown): void {
+    const seat = this.seatByClient.get(client.sessionId);
+    if (seat === undefined) return;
+    const speed = (payload as { speed?: unknown } | null)?.speed;
+    if (isEffectSpeed(speed)) this.animationSpeed[seat] = speed;
   }
 
   private handlePresentationReport(client: Client, payload: unknown): void {

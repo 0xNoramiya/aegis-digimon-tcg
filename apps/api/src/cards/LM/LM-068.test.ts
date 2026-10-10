@@ -44,6 +44,8 @@ describe("LM-068 HeavyMetaldramon / Black Sabbath", () => {
         {
           kind: "SubTrigger",
           event: "whenAttacking",
+          fireCondition: { kind: "isYourTurn" },
+          activationCondition: { kind: "zoneCount", seat: "mine", zone: "hand", op: "lte", value: 4 },
           actions: [{ kind: "UseOptionWithoutCost", from: ["trash"], payCost: true, reduceCostBy: 3 }],
         },
       ],
@@ -404,6 +406,56 @@ describe("LM-068 HeavyMetaldramon / Black Sabbath", () => {
 
     expect(s.state.players[0]!.trash.map(({ cardId }) => cardId)).toContain("LM-068");
     expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard.cardId)).toEqual(["BT1-020"]);
+  });
+
+  it("feedback #29: triggers at 5 cards in hand and activates after a simultaneous When Attacking trashes to 3 (CR 15-8-3-9)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "EX11-049", as: "punkmon" }],
+          hand: [FILLER, FILLER, FILLER, FILLER, FILLER],
+          trash: [{ card: "LM-068", as: "blackSabbath" }],
+          deck: [FILLER, FILLER],
+        },
+        1: {
+          battleArea: [{ card: "BT1-020", as: "levelFive" }],
+          security: [FILLER],
+          deck: [FILLER, FILLER],
+        },
+      },
+      {
+        autoAcceptOptional: true,
+        autoSelectCards: true,
+        autoChooseOption: true,
+        autoOrderTriggers: true,
+        declinePrompts: ["digivolve"],
+      },
+    );
+    s.state.turnSeat = 0;
+    s.state.memory = 3;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("punkmon").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some((event) => event.kind === "attackEnded"));
+
+    const effectEvents = s.events.flatMap((event) =>
+      event.kind === "effectTriggered" || event.kind === "effectResolved"
+        ? [`${event.kind}:${event.sourceCardId}`]
+        : [],
+    );
+    expect(effectEvents.indexOf("effectResolved:EX11-049")).toBeLessThan(
+      effectEvents.indexOf("effectTriggered:LM-068"),
+    );
+    expect(s.state.players[0]!.hand).toHaveLength(3);
+    expect(s.state.players[0]!.trash.map(({ cardId }) => cardId)).toContain("LM-068");
+    expect(s.state.players[1]!.battleArea).toHaveLength(0);
+    expect(s.state.memory).toBe(0);
   });
 
   it("stays in trash when the attacker carries none of the three traits", async () => {

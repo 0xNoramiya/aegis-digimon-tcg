@@ -416,4 +416,37 @@ describe("BT24-083 Hiroko Sagisaka — KB Q&A rulings", () => {
       expect(s.state.memory).toBe(memory);
     },
   );
+  it("feedback #36: does not play a card when Jupitermon keeps Hiroko on the field (Q7247)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT24-083", as: "hiroko" },
+            { card: "BT24-101", as: "jupitermon" },
+          ],
+          hand: [{ card: "BT24-013", as: "eligible" }],
+          security: [
+            { card: "BT4-022", as: "payment" },
+            { card: "BT4-023", as: "remaining" },
+          ],
+        },
+        1: { security: ["BT4-024", "BT4-025"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoOrderCards: true },
+    );
+    s.state.memory = 4;
+    await s.ready();
+    const turn = s.engine.runOneTurn();
+    await advance(s.engine).waitForMainPhase(0);
+    await settle(() => s.state.pendingDecision === undefined);
+
+    expect(s.state.players[0]!.battleArea.map((permanent) => permanent.permanentId)).toContain(
+      s.perm("hiroko").permanentId,
+    );
+    expect(s.state.players[0]!.security.map((card) => card.instanceId)).not.toContain(s.inst("payment").instanceId);
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toContain(s.inst("eligible").instanceId);
+    expect(s.state.memory).toBe(4);
+    advance(s.engine).endMainPhaseIfOpen(0);
+    await turn;
+  });
 });

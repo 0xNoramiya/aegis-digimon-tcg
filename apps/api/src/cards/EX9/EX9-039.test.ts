@@ -53,7 +53,7 @@ describe("EX9-039", () => {
   it("explicitly declines an available attack without suspending the attacker", async () => {
     const s = setupEngine(
       {
-        0: { hand: [{ card: "EX9-039", as: "source" }, "BT1-009"] },
+        0: { battleArea: [{ card: "BT1-009", as: "attacker" }], hand: [{ card: "EX9-039", as: "source" }, "BT1-009"] },
         1: { battleArea: [{ card: "BT1-009", as: "target", suspended: true }] },
       },
       { autoSelectCards: true, autoOrderTriggers: true },
@@ -64,14 +64,17 @@ describe("EX9-039", () => {
       ok: true,
     });
     await settle(() => s.state.pendingDecision?.kind === "optional");
+    const placementDecisionId = s.state.pendingDecision!.decisionId;
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
-        decisionId: s.state.pendingDecision!.decisionId,
+        decisionId: placementDecisionId,
         response: { kind: "optional", accept: false },
       }),
     ).toEqual({ ok: true });
-    await settle();
+    await settle(
+      () => s.state.pendingDecision?.kind === "optional" && s.state.pendingDecision.decisionId !== placementDecisionId,
+    );
     const attackDecision = s.state.pendingDecision!;
     expect(
       s.engine.applyIntent(0, {
@@ -82,6 +85,7 @@ describe("EX9-039", () => {
     ).toEqual({ ok: true });
     await settle();
     expect(s.events.some(({ kind }) => kind === "attackDeclared")).toBe(false);
+    expect(s.perm("attacker").isSuspended).toBe(false);
     expect(s.perm("source").isSuspended).toBe(false);
     expect(s.state.players[1]!.battleArea).toHaveLength(1);
     expect(s.state.pendingDecision).toBeUndefined();
@@ -144,7 +148,7 @@ describe("EX9-039", () => {
     expect(s.state.pendingDecision).toBeUndefined();
   });
 
-  it("offers the separate attack after declining hand placement but cannot attack the play turn without Rush", async () => {
+  it("skips the separate attack prompt when its only Digimon was played this turn without Rush", async () => {
     const s = setupEngine(
       {
         0: { hand: [{ card: "EX9-039", as: "source" }, "BT1-009"] },
@@ -167,21 +171,9 @@ describe("EX9-039", () => {
         response: { kind: "optional", accept: false },
       }),
     ).toEqual({ ok: true });
-    await settle(
-      () =>
-        s.state.pendingDecision?.kind === "optional" &&
-        s.state.pendingDecision.decisionId !== placementDecision.decisionId,
-    );
-    const attackDecision = s.state.pendingDecision!;
-    expect(
-      s.engine.applyIntent(0, {
-        type: "respondDecision",
-        decisionId: attackDecision.decisionId,
-        response: { kind: "optional", accept: true },
-      }),
-    ).toEqual({ ok: true });
-    await settle(() => s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "EX9-039"));
+    await settle(() => s.state.pendingDecision === undefined);
 
+    expect(s.decisions.filter(({ req }) => req.kind === "optional" && req.sourceCardId === "EX9-039")).toHaveLength(1);
     expect(source.stack).toHaveLength(0);
     expect(s.state.players[0]!.hand.map(({ cardId }) => cardId)).toEqual(["BT1-009"]);
     expect(s.state.players[1]!.battleArea).toHaveLength(1);

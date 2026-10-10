@@ -12,30 +12,26 @@ import type { PrimitivesContext } from "./context.js";
 export function createCombatVerbs(pc: PrimitivesContext) {
   const { engine, access, continuous, effectSeatStack, player, state } = pc;
 
-  const forceAttack = async (
-    attackerPermanentId: string,
-    opts?: ForceAttackOptions & {
-      /** Replaces the target prompt; `undefined` declines the attack before declaration. */
-      chooseTarget?: (candidates: string[]) => Promise<string | undefined>;
-    },
-  ): Promise<void> => {
+  const PLAYER = "player";
+
+  /** The attack targets `forceAttack` would offer right now; empty when it would do nothing. */
+  const forceAttackCandidates = (attackerPermanentId: string, opts?: ForceAttackOptions): string[] => {
     const combat = engine.combat;
-    if (combat === undefined) return; // no combat port (test engine): narrate nothing
-    if (combat.isAttacking) return; // do not nest an effect-driven attack inside another
+    if (combat === undefined) return []; // no combat port (test engine): narrate nothing
+    if (combat.isAttacking) return []; // do not nest an effect-driven attack inside another
     const attacker = access.permanentById(attackerPermanentId);
-    if (attacker === undefined) return;
+    if (attacker === undefined) return [];
     const controllerSeat = attacker.controllerSeat;
     if (
       canAttackerDeclare(access, controllerSeat, attacker, continuous, opts?.vortex, opts?.withoutSuspending) !== null
     ) {
-      return;
+      return [];
     }
     const opponentSeat = access.opponentOf(controllerSeat);
 
     // Reuse declared-attack target legality so forced attacks cannot offer a
     // protected defender, an unsuspended defender without a matching grant, or a
     // player forbidden by the effect/restriction (BT9-100, KB Q1904/Q1905).
-    const PLAYER = "player";
     const playerTarget: AttackTarget = { kind: "player" };
     const legalEnemyIds = access
       .battleAreaPermanents(opponentSeat)
@@ -51,14 +47,30 @@ export function createCombatVerbs(pc: PrimitivesContext) {
           ) === null,
       )
       .map((permanent) => permanent.permanentId);
-    const candidates = [
+    return [
       ...(opts?.attackPlayer !== false &&
       canAttackTarget(access, controllerSeat, attacker, playerTarget, continuous, opts?.vortex) === null
         ? [PLAYER]
         : []),
       ...(opts?.attackPlayerOnly === true ? [] : legalEnemyIds),
     ];
-    if (candidates.length === 0) return;
+  };
+
+  const canForceAttack = (attackerPermanentId: string, opts?: ForceAttackOptions): boolean =>
+    forceAttackCandidates(attackerPermanentId, opts).length > 0;
+
+  const forceAttack = async (
+    attackerPermanentId: string,
+    opts?: ForceAttackOptions & {
+      /** Replaces the target prompt; `undefined` declines the attack before declaration. */
+      chooseTarget?: (candidates: string[]) => Promise<string | undefined>;
+    },
+  ): Promise<void> => {
+    const combat = engine.combat;
+    const attacker = access.permanentById(attackerPermanentId);
+    const candidates = forceAttackCandidates(attackerPermanentId, opts);
+    if (combat === undefined || attacker === undefined || candidates.length === 0) return;
+    const controllerSeat = attacker.controllerSeat;
     const promptTarget = async (): Promise<string> => {
       const chosen = await engine.ask.selectInstances(
         controllerSeat,
@@ -142,7 +154,7 @@ export function createCombatVerbs(pc: PrimitivesContext) {
   /**
    * Redirect the currently-resolving attack onto one of `candidatePermanentIds`
    * (chosen by the source's controller). The reserved id `"player"` represents the
-   * opponent player, allowing cards that say "another opponent's Digimon or the player".
+   * defending player, allowing cards that say "another opponent's Digimon or the player".
    */
   const redirectAttack: Primitives["redirectAttack"] = async (candidatePermanentIds, opts) => {
     const combat = engine.combat;
@@ -154,13 +166,20 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     // chooser may decline (min 0) and the attack proceeds unchanged.
     const chooserSeat = opts?.chooserSeat ?? effectSeatStack.at(-1) ?? engine.controllerSeat();
     const optional = opts?.optional ?? false;
+    const attackerId = combat.currentAttackerId;
+    const attackerSeat = attackerId === undefined ? undefined : access.permanentById(attackerId)?.controllerSeat;
+    // "player" is always the defending player. Clients label the sentinel from the chooser's
+    // side ("player" = opponent's security, "mine" = your security), so a defending chooser
+    // (EX5-054 "this Digimon or the player") must be offered "mine".
+    const playerPromptId = attackerSeat !== undefined && chooserSeat !== attackerSeat ? "mine" : "player";
+    const promptCandidates = candidates.map((id) => (id === "player" ? playerPromptId : id));
     let chosen: string[];
     if (candidates.length === 1 && !optional) {
-      chosen = candidates;
+      chosen = promptCandidates;
     } else {
       chosen = await engine.ask.selectInstances(
         chooserSeat,
-        candidates,
+        promptCandidates,
         optional ? 0 : 1,
         1,
         "Choose the new target of the attack.",
@@ -168,8 +187,7 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     }
     const pick = chosen[0];
     if (pick === undefined) return; // declined (or no pick): attack proceeds unchanged
-    const attackerId = combat.currentAttackerId;
-    combat.redirectTarget(pick === "player" ? { kind: "player" } : { kind: "permanent", permanentId: pick });
+    combat.redirectTarget(pick === playerPromptId ? { kind: "player" } : { kind: "permanent", permanentId: pick });
     // The attack target was just switched — notify reactive watchers ("when this Digimon's
     // attack target is switched", BT11-008). The attacker is the event subject; a watcher's
     // sourceFilter isSelfRef gates it to its own attack.
@@ -181,5 +199,5 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     }
   };
 
-  return { forceAttack, blitzAttack, isAttackResolving, redirectAttack };
+  return { forceAttack, canForceAttack, blitzAttack, isAttackResolving, redirectAttack };
 }

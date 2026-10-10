@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
             "[Main] Reveal the top 6 cards of your deck. You may add 2 cards with [Blue Flare] in their traits among them to your hand, and play 1 [Kiriha Aonuma] among them without paying its memory cost. Place the rest at the bottom of your deck in any order.",
           kind: "RevealAdd",
           revealCount: 6,
+          reserveForLaterSlots: true,
           add: [
             {
               filter: {

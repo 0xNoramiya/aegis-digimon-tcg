@@ -724,6 +724,10 @@ export function evaluateCondition(ctx: EffectContext, cond: Condition): boolean 
       const sp = ctx.source.permanent();
       return sp !== undefined && sp.isSuspended !== true;
     }
+    case "selfCanDeclareAttack": {
+      const self = ctx.source.permanent();
+      return self !== undefined && (ctx.game.canDeclareAttack?.(self) ?? true);
+    }
     case "selfDpAtLeast": {
       const self = ctx.source.permanent();
       return (ctx.game.effectiveDP?.(self?.permanentId ?? "") ?? self?.currentDP ?? -1) >= (cond.value ?? 0);

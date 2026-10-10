@@ -55,20 +55,6 @@ export const compiled: CompiledCard = {
             },
           ],
         },
-        {
-          kind: "SubTrigger",
-          event: "whenEffectRemovesFromSecurity",
-          sourceFilter: { controller: "any" },
-          oncePerTurnKey: "BT26-103/security-removed-dp",
-          actions: [
-            {
-              kind: "ModifyDP",
-              target: { filter: opponentDigimon, count: 1 },
-              amount: -15000,
-              duration: "untilOpponentTurnEnd",
-            },
-          ],
-        },
       ],
     },
   ],

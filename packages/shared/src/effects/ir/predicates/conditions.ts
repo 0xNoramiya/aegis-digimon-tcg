@@ -63,6 +63,7 @@ export interface Condition {
     | "selfDigivolutionStackHasSameLevelPair" // 2 or more SOURCE stack cards share a level (BT23-102)
     | "selfIsSuspended" // EX3-042, EX8-043
     | "selfUnsuspended" // P-199 only offers its by-suspending reduction while it can still be suspended
+    | "selfCanDeclareAttack" // ＜Execute＞ offers its end-of-turn attack only while this Digimon could attack
     | "selfDpAtLeast"
     | "allOf"
     | "anyOf"

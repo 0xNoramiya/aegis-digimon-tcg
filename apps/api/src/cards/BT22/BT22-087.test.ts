@@ -178,3 +178,36 @@ describe("BT22-087 Torajiro Asuka — KB Q&A rulings", () => {
     expect(deletion).toBeGreaterThan(torajiroResolved);
   });
 });
+
+describe("BT22-087 — optional By cost (Discord 1558408701633757194)", () => {
+  it("stays unsuspended and changes no DP when the cost is declined", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT22-087", as: "torajiro" },
+            { card: "BT21-009", as: "host" },
+          ],
+          hand: [{ card: "BT22-050", as: "link" }],
+        },
+        1: { battleArea: [{ card: "BT1-009", as: "opponent" }] },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "linkCard",
+        instanceId: s.inst("link").instanceId,
+        targetPermanentId: s.perm("host").permanentId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("host").linked.length === 1 && s.state.pendingDecision === undefined, 400);
+
+    expect(s.decisions.some(({ req }) => req.kind === "optional")).toBe(true);
+    expect(s.perm("torajiro").isSuspended).toBe(false);
+    expect(s.perm("opponent").currentDP).toBe(3000);
+  });
+});

@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DecisionRequest, GameState, ServerEvent } from "@aegis/shared";
 import { useMatchCues, type MatchCueAnchors } from "./useMatchCues";
 import { singleServerBatch, type ServerBatch } from "../net/serverBatches";
-import type { PresentationPacing } from "./presentationProbe";
+import type { PresentationPacing, PresentationStepEvent } from "./presentationProbe";
 import {
   activePacing,
   DEFAULT_PACING,
@@ -316,7 +316,6 @@ describe("resumed effect results", () => {
           presentationPacing: "sequential",
           decisionPending: question,
           decisionSourceCardId: question ? "AD1-002" : undefined,
-          decisionTiming: "EndOfYourTurn",
         }),
       { initialProps: { fed: [] as readonly ServerBatch[], question: false } },
     );
@@ -361,6 +360,178 @@ describe("resumed effect results", () => {
     await advance(10_000);
     expect(view.result.current.securityRevealPending).toBe(false);
   });
+  it.each([true, false])(
+    "GitHub #5422: a would-leave prompt does not play its draw over the security reveal (timer: %s)",
+    async (matchTimer) => {
+      const anchors = geometry();
+      const state = { ...BOARD, matchTimer } as GameState;
+      const steps: { id: string; phase: string; version?: number; skipping: boolean }[] = [];
+      const devProbe = {
+        onStep: (event: PresentationStepEvent) =>
+          steps.push({
+            id: event.step.id,
+            phase: event.phase,
+            version: event.batch?.stateVersion,
+            skipping: event.skipping,
+          }),
+      };
+      const view = renderHook(
+        ({ fed, question }: { fed: readonly ServerBatch[]; question: boolean }) =>
+          useMatchCues({
+            batches: fed,
+            state,
+            viewerSeat: VIEWER,
+            mulliganOpen: false,
+            anchors,
+            onActionRejected: () => {},
+            presentationPacing: "sequential",
+            decisionPending: question,
+            decisionSourceCardId: question ? "BT13-040" : undefined,
+            devProbe,
+          }),
+        { initialProps: { fed: [] as readonly ServerBatch[], question: false } },
+      );
+      await advance(0);
+      const attack: ServerEvent = {
+        kind: "attackDeclared",
+        seat: 0,
+        attackerPermanentId: "perm-a",
+        attackerCardId: "BT13-040",
+        target: { kind: "player" },
+      };
+      const reveal: ServerEvent = {
+        kind: "securityRevealed",
+        seat: 1,
+        revealedCardId: "EX13-035",
+        attackerPermanentId: "perm-a",
+        attackerDP: 10000,
+        securityCardDP: 13000,
+        hasSecurityEffect: false,
+        isDigimon: true,
+        securityCountBefore: 4,
+      };
+      const wouldLeave: ServerEvent = {
+        kind: "effectTriggered",
+        seat: 0,
+        sourceCardId: "BT13-040",
+        sourceInstanceId: "src-a",
+        sourcePermanentId: "perm-a",
+        effectKey: "replacement/80",
+        description: "[All Turns] When this Digimon would leave the battle area, ＜Draw 1＞.",
+        timing: "wouldLeavePlay",
+      } as ServerEvent;
+      view.rerender({
+        fed: [
+          singleServerBatch([attack], 1),
+          singleServerBatch([reveal], 2),
+          singleServerBatch([wouldLeave, draw("magnamon-draw")], 3),
+        ],
+        question: true,
+      });
+      await advance(10_000);
+      // The battle hold ends on a poll after the question has taken the board, so its own
+      // finish is bookkeeping rather than the end of what the viewer sees.
+      const securityEnd = steps.reduce(
+        (last, step, index) =>
+          step.phase === "finished" &&
+          step.id.startsWith("security-") &&
+          !step.id.startsWith("security-clash-hold-") &&
+          step.version === 2
+            ? index
+            : last,
+        -1,
+      );
+      const early = steps
+        .slice(0, Math.max(securityEnd, 0))
+        .filter((step) => step.phase === "finished" && step.version === 3 && !step.id.startsWith("security-"))
+        .map((step) => step.id);
+      expect(securityEnd).toBeGreaterThanOrEqual(0);
+      expect(early).toEqual([]);
+      const handOver = steps.findIndex((step) => step.phase === "started" && step.id.startsWith("security-decision-"));
+      const drawShown = steps.findIndex((step) => step.phase === "started" && step.id.startsWith("draw-presentation-"));
+      expect(handOver).toBeGreaterThanOrEqual(0);
+      expect(drawShown).toBeGreaterThan(handOver);
+      // A match timer no longer fast-forwards anything: every beat plays at its own length.
+      expect(steps.filter((step) => step.skipping).map((step) => step.id)).toEqual([]);
+    },
+  );
+  it.each([true, false])(
+    "Discord game-speed report: a check closed without a battle leaves the stage (timer: %s)",
+    async (matchTimer) => {
+      const anchors = geometry();
+      const state = { ...BOARD, matchTimer } as GameState;
+      const view = renderHook(
+        ({ fed, question }: { fed: readonly ServerBatch[]; question: boolean }) =>
+          useMatchCues({
+            batches: fed,
+            state,
+            viewerSeat: VIEWER,
+            mulliganOpen: false,
+            anchors,
+            onActionRejected: () => {},
+            presentationPacing: "sequential",
+            decisionPending: question,
+            decisionSourceCardId: question ? "BT20-083" : undefined,
+          }),
+        { initialProps: { fed: [] as readonly ServerBatch[], question: false } },
+      );
+      await advance(0);
+      const attack: ServerEvent = {
+        kind: "attackDeclared",
+        seat: 1,
+        attackerPermanentId: "perm-x",
+        attackerCardId: "BT26-048",
+        target: { kind: "player" },
+      };
+      const reveal: ServerEvent = {
+        kind: "securityRevealed",
+        seat: 0,
+        revealedCardId: "BT23-054",
+        attackerPermanentId: "perm-x",
+        attackerDP: 24000,
+        securityCardDP: 7000,
+        hasSecurityEffect: false,
+        isDigimon: true,
+        securityCountBefore: 2,
+      };
+      // A removal reaction asks the defender a question before the battle, and its answer
+      // deletes the attacker, so the check closes with the revealed card trashed unfought.
+      const opened = [singleServerBatch([attack], 1), singleServerBatch([reveal], 2)];
+      view.rerender({ fed: opened, question: true });
+      // The question must not cost the viewer the reveal itself.
+      await advance(TIMINGS.securityArm + TIMINGS.shieldBreak + TIMINGS.securityBreakHold + 100);
+      expect(view.result.current.securityClash?.revealed.cardId).toBe("BT23-054");
+      // In match 2e2a3231 the answer, and so the close, came 11 s after the reveal.
+      await advance(3_000);
+      const attackerDeleted: ServerEvent = {
+        kind: "cardsMoved",
+        from: "battleArea",
+        to: "trash",
+        instanceIds: ["opp-x"],
+        deletedPermanents: [
+          { permanentId: "perm-x", instanceId: "opp-x", cardId: "BT26-048", artId: "BT26-048", seat: 1 },
+        ],
+      } as ServerEvent;
+      const closed: ServerEvent = {
+        kind: "securityChecked",
+        seat: 0,
+        artId: "BT23-054",
+        revealedCardId: "BT23-054",
+        resolution: "trashed",
+      };
+      view.rerender({
+        fed: [
+          ...opened,
+          singleServerBatch([attackerDeleted], 3),
+          singleServerBatch([closed], 4),
+          singleServerBatch([{ kind: "attackEnded", seat: 1, attackerPermanentId: "perm-x" } as ServerEvent], 5),
+        ],
+        question: false,
+      });
+      await advance(10_000);
+      expect(view.result.current.securityClash).toBeNull();
+    },
+  );
   it("expires a previous copy's toast while the new copy waits for target confirmation", async () => {
     setBasePacing(PACING_BY_STYLE.stacked);
     const anchors = geometry();
@@ -812,6 +983,139 @@ describe("sequential pacing through a security check", () => {
       "break",
       "BT4-093 Security",
     ]);
+    expect(view.result.current.decisionAnimationsPending).toBe(false);
+  });
+});
+
+describe("an Option an attack effect uses, in the same burst as the security check", () => {
+  // Follow-up to feedback #29 (LM-068 Black Sabbath used from the trash): the check's shield
+  // break replaced the centre-stage track and dropped the Option's showcase. Its clause was
+  // never read, so the deletion and the effect unit waited out their gate ceilings.
+  it("reads the Option's clause and plays its deletion before the shield breaks", async () => {
+    const state = {
+      ...BOARD,
+      players: [
+        {
+          ...BOARD.players[0]!,
+          battleArea: [{ permanentId: "punkmon", topCard: { instanceId: "punk", cardId: "EX11-049" }, stack: [] }],
+        },
+        {
+          ...BOARD.players[1]!,
+          battleArea: [{ permanentId: "groundramon", topCard: { instanceId: "ground", cardId: "BT1-020" }, stack: [] }],
+        },
+      ],
+    } as unknown as GameState;
+    const watcher: Extract<ServerEvent, { kind: "effectTriggered" }> = {
+      kind: "effectTriggered",
+      seat: 0,
+      sourceCardId: "LM-068",
+      sourceInstanceId: "sabbath",
+      effectKey: "subtrigger/14/whenAttacking",
+      description: "When attacking: HeavyMetaldramon",
+      timing: "whenAttacking",
+    };
+    const option: Extract<ServerEvent, { kind: "effectTriggered" }> = {
+      kind: "effectTriggered",
+      seat: 0,
+      sourceCardId: "LM-068",
+      sourceInstanceId: "sabbath",
+      effectKey: "LM-068/ir-25-0",
+      description:
+        "[Main] Delete 1 of your opponent's Digimon with a level as high as the number of cards in your hand or higher.",
+      timing: "OnUseOption",
+    };
+    const asked: readonly (readonly ServerEvent[])[] = [
+      [
+        {
+          kind: "attackDeclared",
+          seat: 0,
+          attackerPermanentId: "punkmon",
+          attackerCardId: "EX11-049",
+          target: { kind: "player" },
+        },
+      ],
+      [watcher],
+    ];
+    const answered: readonly (readonly ServerEvent[])[] = [
+      [
+        { kind: "memoryChanged", from: 3, to: 0, reason: "useOption" },
+        { kind: "cardPlayed", instanceId: "sabbath", fromZone: "trash", seat: 0, cardId: "LM-068" },
+        option,
+      ],
+      [
+        {
+          kind: "cardsMoved",
+          instanceIds: ["ground"],
+          from: "battleArea",
+          to: "trash",
+          deletedPermanents: [{ permanentId: "groundramon", instanceId: "ground", cardId: "BT1-020", seat: 1 }],
+        },
+      ],
+      [{ ...option, kind: "effectResolved" } as ServerEvent],
+      [{ kind: "cardsMoved", instanceIds: ["sabbath"], from: "various", to: "trash", optionUsed: true }],
+      [{ ...watcher, kind: "effectResolved" } as ServerEvent],
+      [
+        {
+          kind: "securityRevealed",
+          seat: 1,
+          revealedCardId: "BT1-027",
+          attackerPermanentId: "punkmon",
+          securityCardDP: 4000,
+          attackerDP: 8000,
+          securityCountBefore: 4,
+          hasSecurityEffect: false,
+          isDigimon: true,
+        },
+      ],
+      [
+        {
+          kind: "securityChecked",
+          seat: 1,
+          revealedCardId: "BT1-027",
+          resolution: "battle",
+          battle: { securityDigimonDeleted: true, attackerDeleted: false, attackerDP: 8000, securityCardDP: 4000 },
+        },
+      ],
+      [{ kind: "attackEnded", seat: 0, attackerPermanentId: "punkmon" }],
+    ];
+    const anchors = geometry();
+    const view = renderHook(
+      ({ fed }: { fed: readonly ServerBatch[] }) =>
+        useMatchCues({
+          batches: fed,
+          state,
+          viewerSeat: VIEWER,
+          mulliganOpen: false,
+          anchors,
+          onActionRejected: vi.fn<(reason: string) => void>(),
+          presentationPacing: "sequential",
+        }),
+      { initialProps: { fed: [] as readonly ServerBatch[] } },
+    );
+    await advance(0);
+    const batches = asked.map((events, index) => singleServerBatch(events, index + 1));
+    view.rerender({ fed: batches });
+    await advance(4000);
+    view.rerender({
+      fed: [...batches, ...answered.map((events, index) => singleServerBatch(events, asked.length + index + 1))],
+    });
+    let clauseAt: number | undefined;
+    let burstAt: number | undefined;
+    let breakAt: number | undefined;
+    for (let elapsed = 0; elapsed <= 15_000; elapsed += 16) {
+      if (
+        effectClauses(view).some((notice) => notice.body.variant === "effect" && notice.body.timing === "OnUseOption")
+      )
+        clauseAt ??= elapsed;
+      if (view.result.current.deleteBursts.length > 0) burstAt ??= elapsed;
+      if (view.result.current.securityBreak !== null) breakAt ??= elapsed;
+      await advance(16);
+    }
+    expect(clauseAt).toBeDefined();
+    expect(burstAt).toBeDefined();
+    expect(breakAt).toBeDefined();
+    expect(clauseAt!).toBeLessThan(burstAt!);
+    expect(burstAt!).toBeLessThan(breakAt!);
     expect(view.result.current.decisionAnimationsPending).toBe(false);
   });
 });

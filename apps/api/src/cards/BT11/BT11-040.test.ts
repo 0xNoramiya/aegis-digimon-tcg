@@ -130,6 +130,31 @@ describe("BT11-040 Sukamon", () => {
     expect(s.state.players[0]!.deck.map(({ instanceId }) => instanceId)).toEqual([s.inst("below").instanceId]);
   });
 
+  it("feedback #7: adds a revealed [KingEtemon] because its name contains [Etemon]", async () => {
+    const preferInstanceIds: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT11-040", as: "sukamon" }],
+          deck: [
+            { card: "BT1-009", as: "first" },
+            { card: "EX13-035", as: "kingEtemon" },
+            { card: "BT1-009", as: "third" },
+            { card: "BT1-009", as: "below" },
+          ],
+        },
+      },
+      { autoSelectCards: true, preferInstanceIds },
+    );
+    preferInstanceIds.push(s.inst("kingEtemon").instanceId);
+
+    expect(await advance(s.engine).verb.deletePermanent([s.perm("sukamon").permanentId], "byEffect")).toBe(1);
+    await settle(() => s.state.players[0]!.trash.some(({ instanceId }) => instanceId === s.inst("third").instanceId));
+
+    expect(s.state.players[0]!.hand.map(({ instanceId }) => instanceId)).toEqual([s.inst("kingEtemon").instanceId]);
+    expect(s.state.players[0]!.deck.map(({ instanceId }) => instanceId)).toEqual([s.inst("below").instanceId]);
+  });
+
   it.each([
     ["a friendly", 0],
     ["an opposing", 1],

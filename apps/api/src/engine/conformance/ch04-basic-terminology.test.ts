@@ -607,8 +607,8 @@ describe("§4-7-8 Stacked Cards, cont'd (comprehensive-0293)", () => {
     // The permanent (and its top card) is public (the field is a public area — §3-4); the
     // face-down card's IDENTITY (cardId) is what's hidden. A minimal, structural proxy: the
     // schema still exposes cardId to a raw reader (Colyseus StateView hides FIELDS, not cardId
-    // string CONTENT) — so this suite instead asserts the tag-level visibility contract that
-    // `revealSecurityCardToOpponent`'s sibling relies on: the permanent itself is visible in
+    // string CONTENT) — so this suite instead asserts the tag-level visibility contract: the
+    // permanent itself is visible in
     // both views (it's on the public field), proving hidden-ness here is a card-identity
     // concern the client-rendering layer owns, not an area-visibility one — §3-1-2 already
     // proves opponent-hidden AREAS (ch03); this chunk's hidden-CARD claim is the digivolution

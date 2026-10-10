@@ -868,30 +868,30 @@ describe("Guard departure lifecycle", () => {
           response: { kind: "optional", accept: true },
         }),
       ).toEqual({ ok: true });
-      await settle(() => s.state.pendingDecision?.kind === "selectCards");
+      await settle(() => s.state.pendingDecision?.kind === "optional");
       const detachDecision = s.state.pendingDecision!;
       const detachRequest = s.decisions.find(({ req }) => req.decisionId === detachDecision.decisionId)!.req;
       expect(detachRequest.sourceCardId).toBe("BT26-019");
-      expect(detachRequest.options?.candidateInstanceIds).toEqual([linkId]);
+      expect(detachRequest.options?.effectText).toContain("Detach");
       expect(
         s.engine.applyIntent(1, {
           type: "respondDecision",
           decisionId: detachDecision.decisionId,
-          response: { kind: "selectCards", instanceIds: [linkId] },
+          response: { kind: "optional", accept: true },
         }),
       ).toEqual({ ok: true });
     } else {
-      await settle(() => s.state.pendingDecision?.kind === "selectCards");
+      await settle(() => s.state.pendingDecision?.kind === "optional");
       const detachDecision = s.state.pendingDecision!;
       const detachRequest = s.decisions.find(({ req }) => req.decisionId === detachDecision.decisionId)!.req;
       expect(detachRequest.sourceCardId).toBe("BT26-019");
       expect(detachRequest.seat).toBe(1);
-      expect(detachRequest.options?.candidateInstanceIds).toEqual([linkId]);
+      expect(detachRequest.options?.effectText).toContain("Detach");
       expect(
         s.engine.applyIntent(1, {
           type: "respondDecision",
           decisionId: detachDecision.decisionId,
-          response: { kind: "selectCards", instanceIds: [linkId] },
+          response: { kind: "optional", accept: true },
         }),
       ).toEqual({ ok: true });
       await settle(() => s.state.pendingDecision?.kind === "optional");
@@ -984,7 +984,7 @@ describe("Guard departure lifecycle", () => {
         response: { kind: "optional", accept: true },
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    await settle(() => s.state.pendingDecision?.kind === "optional");
     const detachDecision = s.state.pendingDecision!;
     expect(s.decisions.find(({ req }) => req.decisionId === detachDecision.decisionId)?.req.sourceCardId).toBe(
       "BT26-019",
@@ -993,7 +993,7 @@ describe("Guard departure lifecycle", () => {
       s.engine.applyIntent(1, {
         type: "respondDecision",
         decisionId: detachDecision.decisionId,
-        response: { kind: "selectCards", instanceIds: [linkId] },
+        response: { kind: "optional", accept: true },
       }),
     ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision?.kind === "orderTriggers");

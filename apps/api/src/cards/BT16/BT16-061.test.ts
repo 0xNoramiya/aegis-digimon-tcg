@@ -43,6 +43,71 @@ describe("BT16-061 DoruGreymon", () => {
     expect(s.state.memory).toBe(0);
   });
 
+  // Feedback #31: the printed trigger is "When an attack target is switched", not "this Digimon's".
+  it("digivolves for free when it blocks an opponent's attack with an SoC Tamer underneath (feedback #31)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT16-061", as: "doru", under: [{ card: "BT16-087" }] }],
+          hand: [{ card: "BT16-064", as: "dorugora" }],
+        },
+        1: { battleArea: [{ card: "BT1-009", as: "attacker" }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.turnSeat = 1;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(1, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some((event) => event.kind === "blockWindowOpened"));
+    expect(s.engine.applyIntent(0, { type: "declareBlock", blockerPermanentId: s.perm("doru").permanentId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.perm("doru").topCard?.cardId === "BT16-064");
+
+    expect(s.perm("doru").topCard?.cardId).toBe("BT16-064");
+    expect(s.state.players[0]!.hand.some((card) => card.cardId === "BT16-064")).toBe(false);
+  });
+
+  it("digivolves for free when another Digimon's block switches the attack target (feedback #31)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT16-061", as: "doru", under: [{ card: "BT14-087" }] },
+            { card: "BT14-011", as: "wall" },
+          ],
+          hand: [{ card: "BT16-064", as: "dorugora" }],
+        },
+        1: { battleArea: [{ card: "BT1-009", as: "attacker" }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.turnSeat = 1;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(1, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some((event) => event.kind === "blockWindowOpened"));
+    expect(s.engine.applyIntent(0, { type: "declareBlock", blockerPermanentId: s.perm("wall").permanentId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.perm("doru").topCard?.cardId === "BT16-064");
+
+    expect(s.perm("doru").topCard?.cardId).toBe("BT16-064");
+  });
+
   it("does not offer the free target-switch digivolution without an SoC Tamer underneath", async () => {
     const s = setupEngine(
       {

@@ -1,8 +1,26 @@
-import { EffectTiming } from "@aegis/shared";
+import { EffectTiming, type CompiledCard } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
+import { registerIrCard, runtimeCompiledCard } from "../../engine/effects/interpreter.js";
 import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import { compiled } from "./BT22-101.js";
+
+// No printed card unsuspends a Tamer and then lowers your own security inside one effect, so a
+// borrowed Digimon carries that shape for the trigger-versus-activation test.
+const UNSUSPEND_THEN_TRASH_SECURITY_ID = "BT1-009";
+const unsuspendThenTrashSecurity: CompiledCard = {
+  effects: [
+    {
+      trigger: "OnPlay",
+      actions: [
+        { kind: "Unsuspend", target: { filter: { controller: "mine", kind: ["Tamer"] }, count: 1 } },
+        { kind: "SecurityManipulation", op: "trashTop", controller: "mine", amount: 1 },
+      ],
+    },
+  ],
+  coverage: "full",
+  residual: [],
+};
 
 describe("BT22-101 Kyoko Kuremi", () => {
   it("sets memory to three at the start of your turn when memory is two or less", () => {
@@ -49,8 +67,9 @@ describe("BT22-101 Kyoko Kuremi", () => {
       kind: "SubTrigger",
       event: "whenUnsuspended",
       sourceFilter: { isSelfRef: true },
-      fireCondition: { kind: "zoneCount", seat: "mine", zone: "security", op: "lte", value: 3 },
     });
+    expect(watcher.fireCondition).toBeUndefined();
+    expect(watcher.activationCondition).toBeUndefined();
     expect(watcher.actions[0]).toMatchObject({
       kind: "Digivolve",
       target: { filter: { isSelfRef: true }, isSelf: true, count: 1 },
@@ -146,6 +165,39 @@ describe("BT22-101 Kyoko Kuremi", () => {
 
     expect(s.perm("kyoko").topCard?.cardId).toBe("BT22-101");
     expect(s.state.players[0]!.hand.some((card) => card.cardId === "BT22-063")).toBe(true);
+  });
+
+  it("checks Alphamon's 3-or-fewer-security requirement when it activates, not when it triggers (CR 15-8-3-7, Q4976)", async () => {
+    const original = runtimeCompiledCard(UNSUSPEND_THEN_TRASH_SECURITY_ID);
+    if (original === undefined) throw new Error(`${UNSUSPEND_THEN_TRASH_SECURITY_ID} must be registered`);
+    registerIrCard(UNSUSPEND_THEN_TRASH_SECURITY_ID, unsuspendThenTrashSecurity);
+    try {
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [
+              { card: "BT22-101", as: "kyoko", suspended: true },
+              { card: UNSUSPEND_THEN_TRASH_SECURITY_ID, as: "source" },
+            ],
+            hand: [{ card: "BT22-063", as: "alphamon" }],
+            security: 4,
+          },
+        },
+        { autoAcceptOptional: true, autoSelectCards: true, autoOrderTriggers: true },
+      );
+      s.state.memory = 5;
+      await s.ready();
+
+      await advance(s.engine).fire(EffectTiming.OnPlay, s.perm("source"));
+      await settle(() => s.state.pendingDecision === undefined && s.perm("kyoko").topCard?.cardId === "BT22-063");
+
+      expect(s.state.players[0]!.security).toHaveLength(3);
+      expect(s.perm("kyoko").topCard?.cardId).toBe("BT22-063");
+      expect(s.perm("kyoko").stack.at(-1)?.cardId).toBe("BT22-101");
+      expect(s.state.memory).toBe(2);
+    } finally {
+      registerIrCard(UNSUSPEND_THEN_TRASH_SECURITY_ID, original);
+    }
   });
 
   it("does not offer an Alphamon with no Kyoko Kuremi digivolution route", async () => {

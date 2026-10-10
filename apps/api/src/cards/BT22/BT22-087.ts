@@ -42,6 +42,8 @@ export const compiled: CompiledCard = {
                 },
                 raw: "by suspending this Tamer",
               },
+              optional: true,
+              abortOnDecline: true,
               actions: [
                 {
                   effectTextPart:

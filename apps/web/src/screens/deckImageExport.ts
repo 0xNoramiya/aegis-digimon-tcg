@@ -264,5 +264,6 @@ export async function downloadDeckImage(options: {
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();
-  URL.revokeObjectURL(url);
+  // Firefox and Safari start the download after click() returns; revoking now can cancel it.
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

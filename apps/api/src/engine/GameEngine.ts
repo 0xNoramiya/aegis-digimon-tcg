@@ -12,6 +12,7 @@ import {
   effectiveColorsOf,
   expireCombatWindow,
   exposeCardToView,
+  forgetWithheldCards,
   handleDisconnect,
   handleReconnect,
   installVisibility,
@@ -199,6 +200,12 @@ export class GameEngine {
    * loop above it, a parked watcher would never be resolved at all.
    */
   pendingPoolDrainDepth = 0;
+  /**
+   * How many attacks ordered by a still-resolving effect are running their steps
+   * (`runAttackSteps`). The ordering effect's window stays open, so triggers derived inside
+   * an attack step are parked for it unless that step drains them itself.
+   */
+  attackStepPauseDepth = 0;
   /** Nesting depth of {@link withPendingSubTriggers} windows. */
   subTriggerWindowDepth = 0;
   /** Watchers armed for the event of the enclosing window, offered to that window's resolver. */
@@ -830,6 +837,10 @@ export class GameEngine {
 
   refreshStateView(view: Client["view"], seat: Seat | undefined): void {
     return refreshStateView(this, view, seat);
+  }
+
+  forgetWithheldCards(view: Client["view"], seat: Seat | undefined): void {
+    return forgetWithheldCards(this, view, seat);
   }
 
   installVisibility(notify: VisibilityPort): void {

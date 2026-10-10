@@ -240,23 +240,41 @@ export function syncPublicCounts(state: GameState): GameState {
 }
 
 /**
+ * Give the owner the identity of each of their face-up security cards, and take it back from
+ * each face-down one. The owner holds every element of their own security array, so a card they
+ * already know (it came from their hand, trash or field, or it was face-up and was turned
+ * face-down in place) would otherwise keep its decoded `cardId` while face-down (§3-7-2).
+ * Removing only the identity tag queues a DELETE for `cardId` and `artId` and keeps the element.
+ */
+function syncOwnSecurityIdentities(view: StateView, owner: PlayerState): void {
+  for (const card of owner.security) {
+    const identified = view.hasTag(card, CARD_ID_VIEW_TAG);
+    if (card.faceUp && !identified) {
+      repairDetachedCardSchema(card);
+      view.add(card, CARD_ID_VIEW_TAG);
+    } else if (!card.faceUp && identified) {
+      view.remove(card, CARD_ID_VIEW_TAG);
+    }
+  }
+}
+
+/**
  * Unlock `seat`'s own PlayerState private zones (deck, egg deck, hand, security)
  * into `view` and nothing of the opponent's. Untagged fields (the whole public
  * board) are visible to every view automatically, so they need no `add`.
  *
- * Face-up security: a security card turned face-up while still in the security zone
- * is public and must be shown to the opponent too. The base view leaves all of the
- * opponent's security hidden; call revealSecurityCardToOpponent for each such card
- * (the security-and-win-check subsystem drives this as cards flip). The common case
- * — flip the top security card and immediately resolve it out of the zone — needs no
- * special handling here, because once the card moves to a public zone (trash or a
- * battle-area Permanent) it is no longer behind the security `@view` tag.
+ * Security: only the owner's view ever holds the raw `security` array. Every other view,
+ * spectators included, reads face-up security cards from the public `securityView`
+ * projection. Do not add an opponent's security card to a view: once a view holds part of
+ * that array, Colyseus shares the array's visibility with every card later placed in it or
+ * changed in it (items of a non-default-tag `@view` collection inherit their parent's
+ * visibility). A face-down card then reaches the opponent with its instance id, and with its
+ * identity when the opponent saw the card before.
  *
- * ADD-ONLY: every call only ever calls `view.add(...)`, never `view.remove(...)`,
- * so it is always safe to call repeatedly on the SAME `view` instance to bring it
- * up to date with the current state (see `refreshStateView`'s doc for why that
- * matters — replacing the view wholesale loses track of cards that just left a
- * private zone and drops their removal from the next patch).
+ * Safe to call repeatedly on the SAME `view` instance to bring it up to date with the
+ * current state (see `refreshStateView`'s doc for why that matters — replacing the view
+ * wholesale loses track of cards that just left a private zone and drops their removal
+ * from the next patch). The only removal is a face-down security card's identity tag.
  */
 function unlockInto(view: StateView, state: GameState, seat: Seat | undefined, fullSnapshot: boolean): void {
   const owner = seat === undefined ? undefined : state.players[seat];
@@ -311,20 +329,7 @@ function unlockInto(view: StateView, state: GameState, seat: Seat | undefined, f
     view.add(state.combatWindow, PRIVATE_DECISION_VIEW_TAG);
   }
 
-  // Reveal any security card already face-up to BOTH players (e.g. set face-up by a prior
-  // effect). The owner already has the security array and anonymous card object, but still
-  // needs the identity tag when that card flips; the opponent needs both the private array
-  // element and its identity. Newly flipped cards are handled incrementally as they flip
-  // (revealSecurityCardToOpponent), so this only has to catch up a view that is being built or
-  // has not seen a given card yet — hence the `hasTag` guard rather than an unconditional re-add.
-  for (const player of state.players) {
-    for (const card of player.security) {
-      if (!card.faceUp || view.hasTag(card, CARD_ID_VIEW_TAG)) continue;
-      repairDetachedCardSchema(card);
-      if (player !== owner) view.add(card, PRIVATE_VIEW_TAG);
-      view.add(card, CARD_ID_VIEW_TAG);
-    }
-  }
+  if (owner !== undefined) syncOwnSecurityIdentities(view, owner);
 
   // Full snapshots only. Every public card is exposed as it arrives — the mutation seam now
   // covers the permanent fields too (`setTopCard`/`pushOnStack`/`linkCard`/`setBreeding`), so a
@@ -403,9 +408,12 @@ export function exposeCardInZone(
   card: CardInstance,
 ): void {
   repairDetachedCardSchema(card);
-  if (isHiddenZone(zone)) return; // deck / egg deck: encoded for nobody, owner included
+  // A deck or egg deck is encoded for nobody, owner included; a hand or security for its owner only.
+  if (isHiddenZone(zone) || (isOwnerPrivateZone(zone) && viewerSeat !== ownerSeat)) {
+    rememberDeparture(view, card);
+    return;
+  }
   if (isOwnerPrivateZone(zone)) {
-    if (viewerSeat !== ownerSeat) return;
     // Untagged fields first (instanceId, ownerSeat, faceUp, the projections). A card drawn out
     // of a hidden zone is genuinely NEW to this client — the deck was never encoded — and its
     // ChangeTree is filtered, so the re-ADD that `Root.add` queues on reinsertion lands in the
@@ -414,8 +422,8 @@ export function exposeCardInZone(
     // every untagged field and fixes that; it deliberately does NOT reveal `cardId`, which is
     // tagged and therefore only travels on the explicit grant below.
     view.add(card);
-    // Your hand is yours to read; your face-down security is not (§3-7-2). A security card that is
-    // later turned face-up is revealed then, by revealSecurityCardToOpponent + the flip path.
+    // Your hand is yours to read; your face-down security is not (§3-7-2). A security card that
+    // is later turned face up, or one you already knew, is settled by `syncOwnSecurityIdentities`.
     if (zone === Zone.Hand || card.faceUp) view.add(card, CARD_ID_VIEW_TAG);
     return;
   }
@@ -424,17 +432,64 @@ export function exposeCardInZone(
 }
 
 /**
- * Expose a single security CardInstance — one that has been turned face-up but is
- * still sitting in its owner's security zone — to a viewer who would otherwise have
- * it hidden (its owner's opponent). Adding the specific child with the same tag
- * unlocks just that element, leaving the rest of the security stack redacted.
- *
- * Call this from the flip step that sets `card.faceUp = true` while the card remains
- * in security. No-op-safe to call for the owner's own view.
+ * Cards each view already knows that have since moved where that view may not read them,
+ * waiting for {@link forgetWithheldCards}.
  */
-export function revealSecurityCardToOpponent(view: StateView, card: CardInstance): void {
-  view.add(card, PRIVATE_VIEW_TAG);
-  view.add(card, CARD_ID_VIEW_TAG);
+const departuresByView = new WeakMap<StateView, Set<CardInstance>>();
+
+function rememberDeparture(view: StateView, card: CardInstance): void {
+  if (!view.has(card) && !view.hasTag(card)) return;
+  let departures = departuresByView.get(view);
+  if (departures === undefined) {
+    departures = new Set();
+    departuresByView.set(view, departures);
+  }
+  departures.add(card);
+}
+
+/**
+ * True when `card` sits in an array `viewerSeat` never receives: any deck, or another player's
+ * hand or security. Face-up security reaches other players through `securityView` instead.
+ */
+function isWithheldFrom(state: GameState, viewerSeat: Seat | undefined, card: CardInstance): boolean {
+  return state.players.some((player) => {
+    if (player.deck.includes(card) || player.eggDeck.includes(card)) return true;
+    if (player.seat === viewerSeat) return false;
+    return player.hand.includes(card) || player.security.includes(card);
+  });
+}
+
+function hideFromView(view: StateView, tree: ChangeTree): void {
+  view.unmarkVisible(tree);
+  view.removeAllTagsOnTree(tree);
+  tree.forEachChild((child) => hideFromView(view, child));
+}
+
+/**
+ * Make `view` stop tracking every card that moved out of its sight. Call it for each client
+ * right AFTER a patch is encoded, never before.
+ *
+ * The client drops a card when the patch carrying its departure arrives. A view that still
+ * counts the card as visible keeps encoding later changes to its fields (a deck reveal's
+ * `faceUp` flip), and the client logs `"refId" not found` for each one.
+ *
+ * Why not on arrival, in `exposeCardInZone`: the departure itself is filtered on the card's
+ * visibility. A hand's DELETE ships only while the view still sees the card, so hiding it in
+ * the same patch strands the card in the client's hand. And `view.remove` is no substitute: it
+ * queues a DELETE on the card's new parent, a deck array the client never received.
+ *
+ * Each card is checked against its zone at call time, so a card that came back into sight
+ * before the patch (deck to trash) is left alone. A card hidden here is re-introduced in full
+ * by the next `view.add` when it becomes visible again.
+ */
+export function forgetWithheldCards(view: StateView, state: GameState, viewerSeat: Seat | undefined): void {
+  const departures = departuresByView.get(view);
+  if (departures === undefined) return;
+  departuresByView.delete(view);
+  for (const card of departures) {
+    const tree = card[$changes];
+    if (tree !== undefined && isWithheldFrom(state, viewerSeat, card)) hideFromView(view, tree);
+  }
 }
 
 /**

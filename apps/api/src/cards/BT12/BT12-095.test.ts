@@ -131,3 +131,35 @@ describe("BT12-095 compiled IR module", () => {
     expect(s.state.players[0]!.battleArea.some(({ topCard }) => topCard.cardId === "BT12-095")).toBe(true);
   });
 });
+
+describe("BT12-095 — optional By cost (Discord 1558408701633757194)", () => {
+  it("stays unsuspended and gains no memory when the cost is declined", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT12-095", as: "tai" },
+            { card: "BT12-038", as: "host" },
+          ],
+          hand: [{ card: "BT12-042", as: "rize" }],
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    s.state.memory = 5;
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("host").permanentId,
+        instanceId: s.inst("rize").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("host").topCard.cardId === "BT12-042" && s.state.pendingDecision === undefined);
+
+    expect(s.decisions.some(({ req }) => req.kind === "optional")).toBe(true);
+    expect(s.perm("tai").isSuspended).toBe(false);
+    expect(s.state.memory).toBe(1);
+  });
+});

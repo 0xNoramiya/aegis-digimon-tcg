@@ -27,7 +27,7 @@ describe("BT4-033 ZeedGarurumon", () => {
         },
         1: { battleArea: [{ card: "BT3-015", under: [{ card: "BT1-011", as: "source" }], as: "target" }] },
       },
-      { autoSelectCards: true },
+      { autoSelectCards: true, autoAcceptOptional: true },
     );
     const opp = s.state.players[1] as PlayerState;
     s.state.memory = 4;
@@ -52,7 +52,7 @@ describe("BT4-033 ZeedGarurumon", () => {
         },
         1: { battleArea: [{ card: "BT1-025", as: "target", under: [{ card: "BT1-011", as: "source" }] }] },
       },
-      { autoSelectCards: true },
+      { autoSelectCards: true, autoAcceptOptional: true },
     );
     s.state.memory = 4;
     const targetId = s.perm("target").permanentId;
@@ -71,5 +71,35 @@ describe("BT4-033 ZeedGarurumon", () => {
     expect(s.perm("target").stack.some((card) => card.instanceId === sourceId)).toBe(true);
     expect(s.perm("base").stack).toHaveLength(2);
     expect(s.state.players[0]!.trash).toHaveLength(0);
+  });
+});
+
+describe("BT4-033 — optional By cost (Discord 1558408701633757194)", () => {
+  it("keeps its digivolution cards and the target when Digi-Burst is declined", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "AD1-011", under: ["BT1-010"], as: "base" }],
+          hand: [{ card: "BT4-033", as: "evolving" }],
+        },
+        1: { battleArea: [{ card: "BT3-015", under: [{ card: "BT1-011", as: "source" }], as: "target" }] },
+      },
+      { autoSelectCards: true, autoDeclineOptional: true },
+    );
+    s.state.memory = 4;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("evolving").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("base").topCard?.cardId === "BT4-033" && s.state.pendingDecision === undefined);
+
+    expect(s.decisions.some(({ req }) => req.kind === "optional")).toBe(true);
+    expect(s.perm("base").stack).toHaveLength(2);
+    expect(s.state.players[1]!.battleArea.map((permanent) => permanent.permanentId)).toEqual([
+      s.perm("target").permanentId,
+    ]);
   });
 });

@@ -98,6 +98,75 @@ describe("BT10-087 Taiki Kudo", () => {
     expect(s.state.pendingDecision).toBeUndefined();
   });
 
+  // Product decision (Discord 1557855696114946230, applied to the same reveal shape): the hand
+  // pick is free, and the place-under part then uses only the cards that remain. No official
+  // ruling covers this exact reveal.
+  describe("Discord 1558457266485731358: hand pick with one Xros Heart Digimon revealed", () => {
+    async function revealForHand() {
+      const s = setupEngine({
+        0: {
+          hand: [{ card: "BT10-087", as: "taiki" }],
+          deck: [
+            { card: "BT21-083", as: "revealedTaiki" },
+            { card: "P-224", as: "kotone" },
+            { card: "AD1-006", as: "x7" },
+            { card: "BT8-097", as: "option" },
+          ],
+        },
+      });
+      s.state.memory = 3;
+      await s.ready();
+      const id = (alias: string) => s.inst(alias).instanceId;
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: id("taiki") })).toEqual({ ok: true });
+      await settle(() => s.state.pendingDecision?.kind === "selectCards");
+      const handRequest = s.decisions.at(-1)!.req;
+      expect(handRequest.options).toMatchObject({
+        candidateInstanceIds: [id("revealedTaiki"), id("kotone"), id("x7")],
+        min: 1,
+        max: 1,
+      });
+      const respond = (decisionId: string, aliases: string[]) =>
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId,
+          response: { kind: "selectCards", instanceIds: aliases.map(id) },
+        });
+      const taiki = () => s.state.players[0]!.battleArea.find((p) => p.topCard.instanceId === id("taiki"));
+      return { s, id, handRequest, respond, taiki };
+    }
+
+    it("places the only Digimon under Taiki after a Tamer is added", async () => {
+      const { s, id, handRequest, respond, taiki } = await revealForHand();
+      expect(respond(handRequest.decisionId, ["kotone"])).toEqual({ ok: true });
+
+      await settle(() => s.state.pendingDecision?.kind === "selectCards");
+      const placeRequest = s.decisions.at(-1)!.req;
+      expect(placeRequest.options).toMatchObject({ candidateInstanceIds: [id("x7")], min: 1, max: 1 });
+      expect(respond(placeRequest.decisionId, []).ok).toBe(false);
+      expect(respond(placeRequest.decisionId, ["x7"])).toEqual({ ok: true });
+
+      await settle(() => s.state.pendingDecision === undefined && taiki()?.stack.length === 1);
+      expect(taiki()!.stack.map((card) => card.instanceId)).toEqual([id("x7")]);
+      expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual([id("kotone")]);
+      expect(s.state.players[0]!.deck.map((card) => card.instanceId).sort()).toEqual(
+        [id("revealedTaiki"), id("option")].sort(),
+      );
+    });
+
+    it("adds the only Digimon to hand by player choice and places nothing", async () => {
+      const { s, id, handRequest, respond, taiki } = await revealForHand();
+      expect(respond(handRequest.decisionId, ["x7"])).toEqual({ ok: true });
+
+      await settle(() => s.state.pendingDecision === undefined && s.state.players[0]!.deck.length === 3);
+      expect(s.decisions.filter(({ req }) => req.kind === "selectCards")).toHaveLength(1);
+      expect(taiki()!.stack).toHaveLength(0);
+      expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual([id("x7")]);
+      expect(s.state.players[0]!.deck.map((card) => card.instanceId).sort()).toEqual(
+        [id("revealedTaiki"), id("kotone"), id("option")].sort(),
+      );
+    });
+  });
+
   it("adds one Xros Heart card and places a different Xros Heart Digimon under itself on play", async () => {
     const s = setupEngine(
       {

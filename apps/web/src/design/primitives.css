@@ -1060,3 +1060,16 @@
     display: none;
   }
 }
+
+/* Shown only where color-mix() is missing, so it uses plain colours. */
+.aegis-browser-notice {
+  position: relative;
+  z-index: 10;
+  margin: 0;
+  padding: 10px 16px;
+  padding-top: max(10px, env(safe-area-inset-top));
+  color: #1f1300;
+  font: 600 14px / 1.4 var(--ds-font-body, system-ui, sans-serif);
+  text-align: center;
+  background: #ffd166;
+}

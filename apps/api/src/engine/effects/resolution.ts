@@ -139,7 +139,7 @@ export function buildResolutionEnv(env: EffectEnvironment, deps: ResolutionDeps)
           env.effectiveColors,
           env.colorRequirementWaived,
           env.colorRequirementAlternatives,
-          undefined,
+          env.canDeclareAttack,
           (permanentId, printedTraits) => effectiveTraits(env.continuous, permanentId, printedTraits),
           (permanentId, printedKinds) => effectiveKinds(env.continuous, permanentId, printedKinds),
           env.baseGrantedDigivolve,

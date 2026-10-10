@@ -25,7 +25,7 @@ describe("BT21-038 compiled implementation", () => {
     expect(compiled.effects).toContainEqual(
       expect.objectContaining({ trigger: "Static", keywords: [{ keyword: "Evade", raw: "＜Evade＞" }] }),
     );
-    expect(compiled.digivolutionRequirement).toEqual([{ level: 3, traits: ["WG"], cost: 2, isAlternate: true }]);
+    expect(compiled.digivolutionRequirement).toEqual([{ level: 4, traits: ["WG"], cost: 3, isAlternate: true }]);
   });
 
   it("optionally unsuspends one of your WG Digimon on play and when digivolving", () => {
@@ -211,11 +211,11 @@ describe("BT21-038 compiled implementation", () => {
     expect(s.state.memory).toBe(4);
   });
 
-  it("evolves from a level-3 WG Digimon for 2 and can unsuspend itself", async () => {
+  it("evolves from a green level-4 WG Digimon for 3 and can unsuspend itself", async () => {
     const s = setupEngine(
       {
         0: {
-          battleArea: [{ card: "BT21-033", as: "floramon", suspended: true }],
+          battleArea: [{ card: "EX9-040", as: "parasaurmon", suspended: true }],
           hand: [{ card: "BT21-038", as: "deramon" }],
         },
       },
@@ -227,22 +227,93 @@ describe("BT21-038 compiled implementation", () => {
     expect(
       s.engine.applyIntent(0, {
         type: "digivolve",
-        permanentId: s.perm("floramon").permanentId,
+        permanentId: s.perm("parasaurmon").permanentId,
         instanceId: s.inst("deramon").instanceId,
         useAlternateCost: true,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.perm("floramon").topCard.cardId === "BT21-038");
+    await settle(() => s.perm("parasaurmon").topCard.cardId === "BT21-038");
 
-    expect(s.state.memory).toBe(1);
-    expect(s.perm("floramon").isSuspended).toBe(false);
-    expect(observe(s.engine).hasKeyword(s.perm("floramon"), "Evade")).toBe(true);
+    expect(s.state.memory).toBe(0);
+    expect(s.perm("parasaurmon").isSuspended).toBe(false);
+    expect(observe(s.engine).hasKeyword(s.perm("parasaurmon"), "Evade")).toBe(true);
   });
 
-  it("rejects the alternate evolution from a non-WG level-3 base without paying", async () => {
+  // Feedback report #6: Deramon digivolved onto Pomumon (Lv.3 WG) stacked on Yokomon in breeding.
+  it.each([
+    { label: "battle area", zone: "battleArea" as const },
+    { label: "breeding area", zone: "breeding" as const },
+  ])("feedback #6: rejects digivolving onto a level-3 WG Digimon in the $label", async ({ zone }) => {
+    const host = { card: "EX9-036", as: "pomumon", under: ["BT21-003"] };
     const s = setupEngine({
       0: {
-        battleArea: [{ card: "BT1-009", as: "base" }],
+        ...(zone === "breeding" ? { breeding: host } : { battleArea: [host] }),
+        hand: [{ card: "BT21-038", as: "deramon" }],
+      },
+    });
+    s.state.memory = 5;
+    await s.ready();
+
+    for (const useAlternateCost of [true, false]) {
+      expect(
+        s.engine.applyIntent(0, {
+          type: "digivolve",
+          permanentId: s.perm("pomumon").permanentId,
+          instanceId: s.inst("deramon").instanceId,
+          useAlternateCost,
+        }),
+      ).toMatchObject({ ok: false });
+    }
+    expect(s.state.memory).toBe(5);
+    expect(s.perm("pomumon").topCard.cardId).toBe("EX9-036");
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toContain(s.inst("deramon").instanceId);
+  });
+
+  // Feedback report #15: Gryphonmon's When Attacking offered only Toropiamon for Parasaurmon.
+  it("feedback #15: offers Deramon to a Parasaurmon host through Gryphonmon's When Attacking", async () => {
+    const preferInstanceIds: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT21-039", as: "gryphonmon" },
+            { card: "EX9-040", as: "parasaurmon" },
+          ],
+          hand: [
+            { card: "BT21-038", as: "deramon" },
+            { card: "EX9-042", as: "toropiamon" },
+          ],
+        },
+        1: { security: ["BT1-001"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true, preferInstanceIds },
+    );
+    preferInstanceIds.push(s.perm("parasaurmon").permanentId, s.inst("deramon").instanceId);
+    s.state.memory = 3;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("gryphonmon").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("parasaurmon").topCard.cardId === "BT21-038");
+
+    const evolutionChoices = s.decisions
+      .map(({ req }) => req.options?.candidateInstanceIds ?? [])
+      .find((ids) => ids.includes(s.inst("toropiamon").instanceId));
+    expect(evolutionChoices).toEqual(
+      expect.arrayContaining([s.inst("deramon").instanceId, s.inst("toropiamon").instanceId]),
+    );
+    expect(s.state.memory).toBe(3);
+  });
+
+  it("rejects the alternate evolution from a non-WG level-4 base without paying", async () => {
+    const s = setupEngine({
+      0: {
+        battleArea: [{ card: "BT1-071", as: "base" }],
         hand: [{ card: "BT21-038", as: "deramon" }],
       },
     });
@@ -257,7 +328,7 @@ describe("BT21-038 compiled implementation", () => {
       }),
     ).toMatchObject({ ok: false });
     expect(s.state.memory).toBe(3);
-    expect(s.perm("base").topCard.cardId).toBe("BT1-009");
+    expect(s.perm("base").topCard.cardId).toBe("BT1-071");
   });
 
   it("does not unsuspend an opponent WG or a non-WG own Digimon", async () => {

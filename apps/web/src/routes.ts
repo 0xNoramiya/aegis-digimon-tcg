@@ -10,10 +10,13 @@ export interface AppRoute {
   tournament?: TournamentRoute;
   /** The public deck open on the community screen; absent on the browse list. */
   communityDeckId?: string;
+  /** The report open on the admin triage or the reporter's own feedback screen. */
+  feedbackId?: number;
 }
 
 export const SCREEN_PATHS: Record<Screen, string> = {
   feedback: "/admin/feedback",
+  myFeedback: "/feedback",
   home: "/",
   login: "/login",
   lobby: "/play",
@@ -31,6 +34,11 @@ export const SCREEN_PATHS: Record<Screen, string> = {
 export function routeFromPathname(pathname: string): AppRoute | undefined {
   const normalized = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
   if (normalized === "/admin/feedback") return { screen: "feedback" };
+  const triagedFeedback = /^\/admin\/feedback\/(\d{1,9})$/.exec(normalized)?.[1];
+  if (triagedFeedback) return { screen: "feedback", feedbackId: Number(triagedFeedback) };
+  if (normalized === "/feedback") return { screen: "myFeedback" };
+  const ownFeedback = /^\/feedback\/(\d{1,9})$/.exec(normalized)?.[1];
+  if (ownFeedback) return { screen: "myFeedback", feedbackId: Number(ownFeedback) };
   if (normalized === "/") return { screen: "home" };
   if (normalized === "/login") return { screen: "login" };
   if (normalized === "/play") return { screen: "lobby" };
@@ -56,6 +64,8 @@ export function pathForRoute(route: AppRoute): string {
   if (route.screen === "replays") return route.replayId ? `/replays/${encodeURIComponent(route.replayId)}` : "/profile";
   if (route.screen === "community" && route.communityDeckId)
     return `/community/decks/${encodeURIComponent(route.communityDeckId)}`;
+  if ((route.screen === "feedback" || route.screen === "myFeedback") && route.feedbackId !== undefined)
+    return `${SCREEN_PATHS[route.screen]}/${route.feedbackId}`;
   if (route.screen !== "tournaments") return SCREEN_PATHS[route.screen];
   if (route.tournament?.kind === "create") return "/tournaments/new";
   if (route.tournament?.kind === "detail") return `/tournaments/${encodeURIComponent(route.tournament.id)}`;

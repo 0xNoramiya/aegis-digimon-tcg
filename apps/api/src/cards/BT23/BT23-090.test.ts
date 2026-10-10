@@ -340,6 +340,7 @@ describe("BT23-090 Keisuke Amasawa", () => {
   });
 
   it("stops granting +1000 DP the moment this Tamer leaves the field", async () => {
+    const answers: SetupEngineOptions = { autoDeclineOptional: true, autoSelectCards: true };
     const { s, loop } = await runSeat0Turn(
       turnBoard(
         {
@@ -361,7 +362,7 @@ describe("BT23-090 Keisuke Amasawa", () => {
           ],
         },
       ),
-      { autoDeclineOptional: true, autoSelectCards: true },
+      answers,
       1,
     );
     const keisukeId = s.perm("keisuke").topCard!.instanceId;
@@ -376,6 +377,8 @@ describe("BT23-090 Keisuke Amasawa", () => {
     expect(s.perm("hudieA").currentDP).toBe(8000);
     expect(s.perm("hudieB").currentDP).toBe(6000);
     s.state.memory = 6;
+    // Ultimate Slicer's "By trashing" cost is optional; this test pays it.
+    answers.autoDeclineOptional = false;
 
     expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("slicer").instanceId })).toEqual({
       ok: true,

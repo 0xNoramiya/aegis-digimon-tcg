@@ -150,7 +150,7 @@ export class ScenarioPage {
       await base.step(`${decision.kind}: ${decision.promptText}`, async () => {
         if (decision.kind === "optional") {
           const answer = this.page.getByRole("button", {
-            name: selection.accept === false ? "No, decline" : "Yes, activate",
+            name: selection.accept === false ? DECLINE : ACTIVATE,
             exact: true,
           });
           await this.decisionReady(answer, decision, selection.decisionBudgetMs);
@@ -190,7 +190,7 @@ export class ScenarioPage {
           await noXros.click();
         } else if (decision.kind === "selectCards" || decision.kind === "chooseTargets") {
           if (selection.accept === false && decision.options.min === 0) {
-            const pass = this.page.getByRole("button", { name: /^(No selection|Pass · no selection|Pass)$/i });
+            const pass = this.page.getByRole("button", { name: /^(No selection|Pass · no selection|Pass|None)$/i });
             await this.decisionReady(pass, decision, selection.decisionBudgetMs);
             await pass.click();
           } else {
@@ -260,22 +260,20 @@ export class ScenarioPage {
     }
     throw new Error("Scenario exceeded 40 decisions");
   }
-  async healthy({
-    timedCatchUp = false,
-    resumedEffectBudgets = {},
-  }: { timedCatchUp?: boolean; resumedEffectBudgets?: Record<string, number> } = {}) {
+  async healthy({ resumedEffectBudgets = {} }: { resumedEffectBudgets?: Record<string, number> } = {}) {
     await this.idle();
     const probe = await this.presentation();
     expect(this.errors).toEqual([]);
     expect(probe.pending).toBe(0);
     expect(probe.gateExpiries).toEqual([]);
     expect(probe.steps.filter((s) => s.failed || s.cancelled)).toEqual([]);
+    expect(probe.steps.filter((s) => s.skipping).map((s) => s.id)).toEqual([]);
     expect(probe.counters).toEqual({
       boardBudgetHits: 0,
       decisionBudgetHits: 0,
       decisionStallHits: 0,
-      // Timed matches intentionally catch cosmetic tracks up at each decision.
-      skips: timedCatchUp ? probe.counters.skips : 0,
+      // A match timer does not fast-forward anything either.
+      skips: 0,
       manualAdvances: 0,
     });
     const finished = probe.steps.filter((s) => s.phase === "finished");
@@ -313,6 +311,21 @@ export class ScenarioPage {
     await info.attach("presentation-timings", { path, contentType: "application/json" });
   }
 }
+const ACTIVATE = "Yes, activate";
+const DECLINE = "No, decline";
+
+/**
+ * Answers an optional effect's "Use this effect?" dialog. When two activation prompts
+ * follow each other, pass `text` from the expected clause: the answer then waits until
+ * that prompt closes, so the next call cannot click the old dialog again.
+ */
+export async function answerActivation(page: Page, accept: boolean, text?: string | RegExp): Promise<void> {
+  const prompts = page.getByRole("dialog").filter({ has: page.getByRole("button", { name: ACTIVATE, exact: true }) });
+  const prompt = text === undefined ? prompts : prompts.filter({ hasText: text });
+  await prompt.getByRole("button", { name: accept ? ACTIVATE : DECLINE, exact: true }).click();
+  if (text !== undefined) await expect(prompt).toHaveCount(0);
+}
+
 export const test = base.extend<{
   scenario: ScenarioPage;
   botOptionalScript: { sourceCardId: string; answers: boolean[] } | undefined;

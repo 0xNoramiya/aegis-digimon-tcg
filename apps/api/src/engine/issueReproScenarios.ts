@@ -26,6 +26,110 @@ type Layout = { players: readonly [PlayerLayout, PlayerLayout]; memory?: number 
 
 // Reduced boards for reported issues. Each runs in the ordinary turn loop.
 const ISSUE_LAYOUTS = {
+  "arena-github-5429-examon-piercing-barrier": {
+    memory: 5,
+    players: [
+      { field: [{ card: "BT1-080" }, { card: "ST2-10" }], hand: ["EX13-045"], deck: Array(12).fill("BT1-009") },
+      {
+        field: [{ card: "BT1-013" }, { card: "BT13-041" }],
+        security: Array(5).fill("BT1-009"),
+        deck: Array(12).fill("BT1-009"),
+      },
+    ],
+  },
+  "arena-github-5422-magnamon-timed-security": {
+    memory: 5,
+    players: [
+      {
+        field: [{ card: "BT13-040", under: ["ST9-02"] }],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      { security: ["EX13-035", "BT1-009", "BT1-009"], deck: Array(12).fill("BT1-009") },
+    ],
+  },
+  "arena-github-5425-craniamon-guardromon": {
+    memory: 10,
+    players: [
+      {
+        field: [{ card: "EX13-062", under: ["P-144", "EX13-051"] }],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      {
+        field: [{ card: "BT4-065" }, { card: "BT1-009" }],
+        hand: ["BT25-016"],
+        security: Array(3).fill("BT1-009"),
+        deck: Array(12).fill("BT1-009"),
+      },
+    ],
+  },
+  "arena-github-5427-gomimon-detach": {
+    memory: 5,
+    players: [
+      {
+        field: [{ card: "BT26-051", under: ["BT26-007"] }],
+        hand: ["BT26-063"],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      { security: ["BT20-102", "BT1-009", "BT1-009"], deck: Array(12).fill("BT1-009") },
+    ],
+  },
+  "arena-github-5430-gankoomon-noir-no-sistermon": {
+    memory: 5,
+    players: [
+      {
+        field: [{ card: "EX13-061", under: ["EX13-066"] }],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      {
+        field: [
+          { card: "BT1-080", under: ["BT1-013", "BT1-020"] },
+          { card: "BT1-080", under: ["BT1-013"] },
+        ],
+        security: Array(3).fill("BT1-009"),
+        deck: Array(12).fill("BT1-009"),
+      },
+    ],
+  },
+  "arena-github-5431-yao-suspend-without-placement": {
+    memory: 3,
+    players: [
+      {
+        field: [{ card: "BT22-096" }, { card: "BT19-082" }, { card: "BT24-029" }],
+        hand: ["BT22-027"],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      { security: Array(3).fill("BT1-009"), deck: Array(12).fill("BT1-009") },
+    ],
+  },
+  "arena-github-5428-megakabuterimon-insectoid": {
+    memory: 6,
+    players: [
+      {
+        field: [{ card: "BT15-047" }, { card: "BT26-041" }],
+        hand: ["P-140", "P-140"],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      { security: Array(3).fill("BT1-009"), deck: Array(12).fill("BT1-009") },
+    ],
+  },
+  "arena-github-5423-knightmon-opponent-attack": {
+    memory: 3,
+    players: [
+      {
+        field: [{ card: "BT1-062", under: ["P-111"] }],
+        hand: ["BT2-054"],
+        deck: Array(12).fill("BT1-009"),
+        security: Array(3).fill("BT1-009"),
+      },
+      { field: [{ card: "BT1-019" }], security: Array(3).fill("BT1-009"), deck: Array(12).fill("BT1-009") },
+    ],
+  },
   "arena-github-5374-up-to-four-trash": {
     memory: 5,
     players: [

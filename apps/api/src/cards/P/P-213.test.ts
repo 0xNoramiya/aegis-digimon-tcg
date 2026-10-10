@@ -310,7 +310,14 @@ describe("P-213 engine behavior", () => {
           useAlternateCost: true,
         }),
       ).toEqual({ ok: true });
-      await settle(() => s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "P-213"));
+      // Without Rush the "may attack" can't happen, so it is not offered and the effect never announces.
+      await settle(() =>
+        security <= 3
+          ? s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "P-213")
+          : host.topCard.instanceId === s.inst("evolution").instanceId &&
+            s.state.pendingDecision === undefined &&
+            s.engine.mainVerbContinuationsInFlight === 0,
+      );
 
       const attacks = s.events.filter((event) => event.kind === "attackDeclared");
       const remainingSecurity = s.state.players[1]!.security.length;

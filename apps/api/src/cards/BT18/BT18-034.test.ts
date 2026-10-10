@@ -4,6 +4,7 @@ import { Phase } from "@aegis/shared";
 import { advance } from "../../engine/testkit/advance.js";
 import { assertNoLoudGap, setupEngine, settle } from "../../engine/testkit/harness.js";
 import { compiled } from "./BT18-034.js";
+import "../BT24/BT24-101.js";
 
 describe("BT18-034 Lucemon", () => {
   it.each(["On Play", "Start of Main"])(
@@ -406,6 +407,39 @@ describe("BT18-034 Lucemon", () => {
     expect(s.state.players[0]!.security[0]!.instanceId).toBe(s.inst("levelSixCost").instanceId);
     expect(s.state.players[0]!.security[1]!.instanceId).toBe(s.inst("oldTopSecurity").instanceId);
     expect(s.state.memory).toBe(-3);
+    assertNoLoudGap(s);
+  });
+
+  it("does not digivolve when Jupitermon keeps the level 6 cost Digimon on the field (Q7247, Q5169)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT18-034", as: "lucemon" },
+            { card: "BT24-101", as: "jupitermon" },
+          ],
+          trash: [{ card: "BT18-082", as: "chaosMode" }],
+          security: [
+            { card: "BT1-009", as: "preventionPayment" },
+            { card: "BT1-010", as: "remainingSecurity" },
+          ],
+        },
+        1: { security: ["BT4-024", "BT4-025"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 3;
+    s.state.turnSeat = 0;
+    await s.ready();
+
+    await advance(s.engine).runTurn(0);
+
+    const human = s.state.players[0]!;
+    expect(human.battleArea.map(({ permanentId }) => permanentId)).toContain(s.perm("jupitermon").permanentId);
+    expect(human.security.map(({ instanceId }) => instanceId)).not.toContain(s.inst("jupitermon").instanceId);
+    expect(human.trash.map(({ instanceId }) => instanceId)).toContain(s.inst("preventionPayment").instanceId);
+    expect(s.perm("lucemon").topCard?.cardId).toBe("BT18-034");
+    expect(human.trash.map(({ instanceId }) => instanceId)).toContain(s.inst("chaosMode").instanceId);
     assertNoLoudGap(s);
   });
 

@@ -85,7 +85,13 @@ export async function payPlaceAsSecurityCost(ctx: EffectContext, cost: Cost): Pr
   const faceUp = cost.position === "faceUpBottom";
   const detachPermanentTop = cost.detachPermanentTop === true;
   await ctx.fx.addSecurity(ctx.source.ownerSeat, instanceIds, { toTop, faceUp, detachPermanentTop });
-  if (!detachPermanentTop) return true;
-  const security = ctx.game.player(ctx.source.ownerSeat).security;
-  return instanceIds.every((instanceId) => security.some((card) => card.instanceId === instanceId));
+  if (detachPermanentTop) {
+    const security = ctx.game.player(ctx.source.ownerSeat).security;
+    return instanceIds.every((instanceId) => security.some((card) => card.instanceId === instanceId));
+  }
+  if (cost.fromDigivolutionTop === true) return true;
+  // A leave-play prevention (BT24-101 Jupitermon) can keep a selected permanent on the
+  // field. The "by placing" condition is then unmet and the rest of the effect does not
+  // run (Q7247, Q5169).
+  return targets.every((permanentId) => ctx.game.permanentById(permanentId) === undefined);
 }
