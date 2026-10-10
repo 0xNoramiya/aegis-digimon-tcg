@@ -53,3 +53,67 @@ it("still treats the defender's own nested decision as an accepted Counter", () 
   const s = counterAfterOpponentDecision();
   expect(s.windows({ seat: 0 }).counterWindow).toBeNull();
 });
+
+// Feedback report 8 (match b20451e6): the defender declined Cho-Hakkaimon's inherited "change
+// the attack target" prompt and the server opened the defender's Counter window 16 ms later.
+// The event reached the defender before the patch that cleared the declined decision, so the
+// defender's own answered decision was read as a nested Counter decision. The Counter stayed
+// hidden, and the block window behind it never opened.
+function counterAfterOwnDeclinedDecision() {
+  const state = new GameState();
+  state.turnSeat = 1;
+  state.stateVersion = 153;
+  state.pendingDecision = Object.assign(new PendingDecision(), {
+    decisionId: "dec-32",
+    seat: 0,
+    kind: "optional",
+  });
+  const events: SequencedServerEvent[] = [
+    {
+      kind: "counterWindowOpened",
+      attackerPermanentId: "nezhamon",
+      defendingSeat: 0,
+      eligibleCounters: [{ instanceId: "takutoumon", effectKey: "EX12-057/ir-shared-0", description: "[Counter]" }],
+      seq: 366,
+      batch: "batch-203",
+      stateVersion: 153,
+    },
+  ];
+  const answered = { current: undefined as string | undefined };
+  const windows = (decision?: { seat: 0 | 1; stateVersion?: number }) =>
+    combatWindowsFor({
+      events,
+      state,
+      viewerSeat: 0,
+      isMyTurn: false,
+      mirroredWindow: null,
+      decision,
+      openCombatWindow: openCombatWindow(events, state, 0),
+      answeredCombatWindowKeyRef: answered,
+      rolledBackRejectionSeqRef: { current: undefined },
+    });
+  return { state, windows };
+}
+
+it("feedback 8 shows the Counter while the defender's own declined decision is still in synced state", () => {
+  const s = counterAfterOwnDeclinedDecision();
+  expect(s.windows().counterWindow?.eligibleCounters).toHaveLength(1);
+  s.state.pendingDecision = undefined;
+  s.state.stateVersion = 154;
+  expect(s.windows().counterWindow?.eligibleCounters).toHaveLength(1);
+});
+
+it("feedback 8 ignores a direct decision raised before the Counter opened", () => {
+  const s = counterAfterOwnDeclinedDecision();
+  s.state.pendingDecision = undefined;
+  expect(s.windows({ seat: 0, stateVersion: 153 }).counterWindow?.eligibleCounters).toHaveLength(1);
+});
+
+it("feedback 8 still treats a decision raised after the Counter opened as an accepted Counter", () => {
+  const synced = counterAfterOwnDeclinedDecision();
+  synced.state.stateVersion = 155;
+  expect(synced.windows().counterWindow).toBeNull();
+  const direct = counterAfterOwnDeclinedDecision();
+  direct.state.pendingDecision = undefined;
+  expect(direct.windows({ seat: 0, stateVersion: 155 }).counterWindow).toBeNull();
+});

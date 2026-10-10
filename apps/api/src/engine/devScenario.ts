@@ -322,6 +322,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-bt20-ouryuken-reduction-resumes",
   "arena-bt20-ouryuken-blast-dna-counter",
   "arena-ex13-gallantmon-counter-after-opponent-decision",
+  "arena-feedback8-nezhamon-counter-block",
   "arena-github-5346-blast-dna-decision",
   "arena-github-5323-alphamon-main-dna",
   "arena-github-5323-alphamon-blast-dna",
@@ -3561,6 +3562,25 @@ function layEx13GallantmonCounterAfterOpponentDecisionScenario(
     // Elecmon's inherited [When Attacking] asks the bot an optional question right before Counter Timing.
     placePermanent(bot, establishedDigimon(1, ["BT24-031", "BT26-081"], "-counter-mervamon"));
     insertCard(bot, Zone.Deck, faceDownCard("dev-counter-bot-draw", "ST1-16", 1), "top");
+  }
+}
+
+/**
+ * Feedback report 8: the defender declines Cho-Hakkaimon's inherited attack redirection, and the
+ * Counter window for Takutoumon opens before the declined decision leaves synchronized state.
+ * Nezhamon's ＜Collision＞ then forces a block with one of the two defenders.
+ */
+function layFeedback8NezhamonCounterBlockScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
+  prepareIssueScenario(state, decks, 3);
+  const human = state.players[0];
+  if (human !== undefined) {
+    placePermanent(human, establishedDigimon(0, ["EX12-056", "EX12-057"], "-feedback8-takutoumon"));
+    placePermanent(human, establishedDigimon(0, ["EX12-043"], "-feedback8-hakubamon"));
+  }
+  const bot = state.players[1];
+  if (bot !== undefined) {
+    placePermanent(bot, establishedDigimon(1, ["EX12-019"], "-feedback8-nezhamon"));
+    insertCard(bot, Zone.Deck, faceDownCard("dev-feedback8-bot-draw", "ST1-16", 1), "top");
   }
 }
 
@@ -10037,6 +10057,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-bt20-ouryuken-reduction-resumes": layBt20OuryukenReductionResumesScenario,
   "arena-bt20-ouryuken-blast-dna-counter": layBt20OuryukenBlastDnaCounterScenario,
   "arena-ex13-gallantmon-counter-after-opponent-decision": layEx13GallantmonCounterAfterOpponentDecisionScenario,
+  "arena-feedback8-nezhamon-counter-block": layFeedback8NezhamonCounterBlockScenario,
   "arena-github-5346-blast-dna-decision": layGithub5346BlastDnaDecisionScenario,
   "arena-github-5323-alphamon-main-dna": (state, decks) => layGithub5323DnaScenario(state, decks, false),
   "arena-github-5323-alphamon-blast-dna": (state, decks) => layGithub5323DnaScenario(state, decks, true),
