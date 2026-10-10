@@ -3,7 +3,9 @@ import { useSyncExternalStore } from "react";
 const STORAGE_KEY = "aegis.sleeve";
 const CUSTOM_IMAGE_KEY = "aegis.sleeve.custom";
 const EGG_STORAGE_KEY = "aegis.eggSleeve";
+const CUSTOM_EGG_IMAGE_KEY = "aegis.eggSleeve.custom";
 export const CUSTOM_CARD_SLEEVE_ID = "custom";
+export const CUSTOM_EGG_SLEEVE_ID = "custom-egg";
 
 export interface CardSleeve {
   id: string;
@@ -378,15 +380,16 @@ export const DEFAULT_CARD_SLEEVE = CARD_SLEEVES[0]!;
 
 const listeners = new Set<() => void>();
 
-function readCustomSrc(): string | undefined {
+function readImage(key: string): string | undefined {
   try {
-    return localStorage.getItem(CUSTOM_IMAGE_KEY) ?? undefined;
+    return localStorage.getItem(key) ?? undefined;
   } catch {
     return undefined;
   }
 }
 
-let customSrc = readCustomSrc();
+let customSrc = readImage(CUSTOM_IMAGE_KEY);
+let customEggSrc = readImage(CUSTOM_EGG_IMAGE_KEY);
 
 export function getCustomCardSleeveSrc(): string | undefined {
   return customSrc;
@@ -416,10 +419,11 @@ export const DEFAULT_EGG_SLEEVE: CardSleeve = {
   src: "/sleeves/digimon-egg.webp",
 };
 
-/** Egg sleeves reuse the main catalog and the uploaded image, after the standard egg back. */
+/** Egg sleeves reuse the main catalog and the uploaded images, after the standard egg back. */
 export const EGG_SLEEVES: readonly CardSleeve[] = [DEFAULT_EGG_SLEEVE, ...CARD_SLEEVES];
 
 function isEggSleeveId(id: string | null): id is string {
+  if (id === CUSTOM_EGG_SLEEVE_ID) return Boolean(customEggSrc);
   return id === DEFAULT_EGG_SLEEVE.id || isCardSleeveId(id);
 }
 
@@ -505,6 +509,28 @@ export function useCardSleeve(): CardSleeve {
   return cardSleeveById(id);
 }
 
+export function getCustomEggSleeveSrc(): string | undefined {
+  return customEggSrc;
+}
+
+/** Saves the egg image on this device and selects it. Storage failures leave the previous sleeve intact. */
+export function setCustomEggSleeve(dataUrl: string): void {
+  localStorage.setItem(CUSTOM_EGG_IMAGE_KEY, dataUrl);
+  customEggSrc = dataUrl;
+  setEggSleeveId(CUSTOM_EGG_SLEEVE_ID);
+}
+
+export function clearCustomEggSleeve(): void {
+  try {
+    localStorage.removeItem(CUSTOM_EGG_IMAGE_KEY);
+  } catch {
+    // Nothing to clean up when storage is blocked.
+  }
+  customEggSrc = undefined;
+  if (currentEggId === CUSTOM_EGG_SLEEVE_ID) setEggSleeveId(DEFAULT_EGG_SLEEVE.id);
+  else for (const listener of listeners) listener();
+}
+
 export function getEggSleeveId(): string {
   return currentEggId;
 }
@@ -535,11 +561,14 @@ export function getEffectiveEggSleeveId(): string {
 }
 
 export function eggSleeveById(id: string): CardSleeve {
+  if (id === CUSTOM_EGG_SLEEVE_ID && customEggSrc)
+    return { id, label: "Custom", collection: "This device", src: customEggSrc };
   return id === DEFAULT_EGG_SLEEVE.id || !isCardSleeveId(id) ? DEFAULT_EGG_SLEEVE : cardSleeveById(id);
 }
 
 export function useEggSleeve(): CardSleeve {
   const id = useSyncExternalStore(subscribeCardSleeve, getEffectiveEggSleeveId, () => DEFAULT_EGG_SLEEVE.id);
   useSyncExternalStore(subscribeCardSleeve, getCustomCardSleeveSrc, () => undefined);
+  useSyncExternalStore(subscribeCardSleeve, getCustomEggSleeveSrc, () => undefined);
   return eggSleeveById(id);
 }
