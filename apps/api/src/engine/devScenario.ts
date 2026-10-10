@@ -432,6 +432,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback31-dorugreymon-block-digivolve",
   "arena-feedback33-kakkinmon-opponent-turn-end",
   "arena-feedback32-omnimon-x-raid-piercing",
+  "arena-feedback40-rie-kishibe-security-gate",
   "arena-security-leak-known-card-face-down",
   "arena-discord-keenan-trigger-order",
   "arena-discord-richard-main-materials-face-down",
@@ -7905,6 +7906,36 @@ function layFeedback32OmnimonXRaidPiercingScenario(state: GameState): void {
 }
 
 /**
+ * Feedback #40 (match 4d17a450): Rie Kishibe's (BT22-090) [End of Your Turn] effect deleted its
+ * payment but did not digivolve into LordKnightmon. The player had 5 security cards. The only
+ * LordKnightmon in hand, EX13-064, can digivolve from [Rie Kishibe] only while its owner has 3 or
+ * fewer security cards, and Q4959 says Rie's effect must meet that requirement. The printed By
+ * condition can still be paid without a legal digivolution (rule manual, "by" conditions).
+ */
+function layFeedback40RieKishibeSecurityGateScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback40-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 10; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback40-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 5; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback40-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT22-090"], "-feedback40-rie"));
+  placePermanent(human, establishedDigimon(0, ["BT22-083"], "-feedback40-payment"));
+  for (let index = 0; index < 2; index += 1) {
+    insertCard(human, Zone.Hand, faceUpCard(`dev-feedback40-lordknightmon-${index}`, "EX13-064", 0));
+  }
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
  * Hidden-information check, no player report: the bot's security stack already shows one card
  * face up, so the player's client holds part of it. Lónkhē Adistakto (BT10-101) places the bot's
  * Monodramon, which both players saw on the field, face down on top of that stack. The player
@@ -11156,6 +11187,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback31-dorugreymon-block-digivolve": layFeedback31DoruGreymonBlockScenario,
   "arena-feedback33-kakkinmon-opponent-turn-end": layFeedback33KakkinmonOpponentTurnEndScenario,
   "arena-feedback32-omnimon-x-raid-piercing": layFeedback32OmnimonXRaidPiercingScenario,
+  "arena-feedback40-rie-kishibe-security-gate": layFeedback40RieKishibeSecurityGateScenario,
   "arena-security-leak-known-card-face-down": laySecurityLeakKnownCardFaceDownScenario,
   "arena-discord-keenan-trigger-order": layDiscordKeenanTriggerOrderScenario,
   "arena-discord-richard-main-materials-face-down": layDiscordRichardMainMaterialsFaceDownScenario,

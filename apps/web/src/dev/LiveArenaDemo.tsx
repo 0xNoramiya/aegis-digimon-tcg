@@ -1897,6 +1897,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Feedback #32. Encerre a criação. Ataque o jogador com Omnimon (X Antibody) (BT20-102). <Raid> e o [Ao Atacar] herdado de WarGreymon (AD1-004) ativam juntos. Resolva <Raid> primeiro e troque o alvo para Plesiomon (ST2-10, 12000 DP). No efeito de WarGreymon, exclua Monodramon (BT1-009). Omnimon vence a batalha contra Plesiomon e <Piercing> verifica 1 carta de segurança: o bot fica com 2. Se o efeito de WarGreymon excluir o próprio alvo da <Raid>, não há batalha, o ataque falha e <Piercing> não ativa (regras 11-2-6 e 16-7-1).",
     en: "Feedback #32. End breeding. Attack the player with Omnimon (X Antibody) (BT20-102). <Raid> and WarGreymon's (AD1-004) inherited [When Attacking] effect trigger together. Resolve <Raid> first and switch the target to Plesiomon (ST2-10, 12000 DP). With WarGreymon's effect, delete Monodramon (BT1-009). Omnimon wins the battle against Plesiomon and <Piercing> checks 1 security card: the bot has 2 left. If WarGreymon's effect deletes the Raid target itself, there is no battle, the attack fails, and <Piercing> does not trigger (rules 11-2-6 and 16-7-1).",
   },
+  "arena-feedback40-rie-kishibe-security-gate": {
+    ptBR: "Feedback #40. Você tem 5 cartas de segurança, Rie Kishibe (BT22-090) e Yuuko Kamishiro (BT22-083) em campo, e 2 LordKnightmon (EX13-064) na mão. Encerre a criação e encerre o turno. O [Fim do Seu Turno] de Rie pergunta se você quer pagar o custo: aceite e exclua Yuuko. Aceite também a digivolução. Resultado esperado: Yuuko vai para o lixo, Rie continua como Tamer e os 2 LordKnightmon ficam na mão. O requisito de EX13-064 a partir de [Rie Kishibe] só vale com 3 ou menos cartas de segurança (Q4959). Com 3 cartas de segurança, veja o cenário arena-bt22-rie-kishibe-legal-digivolve.",
+    en: "Feedback #40. You have 5 security cards, Rie Kishibe (BT22-090) and Yuuko Kamishiro (BT22-083) on the field, and 2 LordKnightmon (EX13-064) in hand. End breeding, then end your turn. Rie's [End of Your Turn] effect asks whether to pay the cost: accept and delete Yuuko. Accept the digivolution too. Expected: Yuuko goes to the trash, Rie stays a Tamer, and both LordKnightmon stay in hand. EX13-064 can digivolve from [Rie Kishibe] only while you have 3 or fewer security cards (Q4959). For the 3-security case, see arena-bt22-rie-kishibe-legal-digivolve.",
+  },
   "arena-security-leak-known-card-face-down": {
     ptBR: "Informação oculta. Encerre a criação. A segurança do bot já mostra o Agumon (BT1-010) virado para cima. Use Lónkhē Adistakto (BT10-101) da mão: você tem 2 cartas de segurança, então só a parte de colocar na segurança se aplica (Q2035). Escolha o Monodramon do bot: ele vai virado para baixo para o topo da segurança do bot, que passa a ter 4 cartas. A pilha mostra o topo virado para baixo e o Agumon ainda virado para cima. O seu cliente não recebe a identidade do Monodramon na segurança do bot.",
     en: "Hidden information. End breeding. The bot's security already shows Agumon (BT1-010) face up. Use Lónkhē Adistakto (BT10-101) from your hand: you have 2 security cards, so only the placement part applies (Q2035). Choose the bot's Monodramon: it goes face down on top of the bot's security stack, which now has 4 cards. The stack shows the top card face down and Agumon still face up. Your client does not receive Monodramon's identity in the bot's security stack.",
@@ -3374,6 +3378,10 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-feedback31-dorugreymon-block-digivolve", "Feedback #31 · DoruGreymon digivolves when it blocks"],
   ["arena-feedback33-kakkinmon-opponent-turn-end", "Feedback #33 · Kakkinmon draws at the end of the opponent's turn"],
   ["arena-feedback32-omnimon-x-raid-piercing", "Feedback #32 · Omnimon (X Antibody) · Raid then Piercing"],
+  [
+    "arena-feedback40-rie-kishibe-security-gate",
+    "Feedback #40 · Rie Kishibe needs 3 or fewer security for LordKnightmon",
+  ],
   ["arena-security-leak-known-card-face-down", "Hidden info · known card placed face down in security"],
   ["arena-discord-keenan-trigger-order", "Discord · Keenan Crier · order with On Play in a forced attack"],
   [
