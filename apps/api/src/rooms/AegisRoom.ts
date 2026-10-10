@@ -58,6 +58,7 @@ const TIMED_DEV_SCENARIOS: ReadonlySet<DevScenarioId> = new Set<DevScenarioId>([
   "arena-chronomon-engage-order",
   "arena-github-5422-magnamon-timed-security",
   "arena-discord-speed-security-scene-stuck",
+  "arena-feedback28-security-reveal-before-prompt",
 ]);
 const WAITING_ROOM_TIMEOUT_SECONDS = positiveSeconds(process.env.AEGIS_WAITING_ROOM_TIMEOUT_SECONDS, 30 * 60);
 

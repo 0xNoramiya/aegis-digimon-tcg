@@ -527,7 +527,8 @@ export function GameScreen({
         ...presentationCues,
         securityBreak: null,
         securityClash: null,
-        securityBranch: null,
+        // The docked card sits beside the board and is what a [Security] effect's question is
+        // about, so it stays while the viewer answers.
         optionBranch: null,
         zoneShowcase: null,
         revealShowcase: null,
