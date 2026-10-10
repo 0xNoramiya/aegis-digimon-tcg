@@ -429,6 +429,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback19-burst-tamer-choice",
   "arena-discord-richard-main-materials-face-down",
   "arena-discord-richard-main-fresh-materials",
+  "arena-davis-both-colors",
   "arena-discord-taiki-keeps-xros-digimon",
   "arena-discord-vemmon-add-or-place",
   "arena-discord-speed-security-scene-stuck",
@@ -7795,6 +7796,35 @@ function layDiscordRichardMainFreshMaterialsScenario(state: GameState): void {
 }
 
 /**
+ * Davis Motomiya (BT3-093) reveals Veemon (P-117, blue), Lighdramon (BT8-053, blue and green),
+ * and Gravity Crush (BT1-090). Q1123 adds 1 blue and 1 green Digimon card, so neither color
+ * choice can be skipped while a matching card remains.
+ */
+function layDavisBothColorsScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-davis-egg-${seat}`, "BT1-001", seat));
+    insertCard(player, Zone.Deck, faceDownCard(`dev-davis-draw-${seat}`, "BT1-085", seat));
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-davis-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  insertCard(human, Zone.Deck, faceDownCard("dev-davis-reveal-veemon", "P-117", 0));
+  insertCard(human, Zone.Deck, faceDownCard("dev-davis-reveal-lighdramon", "BT8-053", 0));
+  insertCard(human, Zone.Deck, faceDownCard("dev-davis-reveal-option", "BT1-090", 0));
+  for (let index = 0; index < 4; index += 1) {
+    insertCard(human, Zone.Deck, faceDownCard(`dev-davis-deck-0-${index}`, "BT1-085", 0));
+    insertCard(state.players[1]!, Zone.Deck, faceDownCard(`dev-davis-deck-1-${index}`, "BT1-085", 1));
+  }
+  insertCard(human, Zone.Hand, faceDownCard("dev-davis-bt3", "BT3-093", 0));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 5;
+}
+
+/**
  * Discord 1558457266485731358: Taiki Kudo (BT10-087) reveals two Xros Heart Tamers, Taiki Kudo
  * (BT21-083) and Kotone Amano (P-224), the only Xros Heart Digimon, Shoutmon X7 (AD1-006), and
  * Crimson Blaze (BT8-097). Q3113 requires adding to hand and placing under as much as possible,
@@ -10908,6 +10938,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback19-burst-tamer-choice": layFeedback19BurstTamerChoiceScenario,
   "arena-discord-richard-main-materials-face-down": layDiscordRichardMainMaterialsFaceDownScenario,
   "arena-discord-richard-main-fresh-materials": layDiscordRichardMainFreshMaterialsScenario,
+  "arena-davis-both-colors": layDavisBothColorsScenario,
   "arena-discord-taiki-keeps-xros-digimon": layDiscordTaikiKeepsXrosDigimonScenario,
   "arena-discord-vemmon-add-or-place": layDiscordVemmonAddOrPlaceScenario,
   "arena-discord-speed-security-scene-stuck": layDiscordSpeedSecuritySceneStuckScenario,

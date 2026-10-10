@@ -676,6 +676,7 @@ export interface AegisJoinOptions {
     | "arena-feedback19-burst-tamer-choice"
     | "arena-discord-richard-main-materials-face-down"
     | "arena-discord-richard-main-fresh-materials"
+    | "arena-davis-both-colors"
     | "arena-discord-taiki-keeps-xros-digimon"
     | "arena-discord-vemmon-add-or-place"
     | "arena-discord-speed-security-scene-stuck"

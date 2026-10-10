@@ -19,13 +19,11 @@ const compiled: CompiledCard = {
               filter: { controllerDefault: "mine", kind: ["Digimon"], colors: ["Blue"] },
               count: 1,
               to: "hand",
-              optional: true,
             },
             {
               filter: { controllerDefault: "mine", kind: ["Digimon"], colors: ["Green"] },
               count: 1,
               to: "hand",
-              optional: true,
             },
           ],
           rest: "deckBottom",

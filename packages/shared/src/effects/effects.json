@@ -112290,14 +112290,12 @@
               {
                 "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "colors": ["Blue"] },
                 "count": 1,
-                "to": "hand",
-                "optional": true
+                "to": "hand"
               },
               {
                 "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "colors": ["Green"] },
                 "count": 1,
-                "to": "hand",
-                "optional": true
+                "to": "hand"
               }
             ],
             "rest": "deckBottom"
