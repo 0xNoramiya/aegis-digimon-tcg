@@ -1,6 +1,6 @@
 import { digiXrosRequirementFor, type ZoneRef } from "@aegis/shared";
 import { materialsSatisfyRecipe } from "../../../actions/digiXros.js";
-import { digiXrosZoneExpanderFor } from "../../../digiXros/zoneExpanders.js";
+import { digiXrosZoneExpanderActiveOnTurn, digiXrosZoneExpanderFor } from "../../../digiXros/zoneExpanders.js";
 import type { EffectContext } from "../../EffectContext.js";
 import { looseCardsInZone, type LooseCandidate } from "../targeting/loose.js";
 
@@ -14,7 +14,8 @@ export function availableEffectPlayDigiXrosReduction(ctx: EffectContext, playedC
   const expanders = Array.from(player.battleArea).flatMap((permanent) => {
     if (permanent.isSuspended || permanent.topCard === undefined) return [];
     const expander = digiXrosZoneExpanderFor(permanent.topCard.cardId);
-    return expander?.appliesTo(playedDefinition) === true ? [expander] : [];
+    if (expander === undefined || !digiXrosZoneExpanderActiveOnTurn(expander, seat, ctx.game.state.turnSeat)) return [];
+    return expander.appliesTo(playedDefinition) ? [expander] : [];
   });
   const zones = new Set(ctx.fx.digiXrosExpandedZones?.(seat, playedCard.instanceId) ?? []);
   const counts = ctx.fx.digiXrosExpandedZoneCounts?.(seat, playedCard.instanceId);

@@ -9,15 +9,8 @@ import { permanentMatchesFilter, seatsForController } from "../matching/permanen
 import { countMatching, scaleFactor } from "../scaling.js";
 import { DEFAULT_PLAY_ZONES, candidateLooseInstances, looseCardsInZone, pickLoose } from "../targeting/loose.js";
 import { runPlayPerLevel } from "./dna.js";
-import {
-  CardKind,
-  digiXrosRequirementFor,
-  effectiveStaticNames,
-  getCardDefinition,
-  resolveTokenCardId,
-} from "@aegis/shared";
+import { CardKind, effectiveStaticNames, getCardDefinition, resolveTokenCardId } from "@aegis/shared";
 import type { Action, Scaling, Seat, Target } from "@aegis/shared";
-import { materialsSatisfyRecipe } from "../../../actions/digiXros.js";
 import { availableEffectPlayAssembly, playEffectInstances } from "./effectPlayAssembly.js";
 import { availableEffectPlayDigiXrosReduction } from "./effectPlayDigiXrosAvailability.js";
 
@@ -896,88 +889,29 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
       const costDelta = payCost ? (action.costReduction ?? 0) + scaledReduction : 0;
       const pfzChosen = await pickLoose(ctx, action.target, pfzCandidates);
       if (pfzChosen.length > 0) {
-        let digiXrosMaterialInstanceIds: string[] | undefined;
-        if (
-          (action.digiXrosMaterialsFrom !== undefined || action.digiXrosMaterialsPlacedThisEffect === true) &&
-          pfzChosen.length === 1
-        ) {
-          const chosenCard = pfzCandidates.find((card) => card.instanceId === pfzChosen[0]);
-          const requirement = chosenCard === undefined ? undefined : digiXrosRequirementFor(chosenCard.cardId)?.[0];
-          if (chosenCard !== undefined && requirement !== undefined) {
-            const ownerSeat = ctx.source.ownerSeat;
-            const battleAreaMaterials = Array.from(ctx.game.player(ownerSeat).battleArea).flatMap((permanent) =>
-              permanent.inBreeding || permanent.topCard === undefined
-                ? []
-                : [
-                    {
-                      instanceId: permanent.topCard.instanceId,
-                      cardId: permanent.topCard.cardId,
-                      ownerSeat: permanent.topCard.ownerSeat,
-                      hostPermanentId: permanent.permanentId,
-                    },
-                  ],
-            );
-            const extraZoneMaterials = (action.digiXrosMaterialsFrom ?? [])
-              .filter((zone) => zone !== "hand" && zone !== "battleArea")
-              .flatMap((zone) => looseCardsInZone(ctx, ownerSeat, zone));
-            // Q6060 permits only the cards this effect placed under a Tamer, not older ones.
-            const placedThisEffect = new Set(ctx.placedUnderInstanceIdsThisEffect ?? []);
-            const placedThisEffectMaterials =
-              action.digiXrosMaterialsPlacedThisEffect === true
-                ? looseCardsInZone(ctx, ownerSeat, "underTamers").filter((card) =>
-                    placedThisEffect.has(card.instanceId),
-                  )
-                : [];
-            const seenMaterialIds = new Set([chosenCard.instanceId]);
-            const allMaterialCandidates = [
-              ...looseCardsInZone(ctx, ownerSeat, "hand"),
-              ...battleAreaMaterials,
-              ...extraZoneMaterials,
-              ...placedThisEffectMaterials,
-            ].filter((card) => {
-              if (seenMaterialIds.has(card.instanceId)) return false;
-              seenMaterialIds.add(card.instanceId);
-              return true;
-            });
-            // Keep the selection prompt faithful to the chosen DigiXros recipe.  The normal
-            // hand-play path filters each candidate before prompting; cards assembled from
-            // another loose zone need the same guard or an auto-selection can consume invalid
-            // cards and silently fall back to a non-DigiXros play.
-            const materialDefinition = (candidate: (typeof allMaterialCandidates)[number]) => {
-              const definition = ctx.game.definitionOf({ cardId: candidate.cardId } as never);
-              return candidate.instanceId === ctx.source.instanceId && action.digiXrosSourceMaterialName !== undefined
-                ? { ...definition, nameEn: action.digiXrosSourceMaterialName }
-                : definition;
-            };
-            const materialCandidates = allMaterialCandidates.filter((candidate) =>
-              materialsSatisfyRecipe([materialDefinition(candidate)], requirement.materials),
-            );
-            const materialCap =
-              requirement.maxMaterials ??
-              (requirement.materials.length === 1 ? materialCandidates.length : requirement.materials.length);
-            const selected = await ctx.ask.selectCards(ctx, {
-              candidates: materialCandidates.map((card) => card.instanceId),
-              min: 0,
-              max: materialCap,
-              digiXrosCardId: chosenCard.cardId,
-            });
-            const selectedDefinitions = selected.map((id) =>
-              materialDefinition(materialCandidates.find((card) => card.instanceId === id)!),
-            );
-            digiXrosMaterialInstanceIds = materialsSatisfyRecipe(selectedDefinitions, requirement.materials)
-              ? selected
-              : [];
-          }
-        }
         const chosenCards = pfzChosen
           .map((instanceId) => pfzCandidates.find((candidate) => candidate.instanceId === instanceId))
           .filter((candidate): candidate is (typeof pfzCandidates)[number] => candidate !== undefined);
-        const played = await playEffectInstances(ctx, chosenCards, {
-          payCost,
-          ...(digiXrosMaterialInstanceIds !== undefined ? { digiXrosMaterialInstanceIds } : {}),
-          ...(costDelta > 0 ? { costDelta } : {}),
-          ...(action.suppressOnPlayEffects === true ? { suppressOnPlayEffects: true } : {}),
-        });
+        const played = await playEffectInstances(
+          ctx,
+          chosenCards,
+          {
+            payCost,
+            ...(costDelta > 0 ? { costDelta } : {}),
+            ...(action.suppressOnPlayEffects === true ? { suppressOnPlayEffects: true } : {}),
+          },
+          {
+            ...(action.digiXrosMaterialsFrom !== undefined ? { extraMaterialZones: action.digiXrosMaterialsFrom } : {}),
+            ...(action.digiXrosSourceMaterialName !== undefined
+              ? {
+                  sourceMaterial: {
+                    instanceId: ctx.source.instanceId,
+                    nameEn: action.digiXrosSourceMaterialName,
+                  },
+                }
+              : {}),
+          },
+        );
         ctx.lastPlayedPermanentIds = (played ?? []).map((p) => p.permanentId);
         if (action.bindResultAs) {
           if (!ctx.boundPlayed) (ctx as { boundPlayed: Map<string, Set<string>> }).boundPlayed = new Map();

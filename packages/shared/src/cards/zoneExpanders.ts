@@ -28,6 +28,17 @@ export interface DigiXrosZoneExpander {
    * more cards at the same time, even if only one of them has DigiXros requirements.
    */
   requiresSinglePlay?: boolean;
+  /** "[Your Turn]": the permission exists only during its controller's turn. */
+  yourTurnOnly?: boolean;
+}
+
+/** Whether `seat`'s expander may be used now. The caller still checks suspension and `appliesTo`. */
+export function digiXrosZoneExpanderActiveOnTurn(
+  expander: DigiXrosZoneExpander,
+  seat: number,
+  turnSeat: number,
+): boolean {
+  return expander.yourTurnOnly !== true || seat === turnSeat;
 }
 
 function cardHasTrait(def: CardDefinition, trait: string): boolean {
@@ -46,6 +57,7 @@ export const DIGIXROS_ZONE_EXPANDERS: Record<string, DigiXrosZoneExpander> = {
     underTamerHostScope: "any",
     trashMax: 0,
     requiresSinglePlay: true,
+    yourTurnOnly: true,
   },
   // BT10-088 (Kiriha Aonuma): the same unrestricted under-your-Tamers permission
   // as Taiki, with no trait gate (Q2016/Q2017).
@@ -55,6 +67,7 @@ export const DIGIXROS_ZONE_EXPANDERS: Record<string, DigiXrosZoneExpander> = {
     underTamerHostScope: "any",
     trashMax: 0,
     requiresSinglePlay: true,
+    yourTurnOnly: true,
   },
   // BT11-095 (Taiki, Kiriha, & Nene): the same unrestricted "1 Digimon card with DigiXros
   // requirements" permission. Cards may come from under ANY of the player's Tamers (Q2125/Q2126),
@@ -64,6 +77,7 @@ export const DIGIXROS_ZONE_EXPANDERS: Record<string, DigiXrosZoneExpander> = {
     underTamerMax: 100,
     trashMax: 0,
     requiresSinglePlay: true,
+    yourTurnOnly: true,
   },
   // BT19-079 (Taiki Kudo): "[All Turns] When any of your [Xros Heart] Digimon with DigiXros would be
   // played, by suspending this Tamer, you may place cards from under your Tamers as DigiXros

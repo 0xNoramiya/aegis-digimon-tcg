@@ -1,6 +1,6 @@
 import type { EffectContext } from "../../EffectContext.js";
 import { materialsSatisfyRecipe } from "../../../actions/digiXros.js";
-import { digiXrosZoneExpanderFor } from "../../../digiXros/zoneExpanders.js";
+import { digiXrosZoneExpanderActiveOnTurn, digiXrosZoneExpanderFor } from "../../../digiXros/zoneExpanders.js";
 import { type LooseCandidate, looseCardsInZone } from "../targeting/loose.js";
 import { digiXrosRequirementFor, type Permanent, type ZoneRef } from "@aegis/shared";
 
@@ -33,6 +33,16 @@ function digiXrosDecisionContext(
   };
 }
 
+export interface EffectPlayDigiXrosOptions {
+  /**
+   * Zones the playing effect itself opens for DigiXros, with no count limit and no Tamer cost
+   * (BT10-104: "you may also place cards from your trash").
+   */
+  extraMaterialZones?: readonly ZoneRef[];
+  /** The resolving source counts as this named material when a ruling permits it (AD1-006). */
+  sourceMaterial?: { instanceId: string; nameEn: string };
+}
+
 /**
  * Prepare every optional DigiXros declaration in one effect-play batch.
  *
@@ -50,7 +60,19 @@ export async function prepareEffectPlayDigiXros(
   ctx: EffectContext,
   playedCards: readonly LooseCandidate[],
   reservedMaterialInstanceIds: readonly string[] = [],
+  options: EffectPlayDigiXrosOptions = {},
 ): Promise<Record<string, string[]>> {
+  const grantedZones = new Set(options.extraMaterialZones ?? []);
+  const grantsUnderTamers = ["underTamers", "underMyTamers", "underTamer"].some((zone) =>
+    grantedZones.has(zone as ZoneRef),
+  );
+  const grantsTrash = grantedZones.has("trash");
+  const materialDefinition = (candidate: Pick<LooseCandidate, "instanceId" | "cardId">) => {
+    const definition = ctx.game.definitionOf({ cardId: candidate.cardId } as never);
+    return candidate.instanceId === options.sourceMaterial?.instanceId
+      ? { ...definition, nameEn: options.sourceMaterial.nameEn }
+      : definition;
+  };
   const materialInstanceIdsByPlay: Record<string, string[]> = {};
   const playedInstanceIds = playedCards.map(({ instanceId }) => instanceId);
   const eligibleDigiXrosIds = playedCards
@@ -91,8 +113,10 @@ export async function prepareEffectPlayDigiXros(
             if (replacementSourcePermanentIds.includes(permanent.permanentId)) return false;
             if (permanent.isSuspended || permanent.topCard === undefined) return false;
             const expander = digiXrosZoneExpanderFor(permanent.topCard.cardId);
-            if (expander?.requiresSinglePlay === true && playedCards.length > 1) return false;
-            return expander?.appliesTo(playedDefinition) === true;
+            if (expander === undefined) return false;
+            if (expander.requiresSinglePlay === true && playedCards.length > 1) return false;
+            if (!digiXrosZoneExpanderActiveOnTurn(expander, ownerSeat, ctx.game.state.turnSeat)) return false;
+            return expander.appliesTo(playedDefinition);
           });
           const soleExpander = expanders.length === 1 ? expanders[0] : undefined;
           const expanderContext = digiXrosDecisionContext(
@@ -182,10 +206,12 @@ export async function prepareEffectPlayDigiXros(
                   ],
             ),
           ];
+          if (grantsUnderTamers) expansion.underTamerMax = Number.POSITIVE_INFINITY;
+          if (grantsTrash) expansion.trashMax = Number.POSITIVE_INFINITY;
           const underTamerCandidates =
             expansion.underTamerMax > 0 ? looseCardsInZone(ctx, ownerSeat, "underTamers") : [];
           let scopedUnderTamerCandidates = underTamerCandidates;
-          if (singleUnderTamerHost) {
+          if (singleUnderTamerHost && !grantsUnderTamers) {
             const hostIds = [...new Set(underTamerCandidates.map((candidate) => candidate.hostPermanentId))].filter(
               (hostId): hostId is string => hostId !== undefined,
             );
@@ -215,10 +241,7 @@ export async function prepareEffectPlayDigiXros(
             (candidate) =>
               !playedInstanceIds.includes(candidate.instanceId) &&
               !reservedMaterials.has(candidate.instanceId) &&
-              materialsSatisfyRecipe(
-                [ctx.game.definitionOf({ cardId: candidate.cardId } as never)],
-                requirement.materials,
-              ),
+              materialsSatisfyRecipe([materialDefinition(candidate)], requirement.materials),
           );
           const materialCap =
             requirement.maxMaterials ??
@@ -250,16 +273,14 @@ export async function prepareEffectPlayDigiXros(
               (trashCard) => trashCard.instanceId === candidate.instanceId,
             ),
           ).length;
-          const definitions = selectedCandidates.map((candidate) =>
-            ctx.game.definitionOf({ cardId: candidate.cardId } as never),
-          );
+          const definitions = selectedCandidates.map(materialDefinition);
           if (
             selected.length > 0 &&
             selectedUnderTamer <= expansion.underTamerMax &&
             selectedTrash <= expansion.trashMax &&
             materialsSatisfyRecipe(definitions, requirement.materials)
           ) {
-            if (selectedUnderTamer > 0 || selectedTrash > 0) {
+            if ((selectedUnderTamer > 0 && !grantsUnderTamers) || (selectedTrash > 0 && !grantsTrash)) {
               await ctx.fx.suspend(
                 selectedExpanders.map((permanent) => permanent.permanentId),
                 { byEffectSeat: ownerSeat, byEffectCardId: ctx.source.cardId },
