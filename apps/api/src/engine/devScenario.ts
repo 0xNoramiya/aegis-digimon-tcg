@@ -425,6 +425,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-lordknightmon-ex13-darkknightmon",
   "arena-discord-lordknightmon-bt22-skullknightmon",
   "arena-feedback18-sukamon-inherited-protection",
+  "arena-feedback19-burst-tamer-choice",
   "arena-discord-speed-security-scene-stuck",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
@@ -7684,6 +7685,37 @@ function layFeedback18SukamonInheritedProtectionScenario(state: GameState): void
   state.memory = 3;
 }
 
+/**
+ * Feedback #19: Burst Digivolve must let the player choose which qualifying Tamer returns to
+ * hand. ShineGreymon (ST7-10) can burst digivolve into ShineGreymon: Burst Mode (BT13-020) with
+ * two [Marcus Damon] Tamers in play: an unsuspended BT4-092 and a suspended BT17-087 with a
+ * face-down card under it.
+ */
+function layFeedback19BurstTamerChoiceScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback19-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback19-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback19-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["ST7-10"], "-feedback19-shinegreymon"));
+  placePermanent(human, establishedDigimon(0, ["BT4-092"], "-feedback19-marcus-ready"));
+  const suspendedMarcus = establishedDigimon(0, ["BT1-085", "BT17-087"], "-feedback19-marcus-suspended");
+  suspendedMarcus.isSuspended = true;
+  for (const source of suspendedMarcus.stack) source.faceUp = false;
+  placePermanent(human, suspendedMarcus);
+  insertCard(human, Zone.Hand, faceDownCard("dev-feedback19-burst-mode", "BT13-020", 0));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 5;
+}
+
 function layP224KotoneOwnSourceScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
   prepareIssueScenario(state, decks, 3);
   const human = state.players[0];
@@ -10734,6 +10766,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-lordknightmon-ex13-darkknightmon": layDiscordLordKnightmonEx13DarkKnightmonScenario,
   "arena-discord-lordknightmon-bt22-skullknightmon": layDiscordLordKnightmonBt22SkullKnightmonScenario,
   "arena-feedback18-sukamon-inherited-protection": layFeedback18SukamonInheritedProtectionScenario,
+  "arena-feedback19-burst-tamer-choice": layFeedback19BurstTamerChoiceScenario,
   "arena-discord-speed-security-scene-stuck": layDiscordSpeedSecuritySceneStuckScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,
