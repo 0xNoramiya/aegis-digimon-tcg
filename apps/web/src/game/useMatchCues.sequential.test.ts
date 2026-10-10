@@ -1132,3 +1132,109 @@ describe("current pacing keeps its own order", () => {
     expect(timeline.sourceLitB! - (timeline.flightsDoneAfterA ?? Infinity)).toBeLessThan(activePacing().settleMs);
   });
 });
+
+// Rules 11-1-3 and 11-1-4: [When Attacking] effects resolve before the battle. Shoutmon X7
+// (AD1-006) attacks with Starmons (BT10-029) under it, in arena-discord-x7-digixros-zones.
+describe("a [When Attacking] clause plays before the battle that follows it", () => {
+  const ATTACKER = "perm-x7";
+  const DEFENDER = "perm-omnimon";
+  const ATTACK_BOARD = {
+    players: [
+      {
+        battleArea: [
+          { permanentId: ATTACKER, topCard: { instanceId: "src-x7", cardId: "AD1-006" }, stack: [], currentDP: 13000 },
+        ],
+        trash: [],
+        hand: [],
+        handCount: 5,
+      },
+      {
+        battleArea: [
+          {
+            permanentId: DEFENDER,
+            topCard: { instanceId: "src-omni", cardId: "BT1-084" },
+            stack: [],
+            currentDP: 15000,
+          },
+        ],
+        trash: [],
+        hand: [],
+        handCount: 5,
+      },
+    ],
+  } as unknown as GameState;
+  const attack: ServerEvent = {
+    kind: "attackDeclared",
+    seat: 0,
+    attackerPermanentId: ATTACKER,
+    attackerCardId: "AD1-006",
+    target: { kind: "permanent", permanentId: DEFENDER },
+    targetCardId: "BT1-084",
+  };
+  const starmons = {
+    seat: 0 as const,
+    sourceCardId: "BT10-029",
+    sourceInstanceId: "src-starmons",
+    sourcePermanentId: ATTACKER,
+    effectKey: "BT10-029/ir-12-0",
+    description: "[When Attacking] If this Digimon has [Shoutmon] in its name, <Draw 1>.",
+    timing: "WhenAttacking",
+  };
+  const clause: ServerEvent[] = [
+    { kind: "effectTriggered", ...starmons },
+    draw("starmons-draw"),
+    { kind: "effectResolved", ...starmons },
+  ];
+  const battle: ServerEvent[] = [
+    {
+      kind: "battleCompared",
+      attackerPermanentId: ATTACKER,
+      defenderPermanentId: DEFENDER,
+      loserPermanentIds: [ATTACKER],
+    },
+    { kind: "combatResolved", seat: 0, attackerPermanentId: ATTACKER, deletedPermanentIds: [ATTACKER] },
+    { kind: "attackEnded", seat: 0, attackerPermanentId: ATTACKER },
+  ];
+
+  it.each([
+    ["in the battle's batch", [[attack], [...clause, ...battle]]],
+    ["in batches of its own", [[attack], ...clause.map((event) => [event]), battle]],
+  ] as const)("settles Starmons' clause before the field clash starts (%s)", async (_shape, chain) => {
+    let elapsed = 0;
+    let settledAt: number | undefined;
+    const devProbe = {
+      onStep: (event: PresentationStepEvent) => {
+        if (event.step.id.startsWith("effect-unit-settle-") && event.phase === "finished") settledAt ??= elapsed;
+      },
+    };
+    const anchors = geometry();
+    const view = renderHook(
+      ({ fed }: { fed: readonly ServerBatch[] }) =>
+        useMatchCues({
+          batches: fed,
+          state: ATTACK_BOARD,
+          viewerSeat: VIEWER,
+          mulliganOpen: false,
+          anchors,
+          onActionRejected: () => {},
+          presentationPacing: "sequential",
+          devProbe,
+        }),
+      { initialProps: { fed: [] as readonly ServerBatch[] } },
+    );
+    await advance(0);
+    view.rerender({ fed: chain.map((events, index) => singleServerBatch(events, index + 1)) });
+    let clauseAt: number | undefined;
+    let clashAt: number | undefined;
+    for (; elapsed <= 20_000; elapsed += 16) {
+      if (clauseShown(view, "BT10-029")) clauseAt ??= elapsed;
+      if (view.result.current.fieldClash !== null) clashAt ??= elapsed;
+      await advance(16);
+    }
+    expect(clauseAt).toBeDefined();
+    expect(settledAt).toBeDefined();
+    expect(clashAt).toBeDefined();
+    expect(clauseAt!).toBeLessThan(clashAt!);
+    expect(settledAt!).toBeLessThanOrEqual(clashAt!);
+  });
+});

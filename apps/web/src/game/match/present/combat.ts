@@ -13,6 +13,50 @@ import {
 import type { MatchCueAnchors } from "../types";
 import { attackDeclarationKey } from "../../trackingArrow";
 import { COMBAT_IMPACT_TOTAL_MS } from "../../timings";
+import type { ObservedBatch } from "../effectSequence";
+import type { PresentationGate } from "../presentationGate";
+
+/** An event the field clash is cut from. An effect's battle belongs to the effect that caused it. */
+function startsBattle(event: ServerEvent): boolean {
+  return (
+    (event.kind === "battleCompared" && !event.effectBattle) ||
+    event.kind === "combatResolved" ||
+    (event.kind === "cardsMoved" && event.battleDeletion === true)
+  );
+}
+
+/**
+ * Rules 11-1-3 and 11-1-4: [When Attacking] effects resolve before the battle. The server can
+ * close such an effect and fight the battle in one batch, so the batch is presented as two
+ * segments: the effect, then the battle. Each then takes its own place in the effect sequence.
+ */
+export function splitBeforeBattle(
+  events: ServerEvent[],
+): { beforeBattle: ServerEvent[]; battle: ServerEvent[] } | null {
+  const battleAt = events.findIndex(startsBattle);
+  if (battleAt <= 0 || !events.slice(0, battleAt).some((event) => event.kind === "effectResolved")) return null;
+  return { beforeBattle: events.slice(0, battleAt), battle: events.slice(battleAt) };
+}
+
+/**
+ * The gate a battle in this batch waits on: every effect the server resolved before it has
+ * settled on screen. The blow plays on its own track, so without it the battle starts while
+ * their clauses are still being read. A unit still open at the battle caused it (a forced
+ * attack), so the battle is one of that unit's results and does not wait for it.
+ */
+export function effectsBeforeBattleSettled({
+  fresh,
+  sequenced,
+  earlierUnitsSettled,
+}: {
+  fresh: readonly ServerEvent[];
+  sequenced: ObservedBatch;
+  /** Units opened by earlier batches and not yet settled, taken before this batch was observed. */
+  earlierUnitsSettled: PresentationGate | null;
+}): PresentationGate | null {
+  if (sequenced.carriedBy || !fresh.some(startsBattle)) return null;
+  return earlierUnitsSettled;
+}
 
 /**
  * The field-clash scenes one batch's `combatResolved` events cut from the open attack, plus
