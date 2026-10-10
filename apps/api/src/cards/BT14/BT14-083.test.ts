@@ -141,3 +141,28 @@ describe("BT14-083", () => {
     await turn;
   });
 });
+
+describe("BT14-083 — optional By cost (Discord 1558408701633757194)", () => {
+  it("stays unsuspended and gains no memory when the cost is declined", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT14-083", as: "watcher" }],
+          hand: [{ card: "BT14-083", as: "joe" }],
+        },
+        1: {
+          battleArea: [{ card: "BT14-058", as: "host", under: ["BT14-057"] }],
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    s.state.memory = 10;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("joe").instanceId })).toEqual({ ok: true });
+    await settle(() => s.perm("host").stack.length === 0 && s.state.pendingDecision === undefined);
+
+    expect(s.decisions.some(({ req }) => req.kind === "optional")).toBe(true);
+    expect(s.perm("watcher").isSuspended).toBe(false);
+    expect(s.state.memory).toBe(7);
+  });
+});

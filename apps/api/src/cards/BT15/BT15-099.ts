@@ -7,6 +7,8 @@ const body: Action[] = [
   {
     kind: "CostGatedBlock",
     cost: { kind: "trash", target: { filter: handDigimon, count: 1 }, storeAs: "trashedDigimonLevel" },
+    optional: true,
+    abortOnDecline: true,
     actions: [
       {
         kind: "Delete",

@@ -130,7 +130,7 @@ describe("§16-14 Digi-Burst parameter processing", () => {
         },
         1: { battleArea: [{ card: "BT1-010", as: "target" }] },
       },
-      { autoSelectCards: true, autoOrderCards: true },
+      { autoSelectCards: true, autoAcceptOptional: true, autoOrderCards: true },
     );
     s.state.memory = 5;
     const priorTopId = s.perm("base").topCard!.instanceId;

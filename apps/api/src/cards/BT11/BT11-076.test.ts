@@ -83,7 +83,8 @@ describe("BT11-076 Ignitemon", () => {
     expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard?.cardId)).toEqual(["BT8-032"]);
   });
 
-  it("does not delete an opponent above the deleted Digimon's level", async () => {
+  // CR 15-7-5: the player may pay the "By" cost even when no opponent Digimon qualifies.
+  it("may pay its cost but does not delete an opponent above the deleted Digimon's level", async () => {
     const s = setupEngine(
       {
         0: {
@@ -107,8 +108,52 @@ describe("BT11-076 Ignitemon", () => {
     ).toEqual({ ok: true });
     await settle();
 
-    expect(s.state.players[0]!.battleArea).toHaveLength(2);
-    expect(s.state.players[1]!.battleArea).toHaveLength(1);
+    expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard?.cardId)).toEqual(["BT11-076"]);
+    expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard?.cardId)).toEqual(["BT8-032"]);
+  });
+
+  // Discord 1558408701633757194: the "By deleting" cost is optional (CR 15-7-1), even when
+  // there is exactly one Digimon that can pay it and one legal opponent target.
+  it("asks before paying its By-deleting cost and keeps both Digimon when declined", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT11-076", as: "ignitemon" },
+            { card: "BT1-009", as: "ownLevelThree" },
+          ],
+        },
+        1: {
+          security: ["BT1-009"],
+          battleArea: [{ card: "BT1-010", as: "opponentLevelThree" }],
+        },
+      },
+      { autoSelectCards: true, autoAcceptOptional: false },
+    );
+    const ownLevelThreeId = s.perm("ownLevelThree").permanentId;
+    const opponentLevelThreeId = s.perm("opponentLevelThree").permanentId;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("ignitemon").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "optional");
+    expect(s.state.players[0]!.battleArea.map(({ permanentId }) => permanentId)).toContain(ownLevelThreeId);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "optional", accept: false },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision === undefined && s.state.players[1]!.security.length === 0);
+
+    expect(s.state.players[0]!.battleArea.map(({ permanentId }) => permanentId)).toContain(ownLevelThreeId);
+    expect(s.state.players[1]!.battleArea.map(({ permanentId }) => permanentId)).toEqual([opponentLevelThreeId]);
   });
 
   it("gains memory when a friendly Digimon is played by an effect and only once per turn", async () => {
