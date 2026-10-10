@@ -485,6 +485,7 @@ export interface AegisJoinOptions {
     | "arena-raid-after-dedigivolve"
     | "arena-lm007-publimon-end-of-attack"
     | "arena-feedback4-shellmon-targets"
+    | "arena-feedback5-execute-suspended"
     | "arena-raid-optional-preset"
     | "arena-preset-order-no-clicks"
     | "arena-ex13-leopardmon-suspended-target"
