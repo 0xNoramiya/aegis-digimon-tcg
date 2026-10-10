@@ -41,6 +41,7 @@ import { isBattleLabPath } from "./dev/BattleLab";
 import { isUiPreviewPath } from "./prototype/routes";
 import { SEQUENTIAL_PACING_ENABLED } from "./features";
 import { clearReconnectSession, loadReconnectSession } from "./net/reconnectSession";
+import { setRoomTicketAccount } from "./net/roomAccount";
 
 const ProfileScreen = lazy(() => import("./account/ProfileScreen").then((m) => ({ default: m.ProfileScreen })));
 const ReplaysScreen = lazy(() => import("./replays/ReplaysScreen").then((m) => ({ default: m.ReplaysScreen })));
@@ -201,6 +202,8 @@ function AppShell() {
   useEffect(() => {
     saveDecks(decks);
   }, [decks]);
+
+  useEffect(() => setRoomTicketAccount(!!account), [account]);
 
   useEffect(() => {
     void (async () => {

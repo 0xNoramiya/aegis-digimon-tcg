@@ -1,7 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, onTestFinished, vi } from "vitest";
 import type { Room } from "@colyseus/sdk";
 import type { GameState } from "@aegis/shared";
 import { AegisConnectionRouter, connectionSlot, type ColyseusClientPort } from "./client";
+import { setRoomTicketAccount } from "./roomAccount";
 import type { DeploymentManifest } from "./deployment";
 
 const OPTIONS = { displayName: "Tamer", deck: { mainDeck: [], eggDeck: [] } };
@@ -160,6 +161,30 @@ describe("room-scoped deployment affinity", () => {
     expect(greenCreate).toHaveBeenCalledWith("aegis_bot", OPTIONS);
     expect(greenJoinOrCreate).not.toHaveBeenCalled();
     expect(connectionSlot(botRoom)).toBe("green");
+  });
+
+  it("carries the signed-in account into a casual bot room", async () => {
+    setRoomTicketAccount(true);
+    onTestFinished(() => setRoomTicketAccount(false));
+    const create = vi.fn(async () => room("bot-room"));
+    const fetcher = vi.fn(async () => Response.json({ ticket: "ticket-1" }));
+    const client = new AegisConnectionRouter({
+      loadManifest: async () => ({ version: 1, active: { slot: "green", revision: "new" }, draining: [] }),
+      endpointForSlot: (slot) => ({
+        http: `https://example.test/api/${slot}`,
+        websocket: `wss://example.test/${slot}`,
+      }),
+      createClient: () => clientPort({ create }),
+      fetcher,
+    });
+
+    await client.createBot(OPTIONS);
+
+    expect(fetcher).toHaveBeenCalledWith(
+      "https://example.test/api/green/auth/room-ticket",
+      expect.objectContaining({ method: "POST", credentials: "include" }),
+    );
+    expect(create).toHaveBeenCalledWith("aegis_bot", { ...OPTIONS, authTicket: "ticket-1" });
   });
 
   it("creates beta bot matches in a beta-isolated room", async () => {

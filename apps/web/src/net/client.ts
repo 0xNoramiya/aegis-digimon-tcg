@@ -22,6 +22,7 @@ import {
 } from "./deployment";
 import type { AegisJoinOptions } from "./types";
 import type { ReconnectSession } from "./reconnectSession";
+import { hasRoomTicketAccount } from "./roomAccount";
 
 export type AegisRoom = Room<GameState>;
 export type RoomSlot = DeploymentSlot | "legacy";
@@ -118,7 +119,7 @@ export class AegisConnectionRouter {
   async createPrivate(options: AegisJoinOptions): Promise<AegisRoom> {
     const manifest = await this.dependencies.loadManifest();
     const created = await this.client(manifest.active.slot).create(ROOM_TYPE_PRIVATE, {
-      ...withDeckRules(options),
+      ...(await this.withRoomTicket(withDeckRules(options), manifest.active.slot)),
       private: true,
     });
     return this.remember(created, manifest.active.slot);
@@ -132,7 +133,10 @@ export class AegisConnectionRouter {
     const manifest = await this.dependencies.loadManifest();
     try {
       const roomType = options.betaBattleMode ? ROOM_TYPE_BETA_BOT : ROOM_TYPE_BOT;
-      const created = await this.client(manifest.active.slot).create(roomType, options);
+      const created = await this.client(manifest.active.slot).create(
+        roomType,
+        await this.withRoomTicket(options, manifest.active.slot),
+      );
       return this.remember(created, manifest.active.slot);
     } catch (error) {
       if (!retriedAfterDrain && isDrainingResponse(error)) {
@@ -149,7 +153,7 @@ export class AegisConnectionRouter {
       const rules = await this.resolveRoomCode(code, slot);
       if (!rules) continue;
       const joined = await this.client(slot).joinById(rules.roomId, {
-        ...options,
+        ...(await this.withRoomTicket(options, slot)),
         roomCode: code.toUpperCase(),
         unlimited: rules.unlimited,
         format: rules.format,
@@ -220,8 +224,9 @@ export class AegisConnectionRouter {
     return fetcher(input, init);
   }
 
+  /** Every seat a signed-in player takes carries their account, so the match joins their history. */
   private async withRoomTicket(options: AegisJoinOptions, slot: DeploymentSlot): Promise<AegisJoinOptions> {
-    if (!options.ranked) return options;
+    if (!options.ranked && !hasRoomTicketAccount()) return options;
     try {
       const { http } = this.dependencies.endpointForSlot(slot);
       const response = await this.fetch(`${http}/auth/room-ticket`, {
@@ -354,7 +359,10 @@ export async function joinWithBot(roomId: string, botDeckId?: string): Promise<v
 export async function createBot(options: AegisJoinOptions): Promise<AegisRoom> {
   if (useProductionRouter()) return getProductionRouter().createBot(options);
   const roomType = options.betaBattleMode ? ROOM_TYPE_BETA_BOT : ROOM_TYPE_BOT;
-  const created = await getLegacyClient().create<GameState>(roomType, withDeckRules(options));
+  const created = await getLegacyClient().create<GameState>(
+    roomType,
+    await withLegacyRoomTicket(withDeckRules(options)),
+  );
   return rememberLegacy(created);
 }
 
@@ -362,7 +370,7 @@ export async function createBot(options: AegisJoinOptions): Promise<AegisRoom> {
 export async function createPrivate(options: AegisJoinOptions): Promise<AegisRoom> {
   if (useProductionRouter()) return getProductionRouter().createPrivate(options);
   const created = await getLegacyClient().create<GameState>(ROOM_TYPE_PRIVATE, {
-    ...withDeckRules(options),
+    ...(await withLegacyRoomTicket(withDeckRules(options))),
     private: true,
   });
   return rememberLegacy(created);
@@ -410,7 +418,7 @@ export async function joinPrivateByCode(code: string, options: AegisJoinOptions)
   const rules = privateRoomRules(await response.json());
   const { roomId } = rules;
   const joined = await getLegacyClient().joinById<GameState>(roomId, {
-    ...options,
+    ...(await withLegacyRoomTicket(options)),
     roomCode: code.toUpperCase(),
     unlimited: rules.unlimited,
     format: rules.format,
@@ -419,7 +427,7 @@ export async function joinPrivateByCode(code: string, options: AegisJoinOptions)
 }
 
 async function withLegacyRoomTicket(options: AegisJoinOptions): Promise<AegisJoinOptions> {
-  if (!options.ranked) return options;
+  if (!options.ranked && !hasRoomTicketAccount()) return options;
   try {
     const response = await fetch(`${legacyEndpoint().replace(/^ws/, "http")}/auth/room-ticket`, {
       method: "POST",
