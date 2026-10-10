@@ -205,6 +205,61 @@ describe("AD1-003 WarGrowlmon", () => {
     expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard?.cardId === "BT12-007")).toBe(false);
   });
 
+  it("feedback #10: has no inherited replacement once Wingdramon trashed WarGrowlmon from the stack", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            {
+              card: "AD1-008",
+              dp: 12000,
+              suspended: true,
+              as: "gallantmon",
+              under: ["AD1-003", "ST7-05", "BT17-080", "BT21-064"],
+            },
+          ],
+        },
+        1: {
+          battleArea: [{ card: "BT1-010", dp: 17000, as: "attacker" }],
+          hand: [{ card: "EX13-021", as: "wingdramon" }],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.turnSeat = 1;
+    s.state.memory = 9;
+    const gallantmonId = s.perm("gallantmon").permanentId;
+    await s.ready();
+
+    expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("wingdramon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.perm("gallantmon").stack.length === 2 && s.state.pendingDecision === undefined);
+    expect(s.perm("gallantmon").stack.map((card) => card.cardId)).toEqual(["BT17-080", "BT21-064"]);
+    expect(s.state.players[0]!.trash.map((card) => card.cardId).sort()).toEqual(["AD1-003", "ST7-05"]);
+
+    expect(
+      s.engine.applyIntent(1, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "permanent", permanentId: gallantmonId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () =>
+        s.state.players[0]!.battleArea.every((permanent) => permanent.permanentId !== gallantmonId) &&
+        s.state.pendingDecision === undefined,
+      5000,
+    );
+    await settle();
+
+    expect(s.state.players[0]!.battleArea).toHaveLength(0);
+    expect(s.decisions.some(({ req }) => req.sourceCardId === "AD1-003")).toBe(false);
+    expect(s.state.players[0]!.trash.map((card) => card.cardId)).toEqual(
+      expect.arrayContaining(["AD1-003", "ST7-05", "BT17-080", "BT21-064", "AD1-008"]),
+    );
+  });
+
   it("does not play inherited cards when Gallantmon leaves by its controller's effect", async () => {
     const s = setupEngine(
       {
