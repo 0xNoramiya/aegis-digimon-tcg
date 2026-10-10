@@ -417,6 +417,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback9-akemi-inherited-mother-eater",
   "arena-feedback20-ruin-mode-on-play",
   "arena-feedback24-kaguyamon-empty-deck",
+  "arena-feedback26-zephagamon-suspend-own",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
   "arena-bt24-homeros-neptunemon-timing-choice",
@@ -7386,6 +7387,37 @@ function layFeedback24KaguyamonEmptyDeckScenario(state: GameState): void {
   state.memory = 3;
 }
 
+/**
+ * Feedback #26: GrandGalemon digivolves into Zephagamon (EX11-035). Its [When Digivolving] first
+ * offers to unsuspend 1 Digimon (only the bot's suspended Monodramon qualifies), then to suspend
+ * 1 Digimon of either player (Q5857). Suspending your own Pteromon triggers Zephagamon's
+ * [All Turns] effect, which plays the Pteromon in hand without paying the cost.
+ */
+function layFeedback26ZephagamonSuspendOwnScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback26-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback26-deck-${seat}-${index}`, "BT1-010", seat));
+    }
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback26-security-${seat}-${index}`, "BT1-010", seat));
+    }
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["ST18-04", "EX11-028", "EX11-032"], "-feedback26-grandgalemon"));
+  placePermanent(human, establishedDigimon(0, ["ST18-04"], "-feedback26-pteromon"));
+  insertCard(human, Zone.Hand, faceUpCard("dev-feedback26-zephagamon", "EX11-035", 0));
+  insertCard(human, Zone.Hand, faceUpCard("dev-feedback26-hand-pteromon", "ST18-04", 0));
+  const monodramon = establishedDigimon(1, ["BT1-009"], "-feedback26-monodramon");
+  monodramon.isSuspended = true;
+  placePermanent(state.players[1]!, monodramon);
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
 function layP224KotoneOwnSourceScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
   prepareIssueScenario(state, decks, 3);
   const human = state.players[0];
@@ -10428,6 +10460,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback9-akemi-inherited-mother-eater": layFeedback9AkemiInheritedScenario,
   "arena-feedback20-ruin-mode-on-play": layFeedback20RuinModeOnPlayScenario,
   "arena-feedback24-kaguyamon-empty-deck": layFeedback24KaguyamonEmptyDeckScenario,
+  "arena-feedback26-zephagamon-suspend-own": layFeedback26ZephagamonSuspendOwnScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,
   "arena-bt24-homeros-neptunemon-timing-choice": layBt24HomerosNeptunemonTimingChoiceScenario,
