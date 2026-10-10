@@ -223993,20 +223993,6 @@
                 "duration": "forTheTurn"
               }
             ]
-          },
-          {
-            "kind": "SubTrigger",
-            "event": "whenEffectRemovesFromSecurity",
-            "fireCondition": { "kind": "triggerRemovedSecuritySeat", "seat": "mine" },
-            "oncePerTurnKey": "BT26-029/security-removed-dp",
-            "actions": [
-              {
-                "kind": "ModifyDP",
-                "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 3 },
-                "amount": -5000,
-                "duration": "forTheTurn"
-              }
-            ]
           }
         ]
       },
@@ -224018,19 +224004,6 @@
           {
             "kind": "SubTrigger",
             "event": "whenSecurityRemoved",
-            "fireCondition": { "kind": "triggerRemovedSecuritySeat", "seat": "mine" },
-            "oncePerTurnKey": "BT26-029/inherited-security-removed-dedigivolve",
-            "actions": [
-              {
-                "kind": "DeDigivolve",
-                "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
-                "amount": 1
-              }
-            ]
-          },
-          {
-            "kind": "SubTrigger",
-            "event": "whenEffectRemovesFromSecurity",
             "fireCondition": { "kind": "triggerRemovedSecuritySeat", "seat": "mine" },
             "oncePerTurnKey": "BT26-029/inherited-security-removed-dedigivolve",
             "actions": [
@@ -231307,20 +231280,6 @@
           {
             "kind": "SubTrigger",
             "event": "whenSecurityRemoved",
-            "sourceFilter": { "controller": "any" },
-            "oncePerTurnKey": "BT26-103/security-removed-dp",
-            "actions": [
-              {
-                "kind": "ModifyDP",
-                "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
-                "amount": -15000,
-                "duration": "untilOpponentTurnEnd"
-              }
-            ]
-          },
-          {
-            "kind": "SubTrigger",
-            "event": "whenEffectRemovesFromSecurity",
             "sourceFilter": { "controller": "any" },
             "oncePerTurnKey": "BT26-103/security-removed-dp",
             "actions": [

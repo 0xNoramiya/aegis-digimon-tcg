@@ -48,10 +48,7 @@ describe("BT26-103 compiled fidelity", () => {
     expect(card?.effects?.[3]).toMatchObject({
       trigger: "AllTurns",
       frequency: "OncePerTurn",
-      actions: [
-        { kind: "SubTrigger", event: "whenSecurityRemoved", sourceFilter: { controller: "any" } },
-        { kind: "SubTrigger", event: "whenEffectRemovesFromSecurity", sourceFilter: { controller: "any" } },
-      ],
+      actions: [{ kind: "SubTrigger", event: "whenSecurityRemoved", sourceFilter: { controller: "any" } }],
     });
   });
 
@@ -87,6 +84,46 @@ describe("BT26-103 compiled fidelity", () => {
     expect(s.state.players[0]!.hand.map(({ instanceId }) => instanceId)).toContain(s.inst("evolutionDraw").instanceId);
     expect(s.state.players[0]!.security).toHaveLength(2);
     expect(s.state.players[0]!.trash.some((card) => card.cardId === "BT1-009")).toBe(true);
+  });
+
+  it("feedback #20 sweep: its own security trash offers the removal watcher once, not twice", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT5-030", as: "olymposBase" }],
+          hand: [{ card: "BT26-103", as: "wrathMode" }],
+          security: ["BT1-009"],
+          deck: ["BT1-010", "BT1-011", "BT1-012"],
+        },
+        1: { battleArea: [{ card: "BT1-009", as: "opponent", dp: 20000 }] },
+      },
+      { autoSelectCards: true },
+    );
+    s.state.memory = 5;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("olymposBase").permanentId,
+        instanceId: s.inst("wrathMode").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision === undefined && s.perm("opponent").currentDP === 5000);
+
+    const offeredRemovalTriggers = s.decisions
+      .filter(({ req }) => req.kind === "orderTriggers")
+      .map(({ req }) => (req.options?.triggerKeys ?? []).filter((key) => key.includes("security-removed-dp")));
+    expect(offeredRemovalTriggers.filter((keys) => keys.length > 1)).toEqual([]);
+    expect(
+      s.events.filter(
+        (event) =>
+          event.kind === "effectResolved" &&
+          event.sourceCardId === "BT26-103" &&
+          String(event.effectKey).includes("security-removed-dp"),
+      ),
+    ).toHaveLength(1);
+    expect(s.perm("opponent").currentDP).toBe(5000);
   });
 
   it("Q7188: recovers two even with no security card to trash", async () => {
@@ -242,7 +279,7 @@ describe("BT26-103 compiled fidelity", () => {
     expect(s.perm("target").currentDP).toBe(14000);
   });
 
-  it("applies the security-removal DP penalty only once across both event routes", async () => {
+  it("applies the security-removal DP penalty only once per turn", async () => {
     const preferred: string[] = [];
     const s = setupEngine(
       {

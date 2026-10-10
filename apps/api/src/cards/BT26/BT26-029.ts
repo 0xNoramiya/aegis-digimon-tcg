@@ -101,9 +101,6 @@ export const compiled: CompiledCard = {
         securityRemovalWatcher("whenSecurityRemoved", "BT26-029/security-removed-dp", [
           { kind: "ModifyDP", target: { filter: opponentDigimon, count: 3 }, amount: -5000, duration: "forTheTurn" },
         ]),
-        securityRemovalWatcher("whenEffectRemovesFromSecurity", "BT26-029/security-removed-dp", [
-          { kind: "ModifyDP", target: { filter: opponentDigimon, count: 3 }, amount: -5000, duration: "forTheTurn" },
-        ]),
       ],
     },
     {
@@ -112,9 +109,6 @@ export const compiled: CompiledCard = {
       isInherited: true,
       actions: [
         securityRemovalWatcher("whenSecurityRemoved", "BT26-029/inherited-security-removed-dedigivolve", [
-          { kind: "DeDigivolve", target: { filter: opponentDigimon, count: 1 }, amount: 1 },
-        ]),
-        securityRemovalWatcher("whenEffectRemovesFromSecurity", "BT26-029/inherited-security-removed-dedigivolve", [
           { kind: "DeDigivolve", target: { filter: opponentDigimon, count: 1 }, amount: 1 },
         ]),
       ],
