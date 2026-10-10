@@ -427,6 +427,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-lordknightmon-bt22-skullknightmon",
   "arena-feedback18-sukamon-inherited-protection",
   "arena-feedback19-burst-tamer-choice",
+  "arena-feedback36-hiroko-kept-by-jupitermon",
   "arena-discord-x7-digixros-zones",
   "arena-security-leak-known-card-face-down",
   "arena-discord-keenan-trigger-order",
@@ -7757,6 +7758,33 @@ function layFeedback19BurstTamerChoiceScenario(state: GameState): void {
 }
 
 /**
+ * Feedback #36: Hiroko Sagisaka (BT24-083) pays "by returning this Tamer to the bottom of the
+ * deck" at the start of the turn. Jupitermon (BT24-101) can keep a [TS] Tamer on the field by
+ * trashing the top security card. If it does, the return did not happen, so Hiroko plays
+ * nothing (Q7247). Fugamon (BT24-013, TS, 4000 DP) waits in hand as the card Hiroko could play.
+ */
+function layFeedback36HirokoKeptByJupitermonScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback36-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback36-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback36-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT24-083"], "-feedback36-hiroko"));
+  placePermanent(human, establishedDigimon(0, ["BT24-101"], "-feedback36-jupitermon"));
+  insertCard(human, Zone.Hand, faceDownCard("dev-feedback36-fugamon", "BT24-013", 0));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
  * Discord 1558458433970380820: Shoutmon X7 (AD1-006) holds Shoutmon X4 (BT10-009), Starmons
  * (BT10-029), and Ballistamon (BT10-049). Tai Kamiya (BT1-085) already has an older Dorulumon
  * (BT10-034) under it, and another Dorulumon is in hand. X7 attacks the bot's suspended Omnimon
@@ -11035,6 +11063,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-lordknightmon-bt22-skullknightmon": layDiscordLordKnightmonBt22SkullKnightmonScenario,
   "arena-feedback18-sukamon-inherited-protection": layFeedback18SukamonInheritedProtectionScenario,
   "arena-feedback19-burst-tamer-choice": layFeedback19BurstTamerChoiceScenario,
+  "arena-feedback36-hiroko-kept-by-jupitermon": layFeedback36HirokoKeptByJupitermonScenario,
   "arena-discord-x7-digixros-zones": layDiscordX7DigiXrosZonesScenario,
   "arena-security-leak-known-card-face-down": laySecurityLeakKnownCardFaceDownScenario,
   "arena-discord-keenan-trigger-order": layDiscordKeenanTriggerOrderScenario,
