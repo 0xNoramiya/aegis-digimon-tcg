@@ -80,9 +80,9 @@ export const compiled: CompiledCard = {
   residual: [],
   digivolutionRequirement: [
     {
-      level: 3,
+      level: 4,
       traits: ["WG"],
-      cost: 2,
+      cost: 3,
       isAlternate: true,
     },
   ],

@@ -486,6 +486,8 @@ export interface AegisJoinOptions {
     | "arena-lm007-publimon-end-of-attack"
     | "arena-feedback4-shellmon-targets"
     | "arena-feedback5-execute-suspended"
+    | "arena-feedback6-deramon-breeding-level"
+    | "arena-feedback15-gryphonmon-deramon"
     | "arena-raid-optional-preset"
     | "arena-preset-order-no-clicks"
     | "arena-ex13-leopardmon-suspended-target"
