@@ -972,6 +972,139 @@ describe("sequential pacing through a security check", () => {
   });
 });
 
+describe("an Option an attack effect uses, in the same burst as the security check", () => {
+  // Follow-up to feedback #29 (LM-068 Black Sabbath used from the trash): the check's shield
+  // break replaced the centre-stage track and dropped the Option's showcase. Its clause was
+  // never read, so the deletion and the effect unit waited out their gate ceilings.
+  it("reads the Option's clause and plays its deletion before the shield breaks", async () => {
+    const state = {
+      ...BOARD,
+      players: [
+        {
+          ...BOARD.players[0]!,
+          battleArea: [{ permanentId: "punkmon", topCard: { instanceId: "punk", cardId: "EX11-049" }, stack: [] }],
+        },
+        {
+          ...BOARD.players[1]!,
+          battleArea: [{ permanentId: "groundramon", topCard: { instanceId: "ground", cardId: "BT1-020" }, stack: [] }],
+        },
+      ],
+    } as unknown as GameState;
+    const watcher: Extract<ServerEvent, { kind: "effectTriggered" }> = {
+      kind: "effectTriggered",
+      seat: 0,
+      sourceCardId: "LM-068",
+      sourceInstanceId: "sabbath",
+      effectKey: "subtrigger/14/whenAttacking",
+      description: "When attacking: HeavyMetaldramon",
+      timing: "whenAttacking",
+    };
+    const option: Extract<ServerEvent, { kind: "effectTriggered" }> = {
+      kind: "effectTriggered",
+      seat: 0,
+      sourceCardId: "LM-068",
+      sourceInstanceId: "sabbath",
+      effectKey: "LM-068/ir-25-0",
+      description:
+        "[Main] Delete 1 of your opponent's Digimon with a level as high as the number of cards in your hand or higher.",
+      timing: "OnUseOption",
+    };
+    const asked: readonly (readonly ServerEvent[])[] = [
+      [
+        {
+          kind: "attackDeclared",
+          seat: 0,
+          attackerPermanentId: "punkmon",
+          attackerCardId: "EX11-049",
+          target: { kind: "player" },
+        },
+      ],
+      [watcher],
+    ];
+    const answered: readonly (readonly ServerEvent[])[] = [
+      [
+        { kind: "memoryChanged", from: 3, to: 0, reason: "useOption" },
+        { kind: "cardPlayed", instanceId: "sabbath", fromZone: "trash", seat: 0, cardId: "LM-068" },
+        option,
+      ],
+      [
+        {
+          kind: "cardsMoved",
+          instanceIds: ["ground"],
+          from: "battleArea",
+          to: "trash",
+          deletedPermanents: [{ permanentId: "groundramon", instanceId: "ground", cardId: "BT1-020", seat: 1 }],
+        },
+      ],
+      [{ ...option, kind: "effectResolved" } as ServerEvent],
+      [{ kind: "cardsMoved", instanceIds: ["sabbath"], from: "various", to: "trash", optionUsed: true }],
+      [{ ...watcher, kind: "effectResolved" } as ServerEvent],
+      [
+        {
+          kind: "securityRevealed",
+          seat: 1,
+          revealedCardId: "BT1-027",
+          attackerPermanentId: "punkmon",
+          securityCardDP: 4000,
+          attackerDP: 8000,
+          securityCountBefore: 4,
+          hasSecurityEffect: false,
+          isDigimon: true,
+        },
+      ],
+      [
+        {
+          kind: "securityChecked",
+          seat: 1,
+          revealedCardId: "BT1-027",
+          resolution: "battle",
+          battle: { securityDigimonDeleted: true, attackerDeleted: false, attackerDP: 8000, securityCardDP: 4000 },
+        },
+      ],
+      [{ kind: "attackEnded", seat: 0, attackerPermanentId: "punkmon" }],
+    ];
+    const anchors = geometry();
+    const view = renderHook(
+      ({ fed }: { fed: readonly ServerBatch[] }) =>
+        useMatchCues({
+          batches: fed,
+          state,
+          viewerSeat: VIEWER,
+          mulliganOpen: false,
+          anchors,
+          onActionRejected: vi.fn<(reason: string) => void>(),
+          presentationPacing: "sequential",
+        }),
+      { initialProps: { fed: [] as readonly ServerBatch[] } },
+    );
+    await advance(0);
+    const batches = asked.map((events, index) => singleServerBatch(events, index + 1));
+    view.rerender({ fed: batches });
+    await advance(4000);
+    view.rerender({
+      fed: [...batches, ...answered.map((events, index) => singleServerBatch(events, asked.length + index + 1))],
+    });
+    let clauseAt: number | undefined;
+    let burstAt: number | undefined;
+    let breakAt: number | undefined;
+    for (let elapsed = 0; elapsed <= 15_000; elapsed += 16) {
+      if (
+        effectClauses(view).some((notice) => notice.body.variant === "effect" && notice.body.timing === "OnUseOption")
+      )
+        clauseAt ??= elapsed;
+      if (view.result.current.deleteBursts.length > 0) burstAt ??= elapsed;
+      if (view.result.current.securityBreak !== null) breakAt ??= elapsed;
+      await advance(16);
+    }
+    expect(clauseAt).toBeDefined();
+    expect(burstAt).toBeDefined();
+    expect(breakAt).toBeDefined();
+    expect(clauseAt!).toBeLessThan(burstAt!);
+    expect(burstAt!).toBeLessThan(breakAt!);
+    expect(view.result.current.decisionAnimationsPending).toBe(false);
+  });
+});
+
 describe("current pacing keeps its own order", () => {
   it("lets the second effect's source light up while the first effect's results still play", async () => {
     const view = renderChain("current");
