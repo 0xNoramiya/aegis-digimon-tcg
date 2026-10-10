@@ -328,6 +328,25 @@ describe("EX12-065 Kaguyamon", () => {
     expect(s.state.players[0]!.trash.some(({ cardId }) => cardId === "EX12-063")).toBe(true);
   });
 
+  it("feedback #24: returns the lowest level Digimon to an empty deck instead of the trash", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: CARD_ID, as: "source" }] },
+        1: { battleArea: [{ card: "BT1-009", as: "lowest", under: ["BT1-010"] }] },
+      },
+      { autoSelectCards: true },
+    );
+    await s.ready();
+    const opponent = s.state.players[1]!;
+    expect(opponent.deck).toHaveLength(0);
+
+    expect(await advance(s.engine).verb.deletePermanent([s.perm("source").permanentId], "byEffect")).toBe(1);
+    await settle(() => opponent.battleArea.length === 0 && s.state.pendingDecision === undefined);
+
+    expect(opponent.deck.map(({ cardId }) => cardId)).toEqual(["BT1-009"]);
+    expect(opponent.trash.map(({ cardId }) => cardId)).toEqual(["BT1-010"]);
+  });
+
   it.each([
     ["EX12-063", ["EX12-063", "EX12-065"]],
     ["EX12-065", ["EX12-065", "EX12-063"]],

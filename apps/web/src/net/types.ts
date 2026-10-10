@@ -663,6 +663,7 @@ export interface AegisJoinOptions {
     | "arena-bt22-akemi-battle-mother"
     | "arena-feedback9-akemi-inherited-mother-eater"
     | "arena-feedback20-ruin-mode-on-play"
+    | "arena-feedback24-kaguyamon-empty-deck"
     | "arena-p224-kotone-own-source"
     | "arena-bt25-ceresmon-homeros-suspend"
     | "arena-bt24-homeros-neptunemon-timing-choice"
