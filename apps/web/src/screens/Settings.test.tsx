@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Settings } from "./Settings";
 import { I18nProvider } from "../i18n";
@@ -7,18 +7,45 @@ import { arePileCountsShown, setPileCountsShown } from "../design/pileCounts";
 
 const player = { name: "Guest Tamer", color: "Blue", shards: 0, guestAvatarId: null };
 
-describe("settings portrait picker", () => {
+describe("settings layout", () => {
   afterEach(() => cleanup());
 
-  it("directs identity editing to the profile page", () => {
+  it("links every section from the section navigation", () => {
     render(
       <I18nProvider>
         <Settings player={player} account={null} dark={false} onToggleDark={() => undefined} />
       </I18nProvider>,
     );
 
-    expect(screen.getByRole("link", { name: /Customize/ }).getAttribute("href")).toBe("/profile/customize");
-    expect(screen.queryByRole("button", { name: "Use Greymon as your avatar" })).toBeNull();
+    const navigation = screen.getByRole("navigation", { name: "Preferences sections" });
+    const links = within(navigation).getAllByRole("link");
+    expect(links.map((link) => link.textContent)).toEqual([
+      "Appearance",
+      "Language & text",
+      "Card sleeves",
+      "Sound & music",
+      "Gameplay",
+      "Arena",
+    ]);
+    for (const link of links) {
+      const target = document.getElementById(link.getAttribute("href")!.slice(1));
+      expect(target?.tagName).toBe("SECTION");
+    }
+    expect(links[0]!.getAttribute("aria-current")).toBe("location");
+    expect(screen.queryByRole("link", { name: /Customize/ })).toBeNull();
+  });
+
+  it("toggles dark mode from a switch", () => {
+    const onToggleDark = vi.fn<(dark: boolean) => void>();
+    render(
+      <I18nProvider>
+        <Settings player={player} account={null} dark={false} onToggleDark={onToggleDark} />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("switch", { name: /Dark mode/ }));
+
+    expect(onToggleDark).toHaveBeenCalledWith(true);
   });
 });
 

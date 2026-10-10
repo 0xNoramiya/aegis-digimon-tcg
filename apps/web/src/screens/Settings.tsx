@@ -1,11 +1,12 @@
 import { CustomMusicPicker } from "../design/CustomMusicPicker";
 import { MusicCredits } from "../design/MusicCredits";
 import { InterfaceThemeDialog } from "../design/InterfaceThemePicker";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Avatar, Button, Eyebrow, Switch, type PlayerIdentity } from "../design/primitives";
 import { Panel, SectionHeading } from "../design/surfaces";
 import { ArenaLookSettings } from "../design/ArenaLookSettings";
-import { Icons } from "../design/icons";
+import { Icons, type IconComponent } from "../design/icons";
+import { getInterfaceColors, useInterfaceTheme } from "../design/interfaceTheme";
 import {
   getMusicTrack,
   getMusicVolume,
@@ -37,6 +38,7 @@ import { setHandAutoSortEnabled, useHandAutoSort } from "../game/handAutoSort";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../game/noticeDuration";
 import { LOCALES, LOCALE_LABELS, useTranslation, type TranslationKey } from "../i18n";
 import type { RemoteAccount } from "../account/client";
+import { useCloudReplays } from "../replays/cloud";
 import { CloudReplaySettings } from "../replays/cloud/CloudReplaySettings";
 import "./settings.css";
 
@@ -45,6 +47,181 @@ const TEXT_SCALE_LABELS: Record<TextScale, TranslationKey> = {
   large: "settings.textSizeLarge",
   larger: "settings.textSizeLarger",
 };
+
+interface SettingsSection {
+  id: string;
+  label: TranslationKey;
+  icon: IconComponent;
+}
+
+const REPLAYS_SECTION_ID = "settings-replays";
+
+const SECTIONS: readonly SettingsSection[] = [
+  { id: "settings-appearance", label: "settings.sectionAppearance", icon: Icons.Palette },
+  { id: "settings-language", label: "redesign.settings.languageText", icon: Icons.FileText },
+  { id: "settings-sleeves", label: "settings.cardSleeve", icon: Icons.LayoutGrid },
+  { id: REPLAYS_SECTION_ID, label: "replay.drive.settingsTitle", icon: Icons.Cloud },
+  { id: "settings-sound", label: "redesign.settings.sound", icon: Icons.Play },
+  { id: "settings-gameplay", label: "settings.sectionGameplay", icon: Icons.Swords },
+  { id: "settings-arena", label: "redesign.settings.arena", icon: Icons.Map },
+];
+
+function prefersReducedMotion(): boolean {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+}
+
+/** Highlights the section nearest the top of the scrolling page. */
+function useActiveSection(sections: readonly SettingsSection[], root: HTMLElement | null) {
+  const [activeId, setActiveId] = useState(sections[0]?.id);
+  useEffect(() => {
+    if (!root || typeof IntersectionObserver === "undefined") return;
+    const visible = new Set<string>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) visible.add(entry.target.id);
+          else visible.delete(entry.target.id);
+        }
+        const first = sections.find((section) => visible.has(section.id));
+        if (first) setActiveId(first.id);
+      },
+      { root, rootMargin: "-80px 0px -55% 0px" },
+    );
+    for (const { id } of sections) {
+      const section = document.getElementById(id);
+      if (section) observer.observe(section);
+    }
+    return () => observer.disconnect();
+  }, [root, sections]);
+  return [activeId, setActiveId] as const;
+}
+
+function SettingsNav({ sections, root }: { sections: readonly SettingsSection[]; root: HTMLElement | null }) {
+  const { t } = useTranslation();
+  const [activeId, setActiveId] = useActiveSection(sections, root);
+  const listRef = useRef<HTMLUListElement>(null);
+
+  useEffect(() => {
+    const list = listRef.current;
+    const link = list?.querySelector<HTMLElement>("[aria-current]");
+    if (!list || !link || list.scrollWidth <= list.clientWidth) return;
+    const outside =
+      link.offsetLeft < list.scrollLeft || link.offsetLeft + link.offsetWidth > list.scrollLeft + list.clientWidth;
+    if (outside) list.scrollLeft = link.offsetLeft - list.clientWidth / 2 + link.offsetWidth / 2;
+  }, [activeId]);
+
+  function jump(event: MouseEvent<HTMLAnchorElement>, id: string) {
+    const section = document.getElementById(id);
+    if (!section || !root) return;
+    // The app routes on pathname; a hash change would fire popstate, so scroll without one.
+    // scrollIntoView would also scroll the app's overflow-hidden stage, so scroll only the page.
+    event.preventDefault();
+    setActiveId(id);
+    const margin = Number.parseFloat(getComputedStyle(section).scrollMarginTop) || 0;
+    const top = root.scrollTop + section.getBoundingClientRect().top - root.getBoundingClientRect().top - margin;
+    root.scrollTo({ top, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+    section.focus({ preventScroll: true });
+  }
+
+  return (
+    <nav className="settings-nav" aria-label={t("redesign.settings.sections")}>
+      <ul ref={listRef}>
+        {sections.map(({ id, label, icon: Icon }) => (
+          <li key={id}>
+            <a
+              href={`#${id}`}
+              className="settings-nav__link"
+              aria-current={activeId === id ? "location" : undefined}
+              onClick={(event) => jump(event, id)}
+            >
+              <Icon size={18} />
+              <span>{t(label)}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+function SettingsCard({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+  return (
+    <section id={id} className="settings-card" aria-labelledby={`${id}-title`} tabIndex={-1}>
+      <SectionHeading id={`${id}-title`} title={title} />
+      <div className="settings-list">{children}</div>
+    </section>
+  );
+}
+
+function SettingRow({
+  label,
+  labelId,
+  description,
+  stacked,
+  children,
+}: {
+  label: ReactNode;
+  labelId?: string;
+  description?: ReactNode;
+  stacked?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className={stacked ? "settings-row settings-row--stack" : "settings-row"}>
+      <div className="settings-row__copy">
+        <strong id={labelId}>{label}</strong>
+        {description ? <small>{description}</small> : null}
+      </div>
+      <div className="settings-row__control">{children}</div>
+    </div>
+  );
+}
+
+function OptionList<T extends string>({
+  options,
+  selected,
+  labelledBy,
+  label,
+  onSelect,
+}: {
+  options: readonly T[];
+  selected: T;
+  labelledBy: string;
+  label: (option: T) => string;
+  onSelect: (option: T) => void;
+}) {
+  return (
+    <div className="settings-option-list" role="group" aria-labelledby={labelledBy}>
+      {options.map((option) => {
+        const on = selected === option;
+        return (
+          <button
+            key={option}
+            type="button"
+            className="settings-option"
+            aria-pressed={on}
+            onClick={() => onSelect(option)}
+          >
+            {label(option)}
+            {on ? <Icons.Check size={16} /> : null}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ThemeSwatches({ dark }: { dark: boolean }) {
+  useInterfaceTheme();
+  const colors = getInterfaceColors(dark);
+  return (
+    <span className="settings-swatches" aria-hidden="true">
+      {[colors.accent, colors.text, colors.header, colors.background].map((color, index) => (
+        <span key={index} style={{ background: color }} />
+      ))}
+    </span>
+  );
+}
 
 export function Settings({
   player,
@@ -59,6 +236,7 @@ export function Settings({
 }) {
   const { t, locale, setLocale } = useTranslation();
   const textScale = useTextScale();
+  const [page, setPage] = useState<HTMLElement | null>(null);
   const [themeOpen, setThemeOpen] = useState(false);
   const [musicOn, setMusicOn] = useState(isMusicEnabled());
   const [musicVolume, setMusicVolumeChoice] = useState(Math.round(getMusicVolume() * 100));
@@ -77,9 +255,15 @@ export function Settings({
   const handAutoSort = useHandAutoSort();
   const effectPromptPosition = useEffectPromptPosition();
   const noticeDuration = useNoticeDuration();
+  const hasCloudReplays = useCloudReplays().provider !== undefined;
+  const sections = useMemo(
+    () => (hasCloudReplays ? SECTIONS : SECTIONS.filter((section) => section.id !== REPLAYS_SECTION_ID)),
+    [hasCloudReplays],
+  );
   const accountStatus = account ? t("account.connected") : account === null ? t("redesign.settings.guest") : null;
+
   return (
-    <main className="settings-page">
+    <main className="settings-page" ref={setPage}>
       <div className="settings-shell aegis-page-sheet aegis-page-sheet--padded">
         <Panel as="header" className="settings-hero">
           <Avatar
@@ -87,7 +271,7 @@ export function Settings({
             color={player.color}
             avatarId={player.avatarId ?? player.guestAvatarId}
             avatarUrl={player.avatarUrl}
-            size={72}
+            size={56}
           />
           <div className="settings-hero__copy">
             <Eyebrow>{t("settings.eyebrow")}</Eyebrow>
@@ -99,320 +283,250 @@ export function Settings({
           </div>
         </Panel>
 
-        <div className="settings-grid">
-          <div className="settings-column settings-column--side">
-            <section className="settings-card settings-card--profile" aria-labelledby="settings-profile-title">
-              <SectionHeading id="settings-profile-title" title={t("redesign.settings.profile")} />
-              <p>{t("profile.previewHint")}</p>
-              <a className="settings-profile-link" href="/profile/customize">
-                {t("profile.customize")} →
-              </a>
-            </section>
-            <CloudReplaySettings />
-          </div>
+        <div className="settings-layout">
+          <SettingsNav sections={sections} root={page} />
 
-          <section className="settings-card settings-card--appearance" aria-labelledby="settings-appearance-title">
-            <SectionHeading id="settings-appearance-title" title={t("settings.sectionAppearance")} />
-            <div className="settings-row">
-              <div className="settings-row__copy">
-                <strong>{t("mobile.settings.darkMode")}</strong>
-                <small>{t("mobile.settings.darkModeDesc")}</small>
-              </div>
-              <button
-                type="button"
-                className="settings-theme-toggle"
-                aria-pressed={dark}
-                onClick={() => onToggleDark(!dark)}
-              >
-                {dark ? <Icons.Moon size={16} /> : <Icons.Sun size={16} />}
-                <span>{dark ? t("settings.themeDark") : t("settings.themeLight")}</span>
-              </button>
-            </div>
-
-            <div className="settings-row settings-row--stack">
-              <div className="settings-row__copy">
-                <strong>{t("redesign.shell.theme.title")}</strong>
-                <small>{t("redesign.shell.theme.description")}</small>
-              </div>
-              <Button variant="secondary" size="sm" onClick={() => setThemeOpen(true)} aria-haspopup="dialog">
-                {t("redesign.shell.theme.choose")}
-              </Button>
-            </div>
-
-            <div className="settings-row">
-              <div className="settings-row__copy">
-                <strong>{t("settings.language")}</strong>
-                <small>{t("settings.languageDesc")}</small>
-              </div>
-              <div className="settings-language-list">
-                {LOCALES.map((option) => {
-                  const on = locale === option;
-                  return (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setLocale(option)}
-                      className="settings-language-option"
-                      aria-pressed={on}
-                    >
-                      {LOCALE_LABELS[option]}
-                      {on ? <Icons.Check size={16} /> : null}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="settings-row">
-              <div className="settings-row__copy">
-                <strong id="settings-text-size-label">{t("settings.textSize")}</strong>
-                <small>{t("settings.textSizeDesc")}</small>
-              </div>
-              <div className="settings-language-list" role="group" aria-labelledby="settings-text-size-label">
-                {TEXT_SCALES.map((option) => {
-                  const on = textScale === option;
-                  return (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setTextScale(option)}
-                      className="settings-language-option"
-                      aria-pressed={on}
-                    >
-                      {t(TEXT_SCALE_LABELS[option])}
-                      {on ? <Icons.Check size={16} /> : null}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="settings-block">
-              <div className="settings-block__heading">
-                <strong>{t("settings.cardSleeve")}</strong>
-                <small>{t("settings.cardSleeveDesc")}</small>
-              </div>
-              <CardSleevePicker />
-            </div>
-
-            <div className="settings-block">
-              <div className="settings-block__heading">
-                <strong>{t("settings.eggSleeve")}</strong>
-                <small>{t("settings.eggSleeveDesc")}</small>
-              </div>
-              <EggSleevePicker />
-            </div>
-          </section>
-
-          <section className="settings-card settings-card--gameplay" aria-labelledby="settings-gameplay-title">
-            <SectionHeading id="settings-gameplay-title" title={t("settings.sectionGameplay")} />
-            <div className="settings-block">
-              <Switch
-                checked={soundOn}
-                label={t("settings.sound")}
-                description={t("settings.soundDesc")}
-                onChange={(next) => {
-                  setSoundEnabled(next);
-                  setSoundOn(next);
-                  if (next) playSound("confirm");
-                }}
-              />
-            </div>
-            <div className="settings-block settings-volume" data-disabled={!soundOn || undefined}>
-              <div className="settings-volume__heading">
-                <span>{t("settings.volume")}</span>
-                <span className="settings-volume__value">{volume}</span>
-              </div>
-              <input
-                aria-label={t("settings.volume")}
-                name="soundVolume"
-                type="range"
-                min={0}
-                max={100}
-                value={volume}
-                disabled={!soundOn}
-                onChange={(e) => {
-                  const next = Number(e.target.value);
-                  setVolume(next);
-                  setSoundVolume(next / 100);
-                }}
-                onPointerUp={() => soundOn && playSound("select")}
-                className="settings-volume__control"
-              />
-            </div>
-            <div className="settings-block">
-              <Switch
-                checked={musicOn}
-                label={t("settings.music")}
-                description={t("settings.musicDesc")}
-                onChange={(next) => {
-                  unlockAudio();
-                  setMusicEnabled(next);
-                  setMusicOn(next);
-                }}
-              />
-            </div>
-            <div className="settings-block settings-volume" data-disabled={!musicOn || undefined}>
-              <div className="settings-volume__heading">
-                <span>{t("settings.musicVolume")}</span>
-                <span className="settings-volume__value">{musicVolume}</span>
-              </div>
-              <input
-                aria-label={t("settings.musicVolume")}
-                name="musicVolume"
-                type="range"
-                min={0}
-                max={100}
-                value={musicVolume}
-                disabled={!musicOn}
-                onChange={(e) => {
-                  const next = Number(e.target.value);
-                  setMusicVolumeChoice(next);
-                  setMusicVolume(next / 100);
-                }}
-                className="settings-volume__control"
-              />
-            </div>
-            <CustomMusicPicker />
-            <div className="settings-row">
-              <div className="settings-row__copy">
-                <strong id="settings-music-track-label">{t("settings.musicTrack")}</strong>
-                <small>{t("settings.musicTrackDesc")}</small>
-              </div>
-              <div className="settings-language-list" role="group" aria-labelledby="settings-music-track-label">
-                {MUSIC_TRACKS.map((track) => {
-                  const on = musicTrack === track;
-                  return (
-                    <button
-                      key={track}
-                      type="button"
-                      className="settings-language-option"
-                      aria-pressed={on}
-                      onClick={() => {
-                        setMusicTrack(track);
-                        setMusicTrackChoice(track);
-                      }}
-                    >
-                      {t(MUSIC_TRACK_LABEL_KEYS[track])}
-                      {on ? <Icons.Check size={16} /> : null}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <MusicCredits track={musicTrack} />
-            <div className="settings-block">
-              <Switch
-                checked={actionConfirmationsOn}
-                label={t("settings.actionConfirmations")}
-                description={t("settings.actionConfirmationsDesc")}
-                onChange={(next) => {
-                  setActionConfirmationsEnabled(next);
-                  setActionConfirmationsOn(next);
-                }}
-              />
-            </div>
-            <div className="settings-row">
-              <div className="settings-row__copy">
-                <strong id="settings-effect-position-label">{t("settings.effectPromptPosition")}</strong>
-                <small>{t("settings.effectPromptPositionDesc")}</small>
-              </div>
-              <div className="settings-language-list" role="group" aria-labelledby="settings-effect-position-label">
-                {EFFECT_PROMPT_POSITIONS.map((position) => (
-                  <button
-                    key={position}
-                    type="button"
-                    className="settings-language-option"
-                    aria-pressed={effectPromptPosition === position}
-                    onClick={() => setEffectPromptPosition(position)}
-                  >
-                    {t(position === "center" ? "settings.effectPromptCenter" : "settings.effectPromptLeft")}
-                    {effectPromptPosition === position ? <Icons.Check size={16} /> : null}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {SEQUENTIAL_PACING_ENABLED ? (
+          <div className="settings-content">
+            <SettingsCard id="settings-appearance" title={t("settings.sectionAppearance")}>
               <div className="settings-row">
-                <div className="settings-row__copy">
-                  <strong id="settings-effect-speed-label">{t("settings.effectSpeed")}</strong>
-                  <small>{t("settings.effectSpeedDesc")}</small>
-                </div>
-                <div className="settings-language-list" role="group" aria-labelledby="settings-effect-speed-label">
-                  {EFFECT_SPEEDS.map((speed) => {
-                    const on = effectSpeed === speed;
-                    return (
-                      <button
-                        key={speed}
-                        type="button"
-                        className="settings-language-option"
-                        aria-pressed={on}
-                        onClick={() => {
-                          setEffectSpeed(speed);
-                          setEffectSpeedChoice(speed);
-                        }}
-                      >
-                        {effectSpeedLabels[speed]}
-                        {on ? <Icons.Check size={16} /> : null}
-                      </button>
-                    );
-                  })}
-                </div>
+                <Switch
+                  checked={dark}
+                  label={t("mobile.settings.darkMode")}
+                  description={t("mobile.settings.darkModeDesc")}
+                  onChange={onToggleDark}
+                />
               </div>
-            ) : null}
-            <div className="settings-row">
-              <div className="settings-row__copy">
-                <strong id="settings-notice-duration-label">{t("settings.noticeDuration")}</strong>
-                <small>{t("settings.noticeDurationDesc")}</small>
-              </div>
-              <div className="settings-language-list" role="group" aria-labelledby="settings-notice-duration-label">
-                {NOTICE_DURATIONS.map((duration) => {
-                  const on = noticeDuration === duration;
-                  return (
-                    <button
-                      key={duration}
-                      type="button"
-                      className="settings-language-option"
-                      aria-pressed={on}
-                      onClick={() => setNoticeDuration(duration)}
-                    >
-                      {t(NOTICE_DURATION_LABELS[duration])}
-                      {on ? <Icons.Check size={16} /> : null}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="settings-block">
-              <Switch
-                checked={fieldLayout === FieldLayout.Organized}
-                label={t("settings.organizedField")}
-                description={t("settings.organizedFieldDesc")}
-                onChange={(next) => setFieldLayout(next ? FieldLayout.Organized : FieldLayout.Classic)}
-              />
-            </div>
-            <div className="settings-block">
-              <Switch
-                checked={handAutoSort}
-                label={t("settings.handAutoSort")}
-                description={t("settings.handAutoSortDesc")}
-                onChange={setHandAutoSortEnabled}
-              />
-            </div>
-            <div className="settings-block">
-              <Switch
-                checked={pileCountsShown}
-                label={t("settings.pileCounts")}
-                description={t("settings.pileCountsDesc")}
-                onChange={setPileCountsShown}
-              />
-            </div>
-          </section>
+              <SettingRow label={t("redesign.shell.theme.title")} description={t("redesign.shell.theme.description")}>
+                <ThemeSwatches dark={dark} />
+                <Button variant="secondary" size="sm" onClick={() => setThemeOpen(true)} aria-haspopup="dialog">
+                  {t("redesign.shell.theme.choose")}
+                </Button>
+              </SettingRow>
+            </SettingsCard>
 
-          <section className="settings-card settings-card--arena" aria-labelledby="settings-arena-title">
-            <SectionHeading id="settings-arena-title" title={t("redesign.settings.arena")} />
-            <ArenaLookSettings />
-          </section>
+            <SettingsCard id="settings-language" title={t("redesign.settings.languageText")}>
+              <SettingRow
+                label={t("settings.language")}
+                labelId="settings-language-label"
+                description={t("settings.languageDesc")}
+              >
+                <OptionList
+                  options={LOCALES}
+                  selected={locale}
+                  labelledBy="settings-language-label"
+                  label={(option) => LOCALE_LABELS[option]}
+                  onSelect={setLocale}
+                />
+              </SettingRow>
+              <SettingRow
+                label={t("settings.textSize")}
+                labelId="settings-text-size-label"
+                description={t("settings.textSizeDesc")}
+              >
+                <OptionList
+                  options={TEXT_SCALES}
+                  selected={textScale}
+                  labelledBy="settings-text-size-label"
+                  label={(option) => t(TEXT_SCALE_LABELS[option])}
+                  onSelect={setTextScale}
+                />
+              </SettingRow>
+            </SettingsCard>
+
+            <SettingsCard id="settings-sleeves" title={t("settings.cardSleeve")}>
+              <div className="settings-row settings-row--stack">
+                <p className="settings-row__lede">{t("settings.cardSleeveDesc")}</p>
+                <CardSleevePicker />
+              </div>
+              <SettingRow stacked label={t("settings.eggSleeve")} description={t("settings.eggSleeveDesc")}>
+                <EggSleevePicker />
+              </SettingRow>
+            </SettingsCard>
+
+            <CloudReplaySettings />
+
+            <SettingsCard id="settings-sound" title={t("redesign.settings.sound")}>
+              <div className="settings-row">
+                <Switch
+                  checked={soundOn}
+                  label={t("settings.sound")}
+                  description={t("settings.soundDesc")}
+                  onChange={(next) => {
+                    setSoundEnabled(next);
+                    setSoundOn(next);
+                    if (next) playSound("confirm");
+                  }}
+                />
+              </div>
+              <div className="settings-row settings-volume" data-disabled={!soundOn || undefined}>
+                <label className="settings-volume__heading" htmlFor="settings-sound-volume">
+                  <span>{t("settings.volume")}</span>
+                  <span className="settings-volume__value">{volume}</span>
+                </label>
+                <input
+                  id="settings-sound-volume"
+                  aria-label={t("settings.volume")}
+                  name="soundVolume"
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={volume}
+                  disabled={!soundOn}
+                  onChange={(e) => {
+                    const next = Number(e.target.value);
+                    setVolume(next);
+                    setSoundVolume(next / 100);
+                  }}
+                  onPointerUp={() => soundOn && playSound("select")}
+                  className="settings-volume__control"
+                />
+              </div>
+              <div className="settings-row">
+                <Switch
+                  checked={musicOn}
+                  label={t("settings.music")}
+                  description={t("settings.musicDesc")}
+                  onChange={(next) => {
+                    unlockAudio();
+                    setMusicEnabled(next);
+                    setMusicOn(next);
+                  }}
+                />
+              </div>
+              <div className="settings-row settings-volume" data-disabled={!musicOn || undefined}>
+                <label className="settings-volume__heading" htmlFor="settings-music-volume">
+                  <span>{t("settings.musicVolume")}</span>
+                  <span className="settings-volume__value">{musicVolume}</span>
+                </label>
+                <input
+                  id="settings-music-volume"
+                  aria-label={t("settings.musicVolume")}
+                  name="musicVolume"
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={musicVolume}
+                  disabled={!musicOn}
+                  onChange={(e) => {
+                    const next = Number(e.target.value);
+                    setMusicVolumeChoice(next);
+                    setMusicVolume(next / 100);
+                  }}
+                  className="settings-volume__control"
+                />
+              </div>
+              <SettingRow
+                stacked
+                label={t("settings.musicTrack")}
+                labelId="settings-music-track-label"
+                description={t("settings.musicTrackDesc")}
+              >
+                <OptionList
+                  options={MUSIC_TRACKS}
+                  selected={musicTrack}
+                  labelledBy="settings-music-track-label"
+                  label={(track) => t(MUSIC_TRACK_LABEL_KEYS[track])}
+                  onSelect={(track) => {
+                    setMusicTrack(track);
+                    setMusicTrackChoice(track);
+                  }}
+                />
+                <MusicCredits track={musicTrack} />
+              </SettingRow>
+              <div className="settings-row">
+                <CustomMusicPicker />
+              </div>
+            </SettingsCard>
+
+            <SettingsCard id="settings-gameplay" title={t("settings.sectionGameplay")}>
+              <div className="settings-row">
+                <Switch
+                  checked={actionConfirmationsOn}
+                  label={t("settings.actionConfirmations")}
+                  description={t("settings.actionConfirmationsDesc")}
+                  onChange={(next) => {
+                    setActionConfirmationsEnabled(next);
+                    setActionConfirmationsOn(next);
+                  }}
+                />
+              </div>
+              <SettingRow
+                label={t("settings.effectPromptPosition")}
+                labelId="settings-effect-position-label"
+                description={t("settings.effectPromptPositionDesc")}
+              >
+                <OptionList
+                  options={EFFECT_PROMPT_POSITIONS}
+                  selected={effectPromptPosition}
+                  labelledBy="settings-effect-position-label"
+                  label={(position) =>
+                    t(position === "center" ? "settings.effectPromptCenter" : "settings.effectPromptLeft")
+                  }
+                  onSelect={setEffectPromptPosition}
+                />
+              </SettingRow>
+              {SEQUENTIAL_PACING_ENABLED ? (
+                <SettingRow
+                  label={t("settings.effectSpeed")}
+                  labelId="settings-effect-speed-label"
+                  description={t("settings.effectSpeedDesc")}
+                >
+                  <OptionList
+                    options={EFFECT_SPEEDS}
+                    selected={effectSpeed}
+                    labelledBy="settings-effect-speed-label"
+                    label={(speed) => effectSpeedLabels[speed]}
+                    onSelect={(speed) => {
+                      setEffectSpeed(speed);
+                      setEffectSpeedChoice(speed);
+                    }}
+                  />
+                </SettingRow>
+              ) : null}
+              <SettingRow
+                label={t("settings.noticeDuration")}
+                labelId="settings-notice-duration-label"
+                description={t("settings.noticeDurationDesc")}
+              >
+                <OptionList
+                  options={NOTICE_DURATIONS}
+                  selected={noticeDuration}
+                  labelledBy="settings-notice-duration-label"
+                  label={(duration) => t(NOTICE_DURATION_LABELS[duration])}
+                  onSelect={setNoticeDuration}
+                />
+              </SettingRow>
+              <div className="settings-row">
+                <Switch
+                  checked={fieldLayout === FieldLayout.Organized}
+                  label={t("settings.organizedField")}
+                  description={t("settings.organizedFieldDesc")}
+                  onChange={(next) => setFieldLayout(next ? FieldLayout.Organized : FieldLayout.Classic)}
+                />
+              </div>
+              <div className="settings-row">
+                <Switch
+                  checked={handAutoSort}
+                  label={t("settings.handAutoSort")}
+                  description={t("settings.handAutoSortDesc")}
+                  onChange={setHandAutoSortEnabled}
+                />
+              </div>
+              <div className="settings-row">
+                <Switch
+                  checked={pileCountsShown}
+                  label={t("settings.pileCounts")}
+                  description={t("settings.pileCountsDesc")}
+                  onChange={setPileCountsShown}
+                />
+              </div>
+            </SettingsCard>
+
+            <section id="settings-arena" className="settings-card" aria-labelledby="settings-arena-title" tabIndex={-1}>
+              <SectionHeading id="settings-arena-title" title={t("redesign.settings.arena")} />
+              <ArenaLookSettings />
+            </section>
+          </div>
         </div>
       </div>
 
