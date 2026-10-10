@@ -22,6 +22,7 @@ import {
   mirroredCombatWindow,
   lastRejectedCombatAnswer,
   ownAlliancePromptCardId,
+  type MirroredCombatWindow,
 } from "./combatWindowModel";
 import {
   decisionCardColors,
@@ -249,6 +250,27 @@ describe("activeCounterWindow", () => {
         false,
       ),
     ).toBeNull();
+  });
+
+  it("does not render a mirrored Counter window that offers nothing", () => {
+    const mirrored: MirroredCombatWindow = {
+      key: "counter:attacker",
+      kind: "counter",
+      seat: 1,
+      attackerPermanentId: "attacker",
+      permanentId: "",
+      eligiblePermanentIds: [],
+      eligibleCounters: [],
+      mustBlock: false,
+    };
+    expect(activeCounterWindow([], 1, false, { ...mirrored, eligibleCounters: [] })).toBeNull();
+    expect(activeCounterWindow([], 1, true, { ...mirrored, eligibleCounters: [] })).toBeNull();
+    expect(
+      activeCounterWindow([], 1, false, {
+        ...mirrored,
+        eligibleCounters: [{ instanceId: "ace", effectKey: "counter", description: "Blast Digivolve" }],
+      }),
+    ).toMatchObject({ eligibleCounters: [{ instanceId: "ace" }] });
   });
 
   it("returns a real Counter choice only to its defending seat", () => {

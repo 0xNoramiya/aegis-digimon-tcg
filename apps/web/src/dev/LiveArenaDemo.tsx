@@ -1913,6 +1913,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Discord 1558289219074654299. Encerre a criação. Digivolva o Knightmon amarelo em LordKnightmon (EX13-064) pelo custo 3. O [Ao Digivolver] oferece DarkKnightmon (EX10-031) da lixeira e SkullKnightmon e DeadlyAxemon da mão. Escolha DarkKnightmon. Depois, a DigiXros oferece SkullKnightmon e DeadlyAxemon da mão: escolha os dois. DarkKnightmon entra com os dois como cartas de digivolução.",
     en: "Discord 1558289219074654299. End breeding. Digivolve the yellow Knightmon into LordKnightmon (EX13-064) for 3. Its [When Digivolving] effect offers DarkKnightmon (EX10-031) from the trash, and SkullKnightmon and DeadlyAxemon from hand. Choose DarkKnightmon. The DigiXros picker then offers SkullKnightmon and DeadlyAxemon from hand: choose both. DarkKnightmon enters with both as digivolution cards.",
   },
+  "arena-counter-no-eligible": {
+    ptBR: "Contra-ataque sem nada para usar. A partida começa no turno do bot, e o Phoenixmon (ST1-10) dele ataca você. Nenhuma carta da sua mão tem Digivolução Explosiva e nenhum Digimon seu tem efeito [Contra-ataque]. Resultado esperado: a janela de Contra-ataque não aparece. A próxima pergunta é a de bloqueio, porque Giromon (BT13-071) tem <Bloqueador>. Controle: o cenário arena-mobile-blast-counter-tap é o mesmo com BlackWarGreymon (EX10-010) na mão, e lá a janela de Contra-ataque aparece acima da sua mão.",
+    en: "Counter timing with nothing to use. The match starts on the bot's turn, and its Phoenixmon (ST1-10) attacks you. No card in your hand has Blast Digivolve, and none of your Digimon has a [Counter] effect. Expected: no Counter window appears. The next question is the block window, because Giromon (BT13-071) has <Blocker>. Control: arena-mobile-blast-counter-tap is the same scenario with BlackWarGreymon (EX10-010) in hand; there the Counter window appears above your hand.",
+  },
   "arena-bt26-029-single-removal-trigger": {
     ptBR: "Continuação do feedback #20. Encerre a criação. Jogue Aegiochusmon: Holy (BT26-029) por 8 de memória. Aceite o [Ao Jogar], descarte a carta do topo da sua segurança e proteja Holy. Holy e Kari Kamiya (BT15-084) reagem à mesma remoção da segurança. Resultado esperado: a pergunta de ordem mostra Holy uma vez e Kari uma vez, não Holy duas vezes. Recuse o efeito de Kari. O efeito de Holy dá -5000 DP aos 3 Monodramon do bot e exclui todos. Holy resolve esse efeito uma vez só, e você fica com 3 cartas de segurança e 2 de memória.",
     en: "Follow-up to feedback #20. End breeding. Play Aegiochusmon: Holy (BT26-029) for 8 memory. Accept its [On Play], trash your top security card, and protect Holy. Holy and Kari Kamiya (BT15-084) both react to the same security removal. Expected: the order prompt lists Holy once and Kari once, not Holy twice. Decline Kari's effect. Holy's effect gives the bot's 3 Monodramon -5000 DP and deletes them. Holy resolves that effect only once, and you have 3 security cards and 2 memory left.",
@@ -3413,6 +3417,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-lordknightmon-bt22-effect-attack-reveal", "BT22 LordKnightmon · reveal during its own effect attack"],
   ["arena-lordknightmon-bt22-opponent-attack-reveal", "BT22 LordKnightmon · reveal on the opponent's attack"],
   ["arena-lordknightmon-ex13-darkknightmon-digixros", "EX13 LordKnightmon · DarkKnightmon from trash with DigiXros"],
+  ["arena-counter-no-eligible", "Counter · no window when nothing can be used"],
   ["arena-bt26-029-single-removal-trigger", "Feedback #20 · Aegiochusmon: Holy triggers once per security removal"],
   [
     "arena-bt22-101-kyoko-alphamon-on-unsuspend",

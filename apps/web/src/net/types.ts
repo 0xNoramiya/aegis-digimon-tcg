@@ -683,6 +683,7 @@ export interface AegisJoinOptions {
     | "arena-lordknightmon-bt22-effect-attack-reveal"
     | "arena-lordknightmon-bt22-opponent-attack-reveal"
     | "arena-lordknightmon-ex13-darkknightmon-digixros"
+    | "arena-counter-no-eligible"
     | "arena-bt26-029-single-removal-trigger"
     | "arena-bt22-101-kyoko-alphamon-on-unsuspend"
     | "arena-may-attack-suspended-creepymon"

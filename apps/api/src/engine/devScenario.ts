@@ -436,6 +436,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-lordknightmon-bt22-effect-attack-reveal",
   "arena-lordknightmon-bt22-opponent-attack-reveal",
   "arena-lordknightmon-ex13-darkknightmon-digixros",
+  "arena-counter-no-eligible",
   "arena-bt26-029-single-removal-trigger",
   "arena-bt22-101-kyoko-alphamon-on-unsuspend",
   "arena-may-attack-suspended-creepymon",
@@ -7992,6 +7993,16 @@ function layLordKnightmonEx13DarkKnightmonDigiXrosScenario(state: GameState): vo
 }
 
 /**
+ * Counter timing with nothing to use: the bot attacks the viewer exactly as in
+ * `arena-mobile-blast-counter-tap`, but the hand holds no Blast Digivolve card and no field
+ * card has a [Counter] effect. The engine must skip the Counter window; the next question
+ * is the block window for BT13-071 Giromon's <Blocker>.
+ */
+function layCounterNoEligibleScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
+  layMobileBlastCounterTapScenario(state, decks, false);
+}
+
+/**
  * Feedback #20 follow-up (match 023effb9): one security trash put BT26-029 Aegiochusmon: Holy's
  * "[All Turns] [Once Per Turn] When your security stack is removed from" effect in the order
  * prompt twice. The human plays Holy and pays its [On Play] by trashing the top security card.
@@ -9917,7 +9928,11 @@ function layEffectsLabPaladinBattleScenario(state: GameState, decks: readonly [D
  * chosen. The bot attacks while the viewer holds EX10-010 BlackWarGreymon; the only host is
  * BT13-071 Giromon, which wears a digivolution count, a Blocker badge and a DP change.
  */
-function layMobileBlastCounterTapScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
+function layMobileBlastCounterTapScenario(
+  state: GameState,
+  decks: readonly [Decklist, Decklist],
+  withBlastCard = true,
+): void {
   for (const seat of [0, 1] as const) {
     const player = state.players[seat];
     if (player === undefined) continue;
@@ -9936,7 +9951,7 @@ function layMobileBlastCounterTapScenario(state: GameState, decks: readonly [Dec
     host.currentDP = host.baseDP + 2000;
     placePermanent(human, host);
     placePermanent(human, establishedDigimon(0, ["BT13-062"], "-blast-bystander"));
-    insertCard(human, Zone.Hand, faceDownCard("dev-blast-blackwargreymon", "EX10-010", 0), "top");
+    if (withBlastCard) insertCard(human, Zone.Hand, faceDownCard("dev-blast-blackwargreymon", "EX10-010", 0), "top");
   }
   const bot = state.players[1];
   if (bot !== undefined) placePermanent(bot, establishedDigimon(1, ["ST1-10"], "-blast-attacker"));
@@ -11359,6 +11374,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-lordknightmon-bt22-effect-attack-reveal": layLordKnightmonBt22EffectAttackRevealScenario,
   "arena-lordknightmon-bt22-opponent-attack-reveal": layLordKnightmonBt22OpponentAttackRevealScenario,
   "arena-lordknightmon-ex13-darkknightmon-digixros": layLordKnightmonEx13DarkKnightmonDigiXrosScenario,
+  "arena-counter-no-eligible": layCounterNoEligibleScenario,
   "arena-bt26-029-single-removal-trigger": layBt26029SingleRemovalTriggerScenario,
   "arena-bt22-101-kyoko-alphamon-on-unsuspend": layBt22101KyokoAlphamonOnUnsuspendScenario,
   "arena-may-attack-suspended-creepymon": layMayAttackSuspendedCreepymonScenario,

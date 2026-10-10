@@ -471,6 +471,11 @@
     bottom: auto;
     left: var(--ds-space-2);
   }
+  /* The folded notice band holds the top of the board; the strip steps below it so both
+     stay tappable while the board is in view. */
+  body:has(.narration-peek) .decision-board-return {
+    top: calc(env(safe-area-inset-top, 0px) + 8.5rem) !important;
+  }
   .decision-board-return > button {
     min-height: 44px;
     flex: 1;

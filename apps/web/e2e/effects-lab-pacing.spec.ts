@@ -2447,8 +2447,7 @@ test.describe("effects lab pacing in the browser", () => {
           await expect(page.locator("[data-narration-id]").filter({ hasText: "King Drasil" })).toHaveCount(0);
         }
         if (accept && index === 1) {
-          // On phones the activation dialog's backdrop covers the notice peek, so open it from the keyboard.
-          if (phone) await page.locator(".narration-peek").press("Enter");
+          if (phone) await page.locator(".narration-peek").click();
           const accepted = page.locator("[data-narration-id]").filter({ hasText: "King Drasil" });
           await expect(accepted).toHaveCount(1);
           await expect(accepted).toBeVisible();
