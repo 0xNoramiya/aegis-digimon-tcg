@@ -8,7 +8,7 @@ import { compiled } from "./BT26-029.js";
 import "../index.js";
 
 describe("BT26-029 compiled fidelity", () => {
-  it("encodes Decode/Ascension, security-paid protection, both removal watchers, and the Angel rule trait", () => {
+  it("encodes Decode/Ascension, security-paid protection, one removal watcher per printed effect, and the Angel rule trait", () => {
     const card = compiled;
     expect(card.digivolutionRequirement).toEqual([{ namesExact: ["Aegiomon"], cost: 3, isAlternate: true }]);
     expect(digivolutionRequirementsFor("BT26-029")).toEqual(card.digivolutionRequirement);
@@ -50,9 +50,8 @@ describe("BT26-029 compiled fidelity", () => {
         ],
       },
     ]);
-    expect(card?.effects?.[4]?.actions).toMatchObject([
-      { kind: "SubTrigger", event: "whenSecurityRemoved" },
-      { kind: "SubTrigger", event: "whenEffectRemovesFromSecurity" },
+    expect(card?.effects?.[4]?.actions).toEqual([
+      expect.objectContaining({ kind: "SubTrigger", event: "whenSecurityRemoved" }),
     ]);
     expect(card?.effects?.[5]).toMatchObject({
       trigger: "AllTurns",
@@ -62,11 +61,6 @@ describe("BT26-029 compiled fidelity", () => {
         {
           kind: "SubTrigger",
           event: "whenSecurityRemoved",
-          actions: [{ kind: "DeDigivolve", amount: 1 }],
-        },
-        {
-          kind: "SubTrigger",
-          event: "whenEffectRemovesFromSecurity",
           actions: [{ kind: "DeDigivolve", amount: 1 }],
         },
       ],
@@ -224,6 +218,47 @@ describe("BT26-029 compiled fidelity", () => {
         (permanent) => permanent.currentDP === 1000,
       ),
     ).toHaveLength(3);
+  });
+
+  it("feedback #20: one security trash offers its removal watcher once, not twice", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT1-009", as: "partner" }],
+          hand: [{ card: "BT26-029", as: "holy" }],
+          security: ["BT1-009", "BT1-010"],
+          deck: ["BT1-013", "BT1-014", "BT1-015", "BT1-016", "BT1-017"],
+        },
+        1: {
+          battleArea: [
+            { card: "BT1-009", as: "first", dp: 6000 },
+            { card: "BT1-010", as: "second", dp: 6000 },
+          ],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    s.state.memory = 8;
+
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("holy").instanceId })).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision === undefined && s.perm("first").currentDP === 1000);
+
+    const offeredRemovalTriggers = s.decisions
+      .filter(({ req }) => req.kind === "orderTriggers")
+      .map(({ req }) => (req.options?.triggerKeys ?? []).filter((key) => key.includes("security-removed-dp")));
+    expect(s.state.players[0]!.security).toHaveLength(1);
+    expect(offeredRemovalTriggers.filter((keys) => keys.length > 1)).toEqual([]);
+    expect(
+      s.events.filter(
+        (event) =>
+          event.kind === "effectResolved" &&
+          event.sourceCardId === "BT26-029" &&
+          String(event.effectKey).includes("security-removed-dp"),
+      ),
+    ).toHaveLength(1);
+    expect(s.perm("first").currentDP).toBe(1000);
+    expect(s.perm("second").currentDP).toBe(1000);
   });
 
   it("reacts to a real security check through the non-effect removal window", async () => {
