@@ -150,9 +150,10 @@ export interface RemovalPrimitives {
   /**
    * Whether `suspend` would turn this permanent: it is unsuspended and no "can't suspend"
    * restriction holds it. A "suspend" cost is payable only with such a permanent. Optional on
-   * the port so faked primitives in tests need no change.
+   * the port so faked primitives in tests need no change. `effectSeat` is the seat of an
+   * effect checked before it resolves; it decides whether "opponent's effects" immunity applies.
    */
-  canSuspend?(permanentId: string): boolean;
+  canSuspend?(permanentId: string, effectSeat?: Seat): boolean;
   /** Returns the permanent IDs that actually transitioned to suspended. */
   suspend(
     permanentIds: string[],
@@ -174,7 +175,7 @@ export interface RemovalPrimitives {
    * "unsuspend" cost is payable only with such a permanent. Optional on the port so faked
    * primitives in tests need no change.
    */
-  canUnsuspend?(permanentId: string): boolean;
+  canUnsuspend?(permanentId: string, effectSeat?: Seat): boolean;
   /**
    * Return cards to their owners' hands. Async because a permanent bounce consults the
    * leave-the-battle-area PREVENT reactions first (a "would leave" reaction voids hand
