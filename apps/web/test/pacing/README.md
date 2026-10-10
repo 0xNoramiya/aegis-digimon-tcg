@@ -78,8 +78,8 @@ Every paced row had zero early results, unreadable or missing clauses, gate expi
 
 | Scenario suffix          | Sequential shown / ceiling (ms) | Stacked shown / ceiling (ms) |
 | ------------------------ | ------------------------------: | ---------------------------: |
-| `ghost-execute`          |                 54,224 / 59,000 |              34,320 / 49,000 |
-| `ghost-execute-security` |                 58,624 / 66,000 |              38,288 / 55,000 |
+| `ghost-execute`          |                 45,968 / 59,000 |              35,344 / 49,000 |
+| `ghost-execute-security` |                 50,352 / 66,000 |              39,280 / 55,000 |
 | `attack-stack`           |                 45,584 / 51,000 |              32,960 / 36,000 |
 | `security-removed`       |                 16,832 / 18,500 |              12,336 / 13,000 |
 | `titan-cascade`          |                 18,624 / 23,000 |              13,824 / 17,000 |
@@ -103,6 +103,20 @@ that moved these rows.
   after the following turn's banners, which adds 8,240 ms at Sequential Normal; the other
   rows change by about 1 s. `security-removed` gains the second question's beats (+1,024 ms),
   so its Sequential ceiling rises from 16,000 to 18,500 ms (10% over the measured time).
+
+The 2026-10-10 refresh updates only the `ghost-execute` and `ghost-execute-security` rows.
+A bisect found the engine fix b360b6019 ("skip Digivolve prompt with no target", feedback
+#40), not a presentation change. In these boards Violet Inboots (BT20-088) has no legal
+digivolution, so after its suspension the engine no longer asks the empty "Digivolve"
+question.
+
+- The paced rows keep zero board-ahead, early results and gate expiries. Sequential Normal
+  drops by 8,256 ms, because the last result no longer slides into the turn handover. The
+  other paced rows move by about 1 s.
+- The unpaced `current` rows rise from 1 to 2 ahead effects (832 to 1,552 ms). Before, the
+  empty question held the suspension cost on screen until the viewer answered. Now the cost
+  lands about 720 ms before the clause. `current` does not pace effects, and the match screen
+  does not use it (`SEQUENTIAL_PACING_ENABLED`), so this is the expected unpaced behavior.
 
 The 2026-10-03 refresh gives visible toasts their own arrival clock, including during
 questions. Field deletions use 260 ms shard motion plus 90 ms spread (350 ms total), and

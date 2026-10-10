@@ -181,6 +181,8 @@ class EffectsLabPage {
   async start(scenario = "effects-lab-opponent-chain", endTurn = true, speed = "normal", observePaint = true) {
     await this.page.addInitScript((initialSpeed) => {
       localStorage.setItem("aegis:locale", "en");
+      // END TURN must hand the turn over at once; the confirmation dialog is not under test.
+      localStorage.setItem("aegis.skip-end-turn-confirmation", "true");
       // Obsolete tuning must not shorten effects or switch the lab out of stacked.
       localStorage.setItem(
         "aegis.dev.effects-lab.pacing",
@@ -209,14 +211,17 @@ class EffectsLabPage {
         globals.__labArrivals = new Map<string, ArrivalPaint>();
         let focused: { key: string; cardId: string; at: number } | undefined;
         const record = () => {
-          for (const element of document.querySelectorAll<HTMLElement>("[data-narration-id]")) {
+          // A phone folds its notices into one band that names the newest moment.
+          for (const element of document.querySelectorAll<HTMLElement>(
+            "[data-narration-id], [data-narration-peek-id]",
+          )) {
             const bounds = element.getBoundingClientRect();
             const style = getComputedStyle(element);
             if (bounds.width > 0 && bounds.height > 0 && style.visibility !== "hidden" && Number(style.opacity) > 0) {
-              (globals.__labPaintedNotices as Set<string>).add(element.dataset.narrationId!);
+              const id = element.dataset.narrationId ?? element.dataset.narrationPeekId!;
+              (globals.__labPaintedNotices as Set<string>).add(id);
               const noticeAt = globals.__labNoticeAt as Map<string, number>;
-              if (!noticeAt.has(element.dataset.narrationId!))
-                noticeAt.set(element.dataset.narrationId!, performance.now());
+              if (!noticeAt.has(id)) noticeAt.set(id, performance.now());
             }
           }
           for (const element of document.querySelectorAll<SVGElement>('[data-testid="effect-focus"]'))
