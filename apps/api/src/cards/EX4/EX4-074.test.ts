@@ -180,6 +180,40 @@ describe("EX4-074 ShineGreymon: Ruin Mode", () => {
     expect(s.state.players[1]!.deck).toHaveLength(5);
   });
 
+  it("feedback #20: a later play that keeps DP above 0 survives and activates its On Play after Ruin Mode leaves", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "EX4-074", as: "ruin" },
+            { card: "BT1-009", as: "monodramon" },
+          ],
+        },
+        1: { hand: [{ card: "BT5-042", as: "knightmon" }], deck: ["BT1-085", "BT1-085", "BT1-085"] },
+      },
+      { autoSelectCards: true, autoOrderCards: true },
+    );
+    await s.ready();
+    await advance(s.engine).fireForPermanent(EffectTiming.WhenDigivolving, s.perm("ruin"));
+    s.state.turnSeat = 1;
+    s.state.memory = 10;
+    const ruinCard = s.perm("ruin").topCard.instanceId;
+    await advance(s.engine).verb.returnToHand([ruinCard]);
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual([ruinCard]);
+
+    expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("knightmon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "BT5-042"));
+
+    const knightmon = s.state.players[1]!.battleArea.find(
+      (permanent) => permanent.topCard.instanceId === s.inst("knightmon").instanceId,
+    );
+    expect(knightmon?.currentDP).toBe(2000);
+    expect(s.state.players[0]!.battleArea).toHaveLength(0);
+    expect(s.state.players[0]!.trash.map((card) => card.cardId)).toEqual(["BT1-009"]);
+  });
+
   it("Q3524 resolves the mandatory End of Attack sequence, including Recovery and Hatch", async () => {
     const s = setupEngine(
       {

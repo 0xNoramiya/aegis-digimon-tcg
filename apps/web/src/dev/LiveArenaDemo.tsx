@@ -1817,6 +1817,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Feedback #9. Aguarde a Principal: a criação avança sozinha. O Mother Eater no campo entrou neste turno e ainda não pode atacar. Ative o [Principal] de Akemi Suedou e coloque-a sob esse Mother Eater. Ele passa a mostrar ＜Rush＞, ＜Alliance＞ e ＜Scapegoat＞ e já pode atacar o jogador neste turno. Controle: antes de ativar Akemi, o Mother Eater não tem esses selos nem pode atacar.",
     en: "Feedback #9. Wait for Main: breeding skips on its own. The battle-area Mother Eater entered this turn and cannot attack yet. Activate Akemi Suedou's [Main] and place her under that Mother Eater. It now shows ＜Rush＞, ＜Alliance＞ and ＜Scapegoat＞ and can attack the player this turn. Control: before Akemi activates, the Mother Eater has none of these badges and cannot attack.",
   },
+  "arena-feedback20-ruin-mode-on-play": {
+    ptBR: "Feedback #20. Encerre a criação. Use Plasma Stake (BT3-098) para excluir o ShineGreymon: Ruin Mode do oponente. O [Ao Ser Excluído] dele dá -5000 DP a todos os seus Digimon, inclusive os jogados depois. Jogue Kuwagamon (4000 DP): ele é excluído com 0 DP antes que o [Ao Jogar] possa ativar (Q3523), e o Monodramon do oponente continua ativo. Depois jogue Lillymon (8000 DP): ela fica com 3000 DP e o [Ao Jogar] resolve: suspende o Monodramon e o devolve ao fundo do deck. Lillymon gasta a última memória, então o turno passa em seguida.",
+    en: "Feedback #20. End breeding. Use Plasma Stake (BT3-098) to delete the opponent's ShineGreymon: Ruin Mode. Its [On Deletion] gives all of your Digimon -5000 DP, including ones played later. Play Kuwagamon (4000 DP): it is deleted at 0 DP before its [On Play] can activate (Q3523), and the opponent's Monodramon stays unsuspended. Then play Lillymon (8000 DP): it stays at 3000 DP and its [On Play] resolves: it suspends Monodramon and returns it to the bottom of the deck. Lillymon spends the last memory, so the turn passes next.",
+  },
   "arena-bt22-akemi-battle-mother": {
     ptBR: "GitHub #5370. Aguarde a Principal: a criação avança automaticamente porque Mother Eater não tem DP para sair. Ative o [Principal] de Akemi Suedou. Somente os dois Mother Eater no campo podem ser escolhidos; a cópia na criação fica excluída. Escolha o Mother Eater com Eater (Species Form) nas fontes. Akemi deve ficar como a fonte inferior, abaixo de Eater (Species Form), enquanto a pilha na criação fica intacta.",
     en: "GitHub #5370. Wait for Main: breeding skips automatically because Mother Eater has no DP to move. Activate Akemi Suedou's [Main]. Only the two battle-area Mother Eaters are eligible; the breeding copy is excluded. Choose the Mother Eater with Eater (Species Form) in its sources. Akemi must become its bottom source, below Eater (Species Form), while the breeding stack stays intact.",
@@ -3242,6 +3246,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-kanan-jupiter-pomumon", "Kanan · Jupitermon Option com Pomumon / under Pomumon"],
   ["arena-bt22-akemi-battle-mother", "BT22 Akemi · Mother Eater no campo / battle area"],
   ["arena-feedback9-akemi-inherited-mother-eater", "BT22 Akemi · inherited Rush/Alliance/Scapegoat on Mother Eater"],
+  ["arena-feedback20-ruin-mode-on-play", "Feedback #20 · Ruin Mode -5000 DP · later plays and On Play"],
   ["arena-p224-kotone-own-source", "P-224 Kotone · X7 das próprias fontes / own sources"],
   ["arena-kotone-digixros-pending-attack", "Kotone · DigiXros + EX6 pending attack"],
   ["arena-bt6-beelstarmon-duplicate-cost", "BT6 BeelStarmon · duplicate hand cost"],
