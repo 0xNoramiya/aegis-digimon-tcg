@@ -666,6 +666,7 @@ export interface AegisJoinOptions {
     | "arena-feedback24-kaguyamon-empty-deck"
     | "arena-feedback26-zephagamon-suspend-own"
     | "arena-feedback25-alter-s-unsuspend-lock"
+    | "arena-feedback27-chuumon-opponent-turn"
     | "arena-p224-kotone-own-source"
     | "arena-bt25-ceresmon-homeros-suspend"
     | "arena-bt24-homeros-neptunemon-timing-choice"
