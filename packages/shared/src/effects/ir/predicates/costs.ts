@@ -121,7 +121,10 @@ export interface Cost {
    * a matching host (BT21-071).
    */
   host?: "self" | "target" | "triggerSource" | { filter: Filter; count: number; orFilters?: Filter[] };
-  /** Only meaningful for `destination:"security"`; digivolution cards are always face-down. */
+  /**
+   * Only meaningful for `destination:"security"`; digivolution cards are always face-down.
+   * Security placement is face down unless this is explicitly `false` ("face up", BT18-004).
+   */
   faceDown?: boolean;
   /** The place cost relocates a battle-area permanent rather than a loose card. */
   targetIsPermanent?: boolean;
