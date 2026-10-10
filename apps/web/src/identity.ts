@@ -28,11 +28,11 @@ export function loadIdentity(): PlayerIdentity {
 }
 
 export function saveIdentity(player: PlayerIdentity): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(player));
+  writeStorage(STORAGE_KEY, JSON.stringify(player));
 }
 
 export function hasStoredIdentity(): boolean {
-  return localStorage.getItem(STORAGE_KEY) !== null;
+  return readStorage(STORAGE_KEY) !== null;
 }
 
 const DECKS_KEY = "aegis:decks";
@@ -49,15 +49,33 @@ export function loadDecks(): DeckListing[] {
 }
 
 export function saveDecks(decks: DeckListing[]): void {
-  localStorage.setItem(DECKS_KEY, JSON.stringify(decks));
+  writeStorage(DECKS_KEY, JSON.stringify(decks));
 }
 
 export function loadActiveDeckId(decks: DeckListing[]): string {
-  const stored = localStorage.getItem(ACTIVE_DECK_KEY);
+  const stored = readStorage(ACTIVE_DECK_KEY);
   if (stored && decks.some((d) => d.id === stored)) return stored;
   return decks[0]?.id ?? "";
 }
 
 export function saveActiveDeckId(id: string): void {
-  localStorage.setItem(ACTIVE_DECK_KEY, id);
+  writeStorage(ACTIVE_DECK_KEY, id);
+}
+
+// Safari and Firefox throw on any storage access when cookies are blocked, and
+// every browser throws when the quota is full. The session then runs in memory.
+function readStorage(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStorage(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // keep the in-memory value for this session
+  }
 }
