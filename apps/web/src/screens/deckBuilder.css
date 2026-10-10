@@ -207,6 +207,14 @@
   opacity: 1;
 }
 
+/* Touch screens have no hover to reveal these, and a tap would hit them while invisible. */
+@media (hover: none) {
+  .deck-pool-card__info,
+  .deck-pool-card-actions {
+    opacity: 1;
+  }
+}
+
 .deck-pool-card__add {
   display: flex;
   align-items: center;
