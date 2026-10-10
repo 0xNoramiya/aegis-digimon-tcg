@@ -87,6 +87,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback6-deramon-breeding-level",
   "arena-feedback15-gryphonmon-deramon",
   "arena-feedback14-creepymon-x-end-turn",
+  "arena-feedback29-black-sabbath-trash",
   "arena-github5331-offense-hand",
   "arena-github5362-shellmon-ts",
   "arena-lanamon-tamer-cost",
@@ -1615,6 +1616,34 @@ function layFeedback14CreepymonXEndTurnScenario(state: GameState): void {
   for (let index = 0; index < 9; index += 1) {
     insertCard(bot, Zone.Trash, faceUpCard(`dev-creepymon-bot-trash-${index}`, "BT1-027", 1));
   }
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
+ * Feedback #29: Black Sabbath (LM-068) in the trash triggers when Punkmon attacks with 5 cards in
+ * hand, then activates after Punkmon's [When Attacking] has trashed the hand down to 3.
+ */
+function layFeedback29BlackSabbathTrashScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback29-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback29-deck-${seat}-${index}`, "BT1-027", seat));
+    }
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback29-security-${seat}-${index}`, "BT1-027", seat));
+    }
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["EX7-050", "EX11-049"], "-feedback29-punkmon"));
+  for (let index = 0; index < 4; index += 1) {
+    insertCard(human, Zone.Hand, faceUpCard(`dev-feedback29-hand-${index}`, "BT1-027", 0));
+  }
+  insertCard(human, Zone.Trash, faceUpCard("dev-feedback29-black-sabbath", "LM-068", 0));
+  placePermanent(state.players[1]!, establishedDigimon(1, ["BT1-020"], "-feedback29-groundramon"));
   state.turnSeat = 0;
   state.turnCount = 0;
   state.isFirstPlayersFirstTurn = false;
@@ -9928,6 +9957,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback6-deramon-breeding-level": layFeedback6DeramonBreedingScenario,
   "arena-feedback15-gryphonmon-deramon": layFeedback15GryphonmonDeramonScenario,
   "arena-feedback14-creepymon-x-end-turn": layFeedback14CreepymonXEndTurnScenario,
+  "arena-feedback29-black-sabbath-trash": layFeedback29BlackSabbathTrashScenario,
   "arena-raid-optional-preset": layRaidOptionalPresetScenario,
   "arena-preset-order-no-clicks": layPresetOrderNoClicksScenario,
   "arena-oct06-king-sukamon-assembly": (state, decks) => layOct06LatestScenario(state, decks, "king-sukamon-assembly"),
