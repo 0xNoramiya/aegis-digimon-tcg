@@ -336,6 +336,8 @@ export async function payTrashCost(ctx: EffectContext, cost: Cost, out?: { paidC
   }
   const ids = topInstanceIds(ctx, await resolvePermanentTargets(ctx, cost.target));
   if (ids.length === 0) return false;
-  await ctx.fx.trash(ids, { byEffectSeat: ctx.source.ownerSeat });
-  return true;
+  // The trash verb skips a permanent that can't be trashed, so it stays in the battle area.
+  // The "by trashing" condition is then unmet and the rest of the effect does not run (Q7247).
+  const moved = await ctx.fx.trash(ids, { byEffectSeat: ctx.source.ownerSeat });
+  return moved.length >= ids.length;
 }

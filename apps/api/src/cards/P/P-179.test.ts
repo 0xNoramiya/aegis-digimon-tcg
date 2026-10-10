@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EffectTiming } from "@aegis/shared";
+import { EffectDuration, EffectTiming } from "@aegis/shared";
 import { advance } from "../../engine/testkit/advance.js";
 import { assertNoLoudGap, setupEngine, settle } from "../../engine/testkit/harness.js";
 import { observe } from "../../engine/testkit/observe.js";
@@ -325,5 +325,43 @@ describe("P-179 Justimon: Critical Arm — KB Q&A rulings", () => {
     expect(s.state.players[0]!.hand.map(({ instanceId }) => instanceId)).toContain(s.inst("handOption").instanceId);
     expect(s.state.players[1]!.trash.map(({ instanceId }) => instanceId)).toContain(targetId);
     expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard.instanceId)).toEqual([opponentOptionId]);
+  });
+
+  it("deletes nothing when the Option card it tries to trash stays in the battle area (Q7247)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "P-179", as: "critical" },
+            { card: "P-155", as: "placedOption", placedByEffect: true },
+          ],
+          security: ["BT1-009"],
+        },
+        1: { battleArea: [{ card: "BT12-083", as: "target" }], security: ["BT1-009"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    advance(s.engine).ledgers.continuous.addRestriction(
+      s.perm("placedOption").permanentId,
+      "beTrashed",
+      EffectDuration.Permanent,
+    );
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("critical").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => !observe(s.engine).isAttacking() && s.state.pendingDecision === undefined);
+
+    expect(s.state.players[0]!.battleArea.map(({ permanentId }) => permanentId)).toContain(
+      s.perm("placedOption").permanentId,
+    );
+    expect(s.state.players[1]!.battleArea.map(({ permanentId }) => permanentId)).toContain(
+      s.perm("target").permanentId,
+    );
   });
 });
