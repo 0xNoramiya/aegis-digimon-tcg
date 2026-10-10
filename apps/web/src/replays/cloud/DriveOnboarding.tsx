@@ -257,7 +257,7 @@ export function useDriveOnboarding(signedIn: boolean) {
   return { show, element };
 }
 
-/** The Replays page invitation for a device that has never connected Google Drive. */
+/** The profile's invitation for a device that has never connected Google Drive. */
 export function DriveConnectCard({ signedIn }: { signedIn: boolean }) {
   const { t } = useTranslation();
   const { provider, linked } = useCloudReplays();
@@ -265,25 +265,23 @@ export function DriveConnectCard({ signedIn }: { signedIn: boolean }) {
   if (!provider || linked) return null;
   return (
     <section className="drive-connect-card" aria-labelledby="drive-connect-title">
-      <DriveFolder size="lg" />
-      <div>
-        <span className="drive-connect-card__badge">{t("replay.onboarding.new")}</span>
+      <span className="drive-connect-card__icon" aria-hidden="true">
+        <Icons.Folder size={40} />
+        <Icons.Cloud size={22} />
+      </span>
+      <div className="drive-connect-card__copy">
         <h2 id="drive-connect-title">{t("replay.onboarding.cardTitle")}</h2>
         <p>{t(signedIn ? "replay.onboarding.cardBody" : "replay.onboarding.cardGuest")}</p>
-        <div className="drive-connect-card__actions">
-          <Button
-            icon={Icons.Cloud}
-            onClick={() =>
-              hasSeenDriveOnboarding() ? void provider.connect().catch(() => undefined) : onboarding.show()
-            }
-          >
-            {t("replay.drive.connect")}
-          </Button>
-          <button className="drive-how-link" onClick={() => onboarding.show()}>
-            {t("replay.onboarding.howItWorks")}
-          </button>
-        </div>
       </div>
+      <button className="drive-how-link" onClick={() => onboarding.show()}>
+        {t("replay.onboarding.howItWorks")}
+      </button>
+      <Button
+        icon={Icons.Cloud}
+        onClick={() => (hasSeenDriveOnboarding() ? void provider.connect().catch(() => undefined) : onboarding.show())}
+      >
+        {t("profile.driveConnect")}
+      </Button>
       {onboarding.element}
     </section>
   );

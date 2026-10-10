@@ -40,8 +40,7 @@ async function stubGoogle(page: Page, onUpload?: () => void) {
 test("explains Google Drive in three steps and connects with the chosen auto-save", async ({ page }) => {
   await stubGoogle(page);
   await page.route("**/auth/me", (route) => route.fulfill({ contentType: "application/json", body: "null" }));
-  await page.route("**/account/replays**", (route) => route.fulfill({ status: 401 }));
-  await page.goto("/replays");
+  await page.goto("/profile");
 
   const card = page.getByRole("region", { name: "Keep your matches in your Drive" });
   await card.getByRole("button", { name: "How it works" }).click();
@@ -68,7 +67,7 @@ test("explains Drive before the first save from the match result, then saves", a
   match.opponent.room.onMessage("replay", () => {});
   match.opponent.room.send("surrender", {});
 
-  await page.getByRole("button", { name: "Save to Google Drive" }).click();
+  await page.getByRole("button", { name: "Sync to Google Drive" }).click();
   const dialog = page.getByRole("dialog", { name: "Your replays in your Google Drive" });
   await dialog.getByRole("button", { name: "Next" }).click();
   await page.getByRole("button", { name: "Next" }).click();
@@ -77,5 +76,5 @@ test("explains Drive before the first save from the match result, then saves", a
 
   await expect(page.getByRole("heading", { name: "Saved to Google Drive" })).toBeVisible();
   expect(uploads).toBe(1);
-  expect(await page.evaluate(() => localStorage.getItem("aegis.drive.autosave"))).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem("aegis.drive.autosave"))).toBe("off");
 });

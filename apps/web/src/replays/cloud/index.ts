@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { ReadyReplay } from "../files";
 import { replayApi } from "../library";
+import { markLocalReplaySynced } from "../local";
 import { createGoogleDriveProvider } from "./googleDrive";
 import { CloudAuthError, type CloudReplayFile, type ReplayCloudProvider } from "./provider";
 
@@ -28,18 +29,18 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
+/** On unless the player turned it off: a connected Drive saves every match by default. */
 export function isCloudAutoSaveOn(): boolean {
   try {
-    return localStorage.getItem(AUTO_SAVE_KEY) === "on";
+    return localStorage.getItem(AUTO_SAVE_KEY) !== "off";
   } catch {
-    return false;
+    return true;
   }
 }
 
 export function setCloudAutoSave(on: boolean): void {
   try {
-    if (on) localStorage.setItem(AUTO_SAVE_KEY, "on");
-    else localStorage.removeItem(AUTO_SAVE_KEY);
+    localStorage.setItem(AUTO_SAVE_KEY, on ? "on" : "off");
   } catch {
     // The choice lasts for this page when storage is unavailable.
   }
@@ -86,6 +87,7 @@ class RegisterError extends Error {}
 /** Uploads, then records the file in the signed-in player's library. Both steps are idempotent, so a retry repeats both. */
 async function saveToCloud(provider: ReplayCloudProvider, replay: ReadyReplay): Promise<CloudReplayFile> {
   const file = await provider.upload(replay);
+  void markLocalReplaySynced(replay, file.id).catch(() => undefined);
   if (replay.indexId)
     await replayApi.registerDrive(replay.indexId, file.id).catch(() => Promise.reject(new RegisterError()));
   return file;

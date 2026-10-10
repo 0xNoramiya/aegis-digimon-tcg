@@ -36,6 +36,7 @@ import {
 } from "./reconnectSession";
 import { ResumeCancelledError, resumeSeat } from "./resumeSeat";
 import type { AegisJoinOptions } from "./types";
+import { keepLocalReplay } from "../replays/local";
 
 export type ConnectionStatus = "connecting" | "connected" | "reconnecting" | "error" | "closed";
 
@@ -252,7 +253,11 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       const heartbeat = setInterval(stampSession, SESSION_HEARTBEAT_MS);
       stopHeartbeat = () => clearInterval(heartbeat);
 
-      room.onMessage<ReplayDownloadMessage>(REPLAY_CHANNEL, setReplayDownload);
+      room.onMessage<ReplayDownloadMessage>(REPLAY_CHANNEL, (message) => {
+        setReplayDownload(message);
+        // Every finished match stays in this browser, saved or not to Google Drive.
+        if (message.kind === "ready") void keepLocalReplay(message).catch(() => undefined);
+      });
       const acceptState = (next: GameState) => {
         stateRef.current = next;
         if (next.gameOver) {

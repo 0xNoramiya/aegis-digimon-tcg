@@ -314,26 +314,52 @@
   background: var(--ds-accent);
 }
 
-/* Entry points: the Replays page card and the "How it works" text button. */
+/* Entry points: the profile banner and the "How it works" text button. */
 .drive-connect-card {
-  grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: var(--ds-space-6);
-  padding: var(--ds-space-6);
-  border: 1px dashed var(--ds-line-strong);
-  border-radius: var(--ds-radius-lg);
+  gap: var(--ds-space-5);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-md);
   background: var(--ds-sheet);
 }
 
+.drive-connect-card__icon {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--ds-accent);
+}
+
+.drive-connect-card__icon > svg:last-child {
+  position: absolute;
+  right: -6px;
+  bottom: -2px;
+  padding: 1px;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-sheet);
+}
+
+.drive-connect-card__copy {
+  flex: 1;
+  min-width: 0;
+}
+
 .drive-connect-card h2 {
-  margin: var(--ds-space-2) 0 var(--ds-space-1);
-  font: 800 var(--ds-text-xl) / var(--ds-leading-tight) var(--ds-font-display);
+  margin: 0 0 var(--ds-space-1);
+  font: 800 var(--ds-text-base) / var(--ds-leading-tight) var(--ds-font-display);
 }
 
 .drive-connect-card p {
   margin: 0;
   color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+}
+
+.drive-connect-card > .aegis-button {
+  flex: none;
 }
 
 .drive-connect-card__badge {
@@ -344,14 +370,6 @@
   background: var(--ds-accent);
   font-size: var(--ds-text-xs);
   font-weight: 700;
-}
-
-.drive-connect-card__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ds-space-4);
-  margin-top: var(--ds-space-4);
 }
 
 .drive-how-link {
@@ -416,22 +434,30 @@
   }
 
   .drive-connect-card {
-    flex-direction: column;
-    text-align: center;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: var(--ds-space-2) var(--ds-space-3);
+    padding: var(--ds-space-3) var(--ds-space-4);
   }
 
-  .drive-connect-card__actions {
-    justify-content: center;
+  .drive-connect-card__icon {
+    align-self: start;
   }
-}
 
-.replay-prompt h2 .drive-connect-card__badge {
-  margin-right: var(--ds-space-2);
-  vertical-align: 2px;
-}
+  .drive-connect-card__copy {
+    grid-column: 2 / 4;
+  }
 
-.replay-prompt .drive-how-link {
-  justify-self: start;
+  .drive-connect-card > .drive-how-link {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+  }
+
+  .drive-connect-card > .aegis-button {
+    grid-column: 3;
+    grid-row: 2;
+  }
 }
 
 .settings-replays__links {

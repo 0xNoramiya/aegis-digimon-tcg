@@ -89,7 +89,7 @@ function stubIdentity(grant: { access_token?: string; error?: string } = { acces
 }
 
 function signIn(expiresInMs = 3_600_000) {
-  sessionStorage.setItem(
+  localStorage.setItem(
     DRIVE_STORAGE_KEYS.token,
     JSON.stringify({ token: "live-token", expiresAt: Date.now() + expiresInMs }),
   );
@@ -329,11 +329,11 @@ describe("Drive save on the match result", () => {
 
     await renderPrompt({ clientId: "client-id", replayFile: readyReplay() });
 
-    expect(screen.getByText(/Your Google Drive sign-in expired/)).toBeTruthy();
+    expect(screen.getByText(/Drive sign-in expired/)).toBeTruthy();
     expect(drive.fetchMock).not.toHaveBeenCalled();
     expect(identity.requestAccessToken).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole("button", { name: "Save to Google Drive" }));
+    fireEvent.click(screen.getByRole("button", { name: "Reconnect and save" }));
 
     expect(await screen.findByText("Saved to Google Drive")).toBeTruthy();
     expect(identity.requestAccessToken).toHaveBeenCalledWith({ prompt: "" });
@@ -342,6 +342,7 @@ describe("Drive save on the match result", () => {
 
   it("keeps the download when the upload fails", async () => {
     signIn();
+    localStorage.setItem("aegis.drive.autosave", "off");
     const drive = stubDrive({ uploadStatus: 500 });
     const { onDownloadReplay } = await renderPrompt({ clientId: "client-id", replayFile: readyReplay() });
 

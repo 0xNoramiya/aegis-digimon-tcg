@@ -58,7 +58,7 @@ test("auto-saves a finished match to the player's Google Drive", async ({ page, 
   await page.addInitScript(() => {
     localStorage.setItem("aegis.drive.autosave", "on");
     localStorage.setItem("aegis.drive.linked", "1");
-    sessionStorage.setItem(
+    localStorage.setItem(
       "aegis.drive.token",
       JSON.stringify({ token: "e2e-token", expiresAt: Date.now() + 3_600_000 }),
     );
@@ -71,11 +71,10 @@ test("auto-saves a finished match to the player's Google Drive", async ({ page, 
   match.opponent.room.send("surrender", {});
 
   await expect(page.getByRole("heading", { name: "Saved to Google Drive" })).toBeVisible();
-  await expect(page.getByText("The file is in the Aegis Replays folder of your Google Drive.")).toBeVisible();
   const watch = page.getByRole("link", { name: "Watch now" });
   await expect(watch).toHaveAttribute("href", VIEW_LINK);
   await expect(watch).toHaveAttribute("target", "_blank");
-  await expect(page.getByRole("link", { name: "My replays" })).toHaveAttribute("href", "/replays");
+  await expect(page.getByRole("link", { name: "My matches" })).toHaveAttribute("href", "/profile");
   expect(uploaded).toBeDefined();
   const text = uploaded!.toString("latin1");
   expect(text).toContain('"parents":["aegis-folder"]');
@@ -87,7 +86,7 @@ test("auto-saves a finished match to the player's Google Drive", async ({ page, 
   expect(identityRequests).toEqual([]);
 });
 
-test("signs in to Drive again from /replays and watches a Drive replay", async ({ page }) => {
+test("a guest signs in to Drive again from the profile and watches a Drive replay", async ({ page }) => {
   const archive = gzipSync(JSON.stringify(replayFixture()));
   await page.addInitScript(() => {
     localStorage.setItem("aegis:locale", "en");
@@ -105,10 +104,9 @@ test("signs in to Drive again from /replays and watches a Drive replay", async (
     };
   });
   await page.route("**/auth/me", (route) => route.fulfill({ contentType: "application/json", body: "null" }));
-  await page.route("**/account/replays", (route) => route.fulfill({ status: 401 }));
   await routeDrive(page, { archive });
 
-  await page.goto("/replays");
+  await page.goto("/profile");
   const drive = page.getByRole("region", { name: "Google Drive" });
   await expect(page.getByRole("region", { name: "Saved replays" })).toHaveCount(0);
   await expect(drive.getByText("Sign in to Google Drive again to see your replays.")).toBeVisible();
@@ -128,16 +126,15 @@ test("fits the Drive replays on a 390px screen", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem("aegis:locale", "en");
     localStorage.setItem("aegis.drive.linked", "1");
-    sessionStorage.setItem(
+    localStorage.setItem(
       "aegis.drive.token",
       JSON.stringify({ token: "e2e-token", expiresAt: Date.now() + 3_600_000 }),
     );
   });
   await page.route("**/auth/me", (route) => route.fulfill({ contentType: "application/json", body: "null" }));
-  await page.route("**/account/replays", (route) => route.fulfill({ status: 401 }));
   await routeDrive(page, { archive });
 
-  await page.goto("/replays");
+  await page.goto("/profile");
   const drive = page.getByRole("region", { name: "Google Drive" });
   const watch = drive.getByRole("button", { name: /Watch now/ });
   await watch.scrollIntoViewIfNeeded();

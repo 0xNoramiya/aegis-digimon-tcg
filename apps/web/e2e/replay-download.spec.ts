@@ -7,7 +7,7 @@ test("downloads a finished live match and opens it locally after leaving the roo
   await match.start("reconnect");
   match.opponent.room.onMessage("replay", () => {});
   match.opponent.room.send("surrender", {});
-  await expect(page.getByRole("heading", { name: "Save this match's replay?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Saved on this device" })).toBeVisible();
   const downloadButton = page.getByRole("button", { name: "Download file", exact: true });
   await expect(downloadButton).toBeVisible();
   const pendingDownload = page.waitForEvent("download");
@@ -23,8 +23,28 @@ test("downloads a finished live match and opens it locally after leaving the roo
   expect(replay.frames[0]!.state.players[1]!.hand.length).toBeGreaterThan(0);
   expect(replay.frames.at(-1)!.state.gameOver).toBe(true);
   await page.route("**/auth/me", (route) => route.fulfill({ contentType: "application/json", body: "null" }));
-  await page.goto("/replays");
+  await page.goto("/profile");
   await page.getByLabel("Open replay file").setInputFiles(path!);
+  await expect(page.getByRole("heading", { name: "Browser Protagonist vs Observer Opponent" })).toBeVisible();
+  await page.getByRole("button", { name: "Go to end", exact: true }).click();
+  await expect(page.getByText("Replay finished", { exact: true })).toBeVisible();
+});
+
+test("keeps every finished match in the browser and plays it without Google Drive", async ({ page, match }) => {
+  await match.start("reconnect");
+  match.opponent.room.onMessage("replay", () => {});
+  match.opponent.room.send("surrender", {});
+  await expect(page.getByRole("heading", { name: "Saved on this device" })).toBeVisible();
+  await expect(
+    page.getByText("Not synced with Google Drive. If you switch browsers or clear this site's data, you'll lose it."),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Not now" }).click();
+  const watch = page.getByRole("link", { name: "Watch now" });
+  const href = await watch.getAttribute("href");
+  expect(href).toMatch(/^\/replays\/.+/);
+
+  await page.route("**/auth/me", (route) => route.fulfill({ contentType: "application/json", body: "null" }));
+  await page.goto(href!);
   await expect(page.getByRole("heading", { name: "Browser Protagonist vs Observer Opponent" })).toBeVisible();
   await page.getByRole("button", { name: "Go to end", exact: true }).click();
   await expect(page.getByText("Replay finished", { exact: true })).toBeVisible();

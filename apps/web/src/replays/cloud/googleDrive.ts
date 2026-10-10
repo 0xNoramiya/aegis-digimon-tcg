@@ -72,7 +72,6 @@ function writeStorage(storage: () => Storage, key: string, value: string | undef
 }
 
 const local = () => localStorage;
-const session = () => sessionStorage;
 
 function quote(value: string): string {
   return `'${value.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
@@ -147,7 +146,7 @@ export function createGoogleDriveProvider(clientId: string): ReplayCloudProvider
   };
 
   function accessToken(): string | undefined {
-    const stored = readStorage(session, DRIVE_STORAGE_KEYS.token);
+    const stored = readStorage(local, DRIVE_STORAGE_KEYS.token);
     if (!stored) return undefined;
     try {
       const { token, expiresAt } = JSON.parse(stored) as { token?: unknown; expiresAt?: unknown };
@@ -160,7 +159,7 @@ export function createGoogleDriveProvider(clientId: string): ReplayCloudProvider
   }
 
   function dropSession() {
-    writeStorage(session, DRIVE_STORAGE_KEYS.token, undefined);
+    writeStorage(local, DRIVE_STORAGE_KEYS.token, undefined);
     notify();
   }
 
@@ -293,11 +292,8 @@ export function createGoogleDriveProvider(clientId: string): ReplayCloudProvider
               return;
             }
             const expiresAt = Date.now() + Number(response.expires_in ?? 3600) * 1000;
-            writeStorage(
-              session,
-              DRIVE_STORAGE_KEYS.token,
-              JSON.stringify({ token: response.access_token, expiresAt }),
-            );
+            // Shared by every tab, so a new tab auto-saves until the hour-long token expires.
+            writeStorage(local, DRIVE_STORAGE_KEYS.token, JSON.stringify({ token: response.access_token, expiresAt }));
             writeStorage(local, DRIVE_STORAGE_KEYS.linked, "1");
             notify();
             resolve();
@@ -359,7 +355,7 @@ export function createGoogleDriveProvider(clientId: string): ReplayCloudProvider
     viewLink: driveViewLink,
     async disconnect() {
       const token = accessToken();
-      writeStorage(session, DRIVE_STORAGE_KEYS.token, undefined);
+      writeStorage(local, DRIVE_STORAGE_KEYS.token, undefined);
       writeStorage(local, DRIVE_STORAGE_KEYS.linked, undefined);
       forgetFolder();
       uploads.clear();

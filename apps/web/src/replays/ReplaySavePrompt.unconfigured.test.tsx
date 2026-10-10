@@ -31,6 +31,8 @@ it("offers only the download and skipping when the build has no Google client id
       />
     </I18nProvider>,
   );
-  expect(screen.getByText("Download the file to watch it later in Replays.")).toBeTruthy();
-  expect(screen.getAllByRole("button").map((button) => button.textContent)).toEqual(["Download file", "Not now"]);
+  expect(screen.getByText("Download the file to open it later from your profile.")).toBeTruthy();
+  expect(
+    screen.getAllByRole("button").map((button) => button.getAttribute("aria-label") ?? button.textContent),
+  ).toEqual(["Not now", "Download file"]);
 });

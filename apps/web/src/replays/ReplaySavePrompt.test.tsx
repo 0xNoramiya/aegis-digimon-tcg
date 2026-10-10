@@ -42,6 +42,7 @@ let register: ReturnType<typeof vi.fn<typeof replayApi.registerDrive>>;
 beforeEach(() => {
   fakeDrive.reset();
   localStorage.clear();
+  localStorage.setItem("aegis.drive.autosave", "off");
   register = vi.fn<typeof replayApi.registerDrive>(async () => ({}) as SavedReplay);
   vi.spyOn(replayApi, "registerDrive").mockImplementation(register);
 });
@@ -64,8 +65,8 @@ it("offers Google Drive, the file, or skipping, and registers the Drive copy for
   const replay = readyReplay("11111111-1111-4111-8111-111111111111");
   renderPrompt({ replayFile: replay, onDownloadReplay, signedIn: true });
 
-  expect(screen.getByRole("heading", { name: "Save this match's replay?" })).toBeTruthy();
-  expect(screen.getByText("Save it to your Google Drive to watch it from My replays on any device.")).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Keep this replay?" })).toBeTruthy();
+  expect(screen.getByText("Save it to watch later on any device.")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Download file" }));
   expect(onDownloadReplay).toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "Save to Google Drive" }));
@@ -77,20 +78,31 @@ it("offers Google Drive, the file, or skipping, and registers the Drive copy for
   expect(screen.getByRole("link", { name: "Watch now" }).getAttribute("href")).toBe(
     "/replays/11111111-1111-4111-8111-111111111111",
   );
-  expect(screen.getByRole("link", { name: "My replays" }).getAttribute("href")).toBe("/replays");
+  expect(screen.getByRole("link", { name: "My matches" }).getAttribute("href")).toBe("/profile");
 });
 
-it("auto-saves with a live session and never asks a guest's library to register", async () => {
-  localStorage.setItem("aegis.drive.autosave", "on");
+it("auto-saves by default with a live session and never asks a guest's library to register", async () => {
+  localStorage.removeItem("aegis.drive.autosave");
   renderPrompt({ replayFile: readyReplay() });
 
   expect(await screen.findByRole("heading", { name: "Saved to Google Drive" })).toBeTruthy();
   expect(fakeDrive.provider.connect).not.toHaveBeenCalled();
   expect(register).not.toHaveBeenCalled();
-  expect(screen.getByText("The file is in the Aegis Replays folder of your Google Drive.")).toBeTruthy();
   const watch = screen.getByRole("link", { name: "Watch now" });
   expect(watch.getAttribute("href")).toBe(DRIVE_FILE.webViewLink);
   expect(watch.getAttribute("target")).toBe("_blank");
+});
+
+it("asks to reconnect when auto-save meets an expired Drive session", async () => {
+  localStorage.removeItem("aegis.drive.autosave");
+  fakeDrive.setConnected(false);
+  renderPrompt({ replayFile: readyReplay(), signedIn: true });
+
+  expect(screen.getByText("Reconnect to save this match.")).toBeTruthy();
+  expect(fakeDrive.provider.upload).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Reconnect and save" }));
+  expect(await screen.findByRole("heading", { name: "Saved to Google Drive" })).toBeTruthy();
+  expect(fakeDrive.provider.connect).toHaveBeenCalledOnce();
 });
 
 it("explains a guest's choices and lets them skip", () => {
@@ -126,7 +138,7 @@ it("opens links in a new tab between games of a series", async () => {
   });
   fireEvent.click(screen.getByRole("button", { name: "Save to Google Drive" }));
   await waitFor(() => expect(screen.getByRole("link", { name: "Watch now" }).getAttribute("target")).toBe("_blank"));
-  expect(screen.getByRole("link", { name: "My replays" }).getAttribute("target")).toBe("_blank");
+  expect(screen.getByRole("link", { name: "My matches" }).getAttribute("target")).toBe("_blank");
 });
 
 it("shows the preparing state before the file arrives", () => {
