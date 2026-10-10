@@ -153,6 +153,28 @@ describe("buildInstanceZoneIndex", () => {
     expect(zones.get("greymon-card")).toBe("opponentBattle");
     expect(zones.get("agumon-card")).toBe("opponentDigivolutionCards");
   });
+
+  it("files the opponent's face-up security cards from the public projection", () => {
+    const state = {
+      players: [
+        { battleArea: [], trash: [], hand: [], security: [], securityView: [] },
+        {
+          battleArea: [],
+          trash: [],
+          hand: [],
+          security: [],
+          securityView: [
+            { instanceId: "", cardId: "", artId: "", faceUp: false },
+            { instanceId: "face-up-security", cardId: "BT1-010", artId: "BT1-010", faceUp: true },
+          ],
+        },
+      ],
+    } as unknown as import("@aegis/shared").GameState;
+
+    const zones = buildInstanceZoneIndex(state, 0);
+    expect(zones.get("face-up-security")).toBe("security");
+    expect(zones.has("")).toBe(false);
+  });
 });
 
 describe("activeBlockWindow", () => {

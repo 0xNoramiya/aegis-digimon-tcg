@@ -1,12 +1,11 @@
-import { Decoder, Encoder } from "@colyseus/schema";
-import { GameState, Phase, type Seat } from "@aegis/shared";
-import { describe, expect, it, vi } from "vitest";
+import { Phase } from "@aegis/shared";
+import { describe, expect, it } from "vitest";
 import "../../cards/index.js";
-import type { GameEngine } from "../GameEngine.js";
 import { layDevScenario } from "../devScenario.js";
 import { BLUE_DECK, RED_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { setupEngine, settle } from "../testkit/harness.js";
+import { seatClients } from "../testkit/seatClients.js";
 
 const MONODRAMON = "dev-field-1-feedback24-monodramon";
 
@@ -107,49 +106,3 @@ describe("Feedback #24 playable Kaguyamon empty-deck scenario", () => {
     clients.restore();
   });
 });
-
-/** The room's client fan-out: one StateView and decoder per seat, patched as `AegisRoom.broadcastPatch` does. */
-function seatClients(engine: GameEngine, state: GameState) {
-  const encoder = new Encoder(state);
-  const seats = ([0, 1] as Seat[]).map((seat) => ({
-    seat,
-    view: engine.makeStateView(seat)!,
-    decoder: new Decoder(new GameState()),
-  }));
-  engine.installVisibility((ownerSeat, zone, card) => {
-    for (const target of seats) engine.exposeCardToView(target.view, target.seat, ownerSeat, zone, card);
-  });
-  const decoderErrors: string[] = [];
-  const consoleError = vi.spyOn(console, "error").mockImplementation((message: unknown) => {
-    decoderErrors.push(String(message));
-  });
-  const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-  let full = true;
-  const patch = (): true => {
-    engine.syncCounts();
-    for (const target of seats) engine.refreshStateView(target.view, target.seat);
-    const iterator = { offset: 0 };
-    if (full) encoder.encodeAll(iterator);
-    else encoder.encode(iterator);
-    const shared = iterator.offset;
-    for (const target of seats) {
-      iterator.offset = shared;
-      target.decoder.decode(
-        full ? encoder.encodeAllView(target.view, shared, iterator) : encoder.encodeView(target.view, shared, iterator),
-      );
-    }
-    encoder.discardChanges();
-    for (const target of seats) engine.forgetWithheldCards(target.view, target.seat);
-    full = false;
-    return true;
-  };
-  return {
-    patch,
-    decoderErrors,
-    stateFor: (seat: Seat) => seats[seat]!.decoder.state as GameState,
-    restore: () => {
-      consoleError.mockRestore();
-      consoleWarn.mockRestore();
-    },
-  };
-}
