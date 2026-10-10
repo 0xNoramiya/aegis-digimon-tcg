@@ -371,6 +371,7 @@ function PeekLine({
       className="narration-peek"
       type="button"
       data-tone={summary.tone}
+      data-narration-peek-id={newest?.id}
       data-reading-paused={newest?.pausedAt !== undefined || undefined}
       data-swipe={swipe.phase}
       style={{ "--swipe-offset": `${swipe.offset}px`, "--swipe-fade": swipe.fade } as CSSProperties}

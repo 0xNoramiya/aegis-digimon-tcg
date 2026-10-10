@@ -465,8 +465,9 @@ export async function startPacingCapture(page: Page) {
       for (const [element, observation] of focusObservations)
         if ((!element.isConnected || !isPainted(element)) && observation.removedAt === undefined)
           observation.removedAt = at;
-      for (const notice of document.querySelectorAll<HTMLElement>("[data-narration-id]")) {
-        const id = notice.dataset.narrationId!;
+      // A phone folds its notices into one band that names the newest moment.
+      for (const notice of document.querySelectorAll<HTMLElement>("[data-narration-id], [data-narration-peek-id]")) {
+        const id = notice.dataset.narrationId ?? notice.dataset.narrationPeekId!;
         if (noticeIds.has(id) || !isPainted(notice)) continue;
         noticeIds.add(id);
         capture.notices.push({ id, firstAt: at });
