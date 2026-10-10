@@ -53,7 +53,7 @@ describe("BT19-100 D-Reaper Zone — catalog and IR", () => {
           {
             kind: "SubTrigger",
             event: "whenOpponentAttacks",
-            fireCondition: {
+            activationCondition: {
               kind: "allYoursMatchFilter",
               filter: {
                 kind: ["Digimon", "Tamer"],
@@ -290,6 +290,54 @@ describe("BT19-100 D-Reaper Zone — [Security][Opponent's Turn] scaled attacker
 
     expect(Math.min(...attackerDp)).toBe(10000);
     expect(s.state.players[1]!.battleArea.some((permanent) => permanent.permanentId === wallId)).toBe(false);
+  });
+
+  it("feedback #29 sweep: triggers with a non-[D-Reaper] Digimon out and activates after the attacker's When Attacking deletes it (CR 15-8-3-9)", async () => {
+    const attackerDp: number[] = [];
+    let handle: EngineSetup | undefined;
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "ST7-08", as: "attacker" }],
+          deck: [...FILLER],
+          security: [...SECURITY],
+        },
+        1: {
+          battleArea: [
+            { card: "EX2-007", as: "mother", under: ["BT1-009", "BT1-013"] },
+            { card: "EX2-051", as: "wall", dp: 9000, suspended: true },
+            { card: "BT1-009", as: "outsider" },
+          ],
+          deck: [...FILLER],
+          security: [{ card: "BT19-100", as: "zone", faceUp: true }, "BT1-013", "BT1-009"],
+        },
+      },
+      {
+        autoAcceptOptional: true,
+        autoSelectCards: true,
+        onEvent: () => {
+          const attacker = handle?.state.players[0]!.battleArea.find(
+            (permanent) => permanent.topCard?.cardId === "ST7-08",
+          );
+          if (attacker !== undefined) attackerDp.push(attacker.currentDP);
+        },
+      },
+    );
+    handle = s;
+    await s.ready();
+    const outsiderInstanceId = s.perm("outsider").topCard!.instanceId;
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("wall").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some((event) => event.kind === "attackEnded"));
+
+    expect(s.state.players[1]!.trash.map((card) => card.instanceId)).toContain(outsiderInstanceId);
+    expect(Math.min(...attackerDp)).toBe(6000);
   });
 });
 

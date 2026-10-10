@@ -92,11 +92,8 @@ export const compiled: CompiledCard = {
           kind: "SubTrigger",
           event: "whenAttacking",
           sourceFilter: { controller: "mine", kind: ["Digimon"], nameOrTrait: evilDragonTraits },
-          fireCondition: {
-            kind: "allOf",
-            conditions: [{ kind: "isYourTurn" }, handAtMostFour],
-            raw: "it's your turn and your hand has 4 or fewer cards",
-          },
+          fireCondition: { kind: "isYourTurn" },
+          activationCondition: handAtMostFour,
           actions: [
             {
               kind: "UseOptionWithoutCost",
