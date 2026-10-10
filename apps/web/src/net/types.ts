@@ -680,6 +680,7 @@ export interface AegisJoinOptions {
     | "arena-feedback33-kakkinmon-opponent-turn-end"
     | "arena-feedback32-omnimon-x-raid-piercing"
     | "arena-feedback40-rie-kishibe-security-gate"
+    | "arena-bt22-101-kyoko-alphamon-on-unsuspend"
     | "arena-prevented-cost-lucemon-jupitermon"
     | "arena-security-leak-known-card-face-down"
     | "arena-discord-keenan-trigger-order"
