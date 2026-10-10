@@ -45,14 +45,7 @@ test("feedback #24: Kaguyamon returns to an empty deck, then PrinceMamemon's rev
   expect(after.players[1]!.trash.map((card) => card.cardId).sort()).toEqual(["BT1-009", "EX13-063"]);
   expect(after.players[0]!.trash.map((card) => card.cardId)).toContain("EX12-065");
 
-  // Known sync defect for this sequence only, separate from feedback #24: both clients saw
-  // Monodramon on the field, so the reveal's faceUp flip while it sits in the hidden deck is
-  // encoded for a ref the clients already dropped and the decoder logs `"refId" not found`.
-  // The final board above still matches the server.
-  await scenario.idle();
-  const probe = await scenario.presentation();
-  expect(probe.pending).toBe(0);
-  expect(probe.gateExpiries).toEqual([]);
-  expect(probe.steps.filter((step) => step.failed || step.cancelled)).toEqual([]);
-  expect(scenario.errors.filter((error) => !error.startsWith('"refId" not found'))).toEqual([]);
+  // Both clients saw Monodramon on the field before it went into the deck. The reveal's
+  // faceUp flip there must not reach them as a patch for a ref they already dropped.
+  await scenario.healthy();
 });
