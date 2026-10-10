@@ -76,7 +76,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CardKind,
   PRESENTATION_CHANNEL,
-  PRESENTATION_CAUGHT_UP_CHANNEL,
+  ANIMATION_SPEED_CHANNEL,
+  type AnimationSpeedReport,
   SERIES_CHANNEL,
   getCardDefinition,
   type DecisionResponse,
@@ -120,7 +121,7 @@ import { buildInstanceIndex, instancePermanentId } from "./decisionModel";
 import { digivolveBasePermanentIds } from "./digivolveModel";
 import { buildMatchLog, type LogLine } from "./matchLog";
 import { useMatchCues } from "./useMatchCues";
-import { caughtUpStateVersion, usePresentationCaughtUp } from "./usePresentationCaughtUp";
+import { useAnimationSpeedReport } from "./useAnimationSpeedReport";
 import type { PresentationPacing, PresentationProbe } from "./presentationProbe";
 import { TIMINGS } from "./timings";
 import { loadReconnectSession } from "../net/reconnectSession";
@@ -562,17 +563,11 @@ export function GameScreen({
     : decisionPendingForViewer
       ? decision.decisionId
       : openCombatWindowForBarrier?.key;
-  usePresentationCaughtUp({
-    enabled: !spectating && state?.matchTimer === true && !state.gameOver,
-    stateVersion: caughtUpStateVersion({
-      consumedStateVersion: cues.consumedStateVersion,
-      viewerQuestionPending,
-      promptShown: viewerPromptKey !== undefined,
-      playbackPending: cues.playbackPending,
-      presenting: cues.presenting,
-    }),
-    send: (report) => room?.send(PRESENTATION_CAUGHT_UP_CHANNEL, report),
-  });
+  const sendAnimationSpeed = useMemo(
+    () => (room ? (report: AnimationSpeedReport) => room.send(ANIMATION_SPEED_CHANNEL, report) : undefined),
+    [room],
+  );
+  useAnimationSpeedReport({ enabled: !spectating, send: sendAnimationSpeed });
   useReadoutAudio({
     memory: shownState
       ? displayMemory(

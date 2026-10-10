@@ -5,22 +5,28 @@ import {
   type MatchTimerOptions,
   MATCH_TIMER_OPPONENT_REFILL_SECONDS,
 } from "@aegis/shared";
-import { PRESENTATION_BACKLOG_MAX_MS } from "./presentationBudget.js";
+
+/**
+ * The furthest ahead a seat's presentation timeline may run. Honest play never comes near
+ * it: it takes a minute of animation queued faster than it plays. It stops a client that
+ * fires actions far faster than anyone can watch them from banking unlimited free time.
+ */
+export const PRESENTATION_BACKLOG_MAX_MS = 60_000;
 
 /**
  * Server monotonic-time accounting.
  *
- * Each seat has its own presentation pause: the seat is not charged while its client still
- * plays the batches that came before its question. The server sets the pause's length from
- * the batches themselves (presentationBudget.ts). A client report can only shorten it.
+ * Each seat has its own presentation timeline, `presentEnd`: when that seat's screen
+ * finishes the batches sent so far, at the seat's own Effect speed. A seat asked to act is
+ * charged from `max(now, presentEnd[seat])`, so it never pays for animations still playing.
+ * The server computes the timeline from the shared animation table; the client reports
+ * nothing but its speed.
  */
 export class MatchClock {
   private remaining: [number, number];
   private lastTime: number;
   private runningSeat: Seat | undefined;
-  private pausedUntil: [number, number] = [0, 0];
-  /** The revision a seat must report having presented to end its pause. */
-  private awaitedVersion: [number, number] = [0, 0];
+  private presentEnd: [number, number] = [0, 0];
   private lastTurn = 0;
 
   constructor(
@@ -48,7 +54,7 @@ export class MatchClock {
     }
     const chargedSeat = this.runningSeat;
     if (chargedSeat !== undefined) {
-      const elapsed = Math.max(0, now - Math.max(this.lastTime, this.pausedUntil[chargedSeat]));
+      const elapsed = Math.max(0, now - Math.max(this.lastTime, this.presentEnd[chargedSeat]));
       this.remaining[chargedSeat] = Math.max(0, this.remaining[chargedSeat] - elapsed);
     }
     this.lastTime = now;
@@ -72,26 +78,21 @@ export class MatchClock {
     }
     this.runningSeat = inputSeat;
     this.publish();
-    this.state.timerActiveSeat = inputSeat !== undefined && now >= this.pausedUntil[inputSeat] ? inputSeat : -1;
+    this.state.timerActiveSeat = inputSeat !== undefined && now >= this.presentEnd[inputSeat] ? inputSeat : -1;
   }
 
-  /**
-   * Both seats watch the batch that closed at `stateVersion`, so both get its allowance on
-   * top of what they still have to watch. Only the seat asked to act is ever charged.
-   */
-  pauseForPresentation(now: number, allowanceMs: number, stateVersion: number): void {
+  /** Each seat's screen plays the batch that just closed, after what it still has queued. */
+  presentBatch(now: number, durationMs: readonly [number, number]): void {
     for (const seat of [0, 1] as const) {
-      const backlog = Math.max(this.pausedUntil[seat], now) + allowanceMs;
-      this.pausedUntil[seat] = Math.min(backlog, now + PRESENTATION_BACKLOG_MAX_MS);
-      this.awaitedVersion[seat] = stateVersion;
+      const end = Math.max(this.presentEnd[seat], now) + durationMs[seat];
+      this.presentEnd[seat] = Math.min(end, now + PRESENTATION_BACKLOG_MAX_MS);
     }
     this.state.timerActiveSeat = -1;
   }
 
-  /** The seat's client has presented everything up to `stateVersion`; charge it from now. */
-  presentationCaughtUp(seat: Seat, stateVersion: number, now: number): void {
-    if (stateVersion < this.awaitedVersion[seat]) return;
-    this.pausedUntil[seat] = Math.min(this.pausedUntil[seat], now);
+  /** A reconnecting client catches up without replaying, so its screen is current now. */
+  resetPresentation(seat: Seat, now: number): void {
+    this.presentEnd[seat] = Math.min(this.presentEnd[seat], now);
   }
 
   private publish(): void {

@@ -1,10 +1,5 @@
 // @vitest-environment jsdom
-import {
-  PRESENTATION_CAUGHT_UP_CHANNEL,
-  type DecisionRequest,
-  type DecisionResponse,
-  type ServerEvent,
-} from "@aegis/shared";
+import { ANIMATION_SPEED_CHANNEL, type DecisionRequest, type DecisionResponse, type ServerEvent } from "@aegis/shared";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
@@ -196,31 +191,18 @@ it.each([
   expect(respondDecision).toHaveBeenCalledWith({ kind: "orderTriggers", order: ["source/effect1"] });
 });
 
-it.each([false, true])(
-  "reports the presentation caught up only once the prompt opens, and only when timed (split: %s)",
-  async (split) => {
-    for (const timed of [false, true]) {
-      const send = vi.fn<(type: string, payload: unknown) => void>();
-      const room = { send, onMessage: () => () => {}, connection: { isOpen: true } };
-      const { decision } = await pendingTriggerDecision(split, timed, room);
-      const caughtUp = () =>
-        send.mock.calls.filter(([type]) => type === PRESENTATION_CAUGHT_UP_CHANNEL).map(([, payload]) => payload);
-      expect(caughtUp()).toEqual([]);
-      const duration = 2 * (SECURITY_BREAK_TOTAL_MS + SECURITY_DESTROY_TOTAL_MS);
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(duration - 101);
-      });
-      expect(screen.queryByText(decision.promptText!)).toBeNull();
-      expect(caughtUp()).toEqual([]);
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(1);
-      });
-      expect(screen.getByText(decision.promptText!)).toBeTruthy();
-      expect(caughtUp()).toEqual(timed ? [{ stateVersion: 1 }] : []);
-      cleanup();
-    }
-  },
-);
+it("sends the Effect speed on join and never a caught-up report", async () => {
+  const send = vi.fn<(type: string, payload: unknown) => void>();
+  const room = { send, onMessage: () => () => {}, connection: { isOpen: true } };
+  await pendingTriggerDecision(false, true, room);
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(2 * (SECURITY_BREAK_TOTAL_MS + SECURITY_DESTROY_TOTAL_MS));
+  });
+  expect(send.mock.calls.filter(([type]) => type === ANIMATION_SPEED_CHANNEL)).toEqual([
+    [ANIMATION_SPEED_CHANNEL, { speed: "normal" }],
+  ]);
+  expect(send.mock.calls.filter(([type]) => type === "presentationCaughtUp")).toEqual([]);
+});
 
 it.each([false, true])("presents the Barrier prompt after the security scene (timed: %s)", async (timed) => {
   vi.useFakeTimers();

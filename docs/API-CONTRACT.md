@@ -57,19 +57,27 @@ The server owns elapsed time. `timerRemaining0` and `timerRemaining1` are rounde
 seconds; `timerActiveSeat` is 0 or 1 while that player must act, and -1 while paused.
 Decisions and combat responses charge their owner even during the opponent's turn.
 Automatic engine resolution pauses both banks.
-A match timer never skips animations. Instead, each broadcast batch pauses each
-seat's clock while that seat's client plays it:
+A match timer never skips animations. Instead, the server holds each seat's clock
+while that seat's screen plays what was broadcast. The client reports nothing about
+its playback:
 
-- The client sends `presentationCaughtUp { stateVersion }` once it has presented
-  the batch closed at that revision: its prompt is on screen, or, with no question
-  open, its queue owes nothing. The server then charges the seat from that moment.
-- A report for an older revision than the newest closed batch is ignored. Spectator
-  reports are ignored. Only the seat that must act is charged.
-- A client that never reports, or reports late, cannot freeze the clock. Each
-  batch adds an allowance to the seat's pause: 1 s plus each event's Normal-speed
-  beat scaled by Slow speed (1.4x), with 2 s more for a played or digivolved card;
-  at most 20 s per batch and 30 s of pause in total
-  (`apps/api/src/rooms/presentationBudget.ts`). The seat is charged once it ends.
+- Each seat has a presentation timeline. When a batch closes at time `t`, the
+  server sets `presentEnd[seat] = max(presentEnd[seat], t) + duration`, where
+  `duration` sums each event's length at that seat's Effect speed. A seat asked to
+  act is charged from `max(now, presentEnd[seat])`. Only the seat that must act is
+  charged.
+- Event lengths come from the table the web client animates to
+  (`packages/shared/src/protocol/animationTimings.ts` and `animationPause.ts`).
+  Effect beats scale with the speed (Slow 1.4x, Fast 0.55x); an opponent's played
+  or digivolved card adds the Slow showcase hold (2 s).
+- The client sends `animationSpeed { speed: "slow" | "normal" | "fast" }` on join
+  and whenever the player changes it. A seat that never sends it counts as Normal.
+  Unknown values and spectator messages are ignored. The skip control changes
+  nothing on the server.
+- A timeline may run at most 60 s ahead of now, so a client that queues actions far
+  faster than they can be watched cannot bank unlimited time.
+- A reconnecting client catches up without replaying, so its timeline ends at the
+  reconnect.
 
 A disconnect or reconnect never resets either reserve, and an absent player's
 required response continues to consume time once its pause ends. Waiting rooms do not consume time.

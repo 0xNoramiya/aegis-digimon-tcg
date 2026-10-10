@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { GameState, matchTimerSettings } from "@aegis/shared";
-import { MatchClock } from "./MatchClock.js";
-import { PRESENTATION_BACKLOG_MAX_MS } from "./presentationBudget.js";
+import { MatchClock, PRESENTATION_BACKLOG_MAX_MS } from "./MatchClock.js";
 
 function clock(options = { matchTimer: true, timerStartSeconds: 60, timerRefillSeconds: 15 }) {
   const state = new GameState();
@@ -39,85 +38,67 @@ describe("optional match clock", () => {
     expect(state.timerRemaining1).toBe(59);
   });
 
-  it("pauses the deciding seat until its client reports the batch presented", () => {
+  it("holds the deciding seat for exactly the batch's computed animation time, with no client report", () => {
     const { state, timer } = clock();
     timer.update(0, 0);
-    timer.pauseForPresentation(0, 8000, 4);
-    timer.update(3000, 0);
-    expect(state.timerActiveSeat).toBe(-1);
-    expect(state.timerRemaining0).toBe(60);
-    timer.presentationCaughtUp(0, 4, 3000);
-    timer.update(3000, 0);
-    expect(state.timerActiveSeat).toBe(0);
-    timer.update(5000, 0);
-    expect(state.timerRemaining0).toBe(58);
-  });
-
-  it("starts charging at the allowance's end when the client never reports", () => {
-    const { state, timer } = clock();
-    timer.update(0, 0);
-    timer.pauseForPresentation(0, 8000, 4);
+    timer.presentBatch(0, [8000, 8000]);
     timer.update(7900, 0);
     expect(state.timerActiveSeat).toBe(-1);
     expect(state.timerRemaining0).toBe(60);
-    timer.update(10_000, 0);
+    timer.update(8000, 0);
     expect(state.timerActiveSeat).toBe(0);
+    timer.update(10_000, 0);
     expect(state.timerRemaining0).toBe(58);
   });
 
-  it("adds each batch's allowance to the backlog, up to a fixed ceiling", () => {
+  it("queues back-to-back batches on the seat's timeline", () => {
     const { state, timer } = clock();
     timer.update(0, 0);
-    timer.pauseForPresentation(0, 5000, 4);
-    timer.pauseForPresentation(1000, 5000, 5);
+    timer.presentBatch(0, [5000, 5000]);
+    timer.presentBatch(1000, [5000, 5000]);
     timer.update(9900, 0);
     expect(state.timerRemaining0).toBe(60);
     timer.update(12_000, 0);
     expect(state.timerRemaining0).toBe(58);
-    for (let version = 6; version < 20; version += 1) timer.pauseForPresentation(12_000, 20_000, version);
-    timer.update(12_000 + PRESENTATION_BACKLOG_MAX_MS + 1000, 0);
-    expect(state.timerRemaining0).toBe(57);
   });
 
-  it("ignores a report for an older batch than the latest one", () => {
+  it("starts each seat's clock at the end of its own timeline", () => {
     const { state, timer } = clock();
     timer.update(0, 0);
-    timer.pauseForPresentation(0, 5000, 4);
-    timer.pauseForPresentation(0, 5000, 5);
-    timer.presentationCaughtUp(0, 4, 1000);
-    timer.update(9000, 0);
-    expect(state.timerActiveSeat).toBe(-1);
-    expect(state.timerRemaining0).toBe(60);
-    timer.presentationCaughtUp(0, 5, 9000);
-    timer.update(10_000, 0);
+    timer.presentBatch(0, [3000, 6000]);
+    timer.update(4000, 0);
     expect(state.timerRemaining0).toBe(59);
-  });
-
-  it("uses only the deciding seat's report and never charges the other seat", () => {
-    const { state, timer } = clock();
-    timer.update(0, 1);
-    timer.pauseForPresentation(0, 8000, 4);
-    timer.presentationCaughtUp(0, 4, 500);
-    timer.update(3000, 1);
-    expect(state.timerActiveSeat).toBe(-1);
-    expect(state.timerRemaining0).toBe(60);
+    timer.update(4000, 1);
+    timer.update(5000, 1);
     expect(state.timerRemaining1).toBe(60);
-    timer.presentationCaughtUp(1, 4, 3000);
-    timer.update(6000, 1);
-    expect(state.timerRemaining0).toBe(60);
+    timer.update(9000, 1);
     expect(state.timerRemaining1).toBe(57);
   });
 
-  it("keeps a disconnected seat's pause until the allowance ends, and a reconnect report ends it", () => {
+  it("caps a timeline queued far faster than it plays", () => {
+    const { state, timer } = clock({ matchTimer: true, timerStartSeconds: 300, timerRefillSeconds: 15 });
+    timer.update(0, 0);
+    for (let batch = 0; batch < 20; batch += 1) timer.presentBatch(0, [20_000, 20_000]);
+    timer.update(PRESENTATION_BACKLOG_MAX_MS + 1000, 0);
+    expect(state.timerRemaining0).toBe(299);
+  });
+
+  it("never charges the seat that is not asked to act", () => {
+    const { state, timer } = clock();
+    timer.update(0, 1);
+    timer.presentBatch(0, [1000, 1000]);
+    timer.update(6000, 1);
+    expect(state.timerRemaining0).toBe(60);
+    expect(state.timerRemaining1).toBe(55);
+  });
+
+  it("ends a reconnecting seat's timeline at the reconnect", () => {
     const { state, timer } = clock();
     timer.update(0, 0);
-    timer.pauseForPresentation(0, 8000, 4);
-    // Disconnected: no report arrives, so only the allowance bounds the pause.
+    timer.presentBatch(0, [8000, 8000]);
+    timer.update(2000, 0);
+    timer.resetPresentation(0, 2000);
     timer.update(4000, 0);
-    expect(state.timerRemaining0).toBe(60);
-    // The reconnected client replays history as its baseline and reports the newest batch.
-    timer.presentationCaughtUp(0, 4, 4000);
-    timer.update(6000, 0);
     expect(state.timerRemaining0).toBe(58);
   });
 
