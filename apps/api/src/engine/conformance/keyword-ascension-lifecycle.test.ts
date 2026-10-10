@@ -239,6 +239,9 @@ describe("Ascension through public battle deletion", () => {
           hand: [
             { card: "BT26-030", as: "pumpkinmon" },
             { card: "BT1-009", as: "cost" },
+            // A playable reserve keeps Main open after the grant. Without it, Main has no legal
+            // action left and the engine passes the turn before the grant can be observed.
+            { card: "BT1-009", as: "reserve" },
           ],
           deck: ["BT1-009", "BT1-009"],
         },
