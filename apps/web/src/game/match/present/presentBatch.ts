@@ -50,7 +50,7 @@ import { activePacing } from "../../pacing";
 import type { PresentationPacing } from "../../presentationProbe";
 import { withoutId } from "../eventLookup";
 import { batchFacts } from "./batchFacts";
-import { combatScenes } from "./combat";
+import { combatScenes, effectsBeforeBattleSettled, splitBeforeBattle } from "./combat";
 import { collectBatchAnnouncements } from "./announcements";
 import { enqueueArrivals } from "./arrivals";
 import { enqueueAttackAnnouncement } from "./attackAnnouncement";
@@ -368,6 +368,7 @@ export function presentServerBatch({
   setHeldDeletions: Dispatch<SetStateAction<ReadonlyMap<number, HeldDeletion>>>;
   setHeldStackStrips: Dispatch<SetStateAction<ReadonlyMap<number, HeldStackStrip>>>;
 }) {
+  const followsResolvedEffects = battleSegments.has(fresh);
   // Preserve event order before splitting a batch into target-animation segments. A
   // resolving source can be removed by its nested cost later at the same state version.
   const deletedLater = new Set<string>();
@@ -400,7 +401,13 @@ export function presentServerBatch({
         parts.push([]);
       parts.at(-1)!.push(event);
     }
-    return parts;
+    return parts.flatMap((part) => {
+      const split =
+        presentationPacingRef.current === "sequential" && !replayingHistory ? splitBeforeBattle(part) : null;
+      if (!split) return [part];
+      battleSegments.add(split.battle);
+      return [split.beforeBattle, split.battle];
+    });
   });
   if (segments.length > 1) {
     for (const [index, segment] of segments.entries()) {
@@ -509,12 +516,17 @@ export function presentServerBatch({
     unsettled && step.track === CueTrack.CenterStage
       ? afterGate(step, unsettled, activePacing().budgetCeilingMs, "centerStage/effectUnitsSettled")
       : step;
-  const enqueue = (step: AnimationStep) =>
+  // The battle segment shares its batch with the effects resolved before it. Its steps wait
+  // for those effects to settle, so the effects must not wait for its steps in turn.
+  const unitsResolvedBeforeBattle = followsResolvedEffects ? effectSequence.closedUnitsIn(batchId) : [];
+  const enqueue = (step: AnimationStep) => {
+    for (const unit of unitsResolvedBeforeBattle) unit.stepsAfterClose.add(step.id);
     queue.enqueue({
       ...afterEarlierUnits(step),
       origin: { batchId, stateVersion, phaseOrder: batchPhaseOrder },
       ...(replayingHistory ? { mode: "replay" as const } : {}),
     });
+  };
   if (attackCause && attackReady) {
     setAttackAwaitingCause(true);
     const readyToAttack = () => {
@@ -603,6 +615,16 @@ export function presentServerBatch({
     anchors,
     lastVisibleArtRef,
   });
+  // A separate step, so the step log shows the battle starting only once the wait is over.
+  const battleCause = sequenced ? effectsBeforeBattleSettled({ fresh, sequenced, earlierUnitsSettled }) : null;
+  if (battleCause && (clashScenes.length > 0 || beaten.size > 0))
+    enqueue({
+      id: `combat-after-effects-${batchId}-${fieldClashKeyRef.current}`,
+      track: "combatImpact",
+      async run(context) {
+        await waitForGate(battleCause, context, activePacing().budgetCeilingMs, "combatImpact/effectsBeforeBattle");
+      },
+    });
   // Start the field battle before a Piercing continuation can enqueue its security scene.
   // The shield step observes this track and waits until Raid's redirected battle has landed.
   const { completion: combatCompletionGate, landedByPermanent } = enqueueCombatImpact({
@@ -1225,6 +1247,9 @@ export function presentServerBatch({
     }
   }
 }
+
+/** The battle part of a batch split by {@link splitBeforeBattle}. */
+const battleSegments = new WeakSet<readonly ServerEvent[]>();
 
 /** Waiters use the announcement owner's ceiling, including a security reveal before the clause. */
 function afterGate(

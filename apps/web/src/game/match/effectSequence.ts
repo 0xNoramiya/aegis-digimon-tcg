@@ -173,6 +173,11 @@ export interface EffectUnit {
   touched: Set<string>;
   /** Effects that opened while this one was still resolving ("activate this card's [Main] effect"). */
   nested: EffectUnit[];
+  /**
+   * Steps its closing batch queued for what came after its close (the battle after a
+   * [When Attacking] clause). They are not its results, so its settle does not wait for them.
+   */
+  stepsAfterClose: Set<string>;
 
   /** A clause was raised for it. A unit nobody announces has nothing to read before its results. */
   narrated: boolean;
@@ -227,6 +232,8 @@ export interface EffectSequence {
   /** A clause step, which no unit's results wait on: it belongs to its own unit's announce. */
   markClauseStep(stepId: string): void;
   isClauseStep(stepId: string): boolean;
+  /** Units already closed and still settling whose results this batch carried. */
+  closedUnitsIn(batchId: string): EffectUnit[];
   /**
    * The cause of a change the live state shows before the batch that made it has been
    * presented: the state patch reaches the client ahead of its batch's close, and one patch
@@ -368,6 +375,7 @@ export function createEffectSequence(options: EffectSequenceOptions = {}): Effec
       repeat,
       touched: new Set(),
       nested: [],
+      stepsAfterClose: new Set(),
       narrated: false,
       clauseVisible: createPresentationGate(),
       started,
@@ -501,6 +509,9 @@ export function createEffectSequence(options: EffectSequenceOptions = {}): Effec
     isClauseStep(stepId) {
       return clauseSteps.has(stepId);
     },
+    closedUnitsIn(batchId) {
+      return [...pending].filter((unit) => unit.closed && unit.batchIds.has(batchId));
+    },
     causeOfLiveChange(liveStateVersion) {
       const version = Math.min(liveStateVersion, latestVersion + 1);
       const existing = causes.get(version);
@@ -597,6 +608,7 @@ function resultsPendingOf(unit: EffectUnit, deps: EffectUnitStepsDeps): () => bo
   return () =>
     queue.hasPendingStep((step) => {
       if (step.track === EFFECT_UNIT_TRACK || sequence.isClauseStep(step.id)) return false;
+      if (unit.stepsAfterClose.has(step.id)) return false;
       if (step.track === CueTrack.SecurityDock || step.track === CueTrack.SecurityHold) return false;
       // An effect-used Option waits in its dock for the viewer's next answer.
       // That decision waits for this unit to settle, so waiting for the hold
