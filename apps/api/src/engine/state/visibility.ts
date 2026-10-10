@@ -403,9 +403,12 @@ export function exposeCardInZone(
   card: CardInstance,
 ): void {
   repairDetachedCardSchema(card);
-  if (isHiddenZone(zone)) return; // deck / egg deck: encoded for nobody, owner included
+  // A deck or egg deck is encoded for nobody, owner included; a hand or security for its owner only.
+  if (isHiddenZone(zone) || (isOwnerPrivateZone(zone) && viewerSeat !== ownerSeat)) {
+    rememberDeparture(view, card);
+    return;
+  }
   if (isOwnerPrivateZone(zone)) {
-    if (viewerSeat !== ownerSeat) return;
     // Untagged fields first (instanceId, ownerSeat, faceUp, the projections). A card drawn out
     // of a hidden zone is genuinely NEW to this client — the deck was never encoded — and its
     // ChangeTree is filtered, so the re-ADD that `Root.add` queues on reinsertion lands in the
@@ -421,6 +424,64 @@ export function exposeCardInZone(
   }
   view.add(card);
   if (card.faceUp || card.ownerSeat === viewerSeat) view.add(card, CARD_ID_VIEW_TAG);
+}
+
+/**
+ * Cards each view already knows that have since moved where that view may not read them,
+ * waiting for {@link forgetWithheldCards}.
+ */
+const departuresByView = new WeakMap<StateView, Set<CardInstance>>();
+
+function rememberDeparture(view: StateView, card: CardInstance): void {
+  if (!view.has(card) && !view.hasTag(card)) return;
+  let departures = departuresByView.get(view);
+  if (departures === undefined) {
+    departures = new Set();
+    departuresByView.set(view, departures);
+  }
+  departures.add(card);
+}
+
+/** True when `card` sits where `viewerSeat` may not read it: any deck, or the opponent's hand or face-down security. */
+function isWithheldFrom(state: GameState, viewerSeat: Seat | undefined, card: CardInstance): boolean {
+  return state.players.some((player) => {
+    if (player.deck.includes(card) || player.eggDeck.includes(card)) return true;
+    if (player.seat === viewerSeat) return false;
+    return player.hand.includes(card) || (player.security.includes(card) && !card.faceUp);
+  });
+}
+
+function hideFromView(view: StateView, tree: ChangeTree): void {
+  view.unmarkVisible(tree);
+  view.removeAllTagsOnTree(tree);
+  tree.forEachChild((child) => hideFromView(view, child));
+}
+
+/**
+ * Make `view` stop tracking every card that moved out of its sight. Call it for each client
+ * right AFTER a patch is encoded, never before.
+ *
+ * The client drops a card when the patch carrying its departure arrives. A view that still
+ * counts the card as visible keeps encoding later changes to its fields (a deck reveal's
+ * `faceUp` flip), and the client logs `"refId" not found` for each one.
+ *
+ * Why not on arrival, in `exposeCardInZone`: the departure itself is filtered on the card's
+ * visibility. A hand's DELETE ships only while the view still sees the card, so hiding it in
+ * the same patch strands the card in the client's hand. And `view.remove` is no substitute: it
+ * queues a DELETE on the card's new parent, a deck array the client never received.
+ *
+ * Each card is checked against its zone at call time, so a card that came back into sight
+ * before the patch (deck to trash, face-down security turned face-up) is left alone. A card
+ * hidden here is re-introduced in full by the next `view.add` when it becomes visible again.
+ */
+export function forgetWithheldCards(view: StateView, state: GameState, viewerSeat: Seat | undefined): void {
+  const departures = departuresByView.get(view);
+  if (departures === undefined) return;
+  departuresByView.delete(view);
+  for (const card of departures) {
+    const tree = card[$changes];
+    if (tree !== undefined && isWithheldFrom(state, viewerSeat, card)) hideFromView(view, tree);
+  }
 }
 
 /**

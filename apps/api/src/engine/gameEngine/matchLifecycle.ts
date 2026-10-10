@@ -12,6 +12,7 @@ import {
 import {
   buildStateView,
   exposeCardInZone,
+  forgetWithheldCards as forgetWithheldCardsIn,
   refreshStateView as refreshStateViewInto,
   syncPublicCounts,
 } from "../state/visibility.js";
@@ -275,6 +276,12 @@ export function refreshStateView(engine: GameEngine, view: Client["view"], seat:
   if (view === undefined) return;
   syncPublicCounts(engine.state);
   refreshStateViewInto(view, engine.state, seat);
+}
+
+/** Release a client's view of the cards that left its sight; the room calls it after each patch. */
+export function forgetWithheldCards(engine: GameEngine, view: Client["view"], seat: Seat | undefined): void {
+  if (view === undefined) return;
+  forgetWithheldCardsIn(view, engine.state, seat);
 }
 
 /**

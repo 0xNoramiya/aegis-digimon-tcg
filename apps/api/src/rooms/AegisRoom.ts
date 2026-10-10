@@ -1508,6 +1508,22 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   }
 
   /**
+   * After each patch, each view forgets the cards whose move out of its sight that patch
+   * carried (into a deck, or into the opponent's hand or face-down security). Otherwise a
+   * later change to such a card, such as a deck reveal, is encoded for a refId the client
+   * already dropped. Colyseus has no after-patch hook, and its patch timer calls this method.
+   */
+  override broadcastPatch(): boolean {
+    const hasChanges = super.broadcastPatch();
+    if (!this.engine) return hasChanges;
+    for (const client of this.clients) {
+      if (client.view === undefined) continue;
+      this.engine.forgetWithheldCards(client.view, this.seatByClient.get(client.sessionId));
+    }
+    return hasChanges;
+  }
+
+  /**
    * Run one entry into the engine as a single batch of events.
    *
    * Every path from this room into `GameEngine` that can emit goes through here, so the

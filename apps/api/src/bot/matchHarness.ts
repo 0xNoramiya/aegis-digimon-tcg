@@ -246,6 +246,7 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
             recordProjectionError(`projection seat ${target.seat}: own hand identity missing`);
         }
         encoder.discardChanges();
+        for (const target of targets) engine.forgetWithheldCards(target.view, target.seat);
         full = false;
         projectionChecks++;
       } catch (error) {
