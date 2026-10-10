@@ -340,6 +340,95 @@ describe("EX12-026 Shellmon", () => {
   });
 });
 
+describe("EX12-026 Shellmon — feedback report 4: two independent targets", () => {
+  const trashClause =
+    "[On Play] [When Digivolving] Trash the bottom 2 digivolution cards of 1 of your opponent's Digimon.";
+  const restrictClause =
+    "Then, 1 of their Digimon with 1 or fewer digivolution cards can't attack or block until their turn ends.";
+
+  async function playShellmonAgainst(otherSources: string[]) {
+    const s = setupEngine({
+      0: { hand: [{ card: "EX12-026", as: "source" }] },
+      1: {
+        battleArea: [
+          { card: "EX12-032", as: "stripped", under: ["BT1-009", "BT1-010", "BT1-011"] },
+          { card: "EX12-025", as: "other", under: otherSources },
+        ],
+      },
+    });
+    s.state.memory = 10;
+    await s.ready();
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("source").instanceId })).toEqual({
+      ok: true,
+    });
+    return s;
+  }
+
+  function lastTargetRequest(s: ReturnType<typeof setupEngine>) {
+    const request = s.decisions.at(-1)!.req;
+    expect(request.kind).toBe("chooseTargets");
+    return request;
+  }
+
+  it("labels each target prompt with its own clause and restricts a different Digimon", async () => {
+    const s = await playShellmonAgainst(["BT1-009"]);
+    const candidates = [s.perm("stripped").permanentId, s.perm("other").permanentId];
+
+    await settle(() => s.state.pendingDecision?.kind === "chooseTargets");
+    expect(lastTargetRequest(s).options).toMatchObject({
+      candidateInstanceIds: candidates,
+      effectTextPart: trashClause,
+    });
+    await chooseTarget(s, s.perm("stripped").permanentId);
+
+    await settle(() => s.decisions.length === 2);
+    expect(lastTargetRequest(s).options).toMatchObject({
+      candidateInstanceIds: candidates,
+      effectTextPart: restrictClause,
+    });
+    await chooseTarget(s, s.perm("other").permanentId);
+    await settle(
+      () => s.state.pendingDecision === undefined && observe(s.engine).isRestricted(s.perm("other"), "block"),
+    );
+
+    expect(s.perm("stripped").stack.map((card) => card.cardId)).toEqual(["BT1-011"]);
+    expect(observe(s.engine).isRestricted(s.perm("stripped"), "attack")).toBe(false);
+    expect(observe(s.engine).isRestricted(s.perm("other"), "attack")).toBe(true);
+  });
+
+  it("auto-targets the only Digimon with sources, then asks only the restriction clause", async () => {
+    const s = await playShellmonAgainst([]);
+
+    await settle(() => s.state.pendingDecision?.kind === "chooseTargets");
+    expect(s.decisions).toHaveLength(1);
+    expect(s.perm("stripped").stack.map((card) => card.cardId)).toEqual(["BT1-011"]);
+    expect(lastTargetRequest(s).options).toMatchObject({
+      candidateInstanceIds: [s.perm("stripped").permanentId, s.perm("other").permanentId],
+      effectTextPart: restrictClause,
+    });
+    await chooseTarget(s, s.perm("other").permanentId);
+    await settle(
+      () => s.state.pendingDecision === undefined && observe(s.engine).isRestricted(s.perm("other"), "block"),
+    );
+
+    expect(observe(s.engine).isRestricted(s.perm("stripped"), "attack")).toBe(false);
+  });
+
+  it("restricts the stripped Digimon without a prompt when it is the only one with 1 or fewer sources", async () => {
+    const s = await playShellmonAgainst(["BT1-009", "BT1-010"]);
+
+    await settle(() => s.state.pendingDecision?.kind === "chooseTargets");
+    await chooseTarget(s, s.perm("stripped").permanentId);
+    await settle(
+      () => s.state.pendingDecision === undefined && observe(s.engine).isRestricted(s.perm("stripped"), "block"),
+    );
+
+    expect(s.decisions).toHaveLength(1);
+    expect(observe(s.engine).isRestricted(s.perm("stripped"), "attack")).toBe(true);
+    expect(observe(s.engine).isRestricted(s.perm("other"), "attack")).toBe(false);
+  });
+});
+
 describe("EX12-026 Shellmon — KB Q&A rulings", () => {
   it("keeps the attack and block lock after the restricted Digimon gains two or more sources (Q6753)", async () => {
     const s = setupEngine(
