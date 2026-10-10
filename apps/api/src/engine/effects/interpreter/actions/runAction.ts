@@ -20,7 +20,7 @@ import { availableEffectPlayAssemblyReduction } from "./effectPlayAssembly.js";
 import { runCombatAction } from "./combat.js";
 import { runControlFlowAction } from "./controlFlow.js";
 import { runDigivolutionAction } from "./digivolution.js";
-import { canAttemptDigivolveBeforeCost } from "./digivolve.js";
+import { canAttemptDigivolve, canAttemptDigivolveBeforeCost } from "./digivolve.js";
 import { runGrantStaticAction } from "./grantStatic.js";
 import { canReactivateOwnEffect, runMetaAction } from "./meta.js";
 import { DECLINE_MODAL_CHOICE_LABEL, declinableModalChoices, modalHasAvailableOption } from "./modal.js";
@@ -412,6 +412,19 @@ function isOpponentChosenProcessing(action: Action): boolean {
   const chooser =
     (action as { chooser?: string }).chooser ?? (action as { target?: { chooser?: string } }).target?.chooser;
   return chooser === "opponent";
+}
+
+/**
+ * A printed "By [cost], ... may digivolve" pays its processing condition even when no
+ * digivolution is possible (§15-7-5), so the pre-cost gate lets it through. Once the cost is
+ * paid, re-check against the live board: with no legal destination the "Digivolve" yes/no
+ * would do nothing, so it is not asked (feedback #40, BT22-090 at 5 security).
+ * The cost is stripped because it is already paid: its pre-payment projections (a bound
+ * breeding Digimon, a rotated stack top) no longer describe the board.
+ */
+function optionalDigivolveImpossibleAfterCost(ctx: EffectContext, action: Action): boolean {
+  if (action.kind !== "Digivolve") return false;
+  return !canAttemptDigivolve(ctx, { ...action, cost: undefined });
 }
 
 async function runActionInner(ctx: EffectContext, action: Action): Promise<boolean> {
@@ -1243,6 +1256,10 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
     actionCost?.optional === true &&
     !paysProcessingCostBeforeOptional
   ) {
+    if (optionalDigivolveImpossibleAfterCost(ctx, action)) {
+      ctx.lastEffectActed = false;
+      return false;
+    }
     const yes = await ctx.ask.optional(ctx, describeAction(action));
     if (!yes) {
       ctx.lastEffectActed = false;
@@ -1274,6 +1291,10 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   // only then is the payload offered. Asking before the extra costs would leave Q2853's placement
   // half-done (this Tamer placed, [Growlmon] and [WarGrowlmon] left in the trash).
   if (action.kind !== "RawUnparsed" && paysProcessingCostBeforeOptional) {
+    if (optionalDigivolveImpossibleAfterCost(ctx, action)) {
+      ctx.lastEffectActed = false;
+      return false;
+    }
     const yes = ctx.predecidedOptionalActions?.get(action) ?? (await ctx.ask.optional(ctx, describeAction(action)));
     if (!yes) {
       ctx.lastEffectActed = false;
