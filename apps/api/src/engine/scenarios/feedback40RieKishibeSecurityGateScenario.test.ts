@@ -29,15 +29,21 @@ async function endTurnWithRie(securityCount: number) {
     expect(s.engine.applyIntent(1, { type: "surrender" })).toEqual({ ok: true });
     await loop;
   };
-  return { s, human, finish };
+  const riePrompts = s.decisions
+    .filter(({ req }) => req.sourceCardId === "BT22-090" && req.kind === "optional")
+    .map(({ req }) => req.promptText);
+  return { s, human, riePrompts, finish };
 }
 
 describe("Feedback #40: Rie Kishibe end-of-turn digivolution into LordKnightmon", () => {
   it("pays the By deletion but keeps Rie a Tamer with 5 security cards (Q4959, match 4d17a450)", async () => {
-    const { s, human, finish } = await endTurnWithRie(5);
+    const { human, riePrompts, finish } = await endTurnWithRie(5);
 
     expect(human.security).toHaveLength(5);
-    expect(s.decisions.some(({ req }) => req.sourceCardId === "BT22-090" && req.kind === "optional")).toBe(true);
+    // Follow-up to #40: no LordKnightmon can legally digivolve, so only the By cost is offered,
+    // never a "Digivolve" yes/no that would do nothing.
+    expect(riePrompts).toHaveLength(1);
+    expect(riePrompts[0]).toMatch(/^Pay cost: By deleting/);
     expect(human.trash.map(({ instanceId }) => instanceId)).toContain(PAYMENT);
     const rie = human.battleArea.find(({ permanentId }) => permanentId === RIE);
     expect(rie?.topCard.cardId).toBe("BT22-090");
@@ -47,7 +53,9 @@ describe("Feedback #40: Rie Kishibe end-of-turn digivolution into LordKnightmon"
   });
 
   it("digivolves the same board into EX13-064 once security is down to 3", async () => {
-    const { human, finish } = await endTurnWithRie(3);
+    const { human, riePrompts, finish } = await endTurnWithRie(3);
+
+    expect(riePrompts).toEqual([expect.stringMatching(/^Pay cost: By deleting/), "Digivolve"]);
 
     expect(human.trash.map(({ instanceId }) => instanceId)).toContain(PAYMENT);
     const lord = human.battleArea.find(({ permanentId }) => permanentId === RIE);

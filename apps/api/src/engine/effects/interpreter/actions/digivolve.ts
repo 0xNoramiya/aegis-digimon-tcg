@@ -264,7 +264,11 @@ export function canAttemptDigivolve(ctx: EffectContext, action: Extract<Action, 
     const breeding = ctx.game.player(ctx.source.ownerSeat).breeding;
     return breeding !== undefined ? hasLegalDestination(breeding.permanentId) : allowNoTarget;
   }
-  const targets = candidatePermanents(ctx, target);
+  // After a rotation cost is paid, its host may show a non-Digimon top until it digivolves
+  // (Q5212). runDigivolve accepts that pending host, so the preflight must too.
+  const targets = candidatePermanents(ctx, target, {
+    allowPendingRotationHost: ctx.pendingRotationHostPermanentId !== undefined,
+  });
   return targets.length > 0 ? targets.some((permanent) => hasLegalDestination(permanent.permanentId)) : allowNoTarget;
 }
 
