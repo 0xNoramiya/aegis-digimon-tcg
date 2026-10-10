@@ -1,7 +1,14 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Client, type Room } from "@colyseus/sdk";
-import { DECISION_CHANNEL, GameState, type DecisionRequest } from "@aegis/shared";
+import {
+  DECISION_CHANNEL,
+  EVENT_CHANNEL,
+  GameState,
+  PRESENTATION_CAUGHT_UP_CHANNEL,
+  type DecisionRequest,
+  type SequencedServerEvent,
+} from "@aegis/shared";
 import { RED_DECK, BLUE_DECK } from "@aegis-api/engine/testDecks.js";
 import { startTestServer, type TestServer } from "./scenarioHarness/server";
 
@@ -12,6 +19,13 @@ afterEach(async () => {
   await server?.close();
   server = undefined;
 });
+
+/** These clients draw nothing, so each closed batch is presented the moment it arrives. */
+function presentInstantly(room: Room<GameState>) {
+  room.onMessage<SequencedServerEvent>(EVENT_CHANNEL, (event) => {
+    if (event.kind === "batchClosed") room.send(PRESENTATION_CAUGHT_UP_CHANNEL, { stateVersion: event.stateVersion });
+  });
+}
 
 async function join(endpoint: string, matchTimer?: boolean, roomType = "aegis") {
   const room = await new Client(endpoint).joinOrCreate<GameState>(
@@ -85,6 +99,7 @@ describe("match timer websocket contract", () => {
       GameState,
     );
     rooms.push(host);
+    presentInstantly(host);
     await vi.waitFor(() => expect(host.state.roomCode.length).toBe(6));
     host.onMessage<DecisionRequest>(DECISION_CHANNEL, (request) => {
       if (request.kind === "mulligan") host.send("mulligan", { keep: true });
@@ -102,6 +117,7 @@ describe("match timer websocket contract", () => {
       GameState,
     );
     rooms.push(guest);
+    presentInstantly(guest);
     guest.onMessage<DecisionRequest>(DECISION_CHANNEL, (request) => {
       if (request.kind === "mulligan") guest.send("mulligan", { keep: true });
     });
@@ -137,6 +153,7 @@ describe("match timer websocket contract", () => {
       GameState,
     );
     rooms.push(host);
+    presentInstantly(host);
     let initial: DecisionRequest | undefined;
     host.onMessage<DecisionRequest>(DECISION_CHANNEL, (request) => {
       initial = request;
@@ -148,6 +165,7 @@ describe("match timer websocket contract", () => {
       GameState,
     );
     rooms.push(guest);
+    presentInstantly(guest);
     guest.onMessage<DecisionRequest>(DECISION_CHANNEL, (request) => {
       if (request.kind === "mulligan") guest.send("mulligan", { keep: true });
     });

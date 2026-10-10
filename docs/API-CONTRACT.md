@@ -56,13 +56,23 @@ The required responder is highlighted; the compact readout shows remaining secon
 The server owns elapsed time. `timerRemaining0` and `timerRemaining1` are rounded-up
 seconds; `timerActiveSeat` is 0 or 1 while that player must act, and -1 while paused.
 Decisions and combat responses charge their owner even during the opponent's turn.
-Automatic engine resolution pauses both banks. Visible game-event batches receive
-a fixed two-second presentation grace; client animation reports cannot extend it.
-In timed matches, an incoming decision or combat response takes priority over
-presentation: the client shows the live board and fast-forwards queued animations
-so a low reserve cannot expire behind a hidden response dialog.
+Automatic engine resolution pauses both banks.
+A match timer never skips animations. Instead, each broadcast batch pauses each
+seat's clock while that seat's client plays it:
+
+- The client sends `presentationCaughtUp { stateVersion }` once it has presented
+  the batch closed at that revision: its prompt is on screen, or, with no question
+  open, its queue owes nothing. The server then charges the seat from that moment.
+- A report for an older revision than the newest closed batch is ignored. Spectator
+  reports are ignored. Only the seat that must act is charged.
+- A client that never reports, or reports late, cannot freeze the clock. Each
+  batch adds an allowance to the seat's pause: 1 s plus each event's Normal-speed
+  beat scaled by Slow speed (1.4x), with 2 s more for a played or digivolved card;
+  at most 20 s per batch and 30 s of pause in total
+  (`apps/api/src/rooms/presentationBudget.ts`). The seat is charged once it ends.
+
 A disconnect or reconnect never resets either reserve, and an absent player's
-required response continues to consume time. Waiting rooms do not consume time.
+required response continues to consume time once its pause ends. Waiting rooms do not consume time.
 Expiry is checked before accepting an intent and ends the match through the ordinary
 `gameOver` pipeline with `reason: "timeout"`, cancelling open decision/phase waits.
 Clock-only schema patches do not advance the gameplay `stateVersion`.

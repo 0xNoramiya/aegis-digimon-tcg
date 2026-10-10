@@ -73,7 +73,7 @@ test.describe("Discord 1557557257129037844: Nezhamon Engage and Kakkinmon at end
     expect(permanentOf(result.passed, "ST5-08").isSuspended).toBe(true);
     // Nezhamon may unsuspend when security is removed; Kakkinmon must not draw again.
     expect(permanentOf(result.passed, "EX12-019").isSuspended).toBe(false);
-    await scenario.healthy({ timedCatchUp: true });
+    await scenario.healthy();
   });
 
   test("Discord 1557557257129037844: Engage first suspends the only Blocker, so Kakkinmon cannot pay and does not draw", async ({
@@ -93,7 +93,7 @@ test.describe("Discord 1557557257129037844: Nezhamon Engage and Kakkinmon at end
     expect(result.passed.players[0]!.handCount).toBe(result.before.players[0]!.handCount);
     expect(result.passed.players[1]!.securityCount).toBe(4);
     expect(permanentOf(result.passed, "EX12-019").isSuspended).toBe(false);
-    await scenario.healthy({ timedCatchUp: true });
+    await scenario.healthy();
   });
 
   test("Discord 1557557257129037844: Kakkinmon first suspends Nezhamon and draws, so Engage cannot attack", async ({
@@ -108,6 +108,6 @@ test.describe("Discord 1557557257129037844: Nezhamon Engage and Kakkinmon at end
     expect(result.passed.players[0]!.handCount).toBe(result.before.players[0]!.handCount + 1);
     expect(result.passed.players[1]!.securityCount).toBe(5);
     expect(permanentOf(result.passed, "EX12-019").isSuspended).toBe(true);
-    await scenario.healthy({ timedCatchUp: true });
+    await scenario.healthy();
   });
 });

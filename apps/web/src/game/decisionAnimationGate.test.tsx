@@ -1,5 +1,10 @@
 // @vitest-environment jsdom
-import { type DecisionRequest, type DecisionResponse, type ServerEvent } from "@aegis/shared";
+import {
+  PRESENTATION_CAUGHT_UP_CHANNEL,
+  type DecisionRequest,
+  type DecisionResponse,
+  type ServerEvent,
+} from "@aegis/shared";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
@@ -106,7 +111,7 @@ it.each([false, true])(
   },
 );
 
-async function pendingTriggerDecision(split: boolean, timed: boolean) {
+async function pendingTriggerDecision(split: boolean, timed: boolean, room?: unknown) {
   vi.useFakeTimers();
   const state = createArenaDemoState();
   state.matchTimer = timed;
@@ -135,7 +140,7 @@ async function pendingTriggerDecision(split: boolean, timed: boolean) {
         identityColor="Red"
         onExit={() => {}}
         demoConnection={{
-          room: undefined,
+          room: room as never,
           status: "connected",
           state,
           batches,
@@ -166,8 +171,13 @@ async function pendingTriggerDecision(split: boolean, timed: boolean) {
   return { decision, respondDecision };
 }
 
-it.each([false, true])("waits for every security animation without a timer (split: %s)", async (split) => {
-  const { decision } = await pendingTriggerDecision(split, false);
+it.each([
+  { split: false, timed: false },
+  { split: true, timed: false },
+  { split: false, timed: true },
+  { split: true, timed: true },
+])("waits for every security animation (timed: $timed, split: $split)", async ({ split, timed }) => {
+  const { decision, respondDecision } = await pendingTriggerDecision(split, timed);
   expect(screen.queryByText(decision.promptText!)).toBeNull();
   const duration = 2 * (SECURITY_BREAK_TOTAL_MS + SECURITY_DESTROY_TOTAL_MS);
   await act(async () => {
@@ -178,11 +188,7 @@ it.each([false, true])("waits for every security animation without a timer (spli
     await vi.advanceTimersByTimeAsync(1);
   });
   expect(screen.getByText(decision.promptText!)).toBeTruthy();
-});
-
-it.each([false, true])("allows a timed response with one second remaining (split: %s)", async (split) => {
-  const { decision, respondDecision } = await pendingTriggerDecision(split, true);
-  expect(screen.getByText(decision.promptText!)).toBeTruthy();
+  // A match timer no longer skips the scene; the answer still goes through once the prompt opens.
   const option = document.querySelector<HTMLButtonElement>(".trigger-chooser__option")!;
   expect(option.disabled).toBe(false);
   fireEvent.click(option);
@@ -190,7 +196,33 @@ it.each([false, true])("allows a timed response with one second remaining (split
   expect(respondDecision).toHaveBeenCalledWith({ kind: "orderTriggers", order: ["source/effect1"] });
 });
 
-it.each([false, true])("presents the Barrier prompt safely (timed: %s)", async (timed) => {
+it.each([false, true])(
+  "reports the presentation caught up only once the prompt opens, and only when timed (split: %s)",
+  async (split) => {
+    for (const timed of [false, true]) {
+      const send = vi.fn<(type: string, payload: unknown) => void>();
+      const room = { send, onMessage: () => () => {}, connection: { isOpen: true } };
+      const { decision } = await pendingTriggerDecision(split, timed, room);
+      const caughtUp = () =>
+        send.mock.calls.filter(([type]) => type === PRESENTATION_CAUGHT_UP_CHANNEL).map(([, payload]) => payload);
+      expect(caughtUp()).toEqual([]);
+      const duration = 2 * (SECURITY_BREAK_TOTAL_MS + SECURITY_DESTROY_TOTAL_MS);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(duration - 101);
+      });
+      expect(screen.queryByText(decision.promptText!)).toBeNull();
+      expect(caughtUp()).toEqual([]);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1);
+      });
+      expect(screen.getByText(decision.promptText!)).toBeTruthy();
+      expect(caughtUp()).toEqual(timed ? [{ stateVersion: 1 }] : []);
+      cleanup();
+    }
+  },
+);
+
+it.each([false, true])("presents the Barrier prompt after the security scene (timed: %s)", async (timed) => {
   vi.useFakeTimers();
   const state = createArenaDemoState();
   state.matchTimer = timed;
@@ -236,14 +268,14 @@ it.each([false, true])("presents the Barrier prompt safely (timed: %s)", async (
   await act(async () => {
     await vi.advanceTimersByTimeAsync(100);
   });
-  expect(screen.queryByRole("button", { name: /^Use$/ }) !== null).toBe(timed);
+  expect(screen.queryByRole("button", { name: /^Use$/ })).toBeNull();
   await act(async () => {
     await vi.advanceTimersByTimeAsync(2 * (SECURITY_BREAK_TOTAL_MS + SECURITY_DESTROY_TOTAL_MS));
   });
   expect(screen.getByRole("button", { name: /^Use$/ }).hasAttribute("disabled")).toBe(false);
 });
 
-it("makes a newly played target selectable on the field while a timed security sequence is still running", async () => {
+it("makes a newly played target selectable on the field once a timed security sequence has played", async () => {
   vi.useFakeTimers();
   const state = createArenaDemoState();
   state.matchTimer = true;
@@ -315,6 +347,12 @@ it("makes a newly played target selectable on the field while a timed security s
   rendered.rerender(view([securityBatch, playBatch], decision));
   await act(async () => {
     await vi.advanceTimersByTimeAsync(0);
+  });
+  // The timer does not cut the scene short: the prompt waits for it.
+  expect(screen.getByTestId("security-clash")).toBeTruthy();
+  expect(screen.queryByRole("region", { name: "Confirm targets" })).toBeNull();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(2 * (SECURITY_BREAK_TOTAL_MS + SECURITY_DESTROY_TOTAL_MS) + 2000);
   });
   expect(screen.queryByTestId("security-clash")).toBeNull();
   expect(screen.queryByRole("dialog")).toBeNull();

@@ -132,7 +132,6 @@ export function useMatchCues({
   narrationLimit = NARRATION_QUEUE_LIMIT,
   decisionStateVersion,
   decisionSourceCardId,
-  decisionTiming,
   targetDecision,
   anchors,
   onActionRejected,
@@ -170,8 +169,6 @@ export function useMatchCues({
   decisionStateVersion?: number;
   /** The card whose effect the viewer's open decision is about, when it names one. */
   decisionSourceCardId?: string;
-  /** End-of-turn choices follow the preceding attack's security presentation. */
-  decisionTiming?: string;
   /** A new clause waits for this viewer-owned field-target selection to be confirmed. */
   targetDecision?: DecisionRequest | undefined;
   anchors: MatchCueAnchors;
@@ -196,6 +193,9 @@ export function useMatchCues({
   );
   const [decisionAnimationsPending, setDecisionAnimationsPending] = useState(false);
   const [playbackPending, setPlaybackPending] = useState(false);
+  // The newest batch handed to the queue. Set in the same layout pass that enqueues the batch's
+  // steps, so a render never pairs this revision with a queue that has not seen its steps yet.
+  const [consumedStateVersion, setConsumedStateVersion] = useState<number | undefined>(undefined);
   // Every queue change bumps this. Nothing reads what it counts — it is the proof that the
   // queue is still moving, which is what the decision stall watchdog waits on.
   const [queueActivity, setQueueActivity] = useState(0);
@@ -1149,6 +1149,7 @@ export function useMatchCues({
       }
     }
     enqueuePhaseOrderRef.current = undefined;
+    setConsumedStateVersion(pending.at(-1)!.stateVersion);
     // presentBatch is rebuilt every render and reads only refs and setters.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [batches]);
@@ -1256,55 +1257,6 @@ export function useMatchCues({
     }),
     [queue],
   );
-
-  // A timed answer cannot wait behind cosmetic beats: the authoritative reserve
-  // may be almost empty. Catch the board up and release the security hold as soon
-  // as the question arrives, without asking the server for additional free time.
-  const timedDecisionPending = state?.matchTimer === true && decisionPending;
-  // A security check's revealed card is public before anything it causes asks a question
-  // (DB feedback #28), so its finite reveal still plays first. The question releases it
-  // through the `security-decision-` step, as in an untimed match.
-  const securityCheckRevealPending = pendingRevealKey !== null && revealOnStageRef.current?.key === pendingRevealKey;
-  const keepsSecurityPresentation = decisionTiming === "EndOfYourTurn" || securityCheckRevealPending;
-  const timedSecurityPending = timedDecisionPending && keepsSecurityPresentation && pendingRevealKey !== null;
-  useEffect(() => {
-    if (!timedDecisionPending) return;
-    const revision = decisionStateVersion ?? state?.stateVersion;
-    if (revision !== undefined) progress.raiseFloor(revision);
-    if (pendingRevealKey !== null && !keepsSecurityPresentation) {
-      handOverSecurityBlow(pendingRevealKey);
-      const held = securityHoldRef.current;
-      if (held?.key === pendingRevealKey) held.handedOver = true;
-      setPendingRevealKey(null);
-    }
-    setDecisionBarrier(null);
-    // Catch up cosmetic tracks without truncating a security verdict or a later
-    // check queued before those tracks become idle. Explicit user skips stay broad.
-    // A beat from a batch after an unfinished security scene waits for it too: skipping
-    // it would draw the card and announce the effect over the reveal (GitHub #5422).
-    const versionOf = (step: AnimationStep) => (step.origin ?? stepBatchesRef.current.get(step))?.stateVersion;
-    fastForwardWithFilter((step) => {
-      if (step.id.startsWith("security-")) return false;
-      const version = versionOf(step);
-      return (
-        version === undefined ||
-        !queue.hasPendingStep((pending) => {
-          const pendingVersion = versionOf(pending);
-          return pending.id.startsWith("security-") && pendingVersion !== undefined && pendingVersion < version;
-        })
-      );
-    });
-    // The queue and progress are stable; the other helpers read current refs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    timedDecisionPending,
-    keepsSecurityPresentation,
-    decisionStateVersion,
-    state?.stateVersion,
-    pendingRevealKey,
-    queue,
-    progress,
-  ]);
 
   useDpPulses({
     state,
@@ -1617,10 +1569,11 @@ export function useMatchCues({
     securityBreak,
     securityBranch,
     optionBranch,
-    securityRevealPending: pendingRevealKey !== null && (!timedDecisionPending || timedSecurityPending),
-    decisionBarrierPending: decisionBarrier !== null && !timedDecisionPending,
-    decisionAnimationsPending:
-      timedSecurityPending || (decisionAnimationsPending && !decisionStalled && !timedDecisionPending),
+    securityRevealPending: pendingRevealKey !== null,
+    decisionBarrierPending: decisionBarrier !== null,
+    decisionAnimationsPending: decisionAnimationsPending && !decisionStalled,
+    playbackPending,
+    consumedStateVersion,
     presentedStateVersion,
     presenting: presentedStateVersion !== undefined || pendingPhaseBanners > 0,
     resultPending,

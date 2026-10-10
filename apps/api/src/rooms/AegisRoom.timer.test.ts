@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CombatWindow, EVENT_CHANNEL, PendingDecision, Phase, type Seat } from "@aegis/shared";
+import { CombatWindow, EVENT_CHANNEL, PendingDecision, Phase, type Seat, type ServerEvent } from "@aegis/shared";
+import type { Client } from "colyseus";
+import { batchPresentationMs, eventPresentationMs } from "./presentationBudget.js";
 import type { GameEngine } from "../engine/GameEngine.js";
 import { AegisRoom } from "./AegisRoom.js";
 
@@ -163,6 +165,64 @@ describe("room clock enforcement", () => {
     now.mockReturnValue(230_000);
     sync(game);
     expect(game.state.timerRemaining0).toBe(230);
+  });
+
+  it("holds the deciding seat's clock while its client presents a batch, until that seat reports", () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(0);
+    const game = room();
+    begin(game, 0);
+    const internals = game as unknown as {
+      seatByClient: Map<string, Seat>;
+      stamp(event: ServerEvent): void;
+      closeBatch(): void;
+      handlePresentationCaughtUp(client: Client, payload: unknown): void;
+    };
+    internals.seatByClient.set("seat-0", 0);
+    internals.seatByClient.set("seat-1", 1);
+    const seat0 = { sessionId: "seat-0" } as Client;
+    const seat1 = { sessionId: "seat-1" } as Client;
+    const spectator = { sessionId: "spectator" } as Client;
+    sync(game);
+    internals.stamp({ kind: "attackDeclared" } as ServerEvent);
+    internals.stamp({ kind: "securityRevealed" } as ServerEvent);
+    internals.closeBatch();
+    const presented = game.state.stateVersion;
+    expect(game.state.timerActiveSeat).toBe(-1);
+
+    now.mockReturnValue(4000);
+    internals.handlePresentationCaughtUp(spectator, { stateVersion: presented });
+    internals.handlePresentationCaughtUp(seat1, { stateVersion: presented });
+    internals.handlePresentationCaughtUp(seat0, { stateVersion: presented - 1 });
+    internals.handlePresentationCaughtUp(seat0, { stateVersion: "x" });
+    sync(game);
+    expect(game.state.timerActiveSeat).toBe(-1);
+    expect(game.state.timerRemaining0).toBe(60);
+
+    internals.handlePresentationCaughtUp(seat0, { stateVersion: presented });
+    expect(game.state.timerActiveSeat).toBe(0);
+    now.mockReturnValue(7000);
+    sync(game);
+    expect(game.state.timerRemaining0).toBe(57);
+    expect(game.state.timerRemaining1).toBe(60);
+  });
+
+  it("charges after the batch's allowance when the deciding client never reports", () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(0);
+    const game = room();
+    begin(game, 0);
+    const internals = game as unknown as { stamp(event: ServerEvent): void; closeBatch(): void };
+    sync(game);
+    internals.stamp({ kind: "attackDeclared" } as ServerEvent);
+    internals.closeBatch();
+    const allowance = batchPresentationMs(eventPresentationMs("attackDeclared"));
+    now.mockReturnValue(allowance - 100);
+    sync(game);
+    expect(game.state.timerActiveSeat).toBe(-1);
+    expect(game.state.timerRemaining0).toBe(60);
+    now.mockReturnValue(allowance + 5000);
+    sync(game);
+    expect(game.state.timerActiveSeat).toBe(0);
+    expect(game.state.timerRemaining0).toBe(55);
   });
 
   it("never runs before both seats are ready", () => {

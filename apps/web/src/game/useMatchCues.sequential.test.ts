@@ -316,7 +316,6 @@ describe("resumed effect results", () => {
           presentationPacing: "sequential",
           decisionPending: question,
           decisionSourceCardId: question ? "AD1-002" : undefined,
-          decisionTiming: "EndOfYourTurn",
         }),
       { initialProps: { fed: [] as readonly ServerBatch[], question: false } },
     );
@@ -366,10 +365,15 @@ describe("resumed effect results", () => {
     async (matchTimer) => {
       const anchors = geometry();
       const state = { ...BOARD, matchTimer } as GameState;
-      const steps: { id: string; phase: string; version?: number }[] = [];
+      const steps: { id: string; phase: string; version?: number; skipping: boolean }[] = [];
       const devProbe = {
         onStep: (event: PresentationStepEvent) =>
-          steps.push({ id: event.step.id, phase: event.phase, version: event.batch?.stateVersion }),
+          steps.push({
+            id: event.step.id,
+            phase: event.phase,
+            version: event.batch?.stateVersion,
+            skipping: event.skipping,
+          }),
       };
       const view = renderHook(
         ({ fed, question }: { fed: readonly ServerBatch[]; question: boolean }) =>
@@ -383,7 +387,6 @@ describe("resumed effect results", () => {
             presentationPacing: "sequential",
             decisionPending: question,
             decisionSourceCardId: question ? "BT13-040" : undefined,
-            decisionTiming: question ? "AllTurns" : undefined,
             devProbe,
           }),
         { initialProps: { fed: [] as readonly ServerBatch[], question: false } },
@@ -448,6 +451,8 @@ describe("resumed effect results", () => {
       const drawShown = steps.findIndex((step) => step.phase === "started" && step.id.startsWith("draw-presentation-"));
       expect(handOver).toBeGreaterThanOrEqual(0);
       expect(drawShown).toBeGreaterThan(handOver);
+      // A match timer no longer fast-forwards anything: every beat plays at its own length.
+      expect(steps.filter((step) => step.skipping).map((step) => step.id)).toEqual([]);
     },
   );
   it.each([true, false])(
@@ -467,7 +472,6 @@ describe("resumed effect results", () => {
             presentationPacing: "sequential",
             decisionPending: question,
             decisionSourceCardId: question ? "BT20-083" : undefined,
-            decisionTiming: question ? "OpponentsTurn" : undefined,
           }),
         { initialProps: { fed: [] as readonly ServerBatch[], question: false } },
       );
@@ -494,7 +498,7 @@ describe("resumed effect results", () => {
       // deletes the attacker, so the check closes with the revealed card trashed unfought.
       const opened = [singleServerBatch([attack], 1), singleServerBatch([reveal], 2)];
       view.rerender({ fed: opened, question: true });
-      // The timed hand-over must not cost the viewer the reveal itself.
+      // The question must not cost the viewer the reveal itself.
       await advance(TIMINGS.securityArm + TIMINGS.shieldBreak + TIMINGS.securityBreakHold + 100);
       expect(view.result.current.securityClash?.revealed.cardId).toBe("BT23-054");
       // In match 2e2a3231 the answer, and so the close, came 11 s after the reveal.

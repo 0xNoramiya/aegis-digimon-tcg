@@ -16,6 +16,7 @@ import {
   EVENT_CHANNEL,
   DECISION_CHANNEL,
   PRESENTATION_CHANNEL,
+  PRESENTATION_CAUGHT_UP_CHANNEL,
   CHAT_CHANNEL,
   CHAT_COOLDOWN_MS,
   parseChatMessage,
@@ -48,6 +49,7 @@ import { MatchClock } from "./MatchClock.js";
 import { CasualSeries, type SeriesContinuationOptions, type SeriesRoomPort } from "./series/CasualSeries.js";
 import type { SeriesRecord } from "./series/SeriesDirectory.js";
 import { parsePresentationReport } from "./presentationReport.js";
+import { batchPresentationMs, eventPresentationMs } from "./presentationBudget.js";
 import { hasBlockedWord, maskBlockedWords } from "../moderation/blockedWords.js";
 
 /** Hand-laid boards must never be reachable by a real player. */
@@ -225,7 +227,8 @@ interface OpenBatch {
   emitted: number;
   lastSeq: number;
   recipient?: Client;
-  presentation?: boolean;
+  /** The sum of the events' presentation beats (presentationBudget.ts). */
+  presentationMs: number;
 }
 
 /**
@@ -729,6 +732,10 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     this.onMessage("*", (client, type, payload) => {
       if (type === PRESENTATION_CHANNEL) {
         this.handlePresentationReport(client, payload);
+        return;
+      }
+      if (type === PRESENTATION_CAUGHT_UP_CHANNEL) {
+        this.handlePresentationCaughtUp(client, payload);
         return;
       }
       if (type === CHAT_CHANNEL) {
@@ -1545,7 +1552,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
 
   private openBatch(recipient?: Client): OpenBatch {
     this.batchSeq += 1;
-    this.currentBatch = { id: `batch-${this.batchSeq}`, emitted: 0, lastSeq: 0, recipient };
+    this.currentBatch = { id: `batch-${this.batchSeq}`, emitted: 0, lastSeq: 0, recipient, presentationMs: 0 };
     return this.currentBatch;
   }
 
@@ -1560,20 +1567,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     const batch = this.currentBatch ?? this.openImplicitBatch();
     this.eventSeq += 1;
     batch.emitted += 1;
-    if (
-      [
-        "phaseChanged",
-        "cardPlayed",
-        "cardsMoved",
-        "digivolved",
-        "attackDeclared",
-        "securityRevealed",
-        "securityChecked",
-        "matchStarted",
-      ].includes(event.kind)
-    ) {
-      batch.presentation = true;
-    }
+    batch.presentationMs += eventPresentationMs(event.kind);
     batch.lastSeq = this.eventSeq;
     const stamped = { ...event, seq: this.eventSeq, batch: batch.id, stateVersion: this.state.stateVersion };
     this.debug("engine.event", stamped);
@@ -1608,8 +1602,12 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     if (!batch || batch.emitted === 0) return;
     if (!batch.recipient) {
       this.syncMatchClock();
-      if (batch.presentation) this.matchClock?.pauseForPresentation(performance.now());
       this.state.stateVersion += 1;
+      this.matchClock?.pauseForPresentation(
+        performance.now(),
+        batchPresentationMs(batch.presentationMs),
+        this.state.stateVersion,
+      );
     }
     const closed: ServerEvent = {
       kind: "batchClosed",
@@ -1708,6 +1706,17 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
 
   private debug(...data: unknown[]): void {
     withMatchLog(this.state.matchLogId, this.roomId, () => log(...data));
+  }
+
+  /** Spectators and unseated clients never move a clock. */
+  private handlePresentationCaughtUp(client: Client, payload: unknown): void {
+    const seat = this.seatByClient.get(client.sessionId);
+    if (seat === undefined || !this.matchClock || !this.state.matchTimer) return;
+    const stateVersion = (payload as { stateVersion?: unknown } | null)?.stateVersion;
+    if (typeof stateVersion !== "number" || !Number.isSafeInteger(stateVersion) || stateVersion < 0) return;
+    this.syncMatchClock();
+    this.matchClock.presentationCaughtUp(seat, stateVersion, performance.now());
+    this.syncMatchClock();
   }
 
   private handlePresentationReport(client: Client, payload: unknown): void {

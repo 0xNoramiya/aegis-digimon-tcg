@@ -51,6 +51,6 @@ test.describe("DB feedback #28: a timed security effect's prompt waits for the r
         s.players[0]!.battleArea.map((permanent) => permanent.topCard.cardId).join() === "BT10-079",
       (decision) => (decision.promptText?.includes("Decoy") ? { cardId: "EX5-050" } : {}),
     );
-    await scenario.healthy({ timedCatchUp: true });
+    await scenario.healthy();
   });
 });
