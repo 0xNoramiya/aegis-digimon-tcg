@@ -533,6 +533,8 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* A classic desktop scrollbar would otherwise take 9-15px from the card names. */
+  scrollbar-width: thin;
   padding: var(--ds-space-3);
 }
 
