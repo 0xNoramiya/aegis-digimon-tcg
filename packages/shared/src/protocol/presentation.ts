@@ -30,14 +30,3 @@ export interface PresentationReport {
   failed: boolean;
   pendingCount: number;
 }
-
-/**
- * Client -> server: this seat's presentation has caught up to `stateVersion`, the revision
- * of a closed batch. Unlike {@link PRESENTATION_CHANNEL}, this one is acted on: it ends that
- * seat's match-clock pause for the batches up to that revision.
- */
-export const PRESENTATION_CAUGHT_UP_CHANNEL = "presentationCaughtUp" as const;
-
-export interface PresentationCaughtUp {
-  stateVersion: number;
-}

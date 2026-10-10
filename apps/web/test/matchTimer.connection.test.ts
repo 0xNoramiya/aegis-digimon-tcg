@@ -1,14 +1,7 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Client, type Room } from "@colyseus/sdk";
-import {
-  DECISION_CHANNEL,
-  EVENT_CHANNEL,
-  GameState,
-  PRESENTATION_CAUGHT_UP_CHANNEL,
-  type DecisionRequest,
-  type SequencedServerEvent,
-} from "@aegis/shared";
+import { DECISION_CHANNEL, GameState, type DecisionRequest } from "@aegis/shared";
 import { RED_DECK, BLUE_DECK } from "@aegis-api/engine/testDecks.js";
 import { startTestServer, type TestServer } from "./scenarioHarness/server";
 
@@ -19,13 +12,6 @@ afterEach(async () => {
   await server?.close();
   server = undefined;
 });
-
-/** These clients draw nothing, so each closed batch is presented the moment it arrives. */
-function presentInstantly(room: Room<GameState>) {
-  room.onMessage<SequencedServerEvent>(EVENT_CHANNEL, (event) => {
-    if (event.kind === "batchClosed") room.send(PRESENTATION_CAUGHT_UP_CHANNEL, { stateVersion: event.stateVersion });
-  });
-}
 
 async function join(endpoint: string, matchTimer?: boolean, roomType = "aegis") {
   const room = await new Client(endpoint).joinOrCreate<GameState>(
@@ -99,7 +85,6 @@ describe("match timer websocket contract", () => {
       GameState,
     );
     rooms.push(host);
-    presentInstantly(host);
     await vi.waitFor(() => expect(host.state.roomCode.length).toBe(6));
     host.onMessage<DecisionRequest>(DECISION_CHANNEL, (request) => {
       if (request.kind === "mulligan") host.send("mulligan", { keep: true });
@@ -117,18 +102,18 @@ describe("match timer websocket contract", () => {
       GameState,
     );
     rooms.push(guest);
-    presentInstantly(guest);
     guest.onMessage<DecisionRequest>(DECISION_CHANNEL, (request) => {
       if (request.kind === "mulligan") guest.send("mulligan", { keep: true });
     });
     host.send("ready", {});
     guest.send("ready", {});
-    await vi.waitFor(() => expect(host.state.timerActiveSeat).not.toBe(-1), { timeout: 10_000 });
+    // The server holds the clock while the opening batches play at Normal speed.
+    await vi.waitFor(() => expect(host.state.timerActiveSeat).not.toBe(-1), { timeout: 30_000 });
     expect(guest.state.matchTimer).toBe(true);
     expect(guest.state.timerStartSeconds).toBe(60);
     expect(guest.state.timerRefillSeconds).toBe(60);
     await vi.waitFor(() => expect(Math.min(host.state.timerRemaining0, host.state.timerRemaining1)).toBeLessThan(60), {
-      timeout: 5000,
+      timeout: 15_000,
     });
     const before = [guest.state.timerRemaining0, guest.state.timerRemaining1];
     const token = host.reconnectionToken;
@@ -142,7 +127,7 @@ describe("match timer websocket contract", () => {
     expect(resumed.state.timerRemaining1).toBeLessThanOrEqual(before[1]!);
     expect(resumed.state.matchTimer).toBe(true);
     expect(resumed.state.timerRefillSeconds).toBe(60);
-  }, 20_000);
+  }, 60_000);
 
   it("resends an open timed decision after reconnect without restoring the reserve", async () => {
     server = await startTestServer();
@@ -153,7 +138,6 @@ describe("match timer websocket contract", () => {
       GameState,
     );
     rooms.push(host);
-    presentInstantly(host);
     let initial: DecisionRequest | undefined;
     host.onMessage<DecisionRequest>(DECISION_CHANNEL, (request) => {
       initial = request;
@@ -165,14 +149,13 @@ describe("match timer websocket contract", () => {
       GameState,
     );
     rooms.push(guest);
-    presentInstantly(guest);
     guest.onMessage<DecisionRequest>(DECISION_CHANNEL, (request) => {
       if (request.kind === "mulligan") guest.send("mulligan", { keep: true });
     });
     host.send("ready", {});
     guest.send("ready", {});
     await vi.waitFor(() => expect(initial?.kind).toBe("mulligan"), { timeout: 10_000 });
-    await vi.waitFor(() => expect(host.state.timerRemaining0).toBeLessThan(60), { timeout: 5000 });
+    await vi.waitFor(() => expect(host.state.timerRemaining0).toBeLessThan(60), { timeout: 15_000 });
     const remaining = host.state.timerRemaining0;
     const token = host.reconnectionToken;
     const departed = new Promise<void>((resolve) => host.onLeave(() => resolve()));
@@ -192,5 +175,5 @@ describe("match timer websocket contract", () => {
     resumed.send("mulligan", { keep: true });
     await vi.waitFor(() => expect(resumed.state.pendingDecision?.decisionId).not.toBe(initial!.decisionId));
     expect(resumed.state.gameOver).toBe(false);
-  }, 20_000);
+  }, 60_000);
 });
