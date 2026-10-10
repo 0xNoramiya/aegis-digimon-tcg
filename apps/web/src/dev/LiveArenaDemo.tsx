@@ -1841,6 +1841,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Feedback #26. Encerre a criação. Evolua GrandGalemon para EX11-035 Zephagamon da mão (custo 3). O [Ao Digivolver] primeiro oferece reativar 1 Digimon: só o Monodramon suspenso do bot pode ser escolhido, porque os seus Digimon estão ativos. Passe sem escolher. Depois ele oferece suspender 1 Digimon de qualquer jogador (Q5857): seus Zephagamon e Pteromon podem ser escolhidos. Suspenda o seu Pteromon. O [Todos os Turnos] de Zephagamon ativa: aceite e o Pteromon da mão entra em jogo sem pagar o custo.",
     en: "Feedback #26. End breeding. Digivolve GrandGalemon into EX11-035 Zephagamon from hand (cost 3). Its [When Digivolving] first offers to unsuspend 1 Digimon: only the bot's suspended Monodramon can be chosen, because your Digimon are unsuspended. Pass without a choice. Then it offers to suspend 1 Digimon of either player (Q5857): your Zephagamon and Pteromon can be chosen. Suspend your Pteromon. Zephagamon's [All Turns] effect activates: accept, and the Pteromon in hand is played without paying the cost.",
   },
+  "arena-discord-speed-security-scene-stuck": {
+    ptBR: "Partida com relógio. Encerre a criação e o turno. O bot ataca você com Monodramon e Magnamon (7000 DP) é revelado da sua segurança. Antes da batalha, o [Todos os Turnos] de Dynasmon oferece excluir o Digimon de menor DP do oponente: escolha Monodramon. A checagem termina sem batalha, e Magnamon sai do centro da tela e vai para a lixeira. A cena não fica presa nos turnos seguintes.",
+    en: "Timed match. End breeding and your turn. The bot attacks you with Monodramon, and Magnamon (7000 DP) is revealed from your security. Before the battle, Dynasmon's [All Turns] effect offers to delete your opponent's lowest DP Digimon: choose Monodramon. The check ends with no battle, and Magnamon leaves the centre of the screen for the trash. The scene does not stay on screen in later turns.",
+  },
   "arena-bt22-akemi-battle-mother": {
     ptBR: "GitHub #5370. Aguarde a Principal: a criação avança automaticamente porque Mother Eater não tem DP para sair. Ative o [Principal] de Akemi Suedou. Somente os dois Mother Eater no campo podem ser escolhidos; a cópia na criação fica excluída. Escolha o Mother Eater com Eater (Species Form) nas fontes. Akemi deve ficar como a fonte inferior, abaixo de Eater (Species Form), enquanto a pilha na criação fica intacta.",
     en: "GitHub #5370. Wait for Main: breeding skips automatically because Mother Eater has no DP to move. Activate Akemi Suedou's [Main]. Only the two battle-area Mother Eaters are eligible; the breeding copy is excluded. Choose the Mother Eater with Eater (Species Form) in its sources. Akemi must become its bottom source, below Eater (Species Form), while the breeding stack stays intact.",
@@ -3272,6 +3276,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-feedback20-ruin-mode-on-play", "Feedback #20 · Ruin Mode -5000 DP · later plays and On Play"],
   ["arena-feedback24-kaguyamon-empty-deck", "Feedback #24 · Kaguyamon · return to an empty deck"],
   ["arena-feedback26-zephagamon-suspend-own", "Feedback #26 · Zephagamon · suspend your own Digimon"],
+  ["arena-discord-speed-security-scene-stuck", "Discord · timed security check closes without a battle"],
   ["arena-p224-kotone-own-source", "P-224 Kotone · X7 das próprias fontes / own sources"],
   ["arena-kotone-digixros-pending-attack", "Kotone · DigiXros + EX6 pending attack"],
   ["arena-bt6-beelstarmon-duplicate-cost", "BT6 BeelStarmon · duplicate hand cost"],

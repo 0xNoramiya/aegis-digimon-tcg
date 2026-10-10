@@ -418,6 +418,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback20-ruin-mode-on-play",
   "arena-feedback24-kaguyamon-empty-deck",
   "arena-feedback26-zephagamon-suspend-own",
+  "arena-discord-speed-security-scene-stuck",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
   "arena-bt24-homeros-neptunemon-timing-choice",
@@ -7418,6 +7419,36 @@ function layFeedback26ZephagamonSuspendOwnScenario(state: GameState): void {
   state.memory = 3;
 }
 
+/**
+ * Discord suggestion 1558288251029032970: in a timed match, a removal reaction deletes the
+ * attacker before the battle, so the check closes with no battle and the revealed card stayed
+ * on screen for the rest of the match. End the turn; the bot attacks with Monodramon.
+ */
+function layDiscordSpeedSecuritySceneStuckScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-discord-speed-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-discord-speed-deck-${seat}-${index}`, "BT1-009", seat));
+    }
+  }
+  const human = state.players[0]!;
+  insertCard(human, Zone.Security, faceDownCard("dev-discord-speed-magnamon", "BT23-054", 0));
+  for (let index = 0; index < 2; index += 1) {
+    insertCard(human, Zone.Security, faceDownCard(`dev-discord-speed-security-0-${index}`, "BT1-009", 0));
+  }
+  placePermanent(human, establishedDigimon(0, ["AD1-017"], "-discord-speed-dynasmon"));
+  const bot = state.players[1]!;
+  for (let index = 0; index < 3; index += 1) {
+    insertCard(bot, Zone.Security, faceDownCard(`dev-discord-speed-security-1-${index}`, "BT1-009", 1));
+  }
+  placePermanent(bot, establishedDigimon(1, ["BT1-009"], "-discord-speed-monodramon"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
 function layP224KotoneOwnSourceScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
   prepareIssueScenario(state, decks, 3);
   const human = state.players[0];
@@ -10461,6 +10492,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback20-ruin-mode-on-play": layFeedback20RuinModeOnPlayScenario,
   "arena-feedback24-kaguyamon-empty-deck": layFeedback24KaguyamonEmptyDeckScenario,
   "arena-feedback26-zephagamon-suspend-own": layFeedback26ZephagamonSuspendOwnScenario,
+  "arena-discord-speed-security-scene-stuck": layDiscordSpeedSecuritySceneStuckScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,
   "arena-bt24-homeros-neptunemon-timing-choice": layBt24HomerosNeptunemonTimingChoiceScenario,
