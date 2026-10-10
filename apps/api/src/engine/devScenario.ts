@@ -7443,6 +7443,13 @@ function layFeedback25AlterSUnsuspendLockScenario(state: GameState): void {
   const bot = state.players[1]!;
   placePermanent(bot, establishedDigimon(1, ["EX9-038"], "-feedback25-kuwagamon"));
   insertCard(bot, Zone.Hand, faceUpCard("dev-feedback25-bot-cost", "BT1-027", 1));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
  * Discord suggestion 1558288251029032970: in a timed match, a removal reaction deletes the
  * attacker before the battle, so the check closes with no battle and the revealed card stayed
  * on screen for the rest of the match. End the turn; the bot attacks with Monodramon.
