@@ -165,6 +165,93 @@ describe("BT13-020 ShineGreymon: Burst Mode", () => {
     expect(s.state.players[0]!.trash.map((card) => card.instanceId)).not.toContain(priorTopId);
   });
 
+  it("feedback #19: asks which Marcus Damon to return when 2 qualify, and returns the chosen one", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT13-018", as: "shine" },
+            { card: "BT12-092", as: "firstMarcus" },
+            { card: "BT13-095", as: "secondMarcus", suspended: true, under: [{ card: "BT1-085", as: "tamerSource" }] },
+          ],
+          hand: [{ card: "BT13-020", as: "burst" }],
+        },
+      },
+      { autoDeclineOptional: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    const firstMarcusId = s.perm("firstMarcus").permanentId;
+    const secondMarcusTopId = s.perm("secondMarcus").topCard.instanceId;
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("shine").permanentId,
+        instanceId: s.inst("burst").instanceId,
+        alternateRequirementIndex: 0,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "chooseTargets");
+    const request = s.decisions.at(-1)!.req;
+    expect(request.seat).toBe(0);
+    expect(request.options?.candidateInstanceIds).toEqual([
+      s.perm("firstMarcus").topCard.instanceId,
+      secondMarcusTopId,
+    ]);
+    expect(request.options?.min).toBe(1);
+    expect(request.options?.max).toBe(1);
+    expect(request.options?.targetFate).toBe("returnToHand");
+    expect(s.perm("shine").topCard.cardId).toBe("BT13-018");
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: request.decisionId,
+        response: { kind: "chooseTargets", instanceIds: [secondMarcusTopId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("shine").topCard.cardId === "BT13-020" && !s.state.pendingDecision);
+
+    const player = s.state.players[0]!;
+    expect(player.hand.map((card) => card.instanceId)).toContain(secondMarcusTopId);
+    expect(player.trash.map((card) => card.instanceId)).toContain(s.inst("tamerSource").instanceId);
+    expect(player.battleArea.map((permanent) => permanent.permanentId)).toContain(firstMarcusId);
+    expect(player.battleArea.some((permanent) => permanent.topCard.instanceId === secondMarcusTopId)).toBe(false);
+    expect(s.state.memory).toBe(10);
+  });
+
+  it("returns the only qualifying Marcus Damon without asking", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT13-018", as: "shine" },
+            { card: "BT12-092", as: "marcus" },
+          ],
+          hand: [{ card: "BT13-020", as: "burst" }],
+        },
+      },
+      { autoDeclineOptional: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    const marcusTopId = s.perm("marcus").topCard.instanceId;
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("shine").permanentId,
+        instanceId: s.inst("burst").instanceId,
+        alternateRequirementIndex: 0,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("shine").topCard.cardId === "BT13-020" && !s.state.pendingDecision);
+
+    expect(s.decisions.some((entry) => entry.req.kind === "chooseTargets")).toBe(false);
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toContain(marcusTopId);
+  });
+
   it("may decline to play Marcus Damon after a normal digivolution", async () => {
     const s = setupEngine(
       {

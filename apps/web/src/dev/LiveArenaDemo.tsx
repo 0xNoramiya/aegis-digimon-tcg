@@ -1869,6 +1869,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Feedback #18. Encerre a criação. Ataque o jogador com KingSukamon (EX13-031). Ele tem Chuumon (EX13-027) e Sukamon (EX13-028) nas fontes. A segurança do bot revela Omnimon (15000 DP), e KingSukamon perde a batalha. Os dois efeitos herdados ativam: resolva Chuumon primeiro e aceite. O custo exclui o seu outro Sukamon. KingSukamon fica no campo com as duas fontes. O Sukamon herdado não pergunta de novo, porque não sobra outro Digimon com [Sukamon] no nome.",
     en: "Feedback #18. End breeding. Attack the player with KingSukamon (EX13-031). It has Chuumon (EX13-027) and Sukamon (EX13-028) in its sources. The bot's security reveals Omnimon (15000 DP), and KingSukamon loses the battle. Both inherited effects activate: resolve Chuumon first and accept. The cost deletes your other Sukamon. KingSukamon stays in play with both sources. The inherited Sukamon effect does not ask again, because no other Digimon with [Sukamon] in its name is left.",
   },
+  "arena-feedback19-burst-tamer-choice": {
+    ptBR: "Feedback #19. Encerre a criação. Faça a Digivolução Explosiva de ShineGreymon (ST7-10) em ShineGreymon: Burst Mode (BT13-020). Você tem dois [Marcus Damon]: BT4-092 em pé e BT17-087 suspenso, com uma carta virada para baixo embaixo dele. O jogo pergunta qual Tamer volta para a mão. Escolha o BT17-087 suspenso: ele volta para a mão, a carta embaixo dele vai para a lixeira, e o BT4-092 fica no campo. Recuse jogar Marcus Damon pelo [Ao Digivolver].",
+    en: "Feedback #19. End breeding. Burst digivolve ShineGreymon (ST7-10) into ShineGreymon: Burst Mode (BT13-020). You have two [Marcus Damon] Tamers: an unsuspended BT4-092 and a suspended BT17-087 with a face-down card under it. The game asks which Tamer returns to hand. Choose the suspended BT17-087: it returns to hand, the card under it goes to the trash, and BT4-092 stays in play. Decline to play Marcus Damon with [When Digivolving].",
+  },
   "arena-discord-speed-security-scene-stuck": {
     ptBR: "Partida com relógio. Encerre a criação e o turno. O bot ataca você com Monodramon e Magnamon (7000 DP) é revelado da sua segurança. Antes da batalha, o [Todos os Turnos] de Dynasmon oferece excluir o Digimon de menor DP do oponente: escolha Monodramon. A checagem termina sem batalha, e Magnamon sai do centro da tela e vai para a lixeira. A cena não fica presa nos turnos seguintes.",
     en: "Timed match. End breeding and your turn. The bot attacks you with Monodramon, and Magnamon (7000 DP) is revealed from your security. Before the battle, Dynasmon's [All Turns] effect offers to delete your opponent's lowest DP Digimon: choose Monodramon. The check ends with no battle, and Magnamon leaves the centre of the screen for the trash. The scene does not stay on screen in later turns.",
@@ -3311,6 +3315,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-discord-lordknightmon-ex13-darkknightmon", "EX13 LordKnightmon · plays DarkKnightmon from hand or trash"],
   ["arena-discord-lordknightmon-bt22-skullknightmon", "BT22 LordKnightmon · plays a revealed SkullKnightmon"],
   ["arena-feedback18-sukamon-inherited-protection", "Feedback #18 · Sukamon inherited protection keeps host"],
+  ["arena-feedback19-burst-tamer-choice", "Feedback #19 · Burst Digivolve · choose which Tamer returns"],
   ["arena-discord-speed-security-scene-stuck", "Discord · timed security check closes without a battle"],
   ["arena-p224-kotone-own-source", "P-224 Kotone · X7 das próprias fontes / own sources"],
   ["arena-kotone-digixros-pending-attack", "Kotone · DigiXros + EX6 pending attack"],

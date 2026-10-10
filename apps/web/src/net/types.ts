@@ -672,6 +672,7 @@ export interface AegisJoinOptions {
     | "arena-discord-lordknightmon-ex13-darkknightmon"
     | "arena-discord-lordknightmon-bt22-skullknightmon"
     | "arena-feedback18-sukamon-inherited-protection"
+    | "arena-feedback19-burst-tamer-choice"
     | "arena-discord-speed-security-scene-stuck"
     | "arena-p224-kotone-own-source"
     | "arena-bt25-ceresmon-homeros-suspend"

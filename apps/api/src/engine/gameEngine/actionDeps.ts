@@ -447,12 +447,8 @@ export function digivolveDeps(engine: GameEngine): DigivolveDeps {
     // Burst Digivolve's non-memory Tamer-return cost (§8-3-3-2): availability gate + payment.
     burstDigivolveTamerPayable: (_state, seat, requirement) =>
       engine.digivolveSupport.burstDigivolveTamerCandidates(seat, requirement).length > 0,
-    payBurstDigivolveTamer: async (_state, seat, requirement) => {
-      const target = engine.digivolveSupport.burstDigivolveTamerCandidates(seat, requirement)[0];
-      if (target?.topCard === undefined) return false;
-      const moved = await engine.primitives.returnToHand([target.topCard.instanceId]);
-      return moved.length > 0;
-    },
+    payBurstDigivolveTamer: (_state, seat, requirement, evolving) =>
+      engine.digivolveSupport.payBurstDigivolveTamer(seat, requirement, evolving),
     // ＜Digisorption -N＞ availability for the affordability gate (Comprehensive Rules §16-10):
     // N when the card being digivolved into has ＜Digisorption＞ AND at least one Digimon is
     // suspendable to pay it (the controller's own, or — while an eligible BT3-056 redirector is
