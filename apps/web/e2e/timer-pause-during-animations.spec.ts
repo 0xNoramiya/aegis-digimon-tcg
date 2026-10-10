@@ -10,13 +10,13 @@ interface ClockSample {
 
 declare global {
   interface Window {
-    clockSeen?: { duringReveal: ClockSample[]; atPrompt?: ClockSample };
+    clockSeen?: { duringReveal: ClockSample[]; atPrompt?: ClockSample; promptAt?: number; activeAt?: number };
   }
 }
 
-// Product change: a match timer no longer fast-forwards animations. Instead the deciding
-// player's clock holds while their client plays the events before the question, and starts
-// once the prompt is on screen.
+// Product change: a match timer no longer fast-forwards animations. Instead the server holds
+// the deciding player's clock for as long as the events before the question take to play at
+// that player's Effect speed. The client reports only its speed, never its playback.
 test.describe("Match timer: the clock pauses for the animations, not the other way round", () => {
   test("the clock holds through the security reveal at Slow speed and runs once the prompt opens", async ({
     scenario,
@@ -31,11 +31,16 @@ test.describe("Match timer: the clock pauses for the animations, not the other w
         return { value: Number(timer.querySelector("strong")?.textContent), active: timer.hasAttribute("data-active") };
       };
       new MutationObserver(() => {
-        if (seen.atPrompt) return;
         const now = sample();
         if (!now) return;
-        if (document.body?.innerText.includes(promptText)) seen.atPrompt = now;
-        else if (document.querySelector('[data-testid="security-clash"]')) seen.duringReveal.push(now);
+        if (seen.atPrompt) {
+          if (now.active && seen.activeAt === undefined) seen.activeAt = performance.now();
+          return;
+        }
+        if (document.body?.innerText.includes(promptText)) {
+          seen.atPrompt = now;
+          seen.promptAt = performance.now();
+        } else if (document.querySelector('[data-testid="security-clash"]')) seen.duringReveal.push(now);
       }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true });
     }, DECOY_PROMPT);
     await scenario.open(SCENARIO, "slow");
@@ -57,14 +62,19 @@ test.describe("Match timer: the clock pauses for the animations, not the other w
     expect(seen.duringReveal.map((sample) => sample.value)).toEqual(seen.duringReveal.map(() => held));
     expect(seen.atPrompt!.value).toBe(held);
 
-    // The viewer's client reported the prompt on screen, so the server charges the viewer now.
-    await expect.poll(async () => (await scenario.snapshot()).timerActiveSeat, { timeout: 5000 }).toBe(0);
+    // The server's computed Slow timeline ends on its own; no client report starts the clock.
+    await expect.poll(async () => (await scenario.snapshot()).timerActiveSeat, { timeout: 20_000 }).toBe(0);
     await expect(page.getByTestId("viewer-match-timer").first()).toHaveAttribute("data-active", "true");
     await expect
       .poll(async () => Number(await page.getByTestId("viewer-match-timer").first().locator("strong").textContent()), {
         timeout: 5000,
       })
       .toBeLessThan(held);
+    const timeline = await page.evaluate(() => window.clockSeen!);
+    test.info().annotations.push({
+      type: "clock-start-after-prompt-ms",
+      description: String(Math.round(timeline.activeAt! - timeline.promptAt!)),
+    });
 
     const { steps } = await scenario.presentation();
     expect(steps.filter((step) => step.skipping).map((step) => step.id)).toEqual([]);
@@ -73,7 +83,9 @@ test.describe("Match timer: the clock pauses for the animations, not the other w
         !s.pendingDecision &&
         !s.combatWindow &&
         s.players[0]!.battleArea.map((permanent) => permanent.topCard.cardId).join() === "BT10-079",
-      (decision) => (decision.promptText?.includes("Decoy") ? { cardId: "EX5-050" } : {}),
+      // This test waits for the clock before it answers, so the receipt-to-answer sample
+      // includes that wait, not just presentation time.
+      (decision) => (decision.promptText?.includes("Decoy") ? { cardId: "EX5-050", decisionBudgetMs: 30_000 } : {}),
     );
     await scenario.healthy();
   });
