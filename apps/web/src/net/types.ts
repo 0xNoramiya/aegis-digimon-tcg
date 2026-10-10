@@ -499,6 +499,7 @@ export interface AegisJoinOptions {
     | "arena-feedback14-creepymon-x-end-turn"
     | "arena-feedback17-ex11-006-linked-attack"
     | "arena-feedback29-black-sabbath-trash"
+    | "arena-feedback21-valdur-on-play-lock"
     | "arena-raid-optional-preset"
     | "arena-preset-order-no-clicks"
     | "arena-ex13-leopardmon-suspended-target"

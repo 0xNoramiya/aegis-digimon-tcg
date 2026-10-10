@@ -89,6 +89,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback14-creepymon-x-end-turn",
   "arena-feedback17-ex11-006-linked-attack",
   "arena-feedback29-black-sabbath-trash",
+  "arena-feedback21-valdur-on-play-lock",
   "arena-github5331-offense-hand",
   "arena-github5362-shellmon-ts",
   "arena-lanamon-tamer-cost",
@@ -1672,6 +1673,37 @@ function layFeedback29BlackSabbathTrashScenario(state: GameState): void {
   state.turnCount = 0;
   state.isFirstPlayersFirstTurn = false;
   state.memory = 3;
+}
+
+/**
+ * Feedback #21: Chaosmon: Valdur Arm's [On Play] lock outlives Valdur's deletion and ends with the
+ * opponent's next turn. Every bot security card is a 16000 DP Omnimon that deletes Valdur in battle.
+ */
+function layFeedback21ValdurOnPlayLockScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback21-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback21-deck-${seat}-${index}`, "BT1-027", seat));
+    }
+  }
+  const human = state.players[0]!;
+  for (let index = 0; index < 5; index += 1) {
+    insertCard(human, Zone.Security, faceDownCard(`dev-feedback21-security-0-${index}`, "BT1-027", 0));
+  }
+  placePermanent(human, establishedDigimon(0, ["BT20-035"], "-feedback21-kazuchimon"));
+  insertCard(human, Zone.Hand, faceUpCard("dev-feedback21-valdur", "BT20-037", 0));
+  const bot = state.players[1]!;
+  for (let index = 0; index < 4; index += 1) {
+    insertCard(bot, Zone.Security, faceDownCard(`dev-feedback21-security-1-${index}`, "BT10-086", 1));
+  }
+  placePermanent(bot, establishedDigimon(1, ["BT1-085"], "-feedback21-tai"));
+  insertCard(bot, Zone.Hand, faceUpCard("dev-feedback21-locked-demidevimon", "P-017", 1));
+  insertCard(bot, Zone.Hand, faceUpCard("dev-feedback21-unlocked-demidevimon", "P-017", 1));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 10;
 }
 
 /** Discord 1557815179218128896: Guard removes a queued Raid's printed source. */
@@ -9983,6 +10015,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback14-creepymon-x-end-turn": layFeedback14CreepymonXEndTurnScenario,
   "arena-feedback17-ex11-006-linked-attack": layFeedback17FlickmonLinkedAttackScenario,
   "arena-feedback29-black-sabbath-trash": layFeedback29BlackSabbathTrashScenario,
+  "arena-feedback21-valdur-on-play-lock": layFeedback21ValdurOnPlayLockScenario,
   "arena-raid-optional-preset": layRaidOptionalPresetScenario,
   "arena-preset-order-no-clicks": layPresetOrderNoClicksScenario,
   "arena-oct06-king-sukamon-assembly": (state, decks) => layOct06LatestScenario(state, decks, "king-sukamon-assembly"),
