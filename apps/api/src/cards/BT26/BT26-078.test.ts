@@ -63,10 +63,8 @@ describe("BT26-078 compiled behavior", () => {
               { tokens: ["Titan"], match: "trait" },
             ],
           },
-          fireCondition: {
-            kind: "allOf",
-            conditions: [{ kind: "isYourTurn" }, { kind: "memoryAtLeast", value: 5, controller: "opponent" }],
-          },
+          fireCondition: { kind: "isYourTurn" },
+          activationCondition: { kind: "memoryAtLeast", value: 5, controller: "opponent" },
         },
       ],
     });

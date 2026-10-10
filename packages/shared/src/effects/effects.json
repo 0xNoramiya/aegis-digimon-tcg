@@ -62720,7 +62720,7 @@
           {
             "kind": "SubTrigger",
             "event": "whenOpponentAttacks",
-            "fireCondition": {
+            "activationCondition": {
               "kind": "allYoursMatchFilter",
               "filter": { "kind": ["Digimon", "Tamer"], "nameOrTrait": [{ "tokens": ["D-Reaper"], "match": "trait" }] },
               "raw": "all of your Digimon and Tamers in the battle area have the [D-Reaper] trait"
@@ -228715,13 +228715,12 @@
                 "duration": "forTheTurn"
               }
             ],
-            "fireCondition": {
-              "kind": "allOf",
-              "conditions": [
-                { "kind": "isYourTurn" },
-                { "kind": "memoryAtLeast", "value": 5, "controller": "opponent" }
-              ],
-              "raw": "it's your turn and your opponent has 5 or more memory"
+            "fireCondition": { "kind": "isYourTurn" },
+            "activationCondition": {
+              "kind": "memoryAtLeast",
+              "value": 5,
+              "controller": "opponent",
+              "raw": "your opponent has 5 or more memory"
             }
           }
         ]
@@ -240187,20 +240186,14 @@
               "kind": ["Digimon"],
               "nameOrTrait": [{ "tokens": ["Evil", "Dark Dragon", "Evil Dragon"], "match": "trait" }]
             },
-            "fireCondition": {
-              "kind": "allOf",
-              "conditions": [
-                { "kind": "isYourTurn" },
-                {
-                  "kind": "zoneCount",
-                  "seat": "mine",
-                  "zone": "hand",
-                  "op": "lte",
-                  "value": 4,
-                  "raw": "your hand has 4 or fewer cards"
-                }
-              ],
-              "raw": "it's your turn and your hand has 4 or fewer cards"
+            "fireCondition": { "kind": "isYourTurn" },
+            "activationCondition": {
+              "kind": "zoneCount",
+              "seat": "mine",
+              "zone": "hand",
+              "op": "lte",
+              "value": 4,
+              "raw": "your hand has 4 or fewer cards"
             },
             "actions": [
               {
