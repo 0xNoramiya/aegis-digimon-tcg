@@ -17,6 +17,7 @@ import {
   Zone,
   getCardDefinition,
   type GameState,
+  type PlayerState,
   type Seat,
   type KeywordPacingScenario,
   type KeywordPacingScenarioId,
@@ -412,6 +413,8 @@ export const DEV_SCENARIO_IDS = [
   "arena-rock-pyramidimon-breeding-sources",
   "arena-rock-magneticdramon-breeding-sources",
   "arena-rock-gravel-hearts-tumblemon-memory",
+  "arena-ex11-close-start-main-decline",
+  "arena-p146-reload-plug-in-face-down",
   "arena-bt25-beelstarmon-option-trash-trigger",
   "arena-bt20-last-guardian-omnimon-wipe",
   "arena-ex7-deputymon-option-trash-trigger",
@@ -7159,6 +7162,52 @@ function layRockGravelHeartsMemoryScenario(state: GameState, decks: readonly [De
   insertCard(human, Zone.Hand, faceDownCard("dev-rock-pyramidimon", "EX11-044", 0));
 }
 
+/** Empty hands, trash, and eggs; 20 Tai Kamiya draws and 5 Monodramon security cards per seat. */
+function prepareEmptyIssueBoard(
+  state: GameState,
+  decks: readonly [Decklist, Decklist],
+  memory: number,
+  prefix: string,
+): [PlayerState, PlayerState] | undefined {
+  prepareIssueScenario(state, decks, memory);
+  const human = state.players[0];
+  const opponent = state.players[1];
+  if (human === undefined || opponent === undefined) return undefined;
+  for (const player of [human, opponent]) {
+    for (const zone of [Zone.Hand, Zone.Deck, Zone.Trash, Zone.Security, Zone.EggDeck] as const)
+      clearZone(player, zone);
+    for (let i = 0; i < 20; i++)
+      insertCard(player, Zone.Deck, faceDownCard(`${prefix}-deck-${player.seat}-${i}`, "BT1-085", player.seat));
+    for (let i = 0; i < 5; i++)
+      insertCard(player, Zone.Security, faceDownCard(`${prefix}-security-${player.seat}-${i}`, "BT1-009", player.seat));
+  }
+  return [human, opponent];
+}
+
+/** Discord 1557413340161253496: EX11-065 Close's Start of Main cost must be declinable. */
+function layEx11CloseStartMainDeclineScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
+  const players = prepareEmptyIssueBoard(state, decks, 3, "close-decline");
+  if (players === undefined) return;
+  const [human, opponent] = players;
+  placePermanent(human, establishedDigimon(0, ["EX11-065"], "-close-decline-tamer"));
+  placePermanent(human, establishedDigimon(0, ["BT4-065", "BT4-065"], "-close-decline-gotsumon"));
+  const breeding = establishedDigimon(0, ["EX8-005", "EX10-025"], "-close-decline-breeding");
+  breeding.inBreeding = true;
+  setBreeding(human, breeding);
+  placePermanent(opponent, establishedDigimon(1, ["BT1-009"], "-close-decline-bot"));
+}
+
+/** Discord 1558244573333954622: Reload Plug-In Q joins security face down. */
+function layP146ReloadPlugInFaceDownScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
+  const players = prepareEmptyIssueBoard(state, decks, 3, "reload-plug-in");
+  if (players === undefined) return;
+  const [human, opponent] = players;
+  placePermanent(human, establishedDigimon(0, ["P-146", "BT1-009"], "-reload-plug-in-host"));
+  const wall = establishedDigimon(1, ["BT1-025"], "-reload-plug-in-wall");
+  wall.isSuspended = true;
+  placePermanent(opponent, wall);
+}
+
 /**
  * Reproduce Discord bug 1555578375677018193: BT25-085 BeelStarmon's [When Attacking] unsuspend
  * cost trashes EX7-071 Hurricane Screw Shot from digivolution cards, which must fire its
@@ -10035,6 +10084,8 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-rock-magneticdramon-breeding-sources": (state, decks) =>
     layRockBreedingSourcesScenario(state, decks, "EX10-036"),
   "arena-rock-gravel-hearts-tumblemon-memory": layRockGravelHeartsMemoryScenario,
+  "arena-ex11-close-start-main-decline": layEx11CloseStartMainDeclineScenario,
+  "arena-p146-reload-plug-in-face-down": layP146ReloadPlugInFaceDownScenario,
   "arena-bt25-beelstarmon-option-trash-trigger": layBt25BeelStarmonOptionTrashTriggerScenario,
   "arena-bt20-last-guardian-omnimon-wipe": layBt20LastGuardianOmnimonWipeScenario,
   "arena-ex7-deputymon-option-trash-trigger": layEx7DeputymonOptionTrashTriggerScenario,

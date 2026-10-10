@@ -190,7 +190,7 @@ export class ScenarioPage {
           await noXros.click();
         } else if (decision.kind === "selectCards" || decision.kind === "chooseTargets") {
           if (selection.accept === false && decision.options.min === 0) {
-            const pass = this.page.getByRole("button", { name: /^(No selection|Pass · no selection|Pass)$/i });
+            const pass = this.page.getByRole("button", { name: /^(No selection|Pass · no selection|Pass|None)$/i });
             await this.decisionReady(pass, decision, selection.decisionBudgetMs);
             await pass.click();
           } else {
