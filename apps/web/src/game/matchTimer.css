@@ -26,6 +26,12 @@
 .match-timer__icon {
   flex: none;
 }
+.match-timer__label {
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 .match-timer__time {
   font-family: var(--ds-font-body);
   font-size: var(--ds-text-xl);

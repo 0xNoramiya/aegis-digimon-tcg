@@ -214,6 +214,7 @@ export const en = {
   "game.timer.opponent": "Opponent",
   "game.timer.active": "Your action",
   "game.timer.paused": "Paused",
+  "game.timer.mulligan": "Mulligan",
   "game.timer.low": "Time running low",
   "game.timer.refill": "+{seconds}s / turn",
   "overlay.reason.win.timeout": "Your opponent ran out of time.",
@@ -251,7 +252,8 @@ export const en = {
   "nav.skipToContent": "Skip to main content",
   "brand.subtitle": "CARD GAME",
 
-  "browser.outdated": "This browser is out of date, so some colours and panels may not show. Update to Safari 16.4, Chrome 111, Firefox 113 or newer.",
+  "browser.outdated":
+    "This browser is out of date, so some colours and panels may not show. Update to Safari 16.4, Chrome 111, Firefox 113 or newer.",
   "beta.tag": "Beta",
   "lobby.betaBattleMode": "Beta battle mode",
   "lobby.betaBattleHint":
