@@ -24,10 +24,13 @@ for (const viewport of [
       await expect(panel).toBeVisible();
       const bounds = (await panel.boundingBox())!;
       const centered = viewport.width >= 768 && (await panel.getAttribute("data-prompt-surface")) === "center";
+      // On phones, effect activation prompts float as an inset card; other prompts span the screen.
+      const phoneInset =
+        viewport.width < 768 && (await panel.getAttribute("data-effect-activation")) === "true" ? 16 : 0;
       if (centered) {
         expect(bounds.x + bounds.width / 2).toBeCloseTo(viewport.width / 2, 0);
         expect(bounds.y + bounds.height / 2).toBeCloseTo(viewport.height / 2, 0);
-      } else expect(bounds.x).toBeCloseTo(viewport.width < 768 ? 0 : 8, 0);
+      } else expect(bounds.x).toBeCloseTo(viewport.width < 768 ? phoneInset : 8, 0);
       const handSelection = (await panel.getAttribute("data-variant")) === "selection";
       if (handSelection) {
         const handCards = page.locator(".game-hand-card[data-hand-instance-id]");
@@ -40,13 +43,16 @@ for (const viewport of [
           const dock = (await page.locator(".game-hand-dock").boundingBox())!;
           expect(bounds.y + bounds.height).toBeLessThanOrEqual(dock.y + 1);
         } else {
-          expect(bounds.y + bounds.height).toBeCloseTo(viewport.height, 0);
+          expect(bounds.y + bounds.height).toBeCloseTo(viewport.height - phoneInset, 0);
         }
       } else if (!centered) {
         expect(bounds.y + bounds.height).toBeCloseTo(viewport.height - 8, 0);
       }
-      expectedWidth ??= bounds.width;
-      if (!centered) expect(bounds.width).toBeCloseTo(expectedWidth, 0);
+      if (phoneInset) expect(bounds.width).toBeCloseTo(viewport.width - 2 * phoneInset, 0);
+      else {
+        expectedWidth ??= bounds.width;
+        if (!centered) expect(bounds.width).toBeCloseTo(expectedWidth, 0);
+      }
       if (viewport.width < 768) {
         expect(bounds.height).toBeLessThanOrEqual(viewport.height * 0.78);
       } else if (centered) {

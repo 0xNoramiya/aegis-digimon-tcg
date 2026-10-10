@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { answerActivation } from "./scenario-page";
 import { startBrowserServer } from "./server";
 
 class GroupArena {
@@ -7,12 +8,13 @@ class GroupArena {
     await this.page.addInitScript(() => {
       localStorage.setItem("aegis:locale", "en");
       localStorage.setItem("aegis.action-confirmation.enabled", "false");
+      localStorage.setItem("aegis.skip-end-turn-confirmation", "true");
     });
     await this.page.goto(`/dev/arena?scenario=arena-github-${suffix}`);
     await expect(this.page.getByRole("combobox", { name: "Scenario" })).toHaveValue(`arena-github-${suffix}`);
     await expect(this.page.getByRole("dialog", { name: "Connecting bot opponent…", exact: true })).toBeHidden();
     await this.page.getByRole("button", { name: /^end breeding$/i }).click();
-    if (suffix === "5116-rizegreymon") await this.page.getByRole("button", { name: "Use", exact: true }).click();
+    if (suffix === "5116-rizegreymon") await answerActivation(this.page, true);
     await expect(this.page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
   }
   async play(name: string) {
@@ -52,7 +54,7 @@ test("#5136 Greymon visibly recovers EX9 Omnimon Alter-S", async ({ page }) => {
     const arena = new GroupArena(page);
     await arena.open("5136-greymon-recovery");
     await arena.play("Greymon");
-    await page.getByRole("button", { name: "Use", exact: true }).click();
+    await answerActivation(page, true);
     await arena.select("arena-github-5136-greymon-recovery-0-trash-0");
     await expect(page.getByTestId("hand").getByRole("img", { name: "Omnimon Alter-S", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
@@ -99,7 +101,7 @@ for (const suffix of ["5151-examon-sources", "5112-plutomon", "5119-cerberusmon"
         await page.getByRole("button", { name: /resolve.*effect/i }).click();
       }
       if (suffix === "5151-examon-sources") {
-        await page.getByRole("button", { name: "Use", exact: true }).click();
+        await answerActivation(page, true);
         await arena.select(`arena-github-${suffix}-0-source-0-0`);
         await expect(
           page.locator('[data-drop="perm-you"]').getByRole("img", { name: "Coredramon", exact: true }),
@@ -109,14 +111,14 @@ for (const suffix of ["5151-examon-sources", "5112-plutomon", "5119-cerberusmon"
         await page.getByTestId("hand").getByRole("button", { name: "Pick Yokomon", exact: true }).click();
         await page.getByRole("button", { name: "End Selection", exact: true }).click();
         if (suffix === "5119-cerberusmon") {
-          await page.getByRole("button", { name: "Use", exact: true }).click();
+          await answerActivation(page, true);
           await arena.select(`arena-github-${suffix}-0-trash-0`);
           await page.getByRole("button", { name: "Yes, activate", exact: true }).click();
           await expect(
             page.locator('[data-drop="perm-you"]').getByRole("img", { name: "Goblimon", exact: true }),
           ).toBeVisible();
         } else {
-          await page.getByRole("button", { name: "Use", exact: true }).click();
+          await answerActivation(page, true);
           await arena.select(`arena-github-${suffix}-0-trash-0`);
           await expect(
             page.locator('[data-drop="perm-you"]').getByRole("img", { name: "Gekomon", exact: true }),
@@ -180,7 +182,7 @@ for (const suffix of ["5160-super-hacking", "5127-zephagamon-protection"]) {
       await arena.open(suffix);
       await arena.option("Happy Bullet Showering");
       if (suffix === "5160-super-hacking") {
-        await page.getByRole("button", { name: "Use", exact: true }).click();
+        await answerActivation(page, true, "When Digimon are deleted");
         await page.getByRole("button", { name: "Yes, activate", exact: true }).click();
         await arena.select(`arena-github-${suffix}-0-trash-0`);
         await expect(
@@ -231,7 +233,9 @@ test("#5144 Mastemon places an actively protected Infermon into security", async
     await page.getByRole("button", { name: "Titamon", exact: true }).click();
     await page.getByRole("button", { name: "Attack", exact: true }).click();
     await page.locator('[data-drop="opp-security"]').click();
-    await page.getByRole("button", { name: "Use", exact: true }).click();
+    await answerActivation(page, true);
+    // A board click before the target rail opens inspects the card instead of choosing it.
+    await expect(page.getByRole("region", { name: "Confirm targets", exact: true })).toBeVisible();
     await page
       .locator('[data-drop="perm-opp"]')
       .filter({ has: page.getByRole("img", { name: "Infermon", exact: true }) })
@@ -258,7 +262,7 @@ for (const viewport of [
       const arena = new GroupArena(page);
       await arena.open("5116-rizegreymon");
       await arena.play("RizeGreymon");
-      await page.getByRole("button", { name: "Use", exact: true }).click();
+      await answerActivation(page, true);
       await expect(
         page.getByTestId("hand").getByRole("button", { name: "Pick ShineGreymon", exact: true }),
       ).toBeEnabled();

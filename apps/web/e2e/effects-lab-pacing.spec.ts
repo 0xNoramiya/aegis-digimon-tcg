@@ -19,6 +19,7 @@ import {
 } from "@aegis/shared";
 import { startPacingCapture, finishPacingCapture } from "./pacing-capture";
 import { installAudioCapture, readAudioCapture } from "./audio-capture";
+import { answerActivation } from "./scenario-page";
 import { MAX_SOUND_VOICES } from "../src/design/sound";
 import { AUDIO_CUES } from "../src/design/audioBank";
 import { cueKey } from "../src/design/audioRecipes";
@@ -2433,7 +2434,10 @@ test.describe("effects lab pacing in the browser", () => {
       await page.getByRole("button", { name: "Select all, top to bottom", exact: true }).click();
       await page.getByRole("button", { name: "Resolve in this order", exact: true }).click();
       for (let index = 0; index < 2; index++) {
-        await expect(page.getByRole("button", { name: "Use", exact: true })).toBeVisible();
+        const activation = page
+          .getByRole("dialog")
+          .filter({ has: page.getByRole("button", { name: "Yes, activate", exact: true }) });
+        await expect(activation).toBeVisible();
         const before = await lab.read();
         expect(
           before.events.filter((event) => event.kind === "effectTriggered" && event.sourceCardId === "BT23-072"),
@@ -2443,7 +2447,8 @@ test.describe("effects lab pacing in the browser", () => {
           await expect(page.locator("[data-narration-id]").filter({ hasText: "King Drasil" })).toHaveCount(0);
         }
         if (accept && index === 1) {
-          if (phone) await page.locator(".narration-peek").click();
+          // On phones the activation dialog's backdrop covers the notice peek, so open it from the keyboard.
+          if (phone) await page.locator(".narration-peek").press("Enter");
           const accepted = page.locator("[data-narration-id]").filter({ hasText: "King Drasil" });
           await expect(accepted).toHaveCount(1);
           await expect(accepted).toBeVisible();
@@ -2458,7 +2463,7 @@ test.describe("effects lab pacing in the browser", () => {
           await expect(accepted).toBeVisible();
           if (!phone) {
             const lane = await page.locator('[data-slot="narration-text"]').boundingBox();
-            const prompt = await page.locator(".board-prompt").boundingBox();
+            const prompt = await activation.boundingBox();
             expect(lane!.y + lane!.height).toBeLessThanOrEqual(prompt!.y);
           }
         }
@@ -2467,7 +2472,7 @@ test.describe("effects lab pacing in the browser", () => {
           await page.getByRole("button", { name: "‹", exact: true }).click();
           if (phone) await page.getByRole("button", { name: "Return to decision", exact: true }).click();
         }
-        await page.getByRole("button", { name: accept ? "Use" : "Don't use", exact: true }).click();
+        await answerActivation(page, accept);
         if (accept && index === 0) {
           expect(
             before.decision?.sourcePermanentId,

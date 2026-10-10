@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { answerActivation } from "./scenario-page";
 import { startBrowserServer } from "./server";
 
 class DiscordFollowupArena {
@@ -23,7 +24,7 @@ class DiscordFollowupArena {
     await this.page.goto(`/dev/arena?scenario=${scenario}`);
     await expect(this.page.getByRole("combobox", { name: "Scenario" })).toHaveValue(scenario);
     await this.page.getByRole("button", { name: /^end breeding$/i }).click();
-    if (scenario.endsWith("-asuna")) await this.page.getByRole("button", { name: /^don.t use$/i }).click();
+    if (scenario.endsWith("-asuna")) await answerActivation(this.page, false);
     await beforeMain?.();
     await expect(this.page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
     await this.page.getByText("Scenario instructions", { exact: true }).click();
@@ -77,8 +78,8 @@ for (const [suffix, memory] of [
       await attacker.click();
       await page.getByRole("button", { name: "Attack", exact: true }).click();
       await page.locator('[data-drop="opp-security"]').click();
-      await page.getByRole("button", { name: "Use", exact: true }).click();
-      await page.getByRole("button", { name: "Use", exact: true }).click();
+      await answerActivation(page, true, "add your top security card to the hand");
+      await answerActivation(page, true);
       await expect(
         page.locator('[data-drop="perm-you"]').getByRole("img", { name: "Jupitermon", exact: true }),
       ).toBeVisible();
@@ -130,7 +131,7 @@ for (const suffix of ["one", "multiple"]) {
         // Duplicate Unimon cards are separate physical choices; deliberately pick the last copy.
         await choices.last().click();
         await selection.getByRole("button", { name: "Confirm targets", exact: true }).click();
-        await page.getByRole("button", { name: /^don.t use$/i }).click();
+        await answerActivation(page, false);
       });
       await expect(
         page.locator('[data-drop="perm-you"]').getByRole("img", { name: "Unimon", exact: true }),
@@ -158,9 +159,9 @@ test("Discord 1556810241952194590: Inferno Divide affects Alphamon after real Gr
       .locator(".trigger-chooser__footer")
       .getByRole("button", { name: /resolve/i })
       .click();
-    await page.getByRole("button", { name: "Use", exact: true }).click();
+    await answerActivation(page, true);
     await page.getByRole("button", { name: "Alternate requirement, pays 3 memory", exact: true }).click();
-    await page.getByRole("button", { name: "Use", exact: true }).click();
+    await answerActivation(page, true);
     await page.getByRole("button", { name: "Alternate requirement, pays 4 memory", exact: true }).click();
     await expect(ownDigimon.getByRole("img", { name: "Alphamon", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
@@ -212,15 +213,12 @@ test("Discord 1556831312008974437: Jesmon attacks at negative memory after gaini
     await page.getByRole("button", { name: "Attack", exact: true }).click();
     await expect(page.locator(".game-memory-gauge")).toHaveAttribute("aria-label", "Memory: -5");
     // Jesmon's optional When Attacking play and Alliance are independent of its watcher attack.
+    // "No to all" presets Alliance to No as well, so no Alliance window opens.
     await page.getByRole("button", { name: "Select all, top to bottom", exact: true }).click();
     await page.getByRole("button", { name: "No to all", exact: true }).click();
     await page
       .locator(".trigger-chooser__footer")
       .getByRole("button", { name: /resolve/i })
-      .click();
-    await page
-      .getByRole("region", { name: "Alliance window" })
-      .getByRole("button", { name: "Pass", exact: true })
       .click();
     await expect(page.getByRole("button", { name: /^end breeding$/i })).toBeEnabled({ timeout: 30000 });
     await expect(page.locator('[data-drop="opp-security"]')).toHaveAttribute("aria-label", "Opponent security · 2");

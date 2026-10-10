@@ -1,10 +1,14 @@
 import { test, expect, type Page } from "@playwright/test";
+import { answerActivation } from "./scenario-page";
 import { startBrowserServer } from "./server";
 
 class ArenaPage {
   constructor(readonly page: Page) {}
   async open(scenario: string) {
-    await this.page.addInitScript(() => localStorage.setItem("aegis:locale", "en"));
+    await this.page.addInitScript(() => {
+      localStorage.setItem("aegis:locale", "en");
+      localStorage.setItem("aegis.skip-end-turn-confirmation", "true");
+    });
     await this.page.goto(`/dev/arena?scenario=${scenario}`);
     await expect(this.page.getByRole("combobox", { name: "Scenario" })).toHaveValue(scenario);
     await expect(this.page.getByRole("button", { name: /^end breeding$/i })).toBeVisible();
@@ -17,7 +21,7 @@ test("#5036/#5032/#5020 Marcus opens attack actions and attacks while treated as
     await page.addInitScript(() => localStorage.setItem("aegis.action-confirmation.enabled", "false"));
     await new ArenaPage(page).open("arena-open-bugs-marcus-attack");
     await page.getByRole("button", { name: /^end breeding$/i }).click();
-    await page.getByRole("button", { name: "Don't use", exact: true }).click();
+    await answerActivation(page, false);
     await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
     const marcus = page.locator('[data-drop="perm-you"][data-id="dev-perm-0-open-bugs-marcus"]');
     await marcus.click();
@@ -46,7 +50,7 @@ test("#5043 selects Takato's granted Blitz before Gallantmon's printed effect", 
     await blitz.click();
     await page.getByRole("button", { name: /^resolve next effect$/i }).click();
     await expect(page.getByText("Activate Blitz?", { exact: true })).toBeVisible();
-    await page.getByRole("button", { name: "Use", exact: true }).click();
+    await answerActivation(page, true);
     const attacker = page.locator('[data-drop="perm-you"][data-id="dev-perm-0-takato-blitz-wargrowlmon"]');
     await attacker.click();
     await page.getByRole("button", { name: "Attack", exact: true }).click();
@@ -102,14 +106,11 @@ test("Burst Mode hides the unpaid cost 0 route and displays its Option Main text
     await page.getByTestId("hand").getByRole("img", { name: "ShineGreymon: Burst Mode", exact: true }).click();
     await page.getByRole("button", { name: "Digivolve", exact: true }).click();
     await page.locator('[data-drop="perm-you"][data-id="arena-issue-4964-burst-own-tamer-0-field-0"]').click();
-    const activation = page.getByRole("dialog", { name: "ShineGreymon: Burst Mode · effect", exact: true });
-    await expect(activation).toBeVisible();
-    await expect(page.getByRole("dialog", { name: "Digivolve cost", exact: true })).not.toBeVisible();
-    await expect(activation).toContainText("[Main]");
-    await expect(activation).toContainText("-15000 DP");
-    await activation.getByRole("button", { name: "Use", exact: true }).click();
-    await expect(page.getByRole("button", { name: /^no selection$/i })).toBeVisible();
+    // The optional Tamer play is answered in its up-to-one hand selection, with no separate activation prompt.
     const selection = page.getByRole("region", { name: "Hand selection", exact: true });
+    await expect(selection.getByRole("button", { name: /^no selection$/i })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Digivolve cost", exact: true })).not.toBeVisible();
+    await expect(page.getByRole("dialog", { name: "ShineGreymon: Burst Mode · effect", exact: true })).toHaveCount(0);
     await expect(selection).toContainText("[Main]");
     await expect(selection).toContainText("-15000 DP");
     await expect(selection).toContainText("Tamer card from your hand");
@@ -260,7 +261,13 @@ test("#4985 the second Alliance stays selectable after answering the first", asy
     const security = page.locator('[data-drop="opp-security"]');
     await expect(security).toHaveClass(/game-security-shield--glow/);
     await security.click();
-    await page.getByRole("button", { name: "No to all", exact: true }).click();
+    // "No to all" would also preset both Alliance entries to No; decline only the token play.
+    await page
+      .getByRole("list", { name: "Order pending effects", exact: true })
+      .getByRole("listitem")
+      .filter({ hasText: "Atho, René & Por" })
+      .getByRole("button", { name: "No", exact: true })
+      .click();
     await page.getByRole("button", { name: "Select all, top to bottom", exact: true }).click();
     await page
       .locator(".trigger-chooser__footer")
@@ -299,8 +306,7 @@ for (const scenario of [
       await new ArenaPage(page).open(scenario);
       await page.getByRole("button", { name: /^end breeding$/i }).click();
       // Asuna may offer her printed start-of-main optional cost before Main opens.
-      if (scenario === "arena-issue-4995-asuna-evolution")
-        await page.getByRole("button", { name: "Don't use", exact: true }).click();
+      if (scenario === "arena-issue-4995-asuna-evolution") await answerActivation(page, false);
       await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
       expect(errors).toEqual([]);
     } finally {
@@ -344,7 +350,7 @@ test("#5004 Burst Digivolution with ST24 Marcus pays zero through the UI", async
     await page.addInitScript(() => localStorage.setItem("aegis.action-confirmation.enabled", "false"));
     await new ArenaPage(page).open("arena-issue-5004-shine-burst-marcus");
     await page.getByRole("button", { name: /^end breeding$/i }).click();
-    await page.getByRole("button", { name: "Don't use", exact: true }).click();
+    await answerActivation(page, false);
     await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
     await page.getByTestId("hand").getByRole("img", { name: "ShineGreymon: Burst Mode", exact: true }).click();
     await page.getByRole("button", { name: "Digivolve", exact: true }).click();
@@ -505,6 +511,8 @@ for (const width of [1440, 390]) {
       const bounds = await confirm.boundingBox();
       expect(bounds).not.toBeNull();
       expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(1000);
+      const cancel = (await rail.getByRole("button", { name: "Cancel", exact: true }).boundingBox())!;
+      expect(bounds!.x).toBeGreaterThanOrEqual(cancel.x + cancel.width);
       await confirm.click();
       await expect(
         page.locator('[data-drop="perm-you"]').getByRole("img", { name: "Mastemon", exact: true }),
