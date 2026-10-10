@@ -252,6 +252,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "nav.skipToContent": "Ir para o conteúdo principal",
   "brand.subtitle": "JOGO DE CARTAS",
 
+  "browser.outdated": "Este navegador está desatualizado, então algumas cores e painéis podem não aparecer. Atualize para Safari 16.4, Chrome 111, Firefox 113 ou mais recente.",
   "beta.tag": "Beta",
   "lobby.betaBattleMode": "Modo de batalha beta",
   "lobby.betaBattleHint":

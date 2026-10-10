@@ -247,6 +247,7 @@ export const es: Record<keyof typeof en, string> = {
   "nav.primaryAria": "Navegación principal",
   "nav.skipToContent": "Ir al contenido principal",
   "brand.subtitle": "JUEGO DE CARTAS",
+  "browser.outdated": "Este navegador está desactualizado, así que algunos colores y paneles pueden no mostrarse. Actualiza a Safari 16.4, Chrome 111, Firefox 113 o posterior.",
   "beta.tag": "Beta",
   "lobby.betaBattleMode": "Modo de batalla beta",
   "lobby.betaBattleHint":

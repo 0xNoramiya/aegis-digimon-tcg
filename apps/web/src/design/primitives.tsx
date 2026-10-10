@@ -19,6 +19,7 @@ import { playSound, type SoundKind } from "./sound";
 import { useTranslation } from "../i18n";
 import { digimonAvatarUrl, type DigimonWorldAvatarId } from "../account/avatars";
 import { AegisLogo } from "./AegisLogo";
+import { BrowserSupportNotice } from "./BrowserSupportNotice";
 
 /** The lightweight identity carried across screens (name + accent color). */
 export interface PlayerIdentity {
@@ -53,6 +54,7 @@ export function Stage({ children }: { children: ReactNode }) {
       <a className="aegis-skip-link" href="#aegis-main">
         {t("nav.skipToContent")}
       </a>
+      <BrowserSupportNotice />
       <div className="aegis-stage__content">{children}</div>
     </div>
   );

@@ -251,6 +251,7 @@ export const en = {
   "nav.skipToContent": "Skip to main content",
   "brand.subtitle": "CARD GAME",
 
+  "browser.outdated": "This browser is out of date, so some colours and panels may not show. Update to Safari 16.4, Chrome 111, Firefox 113 or newer.",
   "beta.tag": "Beta",
   "lobby.betaBattleMode": "Beta battle mode",
   "lobby.betaBattleHint":
