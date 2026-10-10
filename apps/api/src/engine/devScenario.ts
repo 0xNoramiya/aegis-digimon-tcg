@@ -402,6 +402,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-mirage-hidden-hand",
   "arena-kanan-jupiter-pomumon",
   "arena-bt22-akemi-battle-mother",
+  "arena-feedback9-akemi-inherited-mother-eater",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
   "arena-bt24-homeros-neptunemon-timing-choice",
@@ -7042,6 +7043,21 @@ function layBt22AkemiBattleMotherScenario(state: GameState, decks: readonly [Dec
   setBreeding(human, breeding);
 }
 
+/** Feedback #9: Akemi under a battle-area Mother Eater grants Rush, Alliance and Scapegoat. */
+function layFeedback9AkemiInheritedScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
+  prepareIssueScenario(state, decks, 3);
+  const human = state.players[0]!;
+  // No Digi-Egg deck keeps the breeding Mother Eater from prompting at Start of Main.
+  clearZone(human, Zone.EggDeck);
+  placePermanent(human, establishedDigimon(0, ["BT22-095"], "-feedback9-akemi"));
+  const mother = establishedDigimon(0, ["BT22-007"], "-feedback9-mother");
+  mother.enterFieldTurnCount = 1;
+  placePermanent(human, mother);
+  const breeding = establishedDigimon(0, ["BT22-007"], "-feedback9-breeding");
+  breeding.inBreeding = true;
+  setBreeding(human, breeding);
+}
+
 function layP224KotoneOwnSourceScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
   prepareIssueScenario(state, decks, 3);
   const human = state.players[0];
@@ -10024,6 +10040,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-mirage-hidden-hand": layMirageHiddenHandScenario,
   "arena-kanan-jupiter-pomumon": layKananJupiterPomumonScenario,
   "arena-bt22-akemi-battle-mother": layBt22AkemiBattleMotherScenario,
+  "arena-feedback9-akemi-inherited-mother-eater": layFeedback9AkemiInheritedScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,
   "arena-bt24-homeros-neptunemon-timing-choice": layBt24HomerosNeptunemonTimingChoiceScenario,

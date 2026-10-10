@@ -1749,6 +1749,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Encerre a criação sem mover o Agumon. Com 5 de memória, jogue Titamon BT1-080 da mão pelo custo 10: o adversário recebe 5. Aceite suspender Kanan Yuki no Fim do Seu Turno. As duas Jupitermon BT26-033 e Central Town devem aparecer como escolhas, mesmo com Pomumon em campo. Selecione uma Jupitermon para usar Wide Plasment: custo 2 + 3 seguranças − 5 de memória adversária = 0. O Monochromon do bot é deletado, sua segurança sobe para 4, a Option vai ao lixo e a outra Jupitermon permanece na mão. Pomumon continua em campo.",
     en: "End breeding without moving Agumon. At 5 memory, play BT1-080 Titamon from hand for 10: the opponent gets 5. Accept suspending Kanan Yuki at End of Your Turn. Both BT26-033 Jupitermon copies and Central Town must be offered despite Pomumon on the field. Choose one Jupitermon to use Wide Plasment: cost 2 + 3 security − 5 opponent memory = 0. The bot's Monochromon is deleted, your security increases to 4, the Option goes to trash, and the other Jupitermon remains in hand. Pomumon stays in play.",
   },
+  "arena-feedback9-akemi-inherited-mother-eater": {
+    ptBR: "Feedback #9. Aguarde a Principal: a criação avança sozinha. O Mother Eater no campo entrou neste turno e ainda não pode atacar. Ative o [Principal] de Akemi Suedou e coloque-a sob esse Mother Eater. Ele passa a mostrar ＜Rush＞, ＜Alliance＞ e ＜Scapegoat＞ e já pode atacar o jogador neste turno. Controle: antes de ativar Akemi, o Mother Eater não tem esses selos nem pode atacar.",
+    en: "Feedback #9. Wait for Main: breeding skips on its own. The battle-area Mother Eater entered this turn and cannot attack yet. Activate Akemi Suedou's [Main] and place her under that Mother Eater. It now shows ＜Rush＞, ＜Alliance＞ and ＜Scapegoat＞ and can attack the player this turn. Control: before Akemi activates, the Mother Eater has none of these badges and cannot attack.",
+  },
   "arena-bt22-akemi-battle-mother": {
     ptBR: "GitHub #5370. Aguarde a Principal: a criação avança automaticamente porque Mother Eater não tem DP para sair. Ative o [Principal] de Akemi Suedou. Somente os dois Mother Eater no campo podem ser escolhidos; a cópia na criação fica excluída. Escolha o Mother Eater com Eater (Species Form) nas fontes. Akemi deve ficar como a fonte inferior, abaixo de Eater (Species Form), enquanto a pilha na criação fica intacta.",
     en: "GitHub #5370. Wait for Main: breeding skips automatically because Mother Eater has no DP to move. Activate Akemi Suedou's [Main]. Only the two battle-area Mother Eaters are eligible; the breeding copy is excluded. Choose the Mother Eater with Eater (Species Form) in its sources. Akemi must become its bottom source, below Eater (Species Form), while the breeding stack stays intact.",
@@ -3149,6 +3153,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-bt24-homeros-neptunemon-timing-choice", "BT24 Homeros · Neptunemon timing choice"],
   ["arena-kanan-jupiter-pomumon", "Kanan · Jupitermon Option com Pomumon / under Pomumon"],
   ["arena-bt22-akemi-battle-mother", "BT22 Akemi · Mother Eater no campo / battle area"],
+  ["arena-feedback9-akemi-inherited-mother-eater", "BT22 Akemi · inherited Rush/Alliance/Scapegoat on Mother Eater"],
   ["arena-p224-kotone-own-source", "P-224 Kotone · X7 das próprias fontes / own sources"],
   ["arena-kotone-digixros-pending-attack", "Kotone · DigiXros + EX6 pending attack"],
   ["arena-bt6-beelstarmon-duplicate-cost", "BT6 BeelStarmon · duplicate hand cost"],
