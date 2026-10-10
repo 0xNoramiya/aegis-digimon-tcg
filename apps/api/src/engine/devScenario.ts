@@ -7413,6 +7413,13 @@ function layFeedback26ZephagamonSuspendOwnScenario(state: GameState): void {
   const monodramon = establishedDigimon(1, ["BT1-009"], "-feedback26-monodramon");
   monodramon.isSuspended = true;
   placePermanent(state.players[1]!, monodramon);
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
  * Feedback #25: the human's Omnimon Alter-S attacks and stays suspended. On the bot's turn,
  * Kuwagamon (EX9-038) attacks and its [When Attacking] suspends Alter-S again. Alter-S was already
  * suspended, but "It can't unsuspend in their next unsuspend phase" still applies (Q4792), so
