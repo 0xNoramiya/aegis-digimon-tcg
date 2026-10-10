@@ -3396,6 +3396,7 @@ describe("Primitives completeness guard (no declared-but-unassigned methods)", (
     flipTopSecurity: true,
     flipSecurityFaceDown: true,
     forceAttack: true,
+    canForceAttack: true,
     blitzAttack: true,
     forceBattle: true,
     gainMemory: true,

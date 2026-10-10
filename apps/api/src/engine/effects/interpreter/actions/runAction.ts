@@ -17,7 +17,7 @@ import { candidatePermanents, raiseDeletionDpCap, resolvePermanentTargets } from
 import { targetAfterSelfPlacementCost } from "../targeting/afterCost.js";
 import { runBoardAction } from "./board.js";
 import { availableEffectPlayAssemblyReduction } from "./effectPlayAssembly.js";
-import { runCombatAction } from "./combat.js";
+import { canAttemptAttack, runCombatAction } from "./combat.js";
 import { runControlFlowAction } from "./controlFlow.js";
 import { runDigivolutionAction } from "./digivolution.js";
 import { canAttemptDigivolve, canAttemptDigivolveBeforeCost } from "./digivolve.js";
@@ -901,6 +901,17 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       action.kind === "PlaceUnder" &&
       !allowsOptionalProcessingCostWithoutTarget(action) &&
       !canAttemptPlaceUnder(ctx, action)
+    ) {
+      return unavailableAction(ctx, action, action.abortOnDecline === true);
+    }
+    // A "may attack" with no cost does nothing when no named Digimon can attack (Q2490), so it
+    // is not asked. A cost-bearing attack keeps its prompt: the cost may still be paid.
+    if (
+      action.kind === "Attack" &&
+      payableActionCost === undefined &&
+      action.additionalCost === undefined &&
+      !action.additionalCosts?.length &&
+      !canAttemptAttack(ctx, action)
     ) {
       return unavailableAction(ctx, action, action.abortOnDecline === true);
     }
