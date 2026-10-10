@@ -212,6 +212,7 @@ function CardZoomPreview({
         <img
           draggable={false}
           src={urls[idx]}
+          decoding="async"
           alt={def?.nameEn}
           onError={() => setExtra((e) => e + 1)}
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
@@ -307,6 +308,8 @@ export function CardFull({
           draggable={false}
           src={urls[urlIndex]}
           alt={def.nameEn}
+          loading="lazy"
+          decoding="async"
           onError={() => setUrlIndex((i) => i + 1)}
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
         />
@@ -362,6 +365,7 @@ export function CoverThumb({
     <img
       draggable={false}
       src={urls[urlIndex]}
+      decoding="async"
       onError={() => setUrlIndex((i) => i + 1)}
       style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
     />
@@ -605,6 +609,7 @@ export function CardMini({
           draggable={false}
           src={urls[urlIndex]}
           alt={def.nameEn}
+          decoding="async"
           onError={() => setUrlIndex((i) => i + 1)}
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
         />
