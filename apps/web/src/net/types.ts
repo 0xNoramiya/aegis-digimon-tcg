@@ -497,6 +497,7 @@ export interface AegisJoinOptions {
     | "arena-feedback6-deramon-breeding-level"
     | "arena-feedback15-gryphonmon-deramon"
     | "arena-feedback14-creepymon-x-end-turn"
+    | "arena-feedback17-ex11-006-linked-attack"
     | "arena-raid-optional-preset"
     | "arena-preset-order-no-clicks"
     | "arena-ex13-leopardmon-suspended-target"

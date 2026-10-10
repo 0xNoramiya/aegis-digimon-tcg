@@ -87,6 +87,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback6-deramon-breeding-level",
   "arena-feedback15-gryphonmon-deramon",
   "arena-feedback14-creepymon-x-end-turn",
+  "arena-feedback17-ex11-006-linked-attack",
   "arena-github5331-offense-hand",
   "arena-github5362-shellmon-ts",
   "arena-lanamon-tamer-cost",
@@ -1619,6 +1620,29 @@ function layFeedback14CreepymonXEndTurnScenario(state: GameState): void {
   state.turnCount = 0;
   state.isFirstPlayersFirstTurn = false;
   state.memory = 3;
+}
+
+/** Feedback #17: Flickmon's linked-Maquinamon cost reduction applies only [When Attacking]. */
+function layFeedback17FlickmonLinkedAttackScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback17-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback17-deck-${seat}-${index}`, "BT1-009", seat));
+    }
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback17-security-${seat}-${index}`, "BT1-010", seat));
+    }
+  }
+  const human = state.players[0]!;
+  const turbomon = establishedDigimon(0, ["EX11-006", "EX11-027", "EX11-029"], "-feedback17-turbomon");
+  linkEstablishedCard(turbomon, faceUpCard("dev-feedback17-linked-maquinamon", "EX11-027", 0));
+  placePermanent(human, turbomon);
+  insertCard(human, Zone.Hand, faceUpCard("dev-feedback17-maneuvermon", "EX11-033", 0));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 4;
 }
 
 /** Discord 1557815179218128896: Guard removes a queued Raid's printed source. */
@@ -9928,6 +9952,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback6-deramon-breeding-level": layFeedback6DeramonBreedingScenario,
   "arena-feedback15-gryphonmon-deramon": layFeedback15GryphonmonDeramonScenario,
   "arena-feedback14-creepymon-x-end-turn": layFeedback14CreepymonXEndTurnScenario,
+  "arena-feedback17-ex11-006-linked-attack": layFeedback17FlickmonLinkedAttackScenario,
   "arena-raid-optional-preset": layRaidOptionalPresetScenario,
   "arena-preset-order-no-clicks": layPresetOrderNoClicksScenario,
   "arena-oct06-king-sukamon-assembly": (state, decks) => layOct06LatestScenario(state, decks, "king-sukamon-assembly"),
