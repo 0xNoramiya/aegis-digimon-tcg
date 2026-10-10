@@ -141,6 +141,17 @@ it("Discord 1557582673117970482 keeps field chrome in the board's modal stacking
   expect(badge.closest(".game-battle-zones")).toBeNull();
 });
 
+it("keeps field chrome inside the isolated board so board notices and prompts can cover it", () => {
+  const view = render(
+    <div id="aegis-stage">
+      <div className="game-board">{indicator([reduction], false)}</div>
+    </div>,
+  );
+  const badge = screen.getByLabelText("Opponent field: DP −4,000").closest("details")!;
+  expect(badge.parentElement).toBe(view.container.querySelector(".game-board"));
+  expect(badge.closest(".game-battle-zones")).toBeNull();
+});
+
 it("uses the body fallback for standalone boards even if an unrelated stage exists", () => {
   render(<div id="aegis-stage" />);
   render(indicator([reduction], false));
