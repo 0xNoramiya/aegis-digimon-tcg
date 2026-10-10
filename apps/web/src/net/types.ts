@@ -674,6 +674,7 @@ export interface AegisJoinOptions {
     | "arena-discord-lordknightmon-bt22-skullknightmon"
     | "arena-feedback18-sukamon-inherited-protection"
     | "arena-feedback19-burst-tamer-choice"
+    | "arena-davis-both-colors"
     | "arena-discord-taiki-keeps-xros-digimon"
     | "arena-discord-vemmon-add-or-place"
     | "arena-discord-speed-security-scene-stuck"
