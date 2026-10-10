@@ -401,6 +401,12 @@ export async function fireTimingForPermanent(
     return;
   }
   const wasOutermostWindow = beginResolvingWindow(engine);
+  // A window opened between effects inside an enclosing one (an effect-ordered attack's Counter
+  // Timing) must still pool what its own effects trigger: a Digimon that Blast Digivolve's
+  // [When Digivolving] plays has its [On Play] parked in the nested pool, beside the watchers
+  // that play armed. Only entries parked before this window opened belong to the parent.
+  const excludedNestedPending =
+    engine.effectResolutionDepth === 0 ? new Set(engine.pendingNestedTimingEffects) : undefined;
   // Freeze the subject instance set at window open. The resolver re-collects every pass
   // (to fold in effects that BECOME active during resolution), but a card that digivolves
   // onto engine permanent MID-WINDOW would otherwise be re-collected here and have its
@@ -432,7 +438,11 @@ export async function fireTimingForPermanent(
             collectPermanentInstances(engine, permanent, scoped);
             return scoped.filter((instance) => subjectInstanceIds.has(instance.instanceId));
           },
-          { outermost: wasOutermostWindow, extraPending: [...extraPending, ...ruleCheckPending] },
+          {
+            outermost: wasOutermostWindow,
+            extraPending: [...extraPending, ...ruleCheckPending],
+            excludeNestedPending: excludedNestedPending,
+          },
         ),
       ),
     );
