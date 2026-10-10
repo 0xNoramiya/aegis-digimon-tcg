@@ -326,4 +326,46 @@ describe("EX5-045 Chuumon", () => {
     expect(s.state.players[0]!.trash.map(({ cardId }) => cardId)).toEqual(["EX1-052"]);
     expect(s.state.pendingDecision).toBeUndefined();
   });
+
+  it("feedback #27: does not reveal when another effect plays it on your own turn", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          hand: [
+            { card: "EX13-035", as: "kingEtemon" },
+            { card: "EX5-045", as: "source" },
+          ],
+          deck: [
+            { card: "BT11-040", as: "sukamon" },
+            { card: "BT1-009", as: "first" },
+            { card: "BT1-010", as: "second" },
+          ],
+        },
+      },
+      { autoAcceptOptional: true },
+    );
+    s.state.memory = 20;
+    await s.ready();
+    const deckBefore = s.state.players[0]!.deck.map((card) => card.instanceId);
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("kingEtemon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    const kingEtemonPlay = s.state.pendingDecision!;
+    expect(JSON.parse(kingEtemonPlay.payloadJson).candidateInstanceIds).toEqual([s.inst("source").instanceId]);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: kingEtemonPlay.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("source").instanceId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision === undefined);
+    expect(s.state.turnSeat).toBe(0);
+    expect(s.state.players[0]!.battleArea.map((permanent) => permanent.topCard.instanceId).sort()).toEqual(
+      [s.inst("kingEtemon").instanceId, s.inst("source").instanceId].sort(),
+    );
+    expect(s.events.some((event) => event.kind === "cardRevealed" && event.sourceCardId === "EX5-045")).toBe(false);
+    expect(s.state.players[0]!.deck.map((card) => card.instanceId)).toEqual(deckBefore);
+  });
 });

@@ -419,6 +419,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback24-kaguyamon-empty-deck",
   "arena-feedback26-zephagamon-suspend-own",
   "arena-feedback25-alter-s-unsuspend-lock",
+  "arena-feedback27-chuumon-opponent-turn",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
   "arena-bt24-homeros-neptunemon-timing-choice",
@@ -7447,6 +7448,55 @@ function layFeedback25AlterSUnsuspendLockScenario(state: GameState): void {
   state.memory = 3;
 }
 
+/**
+ * Feedback #27: Chuumon's [On Play] reveal only works "if it's your opponent's turn". Playing
+ * Chuumon from hand on your own turn reveals nothing. KingEtemon gives the bot's Digimon -3000 DP
+ * (3 Digimon with [Sukamon]/[Etemon] in their names). The bot's suspended Sukamon survives only
+ * through Mikemon's inherited +1000 DP, so it is deleted when it unsuspends at the start of the
+ * bot's turn. KingSukamon's inherited [All Turns] then plays Chuumon from the top of your deck,
+ * and now it is your opponent's turn, so Chuumon's [On Play] plays the Sukamon it reveals.
+ */
+function layFeedback27ChuumonOpponentTurnScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback27-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback27-security-${seat}-${index}`, "BT1-010", seat));
+    }
+  }
+  const human = state.players[0]!;
+  const humanDeck = [
+    ["draw", "BT1-085"],
+    ["deck-chuumon", "EX5-045"],
+    ["kingsukamon-reveal-1", "BT1-085"],
+    ["kingsukamon-reveal-2", "BT1-085"],
+    ["deck-sukamon", "BT3-063"],
+    ["chuumon-reveal-1", "BT1-085"],
+    ["chuumon-reveal-2", "BT1-085"],
+  ];
+  for (const [slot, cardId] of humanDeck) {
+    insertCard(human, Zone.Deck, faceDownCard(`dev-feedback27-${slot}`, cardId!, 0));
+  }
+  for (let index = 0; index < 6; index += 1) {
+    insertCard(human, Zone.Deck, faceDownCard(`dev-feedback27-deck-0-${index}`, "BT1-085", 0));
+  }
+  placePermanent(human, establishedDigimon(0, ["EX13-031", "EX13-035"], "-feedback27-kingetemon"));
+  placePermanent(human, establishedDigimon(0, ["BT3-063"], "-feedback27-sukamon-a"));
+  placePermanent(human, establishedDigimon(0, ["BT3-063"], "-feedback27-sukamon-b"));
+  insertCard(human, Zone.Hand, faceUpCard("dev-feedback27-hand-chuumon", "EX5-045", 0));
+  const bot = state.players[1]!;
+  for (let index = 0; index < 12; index += 1) {
+    insertCard(bot, Zone.Deck, faceDownCard(`dev-feedback27-deck-1-${index}`, "BT1-085", 1));
+  }
+  const botSukamon = establishedDigimon(1, ["EX13-040", "EX9-049"], "-feedback27-bot-sukamon");
+  botSukamon.isSuspended = true;
+  placePermanent(bot, botSukamon);
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 2;
+}
+
 function layP224KotoneOwnSourceScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
   prepareIssueScenario(state, decks, 3);
   const human = state.players[0];
@@ -10491,6 +10541,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback24-kaguyamon-empty-deck": layFeedback24KaguyamonEmptyDeckScenario,
   "arena-feedback26-zephagamon-suspend-own": layFeedback26ZephagamonSuspendOwnScenario,
   "arena-feedback25-alter-s-unsuspend-lock": layFeedback25AlterSUnsuspendLockScenario,
+  "arena-feedback27-chuumon-opponent-turn": layFeedback27ChuumonOpponentTurnScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,
   "arena-bt24-homeros-neptunemon-timing-choice": layBt24HomerosNeptunemonTimingChoiceScenario,
