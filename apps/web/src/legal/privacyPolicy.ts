@@ -53,17 +53,6 @@ const en: PrivacyPolicy = {
       ],
     },
     {
-      id: "providers",
-      heading: "Services we rely on",
-      items: [
-        "Oracle Cloud hosts our servers and database.",
-        "Resend and Brevo send sign-in emails.",
-        "Discord handles Discord sign-in.",
-        "GitHub hosts our public issue tracker.",
-        "Google Drive stores the replays you choose to save there.",
-      ],
-    },
-    {
       id: "retention",
       heading: "How long we keep it",
       paragraphs: [
@@ -118,17 +107,6 @@ const ptBR: PrivacyPolicy = {
       heading: "Como usamos",
       paragraphs: [
         "Usamos esses dados só para operar o Aegis: fazer seu login, formar partidas, mostrar seu perfil e replays, enviar e-mails de login e corrigir problemas. Não vendemos dados, não exibimos anúncios e não usamos seus dados para treinar modelos de IA.",
-      ],
-    },
-    {
-      id: "providers",
-      heading: "Serviços que usamos",
-      items: [
-        "A Oracle Cloud hospeda nossos servidores e banco de dados.",
-        "Resend e Brevo enviam os e-mails de login.",
-        "O Discord cuida do login pelo Discord.",
-        "O GitHub hospeda nosso rastreador público de problemas.",
-        "O Google Drive guarda os replays que você escolher salvar lá.",
       ],
     },
     {
@@ -189,17 +167,6 @@ const es: PrivacyPolicy = {
       ],
     },
     {
-      id: "providers",
-      heading: "Servicios que usamos",
-      items: [
-        "Oracle Cloud aloja nuestros servidores y base de datos.",
-        "Resend y Brevo envían los correos de inicio de sesión.",
-        "Discord gestiona el inicio de sesión con Discord.",
-        "GitHub aloja nuestro gestor público de incidencias.",
-        "Google Drive guarda los replays que decidas guardar allí.",
-      ],
-    },
-    {
       id: "retention",
       heading: "Cuánto tiempo lo guardamos",
       paragraphs: [
@@ -254,17 +221,6 @@ const it: PrivacyPolicy = {
       heading: "Come li usiamo",
       paragraphs: [
         "Usiamo questi dati solo per far funzionare Aegis: farti accedere, abbinare i giocatori, mostrare profilo e replay, inviare email di accesso e risolvere problemi. Non vendiamo dati, non mostriamo pubblicità e non usiamo i tuoi dati per addestrare modelli di IA.",
-      ],
-    },
-    {
-      id: "providers",
-      heading: "Servizi che usiamo",
-      items: [
-        "Oracle Cloud ospita i nostri server e il database.",
-        "Resend e Brevo inviano le email di accesso.",
-        "Discord gestisce l’accesso con Discord.",
-        "GitHub ospita il nostro issue tracker pubblico.",
-        "Google Drive conserva i replay che scegli di salvarvi.",
       ],
     },
     {
