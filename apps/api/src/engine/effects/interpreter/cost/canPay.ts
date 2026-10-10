@@ -26,7 +26,7 @@ export function canUnsuspendForCost(
   ctx: EffectContext,
   permanent: { permanentId: string; isSuspended: boolean },
 ): boolean {
-  return permanent.isSuspended && ctx.fx.canUnsuspend?.(permanent.permanentId) !== false;
+  return permanent.isSuspended && ctx.fx.canUnsuspend?.(permanent.permanentId, ctx.source.ownerSeat) !== false;
 }
 
 /**
@@ -37,7 +37,7 @@ export function canSuspendForCost(
   ctx: EffectContext,
   permanent: { permanentId: string; isSuspended: boolean },
 ): boolean {
-  return !permanent.isSuspended && ctx.fx.canSuspend?.(permanent.permanentId) !== false;
+  return !permanent.isSuspended && ctx.fx.canSuspend?.(permanent.permanentId, ctx.source.ownerSeat) !== false;
 }
 
 export function canPayCost(ctx: EffectContext, cost: Cost): boolean {

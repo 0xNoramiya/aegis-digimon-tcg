@@ -429,6 +429,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback19-burst-tamer-choice",
   "arena-discord-x7-digixros-zones",
   "arena-feedback31-dorugreymon-block-digivolve",
+  "arena-feedback33-kakkinmon-opponent-turn-end",
   "arena-security-leak-known-card-face-down",
   "arena-discord-keenan-trigger-order",
   "arena-discord-richard-main-materials-face-down",
@@ -7817,6 +7818,37 @@ function layFeedback31DoruGreymonBlockScenario(state: GameState): void {
 }
 
 /**
+ * Feedback #33 (match 2bb4232d): Kakkinmon's inherited [End of All Turns] effect did not trigger
+ * at the end of the opponent's turn. Craniamon's [When Digivolving] immunity to the opponent's
+ * effects lasts until that turn ends, and the suspend-cost check read the turn player as the
+ * effect's owner, so Craniamon could not pay for its own Kakkinmon. The bot plays Zephagamon
+ * (BT20-101) on its turn, as in the match.
+ */
+function layFeedback33KakkinmonOpponentTurnEndScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback33-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 10; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback33-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback33-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["P-245", "BT2-060"], "-feedback33-craniamon"));
+  insertCard(human, Zone.Hand, faceUpCard("dev-feedback33-hand-craniamon", "EX13-062", 0));
+  for (let index = 0; index < 2; index += 1) {
+    insertCard(human, Zone.Hand, faceUpCard(`dev-feedback33-hand-${index}`, "BT1-085", 0));
+  }
+  insertCard(state.players[1]!, Zone.Hand, faceUpCard("dev-feedback33-zephagamon", "BT20-101", 1));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
  * Hidden-information check, no player report: the bot's security stack already shows one card
  * face up, so the player's client holds part of it. Lónkhē Adistakto (BT10-101) places the bot's
  * Monodramon, which both players saw on the field, face down on top of that stack. The player
@@ -11065,6 +11097,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback19-burst-tamer-choice": layFeedback19BurstTamerChoiceScenario,
   "arena-discord-x7-digixros-zones": layDiscordX7DigiXrosZonesScenario,
   "arena-feedback31-dorugreymon-block-digivolve": layFeedback31DoruGreymonBlockScenario,
+  "arena-feedback33-kakkinmon-opponent-turn-end": layFeedback33KakkinmonOpponentTurnEndScenario,
   "arena-security-leak-known-card-face-down": laySecurityLeakKnownCardFaceDownScenario,
   "arena-discord-keenan-trigger-order": layDiscordKeenanTriggerOrderScenario,
   "arena-discord-richard-main-materials-face-down": layDiscordRichardMainMaterialsFaceDownScenario,
