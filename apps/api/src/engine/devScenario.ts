@@ -433,6 +433,9 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback33-kakkinmon-opponent-turn-end",
   "arena-feedback32-omnimon-x-raid-piercing",
   "arena-feedback40-rie-kishibe-security-gate",
+  "arena-lordknightmon-bt22-effect-attack-reveal",
+  "arena-lordknightmon-bt22-opponent-attack-reveal",
+  "arena-lordknightmon-ex13-darkknightmon-digixros",
   "arena-bt26-029-single-removal-trigger",
   "arena-bt22-101-kyoko-alphamon-on-unsuspend",
   "arena-may-attack-suspended-creepymon",
@@ -7939,6 +7942,55 @@ function layFeedback40RieKishibeSecurityGateScenario(state: GameState): void {
   state.memory = 3;
 }
 
+const LORDKNIGHTMON_REVEAL_DECK = ["EX10-026", "EX13-058", "BT5-042", ...Array.from({ length: 8 }, () => "BT5-042")];
+
+/**
+ * Discord 1558289910425985055 re-check: BT22 LordKnightmon's own [When Digivolving] attack
+ * triggers its [All Turns] reveal inside an effect-ordered attack. The human digivolves
+ * RizeGreymon (Lv.5 [CS]) into LordKnightmon for 3, draws Agumon, and attacks the player with
+ * LordKnightmon. The reveal shows SkullKnightmon (EX10-026, cost 4) and two cost-7 Knightmon.
+ */
+function layLordKnightmonBt22EffectAttackRevealScenario(state: GameState): void {
+  layDiscordLordKnightmonBoard(state, "lk-effect-attack", ["BT1-010", "BT1-010", ...LORDKNIGHTMON_REVEAL_DECK]);
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT22-012"], "-lk-effect-attack-rizegreymon"));
+  insertCard(human, Zone.Hand, faceUpCard("dev-lk-effect-attack-hand-lordknightmon", "BT22-067", 0));
+}
+
+/**
+ * Discord 1558289910425985055 re-check: "When Digimon attack players" also covers the
+ * opponent's attacks. The bot's Agumon attacks the human, and the human answers BT22
+ * LordKnightmon's [All Turns] reveal during the opponent's turn.
+ */
+function layLordKnightmonBt22OpponentAttackRevealScenario(state: GameState): void {
+  layDiscordLordKnightmonBoard(state, "lk-opponent-attack", LORDKNIGHTMON_REVEAL_DECK);
+  const lordKnightmon = establishedDigimon(0, ["BT22-067"], "-lk-opponent-attack-lordknightmon");
+  lordKnightmon.isSuspended = true;
+  placePermanent(state.players[0]!, lordKnightmon);
+  placePermanent(state.players[1]!, establishedDigimon(1, ["BT1-010"], "-lk-opponent-attack-agumon"));
+  state.turnSeat = 1;
+  state.memory = 0;
+}
+
+/**
+ * Discord 1558289219074654299 re-check: EX13 LordKnightmon plays EX10 DarkKnightmon from the
+ * trash while SkullKnightmon and DeadlyAxemon, its DigiXros materials, are in hand. After the
+ * pick, the DigiXros picker offers both materials (rule 7-2-2-13).
+ */
+function layLordKnightmonEx13DarkKnightmonDigiXrosScenario(state: GameState): void {
+  layDiscordLordKnightmonBoard(
+    state,
+    "lk-digixros",
+    Array.from({ length: 10 }, () => "BT1-010"),
+  );
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT5-042"], "-lk-digixros-knightmon"));
+  insertCard(human, Zone.Hand, faceUpCard("dev-lk-digixros-hand-lordknightmon", "EX13-064", 0));
+  insertCard(human, Zone.Hand, faceUpCard("dev-lk-digixros-hand-skullknightmon", "EX10-026", 0));
+  insertCard(human, Zone.Hand, faceUpCard("dev-lk-digixros-hand-deadlyaxemon", "EX10-027", 0));
+  insertCard(human, Zone.Trash, faceUpCard("dev-lk-digixros-trash-darkknightmon", "EX10-031", 0));
+}
+
 /**
  * Feedback #20 follow-up (match 023effb9): one security trash put BT26-029 Aegiochusmon: Holy's
  * "[All Turns] [Once Per Turn] When your security stack is removed from" effect in the order
@@ -11304,6 +11356,9 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback33-kakkinmon-opponent-turn-end": layFeedback33KakkinmonOpponentTurnEndScenario,
   "arena-feedback32-omnimon-x-raid-piercing": layFeedback32OmnimonXRaidPiercingScenario,
   "arena-feedback40-rie-kishibe-security-gate": layFeedback40RieKishibeSecurityGateScenario,
+  "arena-lordknightmon-bt22-effect-attack-reveal": layLordKnightmonBt22EffectAttackRevealScenario,
+  "arena-lordknightmon-bt22-opponent-attack-reveal": layLordKnightmonBt22OpponentAttackRevealScenario,
+  "arena-lordknightmon-ex13-darkknightmon-digixros": layLordKnightmonEx13DarkKnightmonDigiXrosScenario,
   "arena-bt26-029-single-removal-trigger": layBt26029SingleRemovalTriggerScenario,
   "arena-bt22-101-kyoko-alphamon-on-unsuspend": layBt22101KyokoAlphamonOnUnsuspendScenario,
   "arena-may-attack-suspended-creepymon": layMayAttackSuspendedCreepymonScenario,
