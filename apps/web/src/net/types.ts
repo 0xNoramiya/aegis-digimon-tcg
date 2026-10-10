@@ -668,6 +668,7 @@ export interface AegisJoinOptions {
     | "arena-feedback25-alter-s-unsuspend-lock"
     | "arena-feedback27-chuumon-opponent-turn"
     | "arena-feedback28-security-reveal-before-prompt"
+    | "arena-discord-metaletemon-redirect-player"
     | "arena-discord-lordknightmon-ex13-darkknightmon"
     | "arena-discord-lordknightmon-bt22-skullknightmon"
     | "arena-discord-speed-security-scene-stuck"
