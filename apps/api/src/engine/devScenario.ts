@@ -421,6 +421,8 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback25-alter-s-unsuspend-lock",
   "arena-feedback27-chuumon-opponent-turn",
   "arena-feedback28-security-reveal-before-prompt",
+  "arena-discord-lordknightmon-ex13-darkknightmon",
+  "arena-discord-lordknightmon-bt22-skullknightmon",
   "arena-discord-speed-security-scene-stuck",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
@@ -7560,6 +7562,61 @@ function layFeedback28SecurityRevealBeforePromptScenario(state: GameState): void
   state.memory = 3;
 }
 
+function layDiscordLordKnightmonBoard(state: GameState, prefix: string, humanDeck: readonly string[]): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-${prefix}-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-${prefix}-security-${seat}-${index}`, "BT1-010", seat));
+    }
+  }
+  const human = state.players[0]!;
+  humanDeck.forEach((cardId, index) => {
+    insertCard(human, Zone.Deck, faceDownCard(`dev-${prefix}-deck-0-${index}`, cardId, 0));
+  });
+  for (let index = 0; index < 12; index += 1) {
+    insertCard(state.players[1]!, Zone.Deck, faceDownCard(`dev-${prefix}-deck-1-${index}`, "BT1-010", 1));
+  }
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
+ * Discord 1558289219074654299: EX13 LordKnightmon's [When Digivolving] plays a play cost 8 or
+ * lower card with [Knightmon] in its text from hand or trash. EX10 DarkKnightmon qualifies by its
+ * name (Q7420). The yellow Knightmon only takes the 3-memory [Knightmon]-text route.
+ */
+function layDiscordLordKnightmonEx13DarkKnightmonScenario(state: GameState): void {
+  layDiscordLordKnightmonBoard(
+    state,
+    "lordknightmon-ex13",
+    Array.from({ length: 10 }, () => "BT1-010"),
+  );
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT5-042"], "-lordknightmon-ex13-knightmon"));
+  insertCard(human, Zone.Hand, faceUpCard("dev-lordknightmon-ex13-hand-lordknightmon", "EX13-064", 0));
+  insertCard(human, Zone.Hand, faceUpCard("dev-lordknightmon-ex13-hand-darkknightmon", "EX10-031", 0));
+  insertCard(human, Zone.Trash, faceUpCard("dev-lordknightmon-ex13-trash-darkknightmon", "EX10-031", 0));
+}
+
+/**
+ * Discord 1558289910425985055: BT22 LordKnightmon's [All Turns] reveal plays a play cost 4 or
+ * lower black or red card. EX10 SkullKnightmon is Black/Purple with play cost 4, so it qualifies.
+ * The other two revealed cards cost 7 and are not eligible.
+ */
+function layDiscordLordKnightmonBt22SkullKnightmonScenario(state: GameState): void {
+  layDiscordLordKnightmonBoard(state, "lordknightmon-bt22", [
+    "BT5-042",
+    "EX10-026",
+    "EX13-058",
+    "BT5-042",
+    ...Array.from({ length: 8 }, () => "BT5-042"),
+  ]);
+  placePermanent(state.players[0]!, establishedDigimon(0, ["BT22-067"], "-lordknightmon-bt22-lordknightmon"));
+}
+
 function layP224KotoneOwnSourceScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
   prepareIssueScenario(state, decks, 3);
   const human = state.players[0];
@@ -10606,6 +10663,8 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback25-alter-s-unsuspend-lock": layFeedback25AlterSUnsuspendLockScenario,
   "arena-feedback27-chuumon-opponent-turn": layFeedback27ChuumonOpponentTurnScenario,
   "arena-feedback28-security-reveal-before-prompt": layFeedback28SecurityRevealBeforePromptScenario,
+  "arena-discord-lordknightmon-ex13-darkknightmon": layDiscordLordKnightmonEx13DarkKnightmonScenario,
+  "arena-discord-lordknightmon-bt22-skullknightmon": layDiscordLordKnightmonBt22SkullKnightmonScenario,
   "arena-discord-speed-security-scene-stuck": layDiscordSpeedSecuritySceneStuckScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,

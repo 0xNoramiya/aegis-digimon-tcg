@@ -79,6 +79,34 @@ describe("BT22-067 LordKnightmon", () => {
     );
   });
 
+  it("Discord 1558289910425985055: plays a revealed Black/Purple EX10 SkullKnightmon", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT22-067", as: "lordknightmon" }],
+          deck: ["EX10-026", "BT1-090", "BT1-010"],
+        },
+        1: { security: ["BT1-009", "BT1-010", "BT1-011"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true },
+    );
+    const skullKnightmonId = s.state.players[0]!.deck[0]!.instanceId;
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("lordknightmon").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => !observe(s.engine).isAttacking() && s.state.pendingDecision === undefined);
+
+    expect(s.state.players[0]!.battleArea.some((p) => p.topCard?.instanceId === skullKnightmonId)).toBe(true);
+    expect(s.state.players[0]!.trash.map((card) => card.cardId)).toEqual(
+      expect.arrayContaining(["BT1-090", "BT1-010"]),
+    );
+  });
+
   it("runs the reveal after Raid switches the player attack to the highest-DP target", async () => {
     const s = setupEngine(
       {
