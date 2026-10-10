@@ -415,6 +415,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-bt22-akemi-battle-mother",
   "arena-feedback9-akemi-inherited-mother-eater",
   "arena-feedback20-ruin-mode-on-play",
+  "arena-feedback24-kaguyamon-empty-deck",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
   "arena-bt24-homeros-neptunemon-timing-choice",
@@ -7325,6 +7326,36 @@ function layFeedback20RuinModeOnPlayScenario(state: GameState): void {
   state.memory = 10;
 }
 
+/**
+ * Feedback #24: Kaguyamon (12000 DP) attacks the bot's suspended PrinceMamemon (12000 DP) and both
+ * are deleted. Kaguyamon's [On Deletion] resolves first (turn player) and returns the bot's
+ * Monodramon to the bottom of its empty deck. PrinceMamemon's [On Deletion] then reveals the top
+ * 3 cards, which is only Monodramon, cannot play it, and trashes it.
+ */
+function layFeedback24KaguyamonEmptyDeckScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback24-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback24-security-${seat}-${index}`, "BT1-010", seat));
+    }
+  }
+  const human = state.players[0]!;
+  for (let index = 0; index < 12; index += 1) {
+    insertCard(human, Zone.Deck, faceDownCard(`dev-feedback24-deck-0-${index}`, "BT1-010", 0));
+  }
+  placePermanent(human, establishedDigimon(0, ["EX12-065"], "-feedback24-kaguyamon"));
+  const bot = state.players[1]!;
+  const princeMamemon = establishedDigimon(1, ["EX13-063"], "-feedback24-princemamemon");
+  princeMamemon.isSuspended = true;
+  placePermanent(bot, princeMamemon);
+  placePermanent(bot, establishedDigimon(1, ["BT1-009"], "-feedback24-monodramon"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
 function layP224KotoneOwnSourceScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
   prepareIssueScenario(state, decks, 3);
   const human = state.players[0];
@@ -10365,6 +10396,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-bt22-akemi-battle-mother": layBt22AkemiBattleMotherScenario,
   "arena-feedback9-akemi-inherited-mother-eater": layFeedback9AkemiInheritedScenario,
   "arena-feedback20-ruin-mode-on-play": layFeedback20RuinModeOnPlayScenario,
+  "arena-feedback24-kaguyamon-empty-deck": layFeedback24KaguyamonEmptyDeckScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,
   "arena-bt24-homeros-neptunemon-timing-choice": layBt24HomerosNeptunemonTimingChoiceScenario,
