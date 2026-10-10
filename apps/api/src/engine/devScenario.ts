@@ -427,6 +427,8 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-lordknightmon-bt22-skullknightmon",
   "arena-feedback18-sukamon-inherited-protection",
   "arena-feedback19-burst-tamer-choice",
+  "arena-discord-richard-main-materials-face-down",
+  "arena-discord-richard-main-fresh-materials",
   "arena-discord-taiki-keeps-xros-digimon",
   "arena-discord-vemmon-add-or-place",
   "arena-discord-speed-security-scene-stuck",
@@ -7751,6 +7753,48 @@ function layFeedback19BurstTamerChoiceScenario(state: GameState): void {
 }
 
 /**
+ * Discord 1558451244815880332: Richard Sampson (EX13-071) has 3 face-down cards under it, and two
+ * of them are the level 4 and level 5 [Holy Beast] materials. Q7447 requires one of each material
+ * in the trash before the [Main] effect can activate. `materialsInTrash` adds Reppamon (BT1-051)
+ * and Chirinmon (BT1-058) to the trash, so the effect activates and the player may stack the two
+ * materials it just trashed from under Richard instead.
+ */
+function layDiscordRichardMainScenario(state: GameState, materialsInTrash: boolean): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-richard-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-richard-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-richard-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  const richard = establishedDigimon(0, ["EX13-030", "EX13-032", "BT1-085", "EX13-071"], "-richard");
+  for (const source of richard.stack) source.faceUp = false;
+  placePermanent(human, richard);
+  placePermanent(human, establishedDigimon(0, ["EX13-026"], "-richard-kudamon"));
+  insertCard(human, Zone.Hand, faceDownCard("dev-richard-kentaurosmon", "BT3-043", 0));
+  if (materialsInTrash) {
+    insertCard(human, Zone.Trash, faceUpCard("dev-richard-trash-reppamon", "BT1-051", 0));
+    insertCard(human, Zone.Trash, faceUpCard("dev-richard-trash-chirinmon", "BT1-058", 0));
+  }
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+function layDiscordRichardMainMaterialsFaceDownScenario(state: GameState): void {
+  layDiscordRichardMainScenario(state, false);
+}
+
+function layDiscordRichardMainFreshMaterialsScenario(state: GameState): void {
+  layDiscordRichardMainScenario(state, true);
+}
+
+/**
  * Discord 1558457266485731358: Taiki Kudo (BT10-087) reveals two Xros Heart Tamers, Taiki Kudo
  * (BT21-083) and Kotone Amano (P-224), the only Xros Heart Digimon, Shoutmon X7 (AD1-006), and
  * Crimson Blaze (BT8-097). Q3113 requires adding to hand and placing under as much as possible,
@@ -10862,6 +10906,8 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-lordknightmon-bt22-skullknightmon": layDiscordLordKnightmonBt22SkullKnightmonScenario,
   "arena-feedback18-sukamon-inherited-protection": layFeedback18SukamonInheritedProtectionScenario,
   "arena-feedback19-burst-tamer-choice": layFeedback19BurstTamerChoiceScenario,
+  "arena-discord-richard-main-materials-face-down": layDiscordRichardMainMaterialsFaceDownScenario,
+  "arena-discord-richard-main-fresh-materials": layDiscordRichardMainFreshMaterialsScenario,
   "arena-discord-taiki-keeps-xros-digimon": layDiscordTaikiKeepsXrosDigimonScenario,
   "arena-discord-vemmon-add-or-place": layDiscordVemmonAddOrPlaceScenario,
   "arena-discord-speed-security-scene-stuck": layDiscordSpeedSecuritySceneStuckScenario,
