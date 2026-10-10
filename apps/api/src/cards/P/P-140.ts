@@ -60,7 +60,7 @@ const compiled: CompiledCard = {
   digivolutionRequirement: [
     {
       level: 4,
-      names: ["Insectoid"],
+      traits: ["Insectoid"],
       cost: 3,
       isAlternate: true,
     },

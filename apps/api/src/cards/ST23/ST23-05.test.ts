@@ -10,6 +10,57 @@ const OPP_DIGIMON = "BT1-058";
 const DECK_FILLER = "BT1-009";
 const EVO_COST = 3;
 
+describe("ST23-05 alternate digivolution", () => {
+  it("rejects the [Glowing Dawn] route from a level-4 Digimon", async () => {
+    const s = setupEngine({
+      0: {
+        battleArea: [{ card: "ST23-03", as: "cougarmon" }],
+        hand: [{ card: HABA, as: "habakirimon" }],
+      },
+    });
+    s.state.memory = 5;
+    await s.ready();
+
+    for (const useAlternateCost of [true, false]) {
+      expect(
+        s.engine.applyIntent(0, {
+          type: "digivolve",
+          permanentId: s.perm("cougarmon").permanentId,
+          instanceId: s.inst("habakirimon").instanceId,
+          useAlternateCost,
+        }),
+      ).toMatchObject({ ok: false });
+    }
+    expect(s.state.memory).toBe(5);
+    expect(s.perm("cougarmon").topCard.cardId).toBe("ST23-03");
+  });
+
+  it("digivolves from an off-color level-5 [Glowing Dawn] Digimon for 3", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "ST23-08", as: "monarchlizamon" }],
+          hand: [{ card: HABA, as: "habakirimon" }],
+        },
+      },
+      { autoDeclineOptional: true },
+    );
+    s.state.memory = 3;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("monarchlizamon").permanentId,
+        instanceId: s.inst("habakirimon").instanceId,
+        useAlternateCost: true,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("monarchlizamon").topCard.cardId === HABA);
+    expect(s.state.memory).toBe(0);
+  });
+});
+
 describe("ST23-05 place-as-security + Recovery by trashing the most-security player's top", () => {
   it("can activate on a later attack after declining the whole effect", async () => {
     const options = {

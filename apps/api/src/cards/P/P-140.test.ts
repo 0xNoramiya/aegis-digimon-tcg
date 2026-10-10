@@ -41,7 +41,29 @@ describe("P-140 MegaKabuterimon", () => {
         }),
       ]),
     );
-    expect(compiled.digivolutionRequirement).toEqual([{ level: 4, names: ["Insectoid"], cost: 3, isAlternate: true }]);
+    expect(compiled.digivolutionRequirement).toEqual([{ level: 4, traits: ["Insectoid"], cost: 3, isAlternate: true }]);
+  });
+
+  it("digivolves from an off-color level-4 [Insectoid] trait Digimon for the printed cost of 3", async () => {
+    const s = setupEngine({
+      0: {
+        battleArea: [{ card: "BT20-066", as: "stingmon" }],
+        hand: [{ card: "P-140", as: "megaKabuterimon" }],
+      },
+    });
+    s.state.memory = 3;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("stingmon").permanentId,
+        instanceId: s.inst("megaKabuterimon").instanceId,
+        useAlternateCost: true,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("stingmon").topCard.cardId === "P-140");
+    expect(s.state.memory).toBe(0);
   });
 
   it("trashes security when the inherited host itself wins a battle", async () => {

@@ -74343,7 +74343,7 @@
     ],
     "coverage": "full",
     "residual": [],
-    "digivolutionRequirement": [{ "level": 3, "traits": ["WG"], "cost": 2, "isAlternate": true }]
+    "digivolutionRequirement": [{ "level": 4, "traits": ["WG"], "cost": 3, "isAlternate": true }]
   },
   "BT21-039": {
     "effects": [
@@ -199872,7 +199872,7 @@
     ],
     "coverage": "full",
     "residual": [],
-    "digivolutionRequirement": [{ "level": 4, "names": ["Insectoid"], "cost": 3, "isAlternate": true }]
+    "digivolutionRequirement": [{ "level": 4, "traits": ["Insectoid"], "cost": 3, "isAlternate": true }]
   },
   "P-141": {
     "effects": [
@@ -217513,7 +217513,7 @@
     ],
     "coverage": "full",
     "residual": [],
-    "digivolutionRequirement": [{ "cost": 3, "isAlternate": true, "traits": ["Glowing Dawn"] }]
+    "digivolutionRequirement": [{ "level": 5, "cost": 3, "isAlternate": true, "traits": ["Glowing Dawn"] }]
   },
   "ST23-06": {
     "effects": [

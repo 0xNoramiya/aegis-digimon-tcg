@@ -92,6 +92,7 @@ const compiled: CompiledCard = {
   residual: [],
   digivolutionRequirement: [
     {
+      level: 5,
       cost: 3,
       isAlternate: true,
       traits: ["Glowing Dawn"],
