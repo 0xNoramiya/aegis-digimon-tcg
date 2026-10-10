@@ -676,6 +676,7 @@ export interface AegisJoinOptions {
     | "arena-feedback19-burst-tamer-choice"
     | "arena-discord-x7-digixros-zones"
     | "arena-feedback31-dorugreymon-block-digivolve"
+    | "arena-feedback32-omnimon-x-raid-piercing"
     | "arena-security-leak-known-card-face-down"
     | "arena-discord-keenan-trigger-order"
     | "arena-discord-richard-main-materials-face-down"

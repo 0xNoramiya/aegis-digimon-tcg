@@ -429,6 +429,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback19-burst-tamer-choice",
   "arena-discord-x7-digixros-zones",
   "arena-feedback31-dorugreymon-block-digivolve",
+  "arena-feedback32-omnimon-x-raid-piercing",
   "arena-security-leak-known-card-face-down",
   "arena-discord-keenan-trigger-order",
   "arena-discord-richard-main-materials-face-down",
@@ -7817,6 +7818,33 @@ function layFeedback31DoruGreymonBlockScenario(state: GameState): void {
 }
 
 /**
+ * Feedback #32: Omnimon (X Antibody) (BT20-102) has <Raid> and <Piercing>. WarGreymon (AD1-004)
+ * in its digivolution cards gives it an inherited [When Attacking] delete, which triggers with
+ * Raid. The bot has two unsuspended Digimon: Plesiomon (ST2-10, 12000 DP) and Monodramon
+ * (BT1-009, 3000 DP). Piercing checks security only when the battle deletes the attack target.
+ */
+function layFeedback32OmnimonXRaidPiercingScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback32-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback32-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback32-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  placePermanent(state.players[0]!, establishedDigimon(0, ["AD1-004", "BT5-086", "BT20-102"], "-feedback32-omnimon"));
+  const opponent = state.players[1]!;
+  placePermanent(opponent, establishedDigimon(1, ["ST2-10"], "-feedback32-plesiomon"));
+  placePermanent(opponent, establishedDigimon(1, ["BT1-009"], "-feedback32-monodramon"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
  * Hidden-information check, no player report: the bot's security stack already shows one card
  * face up, so the player's client holds part of it. Lónkhē Adistakto (BT10-101) places the bot's
  * Monodramon, which both players saw on the field, face down on top of that stack. The player
@@ -11065,6 +11093,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback19-burst-tamer-choice": layFeedback19BurstTamerChoiceScenario,
   "arena-discord-x7-digixros-zones": layDiscordX7DigiXrosZonesScenario,
   "arena-feedback31-dorugreymon-block-digivolve": layFeedback31DoruGreymonBlockScenario,
+  "arena-feedback32-omnimon-x-raid-piercing": layFeedback32OmnimonXRaidPiercingScenario,
   "arena-security-leak-known-card-face-down": laySecurityLeakKnownCardFaceDownScenario,
   "arena-discord-keenan-trigger-order": layDiscordKeenanTriggerOrderScenario,
   "arena-discord-richard-main-materials-face-down": layDiscordRichardMainMaterialsFaceDownScenario,
