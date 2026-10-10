@@ -87,8 +87,10 @@ for (const viewport of [
       await test.step(specimen, async () => {
         const panel = await preview.open(specimen);
         const bounds = (await panel.boundingBox())!;
-        expect(bounds.x).toBeCloseTo(0, 0);
-        expect(bounds.width).toBeCloseTo(viewport.width, 0);
+        // Effect activation prompts float as an inset card; other prompts span the screen.
+        const inset = (await panel.getAttribute("data-effect-activation")) === "true" ? 16 : 0;
+        expect(bounds.x).toBeCloseTo(inset, 0);
+        expect(bounds.width).toBeCloseTo(viewport.width - 2 * inset, 0);
         expect(bounds.y).toBeGreaterThanOrEqual(0);
         expect(bounds.y + bounds.height).toBeLessThanOrEqual(viewport.height + 1);
         const hand = page.locator(".game-hand-dock");

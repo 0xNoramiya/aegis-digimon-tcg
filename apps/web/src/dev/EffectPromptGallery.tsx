@@ -309,6 +309,7 @@ export function EffectPromptGallery() {
             room: combatPreview
               ? ({
                   connection: { isOpen: true },
+                  onMessage: () => () => {},
                   send: (type: string, payload: object) => {
                     if (type === "respondAlliance" || type === "declareBlock") respond({ type, ...payload });
                   },
