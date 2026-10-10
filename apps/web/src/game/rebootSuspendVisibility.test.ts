@@ -159,7 +159,14 @@ afterEach(() => {
 
 const probeMs = 8;
 
-async function presentEndOfTurnSuspend(viewerSeat: Seat) {
+/** Index of the Reboot unsuspend move, the first batch of the opponent's Active phase. */
+const rebootUnsuspendBatch = 6;
+
+/**
+ * `splitAt` delivers the batches from that index in a second render, after the first one has
+ * already opened the Unsuspend hold, as a socket can when the patches land in two frames.
+ */
+async function presentEndOfTurnSuspend(viewerSeat: Seat, splitAt = productionBatches.length) {
   const firstVersion = 89;
   const before = board({
     stateVersion: firstVersion - 1,
@@ -188,16 +195,23 @@ async function presentEndOfTurnSuspend(viewerSeat: Seat) {
   );
   const advance = (ms: number) => act(async () => vi.advanceTimersByTimeAsync(ms));
   await advance(0);
+  const deliver = (from: number, to: number) => {
+    productionBatches.slice(from, to).forEach(({ events, state }, offset) => {
+      const stateVersion = firstVersion + from + offset;
+      const batch = singleServerBatch(events, stateVersion);
+      // The server stamps a batch's events with the revision it opened on; its close names the next.
+      fed.push({ ...batch, events: batch.events.map((event) => ({ ...event, stateVersion: stateVersion - 1 })) });
+      live = board({ stateVersion, ...state });
+      snapshots = recordSnapshot(snapshots, live);
+    });
+    view.rerender({ batches: [...fed], state: live, taken: snapshots });
+  };
   // The server closes these batches within one engine run: they arrive as one burst.
-  productionBatches.forEach(({ events, state }, index) => {
-    const stateVersion = firstVersion + index;
-    const batch = singleServerBatch(events, stateVersion);
-    // The server stamps a batch's events with the revision it opened on; its close names the next.
-    fed.push({ ...batch, events: batch.events.map((event) => ({ ...event, stateVersion: stateVersion - 1 })) });
-    live = board({ stateVersion, ...state });
-    snapshots = recordSnapshot(snapshots, live);
-  });
-  view.rerender({ batches: [...fed], state: live, taken: snapshots });
+  deliver(0, splitAt);
+  if (splitAt < productionBatches.length) {
+    await advance(probeMs);
+    deliver(splitAt, productionBatches.length);
+  }
   const frames: { at: number; suspended: boolean; dp: number }[] = [];
   for (let elapsed = 0; elapsed <= 12_000; elapsed += probeMs) {
     const cues = view.result.current;
@@ -214,10 +228,16 @@ async function presentEndOfTurnSuspend(viewerSeat: Seat) {
   return frames;
 }
 
-it.each([craniamonOwner, opponent])(
-  "viewer %i sees Craniamon turn sideways before Reboot stands it up (Discord 1557481090870939840)",
-  async (viewerSeat) => {
-    const frames = await presentEndOfTurnSuspend(viewerSeat);
+it.each([
+  { viewerSeat: craniamonOwner, splitAt: productionBatches.length },
+  { viewerSeat: opponent, splitAt: productionBatches.length },
+  // Feedback #3: the Reboot move arrived after the Unsuspend hold opened and released it at once.
+  { viewerSeat: craniamonOwner, splitAt: rebootUnsuspendBatch },
+  { viewerSeat: opponent, splitAt: rebootUnsuspendBatch },
+])(
+  "viewer $viewerSeat sees Craniamon turn sideways before Reboot stands it up, second delivery from $splitAt (Discord 1557481090870939840)",
+  async ({ viewerSeat, splitAt }) => {
+    const frames = await presentEndOfTurnSuspend(viewerSeat, splitAt);
     const suspendedFrame = frames.findIndex((frame) => frame.suspended);
     expect(frames, JSON.stringify(frames)).not.toEqual([]);
     expect(suspendedFrame, JSON.stringify(frames)).toBeGreaterThanOrEqual(0);

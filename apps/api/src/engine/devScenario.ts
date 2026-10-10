@@ -84,6 +84,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-github5331-offense-hand",
   "arena-github5362-shellmon-ts",
   "arena-lanamon-tamer-cost",
+  "arena-feedback3-kakkinmon-craniamon",
   "arena-discord-1557790296379625482-trash-hybrids",
   "arena-discord-1557790296379625482-loweemon-hosts",
   "arena-github5365-jesmon-token",
@@ -553,6 +554,20 @@ function establishedDigimon(seat: Seat, cardIds: readonly string[], slot = ""): 
 function linkEstablishedCard(permanent: Permanent, card: CardInstance): void {
   linkCard(permanent, card, "bottom");
   permanent.currentDP += getCardDefinition(card.cardId)?.linkDp ?? 0;
+}
+
+/**
+ * Feedback #3: Kakkinmon's inherited end-of-turn cost suspends Craniamon, whose suspend trigger
+ * then finds no target because both opposing Digimon are DUAL cards without a play cost.
+ */
+function layFeedback3KakkinmonCraniamonScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
+  prepareIssueScenario(state, decks, 3);
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["P-245", "EX13-047", "EX13-051"], "-feedback3-kakkinmon"));
+  placePermanent(human, establishedDigimon(0, ["BT15-061", "EX13-062"], "-feedback3-craniamon"));
+  const opponent = state.players[1]!;
+  placePermanent(opponent, establishedDigimon(1, ["ST23-09"], "-feedback3-atratusmon"));
+  placePermanent(opponent, establishedDigimon(1, ["BT25-057"], "-feedback3-monarchlizamon"));
 }
 
 /** #5340: distinct printed Tamer, normal level-3, and named slide evolution costs. */
@@ -9644,6 +9659,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-ravemon-burst-hand": layRavemonBurstHandScenario,
   "arena-github5331-offense-hand": layGithub5331OffenseHandScenario,
   "arena-lanamon-tamer-cost": layLanamonTamerCostScenario,
+  "arena-feedback3-kakkinmon-craniamon": layFeedback3KakkinmonCraniamonScenario,
   "arena-github5332-kekkomon-cost": layGithub5332KekkomonCostScenario,
   "arena-github-5324-omnimon-traits": layGithub5324OmnimonTraitsScenario,
   "arena-github5320-alliance-after-evolution": layGithub5320AllianceAfterEvolutionScenario,

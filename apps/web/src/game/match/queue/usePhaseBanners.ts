@@ -171,6 +171,8 @@ export function usePhaseBanners({
   const unsuspendSweepKeyRef = useRef(0);
   const appliedUnsuspendSeqRef = useRef(-1);
   const appliedUnsuspendsRef = useRef(new WeakSet<ServerEvent>());
+  /** The Unsuspend phase whose ribbon has not released that phase's moves yet. */
+  const unreleasedUnsuspendPhaseRef = useRef<ServerEvent | undefined>(undefined);
 
   /**
    * Release permanents whose unsuspend move reaches the client after the Unsuspend ribbon
@@ -179,13 +181,26 @@ export function usePhaseBanners({
    * ribbon's one-shot read finds nothing and the held board keeps them rotated until Main
    * lifts the hold. A move is applied once: by identity, and by seq so that a log rewrite
    * cannot replay an old move against a later hold.
+   *
+   * A move inside an Unsuspend phase whose ribbon has not played yet is left to that ribbon.
+   * Releasing it on arrival stood a ＜Reboot＞ holder up before the board ever showed the
+   * end-of-turn suspend that put it down (feedback #3).
    */
   useLayoutEffect(() => {
+    const unreleasedPhase = unreleasedUnsuspendPhaseRef.current;
+    const unreleasedStart = unreleasedPhase ? eventTimeline.indexOf(unreleasedPhase) : -1;
+    const unreleasedEnd =
+      unreleasedStart < 0
+        ? -1
+        : eventTimeline.findIndex((event, index) => index > unreleasedStart && event.kind === "phaseChanged");
+    const awaitsRibbon = (index: number) =>
+      unreleasedStart >= 0 && index > unreleasedStart && (unreleasedEnd < 0 || index < unreleasedEnd);
     const arrived: string[] = [];
     let highestSeq = appliedUnsuspendSeqRef.current;
-    for (const event of eventTimeline) {
+    for (const [index, event] of eventTimeline.entries()) {
       if (event.kind !== "cardsMoved" || event.from !== "suspended" || event.to !== "unsuspended") continue;
       if (appliedUnsuspendsRef.current.has(event)) continue;
+      if (awaitsRibbon(index)) continue;
       const seq = "seq" in event && typeof event.seq === "number" ? event.seq : undefined;
       if (seq !== undefined && seq <= appliedUnsuspendSeqRef.current) continue;
       if (seq !== undefined && seq > highestSeq) highestSeq = seq;
@@ -392,6 +407,7 @@ export function usePhaseBanners({
         setPendingPhaseBanners((count) => count + 1);
         if (banner.phase === UNSUSPEND_PHASE) {
           drawPhaseWaitingRef.current = { seat: openedPhase.turnSeat, phaseOrder };
+          unreleasedUnsuspendPhaseRef.current = openedPhase;
           const drawState = boardBeforePhase(openedPhase, previousDrawStateRef.current);
           // The held revision can predate an unsuspend the ending turn made before its End
           // phase (EX13-006): the move reached an earlier pass, and the state patch lags the
@@ -435,6 +451,9 @@ export function usePhaseBanners({
             ),
           );
         }
+        const releaseUnsuspendPhase = () => {
+          if (unreleasedUnsuspendPhaseRef.current === openedPhase) unreleasedUnsuspendPhaseRef.current = undefined;
+        };
         const releaseDrawHold = () => {
           const owner = drawPhaseWaitingRef.current;
           if (owner?.seat !== openedPhase.turnSeat || phaseOrder < owner.phaseOrder) return;
@@ -493,6 +512,7 @@ export function usePhaseBanners({
                 setHeldBreedingState((held) =>
                   held ? { ...held, player: releaseUnsuspended(held.player, unsuspendedIds) } : held,
                 );
+                releaseUnsuspendPhase();
                 const sweep: UnsuspendSweep = { seat: openedPhase.turnSeat, key: ++unsuspendSweepKeyRef.current };
                 queue.enqueue({
                   id: `unsuspend-sweep-${sweep.key}`,
@@ -577,6 +597,7 @@ export function usePhaseBanners({
               completedPhaseOrderRef.current = phaseOrder;
               setPhaseBanner((current) => (current?.key === banner.key ? null : current));
               setPendingPhaseBanners((count) => count - 1);
+              releaseUnsuspendPhase();
               if (context.cancelled || context.mode !== "live") {
                 setHeldSuspendedIds(new Set());
                 setHeldPhaseState(undefined);
