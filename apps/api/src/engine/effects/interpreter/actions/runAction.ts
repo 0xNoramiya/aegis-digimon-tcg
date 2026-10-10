@@ -689,7 +689,12 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   if (action.kind === "ReactivateEffect" && action.cost !== undefined && !canReactivateOwnEffect(ctx, action)) {
     return unavailableAction(ctx, action, action.abortOnDecline === true);
   }
-  if (action.kind === "PlaceUnder" && action.cost !== undefined && !canAttemptPlaceUnder(ctx, action)) {
+  if (
+    action.kind === "PlaceUnder" &&
+    action.cost !== undefined &&
+    !allowsOptionalProcessingCostWithoutTarget(action) &&
+    !canAttemptPlaceUnder(ctx, action)
+  ) {
     return unavailableAction(ctx, action, action.abortOnDecline === true);
   }
   // A modal whose every option is un-attemptable cannot be activated at all, so its
@@ -879,7 +884,11 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
     (action.kind !== "RedirectAttack" || action.chooser !== "opponent") &&
     actionCost?.optional !== true
   ) {
-    if (action.kind === "PlaceUnder" && !canAttemptPlaceUnder(ctx, action)) {
+    if (
+      action.kind === "PlaceUnder" &&
+      !allowsOptionalProcessingCostWithoutTarget(action) &&
+      !canAttemptPlaceUnder(ctx, action)
+    ) {
       return unavailableAction(ctx, action, action.abortOnDecline === true);
     }
     if (action.kind === "Attack" && onlyNonTurnPlayerAttackers(ctx, action)) {
@@ -1009,7 +1018,12 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
     // at least one eligible loose card and at least one legal destination host. Without
     // this preflight, cards such as BT8-104 published a "Place 1 card(s) under" decision
     // even with no X-Antibody card in hand, leaving the UI to confirm a guaranteed no-op.
-    if (action.kind === "PlaceUnder" && !canAttemptPlaceUnder(ctx, action)) return unavailableAction(ctx, action);
+    if (
+      action.kind === "PlaceUnder" &&
+      !allowsOptionalProcessingCostWithoutTarget(action) &&
+      !canAttemptPlaceUnder(ctx, action)
+    )
+      return unavailableAction(ctx, action);
     // A targeted PlaceInBattleAreaSelf shape is actually "place 1 matching Option from
     // hand" (the Four Great Dragons On Deletion family), not literal self-placement.
     // Skip its optional confirmation when the source zone has no legal candidate.

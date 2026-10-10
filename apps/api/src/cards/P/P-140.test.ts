@@ -66,6 +66,45 @@ describe("P-140 MegaKabuterimon", () => {
     expect(s.state.memory).toBe(0);
   });
 
+  for (const base of ["BT15-047", "BT26-041"]) {
+    it(`digivolves from an [Insectoid] trait Lv.4 ${base} for the alternate cost 3 (GitHub #5428)`, async () => {
+      const s = setupEngine({
+        0: { battleArea: [{ card: base, as: "base" }], hand: [{ card: "P-140", as: "mega" }] },
+      });
+      s.state.memory = 10;
+      await s.ready();
+      const baseInstanceId = s.perm("base").topCard.instanceId;
+      expect(
+        s.engine.applyIntent(0, {
+          type: "digivolve",
+          permanentId: s.perm("base").permanentId,
+          instanceId: s.inst("mega").instanceId,
+          alternateRequirementIndex: 0,
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.perm("base").topCard.instanceId === s.inst("mega").instanceId);
+      expect(s.state.memory).toBe(7);
+      expect(s.perm("base").stack.some((card) => card.instanceId === baseInstanceId)).toBe(true);
+    });
+  }
+
+  it("refuses the alternate cost on a Lv.4 without the [Insectoid] trait (GitHub #5428)", async () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "BT1-069", as: "base" }], hand: [{ card: "P-140", as: "mega" }] },
+    });
+    s.state.memory = 10;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("mega").instanceId,
+        alternateRequirementIndex: 0,
+      }),
+    ).toMatchObject({ ok: false });
+    expect(s.state.memory).toBe(10);
+  });
+
   it("trashes security when the inherited host itself wins a battle", async () => {
     const s = setupEngine({
       0: { battleArea: [{ card: "BT1-081", as: "host", under: ["P-140"], dp: 12000 }] },

@@ -52,6 +52,12 @@ import { hasBlockedWord, maskBlockedWords } from "../moderation/blockedWords.js"
 
 /** Hand-laid boards must never be reachable by a real player. */
 const DEV_SCENARIOS_ENABLED = process.env.NODE_ENV !== "production";
+/** Dev scenarios that reproduce timed-match presentation, so they keep the match clock against a bot. */
+const TIMED_DEV_SCENARIOS: ReadonlySet<DevScenarioId> = new Set<DevScenarioId>([
+  "arena-match-timer",
+  "arena-chronomon-engage-order",
+  "arena-github-5422-magnamon-timed-security",
+]);
 const WAITING_ROOM_TIMEOUT_SECONDS = positiveSeconds(process.env.AEGIS_WAITING_ROOM_TIMEOUT_SECONDS, 30 * 60);
 
 const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
@@ -736,7 +742,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     });
 
     // Optional clocks belong to casual/private rooms. Ignore crafted ranked/tournament options.
-    const devTimer = this.devScenario === "arena-match-timer" || this.devScenario === "arena-chronomon-engage-order";
+    const devTimer = this.devScenario !== undefined && TIMED_DEV_SCENARIOS.has(this.devScenario);
     this.matchClock = new MatchClock(
       this.state,
       {
@@ -1423,7 +1429,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // has no seatByClient entry for applyIntent to route through) — starting the
     // match directly here is the bot seat's stand-in for readiness.
     // Legacy bot joins can promote a waiting casual room to practice mode.
-    if (this.devScenario !== "arena-match-timer" && this.devScenario !== "arena-chronomon-engage-order") {
+    if (this.devScenario === undefined || !TIMED_DEV_SCENARIOS.has(this.devScenario)) {
       this.state.matchTimer = false;
       this.state.timerActiveSeat = -1;
       this.matchClockInterval?.clear();

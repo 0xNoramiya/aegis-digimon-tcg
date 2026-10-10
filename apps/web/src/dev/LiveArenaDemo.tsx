@@ -97,6 +97,38 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Evolua ZeigGreymon para Shoutmon X7 por 2 via Blue Flare. Recuse efeitos opcionais. Fontes mantêm ordem; memória 8.",
   },
 
+  "arena-github-5429-examon-piercing-barrier": {
+    en: "DNA digivolve into Examon. Battle Muchomon with the [When Digivolving] effect: it is deleted. Raid moves the attack to Chirinmon, which loses and uses Barrier. Per Q7365, Piercing still checks security once: 2 cards, because of Security A. +1.",
+    ptBR: "Faça DNA para Examon. Batalhe com Muchomon pelo efeito [When Digivolving]: ele é excluído. Raid move o ataque para Chirinmon, que perde e usa Barrier. Pela Q7365, Piercing ainda verifica a segurança uma vez: 2 cartas, por causa de Security A. +1.",
+  },
+  "arena-github-5422-magnamon-timed-security": {
+    en: "Timed match. Attack with Magnamon. KingEtemon (13000 DP) is revealed from security first; only after the reveal does Magnamon's [All Turns] effect draw 1 and offer to play Veemon.",
+    ptBR: "Partida com relógio. Ataque com Magnamon. KingEtemon (13000 DP) é revelado da segurança primeiro; só depois da revelação o efeito [All Turns] de Magnamon compra 1 e oferece jogar Veemon.",
+  },
+  "arena-github-5425-craniamon-guardromon": {
+    en: "End your turn. The opponent plays GrapLeomon, and its effect makes Gotsumon attack. Block with Craniamon and resolve Guardromon's inherited unsuspend first: Craniamon's +3000 DP resolves right away, before its delete effect and before the battle.",
+    ptBR: "Termine o turno. O oponente joga GrapLeomon, e o efeito faz Gotsumon atacar. Bloqueie com Craniamon e resolva primeiro o efeito herdado de Guardromon: o +3000 DP de Craniamon resolve na hora, antes do efeito de exclusão e antes da batalha.",
+  },
+  "arena-github-5427-gomimon-detach": {
+    en: "Attack with Gomimon. Use Swipemon's inherited effect to link Tellermon. Omnimon in security wins the battle. Answer Yes to Detach: Tellermon goes to the trash and Gomimon stays in play.",
+    ptBR: "Ataque com Gomimon. Use o efeito herdado de Swipemon para vincular Tellermon. Omnimon na segurança vence a batalha. Responda Sim ao Detach: Tellermon vai ao lixo e Gomimon permanece em campo.",
+  },
+  "arena-github-5430-gankoomon-noir-no-sistermon": {
+    en: "Attack with Gankoomon and use Sistermon Noir (Awakened) from its sources. No [Sistermon] card can be played, so the next prompt asks only for the De-Digivolve target and shows that clause. Pick an opposing Digimon: it loses 1 source.",
+    ptBR: "Ataque com Gankoomon e use Sistermon Noir (Awakened) das fontes. Nenhuma carta [Sistermon] pode ser jogada, então o próximo pedido pede só o alvo do De-Digivolve e mostra essa cláusula. Escolha um Digimon oponente: ele perde 1 fonte.",
+  },
+  "arena-github-5431-yao-suspend-without-placement": {
+    en: "Attack with Whamon. Accept Yao Qinglan's effect: no Lv.5 or lower card is in hand, but Yao still suspends. Poseidia Lagoon's Delay then digivolves Whamon into Ryugumon for 0 memory.",
+    ptBR: "Ataque com Whamon. Aceite o efeito de Yao Qinglan: não há carta de nível 5 ou menor na mão, mas Yao ainda é suspensa. O Delay de Poseidia Lagoon então evolui Whamon para Ryugumon por 0 de memória.",
+  },
+  "arena-github-5428-megakabuterimon-insectoid": {
+    en: "Digivolve MegaKabuterimon onto Kabuterimon and choose the [Insectoid] trait cost 3: memory 6 → 3. Hudiemon offers the same cost 3 path.",
+    ptBR: "Evolua MegaKabuterimon sobre Kabuterimon e escolha o custo 3 do traço [Insectoid]: memória 6 → 3. Hudiemon oferece o mesmo custo 3.",
+  },
+  "arena-github-5423-knightmon-opponent-attack": {
+    en: "End your turn. When the opponent's Agumon attacks, accept Knightmon's inherited effect and play Gotsumon. Block with Gotsumon: no security card is checked.",
+    ptBR: "Termine o turno. Quando o Agumon oponente atacar, aceite o efeito herdado de Knightmon e jogue Gotsumon. Bloqueie com Gotsumon: nenhuma carta de segurança é verificada.",
+  },
   "arena-github-5408-ruin-mode-hatch": {
     en: "End breeding without hatching. Attack with Ruin Mode; delete the opposing Digimon, recover, and hatch the egg while Tai remains in play.",
     ptBR: "Termine a criação sem chocar. Ataque com Ruin Mode; exclua o Digimon oponente, recupere e choque o ovo enquanto Tai permanece em campo.",
@@ -2654,6 +2686,14 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-github5421-skullmammoth-hand", "GitHub #5421 · SkullMammothmon in hand"],
   ["arena-github5421-skullmammoth-field", "GitHub #5421 · SkullMammothmon in battle"],
 
+  ["arena-github-5423-knightmon-opponent-attack", "#5423 · Knightmon on an opposing attack"],
+  ["arena-github-5428-megakabuterimon-insectoid", "#5428 · MegaKabuterimon Insectoid cost"],
+  ["arena-github-5431-yao-suspend-without-placement", "#5431 · Yao Qinglan suspends with nothing to place"],
+  ["arena-github-5430-gankoomon-noir-no-sistermon", "#5430 · Gankoomon uses Sistermon Noir with no Sistermon"],
+  ["arena-github-5427-gomimon-detach", "#5427 · Gomimon Detach after a security loss"],
+  ["arena-github-5425-craniamon-guardromon", "#5425 · Craniamon boost during an effect attack"],
+  ["arena-github-5422-magnamon-timed-security", "#5422 · Magnamon would-leave in a timed match"],
+  ["arena-github-5429-examon-piercing-barrier", "#5429 · Examon Piercing after Barrier (Q7365)"],
   ["arena-github-5408-ruin-mode-hatch", "#5408 · Ruin Mode recovery and hatch"],
   ["arena-github-5372-progress-protection", "#5372 · Progress protection control"],
   ["arena-growlmon-deletion-5361", "#5361 Growlmon X · security deletion / stack Guilmon"],

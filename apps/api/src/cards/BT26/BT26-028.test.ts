@@ -420,13 +420,13 @@ describe("BT26-028 Medicmon", () => {
     expect(s.engine.applyIntent(0, { type: "respondBarrier", permanentId: hostId, accept: false })).toEqual({
       ok: true,
     });
-    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    await settle(() => s.state.pendingDecision?.kind === "optional");
     const detach = s.state.pendingDecision!;
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
         decisionId: detach.decisionId,
-        response: { kind: "selectCards", instanceIds: [s.inst("link").instanceId] },
+        response: { kind: "optional", accept: true },
       }),
     ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision === undefined && !observe(s.engine).isAttacking());

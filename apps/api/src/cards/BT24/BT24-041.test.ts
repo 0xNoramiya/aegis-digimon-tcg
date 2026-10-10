@@ -7,6 +7,17 @@ import { compiled as BT24_041 } from "./BT24-041.js";
 import "../index.js";
 
 describe("BT24-041 Minervamon", () => {
+  it("labels each De-Digivolve target prompt with its own clause, not the optional play (GitHub #5430 sweep)", () => {
+    const selections = BT24_041.effects
+      .flatMap((effect) => effect.actions)
+      .filter((action) => action.kind === "SelectBind");
+    expect(selections).toHaveLength(3);
+    for (const selection of selections)
+      expect(selection.effectTextPart).toBe(
+        "Then, to 1 of your opponent's Digimon, ＜De-Digivolve 1＞ for each of your Digimon.",
+      );
+  });
+
   it("Discord 1557624042733969509 mechanism sweep: keeps repeated De-Digivolve on one opponent", async () => {
     const s = setupEngine(
       {

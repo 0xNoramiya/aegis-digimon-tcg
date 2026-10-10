@@ -89,6 +89,7 @@ export const compiled: CompiledCard = {
         {
           kind: "SelectBind",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1, bindAs: "noirOpponent" },
+          effectTextPart: "Then, to 1 of your opponent's Digimon, ＜De-Digivolve 1＞ for each of your Digimon.",
         },
         {
           kind: "DeDigivolve",

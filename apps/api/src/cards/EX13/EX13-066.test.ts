@@ -736,6 +736,48 @@ describe("EX13-066 Option side — Mickey Bullet (Awakened)", () => {
     expect(s.perm("victim").stack.map(({ cardId }) => cardId)).toEqual(["BT7-082", "BT7-083"]);
   });
 
+  it("labels the mandatory De-Digivolve target prompt with its own clause, not the skipped play (GitHub #5430)", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [whiteAnchor()], hand: [{ card: CARD_ID, as: "mickey" }] },
+        1: { battleArea: [victim(), { card: "BT1-080", as: "bystander", under: ["BT7-082"] }] },
+      },
+      { autoAcceptOptional: true },
+    );
+    s.state.memory = 5;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "playCard",
+        instanceId: s.inst("mickey").instanceId,
+        useAs: "option",
+      } as never),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision !== undefined);
+
+    const request = s.decisions.at(-1)!.req;
+    expect(request.kind).toBe("chooseTargets");
+    expect(request.options?.min).toBe(1);
+    expect(request.options?.candidateInstanceIds).toEqual([
+      s.perm("victim").permanentId,
+      s.perm("bystander").permanentId,
+    ]);
+    expect(request.options?.effectTextPart).toBe(
+      "Then, to 1 of your opponent's Digimon, ＜De-Digivolve 1＞ for each of your Digimon.",
+    );
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: request.decisionId,
+        response: { kind: "chooseTargets", instanceIds: [s.perm("victim").permanentId] },
+      } as never),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision === undefined);
+    expect(s.perm("victim").stack.map(({ cardId }) => cardId)).toEqual(["BT7-082", "BT7-083"]);
+    expect(s.state.players[0]!.trash.some(({ cardId }) => cardId === CARD_ID)).toBe(true);
+  });
+
   it("cannot be used as an Option without a white card in play", async () => {
     const s = setupEngine(
       {

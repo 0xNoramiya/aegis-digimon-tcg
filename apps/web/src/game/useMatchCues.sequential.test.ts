@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DecisionRequest, GameState, ServerEvent } from "@aegis/shared";
 import { useMatchCues, type MatchCueAnchors } from "./useMatchCues";
 import { singleServerBatch, type ServerBatch } from "../net/serverBatches";
-import type { PresentationPacing } from "./presentationProbe";
+import type { PresentationPacing, PresentationStepEvent } from "./presentationProbe";
 import {
   activePacing,
   DEFAULT_PACING,
@@ -361,6 +361,84 @@ describe("resumed effect results", () => {
     await advance(10_000);
     expect(view.result.current.securityRevealPending).toBe(false);
   });
+  it.each([true, false])(
+    "GitHub #5422: a would-leave prompt does not play its draw over the security reveal (timer: %s)",
+    async (matchTimer) => {
+      const anchors = geometry();
+      const state = { ...BOARD, matchTimer } as GameState;
+      const steps: { id: string; phase: string; version?: number }[] = [];
+      const devProbe = {
+        onStep: (event: PresentationStepEvent) =>
+          steps.push({ id: event.step.id, phase: event.phase, version: event.batch?.stateVersion }),
+      };
+      const view = renderHook(
+        ({ fed, question }: { fed: readonly ServerBatch[]; question: boolean }) =>
+          useMatchCues({
+            batches: fed,
+            state,
+            viewerSeat: VIEWER,
+            mulliganOpen: false,
+            anchors,
+            onActionRejected: () => {},
+            presentationPacing: "sequential",
+            decisionPending: question,
+            decisionSourceCardId: question ? "BT13-040" : undefined,
+            decisionTiming: question ? "AllTurns" : undefined,
+            devProbe,
+          }),
+        { initialProps: { fed: [] as readonly ServerBatch[], question: false } },
+      );
+      await advance(0);
+      const attack: ServerEvent = {
+        kind: "attackDeclared",
+        seat: 0,
+        attackerPermanentId: "perm-a",
+        attackerCardId: "BT13-040",
+        target: { kind: "player" },
+      };
+      const reveal: ServerEvent = {
+        kind: "securityRevealed",
+        seat: 1,
+        revealedCardId: "EX13-035",
+        attackerPermanentId: "perm-a",
+        attackerDP: 10000,
+        securityCardDP: 13000,
+        hasSecurityEffect: false,
+        isDigimon: true,
+        securityCountBefore: 4,
+      };
+      const wouldLeave: ServerEvent = {
+        kind: "effectTriggered",
+        seat: 0,
+        sourceCardId: "BT13-040",
+        sourceInstanceId: "src-a",
+        sourcePermanentId: "perm-a",
+        effectKey: "replacement/80",
+        description: "[All Turns] When this Digimon would leave the battle area, ＜Draw 1＞.",
+        timing: "wouldLeavePlay",
+      } as ServerEvent;
+      view.rerender({
+        fed: [
+          singleServerBatch([attack], 1),
+          singleServerBatch([reveal], 2),
+          singleServerBatch([wouldLeave, draw("magnamon-draw")], 3),
+        ],
+        question: true,
+      });
+      await advance(10_000);
+      const securityEnd = steps.reduce(
+        (last, step, index) =>
+          step.phase === "finished" && step.id.startsWith("security-") && step.version === 2 ? index : last,
+        -1,
+      );
+      const early = steps
+        .slice(0, Math.max(securityEnd, 0))
+        .filter((step) => step.phase === "finished" && step.version === 3 && !step.id.startsWith("security-"))
+        .map((step) => step.id);
+      expect(securityEnd).toBeGreaterThanOrEqual(0);
+      expect(early).toEqual([]);
+    },
+  );
   it("expires a previous copy's toast while the new copy waits for target confirmation", async () => {
     setBasePacing(PACING_BY_STYLE.stacked);
     const anchors = geometry();

@@ -987,7 +987,8 @@ export function canActivateEffect(
       if (allowsOptionalProcessingCostWithoutTarget(action)) return true;
       return canAttemptDigivolveBeforeCost(ctx, action);
     }
-    if (action.kind === "PlaceUnder") return canAttemptPlaceUnder(ctx, action);
+    if (action.kind === "PlaceUnder")
+      return allowsOptionalProcessingCostWithoutTarget(action) || canAttemptPlaceUnder(ctx, action);
     if (action.kind === "MindLink") return canAttemptMindLink(ctx, action);
     if (isDetachTopAction(action)) return canDetachPermanentTop(ctx, action);
     return action.kind === "DnaDigivolve"
