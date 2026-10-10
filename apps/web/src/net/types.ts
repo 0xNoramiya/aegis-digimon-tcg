@@ -667,6 +667,8 @@ export interface AegisJoinOptions {
     | "arena-feedback26-zephagamon-suspend-own"
     | "arena-feedback25-alter-s-unsuspend-lock"
     | "arena-feedback27-chuumon-opponent-turn"
+    | "arena-discord-lordknightmon-ex13-darkknightmon"
+    | "arena-discord-lordknightmon-bt22-skullknightmon"
     | "arena-discord-speed-security-scene-stuck"
     | "arena-p224-kotone-own-source"
     | "arena-bt25-ceresmon-homeros-suspend"

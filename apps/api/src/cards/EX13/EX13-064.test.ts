@@ -501,6 +501,36 @@ describe("EX13-064 LordKnightmon", () => {
     expect(s.state.memory).toBe(2);
   });
 
+  it("Discord 1558289219074654299: plays EX10 DarkKnightmon from HAND, matched by its name", async () => {
+    const s = setupEngine(whenDigivolvingBoard({ hand: [{ card: "EX10-031", as: "darkKnightmon" }] }), {
+      autoAcceptOptional: true,
+      autoSelectCards: true,
+      autoChooseOption: true,
+    });
+    await digivolveIntoLord(s);
+    await settle(() =>
+      s.state.players[0]!.battleArea.some(({ topCard }) => topCard.instanceId === s.inst("darkKnightmon").instanceId),
+    );
+    await settle(() => s.state.pendingDecision === undefined);
+
+    expect(s.state.memory).toBe(2);
+    expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId)).toEqual([cardId, "EX10-031"]);
+  });
+
+  it("Discord 1558289219074654299: plays EX10 DarkKnightmon from TRASH", async () => {
+    const s = setupEngine(whenDigivolvingBoard({ trash: ["EX10-031"] }), {
+      autoAcceptOptional: true,
+      autoSelectCards: true,
+      autoChooseOption: true,
+    });
+    await digivolveIntoLord(s);
+    await settle(() => s.state.players[0]!.battleArea.length === 2);
+    await settle(() => s.state.pendingDecision === undefined);
+
+    expect(s.state.players[0]!.trash).toHaveLength(0);
+    expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId)).toEqual([cardId, "EX10-031"]);
+  });
+
   it("reaches a TAMER too, because the printed noun is 'card' and not 'Digimon card'", async () => {
     const s = setupEngine(whenDigivolvingBoard({ hand: [{ card: RIE_KISHIBE, as: "tamer" }] }), {
       autoAcceptOptional: true,
