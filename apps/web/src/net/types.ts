@@ -648,6 +648,7 @@ export interface AegisJoinOptions {
     | "arena-mirage-hidden-hand"
     | "arena-kanan-jupiter-pomumon"
     | "arena-bt22-akemi-battle-mother"
+    | "arena-feedback9-akemi-inherited-mother-eater"
     | "arena-p224-kotone-own-source"
     | "arena-bt25-ceresmon-homeros-suspend"
     | "arena-bt24-homeros-neptunemon-timing-choice"
