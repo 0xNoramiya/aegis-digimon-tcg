@@ -85,6 +85,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback5-execute-suspended",
   "arena-feedback6-deramon-breeding-level",
   "arena-feedback15-gryphonmon-deramon",
+  "arena-feedback14-creepymon-x-end-turn",
   "arena-github5331-offense-hand",
   "arena-github5362-shellmon-ts",
   "arena-lanamon-tamer-cost",
@@ -1587,6 +1588,34 @@ function layFeedback15GryphonmonDeramonScenario(state: GameState): void {
   placePermanent(human, establishedDigimon(0, ["EX9-040"], "-feedback15-parasaurmon"));
   insertCard(human, Zone.Hand, faceUpCard("dev-feedback15-deramon", "BT21-038", 0));
   insertCard(human, Zone.Hand, faceUpCard("dev-feedback15-toropiamon", "EX9-042", 0));
+}
+
+/**
+ * Feedback #14: Creepymon (X Antibody) in the trash triggers on an end-of-turn attack while the
+ * opponent has 9 trash cards, then activates after Devimon's inherited effect makes it 10.
+ */
+function layFeedback14CreepymonXEndTurnScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-creepymon-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-creepymon-deck-${seat}-${index}`, "BT1-027", seat));
+    }
+    for (let index = 0; index < 5; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-creepymon-security-${seat}-${index}`, "BT1-027", seat));
+    }
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["EX10-046", "EX10-009"], "-creepymon"));
+  insertCard(human, Zone.Trash, faceUpCard("dev-creepymon-x", "BT24-078", 0));
+  const bot = state.players[1]!;
+  for (let index = 0; index < 9; index += 1) {
+    insertCard(bot, Zone.Trash, faceUpCard(`dev-creepymon-bot-trash-${index}`, "BT1-027", 1));
+  }
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
 }
 
 /** Discord 1557815179218128896: Guard removes a queued Raid's printed source. */
@@ -9849,6 +9878,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback5-execute-suspended": layFeedback5ExecuteSuspendedScenario,
   "arena-feedback6-deramon-breeding-level": layFeedback6DeramonBreedingScenario,
   "arena-feedback15-gryphonmon-deramon": layFeedback15GryphonmonDeramonScenario,
+  "arena-feedback14-creepymon-x-end-turn": layFeedback14CreepymonXEndTurnScenario,
   "arena-raid-optional-preset": layRaidOptionalPresetScenario,
   "arena-preset-order-no-clicks": layPresetOrderNoClicksScenario,
   "arena-oct06-king-sukamon-assembly": (state, decks) => layOct06LatestScenario(state, decks, "king-sukamon-assembly"),

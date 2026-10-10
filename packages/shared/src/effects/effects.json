@@ -99470,7 +99470,7 @@
               "controller": "mine",
               "nameOrTrait": [{ "tokens": ["Creepymon"], "match": "nameExact" }]
             },
-            "fireCondition": {
+            "activationCondition": {
               "kind": "zoneCount",
               "seat": "opponent",
               "zone": "trash",

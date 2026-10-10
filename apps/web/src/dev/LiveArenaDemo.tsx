@@ -1429,6 +1429,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Encerre a criação e ataque o jogador com Gryphonmon BT21-039. No [Ao Atacar] de Gryphonmon, escolha Parasaurmon EX9-040 como Digimon que digivolve. A lista de cartas deve oferecer Deramon BT21-038 e Toropiamon EX9-042. Escolha Deramon: Parasaurmon digivolve sem pagar custo (a memória continua 3), e o [Ao Digivolver] de Deramon pode desvirar Gryphonmon. Toropiamon fica na mão. Depois, passe a Aliança: o ataque verifica 1 carta de segurança.",
     en: "End breeding and attack the player with BT21-039 Gryphonmon. For Gryphonmon's [When Attacking], choose EX9-040 Parasaurmon as the Digimon that digivolves. The card list must offer both BT21-038 Deramon and EX9-042 Toropiamon. Choose Deramon: Parasaurmon digivolves without paying the cost (memory stays 3), and Deramon's [When Digivolving] may unsuspend Gryphonmon. Toropiamon stays in hand. Then pass Alliance: the attack checks 1 security card.",
   },
+  "arena-feedback14-creepymon-x-end-turn": {
+    ptBR: "Encerre a criação e depois encerre o turno. O bot tem 9 cartas na lixeira. 1) Aceite o [Fim do Seu Turno] de Creepymon EX10-009 e ataque o jogador. 2) O [Ao Atacar] herdado de Devimon EX10-046 descarta a carta do topo dos dois decks: o bot chega a 10 cartas na lixeira. 3) Creepymon (X Antibody) BT24-078 na sua lixeira oferece a digivolução: aceite. Creepymon digivolui para BT24-078 sem custo, você compra 1 carta e a carta do topo da segurança do bot é descartada antes da checagem. A segurança do bot termina com 3 cartas.",
+    en: "End breeding, then end the turn. The bot has 9 cards in its trash. 1) Accept EX10-009 Creepymon's [End of Your Turn] and attack the player. 2) EX10-046 Devimon's inherited [When Attacking] trashes the top card of both decks: the bot reaches 10 trash cards. 3) BT24-078 Creepymon (X Antibody) in your trash offers its digivolution: accept. Creepymon digivolves into BT24-078 for free, you draw 1, and the bot's top security card is trashed before the check. The bot ends with 3 security cards.",
+  },
   "arena-raid-optional-preset": {
     ptBR: "Encerre a criação e ataque a segurança com Examon EX13-045. Na ordem dos efeitos [Ao Atacar], ＜Raid＞ deve mostrar Sim/Não/Perguntar, não Obrigatório. Marque Não: o ataque continua na segurança, sem pedido de Raid, e o Agumon BT1-013 do bot sobrevive. Reinicie e marque Sim: o alvo muda para o Agumon sem pedido extra, e ele é deletado na batalha.",
     en: "End breeding and attack security with EX13-045 Examon. In the [When Attacking] order, ＜Raid＞ must show Yes/No/Ask, not Mandatory. Set No: the attack stays on security with no Raid prompt, and the bot's BT1-013 Agumon survives. Reset and set Yes: the target switches to the Agumon with no extra prompt, and it is deleted in battle.",
@@ -3030,6 +3034,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-feedback5-execute-suspended", "EX12-004 Onibimon · no Execute prompt after attacking"],
   ["arena-feedback6-deramon-breeding-level", "Feedback #6 · Deramon refused on Lv.3 WG in breeding"],
   ["arena-feedback15-gryphonmon-deramon", "Feedback #15 · Gryphonmon offers Deramon to Parasaurmon"],
+  ["arena-feedback14-creepymon-x-end-turn", "BT24-078 Creepymon (X Antibody) · trash digivolve on end-of-turn attack"],
   ["arena-raid-optional-preset", "EX13 Examon · Raid Yes/No preset in effect order"],
   ["arena-preset-order-no-clicks", "EX13 Examon · preset effect order resolves in one submit"],
   ["arena-ex13-leopardmon-suspended-target", "EX13 Leopardmon · suspend an already suspended Digimon"],

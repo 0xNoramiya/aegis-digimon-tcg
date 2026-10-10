@@ -29,8 +29,9 @@ describe("BT24-078 Creepymon (X Antibody)", () => {
     expect(trash).toMatchObject({
       event: "whenAttacking",
       sourceFilter: { nameOrTrait: [{ tokens: ["Creepymon"], match: "nameExact" }] },
-      fireCondition: { kind: "zoneCount", seat: "opponent", zone: "trash", op: "gte", value: 10 },
+      activationCondition: { kind: "zoneCount", seat: "opponent", zone: "trash", op: "gte", value: 10 },
     });
+    expect(trash).not.toHaveProperty("fireCondition");
     expect(trash.actions).toEqual([
       expect.objectContaining({
         kind: "Digivolve",
@@ -310,6 +311,64 @@ describe("BT24-078 Creepymon (X Antibody)", () => {
     expect(s.state.players[1]!.security).toHaveLength(1);
     expect(s.state.players[1]!.trash.map((card) => card.instanceId)).toContain(s.inst("securityA").instanceId);
     expect(s.state.players[1]!.security[0]!.instanceId).toBe(s.inst("securityB").instanceId);
+  });
+
+  it("feedback #14: triggers below 10 and activates once a simultaneous When Attacking reaches 10 (CR 15-8-3-9)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "EX10-009", as: "creepymon", under: ["EX10-046"] }],
+          trash: [{ card: "BT24-078", as: "creepymonX" }],
+          deck: ["BT1-009", { card: "BT1-010", as: "bonusDraw" }],
+        },
+        1: {
+          security: [
+            { card: "BT1-011", as: "securityTrashed" },
+            { card: "BT1-011", as: "securityChecked" },
+            { card: "BT1-011", as: "securityRemaining" },
+          ],
+          deck: [{ card: "BT1-012", as: "milled" }],
+          trash: Array.from({ length: 9 }, () => "BT1-012"),
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoOrderTriggers: false },
+    );
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("creepymon").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    const attackEnded = () =>
+      s.events.some((event) => event.kind === "securityChecked") && !observe(s.engine).isAttacking();
+    while (true) {
+      await settle(() => s.state.pendingDecision?.kind === "orderTriggers" || attackEnded());
+      const ordering = s.state.pendingDecision;
+      if (ordering?.kind !== "orderTriggers") break;
+      const request = s.decisions.find(({ req }) => req.decisionId === ordering.decisionId)!.req;
+      const cardIds = request.options?.triggerCardIds ?? [];
+      const preferred = ["EX10-046", "BT24-078"].map((id) => cardIds.indexOf(id)).find((index) => index >= 0) ?? 0;
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: ordering.decisionId,
+          response: { kind: "orderTriggers", order: [request.options!.triggerKeys![preferred]!] },
+        }),
+      ).toEqual({ ok: true });
+    }
+
+    expect(s.state.players[1]!.trash.map((card) => card.instanceId)).toContain(s.inst("milled").instanceId);
+    expect(s.perm("creepymon").topCard.instanceId).toBe(s.inst("creepymonX").instanceId);
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toContain(s.inst("bonusDraw").instanceId);
+    expect(s.state.players[1]!.security.map((card) => card.instanceId)).toEqual([
+      s.inst("securityRemaining").instanceId,
+    ]);
+    expect(s.state.players[1]!.trash.map((card) => card.instanceId)).toEqual(
+      expect.arrayContaining([s.inst("securityTrashed").instanceId, s.inst("securityChecked").instanceId]),
+    );
   });
 
   it("Q5775: does not join a when-attacking trigger window after an inherited effect trashes it", async () => {
