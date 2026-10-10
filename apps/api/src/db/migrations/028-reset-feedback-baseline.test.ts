@@ -29,7 +29,7 @@ describe("028-reset-feedback-baseline", () => {
       [account],
     );
 
-    expect(await runMigrations(pool, migrations, noLock)).toEqual(["028-reset-feedback-baseline"]);
+    expect(await runMigrations(pool, migrations.slice(0, before + 1), noLock)).toEqual(["028-reset-feedback-baseline"]);
 
     for (const table of ["feedback_reports", "feedback_status_events", "notifications"]) {
       const { rows } = await pool.query(`SELECT count(*) AS count FROM ${table}`);
