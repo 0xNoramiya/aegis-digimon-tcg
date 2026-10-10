@@ -433,6 +433,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback33-kakkinmon-opponent-turn-end",
   "arena-feedback32-omnimon-x-raid-piercing",
   "arena-feedback40-rie-kishibe-security-gate",
+  "arena-bt22-101-kyoko-alphamon-on-unsuspend",
   "arena-prevented-cost-lucemon-jupitermon",
   "arena-security-leak-known-card-face-down",
   "arena-discord-keenan-trigger-order",
@@ -7937,6 +7938,36 @@ function layFeedback40RieKishibeSecurityGateScenario(state: GameState): void {
 }
 
 /**
+ * BT22-101 Kyoko Kuremi follow-up: "[Your Turn] [Once Per Turn] When this Tamer unsuspends, if you
+ * don't have [Alphamon], this Tamer may digivolve into [Alphamon] in the hand with the digivolution
+ * cost reduced by 2." The card has no security check of its own. BT22-063 Alphamon's requirement
+ * "[Digivolve] While you have 3 or fewer security cards, [Kyoko Kuremi]: Cost 5" is checked when the
+ * effect activates (CR 15-8-3-7, Q4976), not as a trigger condition. Kyoko starts suspended, so the
+ * unsuspend phase triggers it with 3 security cards and 4 memory.
+ */
+function layBt22101KyokoAlphamonOnUnsuspendScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-bt22-101-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-bt22-101-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-bt22-101-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  const kyoko = establishedDigimon(0, ["BT22-101"], "-bt22-101-kyoko");
+  kyoko.isSuspended = true;
+  placePermanent(human, kyoko);
+  insertCard(human, Zone.Hand, faceUpCard("dev-bt22-101-alphamon", "BT22-063", 0));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 4;
+}
+
+/**
  * Follow-up to feedback #36: Lucemon (BT18-034) pays "by placing 1 of your level 6 Digimon on top
  * of your security stack" at the end of the turn. Jupitermon (BT24-101) is the only level 6
  * Digimon, and it can keep itself on the field by trashing the top security card. If it does, the
@@ -11217,6 +11248,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback33-kakkinmon-opponent-turn-end": layFeedback33KakkinmonOpponentTurnEndScenario,
   "arena-feedback32-omnimon-x-raid-piercing": layFeedback32OmnimonXRaidPiercingScenario,
   "arena-feedback40-rie-kishibe-security-gate": layFeedback40RieKishibeSecurityGateScenario,
+  "arena-bt22-101-kyoko-alphamon-on-unsuspend": layBt22101KyokoAlphamonOnUnsuspendScenario,
   "arena-prevented-cost-lucemon-jupitermon": layPreventedCostLucemonJupitermonScenario,
   "arena-security-leak-known-card-face-down": laySecurityLeakKnownCardFaceDownScenario,
   "arena-discord-keenan-trigger-order": layDiscordKeenanTriggerOrderScenario,
