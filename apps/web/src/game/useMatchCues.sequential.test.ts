@@ -439,6 +439,84 @@ describe("resumed effect results", () => {
       expect(early).toEqual([]);
     },
   );
+  it.each([true, false])(
+    "Discord game-speed report: a check closed without a battle leaves the stage (timer: %s)",
+    async (matchTimer) => {
+      const anchors = geometry();
+      const state = { ...BOARD, matchTimer } as GameState;
+      const view = renderHook(
+        ({ fed, question }: { fed: readonly ServerBatch[]; question: boolean }) =>
+          useMatchCues({
+            batches: fed,
+            state,
+            viewerSeat: VIEWER,
+            mulliganOpen: false,
+            anchors,
+            onActionRejected: () => {},
+            presentationPacing: "sequential",
+            decisionPending: question,
+            decisionSourceCardId: question ? "BT20-083" : undefined,
+            decisionTiming: question ? "OpponentsTurn" : undefined,
+          }),
+        { initialProps: { fed: [] as readonly ServerBatch[], question: false } },
+      );
+      await advance(0);
+      const attack: ServerEvent = {
+        kind: "attackDeclared",
+        seat: 1,
+        attackerPermanentId: "perm-x",
+        attackerCardId: "BT26-048",
+        target: { kind: "player" },
+      };
+      const reveal: ServerEvent = {
+        kind: "securityRevealed",
+        seat: 0,
+        revealedCardId: "BT23-054",
+        attackerPermanentId: "perm-x",
+        attackerDP: 24000,
+        securityCardDP: 7000,
+        hasSecurityEffect: false,
+        isDigimon: true,
+        securityCountBefore: 2,
+      };
+      // A removal reaction asks the defender a question before the battle, and its answer
+      // deletes the attacker, so the check closes with the revealed card trashed unfought.
+      const opened = [singleServerBatch([attack], 1), singleServerBatch([reveal], 2)];
+      view.rerender({ fed: opened, question: true });
+      // The timed hand-over must not cost the viewer the reveal itself.
+      await advance(TIMINGS.securityArm + TIMINGS.shieldBreak + TIMINGS.securityBreakHold + 100);
+      expect(view.result.current.securityClash?.revealed.cardId).toBe("BT23-054");
+      // In match 2e2a3231 the answer, and so the close, came 11 s after the reveal.
+      await advance(3_000);
+      const attackerDeleted: ServerEvent = {
+        kind: "cardsMoved",
+        from: "battleArea",
+        to: "trash",
+        instanceIds: ["opp-x"],
+        deletedPermanents: [
+          { permanentId: "perm-x", instanceId: "opp-x", cardId: "BT26-048", artId: "BT26-048", seat: 1 },
+        ],
+      } as ServerEvent;
+      const closed: ServerEvent = {
+        kind: "securityChecked",
+        seat: 0,
+        artId: "BT23-054",
+        revealedCardId: "BT23-054",
+        resolution: "trashed",
+      };
+      view.rerender({
+        fed: [
+          ...opened,
+          singleServerBatch([attackerDeleted], 3),
+          singleServerBatch([closed], 4),
+          singleServerBatch([{ kind: "attackEnded", seat: 1, attackerPermanentId: "perm-x" } as ServerEvent], 5),
+        ],
+        question: false,
+      });
+      await advance(10_000);
+      expect(view.result.current.securityClash).toBeNull();
+    },
+  );
   it("expires a previous copy's toast while the new copy waits for target confirmation", async () => {
     setBasePacing(PACING_BY_STYLE.stacked);
     const anchors = geometry();
