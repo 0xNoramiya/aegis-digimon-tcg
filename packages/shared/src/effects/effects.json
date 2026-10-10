@@ -216808,8 +216808,7 @@
             "kind": "Restrict",
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon", "Tamer"] }, "count": 1 },
             "restriction": "suspend",
-            "duration": "untilOpponentTurnEnd",
-            "optional": true
+            "duration": "untilOpponentTurnEnd"
           }
         ]
       },

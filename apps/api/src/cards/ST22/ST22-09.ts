@@ -81,7 +81,6 @@ const compiled: CompiledCard = {
           },
           restriction: "suspend",
           duration: "untilOpponentTurnEnd",
-          optional: true,
         },
       ],
     },
