@@ -427,6 +427,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-lordknightmon-bt22-skullknightmon",
   "arena-feedback18-sukamon-inherited-protection",
   "arena-feedback19-burst-tamer-choice",
+  "arena-security-leak-known-card-face-down",
   "arena-discord-richard-main-materials-face-down",
   "arena-discord-richard-main-fresh-materials",
   "arena-discord-taiki-keeps-xros-digimon",
@@ -7753,6 +7754,39 @@ function layFeedback19BurstTamerChoiceScenario(state: GameState): void {
 }
 
 /**
+ * Hidden-information check, no player report: the bot's security stack already shows one card
+ * face up, so the player's client holds part of it. Lónkhē Adistakto (BT10-101) places the bot's
+ * Monodramon, which both players saw on the field, face down on top of that stack. The player
+ * has 2 security cards, so only the placement half of the [Main] effect applies (Q2035). The
+ * player's client must not receive Monodramon's identity, or even the card, inside the bot's
+ * security stack.
+ */
+function laySecurityLeakKnownCardFaceDownScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-security-leak-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-security-leak-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  for (let index = 0; index < 2; index += 1) {
+    insertCard(human, Zone.Security, faceDownCard(`dev-security-leak-security-0-${index}`, "BT1-085", 0));
+  }
+  placePermanent(human, establishedDigimon(0, ["BT1-050"], "-security-leak-liollmon"));
+  insertCard(human, Zone.Hand, faceDownCard("dev-security-leak-adistakto", "BT10-101", 0));
+  const bot = state.players[1]!;
+  insertCard(bot, Zone.Security, faceDownCard("dev-security-leak-security-1-0", "BT1-085", 1));
+  insertCard(bot, Zone.Security, faceUpCard("dev-security-leak-security-1-face-up", "BT1-010", 1));
+  insertCard(bot, Zone.Security, faceDownCard("dev-security-leak-security-1-2", "BT1-085", 1));
+  placePermanent(bot, establishedDigimon(1, ["BT1-009"], "-security-leak-monodramon"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 10;
+}
+
+/**
  * Discord 1558451244815880332: Richard Sampson (EX13-071) has 3 face-down cards under it, and two
  * of them are the level 4 and level 5 [Holy Beast] materials. Q7447 requires one of each material
  * in the trash before the [Main] effect can activate. `materialsInTrash` adds Reppamon (BT1-051)
@@ -10906,6 +10940,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-lordknightmon-bt22-skullknightmon": layDiscordLordKnightmonBt22SkullKnightmonScenario,
   "arena-feedback18-sukamon-inherited-protection": layFeedback18SukamonInheritedProtectionScenario,
   "arena-feedback19-burst-tamer-choice": layFeedback19BurstTamerChoiceScenario,
+  "arena-security-leak-known-card-face-down": laySecurityLeakKnownCardFaceDownScenario,
   "arena-discord-richard-main-materials-face-down": layDiscordRichardMainMaterialsFaceDownScenario,
   "arena-discord-richard-main-fresh-materials": layDiscordRichardMainFreshMaterialsScenario,
   "arena-discord-taiki-keeps-xros-digimon": layDiscordTaikiKeepsXrosDigimonScenario,
