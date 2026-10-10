@@ -8189,8 +8189,8 @@ function layDavisBothColorsScenario(state: GameState): void {
 /**
  * Discord 1558457266485731358: Taiki Kudo (BT10-087) reveals two Xros Heart Tamers, Taiki Kudo
  * (BT21-083) and Kotone Amano (P-224), the only Xros Heart Digimon, Shoutmon X7 (AD1-006), and
- * Crimson Blaze (BT8-097). Q3113 requires adding to hand and placing under as much as possible,
- * so Shoutmon X7 is kept for the place-under slot.
+ * Crimson Blaze (BT8-097). The player may add any of the three Xros Heart cards. If Shoutmon X7
+ * is not added, it must go under the played Taiki.
  */
 function layDiscordTaikiKeepsXrosDigimonScenario(state: GameState): void {
   for (const seat of [0, 1] as const) {
@@ -8219,8 +8219,8 @@ function layDiscordTaikiKeepsXrosDigimonScenario(state: GameState): void {
 
 /**
  * Discord 1557855696114946230: BT18 Vemmon (BT18-060) reveals the reported cards in order,
- * Snatchmon (BT18-065), Xeno (EX11-066), and BT11 Vemmon (BT11-061). Q2992 requires adding to
- * hand and placing a source as much as possible, so the only [Vemmon] is kept for the source.
+ * Snatchmon (BT18-065), Xeno (EX11-066), and BT11 Vemmon (BT11-061). The player may add any of the
+ * three. If BT11 Vemmon is not added, it must become the bottom source.
  */
 function layDiscordVemmonAddOrPlaceScenario(state: GameState): void {
   for (const seat of [0, 1] as const) {
