@@ -1,9 +1,9 @@
-import { CARD_ID_VIEW_TAG, EffectTiming } from "@aegis/shared";
-import { Encoder } from "@colyseus/schema";
+import { EffectTiming } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import { observe } from "../../engine/testkit/observe.js";
+import { identityVisibility } from "../ST24/tamerStack.testSupport.js";
 import { compiled as BT24_090 } from "./BT24-090.js";
 import "../index.js";
 
@@ -654,9 +654,7 @@ describe("BT24-090 Abyss Sanctuary: Throne Room — KB Q&A rulings", () => {
     expect(s.state.players[0]!.security.map(({ instanceId, faceUp }) => ({ instanceId, faceUp }))).toEqual([
       { instanceId: sanctuaryId, faceUp: true },
     ]);
-    // eslint-disable-next-line no-new -- a StateView only tracks state attached to an encoder, as a room's is.
-    new Encoder(s.state);
-    expect(s.engine.makeStateView(1)!.hasTag(s.inst("sanctuary"), CARD_ID_VIEW_TAG)).toBe(true);
+    expect(identityVisibility(s, s.inst("sanctuary"))).toEqual({ owner: true, opponent: true });
 
     s.state.turnSeat = 1;
     expect(
