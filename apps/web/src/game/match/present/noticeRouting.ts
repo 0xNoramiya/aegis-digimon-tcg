@@ -149,13 +149,20 @@ export function routeBatchNotices({
     const effectSourceHoldMs = deletesFromField
       ? TIMINGS.effectSourceHold - TIMINGS.noticeIn
       : TIMINGS.effectSourceHold;
+    // A security check that replaces the centre-stage track cuts the showcase short, but the
+    // clause still has to be read: its effect unit and the deletions it caused wait on it.
+    let narrated = false;
+    const narrateHeld = () => {
+      if (narrated) return;
+      narrated = true;
+      narrate(heldForShowcase, panelsForShowcase, batchId, effectSourceHoldMs, { next: true });
+    };
     enqueue({
       id: `showcase-notices-${showcaseKeyRef.current}`,
       track: CueTrack.CenterStage,
       skippable: false,
-      run() {
-        narrate(heldForShowcase, panelsForShowcase, batchId, effectSourceHoldMs, { next: true });
-      },
+      onDiscard: narrateHeld,
+      run: narrateHeld,
     });
     // The prompt this play is about to raise waits behind the same beats through the decision
     // barrier, which holds it until the presentation has reached the board the question is

@@ -41,14 +41,13 @@ test("feedback #29: Black Sabbath is offered from the trash after Punkmon trashe
   expect(after.memory).toBe(0);
   expect(after.players[0]!.trash.map((card) => card.cardId)).toContain("LM-068");
 
-  // Timing exception for this sequence only: an Option used from the trash by an effect stalls
-  // the presentation until two gate ceilings expire (the Option dock waits on the deletion its
-  // own clause causes). That is a client presentation defect, separate from this rules fix.
-  const knownStalls = ["deleteBurst/causingEffect", "effectUnit/announced"];
+  // The check's shield break replaces the centre-stage track while Black Sabbath's showcase is
+  // still queued there. Its clause must still be read, or the deletion and the effect unit
+  // wait out their gate ceilings.
   await scenario.idle();
   const probe = await scenario.presentation();
   expect(probe.pending).toBe(0);
   expect(probe.steps.filter((step) => step.failed)).toEqual([]);
-  expect(probe.gateExpiries.filter((expiry) => !knownStalls.includes(expiry.label))).toEqual([]);
-  expect(scenario.errors.filter((error) => !error.startsWith("[MATCH_CUE] gate expired"))).toEqual([]);
+  expect(probe.gateExpiries).toEqual([]);
+  expect(scenario.errors).toEqual([]);
 });
