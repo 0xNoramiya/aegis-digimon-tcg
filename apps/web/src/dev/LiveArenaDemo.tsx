@@ -1877,6 +1877,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Feedback #19. Encerre a criação. Faça a Digivolução Explosiva de ShineGreymon (ST7-10) em ShineGreymon: Burst Mode (BT13-020). Você tem dois [Marcus Damon]: BT4-092 em pé e BT17-087 suspenso, com uma carta virada para baixo embaixo dele. O jogo pergunta qual Tamer volta para a mão. Escolha o BT17-087 suspenso: ele volta para a mão, a carta embaixo dele vai para a lixeira, e o BT4-092 fica no campo. Recuse jogar Marcus Damon pelo [Ao Digivolver].",
     en: "Feedback #19. End breeding. Burst digivolve ShineGreymon (ST7-10) into ShineGreymon: Burst Mode (BT13-020). You have two [Marcus Damon] Tamers: an unsuspended BT4-092 and a suspended BT17-087 with a face-down card under it. The game asks which Tamer returns to hand. Choose the suspended BT17-087: it returns to hand, the card under it goes to the trash, and BT4-092 stays in play. Decline to play Marcus Damon with [When Digivolving].",
   },
+  "arena-feedback31-dorugreymon-block-digivolve": {
+    ptBR: "Feedback #31. Encerre a criação e encerre o turno. Recuse jogar Kosuke Kisakata no [Fim de Todos os Turnos]. O bot ataca você com Monodramon (BT1-009). Bloqueie com DoruGreymon (BT16-061): Kosuke Kisakata (BT16-087) embaixo dele é o Tamer [SoC] e dá <Bloqueador>. O bloqueio troca o alvo do ataque, então o [Todos os Turnos] de DoruGreymon ativa. Aceite e escolha Dorugoramon (BT16-064) da mão: ele digivolve sem pagar o custo e vence a batalha.",
+    en: "Feedback #31. End breeding, then end your turn. Decline to play Kosuke Kisakata with [End of All Turns]. The bot attacks you with Monodramon (BT1-009). Block with DoruGreymon (BT16-061): Kosuke Kisakata (BT16-087) under it is the [SoC] Tamer and grants <Blocker>. The block switches the attack target, so DoruGreymon's [All Turns] effect activates. Accept and choose Dorugoramon (BT16-064) from your hand: it digivolves without paying the cost and wins the battle.",
+  },
   "arena-security-leak-known-card-face-down": {
     ptBR: "Informação oculta. Encerre a criação. A segurança do bot já mostra o Agumon (BT1-010) virado para cima. Use Lónkhē Adistakto (BT10-101) da mão: você tem 2 cartas de segurança, então só a parte de colocar na segurança se aplica (Q2035). Escolha o Monodramon do bot: ele vai virado para baixo para o topo da segurança do bot, que passa a ter 4 cartas. A pilha mostra o topo virado para baixo e o Agumon ainda virado para cima. O seu cliente não recebe a identidade do Monodramon na segurança do bot.",
     en: "Hidden information. End breeding. The bot's security already shows Agumon (BT1-010) face up. Use Lónkhē Adistakto (BT10-101) from your hand: you have 2 security cards, so only the placement part applies (Q2035). Choose the bot's Monodramon: it goes face down on top of the bot's security stack, which now has 4 cards. The stack shows the top card face down and Agumon still face up. Your client does not receive Monodramon's identity in the bot's security stack.",
@@ -3345,6 +3349,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-discord-lordknightmon-bt22-skullknightmon", "BT22 LordKnightmon · plays a revealed SkullKnightmon"],
   ["arena-feedback18-sukamon-inherited-protection", "Feedback #18 · Sukamon inherited protection keeps host"],
   ["arena-feedback19-burst-tamer-choice", "Feedback #19 · Burst Digivolve · choose which Tamer returns"],
+  ["arena-feedback31-dorugreymon-block-digivolve", "Feedback #31 · DoruGreymon digivolves when it blocks"],
   ["arena-security-leak-known-card-face-down", "Hidden info · known card placed face down in security"],
   [
     "arena-discord-richard-main-materials-face-down",

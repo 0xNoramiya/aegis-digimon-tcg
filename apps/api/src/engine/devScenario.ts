@@ -427,6 +427,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-lordknightmon-bt22-skullknightmon",
   "arena-feedback18-sukamon-inherited-protection",
   "arena-feedback19-burst-tamer-choice",
+  "arena-feedback31-dorugreymon-block-digivolve",
   "arena-security-leak-known-card-face-down",
   "arena-discord-richard-main-materials-face-down",
   "arena-discord-richard-main-fresh-materials",
@@ -7755,6 +7756,33 @@ function layFeedback19BurstTamerChoiceScenario(state: GameState): void {
 }
 
 /**
+ * Feedback #31: DoruGreymon (BT16-061) prints "When an attack target is switched", so its free
+ * digivolution also fires when it blocks on the opponent's turn. Kosuke Kisakata (BT16-087) under
+ * it is the [SoC] Tamer and grants <Blocker>. Dorugoramon (BT16-064) waits in hand. The bot
+ * attacks the player with Monodramon (BT1-009).
+ */
+function layFeedback31DoruGreymonBlockScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback31-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback31-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback31-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT16-087", "BT16-061"], "-feedback31-dorugreymon"));
+  insertCard(human, Zone.Hand, faceDownCard("dev-feedback31-dorugoramon", "BT16-064", 0));
+  placePermanent(state.players[1]!, establishedDigimon(1, ["BT1-009"], "-feedback31-attacker"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
  * Hidden-information check, no player report: the bot's security stack already shows one card
  * face up, so the player's client holds part of it. Lónkhē Adistakto (BT10-101) places the bot's
  * Monodramon, which both players saw on the field, face down on top of that stack. The player
@@ -10970,6 +10998,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-lordknightmon-bt22-skullknightmon": layDiscordLordKnightmonBt22SkullKnightmonScenario,
   "arena-feedback18-sukamon-inherited-protection": layFeedback18SukamonInheritedProtectionScenario,
   "arena-feedback19-burst-tamer-choice": layFeedback19BurstTamerChoiceScenario,
+  "arena-feedback31-dorugreymon-block-digivolve": layFeedback31DoruGreymonBlockScenario,
   "arena-security-leak-known-card-face-down": laySecurityLeakKnownCardFaceDownScenario,
   "arena-discord-richard-main-materials-face-down": layDiscordRichardMainMaterialsFaceDownScenario,
   "arena-discord-richard-main-fresh-materials": layDiscordRichardMainFreshMaterialsScenario,
