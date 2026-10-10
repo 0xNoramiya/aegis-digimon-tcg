@@ -352,3 +352,77 @@ describe("EX11-006 Flickmon — KB Q&A rulings", () => {
     expect(s.state.memory).toBe(10);
   });
 });
+
+describe("EX11-006 Flickmon — feedback #17 (linked Turbomon)", () => {
+  const linkedTurbomon = () =>
+    setupEngine(
+      {
+        0: {
+          battleArea: [
+            {
+              card: "EX11-029",
+              as: "host",
+              dp: 20000,
+              under: ["EX11-006", "EX11-027"],
+              linked: [{ card: "EX11-027", as: "maquinamonLink" }],
+            },
+          ],
+          hand: [{ card: "EX11-033", as: "maneuvermon" }],
+          deck: ["BT1-009", "BT1-009"],
+        },
+        1: { battleArea: [{ card: "BT1-009", as: "target", suspended: true, dp: 0 }] },
+      },
+      {
+        autoAcceptOptional: true,
+        autoSelectCards: true,
+        autoChooseOption: true,
+        declinePrompts: ["Play without paying the cost"],
+      },
+    );
+
+  it("charges the full digivolution cost in the main phase, outside [When Attacking]", async () => {
+    const s = linkedTurbomon();
+    s.state.memory = 4;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("host").permanentId,
+        instanceId: s.inst("maneuvermon").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("host").topCard.instanceId === s.inst("maneuvermon").instanceId);
+    await settle(() => s.state.pendingDecision === undefined);
+
+    expect(s.state.memory).toBe(1);
+    expect(s.perm("host").linked.map(({ instanceId }) => instanceId)).toEqual([s.inst("maquinamonLink").instanceId]);
+    assertNoLoudGap(s);
+  });
+
+  it("reduces the same digivolution by 2 when the linked Digimon attacks", async () => {
+    const s = linkedTurbomon();
+    s.state.memory = 4;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("host").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("target").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("host").topCard.instanceId === s.inst("maneuvermon").instanceId);
+    await settle(() => s.state.pendingDecision === undefined);
+
+    expect(s.state.memory).toBe(3);
+    expect(s.perm("host").stack.map(({ cardId }) => cardId)).toEqual(
+      expect.arrayContaining(["EX11-006", "EX11-027", "EX11-029"]),
+    );
+    expect(s.perm("host").linked.map(({ instanceId }) => instanceId)).toEqual([s.inst("maquinamonLink").instanceId]);
+    expect(s.state.players[0]!.hand.map(({ instanceId }) => instanceId)).not.toContain(
+      s.inst("maneuvermon").instanceId,
+    );
+    assertNoLoudGap(s);
+  });
+});
