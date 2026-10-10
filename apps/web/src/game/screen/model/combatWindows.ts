@@ -52,7 +52,7 @@ export function combatWindowsFor({
   isMyTurn: boolean;
   mirroredWindow: MirroredCombatWindow | null;
   /** The direct decision message, which can arrive before its synchronized state patch. */
-  decision?: { seat: Seat } | undefined;
+  decision?: { seat: Seat; stateVersion?: number } | undefined;
   /** The window the server currently has open, which is what an answer is recorded against. */
   openCombatWindow: OpenCombatWindow | null;
   /** Mutated: the window key this viewer has answered, cleared when the window closes. */
@@ -131,9 +131,16 @@ export function combatWindowsFor({
   // Counter closes only after its asynchronous effect resolves. A nested decision proves
   // its answer was accepted, including after reconnect when the local answer ref is lost.
   // Keep that answer between successive effect decisions until counterResolved arrives.
-  // Only the viewer's own decision counts: the opponent's answered decision can still sit in
-  // synchronized state when the Counter event arrives, and must not hide the window.
-  const viewerDecisionPending = decision?.seat === viewerSeat || state.pendingDecision?.seat === viewerSeat;
+  // Only a decision the viewer owes and that was raised after the Counter opened counts. The
+  // event can arrive before the patch that clears an answered decision, whether the opponent's
+  // or the viewer's own (a declined "change the attack target" prompt), and that stale
+  // decision must not hide the window. A revision that is unknown counts as nested.
+  const counterOpenedAt = counterWindowRaw?.stateVersion;
+  const raisedAfterCounter = (raisedAt: number | undefined) =>
+    counterOpenedAt === undefined || raisedAt === undefined || raisedAt > counterOpenedAt;
+  const viewerDecisionPending =
+    (decision?.seat === viewerSeat && raisedAfterCounter(decision.stateVersion)) ||
+    (state.pendingDecision?.seat === viewerSeat && raisedAfterCounter(state.stateVersion));
   if (counterWindowRaw && viewerDecisionPending) {
     answeredCombatWindowKeyRef.current = answerKey(`counter:${counterWindowRaw.attackerPermanentId}`);
   }
