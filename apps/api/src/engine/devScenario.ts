@@ -421,6 +421,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback25-alter-s-unsuspend-lock",
   "arena-feedback27-chuumon-opponent-turn",
   "arena-feedback28-security-reveal-before-prompt",
+  "arena-discord-ignitemon-by-cost-optional",
   "arena-discord-metaletemon-redirect-player",
   "arena-discord-lordknightmon-ex13-darkknightmon",
   "arena-discord-lordknightmon-bt22-skullknightmon",
@@ -7564,6 +7565,37 @@ function layFeedback28SecurityRevealBeforePromptScenario(state: GameState): void
 }
 
 /**
+ * Discord 1558408701633757194: Ignitemon (BT11-076) deleted another of your level 3 Digimon and
+ * an opponent's level 3 Digimon on attack without asking. "By deleting 1 of your other Digimon"
+ * is an optional cost (CR 15-7-1), so the attack must first ask whether to pay it, even when
+ * Monodramon is the only Digimon that can pay and Agumon is the only legal target.
+ */
+function layDiscordIgnitemonByCostScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-discord-ignitemon-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-discord-ignitemon-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(
+        player,
+        Zone.Security,
+        faceDownCard(`dev-discord-ignitemon-security-${seat}-${index}`, "BT1-009", seat),
+      );
+    }
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT11-076"], "-discord-ignitemon"));
+  placePermanent(human, establishedDigimon(0, ["BT1-009"], "-discord-ignitemon-monodramon"));
+  placePermanent(state.players[1]!, establishedDigimon(1, ["BT1-010"], "-discord-ignitemon-agumon"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
  * Discord 1558441146781536346: MetalEtemon (EX5-054) may switch an opponent's attack "to this
  * Digimon or the player". The player is MetalEtemon's controller (Q3647), but the redirect
  * prompt labelled that choice as the opponent's security. The match opens on the bot's turn.
@@ -10698,6 +10730,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback25-alter-s-unsuspend-lock": layFeedback25AlterSUnsuspendLockScenario,
   "arena-feedback27-chuumon-opponent-turn": layFeedback27ChuumonOpponentTurnScenario,
   "arena-feedback28-security-reveal-before-prompt": layFeedback28SecurityRevealBeforePromptScenario,
+  "arena-discord-ignitemon-by-cost-optional": layDiscordIgnitemonByCostScenario,
   "arena-discord-metaletemon-redirect-player": layDiscordMetalEtemonRedirectPlayerScenario,
   "arena-discord-lordknightmon-ex13-darkknightmon": layDiscordLordKnightmonEx13DarkKnightmonScenario,
   "arena-discord-lordknightmon-bt22-skullknightmon": layDiscordLordKnightmonBt22SkullKnightmonScenario,
