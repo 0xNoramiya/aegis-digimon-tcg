@@ -6,10 +6,12 @@ import { setupEngine } from "../../../testkit/harness.js";
 import type { BoardSpec } from "../../../testkit/harness.js";
 import { availableEffectPlayDigiXrosReduction } from "./effectPlayDigiXrosAvailability.js";
 
-function reductionFor(cardId: string, board: BoardSpec): number {
+function reductionFor(cardId: string, board: BoardSpec, turnSeat: Seat = 0): number {
   const s = setupEngine(board);
+  s.state.turnSeat = turnSeat;
   const ctx = {
     game: {
+      state: s.state,
       player: (seat: Seat) => s.state.players[seat]!,
       definitionOf: (card: { cardId: string }) => getCardDefinition(card.cardId)!,
     },
@@ -65,6 +67,17 @@ describe("paid effect DigiXros availability — Discord 1556113288599834624", ()
           },
         }),
       ).toBe(0);
+    },
+  );
+
+  it.each(["BT10-087", "BT10-088", "BT11-095"])(
+    "Discord 1558458433970380820: ignores the [Your Turn] permission of %s on the opponent's turn",
+    (expanderCardId) => {
+      const board: BoardSpec = {
+        0: { battleArea: [{ card: expanderCardId }, { card: "P-224", under: ["BT11-015", "AD1-013"] }] },
+      };
+      expect(reductionFor("AD1-006", board, 0)).toBe(4);
+      expect(reductionFor("AD1-006", board, 1)).toBe(0);
     },
   );
 
