@@ -433,6 +433,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback33-kakkinmon-opponent-turn-end",
   "arena-feedback32-omnimon-x-raid-piercing",
   "arena-feedback40-rie-kishibe-security-gate",
+  "arena-plugin-high-speed-optional-link",
   "arena-lordknightmon-bt22-effect-attack-reveal",
   "arena-lordknightmon-bt22-opponent-attack-reveal",
   "arena-lordknightmon-ex13-darkknightmon-digixros",
@@ -7942,6 +7943,36 @@ function layFeedback40RieKishibeSecurityGateScenario(state: GameState): void {
   state.memory = 3;
 }
 
+/**
+ * Discord 1558589221843771433: High-Speed Plug-In H (ST22-09) reads "You may link this card to 1
+ * of your Digimon without paying the cost. Then, 1 of your opponent's Digimon or Tamers can't
+ * suspend until their turn ends." Only the link is optional; the "Then" part resolves either way.
+ * The human holds two copies: decline the link with the first and accept it with the second.
+ */
+function layPlugInHighSpeedOptionalLinkScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-plugin-h-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 10; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-plugin-h-deck-${seat}-${index}`, "BT1-085", seat));
+    }
+    for (let index = 0; index < 5; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-plugin-h-security-${seat}-${index}`, "BT1-085", seat));
+    }
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT1-010"], "-plugin-h-agumon"));
+  placePermanent(human, establishedDigimon(0, ["BT1-085"], "-plugin-h-tai"));
+  for (let index = 0; index < 2; index += 1) {
+    insertCard(human, Zone.Hand, faceUpCard(`dev-plugin-h-option-${index}`, "ST22-09", 0));
+  }
+  placePermanent(state.players[1]!, establishedDigimon(1, ["BT1-009"], "-plugin-h-monodramon"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 7;
+}
+
 const LORDKNIGHTMON_REVEAL_DECK = ["EX10-026", "EX13-058", "BT5-042", ...Array.from({ length: 8 }, () => "BT5-042")];
 
 /**
@@ -11356,6 +11387,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback33-kakkinmon-opponent-turn-end": layFeedback33KakkinmonOpponentTurnEndScenario,
   "arena-feedback32-omnimon-x-raid-piercing": layFeedback32OmnimonXRaidPiercingScenario,
   "arena-feedback40-rie-kishibe-security-gate": layFeedback40RieKishibeSecurityGateScenario,
+  "arena-plugin-high-speed-optional-link": layPlugInHighSpeedOptionalLinkScenario,
   "arena-lordknightmon-bt22-effect-attack-reveal": layLordKnightmonBt22EffectAttackRevealScenario,
   "arena-lordknightmon-bt22-opponent-attack-reveal": layLordKnightmonBt22OpponentAttackRevealScenario,
   "arena-lordknightmon-ex13-darkknightmon-digixros": layLordKnightmonEx13DarkKnightmonDigiXrosScenario,
