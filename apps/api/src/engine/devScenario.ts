@@ -418,6 +418,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback20-ruin-mode-on-play",
   "arena-feedback24-kaguyamon-empty-deck",
   "arena-feedback26-zephagamon-suspend-own",
+  "arena-feedback25-alter-s-unsuspend-lock",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
   "arena-bt24-homeros-neptunemon-timing-choice",
@@ -7412,6 +7413,27 @@ function layFeedback26ZephagamonSuspendOwnScenario(state: GameState): void {
   const monodramon = establishedDigimon(1, ["BT1-009"], "-feedback26-monodramon");
   monodramon.isSuspended = true;
   placePermanent(state.players[1]!, monodramon);
+ * Feedback #25: the human's Omnimon Alter-S attacks and stays suspended. On the bot's turn,
+ * Kuwagamon (EX9-038) attacks and its [When Attacking] suspends Alter-S again. Alter-S was already
+ * suspended, but "It can't unsuspend in their next unsuspend phase" still applies (Q4792), so
+ * Alter-S skips the human's next unsuspend phase. With no new lock, it unsuspends in the one
+ * after that.
+ */
+function layFeedback25AlterSUnsuspendLockScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-feedback25-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback25-deck-${seat}-${index}`, "BT1-027", seat));
+    }
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback25-security-${seat}-${index}`, "BT1-010", seat));
+    }
+  }
+  placePermanent(state.players[0]!, establishedDigimon(0, ["EX9-021"], "-feedback25-alter-s"));
+  const bot = state.players[1]!;
+  placePermanent(bot, establishedDigimon(1, ["EX9-038"], "-feedback25-kuwagamon"));
+  insertCard(bot, Zone.Hand, faceUpCard("dev-feedback25-bot-cost", "BT1-027", 1));
   state.turnSeat = 0;
   state.turnCount = 0;
   state.isFirstPlayersFirstTurn = false;
@@ -10461,6 +10483,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback20-ruin-mode-on-play": layFeedback20RuinModeOnPlayScenario,
   "arena-feedback24-kaguyamon-empty-deck": layFeedback24KaguyamonEmptyDeckScenario,
   "arena-feedback26-zephagamon-suspend-own": layFeedback26ZephagamonSuspendOwnScenario,
+  "arena-feedback25-alter-s-unsuspend-lock": layFeedback25AlterSUnsuspendLockScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,
   "arena-bt24-homeros-neptunemon-timing-choice": layBt24HomerosNeptunemonTimingChoiceScenario,
