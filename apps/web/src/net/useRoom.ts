@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { GameState } from "@aegis/shared";
 import {
   EVENT_CHANNEL,
+  MATCH_EXPIRED_CLOSE_CODE,
+  MESSAGE_FLOOD_CLOSE_CODE,
   REPLAY_CHANNEL,
   type ReplayDownloadMessage,
   DECISION_CHANNEL,
@@ -41,6 +43,7 @@ import { keepLocalReplay } from "../replays/local";
 export type ConnectionStatus = "connecting" | "connected" | "reconnecting" | "error" | "closed";
 
 const WS_NORMAL_CLOSURE = 1000;
+const FINAL_CLOSE_CODES = new Set([WS_NORMAL_CLOSURE, MATCH_EXPIRED_CLOSE_CODE, MESSAGE_FLOOD_CLOSE_CODE]);
 /** Grace runs from the drop, not the join, so a live seat keeps its saved session fresh. */
 const SESSION_HEARTBEAT_MS = 5_000;
 
@@ -346,7 +349,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       room.onLeave((code) => {
         stopHeartbeat();
         if (cancelled) return;
-        if (code === WS_NORMAL_CLOSURE) {
+        if (FINAL_CLOSE_CODES.has(code)) {
           clearReconnectSession();
           setStatus("closed");
           return;
