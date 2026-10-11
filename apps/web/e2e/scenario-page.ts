@@ -158,6 +158,7 @@ export class ScenarioPage {
         } else if (decision.kind === "orderTriggers") {
           const triggerKeys = decision.options.triggerKeys ?? [];
           const deletionOrder =
+            decision.options.acceptsResolutionPlan !== true &&
             triggerKeys.some((key) => key.startsWith("ascension/")) &&
             triggerKeys.some((key) => key.startsWith("on-deletion/")) &&
             triggerKeys.every((key) => /^(ascension|on-deletion)\//.test(key));

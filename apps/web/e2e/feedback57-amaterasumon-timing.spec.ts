@@ -23,7 +23,7 @@ for (const mode of ["empty", "pay", "decline"] as const) {
     await scenario.attack(ATTACKER);
     await scenario.resolveUntil(
       (s) => s.turnSeat === 1 && s.phase === "Breeding" && !s.pendingDecision && !s.combatWindow,
-      (decision) => {
+      async (decision) => {
         if (decision.options.purpose === "optionalTarget" && decision.options.min === 0) return { accept: false };
         if (decision.options.digivolveCostChoice) {
           expect(decision.options.digivolveCostChoice.costs).toEqual([4, 3]);
@@ -35,6 +35,18 @@ for (const mode of ["empty", "pay", "decline"] as const) {
             "ascension/feedback57-amaterasu",
             "on-deletion/feedback57-amaterasu",
           ]);
+          expect(decision.options.acceptsResolutionPlan).toBe(true);
+          expect(decision.options.triggerCardIds).toEqual(["EX12-047", "EX12-047"]);
+          await expect(scenario.page.getByRole("list", { name: "Order pending effects" })).toBeVisible();
+          await expect(
+            scenario.page.getByRole("dialog").getByRole("button", { name: "Select all, top to bottom" }),
+          ).toBeVisible();
+          await scenario.page
+            .getByRole("dialog")
+            .locator(".trigger-chooser__entry")
+            .first()
+            .getByRole("button", { name: "No", exact: true })
+            .click();
           // This receipt precedes the earlier clause, second security battle and
           // deletion presentation: the healthy sequence measured 8.03 seconds.
           return { decisionBudgetMs: 10_000 };

@@ -510,6 +510,7 @@ describe("resolution plan chooser", () => {
     (triggerIsOptional) => {
       renderDecision({ ...planRequest, options: { ...planRequest.options, triggerIsOptional } });
       expect(screen.queryByRole("button", { name: "Select mandatory, top to bottom" })).toBeNull();
+      expect(screen.queryAllByText("Mandatory")).toHaveLength(0);
     },
   );
 

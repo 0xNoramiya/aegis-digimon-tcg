@@ -144,3 +144,137 @@ it.each(["empty", "pay", "decline"] as const)(
     }
   },
 );
+
+it.each(["deletion-first", "ascension-first"] as const)(
+  "orders Amaterasumon pending deletion effects with the standard resolution plan: %s",
+  async (order) => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "EX12-047", as: "amaterasu" }],
+          security: ["BT1-009"],
+          deck: Array(10).fill("BT1-009"),
+        },
+      },
+      {
+        autoAcceptOptional: true,
+        autoSelectCards: true,
+        autoOrderTriggers: false,
+        declinePrompts: ["Return 1 to hand", "Play without paying"],
+      },
+    );
+    await s.ready();
+    const instanceId = s.perm("amaterasu").topCard.instanceId;
+    const deletion = advance(s.engine).verb.deletePermanent([s.perm("amaterasu").permanentId], "byEffect");
+    await settle(() => s.state.pendingDecision?.kind === "orderTriggers");
+    const req = s.decisions.at(-1)!.req;
+    const ascension = `ascension/${instanceId}`;
+    const onDeletion = `on-deletion/${instanceId}`;
+    expect(req).toMatchObject({
+      sourceCardId: "EX12-047",
+      sourceInstanceId: instanceId,
+      options: {
+        triggerKeys: [ascension, onDeletion],
+        triggerCardIds: ["EX12-047", "EX12-047"],
+        triggerTimings: ["Ascension", "OnDeletion"],
+        acceptsResolutionPlan: true,
+      },
+    });
+    expect(req.options!.triggerDescriptions![0]).toContain("Ascension");
+    expect(req.options!.triggerDescriptions![1]).toMatch(/^\[On Deletion\]/);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: req.decisionId,
+        response: {
+          kind: "orderTriggers",
+          order: order === "deletion-first" ? [onDeletion, ascension] : [ascension, onDeletion],
+        },
+      }),
+    ).toEqual({ ok: true });
+    await deletion;
+    await settle(() => !s.state.pendingDecision);
+    expect(s.state.players[0]!.security.map((c) => c.instanceId)).toContain(instanceId);
+    const nativeChoice = s.decisions.some(
+      ({ req }) => req.sourceCardId === "EX12-047" && /Return 1 to hand/.test(req.promptText ?? ""),
+    );
+    expect(nativeChoice).toBe(order === "deletion-first");
+    assertNoLoudGap(s);
+  },
+);
+
+it("does not activate Ascension after On Deletion returns Amaterasumon to hand", async () => {
+  const s = setupEngine(
+    {
+      0: {
+        battleArea: [{ card: "EX12-047", as: "amaterasu" }],
+        security: ["BT1-009"],
+        deck: Array(10).fill("BT1-009"),
+      },
+    },
+    { autoAcceptOptional: true, autoSelectCards: true, autoOrderTriggers: false },
+  );
+  await s.ready();
+  const instanceId = s.perm("amaterasu").topCard.instanceId;
+  const deletion = advance(s.engine).verb.deletePermanent([s.perm("amaterasu").permanentId], "byEffect");
+  await settle(() => s.state.pendingDecision?.kind === "orderTriggers");
+  const req = s.decisions.at(-1)!.req;
+  expect(
+    s.engine.applyIntent(0, {
+      type: "respondDecision",
+      decisionId: req.decisionId,
+      response: { kind: "orderTriggers", order: [`on-deletion/${instanceId}`, `ascension/${instanceId}`] },
+    }),
+  ).toEqual({ ok: true });
+  await deletion;
+  await settle(() => !s.state.pendingDecision);
+  expect(s.state.players[0]!.hand.map((c) => c.instanceId)).toContain(instanceId);
+  expect(s.state.players[0]!.security.map((c) => c.instanceId)).not.toContain(instanceId);
+  expect(s.decisions.filter(({ req }) => req.options?.timing === "Ascension")).toHaveLength(0);
+  assertNoLoudGap(s);
+});
+
+it.each([true, false])(
+  "honors the Ascension answer in the pending-effect plan without another modal: %s",
+  async (accept) => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "EX12-047", as: "amaterasu" }],
+          security: ["BT1-009"],
+          deck: Array(10).fill("BT1-009"),
+        },
+      },
+      {
+        autoAcceptOptional: true,
+        autoSelectCards: true,
+        autoOrderTriggers: false,
+        declinePrompts: ["Return 1 to hand", "Play without paying"],
+      },
+    );
+    await s.ready();
+    const instanceId = s.perm("amaterasu").topCard.instanceId;
+    const deletion = advance(s.engine).verb.deletePermanent([s.perm("amaterasu").permanentId], "byEffect");
+    await settle(() => s.state.pendingDecision?.kind === "orderTriggers");
+    const req = s.decisions.at(-1)!.req;
+    const ascension = `ascension/${instanceId}`;
+    expect(req.options!.triggerIsOptional).toEqual([true]);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: req.decisionId,
+        response: {
+          kind: "orderTriggers",
+          order: [`on-deletion/${instanceId}`, ascension],
+          optionalAnswers: { [ascension]: accept },
+        },
+      }),
+    ).toEqual({ ok: true });
+    await deletion;
+    await settle(() => !s.state.pendingDecision);
+    expect(s.state.players[0]!.security.some((c) => c.instanceId === instanceId)).toBe(accept);
+    expect(s.state.players[0]!.trash.some((c) => c.instanceId === instanceId)).toBe(!accept);
+    expect(s.decisions.filter(({ req }) => req.options?.timing === "Ascension")).toHaveLength(0);
+    assertNoLoudGap(s);
+  },
+);
