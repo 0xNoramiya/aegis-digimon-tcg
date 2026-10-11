@@ -1578,3 +1578,23 @@ body:has(.decision-overlay--selection) .narration-slot {
   color: var(--ds-text-2);
   overflow-wrap: anywhere;
 }
+
+/* Physical copy provenance stays below the card, including phone galleries. */
+.decision-overlay__candidate-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding-top: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  line-height: 1.35;
+  color: var(--ds-text-2);
+  white-space: normal;
+}
+.decision-overlay__pending-effect {
+  padding: var(--ds-space-1) var(--ds-space-2);
+  border: 1px solid var(--ds-accent);
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-text);
+  background: var(--ds-sheet);
+}

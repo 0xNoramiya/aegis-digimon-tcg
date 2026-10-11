@@ -469,6 +469,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-richard-main-fresh-materials",
   "arena-davis-both-colors",
   "arena-feedback65-dracomon-selection",
+  "arena-feedback60-duplicate-option-choice",
   "arena-discord-taiki-keeps-xros-digimon",
   "arena-discord-vemmon-add-or-place",
   "arena-discord-speed-security-scene-stuck",
@@ -8364,6 +8365,31 @@ function layDavisBothColorsScenario(state: GameState): void {
   state.memory = 5;
 }
 
+/** #60: exact pending discarded Option beside an older physical copy during Fly Bullet. */
+function layFeedback60DuplicateOptionChoiceScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`feedback60-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index++)
+      insertCard(player, Zone.Deck, faceDownCard(`feedback60-deck-${seat}-${index}`, "BT1-009", seat));
+    for (let index = 0; index < 3; index++)
+      insertCard(player, Zone.Security, faceDownCard(`feedback60-security-${seat}-${index}`, "BT1-009", seat));
+  }
+  const human = state.players[0]!;
+  const base = establishedDigimon(0, ["BT25-082"], "-feedback60-base");
+  pushOnStack(base, faceUpCard("feedback60-pending", "EX7-071", 0));
+  placePermanent(human, base);
+  insertCard(human, Zone.Hand, faceDownCard("feedback60-lady", "BT25-083", 0));
+  insertCard(human, Zone.Hand, faceDownCard("feedback60-reserve", "BT1-009", 0));
+  insertCard(human, Zone.Trash, faceDownCard("feedback60-old", "EX7-071", 0));
+  insertCard(human, Zone.Trash, faceDownCard("feedback60-dual", "BT25-085", 0));
+  placePermanent(state.players[1]!, establishedDigimon(1, ["BT1-009"], "-feedback60-victim"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 10;
+}
+
 /** #65/#67: real reveal and bottom-order confirmations using the shared prompt. */
 function layFeedback65DracomonSelectionScenario(state: GameState): void {
   for (const seat of [0, 1] as const) {
@@ -11789,6 +11815,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-richard-main-fresh-materials": layDiscordRichardMainFreshMaterialsScenario,
   "arena-davis-both-colors": layDavisBothColorsScenario,
   "arena-feedback65-dracomon-selection": layFeedback65DracomonSelectionScenario,
+  "arena-feedback60-duplicate-option-choice": layFeedback60DuplicateOptionChoiceScenario,
   "arena-discord-taiki-keeps-xros-digimon": layDiscordTaikiKeepsXrosDigimonScenario,
   "arena-discord-vemmon-add-or-place": layDiscordVemmonAddOrPlaceScenario,
   "arena-discord-speed-security-scene-stuck": layDiscordSpeedSecuritySceneStuckScenario,

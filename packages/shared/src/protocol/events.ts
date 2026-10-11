@@ -691,6 +691,8 @@ export interface DecisionRequest {
     visibleInstanceIds?: string[]; // full display set (e.g. all revealed cards); ids absent from candidateInstanceIds render disabled
     /** Authoritative identities for temporarily revealed cards that may not yet exist in the client's zone index. */
     visibleCards?: { instanceId: string; cardId: string; artId?: string }[];
+    /** Offered readable trash cards with a still-pending discarded-source effect; not a promised outcome. */
+    pendingEffectInstanceIds?: string[];
     min?: number;
     max?: number; // selection count bounds
     maxTotalPlayCost?: number; // summed printed play-cost budget for multi-card selections

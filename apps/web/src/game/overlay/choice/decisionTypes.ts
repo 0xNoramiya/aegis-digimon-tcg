@@ -14,4 +14,6 @@ export interface DecisionCandidate {
   isSuspended?: boolean;
   /** Where the card sits, so a mixed-zone prompt can group its candidates. */
   zone?: CandidateZone;
+  /** Exact live pending source supplied by the server, never inferred from card identity. */
+  pendingEffect?: boolean;
 }
