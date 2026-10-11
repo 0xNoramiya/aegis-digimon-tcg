@@ -382,6 +382,8 @@ export const DEV_SCENARIO_IDS = [
   "arena-p108-training-delay-with-target",
   "arena-feedback47-chronomon-security-return",
   "arena-feedback50-progress-end-attack",
+  "arena-feedback57-amaterasumon-empty-resolution",
+  "arena-feedback57-amaterasumon-paid-resolution",
   "arena-feedback51-jesmon-gx-copied-text",
   "arena-feedback46-jimmy-boltmon-single",
   "arena-feedback46-jimmy-boltmon-double",
@@ -10634,6 +10636,41 @@ function layGithub5311CrescemonCostScenario(state: GameState): void {
   insertCard(human, Zone.Hand, faceDownCard("github5311-crescemon", "EX5-020", 0));
 }
 
+/** Feedback #57: a live first-check evolution resolves before the second security battle. */
+function layFeedback57AmaterasumonScenario(state: GameState, payable = false): void {
+  prepareGithubCardEffectsScenario(state, 0);
+  const human = state.players[0]!;
+  const opponent = state.players[1]!;
+  placePermanent(human, establishedDigimon(0, ["BT1-019", "EX12-046"], "-feedback57-attacker"));
+  insertCard(human, Zone.Hand, faceDownCard("feedback57-amaterasu", "EX12-047", 0));
+  const breeding = establishedDigimon(1, ["EX5-015"], "-feedback57-breeding");
+  breeding.inBreeding = true;
+  setBreeding(opponent, breeding);
+  placePermanent(opponent, establishedDigimon(1, ["BT15-083"], "-feedback57-tamer"));
+  const training = establishedDigimon(1, ["P-104"], "-feedback57-training");
+  training.placedByEffect = true;
+  placePermanent(opponent, training);
+  fillZone(opponent, Zone.Security, [
+    faceDownCard("feedback57-parkour", "LM-058", 1),
+    faceDownCard("feedback57-second-security", "EX12-035", 1),
+    faceDownCard("feedback57-last-security", "BT1-010", 1),
+  ]);
+  // Parkour adds a Blue card and bottoms the other, without creating a trash payment.
+  fillZone(opponent, Zone.Deck, [
+    faceDownCard("feedback57-parkour-add", "BT1-027", 1),
+    faceDownCard("feedback57-parkour-bottom", "BT1-009", 1),
+    ...opponent.deck,
+  ]);
+  if (payable) {
+    placePermanent(opponent, establishedDigimon(1, ["BT1-009"], "-feedback57-lowest"));
+    const target = establishedDigimon(1, ["BT1-021"], "-feedback57-target");
+    target.baseDP = target.currentDP = 20000;
+    placePermanent(opponent, target);
+    insertCard(opponent, Zone.Trash, faceUpCard("feedback57-return-red", "BT1-010", 1));
+    insertCard(opponent, Zone.Trash, faceUpCard("feedback57-return-blue", "BT1-027", 1));
+  }
+}
+
 /** Feedback #51: the copied clause retains its printed donor while GX owns its effect. */
 function layFeedback51JesmonGxCopiedTextScenario(state: GameState): void {
   prepareGithubCardEffectsScenario(state, 10);
@@ -11525,6 +11562,8 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-p108-training-delay-with-target": (state, decks) => layP108TrainingDelayScenario(state, decks, true),
   "arena-feedback47-chronomon-security-return": layFeedback47ChronomonSecurityReturnScenario,
   "arena-feedback50-progress-end-attack": layFeedback50ProgressEndAttackScenario,
+  "arena-feedback57-amaterasumon-empty-resolution": (state) => layFeedback57AmaterasumonScenario(state),
+  "arena-feedback57-amaterasumon-paid-resolution": (state) => layFeedback57AmaterasumonScenario(state, true),
   "arena-feedback51-jesmon-gx-copied-text": layFeedback51JesmonGxCopiedTextScenario,
   "arena-feedback46-jimmy-boltmon-single": (state) => layFeedback46JimmyBoltmonScenario(state, false),
   "arena-feedback46-jimmy-boltmon-double": (state) => layFeedback46JimmyBoltmonScenario(state, true),
