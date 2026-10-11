@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { synchronizeDeploymentRevision, usesSlotDeploymentRouter } from "./net/deployment";
 import { translator } from "./i18n";
-import { loadLocale } from "./i18n/locales";
+import { loadLocale } from "@/i18n/loadLocale";
 import { AegisEmblem } from "./design/AegisLogo";
 import { Button } from "./design/primitives";
 import { Panel } from "./design/surfaces";
