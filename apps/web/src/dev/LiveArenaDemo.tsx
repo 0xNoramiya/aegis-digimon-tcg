@@ -2365,6 +2365,14 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Wisdom Training está no campo desde um turno anterior e você não tem Digimon. Ative o ＜Delay＞: a carta vai para o lixo e o efeito não faz nada.",
     en: "Wisdom Training has been in the battle area since an earlier turn and you have no Digimon. Activate its ＜Delay＞: the card goes to the trash and the effect does nothing.",
   },
+  "arena-feedback46-jimmy-boltmon-single": {
+    en: "Play Boltmon using all five trash cards for Assembly. Accept Jimmy KEN's suspension and Main activation. Pay Meramon's 2 memory, then decline its optional attack: Boltmon gains Raid and Piercing and Jimmy gains 1, leaving 3 memory. Declining Jimmy instead preserves the Tamer and leaves 4 memory.",
+    ptBR: "Jogue Boltmon usando as cinco cartas do descarte para Assembly. Aceite suspender Jimmy KEN e ativar Main. Pague 2 memórias de Meramon e recuse o ataque opcional: Boltmon ganha Raid e Piercing, e Jimmy ganha 1, deixando 3 memórias. Recusar Jimmy preserva o Tamer e deixa 4 memórias.",
+  },
+  "arena-feedback46-jimmy-boltmon-double": {
+    en: "Play Boltmon using all five trash cards for Assembly. Resolve the first Jimmy: accept, choose SkullMeramon's Main, pay 3, delete the opposing Digimon, and decline the attack. Resolve the second Jimmy: choose Meramon's trash-a-Flame Main and discard the hand Candlemon; with no target it draws 2. Each Jimmy gains 1 after its Main. Final cost passes the turn with 4 memory; both Tamers are suspended and the copied Main effects are used once.",
+    ptBR: "Jogue Boltmon com as cinco cartas do descarte para Assembly. Resolva o primeiro Jimmy: aceite, escolha Main de SkullMeramon, pague 3, exclua o Digimon adversário e recuse o ataque. No segundo Jimmy, escolha Main de Meramon que descarta uma carta Flame e descarte Candlemon da mão; sem alvo, compre 2. Cada Jimmy ganha 1 após seu Main. O custo final passa o turno com 4 memórias; ambos os Tamers ficam suspensos e os Main copiados são usados uma vez.",
+  },
   "arena-feedback45-jesmon-choice": {
     en: "Digivolve SaviorHuckmon into Jesmon for 3. Choose Play a Sistermon from hand or trash, then the hand Sistermon Blanc; decline Jesmon's immediate attack. Attack with Jesmon and choose the trash Sistermon Ciel. Both choices also offer the token and Don't use. Blanc draws 1; Ciel gains 1 memory. Decline Alliance to resolve one security check.",
     ptBR: "Evolua SaviorHuckmon para Jesmon por 3. Escolha jogar uma Sistermon da mão ou descarte e selecione Sistermon Blanc da mão; recuse o ataque imediato de Jesmon. Ataque com Jesmon e escolha Sistermon Ciel do descarte. Ambas as escolhas também oferecem a ficha e não usar. Blanc compra 1; Ciel ganha 1 memória. Recuse Alliance para resolver uma verificação de segurança.",
@@ -3390,6 +3398,8 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex5-attack-priority", "EX5 Etemon · attack trigger priority"],
   ["arena-ex5-biting-crush-delay", "EX5 Biting Crush · Delay on effect play"],
   ["arena-p108-training-delay-no-target", "P-108 Wisdom Training · Delay with no target"],
+  ["arena-feedback46-jimmy-boltmon-single", "Feedback #46 · Jimmy + Boltmon · copied Main"],
+  ["arena-feedback46-jimmy-boltmon-double", "Feedback #46 · Two Jimmys · copied Main choices"],
   ["arena-feedback45-jesmon-choice", "Feedback #45 · Jesmon · token or Sistermon"],
   ["arena-feedback45-jesmon-name-restriction", "Feedback #45 · Jesmon · existing names"],
   ["arena-feedback44-shoutmon-trash-bt21", "Feedback #44 · BT21 Superior Mode · paid trash DigiXros"],

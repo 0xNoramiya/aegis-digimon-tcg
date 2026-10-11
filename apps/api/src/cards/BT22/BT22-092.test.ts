@@ -87,13 +87,13 @@ describe("BT22-092 [Your Turn] Flame/CS Digimon enters -> suspend Jimmy, reactiv
   it("reactivates the real played Flame Digimon Main effect, then gains 1 memory", async () => {
     const s = setup(
       { 0: { battleArea: [{ card: JIMMY, as: "jimmy" }], hand: [{ card: FLAME_DIGIMON, as: "flame" }] } },
-      { autoAcceptOptional: true, autoSelectCards: true, autoDeclineOptional: true },
+      { autoAcceptOptional: true, autoSelectCards: true, declinePrompts: ["Attack", "attack"] },
     );
     await s.ready();
     s.state.memory = 10;
 
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("flame").instanceId })).toEqual({ ok: true });
-    await settle(() => s.perm("jimmy").isSuspended, 400);
+    await settle(() => s.perm("jimmy").isSuspended && !s.state.pendingDecision && s.state.memory === 4, 400);
 
     expect(s.state.memory).toBe(4);
     expect(s.perm("jimmy").isSuspended).toBe(true);
@@ -111,7 +111,7 @@ describe("BT22-092 [Your Turn] Flame/CS Digimon enters -> suspend Jimmy, reactiv
           hand: [{ card: FLAME_DIGIMON, as: "flame" }],
         },
       },
-      { autoAcceptOptional: true, autoSelectCards: true, autoDeclineOptional: true },
+      { autoAcceptOptional: true, autoSelectCards: true, declinePrompts: ["Attack", "attack"] },
     );
     await s.ready();
     s.state.memory = 10;
@@ -123,9 +123,24 @@ describe("BT22-092 [Your Turn] Flame/CS Digimon enters -> suspend Jimmy, reactiv
         instanceId: s.inst("flame").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.perm("jimmy").isSuspended, 400);
+    await settle(
+      () =>
+        s.perm("jimmy").isSuspended &&
+        !s.state.pendingDecision &&
+        observe(s.engine).hasKeyword(s.perm("base"), "Raid") &&
+        s.state.memory === 6,
+      400,
+    );
 
-    expect(s.state.memory).toBe(7);
+    // Normal printed evolution costs 3; Meramon Main costs 2; Jimmy gains 1 after resolution.
+    expect(s.state.memory).toBe(10 - 3 - 2 + 1);
+    expect(observe(s.engine).hasKeyword(s.perm("base"), "Raid")).toBe(true);
+    expect(observe(s.engine).hasPierce(s.perm("base"))).toBe(true);
+    expect(s.events.filter((event) => event.kind === "memoryChanged" && event.reason !== "digivolve")).toEqual([
+      { kind: "memoryChanged", from: 10, to: 7, reason: "payCost" },
+      { kind: "memoryChanged", from: 7, to: 5, reason: "gainMemory" },
+      { kind: "memoryChanged", from: 5, to: 6, reason: "gainMemory" },
+    ]);
     expect(s.perm("jimmy").isSuspended).toBe(true);
     expect(s.perm("base").topCard?.cardId).toBe(FLAME_DIGIMON);
   });
