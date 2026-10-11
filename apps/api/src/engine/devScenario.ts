@@ -469,6 +469,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-richard-main-fresh-materials",
   "arena-davis-both-colors",
   "arena-feedback65-dracomon-selection",
+  "arena-feedback71-justimon-copied-opt",
   "arena-feedback70-gaiomon-attack",
   "arena-feedback68-arisa-effect-play",
   "arena-feedback60-duplicate-option-choice",
@@ -8392,6 +8393,30 @@ function layFeedback60DuplicateOptionChoiceScenario(state: GameState): void {
   state.memory = 10;
 }
 
+/** #71: copied evolution processing does not share the lender's already-used OPT. */
+function layFeedback71JustimonCopiedOptScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const p = state.players[seat]!;
+    insertCard(p, Zone.EggDeck, faceDownCard(`feedback71-egg-${seat}`, "BT1-001", seat));
+    for (let i = 0; i < 8; i++) insertCard(p, Zone.Deck, faceDownCard(`feedback71-deck-${seat}-${i}`, "BT1-009", seat));
+    for (let i = 0; i < 5; i++)
+      insertCard(p, Zone.Security, faceDownCard(`feedback71-security-${seat}-${i}`, "BT1-009", seat));
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT19-064"], "-feedback71-host"));
+  for (const name of ["first", "second", "third"]) {
+    const option = establishedDigimon(0, ["LM-058"], `-feedback71-${name}`);
+    option.placedByEffect = true;
+    placePermanent(human, option);
+  }
+  insertCard(human, Zone.Hand, faceUpCard("feedback71-x", "EX8-054", 0));
+  insertCard(human, Zone.Hand, faceUpCard("feedback71-reserve", "BT1-009", 0));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 6;
+}
+
 /** #70: evolution preserves a newly played host's attack restriction. */
 function layFeedback70GaiomonAttackScenario(state: GameState): void {
   for (const seat of [0, 1] as const) {
@@ -11865,6 +11890,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-richard-main-fresh-materials": layDiscordRichardMainFreshMaterialsScenario,
   "arena-davis-both-colors": layDavisBothColorsScenario,
   "arena-feedback65-dracomon-selection": layFeedback65DracomonSelectionScenario,
+  "arena-feedback71-justimon-copied-opt": layFeedback71JustimonCopiedOptScenario,
   "arena-feedback70-gaiomon-attack": layFeedback70GaiomonAttackScenario,
   "arena-feedback68-arisa-effect-play": layFeedback68ArisaEffectPlayScenario,
   "arena-feedback60-duplicate-option-choice": layFeedback60DuplicateOptionChoiceScenario,
