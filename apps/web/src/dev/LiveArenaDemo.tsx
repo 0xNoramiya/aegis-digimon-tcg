@@ -1953,6 +1953,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Discord 1558451244815880332. Encerre a criação. No início da sua fase principal, recuse colocar a carta do topo do deck embaixo de Richard Sampson (EX13-071). A lixeira tem Reppamon (BT1-051) e Chirinmon (BT1-058), então o [Principal] de Richard aparece. Ative e aceite. As 3 cartas viradas para baixo vão para a lixeira. Pela Q7447, escolha o Reppamon (EX13-030) e o Chirinmon (EX13-032) que acabaram de ir para a lixeira. Os dois ficam embaixo de Kudamon (EX13-026), que digivolve em Kentaurosmon (BT3-043) por 2 de memória. BT1-051 e BT1-058 ficam na lixeira.",
     en: "Discord 1558451244815880332. End breeding. At the start of your main phase, decline to place your deck's top card under Richard Sampson (EX13-071). Your trash has Reppamon (BT1-051) and Chirinmon (BT1-058), so Richard's [Main] is offered. Activate it and accept. The 3 face-down cards go to the trash. Per Q7447, choose the Reppamon (EX13-030) and Chirinmon (EX13-032) you just trashed. Both go under Kudamon (EX13-026), which digivolves into Kentaurosmon (BT3-043) for 2 memory. BT1-051 and BT1-058 stay in the trash.",
   },
+  "arena-feedback70-gaiomon-attack": {
+    en: "Evolve established MetalGreymon into Gaiomon for 4, unsuspend the opponent and accept or decline the separate attack. Alternatively, first play the hand MetalGreymon with the trash Agumon as Assembly (-2), then evolve that new host: it may unsuspend the opponent but cannot attack this turn without Rush. Evolution preserves the host’s entry turn. Decline Raid when attacking security.",
+    ptBR: "Digivolva MetalGreymon já em campo em Gaiomon por 4, desuspenda o oponente e aceite ou recuse o ataque separado. Alternativamente, jogue MetalGreymon da mão com Agumon da lixeira como Assembly (-2), depois digivolva esse novo hospedeiro: pode desuspender o oponente, mas não pode atacar nesse turno sem Rush. A digivolução preserva o turno de entrada. Recuse Raid para atacar a segurança.",
+  },
   "arena-feedback68-arisa-effect-play": {
     en: "Play Underworld’s Call for 4. Choose Gazimon: Arisa must not offer Rush and the new Digimon cannot attack this turn. Choose Kokeshimon instead: accept Arisa’s suspension to grant Rush and attack immediately, or decline to keep Arisa unsuspended and the new Digimon unable to attack. End the turn to expire Rush.",
     ptBR: "Jogue Underworld’s Call por 4. Escolha Gazimon: Arisa não oferece Rush e o novo Digimon não pode atacar neste turno. Escolha Kokeshimon: aceite suspender Arisa para conceder Rush e atacar imediatamente, ou recuse para manter Arisa desvirada e impedir o ataque do novo Digimon. Encerre o turno para expirar Rush.",
@@ -3563,6 +3567,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
     "arena-discord-richard-main-fresh-materials",
     "Discord · EX13 Richard Sampson · [Main] stacks the cards it just trashed",
   ],
+  ["arena-feedback70-gaiomon-attack", "Feedback 70 · Gaiomon fresh-play attack restriction"],
   ["arena-feedback68-arisa-effect-play", "Feedback 68 · Arisa effect-play Rush filter"],
   ["arena-feedback60-duplicate-option-choice", "Feedback 60 · physical Option copies and pending effect"],
   ["arena-feedback65-dracomon-selection", "Feedback 65/67 · Dracomon selection and order"],

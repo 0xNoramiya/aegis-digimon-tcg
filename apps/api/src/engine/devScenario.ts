@@ -469,6 +469,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-richard-main-fresh-materials",
   "arena-davis-both-colors",
   "arena-feedback65-dracomon-selection",
+  "arena-feedback70-gaiomon-attack",
   "arena-feedback68-arisa-effect-play",
   "arena-feedback60-duplicate-option-choice",
   "arena-discord-taiki-keeps-xros-digimon",
@@ -8391,6 +8392,31 @@ function layFeedback60DuplicateOptionChoiceScenario(state: GameState): void {
   state.memory = 10;
 }
 
+/** #70: evolution preserves a newly played host's attack restriction. */
+function layFeedback70GaiomonAttackScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`feedback70-egg-${seat}`, "BT1-001", seat));
+    for (let i = 0; i < 8; i++)
+      insertCard(player, Zone.Deck, faceDownCard(`feedback70-deck-${seat}-${i}`, "BT1-009", seat));
+    for (let i = 0; i < 3; i++)
+      insertCard(player, Zone.Security, faceDownCard(`feedback70-security-${seat}-${i}`, "BT1-009", seat));
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT12-059", "EX12-016"], "-feedback70-established"));
+  const target = establishedDigimon(1, ["BT1-021"], "-feedback70-opponent");
+  target.isSuspended = true;
+  placePermanent(state.players[1]!, target);
+  insertCard(human, Zone.Hand, faceUpCard("feedback70-metal", "EX12-016", 0));
+  insertCard(human, Zone.Hand, faceUpCard("feedback70-gaiomon", "BT22-014", 0));
+  insertCard(human, Zone.Hand, faceUpCard("feedback70-reserve", "BT1-009", 0));
+  insertCard(human, Zone.Trash, faceUpCard("feedback70-source", "BT12-059", 0));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 5;
+}
+
 /** #68: identical effect play distinguishes a Puppet from an unrelated Digimon. */
 function layFeedback68ArisaEffectPlayScenario(state: GameState): void {
   for (const seat of [0, 1] as const) {
@@ -11839,6 +11865,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-richard-main-fresh-materials": layDiscordRichardMainFreshMaterialsScenario,
   "arena-davis-both-colors": layDavisBothColorsScenario,
   "arena-feedback65-dracomon-selection": layFeedback65DracomonSelectionScenario,
+  "arena-feedback70-gaiomon-attack": layFeedback70GaiomonAttackScenario,
   "arena-feedback68-arisa-effect-play": layFeedback68ArisaEffectPlayScenario,
   "arena-feedback60-duplicate-option-choice": layFeedback60DuplicateOptionChoiceScenario,
   "arena-discord-taiki-keeps-xros-digimon": layDiscordTaikiKeepsXrosDigimonScenario,
