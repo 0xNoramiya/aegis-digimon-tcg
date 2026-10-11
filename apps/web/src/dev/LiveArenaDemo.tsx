@@ -2365,6 +2365,14 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Wisdom Training está no campo desde um turno anterior e você não tem Digimon. Ative o ＜Delay＞: a carta vai para o lixo e o efeito não faz nada.",
     en: "Wisdom Training has been in the battle area since an earlier turn and you have no Digimon. Activate its ＜Delay＞: the card goes to the trash and the effect does nothing.",
   },
+  "arena-feedback57-amaterasumon-empty-resolution": {
+    en: "Attack with Shishimamon. Parkour Training resolves from security and stays in the battle area. Accept the evolution into Amaterasumon for 1. Its When Digivolving resolves before the next check, but there is no opposing battle Digimon and no two-card trash cost. The second security Digimon ties at 12,000 DP and deletes the attacker. Decline its optional On Deletion effects.",
+    ptBR: "Ataque com Shishimamon. Parkour Training resolve da segurança e fica no campo. Aceite evoluir para Amaterasumon por 1. When Digivolving resolve antes da próxima verificação, mas não há Digimon adversário no campo nem duas cartas no lixo para pagar. O segundo Digimon de segurança empata em 12.000 DP e exclui o atacante. Recuse os efeitos opcionais On Deletion.",
+  },
+  "arena-feedback57-amaterasumon-paid-resolution": {
+    en: "Attack with Shishimamon and accept Amaterasumon's evolution for 1 after Parkour Training. Delete the lowest-DP opposing Monodramon. Return the exact red and blue trash cards: Amaterasumon reaches 18,000 DP and the 20,000-DP MetalGreymon loses 10,000 DP before the second security check. Refuse the return instead to keep 12,000 DP and lose the second battle. Decline optional On Deletion effects.",
+    ptBR: "Ataque com Shishimamon e aceite evoluir para Amaterasumon por 1 após Parkour Training. Exclua o Monodramon adversário com menor DP. Devolva as cartas vermelha e azul do lixo: Amaterasumon chega a 18.000 DP e MetalGreymon de 20.000 DP perde 10.000 DP antes da segunda verificação. Recuse a devolução para manter 12.000 DP e perder a segunda batalha. Recuse efeitos opcionais On Deletion.",
+  },
   "arena-feedback51-jesmon-gx-copied-text": {
     en: "Digivolve Alphamon into Jesmon GX for 5. Place the hand Gankoomon underneath. Its copied prompt must describe the Hinukamuy Token, while Jesmon GX remains the effect source. Accept or decline the token, then choose Sistermon Blanc for the copied white-Digimon protection; that prompt must show the donor's protection text. Finish with 5 memory and the donor at the bottom of GX's stack.",
     ptBR: "Evolua Alphamon para Jesmon GX por 5. Coloque Gankoomon da mão por baixo. A pergunta do efeito copiado deve descrever a ficha Hinukamuy, enquanto Jesmon GX permanece a origem do efeito. Aceite ou recuse a ficha e escolha Sistermon Blanc para a proteção copiada de Digimon branco; essa pergunta deve mostrar o texto de proteção do doador. Termine com 5 memórias e o doador no fundo da pilha de GX.",
@@ -3410,6 +3418,8 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex5-attack-priority", "EX5 Etemon · attack trigger priority"],
   ["arena-ex5-biting-crush-delay", "EX5 Biting Crush · Delay on effect play"],
   ["arena-p108-training-delay-no-target", "P-108 Wisdom Training · Delay with no target"],
+  ["arena-feedback57-amaterasumon-empty-resolution", "Feedback #57 · Amaterasumon · empty resolution"],
+  ["arena-feedback57-amaterasumon-paid-resolution", "Feedback #57 · Amaterasumon · paid resolution"],
   ["arena-feedback51-jesmon-gx-copied-text", "Feedback #51 · Jesmon GX · copied effect text"],
   ["arena-feedback50-progress-end-attack", "Feedback #50 · Progress · end attack"],
   ["arena-feedback47-chronomon-security-return", "Feedback #47 · Chronomon · security return cost"],

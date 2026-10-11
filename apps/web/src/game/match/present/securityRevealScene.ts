@@ -178,8 +178,15 @@ export function securityRevealScene(deps: SecurityRevealSceneDeps) {
     setHeldBlowState(battlePending ? blowHoldState() : undefined);
     // A protection cost can trash security immediately before Piercing checks.
     // That paid card must finish its scene before the check takes the centre.
+    // A completed earlier check also owes its queued clauses and presentation receipt.
+    // Replacing those drops the only narration that releases a nested effect's gate.
     const replace =
-      !queue.hasPendingStep((step) => step.id.startsWith("security-destroyed-")) &&
+      !queue.hasPendingStep(
+        (step) =>
+          step.id.startsWith("security-destroyed-") ||
+          step.id.startsWith("security-notices-late-") ||
+          step.id.startsWith("security-presented-"),
+      ) &&
       (revealOnStageRef.current !== null || queuedSecurityKeyRef.current === null);
     if (revealOnStageRef.current !== null) flushHeldNotices();
     queuedSecurityKeyRef.current = key;

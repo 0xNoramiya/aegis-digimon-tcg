@@ -156,11 +156,21 @@ export class ScenarioPage {
           await this.decisionReady(answer, decision, selection.decisionBudgetMs);
           await answer.click();
         } else if (decision.kind === "orderTriggers") {
-          const panel = this.page
-            .getByRole("dialog")
-            .filter({ has: this.page.getByRole("heading", { name: "Order pending effects", exact: true }) });
+          const triggerKeys = decision.options.triggerKeys ?? [];
+          const deletionOrder =
+            triggerKeys.some((key) => key.startsWith("ascension/")) &&
+            triggerKeys.some((key) => key.startsWith("on-deletion/")) &&
+            triggerKeys.every((key) => /^(ascension|on-deletion)\//.test(key));
+          const panel = this.page.getByRole("dialog").filter({
+            has: this.page.getByRole("heading", {
+              name: deletionOrder ? decision.promptText : "Order pending effects",
+              exact: true,
+            }),
+          });
           await this.decisionReady(panel, decision, selection.decisionBudgetMs);
-          if (selection.triggerCardId) {
+          if (deletionOrder) {
+            await panel.getByRole("button", { name: "ascension", exact: true }).click();
+          } else if (selection.triggerCardId) {
             const name = getCardDefinition(selection.triggerCardId)!.nameEn;
             await panel
               .getByRole("button", { name: new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) })
