@@ -17,6 +17,7 @@ import {
 } from "@aegis/shared";
 import { GameEngine, type GameEngineHooks } from "../GameEngine.js";
 import { peekCheckedCard } from "../security/checkedCard.js";
+import { makeRng, seatSeed } from "../setup.js";
 import {
   fillZone,
   insertCard,
@@ -580,6 +581,9 @@ export function setupEngine(boardOrOpts?: BoardSpec | SetupEngineOptions, maybeO
     },
   };
   const engine = new GameEngine(state, hooks);
+  // Arranged boards skip runSetup, which normally installs these match streams.
+  const random = [makeRng(seatSeed(hooks.seed, 0)), makeRng(seatSeed(hooks.seed, 1))];
+  engine.rngForSeat = (seat) => random[seat]!;
   engineRef = engine;
   engine.seatPlayer(0, "sa", { displayName: "A", deck: { mainDeck: [], eggDeck: [] } });
   engine.seatPlayer(1, "sb", { displayName: "B", deck: { mainDeck: [], eggDeck: [] } });

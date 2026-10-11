@@ -1,4 +1,4 @@
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { evolutionDeck } from "./decks.js";
 import { runResidualMatch } from "./residualMatch.js";
 import { SEED_RESIDUAL } from "./residualPolicy.js";
@@ -9,6 +9,34 @@ it("refuses a replaced balanced control even when the override is neutral", asyn
     runResidualMatch({ seed: 719, learnerSeat: 0, decks, program: SEED_RESIDUAL, opponentProgram: SEED_RESIDUAL }),
   ).rejects.toThrow("Balanced comparison cannot override the control policy");
 });
+
+it("replays effect-driven security shuffles from the match seed without ambient randomness", async () => {
+  const decks = [
+    evolutionDeck("bt5-lordknightmon").deck,
+    evolutionDeck("bt24-dgo-2026-02-14-13-jupitermon").deck,
+  ] as const;
+  const ambient = vi.spyOn(Math, "random").mockImplementation(() => {
+    throw new Error("Match escaped its seeded random stream");
+  });
+  try {
+    const results = [];
+    for (const learnerSeat of [0, 1, 0] as const) {
+      const game = await runResidualMatch({ seed: 32000027, learnerSeat, decks, program: SEED_RESIDUAL });
+      expect(game.result.errors).toEqual([]);
+      expect(game.valid).toBe(true);
+      results.push(game.result);
+    }
+    expect(results[0]!.events!.filter((event) => event.kind === "securityRevealed").length).toBeGreaterThan(0);
+    for (const result of results.slice(1)) {
+      expect(result.winnerSeat).toBe(results[0]!.winnerSeat);
+      expect(result.turnCount).toBe(results[0]!.turnCount);
+      expect(result.events).toEqual(results[0]!.events);
+    }
+    expect(ambient).not.toHaveBeenCalled();
+  } finally {
+    ambient.mockRestore();
+  }
+}, 30000);
 
 it("a neutral residual reproduces the balanced control's real game in both learner seats", async () => {
   const decks = [evolutionDeck("bt1-red-omnimon").deck, evolutionDeck("bt4-yellow-wargreymon").deck] as const;
