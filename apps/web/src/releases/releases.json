@@ -1,5 +1,32 @@
 [
   {
+    "version": "1.22.0-beta",
+    "releasedAt": "2026-10-11",
+    "summaryKey": "releases.1.22.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.22.0-beta.feature.replays"
+      },
+      {
+        "textKey": "releases.1.22.0-beta.feature.profile"
+      },
+      {
+        "textKey": "releases.1.22.0-beta.feature.preferences"
+      },
+      {
+        "textKey": "releases.1.22.0-beta.feature.privacy"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.22.0-beta.fix.table"
+      },
+      {
+        "textKey": "releases.1.22.0-beta.fix.interface"
+      }
+    ]
+  },
+  {
     "version": "1.21.0-beta",
     "releasedAt": "2026-10-10",
     "summaryKey": "releases.1.21.0-beta.summary",

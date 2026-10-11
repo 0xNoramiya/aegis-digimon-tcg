@@ -1,4 +1,46 @@
 {
+  "releases.1.22.0-beta.summary": {
+    "en": "This minor release adds match replays, a full match history on your profile and a redesigned Preferences screen, and fixes reported table and window problems.",
+    "pt-BR": "Esta versão minor adiciona replays das partidas, o histórico completo de partidas no seu perfil e uma nova tela de Preferências, e corrige problemas relatados na mesa e nas janelas.",
+    "es": "Esta versión minor añade repeticiones de partidas, el historial completo de partidas en tu perfil y una nueva pantalla de Preferencias, y corrige problemas reportados en la mesa y en las ventanas.",
+    "it": "Questa versione minor aggiunge i replay delle partite, lo storico completo delle partite nel profilo e una nuova schermata Preferenze, e corregge problemi segnalati sul tavolo e nelle finestre."
+  },
+  "releases.1.22.0-beta.feature.replays": {
+    "en": "After a match, you can watch its replay with seeking, turn navigation and card inspection. Your browser keeps your newest 100 replays, and you can save them to your Google Drive, download the file or share a link.",
+    "pt-BR": "Depois de uma partida, você pode assistir ao replay com avanço, navegação por turno e inspeção de cartas. Seu navegador guarda os 100 replays mais recentes, e você pode salvá-los no seu Google Drive, baixar o arquivo ou compartilhar um link.",
+    "es": "Después de una partida, puedes ver su repetición con avance, navegación por turnos e inspección de cartas. Tu navegador guarda las 100 repeticiones más recientes, y puedes guardarlas en tu Google Drive, descargar el archivo o compartir un enlace.",
+    "it": "Dopo una partita puoi guardarne il replay con avanzamento, navigazione per turni e ispezione delle carte. Il browser conserva i 100 replay più recenti, e puoi salvarli sul tuo Google Drive, scaricare il file o condividere un link."
+  },
+  "releases.1.22.0-beta.feature.profile": {
+    "en": "Your profile shows your last 100 matches on one page, with filters by result, mode and opponent. Signed-in casual, bot and private matches now appear there too.",
+    "pt-BR": "Seu perfil mostra suas últimas 100 partidas em uma página, com filtros por resultado, modo e oponente. Partidas casuais, contra bot e privadas com conta conectada agora também aparecem.",
+    "es": "Tu perfil muestra tus últimas 100 partidas en una página, con filtros por resultado, modo y oponente. Las partidas casuales, contra bot y privadas con sesión iniciada ahora también aparecen.",
+    "it": "Il profilo mostra le ultime 100 partite in una pagina, con filtri per risultato, modalità e avversario. Ora compaiono anche le partite casual, contro bot e private giocate con l'account connesso."
+  },
+  "releases.1.22.0-beta.feature.preferences": {
+    "en": "The Preferences screen has a new layout, you can upload your own egg sleeve image, and the hand sort button lets you sort by type, cost or color.",
+    "pt-BR": "A tela de Preferências tem um novo layout, você pode enviar sua própria imagem de sleeve de ovo, e o botão de ordenar a mão permite ordenar por tipo, custo ou cor.",
+    "es": "La pantalla de Preferencias tiene un nuevo diseño, puedes subir tu propia imagen de funda de huevo, y el botón de ordenar la mano permite ordenar por tipo, coste o color.",
+    "it": "La schermata Preferenze ha un nuovo layout, puoi caricare la tua immagine per la bustina delle uova, e il pulsante di ordinamento della mano ordina per tipo, costo o colore."
+  },
+  "releases.1.22.0-beta.feature.privacy": {
+    "en": "A privacy policy page explains what Aegis keeps and how the Google Drive integration works. Leaving a match with Back now concedes and stays on the result screen, so you can keep the replay.",
+    "pt-BR": "Uma página de política de privacidade explica o que o Aegis guarda e como funciona a integração com o Google Drive. Sair de uma partida com Voltar agora concede e fica na tela de resultado, para você poder guardar o replay.",
+    "es": "Una página de política de privacidad explica qué guarda Aegis y cómo funciona la integración con Google Drive. Salir de una partida con Atrás ahora concede y se queda en la pantalla de resultado, para que puedas guardar la repetición.",
+    "it": "Una pagina sull'informativa privacy spiega cosa conserva Aegis e come funziona l'integrazione con Google Drive. Uscire da una partita con Indietro ora concede e resta sulla schermata del risultato, così puoi tenere il replay."
+  },
+  "releases.1.22.0-beta.fix.table": {
+    "en": "Fixed a card selection window, such as Greymon's [Security] effect choosing from hand and trash, that grew below the screen and hid its buttons, and opponent card windows that closed on every phase change.",
+    "pt-BR": "Corrigidas uma janela de seleção de cartas, como o efeito [Segurança] de Greymon escolhendo da mão e da lixeira, que crescia para fora da tela e escondia seus botões, e janelas de cartas do oponente que fechavam a cada mudança de fase.",
+    "es": "Se corrigieron una ventana de selección de cartas, como el efecto [Seguridad] de Greymon eligiendo de la mano y la papelera, que crecía fuera de la pantalla y ocultaba sus botones, y ventanas de cartas del oponente que se cerraban en cada cambio de fase.",
+    "it": "Corrette una finestra di selezione delle carte, come l'effetto [Sicurezza] di Greymon che sceglie dalla mano e dal cestino, che usciva dallo schermo e nascondeva i pulsanti, e le finestre delle carte avversarie che si chiudevano a ogni cambio di fase."
+  },
+  "releases.1.22.0-beta.fix.interface": {
+    "en": "The feedback form keeps your text when you click outside it, the skip button no longer shifts the toolbar, and the advanced queue settings are easier to find.",
+    "pt-BR": "O formulário de feedback mantém seu texto quando você clica fora dele, o botão de pular não desloca mais a barra de ferramentas, e as configurações avançadas da fila ficaram mais fáceis de encontrar.",
+    "es": "El formulario de comentarios conserva tu texto cuando haces clic fuera, el botón de saltar ya no desplaza la barra de herramientas, y la configuración avanzada de la cola es más fácil de encontrar.",
+    "it": "Il modulo di feedback mantiene il testo quando fai clic fuori, il pulsante per saltare non sposta più la barra degli strumenti, e le impostazioni avanzate della coda sono più facili da trovare."
+  },
   "releases.1.19.0-beta.summary": {
     "en": "This minor release adds historical and Pauper deck formats, a better phone deck builder and an account-synced auto hatch setting, and fixes reported card, effect and table problems.",
     "pt-BR": "Esta versão minor adiciona formatos de deck históricos e Pauper, um construtor de decks melhor no celular e uma opção de auto hatch sincronizada com a conta, e corrige problemas reportados em cartas, efeitos e na mesa.",
