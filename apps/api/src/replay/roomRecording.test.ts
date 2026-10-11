@@ -10,6 +10,7 @@ import { BLUE_DECK, RED_DECK } from "../engine/testDecks.js";
 import type { GameEngine } from "../engine/GameEngine.js";
 import { extractReplay } from "./extract.js";
 import { runReplay } from "./run.js";
+import { comparableState } from "./roomMatch.fixture.js";
 
 /**
  * Every room path that changes engine state outside an intent writes the line `extractReplay`
@@ -216,7 +217,9 @@ describe("AegisRoom replay recording", () => {
       expect([...replay.state.players[seat]!.hand].map((card) => card.cardId)).toEqual(
         [...room.state.players[seat]!.hand].map((card) => card.cardId),
       );
-    expect(replay.state.turnCount).toBe(room.state.turnCount);
+    internals(room).engine.syncCounts();
+    replay.engine.syncCounts();
+    expect(comparableState(replay.state)).toEqual(comparableState(room.state));
   });
 
   it("records a departure as clearReady then a final disconnect, and the replacement's seat", async () => {
