@@ -1,3 +1,4 @@
+import type { ReplaySaveProps } from "../../../replays/ReplaySavePrompt";
 /* Everything the board can put over itself, in the order it stacks.
 
    The mulligan and the hand-card preview come first because they are about the hand, not
@@ -146,14 +147,16 @@ export function MatchOverlays({
   signedIn: boolean;
   opponentDropped: boolean;
   gameOver:
-    | {
+    | (ReplaySaveProps & {
         spectatorResult?: string;
+        onDownloadReplay?: () => void;
+        replayStatus?: "preparing" | "unavailable";
         result: GameOverOutcome;
         reason: string;
         /** Every hidden zone, once the server reveals them; absent in a tournament set. */
         revealed?: RevealedZones;
         series?: SeriesResultProps;
-      }
+      })
     | undefined;
   overlays: ReturnType<typeof useOverlayState>;
   selection: ReturnType<typeof useBoardSelection>;

@@ -1,3 +1,4 @@
+import { downloadReplay } from "../replays/files";
 /* The in-game board — the design's letterboxed board layout, driven entirely by
    the synchronized GameState and wired to the server through typed intents. The
    client owns zero rules: every action is an intent the server validates, and the
@@ -87,6 +88,7 @@ import {
 } from "@aegis/shared";
 import { rejectionMessage } from "../rejectionMessages";
 import { useTranslation } from "../i18n";
+import { intents } from "../net/intents";
 import { useRoom, type MatchMode, type SeriesGameTicket, type UseRoomResult } from "../net/useRoom";
 import { seriesView } from "./seriesModel";
 import { singleServerBatch, type ServerBatch } from "../net/serverBatches";
@@ -144,6 +146,7 @@ export function GameScreen({
   signedIn = false,
   autoHatchReady = true,
   demoConnection,
+  replayMode = false,
   devProbe,
   presentationPacing,
   seriesGame,
@@ -189,6 +192,8 @@ export function GameScreen({
     /** No snapshots either, so the board it shows is always its live state. */
     snapshots?: readonly StateSnapshot[];
   };
+  /** Portable file playback uses the read-only board without live result dialogs. */
+  replayMode?: boolean;
   /** Dev inspector hooks (the effects lab): queue controls, step events, batches, decisions. */
   devProbe?: PresentationProbe;
   presentationPacing?: PresentationPacing;
@@ -196,12 +201,18 @@ export function GameScreen({
   seriesGame?: SeriesGameTicket;
   /** The series opened its next game; the caller remounts this screen on that ticket. */
   onSeriesNext?: (ticket: SeriesGameTicket) => void;
-  /** Whether leaving now would concede a live match; must be a stable callback. */
-  onLeaveForfeitsChange?: (forfeits: boolean) => void;
+  /**
+   * Receives a way to concede while leaving would forfeit a live match, and `undefined` once it
+   * would not. Conceding keeps the player on the result so they can still keep the replay.
+   * Must be a stable callback.
+   */
+  onLeaveForfeitsChange?: (concede: (() => void) | undefined) => void;
 }) {
   const { t } = useTranslation();
   const [handOrder, setHandOrder] = useState<readonly string[]>([]);
-  const [spectating] = useState(() => startMode === "spectator" || loadReconnectSession()?.spectator === true);
+  const [spectating] = useState(
+    () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
+  );
   const actionConfirmationsEnabled = areActionConfirmationsEnabled();
   const arenaLayout = useArenaLayout();
   const { narrowGameLayout, compactPiles, shortBoard, collapseNotices } = arenaLayout;
@@ -267,9 +278,11 @@ export function GameScreen({
   const leaveForfeits = !demoConnection && !spectating && !!state && bothSeated(state) && !state.gameOver;
   useEffect(() => {
     if (!leaveForfeits || !onLeaveForfeitsChange) return;
-    onLeaveForfeitsChange(true);
-    return () => onLeaveForfeitsChange(false);
-  }, [leaveForfeits, onLeaveForfeitsChange]);
+    onLeaveForfeitsChange(() => {
+      if (connectedRoom) intents.surrender(connectedRoom);
+    });
+    return () => onLeaveForfeitsChange(undefined);
+  }, [leaveForfeits, onLeaveForfeitsChange, connectedRoom]);
 
   const vsBot = startMode === "bot";
   const isPrivateMatch = startMode === "private_host" || startMode === "private_guest" || !!state?.roomCode;
@@ -1384,9 +1397,28 @@ export function GameScreen({
       signedIn={signedIn}
       opponentDropped={!spectating && !vsBot && !opp.connected && !state.gameOver}
       gameOver={
-        (state.gameOver || series?.stage === "over") && !cues.resultPending
+        !replayMode && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
+              onDownloadReplay:
+                !spectating && liveConnection.replayDownload?.kind === "ready"
+                  ? () => {
+                      if (liveConnection.replayDownload?.kind === "ready")
+                        downloadReplay(liveConnection.replayDownload);
+                    }
+                  : undefined,
+              replayFile:
+                !spectating && liveConnection.replayDownload?.kind === "ready"
+                  ? liveConnection.replayDownload
+                  : undefined,
+              replayStatus:
+                spectating || demoConnection || joinOptions.devScenario
+                  ? undefined
+                  : liveConnection.replayDownload?.kind === "unavailable"
+                    ? "unavailable"
+                    : liveConnection.replayDownload
+                      ? undefined
+                      : "preparing",
               reason: gameOverReason,
               revealed,
               series: series && {
@@ -1476,6 +1508,7 @@ export function GameScreen({
 
   return (
     <BoardStage
+      replayMode={replayMode}
       onResetScenario={onResetScenario}
       state={state}
       shownState={shownState}

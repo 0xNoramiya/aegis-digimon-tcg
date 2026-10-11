@@ -274,6 +274,8 @@ export async function controller({
         `VITE_AEGIS_PUBLIC_VERSION=${publicVersion ?? "development"}`,
         "--build-arg",
         "VITE_AEGIS_DEPLOYMENT_MODE=slots",
+        "--build-arg",
+        `VITE_GOOGLE_CLIENT_ID=${config.services.web?.build?.args?.VITE_GOOGLE_CLIENT_ID ?? ""}`,
         "-t",
         `aegis-static:${webRevision}`,
         "-f",

@@ -73,3 +73,13 @@ const DIGIMON_WORLD_AVATAR_IDS = new Set<string>(DIGIMON_WORLD_AVATARS.map(({ id
 export function isDigimonWorldAvatarId(value: unknown): value is DigimonWorldAvatarId {
   return typeof value === "string" && DIGIMON_WORLD_AVATAR_IDS.has(value);
 }
+
+/** Stored instead of a Digimon id when a player prefers their initials over a linked Discord picture. */
+export const INITIALS_AVATAR = "initials";
+export type AvatarChoice = DigimonWorldAvatarId | typeof INITIALS_AVATAR | null;
+/** Which picture an account shows: a Digimon portrait, the Discord picture, or the initials of its name. */
+export type AvatarSource = "digimon" | "discord" | "initials";
+
+export function isAvatarChoice(value: unknown): value is AvatarChoice {
+  return value === null || value === INITIALS_AVATAR || isDigimonWorldAvatarId(value);
+}

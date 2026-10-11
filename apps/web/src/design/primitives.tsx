@@ -42,8 +42,10 @@ export type Screen =
   | "community"
   | "tournaments"
   | "settings"
+  | "replays"
   | "releases"
   | "feedback"
+  | "privacy"
   | "myFeedback"
   | "game";
 
@@ -291,11 +293,13 @@ export function Dialog({
   className,
   labelledBy,
   onClose,
+  style,
 }: {
   children: ReactNode;
   className?: string;
   labelledBy: string;
   onClose?: () => void;
+  style?: CSSProperties;
 }) {
   const dialogRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -338,6 +342,7 @@ export function Dialog({
         aria-modal="true"
         aria-labelledby={labelledBy}
         tabIndex={-1}
+        style={style}
         onKeyDown={handleKeyDown}
         onClick={(event) => event.stopPropagation()}
       >
@@ -531,6 +536,7 @@ export function TopNav({
   actions,
   signedIn = false,
   onOpenPlayerMenu,
+  playerMenuOpen,
   dark,
   onToggleDark,
   onOpenTheme,
@@ -544,7 +550,8 @@ export function TopNav({
   /** The signed-in player's notification bell; rendered in both the wide and the mobile bar. */
   notifications?: ReactNode;
   signedIn?: boolean;
-  onOpenPlayerMenu?: () => void;
+  onOpenPlayerMenu?: (anchor: HTMLButtonElement) => void;
+  playerMenuOpen?: boolean;
   /** Opens the palette chooser when available, otherwise toggles light/dark. */
   dark?: boolean;
   onToggleDark?: (dark: boolean) => void;
@@ -609,11 +616,12 @@ export function TopNav({
   const portrait = (size: number) => (
     <button
       className="aegis-portrait-button"
-      onClick={() => {
+      onClick={(event) => {
         playSound("nav");
-        onOpenPlayerMenu?.();
+        onOpenPlayerMenu?.(event.currentTarget);
       }}
-      aria-haspopup="dialog"
+      aria-expanded={playerMenuOpen ?? false}
+      aria-controls={playerMenuOpen ? "player-menu" : undefined}
       aria-label={t("playerMenu.open")}
       title={t("playerMenu.open")}
     >

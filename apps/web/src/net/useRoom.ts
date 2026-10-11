@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { GameState } from "@aegis/shared";
 import {
   EVENT_CHANNEL,
+  REPLAY_CHANNEL,
+  type ReplayDownloadMessage,
   DECISION_CHANNEL,
   SERIES_CHANNEL,
   type SequencedServerEvent,
@@ -34,6 +36,7 @@ import {
 } from "./reconnectSession";
 import { ResumeCancelledError, resumeSeat } from "./resumeSeat";
 import type { AegisJoinOptions } from "./types";
+import { keepLocalReplay } from "../replays/local";
 
 export type ConnectionStatus = "connecting" | "connected" | "reconnecting" | "error" | "closed";
 
@@ -117,6 +120,7 @@ export interface UseRoomResult {
   roomCode: string;
   /** This seat's claim on the next game of its best-of-three, once the series has handed it out. */
   seriesSeat: Omit<SeriesGameTicket, "roomId"> | undefined;
+  replayDownload?: ReplayDownloadMessage;
 }
 
 /** Where the next game of a series is and how this player takes their seat in it. */
@@ -206,6 +210,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
   const confirmedDecisionIdRef = useRef<string | undefined>(undefined);
   const answeredDecisionsRef = useRef(new Map<string, DecisionRequest>());
   const [error, setError] = useState<string>();
+  const [replayDownload, setReplayDownload] = useState<ReplayDownloadMessage>();
   const [sessionId, setSessionId] = useState<string>();
   const [roomCode, setRoomCode] = useState("");
   const [seriesSeat, setSeriesSeat] = useState<Omit<SeriesGameTicket, "roomId">>();
@@ -238,6 +243,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         spectator: options.spectator === true,
       };
       let gameOver = false;
+      let replayRequested = false;
       const stampSession = () => {
         if (cancelled || gameOver || roomRef.current !== room || !room.connection.isOpen) return;
         saveReconnectSession({ ...session, savedAt: Date.now() });
@@ -247,9 +253,18 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       const heartbeat = setInterval(stampSession, SESSION_HEARTBEAT_MS);
       stopHeartbeat = () => clearInterval(heartbeat);
 
+      room.onMessage<ReplayDownloadMessage>(REPLAY_CHANNEL, (message) => {
+        setReplayDownload(message);
+        // Every finished match stays in this browser, saved or not to Google Drive.
+        if (message.kind === "ready") void keepLocalReplay(message).catch(() => undefined);
+      });
       const acceptState = (next: GameState) => {
         stateRef.current = next;
         if (next.gameOver) {
+          if (!options.spectator && !replayRequested) {
+            replayRequested = true;
+            room.send(REPLAY_CHANNEL, {});
+          }
           gameOver = true;
           stopHeartbeat();
           clearReconnectSession();
@@ -461,5 +476,6 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     snapshots,
     roomCode,
     seriesSeat,
+    replayDownload,
   };
 }

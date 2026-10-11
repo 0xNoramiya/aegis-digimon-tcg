@@ -96,7 +96,7 @@ describe("AccountStore", () => {
     const first = await store.accountForIdentity("discord", "43", "Tamer");
     expect(first.avatarUrl).toBeNull();
     const refreshed = await store.accountForIdentity("discord", "43", "Tamer", "https://cdn.discordapp.com/a.png");
-    expect(refreshed).toEqual({ ...first, avatarUrl: "https://cdn.discordapp.com/a.png" });
+    expect(refreshed).toEqual({ ...first, avatarUrl: "https://cdn.discordapp.com/a.png", avatarSource: "discord" });
     expect((await store.accountForIdentity("discord", "43", "Tamer", null)).avatarUrl).toBeNull();
     await store.close();
   });

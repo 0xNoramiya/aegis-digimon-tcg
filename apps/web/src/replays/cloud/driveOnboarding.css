@@ -1,0 +1,468 @@
+.aegis-dialog.drive-onboarding {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--ds-space-4);
+  width: min(100%, 34rem);
+  text-align: center;
+}
+
+.drive-onboarding h2 {
+  max-width: 22ch;
+  margin: var(--ds-space-2) 0 0;
+  font: 800 var(--ds-text-2xl) / var(--ds-leading-tight) var(--ds-font-display);
+  letter-spacing: var(--ds-tracking-display);
+}
+
+.drive-onboarding__close {
+  position: absolute;
+  top: var(--ds-space-3);
+  right: var(--ds-space-3);
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 0;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-text-2);
+  background: transparent;
+  cursor: pointer;
+}
+
+.drive-onboarding__close:hover {
+  background: var(--ds-fill);
+}
+
+.drive-onboarding__handle {
+  display: none;
+}
+
+.drive-onboarding__body {
+  display: grid;
+  gap: var(--ds-space-3);
+  width: 100%;
+  min-height: 7.5rem;
+  color: var(--ds-text-2);
+  line-height: var(--ds-leading-body);
+  text-align: left;
+}
+
+.drive-onboarding__body p {
+  margin: 0;
+}
+
+.drive-onboarding__checks {
+  display: grid;
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ds-text);
+}
+
+.drive-onboarding__checks li {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.drive-onboarding__checks svg {
+  flex: none;
+  box-sizing: content-box;
+  padding: 4px;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-on-accent);
+  background: var(--ds-accent);
+}
+
+.drive-onboarding__footnote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-sm);
+}
+
+.drive-onboarding__footnote a {
+  color: var(--ds-accent);
+}
+
+.drive-onboarding [role="alert"] {
+  color: var(--ds-danger);
+}
+
+.drive-onboarding__dots {
+  display: flex;
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.drive-onboarding__dots li {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-line-strong);
+}
+
+.drive-onboarding__dots li[aria-current] {
+  width: 1.5rem;
+  background: var(--ds-accent);
+}
+
+.drive-onboarding__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--ds-space-2);
+  width: 100%;
+}
+
+.drive-onboarding__actions > .aegis-button:first-child:not(.drive-onboarding__next) {
+  margin-right: auto;
+}
+
+/* Illustrations are drawn from interface parts so they follow the theme in both modes. */
+.drive-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-4);
+  width: 100%;
+  min-height: 9.5rem;
+  padding: var(--ds-space-4);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in srgb, var(--ds-accent) 7%, var(--ds-fill));
+  box-sizing: border-box;
+}
+
+.drive-art__match {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-sheet);
+}
+
+.drive-art__match small {
+  color: var(--ds-text-3);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.drive-art__match strong {
+  color: var(--ds-accent);
+  font: 800 var(--ds-text-base) / 1 var(--ds-font-display);
+  text-transform: uppercase;
+}
+
+.drive-art__cards {
+  display: flex;
+  margin-top: var(--ds-space-1);
+}
+
+.drive-art__cards > * + * {
+  margin-left: -14px;
+  transform: rotate(6deg);
+}
+
+.drive-art__flow {
+  width: 3.5rem;
+  border-top: 3px dotted var(--ds-accent);
+  position: relative;
+}
+
+.drive-art__flow::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  right: -2px;
+  width: 9px;
+  height: 9px;
+  border-top: 3px solid var(--ds-accent);
+  border-right: 3px solid var(--ds-accent);
+  transform: rotate(45deg);
+}
+
+.drive-folder {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  color: #fff;
+}
+
+.drive-folder__tab {
+  width: 42%;
+  height: 0.75rem;
+  border-radius: 6px 6px 0 0;
+  background: #1c2c55;
+}
+
+.drive-folder__body {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--ds-space-1);
+  width: 8.5rem;
+  height: 6rem;
+  border-radius: 0 8px 8px 8px;
+  background: #22356a;
+  box-shadow: inset 0 3px 0 rgb(255 255 255 / 10%);
+}
+
+.drive-folder__body strong {
+  font-size: var(--ds-text-xs);
+}
+
+.drive-folder--sm .drive-folder__body {
+  width: 4.5rem;
+  height: 3.25rem;
+}
+
+.drive-folder--lg .drive-folder__body {
+  width: 10rem;
+  height: 7rem;
+}
+
+.drive-art__shield {
+  color: var(--ds-accent);
+}
+
+.drive-art__laptop {
+  display: grid;
+  justify-items: center;
+}
+
+.drive-art__laptop::after {
+  content: "";
+  width: 11.5rem;
+  height: 6px;
+  border-radius: 0 0 6px 6px;
+  background: #1c2c55;
+}
+
+.drive-art__screen,
+.drive-art__phone {
+  padding: 6px;
+  border: 5px solid #1c2c55;
+  background: var(--ds-sheet);
+}
+
+.drive-art__screen {
+  width: 9.5rem;
+  border-radius: 6px 6px 0 0;
+}
+
+.drive-art__phone {
+  width: 5rem;
+  border-radius: 12px;
+}
+
+.drive-art ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ds-text);
+  font-size: 9px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.drive-art__phone ul {
+  font-size: 7px;
+}
+
+.drive-art li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.drive-art__thumb {
+  flex: none;
+  width: 9px;
+  height: 12px;
+  border-radius: 2px;
+  background: #e8505b;
+}
+
+.drive-art__thumb--1 {
+  background: #f2a93b;
+}
+
+.drive-art__thumb--2 {
+  background: #3d7be0;
+}
+
+.drive-art__sync {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-on-accent);
+  background: var(--ds-accent);
+}
+
+/* Entry points: the profile banner and the "How it works" text button. */
+.drive-connect-card {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-5);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-sheet);
+}
+
+.drive-connect-card__icon {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--ds-accent);
+}
+
+.drive-connect-card__icon > svg:last-child {
+  position: absolute;
+  right: -6px;
+  bottom: -2px;
+  padding: 1px;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-sheet);
+}
+
+.drive-connect-card__copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.drive-connect-card h2 {
+  margin: 0 0 var(--ds-space-1);
+  font: 800 var(--ds-text-base) / var(--ds-leading-tight) var(--ds-font-display);
+}
+
+.drive-connect-card p {
+  margin: 0;
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+}
+
+.drive-connect-card > .aegis-button {
+  flex: none;
+}
+
+.drive-connect-card__badge {
+  display: inline-block;
+  padding: 2px var(--ds-space-2);
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-on-accent);
+  background: var(--ds-accent);
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+}
+
+.drive-how-link {
+  padding: 0;
+  border: 0;
+  color: var(--ds-accent);
+  background: none;
+  font: inherit;
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 599px) {
+  .aegis-dialog-layer:has(> .drive-onboarding) {
+    align-items: end;
+    padding: 0;
+  }
+
+  .aegis-dialog.drive-onboarding {
+    width: 100%;
+    max-height: 92dvh;
+    padding-bottom: calc(var(--ds-space-6) + env(safe-area-inset-bottom));
+    border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
+  }
+
+  .drive-onboarding__handle {
+    display: block;
+    width: 2.5rem;
+    height: 4px;
+    border-radius: var(--ds-radius-pill);
+    background: var(--ds-line-strong);
+  }
+
+  .drive-onboarding h2 {
+    font-size: var(--ds-text-xl);
+  }
+
+  .drive-art {
+    gap: var(--ds-space-2);
+    min-height: 8rem;
+  }
+
+  .drive-art__flow {
+    width: 1.75rem;
+  }
+
+  .drive-onboarding__actions > .drive-onboarding__next {
+    flex: 1 1 100%;
+    justify-content: center;
+    order: -1;
+  }
+
+  .drive-onboarding__actions > .aegis-button:first-child:not(.drive-onboarding__next) {
+    margin-right: 0;
+  }
+
+  .drive-onboarding__actions > .aegis-button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .drive-connect-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: var(--ds-space-2) var(--ds-space-3);
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+
+  .drive-connect-card__icon {
+    align-self: start;
+  }
+
+  .drive-connect-card__copy {
+    grid-column: 2 / 4;
+  }
+
+  .drive-connect-card > .drive-how-link {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+  }
+
+  .drive-connect-card > .aegis-button {
+    grid-column: 3;
+    grid-row: 2;
+  }
+}
+
+.settings-replays__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-4);
+  margin-top: var(--ds-space-1);
+}

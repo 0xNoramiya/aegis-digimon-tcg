@@ -1,3 +1,5 @@
+import { profileReplayEn } from "./profileReplays";
+import { replayEn } from "./replays";
 import releaseMessages from "../releases/messages.json";
 import { arenaEn } from "./redesign/arena.en";
 import { chatEn } from "./redesign/chat.en";
@@ -16,6 +18,8 @@ import { shellEn } from "./redesign/shell.en";
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  ...profileReplayEn,
+  ...replayEn,
   "feedback.title": "Player feedback",
   "feedback.subtitle": "Triage player reports, set their status and reply to the reporter.",
   "feedback.restricted": "Only administrators can view feedback.",
@@ -155,6 +159,7 @@ export const en = {
   "myFeedback.reopenFailure.generic": "Could not reopen the report. Try again.",
   "bugReport.successTracked": "Thanks. Track it in My feedback; the bell tells you when its status changes.",
 
+  "privacy.title": "Privacy policy",
   "game.dragIntent.reorder": "REORDER HAND",
   "game.handSort.type": "By type",
   "game.handSort.cost": "By cost",
@@ -676,22 +681,10 @@ export const en = {
   "playerMenu.guest": "Guest · saved on this device",
   "playerMenu.signedIn": "Signed in with Discord",
   "playerMenu.signOut": "Sign out",
-  "playerMenu.signInTitle": "Playing on more than one device?",
-  "playerMenu.signInCopy": "Connect Discord to keep your decks on your account.",
-  "playerMenu.accountAvatar": "Use account avatar",
-  "playerMenu.accountAvatarCopy": "Your original account picture.",
-  "playerMenu.defaultAvatar": "Use default avatar",
-  "playerMenu.defaultAvatarCopy": "Show your initials instead of a Digimon.",
-  "playerMenu.avatarSaveFailed": "Could not save your avatar. Try again.",
   "playerMenu.refreshDiscordAvatar": "Refresh Discord picture",
   "playerMenu.refreshDiscordAvatarDone": "Discord picture updated.",
   "playerMenu.refreshDiscordAvatarCooldown": "You just refreshed it. Try again in a minute.",
   "playerMenu.refreshDiscordAvatarFailed": "Could not reach Discord. Try again later.",
-  "playerMenu.avatarTitle": "Choose your portrait",
-  "playerMenu.avatarCopy": "Stays on this device, even without an account.",
-  "playerMenu.avatarSearch": "Search Digimon",
-  "playerMenu.avatarGridAria": "Digimon portraits",
-  "playerMenu.avatarEmpty": "No Digimon matches that search.",
   "playerMenu.linksAria": "Player menu links",
 
   "login.back": "Back to home",
@@ -707,9 +700,6 @@ export const en = {
   "login.benefit.free": "Free and ad-free fan project",
   "login.legal":
     "Fan project with no affiliation to Bandai. Digimon and the Digimon Card Game belong to their respective owners.",
-
-  "profile.nickname": "Nickname",
-  "profile.nameHint": "Opponents see this name",
 
   "menu.settings": "Settings",
 
@@ -917,6 +907,7 @@ export const en = {
   "settings.sleeveReplace": "Replace sleeve image",
   "settings.sleeveCustom": "Your image",
   "settings.sleeveLocal": "This device",
+  "settings.sleeveFromCards": "Card sleeve upload",
   "settings.sleeveRemove": "Remove sleeve image",
   "settings.sleeveInvalid": "Choose an image file.",
   "settings.sleeveUploadError": "Could not load or save this image. Try another image or a smaller file.",
@@ -1106,7 +1097,7 @@ export const en = {
   "game.surrenderConfirmTitle": "Surrender this match?",
   "game.surrenderConfirmBody": "The match ends now and counts as a loss.",
   "game.leaveConfirmTitle": "Leave this match?",
-  "game.leaveConfirmBody": "Leaving ends the match and counts as a loss.",
+  "game.leaveConfirmBody": "Leaving ends the match and counts as a loss. You can still save its replay.",
   "game.stats.turns": "Turns",
   "game.stats.oppBoard": "Opp. board",
   "game.stats.yourSecurity": "Your security",
@@ -1968,41 +1959,22 @@ export const en = {
   "account.magicLinkDailyLimit": "We reached today's sign-in email limit. Sign in with Discord, or try again tomorrow.",
   "account.magicLinkError": "Could not send the sign-in email. Try again.",
   "account.connected": "Account connected",
-  "account.signOut": "Sign out",
-  "account.nickname.title": "Player nickname",
-  "account.nickname.copy": "This is the name used in matches and new tournament registrations.",
   "account.nickname.label": "Nickname",
-  "account.nickname.hint": "3–32 characters.",
   "account.nickname.invalid": "Use 3–32 letters, numbers, spaces, underscores or hyphens.",
   "account.nickname.taken": "This nickname is already in use.",
   "account.nickname.rateLimit": "Too many changes in a short time. Wait a moment and try again.",
   "account.nickname.error": "Could not update your nickname. Try again.",
   "account.nickname.saving": "Saving…",
-  "account.stats.wins": "Wins",
-  "account.stats.losses": "Losses",
-  "account.stats.draws": "Draws",
-  "account.stats.dodges": "Dodges",
-  "account.stats.matches": "Matches",
-  "account.stats.tournaments": "Tournaments",
-  "account.stats.titles": "Titles",
-  "account.deckPerformance": "Deck performance",
-  "account.deckLine": "{wins}W · {losses}L · {draws}D · {matches} matches · {cards} cards",
-  "account.recentMatches": "Recent matches",
   "account.mode.ranked": "Ranked",
   "account.mode.tournament": "Tournament",
   "account.result.win": "Win",
   "account.result.loss": "Loss",
   "account.result.draw": "Draw",
-  "account.avatar.title": "Digimon World avatar",
-  "account.avatar.copy": "Choose one of the 65 original portraits from the PlayStation game.",
-  "account.avatar.credit": "Portraits ripped by metaldodomon (The Spriters Resource).",
   "account.avatar.search": "Search Digimon",
-  "account.avatar.searchPlaceholder": "E.g.: Tyrannomon",
   "account.avatar.gridAria": "Available avatars",
   "account.avatar.use": "Use {name} as your avatar",
   "account.avatar.saving": "Saving…",
   "account.avatar.empty": "No Digimon found.",
-  "account.avatar.saved": "{name} is now your avatar.",
   "account.avatar.error": "Could not save your avatar. Try again.",
 
   "bugReport.button": "Send feedback",

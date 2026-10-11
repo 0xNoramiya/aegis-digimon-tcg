@@ -342,7 +342,7 @@ describe("stats segregation", () => {
     expect(stats.tournament_losses).toBe(0);
     expect(stats.tournament_draws).toBe(0);
     // The match still shows up in the player's own history, named rather than dropped.
-    expect((await accounts.profile(alice.id)).matches).toHaveLength(1);
+    expect((await accounts.matchHistory(alice.id, { page: 1, limit: 25 })).matches).toHaveLength(1);
   });
 
   it("records nothing at all for a bot-versus-bot confrontation", async () => {
@@ -377,8 +377,9 @@ describe("stats segregation", () => {
     await elimination.resolveMatch({ matchId: final.id, winnerSeat: botSeat, reason: "series_won" });
 
     const profile = await accounts.profile(alice.id);
-    expect(profile.matches).toHaveLength(1);
-    expect(profile.matches[0]).toMatchObject({ result: "loss", opponentKind: "bot", opponentName: "Agumon Unit" });
+    const matches = (await accounts.matchHistory(alice.id, { page: 1, limit: 25 })).matches;
+    expect(matches).toHaveLength(1);
+    expect(matches[0]).toMatchObject({ result: "loss", opponentKind: "bot", opponentName: "Agumon Unit" });
     // Still not a competitive counter.
     expect(profile.stats.tournamentLosses).toBe(0);
   });
@@ -389,7 +390,9 @@ describe("stats segregation", () => {
     await addBot("Gabumon Unit");
     await elimination.createBracket({ tournamentId });
     await playOut();
-    expect((await accounts.profile(alice.id)).matches[0]?.opponentName).toBe("Gabumon Unit");
+    expect((await accounts.matchHistory(alice.id, { page: 1, limit: 25 })).matches[0]?.opponentName).toBe(
+      "Gabumon Unit",
+    );
   });
 
   it("writes the ledger table standings project from", async () => {
