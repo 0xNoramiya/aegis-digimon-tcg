@@ -1,9 +1,9 @@
 import { gunzipSync } from "node:zlib";
-import type { MatchReplay } from "@aegis/shared";
+import type { GameState, MatchReplay, ReplayFrame } from "@aegis/shared";
 import { beforeAll, describe, expect, it } from "vitest";
 import { exportPlayerReplay } from "./export.js";
 import { extractReplay } from "./extract.js";
-import { recordRoomMatch } from "./roomMatch.fixture.js";
+import { comparableState, recordRoomMatch } from "./roomMatch.fixture.js";
 import type { ReplayRecord } from "./types.js";
 
 /**
@@ -12,10 +12,13 @@ import type { ReplayRecord } from "./types.js";
  */
 
 let record: ReplayRecord;
+/** The frames the room's own `ReplayRecording` captured while it played the recorded match. */
+let roomFrames: ReplayFrame[];
 
 beforeAll(async () => {
   const recorded = await recordRoomMatch({ seed: 20260914 });
   if (!recorded.gameOver) throw new Error("the recorded match did not end");
+  roomFrames = recorded.recordingFrames;
   record = JSON.parse(JSON.stringify(extractReplay(recorded.lines, recorded.matchId))) as ReplayRecord;
 }, 120_000);
 
@@ -61,8 +64,9 @@ describe("exportPlayerReplay", () => {
   it("paces frames in order, redacts hidden zones and records only the shared batch events", async () => {
     const replay = open((await exportPlayerReplay(record)).file);
 
+    // `FRAME_MS` apart, so strictly increasing (the recording itself only clamps to non-decreasing).
     const times = replay.frames.map((frame) => frame.atMs);
-    expect(times).toEqual([...times].sort((a, b) => a - b));
+    for (let i = 1; i < times.length; i++) expect(times[i]).toBeGreaterThan(times[i - 1]!);
     for (const frame of replay.frames)
       for (const player of frame.state.players) {
         expect(player.deck).toHaveLength(0);
@@ -89,6 +93,27 @@ describe("exportPlayerReplay", () => {
       expect([...batches][0]).toMatch(/^batch-\d+$/);
       for (const event of frame.events) expect(event.stateVersion).toBe(frame.state.stateVersion - 1);
     }
+  }, 120_000);
+
+  it("is the file the room itself recorded for its players, frame by frame", async () => {
+    const replay = open((await exportPlayerReplay(record)).file);
+    expect(roomFrames.length).toBeGreaterThan(1);
+    expect(replay.frames).toHaveLength(roomFrames.length);
+    // A frame's state is the recording's plain JSON copy; `comparableState` reads it through `toJSON`.
+    // It leaves out what the room alone writes: the codes, the match clock and timers, the series,
+    // and each seat's identity (`displayName`, `avatarId`, `sessionId`: the replay seats are
+    // "Seat N", the room's carry the real names). `matchLogId` is compared beside it.
+    const comparable = (state: GameState) => comparableState({ toJSON: () => state } as unknown as GameState);
+    const events = (frame: ReplayFrame) =>
+      frame.events.map(({ kind, seq, batch, stateVersion }) => ({ kind, seq, batch, stateVersion }));
+    // Each frame is tagged with its index, so a failure names the first frame that differs.
+    const view = (frame: ReplayFrame, index: number) => ({
+      index,
+      matchLogId: frame.state.matchLogId,
+      state: comparable(frame.state),
+      events: events(frame),
+    });
+    replay.frames.forEach((frame, index) => expect(view(frame, index)).toEqual(view(roomFrames[index]!, index)));
   }, 120_000);
 
   it("derives the mode from the record's rules", async () => {

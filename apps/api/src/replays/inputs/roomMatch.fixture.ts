@@ -1,5 +1,5 @@
 import { ClientState, CloseCode, type Client } from "colyseus";
-import type { GameState, Intent } from "@aegis/shared";
+import type { GameState, Intent, ReplayFrame } from "@aegis/shared";
 import { vi } from "vitest";
 import { AegisRoom } from "../../rooms/AegisRoom.js";
 import { BotPlayer } from "../../bot/BotPlayer.js";
@@ -57,6 +57,8 @@ export interface RecordedRoomMatch {
   finalState: unknown;
   turnCount: number;
   gameOver: boolean;
+  /** The frames of the room's own player replay recording (`ReplayRecording`), empty if it made none. */
+  recordingFrames: ReplayFrame[];
 }
 
 const COMBAT_ANSWERS = new Set<Intent["type"]>([
@@ -90,6 +92,8 @@ type RoomInternals = {
   handleIntent(client: Client, intent: Intent): void;
   handleChat(client: Client, payload: unknown): void;
   COMBAT_WINDOW_TIMEOUT_SECONDS: number;
+  // `frames` is private on `ReplayRecording`; read structurally so `recording.ts` stays as it is.
+  replayRecording?: { frames: ReplayFrame[] };
 };
 
 /**
@@ -210,6 +214,7 @@ export async function recordRoomMatch(options: RoomMatchOptions): Promise<Record
       finalState: comparableState(room.state),
       turnCount: room.state.turnCount,
       gameOver: room.state.gameOver,
+      recordingFrames: structuredClone(internals.replayRecording?.frames ?? []),
     };
   } finally {
     if (realClock) disposeLikeColyseus(room);
