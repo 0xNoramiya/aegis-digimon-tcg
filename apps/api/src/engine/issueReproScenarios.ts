@@ -2171,6 +2171,27 @@ const ISSUE_LAYOUTS = {
     ],
     memory: 8,
   },
+  "arena-hand-sort-modes": {
+    players: [
+      {
+        hand: [
+          "BT1-084",
+          "BT1-087",
+          "BT1-028",
+          "ST1-16",
+          "BT8-012",
+          "BT1-088",
+          "BT1-073",
+          "BT1-090",
+          "BT1-009",
+          "BT2-112",
+        ],
+        deck: ["BT1-047", "BT1-060", "BT10-104", "BT1-091", "BT8-015", "BT8-011"],
+      },
+      {},
+    ],
+    memory: 3,
+  },
   "arena-issue-5073-epulse-trash": {
     players: [{ field: [{ card: "ST23-10" }], hand: ["ST23-15", "ST23-03"], trash: ["ST23-02", "ST23-04"] }, {}],
     memory: 5,

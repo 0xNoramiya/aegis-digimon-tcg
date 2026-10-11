@@ -2821,6 +2821,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     en: "End breeding and use Supreme Connection! from hand (3 memory). It goes to the battle area, but its ＜Delay＞ can't be activated this turn. Then activate ＜Delay＞ on the Supreme Connection! that was already in play: it goes to the trash, and Gigadramon is played from hand for 3. Memory ends at 2.",
     ptBR: "Encerre a criação e use Supreme Connection! da mão (3 de memória). Ela vai para a área de batalha, mas o ＜Delay＞ dela não pode ser ativado neste turno. Depois, ative o ＜Delay＞ da Supreme Connection! que já estava em jogo: ela vai para a lixeira e Gigadramon é jogado da mão por 3. A memória termina em 2.",
   },
+  "arena-hand-sort-modes": {
+    en: "Your hand mixes colors, levels, Tamers, and Options. Tap the sort button to sort by type. Open the caret menu and pick By cost, then By color: each choice sorts at once and becomes the button's mode. Draw a card: it stays at the end until you sort again.",
+    ptBR: "Sua mão mistura cores, níveis, Tamers e Options. Toque no botão de ordenar para ordenar por tipo. Abra o menu da seta e escolha Por custo, depois Por cor: cada escolha ordena na hora e vira o modo do botão. Compre uma carta: ela fica no fim até você ordenar de novo.",
+  },
   "arena-issue-5181-sharkmon-shellmon": {
     en: "End breeding and digivolve Shellmon into Sharkmon with the [Aqua]/[Sea Animal] route (cost 3). Shellmon has [Aquatic] only from its [Rule] text. De-Digivolve 1 the opponent's Digimon. Memory ends at 5.",
     ptBR: "Encerre a criação e digivolva Shellmon em Sharkmon pela rota [Aqua]/[Sea Animal] (custo 3). Shellmon tem [Aquatic] apenas pelo texto [Rule]. Aplique De-Digivolve 1 no Digimon do oponente. A memória termina em 5.",
@@ -3568,6 +3572,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-issue-5132-lm-055-search", "GitHub #5132 · Sprint Dash Training search"],
   ["arena-issue-5182-supreme-connection-delay", "GitHub #5182 · Supreme Connection! Delay"],
   ["arena-issue-5181-sharkmon-shellmon", "GitHub #5181 · Sharkmon onto Shellmon"],
+  ["arena-hand-sort-modes", "Hand sort modes"],
 ];
 
 /** Uses the normal room, bot and intent pipeline; all results come from the engine. */

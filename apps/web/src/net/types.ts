@@ -156,6 +156,7 @@ export interface AegisJoinOptions {
     | "arena-issue-5132-lm-055-search"
     | "arena-issue-5182-supreme-connection-delay"
     | "arena-issue-5181-sharkmon-shellmon"
+    | "arena-hand-sort-modes"
     | "arena-issue-5167-assembly-digimon"
     | "arena-issue-5171-taomon-famis"
     | "arena-issue-5127-opponent-suspend-cost"
