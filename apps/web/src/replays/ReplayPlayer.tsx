@@ -9,6 +9,12 @@ import { Button } from "../design/primitives";
 import { createPlaybackClock, frameDelay, playbackState, presentationEnd, turnPositions } from "./playback";
 import { SEQUENTIAL_PACING_ENABLED } from "../features";
 import { createAnimationPlayback } from "../game/animationPlayback";
+import {
+  downloadReplayVideo,
+  recordReplayVideo,
+  replayVideoSupported,
+  type ReplayVideoRecording,
+} from "./videoRecording";
 
 const emptyDeck = { mainDeck: [], eggDeck: [] };
 const acknowledgeDecision = () => undefined;
@@ -34,6 +40,18 @@ export function ReplayPlayer({
   const [viewerSeat, setViewerSeat] = useState<Seat>(replay.viewerSeat);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [recordingVideo, setRecordingVideo] = useState(false);
+  const [requestingVideo, setRequestingVideo] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const recording = useRef<ReplayVideoRecording | undefined>(undefined);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      recording.current?.discard();
+    };
+  }, []);
   const history = useRef<HTMLElement>(null);
   const historyToggle = useRef<HTMLButtonElement>(null);
   const surface = useRef<HTMLElement>(null);
@@ -136,6 +154,7 @@ export function ReplayPlayer({
       if (atEnd) {
         setSettled(true);
         setPlaying(false);
+        recording.current?.finish();
         return;
       }
       if (clock.elapsed() < frameDelay(replay, cursor.index, 1)) return;
@@ -198,6 +217,52 @@ export function ReplayPlayer({
       animate: false,
     }));
   }
+  async function exportVideo() {
+    if (recording.current) {
+      recording.current.finish();
+      return;
+    }
+    setVideoError(false);
+    setRequestingVideo(true);
+    setPlaying(false);
+    controls.current?.queue.pause();
+    try {
+      const capture = await recordReplayVideo({
+        onSaved(video) {
+          if (!mounted.current) return;
+          recording.current = undefined;
+          setRecordingVideo(false);
+          setControlsVisible(true);
+          setPlaying(false);
+          controls.current?.queue.pause();
+          downloadReplayVideo(video, replay.id);
+        },
+        onError() {
+          if (!mounted.current) return;
+          recording.current = undefined;
+          setRecordingVideo(false);
+          setControlsVisible(true);
+          setPlaying(false);
+          controls.current?.queue.pause();
+          setVideoError(true);
+        },
+      });
+      if (!mounted.current) {
+        capture.discard();
+        return;
+      }
+      recording.current = capture;
+      setRecordingVideo(true);
+      setHistoryOpen(false);
+      setControlsVisible(false);
+      seek(0);
+      setPlaying(true);
+    } catch {
+      if (mounted.current) setVideoError(true);
+    } finally {
+      if (mounted.current) setRequestingVideo(false);
+    }
+  }
   function togglePlay() {
     if (playing) {
       controls.current?.queue.pause();
@@ -236,6 +301,7 @@ export function ReplayPlayer({
         </div>
       </header>
       <p className="aegis-sr-only">{t("replay.perspective", { name: replay.players[replay.viewerSeat] })}</p>
+      {videoError ? <p role="alert">{t("replay.videoError")}</p> : null}
       <div className="replay-player__body">
         <div className="replay-player__board">
           <GameScreen
@@ -287,6 +353,17 @@ export function ReplayPlayer({
         ) : null}
       </div>
       <div className="replay-player__tools">
+        {replayVideoSupported() ? (
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={requestingVideo}
+            onClick={() => void exportVideo()}
+            title={t("replay.videoHint")}
+          >
+            {t(recordingVideo ? "replay.videoStop" : "replay.videoExport")}
+          </Button>
+        ) : null}
         <button
           ref={historyToggle}
           type="button"
@@ -296,6 +373,7 @@ export function ReplayPlayer({
           aria-expanded={historyOpen}
           aria-controls="replay-history"
           onClick={() => setHistoryOpen((open) => !open)}
+          disabled={recordingVideo || requestingVideo}
         >
           <Icons.FileText size={20} />
         </button>
@@ -307,6 +385,7 @@ export function ReplayPlayer({
           aria-expanded={controlsVisible}
           aria-controls="replay-controls"
           onClick={() => setControlsVisible((visible) => !visible)}
+          disabled={recordingVideo || requestingVideo}
         >
           <Icons.PlayCircle size={20} />
         </button>

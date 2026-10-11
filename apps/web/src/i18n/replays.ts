@@ -27,6 +27,11 @@ export const replayEn = {
   "replay.controlsShow": "Show controls",
 
   "replay.speedShort": "Speed",
+  "replay.videoExport": "Export video",
+  "replay.videoStop": "Stop and save video",
+  "replay.videoHint":
+    "Choose this tab in the browser prompt. The replay starts from the beginning and skips thinking time.",
+  "replay.videoError": "Could not record the replay. Try again in a browser that supports tab capture.",
   "replay.title": "Replays",
   "replay.open": "Open replay file",
   "replay.openAnother": "Open another file",
@@ -155,6 +160,11 @@ export const replayPtBR: Record<keyof typeof replayEn, string> = {
   "replay.controlsShow": "Mostrar controles",
 
   "replay.speedShort": "Velocidade",
+  "replay.videoExport": "Exportar vídeo",
+  "replay.videoStop": "Parar e salvar vídeo",
+  "replay.videoHint":
+    "Escolha esta aba na janela do navegador. O replay começa do início e remove o tempo de espera entre jogadas.",
+  "replay.videoError": "Não foi possível gravar o replay. Tente novamente em um navegador com captura de abas.",
   "replay.title": "Replays",
   "replay.open": "Abrir arquivo de replay",
   "replay.openAnother": "Abrir outro arquivo",
@@ -284,6 +294,11 @@ export const replayEs: Record<keyof typeof replayEn, string> = {
   "replay.controlsShow": "Mostrar controles",
 
   "replay.speedShort": "Velocidad",
+  "replay.videoExport": "Exportar vídeo",
+  "replay.videoStop": "Detener y guardar vídeo",
+  "replay.videoHint":
+    "Elige esta pestaña en la ventana del navegador. El replay empieza desde el inicio y omite el tiempo de espera entre jugadas.",
+  "replay.videoError": "No se pudo grabar el replay. Prueba en un navegador compatible con captura de pestañas.",
   "replay.title": "Replays",
   "replay.open": "Abrir archivo de replay",
   "replay.openAnother": "Abrir otro archivo",
@@ -416,6 +431,11 @@ export const replayIt: Record<keyof typeof replayEn, string> = {
   "replay.controlsShow": "Mostra controlli",
 
   "replay.speedShort": "Velocità",
+  "replay.videoExport": "Esporta video",
+  "replay.videoStop": "Ferma e salva video",
+  "replay.videoHint":
+    "Scegli questa scheda nella finestra del browser. Il replay riparte dall’inizio e salta il tempo di attesa tra le mosse.",
+  "replay.videoError": "Impossibile registrare il replay. Riprova con un browser che supporta la cattura delle schede.",
   "replay.title": "Replay",
   "replay.open": "Apri file replay",
   "replay.openAnother": "Apri un altro file",
