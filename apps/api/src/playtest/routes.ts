@@ -1,4 +1,3 @@
-// apps/api/src/playtest/routes.ts
 import { MAX_STUDY_BLURB, MAX_STUDY_LINK, MAX_STUDY_TITLE, type PlaytestStudyFailure } from "@aegis/shared";
 import type { Express, NextFunction, Request, Response } from "express";
 import type { AuthSession } from "../accounts/AccountStore.js";
@@ -113,7 +112,9 @@ function text(value: unknown): string | undefined {
 }
 
 function epoch(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? Math.floor(value) : undefined;
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 && Number.isSafeInteger(Math.floor(value))
+    ? Math.floor(value)
+    : undefined;
 }
 
 function isHttpsUrl(value: string): boolean {

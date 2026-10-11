@@ -1,4 +1,3 @@
-// apps/api/src/playtest/PlaytestStore.ts
 import type { PlaytestMember, PlaytestMembership, PlaytestStudy } from "@aegis/shared";
 import type { AccountStore } from "../accounts/AccountStore.js";
 import { notify } from "../notifications/NotificationStore.js";

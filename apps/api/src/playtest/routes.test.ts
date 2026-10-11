@@ -1,4 +1,3 @@
-// apps/api/src/playtest/routes.test.ts
 import type { AddressInfo } from "node:net";
 import express from "express";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -119,6 +118,7 @@ describe("/admin/playtest", () => {
   it("refuses a study with a bad window, title, blurb or link", async () => {
     for (const [body, error] of [
       [{ ...STUDY, closesAt: Date.now() - 1 }, "invalid_window"],
+      [{ ...STUDY, closesAt: 1e308 }, "invalid_window"],
       [{ ...STUDY, opensAt: STUDY.closesAt + 1 }, "invalid_window"],
       [{ ...STUDY, opensAt: Date.now() + 60_000 }, "invalid_window"],
       [{ ...STUDY, title: "" }, "invalid_title"],
