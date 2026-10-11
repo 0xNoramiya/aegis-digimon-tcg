@@ -22,6 +22,18 @@ import { fireTimingForPermanent } from "../gameEngine/timing.js";
 export function advance(engine: GameEngine) {
   const internals = internalsOf(engine);
   return {
+    /** Supplemental failure after a batch's cost preparation, before its first paid placement. */
+    failNextPlayCostPlacement(): () => void {
+      const original = internals.primitives.relocatePermanentByEffect;
+      function restore(): void {
+        internals.primitives.relocatePermanentByEffect = original;
+      }
+      internals.primitives.relocatePermanentByEffect = async () => {
+        restore();
+        throw new Error("injected-play-cost-placement-failure");
+      };
+      return restore;
+    },
     /** Supplemental fault injection; this is not a legal in-game replacement producer. */
     failNextSuspension(): () => void {
       const original = internals.primitives.suspend;

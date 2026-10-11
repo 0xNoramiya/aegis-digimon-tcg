@@ -1,3 +1,10 @@
+import { availableEffectPlayDigiXrosReduction } from "../../effects/interpreter/actions/effectPlayDigiXrosAvailability.js";
+import {
+  wouldBePlayedSelfReducerPaymentCandidates,
+  wouldBePlayedSelfReducersFor,
+} from "../../effects/interpreter/registration/reducers.js";
+import type { CardInstance } from "@aegis/shared";
+import { prepareDigiXrosSelfCosts } from "./payCost.js";
 import { Permanent } from "@aegis/shared";
 import { digiXrosZoneExpanderFor } from "../../digiXros/zoneExpanders.js";
 import { setTopCard } from "../../state/access.js";
@@ -24,6 +31,7 @@ export async function prepareDigiXrosPlays(
   for (const instanceId of instanceIds) {
     const instance = findLooseInstance(engine, instanceId);
     if (instance === undefined) continue;
+    await prepareDigiXrosSelfCosts(engine, instance);
     const source = cardSourceOf(engine, instance);
     const playTarget = new Permanent();
     playTarget.permanentId = `pending-play-${instance.instanceId}`;
@@ -79,4 +87,24 @@ export async function prepareDigiXrosPlays(
     },
   );
   return handledByPlay;
+}
+
+/** Joint material/payment bound: a paid Shoutmon cannot simultaneously earn a material discount. */
+export function maximumPreparedDigiXrosReduction(engine: GameEngine, instance: CardInstance): number {
+  if (engine.continuous.blocksCostReduction(instance.ownerSeat, "play")) return 0;
+  const ctx = buildEffectContext(engine, cardSourceOf(engine, instance), {});
+  let maximum = availableEffectPlayDigiXrosReduction(ctx, instance);
+  for (const reducer of wouldBePlayedSelfReducersFor(instance.cardId).filter(
+    (candidate) => candidate.grantsTrashDigiXros,
+  )) {
+    for (const source of wouldBePlayedSelfReducerPaymentCandidates(ctx, reducer)) {
+      const reduction = availableEffectPlayDigiXrosReduction(ctx, instance, {
+        allowsTrash: true,
+        ruleTrashMaterials: [...source.stack, ...source.linked],
+        reservedInstanceIds: source.topCard ? [source.topCard.instanceId] : [],
+      });
+      maximum = Math.max(maximum, reducer.amount + reduction);
+    }
+  }
+  return maximum;
 }

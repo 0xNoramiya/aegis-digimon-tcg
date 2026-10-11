@@ -2,6 +2,7 @@ import {
   CardKind,
   assemblyRequirementFor,
   digiXrosRequirementFor,
+  digiXrosRequiresPreparationFor,
   digiXrosAllowsTrashWithoutCostFor,
   digiXrosTrashNameAllowanceFor,
   digiXrosZoneExpanderFor,
@@ -69,7 +70,7 @@ export function prePlayPromptFor({
   const routes = entry.dnaDigivolveRoutes ?? [];
   if (preferDna && routes.length > 0) return { kind: "dna", instanceId, cardId, routes };
   const requirements = digiXrosRequirementFor(cardId);
-  if (requirements && requirements.length > 0)
+  if (requirements && requirements.length > 0 && !digiXrosRequiresPreparationFor(cardId))
     return {
       kind: "digiXros",
       playCostReductionBlocked: entry.playCostReductionBlocked,

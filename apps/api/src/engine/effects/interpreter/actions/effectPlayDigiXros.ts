@@ -39,6 +39,8 @@ export interface EffectPlayDigiXrosOptions {
    * (BT10-104: "you may also place cards from your trash").
    */
   extraMaterialZones?: readonly ZoneRef[];
+  /** Manual plays validate and consume paid grants when the actual play finishes. */
+  retainPlayExpansions?: boolean;
   /** The resolving source counts as this named material when a ruling permits it (AD1-006). */
   sourceMaterial?: { instanceId: string; nameEn: string };
 }
@@ -94,8 +96,10 @@ export async function prepareEffectPlayDigiXros(
   } catch (error) {
     for (const pendingId of eligibleDigiXrosIds) {
       const candidate = playedCards.find((entry) => entry.instanceId === pendingId);
-      if (candidate !== undefined) ctx.fx.consumeDigiXrosPlayExpansions?.(candidate.ownerSeat, pendingId);
+      if (candidate !== undefined && !options.retainPlayExpansions)
+        ctx.fx.consumeDigiXrosPlayExpansions?.(candidate.ownerSeat, pendingId);
     }
+    for (const pendingId of eligibleDigiXrosIds) ctx.fx.clearPreparedDigiXrosPlay?.(pendingId);
     throw error;
   }
   const reservedMaterials = new Set(reservedMaterialInstanceIds);
@@ -106,6 +110,8 @@ export async function prepareEffectPlayDigiXros(
       if (playedCard !== undefined && requirement !== undefined) {
         try {
           const replacementSourcePermanentIds = preparedDigiXros[playedCard.instanceId] ?? [];
+          const preparedMaterials = ctx.fx.preparedDigiXrosMaterials?.(playedCard.instanceId);
+          for (const reserved of preparedMaterials?.reservedInstanceIds ?? []) reservedMaterials.add(reserved);
           const ownerSeat = playedCard.ownerSeat;
           const player = ctx.game.player(ownerSeat);
           const playedDefinition = ctx.game.definitionOf({ cardId: playedCard.cardId } as never);
@@ -207,7 +213,7 @@ export async function prepareEffectPlayDigiXros(
             ),
           ];
           if (grantsUnderTamers) expansion.underTamerMax = Number.POSITIVE_INFINITY;
-          if (grantsTrash) expansion.trashMax = Number.POSITIVE_INFINITY;
+          if (grantsTrash || preparedMaterials?.allowsTrash) expansion.trashMax = Number.POSITIVE_INFINITY;
           const underTamerCandidates =
             expansion.underTamerMax > 0 ? looseCardsInZone(ctx, ownerSeat, "underTamers") : [];
           let scopedUnderTamerCandidates = underTamerCandidates;
@@ -234,6 +240,7 @@ export async function prepareEffectPlayDigiXros(
                 : underTamerCandidates.filter((candidate) => candidate.hostPermanentId === selectedHostId);
           }
           const expandedCandidates = [
+            ...(preparedMaterials?.ruleTrashMaterials ?? []),
             ...scopedUnderTamerCandidates,
             ...(expansion.trashMax > 0 ? looseCardsInZone(ctx, ownerSeat, "trash") : []),
           ];
@@ -258,6 +265,7 @@ export async function prepareEffectPlayDigiXros(
               min: 0,
               max: materialCap,
               digiXrosCardId: playedCard.cardId,
+              digiXrosRuleTrashInstanceIds: preparedMaterials?.ruleTrashMaterials.map((card) => card.instanceId),
             },
           );
           const selectedCandidates = selected
@@ -292,14 +300,19 @@ export async function prepareEffectPlayDigiXros(
         } finally {
           // A failed/aborted picker must not leak an expansion into a later play. Persistent
           // grants are retained by the primitive and are not part of this cleanup.
-          ctx.fx.consumeDigiXrosPlayExpansions?.(playedCard.ownerSeat, playedCard.instanceId);
+          if (!options.retainPlayExpansions)
+            ctx.fx.consumeDigiXrosPlayExpansions?.(playedCard.ownerSeat, playedCard.instanceId);
         }
       }
     }
+  } catch (error) {
+    for (const pendingId of eligibleDigiXrosIds) ctx.fx.clearPreparedDigiXrosPlay?.(pendingId);
+    throw error;
   } finally {
     for (const pendingId of eligibleDigiXrosIds) {
       const candidate = playedCards.find((entry) => entry.instanceId === pendingId);
-      if (candidate !== undefined) ctx.fx.consumeDigiXrosPlayExpansions?.(candidate.ownerSeat, pendingId);
+      if (candidate !== undefined && !options.retainPlayExpansions)
+        ctx.fx.consumeDigiXrosPlayExpansions?.(candidate.ownerSeat, pendingId);
     }
   }
   return materialInstanceIdsByPlay;

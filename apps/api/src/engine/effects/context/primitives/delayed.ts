@@ -39,6 +39,12 @@ export interface DelayedPrimitives {
   /** Consume pending-play expansions after material selection; persistent grants survive. */
   consumeDigiXrosPlayExpansions?(seat: Seat, pendingPlayInstanceId?: string): void;
   /** Resolve matching wouldBePlayed replacements before effect-driven DigiXros material selection. */
+  clearPreparedDigiXrosPlay?(instanceId: string): void;
+  preparedDigiXrosMaterials?(instanceId: string): {
+    allowsTrash: boolean;
+    reservedInstanceIds: string[];
+    ruleTrashMaterials: import("@aegis/shared").CardInstance[];
+  };
   prepareDigiXrosPlay?(instanceId: string): Promise<string[]>;
   prepareDigiXrosPlays?(
     instanceIds: readonly string[],

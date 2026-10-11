@@ -16,6 +16,7 @@ export {
   DIGIXROS_REQUIREMENT_OVERRIDES,
   digiXrosTrashNameAllowanceFor,
   digiXrosAllowsTrashWithoutCostFor,
+  digiXrosRequiresPreparationFor,
   DIGIXROS_TRASH_NAME_ALLOWANCES,
   assemblyRequirementFor,
 } from "./data.js";

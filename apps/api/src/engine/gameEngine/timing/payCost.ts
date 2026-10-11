@@ -3,6 +3,7 @@ import { canActivate, canTrigger } from "../../effects/kernel.js";
 import { effectsOf } from "../../effects/collect.js";
 import {
   applyWouldBePlayedSelfReducer,
+  canPayWouldBePlayedSelfReducer,
   potentialWouldBePlayedSelfReduction,
   wouldBePlayedRuleTrashCandidates,
   wouldBePlayedSelfReducersFor,
@@ -67,7 +68,10 @@ export async function fireBeforePayCost(
   // inert `wouldBePlayed reduceCost` replacements (never consulted; `ReplacementSubscription.apply`
   // has no call site and self-reducers on a card still in hand never reach a Static continuous
   // recompute anyway). Run them here in the pay-time window alongside the BeforePayCost effects.
-  const selfReducers = wouldBePlayedSelfReducersFor(instance.cardId);
+  const prepared = engine.preparedDigiXrosCosts.get(instance.instanceId);
+  const selfReducers = wouldBePlayedSelfReducersFor(instance.cardId).filter(
+    (reducer) => !prepared?.handled.includes(reducer.raw),
+  );
   // Cross-permanent reducers: a permanent OTHER than the played card (BT10-093 / EX3-040)
   // that reduces the cost of a matching played card. Scanned so the early-return below does not
   // skip the pay-time window when only such a reducer applies.
@@ -75,6 +79,7 @@ export async function fireBeforePayCost(
   const residentEffects = residentPlayCostEffects(engine, source.ownerSeat);
   const breedingResidentEffects = breedingPlayCostEffects(engine, source.ownerSeat);
   if (
+    prepared === undefined &&
     effects.length === 0 &&
     selfReducers.length === 0 &&
     crossWatchers.length === 0 &&
@@ -94,6 +99,7 @@ export async function fireBeforePayCost(
       wouldBePlayedAsOption: useAsOption,
     }),
     selections: new Map(),
+    playCostDelta: prepared?.delta ?? 0,
   };
   const playTarget = pendingPlayTarget(instance, source);
   if (projectOnly) {
@@ -145,7 +151,10 @@ export async function fireBeforePayCost(
         return total;
       return total + effect.potentialPlayCostReduction(residentCtx, playTarget);
     }, 0);
-    return Math.max(0, baseCost - selfReduction - interactiveReduction - prospectiveBreedingReduction);
+    return Math.max(
+      0,
+      baseCost - (prepared?.delta ?? 0) - selfReduction - interactiveReduction - prospectiveBreedingReduction,
+    );
   }
   // Everything below actually PAYS the reducers' costs. Mark the window so a cost deletion's
   // [On Deletion] joins engine play's trigger batch instead of resolving in its own window.
@@ -295,6 +304,8 @@ export async function fireBeforePayCost(
 
 /** Digivolution cards the played card's own "would be played" costs may trash by rule. */
 export function wouldBePlayedRuleTrashMaterials(engine: GameEngine, instance: CardInstance): CardInstance[] {
+  if (engine.preparedDigiXrosCosts.has(instance.instanceId))
+    return preparedDigiXrosMaterials(engine, instance.instanceId).ruleTrashMaterials;
   const reducers = wouldBePlayedSelfReducersFor(instance.cardId);
   if (reducers.length === 0) return [];
   const ctx = buildEffectContext(engine, cardSourceOf(engine, instance), {
@@ -322,4 +333,102 @@ export async function fireBeforeDigivolveCost(
     if (!canActivate(effect, ctx, engine.tracker)) continue;
     await effect.resolve(ctx);
   }
+}
+
+/** Resolve the self clauses which open material zones before any DigiXros declaration (§7-2-2-2). */
+export async function prepareDigiXrosSelfCosts(engine: GameEngine, instance: CardInstance): Promise<void> {
+  if (engine.preparedDigiXrosCosts.has(instance.instanceId)) return;
+  const reducers = wouldBePlayedSelfReducersFor(instance.cardId).filter((reducer) => reducer.grantsTrashDigiXros);
+  if (reducers.length === 0) return;
+  const ctx: EffectContext = {
+    ...buildEffectContext(engine, cardSourceOf(engine, instance), {
+      wouldBePlayedInstanceId: instance.instanceId,
+      wouldBePlayedCardId: instance.cardId,
+    }),
+    selections: new Map(),
+    reservedCostInstanceIds: new Set(
+      [...engine.pendingSelfReducerRelocations.values()].flatMap((entries) =>
+        entries.flatMap((entry) => {
+          const top = engine.access.permanentById(entry.permanentId)?.topCard;
+          return top ? [top.instanceId] : [];
+        }),
+      ),
+    ),
+  };
+  const receipt = { handled: [] as string[], delta: 0, allowsTrash: false };
+  engine.preparedDigiXrosCosts.set(instance.instanceId, receipt);
+  const wasPaying = engine.payingPlayCost;
+  engine.payingPlayCost = true;
+  try {
+    for (const reducer of reducers) {
+      const previous = ctx.playCostDelta ?? 0;
+      // Materials have not been chosen: affordability cannot force this optional payment yet.
+      await applyWouldBePlayedSelfReducer(ctx, reducer, false);
+      receipt.handled.push(reducer.raw);
+      if ((ctx.playCostDelta ?? 0) > previous) receipt.allowsTrash = true;
+    }
+    receipt.delta = engine.continuous.blocksCostReduction(instance.ownerSeat, "play")
+      ? 0
+      : Math.max(0, ctx.playCostDelta ?? 0);
+    if (ctx.pendingSelfReducerRelocations?.length)
+      engine.pendingSelfReducerRelocations.set(instance.instanceId, ctx.pendingSelfReducerRelocations);
+    if (ctx.pendingSelfReducerPlacements?.length)
+      engine.pendingPlayReducerPlacements.set(instance.instanceId, ctx.pendingSelfReducerPlacements);
+  } finally {
+    engine.payingPlayCost = wasPaying;
+  }
+}
+
+/** The source top is committed by the clause, not an additional discounted DigiXros material. */
+export function preparedDigiXrosMaterials(engine: GameEngine, instanceId: string) {
+  const receipt = engine.preparedDigiXrosCosts.get(instanceId);
+  const sources = (engine.pendingSelfReducerRelocations.get(instanceId) ?? []).flatMap((entry) => {
+    const permanent = engine.access.permanentById(entry.permanentId);
+    return permanent === undefined ? [] : [permanent];
+  });
+  return {
+    allowsTrash: receipt?.allowsTrash ?? false,
+    reservedInstanceIds: sources.flatMap((source) => (source.topCard ? [source.topCard.instanceId] : [])),
+    ruleTrashMaterials: receipt?.allowsTrash ? sources.flatMap((source) => [...source.stack, ...source.linked]) : [],
+  };
+}
+
+export function clearPreparedDigiXrosPlay(engine: GameEngine, instanceId: string): void {
+  engine.preparedDigiXrosCosts.delete(instanceId);
+  engine.pendingSelfReducerRelocations.delete(instanceId);
+  engine.pendingPlayReducerPlacements.delete(instanceId);
+}
+
+/** Before preparation, only a genuinely payable printed clause may provisionally admit trash. */
+export function conditionalDigiXrosTrashAllowed(engine: GameEngine, instance: CardInstance): boolean | undefined {
+  const reducers = wouldBePlayedSelfReducersFor(instance.cardId).filter((reducer) => reducer.grantsTrashDigiXros);
+  if (reducers.length === 0) return undefined;
+  const receipt = engine.preparedDigiXrosCosts.get(instance.instanceId);
+  if (receipt !== undefined) return receipt.allowsTrash;
+  const ctx = buildEffectContext(engine, cardSourceOf(engine, instance), {});
+  return reducers.some((reducer) => canPayWouldBePlayedSelfReducer(ctx, reducer));
+}
+
+export function pendingDigiXrosSelfReduction(engine: GameEngine, instance: CardInstance): number {
+  const receipt = engine.preparedDigiXrosCosts.get(instance.instanceId);
+  if (receipt !== undefined) return receipt.delta;
+  if (engine.continuous.blocksCostReduction(instance.ownerSeat, "play")) return 0;
+  const ctx = buildEffectContext(engine, cardSourceOf(engine, instance), {});
+  return wouldBePlayedSelfReducersFor(instance.cardId)
+    .filter((reducer) => reducer.grantsTrashDigiXros)
+    .reduce((total, reducer) => total + (canPayWouldBePlayedSelfReducer(ctx, reducer) ? reducer.amount : 0), 0);
+}
+
+/** Unknown independent cost effects still resolve authoritatively instead of a guessed affordability bound. */
+export function hasOtherDigiXrosPlayCosts(engine: GameEngine, instance: CardInstance): boolean {
+  const source = cardSourceOf(engine, instance);
+  return (
+    wouldBePlayedSelfReducersFor(instance.cardId).some((reducer) => !reducer.grantsTrashDigiXros) ||
+    effectsOf(EffectTiming.BeforePayCost, source).some((effect) => effect.costWindow !== "digivolve") ||
+    crossPermanentPlayReducerWatchers(engine, instance, source.ownerSeat).length > 0 ||
+    residentPlayCostEffects(engine, source.ownerSeat).length > 0 ||
+    breedingPlayCostEffects(engine, source.ownerSeat).length > 0 ||
+    engine.subTriggers.hasInteractiveReductionsFor("wouldBePlayed", source.ownerSeat) ||
+    engine.subTriggers.hasPassiveReductionsFor("wouldBePlayed")
+  );
 }

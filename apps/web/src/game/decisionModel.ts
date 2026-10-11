@@ -114,7 +114,7 @@ export function decisionVisibleCards(
     const revealed = authoritative.get(instanceId);
     const cardId = revealed?.cardId ?? instanceIndex.get(instanceId);
     const artId = revealed?.artId ?? artIndex?.get(instanceId);
-    const zone = zoneIndex?.get(instanceId);
+    const zone = options?.digiXrosRuleTrashInstanceIds?.includes(instanceId) ? "trash" : zoneIndex?.get(instanceId);
     return { instanceId, cardId, ...(cardId && artId ? { artId } : {}), ...(zone ? { zone } : {}) };
   });
 }

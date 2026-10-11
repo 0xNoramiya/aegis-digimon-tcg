@@ -2107,3 +2107,18 @@ export function appFusionCostFor(
   }
   return undefined;
 }
+
+/** A paid would-be-played clause changes the material zones; the API must resolve it before selection. */
+export function digiXrosRequiresPreparationFor(cardId: string): boolean {
+  return (
+    compiledEffects[cardId]?.effects.some((effect) =>
+      effect.actions.some(
+        (action) =>
+          action.kind === "Replacement" &&
+          action.event === "wouldBePlayed" &&
+          (action.actions?.length ?? 0) > 0 &&
+          action.additionalEffects?.some((extra) => extra.kind === "AllowDigiXrosMaterialsFromTrash"),
+      ),
+    ) ?? false
+  );
+}

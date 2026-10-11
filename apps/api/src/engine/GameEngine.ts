@@ -304,6 +304,8 @@ export class GameEngine {
    * separate maps because this one relocates a whole PERMANENT via `relocatePermanent`, not loose
    * card instances via `placeUnder`).
    */
+  /** Paid/declined material-zone clauses, scoped to one pending played instance. */
+  readonly preparedDigiXrosCosts = new Map<string, { handled: string[]; delta: number; allowsTrash: boolean }>();
   readonly pendingSelfReducerRelocations = new Map<string, { permanentId: string; shedOwnCards?: boolean }[]>();
 
   /** The effect verbs (effect-primitives) bound to this match. */

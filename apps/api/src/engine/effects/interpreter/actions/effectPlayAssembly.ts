@@ -169,45 +169,49 @@ export async function playEffectInstances(
   options: EffectPlayOptions = {},
   digiXrosOptions: EffectPlayDigiXrosOptions = {},
 ): Promise<Permanent[]> {
-  const callerChoseDigiXros =
-    options?.digiXrosMaterialInstanceIds !== undefined || options?.digiXrosMaterialInstanceIdsByPlay !== undefined;
-  const digiXrosMaterialInstanceIdsByPlay = callerChoseDigiXros
-    ? (options?.digiXrosMaterialInstanceIdsByPlay ?? {})
-    : await prepareEffectPlayDigiXros(ctx, playedCards, [], digiXrosOptions);
-  const reservedDigiXrosMaterials = [
-    ...(options?.digiXrosMaterialInstanceIds ?? []),
-    ...Object.values(digiXrosMaterialInstanceIdsByPlay).flat(),
-  ];
-  const { assemblyMaterialInstanceIdsByPlay, assemblyReductionByPlay } = await prepareEffectPlayAssembly(
-    ctx,
-    playedCards,
-    reservedDigiXrosMaterials,
-  );
-  const hasAssembly = Object.keys(assemblyMaterialInstanceIdsByPlay).length > 0;
-  const hasDigiXros = Object.keys(digiXrosMaterialInstanceIdsByPlay).length > 0;
-  const instanceIds = playedCards.map(({ instanceId }) => instanceId);
+  try {
+    const callerChoseDigiXros =
+      options?.digiXrosMaterialInstanceIds !== undefined || options?.digiXrosMaterialInstanceIdsByPlay !== undefined;
+    const digiXrosMaterialInstanceIdsByPlay = callerChoseDigiXros
+      ? (options?.digiXrosMaterialInstanceIdsByPlay ?? {})
+      : await prepareEffectPlayDigiXros(ctx, playedCards, [], digiXrosOptions);
+    const reservedDigiXrosMaterials = [
+      ...(options?.digiXrosMaterialInstanceIds ?? []),
+      ...Object.values(digiXrosMaterialInstanceIdsByPlay).flat(),
+    ];
+    const { assemblyMaterialInstanceIdsByPlay, assemblyReductionByPlay } = await prepareEffectPlayAssembly(
+      ctx,
+      playedCards,
+      reservedDigiXrosMaterials,
+    );
+    const hasAssembly = Object.keys(assemblyMaterialInstanceIdsByPlay).length > 0;
+    const hasDigiXros = Object.keys(digiXrosMaterialInstanceIdsByPlay).length > 0;
+    const instanceIds = playedCards.map(({ instanceId }) => instanceId);
 
-  const { digiXrosMaterialInstanceIds, ...playOptions } = options ?? {};
-  return ctx.fx.playInstances(instanceIds, {
-    ...playOptions,
-    ...(digiXrosMaterialInstanceIds !== undefined && digiXrosMaterialInstanceIds.length > 0
-      ? { digiXrosMaterialInstanceIds }
-      : {}),
-    ...(hasDigiXros ? { digiXrosMaterialInstanceIdsByPlay } : {}),
-    ...(hasAssembly
-      ? {
-          assemblyMaterialInstanceIdsByPlay: {
-            ...(options?.assemblyMaterialInstanceIdsByPlay ?? {}),
-            ...assemblyMaterialInstanceIdsByPlay,
-          },
-          costDeltaByPlay: Object.fromEntries(
-            instanceIds.map((instanceId) => [
-              instanceId,
-              (options?.costDeltaByPlay?.[instanceId] ?? options?.costDelta ?? 0) +
-                (assemblyReductionByPlay[instanceId] ?? 0),
-            ]),
-          ),
-        }
-      : {}),
-  });
+    const { digiXrosMaterialInstanceIds, ...playOptions } = options ?? {};
+    return await ctx.fx.playInstances(instanceIds, {
+      ...playOptions,
+      ...(digiXrosMaterialInstanceIds !== undefined && digiXrosMaterialInstanceIds.length > 0
+        ? { digiXrosMaterialInstanceIds }
+        : {}),
+      ...(hasDigiXros ? { digiXrosMaterialInstanceIdsByPlay } : {}),
+      ...(hasAssembly
+        ? {
+            assemblyMaterialInstanceIdsByPlay: {
+              ...(options?.assemblyMaterialInstanceIdsByPlay ?? {}),
+              ...assemblyMaterialInstanceIdsByPlay,
+            },
+            costDeltaByPlay: Object.fromEntries(
+              instanceIds.map((instanceId) => [
+                instanceId,
+                (options?.costDeltaByPlay?.[instanceId] ?? options?.costDelta ?? 0) +
+                  (assemblyReductionByPlay[instanceId] ?? 0),
+              ]),
+            ),
+          }
+        : {}),
+    });
+  } finally {
+    for (const card of playedCards) ctx.fx.clearPreparedDigiXrosPlay?.(card.instanceId);
+  }
 }

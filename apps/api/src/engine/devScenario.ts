@@ -380,6 +380,8 @@ export const DEV_SCENARIO_IDS = [
   "arena-ex5-biting-crush-delay",
   "arena-p108-training-delay-no-target",
   "arena-p108-training-delay-with-target",
+  "arena-feedback44-shoutmon-trash-bt21",
+  "arena-feedback44-shoutmon-trash-bt12",
   "arena-feedback43-omnimon-name-dna",
   "arena-feedback42-parkour-sequential",
   "arena-github5306-training-use-memory",
@@ -10625,6 +10627,19 @@ function layGithub5311CrescemonCostScenario(state: GameState): void {
   insertCard(human, Zone.Hand, faceDownCard("github5311-crescemon", "EX5-020", 0));
 }
 
+/** Feedback #44: pay the printed Shoutmon clause before selecting hand, trash and freshly shed sources. */
+function layFeedback44ShoutmonTrashScenario(state: GameState, cardId: string): void {
+  prepareGithubCardEffectsScenario(state, 10);
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT10-008", "BT21-011"], "-feedback44-shoutmon"));
+  // A non-expander Tamer proves this clause does not open stored cards beneath Tamers.
+  placePermanent(human, establishedDigimon(0, ["BT10-015", "BT1-085"], "-feedback44-tamer"));
+  insertCard(human, Zone.Hand, faceDownCard("feedback44-superior", cardId, 0));
+  insertCard(human, Zone.Hand, faceDownCard("feedback44-hand", "BT10-013", 0));
+  for (const [index, material] of ["BT10-007", "BT10-009", "BT10-012"].entries())
+    insertCard(human, Zone.Trash, faceDownCard(`feedback44-trash-${index}`, material, 0));
+}
+
 /** Feedback #43: Main DNA accepts level-6 substring names, including the observed AD1 stacks. */
 function layFeedback43OmnimonDnaScenario(state: GameState): void {
   prepareGithubCardEffectsScenario(state, 2);
@@ -11420,6 +11435,8 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-ex5-biting-crush-delay": layEx5BitingCrushDelayScenario,
   "arena-p108-training-delay-no-target": (state, decks) => layP108TrainingDelayScenario(state, decks, false),
   "arena-p108-training-delay-with-target": (state, decks) => layP108TrainingDelayScenario(state, decks, true),
+  "arena-feedback44-shoutmon-trash-bt21": (state) => layFeedback44ShoutmonTrashScenario(state, "BT21-030"),
+  "arena-feedback44-shoutmon-trash-bt12": (state) => layFeedback44ShoutmonTrashScenario(state, "BT12-112"),
   "arena-feedback43-omnimon-name-dna": (state) => layFeedback43OmnimonDnaScenario(state),
   "arena-feedback42-parkour-sequential": (state) => layFeedback42ParkourScenario(state),
   "arena-github5306-training-use-memory": (state) => layGithub5306TrainingMemoryScenario(state, "use"),

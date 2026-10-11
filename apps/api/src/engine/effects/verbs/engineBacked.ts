@@ -17,6 +17,8 @@ export function createEngineBackedVerbs(
   | "linkCostReductionUsed"
   | "markLinkCostReductionUsed"
   | "customEffectGrants"
+  | "clearPreparedDigiXrosPlay"
+  | "preparedDigiXrosMaterials"
   | "prepareDigiXrosPlay"
   | "prepareDigiXrosPlays"
 > {
@@ -33,6 +35,13 @@ export function createEngineBackedVerbs(
           (grant) =>
             grant.instanceId === access.permanentById(permanentId)?.topCard?.instanceId && grant.isActive?.() !== false,
         ),
+    clearPreparedDigiXrosPlay: (instanceId) => engine.clearPreparedDigiXrosPlay?.(instanceId),
+    preparedDigiXrosMaterials: (instanceId) =>
+      engine.preparedDigiXrosMaterials?.(instanceId) ?? {
+        allowsTrash: false,
+        reservedInstanceIds: [],
+        ruleTrashMaterials: [],
+      },
     prepareDigiXrosPlay: async (instanceId) => engine.prepareDigiXrosPlay?.(instanceId) ?? [],
     prepareDigiXrosPlays: async (instanceIds, simultaneousPlayCount) => {
       if (engine.prepareDigiXrosPlays !== undefined)

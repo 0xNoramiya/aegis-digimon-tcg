@@ -82,7 +82,7 @@ describe("BT12-112 ＜when played＞ cost reduction (place 1 [Shoutmon] → -1)"
         },
         1: { battleArea: [{ card: "BT12-008", as: "opponent-shoutmon" }] },
       },
-      { autoSelectCards: true },
+      { autoSelectCards: true, declineDigiXros: true },
     );
     s.state.memory = 14;
 
@@ -138,7 +138,7 @@ describe("BT12-112 ＜when played＞ cost reduction (place 1 [Shoutmon] → -1)"
           hand: [{ card: BT12_112, as: "card" }],
         },
       },
-      { autoAcceptOptional: true, autoSelectCards: true },
+      { autoAcceptOptional: true, autoSelectCards: true, declineDigiXros: true },
     );
     const p0 = s.state.players[0];
     s.state.memory = 14;
@@ -169,7 +169,7 @@ describe("BT12-112 ＜when played＞ cost reduction (place 1 [Shoutmon] → -1)"
           hand: [{ card: BT12_112, as: "card" }],
         },
       },
-      { autoSelectCards: true },
+      { autoSelectCards: true, declineDigiXros: true },
     );
     const p0 = s.state.players[0];
     s.state.memory = 15;
@@ -303,7 +303,7 @@ describe("BT12-112 Shoutmon X7: Superior Mode — KB Q&A rulings", () => {
           breeding: { card: SHOUTMON, as: "breeding-shoutmon" },
         },
       },
-      { autoAcceptOptional: true, autoSelectCards: true },
+      { autoAcceptOptional: true, autoSelectCards: true, declineDigiXros: true },
     );
     s.state.memory = 15;
 
@@ -330,7 +330,7 @@ describe("BT12-112 Shoutmon X7: Superior Mode — KB Q&A rulings", () => {
           breeding: { card: SHOUTMON, as: "breeding-shoutmon" },
         },
       },
-      { autoAcceptOptional: true },
+      { autoAcceptOptional: true, autoSelectCards: true, declineDigiXros: true },
     );
     control.state.memory = 14;
     const fieldShoutmonId = control.perm("field-shoutmon").topCard!.instanceId;
@@ -367,7 +367,7 @@ describe("BT12-112 Shoutmon X7: Superior Mode — KB Q&A rulings", () => {
           hand: [{ card: BT12_112, as: "x7" }],
         },
       },
-      { autoAcceptOptional: true, autoSelectCards: true },
+      { autoAcceptOptional: true, autoSelectCards: true, declineDigiXros: true },
     );
     s.state.memory = 14;
     const shoutmonCardId = s.perm("shoutmon").topCard!.instanceId;
@@ -411,7 +411,7 @@ describe("BT12-112 Shoutmon X7: Superior Mode — KB Q&A rulings", () => {
           hand: [{ card: BT12_112, as: "x7" }],
         },
       },
-      { autoAcceptOptional: true, autoSelectCards: true },
+      { autoAcceptOptional: true, autoSelectCards: true, declineDigiXros: true },
     );
     await s.ready();
     s.state.memory = 14;
@@ -436,7 +436,7 @@ describe("BT12-112 Shoutmon X7: Superior Mode — KB Q&A rulings", () => {
           ],
         },
       },
-      { autoSelectCards: true },
+      { autoSelectCards: true, declineDigiXros: true },
     );
     s.state.memory = 13;
     const shoutmonCardId = s.perm("shoutmon").topCard!.instanceId;
@@ -484,7 +484,7 @@ describe("BT12-112 Shoutmon X7: Superior Mode — KB Q&A rulings", () => {
           hand: [{ card: BT12_112, as: "x7" }],
         },
       },
-      { autoAcceptOptional: true, autoSelectCards: true },
+      { autoAcceptOptional: true, autoSelectCards: true, declineDigiXros: true },
     );
     s.state.memory = 12;
     const shoutmonCardId = s.perm("shoutmon").topCard!.instanceId;
@@ -583,7 +583,7 @@ describe("BT12-112 Shoutmon X7: Superior Mode — KB Q&A rulings", () => {
           ],
         },
       },
-      { autoSelectCards: true },
+      { autoSelectCards: true, declineDigiXros: true },
     );
     control.state.memory = 15;
     expect(
@@ -609,7 +609,7 @@ describe("BT12-112 Shoutmon X7: Superior Mode — KB Q&A rulings", () => {
           ],
         },
       },
-      { autoAcceptOptional: true, autoSelectCards: true },
+      { autoAcceptOptional: true, autoSelectCards: true, declineDigiXros: true },
     );
     s.state.memory = 13;
     const x7Id = s.inst("x7").instanceId;

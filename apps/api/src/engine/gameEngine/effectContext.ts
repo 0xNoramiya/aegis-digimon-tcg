@@ -1,3 +1,4 @@
+import { clearPreparedDigiXrosPlay, preparedDigiXrosMaterials } from "./timing/payCost.js";
 import { retirePendingAttackWatchers } from "./subTriggers.js";
 import { isTimingActivationDisabled } from "../effects/timingActivation.js";
 import {
@@ -42,7 +43,7 @@ import { effectiveColorsOf } from "./matchLifecycle.js";
 import { createPrimitives } from "../effects/primitives.js";
 import { resolveSelfWhenTrashedFromDeck } from "../effects/interpreter.js";
 import { payBarrierSecurityCost } from "./securityCheck.js";
-import { digivolveDeps } from "./actionDeps.js";
+import { digivolveDeps, playCardDeps } from "./actionDeps.js";
 import { collectRuleProcessPending } from "./ruleProcess.js";
 import { awaitBlitzAttackDeclaration } from "./blitz.js";
 import {
@@ -680,6 +681,10 @@ export function buildPrimitives(engine: GameEngine): Primitives {
         ? baseCost
         : fireBeforePayCost(engine, instance, baseCost, useAsOption, originZone, projectOnly, simultaneousPlayCount);
     },
+    clearPreparedDigiXrosPlay: (instanceId) => clearPreparedDigiXrosPlay(engine, instanceId),
+    placePendingPlayCosts: (instanceId, permanentId) =>
+      playCardDeps(engine).placePendingDigivolution?.(instanceId, permanentId) ?? Promise.resolve(),
+    preparedDigiXrosMaterials: (instanceId) => preparedDigiXrosMaterials(engine, instanceId),
     prepareDigiXrosPlay: (instanceId) => prepareDigiXrosPlay(engine, instanceId),
     prepareDigiXrosPlays: (instanceIds, simultaneousPlayCount) =>
       prepareDigiXrosPlays(engine, instanceIds, simultaneousPlayCount),
