@@ -138,7 +138,10 @@ scenario("target-decision", () => {
       // The board refuses ordinary actions while it is still presenting the attack, and the
       // next attacker is picked off the presented board, so wait for the presentation to end
       // and for the suspension the server already applied to appear.
-      await vi.waitFor(() => expect(screen.queryByTestId("skip-presentation")).toBeNull(), { timeout: 10_000 });
+      await vi.waitFor(
+        () => expect(screen.getByTestId("skip-presentation").getAttribute("data-skippable")).toBe("false"),
+        { timeout: 10_000 },
+      );
       await vi.waitFor(
         () =>
           expect(

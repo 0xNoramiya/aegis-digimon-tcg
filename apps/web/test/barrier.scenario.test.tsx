@@ -138,8 +138,12 @@ scenario("barrier", () => {
       // (GameScreen's `boardLocked` guard), leaving the turn stuck here.
       await vi.waitFor(() => expect(document.querySelector(".game-input-lock")).toBeNull(), { timeout: 10_000 });
       // The board also refuses ordinary actions for as long as it is still presenting the
-      // check, and the skip control is the only thing on screen that says it still is.
-      await vi.waitFor(() => expect(screen.queryByTestId("skip-presentation")).toBeNull(), { timeout: 10_000 });
+      // check, and the skip control is the only thing on screen that says it still is (it stays mounted
+      // and reports data-skippable="false" once nothing is left to skip).
+      await vi.waitFor(
+        () => expect(screen.getByTestId("skip-presentation").getAttribute("data-skippable")).toBe("false"),
+        { timeout: 10_000 },
+      );
       await endTurnStep(10_000);
     }
 
