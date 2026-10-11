@@ -25,7 +25,12 @@ export function isClosedFeedbackStatus(status: FeedbackStatus): status is Closed
   return CLOSED_FEEDBACK_STATUSES.includes(status as ClosedFeedbackStatus);
 }
 
-export type FeedbackKind = "bug" | "improvement" | "other";
+/** What a report is about. `other` is no longer offered by the web client but stays accepted. */
+export const FEEDBACK_KINDS = ["bug", "improvement", "other"] as const;
+export type FeedbackKind = (typeof FEEDBACK_KINDS)[number];
+export function isFeedbackKind(value: unknown): value is FeedbackKind {
+  return FEEDBACK_KINDS.includes(value as FeedbackKind);
+}
 
 /**
  * One recorded status transition. `from` is null for the report's creation. A reporter's reopening

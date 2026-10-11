@@ -1,10 +1,12 @@
 import {
+  FEEDBACK_KINDS,
   isClosedFeedbackStatus,
   isFeedbackStatus,
   MAX_FEEDBACK_FINAL_REPLY,
   MAX_FEEDBACK_INTERNAL_NOTE,
   MAX_FEEDBACK_REOPEN_COMMENT,
   MAX_FEEDBACK_SEARCH,
+  type FeedbackKind,
   type FeedbackReopenFailure,
   type FeedbackTriageFailure,
   type FeedbackTriageUpdate,
@@ -14,7 +16,6 @@ import type { AuthSession } from "../accounts/AccountStore.js";
 import { parseId } from "../http/parseId.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
 import type { FeedbackFilter, FeedbackStore } from "./FeedbackStore.js";
-import { FEEDBACK_KINDS, type FeedbackKind } from "./GitHubIssueTracker.js";
 
 export type FeedbackTriageRouteDeps = {
   app: Express;

@@ -1,12 +1,9 @@
-import { getCardDefinition } from "@aegis/shared";
+import { getCardDefinition, type FeedbackKind } from "@aegis/shared";
 
 export const MAX_BUG_REPORT_CARDS = 20;
 export const MAX_BUG_REPORT_SUMMARY = 120;
 export const MAX_BUG_REPORT_DESCRIPTION = 4000;
 export const MAX_BUG_REPORT_OPPONENT_DECK = 120;
-
-export const FEEDBACK_KINDS = ["bug", "improvement", "other"] as const;
-export type FeedbackKind = (typeof FEEDBACK_KINDS)[number];
 
 // GitHub's default label set already has `bug` and `enhancement`; `feedback` is created on first use.
 const KIND_LABELS: Record<FeedbackKind, string> = {
