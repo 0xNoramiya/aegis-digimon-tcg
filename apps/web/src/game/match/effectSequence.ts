@@ -608,6 +608,11 @@ function resultsPendingOf(unit: EffectUnit, deps: EffectUnitStepsDeps): () => bo
   return () =>
     queue.hasPendingStep((step) => {
       if (step.track === EFFECT_UNIT_TRACK || sequence.isClauseStep(step.id)) return false;
+      // Audio receipts share a serial track. A nested unit's sound may be waiting for
+      // that unit to announce before a later parent receipt can play. Waiting for
+      // the latter here would hold the nested announcement behind this settle.
+      // Painted results still own the handoff; audio retains its queued order.
+      if (step.track === "sound") return false;
       if (unit.stepsAfterClose.has(step.id)) return false;
       if (step.track === CueTrack.SecurityDock || step.track === CueTrack.SecurityHold) return false;
       // An effect-used Option waits in its dock for the viewer's next answer.
