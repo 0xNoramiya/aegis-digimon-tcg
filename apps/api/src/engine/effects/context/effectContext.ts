@@ -46,6 +46,8 @@ export interface EffectContext {
   residentCostRegistration?: boolean;
   /** Exact rules clause currently resolving, including inherited/security provenance. Display-only. */
   activeEffectText?: string;
+  /** Catalog provenance for a copied clause, independent of its activating rules source. */
+  activeEffectTextCardId?: string;
   activeEffectTextPart?: string;
   activeEffectIsInherited?: boolean;
   /**

@@ -382,6 +382,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-p108-training-delay-with-target",
   "arena-feedback47-chronomon-security-return",
   "arena-feedback50-progress-end-attack",
+  "arena-feedback51-jesmon-gx-copied-text",
   "arena-feedback46-jimmy-boltmon-single",
   "arena-feedback46-jimmy-boltmon-double",
   "arena-feedback45-jesmon-choice",
@@ -10633,6 +10634,17 @@ function layGithub5311CrescemonCostScenario(state: GameState): void {
   insertCard(human, Zone.Hand, faceDownCard("github5311-crescemon", "EX5-020", 0));
 }
 
+/** Feedback #51: the copied clause retains its printed donor while GX owns its effect. */
+function layFeedback51JesmonGxCopiedTextScenario(state: GameState): void {
+  prepareGithubCardEffectsScenario(state, 10);
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT6-111"], "-feedback51-gx-base"));
+  placePermanent(human, establishedDigimon(0, ["BT6-082"], "-feedback51-white"));
+  placePermanent(human, establishedDigimon(0, ["BT6-084"], "-feedback51-other-white"));
+  insertCard(human, Zone.Hand, faceDownCard("feedback51-gx", "BT10-112", 0));
+  insertCard(human, Zone.Hand, faceDownCard("feedback51-donor", "EX13-061", 0));
+}
+
 /** Feedback #50: ending an attack changes timing even when its attacker has Progress. */
 function layFeedback50ProgressEndAttackScenario(state: GameState): void {
   prepareGithubCardEffectsScenario(state, 3);
@@ -11513,6 +11525,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-p108-training-delay-with-target": (state, decks) => layP108TrainingDelayScenario(state, decks, true),
   "arena-feedback47-chronomon-security-return": layFeedback47ChronomonSecurityReturnScenario,
   "arena-feedback50-progress-end-attack": layFeedback50ProgressEndAttackScenario,
+  "arena-feedback51-jesmon-gx-copied-text": layFeedback51JesmonGxCopiedTextScenario,
   "arena-feedback46-jimmy-boltmon-single": (state) => layFeedback46JimmyBoltmonScenario(state, false),
   "arena-feedback46-jimmy-boltmon-double": (state) => layFeedback46JimmyBoltmonScenario(state, true),
   "arena-feedback45-jesmon-choice": (state) => layFeedback45JesmonChoiceScenario(state, false),

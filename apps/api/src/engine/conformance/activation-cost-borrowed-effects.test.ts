@@ -37,7 +37,11 @@ describe("borrowed effect processing cost", () => {
     await settle(() => !observe(s.engine).isAttacking() && s.state.pendingDecision === undefined);
     expect(s.state.players[0]!.trash.some((card) => card.instanceId === payerId)).toBe(true);
     expect(s.state.players[0]!.security.map((card) => card.cardId)).toEqual(["BT23-045"]);
-    expect(s.decisions.filter(({ req }) => req.kind === "optional")).toHaveLength(1);
+    const optional = s.decisions.filter(({ req }) => req.kind === "optional");
+    expect(optional).toHaveLength(1);
+    // Feedback #51: copied Security text retains its donor while the host owns the effect.
+    expect(optional[0]!.req.sourceCardId).toBe("BT23-060");
+    expect(optional[0]!.req.options?.effectTextCardId).toBe("BT23-045");
     expect(s.state.players[1]!.battleArea[0]?.topCard.instanceId).toBe(victimInstanceId);
     expect(s.perm("machine").topCard.instanceId).toBe(s.inst("machine").instanceId);
     expect(s.state.memory).toBe(memoryBefore);
@@ -70,7 +74,11 @@ describe("borrowed effect processing cost", () => {
     await settle(() => !observe(s.engine).isAttacking() && s.state.pendingDecision === undefined);
     expect(s.state.players[0]!.hand.some((card) => card.instanceId === payerId)).toBe(true);
     expect(s.state.players[0]!.security.map((card) => card.cardId)).toEqual(["BT23-045"]);
-    expect(s.decisions.filter(({ req }) => req.kind === "optional")).toHaveLength(1);
+    const optional = s.decisions.filter(({ req }) => req.kind === "optional");
+    expect(optional).toHaveLength(1);
+    // Feedback #51: copied Security text retains its donor while the host owns the effect.
+    expect(optional[0]!.req.sourceCardId).toBe("BT23-060");
+    expect(optional[0]!.req.options?.effectTextCardId).toBe("BT23-045");
     expect(s.state.players[1]!.battleArea[0]?.topCard.instanceId).toBe(victimInstanceId);
     expect(s.perm("machine").topCard.instanceId).toBe(s.inst("machine").instanceId);
     expect(s.state.memory).toBe(memoryBefore);

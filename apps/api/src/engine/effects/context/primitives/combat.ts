@@ -6,6 +6,7 @@ export interface AttackDecisionProvenance {
   sourcePermanentId?: string;
   timing?: string;
   effectText?: string;
+  effectTextCardId?: string;
   effectTextPart?: string;
   isInherited?: boolean;
 }

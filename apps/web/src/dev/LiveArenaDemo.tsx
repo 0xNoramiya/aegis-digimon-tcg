@@ -2365,6 +2365,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Wisdom Training está no campo desde um turno anterior e você não tem Digimon. Ative o ＜Delay＞: a carta vai para o lixo e o efeito não faz nada.",
     en: "Wisdom Training has been in the battle area since an earlier turn and you have no Digimon. Activate its ＜Delay＞: the card goes to the trash and the effect does nothing.",
   },
+  "arena-feedback51-jesmon-gx-copied-text": {
+    en: "Digivolve Alphamon into Jesmon GX for 5. Place the hand Gankoomon underneath. Its copied prompt must describe the Hinukamuy Token, while Jesmon GX remains the effect source. Accept or decline the token, then choose Sistermon Blanc for the copied white-Digimon protection; that prompt must show the donor's protection text. Finish with 5 memory and the donor at the bottom of GX's stack.",
+    ptBR: "Evolua Alphamon para Jesmon GX por 5. Coloque Gankoomon da mão por baixo. A pergunta do efeito copiado deve descrever a ficha Hinukamuy, enquanto Jesmon GX permanece a origem do efeito. Aceite ou recuse a ficha e escolha Sistermon Blanc para a proteção copiada de Digimon branco; essa pergunta deve mostrar o texto de proteção do doador. Termine com 5 memórias e o doador no fundo da pilha de GX.",
+  },
   "arena-feedback50-progress-end-attack": {
     en: "The opponent starts with Medusamon. When it attacks, choose two hand cards for Belphemon: Sleep Mode's effect: the attack ends without a security check even with Progress, because ending an attack changes timing. Pass instead to preserve your hand and let the security check resolve.",
     ptBR: "O oponente começa com Medusamon. Quando ele atacar, escolha duas cartas da mão para o efeito de Belphemon: Sleep Mode: o ataque termina sem verificar a segurança mesmo com Progress, pois encerrar um ataque altera o timing. Passe para manter sua mão e resolver a verificação de segurança.",
@@ -3406,6 +3410,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex5-attack-priority", "EX5 Etemon · attack trigger priority"],
   ["arena-ex5-biting-crush-delay", "EX5 Biting Crush · Delay on effect play"],
   ["arena-p108-training-delay-no-target", "P-108 Wisdom Training · Delay with no target"],
+  ["arena-feedback51-jesmon-gx-copied-text", "Feedback #51 · Jesmon GX · copied effect text"],
   ["arena-feedback50-progress-end-attack", "Feedback #50 · Progress · end attack"],
   ["arena-feedback47-chronomon-security-return", "Feedback #47 · Chronomon · security return cost"],
   ["arena-feedback46-jimmy-boltmon-single", "Feedback #46 · Jimmy + Boltmon · copied Main"],

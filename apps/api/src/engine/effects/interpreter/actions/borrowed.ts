@@ -371,6 +371,7 @@ export async function runActivateForeignEffect(
             borrowedEffectOverrides,
             activeTiming: eff.trigger,
             activeEffectText: eff.description ?? describeEffect(eff),
+            activeEffectTextCardId: borrowed.sourceCardId,
           },
           eff,
         );
