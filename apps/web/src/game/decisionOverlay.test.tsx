@@ -4494,8 +4494,10 @@ it("#60 visibly identifies the copy trashed from LadyDevimon's sources and sends
       />
     </I18nProvider>,
   );
-  expect(screen.getByText("copy 1 of 2")).toBeTruthy();
-  expect(screen.getByText("copy 2 of 2")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Hurricane Screw Shot, copy 1 of 2" }).textContent).toContain(
+    "copy 1 of 2",
+  );
+  expect(screen.getByRole("button", { name: /copy 2 of 2/ }).textContent).toContain("copy 2 of 2");
   expect(screen.getByText("Trashed from LadyDevimon’s sources")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: /Trashed from LadyDevimon’s sources/ }));
   expect(onTogglePick).toHaveBeenCalledWith("source-shot");
@@ -4522,4 +4524,23 @@ it.each([
   expect(screen.getByRole("dialog").getAttribute("data-prompt-surface")).toBe("left");
   fireEvent.click(screen.getByRole("button", { name: "Yes, activate" }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: true });
+});
+
+it.each(["before", "after"] as const)("shows the full staged Ryutaro effect with its %s passage in bold", (stage) => {
+  const full = cardEffectClauseForTiming("EX11-056", "AllTurns")!;
+  const boundary = full.indexOf(" After,");
+  const passage = stage === "before" ? full.slice(0, boundary) : full.slice(boundary + 1);
+  const { onRespond } = renderDecision({
+    decisionId: `ryutaro-staged-${stage}`,
+    seat: 0,
+    kind: "optional",
+    sourceCardId: "EX11-056",
+    promptText: "Use this effect?",
+    options: { timing: "AllTurns", effectText: full, effectTextPart: full, effectTextEmphasis: passage },
+  });
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(full);
+  expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(passage);
+  expect(screen.getByRole("dialog").getAttribute("data-prompt-surface")).toBe("left");
+  fireEvent.click(screen.getByRole("button", { name: "No, decline" }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: false });
 });

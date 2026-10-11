@@ -258,7 +258,9 @@ export function DecisionOverlay({
     emphasis && displayedEffectText && emphasisStart >= 0 ? (
       <>
         {displayedEffectText.slice(0, emphasisStart)}
-        <strong>{displayedEffectText.slice(emphasisStart, emphasisStart + emphasis.length)}</strong>
+        <strong className="decision-overlay__effect-step">
+          {displayedEffectText.slice(emphasisStart, emphasisStart + emphasis.length)}
+        </strong>
         {displayedEffectText.slice(emphasisStart + emphasis.length)}
       </>
     ) : (

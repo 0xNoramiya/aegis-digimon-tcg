@@ -161,3 +161,16 @@
     width: 100%;
   }
 }
+
+/* The resolving passage stays recognizable across wrapped lines and themes. */
+.decision-overlay__effect-step {
+  color: var(--ds-text);
+  font-weight: 800;
+  background: color-mix(in srgb, var(--ds-accent) 18%, transparent);
+  text-decoration: underline;
+  text-decoration-color: var(--ds-accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.18em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
