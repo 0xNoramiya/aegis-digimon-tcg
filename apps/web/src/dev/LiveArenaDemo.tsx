@@ -1969,6 +1969,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Partida com relógio. Encerre a criação e o turno. O bot ataca você com Monodramon e Magnamon (7000 DP) é revelado da sua segurança. Antes da batalha, o [Todos os Turnos] de Dynasmon oferece excluir o Digimon de menor DP do oponente: escolha Monodramon. A checagem termina sem batalha, e Magnamon sai do centro da tela e vai para a lixeira. A cena não fica presa nos turnos seguintes.",
     en: "Timed match. End breeding and your turn. The bot attacks you with Monodramon, and Magnamon (7000 DP) is revealed from your security. Before the battle, Dynasmon's [All Turns] effect offers to delete your opponent's lowest DP Digimon: choose Monodramon. The check ends with no battle, and Magnamon leaves the centre of the screen for the trash. The scene does not stay on screen in later turns.",
   },
+  "arena-discord-greymon-security-two-zones": {
+    ptBR: "Discord 1558643290751115264. Encerre a criação e o turno. O bot ataca você com Monodramon, e Greymon (ST15-08) é revelado da sua segurança. A escolha mostra 6 cartas da mão e 6 da lixeira, com Tai Kamiya (ST15-14) e Agumon (ST15-02) selecionáveis. Os botões de confirmar e de nenhuma escolha ficam visíveis sem rolar a página, mesmo em uma tela de 1920x900. Escolha Tai Kamiya: ele entra em campo sem pagar o custo.",
+    en: "Discord 1558643290751115264. End breeding and your turn. The bot attacks you with Monodramon, and Greymon (ST15-08) is revealed from your security. The choice shows 6 hand cards and 6 trash cards, with Tai Kamiya (ST15-14) and Agumon (ST15-02) selectable. The confirm and choose-none buttons stay visible without scrolling the page, even on a 1920x900 screen. Choose Tai Kamiya: it enters play without paying the cost.",
+  },
   "arena-bt22-akemi-battle-mother": {
     ptBR: "GitHub #5370. Aguarde a Principal: a criação avança automaticamente porque Mother Eater não tem DP para sair. Ative o [Principal] de Akemi Suedou. Somente os dois Mother Eater no campo podem ser escolhidos; a cópia na criação fica excluída. Escolha o Mother Eater com Eater (Species Form) nas fontes. Akemi deve ficar como a fonte inferior, abaixo de Eater (Species Form), enquanto a pilha na criação fica intacta.",
     en: "GitHub #5370. Wait for Main: breeding skips automatically because Mother Eater has no DP to move. Activate Akemi Suedou's [Main]. Only the two battle-area Mother Eaters are eligible; the breeding copy is excluded. Choose the Mother Eater with Eater (Species Form) in its sources. Akemi must become its bottom source, below Eater (Species Form), while the breeding stack stays intact.",
@@ -3447,6 +3451,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-discord-taiki-keeps-xros-digimon", "Discord · BT10 Taiki may add or place the only Xros Heart Digimon"],
   ["arena-discord-vemmon-add-or-place", "Discord · BT18 Vemmon may add or place the only [Vemmon]"],
   ["arena-discord-speed-security-scene-stuck", "Discord · timed security check closes without a battle"],
+  ["arena-discord-greymon-security-two-zones", "Discord · ST15 Greymon security picks from hand and trash"],
   ["arena-p224-kotone-own-source", "P-224 Kotone · X7 das próprias fontes / own sources"],
   ["arena-kotone-digixros-pending-attack", "Kotone · DigiXros + EX6 pending attack"],
   ["arena-bt6-beelstarmon-duplicate-cost", "BT6 BeelStarmon · duplicate hand cost"],

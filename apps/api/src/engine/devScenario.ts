@@ -450,6 +450,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-taiki-keeps-xros-digimon",
   "arena-discord-vemmon-add-or-place",
   "arena-discord-speed-security-scene-stuck",
+  "arena-discord-greymon-security-two-zones",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
   "arena-bt24-homeros-neptunemon-timing-choice",
@@ -7509,6 +7510,43 @@ function layDiscordSpeedSecuritySceneStuckScenario(state: GameState): void {
 }
 
 /**
+ * Discord 1558643290751115264: Greymon's (ST15-08) [Security] effect offers six hand cards and six
+ * trash cards at once. Both zones wrapped onto two rows, and the dialog pushed its actions below
+ * the screen. The human draws one card on their turn, so the hand reaches six on the bot's attack.
+ */
+function layDiscordGreymonSecurityTwoZonesScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-greymon-zones-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-greymon-zones-deck-${seat}-${index}`, "BT1-009", seat));
+    }
+  }
+  const human = state.players[0]!;
+  insertCard(human, Zone.Security, faceDownCard("dev-greymon-zones-greymon", "ST15-08", 0));
+  for (let index = 0; index < 2; index += 1) {
+    insertCard(human, Zone.Security, faceDownCard(`dev-greymon-zones-security-0-${index}`, "BT1-009", 0));
+  }
+  insertCard(human, Zone.Hand, faceDownCard("dev-greymon-zones-tai", "ST15-14", 0));
+  for (let index = 0; index < 4; index += 1) {
+    insertCard(human, Zone.Hand, faceDownCard(`dev-greymon-zones-hand-${index}`, "BT1-009", 0));
+  }
+  insertCard(human, Zone.Trash, faceUpCard("dev-greymon-zones-agumon", "ST15-02", 0));
+  for (let index = 0; index < 5; index += 1) {
+    insertCard(human, Zone.Trash, faceUpCard(`dev-greymon-zones-trash-${index}`, "BT1-009", 0));
+  }
+  const bot = state.players[1]!;
+  for (let index = 0; index < 3; index += 1) {
+    insertCard(bot, Zone.Security, faceDownCard(`dev-greymon-zones-security-1-${index}`, "BT1-009", 1));
+  }
+  placePermanent(bot, establishedDigimon(1, ["BT1-009"], "-greymon-zones-attacker"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
  * Feedback #27: Chuumon's [On Play] reveal only works "if it's your opponent's turn". Playing
  * Chuumon from hand on your own turn reveals nothing. KingEtemon gives the bot's Digimon -3000 DP
  * (3 Digimon with [Sukamon]/[Etemon] in their names). The bot's suspended Sukamon survives only
@@ -11420,6 +11458,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-taiki-keeps-xros-digimon": layDiscordTaikiKeepsXrosDigimonScenario,
   "arena-discord-vemmon-add-or-place": layDiscordVemmonAddOrPlaceScenario,
   "arena-discord-speed-security-scene-stuck": layDiscordSpeedSecuritySceneStuckScenario,
+  "arena-discord-greymon-security-two-zones": layDiscordGreymonSecurityTwoZonesScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,
   "arena-bt24-homeros-neptunemon-timing-choice": layBt24HomerosNeptunemonTimingChoiceScenario,
