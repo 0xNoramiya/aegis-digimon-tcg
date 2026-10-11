@@ -6,9 +6,10 @@ import json
 import math
 import random
 import subprocess
+import tarfile
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import click
 from gepa.strategies.instruction_proposal import InstructionProposalSignature
@@ -17,6 +18,94 @@ from api_reflection import validate_ledger
 from deterministic_proposals import gate_evidence, gate_tasks, plan_hash, prior_gate, validate_plan
 from evidence import policy_hash
 from residual_weights import RESIDUAL_WEIGHTS
+
+
+def runtime_payload_hash(entries: dict[str, str]) -> str:
+    """Cross-language archive/live binding: sorted POSIX path, NUL, file SHA, newline."""
+    payload = "".join(
+        f"{name}\0{entries[name]}\n" for name in sorted(entries) if name.endswith((".js", ".json"))
+    )
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+
+def projection_runtime_amendment(run_dir: Path, path: Path, selected: dict) -> dict:
+    """Preserve learning provenance while pinning an independently tested projection repair."""
+    amendment = json.loads(path.read_text())
+    snapshot = json.loads((run_dir / "snapshot-fingerprints.json").read_text())
+    target_engine = amendment.get("certificationEngineSha256", "")
+    if (
+        amendment.get("schemaVersion") != 1
+        or amendment.get("kind") != "projection-repair"
+        or amendment.get("selectionEngineSha256") != selected["engineSha256"]
+        or snapshot["engineSha256"] != selected["engineSha256"]
+        or amendment.get("policySha256") != policy_hash(selected["program"])
+        or len(target_engine) != 64
+        or any(char not in "0123456789abcdef" for char in target_engine)
+        or target_engine == selected["engineSha256"]
+        or not isinstance(amendment.get("reason"), str)
+        or not amendment["reason"].strip()
+    ):
+        raise ValueError("Projection amendment changed the selected policy or engine provenance")
+
+    def archive_entries(record):
+        archive_path = (run_dir / record["file"]).resolve()
+        if not archive_path.is_relative_to(run_dir.resolve()):
+            raise ValueError("Runtime archive must be inside the original run")
+        if hashlib.sha256(archive_path.read_bytes()).hexdigest() != record["sha256"]:
+            raise ValueError("Runtime archive fingerprint changed")
+        entries = {}
+        with tarfile.open(archive_path) as archive:
+            for member in archive:
+                if not member.isfile() or not (
+                    member.name.endswith((".js", ".json")) or member.name == "pnpm-lock.yaml"
+                ):
+                    continue
+                if (
+                    PurePosixPath(member.name).is_absolute()
+                    or ".." in PurePosixPath(member.name).parts
+                    or member.name in entries
+                ):
+                    raise ValueError("Ambiguous runtime archive entry")
+                entries[member.name] = hashlib.sha256(
+                    archive.extractfile(member).read()
+                ).hexdigest()
+        return entries
+
+    if amendment["sourceRuntime"]["sha256"] != snapshot["runtimeArchiveSha256"]:
+        raise ValueError("Projection amendment must retain the original runtime snapshot")
+    source = archive_entries(amendment["sourceRuntime"])
+    target = archive_entries(amendment["targetRuntime"])
+    lock_path = (run_dir / amendment["dependencyLockFile"]).resolve()
+    if (
+        amendment.get("runtimePayloadSha256") != runtime_payload_hash(target)
+        or not lock_path.is_relative_to(run_dir.resolve())
+        or hashlib.sha256(lock_path.read_bytes()).hexdigest() != amendment["dependencyLockSha256"]
+    ):
+        raise ValueError("Runtime payload or dependency lock binding changed")
+    changed = [
+        name
+        for name in sorted(source.keys() | target.keys())
+        if source.get(name) != target.get(name)
+    ]
+    allowed = {
+        "apps/api/dist/engine/state/visibility.js",
+        "apps/api/dist/bot/matchHarness.js",
+    }
+    if (
+        set(source) != set(target)
+        or not changed
+        or not set(changed) <= allowed
+        or "apps/api/dist/engine/state/visibility.js" not in changed
+        or amendment.get("changes")
+        != [
+            {"file": name, "beforeSha256": source[name], "afterSha256": target[name]}
+            for name in changed
+        ]
+    ):
+        raise ValueError(
+            "Projection repair changed code outside the declared visibility/verifier seam"
+        )
+    return amendment
 
 
 def confidence_lower(means: list[float], alpha: float) -> dict:
@@ -383,7 +472,8 @@ def api_lineage(run_dir: Path, manifest: dict, selected: dict) -> dict:
 @click.option("--api-root", required=True)
 @click.option("--remote-worker", required=True)
 @click.option("--attempt", required=True, type=click.IntRange(1, 5))
-def main(run_dir, desktop_host, node, api_root, remote_worker, attempt):
+@click.option("--runtime-amendment", type=click.Path(exists=True, path_type=Path))
+def main(run_dir, desktop_host, node, api_root, remote_worker, attempt, runtime_amendment):
     manifest = json.loads((run_dir / "manifest.json").read_text())
     selected = json.loads((run_dir / "generic/selected.json").read_text())
     seed = manifest["metadata"]["seedProgram"]
@@ -400,6 +490,11 @@ def main(run_dir, desktop_host, node, api_root, remote_worker, attempt):
         if manifest["config"].get("proposalOrigin") == "deterministic-numeric"
         else api_lineage(run_dir, manifest, selected)
     )
+    amendment = (
+        projection_runtime_amendment(run_dir, runtime_amendment, selected)
+        if runtime_amendment is not None
+        else None
+    )
     output = run_dir / f"certification-{attempt}"
     output.mkdir(exist_ok=True)
     units = certification_units(manifest["decks"], attempt)
@@ -407,7 +502,11 @@ def main(run_dir, desktop_host, node, api_root, remote_worker, attempt):
     protocol = {
         "program": selected["program"],
         "policySha256": policy_hash(selected["program"]),
-        "engineSha256": manifest["config"]["engineSha256"],
+        "engineSha256": (
+            amendment["certificationEngineSha256"]
+            if amendment is not None
+            else manifest["config"]["engineSha256"]
+        ),
         "workerSha256": hashlib.sha256(worker.read_bytes()).hexdigest(),
         "certifierSha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         "reflectionLineage": lineage,
@@ -428,6 +527,12 @@ def main(run_dir, desktop_host, node, api_root, remote_worker, attempt):
         "units": units,
         "rule": "at least 1200 complete seed blocks, all games valid and preregistered empirical Bernstein lower bound above 0.5",
     }
+    if amendment is not None:
+        protocol["selectionEngineSha256"] = selected["engineSha256"]
+        protocol["runtimeAmendment"] = amendment
+        protocol["runtimeAmendmentSha256"] = hashlib.sha256(
+            runtime_amendment.read_bytes()
+        ).hexdigest()
     path = output / "protocol.json"
     if path.is_file() and json.loads(path.read_text()) != protocol:
         raise click.ClickException("Certification inputs changed")
@@ -444,6 +549,9 @@ def main(run_dir, desktop_host, node, api_root, remote_worker, attempt):
                 "program": selected["program"],
                 "units": units[index * 40 : (index + 1) * 40],
             }
+            if amendment is not None:
+                config["runtimePayloadSha256"] = amendment["runtimePayloadSha256"]
+                config["dependencyLockSha256"] = amendment["dependencyLockSha256"]
             request_path = output / f"input-{index:03d}.json"
             if target.is_file():
                 if not request_path.is_file() or json.loads(request_path.read_text()) != config:

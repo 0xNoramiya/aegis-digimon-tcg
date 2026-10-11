@@ -1,6 +1,7 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { resolve } from "node:path";
+import { createRequire } from "node:module";
+import { dirname, relative, resolve, sep } from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
 
 process.env.NODE_ENV = "test";
@@ -11,6 +12,30 @@ const workerHash = () =>
     .update(readFileSync(fileURLToPath(import.meta.url)))
     .digest("hex");
 if (workerHash() !== input.workerSha256) throw new Error("Certification worker fingerprint changed");
+const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
+function verifyRuntimePayload() {
+  if (input.runtimePayloadSha256 === undefined && input.dependencyLockSha256 === undefined) return;
+  const entries = [];
+  const visit = (directory, base, prefix) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const path = resolve(directory, entry.name);
+      if (entry.isDirectory()) visit(path, base, prefix);
+      else if (entry.name.endsWith(".js") || entry.name.endsWith(".json")) {
+        entries.push([`${prefix}/${relative(base, path).split(sep).join("/")}`, digest(readFileSync(path))]);
+      }
+    }
+  };
+  visit(input.apiRoot, input.apiRoot, "apps/api/dist");
+  const sharedRoot = dirname(createRequire(resolve(input.apiRoot, "index.js")).resolve("@aegis/shared"));
+  visit(sharedRoot, sharedRoot, "packages/shared/dist");
+  entries.sort(([left], [right]) => Buffer.compare(Buffer.from(left), Buffer.from(right)));
+  const payload = entries.map(([path, hash]) => `${path}\0${hash}\n`).join("");
+  if (digest(payload) !== input.runtimePayloadSha256)
+    throw new Error("Certification live runtime differs from the amended archive payload");
+  if (digest(readFileSync(resolve(input.apiRoot, "../../../pnpm-lock.yaml"))) !== input.dependencyLockSha256)
+    throw new Error("Certification dependency lock changed");
+}
+verifyRuntimePayload();
 const moduleAt = (name) => import(pathToFileURL(resolve(input.apiRoot, name)).href);
 const { trainingMetadata } = await moduleAt("bot/training/metadata.js");
 if (trainingMetadata().engineSha256 !== input.engineSha256) throw new Error("Certification engine fingerprint changed");
@@ -74,3 +99,4 @@ for (const unit of input.units) {
 if (trainingMetadata().engineSha256 !== input.engineSha256)
   throw new Error("Certification engine changed during batch");
 if (workerHash() !== input.workerSha256) throw new Error("Certification worker changed during batch");
+verifyRuntimePayload();

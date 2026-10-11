@@ -3,6 +3,32 @@ import { evolutionDeck } from "./decks.js";
 import { runResidualMatch } from "./residualMatch.js";
 import { SEED_RESIDUAL } from "./residualPolicy.js";
 
+it("keeps client projections valid when Ulforce returns a just-evolved top card before the next patch", async () => {
+  const decks = [
+    evolutionDeck("ex4-dgo-2022-06-25-1-ulforceveedramon").deck,
+    evolutionDeck("bt8-blackwargreymon").deck,
+  ] as const;
+  const program = {
+    ...SEED_RESIDUAL,
+    rules: SEED_RESIDUAL.rules.map((rule) => ({ ...rule, weight: rule.feature === "sourceDp" ? 0.2 : 0 })),
+  };
+  const decoderErrors = vi.spyOn(console, "error").mockImplementation(() => undefined);
+  const decoderWarnings = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+  try {
+    const game = await runResidualMatch({ seed: 2130995244, learnerSeat: 0, decks, program });
+    expect(game.result.errors).toEqual([]);
+    expect(game.result.rejections).toEqual([]);
+    expect(game.result.timedOut).toBe(false);
+    expect(game.result.projectionChecks).toBeGreaterThan(50);
+    expect(game.valid).toBe(true);
+    expect(decoderErrors).not.toHaveBeenCalled();
+    expect(decoderWarnings).not.toHaveBeenCalled();
+  } finally {
+    decoderErrors.mockRestore();
+    decoderWarnings.mockRestore();
+  }
+});
+
 it("refuses a replaced balanced control even when the override is neutral", async () => {
   const decks = [evolutionDeck("bt1-red-omnimon").deck, evolutionDeck("bt4-yellow-wargreymon").deck] as const;
   await expect(

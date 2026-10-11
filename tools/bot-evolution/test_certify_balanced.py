@@ -1,8 +1,12 @@
 """Certification counts independent blocks and rejects scorer/control contamination."""
 
 import hashlib
+import io
 import json
+import subprocess
+import tarfile
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 
@@ -11,9 +15,180 @@ from certify_balanced import (
     certification_units,
     certify_result,
     confidence_lower,
+    projection_runtime_amendment,
     register_attempt,
+    runtime_payload_hash,
 )
+from evidence import policy_hash
 from learn_balanced import balanced_splits
+
+
+@pytest.fixture
+def projection_repair(tmp_path):
+    visibility = "apps/api/dist/engine/state/visibility.js"
+    policy = "apps/api/dist/bot/projectedPolicy.js"
+    source = {visibility: b"old visibility", policy: b"unchanged policy", "pnpm-lock.yaml": b"lock"}
+    target = {**source, visibility: b"fixed visibility"}
+
+    def archive(name, entries):
+        path = tmp_path / name
+        with tarfile.open(path, "w:gz") as output:
+            for filename, content in entries.items():
+                member = tarfile.TarInfo(filename)
+                member.size = len(content)
+                output.addfile(member, io.BytesIO(content))
+        return {"file": name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+
+    selected = {
+        "engineSha256": "a" * 64,
+        "program": {"rules": [{"feature": "sourceDp", "weight": 0.2}]},
+    }
+    amendment = {
+        "schemaVersion": 1,
+        "kind": "projection-repair",
+        "selectionEngineSha256": selected["engineSha256"],
+        "certificationEngineSha256": "b" * 64,
+        "policySha256": policy_hash(selected["program"]),
+        "reason": "Cancel an unintroduced card before it reaches a hidden zone.",
+        "sourceRuntime": archive("source.tgz", source),
+        "targetRuntime": archive("target.tgz", target),
+        "runtimePayloadSha256": runtime_payload_hash(
+            {name: hashlib.sha256(content).hexdigest() for name, content in target.items()}
+        ),
+        "dependencyLockFile": "pnpm-lock.yaml",
+        "dependencyLockSha256": hashlib.sha256(b"lock").hexdigest(),
+        "changes": [
+            {
+                "file": visibility,
+                "beforeSha256": hashlib.sha256(source[visibility]).hexdigest(),
+                "afterSha256": hashlib.sha256(target[visibility]).hexdigest(),
+            }
+        ],
+    }
+    (tmp_path / "pnpm-lock.yaml").write_bytes(b"lock")
+    (tmp_path / "snapshot-fingerprints.json").write_text(
+        json.dumps(
+            {"engineSha256": "a" * 64, "runtimeArchiveSha256": amendment["sourceRuntime"]["sha256"]}
+        )
+    )
+    path = tmp_path / "repair.json"
+    return tmp_path, path, selected, amendment, archive, target, policy
+
+
+def test_projection_repair_preserves_selection_and_pins_only_visibility_changes(projection_repair):
+    run, path, selected, amendment, *_ = projection_repair
+    path.write_text(json.dumps(amendment))
+    assert projection_runtime_amendment(run, path, selected) == amendment
+    assert selected["engineSha256"] == "a" * 64
+
+
+@pytest.mark.parametrize("change", ["policy", "engine", "archive", "changes", "unchanged"])
+def test_projection_repair_rejects_changed_identity_or_unverifiable_payload(
+    projection_repair, change
+):
+    run, path, selected, amendment, *_ = projection_repair
+    if change == "policy":
+        selected["program"]["rules"][0]["weight"] = 0.3
+    elif change == "engine":
+        amendment["selectionEngineSha256"] = "c" * 64
+    elif change == "archive":
+        amendment["targetRuntime"]["sha256"] = "c" * 64
+    elif change == "changes":
+        amendment["changes"][0]["afterSha256"] = "c" * 64
+    else:
+        amendment["certificationEngineSha256"] = selected["engineSha256"]
+    path.write_text(json.dumps(amendment))
+    with pytest.raises(ValueError):
+        projection_runtime_amendment(run, path, selected)
+
+
+@pytest.mark.parametrize("change", ["policy", "lock", "added", "missing"])
+def test_projection_repair_cannot_change_policy_dependencies_or_archive_members(
+    projection_repair, change
+):
+    run, path, selected, amendment, archive, target, policy = projection_repair
+    if change == "policy":
+        target[policy] = b"changed policy"
+    elif change == "lock":
+        target["pnpm-lock.yaml"] = b"changed dependencies"
+    elif change == "added":
+        target["apps/api/dist/bot/extra.js"] = b"unregistered addition"
+    else:
+        del target[policy]
+    amendment["targetRuntime"] = archive("target.tgz", target)
+    amendment["runtimePayloadSha256"] = runtime_payload_hash(
+        {name: hashlib.sha256(content).hexdigest() for name, content in target.items()}
+    )
+    path.write_text(json.dumps(amendment))
+    with pytest.raises(ValueError, match="outside the declared"):
+        projection_runtime_amendment(run, path, selected)
+
+
+@pytest.mark.parametrize("change", [None, "api", "shared", "lock", "archive-binding"])
+def test_worker_binds_actual_api_shared_and_lock_to_amended_archive_before_games(tmp_path, change):
+    api = tmp_path / "apps/api/dist"
+    shared = tmp_path / "packages/shared/dist"
+    modules = {
+        "bot/training/metadata.js": 'export function trainingMetadata(){return {engineSha256:"'
+        + "b" * 64
+        + '"}}',
+        "bot/evolution/heuristic.js": "export function parseHeuristic(x){return x}",
+        "bot/evolution/decks.js": "export function evolutionDeck(){throw Error('no games')}",
+        "bot/evolution/residualMatch.js": "export function runResidualMatch(){throw Error('no games')}",
+    }
+    for name, content in modules.items():
+        path = api / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+    shared.mkdir(parents=True)
+    (shared / "index.js").write_text("export const shared = true")
+    (shared.parent / "package.json").write_text(
+        json.dumps({"main": "./dist/index.js", "type": "module"})
+    )
+    dependency = api.parent / "node_modules/@aegis/shared"
+    dependency.parent.mkdir(parents=True)
+    dependency.symlink_to(shared.parent, target_is_directory=True)
+    lock = tmp_path / "pnpm-lock.yaml"
+    lock.write_text("unchanged lock")
+    entries = {}
+    for base, prefix in ((api, "apps/api/dist"), (shared, "packages/shared/dist")):
+        for path in base.rglob("*.js"):
+            entries[f"{prefix}/{path.relative_to(base).as_posix()}"] = hashlib.sha256(
+                path.read_bytes()
+            ).hexdigest()
+    worker = Path(__file__).with_name("certifyWorker.mjs")
+    request = {
+        "apiRoot": str(api),
+        "workerSha256": hashlib.sha256(worker.read_bytes()).hexdigest(),
+        "engineSha256": "b" * 64,
+        "program": {"basePolicy": "projected-balanced"},
+        "units": [],
+        "runtimePayloadSha256": runtime_payload_hash(entries),
+        "dependencyLockSha256": hashlib.sha256(lock.read_bytes()).hexdigest(),
+    }
+    if change == "api":
+        (api / "unreviewed-policy.js").write_text("export const changed = true")
+    elif change == "shared":
+        (shared / "index.js").write_text("export const shared = false")
+    elif change == "lock":
+        lock.write_text("changed dependency")
+    elif change == "archive-binding":
+        request["runtimePayloadSha256"] = "a" * 64
+    result = subprocess.run(
+        ["node", str(worker)],
+        input=json.dumps(request),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.stdout == ""
+    if change is None:
+        assert result.returncode == 0, result.stderr
+    else:
+        assert result.returncode != 0
+        assert (
+            "dependency lock changed" if change == "lock" else "amended archive payload"
+        ) in result.stderr
 
 
 def games(units, wins=2):
