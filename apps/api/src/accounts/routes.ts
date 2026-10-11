@@ -37,7 +37,7 @@ import { BotSeatingStore } from "../tournaments/bots/index.js";
 import { EliminationStore } from "../tournaments/elimination/index.js";
 import { ArbitrationService, installArbitrationRoutes } from "../tournaments/arbitration/index.js";
 import { FeedbackStore } from "../bugs/FeedbackStore.js";
-import { installBugReportRoutes, type IssueTracker } from "../bugs/index.js";
+import { installBugReportRoutes, ReplayCapturer, type IssueTracker } from "../bugs/index.js";
 import { NotificationStore } from "../notifications/NotificationStore.js";
 import { installNotificationRoutes } from "../notifications/routes.js";
 import { CommunityDeckStore } from "../community/CommunityDeckStore.js";
@@ -102,8 +102,15 @@ export function installAccountRoutes(
     arbitration,
     session: sessionFromRequest,
   });
-  // Feedback is stored locally, with an optional copy in GitHub.
-  installBugReportRoutes({ app, store: new FeedbackStore(store), tracker: bugTracker, session: sessionFromRequest });
+  // Feedback is stored locally, with an optional copy in GitHub. A report filed from a match also
+  // keeps a private copy of the match's input record (see bugs/replayCapture).
+  installBugReportRoutes({
+    app,
+    store: new FeedbackStore(store),
+    tracker: bugTracker,
+    session: sessionFromRequest,
+    replayCapture: ReplayCapturer.fromEnvironment(),
+  });
   // The signed-in player's inbox; feedback triage is its first producer. See src/notifications.
   installNotificationRoutes({ app, store: new NotificationStore(store), session: sessionFromRequest });
   // Public decks, likes and copies. See src/community.
