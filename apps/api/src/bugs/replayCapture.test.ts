@@ -60,11 +60,11 @@ afterEach(async () => {
 });
 
 async function startHarness({
-  replays,
+  replayCapture,
   tracker = true,
   feedback,
 }: {
-  replays?: ReplayCapturer;
+  replayCapture?: ReplayCapturer;
   tracker?: boolean;
   feedback?: (accounts: AccountStore) => FeedbackStore;
 } = {}): Promise<Harness> {
@@ -83,7 +83,7 @@ async function startHarness({
     app,
     store,
     tracker: tracker ? recording : undefined,
-    replays,
+    replayCapture,
     session: (req) => accounts.session(/aegis_session=([^;]+)/.exec(req.headers.cookie ?? "")?.[1]),
   });
   const server = app.listen(0);
@@ -134,7 +134,7 @@ function stalledExtractor(): { extract: ReplayExtractor; aborted: () => boolean 
 
 describe("capturing the replay of a reported match", () => {
   it("stores the match's replay with the report and says so, without its contents, on the issue", async () => {
-    const h = await startHarness({ replays: new ReplayCapturer({ logDir }) });
+    const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir }) });
 
     const response = await submit(h, { matchId: match.matchId });
 
@@ -168,7 +168,7 @@ describe("capturing the replay of a reported match", () => {
   });
 
   it("keeps no replay larger than its size cap and says so on the issue", async () => {
-    const h = await startHarness({ replays: new ReplayCapturer({ logDir, maxRecordChars: 1_000 }) });
+    const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir, maxRecordChars: 1_000 }) });
 
     const response = await submit(h, { matchId: match.matchId });
 
@@ -178,7 +178,7 @@ describe("capturing the replay of a reported match", () => {
   });
 
   it("files the report and says the replay is unavailable when the match is not in the logs", async () => {
-    const h = await startHarness({ replays: new ReplayCapturer({ logDir }) });
+    const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir }) });
 
     const response = await submit(h, { matchId: UNKNOWN_MATCH });
 
@@ -193,7 +193,7 @@ describe("capturing the replay of a reported match", () => {
     try {
       const lines = match.lines.filter((line) => !line.includes('"replay.header"'));
       writeFileSync(join(headless, "api-2026-10-09-aaaa.jsonl"), lines.join("\n") + "\n");
-      const h = await startHarness({ replays: new ReplayCapturer({ logDir: headless }) });
+      const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir: headless }) });
 
       expect((await submit(h, { matchId: match.matchId })).status).toBe(201);
       expect(await storedReplays(h)).toEqual([]);
@@ -206,7 +206,7 @@ describe("capturing the replay of a reported match", () => {
   });
 
   it("treats a missing log directory as logs not found", async () => {
-    const h = await startHarness({ replays: new ReplayCapturer({ logDir: join(logDir, "does-not-exist") }) });
+    const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir: join(logDir, "does-not-exist") }) });
 
     expect((await submit(h, { matchId: match.matchId })).status).toBe(201);
     expect(h.filed[0]!.body).toContain("Replay not available: logs not found.");
@@ -214,7 +214,9 @@ describe("capturing the replay of a reported match", () => {
 
   it("gives up after its time budget, stops the read, and still files the report", async () => {
     const stalled = stalledExtractor();
-    const h = await startHarness({ replays: new ReplayCapturer({ logDir, timeoutMs: 50, extract: stalled.extract }) });
+    const h = await startHarness({
+      replayCapture: new ReplayCapturer({ logDir, timeoutMs: 50, extract: stalled.extract }),
+    });
 
     const started = Date.now();
     const response = await submit(h, { matchId: match.matchId });
@@ -230,7 +232,7 @@ describe("capturing the replay of a reported match", () => {
     const extract = vi.fn<ReplayExtractor>(async () => {
       throw new Error(`EACCES: permission denied, open '${logDir}/api-secret.jsonl'`);
     });
-    const h = await startHarness({ replays: new ReplayCapturer({ logDir, extract }) });
+    const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir, extract }) });
 
     expect((await submit(h, { matchId: match.matchId })).status).toBe(201);
     expect(h.filed[0]!.body).toContain("Replay not available: error.");
@@ -238,7 +240,7 @@ describe("capturing the replay of a reported match", () => {
   });
 
   it("files the report without a replay when storing the replay fails", async () => {
-    const h = await startHarness({ replays: new ReplayCapturer({ logDir }) });
+    const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir }) });
     vi.spyOn(h.feedback, "saveReplay").mockRejectedValue(new Error("database offline"));
 
     const response = await submit(h, { matchId: match.matchId });
@@ -249,7 +251,7 @@ describe("capturing the replay of a reported match", () => {
 
   it("captures nothing and adds no Replay section when the report was not filed from a match", async () => {
     const extract = vi.fn<ReplayExtractor>(async () => record);
-    const h = await startHarness({ replays: new ReplayCapturer({ logDir, extract }) });
+    const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir, extract }) });
 
     expect((await submit(h, {})).status).toBe(201);
     expect((await submit(h, { matchId: "not-a-match-id" })).status).toBe(201);
@@ -261,7 +263,7 @@ describe("capturing the replay of a reported match", () => {
 
   it("only scans for accepted reports: refused and rate-limited submissions never reach the logs", async () => {
     const extract = vi.fn<ReplayExtractor>(async () => record);
-    const h = await startHarness({ replays: new ReplayCapturer({ logDir, extract }) });
+    const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir, extract }) });
 
     // The refused one still spends a token of the account's five per minute.
     expect((await submit(h, { matchId: match.matchId, summary: " " })).status).toBe(400);
@@ -272,7 +274,7 @@ describe("capturing the replay of a reported match", () => {
   });
 
   it("still saves the replay when there is no GitHub mirror, keeping the response contract", async () => {
-    const h = await startHarness({ replays: new ReplayCapturer({ logDir }), tracker: false });
+    const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir }), tracker: false });
 
     const response = await submit(h, { matchId: match.matchId });
 
@@ -346,7 +348,7 @@ describe("downloading a saved replay", () => {
   }
 
   it("gives administrators the stored record and nobody else", async () => {
-    const h = await startHarness({ replays: new ReplayCapturer({ logDir }) });
+    const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir }) });
     await submit(h, { matchId: match.matchId });
     await submit(h, {});
 
@@ -373,7 +375,7 @@ describe("downloading a saved replay", () => {
   });
 
   it("marks which reports in the admin list have a replay", async () => {
-    const h = await startHarness({ replays: new ReplayCapturer({ logDir }) });
+    const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir }) });
     await submit(h, { matchId: match.matchId });
     await submit(h, {});
 

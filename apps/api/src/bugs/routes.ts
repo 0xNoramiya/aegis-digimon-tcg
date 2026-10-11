@@ -41,11 +41,11 @@ export type BugReportRouteDeps = {
    * Copies the reported match's replay out of the logs; absent means reports are filed without one.
    * Only accepted reports (past the rate limit and validation) ever reach it.
    */
-  replays?: ReplayCapturer;
+  replayCapture?: ReplayCapturer;
 };
 
 /** Public submissions persist before mirroring. Admins triage them; signed-in reporters follow their own. */
-export function installBugReportRoutes({ app, store, tracker, session, replays }: BugReportRouteDeps): void {
+export function installBugReportRoutes({ app, store, tracker, session, replayCapture }: BugReportRouteDeps): void {
   const limitAccount = tokenBucketLimiter(SIGNED_IN_RATE_LIMIT);
   const limitAddress = tokenBucketLimiter(ANONYMOUS_RATE_LIMIT);
 
@@ -93,7 +93,7 @@ export function installBugReportRoutes({ app, store, tracker, session, replays }
     // kept. It is bounded by the capturer's time budget and never throws, so it can delay the
     // response by at most that budget and can never fail it.
     let replay: ReplayOutcome | undefined;
-    if (report.matchId && replays) replay = await captureReportReplay(store, replays, id, report.matchId);
+    if (report.matchId && replayCapture) replay = await captureReportReplay(store, replayCapture, id, report.matchId);
     if (!tracker) {
       res.status(201).json({ number: id });
       return;

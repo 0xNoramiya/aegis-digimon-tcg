@@ -109,7 +109,7 @@ export function installAccountRoutes(
     store: new FeedbackStore(store),
     tracker: bugTracker,
     session: sessionFromRequest,
-    replays: ReplayCapturer.fromEnvironment(),
+    replayCapture: ReplayCapturer.fromEnvironment(),
   });
   // The signed-in player's inbox; feedback triage is its first producer. See src/notifications.
   installNotificationRoutes({ app, store: new NotificationStore(store), session: sessionFromRequest });
