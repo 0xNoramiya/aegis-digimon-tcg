@@ -41,7 +41,6 @@
     border-bottom: 0 !important;
     overflow: hidden auto !important;
     translate: none !important;
-    transform: none !important;
     scrollbar-width: thin;
   }
   .game-modal__panel.effect-prompt-family[data-prompt-surface] {
@@ -416,7 +415,6 @@
   right: auto !important;
   bottom: auto !important;
   translate: none !important;
-  transform: none !important;
 }
 
 .decision-overlay__move-handle {

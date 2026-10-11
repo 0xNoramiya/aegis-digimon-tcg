@@ -6,10 +6,12 @@ import { CardBack } from "./cards";
 import {
   DEFAULT_EGG_SLEEVE,
   clearCustomCardSleeve,
+  clearCustomEggSleeve,
   getEffectiveEggSleeveId,
   getEggSleeveId,
   setCardSleeveId,
   setCustomCardSleeve,
+  setCustomEggSleeve,
   setDeckEggSleeveId,
   setEggSleeveId,
 } from "./sleeve";
@@ -19,6 +21,7 @@ const EGG_BACK = 'img[src="/sleeves/digimon-egg.webp"]';
 
 beforeEach(() => {
   clearCustomCardSleeve();
+  clearCustomEggSleeve();
   setCardSleeveId("omnimon");
   setEggSleeveId(DEFAULT_EGG_SLEEVE.id);
   setDeckEggSleeveId(undefined);
@@ -65,6 +68,18 @@ describe("egg sleeve fallback", () => {
     expect(getEggSleeveId()).toBe("digimon-egg");
   });
 
+  it("keeps its own uploaded image apart from the card sleeve image", () => {
+    setCustomCardSleeve("data:image/webp;base64,Y2FyZA==");
+    setCustomEggSleeve("data:image/webp;base64,ZWdn");
+    expect(getEggSleeveId()).toBe("custom-egg");
+    const { container } = render(<CardBack width={70} egg />);
+    expect(container.querySelector('img[src="data:image/webp;base64,ZWdn"]')).toBeTruthy();
+    clearCustomCardSleeve();
+    expect(getEggSleeveId()).toBe("custom-egg");
+    act(() => clearCustomEggSleeve());
+    expect(getEggSleeveId()).toBe("digimon-egg");
+  });
+
   it("paints the player's egg pile and keeps the opponent's on the Digi-Egg back", () => {
     const { container } = render(
       <>
@@ -106,5 +121,14 @@ describe("egg sleeve picker", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Gold, Official Card Sleeves" }));
     expect(getEggSleeveId()).toBe("gold");
+  });
+
+  it("offers an upload tile for the egg deck", () => {
+    render(
+      <I18nProvider>
+        <EggSleevePicker />
+      </I18nProvider>,
+    );
+    expect(screen.getByRole("button", { name: /upload/i })).toBeTruthy();
   });
 });

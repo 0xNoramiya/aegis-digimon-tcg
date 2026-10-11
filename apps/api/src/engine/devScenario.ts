@@ -380,6 +380,8 @@ export const DEV_SCENARIO_IDS = [
   "arena-ex5-biting-crush-delay",
   "arena-p108-training-delay-no-target",
   "arena-p108-training-delay-with-target",
+  "arena-feedback43-omnimon-name-dna",
+  "arena-feedback42-parkour-sequential",
   "arena-github5306-training-use-memory",
   "arena-github5306-training-delay-paid",
   "arena-github5306-training-delay-free",
@@ -450,6 +452,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-taiki-keeps-xros-digimon",
   "arena-discord-vemmon-add-or-place",
   "arena-discord-speed-security-scene-stuck",
+  "arena-discord-greymon-security-two-zones",
   "arena-p224-kotone-own-source",
   "arena-bt25-ceresmon-homeros-suspend",
   "arena-bt24-homeros-neptunemon-timing-choice",
@@ -7509,6 +7512,43 @@ function layDiscordSpeedSecuritySceneStuckScenario(state: GameState): void {
 }
 
 /**
+ * Discord 1558643290751115264: Greymon's (ST15-08) [Security] effect offers six hand cards and six
+ * trash cards at once. Both zones wrapped onto two rows, and the dialog pushed its actions below
+ * the screen. The human draws one card on their turn, so the hand reaches six on the bot's attack.
+ */
+function layDiscordGreymonSecurityTwoZonesScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-greymon-zones-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-greymon-zones-deck-${seat}-${index}`, "BT1-009", seat));
+    }
+  }
+  const human = state.players[0]!;
+  insertCard(human, Zone.Security, faceDownCard("dev-greymon-zones-greymon", "ST15-08", 0));
+  for (let index = 0; index < 2; index += 1) {
+    insertCard(human, Zone.Security, faceDownCard(`dev-greymon-zones-security-0-${index}`, "BT1-009", 0));
+  }
+  insertCard(human, Zone.Hand, faceDownCard("dev-greymon-zones-tai", "ST15-14", 0));
+  for (let index = 0; index < 4; index += 1) {
+    insertCard(human, Zone.Hand, faceDownCard(`dev-greymon-zones-hand-${index}`, "BT1-009", 0));
+  }
+  insertCard(human, Zone.Trash, faceUpCard("dev-greymon-zones-agumon", "ST15-02", 0));
+  for (let index = 0; index < 5; index += 1) {
+    insertCard(human, Zone.Trash, faceUpCard(`dev-greymon-zones-trash-${index}`, "BT1-009", 0));
+  }
+  const bot = state.players[1]!;
+  for (let index = 0; index < 3; index += 1) {
+    insertCard(bot, Zone.Security, faceDownCard(`dev-greymon-zones-security-1-${index}`, "BT1-009", 1));
+  }
+  placePermanent(bot, establishedDigimon(1, ["BT1-009"], "-greymon-zones-attacker"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
+/**
  * Feedback #27: Chuumon's [On Play] reveal only works "if it's your opponent's turn". Playing
  * Chuumon from hand on your own turn reveals nothing. KingEtemon gives the bot's Digimon -3000 DP
  * (3 Digimon with [Sukamon]/[Etemon] in their names). The bot's suspended Sukamon survives only
@@ -10585,6 +10625,37 @@ function layGithub5311CrescemonCostScenario(state: GameState): void {
   insertCard(human, Zone.Hand, faceDownCard("github5311-crescemon", "EX5-020", 0));
 }
 
+/** Feedback #43: Main DNA accepts level-6 substring names, including the observed AD1 stacks. */
+function layFeedback43OmnimonDnaScenario(state: GameState): void {
+  prepareGithubCardEffectsScenario(state, 2);
+  const human = state.players[0]!;
+  const grey = establishedDigimon(0, ["ST21-01", "ST20-10", "AD1-001", "EX9-012", "AD1-009"], "-feedback43-grey");
+  const garuru = establishedDigimon(0, ["AD1-010", "EX9-019", "AD1-012"], "-feedback43-garuru");
+  placePermanent(human, grey);
+  placePermanent(human, garuru);
+  placePermanent(human, establishedDigimon(0, ["BT1-036"], "-feedback43-low-level"));
+  placePermanent(human, establishedDigimon(0, ["BT2-020"], "-feedback43-wrong-name"));
+  insertCard(human, Zone.Hand, faceDownCard("feedback43-omnimon", "AD1-025", 0));
+}
+
+/** Feedback #42: printed waiver ends after the first Parkour; the Tamer restores both colors. */
+function layFeedback42ParkourScenario(state: GameState): void {
+  // Eight memory permits the positive control in one turn; the reported match started at two.
+  prepareGithubCardEffectsScenario(state, 8);
+  const human = state.players[0]!;
+  const breeding = establishedDigimon(0, ["BT12-002"], "-feedback42-breeding");
+  breeding.inBreeding = true;
+  setBreeding(human, breeding);
+  for (const suffix of ["first", "second"]) {
+    insertCard(human, Zone.Hand, faceDownCard(`feedback42-${suffix}`, "LM-058", 0));
+  }
+  clearZone(human, Zone.Deck);
+  const cards = ["BT1-028", "BT16-085", "BT1-013", "BT1-028", "BT1-013", ...Array(16).fill("BT1-009")];
+  for (const [index, card] of cards.entries()) {
+    insertCard(human, Zone.Deck, faceDownCard(`feedback42-deck-${index}`, card, 0));
+  }
+}
+
 /** #5306 current-behavior controls: using costs 2; Delay discounts digivolution, never gains memory. */
 function layGithub5306TrainingMemoryScenario(state: GameState, mode: "use" | "paid" | "free" | "cost-choice"): void {
   prepareGithubCardEffectsScenario(state, mode === "use" ? 1 : 3);
@@ -11349,6 +11420,8 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-ex5-biting-crush-delay": layEx5BitingCrushDelayScenario,
   "arena-p108-training-delay-no-target": (state, decks) => layP108TrainingDelayScenario(state, decks, false),
   "arena-p108-training-delay-with-target": (state, decks) => layP108TrainingDelayScenario(state, decks, true),
+  "arena-feedback43-omnimon-name-dna": (state) => layFeedback43OmnimonDnaScenario(state),
+  "arena-feedback42-parkour-sequential": (state) => layFeedback42ParkourScenario(state),
   "arena-github5306-training-use-memory": (state) => layGithub5306TrainingMemoryScenario(state, "use"),
   "arena-github5306-training-delay-paid": (state) => layGithub5306TrainingMemoryScenario(state, "paid"),
   "arena-github5306-training-delay-free": (state) => layGithub5306TrainingMemoryScenario(state, "free"),
@@ -11420,6 +11493,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-taiki-keeps-xros-digimon": layDiscordTaikiKeepsXrosDigimonScenario,
   "arena-discord-vemmon-add-or-place": layDiscordVemmonAddOrPlaceScenario,
   "arena-discord-speed-security-scene-stuck": layDiscordSpeedSecuritySceneStuckScenario,
+  "arena-discord-greymon-security-two-zones": layDiscordGreymonSecurityTwoZonesScenario,
   "arena-p224-kotone-own-source": layP224KotoneOwnSourceScenario,
   "arena-bt25-ceresmon-homeros-suspend": layBt25CeresmonHomerosSuspendScenario,
   "arena-bt24-homeros-neptunemon-timing-choice": layBt24HomerosNeptunemonTimingChoiceScenario,

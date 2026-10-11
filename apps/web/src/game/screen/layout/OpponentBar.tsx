@@ -20,8 +20,11 @@ import { useEnterAnimation } from "../../animations";
 import { Side } from "../../side";
 import { PlayerLine } from "./PlayerLine";
 import { useFullscreen } from "../hooks/useFullscreen";
+import { useHeldFlag } from "../hooks/useHeldFlag";
 
 const OPPONENT_NAME_MAX_LENGTH = 12;
+/** Animation batches arrive with short gaps; the skip button outlasts them instead of blinking. */
+export const SKIP_BUTTON_HOLD_MS = 700;
 const CHAT_UNREAD_SHOWN_MAX = 9;
 
 function ChatUnreadBadge({ count }: { count: number }) {
@@ -102,6 +105,7 @@ export function OpponentBar({
   const FullscreenIcon = fullscreen.active ? Icons.Minimize : Icons.Maximize;
   const chatLabel = chatUnread > 0 ? t("chat.openUnread", { count: chatUnread }) : t("chat.open");
   const openCard = useCardOpener();
+  const skipShown = useHeldFlag(skippable, SKIP_BUTTON_HOLD_MS);
   const fanned = revealedHand?.length ?? Math.max(0, handCount);
   const entering = useEnterAnimation(Array.from({ length: fanned }, (_, index) => String(index)));
   return (
@@ -327,21 +331,23 @@ export function OpponentBar({
               <FullscreenIcon size={17} />
             </button>
           ) : null}
-          {/* Only while there is something to skip: a button that does nothing most
-              of the match teaches players to ignore it. The phone has no equivalent
+          {/* The slot is always there so the buttons around it never move; the button
+              only shows while there is something to skip. The phone has no equivalent
               — a tap anywhere on the board already advances the narration. Space and
               Enter come free with the native button; the match has no global keys. */}
-          {skippable ? (
-            <button
-              className="game-topbar-button game-topbar-button--skip"
-              onClick={onSkipPresentation}
-              aria-label={t("game.skipPresentation")}
-              title={t("game.skipPresentation")}
-              data-testid="skip-presentation"
-            >
-              <Icons.FastForward size={17} />
-            </button>
-          ) : null}
+          <button
+            className="game-topbar-button game-topbar-button--skip"
+            onClick={onSkipPresentation}
+            aria-label={t("game.skipPresentation")}
+            title={skipShown ? t("game.skipPresentation") : undefined}
+            aria-hidden={!skipShown}
+            disabled={!skipShown}
+            tabIndex={skipShown ? undefined : -1}
+            data-skippable={skipShown}
+            data-testid="skip-presentation"
+          >
+            <Icons.FastForward size={17} />
+          </button>
           <button
             className="game-topbar-button game-topbar-button--look"
             onClick={onOpenArenaLook}

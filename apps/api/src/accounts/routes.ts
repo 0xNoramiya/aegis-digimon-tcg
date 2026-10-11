@@ -1,9 +1,18 @@
 import { isDeckFormat, type DeckFormat } from "@aegis/shared";
 import { randomBytes } from "node:crypto";
+import { ReplayLibrary } from "../replays/ReplayLibrary.js";
+import { installReplayRoutes } from "../replays/routes.js";
 import {
   latestReleasedProductLabel,
-  isDigimonWorldAvatarId,
+  isAvatarChoice,
+  MATCH_MODES,
+  MATCH_OPPONENT_SEARCH_MAX,
+  MATCH_PAGE_SIZE,
+  MATCH_RESULTS,
+  MAX_MATCH_PAGE_SIZE,
   type BanlistPolicy,
+  type MatchHistoryFilter,
+  type MatchHistoryPage,
   type CreateTournamentInput,
   type SeriesScoreView,
   type TournamentSummary,
@@ -82,8 +91,10 @@ export function installAccountRoutes(
   mailer?: Mailer,
   deckReports?: DeckReportTracker,
   discordAvatars?: DiscordAvatarSource,
+  replays: ReplayLibrary = new ReplayLibrary(store),
 ): void {
   const sessionFromRequest = (req: Request) => store.session(cookie(req, SESSION_COOKIE));
+  installReplayRoutes({ app, library: replays, session: sessionFromRequest });
   // The organizer's override surface, in its own module. See src/tournaments/arbitration.
   installArbitrationRoutes({
     app,
@@ -127,7 +138,7 @@ export function installAccountRoutes(
     }
     const result = await refreshDiscordAvatarNow(store, discordAvatars, session.account.id);
     if (result.status === "refreshed") {
-      res.json({ ...session.account, avatarUrl: result.avatarUrl, discordLinked: true });
+      res.json({ ...((await store.account(session.account.id)) ?? session.account), discordLinked: true });
       return;
     }
     const failures = { not_discord: 404, cooldown: 429, rate_limited: 429, failed: 502 } as const;
@@ -286,13 +297,62 @@ export function installAccountRoutes(
   });
   get("/account/profile", async (req, res) => {
     const session = await requireSession(req, res, store);
-    if (session) res.json({ account: session.account, ...(await store.profile(session.account.id)) });
+    if (session) {
+      res.setHeader("Cache-Control", "private, no-store");
+      res.json({ account: session.account, ...(await store.profile(session.account.id)) });
+    }
+  });
+  get("/account/matches", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) return;
+    const query = parseMatchHistoryQuery(req.query);
+    if (!query) {
+      res.status(400).json({ error: "invalid_query" });
+      return;
+    }
+    const { matches, total } = await store.matchHistory(session.account.id, query);
+    const saved = await replays.forMatches(
+      session.account.id,
+      matches.map((match) => match.id),
+    );
+    res.setHeader("Cache-Control", "private, no-store");
+    res.json({
+      matches: matches.map((match) => ({ ...match, replay: saved.find((item) => item.matchId === match.id) ?? null })),
+      total,
+      page: query.page,
+      limit: query.limit,
+      sharing: replays.sharing,
+    } satisfies MatchHistoryPage);
+  });
+  put("/account/profile", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) return;
+    const { displayName, avatarId } = req.body ?? {};
+    if (typeof displayName !== "string") {
+      res.status(400).json({ error: "invalid_display_name" });
+      return;
+    }
+    if (!isAvatarChoice(avatarId)) {
+      res.status(400).json({ error: "invalid avatar" });
+      return;
+    }
+    if (displayName !== session.account.displayName && !limitDisplayNameChange(session.account.id)) {
+      res.status(429).json({ error: "too_many_requests" });
+      return;
+    }
+    try {
+      res.json(await store.updateProfile(session.account.id, { displayName, avatarId }));
+    } catch (error) {
+      if (error instanceof InvalidDisplayNameError) res.status(400).json({ error: "invalid_display_name" });
+      else if (error instanceof DisplayNameTakenError) res.status(409).json({ error: "display_name_taken" });
+      else throw error;
+    }
   });
   put("/account/profile/avatar", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
     const avatarId = (req.body as { avatarId?: unknown }).avatarId;
-    if (avatarId !== null && !isDigimonWorldAvatarId(avatarId)) {
+    if (!isAvatarChoice(avatarId)) {
       res.status(400).json({ error: "invalid avatar" });
       return;
     }
@@ -760,6 +820,34 @@ function isSleeveId(value: unknown): value is string {
  * Accepts a partial set of known keys. The web client owns the valid locale, sleeve and
  * sort ids, and clamps the deck panel share to its own layout limits.
  */
+const MAX_MATCH_PAGE = 1000;
+/** Absent fields take their defaults; anything present must be exactly one well-formed value. */
+function parseMatchHistoryQuery(
+  query: Request["query"],
+): ({ page: number; limit: number } & MatchHistoryFilter) | undefined {
+  const page = positiveInteger(query.page, 1);
+  const limit = positiveInteger(query.limit, MATCH_PAGE_SIZE);
+  if (page === undefined || page > MAX_MATCH_PAGE || limit === undefined || limit > MAX_MATCH_PAGE_SIZE)
+    return undefined;
+  const { result, mode, opponent } = query;
+  if (result !== undefined && !(MATCH_RESULTS as readonly unknown[]).includes(result)) return undefined;
+  if (mode !== undefined && !(MATCH_MODES as readonly unknown[]).includes(mode)) return undefined;
+  if (opponent !== undefined && typeof opponent !== "string") return undefined;
+  const search = opponent?.trim();
+  if (search && search.length > MATCH_OPPONENT_SEARCH_MAX) return undefined;
+  return {
+    page,
+    limit,
+    ...(result ? { result: result as MatchHistoryFilter["result"] } : {}),
+    ...(mode ? { mode: mode as MatchHistoryFilter["mode"] } : {}),
+    ...(search ? { opponent: search } : {}),
+  };
+}
+function positiveInteger(value: unknown, fallback: number): number | undefined {
+  if (value === undefined) return fallback;
+  if (typeof value !== "string" || !/^[1-9]\d{0,5}$/.test(value)) return undefined;
+  return Number(value);
+}
 function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
   const { autoHatch, darkMode, locale, sleeve, eggSleeve, deckShare, deckView, deckSort, ...unknownKeys } =

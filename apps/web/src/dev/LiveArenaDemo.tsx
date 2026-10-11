@@ -1969,6 +1969,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Partida com relógio. Encerre a criação e o turno. O bot ataca você com Monodramon e Magnamon (7000 DP) é revelado da sua segurança. Antes da batalha, o [Todos os Turnos] de Dynasmon oferece excluir o Digimon de menor DP do oponente: escolha Monodramon. A checagem termina sem batalha, e Magnamon sai do centro da tela e vai para a lixeira. A cena não fica presa nos turnos seguintes.",
     en: "Timed match. End breeding and your turn. The bot attacks you with Monodramon, and Magnamon (7000 DP) is revealed from your security. Before the battle, Dynasmon's [All Turns] effect offers to delete your opponent's lowest DP Digimon: choose Monodramon. The check ends with no battle, and Magnamon leaves the centre of the screen for the trash. The scene does not stay on screen in later turns.",
   },
+  "arena-discord-greymon-security-two-zones": {
+    ptBR: "Discord 1558643290751115264. Encerre a criação e o turno. O bot ataca você com Monodramon, e Greymon (ST15-08) é revelado da sua segurança. A escolha mostra 6 cartas da mão e 6 da lixeira, com Tai Kamiya (ST15-14) e Agumon (ST15-02) selecionáveis. Os botões de confirmar e de nenhuma escolha ficam visíveis sem rolar a página, mesmo em uma tela de 1920x900. Escolha Tai Kamiya: ele entra em campo sem pagar o custo.",
+    en: "Discord 1558643290751115264. End breeding and your turn. The bot attacks you with Monodramon, and Greymon (ST15-08) is revealed from your security. The choice shows 6 hand cards and 6 trash cards, with Tai Kamiya (ST15-14) and Agumon (ST15-02) selectable. The confirm and choose-none buttons stay visible without scrolling the page, even on a 1920x900 screen. Choose Tai Kamiya: it enters play without paying the cost.",
+  },
   "arena-bt22-akemi-battle-mother": {
     ptBR: "GitHub #5370. Aguarde a Principal: a criação avança automaticamente porque Mother Eater não tem DP para sair. Ative o [Principal] de Akemi Suedou. Somente os dois Mother Eater no campo podem ser escolhidos; a cópia na criação fica excluída. Escolha o Mother Eater com Eater (Species Form) nas fontes. Akemi deve ficar como a fonte inferior, abaixo de Eater (Species Form), enquanto a pilha na criação fica intacta.",
     en: "GitHub #5370. Wait for Main: breeding skips automatically because Mother Eater has no DP to move. Activate Akemi Suedou's [Main]. Only the two battle-area Mother Eaters are eligible; the breeding copy is excluded. Choose the Mother Eater with Eater (Species Form) in its sources. Akemi must become its bottom source, below Eater (Species Form), while the breeding stack stays intact.",
@@ -2360,6 +2364,14 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
   "arena-p108-training-delay-no-target": {
     ptBR: "Wisdom Training está no campo desde um turno anterior e você não tem Digimon. Ative o ＜Delay＞: a carta vai para o lixo e o efeito não faz nada.",
     en: "Wisdom Training has been in the battle area since an earlier turn and you have no Digimon. Activate its ＜Delay＞: the card goes to the trash and the effect does nothing.",
+  },
+  "arena-feedback43-omnimon-name-dna": {
+    en: "Feedback #43: end breeding, select AD1 Omnimon from hand and choose Digivolve, then click CresGarurumon to open the DNA/ordinary evolution choices. Select BlitzGreymon and CresGarurumon and confirm DNA Digivolve: printed substring names at level 6 qualify, cost is 0, both full stacks combine and one card is drawn. Level-4 Garurumon cannot replace CresGarurumon; level-6 Gallantmon lacks the required name. Both stay in play. This is Main-phase DNA; these materials' triggered effects specifically name Omnimon Alter-S, which is a different card. The observed source stacks are retained, with a neutral opponent and level/name refusal controls.",
+    ptBR: "Feedback #43: encerre a criação, selecione Omnimon AD1 da mão e escolha Digievoluir, depois clique em CresGarurumon para abrir as opções de DNA e evolução normal. Selecione BlitzGreymon e CresGarurumon e confirme DNA Digievoluir: os nomes com os trechos impressos no nível 6 são válidos, o custo é 0, as duas pilhas completas se unem e você compra uma carta. Garurumon nível 4 não pode substituir CresGarurumon; Gallantmon nível 6 não tem o nome exigido. Ambos ficam no campo. É DNA na fase Principal; os efeitos desses materiais citam especificamente Omnimon Alter-S, outra carta. O cenário preserva as fontes observadas, com oponente neutro e controles de recusa por nível e nome.",
+  },
+  "arena-feedback42-parkour-sequential": {
+    en: "Feedback #42: breeding skips automatically with the existing egg. Use one Parkour Training. Select Davis Motomiya & Ken Ichijoji. Memory goes 8→6 and Parkour stays in the battle area. The second copy is unavailable: the blue egg supplies no green, and placed Options do not supply colors. Play the revealed Tamer for 4 (6→2), then use the second Parkour for 2 (2→0), selecting Elecmon. Both copies remain in play; neither can Delay this turn. The extra starting memory is a positive control; in the report, playing the Tamer at 0 passed the turn.",
+    ptBR: "Feedback #42: a criação é pulada automaticamente com o ovo já presente. Use um Parkour Training. Escolha Davis Motomiya & Ken Ichijoji. A memória vai de 8 para 6 e Parkour fica no campo. A segunda cópia fica indisponível: o ovo azul não fornece verde e Options no campo não fornecem cores. Jogue o Tamer revelado por 4 (6→2), depois use o segundo Parkour por 2 (2→0), escolhendo Elecmon. As duas cópias ficam no campo e nenhuma pode usar Delay neste turno. A memória inicial extra permite o controle positivo; no relato, jogar o Tamer com 0 passou o turno.",
   },
   "arena-github5306-training-use-memory": {
     ptBR: "#5306: controle do comportamento atual. Encerre a criação com 1 de memória e use Treadmill Training da mão. O custo 2 leva a memória a 1 do oponente antes da escolha. Escolha Reppamon entre as duas cartas reveladas; Muchomon vai para o fundo e Training fica no campo. Após resolver tudo, o turno passa ao oponente com 1. O Delay não pode ser ativado no turno em que Training foi colocado.",
@@ -2820,6 +2832,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
   "arena-issue-5182-supreme-connection-delay": {
     en: "End breeding and use Supreme Connection! from hand (3 memory). It goes to the battle area, but its ＜Delay＞ can't be activated this turn. Then activate ＜Delay＞ on the Supreme Connection! that was already in play: it goes to the trash, and Gigadramon is played from hand for 3. Memory ends at 2.",
     ptBR: "Encerre a criação e use Supreme Connection! da mão (3 de memória). Ela vai para a área de batalha, mas o ＜Delay＞ dela não pode ser ativado neste turno. Depois, ative o ＜Delay＞ da Supreme Connection! que já estava em jogo: ela vai para a lixeira e Gigadramon é jogado da mão por 3. A memória termina em 2.",
+  },
+  "arena-hand-sort-modes": {
+    en: "Your hand mixes colors, levels, Tamers, and Options. Tap the sort button to sort by type. Open the caret menu and pick By cost, then By color: each choice sorts at once and becomes the button's mode. Draw a card: it stays at the end until you sort again.",
+    ptBR: "Sua mão mistura cores, níveis, Tamers e Options. Toque no botão de ordenar para ordenar por tipo. Abra o menu da seta e escolha Por custo, depois Por cor: cada escolha ordena na hora e vira o modo do botão. Compre uma carta: ela fica no fim até você ordenar de novo.",
   },
   "arena-issue-5181-sharkmon-shellmon": {
     en: "End breeding and digivolve Shellmon into Sharkmon with the [Aqua]/[Sea Animal] route (cost 3). Shellmon has [Aquatic] only from its [Rule] text. De-Digivolve 1 the opponent's Digimon. Memory ends at 5.",
@@ -3358,6 +3374,8 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex5-attack-priority", "EX5 Etemon · attack trigger priority"],
   ["arena-ex5-biting-crush-delay", "EX5 Biting Crush · Delay on effect play"],
   ["arena-p108-training-delay-no-target", "P-108 Wisdom Training · Delay with no target"],
+  ["arena-feedback43-omnimon-name-dna", "Feedback #43 · Omnimon · substring-name Main DNA"],
+  ["arena-feedback42-parkour-sequential", "Feedback #42 · Parkour Training sequential colors"],
   ["arena-github5306-training-use-memory", "#5306 Treadmill Training · use cost and turn pass"],
   ["arena-github5306-training-delay-paid", "#5306 Treadmill Training · Delay pays 1"],
   ["arena-github5306-training-delay-free", "#5306 Treadmill Training · Delay costs 0"],
@@ -3447,6 +3465,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-discord-taiki-keeps-xros-digimon", "Discord · BT10 Taiki may add or place the only Xros Heart Digimon"],
   ["arena-discord-vemmon-add-or-place", "Discord · BT18 Vemmon may add or place the only [Vemmon]"],
   ["arena-discord-speed-security-scene-stuck", "Discord · timed security check closes without a battle"],
+  ["arena-discord-greymon-security-two-zones", "Discord · ST15 Greymon security picks from hand and trash"],
   ["arena-p224-kotone-own-source", "P-224 Kotone · X7 das próprias fontes / own sources"],
   ["arena-kotone-digixros-pending-attack", "Kotone · DigiXros + EX6 pending attack"],
   ["arena-bt6-beelstarmon-duplicate-cost", "BT6 BeelStarmon · duplicate hand cost"],
@@ -3568,6 +3587,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-issue-5132-lm-055-search", "GitHub #5132 · Sprint Dash Training search"],
   ["arena-issue-5182-supreme-connection-delay", "GitHub #5182 · Supreme Connection! Delay"],
   ["arena-issue-5181-sharkmon-shellmon", "GitHub #5181 · Sharkmon onto Shellmon"],
+  ["arena-hand-sort-modes", "Hand sort modes"],
 ];
 
 /** Uses the normal room, bot and intent pipeline; all results come from the engine. */

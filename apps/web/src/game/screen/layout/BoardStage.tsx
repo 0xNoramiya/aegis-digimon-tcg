@@ -17,6 +17,7 @@ import { MatchChatWindow } from "../../chat/MatchChatWindow";
 import type { MatchChat } from "../../chat/useMatchChat";
 import { useUnreadChatCount } from "../../chat/useUnreadChatCount";
 import type { ArenaBoardLook } from "../../arenaLook";
+import type { HandSortMode } from "../../handSortMode";
 import { createPortal } from "react-dom";
 import type { GameState, Permanent, PlayerState, Seat } from "@aegis/shared";
 import type { RevealedZones } from "../model/gameOutcome";
@@ -136,7 +137,8 @@ export interface BoardChrome {
 export interface HandDockInputs {
   reorderDropBeforeInstanceId?: string | null;
   onMoveHandCard: (instanceId: string, direction: -1 | 1) => void;
-  onSortHand: () => void;
+  handSortMode: HandSortMode;
+  onSortHand: (mode: HandSortMode) => void;
   effectSourceInstanceId: string | undefined;
   effectSource?: EffectActivation;
   shakeInstanceId: string | undefined;
@@ -155,6 +157,7 @@ export interface HandDockInputs {
 
 export function BoardStage({
   spectating = false,
+  replayMode = false,
   onLeaveSpectator,
   state,
   shownState,
@@ -196,6 +199,7 @@ export function BoardStage({
   /** The card whose effect the viewer's open decision is about. */
   promptSourceCardId?: string | undefined;
   spectating?: boolean;
+  replayMode?: boolean;
   onLeaveSpectator?: () => void;
   room: Parameters<typeof intents.surrender>[0] | undefined;
   /** Absent when there is no live room to talk through, as in a demo. */
@@ -341,7 +345,10 @@ export function BoardStage({
             memory={readouts.memory}
             eggDeckCount={breedingOpponent.eggDeckCount}
             handCount={seats.shownOpponentHandCount}
-            revealedHand={seats.revealed?.opponent.hand}
+            revealedHand={
+              seats.revealed?.opponent.hand ??
+              (replayMode && opponent.hand.length > 0 ? Array.from(opponent.hand) : undefined)
+            }
             deckCount={shownOpponent.deckCount}
             trashCount={shownOpponent.trash.length}
             portraitArena={layout.portraitArena}
@@ -573,6 +580,8 @@ export function BoardStage({
 
           <PlayerDock
             spectating={spectating}
+            handSortMode={handDock.handSortMode}
+            showRecordedHand={replayMode && seats.shownHandEntries.length > 0}
             onSortHand={handDock.onSortHand}
             onMoveHandCard={handDock.onMoveHandCard}
             reorderDropBeforeInstanceId={handDock.reorderDropBeforeInstanceId}
@@ -600,7 +609,10 @@ export function BoardStage({
             startDrag={onStartHandDrag}
             selectCard={(index) => {
               const entry = seats.shownHandEntries[index];
-              if (entry) actions.selectHandCard(entry);
+              if (entry) {
+                if (replayMode) onOpenCard(entry.cardId, entry.artId);
+                else actions.selectHandCard(entry);
+              }
             }}
             onHoverChange={handDock.onHoverChange}
           />

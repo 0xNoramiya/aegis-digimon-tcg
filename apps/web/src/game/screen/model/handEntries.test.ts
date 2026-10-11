@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CardInstance, type PlayerState } from "@aegis/shared";
+import { HandSortMode } from "../../handSortMode";
 import { handEntriesOf, sortedHandInstanceIds, retainHandOrder } from "./handEntries";
 
 describe("handEntriesOf", () => {
@@ -86,6 +87,44 @@ it("Discord suggestion 1557203354323787857: sorts by type, then level, then cost
     "tamer-4",
     "option-0",
     "option-3",
+  ]);
+});
+
+it("sorts by cost first, then the type order", () => {
+  const hand = [
+    ["option-3", "BT1-091"],
+    ["tamer-4", "BT1-085"],
+    ["rookie-3", "BT1-010"],
+    ["option-0", "BT1-090"],
+    ["tamer-2", "BT1-088"],
+    ["rookie-2", "BT1-009"],
+    ["rookie-3-other", "BT1-011"],
+  ].map(([instanceId, cardId]) => ({ instanceId: instanceId!, cardId: cardId! }));
+
+  expect(sortedHandInstanceIds(hand, HandSortMode.Cost)).toEqual([
+    "option-0",
+    "rookie-2",
+    "tamer-2",
+    "rookie-3",
+    "rookie-3-other",
+    "option-3",
+    "tamer-4",
+  ]);
+});
+
+it("sorts by first color, single colors before multicolor, then the type order", () => {
+  const hand = [
+    ["green-tamer", "BT1-088"],
+    ["red-option", "BT1-090"],
+    ["red-tamer", "BT1-085"],
+    ["red-rookie", "BT1-009"],
+  ].map(([instanceId, cardId]) => ({ instanceId: instanceId!, cardId: cardId! }));
+
+  expect(sortedHandInstanceIds(hand, HandSortMode.Color)).toEqual([
+    "red-rookie",
+    "red-tamer",
+    "red-option",
+    "green-tamer",
   ]);
 });
 

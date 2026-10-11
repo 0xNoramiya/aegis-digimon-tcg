@@ -228,3 +228,9 @@ test("static guides coexist with replay API routing and missing guides do not be
   assert.equal(sitemap.headers.get("content-type"), "application/xml; charset=utf-8");
   assert.deepEqual(await (await fetch(`${origin}/strategy-guides/evidence.json`)).json(), { simulations: 256 });
 });
+
+test("shared replay API calls reach the API while page navigation gets the web app", () => {
+  assert.equal(isApiPath("/replays/replay-1", { accept: "application/json" }), true);
+  assert.equal(isApiPath("/replays/replay-1/file", {}), true);
+  assert.equal(isApiPath("/replays/replay-1", { accept: "text/html,application/xhtml+xml" }), false);
+});

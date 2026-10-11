@@ -1,0 +1,249 @@
+import { randomUUID } from "node:crypto";
+import {
+  MAX_REPLAY_BYTES,
+  MAX_REPLAY_PAGE_SIZE,
+  REPLAY_PAGE_SIZE,
+  type ReplayDownloadMessage,
+  type ReplayLibraryPage,
+  type SavedReplay,
+  type SharedReplay,
+} from "@aegis/shared";
+import type { AccountStore } from "../accounts/AccountStore.js";
+
+type IndexRow = {
+  id: string;
+  account_id: string;
+  match_id: string;
+  viewer_seat: SavedReplay["viewerSeat"];
+  summary: SavedReplay["summary"];
+  byte_size: number;
+  created_at: string;
+  drive_file_id: string | null;
+  saved_at: string | null;
+  visibility: SavedReplay["visibility"];
+};
+type SavedRow = IndexRow & { drive_file_id: string; saved_at: string };
+
+export const DRIVE_FILE_ID = /^[A-Za-z0-9_-]{10,200}$/;
+export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const DRIVE_FILES = "https://www.googleapis.com/drive/v3/files";
+const DRIVE_TIMEOUT_MS = 15_000;
+/** Rows the client never attached to a Drive file are only reachable from the match that made them. */
+export const UNSAVED_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+
+export class ReplayLibraryError extends Error {
+  readonly code: "sharing_disabled" | "drive_unavailable" | "too_large" | "invalid_cursor";
+  constructor(code: ReplayLibraryError["code"]) {
+    super(code);
+    this.code = code;
+  }
+}
+
+const view = (row: SavedRow): SavedReplay => ({
+  id: row.id,
+  matchId: row.match_id,
+  summary: row.summary,
+  viewerSeat: row.viewer_seat,
+  bytes: row.byte_size,
+  savedAt: Number(row.saved_at),
+  driveFileId: row.drive_file_id,
+  visibility: row.visibility,
+});
+const saved = (row: IndexRow | undefined): row is SavedRow => row?.drive_file_id != null;
+
+function encodeCursor(row: SavedRow): string {
+  return Buffer.from(`${row.saved_at}:${row.id}`).toString("base64url");
+}
+function decodeCursor(cursor: string): { savedAt: number; id: string } | undefined {
+  const [savedAt, id, extra] = Buffer.from(cursor, "base64url").toString().split(":");
+  const parsed = Number(savedAt);
+  if (extra !== undefined || !id || !UUID.test(id) || !Number.isSafeInteger(parsed)) return undefined;
+  return { savedAt: parsed, id };
+}
+
+export interface DriveAccess {
+  /** Google API key that reads files shared as "anyone with the link". Unset disables public sharing. */
+  apiKey?: string;
+  fetch?: typeof fetch;
+}
+
+export class ReplayLibrary {
+  private readonly apiKey?: string;
+  private readonly fetch: typeof fetch;
+
+  constructor(
+    private readonly accounts: AccountStore,
+    drive: DriveAccess = {},
+  ) {
+    this.apiKey = drive.apiKey || undefined;
+    this.fetch = drive.fetch ?? fetch;
+  }
+
+  get sharing(): boolean {
+    return this.apiKey !== undefined;
+  }
+
+  /** Idempotent per account, match and seat; the room is the only caller, so the summary is trusted. */
+  async record(accountId: string, message: Extract<ReplayDownloadMessage, { kind: "ready" }>): Promise<string> {
+    await this.accounts.ensureReady();
+    const bytes = Buffer.byteLength(message.data, "base64");
+    const result = await this.accounts.pool.query<{ id: string }>(
+      `INSERT INTO account_replays (id,account_id,match_id,viewer_seat,summary,byte_size,created_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)
+       ON CONFLICT (account_id,match_id,viewer_seat) DO UPDATE SET account_id=EXCLUDED.account_id
+       RETURNING id`,
+      [
+        randomUUID(),
+        accountId,
+        message.summary.id,
+        message.viewerSeat,
+        JSON.stringify(message.summary),
+        bytes,
+        Date.now(),
+      ],
+    );
+    return result.rows[0]!.id;
+  }
+
+  /**
+   * Marks the caller's entry saved. Repeating the call is harmless; a different file id (the
+   * player uploaded again) replaces the old one and makes the replay private, because the new
+   * Drive file carries no public permission.
+   */
+  async attachDrive(accountId: string, id: string, fileId: string): Promise<SavedReplay | undefined> {
+    await this.accounts.ensureReady();
+    const row = (
+      await this.accounts.pool.query<IndexRow>(
+        `UPDATE account_replays SET
+           visibility = CASE WHEN drive_file_id = $3 THEN visibility ELSE 'private' END,
+           drive_file_id = $3,
+           saved_at = COALESCE(saved_at, $4)
+         WHERE id=$1 AND account_id=$2 RETURNING *`,
+        [id, accountId, fileId, Date.now()],
+      )
+    ).rows[0];
+    return saved(row) ? view(row) : undefined;
+  }
+
+  async list(accountId: string, options: { cursor?: string; limit?: number } = {}): Promise<ReplayLibraryPage> {
+    await this.accounts.ensureReady();
+    const limit = Math.min(Math.max(Math.trunc(options.limit ?? REPLAY_PAGE_SIZE), 1), MAX_REPLAY_PAGE_SIZE);
+    const after = options.cursor ? decodeCursor(options.cursor) : undefined;
+    if (options.cursor && !after) throw new ReplayLibraryError("invalid_cursor");
+    const rows = (
+      await this.accounts.pool.query<SavedRow>(
+        `SELECT * FROM account_replays
+         WHERE account_id=$1 AND saved_at IS NOT NULL
+           AND ($2::bigint IS NULL OR saved_at < $2 OR (saved_at = $2 AND id < $3))
+         ORDER BY saved_at DESC, id DESC LIMIT $4`,
+        [accountId, after?.savedAt ?? null, after?.id ?? null, limit + 1],
+      )
+    ).rows;
+    const page = rows.slice(0, limit);
+    return {
+      replays: page.map(view),
+      ...(rows.length > limit ? { nextCursor: encodeCursor(page.at(-1)!) } : {}),
+      sharing: this.sharing,
+    };
+  }
+
+  /** The caller's saved replays among the given matches, for the profile's match history. */
+  async forMatches(accountId: string, matchIds: readonly string[]): Promise<SavedReplay[]> {
+    if (!matchIds.length) return [];
+    await this.accounts.ensureReady();
+    const rows = (
+      await this.accounts.pool.query<SavedRow>(
+        "SELECT * FROM account_replays WHERE account_id=$1 AND saved_at IS NOT NULL AND match_id = ANY($2::text[])",
+        [accountId, [...matchIds]],
+      )
+    ).rows;
+    return rows.map(view);
+  }
+
+  async setVisibility(
+    accountId: string,
+    id: string,
+    visibility: SavedReplay["visibility"],
+  ): Promise<SavedReplay | undefined> {
+    await this.accounts.ensureReady();
+    const row = (
+      await this.accounts.pool.query<IndexRow>(
+        "UPDATE account_replays SET visibility=$3 WHERE id=$1 AND account_id=$2 AND saved_at IS NOT NULL RETURNING *",
+        [id, accountId, visibility],
+      )
+    ).rows[0];
+    return saved(row) ? view(row) : undefined;
+  }
+
+  async accessible(accountId: string | undefined, id: string): Promise<SharedReplay | undefined> {
+    await this.accounts.ensureReady();
+    const row = (
+      await this.accounts.pool.query<IndexRow>(
+        "SELECT * FROM account_replays WHERE id=$1 AND saved_at IS NOT NULL AND (account_id=$2 OR visibility='public')",
+        [id, accountId ?? null],
+      )
+    ).rows[0];
+    return saved(row) ? { ...view(row), owned: row.account_id === accountId } : undefined;
+  }
+
+  /** Reads a public replay from Drive with the server's API key; owners download with their own token. */
+  async publicFile(id: string): Promise<Buffer | undefined> {
+    if (!this.apiKey) throw new ReplayLibraryError("sharing_disabled");
+    const replay = await this.publicReplay(id);
+    if (!replay) return undefined;
+    const response = await this.fetch(
+      `${DRIVE_FILES}/${encodeURIComponent(replay.driveFileId)}?alt=media&key=${encodeURIComponent(this.apiKey)}`,
+      { signal: AbortSignal.timeout(DRIVE_TIMEOUT_MS) },
+    );
+    // Drive answers 403 or 404 once the owner trashed the file or removed the link permission.
+    if (response.status === 403 || response.status === 404) {
+      await response.body?.cancel();
+      return undefined;
+    }
+    if (!response.ok || !response.body) {
+      await response.body?.cancel();
+      throw new ReplayLibraryError("drive_unavailable");
+    }
+    if (Number(response.headers.get("Content-Length") ?? 0) > MAX_REPLAY_BYTES) {
+      await response.body.cancel();
+      throw new ReplayLibraryError("too_large");
+    }
+    const chunks: Buffer[] = [];
+    let size = 0;
+    for await (const chunk of response.body as AsyncIterable<Uint8Array>) {
+      size += chunk.byteLength;
+      if (size > MAX_REPLAY_BYTES) throw new ReplayLibraryError("too_large");
+      chunks.push(Buffer.from(chunk));
+    }
+    const bytes = Buffer.concat(chunks, size);
+    // The client names the Drive file, so refuse to relay anything that is not an Aegis gzip archive.
+    if (bytes[0] !== 0x1f || bytes[1] !== 0x8b) throw new ReplayLibraryError("drive_unavailable");
+    // Check again after the download so a revocation during a slow transfer is respected.
+    if (!(await this.publicReplay(id))) return undefined;
+    return bytes;
+  }
+
+  private async publicReplay(id: string): Promise<SharedReplay | undefined> {
+    const replay = await this.accessible(undefined, id);
+    return replay?.visibility === "public" ? replay : undefined;
+  }
+
+  /** Removes only the index entry. The Drive file belongs to the player and stays unless they trash it. */
+  async remove(accountId: string, id: string): Promise<boolean> {
+    await this.accounts.ensureReady();
+    const result = await this.accounts.pool.query("DELETE FROM account_replays WHERE id=$1 AND account_id=$2", [
+      id,
+      accountId,
+    ]);
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async cleanup(now = Date.now()): Promise<number> {
+    await this.accounts.ensureReady();
+    const result = await this.accounts.pool.query(
+      "DELETE FROM account_replays WHERE drive_file_id IS NULL AND created_at < $1",
+      [now - UNSAVED_RETENTION_MS],
+    );
+    return result.rowCount ?? 0;
+  }
+}

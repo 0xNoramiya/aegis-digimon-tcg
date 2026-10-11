@@ -305,16 +305,27 @@ button.lobby-active-strip__jump {
   border-top: 1px solid var(--ds-line);
 }
 
+/* A bordered control with an icon and a line on what it holds: as a bare grey line,
+   players took it for fine print and never found the queue options (#56). */
 .lobby-advanced > summary {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: var(--ds-space-3);
-  padding-block: var(--ds-space-3);
-  color: var(--ds-text-2);
-  font-size: var(--ds-text-sm);
+  margin-block: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-text);
+  background: var(--ds-fill);
   cursor: pointer;
   list-style: none;
+  transition:
+    border-color 150ms,
+    background 150ms;
+}
+
+.lobby-advanced > summary:hover {
+  border-color: var(--ds-accent);
 }
 
 .lobby-advanced > summary::-webkit-details-marker {
@@ -324,10 +335,37 @@ button.lobby-active-strip__jump {
 .lobby-advanced > summary:focus-visible {
   outline: none;
   box-shadow: var(--ds-focus-ring);
-  border-radius: var(--ds-radius-sm);
 }
 
-.lobby-advanced[open] > summary > svg {
+.lobby-advanced__icon {
+  flex: none;
+  color: var(--ds-accent);
+}
+
+.lobby-advanced__label {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lobby-advanced__label > strong {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+}
+
+.lobby-advanced__label > small {
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-xs);
+}
+
+.lobby-advanced__chevron {
+  flex: none;
+  color: var(--ds-text-2);
+  transition: transform 150ms;
+}
+
+.lobby-advanced[open] > summary > .lobby-advanced__chevron {
   transform: rotate(180deg);
 }
 

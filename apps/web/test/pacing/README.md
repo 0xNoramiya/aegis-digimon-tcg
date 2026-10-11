@@ -104,7 +104,16 @@ that moved these rows.
   rows change by about 1 s. `security-removed` gains the second question's beats (+1,024 ms),
   so its Sequential ceiling rises from 16,000 to 18,500 ms (10% over the measured time).
 
-The 2026-10-10 refresh updates only the `ghost-execute` and `ghost-execute-security` rows.
+A second 2026-10-10 refresh follows commit 3d9202aee ("play When Attacking clauses before
+battle"). The battle scene now waits until the clauses that resolved before it finish on screen.
+
+- `arena-ex13-giromon-block-triggers` grows by about 7–8 s in every paced row: its block raises
+  seven effects that resolve before the battle (CR 11-1-3/11-1-4), and the battle used to play
+  over them. Stalls, gate expiries, dropped steps and rescues stay at zero.
+- `security-removed` moves its announce-to-result by up to about 650 ms in the Stacked rows;
+  the other rows change by less than 100 ms.
+
+The first 2026-10-10 refresh updates only the `ghost-execute` and `ghost-execute-security` rows.
 A bisect found the engine fix b360b6019 ("skip Digivolve prompt with no target", feedback
 #40), not a presentation change. In these boards Violet Inboots (BT20-088) has no legal
 digivolution, so after its suspension the engine no longer asks the empty "Digivolve"

@@ -8,7 +8,15 @@
    does, and cannot act on it meanwhile. A card an optimistic play has taken out of the
    hand is left out of both. */
 
-import { CardKind, getCardDefinition, type CardInstance, type PlayerState } from "@aegis/shared";
+import {
+  CardColor,
+  CardKind,
+  getCardDefinition,
+  type CardDefinition,
+  type CardInstance,
+  type PlayerState,
+} from "@aegis/shared";
+import { HandSortMode } from "../../handSortMode";
 import type { HandEntry } from "../../piece";
 
 export function handEntriesOf({
@@ -78,22 +86,56 @@ export function handEntriesOf({
   return { handEntries, shownHandEntries };
 }
 
-/** Digimon and Digi-Eggs by level, then Tamers, then Options; cost, then card number, inside each. */
-export function sortedHandInstanceIds(entries: readonly Pick<HandEntry, "instanceId" | "cardId">[]): string[] {
-  const sortKey = (entry: Pick<HandEntry, "cardId">): [number, number, number] => {
-    const definition = getCardDefinition(entry.cardId);
-    const cost = definition?.playCost ?? -1;
-    if (definition?.kinds.includes(CardKind.Digimon) || definition?.kinds.includes(CardKind.DigiEgg))
-      return [0, definition.level ?? 0, cost];
-    return [definition?.kinds.includes(CardKind.Tamer) ? 1 : 2, 0, cost];
+type SortKey = readonly number[];
+
+const COLOR_ORDER = Object.values(CardColor);
+
+function typeGroupOf(definition: CardDefinition | undefined): number {
+  if (definition?.kinds.includes(CardKind.Digimon) || definition?.kinds.includes(CardKind.DigiEgg)) return 0;
+  return definition?.kinds.includes(CardKind.Tamer) ? 1 : 2;
+}
+
+function levelOf(definition: CardDefinition | undefined): number {
+  return typeGroupOf(definition) === 0 ? (definition?.level ?? 0) : 0;
+}
+
+function colorRankOf(definition: CardDefinition | undefined): number {
+  const color = definition?.colors[0];
+  return color === undefined ? COLOR_ORDER.length : COLOR_ORDER.indexOf(color);
+}
+
+const SORT_KEYS: Record<HandSortMode, (definition: CardDefinition | undefined) => SortKey> = {
+  [HandSortMode.Type]: (definition) => [typeGroupOf(definition), levelOf(definition), definition?.playCost ?? -1],
+  [HandSortMode.Cost]: (definition) => [definition?.playCost ?? -1, typeGroupOf(definition), levelOf(definition)],
+  [HandSortMode.Color]: (definition) => [
+    colorRankOf(definition),
+    definition?.colors.length ?? 0,
+    typeGroupOf(definition),
+    levelOf(definition),
+    definition?.playCost ?? -1,
+  ],
+};
+
+/**
+ * Type: Digimon and Digi-Eggs by level, then Tamers, then Options; cost inside each.
+ * Cost: play cost first, then the type order. Color: first printed color, single-color
+ * cards before multicolor ones, then the type order. Card number breaks every tie.
+ */
+export function sortedHandInstanceIds(
+  entries: readonly Pick<HandEntry, "instanceId" | "cardId">[],
+  mode: HandSortMode = HandSortMode.Type,
+): string[] {
+  const keyOf = SORT_KEYS[mode];
+  const keys = new Map(entries.map((entry) => [entry.instanceId, keyOf(getCardDefinition(entry.cardId))]));
+  const compareKeys = (a: SortKey, b: SortKey) => {
+    for (let index = 0; index < a.length; index++) {
+      const difference = a[index]! - b[index]!;
+      if (difference !== 0) return difference;
+    }
+    return 0;
   };
-  const keys = new Map(entries.map((entry) => [entry.instanceId, sortKey(entry)]));
   return [...entries]
-    .sort((a, b) => {
-      const [groupA, levelA, costA] = keys.get(a.instanceId)!;
-      const [groupB, levelB, costB] = keys.get(b.instanceId)!;
-      return groupA - groupB || levelA - levelB || costA - costB || a.cardId.localeCompare(b.cardId);
-    })
+    .sort((a, b) => compareKeys(keys.get(a.instanceId)!, keys.get(b.instanceId)!) || a.cardId.localeCompare(b.cardId))
     .map((entry) => entry.instanceId);
 }
 

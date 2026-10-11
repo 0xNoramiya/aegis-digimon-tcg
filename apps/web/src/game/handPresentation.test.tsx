@@ -15,10 +15,12 @@ import type { AegisRoom } from "../net/client";
 import { snapshotGameState } from "../net/presentedState";
 import type { ServerBatch } from "../net/serverBatches";
 import { GameScreen } from "./GameScreen";
+import { HandSortMode, setHandSortMode } from "./handSortMode";
 import { TIMINGS } from "./timings";
 
 afterEach(() => {
   cleanup();
+  setHandSortMode(HandSortMode.Type);
   vi.useRealTimers();
 });
 
@@ -172,7 +174,7 @@ it("sorts from the hand tray without opening settings and appends later draws", 
     </I18nProvider>
   );
   const rendered = render(view());
-  const button = screen.getByRole("button", { name: "Sort hand" });
+  const button = screen.getByRole("button", { name: "Sort hand: By type" });
   expect(button.closest(".game-player-dock")?.querySelector('[data-testid="hand"]')).toBeTruthy();
   expect(screen.queryByRole("dialog", { name: "Match settings" })).toBeNull();
   const ids = () =>
@@ -190,4 +192,12 @@ it("sorts from the hand tray without opening settings and appends later draws", 
   expect(ids()).toEqual(["sort-card-1", "sort-card-2", "sort-card-0", "later-draw"]);
   fireEvent.click(button);
   expect(ids()).toEqual(["sort-card-1", "later-draw", "sort-card-2", "sort-card-0"]);
+
+  fireEvent.click(screen.getByRole("button", { name: "Choose sort order" }));
+  expect(screen.getByRole("menuitemradio", { name: "By type" }).getAttribute("aria-checked")).toBe("true");
+  fireEvent.click(screen.getByRole("menuitemradio", { name: "By cost" }));
+  expect(screen.queryByRole("menu")).toBeNull();
+  expect(ids()).toEqual(["sort-card-1", "later-draw", "sort-card-0", "sort-card-2"]);
+  expect(screen.getByRole("button", { name: "Sort hand: By cost" })).toBeTruthy();
+  expect(localStorage.getItem("aegis.hand.sort-mode")).toBe("cost");
 });

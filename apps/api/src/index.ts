@@ -24,6 +24,7 @@ import {
 } from "./tournaments/runtime.js";
 import { drainForShutdown, startDeadlineWorker, type DeadlineWorker } from "./tournaments/scheduler/index.js";
 import { accountStore } from "./accounts/runtime.js";
+import { replayLibrary } from "./replays/runtime.js";
 import { createDeploymentRuntime, installDeploymentRoutes, type DeploymentSlot } from "./deployment/runtime.js";
 import { DeploymentServer } from "./deployment/DeploymentServer.js";
 import { isActiveDeploymentSlot, setRoomCreationAdmission } from "./deployment/admission.js";
@@ -82,8 +83,28 @@ installAccountRoutes(
   mailerFromEnv(accountStore),
   GitHubDeckReportTracker.fromEnvironment(),
   discordAvatars,
+  replayLibrary,
 );
 if (discordAvatarBackfill) void backfillDiscordAvatars(accountStore, discordAvatarBackfill).catch(() => undefined);
+function scheduleReplayCleanup() {
+  let cleaning = false;
+  const cleanupReplays = async () => {
+    if (cleaning) return;
+    cleaning = true;
+    try {
+      await replayLibrary.cleanup();
+    } catch (error) {
+      logError("[replays] cleanup failed", error);
+    } finally {
+      cleaning = false;
+    }
+  };
+  setInterval(() => {
+    void cleanupReplays();
+  }, 15 * 60_000).unref();
+  void cleanupReplays();
+}
+scheduleReplayCleanup();
 
 const cluster = createClusterRuntime();
 setRoomCodeDirectory(cluster.roomCodes);

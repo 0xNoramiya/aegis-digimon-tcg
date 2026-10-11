@@ -4,18 +4,20 @@
    short desktop moves the deck and trash down from the right rail the same way. */
 
 import type { ReactNode, RefObject } from "react";
-import { Icons } from "../../../design/icons";
 import { CardBack } from "../../../design/cards";
 import { useTranslation } from "../../../i18n";
 import { ArenaCounters } from "../../ArenaCounters";
 import { Hand, type HandEntry } from "../../piece";
 import { Side } from "../../side";
+import { HandSortMode } from "../../handSortMode";
 import { ActionBar } from "./ActionBar";
+import { HandSortControl } from "./HandSortControl";
 import { PlayerLine } from "./PlayerLine";
 import type { EffectActivation } from "../../effectSource";
 
 export function PlayerDock({
   spectating = false,
+  showRecordedHand = false,
   timer,
   playerName,
   playerAvatarId,
@@ -40,12 +42,16 @@ export function PlayerDock({
   startDrag,
   selectCard,
   onHoverChange,
+  handSortMode = HandSortMode.Type,
   onSortHand,
   onMoveHandCard,
   reorderDropBeforeInstanceId,
 }: {
   spectating?: boolean;
-  onSortHand?: () => void;
+  handSortMode?: HandSortMode;
+  onSortHand?: (mode: HandSortMode) => void;
+  /** Authorised replay cards can be inspected while every gameplay action stays disabled. */
+  showRecordedHand?: boolean;
   onMoveHandCard?: (instanceId: string, direction: -1 | 1) => void;
   reorderDropBeforeInstanceId?: string | null;
   timer?: ReactNode;
@@ -114,7 +120,7 @@ export function PlayerDock({
           <div className="game-action-bar game-action-bar--idle" aria-hidden />
         ) : null}
         <div className="game-hand-tray">
-          {spectating ? (
+          {spectating && !showRecordedHand ? (
             <div className="game-spectator-hand" aria-label={t("game.handCount", { count: handCount })}>
               {Array.from({ length: handCount }, (_, index) => (
                 <CardBack key={index} width={40} useSelectedSleeve={false} />
@@ -125,13 +131,13 @@ export function PlayerDock({
               cardWidth={cardWidth}
               minExposure={minExposure}
               cards={cards}
-              onMoveCard={onMoveHandCard}
+              onMoveCard={spectating ? undefined : onMoveHandCard}
               reorderDropBeforeInstanceId={reorderDropBeforeInstanceId}
               selectedInstanceId={selectedInstanceId}
               effectSourceInstanceId={effectSourceInstanceId}
               effectSource={effectSource}
               selection={selection}
-              startDrag={startDrag}
+              startDrag={spectating ? (index) => selectCard(index) : startDrag}
               selectCard={selectCard}
               draggingInstanceId={draggingInstanceId}
               shakeInstanceId={shakeInstanceId}
@@ -139,19 +145,11 @@ export function PlayerDock({
             />
           )}
           {!spectating && onSortHand ? (
-            <button
-              type="button"
-              className="game-hand-sort"
-              aria-label={t("settings.sortHand")}
-              title={t("settings.sortHandDesc")}
+            <HandSortControl
+              mode={handSortMode}
               disabled={cards.length < 2 || draggingInstanceId !== undefined}
-              onClick={onSortHand}
-            >
-              <span aria-hidden="true">
-                <Icons.List size={18} />
-              </span>
-              <span className="game-hand-sort__label">{t("settings.sortHand")}</span>
-            </button>
+              onSort={onSortHand}
+            />
           ) : null}
         </div>
       </div>

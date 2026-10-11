@@ -90,6 +90,21 @@ test("fixed slot infrastructure isolates Redis and advertises exact owning proce
   ]);
 });
 
+test("the Google API key for public replays reaches every slot API process and Garage is gone", () => {
+  const compose = readFileSync(new URL("../../docker-compose.prod.yml", import.meta.url), "utf8");
+  assert.match(compose, /^ {4}AEGIS_GOOGLE_API_KEY: \$\{AEGIS_GOOGLE_API_KEY:-\}$/m);
+  assert.doesNotMatch(compose, /AEGIS_REPLAY_S3_/);
+  const slot = buildSlotCompose({
+    slot: "blue",
+    revision: "1111111111111111111111111111111111111111",
+    apiEnvironment: restoreComposeEnvironment({ AEGIS_GOOGLE_API_KEY: "google-key" }),
+    network: "aegis_default",
+    state: "/opt/aegis-rollout",
+  });
+  for (const name of ["api1", "api2", "api3"])
+    assert.equal(slot.services[name].environment.AEGIS_GOOGLE_API_KEY, "google-key");
+});
+
 test("fixed deployment slots rotate after the active slot and accept transitional g manifests", () => {
   assert.deepEqual(FIXED_SLOTS, ["blue", "red", "green"]);
   assert.deepEqual(fixedSlotRotation("blue"), ["red", "green", "blue"]);

@@ -817,7 +817,12 @@ export function Lobby({
           </div>
           <details className="lobby-advanced">
             <summary>
-              {t("redesign.play.advancedSettings")} <Icons.ChevronDown size={16} />
+              <Icons.Settings size={18} className="lobby-advanced__icon" />
+              <span className="lobby-advanced__label">
+                <strong>{t("redesign.play.advancedSettings")}</strong>
+                <small>{t("redesign.play.advancedSettingsHint")}</small>
+              </span>
+              <Icons.ChevronDown size={18} className="lobby-advanced__chevron" />
             </summary>
             <div className="lobby-advanced__content">
               {!privateGuest || privateRoom || guestRules?.code === guestCode ? (
