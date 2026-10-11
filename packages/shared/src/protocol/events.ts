@@ -804,6 +804,8 @@ export interface DecisionRequest {
     playCostReductionBlocked?: boolean;
     /** Effect-driven play awaiting the existing DigiXros material picker for this card. */
     digiXrosCardId?: string;
+    /** Already-authorized material groups and quotas for an effect-driven DigiXros picker. */
+    digiXrosMaterialLimits?: { candidateInstanceIds: string[]; max: number }[];
   };
 }
 
