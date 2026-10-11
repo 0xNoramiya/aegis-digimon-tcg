@@ -224,3 +224,17 @@ describe("mulligan window, disconnect freeze and combo time", () => {
     expect(state.timerRemaining1).toBe(60);
   });
 });
+
+it("#39 shares a bounded combo allowance between confirmed cards and effect decisions", () => {
+  const { state, timer } = clock();
+  state.turnCount = 1;
+  timer.update(0, 0);
+  timer.update(50_000, 0);
+  timer.grantCardBonus(0);
+  expect(state.timerRemaining0).toBe(10 + MATCH_TIMER_DECISION_BONUS_SECONDS);
+  for (let index = 0; index < 20; index++) {
+    timer.grantCardBonus(0);
+    timer.grantDecisionBonus(0);
+  }
+  expect(state.timerRemaining0).toBe(10 + MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN);
+});

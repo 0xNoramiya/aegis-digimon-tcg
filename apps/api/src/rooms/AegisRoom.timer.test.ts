@@ -181,6 +181,27 @@ describe("room clock enforcement", () => {
     expect(game.state.timerRemaining0).toBe(290);
   });
 
+  it("#39 adds combo time only for confirmed card plays and digivolutions", () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(0);
+    const game = room();
+    begin(game, 0);
+    sync(game);
+    now.mockReturnValue(50_000);
+    sync(game);
+    engine(game).hooks.emit({ kind: "cardPlayed", seat: 0, cardId: "BT1-010" });
+    expect(game.state.timerRemaining0).toBe(10 + MATCH_TIMER_DECISION_BONUS_SECONDS);
+    engine(game).hooks.emit({
+      kind: "digivolved",
+      seat: 0,
+      cardId: "BT1-015",
+      permanentId: "test",
+      mechanic: "normal",
+    });
+    expect(game.state.timerRemaining0).toBe(10 + 2 * MATCH_TIMER_DECISION_BONUS_SECONDS);
+    engine(game).hooks.emit({ kind: "memoryChanged", from: 1, to: 0, reason: "play" });
+    expect(game.state.timerRemaining0).toBe(10 + 2 * MATCH_TIMER_DECISION_BONUS_SECONDS);
+  });
+
   function presentingRoom() {
     const now = vi.spyOn(performance, "now").mockReturnValue(0);
     const game = room();

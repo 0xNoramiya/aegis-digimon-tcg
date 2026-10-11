@@ -668,6 +668,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         this.bots[seat]?.onActionSettled(intentType);
       },
       emit: (event) => {
+        if (event.kind === "cardPlayed" || event.kind === "digivolved") this.matchClock?.grantCardBonus(event.seat);
         if (event.kind === "matchStarted" && !this.devScenario && !this.replayRecording) {
           this.replayRecording = new ReplayRecording();
         }

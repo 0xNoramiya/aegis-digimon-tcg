@@ -104,6 +104,15 @@ export class MatchClock {
    * clock, up to a per-turn ceiling, so a long chain of effects does not drain the bank.
    */
   grantDecisionBonus(seat: Seat): void {
+    this.grantComboBonus(seat);
+  }
+
+  /** Feedback #39: a confirmed card play or digivolution earns the same bounded combo time. */
+  grantCardBonus(seat: Seat): void {
+    this.grantComboBonus(seat);
+  }
+
+  private grantComboBonus(seat: Seat): void {
     if (!this.state.matchTimer || this.state.gameOver) return;
     if (this.state.turnCount !== this.bonusTurn) {
       this.bonusTurn = this.state.turnCount;
