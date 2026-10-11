@@ -1,35 +1,26 @@
+import { FeedbackStatus, CLOSED_FEEDBACK_STATUSES, FEEDBACK_STATUSES } from "@aegis/shared/feedback/FeedbackStatus";
+import { FEEDBACK_REOPEN_WINDOW_MS } from "@aegis/shared/feedback/limits";
+import { isClosedFeedbackStatus } from "@aegis/shared/feedback/isClosedFeedbackStatus";
 import {
-  CLOSED_FEEDBACK_STATUSES,
-  FEEDBACK_REOPEN_WINDOW_MS,
-  FEEDBACK_STATUSES,
-  isClosedFeedbackStatus,
   type FeedbackKind,
   type FeedbackReopenFailure,
-  type FeedbackStatus,
   type FeedbackStatusChange,
   type FeedbackTriageFailure,
   type FeedbackTriageUpdate,
   type OwnFeedbackPage,
   type OwnFeedbackReport,
-} from "@aegis/shared";
+} from "@aegis/shared/feedback/types";
 import type { PoolClient } from "pg";
-import type { AccountStore } from "../accounts/AccountStore.js";
-import type { Queryable } from "../db/migrator.js";
-import { notify } from "../notifications/NotificationStore.js";
-import type { ReplayRecord } from "../replays/inputs/types.js";
-import type { FiledBugReport, NewBugReport } from "./GitHubIssueTracker.js";
+import type { AccountStore } from "#api/accounts/AccountStore";
+import type { Queryable } from "#api/db/migrator";
+import { notify } from "#api/notifications/NotificationStore";
+import type { ReplayRecord } from "#api/replays/inputs/types";
+import type { FiledBugReport, NewBugReport } from "#api/bugs/GitHubIssueTracker";
+import { replayRetentionMs } from "#api/bugs/replayRetentionMs";
 
 const PAGE_SIZE = 50;
 const OWN_PAGE_SIZE = 20;
 const REPLY_EXCERPT = 160;
-const DAY_MS = 24 * 60 * 60 * 1000;
-const DEFAULT_REPLAY_RETENTION_DAYS = 30;
-
-/** `AEGIS_REPLAY_RETENTION_DAYS`, or 30 days when it is unset or not a positive number. */
-export function replayRetentionMs(env: NodeJS.ProcessEnv = process.env): number {
-  const days = Number(env.AEGIS_REPLAY_RETENTION_DAYS);
-  return (Number.isFinite(days) && days > 0 ? days : DEFAULT_REPLAY_RETENTION_DAYS) * DAY_MS;
-}
 
 export type FeedbackRecord = {
   id: number;
@@ -218,7 +209,7 @@ export class FeedbackStore {
       if (!current) return { error: "not_found" as const };
       if (current.revision !== update.revision) return { error: "stale_revision" as const };
 
-      const duplicateOfId = update.status === "duplicate" ? update.duplicateOfId : null;
+      const duplicateOfId = update.status === FeedbackStatus.DUPLICATE.value ? update.duplicateOfId : null;
       if (duplicateOfId !== null) {
         const target = await client.query("SELECT 1 FROM feedback_reports WHERE id=$1", [duplicateOfId]);
         if (duplicateOfId === id || target.rows.length === 0) return { error: "invalid_duplicate_target" as const };
@@ -227,7 +218,8 @@ export class FeedbackStore {
       const internalNote = update.internalNote.trim() || null;
       const closed = isClosedFeedbackStatus(update.status);
       const closedAt = !closed ? null : isClosedFeedbackStatus(current.status) ? current.closed_at : at;
-      const confirmedBug = update.status !== "duplicate" && (update.confirmedBug ?? current.confirmed_bug);
+      const confirmedBug =
+        update.status !== FeedbackStatus.DUPLICATE.value && (update.confirmedBug ?? current.confirmed_bug);
 
       await client.query(
         `UPDATE feedback_reports
@@ -297,13 +289,13 @@ export class FeedbackStore {
       if (deadline === null || deadline < at) return { error: "reopen_window_closed" as const };
 
       await client.query(
-        "UPDATE feedback_reports SET status='triaged', closed_at=NULL, reopened_at=$2, revision=revision+1 WHERE id=$1",
-        [id, at],
+        "UPDATE feedback_reports SET status=$3, closed_at=NULL, reopened_at=$2, revision=revision+1 WHERE id=$1",
+        [id, at, FeedbackStatus.TRIAGED.value],
       );
       await client.query(
         `INSERT INTO feedback_status_events (feedback_id, actor_account_id, from_status, to_status, by_reporter, comment, created_at)
-         VALUES ($1,$2,$3,'triaged',true,$4,$5)`,
-        [id, accountId, current.status, comment, at],
+         VALUES ($1,$2,$3,$6,true,$4,$5)`,
+        [id, accountId, current.status, comment, at, FeedbackStatus.TRIAGED.value],
       );
       return (await this.readOwnWith(client, accountId, id))!;
     });
@@ -365,7 +357,14 @@ export class FeedbackStore {
       ...toRecord(row),
       reporterConfirmedBugs: row.reporter_account_id ? (points[0]?.confirmed_bug_reports ?? 0) : null,
       history: [
-        { from: null, to: "new", at: Number(row.created_at), byReporter: false, comment: null, actorName: null },
+        {
+          from: null,
+          to: FeedbackStatus.NEW.value,
+          at: Number(row.created_at),
+          byReporter: false,
+          comment: null,
+          actorName: null,
+        },
         ...(histories.get(id) ?? []),
       ],
     };
@@ -523,7 +522,7 @@ function toOwnReport(row: FeedbackRow, history: FeedbackHistoryEntry[]): OwnFeed
     finalReply: answered ? row.final_reply : null,
     duplicateOfId: closed ? row.duplicate_of_id : null,
     history: [
-      { from: null, to: "new", at: Number(row.created_at), byReporter: false, comment: null },
+      { from: null, to: FeedbackStatus.NEW.value, at: Number(row.created_at), byReporter: false, comment: null },
       ...history.map(({ from, to, at, byReporter, comment }) => ({ from, to, at, byReporter, comment })),
     ],
     reopenDeadline: reopenDeadline(row),

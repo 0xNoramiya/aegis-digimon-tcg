@@ -49,7 +49,7 @@ semantics. When the engine cannot express the card faithfully, improve the
 smallest reusable engine seam before implementing the card, and document that
 seam in `docs/audits/engine/<seam>.md` (kebab-case).
 
-Registration rules from `AGENTS.md`:
+Registration rules from [cards and rules](../../../internal-docs/ai/cards-and-rules.md):
 
 - The module registers behaviour exclusively with
   `registerIrCard(cardId, compiled)`. Never add or keep a second

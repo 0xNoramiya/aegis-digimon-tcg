@@ -30,7 +30,7 @@ around git are refused.
 ## 3. Reproduce the match
 
 Try the replay first; it replays the reported match exactly, with no log scan on the VPS.
-See "Reproduce from a replay" in `AGENTS.md` for the commands.
+See [replay reproduction](../../../internal-docs/ai/replays.md) for the commands.
 
 1. **Replay saved with the report.** A report filed in-game links a GitHub issue whose
    "Replay" section reads `Saved privately with report #<id> (<n> inputs)`. Fetch it with
