@@ -4,7 +4,7 @@ const HOST = "dev-perm-0-feedback84-host";
 const YELLOW = "dev-feedback84-yellow";
 const PURPLE = "dev-feedback84-purple";
 const PLAY_CLAUSE =
-  "By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
+  "You may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
 
 for (const timing of ["digivolve", "attack"] as const) {
   for (const payload of ["decline", "no selection", "hand", "trash"] as const) {

@@ -8,7 +8,7 @@ import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
 import "../../cards/index.js";
 
 const PLAY_CLAUSE =
-  "By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
+  "You may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
 
 it.each(["digivolve", "attack"] as const)(
   "Feedback #84: Mastemon can pay the security cost on %s and decline the free play",
