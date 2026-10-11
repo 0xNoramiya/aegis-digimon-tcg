@@ -2365,6 +2365,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Wisdom Training está no campo desde um turno anterior e você não tem Digimon. Ative o ＜Delay＞: a carta vai para o lixo e o efeito não faz nada.",
     en: "Wisdom Training has been in the battle area since an earlier turn and you have no Digimon. Activate its ＜Delay＞: the card goes to the trash and the effect does nothing.",
   },
+  "arena-feedback63-chaos-triangular-trash": {
+    en: "Evolve the field Chirinmon into Kentaurosmon for 3. Pay the opponent's security to apply −7000 DP, then place your Kentaurosmon in security using Chirinmon's protection. The opponent's Gundramon can trash Chaos Triangular to prevent its own removal; the discarded Option then grants +3000 DP, leaving Gundramon at 8000 DP until the end of your current turn.",
+    ptBR: "Evolua Chirinmon do campo para Kentaurosmon por 3. Pague a segurança adversária para aplicar −7000 DP e coloque seu Kentaurosmon na segurança usando a proteção de Chirinmon. Gundramon adversário pode descartar Chaos Triangular para impedir sua remoção; a Opção descartada concede +3000 DP, deixando Gundramon com 8000 DP até o fim do seu turno atual.",
+  },
   "arena-feedback62-dragons-roar-breeding": {
     en: "Keep Wizardmon in breeding: Dragon's Roar cannot use its Data/Witchelny color waiver. Reset, move Wizardmon to battle, then use Dragon's Roar for 5 and pay its top security to reduce the opponent by 6000 DP; this Option enters bottom security. Declining the security cost leaves the target unchanged and the Option in trash.",
     ptBR: "Mantenha Wizardmon na criação: Dragon's Roar não pode usar a dispensa de cores por Data/Witchelny. Reinicie, mova Wizardmon ao campo, use Dragon's Roar por 5 e pague o topo da segurança para reduzir 6000 DP do adversário; a Opção entra no fundo da segurança. Recusar o custo mantém o alvo e deixa a Opção no lixo.",
@@ -3442,6 +3446,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex5-attack-priority", "EX5 Etemon · attack trigger priority"],
   ["arena-ex5-biting-crush-delay", "EX5 Biting Crush · Delay on effect play"],
   ["arena-p108-training-delay-no-target", "P-108 Wisdom Training · Delay with no target"],
+  ["arena-feedback63-chaos-triangular-trash", "Feedback #63 · Chaos Triangular · discarded source bonus"],
   ["arena-feedback62-dragons-roar-breeding", "Feedback #62 · Dragon’s Roar · breeding versus battle"],
   ["arena-feedback62-dragons-roar-normal-colors", "Feedback #62 · Dragon’s Roar · ordinary split colors"],
   ["arena-feedback59-metalgarurumon-field-warp", "Feedback #59 · MetalGarurumon · legal field warp"],
