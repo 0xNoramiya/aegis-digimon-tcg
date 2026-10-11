@@ -729,6 +729,7 @@ export interface AegisJoinOptions {
     | "arena-feedback75-tomoro-timing"
     | "arena-feedback72-nokia-hand-evolution"
     | "arena-feedback71-justimon-copied-opt"
+    | "arena-feedback88-davis-ken-end-turn"
     | "arena-feedback91-justimon-end-turn-copy"
     | "arena-feedback70-gaiomon-attack"
     | "arena-feedback68-arisa-effect-play"
