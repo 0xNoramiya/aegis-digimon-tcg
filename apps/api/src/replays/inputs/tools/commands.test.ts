@@ -1,6 +1,8 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { gunzipSync } from "node:zlib";
+import type { MatchReplay } from "@aegis/shared";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createMemoryPool } from "../../../db/memoryPool.fixture.js";
 import { extractReplay } from "../extract.js";
@@ -128,6 +130,49 @@ describe("run", () => {
     expect(await runCommand({ command: "run", file: "tampered.json", json: false }, commandIo)).toBe(1);
     expect(out).toContain("Divergences: 1");
     expect(out).toContain(`  intent-result: input #${index} (seat 0 mulligan): accepted, recorded rejected`);
+  });
+
+  it("--export writes the re-executed match as a player replay file", async () => {
+    const { out, io: commandIo } = io();
+    expect(
+      await runCommand({ command: "run", file: "match.json", json: false, export: "match.aegis-replay" }, commandIo),
+    ).toBe(0);
+
+    const replay = JSON.parse(
+      gunzipSync(readFileSync(join(dir, "match.aegis-replay"))).toString("utf8"),
+    ) as MatchReplay;
+    expect(replay.format).toBe("aegis-replay");
+    expect(out).toContain(`Exported ${replay.frames.length} frames to ${join(dir, "match.aegis-replay")}`);
+    expect(out).not.toContain("Ended by surrender for the viewer");
+    // The summary still shows the record's own end, not the export's.
+    expect(out).toContain("Divergences: none");
+  });
+
+  it("--export with --until ends the match by surrender for the viewer, and divergences keep exit code 1", async () => {
+    const until = firstIndex((input) => input.kind === "intent" && input.intent.type === "attack");
+    const partial = io();
+    expect(
+      await runCommand(
+        { command: "run", file: "match.json", json: false, until, export: "partial.aegis-replay" },
+        partial.io,
+      ),
+    ).toBe(0);
+    expect(partial.out).toContain("Ended by surrender for the viewer");
+    expect(partial.out.find((line) => line.startsWith("Position: turn "))).toBeDefined();
+
+    const tampered = structuredClone(record);
+    const index = tampered.inputs.findIndex((input) => input.kind === "intent" && input.intent.type === "mulligan");
+    (tampered.inputs[index] as IntentInput).ok = false;
+    writeJson(join(dir, "tampered-export.json"), tampered);
+    const diverged = io();
+    expect(
+      await runCommand(
+        { command: "run", file: "tampered-export.json", json: false, export: "tampered.aegis-replay" },
+        diverged.io,
+      ),
+    ).toBe(1);
+    expect(diverged.out).toContain("Divergences: 1");
+    expect(existsSync(join(dir, "tampered.aegis-replay"))).toBe(true);
   });
 
   it("refuses a file that is not a replay record", async () => {

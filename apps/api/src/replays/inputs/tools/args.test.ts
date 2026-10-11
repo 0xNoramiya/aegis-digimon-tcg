@@ -23,6 +23,12 @@ describe("parseReplayArgs", () => {
       until: 12,
       json: true,
     });
+    expect(parseReplayArgs(["run", "r.json", "--export", "r.aegis-replay"])).toEqual({
+      command: "run",
+      file: "r.json",
+      json: false,
+      export: "r.aegis-replay",
+    });
     expect(parseReplayArgs(["inputs", "r.json", "--from", "3", "--to", "9"])).toEqual({
       command: "inputs",
       file: "r.json",
@@ -62,6 +68,13 @@ describe("parseReplayArgs", () => {
     [["scaffold", "a.json", "--until", "3"], /needs --out/],
     [["scaffold", "a.json", "--until", "3", "--out", "x.ts"], /must end in \.test\.ts/],
     [["run", "a.json", "--bogus"], /bogus/],
+    [["inputs", "a.json", "--export", "b.aegis-replay"], /"inputs" does not take --export/],
+    [
+      ["scaffold", "a.json", "--until", "3", "--out", "x.test.ts", "--export", "b"],
+      /"scaffold" does not take --export/,
+    ],
+    [["extract", "m-1", "--export", "b"], /"extract" does not take --export/],
+    [["fetch", "42", "--export", "b"], /"fetch" does not take --export/],
   ])("rejects %j", (argv, message) => {
     expect(() => parseReplayArgs(argv)).toThrow(UsageError);
     expect(() => parseReplayArgs(argv)).toThrow(message);

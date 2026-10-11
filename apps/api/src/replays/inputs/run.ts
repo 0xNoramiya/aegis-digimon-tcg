@@ -1,4 +1,4 @@
-import { GameState, type Intent, type Seat } from "@aegis/shared";
+import { GameState, type Intent, type IntentResult, type Seat, type SequencedServerEvent } from "@aegis/shared";
 import { GameEngine } from "../../engine/GameEngine.js";
 import type { ReplayDivergence, ReplayInput, ReplayRecord, ReplaySite } from "./types.js";
 import "../../cards/index.js";
@@ -11,6 +11,12 @@ export interface RunReplayOptions {
   untilInput?: number;
   /** Stop at the first divergence instead of playing on. */
   stopOnDivergence?: boolean;
+  /**
+   * Called as each batch that emitted closes, after its `stateVersion` bump, with the state and the
+   * batch's events stamped as `AegisRoom.stamp()` stamps them: where the room captures its
+   * `ReplayRecording` frame. Every batch here is a broadcast batch (see `runReplay`).
+   */
+  onBatch?: (state: GameState, events: SequencedServerEvent[]) => void;
 }
 
 export interface ReplayRun {
@@ -19,6 +25,11 @@ export interface ReplayRun {
   /** How many inputs were applied. */
   applied: number;
   divergences: ReplayDivergence[];
+  /**
+   * Apply one more intent after the record's inputs, through the same batch bookkeeping (and
+   * `onBatch`), and wait for the engine to go idle again.
+   */
+  applyIntent(seat: Seat, intent: Intent): Promise<IntentResult>;
 }
 
 /** Macrotask turns allowed for the engine to go quiet before an input is applied anyway. */
@@ -37,6 +48,12 @@ const MAX_IDLE_TURNS = 1_000;
  * The room's batch bookkeeping is reproduced (one batch per input, an implicit batch for events
  * emitted after an input returned, `stateVersion` bumped when a batch that emitted closes), so the
  * replayed `stateVersion` and event count are compared with the recorded ones at every input.
+ *
+ * Each engine event is stamped as `AegisRoom.stamp()` does (`seq`, `batch`, the `stateVersion` it
+ * was emitted at) and handed to `onBatch` with its batch. The room keeps events out of its replay
+ * recording only in a `recipient` batch, one opened for a single client; it opens those only to
+ * send that client a room-made event (a refusal, a reopened prompt), never around an engine call,
+ * so every engine event lands in a broadcast batch and there is nothing here to exclude.
  */
 export async function runReplay(record: ReplayRecord, options: RunReplayOptions = {}): Promise<ReplayRun> {
   const state = new GameState();
@@ -50,12 +67,14 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
   let progress = 0;
   let cursor = 0;
   let stopped = false;
-  let batch: { emitted: number } | undefined;
+  let batch: OpenBatch | undefined;
+  let batchSeq = 0;
+  let eventSeq = 0;
   let batchDepth = 0;
   let started = false;
 
   const withBatch = <T>(run: () => T): T => {
-    const opened = batch ?? (batch = { emitted: 0 });
+    const opened = batch ?? (batch = openBatch());
     batchDepth += 1;
     try {
       return run();
@@ -72,8 +91,10 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     if (!closing || closing.emitted === 0) return;
     applyDueAt("batchClose");
     state.stateVersion += 1;
+    options.onBatch?.(state, closing.events);
     applyDueAt("batchClose");
   };
+  const openBatch = (): OpenBatch => ({ id: `batch-${++batchSeq}`, emitted: 0, events: [] });
   const startOnce = (start: () => void) => {
     if (started) return;
     started = true;
@@ -95,12 +116,13 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
       emitted += 1;
       progress += 1;
       if (!batch) {
-        const implicit = (batch = { emitted: 0 });
+        const implicit = (batch = openBatch());
         queueMicrotask(() => {
           if (batchDepth === 0 && batch === implicit) closeBatch();
         });
       }
       batch.emitted += 1;
+      batch.events.push({ ...event, seq: ++eventSeq, batch: batch.id, stateVersion: state.stateVersion });
       if (event.kind === "matchStarted") applyDueAt("matchStarted");
     },
   });
@@ -236,7 +258,24 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     applyNext();
   }
   await waitForIdle(() => progress);
-  return { engine, state, applied: cursor, divergences };
+  return {
+    engine,
+    state,
+    applied: cursor,
+    divergences,
+    applyIntent: async (seat, intent) => {
+      const result = withBatch(() => engine.applyIntent(seat, intent));
+      await waitForIdle(() => progress);
+      return result;
+    },
+  };
+}
+
+/** The room's `OpenBatch`, less what only a room with clients needs. */
+interface OpenBatch {
+  id: string;
+  emitted: number;
+  events: SequencedServerEvent[];
 }
 
 /**

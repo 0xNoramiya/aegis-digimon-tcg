@@ -44,6 +44,7 @@
   pnpm replay extract <matchId> --log-dir <dir>   # from api-*.jsonl logs, for a match without a report
   pnpm replay inputs replays/<file>.json          # find the input where the bug shows
   pnpm replay run replays/<file>.json --until <N> # position and boards as input N arrived
+  pnpm replay run replays/<file>.json --export replays/<file>.aegis-replay   # watch it in the web viewer (Profile → Replays → Open file)
   pnpm replay scaffold replays/<file>.json --until <N> --out apps/api/src/engine/scenarios/<behavior>.test.ts --issue <id>
   ```
 

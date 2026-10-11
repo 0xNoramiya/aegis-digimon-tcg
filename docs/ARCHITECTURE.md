@@ -40,6 +40,9 @@ Two replay records exist and serve different purposes. The player replay
 (`apps/api/src/replays/recording.ts`) stores snapshot frames for playback. The
 input record (`apps/api/src/replays/inputs/`, format `aegis-replay-inputs/1`)
 stores the decklists and every input so the engine can re-execute the match.
+`pnpm replay run <record> --export <file>.aegis-replay` re-executes an input
+record into a player replay through the same `ReplayRecording`, so the web
+viewer opens it.
 
 ## Cards and effects
 

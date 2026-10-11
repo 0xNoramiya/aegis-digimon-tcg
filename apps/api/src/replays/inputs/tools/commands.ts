@@ -1,7 +1,9 @@
 import { replayRetentionMs } from "../../../bugs/FeedbackStore.js";
-import { relative, resolve } from "node:path";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { extractReplayFromLogDir } from "../extract.js";
+import { exportPlayerReplay } from "../export.js";
 import { runReplay } from "../run.js";
 import type { ReplayCommand } from "./args.js";
 import { usageFor } from "./args.js";
@@ -9,7 +11,7 @@ import { fetchReplayFromApi, fetchReplayFromDb, hasDatabaseConfig, type FetchLik
 import { listInputs } from "./inputs.js";
 import { readRecord, writeJson } from "./records.js";
 import { renderScaffold, writeScaffold } from "./scaffold.js";
-import { formatSummary, summarizeRun } from "./summary.js";
+import { formatSummary, summarizeRun, type RunSummary } from "./summary.js";
 
 /** Everything a command touches outside the file system, so tests can run commands in-process. */
 export interface CommandIo {
@@ -89,8 +91,28 @@ export async function runCommand(command: ReplayCommand, io: CommandIo): Promise
       const record = readRecord(path(command.file));
       if (command.until !== undefined && command.until > record.inputs.length)
         io.err(`note: --until ${command.until} is past the last input; replaying all ${record.inputs.length}.`);
-      const run = await runReplay(record, command.until !== undefined ? { untilInput: command.until } : {});
-      const summary = summarizeRun(record, run, command.until);
+      let summary: RunSummary | undefined;
+      if (command.export !== undefined) {
+        // One run serves both: the summary is taken before the export ends the match.
+        const out = path(command.export);
+        const exported = await exportPlayerReplay(record, {
+          ...(command.until !== undefined ? { until: command.until } : {}),
+          inspect: (run) => (summary = summarizeRun(record, run, command.until)),
+        });
+        mkdirSync(dirname(out), { recursive: true });
+        writeFileSync(out, exported.file);
+        // With --json, stdout carries only the summary.
+        const note = command.json ? io.err : io.out;
+        note(`Exported ${exported.frames} frames to ${out}`);
+        if (exported.endedBy === "surrender") note("Ended by surrender for the viewer");
+      } else {
+        summary = summarizeRun(
+          record,
+          await runReplay(record, command.until !== undefined ? { untilInput: command.until } : {}),
+          command.until,
+        );
+      }
+      if (!summary) throw new Error("unreachable: the replay ran without a summary");
       if (command.json) io.out(JSON.stringify(summary, null, 2));
       else for (const line of formatSummary(summary)) io.out(line);
       return summary.divergences.length > 0 ? 1 : 0;
