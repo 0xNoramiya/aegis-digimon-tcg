@@ -380,6 +380,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-ex5-biting-crush-delay",
   "arena-p108-training-delay-no-target",
   "arena-p108-training-delay-with-target",
+  "arena-feedback42-parkour-sequential",
   "arena-github5306-training-use-memory",
   "arena-github5306-training-delay-paid",
   "arena-github5306-training-delay-free",
@@ -10585,6 +10586,24 @@ function layGithub5311CrescemonCostScenario(state: GameState): void {
   insertCard(human, Zone.Hand, faceDownCard("github5311-crescemon", "EX5-020", 0));
 }
 
+/** Feedback #42: printed waiver ends after the first Parkour; the Tamer restores both colors. */
+function layFeedback42ParkourScenario(state: GameState): void {
+  // Eight memory permits the positive control in one turn; the reported match started at two.
+  prepareGithubCardEffectsScenario(state, 8);
+  const human = state.players[0]!;
+  const breeding = establishedDigimon(0, ["BT12-002"], "-feedback42-breeding");
+  breeding.inBreeding = true;
+  setBreeding(human, breeding);
+  for (const suffix of ["first", "second"]) {
+    insertCard(human, Zone.Hand, faceDownCard(`feedback42-${suffix}`, "LM-058", 0));
+  }
+  clearZone(human, Zone.Deck);
+  const cards = ["BT1-028", "BT16-085", "BT1-013", "BT1-028", "BT1-013", ...Array(16).fill("BT1-009")];
+  for (const [index, card] of cards.entries()) {
+    insertCard(human, Zone.Deck, faceDownCard(`feedback42-deck-${index}`, card, 0));
+  }
+}
+
 /** #5306 current-behavior controls: using costs 2; Delay discounts digivolution, never gains memory. */
 function layGithub5306TrainingMemoryScenario(state: GameState, mode: "use" | "paid" | "free" | "cost-choice"): void {
   prepareGithubCardEffectsScenario(state, mode === "use" ? 1 : 3);
@@ -11349,6 +11368,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-ex5-biting-crush-delay": layEx5BitingCrushDelayScenario,
   "arena-p108-training-delay-no-target": (state, decks) => layP108TrainingDelayScenario(state, decks, false),
   "arena-p108-training-delay-with-target": (state, decks) => layP108TrainingDelayScenario(state, decks, true),
+  "arena-feedback42-parkour-sequential": (state) => layFeedback42ParkourScenario(state),
   "arena-github5306-training-use-memory": (state) => layGithub5306TrainingMemoryScenario(state, "use"),
   "arena-github5306-training-delay-paid": (state) => layGithub5306TrainingMemoryScenario(state, "paid"),
   "arena-github5306-training-delay-free": (state) => layGithub5306TrainingMemoryScenario(state, "free"),
