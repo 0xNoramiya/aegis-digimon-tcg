@@ -218032,7 +218032,7 @@
         ]
       },
       {
-        "trigger": "AllTurns",
+        "trigger": "YourTurn",
         "actions": [
           {
             "kind": "SubTrigger",

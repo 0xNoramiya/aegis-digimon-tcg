@@ -470,6 +470,8 @@ export const DEV_SCENARIO_IDS = [
   "arena-davis-both-colors",
   "arena-feedback65-dracomon-selection",
   "arena-feedback73-magnaangemon-decision",
+  "arena-feedback75-tomoro-on-play",
+  "arena-feedback75-tomoro-timing",
   "arena-feedback72-nokia-hand-evolution",
   "arena-feedback71-justimon-copied-opt",
   "arena-feedback70-gaiomon-attack",
@@ -8395,6 +8397,36 @@ function layFeedback60DuplicateOptionChoiceScenario(state: GameState): void {
   state.memory = 10;
 }
 
+/** #75: distinguish conditional memory from the own-turn-only source payment response. */
+function layFeedback75TomoroScenario(state: GameState, timing: boolean): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`feedback75-egg-${seat}`, "ST23-01", seat));
+    for (let i = 0; i < 12; i++)
+      insertCard(player, Zone.Deck, faceDownCard(`feedback75-deck-${seat}-${i}`, "BT1-009", seat));
+    for (let i = 0; i < 3; i++)
+      insertCard(player, Zone.Security, faceDownCard(`feedback75-security-${seat}-${i}`, "BT1-009", seat));
+  }
+  const human = state.players[0]!;
+  insertCard(state.players[1]!, Zone.Hand, faceDownCard("feedback75-opponent-reserve", "BT1-009", 1));
+  insertCard(human, Zone.Hand, faceDownCard("feedback75-reserve", "BT1-009", 0));
+  if (timing) {
+    const tomoro = establishedDigimon(0, ["BT1-009", "BT1-009", "ST23-13"], "-feedback75-tomoro");
+    for (const card of tomoro.stack) card.faceUp = false;
+    placePermanent(human, tomoro);
+    placePermanent(human, establishedDigimon(0, ["BT26-003", "ST23-11"], "-feedback75-glowing"));
+    insertCard(human, Zone.Hand, faceDownCard("feedback75-chirop", "ST23-12", 0));
+    insertCard(human, Zone.Trash, faceUpCard("feedback75-return", "ST23-03", 0));
+    placePermanent(state.players[1]!, establishedDigimon(1, ["BT1-009"], "-feedback75-attacker"));
+  } else {
+    insertCard(human, Zone.Hand, faceDownCard("feedback75-tomoro", "ST23-13", 0));
+  }
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = timing ? 3 : 0;
+}
+
 /** #73: recovery narration precedes a required choice between two actual opposing Digimon. */
 function layFeedback73MagnaAngemonDecisionScenario(state: GameState): void {
   for (const seat of [0, 1] as const) {
@@ -11954,6 +11986,8 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-davis-both-colors": layDavisBothColorsScenario,
   "arena-feedback65-dracomon-selection": layFeedback65DracomonSelectionScenario,
   "arena-feedback73-magnaangemon-decision": layFeedback73MagnaAngemonDecisionScenario,
+  "arena-feedback75-tomoro-on-play": (state) => layFeedback75TomoroScenario(state, false),
+  "arena-feedback75-tomoro-timing": (state) => layFeedback75TomoroScenario(state, true),
   "arena-feedback72-nokia-hand-evolution": layFeedback72NokiaHandEvolutionScenario,
   "arena-feedback71-justimon-copied-opt": layFeedback71JustimonCopiedOptScenario,
   "arena-feedback70-gaiomon-attack": layFeedback70GaiomonAttackScenario,
