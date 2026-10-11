@@ -1,5 +1,6 @@
 import { CardKind, getCardDefinition } from "@aegis/shared";
 import { createBotRandom } from "../rng.js";
+import type { createHeuristicFeatureContext } from "#api/bot/evolution/createHeuristicFeatureContext";
 import type { TrainingWindow } from "../training/policy.js";
 
 /** GEPA evolves data, never executable code. Guides come from these same rules. */
@@ -131,19 +132,34 @@ export function parseHeuristic(value: unknown): HeuristicProgram {
   };
 }
 
-export function actionFeatures(window: TrainingWindow, index: number): Record<Feature, number> {
+export function actionFeatures(
+  window: TrainingWindow,
+  index: number,
+  context?: ReturnType<typeof createHeuristicFeatureContext>,
+): Record<Feature, number> {
   const action = window.actions[index];
   if (action === undefined) throw new Error("Action is outside legal choices");
-  const features = Object.fromEntries(FEATURES.map((key) => [key, 0])) as Record<Feature, number>;
-  const own = window.observation.players.find((player) => player.seat === window.observation.seat)!;
-  const enemy = window.observation.players.find((player) => player.seat !== window.observation.seat)!;
-  const ownUnits = [...own.board, ...(own.breeding === undefined ? [] : [own.breeding])];
-  const units = [...ownUnits, ...enemy.board];
-  const source = units.find((unit) => unit.permanentId === action.sourceId || unit.top.instanceId === action.sourceId);
-  const target = units.find((unit) => unit.permanentId === action.targetId);
-  const card = [...visibleCards(window), ...window.observation.revealed].find(
-    (entry) => entry.instanceId === action.sourceId,
-  );
+  const features =
+    context === undefined
+      ? (Object.fromEntries(FEATURES.map((key) => [key, 0])) as Record<Feature, number>)
+      : { ...context.zeroFeatures };
+  const own = context?.own ?? window.observation.players.find((player) => player.seat === window.observation.seat)!;
+  const enemy = context?.enemy ?? window.observation.players.find((player) => player.seat !== window.observation.seat)!;
+  const ownUnits =
+    context === undefined ? [...own.board, ...(own.breeding === undefined ? [] : [own.breeding])] : undefined;
+  const units = context === undefined ? [...ownUnits!, ...enemy.board] : undefined;
+  const source =
+    context === undefined
+      ? units!.find((unit) => unit.permanentId === action.sourceId || unit.top.instanceId === action.sourceId)
+      : context.sources.get(action.sourceId);
+  const target =
+    context === undefined
+      ? units!.find((unit) => unit.permanentId === action.targetId)
+      : context.targets.get(action.targetId);
+  const card =
+    context === undefined
+      ? [...visibleCards(window), ...window.observation.revealed].find((entry) => entry.instanceId === action.sourceId)
+      : context.cards.get(action.sourceId);
   features.bias = 1;
   features.ownHandCount = own.handCount;
   features.opponentHandCount = enemy.handCount;
@@ -154,14 +170,22 @@ export function actionFeatures(window: TrainingWindow, index: number): Record<Fe
   features.handover = Math.max(0, features.cost - window.observation.memory);
   features.sourceLevel = source?.top.level ?? card?.level ?? 0;
   features.sourceDp = (source?.dp ?? card?.dp ?? 0) / 1000;
-  features.sourceInHand = Number(own.hand.some((entry) => entry.instanceId === action.sourceId));
+  features.sourceInHand = Number(
+    context === undefined
+      ? own.hand.some((entry) => entry.instanceId === action.sourceId)
+      : context.ownHand.has(action.sourceId),
+  );
   features.sourceInTrash = Number(
-    window.observation.players.some((player) => player.trash.some((entry) => entry.instanceId === action.sourceId)),
+    context === undefined
+      ? window.observation.players.some((player) => player.trash.some((entry) => entry.instanceId === action.sourceId))
+      : context.trash.has(action.sourceId),
   );
   features.sourceOnBoard = Number(source !== undefined && !source.inBreeding);
   features.sourceOpponent = Number(
-    enemy.board.some((unit) => unit.permanentId === action.sourceId || unit.top.instanceId === action.sourceId) ||
-      enemy.trash.some((entry) => entry.instanceId === action.sourceId),
+    context === undefined
+      ? enemy.board.some((unit) => unit.permanentId === action.sourceId || unit.top.instanceId === action.sourceId) ||
+          enemy.trash.some((entry) => entry.instanceId === action.sourceId)
+      : context.enemySources.has(action.sourceId),
   );
   features.sourceValue = features.sourceDp + features.sourceLevel + (card?.playCost ?? source?.top.playCost ?? 0) / 10;
   features.targetDp = (target?.dp ?? 0) / 1000;
@@ -231,8 +255,14 @@ function visibleCards(window: TrainingWindow) {
   ]);
 }
 
-export function actionCardId(window: TrainingWindow, index: number): string | undefined {
+export function actionCardId(
+  window: TrainingWindow,
+  index: number,
+  context?: ReturnType<typeof createHeuristicFeatureContext>,
+): string | undefined {
   const action = window.actions[index]!;
+  if (context !== undefined)
+    return context.cards.get(action.sourceId)?.cardId ?? context.permanentCards.get(action.sourceId);
   return (
     [...visibleCards(window), ...window.observation.revealed].find((card) => card.instanceId === action.sourceId)
       ?.cardId ??

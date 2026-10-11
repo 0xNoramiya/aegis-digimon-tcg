@@ -3,6 +3,7 @@ import type { GameEngine } from "../../engine/GameEngine.js";
 import type { Decklist } from "../../engine/testDecks.js";
 import { runBotMatch, type MatchResult } from "../matchHarness.js";
 import { mainActionReady, type TrainingAction } from "#api/bot/training/actions";
+import { chooseFastHeuristic } from "#api/bot/evolution/chooseFastHeuristic";
 import { createReplayMainActionSource } from "#api/bot/evolution/createReplayMainActionSource";
 import { createAsyncTrainingPolicy, type TrainingWindow } from "../training/policy.js";
 import { determinize } from "./determinize.js";
@@ -78,6 +79,10 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
   pilots[opponentSeat] = options.opponentProgram ?? SEED_HEURISTIC;
   const rollout = (seat: Seat, window: TrainingWindow): number =>
     chooseHeuristic(pilots[seat]!, window, options.seed + seat * 7919);
+  const replayRollout = (seat: Seat, window: TrainingWindow): number =>
+    options.mcts?.reusePrefixActions === false
+      ? rollout(seat, window)
+      : chooseFastHeuristic(pilots[seat]!, window, options.seed + seat * 7919);
   const replay = async (
     prefix: readonly RecordedChoice[],
     root: TrainingWindow,
@@ -103,7 +108,7 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
             if (cursor > 10000) {
               mismatch = true;
               control.abort();
-              return rollout(seat, window);
+              return replayRollout(seat, window);
             }
             const entry = prefix[cursor++];
             if (entry !== undefined) {
@@ -120,7 +125,7 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
               ) {
                 mismatch = true;
                 control.abort();
-                return rollout(seat, window);
+                return replayRollout(seat, window);
               }
               restoration.replayedWindows++;
               if (reuseIndex) restoration.reusedActionIndices++;
@@ -130,12 +135,12 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
               if (seat !== opponentSeat || informationKey(window) !== informationKey(root)) {
                 mismatch = true;
                 control.abort();
-                return rollout(seat, window);
+                return replayRollout(seat, window);
               }
               reachedRoot = true;
               await determinize(engine, opponentSeat, sampleSeed);
             }
-            return index === opponentSeat ? choose(window) : rollout(seat, window);
+            return index === opponentSeat ? choose(window) : replayRollout(seat, window);
           },
           undefined,
           createReplayMainActionSource({
@@ -193,7 +198,7 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
             seat,
             simulations: options.mcts.simulations,
             signal,
-            rolloutChoose: (next) => rollout(seat, next),
+            rolloutChoose: (next) => replayRollout(seat, next),
             simulate: (choose, simulation) =>
               replay(
                 prefix,

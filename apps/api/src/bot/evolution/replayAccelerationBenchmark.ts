@@ -10,6 +10,7 @@ const { runEvolutionMatch } = await import("#api/bot/evolution/evolutionMatch");
 const { SEED_HEURISTIC } = await import("#api/bot/evolution/heuristic");
 const { randomDeck } = await import("#api/bot/evolution/randomDecks");
 const { evolutionDeck } = await import("#api/bot/evolution/decks");
+const { trainingMetadata } = await import("#api/bot/training/metadata");
 
 async function main(): Promise<void> {
   const input = JSON.parse(readFileSync(0, "utf8")) as {
@@ -36,6 +37,7 @@ async function main(): Promise<void> {
     };
   };
   const decks = [resolveDeck(deckKeys[0]!), resolveDeck(deckKeys[1]!)] as const;
+  const engineSha256 = trainingMetadata().engineSha256;
   const repetitions = input.repetitions ?? 2;
   const mode = input.mode ?? "single-search-after-prefix";
   if (mode !== "single-search-after-prefix" && mode !== "full-game") throw new Error("Unknown benchmark mode");
@@ -48,6 +50,7 @@ async function main(): Promise<void> {
     throw new Error("Benchmark learner seat must be zero or one");
   const run = async (enabled: boolean, simulations: number, repetition: number, phase: "warmup" | "measured") => {
     const bounded = phase === "warmup" || mode === "single-search-after-prefix";
+    const cpuStart = process.cpuUsage();
     const start = performance.now();
     const result = await runEvolutionMatch({
       seed: input.seed ?? 42,
@@ -67,6 +70,7 @@ async function main(): Promise<void> {
       },
     });
     const durationMs = performance.now() - start;
+    const cpu = process.cpuUsage(cpuStart);
     if (!result.valid || result.searches.length === 0)
       throw new Error("Benchmark requires a complete valid real-engine search match");
     if (bounded && result.searches.length !== 1)
@@ -91,6 +95,9 @@ async function main(): Promise<void> {
     const sample = {
       enabled,
       durationMs,
+      cpuUserMs: cpu.user / 1000,
+      cpuSystemMs: cpu.system / 1000,
+      cpuDurationMs: (cpu.user + cpu.system) / 1000,
       identity,
       requestedRollouts: result.searches.reduce((total, search) => total + search.requested, 0),
       completedRollouts: result.searches.reduce((total, search) => total + search.completed, 0),
@@ -115,9 +122,13 @@ async function main(): Promise<void> {
   }
   const duration = (enabled: boolean): number =>
     samples.filter((sample) => sample.enabled === enabled).reduce((total, sample) => total + sample.durationMs, 0);
+  const cpuDuration = (enabled: boolean): number =>
+    samples.filter((sample) => sample.enabled === enabled).reduce((total, sample) => total + sample.cpuDurationMs, 0);
+  if (trainingMetadata().engineSha256 !== engineSha256) throw new Error("Benchmark runtime changed during measurement");
   writeReport(
     JSON.stringify({
-      schemaVersion: 2,
+      schemaVersion: 3,
+      engineSha256,
       nodeVersion: process.version,
       nodeEnvironment: process.env.NODE_ENV,
       acceleration: [
@@ -125,6 +136,7 @@ async function main(): Promise<void> {
         "guarded-action-index",
         "rejection-only-rollout-events",
         "disabled-rollout-latency-sampling",
+        "public-indexed-score-only-rollout-chooser",
       ],
       simulations: input.simulations,
       mode,
@@ -144,6 +156,8 @@ async function main(): Promise<void> {
       equivalent: true,
       speedup: duration(false) / duration(true),
       savedWallTimeFraction: 1 - duration(true) / duration(false),
+      cpuSpeedup: cpuDuration(false) / cpuDuration(true),
+      savedCpuTimeFraction: 1 - cpuDuration(true) / cpuDuration(false),
       samples,
     }) + "\n",
   );
