@@ -717,6 +717,8 @@ export interface AegisJoinOptions {
     | "arena-davis-both-colors"
     | "arena-feedback65-dracomon-selection"
     | "arena-feedback73-magnaangemon-decision"
+    | "arena-feedback79-execute-replacement"
+    | "arena-feedback79-ordinary-replacement"
     | "arena-feedback78-main-crossed"
     | "arena-feedback78-main-positive"
     | "arena-feedback76-seiten-assembly"

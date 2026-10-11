@@ -470,6 +470,8 @@ export const DEV_SCENARIO_IDS = [
   "arena-davis-both-colors",
   "arena-feedback65-dracomon-selection",
   "arena-feedback73-magnaangemon-decision",
+  "arena-feedback79-execute-replacement",
+  "arena-feedback79-ordinary-replacement",
   "arena-feedback78-main-crossed",
   "arena-feedback78-main-positive",
   "arena-feedback76-seiten-assembly",
@@ -8400,6 +8402,39 @@ function layFeedback60DuplicateOptionChoiceScenario(state: GameState): void {
   state.memory = 10;
 }
 
+/** #79: a battle replacement prevents one deletion, while Execute creates a separate attempt. */
+function layFeedback79ExecuteReplacementScenario(state: GameState, ordinary: boolean): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`feedback79-egg-${seat}`, "BT18-004", seat));
+    for (let i = 0; i < 12; i++)
+      insertCard(player, Zone.Deck, faceDownCard(`feedback79-deck-${seat}-${i}`, "BT1-009", seat));
+    for (let i = 0; i < 3; i++)
+      insertCard(player, Zone.Security, faceDownCard(`feedback79-security-${seat}-${i}`, "BT1-009", seat));
+    insertCard(player, Zone.Hand, faceDownCard(`feedback79-reserve-${seat}`, "BT1-009", seat));
+  }
+  const human = state.players[0]!;
+  const materials = ["BT26-001", "BT24-034", "BT26-009", "BT26-015", "BT26-016"];
+  insertCard(human, Zone.Trash, faceUpCard("feedback79-destroy", "BT26-060", 0));
+  if (ordinary) {
+    const giant = establishedDigimon(0, [...materials, "BT26-085"], "-feedback79-giant");
+    giant.topCard.instanceId = "feedback79-giant";
+    giant.stack.forEach((card, i) => {
+      card.instanceId = `feedback79-material-${i}`;
+    });
+    placePermanent(human, giant);
+  } else {
+    insertCard(human, Zone.Hand, faceDownCard("feedback79-giant", "BT26-085", 0));
+    insertCard(human, Zone.Trash, faceUpCard("feedback79-cherub", "BT26-078", 0));
+    materials.forEach((card, i) => insertCard(human, Zone.Trash, faceUpCard(`feedback79-material-${i}`, card, 0)));
+  }
+  placePermanent(state.players[1]!, establishedDigimon(1, ["AD1-004", "AD1-014", "AD1-025"], "-feedback79-omni"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = ordinary ? 3 : 2;
+}
+
 /** #78: finish Candlemon's actual no-match search before the next ordinary Main action. */
 function layFeedback78MainActionScenario(state: GameState, positive: boolean): void {
   for (const seat of [0, 1] as const) {
@@ -12040,6 +12075,8 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-davis-both-colors": layDavisBothColorsScenario,
   "arena-feedback65-dracomon-selection": layFeedback65DracomonSelectionScenario,
   "arena-feedback73-magnaangemon-decision": layFeedback73MagnaAngemonDecisionScenario,
+  "arena-feedback79-execute-replacement": (state) => layFeedback79ExecuteReplacementScenario(state, false),
+  "arena-feedback79-ordinary-replacement": (state) => layFeedback79ExecuteReplacementScenario(state, true),
   "arena-feedback78-main-crossed": (state) => layFeedback78MainActionScenario(state, false),
   "arena-feedback78-main-positive": (state) => layFeedback78MainActionScenario(state, true),
   "arena-feedback76-seiten-assembly": layFeedback76SeitenAssemblyScenario,

@@ -1953,6 +1953,14 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Discord 1558451244815880332. Encerre a criação. No início da sua fase principal, recuse colocar a carta do topo do deck embaixo de Richard Sampson (EX13-071). A lixeira tem Reppamon (BT1-051) e Chirinmon (BT1-058), então o [Principal] de Richard aparece. Ative e aceite. As 3 cartas viradas para baixo vão para a lixeira. Pela Q7447, escolha o Reppamon (EX13-030) e o Chirinmon (EX13-032) que acabaram de ir para a lixeira. Os dois ficam embaixo de Kudamon (EX13-026), que digivolve em Kentaurosmon (BT3-043) por 2 de memória. BT1-051 e BT1-058 ficam na lixeira.",
     en: "Discord 1558451244815880332. End breeding. At the start of your main phase, decline to place your deck's top card under Richard Sampson (EX13-071). Your trash has Reppamon (BT1-051) and Chirinmon (BT1-058), so Richard's [Main] is offered. Activate it and accept. The 3 face-down cards go to the trash. Per Q7447, choose the Reppamon (EX13-030) and Chirinmon (EX13-032) you just trashed. Both go under Kudamon (EX13-026), which digivolves into Kentaurosmon (BT3-043) for 2 memory. BT1-051 and BT1-058 stay in the trash.",
   },
+  "arena-feedback79-execute-replacement": {
+    en: "Play Giant Slayer with all five Assembly materials. Accept Cherubimon's Rush/Execute grant, attack security, decline Barrier, and accept Giant Slayer's free evolution into Destroy Mode. Omnimon blocks the battle, whose deletion is prevented. Execute then attempts a separate deletion: accept Holy Mode's top-security return to keep the seven-card stack, or decline it to delete the stack and trigger Omnimon's actual-leave effect. Decline all unrelated optional effects.",
+    ptBR: "Jogue Giant Slayer com os cinco materiais de Assembly. Aceite Rush/Execute de Cherubimon, ataque a segurança, recuse Barrier e aceite a evolução gratuita para Destroy Mode. Omnimon bloqueia a batalha, cuja deleção é evitada. Execute tenta outra deleção: aceite devolver o topo da segurança por Holy Mode para manter as sete cartas, ou recuse para deletar a pilha e ativar a saída real de Omnimon. Recuse os outros efeitos opcionais.",
+  },
+  "arena-feedback79-ordinary-replacement": {
+    en: "Attack security with the established Giant Slayer without Execute. Omnimon must block. Decline Barrier and accept the free Destroy Mode evolution: this prevents the battle's only deletion attempt. No second Holy Mode protection is needed, and the seven-card stack survives. Decline unrelated optional effects.",
+    ptBR: "Ataque a segurança com Giant Slayer já em campo, sem Execute. Omnimon deve bloquear. Recuse Barrier e aceite a evolução gratuita para Destroy Mode: ela evita a única tentativa de deleção da batalha. Holy Mode não precisa proteger uma segunda vez, e as sete cartas sobrevivem. Recuse os outros efeitos opcionais.",
+  },
   "arena-feedback78-main-crossed": {
     en: "At 0 memory, play Candlemon and order all three non-matching revealed cards to the bottom. Wizardmon stays in hand; the turn passes with only Candlemon's 3 cost paid.",
     ptBR: "Com 0 memória, jogue Candlemon e ordene as três cartas reveladas sem alvos válidos para o fundo. Wizardmon fica na mão; o turno passa pagando apenas 3 por Candlemon.",
@@ -3600,6 +3608,8 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
     "Discord · EX13 Richard Sampson · [Main] stacks the cards it just trashed",
   ],
   ["arena-feedback73-magnaangemon-decision", "Feedback 73 · MagnaAngemon recovery and target choice"],
+  ["arena-feedback79-execute-replacement", "Feedback 79 · Separate Execute deletion"],
+  ["arena-feedback79-ordinary-replacement", "Feedback 79 · Ordinary battle prevention"],
   ["arena-feedback78-main-crossed", "Feedback 78 · Crossed-memory Main boundary"],
   ["arena-feedback78-main-positive", "Feedback 78 · Fresh Main action after resolution"],
   ["arena-feedback76-seiten-assembly", "Feedback 76 · Seiten exact Assembly"],
