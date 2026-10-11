@@ -466,3 +466,8 @@
   gap: var(--ds-space-4);
   margin-top: var(--ds-space-1);
 }
+
+/* Opened from the match result, which sits above --ds-z-dialog (.game-result, z-index 96). */
+.aegis-dialog-layer:has(> .drive-onboarding) {
+  z-index: calc(var(--ds-z-dialog) + 10);
+}
