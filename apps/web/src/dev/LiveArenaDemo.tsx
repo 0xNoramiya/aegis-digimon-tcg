@@ -2365,6 +2365,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Wisdom Training está no campo desde um turno anterior e você não tem Digimon. Ative o ＜Delay＞: a carta vai para o lixo e o efeito não faz nada.",
     en: "Wisdom Training has been in the battle area since an earlier turn and you have no Digimon. Activate its ＜Delay＞: the card goes to the trash and the effect does nothing.",
   },
+  "arena-feedback43-omnimon-name-dna": {
+    en: "Feedback #43: end breeding, select AD1 Omnimon from hand and choose Digivolve, then click CresGarurumon to open the DNA/ordinary evolution choices. Select BlitzGreymon and CresGarurumon and confirm DNA Digivolve: printed substring names at level 6 qualify, cost is 0, both full stacks combine and one card is drawn. Level-4 Garurumon cannot replace CresGarurumon; level-6 Gallantmon lacks the required name. Both stay in play. This is Main-phase DNA; these materials' triggered effects specifically name Omnimon Alter-S, which is a different card. The observed source stacks are retained, with a neutral opponent and level/name refusal controls.",
+    ptBR: "Feedback #43: encerre a criação, selecione Omnimon AD1 da mão e escolha Digievoluir, depois clique em CresGarurumon para abrir as opções de DNA e evolução normal. Selecione BlitzGreymon e CresGarurumon e confirme DNA Digievoluir: os nomes com os trechos impressos no nível 6 são válidos, o custo é 0, as duas pilhas completas se unem e você compra uma carta. Garurumon nível 4 não pode substituir CresGarurumon; Gallantmon nível 6 não tem o nome exigido. Ambos ficam no campo. É DNA na fase Principal; os efeitos desses materiais citam especificamente Omnimon Alter-S, outra carta. O cenário preserva as fontes observadas, com oponente neutro e controles de recusa por nível e nome.",
+  },
   "arena-feedback42-parkour-sequential": {
     en: "Feedback #42: breeding skips automatically with the existing egg. Use one Parkour Training. Select Davis Motomiya & Ken Ichijoji. Memory goes 8→6 and Parkour stays in the battle area. The second copy is unavailable: the blue egg supplies no green, and placed Options do not supply colors. Play the revealed Tamer for 4 (6→2), then use the second Parkour for 2 (2→0), selecting Elecmon. Both copies remain in play; neither can Delay this turn. The extra starting memory is a positive control; in the report, playing the Tamer at 0 passed the turn.",
     ptBR: "Feedback #42: a criação é pulada automaticamente com o ovo já presente. Use um Parkour Training. Escolha Davis Motomiya & Ken Ichijoji. A memória vai de 8 para 6 e Parkour fica no campo. A segunda cópia fica indisponível: o ovo azul não fornece verde e Options no campo não fornecem cores. Jogue o Tamer revelado por 4 (6→2), depois use o segundo Parkour por 2 (2→0), escolhendo Elecmon. As duas cópias ficam no campo e nenhuma pode usar Delay neste turno. A memória inicial extra permite o controle positivo; no relato, jogar o Tamer com 0 passou o turno.",
@@ -3370,6 +3374,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex5-attack-priority", "EX5 Etemon · attack trigger priority"],
   ["arena-ex5-biting-crush-delay", "EX5 Biting Crush · Delay on effect play"],
   ["arena-p108-training-delay-no-target", "P-108 Wisdom Training · Delay with no target"],
+  ["arena-feedback43-omnimon-name-dna", "Feedback #43 · Omnimon · substring-name Main DNA"],
   ["arena-feedback42-parkour-sequential", "Feedback #42 · Parkour Training sequential colors"],
   ["arena-github5306-training-use-memory", "#5306 Treadmill Training · use cost and turn pass"],
   ["arena-github5306-training-delay-paid", "#5306 Treadmill Training · Delay pays 1"],
