@@ -1,4 +1,40 @@
 {
+  "releases.1.22.1-beta.summary": {
+    "en": "This patch restores source selection by Digimon stack and fixes reported card effects, replay synchronization and match reliability.",
+    "pt-BR": "Este patch restaura a seleção de fontes por pilha de Digimon e corrige efeitos de cartas reportados, sincronização de replays e estabilidade das partidas.",
+    "es": "Este parche restaura la selección de fuentes por pila de Digimon y corrige efectos de cartas reportados, sincronización de repeticiones y estabilidad de las partidas.",
+    "it": "Questa patch ripristina la selezione delle fonti per pila di Digimon e corregge effetti delle carte segnalati, sincronizzazione dei replay e stabilità delle partite."
+  },
+  "releases.1.22.1-beta.fix.sources": {
+    "en": "Choose the opponent's Digimon on the field before selecting digivolution cards to trash. Source cards show their host Digimon, and selections remain when switching stacks.",
+    "pt-BR": "Escolha o Digimon adversário no campo antes de selecionar as cartas de digivolução para remover. As fontes mostram o Digimon de origem e as seleções são mantidas ao trocar de pilha.",
+    "es": "Elige el Digimon rival en el campo antes de seleccionar las cartas de digievolución que se descartarán. Las fuentes muestran su Digimon de origen y las selecciones se conservan al cambiar de pila.",
+    "it": "Scegli il Digimon avversario sul campo prima di selezionare le carte digievoluzione da scartare. Le fonti mostrano il Digimon di origine e le selezioni restano quando cambi pila."
+  },
+  "releases.1.22.1-beta.fix.cards": {
+    "en": "Fixed security-removal triggers when cards return to the deck, paid DigiXros from the trash, Jimmy activating Boltmon's copied Main effect, Jesmon's Sistermon choice and the printed text shown for copied effects.",
+    "pt-BR": "Corrigidos gatilhos de remoção de segurança ao retornar cartas ao deck, DigiXros pago do lixo, ativação do Main copiado de Boltmon por Jimmy, escolha de Sistermon de Jesmon e o texto impresso exibido para efeitos copiados.",
+    "es": "Corregidos los efectos de retirada de seguridad al devolver cartas al mazo, DigiXros pagado desde el descarte, la activación del Main copiado de Boltmon por Jimmy, la elección de Sistermon de Jesmon y el texto impreso de efectos copiados.",
+    "it": "Corretti i trigger di rimozione dalla sicurezza quando le carte tornano nel mazzo, il DigiXros a pagamento dagli scarti, l'attivazione del Main copiato di Boltmon tramite Jimmy, la scelta Sistermon di Jesmon e il testo stampato degli effetti copiati."
+  },
+  "releases.1.22.1-beta.fix.replays": {
+    "en": "Local replays sync after signing in to Google Drive and appear in match history after background synchronization. Drive onboarding stays above the match result, sign-in remembers the last account, and shared replay requests reach the API.",
+    "pt-BR": "Replays locais são sincronizados após entrar no Google Drive e aparecem no histórico depois da sincronização em segundo plano. A apresentação do Drive fica acima do resultado da partida, o login lembra a última conta e as requisições de replays compartilhados chegam à API.",
+    "es": "Las repeticiones locales se sincronizan al iniciar sesión en Google Drive y aparecen en el historial tras la sincronización en segundo plano. La presentación de Drive queda sobre el resultado, el inicio de sesión recuerda la última cuenta y las solicitudes de repeticiones compartidas llegan a la API.",
+    "it": "I replay locali si sincronizzano dopo l'accesso a Google Drive e compaiono nello storico dopo la sincronizzazione in background. La presentazione di Drive resta sopra il risultato, l'accesso ricorda l'ultimo account e le richieste dei replay condivisi raggiungono l'API."
+  },
+  "releases.1.22.1-beta.fix.interface": {
+    "en": "Full effect clauses remain readable on phones, and the opponent's raising-area source badge stays visible.",
+    "pt-BR": "As cláusulas completas dos efeitos continuam legíveis no celular e o indicador de origem da área de criação adversária permanece visível.",
+    "es": "Las cláusulas completas de los efectos siguen siendo legibles en el móvil y el indicador de origen del área de crianza rival permanece visible.",
+    "it": "Le clausole complete degli effetti restano leggibili sui telefoni e l'indicatore della fonte nell'area di allevamento avversaria resta visibile."
+  },
+  "releases.1.22.1-beta.fix.matches": {
+    "en": "Closed matches stop reconnecting, inactive matches and old draining rooms close automatically, and message and matchmaking limits improve stability. Battle areas are limited to 30 tokens.",
+    "pt-BR": "Partidas encerradas deixam de tentar reconectar, partidas inativas e salas antigas em drenagem são encerradas automaticamente, e limites de mensagens e busca de partidas melhoram a estabilidade. Áreas de batalha ficam limitadas a 30 tokens.",
+    "es": "Las partidas cerradas dejan de reconectarse, las partidas inactivas y salas antiguas en drenaje se cierran automáticamente, y los límites de mensajes y búsqueda de partidas mejoran la estabilidad. Las áreas de batalla tienen un límite de 30 tokens.",
+    "it": "Le partite chiuse smettono di riconnettersi, le partite inattive e le vecchie stanze in dismissione si chiudono automaticamente, e i limiti ai messaggi e alla ricerca di partite migliorano la stabilità. Le aree di battaglia sono limitate a 30 token."
+  },
   "releases.1.22.0-beta.summary": {
     "en": "This minor release adds match replays, a full match history on your profile and a redesigned Preferences screen, and fixes reported table and window problems.",
     "pt-BR": "Esta versão minor adiciona replays das partidas, o histórico completo de partidas no seu perfil e uma nova tela de Preferências, e corrige problemas relatados na mesa e nas janelas.",

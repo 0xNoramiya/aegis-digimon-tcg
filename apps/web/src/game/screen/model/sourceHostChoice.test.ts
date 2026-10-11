@@ -24,12 +24,12 @@ const decision: DecisionRequest = {
   kind: "selectCards",
   promptText: "Play or use 1 card",
 };
-const yourBattleArea = [permanent("proximamon", ["a1", "a2"]), permanent("canoweissmon", ["b1"])];
+const battleArea = [permanent("proximamon", ["a1", "a2"]), permanent("canoweissmon", ["b1"])];
 const sources = ["a1", "a2", "b1"].map((instanceId) => ({ instanceId, zone: "digivolutionCards" as const }));
 
 describe("source host choice", () => {
   it("groups one-card source picks by the Digimon holding them", () => {
-    const choice = sourceHostChoiceFor({ decision, answerOnBoard: false, candidates: sources, yourBattleArea, max: 1 });
+    const choice = sourceHostChoiceFor({ decision, answerOnBoard: false, candidates: sources, battleArea });
     expect(choice?.hostPermanentIds).toEqual(["proximamon", "canoweissmon"]);
     expect([...choice!.cardIdsByHost.get("proximamon")!]).toEqual(["a1", "a2"]);
     expect([...choice!.cardIdsByHost.get("canoweissmon")!]).toEqual(["b1"]);
@@ -37,23 +37,29 @@ describe("source host choice", () => {
 
   it("skips the host step when every card sits under one Digimon", () => {
     const candidates = sources.filter((candidate) => candidate.instanceId !== "b1");
-    expect(sourceHostChoiceFor({ decision, answerOnBoard: false, candidates, yourBattleArea, max: 1 })).toBeUndefined();
+    expect(sourceHostChoiceFor({ decision, answerOnBoard: false, candidates, battleArea })).toBeUndefined();
   });
 
-  it("keeps multi-card picks, board picks, and mixed zones in one list", () => {
-    expect(
-      sourceHostChoiceFor({ decision, answerOnBoard: false, candidates: sources, yourBattleArea, max: 2 }),
-    ).toBeUndefined();
-    expect(
-      sourceHostChoiceFor({ decision, answerOnBoard: true, candidates: sources, yourBattleArea, max: 1 }),
-    ).toBeUndefined();
+  it("groups multi-card opponent source picks without including unoffered stacks", () => {
+    const opponentSources = sources.map((source) => ({ ...source, zone: "opponentDigivolutionCards" as const }));
+    const choice = sourceHostChoiceFor({
+      decision: { ...decision, options: { min: 2, max: 2 } },
+      answerOnBoard: false,
+      candidates: opponentSources,
+      battleArea: [...battleArea, permanent("unoffered", ["c1"])],
+    });
+    expect(choice?.hostPermanentIds).toEqual(["proximamon", "canoweissmon"]);
+    expect([...choice!.cardIdsByHost.get("proximamon")!]).toEqual(["a1", "a2"]);
+  });
+
+  it("keeps board picks and mixed zones in one list", () => {
+    expect(sourceHostChoiceFor({ decision, answerOnBoard: true, candidates: sources, battleArea })).toBeUndefined();
     expect(
       sourceHostChoiceFor({
         decision,
         answerOnBoard: false,
         candidates: [...sources, { instanceId: "h1", zone: "hand" }],
-        yourBattleArea,
-        max: 1,
+        battleArea,
       }),
     ).toBeUndefined();
   });

@@ -1568,3 +1568,13 @@ body:has(.decision-overlay--selection) .narration-slot {
     display: none;
   }
 }
+
+/* Keep a source's host readable while selecting cards from its stack. */
+.decision-overlay__source-host {
+  display: block;
+  margin-top: var(--ds-space-1, 4px);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ds-text-2);
+  overflow-wrap: anywhere;
+}

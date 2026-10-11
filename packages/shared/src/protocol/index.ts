@@ -4,6 +4,7 @@ export * from "./messages.js";
 export * from "./triggerKey.js";
 export * from "./pacing.js";
 export * from "./presentation.js";
+export * from "./closeCodes.js";
 export * from "./chat.js";
 export * from "./series.js";
 export * from "./animationTimings.js";

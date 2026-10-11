@@ -27,7 +27,7 @@ import { totalPlayCost } from "../../overlay/choice/decisionPlayCost";
 import { totalDP } from "../../overlay/choice/decisionDpBudget";
 
 /**
- * A one-card pick from several Digimon's digivolution cards: the viewer picks the Digimon
+ * A pick from several Digimon's digivolution cards: the viewer picks the Digimon
  * on the field first (`picking`), then the dialog shows only the cards under it.
  */
 export interface SourceHostStep {
@@ -74,7 +74,7 @@ export function DecisionPrompts({
   onTogglePick: (instanceId: string) => void;
   onRespond: (response: DecisionResponse) => void;
   onOpenDialog: () => void;
-  /** A one-card source pick that first asks which Digimon to look under. */
+  /** A source pick that first asks which Digimon to look under. */
   sourceHost?: SourceHostStep;
 }) {
   const { t } = useTranslation();
@@ -154,12 +154,20 @@ export function DecisionPrompts({
                   .filter((card) => sourceHost?.cardIds === undefined || sourceHost.cardIds.has(card.instanceId))
                   .map((card) => {
                     const details = permanentDetails.get(card.instanceId);
+                    const host =
+                      card.zone === "digivolutionCards" || card.zone === "opponentDigivolutionCards"
+                        ? permanents.find((permanent) =>
+                            permanent.stack.some((source) => source.instanceId === card.instanceId),
+                          )
+                        : undefined;
                     return {
                       instanceId: card.instanceId,
                       cardId: card.cardId,
                       artId: card.artId,
                       selectable: allowsPick(card.instanceId),
                       sourceCount: sourceCounts.get(card.instanceId),
+                      hostCardId: host?.topCard.cardId,
+                      hostPermanentId: host?.permanentId,
                       currentDP: details?.currentDP,
                       isSuspended: details?.isSuspended,
                       zone: card.zone,

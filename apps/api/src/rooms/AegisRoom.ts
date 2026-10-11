@@ -2,6 +2,7 @@ import { validateDecklist } from "../engine/deckValidation.js";
 import { log, logError, withMatchLog } from "../logger.js";
 import { CloseCode, Room, Client, ServerError, matchMaker, type Delayed } from "colyseus";
 import { canCreateRoom } from "../deployment/admission.js";
+import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
 import { randomBytes, randomUUID } from "node:crypto";
 import { ReplayRecording } from "../replays/recording.js";
 import { replayDownload } from "../replays/download.js";
@@ -9,6 +10,8 @@ import { replayLibrary } from "../replays/runtime.js";
 import type { ReplayLibrary } from "../replays/ReplayLibrary.js";
 import {
   GameState,
+  MATCH_EXPIRED_CLOSE_CODE,
+  MESSAGE_FLOOD_CLOSE_CODE,
   REPLAY_CHANNEL,
   type ReplaySummary,
   type ReplayDownloadMessage,
@@ -73,6 +76,22 @@ const TIMED_DEV_SCENARIOS: ReadonlySet<DevScenarioId> = new Set<DevScenarioId>([
   "arena-discord-speed-security-scene-stuck",
   "arena-feedback28-security-reveal-before-prompt",
 ]);
+/**
+ * A real client sends a few messages per second, with bursts when it catches up on presentation
+ * reports. The budget is several times that, so only a flooding client hits it. Its excess messages
+ * are dropped before they reach the engine, and a client that keeps flooding is disconnected.
+ */
+const CLIENT_MESSAGE_RATE_LIMIT: TokenBucketOptions = { capacity: 120, refillMs: 25 };
+const CLIENT_DROPPED_MESSAGE_LIMIT: TokenBucketOptions = { capacity: 400, refillMs: 1_000 };
+
+/**
+ * A draining deployment keeps its processes, and their CPU and memory, until its last room closes,
+ * and an abandoned tab used to hold a room open for days. A match therefore ends after this long
+ * without a player action, and a match on a draining deployment ends this long after draining began.
+ */
+export const MATCH_INACTIVITY_LIMIT_MS = 15 * 60_000;
+export const DRAINING_MATCH_LIMIT_MS = 60 * 60_000;
+const MATCH_LIMIT_CHECK_MS = 60_000;
 const WAITING_ROOM_TIMEOUT_SECONDS = positiveSeconds(process.env.AEGIS_WAITING_ROOM_TIMEOUT_SECONDS, 30 * 60);
 
 const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
@@ -269,6 +288,8 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private replayDownloads = new Map<Seat, Promise<ReplayDownloadMessage>>();
   private replayFinished = false;
   private replayRequestTimes = new WeakMap<Client, number>();
+  private readonly allowClientMessage = tokenBucketLimiter(CLIENT_MESSAGE_RATE_LIMIT);
+  private readonly allowDroppedClientMessage = tokenBucketLimiter(CLIENT_DROPPED_MESSAGE_LIMIT);
   /** Index entries per `seat:account`, so repeated replay requests write the row once. */
   private replayIndexes = new Map<string, Promise<string | undefined>>();
   private rankedByClient = new Map<string, boolean>();
@@ -311,6 +332,9 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private matchStartRequested = false;
   private matchClock: MatchClock | undefined;
   private matchClockInterval: Delayed | undefined;
+  private matchLimitInterval: Delayed | undefined;
+  private lastPlayerActionAt: number | undefined;
+  private drainingSince: number | undefined;
   /** How many games this room's match runs to; only casual and private rooms play more than one. */
   private bestOf: MatchBestOf = 1;
   private casualSeries: CasualSeries | undefined;
@@ -757,6 +781,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // mutates state, and emits events. Rejections are surfaced as an
     // "actionRejected" event to the offending client only.
     this.onMessage("*", (client, type, payload) => {
+      if (!this.admitClientMessage(client)) return;
       if (type === REPLAY_CHANNEL) {
         const now = performance.now();
         if (now - (this.replayRequestTimes.get(client) ?? -Infinity) >= 10_000) {
@@ -803,6 +828,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     if (this.state.matchTimer) {
       this.matchClockInterval = this.clock.setInterval(() => this.syncMatchClock(), 100);
     }
+    this.matchLimitInterval = this.clock.setInterval(() => this.enforceMatchLimits(), MATCH_LIMIT_CHECK_MS);
     roomRegistry.set(this.roomId, this);
   }
 
@@ -1106,6 +1132,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     this.readyTimeout?.clear();
     this.waitingRoomTimeout?.clear();
     this.matchClockInterval?.clear();
+    this.matchLimitInterval?.clear();
     // Legacy only. A Tournament Game's room binding is permanent by design: the game either
     // finished here or is voided by the scheduler, and re-binding it to a second room would be the
     // duplicate-claim the UNIQUE room_id exists to prevent.
@@ -1900,6 +1927,48 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
    * cooldown are dropped without a reply, and blocked words are masked before anyone, the
    * match log included, sees the text.
    */
+  /**
+   * Inactivity costs the match to the player the game is waiting on, as leaving would. With no
+   * player connected, or when the deployment's drain deadline passes, the room closes without a
+   * result: nothing is recorded, and the tournament scheduler voids an unfinished Tournament Game.
+   */
+  private enforceMatchLimits(): void {
+    if (!this.matchStartRequested || this.state.gameOver) return;
+    const now = Date.now();
+    this.lastPlayerActionAt ??= now;
+    this.drainingSince = canCreateRoom() ? undefined : (this.drainingSince ?? now);
+    if (this.drainingSince !== undefined && now - this.drainingSince >= DRAINING_MATCH_LIMIT_MS) {
+      this.expireMatch("draining");
+      return;
+    }
+    if (now - this.lastPlayerActionAt < MATCH_INACTIVITY_LIMIT_MS) return;
+    const awaitedSeat = this.state.pendingDecision?.seat ?? this.state.turnSeat;
+    const playerConnected = this.clients.some((client) => this.seatByClient.has(client.sessionId));
+    if (playerConnected && this.bots[awaitedSeat] === undefined) {
+      log(`[MATCH_LIMIT] ${JSON.stringify({ roomId: this.roomId, outcome: "inactive_concede", seat: awaitedSeat })}`);
+      this.concede(awaitedSeat);
+      return;
+    }
+    this.expireMatch("inactive");
+  }
+
+  private expireMatch(reason: "inactive" | "draining"): void {
+    log(`[MATCH_LIMIT] ${JSON.stringify({ roomId: this.roomId, outcome: "expired", reason })}`);
+    this.matchLimitInterval?.clear();
+    void this.disconnect(MATCH_EXPIRED_CLOSE_CODE).catch((error: unknown) =>
+      this.debugError("[AegisRoom] failed to close an expired match", error),
+    );
+  }
+
+  private admitClientMessage(client: Client): boolean {
+    if (this.allowClientMessage(client.sessionId)) return true;
+    if (!this.allowDroppedClientMessage(client.sessionId)) {
+      log(`[MESSAGE_FLOOD] ${JSON.stringify({ roomId: this.roomId, sessionId: client.sessionId })}`);
+      client.leave(MESSAGE_FLOOD_CLOSE_CODE);
+    }
+    return false;
+  }
+
   private handleChat(client: Client, payload: unknown): void {
     const sender = this.chatSender(client);
     if (!sender) return;
@@ -2004,6 +2073,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
           ? this.state.pendingDecision?.decisionId
           : undefined;
     const result = this.applyLoggedIntent(seat, intent);
+    if (result.ok) this.lastPlayerActionAt = Date.now();
     if (!result.ok) {
       // A refusal is the offending client's alone, so it travels in its own batch rather
       // than in the (empty) batch of the intent it refused.
