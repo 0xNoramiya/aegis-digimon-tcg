@@ -1,5 +1,13 @@
 // @vitest-environment jsdom
-import { CardInstance, CombatWindow, GameState, PlayerState, Permanent, Phase } from "@aegis/shared";
+import {
+  ANIMATION_SPEED_CHANNEL,
+  CardInstance,
+  CombatWindow,
+  GameState,
+  PlayerState,
+  Permanent,
+  Phase,
+} from "@aegis/shared";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { useState, type ComponentProps } from "react";
@@ -96,7 +104,11 @@ function renderCombatGame(kind: "alliance" | "block" | "counter" = "alliance", m
     { instanceId: "ineligible-top", effectKey: "second", description: "Second counter" },
   ]);
   const send = vi.fn<(type: string, payload: unknown) => void>();
-  const room = { connection: { isOpen: true }, send, onMessage: () => () => {} } as unknown as AegisRoom;
+  const room = {
+    connection: { isOpen: true },
+    send: (type: string, payload: unknown) => (type === ANIMATION_SPEED_CHANNEL ? undefined : send(type, payload)),
+    onMessage: () => () => {},
+  } as unknown as AegisRoom;
   const view = render(
     <I18nProvider>
       <GameScreen

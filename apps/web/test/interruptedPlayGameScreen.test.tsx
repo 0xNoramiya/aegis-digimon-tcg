@@ -7,7 +7,7 @@ import { tap } from "./scenarioHarness/tap";
 
 const mocked = vi.hoisted(() => ({
   result: { current: undefined as unknown },
-  room: { roomId: "interrupted-play-room", onMessage: () => () => {} },
+  room: { roomId: "interrupted-play-room", onMessage: () => () => {}, send: () => {} },
   playCard: vi.fn<typeof intents.playCard>(),
 }));
 vi.mock("../src/net/useRoom", () => ({ useRoom: () => mocked.result.current }));

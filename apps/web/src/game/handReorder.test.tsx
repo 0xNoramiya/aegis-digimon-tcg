@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { CardInstance, GameState, PendingDecision, Phase, PlayerState } from "@aegis/shared";
+import { ANIMATION_SPEED_CHANNEL, CardInstance, GameState, PendingDecision, Phase, PlayerState } from "@aegis/shared";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
@@ -26,7 +26,11 @@ function mountHand() {
     state.players[0]!.hand.push(card);
   }
   const send = vi.fn<(type: string, payload: unknown) => void>();
-  const room = { connection: { isOpen: true }, send, onMessage: () => () => {} } as unknown as AegisRoom;
+  const room = {
+    connection: { isOpen: true },
+    send: (type: string, payload: unknown) => (type === ANIMATION_SPEED_CHANNEL ? undefined : send(type, payload)),
+    onMessage: () => () => {},
+  } as unknown as AegisRoom;
   const connection = {
     room,
     status: "connected" as const,
