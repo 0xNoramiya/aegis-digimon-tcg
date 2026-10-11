@@ -36,21 +36,31 @@ for (const accept of [true, false]) {
     }
     await dna.getByRole("button", { name: "DNA Digivolve", exact: true }).click();
     let sourceChoices = 0;
-    await scenario.resolveUntil(
-      (s) =>
-        s.players[0]!.battleArea.some((p) => p.topCard.instanceId === fixtureInstanceId("feedback90-dna")) &&
-        !s.pendingDecision &&
-        (!accept || s.players[1]!.trash.length === 3),
-      (decision) => {
-        if (decision.kind === "orderTriggers") return { triggerCardId: "BT16-025" };
-        if (decision.sourceCardId === "BT16-085" && decision.kind === "selectCards") {
-          sourceChoices += 1;
-          expect(decision.options).toMatchObject({ min: 3, max: 3, candidateInstanceIds: pool });
-          return { instanceIds: chosen };
-        }
-        return { accept };
-      },
-    );
+    await Promise.all([
+      accept
+        ? expect(
+            page
+              .getByTestId("side-panel")
+              .filter({ hasText: "Digivolution cards trashed" })
+              .locator(".side-panel__card"),
+          ).toHaveCount(3, { timeout: 20_000 })
+        : Promise.resolve(),
+      scenario.resolveUntil(
+        (s) =>
+          s.players[0]!.battleArea.some((p) => p.topCard.instanceId === fixtureInstanceId("feedback90-dna")) &&
+          !s.pendingDecision &&
+          (!accept || s.players[1]!.trash.length === 3),
+        (decision) => {
+          if (decision.kind === "orderTriggers") return { triggerCardId: "BT16-025" };
+          if (decision.sourceCardId === "BT16-085" && decision.kind === "selectCards") {
+            sourceChoices += 1;
+            expect(decision.options).toMatchObject({ min: 3, max: 3, candidateInstanceIds: pool });
+            return { instanceIds: chosen };
+          }
+          return { accept };
+        },
+      ),
+    ]);
     const after = await scenario.snapshot();
     expect(sourceChoices).toBe(accept ? 1 : 0);
     expect(after.memory).toBe(accept ? 2 : 1);

@@ -1,3 +1,5 @@
+import { createDiscardedSourceResolution } from "./match/present/announcements";
+import { createDiscardedSourcePanels } from "./match/narration/presentableNarration";
 /* Everything the board plays back at the player because the server said
    something happened: sounds, info panels, the attack call-out and target arrow, the
    security clash, the recovery and effect notices, the turn banner and the draw
@@ -721,8 +723,11 @@ export function useMatchCues({
   }, [heldSecurityCards]);
 
   const effectNarrationTracksRef = useRef(new Map<Seat, string>());
+  const groupDiscardedSources = useMemo(createDiscardedSourcePanels, []);
+  const discardedSourceResolution = useMemo(createDiscardedSourceResolution, []);
 
   const { narrate, flushHeldNotices, openHeld, narrationBefore, flushTargetClauses } = narrationStream({
+    groupDiscardedSources,
     viewerSeat,
     queue,
     cardSiteRef,
@@ -985,6 +990,7 @@ export function useMatchCues({
       pendingDigivolutionDrawRef,
       eventDrawCountsRef,
       sidePanelLookupRef,
+      discardedSourceResolution,
       sidePanelSequenceRef,
       noticeSequenceRef,
       securityEffectPendingRef,

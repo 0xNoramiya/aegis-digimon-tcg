@@ -1238,3 +1238,36 @@ describe("a [When Attacking] clause plays before the battle that follows it", ()
     expect(settledAt!).toBeLessThanOrEqual(clashAt!);
   });
 });
+
+it.each(["sequential", "current"] as const)(
+  "groups discarded sources delivered in separate React renders with %s pacing",
+  async (pacing) => {
+    const view = renderChain(pacing);
+    await advance(0);
+    view.feedChain([[triggered("AD1-002", "src-a", "a/sources")]]);
+    await advance(2000);
+    for (let index = 1; index <= 3; index += 1) {
+      view.feedChain([
+        [
+          {
+            kind: "cardsMoved",
+            from: "various",
+            to: "trash",
+            seat: 1,
+            instanceIds: [`source-${index}`],
+            cardIds: ["BT1-009"],
+            trashedSources: { permanentId: `host-${index}`, hostCardId: "BT1-018", sourceCardId: "AD1-002" },
+          },
+        ],
+      ]);
+      let panels: NonNullable<ReturnType<typeof useMatchCues>["sidePanels"]> = [];
+      for (let elapsed = 0; elapsed < 8000; elapsed += 16) {
+        await advance(16);
+        panels = view.result.current.sidePanels.filter((panel) => panel.titleKey === "panel.trashedDigivolutionCards");
+        if (panels.some((panel) => panel.cards.length === index)) break;
+      }
+      expect(panels).toHaveLength(1);
+      expect(panels[0]?.cards).toHaveLength(index);
+    }
+  },
+);

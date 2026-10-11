@@ -6,7 +6,7 @@ import { REVEAL_SHOWCASE_TOTAL_MS } from "../../timings";
 import { CueTrack } from "../enums";
 import { createPresentationGate } from "../presentationGate";
 import type { DrawFlightCard } from "../types";
-import { collectBatchAnnouncements } from "./announcements";
+import { collectBatchAnnouncements, createDiscardedSourceResolution } from "./announcements";
 import { enqueueRevealShowcases, revealShowcasesFromEvents, type RevealShowcase } from "./revealShowcases";
 
 const VIEWER = 0;
@@ -127,10 +127,14 @@ describe("enqueueRevealShowcases", () => {
   });
 });
 
-function announce(fresh: readonly ServerEvent[]) {
+function announce(
+  fresh: readonly ServerEvent[],
+  discardedSourceResolution?: (event: ServerEvent) => string | undefined,
+) {
   const flights: { side: Side; card?: DrawFlightCard }[] = [];
   const result = collectBatchAnnouncements({
     fresh,
+    discardedSourceResolution,
     viewerSeat: VIEWER,
     state: undefined,
     now: 0,
@@ -151,7 +155,7 @@ function announce(fresh: readonly ServerEvent[]) {
     launchDrawFlight: (side, _burst, _delayMs, card) => flights.push({ side, ...(card ? { card } : {}) }),
     launchDeckToUnderFlight: () => {},
   });
-  return { flights, panels: result.opened };
+  return { flights, panels: result.opened, panelAt: result.panelAt };
 }
 
 describe("collectBatchAnnouncements: reveals and public hand additions", () => {
@@ -192,4 +196,83 @@ describe("collectBatchAnnouncements: reveals and public hand additions", () => {
     };
     expect(announce([returned]).flights).toEqual([]);
   });
+});
+
+describe("trashed sources across Digimon", () => {
+  function source(host: string, cardId: string, sourceCardId = "BT16-085"): ServerEvent {
+    return {
+      kind: "cardsMoved",
+      instanceIds: [host],
+      cardIds: [cardId],
+      seat: OPPONENT,
+      from: "various",
+      to: "trash",
+      trashedSources: { permanentId: host, hostCardId: "BT1-010", sourceCardId },
+    };
+  }
+  it("shows one ordered panel for three hosts discarded by one effect", () => {
+    const result = announce([source("host1", "BT1-001"), source("host2", "BT1-002"), source("host3", "BT1-003")]);
+    expect(result.panels).toHaveLength(1);
+    expect(result.panels[0]).toMatchObject({
+      titleKey: "panel.trashedDigivolutionCards",
+      ordered: true,
+      cards: [
+        { cardId: "BT1-001", badge: 1 },
+        { cardId: "BT1-002", badge: 2 },
+        { cardId: "BT1-003", badge: 3 },
+      ],
+    });
+    expect(result.panelAt).toEqual([0]);
+  });
+  it("keeps different effect sources separate", () => {
+    expect(announce([source("host1", "BT1-001"), source("host2", "BT1-002", "EX12-035")]).panels).toHaveLength(2);
+  });
+  it("keeps separate activations of the same source separate", () => {
+    expect(
+      announce([
+        source("host1", "BT1-001"),
+        {
+          kind: "effectResolved",
+          seat: VIEWER,
+          sourceCardId: "BT16-085",
+          effectKey: "first",
+          description: "First activation",
+        },
+        source("host2", "BT1-002"),
+      ]).panels,
+    ).toHaveLength(2);
+  });
+});
+
+it("assigns separate discarded-source ownership to effects sharing a server batch", () => {
+  const tracker = createDiscardedSourceResolution();
+  const trigger = {
+    kind: "effectTriggered" as const,
+    seat: 0 as const,
+    sourceCardId: "BT16-085",
+    sourceInstanceId: "tamer",
+    effectKey: "first",
+    description: "Trash sources",
+  };
+  const move = {
+    kind: "cardsMoved" as const,
+    from: "various" as const,
+    to: "trash" as const,
+    seat: 1 as const,
+    instanceIds: ["one"],
+    cardIds: ["BT1-009"],
+    trashedSources: { permanentId: "host", hostCardId: "BT1-018", sourceCardId: "BT16-085" },
+  };
+  const result = announce(
+    [
+      trigger,
+      move,
+      { ...trigger, kind: "effectResolved" },
+      { ...trigger, effectKey: "second" },
+      { ...move, instanceIds: ["two"] },
+    ],
+    tracker,
+  );
+  expect(result.panels).toHaveLength(2);
+  expect(result.panels[0]?.resolutionId).not.toBe(result.panels[1]?.resolutionId);
 });

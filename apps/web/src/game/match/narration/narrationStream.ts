@@ -56,6 +56,7 @@ export interface NarrationPlacement {
 }
 
 export interface NarrationStreamDeps {
+  groupDiscardedSources: (item: NarrationItem) => NarrationItem;
   viewerSeat: Seat;
   queue: AnimationQueue;
   cardSiteRef: MutableRefObject<{
@@ -139,6 +140,7 @@ function waitsForTargets(
 
 export function narrationStream(deps: NarrationStreamDeps) {
   const {
+    groupDiscardedSources,
     viewerSeat,
     queue,
     cardSiteRef,
@@ -546,7 +548,7 @@ export function narrationStream(deps: NarrationStreamDeps) {
             targetClausesRef.current.delete(published.id);
             const now = Date.now();
             const collapseNarration = collapseNarrationRef.current;
-            const fresh = presentableNarration(published, { collapseNarration });
+            const fresh = presentableNarration(groupDiscardedSources(published), { collapseNarration });
             setNarration((items) => {
               const current = items;
               const existing = current.get(published.id);
