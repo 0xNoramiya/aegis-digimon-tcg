@@ -254,6 +254,29 @@ def test_api_attribution_reconstructs_code_calibration_and_pins_exact_response(t
     assert proof["gateFile"] == "generic/proposal-gates/proposal-0001.json"
 
 
+def test_gemini_attribution_uses_shared_cap_and_exact_provider_model(tmp_path):
+    manifest, selected, response_path, response = api_run(tmp_path)
+    prompt_path = tmp_path / "generic/reflections/0001-test.prompt.json"
+    prompt = json.loads(prompt_path.read_text())
+    config = {
+        **prompt["config"],
+        "model": "gemini/gemini-3.1-pro-preview",
+        "reasoningEffort": "medium",
+    }
+    manifest["config"]["model"] = config["model"]
+    manifest["config"]["reflectionBudget"]["reasoning_effort"] = "medium"
+    ledger_path = tmp_path / "ledger.json"
+    ledger = json.loads(ledger_path.read_text())
+    ledger["configurations"] = [ledger["config"], config]
+    ledger["reservedUsd"] = 2.9
+    ledger_path.write_text(json.dumps(ledger))
+    prompt["config"] = config
+    prompt_path.write_text(json.dumps(prompt))
+    response["model"] = "gemini-3.1-pro-preview"
+    response_path.write_text(json.dumps(response))
+    assert api_lineage(tmp_path, manifest, selected)["model"] == config["model"]
+
+
 @pytest.mark.parametrize(
     "change",
     ("unrelated_response", "wrong_model", "over_token_limit", "changed_prompt", "over_budget"),

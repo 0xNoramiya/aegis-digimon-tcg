@@ -4,7 +4,31 @@ import json
 
 import pytest
 
-from evidence import paired_evidence, policy_hash, program_hash
+from evidence import paired_evidence, policy_hash, program_hash, verify_neutral_control
+
+
+def test_neutral_control_audits_the_full_paired_validation_pool():
+    outputs = [
+        {
+            "task": {"seed": seed, "decks": decks, "learnerSeat": seat},
+            "valid": True,
+            "score": int(seat == 1),
+            "result": {"winnerSeat": 1, "turnCount": 11, "reason": "security"},
+        }
+        for seed in range(96)
+        for decks in (["a", "b"], ["b", "a"])
+        for seat in (0, 1)
+    ]
+    assert verify_neutral_control(outputs) == {
+        "games": 384,
+        "seedBlocks": 96,
+        "score": 0.5,
+        "verified": True,
+    }
+    outputs[0]["score"] = 1
+    outputs[0]["result"]["winnerSeat"] = 0
+    with pytest.raises(ValueError, match="changed outcomes"):
+        verify_neutral_control(outputs)
 
 
 def games(score, count=48):

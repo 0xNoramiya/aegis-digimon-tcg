@@ -17,8 +17,12 @@ def weight_neighbor(program: dict, random_source: random.Random, scale: float) -
     rule = random_source.choice(proposal["rules"])
     # Keep signs stable so numeric tuning cannot silently contradict authored advice.
     if rule["weight"] == 0 and program.get("basePolicy") == "projected-balanced":
-        rule["weight"] = RESIDUAL_WEIGHTS.get(rule["feature"], 0.25) * random_source.choice(
-            (0.5, 1, 2)
+        # Zero has no authored direction. Search both sides of the existing scorer,
+        # then author advice for the code-selected direction.
+        rule["weight"] = (
+            RESIDUAL_WEIGHTS.get(rule["feature"], 0.25)
+            * random_source.choice((0.5, 1, 2))
+            * random_source.choice((-1, 1))
         )
         rule["advice"] = activation_advice(rule["feature"], rule["weight"])
     elif rule["weight"] != 0:

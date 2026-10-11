@@ -34,6 +34,7 @@ def balanced_splits(decks: list[str], pairs: int) -> dict:
 @click.command()
 @click.option("--run-dir", required=True, type=click.Path(path_type=Path))
 @click.option("--deck-pool", required=True, type=click.Path(exists=True, path_type=Path))
+@click.option("--evaluation-cache", type=click.Path(path_type=Path), default=None)
 @click.option("--desktop-host", default="desktop")
 @click.option("--node", required=True)
 @click.option("--worker", required=True)
@@ -45,6 +46,7 @@ def balanced_splits(decks: list[str], pairs: int) -> dict:
 def main(
     run_dir,
     deck_pool,
+    evaluation_cache,
     desktop_host,
     node,
     worker,
@@ -98,10 +100,13 @@ def main(
             "evaluationTimeout": 600,
             "evaluationWorkers": 4,
             "balancedBatchSize": 32,
-            "evaluationCache": str(run_dir / "cache"),
+            "evaluationCache": str(
+                evaluation_cache if evaluation_cache is not None else run_dir / "cache"
+            ),
             "pairedProposalGates": True,
             "adaptiveLadder": False,
             "feedbackMode": "thin",
+            "reflectionMinibatchSize": 6,
             "trainingControl": "current projected-balanced",
             "reflectionBudgetLedger": str(run_dir.parent / "gepa-balanced-reflection-budget.json"),
         }
@@ -113,9 +118,18 @@ def main(
         "input_usd_per_million": 2,
         "output_usd_per_million": 8,
     }
-    if model != "openai/gpt-4.1-2025-04-14":
+    if model == "gemini/gemini-3.1-pro-preview":
+        # Conservative upper-context standard rates, including thinking tokens.
+        # https://ai.google.dev/gemini-api/docs/pricing#gemini-3.1-pro-preview
+        budget.update(
+            completion_tokens=8192,
+            input_usd_per_million=4,
+            output_usd_per_million=18,
+            reasoning_effort="medium",
+        )
+    elif model != "openai/gpt-4.1-2025-04-14":
         raise click.ClickException(
-            "This entry point pins GPT-4.1 snapshot pricing; use an explicit priced model configuration for alternatives"
+            "Use one of the explicitly priced GPT-4.1 or Gemini 3.1 Pro configurations"
         )
     manifest = {
         "metadata": metadata,

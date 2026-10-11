@@ -15,7 +15,7 @@ import gepa
 
 from adapter import REFLECTION_TEMPLATE, EvaluationConfig, HeuristicAdapter
 from api_reflection import ApiReflection
-from evidence import paired_evidence, policy_hash
+from evidence import paired_evidence, policy_hash, verify_neutral_control
 from ladder import choose_training_rung, ladder_tasks
 from proposals import guarded_proposer
 from session_reflection import SessionReflection
@@ -157,6 +157,13 @@ def optimize_stage(
     )
     stage_dir.mkdir(parents=True, exist_ok=True)
     (stage_dir / "splits.json").write_text(json.dumps(splits, indent=2) + "\n", encoding="utf-8")
+    if metadata.get("trainingControl") == "current projected-balanced" and all(
+        rule["weight"] == 0 for rule in initial["rules"]
+    ):
+        neutral = adapter.evaluate(splits["validation"], {"heuristic": json.dumps(initial)}).outputs
+        (stage_dir / "neutral-control.json").write_text(
+            json.dumps(verify_neutral_control(neutral), indent=2) + "\n"
+        )
     opponent = (
         "current projected-balanced control"
         if metadata.get("trainingControl") == "current projected-balanced"
@@ -216,9 +223,14 @@ def optimize_stage(
         valset=splits["validation"],
         adapter=adapter,
         reflection_lm=reflector,
-        reflection_prompt_template=REFLECTION_TEMPLATE,
+        reflection_prompt_template=None
+        if adapter.propose_new_texts is not None
+        else REFLECTION_TEMPLATE,
         reflection_minibatch_size=min(
-            24 if metadata.get("feedbackMode") == "thin" else 48, len(splits["train"])
+            metadata.get(
+                "reflectionMinibatchSize", 24 if metadata.get("feedbackMode") == "thin" else 48
+            ),
+            len(splits["train"]),
         )
         or 2,
         max_metric_calls=metric_calls,
@@ -232,7 +244,12 @@ def optimize_stage(
         display_progress_bar=False,
         raise_on_exception=True,
         callbacks=[audit],
+        stop_callbacks=lambda state: getattr(reflector, "failure", None) is not None,
     )
+    if getattr(reflector, "failure", None) is not None:
+        raise RuntimeError(
+            "API reflection failed; run stopped without selecting a policy"
+        ) from reflector.failure
     (stage_dir / "gepa-result.json").write_text(
         json.dumps(result.to_dict(), indent=2) + "\n", encoding="utf-8"
     )

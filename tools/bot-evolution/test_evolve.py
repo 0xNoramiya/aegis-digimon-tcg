@@ -1,6 +1,7 @@
 """Verify real GEPA integration, split isolation, and frozen archive semantics."""
 
 import json
+from contextlib import nullcontext
 from pathlib import Path
 
 import gepa
@@ -8,6 +9,7 @@ import pytest
 from gepa.core.adapter import EvaluationBatch
 
 from adapter import REFLECTION_TEMPLATE
+from evidence import policy_hash
 from evolve import EvolutionAudit, optimize_stage, task_sets
 
 
@@ -209,3 +211,109 @@ def test_pilot_test_split_excludes_mirrors_and_rotates_opponents():
     assert opponents == {"train": {"b"}, "validation": {"c"}, "test": {"d"}}
     for tasks in task_sets(["a", "b"], "a", archive, 8, 1).values():
         assert all(task["decks"][0] != task["decks"][1] for task in tasks)
+
+
+@pytest.mark.parametrize("api_failure", (False, True))
+def test_official_gepa_stage_runs_custom_guarded_proposer_without_duplicate_template(
+    tmp_path, monkeypatch, api_failure
+):
+    """Exercise the real GEPA public API with its custom-proposer path, without paid calls."""
+    initial = {
+        "schemaVersion": 1,
+        "basePolicy": "projected-balanced",
+        "title": "Synthetic integration",
+        "rules": [{"feature": "bias", "weight": 1, "advice": "Develop when useful."}],
+    }
+    raw = {**initial, "rules": [{**initial["rules"][0], "when": {"minimum": {"turn": 1}}}]}
+    prompts = []
+
+    class Adapter:
+        propose_new_texts = None
+
+        def __init__(self, config, metadata):
+            self.config = config
+            config.run_dir.mkdir(parents=True)
+            self.calls = 0
+
+        def evaluate(self, tasks, candidate, capture_traces=False):
+            program = json.loads(candidate["heuristic"])
+            score = int("when" in program["rules"][0])
+            outputs = []
+            for task in tasks:
+                self.calls += 1
+                output = {
+                    "task": task,
+                    "valid": True,
+                    "score": score,
+                    "policySha256": policy_hash(program),
+                    "traces": [{"kind": "main"}],
+                }
+                (self.config.run_dir / f"{self.calls:05d}.json").write_text(json.dumps(output))
+                outputs.append(output)
+            return EvaluationBatch(
+                outputs=outputs,
+                scores=[score] * len(tasks),
+                trajectories=outputs if capture_traces else None,
+            )
+
+        def make_reflective_dataset(self, candidate, evaluated, components):
+            return {
+                component: [
+                    {
+                        "Inputs": "synthetic game",
+                        "Generated Outputs": candidate,
+                        "Feedback": "condition distinguishes useful development",
+                    }
+                ]
+                for component in components
+            }
+
+    def reflect(prompt):
+        prompts.append(prompt)
+        if api_failure:
+            reflect.failure = RuntimeError("provider unavailable")
+            raise reflect.failure
+        return "```json\n" + json.dumps(raw) + "\n```"
+
+    monkeypatch.setattr("evolve.HeuristicAdapter", Adapter)
+    monkeypatch.setattr("evolve.SessionReflection", lambda directory: reflect)
+    splits = {
+        name: [{"seed": base + n, "learnerSeat": 0} for n in range(48)]
+        for name, base in (("train", 0), ("validation", 100))
+    }
+    context = (
+        pytest.raises(RuntimeError, match="API reflection failed") if api_failure else nullcontext()
+    )
+    with context:
+        selected = optimize_stage(
+            stage="generic",
+            initial=initial,
+            splits=splits,
+            run_dir=tmp_path,
+            node="unused",
+            simulations=1,
+            metric_calls=384,
+            reflection_model="session",
+            metadata={
+                "worker": "unused",
+                "engineSha256": "engine",
+                "runnerSha256": "runner",
+                "evaluationTimeout": 60,
+                "evaluationWorkers": 4,
+                "evaluationCache": str(tmp_path / "cache"),
+                "seedProgram": initial,
+                "pairedProposalGates": True,
+            },
+        )
+    assert prompts and "Focus on structural edits" in prompts[0]
+    if api_failure:
+        assert len(prompts) == 1
+        assert not (tmp_path / "generic/selected.json").exists()
+        return
+    assert selected["program"] == raw and selected["validationScore"] == 1
+    assert selected["candidates"] >= 2 and selected["validEvaluatedProposals"] >= 1
+    gates = [
+        json.loads(path.read_text())
+        for path in (tmp_path / "generic/proposal-gates").glob("proposal-*.json")
+    ]
+    assert any(gate.get("pairedEvidence", {}).get("accepted") is True for gate in gates)

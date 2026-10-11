@@ -39,6 +39,36 @@ def policy_hash(program: dict[str, Any]) -> str:
     return hashlib.sha256(json.dumps(normalized(identity), sort_keys=True).encode()).hexdigest()
 
 
+def verify_neutral_control(outputs: list[dict]) -> dict:
+    """Seat swaps of a zero residual must replay the same balanced game."""
+    blocks = defaultdict(list)
+    for output in outputs:
+        if output.get("valid") is not True:
+            raise ValueError("Neutral control audit requires valid completed games")
+        blocks[output["task"]["seed"]].append(output)
+    if not blocks:
+        raise ValueError("Neutral control audit requires paired games")
+    for games in blocks.values():
+        orders = defaultdict(dict)
+        if len(games) != 4 or sum(game["score"] for game in games) != 2:
+            raise ValueError("Neutral control changed outcomes after swapping learner seats")
+        for game in games:
+            order = tuple(game["task"]["decks"])
+            seat = game["task"]["learnerSeat"]
+            if seat in orders[order]:
+                raise ValueError("Neutral control audit repeated a task")
+            orders[order][seat] = game
+        if len(orders) != 2 or any(set(pair) != {0, 1} for pair in orders.values()):
+            raise ValueError("Neutral control audit needs both assignments and both learner seats")
+        for pair in orders.values():
+            if any(
+                pair[0]["result"].get(key) != pair[1]["result"].get(key)
+                for key in ("winnerSeat", "turnCount", "reason")
+            ):
+                raise ValueError("Neutral control changed the seeded game")
+    return {"games": len(outputs), "seedBlocks": len(blocks), "score": 0.5, "verified": True}
+
+
 def paired_evidence(
     selected: list[dict], control: list[dict], alpha: float = 0.05, *, method: str = "hoeffding"
 ) -> dict:

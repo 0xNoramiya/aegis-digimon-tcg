@@ -68,6 +68,11 @@ def test_neutral_residual_weights_activate_with_code_owned_advice():
         "rules": [{"feature": "cost", "weight": 0, "advice": "Use balanced."}],
     }
     neighbor = weight_neighbor(original, random.Random(71), 2)
-    assert neighbor["rules"][0]["weight"] in (-0.5, -1, -2)
-    assert "caution" in neighbor["rules"][0]["advice"]
+    assert neighbor["rules"][0]["weight"] in (-0.5, -1, -2, 0.5, 1, 2)
+    assert ("caution" in neighbor["rules"][0]["advice"]) == (neighbor["rules"][0]["weight"] < 0)
+    directions = {
+        weight_neighbor(original, random.Random(seed), 2)["rules"][0]["weight"] > 0
+        for seed in range(20)
+    }
+    assert directions == {False, True}
     assert original["rules"][0]["weight"] == 0

@@ -13,6 +13,7 @@ from pathlib import Path
 import click
 from gepa.strategies.instruction_proposal import InstructionProposalSignature
 
+from api_reflection import validate_ledger
 from evidence import policy_hash
 from residual_weights import RESIDUAL_WEIGHTS
 
@@ -225,11 +226,17 @@ def api_lineage(run_dir: Path, manifest: dict, selected: dict) -> dict:
         "inputUsdPerMillion": budget["input_usd_per_million"],
         "outputUsdPerMillion": budget["output_usd_per_million"],
     }
+    if "reasoning_effort" in budget:
+        config["reasoningEffort"] = budget["reasoning_effort"]
     ledger_path = Path(manifest["metadata"]["reflectionBudgetLedger"])
     if not ledger_path.is_file():
         raise ValueError("Missing run-wide API budget ledger")
     ledger = json.loads(ledger_path.read_text())
-    if ledger["config"] != config or not 0 < ledger["reservedUsd"] <= config["dollarCap"]:
+    validate_ledger(ledger, config)
+    if (
+        config not in ledger.get("configurations", [ledger["config"]])
+        or not 0 < ledger["reservedUsd"]
+    ):
         raise ValueError("API reflection model, pricing or budget changed")
     calibrated = json.loads((run_dir / "generic/numeric/selected.json").read_text())["program"]
     for gate in (run_dir / "generic/proposal-gates").glob("proposal-*.json"):
@@ -245,9 +252,11 @@ def api_lineage(run_dir: Path, manifest: dict, selected: dict) -> dict:
             )
             prompt = json.loads(prompt_path.read_text())
             response = json.loads(response_path.read_text())
-            if prompt.get("config") != config or response.get("model") != config[
-                "model"
-            ].removeprefix("openai/"):
+            # LiteLLM responses identify the provider model without its route prefix.
+            if (
+                prompt.get("config") != config
+                or response.get("model") != config["model"].split("/", 1)[-1]
+            ):
                 continue
             prompt_sha = hashlib.sha256(prompt["prompt"].encode()).hexdigest()
             if (

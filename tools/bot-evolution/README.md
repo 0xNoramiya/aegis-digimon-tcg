@@ -16,8 +16,8 @@ preserving each game's full-task cache identity, result and audit record.
 
 ```sh
 tools/bot-evolution/.venv/bin/python tools/bot-evolution/learn_balanced.py \
-  --run-dir artifacts/bot-evolution/gepa-balanced-v2 \
-  --deck-pool artifacts/bot-evolution/gepa-balanced-v2/deck-pool.json \
+  --run-dir artifacts/bot-evolution/gepa-balanced-v4 \
+  --deck-pool artifacts/bot-evolution/gepa-balanced-v4/deck-pool.json \
   --node /home/vinicius/aegis-bot-lab/toolchain/node-v26.10.0-linux-x64/bin/node \
   --worker /home/vinicius/aegis-bot-lab/checkouts/gepa-delivery-68ed0fef6d/apps/api/dist/bot/evolution/evaluateCli.js \
   --pairs 96 --metric-calls 6144 --numeric-proposals 24
@@ -29,6 +29,13 @@ Train and selection use different opponent pairings. Certification excludes both
 pairings in either orientation and uses fresh seeds. Invalid or timed-out games
 remain unscored and prevent acceptance. The pinned GPT-4.1 snapshot uses a 4,096
 completion-token limit and a conservative US$5 ledger shared across run directories.
+The explicitly priced `--model gemini/gemini-3.1-pro-preview` alternative uses 8,192
+tokens including thinking, medium reasoning, and conservative upper-context rates
+from the [official pricing table](https://ai.google.dev/gemini-api/docs/pricing).
+Switching providers preserves every reservation and the same total cap. Provider
+failure stops the optimizer after one failed request and never selects a policy.
+Before tuning, all validation seed blocks must pass a neutral-control seat-swap audit.
+Neutral numeric rules explore both coefficient directions with code-authored advice.
 
 `certify_balanced.py` requires the selected policy to reconstruct from an accepted
 GEPA proposal and its pinned API prompt/response, after code calibration. It freezes
