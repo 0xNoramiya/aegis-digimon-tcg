@@ -7,6 +7,8 @@ import "../../api/dist/cards/index.js";
 import { BotPlayer } from "../../api/dist/bot/BotPlayer.js";
 import type { DecisionRequest, GameState, Intent } from "@aegis/shared";
 import { Edge } from "./edge";
+import { configureLocalScenario, clearLocalScenario } from "../../api/dist/engine/scenario/local.js";
+import type { ScenarioFixture } from "../../api/src/engine/scenario/types.js";
 
 const EDGE_PORT = Number(process.env.AEGIS_E2E_EDGE_PORT ?? 2569);
 const SERVER_PORT = Number(process.env.AEGIS_E2E_SERVER_PORT ?? 2570);
@@ -27,6 +29,7 @@ export async function startBrowserServer({
   botMainIntents?: Intent[];
   holdBotAfterTurn?: number;
 } = {}) {
+  const fixtureBotTurnWindow = holdBotAfterTurn;
   const scriptedAnswers = [...(botOptionalScript?.answers ?? [])];
   const scriptedMainIntents = botMainIntents === undefined ? undefined : [...botMainIntents];
   const scriptedBots = new WeakSet<object>();
@@ -95,6 +98,11 @@ export async function startBrowserServer({
 
   return {
     edge,
+    useFixture: (fixture: ScenarioFixture) => {
+      const references = configureLocalScenario(fixture);
+      holdBotAfterTurn = fixture.turnCount + fixtureBotTurnWindow;
+      return references;
+    },
     /** Bypasses the edge, so it survives `edge.stop()`. */
     directEndpoint: `ws://127.0.0.1:${serverPort}`,
     pendingBotDecision: () => queued[0]?.request,
@@ -104,6 +112,7 @@ export async function startBrowserServer({
       originalDecision.call(next.bot, next.request);
     },
     close: async () => {
+      clearLocalScenario();
       BotPlayer.prototype.onDecisionRequested = originalDecision;
       phases.onOwnPhase = originalPhase;
       autonomous.runBreedingPhase = originalBreeding;

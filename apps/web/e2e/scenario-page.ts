@@ -4,6 +4,7 @@ import { RED_DECK } from "../../api/dist/engine/testDecks.js";
 import { getCardDefinition, type DecisionRequest, type Intent } from "@aegis/shared";
 import { startBrowserServer } from "./server";
 import type {} from "./harness";
+import type { ScenarioFixture, ScenarioReferences } from "../../api/src/engine/scenario/types.js";
 
 type Snapshot = ReturnType<Window["browserTestSnapshot"]>;
 type Decision = NonNullable<Snapshot["pendingDecision"]> &
@@ -26,11 +27,20 @@ export class ScenarioPage {
   readonly errors: string[] = [];
   readonly decisionTimings: { decisionId: string; kind: string; sourceCardId?: string; delayMs: number }[] = [];
   private speed: "normal" | "slow" = "normal";
-  constructor(readonly page: Page) {
+  constructor(
+    readonly page: Page,
+    private readonly useFixture?: (fixture: ScenarioFixture) => ScenarioReferences,
+  ) {
     page.on("pageerror", (error) => this.errors.push(error.message));
     page.on("console", (message) => {
       if (message.type() === "error") this.errors.push(message.text());
     });
+  }
+  async openFixture(fixture: ScenarioFixture, speed: "normal" | "slow" = "normal") {
+    if (!this.useFixture) throw new Error("This ScenarioPage has no fixture server");
+    const references = this.useFixture(fixture);
+    await this.open("local-fixture", speed, fixture.turnSeat === 0 ? "end" : "none");
+    return references;
   }
   /** `none`: the scenario opens on the opponent's turn, or the engine passes this Breeding phase itself. */
   async open(id: string, speed: "normal" | "slow" = "normal", breeding: "end" | "move" | "none" = "end") {
@@ -342,7 +352,7 @@ export const test = base.extend<{
       holdBotAfterTurn,
       botMainIntents,
     });
-    const scenario = new ScenarioPage(page);
+    const scenario = new ScenarioPage(page, server.useFixture);
     try {
       await use(scenario);
     } finally {

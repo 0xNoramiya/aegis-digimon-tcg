@@ -1,3 +1,4 @@
+import { hasLocalScenario, layLocalScenario } from "./scenario/local.js";
 import { CARDS_TURNS_SCENARIO_IDS, layCardsTurnsScenario } from "./cardsTurnsScenarios.js";
 import { GITHUB_TIMING_SCENARIO_IDS, layGithubTimingScenario } from "./githubTimingScenarios.js";
 import { ISSUE_REPRO_SCENARIO_IDS, layIssueReproScenario } from "./issueReproScenarios.js";
@@ -61,6 +62,7 @@ import {
  * a developer lands mid-match instead of playing the opening turns every time.
  */
 export const DEV_SCENARIO_IDS = [
+  "local-fixture",
   ...CARDS_TURNS_SCENARIO_IDS,
   ...GITHUB_TIMING_SCENARIO_IDS,
   "arena-raid-immune-atratusmon",
@@ -436,10 +438,6 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback27-chuumon-opponent-turn",
   "arena-feedback28-security-reveal-before-prompt",
   "arena-discord-ignitemon-by-cost-optional",
-  "arena-discord-invasion-titans-fugamon",
-  "arena-discord-invasion-titans-hyogamon",
-  "arena-discord-invasion-titans-ogremon",
-  "arena-discord-invasion-titans-two-ogres",
   "arena-discord-metaletemon-redirect-player",
   "arena-discord-lordknightmon-ex13-darkknightmon",
   "arena-discord-lordknightmon-bt22-skullknightmon",
@@ -554,7 +552,11 @@ export const DEV_SCENARIO_IDS = [
 export type DevScenarioId = (typeof DEV_SCENARIO_IDS)[number];
 
 export function isDevScenarioId(value: unknown): value is DevScenarioId {
-  return typeof value === "string" && (DEV_SCENARIO_IDS as readonly string[]).includes(value);
+  return (
+    typeof value === "string" &&
+    (DEV_SCENARIO_IDS as readonly string[]).includes(value) &&
+    (value !== "local-fixture" || hasLocalScenario())
+  );
 }
 
 /**
@@ -7667,39 +7669,6 @@ function layFeedback28SecurityRevealBeforePromptScenario(state: GameState): void
   state.memory = 3;
 }
 
-/** Discord 1558856866413412413: Invasion draws the Ogres immediately before discarding them. */
-function layDiscordInvasionTitansScenario(state: GameState, ogreCardId: string, twoOgres = false): void {
-  for (const seat of [0, 1] as const) {
-    const player = state.players[seat]!;
-    insertCard(player, Zone.EggDeck, faceDownCard(`dev-invasion-egg-${seat}`, "BT1-001", seat));
-    for (let index = 0; index < 3; index += 1) {
-      insertCard(player, Zone.Security, faceDownCard(`dev-invasion-security-${seat}-${index}`, "BT1-009", seat));
-    }
-    const deck =
-      seat === 0
-        ? ["BT1-010", ogreCardId, twoOgres ? "BT24-026" : "BT1-011", "BT1-012", "BT1-014", "BT1-015", "BT1-016"]
-        : Array<string>(8).fill("BT1-010");
-    deck.forEach((cardId, index) =>
-      insertCard(player, Zone.Deck, faceDownCard(`dev-invasion-deck-${seat}-${index}`, cardId, seat)),
-    );
-  }
-  const human = state.players[0]!;
-  placePermanent(human, establishedDigimon(0, ["BT24-042"], "-invasion-purple-source"));
-  for (const [index, cardId] of [
-    "BT24-098",
-    "BT1-009",
-    "BT1-017",
-    "BT1-018",
-    ...(twoOgres ? ["BT1-019"] : []),
-  ].entries()) {
-    insertCard(human, Zone.Hand, faceDownCard(`dev-invasion-hand-${index}`, cardId, 0));
-  }
-  state.turnSeat = 0;
-  state.turnCount = 0;
-  state.isFirstPlayersFirstTurn = false;
-  state.memory = 5;
-}
-
 /**
  * Discord 1558408701633757194: Ignitemon (BT11-076) deleted another of your level 3 Digimon and
  * an opponent's level 3 Digimon on attack without asking. "By deleting 1 of your other Digimon"
@@ -11255,6 +11224,7 @@ function laySanzomonSearchScenario(state: GameState, decks: readonly [Decklist, 
 }
 
 const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
+  "local-fixture": layLocalScenario,
   "arena-ex6-sanzomon-named-search": laySanzomonSearchScenario,
   "arena-heavy-mobile-successive-machines": layHeavyMobileScenario,
   ...(Object.fromEntries(
@@ -11697,10 +11667,6 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback27-chuumon-opponent-turn": layFeedback27ChuumonOpponentTurnScenario,
   "arena-feedback28-security-reveal-before-prompt": layFeedback28SecurityRevealBeforePromptScenario,
   "arena-discord-ignitemon-by-cost-optional": layDiscordIgnitemonByCostScenario,
-  "arena-discord-invasion-titans-fugamon": (state) => layDiscordInvasionTitansScenario(state, "BT24-013"),
-  "arena-discord-invasion-titans-hyogamon": (state) => layDiscordInvasionTitansScenario(state, "BT24-026"),
-  "arena-discord-invasion-titans-ogremon": (state) => layDiscordInvasionTitansScenario(state, "BT24-045"),
-  "arena-discord-invasion-titans-two-ogres": (state) => layDiscordInvasionTitansScenario(state, "BT24-013", true),
   "arena-discord-metaletemon-redirect-player": layDiscordMetalEtemonRedirectPlayerScenario,
   "arena-discord-lordknightmon-ex13-darkknightmon": layDiscordLordKnightmonEx13DarkKnightmonScenario,
   "arena-discord-lordknightmon-bt22-skullknightmon": layDiscordLordKnightmonBt22SkullKnightmonScenario,

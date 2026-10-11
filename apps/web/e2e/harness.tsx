@@ -40,6 +40,13 @@ declare global {
 // Match App bootstrap so actual saved theme preferences reach production CSS.
 applyDarkMode();
 
+// The local CLI serves options beside this entry. Automated tests supply them before navigation.
+if (!window.browserTestOptions) {
+  const response = await fetch("/e2e/local-scenario.json");
+  if (!response.ok) throw new Error("No local scenario configured; start pnpm scenario open <fixture>");
+  window.browserTestOptions = await response.json();
+}
+
 const presentationSteps: {
   id: string;
   track: string;

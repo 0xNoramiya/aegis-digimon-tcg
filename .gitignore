@@ -63,3 +63,6 @@ apps/web/public/dev/modal-review/manifest.json
 
 # Match replays fetched or extracted for local debugging (pnpm replay); hold decklists and actions
 /replays/
+
+# Throwaway scenario fixtures for pnpm scenario open (committed regression fixtures live with tests)
+/.local/scenarios/

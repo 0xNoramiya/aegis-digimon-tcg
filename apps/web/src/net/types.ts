@@ -30,6 +30,7 @@ export interface AegisJoinOptions {
   presentationPacing?: "current" | "sequential";
   /** Dev-only: ask a bot room for a hand-laid board instead of the pre-game procedure. */
   devScenario?:
+    | "local-fixture"
     | "arena-github-5374-up-to-four-trash"
     | "arena-github-5410-tamer-inherited-deletion"
     | "arena-github-5412-kapurimon-illegal-colors"
@@ -683,10 +684,6 @@ export interface AegisJoinOptions {
     | "arena-feedback27-chuumon-opponent-turn"
     | "arena-feedback28-security-reveal-before-prompt"
     | "arena-discord-ignitemon-by-cost-optional"
-    | "arena-discord-invasion-titans-fugamon"
-    | "arena-discord-invasion-titans-hyogamon"
-    | "arena-discord-invasion-titans-ogremon"
-    | "arena-discord-invasion-titans-two-ogres"
     | "arena-discord-metaletemon-redirect-player"
     | "arena-discord-lordknightmon-ex13-darkknightmon"
     | "arena-discord-lordknightmon-bt22-skullknightmon"

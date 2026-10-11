@@ -1865,22 +1865,6 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: 'Discord 1558408701633757194. Encerre a criação. Ataque o jogador com Ignitemon (BT11-076). O [Ao Atacar] pergunta se você quer excluir 1 dos seus outros Digimon: o custo "Ao excluir" é opcional (CR 15-7-1), mesmo com só o Monodramon para pagar e só o Agumon do bot como alvo. Recuse: o seu Monodramon e o Agumon do bot ficam no campo, e o ataque continua para a segurança. Se aceitar, o Monodramon é excluído e depois o Agumon (nível 3) é excluído.',
     en: "Discord 1558408701633757194. End breeding. Attack the player with Ignitemon (BT11-076). Its [When Attacking] effect asks whether to delete 1 of your other Digimon: the \"By deleting\" cost is optional (CR 15-7-1), even with only Monodramon to pay it and only the bot's Agumon as a target. Decline: your Monodramon and the bot's Agumon stay on the field, and the attack goes on to the security check. If you accept, Monodramon is deleted, then Agumon (level 3) is deleted.",
   },
-  "arena-discord-invasion-titans-fugamon": {
-    ptBR: "Discord 1558856866413412413. Encerre a criação e use Invasion of the Titans (custo 3). Descarte o Fugamon recém-comprado e Monodramon: restam 4 cartas. Resolva a compra do Fugamon: a mão fica com 5 cartas, a memória fica em 2 e Invasion permanece no campo.",
-    en: "Discord 1558856866413412413. End breeding and use Invasion of the Titans (cost 3). Trash the newly drawn Fugamon and Monodramon: 4 cards remain. Resolve Fugamon's draw: the hand reaches 5 cards, memory stays at 2, and Invasion remains in the battle area.",
-  },
-  "arena-discord-invasion-titans-hyogamon": {
-    ptBR: "Discord 1558856866413412413. Encerre a criação e use Invasion of the Titans (custo 3). Descarte o Hyogamon recém-comprado e Monodramon: restam 4 cartas. Resolva a compra do Hyogamon: a mão fica com 5 cartas, a memória fica em 2 e Invasion permanece no campo.",
-    en: "Discord 1558856866413412413. End breeding and use Invasion of the Titans (cost 3). Trash the newly drawn Hyogamon and Monodramon: 4 cards remain. Resolve Hyogamon's draw: the hand reaches 5 cards, memory stays at 2, and Invasion remains in the battle area.",
-  },
-  "arena-discord-invasion-titans-ogremon": {
-    ptBR: "Discord 1558856866413412413. Encerre a criação e use Invasion of the Titans (custo 3). Descarte o Ogremon recém-comprado e Monodramon: restam 4 cartas. Resolva a compra do Ogremon: a mão fica com 5 cartas, a memória fica em 2 e Invasion permanece no campo.",
-    en: "Discord 1558856866413412413. End breeding and use Invasion of the Titans (cost 3). Trash the newly drawn Ogremon and Monodramon: 4 cards remain. Resolve Ogremon's draw: the hand reaches 5 cards, memory stays at 2, and Invasion remains in the battle area.",
-  },
-  "arena-discord-invasion-titans-two-ogres": {
-    ptBR: "Discord 1558856866413412413; Q5583. Encerre a criação e use Invasion of the Titans (custo 3). Descarte Fugamon e Hyogamon, ambos recém-comprados: restam 5 cartas. Resolva qualquer um primeiro: compra 1 e a mão sobe para 6. O segundo não compra, pois o limite é verificado na ativação. Invasion fica no campo e a memória fica em 2.",
-    en: "Discord 1558856866413412413; Q5583. End breeding and use Invasion of the Titans (cost 3). Trash both newly drawn cards, Fugamon and Hyogamon: 5 cards remain. Resolve either first: draw 1, bringing the hand to 6. The second draws nothing because the limit is checked at activation. Invasion remains in the battle area and memory stays at 2.",
-  },
   "arena-discord-metaletemon-redirect-player": {
     ptBR: 'Discord 1558441146781536346. A partida começa no turno do bot. O Agumon do bot ataca seu MetalEtemon (EX5-054) suspenso. Ative o [Turno do Oponente] de MetalEtemon e coloque o Etemon da mão no topo da sua segurança. Aceite trocar o alvo. As opções são MetalEtemon e "Sua segurança": o jogador do texto é você (Q3647), nunca o oponente. Escolha "Sua segurança": o Etemon (7000 DP) é revelado da sua segurança e exclui o Agumon (2000 DP). MetalEtemon fica no campo e a segurança do bot não muda.',
     en: "Discord 1558441146781536346. The match opens on the bot's turn. The bot's Agumon attacks your suspended MetalEtemon (EX5-054). Activate MetalEtemon's [Opponent's Turn] effect and place the Etemon from your hand on top of your security stack. Accept switching the target. The choices are MetalEtemon and \"Your security\": the player in the text is you (Q3647), never your opponent. Choose \"Your security\": the Etemon (7000 DP) is revealed from your security and deletes Agumon (2000 DP). MetalEtemon stays on the field, and the bot's security does not change.",
@@ -3493,10 +3477,6 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-feedback27-chuumon-opponent-turn", "Feedback #27 · Chuumon · On Play only on opponent's turn"],
   ["arena-feedback28-security-reveal-before-prompt", "Feedback #28 · timed · security card shown before Decoy"],
   ["arena-discord-ignitemon-by-cost-optional", "Discord · Ignitemon asks before its By-deleting cost"],
-  ["arena-discord-invasion-titans-fugamon", "Discord · Invasion draws and trashes Fugamon"],
-  ["arena-discord-invasion-titans-hyogamon", "Discord · Invasion draws and trashes Hyogamon"],
-  ["arena-discord-invasion-titans-ogremon", "Discord · Invasion draws and trashes Ogremon"],
-  ["arena-discord-invasion-titans-two-ogres", "Discord · Invasion and two Ogres at the hand limit"],
   ["arena-discord-metaletemon-redirect-player", "Discord · MetalEtemon switches the attack to your own security"],
   ["arena-discord-lordknightmon-ex13-darkknightmon", "EX13 LordKnightmon · plays DarkKnightmon from hand or trash"],
   ["arena-discord-lordknightmon-bt22-skullknightmon", "BT22 LordKnightmon · plays a revealed SkullKnightmon"],

@@ -22,3 +22,4 @@ export {
 export { observe } from "./observe.js";
 export { advance } from "./advance.js";
 export { irNode, type IrNode } from "./irNode.js";
+export { setupScenario } from "./scenario.js";

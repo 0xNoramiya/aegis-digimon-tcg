@@ -1,6 +1,6 @@
 ---
 name: fix-discord-bug
-description: Audit, fix, and test an Aegis bug reported in the Discord bug channel. Reads the report, reproduces the match from its replay (or checks the production logs on the Oracle VPS), confirms the printed card text, fixes the card IR or engine in a fix/ worktree branch, sweeps for other affected cards, and adds a playable dev arena scenario. Use when the user asks to fix a new or specific Discord bug.
+description: Audit, fix, and test an Aegis bug reported in the Discord bug channel. Reads the report, reproduces the match from its replay (or checks the production logs on the Oracle VPS), confirms the printed card text, fixes the card IR or engine in a fix/ worktree branch, sweeps for other affected cards, and adds behavior-named regressions with reusable fixtures. Use when the user asks to fix a new or specific Discord bug.
 ---
 
 # Fix a Discord bug
@@ -98,12 +98,13 @@ sometimes missing from `cards.json`. They need both the catalog text and the IR 
 - Decide whether the defect is card data, card IR, or a shared engine path. Prefer the
   narrowest correct fix. Widen the engine only when the rules say every card behaves that
   way, and check that the wider change does not open an illegal choice elsewhere.
-- Write the regression test first in `<ID>.test.ts`, drive it through public intents
+- Write the regression test first in `engine/scenarios/<behavior>.test.ts`, drive it through public intents
   (`applyIntent`), and confirm it fails without the fix (red), then passes (green).
   With a replay, start from the scaffold: replace its `it.todo` with the expected
   behaviour at input N. Keep or replace it with a minimal testkit board, whichever states
   the rule more clearly.
-  Name the Discord bug id in the test title.
+  Name files and suites after the protected behavior. Report IDs are optional provenance
+  comments; follow the regression fixture conventions in `AGENTS.md`.
 - After changing a card module, sync its IR snapshot with Node 26:
 
   ```bash
@@ -132,31 +133,27 @@ temporary vitest file that you delete afterwards.
 Classify each hit: same bug (fix it), latent (no card reaches it today), or a different
 defect (report it, don't fix it silently). Confirm data gaps on the official image.
 
-## 7. Add the dev arena scenario
+## 7. Share regression preparation when needed
 
-Follow an existing entry such as `arena-ex7-seventh-fascination-turn`:
+Use the [regression fixture pattern](../../../docs/TESTING.md): a behavior-named
+`<behavior>.fixture.ts` beside the engine regression, with semantic aliases and
+explicit turn-start state. API tests use `setupScenario` from `engine/testkit`; browser tests
+use `ScenarioPage.openFixture` and operate the real UI. Add E2E when prompts,
+presentation, queue completion, or synchronization are part of the defect.
 
-1. `apps/api/src/engine/devScenario.ts`: a `lay<Name>Scenario` layout, its id in
-   `DEV_SCENARIO_IDS`, and its entry in `LAYOUTS`.
-2. `apps/web/src/net/types.ts`: the id in the scenario union.
-3. `apps/web/src/dev/LiveArenaDemo.tsx`: `SCENARIO_NOTES` (ptBR and en steps with the
-   expected result) and `SCENARIO_OPTIONS` (menu label).
-4. `apps/api/src/engine/<name>Scenario.test.ts`: `layDevScenario`, then
-   `startTurnLoop()` → wait for `Phase.Breeding` → `endPhase` →
-   `advance(engine).waitForMainPhase(0)` before the first intent.
+Manual reproduction is on demand with `pnpm scenario open <behavior|fixture.ts>`.
+Temporary experiments belong in ignored `.local/scenarios/`. A regression does
+not require entries in `devScenario.ts`, the client scenario union, or the arena
+menu. Add a permanent demo only when the user asks for one.
 
-Gotchas:
-
-- `autoSelectCards` picks the first legal candidate. Keep the repro state unambiguous.
-- An earlier action's effect can consume later materials. Order the steps, and write the
-  same order in the arena note.
-- Wait for the final state and `pendingDecision === undefined`, not for an intermediate
-  memory value.
+Wait for the final state and `pendingDecision === undefined`, not intermediate
+memory. Resolve and assert the relevant choices explicitly, and finish running
+turn loops in cleanup.
 
 ## 8. Gates
 
 ```bash
-pnpm --filter @aegis/api exec vitest run src/cards/<SET> <engine suites touched> src/engine/<name>Scenario.test.ts
+pnpm --filter @aegis/api exec vitest run src/cards/<SET> <engine suites touched> src/engine/scenarios/<behavior>.test.ts
 pnpm --filter @aegis/api typecheck
 pnpm --filter @aegis/web exec tsc --noEmit -p tsconfig.json
 pnpm exec oxlint <changed files>
@@ -171,4 +168,4 @@ pnpm exec oxfmt --check <changed files>
 - Commit only when the user asks: conventional commits, one concern each, no AI
   attribution.
 - Report: the cause of each finding, the fix, the red/green evidence, the sweep results
-  split by class, the scenario ids, and anything the report got wrong.
+  split by class, the behavior names and fixture paths, and anything the report got wrong.
