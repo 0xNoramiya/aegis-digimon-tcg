@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { performance } from "node:perf_hooks";
 import type { Seat } from "@aegis/shared/schema/enums";
 
+process.env.NODE_ENV = "test";
 const writeReport = process.stdout.write.bind(process.stdout);
 process.stdout.write = process.stderr.write.bind(process.stderr);
 const { runEvolutionMatch } = await import("#api/bot/evolution/evolutionMatch");
@@ -118,6 +119,13 @@ async function main(): Promise<void> {
     JSON.stringify({
       schemaVersion: 2,
       nodeVersion: process.version,
+      nodeEnvironment: process.env.NODE_ENV,
+      acceleration: [
+        "prefix-main-action-catalog",
+        "guarded-action-index",
+        "rejection-only-rollout-events",
+        "disabled-rollout-latency-sampling",
+      ],
       simulations: input.simulations,
       mode,
       ...(mode === "single-search-after-prefix" ? { startAfterDecisions, maxSearches: 1 } : {}),

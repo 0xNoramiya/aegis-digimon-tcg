@@ -38,6 +38,8 @@ export interface MatchOptions {
   turnLimit?: number;
   /** Keep the public event stream for deterministic presentation analysis. */
   captureEvents?: boolean;
+  captureEventFilter?: (event: ServerEvent) => boolean;
+  measureDecisionLatencies?: boolean;
   /** Decode both client projections after each action and check hidden zones. */
   verifyProjections?: boolean;
 }
@@ -152,7 +154,7 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
     },
     emit: (event: ServerEvent) => {
       if (closed) return;
-      events?.push(structuredClone(event));
+      if (events !== undefined && (options.captureEventFilter?.(event) ?? true)) events.push(structuredClone(event));
       recordEvent(event, state, stats);
       if (event.kind === "gameOver") {
         finished = true;
@@ -208,7 +210,10 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
       config.policy ??
       createEvaluationPolicy({ profile: resolveBotProfile(config.profile), seed });
     bots[seat] = new BotPlayer(seat, state, send, {
-      policy: timed(policy, stats[seat].decisionLatenciesMs, () => !closed),
+      policy:
+        options.measureDecisionLatencies === false
+          ? policy
+          : timed(policy, stats[seat].decisionLatenciesMs, () => !closed),
       seed,
       thinkDelay: microtask,
       ...(config.policyTimeoutMs === undefined ? {} : { policyTimeoutMs: config.policyTimeoutMs }),

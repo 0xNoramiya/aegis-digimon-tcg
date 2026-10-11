@@ -1,4 +1,4 @@
-import type { Seat } from "@aegis/shared";
+import type { Seat, ServerEvent } from "@aegis/shared";
 import type { GameEngine } from "../../engine/GameEngine.js";
 import type { Decklist } from "../../engine/testDecks.js";
 import { runBotMatch, type MatchResult } from "../matchHarness.js";
@@ -157,6 +157,12 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
       seats: [seats[0]!, seats[1]!],
       turnLimit: options.turnLimit ?? 60,
       captureEvents: true,
+      ...(options.mcts?.reusePrefixActions === false
+        ? {}
+        : {
+            captureEventFilter: (event: ServerEvent) => event.kind === "actionRejected",
+            measureDecisionLatencies: false,
+          }),
       signal: AbortSignal.any([control.signal, signal]),
     });
     const valid = reachedRoot && !mismatch && validEvolutionGame(result);
