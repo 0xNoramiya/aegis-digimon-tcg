@@ -4470,3 +4470,32 @@ it.each([0, 1] as const)("GitHub #5347: seat %i sees P-220's separate optional d
   fireEvent.click(screen.getByRole("button", { name: "None" }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "chooseTargets", instanceIds: [] });
 });
+
+it("#60 visibly identifies the copy trashed from LadyDevimon's sources and sends its exact identity", () => {
+  const onTogglePick = vi.fn<(instanceId: string) => void>();
+  render(
+    <I18nProvider>
+      <DecisionOverlay
+        request={{
+          decisionId: "source-copy",
+          seat: 0,
+          kind: "selectCards",
+          promptText: "Choose an Option",
+          options: { candidateInstanceIds: ["old-shot", "source-shot"], min: 1, max: 1 },
+        }}
+        candidates={[
+          { instanceId: "old-shot", cardId: "EX7-071", zone: "trash" },
+          { instanceId: "source-shot", cardId: "EX7-071", zone: "trash", trashOriginCardId: "BT25-083" },
+        ]}
+        picks={[]}
+        onTogglePick={onTogglePick}
+        onRespond={vi.fn<() => void>()}
+      />
+    </I18nProvider>,
+  );
+  expect(screen.getByText("copy 1 of 2")).toBeTruthy();
+  expect(screen.getByText("copy 2 of 2")).toBeTruthy();
+  expect(screen.getByText("Trashed from LadyDevimon’s sources")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: /Trashed from LadyDevimon’s sources/ }));
+  expect(onTogglePick).toHaveBeenCalledWith("source-shot");
+});

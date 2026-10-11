@@ -162,9 +162,14 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       }
       // Pass includeTrash=false: a card already in trash must not be removed-then-
       // re-pushed (this verb moves cards INTO trash, never out of it).
+      const sourceHost = hostOfStackInstance(state, instanceId);
+      const sourceHostCardId = sourceHost
+        ? access.permanentById(sourceHost.hostPermanentId)?.topCard.cardId
+        : undefined;
       const removed = removeLooseInstance(state, instanceId, false);
       if (removed === undefined) continue;
       insertFaceUpIntoTrash(removed);
+      removed.trashOriginCardId = opts?.trashedSources?.hostCardId ?? sourceHostCardId ?? "";
       moved.push(removed);
     }
     applyOverflow(

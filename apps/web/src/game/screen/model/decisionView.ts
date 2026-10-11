@@ -28,7 +28,7 @@ export type DecisionView = {
   /** The card whose clause is being asked about, named on the board prompt. */
   decisionSourceCardId: string | undefined;
   decisionSelectable: Set<string>;
-  decisionVisible: ReturnType<typeof decisionVisibleCards>;
+  decisionVisible: (ReturnType<typeof decisionVisibleCards>[number] & { trashOriginCardId?: string })[];
   decisionVisibleCardIds: Map<string, string | undefined>;
   decisionInstanceColors: ReturnType<typeof decisionCardColors>;
   decisionDifferentColors: boolean;
@@ -92,13 +92,24 @@ export function decisionViewFor({
     : "dialog";
   const answerOnBoard =
     boardPresentation === "board" && (isFieldCardSelection(viewerDecision, fieldInstanceIds) || !decisionAsDialog);
+  const trashOrigins = new Map(
+    Array.from(state.players).flatMap((player) =>
+      player.trash.map((card) => [card.instanceId, card.trashOriginCardId] as const),
+    ),
+  );
   const decisionVisible = viewerDecision
     ? decisionVisibleCards(
         viewerDecision.options,
         instanceIndex,
         buildInstanceArtIndex(state),
         buildInstanceZoneIndex(state, viewerSeat, { permanentTargets: viewerDecision.kind === "chooseTargets" }),
-      )
+      ).map((candidate) => ({
+        ...candidate,
+        ...((candidate.zone === "trash" || candidate.zone === "opponentTrash") &&
+        Boolean(trashOrigins.get(candidate.instanceId))
+          ? { trashOriginCardId: trashOrigins.get(candidate.instanceId) }
+          : {}),
+      }))
     : [];
   return {
     viewerDecision,

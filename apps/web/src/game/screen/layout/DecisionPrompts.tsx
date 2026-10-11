@@ -63,7 +63,13 @@ export function DecisionPrompts({
   /** Both battle areas, which is where the dialog reads its stack and DP badges. */
   permanents: readonly Permanent[];
   sourceCardId: string | undefined;
-  candidates: readonly { instanceId: string; cardId?: string; artId?: string; zone?: CandidateZone }[];
+  candidates: readonly {
+    instanceId: string;
+    cardId?: string;
+    artId?: string;
+    zone?: CandidateZone;
+    trashOriginCardId?: string;
+  }[];
   allowsPick: (instanceId: string) => boolean;
   picks: string[];
   min: number;
@@ -171,6 +177,7 @@ export function DecisionPrompts({
                       currentDP: details?.currentDP,
                       isSuspended: details?.isSuspended,
                       zone: card.zone,
+                      trashOriginCardId: card.trashOriginCardId,
                     };
                   })}
                 picks={picks}

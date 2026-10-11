@@ -51,6 +51,8 @@ export class CardInstance extends Schema {
   @view(CARD_ID_VIEW_TAG) @type("string") cardId!: string; // e.g. "BT7-089"; key into CardDefinition registry
   /** Chosen printing for this physical copy; hidden with its canonical identity. */
   @view(CARD_ID_VIEW_TAG) @type("string") artId = "";
+  /** Public provenance of this stay in trash; empty unless discarded from a Digimon’s sources. */
+  @view(CARD_ID_VIEW_TAG) @type("string") trashOriginCardId = "";
   @type("uint8") ownerSeat!: Seat; // who owns it (not necessarily who controls it)
   @type("boolean") faceUp = true; // false => redacted for opponents (see Visibility)
   /** Owner-visible activated abilities available while this loose card is in hand. */

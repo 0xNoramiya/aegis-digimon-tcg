@@ -14,4 +14,6 @@ export interface DecisionCandidate {
   isSuspended?: boolean;
   /** Where the card sits, so a mixed-zone prompt can group its candidates. */
   zone?: CandidateZone;
+  /** Last public movement into trash came from this Digimon's sources. */
+  trashOriginCardId?: string;
 }
