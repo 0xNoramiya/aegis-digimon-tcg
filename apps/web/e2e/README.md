@@ -36,6 +36,27 @@ limited to 2048 MB; Chromium consumes additional memory. No CI is configured.
 
 ## Coverage and boundaries
 
+### Published strategy guides
+
+`strategy-guides.spec.ts` uses the production web build served through the deployment
+gateway. It requires the three real published guides and their benchmark evidence;
+it fails when the catalog is empty. This lane is separate from the game harness
+and does not rebuild the API while evolution games are running.
+
+Run on the Tailscale desktop with one Chromium instance, after publishing the
+validated evolution run and building the web client:
+
+```sh
+AEGIS_GUIDES_BASE_URL=http://127.0.0.1:4176 NODE_OPTIONS=--max-old-space-size=2048 \
+  pnpm --filter @aegis/web exec playwright test -c playwright.guides.config.ts
+```
+
+Point the URL at a gateway serving that build. The lane checks all three guides
+at 390px and 1440px in light and dark modes, keyboard access, horizontal overflow,
+benchmark access, the Home entry, and the practice link into the real guest lobby. Screenshots
+are saved with each test. It does not claim that a match was started; game-flow
+validation remains a separate check using the real Colyseus server and GameScreen.
+
 - `security.spec.ts`: the actual security-chain board. The test server temporarily
   holds the bot's reactive decision callbacks, releasing the real bot policy once
   the browser has inspected each decision window. A frame probe catches a missing,

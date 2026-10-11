@@ -9,6 +9,7 @@ export default defineConfig({
   testDir: "./e2e",
   tsconfig: "./e2e/tsconfig.json",
   testMatch: "**/*.spec.ts",
+  testIgnore: "**/strategy-guides.spec.ts",
   fullyParallel: false,
   workers: 1,
   retries: 0,
