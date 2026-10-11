@@ -1,5 +1,57 @@
 # GEPA heuristic evolution
 
+## Learning against the current balanced bot
+
+`learn_balanced.py` evolves bounded score adjustments on top of the current
+projected balanced policy. A neutral residual reproduces the control's actions,
+seeded tie jitter, readiness guard, legal-action search and driver limits. Only
+public observations and the learner's own visible cards reach learned rules.
+The deterministic numeric pass precedes official GEPA API reflection. Reflection
+edits conditions/card scopes; code owns numeric calibration and activation advice.
+
+Run the orchestration locally with API credentials in the local environment;
+all games execute on the desktop. Use a fresh run directory after engine or runner
+changes. Balanced evaluations batch up to 32 isolated games per SSH process,
+preserving each game's full-task cache identity, result and audit record.
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/learn_balanced.py \
+  --run-dir artifacts/bot-evolution/gepa-balanced-v2 \
+  --deck-pool artifacts/bot-evolution/gepa-balanced-v2/deck-pool.json \
+  --node /home/vinicius/aegis-bot-lab/toolchain/node-v26.10.0-linux-x64/bin/node \
+  --worker /home/vinicius/aegis-bot-lab/checkouts/gepa-delivery-68ed0fef6d/apps/api/dist/bot/evolution/evaluateCli.js \
+  --pairs 96 --metric-calls 6144 --numeric-proposals 24
+```
+
+The 24-deck pool is a JSON array of legal, implemented repository deck IDs.
+Each seed contributes four games: both deck assignments and both learner seats.
+Train and selection use different opponent pairings. Certification excludes both
+pairings in either orientation and uses fresh seeds. Invalid or timed-out games
+remain unscored and prevent acceptance. The pinned GPT-4.1 snapshot uses a 4,096
+completion-token limit and a conservative US$5 ledger shared across run directories.
+
+`certify_balanced.py` requires the selected policy to reconstruct from an accepted
+GEPA proposal and its pinned API prompt/response, after code calibration. It freezes
+the program, engine, worker, evaluator, task list and lineage before execution.
+One shared registry permits at most five candidate attempts and three fixed looks
+at 1,200, 2,400 and 4,800 complete seed blocks. It accepts only when every game is
+valid and the sole preregistered lower confidence bound exceeds 50% against the
+current balanced control. Use `--attempt` once per frozen candidate; changed inputs
+cannot reuse a reservation.
+
+The certification bound is the empirical Bernstein bound in
+[Maurer–Pontil (2009), Theorem 11](https://arxiv.org/pdf/0907.3740#page=4), applied
+to one minus the mean score of each four-game block. It uses sample variance with
+denominator `n-1` and permits differing deck distributions. Its per-look error
+budget is `0.05/(5*3)`, further multiplied by the probability that all 4,800
+independent seeds would be unique. That conditioning correction covers the actual
+sampling without replacement. The protocol records the amendment from the training
+manifest's provisional Hoeffding plan before any held-out candidate games. This
+certificate concerns direct strength against current balanced; high-budget MCTS
+guide publication remains a separate gate.
+
+## MCTS and pilot evolution
+
 The official GEPA package evolves bounded JSON heuristics; the TypeScript
 interpreter scores legal engine actions. Each rule contains plain English advice
 for future strategy-guide publication. Candidate code is never executed.
