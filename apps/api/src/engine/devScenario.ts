@@ -469,6 +469,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-richard-main-fresh-materials",
   "arena-davis-both-colors",
   "arena-feedback65-dracomon-selection",
+  "arena-feedback68-arisa-effect-play",
   "arena-feedback60-duplicate-option-choice",
   "arena-discord-taiki-keeps-xros-digimon",
   "arena-discord-vemmon-add-or-place",
@@ -8390,6 +8391,29 @@ function layFeedback60DuplicateOptionChoiceScenario(state: GameState): void {
   state.memory = 10;
 }
 
+/** #68: identical effect play distinguishes a Puppet from an unrelated Digimon. */
+function layFeedback68ArisaEffectPlayScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`feedback68-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index++)
+      insertCard(player, Zone.Deck, faceDownCard(`feedback68-deck-${seat}-${index}`, "BT1-009", seat));
+    for (let index = 0; index < 3; index++)
+      insertCard(player, Zone.Security, faceDownCard(`feedback68-security-${seat}-${index}`, "BT1-009", seat));
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["ST19-14"], "-feedback68-arisa"));
+  placePermanent(human, establishedDigimon(0, ["BT2-090"], "-feedback68-purple"));
+  insertCard(human, Zone.Hand, faceUpCard("feedback68-call", "BT6-108", 0));
+  insertCard(human, Zone.Hand, faceUpCard("feedback68-reserve", "BT1-009", 0));
+  insertCard(human, Zone.Trash, faceUpCard("feedback68-non-puppet", "BT10-071", 0));
+  insertCard(human, Zone.Trash, faceUpCard("feedback68-puppet", "EX11-021", 0));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 10;
+}
+
 /** #65/#67: real reveal and bottom-order confirmations using the shared prompt. */
 function layFeedback65DracomonSelectionScenario(state: GameState): void {
   for (const seat of [0, 1] as const) {
@@ -11815,6 +11839,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-richard-main-fresh-materials": layDiscordRichardMainFreshMaterialsScenario,
   "arena-davis-both-colors": layDavisBothColorsScenario,
   "arena-feedback65-dracomon-selection": layFeedback65DracomonSelectionScenario,
+  "arena-feedback68-arisa-effect-play": layFeedback68ArisaEffectPlayScenario,
   "arena-feedback60-duplicate-option-choice": layFeedback60DuplicateOptionChoiceScenario,
   "arena-discord-taiki-keeps-xros-digimon": layDiscordTaikiKeepsXrosDigimonScenario,
   "arena-discord-vemmon-add-or-place": layDiscordVemmonAddOrPlaceScenario,
