@@ -7,7 +7,7 @@ from pathlib import Path
 
 import click
 
-from deterministic_proposals import plan_hash, validate_plan
+from deterministic_proposals import gate_tasks, plan_hash, prior_gate, validate_plan
 from evolve import optimize_stage
 
 
@@ -138,6 +138,23 @@ def main(
             proposalGateTasks=balanced_splits(decks, gate_pairs)["validation"],
             reflectionMinibatchSize=len(splits["train"]),
         )
+        split_seeds = {task["seed"] for tasks in splits.values() for task in tasks}
+        for number in range(1, len(plan["programs"]) + 1):
+            if split_seeds & {
+                task["seed"] for task in gate_tasks(plan, metadata["proposalGateTasks"], number)
+            }:
+                raise click.ClickException(
+                    "Numerical gates must use fresh seeds outside both splits"
+                )
+        if plan.get("pairedScreen") is not None:
+            prior_seeds = {task["seed"] for task in prior_gate(plan, seed)["tasks"]}
+            fresh_seeds = {
+                task["seed"] for task in gate_tasks(plan, metadata["proposalGateTasks"], 1)
+            }
+            if prior_seeds & (split_seeds | fresh_seeds):
+                raise click.ClickException(
+                    "Prior gate seeds cannot overlap the new split or gate seeds"
+                )
     elif proposal_plan is not None:
         raise click.ClickException("A numerical proposal plan requires --model deterministic")
     budget = {

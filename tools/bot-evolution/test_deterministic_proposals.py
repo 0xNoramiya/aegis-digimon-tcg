@@ -1,5 +1,6 @@
 """Real GEPA numerical selection needs no model and cannot bypass lineage or gates."""
 
+import hashlib
 import json
 from copy import deepcopy
 
@@ -7,8 +8,8 @@ import pytest
 from gepa.core.adapter import EvaluationBatch
 
 from certify_balanced import deterministic_lineage
-from deterministic_proposals import plan_hash, validate_plan
-from evidence import policy_hash
+from deterministic_proposals import gate_evidence, plan_hash, validate_plan
+from evidence import paired_evidence, policy_hash
 from evolve import optimize_stage
 
 
@@ -87,6 +88,53 @@ def numerical_run(tmp_path, monkeypatch, request):
         "proposalGateTasks": splits["validation"],
         "reflectionMinibatchSize": 48,
     }
+    if getattr(request, "param", None) == "recheck":
+        tasks = [
+            {"seed": 900 + n, "decks": order, "learnerSeat": seat, "opponent": "balanced"}
+            for n in range(12)
+            for order in (["A", "B"], ["B", "A"])
+            for seat in (0, 1)
+        ]
+        prior = {
+            "origin": "deterministic-numeric",
+            "status": "evaluated",
+            "program": better,
+            "parent": initial,
+            "tasks": tasks,
+        }
+        for arm, program in (("selected", better), ("control", initial)):
+            prior[arm] = [
+                {
+                    "task": task,
+                    "valid": True,
+                    "score": int((task["seed"] < 907) == (arm == "selected")),
+                    "policySha256": policy_hash(program),
+                    "engineSha256": "engine",
+                }
+                for task in tasks
+            ]
+        prior["pairedEvidence"] = paired_evidence(
+            prior["selected"], prior["control"], alpha=0.05 / 7, method="wilson-wins"
+        )
+        prior_path = tmp_path / "prior.json"
+        prior_path.write_text(json.dumps(prior, indent=2) + "\n")
+        plan["pairedScreen"] = {
+            "familySize": 7,
+            "maximumLooks": 2,
+            "look": 2,
+            "seedOffset": 1_200_000_000,
+            "priorGates": [
+                {
+                    "file": str(prior_path),
+                    "fileSha256": hashlib.sha256(prior_path.read_bytes()).hexdigest(),
+                    "recordSha256": plan_hash(prior),
+                    "record": prior,
+                }
+            ],
+        }
+        metadata["proposalGateTasks"] = [
+            {**task, "seed": 100 + n} for n in range(48) for task in tasks[:4]
+        ]
     selected = optimize_stage(
         stage="generic",
         initial=initial,
@@ -183,3 +231,71 @@ def test_real_gepa_cannot_select_after_a_swallowed_proposal_timeout(tmp_path, mo
     assert not (tmp_path / "generic/selected.json").exists()
     gate = json.loads((tmp_path / "generic/proposal-gates/proposal-0001.json").read_text())
     assert gate["status"] == "reserved"
+
+
+@pytest.mark.parametrize("numerical_run", ["recheck"], indirect=True)
+def test_real_gepa_recheck_retains_rejected_prior_and_requires_fresh_and_pooled_evidence(
+    numerical_run,
+):
+    path, manifest, selected, _better = numerical_run
+    lineage = deterministic_lineage(path, manifest, selected)
+    gate = json.loads((path / "generic/proposal-gates/proposal-0001.json").read_text())
+    prior = manifest["metadata"]["deterministicPlan"]["pairedScreen"]["priorGates"][0]["record"]
+    assert prior["pairedEvidence"]["accepted"] is False
+    assert prior["pairedEvidence"]["alpha"] == 0.05 / 7
+    assert gate["pairedEvidence"]["seedBlocks"] == 48
+    assert gate["pooledEvidence"]["seedBlocks"] == 60
+    assert gate["pairedEvidence"]["alpha"] == gate["pooledEvidence"]["alpha"] == 0.05 / 14
+    assert gate["screenAccepted"] is True
+    assert lineage["pairedScreen"]["priorGateSha256"] == gate["priorGateSha256"]
+
+
+@pytest.mark.parametrize("numerical_run", ["recheck"], indirect=True)
+@pytest.mark.parametrize("corruption", ["prior", "pooled", "overlap", "assignment", "control"])
+def test_recheck_lineage_rejects_changed_prior_pool_seeds_assignments_and_control(
+    numerical_run, corruption
+):
+    path, manifest, selected, _better = numerical_run
+    target = path / "generic/proposal-gates/proposal-0001.json"
+    gate = json.loads(target.read_text())
+    if corruption == "prior":
+        (path / "prior.json").write_text("{}")
+    elif corruption == "pooled":
+        gate["pooledEvidence"]["difference"] = -1
+    elif corruption == "overlap":
+        gate["tasks"][0]["seed"] = 900
+    elif corruption == "assignment":
+        gate["tasks"][0]["learnerSeat"] = 1
+    else:
+        gate["parent"]["rules"][0]["weight"] = 2
+    target.write_text(json.dumps(gate))
+    with pytest.raises(ValueError):
+        deterministic_lineage(path, manifest, selected)
+
+
+@pytest.mark.parametrize("numerical_run", ["recheck"], indirect=True)
+def test_pooled_evidence_cannot_rescue_a_failed_fresh_gate(numerical_run):
+    path, manifest, _selected, _better = numerical_run
+    gate = json.loads((path / "generic/proposal-gates/proposal-0001.json").read_text())
+    plan = deepcopy(manifest["metadata"]["deterministicPlan"])
+    reference = plan["pairedScreen"]["priorGates"][0]
+    prior = reference["record"]
+    for game in prior["selected"]:
+        game["score"] = 1
+    for game in prior["control"]:
+        game["score"] = 0
+    prior["pairedEvidence"] = paired_evidence(
+        prior["selected"], prior["control"], alpha=0.05 / 7, method="wilson-wins"
+    )
+    prior_path = path / "prior.json"
+    prior_path.write_text(json.dumps(prior, indent=2) + "\n")
+    reference.update(
+        fileSha256=hashlib.sha256(prior_path.read_bytes()).hexdigest(),
+        recordSha256=plan_hash(prior),
+    )
+    for game in gate["selected"]:
+        game["score"] = 0
+    evidence = gate_evidence(plan, gate)
+    assert evidence["pairedEvidence"]["accepted"] is False
+    assert evidence["pooledEvidence"]["accepted"] is True
+    assert evidence["screenAccepted"] is False

@@ -14,8 +14,8 @@ import click
 from gepa.strategies.instruction_proposal import InstructionProposalSignature
 
 from api_reflection import validate_ledger
-from deterministic_proposals import plan_hash, validate_plan
-from evidence import paired_evidence, policy_hash
+from deterministic_proposals import gate_evidence, gate_tasks, plan_hash, prior_gate, validate_plan
+from evidence import policy_hash
 from residual_weights import RESIDUAL_WEIGHTS
 
 
@@ -266,12 +266,13 @@ def deterministic_lineage(run_dir: Path, manifest: dict, selected: dict) -> dict
             or gate["program"] != plan["programs"][number - 1]
         ):
             raise ValueError("Selected program does not reconstruct from its frozen numerical plan")
-        tasks = [
-            {**task, "seed": task["seed"] + 1_000_000_000 + number * 10000}
-            for task in manifest["metadata"]["proposalGateTasks"]
-        ]
+        tasks = gate_tasks(plan, manifest["metadata"]["proposalGateTasks"], number)
         if tasks != gate["tasks"] or split_seeds & {task["seed"] for task in tasks}:
             raise ValueError("Numerical gate reused training or validation seeds")
+        if plan.get("pairedScreen") is not None and split_seeds & {
+            task["seed"] for task in prior_gate(plan, gate["parent"])["tasks"]
+        }:
+            raise ValueError("Prior numerical gate reused training or validation seeds")
         for arm, program in (("selected", gate["program"]), ("control", gate["parent"])):
             games = gate[arm]
             if [game["task"] for game in games] != tasks or any(
@@ -279,13 +280,10 @@ def deterministic_lineage(run_dir: Path, manifest: dict, selected: dict) -> dict
                 for game in games
             ):
                 raise ValueError("Numerical gate changed its engine, tasks or policies")
-        evidence = paired_evidence(
-            gate["selected"],
-            gate["control"],
-            alpha=0.05 / len(plan["programs"]),
-            method="wilson-wins",
-        )
-        if evidence != gate["pairedEvidence"] or evidence["accepted"] is not True:
+        evidence = gate_evidence(plan, gate)
+        if any(gate.get(key) != value for key, value in evidence.items()) or not evidence.get(
+            "screenAccepted", evidence["pairedEvidence"]["accepted"]
+        ):
             raise ValueError("Selected numerical policy did not pass its fresh paired gate")
         return {
             "origin": "deterministic-numeric",
@@ -296,6 +294,14 @@ def deterministic_lineage(run_dir: Path, manifest: dict, selected: dict) -> dict
             "gepaResultSha256": result_sha,
             "policySha256": policy_hash(selected["program"]),
             "gateFile": str(path.relative_to(run_dir)),
+            "pairedScreen": plan.get("pairedScreen")
+            and {
+                "freshEvidence": evidence["pairedEvidence"],
+                "pooledEvidence": evidence["pooledEvidence"],
+                "priorGateSha256": evidence["priorGateSha256"],
+                "look": plan["pairedScreen"]["look"],
+                "note": "Approximate exploratory screen; original look alpha is retained unchanged.",
+            },
         }
     raise ValueError("Selected policy has no accepted deterministic GEPA proposal gate")
 
