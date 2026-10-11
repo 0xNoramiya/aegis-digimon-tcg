@@ -374,17 +374,20 @@ describe("downloading a saved replay", () => {
     for (const id of ["0", "abc", "1.5", "2147483648"]) expect((await download(h, id, cookie)).status).toBe(400);
   });
 
-  it("marks which reports in the admin list have a replay", async () => {
+  it("marks which reports in the admin list and detail have a replay", async () => {
     const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir }) });
     await submit(h, { matchId: match.matchId });
     await submit(h, {});
+    const headers = { Cookie: await adminCookie(h) };
 
-    const response = await fetch(`${h.url}/account/feedback`, { headers: { Cookie: await adminCookie(h) } });
+    const response = await fetch(`${h.url}/account/feedback?q=broke&status=new&kind=bug`, { headers });
     const page = (await response.json()) as Awaited<ReturnType<FeedbackStore["list"]>>;
     expect(page.items).toMatchObject([
       { id: 2, hasReplay: false, replayInputs: null },
       { id: 1, hasReplay: true, replayInputs: record.inputs.length },
     ]);
+    const detail = await fetch(`${h.url}/admin/feedback/1`, { headers });
+    expect(await detail.json()).toMatchObject({ id: 1, hasReplay: true, replayInputs: record.inputs.length });
   });
 });
 
