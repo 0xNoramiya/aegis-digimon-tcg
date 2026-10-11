@@ -3,6 +3,8 @@ import hashlib
 import json
 from pathlib import Path
 
+from audit_pilot_family import audit_pilot_family
+
 
 def reserve_pilot_family(
     *,
@@ -16,6 +18,7 @@ def reserve_pilot_family(
     seed_offset: int,
     held_out_seeds: dict[str, list[int]],
 ) -> dict:
+    audit_pilot_family(registry=registry, attempt=attempt)
     if (
         not 1 <= attempt <= 3
         or not decks
@@ -62,6 +65,8 @@ def reserve_pilot_family(
     registry.parent.mkdir(parents=True, exist_ok=True)
     with registry.with_suffix(registry.suffix + ".lock").open("a", encoding="utf-8") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
+        if attempt in (2, 3) and registry.with_suffix(registry.suffix + ".closure.json").is_file():
+            raise ValueError("This initial-family wave was irrevocably retired by its amendment")
         previous = json.loads(registry.read_text(encoding="utf-8")) if registry.is_file() else None
         if previous is None:
             previous = {"family": family, "reservations": []}

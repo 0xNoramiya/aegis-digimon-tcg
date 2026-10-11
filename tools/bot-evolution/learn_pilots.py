@@ -6,6 +6,7 @@ from pathlib import Path
 
 import click
 
+from audit_pilot_catalog import audit_pilot_catalog
 from audit_pilot_selection import audit_pilot_selection
 from evidence import policy_hash
 from pilot_splits import pilot_splits
@@ -83,10 +84,22 @@ def main(
         "train_pilot.py",
         "paired_pilot_evidence.py",
         "audit_pilot_selection.py",
+        "audit_pilot_catalog.py",
         "reserve_pilot_family.py",
+        "audit_pilot_family.py",
+        "audit_pilot_quiescence.py",
+        "pilot_family_amendment.py",
+        "audit_terminal_pilot_wave.py",
         "adapter.py",
         "evidence.py",
         "evolve.py",
+        "api_reflection.py",
+        "deterministic_proposals.py",
+        "ladder.py",
+        "proposals.py",
+        "residual_weights.py",
+        "session_reflection.py",
+        "tune.py",
         "pyproject.toml",
         "uv.lock",
     ]
@@ -214,6 +227,7 @@ def main(
         },
     }
     (run_dir / "catalog.json").write_text(json.dumps(catalog, indent=2) + "\n", encoding="utf-8")
+    audit_pilot_catalog(directory=run_dir)
     (run_dir / "summary.json").write_text(
         json.dumps(
             {

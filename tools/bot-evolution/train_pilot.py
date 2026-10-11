@@ -5,6 +5,7 @@ from pathlib import Path
 import gepa
 
 from adapter import EvaluationConfig, HeuristicAdapter
+from audit_pilot_family import audit_pilot_family
 from audit_pilot_selection import audit_pilot_selection
 from evidence import policy_hash
 from evolve import EvolutionAudit
@@ -21,7 +22,6 @@ def train_pilot(
     screen_alpha: float,
     held_out_alpha: float,
 ) -> dict:
-    directory.mkdir(parents=True, exist_ok=True)
     configuration = {
         "deck": deck,
         "metadata": metadata,
@@ -29,6 +29,8 @@ def train_pilot(
         "screenAlpha": screen_alpha,
         "heldOutAlpha": held_out_alpha,
     }
+    audit_pilot_family(directory=directory, configuration=configuration)
+    directory.mkdir(parents=True, exist_ok=True)
     identity = hashlib.sha256(json.dumps(configuration, sort_keys=True).encode()).hexdigest()
     selected_path = directory / "selected.json"
     if selected_path.is_file():
@@ -47,6 +49,7 @@ def train_pilot(
             timeout=600,
             workers=metadata["evaluationWorkers"],
             cache_dir=Path(metadata["evaluationCache"]),
+            desktop_wsl_args=tuple(metadata.get("desktopWslArgs", [])),
         ),
         {**metadata, "residualBatchSize": 32},
     )
@@ -58,6 +61,7 @@ def train_pilot(
         tasks=splits["gate"],
         directory=directory / "proposal-gates",
         alpha=screen_alpha,
+        origin=metadata.get("proposalOrigin", "deterministic-structural"),
     )
     adapter.propose_new_texts = proposer
     result = gepa.optimize(
@@ -113,7 +117,7 @@ def train_pilot(
         "distinct": distinct,
         "activated": bool(distinct and held_out["pairedEvidence"]["accepted"]),
         "heldOutEvidence": None if held_out is None else held_out["pairedEvidence"],
-        "origin": "deterministic-structural",
+        "origin": metadata.get("proposalOrigin", "deterministic-structural"),
         "apiCalls": 0,
         "proposals": proposer.calls,
         "engineSha256": metadata["engineSha256"],

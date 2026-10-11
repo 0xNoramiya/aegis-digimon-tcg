@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 import click
 
+from audit_pilot_family import audit_pilot_family
 from evidence import paired_evidence, policy_hash, program_hash
 
 GUIDES = {
@@ -33,6 +34,9 @@ GUIDES = {
 
 def verified_run(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+    family = manifest.get("family", {})
+    if "registry" in family:
+        audit_pilot_family(registry=Path(family["registry"]), attempt=family["attempt"])
     pilots = json.loads((run_dir / "pilots.json").read_text(encoding="utf-8"))
     report = json.loads((run_dir / "held-out.json").read_text(encoding="utf-8"))
     if manifest["config"].get("reflectionModel", manifest["config"].get("model")) in (

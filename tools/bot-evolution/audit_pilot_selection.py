@@ -2,11 +2,14 @@ import hashlib
 import json
 from pathlib import Path
 
+from audit_pilot_family import audit_pilot_family
 from evidence import paired_evidence, policy_hash, program_hash
 from paired_pilot_evidence import paired_pilot_evidence
 
 
 def audit_pilot_selection(*, directory: Path, configuration: dict) -> dict:
+    audit_pilot_family(directory=directory, configuration=configuration)
+
     def load(name: str) -> dict:
         path = directory / name
         if not path.is_file():
@@ -22,12 +25,17 @@ def audit_pilot_selection(*, directory: Path, configuration: dict) -> dict:
             expected = 0.5 if winner is None else int(winner == game["task"]["learnerSeat"])
             if (
                 game.get("valid") is not True
+                or type(game.get("score")) not in (int, float)
                 or game.get("score") != expected
-                or winner not in (None, 0, 1)
+                or (winner is not None and (type(winner) is not int or winner not in (0, 1)))
                 or game.get("status") != "played"
                 or game.get("engineSha256") != metadata["engineSha256"]
                 or game.get("policySha256") != policy_hash(program)
                 or result.get("timedOut") is not False
+                or not isinstance(result.get("reason"), str)
+                or not result["reason"]
+                or result["reason"]
+                in ("cancelled", "stalled", "unfinished", "turnLimit", "decisionLimit")
                 or result.get("errors") != []
                 or result.get("rejections") != []
                 or result.get("projectionChecks", 0) <= 0
@@ -98,7 +106,7 @@ def audit_pilot_selection(*, directory: Path, configuration: dict) -> dict:
     for number, (path, proposal) in enumerate(zip(gates, proposals, strict=True), 1):
         gate = json.loads(path.read_text(encoding="utf-8"))
         if (
-            gate.get("origin") != "deterministic-structural"
+            gate.get("origin") != metadata.get("proposalOrigin", "deterministic-structural")
             or gate.get("apiCalls") != 0
             or gate.get("status") != "evaluated"
             or gate.get("proposalNumber") != number
@@ -181,7 +189,7 @@ def audit_pilot_selection(*, directory: Path, configuration: dict) -> dict:
         selected.get("distinct") is not distinct
         or selected.get("activated") is not bool(distinct and evidence["accepted"])
         or selected.get("heldOutEvidence") != evidence
-        or selected.get("origin") != "deterministic-structural"
+        or selected.get("origin") != metadata.get("proposalOrigin", "deterministic-structural")
         or selected.get("apiCalls") != 0
         or selected.get("proposals") != len(proposals)
         or selected.get("deck") != configuration["deck"]["id"]

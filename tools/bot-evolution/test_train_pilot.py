@@ -6,15 +6,20 @@ from gepa.core.adapter import EvaluationBatch
 
 from evidence import policy_hash
 from pilot_splits import pilot_splits
+from reserve_pilot_family import reserve_pilot_family
 from train_pilot import train_pilot
 
 
-@pytest.mark.parametrize("mode", ("gain", "multi-gain", "unchanged", "held-out-loss", "timeout"))
+@pytest.mark.parametrize(
+    "mode", ("gain", "combo-gain", "multi-gain", "unchanged", "held-out-loss", "timeout", "invalid")
+)
 def test_real_gepa_pilot_selection_requires_fresh_direct_generic_control_and_held_out_gate(
     tmp_path,
     monkeypatch,
     mode,
 ):
+    run_root = tmp_path / "wave"
+    tmp_path = run_root / "pilots" / "A"
     generic = {
         "schemaVersion": 1,
         "basePolicy": "projected-balanced",
@@ -32,6 +37,8 @@ def test_real_gepa_pilot_selection_requires_fresh_direct_generic_control_and_hel
         }
     )
     proposals = [{"strategy": "early-tamer", "program": pilot}]
+    if mode == "combo-gain":
+        pilot["rules"][-1]["when"]["ownHand"] = {"cardIds": ["BT1-085"], "minimum": 1}
     if mode == "multi-gain":
         for weight in (3, 4, 5):
             alternative = deepcopy(pilot)
@@ -68,6 +75,7 @@ def test_real_gepa_pilot_selection_requires_fresh_direct_generic_control_and_hel
                     "asynchronousRejections": [],
                     "result": {
                         "winnerSeat": task["learnerSeat"] if score else 1 - task["learnerSeat"],
+                        "reason": "security",
                         "timedOut": False,
                         "errors": [],
                         "rejections": [],
@@ -78,9 +86,15 @@ def test_real_gepa_pilot_selection_requires_fresh_direct_generic_control_and_hel
                 for task in tasks
             ]
             for game in outputs:
+                if mode == "invalid" and tasks[0]["seed"] >= 700_000_000:
+                    game.update(valid=False, status="invalid", score=None)
                 self.calls += 1
                 (self.config.run_dir / f"{self.calls:05d}.json").write_text(
                     json.dumps(game), encoding="utf-8"
+                )
+            if mode == "invalid" and tasks[0]["seed"] >= 700_000_000:
+                raise RuntimeError(
+                    "Incomplete evaluation batch; invalid games are not fitness losses"
                 )
             return EvaluationBatch(
                 outputs=outputs,
@@ -103,6 +117,9 @@ def test_real_gepa_pilot_selection_requires_fresh_direct_generic_control_and_hel
             "engineSha256": "engine",
             "evaluationWorkers": 4,
             "evaluationCache": str(tmp_path / "cache"),
+            "proposalOrigin": "deterministic-bounded-combo"
+            if mode == "combo-gain"
+            else "deterministic-structural",
         },
         "splits": pilot_splits(
             deck="A",
@@ -111,19 +128,53 @@ def test_real_gepa_pilot_selection_requires_fresh_direct_generic_control_and_hel
             ordinal=0,
             pairs=24,
             gate_pairs=24,
-            held_out_pairs=24,
+            held_out_pairs=96,
+            held_out_seeds=list(range(1_500_000_000, 1_500_000_096)),
         ),
         "screen_alpha": 0.05,
         "held_out_alpha": 0.05,
     }
-    if mode == "timeout":
+    pool = list("ABCDEFGH")
+    plans = {
+        deck: list(range(1_500_000_000 + index * 96, 1_500_000_000 + (index + 1) * 96))
+        for index, deck in enumerate(pool)
+    }
+    family = reserve_pilot_family(
+        registry=run_root.parent / "family.json",
+        run_dir=run_root,
+        attempt=1,
+        engine="engine",
+        generic=policy_hash(generic),
+        decks=pool,
+        proposals=len(proposals) * len(pool),
+        seed_offset=0,
+        held_out_seeds=plans,
+    )
+    values["screen_alpha"] = family["screenAlphaPerHypothesis"]
+    values["held_out_alpha"] = family["heldOutAlphaPerDeck"]
+    run_root.mkdir()
+    manifest = {
+        "metadata": values["metadata"],
+        "decks": [{"id": deck, "proposals": proposals} for deck in pool],
+        "family": family,
+        "pairs": 24,
+        "gatePairs": 24,
+        "heldOutPairs": 96,
+        "seedOffset": 0,
+        "heldOutSeedPlans": plans,
+        "screenAlphaPerHypothesis": values["screen_alpha"],
+        "heldOutAlphaPerDeck": values["held_out_alpha"],
+    }
+    (run_root / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    if mode in ("timeout", "invalid"):
         with pytest.raises(RuntimeError, match="Pilot gate failed"):
             train_pilot(**values)
         assert not (tmp_path / "selected.json").exists()
         return
     selected = train_pilot(**values)
     assert selected["apiCalls"] == 0
-    assert selected["activated"] == (mode in ("gain", "multi-gain"))
+    assert selected["activated"] == (mode in ("gain", "combo-gain", "multi-gain"))
+    assert selected["origin"] == values["metadata"]["proposalOrigin"]
     assert selected["proposals"] == len(proposals)
     assert selected["distinct"] == (mode != "unchanged")
     assert selected["selectedIndex"] == (0 if mode == "unchanged" else 1)
@@ -167,5 +218,5 @@ def test_real_gepa_pilot_selection_requires_fresh_direct_generic_control_and_hel
             train_pilot(**values)
         raw_path.write_text(original, encoding="utf-8")
     values["held_out_alpha"] = 0.01
-    with pytest.raises(ValueError, match="inputs changed"):
+    with pytest.raises(ValueError, match="configuration|inputs changed"):
         train_pilot(**values)

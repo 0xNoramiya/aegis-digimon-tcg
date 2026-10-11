@@ -373,6 +373,45 @@ requires an API reflector.
 
 ## Numeric selection and publication gates
 
+`learn_combo_pilots.py` freezes 18 finite public-state hypotheses for the exact
+Ulforce `ex4-dgo-2022-06-25-1-ulforceveedramon@1`, Mirage
+`ex6-dgo-2024-07-06-1-miragegaogamon@2`, and Shine
+`bt25-dgo-2026-06-06-4-shinegreymon@1` versions. Each preserves the certified generic
+rules and appends one authored, card-scoped Main rule, using own board/hand predicates
+and weights 4, 8, or 12. The 24-deck opponent pool remains separate from these three
+targets. Unsupported intentions are frozen as metadata, outside the scored program.
+
+The launcher requires `--run-root`, `--amendment`, `--prior-registry`, `--prior-run`,
+`--deck-pool`, `--node`, and `--worker`. `--freeze-only` closes and allocates the family
+without launching games. `--attempt 1` uses 96 training/validation, 384 gate, and
+2400 held-out seed blocks per deck; attempt 2 prospectively uses 192, 768, and 9600.
+Both waves' counts, hypotheses, runtime, runner, opponent partitions, and unique
+held-out seed plans are frozen before either runs. `--only-deck` can select a subset
+of the three targets without changing their allocated confidence budget. Completed
+selections are reconstructed from raw games before their catalog is assembled.
+`--desktop-system` freezes the exact WSL prefix `--system -d Ubuntu` for descriptor,
+process capture and every match, supporting a verified runtime built in desktop RAM.
+Omitting it retains ordinary WSL transport. Changing the prefix prevents resume.
+
+The append-only amendment retains the full original wave-one alpha charge of
+0.05/3, retires original waves two and three permanently, and divides the remaining
+0.05×2/3 over three targets and two waves. Activation uses the existing conservative
+paired seed-block empirical Bernstein bound at alpha 0.0055555556 per target/wave.
+Training screens retain their explicitly approximate corrected Wilson gate. Failure
+does not refund either budget. The original registry and every run artifact retain
+their bytes and hashes, including stale summaries, partial reservations and raw
+invalid games. Separate immutable closure records authorize the new family.
+
+If the original wave ended in a non-resumable infrastructure failure,
+`--prior-failure <record.json>` accepts `kind: infrastructure-failure-abandonment`,
+the nonzero `orchestratorExitCode`, the absolute immutable failure `log`, and its
+byte `logSha256`. The launcher captures local and desktop process snapshots and
+refuses closure while any worker or orchestrator is live. It verifies the original
+source/runtime archives, completed raw selections, partial frozen reservations,
+and a disk/I/O failure in the log. Its terminal audit records completed, partial,
+and unstarted decks explicitly. Invalid games keep null scores and do not become
+losses. This abandonment authorizes a prospective family; it makes no strength claim.
+
 Independent balanced certification preserves the GEPA selection's original engine
 and policy identities. `certify_balanced.py --runtime-amendment <record.json>` can
 pin a repaired certification runtime without rewriting the selection. A

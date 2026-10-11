@@ -26,6 +26,7 @@ class EvaluationConfig:
     timeout: int = 7200
     workers: int = 4
     cache_dir: Path | None = None
+    desktop_wsl_args: tuple[str, ...] = ()
 
 
 class HeuristicAdapter:
@@ -33,6 +34,10 @@ class HeuristicAdapter:
     propose_new_texts = None
 
     def __init__(self, config: EvaluationConfig, metadata: dict[str, Any]) -> None:
+        if config.desktop_wsl_args not in ((), ("--system", "-d", "Ubuntu")) or metadata.get(
+            "desktopWslArgs", []
+        ) != list(config.desktop_wsl_args):
+            raise ValueError("Freeze an ordinary or system Ubuntu WSL transport prefix")
         if config.desktop_host is None and not config.worker.is_file():
             raise ValueError("Build shared and API packages before evolution")
         self.config = config
@@ -166,6 +171,7 @@ class HeuristicAdapter:
                 "BatchMode=yes",
                 self.config.desktop_host,
                 "wsl.exe",
+                *self.config.desktop_wsl_args,
                 "-e",
                 "timeout",
                 "--signal=TERM",

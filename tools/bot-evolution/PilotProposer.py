@@ -14,6 +14,7 @@ class PilotProposer:
         tasks: list[dict],
         directory: Path,
         alpha: float,
+        origin: str = "deterministic-structural",
     ) -> None:
         if len(tasks) < 48 or len({task["seed"] for task in tasks}) < 24:
             raise ValueError("Pilot screens require at least 48 same-seed games")
@@ -23,6 +24,7 @@ class PilotProposer:
         self.tasks = tasks
         self.directory = directory
         self.alpha = alpha
+        self.origin = origin
         self.calls = 0
         self.failure: Exception | None = None
         directory.mkdir(parents=True, exist_ok=True)
@@ -59,7 +61,7 @@ class PilotProposer:
         self.calls += 1
         path = self.directory / f"proposal-{self.calls:04d}.json"
         record = {
-            "origin": "deterministic-structural",
+            "origin": self.origin,
             "proposalNumber": self.calls,
             "program": program,
             "control": self.generic,
