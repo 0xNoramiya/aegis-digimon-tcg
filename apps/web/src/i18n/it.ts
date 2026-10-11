@@ -215,15 +215,19 @@ const interfaceMessages = {
   "community.moderation.hiddenOwnerBadge": "Nascosto da un moderatore",
   "community.moderation.hiddenOwnerNote": "Segnalato dai giocatori. Gli altri non possono vederlo.",
   "game.dragIntent.reorder": "RIORDINA LA MANO",
+  "game.handSort.type": "Per tipo",
+  "game.handSort.cost": "Per costo",
+  "game.handSort.color": "Per colore",
+  "game.handSort.choose": "Scegli l'ordine",
   "settings.sortHand": "Ordina la mano",
   "settings.sortHandDesc":
-    "Ordina la mano attuale per livello dei Digimon, poi Tamer e Option. Le nuove carte restano in fondo finché non ordini di nuovo.",
+    "Ordina la mano attuale nell'ordine scelto. Le nuove carte restano in fondo finché non ordini di nuovo.",
   "settings.autoHatch": "Schiusa automatica",
   "settings.autoHatchDesc":
     "Schiude automaticamente un Digi-Uovo durante la tua fase di allevamento quando l’area è vuota. Salvato nel tuo account.",
   "settings.handAutoSort": "Mantieni la mano ordinata",
   "settings.handAutoSortDesc":
-    "Riordina la mano ogni volta che una carta entra o esce: Digimon per livello, poi Tamer, poi Option, dal costo più basso. Le carte che trascini restano al loro posto finché la mano non cambia.",
+    "Riordina la mano nell'ordine scelto sul pulsante di ordinamento ogni volta che una carta entra o esce. Le carte che trascini restano al loro posto finché la mano non cambia.",
   "settings.customMusic": "File musicale locale",
   "settings.customMusicDesc":
     "Scegli un file audio fino a 50 MB. Rimane sul tuo dispositivo per questa sessione; selezionalo di nuovo dopo aver ricaricato.",

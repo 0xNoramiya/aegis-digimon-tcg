@@ -61,6 +61,7 @@ import {
 } from "./screen/model/handEntries";
 import { useAutoHatch } from "./screen/hooks/useAutoHatch";
 import { useHandAutoSort } from "./handAutoSort";
+import { setHandSortMode, useHandSortMode, type HandSortMode } from "./handSortMode";
 import { dnaFieldChoice, dnaMaterialPicks, toggleDnaMaterial } from "./screen/model/dnaMaterialSelection";
 import { presentedSeats } from "./screen/model/presentedSeats";
 import { visibleBoard } from "./screen/model/visibleBoard";
@@ -770,14 +771,15 @@ export function GameScreen({
   const presentedHand = seats?.handHeld ? seats.shownHand : you?.hand;
   const presentedHandKey = presentedHand?.map((card) => `${card.instanceId}\u0001${card.cardId}`).join("\0");
   const handAutoSort = useHandAutoSort();
+  const handSortMode = useHandSortMode();
   useEffect(() => {
     if (presentedHandKey === undefined) return;
     const hand = presentedHandKey.split("\0").map((card) => {
       const [instanceId = "", cardId = ""] = card.split("\u0001");
       return { instanceId, cardId };
     });
-    setHandOrder((order) => (handAutoSort ? sortedHandInstanceIds(hand) : retainHandOrder(order, hand)));
-  }, [presentedHandKey, handAutoSort]);
+    setHandOrder((order) => (handAutoSort ? sortedHandInstanceIds(hand, handSortMode) : retainHandOrder(order, hand)));
+  }, [presentedHandKey, handAutoSort, handSortMode]);
 
   if (
     status === "reconnecting" ||
@@ -1546,7 +1548,11 @@ export function GameScreen({
       }}
       chrome={{ permanentChrome, unsuspendStagger, dropIntentAttrs, baseDropIntentAttrs, trashEffectSource }}
       handDock={{
-        onSortHand: () => setHandOrder(sortedHandInstanceIds(shownHandEntries)),
+        handSortMode,
+        onSortHand: (mode: HandSortMode) => {
+          setHandSortMode(mode);
+          setHandOrder(sortedHandInstanceIds(shownHandEntries, mode));
+        },
         reorderDropBeforeInstanceId: hoveredDragIntent === "reorder" ? (dragHover?.id ?? null) : undefined,
         onMoveHandCard: (instanceId, direction) => {
           const index = shownHandEntries.findIndex((entry) => entry.instanceId === instanceId);

@@ -17,6 +17,7 @@ import { MatchChatWindow } from "../../chat/MatchChatWindow";
 import type { MatchChat } from "../../chat/useMatchChat";
 import { useUnreadChatCount } from "../../chat/useUnreadChatCount";
 import type { ArenaBoardLook } from "../../arenaLook";
+import type { HandSortMode } from "../../handSortMode";
 import { createPortal } from "react-dom";
 import type { GameState, Permanent, PlayerState, Seat } from "@aegis/shared";
 import type { RevealedZones } from "../model/gameOutcome";
@@ -136,7 +137,8 @@ export interface BoardChrome {
 export interface HandDockInputs {
   reorderDropBeforeInstanceId?: string | null;
   onMoveHandCard: (instanceId: string, direction: -1 | 1) => void;
-  onSortHand: () => void;
+  handSortMode: HandSortMode;
+  onSortHand: (mode: HandSortMode) => void;
   effectSourceInstanceId: string | undefined;
   effectSource?: EffectActivation;
   shakeInstanceId: string | undefined;
@@ -573,6 +575,7 @@ export function BoardStage({
 
           <PlayerDock
             spectating={spectating}
+            handSortMode={handDock.handSortMode}
             onSortHand={handDock.onSortHand}
             onMoveHandCard={handDock.onMoveHandCard}
             reorderDropBeforeInstanceId={handDock.reorderDropBeforeInstanceId}

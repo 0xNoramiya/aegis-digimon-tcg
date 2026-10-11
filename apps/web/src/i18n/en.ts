@@ -156,15 +156,18 @@ export const en = {
   "bugReport.successTracked": "Thanks. Track it in My feedback; the bell tells you when its status changes.",
 
   "game.dragIntent.reorder": "REORDER HAND",
+  "game.handSort.type": "By type",
+  "game.handSort.cost": "By cost",
+  "game.handSort.color": "By color",
+  "game.handSort.choose": "Choose sort order",
   "settings.sortHand": "Sort hand",
-  "settings.sortHandDesc":
-    "Sort the current hand by Digimon level, then Tamers and Options. New draws stay at the end until you sort again.",
+  "settings.sortHandDesc": "Sort the current hand in the chosen order. New draws stay at the end until you sort again.",
   "settings.autoHatch": "Auto hatch",
   "settings.autoHatchDesc":
     "Automatically hatch a Digi-Egg during your breeding phase when the breeding area is empty. Saved to your account.",
   "settings.handAutoSort": "Keep hand sorted",
   "settings.handAutoSortDesc":
-    "Re-sort your hand whenever a card arrives or leaves: Digimon by level, then Tamers, then Options, cheapest first. Cards you drag stay put until the hand changes.",
+    "Re-sort your hand in the order chosen on the hand's sort button whenever a card arrives or leaves. Cards you drag stay put until the hand changes.",
   "settings.customMusic": "Local music file",
   "settings.customMusicDesc":
     "Choose an audio file up to 50 MB. It stays on your device for this session; choose it again after reloading.",

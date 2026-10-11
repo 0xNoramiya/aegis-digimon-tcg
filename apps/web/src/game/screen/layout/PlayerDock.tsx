@@ -4,13 +4,14 @@
    short desktop moves the deck and trash down from the right rail the same way. */
 
 import type { ReactNode, RefObject } from "react";
-import { Icons } from "../../../design/icons";
 import { CardBack } from "../../../design/cards";
 import { useTranslation } from "../../../i18n";
 import { ArenaCounters } from "../../ArenaCounters";
 import { Hand, type HandEntry } from "../../piece";
 import { Side } from "../../side";
+import { HandSortMode } from "../../handSortMode";
 import { ActionBar } from "./ActionBar";
+import { HandSortControl } from "./HandSortControl";
 import { PlayerLine } from "./PlayerLine";
 import type { EffectActivation } from "../../effectSource";
 
@@ -40,12 +41,14 @@ export function PlayerDock({
   startDrag,
   selectCard,
   onHoverChange,
+  handSortMode = HandSortMode.Type,
   onSortHand,
   onMoveHandCard,
   reorderDropBeforeInstanceId,
 }: {
   spectating?: boolean;
-  onSortHand?: () => void;
+  handSortMode?: HandSortMode;
+  onSortHand?: (mode: HandSortMode) => void;
   onMoveHandCard?: (instanceId: string, direction: -1 | 1) => void;
   reorderDropBeforeInstanceId?: string | null;
   timer?: ReactNode;
@@ -139,19 +142,11 @@ export function PlayerDock({
             />
           )}
           {!spectating && onSortHand ? (
-            <button
-              type="button"
-              className="game-hand-sort"
-              aria-label={t("settings.sortHand")}
-              title={t("settings.sortHandDesc")}
+            <HandSortControl
+              mode={handSortMode}
               disabled={cards.length < 2 || draggingInstanceId !== undefined}
-              onClick={onSortHand}
-            >
-              <span aria-hidden="true">
-                <Icons.List size={18} />
-              </span>
-              <span className="game-hand-sort__label">{t("settings.sortHand")}</span>
-            </button>
+              onSort={onSortHand}
+            />
           ) : null}
         </div>
       </div>

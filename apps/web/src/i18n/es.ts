@@ -156,15 +156,19 @@ export const es: Record<keyof typeof en, string> = {
   "bugReport.successTracked": "Gracias. Síguelo en Mis comentarios; la campana te avisa cuando cambie el estado.",
 
   "game.dragIntent.reorder": "REORDENAR MANO",
+  "game.handSort.type": "Por tipo",
+  "game.handSort.cost": "Por coste",
+  "game.handSort.color": "Por color",
+  "game.handSort.choose": "Elegir orden",
   "settings.sortHand": "Ordenar mano",
   "settings.sortHandDesc":
-    "Ordena la mano actual por nivel de Digimon, después Tamers y Options. Las nuevas cartas quedan al final hasta que vuelvas a ordenar.",
+    "Ordena la mano actual en el orden elegido. Las nuevas cartas quedan al final hasta que vuelvas a ordenar.",
   "settings.autoHatch": "Eclosión automática",
   "settings.autoHatchDesc":
     "Eclosiona un Digi-Huevo automáticamente durante tu fase de crianza cuando el área está vacía. Se guarda en tu cuenta.",
   "settings.handAutoSort": "Mantener la mano ordenada",
   "settings.handAutoSortDesc":
-    "Reordena la mano cada vez que entra o sale una carta: Digimon por nivel, después Tamers, después Options, de menor a mayor coste. Las cartas que arrastras se quedan en su sitio hasta que cambie la mano.",
+    "Reordena la mano en el orden elegido en el botón de ordenar cada vez que entra o sale una carta. Las cartas que arrastras se quedan en su sitio hasta que cambie la mano.",
   "settings.customMusic": "Archivo de música local",
   "settings.customMusicDesc":
     "Elige un archivo de audio de hasta 50 MB. Permanece en tu dispositivo durante esta sesión; vuelve a elegirlo después de recargar.",
