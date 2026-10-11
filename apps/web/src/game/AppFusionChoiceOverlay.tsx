@@ -52,6 +52,7 @@ export function AppFusionChoiceOverlay({
   return (
     <CardPromptFrame
       cardId={resultCardId}
+      surface="center"
       className="app-fusion-choice"
       label={t("overlay.appFusionTitle")}
       eyebrow={t("overlay.appFusionMaterial")}

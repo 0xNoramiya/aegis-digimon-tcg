@@ -340,14 +340,14 @@ describe("BT25-034 Angemon", () => {
         target: { kind: "permanent", permanentId: s.perm("angemon").permanentId },
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    await settle(() => s.state.pendingDecision?.kind === "optional");
     const ascensionDecision = s.state.pendingDecision!;
-    expect(ascensionDecision.kind).toBe("selectCards");
+    expect(ascensionDecision.kind).toBe("optional");
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
         decisionId: ascensionDecision.decisionId,
-        response: { kind: "selectCards", instanceIds: [s.inst("angemon").instanceId] },
+        response: { kind: "optional", accept: true },
       }),
     ).toEqual({ ok: true });
     await settle(
@@ -382,13 +382,13 @@ describe("BT25-034 Angemon", () => {
         target: { kind: "permanent", permanentId: s.perm("angemon").permanentId },
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    await settle(() => s.state.pendingDecision?.kind === "optional");
     const selection = s.state.pendingDecision!;
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
         decisionId: selection.decisionId,
-        response: { kind: "selectCards", instanceIds: [] },
+        response: { kind: "optional", accept: false },
       }),
     ).toEqual({ ok: true });
     await settle(() => !observe(s.engine).isAttacking());

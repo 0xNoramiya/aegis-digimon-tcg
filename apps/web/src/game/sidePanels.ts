@@ -53,6 +53,8 @@ export interface SidePanelCard {
 }
 
 export interface SidePanel {
+  /** Exact effect resolution that owns these discarded sources across server batches. */
+  resolutionId?: string;
   id: string;
   titleKey: TranslationKey;
   side: Side;

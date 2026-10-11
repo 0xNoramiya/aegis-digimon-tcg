@@ -157,6 +157,10 @@ export function DecisionCandidateGrid({
                   instanceId: cand.instanceId,
                   t,
                 });
+                const pendingLabel =
+                  cand.pendingEffect && cand.cardId && (cand.zone === "trash" || cand.zone === "opponentTrash")
+                    ? t("overlay.pendingEffect")
+                    : undefined;
                 const copyLabel = cardCopyLabels.get(cand.instanceId);
                 const sourceLabel =
                   cand.sourceCount === undefined
@@ -165,6 +169,7 @@ export function DecisionCandidateGrid({
                         count: cand.sourceCount,
                       });
                 const liveLabels = [
+                  pendingLabel,
                   cand.trashOriginCardId
                     ? t("overlay.trashedFromSources", { name: printedCardName(cand.trashOriginCardId) })
                     : undefined,
@@ -209,19 +214,20 @@ export function DecisionCandidateGrid({
                         {printedCardName(cand.hostCardId)}
                       </span>
                     ) : null}
-                    {on && max > 1 ? (
-                      <span className="decision-overlay__order-badge" aria-hidden="true">
-                        {picks.indexOf(cand.instanceId) + 1}
-                      </span>
-                    ) : null}
-                    {copyLabel || cand.trashOriginCardId ? (
-                      <span className="decision-overlay__copy-details" aria-hidden="true">
+                    {copyLabel || pendingLabel || cand.trashOriginCardId ? (
+                      <span className="decision-overlay__candidate-details" aria-hidden="true">
                         {copyLabel ? <span>{copyLabel}</span> : null}
+                        {pendingLabel ? <span className="decision-overlay__pending-effect">{pendingLabel}</span> : null}
                         {cand.trashOriginCardId ? (
                           <span>
                             {t("overlay.trashedFromSources", { name: printedCardName(cand.trashOriginCardId) })}
                           </span>
                         ) : null}
+                      </span>
+                    ) : null}
+                    {on && max > 1 ? (
+                      <span className="decision-overlay__order-badge" aria-hidden="true">
+                        {picks.indexOf(cand.instanceId) + 1}
                       </span>
                     ) : null}
                     {/* What the effect will do to this card, once it has been

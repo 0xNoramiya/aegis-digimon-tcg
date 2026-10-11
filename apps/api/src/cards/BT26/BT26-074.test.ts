@@ -462,7 +462,7 @@ describe("BT26-074 Cerberusmon", () => {
           ],
         },
       },
-      { autoSelectCards: true },
+      { autoSelectCards: true, autoAcceptOptional: true, autoOrderTriggers: true },
     );
     await s.ready();
 

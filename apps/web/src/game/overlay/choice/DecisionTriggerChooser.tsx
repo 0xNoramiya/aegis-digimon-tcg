@@ -293,9 +293,9 @@ export function DecisionTriggerChooser({
                     value={presets[key]}
                     onChange={(preset) => setPreset(key, preset)}
                   />
-                ) : (
+                ) : triggerIsOptional?.[i] === false ? (
                   <span className="trigger-chooser__mandatory">{t("overlay.presetMandatory")}</span>
-                )
+                ) : null
               ) : null}
             </div>
           );

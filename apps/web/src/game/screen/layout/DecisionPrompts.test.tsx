@@ -368,3 +368,42 @@ it("respects engine DigiXros trash quotas without restricting hand materials", (
   fireEvent.click(screen.getByRole("button", { name: /DigiXros \(2 cards\)/ }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: ["dorulumon-hand", "ballistamon-trash"] });
 });
+
+it("retains pending physical-source provenance through the shared gallery adapter", () => {
+  const onTogglePick = vi.fn<(instanceId: string) => void>();
+  render(
+    <I18nProvider>
+      <DecisionPrompts
+        decision={{
+          decisionId: "physical-copy",
+          seat: 0,
+          kind: "selectCards",
+          promptText: "Choose",
+          sourceCardId: "BT25-085",
+          options: { candidateInstanceIds: ["old", "pending"], pendingEffectInstanceIds: ["pending"], min: 0, max: 1 },
+        }}
+        answerOnBoard={false}
+        permanents={[]}
+        sourceCardId="BT25-085"
+        candidates={[
+          { instanceId: "old", cardId: "EX7-071", zone: "trash" },
+          { instanceId: "pending", cardId: "EX7-071", zone: "trash", pendingEffect: true },
+        ]}
+        allowsPick={() => true}
+        picks={[]}
+        min={0}
+        max={1}
+        triggerDetails={[]}
+        opponentSecurityCount={3}
+        onTogglePick={onTogglePick}
+        onRespond={() => {}}
+        onOpenDialog={() => {}}
+      />
+    </I18nProvider>,
+  );
+  expect(screen.getByText("Pending effect")).toBeTruthy();
+  expect(screen.getByText("copy 1 of 2")).toBeTruthy();
+  expect(screen.getByText("copy 2 of 2")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: /Hurricane Screw Shot, Pending effect, copy 2 of 2/ }));
+  expect(onTogglePick).toHaveBeenCalledWith("pending");
+});

@@ -73,7 +73,8 @@ docker run --rm -v /etc/dokploy:/etc/dokploy:ro -v /opt/aegis-rollout:/opt/aegis
   --source /etc/dokploy/compose/aegis-rgise8/code --state /opt/aegis-rollout
 ```
 
-In local development, Vite proxies `/assets/card-images` to the upstream bucket.
+In local development, Vite proxies `/assets/card-images` to the deployed Oracle VPS mirror at
+`https://aegis-digi.online/assets/card-images`. `AEGIS_CARD_IMAGE_ORIGIN` overrides that mirror.
 
 ## Migration from revision-named generations
 

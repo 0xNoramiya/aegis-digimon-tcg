@@ -1,4 +1,52 @@
 {
+  "releases.1.24.0-beta.summary": {
+    "en": "Clearer staged effects and fixes for optional costs, card choices and action timing.",
+    "pt-BR": "Efeitos por etapa mais claros e correções de custos opcionais, escolhas de cartas e ordem das ações.",
+    "es": "Efectos por etapas más claros y correcciones de costes opcionales, elecciones de cartas y orden de acciones.",
+    "it": "Effetti per fasi più chiari e correzioni di costi facoltativi, scelte delle carte e ordine delle azioni."
+  },
+  "releases.1.24.0-beta.feature.stages": {
+    "en": "Effect prompts retain the complete effect text and emphasize the current step. Ascension uses the standard effect order and an optional activation prompt; App Fusion material choices appear in the central panel.",
+    "pt-BR": "As modais mantêm o texto completo do efeito e destacam a etapa atual. Ascension usa a ordem padrão de efeitos e uma ativação opcional; os materiais de App Fusion aparecem no painel central.",
+    "es": "Las ventanas conservan el texto completo del efecto y destacan la etapa actual. Ascension usa el orden habitual de efectos y una activación opcional; los materiales de App Fusion aparecen en el panel central.",
+    "it": "Le finestre mantengono il testo completo dell’effetto ed evidenziano la fase corrente. Ascension usa il normale ordine degli effetti e un’attivazione facoltativa; i materiali di App Fusion appaiono nel pannello centrale."
+  },
+  "releases.1.24.0-beta.fix.costs": {
+    "en": "Mastemon P-187 may decline its free play after paying the security cost. Unpaid optional costs preserve effects that can still activate later.",
+    "pt-BR": "Mastemon P-187 pode recusar a jogada gratuita depois de pagar o custo de segurança. Custos opcionais não pagos preservam efeitos que ainda podem ser ativados depois.",
+    "es": "Mastemon P-187 puede rechazar la jugada gratuita después de pagar el coste de seguridad. Los costes opcionales no pagados conservan los efectos que aún pueden activarse después.",
+    "it": "Mastemon P-187 può rifiutare la giocata gratuita dopo aver pagato il costo di sicurezza. I costi facoltativi non pagati preservano gli effetti ancora attivabili in seguito."
+  },
+  "releases.1.24.0-beta.fix.sources": {
+    "en": "Davis & Ken BT16-085 can trash digivolution cards across different opposing Digimon. Cards discarded by the same effect appear together in the result toast, with each source host identified.",
+    "pt-BR": "Davis & Ken BT16-085 pode descartar cartas de digivolução de diferentes Digimon adversários. Cartas descartadas pelo mesmo efeito aparecem juntas no aviso de resultado, identificando cada Digimon de origem.",
+    "es": "Davis & Ken BT16-085 puede descartar cartas de digievolución de distintos Digimon rivales. Las cartas descartadas por el mismo efecto aparecen juntas en el aviso de resultado, identificando cada Digimon de origen.",
+    "it": "Davis & Ken BT16-085 può scartare carte di digievoluzione da diversi Digimon avversari. Le carte scartate dallo stesso effetto appaiono insieme nella notifica del risultato, indicando ogni Digimon di origine."
+  },
+  "releases.1.24.0-beta.fix.cards": {
+    "en": "Corrected Arisa’s Rush eligibility, Tomoro’s own-turn response, Justimon’s borrowed effect usage, exact paired digivolution names and SeitenGokuumon’s Assembly materials. Conditional rookie warp routes no longer work in breeding.",
+    "pt-BR": "Corrigidos os alvos de Rush de Arisa, a resposta de Tomoro no próprio turno, os efeitos copiados de Justimon, os nomes exatos de digivolução em pares e os materiais de Assembly de SeitenGokuumon. Rotas condicionais de warp dos rookies não funcionam mais na criação.",
+    "es": "Corregidos los objetivos de Rush de Arisa, la respuesta de Tomoro en su propio turno, los efectos copiados de Justimon, los nombres exactos de digievolución en pareja y los materiales de Assembly de SeitenGokuumon. Las rutas condicionales de warp de los rookies ya no funcionan en crianza.",
+    "it": "Corretti i bersagli di Rush di Arisa, la risposta di Tomoro nel proprio turno, gli effetti copiati di Justimon, i nomi esatti delle digievoluzioni in coppia e i materiali Assembly di SeitenGokuumon. Le evoluzioni warp condizionali dei rookie non funzionano più nell’area di allevamento."
+  },
+  "releases.1.24.0-beta.fix.timing": {
+    "en": "Amaterasumon’s effect narration finishes before the next security check. Normal Main actions wait for pending processing, and newly drawn cards trigger their hand-trash effects when discarded.",
+    "pt-BR": "A apresentação do efeito de Amaterasumon termina antes da próxima checagem de segurança. Ações normais de Main aguardam o processamento pendente, e cartas recém-compradas ativam seus efeitos de descarte da mão quando descartadas.",
+    "es": "La presentación del efecto de Amaterasumon termina antes de la siguiente comprobación de seguridad. Las acciones normales de Main esperan el procesamiento pendiente, y las cartas recién robadas activan sus efectos de descarte de la mano cuando se descartan.",
+    "it": "La presentazione dell’effetto di Amaterasumon termina prima del controllo di sicurezza successivo. Le normali azioni Main attendono l’elaborazione in corso e le carte appena pescate attivano i propri effetti di scarto dalla mano quando vengono scartate."
+  },
+  "releases.1.24.0-beta.fix.presentation": {
+    "en": "Corrected Official Card Sleeves 03 names and removed duplicate copy labels in card choices. Effect result animations stay attached to their owning effect, including end-of-turn choices.",
+    "pt-BR": "Corrigidos os nomes de Official Card Sleeves 03 e removidos os rótulos de cópia duplicados nas escolhas de cartas. Animações de resultado permanecem ligadas ao efeito correspondente, incluindo escolhas de fim de turno.",
+    "es": "Corregidos los nombres de Official Card Sleeves 03 y eliminadas las etiquetas duplicadas de copias al elegir cartas. Las animaciones de resultado permanecen vinculadas a su efecto, incluidas las elecciones de fin de turno.",
+    "it": "Corretti i nomi di Official Card Sleeves 03 e rimosse le etichette duplicate delle copie nelle scelte delle carte. Le animazioni dei risultati restano legate al relativo effetto, incluse le scelte di fine turno."
+  },
+  "releases.1.24.0-beta.fix.video": {
+    "en": "Fixed corrupted replay video recordings.",
+    "pt-BR": "Corrigidas as gravações de replay em vídeo corrompidas.",
+    "es": "Corregidas las grabaciones de repeticiones en vídeo dañadas.",
+    "it": "Corrette le registrazioni video dei replay danneggiate."
+  },
   "releases.1.23.0-beta.summary": {
     "en": "This release gives timed matches a fresh clock each turn, makes trash copies easier to identify and adds local replay video recording.",
     "pt-BR": "Esta versão renova o cronômetro a cada turno, facilita a identificação de cópias no lixo e adiciona gravação local de replays em vídeo.",

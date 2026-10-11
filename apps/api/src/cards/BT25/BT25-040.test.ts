@@ -239,14 +239,14 @@ describe("BT25-040 MagnaAngemon", () => {
           target: { kind: "permanent", permanentId: s.perm("magna").permanentId },
         }),
       ).toEqual({ ok: true });
-      await settle(() => s.state.pendingDecision?.kind === "selectCards");
+      await settle(() => s.state.pendingDecision?.kind === "optional");
       const decision = s.state.pendingDecision!;
-      expect(JSON.parse(decision.payloadJson).candidateInstanceIds).toContain(s.inst("magna").instanceId);
+      expect(s.decisions.at(-1)!.req.sourceInstanceId).toBe(s.inst("magna").instanceId);
       expect(
         s.engine.applyIntent(0, {
           type: "respondDecision",
           decisionId: decision.decisionId,
-          response: { kind: "selectCards", instanceIds: accept ? [s.inst("magna").instanceId] : [] },
+          response: { kind: "optional", accept },
         }),
       ).toEqual({ ok: true });
       await settle(() => !observe(s.engine).isAttacking());

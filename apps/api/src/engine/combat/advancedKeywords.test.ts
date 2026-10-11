@@ -719,7 +719,7 @@ describe("§16-37 <Fragment (N)> — choose and trash N of this Digimon's own di
 
 describe("§16-43 <Ascension> — when this card is deleted, you may place it at the top of your security stack", () => {
   it("a printed-<Ascension> Digimon, when deleted, may be placed on top of security instead of trash", async () => {
-    const s = setup({ autoSelectCards: true });
+    const s = setup({ autoSelectCards: true, autoAcceptOptional: true });
     const p0 = s.state.players[0] as PlayerState;
     const p1 = s.state.players[1] as PlayerState;
     const holder = digimon(0, 12000, "EX12-047"); // printed <Ascension> (Amaterasumon)

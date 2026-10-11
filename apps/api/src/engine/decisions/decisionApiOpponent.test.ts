@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ArraySchema } from "@colyseus/schema";
-import { GameState, PlayerState, type DecisionRequest, type Seat } from "@aegis/shared";
+import { GameState, PlayerState, getCardDefinition, type DecisionRequest, type Seat } from "@aegis/shared";
 import { DecisionManager, type DecisionTransport } from "./index.js";
 import { createDecisionApi, requireOpponentAsk } from "./decisionApi.js";
 import type { EffectContext } from "../effects/EffectContext.js";
@@ -149,4 +149,77 @@ describe("ctx.ask.opponent (opponent-addressed decisions)", () => {
     // a loud failure.
     expect(() => requireOpponentAsk(ctx)).toThrow(/ctx\.ask\.opponent is not wired/);
   });
+});
+
+describe("staged effect presentation", () => {
+  it.each([false, true])("keeps the full effect and changes emphasis per step (opponent: %s)", async (opponent) => {
+    const state = makeState();
+    const { transport, sent } = recordingTransport();
+    const manager = new DecisionManager(state, transport);
+    const api = createDecisionApi(manager);
+    const ask = opponent ? api.opponent! : api;
+    const ctx = makeCtx();
+    const clause = "[On Play] Draw 1. Then, you may suspend 1 of your opponent's Digimon.";
+    ctx.activeEffectText = `[Start of Your Turn] Set memory to 3.\n${clause}`;
+    ctx.activeEffectTextPart = "draw 1.";
+    const first = ask.selectCards(ctx, { candidates: ["c1"], min: 1, max: 1 });
+    expect(sent[0]!.req.options).toMatchObject({
+      effectText: clause,
+      effectTextPart: "draw 1.",
+      effectTextEmphasis: "draw 1.",
+    });
+    manager.respond(sent[0]!.seat, sent[0]!.req.decisionId, { kind: "selectCards", instanceIds: ["c1"] });
+    expect(await first).toEqual(["c1"]);
+    ctx.activeEffectTextPart = "Then, you may suspend 1 of your opponent's Digimon.";
+    const second = ask.optional(ctx, "Use the second step?");
+    expect(sent[1]!.req.options).toMatchObject({
+      effectText: clause,
+      effectTextPart: ctx.activeEffectTextPart,
+      effectTextEmphasis: ctx.activeEffectTextPart,
+    });
+    manager.respond(sent[1]!.seat, sent[1]!.req.decisionId, { kind: "optional", accept: false });
+    expect(await second).toBe(false);
+    // Presentation does not overwrite interpreter state for the next action.
+    expect(ctx.activeEffectTextPart).toBe("Then, you may suspend 1 of your opponent's Digimon.");
+  });
+
+  it.each(["Draw 1.", "Unrelated passage", ""])(
+    "does not invent a stage for an unmatched or complete passage: %s",
+    async (part) => {
+      const state = makeState();
+      const { transport, sent } = recordingTransport();
+      const manager = new DecisionManager(state, transport);
+      const api = createDecisionApi(manager);
+      const ctx = makeCtx();
+      ctx.activeEffectText = "Draw 1.";
+      ctx.activeEffectTextPart = part;
+      const decision = api.optional(ctx, "Use this effect?");
+      expect(sent[0]!.req.options?.effectTextEmphasis).toBeUndefined();
+      expect(sent[0]!.req.options?.effectTextPart).toBe(part);
+      manager.respond(0, sent[0]!.req.decisionId, { kind: "optional", accept: false });
+      expect(await decision).toBe(false);
+    },
+  );
+});
+
+it("preserves a complete multiline modal effect while highlighting the selected bullet", async () => {
+  const state = makeState();
+  const { transport, sent } = recordingTransport();
+  const manager = new DecisionManager(state, transport);
+  const api = createDecisionApi(manager);
+  const ctx = makeCtx();
+  ctx.activeEffectText = getCardDefinition("BT17-015")!.effectText!;
+  const bullet = ctx.activeEffectText.split("\n").find((line) => line.startsWith("・"))!;
+  expect(bullet).toBeTruthy();
+  ctx.activeEffectTextPart = bullet;
+  const decision = api.optional(ctx, "Activate the selected effect?");
+  const clause = ctx.activeEffectText.slice(ctx.activeEffectText.indexOf("[On Play]"));
+  expect(sent[0]!.req.options).toMatchObject({
+    effectText: clause,
+    effectTextPart: bullet,
+    effectTextEmphasis: bullet,
+  });
+  expect(sent[0]!.req.options!.effectText).toContain("Activate 1 of the effects below:");
+  manager.respond(0, sent[0]!.req.decisionId, { kind: "optional", accept: false });
+  expect(await decision).toBe(false);
 });

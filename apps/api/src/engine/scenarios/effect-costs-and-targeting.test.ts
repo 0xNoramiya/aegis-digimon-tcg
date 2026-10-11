@@ -648,13 +648,17 @@ describe("Effect costs and targeting through public intents", () => {
       s.engine.applyIntent(0, {
         type: "playCard",
         instanceId: hand(s, "EX12-048").instanceId,
-        assembly: { materialInstanceIds: s.state.players[0]!.trash.map((c) => c.instanceId) },
+        assembly: {
+          materialInstanceIds: s.state.players[0]!.trash.filter((c) => c.cardId !== "EX12-048").map(
+            (c) => c.instanceId,
+          ),
+        },
       }),
     ).toEqual({ ok: true });
     await resolved(s, "EX12-048");
     expect(s.state.memory).toBe(memory - 7);
     expect(field(s, "EX12-048").stack.map((c) => c.cardId)).toEqual(
-      expect.arrayContaining(["EX12-015", "EX12-029", "BT12-041"]),
+      expect.arrayContaining(["EX12-015", "EX12-029", "EX12-056"]),
     );
     await finish(run);
   });

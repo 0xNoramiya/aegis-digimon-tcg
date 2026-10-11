@@ -510,6 +510,7 @@ describe("resolution plan chooser", () => {
     (triggerIsOptional) => {
       renderDecision({ ...planRequest, options: { ...planRequest.options, triggerIsOptional } });
       expect(screen.queryByRole("button", { name: "Select mandatory, top to bottom" })).toBeNull();
+      expect(screen.queryAllByText("Mandatory")).toHaveLength(0);
     },
   );
 
@@ -4493,9 +4494,53 @@ it("#60 visibly identifies the copy trashed from LadyDevimon's sources and sends
       />
     </I18nProvider>,
   );
-  expect(screen.getByText("copy 1 of 2")).toBeTruthy();
-  expect(screen.getByText("copy 2 of 2")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Hurricane Screw Shot, copy 1 of 2" }).textContent).toContain(
+    "copy 1 of 2",
+  );
+  expect(screen.getByRole("button", { name: /copy 2 of 2/ }).textContent).toContain("copy 2 of 2");
   expect(screen.getByText("Trashed from LadyDevimon’s sources")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: /Trashed from LadyDevimon’s sources/ }));
   expect(onTogglePick).toHaveBeenCalledWith("source-shot");
+});
+
+it.each([
+  "By trashing your top security card",
+  "You may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.",
+])("keeps Mastemon's complete clause on the left and emphasizes its current step: %s", (effectTextEmphasis) => {
+  const clause =
+    "[When Digivolving] [When Attacking] [Once Per Turn] By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
+  const { onRespond } = renderDecision({
+    decisionId: "mastemon-step",
+    seat: 0,
+    kind: "optional",
+    sourceCardId: "P-187",
+    promptText: "Use this effect?",
+    options: { timing: "WhenDigivolving", effectText: clause, effectTextPart: clause, effectTextEmphasis },
+  });
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(clause);
+  expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent?.toLowerCase()).toBe(
+    effectTextEmphasis.toLowerCase(),
+  );
+  expect(screen.getByRole("dialog").getAttribute("data-prompt-surface")).toBe("left");
+  fireEvent.click(screen.getByRole("button", { name: "Yes, activate" }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: true });
+});
+
+it.each(["before", "after"] as const)("shows the full staged Ryutaro effect with its %s passage in bold", (stage) => {
+  const full = cardEffectClauseForTiming("EX11-056", "AllTurns")!;
+  const boundary = full.indexOf(" After,");
+  const passage = stage === "before" ? full.slice(0, boundary) : full.slice(boundary + 1);
+  const { onRespond } = renderDecision({
+    decisionId: `ryutaro-staged-${stage}`,
+    seat: 0,
+    kind: "optional",
+    sourceCardId: "EX11-056",
+    promptText: "Use this effect?",
+    options: { timing: "AllTurns", effectText: full, effectTextPart: passage, effectTextEmphasis: passage },
+  });
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(full);
+  expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(passage);
+  expect(screen.getByRole("dialog").getAttribute("data-prompt-surface")).toBe("left");
+  fireEvent.click(screen.getByRole("button", { name: "No, decline" }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: false });
 });

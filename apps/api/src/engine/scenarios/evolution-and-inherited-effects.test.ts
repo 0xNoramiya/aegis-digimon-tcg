@@ -656,6 +656,7 @@ describe("Evolution and inherited effects", () => {
       ok: true,
     });
     await advance(s.engine).waitForMainPhase(0);
+    await settle(() => s.engine.mainVerbContinuationsInFlight === 0);
     const veemon = field(s, "P-117");
     expect(s.state.memory).toBe(3);
     expect(

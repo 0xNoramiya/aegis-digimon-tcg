@@ -35,7 +35,9 @@ describe("EX12-048 SeitenGokuumon", () => {
     ]);
     expect(compiled.assemblyRequirement).toEqual([
       {
-        materials: [{ count: 3, names: ["Gokuumon", "Sagomon", "Cho-Hakkaimon", "Sanzomon"], differentNames: true }],
+        materials: [
+          { count: 3, namesExact: ["Gokuumon", "Sagomon", "Cho-Hakkaimon", "Sanzomon"], differentNames: true },
+        ],
         reduceCost: 6,
       },
     ]);
