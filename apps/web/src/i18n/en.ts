@@ -1465,6 +1465,7 @@ export const en = {
   "overlay.zoomCard": "Enlarge card",
   "overlay.trashEffect": "Trash effect",
   "overlay.trashEmpty": "trash is empty",
+  "overlay.trashedFromSources": "Trashed from {name}’s sources",
   "overlay.trashSort": "Sort trash",
   "overlay.trashSortRecent": "Newest first",
   "overlay.trashSortName": "Group by card name",

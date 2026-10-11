@@ -71,6 +71,7 @@ export function PileViewers({
         <TrashViewerOverlay
           title={trashView === Side.Viewer ? t("game.yourTrash") : t("game.oppTrash", { name: opponentName })}
           cardIds={trashOwner.trash.map((c) => c.cardId)}
+          instanceIds={trashOwner.trash.map((c) => c.instanceId)}
           artIds={trashOwner.trash.map((c) => c.artId)}
           effects={trashEffects}
           sheet={sheet}

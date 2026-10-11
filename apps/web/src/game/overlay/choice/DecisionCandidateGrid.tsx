@@ -165,6 +165,9 @@ export function DecisionCandidateGrid({
                         count: cand.sourceCount,
                       });
                 const liveLabels = [
+                  cand.trashOriginCardId
+                    ? t("overlay.trashedFromSources", { name: printedCardName(cand.trashOriginCardId) })
+                    : undefined,
                   cand.currentDP === undefined ? undefined : `${cand.currentDP.toLocaleString()} DP`,
                   cand.isSuspended === true ? t("overlay.suspended") : undefined,
                   sourceLabel,
@@ -203,6 +206,16 @@ export function DecisionCandidateGrid({
                     {on && max > 1 ? (
                       <span className="decision-overlay__order-badge" aria-hidden="true">
                         {picks.indexOf(cand.instanceId) + 1}
+                      </span>
+                    ) : null}
+                    {copyLabel || cand.trashOriginCardId ? (
+                      <span className="decision-overlay__copy-details" aria-hidden="true">
+                        {copyLabel ? <span>{copyLabel}</span> : null}
+                        {cand.trashOriginCardId ? (
+                          <span>
+                            {t("overlay.trashedFromSources", { name: printedCardName(cand.trashOriginCardId) })}
+                          </span>
+                        ) : null}
                       </span>
                     ) : null}
                     {/* What the effect will do to this card, once it has been

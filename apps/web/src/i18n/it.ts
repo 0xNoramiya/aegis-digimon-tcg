@@ -1141,6 +1141,7 @@ const interfaceMessages = {
   "overlay.zoomCard": "Ingrandisci la carta",
   "overlay.trashEffect": "Effetto dal trash",
   "overlay.trashEmpty": "il trash è vuoto",
+  "overlay.trashedFromSources": "Scartata dalle fonti di {name}",
   "overlay.trashSort": "Ordina scarti",
   "overlay.trashSortRecent": "Più recenti",
   "overlay.trashSortName": "Raggruppa per nome",

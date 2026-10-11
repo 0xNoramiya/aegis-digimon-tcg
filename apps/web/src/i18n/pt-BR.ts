@@ -1491,6 +1491,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.zoomCard": "Ampliar carta",
   "overlay.trashEffect": "Efeito do lixo",
   "overlay.trashEmpty": "lixo vazio",
+  "overlay.trashedFromSources": "Descartada das fontes de {name}",
   "overlay.trashSort": "Ordenar descarte",
   "overlay.trashSortRecent": "Mais recentes",
   "overlay.trashSortName": "Agrupar por nome",

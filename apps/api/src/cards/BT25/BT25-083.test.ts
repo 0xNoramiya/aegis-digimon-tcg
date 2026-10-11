@@ -305,6 +305,9 @@ describe("BT25-083 LadyDevimon — KB Q&A rulings", () => {
 
     expect(s.perm("lady").stack).toHaveLength(0);
     expect(s.state.players[0]!.trash.map((card) => card.cardId)).toEqual(["EX7-071", "EX7-071"]);
+    // Feedback #60: provenance survives while this copy stays in trash, but clears on reuse.
+    expect(s.inst("trashedCopy").trashOriginCardId).toBe(useTrashedCopy ? "" : CARD_ID);
+    expect(s.inst("otherCopy").trashOriginCardId).toBe("");
     return s;
   }
 

@@ -1439,6 +1439,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.zoomCard": "Ampliar carta",
   "overlay.trashEffect": "Efecto de descarte",
   "overlay.trashEmpty": "el descarte está vacío",
+  "overlay.trashedFromSources": "Descartada de las fuentes de {name}",
   "overlay.trashSort": "Ordenar descarte",
   "overlay.trashSortRecent": "Más recientes",
   "overlay.trashSortName": "Agrupar por nombre",

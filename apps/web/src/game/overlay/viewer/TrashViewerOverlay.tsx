@@ -21,6 +21,7 @@ import { CardZoomOverlay } from "./CardZoomOverlay";
 export function TrashViewerOverlay({
   cardIds,
   artIds,
+  instanceIds,
   effects,
   title,
   sheet,
@@ -32,6 +33,7 @@ export function TrashViewerOverlay({
 }: {
   cardIds: string[];
   artIds?: string[];
+  instanceIds?: string[];
   /** Server-projected `[Trash] [Main]` activations per card, aligned with `cardIds`. */
   effects?: readonly (readonly ActivatableEntry[])[];
   preserveOrder?: boolean;
@@ -46,24 +48,73 @@ export function TrashViewerOverlay({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const [sort, setSort] = useState<"recent" | "name">("recent");
   const countText = countLabel ?? t("overlay.trashCount", { count: cardIds.length });
   const emptyText = emptyLabel ?? t("overlay.trashEmpty");
-  const ordered = preserveOrder ? [...cardIds] : [...cardIds].reverse();
-  const arts = cardIds.map((_, index) => artIds?.[index]);
-  const orderedArts = preserveOrder ? arts : arts.reverse();
-  const effectsPerCard = cardIds.map((_, index) => effects?.[index] ?? []);
-  const orderedEffects = preserveOrder ? effectsPerCard : [...effectsPerCard].reverse();
+  // Sort entries together: art and executable effects belong to a physical copy.
+  const entries = cardIds.map((cardId, index) => ({ cardId, index, key: instanceIds?.[index] ?? String(index) }));
+  if (!preserveOrder) {
+    entries.reverse();
+    if (sort === "name")
+      entries.sort(
+        (a, b) =>
+          (getCardDefinition(a.cardId)?.nameEn ?? a.cardId).localeCompare(
+            getCardDefinition(b.cardId)?.nameEn ?? b.cardId,
+          ) ||
+          a.cardId.localeCompare(b.cardId) ||
+          b.index - a.index,
+      );
+  }
+  const ordered = entries.map((entry) => entry.cardId);
+  const orderedArts = entries.map((entry) => artIds?.[entry.index]);
+  const orderedEffects = entries.map((entry) => effects?.[entry.index] ?? []);
+  const totals = new Map<string, number>();
+  for (const cardId of cardIds) totals.set(cardId, (totals.get(cardId) ?? 0) + 1);
+  const copyLabels = entries.map((entry) => {
+    const total = totals.get(entry.cardId) ?? 0;
+    return total > 1
+      ? t("overlay.cardCopy", {
+          index: cardIds.slice(0, entry.index + 1).filter((id) => id === entry.cardId).length,
+          total,
+        })
+      : undefined;
+  });
   const canActivate = onActivateEffect !== undefined;
   const isActivatable = (index: number) => canActivate && (orderedEffects[index]?.length ?? 0) > 0;
-  const [menuIndex, setMenuIndex] = useState<number | null>(null);
-  const [activeIndex, setActiveIndex] = useState(() => {
+  const [menuKey, setMenuKey] = useState<string | null>(null);
+  const [activeKey, setActiveKey] = useState(() => {
     const firstActivatable = ordered.findIndex((_, index) => isActivatable(index));
-    return firstActivatable >= 0 ? firstActivatable : Math.max(0, ordered.findIndex(Boolean));
+    return entries[firstActivatable >= 0 ? firstActivatable : Math.max(0, ordered.findIndex(Boolean))]?.key;
   });
-  const [zoomedIndex, setZoomedIndex] = useState<number | null>(null);
+  const [zoomedKey, setZoomedKey] = useState<string | null>(null);
+  const indexOf = (key: string | null | undefined) => {
+    const index = entries.findIndex((entry) => entry.key === key);
+    return index < 0 ? null : index;
+  };
+  const menuIndex = indexOf(menuKey);
+  const zoomedIndex = indexOf(zoomedKey);
+  const activeIndex = indexOf(activeKey) ?? 0;
   const zoomed = zoomedIndex === null ? undefined : ordered[zoomedIndex];
-  const effectiveIndex = activeIndex < ordered.length ? activeIndex : 0;
+  const effectiveIndex = activeIndex;
   const preview = ordered[effectiveIndex];
+  const sortControl =
+    !preserveOrder && cardIds.length > 0 ? (
+      <label className="trash-viewer__sort">
+        {t("overlay.trashSort")}
+        <select
+          value={sort}
+          onChange={(event) => {
+            setSort(event.target.value as "recent" | "name");
+            setActiveKey(entries[0]?.key);
+            setMenuKey(null);
+            setZoomedKey(null);
+          }}
+        >
+          <option value="recent">{t("overlay.trashSortRecent")}</option>
+          <option value="name">{t("overlay.trashSortName")}</option>
+        </select>
+      </label>
+    ) : null;
 
   /** One button per effect of ONE card, so two copies never show two identical buttons side by side. */
   const activationButtonsFor = (index: number) => {
@@ -72,7 +123,10 @@ export function TrashViewerOverlay({
     if (!onActivateEffect || !cardId || cardEffects.length === 0) return null;
     const name = getCardDefinition(cardId)?.nameEn ?? cardId;
     return (
-      <div className="trash-viewer__activations" style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
+      <div
+        className="trash-viewer__activations"
+        style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}
+      >
         {cardEffects.map((effect) => (
           <Button
             key={`${effect.instanceId}:${effect.effectKey}`}
@@ -81,7 +135,7 @@ export function TrashViewerOverlay({
             title={effect.description}
             aria-label={`${t("game.activateMainEffect")}: ${name}`}
             onClick={() => {
-              setMenuIndex(null);
+              setMenuKey(null);
               onActivateEffect(effect);
             }}
           >
@@ -91,15 +145,14 @@ export function TrashViewerOverlay({
       </div>
     );
   };
-  const trashClauses = (cardId: string | undefined) =>
-    cardId ? cardEffectClausesForTiming(cardId, "Trash") : [];
+  const trashClauses = (cardId: string | undefined) => (cardId ? cardEffectClausesForTiming(cardId, "Trash") : []);
   /** Clicking an activatable card asks for confirmation: the card, its [Trash] clause, and activate or cancel. */
   const confirmDialog = (index: number) => {
     const cardId = ordered[index];
     if (!cardId) return null;
     const name = getCardDefinition(cardId)?.nameEn ?? cardId;
     return (
-      <div className="trash-viewer__confirm" onClick={() => setMenuIndex(null)}>
+      <div className="trash-viewer__confirm" onClick={() => setMenuKey(null)}>
         <div
           className="trash-viewer__confirm-panel"
           role="dialog"
@@ -118,7 +171,7 @@ export function TrashViewerOverlay({
               ))}
             </div>
             {activationButtonsFor(index)}
-            <Button size="md" full variant="ghost" onClick={() => setMenuIndex(null)}>
+            <Button size="md" full variant="ghost" onClick={() => setMenuKey(null)}>
               {t("common.cancel")}
             </Button>
           </div>
@@ -127,16 +180,16 @@ export function TrashViewerOverlay({
     );
   };
   const openCard = (index: number) => {
-    setActiveIndex(index);
-    if (isActivatable(index)) setMenuIndex(index);
-    else if (ordered[index]) setZoomedIndex(index);
+    setActiveKey(entries[index]?.key);
+    if (isActivatable(index)) setMenuKey(entries[index]?.key ?? null);
+    else if (ordered[index]) setZoomedKey(entries[index]?.key ?? null);
   };
 
   const zoomOverlay = zoomed ? (
     <CardZoomOverlay
       cardId={zoomed}
       artId={zoomedIndex === null ? undefined : orderedArts[zoomedIndex]}
-      onClose={() => setZoomedIndex(null)}
+      onClose={() => setZoomedKey(null)}
     />
   ) : null;
 
@@ -156,6 +209,7 @@ export function TrashViewerOverlay({
               <strong>{title}</strong>
               <span>{countText}</span>
             </div>
+            {sortControl}
             {ordered.length === 0 ? (
               <p className="trash-sheet__empty">{emptyText}</p>
             ) : (
@@ -163,7 +217,7 @@ export function TrashViewerOverlay({
                 {ordered.map((cardId, i) => (
                   <button
                     type="button"
-                    key={`${cardId}-${i}`}
+                    key={entries[i]?.key}
                     aria-haspopup={isActivatable(i) ? "dialog" : undefined}
                     onClick={() => openCard(i)}
                   >
@@ -175,6 +229,9 @@ export function TrashViewerOverlay({
                     <figcaption>
                       {cardId ? (getCardDefinition(cardId)?.nameEn ?? cardId) : t("game.hiddenCard")}
                     </figcaption>
+                    {!preserveOrder && copyLabels[i] ? (
+                      <span className="trash-viewer__label">{copyLabels[i]}</span>
+                    ) : null}
                     {isActivatable(i) ? <span className="trash-viewer__label">{t("overlay.trashEffect")}</span> : null}
                     {preserveOrder && cardId
                       ? securityCardEffects(cardId).map((effect) => (
@@ -260,6 +317,7 @@ export function TrashViewerOverlay({
                 {countText}
               </div>
             </div>
+            {sortControl}
             {ordered.length === 0 ? (
               <div
                 style={{
@@ -289,35 +347,40 @@ export function TrashViewerOverlay({
                   const sel = activeIndex === i;
                   const activatable = isActivatable(i);
                   return (
-                    <div key={`${cardId}-${i}`} className="trash-viewer__slot">
-                    <button
-                      type="button"
-                      onMouseEnter={() => setActiveIndex(i)}
-                      aria-haspopup={activatable ? "dialog" : undefined}
-                      onClick={() => openCard(i)}
-                      title={cardId ? (def?.nameEn ?? cardId) : t("game.hiddenCard")}
-                      aria-label={cardId ? (def?.nameEn ?? cardId) : t("game.hiddenCard")}
-                      onFocus={() => setActiveIndex(i)}
-                      className="trash-viewer__card"
-                      data-selected={sel || undefined}
-                    >
-                      {cardId ? (
-                        <CardArt cardId={cardId} artId={orderedArts[i]} width={preserveOrder ? 96 : 64} />
-                      ) : (
-                        <CardBack width={96} useSelectedSleeve={false} />
-                      )}
-                      {preserveOrder ? (
-                        <span className="security-viewer__name">{def?.nameEn ?? t("game.hiddenCard")}</span>
-                      ) : null}
-                      {preserveOrder && cardId
-                        ? securityCardEffects(cardId).map((effect) => (
-                            <span className="security-viewer__badge" title={effect.text} key={effect.text}>
-                              {effect.badge}
-                            </span>
-                          ))
-                        : null}
-                    {isActivatable(i) ? <span className="trash-viewer__label">{t("overlay.trashEffect")}</span> : null}
-</button>
+                    <div key={entries[i]?.key} className="trash-viewer__slot">
+                      <button
+                        type="button"
+                        onMouseEnter={() => setActiveKey(entries[i]?.key)}
+                        aria-haspopup={activatable ? "dialog" : undefined}
+                        onClick={() => openCard(i)}
+                        title={cardId ? (def?.nameEn ?? cardId) : t("game.hiddenCard")}
+                        aria-label={cardId ? (def?.nameEn ?? cardId) : t("game.hiddenCard")}
+                        onFocus={() => setActiveKey(entries[i]?.key)}
+                        className="trash-viewer__card"
+                        data-selected={sel || undefined}
+                      >
+                        {cardId ? (
+                          <CardArt cardId={cardId} artId={orderedArts[i]} width={preserveOrder ? 96 : 64} />
+                        ) : (
+                          <CardBack width={96} useSelectedSleeve={false} />
+                        )}
+                        {preserveOrder ? (
+                          <span className="security-viewer__name">{def?.nameEn ?? t("game.hiddenCard")}</span>
+                        ) : null}
+                        {!preserveOrder && copyLabels[i] ? (
+                          <span className="trash-viewer__label">{copyLabels[i]}</span>
+                        ) : null}
+                        {preserveOrder && cardId
+                          ? securityCardEffects(cardId).map((effect) => (
+                              <span className="security-viewer__badge" title={effect.text} key={effect.text}>
+                                {effect.badge}
+                              </span>
+                            ))
+                          : null}
+                        {isActivatable(i) ? (
+                          <span className="trash-viewer__label">{t("overlay.trashEffect")}</span>
+                        ) : null}
+                      </button>
                     </div>
                   );
                 })}
