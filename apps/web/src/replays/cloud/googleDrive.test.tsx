@@ -142,6 +142,28 @@ describe("Google Drive provider", () => {
     expect(drive.isLinked()).toBe(true);
   });
 
+  it("remembers the Google account and hints it on the next sign-in", async () => {
+    const identity = stubIdentity();
+    const fetchMock = vi.fn<typeof fetch>(
+      async () => new Response(JSON.stringify({ user: { emailAddress: "tai@example.com" } }), { status: 200 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const drive = createGoogleDriveProvider("client-id");
+
+    await drive.connect();
+    await waitFor(() => expect(localStorage.getItem(DRIVE_STORAGE_KEYS.account)).toBe("tai@example.com"));
+    expect(String(fetchMock.mock.calls[0]![0])).toContain("/drive/v3/about");
+    expect(identity.initTokenClient.mock.calls[0]![0]).not.toHaveProperty("login_hint");
+
+    await drive.connect();
+    expect(identity.initTokenClient.mock.calls[1]![0]).toMatchObject({ login_hint: "tai@example.com" });
+    expect(identity.requestAccessToken).toHaveBeenLastCalledWith({ prompt: "" });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    await drive.disconnect();
+    expect(localStorage.getItem(DRIVE_STORAGE_KEYS.account)).toBeNull();
+  });
+
   it("rejects a sign-in the player cancels", async () => {
     stubIdentity({ error: "access_denied" });
     const drive = createGoogleDriveProvider("client-id");
