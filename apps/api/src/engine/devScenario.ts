@@ -469,6 +469,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-richard-main-fresh-materials",
   "arena-davis-both-colors",
   "arena-feedback65-dracomon-selection",
+  "arena-feedback73-magnaangemon-decision",
   "arena-feedback72-nokia-hand-evolution",
   "arena-feedback71-justimon-copied-opt",
   "arena-feedback70-gaiomon-attack",
@@ -8394,6 +8395,37 @@ function layFeedback60DuplicateOptionChoiceScenario(state: GameState): void {
   state.memory = 10;
 }
 
+/** #73: recovery narration precedes a required choice between two actual opposing Digimon. */
+function layFeedback73MagnaAngemonDecisionScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const p = state.players[seat]!;
+    insertCard(p, Zone.EggDeck, faceDownCard(`feedback73-egg-${seat}`, "BT14-003", seat));
+    for (let i = 0; i < 10; i++)
+      insertCard(p, Zone.Deck, faceDownCard(`feedback73-deck-${seat}-${i}`, "BT1-009", seat));
+    for (let i = 0; i < 5; i++)
+      insertCard(p, Zone.Security, faceDownCard(`feedback73-security-${seat}-${i}`, "BT1-009", seat));
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT14-003", "BT14-033"], "-feedback73-base"));
+  placePermanent(human, establishedDigimon(0, ["ST3-04"], "-feedback73-other"));
+  const training = establishedDigimon(0, ["P-105"], "-feedback73-training");
+  training.placedByEffect = true;
+  placePermanent(human, training);
+  placePermanent(human, establishedDigimon(0, ["BT1-087"], "-feedback73-tk"));
+  human.security[0]!.cardId = "BT14-102";
+  human.security[0]!.artId = "BT14-102";
+  insertCard(human, Zone.Hand, faceUpCard("feedback73-replacement", "BT14-102", 0));
+  insertCard(human, Zone.Hand, faceUpCard("feedback73-other-evolution", "BT16-019", 0));
+  insertCard(human, Zone.Hand, faceUpCard("feedback73-magna", "BT14-037", 0));
+  insertCard(human, Zone.Hand, faceUpCard("feedback73-reserve", "BT1-009", 0));
+  placePermanent(state.players[1]!, establishedDigimon(1, ["ST20-01", "EX4-038"], "-feedback73-low"));
+  placePermanent(state.players[1]!, establishedDigimon(1, ["EX9-019"], "-feedback73-high"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 6;
+}
+
 /** #72: actual recovery/refusal sequence leaves zero-memory hand Main actions available. */
 function layFeedback72NokiaHandEvolutionScenario(state: GameState): void {
   for (const seat of [0, 1] as const) {
@@ -11921,6 +11953,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-richard-main-fresh-materials": layDiscordRichardMainFreshMaterialsScenario,
   "arena-davis-both-colors": layDavisBothColorsScenario,
   "arena-feedback65-dracomon-selection": layFeedback65DracomonSelectionScenario,
+  "arena-feedback73-magnaangemon-decision": layFeedback73MagnaAngemonDecisionScenario,
   "arena-feedback72-nokia-hand-evolution": layFeedback72NokiaHandEvolutionScenario,
   "arena-feedback71-justimon-copied-opt": layFeedback71JustimonCopiedOptScenario,
   "arena-feedback70-gaiomon-attack": layFeedback70GaiomonAttackScenario,
