@@ -630,6 +630,8 @@ export interface AegisJoinOptions {
     | "arena-p108-training-delay-no-target"
     | "arena-feedback47-chronomon-security-return"
     | "arena-feedback50-progress-end-attack"
+    | "arena-feedback62-dragons-roar-breeding"
+    | "arena-feedback62-dragons-roar-normal-colors"
     | "arena-feedback59-metalgarurumon-field-warp"
     | "arena-feedback59-metalgarurumon-printed-breeding"
     | "arena-feedback59-wargreymon-field-warp"

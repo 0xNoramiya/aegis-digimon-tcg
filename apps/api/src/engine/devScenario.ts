@@ -383,6 +383,8 @@ export const DEV_SCENARIO_IDS = [
   "arena-p108-training-delay-with-target",
   "arena-feedback47-chronomon-security-return",
   "arena-feedback50-progress-end-attack",
+  "arena-feedback62-dragons-roar-breeding",
+  "arena-feedback62-dragons-roar-normal-colors",
   "arena-feedback59-metalgarurumon-field-warp",
   "arena-feedback59-metalgarurumon-printed-breeding",
   "arena-feedback59-wargreymon-field-warp",
@@ -10664,6 +10666,24 @@ function layGithub5311CrescemonCostScenario(state: GameState): void {
   insertCard(human, Zone.Hand, faceDownCard("github5311-crescemon", "EX5-020", 0));
 }
 
+/** Feedback #62: breeding colors meet ordinary requirements but cannot supply a trait waiver. */
+function layFeedback62DragonsRoarScenario(state: GameState, normalColors = false): void {
+  prepareGithubCardEffectsScenario(state, 6);
+  const human = state.players[0]!;
+  const source = establishedDigimon(0, [normalColors ? "BT1-045" : "BT18-036"], "-feedback62-source");
+  source.inBreeding = true;
+  setBreeding(human, source);
+  if (normalColors) placePermanent(human, establishedDigimon(0, ["BT1-085"], "-feedback62-red-tamer"));
+  insertCard(human, Zone.Hand, faceDownCard("feedback62-roar", "BT18-098", 0));
+  insertCard(human, Zone.Hand, faceDownCard("feedback62-reserve", "BT1-009", 0));
+  clearZone(human, Zone.Security);
+  for (const suffix of ["top", "bottom"])
+    insertCard(human, Zone.Security, faceDownCard(`feedback62-security-${suffix}`, "BT1-009", 0));
+  const target = establishedDigimon(1, ["BT1-080"], "-feedback62-target");
+  target.baseDP = target.currentDP = 12000;
+  placePermanent(state.players[1]!, target);
+}
+
 /** Feedback #59: conditional hand warps exclude breeding; printed Lv.5 routes do not. */
 function layFeedback59WarpScenario(state: GameState, mode: "metal" | "printed" | "war"): void {
   prepareGithubCardEffectsScenario(state, 6);
@@ -11628,6 +11648,8 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-p108-training-delay-with-target": (state, decks) => layP108TrainingDelayScenario(state, decks, true),
   "arena-feedback47-chronomon-security-return": layFeedback47ChronomonSecurityReturnScenario,
   "arena-feedback50-progress-end-attack": layFeedback50ProgressEndAttackScenario,
+  "arena-feedback62-dragons-roar-breeding": (state) => layFeedback62DragonsRoarScenario(state),
+  "arena-feedback62-dragons-roar-normal-colors": (state) => layFeedback62DragonsRoarScenario(state, true),
   "arena-feedback59-metalgarurumon-field-warp": (state) => layFeedback59WarpScenario(state, "metal"),
   "arena-feedback59-metalgarurumon-printed-breeding": (state) => layFeedback59WarpScenario(state, "printed"),
   "arena-feedback59-wargreymon-field-warp": (state) => layFeedback59WarpScenario(state, "war"),
