@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "slug": "fundamentals",
+    "title": "Digimon fundamentals",
+    "description": "A reusable approach to memory, development, and attacks.",
+    "url": "/strategy-guides/fundamentals/"
+  },
+  {
+    "slug": "glowing-dawn",
+    "title": "Glowing Dawn",
+    "description": "Practice the choices behind this BT26 Glowing Dawn deck.",
+    "url": "/strategy-guides/glowing-dawn/"
+  },
+  {
+    "slug": "toho-braves",
+    "title": "Toho Braves",
+    "description": "Practice the choices behind this BT26 Toho Braves deck.",
+    "url": "/strategy-guides/toho-braves/"
+  }
+]

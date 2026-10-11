@@ -79,13 +79,15 @@ def verified_run(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
                 candidate = hashlib.sha256(json.dumps(program).encode("utf-8")).hexdigest()
                 if game["candidateSha256"] != candidate:
                     raise ValueError("Held-out games do not match the selected or starting policy")
-                if game["task"]["opponent"] == "mcts":
-                    if not game.get("searches") or any(
+                if game["task"]["opponent"] == "mcts" and (
+                    not game.get("searches")
+                    or any(
                         search["requested"] != report["simulations"]
                         or search["completed"] != search["requested"]
                         for search in game["searches"]
-                    ):
-                        raise ValueError("Held-out search budget was incomplete")
+                    )
+                ):
+                    raise ValueError("Held-out search budget was incomplete")
     return manifest, pilots, report
 
 
@@ -254,6 +256,19 @@ def evidence_table(evidence: dict[str, Any]) -> str:
 
 def publish(run_dir: Path, output: Path, base_url: str, catalog_output: Path | None = None) -> None:
     manifest, pilots, report = verified_run(run_dir)
+    render_guides(manifest, pilots, report, output, base_url, catalog_output)
+
+
+def render_guides(
+    manifest: dict[str, Any],
+    pilots: dict[str, Any],
+    report: dict[str, Any],
+    output: Path,
+    base_url: str,
+    catalog_output: Path | None,
+    *,
+    experimental: bool = False,
+) -> None:
     output.mkdir(parents=True, exist_ok=True)
     metadata = manifest["metadata"]
     cards = {card["cardId"]: card for card in metadata["cards"]}
@@ -313,10 +328,19 @@ def publish(run_dir: Path, output: Path, base_url: str, catalog_output: Path | N
 <nav class="contents" aria-label="In this guide"><a href="#decisions">Decision principles</a>{'<a href="#deck">Deck list</a>' if deck_html else ""}<a href="#results">Practice results</a></nav>
 <section id="decisions"><h2>Decision principles</h2><p>These principles describe the selected pilot's preferences. Combine them with the board and the printed card text; a preference is not a guarantee that a play is safe.</p><ul class="principles">{principles}</ul></section>{deck_html}
 <section id="results"><h2>Practice results</h2><p>The search opponent used {report["simulations"]} completed game simulations per main choice. Both player seats were tested. This small benchmark describes these particular decks and seeds; it does not establish tournament performance.</p>{evidence_table(report["results"][version])}<details><summary>How this guide was selected</summary><p>We evolved a general pilot on varied legal decks, then trained deck pilots against search and a frozen archive of other pilots. Final games were excluded from training and selection. Search samples unknown cards using an open deck list and applies to main choices.</p><p>{stage["validEvaluatedProposals"]} alternative policies tested in completed games. {selection_note} Selected validation score {stage["validationScore"]:.2f}. The final results above include the starting-policy control.</p><p>Engine fingerprint: <code>{escape(report["engineSha256"])}</code></p><a href="/strategy-guides/evidence.json">Download policy and benchmark evidence</a></details></section>"""
+        if experimental:
+            body = (
+                '<p class="practice"><strong>Experimental training preview.</strong> This short evaluation uses a small search budget. Improved playing strength has not been established.</p>'
+                + body
+            )
         page = output / slug
         page.mkdir(exist_ok=True)
         (page / "index.html").write_text(
-            shell(title, description, body, f"{base_url}/strategy-guides/{slug}/"), encoding="utf-8"
+            shell(title, description, body, f"{base_url}/strategy-guides/{slug}/").replace(
+                "</head>",
+                '<meta name="robots" content="noindex"></head>' if experimental else "</head>",
+            ),
+            encoding="utf-8",
         )
         index_links.append(
             f'<li><a href="/strategy-guides/{slug}/"><h2>{escape(title)}</h2><p>{escape(description)}</p><span>Read guide →</span></a></li>'
@@ -326,17 +350,26 @@ def publish(run_dir: Path, output: Path, base_url: str, catalog_output: Path | N
         + "".join(index_links)
         + "</ul>"
     )
+    if experimental:
+        body = (
+            '<p class="practice"><strong>Experimental training preview.</strong> Results use a limited search budget; improved playing strength has not been established.</p>'
+            + body
+        )
     (output / "index.html").write_text(
         shell(
             "Digimon strategy guides",
             "Learn Digimon Card Game decisions and practice BT26 decks on Aegis.",
             body,
             f"{base_url}/strategy-guides/",
+        ).replace(
+            "</head>",
+            '<meta name="robots" content="noindex"></head>' if experimental else "</head>",
         ),
         encoding="utf-8",
     )
     public_evidence = {
         "engineSha256": report["engineSha256"],
+        "runnerSha256": report["runnerSha256"],
         "simulations": report["simulations"],
         "policies": pilots,
         "results": {
@@ -357,7 +390,20 @@ def publish(run_dir: Path, output: Path, base_url: str, catalog_output: Path | N
                             "score": game["score"],
                             "valid": game["valid"],
                             "candidateSha256": game["candidateSha256"],
-                            "searches": game.get("searches", []),
+                            "searches": [
+                                {
+                                    key: search[key]
+                                    for key in (
+                                        "requested",
+                                        "attempted",
+                                        "completed",
+                                        "invalid",
+                                        "nodes",
+                                    )
+                                    if key in search
+                                }
+                                for search in game.get("searches", [])
+                            ],
                         }
                         for game in result[arm]
                     ]
@@ -367,6 +413,8 @@ def publish(run_dir: Path, output: Path, base_url: str, catalog_output: Path | N
             for version, result in report["results"].items()
         },
     }
+    if experimental:
+        public_evidence["experimental"] = True
     if catalog_output is not None:
         catalog_output.parent.mkdir(parents=True, exist_ok=True)
         catalog_output.write_text(json.dumps(catalog, indent=2) + "\n", encoding="utf-8")

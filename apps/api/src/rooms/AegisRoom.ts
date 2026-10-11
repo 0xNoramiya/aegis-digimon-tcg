@@ -54,6 +54,7 @@ import { GameEngine, type SeatJoinOptions } from "../engine/GameEngine.js";
 import { finalRevealOf, type VisibilityPort } from "../engine/state/index.js";
 import { BotPlayer, type BotOptions } from "../bot/BotPlayer.js";
 import { trainedBotOptions } from "../bot/inferenceRuntime.js";
+import { evolvedBotOptions } from "../bot/evolution/livePolicy.js";
 import { playableBotDeck } from "../engine/botDeck.js";
 import { accountStore } from "../accounts/runtime.js";
 import type { AccountStore, DeckSnapshot } from "../accounts/AccountStore.js";
@@ -1493,11 +1494,16 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     const humanDeck = this.engine.stagedDecks[0];
     const modelOptions =
       this.devScenario === undefined && humanDeck !== undefined
-        ? trainedBotOptions({
+        ? (evolvedBotOptions({
             engine: this.engine,
             seat: this.BOT_SEAT,
             decks: [humanDeck, deck],
-          })
+          }) ??
+          trainedBotOptions({
+            engine: this.engine,
+            seat: this.BOT_SEAT,
+            decks: [humanDeck, deck],
+          }))
         : undefined;
     const scenarioPolicy = createIssueReproBotPolicy(this.devScenario);
     const baseBotOptions: BotOptions | undefined =
@@ -1525,7 +1531,12 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     try {
       this.withBatch(() =>
         this.engine.seatPlayer(this.BOT_SEAT, "bot", {
-          displayName: modelOptions === undefined ? "Bot" : "BT26 AI",
+          displayName:
+            modelOptions === undefined
+              ? "Bot"
+              : modelOptions.policy?.name.startsWith("evolved:")
+                ? "Strategy Bot"
+                : "BT26 AI",
           deck,
           betaBattleMode: this.isBetaBattleRoom,
           unlimited: this.isUnlimitedRoom,

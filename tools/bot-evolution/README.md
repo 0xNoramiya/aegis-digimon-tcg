@@ -91,9 +91,35 @@ The training action and material-selection modules were adapted from
   The exact pilot decks are pinned repository tournament lists, not claims that
   these lists are the strongest current builds.
 
-The integration is implemented and under validation. A completed high-budget
-evolution run, held-out strength validation, and user-facing publication are
-still required. No guides are published by this runner yet.
+A local experimental preview can use a completed low-budget run. It does not
+establish improved playing strength. High-budget evaluation is still required
+for ordinary guide publication.
+
+## Experimental preview and live practice
+
+For a completed paired run with at least eight simulations per search:
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/preview.py \
+  --run-dir artifacts/bot-evolution/desktop-gepa-timeboxed-preview-8 \
+  --base-url http://localhost:5173
+
+AEGIS_BOT_HEURISTIC="$PWD/apps/api/src/bot/evolution/programs/preview.json" pnpm dev
+```
+
+Preview pages explicitly identify the limited evaluation and use `noindex`.
+The preview renderer checks complete paired games, both player seats, matching
+selected and control policies, and pinned engine and runner fingerprints. The
+strict publisher below retains its minimum of 128 simulations.
+
+The live catalog contains `schemaVersion: 1`, a `generic` heuristic and `pilots`
+keyed by the exact supported deck version. A deck pilot is selected only when
+the actual main and Digi-Egg card multisets match; other decks use the generic
+policy. `AEGIS_BOT_HEURISTIC` and `AEGIS_BOT_CHECKPOINT` are mutually exclusive.
+Restart the API after changing the catalog. Rejected actions disable the policy
+for that match and use the standard bot fallback. Live games retain the normal
+bot action cap and presentation pacing; the benchmark uses a pinned evaluation
+engine and removes think delays. The live app is not an identical benchmark run.
 
 ## Guide publication
 
