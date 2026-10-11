@@ -1205,7 +1205,12 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       const willPay =
         costAsksItself ||
         (ctx.predecidedOptionalCosts?.get(action) ??
-          (await ctx.ask.optional(ctx, `Pay cost: ${describeCost(payableActionCost)}?`)));
+          (await ctx.ask.optional(
+            paysProcessingCostBeforeOptional && payableActionCost.raw !== undefined
+              ? { ...ctx, activeEffectTextPart: payableActionCost.raw }
+              : ctx,
+            `Pay cost: ${describeCost(payableActionCost)}?`,
+          )));
       if (willPay) {
         if (!costAsksItself) markActivationChosen(ctx);
         const outerCostIsTheQuestion = ctx.costIsTheQuestion;

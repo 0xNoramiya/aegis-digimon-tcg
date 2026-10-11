@@ -3,6 +3,7 @@ import { test, expect } from "./scenario-page";
 const HOST = "dev-perm-0-feedback84-host";
 const YELLOW = "dev-feedback84-yellow";
 const PURPLE = "dev-feedback84-purple";
+const COST_CLAUSE = "By trashing your top security card";
 const PLAY_CLAUSE =
   "You may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
 
@@ -31,8 +32,9 @@ for (const timing of ["digivolve", "attack"] as const) {
         async (decision) => {
           if (decision.sourceCardId !== "P-187") return { accept: false };
           if (decision.kind === "optional") {
-            expect(decision.options.effectTextPart).toBe(PLAY_CLAUSE);
-            await expect(scenario.page.getByRole("dialog").getByText(PLAY_CLAUSE, { exact: true })).toBeVisible({
+            const clause = /Pay cost/i.test(decision.promptText) ? COST_CLAUSE : PLAY_CLAUSE;
+            expect(decision.options.effectTextPart).toBe(clause);
+            await expect(scenario.page.getByRole("dialog").getByText(clause, { exact: true })).toBeVisible({
               timeout: 6_000,
             });
           }

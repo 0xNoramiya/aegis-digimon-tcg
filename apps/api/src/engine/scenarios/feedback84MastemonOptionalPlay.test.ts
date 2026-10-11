@@ -7,6 +7,7 @@ import { observe } from "../testkit/observe.js";
 import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
 import "../../cards/index.js";
 
+const COST_CLAUSE = "By trashing your top security card";
 const PLAY_CLAUSE =
   "You may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
 
@@ -58,7 +59,10 @@ it.each(["digivolve", "attack"] as const)(
       ).toEqual({ ok: true });
       await settle(() => s.state.players[0]!.trash.some((c) => c.instanceId === costId) && !!s.state.pendingDecision);
       expect(s.state.pendingDecision!.kind).toBe("optional");
-      expect(s.decisions.at(-1)!.req.options!.effectTextPart).toBe(PLAY_CLAUSE);
+      const request = s.decisions.at(-1)!.req;
+      expect(request.options!.effectTextPart).toBe(
+        request.promptText?.startsWith("Pay cost:") ? COST_CLAUSE : PLAY_CLAUSE,
+      );
       expect(
         s.engine.applyIntent(0, {
           type: "respondDecision",
@@ -97,7 +101,8 @@ function respond(s: ReturnType<typeof setupEngine>, response: DecisionResponse) 
 
 async function optional(s: ReturnType<typeof setupEngine>, accept: boolean) {
   await settle(() => s.state.pendingDecision?.kind === "optional");
-  expect(s.decisions.at(-1)!.req.options!.effectTextPart).toBe(PLAY_CLAUSE);
+  const request = s.decisions.at(-1)!.req;
+  expect(request.options!.effectTextPart).toBe(request.promptText?.startsWith("Pay cost:") ? COST_CLAUSE : PLAY_CLAUSE);
   respond(s, { kind: "optional", accept });
 }
 

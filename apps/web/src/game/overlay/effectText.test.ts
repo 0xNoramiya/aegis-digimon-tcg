@@ -25,3 +25,19 @@ it("feedback #51: donor provenance still validates against printed text and ordi
     }),
   ).toBe(donor);
 });
+
+it.each(["WhenDigivolving", "WhenAttacking"])("shows Mastemon free play as a separate sentence for %s", (timing) => {
+  const part =
+    "You may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
+  expect(playerFacingEffectClause({ cardId: "P-187", timing, description: undefined, effectTextPart: part })).toBe(
+    part,
+  );
+  expect(
+    playerFacingEffectClause({
+      cardId: "P-187",
+      timing,
+      description: undefined,
+      effectTextPart: part.replace("6000", "7000"),
+    }),
+  ).not.toContain("7000");
+});
