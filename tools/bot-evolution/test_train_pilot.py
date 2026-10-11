@@ -76,7 +76,11 @@ def test_real_gepa_pilot_selection_requires_fresh_direct_generic_control_and_hel
                 (self.config.run_dir / f"{self.calls:05d}.json").write_text(
                     json.dumps(game), encoding="utf-8"
                 )
-            return EvaluationBatch(outputs=outputs, scores=[score] * len(tasks), trajectories=None)
+            return EvaluationBatch(
+                outputs=outputs,
+                scores=[score] * len(tasks),
+                trajectories=outputs if capture_traces else None,
+            )
 
         def make_reflective_dataset(self, candidate, evaluated, components):
             return {component: [] for component in components}
