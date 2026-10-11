@@ -12,5 +12,5 @@ compiled engine fingerprint, supported features, seed policy, and pinned decks.
 
 Valid fitness requires a completed game, projection verification, no rejected
 intents or policy fallbacks, and every search completing its requested rollout
-budget. Invalid games receive zero score. Traces retain actual chosen actions,
+budget. Invalid games and timeouts have null fitness; incomplete batches stop training. Traces retain actual chosen actions,
 source cards, public features, and rule contributions for GEPA reflection.
