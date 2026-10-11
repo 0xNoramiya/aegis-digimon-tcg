@@ -994,6 +994,7 @@ const interfaceMessages = {
   "overlay.playCostBudget": "Costo di gioco: {selected} / {max}",
   "overlay.dpBudget": "DP totali: {selected} / {max}",
   "overlay.card": "Carta",
+  "overlay.pendingEffect": "Effetto in attesa",
   "overlay.cardCopy": "copia {index} di {total}",
   "overlay.yourSecurity": "La tua sicurezza",
   "overlay.opponentSecurity": "Sicurezza avversaria",

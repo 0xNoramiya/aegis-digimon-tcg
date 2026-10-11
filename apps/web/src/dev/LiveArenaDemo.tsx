@@ -1953,6 +1953,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Discord 1558451244815880332. Encerre a criação. No início da sua fase principal, recuse colocar a carta do topo do deck embaixo de Richard Sampson (EX13-071). A lixeira tem Reppamon (BT1-051) e Chirinmon (BT1-058), então o [Principal] de Richard aparece. Ative e aceite. As 3 cartas viradas para baixo vão para a lixeira. Pela Q7447, escolha o Reppamon (EX13-030) e o Chirinmon (EX13-032) que acabaram de ir para a lixeira. Os dois ficam embaixo de Kudamon (EX13-026), que digivolve em Kentaurosmon (BT3-043) por 2 de memória. BT1-051 e BT1-058 ficam na lixeira.",
     en: "Discord 1558451244815880332. End breeding. At the start of your main phase, decline to place your deck's top card under Richard Sampson (EX13-071). Your trash has Reppamon (BT1-051) and Chirinmon (BT1-058), so Richard's [Main] is offered. Activate it and accept. The 3 face-down cards go to the trash. Per Q7447, choose the Reppamon (EX13-030) and Chirinmon (EX13-032) you just trashed. Both go under Kudamon (EX13-026), which digivolves into Kentaurosmon (BT3-043) for 2 memory. BT1-051 and BT1-058 stay in the trash.",
   },
+  "arena-feedback60-duplicate-option-choice": {
+    en: "Digivolve BlackGatomon into LadyDevimon. Decline placement/draw, accept trashing its Hurricane Screw Shot source, and use BeelStarmon as Fly Bullet. Accept placement: the two Hurricanes have visible copy labels, and only the newly discarded one shows Pending effect. Choose the older copy to leave the pending memory effect available, or choose the pending copy to move its source before activation. Decline Arts Digivolve. Evolution costs 3, Fly Bullet costs 3; final memory is 5 or 4 respectively.",
+    ptBR: "Digivolva BlackGatomon em LadyDevimon. Recuse colocar/comprar, aceite descartar Hurricane Screw Shot da fonte e use BeelStarmon como Fly Bullet. Aceite colocar: as duas cópias têm rótulos visíveis, e só a recém-descartada mostra Efeito pendente. Escolha a antiga para manter o efeito de memória disponível ou a pendente para mover a fonte antes da ativação. Recuse Arts Digivolve. Digivolução custa 3, Fly Bullet custa 3; memória final 5 ou 4, respectivamente.",
+  },
   "arena-feedback65-dracomon-selection": {
     en: "Play Dracomon, add the matching card, then confirm the order of both remaining cards. Verify that the shared confirmation controls stay reachable.",
     ptBR: "Jogue Dracomon, adicione a carta correspondente e confirme a ordem das duas restantes. Verifique se os controles de confirmação continuam acessíveis.",
@@ -3555,6 +3559,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
     "arena-discord-richard-main-fresh-materials",
     "Discord · EX13 Richard Sampson · [Main] stacks the cards it just trashed",
   ],
+  ["arena-feedback60-duplicate-option-choice", "Feedback 60 · physical Option copies and pending effect"],
   ["arena-feedback65-dracomon-selection", "Feedback 65/67 · Dracomon selection and order"],
   ["arena-davis-both-colors", "BT3 Davis · must add both the blue and the green Digimon"],
   ["arena-discord-taiki-keeps-xros-digimon", "Discord · BT10 Taiki may add or place the only Xros Heart Digimon"],

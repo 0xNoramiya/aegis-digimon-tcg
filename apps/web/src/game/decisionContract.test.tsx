@@ -27,6 +27,7 @@ const OPTION_CONSUMERS: Record<DecisionOptionKey, string | null> = {
   candidateInstanceIds: "screen/model/decisionView.ts",
   visibleInstanceIds: "decisionModel.ts",
   visibleCards: "decisionModel.ts",
+  pendingEffectInstanceIds: "decisionModel.ts",
   min: "decisionPresentation.ts",
   max: "overlay/choice/DecisionOverlay.tsx",
   maxTotalPlayCost: "screen/model/decisionView.ts",

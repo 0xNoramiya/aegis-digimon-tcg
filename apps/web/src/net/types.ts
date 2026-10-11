@@ -716,6 +716,7 @@ export interface AegisJoinOptions {
     | "arena-discord-richard-main-fresh-materials"
     | "arena-davis-both-colors"
     | "arena-feedback65-dracomon-selection"
+    | "arena-feedback60-duplicate-option-choice"
     | "arena-discord-taiki-keeps-xros-digimon"
     | "arena-discord-vemmon-add-or-place"
     | "arena-discord-speed-security-scene-stuck"
