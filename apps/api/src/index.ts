@@ -61,7 +61,8 @@ app.use(express.json());
 // container's Caddy), so the client address is the third entry from the right. Bug reports meter
 // anonymous callers by address, which is the proxy's address without this. A deployment with a
 // different number of hops sets AEGIS_TRUSTED_PROXY_HOPS; a direct one sets 0.
-app.set("trust proxy", Number(process.env.AEGIS_TRUSTED_PROXY_HOPS ?? 2));
+const trustedProxyHops = Number(process.env.AEGIS_TRUSTED_PROXY_HOPS ?? 2);
+app.set("trust proxy", trustedProxyHops);
 // The runtime singletons, not fresh instances: `TopCutProgram`'s in-process lock only serializes
 // callers that SHARE the instance, and the routes, the resolution listener and the sweep are three
 // callers of the same transition.
@@ -198,6 +199,7 @@ const gameServer = new DeploymentServer(deploymentRuntime, {
   transport: new WebSocketTransport({ server: httpServer }),
   // Aegis owns SIGTERM/SIGINT below so it can refuse a stop while rooms exist.
   gracefullyShutdown: false,
+  trustedProxyHops,
   presence: cluster.presence,
   driver: cluster.driver,
   // Undefined in single-process mode, where Colyseus keeps its own default.
