@@ -3,12 +3,16 @@
 
    Most of them are unfinished business, so server authority closing the window they
    belong to closes them too: a new decision, a combat window, a phase, a turn, or the
-   end of the match. The stack viewer is exempt: it only reads a permanent, so the
-   viewer keeps it open until they close it or the permanent leaves the board. */
+   end of the match. Windows that only show cards are exempt, so the viewer can read
+   the opponent's turn card by card (#55). The stack viewer stays until the viewer
+   closes it or the permanent leaves the board. The opponent's card menu, the trash
+   and the security viewer stay until the viewer closes them, the card leaves the
+   board, the viewer gets a decision of their own (which they must not cover), or
+   the match ends. */
 
 import { useEffect, useState } from "react";
 import type { DecisionRequest, GameState } from "@aegis/shared";
-import type { Side } from "../../side";
+import { Side } from "../../side";
 import type { RevealedZoneView } from "../model/gameOutcome";
 import type { DnaMaterialSelection } from "../model/dnaMaterialSelection";
 import type {
@@ -65,9 +69,7 @@ export function useOverlayState({
   // Discard unfinished declarations when server authority changes their action window.
   useEffect(() => {
     clearSel();
-    setCardMenu(null);
-    setTrashView(null);
-    setSecurityView(null);
+    setCardMenu((menu) => (menu?.side === Side.Opponent ? menu : null));
     setDigiXrosPick(null);
     setAssemblyPick(null);
     setActionConfirm(null);
@@ -84,6 +86,15 @@ export function useOverlayState({
     state?.turnSeat,
     state?.gameOver,
   ]);
+
+  const ownDecisionId = decision?.decisionId;
+  const gameOver = state?.gameOver;
+  useEffect(() => {
+    if (!ownDecisionId && !gameOver) return;
+    setCardMenu(null);
+    setTrashView(null);
+    setSecurityView(null);
+  }, [ownDecisionId, gameOver]);
 
   return {
     cardMenu,

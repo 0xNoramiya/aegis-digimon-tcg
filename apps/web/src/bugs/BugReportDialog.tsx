@@ -66,6 +66,7 @@ export function BugReportDialog({
   // Until the server says otherwise, assume the public copy is on: never understate where words go.
   const [publicMirror, setPublicMirror] = useState(true);
   const isBug = kind === "bug";
+  const hasDraft = [summary, description, opponentDeck].some((text) => text.trim()) || cardIds.length > 0;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -98,7 +99,15 @@ export function BugReportDialog({
   };
 
   return (
-    <Dialog className="bug-report" labelledBy={titleId} onClose={onClose}>
+    // Only Cancel closes a started report: a click outside or a stray Escape must not
+    // throw away what the reporter typed. Escape still closes an empty or sent form.
+    <Dialog
+      className="bug-report"
+      labelledBy={titleId}
+      onClose={onClose}
+      closeOnBackdrop={false}
+      closeOnEscape={!!filed || !hasDraft}
+    >
       <header className="bug-report__head aegis-dialog__header">
         <span className="bug-report__title">
           <Icons.Megaphone size={20} />

@@ -7,6 +7,7 @@ export const playEs: Record<keyof typeof playEn, string> = {
   "redesign.play.banlistIssue": "Problema con la banlist",
   "redesign.play.setupTitle": "Configurar partida",
   "redesign.play.advancedSettings": "Configuración avanzada",
+  "redesign.play.advancedSettingsHint": "Cartas permitidas, reglas, al mejor de, temporizador y más",
   "redesign.play.timerOff": "Temporizador desactivado",
   "redesign.play.short.queue": "Cola",
   "redesign.play.short.bot": "Jugar",

@@ -80,11 +80,16 @@
   box-shadow: 0 0 10px var(--ds-accent-soft);
 }
 
-/* The skip button is only in the header while the queue has something to skip, so it
-   is tinted: a control that comes and goes has to be recognisable at a glance. */
+/* The skip button only shows while the queue has something to skip, so it is tinted:
+   a control that comes and goes has to be recognisable at a glance. Its slot stays
+   reserved while it is hidden, so the buttons beside it never shift. */
 .game-topbar-button--skip {
   color: var(--ds-accent);
   border-color: var(--ds-accent);
+}
+
+.game-topbar-button--skip[data-skippable="false"] {
+  visibility: hidden;
 }
 
 /* Unread chat count on the chat button's corner (or the phone's match-menu button). */

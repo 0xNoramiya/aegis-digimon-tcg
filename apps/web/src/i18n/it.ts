@@ -1787,6 +1787,7 @@ const interfaceMessages = {
   "redesign.play.banlistIssue": "Violazione della banlist",
   "redesign.play.setupTitle": "Configurazione della partita",
   "redesign.play.advancedSettings": "Impostazioni avanzate",
+  "redesign.play.advancedSettingsHint": "Carte ammesse, regole, al meglio di, timer e altro",
   "redesign.play.timerOff": "Timer disattivato",
   "redesign.play.short.queue": "Coda",
   "redesign.play.short.bot": "Gioca",
