@@ -1337,6 +1337,7 @@ export const en = {
   "overlay.playCostBudget": "Play cost: {selected} / {max}",
   "overlay.dpBudget": "Total DP: {selected} / {max}",
   "overlay.card": "Card",
+  "overlay.pendingEffect": "Pending effect",
   "overlay.cardCopy": "copy {index} of {total}",
   "overlay.yourSecurity": "Your security",
   "overlay.opponentSecurity": "Opponent security",

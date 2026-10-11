@@ -156,6 +156,25 @@ describe("digivolution matching (static-data half)", () => {
     });
   });
 
+  it("feedback #59 keeps conditional exact-name warps hand-only for effect evolution", () => {
+    for (const [card, exact, near, level5] of [
+      ["BT15-101", "BT17-019", "BT9-020", "BT2-078"],
+      ["BT14-101", "ST1-03", "BT9-008", "BT2-063"],
+    ]) {
+      expect(matchingAlternateDigivolutionRequirement(card!, exact!, { sourceZone: "hand" })).toMatchObject({
+        cost: 4,
+        sourceZones: ["hand"],
+        battleAreaOnly: true,
+      });
+      expect(matchingAlternateDigivolutionRequirement(card!, exact!, { sourceZone: "trash" })).toBeUndefined();
+      expect(matchingAlternateDigivolutionRequirement(card!, near!, { sourceZone: "hand" })).toBeUndefined();
+      expect(matchingAlternateDigivolutionRequirement(card!, level5!, { sourceZone: "trash" })).toMatchObject({
+        level: 5,
+        cost: 4,
+      });
+    }
+  });
+
   it("preserves BT7-111's hand-only alternate path when an effect sources the card from trash", () => {
     expect(matchingAlternateDigivolutionRequirement("BT7-111", "EX10-013", { sourceZone: "hand" })).toMatchObject({
       namesExact: ["Lucemon"],

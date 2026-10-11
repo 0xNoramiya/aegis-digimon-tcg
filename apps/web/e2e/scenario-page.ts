@@ -170,11 +170,22 @@ export class ScenarioPage {
           await this.decisionReady(answer, decision, selection.decisionBudgetMs);
           await answer.click();
         } else if (decision.kind === "orderTriggers") {
-          const panel = this.page
-            .getByRole("dialog")
-            .filter({ has: this.page.getByRole("heading", { name: "Order pending effects", exact: true }) });
+          const triggerKeys = decision.options.triggerKeys ?? [];
+          const deletionOrder =
+            decision.options.acceptsResolutionPlan !== true &&
+            triggerKeys.some((key) => key.startsWith("ascension/")) &&
+            triggerKeys.some((key) => key.startsWith("on-deletion/")) &&
+            triggerKeys.every((key) => /^(ascension|on-deletion)\//.test(key));
+          const panel = this.page.getByRole("dialog").filter({
+            has: this.page.getByRole("heading", {
+              name: deletionOrder ? decision.promptText : "Order pending effects",
+              exact: true,
+            }),
+          });
           await this.decisionReady(panel, decision, selection.decisionBudgetMs);
-          if (selection.triggerCardId) {
+          if (deletionOrder) {
+            await panel.getByRole("button", { name: "ascension", exact: true }).click();
+          } else if (selection.triggerCardId) {
             const name = getCardDefinition(selection.triggerCardId)!.nameEn;
             await panel
               .getByRole("button", { name: new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) })
@@ -193,9 +204,11 @@ export class ScenarioPage {
           const index = selection.choice ?? (selection.accept === false ? decision.options.declineIndex : 0) ?? 0;
           const choice = decision.options.digivolveCostChoice
             ? this.page.locator(".digivolve-cost-choice__option").nth(index)
-            : this.page
-                .getByRole("dialog")
-                .getByRole("button", { name: decision.options.choices![index]!, exact: true });
+            : decision.options.choiceEffects !== undefined || decision.options.choiceClauses !== undefined
+              ? this.page.getByRole("dialog").locator(".effect-choice__option").nth(index)
+              : this.page
+                  .getByRole("dialog")
+                  .getByRole("button", { name: decision.options.choices![index]!, exact: true });
           await this.decisionReady(choice, decision, selection.decisionBudgetMs);
           await choice.click();
         } else if (decision.kind === "selectCards" && decision.options.digiXrosCardId) {
@@ -232,7 +245,6 @@ export class ScenarioPage {
             const confirm = this.page.getByRole("button", {
               name: /^(Confirm targets|End Selection|Confirm|Declare attack|Attack)$/i,
             });
-            await this.decisionReady(confirm, decision, selection.decisionBudgetMs);
             const pickedIds =
               decision.options.selectionContext === "attackTarget" &&
               candidates.length === 1 &&
@@ -242,6 +254,45 @@ export class ScenarioPage {
                   (selection.instanceId || selection.cardId
                     ? [instanceId!]
                     : candidates.slice(0, Math.max(1, decision.options.min ?? 1))));
+            const sourceHosts = state.players.flatMap((player) => [...player.battleArea]);
+            const hostForSource = (id: string) =>
+              sourceHosts.find((host) => host.stack.some((card) => card.instanceId === id));
+            const pooledSources =
+              candidates.every((id) => hostForSource(id) !== undefined) &&
+              new Set(candidates.map((id) => hostForSource(id)!.permanentId)).size > 1;
+            if (pooledSources) {
+              // The first visible control asks for a physical source host. Switching
+              // stacks is response time, so sample receipt-to-control only once.
+              const chooseHost = this.page.getByRole("region", { name: "Choose a Digimon", exact: true });
+              await this.decisionReady(chooseHost, decision, selection.decisionBudgetMs);
+              let openHost: string | undefined;
+              let pickedCount = 0;
+              for (const pickedId of pickedIds) {
+                const host = hostForSource(pickedId)!;
+                if (openHost !== host.permanentId) {
+                  if (openHost !== undefined)
+                    await this.page.getByRole("button", { name: "Choose another Digimon", exact: true }).click();
+                  await expect(chooseHost).toBeVisible({ timeout: 6_000 });
+                  await this.page.locator(`[data-id="${host.permanentId}"][role="button"]`).click();
+                  openHost = host.permanentId;
+                }
+                const card = this.page.getByRole("dialog").locator(`[data-instance-id="${pickedId}"]`);
+                await expect(card).toBeVisible({ timeout: 6_000 });
+                if ((await card.getAttribute("aria-pressed")) !== "true") await card.click();
+                await expect(card).toHaveAttribute("aria-pressed", "true");
+                pickedCount += 1;
+                await expect(
+                  this.page.getByRole("dialog").getByText(`${pickedCount} chosen`, { exact: true }),
+                ).toBeVisible();
+              }
+              await expect(confirm).toBeEnabled();
+              await confirm.click();
+              await expect
+                .poll(async () => (await this.snapshot()).pendingDecision?.decisionId, { timeout: 8_000 })
+                .not.toBe(decision.decisionId);
+              return;
+            }
+            await this.decisionReady(confirm, decision, selection.decisionBudgetMs);
             for (const pickedId of pickedIds) {
               const modal = this.page.getByRole("dialog").locator(`[data-instance-id="${pickedId}"]`);
               if (await modal.count()) {

@@ -178,6 +178,7 @@ export function presentServerBatch({
   pendingDigivolutionDrawRef,
   eventDrawCountsRef,
   sidePanelLookupRef,
+  discardedSourceResolution,
   sidePanelSequenceRef,
   noticeSequenceRef,
   securityEffectPendingRef,
@@ -299,6 +300,7 @@ export function presentServerBatch({
   pendingDigivolutionDrawRef: MutableRefObject<Map<Seat, PresentationGate>>;
   eventDrawCountsRef: MutableRefObject<{ you?: number; opp?: number }>;
   sidePanelLookupRef: MutableRefObject<SidePanelLookup>;
+  discardedSourceResolution: (event: ServerEvent) => string | undefined;
   sidePanelSequenceRef: MutableRefObject<number>;
   noticeSequenceRef: MutableRefObject<number>;
   securityEffectPendingRef: MutableRefObject<boolean>;
@@ -764,6 +766,7 @@ export function presentServerBatch({
     }
     const collected = collectBatchAnnouncements({
       fresh,
+      discardedSourceResolution,
       handReturnEntryGates: handReturns.beforeEntry,
       viewerSeat,
       state: snapshots.find((snapshot) => snapshot.stateVersion === stateVersion)?.state ?? state,

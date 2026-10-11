@@ -4,6 +4,7 @@ import { Side } from "../../side";
 import {
   attackAnnouncementFromEvent,
   sidePanelFromEvent,
+  pushSidePanel,
   type AttackAnnouncement,
   type SidePanel,
   type SidePanelLookup,
@@ -48,6 +49,7 @@ export type BatchAnnouncements = {
  */
 export function collectBatchAnnouncements({
   fresh,
+  discardedSourceResolution,
   viewerSeat,
   state,
   stateVersion = state?.stateVersion ?? 0,
@@ -71,6 +73,7 @@ export function collectBatchAnnouncements({
   launchDeckToUnderFlight,
 }: {
   fresh: readonly ServerEvent[];
+  discardedSourceResolution?: (event: ServerEvent) => string | undefined;
   viewerSeat: Seat;
   state: GameState | undefined;
   stateVersion?: number;
@@ -127,6 +130,7 @@ export function collectBatchAnnouncements({
   const opened: SidePanel[] = [];
   const raised: MatchNotice[] = [];
   const panelAt: number[] = [];
+  let previousPanelEventIndex: number | undefined;
   const noticeAt: number[] = [];
   let precedingDeletions: readonly { seat: Seat; cardId: string }[] = [];
   /* The card a check is currently holding on screen. A `[Security]` clause that plays its
@@ -139,6 +143,7 @@ export function collectBatchAnnouncements({
       ? securityReveal.revealedCardId
       : revealOnStageRef.current?.scene.revealed.cardId;
   for (const [eventIndex, event] of fresh.entries()) {
+    const resolutionId = discardedSourceResolution?.(event);
     if (event.kind === "cardsMoved" && event.deletedPermanents?.length)
       precedingDeletions = event.deletedPermanents.map(({ seat, cardId }) => ({ seat, cardId }));
     if (event.kind === "digivolved") {
@@ -223,8 +228,30 @@ export function collectBatchAnnouncements({
     const panel =
       announced?.titleKey === "panel.playedCard" && announced.cards[0]?.cardId === dockedCardId ? null : announced;
     if (panel) {
-      opened.push(panel);
-      panelAt.push(eventIndex);
+      if (event.kind === "cardsMoved" && event.trashedSources && resolutionId) panel.resolutionId = resolutionId;
+      const previousIndex = previousPanelEventIndex;
+      const previousEvent = previousIndex === undefined ? undefined : fresh[previousIndex];
+      const previousPanel = opened.at(-1);
+      const groupsTrashedSources =
+        event.kind === "cardsMoved" &&
+        event.trashedSources !== undefined &&
+        previousEvent?.kind === "cardsMoved" &&
+        previousEvent.trashedSources !== undefined &&
+        event.trashedSources.sourceCardId === previousEvent.trashedSources.sourceCardId &&
+        previousPanel?.side === panel.side &&
+        fresh
+          .slice(previousIndex! + 1, eventIndex)
+          .every(
+            (between) =>
+              between.kind !== "effectTriggered" && between.kind !== "effectResolved" && between.kind !== "cardsMoved",
+          );
+      if (groupsTrashedSources && previousPanel) {
+        opened[opened.length - 1] = pushSidePanel([previousPanel], { ...panel, ordered: true })[0]!;
+      } else {
+        opened.push(panel);
+        panelAt.push(eventIndex);
+      }
+      previousPanelEventIndex = eventIndex;
     }
     announcement = attackAnnouncementFromEvent(event, viewerSeat, id, now) ?? announcement;
     // A security card that resolves an effect owns the next notice, which is why the flag is
@@ -285,4 +312,34 @@ export function collectBatchAnnouncements({
       }
   }
   return { announcement, opened, raised, panelAt, noticeAt };
+}
+
+/** Track exact resolving occurrences independently of presentation pacing and server batch boundaries. */
+export function createDiscardedSourceResolution() {
+  let sequence = 0;
+  const active: { id: string; card: string; instance?: string; key: string }[] = [];
+  return (event: ServerEvent): string | undefined => {
+    if (event.kind === "effectTriggered") {
+      active.push({
+        id: String(++sequence),
+        card: event.sourceCardId,
+        instance: event.sourceInstanceId,
+        key: event.effectKey,
+      });
+    }
+    const source = event.kind === "cardsMoved" ? event.trashedSources?.sourceCardId : undefined;
+    const owner = source ? [...active].reverse().find((entry) => entry.card === source) : undefined;
+    if (event.kind === "effectResolved") {
+      const reverseIndex = [...active]
+        .reverse()
+        .findIndex(
+          (entry) =>
+            entry.card === event.sourceCardId &&
+            entry.instance === event.sourceInstanceId &&
+            entry.key === event.effectKey,
+        );
+      if (reverseIndex !== -1) active.splice(active.length - 1 - reverseIndex, 1);
+    }
+    return owner?.id;
+  };
 }

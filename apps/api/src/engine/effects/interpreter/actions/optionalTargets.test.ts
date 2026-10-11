@@ -6,6 +6,36 @@ import { runAction } from "./runAction.js";
 import "../../../../cards/index.js";
 
 describe("optional target preflight", () => {
+  it.each([false, true])(
+    "preserves an unpaid optional processing cost without refunding an earlier activation (chosen: %s)",
+    async (chosen) => {
+      const s = setupEngine({ 0: { battleArea: [{ card: "BT23-024", as: "source" }], deck: ["ST1-03"] } });
+      await s.ready();
+      const engine = internalsOf(s.engine);
+      const ctx = engine.buildEffectContext(engine.cardSourceOf(s.perm("source").topCard), {});
+      ctx.oncePerTurnActivationChosen = false;
+      const handBefore = s.state.players[0]!.hand.length;
+      // Fixed test input selects whether a mandatory action preceded the failed cost.
+      /* oxlint-disable vitest/no-conditional-expect */
+      if (chosen) {
+        await runAction(ctx, { kind: "Draw", controller: "mine", amount: 1 });
+        expect(s.state.players[0]!.hand).toHaveLength(handBefore + 1);
+        expect(ctx.lastEffectActed).toBe(true);
+      }
+      /* oxlint-enable vitest/no-conditional-expect */
+      await runAction(ctx, {
+        kind: "ArmSuspendRestriction",
+        cost: { kind: "unsuspend", target: { filter: { isSelfRef: true }, count: 1, isSelf: true } },
+        optional: true,
+        abortOnDecline: true,
+      });
+      expect(ctx.oncePerTurnActivationDeclined === true).toBe(!chosen);
+      expect(ctx.oncePerTurnActivationChosen).toBe(chosen);
+      expect(s.perm("source").isSuspended).toBe(false);
+      expect(s.decisions).toHaveLength(0);
+    },
+  );
+
   it("declines an optional field target through zero picks without changing the board", async () => {
     const s = setupEngine(
       { 0: { battleArea: [{ card: "ST1-03", as: "source" }] }, 1: { battleArea: [{ card: "ST1-03", as: "target" }] } },

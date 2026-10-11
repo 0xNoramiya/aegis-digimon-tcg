@@ -23,7 +23,7 @@ const compiled: CompiledCard = {
           sourceFilter: {
             controller: "mine",
             kind: ["Digimon"],
-            orFilters: [{ isToken: true }, { nameOrTrait: [{ tokens: ["Puppet"], match: "trait" }] }],
+            or: [{ isToken: true }, { nameOrTrait: [{ tokens: ["Puppet"], match: "trait" }] }],
           },
           actions: [
             {

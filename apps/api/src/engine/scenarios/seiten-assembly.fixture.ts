@@ -1,39 +1,262 @@
 import type { ScenarioFixture } from "../scenario/types.js";
-import { dealtCards } from "../scenario/dealtCards.js";
-import { BLUE_DECK, RED_DECK } from "../testDecks.js";
 
 const fixture: ScenarioFixture = {
   name: "seiten-assembly",
   board: {
     "0": {
-      hand: [{ card: "EX12-048", as: "seiten-assembly-0-hand-0-card", faceUp: false }],
-      deck: dealtCards({
-        deck: BLUE_DECK,
-        seat: 0,
-        indices: [
-          5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
-          34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
-        ],
-      }),
-      eggDeck: dealtCards({ deck: BLUE_DECK, seat: 0, indices: [0, 1, 2, 3, 4], egg: true, aliasOffset: 50 }),
-      trash: [
-        { card: "EX12-015", as: "seiten-assembly-0-trash-0-card" },
-        { card: "EX12-029", as: "seiten-assembly-0-trash-1-card" },
-        { card: "BT12-041", as: "seiten-assembly-0-trash-2-card" },
+      hand: [
+        {
+          card: "BT1-009",
+          as: "feedback76-reserve-0",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+        {
+          card: "EX12-048",
+          as: "feedback76-seiten",
+          faceUp: false,
+          ownerSeat: 0,
+        },
       ],
-      security: dealtCards({ deck: BLUE_DECK, seat: 0, indices: [4, 3, 2, 1, 0] }),
+      deck: [
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-0-0",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-0-1",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-0-2",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-0-3",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-0-4",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-0-5",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-0-6",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-0-7",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-0-8",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-0-9",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+      ],
+      eggDeck: [
+        {
+          card: "EX12-001",
+          as: "feedback76-egg-0",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+      ],
+      trash: [
+        {
+          card: "EX12-048",
+          as: "feedback76-self",
+          faceUp: true,
+          ownerSeat: 0,
+        },
+        {
+          card: "EX12-015",
+          as: "feedback76-gokuu",
+          faceUp: true,
+          ownerSeat: 0,
+        },
+        {
+          card: "EX12-029",
+          as: "feedback76-sago",
+          faceUp: true,
+          ownerSeat: 0,
+        },
+        {
+          card: "EX12-056",
+          as: "feedback76-cho",
+          faceUp: true,
+          ownerSeat: 0,
+        },
+      ],
+      security: [
+        {
+          card: "BT1-009",
+          as: "feedback76-security-0-0",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-security-0-1",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-security-0-2",
+          faceUp: false,
+          ownerSeat: 0,
+        },
+      ],
+      delayZone: [],
+      battleArea: [],
     },
     "1": {
-      deck: dealtCards({
-        deck: RED_DECK,
-        seat: 1,
-        indices: [
-          5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
-          34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
-        ],
-      }),
-      eggDeck: dealtCards({ deck: RED_DECK, seat: 1, indices: [0, 1, 2, 3, 4], egg: true, aliasOffset: 50 }),
-      security: dealtCards({ deck: RED_DECK, seat: 1, indices: [4, 3, 2, 1, 0] }),
+      hand: [
+        {
+          card: "BT1-009",
+          as: "feedback76-reserve-1",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+      ],
+      deck: [
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-1-0",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-1-1",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-1-2",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-1-3",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-1-4",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-1-5",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-1-6",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-1-7",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-1-8",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-deck-1-9",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+      ],
+      eggDeck: [
+        {
+          card: "EX12-001",
+          as: "feedback76-egg-1",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+      ],
+      trash: [],
+      security: [
+        {
+          card: "BT1-009",
+          as: "feedback76-security-1-0",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-security-1-1",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+        {
+          card: "BT1-009",
+          as: "feedback76-security-1-2",
+          faceUp: false,
+          ownerSeat: 1,
+        },
+      ],
+      delayZone: [],
+      battleArea: [
+        {
+          card: "BT1-024",
+          as: "dev-perm-1-feedback76-target",
+          top: {
+            card: "BT1-024",
+            as: "dev-field-1-feedback76-target",
+            faceUp: true,
+            ownerSeat: 1,
+          },
+          under: [],
+          linked: [],
+          currentDP: 20000,
+          dp: 20000,
+          suspended: false,
+          enterFieldTurnCount: 4294967295,
+          placedByEffect: false,
+        },
+      ],
     },
   },
   memory: 10,

@@ -4,7 +4,7 @@ import type { GameState } from "@aegis/shared";
 import { createAnimationQueue, type AnimationStep } from "../../animationQueue";
 import { buildSecurityRevealScene } from "../../securityClash";
 import { securityRevealScene, type SecurityRevealSceneDeps } from "./securityRevealScene";
-import type { PresentationGate } from "../presentationGate";
+import { createPresentationGate, type PresentationGate } from "../presentationGate";
 
 /* A check arms a "blow" gate that every deletion it causes waits on, so a shatter never
    plays over a battle the viewer has not been shown. Only a check that HAS a battle ever
@@ -14,7 +14,7 @@ import type { PresentationGate } from "../presentationGate";
    check is waiting on (the "Cooties Kick" freeze). */
 
 function stageFor(
-  overrides: { battlePending: boolean; isDigimon: boolean },
+  overrides: { battlePending: boolean; isDigimon: boolean; key?: number },
   deps: Partial<SecurityRevealSceneDeps> = {},
 ) {
   const queue = createAnimationQueue();
@@ -56,14 +56,18 @@ function stageFor(
     securityCountOf: () => 1,
     ...deps,
   });
+  const key = overrides.key ?? 1;
   const scene = buildSecurityRevealScene({
-    key: 1,
+    key,
     revealedCardId: overrides.isDigimon ? "BT13-065" : "BT11-106",
     defenderSeat: 0,
     viewerSeat: 0,
     attacker: { seat: 1, cardId: "BT24-018", permanentId: "perm-6" },
   });
-  stage.stageSecurityReveal(1, scene, 0, { docking: !overrides.battlePending, battlePending: overrides.battlePending });
+  stage.stageSecurityReveal(key, scene, 0, {
+    docking: !overrides.battlePending,
+    battlePending: overrides.battlePending,
+  });
   return { securityBlowRef, setHeldBlowState, stage, steps };
 }
 
@@ -73,6 +77,36 @@ afterEach(() => {
 });
 
 describe("security check blow arming", () => {
+  it.each(["security-notices-late-25", "security-presented-1"])(
+    "preserves completed-check %s before the next reveal (feedback #57)",
+    async (id) => {
+      const queue = createAnimationQueue();
+      queue.pause();
+      const announced = createPresentationGate();
+      const presented = vi.fn<() => void>(() => announced.release());
+      queue.enqueue({ id, track: "centerStage", skippable: false, run: presented });
+      stageFor(
+        { battlePending: true, isDigimon: true, key: 2 },
+        {
+          queue,
+          enqueue: (step) => queue.enqueue(step),
+          revealOnStageRef: {
+            current: {
+              key: 1,
+              scene: buildSecurityRevealScene({ key: 1, revealedCardId: "LM-058", defenderSeat: 0, viewerSeat: 0 }),
+            },
+          },
+          queuedSecurityKeyRef: { current: 1 },
+        },
+      );
+      queue.setMode("replay");
+      queue.resume();
+      await queue.idle();
+      expect(presented).toHaveBeenCalledOnce();
+      expect(announced.open).toBe(true);
+    },
+  );
+
   it.each([1, 2])("keeps the shield count until a late reveal finishes at %sx playback", async (speed) => {
     let now = 0;
     const animation = {

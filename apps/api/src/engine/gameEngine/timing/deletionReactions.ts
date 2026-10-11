@@ -80,20 +80,26 @@ export async function resolveDeletionReactions(
       if (engine.subTriggerWindowDepth === 0) engine.consumedSubTriggerKeys.clear();
     }
   };
+  const ascensionAnswers = new Map<string, boolean>();
   const ascend = async ({ instanceId, seat }: { instanceId: string; seat: Seat }): Promise<void> => {
-    const card = findLooseInstance(engine, instanceId);
+    const card = engine.state.players[seat]!.trash.find((candidate) => candidate.instanceId === instanceId);
     if (card === undefined) return;
-    const response = await engine.decisions.request({
-      seat,
-      kind: "selectCards",
-      promptText: "＜Ascension＞: place this card at the top of your security stack?",
-      sourceCardId: card.cardId,
-      sourceInstanceId: instanceId,
-      options: { candidateInstanceIds: [instanceId], min: 0, max: 1 },
-    });
-    if (response.kind === "selectCards" && response.instanceIds.includes(instanceId)) {
-      await engine.primitives.ascendToSecurity(instanceId);
+    let accept = ascensionAnswers.get(instanceId);
+    if (accept === undefined) {
+      const response = await engine.decisions.request({
+        seat,
+        kind: "optional",
+        promptText: "Activate ＜Ascension＞?",
+        sourceCardId: card.cardId,
+        sourceInstanceId: instanceId,
+        options: {
+          timing: "Ascension",
+          effectText: "＜Ascension＞: When this card is deleted, you may place it at the top of your security stack.",
+        },
+      });
+      accept = response.kind === "optional" && response.accept;
     }
+    if (accept) await engine.primitives.ascendToSecurity(instanceId);
   };
 
   // Every simultaneously-deleted Ascension candidate that ALSO prints its own [On Deletion]
@@ -115,14 +121,32 @@ export async function resolveDeletionReactions(
   const ascendBeforeFire: { instanceId: string; seat: Seat }[] = [];
   const ascendAfterFire: { instanceId: string; seat: Seat }[] = [];
   for (const candidate of selfEffectCandidates) {
+    const card = findLooseInstance(engine, candidate.instanceId);
+    if (card === undefined) continue;
+    const printed = definitionOf(card).effectText ?? "";
     const ascensionKey = `ascension/${candidate.instanceId}`;
     const onDeletionKey = `on-deletion/${candidate.instanceId}`;
     const response = await engine.decisions.request({
       seat: candidate.seat,
       kind: "orderTriggers",
-      promptText: "Choose whether to activate ＜Ascension＞ or [On Deletion] first.",
-      options: { triggerKeys: [ascensionKey, onDeletionKey] },
+      promptText: "Choose the resolution order for the pending deletion effects.",
+      sourceCardId: card.cardId,
+      sourceInstanceId: candidate.instanceId,
+      options: {
+        triggerKeys: [ascensionKey, onDeletionKey],
+        triggerCardIds: [card.cardId, card.cardId],
+        triggerTimings: ["Ascension", "OnDeletion"],
+        triggerDescriptions: [
+          "＜Ascension＞: When this card is deleted, you may place it at the top of your security stack.",
+          printed.slice(printed.indexOf("[On Deletion]")),
+        ],
+        acceptsResolutionPlan: true,
+        // Native On Deletion bodies keep their individual optional choices.
+        triggerIsOptional: [true],
+      },
     });
+    if (response.kind === "orderTriggers" && response.optionalAnswers?.[ascensionKey] !== undefined)
+      ascensionAnswers.set(candidate.instanceId, response.optionalAnswers[ascensionKey]);
     const ascensionFirst = response.kind === "orderTriggers" && response.order[0] === ascensionKey;
     (ascensionFirst ? ascendBeforeFire : ascendAfterFire).push(candidate);
   }

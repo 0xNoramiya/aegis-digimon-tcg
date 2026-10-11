@@ -129,13 +129,13 @@ describe("Ascension through public battle deletion", () => {
         target: { kind: "permanent", permanentId: s.perm("holder").permanentId },
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    await settle(() => s.state.pendingDecision?.kind === "optional");
     const decision = s.state.pendingDecision!;
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
         decisionId: decision.decisionId,
-        response: { kind: "selectCards", instanceIds: [] },
+        response: { kind: "optional", accept: false },
       }),
     ).toEqual({ ok: true });
     await settle(() => !observe(s.engine).isAttacking());

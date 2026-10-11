@@ -131,11 +131,12 @@ export function DecisionOverlay({
   const isOrderTriggers = request.kind === "orderTriggers";
   const isResolutionPlan = isOrderTriggers && request.options?.acceptsResolutionPlan === true;
   const isOrdering = isOrderCards || isOrderTriggers;
-  const surface = isSecurityChoice
-    ? "left"
-    : isCardChoice || isOrdering
-      ? "center"
-      : effectDecisionSurface(request, effectPromptPosition);
+  const surface =
+    isSecurityChoice || (isOptional && request.options?.effectTextEmphasis)
+      ? "left"
+      : isCardChoice || isOrdering
+        ? "center"
+        : effectDecisionSurface(request, effectPromptPosition);
   const docksOnRail = surface === "left";
   const draggableActivation = isEffectActivationDecision(request) && !isCardChoice;
   const triggerKeys = request.options?.triggerKeys ?? [];
@@ -250,6 +251,21 @@ export function DecisionOverlay({
   // Older decisions may carry their only effect description in the question.
   // Keep that context in the body while all activations share the same heading.
   const displayedEffectText = sourceEffectText ?? (isOptional ? specificPrompt : undefined);
+  const emphasis = request.options?.effectTextEmphasis;
+  const emphasisStart =
+    emphasis && displayedEffectText ? displayedEffectText.toLowerCase().indexOf(emphasis.toLowerCase()) : -1;
+  const renderedEffectText =
+    emphasis && displayedEffectText && emphasisStart >= 0 ? (
+      <>
+        {displayedEffectText.slice(0, emphasisStart)}
+        <strong className="decision-overlay__effect-step">
+          {displayedEffectText.slice(emphasisStart, emphasisStart + emphasis.length)}
+        </strong>
+        {displayedEffectText.slice(emphasisStart + emphasis.length)}
+      </>
+    ) : (
+      displayedEffectText
+    );
 
   const boardReturn = isViewingBoard ? (
     <DecisionBoardReturn returnControlRef={returnControlRef} onReturn={() => setIsViewingBoard(false)} />
@@ -351,7 +367,7 @@ export function DecisionOverlay({
               </div>
               <div className="decision-overlay__clauses">
                 {!isOrderTriggers && displayedEffectText && onChangeSourceHost === undefined ? (
-                  <p className="decision-overlay__effect-text">{displayedEffectText}</p>
+                  <p className="decision-overlay__effect-text">{renderedEffectText}</p>
                 ) : null}
                 {isOptional && request.options?.promptKey === "attackAlreadyResolving" && sourceEffectText ? (
                   <p className="decision-overlay__effect-text">{specificPrompt}</p>

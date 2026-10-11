@@ -103,7 +103,7 @@ export function decisionVisibleCards(
   instanceIndex: ReadonlyMap<string, string>,
   artIndex?: ReadonlyMap<string, string>,
   zoneIndex?: ReadonlyMap<string, CandidateZone>,
-): { instanceId: string; cardId?: string; artId?: string; zone?: CandidateZone }[] {
+): { instanceId: string; cardId?: string; artId?: string; zone?: CandidateZone; pendingEffect?: boolean }[] {
   const authoritative = new Map((options?.visibleCards ?? []).map((card) => [card.instanceId, card]));
   const visible = options?.visibleInstanceIds ?? options?.candidateInstanceIds ?? [];
   // Concealed choices still need clickable backs; an explicit visibility list
@@ -115,7 +115,18 @@ export function decisionVisibleCards(
     const cardId = revealed?.cardId ?? instanceIndex.get(instanceId);
     const artId = revealed?.artId ?? artIndex?.get(instanceId);
     const zone = options?.digiXrosRuleTrashInstanceIds?.includes(instanceId) ? "trash" : zoneIndex?.get(instanceId);
-    return { instanceId, cardId, ...(cardId && artId ? { artId } : {}), ...(zone ? { zone } : {}) };
+    const pendingEffect =
+      !!cardId &&
+      (zone === "trash" || zone === "opponentTrash") &&
+      options?.candidateInstanceIds?.includes(instanceId) &&
+      options?.pendingEffectInstanceIds?.includes(instanceId);
+    return {
+      instanceId,
+      cardId,
+      ...(cardId && artId ? { artId } : {}),
+      ...(zone ? { zone } : {}),
+      ...(pendingEffect ? { pendingEffect: true } : {}),
+    };
   });
 }
 

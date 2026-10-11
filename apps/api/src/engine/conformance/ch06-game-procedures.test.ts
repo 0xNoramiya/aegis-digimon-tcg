@@ -275,6 +275,7 @@ describe("§6-5 Main Phase (comprehensive-0108)", () => {
     s.state.memory = requireCardDefinition("AD1-001").playCost;
 
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: card.instanceId })).toEqual({ ok: true });
+    await settle(() => s.engine.mainVerbContinuationsInFlight === 0);
     const played = findPermanent(s, 0, "AD1-001");
 
     const digivolveCard = instance("AD1-002", 0, false); // Lv.5, evolves from Lv.4 Red for cost 3
