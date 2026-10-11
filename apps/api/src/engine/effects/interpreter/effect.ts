@@ -607,11 +607,14 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
     action.kind === "CostGatedBlock" ||
     action.kind === "CostModifier";
   const outerEffectTextPart = ctx.activeEffectTextPart;
+  const outerEffectTextEmphasis = ctx.activeEffectTextEmphasis;
   const outerPayingCostDepth = ctx.payingCostDepth;
   const outerTargetFate = ctx.activeTargetFate;
   if (action.effectTextPart !== undefined) ctx.activeEffectTextPart = action.effectTextPart;
-  if (costChoice && action.payCostBeforeOptional === true && effectiveCost.raw !== undefined)
+  if (costChoice && action.payCostBeforeOptional === true && effectiveCost.raw !== undefined) {
     ctx.activeEffectTextPart = ctx.activeEffectText;
+    ctx.activeEffectTextEmphasis = effectiveCost.raw;
+  }
   let chosen: boolean;
   try {
     if (selectionChoice && canPay) {
@@ -644,6 +647,7 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
     }
   } finally {
     ctx.activeEffectTextPart = outerEffectTextPart;
+    ctx.activeEffectTextEmphasis = outerEffectTextEmphasis;
     ctx.payingCostDepth = outerPayingCostDepth;
     ctx.activeTargetFate = outerTargetFate;
   }

@@ -2,9 +2,9 @@ import prepared0 from "../../api/src/engine/scenarios/mastemon-digivolve.fixture
 import prepared1 from "../../api/src/engine/scenarios/mastemon-attack.fixture";
 import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
 
-const preparedFixtures = { "mastemon-digivolve": prepared0, "mastemon-attack": prepared1 };
-
 import { test, expect } from "./scenario-page";
+
+const preparedFixtures = { "mastemon-digivolve": prepared0, "mastemon-attack": prepared1 };
 
 const HOST = fixturePermanentId("dev-perm-0-feedback84-host");
 const YELLOW = fixtureInstanceId("dev-feedback84-yellow");
@@ -39,7 +39,14 @@ for (const timing of ["digivolve", "attack"] as const) {
         async (decision) => {
           if (decision.sourceCardId !== "P-187") return { accept: false };
           if (decision.kind === "optional") {
-            const clause = /Pay cost/i.test(decision.promptText) ? COST_CLAUSE : PLAY_CLAUSE;
+            const clause = COST_CLAUSE;
+            const emphasis = /Pay cost/i.test(decision.promptText) ? "By trashing your top security card" : PLAY_CLAUSE;
+            expect(decision.options.effectTextEmphasis).toBe(emphasis);
+            const dialog = scenario.page.getByRole("dialog");
+            await expect(dialog).toHaveAttribute("data-prompt-surface", "left");
+            await expect(dialog.locator(".decision-overlay__effect-text strong")).toHaveText(emphasis, {
+              ignoreCase: true,
+            });
             expect(decision.options.effectTextPart).toBe(clause);
             await expect(scenario.page.getByRole("dialog").getByText(clause, { exact: true })).toBeVisible({
               timeout: 6_000,

@@ -1207,7 +1207,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
         (ctx.predecidedOptionalCosts?.get(action) ??
           (await ctx.ask.optional(
             paysProcessingCostBeforeOptional && payableActionCost.raw !== undefined
-              ? { ...ctx, activeEffectTextPart: ctx.activeEffectText }
+              ? { ...ctx, activeEffectTextPart: ctx.activeEffectText, activeEffectTextEmphasis: payableActionCost.raw }
               : ctx,
             `Pay cost: ${describeCost(payableActionCost)}?`,
           )));
@@ -1313,7 +1313,12 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       ctx.lastEffectActed = false;
       return false;
     }
-    const yes = ctx.predecidedOptionalActions?.get(action) ?? (await ctx.ask.optional(ctx, describeAction(action)));
+    const yes =
+      ctx.predecidedOptionalActions?.get(action) ??
+      (await ctx.ask.optional(
+        { ...ctx, activeEffectTextPart: ctx.activeEffectText, activeEffectTextEmphasis: action.effectTextPart },
+        describeAction(action),
+      ));
     if (!yes) {
       ctx.lastEffectActed = false;
       markActivationDeclined(ctx);

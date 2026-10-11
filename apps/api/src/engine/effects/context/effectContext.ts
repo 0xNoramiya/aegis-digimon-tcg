@@ -49,6 +49,7 @@ export interface EffectContext {
   /** Catalog provenance for a copied clause, independent of its activating rules source. */
   activeEffectTextCardId?: string;
   activeEffectTextPart?: string;
+  activeEffectTextEmphasis?: string;
   activeEffectIsInherited?: boolean;
   /**
    * Context-specific rules applied while a borrowed CardEffect resolves. This is seeded only by

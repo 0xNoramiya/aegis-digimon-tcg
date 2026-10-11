@@ -105,6 +105,7 @@ function buildSeatScopedApi(
     ...(ctx.activeEffectTextCardId !== undefined ? { effectTextCardId: ctx.activeEffectTextCardId } : {}),
     ...(ctx.activeEffectKey !== undefined ? { effectKey: ctx.activeEffectKey } : {}),
     ...(ctx.activeEffectTextPart !== undefined ? { effectTextPart: ctx.activeEffectTextPart } : {}),
+    ...(ctx.activeEffectTextEmphasis !== undefined ? { effectTextEmphasis: ctx.activeEffectTextEmphasis } : {}),
     ...(ctx.activeSelectionContext !== undefined ? { selectionContext: ctx.activeSelectionContext } : {}),
     ...(ctx.affectedPermanentIds !== undefined ? { affectedPermanentIds: [...ctx.affectedPermanentIds] } : {}),
     // Raised by `payCost` for as long as a cost payment is on the stack. Without it a

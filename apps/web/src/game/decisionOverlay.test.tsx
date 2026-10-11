@@ -4500,3 +4500,26 @@ it("#60 visibly identifies the copy trashed from LadyDevimon's sources and sends
   fireEvent.click(screen.getByRole("button", { name: /Trashed from LadyDevimon’s sources/ }));
   expect(onTogglePick).toHaveBeenCalledWith("source-shot");
 });
+
+it.each([
+  "By trashing your top security card",
+  "You may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.",
+])("keeps Mastemon's complete clause on the left and emphasizes its current step: %s", (effectTextEmphasis) => {
+  const clause =
+    "[When Digivolving] [When Attacking] [Once Per Turn] By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
+  const { onRespond } = renderDecision({
+    decisionId: "mastemon-step",
+    seat: 0,
+    kind: "optional",
+    sourceCardId: "P-187",
+    promptText: "Use this effect?",
+    options: { timing: "WhenDigivolving", effectText: clause, effectTextPart: clause, effectTextEmphasis },
+  });
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(clause);
+  expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent?.toLowerCase()).toBe(
+    effectTextEmphasis.toLowerCase(),
+  );
+  expect(screen.getByRole("dialog").getAttribute("data-prompt-surface")).toBe("left");
+  fireEvent.click(screen.getByRole("button", { name: "Yes, activate" }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: true });
+});

@@ -782,6 +782,8 @@ export interface DecisionRequest {
     activationConfirmation?: boolean;
     /** Verbatim printed passage associated with this decision. */
     effectTextPart?: string;
+    /** Passage emphasized within the complete resolving clause. Display-only. */
+    effectTextEmphasis?: string;
     isInherited?: boolean;
     /** What the resolving action will do to the permanents picked here (`chooseTargets` only). */
     targetFate?: TargetFate;
