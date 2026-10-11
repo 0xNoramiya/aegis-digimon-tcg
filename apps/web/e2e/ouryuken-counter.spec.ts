@@ -41,14 +41,13 @@ for (const width of [320, 390, 768, 1024, 1440]) {
       await page.getByRole("button", { name: /^end turn$/i }).click();
       await answerActivation(page, false, "Alphamon");
       await answerActivation(page, false, /When one of your opponent's Digimon attacks/);
+      const counter = page.getByRole("region", { name: "Counter timing", exact: true });
+      await expect(counter).toBeVisible();
+      const secondAce = page.locator(`[data-hand-instance-id="${fixtureInstanceId("ouryuken-ace-2-card")}"]`);
+      await secondAce.focus();
+      await secondAce.press("Enter");
       const rail = page.getByRole("dialog", { name: "Counter timing" });
       await expect(rail).toBeVisible();
-      // Select the second ACE; identical partner copies share one concise action.
-      await rail
-        .getByRole("button")
-        .filter({ has: page.getByRole("img", { name: "Alphamon: Ouryuken", exact: true }) })
-        .nth(1)
-        .click();
       const blast = rail.getByRole("button", { name: /Blast DNA/ });
       await expect(blast).toHaveCount(1);
       await expect(blast).toBeVisible();

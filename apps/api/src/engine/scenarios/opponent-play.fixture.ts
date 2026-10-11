@@ -35,6 +35,13 @@ const fixture: ScenarioFixture = {
   turnSeat: 0,
   turnCount: 0,
   isFirstPlayersFirstTurn: false,
+  presentation: {
+    opponent: {
+      endBreeding: true,
+      main: [{ kind: "play", card: "BT1-029" }],
+      fallbackMain: "end",
+    },
+  },
 };
 
 export default fixture;

@@ -68,13 +68,12 @@ export function serializeScenarioFixture(value: ScenarioFixture): ScenarioFixtur
   for (const seat of [0, 1] as const) {
     const source = value.board[seat];
     if (!source) continue;
-    const player: SeatSpec = {};
+    const player: SeatSpec = source.breeding ? { breeding: permanent(source.breeding) } : {};
     for (const zone of ["hand", "deck", "eggDeck", "trash", "delayZone"] as const)
       if (source[zone]) player[zone] = source[zone].map(card);
     if (source.security !== undefined)
       player.security = typeof source.security === "number" ? source.security : source.security.map(card);
     if (source.battleArea) player.battleArea = source.battleArea.map(permanent);
-    if (source.breeding) player.breeding = permanent(source.breeding);
     result.board[seat] = player;
   }
   if (value.effects) result.effects = value.effects.map((effect) => fields(effect, ["permanent", "kind"]));
