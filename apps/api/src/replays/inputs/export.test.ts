@@ -26,6 +26,9 @@ function open(file: Buffer): MatchReplay {
   return JSON.parse(gunzipSync(file).toString("utf8")) as MatchReplay;
 }
 
+/** The public count mirrors of a seat, refreshed only when the room patches. */
+const COUNT_MIRRORS = ["deckCount", "eggDeckCount", "handCount", "securityCount"] as const;
+
 const firstAttack = () => record.inputs.findIndex((input) => input.kind === "intent" && input.intent.type === "attack");
 
 describe("exportPlayerReplay", () => {
@@ -103,7 +106,17 @@ describe("exportPlayerReplay", () => {
     // It leaves out what the room alone writes: the codes, the match clock and timers, the series,
     // and each seat's identity (`displayName`, `avatarId`, `sessionId`: the replay seats are
     // "Seat N", the room's carry the real names). `matchLogId` is compared beside it.
-    const comparable = (state: GameState) => comparableState({ toJSON: () => state } as unknown as GameState);
+    // The per-seat count mirrors are left out too: the room refreshes them when it patches
+    // (`onBeforePatch`), which it skips for a bot seat's decision and, in production, paces by a
+    // timer, so its mirrors lag the batch close by an amount the input record cannot reproduce.
+    // The export refreshes them at every batch close; the next test checks them against the zones.
+    const comparable = (state: GameState) => {
+      const json = comparableState({ toJSON: () => state } as unknown as GameState) as {
+        players: Record<string, unknown>[];
+      };
+      for (const player of json.players) for (const key of COUNT_MIRRORS) delete player[key];
+      return json;
+    };
     const events = (frame: ReplayFrame) =>
       frame.events.map(({ kind, seq, batch, stateVersion }) => ({ kind, seq, batch, stateVersion }));
     // Each frame is tagged with its index, so a failure names the first frame that differs.
@@ -114,6 +127,19 @@ describe("exportPlayerReplay", () => {
       events: events(frame),
     });
     replay.frames.forEach((frame, index) => expect(view(frame, index)).toEqual(view(roomFrames[index]!, index)));
+  }, 120_000);
+
+  it("carries count mirrors that match the zones in every frame", async () => {
+    const replay = open((await exportPlayerReplay(record)).file);
+    // Hands stay in the frames, so their mirror can be checked exactly; decks are redacted, so
+    // the opening frame must at least show both decks with cards left in them.
+    for (const frame of replay.frames)
+      for (const player of frame.state.players) expect(player.handCount).toBe(player.hand.length);
+    for (const player of replay.frames[0]!.state.players) {
+      expect(player.handCount).toBeGreaterThan(0);
+      expect(player.deckCount).toBeGreaterThan(0);
+      expect(player.eggDeckCount).toBeGreaterThan(0);
+    }
   }, 120_000);
 
   it("derives the mode from the record's rules", async () => {
