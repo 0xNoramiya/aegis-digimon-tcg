@@ -480,6 +480,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback75-tomoro-timing",
   "arena-feedback72-nokia-hand-evolution",
   "arena-feedback71-justimon-copied-opt",
+  "arena-feedback88-davis-ken-end-turn",
   "arena-feedback91-justimon-end-turn-copy",
   "arena-feedback70-gaiomon-attack",
   "arena-feedback68-arisa-effect-play",
@@ -8608,6 +8609,42 @@ function layFeedback72NokiaHandEvolutionScenario(state: GameState): void {
   state.memory = 2;
 }
 
+/** #88: three natural own turns, a refused cost, paid/declined DNA, then a new end-turn evolution. */
+function layFeedback88DavisKenEndTurnScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`feedback88-egg-${seat}`, "BT1-001", seat));
+    for (let i = 0; i < 16; i++)
+      insertCard(
+        player,
+        Zone.Deck,
+        faceDownCard(`feedback88-deck-${seat}-${i}`, seat === 0 ? "ST2-02" : "ST2-16", seat),
+      );
+    for (let i = 0; i < 5; i++)
+      insertCard(player, Zone.Security, faceDownCard(`feedback88-security-${seat}-${i}`, "ST2-02", seat));
+  }
+  const human = state.players[0]!;
+  for (const [slot, card] of [
+    ["tamer", "EX13-070"],
+    ["blue", "BT12-022"],
+    ["green", "BT12-050"],
+  ] as const)
+    placePermanent(human, establishedDigimon(0, [card], `-feedback88-${slot}`));
+  for (const [slot, card] of [
+    ["paildramon", "BT16-025"],
+    ["fighter", "AD1-024"],
+    ["paladin", "EX13-076"],
+    ["payment2", "ST2-02"],
+    ["payment4", "ST2-05"],
+  ] as const)
+    insertCard(human, Zone.Hand, faceUpCard(`feedback88-${slot}`, card, 0));
+  placePermanent(state.players[1]!, establishedDigimon(1, ["BT1-009"], "-feedback88-opponent"));
+  state.turnSeat = 0;
+  state.turnCount = 5;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 3;
+}
+
 /** #91: End of Turn copying remains legal after both lenders spent their own OPT. */
 function layFeedback91JustimonEndTurnCopyScenario(state: GameState): void {
   for (const seat of [0, 1] as const) {
@@ -12145,6 +12182,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback75-tomoro-timing": (state) => layFeedback75TomoroScenario(state, true),
   "arena-feedback72-nokia-hand-evolution": layFeedback72NokiaHandEvolutionScenario,
   "arena-feedback71-justimon-copied-opt": layFeedback71JustimonCopiedOptScenario,
+  "arena-feedback88-davis-ken-end-turn": layFeedback88DavisKenEndTurnScenario,
   "arena-feedback91-justimon-end-turn-copy": layFeedback91JustimonEndTurnCopyScenario,
   "arena-feedback70-gaiomon-attack": layFeedback70GaiomonAttackScenario,
   "arena-feedback68-arisa-effect-play": layFeedback68ArisaEffectPlayScenario,
