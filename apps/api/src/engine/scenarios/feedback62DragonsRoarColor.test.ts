@@ -2,15 +2,15 @@ import prepared0 from "./dragons-roar-normal-colors.fixture.js";
 import prepared1 from "./dragons-roar-breeding.fixture.js";
 import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
 
-const preparedFixtures = { "dragons-roar-normal-colors": prepared0, "dragons-roar-breeding": prepared1 };
-
 import { Phase } from "@aegis/shared";
 import { expect, it } from "vitest";
 import "../../cards/index.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { BLUE_DECK, RED_DECK } from "../testDecks.js";
+
 import { advance } from "../testkit/advance.js";
 import { assertNoLoudGap, setupEngine, settle, type SeatSpec } from "../testkit/harness.js";
+
+const preparedFixtures = { "dragons-roar-normal-colors": prepared0, "dragons-roar-breeding": prepared1 };
 
 const cases = [
   {

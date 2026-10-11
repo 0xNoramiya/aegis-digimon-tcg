@@ -1,15 +1,15 @@
 import prepared0 from "./davis-ken-sources.fixture.js";
 import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
 
-const preparedFixtures = { "davis-ken-sources": prepared0 };
-
 import { describe, expect, it } from "vitest";
 import "../../cards/index.js";
 import { Phase, Zone } from "@aegis/shared";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { BLUE_DECK, RED_DECK } from "../testDecks.js";
+
 import { advance } from "../testkit/advance.js";
 import { setupEngine, settle, type EngineSetup } from "../testkit/harness.js";
+
+const preparedFixtures = { "davis-ken-sources": prepared0 };
 
 function board(counts = [2, 1, 1], decline = false) {
   return setupEngine(

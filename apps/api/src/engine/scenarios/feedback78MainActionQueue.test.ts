@@ -2,15 +2,15 @@ import prepared0 from "./main-positive.fixture.js";
 import prepared1 from "./main-crossed.fixture.js";
 import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
 
-const preparedFixtures = { "main-positive": prepared0, "main-crossed": prepared1 };
-
 import { expect, it } from "vitest";
 import { Phase, type Intent } from "@aegis/shared";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { RED_DECK, BLUE_DECK } from "../testDecks.js";
+
 import { advance } from "../testkit/advance.js";
 import { setupEngine, settle } from "../testkit/harness.js";
 import "../../cards/index.js";
+
+const preparedFixtures = { "main-positive": prepared0, "main-crossed": prepared1 };
 
 // These controlled requests prove that dispatch rejects unresolved processing before
 // validating a second action's targets. Legal examples remain in the affected suites.

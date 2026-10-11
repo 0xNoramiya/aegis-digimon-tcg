@@ -1,8 +1,6 @@
 import prepared0 from "./nokia-hand-evolution.fixture.js";
 import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../scenario/references.js";
 
-const preparedFixtures = { "nokia-hand-evolution": prepared0 };
-
 import { Phase, EffectTiming } from "@aegis/shared";
 import { expect, it } from "vitest";
 import { effectsOf } from "../effects/collect.js";
@@ -10,8 +8,10 @@ import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
 import { observe } from "../testkit/observe.js";
 import { advance } from "../testkit/advance.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { RED_DECK, BLUE_DECK } from "../testDecks.js";
+
 import "../../cards/index.js";
+
+const preparedFixtures = { "nokia-hand-evolution": prepared0 };
 
 it.each([
   { card: "BT22-013", base: "BT22-008" },

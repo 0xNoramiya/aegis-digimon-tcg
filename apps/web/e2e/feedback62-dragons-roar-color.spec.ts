@@ -2,9 +2,9 @@ import prepared0 from "../../api/src/engine/scenarios/dragons-roar-normal-colors
 import prepared1 from "../../api/src/engine/scenarios/dragons-roar-breeding.fixture";
 import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
 
-const preparedFixtures = { "dragons-roar-normal-colors": prepared0, "dragons-roar-breeding": prepared1 };
-
 import { test, expect } from "./scenario-page";
+
+const preparedFixtures = { "dragons-roar-normal-colors": prepared0, "dragons-roar-breeding": prepared1 };
 
 test.use({ holdBotAfterTurn: 1 });
 
@@ -13,10 +13,13 @@ for (const mode of ["keep", "move", "normal-colors"] as const) {
     scenario,
   }) => {
     const normalColors = mode === "normal-colors";
-    await scenario.open(
-      normalColors ? "dragons-roar-normal-colors" : "dragons-roar-breeding",
-      "normal",
-      mode === "move" ? "move" : "end",
+    await scenario.openFixture(
+      fixtureVariant(
+        preparedFixtures,
+        normalColors ? "dragons-roar-normal-colors" : "dragons-roar-breeding",
+        "normal",
+        mode === "move" ? "move" : "end",
+      ),
     );
     await scenario.resolveUntil((state) => state.phase === "Main" && !state.pendingDecision);
     const before = await scenario.snapshot();

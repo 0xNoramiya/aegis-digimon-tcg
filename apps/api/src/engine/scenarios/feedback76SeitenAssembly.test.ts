@@ -1,16 +1,16 @@
 import prepared0 from "./seiten-assembly.fixture.js";
 import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
 
-const preparedFixtures = { "seiten-assembly": prepared0 };
-
 import { expect, it } from "vitest";
 import { Phase } from "@aegis/shared";
 import { setupEngine, settle } from "../testkit/harness.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { RED_DECK, BLUE_DECK } from "../testDecks.js";
+
 import { advance } from "../testkit/advance.js";
 import { playByAssembly } from "../testkit/assembly.js";
 import "../../cards/index.js";
+
+const preparedFixtures = { "seiten-assembly": prepared0 };
 
 it("Feedback #76: another SeitenGokuumon is not exact Gokuumon Assembly material", async () => {
   const { s, result } = await playByAssembly("EX12-048", ["EX12-048", "EX12-029", "EX12-056"], 7);

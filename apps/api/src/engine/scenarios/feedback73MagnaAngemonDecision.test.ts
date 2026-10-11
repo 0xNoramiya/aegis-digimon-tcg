@@ -1,15 +1,15 @@
 import prepared0 from "./magnaangemon-decision.fixture.js";
 import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../scenario/references.js";
 
-const preparedFixtures = { "magnaangemon-decision": prepared0 };
-
 import { Phase } from "@aegis/shared";
 import { expect, it } from "vitest";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { RED_DECK, BLUE_DECK } from "../testDecks.js";
+
 import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
 import { advance } from "../testkit/advance.js";
 import "../../cards/index.js";
+
+const preparedFixtures = { "magnaangemon-decision": prepared0 };
 
 it.each(["low", "high"] as const)(
   "Feedback #73: recovery completes before required %s target choice and Main resumes",

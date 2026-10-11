@@ -1,16 +1,16 @@
 import prepared0 from "./savior-option-cost.fixture.js";
 import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
 
-const preparedFixtures = { "savior-option-cost": prepared0 };
-
 /* eslint-disable vitest/no-conditional-expect -- Each static input mode asserts its distinct paid, declined-Arts, or refused lifecycle; these are not runtime feature probes. */
 import { expect, it } from "vitest";
 import { Phase } from "@aegis/shared";
 import { advance } from "../testkit/advance.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { RED_DECK } from "../testDecks.js";
+
 import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
 import "../../cards/index.js";
+
+const preparedFixtures = { "savior-option-cost": prepared0 };
 
 function board(discount: boolean, refuse = false, noEligible = false) {
   const preferred: string[] = [];

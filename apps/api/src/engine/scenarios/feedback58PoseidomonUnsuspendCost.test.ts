@@ -1,17 +1,17 @@
 import prepared0 from "./poseidomon-unsuspend-cost.fixture.js";
 import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
 
-const preparedFixtures = { "poseidomon-unsuspend-cost": prepared0 };
-
 /* oxlint-disable vitest/no-conditional-expect -- Fixed acceptance cases exercise distinct public continuation intents. */
 import { expect, it } from "vitest";
 import { Phase } from "@aegis/shared";
 import "../../cards/index.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { BLUE_DECK, RED_DECK } from "../testDecks.js";
+
 import { advance } from "../testkit/advance.js";
 import { assertNoLoudGap, setupEngine, settle } from "../testkit/harness.js";
 import { observe } from "../testkit/observe.js";
+
+const preparedFixtures = { "poseidomon-unsuspend-cost": prepared0 };
 
 it.each([true, false])("Feedback #58: unpaid Link preserves the later unsuspend use, accept=%s", async (accept) => {
   const declinePrompts: string[] = [];

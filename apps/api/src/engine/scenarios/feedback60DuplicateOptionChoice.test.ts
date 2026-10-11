@@ -1,16 +1,16 @@
 import prepared0 from "./duplicate-option-choice.fixture.js";
 import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
 
-const preparedFixtures = { "duplicate-option-choice": prepared0 };
-
 import { Phase, type DecisionResponse } from "@aegis/shared";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { RED_DECK, BLUE_DECK } from "../testDecks.js";
+
 import { advance } from "../testkit/advance.js";
 import { pendingEffectCandidates } from "../gameEngine/pendingEffectCandidates.js";
 import { expect, it } from "vitest";
 import "../../cards/index.js";
 import { setupEngine, settle, assertNoLoudGap, type EngineSetup } from "../testkit/harness.js";
+
+const preparedFixtures = { "duplicate-option-choice": prepared0 };
 
 it.each(["old", "pending", "refuse"] as const)(
   "Feedback #60 (%s): marks only the pending physical source in a nested duplicate Option choice",

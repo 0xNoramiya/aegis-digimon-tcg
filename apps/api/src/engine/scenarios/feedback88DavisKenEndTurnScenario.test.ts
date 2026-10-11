@@ -1,13 +1,10 @@
-import prepared0 from "./davis-ken-end-turn.fixture.js";
-import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
-
-const preparedFixtures = { "davis-ken-end-turn": prepared0 };
+import davisKenEndTurn from "./davis-ken-end-turn.fixture.js";
+import { fixtureInstanceId } from "../scenario/references.js";
 
 import { Phase, type DecisionResponse, type Intent, type Seat } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import "../../cards/index.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { BLUE_DECK, RED_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { setupEngine, settle } from "../testkit/harness.js";
 
@@ -168,9 +165,9 @@ describe("Feedback #88: EX13-070 End of Your Turn rearming", () => {
     }
   });
 
-  it("runs the registered arena through three own turns with public cost refusals", async () => {
+  it("runs the shared fixture through three own turns with public cost refusals", async () => {
     const s = setupEngine({ 0: {}, 1: {} });
-    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "davis-ken-end-turn"));
+    layScenarioFixture(s.state, davisKenEndTurn);
     const tamer = s.state.players[0]!.battleArea.find((p) => p.topCard.cardId === TAMER)!;
     const loop = s.engine.startTurnLoop();
     try {

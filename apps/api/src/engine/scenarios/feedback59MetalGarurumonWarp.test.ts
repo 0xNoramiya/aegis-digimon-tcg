@@ -3,20 +3,20 @@ import prepared1 from "./metalgarurumon-printed-breeding.fixture.js";
 import prepared2 from "./wargreymon-field-warp.fixture.js";
 import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
 
+import { expect, it } from "vitest";
+import { EffectTiming, Phase } from "@aegis/shared";
+import { layScenarioFixture } from "../scenario/fixture.js";
+
+import { advance } from "../testkit/advance.js";
+import { observe } from "../testkit/observe.js";
+import "../../cards/index.js";
+import { assertNoLoudGap, setupEngine, settle, type SeatSpec } from "../testkit/harness.js";
+
 const preparedFixtures = {
   "metalgarurumon-field-warp": prepared0,
   "metalgarurumon-printed-breeding": prepared1,
   "wargreymon-field-warp": prepared2,
 };
-
-import { expect, it } from "vitest";
-import { EffectTiming, Phase } from "@aegis/shared";
-import { layScenarioFixture } from "../scenario/fixture.js";
-import { BLUE_DECK, RED_DECK } from "../testDecks.js";
-import { advance } from "../testkit/advance.js";
-import { observe } from "../testkit/observe.js";
-import "../../cards/index.js";
-import { assertNoLoudGap, setupEngine, settle, type SeatSpec } from "../testkit/harness.js";
 
 const cases = [
   {

@@ -2,15 +2,15 @@ import prepared0 from "./tomoro-on-play.fixture.js";
 import prepared1 from "./tomoro-timing.fixture.js";
 import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../scenario/references.js";
 
-const preparedFixtures = { "tomoro-on-play": prepared0, "tomoro-timing": prepared1 };
-
 import { expect, it } from "vitest";
 import { Phase } from "@aegis/shared";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { RED_DECK, BLUE_DECK } from "../testDecks.js";
+
 import { advance } from "../testkit/advance.js";
 import { setupEngine, settle } from "../testkit/harness.js";
 import "../../cards/index.js";
+
+const preparedFixtures = { "tomoro-on-play": prepared0, "tomoro-timing": prepared1 };
 
 async function replyOptional(s: ReturnType<typeof setupEngine>, cardId: string, accept: boolean) {
   await settle(() => s.state.pendingDecision?.kind === "optional");

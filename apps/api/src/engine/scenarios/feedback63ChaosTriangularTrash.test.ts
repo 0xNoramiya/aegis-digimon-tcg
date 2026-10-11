@@ -1,15 +1,15 @@
 import prepared0 from "./chaos-triangular-trash.fixture.js";
 import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
 
-const preparedFixtures = { "chaos-triangular-trash": prepared0 };
-
 import { Phase, type DecisionResponse } from "@aegis/shared";
 import { expect, it } from "vitest";
 import "../../cards/index.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { RED_DECK, BLUE_DECK } from "../testDecks.js";
+
 import { advance } from "../testkit/advance.js";
 import { assertNoLoudGap, setupEngine, settle } from "../testkit/harness.js";
+
+const preparedFixtures = { "chaos-triangular-trash": prepared0 };
 
 async function resolvePrintedDecisions(
   s: ReturnType<typeof setupEngine>,

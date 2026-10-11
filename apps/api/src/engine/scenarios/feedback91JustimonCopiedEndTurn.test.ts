@@ -1,15 +1,15 @@
 import prepared0 from "./justimon-end-turn-copy.fixture.js";
 import { fixtureVariant } from "../scenario/references.js";
 
-const preparedFixtures = { "justimon-end-turn-copy": prepared0 };
-
 import { expect, it } from "vitest";
 import { Phase } from "@aegis/shared";
 import { advance } from "../testkit/advance.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { RED_DECK } from "../testDecks.js";
+
 import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
 import "../../cards/index.js";
+
+const preparedFixtures = { "justimon-end-turn-copy": prepared0 };
 
 it.each(
   (["accept", "refuse", "declineEgg"] as const).flatMap((mode) => [

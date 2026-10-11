@@ -2,16 +2,16 @@ import prepared0 from "./amaterasumon-empty-resolution.fixture.js";
 import prepared1 from "./amaterasumon-paid-resolution.fixture.js";
 import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../scenario/references.js";
 
-const preparedFixtures = { "amaterasumon-empty-resolution": prepared0, "amaterasumon-paid-resolution": prepared1 };
-
 /* oxlint-disable vitest/no-conditional-expect -- Fixed table modes select independent printed-rule outcomes. */
 import { expect, it } from "vitest";
 import { Phase, type Permanent } from "@aegis/shared";
 import "../../cards/index.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { BLUE_DECK, RED_DECK } from "../testDecks.js";
+
 import { advance } from "../testkit/advance.js";
 import { assertNoLoudGap, setupEngine, settle } from "../testkit/harness.js";
+
+const preparedFixtures = { "amaterasumon-empty-resolution": prepared0, "amaterasumon-paid-resolution": prepared1 };
 
 it.each(["empty", "pay", "decline"] as const)(
   "Feedback #57: Amaterasumon's %s resolution finishes before the second security check",

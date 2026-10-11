@@ -1,21 +1,14 @@
-import prepared0 from "../../api/src/engine/scenarios/davis-ken-end-turn.fixture";
-import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
-
-const preparedFixtures = { "davis-ken-end-turn": prepared0 };
+import davisKenEndTurn from "../../api/src/engine/scenarios/davis-ken-end-turn.fixture";
+import { fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
 
 import { test, expect, type DecisionPolicy } from "./scenario-page";
-
-test.use({
-  holdBotAfterTurn: 10,
-  botMainIntents: [[{ type: "endPhase" }, { type: "endPhase" }], { scope: "test" }],
-});
 
 for (const ending of ["cost crossing", "explicit pass"] as const) {
   test(`Feedback #88: the same Davis & Ken offers on the third own turn (${ending})`, async ({ scenario, page }) => {
     // Five natural turns include distinct draw/unsuspend queues. Individual
     // decision, flight and resettle budgets remain the usual six seconds.
     test.setTimeout(180_000);
-    await scenario.openFixture(fixtureVariant(preparedFixtures, "davis-ken-end-turn"));
+    await scenario.openFixture(davisKenEndTurn);
     if (process.env.AEGIS_E2E_PRODUCTION === "true") {
       await expect(page.locator("style[data-vite-dev-id]")).toHaveCount(0);
       expect(await page.locator('link[rel="stylesheet"][href*="/assets/"]').count()).toBeGreaterThan(0);
@@ -74,7 +67,7 @@ for (const ending of ["cost crossing", "explicit pass"] as const) {
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision, policy);
     await scenario.hand("Paildramon");
     await page.getByRole("button", { name: "Digivolve", exact: true }).click();
-    await page.locator('[data-drop="perm-you"][data-id=fixturePermanentId("dev-perm-0-feedback88-blue")]').click();
+    await page.locator(`[data-drop="perm-you"][data-id="${fixturePermanentId("dev-perm-0-feedback88-blue")}"]`).click();
     const dna = page.getByRole("region", { name: /DNA Digivolution available/i });
     await expect(dna).toBeVisible();
     for (const id of [
@@ -103,7 +96,7 @@ for (const ending of ["cost crossing", "explicit pass"] as const) {
     stage = "evolve";
     if (ending === "cost crossing") {
       // Turn draws also contain Gomamon. Select the original physical payment card.
-      const payment = page.locator('.game-hand [data-hand-instance-id=fixtureInstanceId("feedback88-payment2")]');
+      const payment = page.locator(`.game-hand [data-hand-instance-id="${fixtureInstanceId("feedback88-payment2")}"]`);
       await payment.focus();
       await payment.press("Enter");
       await page.getByRole("button", { name: "Play Digimon", exact: true }).click();

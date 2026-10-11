@@ -2,9 +2,9 @@ import prepared0 from "../../api/src/engine/scenarios/amaterasumon-empty-resolut
 import prepared1 from "../../api/src/engine/scenarios/amaterasumon-paid-resolution.fixture";
 import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
 
-const preparedFixtures = { "amaterasumon-empty-resolution": prepared0, "amaterasumon-paid-resolution": prepared1 };
-
 import { test, expect } from "./scenario-page";
+
+const preparedFixtures = { "amaterasumon-empty-resolution": prepared0, "amaterasumon-paid-resolution": prepared1 };
 
 const ATTACKER = fixturePermanentId("dev-perm-0-feedback57-attacker");
 const LOWEST = fixturePermanentId("dev-perm-1-feedback57-lowest");
@@ -16,7 +16,12 @@ test.use({ holdBotAfterTurn: 1 });
 for (const mode of ["empty", "pay", "decline"] as const) {
   test(`Feedback #57: Amaterasumon's ${mode} resolution precedes the second security check`, async ({ scenario }) => {
     const paid = mode === "pay";
-    await scenario.open(mode === "empty" ? "amaterasumon-empty-resolution" : "amaterasumon-paid-resolution");
+    await scenario.openFixture(
+      fixtureVariant(
+        preparedFixtures,
+        mode === "empty" ? "amaterasumon-empty-resolution" : "amaterasumon-paid-resolution",
+      ),
+    );
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     const before = await scenario.snapshot();
     const source = before.players[0]!.battleArea.find((p) => p.permanentId === ATTACKER)!;
@@ -34,8 +39,8 @@ for (const mode of ["empty", "pay", "decline"] as const) {
         }
         if (decision.kind === "orderTriggers") {
           expect(decision.options.triggerKeys).toEqual([
-            "ascension/feedback57-amaterasu",
-            "on-deletion/feedback57-amaterasu",
+            `ascension/${fixtureInstanceId("feedback57-amaterasu")}`,
+            `on-deletion/${fixtureInstanceId("feedback57-amaterasu")}`,
           ]);
           expect(decision.options.acceptsResolutionPlan).toBe(true);
           expect(decision.options.triggerCardIds).toEqual(["EX12-047", "EX12-047"]);

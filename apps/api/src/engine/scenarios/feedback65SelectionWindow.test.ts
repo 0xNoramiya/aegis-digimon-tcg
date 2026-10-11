@@ -1,15 +1,15 @@
 import prepared0 from "./dracomon-selection.fixture.js";
 import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
 
-const preparedFixtures = { "dracomon-selection": prepared0 };
-
 import { Phase } from "@aegis/shared";
 import { expect, it } from "vitest";
 import "../../cards/index.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { RED_DECK, BLUE_DECK } from "../testDecks.js";
+
 import { advance } from "../testkit/advance.js";
 import { assertNoLoudGap, setupEngine, settle } from "../testkit/harness.js";
+
+const preparedFixtures = { "dracomon-selection": prepared0 };
 
 it("Feedback #65/#67: Dracomon reveals, adds and publicly orders the two leftovers", async () => {
   const s = setupEngine({ autoOrderCards: false });

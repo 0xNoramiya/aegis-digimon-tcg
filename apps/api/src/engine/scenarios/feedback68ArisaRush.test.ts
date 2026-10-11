@@ -1,16 +1,16 @@
 import prepared0 from "./arisa-effect-play.fixture.js";
 import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
 
-const preparedFixtures = { "arisa-effect-play": prepared0 };
-
 import { Phase } from "@aegis/shared";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { RED_DECK, BLUE_DECK } from "../testDecks.js";
+
 import { advance } from "../testkit/advance.js";
 import { expect, it } from "vitest";
 import "../../cards/index.js";
 import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
 import { observe } from "../testkit/observe.js";
+
+const preparedFixtures = { "arisa-effect-play": prepared0 };
 
 it.each([
   { card: "BT10-071", puppet: false, name: "non-Puppet Gazimon" },

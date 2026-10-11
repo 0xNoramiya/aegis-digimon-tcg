@@ -2,16 +2,16 @@ import prepared0 from "./execute-replacement.fixture.js";
 import prepared1 from "./ordinary-replacement.fixture.js";
 import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
 
-const preparedFixtures = { "execute-replacement": prepared0, "ordinary-replacement": prepared1 };
-
 import { expect, it } from "vitest";
-import { RED_DECK } from "../testDecks.js";
+
 import { Phase, type DecisionResponse, type ServerEvent } from "@aegis/shared";
 import { setupEngine, settle, type EngineSetup } from "../testkit/harness.js";
 import { advance } from "../testkit/advance.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
 import { observe } from "../testkit/observe.js";
 import "../../cards/index.js";
+
+const preparedFixtures = { "execute-replacement": prepared0, "ordinary-replacement": prepared1 };
 
 // Exact production Assembly recipe, ordered from the bottom of the resulting stack.
 const MATERIALS = ["BT26-001", "BT24-034", "BT26-009", "BT26-015", "BT26-016"];

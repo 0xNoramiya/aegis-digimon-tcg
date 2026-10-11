@@ -1,17 +1,17 @@
 import prepared0 from "./gaiomon-attack.fixture.js";
 import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../scenario/references.js";
 
-const preparedFixtures = { "gaiomon-attack": prepared0 };
-
 /* oxlint-disable vitest/no-conditional-expect -- Fixed table inputs select independent expected contracts; no branch depends on observed game state. */
 import { Phase, EffectDuration } from "@aegis/shared";
 import { advance } from "../testkit/advance.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { RED_DECK, BLUE_DECK } from "../testDecks.js";
+
 import { expect, it } from "vitest";
 import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
 import { observe } from "../testkit/observe.js";
 import "../../cards/index.js";
+
+const preparedFixtures = { "gaiomon-attack": prepared0 };
 
 it.each([false, true])(
   "Feedback #70: public evolution on established=%s preserves attack eligibility",

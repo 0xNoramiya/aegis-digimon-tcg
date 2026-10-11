@@ -400,6 +400,7 @@ const fixture: ScenarioFixture = {
       ],
     },
   },
+  presentation: { opponent: { fallbackMain: "end" }, holdBotAfterTurn: 10 },
   memory: 3,
   turnSeat: 0,
   turnCount: 5,

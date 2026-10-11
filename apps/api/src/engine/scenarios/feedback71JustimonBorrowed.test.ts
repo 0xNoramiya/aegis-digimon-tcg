@@ -1,16 +1,16 @@
 import prepared0 from "./justimon-copied-opt.fixture.js";
 import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../scenario/references.js";
 
-const preparedFixtures = { "justimon-copied-opt": prepared0 };
-
 import { Phase } from "@aegis/shared";
 import { advance } from "../testkit/advance.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
-import { RED_DECK, BLUE_DECK } from "../testDecks.js";
+
 import { expect, it } from "vitest";
 import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
 import { observe } from "../testkit/observe.js";
 import "../../cards/index.js";
+
+const preparedFixtures = { "justimon-copied-opt": prepared0 };
 
 it("Feedback #71: a copied Blitz Arm clause remains usable after the lender's own OPT", async () => {
   const s = setupEngine(
