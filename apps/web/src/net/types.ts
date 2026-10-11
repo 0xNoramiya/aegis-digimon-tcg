@@ -716,6 +716,7 @@ export interface AegisJoinOptions {
     | "arena-discord-richard-main-fresh-materials"
     | "arena-davis-both-colors"
     | "arena-feedback65-dracomon-selection"
+    | "arena-feedback72-nokia-hand-evolution"
     | "arena-feedback71-justimon-copied-opt"
     | "arena-feedback70-gaiomon-attack"
     | "arena-feedback68-arisa-effect-play"
