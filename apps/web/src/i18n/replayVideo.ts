@@ -3,7 +3,7 @@ export const replayVideoEn = {
   "replay.video.intro":
     "The replay restarts from the beginning at your selected speed and hand visibility. Keep this page open and visible until it finishes.",
   "replay.video.captureHint":
-    "Select this replay tab and enable tab audio if offered. The video is recorded on your device and never uploaded. MP4 is used when supported; otherwise WebM.",
+    "Select this replay tab and enable tab audio if offered. The video is recorded on your device and never uploaded. WebM is used when supported; otherwise MP4.",
   "replay.video.start": "Choose screen and record",
   "replay.video.choose": "Choose the replay tab…",
   "replay.video.stop": "Stop recording",
@@ -42,7 +42,7 @@ export const replayVideoPtBR = {
   "replay.video.intro":
     "O replay reinicia do começo com a velocidade e visibilidade da mão escolhidas. Mantenha esta página aberta e visível até terminar.",
   "replay.video.captureHint":
-    "Selecione a aba deste replay e habilite o áudio da aba se disponível. O vídeo é gravado no seu dispositivo e nunca é enviado. Usamos MP4 quando suportado; caso contrário, WebM.",
+    "Selecione a aba deste replay e habilite o áudio da aba se disponível. O vídeo é gravado no seu dispositivo e nunca é enviado. Usamos WebM quando suportado; caso contrário, MP4.",
   "replay.video.start": "Escolher tela e gravar",
   "replay.video.choose": "Escolha a aba do replay…",
   "replay.video.stop": "Parar gravação",
@@ -84,7 +84,7 @@ export const replayVideoEs = {
   "replay.video.intro":
     "El replay reinicia desde el principio con la velocidad y visibilidad de mano elegidas. Mantén esta página abierta y visible hasta terminar.",
   "replay.video.captureHint":
-    "Selecciona la pestaña del replay y activa su audio si está disponible. El vídeo se graba en tu dispositivo y nunca se sube. Se usa MP4 cuando es compatible; de lo contrario, WebM.",
+    "Selecciona la pestaña del replay y activa su audio si está disponible. El vídeo se graba en tu dispositivo y nunca se sube. Se usa WebM cuando es compatible; de lo contrario, MP4.",
   "replay.video.start": "Elegir pantalla y grabar",
   "replay.video.choose": "Elige la pestaña del replay…",
   "replay.video.stop": "Detener grabación",
@@ -126,7 +126,7 @@ export const replayVideoIt = {
   "replay.video.intro":
     "Il replay riparte dall’inizio con la velocità e la visibilità della mano scelte. Mantieni questa pagina aperta e visibile fino alla fine.",
   "replay.video.captureHint":
-    "Seleziona la scheda del replay e abilita il suo audio se disponibile. Il video viene registrato sul dispositivo e mai caricato. Si usa MP4 quando supportato, altrimenti WebM.",
+    "Seleziona la scheda del replay e abilita il suo audio se disponibile. Il video viene registrato sul dispositivo e mai caricato. Si usa WebM quando supportato, altrimenti MP4.",
   "replay.video.start": "Scegli schermo e registra",
   "replay.video.choose": "Scegli la scheda del replay…",
   "replay.video.stop": "Interrompi registrazione",

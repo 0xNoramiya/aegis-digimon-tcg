@@ -55,6 +55,10 @@ limited to 2048 MB; Chromium consumes additional memory. No CI is configured.
 These cover desktop Chromium. They do not claim full lobby/account coverage,
 mobile-device validation, cross-browser parity, or screenshot baseline comparison.
 
+`replay-video-export.spec.ts` requires `ffmpeg` on `PATH`. It decodes every packet
+of the real tab recording independently of the browser to catch corrupt video
+samples that a first-frame playback check can miss.
+
 ## Mobile cross-browser lane
 
 `playwright.mobile.config.ts` runs every `mobile-*.spec.ts` under four emulated

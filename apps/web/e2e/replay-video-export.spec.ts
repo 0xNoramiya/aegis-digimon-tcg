@@ -1,4 +1,5 @@
 import { statSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { gzipSync } from "node:zlib";
 import { expect, test } from "@playwright/test";
 import { drawReplayFixture } from "../test/replays/fixture";
@@ -38,11 +39,19 @@ test("#34 exports a decodable video and removes the recorded thinking gaps", asy
   await page.getByRole("link", { name: "Download video", exact: true }).click();
   const video = await download;
   expect(Date.now() - started).toBeLessThan(30_000);
-  expect(video.suggestedFilename()).toMatch(/^aegis-.*\.(webm|mp4)$/);
+  expect(video.suggestedFilename()).toMatch(/^aegis-.*\.webm$/);
   const path = test.info().outputPath(video.suggestedFilename());
   await video.saveAs(path);
+  // Opening the first frame can succeed even when H.264 samples are corrupt.
+  // Decode every video and audio packet with an independent decoder.
   expect(statSync(path).size).toBeGreaterThan(10_000);
   await test.info().attach("exported replay", { path, contentType: path.endsWith("mp4") ? "video/mp4" : "video/webm" });
+  expect(() =>
+    execFileSync("ffmpeg", ["-v", "error", "-xerror", "-i", path, "-f", "null", "-"], {
+      stdio: "pipe",
+      timeout: 20_000,
+    }),
+  ).not.toThrow();
   const file = await video.createReadStream();
   const chunks: Buffer[] = [];
   for await (const chunk of file!) chunks.push(Buffer.from(chunk));

@@ -8,7 +8,9 @@ export function canRecordScreen(): boolean {
 }
 
 export function recordingMimeType(): string | undefined {
-  return ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp8,opus", "video/webm"].find(
+  // Some Chromium H.264 encoders advertise MP4 support but emit corrupt samples.
+  // Prefer VP8 for screen capture; keep MP4 for browsers without WebM recording.
+  return ["video/webm;codecs=vp8,opus", "video/webm", "video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4"].find(
     (type) => MediaRecorder.isTypeSupported(type),
   );
 }

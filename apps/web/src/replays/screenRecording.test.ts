@@ -3,6 +3,7 @@ import {
   canRecordScreen,
   recordScreen,
   recordingExtension,
+  recordingMimeType,
   type RecordingNotice,
   type RecordingError,
 } from "./screenRecording";
@@ -47,6 +48,14 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("local replay recording", () => {
+  it("prefers VP8/WebM over H.264/MP4 when both are advertised as supported", () => {
+    FakeRecorder.isTypeSupported.mockReturnValue(true);
+    expect(recordingMimeType()).toBe("video/webm;codecs=vp8,opus");
+    const context = capture();
+    const session = recordScreen(context);
+    expect(FakeRecorder.last.mimeType).toBe("video/webm;codecs=vp8,opus");
+    session.discard();
+  });
   it("includes the final data event, keeps the native container and stops all capture tracks", async () => {
     const context = capture();
     const session = recordScreen(context);
