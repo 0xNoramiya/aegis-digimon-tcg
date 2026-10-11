@@ -232,6 +232,21 @@ requires an API reflector.
 
 ## Numeric selection and publication gates
 
+Independent balanced certification preserves the GEPA selection's original engine
+and policy identities. `certify_balanced.py --runtime-amendment <record.json>` can
+pin a repaired certification runtime without rewriting the selection. A
+`projection-repair` record permits only the declared visibility/verifier changes.
+A `main-integration` record additionally verifies the merge parents and ancestry,
+the complete source archive against the commit's Git blobs and file modes, and
+the actual desktop build record with source checks before and after compilation.
+All runtime changes are declared, and every production bot module must retain its
+membership and bytes; only test modules and the previously reviewed projection
+verifier are exempt. The worker binds the live API, shared runtime and dependency
+lock to that archive before and after games. Historical selection scores continue
+to describe the original runtime. Strength on the integrated engine requires a
+fresh reserved certification attempt with the existing seeds, family budget and
+confidence gates.
+
 Run `tune.py --manifest <run>/manifest.json --program <program.json> --tasks <tasks.json>
 --output <selection-dir>` before paying for reflection. It evaluates fixed, reproducible
 single-weight neighbors through `HeuristicAdapter` and the same compiled worker as GEPA.

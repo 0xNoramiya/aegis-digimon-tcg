@@ -3,6 +3,7 @@
 import hashlib
 import io
 import json
+import os
 import subprocess
 import tarfile
 from copy import deepcopy
@@ -17,18 +18,26 @@ from certify_balanced import (
     confidence_lower,
     projection_runtime_amendment,
     register_attempt,
-    runtime_payload_hash,
 )
 from evidence import policy_hash
 from learn_balanced import balanced_splits
+from main_runtime_amendment import main_runtime_amendment
+from runtime_archive_entries import runtime_archive_entries
+from runtime_payload_hash import runtime_payload_hash
 
 
 @pytest.fixture
 def projection_repair(tmp_path):
     visibility = "apps/api/dist/engine/state/visibility.js"
     policy = "apps/api/dist/bot/projectedPolicy.js"
-    source = {visibility: b"old visibility", policy: b"unchanged policy", "pnpm-lock.yaml": b"lock"}
-    target = {**source, visibility: b"fixed visibility"}
+    harness = "apps/api/dist/bot/matchHarness.js"
+    source = {
+        visibility: b"old visibility",
+        policy: b"unchanged policy",
+        harness: b"old verifier",
+        "pnpm-lock.yaml": b"lock",
+    }
+    target = {**source, visibility: b"fixed visibility", harness: b"guarded verifier"}
 
     def archive(name, entries):
         path = tmp_path / name
@@ -59,10 +68,12 @@ def projection_repair(tmp_path):
         "dependencyLockSha256": hashlib.sha256(b"lock").hexdigest(),
         "changes": [
             {
-                "file": visibility,
-                "beforeSha256": hashlib.sha256(source[visibility]).hexdigest(),
-                "afterSha256": hashlib.sha256(target[visibility]).hexdigest(),
+                "file": name,
+                "beforeSha256": hashlib.sha256(source[name]).hexdigest(),
+                "afterSha256": hashlib.sha256(target[name]).hexdigest(),
             }
+            for name in sorted(source)
+            if source[name] != target[name]
         ],
     }
     (tmp_path / "pnpm-lock.yaml").write_bytes(b"lock")
@@ -73,6 +84,176 @@ def projection_repair(tmp_path):
     )
     path = tmp_path / "repair.json"
     return tmp_path, path, selected, amendment, archive, target, policy
+
+
+@pytest.fixture
+def main_integration(projection_repair):
+    run, repair_path, selected, repair, archive, target, policy = projection_repair
+    repair_path.write_text(json.dumps(repair))
+    repository = run / "repository"
+    repository.mkdir()
+    environment = {
+        **os.environ,
+        "GIT_AUTHOR_NAME": "Test Fixture",
+        "GIT_AUTHOR_EMAIL": "fixture@example.invalid",
+        "GIT_COMMITTER_NAME": "Test Fixture",
+        "GIT_COMMITTER_EMAIL": "fixture@example.invalid",
+    }
+
+    def git(*args):
+        return subprocess.run(
+            ["git", "-c", "core.hooksPath=/dev/null", "-C", str(repository), *args],
+            check=True,
+            capture_output=True,
+            env=environment,
+        ).stdout
+
+    git("init", "-b", "main")
+    (repository / "pnpm-lock.yaml").write_bytes(b"lock")
+    (repository / "policy.ts").write_bytes(b"unchanged policy")
+    git("add", ".")
+    git("commit", "--no-gpg-sign", "-m", "Selection source")
+    selection_commit = git("rev-parse", "HEAD").decode().strip()
+    git("checkout", "-b", "delivery")
+    (repository / "visibility.ts").write_bytes(b"fixed visibility")
+    git("add", ".")
+    git("commit", "--no-gpg-sign", "-m", "Projection repair")
+    parent = git("rev-parse", "HEAD").decode().strip()
+    git("checkout", "main")
+    (repository / "rule.ts").write_bytes(b"main rule")
+    git("add", ".")
+    git("commit", "--no-gpg-sign", "-m", "Main engine update")
+    main_commit = git("rev-parse", "HEAD").decode().strip()
+    git("checkout", "delivery")
+    git("merge", "--no-ff", "--no-gpg-sign", "-m", "Integrate main", "main")
+    merge_commit = git("rev-parse", "HEAD").decode().strip()
+    source_archive = run / "main-source.tgz"
+    source_archive.write_bytes(git("archive", "--format=tar.gz", "HEAD"))
+    snapshot_path = run / "snapshot-fingerprints.json"
+    snapshot = json.loads(snapshot_path.read_text())
+    snapshot["commit"] = selection_commit
+    snapshot_path.write_text(json.dumps(snapshot))
+    target = {
+        **target,
+        "apps/api/dist/engine/gameEngine/newRule.js": b"main rule",
+        "apps/api/dist/bot/evolution/new.test.js": b"migrated test",
+    }
+    source = runtime_archive_entries(run, repair["sourceRuntime"])
+    hashes = {name: hashlib.sha256(content).hexdigest() for name, content in target.items()}
+    amendment = {
+        **repair,
+        "kind": "main-integration",
+        "certificationEngineSha256": "d" * 64,
+        "targetRuntime": archive("main-runtime.tgz", target),
+        "runtimePayloadSha256": runtime_payload_hash(hashes),
+        "reviewedProjectionRepair": {
+            "file": repair_path.name,
+            "sha256": hashlib.sha256(repair_path.read_bytes()).hexdigest(),
+        },
+        "changes": [
+            {"file": name, "beforeSha256": source.get(name), "afterSha256": hashes.get(name)}
+            for name in sorted(source.keys() | hashes.keys())
+            if source.get(name) != hashes.get(name)
+        ],
+        "mainIntegration": {
+            "selectionCommit": selection_commit,
+            "mergeCommit": merge_commit,
+            "deliveryParent": parent,
+            "mainCommit": main_commit,
+            "sourceArchive": {
+                "file": source_archive.name,
+                "sha256": hashlib.sha256(source_archive.read_bytes()).hexdigest(),
+            },
+        },
+    }
+    build = {
+        "commit": merge_commit,
+        "sourceArchiveSha256": amendment["mainIntegration"]["sourceArchive"]["sha256"],
+        "runtimeArchiveSha256": amendment["targetRuntime"]["sha256"],
+        "runtimePayloadSha256": amendment["runtimePayloadSha256"],
+        "dependencyLockSha256": amendment["dependencyLockSha256"],
+        "commands": [
+            "pnpm install --offline --frozen-lockfile --ignore-scripts",
+            "pnpm --filter @aegis/shared build",
+            "pnpm --filter @aegis/api build",
+        ],
+        "exitCode": 0,
+        "sourceVerifiedBeforeBuild": True,
+        "sourceVerifiedAfterBuild": True,
+        "nodeVersion": "v26.10.0",
+        "pnpmVersion": "10.30.1",
+    }
+    build_path = run / "main-build.json"
+    build_path.write_text(json.dumps(build))
+    amendment["mainIntegration"]["buildRecord"] = {
+        "file": build_path.name,
+        "sha256": hashlib.sha256(build_path.read_bytes()).hexdigest(),
+    }
+    path = run / "main-integration.json"
+    return run, path, selected, amendment, archive, target, policy, repository
+
+
+def test_main_integration_preserves_historical_selection_and_binds_merged_build(main_integration):
+    run, path, selected, amendment, *_, repository = main_integration
+    path.write_text(json.dumps(amendment))
+    assert main_runtime_amendment(run, path, selected, repository=repository) == amendment
+    assert selected["engineSha256"] == "a" * 64
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        "policy",
+        "added-policy",
+        "missing-policy",
+        "verifier",
+        "changes",
+        "parents",
+        "source",
+        "build",
+        "repair",
+    ],
+)
+def test_main_integration_rejects_policy_or_build_provenance_substitution(main_integration, change):
+    run, path, selected, amendment, archive, target, policy, repository = main_integration
+    if change in {"policy", "added-policy", "missing-policy", "verifier"}:
+        if change == "policy":
+            target[policy] = b"changed policy"
+        elif change == "added-policy":
+            target["apps/api/dist/bot/newPolicy.js"] = b"hidden policy"
+        elif change == "missing-policy":
+            del target[policy]
+        else:
+            target["apps/api/dist/bot/matchHarness.js"] = b"weakened verifier"
+        amendment["targetRuntime"] = archive("main-runtime.tgz", target)
+        hashes = {name: hashlib.sha256(content).hexdigest() for name, content in target.items()}
+        amendment["runtimePayloadSha256"] = runtime_payload_hash(hashes)
+        source = runtime_archive_entries(run, amendment["sourceRuntime"])
+        amendment["changes"] = [
+            {"file": name, "beforeSha256": source.get(name), "afterSha256": hashes.get(name)}
+            for name in sorted(source.keys() | hashes.keys())
+            if source.get(name) != hashes.get(name)
+        ]
+    elif change == "changes":
+        amendment["changes"].pop()
+    elif change == "parents":
+        amendment["mainIntegration"]["mainCommit"] = amendment["mainIntegration"]["deliveryParent"]
+    elif change == "source":
+        amendment["mainIntegration"]["sourceArchive"] = archive(
+            "main-source.tgz", {"pnpm-lock.yaml": b"lock", "policy.ts": b"uncommitted policy"}
+        )
+    elif change == "build":
+        record = amendment["mainIntegration"]["buildRecord"]
+        build_path = run / record["file"]
+        build = json.loads(build_path.read_text())
+        build["sourceVerifiedBeforeBuild"] = False
+        build_path.write_text(json.dumps(build))
+        record["sha256"] = hashlib.sha256(build_path.read_bytes()).hexdigest()
+    else:
+        amendment["reviewedProjectionRepair"]["sha256"] = "c" * 64
+    path.write_text(json.dumps(amendment))
+    with pytest.raises(ValueError):
+        main_runtime_amendment(run, path, selected, repository=repository)
 
 
 def test_projection_repair_preserves_selection_and_pins_only_visibility_changes(projection_repair):

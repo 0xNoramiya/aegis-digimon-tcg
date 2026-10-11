@@ -6,10 +6,9 @@ import json
 import math
 import random
 import subprocess
-import tarfile
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
 import click
 from gepa.strategies.instruction_proposal import InstructionProposalSignature
@@ -17,95 +16,9 @@ from gepa.strategies.instruction_proposal import InstructionProposalSignature
 from api_reflection import validate_ledger
 from deterministic_proposals import gate_evidence, gate_tasks, plan_hash, prior_gate, validate_plan
 from evidence import policy_hash
+from main_runtime_amendment import main_runtime_amendment
+from projection_runtime_amendment import projection_runtime_amendment
 from residual_weights import RESIDUAL_WEIGHTS
-
-
-def runtime_payload_hash(entries: dict[str, str]) -> str:
-    """Cross-language archive/live binding: sorted POSIX path, NUL, file SHA, newline."""
-    payload = "".join(
-        f"{name}\0{entries[name]}\n" for name in sorted(entries) if name.endswith((".js", ".json"))
-    )
-    return hashlib.sha256(payload.encode()).hexdigest()
-
-
-def projection_runtime_amendment(run_dir: Path, path: Path, selected: dict) -> dict:
-    """Preserve learning provenance while pinning an independently tested projection repair."""
-    amendment = json.loads(path.read_text())
-    snapshot = json.loads((run_dir / "snapshot-fingerprints.json").read_text())
-    target_engine = amendment.get("certificationEngineSha256", "")
-    if (
-        amendment.get("schemaVersion") != 1
-        or amendment.get("kind") != "projection-repair"
-        or amendment.get("selectionEngineSha256") != selected["engineSha256"]
-        or snapshot["engineSha256"] != selected["engineSha256"]
-        or amendment.get("policySha256") != policy_hash(selected["program"])
-        or len(target_engine) != 64
-        or any(char not in "0123456789abcdef" for char in target_engine)
-        or target_engine == selected["engineSha256"]
-        or not isinstance(amendment.get("reason"), str)
-        or not amendment["reason"].strip()
-    ):
-        raise ValueError("Projection amendment changed the selected policy or engine provenance")
-
-    def archive_entries(record):
-        archive_path = (run_dir / record["file"]).resolve()
-        if not archive_path.is_relative_to(run_dir.resolve()):
-            raise ValueError("Runtime archive must be inside the original run")
-        if hashlib.sha256(archive_path.read_bytes()).hexdigest() != record["sha256"]:
-            raise ValueError("Runtime archive fingerprint changed")
-        entries = {}
-        with tarfile.open(archive_path) as archive:
-            for member in archive:
-                if not member.isfile() or not (
-                    member.name.endswith((".js", ".json")) or member.name == "pnpm-lock.yaml"
-                ):
-                    continue
-                if (
-                    PurePosixPath(member.name).is_absolute()
-                    or ".." in PurePosixPath(member.name).parts
-                    or member.name in entries
-                ):
-                    raise ValueError("Ambiguous runtime archive entry")
-                entries[member.name] = hashlib.sha256(
-                    archive.extractfile(member).read()
-                ).hexdigest()
-        return entries
-
-    if amendment["sourceRuntime"]["sha256"] != snapshot["runtimeArchiveSha256"]:
-        raise ValueError("Projection amendment must retain the original runtime snapshot")
-    source = archive_entries(amendment["sourceRuntime"])
-    target = archive_entries(amendment["targetRuntime"])
-    lock_path = (run_dir / amendment["dependencyLockFile"]).resolve()
-    if (
-        amendment.get("runtimePayloadSha256") != runtime_payload_hash(target)
-        or not lock_path.is_relative_to(run_dir.resolve())
-        or hashlib.sha256(lock_path.read_bytes()).hexdigest() != amendment["dependencyLockSha256"]
-    ):
-        raise ValueError("Runtime payload or dependency lock binding changed")
-    changed = [
-        name
-        for name in sorted(source.keys() | target.keys())
-        if source.get(name) != target.get(name)
-    ]
-    allowed = {
-        "apps/api/dist/engine/state/visibility.js",
-        "apps/api/dist/bot/matchHarness.js",
-    }
-    if (
-        set(source) != set(target)
-        or not changed
-        or not set(changed) <= allowed
-        or "apps/api/dist/engine/state/visibility.js" not in changed
-        or amendment.get("changes")
-        != [
-            {"file": name, "beforeSha256": source[name], "afterSha256": target[name]}
-            for name in changed
-        ]
-    ):
-        raise ValueError(
-            "Projection repair changed code outside the declared visibility/verifier seam"
-        )
-    return amendment
 
 
 def confidence_lower(means: list[float], alpha: float) -> dict:
@@ -491,7 +404,11 @@ def main(run_dir, desktop_host, node, api_root, remote_worker, attempt, runtime_
         else api_lineage(run_dir, manifest, selected)
     )
     amendment = (
-        projection_runtime_amendment(run_dir, runtime_amendment, selected)
+        (
+            main_runtime_amendment(run_dir, runtime_amendment, selected)
+            if json.loads(runtime_amendment.read_text()).get("kind") == "main-integration"
+            else projection_runtime_amendment(run_dir, runtime_amendment, selected)
+        )
         if runtime_amendment is not None
         else None
     )
@@ -509,6 +426,19 @@ def main(run_dir, desktop_host, node, api_root, remote_worker, attempt, runtime_
         ),
         "workerSha256": hashlib.sha256(worker.read_bytes()).hexdigest(),
         "certifierSha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "certifierModuleSha256": {
+            name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
+            for name in (
+                "api_reflection.py",
+                "deterministic_proposals.py",
+                "evidence.py",
+                "residual_weights.py",
+                "main_runtime_amendment.py",
+                "projection_runtime_amendment.py",
+                "runtime_archive_entries.py",
+                "runtime_payload_hash.py",
+            )
+        },
         "reflectionLineage": lineage,
         "attempt": attempt,
         "maximumAttempts": 5,
