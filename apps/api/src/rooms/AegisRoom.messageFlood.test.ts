@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Client } from "colyseus";
-import { AegisRoom, MESSAGE_FLOOD_CLOSE_CODE } from "./AegisRoom.js";
+import { MESSAGE_FLOOD_CLOSE_CODE } from "@aegis/shared";
+import { AegisRoom } from "./AegisRoom.js";
 
 function fakeClient(sessionId: string): Client {
   return { sessionId, send: vi.fn<() => void>(), leave: vi.fn<() => void>(), view: undefined } as unknown as Client;
