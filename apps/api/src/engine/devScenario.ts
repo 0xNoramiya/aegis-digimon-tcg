@@ -380,6 +380,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-ex5-biting-crush-delay",
   "arena-p108-training-delay-no-target",
   "arena-p108-training-delay-with-target",
+  "arena-feedback47-chronomon-security-return",
   "arena-feedback46-jimmy-boltmon-single",
   "arena-feedback46-jimmy-boltmon-double",
   "arena-feedback45-jesmon-choice",
@@ -10631,6 +10632,21 @@ function layGithub5311CrescemonCostScenario(state: GameState): void {
   insertCard(human, Zone.Hand, faceDownCard("github5311-crescemon", "EX5-020", 0));
 }
 
+/** Feedback #47: a hidden security return cost triggers Holy after leave prevention. */
+function layFeedback47ChronomonSecurityReturnScenario(state: GameState): void {
+  prepareGithubCardEffectsScenario(state, 3);
+  const human = state.players[0]!;
+  const opponent = state.players[1]!;
+  placePermanent(human, establishedDigimon(0, ["BT26-029", "BT26-016"], "-feedback47-chronomon"));
+  placePermanent(opponent, establishedDigimon(1, ["ST2-04", "ST2-11"], "-feedback47-target"));
+  clearZone(human, Zone.Security);
+  insertCard(human, Zone.Security, faceDownCard("feedback47-security-payment", "BT1-009", 0));
+  insertCard(human, Zone.Security, faceDownCard("feedback47-security-remaining", "BT1-010", 0));
+  clearZone(opponent, Zone.Security);
+  insertCard(opponent, Zone.Security, faceDownCard("feedback47-gaia-security", "ST1-16", 1));
+  insertCard(opponent, Zone.Security, faceDownCard("feedback47-opponent-remaining", "BT1-009", 1));
+}
+
 /** Feedback #46: Jimmy activates a copied Main with its source/host identity intact. */
 function layFeedback46JimmyBoltmonScenario(state: GameState, double: boolean): void {
   prepareGithubCardEffectsScenario(state, double ? 3 : 10);
@@ -11476,6 +11492,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-ex5-biting-crush-delay": layEx5BitingCrushDelayScenario,
   "arena-p108-training-delay-no-target": (state, decks) => layP108TrainingDelayScenario(state, decks, false),
   "arena-p108-training-delay-with-target": (state, decks) => layP108TrainingDelayScenario(state, decks, true),
+  "arena-feedback47-chronomon-security-return": layFeedback47ChronomonSecurityReturnScenario,
   "arena-feedback46-jimmy-boltmon-single": (state) => layFeedback46JimmyBoltmonScenario(state, false),
   "arena-feedback46-jimmy-boltmon-double": (state) => layFeedback46JimmyBoltmonScenario(state, true),
   "arena-feedback45-jesmon-choice": (state) => layFeedback45JesmonChoiceScenario(state, false),

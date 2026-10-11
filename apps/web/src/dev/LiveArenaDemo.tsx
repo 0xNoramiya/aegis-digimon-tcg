@@ -2365,6 +2365,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Wisdom Training está no campo desde um turno anterior e você não tem Digimon. Ative o ＜Delay＞: a carta vai para o lixo e o efeito não faz nada.",
     en: "Wisdom Training has been in the battle area since an earlier turn and you have no Digimon. Activate its ＜Delay＞: the card goes to the trash and the effect does nothing.",
   },
+  "arena-feedback47-chronomon-security-return": {
+    en: "Attack security with Chronomon: Holy Mode. Decline its deletion and Recovery. Gaia Force's Security effect would delete Chronomon; accept prevention by returning your top security card to the bottom of your deck. Holy's inherited De-Digivolve then promotes the opposing Garurumon. Declining prevention instead deletes Chronomon and leaves your security and the opponent's stack intact.",
+    ptBR: "Ataque a segurança com Chronomon: Holy Mode. Recuse sua exclusão e Recovery. O efeito de Segurança de Gaia Force excluiria Chronomon; aceite a prevenção devolvendo sua carta do topo da segurança ao fundo do deck. O De-Digivolve herdado de Holy promove o Garurumon adversário. Recusar a prevenção exclui Chronomon e mantém sua segurança e a pilha adversária intactas.",
+  },
   "arena-feedback46-jimmy-boltmon-single": {
     en: "Play Boltmon using all five trash cards for Assembly. Accept Jimmy KEN's suspension and Main activation. Pay Meramon's 2 memory, then decline its optional attack: Boltmon gains Raid and Piercing and Jimmy gains 1, leaving 3 memory. Declining Jimmy instead preserves the Tamer and leaves 4 memory.",
     ptBR: "Jogue Boltmon usando as cinco cartas do descarte para Assembly. Aceite suspender Jimmy KEN e ativar Main. Pague 2 memórias de Meramon e recuse o ataque opcional: Boltmon ganha Raid e Piercing, e Jimmy ganha 1, deixando 3 memórias. Recusar Jimmy preserva o Tamer e deixa 4 memórias.",
@@ -3398,6 +3402,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex5-attack-priority", "EX5 Etemon · attack trigger priority"],
   ["arena-ex5-biting-crush-delay", "EX5 Biting Crush · Delay on effect play"],
   ["arena-p108-training-delay-no-target", "P-108 Wisdom Training · Delay with no target"],
+  ["arena-feedback47-chronomon-security-return", "Feedback #47 · Chronomon · security return cost"],
   ["arena-feedback46-jimmy-boltmon-single", "Feedback #46 · Jimmy + Boltmon · copied Main"],
   ["arena-feedback46-jimmy-boltmon-double", "Feedback #46 · Two Jimmys · copied Main choices"],
   ["arena-feedback45-jesmon-choice", "Feedback #45 · Jesmon · token or Sistermon"],

@@ -628,6 +628,7 @@ export interface AegisJoinOptions {
     | "arena-ex5-attack-priority"
     | "arena-ex5-biting-crush-delay"
     | "arena-p108-training-delay-no-target"
+    | "arena-feedback47-chronomon-security-return"
     | "arena-feedback46-jimmy-boltmon-single"
     | "arena-feedback46-jimmy-boltmon-double"
     | "arena-feedback45-jesmon-choice"

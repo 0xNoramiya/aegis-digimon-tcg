@@ -65,7 +65,7 @@ import { collectRuleProcessMovements, flushRuleTriggerPool, nextInstanceId, next
 import {
   flushDeferredTimingWindows,
   inContinuousPass,
-  parkDeferredSecurityRemovalTriggersForAttack,
+  parkDeferredSecurityRemovalTriggers,
   parkDeferredTimingWindowsForAttack,
   resolveLeaveReplacementBody,
   settleBetweenEffects,
@@ -554,7 +554,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       engine.effectResolutionDepth = 0;
       engine.optionMainDepth = 0;
       try {
-        parkDeferredSecurityRemovalTriggersForAttack(engine);
+        parkDeferredSecurityRemovalTriggers(engine);
         parkDeferredTimingWindowsForAttack(engine);
         // Settle the already-armed watcher tier before exposing the Option's older
         // printed entry/attack effects. Then settle the interrupted Option's rule
