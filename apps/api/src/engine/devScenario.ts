@@ -380,6 +380,8 @@ export const DEV_SCENARIO_IDS = [
   "arena-ex5-biting-crush-delay",
   "arena-p108-training-delay-no-target",
   "arena-p108-training-delay-with-target",
+  "arena-feedback46-jimmy-boltmon-single",
+  "arena-feedback46-jimmy-boltmon-double",
   "arena-feedback45-jesmon-choice",
   "arena-feedback45-jesmon-name-restriction",
   "arena-feedback44-shoutmon-trash-bt21",
@@ -10629,6 +10631,25 @@ function layGithub5311CrescemonCostScenario(state: GameState): void {
   insertCard(human, Zone.Hand, faceDownCard("github5311-crescemon", "EX5-020", 0));
 }
 
+/** Feedback #46: Jimmy activates a copied Main with its source/host identity intact. */
+function layFeedback46JimmyBoltmonScenario(state: GameState, double: boolean): void {
+  prepareGithubCardEffectsScenario(state, double ? 3 : 10);
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["BT22-092"], "-feedback46-jimmy-0"));
+  if (double) placePermanent(human, establishedDigimon(0, ["BT22-092"], "-feedback46-jimmy-1"));
+  const materials = double
+    ? ["BT22-074", "BT22-011", "BT20-062", "BT15-069", "BT25-014"]
+    : ["BT22-010", "BT15-069", "BT20-062", "BT3-076", "BT3-083"];
+  for (const [index, material] of materials.entries())
+    insertCard(human, Zone.Trash, faceDownCard(`feedback46-material-${index}`, material, 0));
+  insertCard(human, Zone.Hand, faceDownCard("feedback46-boltmon", "BT22-078", 0));
+  if (double) {
+    insertCard(human, Zone.Hand, faceDownCard("feedback46-payment", "BT3-076", 0));
+    insertCard(human, Zone.Hand, faceDownCard("feedback46-wrong-trait", "BT1-009", 0));
+    placePermanent(state.players[1]!, establishedDigimon(1, ["BT1-009"], "-feedback46-delete-target"));
+  }
+}
+
 /** Feedback #45: both printed modal routes, then effective-name and existing-token controls. */
 function layFeedback45JesmonChoiceScenario(state: GameState, restricted: boolean): void {
   prepareGithubCardEffectsScenario(state, 10);
@@ -11455,6 +11476,8 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-ex5-biting-crush-delay": layEx5BitingCrushDelayScenario,
   "arena-p108-training-delay-no-target": (state, decks) => layP108TrainingDelayScenario(state, decks, false),
   "arena-p108-training-delay-with-target": (state, decks) => layP108TrainingDelayScenario(state, decks, true),
+  "arena-feedback46-jimmy-boltmon-single": (state) => layFeedback46JimmyBoltmonScenario(state, false),
+  "arena-feedback46-jimmy-boltmon-double": (state) => layFeedback46JimmyBoltmonScenario(state, true),
   "arena-feedback45-jesmon-choice": (state) => layFeedback45JesmonChoiceScenario(state, false),
   "arena-feedback45-jesmon-name-restriction": (state) => layFeedback45JesmonChoiceScenario(state, true),
   "arena-feedback44-shoutmon-trash-bt21": (state) => layFeedback44ShoutmonTrashScenario(state, "BT21-030"),
