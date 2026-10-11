@@ -36,6 +36,7 @@ export const compiled: CompiledCard = {
           kind: "Modal",
           optional: true,
           choose: 1,
+          labels: ["Play an Atho, René & Por Token", "Play a Sistermon from hand or trash"],
           options: [
             [
               {
@@ -94,6 +95,7 @@ export const compiled: CompiledCard = {
           kind: "Modal",
           optional: true,
           choose: 1,
+          labels: ["Play an Atho, René & Por Token", "Play a Sistermon from hand or trash"],
           options: [
             [
               {

@@ -2365,6 +2365,14 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Wisdom Training está no campo desde um turno anterior e você não tem Digimon. Ative o ＜Delay＞: a carta vai para o lixo e o efeito não faz nada.",
     en: "Wisdom Training has been in the battle area since an earlier turn and you have no Digimon. Activate its ＜Delay＞: the card goes to the trash and the effect does nothing.",
   },
+  "arena-feedback45-jesmon-choice": {
+    en: "Digivolve SaviorHuckmon into Jesmon for 3. Choose Play a Sistermon from hand or trash, then the hand Sistermon Blanc; decline Jesmon's immediate attack. Attack with Jesmon and choose the trash Sistermon Ciel. Both choices also offer the token and Don't use. Blanc draws 1; Ciel gains 1 memory. Decline Alliance to resolve one security check.",
+    ptBR: "Evolua SaviorHuckmon para Jesmon por 3. Escolha jogar uma Sistermon da mão ou descarte e selecione Sistermon Blanc da mão; recuse o ataque imediato de Jesmon. Ataque com Jesmon e escolha Sistermon Ciel do descarte. Ambas as escolhas também oferecem a ficha e não usar. Blanc compra 1; Ciel ganha 1 memória. Recuse Alliance para resolver uma verificação de segurança.",
+  },
+  "arena-feedback45-jesmon-name-restriction": {
+    en: "Attack with Jesmon. The existing Atho, René & Por Token blocks another token; the field Sistermon Ciel also blocks ST12-13's Ciel/Noir names. Accept the remaining Sistermon route and choose Sistermon Blanc from trash. Decline Alliance; only Blanc is played, for no cost, and draws 1.",
+    ptBR: "Ataque com Jesmon. A ficha Atho, René & Por já existente impede outra ficha; Sistermon Ciel em campo também bloqueia os nomes Ciel/Noir de ST12-13. Aceite a opção restante e escolha Sistermon Blanc do descarte. Recuse Alliance; apenas Blanc é jogada, sem custo, e compra 1.",
+  },
   "arena-feedback44-shoutmon-trash-bt21": {
     en: "Feedback #44: play Superior Mode. First accept its optional Shoutmon placement, then select DigiXros materials from hand, trash and the old Shoutmon sources. Five materials reduce 15 to 9 after the paid -1; memory ends at 1. The paid Shoutmon is not another discounted material, and stored cards beneath the non-expander Tamer stay unavailable. Restart and decline the Shoutmon clause: only hand and field materials are available. Restart and accept the clause but choose Play without DigiXros: Shoutmon still goes underneath and cost is 14.",
     ptBR: "Feedback #44: jogue Superior Mode. Primeiro aceite a colocação opcional de Shoutmon, depois selecione os materiais de DigiXros da mão, do lixo e das antigas fontes de Shoutmon. Cinco materiais reduzem 15 para 9 após o -1 pago; a memória fica em 1. O Shoutmon pago não é outro material com desconto e as cartas sob o Tamer sem expansão continuam indisponíveis. Reinicie e recuse a cláusula de Shoutmon: só materiais da mão e do campo ficam disponíveis. Aceite a cláusula mas escolha jogar sem DigiXros: Shoutmon ainda vai para baixo e o custo é 14.",
@@ -3382,6 +3390,8 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex5-attack-priority", "EX5 Etemon · attack trigger priority"],
   ["arena-ex5-biting-crush-delay", "EX5 Biting Crush · Delay on effect play"],
   ["arena-p108-training-delay-no-target", "P-108 Wisdom Training · Delay with no target"],
+  ["arena-feedback45-jesmon-choice", "Feedback #45 · Jesmon · token or Sistermon"],
+  ["arena-feedback45-jesmon-name-restriction", "Feedback #45 · Jesmon · existing names"],
   ["arena-feedback44-shoutmon-trash-bt21", "Feedback #44 · BT21 Superior Mode · paid trash DigiXros"],
   ["arena-feedback44-shoutmon-trash-bt12", "Feedback #44 · BT12 Superior Mode · source trash DigiXros"],
   ["arena-feedback43-omnimon-name-dna", "Feedback #43 · Omnimon · substring-name Main DNA"],
