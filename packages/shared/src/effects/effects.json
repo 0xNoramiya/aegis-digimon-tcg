@@ -41765,12 +41765,13 @@
                 "kind": "TrashDigivolution",
                 "target": {
                   "filter": { "controller": "opponent", "kind": ["Digimon"], "digivolutionCards": "hasAny" },
-                  "count": 1
+                  "count": "all"
                 },
                 "amount": 3,
                 "choose": true,
+                "scope": "acrossDigimon",
                 "condition": { "kind": "isDnaDigivolving", "raw": "DNA digivolving" },
-                "raw": "If DNA digivolving, by suspending this Tamer, trash any 3 digivolution cards under 1 of your opponent's Digimon."
+                "raw": "If DNA digivolving, trash any 3 digivolution cards under your opponent's Digimon."
               }
             ]
           }

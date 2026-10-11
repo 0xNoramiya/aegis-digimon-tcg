@@ -647,6 +647,7 @@ export interface AegisJoinOptions {
     | "arena-feedback44-shoutmon-trash-bt21"
     | "arena-feedback44-shoutmon-trash-bt12"
     | "arena-feedback43-omnimon-name-dna"
+    | "arena-feedback90-davis-ken-sources"
     | "arena-feedback42-parkour-sequential"
     | "arena-github5306-training-use-memory"
     | "arena-github5306-training-delay-paid"

@@ -43,6 +43,8 @@ describe("BT16-085", () => {
               kind: "TrashDigivolution",
               amount: 3,
               choose: true,
+              scope: "acrossDigimon",
+              target: { count: "all" },
               condition: { kind: "isDnaDigivolving" },
             },
           ],
