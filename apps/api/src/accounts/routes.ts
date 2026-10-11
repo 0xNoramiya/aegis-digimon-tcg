@@ -40,6 +40,7 @@ import { FeedbackStore } from "../bugs/FeedbackStore.js";
 import { installBugReportRoutes, ReplayCapturer, type IssueTracker } from "../bugs/index.js";
 import { NotificationStore } from "../notifications/NotificationStore.js";
 import { installNotificationRoutes } from "../notifications/routes.js";
+import { installPlaytestRoutes, PlaytestStore } from "../playtest/index.js";
 import { CommunityDeckStore } from "../community/CommunityDeckStore.js";
 import type { DeckReportTracker } from "../community/deckReports.js";
 import { installCommunityDeckRoutes } from "../community/routes.js";
@@ -113,6 +114,8 @@ export function installAccountRoutes(
   });
   // The signed-in player's inbox; feedback triage is its first producer. See src/notifications.
   installNotificationRoutes({ app, store: new NotificationStore(store), session: sessionFromRequest });
+  // The opt-in playtest group and the studies admins open for it. See src/playtest.
+  installPlaytestRoutes({ app, store: new PlaytestStore(store), session: sessionFromRequest });
   // Public decks, likes and copies. See src/community.
   installCommunityDeckRoutes({
     app,
