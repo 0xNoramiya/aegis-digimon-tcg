@@ -30,66 +30,6 @@ const compiled: CompiledCard = {
       ],
     },
     {
-      trigger: "Main",
-      actions: [
-        {
-          kind: "Digivolve",
-          target: {
-            filter: {
-              controller: "mine",
-              kind: ["Digimon"],
-              nameOrTrait: [
-                {
-                  tokens: ["Gabumon"],
-                  match: "name",
-                },
-              ],
-            },
-            count: 1,
-          },
-          into: {
-            isSelfRef: true,
-          },
-          from: ["hand"],
-          payCost: true,
-          costOverride: 4,
-          ignoreRequirements: true,
-          optional: true,
-          condition: {
-            kind: "allOf",
-            conditions: [
-              {
-                kind: "youHave",
-                filter: {
-                  controller: "mine",
-                  kind: ["Tamer"],
-                  nameOrTrait: [
-                    {
-                      tokens: ["Matt Ishida"],
-                      match: "name",
-                    },
-                  ],
-                },
-                raw: "you have a Tamer with [Matt Ishida] in its name",
-              },
-              {
-                kind: "opponentHas",
-                filter: {
-                  controller: "opponent",
-                  kind: ["Digimon"],
-                  dp: {
-                    op: "gte",
-                    value: 10000,
-                  },
-                },
-                raw: "your opponent has a Digimon with 10000 DP or more",
-              },
-            ],
-          },
-        },
-      ],
-    },
-    {
       trigger: "WhenDigivolving",
       actions: [
         {
@@ -132,7 +72,18 @@ const compiled: CompiledCard = {
   ],
   coverage: "full",
   residual: [],
-  digivolutionRequirement: [{ names: ["Gabumon"], cost: 4, isAlternate: true }],
+  digivolutionRequirement: [
+    { level: 5, names: ["Garurumon"], cost: 4, isAlternate: true },
+    {
+      namesExact: ["Gabumon"],
+      cost: 4,
+      isAlternate: true,
+      sourceZones: ["hand"],
+      battleAreaOnly: true,
+      controllerControls: { kind: ["Tamer"], names: ["Matt Ishida"], min: 1 },
+      opponentDigimonDpMin: 10000,
+    },
+  ],
 };
 
 registerIrCard("BT15-101", compiled);

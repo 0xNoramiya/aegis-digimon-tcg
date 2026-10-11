@@ -21,21 +21,53 @@ function handMainEffectKey(s: EngineSetup, instance: CardInstance): string | und
 }
 
 describe("BT14-101", () => {
-  it("allows the hand digivolution when Tai and an opposing 10000 DP Digimon are present", () => {
-    expect(compiled.effects?.[0]).toMatchObject({ trigger: "Main", isFromHand: true, condition: { kind: "allOf" } });
-    expect(compiled.effects?.[0]?.actions[0]).toMatchObject({
-      kind: "Digivolve",
-      costOverride: 4,
-      ignoreRequirements: true,
-      payCost: true,
+  it("uses the structured conditional hand route without a synthetic Main activation", () => {
+    expect(compiled.effects.some((effect) => effect.trigger === "Main")).toBe(false);
+    expect(compiled.digivolutionRequirement).toContainEqual({
+      namesExact: ["Agumon"],
+      cost: 4,
+      isAlternate: true,
+      sourceZones: ["hand"],
+      battleAreaOnly: true,
+      controllerControls: { kind: ["Tamer"], names: ["Tai Kamiya"], min: 1 },
+      opponentDigimonDpMin: 10000,
     });
   });
+  it("feedback #59 refuses the synthetic hand-Main bypass onto Agumon X Antibody", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT9-008", as: "nearName" }, { card: "BT1-085" }],
+          hand: [{ card: WARGREYMON, as: "warp" }],
+          deck: ["BT1-009"],
+        },
+        1: { battleArea: [{ card: "BT1-025" }], security: ["BT1-009"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, declinePrompts: ["Attack"] },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    const warp = s.inst("warp");
+    const key = handMainEffectKey(s, warp) ?? `${WARGREYMON}/ir-${EffectTiming.OnDeclaration}-0`;
+    const result = s.engine.applyIntent(0, {
+      type: "activateEffect",
+      sourceInstanceId: warp.instanceId,
+      effectKey: key,
+    });
+    await settle();
+    expect(s.perm("nearName").topCard.cardId).toBe("BT9-008");
+    expect(result.ok).toBe(false);
+    expect(s.state.memory).toBe(10);
+    expect(s.state.players[0]!.deck).toHaveLength(1);
+    expect(s.state.players[0]!.hand.map((c) => c.instanceId)).toEqual([warp.instanceId]);
+  });
+
   it("grants Raid and attack, then grants Security Attack +1 and Piercing with a Tamer", () => {
-    expect(compiled.effects?.[1]).toMatchObject({
+    expect(compiled.effects?.[0]).toMatchObject({
       trigger: "WhenDigivolving",
       actions: [{ kind: "GainKeyword", keyword: { keyword: "Raid" } }, { kind: "Attack" }],
     });
-    expect(compiled.effects?.[2]).toMatchObject({
+    expect(compiled.effects?.[1]).toMatchObject({
       trigger: "WhenAttacking",
       actions: [
         { kind: "GainKeyword", keyword: { keyword: "SecurityAttack", amount: 1 } },
@@ -44,7 +76,7 @@ describe("BT14-101", () => {
     });
   });
 
-  it("activates from hand, evolves a bare Agumon, raids the highest unsuspended Digimon, and grants both attack keywords", async () => {
+  it("evolves from hand through the qualified route onto a bare Agumon, raids the highest unsuspended Digimon, and grants both attack keywords", async () => {
     const s = setupEngine(
       {
         0: {
@@ -69,10 +101,14 @@ describe("BT14-101", () => {
 
     const handCard = s.inst("wargreymon");
     const highestId = s.perm("highest").permanentId;
-    const effectKey = handMainEffectKey(s, handCard);
-    expect(effectKey).toBeDefined();
+    expect(handMainEffectKey(s, handCard)).toBeUndefined();
     expect(
-      s.engine.applyIntent(0, { type: "activateEffect", sourceInstanceId: handCard.instanceId, effectKey: effectKey! }),
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("agumon").permanentId,
+        instanceId: handCard.instanceId,
+        useAlternateCost: true,
+      }),
     ).toEqual({ ok: true });
 
     await settle(

@@ -2365,6 +2365,18 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Wisdom Training está no campo desde um turno anterior e você não tem Digimon. Ative o ＜Delay＞: a carta vai para o lixo e o efeito não faz nada.",
     en: "Wisdom Training has been in the battle area since an earlier turn and you have no Digimon. Activate its ＜Delay＞: the card goes to the trash and the effect does nothing.",
   },
+  "arena-feedback59-metalgarurumon-field-warp": {
+    en: "Keep Gabumon in breeding. With Matt Ishida and the opposing 10,000-DP Digimon, evolve the exact battle-area Gabumon into MetalGarurumon for 4. The breeding Gabumon and Gabumon X Antibody must not be legal warp targets. Choose the opposing Digimon for the suspension restriction; finish with 2 memory.",
+    ptBR: "Mantenha Gabumon na criação. Com Matt Ishida e o Digimon adversário de 10.000 DP, evolua o Gabumon exato do campo para MetalGarurumon por 4. Gabumon na criação e Gabumon X Antibody não devem ser alvos legais do salto. Escolha o Digimon adversário para a restrição de suspensão e termine com 2 memórias.",
+  },
+  "arena-feedback59-metalgarurumon-printed-breeding": {
+    en: "Keep the purple WereGarurumon in breeding, then evolve it into MetalGarurumon for 4. The printed level-5 Garurumon-name route is legal in breeding without Matt or a 10,000-DP opponent. Draw for evolution and finish with 2 memory; When Digivolving does not trigger in breeding.",
+    ptBR: "Mantenha WereGarurumon roxo na criação e evolua para MetalGarurumon por 4. A rota impressa de nível 5 com Garurumon no nome é válida na criação sem Matt nem adversário de 10.000 DP. Compre pela evolução e termine com 2 memórias; When Digivolving não ativa na criação.",
+  },
+  "arena-feedback59-wargreymon-field-warp": {
+    en: "Keep Agumon in breeding. With Tai Kamiya and the opposing 10,000-DP Digimon, evolve the exact battle-area Agumon into WarGreymon for 4. Agumon X Antibody and the breeding Agumon must not be legal warp targets, and there is no separate hand Main activation. Decline the optional attack after gaining Raid; finish with 2 memory.",
+    ptBR: "Mantenha Agumon na criação. Com Tai Kamiya e o Digimon adversário de 10.000 DP, evolua o Agumon exato do campo para WarGreymon por 4. Agumon X Antibody e o Agumon na criação não devem ser alvos legais, e não há ativação Main separada da mão. Recuse o ataque opcional após ganhar Raid e termine com 2 memórias.",
+  },
   "arena-feedback58-poseidomon-unsuspend-cost": {
     en: "App Fuse Oujamon and its linked Beautymon into Poseidomon for 0. Link the first hand Appmon during When Digivolving: Poseidomon is already unsuspended, so no restriction can be paid. Attack and link the second hand Appmon. Now accept the unsuspend cost to restrict only the lower-play-cost opposing Digimon, or decline and keep Poseidomon suspended. The first unpaid opportunity must not consume its once-per-turn use.",
     ptBR: "Use App Fusion de Oujamon e seu Beautymon vinculado para Poseidomon por 0. Vincule o primeiro Appmon da mão em When Digivolving: Poseidomon já está ativo e não pode pagar a restrição. Ataque e vincule o segundo Appmon da mão. Aceite o custo de ativar para restringir apenas o Digimon adversário de menor custo, ou recuse e mantenha Poseidomon suspenso. A primeira oportunidade não paga não deve consumir o uso por turno.",
@@ -3422,6 +3434,9 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex5-attack-priority", "EX5 Etemon · attack trigger priority"],
   ["arena-ex5-biting-crush-delay", "EX5 Biting Crush · Delay on effect play"],
   ["arena-p108-training-delay-no-target", "P-108 Wisdom Training · Delay with no target"],
+  ["arena-feedback59-metalgarurumon-field-warp", "Feedback #59 · MetalGarurumon · legal field warp"],
+  ["arena-feedback59-metalgarurumon-printed-breeding", "Feedback #59 · MetalGarurumon · printed breeding route"],
+  ["arena-feedback59-wargreymon-field-warp", "Feedback #59 · WarGreymon · exact field warp"],
   ["arena-feedback58-poseidomon-unsuspend-cost", "Feedback #58 · Poseidomon · unpaid then paid Link"],
   ["arena-feedback57-amaterasumon-empty-resolution", "Feedback #57 · Amaterasumon · empty resolution"],
   ["arena-feedback57-amaterasumon-paid-resolution", "Feedback #57 · Amaterasumon · paid resolution"],
