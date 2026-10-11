@@ -197,6 +197,13 @@ def context(rule: dict[str, Any], cards: dict[str, Any] | None = None) -> str:
             "mulligan": "your opening-hand choice",
             "counter": "a counter response",
             "block": "a blocking choice",
+            "chooseTargets": "target selection",
+            "selectCards": "card selection",
+            "orderCards": "card ordering",
+            "orderTriggers": "the ordering of simultaneous effects",
+            "chooseOption": "an effect option choice",
+            "respondEvade": "an Evade response",
+            "respondBarrier": "a Barrier response",
         }.get(when["kind"], when["kind"] + " choices")
         parts.append("During " + kind)
     for bound, word in (("minimum", "at least"), ("maximum", "at most")):
