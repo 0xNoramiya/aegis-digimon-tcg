@@ -1,6 +1,9 @@
 import { test, expect, type DecisionPolicy } from "./scenario-page";
 
-test.use({ holdBotAfterTurn: 11, botMainIntents: [{ type: "endPhase" }, { type: "endPhase" }] });
+test.use({
+  holdBotAfterTurn: 11,
+  botMainIntents: [[{ type: "endPhase" }, { type: "endPhase" }], { scope: "test" }],
+});
 
 for (const ending of ["cost crossing", "explicit pass"] as const) {
   test(`Feedback #88: the same Davis & Ken offers on the third own turn (${ending})`, async ({ scenario, page }) => {
