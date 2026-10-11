@@ -628,6 +628,8 @@ export interface AegisJoinOptions {
     | "arena-ex5-attack-priority"
     | "arena-ex5-biting-crush-delay"
     | "arena-p108-training-delay-no-target"
+    | "arena-feedback45-jesmon-choice"
+    | "arena-feedback45-jesmon-name-restriction"
     | "arena-feedback44-shoutmon-trash-bt21"
     | "arena-feedback44-shoutmon-trash-bt12"
     | "arena-feedback43-omnimon-name-dna"
