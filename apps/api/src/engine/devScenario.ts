@@ -470,6 +470,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-davis-both-colors",
   "arena-feedback65-dracomon-selection",
   "arena-feedback73-magnaangemon-decision",
+  "arena-feedback80-savior-option-cost",
   "arena-feedback79-execute-replacement",
   "arena-feedback79-ordinary-replacement",
   "arena-feedback78-main-crossed",
@@ -8402,6 +8403,35 @@ function layFeedback60DuplicateOptionChoiceScenario(state: GameState): void {
   state.memory = 10;
 }
 
+/** #80: evolve for 3, use the DUAL Option for 2, then resolve Arts and Huckmon's +1. */
+function layFeedback80SaviorOptionCostScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`feedback80-egg-${seat}`, "BT18-004", seat));
+    for (let i = 0; i < 12; i++)
+      insertCard(player, Zone.Deck, faceDownCard(`feedback80-deck-${seat}-${i}`, "BT1-009", seat));
+    for (let i = 0; i < 3; i++)
+      insertCard(player, Zone.Security, faceDownCard(`feedback80-security-${seat}-${i}`, "BT1-009", seat));
+    insertCard(player, Zone.Hand, faceDownCard(`feedback80-reserve-${seat}`, "BT1-009", seat));
+  }
+  const human = state.players[0]!;
+  const host = establishedDigimon(0, ["EX13-009", "EX13-066"], "-feedback80-host");
+  host.stack[0]!.instanceId = "feedback80-huckmon";
+  host.topCard.instanceId = "feedback80-base";
+  placePermanent(human, host);
+  insertCard(human, Zone.Hand, faceDownCard("feedback80-savior", "EX13-012", 0));
+  insertCard(human, Zone.Hand, faceDownCard("feedback80-option", "EX13-065", 0));
+  insertCard(human, Zone.Trash, faceUpCard("feedback80-blanc", "BT23-076", 0));
+  const target = establishedDigimon(1, ["BT1-080"], "-feedback80-target");
+  target.baseDP = 20_000;
+  target.currentDP = 20_000;
+  placePermanent(state.players[1]!, target);
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 0;
+}
+
 /** #79: a battle replacement prevents one deletion, while Execute creates a separate attempt. */
 function layFeedback79ExecuteReplacementScenario(state: GameState, ordinary: boolean): void {
   for (const seat of [0, 1] as const) {
@@ -12075,6 +12105,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-davis-both-colors": layDavisBothColorsScenario,
   "arena-feedback65-dracomon-selection": layFeedback65DracomonSelectionScenario,
   "arena-feedback73-magnaangemon-decision": layFeedback73MagnaAngemonDecisionScenario,
+  "arena-feedback80-savior-option-cost": layFeedback80SaviorOptionCostScenario,
   "arena-feedback79-execute-replacement": (state) => layFeedback79ExecuteReplacementScenario(state, false),
   "arena-feedback79-ordinary-replacement": (state) => layFeedback79ExecuteReplacementScenario(state, true),
   "arena-feedback78-main-crossed": (state) => layFeedback78MainActionScenario(state, false),
