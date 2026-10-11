@@ -3,6 +3,9 @@
 import hashlib
 import json
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
+from uuid import uuid4
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -19,6 +22,8 @@ class EvaluationConfig:
     simulations: int
     desktop_host: str | None = None
     timeout: int = 7200
+    workers: int = 4
+    cache_dir: Path | None = None
 
 
 class HeuristicAdapter:
@@ -30,9 +35,14 @@ class HeuristicAdapter:
             raise ValueError("Build shared and API packages before evolution")
         self.config = config
         self.metadata = metadata
+        if not 1 <= config.workers <= 4:
+            raise ValueError("Use 1–4 bounded desktop evaluation workers")
+        self.call_lock = Lock()
+        if config.cache_dir is not None:
+            config.cache_dir.mkdir(parents=True, exist_ok=True)
         self.config.run_dir.mkdir(parents=True, exist_ok=True)
         self.calls = max(
-            (int(path.name.split("-", 1)[0]) for path in config.run_dir.glob("[0-9]*-*.json")),
+            (int(path.name.split("-", 1)[0]) for path in config.run_dir.glob("[0-9]*-*.*")),
             default=0,
         )
 
@@ -42,9 +52,10 @@ class HeuristicAdapter:
         candidate: dict[str, str],
         capture_traces: bool = False,
     ) -> EvaluationBatch:
-        outputs = []
-        for task in batch:
-            outputs.append(self.evaluate_game(task, candidate, capture_traces))
+        with ThreadPoolExecutor(max_workers=self.config.workers) as pool:
+            outputs = list(
+                pool.map(lambda task: self.evaluate_game(task, candidate, capture_traces), batch)
+            )
         return EvaluationBatch(
             outputs=outputs,
             scores=[output.get("score", 0.0) for output in outputs],
@@ -54,7 +65,9 @@ class HeuristicAdapter:
     def evaluate_game(
         self, task: dict[str, Any], candidate: dict[str, str], capture_traces: bool
     ) -> dict[str, Any]:
-        self.calls += 1
+        with self.call_lock:
+            self.calls += 1
+            call_index = self.calls
         # JSON parse errors are candidate failures, not infrastructure failures.
         # Check at the third-party engine boundary so the TS interpreter owns validation.
         raw_program = candidate.get("heuristic", "")
@@ -69,12 +82,33 @@ class HeuristicAdapter:
             "captureTraces": capture_traces,
             "engineSha256": self.config.engine_sha256,
         }
+        # Capturing traces changes audit detail, never the policy or game choices.
         fingerprint = hashlib.sha256(
-            json.dumps(payload, sort_keys=True).encode("utf-8")
+            json.dumps(
+                {key: value for key, value in payload.items() if key != "captureTraces"},
+                sort_keys=True,
+            ).encode("utf-8")
         ).hexdigest()
-        log = self.config.run_dir / f"{self.calls:05d}-{fingerprint[:12]}.stderr.log"
+        cache_path = (
+            None if self.config.cache_dir is None else self.config.cache_dir / f"{fingerprint}.json"
+        )
+        if cache_path is not None and cache_path.is_file():
+            cached = json.loads(cache_path.read_text(encoding="utf-8"))
+            output = cached["output"]
+            if (
+                cached["payloadSha256"] == fingerprint
+                and output.get("valid") is True
+                and output.get("engineSha256") == self.config.engine_sha256
+                and (not capture_traces or bool(output.get("traces")))
+            ):
+                output["candidateSha256"] = hashlib.sha256(raw_program.encode("utf-8")).hexdigest()
+                output["cacheHit"] = True
+                artifact = self.config.run_dir / f"{call_index:05d}-{fingerprint[:12]}.json"
+                artifact.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
+                return output
+        log = self.config.run_dir / f"{call_index:05d}-{fingerprint[:12]}.stderr.log"
         with log.open("w", encoding="utf-8") as stderr:
-            command = [self.config.node, "--max-old-space-size=2048", str(self.config.worker)]
+            command = [self.config.node, "--max-old-space-size=1024", str(self.config.worker)]
             if self.config.desktop_host is not None:
                 command = [
                     "ssh",
@@ -100,7 +134,7 @@ class HeuristicAdapter:
                     check=False,
                 )
             except subprocess.TimeoutExpired as error:
-                artifact = self.config.run_dir / f"{self.calls:05d}-{fingerprint[:12]}.json"
+                artifact = self.config.run_dir / f"{call_index:05d}-{fingerprint[:12]}.json"
                 artifact.write_text(
                     json.dumps(
                         {
@@ -120,7 +154,7 @@ class HeuristicAdapter:
                 )
                 raise TimeoutError(f"Evaluation transport deadline expired; see {log}") from error
         if result.returncode in (124, 137):
-            artifact = self.config.run_dir / f"{self.calls:05d}-{fingerprint[:12]}.json"
+            artifact = self.config.run_dir / f"{call_index:05d}-{fingerprint[:12]}.json"
             artifact.write_text(
                 json.dumps(
                     {
@@ -149,8 +183,15 @@ class HeuristicAdapter:
         output["task"] = task
         output["candidateSha256"] = hashlib.sha256(raw_program.encode("utf-8")).hexdigest()
         output["engineSha256"] = self.config.engine_sha256
-        artifact = self.config.run_dir / f"{self.calls:05d}-{fingerprint[:12]}.json"
+        artifact = self.config.run_dir / f"{call_index:05d}-{fingerprint[:12]}.json"
         artifact.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
+        if cache_path is not None and output.get("valid") is True:
+            temporary = cache_path.with_suffix(f".{uuid4().hex}.tmp")
+            temporary.write_text(
+                json.dumps({"payloadSha256": fingerprint, "output": output}, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            temporary.replace(cache_path)
         return output
 
     def make_reflective_dataset(

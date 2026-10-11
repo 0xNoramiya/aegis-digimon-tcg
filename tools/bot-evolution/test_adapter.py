@@ -45,3 +45,94 @@ def test_timeout_records_failure_and_remote_worker_has_owned_deadline(
     audit = json.loads(next(tmp_path.glob("*.json")).read_text())
     assert audit["valid"] is False and audit["score"] == 0 and audit["engineSha256"] == "engine"
     assert audit["candidateSha256"] and audit["task"] == {"seed": 1}
+
+
+def test_parallel_batch_keeps_order_and_unique_audit_files(tmp_path: Path, monkeypatch) -> None:
+    from threading import Barrier
+
+    ready = Barrier(4)
+
+    def complete(command, **kwargs):
+        payload = json.loads(kwargs["input"])
+        ready.wait(timeout=5)
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=json.dumps(
+                {
+                    "valid": True,
+                    "score": payload["seed"] % 2,
+                    "traces": [],
+                }
+            ),
+        )
+
+    monkeypatch.setattr("adapter.subprocess.run", complete)
+    adapter = HeuristicAdapter(
+        EvaluationConfig(
+            node="node",
+            worker=Path("/worker.js"),
+            run_dir=tmp_path,
+            engine_sha256="engine",
+            simulations=256,
+            desktop_host="desktop",
+        ),
+        {},
+    )
+    batch = adapter.evaluate([{"seed": seed} for seed in range(4)], {"heuristic": "{}"})
+    assert batch.scores == [0, 1, 0, 1]
+    assert [output["task"]["seed"] for output in batch.outputs] == [0, 1, 2, 3]
+    assert len(list(tmp_path.glob("*.json"))) == 4
+
+
+def test_only_valid_identical_games_reuse_cache_and_traces_are_required(
+    tmp_path: Path, monkeypatch
+) -> None:
+    calls = []
+
+    def complete(command, **kwargs):
+        payload = json.loads(kwargs["input"])
+        calls.append(payload)
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=json.dumps(
+                {
+                    "valid": payload["seed"] != 3,
+                    "score": 1,
+                    "traces": [{"kind": "main"}] if payload["captureTraces"] else [],
+                }
+            ),
+        )
+
+    monkeypatch.setattr("adapter.subprocess.run", complete)
+    adapter = HeuristicAdapter(
+        EvaluationConfig(
+            node="node",
+            worker=Path("/worker.js"),
+            run_dir=tmp_path / "games",
+            engine_sha256="engine",
+            simulations=256,
+            desktop_host="desktop",
+            cache_dir=tmp_path / "cache",
+        ),
+        {},
+    )
+    candidate = {"heuristic": '{"schemaVersion":1}'}
+    task = {"seed": 1, "decks": [1, 2], "opponent": "mcts"}
+    adapter.evaluate_game(task, candidate, False)
+    assert adapter.evaluate_game(task, candidate, False)["cacheHit"] is True
+    assert len(calls) == 1
+    adapter.evaluate_game(task, candidate, True)
+    assert len(calls) == 2
+    assert adapter.evaluate_game(task, candidate, True)["cacheHit"] is True
+    adapter.evaluate_game({**task, "seed": 2}, candidate, False)
+    adapter.evaluate_game({**task, "opponent": "heuristic"}, candidate, False)
+    adapter.evaluate_game(task, {"heuristic": '{"schemaVersion":1,"title":"changed"}'}, False)
+    assert len(calls) == 5
+    assert len(list((tmp_path / "games").glob("*.json"))) == 7
+    for _ in range(2):
+        invalid = adapter.evaluate_game({**task, "seed": 3}, candidate, False)
+        assert invalid["valid"] is False and invalid["score"] == 0
+    assert len(calls) == 7
+    assert len(list((tmp_path / "cache").glob("*.json"))) == 4

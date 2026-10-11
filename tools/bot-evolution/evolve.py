@@ -16,6 +16,39 @@ from adapter import EvaluationConfig, HeuristicAdapter, REFLECTION_TEMPLATE
 from session_reflection import SessionReflection
 
 
+class EvolutionAudit:
+    """Observe official GEPA proposals and decisions without changing selection."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+
+    def record(self, kind: str, event: dict[str, Any]) -> None:
+        with self.path.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps({"kind": kind, "event": event}) + "\n")
+
+    def on_proposal_end(self, event: dict[str, Any]) -> None:
+        self.record("proposal", event)
+
+    def on_candidate_accepted(self, event: dict[str, Any]) -> None:
+        self.record("accepted", event)
+
+    def on_candidate_rejected(self, event: dict[str, Any]) -> None:
+        self.record("rejected", event)
+
+    def proposals(self) -> set[str]:
+        if not self.path.is_file():
+            return set()
+        return {
+            hashlib.sha256(
+                record["event"]["new_instructions"]["heuristic"].encode("utf-8")
+            ).hexdigest()
+            for record in (
+                json.loads(line) for line in self.path.read_text(encoding="utf-8").splitlines()
+            )
+            if record["kind"] == "proposal"
+        }
+
+
 def task_sets(
     deck_versions: list[str],
     pilot: str | None,
@@ -105,12 +138,15 @@ def optimize_stage(
             simulations=simulations,
             desktop_host=metadata.get("desktopHost"),
             timeout=metadata["evaluationTimeout"],
+            workers=metadata["evaluationWorkers"],
+            cache_dir=Path(metadata["evaluationCache"]),
         ),
         metadata,
     )
     stage_dir.mkdir(parents=True, exist_ok=True)
     (stage_dir / "splits.json").write_text(json.dumps(splits, indent=2) + "\n", encoding="utf-8")
     click.echo(f"Optimizing {stage}: {simulations} MCTS simulations per search", err=True)
+    audit = EvolutionAudit(stage_dir / "evolution-audit.jsonl")
     result = gepa.optimize(
         seed_candidate={"heuristic": json.dumps(initial)},
         trainset=splits["train"],
@@ -130,12 +166,28 @@ def optimize_stage(
         cache_evaluation=True,
         display_progress_bar=False,
         raise_on_exception=True,
+        callbacks=[audit],
     )
     (stage_dir / "gepa-result.json").write_text(
         json.dumps(result.to_dict(), indent=2) + "\n", encoding="utf-8"
     )
+    evaluated = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in (stage_dir / "games").glob("*.json")
+    ]
+    proposals = audit.proposals() - {
+        hashlib.sha256(json.dumps(initial).encode("utf-8")).hexdigest()
+    }
+    valid_evaluated = {
+        game.get("candidateSha256") for game in evaluated if game.get("valid") is True
+    }
     selected = {
         "stage": stage,
+        "proposals": len(proposals),
+        "validEvaluatedProposals": len(proposals & valid_evaluated),
+        "retainedStageInitial": result.best_idx == 0,
+        "retainedOriginalSeed": json.loads(result.best_candidate["heuristic"])
+        == metadata.get("seedProgram", initial),
         "stageSha256": stage_fingerprint,
         "program": json.loads(result.best_candidate["heuristic"]),
         "validationScore": result.val_aggregate_scores[result.best_idx],
@@ -179,6 +231,8 @@ def final_evaluation(
                 simulations=simulations,
                 desktop_host=metadata.get("desktopHost"),
                 timeout=metadata["evaluationTimeout"],
+                workers=metadata["evaluationWorkers"],
+                cache_dir=Path(metadata["evaluationCache"]),
             ),
             metadata,
         )
@@ -217,6 +271,7 @@ def final_evaluation(
 @click.option(
     "--evaluation-timeout", default=7200, type=click.IntRange(60, 86400), show_default=True
 )
+@click.option("--evaluation-workers", default=4, type=click.IntRange(1, 4), show_default=True)
 @click.option("--simulations", default=256, type=click.IntRange(1, 10000), show_default=True)
 @click.option("--metric-calls", default=24, type=click.IntRange(12, 10000), show_default=True)
 @click.option("--pairs", default=2, type=click.IntRange(1, 100), show_default=True)
@@ -229,6 +284,7 @@ def main(
     worker_override: Path | None,
     simulations: int,
     evaluation_timeout: int,
+    evaluation_workers: int,
     metric_calls: int,
     pairs: int,
     generations: int,
@@ -251,6 +307,8 @@ def main(
         "worker": str(worker),
         "desktopHost": desktop_host,
         "evaluationTimeout": evaluation_timeout,
+        "evaluationWorkers": evaluation_workers,
+        "evaluationCache": str(run_dir.parent / "game-cache"),
         "runnerSha256": hashlib.sha256(
             b"".join(
                 path.name.encode("utf-8") + b"\0" + path.read_bytes()
@@ -264,6 +322,7 @@ def main(
         "engineSha256": metadata["engineSha256"],
         "runnerSha256": metadata["runnerSha256"],
         "evaluationTimeout": evaluation_timeout,
+        "evaluationWorkers": evaluation_workers,
         "simulations": simulations,
         "metricCalls": metric_calls,
         "pairs": pairs,

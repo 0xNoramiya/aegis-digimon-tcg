@@ -8,7 +8,7 @@ import pytest
 from gepa.core.adapter import EvaluationBatch
 
 from adapter import REFLECTION_TEMPLATE
-from evolve import task_sets, optimize_stage
+from evolve import task_sets, optimize_stage, EvolutionAudit
 
 
 def test_training_selection_and_test_are_separate_across_generations() -> None:
@@ -73,6 +73,7 @@ def test_official_gepa_reflects_and_selects_a_better_candidate(tmp_path: Path, m
         prompts.append(prompt)
         return '```json\n{"weight":1}\n```'
 
+    audit = EvolutionAudit(tmp_path / "observations.jsonl")
     result = gepa.optimize(
         seed_candidate={"heuristic": '{"weight":-1}'},
         trainset=[0, 1],
@@ -85,12 +86,18 @@ def test_official_gepa_reflects_and_selects_a_better_candidate(tmp_path: Path, m
         skip_perfect_score=False,
         run_dir=str(tmp_path / "gepa"),
         display_progress_bar=False,
+        callbacks=[audit],
     )
     assert prompts
     assert "positive weight wins" in prompts[0]
     assert json.loads(result.best_candidate["heuristic"])["weight"] == 1
     assert result.val_aggregate_scores[result.best_idx] == 1.0
     assert result.num_candidates >= 2
+    assert audit.proposals()
+    observations = [
+        json.loads(line) for line in (tmp_path / "observations.jsonl").read_text().splitlines()
+    ]
+    assert any(record["kind"] == "accepted" for record in observations)
 
     worker = tmp_path / "worker.js"
     worker.write_text("placeholder")
@@ -99,6 +106,8 @@ def test_official_gepa_reflects_and_selects_a_better_candidate(tmp_path: Path, m
         "engineSha256": "engine",
         "runnerSha256": "runner",
         "evaluationTimeout": 60,
+        "evaluationWorkers": 4,
+        "evaluationCache": str(tmp_path / "cache"),
     }
     monkeypatch.setattr("evolve.gepa.optimize", lambda **kwargs: result)
     options = {
