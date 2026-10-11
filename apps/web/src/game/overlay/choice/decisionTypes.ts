@@ -7,6 +7,9 @@ export interface DecisionCandidate {
   artId?: string;
   selectable?: boolean;
   sourceCount?: number;
+  /** The Digimon holding this digivolution card. */
+  hostCardId?: string;
+  hostPermanentId?: string;
   currentDP?: number;
   isSuspended?: boolean;
   /** Where the card sits, so a mixed-zone prompt can group its candidates. */

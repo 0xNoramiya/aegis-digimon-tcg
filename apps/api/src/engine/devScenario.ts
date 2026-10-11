@@ -83,6 +83,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-raid-after-dedigivolve",
   "arena-lm007-publimon-end-of-attack",
   "arena-feedback4-shellmon-targets",
+  "arena-source-strip-stacks",
   "arena-feedback5-execute-suspended",
   "arena-feedback6-deramon-breeding-level",
   "arena-feedback15-gryphonmon-deramon",
@@ -1563,6 +1564,29 @@ function layFeedback4ShellmonTargetsScenario(state: GameState): void {
   state.turnCount = 0;
   state.isFirstPlayersFirstTurn = false;
   state.memory = 5;
+}
+
+/** Source-strip UI: identical sources under distinct hosts, including a locked stack. */
+function laySourceStripStacksScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`dev-source-strip-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 12; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-source-strip-deck-${seat}-${index}`, "BT1-009", seat));
+    }
+    for (let index = 0; index < 4; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-source-strip-security-${seat}-${index}`, "BT1-009", seat));
+    }
+  }
+  insertCard(state.players[0]!, Zone.Hand, faceUpCard("dev-source-strip-gekomon", "BT23-019", 0));
+  const opponent = state.players[1]!;
+  placePermanent(opponent, establishedDigimon(1, ["BT1-009", "BT1-010", "ST1-07"], "-source-strip-first"));
+  placePermanent(opponent, establishedDigimon(1, ["BT1-009", "BT1-010", "ST1-09"], "-source-strip-second"));
+  placePermanent(opponent, establishedDigimon(1, ["BT1-009", "EX11-070", "EX11-027"], "-source-strip-locked"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 10;
 }
 
 /** Discord 1558210190376050858: Publimon's [End of Attack] fires only after its own attack. */
@@ -11235,6 +11259,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-raid-after-dedigivolve": layRaidAfterDeDigivolveScenario,
   "arena-lm007-publimon-end-of-attack": layLm007PublimonEndOfAttackScenario,
   "arena-feedback4-shellmon-targets": layFeedback4ShellmonTargetsScenario,
+  "arena-source-strip-stacks": laySourceStripStacksScenario,
   "arena-feedback5-execute-suspended": layFeedback5ExecuteSuspendedScenario,
   "arena-feedback6-deramon-breeding-level": layFeedback6DeramonBreedingScenario,
   "arena-feedback15-gryphonmon-deramon": layFeedback15GryphonmonDeramonScenario,

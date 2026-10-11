@@ -168,6 +168,7 @@ export function DecisionCandidateGrid({
                   cand.currentDP === undefined ? undefined : `${cand.currentDP.toLocaleString()} DP`,
                   cand.isSuspended === true ? t("overlay.suspended") : undefined,
                   sourceLabel,
+                  cand.hostCardId ? printedCardName(cand.hostCardId) : undefined,
                 ].filter((label): label is string => label !== undefined);
                 return (
                   <button
@@ -200,6 +201,11 @@ export function DecisionCandidateGrid({
                         selected={on}
                       />
                     )}
+                    {cand.hostCardId ? (
+                      <span className="decision-overlay__source-host" data-host-permanent-id={cand.hostPermanentId}>
+                        {printedCardName(cand.hostCardId)}
+                      </span>
+                    ) : null}
                     {on && max > 1 ? (
                       <span className="decision-overlay__order-badge" aria-hidden="true">
                         {picks.indexOf(cand.instanceId) + 1}
