@@ -16,7 +16,7 @@ import { useTranslation, type TranslationKey } from "../i18n";
 import { AccountApiError, accountApi } from "./client";
 import { ReplaySharing } from "../replays/ReplaySharing";
 import { replayApi, replayPath } from "../replays/library";
-import { CloudAuthError, useCloudReplays, withCloudSession } from "../replays/cloud";
+import { CloudAuthError, subscribeRegisteredReplays, useCloudReplays, withCloudSession } from "../replays/cloud";
 import { driveViewLink } from "../replays/cloud/googleDrive";
 import { OpenReplayFile } from "./OpenReplayFile";
 import {
@@ -132,20 +132,24 @@ export function MatchHistory({
     onReplaysChange?.();
   }
 
-  function replayChanged(entry: MatchHistoryEntry, replay: SavedReplay) {
+  function replayChanged(matchId: string, replay: SavedReplay) {
     setHistory((state) =>
       state.kind === "ready"
         ? {
             kind: "ready",
             page: {
               ...state.page,
-              matches: state.page.matches.map((match) => (match.id === entry.id ? { ...match, replay } : match)),
+              matches: state.page.matches.map((match) => (match.id === matchId ? { ...match, replay } : match)),
             },
           }
         : state,
     );
     onReplaysChange?.();
   }
+
+  const onRegistered = useRef(replayChanged);
+  onRegistered.current = replayChanged;
+  useEffect(() => subscribeRegisteredReplays((replay) => onRegistered.current(replay.matchId, replay)), []);
 
   async function trash(replay: SavedReplay) {
     if (!provider) return;
@@ -301,7 +305,7 @@ export function MatchHistory({
                 local={onDevice.get(match.id)}
                 sharing={ready.sharing}
                 onRemoved={(replay) => replayRemoved(match, replay)}
-                onChanged={(replay) => replayChanged(match, replay)}
+                onChanged={(replay) => replayChanged(match.id, replay)}
                 onFailure={(key) => setNotice({ key, alert: true })}
               />
             ))}

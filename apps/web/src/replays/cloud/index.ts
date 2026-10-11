@@ -1,3 +1,4 @@
+import type { SavedReplay } from "@aegis/shared";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { ReadyReplay } from "../files";
 import { replayApi } from "../library";
@@ -92,9 +93,21 @@ class RegisterError extends Error {}
 async function saveToCloud(provider: ReplayCloudProvider, replay: ReadyReplay): Promise<CloudReplayFile> {
   const file = await provider.upload(replay);
   void markLocalReplaySynced(replay, file.id).catch(() => undefined);
-  if (replay.indexId)
-    await replayApi.registerDrive(replay.indexId, file.id).catch(() => Promise.reject(new RegisterError()));
+  if (replay.indexId) {
+    const saved = await replayApi
+      .registerDrive(replay.indexId, file.id)
+      .catch(() => Promise.reject(new RegisterError()));
+    for (const listener of registeredListeners) listener(saved);
+  }
   return file;
+}
+
+const registeredListeners = new Set<(replay: SavedReplay) => void>();
+
+/** Hears each replay a background save adds to the account library, so open lists can show it. */
+export function subscribeRegisteredReplays(listener: (replay: SavedReplay) => void): () => void {
+  registeredListeners.add(listener);
+  return () => registeredListeners.delete(listener);
 }
 
 let backlog: Promise<void> | undefined;

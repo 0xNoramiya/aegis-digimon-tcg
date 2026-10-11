@@ -8,6 +8,8 @@ import { ProfileScreen } from "./ProfileScreen";
 import type { DigimonWorldAvatarId } from "./avatars";
 import { replayApi } from "../replays/library";
 import { fakeDrive } from "../replays/cloud/fakeProvider.fixture";
+import { syncLocalReplays } from "../replays/cloud";
+import type { LocalReplay } from "../replays/local";
 
 vi.hoisted(() => vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "test-client.apps.googleusercontent.com"));
 vi.mock("../replays/cloud/googleDrive", async (original) => {
@@ -17,6 +19,13 @@ vi.mock("../replays/cloud/googleDrive", async (original) => {
     createGoogleDriveProvider: () => drive.provider,
   };
 });
+
+const unsynced = vi.hoisted(() => ({ entries: [] as LocalReplay[] }));
+vi.mock("../replays/local", async (original) => ({
+  ...(await original<typeof import("../replays/local")>()),
+  unsyncedLocalReplays: async () => unsynced.entries,
+  markLocalReplaySynced: async () => {},
+}));
 
 const ACCOUNT: RemoteAccount = {
   id: "account-1",
@@ -83,6 +92,7 @@ function page(matches: MatchHistoryEntry[], extra: Partial<MatchHistoryPage> = {
 
 beforeEach(() => {
   fakeDrive.reset();
+  unsynced.entries = [];
   const stage = document.createElement("div");
   stage.id = "aegis-stage";
   document.body.append(stage);
@@ -306,6 +316,32 @@ it("links saved replays to watch, and marks the rest", async () => {
   expect(within(row("Rival 1")).getByRole("link", { name: "Open in Drive" }).getAttribute("href")).toBe(
     `https://drive.google.com/file/d/${replay(1).driveFileId}/view`,
   );
+});
+
+it("shows a replay the background sync saves while the history is open", async () => {
+  vi.spyOn(accountApi, "matches").mockResolvedValue(page([match(2)]));
+  vi.spyOn(replayApi, "registerDrive").mockResolvedValue(replay(2));
+  renderProfile();
+  expect(await within(await waitFor(() => row("Rival 2"))).findByText("No replay")).toBeTruthy();
+  const saved = replay(2);
+  unsynced.entries = [
+    {
+      key: `${saved.matchId}:0`,
+      matchId: saved.matchId,
+      viewerSeat: 0,
+      indexId: saved.id,
+      summary: saved.summary,
+      data: btoa("replay"),
+      savedAt: 1,
+    },
+  ];
+
+  await syncLocalReplays(fakeDrive.provider);
+
+  expect((await screen.findByRole("link", { name: "Watch: Rival 2" })).getAttribute("href")).toBe(
+    `/replays/${saved.id}`,
+  );
+  expect(replayApi.registerDrive).toHaveBeenCalledWith(saved.id, "drive-file-0001");
 });
 
 it("deletes a replay from the row, refreshes the totals and offers the Drive trash", async () => {
