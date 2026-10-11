@@ -59,4 +59,18 @@ describe("the playtest admin panel", () => {
     expect(await screen.findByText("Could not load the playtest group.")).toBeTruthy();
     expect(screen.queryByText(/0 member/)).toBeNull();
   });
+
+  it("says the studies could not be loaded instead of showing no studies", async () => {
+    vi.spyOn(admin, "listPlaytestMembers").mockResolvedValue({ members: [] });
+    const studies = vi.spyOn(admin, "listStudies").mockRejectedValue(new Error("down"));
+    render(
+      <I18nProvider>
+        <PlaytestAdminPanel />
+      </I18nProvider>,
+    );
+    expect(await screen.findByText("Could not load the studies.")).toBeTruthy();
+    expect(await screen.findByText(/0 member/)).toBeTruthy();
+    expect(studies).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText(/open study/)).toBeNull();
+  });
 });

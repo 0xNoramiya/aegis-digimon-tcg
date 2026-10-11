@@ -1,5 +1,3 @@
-/* Admin view of the playtest group: who is in it, and a form to open a recruiting window. Opening
-   one notifies every member through the bell. */
 import {
   MAX_STUDY_BLURB,
   MAX_STUDY_LINK,
@@ -13,12 +11,17 @@ import { useTranslation } from "../i18n";
 import { createStudy, listPlaytestMembers, listStudies } from "./adminClient";
 import { BugReportApiError } from "./client";
 
+function endOfLocalDay(dateInput: string): number {
+  return dateInput ? new Date(`${dateInput}T23:59:59`).getTime() : NaN;
+}
+
 export function PlaytestAdminPanel() {
   const { t, locale } = useTranslation();
   const formId = useId();
   const [members, setMembers] = useState<PlaytestMember[]>();
   const [studies, setStudies] = useState<{ open: PlaytestStudy[]; past: PlaytestStudy[] }>();
   const [membersFailed, setMembersFailed] = useState(false);
+  const [studiesFailed, setStudiesFailed] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
   const [title, setTitle] = useState("");
   const [blurb, setBlurb] = useState("");
@@ -36,12 +39,13 @@ export function PlaytestAdminPanel() {
       });
     void listStudies(controller.signal)
       .then(setStudies)
-      .catch(() => setStudies({ open: [], past: [] }));
+      .catch(() => {
+        if (!controller.signal.aborted) setStudiesFailed(true);
+      });
     return () => controller.abort();
   }, []);
 
-  // The date input gives a calendar day; the study closes at the end of that day, local time.
-  const closesAt = closesOn ? new Date(`${closesOn}T23:59:59`).getTime() : NaN;
+  const closesAt = endOfLocalDay(closesOn);
   const canSubmit = title.trim() && blurb.trim() && link.trim() && Number.isFinite(closesAt) && !saving;
 
   const submit = () => {
@@ -91,6 +95,7 @@ export function PlaytestAdminPanel() {
           ))}
         </ul>
       ) : null}
+      {studiesFailed ? <p className="feedback-playtest__open">{t("feedback.playtest.studiesLoadFailed")}</p> : null}
       {studies?.open.length ? (
         <p className="feedback-playtest__open">
           {t("feedback.playtest.openStudies", { count: studies.open.length })}:{" "}

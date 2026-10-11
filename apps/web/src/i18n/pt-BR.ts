@@ -98,6 +98,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "feedback.playtest.showMembers": "Mostrar membros",
   "feedback.playtest.hideMembers": "Ocultar membros",
   "feedback.playtest.openStudies": "{count} estudo(s) aberto(s)",
+  "feedback.playtest.studiesLoadFailed": "Não foi possível carregar os estudos.",
   "feedback.playtest.form.title": "Título",
   "feedback.playtest.form.blurb": "Descrição",
   "feedback.playtest.form.link": "Link",

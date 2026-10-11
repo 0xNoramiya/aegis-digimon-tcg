@@ -51,7 +51,6 @@ type Handler = (url: string, init?: RequestInit) => Reply;
 const REPORTED_DECKS = "/admin/community/reports";
 const PLAYTEST = "/admin/playtest/";
 
-/** Feedback calls go to `handler`; the reported-deck queue and playtest group are empty unless `reportedDecks` says otherwise. */
 function mockApi(handler: Handler, reportedDecks: unknown[] = []) {
   const fetchMock = vi.fn<typeof fetch>(async (input, init) => {
     const url = String(input);

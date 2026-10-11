@@ -1,5 +1,3 @@
-/* Membership of the playtest group, from the profile. The feedback form offers the same opt-in;
-   this is where a player leaves it. */
 import { useEffect, useState } from "react";
 import type { PlaytestMembership } from "@aegis/shared";
 import { Switch } from "../design/primitives";

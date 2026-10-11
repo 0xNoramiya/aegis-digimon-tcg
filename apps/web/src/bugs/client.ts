@@ -6,7 +6,6 @@ export const MAX_BUG_REPORT_DESCRIPTION = 4000;
 
 export { FEEDBACK_KINDS, type FeedbackKind };
 
-/** The kinds the form offers. `other` reports are still read by admins but no longer collected. */
 export const OFFERED_FEEDBACK_KINDS = ["bug", "improvement"] as const;
 export type OfferedFeedbackKind = (typeof OFFERED_FEEDBACK_KINDS)[number];
 

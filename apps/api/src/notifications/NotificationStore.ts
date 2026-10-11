@@ -8,7 +8,6 @@ export const MAX_MARK_READ_IDS = 100;
 
 export type NewNotification = {
   accountId: string;
-  /** What the notification is about, e.g. `feedback:412` or `study:3`. A newer unread one replaces an older one. */
   subject: string;
   at: number;
 } & NotificationBody;

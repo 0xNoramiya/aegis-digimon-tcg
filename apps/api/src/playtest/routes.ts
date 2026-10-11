@@ -13,7 +13,6 @@ export type NewStudyInput = Omit<NewStudy, "createdBy">;
 
 type Handler = (req: Request, res: Response, auth: AuthSession) => Promise<void>;
 
-/** The player's own opt-in, and the admin's member list and studies. */
 export function installPlaytestRoutes({ app, store, session }: PlaytestRouteDeps): void {
   const route =
     (handler: Handler, { admin = false } = {}) =>
@@ -25,7 +24,6 @@ export function installPlaytestRoutes({ app, store, session }: PlaytestRouteDeps
           res.status(401).json({ error: "authentication_required" });
           return;
         }
-        // Read from the session on every request, so a revoked admin loses access at once.
         if (admin && !auth.account.isAdmin) {
           res.status(403).json({ error: "admin_required" });
           return;
@@ -90,7 +88,6 @@ export function installPlaytestRoutes({ app, store, session }: PlaytestRouteDeps
   );
 }
 
-/** A study needs a title, a blurb, an https link, and a window that has opened and not yet closed. */
 export function validateStudy(body: unknown, now: number): NewStudyInput | { error: PlaytestStudyFailure } {
   const input = (body ?? {}) as Record<string, unknown>;
   const title = text(input.title);

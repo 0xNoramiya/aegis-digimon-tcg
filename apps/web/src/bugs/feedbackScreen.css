@@ -566,8 +566,6 @@
   outline-offset: -2px;
 }
 
-/* ---- Playtest group ---- */
-
 .feedback-playtest {
   display: grid;
   gap: 0.75rem;

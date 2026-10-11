@@ -95,6 +95,7 @@ export const en = {
   "feedback.playtest.showMembers": "Show members",
   "feedback.playtest.hideMembers": "Hide members",
   "feedback.playtest.openStudies": "{count} open study(ies)",
+  "feedback.playtest.studiesLoadFailed": "Could not load the studies.",
   "feedback.playtest.form.title": "Title",
   "feedback.playtest.form.blurb": "Blurb",
   "feedback.playtest.form.link": "Link",

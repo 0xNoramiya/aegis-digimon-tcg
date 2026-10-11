@@ -1,7 +1,3 @@
-/* The feedback modal: a bug or an idea, in two sentences. Everything the client can know on its
-   own — the match, the build, the browser — is captured rather than asked. The replay saved with an
-   in-match report carries the cards and both decks, so the form no longer asks for them. */
-
 import { useEffect, useId, useState } from "react";
 import { accountApi } from "../account/client";
 import { Icons, type IconComponent } from "../design/icons";
@@ -55,7 +51,6 @@ export function BugReportDialog({
   const [error, setError] = useState<TranslationKey>();
   // Until the server says otherwise, assume the public copy is on: never understate where words go.
   const [publicMirror, setPublicMirror] = useState(true);
-  // The playtest group: offered to signed-in reporters only, since it lives on the account.
   const playtestId = useId();
   const [playtestMember, setPlaytestMember] = useState<boolean>();
   const [playtestWanted, setPlaytestWanted] = useState(false);

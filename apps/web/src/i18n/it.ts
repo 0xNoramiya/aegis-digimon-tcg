@@ -84,6 +84,7 @@ const interfaceMessages = {
   "feedback.playtest.showMembers": "Mostra membri",
   "feedback.playtest.hideMembers": "Nascondi membri",
   "feedback.playtest.openStudies": "{count} studio/i aperto/i",
+  "feedback.playtest.studiesLoadFailed": "Impossibile caricare gli studi.",
   "feedback.playtest.form.title": "Titolo",
   "feedback.playtest.form.blurb": "Descrizione",
   "feedback.playtest.form.link": "Link",

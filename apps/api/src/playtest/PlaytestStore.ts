@@ -21,7 +21,6 @@ export type NewStudy = {
   createdBy: string;
 };
 
-/** Membership of the playtest group and the studies members are invited to. */
 export class PlaytestStore {
   constructor(private readonly accounts: AccountStore) {}
 
@@ -35,7 +34,6 @@ export class PlaytestStore {
     return since == null ? { member: false, since: null } : { member: true, since: Number(since) };
   }
 
-  /** Opting in while a study is open delivers that study's invitation at once. */
   async setMembership(accountId: string, member: boolean, at = Date.now()): Promise<PlaytestMembership> {
     await this.accounts.ensureReady();
     await this.accounts.pool.query("UPDATE accounts SET playtest_opt_in_at=$2 WHERE id=$1", [
@@ -68,7 +66,6 @@ export class PlaytestStore {
     };
   }
 
-  /** Records the study and invites every current member if it is already open. */
   async createStudy(input: NewStudy, at = Date.now()): Promise<{ study: PlaytestStudy; notified: number }> {
     await this.accounts.ensureReady();
     const { rows } = await this.accounts.pool.query<StudyRow>(
@@ -86,7 +83,6 @@ export class PlaytestStore {
     return { study, notified };
   }
 
-  // One invitation per study per account, read or not: a member who leaves and rejoins is not nagged.
   private async invite(accountId: string, study: PlaytestStudy, at: number): Promise<boolean> {
     const subject = `study:${study.id}`;
     const { rows } = await this.accounts.pool.query(

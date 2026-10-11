@@ -117,7 +117,6 @@ export function installAccountRoutes(
   });
   // The signed-in player's inbox; feedback triage is its first producer. See src/notifications.
   installNotificationRoutes({ app, store: new NotificationStore(store), session: sessionFromRequest });
-  // The opt-in playtest group and the studies admins open for it. See src/playtest.
   installPlaytestRoutes({ app, store: new PlaytestStore(store), session: sessionFromRequest });
   // Public decks, likes and copies. See src/community.
   installCommunityDeckRoutes({

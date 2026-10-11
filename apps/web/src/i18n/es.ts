@@ -95,6 +95,7 @@ export const es: Record<keyof typeof en, string> = {
   "feedback.playtest.showMembers": "Mostrar miembros",
   "feedback.playtest.hideMembers": "Ocultar miembros",
   "feedback.playtest.openStudies": "{count} estudio(s) abierto(s)",
+  "feedback.playtest.studiesLoadFailed": "No se pudieron cargar los estudios.",
   "feedback.playtest.form.title": "Título",
   "feedback.playtest.form.blurb": "Descripción",
   "feedback.playtest.form.link": "Enlace",

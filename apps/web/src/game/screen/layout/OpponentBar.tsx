@@ -352,7 +352,6 @@ export function OpponentBar({
           >
             <Icons.FastForward size={17} />
           </button>
-          {/* Feedback sits with settings and leave so the three "about the match" controls read as one group. */}
           <button className="game-topbar-button" {...tooltip.describe("feedback", t("bugReport.button"), onReportBug)}>
             <Icons.Megaphone size={17} />
           </button>

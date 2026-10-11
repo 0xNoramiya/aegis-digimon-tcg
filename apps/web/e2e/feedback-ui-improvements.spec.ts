@@ -17,7 +17,6 @@ test("the toolbar holds still, the opponent's card stays open, and the feedback 
 }) => {
   test.setTimeout(120_000);
   const { page } = scenario;
-  // Card art is cosmetic; the remote mirror can return 502 independently of what this spec checks.
   await page.route("**/assets/card-images/**", (route) =>
     route.fulfill({
       contentType: "image/png",
@@ -88,7 +87,7 @@ test("the toolbar holds still, the opponent's card stays open, and the feedback 
     await expect(page.getByRole("tooltip")).toHaveCount(0);
   });
 
-  await test.step("#54: only Cancel closes a started feedback report", async () => {
+  await test.step("#54: the form asks two questions, and only Cancel closes a started report", async () => {
     // The browser test server has no account API; the dialog only asks it where reports go.
     await page.route("**/bug-reports/limits", (route) =>
       route.fulfill({ json: { enabled: true, publicMirror: false } }),
@@ -96,7 +95,6 @@ test("the toolbar holds still, the opponent's card stays open, and the feedback 
     await page.getByRole("button", { name: "Send feedback", exact: true }).click();
     const dialog = page.getByRole("dialog", { name: "Send feedback" });
     await expect(dialog).toBeVisible();
-    // The form asks two questions and nothing about cards, decks or match ids; the replay has those.
     await expect(dialog.getByRole("radio")).toHaveCount(2);
     await expect(dialog.getByLabel("Title")).toBeVisible();
     await expect(dialog.getByLabel("Cards involved")).toHaveCount(0);
