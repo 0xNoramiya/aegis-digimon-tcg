@@ -469,6 +469,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-richard-main-fresh-materials",
   "arena-davis-both-colors",
   "arena-feedback65-dracomon-selection",
+  "arena-feedback72-nokia-hand-evolution",
   "arena-feedback71-justimon-copied-opt",
   "arena-feedback70-gaiomon-attack",
   "arena-feedback68-arisa-effect-play",
@@ -8393,6 +8394,36 @@ function layFeedback60DuplicateOptionChoiceScenario(state: GameState): void {
   state.memory = 10;
 }
 
+/** #72: actual recovery/refusal sequence leaves zero-memory hand Main actions available. */
+function layFeedback72NokiaHandEvolutionScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const p = state.players[seat]!;
+    insertCard(p, Zone.EggDeck, faceDownCard(`feedback72-egg-${seat}`, "BT1-001", seat));
+    for (let i = 0; i < 8; i++) insertCard(p, Zone.Deck, faceDownCard(`feedback72-deck-${seat}-${i}`, "BT1-009", seat));
+    for (let i = 0; i < 3; i++)
+      insertCard(p, Zone.Security, faceDownCard(`feedback72-security-${seat}-${i}`, "BT1-009", seat));
+  }
+  const human = state.players[0]!;
+  for (const [id, card] of [
+    ["gabumon", "BT22-017"],
+    ["nokia", "EX13-067"],
+    ["tai-matt", "EX9-066"],
+    ["tai", "BT17-081"],
+  ] as const)
+    placePermanent(human, establishedDigimon(0, [card], `-feedback72-${id}`));
+  setBreeding(human, establishedDigimon(0, ["BT22-008"], "-feedback72-breeding"));
+  insertCard(human, Zone.Hand, faceUpCard("feedback72-agumon", "BT22-008", 0));
+  insertCard(human, Zone.Hand, faceUpCard("feedback72-war", "BT22-013", 0));
+  insertCard(human, Zone.Hand, faceUpCard("feedback72-reserve", "BT1-009", 0));
+  insertCard(human, Zone.Trash, faceUpCard("feedback72-metal", "BT22-026", 0));
+  placePermanent(state.players[1]!, establishedDigimon(1, ["BT14-026"], "-feedback72-opponent"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  // Nokia gains 1 at Main entry with the opposing Digimon: 2 -> 3, then Agumon's play costs 3.
+  state.memory = 2;
+}
+
 /** #71: copied evolution processing does not share the lender's already-used OPT. */
 function layFeedback71JustimonCopiedOptScenario(state: GameState): void {
   for (const seat of [0, 1] as const) {
@@ -11890,6 +11921,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-richard-main-fresh-materials": layDiscordRichardMainFreshMaterialsScenario,
   "arena-davis-both-colors": layDavisBothColorsScenario,
   "arena-feedback65-dracomon-selection": layFeedback65DracomonSelectionScenario,
+  "arena-feedback72-nokia-hand-evolution": layFeedback72NokiaHandEvolutionScenario,
   "arena-feedback71-justimon-copied-opt": layFeedback71JustimonCopiedOptScenario,
   "arena-feedback70-gaiomon-attack": layFeedback70GaiomonAttackScenario,
   "arena-feedback68-arisa-effect-play": layFeedback68ArisaEffectPlayScenario,

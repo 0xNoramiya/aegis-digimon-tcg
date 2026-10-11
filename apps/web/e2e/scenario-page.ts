@@ -189,7 +189,7 @@ export class ScenarioPage {
           const index = selection.choice ?? (selection.accept === false ? decision.options.declineIndex : 0) ?? 0;
           const choice = decision.options.digivolveCostChoice
             ? this.page.locator(".digivolve-cost-choice__option").nth(index)
-            : decision.options.choiceEffects !== undefined
+            : decision.options.choiceEffects !== undefined || decision.options.choiceClauses !== undefined
               ? this.page.getByRole("dialog").locator(".effect-choice__option").nth(index)
               : this.page
                   .getByRole("dialog")

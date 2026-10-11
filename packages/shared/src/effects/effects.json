@@ -43691,14 +43691,14 @@
                     "filter": {
                       "controller": "mine",
                       "kind": ["Digimon"],
-                      "nameOrTrait": [{ "tokens": ["Gabumon"], "match": "name" }]
+                      "nameOrTrait": [{ "tokens": ["Gabumon"], "match": "nameExact" }]
                     },
                     "count": 1
                   },
                   "into": {
                     "controllerDefault": "mine",
                     "kind": ["Digimon"],
-                    "nameOrTrait": [{ "tokens": ["MetalGarurumon"], "match": "name" }]
+                    "nameOrTrait": [{ "tokens": ["MetalGarurumon"], "match": "nameExact" }]
                   },
                   "payCost": false,
                   "from": ["hand"],
@@ -43734,14 +43734,14 @@
                     "filter": {
                       "controller": "mine",
                       "kind": ["Digimon"],
-                      "nameOrTrait": [{ "tokens": ["Gabumon"], "match": "name" }]
+                      "nameOrTrait": [{ "tokens": ["Gabumon"], "match": "nameExact" }]
                     },
                     "count": 1
                   },
                   "into": {
                     "controllerDefault": "mine",
                     "kind": ["Digimon"],
-                    "nameOrTrait": [{ "tokens": ["MetalGarurumon"], "match": "name" }]
+                    "nameOrTrait": [{ "tokens": ["MetalGarurumon"], "match": "nameExact" }]
                   },
                   "payCost": false,
                   "from": ["hand"],
@@ -44590,12 +44590,12 @@
                 {
                   "kind": "Digivolve",
                   "target": {
-                    "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Agumon"], "match": "name" }] },
+                    "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Agumon"], "match": "nameExact" }] },
                     "count": 1
                   },
                   "into": {
                     "controllerDefault": "mine",
-                    "nameOrTrait": [{ "tokens": ["WarGreymon"], "match": "name" }]
+                    "nameOrTrait": [{ "tokens": ["WarGreymon"], "match": "nameExact" }]
                   },
                   "payCost": false,
                   "from": ["hand"],
@@ -44627,12 +44627,12 @@
                 {
                   "kind": "Digivolve",
                   "target": {
-                    "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Agumon"], "match": "name" }] },
+                    "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Agumon"], "match": "nameExact" }] },
                     "count": 1
                   },
                   "into": {
                     "controllerDefault": "mine",
-                    "nameOrTrait": [{ "tokens": ["WarGreymon"], "match": "name" }]
+                    "nameOrTrait": [{ "tokens": ["WarGreymon"], "match": "nameExact" }]
                   },
                   "payCost": false,
                   "from": ["hand"],
@@ -79559,12 +79559,15 @@
                 {
                   "kind": "Digivolve",
                   "target": {
-                    "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Gabumon"], "match": "name" }] },
+                    "filter": {
+                      "controller": "mine",
+                      "nameOrTrait": [{ "tokens": ["Gabumon"], "match": "nameExact" }]
+                    },
                     "count": 1
                   },
                   "into": {
                     "controllerDefault": "mine",
-                    "nameOrTrait": [{ "tokens": ["MetalGarurumon"], "match": "name" }]
+                    "nameOrTrait": [{ "tokens": ["MetalGarurumon"], "match": "nameExact" }]
                   },
                   "payCost": false,
                   "from": ["hand"],
@@ -80487,7 +80490,7 @@
                 "controller": "mine",
                 "zone": "battleArea",
                 "kind": ["Digimon"],
-                "nameOrTrait": [{ "tokens": ["Gabumon"], "match": "name" }]
+                "nameOrTrait": [{ "tokens": ["Gabumon"], "match": "nameExact" }]
               },
               "count": 1
             },
@@ -80523,14 +80526,14 @@
                       "controller": "mine",
                       "zone": "battleArea",
                       "kind": ["Digimon"],
-                      "nameOrTrait": [{ "tokens": ["Agumon"], "match": "name" }]
+                      "nameOrTrait": [{ "tokens": ["Agumon"], "match": "nameExact" }]
                     },
                     "count": 1
                   },
                   "into": {
                     "controllerDefault": "mine",
                     "kind": ["Digimon"],
-                    "nameOrTrait": [{ "tokens": ["WarGreymon"], "match": "name" }]
+                    "nameOrTrait": [{ "tokens": ["WarGreymon"], "match": "nameExact" }]
                   },
                   "from": ["hand"],
                   "payCost": false,
