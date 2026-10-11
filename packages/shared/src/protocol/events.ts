@@ -351,6 +351,7 @@ export type ServerEvent =
       kind: "effectResolved";
       seat: Seat;
       sourceCardId: string;
+      digivolutionPerformed?: boolean;
       /** Physical source and host copied from the matching `effectTriggered`. */
       sourceInstanceId?: string;
       sourcePermanentId?: string;
@@ -691,6 +692,8 @@ export interface DecisionRequest {
     visibleInstanceIds?: string[]; // full display set (e.g. all revealed cards); ids absent from candidateInstanceIds render disabled
     /** Authoritative identities for temporarily revealed cards that may not yet exist in the client's zone index. */
     visibleCards?: { instanceId: string; cardId: string; artId?: string }[];
+    /** Offered readable trash cards with a still-pending discarded-source effect; not a promised outcome. */
+    pendingEffectInstanceIds?: string[];
     min?: number;
     max?: number; // selection count bounds
     maxTotalPlayCost?: number; // summed printed play-cost budget for multi-card selections
@@ -780,6 +783,8 @@ export interface DecisionRequest {
     activationConfirmation?: boolean;
     /** Verbatim printed passage associated with this decision. */
     effectTextPart?: string;
+    /** Passage emphasized within the complete resolving clause. Display-only. */
+    effectTextEmphasis?: string;
     isInherited?: boolean;
     /** What the resolving action will do to the permanents picked here (`chooseTargets` only). */
     targetFate?: TargetFate;

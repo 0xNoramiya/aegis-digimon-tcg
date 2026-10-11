@@ -1,6 +1,6 @@
+import { applyScenarioEffects } from "../scenario/effects.js";
 import type { Client } from "colyseus";
 import {
-  EffectDuration,
   PlayerState,
   isDigimonWorldAvatarId,
   Phase,
@@ -22,7 +22,7 @@ import { effectiveColors } from "../effects/continuous.js";
 import { linkMax } from "../effects/mindLink.js";
 import { logError } from "../../logger.js";
 import { runSetup, finalizeSecurity, mulliganRedraw, type Decklist } from "../setup.js";
-import { layDevScenario, type DevScenarioId } from "../devScenario.js";
+import { layScenarioFixture, type ScenarioFixture } from "../scenario/fixture.js";
 import { validateDecklist } from "../deckValidation.js";
 import type { SeatJoinOptions } from "./types.js";
 import type { GameEngine } from "../GameEngine.js";
@@ -136,36 +136,17 @@ export async function runMatch(engine: GameEngine): Promise<void> {
 
 /**
  * Development-only alternative to {@link startMatch}: skip the pre-game procedure, lay a
- * hand-built board for the named scenario, and start the real turn loop on it. The room only
+ * fixture board, and start the real turn loop on it. The room only
  * exposes engine outside production.
  */
-export function startDevScenario(engine: GameEngine, scenario: DevScenarioId): void {
+export function startScenarioFixture(engine: GameEngine, fixture: ScenarioFixture): void {
   const decks = collectStagedDecks(engine);
   if (decks === undefined) return;
+  const references = layScenarioFixture(engine.state, fixture, decks);
   engine.matchSetupStarted = true;
-  layDevScenario(scenario, engine.state, decks);
-  if (scenario === "arena-suspend-lock-block") {
-    const blocker = engine.state.players[0]?.battleArea.find(({ topCard }) => topCard.cardId === "ST18-07");
-    if (blocker !== undefined) {
-      engine.continuous.addRestriction(blocker.permanentId, "suspend", EffectDuration.Permanent);
-      engine.projection.syncRestrictions();
-    }
-  }
-  if (scenario === "arena-bt20-ouryuken-reduction-resumes") {
-    const chronomon = engine.state.players[1]?.battleArea.find(({ topCard }) => topCard.cardId === "BT26-016");
-    if (chronomon !== undefined) installAegiochusmonHolyProtection(engine, chronomon);
-  }
+  applyScenarioEffects(engine, fixture, references);
   engine.hooks.emit({ kind: "matchStarted", firstSeat: engine.state.turnSeat });
   void startTurnLoop(engine);
-}
-
-/** BT26-029's When Digivolving protection, as if its controller resolved it on their last turn. */
-function installAegiochusmonHolyProtection(engine: GameEngine, { permanentId, controllerSeat }: Permanent): void {
-  const opponentOnly = { byOpponentEffectsOnly: true, originSeat: controllerSeat };
-  engine.continuous.addRestriction(permanentId, "dpImmune", EffectDuration.UntilOpponentTurnEnd, opponentOnly);
-  engine.continuous.addRestriction(permanentId, "stackReturn", EffectDuration.UntilOpponentTurnEnd, opponentOnly);
-  engine.continuous.addStackTrashLock(permanentId, EffectDuration.UntilOpponentTurnEnd);
-  engine.projection.syncRestrictions();
 }
 
 /** Gather both staged decklists; undefined if either seat has not staged one. */

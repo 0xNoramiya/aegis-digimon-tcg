@@ -248,11 +248,14 @@ describe("P-095 Pause Plug-In P — KB Q&A rulings", () => {
   };
 
   it("stops a [When Digivolving] effect from triggering on the affected Digimon (Q5751)", async () => {
-    const s = await pauseOpponentDigimon({
-      battleArea: [{ card: "BT1-075", dp: 12000, as: "affected" }],
-      hand: [{ card: "P-090", as: "evolver" }],
-      deck: ["BT1-009", "BT1-009"],
-    }, { pause: true, ownBattleArea: [{ card: "BT1-009", as: "suspendTarget" }] });
+    const s = await pauseOpponentDigimon(
+      {
+        battleArea: [{ card: "BT1-075", dp: 12000, as: "affected" }],
+        hand: [{ card: "P-090", as: "evolver" }],
+        deck: ["BT1-009", "BT1-009"],
+      },
+      { pause: true, ownBattleArea: [{ card: "BT1-009", as: "suspendTarget" }] },
+    );
 
     await digivolveAffected(s, "evolver");
 
@@ -299,7 +302,9 @@ describe("P-095 Pause Plug-In P — KB Q&A rulings", () => {
 
     const paused = await useSeikenMeppa(true);
     expect(paused.perm("affected").isSuspended).toBe(false);
-    expect(paused.state.players[1]!.hand.map(({ instanceId }) => instanceId)).toContain(paused.inst("knight").instanceId);
+    expect(paused.state.players[1]!.hand.map(({ instanceId }) => instanceId)).toContain(
+      paused.inst("knight").instanceId,
+    );
     expect(paused.perm("affected").stack).toHaveLength(0);
   });
 

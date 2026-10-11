@@ -2,11 +2,7 @@
    and a short-lived error state inline. */
 
 import { useEffect, useRef, useState } from "react";
-import {
-  Button,
-  type ButtonSize,
-  type ButtonVariant,
-} from "../design/primitives";
+import { Button, type ButtonSize, type ButtonVariant } from "../design/primitives";
 import { Icons } from "../design/icons";
 import type { DeckListing } from "../game/decks";
 import { useTranslation } from "../i18n";

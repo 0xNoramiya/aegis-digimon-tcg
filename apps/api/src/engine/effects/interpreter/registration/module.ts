@@ -379,7 +379,11 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
               const outerEffectKey = ctx.activeEffectKey;
               ctx.activeEffectKey = runtimeEffectKey(ctx, effectKey);
               try {
-                await runEffect({ ...ctx, delayArmedConsumed }, effect);
+                const resolutionContext = { ...ctx, delayArmedConsumed };
+                await runEffect(resolutionContext, effect);
+                if (effect.actions.length === 1 && effect.actions[0]?.kind === "Digivolve") {
+                  ctx.digivolutionPerformed = resolutionContext.lastDigivolveResult === true;
+                }
               } finally {
                 ctx.activeEffectKey = outerEffectKey;
               }

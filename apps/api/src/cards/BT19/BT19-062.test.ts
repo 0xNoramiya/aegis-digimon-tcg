@@ -172,8 +172,10 @@ describe("BT19-062 Cyberdramon", () => {
     await s.ready();
 
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("peer").instanceId })).toEqual({ ok: true });
+    await settle();
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("cyber").instanceId })).toEqual({ ok: true });
     await settle(() => s.state.players[0]!.battleArea.length === 2);
+    await settle();
 
     const peer = s.state.players[0]!.battleArea.find((permanent) => permanent.topCard?.cardId === BLACK_LV4)!;
     const cyber = s.state.players[0]!.battleArea.find((permanent) => permanent.topCard?.cardId === "BT19-062")!;

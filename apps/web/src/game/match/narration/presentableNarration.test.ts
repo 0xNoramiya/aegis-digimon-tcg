@@ -1,9 +1,10 @@
+import { Side } from "../../side";
 import { afterEach, describe, expect, it } from "vitest";
 import { NOTICE_LIFETIME_MS, type MatchNotice } from "../../notices";
 import type { NarrationItem } from "../../narration";
 import { TOUCH_NARRATION_LIFETIME_SCALE } from "../../narration";
 import { setNoticeDuration } from "../../noticeDuration";
-import { presentableNarration } from "./presentableNarration";
+import { presentableNarration, createDiscardedSourcePanels } from "./presentableNarration";
 
 const item = {
   id: "moment-1",
@@ -30,5 +31,37 @@ describe("presentable narration", () => {
     expect(presentableNarration(item, { collapseNarration: true }).lifetimeMs).toBe(
       Math.round(NOTICE_LIFETIME_MS * TOUCH_NARRATION_LIFETIME_SCALE * 1.5),
     );
+  });
+});
+
+describe("discarded source panels across batches", () => {
+  function moved(id: string, resolutionId = "effect-1"): NarrationItem {
+    return {
+      id,
+      batchId: id,
+      side: Side.Opponent,
+      createdAt: 0,
+      panel: {
+        id,
+        resolutionId,
+        titleKey: "panel.trashedDigivolutionCards",
+        side: Side.Opponent,
+        cards: [{ cardId: "BT1-009", badge: 1 }],
+        ordered: false,
+        createdAt: 0,
+      },
+    };
+  }
+  it("retains identical physical cards from three hosts after earlier panels expire", () => {
+    const group = createDiscardedSourcePanels();
+    group(moved("batch-1"));
+    expect(group(moved("batch-2")).panel?.cards).toHaveLength(2);
+    expect(group(moved("batch-3")).panel?.cards.map((card) => card.badge)).toEqual([1, 2, 3]);
+  });
+  it("does not duplicate a republished occurrence or combine separate activations", () => {
+    const group = createDiscardedSourcePanels();
+    group(moved("batch-1"));
+    expect(group(moved("batch-1")).panel?.cards).toHaveLength(1);
+    expect(group(moved("batch-2", "effect-2")).panel?.cards).toHaveLength(1);
   });
 });

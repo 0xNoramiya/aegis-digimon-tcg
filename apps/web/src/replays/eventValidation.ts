@@ -102,6 +102,7 @@ export function validReplayEvent(value: unknown): boolean {
     inBreeding: boolean,
     mustBlock: boolean,
     isInherited: boolean,
+    digivolutionPerformed: boolean,
     timing: string,
     hasSecurityEffect: boolean,
     isDigimon: boolean,

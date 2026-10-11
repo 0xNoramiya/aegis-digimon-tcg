@@ -169,3 +169,6 @@ Scenario and bug-regression tests live in `apps/api/src/engine/scenarios/` and
 drive public intents through `engine/testkit`. Engine conformance tests cover
 shared rules and cite the KB. Browser specs in `apps/web/e2e/` exercise rendered
 flows through a real room. [AGENTS.md](../AGENTS.md) has the full test rules.
+Reusable regression boards use behavior-named fixtures shared by the testkit and
+browser harness. Manual reproductions load those fixtures on demand rather than
+requiring arena registrations; see [regression fixtures](TESTING.md).

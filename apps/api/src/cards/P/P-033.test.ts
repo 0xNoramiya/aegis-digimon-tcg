@@ -91,7 +91,10 @@ describe("P-033 Sunarizamon — KB Q&A rulings", () => {
         },
         1: {
           battleArea: [{ card: "BT1-009", as: "defender", suspended: true, dp: 1000 }],
-          security: [{ card: "BT1-009", as: "checked" }, { card: "BT1-009", as: "kept" }],
+          security: [
+            { card: "BT1-009", as: "checked" },
+            { card: "BT1-009", as: "kept" },
+          ],
         },
       },
       { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true, preferOptionIndex: 2 },

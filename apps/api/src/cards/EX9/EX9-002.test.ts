@@ -48,12 +48,7 @@ describe("EX9-002", () => {
 
     expect(s.perm("host").topCard.cardId).toBe("EX9-017");
     expect(s.state.memory).toBe(3);
-    expect(s.perm("host").stack.map((card) => card.cardId)).toEqual([
-      "BT1-048",
-      "BT1-027",
-      "EX9-002",
-      "EX9-015",
-    ]);
+    expect(s.perm("host").stack.map((card) => card.cardId)).toEqual(["BT1-048", "BT1-027", "EX9-002", "EX9-015"]);
     expect(s.perm("host").stack[0]!.faceUp).toBe(false);
     expect(s.state.pendingDecision).toBeUndefined();
   });

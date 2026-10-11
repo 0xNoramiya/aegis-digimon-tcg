@@ -1,3 +1,4 @@
+import fixtureHellscytheOnplayPriority from "./scenarios/hellscythe-onplay-priority.fixture.js";
 import { EffectTiming, Phase, type Seat } from "@aegis/shared";
 import { expect, it } from "vitest";
 import "../cards/index.js";
@@ -66,7 +67,7 @@ it("runs the reported Wizardmon/MagnaAngemon arena with recovery before the oppo
   const s = setupEngine({ 0: {}, 1: {} }, automation);
   s.engine.stagedDecks[0] = BLUE_DECK;
   s.engine.stagedDecks[1] = RED_DECK;
-  s.engine.startDevScenario("arena-hellscythe-onplay-priority");
+  s.engine.startScenarioFixture(fixtureHellscytheOnplayPriority);
   try {
     await settle(() => s.state.phase === Phase.Breeding);
     expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });

@@ -1,0 +1,109 @@
+import prepared0 from "../../api/src/engine/scenarios/mastemon-digivolve.fixture";
+import prepared1 from "../../api/src/engine/scenarios/mastemon-attack.fixture";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
+
+import { test, expect } from "./scenario-page";
+
+const preparedFixtures = { "mastemon-digivolve": prepared0, "mastemon-attack": prepared1 };
+
+const HOST = fixturePermanentId("dev-perm-0-feedback84-host");
+const YELLOW = fixtureInstanceId("dev-feedback84-yellow");
+const PURPLE = fixtureInstanceId("dev-feedback84-purple");
+const COST_CLAUSE =
+  "[When Digivolving] [When Attacking] [Once Per Turn] By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
+const PLAY_CLAUSE =
+  "You may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
+
+for (const timing of ["digivolve", "attack"] as const) {
+  for (const payload of ["decline", "no selection", "hand", "trash"] as const) {
+    test(`Feedback #84: ${timing} pays security then chooses ${payload} in the real GameScreen`, async ({
+      scenario,
+    }) => {
+      await scenario.openFixture(fixtureVariant(preparedFixtures, `mastemon-${timing}`));
+      await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
+      const before = await scenario.snapshot();
+      let costId: string | undefined;
+      let costChoices = 0;
+      let payloadChoices = 0;
+      let cardChoices = 0;
+      if (timing === "digivolve") await scenario.evolve("Mastemon", HOST);
+      else await scenario.attack(HOST);
+      await scenario.resolveUntil(
+        (s) =>
+          payloadChoices === 1 &&
+          (payload === "decline" || cardChoices === 1) &&
+          !s.pendingDecision &&
+          !s.combatWindow &&
+          s.phase === "Main" &&
+          s.players[0]!.battleArea.find((p) => p.permanentId === HOST)?.topCard.cardId === "P-187",
+        async (decision) => {
+          if (decision.sourceCardId !== "P-187") return { accept: false };
+          if (decision.kind === "optional") {
+            const clause = COST_CLAUSE;
+            const emphasis = /Pay cost/i.test(decision.promptText) ? "By trashing your top security card" : PLAY_CLAUSE;
+            expect(decision.options.effectTextEmphasis).toBe(emphasis);
+            const dialog = scenario.page.getByRole("dialog");
+            await expect(dialog).toHaveAttribute("data-prompt-surface", "left");
+            await expect(dialog.locator(".decision-overlay__effect-text strong")).toHaveText(emphasis, {
+              ignoreCase: true,
+            });
+            expect(decision.options.effectTextPart).toBe(clause);
+            await expect(scenario.page.getByRole("dialog").getByText(clause, { exact: true })).toBeVisible({
+              timeout: 6_000,
+            });
+          }
+          if (decision.kind === "optional" && /Pay cost/i.test(decision.promptText)) {
+            costChoices += 1;
+            const state = await scenario.snapshot();
+            costId = state.players[0]!.security[0]!.instanceId;
+            return { accept: true };
+          }
+          if (decision.kind === "optional") {
+            payloadChoices += 1;
+            const state = await scenario.snapshot();
+            expect(state.players[0]!.trash.map((c) => c.instanceId)).toContain(costId);
+            expect(decision.promptText).toMatch(/play/i);
+            return { accept: payload !== "decline" };
+          }
+          if (decision.kind === "selectCards") {
+            cardChoices += 1;
+            expect(decision.options).toMatchObject({ min: 0, max: 1 });
+            expect(decision.options.candidateInstanceIds).toEqual(expect.arrayContaining([YELLOW, PURPLE]));
+            expect(decision.options.candidateInstanceIds).toHaveLength(2);
+            return payload === "no selection"
+              ? { accept: false }
+              : { instanceId: payload === "hand" ? YELLOW : PURPLE };
+          }
+          return {};
+        },
+      );
+      const after = await scenario.snapshot();
+      expect(costChoices).toBe(1);
+      expect(payloadChoices).toBe(1);
+      expect(cardChoices).toBe(payload === "decline" ? 0 : 1);
+      expect(after.memory).toBe(timing === "digivolve" ? 5 : 10);
+      expect(after.players[0]!.security).toHaveLength(timing === "digivolve" ? 3 : 2);
+      expect(after.players[0]!.trash.map((c) => c.instanceId)).toContain(costId);
+      const played = payload === "hand" ? YELLOW : payload === "trash" ? PURPLE : undefined;
+      expect(after.players[0]!.battleArea.map((p) => p.topCard.instanceId)).toEqual(
+        played
+          ? [after.players[0]!.battleArea[0]!.topCard.instanceId, played]
+          : [after.players[0]!.battleArea[0]!.topCard.instanceId],
+      );
+      expect(after.players[0]!.hand.some((c) => c.instanceId === YELLOW)).toBe(payload !== "hand");
+      expect(after.players[0]!.trash.some((c) => c.instanceId === PURPLE)).toBe(payload !== "trash");
+      expect(after.players[1]!.securityCount).toBe(before.players[1]!.securityCount - (timing === "attack" ? 1 : 0));
+      if (timing === "digivolve") {
+        await scenario.attack(HOST);
+        await scenario.resolveUntil(
+          (s) =>
+            !s.pendingDecision &&
+            !s.combatWindow &&
+            s.players[1]!.securityCount === before.players[1]!.securityCount - 1,
+        );
+        expect((await scenario.snapshot()).players[0]!.security).toHaveLength(3);
+      }
+      await scenario.healthy();
+    });
+  }
+}

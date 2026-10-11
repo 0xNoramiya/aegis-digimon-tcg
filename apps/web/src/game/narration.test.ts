@@ -224,6 +224,20 @@ describe("pushing a moment into its column", () => {
     panel: panel(),
   });
 
+  it("replaces earlier source panels from the same resolution with the accumulated panel", () => {
+    const first = {
+      ...cards("first"),
+      panel: { ...panel(), titleKey: "panel.trashedDigivolutionCards" as const, resolutionId: "effect-1" },
+    };
+    const second = { ...first, id: "second" };
+    const other = { ...first, id: "other", panel: { ...first.panel, resolutionId: "effect-2" } };
+    const initial = new Map([
+      [first.id, first],
+      [other.id, other],
+    ]);
+    expect([...pushNarrationItem(initial, second, 3, false).keys()]).toEqual(["other", "second"]);
+  });
+
   it("keeps each column independent, so a card list never evicts the clause beside it", () => {
     const after = pushNarrationItem(pushNarrationItem(new Map(), clause("a"), 1, false), cards("b"), 1, false);
     expect([...after.keys()]).toEqual(["a", "b"]);

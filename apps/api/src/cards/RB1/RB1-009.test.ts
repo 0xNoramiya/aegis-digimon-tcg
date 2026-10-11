@@ -123,22 +123,19 @@ describe("RB1-009 Canoweissmon — KB Q&A rulings", () => {
     ["KausGammamon", "RB1-012"],
     ["WezenGammamon", "RB1-021"],
     ["GulusGammamon", "RB1-029"],
-  ])(
-    "refuses the special path from %s but allows its printed Lv.4 requirement (Q4080)",
-    async (_name, hostCardId) => {
-      const host = { card: hostCardId, under: ["RB1-005"] };
+  ])("refuses the special path from %s but allows its printed Lv.4 requirement (Q4080)", async (_name, hostCardId) => {
+    const host = { card: hostCardId, under: ["RB1-005"] };
 
-      const special = await digivolveCanoweissmon(host, 0);
-      expect(special.result).toMatchObject({ ok: false });
-      expect(special.topCardId).toBe(hostCardId);
-      expect(special.memory).toBe(3);
+    const special = await digivolveCanoweissmon(host, 0);
+    expect(special.result).toMatchObject({ ok: false });
+    expect(special.topCardId).toBe(hostCardId);
+    expect(special.memory).toBe(3);
 
-      const printed = await digivolveCanoweissmon(host);
-      expect(printed.result).toEqual({ ok: true });
-      expect(printed.topCardId).toBe("RB1-009");
-      expect(printed.memory).toBe(0);
-    },
-  );
+    const printed = await digivolveCanoweissmon(host);
+    expect(printed.result).toEqual({ ok: true });
+    expect(printed.topCardId).toBe("RB1-009");
+    expect(printed.memory).toBe(0);
+  });
 
   it("uses the special path only from a [Gammamon] that has a Gammamon-named digivolution card (Q4080)", async () => {
     const withGammamonSource = await digivolveCanoweissmon({ card: "RB1-005", under: ["RB1-008"] }, 0);

@@ -1,10 +1,12 @@
+import fixtureSourceStripStacks from "../../api/src/engine/scenarios/source-strip-stacks.fixture";
+import { fixturePermanentId, fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
-const firstHost = "dev-perm-1-source-strip-first";
-const secondHost = "dev-perm-1-source-strip-second";
-const lockedHost = "dev-perm-1-source-strip-locked";
-const firstSource = "dev-stack-1-source-strip-first-0";
-const secondSource = "dev-stack-1-source-strip-second-0";
+const firstHost = fixturePermanentId("opponent-source-strip-first");
+const secondHost = fixturePermanentId("opponent-source-strip-second");
+const lockedHost = fixturePermanentId("opponent-source-strip-locked");
+const firstSource = fixtureInstanceId("opponent-source-source-strip-first-0-card");
+const secondSource = fixtureInstanceId("opponent-source-source-strip-second-0-card");
 
 for (const viewport of [
   { width: 390, height: 844 },
@@ -18,7 +20,7 @@ for (const viewport of [
       await page.setViewportSize(viewport);
       await page.emulateMedia({ colorScheme });
       await page.addInitScript((dark) => localStorage.setItem("aegis:darkMode", String(dark)), colorScheme === "dark");
-      await scenario.open("arena-source-strip-stacks");
+      await scenario.openFixture(fixtureSourceStripStacks);
       await expect(page.locator("html")).toHaveClass(colorScheme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
       await scenario.resolveUntil((state) => state.phase === "Main" && !state.pendingDecision);
       const initial = await scenario.snapshot();
@@ -31,9 +33,9 @@ for (const viewport of [
       // Inspect the protected stack without choosing any of its sources.
       await page.locator(`[data-drop="perm-opp"][data-id="${lockedHost}"]`).click();
       const lockedDialog = page.getByRole("dialog");
-      await expect(lockedDialog.locator('[data-instance-id="dev-stack-1-source-strip-locked-0"]')).toHaveAccessibleName(
-        /Maquinamon/,
-      );
+      await expect(
+        lockedDialog.locator(`[data-instance-id="${fixtureInstanceId("opponent-source-source-strip-locked-0-card")}"]`),
+      ).toHaveAccessibleName(/Maquinamon/);
       await lockedDialog.getByRole("button", { name: "Choose another Digimon", exact: true }).click();
       await expect(lockedDialog).toHaveCount(0);
 

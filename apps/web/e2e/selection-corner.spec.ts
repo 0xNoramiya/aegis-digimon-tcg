@@ -116,9 +116,7 @@ for (const viewport of [
   { width: 1440, height: 1000 },
   { width: 1024, height: 768 },
 ]) {
-  test(`Discord 1557059213266522233: card selection is centered and readable at ${viewport.width}px`, async ({
-    page,
-  }) => {
+  test(`card selection is centered and readable at ${viewport.width}px`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/dev/mobile?specimen=decision-trash-cards&frame=1&locale=en");
@@ -154,7 +152,7 @@ for (const viewport of [
   { width: 320, height: 740 },
 ]) {
   for (const kind of ["assembly", "digixros"]) {
-    test(`Discord 1557059213266522233: ${kind} materials are clickable at ${viewport.width}px`, async ({ page }) => {
+    test(`${kind} materials are clickable at ${viewport.width}px`, async ({ page }) => {
       await page.setViewportSize(viewport);
       await page.emulateMedia({ reducedMotion: "reduce" });
       await page.addInitScript(() => localStorage.setItem("aegis:locale", "en"));

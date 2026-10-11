@@ -1,9 +1,10 @@
+import fixtureKotoGrademonPendingPiercing from "../../api/src/engine/scenarios/koto-grademon-pending-piercing.fixture";
 import { test, expect } from "./scenario-page";
 
 test.use({ botOptionalScript: { sourceCardId: "EX13-057", answers: [false, true] } });
 test("Koto preserves pending Piercing through a protected block and pays one security", async ({ scenario, page }) => {
   test.setTimeout(120_000);
-  await scenario.open("arena-koto-grademon-pending-piercing");
+  await scenario.openFixture(fixtureKotoGrademonPendingPiercing);
   await scenario.resolveUntil(
     (s) => s.phase === "Main" && !s.pendingDecision,
     () => ({ accept: false }),

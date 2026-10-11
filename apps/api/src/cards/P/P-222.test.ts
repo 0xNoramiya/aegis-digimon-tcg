@@ -212,7 +212,12 @@ describe("P-222 Rosemon — KB Q&A rulings", () => {
     const preferred: string[] = [];
     const s = setupEngine(
       {
-        0: { battleArea: [{ card: "P-222", as: "rosemon" }, { card: "BT1-010", as: "ownDigimon" }] },
+        0: {
+          battleArea: [
+            { card: "P-222", as: "rosemon" },
+            { card: "BT1-010", as: "ownDigimon" },
+          ],
+        },
         1: {
           battleArea: [
             { card: "BT1-011", as: "opponentDigimon", dp: 20000 },

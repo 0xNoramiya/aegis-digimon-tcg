@@ -1,5 +1,35 @@
 [
   {
+    "version": "1.24.0-beta",
+    "releasedAt": "2026-10-11",
+    "summaryKey": "releases.1.24.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.24.0-beta.feature.stages"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.24.0-beta.fix.costs"
+      },
+      {
+        "textKey": "releases.1.24.0-beta.fix.sources"
+      },
+      {
+        "textKey": "releases.1.24.0-beta.fix.cards"
+      },
+      {
+        "textKey": "releases.1.24.0-beta.fix.timing"
+      },
+      {
+        "textKey": "releases.1.24.0-beta.fix.presentation"
+      },
+      {
+        "textKey": "releases.1.24.0-beta.fix.video"
+      }
+    ]
+  },
+  {
     "version": "1.23.0-beta",
     "releasedAt": "2026-10-11",
     "summaryKey": "releases.1.23.0-beta.summary",

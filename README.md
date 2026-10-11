@@ -133,8 +133,13 @@ pnpm test          # run package test suites
 pnpm test:tools    # run repository tool tests
 pnpm lint          # Oxlint
 pnpm format:check  # Oxfmt
-pnpm ci            # the full verification suite
+pnpm check
+pnpm check:fix
+pnpm run ci            # the full verification suite
 ```
+
+`pnpm check` runs the non-mutating lint and format gate. `pnpm check:fix` applies
+lint and format fixes; review its diff before running the final gate.
 
 Target one package with a filter:
 
@@ -209,7 +214,7 @@ rules for card changes, rules research and tests. Before you open a PR:
 
 1. Keep rules and state transitions in the API.
 2. Add or update tests for observable behavior.
-3. Run `pnpm ci` and `git diff --check`.
+3. Run `pnpm run ci` and `git diff --check`.
 4. Keep commits focused, and say what changed for players or for the rules.
 
 ## Releasing

@@ -65,7 +65,7 @@ import { runReplay, type ReplayRecord } from "${importPath}";
 ${fixtureDeclaration}
 const record = JSON.parse(readFileSync(fixture, "utf8")) as ReplayRecord;
 
-describe("${tag}: ${name}", () => {
+describe("${name}", () => {
   it("replays the reported match up to input #${until} as recorded", async () => {
     const { divergences } = await runReplay(record, { untilInput: ${until} });
 
@@ -78,7 +78,7 @@ describe("${tag}: ${name}", () => {
   // from the replay above, apply the intent yourself and \`settle()\` (engine/testkit). Once the
   // bug is fixed, input #${until} may legitimately diverge from the recording; assert that
   // divergence instead of expecting none.
-  it.todo("${tag}: expected behaviour at input #${until}");
+  it.todo("expected behaviour at input #${until}");
 });
 `;
   return { testPath, fixturePath, test, fixture: formatJson(trimRecord(record, until)) + "\n" };

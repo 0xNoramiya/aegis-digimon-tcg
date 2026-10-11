@@ -7,7 +7,8 @@ import "@aegis-api/cards/EX11/EX11-062.js";
 import "@aegis-api/cards/ST8/ST8-11.js";
 import "@aegis-api/cards/BT3/BT3-021.js";
 import "@aegis-api/cards/BT1/BT1-115.js";
-import { layDevScenario } from "@aegis-api/engine/devScenario.js";
+import { layScenarioFixture } from "@aegis-api/engine/scenario/fixture.js";
+import fixtureRina from "@aegis-api/engine/scenarios/ex13-rina-modal-title.fixture.js";
 import { BLUE_DECK, RED_DECK } from "@aegis-api/engine/testDecks.js";
 import { setupEngine, settle } from "@aegis-api/engine/testkit/harness.js";
 import { advance } from "@aegis-api/engine/testkit/advance.js";
@@ -39,7 +40,7 @@ it.each([
 ])("Rina modal title report: renders real engine requests in %s", async (locale, activationTitle) => {
   localStorage.setItem("aegis:locale", locale);
   const s = setupEngine({ 0: {}, 1: {} });
-  layDevScenario("arena-ex13-rina-modal-title", s.state, [BLUE_DECK, RED_DECK]);
+  const refs = layScenarioFixture(s.state, fixtureRina, [BLUE_DECK, RED_DECK], true);
   const loop = s.engine.startTurnLoop();
   try {
     await settle(() => s.state.phase === Phase.Breeding);
@@ -50,7 +51,9 @@ it.each([
       s.engine.applyIntent(0, { type: "attack", attackerPermanentId: veemon.permanentId, target: { kind: "player" } }),
     ).toEqual({ ok: true });
     await settle(() => s.events.some((e) => e.kind === "attackEnded") && s.state.pendingDecision === undefined);
-    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: "dev-rina-title-sword" })).toEqual({ ok: true });
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: refs.instanceId("rina-title-sword-card") })).toEqual(
+      { ok: true },
+    );
     await settle(() => s.state.pendingDecision?.kind === "optional");
     const request = s.decisions.at(-1)!.req;
     expect(request.sourceCardId).toBe("EX13-069");
@@ -60,7 +63,10 @@ it.each([
     );
     const respond = mount(request);
     expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(activationTitle);
-    expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(request.options?.effectTextPart);
+    expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(request.options?.effectText);
+    expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(
+      request.options?.effectTextEmphasis,
+    );
     fireEvent.click(screen.getByRole("button", { name: /yes, activate|sim, ativar/i }));
     expect(respond).toHaveBeenCalledWith({ kind: "optional", accept: true });
     cleanup();
@@ -77,9 +83,7 @@ it.each([
     expect(followOn.options?.effectTextPart).toMatch(/^After, 1 of your Digimon may digivolve/);
     mount(followOn);
     expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(activationTitle);
-    expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(
-      followOn.options?.effectTextPart,
-    );
+    expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(followOn.options?.effectText);
     cleanup();
     expect(
       s.engine.applyIntent(0, {

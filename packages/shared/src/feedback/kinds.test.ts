@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { FEEDBACK_KINDS, isFeedbackKind } from "./index.js";
+import { isFeedbackKind } from "#shared/feedback/isFeedbackKind";
+import { FEEDBACK_KINDS } from "#shared/feedback/types";
 
 describe("feedback kinds", () => {
   it("names the three kinds the API accepts", () => {

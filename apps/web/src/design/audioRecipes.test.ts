@@ -92,7 +92,7 @@ describe("authored original bank", () => {
       const start = 44 + Math.round(clip.offset * 48000) * 2;
       const end = start + Math.round(clip.duration * 48000) * 2;
       expect(createHash("sha256").update(single).digest("hex")).toBe(clip.sha256);
-      expect(single.subarray(44)).toEqual(priorWav.subarray(start, end));
+      expect(Buffer.compare(single.subarray(44), priorWav.subarray(start, end))).toBe(0);
       expect(example.current.offset).toBe(AUDIO_CUES[example.key]!.offset);
       expect(example.current.duration).toBe(AUDIO_CUES[example.key]!.duration);
       expect(example.current.metrics.peak).toBeLessThan(0.3);

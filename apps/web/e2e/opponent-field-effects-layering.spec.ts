@@ -1,10 +1,11 @@
+import fixtureMultipleFieldEffects from "../../api/src/engine/scenarios/multiple-field-effects.fixture";
 import { test, expect, type ScenarioPage } from "./scenario-page";
 
 // User report (2026-10-10): the "Opponent field" effects badge painted over the
 // notices and prompts docked on the right of the desktop board. The desktop board
 // isolates its own stacking context, so a badge portalled outside it outranked
 // every layer inside it, whatever their z-index.
-const SCENARIO = "arena-multiple-field-effects";
+const SCENARIO = fixtureMultipleFieldEffects;
 const APOLLOMON = "BT25-018";
 const FLAREMON = "BT25-017";
 const SHOTS = process.env.AEGIS_E2E_SHOT_PREFIX;
@@ -36,7 +37,7 @@ for (const viewport of [
     page,
   }) => {
     await page.setViewportSize(viewport);
-    await scenario.open(SCENARIO);
+    await scenario.openFixture(SCENARIO);
     const flaremons = (await scenario.snapshot()).players[0]!.battleArea.filter(
       (permanent) => permanent.topCard.cardId === FLAREMON,
     );

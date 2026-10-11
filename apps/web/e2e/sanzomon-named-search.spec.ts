@@ -1,6 +1,8 @@
+import fixtureEx6SanzomonNamedSearch from "../../api/src/engine/scenarios/ex6-sanzomon-named-search.fixture";
+import { fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
-test("Discord 1558813188479262720: Sanzomon searches only one of each named card", async ({ scenario, page }) => {
+test("Sanzomon searches only one of each named card", async ({ scenario, page }) => {
   test.setTimeout(120_000);
   // Card art is cosmetic; the remote mirror can return 502 independently of the rules regression.
   await page.route("**/assets/card-images/**", (route) =>
@@ -12,7 +14,7 @@ test("Discord 1558813188479262720: Sanzomon searches only one of each named card
       ),
     }),
   );
-  await scenario.open("arena-ex6-sanzomon-named-search");
+  await scenario.openFixture(fixtureEx6SanzomonNamedSearch);
   await scenario.resolveUntil((state) => state.phase === "Main" && !state.pendingDecision);
   await scenario.play("Sanzomon", "Digimon");
   const picker = page.getByRole("dialog", { name: "＜DigiXros＞ Sanzomon", exact: true });
@@ -29,9 +31,13 @@ test("Discord 1558813188479262720: Sanzomon searches only one of each named card
         const candidates = decision.options.candidateInstanceIds!;
         expect(decision.options.min).toBe(1);
         expect(decision.options.max).toBe(1);
-        expect(candidates).toEqual(searchDecisions === 1 ? ["sanzo-deck-1", "sanzo-deck-2"] : ["sanzo-deck-3"]);
+        expect(candidates).toEqual(
+          searchDecisions === 1
+            ? [fixtureInstanceId("sanzo-deck-1-card"), fixtureInstanceId("sanzo-deck-2-card")]
+            : [fixtureInstanceId("sanzo-deck-3-card")],
+        );
         // Agumon is revealed for context but can never be selected for addition to hand.
-        expect(candidates).not.toContain("sanzo-deck-4");
+        expect(candidates).not.toContain(fixtureInstanceId("sanzo-deck-4-card"));
       }
       return {};
     },
@@ -40,9 +46,17 @@ test("Discord 1558813188479262720: Sanzomon searches only one of each named card
   expect(searchDecisions).toBe(2);
   expect(final.memory).toBe(5);
   expect(final.turnSeat).toBe(0);
-  expect(final.players[0]!.battleArea[0]!.stack.map((card) => card.instanceId)).toEqual(["sanzo-hand-1"]);
+  expect(final.players[0]!.battleArea[0]!.stack.map((card) => card.instanceId)).toEqual([
+    fixtureInstanceId("sanzo-hand-1-card"),
+  ]);
   expect(final.players[0]!.hand.map((card) => card.instanceId).sort()).toEqual(
-    ["sanzo-hand-2", "sanzo-hand-3", "sanzo-deck-0", "sanzo-deck-1", "sanzo-deck-3"].sort(),
+    [
+      fixtureInstanceId("sanzo-hand-2-card"),
+      fixtureInstanceId("sanzo-hand-3-card"),
+      fixtureInstanceId("sanzo-deck-0-card"),
+      fixtureInstanceId("sanzo-deck-1-card"),
+      fixtureInstanceId("sanzo-deck-3-card"),
+    ].sort(),
   );
   expect(final.players[0]!.deckCount).toBe(3);
   expect(

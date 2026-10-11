@@ -1,4 +1,4 @@
-import type { Seat } from "@aegis/shared";
+import { splitPrintedClauses, type Seat } from "@aegis/shared";
 import type { DecisionApi, EffectContext, SeatScopedDecisionApi } from "../effects/EffectContext.js";
 import type { ChooseOptionExtras } from "../effects/context/decisions.js";
 import type { DecisionManager } from "./index.js";
@@ -98,20 +98,44 @@ function buildSeatScopedApi(
     playCostReductionBlocked?: (seat: Seat) => boolean;
   },
 ): SeatScopedDecisionApi {
-  const provenance = (ctx: EffectContext) => ({
-    timing: ctx.activeTiming,
-    ...(ctx.activeEffectIsInherited === true ? { isInherited: true } : {}),
-    effectText: ctx.activeEffectText,
-    ...(ctx.activeEffectTextCardId !== undefined ? { effectTextCardId: ctx.activeEffectTextCardId } : {}),
-    ...(ctx.activeEffectKey !== undefined ? { effectKey: ctx.activeEffectKey } : {}),
-    ...(ctx.activeEffectTextPart !== undefined ? { effectTextPart: ctx.activeEffectTextPart } : {}),
-    ...(ctx.activeSelectionContext !== undefined ? { selectionContext: ctx.activeSelectionContext } : {}),
-    ...(ctx.affectedPermanentIds !== undefined ? { affectedPermanentIds: [...ctx.affectedPermanentIds] } : {}),
-    // Raised by `payCost` for as long as a cost payment is on the stack. Without it a
-    // cost selection and a target selection reach the deciding seat as the same request.
-    ...((ctx.payingCostDepth ?? 0) > 0 ? { purpose: "cost" as const } : {}),
-    ...(ctx.selectingOptionalTarget === true && asksController ? { purpose: "optionalTarget" as const } : {}),
-  });
+  const provenance = (ctx: EffectContext) => {
+    const part = ctx.activeEffectTextPart;
+    const focus = ctx.activeEffectTextEmphasis ?? part;
+    const matchingClauses = focus
+      ? splitPrintedClauses(ctx.activeEffectText).filter((clause) =>
+          clause.text.toLowerCase().includes(focus.toLowerCase()),
+        )
+      : undefined;
+    // Catalog fallback text may include other timing windows.
+    // Retain the complete resolving clause rather than unrelated card effects.
+    const fullText = matchingClauses?.length === 1 ? matchingClauses[0]!.text : ctx.activeEffectText;
+    // Every staged action uses the same display contract, including target picks
+    // and decisions addressed to the opponent. A passage must actually belong to
+    // this effect before it can replace the narrower description with full text.
+    const emphasis =
+      ctx.activeEffectTextEmphasis ??
+      (fullText &&
+      part &&
+      fullText.toLowerCase() !== part.toLowerCase() &&
+      fullText.toLowerCase().includes(part.toLowerCase())
+        ? part
+        : undefined);
+    return {
+      timing: ctx.activeTiming,
+      ...(ctx.activeEffectIsInherited === true ? { isInherited: true } : {}),
+      effectText: emphasis && fullText ? fullText : ctx.activeEffectText,
+      ...(ctx.activeEffectTextCardId !== undefined ? { effectTextCardId: ctx.activeEffectTextCardId } : {}),
+      ...(ctx.activeEffectKey !== undefined ? { effectKey: ctx.activeEffectKey } : {}),
+      ...(part !== undefined ? { effectTextPart: part } : {}),
+      ...(emphasis !== undefined ? { effectTextEmphasis: emphasis } : {}),
+      ...(ctx.activeSelectionContext !== undefined ? { selectionContext: ctx.activeSelectionContext } : {}),
+      ...(ctx.affectedPermanentIds !== undefined ? { affectedPermanentIds: [...ctx.affectedPermanentIds] } : {}),
+      // Raised by `payCost` for as long as a cost payment is on the stack. Without it a
+      // cost selection and a target selection reach the deciding seat as the same request.
+      ...((ctx.payingCostDepth ?? 0) > 0 ? { purpose: "cost" as const } : {}),
+      ...(ctx.selectingOptionalTarget === true && asksController ? { purpose: "optionalTarget" as const } : {}),
+    };
+  };
   // Only a pick whose floor was lowered here is the back-out of an accepted "you may"; a pick
   // the action already allowed to be empty keeps its own meaning (DigiXros materials).
   const backOutPurpose = (min: number, printedMin: number) =>

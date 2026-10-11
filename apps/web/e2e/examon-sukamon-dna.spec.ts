@@ -1,3 +1,5 @@
+import fixtureSukamonDnaMaterials from "../../api/src/engine/scenarios/sukamon-dna-materials.fixture";
+import fixtureSukamonDnaControl from "../../api/src/engine/scenarios/sukamon-dna-control.fixture";
 import { test, expect, type ScenarioPage } from "./scenario-page";
 import { GamePage } from "./game-page";
 
@@ -24,16 +26,12 @@ async function awaitHumanTurn(scenario: ScenarioPage, done: (state: Snapshot) =>
 }
 
 for (const transformed of [true, false]) {
-  test(`Discord 1557631388650315826: Examon DNA uses current material colors (Wingdramon transformed=${transformed})`, async ({
+  test(`Examon DNA uses current material colors (Wingdramon transformed=${transformed})`, async ({
     scenario,
     page,
   }) => {
     test.setTimeout(150_000);
-    await scenario.open(
-      transformed
-        ? "arena-discord-1557631388650315826-sukamon-dna-materials"
-        : "arena-discord-1557631388650315826-sukamon-dna-control",
-    );
+    await scenario.openFixture(transformed ? fixtureSukamonDnaMaterials : fixtureSukamonDnaControl);
     await scenario.resolveUntil((s) => s.turnSeat === 0 && s.phase === "Main" && !s.pendingDecision);
     const initial = await scenario.snapshot();
     const examon = initial.players[0]!.hand.find((c) => c.cardId === "EX13-045")!;

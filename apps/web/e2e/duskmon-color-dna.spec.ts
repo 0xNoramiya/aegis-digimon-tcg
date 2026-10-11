@@ -1,18 +1,18 @@
+import fixtureDuskmonDnaColors from "../../api/src/engine/scenarios/duskmon-dna-colors.fixture";
+import fixtureDuskmonDnaControl from "../../api/src/engine/scenarios/duskmon-dna-control.fixture";
+import { fixturePermanentId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 import { GamePage } from "./game-page";
 
 // The bot plays its scenario turn (turn 2); hold its next turn after the human's turn 3.
 test.use({ holdBotAfterTurn: 3 });
 
-const MATERIAL = "dev-perm-0-duskmon-changed";
-const GREEN = "dev-perm-0-duskmon-green";
+const MATERIAL = fixturePermanentId("own-duskmon-changed");
+const GREEN = fixturePermanentId("own-duskmon-green");
 
-test("Discord 1557565628439724032: Duskmon's color change survives evolution and blocks Examon's blue DNA", async ({
-  scenario,
-  page,
-}) => {
+test("Duskmon's color change survives evolution and blocks Examon's blue DNA", async ({ scenario, page }) => {
   test.setTimeout(150_000);
-  await scenario.open("arena-discord-1557565628439724032-duskmon-dna-colors", "normal", "none");
+  await scenario.openFixture(fixtureDuskmonDnaColors, "normal", "none");
   // The bot plays Duskmon on its turn and changes Wingdramon to red.
   await expect(page.getByRole("button", { name: /^end breeding$/i })).toBeEnabled({ timeout: 60_000 });
   await page.getByRole("button", { name: /^end breeding$/i }).click();
@@ -61,12 +61,9 @@ test("Discord 1557565628439724032: Duskmon's color change survives evolution and
   await scenario.healthy();
 });
 
-test("Discord 1557565628439724032 control: without Duskmon, Wingdramon + HerculesKabuterimon DNA into Examon for 0", async ({
-  scenario,
-  page,
-}) => {
+test("control: without Duskmon, Wingdramon + HerculesKabuterimon DNA into Examon for 0", async ({ scenario, page }) => {
   test.setTimeout(120_000);
-  await scenario.open("arena-discord-1557565628439724032-duskmon-dna-control", "normal", "none");
+  await scenario.openFixture(fixtureDuskmonDnaControl, "normal", "none");
   await expect(page.getByRole("button", { name: /^end breeding$/i })).toBeEnabled({ timeout: 60_000 });
   await page.getByRole("button", { name: /^end breeding$/i }).click();
   await scenario.resolveUntil((s) => s.turnSeat === 0 && s.phase === "Main" && !s.pendingDecision);

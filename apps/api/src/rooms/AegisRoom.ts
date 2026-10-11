@@ -48,8 +48,9 @@ import {
   formatIsUnlimited,
   isDigimonWorldAvatarId,
 } from "@aegis/shared";
-import { isDevScenarioId, type DevScenarioId } from "../engine/devScenario.js";
-import { createIssueReproBotPolicy } from "../engine/issueReproBotPolicy.js";
+import { getLocalScenario, isLocalScenarioEntry, type LocalScenarioEntry } from "../engine/scenario/local.js";
+import { bindScenarioDecks, type ScenarioFixture } from "../engine/scenario/fixture.js";
+import { createFixtureBotPolicy } from "../engine/scenario/botPolicy.js";
 import { GameEngine, type SeatJoinOptions } from "../engine/GameEngine.js";
 import { finalRevealOf, type VisibilityPort } from "../engine/state/index.js";
 import { BotPlayer, type BotOptions } from "../bot/BotPlayer.js";
@@ -77,14 +78,6 @@ import type {
 
 /** Hand-laid boards must never be reachable by a real player. */
 const DEV_SCENARIOS_ENABLED = process.env.NODE_ENV !== "production";
-/** Dev scenarios that reproduce timed-match presentation, so they keep the match clock against a bot. */
-const TIMED_DEV_SCENARIOS: ReadonlySet<DevScenarioId> = new Set<DevScenarioId>([
-  "arena-match-timer",
-  "arena-chronomon-engage-order",
-  "arena-github-5422-magnamon-timed-security",
-  "arena-discord-speed-security-scene-stuck",
-  "arena-feedback28-security-reveal-before-prompt",
-]);
 /**
  * A real client sends a few messages per second, with bursts when it catches up on presentation
  * reports. The budget is several times that, so only a flooding client hits it. Its excess messages
@@ -326,7 +319,8 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     undefined,
   ];
   private isBotRoom = false;
-  private devScenario: DevScenarioId | undefined;
+  private devScenario: LocalScenarioEntry | undefined;
+  private scenarioFixture: ScenarioFixture | undefined;
   private readonly BOT_SEAT = 1 as Seat;
   private isPrivate = false;
   private isRankedRoom = false;
@@ -641,7 +635,10 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     if (this.isBotRoom) {
       this.maxClients = 1;
       this.autoDispose = true;
-      if (DEV_SCENARIOS_ENABLED && isDevScenarioId(options.devScenario)) this.devScenario = options.devScenario;
+      if (DEV_SCENARIOS_ENABLED && isLocalScenarioEntry(options.devScenario)) {
+        this.devScenario = options.devScenario;
+        this.scenarioFixture = getLocalScenario();
+      }
     }
     this.isRankedRoom = options.rankedRoom === true;
     this.isBetaBattleRoom = options.betaBattleRoom === true;
@@ -841,7 +838,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     });
 
     // Optional clocks belong to casual/private rooms. Ignore crafted ranked/tournament options.
-    const devTimer = this.devScenario !== undefined && TIMED_DEV_SCENARIOS.has(this.devScenario);
+    const devTimer = this.scenarioFixture?.presentation?.timed === true;
     this.matchClock = new MatchClock(
       this.state,
       {
@@ -1324,13 +1321,15 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   }
 
   /** A hand-laid board instead of the pre-game procedure; bot rooms outside production only. */
-  private startDevScenarioNow(scenario: DevScenarioId): void {
+  private startScenarioNow(): void {
+    if (!this.scenarioFixture) throw new Error("No room fixture configured");
     if (this.matchStartRequested) return;
     this.matchStartRequested = true;
     this.readyTimeout?.clear();
     this.readyTimeout = undefined;
-    this.recordReplayInput({ kind: "startDevScenario", scenario });
-    this.withBatch(() => this.engine.startDevScenario(scenario));
+    const fixture = bindScenarioDecks(this.scenarioFixture, [this.engine.stagedDecks[0]!, this.engine.stagedDecks[1]!]);
+    this.recordReplayInput({ kind: "startScenarioFixture", fixture });
+    this.withBatch(() => this.engine.startScenarioFixture(fixture));
   }
 
   /** Idempotent: only the first caller (ready-gate or timeout) actually starts the match. */
@@ -1542,7 +1541,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
             decks: [humanDeck, deck],
           })
         : undefined;
-    const scenarioPolicy = createIssueReproBotPolicy(this.devScenario);
+    const scenarioPolicy = createFixtureBotPolicy(this.scenarioFixture?.presentation?.opponent);
     const baseBotOptions: BotOptions | undefined =
       scenarioPolicy === undefined ? modelOptions : { policy: scenarioPolicy };
     const clientPacesChains = this.clients.some((client) => this.chainPacingClients.has(client.sessionId));
@@ -1599,12 +1598,12 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // has no seatByClient entry for applyIntent to route through) — starting the
     // match directly here is the bot seat's stand-in for readiness.
     // Legacy bot joins can promote a waiting casual room to practice mode.
-    if (this.devScenario === undefined || !TIMED_DEV_SCENARIOS.has(this.devScenario)) {
+    if (this.scenarioFixture?.presentation?.timed !== true) {
       this.state.matchTimer = false;
       this.state.timerActiveSeat = -1;
       this.matchClockInterval?.clear();
     }
-    if (this.devScenario !== undefined) this.startDevScenarioNow(this.devScenario);
+    if (this.devScenario !== undefined) this.startScenarioNow();
     else this.startMatchNow();
     return true;
   }

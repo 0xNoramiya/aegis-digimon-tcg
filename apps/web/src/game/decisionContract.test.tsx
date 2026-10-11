@@ -27,6 +27,7 @@ const OPTION_CONSUMERS: Record<DecisionOptionKey, string | null> = {
   candidateInstanceIds: "screen/model/decisionView.ts",
   visibleInstanceIds: "decisionModel.ts",
   visibleCards: "decisionModel.ts",
+  pendingEffectInstanceIds: "decisionModel.ts",
   min: "decisionPresentation.ts",
   max: "overlay/choice/DecisionOverlay.tsx",
   maxTotalPlayCost: "screen/model/decisionView.ts",
@@ -56,6 +57,7 @@ const OPTION_CONSUMERS: Record<DecisionOptionKey, string | null> = {
   timing: "screen/model/triggerDetails.ts",
   effectText: "notices.ts",
   effectTextPart: "notices.ts",
+  effectTextEmphasis: "overlay/choice/DecisionOverlay.tsx",
   effectTextCardId: "overlay/choice/DecisionOverlay.tsx",
   // Diagnostic provenance identifies initial consent separately from later choices. It
   // changes no pick constraint; the engine publishes accepted activation for the UI.

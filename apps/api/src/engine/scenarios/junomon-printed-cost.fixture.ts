@@ -1,0 +1,102 @@
+import type { ScenarioFixture } from "../scenario/types.js";
+
+const fixture: ScenarioFixture = {
+  name: "junomon-printed-cost",
+  board: {
+    "0": {
+      hand: [
+        { card: "BT25-044", as: "junomon-card", faceUp: false },
+        { card: "BT24-040", as: "venusmon-hand-card", faceUp: false },
+        { card: "BT25-034", as: "angel-card", faceUp: false },
+      ],
+      deck: [
+        { card: "BT1-009", as: "effects-deck-0-0-card" },
+        { card: "BT1-009", as: "effects-deck-0-1-card" },
+        { card: "BT1-009", as: "effects-deck-0-2-card" },
+        { card: "BT1-009", as: "effects-deck-0-3-card" },
+        { card: "BT1-009", as: "effects-deck-0-4-card" },
+        { card: "BT1-009", as: "effects-deck-0-5-card" },
+        { card: "BT1-009", as: "effects-deck-0-6-card" },
+        { card: "BT1-009", as: "effects-deck-0-7-card" },
+        { card: "BT1-009", as: "effects-deck-0-8-card" },
+        { card: "BT1-009", as: "effects-deck-0-9-card" },
+        { card: "BT1-009", as: "effects-deck-0-10-card" },
+        { card: "BT1-009", as: "effects-deck-0-11-card" },
+        { card: "BT1-009", as: "effects-deck-0-12-card" },
+        { card: "BT1-009", as: "effects-deck-0-13-card" },
+        { card: "BT1-009", as: "effects-deck-0-14-card" },
+        { card: "BT1-009", as: "effects-deck-0-15-card" },
+        { card: "BT1-009", as: "effects-deck-0-16-card" },
+        { card: "BT1-009", as: "effects-deck-0-17-card" },
+        { card: "BT1-009", as: "effects-deck-0-18-card" },
+        { card: "BT1-009", as: "effects-deck-0-19-card" },
+      ],
+      eggDeck: [{ card: "BT1-003", as: "effects-egg-0-card" }],
+      trash: [
+        { card: "BT24-040", as: "venusmon-trash-card" },
+        { card: "BT25-034", as: "angel-trash-card" },
+      ],
+      security: [
+        { card: "BT1-010", as: "security-0-card" },
+        { card: "BT1-010", as: "security-1-card" },
+        { card: "BT1-010", as: "security-2-card" },
+      ],
+      battleArea: [
+        {
+          card: "BT3-088",
+          as: "own-base",
+          top: { card: "BT3-088", as: "own-card-base-card" },
+          dp: 8000,
+          placedByEffect: false,
+        },
+      ],
+    },
+    "1": {
+      deck: [
+        { card: "BT1-009", as: "effects-deck-1-0-card" },
+        { card: "BT1-009", as: "effects-deck-1-1-card" },
+        { card: "BT1-009", as: "effects-deck-1-2-card" },
+        { card: "BT1-009", as: "effects-deck-1-3-card" },
+        { card: "BT1-009", as: "effects-deck-1-4-card" },
+        { card: "BT1-009", as: "effects-deck-1-5-card" },
+        { card: "BT1-009", as: "effects-deck-1-6-card" },
+        { card: "BT1-009", as: "effects-deck-1-7-card" },
+        { card: "BT1-009", as: "effects-deck-1-8-card" },
+        { card: "BT1-009", as: "effects-deck-1-9-card" },
+        { card: "BT1-009", as: "effects-deck-1-10-card" },
+        { card: "BT1-009", as: "effects-deck-1-11-card" },
+        { card: "BT1-009", as: "effects-deck-1-12-card" },
+        { card: "BT1-009", as: "effects-deck-1-13-card" },
+        { card: "BT1-009", as: "effects-deck-1-14-card" },
+        { card: "BT1-009", as: "effects-deck-1-15-card" },
+        { card: "BT1-009", as: "effects-deck-1-16-card" },
+        { card: "BT1-009", as: "effects-deck-1-17-card" },
+        { card: "BT1-009", as: "effects-deck-1-18-card" },
+        { card: "BT1-009", as: "effects-deck-1-19-card" },
+      ],
+      eggDeck: [{ card: "BT1-003", as: "effects-egg-1-card" }],
+      security: [
+        { card: "BT1-010", as: "effects-security-1-0-card" },
+        { card: "BT1-010", as: "effects-security-1-1-card" },
+        { card: "BT1-010", as: "effects-security-1-2-card" },
+        { card: "BT1-010", as: "effects-security-1-3-card" },
+        { card: "BT1-010", as: "effects-security-1-4-card" },
+      ],
+      battleArea: [
+        {
+          card: "BT1-009",
+          as: "opponent-material",
+          top: { card: "BT1-009", as: "opponent-card-material-card" },
+          dp: 3000,
+          placedByEffect: false,
+        },
+      ],
+    },
+  },
+  memory: 10,
+  turnSeat: 0,
+  turnCount: 0,
+  isFirstPlayersFirstTurn: false,
+};
+
+export default fixture;

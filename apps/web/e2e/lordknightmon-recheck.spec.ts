@@ -1,17 +1,21 @@
+import fixtureLordknightmonBt22EffectAttackReveal from "../../api/src/engine/scenarios/lordknightmon-bt22-effect-attack-reveal.fixture";
+import fixtureLordknightmonBt22OpponentAttackReveal from "../../api/src/engine/scenarios/lordknightmon-bt22-opponent-attack-reveal.fixture";
+import fixtureLordknightmonEx13DarkknightmonDigixros from "../../api/src/engine/scenarios/lordknightmon-ex13-darkknightmon-digixros.fixture";
+import { fixturePermanentId, fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
 // Discord 1558289910425985055 (BT22-067) and 1558289219074654299 (EX13-064), re-checked through
 // the real GameScreen on boards the first investigation did not cover.
 
-const RIZEGREYMON = "dev-perm-0-lk-effect-attack-rizegreymon";
-const EFFECT_ATTACK_LORDKNIGHTMON = "dev-lk-effect-attack-hand-lordknightmon";
-const EFFECT_ATTACK_SKULLKNIGHTMON = "dev-lk-effect-attack-deck-0-2";
-const OPPONENT_ATTACKER = "dev-perm-1-lk-opponent-attack-agumon";
-const OPPONENT_ATTACK_SKULLKNIGHTMON = "dev-lk-opponent-attack-deck-0-0";
-const DIGIXROS_KNIGHTMON = "dev-perm-0-lk-digixros-knightmon";
-const DIGIXROS_SKULLKNIGHTMON = "dev-lk-digixros-hand-skullknightmon";
-const DIGIXROS_DEADLYAXEMON = "dev-lk-digixros-hand-deadlyaxemon";
-const DIGIXROS_DARKKNIGHTMON = "dev-lk-digixros-trash-darkknightmon";
+const RIZEGREYMON = fixturePermanentId("own-lk-effect-attack-rizegreymon");
+const EFFECT_ATTACK_LORDKNIGHTMON = fixtureInstanceId("lk-effect-attack-hand-lordknightmon-card");
+const EFFECT_ATTACK_SKULLKNIGHTMON = fixtureInstanceId("lk-effect-attack-deck-0-2-card");
+const OPPONENT_ATTACKER = fixturePermanentId("opponent-lk-opponent-attack-agumon");
+const OPPONENT_ATTACK_SKULLKNIGHTMON = fixtureInstanceId("lk-opponent-attack-deck-0-0-card");
+const DIGIXROS_KNIGHTMON = fixturePermanentId("own-lk-digixros-knightmon");
+const DIGIXROS_SKULLKNIGHTMON = fixtureInstanceId("lk-digixros-hand-skullknightmon-card");
+const DIGIXROS_DEADLYAXEMON = fixtureInstanceId("lk-digixros-hand-deadlyaxemon-card");
+const DIGIXROS_DARKKNIGHTMON = fixtureInstanceId("lk-digixros-trash-darkknightmon-card");
 
 const isRevealPick = (decision: { sourceCardId?: string; kind: string; options: { min?: number } }) =>
   decision.sourceCardId === "BT22-067" && decision.kind === "selectCards" && decision.options.min === 0;
@@ -20,7 +24,7 @@ test("BT22 LordKnightmon reveal offers SkullKnightmon during its own [When Digiv
   scenario,
 }) => {
   test.setTimeout(120_000);
-  await scenario.open("arena-lordknightmon-bt22-effect-attack-reveal");
+  await scenario.openFixture(fixtureLordknightmonBt22EffectAttackReveal);
   await scenario.resolveUntil((s) => s.phase === "Main" && s.turnSeat === 0 && !s.pendingDecision);
   await scenario.evolve("LordKnightmon", RIZEGREYMON, true);
 
@@ -65,7 +69,7 @@ test.describe("BT22 LordKnightmon reveal on the opponent's attack", () => {
 
   test("the owner picks the revealed SkullKnightmon during the opponent's turn", async ({ scenario }) => {
     test.setTimeout(120_000);
-    await scenario.open("arena-lordknightmon-bt22-opponent-attack-reveal", "normal", "none");
+    await scenario.openFixture(fixtureLordknightmonBt22OpponentAttackReveal, "normal", "none");
 
     const offered: string[][] = [];
     await scenario.resolveUntil(
@@ -98,7 +102,7 @@ test("EX13 LordKnightmon plays DarkKnightmon from the trash with DigiXros materi
   page,
 }) => {
   test.setTimeout(120_000);
-  await scenario.open("arena-lordknightmon-ex13-darkknightmon-digixros");
+  await scenario.openFixture(fixtureLordknightmonEx13DarkknightmonDigixros);
   await scenario.resolveUntil((s) => s.phase === "Main" && s.turnSeat === 0 && !s.pendingDecision);
   await scenario.evolve("LordKnightmon", DIGIXROS_KNIGHTMON);
 

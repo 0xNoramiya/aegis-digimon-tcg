@@ -72,6 +72,7 @@ export function advance(engine: GameEngine) {
       const inMain = () => internals.mainPhase.seat === seat && internals.state.phase === Phase.Main;
       const idle = () =>
         !internals.mainEntryPending &&
+        engine.mainVerbContinuationsInFlight === 0 &&
         internals.activeWindowToken === undefined &&
         internals.effectResolutionDepth === 0 &&
         internals.optionResolutionDepth === 0;

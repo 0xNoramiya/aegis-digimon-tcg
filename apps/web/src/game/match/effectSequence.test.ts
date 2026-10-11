@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { ServerEvent } from "@aegis/shared";
-import type { AnimationStep, AnimationStepContext } from "../animationQueue";
+import { createAnimationQueue, type AnimationStep, type AnimationStepContext } from "../animationQueue";
+import { waitForGate } from "./presentationGate";
 import { DEFAULT_PACING } from "../pacing";
 import {
   announceMsFor,
@@ -368,6 +369,122 @@ describe("settling a unit around a nested effect", () => {
     };
     return Promise.resolve(settle.run(context)).then(() => waitedMs);
   }
+
+  it("hands off while a child sound precedes the parent's sound, after its visual result finishes", async () => {
+    vi.useFakeTimers();
+    try {
+      const sequence = createEffectSequence();
+      const parent = sequence.observeBatch("parent", 1, [triggered("parent")]).opened[0]!.unit;
+      const child = sequence.observeBatch("child", 2, [triggered("child"), resolved("child")]).opened[0]!.unit;
+      sequence.observeBatch("result", 3, [{ kind: "blocked", blockerPermanentId: "p2" }, resolved("parent")]);
+      const log: string[] = [];
+      const queue = createAnimationQueue();
+      const batches = new Map<string, string>();
+      const enqueue = (step: AnimationStep, batch: string) => {
+        batches.set(step.id, batch);
+        queue.enqueue(step);
+      };
+      const deps = {
+        sequence,
+        queue,
+        batchOf: (step: AnimationStep) => batches.get(step.id),
+        decisionPending: () => false,
+        onStarted: () => {
+          log.push("child-announced");
+          child.announced.release();
+        },
+      };
+      parent.announced.release();
+      enqueue(
+        {
+          id: "child-sound",
+          track: "sound",
+          async run(context) {
+            await waitForGate(child.announced, context, DEFAULT_PACING.announceMaxMs, "sound/effectUnit");
+            log.push("child-sound");
+          },
+        },
+        "child",
+      );
+      enqueue(
+        {
+          id: "parent-sound",
+          track: "sound",
+          run() {
+            log.push("parent-sound");
+          },
+        },
+        "result",
+      );
+      enqueue(
+        {
+          id: "parent-visual",
+          track: "combatImpact",
+          async run(context) {
+            await context.wait(200);
+            log.push("parent-visual");
+          },
+        },
+        "result",
+      );
+      enqueue(effectUnitSteps(parent, deps)[1]!, "parent");
+      for (const step of effectUnitSteps(child, deps)) enqueue(step, "child");
+      await vi.advanceTimersByTimeAsync(100);
+      expect(log).toEqual([]);
+      await vi.advanceTimersByTimeAsync(1500);
+      expect(queue.isIdle()).toBe(true);
+      expect(log).toEqual(["parent-visual", "child-announced", "child-sound", "parent-sound"]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("hands off to the announcement that owns results shared by two sequential effects", async () => {
+    vi.useFakeTimers();
+    try {
+      const sequence = createEffectSequence();
+      const observed = sequence.observeBatch("shared", 1, [
+        triggered("first-material"),
+        memoryGain,
+        resolved("first-material"),
+        triggered("second-material"),
+        memoryGain,
+        resolved("second-material"),
+      ]);
+      const first = observed.opened[0]!.unit;
+      const second = observed.opened[1]!.unit;
+      expect(observed.owner).toBe(second);
+      const log: string[] = [];
+      const queue = createAnimationQueue();
+      const deps = {
+        sequence,
+        queue,
+        batchOf: () => "shared",
+        decisionPending: () => false,
+        onStarted: (unit: EffectUnit) => {
+          log.push(`${unit.effectKey}-announced`);
+          unit.announced.release();
+        },
+      };
+      first.announced.release();
+      queue.enqueue({
+        id: "shared-arrival",
+        track: "zoneChange",
+        async run(context) {
+          await waitForGate(second.announced, context, DEFAULT_PACING.announceMaxMs, "arrival/effectUnit");
+          await context.wait(200);
+          log.push("arrival");
+        },
+      });
+      queue.enqueue(effectUnitSteps(first, deps)[1]!);
+      for (const step of effectUnitSteps(second, deps)) queue.enqueue(step);
+      await vi.advanceTimersByTimeAsync(1500);
+      expect(log).toEqual(["second-material-announced", "arrival"]);
+      expect(queue.isIdle()).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 
   it("does not wait out the ceiling for results that belong to a nested effect (Discord 1557410815466938429)", async () => {
     // ST1-16 Gaia Force: "[Security] Activate this card's [Main] effect." The [Main] unit opens

@@ -1,7 +1,8 @@
+import fixtureCrescemonHexeblaumonCost from "../../api/src/engine/scenarios/crescemon-hexeblaumon-cost.fixture";
 import { test, expect } from "./scenario-page";
 
-test("GitHub #5387: Crescemon does not discount Hexeblaumon; evolution animations finish", async ({ scenario }) => {
-  await scenario.open("arena-crescemon-hexeblaumon-cost");
+test("Crescemon does not discount Hexeblaumon; evolution animations finish", async ({ scenario }) => {
+  await scenario.openFixture(fixtureCrescemonHexeblaumonCost);
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
   const before = await scenario.snapshot();
   const base = before.players[0]!.battleArea[0]!;

@@ -1,5 +1,5 @@
 import type { DeckFormat, Intent, Seat } from "@aegis/shared";
-import type { DevScenarioId } from "../../engine/devScenario.js";
+import type { ScenarioFixture } from "../../engine/scenario/types.js";
 
 /**
  * A match replay: everything needed to rebuild one match on a fresh engine and feed it the same
@@ -33,7 +33,7 @@ export interface ReplayRules {
   deckFormat: DeckFormat;
   unlimited: boolean;
   betaBattle: boolean;
-  devScenario?: DevScenarioId;
+  devScenario?: string;
 }
 
 export interface ReplayDeck {
@@ -80,7 +80,8 @@ export type ReplayInput =
 /** The inputs the room itself issues to the engine, outside any intent or seating. */
 export type ReplayRoomInput =
   | { kind: "startMatch" }
-  | { kind: "startDevScenario"; scenario: DevScenarioId }
+  | { kind: "startDevScenario"; scenario: string }
+  | { kind: "startScenarioFixture"; fixture: ScenarioFixture }
   /** `final` is a departure (a concession once the match has started); otherwise the seat only dropped. */
   | { kind: "disconnect"; seat: Seat; final: boolean }
   | { kind: "reconnect"; seat: Seat }
@@ -144,7 +145,7 @@ export interface ReplayHeaderLine {
   deckFormat: DeckFormat;
   unlimited: boolean;
   betaBattle: boolean;
-  devScenario?: DevScenarioId;
+  devScenario?: string;
 }
 
 /** `replay.seat`, written after a seat is given a deck. */

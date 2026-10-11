@@ -13,7 +13,7 @@ for (const [width, dark] of [
   [390, false],
   [1440, true],
 ] as const) {
-  test(`Discord 1558695961880952902: human win rate follows filters across pages at ${width}px`, async ({ page }) => {
+  test(`human win rate follows filters across pages at ${width}px`, async ({ page }) => {
     const { AccountStore } = await apiModule("accounts/AccountStore");
     const { installAccountRoutes } = await apiModule("accounts/routes");
     const store = new AccountStore(new (newDb({ noAstCoverageCheck: true }).adapters.createPg().Pool)());

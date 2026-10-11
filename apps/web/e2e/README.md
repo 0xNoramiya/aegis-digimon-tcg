@@ -1,9 +1,16 @@
 # Local Chromium regressions
 
-These tests run the real React GameScreen with production CSS and a real Colyseus
+These tests run the real React GameScreen with the product stylesheets and a real Colyseus
 AegisRoom. A test-only Vite HTML entry supplies deterministic decks and exposes a
 read-only snapshot of the browser's synchronized state. It is not a product route
 and is not included in the production bundle.
+
+For reusable game regression boards, import a behavior-named API fixture and use
+`ScenarioPage.openFixture`, which returns semantic alias references. API tests
+share that preparation through `setupScenario`; browser actions and assertions
+remain in the spec. No per-case arena registration is needed. See
+[regression fixtures](../../../docs/TESTING.md) for the pattern and
+`pnpm scenario open <behavior|fixture.ts>` for temporary manual reproductions.
 
 ## Run
 
@@ -29,6 +36,17 @@ NODE_OPTIONS=--max-old-space-size=2048 pnpm --filter @aegis/web test:browser dna
 The command builds shared contracts and the API runtime before running tests, so
 old dist output cannot silently stand in for current source. The API uses its dev
 program with noCheck: this is runtime compilation, not a full API typecheck.
+
+By default Vite serves development styles. To verify production-only CSS
+minification, build and preview the same real GameScreen harness instead:
+
+```sh
+AEGIS_E2E_PRODUCTION=true pnpm --filter @aegis/web test:browser feedback65-selection-window.spec.ts
+```
+
+This uses the normal Vite configuration, including Lightning CSS and its browser
+targets, and serves only compiled assets from `/tmp/aegis-browser-production-4175`.
+No development stylesheet tags remain to mask declarations dropped by the build.
 
 One worker uses loopback ports 4175 (Vite), 2569 (a TCP edge that stands in for the production proxy) and 2570 (Colyseus). Do not run two copies
 at once. Each test starts a new server/room and browser context. The Node heap is

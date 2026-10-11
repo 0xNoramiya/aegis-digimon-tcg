@@ -92,6 +92,49 @@ describe("BT21-101 Gaiamon", () => {
     expect(s.state.players[1]!.security).toHaveLength(1);
   });
 
+  it("feedback #58 preserves Gaiamon's unpaid first Link for a later paid attacking Link", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT21-101", as: "gaiamon" }],
+          hand: [
+            { card: "BT21-009", as: "first" },
+            { card: "BT21-009", as: "second" },
+          ],
+        },
+        1: { security: ["ST1-02", "ST1-02", "ST1-02"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 5;
+    const securityIds = s.state.players[1]!.security.map((c) => c.instanceId);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "linkCard",
+        instanceId: s.inst("first").instanceId,
+        targetPermanentId: s.perm("gaiamon").permanentId,
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.perm("gaiamon").isSuspended).toBe(false);
+    expect(s.state.players[1]!.security.map((c) => c.instanceId)).toEqual(securityIds);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("gaiamon").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => !observe(s.engine).isAttacking());
+    expect(s.perm("gaiamon").linked.map((c) => c.instanceId)).toEqual([
+      s.inst("second").instanceId,
+      s.inst("first").instanceId,
+    ]);
+    expect(s.perm("gaiamon").isSuspended).toBe(false);
+    expect(s.state.players[1]!.security.map((c) => c.instanceId)).toEqual([securityIds[2]]);
+    expect(s.state.players[1]!.trash.map((c) => c.instanceId)).toEqual(securityIds.slice(0, 2));
+  });
+
   it("exposes Blocker and Link +1 through the live keyword surface", async () => {
     const s = setupEngine({ 0: { battleArea: [{ card: "BT21-101", as: "gaiamon" }] } });
     await s.ready();

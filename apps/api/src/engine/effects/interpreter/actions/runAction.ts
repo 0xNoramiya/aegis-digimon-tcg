@@ -1205,7 +1205,12 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       const willPay =
         costAsksItself ||
         (ctx.predecidedOptionalCosts?.get(action) ??
-          (await ctx.ask.optional(ctx, `Pay cost: ${describeCost(payableActionCost)}?`)));
+          (await ctx.ask.optional(
+            paysProcessingCostBeforeOptional && payableActionCost.raw !== undefined
+              ? { ...ctx, activeEffectTextPart: ctx.activeEffectText, activeEffectTextEmphasis: payableActionCost.raw }
+              : ctx,
+            `Pay cost: ${describeCost(payableActionCost)}?`,
+          )));
       if (willPay) {
         if (!costAsksItself) markActivationChosen(ctx);
         const outerCostIsTheQuestion = ctx.costIsTheQuestion;
@@ -1253,7 +1258,9 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
           payableActionCost.target.filter.isSelfRef === true;
         const isSecurityTrashCost =
           payableActionCost.kind === "trash" && payableActionCost.target?.filter.zone === "security";
-        return action.abortOnDecline === true || isDigiBurstCost || isSecurityTrashCost;
+        // An unpaid optional processing condition never activated this clause. Preserve
+        // its OPT opportunity, but retain an earlier action's actual activation receipt.
+        return unavailableAction(ctx, action, action.abortOnDecline === true || isDigiBurstCost || isSecurityTrashCost);
       }
     }
   }
@@ -1306,7 +1313,12 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       ctx.lastEffectActed = false;
       return false;
     }
-    const yes = ctx.predecidedOptionalActions?.get(action) ?? (await ctx.ask.optional(ctx, describeAction(action)));
+    const yes =
+      ctx.predecidedOptionalActions?.get(action) ??
+      (await ctx.ask.optional(
+        { ...ctx, activeEffectTextPart: ctx.activeEffectText, activeEffectTextEmphasis: action.effectTextPart },
+        describeAction(action),
+      ));
     if (!yes) {
       ctx.lastEffectActed = false;
       markActivationDeclined(ctx);

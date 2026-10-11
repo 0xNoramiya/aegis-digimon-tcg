@@ -11,7 +11,9 @@ import { setupEngine, settle, type EngineSetup, type PermanentSpec } from "../..
  */
 export async function playRevealing(cardId: string, deck: string[]): Promise<EngineSetup> {
   const s = setupEngine(
-    { 0: { hand: [{ card: cardId, as: "revealer" }], deck: deck.map((card, index) => ({ card, as: `deck${index}` })) } },
+    {
+      0: { hand: [{ card: cardId, as: "revealer" }], deck: deck.map((card, index) => ({ card, as: `deck${index}` })) },
+    },
     { autoDeclineOptional: true, autoSelectCards: true, autoOrderCards: true, declineDigiXros: true },
   );
   s.state.memory = 10;

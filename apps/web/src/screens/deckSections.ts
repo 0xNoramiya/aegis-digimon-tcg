@@ -64,7 +64,11 @@ export function deckSections(deck: DeckListing, t: Translate): DeckSection[] {
       }),
   ];
   const tamerEntries = toEntries(mainCounts, tamers);
-  sections.push({ id: "tamers", label: t("deck.tamerSection", { count: totalOf(tamerEntries) }), entries: tamerEntries });
+  sections.push({
+    id: "tamers",
+    label: t("deck.tamerSection", { count: totalOf(tamerEntries) }),
+    entries: tamerEntries,
+  });
   const optionEntries = toEntries(mainCounts, options);
   sections.push({
     id: "options",
@@ -72,6 +76,10 @@ export function deckSections(deck: DeckListing, t: Translate): DeckSection[] {
     entries: optionEntries,
   });
   const otherEntries = toEntries(mainCounts, other);
-  sections.push({ id: "other", label: t("deck.otherSection", { count: totalOf(otherEntries) }), entries: otherEntries });
+  sections.push({
+    id: "other",
+    label: t("deck.otherSection", { count: totalOf(otherEntries) }),
+    entries: otherEntries,
+  });
   return sections.filter((section) => section.entries.length > 0);
 }

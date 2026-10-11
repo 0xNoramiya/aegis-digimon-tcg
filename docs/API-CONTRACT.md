@@ -63,7 +63,7 @@ and restored on reload for guests and signed-in users. It is local to that brows
 joining a private room or entering a mode without timers does not overwrite it.
 The creator's settings apply to both seats; guest join payloads cannot change them.
 Ranked, tournament and ordinary bot rooms ignore clock opt-in. Outside production,
-`/dev/arena?scenario=arena-match-timer` enables a live bot test with the same
+`pnpm scenario open match-timer` enables a live bot test with the same
 300-second reserves renewed each turn. Both clocks remain visible next to their player identities, including during pauses.
 The required responder is highlighted; the compact readout shows remaining seconds without status text.
 

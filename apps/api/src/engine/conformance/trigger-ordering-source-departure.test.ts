@@ -153,24 +153,24 @@ describe("bounded trigger ordering and pending source departure", () => {
         target: { kind: "permanent", permanentId: s.perm("opponentHolder").permanentId },
       }),
     ).toMatchObject({ ok: true });
-    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    await settle(() => s.state.pendingDecision?.kind === "optional");
     const first = s.state.pendingDecision!;
     expect(first.seat).toBe(0);
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
         decisionId: first.decisionId,
-        response: { kind: "selectCards", instanceIds: [] },
+        response: { kind: "optional", accept: false },
       }),
     ).toMatchObject({ ok: true });
-    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    await settle(() => s.state.pendingDecision?.kind === "optional");
     const second = s.state.pendingDecision!;
     expect(second.seat).toBe(1);
     expect(
       s.engine.applyIntent(1, {
         type: "respondDecision",
         decisionId: second.decisionId,
-        response: { kind: "selectCards", instanceIds: [] },
+        response: { kind: "optional", accept: false },
       }),
     ).toMatchObject({ ok: true });
     await settle(() => !observe(s.engine).isAttacking());

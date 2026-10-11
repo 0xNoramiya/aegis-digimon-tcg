@@ -1,3 +1,4 @@
+import { EffectsLab } from "../src/dev/EffectsLab";
 // Served only by the test Vite server; never imported by the product entry point.
 import { createRoot } from "react-dom/client";
 import { Client, type Room } from "@colyseus/sdk";
@@ -19,6 +20,7 @@ import "../src/design/primitives.css";
 declare global {
   interface Window {
     browserTestOptions: AegisJoinOptions & { seed: number };
+    browserTestLab?: boolean;
     browserTestMode?: "casual" | "bot";
     browserTestBotDeckId?: string;
     browserTestSnapshot: () => ReturnType<GameState["toJSON"]>;
@@ -39,6 +41,15 @@ declare global {
 
 // Match App bootstrap so actual saved theme preferences reach production CSS.
 applyDarkMode();
+
+// The local CLI serves options beside this entry. Automated tests supply them before navigation.
+if (!window.browserTestOptions) {
+  const response = await fetch("/e2e/local-scenario.json");
+  if (!response.ok) throw new Error("No local scenario configured; start pnpm scenario open <fixture>");
+  const config = await response.json();
+  window.browserTestOptions = config.joinOptions;
+  window.browserTestLab = config.lab === "effects";
+}
 
 const presentationSteps: {
   id: string;
@@ -110,14 +121,18 @@ for (const method of ["joinOrCreate", "create", "reconnect"] as const) {
 }
 createRoot(document.getElementById("root")!).render(
   <I18nProvider>
-    <GameScreen
-      joinOptions={window.browserTestOptions}
-      identityColor="Red"
-      startMode={window.browserTestMode ?? (window.browserTestOptions.devScenario ? "bot" : "casual")}
-      botDeckId={window.browserTestBotDeckId}
-      devProbe={presentationProbe}
-      presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}
-      onExit={() => {}}
-    />
+    {window.browserTestLab ? (
+      <EffectsLab joinOptions={window.browserTestOptions} botDeckId={window.browserTestBotDeckId} />
+    ) : (
+      <GameScreen
+        joinOptions={window.browserTestOptions}
+        identityColor="Red"
+        startMode={window.browserTestMode ?? (window.browserTestOptions.devScenario ? "bot" : "casual")}
+        botDeckId={window.browserTestBotDeckId}
+        devProbe={presentationProbe}
+        presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}
+        onExit={() => {}}
+      />
+    )}
   </I18nProvider>,
 );

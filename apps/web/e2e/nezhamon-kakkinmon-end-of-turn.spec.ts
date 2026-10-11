@@ -1,3 +1,5 @@
+import fixtureEx12NezhamonKakkinmonEngageSpareBlocker from "../../api/src/engine/scenarios/ex12-nezhamon-kakkinmon-engage-spare-blocker.fixture";
+import fixtureEx12NezhamonKakkinmonEngage from "../../api/src/engine/scenarios/ex12-nezhamon-kakkinmon-engage.fixture";
 import { test, expect, type DecisionPolicy, type ScenarioPage } from "./scenario-page";
 
 // CR 16-44-2: <Engage> triggers with other End of Your Turn effects, and the turn player
@@ -34,12 +36,12 @@ async function endTurn(scenario: ScenarioPage, first: Trigger, policy: DecisionP
   return { before, passed: passed!, events, kinds, kakkinmon };
 }
 
-test.describe("Discord 1557557257129037844: Nezhamon Engage and Kakkinmon at end of turn", () => {
-  test("Discord 1557557257129037844: Engage first with a spare Blocker resolves Kakkinmon before counter timing and the check", async ({
+test.describe("Nezhamon Engage and Kakkinmon at end of turn", () => {
+  test("Engage first with a spare Blocker resolves Kakkinmon before counter timing and the check", async ({
     scenario,
   }) => {
     test.setTimeout(120_000);
-    await scenario.open("arena-ex12-nezhamon-kakkinmon-engage-spare-blocker");
+    await scenario.openFixture(fixtureEx12NezhamonKakkinmonEngageSpareBlocker);
     let offeredBeforeReveal = false;
     const result = await endTurn(scenario, "EX12-019", async (decision) => {
       if (decision.sourceCardId !== "P-245") return {};
@@ -76,11 +78,9 @@ test.describe("Discord 1557557257129037844: Nezhamon Engage and Kakkinmon at end
     await scenario.healthy();
   });
 
-  test("Discord 1557557257129037844: Engage first suspends the only Blocker, so Kakkinmon cannot pay and does not draw", async ({
-    scenario,
-  }) => {
+  test("Engage first suspends the only Blocker, so Kakkinmon cannot pay and does not draw", async ({ scenario }) => {
     test.setTimeout(120_000);
-    await scenario.open("arena-ex12-nezhamon-kakkinmon-engage");
+    await scenario.openFixture(fixtureEx12NezhamonKakkinmonEngage);
     const kakkinmonPrompts: string[] = [];
     const result = await endTurn(scenario, "EX12-019", (decision) => {
       if (decision.sourceCardId === "P-245") kakkinmonPrompts.push(decision.kind);
@@ -96,11 +96,9 @@ test.describe("Discord 1557557257129037844: Nezhamon Engage and Kakkinmon at end
     await scenario.healthy();
   });
 
-  test("Discord 1557557257129037844: Kakkinmon first suspends Nezhamon and draws, so Engage cannot attack", async ({
-    scenario,
-  }) => {
+  test("Kakkinmon first suspends Nezhamon and draws, so Engage cannot attack", async ({ scenario }) => {
     test.setTimeout(120_000);
-    await scenario.open("arena-ex12-nezhamon-kakkinmon-engage");
+    await scenario.openFixture(fixtureEx12NezhamonKakkinmonEngage);
     const result = await endTurn(scenario, "P-245");
     expect(result.kakkinmon).toHaveLength(1);
     expect(result.kinds).not.toContain("attackDeclared");

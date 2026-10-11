@@ -80,15 +80,7 @@ describe("EX9-074", () => {
   });
 
   it("assembles with seven differently named level-4 DM cards and applies the full reduction", async () => {
-    const materialCards = [
-      "EX9-009",
-      "EX9-010",
-      "EX9-017",
-      "EX9-025",
-      "EX9-026",
-      "EX9-028",
-      "EX9-029",
-    ];
+    const materialCards = ["EX9-009", "EX9-010", "EX9-017", "EX9-025", "EX9-026", "EX9-028", "EX9-029"];
     const s = setupEngine(
       {
         0: {

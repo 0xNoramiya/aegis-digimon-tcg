@@ -502,7 +502,15 @@ export function playerFacingEffectClause({
     normalize(supplied).includes(normalize(clause))
   )
     return supplied;
-  const printedPart = part && boxes.some((text) => text && normalize(text).includes(normalize(part)));
+  // A clause extracted after a processing cost starts its own sentence in the dialog.
+  // Permit its initial capital without accepting changes to the printed words.
+  const sentencePart = part?.replace(/^[A-Z]/, (letter) => letter.toLowerCase());
+  const printedPart =
+    part &&
+    boxes.some(
+      (text) =>
+        text && (normalize(text).includes(normalize(part)) || normalize(text).includes(normalize(sentencePart!))),
+    );
   if (
     part &&
     (printedPart ||

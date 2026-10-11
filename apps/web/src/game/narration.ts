@@ -203,7 +203,11 @@ export function pushNarrationItem(
   limit: number,
   collapsed: boolean,
 ): Map<string, NarrationItem> {
-  const next = new Map([...items, [shown.id, shown] as const]);
+  const sameDiscard = shown.panel?.titleKey === "panel.trashedDigivolutionCards" && shown.panel.resolutionId;
+  const kept = sameDiscard
+    ? [...items].filter(([, item]) => item.panel?.resolutionId !== sameDiscard || item.side !== shown.side)
+    : [...items];
+  const next = new Map([...kept, [shown.id, shown] as const]);
   for (const slot of narrationSlots(shown, collapsed)) {
     const inSlot = [...next.values()].filter((item) => narrationSlots(item, collapsed).includes(slot));
     for (const evicted of inSlot.slice(0, Math.max(0, inSlot.length - limit))) next.delete(evicted.id);

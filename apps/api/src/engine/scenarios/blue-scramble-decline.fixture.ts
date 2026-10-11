@@ -1,0 +1,101 @@
+import type { ScenarioFixture } from "../scenario/types.js";
+
+const fixture: ScenarioFixture = {
+  name: "blue-scramble-decline",
+  board: {
+    "0": {
+      deck: [
+        { card: "BT1-085", as: "deck-0-0-card" },
+        { card: "BT1-085", as: "deck-0-1-card" },
+        { card: "BT1-085", as: "deck-0-2-card" },
+        { card: "BT1-085", as: "deck-0-3-card" },
+        { card: "BT1-085", as: "deck-0-4-card" },
+        { card: "BT1-085", as: "deck-0-5-card" },
+        { card: "BT1-085", as: "deck-0-6-card" },
+        { card: "BT1-085", as: "deck-0-7-card" },
+        { card: "BT1-085", as: "deck-0-8-card" },
+        { card: "BT1-085", as: "deck-0-9-card" },
+        { card: "BT1-085", as: "deck-0-10-card" },
+        { card: "BT1-085", as: "deck-0-11-card" },
+        { card: "BT1-085", as: "deck-0-12-card" },
+        { card: "BT1-085", as: "deck-0-13-card" },
+        { card: "BT1-085", as: "deck-0-14-card" },
+        { card: "BT1-085", as: "deck-0-15-card" },
+        { card: "BT1-085", as: "deck-0-16-card" },
+        { card: "BT1-085", as: "deck-0-17-card" },
+        { card: "BT1-085", as: "deck-0-18-card" },
+        { card: "BT1-085", as: "deck-0-19-card" },
+      ],
+      eggDeck: [{ card: "EX13-002", as: "opening-egg-card" }],
+      trash: [
+        { card: "BT1-027", as: "return-card" },
+        { card: "BT1-031", as: "rookie-card" },
+      ],
+      security: [
+        { card: "BT1-009", as: "security-0-0-card" },
+        { card: "BT1-009", as: "security-0-1-card" },
+        { card: "BT1-009", as: "security-0-2-card" },
+      ],
+      battleArea: [
+        {
+          card: "LM-028",
+          as: "own-scramble-a",
+          top: { card: "LM-028", as: "own-card-scramble-a-card" },
+          dp: 0,
+          placedByEffect: true,
+        },
+        {
+          card: "LM-028",
+          as: "own-scramble-b",
+          top: { card: "LM-028", as: "own-card-scramble-b-card" },
+          dp: 0,
+          placedByEffect: true,
+        },
+      ],
+    },
+    "1": {
+      deck: [
+        { card: "BT1-085", as: "deck-1-0-card" },
+        { card: "BT1-085", as: "deck-1-1-card" },
+        { card: "BT1-085", as: "deck-1-2-card" },
+        { card: "BT1-085", as: "deck-1-3-card" },
+        { card: "BT1-085", as: "deck-1-4-card" },
+        { card: "BT1-085", as: "deck-1-5-card" },
+        { card: "BT1-085", as: "deck-1-6-card" },
+        { card: "BT1-085", as: "deck-1-7-card" },
+        { card: "BT1-085", as: "deck-1-8-card" },
+        { card: "BT1-085", as: "deck-1-9-card" },
+        { card: "BT1-085", as: "deck-1-10-card" },
+        { card: "BT1-085", as: "deck-1-11-card" },
+        { card: "BT1-085", as: "deck-1-12-card" },
+        { card: "BT1-085", as: "deck-1-13-card" },
+        { card: "BT1-085", as: "deck-1-14-card" },
+        { card: "BT1-085", as: "deck-1-15-card" },
+        { card: "BT1-085", as: "deck-1-16-card" },
+        { card: "BT1-085", as: "deck-1-17-card" },
+        { card: "BT1-085", as: "deck-1-18-card" },
+        { card: "BT1-085", as: "deck-1-19-card" },
+      ],
+      security: [
+        { card: "BT1-009", as: "security-1-0-card" },
+        { card: "BT1-009", as: "security-1-1-card" },
+        { card: "BT1-009", as: "security-1-2-card" },
+      ],
+      battleArea: [
+        {
+          card: "BT1-010",
+          as: "opponent-opponent",
+          top: { card: "BT1-010", as: "opponent-card-opponent-card" },
+          dp: 2000,
+          placedByEffect: false,
+        },
+      ],
+    },
+  },
+  memory: 3,
+  turnSeat: 0,
+  turnCount: 0,
+  isFirstPlayersFirstTurn: false,
+};
+
+export default fixture;

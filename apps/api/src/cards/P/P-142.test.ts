@@ -146,7 +146,9 @@ describe("P-142 Falcomon — KB Q&A rulings", () => {
 
     expect(s.perm("target").isSuspended).toBe(true);
     expect(s.events.some((event) => event.kind === "attackDeclared")).toBe(false);
-    expect(s.state.players[1]!.battleArea.map(({ permanentId }) => permanentId)).toEqual([s.perm("target").permanentId]);
+    expect(s.state.players[1]!.battleArea.map(({ permanentId }) => permanentId)).toEqual([
+      s.perm("target").permanentId,
+    ]);
     assertNoLoudGap(s);
   });
 });

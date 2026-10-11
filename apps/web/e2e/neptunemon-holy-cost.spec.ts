@@ -1,7 +1,8 @@
+import fixtureNeptunemonHolyCost from "../../api/src/engine/scenarios/neptunemon-holy-cost.fixture";
 import { test, expect } from "./scenario-page";
 
-test("GitHub #5385: Holy uses Neptunemon's three-memory TS evolution route", async ({ scenario }) => {
-  await scenario.open("arena-neptunemon-holy-cost");
+test("Holy uses Neptunemon's three-memory TS evolution route", async ({ scenario }) => {
+  await scenario.openFixture(fixtureNeptunemonHolyCost);
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
   const before = await scenario.snapshot();
   const base = before.players[0]!.battleArea[0]!;

@@ -6,7 +6,7 @@ import "../index.js";
 import { compiled } from "./BT15-101.js";
 
 describe("BT15-101", () => {
-  it("matches the catalog identity and alternate Gabumon digivolution route", () => {
+  it("matches the catalog identity and both printed digivolution routes", () => {
     expect(getCardDefinition("BT15-101")).toMatchObject({
       cardId: "BT15-101",
       nameEn: "MetalGarurumon",
@@ -20,31 +20,30 @@ describe("BT15-101", () => {
       attributes: ["Data"],
       types: ["Cyborg"],
     });
-    expect(compiled.digivolutionRequirement).toEqual([{ names: ["Gabumon"], cost: 4, isAlternate: true }]);
+    expect(compiled.digivolutionRequirement).toEqual([
+      { level: 5, names: ["Garurumon"], cost: 4, isAlternate: true },
+      {
+        namesExact: ["Gabumon"],
+        cost: 4,
+        isAlternate: true,
+        sourceZones: ["hand"],
+        battleAreaOnly: true,
+        controllerControls: { kind: ["Tamer"], names: ["Matt Ishida"], min: 1 },
+        opponentDigimonDpMin: 10000,
+      },
+    ]);
     expect(digivolutionRequirementsFor("BT15-101")).toEqual(compiled.digivolutionRequirement);
   });
 
-  it("conditionally digivolves a Gabumon by paying 4 when Matt and an opposing 10000 DP Digimon exist", () =>
-    expect(compiled.effects?.[1]).toMatchObject({
-      trigger: "Main",
-      actions: [
-        {
-          kind: "Digivolve",
-          from: ["hand"],
-          payCost: true,
-          costOverride: 4,
-          ignoreRequirements: true,
-          optional: true,
-          condition: { kind: "allOf" },
-        },
-      ],
-    }));
+  it("does not invent a separate Main activation for the untimed hand evolution route", () => {
+    expect(compiled.effects.some((effect) => effect.trigger === "Main")).toBe(false);
+  });
   it("restricts three opposing Digimon/Tamers from suspending and unsuspends itself once per turn", () => {
-    expect(compiled.effects?.[2]).toMatchObject({
+    expect(compiled.effects?.[1]).toMatchObject({
       trigger: "WhenDigivolving",
       actions: [{ kind: "Restrict", target: { count: 3 }, restriction: "suspend", duration: "untilOpponentTurnEnd" }],
     });
-    expect(compiled.effects?.[3]).toMatchObject({
+    expect(compiled.effects?.[2]).toMatchObject({
       trigger: "AllTurns",
       frequency: "OncePerTurn",
       actions: [{ kind: "SubTrigger", event: "whenSuspended", actions: [{ kind: "Unsuspend", optional: true }] }],

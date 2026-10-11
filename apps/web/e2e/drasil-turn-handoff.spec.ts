@@ -1,10 +1,9 @@
+import fixtureDrasilTurnHandoff from "../../api/src/engine/scenarios/drasil-turn-handoff.fixture";
 import { test, expect } from "./scenario-page";
 
-test("Discord 1558122159975567360: King Drasil's turn start does not wait on Gallantmon's DP expiry", async ({
-  scenario,
-}) => {
+test("King Drasil's turn start does not wait on Gallantmon's DP expiry", async ({ scenario }) => {
   test.setTimeout(120_000);
-  await scenario.open("arena-discord1558122159-drasil-turn-handoff", "normal", "none");
+  await scenario.openFixture(fixtureDrasilTurnHandoff, "normal", "none");
   // The bot plays out its whole turn, including Gallantmon's attack and security check.
   await expect.poll(async () => (await scenario.snapshot()).turnSeat, { timeout: 60_000 }).toBe(0);
   await scenario.resolveUntil(

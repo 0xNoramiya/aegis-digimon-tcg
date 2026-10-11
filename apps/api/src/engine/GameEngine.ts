@@ -3,7 +3,7 @@ import { CardKind, EffectTiming, GameState, type CardInstance, type Seat } from 
 import { buildCombatHooks } from "./gameEngine/combatHooks.js";
 import type { CardColor, Permanent, ZoneRef } from "@aegis/shared";
 import type { Client } from "colyseus";
-import type { DevScenarioId } from "./devScenario.js";
+import type { ScenarioFixture } from "./scenario/types.js";
 import type { VisibilityZone } from "./state/access.js";
 import {
   chooseFirstPlayer,
@@ -23,7 +23,7 @@ import {
   runMulliganWindow,
   runOneTurn,
   seatPlayer,
-  startDevScenario,
+  startScenarioFixture,
   startMatch,
   startTurnLoop,
   syncCounts,
@@ -43,6 +43,7 @@ import { DeletionMaxDpLedger } from "./deletionMaxDp.js";
 import { DpDeleteBudgetLedger } from "./dpDeleteBudget.js";
 import { lookupDefinition, isDigimon } from "./cards/cardData.js";
 import { DecisionManager } from "./decisions/index.js";
+import { pendingEffectCandidates } from "./gameEngine/pendingEffectCandidates.js";
 import { createDecisionApi } from "./decisions/decisionApi.js";
 import { createResolverDecisions, type ResolverDecisions } from "./decisions/resolverDecisions.js";
 import { MainPhaseController } from "./MainPhaseController.js";
@@ -458,14 +459,18 @@ export class GameEngine {
     this.modifiers = new ModifierLedger();
     this.modifiers.bindContinuous(this.continuous);
     this.subTriggers = new SubTriggerRegistry();
-    this.decisions = new DecisionManager(this.state, {
-      requestDecision: (seat, req) => {
-        // An earlier action in the same effect can grant a restriction before its next
-        // choice. Publish the live ledger before humans or policies observe that choice.
-        this.projection.syncRestrictions();
-        this.hooks.requestDecision(seat, req);
+    this.decisions = new DecisionManager(
+      this.state,
+      {
+        requestDecision: (seat, req) => {
+          // An earlier action in the same effect can grant a restriction before its next
+          // choice. Publish the live ledger before humans or policies observe that choice.
+          this.projection.syncRestrictions();
+          this.hooks.requestDecision(seat, req);
+        },
       },
-    });
+      { pendingEffectCandidates: (spec) => pendingEffectCandidates(this, spec) },
+    );
     this.decisionApi = createDecisionApi(this.decisions, (seat) => this.continuous.blocksCostReduction(seat, "play"));
     this.resolverDecisions = createResolverDecisions(
       this.decisions,
@@ -809,8 +814,8 @@ export class GameEngine {
     return runMatch(this);
   }
 
-  startDevScenario(scenario: DevScenarioId): void {
-    return startDevScenario(this, scenario);
+  startScenarioFixture(fixture: ScenarioFixture): void {
+    return startScenarioFixture(this, fixture);
   }
 
   collectStagedDecks(): [Decklist, Decklist] | undefined {

@@ -27,10 +27,7 @@ export function testHeapMegabytes(): number {
  * runaway growth.
  * TEST_MAX_WORKERS (or the legacy TEST_MAX_FORKS) remains an explicit override.
  */
-export function testMaxWorkers(
-  parallelism: number,
-  memoryBytes = totalmem(),
-): number {
+export function testMaxWorkers(parallelism: number, memoryBytes = totalmem()): number {
   const requested = Number(process.env.TEST_MAX_WORKERS ?? process.env.TEST_MAX_FORKS);
   if (Number.isInteger(requested) && requested > 0) return requested;
   const cpuWorkers = Math.floor(parallelism * 0.8);

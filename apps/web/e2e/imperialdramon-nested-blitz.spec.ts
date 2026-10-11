@@ -1,10 +1,11 @@
+import fixtureImperialdramonNestedBlitz from "../../api/src/engine/scenarios/imperialdramon-nested-blitz.fixture";
 import { test, expect } from "./scenario-page";
 import { GamePage } from "./game-page";
 
 for (const attack of [true, false]) {
   test(`Imperialdramon nested end-turn DNA and Blitz (attack: ${attack})`, async ({ scenario, page }) => {
     test.setTimeout(120_000);
-    await scenario.open("arena-issue-5353-imperialdramon-nested-blitz");
+    await scenario.openFixture(fixtureImperialdramonNestedBlitz);
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     const initial = await scenario.snapshot();
     await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();

@@ -10,7 +10,8 @@ await mkdir(output, { recursive: true });
 const browser = await chromium.launch();
 const results = [];
 try {
-  for (const route of ["/dev/arena?mode=visual", "/dev/effects-lab"]) {
+  // Pass --base from `pnpm scenario open <behavior> --lab --no-open` for the inspector.
+  for (const route of ["/dev/arena?mode=visual", "/e2e/harness.html"]) {
     for (const width of [320, 768, 1440]) {
       for (const kind of ["chooseTargets", "orderTriggers"]) {
         const page = await browser.newPage({ viewport: { width, height: 900 } });

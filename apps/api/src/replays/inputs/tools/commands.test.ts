@@ -219,7 +219,9 @@ describe("scaffold", () => {
     expect(scaffold.test).toContain('new URL("./bugReplay.replay.json", import.meta.url)');
     expect(scaffold.test).toContain(`runReplay(record, { untilInput: ${until} })`);
     expect(scaffold.test).toContain("expect(divergences).toEqual([]);");
-    expect(scaffold.test).toContain(`it.todo("issue #321: expected behaviour at input #${until}");`);
+    expect(scaffold.test).toContain('describe("bugReplay", () => {');
+    expect(scaffold.test).toContain("Regression for issue #321");
+    expect(scaffold.test).toContain(`it.todo("expected behaviour at input #${until}");`);
     expect(scaffold.test).toContain(describeInput(record.inputs[until]!, until));
     const fixture = JSON.parse(scaffold.fixture) as ReplayRecord;
     expect(fixture).toEqual({ ...record, inputs: record.inputs.slice(0, until + 1) });

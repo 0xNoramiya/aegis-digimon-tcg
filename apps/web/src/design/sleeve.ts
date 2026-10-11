@@ -124,13 +124,13 @@ export const CARD_SLEEVES: readonly CardSleeve[] = [
   },
   {
     id: "official-03-generations",
-    label: "Generations",
+    label: "Data Squad",
     collection: "Official Card Sleeves 03",
     src: "/sleeves/official-03-generations.webp",
   },
   {
     id: "official-03-ghost-game",
-    label: "Ghost Game",
+    label: "BeatBreak",
     collection: "Official Card Sleeves 03",
     src: "/sleeves/official-03-ghost-game.webp",
   },

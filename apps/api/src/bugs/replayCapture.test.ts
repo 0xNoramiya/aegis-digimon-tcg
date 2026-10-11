@@ -4,15 +4,16 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import express from "express";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { AccountStore } from "../accounts/AccountStore.js";
-import { createMemoryPool } from "../db/memoryPool.fixture.js";
-import { extractReplay, extractReplayFromLogDir } from "../replays/inputs/extract.js";
-import { recordRoomMatch, type RecordedRoomMatch } from "../replays/inputs/roomMatch.fixture.js";
-import type { ReplayRecord } from "../replays/inputs/types.js";
-import { FeedbackStore, replayRetentionMs } from "./FeedbackStore.js";
-import { issueBody, type IssueContext, type IssueTracker, type NewBugReport } from "./GitHubIssueTracker.js";
-import { ReplayCapturer, type ReplayExtractor } from "./replayCapture.js";
-import { installBugReportRoutes } from "./routes.js";
+import { AccountStore } from "#api/accounts/AccountStore";
+import { createMemoryPool } from "#api/db/memoryPool.fixture";
+import { extractReplay, extractReplayFromLogDir } from "#api/replays/inputs/extract";
+import { recordRoomMatch, type RecordedRoomMatch } from "#api/replays/inputs/roomMatch.fixture";
+import type { ReplayRecord } from "#api/replays/inputs/types";
+import { FeedbackStore } from "#api/bugs/FeedbackStore";
+import { replayRetentionMs } from "#api/bugs/replayRetentionMs";
+import { issueBody, type IssueContext, type IssueTracker, type NewBugReport } from "#api/bugs/GitHubIssueTracker";
+import { ReplayCapturer, type ReplayExtractor } from "#api/bugs/replayCapture";
+import { installBugReportRoutes } from "#api/bugs/routes";
 
 /**
  * A report filed from a match keeps a private copy of the match's replay, and the public issue
