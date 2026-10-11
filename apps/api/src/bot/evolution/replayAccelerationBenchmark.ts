@@ -1,10 +1,13 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { performance } from "node:perf_hooks";
-import { runEvolutionMatch } from "#api/bot/evolution/evolutionMatch";
-import { SEED_HEURISTIC } from "#api/bot/evolution/heuristic";
-import { randomDeck } from "#api/bot/evolution/randomDecks";
 import type { Seat } from "@aegis/shared/schema/enums";
+
+const writeReport = process.stdout.write.bind(process.stdout);
+process.stdout.write = process.stderr.write.bind(process.stderr);
+const { runEvolutionMatch } = await import("#api/bot/evolution/evolutionMatch");
+const { SEED_HEURISTIC } = await import("#api/bot/evolution/heuristic");
+const { randomDeck } = await import("#api/bot/evolution/randomDecks");
 
 async function main(): Promise<void> {
   const input = JSON.parse(readFileSync(0, "utf8")) as {
@@ -25,77 +28,78 @@ async function main(): Promise<void> {
     throw new Error("Benchmark repetitions must be from 1 to 8");
   if (input.learnerSeat !== undefined && input.learnerSeat !== 0 && input.learnerSeat !== 1)
     throw new Error("Benchmark learner seat must be zero or one");
-  const samples: {
-    enabled: boolean;
-    durationMs: number;
-    identity: string;
-    requestedRollouts: number;
-    completedRollouts: number;
-    invalidRollouts: number;
-    restoration: Awaited<ReturnType<typeof runEvolutionMatch>>["restoration"];
-  }[] = [];
+  const run = async (enabled: boolean, simulations: number, repetition: number, phase: "warmup" | "measured") => {
+    const bounded = phase === "warmup" || mode === "single-search-after-prefix";
+    const start = performance.now();
+    const result = await runEvolutionMatch({
+      seed: input.seed ?? 42,
+      learnerSeat: input.learnerSeat ?? 0,
+      decks: [randomDeck(1).deck, randomDeck(2).deck],
+      program: SEED_HEURISTIC,
+      mcts: {
+        simulations,
+        seed: 619,
+        reusePrefixActions: enabled,
+        ...(bounded ? { startAfterDecisions, maxSearches: 1 } : {}),
+      },
+      turnLimit: 60,
+      captureTraces: true,
+      onSearch: (search) => {
+        process.stderr.write(JSON.stringify({ phase, repetition, enabled, search }) + "\n");
+      },
+    });
+    const durationMs = performance.now() - start;
+    if (!result.valid || result.searches.length === 0)
+      throw new Error("Benchmark requires a complete valid real-engine search match");
+    if (bounded && result.searches.length !== 1)
+      throw new Error("Bounded benchmark requires exactly one real-engine search");
+    if (result.searches.some((search) => search.completed !== simulations || search.invalid !== 0))
+      throw new Error("Benchmark requires the exact completed budget and zero invalid rollouts");
+    if (enabled && result.restoration.reusedMainCatalogs === 0)
+      throw new Error("Benchmark must exercise recorded main catalog reuse");
+    const identity = createHash("sha256")
+      .update(
+        JSON.stringify({
+          result: {
+            ...result.result,
+            seats: result.result.seats.map(({ decisionLatenciesMs: _decisionLatenciesMs, ...stats }) => stats),
+          },
+          searches: result.searches,
+          traces: result.traces,
+          decisions: result.decisions,
+        }),
+      )
+      .digest("hex");
+    const sample = {
+      enabled,
+      durationMs,
+      identity,
+      requestedRollouts: result.searches.reduce((total, search) => total + search.requested, 0),
+      completedRollouts: result.searches.reduce((total, search) => total + search.completed, 0),
+      invalidRollouts: result.searches.reduce((total, search) => total + search.invalid, 0),
+      restoration: result.restoration,
+    };
+    process.stderr.write(JSON.stringify({ phase, repetition, ...sample }) + "\n");
+    return sample;
+  };
+  const warmup = [];
+  for (const enabled of [false, true]) warmup.push(await run(enabled, 8, 0, "warmup"));
+  if (warmup[0]!.identity !== warmup[1]!.identity)
+    throw new Error("Prefix acceleration changed the warm-up seeded game, actions or search report");
+  const samples = [];
   for (let repetition = 0; repetition < repetitions; repetition++) {
     for (const enabled of repetition % 2 === 0 ? [false, true] : [true, false]) {
-      const start = performance.now();
-      const result = await runEvolutionMatch({
-        seed: input.seed ?? 42,
-        learnerSeat: input.learnerSeat ?? 0,
-        decks: [randomDeck(1).deck, randomDeck(2).deck],
-        program: SEED_HEURISTIC,
-        mcts: {
-          simulations: input.simulations,
-          seed: 619,
-          reusePrefixActions: enabled,
-          ...(mode === "single-search-after-prefix" ? { startAfterDecisions, maxSearches: 1 } : {}),
-        },
-        turnLimit: 60,
-        captureTraces: true,
-        onSearch: (search) => {
-          process.stderr.write(JSON.stringify({ repetition, enabled, search }) + "\n");
-        },
-      });
-      const durationMs = performance.now() - start;
-      if (!result.valid || result.searches.length === 0)
-        throw new Error("Benchmark requires a complete valid real-engine search match");
-      if (mode === "single-search-after-prefix" && result.searches.length !== 1)
-        throw new Error("Bounded benchmark requires exactly one real-engine search");
-      if (result.searches.some((search) => search.completed !== input.simulations || search.invalid !== 0))
-        throw new Error("Benchmark requires the exact completed budget and zero invalid rollouts");
-      if (enabled && result.restoration.reusedMainCatalogs === 0)
-        throw new Error("Benchmark must exercise recorded main catalog reuse");
-      const identity = createHash("sha256")
-        .update(
-          JSON.stringify({
-            result: {
-              ...result.result,
-              seats: result.result.seats.map(({ decisionLatenciesMs: _decisionLatenciesMs, ...stats }) => stats),
-            },
-            searches: result.searches,
-            traces: result.traces,
-            decisions: result.decisions,
-          }),
-        )
-        .digest("hex");
-      if (samples.length > 0 && identity !== samples[0]!.identity)
+      const sample = await run(enabled, input.simulations, repetition, "measured");
+      if (samples.length > 0 && sample.identity !== samples[0]!.identity)
         throw new Error("Prefix acceleration changed the seeded game, actions or search report");
-      const sample = {
-        enabled,
-        durationMs,
-        identity,
-        requestedRollouts: result.searches.reduce((total, search) => total + search.requested, 0),
-        completedRollouts: result.searches.reduce((total, search) => total + search.completed, 0),
-        invalidRollouts: result.searches.reduce((total, search) => total + search.invalid, 0),
-        restoration: result.restoration,
-      };
       samples.push(sample);
-      process.stderr.write(JSON.stringify({ repetition, ...sample }) + "\n");
     }
   }
   const duration = (enabled: boolean): number =>
     samples.filter((sample) => sample.enabled === enabled).reduce((total, sample) => total + sample.durationMs, 0);
-  process.stdout.write(
+  writeReport(
     JSON.stringify({
-      schemaVersion: 1,
+      schemaVersion: 2,
       nodeVersion: process.version,
       simulations: input.simulations,
       mode,
@@ -103,6 +107,14 @@ async function main(): Promise<void> {
       seed: input.seed ?? 42,
       learnerSeat: input.learnerSeat ?? 0,
       repetitions,
+      warmup: {
+        mode: "single-search-after-prefix",
+        startAfterDecisions,
+        maxSearches: 1,
+        simulations: 8,
+        excludedFromTiming: true,
+        samples: warmup,
+      },
       equivalent: true,
       speedup: duration(false) / duration(true),
       savedWallTimeFraction: 1 - duration(true) / duration(false),

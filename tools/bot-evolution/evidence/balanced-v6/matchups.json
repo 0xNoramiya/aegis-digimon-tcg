@@ -9,7 +9,7 @@
     "familySize": 480,
     "looks": 3,
     "maximumAttempts": 5,
-    "alphaPerBound": 3.094470955099437e-06,
+    "alphaPerBound": 3.094470955099437e-6,
     "uniqueSeedProbability": 0.8912076350686378,
     "source": "https://arxiv.org/pdf/0907.3740#page=4"
   },

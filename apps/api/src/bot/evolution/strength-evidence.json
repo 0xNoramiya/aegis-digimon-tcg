@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "claim": "Aggregate superiority over current projected-balanced in the preregistered held-out deck/seed distribution",
+  "claim": "Historical aggregate superiority over projected-balanced in the preregistered held-out deck/seed distribution",
   "policy": {
     "catalog": "apps/api/src/bot/evolution/programs/certified-balanced.json",
     "semanticSha256": "ae4a00106017e2859e07c153538287f932e95ab127ad35247dbb87fd93879082",
@@ -137,11 +137,11 @@
     }
   },
   "liveIntegration": {
-    "activation": "AEGIS_BOT_HEURISTIC=\"$PWD/apps/api/src/bot/evolution/programs/certified-balanced.json\" pnpm dev",
-    "defaultActivation": false,
+    "activation": "Balanced bots use defaultBotOptions without environment configuration; explicit evolved/checkpoint policies retain precedence",
+    "defaultActivation": true,
     "roomSeed": "engine.hooks.seed + seat * 7919",
-    "timing": "Room seed wiring and catalog delivery added after the frozen certification; certified policy decision code remains unchanged",
-    "controlScope": "The benchmark seeds both policies by match seed and seat. The ordinary unconfigured app control retains its existing fixed policy seed. Real-time presentation and human opposition differ from the benchmark."
+    "timing": "Default activation and bot personas were added after the frozen certificate. Full-game integration tests compare the default with the certified decision policy in both seats. Later main changes retain their own engine identity; the historical certificate remains attributed to its frozen runtime.",
+    "controlScope": "The historical certificate seeds both policies by match seed and seat. Live human opposition, nondefault profiles and subsequent engine changes are outside that certificate."
   },
   "limits": [
     "No per-deck superiority claim",

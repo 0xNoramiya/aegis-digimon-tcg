@@ -54,10 +54,20 @@ class HeuristicAdapter:
         candidate: dict[str, str],
         capture_traces: bool = False,
     ) -> EvaluationBatch:
-        batch_size = self.metadata.get("balancedBatchSize", 1)
+        batch_size = self.metadata.get(
+            "residualBatchSize", self.metadata.get("balancedBatchSize", 1)
+        )
         if not isinstance(batch_size, int) or not 1 <= batch_size <= 32:
             raise ValueError("Use 1–32 isolated balanced games per transport batch")
-        if batch_size > 1 and any(task.get("opponent") != "balanced" for task in batch):
+        if batch_size > 1 and any(
+            task.get("opponent") != "balanced"
+            and not (
+                self.metadata.get("residualBatchSize") is not None
+                and task.get("opponent") == "heuristic"
+                and task.get("opponentProgram", {}).get("basePolicy") == "projected-balanced"
+            )
+            for task in batch
+        ):
             raise ValueError("Transport batching is restricted to balanced-control games")
         groups = [batch[index : index + batch_size] for index in range(0, len(batch), batch_size)]
         with ThreadPoolExecutor(max_workers=self.config.workers) as pool:
@@ -221,7 +231,12 @@ class HeuristicAdapter:
                     output.get("seed") != request["task"]["seed"]
                     or output.get("learnerSeat") != request["task"]["learnerSeat"]
                     or output.get("decks") != request["task"]["decks"]
-                    or output.get("opponent") != "projected-balanced"
+                    or output.get("opponent")
+                    != (
+                        "coevolved-heuristic"
+                        if request["task"].get("opponent") == "heuristic"
+                        else "projected-balanced"
+                    )
                 )
             ):
                 raise RuntimeError("Transport batch returned a different game or control")

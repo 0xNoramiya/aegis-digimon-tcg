@@ -1112,7 +1112,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         this.rebuildClientViews();
         return result;
       },
-      defaultBotOptions({ engine: this.engine, seat, options: input.botOptions }),
+      defaultBotOptions({ engine: this.engine, seat, deck, options: input.botOptions }),
     );
     this.withBatch(() => {
       this.engine.seatPlayer(seat, `bot:${participantId}`, {
@@ -1555,7 +1555,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     const scenarioPolicy = createFixtureBotPolicy(this.scenarioFixture?.presentation?.opponent);
     const baseBotOptions: BotOptions | undefined =
       scenarioPolicy === undefined
-        ? (modelOptions ?? defaultBotOptions({ engine: this.engine, seat: this.BOT_SEAT }))
+        ? (modelOptions ?? defaultBotOptions({ engine: this.engine, seat: this.BOT_SEAT, deck }))
         : { policy: scenarioPolicy };
     const clientPacesChains = this.clients.some((client) => this.chainPacingClients.has(client.sessionId));
     const botOptions: BotOptions | undefined = clientPacesChains

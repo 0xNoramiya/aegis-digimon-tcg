@@ -1,5 +1,58 @@
 # GEPA heuristic evolution
 
+## Conditional deck pilots
+
+`learn_pilots.py` uses the official GEPA custom-proposer interface without a model
+or API calls. The desktop worker's `--describe-pilots` response discovers every
+known, legal, implemented preset and reports excluded recipes with their reasons.
+The generator preserves every rule of the certified generic policy and appends
+one bounded preference scoped to actual cards in the deck: boss development,
+boss security pressure, early Tamer development, or rookie development. These are
+frozen hypotheses based on card kind and level, not claims about unmodeled effects.
+Their advice states the exact hand, turn, security and memory conditions.
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/learn_pilots.py \
+  --run-dir artifacts/bot-evolution/deck-pilots-v1 \
+  --deck-pool artifacts/bot-evolution/gepa-balanced-v6/deck-pool.json \
+  --desktop-host desktop \
+  --node /home/vinicius/aegis-bot-lab/toolchain/node-v26.10.0-linux-x64/bin/node \
+  --worker /path/to/frozen/checkout/apps/api/dist/bot/evolution/evaluateCli.js \
+  --pairs 48 --gate-pairs 96 --held-out-pairs 2400 --attempt 1
+```
+
+The manifest freezes the entire deck and hypothesis family before any games.
+Each block has two games, placing the pilot's own deck in each player seat; the
+opponent directly uses the certified generic residual. A matched control arm
+uses that same generic policy on the same seeds, decks and seats. This controls
+for differing inherent deck strength. Train, validation and held-out opponent
+decks are disjoint; mirrors are excluded. The gate uses fresh seeds outside the
+training and validation splits. The approximate paired Wilson screen corrects
+for all frozen hypotheses across the shared family's maximum three waves. Fresh
+held-out activation uses a conservative empirical Bernstein lower bound on paired
+seed-block differences in [-1, 1], with sample variance and the range-scaled
+Maurer–Pontil correction. The lower bound must exceed zero. Its error budget is
+`0.05/(3*number_of_decks)`. Before games, the manifest records uniformly sampled
+held-out seeds without replacement from a reserved 100-million-seed domain.
+The bound adjusts its delta by each deck's probability of unique independent seed
+draws. The shared registry retains failed reservations and requires disjoint
+held-out domains between waves. These are scoped pilot/control and opponent-split
+results, not a new aggregate strength certificate or MCTS guide publication gate.
+
+GEPA must finish every reserved hypothesis. Invalid games and transport timeouts
+stop selection and retain their artifacts. Completed stages can be resumed only
+with identical inputs; partial stages require diagnosis and a new run directory.
+`--only-deck` executes a subset of the already frozen family without reducing its
+multiple-comparison budget. `catalog.json` includes only distinct GEPA selections
+that also pass the held-out bound. Resume and catalog assembly reconstruct every
+completed GEPA selection, raw validation score, proposal gate, held-out score and
+activation decision; altered summaries cannot enable a pilot. Rejected decks and custom lists continue to
+use the unchanged certified generic fallback. Live catalogs route pilots by the
+exact main-deck and egg-deck card multisets, reject unavailable presets, and refuse
+two aliases that would overwrite the same multiset. A later wave needs a new run
+directory, `--attempt 2` or `3`, and a disjoint `--seed-offset`, such as 100000000
+or 200000000. Its family budgets stay fixed rather than resetting after rejection.
+
 ## Learning against the current balanced bot
 
 `learn_balanced.py` evolves bounded score adjustments on top of the current
@@ -87,7 +140,13 @@ projected balanced control. There were no invalid games, timeouts, rejections,
 engine errors or inference fallbacks. The first 1,200-block look did not pass;
 attempt 1 remains consumed and invalid due to its repaired projection defect.
 
-Activate the catalog explicitly and restart the API:
+The ordinary balanced app bot now uses `defaultBotOptions` and this certified
+generic policy without requiring an environment option. Explicit policies and
+custom profile weight sets keep their own choices; aggressive and defensive bots
+continue using their corresponding projected profiles. Match and seat seed the
+default policy, while the readiness guard, configured pacing and action limits
+are preserved. No production deployment has occurred. An explicit catalog can
+still override startup, with validation before room admission:
 
 ```sh
 AEGIS_BOT_HEURISTIC="$PWD/apps/api/src/bot/evolution/programs/certified-balanced.json" pnpm dev
@@ -96,8 +155,8 @@ AEGIS_BOT_HEURISTIC="$PWD/apps/api/src/bot/evolution/programs/certified-balanced
 The catalog is generic, with no deck-specific pilots. This result establishes
 aggregate strength on the frozen 24-deck distribution, not superiority for every
 deck, aggressive/defensive profiles, tournaments or high-budget MCTS. It does not
-authorize strict guide publication. The default app policy remains unchanged
-unless the catalog is configured; no production deployment has occurred.
+authorize strict guide publication. The certificate describes its pinned historical
+engine; integrating later main changes does not create a new certificate.
 
 The committed [strength evidence](../../apps/api/src/bot/evolution/strength-evidence.json)
 pins the policy, merged source/runtime, certifier, protocol, statistics and raw
@@ -111,9 +170,50 @@ The practice room now forwards the engine match seed to the configured policy;
 this wiring was added after the frozen certificate without changing its decision
 function. Desktop regressions verify actual startup, seeded policy selection,
 accepted main actions and exact catalog/evaluator event equality in both seats.
-The benchmark seeds both policies by match and seat; the ordinary unconfigured
-app control retains its existing fixed policy seed. Human opponents and real-time
-presentation also differ from the benchmark.
+The benchmark and ordinary default policy now seed decisions by match and seat.
+Human opponents and real-time presentation differ from the benchmark.
+
+## Historical matchups and identities
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/matchup_report.py \
+  --proof tools/bot-evolution/evidence/balanced-v6/proof.tgz \
+  --output-dir tools/bot-evolution/evidence/balanced-v6
+```
+
+The report verifies the pinned proof archive, certificate protocol, accepted fixed
+look and all raw batch counts before writing `matchups.json` and the interactive
+`matchups.html`. Its rows cover the historical 24-deck certificate distribution;
+they describe candidate performance against the frozen balanced control rather
+than certifying uplift for every deck. Matchup groups have their own sample sizes,
+and uncertain rows remain inconclusive. Later main integration needs fresh games
+before making new strength claims.
+
+Names and portraits are independent of policy strength. The server resolves the
+actual deck to a shared persona, and the lobby and game present that same identity.
+See the [persona mapping and source rationale](../../packages/shared/src/bot/personas/README.md)
+for Rina/Ulforce, other printed Tamer associations, Digimon portraits and fallback
+behavior for custom or substituted recipes.
+
+## Guarded MCTS prefix acceleration
+
+The engine still reconstructs simulation state through real prefix replay. It can
+reuse recorded main-action catalogs while replaying the exact, unsampled prefix.
+The replay checks the expected seat, public information key and selected action
+key; a mismatch invalidates that rollout. At the sampled root and beyond the
+prefix, the authoritative engine enumerates actions. This reduces enumeration work
+without changing hidden-information access or claiming a clone of runtime state.
+
+The compiled `replayAccelerationBenchmark.js` accepts JSON on stdin. Benchmark
+budgets 8, 32, 128 and 256 in `mode: "single-search-after-prefix"` with
+`startAfterDecisions: 16` and paired enabled/disabled runs. Each measured game
+contains exactly one search after the prefix; warm-up searches are excluded from
+timing. Every rollout must complete, the recorded catalog path must execute, and
+seeded events, actions and search reports must match. This mode measures the cost
+of a bounded search inside a real game. `mode: "full-game"` searches every MCTS
+decision and measures a different, more expensive workload. Neither benchmark
+establishes playing strength; timings from an earlier runtime do not establish
+speedup after a main integration.
 
 ## MCTS and pilot evolution
 
