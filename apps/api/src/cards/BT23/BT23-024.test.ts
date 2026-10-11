@@ -783,6 +783,54 @@ describe("BT23-024 Poseidomon", () => {
     await loop;
   });
 
+  it("feedback #58 preserves the unpayable first link's use for a paid attacking link", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT23-024", as: "poseidomon" }],
+          hand: [
+            { card: "BT23-007", as: "first" },
+            { card: "BT23-007", as: "second" },
+          ],
+        },
+        1: {
+          battleArea: [
+            { card: "BT1-024", as: "lower" },
+            { card: "BT1-080", as: "highest" },
+          ],
+          security: ["ST1-02", "ST1-02"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 5;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "linkCard",
+        instanceId: s.inst("first").instanceId,
+        targetPermanentId: s.perm("poseidomon").permanentId,
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.perm("poseidomon").isSuspended).toBe(false);
+    expect(observe(s.engine).isRestricted(s.perm("lower"), "suspend")).toBe(false);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("poseidomon").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => !observe(s.engine).isAttacking());
+    expect(s.perm("poseidomon").linked.map((card) => card.instanceId)).toEqual([
+      s.inst("second").instanceId,
+      s.inst("first").instanceId,
+    ]);
+    expect(s.perm("poseidomon").isSuspended).toBe(false);
+    expect(observe(s.engine).isRestricted(s.perm("lower"), "suspend")).toBe(true);
+    expect(observe(s.engine).isRestricted(s.perm("highest"), "suspend")).toBe(false);
+  });
+
   it("cannot arm the restriction when already unsuspended, because the cost is unpayable", async () => {
     const s = setupEngine(
       {

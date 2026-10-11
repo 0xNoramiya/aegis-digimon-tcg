@@ -630,6 +630,7 @@ export interface AegisJoinOptions {
     | "arena-p108-training-delay-no-target"
     | "arena-feedback47-chronomon-security-return"
     | "arena-feedback50-progress-end-attack"
+    | "arena-feedback58-poseidomon-unsuspend-cost"
     | "arena-feedback57-amaterasumon-empty-resolution"
     | "arena-feedback57-amaterasumon-paid-resolution"
     | "arena-feedback51-jesmon-gx-copied-text"

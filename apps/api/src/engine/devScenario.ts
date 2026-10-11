@@ -383,6 +383,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-p108-training-delay-with-target",
   "arena-feedback47-chronomon-security-return",
   "arena-feedback50-progress-end-attack",
+  "arena-feedback58-poseidomon-unsuspend-cost",
   "arena-feedback57-amaterasumon-empty-resolution",
   "arena-feedback57-amaterasumon-paid-resolution",
   "arena-feedback51-jesmon-gx-copied-text",
@@ -10660,6 +10661,20 @@ function layGithub5311CrescemonCostScenario(state: GameState): void {
   insertCard(human, Zone.Hand, faceDownCard("github5311-crescemon", "EX5-020", 0));
 }
 
+/** Feedback #58: an unpayable first Link does not consume the later unsuspend use. */
+function layFeedback58PoseidomonScenario(state: GameState): void {
+  prepareGithubCardEffectsScenario(state, 5);
+  const human = state.players[0]!;
+  const host = establishedDigimon(0, ["BT23-022"], "-feedback58-host");
+  linkEstablishedCard(host, faceUpCard("feedback58-beautymon", "BT23-033", 0));
+  placePermanent(human, host);
+  insertCard(human, Zone.Hand, faceDownCard("feedback58-poseidomon", "BT23-024", 0));
+  for (const suffix of ["first", "second", "third"])
+    insertCard(human, Zone.Hand, faceDownCard(`feedback58-link-${suffix}`, "BT23-007", 0));
+  placePermanent(state.players[1]!, establishedDigimon(1, ["BT1-024"], "-feedback58-lower"));
+  placePermanent(state.players[1]!, establishedDigimon(1, ["BT1-080"], "-feedback58-highest"));
+}
+
 /** Feedback #57: a live first-check evolution resolves before the second security battle. */
 function layFeedback57AmaterasumonScenario(state: GameState, payable = false): void {
   prepareGithubCardEffectsScenario(state, 0);
@@ -11587,6 +11602,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-p108-training-delay-with-target": (state, decks) => layP108TrainingDelayScenario(state, decks, true),
   "arena-feedback47-chronomon-security-return": layFeedback47ChronomonSecurityReturnScenario,
   "arena-feedback50-progress-end-attack": layFeedback50ProgressEndAttackScenario,
+  "arena-feedback58-poseidomon-unsuspend-cost": layFeedback58PoseidomonScenario,
   "arena-feedback57-amaterasumon-empty-resolution": (state) => layFeedback57AmaterasumonScenario(state),
   "arena-feedback57-amaterasumon-paid-resolution": (state) => layFeedback57AmaterasumonScenario(state, true),
   "arena-feedback51-jesmon-gx-copied-text": layFeedback51JesmonGxCopiedTextScenario,
