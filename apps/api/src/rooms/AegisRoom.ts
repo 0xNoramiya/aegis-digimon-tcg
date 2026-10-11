@@ -777,7 +777,8 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       ...(this.devScenario !== undefined ? { devScenario: this.devScenario } : {}),
     } satisfies ReplayHeaderLine);
     // Route zone arrivals to the per-client StateViews (see exposeCardToClients). Installed
-    // before any seat is filled so `seatPlayer` picks it up for both PlayerStates.
+    // before any seat is filled so `seatPlayer` picks it up for both PlayerStates. Not a replay
+    // input: it only wires per-client views, which never feed back into engine state.
     this.engine.installVisibility(this.exposeCardToClients);
 
     // One catch-all handler: every client intent type is reassembled into a
@@ -1156,6 +1157,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       client.view.dispose();
       this.issuedViews.delete(client.view);
     }
+    // Views are per-client filters over the state, so they are not replay inputs.
     client.view = this.engine.makeStateView(seat);
     if (client.view) this.issuedViews.add(client.view);
   }
@@ -1597,6 +1599,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       const seat = this.seatByClient.get(client.sessionId);
       if (seat === undefined && !this.spectatorClients.has(client.sessionId)) continue;
       if (client.view) {
+        // View-only, like every call in here: not a replay input.
         this.engine.refreshStateView(client.view, seat);
       } else {
         this.assignView(client, seat);
@@ -1634,6 +1637,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // Colyseus starts its patch timer before onCreate, which can await a private-code lookup
     // or reject before the engine exists. There is nothing to synchronize until it is ready.
     if (!this.engine) return;
+    // Not a replay input: the counts are derived from the zone arrays, and the replay recomputes them.
     this.engine.syncCounts();
     // Refresh every view before the patch is encoded, not only after the three events that
     // happen to name a move. A StateView must still recognise a card as visible at the moment
@@ -1657,6 +1661,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     if (!this.engine) return hasChanges;
     for (const client of this.clients) {
       if (client.view === undefined) continue;
+      // View-only bookkeeping, not a replay input.
       this.engine.forgetWithheldCards(client.view, this.seatByClient.get(client.sessionId));
     }
     return hasChanges;
@@ -2059,9 +2064,10 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     const seat = this.matchStartRequested ? this.engine.inputSeat : undefined;
     const expired = this.matchClock?.update(performance.now(), seat, this.clockMode(seat));
     if (expired !== undefined && !this.state.gameOver) {
-      if (expired.clock === "mulligan")
+      if (expired.clock === "mulligan") {
+        this.recordReplayInput({ kind: "expireMulliganWindow", seat: expired.seat });
         this.withBatch(() => this.engine.applyIntent(expired.seat, { type: "mulligan", keep: true }));
-      else {
+      } else {
         this.recordReplayInput({ kind: "expireMatchTimer", seat: expired.seat });
         this.withBatch(() => this.engine.expireMatchTimer(expired.seat));
       }

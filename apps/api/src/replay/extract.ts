@@ -95,6 +95,7 @@ const ROOM_INPUT_KINDS = new Set([
   "reconnect",
   "clearReady",
   "expireMatchTimer",
+  "expireMulliganWindow",
   "expireCombatWindow",
 ]);
 
@@ -285,6 +286,7 @@ function roomInputOf(
     case "reconnect":
     case "clearReady":
     case "expireMatchTimer":
+    case "expireMulliganWindow":
       return seat === undefined ? undefined : { kind, seat, ...placed };
     default:
       return undefined;

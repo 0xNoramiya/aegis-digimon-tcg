@@ -15,8 +15,8 @@ export function recordedOutcome(input: Extract<ReplayInput, { kind: "intent" }>)
   return input.ok ? "ok" : `rejected(${input.reason ?? "no reason"})`;
 }
 
-/** The longest input kind, `expireCombatWindow`. */
-const KIND_WIDTH = 18;
+/** The longest input kind, `expireMulliganWindow`. */
+const KIND_WIDTH = 20;
 
 /**
  * One input on one line: `#index kind seat N <what> [outcome] sv=<stateVersion>`, plus the room
@@ -51,6 +51,9 @@ export function describeInput(input: ReplayInput, index: number, indexWidth?: nu
     case "clearReady":
     case "expireMatchTimer":
       parts.push(`seat ${input.seat}`);
+      break;
+    case "expireMulliganWindow":
+      parts.push(`seat ${input.seat}`, "kept the hand");
       break;
     case "startMatch":
     case "expireCombatWindow":

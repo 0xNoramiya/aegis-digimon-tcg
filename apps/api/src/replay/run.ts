@@ -209,6 +209,10 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
       case "expireMatchTimer":
         withBatch(() => engine.expireMatchTimer(input.seat));
         return undefined;
+      case "expireMulliganWindow":
+        // The room ignores the outcome, so a refusal here is not compared either.
+        withBatch(() => engine.applyIntent(input.seat, { type: "mulligan", keep: true }));
+        return undefined;
       case "expireCombatWindow":
         withBatch(() => engine.expireCombatWindow());
         return undefined;

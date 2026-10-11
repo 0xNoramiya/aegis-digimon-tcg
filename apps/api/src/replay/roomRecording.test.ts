@@ -177,6 +177,48 @@ describe("AegisRoom replay recording", () => {
     expect(replay.state.stateVersion).toBe(room.state.stateVersion);
   });
 
+  it("records a mulligan window running out, and the replay keeps the same hand", async () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(0);
+    const room = makeRoom({ private: true, matchTimer: true, timerStartSeconds: 60, timerRefillSeconds: 0 });
+    const clients: [Client, Client] = [join(room, "a", RED_DECK), join(room, "b", BLUE_DECK)];
+    for (const client of clients) internals(room).handleIntent(client, { type: "ready" });
+    // Neither seat answers its mulligan: each window runs out in turn and the room keeps the hand.
+    let time = 0;
+    for (let round = 0; round < 50 && room.state.pendingDecision?.kind !== "mulligan"; round++) await macrotask();
+    const expiries = () => replayLines(room, "replay.input").filter((line) => line.kind === "expireMulliganWindow");
+    for (let window = 0; window < 2; window++) {
+      const seat = room.state.pendingDecision!.seat as Seat;
+      // The first sync starts the seat's mulligan clock; the second, long after, runs it out.
+      internals(room).syncMatchClock();
+      time += 10 * 60_000;
+      now.mockReturnValue(time);
+      internals(room).syncMatchClock();
+      expect(expiries().at(-1)).toMatchObject({ seat });
+      for (let round = 0; round < 50 && room.state.pendingDecision?.seat === seat; round++) await macrotask();
+      if (window === 1) break;
+      for (let round = 0; round < 50 && room.state.pendingDecision?.kind !== "mulligan"; round++) await macrotask();
+    }
+    await macrotask();
+
+    expect(expiries().map((line) => line.seat)).toHaveLength(2);
+    expect(new Set(expiries().map((line) => line.seat))).toEqual(new Set([0, 1]));
+    expect(replayLines(room, "intent.received").map((line) => (line.intent as Intent).type)).toEqual([
+      "ready",
+      "ready",
+    ]);
+
+    const record = extractReplay(lines, room.state.matchLogId);
+    expect(record.inputs.filter((input) => input.kind === "expireMulliganWindow")).toHaveLength(2);
+    const replay = await runReplay(JSON.parse(JSON.stringify(record)));
+    expect(replay.divergences).toEqual([]);
+    expect(replay.state.stateVersion).toBe(room.state.stateVersion);
+    for (const seat of [0, 1] as const)
+      expect([...replay.state.players[seat]!.hand].map((card) => card.cardId)).toEqual(
+        [...room.state.players[seat]!.hand].map((card) => card.cardId),
+      );
+    expect(replay.state.turnCount).toBe(room.state.turnCount);
+  });
+
   it("records a departure as clearReady then a final disconnect, and the replacement's seat", async () => {
     const room = makeRoom();
     const a = join(room, "a", RED_DECK);
