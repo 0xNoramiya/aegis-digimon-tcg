@@ -2,6 +2,9 @@ import { readFileSync } from "node:fs";
 import { getCardDefinition, type Seat } from "@aegis/shared";
 import { FEATURES, parseHeuristic, SEED_HEURISTIC } from "./heuristic.js";
 import { randomDeck } from "./randomDecks.js";
+import { evolutionPilotDecks } from "#api/bot/evolution/evolutionPilotDecks";
+import { generatePilotPrograms } from "#api/bot/evolution/generatePilotPrograms";
+import certifiedCatalog from "#api/bot/evolution/programs/certified-balanced.json" with { type: "json" };
 
 // Each evaluation creates an isolated game; application diagnostics stay off JSON stdout.
 process.env.NODE_ENV = "test";
@@ -113,7 +116,24 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
   }
 }
 
-if (process.argv.includes("--describe")) {
+if (process.argv.includes("--describe-pilots")) {
+  const decks = evolutionPilotDecks();
+  const generic = parseHeuristic(certifiedCatalog.generic);
+  process.stdout.write(
+    `${JSON.stringify({
+      ...trainingMetadata(),
+      generic,
+      features: FEATURES,
+      proposalOrigin: "deterministic-structural",
+      pilotDecks: decks.available.map((deck) => ({
+        ...deck,
+        proposals: generatePilotPrograms({ deck: deck.deck, name: deck.name, generic }),
+      })),
+      excludedDecks: decks.excluded,
+    })}\n`,
+  );
+  process.exitCode = 0;
+} else if (process.argv.includes("--describe")) {
   process.stdout.write(
     `${JSON.stringify({
       ...trainingMetadata(),
@@ -154,9 +174,17 @@ if (process.argv.includes("--describe")) {
       (!Array.isArray(input) ||
         input.length < 1 ||
         input.length > 32 ||
-        input.some((item) => item.opponent !== "balanced"))
+        input.some(
+          (item) =>
+            item.opponent !== "balanced" &&
+            !(
+              item.opponent === "heuristic" &&
+              item.program?.basePolicy === "projected-balanced" &&
+              item.opponentProgram?.basePolicy === "projected-balanced"
+            ),
+        ))
     )
-      throw new Error("Batch evaluations require 1–32 balanced-control games");
+      throw new Error("Batch evaluations require 1–32 residual-control games");
     const engineSha256 = trainingMetadata().engineSha256;
     const outputs = [];
     for (const task of batch ? input : [input]) outputs.push(await evaluate(task, engineSha256));

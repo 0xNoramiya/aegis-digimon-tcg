@@ -6,7 +6,7 @@ import type { BotOptions } from "../BotPlayer.js";
 import { mainActionReady } from "../training/actions.js";
 import { createAsyncTrainingPolicy } from "../training/policy.js";
 import { createResidualPolicy } from "./residualPolicy.js";
-import { evolutionDeck, EVOLUTION_DECK_VERSIONS } from "./decks.js";
+import { evolutionDeck } from "./decks.js";
 import { chooseHeuristic, parseHeuristic, type HeuristicProgram } from "./heuristic.js";
 
 let programs: { generic: HeuristicProgram; pilots: Map<string, HeuristicProgram> } | undefined;
@@ -32,9 +32,15 @@ export async function startEvolvedBots(environment: NodeJS.ProcessEnv): Promise<
   const generic = parseHeuristic(value.generic);
   const pilots = new Map<string, HeuristicProgram>();
   for (const [version, program] of Object.entries(value.pilots)) {
-    if (!EVOLUTION_DECK_VERSIONS.some((known) => known === version))
-      throw new Error(`Unknown heuristic deck: ${version}`);
-    pilots.set(deckKey(evolutionDeck(version).deck), parseHeuristic(program));
+    let deck;
+    try {
+      deck = evolutionDeck(version).deck;
+    } catch (error) {
+      throw new Error(`Unknown heuristic deck: ${version}`, { cause: error });
+    }
+    const key = deckKey(deck);
+    if (pilots.has(key)) throw new Error(`Duplicate heuristic deck multiset: ${version}`);
+    pilots.set(key, parseHeuristic(program));
   }
   programs = { generic, pilots };
 }

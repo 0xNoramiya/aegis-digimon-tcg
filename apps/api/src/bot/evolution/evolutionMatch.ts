@@ -2,7 +2,8 @@ import type { Seat } from "@aegis/shared";
 import type { GameEngine } from "../../engine/GameEngine.js";
 import type { Decklist } from "../../engine/testDecks.js";
 import { runBotMatch, type MatchResult } from "../matchHarness.js";
-import { mainActionReady } from "../training/actions.js";
+import { mainActionReady, type TrainingAction } from "#api/bot/training/actions";
+import { createReplayMainActionSource } from "#api/bot/evolution/createReplayMainActionSource";
 import { createAsyncTrainingPolicy, type TrainingWindow } from "../training/policy.js";
 import { determinize } from "./determinize.js";
 import {
@@ -17,8 +18,10 @@ import { actionKey, informationKey, searchMcts, type SearchReport } from "./mcts
 
 interface RecordedChoice {
   seat: Seat;
+  kind: string;
   information: string;
   action: string;
+  mainActions?: readonly TrainingAction[];
 }
 export interface EvolutionMatchOptions {
   seed: number;
@@ -26,7 +29,13 @@ export interface EvolutionMatchOptions {
   learnerSeat: Seat;
   program: HeuristicProgram;
   opponentProgram?: HeuristicProgram;
-  mcts?: { simulations: number; seed: number };
+  mcts?: {
+    simulations: number;
+    seed: number;
+    reusePrefixActions?: boolean;
+    startAfterDecisions?: number;
+    maxSearches?: number;
+  };
   turnLimit?: number;
   captureTraces?: boolean;
   onSearch?: (report: SearchReport) => void;
@@ -48,9 +57,14 @@ export function validEvolutionGame(result: MatchResult): boolean {
  * After restoration all rollout choices see filtered training observations only.
  */
 export async function runEvolutionMatch(options: EvolutionMatchOptions) {
+  for (const limit of [options.mcts?.startAfterDecisions, options.mcts?.maxSearches]) {
+    if (limit !== undefined && (!Number.isSafeInteger(limit) || limit < 0))
+      throw new Error("MCTS scheduling limits must be non-negative safe integers");
+  }
   const transcript: RecordedChoice[] = [];
   const traces: unknown[] = [];
   const searches: SearchReport[] = [];
+  const restoration = { replays: 0, replayedWindows: 0, reusedMainCatalogs: 0, enumeratedMainCatalogs: 0 };
   const opponentSeat: Seat = options.learnerSeat === 0 ? 1 : 0;
   const pilots = [SEED_HEURISTIC, SEED_HEURISTIC];
   pilots[options.learnerSeat] = options.program;
@@ -64,6 +78,7 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
     sampleSeed: number,
     signal: AbortSignal,
   ): Promise<{ reward: number; valid: boolean }> => {
+    restoration.replays++;
     let cursor = 0;
     let reachedRoot = false;
     let mismatch = false;
@@ -74,35 +89,53 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
       canChooseMainAction: mainActionReady,
       maxMainPhaseActions: Number.POSITIVE_INFINITY,
       policyFactory: (engine: GameEngine, seat: Seat) =>
-        createAsyncTrainingPolicy(engine, seat, async (window) => {
-          if (cursor > 10000) {
-            mismatch = true;
-            control.abort();
-            return rollout(seat, window);
-          }
-          const entry = prefix[cursor++];
-          if (entry !== undefined) {
-            const action = window.actions.findIndex(
-              (_, actionIndex) => actionKey(window, actionIndex) === entry.action,
-            );
-            if (entry.seat !== seat || entry.information !== informationKey(window) || action < 0) {
+        createAsyncTrainingPolicy(
+          engine,
+          seat,
+          async (window) => {
+            if (cursor > 10000) {
               mismatch = true;
               control.abort();
               return rollout(seat, window);
             }
-            return action;
-          }
-          if (!reachedRoot) {
-            if (seat !== opponentSeat || informationKey(window) !== informationKey(root)) {
-              mismatch = true;
-              control.abort();
-              return rollout(seat, window);
+            const entry = prefix[cursor++];
+            if (entry !== undefined) {
+              const action = window.actions.findIndex(
+                (_, actionIndex) => actionKey(window, actionIndex) === entry.action,
+              );
+              if (entry.seat !== seat || entry.information !== informationKey(window) || action < 0) {
+                mismatch = true;
+                control.abort();
+                return rollout(seat, window);
+              }
+              restoration.replayedWindows++;
+              return action;
             }
-            reachedRoot = true;
-            await determinize(engine, opponentSeat, sampleSeed);
-          }
-          return index === opponentSeat ? choose(window) : rollout(seat, window);
-        }),
+            if (!reachedRoot) {
+              if (seat !== opponentSeat || informationKey(window) !== informationKey(root)) {
+                mismatch = true;
+                control.abort();
+                return rollout(seat, window);
+              }
+              reachedRoot = true;
+              await determinize(engine, opponentSeat, sampleSeed);
+            }
+            return index === opponentSeat ? choose(window) : rollout(seat, window);
+          },
+          undefined,
+          createReplayMainActionSource({
+            seat,
+            prefix,
+            cursor: () => cursor,
+            enabled: options.mcts?.reusePrefixActions !== false,
+            onReuse: () => {
+              restoration.reusedMainCatalogs++;
+            },
+            onEnumeration: () => {
+              restoration.enumeratedMainCatalogs++;
+            },
+          }),
+        ),
     }));
     const result = await runBotMatch({
       seed: options.seed,
@@ -126,6 +159,8 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
         if (
           seat === opponentSeat &&
           options.mcts !== undefined &&
+          transcript.length >= (options.mcts.startAfterDecisions ?? 0) &&
+          searches.length < (options.mcts.maxSearches ?? Number.POSITIVE_INFINITY) &&
           window.kind === "main" &&
           window.actions.length > 1 &&
           engine.state.pendingDecision === undefined &&
@@ -151,7 +186,15 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
           searches.push(search.report);
           options.onSearch?.(search.report);
         } else action = rollout(seat, window);
-        transcript.push({ seat, information: informationKey(window), action: actionKey(window, action) });
+        transcript.push({
+          seat,
+          kind: window.kind,
+          information: informationKey(window),
+          action: actionKey(window, action),
+          ...(window.kind === "main" && options.mcts !== undefined && options.mcts.reusePrefixActions !== false
+            ? { mainActions: structuredClone(window.actions) }
+            : {}),
+        });
         if (options.captureTraces && seat === options.learnerSeat && traces.length < 200) {
           const ranked = rankHeuristic(options.program, window);
           const choice = ranked.find((entry) => entry.index === action)!;
@@ -193,5 +236,6 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
     traces,
     searches,
     decisions: transcript.length,
+    restoration,
   };
 }

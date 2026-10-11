@@ -66,6 +66,29 @@ describe("live evolved bot integration", () => {
     ).toBeUndefined();
   });
 
+  it("routes historical pilots by exact card counts and refuses two aliases for the same deck", async () => {
+    const id = "bt8-blackwargreymon";
+    const deck = evolutionDeck(id).deck;
+    const pilot = { ...SEED_HEURISTIC, title: "BlackWarGreymon pilot" };
+    await startEvolvedBots(await catalog({ [id]: pilot }));
+    const engine = setupEngine().engine;
+    const opponent = randomDeck(1).deck;
+    expect(evolvedBotOptions({ engine, seat: 0, decks: [deck, opponent] })?.policy?.name).toBe(
+      "evolved:BlackWarGreymon pilot",
+    );
+    const modified = { ...deck, mainDeck: [...deck.mainDeck] };
+    modified.mainDeck[0] = "BT1-010";
+    expect(evolvedBotOptions({ engine, seat: 0, decks: [modified, opponent] })?.policy?.name).toBe(
+      `evolved:${SEED_HEURISTIC.title}`,
+    );
+    stopEvolvedBots();
+    await rm(directory!, { recursive: true, force: true });
+    await expect(startEvolvedBots(await catalog({ [id]: pilot, [`${id}@1`]: pilot }))).rejects.toThrow(
+      "Duplicate heuristic deck multiset",
+    );
+    expect(evolvedBotOptions({ engine, seat: 0, decks: [deck, opponent] })).toBeUndefined();
+  });
+
   it.each([0, 1] as const)(
     "finishes a real match in seat %s without fallback or projection leaks",
     async (learnerSeat) => {

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Client } from "colyseus";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { botPersonaForDeck } from "@aegis/shared/bot/personas/botPersonaForDeck";
 import { ALL_FAMOUS_DECKS } from "@aegis/shared/decks/index";
 import type { Intent } from "@aegis/shared/protocol/intents";
 import type { ServerEvent } from "@aegis/shared/protocol/events";
@@ -94,7 +95,8 @@ describe("evolved policy in practice rooms", () => {
     expect(worker).not.toHaveBeenCalled();
     const bot = (room as unknown as { bots: BotPlayer[] }).bots[1]!;
     expect(bot.policyName).toBe(`evolved:${program.title}`);
-    expect(room.state.players[1]!.displayName).toBe("Strategy Bot");
+    expect(room.state.players[1]!.displayName).toBe(botPersonaForDeck({ deckId }).displayName);
+    expect(room.state.players[1]!.botPersonaId).toBe(botPersonaForDeck({ deckId }).id);
     const internal = room as unknown as { handleIntent: (client: Client, intent: Intent) => void };
     internal.handleIntent(human, { type: "mulligan", keep: true });
     await vi.advanceTimersByTimeAsync(6_000);

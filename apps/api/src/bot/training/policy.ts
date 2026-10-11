@@ -67,6 +67,7 @@ export function createAsyncTrainingPolicy(
   seat: Seat,
   choose: ChooseAsyncTrainingAction,
   teacher?: BotPolicy,
+  mainActionSource?: () => TrainingAction[] | undefined,
 ): TrainingPolicy<Promise<Intent>> {
   return buildTrainingPolicy(
     engine,
@@ -83,6 +84,7 @@ export function createAsyncTrainingPolicy(
       return step.value;
     },
     teacher,
+    mainActionSource,
   );
 }
 
@@ -91,6 +93,7 @@ function buildTrainingPolicy<Result extends Intent | Promise<Intent>>(
   seat: Seat,
   run: (steps: TrainingSteps, signal?: AbortSignal) => Result,
   teacher?: BotPolicy,
+  mainActionSource?: () => TrainingAction[] | undefined,
 ): TrainingPolicy<Result> {
   const history = createObservationHistory();
   // The engine may accept a play whose pay-time reduction later proves unavailable. After that
@@ -209,7 +212,7 @@ function buildTrainingPolicy<Result extends Intent | Promise<Intent>>(
     chooseMainAction: (view, signal) =>
       take(
         "main",
-        mainActions(engine, seat).filter((action) => !rejectedNow(action)),
+        (mainActionSource?.() ?? mainActions(engine, seat)).filter((action) => !rejectedNow(action)),
         undefined,
         teacher?.chooseMainAction(view),
         signal,
