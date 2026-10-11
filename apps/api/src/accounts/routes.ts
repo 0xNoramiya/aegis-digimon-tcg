@@ -310,7 +310,7 @@ export function installAccountRoutes(
       res.status(400).json({ error: "invalid_query" });
       return;
     }
-    const { matches, total } = await store.matchHistory(session.account.id, query);
+    const { matches, total, winRate } = await store.matchHistory(session.account.id, query);
     const saved = await replays.forMatches(
       session.account.id,
       matches.map((match) => match.id),
@@ -319,6 +319,7 @@ export function installAccountRoutes(
     res.json({
       matches: matches.map((match) => ({ ...match, replay: saved.find((item) => item.matchId === match.id) ?? null })),
       total,
+      winRate,
       page: query.page,
       limit: query.limit,
       sharing: replays.sharing,

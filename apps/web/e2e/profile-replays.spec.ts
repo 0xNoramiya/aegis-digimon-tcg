@@ -102,8 +102,21 @@ async function setup(page: Page, { count = 37, dark = false } = {}) {
         (!mode || match.mode === mode) &&
         (!opponent || match.opponentName.toLowerCase().includes(opponent)),
     );
+    const humans = matches.filter(
+      (match) =>
+        match.opponentKind === "human" &&
+        match.mode !== "bot" &&
+        (!mode || match.mode === mode) &&
+        (!opponent || match.opponentName.toLowerCase().includes(opponent)),
+    );
     return route.fulfill({
       json: {
+        winRate: {
+          matches: humans.length,
+          wins: humans.filter((m) => m.result === "win").length,
+          losses: humans.filter((m) => m.result === "loss").length,
+          draws: humans.filter((m) => m.result === "draw").length,
+        },
         matches: selected.slice((number - 1) * limit, number * limit),
         total: selected.length,
         page: number,
@@ -167,7 +180,7 @@ for (const [width, dark] of [
     await expect(page.getByRole("heading", { name: "My profile", level: 1 })).toBeVisible();
     const identity = page.getByRole("region", { name: "My profile" });
     await expect(identity.getByText("Account connected")).toBeVisible();
-    await expect(identity.locator(".profile-stats")).toContainText("Matches37");
+    await expect(identity.locator(".profile-stats")).toContainText("Human matches28");
     await expect(identity.getByRole("link", { name: "Preferences" })).toHaveAttribute("href", "/settings");
     await expect(rows(page)).toHaveCount(25);
     await expect(page.getByText("Showing 1–25 of 37")).toBeVisible();

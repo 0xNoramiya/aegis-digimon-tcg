@@ -273,12 +273,22 @@ describe("GET /account/matches", () => {
     const first = await matches();
     expect(first.headers.get("cache-control")).toContain("no-store");
     const body = (await first.json()) as MatchHistoryPage;
-    expect(body).toMatchObject({ total: 30, page: 1, limit: 25, sharing: false });
+    expect(body).toMatchObject({
+      total: 30,
+      page: 1,
+      limit: 25,
+      sharing: false,
+      winRate: { matches: 30, wins: 15, losses: 15, draws: 0 },
+    });
     expect(body.matches).toHaveLength(25);
     expect(body.matches[0]).toMatchObject({ id: "match-29", replay: null });
     const second = (await (await matches("?page=2&limit=25")).json()) as MatchHistoryPage;
     expect(second.matches.map((match) => match.id)).toEqual(["match-4", "match-3", "match-2", "match-1", "match-0"]);
-    expect(await (await matches("?result=loss&limit=5")).json()).toMatchObject({ total: 15, limit: 5 });
+    expect(await (await matches("?result=loss&limit=5")).json()).toMatchObject({
+      total: 15,
+      limit: 5,
+      winRate: { matches: 30, wins: 15, losses: 15, draws: 0 },
+    });
     expect(await (await matches("?mode=ranked")).json()).toMatchObject({ matches: [], total: 0 });
     const searched = (await (
       await matches("?opponent=%20OPPONENT%20&mode=casual&result=win")

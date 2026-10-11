@@ -8,6 +8,7 @@ import {
   type MatchHistoryEntry,
   type MatchHistoryFilter,
   type MatchHistoryPage,
+  type MatchWinRate,
   type SavedReplay,
 } from "@aegis/shared";
 import { Avatar, Button } from "../design/primitives";
@@ -43,12 +44,14 @@ export function MatchHistory({
   opening,
   openError,
   onReplaysChange,
+  onWinRateChange,
 }: {
   onOpenFile: (file: Blob) => void;
   opening: boolean;
   openError?: TranslationKey;
   /** A replay was deleted, so the header totals are stale. */
   onReplaysChange?: () => void;
+  onWinRateChange: (rate: MatchWinRate | undefined) => void;
 }) {
   const { t } = useTranslation();
   const { provider } = useCloudReplays();
@@ -80,13 +83,17 @@ export function MatchHistory({
   useEffect(() => {
     let active = true;
     setHistory({ kind: "loading" });
+    onWinRateChange(undefined);
     accountApi
       .matches({ page, limit: MATCH_PAGE_SIZE, ...filter })
       .then((next) => {
         if (!active) return;
         const lastPage = Math.max(1, Math.ceil(next.total / next.limit));
         if (page > lastPage) setPage(lastPage);
-        else setHistory({ kind: "ready", page: next });
+        else {
+          setHistory({ kind: "ready", page: next });
+          onWinRateChange(next.winRate);
+        }
       })
       .catch(() => {
         if (active) setHistory({ kind: "failed" });
@@ -94,7 +101,7 @@ export function MatchHistory({
     return () => {
       active = false;
     };
-  }, [filter, page, reload]);
+  }, [filter, page, reload, onWinRateChange]);
 
   useEffect(() => {
     if (!pageChanged.current) return;

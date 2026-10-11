@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { MatchHistorySummary } from "@aegis/shared";
+import type { MatchHistorySummary, MatchWinRate } from "@aegis/shared";
 import type { PlayerIdentity } from "../design/primitives";
 import { useTranslation } from "../i18n";
 import { accountApi, type RemoteAccount } from "./client";
@@ -32,6 +32,13 @@ export function ProfileScreen({
   const { t } = useTranslation();
   const file = useReplayFile(onViewingChange);
   const [summary, setSummary] = useState<MatchHistorySummary>();
+  const [rate, setRate] = useState<{ accountId: string; counts: MatchWinRate | undefined }>();
+  const updateRate = useCallback(
+    (counts: MatchWinRate | undefined) => {
+      if (account) setRate({ accountId: account.id, counts });
+    },
+    [account?.id],
+  );
   const [summaryVersion, setSummaryVersion] = useState(0);
   const refreshSummary = useCallback(() => setSummaryVersion((value) => value + 1), []);
   useEffect(() => {
@@ -64,6 +71,7 @@ export function ProfileScreen({
         account={account}
         player={player}
         summary={summary}
+        rate={rate?.accountId === account?.id ? rate?.counts : undefined}
         onAccountChange={onAccountChange}
         onGuestChange={onGuestChange}
         onRefreshDiscordAvatar={onRefreshDiscordAvatar}
@@ -74,6 +82,8 @@ export function ProfileScreen({
         <>
           <DriveConnectCard signedIn />
           <MatchHistory
+            key={account.id}
+            onWinRateChange={updateRate}
             onOpenFile={(blob) => void file.open(blob)}
             opening={file.loading}
             openError={openError}

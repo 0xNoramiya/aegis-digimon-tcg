@@ -78,8 +78,12 @@ export interface MatchHistoryEntry extends MatchHistoryRecord {
   replay: SavedReplay | null;
 }
 
+/** Human opponents in retained history, scoped by mode/opponent and ignoring result/pagination. */
+export type MatchWinRate = Pick<MatchHistorySummary, "matches" | "wins" | "losses" | "draws">;
+
 /** `GET /account/matches`: one numbered page; `total` counts the matches the filter selects. */
 export interface MatchHistoryPage {
+  winRate: MatchWinRate;
   matches: MatchHistoryEntry[];
   total: number;
   page: number;

@@ -59,7 +59,7 @@ it("keeps the newest matches up to the cap, deduplicates rooms and isolates owne
   );
   const last = await page(owner.id, { page: 10, limit: 10 });
   expect(last.matches.at(-1)?.id).toBe(`replay-${extra}`);
-  expect(await page(other.id)).toEqual({ matches: [], total: 0 });
+  expect(await page(other.id)).toMatchObject({ matches: [], total: 0 });
 });
 
 it("never drops a match whose replay the player saved", async () => {
@@ -184,4 +184,41 @@ it("names a bot opponent and records a loss to it", async () => {
   expect((await page(owner.id)).matches).toMatchObject([
     { result: "loss", opponentKind: "bot", opponentName: "Agumon Unit", mode: "tournament" },
   ]);
+});
+
+// Discord 1558695961880952902: bots never contribute to profile win rate.
+it("counts only humans across history pages, respects mode/opponent and ignores result", async () => {
+  const { owner, other } = await owners();
+  const records: Partial<MatchRecord>[] = [
+    { result: "win", opponentName: "Rival" },
+    { result: "loss", opponentName: "Rival" },
+    { result: "draw", opponentName: "Rival" },
+    { result: "win", opponentKind: "bot", mode: "tournament" },
+    { result: "win", opponentKind: "human", mode: "bot" },
+    { result: "win", mode: "ranked", opponentName: "Other Rival" },
+  ];
+  for (const [index, changes] of records.entries())
+    await store.recordRecentMatch(owner.id, `rate-${index}`, {
+      ...record(index),
+      mode: "casual",
+      opponentKind: "human",
+      ...changes,
+    });
+  await store.recordRecentMatch(other.id, "other-rate", { ...record(99), mode: "casual", opponentKind: "human" });
+  expect((await page(owner.id, { limit: 1 })).winRate).toEqual({ matches: 4, wins: 2, losses: 1, draws: 1 });
+  expect((await page(owner.id, { limit: 1, page: 2, result: "loss" })).winRate).toEqual({
+    matches: 4,
+    wins: 2,
+    losses: 1,
+    draws: 1,
+  });
+  expect((await page(owner.id, { mode: "casual", opponent: "RIVAL", result: "win" })).winRate).toEqual({
+    matches: 3,
+    wins: 1,
+    losses: 1,
+    draws: 1,
+  });
+  for (const filter of [{ mode: "bot" as const }, { mode: "tournament" as const }, { opponent: "nobody" }])
+    expect((await page(owner.id, filter)).winRate).toEqual({ matches: 0, wins: 0, losses: 0, draws: 0 });
+  expect((await page(other.id)).winRate).toEqual({ matches: 1, wins: 1, losses: 0, draws: 0 });
 });

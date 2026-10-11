@@ -1,5 +1,5 @@
 import { useId, useRef, useState, type FormEvent } from "react";
-import type { MatchHistorySummary } from "@aegis/shared";
+import type { MatchHistorySummary, MatchWinRate } from "@aegis/shared";
 import { Avatar, Badge, type PlayerIdentity } from "../design/primitives";
 import { Icons } from "../design/icons";
 import { useTranslation, type TranslationKey } from "../i18n";
@@ -23,6 +23,7 @@ export function ProfileIdentity({
   account,
   player,
   summary,
+  rate,
   onAccountChange,
   onGuestChange,
   onRefreshDiscordAvatar,
@@ -30,6 +31,7 @@ export function ProfileIdentity({
   account: RemoteAccount | null | undefined;
   player: PlayerIdentity;
   summary: MatchHistorySummary | undefined;
+  rate: MatchWinRate | undefined;
   onAccountChange?: (account: RemoteAccount) => void;
   onGuestChange?: (name: string, avatarId: DigimonWorldAvatarId | null) => void;
   onRefreshDiscordAvatar?: () => Promise<void>;
@@ -94,14 +96,14 @@ export function ProfileIdentity({
     onAccountChange?.({ ...account, ...(await accountApi.updateAvatar(avatarChoice(selection, true))) });
   }
 
-  const winRate = summary?.matches
+  const winRate = rate?.matches
     ? new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(
-        summary.wins / summary.matches,
+        rate.wins / (rate.wins + rate.losses + rate.draws),
       )
     : "—";
   const stats: { key: TranslationKey; value: string | number }[] = [
-    { key: "profile.stats.matches", value: summary?.matches ?? "—" },
-    { key: "profile.stats.wins", value: summary?.wins ?? "—" },
+    { key: "profile.stats.humanMatches", value: rate?.matches ?? "—" },
+    { key: "profile.stats.humanWins", value: rate?.wins ?? "—" },
     { key: "profile.stats.winRate", value: winRate },
     { key: "profile.stats.replays", value: summary?.replaysSaved ?? "—" },
   ];
@@ -198,14 +200,17 @@ export function ProfileIdentity({
         </a>
       </div>
       {account ? (
-        <dl className="profile-stats">
-          {stats.map((stat) => (
-            <div key={stat.key}>
-              <dt>{t(stat.key)}</dt>
-              <dd>{stat.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <>
+          <dl className="profile-stats">
+            {stats.map((stat) => (
+              <div key={stat.key}>
+                <dt>{t(stat.key)}</dt>
+                <dd>{stat.value}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="profile-rate-hint">{t("profile.stats.rateScope")}</p>
+        </>
       ) : null}
       {menuOpen ? (
         <AvatarMenu
