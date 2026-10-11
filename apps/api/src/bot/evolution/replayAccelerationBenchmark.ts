@@ -8,6 +8,7 @@ process.stdout.write = process.stderr.write.bind(process.stderr);
 const { runEvolutionMatch } = await import("#api/bot/evolution/evolutionMatch");
 const { SEED_HEURISTIC } = await import("#api/bot/evolution/heuristic");
 const { randomDeck } = await import("#api/bot/evolution/randomDecks");
+const { evolutionDeck } = await import("#api/bot/evolution/decks");
 
 async function main(): Promise<void> {
   const input = JSON.parse(readFileSync(0, "utf8")) as {
@@ -17,7 +18,23 @@ async function main(): Promise<void> {
     repetitions?: number;
     mode?: "single-search-after-prefix" | "full-game";
     startAfterDecisions?: number;
+    decks?: [string | number, string | number];
   };
+  const deckKeys = input.decks ?? [1, 2];
+  if (!Array.isArray(deckKeys) || deckKeys.length !== 2)
+    throw new Error("Benchmark requires exactly two deck identities");
+  const resolveDeck = (key: string | number) => {
+    if (typeof key === "string") return evolutionDeck(key);
+    if (!Number.isSafeInteger(key) || key < 0 || key > 0xffffffff)
+      throw new Error("Random benchmark deck seeds must be unsigned32-bit integers");
+    const source = randomDeck(key);
+    return {
+      ...source,
+      name: source.id,
+      sha256: createHash("sha256").update(JSON.stringify(source.deck)).digest("hex"),
+    };
+  };
+  const decks = [resolveDeck(deckKeys[0]!), resolveDeck(deckKeys[1]!)] as const;
   const repetitions = input.repetitions ?? 2;
   const mode = input.mode ?? "single-search-after-prefix";
   if (mode !== "single-search-after-prefix" && mode !== "full-game") throw new Error("Unknown benchmark mode");
@@ -34,7 +51,7 @@ async function main(): Promise<void> {
     const result = await runEvolutionMatch({
       seed: input.seed ?? 42,
       learnerSeat: input.learnerSeat ?? 0,
-      decks: [randomDeck(1).deck, randomDeck(2).deck],
+      decks: [decks[0].deck, decks[1].deck],
       program: SEED_HEURISTIC,
       mcts: {
         simulations,
@@ -83,7 +100,7 @@ async function main(): Promise<void> {
     return sample;
   };
   const warmup: Awaited<ReturnType<typeof run>>[] = [];
-  for (const enabled of [false, true]) warmup.push(await run(enabled, 8, 0, "warmup"));
+  for (const enabled of [false, true]) warmup.push(await run(enabled, input.simulations, 0, "warmup"));
   if (warmup[0]!.identity !== warmup[1]!.identity)
     throw new Error("Prefix acceleration changed the warm-up seeded game, actions or search report");
   const samples: Awaited<ReturnType<typeof run>>[] = [];
@@ -106,12 +123,13 @@ async function main(): Promise<void> {
       ...(mode === "single-search-after-prefix" ? { startAfterDecisions, maxSearches: 1 } : {}),
       seed: input.seed ?? 42,
       learnerSeat: input.learnerSeat ?? 0,
+      decks: decks.map(({ id, name, sha256 }) => ({ id, name, sha256 })),
       repetitions,
       warmup: {
         mode: "single-search-after-prefix",
         startAfterDecisions,
         maxSearches: 1,
-        simulations: 8,
+        simulations: input.simulations,
         excludedFromTiming: true,
         samples: warmup,
       },
