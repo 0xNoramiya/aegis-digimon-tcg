@@ -1,0 +1,348 @@
+"""Random-deck GEPA training followed by frozen-archive deck-pilot coevolution."""
+
+import hashlib
+import json
+import shutil
+import subprocess
+from copy import deepcopy
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+import click
+import gepa
+
+from adapter import EvaluationConfig, HeuristicAdapter, REFLECTION_TEMPLATE
+from session_reflection import SessionReflection
+
+
+def task_sets(
+    deck_versions: list[str],
+    pilot: str | None,
+    archive: dict[str, dict[str, Any]],
+    pairs: int,
+    generation: int,
+) -> dict[str, list[dict[str, Any]]]:
+    splits = {}
+    for split_index, split in enumerate(("train", "validation", "test")):
+        tasks = []
+        for pair in range(pairs):
+            seed = 100 + generation * 1000000 + split_index * 10000 + pair
+            random_base = 1 + split_index * 10000 + pair * 2
+            for learner_seat in (0, 1):
+                if pilot is None:
+                    decks: list[str | int] = [random_base, random_base + 1]
+                else:
+                    other = deck_versions[
+                        (deck_versions.index(pilot) + pair + 1) % len(deck_versions)
+                    ]
+                    decks = [pilot, other] if learner_seat == 0 else [other, pilot]
+                task = {
+                    "seed": seed,
+                    "learnerSeat": learner_seat,
+                    "decks": decks,
+                    "opponent": "mcts",
+                    "searchSeed": 777 + split_index * 10000 + pair,
+                }
+                tasks.append(task)
+                if pilot is not None:
+                    # Freeze every opponent at generation start: later pilots cannot
+                    # silently change the opponents used to score an earlier pilot.
+                    other_version = str(decks[1 - learner_seat])
+                    tasks.append(
+                        {
+                            **task,
+                            "opponent": "heuristic",
+                            "opponentProgram": deepcopy(archive[other_version]),
+                        }
+                    )
+        splits[split] = tasks
+    seed_sets = [{task["seed"] for task in tasks} for tasks in splits.values()]
+    if any(seed_sets[left] & seed_sets[right] for left in range(3) for right in range(left)):
+        raise ValueError("Training, selection, and final test game seeds overlap")
+    return splits
+
+
+def optimize_stage(
+    *,
+    stage: str,
+    initial: dict[str, Any],
+    splits: dict[str, list[dict[str, Any]]],
+    run_dir: Path,
+    metadata: dict[str, Any],
+    node: str,
+    simulations: int,
+    metric_calls: int,
+    reflection_model: str,
+) -> dict[str, Any]:
+    stage_dir = run_dir / stage
+    result_path = stage_dir / "selected.json"
+    stage_fingerprint = hashlib.sha256(
+        json.dumps(
+            {
+                "initial": initial,
+                "splits": splits,
+                "runnerSha256": metadata["runnerSha256"],
+                "engineSha256": metadata["engineSha256"],
+                "simulations": simulations,
+                "metricCalls": metric_calls,
+                "reflectionModel": reflection_model,
+            },
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()
+    if result_path.is_file():
+        selected = json.loads(result_path.read_text(encoding="utf-8"))
+        if selected.get("stageSha256") != stage_fingerprint:
+            raise ValueError("Resumed stage inputs or runner changed; use a new run directory")
+        return selected
+    adapter = HeuristicAdapter(
+        EvaluationConfig(
+            node=node,
+            worker=Path(metadata["worker"]),
+            run_dir=stage_dir / "games",
+            engine_sha256=metadata["engineSha256"],
+            simulations=simulations,
+            desktop_host=metadata.get("desktopHost"),
+            timeout=metadata["evaluationTimeout"],
+        ),
+        metadata,
+    )
+    stage_dir.mkdir(parents=True, exist_ok=True)
+    (stage_dir / "splits.json").write_text(json.dumps(splits, indent=2) + "\n", encoding="utf-8")
+    click.echo(f"Optimizing {stage}: {simulations} MCTS simulations per search", err=True)
+    result = gepa.optimize(
+        seed_candidate={"heuristic": json.dumps(initial)},
+        trainset=splits["train"],
+        valset=splits["validation"],
+        adapter=adapter,
+        reflection_lm=(
+            SessionReflection(stage_dir / "reflections")
+            if reflection_model == "session"
+            else reflection_model
+        ),
+        reflection_prompt_template=REFLECTION_TEMPLATE,
+        reflection_minibatch_size=2,
+        max_metric_calls=metric_calls,
+        run_dir=str(stage_dir / "gepa"),
+        seed=71,
+        skip_perfect_score=False,
+        cache_evaluation=True,
+        display_progress_bar=False,
+        raise_on_exception=True,
+    )
+    (stage_dir / "gepa-result.json").write_text(
+        json.dumps(result.to_dict(), indent=2) + "\n", encoding="utf-8"
+    )
+    selected = {
+        "stage": stage,
+        "stageSha256": stage_fingerprint,
+        "program": json.loads(result.best_candidate["heuristic"]),
+        "validationScore": result.val_aggregate_scores[result.best_idx],
+        "candidates": result.num_candidates,
+        "selectedIndex": result.best_idx,
+        "metricCalls": result.total_metric_calls,
+        "engineSha256": metadata["engineSha256"],
+    }
+    result_path.write_text(json.dumps(selected, indent=2) + "\n", encoding="utf-8")
+    return selected
+
+
+def final_evaluation(
+    *,
+    stages: dict[str, dict[str, Any]],
+    run_dir: Path,
+    metadata: dict[str, Any],
+    node: str,
+    simulations: int,
+    pairs: int,
+    generations: int,
+) -> dict[str, Any]:
+    archive = {
+        version: stage["program"] for version, stage in stages.items() if version != "generic"
+    }
+    results = {}
+    for version, selected in stages.items():
+        splits = task_sets(
+            metadata["deckVersions"],
+            None if version == "generic" else version,
+            archive,
+            pairs,
+            generations + 1,
+        )
+        adapter = HeuristicAdapter(
+            EvaluationConfig(
+                node=node,
+                worker=Path(metadata["worker"]),
+                run_dir=run_dir / "held-out" / version,
+                engine_sha256=metadata["engineSha256"],
+                simulations=simulations,
+                desktop_host=metadata.get("desktopHost"),
+                timeout=metadata["evaluationTimeout"],
+            ),
+            metadata,
+        )
+        tasks = splits["test"]
+        # The initial policy is a paired control on the identical held-out games.
+        chosen = adapter.evaluate(tasks, {"heuristic": json.dumps(selected["program"])}, True)
+        control = adapter.evaluate(tasks, {"heuristic": json.dumps(metadata["seedProgram"])}, False)
+        results[version] = {
+            "selected": chosen.outputs,
+            "control": control.outputs,
+            "selectedScore": sum(chosen.scores) / len(chosen.scores),
+            "controlScore": sum(control.scores) / len(control.scores),
+            "allValid": all(
+                output.get("valid") is True for output in chosen.outputs + control.outputs
+            ),
+        }
+    report = {
+        "schemaVersion": 1,
+        "engineSha256": metadata["engineSha256"],
+        "runnerSha256": metadata["runnerSha256"],
+        "evaluationTimeout": metadata["evaluationTimeout"],
+        "simulations": simulations,
+        "results": results,
+    }
+    (run_dir / "held-out.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    return report
+
+
+@click.command()
+@click.option("--run-dir", type=click.Path(path_type=Path), required=True)
+@click.option("--node", default="node", show_default=True)
+@click.option(
+    "--desktop-host", default=None, help="SSH host for the Windows/WSL desktop evaluator."
+)
+@click.option("--worker", "worker_override", type=click.Path(path_type=Path), default=None)
+@click.option(
+    "--evaluation-timeout", default=7200, type=click.IntRange(60, 86400), show_default=True
+)
+@click.option("--simulations", default=256, type=click.IntRange(1, 10000), show_default=True)
+@click.option("--metric-calls", default=24, type=click.IntRange(12, 10000), show_default=True)
+@click.option("--pairs", default=2, type=click.IntRange(1, 100), show_default=True)
+@click.option("--generations", default=2, type=click.IntRange(1, 100), show_default=True)
+@click.option("--reflection-model", default="openai/gpt-4.1", show_default=True)
+def main(
+    run_dir: Path,
+    node: str,
+    desktop_host: str | None,
+    worker_override: Path | None,
+    simulations: int,
+    evaluation_timeout: int,
+    metric_calls: int,
+    pairs: int,
+    generations: int,
+    reflection_model: str,
+) -> None:
+    root = Path(__file__).parent.parent.parent
+    worker = worker_override or root / "apps/api/dist/bot/evolution/evaluateCli.js"
+    if desktop_host is None and (shutil.which(node) is None or not worker.is_file()):
+        raise click.ClickException("Node and a compiled API evolution worker are required")
+    if metric_calls < pairs * 2 + 8:
+        raise click.ClickException(
+            "Metric budget must cover initial validation and a reflective mutation"
+        )
+    command = [node, str(worker), "--describe"]
+    if desktop_host is not None:
+        command = ["ssh", "-o", "BatchMode=yes", desktop_host, "wsl.exe", "-e", *command]
+    description = subprocess.run(command, check=True, capture_output=True, text=True, timeout=60)
+    metadata = {
+        **json.loads(description.stdout),
+        "worker": str(worker),
+        "desktopHost": desktop_host,
+        "evaluationTimeout": evaluation_timeout,
+        "runnerSha256": hashlib.sha256(
+            b"".join(
+                path.name.encode("utf-8") + b"\0" + path.read_bytes()
+                for path in sorted(Path(__file__).parent.iterdir())
+                if path.name
+                in ("adapter.py", "evolve.py", "session_reflection.py", "pyproject.toml", "uv.lock")
+            )
+        ).hexdigest(),
+    }
+    config = {
+        "engineSha256": metadata["engineSha256"],
+        "runnerSha256": metadata["runnerSha256"],
+        "evaluationTimeout": evaluation_timeout,
+        "simulations": simulations,
+        "metricCalls": metric_calls,
+        "pairs": pairs,
+        "generations": generations,
+        "reflectionModel": reflection_model,
+        "deckVersions": metadata["deckVersions"],
+    }
+    config_sha256 = hashlib.sha256(json.dumps(config, sort_keys=True).encode("utf-8")).hexdigest()
+    run_dir.mkdir(parents=True, exist_ok=True)
+    manifest_path = run_dir / "manifest.json"
+    if manifest_path.is_file():
+        existing = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if existing["configurationSha256"] != config_sha256:
+            raise click.ClickException(
+                "Run configuration or engine changed; use a new run directory"
+            )
+    else:
+        manifest_path.write_text(
+            json.dumps(
+                {
+                    "configurationSha256": config_sha256,
+                    "config": config,
+                    "createdAt": datetime.now(UTC).isoformat(),
+                    "metadata": metadata,
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+    generic = optimize_stage(
+        stage="generic",
+        initial=metadata["seedProgram"],
+        splits=task_sets(metadata["deckVersions"], None, {}, pairs, 0),
+        run_dir=run_dir,
+        metadata=metadata,
+        node=node,
+        simulations=simulations,
+        metric_calls=metric_calls,
+        reflection_model=reflection_model,
+    )
+    pilots = {version: generic for version in metadata["deckVersions"]}
+    for generation in range(1, generations + 1):
+        archive = {version: selected["program"] for version, selected in pilots.items()}
+        next_pilots = {}
+        for index, version in enumerate(metadata["deckVersions"]):
+            next_pilots[version] = optimize_stage(
+                stage=f"generation-{generation}-pilot-{index}",
+                initial=pilots[version]["program"],
+                splits=task_sets(metadata["deckVersions"], version, archive, pairs, generation),
+                run_dir=run_dir,
+                metadata=metadata,
+                node=node,
+                simulations=simulations,
+                metric_calls=metric_calls,
+                reflection_model=reflection_model,
+            )
+        pilots = next_pilots
+    report = final_evaluation(
+        stages={"generic": generic, **pilots},
+        run_dir=run_dir,
+        metadata=metadata,
+        node=node,
+        simulations=simulations,
+        pairs=pairs,
+        generations=generations,
+    )
+    (run_dir / "pilots.json").write_text(
+        json.dumps({"generic": generic, **pilots}, indent=2) + "\n", encoding="utf-8"
+    )
+    click.echo(
+        json.dumps(
+            {
+                "run": str(run_dir),
+                "allValid": all(result["allValid"] for result in report["results"].values()),
+            }
+        )
+    )
+
+
+if __name__ == "__main__":
+    main()

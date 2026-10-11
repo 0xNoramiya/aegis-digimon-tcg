@@ -1,0 +1,102 @@
+# GEPA heuristic evolution
+
+The official GEPA package evolves bounded JSON heuristics; the TypeScript
+interpreter scores legal engine actions. Each rule contains plain English advice
+for future strategy-guide publication. Candidate code is never executed.
+
+The runner first trains a generic policy on composed random decks, then
+coevolves Glowing Dawn and Toho Braves pilots. Each generation freezes an archive
+of the other pilots; pilots face both that archive and an information-set MCTS
+opponent. Training, model selection, and final evaluation use disjoint seeds.
+Final evaluations compare the selected and initial policies on the same tasks.
+The default search budget is 256 completed real-engine rollouts per main choice.
+Incomplete search budgets, policy fallbacks, rejected intents, and truncated
+games cannot produce valid fitness results.
+
+MCTS reconstructs the engine by exact replay, then samples hidden copies uniformly
+over unknown deck/hand/security slots under an open-decklist assumption. The
+observer's hand, public zones, and face-up security stay fixed. Future shuffle
+streams are resampled. This belief discards remembered hidden locations and
+ordered-deck knowledge, rather than pinning cards to privileged server locations.
+The other seat uses the candidate heuristic during rollouts. Search expands one
+new edge per rollout and uses UCT and terminal-game reward backpropagation.
+
+Search is currently applied to settled Main windows; other windows use the
+rollout heuristic. Full engine replay is expensive. Logs report actual completed
+and rejected simulations, and the run directory pins the compiled engine hash.
+A low-budget smoke run is development evidence, not a validated strategy guide.
+
+## Desktop execution
+
+The user's Windows desktop is SSH host `desktop`, reached through Tailscale.
+Run engine tests and simulations inside its WSL checkout with the provisioned
+Node 26 environment `/home/vinicius/aegis-bot-lab/env.sh`. Keep each SSH/WSL job
+attached until completion. Use one Vitest worker and a bounded Node heap.
+
+LLM reflection can remain on the local machine while complete evaluations run on
+the desktop. This keeps API credentials local, and sends one JSON configuration
+per game over SSH, rather than transferring every action over the network.
+
+Install Python dependencies with `uv sync --group dev` in this directory. For
+the current isolated desktop checkout:
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/evolve.py \
+  --run-dir artifacts/bot-evolution/desktop-gepa-final-256 \
+  --desktop-host desktop \
+  --node /home/vinicius/aegis-bot-lab/toolchain/node-v26.10.0-linux-x64/bin/node \
+  --worker /home/vinicius/aegis-bot-lab/checkouts/gepa-2026-10-10-v2/apps/api/dist/bot/evolution/evaluateCli.js \
+  --simulations 256 --metric-calls 24 --pairs 2 --generations 2 \
+  --reflection-model session
+```
+
+The configured reflection model defaults to `openai/gpt-4.1`. Its credentials
+are supplied through the local environment. A run directory can be resumed only
+with the same engine and parameters; completed stage artifacts are reused and
+GEPA retains its own checkpoint state. Use a fresh directory after code changes.
+Raw games, stderr logs, selected pilots, lineage, and held-out results remain
+under the ignored run directory.
+
+The training action and material-selection modules were adapted from
+`feat/bot-bt26-chronomon` at `a2692dcbdf`. Its deployment changes were not imported.
+
+## Research and current limits
+
+- [GEPA adapter protocol](https://gepa-ai.github.io/gepa/guides/adapters/) and
+  [official implementation](https://github.com/gepa-ai/gepa).
+- [Information Set Monte Carlo Tree Search](https://pure.york.ac.uk/portal/en/publications/information-set-monte-carlo-tree-search/).
+- [DCG Nexus](https://dcg-nexus.com/) lists Toho Braves and Glowing Dawn among
+  its tracked archetypes for 27 September–4 October 2026 (checked 10 October).
+  The exact pilot decks are pinned repository tournament lists, not claims that
+  these lists are the strongest current builds.
+
+The integration is implemented and under validation. A completed high-budget
+evolution run, held-out strength validation, and user-facing publication are
+still required. No guides are published by this runner yet.
+
+## Guide publication
+
+After the high-budget run completes, publish its selected policies and paired
+held-out results to static HTML (crawlable without JavaScript):
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/publish.py \
+  --run-dir artifacts/bot-evolution/desktop-gepa-final-256 \
+  --base-url https://aegis-digi.online
+```
+
+The publisher requires matching engine/policy fingerprints, both player seats,
+valid final games, and complete search budgets of at least 128 rollouts. It
+refuses low-budget smoke results. Publication preserves every active rule's
+exact advice and conditions, exposes benchmark denominators and the paired
+starting-policy control, and links to Aegis practice. Generated pages live in
+`apps/web/public/strategy-guides/`; deploying those pages is a separate delivery
+step. No raw game traces or hidden observations are published.
+
+If an external reflection provider is unavailable, `--reflection-model session`
+uses the active coding session as the proposer. GEPA writes each exact prompt
+under the stage's `reflections/` directory and waits for a matching response
+fingerprint. The coding session reviews the real feedback and supplies a fenced
+JSON candidate. These prompt/response records make the provenance explicit;
+this mode does not claim an external API model produced the candidate. The
+same GEPA selection, real-engine evaluations, and held-out gates still apply.

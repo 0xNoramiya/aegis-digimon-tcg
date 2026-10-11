@@ -1,4 +1,4 @@
-import { CardKind } from "@aegis/shared";
+import { CardKind, getCardDefinition } from "@aegis/shared";
 import type { TrainingWindow } from "../training/policy.js";
 
 /** GEPA evolves data, never executable code. Guides come from these same rules. */
@@ -31,12 +31,30 @@ export const FEATURES = [
   "finish",
   "pass",
   "openingRookie",
+  "activate",
+  "sourceInHand",
+  "sourceInTrash",
+  "sourceOnBoard",
+  "sourceOpponent",
+  "sourceValue",
+  "digiXros",
+  "assembly",
+  "dnaDigivolve",
+  "appFusion",
+  "link",
+  "materials",
 ] as const;
 export type Feature = (typeof FEATURES)[number];
 export interface HeuristicRule {
   feature: Feature;
   weight: number;
   advice: string;
+  when?: {
+    kind?: string;
+    sourceCardIds?: string[];
+    minimum?: Partial<Record<Feature, number>>;
+    maximum?: Partial<Record<Feature, number>>;
+  };
 }
 export interface HeuristicProgram {
   schemaVersion: 1;
@@ -68,6 +86,30 @@ export function parseHeuristic(value: unknown): HeuristicProgram {
       rule.advice.length > 600
     )
       throw new Error("Invalid heuristic rule");
+    if (rule.when !== undefined) {
+      if (
+        typeof rule.when !== "object" ||
+        rule.when === null ||
+        (rule.when.kind !== undefined && (typeof rule.when.kind !== "string" || rule.when.kind.length > 80)) ||
+        (rule.when.sourceCardIds !== undefined &&
+          (!Array.isArray(rule.when.sourceCardIds) ||
+            rule.when.sourceCardIds.length > 100 ||
+            !rule.when.sourceCardIds.every((id) => typeof id === "string" && getCardDefinition(id) !== undefined)))
+      )
+        throw new Error("Invalid heuristic condition");
+      for (const bounds of [rule.when.minimum, rule.when.maximum]) {
+        if (bounds === undefined) continue;
+        if (
+          typeof bounds !== "object" ||
+          bounds === null ||
+          Array.isArray(bounds) ||
+          Object.entries(bounds).some(
+            ([feature, limit]) => !FEATURES.includes(feature as Feature) || !Number.isFinite(limit),
+          )
+        )
+          throw new Error("Invalid heuristic feature bound");
+      }
+    }
   }
   return { schemaVersion: 1, title: program.title, rules: program.rules.map((rule) => ({ ...rule })) };
 }
@@ -80,9 +122,9 @@ export function actionFeatures(window: TrainingWindow, index: number): Record<Fe
   const enemy = window.observation.players.find((player) => player.seat !== window.observation.seat)!;
   const ownUnits = [...own.board, ...(own.breeding === undefined ? [] : [own.breeding])];
   const units = [...ownUnits, ...enemy.board];
-  const source = units.find((unit) => unit.permanentId === action.sourceId);
+  const source = units.find((unit) => unit.permanentId === action.sourceId || unit.top.instanceId === action.sourceId);
   const target = units.find((unit) => unit.permanentId === action.targetId);
-  const card = [...own.hand, ...own.trash, ...window.observation.revealed].find(
+  const card = [...visibleCards(window), ...window.observation.revealed].find(
     (entry) => entry.instanceId === action.sourceId,
   );
   features.bias = 1;
@@ -90,6 +132,16 @@ export function actionFeatures(window: TrainingWindow, index: number): Record<Fe
   features.handover = Math.max(0, features.cost - window.observation.memory);
   features.sourceLevel = source?.top.level ?? card?.level ?? 0;
   features.sourceDp = (source?.dp ?? card?.dp ?? 0) / 1000;
+  features.sourceInHand = Number(own.hand.some((entry) => entry.instanceId === action.sourceId));
+  features.sourceInTrash = Number(
+    window.observation.players.some((player) => player.trash.some((entry) => entry.instanceId === action.sourceId)),
+  );
+  features.sourceOnBoard = Number(source !== undefined && !source.inBreeding);
+  features.sourceOpponent = Number(
+    enemy.board.some((unit) => unit.permanentId === action.sourceId || unit.top.instanceId === action.sourceId) ||
+      enemy.trash.some((entry) => entry.instanceId === action.sourceId),
+  );
+  features.sourceValue = features.sourceDp + features.sourceLevel + (card?.playCost ?? source?.top.playCost ?? 0) / 10;
   features.targetDp = (target?.dp ?? 0) / 1000;
   features.ownSecurity = own.securityCount;
   features.opponentSecurity = enemy.securityCount;
@@ -120,11 +172,18 @@ export function actionFeatures(window: TrainingWindow, index: number): Record<Fe
   features.hatch = Number(intent.type === "hatchEgg");
   features.deploy = Number(intent.type === "moveFromBreeding");
   features.pass = Number(intent.type === "endPhase");
+  features.activate = Number(intent.type === "activateEffect");
+  features.digiXros = Number(intent.type === "playCard" && intent.digiXros !== undefined);
+  features.assembly = Number(intent.type === "playCard" && intent.assembly !== undefined);
+  features.dnaDigivolve = Number(intent.type === "dnaDigivolve");
+  features.appFusion = Number(intent.type === "appFusion");
+  features.link = Number(intent.type === "linkCard");
+  features.materials = action.materialIds?.length ?? 0;
   features.block = Number(intent.type === "declareBlock");
   features.criticalBlock = Number(
     intent.type === "declareBlock" && window.combat?.targetsPlayer === true && own.securityCount === 0,
   );
-  features.finish = Number(action.label === "Finish selection");
+  features.finish = Number(action.label === "Finish selection" || action.label === "Finish Assembly");
   if (intent.type === "respondEvade" || intent.type === "respondBarrier") features.accept = Number(intent.accept);
   if (intent.type === "respondDecision" && intent.response.kind === "optional")
     features.accept = Number(intent.response.accept);
@@ -133,11 +192,51 @@ export function actionFeatures(window: TrainingWindow, index: number): Record<Fe
   return features;
 }
 
+function visibleCards(window: TrainingWindow) {
+  return window.observation.players.flatMap((player) => [
+    ...player.hand,
+    ...player.trash,
+    ...player.delay,
+    ...player.faceUpSecurity,
+    ...[...player.board, ...(player.breeding === undefined ? [] : [player.breeding])].flatMap((unit) => [
+      unit.top,
+      ...unit.stack,
+      ...unit.linked,
+    ]),
+  ]);
+}
+
+export function actionCardId(window: TrainingWindow, index: number): string | undefined {
+  const action = window.actions[index]!;
+  return (
+    [...visibleCards(window), ...window.observation.revealed].find((card) => card.instanceId === action.sourceId)
+      ?.cardId ??
+    window.observation.players
+      .flatMap((player) => [...player.board, ...(player.breeding === undefined ? [] : [player.breeding])])
+      .find((unit) => unit.permanentId === action.sourceId)?.top.cardId
+  );
+}
+
 export function rankHeuristic(program: HeuristicProgram, window: TrainingWindow) {
   return window.actions
     .map((_, index) => {
       const features = actionFeatures(window, index);
-      const contributions = program.rules.map((rule) => ({ ...rule, value: features[rule.feature] * rule.weight }));
+      const sourceCardId = actionCardId(window, index);
+      const contributions = program.rules.map((rule) => {
+        const condition = rule.when;
+        const matches =
+          condition === undefined ||
+          ((condition.kind === undefined || condition.kind === window.kind) &&
+            (condition.sourceCardIds === undefined ||
+              (sourceCardId !== undefined && condition.sourceCardIds.includes(sourceCardId))) &&
+            Object.entries(condition.minimum ?? {}).every(
+              ([feature, limit]) => features[feature as Feature] >= limit!,
+            ) &&
+            Object.entries(condition.maximum ?? {}).every(
+              ([feature, limit]) => features[feature as Feature] <= limit!,
+            ));
+        return { ...rule, value: matches ? features[rule.feature] * rule.weight : 0 };
+      });
       return { index, score: contributions.reduce((total, rule) => total + rule.value, 0), contributions };
     })
     .sort((left, right) => right.score - left.score || left.index - right.index);

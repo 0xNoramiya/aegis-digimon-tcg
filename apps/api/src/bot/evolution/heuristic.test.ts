@@ -7,6 +7,31 @@ import { actionFeatures, chooseHeuristic, parseHeuristic, SEED_HEURISTIC } from 
 import "../../cards/index.js";
 
 describe("evolved heuristic interpreter", () => {
+  it("applies a deck-specific preference only in its declared context", async () => {
+    const setup = setupEngine({ 0: { hand: ["BT1-010", "BT1-011"] } });
+    await setup.ready();
+    const window: TrainingWindow = {
+      observation: trainingObservation(setup.state, 0),
+      kind: "main",
+      selected: [],
+      actions: mainActions(setup.engine, 0),
+    };
+    const program = parseHeuristic({
+      schemaVersion: 1,
+      title: "Conditional pilot",
+      rules: [
+        {
+          feature: "bias",
+          weight: 10,
+          advice: "Prioritize this rookie when affordable.",
+          when: { kind: "main", sourceCardIds: ["BT1-010"], maximum: { cost: 3 } },
+        },
+      ],
+    });
+    const choice = window.actions[chooseHeuristic(program, window)]!;
+    expect(choice.sourceId).toBe(setup.state.players[0]!.hand.find((card) => card.cardId === "BT1-010")!.instanceId);
+    expect(chooseHeuristic(program, { ...window, kind: "different" })).toBe(0);
+  });
   it("rejects unknown features, nonfinite weights, and missing guide text", () => {
     for (const rule of [
       { feature: "readOpponentHand", weight: 1, advice: "Cheat" },
