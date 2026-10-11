@@ -6,7 +6,47 @@ from pathlib import Path
 
 import pytest
 
-from publish import publish, verified_run
+from publish import context, publish, verified_run
+
+
+def test_guide_conditions_use_card_names_real_dp_and_plain_english() -> None:
+    text = context(
+        {
+            "when": {
+                "kind": "main",
+                "sourceCardIds": ["BT11-112"],
+                "minimum": {"sourceDp": 12, "attackPlayer": 1, "handover": 1},
+                "maximum": {"opponentSecurity": 0},
+            }
+        },
+        {"BT11-112": {"name": "Rina Shinomiya"}},
+    )
+    assert "Rina Shinomiya (BT11-112)" in text
+    assert "During your main phase" in text
+    assert "selected card's DP is at least 12000 DP" in text
+    assert "When the action attacks the opposing player" in text
+    assert "memory given to the opponent is at least 1" in text
+    assert "opponent's security count is at most 0" in text
+    assert "sourceDp" not in text
+    assert "attackPlayer" not in text
+
+
+def test_boolean_conditions_preserve_fractional_and_impossible_bounds() -> None:
+    assert context({"when": {"minimum": {"attackPlayer": 0.5}}}) == (
+        "When the action attacks the opposing player"
+    )
+    assert context({"when": {"maximum": {"attackPlayer": 0}}}) == (
+        "When it is false that the action attacks the opposing player"
+    )
+    assert context({"when": {"minimum": {"attackPlayer": 2}}}) == (
+        "This condition cannot match an action"
+    )
+    assert context({"when": {"minimum": {"attackPlayer": 0}}}) == ""
+
+
+def test_empty_card_or_window_restrictions_are_never_presented_as_unconditional() -> None:
+    for condition in ({"sourceCardIds": []}, {"kind": ""}):
+        assert context({"when": condition}) == "This condition cannot match an action"
 
 
 def artifact_run(path: Path) -> Path:
@@ -44,11 +84,12 @@ def artifact_run(path: Path) -> Path:
         for seat in (0, 1)
     ]
     manifest = {
-        "config": {"engineSha256": "engine"},
-        "metadata": {"cards": [], "evolutionDecks": []},
+        "config": {"engineSha256": "engine", "runnerSha256": "runner", "simulations": 256},
+        "metadata": {"cards": [], "evolutionDecks": [], "seedProgram": program},
     }
     report = {
         "engineSha256": "engine",
+        "runnerSha256": "runner",
         "simulations": 256,
         "results": {
             "generic": {
@@ -99,7 +140,10 @@ def test_publication_escapes_exact_advice_and_links_to_practice(tmp_path: Path) 
     ]
 
 
-@pytest.mark.parametrize("change", ("budget", "policy", "smoke", "opponent", "pairing"))
+@pytest.mark.parametrize(
+    "change",
+    ("budget", "policy", "control", "runner", "manifest-budget", "smoke", "opponent", "pairing"),
+)
 def test_refuses_incomplete_or_mismatched_evidence(tmp_path: Path, change: str) -> None:
     run = artifact_run(tmp_path / "run")
     path = run / "held-out.json"
@@ -108,6 +152,15 @@ def test_refuses_incomplete_or_mismatched_evidence(tmp_path: Path, change: str) 
         report["results"]["generic"]["selected"][0]["searches"][0]["completed"] = 255
     elif change == "policy":
         report["results"]["generic"]["selected"][0]["candidateSha256"] = "different-policy"
+    elif change == "control":
+        report["results"]["generic"]["control"][0]["candidateSha256"] = "different-baseline"
+    elif change == "runner":
+        report["runnerSha256"] = "different-runner"
+    elif change == "manifest-budget":
+        manifest_path = run / "manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["config"]["simulations"] = 8
+        manifest_path.write_text(json.dumps(manifest))
     elif change == "opponent":
         for arm in ("selected", "control"):
             for game in report["results"]["generic"][arm]:

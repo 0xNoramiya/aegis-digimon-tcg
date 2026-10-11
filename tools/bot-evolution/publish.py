@@ -34,7 +34,12 @@ def verified_run(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
     pilots = json.loads((run_dir / "pilots.json").read_text(encoding="utf-8"))
     report = json.loads((run_dir / "held-out.json").read_text(encoding="utf-8"))
     engine = manifest["config"]["engineSha256"]
-    if report["engineSha256"] != engine or report["simulations"] < 128:
+    if (
+        report["engineSha256"] != engine
+        or report.get("runnerSha256") != manifest["config"]["runnerSha256"]
+        or report["simulations"] != manifest["config"]["simulations"]
+        or report["simulations"] < 128
+    ):
         raise ValueError(
             "Publication requires a pinned engine and at least 128 completed rollouts per search"
         )
@@ -68,12 +73,12 @@ def verified_run(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
             for game in games:
                 if game["valid"] is not True or game["engineSha256"] != engine:
                     raise ValueError("Invalid or unpinned held-out game")
-                if arm == "selected":
-                    candidate = hashlib.sha256(
-                        json.dumps(stage["program"]).encode("utf-8")
-                    ).hexdigest()
-                    if game["candidateSha256"] != candidate:
-                        raise ValueError("Held-out games do not match the published policy")
+                program = (
+                    stage["program"] if arm == "selected" else manifest["metadata"]["seedProgram"]
+                )
+                candidate = hashlib.sha256(json.dumps(program).encode("utf-8")).hexdigest()
+                if game["candidateSha256"] != candidate:
+                    raise ValueError("Held-out games do not match the selected or starting policy")
                 if game["task"]["opponent"] == "mcts":
                     if not game.get("searches") or any(
                         search["requested"] != report["simulations"]
@@ -97,16 +102,122 @@ def shell(title: str, description: str, body: str, canonical: str) -> str:
 <main id="content">{body}</main><footer><a href="/">Aegis</a> · Digimon Card Game practice · Independent community project</footer></body></html>'''
 
 
-def context(rule: dict[str, Any]) -> str:
+FEATURE_LABELS = {
+    "bias": "the constant preference",
+    "cost": "the action's memory cost",
+    "handover": "the memory given to the opponent",
+    "attackPlayer": "the action attacks the opposing player",
+    "lethal": "the action attacks the opposing player at zero security",
+    "attackWinningBattle": "the action attacks a Digimon with lower DP",
+    "attackLosingBattle": "the action attacks a Digimon with equal or higher DP",
+    "digivolve": "the action is a standard digivolution",
+    "breedingGrowth": "the action digivolves a Digimon in breeding",
+    "levelGain": "the number of levels gained through standard digivolution",
+    "dpGain": "the DP gained through standard digivolution",
+    "playBody": "the DP of a Digimon being played (zero for other actions)",
+    "playTamer": "the action plays a Tamer",
+    "playOption": "the action uses an Option",
+    "opponentBodies": "the number of opposing cards in the battle area, including Tamers",
+    "hatch": "the action hatches a Digi-Egg",
+    "deploy": "the action moves a Digimon out of breeding",
+    "sourceLevel": "the selected card's level",
+    "sourceDp": "the selected card's DP",
+    "targetDp": "the target Digimon's DP",
+    "ownSecurity": "your security count",
+    "opponentSecurity": "the opponent's security count",
+    "block": "the action declares a block",
+    "criticalBlock": "the action blocks an attack on you at zero security",
+    "accept": "the action accepts an optional effect, Evade, or Barrier",
+    "finish": "the action finishes a card or Assembly selection",
+    "pass": "the action ends the current phase",
+    "openingRookie": "the opening-hand rating (+1 for keeping a rookie, -1 for keeping no rookie, 0 for replacing the hand)",
+    "activate": "the action activates an effect",
+    "sourceInHand": "the selected card is in your hand",
+    "sourceInTrash": "the selected card is in either player's trash",
+    "sourceOnBoard": "the selected permanent or top card is in the battle area",
+    "sourceOpponent": "the selection is an opposing permanent, its top card, or a card in the opponent's trash",
+    "sourceValue": "the selected card's strength rating (level + DP in thousands + one tenth of play cost)",
+    "digiXros": "the action uses DigiXros",
+    "assembly": "the action uses Assembly",
+    "dnaDigivolve": "the action uses DNA digivolution",
+    "appFusion": "the action uses App Fusion",
+    "link": "the action links a card",
+    "materials": "the number of material cards and DigiXros expander Tamers committed by this action (zero during individual selection steps)",
+}
+BOOLEAN_FEATURES = {
+    "attackPlayer",
+    "lethal",
+    "attackWinningBattle",
+    "attackLosingBattle",
+    "digivolve",
+    "breedingGrowth",
+    "playTamer",
+    "playOption",
+    "hatch",
+    "deploy",
+    "block",
+    "criticalBlock",
+    "accept",
+    "finish",
+    "pass",
+    "activate",
+    "sourceInHand",
+    "sourceInTrash",
+    "sourceOnBoard",
+    "sourceOpponent",
+    "digiXros",
+    "assembly",
+    "dnaDigivolve",
+    "appFusion",
+    "link",
+}
+DP_FEATURES = {"dpGain", "playBody", "sourceDp", "targetDp"}
+
+
+def context(rule: dict[str, Any], cards: dict[str, Any] | None = None) -> str:
     when = rule.get("when", {})
+    if when.get("sourceCardIds") == [] or when.get("kind") == "":
+        return "This condition cannot match an action"
     parts = []
     if when.get("sourceCardIds"):
-        parts.append("For " + ", ".join(when["sourceCardIds"]))
+        parts.append(
+            "For "
+            + ", ".join(
+                f"{cards[card_id]['name']} ({card_id})"
+                if cards is not None and card_id in cards
+                else card_id
+                for card_id in when["sourceCardIds"]
+            )
+        )
     if when.get("kind"):
-        parts.append("During " + when["kind"] + " choices")
+        kind = {
+            "main": "your main phase",
+            "breeding": "your breeding phase",
+            "optional": "an optional effect",
+            "mulligan": "your opening-hand choice",
+            "counter": "a counter response",
+            "block": "a blocking choice",
+        }.get(when["kind"], when["kind"] + " choices")
+        parts.append("During " + kind)
     for bound, word in (("minimum", "at least"), ("maximum", "at most")):
         for feature, value in when.get(bound, {}).items():
-            parts.append(f"When {feature} is {word} {value:g}")
+            label = FEATURE_LABELS[feature]
+            if feature in BOOLEAN_FEATURES:
+                allowed = [
+                    flag
+                    for flag in (0, 1)
+                    if (flag >= value if bound == "minimum" else flag <= value)
+                ]
+                if allowed == [1]:
+                    parts.append("When " + label)
+                elif allowed == [0]:
+                    parts.append("When it is false that " + label)
+                elif not allowed:
+                    parts.append("This condition cannot match an action")
+            else:
+                display_value = value * 1000 if feature in DP_FEATURES else value
+                units = " DP" if feature in DP_FEATURES else ""
+                parts.append(f"When {label} is {word} {display_value:g}{units}")
     return " · ".join(parts)
 
 
@@ -160,7 +271,11 @@ def publish(run_dir: Path, output: Path, base_url: str, catalog_output: Path | N
             "<li><p>"
             + escape(rule["advice"])
             + "</p>"
-            + ("<small>" + escape(context(rule)) + "</small>" if context(rule) else "")
+            + (
+                "<small>" + escape(context(rule, cards)) + "</small>"
+                if context(rule, cards)
+                else ""
+            )
             + "</li>"
             for rule in rules
         )
