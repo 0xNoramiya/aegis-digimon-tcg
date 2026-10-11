@@ -146,6 +146,13 @@ export async function localReplaysByMatch(): Promise<Map<string, LocalReplay>> {
   return new Map(entries.map((entry) => [entry.matchId, entry]));
 }
 
+/** Copies on this device that never reached Google Drive, oldest first. */
+export async function unsyncedLocalReplays(): Promise<LocalReplay[]> {
+  const db = await open();
+  const entries = await settle<LocalReplay[]>(db.transaction(STORE).objectStore(STORE).index("savedAt").getAll());
+  return entries.filter((entry) => !entry.driveFileId);
+}
+
 export function localReplayFile(entry: LocalReplay): ReadyReplay {
   return {
     kind: "ready",
