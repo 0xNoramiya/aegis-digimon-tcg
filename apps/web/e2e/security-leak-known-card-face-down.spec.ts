@@ -1,9 +1,11 @@
+import fixtureSecurityLeakKnownCardFaceDown from "../../api/src/engine/scenarios/security-leak-known-card-face-down.fixture";
+import { fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { getCardDefinition } from "@aegis/shared";
 import { test, expect } from "./scenario-page";
 
-const MONODRAMON = "dev-field-1-security-leak-monodramon";
-const ADISTAKTO = "dev-security-leak-adistakto";
-const FACE_UP_SECURITY = "dev-security-leak-security-1-face-up";
+const MONODRAMON = fixtureInstanceId("opponent-card-security-leak-monodramon-card");
+const ADISTAKTO = fixtureInstanceId("security-leak-adistakto-card");
+const FACE_UP_SECURITY = fixtureInstanceId("security-leak-security-1-face-up-card");
 
 declare global {
   interface Window {
@@ -15,7 +17,7 @@ declare global {
 // of that stack. Lónkhē Adistakto places the bot's Monodramon, which this client saw on the field,
 // face down on top of it. This client's state must never hold Monodramon's identity there.
 test("a known card placed face down into security never reaches the opponent's client", async ({ scenario, page }) => {
-  await scenario.open("arena-security-leak-known-card-face-down");
+  await scenario.openFixture(fixtureSecurityLeakKnownCardFaceDown);
   await scenario.resolveUntil((s) => s.phase === "Main" && s.turnSeat === 0 && !s.pendingDecision);
   const before = await scenario.snapshot();
   expect(before.players[1]!.battleArea.map((permanent) => permanent.topCard.instanceId)).toEqual([MONODRAMON]);

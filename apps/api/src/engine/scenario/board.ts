@@ -21,10 +21,12 @@ import {
 
 export type { CardSpec, PermanentSpec, SeatSpec, BoardSpec } from "./types.js";
 import type { CardSpec, PermanentSpec, SeatSpec, BoardSpec } from "./types.js";
+import { fixtureInstanceId, fixturePermanentId } from "./references.js";
 
 export interface BoardIds {
   next(): number;
   prefix: string;
+  named?: boolean;
 }
 
 export function createBoardIds(prefix = ""): BoardIds {
@@ -104,6 +106,11 @@ export function buildInstance(
 ): CardInstance {
   const { card, as, faceUp } = cardOf(spec);
   const instance = makeInstance(card, seat, faceUp ?? defaultFaceUp, ids);
+  if (typeof spec !== "string") {
+    if (ids.named && spec.as) instance.instanceId = fixtureInstanceId(spec.as);
+    instance.ownerSeat = spec.ownerSeat ?? seat;
+    instance.artId = spec.artId ?? "";
+  }
   if (as !== undefined) aliases.set(as, { kind: "instance", id: instance.instanceId });
   return instance;
 }
@@ -117,8 +124,12 @@ export function buildPermanent(
   const resolved = permanentSpecOf(spec);
   const dp = resolved.dp ?? getCardDefinition(resolved.card)?.dp ?? 0;
   const permanent = makeDigimon(seat, dp, resolved.card, ids);
+  if (ids.named && resolved.as) permanent.permanentId = fixturePermanentId(resolved.as);
+  if (resolved.top) setTopCard(permanent, buildInstance(resolved.top, seat, true, aliases, ids));
   permanent.isSuspended = resolved.suspended ?? false;
   permanent.enterFieldTurnCount = resolved.enteredThisTurn === true ? 0 : ESTABLISHED_TURN;
+  if (resolved.enterFieldTurnCount !== undefined) permanent.enterFieldTurnCount = resolved.enterFieldTurnCount;
+  permanent.currentDP = resolved.currentDP ?? dp;
   const definition = getCardDefinition(resolved.card);
   const isPureOption =
     definition !== undefined && isOption(definition) && !isDigimon(definition) && !isDigiEgg(definition);
@@ -174,7 +185,7 @@ export function layBoard(state: GameState, board: BoardSpec, aliases: AliasTable
 
     if (spec.breeding !== undefined) {
       const permanent = buildPermanent(spec.breeding, seat, aliases, ids);
-      permanent.inBreeding = true;
+      permanent.inBreeding = typeof spec.breeding === "string" ? true : (spec.breeding.inBreeding ?? true);
       setBreeding(player, permanent);
     }
   }

@@ -224,9 +224,13 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
       case "startMatch":
         startOnce(() => engine.startMatch());
         return undefined;
+      case "startScenarioFixture":
+        startOnce(() => engine.startScenarioFixture(input.fixture));
+        break;
       case "startDevScenario":
-        startOnce(() => engine.startDevScenario(input.scenario));
-        return undefined;
+        throw new Error(
+          `Historical named development replay is unsupported; supply a fixture start: ${input.scenario}`,
+        );
       case "disconnect":
         withBatch(() => engine.handleDisconnect(input.seat, input.final));
         return undefined;

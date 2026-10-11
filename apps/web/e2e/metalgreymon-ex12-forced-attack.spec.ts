@@ -1,19 +1,28 @@
+import fixtureEx12MetalgreymonForcedAttackPlay from "../../api/src/engine/scenarios/ex12-metalgreymon-forced-attack-play.fixture";
+import fixtureEx12MetalgreymonForcedAttackDigivolve from "../../api/src/engine/scenarios/ex12-metalgreymon-forced-attack-digivolve.fixture";
+
+import { fixtureVariant, fixturePermanentId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
-const RECIPIENT = "dev-perm-1-metalgreymon-recipient";
-const OTHER = "dev-perm-1-metalgreymon-other";
-const BASE = "dev-perm-0-metalgreymon-base";
+const RECIPIENT = fixturePermanentId("opponent-metalgreymon-recipient");
+const OTHER = fixturePermanentId("opponent-metalgreymon-other");
+const BASE = fixturePermanentId("own-metalgreymon-base");
 
 // The opponent's turn (turn 2) runs; the bot is held from turn 4 on.
 test.use({ holdBotAfterTurn: 4 });
 
 for (const mode of ["play", "digivolve"] as const) {
-  test(`Discord 1557600224011096104: EX12 MetalGreymon (${mode}) deletes, then forces the chosen opponent to attack at its Main start`, async ({
+  test(`EX12 MetalGreymon (${mode}) deletes, then forces the chosen opponent to attack at its Main start`, async ({
     scenario,
     page,
   }) => {
     test.setTimeout(150_000);
-    await scenario.open(`arena-ex12-metalgreymon-forced-attack-${mode}`);
+    await scenario.openFixture(
+      fixtureVariant(
+        { play: fixtureEx12MetalgreymonForcedAttackPlay, digivolve: fixtureEx12MetalgreymonForcedAttackDigivolve },
+        mode,
+      ),
+    );
     await scenario.resolveUntil(
       (s) => s.phase === "Main" && !s.pendingDecision,
       () => ({ accept: false }),

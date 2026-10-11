@@ -1,7 +1,16 @@
 import type { Seat } from "@aegis/shared";
 
 /** A card in a zone: a bare card id, or the same plus an alias to address it by later. */
-export type CardSpec = string | { card: string; as?: string; faceUp?: boolean };
+export type CardSpec =
+  | string
+  | {
+      card: string;
+      as?: string;
+      faceUp?: boolean;
+      ownerSeat?: Seat;
+      artId?: string;
+      fromDeck?: { seat: Seat; index: number; egg?: boolean };
+    };
 
 /** A permanent on the battle area or in breeding. */
 export interface PermanentSpec {
@@ -23,6 +32,10 @@ export interface PermanentSpec {
    * `false` to seed the illegal state the rule sweep exists to clean up.
    */
   placedByEffect?: boolean;
+  top?: CardSpec;
+  currentDP?: number;
+  enterFieldTurnCount?: number;
+  inBreeding?: boolean;
 }
 
 export interface SeatSpec {
@@ -42,14 +55,41 @@ export type BoardSpec = { 0?: SeatSpec; 1?: SeatSpec };
 
 /** A board immediately before the real turn loop's Unsuspend/Draw/Breeding phases. */
 export interface ScenarioFixture {
+  name?: string;
   board: BoardSpec;
   memory: number;
   turnSeat: Seat;
   turnCount: number;
   isFirstPlayersFirstTurn: boolean;
+  /** Explicit opt-in for regression boards testing an invalid initial gauge. */
+  allowOutOfRangeMemory?: boolean;
+  effects?: { permanent: string; kind: "suspendLock" | "holyProtection" }[];
+  presentation?: { timed?: boolean; opponent?: ScenarioOpponent; holdBotAfterTurn?: number };
 }
 
 export interface ScenarioReferences {
   instanceId(alias: string): string;
   permanentId(alias: string): string;
+}
+
+/** Optional deterministic opponent control; every action is an ordinary public intent. */
+export interface ScenarioOpponent {
+  endBreeding?: boolean;
+  fallbackMain?: "end" | "evaluate";
+  main?: (
+    | { kind: "attack" }
+    | { kind: "play"; card: string; useAs?: "option"; whenOpponentCard?: string }
+    | { kind: "digivolve"; card: string; base: string; alternate?: boolean }
+  )[];
+  blockerCard?: string;
+  decisions?: {
+    sourceCard: string;
+    kind: "chooseTargets" | "chooseOption" | "optional" | "orderTriggers";
+    timing?: string;
+    promptIncludes?: string;
+    target?: string;
+    choice?: string;
+    choiceStartsWith?: string;
+    accept?: boolean;
+  }[];
 }

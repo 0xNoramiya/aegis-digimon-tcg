@@ -15,4 +15,4 @@ A base-DP override applies only while the permanent's current top card is a Digi
 - `effects/continuous.test.ts`: a Geremon-style Rule alias is suppressed by an original-name rewrite while an effect-granted alias remains.
 - `effects/modifiers.test.ts`: a 3000 base-DP rewrite stops contributing after the top card changes to a Tamer.
 - `cards/EX13/EX13-031.test.ts`: Q7295 and Q7298 exercise both rules through KingSukamon's production IR behavior.
-- `cards/EX13/EX13-031.test.ts` and `engine/ex13KingSukamonMachinedramonDpScenario.test.ts`: KingSukamon sets EX1-073 Machinedramon to 3000 DP, and a later -2000 DP is still blocked.
+- `cards/EX13/EX13-031.test.ts` and `engine/ex13-king-sukamon-machinedramon-dp.test.ts`: KingSukamon sets EX1-073 Machinedramon to 3000 DP, and a later -2000 DP is still blocked.

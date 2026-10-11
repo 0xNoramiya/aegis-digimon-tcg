@@ -1,0 +1,73 @@
+import type { ScenarioFixture } from "../scenario/types.js";
+
+const fixture: ScenarioFixture = {
+  name: "revealed-search",
+  board: {
+    "0": {
+      hand: [{ card: "BT3-093", as: "latest-davis-card", faceUp: false }],
+      deck: [
+        { card: "BT1-085", as: "latest-reveal-0-card" },
+        { card: "BT1-027", as: "latest-reveal-1-card" },
+        { card: "BT1-064", as: "latest-reveal-2-card" },
+        { card: "BT1-010", as: "latest-reveal-3-card" },
+        { card: "BT1-085", as: "latest-reveal-4-card" },
+        { card: "BT1-085", as: "latest-reveal-5-card" },
+        { card: "BT1-085", as: "latest-reveal-6-card" },
+        { card: "BT1-085", as: "latest-reveal-7-card" },
+        { card: "BT1-085", as: "latest-reveal-8-card" },
+        { card: "BT1-085", as: "latest-reveal-9-card" },
+        { card: "BT1-085", as: "latest-reveal-10-card" },
+        { card: "BT1-085", as: "latest-reveal-11-card" },
+        { card: "BT1-085", as: "latest-reveal-12-card" },
+        { card: "BT1-085", as: "latest-reveal-13-card" },
+        { card: "BT1-085", as: "latest-reveal-14-card" },
+        { card: "BT1-085", as: "latest-reveal-15-card" },
+        { card: "BT1-085", as: "latest-reveal-16-card" },
+        { card: "BT1-085", as: "latest-reveal-17-card" },
+        { card: "BT1-085", as: "latest-reveal-18-card" },
+        { card: "BT1-085", as: "latest-reveal-19-card" },
+      ],
+      eggDeck: [{ card: "EX13-002", as: "latest-egg-card" }],
+      security: [
+        { card: "BT1-009", as: "latest-security-0-0-card" },
+        { card: "BT1-009", as: "latest-security-0-1-card" },
+        { card: "BT1-009", as: "latest-security-0-2-card" },
+      ],
+    },
+    "1": {
+      deck: [
+        { card: "BT1-085", as: "latest-deck-1-0-card" },
+        { card: "BT1-085", as: "latest-deck-1-1-card" },
+        { card: "BT1-085", as: "latest-deck-1-2-card" },
+        { card: "BT1-085", as: "latest-deck-1-3-card" },
+        { card: "BT1-085", as: "latest-deck-1-4-card" },
+        { card: "BT1-085", as: "latest-deck-1-5-card" },
+        { card: "BT1-085", as: "latest-deck-1-6-card" },
+        { card: "BT1-085", as: "latest-deck-1-7-card" },
+        { card: "BT1-085", as: "latest-deck-1-8-card" },
+        { card: "BT1-085", as: "latest-deck-1-9-card" },
+        { card: "BT1-085", as: "latest-deck-1-10-card" },
+        { card: "BT1-085", as: "latest-deck-1-11-card" },
+        { card: "BT1-085", as: "latest-deck-1-12-card" },
+        { card: "BT1-085", as: "latest-deck-1-13-card" },
+        { card: "BT1-085", as: "latest-deck-1-14-card" },
+        { card: "BT1-085", as: "latest-deck-1-15-card" },
+        { card: "BT1-085", as: "latest-deck-1-16-card" },
+        { card: "BT1-085", as: "latest-deck-1-17-card" },
+        { card: "BT1-085", as: "latest-deck-1-18-card" },
+        { card: "BT1-085", as: "latest-deck-1-19-card" },
+      ],
+      security: [
+        { card: "BT1-009", as: "latest-security-1-0-card" },
+        { card: "BT1-009", as: "latest-security-1-1-card" },
+        { card: "BT1-009", as: "latest-security-1-2-card" },
+      ],
+    },
+  },
+  memory: 10,
+  turnSeat: 0,
+  turnCount: 0,
+  isFirstPlayersFirstTurn: false,
+};
+
+export default fixture;

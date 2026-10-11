@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("GitHub #5390: Available presets display Olympos XII in the lobby picker", async ({ page }) => {
+test("Available presets display Olympos XII in the lobby picker", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("aegis:locale", "en"));
   await page.goto("/e2e/deck-picker.html");
   await page.locator('input[name="deckSearch"]').fill("Olympos XII");

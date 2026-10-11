@@ -191,7 +191,7 @@ test("a reload late in a long match resumes the same seat", async ({ page, match
   await expect.poll(() => match.state().turnSeat).toBe(1);
 });
 
-test("#5375 a mobile tab resumes input after screen suspension and a socket drop", async ({ page, match }) => {
+test("a mobile tab resumes input after screen suspension and a socket drop", async ({ page, match }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => localStorage.setItem("aegis.skip-end-turn-confirmation", "true"));
   await match.start("reconnect");

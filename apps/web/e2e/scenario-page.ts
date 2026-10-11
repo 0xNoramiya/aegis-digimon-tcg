@@ -1,8 +1,8 @@
 import { writeFile } from "node:fs/promises";
 import { expect, test as base, type Page, type Locator, type TestInfo } from "@playwright/test";
 import { RED_DECK } from "../../api/dist/engine/testDecks.js";
-import { getCardDefinition, type DecisionRequest, type Intent } from "@aegis/shared";
-import { startBrowserServer } from "./server";
+import { CATALOG_DECKS, getCardDefinition, type DecisionRequest, type Intent } from "@aegis/shared";
+import { startBrowserServer, useBrowserFixture } from "./server";
 import type {} from "./harness";
 import type { ScenarioFixture, ScenarioReferences } from "../../api/src/engine/scenario/types.js";
 
@@ -36,10 +36,14 @@ export class ScenarioPage {
       if (message.type() === "error") this.errors.push(message.text());
     });
   }
-  async openFixture(fixture: ScenarioFixture, speed: "normal" | "slow" = "normal") {
+  async openFixture(
+    fixture: ScenarioFixture,
+    speed: "normal" | "slow" = "normal",
+    breeding: "end" | "move" | "none" = fixture.turnSeat === 0 ? "end" : "none",
+  ) {
     if (!this.useFixture) throw new Error("This ScenarioPage has no fixture server");
     const references = this.useFixture(fixture);
-    await this.open("local-fixture", speed, fixture.turnSeat === 0 ? "end" : "none");
+    await this.open("local-fixture", speed, breeding);
     return references;
   }
   /** `none`: the scenario opens on the opponent's turn, or the engine passes this Breeding phase itself. */
@@ -369,3 +373,19 @@ export const test = base.extend<{
   },
 });
 export { expect };
+
+/** Open a fixture with the catalog decks used by full-board presentation regressions. */
+export async function openFixturePage(page: Page, fixture: ScenarioFixture): Promise<void> {
+  useBrowserFixture(fixture);
+  const human = CATALOG_DECKS.find((deck) => deck.deckId === "bt26-dgo-2026-08-28-7-chronomon")!;
+  await page.addInitScript(
+    ({ deck }) => {
+      localStorage.setItem("aegis:locale", "en");
+      localStorage.setItem("aegis.action-confirmation.enabled", "false");
+      localStorage.setItem("aegis.skip-end-turn-confirmation", "true");
+      window.browserTestOptions = { displayName: "Fixture E2E", seed: 1, deck, devScenario: "local-fixture" };
+    },
+    { deck: { mainDeck: [...human.decklist.mainDeck], eggDeck: [...human.decklist.eggDeck] } },
+  );
+  await page.goto("/e2e/harness.html");
+}

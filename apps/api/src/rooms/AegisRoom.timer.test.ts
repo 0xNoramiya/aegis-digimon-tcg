@@ -1,3 +1,7 @@
+import { configureLocalScenario, clearLocalScenario } from "../engine/scenario/local.js";
+import fixtureMatchTimer from "../engine/scenarios/match-timer.fixture.js";
+import fixtureChronomonEngageOrder from "../engine/scenarios/chronomon-engage-order.fixture.js";
+import fixtureArena from "../engine/scenarios/arena.fixture.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   CombatWindow,
@@ -20,6 +24,7 @@ import { RED_DECK } from "../engine/testDecks.js";
 const rooms: AegisRoom[] = [];
 afterEach(() => {
   for (const room of rooms.splice(0)) room.onDispose();
+  clearLocalScenario();
   vi.restoreAllMocks();
 });
 
@@ -288,14 +293,16 @@ describe("room clock enforcement", () => {
     expect(game.state.gameOver).toBe(false);
   });
 
-  it.each(["arena-match-timer", "arena-chronomon-engage-order"] as const)(
+  it.each([fixtureMatchTimer, fixtureChronomonEngageOrder] as const)(
     "enables %s with the standard timer policy",
-    (devScenario) => {
-      const game = room({ botRoom: true, devScenario });
+    (fixture) => {
+      configureLocalScenario(fixture);
+      const game = room({ botRoom: true, devScenario: "local-fixture" });
       expect(game.state.matchTimer).toBe(true);
       expect(game.state.timerStartSeconds).toBe(300);
       expect(game.state.timerRefillSeconds).toBe(60);
-      expect(room({ botRoom: true, devScenario: "arena", matchTimer: true }).state.matchTimer).toBe(false);
+      configureLocalScenario(fixtureArena);
+      expect(room({ botRoom: true, devScenario: "local-fixture", matchTimer: true }).state.matchTimer).toBe(false);
     },
   );
 

@@ -1,9 +1,10 @@
+import { serializeScenarioFixture } from "../../engine/scenario/serialize.js";
 import { createReadStream } from "node:fs";
 import { readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 import type { DeckFormat, Intent, Seat } from "@aegis/shared";
-import type { DevScenarioId } from "../../engine/devScenario.js";
+import type { ScenarioFixture } from "../../engine/scenario/types.js";
 import {
   REPLAY_FORMAT,
   type ReplayDeck,
@@ -91,6 +92,7 @@ const SITES = new Set<string>(["bothReady", "batchClose", "decisionRequest", "ma
 const ROOM_INPUT_KINDS = new Set([
   "startMatch",
   "startDevScenario",
+  "startScenarioFixture",
   "disconnect",
   "reconnect",
   "clearReady",
@@ -235,7 +237,8 @@ function buildRecord(entries: Entry[], matchId: string): ReplayRecord {
         typeof payload.site === "string" && SITES.has(payload.site) ? (payload.site as ReplaySite) : undefined;
       const input = roomInputOf(payload, { ...placed, ...(site ? { site } : {}) });
       if (!input) continue;
-      if (input.kind === "startMatch" || input.kind === "startDevScenario") started = true;
+      if (input.kind === "startMatch" || input.kind === "startDevScenario" || input.kind === "startScenarioFixture")
+        started = true;
       inputs.push(input);
     }
   }
@@ -259,7 +262,7 @@ function buildRecord(entries: Entry[], matchId: string): ReplayRecord {
       deckFormat: (typeof header.deckFormat === "string" ? header.deckFormat : "standard") as DeckFormat,
       unlimited: header.unlimited === true,
       betaBattle: header.betaBattle === true,
-      ...(typeof header.devScenario === "string" ? { devScenario: header.devScenario as DevScenarioId } : {}),
+      ...(typeof header.devScenario === "string" ? { devScenario: header.devScenario as string } : {}),
     },
     seats: [seats[0]!, seats[1]!],
     inputs,
@@ -277,9 +280,16 @@ function roomInputOf(
     case "startMatch":
     case "expireCombatWindow":
       return { kind, ...placed };
+    case "startScenarioFixture": {
+      try {
+        return { kind, fixture: serializeScenarioFixture(payload.fixture as ScenarioFixture), ...placed };
+      } catch {
+        return undefined;
+      }
+    }
     case "startDevScenario":
       return typeof payload.scenario === "string"
-        ? { kind, scenario: payload.scenario as DevScenarioId, ...placed }
+        ? { kind, scenario: payload.scenario as string, ...placed }
         : undefined;
     case "disconnect":
       return seat === undefined ? undefined : { kind, seat, final: payload.final === true, ...placed };

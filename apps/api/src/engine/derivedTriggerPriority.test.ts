@@ -1,3 +1,7 @@
+import fixtureRizegreymonDerivedPriority from "./scenarios/rizegreymon-derived-priority.fixture.js";
+import fixtureTridentDerivedPriority from "./scenarios/trident-derived-priority.fixture.js";
+import fixtureFlashyAttackPriority from "./scenarios/flashy-attack-priority.fixture.js";
+import fixtureDominimonSecurityPriority from "./scenarios/dominimon-security-priority.fixture.js";
 import { Phase } from "@aegis/shared";
 import { BLUE_DECK, RED_DECK } from "./testDecks.js";
 import { advance } from "./testkit/advance.js";
@@ -137,10 +141,10 @@ it("finishes the new mixed-owner batch before an older Cool Boy digivolution wat
 });
 
 it.each([
-  ["arena-rizegreymon-derived-priority", "BT9-041", ["BT17-087", "BT2-070", "BT9-092"]],
-  ["arena-trident-derived-priority", "BT4-100", ["BT17-087", "BT2-070"]],
-  ["arena-flashy-attack-priority", "EX5-068", ["BT2-070", "securityChecked"]],
-  ["arena-dominimon-security-priority", "EX6-030", ["BT1-060", "BT16-013"]],
+  [fixtureRizegreymonDerivedPriority, "BT9-041", ["BT17-087", "BT2-070", "BT9-092"]],
+  [fixtureTridentDerivedPriority, "BT4-100", ["BT17-087", "BT2-070"]],
+  [fixtureFlashyAttackPriority, "EX5-068", ["BT2-070", "securityChecked"]],
+  [fixtureDominimonSecurityPriority, "EX6-030", ["BT1-060", "BT16-013"]],
 ] as const)(
   "runs the %s companion scenario through the corrected priority",
   async (scenario, cardId, expectedOrder) => {
@@ -150,7 +154,7 @@ it.each([
     );
     s.engine.stagedDecks[0] = BLUE_DECK;
     s.engine.stagedDecks[1] = RED_DECK;
-    s.engine.startDevScenario(scenario);
+    s.engine.startScenarioFixture(scenario);
     try {
       await settle(() => s.state.phase === Phase.Breeding);
       expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });

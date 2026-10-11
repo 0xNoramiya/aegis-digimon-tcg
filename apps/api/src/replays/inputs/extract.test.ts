@@ -40,6 +40,33 @@ describe("extractReplay", () => {
     expect(record.inputs.slice(0, 4).map((input) => input.kind)).toEqual(["seat", "intent", "seat", "startMatch"]);
   });
 
+  it("extracts portable fixture preparation while stripping nested author metadata", () => {
+    const fixture = {
+      memory: 3,
+      turnSeat: 0,
+      turnCount: 0,
+      isFirstPlayersFirstTurn: false,
+      board: { 0: { hand: [{ card: "BT1-009", as: "rookie", displayName: HUMAN_NAME }], chat: CHAT_TEXT } },
+      sessionId: HUMAN_SESSION,
+    };
+    const lines = first.lines.map((line) => {
+      const entry = JSON.parse(line);
+      if (entry.data?.[0] === "replay.input" && entry.data[1]?.kind === "startMatch") {
+        entry.data[1] = { ...entry.data[1], kind: "startScenarioFixture", fixture };
+      }
+      return JSON.stringify(entry);
+    });
+    const replay = extractReplay(lines, first.matchId);
+    const input = replay.inputs.find((input) => input.kind === "startScenarioFixture");
+    expect(input).toMatchObject({
+      kind: "startScenarioFixture",
+      fixture: { board: { 0: { hand: [{ card: "BT1-009", as: "rookie" }] } } },
+    });
+    expect(input && JSON.stringify(input)).not.toContain(HUMAN_NAME);
+    expect(input && JSON.stringify(input)).not.toContain(CHAT_TEXT);
+    expect(input && JSON.stringify(input)).not.toContain(HUMAN_SESSION);
+  });
+
   it("ignores other matches and malformed or truncated lines", () => {
     const noisy = [
       "not json at all",

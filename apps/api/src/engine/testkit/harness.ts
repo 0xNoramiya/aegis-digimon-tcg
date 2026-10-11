@@ -3,6 +3,7 @@ import {
   buildInstance,
   buildPermanent,
   layBoard,
+  createBoardIds,
   type BoardSpec,
   type PermanentSpec,
   type CardSpec,
@@ -68,6 +69,8 @@ export interface EngineSetup {
 }
 
 export interface SetupEngineOptions {
+  /** Use the same semantic identities as room fixtures. Set by setupScenario. */
+  fixtureIds?: boolean;
   autoAcceptOptional?: boolean;
   /**
    * Answer every "use this effect?" prompt with no — the declined branch. Also answers a
@@ -419,14 +422,16 @@ export function setupEngine(boardOrOpts?: BoardSpec | SetupEngineOptions, maybeO
   state.turnSeat = 0;
 
   const aliases: AliasTable = new Map();
-  if (board !== undefined) layBoard(state, board, aliases);
+  if (board !== undefined)
+    layBoard(state, board, aliases, opts?.fixtureIds ? { ...createBoardIds("scenario-"), named: true } : undefined);
   // A seeded link card carries printed `linkDp` that only reaches `currentDP` through
   // `ModifierLedger.recomputeDP` (CR 4-2-4), which nothing runs for a hand-laid board — so a
   // Board Spec with links used to start on a DP baseline no real board ever has. This is the
   // narrow DP refresh, not the continuous recompute the comment below deliberately withholds.
   for (const seat of [0, 1] as const) {
     for (const permanent of state.players[seat]?.battleArea ?? []) {
-      if (permanent.linked.length > 0) internalsOf(engine).modifiers.recomputeDP(state, permanent.permanentId);
+      if (!opts?.fixtureIds && permanent.linked.length > 0)
+        internalsOf(engine).modifiers.recomputeDP(state, permanent.permanentId);
     }
   }
   // Deliberately NOT recomputed here. A hand-laid board has no continuous effects installed

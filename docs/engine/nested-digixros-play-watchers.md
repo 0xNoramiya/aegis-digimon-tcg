@@ -45,8 +45,8 @@ Scoped Oxlint, Oxfmt and `git diff --check` passed; debug instrumentation was
 removed. API typecheck was rerun successfully after the final test assertions.
 
 The interactive reproduction is available at
-`/dev/arena?scenario=arena-kotone-digixros-pending-attack`, with bilingual steps.
-`kotoneDigiXrosScenario.test.ts` starts the actual scenario turn loop, declines
+`pnpm scenario open kotone-digixros-pending-attack`, with bilingual steps.
+`kotone-digi-xros.test.ts` starts the actual scenario turn loop, declines
 Start of Main costs, plays X7 first, then uses Kotone to play EX6 with both
 materials under BT10-087. It verifies 20 → 7 → 1 memory, both Tamer costs,
 ShootingStarmon's nested entry and the retained EX6 attack through a completed

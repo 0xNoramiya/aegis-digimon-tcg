@@ -1,9 +1,11 @@
+import fixtureWargrowlmonEvadedBlock from "../../api/src/engine/scenarios/wargrowlmon-evaded-block.fixture";
+import { fixturePermanentId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
-test("GitHub #5384: WarGrowlmon plays Takato at End of Attack after Ulforce evades", async ({ scenario }) => {
-  await scenario.open("arena-wargrowlmon-evaded-block");
+test("WarGrowlmon plays Takato at End of Attack after Ulforce evades", async ({ scenario }) => {
+  await scenario.openFixture(fixtureWargrowlmonEvadedBlock);
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
-  await scenario.attack("dev-perm-0-report-war");
+  await scenario.attack(fixturePermanentId("own-report-war"));
   await scenario.resolveUntil(
     (s) =>
       s.players[0]!.battleArea.some((p) => p.topCard.cardId === "BT17-080") && !s.pendingDecision && !s.combatWindow,

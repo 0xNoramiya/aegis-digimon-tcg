@@ -1,10 +1,7 @@
-import { spawn, type ChildProcess } from "node:child_process";
-import { connect } from "node:net";
-import { fileURLToPath } from "node:url";
-import { test, expect, type Page, type TestInfo } from "@playwright/test";
-import { GamePage } from "./game-page";
-import { SPOTLIGHT_PADDING_PX, SPOTLIGHT_RADIUS_PX } from "../src/game/spotlight";
-import { DEFAULT_PACING } from "../src/game/pacing";
+import { startBrowserServer } from "./server";
+import { CATALOG_DECKS } from "@aegis/shared";
+import type { ScenarioFixture } from "../../api/src/engine/scenario/types";
+import { PHASE_PACING_SCENARIOS } from "../../api/src/engine/scenarios/phase-pacing.cases";
 import {
   KEYWORD_PACING_SCENARIOS,
   KEYWORD_TURN_PACING_SCENARIOS,
@@ -13,13 +10,24 @@ import {
   KEYWORD_DECK_PACING_SCENARIOS,
   KEYWORD_ATTACK_PACING_SCENARIOS,
   KEYWORD_END_ATTACK_PACING_SCENARIOS,
-  PHASE_PACING_SCENARIOS,
-  getCardDefinition,
   type KeywordPacingScenario,
-} from "@aegis/shared";
+} from "../../api/src/engine/scenarios/keyword-pacing.cases";
+
+import fixtureOpponentChain from "../../api/src/engine/scenarios/opponent-chain.fixture";
+import fixtureKeywordPacingVortexDecline from "../../api/src/engine/scenarios/keyword-pacing-vortex-decline.fixture";
+import fixtureFieldGrouping from "../../api/src/engine/scenarios/field-grouping.fixture";
+import fixtureOpponentPlay from "../../api/src/engine/scenarios/opponent-play.fixture";
+import fixtureDrasilOptionalEffectPresets from "../../api/src/engine/scenarios/drasil-optional-effect-presets.fixture";
+import { fixtureVariant, fixturePermanentId } from "../../api/src/engine/scenario/references";
+import { test, expect, type Page, type TestInfo } from "@playwright/test";
+import { GamePage } from "./game-page";
+import { SPOTLIGHT_PADDING_PX, SPOTLIGHT_RADIUS_PX } from "../src/game/spotlight";
+import { DEFAULT_PACING } from "../src/game/pacing";
+import { getCardDefinition } from "@aegis/shared";
 import { startPacingCapture, finishPacingCapture } from "./pacing-capture";
 import { installAudioCapture, readAudioCapture } from "./audio-capture";
-import { answerActivation } from "./scenario-page";
+import { answerActivation, openFixturePage } from "./scenario-page";
+import fixtureInterleavedFieldGrouping from "../../api/src/engine/scenarios/field-grouping-bt1-088-p-035.fixture";
 import { MAX_SOUND_VOICES } from "../src/design/sound";
 import { AUDIO_CUES } from "../src/design/audioBank";
 import { cueKey } from "../src/design/audioRecipes";
@@ -29,6 +37,8 @@ import { cueKey } from "../src/design/audioRecipes";
    under the browser's own timing, so this drives the effects lab and watches the queue's
    trace. A queue that still owes steps and has not queued, started or
    finished one for STALL_MS is wedged; server batches alone do not count as progress. */
+
+let labServer: Awaited<ReturnType<typeof startBrowserServer>>;
 
 const STALL_MS = 10_000;
 const LAB_KEY = "__aegisEffectsLab";
@@ -178,7 +188,7 @@ class EffectsLabPage {
   button(name: RegExp) {
     return this.page.getByRole("button", { name }).filter({ visible: true });
   }
-  async start(scenario = "effects-lab-opponent-chain", endTurn = true, speed = "normal", observePaint = true) {
+  async start(scenario: ScenarioFixture = fixtureOpponentChain, endTurn = true, speed = "normal", observePaint = true) {
     await this.page.addInitScript((initialSpeed) => {
       localStorage.setItem("aegis:locale", "en");
       // END TURN must hand the turn over at once; the confirmation dialog is not under test.
@@ -190,7 +200,17 @@ class EffectsLabPage {
       );
       localStorage.setItem("aegis.effect-speed", initialSpeed);
     }, speed);
-    await this.page.goto(`/dev/effects-lab?scenario=${scenario}`);
+    labServer.useFixture(scenario);
+    const deck = CATALOG_DECKS.find((d) => d.deckId === "bt26-dgo-2026-08-28-7-chronomon")!.decklist;
+    await this.page.addInitScript(
+      (deck) => {
+        window.browserTestOptions = { displayName: "Pacing fixture", seed: 1, deck, devScenario: "local-fixture" };
+        window.browserTestLab = true;
+        window.browserTestBotDeckId = "bt26-dgo-2026-08-28-8-plutomon";
+      },
+      { mainDeck: [...deck.mainDeck], eggDeck: [...deck.eggDeck] },
+    );
+    await this.page.goto("/e2e/harness.html");
     await expect(this.button(/END BREEDING/i)).toBeEnabled({ timeout: 45_000 });
     await expect(this.page.getByRole("combobox", { name: /^pacing$/i })).toHaveCount(0);
     await expect(this.page.getByRole("button", { name: "Sequential", exact: true })).toHaveCount(0);
@@ -502,67 +522,33 @@ class EffectsLabPage {
 }
 
 test.describe("effects lab pacing in the browser", () => {
-  // The lab plays a real bot room, so it runs against the API's own entry point.
-  const apiPort = Number(process.env.AEGIS_E2E_EDGE_PORT ?? 2569);
-  let api: ChildProcess;
-  let startupOutput = "";
-  test.beforeAll(async () => {
-    const listening = () =>
-      new Promise<boolean>((resolve) => {
-        const socket = connect(apiPort, "127.0.0.1", () => {
-          socket.destroy();
-          resolve(true);
-        });
-        socket.once("error", () => resolve(false));
-      });
-    expect(await listening(), `test API port ${apiPort} is already occupied`).toBe(false);
-    api = spawn(process.execPath, ["dist/index.js"], {
-      cwd: fileURLToPath(new URL("../../api/", import.meta.url)),
-      env: { ...process.env, PORT: String(apiPort) },
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    api.stdout?.on("data", (chunk) => {
-      startupOutput += String(chunk);
-    });
-    api.stderr?.on("data", (chunk) => {
-      startupOutput += String(chunk);
-    });
-    await expect
-      .poll(
-        async () => {
-          expect(api.exitCode, startupOutput).toBeNull();
-          return listening();
-        },
-        { timeout: 30_000 },
-      )
-      .toBe(true);
-  });
-  test.afterAll(async () => {
-    if (api?.exitCode === null) {
-      const stopped = new Promise<void>((resolve) => api.once("exit", () => resolve()));
-      api.kill();
-      await stopped;
-    }
+  test.beforeEach(async () => {
+    labServer = await startBrowserServer({ holdBotAllTurns: false });
   });
   test.afterEach(async ({ page }, info) => {
-    if (info.status === info.expectedStatus || page.isClosed()) return;
-    const active = await page.evaluate(() =>
-      Boolean((window as unknown as Record<string, unknown>)["__keywordPacingCapture"]),
-    );
-    if (!active) return;
-    const capture = await finishPacingCapture(page);
-    const state = await new EffectsLabPage(page).read();
-    const layout = await page.locator('[data-drop="battle-you"], [data-field-key]').evaluateAll((elements) =>
-      elements.map((element) => ({
-        className: element.className,
-        dataset: { ...(element as HTMLElement).dataset },
-        rect: element.getBoundingClientRect().toJSON(),
-      })),
-    );
-    await info.attach("pacing-failure-diagnostic.json", {
-      body: Buffer.from(JSON.stringify({ capture, state, layout }, null, 2)),
-      contentType: "application/json",
-    });
+    try {
+      if (info.status === info.expectedStatus || page.isClosed()) return;
+      const active = await page.evaluate(() =>
+        Boolean((window as unknown as Record<string, unknown>)["__keywordPacingCapture"]),
+      );
+      if (!active) return;
+      const capture = await finishPacingCapture(page);
+      const state = await new EffectsLabPage(page).read();
+      const layout = await page.locator('[data-drop="battle-you"], [data-field-key]').evaluateAll((elements) =>
+        elements.map((element) => ({
+          className: element.className,
+          dataset: { ...(element as HTMLElement).dataset },
+          rect: element.getBoundingClientRect().toJSON(),
+        })),
+      );
+      await info.attach("pacing-failure-diagnostic.json", {
+        body: Buffer.from(JSON.stringify({ capture, state, layout }, null, 2)),
+        contentType: "application/json",
+      });
+    } finally {
+      await page.close();
+      await labServer.close();
+    }
   });
 
   for (const scenario of KEYWORD_PACING_SCENARIOS as readonly KeywordPacingScenario[]) {
@@ -584,20 +570,20 @@ test.describe("effects lab pacing in the browser", () => {
         const errors: string[] = [];
         page.on("pageerror", (error) => errors.push(error.message));
         const lab = new EffectsLabPage(page);
-        await lab.start(scenario.id, false, speed);
+        await lab.start(scenario.fixture, false, speed);
         const before = await lab.read();
         await startPacingCapture(page);
         const target =
           scenario.target === "player"
             ? page.locator('[data-drop="opp-security"]')
-            : page.locator('[data-drop="perm-opp"][data-id="dev-perm-1-keyword-defender"]');
-        await new GamePage(page).attack("dev-perm-0-keyword-attacker", target);
+            : page.locator(`[data-drop="perm-opp"][data-id="${fixturePermanentId("opponent-keyword-defender")}"]`);
+        await new GamePage(page).attack(fixturePermanentId("own-keyword-attacker"), target);
         if (scenario.decision?.kind === "Alliance") {
           const prompt = page.getByRole("region", { name: "Alliance window", exact: true });
           await expect(prompt).toBeVisible();
           await waitForDecisionPaint(page, "Alliance window");
           if (scenario.decision.accept) {
-            await page.locator('[data-drop="perm-you"][data-id="dev-perm-0-keyword-ally-0"]').click();
+            await page.locator(`[data-drop="perm-you"][data-id="${fixturePermanentId("own-keyword-ally-0")}"]`).click();
             await page.getByRole("button", { name: "Use Alliance", exact: true }).click();
           } else await prompt.getByRole("button", { name: "Pass", exact: true }).click();
         }
@@ -644,12 +630,14 @@ test.describe("effects lab pacing in the browser", () => {
         );
         if (scenario.decision?.kind === "Alliance") {
           expect(
-            state.board!.live.players[0]!.battleArea.find((p) => p.permanentId === "dev-perm-0-keyword-ally-0")
-              ?.isSuspended,
+            state.board!.live.players[0]!.battleArea.find(
+              (p) => p.permanentId === fixturePermanentId("own-keyword-ally-0"),
+            )?.isSuspended,
           ).toBe(scenario.decision.accept);
           expect(
-            state.board!.live.players[0]!.battleArea.find((p) => p.permanentId === "dev-perm-0-keyword-ally-1")
-              ?.isSuspended,
+            state.board!.live.players[0]!.battleArea.find(
+              (p) => p.permanentId === fixturePermanentId("own-keyword-ally-1"),
+            )?.isSuspended,
           ).toBe(false);
         }
         await expect(lab.button(/END TURN/i)).toBeEnabled();
@@ -700,7 +688,7 @@ test.describe("effects lab pacing in the browser", () => {
         const errors: string[] = [];
         page.on("pageerror", (error) => errors.push(error.message));
         const lab = new EffectsLabPage(page);
-        await lab.start(scenario.id, false, format.speed);
+        await lab.start(scenario.fixture, false, format.speed);
         await expect.poll(async () => (await lab.read()).queueIdle).toBe(true);
         await startPacingCapture(page);
         const actions: { label: string; observedAt: number }[] = [];
@@ -710,8 +698,17 @@ test.describe("effects lab pacing in the browser", () => {
           for (let index = 0; index < 3; index++) {
             await mark(`attack-${index}`);
             await new GamePage(page).attack(
-              `dev-perm-0-keyword-reboot-${index}`,
-              page.locator(`[data-drop="perm-opp"][data-id="dev-perm-1-keyword-reboot-target-${index}"]`),
+              fixtureVariant(
+                {
+                  "0": fixturePermanentId("own-keyword-reboot-0"),
+                  "1": fixturePermanentId("own-keyword-reboot-1"),
+                  "2": fixturePermanentId("own-keyword-reboot-2"),
+                },
+                index,
+              ),
+              page.locator(
+                `[data-drop="perm-opp"][data-id="${fixtureVariant({ "0": fixturePermanentId("opponent-keyword-reboot-target-0"), "1": fixturePermanentId("opponent-keyword-reboot-target-1"), "2": fixturePermanentId("opponent-keyword-reboot-target-2") }, index)}"]`,
+              ),
             );
             await expect
               .poll(
@@ -739,7 +736,9 @@ test.describe("effects lab pacing in the browser", () => {
           await waitForDecisionPaint(page, "Block window");
           await mark(scenario.accept ? "declare-block" : "decline-block");
           if (scenario.accept)
-            await page.locator('[data-drop="perm-you"][data-id="dev-perm-0-keyword-blocker"]').click();
+            await page
+              .locator(`[data-drop="perm-you"][data-id="${fixturePermanentId("own-keyword-blocker")}"]`)
+              .click();
           else await prompt.getByRole("button", { name: "Take the attack, no block", exact: true }).click();
           await expect
             .poll(
@@ -771,7 +770,7 @@ test.describe("effects lab pacing in the browser", () => {
             )
             .toBe(true);
           const second = page.locator(
-            '[data-drop="perm-you"][data-id="dev-perm-0-keyword-reboot-1"] .game-card-enter > [data-state]',
+            `[data-drop="perm-you"][data-id="${fixturePermanentId("own-keyword-reboot-1")}"] .game-card-enter > [data-state]`,
           );
           await expect
             .poll(() => second.evaluate((element) => Number.parseFloat(getComputedStyle(element).rotate)))
@@ -793,7 +792,7 @@ test.describe("effects lab pacing in the browser", () => {
         if (scenario.flow === "block") {
           expect(
             state.board!.visible.players[0]!.battleArea.some(
-              (card) => card.permanentId === "dev-perm-0-keyword-blocker",
+              (card) => card.permanentId === fixturePermanentId("own-keyword-blocker"),
             ),
           ).toBe(!scenario.accept);
           expect(state.board!.visible.players[0]!.securityCount).toBe(scenario.accept ? 5 : 4);
@@ -805,11 +804,14 @@ test.describe("effects lab pacing in the browser", () => {
           expect(blows).toHaveLength(format.reduced ? 0 : 1);
           expect(blows.every((blow) => !blow.cutShort)).toBe(true);
           const securityArrow = capture.arrows.find(
-            (arrow) => arrow.source === "dev-perm-1-keyword-attacker" && arrow.target === "security-you",
+            (arrow) =>
+              arrow.source === fixturePermanentId("opponent-keyword-attacker") && arrow.target === "security-you",
           );
           expect(securityArrow).toBeDefined();
           const blockerArrow = capture.arrows.find(
-            (arrow) => arrow.source === "dev-perm-1-keyword-attacker" && arrow.target === "dev-perm-0-keyword-blocker",
+            (arrow) =>
+              arrow.source === fixturePermanentId("opponent-keyword-attacker") &&
+              arrow.target === fixturePermanentId("own-keyword-blocker"),
           );
           if (scenario.accept && !format.reduced) {
             expect(blockerArrow?.key).toBe(securityArrow!.key);
@@ -820,10 +822,10 @@ test.describe("effects lab pacing in the browser", () => {
           const unsuspended = capture.boards.find(
             (board) =>
               board.turnSeat === 1 &&
-              !board.suspendedIds.includes("dev-perm-0-keyword-reboot-0") &&
-              !board.suspendedIds.includes("dev-perm-0-keyword-reboot-1"),
+              !board.suspendedIds.includes(fixturePermanentId("own-keyword-reboot-0")) &&
+              !board.suspendedIds.includes(fixturePermanentId("own-keyword-reboot-1")),
           );
-          expect(unsuspended?.suspendedIds).toContain("dev-perm-0-keyword-reboot-2");
+          expect(unsuspended?.suspendedIds).toContain(fixturePermanentId("own-keyword-reboot-2"));
           expect(state.events.filter((event) => event.kind === "attackEnded")).toHaveLength(3);
           expect(
             state.events.some(
@@ -837,14 +839,31 @@ test.describe("effects lab pacing in the browser", () => {
             for (let index = 0; index < 2; index++) {
               const rotation = capture.timings.find(
                 (timing) =>
-                  timing.permanentId === `dev-perm-0-keyword-reboot-${index}` &&
+                  timing.permanentId ===
+                    fixtureVariant(
+                      {
+                        "0": fixturePermanentId("own-keyword-reboot-0"),
+                        "1": fixturePermanentId("own-keyword-reboot-1"),
+                        "2": fixturePermanentId("own-keyword-reboot-2"),
+                      },
+                      index,
+                    ) &&
                   timing.at >= ribbon!.at &&
                   timing.properties.includes("rotate") &&
                   timing.duration === 200,
               );
               expect(rotation?.delayMs).toBe(index * 60);
               const poses = capture.poses.filter(
-                (pose) => pose.permanentId === `dev-perm-0-keyword-reboot-${index}` && pose.at >= ribbon!.at,
+                (pose) =>
+                  pose.permanentId ===
+                    fixtureVariant(
+                      {
+                        "0": fixturePermanentId("own-keyword-reboot-0"),
+                        "1": fixturePermanentId("own-keyword-reboot-1"),
+                        "2": fixturePermanentId("own-keyword-reboot-2"),
+                      },
+                      index,
+                    ) && pose.at >= ribbon!.at,
               );
               expect(poses.some((pose) => pose.angle > 1 && pose.angle < 89)).toBe(true);
               expect(poses.at(-1)?.angle).toBe(0);
@@ -855,7 +874,7 @@ test.describe("effects lab pacing in the browser", () => {
             ).toEqual([]);
           }
           const controlPoses = capture.poses.filter(
-            (pose) => pose.permanentId === "dev-perm-0-keyword-reboot-2" && pose.at >= unsuspended!.at,
+            (pose) => pose.permanentId === fixturePermanentId("own-keyword-reboot-2") && pose.at >= unsuspended!.at,
           );
           expect(controlPoses.length).toBeGreaterThan(0);
           expect(controlPoses.every((pose) => pose.angle === 90)).toBe(true);
@@ -877,15 +896,17 @@ test.describe("effects lab pacing in the browser", () => {
         const errors: string[] = [];
         page.on("pageerror", (error) => errors.push(error.message));
         const lab = new EffectsLabPage(page);
-        await lab.start(scenario.id, false, format.speed);
+        await lab.start(scenario.fixture, false, format.speed);
         await expect.poll(async () => (await lab.read()).queueIdle).toBe(true);
         await startPacingCapture(page);
         const actions = [{ label: "attack", observedAt: await page.evaluate(() => performance.now()) }];
         await new GamePage(page).attack(
-          scenario.flow === "evade" ? "dev-perm-0-keyword-attacker" : "dev-perm-0-keyword-protected",
+          scenario.flow === "evade"
+            ? fixturePermanentId("own-keyword-attacker")
+            : fixturePermanentId("own-keyword-protected"),
           scenario.flow === "evade"
             ? page.locator('[data-drop="opp-security"]')
-            : page.locator('[data-drop="perm-opp"][data-id="dev-perm-1-keyword-defender"]'),
+            : page.locator(`[data-drop="perm-opp"][data-id="${fixturePermanentId("opponent-keyword-defender")}"]`),
         );
         let label: string;
         if (scenario.flow === "evade") {
@@ -919,7 +940,7 @@ test.describe("effects lab pacing in the browser", () => {
               await prompt.getByRole("button", { name: /^Flamedramon/ }).click();
             else {
               const art = page
-                .locator('[data-drop="perm-you"][data-id="dev-perm-0-keyword-protected"]')
+                .locator(`[data-drop="perm-you"][data-id="${fixturePermanentId("own-keyword-protected")}"]`)
                 .locator('[title="Flamedramon"][data-state]');
               // Field badges overlap small suspended cards. Find exposed art using real hit testing.
               const position = await art.evaluate((element) => {
@@ -971,7 +992,7 @@ test.describe("effects lab pacing in the browser", () => {
         expect(capture.motion.captureQuality).toBe("usable");
         expectOnlyCompletedDpReplacements(state.steps);
         const holder = state.board!.visible.players[0]!.battleArea.find(
-          (card) => card.permanentId === "dev-perm-0-keyword-protected",
+          (card) => card.permanentId === fixturePermanentId("own-keyword-protected"),
         );
         expect(Boolean(holder)).toBe(scenario.accept);
         if (holder) expect(holder.isSuspended).toBe(true);
@@ -985,7 +1006,7 @@ test.describe("effects lab pacing in the browser", () => {
           expect(blows).toHaveLength(0);
           const turns = capture.timings.filter(
             (timing) =>
-              timing.permanentId === "dev-perm-0-keyword-protected" &&
+              timing.permanentId === fixturePermanentId("own-keyword-protected") &&
               timing.duration === 200 &&
               timing.properties.includes("rotate"),
           );
@@ -999,7 +1020,7 @@ test.describe("effects lab pacing in the browser", () => {
             expect(holder.currentDP).toBe(6000);
           }
           const peels = capture.peels.filter(
-            (peel) => peel.permanentId === "dev-perm-0-keyword-protected" && peel.cardId === "BT8-012",
+            (peel) => peel.permanentId === fixturePermanentId("own-keyword-protected") && peel.cardId === "BT8-012",
           );
           if (scenario.accept && !format.reduced) {
             expect(peels).toHaveLength(1);
@@ -1023,20 +1044,22 @@ test.describe("effects lab pacing in the browser", () => {
             const promoted = capture.boards.find((board) =>
               board.permanents.some(
                 (permanent) =>
-                  permanent.permanentId === "dev-perm-0-keyword-protected" && permanent.cardId === "BT1-009",
+                  permanent.permanentId === fixturePermanentId("own-keyword-protected") &&
+                  permanent.cardId === "BT1-009",
               ),
             );
             expect(promoted).toBeDefined();
             expect(promoted!.at).toBeGreaterThanOrEqual(peels[0]!.lastAt);
             const promotedArt = capture.poses.find(
-              (pose) => pose.permanentId === "dev-perm-0-keyword-protected" && pose.cardName === "Monodramon",
+              (pose) =>
+                pose.permanentId === fixturePermanentId("own-keyword-protected") && pose.cardName === "Monodramon",
             );
             expect(promotedArt).toBeDefined();
             expect(promotedArt!.at).toBeGreaterThanOrEqual(peels[0]!.lastAt);
             expect(
               capture.poses.some(
                 (pose) =>
-                  pose.permanentId === "dev-perm-0-keyword-protected" &&
+                  pose.permanentId === fixturePermanentId("own-keyword-protected") &&
                   pose.cardName === "Flamedramon" &&
                   pose.at >= peels[0]!.firstAt,
               ),
@@ -1060,7 +1083,7 @@ test.describe("effects lab pacing in the browser", () => {
         const errors: string[] = [];
         page.on("pageerror", (error) => errors.push(error.message));
         const lab = new EffectsLabPage(page);
-        await lab.start(scenario.id, false, format.speed, false);
+        await lab.start(scenario.fixture, false, format.speed, false);
         const before = await lab.read();
         await startPacingCapture(page);
         const actions: { name: string; observedAt: number }[] = [];
@@ -1097,7 +1120,7 @@ test.describe("effects lab pacing in the browser", () => {
           await waitForDecisionPaint(page, "Confirm targets");
           await boundary(scenario.accept ? "accept-raid" : "decline-raid");
           if (scenario.accept) {
-            await clickFieldArtwork(page, "dev-perm-1-keyword-attack-defender-1", "Monodramon");
+            await clickFieldArtwork(page, fixturePermanentId("opponent-keyword-attack-defender-1"), "Monodramon");
             await prompt.getByRole("button", { name: "Confirm targets", exact: true }).click();
           } else await prompt.getByRole("button", { name: "Pass", exact: true }).click();
         }
@@ -1142,7 +1165,15 @@ test.describe("effects lab pacing in the browser", () => {
         for (const seat of [0, 1])
           expect(
             state.board!.visible.players[seat]!.battleArea.find(
-              (p) => p.permanentId === `dev-perm-${seat}-keyword-attack-control`,
+              (p) =>
+                p.permanentId ===
+                fixtureVariant(
+                  {
+                    "0": fixturePermanentId("own-keyword-attack-control"),
+                    "1": fixturePermanentId("opponent-keyword-attack-control"),
+                  },
+                  seat,
+                ),
             ),
           ).toMatchObject(before.board!.visible.players[seat]!.battleArea[0]!);
         if (scenario.flow === "rush") {
@@ -1157,7 +1188,16 @@ test.describe("effects lab pacing in the browser", () => {
             .board!.visible.players[1]!.battleArea.filter((p) => p.topCard.cardId !== "BT1-089")
             .map((p) => p.permanentId);
           expect(remaining).toEqual(
-            [0, ...(scenario.accept ? [] : [1]), 2].map((index) => `dev-perm-1-keyword-attack-defender-${index}`),
+            [0, ...(scenario.accept ? [] : [1]), 2].map((index) =>
+              fixtureVariant(
+                {
+                  "0": fixturePermanentId("opponent-keyword-attack-defender-0"),
+                  "1": fixturePermanentId("opponent-keyword-attack-defender-1"),
+                  "2": fixturePermanentId("opponent-keyword-attack-defender-2"),
+                },
+                index,
+              ),
+            ),
           );
           expect(state.events.filter((event) => event.redirected)).toHaveLength(scenario.accept ? 1 : 0);
           expect(
@@ -1173,7 +1213,7 @@ test.describe("effects lab pacing in the browser", () => {
             const redirected = capture.arrows.find(
               (arrow) =>
                 arrow.source === attacker.permanentId &&
-                arrow.target === "dev-perm-1-keyword-attack-defender-1" &&
+                arrow.target === fixturePermanentId("opponent-keyword-attack-defender-1") &&
                 arrow.at >= decision.closedAt!,
             );
             expect(original).toBeDefined();
@@ -1185,14 +1225,14 @@ test.describe("effects lab pacing in the browser", () => {
             expect(
               capture.poses.some(
                 (pose) =>
-                  pose.permanentId === "dev-perm-1-keyword-attack-defender-0" &&
+                  pose.permanentId === fixturePermanentId("opponent-keyword-attack-defender-0") &&
                   pose.at > redirected!.at &&
                   pose.cardName === "Monodramon",
               ),
             ).toBe(true);
             const relayout = capture.timings.find(
               (timing) =>
-                timing.permanentId === "dev-perm-1-keyword-attack-defender-2" &&
+                timing.permanentId === fixturePermanentId("opponent-keyword-attack-defender-2") &&
                 timing.at >= decision.closedAt! &&
                 timing.duration === 420 &&
                 timing.properties.includes("translate"),
@@ -1203,7 +1243,9 @@ test.describe("effects lab pacing in the browser", () => {
               relayout!.endMs! - 34 * Math.max(1, Math.abs(relayout!.playbackRate)),
             );
             const poses = capture.poses.filter(
-              (pose) => pose.permanentId === "dev-perm-1-keyword-attack-defender-2" && pose.at >= relayout!.at,
+              (pose) =>
+                pose.permanentId === fixturePermanentId("opponent-keyword-attack-defender-2") &&
+                pose.at >= relayout!.at,
             );
             const settled = poses.at(-1)!;
             expect(settled).toMatchObject({ cardName: "Agumon", currentDP: 2000 });
@@ -1275,7 +1317,7 @@ test.describe("effects lab pacing in the browser", () => {
       const lab = new EffectsLabPage(page);
       // Reuse the conserved printed-card board, leaving GrandGalemon in hand.
       // Its three established opposing Digimon make three real autonomous attacks.
-      await lab.start("keyword-pacing-vortex-decline", false, format.speed, false);
+      await lab.start(fixtureKeywordPacingVortexDecline, false, format.speed, false);
       const before = await lab.read();
       await startPacingCapture(page);
       await lab.button(/END TURN/i).click();
@@ -1340,7 +1382,7 @@ test.describe("effects lab pacing in the browser", () => {
         expect(hatch.at).toBeGreaterThanOrEqual(breeding.removedAt!);
         const main = opponent.find((panel) => panel.label === "Main Phase")!;
         const firstAttack = capture.arrows.find((arrow) =>
-          arrow.source?.startsWith("dev-perm-1-keyword-attack-defender"),
+          arrow.source?.startsWith(fixturePermanentId("opponent-keyword-attack-defender")),
         )!;
         expect(firstAttack).toBeDefined();
         expect(firstAttack.at).toBeGreaterThanOrEqual(main.removedAt!);
@@ -1375,7 +1417,7 @@ test.describe("effects lab pacing in the browser", () => {
         const errors: string[] = [];
         page.on("pageerror", (error) => errors.push(error.message));
         const lab = new EffectsLabPage(page);
-        await lab.start(scenario.id, false, format.speed, false);
+        await lab.start(scenario.fixture, false, format.speed, false);
         const before = await lab.read();
         const audioBefore = await readAudioCapture(page);
         await startPacingCapture(page);
@@ -1492,7 +1534,9 @@ test.describe("effects lab pacing in the browser", () => {
           // The opponent's private chooseTargets prompt is not sent to this seat.
           // Its synchronized DP delta is the public presentation of the chosen copy.
           const choices = capture.dpPulses.filter(
-            (pulse) => pulse.to - pulse.from === 3000 && pulse.permanentId?.startsWith("dev-perm-1-phase-pacing"),
+            (pulse) =>
+              pulse.to - pulse.from === 3000 &&
+              pulse.permanentId?.startsWith(fixturePermanentId("opponent-phase-pacing")),
           );
           expect(choices).toHaveLength(1);
           const choice = choices[0]!;
@@ -1582,7 +1626,9 @@ test.describe("effects lab pacing in the browser", () => {
           expect(clock.nativeMs).toBeGreaterThanOrEqual(clock.endMs! - 34 * Math.max(1, Math.abs(clock.playbackRate!)));
         }
         if (scenario.flow === "raising-evolution") {
-          const raised = capture.raising.filter((entry) => entry.permanentId === "dev-perm-1-phase-pacing-raising");
+          const raised = capture.raising.filter(
+            (entry) => entry.permanentId === fixturePermanentId("opponent-phase-pacing-raising"),
+          );
           expect(raised.map((entry) => entry.cardId)).toEqual(["ST1-01", ...scenario.handCardIds]);
           for (const [index, entry] of raised.entries()) {
             expect(entry.poses.some((pose) => pose.painted && pose.artLoaded)).toBe(true);
@@ -1617,7 +1663,7 @@ test.describe("effects lab pacing in the browser", () => {
           const relayout = capture.timings.filter(
             (timing) =>
               timing.duration === 420 &&
-              (timing.permanentId?.startsWith("dev-perm-1-phase-pacing") ||
+              (timing.permanentId?.startsWith(fixturePermanentId("opponent-phase-pacing")) ||
                 played.some((event) => event.permanentId === timing.permanentId)) &&
               timing.properties.some((property) => ["transform", "translate"].includes(property)),
           );
@@ -1669,7 +1715,7 @@ test.describe("effects lab pacing in the browser", () => {
         const errors: string[] = [];
         page.on("pageerror", (error) => errors.push(error.message));
         const lab = new EffectsLabPage(page);
-        await lab.start(scenario.id, false, format.speed, false);
+        await lab.start(scenario.fixture, false, format.speed, false);
         const before = await lab.read();
         await startPacingCapture(page);
         const actions: { name: string; observedAt: number }[] = [];
@@ -1680,7 +1726,7 @@ test.describe("effects lab pacing in the browser", () => {
         if (scenario.flow === "blitz") {
           await game.dragCardTo(
             /^Omnimon$/i,
-            page.locator('[data-drop="perm-you"][data-id="dev-perm-0-keyword-attack-attacker"]'),
+            page.locator(`[data-drop="perm-you"][data-id="${fixturePermanentId("own-keyword-attack-attacker")}"]`),
           );
           await boundary("confirm-digivolution");
           await page.getByRole("button", { name: "Digivolve", exact: true }).click();
@@ -1748,7 +1794,7 @@ test.describe("effects lab pacing in the browser", () => {
             await expect(prompt).toBeVisible();
             await waitForDecisionPaint(page, "Attack target");
             await boundary("choose-second-suspended-target");
-            await clickFieldArtwork(page, "dev-perm-1-keyword-attack-defender-1", "Monodramon");
+            await clickFieldArtwork(page, fixturePermanentId("opponent-keyword-attack-defender-1"), "Monodramon");
             await prompt.getByRole("button", { name: "Attack", exact: true }).click();
           }
         }
@@ -1810,12 +1856,29 @@ test.describe("effects lab pacing in the browser", () => {
               .board!.visible.players[1]!.battleArea.filter((p) => p.topCard.cardId !== "BT1-089")
               .map((p) => p.permanentId),
           ).toEqual(
-            [0, ...(scenario.accept ? [] : [1]), 2].map((index) => `dev-perm-1-keyword-attack-defender-${index}`),
+            [0, ...(scenario.accept ? [] : [1]), 2].map((index) =>
+              fixtureVariant(
+                {
+                  "0": fixturePermanentId("opponent-keyword-attack-defender-0"),
+                  "1": fixturePermanentId("opponent-keyword-attack-defender-1"),
+                  "2": fixturePermanentId("opponent-keyword-attack-defender-2"),
+                },
+                index,
+              ),
+            ),
           );
         for (const seat of [0, 1])
           expect(
             state.board!.visible.players[seat]!.battleArea.find(
-              (p) => p.permanentId === `dev-perm-${seat}-keyword-attack-control`,
+              (p) =>
+                p.permanentId ===
+                fixtureVariant(
+                  {
+                    "0": fixturePermanentId("own-keyword-attack-control"),
+                    "1": fixturePermanentId("opponent-keyword-attack-control"),
+                  },
+                  seat,
+                ),
             ),
           ).toMatchObject(before.board!.visible.players[seat]!.battleArea[0]!);
         if (!format.reduced) {
@@ -1865,7 +1928,7 @@ test.describe("effects lab pacing in the browser", () => {
           if (scenario.flow === "vortex" && scenario.accept) {
             const relayout = capture.timings.find(
               (timing) =>
-                timing.permanentId === "dev-perm-1-keyword-attack-defender-2" &&
+                timing.permanentId === fixturePermanentId("opponent-keyword-attack-defender-2") &&
                 timing.duration === 420 &&
                 timing.properties.includes("translate"),
             );
@@ -1892,7 +1955,7 @@ test.describe("effects lab pacing in the browser", () => {
         const errors: string[] = [];
         page.on("pageerror", (error) => errors.push(error.message));
         const lab = new EffectsLabPage(page);
-        await lab.start(scenario.id, false, format.speed);
+        await lab.start(scenario.fixture, false, format.speed);
         await expect.poll(async () => (await lab.read()).queueIdle).toBe(true);
         const before = await lab.read();
         await startPacingCapture(page);
@@ -1952,7 +2015,15 @@ test.describe("effects lab pacing in the browser", () => {
         for (const seat of [0, 1])
           expect(
             state.board!.visible.players[seat]!.battleArea.some(
-              (card) => card.permanentId === `dev-perm-${seat}-keyword-deck-control`,
+              (card) =>
+                card.permanentId ===
+                fixtureVariant(
+                  {
+                    "0": fixturePermanentId("own-keyword-deck-control"),
+                    "1": fixturePermanentId("opponent-keyword-deck-control"),
+                  },
+                  seat,
+                ),
             ),
           ).toBe(true);
         const clause = state.steps.find(
@@ -2102,7 +2173,7 @@ test.describe("effects lab pacing in the browser", () => {
         const errors: string[] = [];
         page.on("pageerror", (error) => errors.push(error.message));
         const lab = new EffectsLabPage(page);
-        await lab.start(scenario.id, false, format.speed);
+        await lab.start(scenario.fixture, false, format.speed);
         await expect.poll(async () => (await lab.read()).queueIdle).toBe(true);
         await startPacingCapture(page);
         const actions = [
@@ -2134,10 +2205,10 @@ test.describe("effects lab pacing in the browser", () => {
               .getByRole("button", { name: /^Phoenixmon/ })
               .first()
               .click();
-          else await clickFieldArtwork(page, "dev-perm-1-keyword-stack-0", "Phoenixmon");
+          else await clickFieldArtwork(page, fixturePermanentId("opponent-keyword-stack-0"), "Phoenixmon");
           await prompt.getByRole("button", { name: "Confirm targets", exact: true }).click();
         } else {
-          await clickFieldArtwork(page, "dev-perm-0-keyword-stack-0", "WarGrowlmon");
+          await clickFieldArtwork(page, fixturePermanentId("own-keyword-stack-0"), "WarGrowlmon");
           await page.getByRole("button", { name: /^Activate effect:/i }).click();
           const prompt = page.getByRole("dialog", { name: "WarGrowlmon · effect", exact: true });
           await expect(prompt).toBeVisible();
@@ -2179,10 +2250,18 @@ test.describe("effects lab pacing in the browser", () => {
         expect(capture.motion.captureQuality).toBe("usable");
         expectOnlyCompletedDpReplacements(state.steps);
         const seat = scenario.flow === "de-digivolve" ? 1 : 0;
-        const hostId = `dev-perm-${seat}-keyword-stack-0`;
+        const hostId = fixtureVariant(
+          { "1": fixturePermanentId("opponent-keyword-stack-0"), "0": fixturePermanentId("own-keyword-stack-0") },
+          seat,
+        );
         const host = state.board!.visible.players[seat]!.battleArea.find((card) => card.permanentId === hostId)!;
         const control = state.board!.visible.players[seat]!.battleArea.find(
-          (card) => card.permanentId === `dev-perm-${seat}-keyword-stack-1`,
+          (card) =>
+            card.permanentId ===
+            fixtureVariant(
+              { "1": fixturePermanentId("opponent-keyword-stack-1"), "0": fixturePermanentId("own-keyword-stack-1") },
+              seat,
+            ),
         )!;
         const peels = capture.peels.filter((peel) => peel.permanentId === hostId);
         const removed = scenario.flow === "de-digivolve" ? scenario.removedCount : 2;
@@ -2245,7 +2324,7 @@ test.describe("effects lab pacing in the browser", () => {
           expect(host.stack.map((card) => card.cardId)).toEqual(["BT1-051"]);
           expect(control.stack).toHaveLength(3);
           const target = state.board!.visible.players[1]!.battleArea.find(
-            (card) => card.permanentId === "dev-perm-1-keyword-stack-target",
+            (card) => card.permanentId === fixturePermanentId("opponent-keyword-stack-target"),
           );
           expect(Boolean(target)).toBe(!scenario.deletesTarget);
           if (target) expect(target.currentDP).toBe(8000);
@@ -2253,22 +2332,27 @@ test.describe("effects lab pacing in the browser", () => {
           if (!format.reduced) {
             const result = capture.boards.find((sample) =>
               scenario.deletesTarget
-                ? !sample.permanents.some((card) => card.permanentId === "dev-perm-1-keyword-stack-target")
+                ? !sample.permanents.some(
+                    (card) => card.permanentId === fixturePermanentId("opponent-keyword-stack-target"),
+                  )
                 : sample.permanents.some(
-                    (card) => card.permanentId === "dev-perm-1-keyword-stack-target" && card.currentDP === 8000,
+                    (card) =>
+                      card.permanentId === fixturePermanentId("opponent-keyword-stack-target") &&
+                      card.currentDP === 8000,
                   ),
             );
             expect(result, "the paid effect's result was painted").toBeDefined();
             expect(result!.at).toBeGreaterThanOrEqual(peels.at(-1)!.lastAt);
             if (!scenario.deletesTarget) {
               const resultPose = capture.poses.find(
-                (pose) => pose.permanentId === "dev-perm-1-keyword-stack-target" && pose.currentDP === 8000,
+                (pose) =>
+                  pose.permanentId === fixturePermanentId("opponent-keyword-stack-target") && pose.currentDP === 8000,
               );
               expect(resultPose, "the paid effect's DP was painted in the card chip").toBeDefined();
               expect(resultPose!.at).toBeGreaterThanOrEqual(peels.at(-1)!.lastAt);
             }
             const dpPulses = capture.dpPulses.filter(
-              (pulse) => pulse.permanentId === "dev-perm-1-keyword-stack-target",
+              (pulse) => pulse.permanentId === fixturePermanentId("opponent-keyword-stack-target"),
             );
             // A zero-DP rule deletion can remove the target before its decoration paints.
             if (!scenario.deletesTarget) expect(dpPulses.length).toBeGreaterThan(0);
@@ -2293,11 +2377,15 @@ test.describe("effects lab pacing in the browser", () => {
       await page.emulateMedia({ reducedMotion: format.reduced ? "reduce" : "no-preference" });
       await page.addInitScript(() => localStorage.setItem("aegis.field-layout", "organized"));
       const lab = new EffectsLabPage(page);
-      await lab.start("effects-lab-field-grouping", false);
+      await lab.start(fixtureFieldGrouping, false);
       await expect(page.getByRole("button", { name: "Izzy Izumi (2 copies)", exact: true })).toBeVisible();
       await startPacingCapture(page);
       for (let index = 0; index < 2; index++) {
-        await page.locator(`[data-drop="perm-you"][data-id="dev-perm-0-group-izzy-${index}"]`).click();
+        await page
+          .locator(
+            `[data-drop="perm-you"][data-id="${fixtureVariant({ "0": fixturePermanentId("own-group-izzy-0"), "1": fixturePermanentId("own-group-izzy-1") }, index)}"]`,
+          )
+          .click();
         await page.getByRole("button", { name: /^Activate effect:/i }).click();
         const decision = page.getByRole("dialog", { name: "Izzy Izumi · effect", exact: true });
         await expect(decision).toBeVisible();
@@ -2367,8 +2455,8 @@ test.describe("effects lab pacing in the browser", () => {
     }, info) => {
       if (phone) await page.setViewportSize({ width: 390, height: 844 });
       const lab = new EffectsLabPage(page);
-      await lab.start("effects-lab-opponent-play");
-      await lab.captureArrival("BT1-029", info);
+      await lab.start(fixtureOpponentPlay, false);
+      await Promise.all([lab.captureArrival("BT1-029", info), lab.button(/END TURN/i).click()]);
       if (phone) await page.getByRole("button", { name: "Show the full notice", exact: true }).click();
       await expect
         .poll(
@@ -2433,7 +2521,7 @@ test.describe("effects lab pacing in the browser", () => {
     }, info) => {
       if (phone) await page.setViewportSize({ width: 390, height: 844 });
       const lab = new EffectsLabPage(page);
-      await lab.start("arena-drasil-optional-effect-presets", false);
+      await lab.start(fixtureDrasilOptionalEffectPresets, false);
       await new GamePage(page).play(/^dracmon$/i);
       await lab.captureArrival("BT23-062", info);
       await page.getByRole("button", { name: "Select all, top to bottom", exact: true }).click();
@@ -2590,7 +2678,7 @@ test.describe("effects lab pacing in the browser", () => {
         localStorage.setItem("aegis:locale", "en");
         localStorage.setItem("aegis.field-layout", "organized");
       });
-      await page.goto("/dev/battle?scenario=field-grouping");
+      await openFixturePage(page, fixtureInterleavedFieldGrouping);
       await new GamePage(page).endBreeding();
       const row = page.locator(".game-battle-row--you");
       await expect(row.getByRole("button", { name: "Izzy Izumi (3 copies)", exact: true })).toBeVisible();
@@ -2652,7 +2740,9 @@ test.describe("effects lab pacing in the browser", () => {
       if (format.name === "desktop") {
         // This chain's short clauses can all fit on a tall desktop. Exercise a smaller
         // toast lane so reading position is tested while actual effects keep arriving.
-        await page.addStyleTag({ content: 'html .narration-slot[data-slot="narration-text"] { max-height: 12rem; }' });
+        await page.addStyleTag({
+          content: 'html .narration-slot[data-slot="narration-text"] { max-height: 12rem; overflow-y: auto; }',
+        });
         await lab.readEarlierNotices();
       }
       if (format.name === "phone")

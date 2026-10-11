@@ -1,11 +1,12 @@
+import { observe } from "../testkit/observe.js";
+import { layLocalScenario } from "./local.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Phase, Zone } from "@aegis/shared";
 import { installVisibilityPort, type VisibilityPort } from "../state/access.js";
 import { setupEngine } from "../testkit/harness.js";
 import { setupScenario } from "../testkit/scenario.js";
-import { isDevScenarioId, layDevScenario } from "../devScenario.js";
-import { layScenarioFixture, scenarioReferences, type ScenarioFixture } from "./fixture.js";
-import { clearLocalScenario, configureLocalScenario, hasLocalScenario } from "./local.js";
+import { bindScenarioDecks, layScenarioFixture, scenarioReferences, type ScenarioFixture } from "./fixture.js";
+import { clearLocalScenario, configureLocalScenario, hasLocalScenario, isLocalScenarioEntry } from "./local.js";
 
 function fixture(): ScenarioFixture {
   return {
@@ -35,6 +36,42 @@ afterEach(() => {
 });
 
 describe("scenario fixtures", () => {
+  it.each([4, 0])("uses a staged deck with %i eggs without adding fallback cards", (count) => {
+    const value = fixture();
+    value.board[0]!.eggDeck = [
+      ...Array.from({ length: 5 }, (_, index) => ({
+        card: "BT1-001",
+        as: `dealt-egg-${index}`,
+        fromDeck: { seat: 0 as const, index, egg: true },
+      })),
+      { card: "BT1-003", as: "explicit-egg" },
+    ];
+    const decks = [
+      { mainDeck: ["BT1-010"], eggDeck: Array<string>(count).fill("BT26-001") },
+      { mainDeck: [], eggDeck: [] },
+    ] satisfies [import("../setup.js").Decklist, import("../setup.js").Decklist];
+    const s = setupScenario(bindScenarioDecks(value, decks));
+    expect([...s.state.players[0]!.eggDeck].map((card) => card.cardId)).toEqual([...decks[0].eggDeck, "BT1-003"]);
+    expect(value.board[0]!.eggDeck).toHaveLength(6);
+    expect(bindScenarioDecks(value)).toBe(value);
+  });
+
+  it("rejects a missing dealt permanent before changing the receiving board", () => {
+    const s = setupScenario(fixture());
+    const before = s.state.toJSON();
+    const value = fixture();
+    value.board[0]!.battleArea = [
+      { card: "BT1-019", as: "missing", top: { card: "BT1-019", fromDeck: { seat: 0, index: 2 } } },
+    ];
+    expect(() =>
+      layScenarioFixture(s.state, value, [
+        { mainDeck: [], eggDeck: [] },
+        { mainDeck: [], eggDeck: [] },
+      ]),
+    ).toThrow("Missing staged deck card");
+    expect(s.state.toJSON()).toEqual(before);
+  });
+
   it("reuses the board builder with explicit turn-start state and aliases in the testkit", () => {
     const s = setupScenario(fixture());
     expect(s.state.phase).toBe(Phase.None);
@@ -92,25 +129,17 @@ describe("scenario fixtures", () => {
   });
 
   it("loads a server-configured fixture through the generic dev entry without sharing mutable author data", () => {
-    expect(isDevScenarioId("local-fixture")).toBe(false);
+    expect(isLocalScenarioEntry("local-fixture")).toBe(false);
     const authored = fixture();
     const refs = configureLocalScenario(authored);
     authored.board[0]!.hand = [];
-    expect(isDevScenarioId("local-fixture")).toBe(true);
+    expect(isLocalScenarioEntry("local-fixture")).toBe(true);
     const s = setupEngine();
-    layDevScenario("local-fixture", s.state, [
-      { mainDeck: [], eggDeck: [] },
-      { mainDeck: [], eggDeck: [] },
-    ]);
+    layLocalScenario(s.state);
     expect(s.state.players[0]!.hand[0]!.instanceId).toBe(refs.instanceId("fodder"));
     clearLocalScenario();
-    expect(isDevScenarioId("local-fixture")).toBe(false);
-    expect(() =>
-      layDevScenario("local-fixture", s.state, [
-        { mainDeck: [], eggDeck: [] },
-        { mainDeck: [], eggDeck: [] },
-      ]),
-    ).toThrow(/No local scenario/);
+    expect(isLocalScenarioEntry("local-fixture")).toBe(false);
+    expect(() => layLocalScenario(s.state)).toThrow(/No local scenario/);
   });
 
   it("keeps local fixture registration and loading unavailable in production", () => {
@@ -118,6 +147,30 @@ describe("scenario fixtures", () => {
     vi.stubEnv("NODE_ENV", "production");
     expect(() => configureLocalScenario(fixture())).toThrow(/production/);
     expect(hasLocalScenario()).toBe(false);
-    expect(isDevScenarioId("local-fixture")).toBe(false);
+    expect(isLocalScenarioEntry("local-fixture")).toBe(false);
   });
+});
+
+it("keeps explicit linked DP and initial effects identical in API and room preparation", () => {
+  const board = fixture();
+  board.board[0]!.battleArea = [{ card: "BT25-052", as: "host", dp: 6000, currentDP: 6000, linked: ["BT25-036"] }];
+  board.effects = [{ permanent: "host", kind: "suspendLock" }];
+  const api = setupScenario(board);
+  const room = setupEngine();
+  layScenarioFixture(room.state, board);
+  expect(api.perm("host").currentDP).toBe(room.state.players[0]!.battleArea[0]!.currentDP);
+  expect(observe(api.engine).isRestricted(api.perm("host"), "suspend")).toBe(true);
+});
+
+it.each([
+  { effects: [{ permanent: "absent", kind: "suspendLock" }] },
+  { board: { 0: { hand: [{ card: "BT1-009", ownerSeat: 2 }] } } },
+  { board: { 0: { battleArea: [{ card: "BT1-019", currentDP: NaN }] } } },
+  { board: { 0: { hand: [{ card: "BT1-009", fromDeck: { seat: 0, index: -1 } }] } } },
+  { board: { 0: { battleArea: [{ card: "BT1-019", top: "BT1-009" }] } } },
+])("rejects malformed preparation before changing a seated board: %j", (invalid) => {
+  const s = setupEngine({ 0: { hand: ["BT1-010"] } });
+  const before = s.state.toJSON();
+  expect(() => layScenarioFixture(s.state, { ...fixture(), ...invalid } as ScenarioFixture)).toThrow();
+  expect(s.state.toJSON()).toEqual(before);
 });

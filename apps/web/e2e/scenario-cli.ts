@@ -33,7 +33,9 @@ try {
           server.middlewares.use("/e2e/local-scenario.json", (_request, response) => {
             response.setHeader("Content-Type", "application/json");
             response.setHeader("Cache-Control", "no-store");
-            response.end(JSON.stringify(options));
+            response.end(
+              JSON.stringify({ joinOptions: options, lab: process.argv.includes("--lab") ? "effects" : undefined }),
+            );
           });
         },
       },

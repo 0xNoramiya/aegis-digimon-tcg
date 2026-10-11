@@ -1,11 +1,13 @@
+import fixtureMayAttackSuspendedCreepymon from "../../api/src/engine/scenarios/may-attack-suspended-creepymon.fixture";
+import { fixturePermanentId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
-const CREEPYMON_ID = "dev-perm-0-may-attack-creepymon";
+const CREEPYMON_ID = fixturePermanentId("own-may-attack-creepymon");
 
 // Feedback #5 follow-up: "[End of Your Turn] This Digimon may attack" (EX10-009) asks nothing
 // when Creepymon is suspended, because it can't attack (KB Q2490).
 test("may attack: a suspended Creepymon gets no end-of-turn attack prompt", async ({ scenario }) => {
-  await scenario.open("arena-may-attack-suspended-creepymon");
+  await scenario.openFixture(fixtureMayAttackSuspendedCreepymon);
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
   await scenario.attack(CREEPYMON_ID);
   await scenario.resolveUntil(
@@ -34,7 +36,7 @@ test("may attack: a suspended Creepymon gets no end-of-turn attack prompt", asyn
 test("may attack control: an unsuspended Creepymon is offered the attack, and declining keeps it", async ({
   scenario,
 }) => {
-  await scenario.open("arena-may-attack-suspended-creepymon");
+  await scenario.openFixture(fixtureMayAttackSuspendedCreepymon);
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
 
   const offered: string[] = [];

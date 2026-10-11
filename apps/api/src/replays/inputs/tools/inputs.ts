@@ -41,6 +41,9 @@ export function describeInput(input: ReplayInput, index: number, indexWidth?: nu
         `deck ${input.deck.mainDeck.length}+${input.deck.eggDeck.length}${input.bot ? " bot" : ""}`,
       );
       break;
+    case "startScenarioFixture":
+      parts.push(input.fixture.name ?? "fixture");
+      break;
     case "startDevScenario":
       parts.push(input.scenario);
       break;

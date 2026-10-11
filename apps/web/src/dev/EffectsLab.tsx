@@ -1,17 +1,4 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
-import {
-  CATALOG_DECKS,
-  KEYWORD_PACING_SCENARIOS,
-  KEYWORD_TURN_PACING_SCENARIOS,
-  KEYWORD_PROTECTION_PACING_SCENARIOS,
-  KEYWORD_STACK_PACING_SCENARIOS,
-  KEYWORD_DECK_PACING_SCENARIOS,
-  KEYWORD_ATTACK_PACING_SCENARIOS,
-  KEYWORD_END_ATTACK_PACING_SCENARIOS,
-  PHASE_PACING_SCENARIOS,
-  getCardDefinition,
-  type KeywordPacingScenario,
-} from "@aegis/shared";
 import { colorKey } from "../design/theme";
 import { GameScreen } from "../game/GameScreen";
 import type { AnimationStep } from "../game/animationQueue";
@@ -42,7 +29,6 @@ import {
   type LabStepEvent,
   type StepBar,
 } from "./effectsLabModel";
-import { SCENARIO_NOTES, type ScenarioCopy } from "./LiveArenaDemo";
 import { PacingTuner, useLabPacing } from "./PacingTuner";
 import { observeGateExpiry } from "../game/match/presentationGate";
 import { presentationTelemetry } from "../game/presentationTelemetry";
@@ -51,256 +37,12 @@ import { createLiveMotionProbe } from "./liveMotionProbe";
 import { LiveMotionHarness } from "./LiveMotionHarness";
 import "./effectsLab.css";
 
-type DevScenario = NonNullable<AegisJoinOptions["devScenario"]>;
-const keywordScenarios: readonly KeywordPacingScenario[] = KEYWORD_PACING_SCENARIOS;
-
-const SCENARIO_OPTIONS: readonly (readonly [DevScenario, string])[] = [
-  ...PHASE_PACING_SCENARIOS.map((scenario) => [scenario.id, `Phase pacing · ${scenario.label}`] as const),
-  ...KEYWORD_END_ATTACK_PACING_SCENARIOS.map(
-    (scenario) =>
-      [scenario.id, `Keyword pacing · ${scenario.keyword} · ${scenario.accept ? "accept" : "decline"}`] as const,
-  ),
-  ...KEYWORD_ATTACK_PACING_SCENARIOS.map(
-    (scenario) =>
-      [
-        scenario.id,
-        `Keyword pacing · ${scenario.keyword} · ${scenario.flow === "raid" ? (scenario.accept ? "accept" : "decline") : scenario.flow === "rush" ? "fresh play" : `${scenario.securityRemoved} checks`}`,
-      ] as const,
-  ),
-  ...KEYWORD_DECK_PACING_SCENARIOS.map(
-    (scenario) =>
-      [
-        scenario.id,
-        `Keyword pacing · ${scenario.keyword} · ${scenario.sourceSeat === 0 ? "own" : "opponent"} · ${scenario.amount || "condition inactive"}`,
-      ] as const,
-  ),
-  ...KEYWORD_STACK_PACING_SCENARIOS.map(
-    (scenario) =>
-      [
-        scenario.id,
-        `Keyword pacing · ${scenario.flow === "de-digivolve" ? `De-Digivolve · ${scenario.removedCount} levels` : `Digi-Burst · ${scenario.deletesTarget ? "delete at zero DP" : "reduce DP"}`}`,
-      ] as const,
-  ),
-  ...KEYWORD_PROTECTION_PACING_SCENARIOS.map(
-    (scenario) =>
-      [scenario.id, `Keyword pacing · ${scenario.keyword} · ${scenario.accept ? "accept" : "decline"}`] as const,
-  ),
-  ...KEYWORD_TURN_PACING_SCENARIOS.map(
-    (scenario) =>
-      [
-        scenario.id,
-        `Keyword pacing · ${scenario.keyword}${scenario.flow === "block" ? ` · ${scenario.accept ? "accept" : "decline"}` : ""}`,
-      ] as const,
-  ),
-  ...keywordScenarios.map(
-    (scenario) =>
-      [
-        scenario.id,
-        `Keyword pacing · ${scenario.keyword}${scenario.decision ? ` · ${scenario.decision.accept ? "accept" : "decline"}` : ""}`,
-      ] as const,
-  ),
-  ["effects-lab-field-grouping", "Field grouping · activate both copies"],
-  ["effects-lab-own-chain", "Effects lab · own trigger chain"],
-  ["effects-lab-opponent-chain", "Effects lab · opponent trigger chain"],
-  ["effects-lab-opponent-play", "Effects lab · opponent confirmed play and On Play"],
-  ["effects-lab-nested", "Effects lab · nested triggers"],
-  ["effects-lab-prod-royal-knights", "Effects lab · production Royal Knights"],
-  ["effects-lab-prod-ghost", "Effects lab · production Ghost"],
-  ["effects-lab-prod-ghost-execute", "Effects lab · production Execute, 8 On Deletion"],
-  ["effects-lab-prod-ghost-execute-security", "Effects lab · production Execute through a Security"],
-  ["effects-lab-prod-attack-stack", "Effects lab · production attack, 4 When Attacking"],
-  ["effects-lab-prod-security-removed", "Effects lab · production security removed, 3 watchers"],
-  ["effects-lab-prod-titan-cascade", "Effects lab · production Titan hand-trash cascade"],
-  ["effects-lab-paladin-battle", "Effects lab · EX13-076 effect battle"],
-  ["arena-bt24-asuna-return-play", "BT24 Asuna · return to deck, then play from trash"],
-  ["arena-ex13-deletion-trigger-ordering", "EX13 Kings · deletion trigger ordering"],
-  ["arena-gate-deadly-sins-effect-order", "EX6 Gate of Deadly Sins · effect resolution plan"],
-  ["arena-security-effect-pacing", "Security effects · pacing"],
-  ["arena-ex13-giromon-block-triggers", "EX13 Giromon · 6 block triggers"],
-  ["arena-drasil-optional-effect-presets", "Optional effects · King Drasil accept or decline"],
-];
-
-const LAB_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
-  "phase-pacing-bot-raising-evolution": {
-    en: "End breeding and your turn. The bot evolves Koromon into Agumon, Birdramon and Garudamon in raising. Follow each physical top and mandatory draw; its When Digivolving effect stays inactive there.",
-    ptBR: "Encerre a criação e seu turno. O bot evolui Koromon para Agumon, Birdramon e Garudamon na criação. Acompanhe cada carta no topo e compra obrigatória; o efeito Ao Digievoluir fica inativo nessa área.",
-  },
-  "phase-pacing-bot-play-grouping": {
-    en: "End breeding and your turn. The bot hatches Tanemon and plays two physical Monodramon copies. Follow both showcases, arrivals and the field regrouping before the turn changes.",
-    ptBR: "Encerre a criação e seu turno. O bot choca Tanemon e joga duas cópias físicas de Monodramon. Acompanhe as apresentações, chegadas e o reagrupamento do campo antes da troca de turno.",
-  },
-  "phase-pacing-bot-raising-move": {
-    en: "End breeding and your turn. The bot moves its Birdramon stack from raising, evolves one copy into Garudamon and makes three ordinary attacks. Follow the move, regrouping, evolution choice and each security check.",
-    ptBR: "Encerre a criação e seu turno. O bot move a pilha de Birdramon da criação, evolui uma cópia para Garudamon e faz três ataques comuns. Acompanhe a saída, reagrupamento, escolha da evolução e cada checagem de segurança.",
-  },
-  ...Object.fromEntries(
-    KEYWORD_END_ATTACK_PACING_SCENARIOS.map((scenario) => [
-      scenario.id,
-      scenario.flow === "blitz"
-        ? {
-            en: `End breeding and digivolve Phoenixmon into Omnimon. Resolve Blitz first and ${scenario.accept ? "accept, then attack security" : "decline the attack"}. Follow the evolution, draw, decision and later unsuspend before the turn changes.`,
-            ptBR: `Encerre a criação e evolua Phoenixmon para Omnimon. Resolva Blitz primeiro e ${scenario.accept ? "aceite, depois ataque a segurança" : "recuse o ataque"}. Acompanhe a evolução, a compra, a decisão e o desvirar antes da troca de turno.`,
-          }
-        : {
-            en: `End breeding, play GrandGalemon, then end your turn. ${scenario.accept ? "Accept Vortex and choose the second suspended Monodramon. Follow its departure and the field regrouping." : "Decline Vortex and follow the turn change without an attack."} The unsuspended Agumon and security are not legal Vortex targets.`,
-            ptBR: `Encerre a criação, jogue GrandGalemon e encerre seu turno. ${scenario.accept ? "Aceite Vortex e escolha o segundo Monodramon virado. Acompanhe a saída e o reagrupamento do campo." : "Recuse Vortex e acompanhe a troca de turno sem ataque."} Agumon desvirado e a segurança não são alvos válidos de Vortex.`,
-          },
-    ]),
-  ),
-  ...Object.fromEntries(
-    KEYWORD_ATTACK_PACING_SCENARIOS.map((scenario) => [
-      scenario.id,
-      scenario.flow === "rush"
-        ? {
-            en: "End breeding, play BushiAgumon and Monodramon, then attack security with BushiAgumon. Only the fresh BushiAgumon can attack this turn.",
-            ptBR: "Encerre a criação, jogue BushiAgumon e Monodramon e ataque a segurança com BushiAgumon. Só o BushiAgumon recém-jogado pode atacar neste turno.",
-          }
-        : scenario.flow === "raid"
-          ? {
-              en: `End breeding and attack security with Cyclonemon. ${scenario.accept ? "Select the second Monodramon and confirm Raid. Follow the target change and the remaining copy." : "Pass Raid and follow the security check."} Both Monodramon are tied for highest DP; Agumon cannot be chosen.`,
-              ptBR: `Encerre a criação e ataque a segurança com Cyclonemon. ${scenario.accept ? "Selecione o segundo Monodramon e confirme Raid. Acompanhe a troca de alvo e a cópia que fica no campo." : "Passe Raid e acompanhe a checagem de segurança."} Os dois Monodramon têm o maior DP; Agumon não pode ser escolhido.`,
-            }
-          : {
-              en: `End breeding and attack security with ${getCardDefinition(scenario.attackerCardIds.at(-1)!)?.nameEn}. Follow ${scenario.securityRemoved} separate checks in order. One declaration starts the attack; an unchecked security card remains.`,
-              ptBR: `Encerre a criação e ataque a segurança com ${getCardDefinition(scenario.attackerCardIds.at(-1)!)?.nameEn}. Acompanhe ${scenario.securityRemoved} checagens separadas em ordem. Uma declaração inicia o ataque; uma segurança não checada permanece.`,
-            },
-    ]),
-  ),
-  ...Object.fromEntries(
-    KEYWORD_DECK_PACING_SCENARIOS.map((scenario) => {
-      const name = getCardDefinition(scenario.sourceCardId)?.nameEn ?? scenario.sourceCardId;
-      return [
-        scenario.id,
-        {
-          en:
-            scenario.sourceSeat === 0
-              ? `End breeding and play ${name}. ${scenario.amount ? `Follow ${scenario.amount} ${scenario.flow === "draw" ? "drawn cards joining your hand, one at a time" : "cards joining your security with one stack reaction"}.` : "With four security cards, its Recovery condition is inactive: no card should move."} The established Tamers are controls.`
-              : `End breeding and your turn. The opponent plays ${name}. Follow its ${scenario.flow === "draw" ? "two hidden draws" : "face-down recovery"} and the displayed counts. The established Tamers are controls.`,
-          ptBR:
-            scenario.sourceSeat === 0
-              ? `Encerre a criação e jogue ${name}. ${scenario.amount ? `Acompanhe ${scenario.amount} ${scenario.flow === "draw" ? "cartas compradas chegando à mão, uma por vez" : "cartas chegando à segurança com uma reação da pilha"}.` : "Com quatro seguranças, a condição de Recovery não se aplica: nenhuma carta deve se mover."} Os Tamers já no campo são controles.`
-              : `Encerre a criação e seu turno. O oponente joga ${name}. Acompanhe ${scenario.flow === "draw" ? "as duas compras ocultas" : "a recuperação com a carta virada para baixo"} e os contadores. Os Tamers já no campo são controles.`,
-        },
-      ];
-    }),
-  ),
-  ...Object.fromEntries(
-    KEYWORD_STACK_PACING_SCENARIOS.map((scenario) => [
-      scenario.id,
-      scenario.flow === "de-digivolve"
-        ? {
-            en: `End breeding, play ${scenario.optionCardId === "BT2-105" ? "Spider Shooter" : "Infinity Cannon"} and select one Phoenixmon. Watch each top leave in order while the other copy keeps its stack. The level-three floor protects Yokomon.`,
-            ptBR: `Encerre a criação, jogue ${scenario.optionCardId === "BT2-105" ? "Spider Shooter" : "Infinity Cannon"} e selecione um Phoenixmon. Acompanhe cada topo saindo em ordem, enquanto a outra cópia mantém a pilha. O limite de nível três protege Yokomon.`,
-          }
-        : {
-            en: `End breeding and activate one WarGrowlmon. Trash Cupimon and Salamon for Digi-Burst, then follow the two source peels and ${scenario.deletesTarget ? "Dracomon's deletion at zero DP" : "Phoenixmon's DP reduction"}. The other WarGrowlmon keeps its sources.`,
-            ptBR: `Encerre a criação e ative um WarGrowlmon. Descarte Cupimon e Salamon para Digi-Burst, depois acompanhe as duas fontes saindo e ${scenario.deletesTarget ? "a deleção de Dracomon com zero DP" : "a redução de DP de Phoenixmon"}. O outro WarGrowlmon mantém suas fontes.`,
-          },
-    ]),
-  ),
-  ...Object.fromEntries(
-    KEYWORD_PROTECTION_PACING_SCENARIOS.map((scenario) => [
-      scenario.id,
-      scenario.flow === "evade"
-        ? {
-            en: `End breeding and attack security with Groundramon. Death Claw targets the active Syakomon. ${scenario.accept ? "Accept Evade to suspend it and prevent deletion" : "Decline Evade to follow its deletion"}.`,
-            ptBR: `Encerre a criação e ataque a segurança com Groundramon. Death Claw mira o Syakomon ativo. ${scenario.accept ? "Aceite Evade para suspendê-lo e evitar a deleção" : "Recuse Evade para acompanhar sua deleção"}.`,
-          }
-        : {
-            en: `End breeding and attack Phoenixmon with Flamedramon. ${scenario.accept ? "Select Flamedramon in Armor Purge and confirm: its armor is trashed and Monodramon remains suspended" : "Pass the Armor Purge choice: both cards leave the field"}. Watch the blow finish before the protection question.`,
-            ptBR: `Encerre a criação e ataque Phoenixmon com Flamedramon. ${scenario.accept ? "Selecione Flamedramon em Armor Purge e confirme: sua armadura vai ao lixo e Monodramon permanece suspenso" : "Passe a escolha de Armor Purge: as duas cartas saem do campo"}. Acompanhe o impacto antes da pergunta de proteção.`,
-          },
-    ]),
-  ),
-  ...Object.fromEntries(
-    KEYWORD_TURN_PACING_SCENARIOS.map((scenario) => [
-      scenario.id,
-      scenario.flow === "block"
-        ? {
-            en: `End breeding and your turn. When Phoenixmon attacks, ${scenario.accept ? "click Kokatorimon to block" : "choose Take the attack, no block"}. Watch the arrow change target before battle, or continue to security.`,
-            ptBR: `Encerre a criação e seu turno. Quando Phoenixmon atacar, ${scenario.accept ? "clique em Kokatorimon para bloquear" : "escolha receber o ataque sem bloquear"}. Acompanhe a troca de alvo da seta antes da batalha ou a continuação até a segurança.`,
-          }
-        : {
-            en: "End breeding. Attack each suspended Agumon with Meteormon, BlackWarGreymon and Monodramon, then end your turn. During the opponent's unsuspend phase, only the two Reboot holders turn upright.",
-            ptBR: "Encerre a criação. Ataque cada Agumon suspenso com Meteormon, BlackWarGreymon e Monodramon e encerre seu turno. Na fase de desvirar do oponente, só as duas cartas com Reboot desviram.",
-          },
-    ]),
-  ),
-  "effects-lab-field-grouping": {
-    en: "End breeding and activate each Izzy Izumi's Main effect. The first suspended copy leaves the group; the second rejoins it. Watch the artwork turn separately from the group movement.",
-    ptBR: "Encerre a criação e ative o efeito Principal de cada Izzy Izumi. A primeira cópia suspensa sai do grupo; a segunda volta a se agrupar com ela. A rotação da carta tem seu próprio tempo, separado do deslocamento.",
-  },
-  ...Object.fromEntries(
-    keywordScenarios.map((scenario) => [
-      scenario.id,
-      {
-        en: `Real server ${scenario.keyword} scenario. End breeding, then drag your Digimon onto ${scenario.target === "player" ? "the opponent's security" : "the suspended opposing Digimon"}.${scenario.decision ? ` ${scenario.decision.accept ? "Accept" : "Decline"} the keyword decision${scenario.decision.kind === "Alliance" && scenario.decision.accept ? " by choosing Monodramon on the field" : ""}.` : ""} The printed cards and engine resolve the result.`,
-        ptBR: `Cenário de ${scenario.keyword} no servidor real. Encerre a criação e arraste seu Digimon para ${scenario.target === "player" ? "a segurança do oponente" : "o Digimon suspenso do oponente"}.${scenario.decision ? ` ${scenario.decision.accept ? "Aceite" : "Recuse"} a decisão da keyword${scenario.decision.kind === "Alliance" && scenario.decision.accept ? " escolhendo Monodramon no campo" : ""}.` : ""} As cartas e a engine resolvem o resultado.`,
-      },
-    ]),
-  ),
-  "effects-lab-own-chain": {
-    en: "Pass breeding, then digivolve Golemon into Megadramon. Six of your effects trigger at once: plan their order and watch each resolve.",
-    ptBR: "Passe a criação e digievolua Golemon em Megadramon. Seis efeitos seus disparam juntos: planeje a ordem e acompanhe cada um.",
-  },
-  "effects-lab-opponent-chain": {
-    en: "Pass breeding, then end your turn. The bot resolves five start-of-main effects with no prompt for you.",
-    ptBR: "Passe a criação e encerre o turno. O bot resolve cinco efeitos de início da fase principal sem nenhuma escolha sua.",
-  },
-  "effects-lab-opponent-play": {
-    en: "Pass breeding, then end your turn. The bot plays Gabumon from hand: watch the showcase, field flight, landing and its On Play draw in order.",
-    ptBR: "Passe a criação e encerre o turno. O bot joga Gabumon da mão: acompanhe a apresentação, o voo ao campo, a chegada e a compra de Ao Jogar nessa ordem.",
-  },
-  "effects-lab-nested": {
-    en: "Pass breeding, then attack the player with Gallantmon. Order its two effects; the deletion adds more triggers, then three security checks follow.",
-    ptBR: "Passe a criação e ataque o jogador com Gallantmon. Ordene os dois efeitos; a deleção adiciona novos gatilhos e depois vêm três checagens de segurança.",
-  },
-  "effects-lab-prod-royal-knights": {
-    en: "Production chain. Pass breeding, digivolve Zudomon into UlforceVeedramon (3× Cool Boy trigger), then attack the player to reveal BT20-100.",
-    ptBR: "Cadeia de produção. Passe a criação, digievolua Zudomon em UlforceVeedramon (3× Cool Boy disparam) e ataque o jogador para revelar BT20-100.",
-  },
-  "effects-lab-prod-ghost": {
-    en: "Production chain. Pass breeding, end your turn, accept the Execute attack and target the player. Decline both digivolve offers to follow the logged chain.",
-    ptBR: "Cadeia de produção. Passe a criação, encerre o turno, aceite o ataque Execute e mire no jogador. Recuse as duas ofertas de digievolução para seguir a cadeia registrada.",
-  },
-
-  "effects-lab-prod-ghost-execute": {
-    en: "Production chain. Pass breeding, end your turn, accept the Execute attack. Its deletion asks you to order eight [On Deletion] effects.",
-    ptBR: "Cadeia de produção. Passe a criação, encerre o turno e aceite o ataque Execute. A deleção pede para ordenar oito efeitos [Ao Ser Deletado].",
-  },
-  "effects-lab-prod-ghost-execute-security": {
-    en: "The same Execute chain, but the check reveals the bot's Our Courage United, whose [Security] resolves before the deletion.",
-    ptBR: "A mesma cadeia de Execute, mas a checagem revela Our Courage United do bot, cujo [Segurança] resolve antes da deleção.",
-  },
-  "effects-lab-prod-attack-stack": {
-    en: "Production chain. Pass breeding, then digivolve Omnimon into Omnimon Zwart. It attacks at once: four [When Attacking] effects, then the bot's GrapLeomon and Callismon answer.",
-    ptBR: "Cadeia de produção. Passe a criação e digievolua Omnimon em Omnimon Zwart. Ele ataca na hora: quatro efeitos [Ao Atacar] e depois GrapLeomon e Callismon do bot respondem.",
-  },
-  "effects-lab-prod-security-removed": {
-    en: "Production chain. Pass breeding, then attack the player with Jupitermon: Wrath Mode. Adding your security card to the hand wakes three watchers and a digivolution.",
-    ptBR: "Cadeia de produção. Passe a criação e ataque o jogador com Jupitermon: Wrath Mode. Colocar sua carta de segurança na mão acorda três observadores e uma digievolução.",
-  },
-  "effects-lab-prod-titan-cascade": {
-    en: "Production chain. Pass breeding, then attack the player with Plutomon. Trash Dobermon and play Witchmon from the trash: five effects trigger together.",
-    ptBR: "Cadeia de produção. Passe a criação e ataque o jogador com Plutomon. Descarte Dobermon e jogue Witchmon do lixo: cinco efeitos disparam juntos.",
-  },
-  "effects-lab-paladin-battle": {
-    en: "Pass breeding, then digivolve UlforceVeedramon into Imperialdramon: Paladin Mode. Accept its effect: BeelStarmon is suspended, loses its digivolution cards and battles Imperialdramon. No attack is declared.",
-    ptBR: "Passe a criação e digievolua UlforceVeedramon em Imperialdramon: Paladin Mode. Aceite o efeito: BeelStarmon é suspenso, perde suas cartas de digievolução e batalha com Imperialdramon. Nenhum ataque é declarado.",
-  },
-};
-
 const RATES = [0.25, 0.5, 1, 2, 4] as const;
 // The queued presentation protocol is named sequential; its match timing is stacked.
 const MATCH_PACING: PresentationPacing = "sequential";
 const ZOOMS = [0.05, 0.1, 0.2, 0.4] as const;
 
 const LabGameScreen = memo(GameScreen);
-
-function initialScenario(): DevScenario {
-  const requested = new URLSearchParams(window.location.search).get("scenario");
-  return SCENARIO_OPTIONS.find(([value]) => value === requested)?.[0] ?? "effects-lab-own-chain";
-}
 
 function labStepEvent(key: string, event: PresentationStepEvent): LabStepEvent {
   const { step } = event;
@@ -323,11 +65,10 @@ function labStepEvent(key: string, event: PresentationStepEvent): LabStepEvent {
 }
 
 /** Plays a real server match against the bot and shows how its triggered effects are presented. */
-export function EffectsLab() {
+export function EffectsLab({ joinOptions, botDeckId }: { joinOptions: AegisJoinOptions; botDeckId?: string }) {
   const { locale } = useTranslation();
   const portuguese = locale === "pt-BR";
   const [run, setRun] = useState(0);
-  const [scenario, setScenario] = useState<DevScenario>(initialScenario);
   const [panelOpen, setPanelOpen] = useState(true);
   useLabPacing();
   const [rate, setRate] = useState(1);
@@ -364,7 +105,7 @@ export function EffectsLab() {
     const labKey = "__aegisEffectsLab";
     const read = Object.assign(
       () => ({
-        scenario,
+        scenario: "local-fixture",
         ...observedRef.current,
         pendingSteps: controlsRef.current?.queue.pendingCount(),
         queueIdle: controlsRef.current?.queue.isIdle(),
@@ -387,7 +128,7 @@ export function EffectsLab() {
       stop();
       if (globals[labKey] === read) delete globals[labKey];
     };
-  }, [scenario]);
+  }, []);
   const playbackRef = useRef({ rate, paused });
   playbackRef.current = { rate, paused };
 
@@ -471,17 +212,6 @@ export function EffectsLab() {
   }, [record, run]);
 
   const player = useMemo(loadIdentity, []);
-  const joinOptions = useMemo<AegisJoinOptions>(() => {
-    const deck = CATALOG_DECKS.find((entry) => entry.deckId === "bt26-dgo-2026-08-28-7-chronomon");
-    if (!deck) throw new Error("Missing BT26 Chronomon demo deck");
-    return {
-      displayName: player.name,
-      deckId: deck.deckId,
-      deckName: deck.name,
-      deck: { mainDeck: [...deck.decklist.mainDeck], eggDeck: [...deck.decklist.eggDeck] },
-      devScenario: scenario,
-    };
-  }, [player, scenario]);
 
   const reset = useCallback(() => {
     controlsRef.current = undefined;
@@ -535,7 +265,7 @@ export function EffectsLab() {
 
   async function copyTrace() {
     const trace = effectsLabTrace(lab, {
-      scenario,
+      scenario: "local-fixture",
       pacing: MATCH_PACING,
       rate,
       paused,
@@ -549,17 +279,15 @@ export function EffectsLab() {
     }
   }
 
-  const note = LAB_NOTES[scenario] ?? SCENARIO_NOTES[scenario];
-
   return (
     <div className={`aegis-effects-lab${panelOpen ? "" : " aegis-effects-lab--collapsed"}`}>
       <div className="aegis-effects-lab-stage">
         <LabGameScreen
-          key={`${scenario}-${run}`}
+          key={run}
           joinOptions={joinOptions}
           identityColor={colorKey(player.color)}
           startMode="bot"
-          botDeckId="bt26-dgo-2026-08-28-8-plutomon"
+          botDeckId={botDeckId}
           onExit={reset}
           devProbe={devProbe}
           presentationPacing={MATCH_PACING}
@@ -579,22 +307,6 @@ export function EffectsLab() {
             <section className="aegis-effects-lab-section">
               <h2>{portuguese ? "Controles" : "Controls"}</h2>
               <div className="aegis-effects-lab-controls">
-                <label className="aegis-effects-lab-field aegis-effects-lab-field--wide">
-                  <span>{portuguese ? "Cenário" : "Scenario"}</span>
-                  <select
-                    value={scenario}
-                    onChange={(event) => {
-                      setScenario(event.target.value as DevScenario);
-                      reset();
-                    }}
-                  >
-                    {SCENARIO_OPTIONS.map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
                 <button type="button" onClick={reset}>
                   {portuguese ? "Reiniciar" : "Reset"}
                 </button>
@@ -622,10 +334,6 @@ export function EffectsLab() {
                 </button>
                 {copyStatus ? <span className="aegis-effects-lab-muted">{copyStatus}</span> : null}
               </div>
-              <details className="aegis-effects-lab-instructions" open>
-                <summary>{portuguese ? "Instruções do cenário" : "Scenario instructions"}</summary>
-                <p tabIndex={0}>{note ? (portuguese ? note.ptBR : note.en) : "–"}</p>
-              </details>
             </section>
             <PacingTuner portuguese={portuguese} />
             <AnimationInventory state={lab} />

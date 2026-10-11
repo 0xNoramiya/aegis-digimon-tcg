@@ -19,7 +19,7 @@ apps/web/e2e/<behavior>.spec.ts                          # when browser behavior
 
 The fixture exports plain data or a factory returning `ScenarioFixture`, without
 Vitest, Playwright, assertions, or automatically executed game actions. A default
-export supplies the variant opened by the local command. The pilot is
+export supplies the variant opened by the local command. An example is
 [`invasion-titans-drawn-ogre-discard.fixture.ts`](../apps/api/src/engine/scenarios/invasion-titans-drawn-ogre-discard.fixture.ts).
 
 `engine/scenario/board.ts` materializes `BoardSpec` through the engine's state
@@ -78,6 +78,7 @@ From the repository root, with the Node and pnpm versions in `package.json`:
 ```sh
 pnpm scenario open invasion-titans-drawn-ogre-discard
 pnpm scenario open .local/scenarios/my-experiment.fixture.ts
+pnpm scenario open invasion-titans-drawn-ogre-discard --lab
 ```
 
 The command builds shared contracts and the API runtime, starts a loopback
@@ -91,20 +92,27 @@ runner or Playwright instance at a time. Override them together with
 `AEGIS_E2E_WEB_PORT`, `AEGIS_E2E_EDGE_PORT`, and `AEGIS_E2E_SERVER_PORT` if needed.
 The opponent's autonomous play stops two turns after the fixture's initial
 `turnCount`; reactive decisions stay real. For E2E fixture runs,
-`holdBotAfterTurn` is relative to that initial count; existing named dev scenarios
-retain their absolute turn boundary.
+`holdBotAfterTurn` is relative to that initial count. Fixtures may declare opponent
+intents and decision preferences in `presentation.opponent` when a regression needs
+a specific response. Initial restrictions belong in `effects`, applied by the same
+preparation code in API tests and rooms.
 This runner supports local debugging, not bot-versus-bot match playback.
 
 `.local/scenarios/` is git-ignored. An experiment can default-export a new fixture
 or import an existing factory and change its parameters. Commit the fixture only
 when it is useful preparation for a regression. There is no scenario catalog or
-per-case registration in `devScenario.ts`, client join types, or `LiveArenaDemo`.
+per-case registration in the room loader, client join types, or the arena interface.
 The generic loader is unavailable in production.
 
-## Gradual migration
+## Portable preparation
 
-New regressions follow this pattern. Migrate existing cases when touching them:
-extract shared preparation, replace hard-coded instance identities with aliases,
-give tests behavior names, and remove their old arena entries. Preserve relevant
-replays and behavioral assertions. Existing demos and unrelated regressions do
-not need to be rewritten together.
+Fixture matches record their canonical preparation as `startScenarioFixture`. A replay
+contains the board, initial effects, and opponent presentation policy, so playback
+does not depend on a local fixture registry. Unknown author metadata is stripped.
+
+Migrated positions that intentionally depend on the selected deck use `dealtCards`
+recipes with explicit physical indices and a fallback test deck. New regressions
+should prefer explicit card identities and semantic aliases for relevant cards.
+
+Use `--lab` to open the same position with the effects inspector and pacing controls.
+The permanent arena retains its visual demo; regression fixtures are opened on demand.
