@@ -2365,6 +2365,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Wisdom Training está no campo desde um turno anterior e você não tem Digimon. Ative o ＜Delay＞: a carta vai para o lixo e o efeito não faz nada.",
     en: "Wisdom Training has been in the battle area since an earlier turn and you have no Digimon. Activate its ＜Delay＞: the card goes to the trash and the effect does nothing.",
   },
+  "arena-feedback58-poseidomon-unsuspend-cost": {
+    en: "App Fuse Oujamon and its linked Beautymon into Poseidomon for 0. Link the first hand Appmon during When Digivolving: Poseidomon is already unsuspended, so no restriction can be paid. Attack and link the second hand Appmon. Now accept the unsuspend cost to restrict only the lower-play-cost opposing Digimon, or decline and keep Poseidomon suspended. The first unpaid opportunity must not consume its once-per-turn use.",
+    ptBR: "Use App Fusion de Oujamon e seu Beautymon vinculado para Poseidomon por 0. Vincule o primeiro Appmon da mão em When Digivolving: Poseidomon já está ativo e não pode pagar a restrição. Ataque e vincule o segundo Appmon da mão. Aceite o custo de ativar para restringir apenas o Digimon adversário de menor custo, ou recuse e mantenha Poseidomon suspenso. A primeira oportunidade não paga não deve consumir o uso por turno.",
+  },
   "arena-feedback57-amaterasumon-empty-resolution": {
     en: "Attack with Shishimamon. Parkour Training resolves from security and stays in the battle area. Accept the evolution into Amaterasumon for 1. Its When Digivolving resolves before the next check, but there is no opposing battle Digimon and no two-card trash cost. The second security Digimon ties at 12,000 DP and deletes the attacker. Decline its optional On Deletion effects.",
     ptBR: "Ataque com Shishimamon. Parkour Training resolve da segurança e fica no campo. Aceite evoluir para Amaterasumon por 1. When Digivolving resolve antes da próxima verificação, mas não há Digimon adversário no campo nem duas cartas no lixo para pagar. O segundo Digimon de segurança empata em 12.000 DP e exclui o atacante. Recuse os efeitos opcionais On Deletion.",
@@ -3418,6 +3422,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex5-attack-priority", "EX5 Etemon · attack trigger priority"],
   ["arena-ex5-biting-crush-delay", "EX5 Biting Crush · Delay on effect play"],
   ["arena-p108-training-delay-no-target", "P-108 Wisdom Training · Delay with no target"],
+  ["arena-feedback58-poseidomon-unsuspend-cost", "Feedback #58 · Poseidomon · unpaid then paid Link"],
   ["arena-feedback57-amaterasumon-empty-resolution", "Feedback #57 · Amaterasumon · empty resolution"],
   ["arena-feedback57-amaterasumon-paid-resolution", "Feedback #57 · Amaterasumon · paid resolution"],
   ["arena-feedback51-jesmon-gx-copied-text", "Feedback #51 · Jesmon GX · copied effect text"],

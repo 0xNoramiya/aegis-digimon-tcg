@@ -1253,7 +1253,9 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
           payableActionCost.target.filter.isSelfRef === true;
         const isSecurityTrashCost =
           payableActionCost.kind === "trash" && payableActionCost.target?.filter.zone === "security";
-        return action.abortOnDecline === true || isDigiBurstCost || isSecurityTrashCost;
+        // An unpaid optional processing condition never activated this clause. Preserve
+        // its OPT opportunity, but retain an earlier action's actual activation receipt.
+        return unavailableAction(ctx, action, action.abortOnDecline === true || isDigiBurstCost || isSecurityTrashCost);
       }
     }
   }
