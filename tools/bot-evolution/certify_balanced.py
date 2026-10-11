@@ -14,7 +14,8 @@ import click
 from gepa.strategies.instruction_proposal import InstructionProposalSignature
 
 from api_reflection import validate_ledger
-from evidence import policy_hash
+from deterministic_proposals import plan_hash, validate_plan
+from evidence import paired_evidence, policy_hash
 from residual_weights import RESIDUAL_WEIGHTS
 
 
@@ -217,6 +218,88 @@ def calibrated_response(raw: dict, calibrated: dict) -> dict | None:
     return raw
 
 
+def verify_gepa_selection(run_dir: Path, selected: dict) -> str:
+    path = run_dir / "generic/gepa-result.json"
+    result = json.loads(path.read_text(encoding="utf-8"))
+    index = selected["selectedIndex"]
+    scores = result["val_aggregate_scores"]
+    if (
+        type(index) is not int
+        or not 0 <= index < len(result["candidates"])
+        or result["best_idx"] != index
+        or json.loads(result["candidates"][index]["heuristic"]) != selected["program"]
+        or scores[index] != max(scores)
+        or scores[index] != selected["validationScore"]
+    ):
+        raise ValueError("Policy was not selected by the pinned GEPA validation result")
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def deterministic_lineage(run_dir: Path, manifest: dict, selected: dict) -> dict:
+    plan_path = run_dir / "generic/deterministic-plan.json"
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    engine = manifest["config"]["engineSha256"]
+    validate_plan(plan, manifest["metadata"]["seedProgram"], engine)
+    if plan != manifest["metadata"].get("deterministicPlan") or plan_hash(plan) != manifest[
+        "config"
+    ].get("proposalPlanSha256"):
+        raise ValueError("Frozen numerical proposal plan changed")
+    if selected.get("deterministicPlan") != {
+        "total": len(plan["programs"]),
+        "attempted": len(plan["programs"]),
+        "completed": len(plan["programs"]),
+        "stopReason": "plan-exhausted",
+    }:
+        raise ValueError("Certification requires a completed frozen numerical plan")
+    result_sha = verify_gepa_selection(run_dir, selected)
+    split_seeds = {task["seed"] for tasks in manifest["splits"].values() for task in tasks}
+    for path in sorted((run_dir / "generic/proposal-gates").glob("proposal-*.json")):
+        gate = json.loads(path.read_text(encoding="utf-8"))
+        if gate.get("program") != selected["program"] or gate.get("status") != "evaluated":
+            continue
+        number = gate["proposalNumber"]
+        if (
+            gate.get("origin") != "deterministic-numeric"
+            or gate["planSha256"] != plan_hash(plan)
+            or type(number) is not int
+            or not 1 <= number <= len(plan["programs"])
+            or gate["program"] != plan["programs"][number - 1]
+        ):
+            raise ValueError("Selected program does not reconstruct from its frozen numerical plan")
+        tasks = [
+            {**task, "seed": task["seed"] + 1_000_000_000 + number * 10000}
+            for task in manifest["metadata"]["proposalGateTasks"]
+        ]
+        if tasks != gate["tasks"] or split_seeds & {task["seed"] for task in tasks}:
+            raise ValueError("Numerical gate reused training or validation seeds")
+        for arm, program in (("selected", gate["program"]), ("control", gate["parent"])):
+            games = gate[arm]
+            if [game["task"] for game in games] != tasks or any(
+                game["engineSha256"] != engine or game["policySha256"] != policy_hash(program)
+                for game in games
+            ):
+                raise ValueError("Numerical gate changed its engine, tasks or policies")
+        evidence = paired_evidence(
+            gate["selected"],
+            gate["control"],
+            alpha=0.05 / len(plan["programs"]),
+            method="wilson-wins",
+        )
+        if evidence != gate["pairedEvidence"] or evidence["accepted"] is not True:
+            raise ValueError("Selected numerical policy did not pass its fresh paired gate")
+        return {
+            "origin": "deterministic-numeric",
+            "model": None,
+            "apiCalls": 0,
+            "planSha256": plan_hash(plan),
+            "gateSha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "gepaResultSha256": result_sha,
+            "policySha256": policy_hash(selected["program"]),
+            "gateFile": str(path.relative_to(run_dir)),
+        }
+    raise ValueError("Selected policy has no accepted deterministic GEPA proposal gate")
+
+
 def api_lineage(run_dir: Path, manifest: dict, selected: dict) -> dict:
     budget = manifest["config"]["reflectionBudget"]
     config = {
@@ -305,21 +388,12 @@ def main(run_dir, desktop_host, node, api_root, remote_worker, attempt):
         or not selected["validEvaluatedProposals"]
     ):
         raise click.ClickException("GEPA did not select a distinct evaluated policy")
-    if not list((run_dir / "generic/reflections").glob("*.response.json")):
-        raise click.ClickException("An official API reflection record is required")
-    accepted_reflections = [
-        json.loads(path.read_text())
-        for path in (run_dir / "generic/proposal-gates").glob("proposal-*.json")
-    ]
-    if not any(
-        record.get("pairedEvidence", {}).get("accepted") is True
-        and policy_hash(record["program"]) == policy_hash(selected["program"])
-        for record in accepted_reflections
-    ):
-        raise click.ClickException(
-            "The selected policy must be an accepted GEPA reflection, not only a numerical seed"
-        )
-    lineage = api_lineage(run_dir, manifest, selected)
+    verify_gepa_selection(run_dir, selected)
+    lineage = (
+        deterministic_lineage(run_dir, manifest, selected)
+        if manifest["config"].get("proposalOrigin") == "deterministic-numeric"
+        else api_lineage(run_dir, manifest, selected)
+    )
     output = run_dir / f"certification-{attempt}"
     output.mkdir(exist_ok=True)
     units = certification_units(manifest["decks"], attempt)

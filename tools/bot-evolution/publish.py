@@ -35,9 +35,12 @@ def verified_run(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
     manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
     pilots = json.loads((run_dir / "pilots.json").read_text(encoding="utf-8"))
     report = json.loads((run_dir / "held-out.json").read_text(encoding="utf-8"))
-    if manifest["config"].get("reflectionModel") == "session":
+    if manifest["config"].get("reflectionModel", manifest["config"].get("model")) in (
+        "session",
+        "deterministic",
+    ):
         raise ValueError(
-            "Strict publication requires reproducible API reflection, not session smoke proposals"
+            "Strict publication requires reproducible API reflection; session and deterministic proposals certify strength separately"
         )
     engine = manifest["config"]["engineSha256"]
     if (

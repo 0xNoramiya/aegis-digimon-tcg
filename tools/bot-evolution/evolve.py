@@ -15,6 +15,7 @@ import gepa
 
 from adapter import REFLECTION_TEMPLATE, EvaluationConfig, HeuristicAdapter
 from api_reflection import ApiReflection
+from deterministic_proposals import DeterministicProposer, validate_plan
 from evidence import paired_evidence, policy_hash, verify_neutral_control
 from ladder import choose_training_rung, ladder_tasks
 from proposals import guarded_proposer
@@ -132,6 +133,8 @@ def optimize_stage(
                 "adaptiveLadder": metadata.get("adaptiveLadder", False),
                 "pairedProposalGates": metadata.get("pairedProposalGates", False),
                 "reflectionBudget": reflection_budget,
+                "deterministicPlan": metadata.get("deterministicPlan"),
+                "proposalGateTasks": metadata.get("proposalGateTasks"),
             },
             sort_keys=True,
         ).encode("utf-8")
@@ -196,19 +199,32 @@ def optimize_stage(
         else None
     )
     starting_program = initial if numeric is None else numeric["program"]
+    deterministic = reflection_model == "deterministic"
+    if deterministic:
+        plan = metadata["deterministicPlan"]
+        validate_plan(plan, initial, metadata["engineSha256"])
+        (stage_dir / "deterministic-plan.json").write_text(json.dumps(plan, indent=2) + "\n")
+        proposer = DeterministicProposer(
+            adapter, plan, metadata["proposalGateTasks"], stage_dir / "proposal-gates"
+        )
+        adapter.propose_new_texts = proposer
     reflector = (
-        SessionReflection(stage_dir / "reflections")
-        if reflection_model == "session"
-        else ApiReflection(
-            stage_dir / "reflections",
-            Path(metadata["reflectionBudgetLedger"])
-            if metadata.get("reflectionBudgetLedger")
-            else run_dir / "reflection-budget.json",
-            model=reflection_model,
-            **(reflection_budget or {}),
+        None
+        if deterministic
+        else (
+            SessionReflection(stage_dir / "reflections")
+            if reflection_model == "session"
+            else ApiReflection(
+                stage_dir / "reflections",
+                Path(metadata["reflectionBudgetLedger"])
+                if metadata.get("reflectionBudgetLedger")
+                else run_dir / "reflection-budget.json",
+                model=reflection_model,
+                **(reflection_budget or {}),
+            )
         )
     )
-    if metadata.get("pairedProposalGates"):
+    if metadata.get("pairedProposalGates") and not deterministic:
         adapter.propose_new_texts = guarded_proposer(
             adapter,
             reflector,
@@ -244,8 +260,14 @@ def optimize_stage(
         display_progress_bar=False,
         raise_on_exception=True,
         callbacks=[audit],
-        stop_callbacks=lambda state: getattr(reflector, "failure", None) is not None,
+        stop_callbacks=(lambda state: proposer.failure is not None or proposer.exhausted(state))
+        if deterministic
+        else (lambda state: getattr(reflector, "failure", None) is not None),
     )
+    if deterministic and proposer.failure is not None:
+        raise RuntimeError(
+            "Deterministic proposal gate failed; run stopped without selecting a policy"
+        ) from proposer.failure
     if getattr(reflector, "failure", None) is not None:
         raise RuntimeError(
             "API reflection failed; run stopped without selecting a policy"
@@ -286,6 +308,19 @@ def optimize_stage(
         "selectedIndex": result.best_idx,
         "metricCalls": result.total_metric_calls,
         "engineSha256": metadata["engineSha256"],
+        "deterministicPlan": {
+            "total": len(plan["programs"]),
+            "attempted": proposer.calls,
+            "completed": sum(
+                json.loads(path.read_text()).get("status") in ("evaluated", "unchanged")
+                for path in (stage_dir / "proposal-gates").glob("proposal-*.json")
+            ),
+            "stopReason": "plan-exhausted"
+            if proposer.exhausted()
+            else "stopped-before-plan-exhausted",
+        }
+        if deterministic
+        else None,
     }
     result_path.write_text(json.dumps(selected, indent=2) + "\n", encoding="utf-8")
     return selected

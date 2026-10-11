@@ -37,8 +37,25 @@ failure stops the optimizer after one failed request and never selects a policy.
 Before tuning, all validation seed blocks must pass a neutral-control seat-swap audit.
 Neutral numeric rules explore both coefficient directions with code-authored advice.
 
+When paid reflection is intentionally skipped, `--model deterministic` uses the
+official GEPA custom-proposer interface with no model calls. Supply a frozen JSON
+`--proposal-plan`, use `--numeric-proposals 0`, and reserve enough `--metric-calls`
+for the entire plan. The plan records `origin: "deterministic-numeric"`, the pinned
+`engineSha256`, `initialPolicySha256`, and a list of distinct `programs`. Only
+bounded weights, authored advice and titles may change; features, conditions and
+card scopes remain fixed. Record the training screen and construction method in
+the plan for reproducibility. `--gate-pairs 384` supplies 1,536 fresh paired games
+per hypothesis; the approximate Wilson screen corrects for the whole frozen plan.
+GEPA additionally compares full training batches and selects on separate validation.
+It stops after the last proposal completes, reports the attempted/completed count,
+and refuses selection after a gate failure. Partial deterministic stages require a
+fresh directory; exact-task game cache entries remain reusable.
+
 `certify_balanced.py` requires the selected policy to reconstruct from an accepted
-GEPA proposal and its pinned API prompt/response, after code calibration. It freezes
+GEPA proposal and the actual GEPA validation result. API proposals reconstruct from
+their pinned prompt/response after code calibration; deterministic proposals
+reconstruct from their frozen numerical plan and a recomputed fresh paired gate.
+The certificate records their different origins explicitly. It freezes
 the program, engine, worker, evaluator, task list and lineage before execution.
 One shared registry permits at most five candidate attempts and three fixed looks
 at 1,200, 2,400 and 4,800 complete seed blocks. It accepts only when every game is

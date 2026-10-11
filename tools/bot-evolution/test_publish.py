@@ -117,6 +117,26 @@ def artifact_run(path: Path) -> Path:
     return path
 
 
+@pytest.mark.parametrize(
+    "field,model",
+    (
+        ("model", "deterministic"),
+        ("reflectionModel", "deterministic"),
+        ("reflectionModel", "session"),
+    ),
+)
+def test_strict_guides_require_api_origin_even_when_strength_can_be_certified(
+    tmp_path, field, model
+):
+    run = artifact_run(tmp_path / "run")
+    path = run / "manifest.json"
+    manifest = json.loads(path.read_text())
+    manifest["config"][field] = model
+    path.write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match="API reflection"):
+        verified_run(run)
+
+
 def test_publication_escapes_exact_advice_and_links_to_practice(tmp_path: Path) -> None:
     run = artifact_run(tmp_path / "run")
     publish(run, tmp_path / "public", "https://example.com", tmp_path / "catalog.json")

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import click
 
+from deterministic_proposals import plan_hash, validate_plan
 from evolve import optimize_stage
 
 
@@ -40,8 +41,10 @@ def balanced_splits(decks: list[str], pairs: int) -> dict:
 @click.option("--worker", required=True)
 @click.option("--pairs", default=24, type=click.IntRange(min=24))
 @click.option("--metric-calls", default=1536, type=click.IntRange(min=384))
-@click.option("--numeric-proposals", default=24, type=click.IntRange(min=1))
+@click.option("--numeric-proposals", default=24, type=click.IntRange(min=0))
 @click.option("--model", default="openai/gpt-4.1-2025-04-14")
+@click.option("--proposal-plan", type=click.Path(exists=True, path_type=Path), default=None)
+@click.option("--gate-pairs", default=384, type=click.IntRange(min=24, max=4800))
 @click.option("--dollar-cap", default=5.0, type=click.FloatRange(min=0, min_open=True))
 def main(
     run_dir,
@@ -54,6 +57,8 @@ def main(
     metric_calls,
     numeric_proposals,
     model,
+    proposal_plan,
+    gate_pairs,
     dollar_cap,
 ):
     decks = json.loads(deck_pool.read_text())
@@ -85,6 +90,7 @@ def main(
         "api_reflection.py",
         "session_reflection.py",
         "ladder.py",
+        "deterministic_proposals.py",
     ]
     fingerprint = hashlib.sha256(
         b"".join((Path(__file__).parent / name).read_bytes() for name in files)
@@ -112,6 +118,28 @@ def main(
         }
     )
     splits = balanced_splits(decks, pairs)
+    deterministic = model == "deterministic"
+    if deterministic:
+        if proposal_plan is None or numeric_proposals:
+            raise click.ClickException(
+                "Deterministic mode needs a frozen --proposal-plan and --numeric-proposals 0"
+            )
+        plan = json.loads(proposal_plan.read_text(encoding="utf-8"))
+        validate_plan(plan, seed, metadata["engineSha256"])
+        minimum_metrics = len(splits["validation"]) + len(plan["programs"]) * (
+            2 * len(splits["train"]) + len(splits["validation"])
+        )
+        if metric_calls < minimum_metrics:
+            raise click.ClickException(
+                f"The complete frozen plan requires --metric-calls at least {minimum_metrics}"
+            )
+        metadata.update(
+            deterministicPlan=plan,
+            proposalGateTasks=balanced_splits(decks, gate_pairs)["validation"],
+            reflectionMinibatchSize=len(splits["train"]),
+        )
+    elif proposal_plan is not None:
+        raise click.ClickException("A numerical proposal plan requires --model deterministic")
     budget = {
         "completion_tokens": 4096,
         "dollar_cap": dollar_cap,
@@ -127,7 +155,7 @@ def main(
             output_usd_per_million=18,
             reasoning_effort="medium",
         )
-    elif model != "openai/gpt-4.1-2025-04-14":
+    elif not deterministic and model != "openai/gpt-4.1-2025-04-14":
         raise click.ClickException(
             "Use one of the explicitly priced GPT-4.1 or Gemini 3.1 Pro configurations"
         )
@@ -138,7 +166,9 @@ def main(
             "runnerSha256": fingerprint,
             "simulations": 1,
             "model": model,
-            "reflectionBudget": budget,
+            "reflectionBudget": None if deterministic else budget,
+            "proposalOrigin": "deterministic-numeric" if deterministic else "api-reflection",
+            "proposalPlanSha256": plan_hash(plan) if deterministic else None,
             "metricCalls": metric_calls,
             "numericProposals": numeric_proposals,
         },
@@ -168,7 +198,7 @@ def main(
         metric_calls=metric_calls,
         reflection_model=model,
         numeric_proposals=numeric_proposals,
-        reflection_budget=budget,
+        reflection_budget=None if deterministic else budget,
     )
     click.echo(
         json.dumps(
