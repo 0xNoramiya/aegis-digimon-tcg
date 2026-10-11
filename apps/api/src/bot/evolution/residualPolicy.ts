@@ -73,7 +73,7 @@ export function createResidualPolicy(input: {
         candidate.kind === "attackPlayer" ? Math.max(0, candidate.attacker?.securityAttack ?? 1) : 0;
       features.readyAttackers = view.readyAttackers.length;
       const sourceCardId = actionCardId(window, 0);
-      const adjustment = scoreHeuristicRules(input.program, features, "main", sourceCardId);
+      const adjustment = scoreHeuristicRules(input.program, features, "main", sourceCardId, observation);
       if (input.onDecision)
         entries.push({
           key: candidate.key,

@@ -4,6 +4,7 @@ import { FEATURES, parseHeuristic, SEED_HEURISTIC } from "./heuristic.js";
 import { randomDeck } from "./randomDecks.js";
 import { evolutionPilotDecks } from "#api/bot/evolution/evolutionPilotDecks";
 import { generatePilotPrograms } from "#api/bot/evolution/generatePilotPrograms";
+import { generateComboPilotPrograms } from "#api/bot/evolution/generateComboPilotPrograms";
 import certifiedCatalog from "#api/bot/evolution/programs/certified-balanced.json" with { type: "json" };
 
 // Each evaluation creates an isolated game; application diagnostics stay off JSON stdout.
@@ -116,7 +117,41 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
   }
 }
 
-if (process.argv.includes("--describe-pilots")) {
+if (process.argv.includes("--describe-combo-pilots")) {
+  const generic = parseHeuristic(certifiedCatalog.generic);
+  const decks = evolutionPilotDecks();
+  const versions = [
+    "ex4-dgo-2022-06-25-1-ulforceveedramon@1",
+    "ex6-dgo-2024-07-06-1-miragegaogamon@2",
+    "bt25-dgo-2026-06-06-4-shinegreymon@1",
+  ];
+  process.stdout.write(
+    `${JSON.stringify({
+      ...trainingMetadata(),
+      generic,
+      features: FEATURES,
+      proposalOrigin: "deterministic-bounded-combo",
+      proposalGrid: [4, 8, 12],
+      availableDeckVersions: decks.available.map((deck) => deck.id),
+      excludedDecks: decks.excluded,
+      blockedIntents: [
+        "Cannot inspect remaining inherited/effect per-turn uses",
+        "Cannot condition on source-stack inherited card IDs",
+        "Cannot rank optional/effect choices with projected-balanced residual",
+        "Cannot bind trigger-order preference such as Thomas-before-Burst",
+        "Cannot predict reduced-cost evolution under every live restriction",
+      ],
+      pilotDecks: versions.map((version) => {
+        const deck = evolutionDeck(version);
+        return {
+          ...deck,
+          proposals: generateComboPilotPrograms({ version, deck: deck.deck, name: deck.name, generic }),
+        };
+      }),
+    })}\n`,
+  );
+  process.exitCode = 0;
+} else if (process.argv.includes("--describe-pilots")) {
   const decks = evolutionPilotDecks();
   const generic = parseHeuristic(certifiedCatalog.generic);
   process.stdout.write(

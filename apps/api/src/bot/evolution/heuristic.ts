@@ -2,6 +2,8 @@ import { CardKind, getCardDefinition } from "@aegis/shared";
 import { createBotRandom } from "../rng.js";
 import type { createHeuristicFeatureContext } from "#api/bot/evolution/createHeuristicFeatureContext";
 import type { TrainingWindow } from "../training/policy.js";
+import type { TrainingObservation } from "#api/bot/training/observation";
+import { matchesHeuristicCondition } from "#api/bot/evolution/matchesHeuristicCondition";
 
 /** GEPA evolves data, never executable code. Guides come from these same rules. */
 export const FEATURES = [
@@ -62,6 +64,8 @@ export interface HeuristicRule {
   when?: {
     kind?: string;
     sourceCardIds?: string[];
+    ownBoard?: { cardIds: string[]; suspended?: boolean; minimum?: number; maximum?: number };
+    ownHand?: { cardIds: string[]; minimum?: number; maximum?: number };
     minimum?: Partial<Record<Feature, number>>;
     maximum?: Partial<Record<Feature, number>>;
   };
@@ -103,6 +107,10 @@ export function parseHeuristic(value: unknown): HeuristicProgram {
       if (
         typeof rule.when !== "object" ||
         rule.when === null ||
+        Array.isArray(rule.when) ||
+        Object.keys(rule.when).some(
+          (key) => !["kind", "sourceCardIds", "minimum", "maximum", "ownBoard", "ownHand"].includes(key),
+        ) ||
         (rule.when.kind !== undefined && (typeof rule.when.kind !== "string" || rule.when.kind.length > 80)) ||
         (rule.when.sourceCardIds !== undefined &&
           (!Array.isArray(rule.when.sourceCardIds) ||
@@ -110,6 +118,31 @@ export function parseHeuristic(value: unknown): HeuristicProgram {
             !rule.when.sourceCardIds.every((id) => typeof id === "string" && getCardDefinition(id) !== undefined)))
       )
         throw new Error("Invalid heuristic condition");
+      for (const [zone, predicate] of [
+        ["ownBoard", rule.when.ownBoard],
+        ["ownHand", rule.when.ownHand],
+      ] as const) {
+        if (predicate === undefined) continue;
+        const allowed =
+          zone === "ownBoard" ? ["cardIds", "suspended", "minimum", "maximum"] : ["cardIds", "minimum", "maximum"];
+        if (
+          typeof predicate !== "object" ||
+          predicate === null ||
+          Array.isArray(predicate) ||
+          Object.keys(predicate).some((key) => !allowed.includes(key)) ||
+          !Array.isArray(predicate.cardIds) ||
+          predicate.cardIds.length === 0 ||
+          predicate.cardIds.length > 100 ||
+          !predicate.cardIds.every((id) => typeof id === "string" && getCardDefinition(id) !== undefined) ||
+          ("suspended" in predicate && typeof predicate.suspended !== "boolean") ||
+          (predicate.minimum === undefined && predicate.maximum === undefined) ||
+          [predicate.minimum, predicate.maximum].some(
+            (bound) => bound !== undefined && (!Number.isInteger(bound) || bound < 0 || bound > 100),
+          ) ||
+          (predicate.minimum !== undefined && predicate.maximum !== undefined && predicate.minimum > predicate.maximum)
+        )
+          throw new Error("Invalid heuristic owned-card predicate");
+      }
       for (const bounds of [rule.when.minimum, rule.when.maximum]) {
         if (bounds === undefined) continue;
         if (
@@ -277,16 +310,11 @@ export function scoreHeuristicRules(
   features: Record<Feature, number>,
   kind: string,
   sourceCardId?: string,
+  observation?: TrainingObservation,
 ) {
   const contributions = program.rules.map((rule) => {
     const condition = rule.when;
-    const matches =
-      condition === undefined ||
-      ((condition.kind === undefined || condition.kind === kind) &&
-        (condition.sourceCardIds === undefined ||
-          (sourceCardId !== undefined && condition.sourceCardIds.includes(sourceCardId))) &&
-        Object.entries(condition.minimum ?? {}).every(([feature, limit]) => features[feature as Feature] >= limit!) &&
-        Object.entries(condition.maximum ?? {}).every(([feature, limit]) => features[feature as Feature] <= limit!));
+    const matches = matchesHeuristicCondition({ condition, features, kind, sourceCardId, observation });
     return { ...rule, value: matches ? features[rule.feature] * rule.weight : 0 };
   });
   return { score: contributions.reduce((total, rule) => total + rule.value, 0), contributions };
@@ -296,7 +324,13 @@ export function rankHeuristic(program: HeuristicProgram, window: TrainingWindow)
   return window.actions
     .map((_, index) => ({
       index,
-      ...scoreHeuristicRules(program, actionFeatures(window, index), window.kind, actionCardId(window, index)),
+      ...scoreHeuristicRules(
+        program,
+        actionFeatures(window, index),
+        window.kind,
+        actionCardId(window, index),
+        window.observation,
+      ),
     }))
     .sort((left, right) => right.score - left.score || left.index - right.index);
 }

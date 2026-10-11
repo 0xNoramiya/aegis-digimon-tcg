@@ -12,7 +12,7 @@ export function chooseFastHeuristic(program: HeuristicProgram, window: TrainingW
   for (let index = 0; index < window.actions.length; index++) {
     const features = actionFeatures(window, index, context);
     const cardId = actionCardId(window, index, context);
-    const score = scoreFastHeuristic(program, features, window.kind, cardId);
+    const score = scoreFastHeuristic(program, features, window.kind, cardId, window.observation);
     if (Number.isNaN(score)) return chooseHeuristic(program, window, seed);
     if (bestScore === undefined || score > bestScore) {
       bestScore = score;
