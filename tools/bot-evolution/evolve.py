@@ -163,7 +163,10 @@ def optimize_stage(
         run_dir=str(stage_dir / "gepa"),
         seed=71,
         skip_perfect_score=False,
-        cache_evaluation=True,
+        # GEPA's list loaders assign overlapping integer IDs to train and val.
+        # Its internal cache keys only candidate + ID; our adapter cache keys
+        # the complete game task, so it can safely provide all reuse instead.
+        cache_evaluation=False,
         display_progress_bar=False,
         raise_on_exception=True,
         callbacks=[audit],

@@ -130,3 +130,70 @@ def test_official_gepa_reflects_and_selects_a_better_candidate(tmp_path: Path, m
     assert optimize_stage(**options) == selected
     with pytest.raises(ValueError, match="Resumed stage inputs"):
         optimize_stage(**{**options, "initial": {"weight": 9}})
+
+
+def test_selection_never_substitutes_training_scores_for_validation(
+    tmp_path: Path, monkeypatch
+) -> None:
+    evaluated = []
+
+    class Adapter:
+        propose_new_texts = None
+
+        def evaluate(self, batch, candidate, capture_traces=False):
+            improved_on_train = json.loads(candidate["heuristic"])["weight"] > 0
+            scores = [float(improved_on_train == (task < 10)) for task in batch]
+            evaluated.append((batch, improved_on_train))
+            return EvaluationBatch(
+                outputs=[{"score": score, "valid": True} for score in scores],
+                scores=scores,
+                trajectories=[candidate for _ in batch] if capture_traces else None,
+            )
+
+        def make_reflective_dataset(self, candidate, eval_batch, components_to_update):
+            return {
+                component: [
+                    {
+                        "Inputs": "training game",
+                        "Generated Outputs": candidate,
+                        "Feedback": "positive weight wins training",
+                    }
+                ]
+                for component in components_to_update
+            }
+
+    real_optimize = gepa.optimize
+
+    def optimize(**kwargs):
+        assert kwargs["cache_evaluation"] is False
+        return real_optimize(**kwargs)
+
+    monkeypatch.setattr("evolve.gepa.optimize", optimize)
+    monkeypatch.setattr("evolve.HeuristicAdapter", lambda config, metadata: Adapter())
+    monkeypatch.setattr(
+        "evolve.SessionReflection", lambda directory: lambda prompt: '```json\n{"weight":1}\n```'
+    )
+    initial = {"weight": -1}
+    selected = optimize_stage(
+        stage="generic",
+        initial=initial,
+        splits={"train": [0, 1], "validation": [10, 11]},
+        run_dir=tmp_path,
+        node="node",
+        simulations=256,
+        metric_calls=10,
+        reflection_model="session",
+        metadata={
+            "worker": "unused",
+            "engineSha256": "engine",
+            "runnerSha256": "runner",
+            "evaluationTimeout": 60,
+            "evaluationWorkers": 4,
+            "evaluationCache": str(tmp_path / "cache"),
+            "seedProgram": initial,
+        },
+    )
+    assert selected["candidates"] >= 2
+    assert ([10, 11], True) in evaluated
+    assert selected["program"] == initial
+    assert selected["validationScore"] == 1.0

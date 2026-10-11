@@ -42,7 +42,7 @@ the current isolated desktop checkout:
 
 ```sh
 tools/bot-evolution/.venv/bin/python tools/bot-evolution/evolve.py \
-  --run-dir artifacts/bot-evolution/desktop-gepa-parallel-256 \
+  --run-dir artifacts/bot-evolution/desktop-gepa-isolated-256 \
   --desktop-host desktop \
   --node /home/vinicius/aegis-bot-lab/toolchain/node-v26.10.0-linux-x64/bin/node \
   --worker /home/vinicius/aegis-bot-lab/checkouts/gepa-2026-10-10-v2/apps/api/dist/bot/evolution/evaluateCli.js \
@@ -57,7 +57,12 @@ with the same engine and parameters; completed stage artifacts are reused and
 GEPA retains its own checkpoint state. Use a fresh directory after code changes.
 Four bounded desktop workers evaluate independent games while preserving batch order.
 A shared cache reuses only valid games with identical policy, task, engine, and
-search budget; reflection additionally requires recorded traces. Official GEPA
+search budget; reflection additionally requires recorded traces. GEPA's internal
+candidate/example-ID cache is disabled because list loaders reuse integer IDs
+across training and validation. The adapter cache uses the full task instead.
+After changing the optimizer protocol, reuse only valid exact-task game outputs
+in a fresh run; do not migrate old optimizer checkpoints or selected stages.
+Official GEPA
 callbacks record proposed policies separately from the retained candidate pool.
 Raw games, stderr logs, selected pilots, lineage, and held-out results remain
 under the ignored run directory.
@@ -86,7 +91,7 @@ held-out results to static HTML (crawlable without JavaScript):
 
 ```sh
 tools/bot-evolution/.venv/bin/python tools/bot-evolution/publish.py \
-  --run-dir artifacts/bot-evolution/desktop-gepa-parallel-256 \
+  --run-dir artifacts/bot-evolution/desktop-gepa-isolated-256 \
   --base-url https://aegis-digi.online
 ```
 
