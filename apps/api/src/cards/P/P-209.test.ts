@@ -292,7 +292,12 @@ describe("P-209 Titamon — KB Q&A rulings", () => {
           battleArea: [{ card: "P-209", as: "titamon" }],
           hand: label === "the hand is empty" ? [] : [{ card: "BT1-009", as: "cost" }],
         },
-        1: { battleArea: [{ card: "BT1-009", as: "target" }, { card: "BT1-085", as: "tamer" }] },
+        1: {
+          battleArea: [
+            { card: "BT1-009", as: "target" },
+            { card: "BT1-085", as: "tamer" },
+          ],
+        },
       },
       options,
     );

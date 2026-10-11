@@ -1,17 +1,23 @@
-import { replayRetentionMs } from "../../../bugs/FeedbackStore.js";
+import { replayRetentionMs } from "#api/bugs/replayRetentionMs";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { extractReplayFromLogDir } from "../extract.js";
-import { exportPlayerReplay } from "../export.js";
-import { runReplay } from "../run.js";
-import type { ReplayCommand } from "./args.js";
-import { usageFor } from "./args.js";
-import { fetchReplayFromApi, fetchReplayFromDb, hasDatabaseConfig, type FetchLike, type Queryable } from "./fetch.js";
-import { listInputs } from "./inputs.js";
-import { readRecord, writeJson } from "./records.js";
-import { renderScaffold, writeScaffold } from "./scaffold.js";
-import { formatSummary, summarizeRun, type RunSummary } from "./summary.js";
+import { extractReplayFromLogDir } from "#api/replays/inputs/extract";
+import { exportPlayerReplay } from "#api/replays/inputs/export";
+import { runReplay } from "#api/replays/inputs/run";
+import type { ReplayCommand } from "#api/replays/inputs/tools/args";
+import { usageFor } from "#api/replays/inputs/tools/args";
+import {
+  fetchReplayFromApi,
+  fetchReplayFromDb,
+  hasDatabaseConfig,
+  type FetchLike,
+  type Queryable,
+} from "#api/replays/inputs/tools/fetch";
+import { listInputs } from "#api/replays/inputs/tools/inputs";
+import { readRecord, writeJson } from "#api/replays/inputs/tools/records";
+import { renderScaffold, writeScaffold } from "#api/replays/inputs/tools/scaffold";
+import { formatSummary, summarizeRun, type RunSummary } from "#api/replays/inputs/tools/summary";
 
 /** Everything a command touches outside the file system, so tests can run commands in-process. */
 export interface CommandIo {

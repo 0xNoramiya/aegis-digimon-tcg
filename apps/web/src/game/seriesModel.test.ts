@@ -16,7 +16,15 @@ describe("seriesView", () => {
   });
 
   it("reads every count and pip from the viewer's side", () => {
-    const state = series({ bestOf: 3, gameNumber: 2, wins0: 0, wins1: 1, results: [1], phase: "choosing", chooserSeat: 0 });
+    const state = series({
+      bestOf: 3,
+      gameNumber: 2,
+      wins0: 0,
+      wins1: 1,
+      results: [1],
+      phase: "choosing",
+      chooserSeat: 0,
+    });
     expect(seriesView(state, 0)).toMatchObject({
       viewerWins: 0,
       opponentWins: 1,

@@ -1,11 +1,14 @@
-import { isClosedFeedbackStatus, MAX_FEEDBACK_REOPEN_COMMENT, type OwnFeedbackReport } from "@aegis/shared";
+import { isClosedFeedbackStatus } from "@aegis/shared/feedback/isClosedFeedbackStatus";
+import { MAX_FEEDBACK_REOPEN_COMMENT } from "@aegis/shared/feedback/limits";
+import { type OwnFeedbackReport } from "@aegis/shared/feedback/types";
 import { useEffect, useId, useRef, useState } from "react";
-import { Alert, Badge, Button } from "../design/primitives";
-import { Icons } from "../design/icons";
-import { useTranslation } from "../i18n";
-import { BugReportApiError, ownFeedbackApi } from "./client";
-import { FEEDBACK_PROGRESS_STEPS, FEEDBACK_STATUS_TONE, progressStep } from "./feedbackStatus";
-import "./myFeedback.css";
+import { Alert, Badge, Button } from "@/design/primitives";
+import { Icons } from "@/design/icons";
+import { useTranslation } from "@/i18n/useTranslation";
+import { BugReportApiError, ownFeedbackApi } from "@/bugs/client";
+import { FEEDBACK_PROGRESS_STEPS, FEEDBACK_STATUS_TONE } from "@/bugs/feedbackStatus";
+import { progressStep } from "@/bugs/progressStep";
+import "@/bugs/myFeedback.css";
 
 export function MyFeedbackScreen({
   signedIn,

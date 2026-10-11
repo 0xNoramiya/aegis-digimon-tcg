@@ -1,77 +1,23 @@
 # Repository Instructions
 
-## Development
-
-- Use the Node and pnpm versions in root `package.json`.
-- The API owns game state and rules; the client presents synchronized state and sends intents. See [architecture](docs/ARCHITECTURE.md).
-- Start the app with `pnpm dev`. Restart after API changes: the API runs compiled code without source watching.
-- Build changed shared contracts before focused tests: `pnpm --filter @aegis/shared build`.
-- Write GitHub issue titles, descriptions, comments, and verification reports in English.
-- Follow the authorized branch and delivery scope. Distinguish local fixes from deployed fixes.
-- Keep mockups, prototypes, and browser captures in `.local/`, which git ignores. Do not commit them to `docs/` or `apps/web/public/`.
-
-## KB and Rules
-
-- Check the exact card in `packages/shared/src/cards/data/cards.json` and its implementation in `apps/api/src/cards/<SET>/`.
-- Query local official Q&A, errata, restrictions, and rules:
-
-  ```sh
-  node tools/kb/query.mjs card BT20-016 --json
-  node tools/kb/query.mjs rules "DNA digivolution" --limit 5 --json
-  ```
-
-- Search rules in English; read the full returned text and referenced sections. Chunk IDs are KB references, not printed rule numbers. Card queries do not include the complete printed card text.
-- Check official card images at `https://world.digimoncard.com/images/cardlist/card/<CARD-ID>.png` and rulings at `https://world.digimoncard.com/rule/?card_no=<CARD-ID>`. Prefer official sources; do not guess ambiguous behavior.
-- The KB in `data/kb/` is a snapshot. `pnpm verify:rules-source` checks rules freshness and requires `pdftotext`; Q&A, errata, and restrictions need their own currency checks. Do not scrape or rebuild the KB as a routine fix. See [KB tooling](tools/kb/README.md).
-- In conformance tests, use `cite()` with a reviewed literal fingerprint and note; run `node tools/kb/check-conformance-citations.mjs` after citation changes. See [conformance guidance](apps/api/src/engine/conformance/README.md).
-- Use [verify-card-implementation](.agents/skills/verify-card-implementation/SKILL.md) for card behavior and [fix-discord-bug](.agents/skills/fix-discord-bug/SKILL.md) for Discord reports. Read the full thread and attachments; follow current paths and session authorization. Production investigation must follow the host's instructions and resource guard.
-
-## Card Changes
-
-- Register executable card behavior exclusively with `registerIrCard(cardId, compiled)`. Do not add a second `registerCard` registration; it is reserved for existing legacy compatibility, engine tests, and justified internal seams.
-- Synchronize and check changed card effect snapshots:
-
-  ```sh
-  node tools/sync-effects-from-card-modules.mjs --set <SET>
-  node tools/sync-effects-from-card-modules.mjs --set <SET> --check
-  ```
-
-## Reproduce from a replay
-
-- When a report has a "Replay" section or a match ID, reproduce the match exactly before guessing. Build `@aegis/shared` first; use `pnpm -s replay … --json` to parse output.
-
-  ```sh
-  pnpm replay fetch <reportId>                    # saved with the report; DATABASE_URL, or --url with AEGIS_SESSION
-  pnpm replay extract <matchId> --log-dir <dir>   # from api-*.jsonl logs, for a match without a report
-  pnpm replay inputs replays/<file>.json          # find the input where the bug shows
-  pnpm replay run replays/<file>.json --until <N> # position and boards as input N arrived
-  pnpm replay run replays/<file>.json --export replays/<file>.aegis-replay   # watch it in the web viewer (Profile → Replays → Open file)
-  pnpm replay scaffold replays/<file>.json --until <N> --out apps/api/src/engine/scenarios/<behavior>.test.ts --issue <id>
-  ```
-
-- `run` exits 1 on a divergence. One before input N means the code differs from the server that played the match (`serverRevision`); resolve it before trusting the repro.
-- Replace the scaffold's `it.todo` with the expected behaviour (Oxlint rejects `.todo`), confirm it fails, fix, confirm it passes.
-- Replays hold both decklists and every action, no names or chat. `replays/` is git-ignored; a committed fixture is the scaffold's trimmed record and nothing else.
-
-## Tests
-
-- Put game scenarios and bug regressions in `apps/api/src/engine/scenarios/<behavior>.test.ts`, card tests in `apps/api/src/cards/<SET>/`, and mechanism tests beside their implementation. Name files and suites after behavior; external report/issue IDs are optional provenance comments, never scenario identities.
-- Share reusable board preparation in `<behavior>.fixture.ts` using `engine/scenario` and `setupScenario` from `engine/testkit`; E2E uses `ScenarioPage.openFixture`. Resolve card identities through aliases. Keep assertions and actions in their respective test runners. See [regression fixtures](docs/TESTING.md).
-- Regression fixtures do not require arena registration. Open one on demand with `pnpm scenario open <behavior>` or an ignored `.local/scenarios/<name>.fixture.ts`; add a permanent demo only when requested.
-- Reuse `engine/testkit`; exercise public intents and assert costs, card identities, destinations, effect order, and turn progression, including relevant refusal or illegal-action branches.
-- Run focused tests, then affected suites. For controlled API runs:
-
-  ```sh
-  pnpm --filter @aegis/api exec vitest run src/engine/scenarios/<behavior>.test.ts --pool=forks --maxWorkers=1 --no-file-parallelism
-  ```
-
-- Put browser specs in `apps/web/e2e/` using the real GameScreen and Colyseus harness. Run one Playwright instance at a time:
-
-  ```sh
-  NODE_OPTIONS=--max-old-space-size=2048 pnpm --filter @aegis/web test:browser <spec>.spec.ts
-  ```
-
-- Never use `waitForTimeout` or fixed sleeps for E2E synchronization. Wait for visible controls, decisions, state transitions, and queue completion. See [E2E setup](apps/web/e2e/README.md).
-- Reuse `scenario-page.ts` to check decision visibility, draw/zone presentation, and effect resettling. Assert that the queue drains without failures or expired gates; exclude human response time. Document timing exceptions per sequence rather than raising all budgets.
-- Use Orca Browser through the public `orca` CLI for requested manual checks. For layout changes, verify narrow/wide viewports and dark/light modes in the shared product component.
-- Run relevant checks and `git diff --check`; report failures and coverage limits. Fix shared product code, not only dev fixtures. Do not create task-specific planning documents unless requested.
+- Use the Node and pnpm versions in root `package.json`; application code stays TypeScript and ESM.
+- The API owns game state, rules, authentication, authorization, and persistence. The client presents synchronized state and sends intents. See [architecture](docs/ARCHITECTURE.md).
+- Do not add comments under any circumstances: no inline, block, JSDoc, JSX, suppression comments, or commented-out code. Put explanations in Markdown.
+- Every exported helper must have its own file, named after the helper. Only helpers private to their owning module may stay in that module.
+- Do not create `index` files or barrels. Import the owning file directly through configured aliases: `@/` in the web app, `#api/` in the API, `#shared/` inside shared, and `@aegis/shared/<domain>/<file>` across workspaces.
+- Organize source by domain and responsibility, colocate tests, types, enums, and helpers, and avoid generic helper/utility dumping grounds. Preserve the workspace, card-set, and scenario paths used by tooling.
+- Apply [coding-style](.agents/skills/coding-style/SKILL.md) to application changes and [enums](.agents/skills/enums/SKILL.md) to fixed domain values. Preserve serialized values and numeric engine enum ordering.
+- Run [quality-gate](.agents/skills/quality-gate/SKILL.md), relevant tests, and `git diff --check`; report failures and coverage limits. Build changed shared contracts before focused tests.
+- Keep these instructions canonical. `CLAUDE.md` is only a pointer. Follow [agent-file-convention](.agents/skills/agent-file-convention/SKILL.md) for instruction changes and update [COLLECTIONS.md](COLLECTIONS.md) with persistence schema changes.
+- Start with `pnpm dev`; restart after API changes because the API runs compiled code without source watching. See [development commands](internal-docs/ai/development.md) and [architecture map](internal-docs/ai/architecture-map.md).
+- For card or rules work, read [cards and rules](internal-docs/ai/cards-and-rules.md) and use [verify-card-implementation](.agents/skills/verify-card-implementation/SKILL.md). Register executable card behavior only through `registerIrCard` and synchronize changed effect snapshots.
+- For reports with a replay or match ID, reproduce the exact match first using [replay guidance](internal-docs/ai/replays.md). Resolve earlier divergence before trusting the reproduction.
+- For Discord reports, use [fix-discord-bug](.agents/skills/fix-discord-bug/SKILL.md), read the full thread and attachments, and follow the production host's instructions and resource guard.
+- Keep mockups, prototypes, and browser captures in ignored `.local/`; do not commit them to `docs/` or `apps/web/public/`.
+- Name regression tests and fixtures after behavior. Share preparation through `engine/scenario` and `setupScenario`; E2E uses `ScenarioPage.openFixture`. See [regression fixtures](docs/TESTING.md). Keep external IDs out of scenario identities; preserve necessary provenance in Markdown.
+- Open fixtures on demand with `pnpm scenario open <behavior>` or an ignored `.local/scenarios/<name>.fixture.ts`; regression fixtures require no arena registration. Add permanent demos only when requested.
+- Follow [testing guidance](internal-docs/ai/testing.md) for engine, card, conformance, and browser changes. Never use fixed sleeps or `waitForTimeout` for E2E synchronization. Fix shared product code, not only fixtures.
+- Use Orca Browser through the public `orca` CLI for requested manual checks. Verify narrow/wide viewports and dark/light modes for layout changes.
+- Write GitHub issue titles, descriptions, comments, and verification reports in English. Follow the authorized branch and delivery scope; distinguish local changes from deployed fixes.
+- Never commit credentials or `.env` files, rewrite pushed history, force push, rebase, squash merge, hard reset, or push directly to main. Do not edit git identity or `.git/config`.
+- Do not create task-specific planning documents unless requested.

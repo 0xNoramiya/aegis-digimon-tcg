@@ -1,10 +1,10 @@
-import type { ReportedCommunityDeck } from "@aegis/shared";
+import { relativeTime } from "@/i18n/relativeTime";
+import type { ReportedCommunityDeck } from "@aegis/shared/decks/community";
 import { useEffect, useState } from "react";
-import { communityApi } from "../community/client";
-import { Badge } from "../design/primitives";
-import { Icons } from "../design/icons";
-import { useTranslation } from "../i18n";
-import { relativeTime } from "./feedbackStatus";
+import { communityApi } from "@/community/client";
+import { Badge } from "@/design/primitives";
+import { Icons } from "@/design/icons";
+import { useTranslation } from "@/i18n/useTranslation";
 
 /**
  * Public decks players reported that no moderator has handled yet. Opening one leads to the deck
@@ -44,7 +44,7 @@ export function ReportedDecksPanel({ onOpenDeck }: { onOpenDeck: (deckId: string
                 {t("community.byAuthor", { name: deck.authorName })} ·{" "}
                 {t("feedback.reportedDecks.reports", { count: deck.openReports })} ·{" "}
                 <time dateTime={new Date(deck.lastReportedAt).toISOString()}>
-                  {relativeTime(deck.lastReportedAt, locale)}
+                  {relativeTime({ at: deck.lastReportedAt, locale })}
                 </time>
               </span>
               {deck.status === "hidden" ? <Badge tone="danger">{t("community.moderation.hiddenBadge")}</Badge> : null}

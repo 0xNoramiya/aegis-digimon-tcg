@@ -412,7 +412,8 @@ describe("P-191 Apollomon — KB Q&A rulings", () => {
       ).toEqual({ ok: true });
     }
     const attacks = s.events.filter(
-      (event): event is Extract<ServerEvent, { kind: "attackDeclared" }> => event.kind === "attackDeclared" && event.seat === 0,
+      (event): event is Extract<ServerEvent, { kind: "attackDeclared" }> =>
+        event.kind === "attackDeclared" && event.seat === 0,
     );
     const finish = async () => {
       expect(s.engine.applyIntent(0, { type: "surrender" })).toEqual({ ok: true });

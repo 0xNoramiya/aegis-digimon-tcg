@@ -1,16 +1,16 @@
+import { relativeTime } from "@/i18n/relativeTime";
+import { FeedbackStatus, FEEDBACK_STATUSES } from "@aegis/shared/feedback/FeedbackStatus";
+import { isClosedFeedbackStatus } from "@aegis/shared/feedback/isClosedFeedbackStatus";
 import {
-  FEEDBACK_STATUSES,
-  isClosedFeedbackStatus,
   MAX_FEEDBACK_FINAL_REPLY,
   MAX_FEEDBACK_INTERNAL_NOTE,
   MAX_FEEDBACK_SEARCH,
-  type FeedbackStatus,
-} from "@aegis/shared";
+} from "@aegis/shared/feedback/limits";
 import { useEffect, useId, useState } from "react";
-import { Alert, Badge, Button } from "../design/primitives";
-import { Icons } from "../design/icons";
-import { useTranslation } from "../i18n";
-import { BugReportApiError, FEEDBACK_KINDS, type FeedbackKind } from "./client";
+import { Alert, Badge, Button } from "@/design/primitives";
+import { Icons } from "@/design/icons";
+import { useTranslation } from "@/i18n/useTranslation";
+import { BugReportApiError, FEEDBACK_KINDS, type FeedbackKind } from "@/bugs/client";
 import {
   FeedbackConflictError,
   getFeedback,
@@ -20,10 +20,10 @@ import {
   type FeedbackFilter,
   type FeedbackPage,
   type FeedbackRecord,
-} from "./adminClient";
-import { FEEDBACK_STATUS_TONE, relativeTime } from "./feedbackStatus";
-import { ReportedDecksPanel } from "./ReportedDecksPanel";
-import "./feedbackScreen.css";
+} from "@/bugs/adminClient";
+import { FEEDBACK_STATUS_TONE } from "@/bugs/feedbackStatus";
+import { ReportedDecksPanel } from "@/bugs/ReportedDecksPanel";
+import "@/bugs/feedbackScreen.css";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -310,7 +310,7 @@ function FeedbackRow({ item, selected, onSelect }: { item: FeedbackRecord; selec
         <span className="feedback-row__cards">{report.cardIds.slice(0, 3).join(" · ")}</span>
         <span>
           {report.reporterName ?? t("feedback.anonymous")} ·{" "}
-          <time dateTime={new Date(item.createdAt).toISOString()}>{relativeTime(item.createdAt, locale)}</time>
+          <time dateTime={new Date(item.createdAt).toISOString()}>{relativeTime({ at: item.createdAt, locale })}</time>
         </span>
       </span>
     </button>
@@ -451,7 +451,7 @@ function FeedbackDetailPanel({
                       from: t(`feedback.status.${entry.from}`),
                       to: t(`feedback.status.${entry.to}`),
                     })}{" "}
-              · <time dateTime={new Date(entry.at).toISOString()}>{relativeTime(entry.at, locale)}</time>
+              · <time dateTime={new Date(entry.at).toISOString()}>{relativeTime({ at: entry.at, locale })}</time>
             </li>
           ))}
         </ol>
@@ -469,7 +469,7 @@ function ReopenNotice({ detail }: { detail: FeedbackDetail }) {
       className="feedback-reopen-notice"
       title={t("feedback.triage.reopenedTitle", {
         actor: detail.report.reporterName ?? t("feedback.anonymous"),
-        when: relativeTime(detail.reopenedAt!, locale),
+        when: relativeTime({ at: detail.reopenedAt!, locale }),
       })}
     >
       {reopening?.comment ? <blockquote>{reopening.comment}</blockquote> : null}
@@ -502,7 +502,7 @@ function normalized(draft: Draft): Draft {
     ...draft,
     finalReply: draft.finalReply.trim(),
     internalNote: draft.internalNote.trim(),
-    confirmedBug: draft.status !== "duplicate" && draft.confirmedBug,
+    confirmedBug: draft.status !== FeedbackStatus.DUPLICATE.value && draft.confirmedBug,
   };
 }
 
@@ -538,7 +538,7 @@ function ResolutionForm({
   const problem =
     closed && !reply
       ? "final_reply_required"
-      : draft.status === "duplicate" &&
+      : draft.status === FeedbackStatus.DUPLICATE.value &&
           !(Number.isSafeInteger(duplicateOfId) && duplicateOfId > 0 && duplicateOfId !== detail.id)
         ? "invalid_duplicate_target"
         : undefined;
@@ -561,7 +561,7 @@ function ResolutionForm({
         status: draft.status,
         finalReply: draft.finalReply,
         internalNote: draft.internalNote,
-        duplicateOfId: draft.status === "duplicate" ? duplicateOfId : null,
+        duplicateOfId: draft.status === FeedbackStatus.DUPLICATE.value ? duplicateOfId : null,
         confirmedBug: pending.confirmedBug,
       });
       setDraft(draftOf(next));
@@ -610,14 +610,14 @@ function ResolutionForm({
           <input
             type="checkbox"
             checked={pending.confirmedBug}
-            disabled={draft.status === "duplicate"}
+            disabled={draft.status === FeedbackStatus.DUPLICATE.value}
             aria-describedby={`${formId}-confirm-hint`}
             onChange={(event) => update({ confirmedBug: event.target.checked })}
           />
           <span>{t("feedback.triage.confirmedBug")}</span>
         </label>
         <small id={`${formId}-confirm-hint`}>
-          {draft.status === "duplicate"
+          {draft.status === FeedbackStatus.DUPLICATE.value
             ? t("feedback.triage.confirmedBugDuplicate")
             : detail.reporterConfirmedBugs === null
               ? t("feedback.triage.confirmedBugAnonymous")
@@ -628,7 +628,7 @@ function ResolutionForm({
         </small>
       </div>
 
-      {draft.status === "duplicate" ? (
+      {draft.status === FeedbackStatus.DUPLICATE.value ? (
         <div className="feedback-duplicate">
           <label className="feedback-textfield">
             <span>{t("feedback.triage.duplicateOf")}</span>

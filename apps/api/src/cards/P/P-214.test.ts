@@ -251,7 +251,9 @@ describe("P-214 Betamon (X Antibody) — KB Q&A rulings", () => {
   }
 
   async function answerSelection(s: Setup, alias: string): Promise<string[]> {
-    await settle(() => s.state.pendingDecision?.kind === "selectCards" || s.state.pendingDecision?.kind === "chooseTargets");
+    await settle(
+      () => s.state.pendingDecision?.kind === "selectCards" || s.state.pendingDecision?.kind === "chooseTargets",
+    );
     const req = s.state.pendingDecision!;
     const candidates: string[] = JSON.parse(req.payloadJson ?? "{}").candidateInstanceIds ?? [];
     const chosen = candidates.filter((id) => idsOf(s, alias).includes(id));

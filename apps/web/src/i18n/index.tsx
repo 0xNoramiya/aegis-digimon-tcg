@@ -2,16 +2,16 @@
    the provider/hook the whole client reads from. Card names and printed card text
    come from @aegis/shared and stay in English — only chrome is translated. */
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { I18nContext, type I18nValue } from "@/i18n/I18nContext";
+import type { Translate, TranslationKey, TranslationParams } from "@/i18n/translationTypes";
 import { DEFAULT_LOCALE, loadLocale, saveLocale, type Locale } from "./locales";
 import { en } from "./en";
 import { ptBR } from "./pt-BR";
 import { es } from "./es";
 import { it } from "./it";
 
-export type TranslationKey = keyof typeof en;
-export type TranslationParams = Record<string, string | number>;
-export type Translate = (key: TranslationKey, params?: TranslationParams) => string;
+export type { Translate, TranslationKey, TranslationParams } from "@/i18n/translationTypes";
 
 const DICTIONARIES: Record<Locale, Record<TranslationKey, string>> = {
   en,
@@ -31,14 +31,6 @@ export function translator(locale: Locale): Translate {
   return (key, params) => interpolate(dictionary[key] ?? en[key] ?? key, params);
 }
 
-interface I18nValue {
-  locale: Locale;
-  setLocale: (locale: Locale) => void;
-  t: Translate;
-}
-
-const I18nContext = createContext<I18nValue | null>(null);
-
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(loadLocale);
 
@@ -53,10 +45,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
-export function useTranslation(): I18nValue {
-  const value = useContext(I18nContext);
-  if (!value) throw new Error("useTranslation must be used inside <I18nProvider>");
-  return value;
-}
+export { useTranslation } from "@/i18n/useTranslation";
 
 export { LOCALES, LOCALE_LABELS, type Locale } from "./locales";

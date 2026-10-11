@@ -1,11 +1,12 @@
-import type { AccountNotification } from "@aegis/shared";
+import { relativeTime } from "@/i18n/relativeTime";
+import type { AccountNotification } from "@aegis/shared/feedback/types";
 import { useEffect, useId, useRef, useState } from "react";
-import { FEEDBACK_STATUS_TONE, relativeTime } from "../bugs/feedbackStatus";
-import { Badge } from "../design/primitives";
-import { Icons } from "../design/icons";
-import { useTranslation } from "../i18n";
-import type { NotificationInbox } from "./useNotificationInbox";
-import "./notificationBell.css";
+import { FEEDBACK_STATUS_TONE } from "@/bugs/feedbackStatus";
+import { Badge } from "@/design/primitives";
+import { Icons } from "@/design/icons";
+import { useTranslation } from "@/i18n/useTranslation";
+import type { NotificationInbox } from "@/notifications/useNotificationInbox";
+import "@/notifications/notificationBell.css";
 
 const BADGE_CAP = 9;
 
@@ -145,7 +146,7 @@ function NotificationItem({ notification, onSelect }: { notification: AccountNot
           <span className="aegis-notifications__bonus">{t("notifications.bugConfirmedPoint")}</span>
         ) : null}
         <time dateTime={new Date(notification.createdAt).toISOString()}>
-          {relativeTime(notification.createdAt, locale)}
+          {relativeTime({ at: notification.createdAt, locale })}
         </time>
       </span>
       <Badge tone={FEEDBACK_STATUS_TONE[payload.status]}>{t(`feedback.status.${payload.status}`)}</Badge>

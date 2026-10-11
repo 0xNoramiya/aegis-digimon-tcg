@@ -138,7 +138,9 @@ describe("P-085 Dracmon — KB Q&A rulings", () => {
 
     const offered = new Set(s.decisions.flatMap(({ req }) => req.options?.candidateInstanceIds ?? []));
     expect(offered.has(s.inst("levelFive").instanceId)).toBe(false);
-    expect(s.state.players[0]!.trash.some(({ instanceId }) => instanceId === s.inst("levelFive").instanceId)).toBe(true);
+    expect(s.state.players[0]!.trash.some(({ instanceId }) => instanceId === s.inst("levelFive").instanceId)).toBe(
+      true,
+    );
     expect(s.state.memory).toBe(5);
   });
 });

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { ANIMATION_SPEED_CHANNEL, type AnimationSpeedReport } from "@aegis/shared";
+import type { AnimationSpeedReport } from "@aegis/shared";
 import { getEffectSpeed, subscribeEffectSpeed } from "./pacing";
 
 /**
