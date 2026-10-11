@@ -18,7 +18,6 @@
   right: 0;
   margin-inline: auto;
   translate: none;
-  transform: none;
   width: min(620px, calc(100% - 24px));
   max-height: min(42dvh, 26rem);
   padding: var(--ds-space-3) var(--ds-space-4);
