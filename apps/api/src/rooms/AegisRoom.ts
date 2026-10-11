@@ -2,6 +2,7 @@ import { validateDecklist } from "../engine/deckValidation.js";
 import { log, logError, withMatchLog } from "../logger.js";
 import { CloseCode, Room, Client, ServerError, matchMaker, type Delayed } from "colyseus";
 import { canCreateRoom } from "../deployment/admission.js";
+import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
 import { randomBytes, randomUUID } from "node:crypto";
 import { ReplayRecording } from "../replays/recording.js";
 import { replayDownload } from "../replays/download.js";
@@ -73,6 +74,14 @@ const TIMED_DEV_SCENARIOS: ReadonlySet<DevScenarioId> = new Set<DevScenarioId>([
   "arena-discord-speed-security-scene-stuck",
   "arena-feedback28-security-reveal-before-prompt",
 ]);
+/**
+ * A real client sends a few messages per second, with bursts when it catches up on presentation
+ * reports. The budget is several times that, so only a flooding client hits it. Its excess messages
+ * are dropped before they reach the engine, and a client that keeps flooding is disconnected.
+ */
+const CLIENT_MESSAGE_RATE_LIMIT: TokenBucketOptions = { capacity: 120, refillMs: 25 };
+const CLIENT_DROPPED_MESSAGE_LIMIT: TokenBucketOptions = { capacity: 400, refillMs: 1_000 };
+export const MESSAGE_FLOOD_CLOSE_CODE = 4429;
 const WAITING_ROOM_TIMEOUT_SECONDS = positiveSeconds(process.env.AEGIS_WAITING_ROOM_TIMEOUT_SECONDS, 30 * 60);
 
 const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
@@ -269,6 +278,8 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private replayDownloads = new Map<Seat, Promise<ReplayDownloadMessage>>();
   private replayFinished = false;
   private replayRequestTimes = new WeakMap<Client, number>();
+  private readonly allowClientMessage = tokenBucketLimiter(CLIENT_MESSAGE_RATE_LIMIT);
+  private readonly allowDroppedClientMessage = tokenBucketLimiter(CLIENT_DROPPED_MESSAGE_LIMIT);
   /** Index entries per `seat:account`, so repeated replay requests write the row once. */
   private replayIndexes = new Map<string, Promise<string | undefined>>();
   private rankedByClient = new Map<string, boolean>();
@@ -757,6 +768,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // mutates state, and emits events. Rejections are surfaced as an
     // "actionRejected" event to the offending client only.
     this.onMessage("*", (client, type, payload) => {
+      if (!this.admitClientMessage(client)) return;
       if (type === REPLAY_CHANNEL) {
         const now = performance.now();
         if (now - (this.replayRequestTimes.get(client) ?? -Infinity) >= 10_000) {
@@ -1900,6 +1912,15 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
    * cooldown are dropped without a reply, and blocked words are masked before anyone, the
    * match log included, sees the text.
    */
+  private admitClientMessage(client: Client): boolean {
+    if (this.allowClientMessage(client.sessionId)) return true;
+    if (!this.allowDroppedClientMessage(client.sessionId)) {
+      log(`[MESSAGE_FLOOD] ${JSON.stringify({ roomId: this.roomId, sessionId: client.sessionId })}`);
+      client.leave(MESSAGE_FLOOD_CLOSE_CODE);
+    }
+    return false;
+  }
+
   private handleChat(client: Client, payload: unknown): void {
     const sender = this.chatSender(client);
     if (!sender) return;
