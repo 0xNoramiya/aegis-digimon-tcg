@@ -4,7 +4,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { Home } from "./Home";
 
-const published = vi.hoisted(() => ({ guides: [] as { slug: string; title: string; url: string }[] }));
+const published = vi.hoisted(() => ({
+  guides: [] as { slug: string; title: string; url: string; strictVerified?: boolean }[],
+}));
 vi.mock("../guides/catalog.json", () => ({ default: published.guides }));
 
 function renderHome(overrides: Partial<Parameters<typeof Home>[0]> = {}) {
@@ -41,6 +43,10 @@ describe("the home screen", () => {
       title: "Digimon fundamentals",
       url: "/strategy-guides/fundamentals/",
     });
+    renderHome();
+    expect(screen.queryByRole("link", { name: /strategy guides/ })).toBeNull();
+    cleanup();
+    published.guides[0]!.strictVerified = true;
     renderHome();
     expect(screen.getByRole("link", { name: "Learn a deck with our strategy guides" }).getAttribute("href")).toBe(
       "/strategy-guides/",

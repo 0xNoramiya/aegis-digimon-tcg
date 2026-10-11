@@ -55,7 +55,8 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
   const pilots = [SEED_HEURISTIC, SEED_HEURISTIC];
   pilots[options.learnerSeat] = options.program;
   pilots[opponentSeat] = options.opponentProgram ?? SEED_HEURISTIC;
-  const rollout = (seat: Seat, window: TrainingWindow): number => chooseHeuristic(pilots[seat]!, window);
+  const rollout = (seat: Seat, window: TrainingWindow): number =>
+    chooseHeuristic(pilots[seat]!, window, options.seed + seat * 7919);
   const replay = async (
     prefix: readonly RecordedChoice[],
     root: TrainingWindow,
@@ -161,6 +162,9 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
             sourceCardId: actionCardId(window, action),
             features: actionFeatures(window, action),
             score: choice.score,
+            legalActions: ranked.length,
+            topScoreTies: ranked.filter((entry) => entry.score === ranked[0]!.score).length,
+            scoreTies: ranked.filter((entry) => entry.score === choice.score).length,
             reasons: choice.contributions.filter((rule) => rule.value !== 0),
             alternatives: ranked
               .filter((entry) => entry.index !== action)

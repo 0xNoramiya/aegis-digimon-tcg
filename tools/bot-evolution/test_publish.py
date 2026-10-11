@@ -67,25 +67,28 @@ def artifact_run(path: Path) -> Path:
         "candidates": 1,
         "validEvaluatedProposals": 1,
         "retainedStageInitial": True,
-        "retainedOriginalSeed": True,
+        "retainedOriginalSeed": False,
         "validationScore": 0.5,
     }
+    from evidence import program_hash
+
+    seed_program = {**program, "rules": [{**program["rules"][0], "weight": -0.5}]}
     candidate = hashlib.sha256(json.dumps(program).encode()).hexdigest()
     games = [
         {
-            "score": seat,
+            "score": 1,
             "valid": True,
             "engineSha256": "engine",
             "candidateSha256": candidate,
             "task": {"learnerSeat": seat, "opponent": "mcts", "seed": seed},
             "searches": [{"requested": 256, "completed": 256}],
         }
-        for seed in (100, 101)
+        for seed in range(100, 124)
         for seat in (0, 1)
     ]
     manifest = {
         "config": {"engineSha256": "engine", "runnerSha256": "runner", "simulations": 256},
-        "metadata": {"cards": [], "evolutionDecks": [], "seedProgram": program},
+        "metadata": {"cards": [], "evolutionDecks": [], "seedProgram": seed_program},
     }
     report = {
         "engineSha256": "engine",
@@ -95,9 +98,12 @@ def artifact_run(path: Path) -> Path:
             "generic": {
                 "allValid": True,
                 "selected": games,
-                "control": games,
-                "selectedScore": 0.5,
-                "controlScore": 0.5,
+                "control": [
+                    {**game, "score": 0, "candidateSha256": program_hash(seed_program)}
+                    for game in games
+                ],
+                "selectedScore": 1,
+                "controlScore": 0,
             }
         },
     }
@@ -119,11 +125,11 @@ def test_publication_escapes_exact_advice_and_links_to_practice(tmp_path: Path) 
     assert "<script>" not in html
     assert "/play?utm_source=strategy-guides&amp;utm_content=fundamentals" in html
     assert '<link rel="canonical" href="https://example.com/strategy-guides/fundamentals/"' in html
-    assert "2 wins, 0 draws / 4 games" in html
-    assert "improvement was not demonstrated" in html
+    assert "48 wins, 0 draws / 48 games" in html
+    assert "improvement was not demonstrated" not in html
     evidence = json.loads((tmp_path / "public/evidence.json").read_text())
     selected = evidence["results"]["generic"]["selected"]
-    assert len(selected) == 4
+    assert len(selected) == 48
     assert {game["task"]["learnerSeat"] for game in selected} == {0, 1}
     assert selected[0]["searches"] == [{"requested": 256, "completed": 256}]
     assert "traces" not in selected[0]
@@ -172,3 +178,42 @@ def test_refuses_incomplete_or_mismatched_evidence(tmp_path: Path, change: str) 
     path.write_text(json.dumps(report))
     with pytest.raises(ValueError):
         verified_run(run)
+
+
+@pytest.mark.parametrize(
+    "change", ("unchanged", "editorial", "no-gain", "too-few", "duplicates", "advice-drift")
+)
+def test_strict_publication_refuses_false_improvement(tmp_path, change):
+    run = artifact_run(tmp_path / "run")
+    pilots = json.loads((run / "pilots.json").read_text())
+    manifest = json.loads((run / "manifest.json").read_text())
+    report = json.loads((run / "held-out.json").read_text())
+    evidence = report["results"]["generic"]
+    if change in ("unchanged", "editorial"):
+        pilots["generic"]["program"] = manifest["metadata"]["seedProgram"]
+        if change == "editorial":
+            pilots["generic"]["program"]["title"] = "Reformatted seed"
+    elif change == "no-gain":
+        for game in evidence["selected"]:
+            game["score"] = 0
+    elif change in ("too-few", "duplicates"):
+        for arm in ("selected", "control"):
+            evidence[arm] = evidence[arm][:4] * (12 if change == "duplicates" else 1)
+    else:
+        pilots["generic"]["program"]["rules"][0]["weight"] = 1
+    for name, value in (("pilots.json", pilots), ("held-out.json", report)):
+        (run / name).write_text(json.dumps(value))
+    with pytest.raises(ValueError):
+        verified_run(run)
+
+
+def test_publication_names_the_random_training_rung(tmp_path):
+    run = artifact_run(tmp_path / "run")
+    path = run / "pilots.json"
+    pilots = json.loads(path.read_text())
+    pilots["generic"]["ladder"] = {"trainingRung": 0}
+    path.write_text(json.dumps(pilots))
+    publish(run, tmp_path / "public", "https://example.com", tmp_path / "catalog.json")
+    html = (tmp_path / "public/fundamentals/index.html").read_text()
+    assert "trained deck pilots against seeded random legal actions" in html
+    assert "trained deck pilots against search" not in html

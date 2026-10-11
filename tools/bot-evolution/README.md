@@ -9,7 +9,9 @@ coevolves Glowing Dawn and Toho Braves pilots. Each generation freezes an archiv
 of the other pilots; pilots face both that archive and an information-set MCTS
 opponent. Training, model selection, and final evaluation use disjoint seeds.
 Final evaluations compare the selected and initial policies on the same tasks.
-The default search budget is 256 completed real-engine rollouts per main choice.
+Training adaptively screens search budgets up to 8 completed real-engine rollouts
+per main choice by default. Strict publication requires a separate final budget of
+at least 128 completed rollouts.
 Incomplete search budgets, policy fallbacks, rejected intents, and truncated
 games cannot produce valid fitness results.
 
@@ -42,11 +44,11 @@ the current isolated desktop checkout:
 
 ```sh
 tools/bot-evolution/.venv/bin/python tools/bot-evolution/evolve.py \
-  --run-dir artifacts/bot-evolution/desktop-gepa-isolated-256 \
+  --run-dir artifacts/bot-evolution/desktop-gepa-smoke-8 \
   --desktop-host desktop \
   --node /home/vinicius/aegis-bot-lab/toolchain/node-v26.10.0-linux-x64/bin/node \
   --worker /home/vinicius/aegis-bot-lab/checkouts/gepa-2026-10-10-v2/apps/api/dist/bot/evolution/evaluateCli.js \
-  --simulations 256 --metric-calls 24 --pairs 2 --generations 2 \
+  --simulations 8 --metric-calls 512 --pairs 24 --generations 2 \
   --evaluation-timeout 21600 \
   --evaluation-workers 4 \
   --reflection-model session
@@ -63,7 +65,7 @@ uninterrupted; if interruption is unavoidable, record the resume in its evidence
 instead of claiming an identical optimization trajectory.
 Four bounded desktop workers evaluate independent games while preserving batch order.
 A complete random-deck game exceeded the two-hour default deadline at 256
-rollouts per search, so this high-budget command allows six hours per game.
+rollouts per search, so certification at high budgets needs a separate measured runtime budget.
 The deadline is recorded in the run manifest. An execution timeout aborts
 evaluation; it does not count as a heuristic loss. Valid exact-task games remain
 reusable from the adapter cache when a fresh run uses a longer deadline.
@@ -135,8 +137,8 @@ tools/bot-evolution/.venv/bin/python tools/bot-evolution/publish.py \
 The publisher requires matching engine/policy fingerprints, both player seats,
 valid final games, and complete search budgets of at least 128 rollouts. It
 refuses low-budget smoke results and requires an alternative policy evaluated
-in completed games. If selection retains the stage input or original baseline,
-the guide reports that explicitly without claiming improvement. Publication
+in completed games. The selected policy must differ semantically from the original baseline and beat its
+paired held-out control with a positive confidence lower bound. Publication
 preserves every active rule's
 exact advice and conditions, exposes benchmark denominators and the paired
 starting-policy control, and links to Aegis practice. Generated pages live in
@@ -149,4 +151,65 @@ under the stage's `reflections/` directory and waits for a matching response
 fingerprint. The coding session reviews the real feedback and supplies a fenced
 JSON candidate. These prompt/response records make the provenance explicit;
 this mode does not claim an external API model produced the candidate. The
-same GEPA selection, real-engine evaluations, and held-out gates still apply.
+same GEPA selection and real-engine evaluations still apply, but strict publication
+requires an API reflector.
+
+
+## Numeric selection and publication gates
+
+Run `tune.py --manifest <run>/manifest.json --program <program.json> --tasks <tasks.json>
+--output <selection-dir>` before paying for reflection. It evaluates fixed, reproducible
+single-weight neighbors through `HeuristicAdapter` and the same compiled worker as GEPA.
+Conditions and authored advice stay fixed; weights retain their signs. Each candidate
+faces the frozen initial control on the same seeds. At least 48 distinct games are
+required, rechecks add no samples, and paired confidence calculations group seats and
+opponents by engine seed. Numeric selection uses an approximate paired Wilson win test with one task-hash
+representative per seed and corrects for the number of predeclared proposals. The
+strict publisher retains the more conservative Hoeffding bound on complete seed blocks. Its output is selection evidence: freeze the winner
+and evaluate new held-out seed blocks before claiming improved strength.
+
+Each structural proposal is screened on at least 48 fresh same-seed games against
+its parent before admission to GEPA. Seeds are separate from training, validation
+and final testing, and the gate corrects for the predeclared proposal limit.
+
+Reflection defaults to thin feedback (the final eight recorded decisions, without the
+card-text dump). `feedbackMode: "rich"` enables the longer diagnostic dataset. A
+`blockedIntents` list records ideas unavailable in the grammar without changing policy
+identity or scores. Exact score ties use seeded randomness derived from the public
+window, preserving deterministic prefix replay; traces report tied actions per window.
+
+Invalid games and timeouts have null fitness. An incomplete GEPA batch stops with its
+audit artifacts rather than supplying artificial losses. Strict publication requires a
+policy distinct from the seed, at least 48 valid paired held-out games, and a positive
+95% seed-block Hoeffding lower bound against control. Duplicate cached games never add
+independent evidence. A weight sign change with unchanged advice also blocks publication.
+Pilot test matchups exclude mirrors; larger deck pools rotate opponents across splits.
+
+Preview catalogs set `strictVerified: false`, so Home exposes the guides link only after
+strict publication. Pilots identical to generic have no deck page. Preview sitemaps
+contain no noindex URLs; canonical origins come from the required `--base-url` option.
+
+
+API reflection requires `--dollar-cap`, `--input-usd-per-million` and
+`--output-usd-per-million` with prices checked for the chosen model. The runner sends
+`--completion-tokens` (4096 by default) on the wire, disables automatic paid retries,
+and reserves a conservative upper cost before each call across all stages. Reservations
+are never refunded for missing usage or unknown library pricing. Prompts, raw API
+responses and the shared budget ledger are saved with the run. Session reflection is
+restricted to smoke work and cannot pass the strict publisher.
+
+A cheap engine snapshot is not currently safe. GameState omits runtime effect and
+modifier ledgers, once-per-turn usage tracking, reducers and RNG closures. The complete
+engine additionally owns promises, WeakMaps and callbacks bound to its original state.
+An engine-owned settled snapshot API would need full runtime export/import, explicit
+quiescence checks, serializable RNG and rebuilt callbacks before replacing prefix replay.
+
+
+Training selects a search rung adaptively by default (`--fixed-opponent` disables it).
+The seed first faces a seeded random legal-action control, then progressively larger
+MCTS budgets up to `--simulations`. A rung advances after its approximate Wilson win
+lower bound clears 50%; the first blocked interval is bisected to find an intermediate
+budget. This is a heuristic bracket: larger MCTS budgets are not guaranteed to be
+monotonically stronger. Each rung records played games, independent seed blocks and its mastery result.
+Archive opponents remain frozen while the search budget changes. These are training
+screens; the final held-out report uses the independently configured search budget.

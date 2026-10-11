@@ -43,7 +43,7 @@ def test_timeout_records_failure_and_remote_worker_has_owned_deadline(
         "60",
     ]
     audit = json.loads(next(tmp_path.glob("*.json")).read_text())
-    assert audit["valid"] is False and audit["score"] == 0 and audit["engineSha256"] == "engine"
+    assert audit["valid"] is False and audit["score"] is None and audit["engineSha256"] == "engine"
     assert audit["candidateSha256"] and audit["task"] == {"seed": 1}
 
 
@@ -133,6 +133,6 @@ def test_only_valid_identical_games_reuse_cache_and_traces_are_required(
     assert len(list((tmp_path / "games").glob("*.json"))) == 7
     for _ in range(2):
         invalid = adapter.evaluate_game({**task, "seed": 3}, candidate, False)
-        assert invalid["valid"] is False and invalid["score"] == 0
+        assert invalid["valid"] is False and invalid["score"] is None
     assert len(calls) == 7
     assert len(list((tmp_path / "cache").glob("*.json"))) == 4

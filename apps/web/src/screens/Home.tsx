@@ -89,7 +89,7 @@ export function Home({
           </section>
         )}
 
-        {strategyGuides.length > 0 ? (
+        {strategyGuides.some((guide) => "strictVerified" in guide && guide.strictVerified === true) ? (
           <a className="home-guides" href="/strategy-guides/">
             <Icons.BookOpen size={20} aria-hidden="true" />
             <span>{t("home.strategyGuides")}</span>

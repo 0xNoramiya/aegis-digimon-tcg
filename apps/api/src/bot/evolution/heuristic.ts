@@ -1,9 +1,15 @@
 import { CardKind, getCardDefinition } from "@aegis/shared";
+import { createBotRandom } from "../rng.js";
 import type { TrainingWindow } from "../training/policy.js";
 
 /** GEPA evolves data, never executable code. Guides come from these same rules. */
 export const FEATURES = [
   "bias",
+  "ownHandCount",
+  "opponentHandCount",
+  "turn",
+  "ownTrashCount",
+  "opponentTrashCount",
   "cost",
   "handover",
   "attackPlayer",
@@ -128,6 +134,11 @@ export function actionFeatures(window: TrainingWindow, index: number): Record<Fe
     (entry) => entry.instanceId === action.sourceId,
   );
   features.bias = 1;
+  features.ownHandCount = own.handCount;
+  features.opponentHandCount = enemy.handCount;
+  features.turn = window.observation.turn;
+  features.ownTrashCount = own.trash.length;
+  features.opponentTrashCount = enemy.trash.length;
   features.cost = action.projectedCost ?? 0;
   features.handover = Math.max(0, features.cost - window.observation.memory);
   features.sourceLevel = source?.top.level ?? card?.level ?? 0;
@@ -242,10 +253,17 @@ export function rankHeuristic(program: HeuristicProgram, window: TrainingWindow)
     .sort((left, right) => right.score - left.score || left.index - right.index);
 }
 
-export function chooseHeuristic(program: HeuristicProgram, window: TrainingWindow): number {
-  const best = rankHeuristic(program, window)[0];
+/** Derive randomness from public information so prefix replay needs no private RNG snapshot. */
+export function chooseHeuristic(program: HeuristicProgram, window: TrainingWindow, seed = 0): number {
+  const ranked = rankHeuristic(program, window);
+  const best = ranked[0];
   if (best === undefined) throw new Error("No legal heuristic action");
-  return best.index;
+  const tied = ranked.filter((entry) => entry.score === best.score);
+  if (tied.length === 1) return best.index;
+  let publicSeed = seed >>> 0;
+  for (const character of JSON.stringify(window))
+    publicSeed = Math.imul(publicSeed ^ character.charCodeAt(0), 16777619) >>> 0;
+  return tied[Math.floor(createBotRandom(publicSeed).next() * tied.length)]!.index;
 }
 
 export const SEED_HEURISTIC: HeuristicProgram = {

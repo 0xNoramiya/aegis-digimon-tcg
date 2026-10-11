@@ -5,6 +5,7 @@ import json
 import shutil
 import subprocess
 from copy import deepcopy
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -12,8 +13,13 @@ from typing import Any
 import click
 import gepa
 
-from adapter import EvaluationConfig, HeuristicAdapter, REFLECTION_TEMPLATE
+from adapter import REFLECTION_TEMPLATE, EvaluationConfig, HeuristicAdapter
+from api_reflection import ApiReflection
+from evidence import paired_evidence, policy_hash
+from ladder import choose_training_rung, ladder_tasks
+from proposals import guarded_proposer
 from session_reflection import SessionReflection
+from tune import tune
 
 
 class EvolutionAudit:
@@ -39,9 +45,7 @@ class EvolutionAudit:
         if not self.path.is_file():
             return set()
         return {
-            hashlib.sha256(
-                record["event"]["new_instructions"]["heuristic"].encode("utf-8")
-            ).hexdigest()
+            policy_hash(json.loads(record["event"]["new_instructions"]["heuristic"]))
             for record in (
                 json.loads(line) for line in self.path.read_text(encoding="utf-8").splitlines()
             )
@@ -67,8 +71,10 @@ def task_sets(
                     decks: list[str | int] = [random_base, random_base + 1]
                 else:
                     other = deck_versions[
-                        (deck_versions.index(pilot) + pair + 1) % len(deck_versions)
+                        (deck_versions.index(pilot) + pair + split_index + 1) % len(deck_versions)
                     ]
+                    if other == pilot:
+                        other = deck_versions[(deck_versions.index(pilot) + 1) % len(deck_versions)]
                     decks = [pilot, other] if learner_seat == 0 else [other, pilot]
                 task = {
                     "seed": seed,
@@ -107,6 +113,8 @@ def optimize_stage(
     simulations: int,
     metric_calls: int,
     reflection_model: str,
+    numeric_proposals: int = 0,
+    reflection_budget: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     stage_dir = run_dir / stage
     result_path = stage_dir / "selected.json"
@@ -120,6 +128,10 @@ def optimize_stage(
                 "simulations": simulations,
                 "metricCalls": metric_calls,
                 "reflectionModel": reflection_model,
+                "numericProposals": numeric_proposals,
+                "adaptiveLadder": metadata.get("adaptiveLadder", False),
+                "pairedProposalGates": metadata.get("pairedProposalGates", False),
+                "reflectionBudget": reflection_budget,
             },
             sort_keys=True,
         ).encode("utf-8")
@@ -147,18 +159,58 @@ def optimize_stage(
     (stage_dir / "splits.json").write_text(json.dumps(splits, indent=2) + "\n", encoding="utf-8")
     click.echo(f"Optimizing {stage}: {simulations} MCTS simulations per search", err=True)
     audit = EvolutionAudit(stage_dir / "evolution-audit.jsonl")
+    rung = None
+    if metadata.get("adaptiveLadder"):
+        rung = choose_training_rung(
+            adapter, initial, splits["train"], stage_dir / "ladder", simulations
+        )
+        simulations = max(1, rung["trainingRung"])
+        adapter.config = replace(adapter.config, simulations=simulations)
+        splits = {
+            name: ladder_tasks(tasks, rung["trainingRung"], include_archive=True)
+            for name, tasks in splits.items()
+        }
+        (stage_dir / "training-splits.json").write_text(json.dumps(splits, indent=2) + "\n")
+    numeric = (
+        tune(
+            adapter,
+            initial,
+            splits["train"],
+            seed=71,
+            proposals=numeric_proposals,
+            output=stage_dir / "numeric",
+        )
+        if numeric_proposals
+        else None
+    )
+    starting_program = initial if numeric is None else numeric["program"]
+    reflector = (
+        SessionReflection(stage_dir / "reflections")
+        if reflection_model == "session"
+        else ApiReflection(
+            stage_dir / "reflections",
+            run_dir / "reflection-budget.json",
+            model=reflection_model,
+            **(reflection_budget or {}),
+        )
+    )
+    if metadata.get("pairedProposalGates"):
+        adapter.propose_new_texts = guarded_proposer(
+            adapter,
+            reflector,
+            starting_program,
+            splits["validation"],
+            stage_dir / "proposal-gates",
+            max(1, metric_calls // (4 * len(splits["validation"]))),
+        )
     result = gepa.optimize(
-        seed_candidate={"heuristic": json.dumps(initial)},
+        seed_candidate={"heuristic": json.dumps(starting_program)},
         trainset=splits["train"],
         valset=splits["validation"],
         adapter=adapter,
-        reflection_lm=(
-            SessionReflection(stage_dir / "reflections")
-            if reflection_model == "session"
-            else reflection_model
-        ),
+        reflection_lm=reflector,
         reflection_prompt_template=REFLECTION_TEMPLATE,
-        reflection_minibatch_size=2,
+        reflection_minibatch_size=min(48, len(splits["train"])) or 2,
         max_metric_calls=metric_calls,
         run_dir=str(stage_dir / "gepa"),
         seed=71,
@@ -178,17 +230,26 @@ def optimize_stage(
         json.loads(path.read_text(encoding="utf-8"))
         for path in (stage_dir / "games").glob("*.json")
     ]
-    proposals = audit.proposals() - {
-        hashlib.sha256(json.dumps(initial).encode("utf-8")).hexdigest()
+    proposals = audit.proposals() - {policy_hash(initial)}
+    proposals |= {
+        json.loads(path.read_text())["policySha256"]
+        for path in (stage_dir / "numeric").glob("proposal-*.json")
     }
-    valid_evaluated = {
-        game.get("candidateSha256") for game in evaluated if game.get("valid") is True
+    proposals |= {
+        policy_hash(record["program"])
+        for path in (stage_dir / "proposal-gates").glob("proposal-*.json")
+        if "program" in (record := json.loads(path.read_text()))
     }
+    proposals.discard(policy_hash(initial))
+    valid_evaluated = {game.get("policySha256") for game in evaluated if game.get("valid") is True}
     selected = {
         "stage": stage,
+        "ladder": rung,
+        "trainingSimulations": simulations,
         "proposals": len(proposals),
         "validEvaluatedProposals": len(proposals & valid_evaluated),
-        "retainedStageInitial": result.best_idx == 0,
+        "retainedStageInitial": policy_hash(json.loads(result.best_candidate["heuristic"]))
+        == policy_hash(initial),
         "retainedOriginalSeed": json.loads(result.best_candidate["heuristic"])
         == metadata.get("seedProgram", initial),
         "stageSha256": stage_fingerprint,
@@ -248,6 +309,8 @@ def final_evaluation(
             "control": control.outputs,
             "selectedScore": sum(chosen.scores) / len(chosen.scores),
             "controlScore": sum(control.scores) / len(control.scores),
+            "pairedEvidence": paired_evidence(chosen.outputs, control.outputs),
+            "played": len(chosen.scores),
             "allValid": all(
                 output.get("valid") is True for output in chosen.outputs + control.outputs
             ),
@@ -275,11 +338,17 @@ def final_evaluation(
     "--evaluation-timeout", default=7200, type=click.IntRange(60, 86400), show_default=True
 )
 @click.option("--evaluation-workers", default=4, type=click.IntRange(1, 4), show_default=True)
-@click.option("--simulations", default=256, type=click.IntRange(1, 10000), show_default=True)
-@click.option("--metric-calls", default=24, type=click.IntRange(12, 10000), show_default=True)
-@click.option("--pairs", default=2, type=click.IntRange(1, 100), show_default=True)
+@click.option("--simulations", default=8, type=click.IntRange(1, 10000), show_default=True)
+@click.option("--metric-calls", default=512, type=click.IntRange(12, 10000), show_default=True)
+@click.option("--pairs", default=24, type=click.IntRange(1, 100), show_default=True)
 @click.option("--generations", default=2, type=click.IntRange(1, 100), show_default=True)
 @click.option("--reflection-model", default="openai/gpt-4.1", show_default=True)
+@click.option("--adaptive-ladder/--fixed-opponent", default=True, show_default=True)
+@click.option("--numeric-proposals", default=24, type=click.IntRange(0, 1000))
+@click.option("--completion-tokens", default=4096, type=click.IntRange(1, 32768))
+@click.option("--dollar-cap", default=None, type=click.FloatRange(min=0, min_open=True))
+@click.option("--input-usd-per-million", default=None, type=click.FloatRange(min=0, min_open=True))
+@click.option("--output-usd-per-million", default=None, type=click.FloatRange(min=0, min_open=True))
 def main(
     run_dir: Path,
     node: str,
@@ -292,14 +361,36 @@ def main(
     pairs: int,
     generations: int,
     reflection_model: str,
+    numeric_proposals: int,
+    adaptive_ladder: bool,
+    completion_tokens: int,
+    dollar_cap: float | None,
+    input_usd_per_million: float | None,
+    output_usd_per_million: float | None,
 ) -> None:
+    reflection_budget = None
+    if reflection_model != "session":
+        if any(
+            value is None for value in (dollar_cap, input_usd_per_million, output_usd_per_million)
+        ):
+            raise click.ClickException(
+                "API reflection requires --dollar-cap and explicit input/output USD-per-million prices; unknown pricing cannot bypass the cap"
+            )
+        reflection_budget = {
+            "completion_tokens": completion_tokens,
+            "dollar_cap": dollar_cap,
+            "input_usd_per_million": input_usd_per_million,
+            "output_usd_per_million": output_usd_per_million,
+        }
+    if pairs < 24:
+        raise click.ClickException("Selection requires at least 48 same-seed games (--pairs >=24)")
     root = Path(__file__).parent.parent.parent
     worker = worker_override or root / "apps/api/dist/bot/evolution/evaluateCli.js"
     if desktop_host is None and (shutil.which(node) is None or not worker.is_file()):
         raise click.ClickException("Node and a compiled API evolution worker are required")
-    if metric_calls < pairs * 2 + 8:
+    if metric_calls < pairs * 4 + 48:
         raise click.ClickException(
-            "Metric budget must cover initial validation and a reflective mutation"
+            "Metric budget must cover initial pilot validation and a 48-game mutation screen"
         )
     command = [node, str(worker), "--describe"]
     if desktop_host is not None:
@@ -308,6 +399,9 @@ def main(
     metadata = {
         **json.loads(description.stdout),
         "worker": str(worker),
+        "node": node,
+        "pairedProposalGates": True,
+        "adaptiveLadder": adaptive_ladder,
         "desktopHost": desktop_host,
         "evaluationTimeout": evaluation_timeout,
         "evaluationWorkers": evaluation_workers,
@@ -317,7 +411,18 @@ def main(
                 path.name.encode("utf-8") + b"\0" + path.read_bytes()
                 for path in sorted(Path(__file__).parent.iterdir())
                 if path.name
-                in ("adapter.py", "evolve.py", "session_reflection.py", "pyproject.toml", "uv.lock")
+                in (
+                    "adapter.py",
+                    "evidence.py",
+                    "tune.py",
+                    "api_reflection.py",
+                    "proposals.py",
+                    "ladder.py",
+                    "evolve.py",
+                    "session_reflection.py",
+                    "pyproject.toml",
+                    "uv.lock",
+                )
             )
         ).hexdigest(),
     }
@@ -331,6 +436,9 @@ def main(
         "pairs": pairs,
         "generations": generations,
         "reflectionModel": reflection_model,
+        "numericProposals": numeric_proposals,
+        "reflectionBudget": reflection_budget,
+        "adaptiveLadder": adaptive_ladder,
         "deckVersions": metadata["deckVersions"],
     }
     config_sha256 = hashlib.sha256(json.dumps(config, sort_keys=True).encode("utf-8")).hexdigest()
@@ -366,6 +474,8 @@ def main(
         simulations=simulations,
         metric_calls=metric_calls,
         reflection_model=reflection_model,
+        numeric_proposals=numeric_proposals,
+        reflection_budget=reflection_budget,
     )
     pilots = {version: generic for version in metadata["deckVersions"]}
     for generation in range(1, generations + 1):
@@ -382,6 +492,8 @@ def main(
                 simulations=simulations,
                 metric_calls=metric_calls,
                 reflection_model=reflection_model,
+                numeric_proposals=numeric_proposals,
+                reflection_budget=reflection_budget,
             )
         pilots = next_pilots
     report = final_evaluation(

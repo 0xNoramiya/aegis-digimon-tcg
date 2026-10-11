@@ -4,13 +4,15 @@ import hashlib
 import json
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
-from threading import Lock
-from uuid import uuid4
 from dataclasses import dataclass
 from pathlib import Path
+from threading import Lock
 from typing import Any
+from uuid import uuid4
 
 from gepa.core.adapter import EvaluationBatch
+
+from evidence import policy_hash, program_hash
 
 
 @dataclass(frozen=True)
@@ -56,9 +58,13 @@ class HeuristicAdapter:
             outputs = list(
                 pool.map(lambda task: self.evaluate_game(task, candidate, capture_traces), batch)
             )
+        if not all(output.get("valid") is True for output in outputs):
+            raise RuntimeError(
+                "Incomplete evaluation batch; invalid games are not fitness losses. Inspect game artifacts and resume after diagnosis."
+            )
         return EvaluationBatch(
             outputs=outputs,
-            scores=[output.get("score", 0.0) for output in outputs],
+            scores=[output["score"] for output in outputs if output.get("valid") is True],
             trajectories=outputs if capture_traces else None,
         )
 
@@ -74,7 +80,12 @@ class HeuristicAdapter:
         try:
             program = json.loads(raw_program)
         except json.JSONDecodeError as error:
-            return {"score": 0.0, "valid": False, "error": f"Invalid candidate JSON: {error}"}
+            return {
+                "score": None,
+                "valid": False,
+                "status": "invalid",
+                "error": f"Invalid candidate JSON: {error}",
+            }
         payload = {
             **task,
             "program": program,
@@ -101,7 +112,7 @@ class HeuristicAdapter:
                 and output.get("engineSha256") == self.config.engine_sha256
                 and (not capture_traces or bool(output.get("traces")))
             ):
-                output["candidateSha256"] = hashlib.sha256(raw_program.encode("utf-8")).hexdigest()
+                output["candidateSha256"] = program_hash(program)
                 output["cacheHit"] = True
                 artifact = self.config.run_dir / f"{call_index:05d}-{fingerprint[:12]}.json"
                 artifact.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
@@ -139,13 +150,12 @@ class HeuristicAdapter:
                     json.dumps(
                         {
                             "valid": False,
-                            "score": 0,
+                            "score": None,
+                            "status": "timed-out",
                             "task": task,
                             "error": "Evaluation transport deadline expired",
                             "engineSha256": self.config.engine_sha256,
-                            "candidateSha256": hashlib.sha256(
-                                raw_program.encode("utf-8")
-                            ).hexdigest(),
+                            "candidateSha256": program_hash(program),
                         },
                         indent=2,
                     )
@@ -159,11 +169,12 @@ class HeuristicAdapter:
                 json.dumps(
                     {
                         "valid": False,
-                        "score": 0,
+                        "score": None,
+                        "status": "timed-out",
                         "task": task,
                         "error": "Desktop evaluation deadline expired",
                         "engineSha256": self.config.engine_sha256,
-                        "candidateSha256": hashlib.sha256(raw_program.encode("utf-8")).hexdigest(),
+                        "candidateSha256": program_hash(program),
                     },
                     indent=2,
                 )
@@ -179,9 +190,15 @@ class HeuristicAdapter:
         if result.returncode not in (0, 1):
             raise RuntimeError(f"Engine worker crashed with exit {result.returncode}; see {log}")
         if output.get("valid") is not True:
-            output["score"] = 0.0
+            output["score"] = None
+        output["status"] = (
+            ("timed-out" if output.get("result", {}).get("timedOut") else "invalid")
+            if output.get("valid") is not True
+            else "played"
+        )
+        output["policySha256"] = policy_hash(program)
         output["task"] = task
-        output["candidateSha256"] = hashlib.sha256(raw_program.encode("utf-8")).hexdigest()
+        output["candidateSha256"] = program_hash(program)
         output["engineSha256"] = self.config.engine_sha256
         artifact = self.config.run_dir / f"{call_index:05d}-{fingerprint[:12]}.json"
         artifact.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
@@ -201,6 +218,7 @@ class HeuristicAdapter:
         components_to_update: list[str],
     ) -> dict[str, list[dict[str, Any]]]:
         records = []
+        rich = self.metadata.get("feedbackMode") == "rich"
         for output in eval_batch.outputs:
             result = output.get("result", {})
             records.append(
@@ -208,11 +226,16 @@ class HeuristicAdapter:
                     "Inputs": {
                         "match": output.get("task"),
                         "legalFeatures": self.metadata["features"],
-                        "deckCards": self.metadata.get("cards", []),
+                        "deckCards": self.metadata.get("cards", []) if rich else [],
                     },
                     "Generated Outputs": {
                         "rules": candidate["heuristic"],
-                        "decisions": output.get("traces", []),
+                        "decisions": output.get("traces", [])
+                        if rich
+                        else output.get("traces", [])[-8:],
+                        "blockedIntents": json.loads(candidate["heuristic"]).get(
+                            "blockedIntents", []
+                        ),
                     },
                     "Feedback": {
                         "score": output.get("score", 0),
@@ -226,7 +249,7 @@ class HeuristicAdapter:
                             {key: search[key] for key in ("requested", "completed", "invalid")}
                             for search in output.get("searches", [])
                         ],
-                        "goal": "Improve completed-game win rate. Rejections and truncated games score zero.",
+                        "goal": "Improve valid completed-game win rate. Invalid games and timeouts are unscored.",
                     },
                 }
             )
@@ -241,13 +264,17 @@ Game traces and feedback:
 <inputs_outputs_feedback>
 
 Return exactly one improved JSON object inside a single fenced code block.
+Focus on structural edits: when conditions and sourceCardIds. Keep calibrated numeric
+weights for existing features; numeric optimization is performed separately by code.
+You may add a top-level blockedIntents list of plain-English strategies that the allowed
+features cannot express. These are recorded for research and never used during scoring.
 Schema: {"schemaVersion":1,"title":"English title (1-120 characters)","rules":[
  {"feature":"allowed feature name","weight":finite number in [-10000,10000],
   "advice":"Accurate plain English advice explaining this rule (1-600 characters)",
   "when":optional {"kind":"main or a decision kind", "sourceCardIds":["exact catalog card ids"],
                    "minimum":{"feature":number},"maximum":{"feature":number}}}]}
 Use 1-100 rules. Conditions are conjunctions; each matching rule adds weight*feature
-to the action score. Highest score wins; ties choose the first offered legal action.
+to the action score. Highest score wins; exact ties use reproducible seeded random choices.
 Only allowed features listed in Inputs exist. Counts and DP are public; DP features
 use thousands of DP. Cost/handover are memory units. Lethal means an opportunity to
 attack zero security, not guaranteed victory. Opposing blockers/counters still resolve.

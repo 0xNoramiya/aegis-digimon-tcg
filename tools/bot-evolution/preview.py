@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 
 import click
 
+from evidence import program_hash
 from publish import GUIDES, render_guides
 
 
@@ -50,7 +51,7 @@ def preview(run_dir: Path, output: Path, base_url: str, catalog_output: Path) ->
                 if (
                     game["valid"] is not True
                     or game["engineSha256"] != config["engineSha256"]
-                    or game["candidateSha256"] != candidate
+                    or game["candidateSha256"] not in (candidate, program_hash(program))
                 ):
                     raise ValueError("Invalid game or mismatched preview policy")
                 if game["task"]["opponent"] == "mcts" and (

@@ -101,7 +101,11 @@ if (process.argv.includes("--describe")) {
         ),
     });
     const asynchronousRejections = result.events!.filter((event) => event.kind === "actionRejected");
-    const score = valid ? (result.winnerSeat === undefined ? 0.5 : Number(result.winnerSeat === input.learnerSeat)) : 0;
+    const score = valid
+      ? result.winnerSeat === undefined
+        ? 0.5
+        : Number(result.winnerSeat === input.learnerSeat)
+      : null;
     process.stdout.write(
       `${JSON.stringify({
         schemaVersion: 1,
@@ -110,6 +114,7 @@ if (process.argv.includes("--describe")) {
         decks: decks.map(({ id }) => id),
         opponent: input.opponent === "mcts" ? "information-set-mcts" : "coevolved-heuristic",
         score,
+        status: valid ? "played" : result.timedOut ? "timed-out" : "invalid",
         valid,
         result: { ...result, events: undefined },
         asynchronousRejections,

@@ -42,7 +42,7 @@ def test_preview_is_noindex_and_never_eligible_for_strict_publication(tmp_path: 
         verified_run(run)
     output = tmp_path / "public"
     preview(run, output, "http://localhost:5173", tmp_path / "catalog.json")
-    for slug in ("", "fundamentals", "glowing-dawn", "toho-braves"):
+    for slug in ("", "fundamentals"):
         html = (output / slug / "index.html").read_text()
         assert '<meta name="robots" content="noindex">' in html
         assert "Experimental training preview." in html
@@ -50,6 +50,12 @@ def test_preview_is_noindex_and_never_eligible_for_strict_publication(tmp_path: 
     evidence = json.loads((output / "evidence.json").read_text())
     assert evidence["experimental"] is True
     assert evidence["simulations"] == 8
+    assert set(evidence["policies"]) == {"generic"}
+    assert not (output / "glowing-dawn/index.html").exists()
+    assert "<loc>" not in (output / "sitemap.xml").read_text()
+    assert all(
+        not guide["strictVerified"] for guide in json.loads((tmp_path / "catalog.json").read_text())
+    )
 
 
 def test_public_evidence_omits_search_actions_and_private_rollout_details(tmp_path: Path) -> None:

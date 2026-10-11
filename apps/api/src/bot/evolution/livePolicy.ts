@@ -46,6 +46,7 @@ export function stopEvolvedBots(): void {
 export function evolvedBotOptions(input: {
   engine: GameEngine;
   seat: Seat;
+  seed?: number;
   decks: readonly [Decklist, Decklist];
 }): BotOptions | undefined {
   const active = programs;
@@ -57,7 +58,7 @@ export function evolvedBotOptions(input: {
   };
   const policy = createAsyncTrainingPolicy(input.engine, input.seat, async (window) => {
     if (disabled) throw new Error("Heuristic action rejected; using the standard bot for this match");
-    return chooseHeuristic(program, window);
+    return chooseHeuristic(program, window, (input.seed ?? 0) + input.seat * 7919);
   });
   return {
     policy: { ...policy, name: `evolved:${program.title}`, noteRejected: disable, onEngineRejection: disable },

@@ -8,7 +8,7 @@ import pytest
 from gepa.core.adapter import EvaluationBatch
 
 from adapter import REFLECTION_TEMPLATE
-from evolve import task_sets, optimize_stage, EvolutionAudit
+from evolve import EvolutionAudit, optimize_stage, task_sets
 
 
 def test_training_selection_and_test_are_separate_across_generations() -> None:
@@ -197,3 +197,15 @@ def test_selection_never_substitutes_training_scores_for_validation(
     assert ([10, 11], True) in evaluated
     assert selected["program"] == initial
     assert selected["validationScore"] == 1.0
+
+
+def test_pilot_test_split_excludes_mirrors_and_rotates_opponents():
+    archive = {name: {"title": name} for name in ("a", "b", "c", "d")}
+    splits = task_sets(list(archive), "a", archive, 1, 1)
+    opponents = {
+        name: {task["decks"][1 - task["learnerSeat"]] for task in tasks}
+        for name, tasks in splits.items()
+    }
+    assert opponents == {"train": {"b"}, "validation": {"c"}, "test": {"d"}}
+    for tasks in task_sets(["a", "b"], "a", archive, 8, 1).values():
+        assert all(task["decks"][0] != task["decks"][1] for task in tasks)

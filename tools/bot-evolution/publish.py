@@ -10,6 +10,8 @@ from urllib.parse import urlparse
 
 import click
 
+from evidence import paired_evidence, policy_hash, program_hash
+
 GUIDES = {
     "generic": (
         "fundamentals",
@@ -33,6 +35,10 @@ def verified_run(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
     manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
     pilots = json.loads((run_dir / "pilots.json").read_text(encoding="utf-8"))
     report = json.loads((run_dir / "held-out.json").read_text(encoding="utf-8"))
+    if manifest["config"].get("reflectionModel") == "session":
+        raise ValueError(
+            "Strict publication requires reproducible API reflection, not session smoke proposals"
+        )
     engine = manifest["config"]["engineSha256"]
     if (
         report["engineSha256"] != engine
@@ -52,7 +58,28 @@ def verified_run(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
             raise ValueError(
                 "Every guide requires a fitness-evaluated alternative policy from the same engine"
             )
+        seed_program = manifest["metadata"]["seedProgram"]
+        seed_rules = {
+            (rule["feature"], json.dumps(rule.get("when"), sort_keys=True)): rule
+            for rule in seed_program["rules"]
+        }
+        for rule in stage["program"]["rules"]:
+            original = seed_rules.get(
+                (rule["feature"], json.dumps(rule.get("when"), sort_keys=True))
+            )
+            if (
+                original is not None
+                and original["weight"] * rule["weight"] < 0
+                and original["advice"] == rule["advice"]
+            ):
+                raise ValueError("A weight crossed zero without reauthoring its advice")
+        if policy_hash(stage["program"]) == policy_hash(seed_program):
+            raise ValueError("Publication requires a policy different from the starting seed")
         evidence = report["results"][version]
+        if not paired_evidence(evidence["selected"], evidence["control"])["accepted"]:
+            raise ValueError(
+                "Publication requires at least 48 paired games and a positive lower confidence bound against control"
+            )
         if not evidence["allValid"] or len(evidence["selected"]) < 4:
             raise ValueError("Publication requires valid held-out games in both seats")
         paired = [
@@ -77,7 +104,7 @@ def verified_run(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
                     stage["program"] if arm == "selected" else manifest["metadata"]["seedProgram"]
                 )
                 candidate = hashlib.sha256(json.dumps(program).encode("utf-8")).hexdigest()
-                if game["candidateSha256"] != candidate:
+                if game["candidateSha256"] not in (candidate, program_hash(program)):
                     raise ValueError("Held-out games do not match the selected or starting policy")
                 if game["task"]["opponent"] == "mcts" and (
                     not game.get("searches")
@@ -106,6 +133,11 @@ def shell(title: str, description: str, body: str, canonical: str) -> str:
 
 FEATURE_LABELS = {
     "bias": "the constant preference",
+    "ownHandCount": "the number of cards in your hand",
+    "opponentHandCount": "the number of cards in the opponent's hand",
+    "turn": "the turn number",
+    "ownTrashCount": "the number of cards in your trash",
+    "opponentTrashCount": "the number of cards in the opponent's trash",
     "cost": "the action's memory cost",
     "handover": "the memory given to the opponent",
     "attackPlayer": "the action attacks the opposing player",
@@ -269,7 +301,17 @@ def render_guides(
     *,
     experimental: bool = False,
 ) -> None:
+    generic_hash = policy_hash(pilots["generic"]["program"])
+    pilots = {
+        version: stage
+        for version, stage in pilots.items()
+        if version == "generic" or policy_hash(stage["program"]) != generic_hash
+    }
     output.mkdir(parents=True, exist_ok=True)
+    for version, (slug, _, _) in GUIDES.items():
+        if version not in pilots:
+            stale_page = output / slug / "index.html"
+            stale_page.unlink(missing_ok=True)
     metadata = manifest["metadata"]
     cards = {card["cardId"]: card for card in metadata["cards"]}
     decks = {deck["id"]: deck for deck in metadata["evolutionDecks"]}
@@ -280,6 +322,7 @@ def render_guides(
         slug, title, description = GUIDES[version]
         catalog.append(
             {
+                "strictVerified": not experimental,
                 "slug": slug,
                 "title": title,
                 "description": description,
@@ -319,15 +362,20 @@ def render_guides(
             if stage.get("retainedStageInitial")
             else "A revised policy was selected."
         )
-        if stage.get("retainedOriginalSeed"):
+        if policy_hash(stage["program"]) == policy_hash(manifest["metadata"]["seedProgram"]):
             selection_note += (
                 " This is also the original baseline policy; improvement was not demonstrated."
             )
+        training_opponent = (
+            "seeded random legal actions"
+            if (stage.get("ladder") or {}).get("trainingRung") == 0
+            else "search"
+        )
         body = f"""<p class="eyebrow">Digimon Card Game · Strategy guide</p><h1>{escape(title)}</h1><p class="lede">{escape(description)}</p>
 <div class="practice"><p>Put these decisions into practice in a real game.</p><a class="button" href="/play?utm_source=strategy-guides&amp;utm_content={slug}">Play on Aegis</a></div>
 <nav class="contents" aria-label="In this guide"><a href="#decisions">Decision principles</a>{'<a href="#deck">Deck list</a>' if deck_html else ""}<a href="#results">Practice results</a></nav>
 <section id="decisions"><h2>Decision principles</h2><p>These principles describe the selected pilot's preferences. Combine them with the board and the printed card text; a preference is not a guarantee that a play is safe.</p><ul class="principles">{principles}</ul></section>{deck_html}
-<section id="results"><h2>Practice results</h2><p>The search opponent used {report["simulations"]} completed game simulations per main choice. Both player seats were tested. This small benchmark describes these particular decks and seeds; it does not establish tournament performance.</p>{evidence_table(report["results"][version])}<details><summary>How this guide was selected</summary><p>We evolved a general pilot on varied legal decks, then trained deck pilots against search and a frozen archive of other pilots. Final games were excluded from training and selection. Search samples unknown cards using an open deck list and applies to main choices.</p><p>{stage["validEvaluatedProposals"]} alternative policies tested in completed games. {selection_note} Selected validation score {stage["validationScore"]:.2f}. The final results above include the starting-policy control.</p><p>Engine fingerprint: <code>{escape(report["engineSha256"])}</code></p><a href="/strategy-guides/evidence.json">Download policy and benchmark evidence</a></details></section>"""
+<section id="results"><h2>Practice results</h2><p>The search opponent used {report["simulations"]} completed game simulations per main choice. Both player seats were tested. This small benchmark describes these particular decks and seeds; it does not establish tournament performance.</p>{evidence_table(report["results"][version])}<details><summary>How this guide was selected</summary><p>We evolved a general pilot on varied legal decks, then trained deck pilots against {training_opponent} and a frozen archive of other pilots. Final games were excluded from training and selection. Search samples unknown cards using an open deck list and applies to main choices.</p><p>{stage["validEvaluatedProposals"]} alternative policies tested in completed games. {selection_note} Selected validation score {stage["validationScore"]:.2f}. The final results above include the starting-policy control.</p><p>Engine fingerprint: <code>{escape(report["engineSha256"])}</code></p><a href="/strategy-guides/evidence.json">Download policy and benchmark evidence</a></details></section>"""
         if experimental:
             body = (
                 '<p class="practice"><strong>Experimental training preview.</strong> This short evaluation uses a small search budget. Improved playing strength has not been established.</p>'
@@ -411,6 +459,7 @@ def render_guides(
                 },
             }
             for version, result in report["results"].items()
+            if version in pilots
         },
     }
     if experimental:
@@ -420,7 +469,9 @@ def render_guides(
         catalog_output.write_text(json.dumps(catalog, indent=2) + "\n", encoding="utf-8")
     (output / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-        + "".join(f"<url><loc>{escape(url)}</loc></url>" for url in page_urls)
+        + "".join(
+            f"<url><loc>{escape(url)}</loc></url>" for url in ([] if experimental else page_urls)
+        )
         + "</urlset>\n",
         encoding="utf-8",
     )

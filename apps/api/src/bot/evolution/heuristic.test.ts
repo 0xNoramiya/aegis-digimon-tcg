@@ -30,7 +30,43 @@ describe("evolved heuristic interpreter", () => {
     });
     const choice = window.actions[chooseHeuristic(program, window)]!;
     expect(choice.sourceId).toBe(setup.state.players[0]!.hand.find((card) => card.cardId === "BT1-010")!.instanceId);
-    expect(chooseHeuristic(program, { ...window, kind: "different" })).toBe(0);
+    expect(window.actions[chooseHeuristic(program, { ...window, kind: "different" })]).toBeDefined();
+  });
+  it("replays seeded tie choices and distributes equal scores beyond the first action", async () => {
+    const setup = setupEngine({ 0: { hand: ["BT1-010", "BT1-011"] } });
+    await setup.ready();
+    const window: TrainingWindow = {
+      observation: trainingObservation(setup.state, 0),
+      kind: "main",
+      selected: [],
+      actions: mainActions(setup.engine, 0),
+    };
+    const program = parseHeuristic({
+      schemaVersion: 1,
+      title: "Ties",
+      rules: [{ feature: "bias", weight: 0, advice: "No preference." }],
+    });
+    const choices = Array.from({ length: 100 }, (_, seed) => chooseHeuristic(program, window, seed));
+    expect(choices).toEqual(Array.from({ length: 100 }, (_, seed) => chooseHeuristic(program, window, seed)));
+    expect(new Set(choices).size).toBeGreaterThan(1);
+    expect(choices.every((choice) => choice >= 0 && choice < window.actions.length)).toBe(true);
+  });
+  it("uses public hand and trash counts for conditional rules without revealing the opposing hand", async () => {
+    const setup = setupEngine({ 0: { hand: ["BT1-010"], trash: ["BT1-011"] }, 1: { hand: ["BT1-010", "BT1-011"] } });
+    await setup.ready();
+    const window: TrainingWindow = {
+      observation: trainingObservation(setup.state, 0),
+      kind: "main",
+      selected: [],
+      actions: mainActions(setup.engine, 0),
+    };
+    const features = actionFeatures(window, 0);
+    expect(features.ownHandCount).toBe(window.observation.players[0]!.handCount);
+    expect(features.opponentHandCount).toBe(window.observation.players[1]!.handCount);
+    expect(window.observation.players[1]!.hand).toEqual([]);
+    expect(features.ownTrashCount).toBe(1);
+    expect(features.opponentTrashCount).toBe(0);
+    expect(features.turn).toBe(window.observation.turn);
   });
   it("rejects unknown features, nonfinite weights, and missing guide text", () => {
     for (const rule of [
