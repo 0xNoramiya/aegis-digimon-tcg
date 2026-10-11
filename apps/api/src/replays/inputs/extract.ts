@@ -3,7 +3,7 @@ import { readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 import type { DeckFormat, Intent, Seat } from "@aegis/shared";
-import type { DevScenarioId } from "../engine/devScenario.js";
+import type { DevScenarioId } from "../../engine/devScenario.js";
 import {
   REPLAY_FORMAT,
   type ReplayDeck,

@@ -4,7 +4,7 @@ import type { ReplayDivergence, ReplayRecord } from "../types.js";
 import { describeInput } from "./inputs.js";
 
 /** The `run` command's result, as `--json` prints it. */
-export interface ReplaySummary {
+export interface RunSummary {
   matchId: string;
   serverRevision?: string;
   totalInputs: number;
@@ -51,7 +51,7 @@ export interface SeatBoard {
   battleArea: PermanentSummary[];
 }
 
-export function summarizeRun(record: ReplayRecord, run: ReplayRun, until?: number): ReplaySummary {
+export function summarizeRun(record: ReplayRecord, run: ReplayRun, until?: number): RunSummary {
   const { state } = run;
   const stopped = until !== undefined && until < record.inputs.length ? until : undefined;
   return {
@@ -128,7 +128,7 @@ function formatPermanent(permanent: PermanentSummary): string {
 }
 
 /** The `run` command's human-readable output. */
-export function formatSummary(summary: ReplaySummary): string[] {
+export function formatSummary(summary: RunSummary): string[] {
   const lines = [
     `Match ${summary.matchId}${summary.serverRevision ? ` (server ${summary.serverRevision})` : ""}`,
     `Applied ${summary.applied}/${summary.totalInputs} inputs` +

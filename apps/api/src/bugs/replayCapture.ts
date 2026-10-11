@@ -1,6 +1,6 @@
 import { log, logDirectory } from "../logger.js";
-import { extractReplayFromLogDir, ReplayExtractionError } from "../replay/extract.js";
-import type { ReplayRecord } from "../replay/types.js";
+import { extractReplayFromLogDir, ReplayExtractionError } from "../replays/inputs/extract.js";
+import type { ReplayRecord } from "../replays/inputs/types.js";
 import type { FeedbackStore } from "./FeedbackStore.js";
 import type { ReplayFailure, ReplayOutcome } from "./GitHubIssueTracker.js";
 

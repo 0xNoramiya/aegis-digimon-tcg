@@ -1,4 +1,4 @@
-import { replayRetentionMs } from "../../bugs/FeedbackStore.js";
+import { replayRetentionMs } from "../../../bugs/FeedbackStore.js";
 import { relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { extractReplayFromLogDir } from "../extract.js";
@@ -24,11 +24,11 @@ export interface CommandIo {
 }
 
 const REPLAY_DIR = fileURLToPath(new URL("..", import.meta.url));
-const API_DIR = fileURLToPath(new URL("../../..", import.meta.url));
+const API_DIR = fileURLToPath(new URL("../../../..", import.meta.url));
 /** Default outputs go to `<repo>/replays/` (git-ignored) wherever pnpm was run from. */
-const REPLAYS_DIR = fileURLToPath(new URL("../../../../../replays/", import.meta.url));
+const REPLAYS_DIR = fileURLToPath(new URL("../../../../../../replays/", import.meta.url));
 /** `apps/api/logs`, the API's default log directory (`logger.ts`), without importing the logger. */
-const DEFAULT_LOG_DIR = fileURLToPath(new URL("../../../logs", import.meta.url));
+const DEFAULT_LOG_DIR = fileURLToPath(new URL("../../../../logs", import.meta.url));
 
 /** Default `pg` connection, configured exactly as `AccountStore` reads it. */
 async function connectPostgres(env: NodeJS.ProcessEnv) {

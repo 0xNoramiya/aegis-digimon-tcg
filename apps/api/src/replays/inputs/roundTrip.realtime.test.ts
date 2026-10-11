@@ -1,6 +1,6 @@
 import { famousDeckById } from "@aegis/shared";
 import { describe, expect, it, vi } from "vitest";
-import type { BotOptions } from "../bot/BotPlayer.js";
+import type { BotOptions } from "../../bot/BotPlayer.js";
 import { extractReplay } from "./extract.js";
 import { runReplay } from "./run.js";
 import type { ReplayInput } from "./types.js";
@@ -25,8 +25,8 @@ import { comparableState, recordRoomMatch, type RoomMatchOptions } from "./roomM
  * once fell back to `Math.random`.
  */
 
-vi.mock("../bot/BotPlayer.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../bot/BotPlayer.js")>();
+vi.mock("../../bot/BotPlayer.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../bot/BotPlayer.js")>();
   class RealTimeBotPlayer extends actual.BotPlayer {
     constructor(...[seat, state, sendIntent, options]: ConstructorParameters<typeof actual.BotPlayer>) {
       // A seeded stream, so the room never calls Math.random on a bot's behalf (see the guard below).

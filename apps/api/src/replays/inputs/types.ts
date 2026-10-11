@@ -1,5 +1,5 @@
 import type { DeckFormat, Intent, Seat } from "@aegis/shared";
-import type { DevScenarioId } from "../engine/devScenario.js";
+import type { DevScenarioId } from "../../engine/devScenario.js";
 
 /**
  * A match replay: everything needed to rebuild one match on a fresh engine and feed it the same
@@ -9,7 +9,7 @@ import type { DevScenarioId } from "../engine/devScenario.js";
  * `replay.*` and `intent.*` log lines, so chat, session ids, display names, account ids, room codes
  * and client metadata never reach it: there is no field for them to land in.
  */
-export const REPLAY_FORMAT = "aegis-replay/1";
+export const REPLAY_FORMAT = "aegis-replay-inputs/1";
 
 export interface ReplayRecord {
   format: typeof REPLAY_FORMAT;

@@ -16,7 +16,7 @@ import type { PoolClient } from "pg";
 import type { AccountStore } from "../accounts/AccountStore.js";
 import type { Queryable } from "../db/migrator.js";
 import { notify } from "../notifications/NotificationStore.js";
-import type { ReplayRecord } from "../replay/types.js";
+import type { ReplayRecord } from "../replays/inputs/types.js";
 import type { FiledBugReport, NewBugReport } from "./GitHubIssueTracker.js";
 
 const PAGE_SIZE = 50;

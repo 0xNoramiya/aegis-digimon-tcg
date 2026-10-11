@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createMemoryPool } from "../../db/memoryPool.fixture.js";
+import { createMemoryPool } from "../../../db/memoryPool.fixture.js";
 import { extractReplay } from "../extract.js";
 import { recordRoomMatch } from "../roomMatch.fixture.js";
 import type { ReplayInput, ReplayRecord } from "../types.js";
@@ -11,7 +11,7 @@ import { fetchReplayFromApi, fetchReplayFromDb, type FetchLike } from "./fetch.j
 import { describeInput, listInputs } from "./inputs.js";
 import { formatJson, readRecord, ReplayRecordError, writeJson } from "./records.js";
 import { renderScaffold } from "./scaffold.js";
-import type { ReplaySummary } from "./summary.js";
+import type { RunSummary } from "./summary.js";
 
 let dir: string;
 let lines: string[];
@@ -103,7 +103,7 @@ describe("run", () => {
     const { out, io: commandIo } = io();
     expect(await runCommand({ command: "run", file: recordPath, until, json: true }, commandIo)).toBe(0);
 
-    const summary = JSON.parse(out.join("\n")) as ReplaySummary;
+    const summary = JSON.parse(out.join("\n")) as RunSummary;
     expect(summary).toMatchObject({
       matchId: record.matchId,
       totalInputs: record.inputs.length,
@@ -131,10 +131,10 @@ describe("run", () => {
   });
 
   it("refuses a file that is not a replay record", async () => {
-    writeFileSync(join(dir, "other.json"), JSON.stringify({ format: "aegis-replay/0", inputs: [] }));
+    writeFileSync(join(dir, "other.json"), JSON.stringify({ format: "aegis-replay-inputs/0", inputs: [] }));
     const { io: commandIo } = io();
     await expect(runCommand({ command: "run", file: "other.json", json: false }, commandIo)).rejects.toThrow(
-      /not a replay record: format is "aegis-replay\/0"/,
+      /not a replay record: format is "aegis-replay-inputs\/0"/,
     );
     expect(() => readRecord(join(dir, "missing.json"))).toThrow(ReplayRecordError);
   });
@@ -165,12 +165,12 @@ describe("scaffold", () => {
     const scaffold = renderScaffold(record, {
       until,
       testPath,
-      replayDir: join(dir, "src", "replay"),
+      replayDir: join(dir, "src", "replays", "inputs"),
       issue: 321,
     });
 
     expect(scaffold.fixturePath).toBe(join(dir, "src", "engine", "scenarios", "bugReplay.replay.json"));
-    expect(scaffold.test).toContain('from "../../replay/index.js"');
+    expect(scaffold.test).toContain('from "../../replays/inputs/index.js"');
     expect(scaffold.test).toContain('new URL("./bugReplay.replay.json", import.meta.url)');
     expect(scaffold.test).toContain(`runReplay(record, { untilInput: ${until} })`);
     expect(scaffold.test).toContain("expect(divergences).toEqual([]);");

@@ -1,7 +1,7 @@
 import { GameState, type Intent, type Seat } from "@aegis/shared";
-import { GameEngine } from "../engine/GameEngine.js";
+import { GameEngine } from "../../engine/GameEngine.js";
 import type { ReplayDivergence, ReplayInput, ReplayRecord, ReplaySite } from "./types.js";
-import "../cards/index.js";
+import "../../cards/index.js";
 
 export interface RunReplayOptions {
   /**

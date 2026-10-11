@@ -55,7 +55,7 @@ const USAGE: Record<ReplayCommandName, string> = {
 
 export const HELP = `Usage: pnpm replay <command> [options]
 
-Reproduce a reported match from its replay record (format aegis-replay/1).
+Reproduce a reported match from its replay record (format aegis-replay-inputs/1).
 
 Commands:
   fetch <reportId>    Download the replay saved with a bug report

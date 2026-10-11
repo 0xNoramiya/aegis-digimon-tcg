@@ -6,12 +6,12 @@ import express from "express";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { AccountStore } from "../accounts/AccountStore.js";
 import { createMemoryPool } from "../db/memoryPool.fixture.js";
-import { extractReplay } from "../replay/extract.js";
-import { recordRoomMatch, type RecordedRoomMatch } from "../replay/roomMatch.fixture.js";
-import type { ReplayRecord } from "../replay/types.js";
+import { extractReplay } from "../replays/inputs/extract.js";
+import { recordRoomMatch, type RecordedRoomMatch } from "../replays/inputs/roomMatch.fixture.js";
+import type { ReplayRecord } from "../replays/inputs/types.js";
 import { FeedbackStore, replayRetentionMs } from "./FeedbackStore.js";
 import { issueBody, type IssueContext, type IssueTracker, type NewBugReport } from "./GitHubIssueTracker.js";
-import { extractReplayFromLogDir } from "../replay/extract.js";
+import { extractReplayFromLogDir } from "../replays/inputs/extract.js";
 import { ReplayCapturer, type ReplayExtractor } from "./replayCapture.js";
 import { installBugReportRoutes } from "./routes.js";
 

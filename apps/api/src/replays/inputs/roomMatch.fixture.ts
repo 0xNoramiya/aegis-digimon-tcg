@@ -1,13 +1,13 @@
 import { ClientState, CloseCode, type Client } from "colyseus";
 import type { GameState, Intent } from "@aegis/shared";
 import { vi } from "vitest";
-import { AegisRoom } from "../rooms/AegisRoom.js";
-import { BotPlayer } from "../bot/BotPlayer.js";
-import { addLogSink } from "../logger.js";
-import { BLUE_DECK, RED_DECK, type Decklist } from "../engine/testDecks.js";
-import type { GameEngine } from "../engine/GameEngine.js";
+import { AegisRoom } from "../../rooms/AegisRoom.js";
+import { BotPlayer } from "../../bot/BotPlayer.js";
+import { addLogSink } from "../../logger.js";
+import { BLUE_DECK, RED_DECK, type Decklist } from "../../engine/testDecks.js";
+import type { GameEngine } from "../../engine/GameEngine.js";
 // Card effects must be registered, or a recorded match plays without them.
-import "../cards/index.js";
+import "../../cards/index.js";
 
 /**
  * Plays a real {@link AegisRoom} match and keeps every log line the room wrote.

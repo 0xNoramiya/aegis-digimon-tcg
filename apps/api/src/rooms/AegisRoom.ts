@@ -70,7 +70,7 @@ import type {
   ReplayRoomInput,
   ReplaySeatLine,
   ReplaySite,
-} from "../replay/types.js";
+} from "../replays/inputs/types.js";
 
 /** Hand-laid boards must never be reachable by a real player. */
 const DEV_SCENARIOS_ENABLED = process.env.NODE_ENV !== "production";
@@ -350,7 +350,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
    * opened, on a board that stood still for the seconds the check was asking its questions.
    */
   private openSecurityReveal: ServerEvent | undefined;
-  /** Ordinal of the last replay-relevant log line (see `replay/types.ts`). */
+  /** Ordinal of the last replay-relevant log line (see `replays/inputs/types.ts`). */
   private replaySeq = 0;
   /** How many events the engine has emitted; places each replay input in the match. */
   private engineEvents = 0;

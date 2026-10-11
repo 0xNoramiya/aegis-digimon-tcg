@@ -9,7 +9,7 @@ export interface ScaffoldOptions {
   until: number;
   /** Absolute path of the test file to write (`*.test.ts`). */
   testPath: string;
-  /** Absolute path of `apps/api/src/replay`, which the test imports `runReplay` from. */
+  /** Absolute path of `apps/api/src/replays/inputs`, which the test imports `runReplay` from. */
   replayDir: string;
   issue?: number;
 }
@@ -39,7 +39,7 @@ export function renderScaffold(record: ReplayRecord, options: ScaffoldOptions): 
   let importPath = relative(dirname(testPath), join(replayDir, "index.js")).split(sep).join("/");
   if (!importPath.startsWith(".")) importPath = `./${importPath}`;
   const bug = describeInput(record.inputs[until]!, until);
-  const repoPath = relative(join(replayDir, "..", "..", "..", ".."), fixturePath)
+  const repoPath = relative(join(replayDir, "..", "..", "..", "..", ".."), fixturePath)
     .split(sep)
     .join("/");
   const tag = issue !== undefined ? `issue #${issue}` : "replayed bug";

@@ -36,6 +36,11 @@ depend on either application, and the web application does not own game rules.
 The client never sends state replacements or decides whether an action is
 legal.
 
+Two replay records exist and serve different purposes. The player replay
+(`apps/api/src/replays/recording.ts`) stores snapshot frames for playback. The
+input record (`apps/api/src/replays/inputs/`, format `aegis-replay-inputs/1`)
+stores the decklists and every input so the engine can re-execute the match.
+
 ## Cards and effects
 
 Every supported card has a module under `apps/api/src/cards/<SET>/<ID>.ts`.
