@@ -1,7 +1,7 @@
 import { test, expect, type DecisionPolicy } from "./scenario-page";
 
 test.use({
-  holdBotAfterTurn: 11,
+  holdBotAfterTurn: 10,
   botMainIntents: [[{ type: "endPhase" }, { type: "endPhase" }], { scope: "test" }],
 });
 
@@ -40,6 +40,9 @@ for (const ending of ["cost crossing", "explicit pass"] as const) {
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision, policy);
     expect((await scenario.snapshot()).turnCount).toBe(6);
     await page.getByRole("button", { name: /^end turn$/i }).click();
+    // Observe the opponent's Main phase separately from its breeding and think
+    // pacing, so each wait covers a visible transition instead of a whole turn.
+    await scenario.resolveUntil((s) => s.turnCount === 7 && s.phase === "Main" && !s.pendingDecision, policy);
     await scenario.resolveUntil((s) => s.turnCount === 8 && s.phase === "Breeding" && !s.pendingDecision, policy);
     expect(costOffers).toBe(1);
     expect((await scenario.snapshot()).players[0]!.battleArea.find((p) => p.permanentId === tamerId)!.isSuspended).toBe(
@@ -50,6 +53,7 @@ for (const ending of ["cost crossing", "explicit pass"] as const) {
     await page.getByRole("button", { name: /^end breeding$/i }).click();
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision, policy);
     await page.getByRole("button", { name: /^end turn$/i }).click();
+    await scenario.resolveUntil((s) => s.turnCount === 9 && s.phase === "Main" && !s.pendingDecision, policy);
     await scenario.resolveUntil((s) => s.turnCount === 10 && s.phase === "Breeding" && !s.pendingDecision, policy);
     expect(costOffers).toBe(2);
     const rearmed = await scenario.snapshot();
@@ -97,7 +101,8 @@ for (const ending of ["cost crossing", "explicit pass"] as const) {
       await scenario.play("Ikkakumon", "Digimon");
     } else await page.getByRole("button", { name: /^end turn$/i }).click();
     await scenario.resolveUntil(
-      (s) => s.turnCount === 11 && s.turnSeat === 1 && s.phase === "Breeding" && !s.pendingDecision,
+      // With the opponent's egg deck empty, Breeding is skipped automatically.
+      (s) => s.turnCount === 11 && s.turnSeat === 1 && s.phase === "Main" && !s.pendingDecision,
       policy,
     );
     expect(costOffers).toBe(3);
