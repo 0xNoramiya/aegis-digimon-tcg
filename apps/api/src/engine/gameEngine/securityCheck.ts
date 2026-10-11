@@ -22,6 +22,7 @@ import {
   endResolvingWindow,
   flushDeferredSecurityRemovalTriggers,
   flushDeferredTimingWindows,
+  parkDeferredSecurityRemovalTriggers,
   withPendingPoolDrain,
   withTriggeredMutations,
 } from "./windows.js";
@@ -98,7 +99,11 @@ export async function engineRunSecurityCheck(
       ];
       // Effects parked while the [Security] effect resolves are derived from it.
       const parkedBeforeSecurityEffect = new Set(engine.pendingNestedTimingEffects);
+      const securityRemovalsBeforeEffect = new Set(engine.deferredSecurityRemovalTriggers);
       return async () => {
+        // Security effects resolve before this checkpoint opens its window. Their
+        // security-removal costs are derived reactions, ahead of the check's original pool.
+        parkDeferredSecurityRemovalTriggers(engine, securityRemovalsBeforeEffect);
         const outermost = beginResolvingWindow(engine);
         const enclosing = engine.pendingWindowSubTriggers;
         engine.pendingWindowSubTriggers = [...enclosing, ...armed];

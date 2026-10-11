@@ -272,10 +272,14 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
     await partition.resolve(partitionCandidates);
     const toTop = opts?.toTop ?? false;
     const returnedFromTrashById = new Map<string, Seat>();
+    const returnedFromSecurityById = new Map<string, Seat>();
     for (const instanceId of instanceIds) {
-      if (looseZoneOfInstance(state, instanceId) !== "trash") continue;
+      const origin = looseZoneOfInstance(state, instanceId);
+      if (origin !== "trash" && origin !== "security") continue;
       const ownerSeat = ownerSeatOfLoose(state, instanceId);
-      if (ownerSeat !== undefined) returnedFromTrashById.set(instanceId, ownerSeat);
+      if (ownerSeat === undefined) continue;
+      if (origin === "trash") returnedFromTrashById.set(instanceId, ownerSeat);
+      else returnedFromSecurityById.set(instanceId, ownerSeat);
     }
     // Bind each battle-area target to the permanent identity selected by the return effect.
     // A would-be-returned reaction can replace that Digimon with a new permanent (BT20-074
@@ -379,6 +383,7 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
         to: Zone.Trash,
       });
     }
+    const movedIds = new Set(moved.map((c) => c.instanceId));
     if (addedToDeck.length > 0) {
       // One movement per deck joined: "3 cards in trashes" (BT26-016) lands in both decks,
       // and each side's client narrates only the return into its own seat's deck.
@@ -406,6 +411,15 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
           ...(joinedFromField.length > 0 ? { returnedPermanents: joinedFromField } : {}),
         });
       }
+      // Returning a security card still removes it from that stack. Signal only actual
+      // committed moves, once per affected owner, without treating them as trashed cards.
+      const securityReturnSeats = new Set<Seat>();
+      for (const [instanceId, seat] of returnedFromSecurityById) {
+        if (movedIds.has(instanceId)) securityReturnSeats.add(seat);
+      }
+      for (const seat of securityReturnSeats) {
+        await engine.fireSubTrigger?.("whenSecurityRemoved", { removedFromSecuritySeat: seat });
+      }
       // The whenEffectAddsToHand sibling for deck-bound returns (BT26-015). Fire once per
       // distinct recipient seat, mirroring returnToHand's own-hand fire above. Revealed cards
       // being restored use the explicit suppression flag because Q6949 says that restoration
@@ -421,7 +435,6 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
         }
       }
     }
-    const movedIds = new Set(moved.map((c) => c.instanceId));
     const trashReturnSeats = new Set<Seat>();
     for (const [instanceId, seat] of returnedFromTrashById) {
       if (movedIds.has(instanceId)) trashReturnSeats.add(seat);
