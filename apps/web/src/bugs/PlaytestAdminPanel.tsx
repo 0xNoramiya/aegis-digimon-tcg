@@ -1,6 +1,12 @@
 /* Admin view of the playtest group: who is in it, and a form to open a recruiting window. Opening
    one notifies every member through the bell. */
-import type { PlaytestMember, PlaytestStudy } from "@aegis/shared";
+import {
+  MAX_STUDY_BLURB,
+  MAX_STUDY_LINK,
+  MAX_STUDY_TITLE,
+  type PlaytestMember,
+  type PlaytestStudy,
+} from "@aegis/shared";
 import { useEffect, useId, useState } from "react";
 import { Alert, Button, Field } from "../design/primitives";
 import { useTranslation } from "../i18n";
@@ -12,6 +18,7 @@ export function PlaytestAdminPanel() {
   const formId = useId();
   const [members, setMembers] = useState<PlaytestMember[]>();
   const [studies, setStudies] = useState<{ open: PlaytestStudy[]; past: PlaytestStudy[] }>();
+  const [membersFailed, setMembersFailed] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
   const [title, setTitle] = useState("");
   const [blurb, setBlurb] = useState("");
@@ -24,7 +31,9 @@ export function PlaytestAdminPanel() {
     const controller = new AbortController();
     void listPlaytestMembers(controller.signal)
       .then((loaded) => setMembers(loaded.members))
-      .catch(() => setMembers([]));
+      .catch(() => {
+        if (!controller.signal.aborted) setMembersFailed(true);
+      });
     void listStudies(controller.signal)
       .then(setStudies)
       .catch(() => setStudies({ open: [], past: [] }));
@@ -58,7 +67,11 @@ export function PlaytestAdminPanel() {
       <header className="feedback-playtest__header">
         <h2 id={`${formId}-title`}>{t("feedback.playtest.title")}</h2>
         <p>
-          {members === undefined ? t("common.loading") : t("feedback.playtest.count", { count: members.length })}{" "}
+          {membersFailed
+            ? t("feedback.playtest.loadFailed")
+            : members === undefined
+              ? t("common.loading")
+              : t("feedback.playtest.count", { count: members.length })}{" "}
           {members?.length ? (
             <button className="aegis-notifications__text-button" onClick={() => setShowMembers((value) => !value)}>
               {t(showMembers ? "feedback.playtest.hideMembers" : "feedback.playtest.showMembers")}
@@ -95,14 +108,14 @@ export function PlaytestAdminPanel() {
           id={`${formId}-t`}
           label={t("feedback.playtest.form.title")}
           value={title}
-          maxLength={120}
+          maxLength={MAX_STUDY_TITLE}
           onChange={(event) => setTitle(event.target.value)}
         />
         <Field
           id={`${formId}-b`}
           label={t("feedback.playtest.form.blurb")}
           value={blurb}
-          maxLength={600}
+          maxLength={MAX_STUDY_BLURB}
           onChange={(event) => setBlurb(event.target.value)}
         />
         <Field
@@ -111,6 +124,7 @@ export function PlaytestAdminPanel() {
           type="url"
           value={link}
           placeholder="https://"
+          maxLength={MAX_STUDY_LINK}
           onChange={(event) => setLink(event.target.value)}
         />
         <Field

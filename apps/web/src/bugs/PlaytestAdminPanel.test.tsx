@@ -47,4 +47,16 @@ describe("the playtest admin panel", () => {
     expect(create.mock.calls[0]![0].closesAt).toBeGreaterThan(Date.UTC(2027, 0, 30));
     expect(await screen.findByText(/Notified 1 member/)).toBeTruthy();
   });
+
+  it("says the group could not be loaded instead of showing zero members", async () => {
+    vi.spyOn(admin, "listPlaytestMembers").mockRejectedValue(new Error("down"));
+    vi.spyOn(admin, "listStudies").mockResolvedValue({ open: [], past: [] });
+    render(
+      <I18nProvider>
+        <PlaytestAdminPanel />
+      </I18nProvider>,
+    );
+    expect(await screen.findByText("Could not load the playtest group.")).toBeTruthy();
+    expect(screen.queryByText(/0 member/)).toBeNull();
+  });
 });

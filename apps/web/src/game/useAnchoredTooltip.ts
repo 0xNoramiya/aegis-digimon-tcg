@@ -56,5 +56,9 @@ export function useAnchoredTooltip<Id extends string>({ preferAbove }: { preferA
     },
     [],
   );
-  return { tooltipId, open, show, closeSoon, cancelClose };
+  function close() {
+    cancelClose();
+    setOpen(null);
+  }
+  return { tooltipId, open, show, close, closeSoon, cancelClose };
 }

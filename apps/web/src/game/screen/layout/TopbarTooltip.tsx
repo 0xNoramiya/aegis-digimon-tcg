@@ -2,13 +2,15 @@
    touch and lags on desktop, so the toolbar reuses the arena counters' anchored tooltip. */
 
 import { createPortal } from "react-dom";
-import type { ButtonHTMLAttributes } from "react";
+import { useRef, type ButtonHTMLAttributes } from "react";
 import { useAnchoredTooltip } from "../../useAnchoredTooltip";
 
 export type TopbarTooltipId = "log" | "feedback" | "chat" | "fullscreen" | "skip" | "look" | "leave" | "reset";
 
 export function useTopbarTooltip() {
   const tooltip = useAnchoredTooltip<TopbarTooltipId>({ preferAbove: false });
+  /* A mouse press focuses the button too; only keyboard focus should open the tooltip. */
+  const pressed = useRef(false);
   /** Spread onto a toolbar button: shows `text` on hover, focus and tap, and names it for AT. */
   function describe(id: TopbarTooltipId, text: string): ButtonHTMLAttributes<HTMLButtonElement> {
     return {
@@ -16,8 +18,21 @@ export function useTopbarTooltip() {
       "aria-describedby": tooltip.open?.id === id ? tooltip.tooltipId : undefined,
       onMouseEnter: (event) => tooltip.show(id, event.currentTarget),
       onMouseLeave: tooltip.closeSoon,
-      onFocus: (event) => tooltip.show(id, event.currentTarget),
-      onBlur: tooltip.closeSoon,
+      onPointerDown: () => {
+        pressed.current = true;
+      },
+      onClick: () => {
+        pressed.current = false;
+        tooltip.close();
+      },
+      onFocus: (event) => {
+        if (pressed.current) return;
+        tooltip.show(id, event.currentTarget);
+      },
+      onBlur: () => {
+        pressed.current = false;
+        tooltip.closeSoon();
+      },
     };
   }
   return { ...tooltip, describe };

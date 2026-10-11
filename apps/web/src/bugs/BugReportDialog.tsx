@@ -147,7 +147,11 @@ export function BugReportDialog({
           <Alert tone="success" title={t("bugReport.success")}>
             {t(signedIn ? "bugReport.successTracked" : "bugReport.successDescription")}
           </Alert>
-          {playtestSaveFailed ? <p className="aegis-field__message">{t("bugReport.playtest.saveFailed")}</p> : null}
+          {playtestSaveFailed ? (
+            <p className="aegis-field__message" role="status">
+              {t("bugReport.playtest.saveFailed")}
+            </p>
+          ) : null}
         </>
       ) : (
         <>

@@ -193,4 +193,35 @@ describe("notification bell", () => {
     expect(onOpenFeedback).not.toHaveBeenCalled();
     openSpy.mockRestore();
   });
+
+  it("labels a closed study and does not open its link", async () => {
+    const invite: AccountNotification = {
+      id: 13,
+      kind: "playtest_study",
+      payload: {
+        studyId: 4,
+        title: "Old interviews",
+        blurb: "Over.",
+        link: "https://cal.example/old",
+        closesAt: Date.now() - 1000,
+      },
+      createdAt: Date.now() - 60_000,
+      readAt: null,
+    };
+    const page: NotificationPage = { items: [invite], nextBefore: null, unread: 1 };
+    mockApi((url) => {
+      if (url.endsWith("/notifications/unread-count")) return [200, { unread: 1 }];
+      if (url.endsWith("/notifications/read")) return [200, { unread: 0 }];
+      if (url.includes("/notifications")) return [200, page];
+      return [404, {}];
+    });
+    const openSpy = vi.spyOn(window, "open").mockReturnValue(null);
+    render(<Harness accountId="a1" onOpenFeedback={vi.fn<(id?: number) => void>()} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Notifications/ }));
+    const item = await screen.findByRole("button", { name: /Study closed: Old interviews/ });
+    fireEvent.click(item);
+    expect(openSpy).not.toHaveBeenCalled();
+    expect(screen.queryByRole("region", { name: "Notifications" })).toBeNull();
+    openSpy.mockRestore();
+  });
 });

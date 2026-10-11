@@ -49,6 +49,7 @@ export function NotificationBell({
     void inbox.markRead([notification.id]);
     setOpen(false);
     if (notification.kind === "playtest_study") {
+      if (notification.payload.closesAt <= Date.now()) return;
       window.open(notification.payload.link, "_blank", "noopener");
       return;
     }
@@ -146,7 +147,9 @@ function NotificationItem({ notification, onSelect }: { notification: AccountNot
         <span className="aegis-notifications__copy">
           <span className="aegis-notifications__headline">
             {unread ? <span className="aegis-sr-only">{t("notifications.unread")} </span> : null}
-            {t("notifications.playtest.invite", { title: payload.title })}
+            {t(payload.closesAt <= Date.now() ? "notifications.playtest.closed" : "notifications.playtest.invite", {
+              title: payload.title,
+            })}
           </span>
           <span className="aegis-notifications__excerpt">{payload.blurb}</span>
           {when}

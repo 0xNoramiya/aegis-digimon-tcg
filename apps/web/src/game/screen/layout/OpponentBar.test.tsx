@@ -122,6 +122,26 @@ describe("the desktop toolbar's trailing group", () => {
     expect(screen.getByRole("tooltip").textContent).toBe("Match settings");
   });
 
+  it("closes the tooltip on a mouse click and leaves nothing open after the pointer leaves", () => {
+    renderBar(false);
+    const feedback = screen.getByRole("button", { name: "Send feedback" });
+    act(() => {
+      fireEvent.mouseEnter(feedback);
+      fireEvent.pointerDown(feedback);
+      fireEvent.focus(feedback);
+      fireEvent.click(feedback);
+    });
+    expect(screen.queryByRole("tooltip")).toBeNull();
+    act(() => {
+      fireEvent.mouseLeave(feedback);
+      vi.advanceTimersByTime(200);
+    });
+    expect(screen.queryByRole("tooltip")).toBeNull();
+    const cog = screen.getByRole("button", { name: "Match settings" });
+    act(() => cog.focus());
+    expect(screen.getByRole("tooltip").textContent).toBe("Match settings");
+  });
+
   it("never opens a tooltip for the hidden skip slot", () => {
     renderBar(false);
     const skip = screen.getByTestId("skip-presentation");

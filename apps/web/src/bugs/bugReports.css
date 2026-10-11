@@ -108,12 +108,6 @@
   pointer-events: none;
 }
 
-.bug-report__hint {
-  margin: 0;
-  color: var(--ds-text-3);
-  font-size: 0.78rem;
-}
-
 .bug-report__description textarea {
   resize: vertical;
 }
