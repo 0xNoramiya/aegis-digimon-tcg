@@ -699,6 +699,7 @@ export interface AegisJoinOptions {
     | "arena-discord-taiki-keeps-xros-digimon"
     | "arena-discord-vemmon-add-or-place"
     | "arena-discord-speed-security-scene-stuck"
+    | "arena-discord-greymon-security-two-zones"
     | "arena-p224-kotone-own-source"
     | "arena-bt25-ceresmon-homeros-suspend"
     | "arena-bt24-homeros-neptunemon-timing-choice"

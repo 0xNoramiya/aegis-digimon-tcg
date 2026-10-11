@@ -32,6 +32,9 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
   overflow: hidden auto !important;
   overscroll-behavior: contain;
   scrollbar-width: thin;
+  /* Lightning CSS drops a `translate` that shares a rule with `transform`, so the
+     reset lives here, apart from every surface's own `translate`. */
+  transform: none !important;
   animation: aegis-fadeIn var(--t-dialog-in, 180ms) ease-out both !important;
 }
 
@@ -45,7 +48,6 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
   max-width: calc(100vw - var(--ds-space-8)) !important;
   max-height: calc(100dvh - var(--ds-space-8)) !important;
   translate: none !important;
-  transform: none !important;
 }
 
 .game-modal__panel.effect-prompt-family[data-prompt-surface="center"] {
@@ -57,7 +59,6 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
   max-width: calc(100vw - var(--ds-space-8)) !important;
   max-height: calc(100dvh - var(--ds-space-8)) !important;
   translate: -50% -50% !important;
-  transform: none !important;
 }
 
 .game-modal__panel.effect-prompt-family.decision-overlay--wide[data-prompt-surface="center"] {
@@ -718,7 +719,6 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
   max-height: var(--effect-prompt-height) !important;
   padding: var(--ds-space-4) !important;
   translate: none !important;
-  transform: none !important;
 }
 
 .game-modal__panel.decision-overlay.effect-prompt-family[data-prompt-surface="left"] {
