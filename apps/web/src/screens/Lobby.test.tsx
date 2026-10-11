@@ -1078,3 +1078,29 @@ describe("independent historical card pool and match rules", () => {
     expect(screen.getByRole("combobox", { name: "Rules" })).toHaveProperty("disabled", true);
   });
 });
+
+// Issue #56: players missed the queue's advanced settings behind a small grey line.
+describe("the advanced settings toggle", () => {
+  function renderLobby() {
+    return render(
+      <I18nProvider>
+        <Lobby
+          player={{ name: "Tamer", color: "Blue", shards: 0 }}
+          decks={[DECKS[0]!]}
+          activeDeckId={DECKS[0]!.id}
+          onSelectDeck={() => undefined}
+          onCopyDeck={() => undefined}
+          onNav={() => undefined}
+          onStart={() => undefined}
+        />
+      </I18nProvider>,
+    );
+  }
+
+  it("says what it holds, so it reads as settings rather than fine print", () => {
+    const view = renderLobby();
+    const summary = view.container.querySelector(".lobby-advanced > summary")!;
+    expect(summary.textContent).toContain("Advanced settings");
+    expect(summary.textContent).toContain("Card pool, rules, best-of, timer and more");
+  });
+});
