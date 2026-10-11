@@ -10,7 +10,7 @@ export const EVOLUTION_DECK_VERSIONS = [
 ] as const;
 
 export function evolutionDeck(version: string) {
-  const source = ALL_FAMOUS_DECKS.find((deck) => deck.deckVersion === version);
+  const source = ALL_FAMOUS_DECKS.find((deck) => deck.deckVersion === version || deck.deckId === version);
   if (source === undefined) throw new Error(`Unknown evolution deck ${version}`);
   const deck = { mainDeck: [...source.decklist.mainDeck], eggDeck: [...source.decklist.eggDeck] };
   const legality = validateDecklist(deck);

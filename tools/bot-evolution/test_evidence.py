@@ -55,3 +55,14 @@ def test_paired_wilson_selection_is_meaningful_and_does_not_pseudoreplicate():
         paired_evidence(games(1) * 3, games(0) * 3, alpha=0.05 / 24, method="wilson-wins") == result
     )
     assert not paired_evidence(games(0), games(0), method="wilson-wins")["accepted"]
+
+
+def test_policy_identity_includes_the_executable_base():
+    program = {
+        "schemaVersion": 1,
+        "title": "Pilot",
+        "rules": [{"feature": "bias", "weight": 0, "advice": "Balanced."}],
+    }
+    residual = {**program, "basePolicy": "projected-balanced"}
+    assert policy_hash(program) != policy_hash(residual)
+    assert program_hash(program) != program_hash(residual)

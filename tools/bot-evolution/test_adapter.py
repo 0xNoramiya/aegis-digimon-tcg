@@ -136,3 +136,100 @@ def test_only_valid_identical_games_reuse_cache_and_traces_are_required(
         assert invalid["valid"] is False and invalid["score"] is None
     assert len(calls) == 7
     assert len(list((tmp_path / "cache").glob("*.json"))) == 4
+
+
+def test_balanced_transport_batches_preserve_tasks_cache_and_audit(tmp_path, monkeypatch):
+    calls = []
+
+    def complete(command, **kwargs):
+        tasks = json.loads(kwargs["input"])
+        calls.append(tasks)
+        assert command[-1] == "--batch"
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=json.dumps(
+                [
+                    {
+                        "seed": task["seed"],
+                        "learnerSeat": task["learnerSeat"],
+                        "decks": task["decks"],
+                        "opponent": "projected-balanced",
+                        "valid": True,
+                        "score": task["seed"] % 2,
+                        "traces": [{"kind": "main"}] if task["captureTraces"] else [],
+                    }
+                    for task in tasks
+                ]
+            ),
+        )
+
+    monkeypatch.setattr("adapter.subprocess.run", complete)
+    adapter = HeuristicAdapter(
+        EvaluationConfig(
+            node="node",
+            worker=Path("/worker.js"),
+            run_dir=tmp_path / "games",
+            engine_sha256="engine",
+            simulations=1,
+            desktop_host="desktop",
+            cache_dir=tmp_path / "cache",
+        ),
+        {"balancedBatchSize": 3},
+    )
+    tasks = [
+        {"seed": n, "learnerSeat": 0, "decks": ["a", "b"], "opponent": "balanced"} for n in range(7)
+    ]
+    candidate = {"heuristic": "{}"}
+    assert adapter.evaluate(tasks[:1], candidate).scores == [0]
+    outputs = adapter.evaluate(tasks, candidate).outputs
+    assert [output["task"] for output in outputs] == tasks
+    assert outputs[0]["cacheHit"] is True
+    assert len(calls) == 4 and sum(len(call) for call in calls) == 7
+    assert len(list((tmp_path / "games").glob("*.json"))) == 8
+    adapter.evaluate(tasks, candidate, True)
+    assert sum(len(call) for call in calls) == 14
+    adapter.evaluate(tasks, candidate, True)
+    assert sum(len(call) for call in calls) == 14
+
+
+def test_balanced_batch_refuses_mislabeled_control_and_wrong_game(tmp_path, monkeypatch):
+    def complete(command, **kwargs):
+        tasks = json.loads(kwargs["input"])
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=json.dumps(
+                [
+                    {
+                        "valid": True,
+                        "score": 1,
+                        "seed": task["seed"] + 1,
+                        "learnerSeat": 0,
+                        "decks": ["a", "b"],
+                        "opponent": "coevolved-heuristic",
+                    }
+                    for task in tasks
+                ]
+            ),
+        )
+
+    monkeypatch.setattr("adapter.subprocess.run", complete)
+    adapter = HeuristicAdapter(
+        EvaluationConfig(
+            node="node",
+            worker=Path("/worker.js"),
+            run_dir=tmp_path,
+            engine_sha256="engine",
+            simulations=1,
+            desktop_host="desktop",
+        ),
+        {"balancedBatchSize": 2},
+    )
+    with pytest.raises(RuntimeError, match="different game or control"):
+        adapter.evaluate(
+            [{"seed": 1, "learnerSeat": 0, "decks": ["a", "b"], "opponent": "balanced"}],
+            {"heuristic": "{}"},
+        )
+    with pytest.raises(ValueError, match="restricted"):
+        adapter.evaluate([{"opponent": "mcts"}], {"heuristic": "{}"})

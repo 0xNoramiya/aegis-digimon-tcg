@@ -24,11 +24,20 @@ export function projectedBotOptions(input: { engine: GameEngine; seat: Seat; opt
   };
 }
 
+export interface ProjectedScoreContext {
+  view: BotView;
+  candidate: Candidate;
+  action: TrainingAction;
+  score: number;
+}
+
 /** Evaluate authoritative legal declarations and their live costs using public observations. */
 export function createProjectedEvaluationPolicy(
   input: {
     engine: GameEngine;
     seat: Seat;
+    adjustMainScore?: (context: ProjectedScoreContext) => number;
+    onMainChoice?: (candidate: Candidate | undefined) => void;
   } & EvaluationPolicyOptions,
 ): BotPolicy {
   const profile = input.profile ?? DEFAULT_BOT_PROFILE;
@@ -62,13 +71,20 @@ export function createProjectedEvaluationPolicy(
           const body = view.board.find((unit) => unit.permanentId === id || unit.topCardInstanceId === id);
           return sum + (body ? bodyValue(body) * 0.7 : view.hand.some((card) => card.instanceId === id) ? 1 : 0.25);
         }, 0);
-        const score = scoreCandidate(view, candidate, profile) - materialCost + random.next() * 0.01;
+        const baselineScore = scoreCandidate(view, candidate, profile) - materialCost;
+        const adjustment = input.adjustMainScore?.({ view, candidate, action, score: baselineScore }) ?? 0;
+        if (!Number.isFinite(adjustment)) throw new Error("Non-finite projected policy adjustment");
+        const score = baselineScore + adjustment + random.next() * 0.01;
         if (score > bestScore) {
           best = candidate;
           bestScore = score;
         }
       }
-      if (!best || bestScore <= profile.weights.actionThreshold) return { type: "endPhase" };
+      if (!best || bestScore <= profile.weights.actionThreshold) {
+        input.onMainChoice?.(undefined);
+        return { type: "endPhase" };
+      }
+      input.onMainChoice?.(best);
       if (best.kind === "activateEffect") activated.add(best.key);
       return best.intent;
     },

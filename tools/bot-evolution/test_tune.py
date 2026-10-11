@@ -58,3 +58,16 @@ def test_fixed_proposals_use_same_tasks_and_reuse_identical_programs(tmp_path):
     assert len(adapters[0].calls) <= 5
     protocol = json.loads((tmp_path / "0/protocol.json").read_text())
     assert protocol["simulations"] == 256
+
+
+def test_neutral_residual_weights_activate_with_code_owned_advice():
+    original = {
+        "schemaVersion": 1,
+        "basePolicy": "projected-balanced",
+        "title": "Balanced",
+        "rules": [{"feature": "cost", "weight": 0, "advice": "Use balanced."}],
+    }
+    neighbor = weight_neighbor(original, random.Random(71), 2)
+    assert neighbor["rules"][0]["weight"] in (-0.5, -1, -2)
+    assert "caution" in neighbor["rules"][0]["advice"]
+    assert original["rules"][0]["weight"] == 0

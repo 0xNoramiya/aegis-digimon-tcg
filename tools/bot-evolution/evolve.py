@@ -157,7 +157,12 @@ def optimize_stage(
     )
     stage_dir.mkdir(parents=True, exist_ok=True)
     (stage_dir / "splits.json").write_text(json.dumps(splits, indent=2) + "\n", encoding="utf-8")
-    click.echo(f"Optimizing {stage}: {simulations} MCTS simulations per search", err=True)
+    opponent = (
+        "current projected-balanced control"
+        if metadata.get("trainingControl") == "current projected-balanced"
+        else f"{simulations} MCTS simulations per search"
+    )
+    click.echo(f"Optimizing {stage}: {opponent}", err=True)
     audit = EvolutionAudit(stage_dir / "evolution-audit.jsonl")
     rung = None
     if metadata.get("adaptiveLadder"):
@@ -189,7 +194,9 @@ def optimize_stage(
         if reflection_model == "session"
         else ApiReflection(
             stage_dir / "reflections",
-            run_dir / "reflection-budget.json",
+            Path(metadata["reflectionBudgetLedger"])
+            if metadata.get("reflectionBudgetLedger")
+            else run_dir / "reflection-budget.json",
             model=reflection_model,
             **(reflection_budget or {}),
         )
@@ -210,7 +217,10 @@ def optimize_stage(
         adapter=adapter,
         reflection_lm=reflector,
         reflection_prompt_template=REFLECTION_TEMPLATE,
-        reflection_minibatch_size=min(48, len(splits["train"])) or 2,
+        reflection_minibatch_size=min(
+            24 if metadata.get("feedbackMode") == "thin" else 48, len(splits["train"])
+        )
+        or 2,
         max_metric_calls=metric_calls,
         run_dir=str(stage_dir / "gepa"),
         seed=71,
@@ -418,6 +428,7 @@ def main(
                     "api_reflection.py",
                     "proposals.py",
                     "ladder.py",
+                    "residual_weights.py",
                     "evolve.py",
                     "session_reflection.py",
                     "pyproject.toml",

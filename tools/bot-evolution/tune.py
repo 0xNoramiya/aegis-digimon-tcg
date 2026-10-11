@@ -9,13 +9,19 @@ import click
 
 from adapter import EvaluationConfig, HeuristicAdapter
 from evidence import paired_evidence, policy_hash
+from residual_weights import RESIDUAL_WEIGHTS, activation_advice
 
 
 def weight_neighbor(program: dict, random_source: random.Random, scale: float) -> dict:
     proposal = deepcopy(program)
     rule = random_source.choice(proposal["rules"])
     # Keep signs stable so numeric tuning cannot silently contradict authored advice.
-    if rule["weight"] != 0:
+    if rule["weight"] == 0 and program.get("basePolicy") == "projected-balanced":
+        rule["weight"] = RESIDUAL_WEIGHTS.get(rule["feature"], 0.25) * random_source.choice(
+            (0.5, 1, 2)
+        )
+        rule["advice"] = activation_advice(rule["feature"], rule["weight"])
+    elif rule["weight"] != 0:
         rule["weight"] = max(
             -10000, min(10000, rule["weight"] * random_source.choice((1 / scale, scale)))
         )

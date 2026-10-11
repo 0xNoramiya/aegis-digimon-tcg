@@ -5,6 +5,9 @@ import type { TrainingWindow } from "../training/policy.js";
 /** GEPA evolves data, never executable code. Guides come from these same rules. */
 export const FEATURES = [
   "bias",
+  "baselineScore",
+  "securityChecks",
+  "readyAttackers",
   "ownHandCount",
   "opponentHandCount",
   "turn",
@@ -64,6 +67,7 @@ export interface HeuristicRule {
 }
 export interface HeuristicProgram {
   schemaVersion: 1;
+  basePolicy?: "projected-balanced";
   title: string;
   rules: HeuristicRule[];
 }
@@ -71,6 +75,8 @@ export interface HeuristicProgram {
 export function parseHeuristic(value: unknown): HeuristicProgram {
   if (typeof value !== "object" || value === null) throw new Error("Expected heuristic object");
   const program = value as HeuristicProgram;
+  if (program.basePolicy !== undefined && program.basePolicy !== "projected-balanced")
+    throw new Error("Unknown heuristic base policy");
   if (
     program.schemaVersion !== 1 ||
     typeof program.title !== "string" ||
@@ -117,7 +123,12 @@ export function parseHeuristic(value: unknown): HeuristicProgram {
       }
     }
   }
-  return { schemaVersion: 1, title: program.title, rules: program.rules.map((rule) => ({ ...rule })) };
+  return {
+    schemaVersion: 1,
+    ...(program.basePolicy === undefined ? {} : { basePolicy: program.basePolicy }),
+    title: program.title,
+    rules: program.rules.map((rule) => ({ ...rule })),
+  };
 }
 
 export function actionFeatures(window: TrainingWindow, index: number): Record<Feature, number> {
@@ -189,7 +200,10 @@ export function actionFeatures(window: TrainingWindow, index: number): Record<Fe
   features.dnaDigivolve = Number(intent.type === "dnaDigivolve");
   features.appFusion = Number(intent.type === "appFusion");
   features.link = Number(intent.type === "linkCard");
-  features.materials = action.materialIds?.length ?? 0;
+  features.materials =
+    action.materialIds?.length ??
+    (intent.type === "playCard" ? intent.assembly?.materialInstanceIds.length : undefined) ??
+    0;
   features.block = Number(intent.type === "declareBlock");
   features.criticalBlock = Number(
     intent.type === "declareBlock" && window.combat?.targetsPlayer === true && own.securityCount === 0,
@@ -228,28 +242,32 @@ export function actionCardId(window: TrainingWindow, index: number): string | un
   );
 }
 
+export function scoreHeuristicRules(
+  program: HeuristicProgram,
+  features: Record<Feature, number>,
+  kind: string,
+  sourceCardId?: string,
+) {
+  const contributions = program.rules.map((rule) => {
+    const condition = rule.when;
+    const matches =
+      condition === undefined ||
+      ((condition.kind === undefined || condition.kind === kind) &&
+        (condition.sourceCardIds === undefined ||
+          (sourceCardId !== undefined && condition.sourceCardIds.includes(sourceCardId))) &&
+        Object.entries(condition.minimum ?? {}).every(([feature, limit]) => features[feature as Feature] >= limit!) &&
+        Object.entries(condition.maximum ?? {}).every(([feature, limit]) => features[feature as Feature] <= limit!));
+    return { ...rule, value: matches ? features[rule.feature] * rule.weight : 0 };
+  });
+  return { score: contributions.reduce((total, rule) => total + rule.value, 0), contributions };
+}
+
 export function rankHeuristic(program: HeuristicProgram, window: TrainingWindow) {
   return window.actions
-    .map((_, index) => {
-      const features = actionFeatures(window, index);
-      const sourceCardId = actionCardId(window, index);
-      const contributions = program.rules.map((rule) => {
-        const condition = rule.when;
-        const matches =
-          condition === undefined ||
-          ((condition.kind === undefined || condition.kind === window.kind) &&
-            (condition.sourceCardIds === undefined ||
-              (sourceCardId !== undefined && condition.sourceCardIds.includes(sourceCardId))) &&
-            Object.entries(condition.minimum ?? {}).every(
-              ([feature, limit]) => features[feature as Feature] >= limit!,
-            ) &&
-            Object.entries(condition.maximum ?? {}).every(
-              ([feature, limit]) => features[feature as Feature] <= limit!,
-            ));
-        return { ...rule, value: matches ? features[rule.feature] * rule.weight : 0 };
-      });
-      return { index, score: contributions.reduce((total, rule) => total + rule.value, 0), contributions };
-    })
+    .map((_, index) => ({
+      index,
+      ...scoreHeuristicRules(program, actionFeatures(window, index), window.kind, actionCardId(window, index)),
+    }))
     .sort((left, right) => right.score - left.score || left.index - right.index);
 }
 

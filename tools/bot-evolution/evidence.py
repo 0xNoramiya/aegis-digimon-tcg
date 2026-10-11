@@ -19,7 +19,11 @@ def normalized(value):
 
 
 def program_hash(program: dict[str, Any]) -> str:
-    parsed = {key: program[key] for key in ("schemaVersion", "title", "rules") if key in program}
+    parsed = {
+        key: program[key]
+        for key in ("schemaVersion", "basePolicy", "title", "rules")
+        if key in program
+    }
     return hashlib.sha256(json.dumps(normalized(parsed), sort_keys=True).encode()).hexdigest()
 
 
@@ -29,7 +33,10 @@ def policy_hash(program: dict[str, Any]) -> str:
         {key: rule[key] for key in ("feature", "weight", "when") if key in rule}
         for rule in program.get("rules", [])
     ]
-    return hashlib.sha256(json.dumps(normalized(rules), sort_keys=True).encode()).hexdigest()
+    identity = (
+        {"basePolicy": program["basePolicy"], "rules": rules} if "basePolicy" in program else rules
+    )
+    return hashlib.sha256(json.dumps(normalized(identity), sort_keys=True).encode()).hexdigest()
 
 
 def paired_evidence(

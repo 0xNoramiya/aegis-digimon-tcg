@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { setupEngine } from "../../engine/testkit/harness.js";
+import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import { mainActions } from "../training/actions.js";
 import { trainingObservation } from "../training/observation.js";
 import type { TrainingWindow } from "../training/policy.js";
@@ -7,6 +7,28 @@ import { actionFeatures, chooseHeuristic, parseHeuristic, SEED_HEURISTIC } from 
 import "../../cards/index.js";
 
 describe("evolved heuristic interpreter", () => {
+  it("counts and executes the actual Assembly materials for learned preferences", async () => {
+    const setup = setupEngine(
+      { 0: { hand: ["EX9-055"], trash: Array(4).fill("EX9-005") } },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    setup.state.memory = 0;
+    await setup.ready();
+    const window: TrainingWindow = {
+      observation: trainingObservation(setup.state, 0),
+      kind: "main",
+      selected: [],
+      actions: mainActions(setup.engine, 0),
+    };
+    const index = window.actions.findIndex((action) => action.intent.type === "playCard" && action.intent.assembly);
+    const action = window.actions[index]!;
+    expect(actionFeatures(window, index).materials).toBe(4);
+    expect(setup.engine.applyIntent(0, action.intent)).toEqual({ ok: true });
+    await settle(() => setup.state.players[0]!.battleArea.some((unit) => unit.topCard.cardId === "EX9-055"));
+    expect(setup.state.players[0]!.battleArea[0]!.stack).toHaveLength(4);
+    expect(setup.state.players[0]!.trash).toHaveLength(0);
+    expect(setup.events.filter((event) => event.kind === "actionRejected")).toEqual([]);
+  });
   it("applies a deck-specific preference only in its declared context", async () => {
     const setup = setupEngine({ 0: { hand: ["BT1-010", "BT1-011"] } });
     await setup.ready();

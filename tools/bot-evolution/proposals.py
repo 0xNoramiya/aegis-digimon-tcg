@@ -7,6 +7,7 @@ from gepa.strategies.instruction_proposal import InstructionProposalSignature
 
 from adapter import REFLECTION_TEMPLATE
 from evidence import paired_evidence, policy_hash
+from residual_weights import RESIDUAL_WEIGHTS
 
 
 def guarded_proposer(
@@ -49,11 +50,22 @@ def guarded_proposer(
             },
         )["new_instruction"]
         program = json.loads(text)
+        if program.get("basePolicy") != calibrated.get("basePolicy"):
+            reservation.write_text(
+                json.dumps({"program": program, "status": "rejected-base-change"}, indent=2) + "\n"
+            )
+            return candidate
         for rule in program["rules"]:
             calibrated_weight = exact_weights.get(
                 (rule["feature"], json.dumps(rule.get("when"), sort_keys=True)),
                 weights.get(rule["feature"], 1),
             )
+            if (
+                calibrated.get("basePolicy") == "projected-balanced"
+                and calibrated_weight == 0
+                and rule["weight"] != 0
+            ):
+                calibrated_weight = RESIDUAL_WEIGHTS.get(rule["feature"], 0.25)
             if (
                 rule["weight"] != 0
                 and calibrated_weight != 0

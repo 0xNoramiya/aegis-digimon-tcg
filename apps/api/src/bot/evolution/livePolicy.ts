@@ -5,6 +5,7 @@ import type { Decklist } from "../../engine/setup.js";
 import type { BotOptions } from "../BotPlayer.js";
 import { mainActionReady } from "../training/actions.js";
 import { createAsyncTrainingPolicy } from "../training/policy.js";
+import { createResidualPolicy } from "./residualPolicy.js";
 import { evolutionDeck, EVOLUTION_DECK_VERSIONS } from "./decks.js";
 import { chooseHeuristic, parseHeuristic, type HeuristicProgram } from "./heuristic.js";
 
@@ -56,12 +57,29 @@ export function evolvedBotOptions(input: {
   const disable = () => {
     disabled = true;
   };
-  const policy = createAsyncTrainingPolicy(input.engine, input.seat, async (window) => {
-    if (disabled) throw new Error("Heuristic action rejected; using the standard bot for this match");
-    return chooseHeuristic(program, window, (input.seed ?? 0) + input.seat * 7919);
-  });
+  const policy =
+    program.basePolicy === "projected-balanced"
+      ? createResidualPolicy({
+          engine: input.engine,
+          seat: input.seat,
+          seed: (input.seed ?? 0) + input.seat * 7919,
+          program,
+        })
+      : createAsyncTrainingPolicy(input.engine, input.seat, async (window) => {
+          if (disabled) throw new Error("Heuristic action rejected; using the standard bot for this match");
+          return chooseHeuristic(program, window, (input.seed ?? 0) + input.seat * 7919);
+        });
   return {
-    policy: { ...policy, name: `evolved:${program.title}`, noteRejected: disable, onEngineRejection: disable },
+    policy: {
+      ...policy,
+      name: `evolved:${program.title}`,
+      chooseMainAction(view, signal) {
+        if (disabled) throw new Error("Heuristic action rejected; using the standard bot for this match");
+        return policy.chooseMainAction(view, signal);
+      },
+      noteRejected: disable,
+      onEngineRejection: disable,
+    },
     canChooseMainAction: () => mainActionReady(input.engine),
     policyTimeoutMs: 1_000,
   };

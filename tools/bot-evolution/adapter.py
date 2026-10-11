@@ -54,161 +54,208 @@ class HeuristicAdapter:
         candidate: dict[str, str],
         capture_traces: bool = False,
     ) -> EvaluationBatch:
+        batch_size = self.metadata.get("balancedBatchSize", 1)
+        if not isinstance(batch_size, int) or not 1 <= batch_size <= 32:
+            raise ValueError("Use 1–32 isolated balanced games per transport batch")
+        if batch_size > 1 and any(task.get("opponent") != "balanced" for task in batch):
+            raise ValueError("Transport batching is restricted to balanced-control games")
+        groups = [batch[index : index + batch_size] for index in range(0, len(batch), batch_size)]
         with ThreadPoolExecutor(max_workers=self.config.workers) as pool:
-            outputs = list(
-                pool.map(lambda task: self.evaluate_game(task, candidate, capture_traces), batch)
+            grouped_outputs = list(
+                pool.map(
+                    lambda tasks: self._evaluate_games(
+                        tasks, candidate, capture_traces, batch_size > 1
+                    ),
+                    groups,
+                )
             )
+        outputs = [output for group in grouped_outputs for output in group]
         if not all(output.get("valid") is True for output in outputs):
             raise RuntimeError(
                 "Incomplete evaluation batch; invalid games are not fitness losses. Inspect game artifacts and resume after diagnosis."
             )
         return EvaluationBatch(
             outputs=outputs,
-            scores=[output["score"] for output in outputs if output.get("valid") is True],
+            scores=[output["score"] for output in outputs],
             trajectories=outputs if capture_traces else None,
         )
 
     def evaluate_game(
         self, task: dict[str, Any], candidate: dict[str, str], capture_traces: bool
     ) -> dict[str, Any]:
-        with self.call_lock:
-            self.calls += 1
-            call_index = self.calls
-        # JSON parse errors are candidate failures, not infrastructure failures.
-        # Check at the third-party engine boundary so the TS interpreter owns validation.
-        raw_program = candidate.get("heuristic", "")
+        return self._evaluate_games([task], candidate, capture_traces, False)[0]
+
+    def _evaluate_games(self, tasks, candidate, capture_traces, batched):
         try:
-            program = json.loads(raw_program)
+            program = json.loads(candidate.get("heuristic", ""))
         except json.JSONDecodeError as error:
-            return {
-                "score": None,
-                "valid": False,
-                "status": "invalid",
-                "error": f"Invalid candidate JSON: {error}",
+            return [
+                {
+                    "score": None,
+                    "valid": False,
+                    "status": "invalid",
+                    "error": f"Invalid candidate JSON: {error}",
+                }
+                for _ in tasks
+            ]
+        requests = []
+        outputs = [None] * len(tasks)
+        for index, task in enumerate(tasks):
+            with self.call_lock:
+                self.calls += 1
+                call_index = self.calls
+            payload = {
+                **task,
+                "program": program,
+                "simulations": self.config.simulations,
+                "captureTraces": capture_traces,
+                "engineSha256": self.config.engine_sha256,
             }
-        payload = {
-            **task,
-            "program": program,
-            "simulations": self.config.simulations,
-            "captureTraces": capture_traces,
-            "engineSha256": self.config.engine_sha256,
-        }
-        # Capturing traces changes audit detail, never the policy or game choices.
-        fingerprint = hashlib.sha256(
-            json.dumps(
-                {key: value for key, value in payload.items() if key != "captureTraces"},
-                sort_keys=True,
-            ).encode("utf-8")
-        ).hexdigest()
-        cache_path = (
-            None if self.config.cache_dir is None else self.config.cache_dir / f"{fingerprint}.json"
-        )
-        if cache_path is not None and cache_path.is_file():
-            cached = json.loads(cache_path.read_text(encoding="utf-8"))
-            output = cached["output"]
-            if (
-                cached["payloadSha256"] == fingerprint
-                and output.get("valid") is True
-                and output.get("engineSha256") == self.config.engine_sha256
-                and (not capture_traces or bool(output.get("traces")))
-            ):
-                output["candidateSha256"] = program_hash(program)
-                output["cacheHit"] = True
-                artifact = self.config.run_dir / f"{call_index:05d}-{fingerprint[:12]}.json"
-                artifact.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
-                return output
-        log = self.config.run_dir / f"{call_index:05d}-{fingerprint[:12]}.stderr.log"
-        with log.open("w", encoding="utf-8") as stderr:
-            command = [self.config.node, "--max-old-space-size=1024", str(self.config.worker)]
-            if self.config.desktop_host is not None:
-                command = [
-                    "ssh",
-                    "-o",
-                    "BatchMode=yes",
-                    self.config.desktop_host,
-                    "wsl.exe",
-                    "-e",
-                    "timeout",
-                    "--signal=TERM",
-                    "--kill-after=10",
-                    str(self.config.timeout),
-                    *command,
-                ]
-            try:
+            fingerprint = hashlib.sha256(
+                json.dumps(
+                    {key: value for key, value in payload.items() if key != "captureTraces"},
+                    sort_keys=True,
+                ).encode("utf-8")
+            ).hexdigest()
+            cache = (
+                None
+                if self.config.cache_dir is None
+                else self.config.cache_dir / f"{fingerprint}.json"
+            )
+            request = {
+                "index": index,
+                "task": task,
+                "payload": payload,
+                "cache": cache,
+                "fingerprint": fingerprint,
+                "artifact": self.config.run_dir / f"{call_index:05d}-{fingerprint[:12]}.json",
+            }
+            if cache is not None and cache.is_file():
+                cached = json.loads(cache.read_text(encoding="utf-8"))
+                output = cached["output"]
+                if (
+                    cached["payloadSha256"] == fingerprint
+                    and output.get("valid") is True
+                    and output.get("engineSha256") == self.config.engine_sha256
+                    and (not capture_traces or bool(output.get("traces")))
+                ):
+                    output["cacheHit"] = True
+                    outputs[index] = self._save_game(output, request, program)
+                    continue
+            requests.append(request)
+        if not requests:
+            return outputs
+        log = requests[0]["artifact"].with_suffix(".stderr.log")
+        command = [self.config.node, "--max-old-space-size=1024", str(self.config.worker)]
+        if batched:
+            command.append("--batch")
+        if self.config.desktop_host is not None:
+            command = [
+                "ssh",
+                "-o",
+                "BatchMode=yes",
+                self.config.desktop_host,
+                "wsl.exe",
+                "-e",
+                "timeout",
+                "--signal=TERM",
+                "--kill-after=10",
+                str(self.config.timeout),
+                *command,
+            ]
+        payloads = [request["payload"] for request in requests]
+        try:
+            with log.open("w", encoding="utf-8") as stderr:
                 result = subprocess.run(
                     command,
-                    input=json.dumps(payload),
+                    input=json.dumps(payloads if batched else payloads[0]),
                     text=True,
                     stdout=subprocess.PIPE,
                     stderr=stderr,
                     timeout=self.config.timeout + 30,
                     check=False,
                 )
-            except subprocess.TimeoutExpired as error:
-                artifact = self.config.run_dir / f"{call_index:05d}-{fingerprint[:12]}.json"
-                artifact.write_text(
-                    json.dumps(
-                        {
-                            "valid": False,
-                            "score": None,
-                            "status": "timed-out",
-                            "task": task,
-                            "error": "Evaluation transport deadline expired",
-                            "engineSha256": self.config.engine_sha256,
-                            "candidateSha256": program_hash(program),
-                        },
-                        indent=2,
-                    )
-                    + "\n",
-                    encoding="utf-8",
-                )
-                raise TimeoutError(f"Evaluation transport deadline expired; see {log}") from error
-        if result.returncode in (124, 137):
-            artifact = self.config.run_dir / f"{call_index:05d}-{fingerprint[:12]}.json"
-            artifact.write_text(
-                json.dumps(
+        except subprocess.TimeoutExpired as error:
+            for request in requests:
+                self._save_game(
                     {
                         "valid": False,
                         "score": None,
                         "status": "timed-out",
-                        "task": task,
-                        "error": "Desktop evaluation deadline expired",
-                        "engineSha256": self.config.engine_sha256,
-                        "candidateSha256": program_hash(program),
+                        "error": "Evaluation transport deadline expired",
                     },
-                    indent=2,
+                    request,
+                    program,
                 )
-                + "\n",
-                encoding="utf-8",
-            )
+            raise TimeoutError(f"Evaluation transport deadline expired; see {log}") from error
+        if result.returncode in (124, 137):
+            for request in requests:
+                self._save_game(
+                    {
+                        "valid": False,
+                        "score": None,
+                        "status": "timed-out",
+                        "error": "Desktop evaluation deadline expired",
+                    },
+                    request,
+                    program,
+                )
             raise TimeoutError(f"Desktop evaluation deadline expired; worker reaped; see {log}")
         if not result.stdout.strip():
             raise RuntimeError(f"Engine worker exited {result.returncode} without JSON; see {log}")
-        output = json.loads(result.stdout)
-        if "error" in output and "engine changed" in output["error"]:
-            raise RuntimeError(output["error"])
+        response = json.loads(result.stdout)
+        if isinstance(response, dict) and "engine changed" in response.get("error", ""):
+            raise RuntimeError(response["error"])
         if result.returncode not in (0, 1):
             raise RuntimeError(f"Engine worker crashed with exit {result.returncode}; see {log}")
+        game_outputs = response if batched else [response]
+        if not isinstance(game_outputs, list) or len(game_outputs) != len(requests):
+            raise RuntimeError(f"Incomplete transport batch; see {log}")
+        for request, output in zip(requests, game_outputs, strict=True):
+            if "engine changed" in output.get("error", ""):
+                raise RuntimeError(output["error"])
+            if (
+                batched
+                and output.get("valid") is True
+                and (
+                    output.get("seed") != request["task"]["seed"]
+                    or output.get("learnerSeat") != request["task"]["learnerSeat"]
+                    or output.get("decks") != request["task"]["decks"]
+                    or output.get("opponent") != "projected-balanced"
+                )
+            ):
+                raise RuntimeError("Transport batch returned a different game or control")
+            outputs[request["index"]] = self._save_game(output, request, program)
+        return outputs
+
+    def _save_game(self, output, request, program):
         if output.get("valid") is not True:
             output["score"] = None
-        output["status"] = (
-            ("timed-out" if output.get("result", {}).get("timedOut") else "invalid")
-            if output.get("valid") is not True
-            else "played"
+            output["status"] = (
+                "timed-out"
+                if (output.get("status") == "timed-out" or output.get("result", {}).get("timedOut"))
+                else "invalid"
+            )
+        else:
+            output["status"] = "played"
+        output.update(
+            {
+                "policySha256": policy_hash(program),
+                "task": request["task"],
+                "candidateSha256": program_hash(program),
+                "engineSha256": self.config.engine_sha256,
+            }
         )
-        output["policySha256"] = policy_hash(program)
-        output["task"] = task
-        output["candidateSha256"] = program_hash(program)
-        output["engineSha256"] = self.config.engine_sha256
-        artifact = self.config.run_dir / f"{call_index:05d}-{fingerprint[:12]}.json"
-        artifact.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
-        if cache_path is not None and output.get("valid") is True:
-            temporary = cache_path.with_suffix(f".{uuid4().hex}.tmp")
+        request["artifact"].write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
+        cache = request["cache"]
+        if cache is not None and output.get("valid") is True and not output.get("cacheHit"):
+            temporary = cache.with_suffix(f".{uuid4().hex}.tmp")
             temporary.write_text(
-                json.dumps({"payloadSha256": fingerprint, "output": output}, indent=2) + "\n",
+                json.dumps({"payloadSha256": request["fingerprint"], "output": output}, indent=2)
+                + "\n",
                 encoding="utf-8",
             )
-            temporary.replace(cache_path)
+            temporary.replace(cache)
         return output
 
     def make_reflective_dataset(
@@ -221,6 +268,44 @@ class HeuristicAdapter:
         rich = self.metadata.get("feedbackMode") == "rich"
         for output in eval_batch.outputs:
             result = output.get("result", {})
+            traces = output.get("traces", [])
+            # Eight evenly spaced decisions keep development as well as the ending.
+            thin_traces = (
+                [
+                    traces[index]
+                    for index in sorted({round(n * (len(traces) - 1) / 7) for n in range(8)})
+                ]
+                if traces
+                else []
+            )
+            thin_traces = [
+                {
+                    **{
+                        key: trace[key]
+                        for key in (
+                            "kind",
+                            "turn",
+                            "action",
+                            "sourceCardId",
+                            "score",
+                            "topScoreTies",
+                        )
+                        if key in trace
+                    },
+                    "features": {
+                        key: value for key, value in trace.get("features", {}).items() if value != 0
+                    },
+                    "alternatives": [
+                        {
+                            key: item[key]
+                            for key in ("action", "sourceCardId", "score")
+                            if key in item
+                        }
+                        for item in trace.get("alternatives", [])
+                    ],
+                }
+                for trace in thin_traces
+            ]
             records.append(
                 {
                     "Inputs": {
@@ -229,10 +314,8 @@ class HeuristicAdapter:
                         "deckCards": self.metadata.get("cards", []) if rich else [],
                     },
                     "Generated Outputs": {
-                        "rules": candidate["heuristic"],
-                        "decisions": output.get("traces", [])
-                        if rich
-                        else output.get("traces", [])[-8:],
+                        **({"rules": candidate["heuristic"]} if rich else {}),
+                        "decisions": traces if rich else thin_traces,
                         "blockedIntents": json.loads(candidate["heuristic"]).get(
                             "blockedIntents", []
                         ),
@@ -268,7 +351,11 @@ Focus on structural edits: when conditions and sourceCardIds. Keep calibrated nu
 weights for existing features; numeric optimization is performed separately by code.
 You may add a top-level blockedIntents list of plain-English strategies that the allowed
 features cannot express. These are recorded for research and never used during scoring.
-Schema: {"schemaVersion":1,"title":"English title (1-120 characters)","rules":[
+If the current object has basePolicy:"projected-balanced", preserve that field.
+That mode starts with the current balanced action score; your rules ADD adjustments to it.
+A zero rule is inactive. Re-author its advice when activating it. Do not replace the
+whole baseline or optimize ties against the old weak generic program.
+Schema: {"schemaVersion":1,"basePolicy":optional "projected-balanced","title":"English title (1-120 characters)","rules":[
  {"feature":"allowed feature name","weight":finite number in [-10000,10000],
   "advice":"Accurate plain English advice explaining this rule (1-600 characters)",
   "when":optional {"kind":"main or a decision kind", "sourceCardIds":["exact catalog card ids"],
