@@ -47,6 +47,7 @@ tools/bot-evolution/.venv/bin/python tools/bot-evolution/evolve.py \
   --node /home/vinicius/aegis-bot-lab/toolchain/node-v26.10.0-linux-x64/bin/node \
   --worker /home/vinicius/aegis-bot-lab/checkouts/gepa-2026-10-10-v2/apps/api/dist/bot/evolution/evaluateCli.js \
   --simulations 256 --metric-calls 24 --pairs 2 --generations 2 \
+  --evaluation-timeout 21600 \
   --evaluation-workers 4 \
   --reflection-model session
 ```
@@ -56,6 +57,11 @@ are supplied through the local environment. A run directory can be resumed only
 with the same engine and parameters; completed stage artifacts are reused and
 GEPA retains its own checkpoint state. Use a fresh directory after code changes.
 Four bounded desktop workers evaluate independent games while preserving batch order.
+A complete random-deck game exceeded the two-hour default deadline at 256
+rollouts per search, so this high-budget command allows six hours per game.
+The deadline is recorded in the run manifest. An execution timeout aborts
+evaluation; it does not count as a heuristic loss. Valid exact-task games remain
+reusable from the adapter cache when a fresh run uses a longer deadline.
 A shared cache reuses only valid games with identical policy, task, engine, and
 search budget; reflection additionally requires recorded traces. GEPA's internal
 candidate/example-ID cache is disabled because list loaders reuse integer IDs
