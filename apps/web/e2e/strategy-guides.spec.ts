@@ -53,6 +53,21 @@ for (const width of [390, 1440]) {
       const errors: string[] = [];
       page.on("pageerror", (error) => errors.push(error.message));
 
+      const robotsResponse = await request.get("/robots.txt");
+      expect(robotsResponse.status()).toBe(200);
+      expect(robotsResponse.headers()["content-type"]).toContain("text/plain");
+      const sitemapDirective = (await robotsResponse.text()).match(/^Sitemap:\s*(https:\/\/\S+)$/m);
+      expect(sitemapDirective).not.toBeNull();
+      const sitemapURL = new URL(sitemapDirective![1]);
+      expect(sitemapURL.pathname).toBe("/strategy-guides/sitemap.xml");
+      const sitemapResponse = await request.get(sitemapURL.pathname);
+      expect(sitemapResponse.status()).toBe(200);
+      expect(sitemapResponse.headers()["content-type"]).toContain("application/xml");
+      const sitemap = await sitemapResponse.text();
+      for (const guide of catalog) {
+        expect(sitemap).toContain(`<loc>${new URL(guide.url, sitemapURL.origin).href}</loc>`);
+      }
+
       const evidenceResponse = await request.get("/strategy-guides/evidence.json");
       expect(evidenceResponse.status()).toBe(200);
       const evidence = await evidenceResponse.json();

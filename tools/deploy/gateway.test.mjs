@@ -180,6 +180,7 @@ test("static guides coexist with replay API routing and missing guides do not be
   writeFileSync(`${web}/strategy-guides/glowing-dawn/index.html`, "Glowing Dawn guide");
   writeFileSync(`${web}/strategy-guides/guides.css`, "body { color: black; }");
   writeFileSync(`${web}/strategy-guides/sitemap.xml`, "<urlset />");
+  writeFileSync(`${web}/robots.txt`, "Sitemap: https://aegis-digi.online/strategy-guides/sitemap.xml\n");
   writeFileSync(`${web}/strategy-guides/evidence.json`, '{"simulations":256}');
   writeFileSync(
     `${state}/routing/manifest.json`,
@@ -226,6 +227,10 @@ test("static guides coexist with replay API routing and missing guides do not be
   assert.equal(css.headers.get("content-type"), "text/css; charset=utf-8");
   const sitemap = await fetch(`${origin}/strategy-guides/sitemap.xml`);
   assert.equal(sitemap.headers.get("content-type"), "application/xml; charset=utf-8");
+  const robots = await fetch(`${origin}/robots.txt`);
+  assert.equal(robots.status, 200);
+  assert.equal(robots.headers.get("content-type"), "text/plain; charset=utf-8");
+  assert.match(await robots.text(), /^Sitemap: https:\/\/aegis-digi\.online\/strategy-guides\/sitemap\.xml\n$/);
   assert.deepEqual(await (await fetch(`${origin}/strategy-guides/evidence.json`)).json(), { simulations: 256 });
 });
 
