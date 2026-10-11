@@ -41,14 +41,18 @@ export function breedingActions(engine: GameEngine, seat: Seat): TrainingAction[
 }
 
 /** Match the real main-verb handlers, including alternate costs and breeding effects. */
-export function mainActions(engine: GameEngine, seat: Seat): TrainingAction[] {
+export function mainActions(
+  engine: GameEngine,
+  seat: Seat,
+  options: { includeSpecialActions?: boolean; digiXrosValidationBudget?: number } = {},
+): TrainingAction[] {
   const state = engine.state;
   const player = state.players[seat];
   if (player === undefined) throw new Error(`Unseated training player ${seat}`);
   const actions: TrainingAction[] = [
     { intent: { type: "endPhase" }, label: "End main phase" },
-    ...specialMainActions(engine, seat),
-    ...digiXrosMainActions(engine, seat),
+    ...(options.includeSpecialActions === false ? [] : specialMainActions(engine, seat)),
+    ...digiXrosMainActions(engine, seat, { validationBudget: options.digiXrosValidationBudget }),
   ];
   const bases = [...player.battleArea, ...(player.breeding === undefined ? [] : [player.breeding])];
   const playDeps = playCardDeps(engine);

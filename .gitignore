@@ -46,6 +46,7 @@ apps/web/playwright-report/
 
 # Local bot datasets, checkpoints, and Python environments
 artifacts/bot-training/
+artifacts/bot-strength-probe/
 tools/bot-training/.venv/
 tools/bot-training/__pycache__/
 artifacts/bot-evolution/

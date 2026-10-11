@@ -18,7 +18,15 @@ function* subsets(ids: readonly string[]): Generator<string[]> {
  * Invalid-material prefixes cannot become valid by adding more cards; unaffordable ones can.
  * No legal subset is truncated, and the validator canonicalizes material stack order.
  */
-export function digiXrosMainActions(engine: GameEngine, seat: Seat): TrainingAction[] {
+export function digiXrosMainActions(
+  engine: GameEngine,
+  seat: Seat,
+  options: { validationBudget?: number } = {},
+): TrainingAction[] {
+  const budget = options.validationBudget ?? Number.POSITIVE_INFINITY;
+  if (budget !== Number.POSITIVE_INFINITY && (!Number.isInteger(budget) || budget < 0))
+    throw new Error("DigiXros validation budget must be a nonnegative integer");
+  let validations = 0;
   const player = engine.state.players[seat]!;
   const deps = digiXrosDeps(engine);
   const actions: TrainingAction[] = [];
@@ -44,13 +52,16 @@ export function digiXrosMainActions(engine: GameEngine, seat: Seat): TrainingAct
         ...(deps.ruleTrashMaterialCandidates?.(card) ?? []).map(({ instanceId }) => instanceId),
       ]),
     ].filter((id) => id !== card.instanceId);
+    if (candidates.length === 0) continue;
     const cap =
       requirement.maxMaterials ??
       (requirement.materials.length === 1 ? candidates.length : requirement.materials.length);
     for (const expanderPermanentIds of subsets(expanders.map((p) => p.permanentId))) {
+      if (validations >= budget) return actions;
       function visit(selected: string[], remaining: readonly string[]): void {
         if (selected.length >= cap) return;
         for (let index = 0; index < remaining.length; index++) {
+          if (validations >= budget) return;
           const materialInstanceIds = [...selected, remaining[index]!];
           const intent: Extract<Intent, { type: "playCard" }> & {
             digiXros: NonNullable<Extract<Intent, { type: "playCard" }>["digiXros"]>;
@@ -59,6 +70,7 @@ export function digiXrosMainActions(engine: GameEngine, seat: Seat): TrainingAct
             instanceId: card.instanceId,
             digiXros: { materialInstanceIds, ...(expanderPermanentIds.length === 0 ? {} : { expanderPermanentIds }) },
           };
+          validations++;
           const check = validateDigiXros(engine.state, seat, intent, deps);
           if (check.ok)
             actions.push({

@@ -53,6 +53,7 @@ import { createIssueReproBotPolicy } from "../engine/issueReproBotPolicy.js";
 import { GameEngine, type SeatJoinOptions } from "../engine/GameEngine.js";
 import { finalRevealOf, type VisibilityPort } from "../engine/state/index.js";
 import { BotPlayer, type BotOptions } from "../bot/BotPlayer.js";
+import { projectedBotOptions } from "../bot/projectedPolicy.js";
 import { trainedBotOptions } from "../bot/inferenceRuntime.js";
 import { evolvedBotOptions } from "../bot/evolution/livePolicy.js";
 import { playableBotDeck } from "../engine/botDeck.js";
@@ -1083,7 +1084,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         this.rebuildClientViews();
         return result;
       },
-      input.botOptions,
+      projectedBotOptions({ engine: this.engine, seat, options: input.botOptions }),
     );
     this.withBatch(() =>
       this.engine.seatPlayer(seat, `bot:${participantId}`, {
@@ -1507,7 +1508,9 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         : undefined;
     const scenarioPolicy = createIssueReproBotPolicy(this.devScenario);
     const baseBotOptions: BotOptions | undefined =
-      scenarioPolicy === undefined ? modelOptions : { policy: scenarioPolicy };
+      scenarioPolicy === undefined
+        ? (modelOptions ?? projectedBotOptions({ engine: this.engine, seat: this.BOT_SEAT }))
+        : { policy: scenarioPolicy };
     const clientPacesChains = this.clients.some((client) => this.chainPacingClients.has(client.sessionId));
     const botOptions: BotOptions | undefined = clientPacesChains
       ? { ...baseBotOptions, clientPacesChains }
