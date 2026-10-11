@@ -15,6 +15,10 @@ for (const accept of [true, false]) {
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     const before = await scenario.snapshot();
     await scenario.evolve("Poseidomon", HOST);
+    await expect(page.getByRole("dialog", { name: "App Fusion", exact: true })).toHaveAttribute(
+      "data-prompt-surface",
+      "center",
+    );
     await expect(page.getByRole("button", { name: "App Fuse", exact: true })).toBeVisible();
     await page.getByRole("button", { name: "App Fuse", exact: true }).click();
     let unsuspendChoices = 0;
