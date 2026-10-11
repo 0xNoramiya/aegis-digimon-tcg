@@ -16,11 +16,20 @@ import type { PoolClient } from "pg";
 import type { AccountStore } from "../accounts/AccountStore.js";
 import type { Queryable } from "../db/migrator.js";
 import { notify } from "../notifications/NotificationStore.js";
+import type { ReplayRecord } from "../replays/inputs/types.js";
 import type { FiledBugReport, NewBugReport } from "./GitHubIssueTracker.js";
 
 const PAGE_SIZE = 50;
 const OWN_PAGE_SIZE = 20;
 const REPLY_EXCERPT = 160;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const DEFAULT_REPLAY_RETENTION_DAYS = 30;
+
+/** `AEGIS_REPLAY_RETENTION_DAYS`, or 30 days when it is unset or not a positive number. */
+export function replayRetentionMs(env: NodeJS.ProcessEnv = process.env): number {
+  const days = Number(env.AEGIS_REPLAY_RETENTION_DAYS);
+  return (Number.isFinite(days) && days > 0 ? days : DEFAULT_REPLAY_RETENTION_DAYS) * DAY_MS;
+}
 
 export type FeedbackRecord = {
   id: number;
@@ -40,6 +49,15 @@ export type FeedbackRecord = {
   reopenedAt: number | null;
   /** An admin confirmed it as a real bug; a signed-in reporter earned a point for it. */
   confirmedBug: boolean;
+  /** Whether a private replay of the reported match is stored with the report. */
+  hasReplay: boolean;
+  replayInputs: number | null;
+};
+
+export type FeedbackStoreOptions = {
+  /** How long a saved replay is kept; defaults to {@link replayRetentionMs}. */
+  replayRetentionMs?: number;
+  now?: () => number;
 };
 
 export type FeedbackHistoryEntry = FeedbackStatusChange & { actorName: string | null };
@@ -84,11 +102,26 @@ type FeedbackRow = {
 
 const FEEDBACK_COLUMNS =
   "id, report, created_at, github_status, github_number, github_url, status, final_reply, internal_note, duplicate_of_id, revision, reporter_account_id, closed_at, reopened_at, confirmed_bug";
+/** A report row with the input count of its stored replay; `input_count` is null when it has none. */
+type FeedbackRecordRow = FeedbackRow & { input_count: number | null };
+const SELECT_WITH_REPLAY = `SELECT ${FEEDBACK_COLUMNS.split(", ")
+  .map((column) => `f.${column}`)
+  .join(", ")}, r.input_count
+  FROM feedback_reports f LEFT JOIN feedback_report_replays r ON r.report_id = f.id`;
 const CLOSED_LIST = CLOSED_FEEDBACK_STATUSES.map((status) => `'${status}'`).join(", ");
 const AWAITING_AFTER_REOPEN = `reopened_at IS NOT NULL AND status NOT IN (${CLOSED_LIST})`;
 
 export class FeedbackStore {
-  constructor(private readonly accounts: AccountStore) {}
+  private readonly replayRetentionMs: number;
+  private readonly now: () => number;
+
+  constructor(
+    private readonly accounts: AccountStore,
+    options: FeedbackStoreOptions = {},
+  ) {
+    this.replayRetentionMs = options.replayRetentionMs ?? replayRetentionMs();
+    this.now = options.now ?? Date.now;
+  }
 
   async save(report: NewBugReport, accountId: string | undefined, mirror: boolean): Promise<number> {
     await this.accounts.ensureReady();
@@ -118,6 +151,8 @@ export class FeedbackStore {
   /** The admin inbox, newest first. Counts ignore the status filter so every chip stays meaningful. */
   async list(filter: FeedbackFilter = {}): Promise<FeedbackListPage> {
     await this.accounts.ensureReady();
+    // An expired replay must not be listed as available; downloading it would 404.
+    await this.pruneReplays();
     const scope = new Conditions();
     if (filter.kind) scope.add("report->>'kind' = ?", filter.kind);
     if (filter.search) {
@@ -131,8 +166,8 @@ export class FeedbackStore {
     if (filter.reopened) page.add(AWAITING_AFTER_REOPEN);
     if (filter.before !== undefined) page.add("id < ?", filter.before);
 
-    const { rows } = await this.accounts.pool.query<FeedbackRow>(
-      `SELECT ${FEEDBACK_COLUMNS} FROM feedback_reports ${page.where()} ORDER BY id DESC LIMIT ${PAGE_SIZE + 1}`,
+    const { rows } = await this.accounts.pool.query<FeedbackRecordRow>(
+      `${SELECT_WITH_REPLAY} ${page.where()} ORDER BY f.id DESC LIMIT ${PAGE_SIZE + 1}`,
       page.values,
     );
     const { rows: tallies } = await this.accounts.pool.query<{
@@ -157,6 +192,7 @@ export class FeedbackStore {
 
   async detail(id: number): Promise<FeedbackDetail | undefined> {
     await this.accounts.ensureReady();
+    await this.pruneReplays();
     return this.readDetail(this.accounts.pool, id);
   }
 
@@ -316,7 +352,7 @@ export class FeedbackStore {
   }
 
   private async readDetail(db: Queryable, id: number): Promise<FeedbackDetail | undefined> {
-    const { rows } = await db.query<FeedbackRow>(`SELECT ${FEEDBACK_COLUMNS} FROM feedback_reports WHERE id=$1`, [id]);
+    const { rows } = await db.query<FeedbackRecordRow>(`${SELECT_WITH_REPLAY} WHERE f.id=$1`, [id]);
     const row = rows[0];
     if (!row) return undefined;
     const histories = await this.histories(db, [id]);
@@ -383,6 +419,39 @@ export class FeedbackStore {
       client.release();
     }
   }
+
+  /**
+   * Keeps the replay of the reported match with the report. Expired replays are pruned here, at
+   * save time: captures only happen for accepted, rate-limited reports, so this runs rarely and
+   * needs no timer of its own.
+   */
+  async saveReplay(reportId: number, record: ReplayRecord): Promise<void> {
+    await this.accounts.pool.query(
+      "INSERT INTO feedback_report_replays (report_id, record, input_count, created_at) VALUES ($1,$2,$3,$4)",
+      [reportId, JSON.stringify(record), record.inputs.length, this.now()],
+    );
+    await this.pruneReplays();
+  }
+
+  /** The stored replay of a report, or undefined when it has none (or it has expired). */
+  async replay(reportId: number): Promise<ReplayRecord | undefined> {
+    await this.accounts.ensureReady();
+    await this.pruneReplays();
+    const { rows } = await this.accounts.pool.query<{ record: ReplayRecord | string }>(
+      "SELECT record FROM feedback_report_replays WHERE report_id=$1",
+      [reportId],
+    );
+    const record = rows[0]?.record;
+    return typeof record === "string" ? (JSON.parse(record) as ReplayRecord) : record;
+  }
+
+  /** Deletes replays older than the retention window; returns how many went. */
+  async pruneReplays(): Promise<number> {
+    const { rowCount } = await this.accounts.pool.query("DELETE FROM feedback_report_replays WHERE created_at < $1", [
+      this.now() - this.replayRetentionMs,
+    ]);
+    return rowCount ?? 0;
+  }
 }
 
 /** Builds a WHERE clause with numbered placeholders from `?` markers. */
@@ -412,7 +481,7 @@ class Conditions {
   }
 }
 
-function toRecord(row: FeedbackRow): FeedbackRecord {
+function toRecord(row: FeedbackRecordRow): FeedbackRecord {
   return {
     id: row.id,
     report: row.report,
@@ -428,6 +497,8 @@ function toRecord(row: FeedbackRow): FeedbackRecord {
     hasReporterAccount: row.reporter_account_id !== null,
     reopenedAt: row.reopened_at === null ? null : Number(row.reopened_at),
     confirmedBug: row.confirmed_bug,
+    hasReplay: row.input_count !== null,
+    replayInputs: row.input_count,
   };
 }
 

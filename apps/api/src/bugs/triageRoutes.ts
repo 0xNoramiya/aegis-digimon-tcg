@@ -77,6 +77,25 @@ export function installFeedbackTriageRoutes({ app, store, session }: FeedbackTri
     }),
   );
 
+  // The private replay saved with a report: both decks and every action, so admins only.
+  app.get(
+    ["/admin/feedback/:id/replay", "/account/admin/feedback/:id/replay"],
+    route(async (req, res) => {
+      if (!(await admin(req, res))) return;
+      const id = parseId(req.params.id);
+      if (id === undefined) {
+        res.status(400).json({ error: "invalid_id" });
+        return;
+      }
+      const record = await store.replay(id);
+      if (!record) {
+        res.status(404).json({ error: "replay_not_found" });
+        return;
+      }
+      res.json(record);
+    }),
+  );
+
   app.patch(
     ["/admin/feedback/:id", "/account/admin/feedback/:id"],
     route(async (req, res) => {
