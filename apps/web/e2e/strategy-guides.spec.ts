@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { test, expect, type Page } from "@playwright/test";
+import { PracticePage } from "./practice-page";
 
 interface Guide {
   slug: string;
@@ -43,7 +44,7 @@ test.beforeAll(() => {
 
 for (const width of [390, 1440]) {
   for (const colorScheme of ["light", "dark"] as const) {
-    test(`published guides reach the guest lobby at ${width}px in ${colorScheme} mode`, async ({
+    test(`published guides start guest practice at ${width}px in ${colorScheme} mode`, async ({
       page,
       request,
     }, testInfo) => {
@@ -80,6 +81,7 @@ for (const width of [390, 1440]) {
       const fundamentals = catalog.find((guide) => guide.slug === "fundamentals")!;
       await guidePage.open(fundamentals);
       await guidePage.openPractice(fundamentals.slug);
+      await new PracticePage(page).startMatch();
       expect(errors).toEqual([]);
     });
   }
