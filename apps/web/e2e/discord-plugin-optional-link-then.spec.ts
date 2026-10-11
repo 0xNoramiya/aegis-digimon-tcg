@@ -21,7 +21,9 @@ test("Discord plug-in: the Then part resolves with or without the optional link"
 
   const prompts: string[] = [];
   for (const [index, acceptLink] of [false, true].entries()) {
-    const plugInCard = page.getByTestId("hand").getByRole("button", { name: "Select High-Speed Plug-In H", exact: true });
+    const plugInCard = page
+      .getByTestId("hand")
+      .getByRole("button", { name: "Select High-Speed Plug-In H", exact: true });
     await plugInCard.first().focus();
     await plugInCard.first().press("Enter");
     await page.getByRole("button", { name: "Play Option", exact: true }).click();

@@ -119,7 +119,9 @@ describe("P-046 Wizardmon — KB Q&A rulings", () => {
     s.state.memory = 5;
     await s.ready();
 
-    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({ ok: true });
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
+      ok: true,
+    });
     await settle(
       () =>
         s.state.players[0]!.trash.some((card) => card.instanceId === s.inst("option").instanceId) &&

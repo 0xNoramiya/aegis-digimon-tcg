@@ -158,7 +158,12 @@ describe("P-109 Imperialdramon: Dragon Mode — KB Q&A rulings", () => {
     const preferred: string[] = [];
     const s = setupEngine(
       {
-        0: { hand: [{ card: "P-109", as: "dragon" }, { card: "BT1-009", as: "small" }] },
+        0: {
+          hand: [
+            { card: "P-109", as: "dragon" },
+            { card: "BT1-009", as: "small" },
+          ],
+        },
         1: { battleArea: [{ card: "BT1-010", as: "opponent" }] },
       },
       { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred },

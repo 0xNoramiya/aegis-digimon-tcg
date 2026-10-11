@@ -10,12 +10,7 @@ import {
 } from "@aegis/shared";
 import { cite } from "./_kb.js";
 import "./not-testable.js";
-import {
-  setupEngine as setup,
-  makeInstance as instance,
-  makeDigimon as digimon,
-  settle,
-} from "../testkit/harness.js";
+import { setupEngine as setup, makeInstance as instance, makeDigimon as digimon, settle } from "../testkit/harness.js";
 import { observe } from "../testkit/observe.js";
 import { GameStateAccess } from "../state/access.js";
 import { ModifierLedger } from "../effects/modifiers.js";
@@ -315,7 +310,6 @@ describe("§15-12-2 Effects That Change Information (comprehensive-0190)", () =>
 });
 
 describe("§15-1-8..15-1-10 Effects (comprehensive-0336)", () => {
-
   // BT4-025 Lobomon (5000 DP) attacks into BT1-020 Groundramon (6000 DP) as a Security Digimon.
   // With BT17-029 Agumon under it, its inherited "[Your Turn] All of your opponent's security
   // Digimon get -3000 DP" applies.
@@ -467,7 +461,6 @@ describe("§15-1-8..15-1-10 Effects (comprehensive-0336)", () => {
 });
 
 describe("§15-15-6 Effects That Can Replace DigiXros Requirements (comprehensive-0205)", () => {
-
   // BT10-111 Shoutmon (King Version): "[On Play] Return 1 card with a DigiXros requirement from
   // your trash to your hand. When DigiXrosing this turn, you may use this Digimon in place of one
   // of the DigiXros requirements." Its On Play returns the DigiXros card this test then plays.
@@ -548,23 +541,20 @@ describe("§15-15-6 Effects That Can Replace DigiXros Requirements (comprehensiv
     expect(s.state.memory).toBe(-5);
   });
 
-  it(
-    "15-15-6-2: the replacing Digimon can't stand in for a 'different card numbers' requirement (BT19-065)",
-    async () => {
-      cite(
-        "comprehensive-0205",
-        "15-15-6-2 an effect that can replace DigiXros requirements can't replace a requirement " +
-          "that specifies a card not the same as another; BT10-111 can't fill a slot of BT19-065",
-        COMPREHENSIVE_0205,
-      );
-      const { s, kingInstanceId } = await playKingVersionReturning("BT19-065", [{ card: "BT3-067", as: "tankmon" }]);
-      const memoryBefore = s.state.memory;
+  it("15-15-6-2: the replacing Digimon can't stand in for a 'different card numbers' requirement (BT19-065)", async () => {
+    cite(
+      "comprehensive-0205",
+      "15-15-6-2 an effect that can replace DigiXros requirements can't replace a requirement " +
+        "that specifies a card not the same as another; BT10-111 can't fill a slot of BT19-065",
+      COMPREHENSIVE_0205,
+    );
+    const { s, kingInstanceId } = await playKingVersionReturning("BT19-065", [{ card: "BT3-067", as: "tankmon" }]);
+    const memoryBefore = s.state.memory;
 
-      expect(playWithMaterials(s, [kingInstanceId, s.perm("tankmon").topCard.instanceId])).toEqual({
-        ok: false,
-        reason: "invalid-material",
-      });
-      expect(s.state.memory).toBe(memoryBefore);
-    },
-  );
+    expect(playWithMaterials(s, [kingInstanceId, s.perm("tankmon").topCard.instanceId])).toEqual({
+      ok: false,
+      reason: "invalid-material",
+    });
+    expect(s.state.memory).toBe(memoryBefore);
+  });
 });

@@ -108,11 +108,7 @@ describe("EX12-058 HiAndromon", () => {
       {
         0: {
           hand: [{ card: "EX12-058", as: "hiandromon" }],
-          deck: [
-            { card: "EX12-064", as: "megadramon" },
-            "BT1-009",
-            "BT1-014",
-          ],
+          deck: [{ card: "EX12-064", as: "megadramon" }, "BT1-009", "BT1-014"],
           trash: [{ card: "EX12-054", as: "assemblyMaterial" }],
         },
       },
@@ -126,14 +122,10 @@ describe("EX12-058 HiAndromon", () => {
     });
     await settle(() => s.state.players[0]!.battleArea.some((permanent) => permanent.topCard?.cardId === "EX12-064"));
 
-    const megadramon = s.state.players[0]!.battleArea.find(
-      (permanent) => permanent.topCard?.cardId === "EX12-064",
-    )!;
+    const megadramon = s.state.players[0]!.battleArea.find((permanent) => permanent.topCard?.cardId === "EX12-064")!;
     expect(megadramon.stack.map(({ instanceId }) => instanceId)).toContain(s.inst("assemblyMaterial").instanceId);
     expect(
-      s.decisions.some(
-        ({ req }) => req.kind === "selectCards" && req.options?.assemblyCardId === "EX12-064",
-      ),
+      s.decisions.some(({ req }) => req.kind === "selectCards" && req.options?.assemblyCardId === "EX12-064"),
     ).toBe(true);
   });
 

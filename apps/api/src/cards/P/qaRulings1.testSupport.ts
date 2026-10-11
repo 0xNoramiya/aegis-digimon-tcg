@@ -4,8 +4,19 @@ import { observe } from "../../engine/testkit/observe.js";
 import { validateDecklist, type DecklistValidation } from "../../engine/deckValidation.js";
 
 const FILLER_CARD_IDS = [
-  "BT1-012", "BT1-013", "BT1-014", "BT1-015", "BT1-016", "BT1-017", "BT1-018", "BT1-019",
-  "BT1-020", "BT1-021", "BT1-022", "BT1-023", "BT1-024",
+  "BT1-012",
+  "BT1-013",
+  "BT1-014",
+  "BT1-015",
+  "BT1-016",
+  "BT1-017",
+  "BT1-018",
+  "BT1-019",
+  "BT1-020",
+  "BT1-021",
+  "BT1-022",
+  "BT1-023",
+  "BT1-024",
 ];
 
 /** A 50-card main deck holding `cards` plus four-copy filler of unrelated commons. */

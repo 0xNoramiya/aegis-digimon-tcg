@@ -93,7 +93,9 @@ describe("P-066 Huckmon — KB Q&A rulings", () => {
   it("still adds itself to hand when no opposing Digimon with 4000 DP or less is deleted (Q4170)", async () => {
     const s = await checkHuckmon([{ card: "BT1-009", as: "large", dp: 5000 }]);
 
-    expect(s.state.players[1]!.battleArea.map((permanent) => permanent.permanentId)).toContain(s.perm("large").permanentId);
+    expect(s.state.players[1]!.battleArea.map((permanent) => permanent.permanentId)).toContain(
+      s.perm("large").permanentId,
+    );
     expect(s.state.players[0]!.hand.map((card) => card.instanceId).sort()).toEqual(
       [s.inst("huckmon").instanceId, s.inst("drawn").instanceId].sort(),
     );

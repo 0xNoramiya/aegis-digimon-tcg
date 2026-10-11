@@ -29,9 +29,7 @@ export function DigiXrosCandidateGrid({
 }) {
   const zoneLabel = (zone: DigiXrosCandidate["zone"]): string => t(`overlay.zone.${zone}` as const);
   return items.length === 0 ? (
-    <div style={{ padding: "14px 0", textAlign: "center", fontSize: 13, color: "var(--ds-text-off)" }}>
-      {emptyText}
-    </div>
+    <div style={{ padding: "14px 0", textAlign: "center", fontSize: 13, color: "var(--ds-text-off)" }}>{emptyText}</div>
   ) : (
     <div className="material-prompt__grid">
       {items.map((c) => {

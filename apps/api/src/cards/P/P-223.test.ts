@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { EffectTiming } from "@aegis/shared";
 import { observe } from "../../engine/testkit/observe.js";
-import {
-  runtimeCompiledCard,
-  universalNameAliasesFor,
-} from "../../engine/effects/interpreter.js";
+import { runtimeCompiledCard, universalNameAliasesFor } from "../../engine/effects/interpreter.js";
 import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import "./P-223.js";
@@ -13,11 +10,7 @@ import "./P-206.js";
 
 describe("P-223 Kuzuhamon", () => {
   it("reduces play cost by 4 with three or fewer security cards", () => {
-    expect(
-      runtimeCompiledCard("P-223")!.effects.find(
-        (effect) => effect.trigger === "BeforePayCost",
-      ),
-    ).toMatchObject({
+    expect(runtimeCompiledCard("P-223")!.effects.find((effect) => effect.trigger === "BeforePayCost")).toMatchObject({
       actions: [
         {
           kind: "CostModifier",
@@ -41,18 +34,14 @@ describe("P-223 Kuzuhamon", () => {
   it("uses one matching Onmyōjutsu or Plug-In Option from hand or trash", () => {
     const card = runtimeCompiledCard("P-223")!;
     for (const trigger of ["OnPlay", "WhenDigivolving"] as const) {
-      expect(
-        card.effects.find((effect) => effect.trigger === trigger),
-      ).toMatchObject({
+      expect(card.effects.find((effect) => effect.trigger === trigger)).toMatchObject({
         actions: [
           {
             kind: "UseOptionWithoutCost",
             filter: {
               kind: ["Option"],
               playCostLte: 99,
-              nameOrTrait: [
-                { tokens: ["Onmyōjutsu", "Plug-In"], match: "trait" },
-              ],
+              nameOrTrait: [{ tokens: ["Onmyōjutsu", "Plug-In"], match: "trait" }],
             },
             from: ["hand", "trash"],
             payCost: false,
@@ -82,11 +71,7 @@ describe("P-223 Kuzuhamon", () => {
   });
 
   it("once per turn may play a Pipe Fox Token after a genuine Option use", () => {
-    expect(
-      runtimeCompiledCard("P-223")!.effects.find(
-        (effect) => effect.trigger === "AllTurns",
-      ),
-    ).toMatchObject({
+    expect(runtimeCompiledCard("P-223")!.effects.find((effect) => effect.trigger === "AllTurns")).toMatchObject({
       frequency: "OncePerTurn",
       actions: [
         {
@@ -142,19 +127,9 @@ describe("P-223 engine behavior", () => {
     });
     await settle();
     expect(s.state.memory).toBe(3);
-    expect(
-      s.state.players[0]!.hand.some((card) => card.instanceId === optionId),
-    ).toBe(false);
-    expect(
-      s.state.players[0]!.security.some(
-        (card) => card.instanceId === optionId && card.faceUp,
-      ),
-    ).toBe(true);
-    expect(
-      s.state.players[0]!.battleArea.some((permanent) =>
-        permanent.topCard.cardId.includes("TOKEN"),
-      ),
-    ).toBe(true);
+    expect(s.state.players[0]!.hand.some((card) => card.instanceId === optionId)).toBe(false);
+    expect(s.state.players[0]!.security.some((card) => card.instanceId === optionId && card.faceUp)).toBe(true);
+    expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.cardId.includes("TOKEN"))).toBe(true);
   });
 
   it("allows refusing the optional cost-6 Option use", async () => {
@@ -186,9 +161,7 @@ describe("P-223 engine behavior", () => {
     });
     await settle();
     expect(s.state.memory).toBe(3);
-    expect(
-      s.state.players[0]!.hand.some((card) => card.instanceId === optionId),
-    ).toBe(true);
+    expect(s.state.players[0]!.hand.some((card) => card.instanceId === optionId)).toBe(true);
   });
 
   it("uses the same resident source once per turn and resets after the natural turn handoff", async () => {
@@ -206,11 +179,7 @@ describe("P-223 engine behavior", () => {
             { card: "BT1-085", as: "tamer" },
           ],
           deck: Array.from({ length: 20 }, () => "BT3-059"),
-          security: [
-            { card: "BT3-059" },
-            { card: "BT3-059" },
-            { card: "BT3-059" },
-          ],
+          security: [{ card: "BT3-059" }, { card: "BT3-059" }, { card: "BT3-059" }],
         },
         1: {
           deck: Array.from({ length: 20 }, () => "BT3-059"),
@@ -228,41 +197,25 @@ describe("P-223 engine behavior", () => {
     const secondOptionId = s.inst("secondOption").instanceId;
     const thirdOptionId = s.inst("thirdOption").instanceId;
     const pipeFoxes = () =>
-      s.state.players[0]!.battleArea.filter(
-        (permanent) => permanent.topCard.cardId === "TOKEN-Pipe-Fox",
-      );
+      s.state.players[0]!.battleArea.filter((permanent) => permanent.topCard.cardId === "TOKEN-Pipe-Fox");
     s.state.memory = 10;
     await s.ready();
     const loop = s.engine.startTurnLoop();
     await advance(s.engine).waitForMainPhase(0);
-    expect(
-      s.engine.applyIntent(0, { type: "playCard", instanceId: sourceId }),
-    ).toEqual({ ok: true });
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: sourceId })).toEqual({ ok: true });
     await settle(
       () =>
         pipeFoxes().length === 1 &&
-        s.state.players[0]!.security.some(
-          (card) => card.instanceId === firstOptionId && card.faceUp,
-        ) &&
+        s.state.players[0]!.security.some((card) => card.instanceId === firstOptionId && card.faceUp) &&
         s.state.pendingDecision === undefined,
     );
     const sourcePermanentId = s.perm("kuzuhamon").permanentId;
     expect(s.perm("kuzuhamon").permanentId).toBe(sourcePermanentId);
 
-    expect(
-      s.engine.applyIntent(0, { type: "playCard", instanceId: secondOptionId }),
-    ).toEqual({ ok: true });
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: secondOptionId })).toEqual({ ok: true });
     await settle();
-    expect(
-      s.state.players[0]!.hand.some(
-        (card) => card.instanceId === secondOptionId,
-      ),
-    ).toBe(false);
-    expect(
-      s.state.players[0]!.security.some(
-        (card) => card.instanceId === secondOptionId && card.faceUp,
-      ),
-    ).toBe(true);
+    expect(s.state.players[0]!.hand.some((card) => card.instanceId === secondOptionId)).toBe(false);
+    expect(s.state.players[0]!.security.some((card) => card.instanceId === secondOptionId && card.faceUp)).toBe(true);
     expect(pipeFoxes()).toHaveLength(1);
     expect(s.perm("kuzuhamon").permanentId).toBe(sourcePermanentId);
 
@@ -270,18 +223,12 @@ describe("P-223 engine behavior", () => {
     await advance(s.engine).waitForMainPhase(1);
     advance(s.engine).endMainPhaseIfOpen(1);
     await advance(s.engine).waitForMainPhase(0);
-    expect(
-      s.engine.applyIntent(0, { type: "playCard", instanceId: thirdOptionId }),
-    ).toEqual({ ok: true });
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: thirdOptionId })).toEqual({ ok: true });
     await settle(
       () =>
         pipeFoxes().length === 2 &&
-        !s.state.players[0]!.hand.some(
-          (card) => card.instanceId === thirdOptionId,
-        ) &&
-        s.state.players[0]!.security.some(
-          (card) => card.instanceId === thirdOptionId && card.faceUp,
-        ) &&
+        !s.state.players[0]!.hand.some((card) => card.instanceId === thirdOptionId) &&
+        s.state.players[0]!.security.some((card) => card.instanceId === thirdOptionId && card.faceUp) &&
         s.state.pendingDecision === undefined,
     );
     expect(s.perm("kuzuhamon").permanentId).toBe(sourcePermanentId);
@@ -295,9 +242,7 @@ describe("P-223 engine behavior", () => {
 describe("P-223 Kuzuhamon — KB Q&A rulings", () => {
   type Setup = ReturnType<typeof setupEngine>;
   const pipeFoxes = (s: Setup) =>
-    s.state.players[0]!.battleArea.filter(
-      (permanent) => permanent.topCard.cardId === "TOKEN-Pipe-Fox",
-    );
+    s.state.players[0]!.battleArea.filter((permanent) => permanent.topCard.cardId === "TOKEN-Pipe-Fox");
 
   it("plays the Pipe Fox Token only after the used Option's [Main] effect resolved (Q5772)", async () => {
     let optionMainDoneWhenTokenArrived: boolean | undefined;
@@ -320,11 +265,7 @@ describe("P-223 Kuzuhamon — KB Q&A rulings", () => {
         autoSelectCards: true,
         autoChooseOption: true,
         onEvent: () => {
-          if (
-            optionMainDoneWhenTokenArrived !== undefined ||
-            pipeFoxes(s).length === 0
-          )
-            return;
+          if (optionMainDoneWhenTokenArrived !== undefined || pipeFoxes(s).length === 0) return;
           const optionId = s.inst("option").instanceId;
           optionMainDoneWhenTokenArrived = s.state.players[0]!.security.some(
             (card) => card.instanceId === optionId && card.faceUp,
@@ -344,9 +285,7 @@ describe("P-223 Kuzuhamon — KB Q&A rulings", () => {
     ).toEqual({
       ok: true,
     });
-    await settle(
-      () => pipeFoxes(s).length === 1 && s.state.pendingDecision === undefined,
-    );
+    await settle(() => pipeFoxes(s).length === 1 && s.state.pendingDecision === undefined);
 
     expect(optionMainDoneWhenTokenArrived).toBe(true);
     expect(s.engine.applyIntent(0, { type: "surrender" })).toEqual({
@@ -379,16 +318,11 @@ describe("P-223 Kuzuhamon — KB Q&A rulings", () => {
     s.state.memory = 10;
     await s.ready();
 
-    await advance(s.engine).fireForInstance(
-      EffectTiming.SecuritySkill,
-      s.inst("securityOption"),
-    );
+    await advance(s.engine).fireForInstance(EffectTiming.SecuritySkill, s.inst("securityOption"));
     await settle(() => s.state.pendingDecision === undefined);
-    expect(
-      s.state.players[0]!.battleArea.some(
-        (p) => p.topCard.instanceId === s.inst("cheapDigimon").instanceId,
-      ),
-    ).toBe(true);
+    expect(s.state.players[0]!.battleArea.some((p) => p.topCard.instanceId === s.inst("cheapDigimon").instanceId)).toBe(
+      true,
+    );
 
     const delay = observe(s.engine)
       .activatableEffects(s.perm("delayOption"))
@@ -401,11 +335,7 @@ describe("P-223 Kuzuhamon — KB Q&A rulings", () => {
       }),
     ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision === undefined);
-    expect(
-      s.state.players[0]!.battleArea.some(
-        (p) => p.topCard.instanceId === s.inst("tamer").instanceId,
-      ),
-    ).toBe(true);
+    expect(s.state.players[0]!.battleArea.some((p) => p.topCard.instanceId === s.inst("tamer").instanceId)).toBe(true);
 
     expect(pipeFoxes(s)).toHaveLength(0);
 
@@ -417,8 +347,6 @@ describe("P-223 Kuzuhamon — KB Q&A rulings", () => {
     ).toEqual({
       ok: true,
     });
-    await settle(
-      () => pipeFoxes(s).length === 1 && s.state.pendingDecision === undefined,
-    );
+    await settle(() => pipeFoxes(s).length === 1 && s.state.pendingDecision === undefined);
   });
 });

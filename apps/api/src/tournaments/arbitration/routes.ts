@@ -61,7 +61,12 @@ export function installArbitrationRoutes({ app, arbitration, session, limiter }:
         const body = (req.body ?? {}) as { reason?: unknown; commandId?: unknown };
         const reason = typeof body.reason === "string" ? body.reason : "";
         const commandId = typeof body.commandId === "string" && body.commandId ? body.commandId : undefined;
-        const result = await run({ req: req as Request<Record<string, string>>, accountId: auth.account.id, reason, commandId });
+        const result = await run({
+          req: req as Request<Record<string, string>>,
+          accountId: auth.account.id,
+          reason,
+          commandId,
+        });
         if (!result.ok) {
           send(res, result.reason);
           return;

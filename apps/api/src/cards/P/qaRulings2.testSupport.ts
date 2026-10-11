@@ -47,8 +47,7 @@ export async function activateDelay(s: EngineSetup): Promise<void> {
   ).toEqual({ ok: true });
   await settle(
     () =>
-      s.state.players[0]!.trash.some((card) => card.instanceId === trainingId) &&
-      s.state.pendingDecision === undefined,
+      s.state.players[0]!.trash.some((card) => card.instanceId === trainingId) && s.state.pendingDecision === undefined,
   );
   await settle(() => false, 40);
   expect(s.state.pendingDecision).toBeUndefined();
@@ -65,14 +64,18 @@ export function inZone(s: EngineSetup, seat: Seat, zone: "hand" | "trash" | "dec
 export function onField(s: EngineSetup, seat: Seat, alias: string): boolean {
   const instanceId = s.inst(alias).instanceId;
   return s.state.players[seat]!.battleArea.some(
-    (permanent) => permanent.topCard.instanceId === instanceId || permanent.stack.some((card) => card.instanceId === instanceId),
+    (permanent) =>
+      permanent.topCard.instanceId === instanceId || permanent.stack.some((card) => card.instanceId === instanceId),
   );
 }
 
 /** Every id any decision offered since the setup began. */
 export function everOffered(s: EngineSetup): Set<string> {
   return new Set(
-    s.decisions.flatMap(({ req }) => [...(req.options?.candidateInstanceIds ?? []), ...(req.options?.visibleInstanceIds ?? [])]),
+    s.decisions.flatMap(({ req }) => [
+      ...(req.options?.candidateInstanceIds ?? []),
+      ...(req.options?.visibleInstanceIds ?? []),
+    ]),
   );
 }
 
@@ -105,7 +108,10 @@ export async function expectDelayCannotUseHandMainRoute(
   cards: { host: string; tamer: string; material: string; target: string },
 ): Promise<void> {
   const s = await setupTraining(trainingId, {
-    battleArea: [{ card: cards.host, as: "host" }, { card: cards.tamer, as: "tamer" }],
+    battleArea: [
+      { card: cards.host, as: "host" },
+      { card: cards.tamer, as: "tamer" },
+    ],
     trash: [{ card: cards.material, as: "material" }],
     hand: [{ card: cards.target, as: "target" }],
   });
@@ -119,7 +125,11 @@ export async function expectDelayCannotUseHandMainRoute(
 }
 
 /** The ＜Delay＞ digivolves Digimon only: a Tamer is never offered as the digivolving permanent. */
-export async function expectDelayIgnoresTamers(trainingId: string, tamerId: string, tamerDigimonId: string): Promise<void> {
+export async function expectDelayIgnoresTamers(
+  trainingId: string,
+  tamerId: string,
+  tamerDigimonId: string,
+): Promise<void> {
   const s = await setupTraining(trainingId, {
     battleArea: [{ card: tamerId, as: "tamer" }],
     hand: [{ card: tamerDigimonId, as: "target" }],
@@ -150,7 +160,11 @@ export async function expectDelayMayDecline(trainingId: string, hostId: string, 
 }
 
 /** A same-color card whose printed requirements the host fails is not a legal ＜Delay＞ target. */
-export async function expectDelayKeepsRequirements(trainingId: string, hostId: string, targetId: string): Promise<void> {
+export async function expectDelayKeepsRequirements(
+  trainingId: string,
+  hostId: string,
+  targetId: string,
+): Promise<void> {
   const s = await setupTraining(trainingId, {
     battleArea: [{ card: hostId, as: "host" }],
     hand: [{ card: targetId, as: "target" }],
@@ -173,7 +187,10 @@ export async function expectDelayDoesNotBurst(
   memoryGainedOnDigivolve = 0,
 ): Promise<void> {
   const s = await setupTraining(trainingId, {
-    battleArea: [{ card: cards.host, as: "host" }, { card: cards.tamer, as: "tamer" }],
+    battleArea: [
+      { card: cards.host, as: "host" },
+      { card: cards.tamer, as: "tamer" },
+    ],
     hand: [{ card: cards.target, as: "target" }],
   });
   await activateDelay(s);
@@ -194,7 +211,10 @@ export async function expectDelayDoesNotDna(
   ordinaryCost: number,
 ): Promise<void> {
   const s = await setupTraining(trainingId, {
-    battleArea: [{ card: cards.first, as: "first" }, { card: cards.second, as: "second" }],
+    battleArea: [
+      { card: cards.first, as: "first" },
+      { card: cards.second, as: "second" },
+    ],
     hand: [{ card: cards.target, as: "target" }],
   });
   await activateDelay(s);
@@ -214,7 +234,9 @@ export async function expectDelayDoesNotDna(
  * card becomes a digivolution card and is trashed like one when the Digimon is deleted.
  */
 export async function expectTamerBecomesDigivolutionCard(tamerId: string, hybridId: string): Promise<void> {
-  const s = setupEngine({ 0: { battleArea: [{ card: tamerId, as: "tamer" }], hand: [{ card: hybridId, as: "hybrid" }] } });
+  const s = setupEngine({
+    0: { battleArea: [{ card: tamerId, as: "tamer" }], hand: [{ card: hybridId, as: "hybrid" }] },
+  });
   s.state.memory = STARTING_MEMORY;
   await s.ready();
   const tamerCardId = s.inst("tamer").instanceId;

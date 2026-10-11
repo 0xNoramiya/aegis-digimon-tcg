@@ -163,7 +163,10 @@ describe("P-047 AeroVeedramon Zero — KB Q&A rulings", () => {
         0: {
           battleArea: [{ card: "AD1-010", as: "base" }, { card: "BT1-089" }],
           hand: [{ card: "P-047", as: "source" }],
-          deck: [{ card: "BT1-009", as: "drawn" }, { card: "BT1-009", as: "trashed" }],
+          deck: [
+            { card: "BT1-009", as: "drawn" },
+            { card: "BT1-009", as: "trashed" },
+          ],
         },
       },
       { autoSelectCards: true },
@@ -177,7 +180,9 @@ describe("P-047 AeroVeedramon Zero — KB Q&A rulings", () => {
         instanceId: s.inst("source").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.pendingDecision === undefined && s.perm("base").currentDP === s.perm("base").baseDP + 3000);
+    await settle(
+      () => s.state.pendingDecision === undefined && s.perm("base").currentDP === s.perm("base").baseDP + 3000,
+    );
 
     expect(s.state.players[0]!.deck).toHaveLength(0);
     expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toEqual([s.inst("trashed").instanceId]);

@@ -65,10 +65,9 @@ test("imports allowlisted English printings the source does not list at all", ()
 });
 
 test("prefers the source's own entry over an allowlisted label", () => {
-  assert.deepEqual(
-    sourceCardArts({ cardNumber: "P-245", AAs: [{ id: "P-245_P1", note: "Source label" }] }),
-    [{ artId: "P-245_P1", imageId: "P-245_P1", label: "Source label" }],
-  );
+  assert.deepEqual(sourceCardArts({ cardNumber: "P-245", AAs: [{ id: "P-245_P1", note: "Source label" }] }), [
+    { artId: "P-245_P1", imageId: "P-245_P1", label: "Source label" },
+  ]);
 });
 
 test("imports errata printings under their plain art ID with their own image", () => {

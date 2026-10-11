@@ -55,7 +55,10 @@ describe("P-028 Pulsemon — KB Q&A rulings", () => {
     const s = setupEngine({
       0: {
         hand: [{ card: "P-028", as: "pulsemon" }],
-        deck: [{ card: "BT1-009", as: "drawn" }, { card: "BT1-009", as: "kept" }],
+        deck: [
+          { card: "BT1-009", as: "drawn" },
+          { card: "BT1-009", as: "kept" },
+        ],
         security: ["BT1-028", "BT1-028", "BT1-028"],
       },
     });

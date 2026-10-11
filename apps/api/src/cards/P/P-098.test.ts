@@ -267,7 +267,9 @@ describe("P-098 Seadramon — KB Q&A rulings", () => {
     const seadramonId = s.inst("seadramon").instanceId;
 
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: seadramonId })).toEqual({ ok: true });
-    await settle(() => s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.instanceId === seadramonId));
+    await settle(() =>
+      s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.instanceId === seadramonId),
+    );
     await settle(() => s.state.pendingDecision === undefined);
 
     const protectedId = s.perm("protected").permanentId;

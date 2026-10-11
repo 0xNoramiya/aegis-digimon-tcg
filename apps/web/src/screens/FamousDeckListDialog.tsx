@@ -16,19 +16,10 @@ import "./famousDeckListDialog.css";
 /* Full-screen look at one card. Lives outside the dialog's portal so it paints
    above the dialog; key events still bubble through React to the dialog, so
    Escape is stopped here to close only the lightbox. */
-function CardLightbox({
-  cardId,
-  onClose,
-}: {
-  cardId: string;
-  onClose: () => void;
-}) {
+function CardLightbox({ cardId, onClose }: { cardId: string; onClose: () => void }) {
   const { t } = useTranslation();
   useEffect(() => {
-    const previousFocus =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     document.getElementById("famous-deck-lightbox")?.focus();
     return () => previousFocus?.focus();
   }, []);
@@ -50,22 +41,10 @@ function CardLightbox({
       onClick={onClose}
       onKeyDown={handleKeyDown}
     >
-      <div
-        className="famous-deck-lightbox__card"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <CardFull
-          cardId={cardId}
-          width={LIGHTBOX_CARD_WIDTH}
-          zoomOnHover={false}
-        />
+      <div className="famous-deck-lightbox__card" onClick={(event) => event.stopPropagation()}>
+        <CardFull cardId={cardId} width={LIGHTBOX_CARD_WIDTH} zoomOnHover={false} />
       </div>
-      <button
-        type="button"
-        className="famous-deck-lightbox__close"
-        aria-label={t("common.close")}
-        onClick={onClose}
-      >
+      <button type="button" className="famous-deck-lightbox__close" aria-label={t("common.close")} onClick={onClose}>
         <Icons.X size={22} />
       </button>
     </div>,
@@ -99,18 +78,11 @@ export function FamousDeckListDialog({
   const [inspectedCardId, setInspectedCardId] = useState<string | null>(null);
 
   return (
-    <Dialog
-      className="famous-deck-dialog"
-      labelledBy="famous-deck-dialog-title"
-      onClose={onClose}
-    >
+    <Dialog className="famous-deck-dialog" labelledBy="famous-deck-dialog-title" onClose={onClose}>
       <header className="famous-deck-dialog__header">
         <div>
           <Eyebrow>{t("lobby.famousDeckEyebrow")}</Eyebrow>
-          <h2
-            id="famous-deck-dialog-title"
-            className="famous-deck-dialog__title"
-          >
+          <h2 id="famous-deck-dialog-title" className="famous-deck-dialog__title">
             {deck.name}
             <span className="famous-deck-dialog__collection">{collection}</span>
           </h2>
@@ -121,25 +93,14 @@ export function FamousDeckListDialog({
             })}
           </p>
         </div>
-        <IconButton
-          variant="ghost"
-          size="sm"
-          label={t("common.close")}
-          onClick={onClose}
-        >
+        <IconButton variant="ghost" size="sm" label={t("common.close")} onClick={onClose}>
           <Icons.X size={18} />
         </IconButton>
       </header>
       <div className="famous-deck-dialog__sections">
         {sections.map((section) => (
-          <section
-            key={section.id}
-            className="famous-deck-dialog__section"
-            aria-label={section.label}
-          >
-            <h3 className="famous-deck-dialog__section-title">
-              {section.label}
-            </h3>
+          <section key={section.id} className="famous-deck-dialog__section" aria-label={section.label}>
+            <h3 className="famous-deck-dialog__section-title">{section.label}</h3>
             <ul className="famous-deck-dialog__cards">
               {section.entries.map(({ cardId, count }) => (
                 <li key={cardId} className="famous-deck-dialog__card">
@@ -152,10 +113,7 @@ export function FamousDeckListDialog({
                     <CardFull cardId={cardId} width={72} zoomOnHover />
                     <span className="famous-deck-dialog__count">×{count}</span>
                   </button>
-                  <span
-                    className="famous-deck-dialog__card-name"
-                    aria-hidden="true"
-                  >
+                  <span className="famous-deck-dialog__card-name" aria-hidden="true">
                     {getCardDefinition(cardId)?.nameEn ?? cardId}
                   </span>
                 </li>
@@ -175,20 +133,11 @@ export function FamousDeckListDialog({
         <Button variant="secondary" icon={Icons.FileText} onClick={onCopy}>
           {t("lobby.copyPreset")}
         </Button>
-        <Button
-          icon={active ? Icons.Check : Icons.Swords}
-          disabled={active}
-          onClick={onUse}
-        >
+        <Button icon={active ? Icons.Check : Icons.Swords} disabled={active} onClick={onUse}>
           {active ? t("deck.active") : t("lobby.useDeck")}
         </Button>
       </footer>
-      {inspectedCardId ? (
-        <CardLightbox
-          cardId={inspectedCardId}
-          onClose={() => setInspectedCardId(null)}
-        />
-      ) : null}
+      {inspectedCardId ? <CardLightbox cardId={inspectedCardId} onClose={() => setInspectedCardId(null)} /> : null}
     </Dialog>
   );
 }

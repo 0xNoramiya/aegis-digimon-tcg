@@ -148,7 +148,10 @@ describe("RB1-010 Siriusmon — KB Q&A rulings", () => {
       {
         0: {
           battleArea: [{ card: "RB1-009", as: "base", suspended: true }],
-          hand: [{ card: "RB1-010", as: "sirius" }, { card: placedCardId, as: "placed" }],
+          hand: [
+            { card: "RB1-010", as: "sirius" },
+            { card: placedCardId, as: "placed" },
+          ],
         },
         1: {
           battleArea: [

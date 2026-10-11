@@ -31,18 +31,19 @@ const [bucket, snapshot] = CARD_IMAGE_ORIGINS;
 test("lists base, errata, and alternate art images but not tokens", (t) => {
   const { source } = fixture(
     t,
-    [
-      { cardId: "BT1-001" },
-      { cardId: "BT16-077", imageId: "BT16-077-Errata" },
-      { cardId: "TOKEN-Familiar" },
-    ],
+    [{ cardId: "BT1-001" }, { cardId: "BT16-077", imageId: "BT16-077-Errata" }, { cardId: "TOKEN-Familiar" }],
     { "BT1-001": [{ artId: "BT1-001_P1", imageId: "BT1-001_P1" }] },
   );
   assert.deepEqual(cardImageIds(source), ["BT1-001", "BT1-001_P1", "BT16-077", "BT16-077-Errata"]);
 });
 
 test("downloads missing images, falling back across origins and to the sample scan", async (t) => {
-  const paths = fixture(t, [{ cardId: "BT1-001" }, { cardId: "BT1-002" }, { cardId: "BT1-003" }, { cardId: "BT1-004" }]);
+  const paths = fixture(t, [
+    { cardId: "BT1-001" },
+    { cardId: "BT1-002" },
+    { cardId: "BT1-003" },
+    { cardId: "BT1-004" },
+  ]);
   mkdirSync(paths.destination, { recursive: true });
   writeFileSync(`${paths.destination}/BT1-004.webp`, "kept");
   const { fetch, requests } = fakeFetch({
@@ -59,8 +60,14 @@ test("downloads missing images, falling back across origins and to the sample sc
   assert.equal(readFileSync(`${paths.destination}/BT1-002.webp`, "utf8").slice(12), "snapshot");
   assert.equal(readFileSync(`${paths.destination}/BT1-003-Sample.webp`, "utf8").slice(12), "sample");
   assert.equal(readFileSync(`${paths.destination}/BT1-004.webp`, "utf8"), "kept");
-  assert.equal(requests.some((url) => url.includes("BT1-004")), false);
-  assert.deepEqual(readdirSync(paths.destination).filter((name) => name.startsWith(".")), []);
+  assert.equal(
+    requests.some((url) => url.includes("BT1-004")),
+    false,
+  );
+  assert.deepEqual(
+    readdirSync(paths.destination).filter((name) => name.startsWith(".")),
+    [],
+  );
 });
 
 test("keeps looking for the real image and replaces the sample once it is published", async (t) => {
@@ -71,7 +78,10 @@ test("keeps looking for the real image and replaces the sample once it is publis
   const before = await syncCardImages({ ...paths, fetch: fakeFetch({}).fetch });
   assert.deepEqual(before, { present: 1, downloaded: 0, missing: ["BT1-002"] });
 
-  const after = await syncCardImages({ ...paths, fetch: fakeFetch({ [`${bucket}/BT1-001.webp`]: webp("real") }).fetch });
+  const after = await syncCardImages({
+    ...paths,
+    fetch: fakeFetch({ [`${bucket}/BT1-001.webp`]: webp("real") }).fetch,
+  });
   assert.deepEqual(after, { present: 0, downloaded: 1, missing: ["BT1-002"] });
   assert.equal(existsSync(`${paths.destination}/BT1-001.webp`), true);
   assert.equal(existsSync(`${paths.destination}/BT1-001-Sample.webp`), false);

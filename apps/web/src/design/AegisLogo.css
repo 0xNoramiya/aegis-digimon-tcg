@@ -18,11 +18,7 @@
   color: transparent;
   font: 800 calc(var(--aegis-logo-size) * 0.75) / 1 var(--ds-font-display);
   letter-spacing: 0.08em;
-  background: linear-gradient(
-    to bottom,
-    var(--ds-on-ink),
-    color-mix(in srgb, var(--ds-ink-accent) 70%, white)
-  );
+  background: linear-gradient(to bottom, var(--ds-on-ink), color-mix(in srgb, var(--ds-ink-accent) 70%, white));
   background-clip: text;
 }
 
