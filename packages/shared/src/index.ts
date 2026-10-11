@@ -18,3 +18,4 @@ export * from "./matchFormat.js";
 export * from "./replays.js";
 export * from "./deckFormat.js";
 export * from "./feedback/index.js";
+export * from "./playtest/index.js";

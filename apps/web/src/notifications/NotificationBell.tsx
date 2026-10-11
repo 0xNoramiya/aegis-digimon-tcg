@@ -48,6 +48,7 @@ export function NotificationBell({
   const select = (notification: AccountNotification) => {
     void inbox.markRead([notification.id]);
     setOpen(false);
+    if (notification.kind !== "feedback_update") return;
     onOpenFeedback(notification.payload.feedbackId);
   };
 
@@ -128,6 +129,7 @@ export function NotificationBell({
 
 function NotificationItem({ notification, onSelect }: { notification: AccountNotification; onSelect: () => void }) {
   const { t, locale } = useTranslation();
+  if (notification.kind !== "feedback_update") return null;
   const { payload } = notification;
   const unread = notification.readAt === null;
   return (
