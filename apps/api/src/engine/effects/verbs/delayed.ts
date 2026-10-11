@@ -7,6 +7,9 @@ import {
   requireCardDefinition,
   CardInstance,
   resolveTokenCardId,
+  getCardDefinition,
+  isTokenDefinition,
+  type PlayerState,
   type Seat,
 } from "@aegis/shared";
 import type { Primitives } from "../EffectContext.js";
@@ -15,6 +18,20 @@ import { normalizeCost, placePermanent } from "../verbs/cardPlacement.js";
 import { looseSourceRootZone } from "../verbs/looseInstances.js";
 
 import type { PrimitivesContext } from "./context.js";
+
+/**
+ * Tokens are the only cards that do not come from a deck, so they are the only way a battle area
+ * grows without bound. The rules set no limit (CR 3-4-8-2). This cap sits far above any real game
+ * and stops a runaway token loop from inflating match state before the loop guard ends it.
+ */
+export const MAX_TOKENS_PER_BATTLE_AREA = 30;
+
+function tokenCount(owner: PlayerState): number {
+  return owner.battleArea.filter((permanent) => {
+    const def = permanent.topCard === undefined ? undefined : getCardDefinition(permanent.topCard.cardId);
+    return def !== undefined && isTokenDefinition(def);
+  }).length;
+}
 
 /**
  * Installing sub-triggers and replacement effects that fire later.
@@ -52,6 +69,8 @@ export function createDelayedVerbs(pc: PrimitivesContext) {
     const cardId = resolveTokenCardId(tokenName);
     if (cardId === undefined) return undefined;
     const def = requireCardDefinition(cardId);
+    const owner = player(seat);
+    if (tokenCount(owner) >= MAX_TOKENS_PER_BATTLE_AREA) return undefined;
     // Digimon tokens obey matching play prohibitions (BT14-017/Q2381). Attribute this effect-driven
     // play to the resolving source seat so the source player's effects retain their normal
     // ability to play into the restricted seat's area (Q4675/Q4676).
@@ -68,7 +87,6 @@ export function createDelayedVerbs(pc: PrimitivesContext) {
     instance.ownerSeat = seat;
     instance.faceUp = true;
 
-    const owner = player(seat);
     const permanent = placePermanent(engine, owner, instance, def, opts?.suspended ?? false);
     for (const keyword of opts?.keywords ?? []) {
       engine.continuous?.addKeywordGrant(
