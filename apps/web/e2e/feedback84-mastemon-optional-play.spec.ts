@@ -3,7 +3,8 @@ import { test, expect } from "./scenario-page";
 const HOST = "dev-perm-0-feedback84-host";
 const YELLOW = "dev-feedback84-yellow";
 const PURPLE = "dev-feedback84-purple";
-const COST_CLAUSE = "By trashing your top security card";
+const COST_CLAUSE =
+  "[When Digivolving] [When Attacking] [Once Per Turn] By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
 const PLAY_CLAUSE =
   "You may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
 

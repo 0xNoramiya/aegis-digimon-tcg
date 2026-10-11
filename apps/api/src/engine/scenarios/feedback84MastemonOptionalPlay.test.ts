@@ -7,7 +7,8 @@ import { observe } from "../testkit/observe.js";
 import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
 import "../../cards/index.js";
 
-const COST_CLAUSE = "By trashing your top security card";
+const COST_CLAUSE =
+  "[When Digivolving] [When Attacking] [Once Per Turn] By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
 const PLAY_CLAUSE =
   "You may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
 

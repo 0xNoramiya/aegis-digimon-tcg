@@ -1207,7 +1207,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
         (ctx.predecidedOptionalCosts?.get(action) ??
           (await ctx.ask.optional(
             paysProcessingCostBeforeOptional && payableActionCost.raw !== undefined
-              ? { ...ctx, activeEffectTextPart: payableActionCost.raw }
+              ? { ...ctx, activeEffectTextPart: ctx.activeEffectText }
               : ctx,
             `Pay cost: ${describeCost(payableActionCost)}?`,
           )));

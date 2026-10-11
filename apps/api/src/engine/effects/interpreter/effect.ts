@@ -611,7 +611,7 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
   const outerTargetFate = ctx.activeTargetFate;
   if (action.effectTextPart !== undefined) ctx.activeEffectTextPart = action.effectTextPart;
   if (costChoice && action.payCostBeforeOptional === true && effectiveCost.raw !== undefined)
-    ctx.activeEffectTextPart = effectiveCost.raw;
+    ctx.activeEffectTextPart = ctx.activeEffectText;
   let chosen: boolean;
   try {
     if (selectionChoice && canPay) {
