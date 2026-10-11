@@ -251,6 +251,7 @@ export interface AegisJoinOptions {
     | "arena-chronomon-engage-order"
     | "arena-raid-immune-atratusmon"
     | "arena-shota-start-main-once"
+    | "arena-heavy-mobile-successive-machines"
     | "arena-heat-training-option-freeze"
     | "arena-crescemon-hexeblaumon-cost"
     | "arena-neptunemon-holy-cost"

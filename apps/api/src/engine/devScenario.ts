@@ -65,6 +65,7 @@ export const DEV_SCENARIO_IDS = [
   ...GITHUB_TIMING_SCENARIO_IDS,
   "arena-raid-immune-atratusmon",
   "arena-shota-start-main-once",
+  "arena-heavy-mobile-successive-machines",
   "arena-heat-training-option-freeze",
   "arena-crescemon-hexeblaumon-cost",
   "arena-neptunemon-holy-cost",
@@ -11161,7 +11162,39 @@ function layGithubEndTurnReportScenario(
   }
 }
 
+/** Discord 1558754612205322250: Rush must already apply when the second Machine processes Blitz. */
+function layHeavyMobileScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
+  prepareIssueScenario(state, decks, 10);
+  for (const player of state.players) {
+    clearBattleArea(player);
+    for (const zone of [Zone.Hand, Zone.Trash, Zone.Deck, Zone.Security, Zone.EggDeck] as const)
+      clearZone(player, zone);
+    for (let i = 0; i < 20; i++)
+      insertCard(player, Zone.Deck, faceDownCard(`heavy-${player.seat}-deck-${i}`, "BT1-009", player.seat));
+    for (let i = 0; i < 5; i++)
+      insertCard(player, Zone.Security, faceDownCard(`heavy-${player.seat}-security-${i}`, "BT1-009", player.seat));
+  }
+  const own = state.players[0]!;
+  for (const player of state.players)
+    insertCard(player, Zone.EggDeck, faceDownCard(`heavy-${player.seat}-egg`, "BT6-005", player.seat));
+  placePermanent(own, establishedDigimon(0, ["BT2-055"], "-heavy-color"));
+  const hand = [
+    "BT9-102",
+    "BT9-029",
+    "EX1-073",
+    "EX1-073",
+    "BT6-013",
+    "BT6-061",
+    "BT6-062",
+    "EX1-048",
+    "EX1-049",
+    "BT6-061",
+  ];
+  hand.forEach((card, index) => insertCard(own, Zone.Hand, faceDownCard(`heavy-hand-${index}`, card, 0)));
+}
+
 const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
+  "arena-heavy-mobile-successive-machines": layHeavyMobileScenario,
   ...(Object.fromEntries(
     CARDS_TURNS_SCENARIO_IDS.map((id) => [
       id,

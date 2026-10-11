@@ -134222,7 +134222,8 @@
               "raw": "by trashing 1 card with [Cyborg] or [Machine] in its traits in your hand"
             },
             "optional": true,
-            "includeLaterEntrants": true
+            "includeLaterEntrants": true,
+            "playerWide": true
           },
           {
             "kind": "GrantStatic",
