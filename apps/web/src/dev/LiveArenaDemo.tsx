@@ -1953,6 +1953,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Discord 1558451244815880332. Encerre a criação. No início da sua fase principal, recuse colocar a carta do topo do deck embaixo de Richard Sampson (EX13-071). A lixeira tem Reppamon (BT1-051) e Chirinmon (BT1-058), então o [Principal] de Richard aparece. Ative e aceite. As 3 cartas viradas para baixo vão para a lixeira. Pela Q7447, escolha o Reppamon (EX13-030) e o Chirinmon (EX13-032) que acabaram de ir para a lixeira. Os dois ficam embaixo de Kudamon (EX13-026), que digivolve em Kentaurosmon (BT3-043) por 2 de memória. BT1-051 e BT1-058 ficam na lixeira.",
     en: "Discord 1558451244815880332. End breeding. At the start of your main phase, decline to place your deck's top card under Richard Sampson (EX13-071). Your trash has Reppamon (BT1-051) and Chirinmon (BT1-058), so Richard's [Main] is offered. Activate it and accept. The 3 face-down cards go to the trash. Per Q7447, choose the Reppamon (EX13-030) and Chirinmon (EX13-032) you just trashed. Both go under Kudamon (EX13-026), which digivolves into Kentaurosmon (BT3-043) for 2 memory. BT1-051 and BT1-058 stay in the trash.",
   },
+  "arena-feedback80-savior-option-cost": {
+    en: "End Breeding, then evolve the white EX13-066 into SaviorHuckmon for 3. Use Divine Pierce (Awakened) for 2 (5 minus 3), play Sistermon Blanc from trash and accept Arts Digivolve for free. Huckmon later gains 1; the turn passes with opponent memory 4. Refusing Savior leaves the Option in hand and passes with 3. Refusing Arts trashes the paid Option instead.",
+    ptBR: "Encerre a Criação e evolua EX13-066 em SaviorHuckmon por 3. Use Divine Pierce (Awakened) por 2 (5 menos 3), jogue Sistermon Blanc do descarte e aceite Arts Digivolve sem custo. Huckmon ganha 1 depois; o turno passa com 4 para o oponente. Recusar Savior mantém a Opção na mão e passa com 3. Recusar Arts descarta a Opção já paga.",
+  },
   "arena-feedback79-execute-replacement": {
     en: "Play Giant Slayer with all five Assembly materials. Accept Cherubimon's Rush/Execute grant, attack security, decline Barrier, and accept Giant Slayer's free evolution into Destroy Mode. Omnimon blocks the battle, whose deletion is prevented. Execute then attempts a separate deletion: accept Holy Mode's top-security return to keep the seven-card stack, or decline it to delete the stack and trigger Omnimon's actual-leave effect. Decline all unrelated optional effects.",
     ptBR: "Jogue Giant Slayer com os cinco materiais de Assembly. Aceite Rush/Execute de Cherubimon, ataque a segurança, recuse Barrier e aceite a evolução gratuita para Destroy Mode. Omnimon bloqueia a batalha, cuja deleção é evitada. Execute tenta outra deleção: aceite devolver o topo da segurança por Holy Mode para manter as sete cartas, ou recuse para deletar a pilha e ativar a saída real de Omnimon. Recuse os outros efeitos opcionais.",
@@ -3608,6 +3612,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
     "Discord · EX13 Richard Sampson · [Main] stacks the cards it just trashed",
   ],
   ["arena-feedback73-magnaangemon-decision", "Feedback 73 · MagnaAngemon recovery and target choice"],
+  ["arena-feedback80-savior-option-cost", "Feedback 80 · Savior Option use discount"],
   ["arena-feedback79-execute-replacement", "Feedback 79 · Separate Execute deletion"],
   ["arena-feedback79-ordinary-replacement", "Feedback 79 · Ordinary battle prevention"],
   ["arena-feedback78-main-crossed", "Feedback 78 · Crossed-memory Main boundary"],
