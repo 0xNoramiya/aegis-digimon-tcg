@@ -6,6 +6,7 @@ for (const accept of [true, false]) {
     page,
   }) => {
     await scenario.open("arena-feedback90-davis-ken-sources");
+    await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     await scenario.play("Davis Motomiya & Ken Ichijoji", "Tamer");
     await scenario.resolveUntil(
       (s) => s.players[0]!.battleArea.some((p) => p.topCard.instanceId === "feedback90-tamer") && !s.pendingDecision,
