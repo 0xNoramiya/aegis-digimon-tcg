@@ -2361,6 +2361,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Wisdom Training está no campo desde um turno anterior e você não tem Digimon. Ative o ＜Delay＞: a carta vai para o lixo e o efeito não faz nada.",
     en: "Wisdom Training has been in the battle area since an earlier turn and you have no Digimon. Activate its ＜Delay＞: the card goes to the trash and the effect does nothing.",
   },
+  "arena-feedback42-parkour-sequential": {
+    en: "Feedback #42: breeding skips automatically with the existing egg. Use one Parkour Training. Select Davis Motomiya & Ken Ichijoji. Memory goes 8→6 and Parkour stays in the battle area. The second copy is unavailable: the blue egg supplies no green, and placed Options do not supply colors. Play the revealed Tamer for 4 (6→2), then use the second Parkour for 2 (2→0), selecting Elecmon. Both copies remain in play; neither can Delay this turn. The extra starting memory is a positive control; in the report, playing the Tamer at 0 passed the turn.",
+    ptBR: "Feedback #42: a criação é pulada automaticamente com o ovo já presente. Use um Parkour Training. Escolha Davis Motomiya & Ken Ichijoji. A memória vai de 8 para 6 e Parkour fica no campo. A segunda cópia fica indisponível: o ovo azul não fornece verde e Options no campo não fornecem cores. Jogue o Tamer revelado por 4 (6→2), depois use o segundo Parkour por 2 (2→0), escolhendo Elecmon. As duas cópias ficam no campo e nenhuma pode usar Delay neste turno. A memória inicial extra permite o controle positivo; no relato, jogar o Tamer com 0 passou o turno.",
+  },
   "arena-github5306-training-use-memory": {
     ptBR: "#5306: controle do comportamento atual. Encerre a criação com 1 de memória e use Treadmill Training da mão. O custo 2 leva a memória a 1 do oponente antes da escolha. Escolha Reppamon entre as duas cartas reveladas; Muchomon vai para o fundo e Training fica no campo. Após resolver tudo, o turno passa ao oponente com 1. O Delay não pode ser ativado no turno em que Training foi colocado.",
     en: "#5306: current-behavior control. End breeding at 1 memory and use Treadmill Training from hand. Its cost of 2 moves memory to the opponent's 1 before the selection. Choose Reppamon among the two revealed cards; Muchomon goes to the bottom and Training stays in play. After everything resolves, the opponent's turn starts at 1. Delay cannot activate on the turn Training was placed.",
@@ -3362,6 +3366,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex5-attack-priority", "EX5 Etemon · attack trigger priority"],
   ["arena-ex5-biting-crush-delay", "EX5 Biting Crush · Delay on effect play"],
   ["arena-p108-training-delay-no-target", "P-108 Wisdom Training · Delay with no target"],
+  ["arena-feedback42-parkour-sequential", "Feedback #42 · Parkour Training sequential colors"],
   ["arena-github5306-training-use-memory", "#5306 Treadmill Training · use cost and turn pass"],
   ["arena-github5306-training-delay-paid", "#5306 Treadmill Training · Delay pays 1"],
   ["arena-github5306-training-delay-free", "#5306 Treadmill Training · Delay costs 0"],
