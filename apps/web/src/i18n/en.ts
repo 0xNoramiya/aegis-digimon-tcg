@@ -2038,6 +2038,17 @@ export const en = {
   "bugReport.error.tooManyRequests": "You sent a lot in a short time. Try again in a minute.",
   "bugReport.error.unavailable": "Feedback is unavailable right now. Tell us on Discord instead.",
   "bugReport.error.generic": "Could not send your feedback. Try again.",
+  "bugReport.playtest.join": "Join the playtest group",
+  "bugReport.playtest.hint":
+    "We may invite you to short interviews and usability studies that shape the game's design and roadmap. You can leave any time from your profile.",
+  "bugReport.playtest.saveFailed":
+    "Your report was sent, but we could not save your playtest group choice. Change it from your profile.",
+  "profile.playtest.title": "Playtest group",
+  "profile.playtest.label": "Playtest group",
+  "profile.playtest.desc":
+    "Get invited to short interviews and usability studies that shape the game's design and roadmap.",
+  "profile.playtest.since": "Member since {date}",
+  "profile.playtest.failed": "Could not update your playtest group membership. Try again.",
   "library.artworks": "Artwork",
   "library.baseArt": "Original",
   "library.alternateArt": "Alternate {number}",

@@ -1687,6 +1687,17 @@ const interfaceMessages = {
   "bugReport.error.tooManyRequests": "Hai inviato molte segnalazioni in poco tempo. Riprova tra un minuto.",
   "bugReport.error.unavailable": "Il feedback non è disponibile ora. Scrivici su Discord.",
   "bugReport.error.generic": "Impossibile inviare il feedback. Riprova.",
+  "bugReport.playtest.join": "Unisciti al gruppo di playtest",
+  "bugReport.playtest.hint":
+    "Potremmo invitarti a brevi interviste e studi di usabilità che guidano il design e la roadmap del gioco. Puoi uscire in qualsiasi momento dal tuo profilo.",
+  "bugReport.playtest.saveFailed":
+    "La tua segnalazione è stata inviata, ma non siamo riusciti a salvare la tua scelta sul gruppo di playtest. Modificala dal tuo profilo.",
+  "profile.playtest.title": "Gruppo di playtest",
+  "profile.playtest.label": "Gruppo di playtest",
+  "profile.playtest.desc":
+    "Ricevi inviti a brevi interviste e studi di usabilità che guidano il design e la roadmap del gioco.",
+  "profile.playtest.since": "Membro dal {date}",
+  "profile.playtest.failed": "Impossibile aggiornare la tua adesione al gruppo di playtest. Riprova.",
   "library.artworks": "Illustrazione",
   "library.baseArt": "Originale",
   "library.alternateArt": "Alternativa {number}",

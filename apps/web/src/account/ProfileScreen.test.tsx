@@ -105,6 +105,7 @@ beforeEach(() => {
   stage.id = "aegis-stage";
   document.body.append(stage);
   vi.spyOn(accountApi, "profile").mockResolvedValue(PROFILE);
+  vi.spyOn(accountApi, "playtest").mockResolvedValue({ member: false, since: null });
 });
 afterEach(() => {
   cleanup();

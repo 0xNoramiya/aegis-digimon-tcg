@@ -234,3 +234,63 @@ describe("the feedback modal", () => {
     });
   });
 });
+
+describe("the playtest group opt-in", () => {
+  it("is not offered to a visitor without an account", () => {
+    mockApi({});
+    renderDialog(false);
+    expect(screen.queryByLabelText("Join the playtest group")).toBeNull();
+  });
+
+  it("is pre-checked for a member and saves the change after the report is sent", async () => {
+    const fetchMock = mockApi({
+      "GET /account/playtest": { body: { member: true, since: 1 } },
+      "PUT /account/playtest": { body: { member: false, since: null } },
+      "POST /bug-reports": { status: 201, body: { number: 7 } },
+    });
+    renderDialog(true);
+    const box = (await screen.findByLabelText("Join the playtest group")) as HTMLInputElement;
+    expect(box.checked).toBe(true);
+    fireEvent.click(box);
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "x" } });
+    fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "y" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    await screen.findByText("Feedback sent");
+    await waitFor(() => {
+      const put = fetchMock.mock.calls.find(([, init]) => init?.method === "PUT");
+      expect(put).toBeTruthy();
+      expect(JSON.parse(String(put![1]?.body))).toEqual({ member: false });
+    });
+    const order = fetchMock.mock.calls.map(([, init]) => init?.method ?? "GET");
+    expect(order.indexOf("POST")).toBeLessThan(order.indexOf("PUT"));
+  });
+
+  it("does not call the opt-in when nothing changed", async () => {
+    const fetchMock = mockApi({
+      "GET /account/playtest": { body: { member: false, since: null } },
+      "POST /bug-reports": { status: 201, body: { number: 7 } },
+    });
+    renderDialog(true);
+    await screen.findByLabelText("Join the playtest group");
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "x" } });
+    fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "y" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    await screen.findByText("Feedback sent");
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === "PUT")).toBe(false);
+  });
+
+  it("keeps the report's success when saving the opt-in fails", async () => {
+    mockApi({
+      "GET /account/playtest": { body: { member: false, since: null } },
+      "PUT /account/playtest": { status: 500, body: {} },
+      "POST /bug-reports": { status: 201, body: { number: 7 } },
+    });
+    renderDialog(true);
+    fireEvent.click(await screen.findByLabelText("Join the playtest group"));
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "x" } });
+    fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "y" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    expect(await screen.findByText("Feedback sent")).toBeTruthy();
+    expect(await screen.findByText(/could not save your playtest group choice/i)).toBeTruthy();
+  });
+});

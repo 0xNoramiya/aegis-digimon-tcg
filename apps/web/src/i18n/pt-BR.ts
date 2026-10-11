@@ -2069,6 +2069,17 @@ export const ptBR: Record<keyof typeof en, string> = {
   "bugReport.error.tooManyRequests": "Muitos envios em pouco tempo. Tente de novo em um minuto.",
   "bugReport.error.unavailable": "Não dá para enviar feedback agora. Nos avise pelo Discord.",
   "bugReport.error.generic": "Não foi possível enviar seu feedback. Tente novamente.",
+  "bugReport.playtest.join": "Entrar no grupo de playtest",
+  "bugReport.playtest.hint":
+    "Podemos convidar você para entrevistas curtas e estudos de usabilidade que orientam o design e o roadmap do jogo. Você pode sair a qualquer momento pelo seu perfil.",
+  "bugReport.playtest.saveFailed":
+    "Seu relato foi enviado, mas não conseguimos salvar sua escolha do grupo de playtest. Altere pelo seu perfil.",
+  "profile.playtest.title": "Grupo de playtest",
+  "profile.playtest.label": "Grupo de playtest",
+  "profile.playtest.desc":
+    "Receba convites para entrevistas curtas e estudos de usabilidade que orientam o design e o roadmap do jogo.",
+  "profile.playtest.since": "Membro desde {date}",
+  "profile.playtest.failed": "Não foi possível atualizar sua participação no grupo de playtest. Tente de novo.",
   "library.artworks": "Artes",
   "library.baseArt": "Original",
   "library.alternateArt": "Alternativa {number}",

@@ -1996,6 +1996,17 @@ export const es: Record<keyof typeof en, string> = {
   "bugReport.error.tooManyRequests": "Enviaste mucho en poco tiempo. Inténtalo de nuevo en un minuto.",
   "bugReport.error.unavailable": "No se pueden enviar comentarios ahora. Avísanos por Discord.",
   "bugReport.error.generic": "No se pudieron enviar tus comentarios. Inténtalo de nuevo.",
+  "bugReport.playtest.join": "Unirme al grupo de playtest",
+  "bugReport.playtest.hint":
+    "Podemos invitarte a entrevistas breves y estudios de usabilidad que orientan el diseño y la hoja de ruta del juego. Puedes salir cuando quieras desde tu perfil.",
+  "bugReport.playtest.saveFailed":
+    "Tu reporte se envió, pero no pudimos guardar tu elección del grupo de playtest. Cámbiala desde tu perfil.",
+  "profile.playtest.title": "Grupo de playtest",
+  "profile.playtest.label": "Grupo de playtest",
+  "profile.playtest.desc":
+    "Recibe invitaciones a entrevistas breves y estudios de usabilidad que orientan el diseño y la hoja de ruta del juego.",
+  "profile.playtest.since": "Miembro desde {date}",
+  "profile.playtest.failed": "No se pudo actualizar tu participación en el grupo de playtest. Inténtalo de nuevo.",
   "library.artworks": "Arte",
   "library.baseArt": "Original",
   "library.alternateArt": "Alternativo {number}",
