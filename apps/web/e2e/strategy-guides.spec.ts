@@ -58,7 +58,7 @@ for (const width of [390, 1440]) {
       expect(robotsResponse.headers()["content-type"]).toContain("text/plain");
       const sitemapDirective = (await robotsResponse.text()).match(/^Sitemap:\s*(https:\/\/\S+)$/m);
       expect(sitemapDirective).not.toBeNull();
-      const sitemapURL = new URL(sitemapDirective![1]);
+      const sitemapURL = new URL(sitemapDirective![1]!);
       expect(sitemapURL.pathname).toBe("/strategy-guides/sitemap.xml");
       const sitemapResponse = await request.get(sitemapURL.pathname);
       expect(sitemapResponse.status()).toBe(200);
