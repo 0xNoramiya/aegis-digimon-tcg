@@ -186,3 +186,18 @@ The failing route-matrix tooling test reproduced before updating its fingerprint
 These changes add no play or digivolution recipient zone and no DNA, App Fusion or Burst provider. The 22 covered cells and eight reviewed catalog absences retain their classifications. The reviewed catalog fingerprint moves from `b848b89fe6516605f313ca0fcc696c7ba209decdb1afb62afd0860732d923d62` to `f445cf491742ba36ac351efdd554b279995f85500fba26b9f3195f7b6e398491`; rule fingerprints and scenario proof statuses remain unchanged.
 
 Verification: all 67 tooling tests pass under Node 26.5.0, including the original failing obligation check and catalog/rule drift guards. The obligation inventory check, all 535 pinned conformance citations and the 66-set audit index check pass.
+
+### Catalog review after Digivolve requirement fixes (2026-10-11)
+
+The obligation test reproduced the catalog-drift failure before this review: 15 tests passed and `representative reviewed clauses keep proof only while exact source stays current` failed. The matrix fingerprint matches the catalog reviewed in `928f306a5`; the field-by-field comparison from that revision to the current catalog finds exactly two changed `effectText` fields introduced by `93719c1b1`:
+
+- BT21-038 Deramon's alternate requirement changes from a level-3 [WG] Digimon for cost 2 to a level-4 [WG] Digimon for cost 3. Its Evade, unsuspend effect and inherited attack-target restriction are unchanged.
+- P-140 MegaKabuterimon's alternate requirement changes from [Insectoid] in the source's name to the [Insectoid] trait, retaining level 4 and cost 3. Its protection effect and inherited security-trash effect are unchanged.
+
+All 4,480 card IDs, every other catalog field, all inherited texts and all security texts are unchanged. Neither corrected requirement instructs a play or digivolution by effect, changes a recipient source zone, or changes a provider/recipient used by the 22 covered cells. ST23-05's implementation correction in the same commit does not change the catalog or any matrix seed.
+
+Rechecking all three effect-text fields finds the same 134 DNA-matching fields, 38 App Fusion-matching fields and five Burst-matching fields, with identical full text to the reviewed catalog. The reviewed provider conclusions therefore remain valid: BT17-101 selects itself from trash; the DNA candidates using trash materials still select the result from hand; the seven explicit App Fusion providers select six hand targets and BT24-087's trash target; the Burst matches describe requirements/reminders rather than effect instructions. No new provider targets the eight excluded recipient routes.
+
+The 22 covered cells, eight absence classifications, candidate lists, scenario evidence and rule-source fingerprint are preserved. After this bounded provider/exclusion review, the catalog fingerprint moves from `39a12bc2101da115533d7775cdc3062fedcbeec17781347c8e7d5f0e2ee2dd02` to `8edd8d1375831988c9bec8980c0f1348dc4e3d1e3733e117d947fba9eb61d84a`. Catalog drift and automatic-refresh safeguards remain enforced.
+
+Verification under Node 26.5.0 and pnpm 10.30.1: all 66 tooling tests pass, including the original failing test and catalog/rule drift guards. `pnpm verify:simulator` passes the shared build, API typecheck, 100 API verification tests, 22 rules-tool tests, obligation inventory check and all 536 pinned citations. Its final lint step fails on an existing unused `ANIMATION_SPEED_CHANNEL` import in `apps/web/src/game/useAnimationSpeedReport.ts:2`, outside this change. Formatting checks for the two changed review files and `git diff --check` pass. This run does not replay the full route scenario scope or deploy a fix.
