@@ -23,6 +23,8 @@ jobs:
           node-version: "26"
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Quality gate
+        run: pnpm check
       - name: Install rules PDF extractor
         run: sudo apt-get update && sudo apt-get install -y poppler-utils
       - name: Fast pull request checks

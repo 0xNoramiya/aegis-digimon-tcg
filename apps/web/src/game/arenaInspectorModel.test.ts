@@ -7,7 +7,9 @@ describe("separatedEffectClauses", () => {
       separatedEffectClauses(
         "(it becomes the attack target).[On Play] [When Digivolving] the [Machine]/[Cyborg]&#160;trait.[Your Turn] Attack.",
       ),
-    ).toBe("(it becomes the attack target).\n[On Play] [When Digivolving] the [Machine]/[Cyborg] trait.\n[Your Turn] Attack.");
+    ).toBe(
+      "(it becomes the attack target).\n[On Play] [When Digivolving] the [Machine]/[Cyborg] trait.\n[Your Turn] Attack.",
+    );
   });
 
   it("breaks lines after keywords and spaced sentences", () => {

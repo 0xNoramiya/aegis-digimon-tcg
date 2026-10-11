@@ -1,0 +1,118 @@
+import type { ScenarioFixture } from "../scenario/types.js";
+import { dealtCards } from "../scenario/dealtCards.js";
+import { BLUE_DECK, RED_DECK } from "../testDecks.js";
+
+const fixture: ScenarioFixture = {
+  name: "chronomon-engage-order",
+  board: {
+    "0": {
+      hand: [
+        { card: "BT26-015", as: "engage-buten-card", faceUp: false },
+        { card: "BT26-016", as: "engage-holy-card", faceUp: false },
+        { card: "BT1-009", as: "engage-filler-0-card", faceUp: false },
+        { card: "BT1-009", as: "engage-filler-1-card", faceUp: false },
+        { card: "BT1-009", as: "engage-filler-2-card", faceUp: false },
+        { card: "BT1-009", as: "engage-filler-3-card", faceUp: false },
+        { card: "BT1-009", as: "engage-filler-4-card", faceUp: false },
+        { card: "BT1-009", as: "engage-filler-5-card", faceUp: false },
+      ],
+      deck: [
+        { card: "BT1-009", as: "engage-deck-0-0-card" },
+        { card: "BT1-009", as: "engage-deck-0-1-card" },
+        { card: "BT1-009", as: "engage-deck-0-2-card" },
+        { card: "BT1-009", as: "engage-deck-0-3-card" },
+        { card: "BT1-009", as: "engage-deck-0-4-card" },
+        { card: "BT1-009", as: "engage-deck-0-5-card" },
+        { card: "BT1-009", as: "engage-deck-0-6-card" },
+        { card: "BT1-009", as: "engage-deck-0-7-card" },
+        { card: "BT1-009", as: "engage-deck-0-8-card" },
+        { card: "BT1-009", as: "engage-deck-0-9-card" },
+        { card: "BT1-009", as: "engage-deck-0-10-card" },
+        { card: "BT1-009", as: "engage-deck-0-11-card" },
+        { card: "BT1-009", as: "engage-deck-0-12-card" },
+        { card: "BT1-009", as: "engage-deck-0-13-card" },
+        { card: "BT1-009", as: "engage-deck-0-14-card" },
+        { card: "BT1-009", as: "engage-deck-0-15-card" },
+        { card: "BT1-009", as: "engage-deck-0-16-card" },
+        { card: "BT1-009", as: "engage-deck-0-17-card" },
+        { card: "BT1-009", as: "engage-deck-0-18-card" },
+        { card: "BT1-009", as: "engage-deck-0-19-card" },
+      ],
+      eggDeck: dealtCards({ deck: BLUE_DECK, seat: 0, indices: [0, 1, 2, 3, 4], egg: true, aliasOffset: 50 }),
+      trash: [
+        { card: "BT1-009", as: "engage-trash-0-card" },
+        { card: "BT1-009", as: "engage-trash-1-card" },
+        { card: "BT1-009", as: "engage-trash-2-card" },
+        { card: "BT1-009", as: "engage-trash-3-card" },
+      ],
+      security: [
+        { card: "BT1-009", as: "engage-sec-0-0-card" },
+        { card: "BT1-009", as: "engage-sec-0-1-card" },
+        { card: "BT1-009", as: "engage-sec-0-2-card" },
+        { card: "BT1-009", as: "engage-sec-0-3-card" },
+        { card: "BT1-009", as: "engage-sec-0-4-card" },
+      ],
+      battleArea: [
+        {
+          card: "BT26-013",
+          as: "own-engage-host",
+          top: { card: "BT26-013", as: "own-card-engage-host-card" },
+          dp: 5000,
+          placedByEffect: false,
+          under: [
+            { card: "BT26-001", as: "own-source-engage-host-0-card" },
+            { card: "BT26-009", as: "own-source-engage-host-1-card" },
+          ],
+        },
+      ],
+    },
+    "1": {
+      deck: [
+        { card: "BT1-009", as: "engage-deck-1-0-card" },
+        { card: "BT1-009", as: "engage-deck-1-1-card" },
+        { card: "BT1-009", as: "engage-deck-1-2-card" },
+        { card: "BT1-009", as: "engage-deck-1-3-card" },
+        { card: "BT1-009", as: "engage-deck-1-4-card" },
+        { card: "BT1-009", as: "engage-deck-1-5-card" },
+        { card: "BT1-009", as: "engage-deck-1-6-card" },
+        { card: "BT1-009", as: "engage-deck-1-7-card" },
+        { card: "BT1-009", as: "engage-deck-1-8-card" },
+        { card: "BT1-009", as: "engage-deck-1-9-card" },
+        { card: "BT1-009", as: "engage-deck-1-10-card" },
+        { card: "BT1-009", as: "engage-deck-1-11-card" },
+        { card: "BT1-009", as: "engage-deck-1-12-card" },
+        { card: "BT1-009", as: "engage-deck-1-13-card" },
+        { card: "BT1-009", as: "engage-deck-1-14-card" },
+        { card: "BT1-009", as: "engage-deck-1-15-card" },
+        { card: "BT1-009", as: "engage-deck-1-16-card" },
+        { card: "BT1-009", as: "engage-deck-1-17-card" },
+        { card: "BT1-009", as: "engage-deck-1-18-card" },
+        { card: "BT1-009", as: "engage-deck-1-19-card" },
+      ],
+      eggDeck: dealtCards({ deck: RED_DECK, seat: 1, indices: [4, 2, 3, 0, 1], egg: true, aliasOffset: 50 }),
+      security: [
+        { card: "BT1-009", as: "engage-sec-1-0-card" },
+        { card: "BT1-009", as: "engage-sec-1-1-card" },
+        { card: "BT1-009", as: "engage-sec-1-2-card" },
+        { card: "BT1-009", as: "engage-sec-1-3-card" },
+        { card: "BT1-009", as: "engage-sec-1-4-card" },
+      ],
+      battleArea: [
+        {
+          card: "BT1-010",
+          as: "opponent-engage-opponent",
+          top: { card: "BT1-010", as: "opponent-card-engage-opponent-card" },
+          dp: 2000,
+          placedByEffect: false,
+        },
+      ],
+    },
+  },
+  memory: 2,
+  turnSeat: 0,
+  turnCount: 0,
+  isFirstPlayersFirstTurn: false,
+  presentation: { timed: true },
+};
+
+export default fixture;

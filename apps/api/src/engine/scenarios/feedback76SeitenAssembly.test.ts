@@ -1,7 +1,12 @@
+import prepared0 from "./seiten-assembly.fixture.js";
+import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
+
+const preparedFixtures = { "seiten-assembly": prepared0 };
+
 import { expect, it } from "vitest";
 import { Phase } from "@aegis/shared";
 import { setupEngine, settle } from "../testkit/harness.js";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { RED_DECK, BLUE_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { playByAssembly } from "../testkit/assembly.js";
@@ -67,25 +72,31 @@ it.each([true, false])(
   "Feedback #76: real turn Assembly %s pays once, preserves excluded self and resolves scaled effect",
   async (assembly) => {
     const s = setupEngine({ autoDeclineOptional: true, autoSelectCards: true });
-    layDevScenario("arena-feedback76-seiten-assembly", s.state, [RED_DECK, BLUE_DECK]);
+    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "seiten-assembly"));
     const loop = s.engine.startTurnLoop();
     try {
       await settle(() => s.state.phase === Phase.Breeding);
       expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
       await advance(s.engine).waitForMainPhase(0);
-      const ids = ["feedback76-gokuu", "feedback76-sago", "feedback76-cho"];
+      const ids = [
+        fixtureInstanceId("feedback76-gokuu"),
+        fixtureInstanceId("feedback76-sago"),
+        fixtureInstanceId("feedback76-cho"),
+      ];
       expect(
         s.engine.applyIntent(0, {
           type: "playCard",
-          instanceId: "feedback76-seiten",
+          instanceId: fixtureInstanceId("feedback76-seiten"),
           ...(assembly ? { assembly: { materialInstanceIds: ids } } : {}),
         }),
       ).toEqual({ ok: true });
       await settle(() => s.engine.mainVerbContinuationsInFlight === 0 && !s.state.pendingDecision);
-      const seiten = s.state.players[0]!.battleArea.find((p) => p.topCard.instanceId === "feedback76-seiten")!;
+      const seiten = s.state.players[0]!.battleArea.find(
+        (p) => p.topCard.instanceId === fixtureInstanceId("feedback76-seiten"),
+      )!;
       expect(seiten.stack.map((card) => card.instanceId)).toEqual(assembly ? [...ids].reverse() : []);
       expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toEqual(
-        assembly ? ["feedback76-self"] : ["feedback76-self", ...ids],
+        assembly ? [fixtureInstanceId("feedback76-self")] : [fixtureInstanceId("feedback76-self"), ...ids],
       );
       expect(s.state.players[1]!.battleArea[0]!.currentDP).toBe(assembly ? 3000 : 12000);
       expect(s.events.filter((event) => event.kind === "attackDeclared")).toHaveLength(0);

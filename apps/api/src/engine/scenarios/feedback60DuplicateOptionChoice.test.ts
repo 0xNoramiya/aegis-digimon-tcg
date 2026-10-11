@@ -1,5 +1,10 @@
+import prepared0 from "./duplicate-option-choice.fixture.js";
+import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
+
+const preparedFixtures = { "duplicate-option-choice": prepared0 };
+
 import { Phase, type DecisionResponse } from "@aegis/shared";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { RED_DECK, BLUE_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { pendingEffectCandidates } from "../gameEngine/pendingEffectCandidates.js";
@@ -134,7 +139,7 @@ it.each(["old", "pending", "refuse"] as const)(
   "Feedback #60 real-turn arena: %s choice and exact accounting",
   async (selection) => {
     const s = setupEngine();
-    layDevScenario("arena-feedback60-duplicate-option-choice", s.state, [RED_DECK, BLUE_DECK]);
+    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "duplicate-option-choice"));
     const loop = s.engine.startTurnLoop();
     try {
       await settle(() => s.state.phase === Phase.Breeding);
@@ -145,29 +150,52 @@ it.each(["old", "pending", "refuse"] as const)(
       const security = human.security.map((card) => card.instanceId);
       const deck = human.deck.length;
       expect(
-        s.engine.applyIntent(0, { type: "digivolve", permanentId: base.permanentId, instanceId: "feedback60-lady" }),
+        s.engine.applyIntent(0, {
+          type: "digivolve",
+          permanentId: base.permanentId,
+          instanceId: fixtureInstanceId("feedback60-lady"),
+        }),
       ).toEqual({ ok: true });
-      await resolveNested(s, "feedback60-pending", "feedback60-old", "feedback60-dual", base.permanentId, selection);
+      await resolveNested(
+        s,
+        fixtureInstanceId("feedback60-pending"),
+        fixtureInstanceId("feedback60-old"),
+        fixtureInstanceId("feedback60-dual"),
+        base.permanentId,
+        selection,
+      );
       expect(s.state.memory).toBe(selection === "pending" ? 4 : 5);
-      expect(base.topCard?.instanceId).toBe("feedback60-lady");
+      expect(base.topCard?.instanceId).toBe(fixtureInstanceId("feedback60-lady"));
       expect(base.stack.map((card) => card.instanceId)).toEqual(
         selection === "refuse"
-          ? ["dev-field-0-feedback60-base"]
-          : [selection === "old" ? "feedback60-old" : "feedback60-pending", "dev-field-0-feedback60-base"],
+          ? [fixtureInstanceId("dev-field-0-feedback60-base")]
+          : [
+              selection === "old" ? fixtureInstanceId("feedback60-old") : fixtureInstanceId("feedback60-pending"),
+              fixtureInstanceId("dev-field-0-feedback60-base"),
+            ],
       );
       expect(human.hand.map((card) => card.instanceId)).toEqual([
-        "feedback60-reserve",
-        "feedback60-deck-0-0",
-        "feedback60-deck-0-1",
+        fixtureInstanceId("feedback60-reserve"),
+        fixtureInstanceId("feedback60-deck-0-0"),
+        fixtureInstanceId("feedback60-deck-0-1"),
       ]);
       expect(human.deck).toHaveLength(deck - 1);
       expect(human.security.map((card) => card.instanceId)).toEqual(security);
       expect(human.trash.map((card) => card.instanceId)).toEqual(
         selection === "refuse"
-          ? ["feedback60-old", "feedback60-pending", "feedback60-dual"]
-          : [selection === "old" ? "feedback60-pending" : "feedback60-old", "feedback60-dual"],
+          ? [
+              fixtureInstanceId("feedback60-old"),
+              fixtureInstanceId("feedback60-pending"),
+              fixtureInstanceId("feedback60-dual"),
+            ]
+          : [
+              selection === "old" ? fixtureInstanceId("feedback60-pending") : fixtureInstanceId("feedback60-old"),
+              fixtureInstanceId("feedback60-dual"),
+            ],
       );
-      expect(s.state.players[1]!.trash.map((card) => card.instanceId)).toEqual(["dev-field-1-feedback60-victim"]);
+      expect(s.state.players[1]!.trash.map((card) => card.instanceId)).toEqual([
+        fixtureInstanceId("dev-field-1-feedback60-victim"),
+      ]);
       expect(
         s.events.filter(
           (event) =>
@@ -183,7 +211,8 @@ it.each(["old", "pending", "refuse"] as const)(
           event.effectKey?.includes("trash-source-use-option"),
       );
       const watcher = s.events.findIndex(
-        (event) => event.kind === "effectTriggered" && event.sourceInstanceId === "feedback60-pending",
+        (event) =>
+          event.kind === "effectTriggered" && event.sourceInstanceId === fixtureInstanceId("feedback60-pending"),
       );
       expect(parent).toBeGreaterThanOrEqual(0);
       expect(watcher > parent).toBe(selection !== "pending");

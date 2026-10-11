@@ -1,3 +1,8 @@
+import prepared0 from "../../api/src/engine/scenarios/justimon-copied-opt.fixture";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "justimon-copied-opt": prepared0 };
+
 import { test, expect } from "./scenario-page";
 
 test.use({ holdBotAfterTurn: 1 });
@@ -5,7 +10,7 @@ test.use({ holdBotAfterTurn: 1 });
 for (const mode of ["accept", "refuse"] as const) {
   test(`Feedback #71: copying a used Justimon clause supports ${mode} payment`, async ({ scenario, page }) => {
     await page.setViewportSize({ width: mode === "accept" ? 390 : 1440, height: mode === "accept" ? 844 : 1000 });
-    await scenario.open("arena-feedback71-justimon-copied-opt");
+    await scenario.openFixture(fixtureVariant(preparedFixtures, "justimon-copied-opt"));
     await scenario.resolveUntil((state) => state.phase === "Main" && !state.pendingDecision);
     const before = await scenario.snapshot();
     expect(before.memory).toBe(6);
@@ -13,10 +18,10 @@ for (const mode of ["accept", "refuse"] as const) {
       await expect(page.locator("style[data-vite-dev-id]")).toHaveCount(0);
       expect(await page.locator('link[rel="stylesheet"][href*="/assets/"]').count()).toBeGreaterThan(0);
     }
-    const hostId = "dev-perm-0-feedback71-host";
-    const first = "dev-field-0-feedback71-first";
-    const second = "dev-field-0-feedback71-second";
-    const third = "dev-field-0-feedback71-third";
+    const hostId = fixturePermanentId("dev-perm-0-feedback71-host");
+    const first = fixtureInstanceId("dev-field-0-feedback71-first");
+    const second = fixtureInstanceId("dev-field-0-feedback71-second");
+    const third = fixtureInstanceId("dev-field-0-feedback71-third");
     await scenario.attack(hostId);
     await scenario.resolveUntil(
       (state) =>
@@ -33,7 +38,7 @@ for (const mode of ["accept", "refuse"] as const) {
       (state) =>
         !state.pendingDecision &&
         state.memory === 5 &&
-        state.players[0]!.battleArea.some((card) => card.topCard.instanceId === "feedback71-x"),
+        state.players[0]!.battleArea.some((card) => card.topCard.instanceId === fixtureInstanceId("feedback71-x")),
     );
     let copiedChoices = 0;
     let paymentRefusals = 0;
@@ -63,25 +68,25 @@ for (const mode of ["accept", "refuse"] as const) {
     );
     const after = await scenario.snapshot();
     const x = after.players[0]!.battleArea.find((card) => card.permanentId === hostId)!;
-    expect(x.topCard.instanceId).toBe("feedback71-x");
-    expect(x.stack.map((card) => card.instanceId)).toEqual(["dev-field-0-feedback71-host"]);
+    expect(x.topCard.instanceId).toBe(fixtureInstanceId("feedback71-x"));
+    expect(x.stack.map((card) => card.instanceId)).toEqual([fixtureInstanceId("dev-field-0-feedback71-host")]);
     expect(x.isSuspended).toBe(mode === "refuse");
     expect(after.memory).toBe(5);
     expect(after.turnSeat).toBe(0);
     expect(after.phase).toBe("Main");
     expect(after.players[0]!.hand.map((card) => card.instanceId)).toEqual([
-      "feedback71-reserve",
-      "feedback71-deck-0-0",
-      "feedback71-deck-0-1",
+      fixtureInstanceId("feedback71-reserve"),
+      fixtureInstanceId("feedback71-deck-0-0"),
+      fixtureInstanceId("feedback71-deck-0-1"),
     ]);
     expect(after.players[0]!.deckCount).toBe(before.players[0]!.deckCount - 1);
     expect(after.players[0]!.trash.map((card) => card.instanceId)).toEqual(
       mode === "accept" ? [first, second] : [first],
     );
     expect(after.players[1]!.trash.map((card) => card.instanceId)).toEqual([
-      "feedback71-security-1-0",
-      "feedback71-security-1-1",
-      "feedback71-security-1-2",
+      fixtureInstanceId("feedback71-security-1-0"),
+      fixtureInstanceId("feedback71-security-1-1"),
+      fixtureInstanceId("feedback71-security-1-2"),
     ]);
     expect(paymentRefusals).toBe(mode === "refuse" ? 1 : 0);
     if (mode === "accept") {

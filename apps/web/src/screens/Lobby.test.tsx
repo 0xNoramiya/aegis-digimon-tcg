@@ -668,11 +668,11 @@ describe("optional match timer configuration", () => {
       timerRefillSeconds: 60,
     });
     expect(screen.getByText("300s")).toBeTruthy();
-    expect(screen.getByText("+60s")).toBeTruthy();
-    expect(screen.getByText("+30s")).toBeTruthy();
-    expect(screen.getByText("Maximum 300s · Counts while you decide")).toBeTruthy();
+    expect(screen.queryByText("+60s")).toBeNull();
+    expect(screen.queryByText("+30s")).toBeNull();
+    expect(screen.getByText("300s per turn · Resets each turn")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /Private Match/ }));
-    fireEvent.change(screen.getByRole("combobox", { name: "Starting time" }), { target: { value: "60" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "Time per turn" }), { target: { value: "60" } });
     expect(screen.queryByRole("combobox", { name: "Per-turn refill" })).toBeNull();
     expect(onTimerOptionsChange).toHaveBeenLastCalledWith({
       matchTimer: true,
@@ -680,16 +680,16 @@ describe("optional match timer configuration", () => {
       timerRefillSeconds: 60,
     });
     expect(screen.getByText("60s")).toBeTruthy();
-    expect(screen.getByText("Maximum 60s · Counts while you decide")).toBeTruthy();
+    expect(screen.getByText("60s per turn · Resets each turn")).toBeTruthy();
     fireEvent.click(screen.getByRole("switch", { name: "Match timer" }));
     expect(onTimerOptionsChange).toHaveBeenLastCalledWith({
       matchTimer: false,
       timerStartSeconds: 60,
       timerRefillSeconds: 60,
     });
-    expect(screen.queryByRole("combobox", { name: "Starting time" })).toBeNull();
+    expect(screen.queryByRole("combobox", { name: "Time per turn" })).toBeNull();
     fireEvent.click(screen.getByRole("switch", { name: "Match timer" }));
-    expect(screen.getByText("Maximum 60s · Counts while you decide")).toBeTruthy();
+    expect(screen.getByText("60s per turn · Resets each turn")).toBeTruthy();
     fireEvent.click(screen.getByRole("tab", { name: "Join" }));
     expect(screen.queryByRole("switch", { name: "Match timer" })).toBeNull();
     expect(screen.getByText("The host sets the format and timer for both players.")).toBeTruthy();

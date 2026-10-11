@@ -43,7 +43,7 @@ const baseline = new Map(
 );
 
 /**
- * The chains rebuilt from production logs (apps/api/src/engine/devScenario.ts). Paced, they
+ * The chains rebuilt from production logs (apps/api/src/engine/scenarios/). Paced, they
  * must show no board ahead, no unreadable clause and no stall. Each also has a ceiling on its shown time at Normal
  * speed per pacing style: about 10% over what it measured.
  */
@@ -54,20 +54,20 @@ const PRODUCTION_CHAINS: Record<
     stackedNormalShownMs: number;
   }
 > = {
-  "effects-lab-prod-ghost-execute": {
+  "prod-ghost-execute": {
     normalShownMs: 59_000,
     stackedNormalShownMs: 49_000,
   },
-  "effects-lab-prod-ghost-execute-security": {
+  "prod-ghost-execute-security": {
     normalShownMs: 66_000,
     stackedNormalShownMs: 55_000,
   },
-  "effects-lab-prod-attack-stack": {
+  "prod-attack-stack": {
     normalShownMs: 51_000,
     stackedNormalShownMs: 36_000,
   },
-  "effects-lab-prod-security-removed": { normalShownMs: 18_500, stackedNormalShownMs: 13_000 },
-  "effects-lab-prod-titan-cascade": { normalShownMs: 23_000, stackedNormalShownMs: 17_000 },
+  "prod-security-removed": { normalShownMs: 18_500, stackedNormalShownMs: 13_000 },
+  "prod-titan-cascade": { normalShownMs: 23_000, stackedNormalShownMs: 17_000 },
 };
 
 function budgetOf(row: SummaryRow): SummaryRow {

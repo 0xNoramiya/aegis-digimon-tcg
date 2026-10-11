@@ -1,15 +1,17 @@
+import fixturePreventedCostLucemonJupitermon from "../../api/src/engine/scenarios/prevented-cost-lucemon-jupitermon.fixture";
+import { fixturePermanentId, fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect, type DecisionPolicy, type ScenarioPage } from "./scenario-page";
 
-const LUCEMON_ID = "dev-perm-0-prevented-cost-lucemon";
-const JUPITERMON_ID = "dev-perm-0-prevented-cost-jupitermon";
-const JUPITERMON_CARD = "dev-field-0-prevented-cost-jupitermon";
-const CHAOS_MODE = "dev-prevented-cost-chaos-mode";
+const LUCEMON_ID = fixturePermanentId("own-prevented-cost-lucemon");
+const JUPITERMON_ID = fixturePermanentId("own-prevented-cost-jupitermon");
+const JUPITERMON_CARD = fixtureInstanceId("own-card-prevented-cost-jupitermon-card");
+const CHAOS_MODE = fixtureInstanceId("prevented-cost-chaos-mode-card");
 
 // Follow-up to feedback #36: a "by placing" cost that a leave prevention stops is not paid,
 // so the rest of the effect does not happen (Q7247, Q5169).
 
 async function endTurnAnsweringJupitermon(scenario: ScenarioPage, jupitermonPrevents: boolean): Promise<void> {
-  await scenario.open("arena-prevented-cost-lucemon-jupitermon");
+  await scenario.openFixture(fixturePreventedCostLucemonJupitermon);
   const prompts: string[] = [];
   const policy: DecisionPolicy = (decision) => {
     if (decision.kind === "optional") {

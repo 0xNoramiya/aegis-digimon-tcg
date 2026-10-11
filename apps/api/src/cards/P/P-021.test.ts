@@ -209,8 +209,9 @@ describe("P-021 A New World — KB Q&A rulings", () => {
     });
     await settle(
       () =>
-        s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.instanceId === s.inst("palmon").instanceId) &&
-        s.state.pendingDecision === undefined,
+        s.state.players[0]!.battleArea.some(
+          (permanent) => permanent.topCard.instanceId === s.inst("palmon").instanceId,
+        ) && s.state.pendingDecision === undefined,
     );
 
     expect(s.state.memory).toBe(3);

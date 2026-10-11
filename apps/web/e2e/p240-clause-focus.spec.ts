@@ -1,3 +1,5 @@
+import { openFixturePage } from "./scenario-page";
+import fixtureP240ArcturusmonOrderedPlacement from "../../api/src/engine/scenarios/p240-arcturusmon-ordered-placement.fixture";
 import { test, expect } from "@playwright/test";
 import { answerActivation } from "./scenario-page";
 import { startBrowserServer } from "./server";
@@ -13,7 +15,7 @@ for (const width of [1440, 390]) {
         localStorage.setItem("aegis:locale", "en");
         localStorage.setItem("aegis.action-confirmation.enabled", "false");
       });
-      await page.goto("/dev/arena?scenario=arena-p240-arcturusmon-ordered-placement");
+      await openFixturePage(page, fixtureP240ArcturusmonOrderedPlacement);
       await page.getByRole("button", { name: /^end breeding$/i }).click();
       const card = page.getByTestId("hand").getByRole("button", { name: "Select Arcturusmon", exact: true });
       await card.focus();

@@ -1,19 +1,33 @@
+import fixtureKingSukamonAssembly from "../../api/src/engine/scenarios/king-sukamon-assembly.fixture";
+import fixtureChuumonTrashRevival from "../../api/src/engine/scenarios/chuumon-trash-revival.fixture";
+import fixtureDorbickmonDigixros from "../../api/src/engine/scenarios/dorbickmon-digixros.fixture";
+import fixtureSnowGoblimonReveal from "../../api/src/engine/scenarios/snow-goblimon-reveal.fixture";
+import fixtureTrashRecovery from "../../api/src/engine/scenarios/trash-recovery.fixture";
+import fixtureRevealedSearch from "../../api/src/engine/scenarios/revealed-search.fixture";
+import fixtureGiromonAssembly from "../../api/src/engine/scenarios/giromon-assembly.fixture";
+import type { ScenarioFixture } from "../../api/src/engine/scenario/types";
+import { openFixturePage } from "./scenario-page";
+
+import { fixtureVariant } from "../../api/src/engine/scenario/references";
+import fixtureSukamonBt11DeletionSearch from "../../api/src/engine/scenarios/sukamon-bt11-deletion-search.fixture";
+import fixtureSukamonBt3DeletionSearch from "../../api/src/engine/scenarios/sukamon-bt3-deletion-search.fixture";
+import fixtureSukamonEx13DeletionSearch from "../../api/src/engine/scenarios/sukamon-ex13-deletion-search.fixture";
 import { expect, test, type Page } from "@playwright/test";
 import { startBrowserServer } from "./server";
 
-async function openScenario(page: Page, scenario: string) {
+async function openScenario(page: Page, scenario: ScenarioFixture) {
   await page.addInitScript(() => {
     localStorage.setItem("aegis:locale", "en");
     localStorage.setItem("aegis.action-confirmation.enabled", "false");
   });
-  await page.goto(`/dev/arena?scenario=${scenario}`);
-  await expect(page.getByRole("combobox", { name: "Scenario" })).toHaveValue(scenario);
+  await openFixturePage(page, scenario);
+
   await expect(page.getByRole("dialog", { name: "Connecting bot opponent…", exact: true })).toBeHidden();
   await page.getByRole("button", { name: /^end breeding$/i }).click();
   await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
 }
 
-async function playCard(page: Page, scenario: string, name: string, action = "Play Tamer") {
+async function playCard(page: Page, scenario: ScenarioFixture, name: string, action = "Play Tamer") {
   await openScenario(page, scenario);
   const card = page.getByTestId("hand").getByRole("button", { name: `Select ${name}`, exact: true });
   await card.focus();
@@ -25,14 +39,24 @@ for (const set of ["bt11", "bt3", "ex13"]) {
   test(`Sukamon ${set}: deletion opens revealed-card selection and confirms the chosen card`, async ({ page }) => {
     const server = await startBrowserServer();
     try {
-      await openScenario(page, `arena-oct06-sukamon-${set}-deletion-search`);
-      await page.locator('[data-drop="perm-you"][data-id="oct06-latest-sukamon"]').click();
+      await openScenario(
+        page,
+        fixtureVariant(
+          {
+            bt11: fixtureSukamonBt11DeletionSearch,
+            bt3: fixtureSukamonBt3DeletionSearch,
+            ex13: fixtureSukamonEx13DeletionSearch,
+          },
+          set,
+        ),
+      );
+      await page.locator('[data-drop="perm-you"][data-id="sukamon"]').click();
       await page.getByRole("button", { name: "Attack", exact: true }).click();
-      await page.locator('[data-drop="perm-opp"][data-id="oct06-latest-target"]').click();
+      await page.locator('[data-drop="perm-opp"][data-id="target"]').click();
       const panel = page.getByRole("dialog");
-      const selected = panel.locator('[data-instance-id="oct06-latest-sukamon-reveal-1"]');
+      const selected = panel.locator('[data-instance-id="sukamon-reveal-1"]');
       await expect(selected).toBeVisible();
-      await expect(panel.locator('[data-instance-id="oct06-latest-sukamon-reveal-3"]')).toBeDisabled();
+      await expect(panel.locator('[data-instance-id="sukamon-reveal-3"]')).toBeDisabled();
       await selected.click();
       await expect(selected).toHaveAttribute("aria-pressed", "true");
       await panel.getByRole("button", { name: "Confirm targets", exact: true }).click();
@@ -43,7 +67,7 @@ for (const set of ["bt11", "bt3", "ex13"]) {
         await expect(
           page.locator('[data-drop="perm-you"]').getByRole("img", { name: "Chuumon", exact: true }),
         ).toBeVisible();
-      await expect(page.locator('[data-drop="perm-you"][data-id="oct06-latest-sukamon"]')).toHaveCount(0);
+      await expect(page.locator('[data-drop="perm-you"][data-id="sukamon"]')).toHaveCount(0);
       await expect(panel).not.toBeVisible();
       await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
     } finally {
@@ -58,13 +82,13 @@ for (const viewport of [
   { width: 1024, height: 768 },
   { width: 320, height: 740 },
 ]) {
-  test(`Discord 1557062221719142481: recover a selected trash card at ${viewport.width}px`, async ({ page }) => {
+  test(`recover a selected trash card at ${viewport.width}px`, async ({ page }) => {
     const server = await startBrowserServer();
     try {
       await page.setViewportSize(viewport);
-      await playCard(page, "arena-oct06-trash-recovery", "Matt Ishida");
+      await playCard(page, fixtureTrashRecovery, "Matt Ishida");
       const panel = page.getByRole("dialog");
-      const candidate = panel.locator('[data-instance-id="oct06-latest-purple-option"]');
+      const candidate = panel.locator('[data-instance-id="purple-option"]');
       await expect(candidate).toBeVisible();
       await candidate.click();
       await expect(candidate).toHaveAttribute("aria-pressed", "true");
@@ -81,15 +105,15 @@ for (const viewport of [
     }
   });
 
-  test(`Discord 1557059213266522233: pick revealed cards into hand at ${viewport.width}px`, async ({ page }) => {
+  test(`pick revealed cards into hand at ${viewport.width}px`, async ({ page }) => {
     const server = await startBrowserServer();
     try {
       await page.setViewportSize(viewport);
-      await playCard(page, "arena-oct06-revealed-search", "Davis Motomiya");
+      await playCard(page, fixtureRevealedSearch, "Davis Motomiya");
       const panel = page.getByRole("dialog");
-      const blue = panel.locator('[data-instance-id="oct06-latest-reveal-1"]');
-      const green = panel.locator('[data-instance-id="oct06-latest-reveal-2"]');
-      const red = panel.locator('[data-instance-id="oct06-latest-reveal-3"]');
+      const blue = panel.locator('[data-instance-id="reveal-1"]');
+      const green = panel.locator('[data-instance-id="reveal-2"]');
+      const red = panel.locator('[data-instance-id="reveal-3"]');
       await expect(blue).toBeEnabled();
       await expect(green).toBeDisabled();
       await expect(red).toBeDisabled();
@@ -112,10 +136,10 @@ for (const viewport of [
   });
 }
 
-test("Discord 1557059213266522233: Assembly plays using the three selected trash materials", async ({ page }) => {
+test("Assembly plays using the three selected trash materials", async ({ page }) => {
   const server = await startBrowserServer();
   try {
-    await playCard(page, "arena-oct06-giromon-assembly", "Millenniummon", "Play Digimon");
+    await playCard(page, fixtureGiromonAssembly, "Millenniummon", "Play Digimon");
     const panel = page.getByRole("dialog", { name: "＜Assembly＞ Millenniummon", exact: true });
     const materials = panel.locator(".material-prompt__body").getByRole("button");
     await expect(materials).toHaveCount(3);
@@ -152,11 +176,11 @@ test("Discord 1557059213266522233: Assembly plays using the three selected trash
 });
 
 for (const width of [1440, 390]) {
-  test(`Discord 1557077795321024543: KingSukamon selects trash Assembly materials at ${width}px`, async ({ page }) => {
+  test(`KingSukamon selects trash Assembly materials at ${width}px`, async ({ page }) => {
     const server = await startBrowserServer();
     try {
       await page.setViewportSize({ width, height: 1000 });
-      await playCard(page, "arena-oct06-king-sukamon-assembly", "KingSukamon", "Play Digimon");
+      await playCard(page, fixtureKingSukamonAssembly, "KingSukamon", "Play Digimon");
       const panel = page.getByRole("dialog", { name: "＜Assembly＞ KingSukamon", exact: true });
       const materials = panel.locator(".material-prompt__body").getByRole("button");
       await expect(materials).toHaveCount(3);
@@ -178,11 +202,11 @@ for (const width of [1440, 390]) {
     }
   });
 
-  test(`Discord 1557085470129922229: Dorbickmon selects five hand materials at ${width}px`, async ({ page }) => {
+  test(`Dorbickmon selects five hand materials at ${width}px`, async ({ page }) => {
     const server = await startBrowserServer();
     try {
       await page.setViewportSize({ width, height: 1000 });
-      await playCard(page, "arena-oct06-dorbickmon-digixros", "Dorbickmon", "Play Digimon");
+      await playCard(page, fixtureDorbickmonDigixros, "Dorbickmon", "Play Digimon");
       const panel = page.getByRole("dialog", { name: "＜DigiXros＞ Dorbickmon", exact: true });
       const materials = panel.locator(".material-prompt__body button:enabled");
       await expect(materials).toHaveCount(5);
@@ -204,17 +228,17 @@ for (const width of [1440, 390]) {
     }
   });
 
-  test(`Discord 1557077795321024543: EX5 Chuumon revives a trash Chuumon at ${width}px`, async ({ page }) => {
+  test(`EX5 Chuumon revives a trash Chuumon at ${width}px`, async ({ page }) => {
     const server = await startBrowserServer();
     try {
       await page.setViewportSize({ width, height: 1000 });
-      await openScenario(page, "arena-oct06-chuumon-trash-revival");
-      await page.locator('[data-drop="perm-you"][data-id="oct06-latest-revival-host"]').click();
+      await openScenario(page, fixtureChuumonTrashRevival);
+      await page.locator('[data-drop="perm-you"][data-id="revival-host"]').click();
       await page.getByRole("button", { name: "Attack", exact: true }).click();
-      await page.locator('[data-drop="perm-opp"][data-id="oct06-latest-revival-enemy"]').click();
+      await page.locator('[data-drop="perm-opp"][data-id="revival-enemy"]').click();
       await page.getByRole("button", { name: "Yes, activate", exact: true }).click();
       const panel = page.getByRole("dialog");
-      const selected = panel.locator('[data-instance-id="oct06-latest-revival-target"]');
+      const selected = panel.locator('[data-instance-id="revival-target"]');
       await expect(selected).toBeVisible();
       await selected.click();
       await expect(selected).toHaveAttribute("aria-pressed", "true");
@@ -222,7 +246,7 @@ for (const width of [1440, 390]) {
       await expect(
         page.locator('[data-drop="perm-you"]').getByRole("img", { name: "Chuumon", exact: true }),
       ).toBeVisible();
-      await expect(page.locator('[data-drop="perm-you"][data-id="oct06-latest-revival-host"]')).toHaveCount(0);
+      await expect(page.locator('[data-drop="perm-you"][data-id="revival-host"]')).toHaveCount(0);
       await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
     } finally {
       await page.close();
@@ -230,18 +254,16 @@ for (const width of [1440, 390]) {
     }
   });
 
-  test(`Discord 1557076811341500428: SnowGoblimon selects revealed cards and discards at ${width}px`, async ({
-    page,
-  }) => {
+  test(`SnowGoblimon selects revealed cards and discards at ${width}px`, async ({ page }) => {
     const server = await startBrowserServer();
     try {
       await page.setViewportSize({ width, height: 1000 });
-      await playCard(page, "arena-oct06-snow-goblimon-reveal", "SnowGoblimon", "Play Digimon");
+      await playCard(page, fixtureSnowGoblimonReveal, "SnowGoblimon", "Play Digimon");
       const panel = page.getByRole("dialog");
       for (const index of [1, 2]) {
         const selected = panel.locator(`[data-instance-id="oct06-latest-snow-reveal-${index}"]`);
         await expect(selected).toBeEnabled();
-        await expect(panel.locator('[data-instance-id="oct06-latest-snow-reveal-3"]')).toBeDisabled();
+        await expect(panel.locator('[data-instance-id="snow-reveal-3"]')).toBeDisabled();
         await selected.click();
         await expect(selected).toHaveAttribute("aria-pressed", "true");
         await panel.getByRole("button", { name: "Confirm targets", exact: true }).click();

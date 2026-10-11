@@ -31,9 +31,8 @@ before launch.
 Casual (`aegis` and `aegis_beta`) join options include `matchTimer: boolean`.
 Both queues filter on this option, so timed and untimed players cannot meet.
 Omitting the option leaves the timer off. Public clocks start with 300 seconds
-per player. Subsequent turn starts grant 60 seconds to the turn owner and
-30 seconds to the opponent, with both reserves capped at 300 seconds.
-The opening turn uses the initial reserve without a bonus.
+per player. Each subsequent turn starts a fresh 300-second reserve for both
+players; unused time does not accumulate. The opening turn uses the initial reserve.
 
 The mulligan has its own clock. Each player gets 30 seconds
 (`MULLIGAN_TIMER_SECONDS`) to answer their own mulligan, published as
@@ -44,28 +43,28 @@ that player's mulligan seconds, labelled "Mulligan", where the match clock usual
 
 Combo time: each decision the engine asks of a player (trigger order, targets,
 selections, optional "activate?" choices; every `DecisionRequest` except the
-mulligan) adds 3 seconds (`MATCH_TIMER_DECISION_BONUS_SECONDS`) to that player's
-match clock, up to 30 seconds per player per turn
-(`MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN`). Main-phase actions (playing
-a card, attacking, ending the turn) are not decisions and add nothing. Like the
-turn bonuses, combo time never raises a reserve above its starting value. All
+mulligan), confirmed card play and confirmed digivolution adds 3 seconds
+(`MATCH_TIMER_DECISION_BONUS_SECONDS`) to that player's match clock. These actions
+share a limit of 30 seconds per player per turn
+(`MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN`). Rejected actions, attacks
+and ending the turn add nothing. Combo time never raises a reserve above its
+starting value. All
 timer constants live in `packages/shared/src/matchTimer.ts`.
 
 Private-room creators may also choose `timerStartSeconds` (60, 180, 300, 600).
 Invalid values use the defaults; private reserves are capped at their chosen starting time.
 `timerRefillSeconds` remains in the wire contract for compatibility, but join payloads
-cannot override the fixed 60-second owner bonus; the opponent bonus is always 30 seconds.
-The synchronized `timerRefillSeconds` field reports 60, and the settings do not offer a refill control.
-The lobby uses a labelled on/off switch and a compact strip showing the starting
-reserve and the 60/30-second turn bonuses. Private hosts can change the starting
-reserve; its displayed value and cap update together.
+cannot override the turn reset. The synchronized `timerRefillSeconds` field
+reports the legacy value 60, which no longer controls clock refills.
+The lobby uses a labelled on/off switch and a compact strip showing time per turn.
+Private hosts can change the per-turn reserve; its displayed value and cap update together.
 The on/off preference is saved under `aegis:match-timer` in browser localStorage
 and restored on reload for guests and signed-in users. It is local to that browser;
 joining a private room or entering a mode without timers does not overwrite it.
 The creator's settings apply to both seats; guest join payloads cannot change them.
 Ranked, tournament and ordinary bot rooms ignore clock opt-in. Outside production,
-`/dev/arena?scenario=arena-match-timer` enables a live bot test with the same
-300-second reserves and 60/30-second turn bonuses. Both clocks remain visible next to their player identities, including during pauses.
+`pnpm scenario open match-timer` enables a live bot test with the same
+300-second reserves renewed each turn. Both clocks remain visible next to their player identities, including during pauses.
 The required responder is highlighted; the compact readout shows remaining seconds without status text.
 
 The server owns elapsed time. `timerRemaining0` and `timerRemaining1` are rounded-up

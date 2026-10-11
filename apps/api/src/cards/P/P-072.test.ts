@@ -290,8 +290,10 @@ describe("P-072 MetalGreymon: Alterous Mode — KB Q&A rulings", () => {
     const s = setupEngine({ 0: { battleArea: [{ card: P_072, as: "alterous" }] } });
     await s.ready();
 
-    expect(observe(s.engine).effectiveNames(s.perm("alterous")).map((name) => name.toLowerCase())).toEqual(
-      expect.arrayContaining(["metalgreymon: alterous mode", "metalgreymon"]),
-    );
+    expect(
+      observe(s.engine)
+        .effectiveNames(s.perm("alterous"))
+        .map((name) => name.toLowerCase()),
+    ).toEqual(expect.arrayContaining(["metalgreymon: alterous mode", "metalgreymon"]));
   });
 });

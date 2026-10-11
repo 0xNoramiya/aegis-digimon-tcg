@@ -1,3 +1,5 @@
+import fixtureSecurityChain from "../../api/src/engine/scenarios/security-chain.fixture";
+import fixtureBt20InvisimonSecurityCount from "../../api/src/engine/scenarios/bt20-invisimon-security-count.fixture";
 import { test as base, expect, type Page } from "@playwright/test";
 import { RED_DECK, BLUE_DECK } from "../../api/dist/engine/testDecks.js";
 import { joinHeadlessOpponent, type HeadlessOpponent } from "../test/scenarioHarness/headlessOpponent";
@@ -16,6 +18,8 @@ class BrowserMatch {
       if (scenario === "dna" && id === "BT1-016") return "BT16-012";
       return id;
     });
+    if (scenario === "security") this.server.useFixture(fixtureSecurityChain);
+    if (scenario === "security-count") this.server.useFixture(fixtureBt20InvisimonSecurityCount);
     await this.page.addInitScript(
       (options) => {
         localStorage.setItem("aegis:locale", "en");
@@ -25,13 +29,18 @@ class BrowserMatch {
         displayName: "Browser Protagonist",
         deck: { mainDeck, eggDeck: [...RED_DECK.eggDeck] },
         seed: scenario === "dna" ? 6 : 2,
-        ...(scenario === "security" ? { devScenario: "security-chain" as const } : {}),
-        ...(scenario === "security-count" ? { devScenario: "arena-bt20-invisimon-security-count" as const } : {}),
+        ...(scenario === "security" ? { devScenario: "local-fixture" as const } : {}),
+        ...(scenario === "security-count" ? { devScenario: "local-fixture" as const } : {}),
       },
     );
     await this.page.goto("/e2e/harness.html");
     if (scenario === "security" || scenario === "security-count") return;
     await expect(this.page.getByText(/finding an opponent/i)).toBeVisible();
+    await this.page.waitForFunction(
+      () =>
+        typeof window.browserTestSnapshot === "function" &&
+        window.browserTestSnapshot().players?.[0]?.displayName === "Browser Protagonist",
+    );
     this.opponent = await joinHeadlessOpponent(this.server.directEndpoint, {
       displayName: "Observer Opponent",
       deck: BLUE_DECK,

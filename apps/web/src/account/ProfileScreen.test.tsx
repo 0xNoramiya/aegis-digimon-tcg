@@ -87,7 +87,15 @@ function match(index: number, withReplay = false): MatchHistoryEntry {
   };
 }
 function page(matches: MatchHistoryEntry[], extra: Partial<MatchHistoryPage> = {}): MatchHistoryPage {
-  return { matches, total: matches.length, page: 1, limit: 25, sharing: true, ...extra };
+  return {
+    matches,
+    winRate: { matches: 0, wins: 0, losses: 0, draws: 0 },
+    total: matches.length,
+    page: 1,
+    limit: 25,
+    sharing: true,
+    ...extra,
+  };
 }
 
 beforeEach(() => {
@@ -123,10 +131,12 @@ function renderProfile(props: Partial<Parameters<typeof ProfileScreen>[0]> = {})
 const row = (rival: string) => screen.getAllByRole("listitem").find((item) => item.textContent?.includes(rival))!;
 
 it("shows the identity header with totals and no tabs", async () => {
-  vi.spyOn(accountApi, "matches").mockResolvedValue(page([]));
+  vi.spyOn(accountApi, "matches").mockResolvedValue(
+    page([], { winRate: { matches: 3, wins: 1, losses: 1, draws: 1 } }),
+  );
   renderProfile();
-  const stats = await screen.findByText("57%");
-  expect(stats.closest("dl")?.textContent).toBe("Matches37Wins21Win rate57%Replays saved4");
+  const stats = await screen.findByText("33%");
+  expect(stats.closest("dl")?.textContent).toBe("Human matches3Human wins1Win rate33%Replays saved4");
   expect(screen.getByRole("link", { name: "Preferences" }).getAttribute("href")).toBe("/settings");
   expect(screen.getByText("Account connected")).toBeTruthy();
   expect(screen.queryByRole("navigation", { name: "Profile sections" })).toBeNull();
@@ -400,4 +410,34 @@ it("shows the Drive banner until this device connects Google Drive", async () =>
   } finally {
     fakeDrive.provider.isLinked.mockReturnValue(true);
   }
+});
+
+it("clears eligible counts when a new filter fails instead of showing the previous rate", async () => {
+  vi.spyOn(accountApi, "matches")
+    .mockResolvedValueOnce(page([match(0)], { winRate: { matches: 3, wins: 1, losses: 1, draws: 1 } }))
+    .mockRejectedValueOnce(new Error("unavailable"));
+  renderProfile();
+  expect(await screen.findByText("33%")).toBeTruthy();
+  fireEvent.change(screen.getByRole("combobox", { name: "Mode" }), { target: { value: "casual" } });
+  await waitFor(() => expect(screen.getByText("Win rate").closest("div")?.querySelector("dd")?.textContent).toBe("—"));
+  expect(screen.queryByText("33%")).toBeNull();
+});
+
+it("does not expose the previous account's eligible counts while the next account loads", async () => {
+  vi.spyOn(accountApi, "matches")
+    .mockResolvedValueOnce(page([match(0)], { winRate: { matches: 3, wins: 1, losses: 1, draws: 1 } }))
+    .mockImplementationOnce(() => new Promise(() => {}));
+  const view = render(
+    <I18nProvider>
+      <ProfileScreen account={ACCOUNT} player={PLAYER} />
+    </I18nProvider>,
+  );
+  expect(await screen.findByText("33%")).toBeTruthy();
+  view.rerender(
+    <I18nProvider>
+      <ProfileScreen account={{ ...ACCOUNT, id: "account-2" }} player={PLAYER} />
+    </I18nProvider>,
+  );
+  expect(screen.queryByText("33%")).toBeNull();
+  expect(screen.getByText("Win rate").closest("div")?.querySelector("dd")?.textContent).toBe("—");
 });

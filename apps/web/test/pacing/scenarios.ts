@@ -1,13 +1,29 @@
+import fixtureOwnChain from "@aegis-api/engine/scenarios/own-chain.fixture.js";
+import fixtureOpponentChain from "@aegis-api/engine/scenarios/opponent-chain.fixture.js";
+import fixtureOpponentPlay from "@aegis-api/engine/scenarios/opponent-play.fixture.js";
+import fixtureNested from "@aegis-api/engine/scenarios/nested.fixture.js";
+import fixtureProdRoyalKnights from "@aegis-api/engine/scenarios/prod-royal-knights.fixture.js";
+import fixtureProdGhost from "@aegis-api/engine/scenarios/prod-ghost.fixture.js";
+import fixtureProdGhostExecute from "@aegis-api/engine/scenarios/prod-ghost-execute.fixture.js";
+import fixtureProdGhostExecuteSecurity from "@aegis-api/engine/scenarios/prod-ghost-execute-security.fixture.js";
+import fixtureProdAttackStack from "@aegis-api/engine/scenarios/prod-attack-stack.fixture.js";
+import fixtureProdSecurityRemoved from "@aegis-api/engine/scenarios/prod-security-removed.fixture.js";
+import fixtureProdTitanCascade from "@aegis-api/engine/scenarios/prod-titan-cascade.fixture.js";
+import fixtureEx13DeletionTriggerOrdering from "@aegis-api/engine/scenarios/ex13-deletion-trigger-ordering.fixture.js";
+import fixtureGateDeadlySinsEffectOrder from "@aegis-api/engine/scenarios/gate-deadly-sins-effect-order.fixture.js";
+import fixtureSecurityEffectPacing from "@aegis-api/engine/scenarios/security-effect-pacing.fixture.js";
+import fixtureEx13GiromonBlockTriggers from "@aegis-api/engine/scenarios/ex13-giromon-block-triggers.fixture.js";
+import fixtureDrasilOptionalEffectPresets from "@aegis-api/engine/scenarios/drasil-optional-effect-presets.fixture.js";
+import { fixtureInstanceId, fixturePermanentId } from "@aegis-api/engine/scenario/references.js";
 /* What the viewer does in each measured scenario, and how it answers what it is asked.
 
-   The moves follow the effects lab's own instructions for each scenario (apps/web/src/dev/
-   EffectsLab.tsx and LiveArenaDemo.tsx). The answers port the engine test harness's auto
+   Each plan imports its own board fixture and defines public intents for that position. The answers port the engine test harness's auto
    responders (apps/api/src/engine/testkit/harness.ts): take the offered order, accept an
    optional effect unless its prompt is refused, pick the most cards allowed with a preference
    list first. The same plan drives every pacing mode, so modes are compared on one game. */
 
 import { Phase, type DecisionRequest, type DecisionResponse, type GameState, type Intent } from "@aegis/shared";
-import type { DevScenarioId } from "@aegis-api/engine/devScenario.js";
+import type { ScenarioFixture } from "@aegis-api/engine/scenario/types.js";
 
 const VIEWER = 0;
 
@@ -23,7 +39,8 @@ export interface AnswerPreferences {
 }
 
 export interface ScenarioPlan {
-  id: DevScenarioId;
+  id: string;
+  fixture: ScenarioFixture;
   /** Distinct accept/decline runs may share the same authoritative server layout. */
   variant?: string;
   /**
@@ -83,21 +100,24 @@ const MAX_MS = 150_000;
 
 export const SCENARIO_PLANS: readonly ScenarioPlan[] = [
   {
-    id: "effects-lab-own-chain",
+    id: "own-chain",
+    fixture: fixtureOwnChain,
     moves: [passBreeding, digivolve("BT10-062", "BT9-065")],
     answers: {},
     finished: (state, resolved) => resolved[0] >= 6 && permanentOf(state, "BT9-065") !== undefined,
     maxMs: MAX_MS,
   },
   {
-    id: "effects-lab-opponent-chain",
+    id: "opponent-chain",
+    fixture: fixtureOpponentChain,
     moves: [passBreeding, passMain],
     answers: {},
     finished: (_state, resolved) => resolved[1] >= 5,
     maxMs: MAX_MS,
   },
   {
-    id: "effects-lab-opponent-play",
+    id: "opponent-play",
+    fixture: fixtureOpponentPlay,
     moves: [passBreeding, passMain],
     answers: {},
     finished: (state, resolved) =>
@@ -106,14 +126,16 @@ export const SCENARIO_PLANS: readonly ScenarioPlan[] = [
     maxMs: MAX_MS,
   },
   {
-    id: "effects-lab-nested",
+    id: "nested",
+    fixture: fixtureNested,
     moves: [passBreeding, attackPlayerWith(firstReadyAttacker)],
     answers: {},
     finished: (_state, resolved) => resolved[0] + resolved[1] >= 6,
     maxMs: MAX_MS,
   },
   {
-    id: "effects-lab-prod-royal-knights",
+    id: "prod-royal-knights",
+    fixture: fixtureProdRoyalKnights,
     moves: [
       passBreeding,
       digivolve("BT2-027", "ST8-10"),
@@ -124,51 +146,62 @@ export const SCENARIO_PLANS: readonly ScenarioPlan[] = [
     maxMs: MAX_MS,
   },
   {
-    id: "effects-lab-prod-ghost",
+    id: "prod-ghost",
+    fixture: fixtureProdGhost,
     moves: [passBreeding, passMain],
-    answers: { preferInstanceIds: ["dev-lab-ghost-discard"], declinePrompts: ["Digivolve"] },
+    answers: { preferInstanceIds: [fixtureInstanceId("lab-ghost-discard-card")], declinePrompts: ["Digivolve"] },
     finished: (_state, resolved) => resolved[0] + resolved[1] >= 8,
     maxMs: MAX_MS,
   },
   {
-    id: "effects-lab-prod-ghost-execute",
+    id: "prod-ghost-execute",
+    fixture: fixtureProdGhostExecute,
     moves: [passBreeding, passMain],
     answers: {},
     finished: (_state, resolved) => resolved[0] >= 12,
     maxMs: MAX_MS,
   },
   {
-    id: "effects-lab-prod-ghost-execute-security",
+    id: "prod-ghost-execute-security",
+    fixture: fixtureProdGhostExecuteSecurity,
     moves: [passBreeding, passMain],
     answers: {},
     finished: (_state, resolved) => resolved[0] >= 12 && resolved[1] >= 1,
     maxMs: MAX_MS,
   },
   {
-    id: "effects-lab-prod-attack-stack",
+    id: "prod-attack-stack",
+    fixture: fixtureProdAttackStack,
     moves: [passBreeding, digivolve("AD1-025", "EX13-077")],
     answers: {
-      preferInstanceIds: ["first", "second", "third"].map((slot) => `dev-perm-1-lab-attack-target-${slot}`),
+      preferInstanceIds: ["first", "second", "third"].map((slot) =>
+        fixturePermanentId(`opponent-lab-attack-target-${slot}`),
+      ),
     },
     finished: (_state, resolved) => resolved[0] >= 5 && resolved[1] >= 1,
     maxMs: MAX_MS,
   },
   {
-    id: "effects-lab-prod-security-removed",
+    id: "prod-security-removed",
+    fixture: fixtureProdSecurityRemoved,
     moves: [passBreeding, attackPlayerWith((state) => permanentOf(state, "BT26-103")?.permanentId)],
     answers: {},
     finished: (_state, resolved) => resolved[0] >= 5,
     maxMs: MAX_MS,
   },
   {
-    id: "effects-lab-prod-titan-cascade",
+    id: "prod-titan-cascade",
+    fixture: fixtureProdTitanCascade,
     moves: [passBreeding, attackPlayerWith((state) => permanentOf(state, "BT26-059")?.permanentId)],
-    answers: { preferInstanceIds: ["dev-lab-titan-discard", "dev-lab-titan-witchmon"] },
+    answers: {
+      preferInstanceIds: [fixtureInstanceId("lab-titan-discard-card"), fixtureInstanceId("lab-titan-witchmon-card")],
+    },
     finished: (_state, resolved) => resolved[0] >= 5,
     maxMs: MAX_MS,
   },
   {
-    id: "arena-ex13-deletion-trigger-ordering",
+    id: "ex13-deletion-trigger-ordering",
+    fixture: fixtureEx13DeletionTriggerOrdering,
     moves: [
       passBreeding,
       (state) => {
@@ -181,29 +214,33 @@ export const SCENARIO_PLANS: readonly ScenarioPlan[] = [
     maxMs: MAX_MS,
   },
   {
-    id: "arena-gate-deadly-sins-effect-order",
+    id: "gate-deadly-sins-effect-order",
+    fixture: fixtureGateDeadlySinsEffectOrder,
     moves: [passBreeding],
-    answers: { preferInstanceIds: ["dev-gate-order-lucemon"] },
+    answers: { preferInstanceIds: [fixtureInstanceId("gate-order-lucemon-card")] },
     finished: (state, resolved) => state.turnSeat === VIEWER && resolved[0] >= 4,
     maxMs: MAX_MS,
   },
   {
-    id: "arena-security-effect-pacing",
+    id: "security-effect-pacing",
+    fixture: fixtureSecurityEffectPacing,
     moves: [passBreeding, attackPlayerWith(firstReadyAttacker), attackPlayerWith(firstReadyAttacker)],
     answers: {},
     finished: (state) => (state.players[1]?.securityCount ?? 5) <= 3,
     maxMs: MAX_MS,
   },
   {
-    id: "arena-ex13-giromon-block-triggers",
+    id: "ex13-giromon-block-triggers",
+    fixture: fixtureEx13GiromonBlockTriggers,
     moves: [],
     answers: { blockFirstAvailable: true },
     finished: (_state, resolved) => resolved[0] >= 6,
     maxMs: MAX_MS,
   },
   ...[false, true].map((decline): ScenarioPlan => ({
-    id: "arena-drasil-optional-effect-presets",
-    variant: `arena-drasil-optional-effect-presets-${decline ? "declined" : "accepted"}`,
+    id: "drasil-optional-effect-presets",
+    fixture: fixtureDrasilOptionalEffectPresets,
+    variant: `drasil-optional-effect-presets-${decline ? "declined" : "accepted"}`,
     moves: [
       passBreeding,
       (state) => {

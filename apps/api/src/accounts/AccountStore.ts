@@ -7,6 +7,7 @@ import type {
   MatchHistoryRecord,
   MatchHistoryFilter,
   MatchHistorySummary,
+  MatchWinRate,
   TournamentBanlistCard,
   TournamentRules,
   TournamentStructure,
@@ -778,24 +779,44 @@ export class AccountStore {
   async matchHistory(
     accountId: string,
     { page, limit, ...filter }: { page: number; limit: number } & MatchHistoryFilter,
-  ): Promise<{ matches: MatchRecord[]; total: number }> {
+  ): Promise<{ matches: MatchRecord[]; total: number; winRate: MatchWinRate }> {
     await this.ensureReady();
     const params: unknown[] = [accountId];
     const conditions = ["account_id=$1"];
-    if (filter.result) conditions.push(`record->>'result'=$${params.push(filter.result)}`);
+
     if (filter.mode) conditions.push(`record->>'mode'=$${params.push(filter.mode)}`);
     // A backslash is Postgres's default LIKE escape, so the player's text matches literally.
     if (filter.opponent)
       conditions.push(
         `record->>'opponentName' ILIKE $${params.push(`%${filter.opponent.replace(/[\\%_]/g, "\\$&")}%`)}`,
       );
+    // Count the full retained human history before applying the result filter or pagination.
+    // Exclude both bot markers, including inconsistent legacy records.
+    const rate = (
+      await this.pool.query<MatchWinRate>(
+        `SELECT count(*)::int matches,
+        COALESCE(SUM(CASE WHEN record->>'result'='win' THEN 1 ELSE 0 END),0)::int wins,
+        COALESCE(SUM(CASE WHEN record->>'result'='loss' THEN 1 ELSE 0 END),0)::int losses,
+        COALESCE(SUM(CASE WHEN record->>'result'='draw' THEN 1 ELSE 0 END),0)::int draws
+        FROM account_recent_matches WHERE ${conditions.join(" AND ")}
+        AND record->>'opponentKind'='human' AND record->>'mode'<>'bot'`,
+        params,
+      )
+    ).rows[0];
+    const winRate: MatchWinRate = {
+      matches: Number(rate?.matches ?? 0),
+      wins: Number(rate?.wins ?? 0),
+      losses: Number(rate?.losses ?? 0),
+      draws: Number(rate?.draws ?? 0),
+    };
+    if (filter.result) conditions.push(`record->>'result'=$${params.push(filter.result)}`);
     const where = `FROM account_recent_matches WHERE ${conditions.join(" AND ")}`;
     const total = await this.pool.query<{ total: number }>(`SELECT count(*)::int total ${where}`, params);
     const rows = await this.pool.query<{ record: MatchRecord }>(
       `SELECT record ${where} ORDER BY finished_at DESC, room_id DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
       [...params, limit, (page - 1) * limit],
     );
-    return { matches: rows.rows.map((row) => row.record), total: Number(total.rows[0]?.total ?? 0) };
+    return { matches: rows.rows.map((row) => row.record), total: Number(total.rows[0]?.total ?? 0), winRate };
   }
 
   async matchSummary(accountId: string): Promise<MatchHistorySummary> {

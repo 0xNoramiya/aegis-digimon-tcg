@@ -1,3 +1,8 @@
+import prepared0 from "../../api/src/engine/scenarios/arisa-effect-play.fixture";
+import { fixtureVariant, fixtureInstanceId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "arisa-effect-play": prepared0 };
+
 import { test, expect } from "./scenario-page";
 
 test.use({ holdBotAfterTurn: 1 });
@@ -5,7 +10,7 @@ test.use({ holdBotAfterTurn: 1 });
 for (const mode of ["non-puppet", "accept", "decline"] as const) {
   test(`Feedback #68: effect-played ${mode} has only legal Rush attacks`, async ({ scenario, page }) => {
     await page.setViewportSize({ width: mode === "accept" ? 390 : 1440, height: mode === "accept" ? 844 : 1000 });
-    await scenario.open("arena-feedback68-arisa-effect-play");
+    await scenario.openFixture(fixtureVariant(preparedFixtures, "arisa-effect-play"));
     await scenario.resolveUntil((state) => state.phase === "Main" && !state.pendingDecision);
     const before = await scenario.snapshot();
     expect(before.memory).toBe(10);
@@ -13,13 +18,14 @@ for (const mode of ["non-puppet", "accept", "decline"] as const) {
       await expect(page.locator("style[data-vite-dev-id]")).toHaveCount(0);
       expect(await page.locator('link[rel="stylesheet"][href*="/assets/"]').count()).toBeGreaterThan(0);
     }
-    const selected = mode === "non-puppet" ? "feedback68-non-puppet" : "feedback68-puppet";
+    const selected =
+      mode === "non-puppet" ? fixtureInstanceId("feedback68-non-puppet") : fixtureInstanceId("feedback68-puppet");
     let arisaDecisions = 0;
     await scenario.play("Underworld's Call", "Option");
     await scenario.resolveUntil(
       (state) =>
         !state.pendingDecision &&
-        state.players[0]!.trash.some((card) => card.instanceId === "feedback68-call") &&
+        state.players[0]!.trash.some((card) => card.instanceId === fixtureInstanceId("feedback68-call")) &&
         state.players[0]!.battleArea.some(
           (card) => card.topCard.instanceId === selected && card.keywords.includes("Rush") === (mode === "accept"),
         ) &&
@@ -46,13 +52,13 @@ for (const mode of ["non-puppet", "accept", "decline"] as const) {
     expect(played.canAttackPlayer).toBe(mode === "accept");
     expect(arisa.isSuspended).toBe(mode === "accept");
     expect(after.players[0]!.hand.map((card) => card.instanceId)).toEqual([
-      "feedback68-reserve",
-      "feedback68-deck-0-0",
+      fixtureInstanceId("feedback68-reserve"),
+      fixtureInstanceId("feedback68-deck-0-0"),
     ]);
     expect(after.players[0]!.deckCount).toBe(before.players[0]!.deckCount);
     expect(after.players[0]!.trash.map((card) => card.instanceId)).toEqual([
-      mode === "non-puppet" ? "feedback68-puppet" : "feedback68-non-puppet",
-      "feedback68-call",
+      mode === "non-puppet" ? fixtureInstanceId("feedback68-puppet") : fixtureInstanceId("feedback68-non-puppet"),
+      fixtureInstanceId("feedback68-call"),
     ]);
     expect(
       (await scenario.presentation()).decisions.filter((decision) => decision.sourceCardId === "ST19-14"),

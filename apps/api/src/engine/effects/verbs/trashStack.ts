@@ -57,6 +57,7 @@ export function createTrashStackVerbs(pc: PrimitivesContext) {
       removeFromStackAt(host, index);
       entry.card.faceUp = true;
       insertCard(player(entry.card.ownerSeat), Zone.Trash, entry.card);
+      entry.card.trashOriginCardId = host.topCard.cardId;
     }
     const moved = validated.map(({ card }) => card);
     applyOverflow(engine.memory, moved, state.turnSeat);

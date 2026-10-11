@@ -1,16 +1,29 @@
+import prepared0 from "../../api/src/engine/scenarios/metalgarurumon-field-warp.fixture";
+import prepared1 from "../../api/src/engine/scenarios/metalgarurumon-printed-breeding.fixture";
+import prepared2 from "../../api/src/engine/scenarios/wargreymon-field-warp.fixture";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = {
+  "metalgarurumon-field-warp": prepared0,
+  "metalgarurumon-printed-breeding": prepared1,
+  "wargreymon-field-warp": prepared2,
+};
+
 import { test, expect } from "./scenario-page";
 
-const FIELD = "dev-perm-0-feedback59-field";
-const BREEDING = "dev-perm-0-feedback59-breeding";
-const OPPONENT = "dev-perm-1-feedback59-opponent";
-const EVOLUTION = "feedback59-evolution";
+const FIELD = fixturePermanentId("dev-perm-0-feedback59-field");
+const BREEDING = fixturePermanentId("dev-perm-0-feedback59-breeding");
+const OPPONENT = fixturePermanentId("dev-perm-1-feedback59-opponent");
+const EVOLUTION = fixtureInstanceId("feedback59-evolution");
 
 test.use({ holdBotAfterTurn: 1 });
 
 for (const mode of ["metal", "war"] as const) {
   test(`Feedback #59: ${mode} projects only the qualified battle-area warp`, async ({ scenario, page }) => {
     const cardName = mode === "metal" ? "MetalGarurumon" : "WarGreymon";
-    await scenario.open(`arena-feedback59-${mode === "metal" ? "metalgarurumon" : "wargreymon"}-field-warp`);
+    await scenario.openFixture(
+      fixtureVariant(preparedFixtures, `${mode === "metal" ? "metalgarurumon" : "wargreymon"}-field-warp`),
+    );
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     const before = await scenario.snapshot();
     const evolution = before.players[0]!.hand.find((c) => c.instanceId === EVOLUTION)!;
@@ -44,9 +57,11 @@ for (const mode of ["metal", "war"] as const) {
       topCard: { instanceId: before.players[0]!.breeding!.topCard.instanceId },
     });
     expect(
-      after.players[0]!.battleArea.find((p) => p.permanentId === "dev-perm-0-feedback59-near")!.topCard.instanceId,
+      after.players[0]!.battleArea.find((p) => p.permanentId === fixturePermanentId("dev-perm-0-feedback59-near"))!
+        .topCard.instanceId,
     ).toBe(
-      before.players[0]!.battleArea.find((p) => p.permanentId === "dev-perm-0-feedback59-near")!.topCard.instanceId,
+      before.players[0]!.battleArea.find((p) => p.permanentId === fixturePermanentId("dev-perm-0-feedback59-near"))!
+        .topCard.instanceId,
     );
     expect(after.players[0]!.hand.some((c) => c.instanceId === EVOLUTION)).toBe(false);
     expect(after.players[1]!.securityCount).toBe(before.players[1]!.securityCount);
@@ -56,7 +71,7 @@ for (const mode of ["metal", "war"] as const) {
 }
 
 test("Feedback #59: the printed Garurumon level-5 path remains legal in breeding", async ({ scenario, page }) => {
-  await scenario.open("arena-feedback59-metalgarurumon-printed-breeding");
+  await scenario.openFixture(fixtureVariant(preparedFixtures, "metalgarurumon-printed-breeding"));
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
   const before = await scenario.snapshot();
   const evolution = before.players[0]!.hand.find((c) => c.instanceId === EVOLUTION)!;

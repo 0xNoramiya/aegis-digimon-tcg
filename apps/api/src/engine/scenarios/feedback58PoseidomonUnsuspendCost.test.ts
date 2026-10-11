@@ -1,8 +1,13 @@
+import prepared0 from "./poseidomon-unsuspend-cost.fixture.js";
+import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
+
+const preparedFixtures = { "poseidomon-unsuspend-cost": prepared0 };
+
 /* oxlint-disable vitest/no-conditional-expect -- Fixed acceptance cases exercise distinct public continuation intents. */
 import { expect, it } from "vitest";
 import { Phase } from "@aegis/shared";
 import "../../cards/index.js";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { BLUE_DECK, RED_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { assertNoLoudGap, setupEngine, settle } from "../testkit/harness.js";
@@ -13,10 +18,14 @@ it.each([true, false])("Feedback #58: unpaid Link preserves the later unsuspend 
   const s = setupEngine({
     autoAcceptOptional: true,
     autoSelectCards: true,
-    preferInstanceIds: ["feedback58-link-first", "feedback58-link-second", "feedback58-link-third"],
+    preferInstanceIds: [
+      fixtureInstanceId("feedback58-link-first"),
+      fixtureInstanceId("feedback58-link-second"),
+      fixtureInstanceId("feedback58-link-third"),
+    ],
     declinePrompts,
   });
-  layDevScenario("arena-feedback58-poseidomon-unsuspend-cost", s.state, [RED_DECK, BLUE_DECK]);
+  layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "poseidomon-unsuspend-cost"));
   const loop = s.engine.startTurnLoop();
   try {
     await settle(() => s.state.phase === Phase.Breeding);
@@ -33,12 +42,16 @@ it.each([true, false])("Feedback #58: unpaid Link preserves the later unsuspend 
       s.engine.applyIntent(0, {
         type: "appFusion",
         permanentId: host.permanentId,
-        instanceId: "feedback58-poseidomon",
-        linkedInstanceId: "feedback58-beautymon",
+        instanceId: fixtureInstanceId("feedback58-poseidomon"),
+        linkedInstanceId: fixtureInstanceId("feedback58-beautymon"),
       }),
     ).toEqual({ ok: true });
-    await settle(() => !s.state.pendingDecision && host.linked.some((c) => c.instanceId === "feedback58-link-first"));
-    expect(host.stack.map((c) => c.instanceId)).toEqual([initialTop, "feedback58-beautymon"]);
+    await settle(
+      () =>
+        !s.state.pendingDecision &&
+        host.linked.some((c) => c.instanceId === fixtureInstanceId("feedback58-link-first")),
+    );
+    expect(host.stack.map((c) => c.instanceId)).toEqual([initialTop, fixtureInstanceId("feedback58-beautymon")]);
     expect(human.deck).toHaveLength(deckBefore - 1);
     expect(s.state.memory).toBe(5);
     expect(host.isSuspended).toBe(false);
@@ -53,7 +66,10 @@ it.each([true, false])("Feedback #58: unpaid Link preserves the later unsuspend 
       s.engine.applyIntent(0, { type: "attack", attackerPermanentId: host.permanentId, target: { kind: "player" } }),
     ).toEqual({ ok: true });
     await settle(() => !observe(s.engine).isAttacking() && opponent.security.length === securityBefore - 1);
-    expect(host.linked.map((c) => c.instanceId)).toEqual(["feedback58-link-second", "feedback58-link-first"]);
+    expect(host.linked.map((c) => c.instanceId)).toEqual([
+      fixtureInstanceId("feedback58-link-second"),
+      fixtureInstanceId("feedback58-link-first"),
+    ]);
     expect(host.isSuspended).toBe(!accept);
     expect(observe(s.engine).isRestricted(lower, "suspend")).toBe(accept);
     expect(observe(s.engine).isRestricted(highest, "suspend")).toBe(false);
@@ -72,7 +88,7 @@ it.each([true, false])("Feedback #58: unpaid Link preserves the later unsuspend 
       expect(
         s.engine.applyIntent(0, {
           type: "linkCard",
-          instanceId: "feedback58-link-third",
+          instanceId: fixtureInstanceId("feedback58-link-third"),
           targetPermanentId: host.permanentId,
         }),
       ).toEqual({ ok: true });
@@ -80,8 +96,11 @@ it.each([true, false])("Feedback #58: unpaid Link preserves the later unsuspend 
       expect(costPromptCount()).toBe(2);
       expect(s.state.memory).toBe(4);
     }
-    expect(host.linked.map((c) => c.instanceId)).toEqual(["feedback58-link-third", "feedback58-link-first"]);
-    expect(human.trash.map((c) => c.instanceId)).toEqual(["feedback58-link-second"]);
+    expect(host.linked.map((c) => c.instanceId)).toEqual([
+      fixtureInstanceId("feedback58-link-third"),
+      fixtureInstanceId("feedback58-link-first"),
+    ]);
+    expect(human.trash.map((c) => c.instanceId)).toEqual([fixtureInstanceId("feedback58-link-second")]);
     expect(observe(s.engine).isRestricted(lower, "suspend")).toBe(true);
     expect(observe(s.engine).isRestricted(highest, "suspend")).toBe(false);
     expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });

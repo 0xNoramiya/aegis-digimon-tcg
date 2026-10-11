@@ -1,9 +1,11 @@
+import fixtureEx13GallantmonCounterAfterOpponentDecision from "../../api/src/engine/scenarios/ex13-gallantmon-counter-after-opponent-decision.fixture";
+import { fixturePermanentId } from "../../api/src/engine/scenario/references";
 import type { Intent } from "@aegis/shared";
 import { BotPlayer } from "../../api/dist/bot/BotPlayer.js";
 import { AegisRoom } from "../../api/dist/rooms/AegisRoom.js";
 import { test, expect } from "./scenario-page";
 
-const MERVAMON = "dev-perm-1-counter-mervamon";
+const MERVAMON = fixturePermanentId("opponent-counter-mervamon");
 
 /**
  * Production order: the defender's client has already shown the attacker's pending decision, the
@@ -51,12 +53,10 @@ for (const viewport of [
     let restore: (() => void) | undefined;
     test.afterEach(() => restore?.());
 
-    test("Discord 1558162472945586388: the Counter rail opens right after the attacker's decision", async ({
-      scenario,
-    }) => {
+    test("the Counter rail opens right after the attacker's decision", async ({ scenario }) => {
       const { page } = scenario;
       restore = deliverCounterBeforeDecisionPatch();
-      await scenario.open("arena-ex13-gallantmon-counter-after-opponent-decision");
+      await scenario.openFixture(fixtureEx13GallantmonCounterAfterOpponentDecision);
       await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
       await page.getByRole("button", { name: /^End turn$/i }).click();
 

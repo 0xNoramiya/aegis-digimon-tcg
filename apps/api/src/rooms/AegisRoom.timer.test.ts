@@ -1,3 +1,7 @@
+import { configureLocalScenario, clearLocalScenario } from "../engine/scenario/local.js";
+import fixtureMatchTimer from "../engine/scenarios/match-timer.fixture.js";
+import fixtureChronomonEngageOrder from "../engine/scenarios/chronomon-engage-order.fixture.js";
+import fixtureArena from "../engine/scenarios/arena.fixture.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   CombatWindow,
@@ -20,6 +24,7 @@ import { RED_DECK } from "../engine/testDecks.js";
 const rooms: AegisRoom[] = [];
 afterEach(() => {
   for (const room of rooms.splice(0)) room.onDispose();
+  clearLocalScenario();
   vi.restoreAllMocks();
 });
 
@@ -141,7 +146,7 @@ describe("room clock enforcement", () => {
     expect(game.state.timerRemaining0).toBe(50);
   });
 
-  it("publishes the 60s/30s turn bonuses once while retaining each player's reserve", () => {
+  it("#37 publishes fresh thinking windows once at each turn", () => {
     const now = vi.spyOn(performance, "now").mockReturnValue(0);
     const game = room({ private: true, matchTimer: true, timerStartSeconds: 300, timerRefillSeconds: 0 });
     begin(game, 0);
@@ -161,7 +166,7 @@ describe("room clock enforcement", () => {
     game.state.turnSeat = 1;
     sync(game);
     expect(game.state.timerRemaining1).toBe(300);
-    expect(game.state.timerRemaining0).toBe(230);
+    expect(game.state.timerRemaining0).toBe(300);
     now.mockReturnValue(170_000);
     sync(game);
     expect(game.state.timerRemaining1).toBe(280);
@@ -170,15 +175,36 @@ describe("room clock enforcement", () => {
     sync(game);
     now.mockReturnValue(220_000);
     sync(game);
-    expect(game.state.timerRemaining0).toBe(180);
+    expect(game.state.timerRemaining0).toBe(250);
     game.state.turnCount = 3;
     game.state.turnSeat = 0;
     sync(game);
-    expect(game.state.timerRemaining0).toBe(240);
+    expect(game.state.timerRemaining0).toBe(300);
     expect(game.state.timerRemaining1).toBe(300);
     now.mockReturnValue(230_000);
     sync(game);
-    expect(game.state.timerRemaining0).toBe(230);
+    expect(game.state.timerRemaining0).toBe(290);
+  });
+
+  it("#39 adds combo time only for confirmed card plays and digivolutions", () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(0);
+    const game = room();
+    begin(game, 0);
+    sync(game);
+    now.mockReturnValue(50_000);
+    sync(game);
+    engine(game).hooks.emit({ kind: "cardPlayed", seat: 0, cardId: "BT1-010" });
+    expect(game.state.timerRemaining0).toBe(10 + MATCH_TIMER_DECISION_BONUS_SECONDS);
+    engine(game).hooks.emit({
+      kind: "digivolved",
+      seat: 0,
+      cardId: "BT1-015",
+      permanentId: "test",
+      mechanic: "normal",
+    });
+    expect(game.state.timerRemaining0).toBe(10 + 2 * MATCH_TIMER_DECISION_BONUS_SECONDS);
+    engine(game).hooks.emit({ kind: "memoryChanged", from: 1, to: 0, reason: "play" });
+    expect(game.state.timerRemaining0).toBe(10 + 2 * MATCH_TIMER_DECISION_BONUS_SECONDS);
   });
 
   function presentingRoom() {
@@ -267,14 +293,16 @@ describe("room clock enforcement", () => {
     expect(game.state.gameOver).toBe(false);
   });
 
-  it.each(["arena-match-timer", "arena-chronomon-engage-order"] as const)(
+  it.each([fixtureMatchTimer, fixtureChronomonEngageOrder] as const)(
     "enables %s with the standard timer policy",
-    (devScenario) => {
-      const game = room({ botRoom: true, devScenario });
+    (fixture) => {
+      configureLocalScenario(fixture);
+      const game = room({ botRoom: true, devScenario: "local-fixture" });
       expect(game.state.matchTimer).toBe(true);
       expect(game.state.timerStartSeconds).toBe(300);
       expect(game.state.timerRefillSeconds).toBe(60);
-      expect(room({ botRoom: true, devScenario: "arena", matchTimer: true }).state.matchTimer).toBe(false);
+      configureLocalScenario(fixtureArena);
+      expect(room({ botRoom: true, devScenario: "local-fixture", matchTimer: true }).state.matchTimer).toBe(false);
     },
   );
 

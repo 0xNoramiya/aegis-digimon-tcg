@@ -1,7 +1,12 @@
+import prepared0 from "./davis-ken-sources.fixture.js";
+import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
+
+const preparedFixtures = { "davis-ken-sources": prepared0 };
+
 import { describe, expect, it } from "vitest";
 import "../../cards/index.js";
 import { Phase, Zone } from "@aegis/shared";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { BLUE_DECK, RED_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { setupEngine, settle, type EngineSetup } from "../testkit/harness.js";
@@ -280,16 +285,20 @@ describe("Feedback #90 BT16-085 any three opposing sources", () => {
 
   it("playable arena pays for the Tamer, preserves material order, and advances turns naturally", async () => {
     const s = setupEngine({ 0: {}, 1: {} }, { autoAcceptOptional: true, autoSelectCards: true });
-    layDevScenario("arena-feedback90-davis-ken-sources", s.state, [BLUE_DECK, RED_DECK]);
+    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "davis-ken-sources"));
     const loop = s.engine.startTurnLoop();
     try {
       await settle(() => s.state.phase === Phase.Breeding);
       expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
       await advance(s.engine).waitForMainPhase(0);
       const human = s.state.players[0]!;
-      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: "feedback90-tamer" })).toEqual({ ok: true });
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: fixtureInstanceId("feedback90-tamer") })).toEqual({
+        ok: true,
+      });
       await settle(
-        () => human.battleArea.some((p) => p.topCard.instanceId === "feedback90-tamer") && !s.state.pendingDecision,
+        () =>
+          human.battleArea.some((p) => p.topCard.instanceId === fixtureInstanceId("feedback90-tamer")) &&
+          !s.state.pendingDecision,
       );
       expect(s.state.memory).toBe(1);
       const blue = human.battleArea.find((p) => p.topCard.cardId === "BT1-037")!;
@@ -307,16 +316,21 @@ describe("Feedback #90 BT16-085 any three opposing sources", () => {
         s.engine.applyIntent(0, {
           type: "dnaDigivolve",
           materialPermanentIds: [blue.permanentId, green.permanentId],
-          instanceId: "feedback90-dna",
+          instanceId: fixtureInstanceId("feedback90-dna"),
         }),
       ).toEqual({ ok: true });
       await settle(() => s.state.players[1]!.trash.length === 3 && !s.state.pendingDecision);
       expect(s.state.memory).toBe(2);
       expect(
-        human.battleArea.find((p) => p.topCard.instanceId === "feedback90-dna")!.stack.map((c) => c.instanceId),
+        human.battleArea
+          .find((p) => p.topCard.instanceId === fixtureInstanceId("feedback90-dna"))!
+          .stack.map((c) => c.instanceId),
       ).toEqual(order);
       expect(s.state.players[1]!.trash.map((c) => c.instanceId)).toEqual(expectedTrash);
-      expect(human.hand.map((c) => c.instanceId)).toEqual(["github-effects-deck-0-0", "github-effects-deck-0-1"]);
+      expect(human.hand.map((c) => c.instanceId)).toEqual([
+        fixtureInstanceId("github-effects-deck-0-0"),
+        fixtureInstanceId("github-effects-deck-0-1"),
+      ]);
       expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
       await settle(() => s.state.turnSeat === 1 && s.state.phase === Phase.Breeding);
       expect(s.engine.applyIntent(1, { type: "endPhase" })).toEqual({ ok: true });
@@ -324,7 +338,9 @@ describe("Feedback #90 BT16-085 any three opposing sources", () => {
       expect(s.state.turnSeat).toBe(1);
       expect(s.engine.applyIntent(1, { type: "endPhase" })).toEqual({ ok: true });
       await settle(() => s.state.turnSeat === 0 && s.state.phase === Phase.Breeding);
-      expect(human.battleArea.find((p) => p.topCard.instanceId === "feedback90-tamer")!.isSuspended).toBe(false);
+      expect(
+        human.battleArea.find((p) => p.topCard.instanceId === fixtureInstanceId("feedback90-tamer"))!.isSuspended,
+      ).toBe(false);
     } finally {
       if (s.state.phase === Phase.Breeding) s.engine.applyIntent(s.state.turnSeat, { type: "endPhase" });
       s.engine.applyIntent(0, { type: "surrender" });

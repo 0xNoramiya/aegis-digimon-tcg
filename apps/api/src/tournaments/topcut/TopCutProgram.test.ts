@@ -152,7 +152,9 @@ async function buildFrozenField(
     participantIds.push(id);
     const offset = participantValues.length;
     participantValues.push(id, tournament.id, account.id, name, index + 1, T0 + index);
-    participantRows.push(`($${offset + 1},$${offset + 2},'human',$${offset + 3},$${offset + 4},$${offset + 5},'active',$${offset + 6})`);
+    participantRows.push(
+      `($${offset + 1},$${offset + 2},'human',$${offset + 3},$${offset + 4},$${offset + 5},'active',$${offset + 6})`,
+    );
   }
   await pool.query(
     `INSERT INTO tournament_participants (id, tournament_id, kind, account_id, display_name, seed, status, created_at)
@@ -170,12 +172,13 @@ async function buildFrozenField(
   const ledgerValues: unknown[] = [];
   const ledgerRows: string[] = [];
   for (const [index, id] of participantIds.entries())
-    for (let round = 1; round <= rounds; round += 1)
-      {
-        const offset = ledgerValues.length;
-        ledgerValues.push(randomUUID(), tournament.id, id, round, round <= (input.wins[index] ?? 0) ? "win" : "loss", T0);
-        ledgerRows.push(`($${offset + 1},$${offset + 2},$${offset + 3},NULL,NULL,$${offset + 4},$${offset + 5},$${offset + 6})`);
-      }
+    for (let round = 1; round <= rounds; round += 1) {
+      const offset = ledgerValues.length;
+      ledgerValues.push(randomUUID(), tournament.id, id, round, round <= (input.wins[index] ?? 0) ? "win" : "loss", T0);
+      ledgerRows.push(
+        `($${offset + 1},$${offset + 2},$${offset + 3},NULL,NULL,$${offset + 4},$${offset + 5},$${offset + 6})`,
+      );
+    }
   await pool.query(
     `INSERT INTO tournament_result_ledger
        (id, tournament_id, participant_id, opponent_id, opponent_kind, round_number, outcome, recorded_at)

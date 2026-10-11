@@ -186,8 +186,22 @@ describe("RB1-014 Thetismon — KB Q&A rulings", () => {
       baseId: "RB1-013",
       evolvingId: "RB1-014",
       opponent: [
-        { card: "RB1-024", as: "digimon", under: [{ card: "RB1-017", as: "digimonLower" }, { card: "RB1-020", as: "digimonUpper" }] },
-        { card: "RB1-034", as: "tamer", under: [{ card: "BT1-010", as: "tamerLower" }, { card: "BT1-011", as: "tamerUpper" }] },
+        {
+          card: "RB1-024",
+          as: "digimon",
+          under: [
+            { card: "RB1-017", as: "digimonLower" },
+            { card: "RB1-020", as: "digimonUpper" },
+          ],
+        },
+        {
+          card: "RB1-034",
+          as: "tamer",
+          under: [
+            { card: "BT1-010", as: "tamerLower" },
+            { card: "BT1-011", as: "tamerUpper" },
+          ],
+        },
       ],
       targetAliases: ["digimon", "tamer"],
       underAliases: ["digimonLower", "tamerUpper"],

@@ -1,8 +1,13 @@
+import prepared0 from "./savior-option-cost.fixture.js";
+import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
+
+const preparedFixtures = { "savior-option-cost": prepared0 };
+
 /* eslint-disable vitest/no-conditional-expect -- Each static input mode asserts its distinct paid, declined-Arts, or refused lifecycle; these are not runtime feature probes. */
 import { expect, it } from "vitest";
 import { Phase } from "@aegis/shared";
 import { advance } from "../testkit/advance.js";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { RED_DECK } from "../testDecks.js";
 import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
 import "../../cards/index.js";
@@ -114,14 +119,14 @@ it.each(["arts", "declineArts", "refuse"] as const)(
       autoAcceptOptional: true,
       autoSelectCards: true,
       autoChooseOption: true,
-      preferInstanceIds: ["feedback80-option"],
+      preferInstanceIds: [fixtureInstanceId("feedback80-option")],
       declinePrompts: mode === "refuse" ? ["SaviorHuckmon"] : mode === "declineArts" ? ["Arts Digivolve"] : [],
       onEvent(event) {
         if (event.kind === "effectResolved" && event.sourceCardId === "EX13-065" && event.timing === "OnUseOption")
           optionDP = s.state.players[1]!.battleArea[0]!.currentDP;
       },
     });
-    layDevScenario("arena-feedback80-savior-option-cost", s.state, [RED_DECK, RED_DECK]);
+    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "savior-option-cost"));
     const host = s.state.players[0]!.battleArea[0]!;
     const loop = s.engine.startTurnLoop();
     try {
@@ -133,7 +138,7 @@ it.each(["arts", "declineArts", "refuse"] as const)(
         s.engine.applyIntent(0, {
           type: "digivolve",
           permanentId: host.permanentId,
-          instanceId: "feedback80-savior",
+          instanceId: fixtureInstanceId("feedback80-savior"),
           useAlternateCost: true,
         }),
       ).toEqual({ ok: true });
@@ -145,33 +150,65 @@ it.each(["arts", "declineArts", "refuse"] as const)(
           s.engine.mainVerbContinuationsInFlight === 0,
       );
       const player = s.state.players[0]!;
-      expect(host.topCard.instanceId).toBe("feedback80-savior");
-      expect(host.stack.map((c) => c.instanceId)).toEqual(["feedback80-huckmon", "feedback80-base"]);
+      expect(host.topCard.instanceId).toBe(fixtureInstanceId("feedback80-savior"));
+      expect(host.stack.map((c) => c.instanceId)).toEqual([
+        fixtureInstanceId("feedback80-huckmon"),
+        fixtureInstanceId("feedback80-base"),
+      ]);
       expect(s.state.memory).toBe(mode === "refuse" ? 3 : 4);
       expect(player.hand.map((c) => c.instanceId)).toEqual(
         mode === "refuse"
-          ? ["feedback80-reserve-0", "feedback80-option", "feedback80-deck-0-0", "feedback80-deck-0-1"]
+          ? [
+              fixtureInstanceId("feedback80-reserve-0"),
+              fixtureInstanceId("feedback80-option"),
+              fixtureInstanceId("feedback80-deck-0-0"),
+              fixtureInstanceId("feedback80-deck-0-1"),
+            ]
           : mode === "arts"
-            ? ["feedback80-reserve-0", "feedback80-deck-0-0", "feedback80-deck-0-1", "feedback80-deck-0-2"]
-            : ["feedback80-reserve-0", "feedback80-deck-0-0", "feedback80-deck-0-1", "feedback80-security-0-0"],
+            ? [
+                fixtureInstanceId("feedback80-reserve-0"),
+                fixtureInstanceId("feedback80-deck-0-0"),
+                fixtureInstanceId("feedback80-deck-0-1"),
+                fixtureInstanceId("feedback80-deck-0-2"),
+              ]
+            : [
+                fixtureInstanceId("feedback80-reserve-0"),
+                fixtureInstanceId("feedback80-deck-0-0"),
+                fixtureInstanceId("feedback80-deck-0-1"),
+                fixtureInstanceId("feedback80-security-0-0"),
+              ],
       );
       expect(player.battleArea.map((p) => p.topCard.instanceId)).toEqual(
         mode === "refuse"
-          ? ["feedback80-savior"]
-          : ["feedback80-savior", mode === "arts" ? "feedback80-option" : "feedback80-blanc"],
+          ? [fixtureInstanceId("feedback80-savior")]
+          : [
+              fixtureInstanceId("feedback80-savior"),
+              mode === "arts" ? fixtureInstanceId("feedback80-option") : fixtureInstanceId("feedback80-blanc"),
+            ],
       );
       expect(player.trash.map((c) => c.instanceId)).toEqual(
-        mode === "refuse" ? ["feedback80-blanc"] : mode === "arts" ? [] : ["feedback80-option"],
+        mode === "refuse"
+          ? [fixtureInstanceId("feedback80-blanc")]
+          : mode === "arts"
+            ? []
+            : [fixtureInstanceId("feedback80-option")],
       );
       expect(player.security.map((c) => c.instanceId)).toEqual(
         mode === "declineArts"
-          ? ["feedback80-deck-0-2", "feedback80-security-0-1", "feedback80-security-0-2"]
-          : ["feedback80-security-0-0", "feedback80-security-0-1", "feedback80-security-0-2"],
+          ? [
+              fixtureInstanceId("feedback80-deck-0-2"),
+              fixtureInstanceId("feedback80-security-0-1"),
+              fixtureInstanceId("feedback80-security-0-2"),
+            ]
+          : [
+              fixtureInstanceId("feedback80-security-0-0"),
+              fixtureInstanceId("feedback80-security-0-1"),
+              fixtureInstanceId("feedback80-security-0-2"),
+            ],
       );
       expect(player.deck.map((c) => c.instanceId)).toEqual(
-        Array.from(
-          { length: mode === "refuse" ? 10 : 9 },
-          (_, i) => `feedback80-deck-0-${i + (mode === "refuse" ? 2 : 3)}`,
+        Array.from({ length: mode === "refuse" ? 10 : 9 }, (_, i) =>
+          fixtureInstanceId(`feedback80-deck-0-${i + (mode === "refuse" ? 2 : 3)}`),
         ),
       );
       expect(s.state.players[1]!.battleArea[0]!.currentDP).toBe(20_000);

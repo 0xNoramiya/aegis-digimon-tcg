@@ -1,20 +1,22 @@
+import prepared0 from "../../api/src/engine/scenarios/amaterasumon-empty-resolution.fixture";
+import prepared1 from "../../api/src/engine/scenarios/amaterasumon-paid-resolution.fixture";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "amaterasumon-empty-resolution": prepared0, "amaterasumon-paid-resolution": prepared1 };
+
 import { test, expect } from "./scenario-page";
 
-const ATTACKER = "dev-perm-0-feedback57-attacker";
-const LOWEST = "dev-perm-1-feedback57-lowest";
-const TARGET = "dev-perm-1-feedback57-target";
-const PAYMENT = ["feedback57-return-red", "feedback57-return-blue"];
+const ATTACKER = fixturePermanentId("dev-perm-0-feedback57-attacker");
+const LOWEST = fixturePermanentId("dev-perm-1-feedback57-lowest");
+const TARGET = fixturePermanentId("dev-perm-1-feedback57-target");
+const PAYMENT = [fixtureInstanceId("feedback57-return-red"), fixtureInstanceId("feedback57-return-blue")];
 
 test.use({ holdBotAfterTurn: 1 });
 
 for (const mode of ["empty", "pay", "decline"] as const) {
   test(`Feedback #57: Amaterasumon's ${mode} resolution precedes the second security check`, async ({ scenario }) => {
     const paid = mode === "pay";
-    await scenario.open(
-      mode === "empty"
-        ? "arena-feedback57-amaterasumon-empty-resolution"
-        : "arena-feedback57-amaterasumon-paid-resolution",
-    );
+    await scenario.open(mode === "empty" ? "amaterasumon-empty-resolution" : "amaterasumon-paid-resolution");
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     const before = await scenario.snapshot();
     const source = before.players[0]!.battleArea.find((p) => p.permanentId === ATTACKER)!;
@@ -53,7 +55,8 @@ for (const mode of ["empty", "pay", "decline"] as const) {
         }
         if (/Ascension/.test(decision.promptText) || decision.options.timing === "OnDeletion") return { accept: false };
         const candidates = decision.options.candidateInstanceIds ?? [];
-        if (candidates.includes("feedback57-amaterasu")) return { instanceId: "feedback57-amaterasu" };
+        if (candidates.includes(fixtureInstanceId("feedback57-amaterasu")))
+          return { instanceId: fixtureInstanceId("feedback57-amaterasu") };
         if (candidates.includes(PAYMENT[0]!)) {
           expect(paid).toBe(true);
           expect(candidates).toEqual(expect.arrayContaining(PAYMENT));
@@ -84,19 +87,21 @@ for (const mode of ["empty", "pay", "decline"] as const) {
     expect(final.players[0]!.deckCount).toBe(before.players[0]!.deckCount - 1);
     expect(final.players[0]!.hand).toHaveLength(before.players[0]!.hand.length);
     expect(final.players[1]!.securityCount).toBe(before.players[1]!.securityCount - 2);
-    expect(final.players[1]!.battleArea.some((p) => p.topCard.instanceId === "feedback57-parkour")).toBe(true);
-    expect(final.players[1]!.trash.map((c) => c.instanceId)).not.toContain("feedback57-parkour");
+    expect(
+      final.players[1]!.battleArea.some((p) => p.topCard.instanceId === fixtureInstanceId("feedback57-parkour")),
+    ).toBe(true);
+    expect(final.players[1]!.trash.map((c) => c.instanceId)).not.toContain(fixtureInstanceId("feedback57-parkour"));
     expect(final.players[1]!.breeding?.topCard.cardId).toBe("EX5-015");
     if (paid) {
       const survivor = final.players[0]!.battleArea.find((p) => p.permanentId === ATTACKER)!;
-      expect(survivor.topCard.instanceId).toBe("feedback57-amaterasu");
+      expect(survivor.topCard.instanceId).toBe(fixtureInstanceId("feedback57-amaterasu"));
       expect(survivor.stack.map((c) => c.instanceId)).toEqual([sourceIds[1], sourceIds[0]]);
       expect(survivor.isSuspended).toBe(true);
       expect(final.players[0]!.trash).toHaveLength(0);
     } else {
       expect(final.players[0]!.battleArea).toHaveLength(0);
       expect(final.players[0]!.trash.map((c) => c.instanceId)).toEqual(
-        expect.arrayContaining([...sourceIds, "feedback57-amaterasu"]),
+        expect.arrayContaining([...sourceIds, fixtureInstanceId("feedback57-amaterasu")]),
       );
     }
     if (mode !== "empty") {

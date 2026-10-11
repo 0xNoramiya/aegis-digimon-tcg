@@ -1,9 +1,15 @@
+import prepared0 from "./execute-replacement.fixture.js";
+import prepared1 from "./ordinary-replacement.fixture.js";
+import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
+
+const preparedFixtures = { "execute-replacement": prepared0, "ordinary-replacement": prepared1 };
+
 import { expect, it } from "vitest";
 import { RED_DECK } from "../testDecks.js";
 import { Phase, type DecisionResponse, type ServerEvent } from "@aegis/shared";
 import { setupEngine, settle, type EngineSetup } from "../testkit/harness.js";
 import { advance } from "../testkit/advance.js";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { observe } from "../testkit/observe.js";
 import "../../cards/index.js";
 
@@ -311,7 +317,7 @@ it("Feedback #79: an established Giant Slayer's ordinary battle has one deletion
 
 it.each([false, true])("Feedback #79 playable Execute arena: exact Holy payment outcome %s", async (holyProtection) => {
   const s = setupEngine({}, { autoOrderTriggers: false, autoOrderCards: false });
-  layDevScenario("arena-feedback79-execute-replacement", s.state, [RED_DECK, RED_DECK]);
+  layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "execute-replacement"));
   const loop = s.engine.startTurnLoop();
   try {
     await settle(() => s.state.phase === Phase.Breeding);
@@ -320,25 +326,31 @@ it.each([false, true])("Feedback #79 playable Execute arena: exact Holy payment 
     expect(
       s.engine.applyIntent(0, {
         type: "playCard",
-        instanceId: "feedback79-giant",
-        assembly: { materialInstanceIds: MATERIALS.map((_, i) => `feedback79-material-${i}`).reverse() },
+        instanceId: fixtureInstanceId("feedback79-giant"),
+        assembly: {
+          materialInstanceIds: MATERIALS.map((_, i) => fixtureInstanceId(`feedback79-material-${i}`)).reverse(),
+        },
       }),
     ).toEqual({ ok: true });
     await resolve(s, holyProtection, () => s.state.turnSeat === 1 && s.state.phase === Phase.Breeding);
     const player = s.state.players[0]!;
-    expect(player.battleArea.map((p) => p.topCard.instanceId)).toEqual(holyProtection ? ["feedback79-destroy"] : []);
+    expect(player.battleArea.map((p) => p.topCard.instanceId)).toEqual(
+      holyProtection ? [fixtureInstanceId("feedback79-destroy")] : [],
+    );
     expect(player.trash.map((c) => c.instanceId)).toEqual(
       holyProtection
         ? []
         : [
-            ...MATERIALS.map((_, i) => `feedback79-material-${i}`),
-            "feedback79-giant",
-            "feedback79-destroy",
-            "feedback79-security-0-0",
+            ...MATERIALS.map((_, i) => fixtureInstanceId(`feedback79-material-${i}`)),
+            fixtureInstanceId("feedback79-giant"),
+            fixtureInstanceId("feedback79-destroy"),
+            fixtureInstanceId("feedback79-security-0-0"),
           ],
     );
     expect(player.deck.slice(holyProtection ? -2 : -1).map((c) => c.instanceId)).toEqual(
-      holyProtection ? ["feedback79-cherub", "feedback79-security-0-0"] : ["feedback79-cherub"],
+      holyProtection
+        ? [fixtureInstanceId("feedback79-cherub"), fixtureInstanceId("feedback79-security-0-0")]
+        : [fixtureInstanceId("feedback79-cherub")],
     );
     expect(s.state.memory).toBe(5);
   } finally {
@@ -353,7 +365,7 @@ it.each([false, true])("Feedback #79 playable Execute arena: exact Holy payment 
 
 it("Feedback #79 playable ordinary arena: only battle deletion is prevented and the turn may pass normally", async () => {
   const s = setupEngine({}, { autoOrderTriggers: false, autoOrderCards: false });
-  layDevScenario("arena-feedback79-ordinary-replacement", s.state, [RED_DECK, RED_DECK]);
+  layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "ordinary-replacement"));
   const loop = s.engine.startTurnLoop();
   try {
     await settle(() => s.state.phase === Phase.Breeding);
@@ -372,10 +384,10 @@ it("Feedback #79 playable ordinary arena: only battle deletion is prevented and 
         !s.state.combatWindow &&
         s.engine.mainVerbContinuationsInFlight === 0,
     );
-    expect(host.topCard.instanceId).toBe("feedback79-destroy");
+    expect(host.topCard.instanceId).toBe(fixtureInstanceId("feedback79-destroy"));
     expect(host.stack.map((c) => c.instanceId)).toEqual([
-      ...MATERIALS.map((_, i) => `feedback79-material-${i}`),
-      "feedback79-giant",
+      ...MATERIALS.map((_, i) => fixtureInstanceId(`feedback79-material-${i}`)),
+      fixtureInstanceId("feedback79-giant"),
     ]);
     expect(s.state.players[0]!.trash).toHaveLength(0);
     expect(s.state.players[0]!.security).toHaveLength(3);

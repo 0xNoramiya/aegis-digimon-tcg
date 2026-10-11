@@ -1,3 +1,9 @@
+import prepared0 from "../../api/src/engine/scenarios/dragons-roar-normal-colors.fixture";
+import prepared1 from "../../api/src/engine/scenarios/dragons-roar-breeding.fixture";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "dragons-roar-normal-colors": prepared0, "dragons-roar-breeding": prepared1 };
+
 import { test, expect } from "./scenario-page";
 
 test.use({ holdBotAfterTurn: 1 });
@@ -8,14 +14,14 @@ for (const mode of ["keep", "move", "normal-colors"] as const) {
   }) => {
     const normalColors = mode === "normal-colors";
     await scenario.open(
-      normalColors ? "arena-feedback62-dragons-roar-normal-colors" : "arena-feedback62-dragons-roar-breeding",
+      normalColors ? "dragons-roar-normal-colors" : "dragons-roar-breeding",
       "normal",
       mode === "move" ? "move" : "end",
     );
     await scenario.resolveUntil((state) => state.phase === "Main" && !state.pendingDecision);
     const before = await scenario.snapshot();
     const owner = before.players[0]!;
-    const roar = owner.hand.find((card) => card.instanceId === "feedback62-roar")!;
+    const roar = owner.hand.find((card) => card.instanceId === fixtureInstanceId("feedback62-roar"))!;
     expect(roar.playableFromHand).toBe(mode !== "keep");
     expect(before.memory).toBe(6);
 
@@ -30,28 +36,33 @@ for (const mode of ["keep", "move", "normal-colors"] as const) {
       expect(after.phase).toBe("Main");
       expect(after.players[0]!.hand.map((card) => card.instanceId)).toEqual(owner.hand.map((card) => card.instanceId));
       expect(after.players[0]!.security.map((card) => card.instanceId)).toEqual([
-        "feedback62-security-top",
-        "feedback62-security-bottom",
+        fixtureInstanceId("feedback62-security-top"),
+        fixtureInstanceId("feedback62-security-bottom"),
       ]);
       expect(after.players[0]!.trash).toHaveLength(0);
-      expect(after.players[0]!.breeding?.topCard.instanceId).toBe("dev-field-0-feedback62-source");
+      expect(after.players[0]!.breeding?.topCard.instanceId).toBe(fixtureInstanceId("dev-field-0-feedback62-source"));
       expect(
-        after.players[1]!.battleArea.find((permanent) => permanent.permanentId === "dev-perm-1-feedback62-target")!
-          .currentDP,
+        after.players[1]!.battleArea.find(
+          (permanent) => permanent.permanentId === fixturePermanentId("dev-perm-1-feedback62-target"),
+        )!.currentDP,
       ).toBe(12000);
     } else {
       await scenario.play("Dragon's Roar", "Option");
       await scenario.resolveUntil(
         (state) =>
           !state.pendingDecision &&
-          !state.players[0]!.hand.some((card) => card.instanceId === "feedback62-roar") &&
+          !state.players[0]!.hand.some((card) => card.instanceId === fixtureInstanceId("feedback62-roar")) &&
           state.players[1]!.battleArea.some(
-            (permanent) => permanent.permanentId === "dev-perm-1-feedback62-target" && permanent.currentDP === 6000,
+            (permanent) =>
+              permanent.permanentId === fixturePermanentId("dev-perm-1-feedback62-target") &&
+              permanent.currentDP === 6000,
           ),
         (decision) => ({
           accept: true,
-          instanceId: decision.options.candidateInstanceIds?.includes("dev-perm-1-feedback62-target")
-            ? "dev-perm-1-feedback62-target"
+          instanceId: decision.options.candidateInstanceIds?.includes(
+            fixturePermanentId("dev-perm-1-feedback62-target"),
+          )
+            ? fixturePermanentId("dev-perm-1-feedback62-target")
             : undefined,
         }),
       );
@@ -61,19 +72,25 @@ for (const mode of ["keep", "move", "normal-colors"] as const) {
       expect(after.turnSeat).toBe(0);
       expect(after.players[0]!.deckCount).toBe(owner.deckCount);
       expect(after.players[0]!.hand.map((card) => card.instanceId)).toEqual(
-        owner.hand.filter((card) => card.instanceId !== "feedback62-roar").map((card) => card.instanceId),
+        owner.hand
+          .filter((card) => card.instanceId !== fixtureInstanceId("feedback62-roar"))
+          .map((card) => card.instanceId),
       );
       expect(after.players[0]!.security.map((card) => card.instanceId)).toEqual([
-        "feedback62-security-bottom",
-        "feedback62-roar",
+        fixtureInstanceId("feedback62-security-bottom"),
+        fixtureInstanceId("feedback62-roar"),
       ]);
-      expect(after.players[0]!.trash.map((card) => card.instanceId)).toEqual(["feedback62-security-top"]);
+      expect(after.players[0]!.trash.map((card) => card.instanceId)).toEqual([
+        fixtureInstanceId("feedback62-security-top"),
+      ]);
       if (normalColors) {
-        expect(after.players[0]!.breeding?.topCard.instanceId).toBe("dev-field-0-feedback62-source");
+        expect(after.players[0]!.breeding?.topCard.instanceId).toBe(fixtureInstanceId("dev-field-0-feedback62-source"));
       } else {
         expect(after.players[0]!.breeding).toBeFalsy();
         expect(
-          after.players[0]!.battleArea.some((permanent) => permanent.permanentId === "dev-perm-0-feedback62-source"),
+          after.players[0]!.battleArea.some(
+            (permanent) => permanent.permanentId === fixturePermanentId("dev-perm-0-feedback62-source"),
+          ),
         ).toBe(true);
       }
     }

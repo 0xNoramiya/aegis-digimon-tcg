@@ -1,9 +1,14 @@
+import prepared0 from "../../api/src/engine/scenarios/duplicate-option-choice.fixture";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "duplicate-option-choice": prepared0 };
+
 import { test, expect } from "./scenario-page";
 
-const BASE = "dev-perm-0-feedback60-base";
-const OLD = "feedback60-old";
-const PENDING = "feedback60-pending";
-const DUAL = "feedback60-dual";
+const BASE = fixturePermanentId("dev-perm-0-feedback60-base");
+const OLD = fixtureInstanceId("feedback60-old");
+const PENDING = fixtureInstanceId("feedback60-pending");
+const DUAL = fixtureInstanceId("feedback60-dual");
 
 test.use({ holdBotAfterTurn: 1 });
 
@@ -20,7 +25,7 @@ for (const { width, theme, selection } of cases) {
   test(`Feedback #60: choose ${selection} at ${width}px in ${theme}`, async ({ scenario, page }) => {
     await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
     await page.addInitScript((dark) => localStorage.setItem("aegis:darkMode", String(dark)), theme === "dark");
-    await scenario.open("arena-feedback60-duplicate-option-choice");
+    await scenario.openFixture(fixtureVariant(preparedFixtures, "duplicate-option-choice"));
     await scenario.resolveUntil((state) => state.phase === "Main" && !state.pendingDecision);
     const before = await scenario.snapshot();
     expect(before.memory).toBe(10);
@@ -82,21 +87,27 @@ for (const { width, theme, selection } of cases) {
     expect(after.turnSeat).toBe(0);
     expect(after.players[0]!.deckCount).toBe(before.players[0]!.deckCount - 1);
     expect(after.players[0]!.hand.map((card) => card.instanceId)).toEqual(
-      expect.arrayContaining(["feedback60-reserve", "feedback60-deck-0-0", "feedback60-deck-0-1"]),
+      expect.arrayContaining([
+        fixtureInstanceId("feedback60-reserve"),
+        fixtureInstanceId("feedback60-deck-0-0"),
+        fixtureInstanceId("feedback60-deck-0-1"),
+      ]),
     );
-    expect(after.players[0]!.hand.some((card) => card.instanceId === "feedback60-lady")).toBe(false);
+    expect(after.players[0]!.hand.some((card) => card.instanceId === fixtureInstanceId("feedback60-lady"))).toBe(false);
     const lady = after.players[0]!.battleArea.find((permanent) => permanent.permanentId === BASE)!;
-    expect(lady.topCard.instanceId).toBe("feedback60-lady");
+    expect(lady.topCard.instanceId).toBe(fixtureInstanceId("feedback60-lady"));
     expect(lady.stack.map((card) => card.instanceId)).toEqual(
       selection === "refuse"
-        ? ["dev-field-0-feedback60-base"]
-        : [selection === "old" ? OLD : PENDING, "dev-field-0-feedback60-base"],
+        ? [fixtureInstanceId("dev-field-0-feedback60-base")]
+        : [selection === "old" ? OLD : PENDING, fixtureInstanceId("dev-field-0-feedback60-base")],
     );
     expect(after.players[0]!.trash.map((card) => card.instanceId)).toEqual(
       selection === "refuse" ? [OLD, PENDING, DUAL] : [selection === "old" ? PENDING : OLD, DUAL],
     );
     expect(after.players[1]!.battleArea).toHaveLength(0);
-    expect(after.players[1]!.trash.map((card) => card.instanceId)).toEqual(["dev-field-1-feedback60-victim"]);
+    expect(after.players[1]!.trash.map((card) => card.instanceId)).toEqual([
+      fixtureInstanceId("dev-field-1-feedback60-victim"),
+    ]);
     expect(after.players[0]!.securityCount).toBe(before.players[0]!.securityCount);
     const events = (await scenario.presentation()).events;
     const hurricane = events.filter((event) => event.kind === "effectTriggered" && event.sourceInstanceId === PENDING);

@@ -1,10 +1,15 @@
+import prepared0 from "./nokia-hand-evolution.fixture.js";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../scenario/references.js";
+
+const preparedFixtures = { "nokia-hand-evolution": prepared0 };
+
 import { Phase, EffectTiming } from "@aegis/shared";
 import { expect, it } from "vitest";
 import { effectsOf } from "../effects/collect.js";
 import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
 import { observe } from "../testkit/observe.js";
 import { advance } from "../testkit/advance.js";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { RED_DECK, BLUE_DECK } from "../testDecks.js";
 import "../../cards/index.js";
 
@@ -319,7 +324,7 @@ it.each(["war", "metal"] as const)(
       autoChooseOption: true,
       autoOrderTriggers: false,
     });
-    layDevScenario("arena-feedback72-nokia-hand-evolution", s.state, [RED_DECK, BLUE_DECK]);
+    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "nokia-hand-evolution"));
     const loop = s.engine.startTurnLoop();
     try {
       await settle(() => s.state.phase === Phase.Breeding);
@@ -329,7 +334,9 @@ it.each(["war", "metal"] as const)(
       expect(s.state.memory).toBe(3);
       const breeding = p.breeding!.topCard.instanceId;
       const deck = p.deck.length;
-      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: "feedback72-agumon" })).toEqual({ ok: true });
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: fixtureInstanceId("feedback72-agumon") })).toEqual(
+        { ok: true },
+      );
       await resolveRefusedTamerPlans(s);
       expect(s.state.memory).toBe(0);
       expect(p.trash).toHaveLength(0);
@@ -339,7 +346,11 @@ it.each(["war", "metal"] as const)(
         ["EX9-066", "BT17-081"],
       ]);
       const keys = p.hand
-        .filter((card) => card.instanceId === "feedback72-war" || card.instanceId === "feedback72-metal")
+        .filter(
+          (card) =>
+            card.instanceId === fixtureInstanceId("feedback72-war") ||
+            card.instanceId === fixtureInstanceId("feedback72-metal"),
+        )
         .map((card) => ({
           card,
           key: effectsOf(EffectTiming.OnDeclaration, observe(s.engine).cardSource(card))[0]!.effectKey,
@@ -349,9 +360,11 @@ it.each(["war", "metal"] as const)(
         expect(JSON.parse(card.activatableEffectsJson)).toEqual([expect.objectContaining({ effectKey: key })]);
         expect(card.playableFromHand).toBe(false);
       }
-      const chosen = keys.find(({ card }) => card.instanceId === `feedback72-${alias}`)!;
-      const played = p.battleArea.find((perm) => perm.topCard.instanceId === "feedback72-agumon")!;
-      const gabumon = p.battleArea.find((perm) => perm.permanentId === "dev-perm-0-feedback72-gabumon")!;
+      const chosen = keys.find(({ card }) => card.instanceId === fixtureInstanceId(`feedback72-${alias}`))!;
+      const played = p.battleArea.find((perm) => perm.topCard.instanceId === fixtureInstanceId("feedback72-agumon"))!;
+      const gabumon = p.battleArea.find(
+        (perm) => perm.permanentId === fixturePermanentId("dev-perm-0-feedback72-gabumon"),
+      )!;
       const enter = [played.enterFieldTurnCount, gabumon.enterFieldTurnCount];
       expect(
         s.engine.applyIntent(0, {
@@ -363,18 +376,18 @@ it.each(["war", "metal"] as const)(
       await resolveRefusedTamerPlans(s);
       await settle(() => s.state.turnSeat === 1 && s.state.phase === Phase.Breeding && !s.state.pendingDecision);
       expect(s.state.memory).toBe(6);
-      expect(played.topCard.instanceId).toBe("feedback72-war");
-      expect(played.stack.map((c) => c.instanceId)).toEqual(["feedback72-agumon"]);
-      expect(gabumon.topCard.instanceId).toBe("feedback72-metal");
-      expect(gabumon.stack.map((c) => c.instanceId)).toEqual(["dev-field-0-feedback72-gabumon"]);
+      expect(played.topCard.instanceId).toBe(fixtureInstanceId("feedback72-war"));
+      expect(played.stack.map((c) => c.instanceId)).toEqual([fixtureInstanceId("feedback72-agumon")]);
+      expect(gabumon.topCard.instanceId).toBe(fixtureInstanceId("feedback72-metal"));
+      expect(gabumon.stack.map((c) => c.instanceId)).toEqual([fixtureInstanceId("dev-field-0-feedback72-gabumon")]);
       expect([played.enterFieldTurnCount, gabumon.enterFieldTurnCount]).toEqual(enter);
       expect(p.breeding!.topCard.instanceId).toBe(breeding);
       expect(p.deck).toHaveLength(deck - 2);
       expect(p.hand.map((c) => c.instanceId)).toEqual([
-        "feedback72-reserve",
-        "feedback72-deck-0-0",
-        "feedback72-deck-0-1",
-        "feedback72-deck-0-2",
+        fixtureInstanceId("feedback72-reserve"),
+        fixtureInstanceId("feedback72-deck-0-0"),
+        fixtureInstanceId("feedback72-deck-0-1"),
+        fixtureInstanceId("feedback72-deck-0-2"),
       ]);
       expect(
         s.events.flatMap((e) =>

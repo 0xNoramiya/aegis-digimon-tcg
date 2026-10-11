@@ -1,3 +1,4 @@
+import { replayVideoEs } from "./replayVideo";
 import { profileReplayEs } from "./profileReplays";
 import { replayEs } from "./replays";
 /* Latin American Spanish strings. Typed against the English source, so a new key
@@ -19,6 +20,7 @@ import { shellEs } from "./redesign/shell.es";
 export const es: Record<keyof typeof en, string> = {
   ...profileReplayEs,
   ...replayEs,
+  ...replayVideoEs,
   "feedback.title": "Comentarios de los jugadores",
   "feedback.subtitle": "Clasifica los informes, define su estado y responde a quien los envió.",
   "feedback.restricted": "Solo los administradores pueden ver los comentarios.",
@@ -200,12 +202,12 @@ export const es: Record<keyof typeof en, string> = {
   "lobby.timer.label": "Temporizador de partida",
   "lobby.timer.with": "Con temporizador",
   "lobby.timer.without": "Sin temporizador",
-  "lobby.timer.summary": "{minutes} min iniciales · +60s en tu turno · +30s en el turno del oponente",
+  "lobby.timer.summary": "{minutes} min por turno · Se reinicia cada turno",
   "lobby.timer.publicHint": "Te emparejas con jugadores que usan la misma opción de temporizador.",
   "lobby.timer.privateHint":
-    "Se aplica a ambos jugadores. Corre mientras decides, hasta el tiempo inicial. Si se agota, pierdes.",
+    "Se aplica a ambos jugadores. El tiempo se reinicia cada turno y corre mientras decides. Agotarlo significa derrota.",
   "lobby.timer.guestHint": "El anfitrión configura el temporizador para ambos jugadores.",
-  "lobby.timer.start": "Tiempo inicial",
+  "lobby.timer.start": "Tiempo por turno",
   "lobby.timer.refill": "Recarga por turno",
   "lobby.timer.seconds": "{seconds} s",
   "lobby.timer.enabled": "Temporizador activado",
@@ -214,10 +216,10 @@ export const es: Record<keyof typeof en, string> = {
   "lobby.timer.yourTurn": "Tu turno",
   "lobby.timer.opponentTurn": "Turno del oponente",
   "lobby.timer.shortSeconds": "{seconds}s",
-  "lobby.timer.capHint": "Máximo {seconds}s · Corre mientras decides",
+  "lobby.timer.capHint": "{seconds}s por turno · Se reinicia cada turno",
   "lobby.timer.offHint": "Se aplica a ambos jugadores. Juega a tu ritmo.",
   "lobby.timer.rules":
-    "Corre mientras decides. Suma 60s en tu turno y 30s en el del oponente, hasta el tiempo inicial. Si se agota, pierdes.",
+    "Ambos jugadores reciben tiempo nuevo cada turno. Corre mientras decides; se pausa durante animaciones y mientras el oponente se reconecta. Agotarlo significa derrota.",
   "game.timer.you": "Tu tiempo",
   "game.timer.opponent": "Oponente",
   "game.timer.active": "Tu acción",
@@ -325,6 +327,15 @@ export const es: Record<keyof typeof en, string> = {
   "releases.1.21.0-beta.fix.rules": releaseMessages["releases.1.21.0-beta.fix.rules"].es,
   "releases.1.21.0-beta.fix.table": releaseMessages["releases.1.21.0-beta.fix.table"].es,
   "releases.1.21.0-beta.fix.privacy": releaseMessages["releases.1.21.0-beta.fix.privacy"].es,
+  "releases.1.23.0-beta.summary": releaseMessages["releases.1.23.0-beta.summary"]["es"],
+  "releases.1.23.0-beta.feature.timer": releaseMessages["releases.1.23.0-beta.feature.timer"]["es"],
+  "releases.1.23.0-beta.feature.video": releaseMessages["releases.1.23.0-beta.feature.video"]["es"],
+  "releases.1.23.0-beta.feature.trash": releaseMessages["releases.1.23.0-beta.feature.trash"]["es"],
+  "releases.1.23.0-beta.fix.combo": releaseMessages["releases.1.23.0-beta.fix.combo"]["es"],
+  "releases.1.23.0-beta.fix.copies": releaseMessages["releases.1.23.0-beta.fix.copies"]["es"],
+  "releases.1.23.0-beta.fix.cards": releaseMessages["releases.1.23.0-beta.fix.cards"]["es"],
+  "releases.1.23.0-beta.fix.profile": releaseMessages["releases.1.23.0-beta.fix.profile"]["es"],
+  "releases.1.23.0-beta.fix.reports": releaseMessages["releases.1.23.0-beta.fix.reports"]["es"],
   "releases.1.22.1-beta.summary": releaseMessages["releases.1.22.1-beta.summary"].es,
   "releases.1.22.1-beta.fix.sources": releaseMessages["releases.1.22.1-beta.fix.sources"].es,
   "releases.1.22.1-beta.fix.cards": releaseMessages["releases.1.22.1-beta.fix.cards"].es,
@@ -1446,6 +1457,10 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.zoomCard": "Ampliar carta",
   "overlay.trashEffect": "Efecto de descarte",
   "overlay.trashEmpty": "el descarte está vacío",
+  "overlay.trashedFromSources": "Descartada de las fuentes de {name}",
+  "overlay.trashSort": "Ordenar descarte",
+  "overlay.trashSortRecent": "Más recientes",
+  "overlay.trashSortName": "Agrupar por nombre",
   "overlay.trashCount": "{count} cartas",
   "overlay.securityCount": "{faceUp} boca arriba de {count} cartas",
   "overlay.securityNoFaceUp": "ninguna carta boca arriba",

@@ -1,0 +1,107 @@
+import type { ScenarioFixture } from "../scenario/types.js";
+import { dealtCards } from "../scenario/dealtCards.js";
+import { BLUE_DECK, RED_DECK } from "../testDecks.js";
+
+const fixture: ScenarioFixture = {
+  name: "ex10-bagramon-materials-destination",
+  board: {
+    "0": {
+      hand: [{ card: "EX10-056", as: "bagramon-played-card", faceUp: false }],
+      deck: [
+        { card: "BT1-085", as: "bagramon-draw-0-0-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-1-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-2-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-3-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-4-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-5-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-6-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-7-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-8-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-9-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-10-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-11-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-12-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-13-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-14-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-15-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-16-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-17-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-18-card" },
+        { card: "BT1-085", as: "bagramon-draw-0-19-card" },
+      ],
+      eggDeck: dealtCards({ deck: BLUE_DECK, seat: 0, indices: [0, 1, 2, 3, 4], egg: true, aliasOffset: 50 }),
+      trash: [{ card: "BT10-073", as: "bagramon-trash-material-card" }],
+      security: dealtCards({ deck: BLUE_DECK, seat: 0, indices: [42, 10, 45, 38, 13] }),
+      battleArea: [
+        {
+          card: "EX10-064",
+          as: "own-bagramon-expander",
+          top: { card: "EX10-064", as: "own-card-bagramon-expander-card" },
+          dp: 0,
+          placedByEffect: false,
+          under: [
+            { card: "EX10-058", as: "own-source-bagramon-expander-0-card" },
+            { card: "BT10-073", as: "own-source-bagramon-expander-1-card" },
+          ],
+        },
+      ],
+    },
+    "1": {
+      deck: [
+        { card: "BT1-085", as: "bagramon-draw-1-0-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-1-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-2-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-3-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-4-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-5-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-6-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-7-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-8-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-9-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-10-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-11-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-12-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-13-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-14-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-15-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-16-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-17-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-18-card" },
+        { card: "BT1-085", as: "bagramon-draw-1-19-card" },
+      ],
+      eggDeck: dealtCards({ deck: RED_DECK, seat: 1, indices: [4, 2, 3, 0, 1], egg: true, aliasOffset: 50 }),
+      security: dealtCards({ deck: RED_DECK, seat: 1, indices: [33, 9, 42, 14, 49] }),
+      battleArea: [
+        {
+          card: "BT1-009",
+          as: "opponent-bagramon-victim",
+          top: { card: "BT1-009", as: "opponent-card-bagramon-victim-card" },
+          dp: 3000,
+          placedByEffect: false,
+          under: [{ card: "BT1-013", as: "opponent-source-bagramon-victim-0-card" }],
+        },
+        {
+          card: "BT1-014",
+          as: "opponent-bagramon-digimon-host",
+          top: { card: "BT1-014", as: "opponent-card-bagramon-digimon-host-card" },
+          dp: 4000,
+          placedByEffect: false,
+        },
+        {
+          card: "BT1-088",
+          as: "opponent-bagramon-tamer-host",
+          top: { card: "BT1-088", as: "opponent-card-bagramon-tamer-host-card" },
+          dp: 0,
+          placedByEffect: false,
+          under: [{ card: "BT1-013", as: "opponent-source-bagramon-tamer-host-0-card" }],
+        },
+      ],
+    },
+  },
+  memory: 2,
+  turnSeat: 0,
+  turnCount: 0,
+  isFirstPlayersFirstTurn: false,
+};
+
+export default fixture;

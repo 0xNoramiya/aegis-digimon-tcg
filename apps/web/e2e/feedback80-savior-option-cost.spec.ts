@@ -1,3 +1,8 @@
+import prepared0 from "../../api/src/engine/scenarios/savior-option-cost.fixture";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "savior-option-cost": prepared0 };
+
 import { test, expect, type DecisionPolicy } from "./scenario-page";
 
 test.use({ holdBotAfterTurn: 1 });
@@ -9,7 +14,7 @@ for (const mode of ["arts", "declineArts", "refuse"] as const) {
   }) => {
     await page.setViewportSize({ width: mode === "arts" ? 390 : 1440, height: mode === "arts" ? 844 : 1000 });
     await page.addInitScript((dark) => localStorage.setItem("aegis:darkMode", String(dark)), mode !== "declineArts");
-    await scenario.open("arena-feedback80-savior-option-cost");
+    await scenario.openFixture(fixtureVariant(preparedFixtures, "savior-option-cost"));
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     expect((await scenario.snapshot()).memory).toBe(0);
     if (process.env.AEGIS_E2E_PRODUCTION === "true") {
@@ -22,18 +27,20 @@ for (const mode of ["arts", "declineArts", "refuse"] as const) {
       const candidates = decision.options.candidateInstanceIds ?? [];
       if (decision.promptText.includes("Arts Digivolve")) {
         artsOffers++;
-        return mode === "declineArts" ? { accept: false } : { instanceId: "feedback80-blanc" };
+        return mode === "declineArts" ? { accept: false } : { instanceId: fixtureInstanceId("feedback80-blanc") };
       }
-      if (decision.sourceCardId === "EX13-012" && candidates.includes("feedback80-option")) {
+      if (decision.sourceCardId === "EX13-012" && candidates.includes(fixtureInstanceId("feedback80-option"))) {
         optionOffers++;
-        expect(candidates).toEqual(["feedback80-option"]);
-        return mode === "refuse" ? { accept: false } : { instanceId: "feedback80-option" };
+        expect(candidates).toEqual([fixtureInstanceId("feedback80-option")]);
+        return mode === "refuse" ? { accept: false } : { instanceId: fixtureInstanceId("feedback80-option") };
       }
-      if (candidates.includes("feedback80-blanc")) return { instanceId: "feedback80-blanc" };
-      if (candidates.includes("dev-perm-1-feedback80-target")) return { instanceId: "dev-perm-1-feedback80-target" };
+      if (candidates.includes(fixtureInstanceId("feedback80-blanc")))
+        return { instanceId: fixtureInstanceId("feedback80-blanc") };
+      if (candidates.includes(fixturePermanentId("dev-perm-1-feedback80-target")))
+        return { instanceId: fixturePermanentId("dev-perm-1-feedback80-target") };
       return {};
     };
-    await scenario.evolve("SaviorHuckmon", "dev-perm-0-feedback80-host");
+    await scenario.evolve("SaviorHuckmon", fixturePermanentId("dev-perm-0-feedback80-host"));
     await scenario.resolveUntil(
       (s) =>
         optionOffers === 1 &&
@@ -46,24 +53,49 @@ for (const mode of ["arts", "declineArts", "refuse"] as const) {
     await scenario.idle();
     const after = await scenario.snapshot();
     const own = after.players[0]!;
-    const host = own.battleArea.find((p) => p.permanentId === "dev-perm-0-feedback80-host")!;
-    expect(host.topCard.instanceId).toBe("feedback80-savior");
-    expect(host.stack.map((c) => c.instanceId)).toEqual(["feedback80-huckmon", "feedback80-base"]);
+    const host = own.battleArea.find((p) => p.permanentId === fixturePermanentId("dev-perm-0-feedback80-host"))!;
+    expect(host.topCard.instanceId).toBe(fixtureInstanceId("feedback80-savior"));
+    expect(host.stack.map((c) => c.instanceId)).toEqual([
+      fixtureInstanceId("feedback80-huckmon"),
+      fixtureInstanceId("feedback80-base"),
+    ]);
     expect(artsOffers).toBe(mode === "refuse" ? 0 : 1);
     expect(own.battleArea.map((p) => p.topCard.instanceId)).toEqual(
       mode === "refuse"
-        ? ["feedback80-savior"]
-        : ["feedback80-savior", mode === "arts" ? "feedback80-option" : "feedback80-blanc"],
+        ? [fixtureInstanceId("feedback80-savior")]
+        : [
+            fixtureInstanceId("feedback80-savior"),
+            mode === "arts" ? fixtureInstanceId("feedback80-option") : fixtureInstanceId("feedback80-blanc"),
+          ],
     );
     expect(own.trash.map((c) => c.instanceId)).toEqual(
-      mode === "refuse" ? ["feedback80-blanc"] : mode === "arts" ? [] : ["feedback80-option"],
+      mode === "refuse"
+        ? [fixtureInstanceId("feedback80-blanc")]
+        : mode === "arts"
+          ? []
+          : [fixtureInstanceId("feedback80-option")],
     );
     expect(own.hand.map((c) => c.instanceId)).toEqual(
       mode === "refuse"
-        ? ["feedback80-reserve-0", "feedback80-option", "feedback80-deck-0-0", "feedback80-deck-0-1"]
+        ? [
+            fixtureInstanceId("feedback80-reserve-0"),
+            fixtureInstanceId("feedback80-option"),
+            fixtureInstanceId("feedback80-deck-0-0"),
+            fixtureInstanceId("feedback80-deck-0-1"),
+          ]
         : mode === "arts"
-          ? ["feedback80-reserve-0", "feedback80-deck-0-0", "feedback80-deck-0-1", "feedback80-deck-0-2"]
-          : ["feedback80-reserve-0", "feedback80-deck-0-0", "feedback80-deck-0-1", "feedback80-security-0-0"],
+          ? [
+              fixtureInstanceId("feedback80-reserve-0"),
+              fixtureInstanceId("feedback80-deck-0-0"),
+              fixtureInstanceId("feedback80-deck-0-1"),
+              fixtureInstanceId("feedback80-deck-0-2"),
+            ]
+          : [
+              fixtureInstanceId("feedback80-reserve-0"),
+              fixtureInstanceId("feedback80-deck-0-0"),
+              fixtureInstanceId("feedback80-deck-0-1"),
+              fixtureInstanceId("feedback80-security-0-0"),
+            ],
     );
     expect(own.deckCount).toBe(mode === "refuse" ? 10 : 9);
     expect(own.securityCount).toBe(3);
@@ -86,7 +118,7 @@ for (const mode of ["arts", "declineArts", "refuse"] as const) {
     if (mode === "arts") {
       const blanc = events.find((e) => e.kind === "cardPlayed" && e.cardId === "BT23-076");
       expect(arts[0]).toMatchObject({ permanentId: blanc && "permanentId" in blanc ? blanc.permanentId : undefined });
-      expect(own.battleArea[1]!.stack.map((c) => c.instanceId)).toEqual(["feedback80-blanc"]);
+      expect(own.battleArea[1]!.stack.map((c) => c.instanceId)).toEqual([fixtureInstanceId("feedback80-blanc")]);
     }
     if (mode !== "refuse") {
       const paid = events.findIndex((e) => e.kind === "memoryChanged" && e.reason === "useOption");

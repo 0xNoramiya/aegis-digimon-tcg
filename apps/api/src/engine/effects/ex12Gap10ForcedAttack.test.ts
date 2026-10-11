@@ -15,7 +15,7 @@ import "../../cards/EX12/EX12-016.js";
 // GainTriggeredEffect installs a recipient-anchored startOfYourMainPhase watcher.
 // Unlike BT23-056, MetalGreymon has no [CS] Tamer precondition.
 // Public turn-loop and visibility coverage lives in forcedAttackGrantVisibility.test.ts
-// and ex12MetalGreymonForcedAttackScenario.test.ts.
+// and ex12-metal-greymon-forced-attack.test.ts.
 //
 // Assertions:
 //   - resolve() installs a subscribeSubTrigger (delayed grant), NOT an immediate forceAttack.

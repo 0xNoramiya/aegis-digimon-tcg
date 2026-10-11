@@ -247,7 +247,11 @@ describe("P-073 WereGarurumon: Sagittarius Mode — KB Q&A rulings", () => {
               as: "defender",
               dp: 7000,
               suspended: true,
-              under: [{ card: "BT1-032", as: "level4a" }, { card: "BT1-033", as: "level4b" }, { card: "P-073", as: "sagittarius" }],
+              under: [
+                { card: "BT1-032", as: "level4a" },
+                { card: "BT1-033", as: "level4b" },
+                { card: "P-073", as: "sagittarius" },
+              ],
             },
           ],
         },

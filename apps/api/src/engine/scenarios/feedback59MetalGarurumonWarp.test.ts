@@ -1,6 +1,17 @@
+import prepared0 from "./metalgarurumon-field-warp.fixture.js";
+import prepared1 from "./metalgarurumon-printed-breeding.fixture.js";
+import prepared2 from "./wargreymon-field-warp.fixture.js";
+import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
+
+const preparedFixtures = {
+  "metalgarurumon-field-warp": prepared0,
+  "metalgarurumon-printed-breeding": prepared1,
+  "wargreymon-field-warp": prepared2,
+};
+
 import { expect, it } from "vitest";
 import { EffectTiming, Phase } from "@aegis/shared";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { BLUE_DECK, RED_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { observe } from "../testkit/observe.js";
@@ -145,11 +156,11 @@ it.each(["metal", "printed", "war"] as const)(
     const s = setupEngine({ autoAcceptOptional: true, autoSelectCards: true, declinePrompts: ["Attack"] });
     const arena =
       mode === "metal"
-        ? "arena-feedback59-metalgarurumon-field-warp"
+        ? "metalgarurumon-field-warp"
         : mode === "printed"
-          ? "arena-feedback59-metalgarurumon-printed-breeding"
-          : "arena-feedback59-wargreymon-field-warp";
-    layDevScenario(arena, s.state, [RED_DECK, BLUE_DECK]);
+          ? "metalgarurumon-printed-breeding"
+          : "wargreymon-field-warp";
+    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, arena));
     const loop = s.engine.startTurnLoop();
     try {
       await settle(() => s.state.phase === Phase.Breeding);
@@ -158,7 +169,7 @@ it.each(["metal", "printed", "war"] as const)(
       const human = s.state.players[0]!;
       const breeding = human.breeding!;
       const host = mode === "printed" ? breeding : human.battleArea[0]!;
-      const metal = human.hand.find((c) => c.instanceId === "feedback59-evolution")!;
+      const metal = human.hand.find((c) => c.instanceId === fixtureInstanceId("feedback59-evolution"))!;
       const originalTop = host.topCard.instanceId;
       const breedingTop = breeding.topCard.instanceId;
       const deckBefore = human.deck.length;

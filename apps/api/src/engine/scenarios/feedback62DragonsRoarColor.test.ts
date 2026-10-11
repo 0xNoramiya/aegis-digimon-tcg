@@ -1,7 +1,13 @@
+import prepared0 from "./dragons-roar-normal-colors.fixture.js";
+import prepared1 from "./dragons-roar-breeding.fixture.js";
+import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
+
+const preparedFixtures = { "dragons-roar-normal-colors": prepared0, "dragons-roar-breeding": prepared1 };
+
 import { Phase } from "@aegis/shared";
 import { expect, it } from "vitest";
 import "../../cards/index.js";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { BLUE_DECK, RED_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { assertNoLoudGap, setupEngine, settle, type SeatSpec } from "../testkit/harness.js";
@@ -73,10 +79,9 @@ it.each(["keep", "move", "decline", "normal"] as const)(
       autoDeclineOptional: mode === "decline",
       autoSelectCards: true,
     });
-    layDevScenario(
-      mode === "normal" ? "arena-feedback62-dragons-roar-normal-colors" : "arena-feedback62-dragons-roar-breeding",
+    layScenarioFixture(
       s.state,
-      [RED_DECK, BLUE_DECK],
+      fixtureVariant(preparedFixtures, mode === "normal" ? "dragons-roar-normal-colors" : "dragons-roar-breeding"),
     );
     const loop = s.engine.startTurnLoop();
     try {
@@ -92,10 +97,12 @@ it.each(["keep", "move", "decline", "normal"] as const)(
         ),
       ).toEqual({ ok: true });
       await advance(s.engine).waitForMainPhase(0);
-      const roar = human.hand.find((c) => c.instanceId === "feedback62-roar")!;
+      const roar = human.hand.find((c) => c.instanceId === fixtureInstanceId("feedback62-roar"))!;
       const target = s.state.players[1]!.battleArea[0]!;
       const deck = human.deck.length;
-      const drawn = human.hand.find((c) => c.instanceId.startsWith("github-effects-deck-"))!.instanceId;
+      const drawn = human.hand.find((c) =>
+        c.instanceId.startsWith(fixtureInstanceId("github-effects-deck-")),
+      )!.instanceId;
       expect(roar.playableFromHand).toBe(mode !== "keep");
       expect(s.engine.applyIntent(0, { type: "playCard", instanceId: roar.instanceId }).ok).toBe(mode !== "keep");
       await settle(() => !s.state.pendingDecision && s.engine.mainVerbContinuationsInFlight === 0);
@@ -104,14 +111,20 @@ it.each(["keep", "move", "decline", "normal"] as const)(
       expect(target.currentDP).toBe(paid ? 6000 : 12000);
       expect(human.security.map((c) => c.instanceId)).toEqual(
         paid
-          ? ["feedback62-security-bottom", "feedback62-roar"]
-          : ["feedback62-security-top", "feedback62-security-bottom"],
+          ? [fixtureInstanceId("feedback62-security-bottom"), fixtureInstanceId("feedback62-roar")]
+          : [fixtureInstanceId("feedback62-security-top"), fixtureInstanceId("feedback62-security-bottom")],
       );
       expect(human.trash.map((c) => c.instanceId)).toEqual(
-        paid ? ["feedback62-security-top"] : mode === "decline" ? ["feedback62-roar"] : [],
+        paid
+          ? [fixtureInstanceId("feedback62-security-top")]
+          : mode === "decline"
+            ? [fixtureInstanceId("feedback62-roar")]
+            : [],
       );
       expect(human.hand.map((c) => c.instanceId)).toEqual(
-        mode === "keep" ? ["feedback62-roar", "feedback62-reserve", drawn] : ["feedback62-reserve", drawn],
+        mode === "keep"
+          ? [fixtureInstanceId("feedback62-roar"), fixtureInstanceId("feedback62-reserve"), drawn]
+          : [fixtureInstanceId("feedback62-reserve"), drawn],
       );
       expect(human.deck).toHaveLength(deck);
       expect(human.breeding?.permanentId).toBe(mode === "move" || mode === "decline" ? undefined : source.permanentId);
@@ -120,7 +133,9 @@ it.each(["keep", "move", "decline", "normal"] as const)(
       expect(s.state.memory).toBe(3);
       // Only this fixed-input branch still owns the Option; verify off-turn refusal.
       const offTurnAttempt =
-        mode === "keep" ? s.engine.applyIntent(0, { type: "playCard", instanceId: "feedback62-roar" }).ok : null;
+        mode === "keep"
+          ? s.engine.applyIntent(0, { type: "playCard", instanceId: fixtureInstanceId("feedback62-roar") }).ok
+          : null;
       expect(offTurnAttempt).toBe(mode === "keep" ? false : null);
       expect(s.engine.applyIntent(1, { type: "endPhase" })).toEqual({ ok: true });
       await advance(s.engine).waitForMainPhase(1);

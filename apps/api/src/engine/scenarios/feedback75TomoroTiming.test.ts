@@ -1,6 +1,12 @@
+import prepared0 from "./tomoro-on-play.fixture.js";
+import prepared1 from "./tomoro-timing.fixture.js";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../scenario/references.js";
+
+const preparedFixtures = { "tomoro-on-play": prepared0, "tomoro-timing": prepared1 };
+
 import { expect, it } from "vitest";
 import { Phase } from "@aegis/shared";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { RED_DECK, BLUE_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { setupEngine, settle } from "../testkit/harness.js";
@@ -21,28 +27,37 @@ async function replyOptional(s: ReturnType<typeof setupEngine>, cardId: string, 
 
 it("Feedback #75: original empty-field On Play passes the turn without memory, then later Start Main gains with a real opponent", async () => {
   const s = setupEngine({ autoAcceptOptional: true, autoSelectCards: true });
-  layDevScenario("arena-feedback75-tomoro-on-play", s.state, [RED_DECK, BLUE_DECK]);
+  layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "tomoro-on-play"));
   const loop = s.engine.startTurnLoop();
   try {
     await settle(() => s.state.phase === Phase.Breeding);
     expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
     await advance(s.engine).waitForMainPhase(0);
-    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: "feedback75-tomoro" })).toEqual({ ok: true });
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: fixtureInstanceId("feedback75-tomoro") })).toEqual({
+      ok: true,
+    });
     await settle(() => s.state.turnSeat === 1 && s.state.phase === Phase.Breeding);
-    const tomoro = s.state.players[0]!.battleArea.find((perm) => perm.topCard.instanceId === "feedback75-tomoro")!;
-    expect(tomoro.stack.map((card) => card.instanceId)).toEqual(["feedback75-deck-0-1"]);
+    const tomoro = s.state.players[0]!.battleArea.find(
+      (perm) => perm.topCard.instanceId === fixtureInstanceId("feedback75-tomoro"),
+    )!;
+    expect(tomoro.stack.map((card) => card.instanceId)).toEqual([fixtureInstanceId("feedback75-deck-0-1")]);
     expect(s.state.memory).toBe(4);
     expect(s.state.players[1]!.battleArea).toHaveLength(0);
     expect(s.engine.applyIntent(1, { type: "endPhase" })).toEqual({ ok: true });
     await advance(s.engine).waitForMainPhase(1);
-    expect(s.engine.applyIntent(1, { type: "playCard", instanceId: "feedback75-deck-1-0" })).toEqual({ ok: true });
+    expect(s.engine.applyIntent(1, { type: "playCard", instanceId: fixtureInstanceId("feedback75-deck-1-0") })).toEqual(
+      { ok: true },
+    );
     await settle(() => s.engine.mainVerbContinuationsInFlight === 0 && !s.state.pendingDecision);
     expect(s.engine.applyIntent(1, { type: "endPhase" })).toEqual({ ok: true });
     await settle(() => s.state.turnSeat === 0 && s.state.phase === Phase.Breeding);
     expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
     await advance(s.engine).waitForMainPhase(0);
     await settle(() => s.state.memory === 4 && !s.state.pendingDecision);
-    expect(tomoro.stack.map((card) => card.instanceId)).toEqual(["feedback75-deck-0-3", "feedback75-deck-0-1"]);
+    expect(tomoro.stack.map((card) => card.instanceId)).toEqual([
+      fixtureInstanceId("feedback75-deck-0-3"),
+      fixtureInstanceId("feedback75-deck-0-1"),
+    ]);
     expect(
       s.events.flatMap((event) =>
         event.kind === "memoryChanged" && event.reason === "gainMemory" ? [[event.from, event.to]] : [],
@@ -57,8 +72,11 @@ it("Feedback #75: original empty-field On Play passes the turn without memory, t
 it.each([true, false])(
   "Feedback #75: real-turn own buff acceptance %s persists only through the opponent's turn",
   async (accept) => {
-    const s = setupEngine({ autoSelectCards: true, preferInstanceIds: ["dev-perm-0-feedback75-glowing"] });
-    layDevScenario("arena-feedback75-tomoro-timing", s.state, [RED_DECK, BLUE_DECK]);
+    const s = setupEngine({
+      autoSelectCards: true,
+      preferInstanceIds: [fixturePermanentId("dev-perm-0-feedback75-glowing")],
+    });
+    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "tomoro-timing"));
     const loop = s.engine.startTurnLoop();
     try {
       await settle(() => s.state.phase === Phase.Breeding);
@@ -66,21 +84,27 @@ it.each([true, false])(
       await replyOptional(s, "ST23-13", false);
       await settle(() => s.state.memory === 4 && !s.state.pendingDecision);
       const tomoro = s.state.players[0]!.battleArea.find(
-        (perm) => perm.permanentId === "dev-perm-0-feedback75-tomoro",
+        (perm) => perm.permanentId === fixturePermanentId("dev-perm-0-feedback75-tomoro"),
       )!;
       const glowing = s.state.players[0]!.battleArea.find(
-        (perm) => perm.permanentId === "dev-perm-0-feedback75-glowing",
+        (perm) => perm.permanentId === fixturePermanentId("dev-perm-0-feedback75-glowing"),
       )!;
-      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: "feedback75-chirop" })).toEqual({ ok: true });
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: fixtureInstanceId("feedback75-chirop") })).toEqual(
+        { ok: true },
+      );
       await replyOptional(s, "ST23-12", true);
       await replyOptional(s, "ST23-13", accept);
       await settle(() => !s.state.pendingDecision && s.engine.mainVerbContinuationsInFlight === 0);
       expect(s.state.memory).toBe(1);
       expect(tomoro.isSuspended).toBe(accept);
       expect(glowing.currentDP).toBe(accept ? 7000 : 4000);
-      expect(tomoro.stack.map((card) => card.instanceId)).toEqual(["dev-stack-0-feedback75-tomoro-1"]);
-      expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toEqual(["dev-stack-0-feedback75-tomoro-0"]);
-      expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toContain("feedback75-return");
+      expect(tomoro.stack.map((card) => card.instanceId)).toEqual([
+        fixtureInstanceId("dev-stack-0-feedback75-tomoro-1"),
+      ]);
+      expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toEqual([
+        fixtureInstanceId("dev-stack-0-feedback75-tomoro-0"),
+      ]);
+      expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toContain(fixtureInstanceId("feedback75-return"));
       const tomoroDecisions = s.decisions.filter(({ req }) => req.sourceCardId === "ST23-13").length;
       expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
       await settle(() => s.state.turnSeat === 1 && s.state.phase === Phase.Breeding);
@@ -90,23 +114,24 @@ it.each([true, false])(
       expect(
         s.engine.applyIntent(1, {
           type: "attack",
-          attackerPermanentId: "dev-perm-1-feedback75-attacker",
+          attackerPermanentId: fixturePermanentId("dev-perm-1-feedback75-attacker"),
           target: { kind: "player" },
         }),
       ).toEqual({ ok: true });
       await replyOptional(s, "BT26-003", true);
       await settle(
         () =>
-          s.state.players[1]!.trash.some((card) => card.instanceId === "dev-field-1-feedback75-attacker") &&
-          !s.state.pendingDecision,
+          s.state.players[1]!.trash.some(
+            (card) => card.instanceId === fixtureInstanceId("dev-field-1-feedback75-attacker"),
+          ) && !s.state.pendingDecision,
       );
       expect(tomoro.stack).toHaveLength(0);
       expect(tomoro.isSuspended).toBe(accept);
       expect(glowing.currentDP).toBe(accept ? 7000 : 4000);
       expect(s.decisions.filter(({ req }) => req.sourceCardId === "ST23-13")).toHaveLength(tomoroDecisions);
       expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toEqual([
-        "dev-stack-0-feedback75-tomoro-0",
-        "dev-stack-0-feedback75-tomoro-1",
+        fixtureInstanceId("dev-stack-0-feedback75-tomoro-0"),
+        fixtureInstanceId("dev-stack-0-feedback75-tomoro-1"),
       ]);
       expect(s.state.players[0]!.security).toHaveLength(3);
       expect(s.engine.applyIntent(1, { type: "endPhase" })).toEqual({ ok: true });

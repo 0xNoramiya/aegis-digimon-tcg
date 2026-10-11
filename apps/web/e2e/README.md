@@ -5,6 +5,13 @@ AegisRoom. A test-only Vite HTML entry supplies deterministic decks and exposes 
 read-only snapshot of the browser's synchronized state. It is not a product route
 and is not included in the production bundle.
 
+For reusable game regression boards, import a behavior-named API fixture and use
+`ScenarioPage.openFixture`, which returns semantic alias references. API tests
+share that preparation through `setupScenario`; browser actions and assertions
+remain in the spec. No per-case arena registration is needed. See
+[regression fixtures](../../../docs/TESTING.md) for the pattern and
+`pnpm scenario open <behavior|fixture.ts>` for temporary manual reproductions.
+
 ## Run
 
 Install the browser once:
@@ -65,6 +72,10 @@ limited to 2048 MB; Chromium consumes additional memory. No CI is configured.
 
 These cover desktop Chromium. They do not claim full lobby/account coverage,
 mobile-device validation, cross-browser parity, or screenshot baseline comparison.
+
+`replay-video-export.spec.ts` requires `ffmpeg` on `PATH`. It decodes every packet
+of the real tab recording independently of the browser to catch corrupt video
+samples that a first-frame playback check can miss.
 
 ## Mobile cross-browser lane
 

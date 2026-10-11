@@ -1,3 +1,8 @@
+import prepared0 from "../../api/src/engine/scenarios/magnaangemon-decision.fixture";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "magnaangemon-decision": prepared0 };
+
 import { test, expect, type DecisionPolicy } from "./scenario-page";
 
 test.use({ holdBotAfterTurn: 1 });
@@ -9,9 +14,9 @@ for (const target of ["low", "high"] as const) {
   }) => {
     await page.setViewportSize({ width: target === "low" ? 1440 : 390, height: target === "low" ? 1000 : 844 });
     await page.addInitScript((dark) => localStorage.setItem("aegis:darkMode", String(dark)), target === "high");
-    await scenario.open("arena-feedback73-magnaangemon-decision");
+    await scenario.openFixture(fixtureVariant(preparedFixtures, "magnaangemon-decision"));
     const policy: DecisionPolicy = (decision) => {
-      for (const id of ["feedback73-security-0-0", "feedback73-replacement"])
+      for (const id of [fixtureInstanceId("feedback73-security-0-0"), fixtureInstanceId("feedback73-replacement")])
         if (decision.options.candidateInstanceIds?.includes(id)) return { instanceId: id };
       return {};
     };
@@ -20,7 +25,9 @@ for (const target of ["low", "high"] as const) {
         !state.pendingDecision &&
         state.phase === "Main" &&
         state.memory === 7 &&
-        state.players[0]!.battleArea.some((card) => card.topCard.instanceId === "feedback73-security-0-0"),
+        state.players[0]!.battleArea.some(
+          (card) => card.topCard.instanceId === fixtureInstanceId("feedback73-security-0-0"),
+        ),
       policy,
     );
     await scenario.idle();
@@ -29,17 +36,21 @@ for (const target of ["low", "high"] as const) {
       expect(await page.locator('link[rel="stylesheet"][href*="/assets/"]').count()).toBeGreaterThan(0);
     }
     expect((await scenario.snapshot()).players[0]!.securityCount).toBe(5);
-    await scenario.evolve("Angemon", "dev-perm-0-feedback73-other", true);
+    await scenario.evolve("Angemon", fixturePermanentId("dev-perm-0-feedback73-other"), true);
     await scenario.resolveUntil(
       (state) =>
         !state.pendingDecision &&
         state.memory === 5 &&
-        state.players[0]!.battleArea.some((card) => card.topCard.instanceId === "feedback73-other-evolution"),
+        state.players[0]!.battleArea.some(
+          (card) => card.topCard.instanceId === fixtureInstanceId("feedback73-other-evolution"),
+        ),
     );
     await scenario.idle();
     const before = await scenario.snapshot();
     expect(before.players[0]!.securityCount).toBe(5);
-    const base = before.players[0]!.battleArea.find((card) => card.permanentId === "dev-perm-0-feedback73-base")!;
+    const base = before.players[0]!.battleArea.find(
+      (card) => card.permanentId === fixturePermanentId("dev-perm-0-feedback73-base"),
+    )!;
     let choices = 0;
     await scenario.evolve("MagnaAngemon", base.permanentId);
     await scenario.resolveUntil(
@@ -51,11 +62,11 @@ for (const target of ["low", "high"] as const) {
       async (decision) => {
         expect(decision.kind).toBe("chooseTargets");
         expect(decision.sourceCardId).toBe("BT14-037");
-        expect(decision.sourceInstanceId).toBe("feedback73-magna");
+        expect(decision.sourceInstanceId).toBe(fixtureInstanceId("feedback73-magna"));
         expect(decision.sourcePermanentId).toBe(base.permanentId);
         expect(decision.options.candidateInstanceIds).toEqual([
-          "dev-perm-1-feedback73-low",
-          "dev-perm-1-feedback73-high",
+          fixturePermanentId("dev-perm-1-feedback73-low"),
+          fixturePermanentId("dev-perm-1-feedback73-high"),
         ]);
         expect(decision.options.min).toBe(1);
         expect(decision.options.max).toBe(1);
@@ -70,35 +81,39 @@ for (const target of ["low", "high"] as const) {
     );
     const after = await scenario.snapshot();
     const magna = after.players[0]!.battleArea.find((card) => card.permanentId === base.permanentId)!;
-    expect(magna.topCard.instanceId).toBe("feedback73-magna");
+    expect(magna.topCard.instanceId).toBe(fixtureInstanceId("feedback73-magna"));
     expect(magna.stack.map((card) => card.instanceId)).toEqual([
       ...base.stack.map((card) => card.instanceId),
       base.topCard.instanceId,
     ]);
     expect(after.players[0]!.hand.map((card) => card.instanceId)).toEqual([
-      "feedback73-reserve",
-      "feedback73-deck-0-0",
-      "feedback73-deck-0-1",
-      "feedback73-deck-0-2",
-      "feedback73-deck-0-3",
-      "feedback73-deck-0-4",
+      fixtureInstanceId("feedback73-reserve"),
+      fixtureInstanceId("feedback73-deck-0-0"),
+      fixtureInstanceId("feedback73-deck-0-1"),
+      fixtureInstanceId("feedback73-deck-0-2"),
+      fixtureInstanceId("feedback73-deck-0-3"),
+      fixtureInstanceId("feedback73-deck-0-4"),
     ]);
     expect(after.players[0]!.deckCount).toBe(before.players[0]!.deckCount - 2);
     expect(after.players[0]!.trash).toHaveLength(0);
     expect(after.players[1]!.securityCount).toBe(5);
     expect(after.phase).toBe("Main");
     expect(after.turnSeat).toBe(0);
-    const high = after.players[1]!.battleArea.find((card) => card.permanentId === "dev-perm-1-feedback73-high")!;
+    const high = after.players[1]!.battleArea.find(
+      (card) => card.permanentId === fixturePermanentId("dev-perm-1-feedback73-high"),
+    )!;
     expect(high.currentDP).toBe(target === "high" ? 2000 : 8000);
     if (target === "low") {
       expect(after.players[1]!.battleArea.map((card) => card.permanentId)).toEqual([high.permanentId]);
       expect(after.players[1]!.trash.map((card) => card.instanceId)).toEqual([
-        "dev-stack-1-feedback73-low-0",
-        "dev-field-1-feedback73-low",
+        fixtureInstanceId("dev-stack-1-feedback73-low-0"),
+        fixtureInstanceId("dev-field-1-feedback73-low"),
       ]);
     } else {
       expect(
-        after.players[1]!.battleArea.find((card) => card.permanentId === "dev-perm-1-feedback73-low")!.currentDP,
+        after.players[1]!.battleArea.find(
+          (card) => card.permanentId === fixturePermanentId("dev-perm-1-feedback73-low"),
+        )!.currentDP,
       ).toBe(1000);
       expect(after.players[1]!.trash).toHaveLength(0);
     }

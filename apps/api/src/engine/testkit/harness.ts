@@ -1,33 +1,42 @@
 import { expect } from "vitest";
 import {
+  buildInstance,
+  buildPermanent,
+  layBoard,
+  createBoardIds,
+  type BoardSpec,
+  type PermanentSpec,
+  type CardSpec,
+  type AliasTable,
+} from "../scenario/board.js";
+
+import {
   GameState,
   PlayerState,
-  Permanent,
   CardInstance,
+  Permanent,
   Phase,
   Zone,
   effectiveExactNames,
   getCardDefinition,
-  isDigiEgg,
-  isDigimon,
-  isOption,
   type Seat,
   type ServerEvent,
   type DecisionRequest,
 } from "@aegis/shared";
 import { GameEngine, type GameEngineHooks } from "../GameEngine.js";
 import { peekCheckedCard } from "../security/checkedCard.js";
-import {
-  fillZone,
-  insertCard,
-  linkCard,
-  placePermanent,
-  pushOnStack,
-  setBreeding,
-  setTopCard,
-  type CardZone,
-} from "../state/access.js";
+import { fillZone, insertCard, placePermanent, setTopCard, type CardZone } from "../state/access.js";
 import { internalsOf } from "./internals.js";
+
+export {
+  makeInstance,
+  makeDigimon,
+  makeSecurityCard,
+  type BoardSpec,
+  type SeatSpec,
+  type PermanentSpec,
+  type CardSpec,
+} from "../scenario/board.js";
 
 /**
  * Shared test harness for engine behavioral suites (A3 mechanic tests, KB conformance
@@ -37,98 +46,6 @@ import { internalsOf } from "./internals.js";
  * pilot migration of `mechanic.test.ts` for the behavior-preservation proof: all of its
  * pre-existing tests pass unchanged against these exports.
  */
-
-let seq = 0;
-
-/** Build a bare `CardInstance` — a hand/deck/trash/security card, not yet on the board. */
-export function makeInstance(cardId: string, seat: Seat, faceUp: boolean): CardInstance {
-  seq += 1;
-  const card = new CardInstance();
-  card.instanceId = `inst-${seq}`;
-  card.cardId = cardId;
-  card.ownerSeat = seat;
-  card.faceUp = faceUp;
-  return card;
-}
-
-/**
- * Build a battle-area `Permanent` with a face-up top card. `cardId` only affects what the
- * top card claims to be (`AD1-001` — an arbitrary Lv.4 Digimon — unless overridden); `dp`
- * is the permanent's actual (base and current) DP.
- */
-export function makeDigimon(seat: Seat, dp: number, cardId = "AD1-001"): Permanent {
-  seq += 1;
-  const top = makeInstance(cardId, seat, true);
-  const permanent = new Permanent();
-  // Distinct id namespace: the engine mints its own `perm-N` for permanents it creates
-  // (plays, merges), so a hand-laid `perm-N` could collide and falsely look "still
-  // present" after e.g. a DNA merge consumes the hand-laid permanent.
-  permanent.permanentId = `seed-perm-${seq}`;
-  permanent.controllerSeat = seat;
-  setTopCard(permanent, top);
-  permanent.isSuspended = false;
-  permanent.inBreeding = false;
-  permanent.baseDP = dp;
-  permanent.currentDP = dp;
-  // A manually seeded battle-area Digimon is established by default, matching
-  // Board Spec fixtures. Tests for summoning sickness opt in by setting the
-  // entry turn explicitly.
-  permanent.enterFieldTurnCount = ESTABLISHED_TURN;
-  return permanent;
-}
-
-/**
- * A permanent laid by a Board Spec is ESTABLISHED by default: it entered the field before
- * the current turn, so summoning sickness (§16-1) and the ＜Delay＞ activation gate treat it
- * as an old permanent. A test wanting a freshly-arrived permanent sets `enteredThisTurn`.
- *
- * The sentinel exists because "entered before now" has no natural value at `turnCount` 0 —
- * the engine records the turn a permanent arrived (`enterFieldTurnCount = state.turnCount`)
- * and both gates compare it for equality, so any value the current turn will never take
- * reads as "arrived earlier". Raising the board's `turnCount` instead would arm summoning
- * sickness for every scenario at once, which is a rules change, not a setup detail.
- */
-const ESTABLISHED_TURN = 4294967295;
-
-/** A card in a zone: a bare card id, or the same plus an alias to address it by later. */
-export type CardSpec = string | { card: string; as?: string; faceUp?: boolean };
-
-/** A permanent on the battle area or in breeding. */
-export interface PermanentSpec {
-  card: string;
-  /** Alias for `perm(alias)`. Aliases are unique per Board Spec. */
-  as?: string;
-  /** Base and current DP. Defaults to the card definition's printed DP. */
-  dp?: number;
-  suspended?: boolean;
-  /** Opt in to summoning sickness / the ＜Delay＞ gate. Established by default. */
-  enteredThisTurn?: boolean;
-  /** Digivolution cards, bottom-most first. */
-  under?: CardSpec[];
-  /** Linked cards (Link mechanic). */
-  linked?: CardSpec[];
-  /**
-   * §17-1-3-2-2 marker. Defaults to `true` for a pure-Option card seeded onto the battle
-   * area, because that is the only way such a permanent can legally exist; set it to
-   * `false` to seed the illegal state the rule sweep exists to clean up.
-   */
-  placedByEffect?: boolean;
-}
-
-export interface SeatSpec {
-  hand?: CardSpec[];
-  deck?: CardSpec[];
-  eggDeck?: CardSpec[];
-  trash?: CardSpec[];
-  delayZone?: CardSpec[];
-  /** Explicit cards, or a count of anonymous face-down cards. `[0]` is the top of the stack. */
-  security?: CardSpec[] | number;
-  battleArea?: (PermanentSpec | string)[];
-  breeding?: PermanentSpec | string;
-}
-
-/** Both seats' starting zones. Seat 0 is the turn player unless a test says otherwise. */
-export type BoardSpec = { 0?: SeatSpec; 1?: SeatSpec };
 
 export interface EngineSetup {
   engine: GameEngine;
@@ -152,6 +69,8 @@ export interface EngineSetup {
 }
 
 export interface SetupEngineOptions {
+  /** Use the same semantic identities as room fixtures. Set by setupScenario. */
+  fixtureIds?: boolean;
   autoAcceptOptional?: boolean;
   /**
    * Answer every "use this effect?" prompt with no — the declined branch. Also answers a
@@ -233,9 +152,6 @@ export interface SetupEngineOptions {
  * `autoOrderTriggers` keeps the engine's offered order for a simultaneous-trigger prompt —
  * all on a microtask so a chain of prompts resolves without a manual respondDecision per step.
  */
-/** Alias -> its stable card identity and, for a seeded field card, original permanent identity. */
-type AliasTable = Map<string, { kind: "permanent" | "instance"; id: string; instanceId?: string }>;
-
 /** The seat whose zones hold `instanceId`, or `undefined` when no zone does. */
 function instanceOwnerSeat(state: GameState, instanceId: string): Seat | undefined {
   for (const [index, player] of state.players.entries()) {
@@ -250,87 +166,6 @@ function instanceOwnerSeat(state: GameState, instanceId: string): Seat | undefin
     if (onField) return index as Seat;
   }
   return undefined;
-}
-
-function cardOf(spec: CardSpec): { card: string; as?: string; faceUp?: boolean } {
-  return typeof spec === "string" ? { card: spec } : spec;
-}
-
-function permanentSpecOf(spec: PermanentSpec | string): PermanentSpec {
-  return typeof spec === "string" ? { card: spec } : spec;
-}
-
-function buildInstance(spec: CardSpec, seat: Seat, defaultFaceUp: boolean, aliases: AliasTable): CardInstance {
-  const { card, as, faceUp } = cardOf(spec);
-  const instance = makeInstance(card, seat, faceUp ?? defaultFaceUp);
-  if (as !== undefined) aliases.set(as, { kind: "instance", id: instance.instanceId });
-  return instance;
-}
-
-function buildPermanent(spec: PermanentSpec | string, seat: Seat, aliases: AliasTable): Permanent {
-  const resolved = permanentSpecOf(spec);
-  const dp = resolved.dp ?? getCardDefinition(resolved.card)?.dp ?? 0;
-  const permanent = makeDigimon(seat, dp, resolved.card);
-  permanent.isSuspended = resolved.suspended ?? false;
-  permanent.enterFieldTurnCount = resolved.enteredThisTurn === true ? 0 : ESTABLISHED_TURN;
-  const definition = getCardDefinition(resolved.card);
-  const isPureOption =
-    definition !== undefined && isOption(definition) && !isDigimon(definition) && !isDigiEgg(definition);
-  permanent.placedByEffect = resolved.placedByEffect ?? isPureOption;
-  for (const under of resolved.under ?? []) pushOnStack(permanent, buildInstance(under, seat, true, aliases));
-  for (const linked of resolved.linked ?? []) linkCard(permanent, buildInstance(linked, seat, true, aliases), "bottom");
-  if (resolved.as !== undefined) {
-    aliases.set(resolved.as, {
-      kind: "permanent",
-      id: permanent.permanentId,
-      instanceId: permanent.topCard!.instanceId,
-    });
-  }
-  return permanent;
-}
-
-const LOOSE_ZONES: [keyof SeatSpec, CardZone, boolean][] = [
-  ["hand", Zone.Hand, true],
-  ["deck", Zone.Deck, false],
-  ["eggDeck", Zone.EggDeck, false],
-  ["trash", Zone.Trash, true],
-  ["delayZone", Zone.Delay, false],
-];
-
-function layBoard(state: GameState, board: BoardSpec, aliases: AliasTable): void {
-  for (const seat of [0, 1] as Seat[]) {
-    const spec = board[seat];
-    const player = state.players[seat];
-    if (spec === undefined || player === undefined) continue;
-
-    for (const [key, zone, faceUp] of LOOSE_ZONES) {
-      const cards = spec[key] as CardSpec[] | undefined;
-      if (cards === undefined) continue;
-      fillZone(
-        player,
-        zone,
-        cards.map((card) => buildInstance(card, seat, faceUp, aliases)),
-      );
-    }
-
-    if (spec.security !== undefined) {
-      const cards =
-        typeof spec.security === "number"
-          ? Array.from({ length: spec.security }, (_, n) => makeSecurityCard(seat, n))
-          : spec.security.map((card) => buildInstance(card, seat, false, aliases));
-      fillZone(player, Zone.Security, cards);
-    }
-
-    for (const permanent of spec.battleArea ?? []) {
-      placePermanent(player, buildPermanent(permanent, seat, aliases));
-    }
-
-    if (spec.breeding !== undefined) {
-      const permanent = buildPermanent(spec.breeding, seat, aliases);
-      permanent.inBreeding = true;
-      setBreeding(player, permanent);
-    }
-  }
 }
 
 function isBoardSpec(value: BoardSpec | SetupEngineOptions | undefined): value is BoardSpec {
@@ -587,14 +422,16 @@ export function setupEngine(boardOrOpts?: BoardSpec | SetupEngineOptions, maybeO
   state.turnSeat = 0;
 
   const aliases: AliasTable = new Map();
-  if (board !== undefined) layBoard(state, board, aliases);
+  if (board !== undefined)
+    layBoard(state, board, aliases, opts?.fixtureIds ? { ...createBoardIds("scenario-"), named: true } : undefined);
   // A seeded link card carries printed `linkDp` that only reaches `currentDP` through
   // `ModifierLedger.recomputeDP` (CR 4-2-4), which nothing runs for a hand-laid board — so a
   // Board Spec with links used to start on a DP baseline no real board ever has. This is the
   // narrow DP refresh, not the continuous recompute the comment below deliberately withholds.
   for (const seat of [0, 1] as const) {
     for (const permanent of state.players[seat]?.battleArea ?? []) {
-      if (permanent.linked.length > 0) internalsOf(engine).modifiers.recomputeDP(state, permanent.permanentId);
+      if (!opts?.fixtureIds && permanent.linked.length > 0)
+        internalsOf(engine).modifiers.recomputeDP(state, permanent.permanentId);
     }
   }
   // Deliberately NOT recomputed here. A hand-laid board has no continuous effects installed
@@ -846,21 +683,4 @@ export function makeSecurityState(securityCards: CardInstance[], attackerPermane
   const attackerController = state.players[0];
   if (attackerController) placePermanent(attackerController, attacker);
   return state;
-}
-
-/**
- * A face-down security card owned by `seat`.
- *
- * The default is an inert main-deck Digimon: BT1-009 Monodramon, level 3, 3000 DP, no effects. The
- * previous default (BT1-001) is a Digi-Egg, which can never legally be in a security stack — a
- * numeric `security: <n>` fixture built a board no game can reach, and its 0 DP quietly made
- * every security battle a win for the attacker.
- */
-export function makeSecurityCard(seat: Seat, n: number, cardId = "BT1-009"): CardInstance {
-  const card = new CardInstance();
-  card.instanceId = `sec-${seat}-${n}`;
-  card.cardId = cardId;
-  card.ownerSeat = seat;
-  card.faceUp = false; // face-down in security
-  return card;
 }

@@ -23,9 +23,7 @@ describe("resumeSeat", () => {
       return "room";
     });
 
-    await expect(resumeSeat({ resume, deadline: 180_000, isCancelled: () => false, now, delay })).resolves.toBe(
-      "room",
-    );
+    await expect(resumeSeat({ resume, deadline: 180_000, isCancelled: () => false, now, delay })).resolves.toBe("room");
     expect(resume.mock.calls.length).toBeGreaterThan(8);
     expect(Math.max(...delay.mock.calls.map(([ms]) => ms))).toBe(5_000);
   });
@@ -36,9 +34,9 @@ describe("resumeSeat", () => {
       throw unreachable;
     });
 
-    await expect(resumeSeat({ resume, deadline: 180_000, isCancelled: () => false, now, delay })).rejects.toBeInstanceOf(
-      SeatLostError,
-    );
+    await expect(
+      resumeSeat({ resume, deadline: 180_000, isCancelled: () => false, now, delay }),
+    ).rejects.toBeInstanceOf(SeatLostError);
     expect(now()).toBe(180_000);
   });
 
@@ -48,9 +46,9 @@ describe("resumeSeat", () => {
       throw seatGone;
     });
 
-    await expect(resumeSeat({ resume, deadline: 180_000, isCancelled: () => false, now, delay })).rejects.toBeInstanceOf(
-      SeatLostError,
-    );
+    await expect(
+      resumeSeat({ resume, deadline: 180_000, isCancelled: () => false, now, delay }),
+    ).rejects.toBeInstanceOf(SeatLostError);
     expect(resume).toHaveBeenCalledOnce();
     expect(delay).not.toHaveBeenCalled();
   });
@@ -65,7 +63,15 @@ describe("resumeSeat", () => {
     });
 
     await expect(
-      resumeSeat({ resume, deadline: 180_000, isCancelled: () => false, now, delay, isHidden: () => hidden, waitUntilVisible }),
+      resumeSeat({
+        resume,
+        deadline: 180_000,
+        isCancelled: () => false,
+        now,
+        delay,
+        isHidden: () => hidden,
+        waitUntilVisible,
+      }),
     ).resolves.toBe("room");
     expect(resume).toHaveBeenCalledOnce();
   });

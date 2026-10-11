@@ -1,8 +1,13 @@
+import prepared0 from "../../api/src/engine/scenarios/poseidomon-unsuspend-cost.fixture";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "poseidomon-unsuspend-cost": prepared0 };
+
 import { test, expect } from "./scenario-page";
 
-const HOST = "dev-perm-0-feedback58-host";
-const FIRST = "feedback58-link-first";
-const SECOND = "feedback58-link-second";
+const HOST = fixturePermanentId("dev-perm-0-feedback58-host");
+const FIRST = fixtureInstanceId("feedback58-link-first");
+const SECOND = fixtureInstanceId("feedback58-link-second");
 
 test.use({ holdBotAfterTurn: 1 });
 
@@ -11,7 +16,7 @@ for (const accept of [true, false]) {
     scenario,
     page,
   }) => {
-    await scenario.open("arena-feedback58-poseidomon-unsuspend-cost");
+    await scenario.openFixture(fixtureVariant(preparedFixtures, "poseidomon-unsuspend-cost"));
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     const before = await scenario.snapshot();
     await scenario.evolve("Poseidomon", HOST);
@@ -37,8 +42,11 @@ for (const accept of [true, false]) {
     const initialHost = evolved.players[0]!.battleArea.find((p) => p.permanentId === HOST)!;
     expect(evolved.memory).toBe(before.memory);
     expect(evolved.players[0]!.deckCount).toBe(before.players[0]!.deckCount - 1);
-    expect(initialHost.topCard.instanceId).toBe("feedback58-poseidomon");
-    expect(initialHost.stack.map((c) => c.instanceId)).toEqual(["dev-field-0-feedback58-host", "feedback58-beautymon"]);
+    expect(initialHost.topCard.instanceId).toBe(fixtureInstanceId("feedback58-poseidomon"));
+    expect(initialHost.stack.map((c) => c.instanceId)).toEqual([
+      fixtureInstanceId("dev-field-0-feedback58-host"),
+      fixtureInstanceId("feedback58-beautymon"),
+    ]);
     expect(initialHost.linked.map((c) => c.instanceId)).toEqual([FIRST]);
     expect(initialHost.isSuspended).toBe(false);
 

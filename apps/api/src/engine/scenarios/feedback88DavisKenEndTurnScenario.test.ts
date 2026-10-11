@@ -1,7 +1,12 @@
+import prepared0 from "./davis-ken-end-turn.fixture.js";
+import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
+
+const preparedFixtures = { "davis-ken-end-turn": prepared0 };
+
 import { Phase, type DecisionResponse, type Intent, type Seat } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import "../../cards/index.js";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { BLUE_DECK, RED_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { setupEngine, settle } from "../testkit/harness.js";
@@ -165,13 +170,13 @@ describe("Feedback #88: EX13-070 End of Your Turn rearming", () => {
 
   it("runs the registered arena through three own turns with public cost refusals", async () => {
     const s = setupEngine({ 0: {}, 1: {} });
-    layDevScenario("arena-feedback88-davis-ken-end-turn", s.state, [BLUE_DECK, RED_DECK]);
+    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "davis-ken-end-turn"));
     const tamer = s.state.players[0]!.battleArea.find((p) => p.topCard.cardId === TAMER)!;
     const loop = s.engine.startTurnLoop();
     try {
       for (const turn of [6, 8, 10]) {
         await main(s, 0, turn);
-        expect(tamer.topCard.instanceId).toBe("dev-field-0-feedback88-tamer");
+        expect(tamer.topCard.instanceId).toBe(fixtureInstanceId("dev-field-0-feedback88-tamer"));
         expect(tamer.isSuspended).toBe(false);
         expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
         const cost = await answer(s, { kind: "optional", accept: false });
@@ -182,14 +187,14 @@ describe("Feedback #88: EX13-070 End of Your Turn rearming", () => {
         if (turn !== 10) apply(s, 1, { type: "endPhase" });
       }
       expect(s.state.players[0]!.hand.map((c) => c.instanceId)).toEqual([
-        "feedback88-paildramon",
-        "feedback88-fighter",
-        "feedback88-paladin",
-        "feedback88-payment2",
-        "feedback88-payment4",
-        "feedback88-deck-0-0",
-        "feedback88-deck-0-1",
-        "feedback88-deck-0-2",
+        fixtureInstanceId("feedback88-paildramon"),
+        fixtureInstanceId("feedback88-fighter"),
+        fixtureInstanceId("feedback88-paladin"),
+        fixtureInstanceId("feedback88-payment2"),
+        fixtureInstanceId("feedback88-payment4"),
+        fixtureInstanceId("feedback88-deck-0-0"),
+        fixtureInstanceId("feedback88-deck-0-1"),
+        fixtureInstanceId("feedback88-deck-0-2"),
       ]);
       expect(s.state.players[0]!.trash).toHaveLength(0);
       expect(s.events.filter((e) => e.kind === "actionRejected")).toEqual([]);

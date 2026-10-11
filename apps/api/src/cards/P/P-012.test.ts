@@ -167,7 +167,9 @@ describe("P-012 Tai Kamiya (V-Tamer) — KB Q&A rulings", () => {
     s.state.memory = 10;
     await s.ready();
 
-    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("agumon").instanceId })).toEqual({ ok: true });
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("agumon").instanceId })).toEqual({
+      ok: true,
+    });
     await settle(() => s.state.pendingDecision === undefined && s.state.players[0]!.hand.length > 0);
 
     expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toContain(s.inst("tai").instanceId);
@@ -176,7 +178,10 @@ describe("P-012 Tai Kamiya (V-Tamer) — KB Q&A rulings", () => {
   it("can't interrupt an attack; its [Main] effect is only usable while the main phase is idle (Q4123)", async () => {
     const s = setupEngine({
       0: {
-        battleArea: [{ card: "P-011", as: "veedramon" }, { card: "P-012", as: "tai" }],
+        battleArea: [
+          { card: "P-011", as: "veedramon" },
+          { card: "P-012", as: "tai" },
+        ],
         deck: ["BT1-009", "BT1-009", "BT1-009", "BT1-009"],
       },
       1: { battleArea: [{ card: "BT1-009", as: "target", suspended: true, dp: 1000 }] },
@@ -219,8 +224,22 @@ describe("P-012 Tai Kamiya (V-Tamer) — KB Q&A rulings", () => {
   it("may give +1000 DP to a Digimon without [Veedramon] in its name (Q4126)", async () => {
     const preferred: string[] = [];
     const s = setupEngine(
-      { 0: { battleArea: [{ card: "P-011", as: "veedramon" }, { card: "BT1-010", as: "agumon" }, { card: "P-012", as: "tai" }] } },
-      { autoAcceptOptional: true, autoChooseOption: true, preferOptionIndex: 1, autoSelectCards: true, preferInstanceIds: preferred },
+      {
+        0: {
+          battleArea: [
+            { card: "P-011", as: "veedramon" },
+            { card: "BT1-010", as: "agumon" },
+            { card: "P-012", as: "tai" },
+          ],
+        },
+      },
+      {
+        autoAcceptOptional: true,
+        autoChooseOption: true,
+        preferOptionIndex: 1,
+        autoSelectCards: true,
+        preferInstanceIds: preferred,
+      },
     );
     preferred.push(s.perm("agumon").permanentId);
     await s.ready();
@@ -236,7 +255,10 @@ describe("P-012 Tai Kamiya (V-Tamer) — KB Q&A rulings", () => {
     const s = setupEngine(
       {
         0: {
-          battleArea: [{ card: "P-012", as: "tai" }, { card: "BT1-010", as: "agumon" }],
+          battleArea: [
+            { card: "P-012", as: "tai" },
+            { card: "BT1-010", as: "agumon" },
+          ],
           hand: [{ card: "P-024", as: "option" }],
           deck: ["BT1-009", "BT1-009", "BT1-009"],
         },
@@ -246,10 +268,14 @@ describe("P-012 Tai Kamiya (V-Tamer) — KB Q&A rulings", () => {
     s.state.memory = 5;
     await s.ready();
 
-    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({ ok: true });
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
+      ok: true,
+    });
     await settle(() => s.state.pendingDecision === undefined && s.state.players[0]!.trash.length > 0);
 
-    expect(s.state.players[0]!.battleArea.map((permanent) => permanent.permanentId)).toContain(s.perm("agumon").permanentId);
+    expect(s.state.players[0]!.battleArea.map((permanent) => permanent.permanentId)).toContain(
+      s.perm("agumon").permanentId,
+    );
     expect(s.state.players[0]!.hand).toHaveLength(0);
     expect(s.state.players[0]!.deck).toHaveLength(3);
   });

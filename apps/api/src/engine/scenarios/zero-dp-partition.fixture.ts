@@ -1,0 +1,103 @@
+import type { ScenarioFixture } from "../scenario/types.js";
+
+const fixture: ScenarioFixture = {
+  name: "zero-dp-partition",
+  board: {
+    "0": {
+      hand: [{ card: "EX12-076", as: "hand-EX12-076-card", faceUp: false }],
+      deck: [
+        { card: "BT1-085", as: "deck-0-0-card" },
+        { card: "BT1-085", as: "deck-0-1-card" },
+        { card: "BT1-085", as: "deck-0-2-card" },
+        { card: "BT1-085", as: "deck-0-3-card" },
+        { card: "BT1-085", as: "deck-0-4-card" },
+        { card: "BT1-085", as: "deck-0-5-card" },
+        { card: "BT1-085", as: "deck-0-6-card" },
+        { card: "BT1-085", as: "deck-0-7-card" },
+        { card: "BT1-085", as: "deck-0-8-card" },
+        { card: "BT1-085", as: "deck-0-9-card" },
+        { card: "BT1-085", as: "deck-0-10-card" },
+        { card: "BT1-085", as: "deck-0-11-card" },
+        { card: "BT1-085", as: "deck-0-12-card" },
+        { card: "BT1-085", as: "deck-0-13-card" },
+        { card: "BT1-085", as: "deck-0-14-card" },
+        { card: "BT1-085", as: "deck-0-15-card" },
+        { card: "BT1-085", as: "deck-0-16-card" },
+        { card: "BT1-085", as: "deck-0-17-card" },
+        { card: "BT1-085", as: "deck-0-18-card" },
+        { card: "BT1-085", as: "deck-0-19-card" },
+      ],
+      eggDeck: [{ card: "EX13-002", as: "opening-egg-card" }],
+      security: [
+        { card: "BT1-009", as: "security-0-0-card" },
+        { card: "BT1-009", as: "security-0-1-card" },
+        { card: "BT1-009", as: "security-0-2-card" },
+      ],
+      battleArea: [
+        {
+          card: "EX12-048",
+          as: "own-sanmyo-base",
+          top: { card: "EX12-048", as: "own-card-sanmyo-base-card" },
+          dp: 13000,
+          placedByEffect: false,
+          under: [
+            { card: "BT1-038", as: "own-source-sanmyo-base-0-card" },
+            { card: "BT1-045", as: "own-source-sanmyo-base-1-card" },
+            { card: "BT1-076", as: "own-source-sanmyo-base-2-card" },
+            { card: "BT2-056", as: "own-source-sanmyo-base-3-card" },
+            { card: "BT2-067", as: "own-source-sanmyo-base-4-card" },
+            { card: "BT1-009", as: "own-source-sanmyo-base-5-card" },
+          ],
+        },
+      ],
+    },
+    "1": {
+      deck: [
+        { card: "BT1-085", as: "deck-1-0-card" },
+        { card: "BT1-085", as: "deck-1-1-card" },
+        { card: "BT1-085", as: "deck-1-2-card" },
+        { card: "BT1-085", as: "deck-1-3-card" },
+        { card: "BT1-085", as: "deck-1-4-card" },
+        { card: "BT1-085", as: "deck-1-5-card" },
+        { card: "BT1-085", as: "deck-1-6-card" },
+        { card: "BT1-085", as: "deck-1-7-card" },
+        { card: "BT1-085", as: "deck-1-8-card" },
+        { card: "BT1-085", as: "deck-1-9-card" },
+        { card: "BT1-085", as: "deck-1-10-card" },
+        { card: "BT1-085", as: "deck-1-11-card" },
+        { card: "BT1-085", as: "deck-1-12-card" },
+        { card: "BT1-085", as: "deck-1-13-card" },
+        { card: "BT1-085", as: "deck-1-14-card" },
+        { card: "BT1-085", as: "deck-1-15-card" },
+        { card: "BT1-085", as: "deck-1-16-card" },
+        { card: "BT1-085", as: "deck-1-17-card" },
+        { card: "BT1-085", as: "deck-1-18-card" },
+        { card: "BT1-085", as: "deck-1-19-card" },
+      ],
+      security: [
+        { card: "BT1-009", as: "security-1-0-card" },
+        { card: "BT1-009", as: "security-1-1-card" },
+        { card: "BT1-009", as: "security-1-2-card" },
+      ],
+      battleArea: [
+        {
+          card: "BT23-047",
+          as: "opponent-examon",
+          top: { card: "BT23-047", as: "opponent-card-examon-card" },
+          dp: 15000,
+          placedByEffect: false,
+          under: [
+            { card: "EX13-041", as: "opponent-source-examon-0-card" },
+            { card: "EX13-021", as: "opponent-source-examon-1-card" },
+          ],
+        },
+      ],
+    },
+  },
+  memory: 10,
+  turnSeat: 0,
+  turnCount: 0,
+  isFirstPlayersFirstTurn: false,
+};
+
+export default fixture;

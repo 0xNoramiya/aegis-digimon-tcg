@@ -148,7 +148,12 @@ describe("RB1-027 HoverEspimon — KB Q&A rulings", () => {
           },
           1: { security: [{ card: "ST1-15", as: "revealed" }, "BT1-010"] },
         },
-        { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true, preferOptionIndex: place === "top" ? 0 : 1 },
+        {
+          autoAcceptOptional: true,
+          autoSelectCards: true,
+          autoChooseOption: true,
+          preferOptionIndex: place === "top" ? 0 : 1,
+        },
       );
       const revealed = s.inst("revealed").instanceId;
       s.state.memory = 10;

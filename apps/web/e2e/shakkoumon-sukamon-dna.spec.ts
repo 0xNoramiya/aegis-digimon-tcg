@@ -1,10 +1,13 @@
+import fixtureShakkoumonSukamon from "../../api/src/engine/scenarios/shakkoumon-sukamon.fixture";
+import fixtureShakkoumonYellowOnly from "../../api/src/engine/scenarios/shakkoumon-yellow-only.fixture";
+import { fixturePermanentId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 import { GamePage } from "./game-page";
 
 const permanentIds: Record<string, string> = {
-  "EX13-028": "dev-perm-0-shakkoumon-ex13",
-  "BT11-040": "dev-perm-0-shakkoumon-bt11",
-  "EX5-046": "dev-perm-0-shakkoumon-targetmon",
+  "EX13-028": fixturePermanentId("own-shakkoumon-ex13"),
+  "BT11-040": fixturePermanentId("own-shakkoumon-bt11"),
+  "EX5-046": fixturePermanentId("own-shakkoumon-targetmon"),
 };
 
 // BT23-032 [DNA Digivolve] Yellow Lv.4 + black/blue Lv.4: Cost 0. EX13-028 is yellow only,
@@ -15,11 +18,8 @@ for (const [first, second] of [
   ["EX5-046", "EX13-028"],
   ["EX5-046", "BT11-040"],
 ] as const) {
-  test(`Discord 1557575147119054889: Shakkoumon DNA digivolves from ${first} + ${second} for 0`, async ({
-    scenario,
-    page,
-  }) => {
-    await scenario.open("arena-discord-1557575147119054889-shakkoumon-sukamon");
+  test(`Shakkoumon DNA digivolves from ${first} + ${second} for 0`, async ({ scenario, page }) => {
+    await scenario.openFixture(fixtureShakkoumonSukamon);
     await scenario.resolveUntil((s) => s.turnSeat === 0 && s.phase === "Main" && !s.pendingDecision);
     const initial = await scenario.snapshot();
     const you = initial.players[0]!;
@@ -84,11 +84,8 @@ for (const [first, second] of [
   });
 }
 
-test("Discord 1557575147119054889: Shakkoumon DNA is refused with two yellow-only Sukamon", async ({
-  scenario,
-  page,
-}) => {
-  await scenario.open("arena-discord-1557575147119054889-shakkoumon-yellow-only");
+test("Shakkoumon DNA is refused with two yellow-only Sukamon", async ({ scenario, page }) => {
+  await scenario.openFixture(fixtureShakkoumonYellowOnly);
   await scenario.resolveUntil((s) => s.turnSeat === 0 && s.phase === "Main" && !s.pendingDecision);
   const initial = await scenario.snapshot();
   const you = initial.players[0]!;

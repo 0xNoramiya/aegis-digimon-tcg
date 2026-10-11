@@ -1,0 +1,93 @@
+import type { ScenarioFixture } from "../scenario/types.js";
+
+const fixture: ScenarioFixture = {
+  name: "chuumon-trash-revival",
+  board: {
+    "0": {
+      deck: [
+        { card: "BT1-085", as: "latest-deck-0-0-card" },
+        { card: "BT1-085", as: "latest-deck-0-1-card" },
+        { card: "BT1-085", as: "latest-deck-0-2-card" },
+        { card: "BT1-085", as: "latest-deck-0-3-card" },
+        { card: "BT1-085", as: "latest-deck-0-4-card" },
+        { card: "BT1-085", as: "latest-deck-0-5-card" },
+        { card: "BT1-085", as: "latest-deck-0-6-card" },
+        { card: "BT1-085", as: "latest-deck-0-7-card" },
+        { card: "BT1-085", as: "latest-deck-0-8-card" },
+        { card: "BT1-085", as: "latest-deck-0-9-card" },
+        { card: "BT1-085", as: "latest-deck-0-10-card" },
+        { card: "BT1-085", as: "latest-deck-0-11-card" },
+        { card: "BT1-085", as: "latest-deck-0-12-card" },
+        { card: "BT1-085", as: "latest-deck-0-13-card" },
+        { card: "BT1-085", as: "latest-deck-0-14-card" },
+        { card: "BT1-085", as: "latest-deck-0-15-card" },
+        { card: "BT1-085", as: "latest-deck-0-16-card" },
+        { card: "BT1-085", as: "latest-deck-0-17-card" },
+        { card: "BT1-085", as: "latest-deck-0-18-card" },
+        { card: "BT1-085", as: "latest-deck-0-19-card" },
+      ],
+      eggDeck: [{ card: "EX13-002", as: "latest-egg-card" }],
+      trash: [{ card: "BT3-061", as: "latest-revival-target-card" }],
+      security: [
+        { card: "BT1-009", as: "latest-security-0-0-card" },
+        { card: "BT1-009", as: "latest-security-0-1-card" },
+        { card: "BT1-009", as: "latest-security-0-2-card" },
+      ],
+      battleArea: [
+        {
+          card: "EX1-052",
+          as: "latest-revival-host",
+          top: { card: "EX1-052", as: "own-card-latest-revival-host-card" },
+          dp: 7000,
+          placedByEffect: false,
+          under: [{ card: "EX5-045", as: "own-source-latest-revival-host-0-card" }],
+        },
+      ],
+    },
+    "1": {
+      deck: [
+        { card: "BT1-085", as: "latest-deck-1-0-card" },
+        { card: "BT1-085", as: "latest-deck-1-1-card" },
+        { card: "BT1-085", as: "latest-deck-1-2-card" },
+        { card: "BT1-085", as: "latest-deck-1-3-card" },
+        { card: "BT1-085", as: "latest-deck-1-4-card" },
+        { card: "BT1-085", as: "latest-deck-1-5-card" },
+        { card: "BT1-085", as: "latest-deck-1-6-card" },
+        { card: "BT1-085", as: "latest-deck-1-7-card" },
+        { card: "BT1-085", as: "latest-deck-1-8-card" },
+        { card: "BT1-085", as: "latest-deck-1-9-card" },
+        { card: "BT1-085", as: "latest-deck-1-10-card" },
+        { card: "BT1-085", as: "latest-deck-1-11-card" },
+        { card: "BT1-085", as: "latest-deck-1-12-card" },
+        { card: "BT1-085", as: "latest-deck-1-13-card" },
+        { card: "BT1-085", as: "latest-deck-1-14-card" },
+        { card: "BT1-085", as: "latest-deck-1-15-card" },
+        { card: "BT1-085", as: "latest-deck-1-16-card" },
+        { card: "BT1-085", as: "latest-deck-1-17-card" },
+        { card: "BT1-085", as: "latest-deck-1-18-card" },
+        { card: "BT1-085", as: "latest-deck-1-19-card" },
+      ],
+      security: [
+        { card: "BT1-009", as: "latest-security-1-0-card" },
+        { card: "BT1-009", as: "latest-security-1-1-card" },
+        { card: "BT1-009", as: "latest-security-1-2-card" },
+      ],
+      battleArea: [
+        {
+          card: "ST15-11",
+          as: "latest-revival-enemy",
+          top: { card: "ST15-11", as: "opponent-card-latest-revival-enemy-card" },
+          dp: 8000,
+          placedByEffect: false,
+          suspended: true,
+        },
+      ],
+    },
+  },
+  memory: 10,
+  turnSeat: 0,
+  turnCount: 0,
+  isFirstPlayersFirstTurn: false,
+};
+
+export default fixture;

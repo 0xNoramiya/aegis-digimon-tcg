@@ -224,6 +224,7 @@ export function insertCard(
   instance: CardInstance,
   position: ZonePosition = "bottom",
 ): void {
+  instance.trashOriginCardId = "";
   if (zone === Zone.Trash) {
     // CR §3-6-3: trash is public. Reveal before attachment notifies either player's view.
     instance.faceUp = true;
@@ -238,10 +239,15 @@ export function insertCard(
   notifyCardEntered(player, zone, instance);
 }
 
+function clearTrashOrigin(card: CardInstance | undefined, zone: CardZone): CardInstance | undefined {
+  if (card && zone === Zone.Trash) card.trashOriginCardId = "";
+  return card;
+}
+
 /** Remove the card at `index` from a loose zone; undefined when out of range. */
 export function extractCardAt(player: PlayerState, zone: CardZone, index: number): CardInstance | undefined {
   if (index < 0) return undefined;
-  return zoneArrayOf(player, zone).splice(index, 1)[0];
+  return clearTrashOrigin(zoneArrayOf(player, zone).splice(index, 1)[0], zone);
 }
 
 /** Remove a card from a loose zone by instance id; undefined when absent. */
@@ -249,23 +255,25 @@ export function extractCardById(player: PlayerState, zone: CardZone, instanceId:
   const arr = zoneArrayOf(player, zone);
   const index = arr.findIndex((card) => card.instanceId === instanceId);
   if (index === -1) return undefined;
-  return arr.splice(index, 1)[0];
+  return clearTrashOrigin(arr.splice(index, 1)[0], zone);
 }
 
 /** Take the top card (index 0) off an ordered zone; undefined when empty. */
 export function takeTop(player: PlayerState, zone: CardZone): CardInstance | undefined {
-  return zoneArrayOf(player, zone).shift();
+  return clearTrashOrigin(zoneArrayOf(player, zone).shift(), zone);
 }
 
 /** Take the bottom card off an ordered zone; undefined when empty. */
 export function takeBottom(player: PlayerState, zone: CardZone): CardInstance | undefined {
-  return zoneArrayOf(player, zone).pop();
+  return clearTrashOrigin(zoneArrayOf(player, zone).pop(), zone);
 }
 
 /** Empty a loose zone, returning the removed cards in order. */
 export function clearZone(player: PlayerState, zone: CardZone): CardInstance[] {
   const arr = zoneArrayOf(player, zone);
-  return arr.splice(0, arr.length);
+  const removed = arr.splice(0, arr.length);
+  for (const card of removed) clearTrashOrigin(card, zone);
+  return removed;
 }
 
 /**

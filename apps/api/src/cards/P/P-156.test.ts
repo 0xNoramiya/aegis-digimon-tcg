@@ -131,7 +131,9 @@ describe("P-156 Future Potential! — KB Q&A rulings", () => {
       .flatMap(({ req }) => req.options?.candidateInstanceIds ?? [])
       .filter((instanceId) => handIds.has(instanceId))
       .map((instanceId) => handIds.get(instanceId)!);
-    const played = s.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId).filter((cardId) => cardId !== tamer);
+    const played = s.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId).filter(
+      (cardId) => cardId !== tamer,
+    );
     return { offered: [...new Set(offered)].sort(), played };
   }
 

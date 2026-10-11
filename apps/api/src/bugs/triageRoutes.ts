@@ -1,20 +1,13 @@
-import {
-  isClosedFeedbackStatus,
-  isFeedbackStatus,
-  MAX_FEEDBACK_FINAL_REPLY,
-  MAX_FEEDBACK_INTERNAL_NOTE,
-  MAX_FEEDBACK_REOPEN_COMMENT,
-  MAX_FEEDBACK_SEARCH,
-  type FeedbackReopenFailure,
-  type FeedbackTriageFailure,
-  type FeedbackTriageUpdate,
-} from "@aegis/shared";
+import { isFeedbackStatus } from "@aegis/shared/feedback/isFeedbackStatus";
+import { MAX_FEEDBACK_SEARCH } from "@aegis/shared/feedback/limits";
 import type { Express, NextFunction, Request, Response } from "express";
-import type { AuthSession } from "../accounts/AccountStore.js";
-import { parseId } from "../http/parseId.js";
-import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
-import type { FeedbackFilter, FeedbackStore } from "./FeedbackStore.js";
-import { FEEDBACK_KINDS, type FeedbackKind } from "./GitHubIssueTracker.js";
+import type { AuthSession } from "#api/accounts/AccountStore";
+import { parseId } from "#api/http/parseId";
+import { tokenBucketLimiter, type TokenBucketOptions } from "#api/http/rateLimit";
+import type { FeedbackFilter, FeedbackStore } from "#api/bugs/FeedbackStore";
+import { FEEDBACK_KINDS, type FeedbackKind } from "#api/bugs/GitHubIssueTracker";
+import { validateReopenComment } from "#api/bugs/validateReopenComment";
+import { validateTriage } from "#api/bugs/validateTriage";
 
 export type FeedbackTriageRouteDeps = {
   app: Express;
@@ -74,6 +67,25 @@ export function installFeedbackTriageRoutes({ app, store, session }: FeedbackTri
         return;
       }
       res.json(detail);
+    }),
+  );
+
+  // The private replay saved with a report: both decks and every action, so admins only.
+  app.get(
+    ["/admin/feedback/:id/replay", "/account/admin/feedback/:id/replay"],
+    route(async (req, res) => {
+      if (!(await admin(req, res))) return;
+      const id = parseId(req.params.id);
+      if (id === undefined) {
+        res.status(400).json({ error: "invalid_id" });
+        return;
+      }
+      const record = await store.replay(id);
+      if (!record) {
+        res.status(404).json({ error: "replay_not_found" });
+        return;
+      }
+      res.json(record);
     }),
   );
 
@@ -168,13 +180,6 @@ export function installFeedbackTriageRoutes({ app, store, session }: FeedbackTri
 // Each report reopens at most once, so this only guards against a client stuck in a retry loop.
 const REOPEN_RATE_LIMIT: TokenBucketOptions = { capacity: 5, refillMs: 60_000 };
 
-export function validateReopenComment(raw: unknown): string | { error: FeedbackReopenFailure } {
-  const comment = typeof raw === "string" ? raw.trim() : "";
-  if (!comment) return { error: "empty_comment" };
-  if (comment.length > MAX_FEEDBACK_REOPEN_COMMENT) return { error: "comment_too_long" };
-  return comment;
-}
-
 function parseFilter(query: Request["query"]): FeedbackFilter | { error: string } {
   const filter: FeedbackFilter = {};
   const { status, reopened, kind, q, before } = query;
@@ -201,43 +206,4 @@ function parseFilter(query: Request["query"]): FeedbackFilter | { error: string 
     filter.before = cursor;
   }
   return filter;
-}
-
-type TriageBody = {
-  revision?: unknown;
-  status?: unknown;
-  finalReply?: unknown;
-  internalNote?: unknown;
-  duplicateOfId?: unknown;
-  confirmedBug?: unknown;
-};
-
-export function validateTriage(body: unknown): FeedbackTriageUpdate | { error: FeedbackTriageFailure } {
-  const input = (body ?? {}) as TriageBody;
-  if (!isFeedbackStatus(input.status)) return { error: "invalid_status" };
-  const revision = input.revision;
-  if (typeof revision !== "number" || !Number.isSafeInteger(revision) || revision < 0) {
-    return { error: "invalid_revision" };
-  }
-  const finalReply = typeof input.finalReply === "string" ? input.finalReply.trim() : "";
-  if (finalReply.length > MAX_FEEDBACK_FINAL_REPLY) return { error: "final_reply_too_long" };
-  if (isClosedFeedbackStatus(input.status) && !finalReply) return { error: "final_reply_required" };
-  const internalNote = typeof input.internalNote === "string" ? input.internalNote.trim() : "";
-  if (internalNote.length > MAX_FEEDBACK_INTERNAL_NOTE) return { error: "internal_note_too_long" };
-
-  let duplicateOfId: number | null = null;
-  if (input.status === "duplicate") {
-    if (input.duplicateOfId === undefined || input.duplicateOfId === null)
-      return { error: "duplicate_target_required" };
-    duplicateOfId = parseId(input.duplicateOfId) ?? null;
-    if (duplicateOfId === null) return { error: "invalid_duplicate_target" };
-  }
-  return {
-    revision,
-    status: input.status,
-    finalReply,
-    internalNote,
-    duplicateOfId,
-    ...(typeof input.confirmedBug === "boolean" ? { confirmedBug: input.confirmedBug } : {}),
-  };
 }

@@ -1,9 +1,10 @@
 import { writeFile } from "node:fs/promises";
 import { expect, test as base, type Page, type Locator, type TestInfo } from "@playwright/test";
 import { RED_DECK } from "../../api/dist/engine/testDecks.js";
-import { getCardDefinition, type DecisionRequest, type Intent } from "@aegis/shared";
-import { startBrowserServer } from "./server";
+import { CATALOG_DECKS, getCardDefinition, type DecisionRequest, type Intent } from "@aegis/shared";
+import { startBrowserServer, useBrowserFixture } from "./server";
 import type {} from "./harness";
+import type { ScenarioFixture, ScenarioReferences } from "../../api/src/engine/scenario/types.js";
 
 type Snapshot = ReturnType<Window["browserTestSnapshot"]>;
 type Decision = NonNullable<Snapshot["pendingDecision"]> &
@@ -26,11 +27,24 @@ export class ScenarioPage {
   readonly errors: string[] = [];
   readonly decisionTimings: { decisionId: string; kind: string; sourceCardId?: string; delayMs: number }[] = [];
   private speed: "normal" | "slow" = "normal";
-  constructor(readonly page: Page) {
+  constructor(
+    readonly page: Page,
+    private readonly useFixture?: (fixture: ScenarioFixture) => ScenarioReferences,
+  ) {
     page.on("pageerror", (error) => this.errors.push(error.message));
     page.on("console", (message) => {
       if (message.type() === "error") this.errors.push(message.text());
     });
+  }
+  async openFixture(
+    fixture: ScenarioFixture,
+    speed: "normal" | "slow" = "normal",
+    breeding: "end" | "move" | "none" = fixture.turnSeat === 0 ? "end" : "none",
+  ) {
+    if (!this.useFixture) throw new Error("This ScenarioPage has no fixture server");
+    const references = this.useFixture(fixture);
+    await this.open("local-fixture", speed, breeding);
+    return references;
   }
   /** `none`: the scenario opens on the opponent's turn, or the engine passes this Breeding phase itself. */
   async open(id: string, speed: "normal" | "slow" = "normal", breeding: "end" | "move" | "none" = "end") {
@@ -393,7 +407,7 @@ export const test = base.extend<{
       holdBotAfterTurn,
       botMainIntents,
     });
-    const scenario = new ScenarioPage(page);
+    const scenario = new ScenarioPage(page, server.useFixture);
     try {
       await use(scenario);
     } finally {
@@ -410,3 +424,19 @@ export const test = base.extend<{
   },
 });
 export { expect };
+
+/** Open a fixture with the catalog decks used by full-board presentation regressions. */
+export async function openFixturePage(page: Page, fixture: ScenarioFixture): Promise<void> {
+  useBrowserFixture(fixture);
+  const human = CATALOG_DECKS.find((deck) => deck.deckId === "bt26-dgo-2026-08-28-7-chronomon")!;
+  await page.addInitScript(
+    ({ deck }) => {
+      localStorage.setItem("aegis:locale", "en");
+      localStorage.setItem("aegis.action-confirmation.enabled", "false");
+      localStorage.setItem("aegis.skip-end-turn-confirmation", "true");
+      window.browserTestOptions = { displayName: "Fixture E2E", seed: 1, deck, devScenario: "local-fixture" };
+    },
+    { deck: { mainDeck: [...human.decklist.mainDeck], eggDeck: [...human.decklist.eggDeck] } },
+  );
+  await page.goto("/e2e/harness.html");
+}

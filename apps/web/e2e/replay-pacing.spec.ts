@@ -154,9 +154,9 @@ async function evidenceFor(page: Page): Promise<Evidence> {
 }
 const cases = [
   ...REPLAY_RECORDINGS.map((id) => ({ id, speed: "4", mobile: false })),
-  { id: "effects-lab-own-chain", speed: "1", mobile: false },
+  { id: "own-chain", speed: "1", mobile: false },
   { id: "keyword-pacing-recovery-many", speed: "0.5", mobile: false },
-  { id: "arena-bt24-silphymon-dna", speed: "4", mobile: true },
+  { id: "bt24-silphymon-dna", speed: "4", mobile: true },
   { id: "phase-pacing-bot-raising-move", speed: "4", mobile: true },
 ];
 for (const { id, speed, mobile } of cases) {
@@ -208,7 +208,7 @@ for (const { id, speed, mobile } of cases) {
 for (const index of [36, 51]) {
   test(`seek into a De-Digivolve chain and resume from action ${index + 1}`, async ({ page }) => {
     const replay = new ReplayPacingPage(page);
-    await replay.open(recordingFor("effects-lab-prod-attack-stack"), "4", true);
+    await replay.open(recordingFor("prod-attack-stack"), "4", true);
     await page.getByRole("button", { name: "Show action history" }).click();
     // The ordered history maps one button to each exact recorded batch.
     await page
@@ -228,7 +228,7 @@ for (const index of [36, 51]) {
 }
 test("a long pause in a complex chain preserves its waits and resumes cleanly", async ({ page }) => {
   const replay = new ReplayPacingPage(page);
-  await replay.open(recordingFor("effects-lab-prod-ghost-execute-security"), "4", true);
+  await replay.open(recordingFor("prod-ghost-execute-security"), "4", true);
   await replay.play();
   await expect
     .poll(
@@ -252,7 +252,7 @@ test("a long pause in a complex chain preserves its waits and resumes cleanly", 
 
 test("Execute focuses the field before deletion and On Deletion focuses the trash", async ({ page }) => {
   const replay = new ReplayPacingPage(page);
-  await replay.open(recordingFor("effects-lab-prod-ghost-execute-security"), "4", true);
+  await replay.open(recordingFor("prod-ghost-execute-security"), "4", true);
   await page.evaluate(() => {
     const seen = new Map<string, string>();
     Object.assign(window, { executeSites: () => [...seen.values()] });

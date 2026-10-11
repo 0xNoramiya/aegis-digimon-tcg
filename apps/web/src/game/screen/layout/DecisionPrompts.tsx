@@ -69,6 +69,7 @@ export function DecisionPrompts({
     artId?: string;
     zone?: CandidateZone;
     pendingEffect?: boolean;
+    trashOriginCardId?: string;
   }[];
   allowsPick: (instanceId: string) => boolean;
   picks: string[];
@@ -178,6 +179,7 @@ export function DecisionPrompts({
                       isSuspended: details?.isSuspended,
                       zone: card.zone,
                       pendingEffect: card.pendingEffect,
+                      trashOriginCardId: card.trashOriginCardId,
                     };
                   })}
                 picks={picks}

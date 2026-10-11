@@ -1,9 +1,9 @@
-import type { CommunityDeckReport } from "@aegis/shared";
+import type { CommunityDeckReport } from "@aegis/shared/decks/community";
 import { useEffect, useState } from "react";
-import { relativeTime } from "../../bugs/feedbackStatus";
-import { communityApi } from "../../community/client";
-import { Alert, Button } from "../../design/primitives";
-import { useTranslation } from "../../i18n";
+import { relativeTime } from "@/i18n/relativeTime";
+import { communityApi } from "@/community/client";
+import { Alert, Button } from "@/design/primitives";
+import { useTranslation } from "@/i18n/useTranslation";
 
 /** A moderator's view of a deck's open reports, with a way to dismiss them when the deck is fine. */
 export function DeckReportsPanel({ deckId }: { deckId: string }) {
@@ -49,7 +49,9 @@ export function DeckReportsPanel({ deckId }: { deckId: string }) {
             {report.details ? <p>{report.details}</p> : null}
             <small>
               {report.reporterName ?? t("community.reports.formerPlayer")} ·{" "}
-              <time dateTime={new Date(report.createdAt).toISOString()}>{relativeTime(report.createdAt, locale)}</time>
+              <time dateTime={new Date(report.createdAt).toISOString()}>
+                {relativeTime({ at: report.createdAt, locale })}
+              </time>
             </small>
           </li>
         ))}

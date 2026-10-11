@@ -1,6 +1,12 @@
+import prepared0 from "./main-positive.fixture.js";
+import prepared1 from "./main-crossed.fixture.js";
+import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
+
+const preparedFixtures = { "main-positive": prepared0, "main-crossed": prepared1 };
+
 import { expect, it } from "vitest";
 import { Phase, type Intent } from "@aegis/shared";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { RED_DECK, BLUE_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { setupEngine, settle } from "../testkit/harness.js";
@@ -93,31 +99,38 @@ it.each([false, true])(
   "Feedback #78: real Candlemon search then normal Wizardmon play with positive memory %s",
   async (positive) => {
     const s = setupEngine({ autoOrderCards: false });
-    layDevScenario(positive ? "arena-feedback78-main-positive" : "arena-feedback78-main-crossed", s.state, [
-      RED_DECK,
-      BLUE_DECK,
-    ]);
+    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, positive ? "main-positive" : "main-crossed"));
     const loop = s.engine.startTurnLoop();
     try {
       await settle(() => s.state.phase === Phase.Breeding);
       expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
       await advance(s.engine).waitForMainPhase(0);
       const before = positive ? 8 : 0;
-      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: "feedback78-candle" })).toEqual({ ok: true });
-      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: "feedback78-wizard" })).toEqual({
-        ok: false,
-        reason: "wrong-phase",
-      });
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: fixtureInstanceId("feedback78-candle") })).toEqual(
+        { ok: true },
+      );
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: fixtureInstanceId("feedback78-wizard") })).toEqual(
+        {
+          ok: false,
+          reason: "wrong-phase",
+        },
+      );
       await settle(() => s.state.pendingDecision?.kind === "orderCards");
       const req = s.decisions.at(-1)!.req;
-      const ids = ["feedback78-deck-0-1", "feedback78-deck-0-2", "feedback78-deck-0-3"];
+      const ids = [
+        fixtureInstanceId("feedback78-deck-0-1"),
+        fixtureInstanceId("feedback78-deck-0-2"),
+        fixtureInstanceId("feedback78-deck-0-3"),
+      ];
       expect(req.sourceCardId).toBe("BT18-030");
       expect(req.options?.candidateInstanceIds).toEqual(ids);
       expect(s.decisions.map(({ req: decision }) => decision.kind)).toEqual(["orderCards"]);
-      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: "feedback78-wizard" })).toEqual({
-        ok: false,
-        reason: "decision-pending",
-      });
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: fixtureInstanceId("feedback78-wizard") })).toEqual(
+        {
+          ok: false,
+          reason: "decision-pending",
+        },
+      );
       expect(
         s.engine.applyIntent(0, {
           type: "respondDecision",
@@ -128,11 +141,13 @@ it.each([false, true])(
       await settle(() => !s.state.pendingDecision && s.engine.mainVerbContinuationsInFlight === 0);
       expect(s.state.players[0]!.deck.slice(-3).map((card) => card.instanceId)).toEqual([...ids].reverse());
       expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual([
-        "feedback78-reserve-0",
-        "feedback78-wizard",
-        "feedback78-deck-0-0",
+        fixtureInstanceId("feedback78-reserve-0"),
+        fixtureInstanceId("feedback78-wizard"),
+        fixtureInstanceId("feedback78-deck-0-0"),
       ]);
-      expect(s.state.players[0]!.battleArea.map((p) => p.topCard.instanceId)).toEqual(["feedback78-candle"]);
+      expect(s.state.players[0]!.battleArea.map((p) => p.topCard.instanceId)).toEqual([
+        fixtureInstanceId("feedback78-candle"),
+      ]);
       expect(
         s.events.flatMap((event) =>
           event.kind === "memoryChanged" && event.reason === "payCost" ? [[event.from, event.to]] : [],
@@ -144,12 +159,14 @@ it.each([false, true])(
         /* eslint-disable vitest/no-conditional-expect */
         expect(s.state.turnSeat).toBe(0);
         expect(s.state.memory).toBe(5);
-        expect(s.engine.applyIntent(0, { type: "playCard", instanceId: "feedback78-wizard" })).toEqual({ ok: true });
+        expect(
+          s.engine.applyIntent(0, { type: "playCard", instanceId: fixtureInstanceId("feedback78-wizard") }),
+        ).toEqual({ ok: true });
         await settle(() => s.engine.mainVerbContinuationsInFlight === 0);
         expect(s.state.memory).toBe(0);
         expect(s.state.players[0]!.battleArea.map((p) => p.topCard.instanceId)).toEqual([
-          "feedback78-candle",
-          "feedback78-wizard",
+          fixtureInstanceId("feedback78-candle"),
+          fixtureInstanceId("feedback78-wizard"),
         ]);
         expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
         /* eslint-enable vitest/no-conditional-expect */

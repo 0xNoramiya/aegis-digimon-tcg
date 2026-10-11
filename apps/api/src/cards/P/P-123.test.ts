@@ -204,7 +204,11 @@ describe("P-123 Ukkomon — KB Q&A rulings", () => {
         autoSelectCards: true,
         onEvent(event) {
           if (state === undefined) return;
-          timeline.push({ kind: event.kind, phase: state.phase, breedingCardId: state.players[0]!.breeding?.topCard.cardId });
+          timeline.push({
+            kind: event.kind,
+            phase: state.phase,
+            breedingCardId: state.players[0]!.breeding?.topCard.cardId,
+          });
         },
       },
     );

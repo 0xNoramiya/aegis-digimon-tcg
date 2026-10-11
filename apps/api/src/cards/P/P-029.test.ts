@@ -298,7 +298,9 @@ describe("P-029 Agunimon — KB Q&A rulings", () => {
 
     const player = s.state.players[0]!;
     expect(player.battleArea.some((permanent) => permanent.permanentId === permanentId)).toBe(false);
-    expect(player.battleArea.map((permanent) => permanent.topCard.instanceId)).toContain(s.inst("ancientGreymon").instanceId);
+    expect(player.battleArea.map((permanent) => permanent.topCard.instanceId)).toContain(
+      s.inst("ancientGreymon").instanceId,
+    );
     expect(player.trash.some((card) => card.cardId === "P-029")).toBe(true);
   });
 });

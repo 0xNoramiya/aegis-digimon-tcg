@@ -1,3 +1,8 @@
+import prepared0 from "../../api/src/engine/scenarios/justimon-end-turn-copy.fixture";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "justimon-end-turn-copy": prepared0 };
+
 import { test, expect, type DecisionPolicy } from "./scenario-page";
 
 test.use({ holdBotAfterTurn: 1 });
@@ -12,14 +17,14 @@ for (const mode of ["accept", "refuse", "declineEgg"] as const) {
     test.setTimeout(180_000);
     await page.setViewportSize({ width: mode === "accept" ? 390 : 1440, height: mode === "accept" ? 844 : 1000 });
     await page.addInitScript((dark) => localStorage.setItem("aegis:darkMode", String(dark)), mode !== "refuse");
-    await scenario.open("arena-feedback91-justimon-end-turn-copy");
+    await scenario.openFixture(fixtureVariant(preparedFixtures, "justimon-end-turn-copy"));
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     expect((await scenario.snapshot()).memory).toBe(6);
-    const hostId = "dev-perm-0-feedback91-host";
-    const victimId = "dev-perm-1-feedback91-victim";
-    const first = "dev-field-0-feedback91-first";
-    const second = "dev-field-0-feedback91-second";
-    const third = "dev-field-0-feedback91-third";
+    const hostId = fixturePermanentId("dev-perm-0-feedback91-host");
+    const victimId = fixturePermanentId("dev-perm-1-feedback91-victim");
+    const first = fixtureInstanceId("dev-field-0-feedback91-first");
+    const second = fixtureInstanceId("dev-field-0-feedback91-second");
+    const third = fixtureInstanceId("dev-field-0-feedback91-third");
     let stage: "blitz" | "accel" | "x" | "end" = "blitz";
     let copyOffers = 0;
     const policy: DecisionPolicy = (decision) => {
@@ -30,14 +35,17 @@ for (const mode of ["accept", "refuse", "declineEgg"] as const) {
         return { accept: false };
       if (stage === "end" && mode === "refuse" && /by trashing 1 Option card/i.test(decision.promptText))
         return { accept: false };
-      if (decision.sourceCardId === "EX8-054" && candidates.includes("feedback91-accel")) {
-        expect(candidates).toEqual(["dev-field-0-feedback91-host", "feedback91-accel"]);
+      if (decision.sourceCardId === "EX8-054" && candidates.includes(fixtureInstanceId("feedback91-accel"))) {
+        expect(candidates).toEqual([
+          fixtureInstanceId("dev-field-0-feedback91-host"),
+          fixtureInstanceId("feedback91-accel"),
+        ]);
         copyOffers++;
-        return { instanceId: "feedback91-accel" };
+        return { instanceId: fixtureInstanceId("feedback91-accel") };
       }
       const option = stage === "blitz" ? first : stage === "accel" ? second : third;
       if (candidates.includes(option)) return { instanceId: option };
-      const target = stage === "blitz" ? "dev-perm-1-feedback91-bait" : victimId;
+      const target = stage === "blitz" ? fixturePermanentId("dev-perm-1-feedback91-bait") : victimId;
       if (candidates.includes(target)) return { instanceId: target };
       return {};
     };
@@ -66,7 +74,7 @@ for (const mode of ["accept", "refuse", "declineEgg"] as const) {
       (s) =>
         !s.pendingDecision &&
         s.memory === 4 &&
-        s.players[0]!.battleArea.some((p) => p.topCard.instanceId === "feedback91-x"),
+        s.players[0]!.battleArea.some((p) => p.topCard.instanceId === fixtureInstanceId("feedback91-x")),
       policy,
     );
     stage = "end";
@@ -75,17 +83,17 @@ for (const mode of ["accept", "refuse", "declineEgg"] as const) {
     const after = await scenario.snapshot();
     const own = after.players[0]!;
     const host = own.battleArea.find((p) => p.permanentId === hostId)!;
-    expect(host.topCard.instanceId).toBe("feedback91-x");
+    expect(host.topCard.instanceId).toBe(fixtureInstanceId("feedback91-x"));
     expect(host.stack.map((c) => c.instanceId)).toEqual([
-      "dev-stack-0-feedback91-host-0",
-      "dev-field-0-feedback91-host",
-      "feedback91-accel",
+      fixtureInstanceId("dev-stack-0-feedback91-host-0"),
+      fixtureInstanceId("dev-field-0-feedback91-host"),
+      fixtureInstanceId("feedback91-accel"),
     ]);
     expect(host.isSuspended).toBe(true);
     expect(own.hand.map((c) => c.instanceId)).toEqual([
-      "feedback91-deck-0-0",
-      "feedback91-deck-0-1",
-      "feedback91-deck-0-2",
+      fixtureInstanceId("feedback91-deck-0-0"),
+      fixtureInstanceId("feedback91-deck-0-1"),
+      fixtureInstanceId("feedback91-deck-0-2"),
     ]);
     expect(own.deckCount).toBe(17);
     expect(own.trash.map((c) => c.instanceId)).toEqual(mode === "accept" ? [first, second, third] : [first, second]);

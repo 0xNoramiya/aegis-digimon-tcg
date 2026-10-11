@@ -1,10 +1,16 @@
+import prepared0 from "../../api/src/engine/scenarios/execute-replacement.fixture";
+import prepared1 from "../../api/src/engine/scenarios/ordinary-replacement.fixture";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "execute-replacement": prepared0, "ordinary-replacement": prepared1 };
+
 import { test, expect, type DecisionPolicy } from "./scenario-page";
 
 test.use({ holdBotAfterTurn: 2 });
 
 const MATERIALS = ["BT26-001", "BT24-034", "BT26-009", "BT26-015", "BT26-016"];
 const SOURCE_IDS = MATERIALS.map((_, i) => `feedback79-material-${i}`);
-const OMNI = "dev-perm-1-feedback79-omni";
+const OMNI = fixturePermanentId("dev-perm-1-feedback79-omni");
 
 for (const mode of ["accept", "decline", "ordinary"] as const) {
   test(`Feedback #79: ${mode} distinguishes battle prevention from Execute's separate deletion`, async ({
@@ -14,7 +20,9 @@ for (const mode of ["accept", "decline", "ordinary"] as const) {
     const ordinary = mode === "ordinary";
     await page.setViewportSize({ width: mode === "accept" ? 390 : 1440, height: mode === "accept" ? 844 : 1000 });
     await page.addInitScript((dark) => localStorage.setItem("aegis:darkMode", String(dark)), mode !== "decline");
-    await scenario.open(ordinary ? "arena-feedback79-ordinary-replacement" : "arena-feedback79-execute-replacement");
+    await scenario.openFixture(
+      fixtureVariant(preparedFixtures, ordinary ? "ordinary-replacement" : "execute-replacement"),
+    );
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     const before = await scenario.snapshot();
     if (process.env.AEGIS_E2E_PRODUCTION === "true") {
@@ -31,7 +39,7 @@ for (const mode of ["accept", "decline", "ordinary"] as const) {
         if (prevention && decision.sourceCardId === "BT26-085") preventionOffers++;
         if (prevention && decision.sourceCardId === "BT26-016") {
           holyOffers++;
-          expect(decision.sourceInstanceId).toBe("feedback79-material-4");
+          expect(decision.sourceInstanceId).toBe(fixtureInstanceId("feedback79-material-4"));
           return { accept: mode === "accept" };
         }
         return { accept: decision.sourceCardId === "BT26-078" || decision.sourceCardId === "BT26-085" };
@@ -39,11 +47,12 @@ for (const mode of ["accept", "decline", "ordinary"] as const) {
       if (decision.kind === "selectCards" || decision.kind === "chooseTargets") {
         const candidates = decision.options.candidateInstanceIds ?? [];
         if ((decision.options.min ?? 1) === 0) return { accept: false };
-        for (const id of ["player", "feedback79-destroy", OMNI]) if (candidates.includes(id)) return { instanceId: id };
+        for (const id of ["player", fixtureInstanceId("feedback79-destroy"), OMNI])
+          if (candidates.includes(id)) return { instanceId: id };
       }
       return {};
     };
-    if (ordinary) await scenario.attack("dev-perm-0-feedback79-giant");
+    if (ordinary) await scenario.attack(fixturePermanentId("dev-perm-0-feedback79-giant"));
     else {
       await scenario.play("Giant Slayer", "Digimon");
       const panel = page.getByRole("dialog", { name: "＜Assembly＞ Giant Slayer", exact: true });
@@ -75,25 +84,34 @@ for (const mode of ["accept", "decline", "ordinary"] as const) {
       .toBe(1);
     await scenario.idle();
     const after = await scenario.snapshot();
-    const survivor = after.players[0]!.battleArea.find((p) => p.topCard.instanceId === "feedback79-destroy");
+    const survivor = after.players[0]!.battleArea.find(
+      (p) => p.topCard.instanceId === fixtureInstanceId("feedback79-destroy"),
+    );
     expect(after.players[0]!.battleArea).toHaveLength(mode === "decline" ? 0 : 1);
     if (mode !== "decline") {
-      expect(survivor!.stack.map((c) => c.instanceId)).toEqual([...SOURCE_IDS, "feedback79-giant"]);
-      if (ordinary) expect(survivor!.permanentId).toBe("dev-perm-0-feedback79-giant");
+      expect(survivor!.stack.map((c) => c.instanceId)).toEqual([...SOURCE_IDS, fixtureInstanceId("feedback79-giant")]);
+      if (ordinary) expect(survivor!.permanentId).toBe(fixturePermanentId("dev-perm-0-feedback79-giant"));
     }
     expect(after.players[0]!.trash.map((c) => c.instanceId)).toEqual(
-      mode === "decline" ? [...SOURCE_IDS, "feedback79-giant", "feedback79-destroy", "feedback79-security-0-0"] : [],
+      mode === "decline"
+        ? [
+            ...SOURCE_IDS,
+            fixtureInstanceId("feedback79-giant"),
+            fixtureInstanceId("feedback79-destroy"),
+            fixtureInstanceId("feedback79-security-0-0"),
+          ]
+        : [],
     );
     expect(after.players[0]!.securityCount).toBe(ordinary ? 3 : 2);
     expect(after.players[0]!.deckCount).toBe(
       before.players[0]!.deckCount + (mode === "accept" ? 0 : ordinary ? -2 : -1),
     );
     expect(after.players[0]!.hand.map((c) => c.instanceId)).toEqual([
-      ...before.players[0]!.hand.filter((c) => ordinary || c.instanceId !== "feedback79-giant").map(
+      ...before.players[0]!.hand.filter((c) => ordinary || c.instanceId !== fixtureInstanceId("feedback79-giant")).map(
         (c) => c.instanceId,
       ),
-      "feedback79-deck-0-1",
-      "feedback79-deck-0-2",
+      fixtureInstanceId("feedback79-deck-0-1"),
+      fixtureInstanceId("feedback79-deck-0-2"),
     ]);
     const events = (await scenario.presentation()).events;
     const evolved = events.filter((e) => e.kind === "digivolved" && e.cardId === "BT26-060");
@@ -109,13 +127,17 @@ for (const mode of ["accept", "decline", "ordinary"] as const) {
         (e) => e.kind === "effectTriggered" && e.sourceCardId === "AD1-025" && e.timing === "whenLeavesPlay",
       ),
     ).toHaveLength(mode === "decline" ? 1 : 0);
-    expect(events.filter((e) => e.kind === "cardsMoved" && e.instanceIds.includes("feedback79-security-0-0"))).toEqual(
+    expect(
+      events.filter(
+        (e) => e.kind === "cardsMoved" && e.instanceIds.includes(fixtureInstanceId("feedback79-security-0-0")),
+      ),
+    ).toEqual(
       ordinary
         ? []
         : [
             expect.objectContaining({
               to: mode === "accept" ? "deckBottom" : "trash",
-              instanceIds: ["feedback79-security-0-0"],
+              instanceIds: [fixtureInstanceId("feedback79-security-0-0")],
             }),
           ],
     );

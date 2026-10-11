@@ -1,6 +1,11 @@
+import prepared0 from "./justimon-copied-opt.fixture.js";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../scenario/references.js";
+
+const preparedFixtures = { "justimon-copied-opt": prepared0 };
+
 import { Phase } from "@aegis/shared";
 import { advance } from "../testkit/advance.js";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { RED_DECK, BLUE_DECK } from "../testDecks.js";
 import { expect, it } from "vitest";
 import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
@@ -123,14 +128,14 @@ it.each(["accept", "refuse"] as const)(
       preferOptionIndex: 1,
       declinePrompts: refused,
     });
-    layDevScenario("arena-feedback71-justimon-copied-opt", s.state, [RED_DECK, BLUE_DECK]);
+    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "justimon-copied-opt"));
     const loop = s.engine.startTurnLoop();
     try {
       await settle(() => s.state.phase === Phase.Breeding);
       expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
       await advance(s.engine).waitForMainPhase(0);
       const human = s.state.players[0]!;
-      const host = human.battleArea.find((p) => p.permanentId === "dev-perm-0-feedback71-host")!;
+      const host = human.battleArea.find((p) => p.permanentId === fixturePermanentId("dev-perm-0-feedback71-host"))!;
       const entered = host.enterFieldTurnCount;
       const deck = human.deck.length;
       expect(
@@ -138,13 +143,13 @@ it.each(["accept", "refuse"] as const)(
       ).toEqual({ ok: true });
       await settle(() => s.events.filter((e) => e.kind === "attackEnded").length === 1 && !s.state.pendingDecision);
       expect(host.isSuspended).toBe(false);
-      expect(human.trash.map((c) => c.instanceId)).toEqual(["dev-field-0-feedback71-first"]);
+      expect(human.trash.map((c) => c.instanceId)).toEqual([fixtureInstanceId("dev-field-0-feedback71-first")]);
       const lender = host.topCard.instanceId;
       expect(
         s.engine.applyIntent(0, {
           type: "digivolve",
           permanentId: host.permanentId,
-          instanceId: "feedback71-x",
+          instanceId: fixtureInstanceId("feedback71-x"),
           useAlternateCost: true,
         }),
       ).toEqual({ ok: true });
@@ -154,9 +159,9 @@ it.each(["accept", "refuse"] as const)(
       expect(s.state.memory).toBe(5);
       expect(human.deck).toHaveLength(deck - 1);
       expect(human.hand.map((c) => c.instanceId)).toEqual([
-        "feedback71-reserve",
-        "feedback71-deck-0-0",
-        "feedback71-deck-0-1",
+        fixtureInstanceId("feedback71-reserve"),
+        fixtureInstanceId("feedback71-deck-0-0"),
+        fixtureInstanceId("feedback71-deck-0-1"),
       ]);
       if (mode === "refuse") refused.push("By trashing");
       expect(
@@ -171,14 +176,14 @@ it.each(["accept", "refuse"] as const)(
       expect(host.isSuspended).toBe(mode === "refuse");
       expect(human.trash.map((c) => c.instanceId)).toEqual(
         mode === "accept"
-          ? ["dev-field-0-feedback71-first", "dev-field-0-feedback71-second"]
-          : ["dev-field-0-feedback71-first"],
+          ? [fixtureInstanceId("dev-field-0-feedback71-first"), fixtureInstanceId("dev-field-0-feedback71-second")]
+          : [fixtureInstanceId("dev-field-0-feedback71-first")],
       );
       expect(s.state.players[1]!.security).toHaveLength(2);
       expect(s.state.players[1]!.trash.map((c) => c.instanceId)).toEqual([
-        "feedback71-security-1-0",
-        "feedback71-security-1-1",
-        "feedback71-security-1-2",
+        fixtureInstanceId("feedback71-security-1-0"),
+        fixtureInstanceId("feedback71-security-1-1"),
+        fixtureInstanceId("feedback71-security-1-2"),
       ]);
       expect(
         s.events.flatMap((e) => (e.kind === "memoryChanged" && e.reason === "payCost" ? [[e.from, e.to]] : [])),

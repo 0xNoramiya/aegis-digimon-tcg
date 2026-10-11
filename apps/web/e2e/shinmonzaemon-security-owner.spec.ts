@@ -1,19 +1,34 @@
+import fixtureBt22ShinmonzaemonOwnSecurity from "../../api/src/engine/scenarios/bt22-shinmonzaemon-own-security.fixture";
+import fixtureBt22ShinmonzaemonOpponentSecurity from "../../api/src/engine/scenarios/bt22-shinmonzaemon-opponent-security.fixture";
+import { fixtureVariant, fixturePermanentId, fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
-const monzaemonId = "dev-perm-0-dm-monzaemon";
-const paymentId = "dev-dm-payment";
+const monzaemonId = fixturePermanentId("own-dm-monzaemon");
+const paymentId = fixtureInstanceId("dm-payment-card");
 
 // Q4940: ShinMonzaemon may place either player's Digimon; each card goes to its owner's security.
 for (const owner of [1, 0] as const) {
-  const targetInstanceId = `dev-field-${owner}-dm-target`;
-  const targetSourceId = `dev-stack-${owner}-dm-target-0`;
+  const targetInstanceId = fixtureVariant(
+    { "1": fixtureInstanceId("opponent-card-dm-target-card"), "0": fixtureInstanceId("own-card-dm-target-card") },
+    owner,
+  );
+  const targetSourceId = fixtureVariant(
+    {
+      "0": fixtureInstanceId("own-source-dm-target-0-card"),
+      "1": fixtureInstanceId("opponent-source-dm-target-0-card"),
+    },
+    owner,
+  );
   const other = owner === 0 ? 1 : 0;
   const arena = owner === 1 ? "opponent" : "own";
-  test(`Discord 1557652222744199228: ShinMonzaemon places the ${arena} Muchomon on its owner's security`, async ({
-    scenario,
-  }) => {
+  test(`ShinMonzaemon places the ${arena} Muchomon on its owner's security`, async ({ scenario }) => {
     test.setTimeout(120_000);
-    await scenario.open(`arena-bt22-shinmonzaemon-${arena}-security`);
+    await scenario.openFixture(
+      fixtureVariant(
+        { own: fixtureBt22ShinmonzaemonOwnSecurity, opponent: fixtureBt22ShinmonzaemonOpponentSecurity },
+        arena,
+      ),
+    );
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     const initial = await scenario.snapshot();
     expect(initial.memory).toBe(8);
@@ -63,11 +78,9 @@ for (const owner of [1, 0] as const) {
   });
 }
 
-test("Discord 1557652222744199228: declining ShinMonzaemon's payment leaves both security stacks unchanged", async ({
-  scenario,
-}) => {
+test("declining ShinMonzaemon's payment leaves both security stacks unchanged", async ({ scenario }) => {
   test.setTimeout(120_000);
-  await scenario.open("arena-bt22-shinmonzaemon-opponent-security");
+  await scenario.openFixture(fixtureBt22ShinmonzaemonOpponentSecurity);
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
   const initial = await scenario.snapshot();
   const ownSecurity = initial.players[0]!.security.map((c) => c.instanceId);
@@ -92,7 +105,9 @@ test("Discord 1557652222744199228: declining ShinMonzaemon's payment leaves both
   expect(final.memory).toBe(5);
   expect(final.players[1]!.securityCount).toBe(5);
   expect(final.players[0]!.security.map((c) => c.instanceId)).toEqual(ownSecurity);
-  expect(final.players[1]!.battleArea.map((p) => p.topCard.instanceId)).toEqual(["dev-field-1-dm-target"]);
+  expect(final.players[1]!.battleArea.map((p) => p.topCard.instanceId)).toEqual([
+    fixtureInstanceId("opponent-card-dm-target-card"),
+  ]);
   expect(
     final.players[0]!.battleArea.find((p) => p.permanentId === monzaemonId)!.stack.map((c) => c.instanceId),
   ).toContain(paymentId);

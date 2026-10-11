@@ -1,3 +1,4 @@
+import { replayVideoPtBR } from "./replayVideo";
 import { profileReplayPtBR } from "./profileReplays";
 import { replayPtBR } from "./replays";
 /* Brazilian Portuguese strings. Typed against the English source, so a new key
@@ -22,6 +23,7 @@ import { shellPtBR } from "./redesign/shell.pt-BR";
 export const ptBR: Record<keyof typeof en, string> = {
   ...profileReplayPtBR,
   ...replayPtBR,
+  ...replayVideoPtBR,
   "feedback.title": "Feedbacks dos jogadores",
   "feedback.subtitle": "Faça a triagem dos relatos, defina o status e responda a quem enviou.",
   "feedback.restricted": "Somente administradores podem ver os feedbacks.",
@@ -202,12 +204,12 @@ export const ptBR: Record<keyof typeof en, string> = {
   "lobby.timer.label": "Tempo de partida",
   "lobby.timer.with": "Com timer",
   "lobby.timer.without": "Sem timer",
-  "lobby.timer.summary": "{minutes} min iniciais · +60s no seu turno · +30s no turno do oponente",
+  "lobby.timer.summary": "{minutes} min por turno · Renova a cada turno",
   "lobby.timer.publicHint": "Você encontra jogadores com o mesmo formato e timer.",
   "lobby.timer.privateHint":
-    "Vale para os dois jogadores. Conta enquanto você decide, até o limite do tempo inicial. Zerar significa derrota.",
+    "Vale para ambos os jogadores. O tempo renova a cada turno e conta enquanto você decide. Esgotar o tempo significa derrota.",
   "lobby.timer.guestHint": "O anfitrião define o formato e o timer para os dois jogadores.",
-  "lobby.timer.start": "Tempo inicial",
+  "lobby.timer.start": "Tempo por turno",
   "lobby.timer.refill": "Reposição por turno",
   "lobby.timer.seconds": "{seconds} s",
   "lobby.timer.enabled": "Timer ligado",
@@ -216,10 +218,10 @@ export const ptBR: Record<keyof typeof en, string> = {
   "lobby.timer.yourTurn": "Seu turno",
   "lobby.timer.opponentTurn": "Turno do oponente",
   "lobby.timer.shortSeconds": "{seconds}s",
-  "lobby.timer.capHint": "Máximo de {seconds}s · Conta enquanto você decide",
+  "lobby.timer.capHint": "{seconds}s por turno · Renova a cada turno",
   "lobby.timer.offHint": "Vale para os dois jogadores. Jogue no seu ritmo.",
   "lobby.timer.rules":
-    "Conta enquanto você decide. Repõe 60s no seu turno e 30s no do oponente, até o tempo inicial. Zerar significa derrota.",
+    "Ambos os jogadores recebem tempo novo a cada turno. Conta enquanto você decide; pausa nas animações e enquanto o adversário reconecta. Esgotar o tempo significa derrota.",
   "game.timer.you": "Seu tempo",
   "game.timer.opponent": "Oponente",
   "game.timer.active": "Sua ação",
@@ -333,6 +335,15 @@ export const ptBR: Record<keyof typeof en, string> = {
   "releases.1.21.0-beta.fix.rules": releaseMessages["releases.1.21.0-beta.fix.rules"]["pt-BR"],
   "releases.1.21.0-beta.fix.table": releaseMessages["releases.1.21.0-beta.fix.table"]["pt-BR"],
   "releases.1.21.0-beta.fix.privacy": releaseMessages["releases.1.21.0-beta.fix.privacy"]["pt-BR"],
+  "releases.1.23.0-beta.summary": releaseMessages["releases.1.23.0-beta.summary"]["pt-BR"],
+  "releases.1.23.0-beta.feature.timer": releaseMessages["releases.1.23.0-beta.feature.timer"]["pt-BR"],
+  "releases.1.23.0-beta.feature.video": releaseMessages["releases.1.23.0-beta.feature.video"]["pt-BR"],
+  "releases.1.23.0-beta.feature.trash": releaseMessages["releases.1.23.0-beta.feature.trash"]["pt-BR"],
+  "releases.1.23.0-beta.fix.combo": releaseMessages["releases.1.23.0-beta.fix.combo"]["pt-BR"],
+  "releases.1.23.0-beta.fix.copies": releaseMessages["releases.1.23.0-beta.fix.copies"]["pt-BR"],
+  "releases.1.23.0-beta.fix.cards": releaseMessages["releases.1.23.0-beta.fix.cards"]["pt-BR"],
+  "releases.1.23.0-beta.fix.profile": releaseMessages["releases.1.23.0-beta.fix.profile"]["pt-BR"],
+  "releases.1.23.0-beta.fix.reports": releaseMessages["releases.1.23.0-beta.fix.reports"]["pt-BR"],
   "releases.1.22.1-beta.summary": releaseMessages["releases.1.22.1-beta.summary"]["pt-BR"],
   "releases.1.22.1-beta.fix.sources": releaseMessages["releases.1.22.1-beta.fix.sources"]["pt-BR"],
   "releases.1.22.1-beta.fix.cards": releaseMessages["releases.1.22.1-beta.fix.cards"]["pt-BR"],
@@ -1498,6 +1509,10 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.zoomCard": "Ampliar carta",
   "overlay.trashEffect": "Efeito do lixo",
   "overlay.trashEmpty": "lixo vazio",
+  "overlay.trashedFromSources": "Descartada das fontes de {name}",
+  "overlay.trashSort": "Ordenar descarte",
+  "overlay.trashSortRecent": "Mais recentes",
+  "overlay.trashSortName": "Agrupar por nome",
   "overlay.trashCount": "{count} cartas",
   "overlay.securityCount": "{faceUp} viradas para cima de {count} cartas",
   "overlay.securityNoFaceUp": "nenhuma carta virada para cima",

@@ -1,8 +1,14 @@
+import prepared0 from "../../api/src/engine/scenarios/mastemon-digivolve.fixture";
+import prepared1 from "../../api/src/engine/scenarios/mastemon-attack.fixture";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "mastemon-digivolve": prepared0, "mastemon-attack": prepared1 };
+
 import { test, expect } from "./scenario-page";
 
-const HOST = "dev-perm-0-feedback84-host";
-const YELLOW = "dev-feedback84-yellow";
-const PURPLE = "dev-feedback84-purple";
+const HOST = fixturePermanentId("dev-perm-0-feedback84-host");
+const YELLOW = fixtureInstanceId("dev-feedback84-yellow");
+const PURPLE = fixtureInstanceId("dev-feedback84-purple");
 const COST_CLAUSE =
   "[When Digivolving] [When Attacking] [Once Per Turn] By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.";
 const PLAY_CLAUSE =
@@ -13,7 +19,7 @@ for (const timing of ["digivolve", "attack"] as const) {
     test(`Feedback #84: ${timing} pays security then chooses ${payload} in the real GameScreen`, async ({
       scenario,
     }) => {
-      await scenario.open(`arena-feedback84-mastemon-${timing}`);
+      await scenario.openFixture(fixtureVariant(preparedFixtures, `mastemon-${timing}`));
       await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
       const before = await scenario.snapshot();
       let costId: string | undefined;

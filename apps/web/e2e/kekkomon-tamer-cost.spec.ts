@@ -1,8 +1,10 @@
+import fixtureKekkomonCost from "../../api/src/engine/scenarios/kekkomon-cost.fixture";
+import { fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
 for (const payer of [0, 1]) {
   test(`Kekkomon consumes the selected suspended Tamer's bottom source (payer ${payer})`, async ({ scenario }) => {
-    await scenario.open("arena-github5332-kekkomon-cost");
+    await scenario.openFixture(fixtureKekkomonCost);
     await scenario.resolveUntil(
       (s) => s.phase === "Main" && !s.pendingDecision,
       () => ({ accept: false }),
@@ -34,9 +36,9 @@ for (const payer of [0, 1]) {
       (s) => s.players[1]!.securityCount === 1 && !s.pendingDecision && !s.combatWindow,
       (d) => {
         if (d.options.purpose === "cost") return { instanceId: selected.topCard.instanceId };
-        if (d.options.candidateInstanceIds?.includes("dev-5332-evolution-0")) {
+        if (d.options.candidateInstanceIds?.includes(fixtureInstanceId("evolution-0-card"))) {
           evolutionSelected = true;
-          return { instanceId: "dev-5332-evolution-0" };
+          return { instanceId: fixtureInstanceId("evolution-0-card") };
         }
         return { accept: !evolutionSelected };
       },

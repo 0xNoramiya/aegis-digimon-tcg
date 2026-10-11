@@ -1,6 +1,12 @@
+import prepared0 from "./mastemon-digivolve.fixture.js";
+import prepared1 from "./mastemon-attack.fixture.js";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../scenario/references.js";
+
+const preparedFixtures = { "mastemon-digivolve": prepared0, "mastemon-attack": prepared1 };
+
 import { expect, it } from "vitest";
 import { Phase, Zone, type DecisionResponse } from "@aegis/shared";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { BLUE_DECK, RED_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { observe } from "../testkit/observe.js";
@@ -370,22 +376,21 @@ it.each(["digivolve", "attack"] as const)(
   "Feedback #84: playable %s arena pays then refuses through public decisions",
   async (timing) => {
     const s = setupEngine({ 0: {}, 1: {} });
-    layDevScenario(
-      timing === "digivolve" ? "arena-feedback84-mastemon-digivolve" : "arena-feedback84-mastemon-attack",
+    layScenarioFixture(
       s.state,
-      [BLUE_DECK, RED_DECK],
+      fixtureVariant(preparedFixtures, timing === "digivolve" ? "mastemon-digivolve" : "mastemon-attack"),
     );
     const loop = s.engine.startTurnLoop();
     try {
       await settle(() => s.state.phase === Phase.Breeding);
       expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
       await advance(s.engine).waitForMainPhase(0);
-      const hostId = "dev-perm-0-feedback84-host";
+      const hostId = fixturePermanentId("dev-perm-0-feedback84-host");
       expect(
         s.engine.applyIntent(
           0,
           timing === "digivolve"
-            ? { type: "digivolve", permanentId: hostId, instanceId: "dev-feedback84-mastemon" }
+            ? { type: "digivolve", permanentId: hostId, instanceId: fixtureInstanceId("dev-feedback84-mastemon") }
             : { type: "attack", attackerPermanentId: hostId, target: { kind: "player" } },
         ),
       ).toEqual({ ok: true });
@@ -397,8 +402,8 @@ it.each(["digivolve", "attack"] as const)(
       expect(s.state.players[0]!.trash.map((c) => c.instanceId)).toContain(costId);
       expect(s.state.players[0]!.security).toHaveLength(timing === "digivolve" ? 3 : 2);
       expect(s.state.players[0]!.battleArea.map((p) => p.permanentId)).toEqual([hostId]);
-      expect(s.state.players[0]!.hand.map((c) => c.instanceId)).toContain("dev-feedback84-yellow");
-      expect(s.state.players[0]!.trash.map((c) => c.instanceId)).toContain("dev-feedback84-purple");
+      expect(s.state.players[0]!.hand.map((c) => c.instanceId)).toContain(fixtureInstanceId("dev-feedback84-yellow"));
+      expect(s.state.players[0]!.trash.map((c) => c.instanceId)).toContain(fixtureInstanceId("dev-feedback84-purple"));
       expect(s.state.memory).toBe(timing === "digivolve" ? 5 : 10);
     } finally {
       s.engine.applyIntent(0, { type: "surrender" });

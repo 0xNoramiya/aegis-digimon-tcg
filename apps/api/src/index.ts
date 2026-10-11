@@ -10,7 +10,7 @@ import { type AegisRoom, roomRegistry } from "./rooms/AegisRoom.js";
 import "./cards/index.js"; // side-effect: registers every implemented card EffectModule
 import { log, logError, flushLogs } from "./logger.js";
 import { installAccountRoutes } from "./accounts/routes.js";
-import { GitHubIssueTracker } from "./bugs/index.js";
+import { GitHubIssueTracker } from "#api/bugs/GitHubIssueTracker";
 import { GitHubDeckReportTracker } from "./community/deckReports.js";
 import {
   botSeatingStore,

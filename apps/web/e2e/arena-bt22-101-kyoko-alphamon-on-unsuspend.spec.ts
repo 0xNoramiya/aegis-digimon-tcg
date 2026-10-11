@@ -1,7 +1,9 @@
+import fixtureBt22101KyokoAlphamonOnUnsuspend from "../../api/src/engine/scenarios/bt22-101-kyoko-alphamon-on-unsuspend.fixture";
+import { fixturePermanentId, fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect, type DecisionPolicy } from "./scenario-page";
 
-const KYOKO = "dev-perm-0-bt22-101-kyoko";
-const ALPHAMON = "dev-bt22-101-alphamon";
+const KYOKO = fixturePermanentId("own-bt22-101-kyoko");
+const ALPHAMON = fixtureInstanceId("bt22-101-alphamon-card");
 
 function answerKyoko(kyokoPrompts: string[]): DecisionPolicy {
   return (decision) => {
@@ -15,7 +17,7 @@ function answerKyoko(kyokoPrompts: string[]): DecisionPolicy {
 // (CR 15-8-3-7, Q4976). With 3 security cards, the unsuspend phase asks "Digivolve" and Kyoko
 // becomes Alphamon for 3 memory.
 test("BT22-101: Kyoko Kuremi digivolves into Alphamon when she unsuspends with 3 security", async ({ scenario }) => {
-  await scenario.open("arena-bt22-101-kyoko-alphamon-on-unsuspend", "normal", "none");
+  await scenario.openFixture(fixtureBt22101KyokoAlphamonOnUnsuspend, "normal", "none");
 
   const kyokoPrompts: string[] = [];
   await scenario.resolveUntil(

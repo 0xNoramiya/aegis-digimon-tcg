@@ -1,5 +1,10 @@
+import prepared0 from "./arisa-effect-play.fixture.js";
+import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
+
+const preparedFixtures = { "arisa-effect-play": prepared0 };
+
 import { Phase } from "@aegis/shared";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { RED_DECK, BLUE_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { expect, it } from "vitest";
@@ -42,14 +47,15 @@ it.each([
 it.each(["non-puppet", "accept", "decline"] as const)(
   "Feedback #68: real-turn %s play, legal attack and Rush expiry",
   async (mode) => {
-    const selected = mode === "non-puppet" ? "feedback68-non-puppet" : "feedback68-puppet";
+    const selected =
+      mode === "non-puppet" ? fixtureInstanceId("feedback68-non-puppet") : fixtureInstanceId("feedback68-puppet");
     const s = setupEngine({
       autoAcceptOptional: true,
       autoSelectCards: true,
       preferInstanceIds: [selected],
       declinePrompts: mode === "decline" ? ["Rush"] : [],
     });
-    layDevScenario("arena-feedback68-arisa-effect-play", s.state, [RED_DECK, BLUE_DECK]);
+    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "arisa-effect-play"));
     const loop = s.engine.startTurnLoop();
     try {
       await settle(() => s.state.phase === Phase.Breeding);
@@ -58,7 +64,9 @@ it.each(["non-puppet", "accept", "decline"] as const)(
       const human = s.state.players[0]!;
       const arisa = human.battleArea.find((p) => p.topCard.cardId === "ST19-14")!;
       const deck = human.deck.length;
-      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: "feedback68-call" })).toEqual({ ok: true });
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: fixtureInstanceId("feedback68-call") })).toEqual({
+        ok: true,
+      });
       await settle(() => !s.state.pendingDecision && s.engine.mainVerbContinuationsInFlight === 0);
       const played = human.battleArea.find((p) => p.topCard.instanceId === selected)!;
       expect(played).toBeDefined();
@@ -66,10 +74,13 @@ it.each(["non-puppet", "accept", "decline"] as const)(
       expect(arisa.isSuspended).toBe(mode === "accept");
       expect(s.state.memory).toBe(6);
       expect(human.deck).toHaveLength(deck);
-      expect(human.hand.map((c) => c.instanceId)).toEqual(["feedback68-reserve", "feedback68-deck-0-0"]);
+      expect(human.hand.map((c) => c.instanceId)).toEqual([
+        fixtureInstanceId("feedback68-reserve"),
+        fixtureInstanceId("feedback68-deck-0-0"),
+      ]);
       expect(human.trash.map((c) => c.instanceId)).toEqual([
-        mode === "non-puppet" ? "feedback68-puppet" : "feedback68-non-puppet",
-        "feedback68-call",
+        mode === "non-puppet" ? fixtureInstanceId("feedback68-puppet") : fixtureInstanceId("feedback68-non-puppet"),
+        fixtureInstanceId("feedback68-call"),
       ]);
       expect(
         s.engine.applyIntent(0, { type: "attack", attackerPermanentId: played.permanentId, target: { kind: "player" } })
@@ -87,7 +98,7 @@ it.each(["non-puppet", "accept", "decline"] as const)(
       expect(s.events.filter((e) => e.kind === "attackEnded")).toHaveLength(mode === "accept" ? 1 : 0);
       expect(s.events.filter((e) => e.kind === "securityChecked")).toHaveLength(mode === "accept" ? 1 : 0);
       expect(s.state.players[1]!.trash.map((c) => c.instanceId)).toEqual(
-        mode === "accept" ? ["feedback68-security-1-0"] : [],
+        mode === "accept" ? [fixtureInstanceId("feedback68-security-1-0")] : [],
       );
       expect(human.battleArea.some((p) => p.permanentId === played.permanentId)).toBe(true);
       expect(played.stack).toHaveLength(0);

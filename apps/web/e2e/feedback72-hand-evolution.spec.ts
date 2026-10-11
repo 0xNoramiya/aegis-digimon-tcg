@@ -1,3 +1,8 @@
+import prepared0 from "../../api/src/engine/scenarios/nokia-hand-evolution.fixture";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "nokia-hand-evolution": prepared0 };
+
 import { test, expect, type DecisionPolicy } from "./scenario-page";
 
 test.use({ holdBotAfterTurn: 1 });
@@ -9,7 +14,7 @@ for (const first of ["war", "metal"] as const) {
   }) => {
     await page.setViewportSize({ width: first === "war" ? 390 : 1440, height: first === "war" ? 844 : 1000 });
     await page.addInitScript((dark) => localStorage.setItem("aegis:darkMode", String(dark)), first === "war");
-    await scenario.open("arena-feedback72-nokia-hand-evolution");
+    await scenario.openFixture(fixtureVariant(preparedFixtures, "nokia-hand-evolution"));
     await scenario.resolveUntil((state) => state.phase === "Main" && state.memory === 3 && !state.pendingDecision);
     const before = await scenario.snapshot();
     if (process.env.AEGIS_E2E_PRODUCTION === "true") {
@@ -44,8 +49,8 @@ for (const first of ["war", "metal"] as const) {
         expect(decision.options.choiceClauses[0]).toContain("without paying the cost");
         return { choice: 0 };
       }
-      if (decision.options.candidateInstanceIds?.includes("feedback72-metal"))
-        return { instanceId: "feedback72-metal" };
+      if (decision.options.candidateInstanceIds?.includes(fixtureInstanceId("feedback72-metal")))
+        return { instanceId: fixtureInstanceId("feedback72-metal") };
       return {};
     };
     await scenario.play("Agumon", "Digimon");
@@ -54,7 +59,7 @@ for (const first of ["war", "metal"] as const) {
         !state.pendingDecision &&
         state.memory === 0 &&
         plans.length === 2 &&
-        state.players[0]!.hand.some((card) => card.instanceId === "feedback72-metal"),
+        state.players[0]!.hand.some((card) => card.instanceId === fixtureInstanceId("feedback72-metal")),
       policy,
     );
     await scenario.idle();
@@ -64,15 +69,19 @@ for (const first of ["war", "metal"] as const) {
     ]);
     const atZero = await scenario.snapshot();
     const player = atZero.players[0]!;
-    const agumon = player.battleArea.find((card) => card.topCard.instanceId === "feedback72-agumon")!;
-    const gabumon = player.battleArea.find((card) => card.permanentId === "dev-perm-0-feedback72-gabumon")!;
+    const agumon = player.battleArea.find(
+      (card) => card.topCard.instanceId === fixtureInstanceId("feedback72-agumon"),
+    )!;
+    const gabumon = player.battleArea.find(
+      (card) => card.permanentId === fixturePermanentId("dev-perm-0-feedback72-gabumon"),
+    )!;
     for (const name of ["WarGreymon", "MetalGarurumon"]) {
       await scenario.hand(name);
       await expect(page.getByRole("button", { name: /^Activate effect:/ })).toBeVisible();
       await expect(page.getByRole("button", { name: "Play Digimon", exact: true })).toHaveCount(0);
       await page.getByRole("button", { name: "Close", exact: true }).click();
     }
-    for (const id of ["feedback72-war", "feedback72-metal"]) {
+    for (const id of [fixtureInstanceId("feedback72-war"), fixtureInstanceId("feedback72-metal")]) {
       const projected = player.hand.find((card) => card.instanceId === id)!;
       expect(JSON.parse(projected.activatableEffectsJson)).toHaveLength(1);
       expect(projected.playableFromHand).toBe(false);
@@ -85,34 +94,39 @@ for (const first of ["war", "metal"] as const) {
         !state.combatWindow &&
         state.turnSeat === 1 &&
         state.memory === 6 &&
-        state.players[0]!.battleArea.some((card) => card.topCard.instanceId === "feedback72-war") &&
-        state.players[0]!.battleArea.some((card) => card.topCard.instanceId === "feedback72-metal"),
+        state.players[0]!.battleArea.some((card) => card.topCard.instanceId === fixtureInstanceId("feedback72-war")) &&
+        state.players[0]!.battleArea.some((card) => card.topCard.instanceId === fixtureInstanceId("feedback72-metal")),
       policy,
     );
     const after = await scenario.snapshot();
     const war = after.players[0]!.battleArea.find((card) => card.permanentId === agumon.permanentId)!;
     const metal = after.players[0]!.battleArea.find((card) => card.permanentId === gabumon.permanentId)!;
-    expect(war.topCard.instanceId).toBe("feedback72-war");
-    expect(war.stack.map((card) => card.instanceId)).toEqual(["feedback72-agumon"]);
-    expect(metal.topCard.instanceId).toBe("feedback72-metal");
-    expect(metal.stack.map((card) => card.instanceId)).toEqual(["dev-field-0-feedback72-gabumon"]);
-    expect(after.players[0]!.breeding!.topCard.instanceId).toBe("dev-field-0-feedback72-breeding");
+    expect(war.topCard.instanceId).toBe(fixtureInstanceId("feedback72-war"));
+    expect(war.stack.map((card) => card.instanceId)).toEqual([fixtureInstanceId("feedback72-agumon")]);
+    expect(metal.topCard.instanceId).toBe(fixtureInstanceId("feedback72-metal"));
+    expect(metal.stack.map((card) => card.instanceId)).toEqual([fixtureInstanceId("dev-field-0-feedback72-gabumon")]);
+    expect(after.players[0]!.breeding!.topCard.instanceId).toBe(fixtureInstanceId("dev-field-0-feedback72-breeding"));
     expect(after.players[0]!.hand.map((card) => card.instanceId)).toEqual([
-      "feedback72-reserve",
-      "feedback72-deck-0-0",
-      "feedback72-deck-0-1",
-      "feedback72-deck-0-2",
+      fixtureInstanceId("feedback72-reserve"),
+      fixtureInstanceId("feedback72-deck-0-0"),
+      fixtureInstanceId("feedback72-deck-0-1"),
+      fixtureInstanceId("feedback72-deck-0-2"),
     ]);
     expect(after.players[0]!.deckCount).toBe(before.players[0]!.deckCount - 2);
     expect(after.players[0]!.trash).toHaveLength(0);
     expect(after.players[0]!.securityCount).toBe(3);
     expect(after.players[1]!.securityCount).toBe(3);
-    for (const id of ["dev-perm-0-feedback72-nokia", "dev-perm-0-feedback72-tai-matt", "dev-perm-0-feedback72-tai"])
+    for (const id of [
+      fixturePermanentId("dev-perm-0-feedback72-nokia"),
+      fixturePermanentId("dev-perm-0-feedback72-tai-matt"),
+      fixturePermanentId("dev-perm-0-feedback72-tai"),
+    ])
       expect(after.players[0]!.battleArea.find((card) => card.permanentId === id)!.isSuspended).toBe(false);
     expect(
-      after.players[1]!.battleArea.find((card) => card.permanentId === "dev-perm-1-feedback72-opponent")!.topCard
-        .instanceId,
-    ).toBe("dev-field-1-feedback72-opponent");
+      after.players[1]!.battleArea.find(
+        (card) => card.permanentId === fixturePermanentId("dev-perm-1-feedback72-opponent"),
+      )!.topCard.instanceId,
+    ).toBe(fixtureInstanceId("dev-field-1-feedback72-opponent"));
     const events = (await scenario.presentation()).events;
     expect(
       events.flatMap((event) =>

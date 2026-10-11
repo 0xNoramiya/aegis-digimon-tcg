@@ -1,3 +1,8 @@
+import prepared0 from "../../api/src/engine/scenarios/davis-ken-sources.fixture";
+import { fixtureVariant, fixtureInstanceId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "davis-ken-sources": prepared0 };
+
 import { test, expect } from "./scenario-page";
 
 for (const accept of [true, false]) {
@@ -5,11 +10,13 @@ for (const accept of [true, false]) {
     scenario,
     page,
   }) => {
-    await scenario.open("arena-feedback90-davis-ken-sources");
+    await scenario.openFixture(fixtureVariant(preparedFixtures, "davis-ken-sources"));
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     await scenario.play("Davis Motomiya & Ken Ichijoji", "Tamer");
     await scenario.resolveUntil(
-      (s) => s.players[0]!.battleArea.some((p) => p.topCard.instanceId === "feedback90-tamer") && !s.pendingDecision,
+      (s) =>
+        s.players[0]!.battleArea.some((p) => p.topCard.instanceId === fixtureInstanceId("feedback90-tamer")) &&
+        !s.pendingDecision,
     );
     const before = await scenario.snapshot();
     expect(before.memory).toBe(1);
@@ -31,7 +38,7 @@ for (const accept of [true, false]) {
     let sourceChoices = 0;
     await scenario.resolveUntil(
       (s) =>
-        s.players[0]!.battleArea.some((p) => p.topCard.instanceId === "feedback90-dna") &&
+        s.players[0]!.battleArea.some((p) => p.topCard.instanceId === fixtureInstanceId("feedback90-dna")) &&
         !s.pendingDecision &&
         (!accept || s.players[1]!.trash.length === 3),
       (decision) => {
@@ -47,9 +54,10 @@ for (const accept of [true, false]) {
     const after = await scenario.snapshot();
     expect(sourceChoices).toBe(accept ? 1 : 0);
     expect(after.memory).toBe(accept ? 2 : 1);
-    expect(after.players[0]!.battleArea.find((p) => p.topCard.instanceId === "feedback90-tamer")!.isSuspended).toBe(
-      accept,
-    );
+    expect(
+      after.players[0]!.battleArea.find((p) => p.topCard.instanceId === fixtureInstanceId("feedback90-tamer"))!
+        .isSuspended,
+    ).toBe(accept);
     expect(after.players[1]!.trash.map((c) => c.instanceId)).toEqual(accept ? chosen : []);
     expect(after.players[1]!.battleArea.map((p) => p.stack.map((c) => c.instanceId))).toEqual(
       hosts.map((p) => p.stack.map((c) => c.instanceId).filter((id) => !accept || !chosen.includes(id))),
@@ -58,7 +66,7 @@ for (const accept of [true, false]) {
       before.players[1]!.breeding!.stack.map((c) => c.instanceId),
     );
     expect(
-      after.players[0]!.battleArea.find((p) => p.topCard.instanceId === "feedback90-dna")!.stack.map(
+      after.players[0]!.battleArea.find((p) => p.topCard.instanceId === fixtureInstanceId("feedback90-dna"))!.stack.map(
         (c) => c.instanceId,
       ),
     ).toEqual([
@@ -68,8 +76,8 @@ for (const accept of [true, false]) {
       blue.topCard.instanceId,
     ]);
     expect(after.players[0]!.hand.map((c) => c.instanceId)).toEqual([
-      "github-effects-deck-0-0",
-      "github-effects-deck-0-1",
+      fixtureInstanceId("github-effects-deck-0-0"),
+      fixtureInstanceId("github-effects-deck-0-1"),
     ]);
     await scenario.healthy();
   });

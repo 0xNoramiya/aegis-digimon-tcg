@@ -1,3 +1,8 @@
+import prepared0 from "../../api/src/engine/scenarios/dracomon-selection.fixture";
+import { fixtureVariant, fixtureInstanceId } from "../../api/src/engine/scenario/references";
+
+const preparedFixtures = { "dracomon-selection": prepared0 };
+
 import { test, expect } from "./scenario-page";
 
 test.use({ holdBotAfterTurn: 1 });
@@ -8,7 +13,9 @@ for (const width of [1440, 390]) {
       test(`Feedback #65/#67: ${card} confirmation works at ${width}px in ${theme}`, async ({ scenario, page }) => {
         await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
         await page.addInitScript((dark) => localStorage.setItem("aegis:darkMode", String(dark)), theme === "dark");
-        await scenario.open(card === "davis" ? "arena-davis-both-colors" : "arena-feedback65-dracomon-selection");
+        await scenario.openFixture(
+          fixtureVariant(preparedFixtures, card === "davis" ? "arena-davis-both-colors" : "dracomon-selection"),
+        );
         await scenario.resolveUntil((state) => state.phase === "Main" && !state.pendingDecision);
         expect(await page.locator("html").evaluate((element) => element.classList.contains("dark"))).toBe(
           theme === "dark",
@@ -28,7 +35,8 @@ for (const width of [1440, 390]) {
             !state.pendingDecision &&
             state.players[0]!.hand.some(
               (candidate) =>
-                candidate.instanceId === (card === "davis" ? "dev-davis-reveal-lighdramon" : "feedback65-reveal-match"),
+                candidate.instanceId ===
+                (card === "davis" ? "dev-davis-reveal-lighdramon" : fixtureInstanceId("feedback65-reveal-match")),
             ),
           async (decision) => {
             if (decision.kind !== "selectCards" && decision.kind !== "orderCards") return {};
@@ -61,7 +69,7 @@ for (const width of [1440, 390]) {
                 ? selections === 1
                   ? "dev-davis-reveal-veemon"
                   : "dev-davis-reveal-lighdramon"
-                : "feedback65-reveal-match";
+                : fixtureInstanceId("feedback65-reveal-match");
             expect(decision.options.candidateInstanceIds).toContain(instanceId);
             return { instanceId };
           },
@@ -77,18 +85,20 @@ for (const width of [1440, 390]) {
           expect.arrayContaining(
             card === "davis"
               ? ["dev-davis-reveal-veemon", "dev-davis-reveal-lighdramon"]
-              : ["feedback65-reveal-match", "feedback65-reserve"],
+              : [fixtureInstanceId("feedback65-reveal-match"), fixtureInstanceId("feedback65-reserve")],
           ),
         );
         expect(
           after.players[0]!.hand.some(
-            (candidate) => candidate.instanceId === (card === "davis" ? "dev-davis-bt3" : "feedback65-dracomon"),
+            (candidate) =>
+              candidate.instanceId === (card === "davis" ? "dev-davis-bt3" : fixtureInstanceId("feedback65-dracomon")),
           ),
         ).toBe(false);
         expect(
           after.players[0]!.battleArea.some(
             (permanent) =>
-              permanent.topCard.instanceId === (card === "davis" ? "dev-davis-bt3" : "feedback65-dracomon"),
+              permanent.topCard.instanceId ===
+              (card === "davis" ? "dev-davis-bt3" : fixtureInstanceId("feedback65-dracomon")),
           ),
         ).toBe(true);
         expect(after.players[0]!.trash).toHaveLength(0);
@@ -97,11 +107,11 @@ for (const width of [1440, 390]) {
             (event) =>
               event.kind === "cardsMoved" &&
               event.to === "deckBottom" &&
-              event.instanceIds?.includes("feedback65-reveal-first"),
+              event.instanceIds?.includes(fixtureInstanceId("feedback65-reveal-first")),
           );
           expect(returned?.kind === "cardsMoved" ? returned.instanceIds : undefined).toEqual([
-            "feedback65-reveal-first",
-            "feedback65-reveal-second",
+            fixtureInstanceId("feedback65-reveal-first"),
+            fixtureInstanceId("feedback65-reveal-second"),
           ]);
         }
         await scenario.healthy();

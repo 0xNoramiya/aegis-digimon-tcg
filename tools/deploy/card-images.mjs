@@ -35,11 +35,7 @@ export function cardImageIds(source) {
 }
 
 function isWebp(bytes) {
-  return (
-    bytes.length > 12 &&
-    bytes.toString("ascii", 0, 4) === "RIFF" &&
-    bytes.toString("ascii", 8, 12) === "WEBP"
-  );
+  return bytes.length > 12 && bytes.toString("ascii", 0, 4) === "RIFF" && bytes.toString("ascii", 8, 12) === "WEBP";
 }
 
 async function download(fetch, name) {

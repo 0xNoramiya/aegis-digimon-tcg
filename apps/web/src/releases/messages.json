@@ -1,4 +1,58 @@
 {
+  "releases.1.23.0-beta.summary": {
+    "en": "This release gives timed matches a fresh clock each turn, makes trash copies easier to identify and adds local replay video recording.",
+    "pt-BR": "Esta versão renova o cronômetro a cada turno, facilita a identificação de cópias no lixo e adiciona gravação local de replays em vídeo.",
+    "es": "Esta versión renueva el reloj en cada turno, facilita identificar copias en el descarte y añade grabación local de repeticiones en vídeo.",
+    "it": "Questa versione rinnova il timer a ogni turno, facilita l’identificazione delle copie negli scarti e aggiunge la registrazione locale dei replay video."
+  },
+  "releases.1.23.0-beta.feature.timer": {
+    "en": "Timed matches now renew both players’ clocks every turn, with five minutes by default. Private rooms retain their time-per-turn choices and the option to disable the timer.",
+    "pt-BR": "Partidas com tempo agora renovam os cronômetros dos dois jogadores a cada turno, com cinco minutos por padrão. Salas privadas mantêm as opções de tempo por turno e de desativar o timer.",
+    "es": "Las partidas con tiempo renuevan los relojes de ambos jugadores en cada turno, con cinco minutos por defecto. Las salas privadas conservan las opciones de tiempo por turno y de desactivar el reloj.",
+    "it": "Le partite a tempo rinnovano i timer di entrambi i giocatori a ogni turno, con cinque minuti predefiniti. Le stanze private mantengono le opzioni di tempo per turno e la possibilità di disattivare il timer."
+  },
+  "releases.1.23.0-beta.feature.video": {
+    "en": "Record replay playback as a local video without the original thinking gaps. Supported browsers offer a video preview and download; mobile players can use their device’s screen recorder.",
+    "pt-BR": "Grave o replay em vídeo local sem as pausas originais para pensar. Navegadores compatíveis oferecem prévia e download; no celular, é possível usar o gravador de tela do aparelho.",
+    "es": "Graba la repetición como vídeo local sin las pausas originales para pensar. Los navegadores compatibles ofrecen vista previa y descarga; en móviles puedes usar el grabador de pantalla del dispositivo.",
+    "it": "Registra il replay come video locale senza le pause originali di riflessione. I browser compatibili offrono anteprima e download; su mobile puoi usare il registratore dello schermo del dispositivo."
+  },
+  "releases.1.23.0-beta.feature.trash": {
+    "en": "Sort the trash by newest cards or group it by card name. Duplicate cards remain separate copies with their own art and available effects.",
+    "pt-BR": "Ordene o lixo pelas cartas mais recentes ou agrupe por nome. Cartas repetidas continuam como cópias separadas, com suas próprias artes e efeitos disponíveis.",
+    "es": "Ordena el descarte por cartas más recientes o agrúpalo por nombre. Las cartas repetidas siguen siendo copias separadas con sus propias ilustraciones y efectos disponibles.",
+    "it": "Ordina gli scarti per carte più recenti o raggruppali per nome. Le carte duplicate restano copie separate con le proprie illustrazioni ed effetti disponibili."
+  },
+  "releases.1.23.0-beta.fix.combo": {
+    "en": "Confirmed card plays and digivolutions now share the decision bonus: three extra seconds per action, up to thirty seconds per player each turn and never above the chosen clock limit.",
+    "pt-BR": "Jogadas de cartas e digivoluções confirmadas agora compartilham o bônus de decisões: três segundos extras por ação, até trinta segundos por jogador a cada turno, sem ultrapassar o limite escolhido.",
+    "es": "Jugar cartas y digievolucionar ahora comparte el bono de decisiones: tres segundos extra por acción confirmada, hasta treinta por jugador en cada turno, sin superar el límite elegido.",
+    "it": "Le giocate e le digievoluzioni confermate condividono ora il bonus delle decisioni: tre secondi extra per azione, fino a trenta per giocatore a ogni turno, senza superare il limite scelto."
+  },
+  "releases.1.23.0-beta.fix.copies": {
+    "en": "Trash choices identify individual copies and show when a card was discarded from a Digimon’s sources, including LadyDevimon’s Hurricane Screw Shot choices. This information survives reconnection.",
+    "pt-BR": "Escolhas no lixo identificam cada cópia e mostram quando a carta foi descartada das fontes de um Digimon, incluindo Hurricane Screw Shot com LadyDevimon. A informação é mantida após reconexão.",
+    "es": "Las elecciones del descarte identifican cada copia e indican cuándo fue descartada de las fuentes de un Digimon, incluidas las elecciones de Hurricane Screw Shot con LadyDevimon. La información se conserva al reconectar.",
+    "it": "Le scelte negli scarti identificano ogni copia e indicano quando una carta è stata scartata dalle fonti di un Digimon, incluse le scelte Hurricane Screw Shot con LadyDevimon. L’informazione resta dopo la riconnessione."
+  },
+  "releases.1.23.0-beta.fix.cards": {
+    "en": "Heavy Mobile Digimon grants Rush before resolving On Play Blitz. Sanzomon’s search now matches only the exact card names in its printed text.",
+    "pt-BR": "Heavy Mobile Digimon concede Rush antes de resolver Blitz de On Play. A busca de Sanzomon agora considera apenas os nomes exatos do texto impresso.",
+    "es": "Heavy Mobile Digimon concede Rush antes de resolver Blitz de On Play. La búsqueda de Sanzomon ahora coincide solo con los nombres exactos de su texto impreso.",
+    "it": "Heavy Mobile Digimon concede Rush prima di risolvere Blitz di On Play. La ricerca di Sanzomon considera ora solo i nomi esatti del testo stampato."
+  },
+  "releases.1.23.0-beta.fix.profile": {
+    "en": "Profile win rates now exclude bot matches when filtering competitive player results.",
+    "pt-BR": "A taxa de vitórias do perfil agora exclui partidas contra bots ao filtrar resultados competitivos entre jogadores.",
+    "es": "La tasa de victorias del perfil ahora excluye partidas contra bots al filtrar resultados competitivos entre jugadores.",
+    "it": "La percentuale di vittorie del profilo esclude ora le partite contro bot quando filtri i risultati competitivi tra giocatori."
+  },
+  "releases.1.23.0-beta.fix.reports": {
+    "en": "Feedback filed during a match can include a private replay for investigation, with more accurate exported state and security shuffles.",
+    "pt-BR": "Feedback enviado durante uma partida pode incluir um replay privado para investigação, com estado exportado e embaralhamento de segurança mais precisos.",
+    "es": "El feedback enviado durante una partida puede incluir una repetición privada para investigar, con estado exportado y barajado de seguridad más precisos.",
+    "it": "Il feedback inviato durante una partita può includere un replay privato per l’indagine, con stato esportato e mescolamento della sicurezza più precisi."
+  },
   "releases.1.22.1-beta.summary": {
     "en": "This patch restores source selection by Digimon stack and fixes reported card effects, replay synchronization and match reliability.",
     "pt-BR": "Este patch restaura a seleção de fontes por pilha de Digimon e corrige efeitos de cartas reportados, sincronização de replays e estabilidade das partidas.",

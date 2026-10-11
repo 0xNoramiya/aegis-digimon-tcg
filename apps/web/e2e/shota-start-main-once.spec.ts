@@ -1,7 +1,8 @@
+import fixtureShotaStartMainOnce from "../../api/src/engine/scenarios/shota-start-main-once.fixture";
 import { test, expect } from "./scenario-page";
 
-test("GitHub #5389: two Shota resolve once each at Main entry, with no repeat activation", async ({ scenario }) => {
-  await scenario.open("arena-shota-start-main-once");
+test("two Shota resolve once each at Main entry, with no repeat activation", async ({ scenario }) => {
+  await scenario.openFixture(fixtureShotaStartMainOnce);
   await scenario.resolveUntil(
     (s) => s.phase === "Main" && !s.pendingDecision,
     () => ({ cardId: "BT25-093" }),

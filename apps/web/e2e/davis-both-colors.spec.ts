@@ -1,13 +1,15 @@
+import fixtureDavisBothColors from "../../api/src/engine/scenarios/davis-both-colors.fixture";
+import { fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
-const VEEMON = "dev-davis-reveal-veemon";
-const LIGHDRAMON = "dev-davis-reveal-lighdramon";
-const OPTION = "dev-davis-reveal-option";
+const VEEMON = fixtureInstanceId("davis-reveal-veemon-card");
+const LIGHDRAMON = fixtureInstanceId("davis-reveal-lighdramon-card");
+const OPTION = fixtureInstanceId("davis-reveal-option-card");
 
 // BT3-093 Q1123: Davis adds 1 blue and 1 green Digimon card, so neither color choice offers a
 // way to skip while a matching card remains.
 test("BT3-093 Davis must add both the blue and the green Digimon (Q1123)", async ({ scenario, page }) => {
-  await scenario.open("arena-davis-both-colors");
+  await scenario.openFixture(fixtureDavisBothColors);
   await scenario.resolveUntil((s) => s.phase === "Main" && s.turnSeat === 0 && !s.pendingDecision);
   await scenario.play("Davis Motomiya", "Tamer");
 

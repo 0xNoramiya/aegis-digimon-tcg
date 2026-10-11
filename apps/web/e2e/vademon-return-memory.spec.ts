@@ -1,9 +1,12 @@
+import fixtureBt22VademonReturnAce from "../../api/src/engine/scenarios/bt22-vademon-return-ace.fixture";
+import fixtureBt22VademonReturnTamer from "../../api/src/engine/scenarios/bt22-vademon-return-tamer.fixture";
+import { fixtureVariant, fixturePermanentId, fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
-const vademonId = "dev-perm-0-dm-vademon";
-const paymentId = "dev-dm-payment";
-const targetPermanentId = "dev-perm-1-dm-target";
-const targetInstanceId = "dev-field-1-dm-target";
+const vademonId = fixturePermanentId("own-dm-vademon");
+const paymentId = fixtureInstanceId("dm-payment-card");
+const targetPermanentId = fixturePermanentId("opponent-dm-target");
+const targetInstanceId = fixtureInstanceId("opponent-card-dm-target-card");
 
 type Probe = Awaited<ReturnType<import("./scenario-page").ScenarioPage["presentation"]>>;
 
@@ -24,12 +27,14 @@ for (const target of [
   // BT14-014 MetalGreymon is a play cost 4 ACE: its Overflow -3 belongs to the bot that owns it.
   { arena: "ace", cardId: "BT14-014", attack: "target", memoryAfter: 6, overflow: 1 },
 ] as const) {
-  test(`Discord 1557652222744199228: Vademon returns the bot's cost-4 ${target.arena} without charging its player memory`, async ({
+  test(`Vademon returns the bot's cost-4 ${target.arena} without charging its player memory`, async ({
     scenario,
     page,
   }) => {
     test.setTimeout(120_000);
-    await scenario.open(`arena-bt22-vademon-return-${target.arena}`);
+    await scenario.openFixture(
+      fixtureVariant({ tamer: fixtureBt22VademonReturnTamer, ace: fixtureBt22VademonReturnAce }, target.arena),
+    );
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     const initial = await scenario.snapshot();
     expect(initial.memory).toBe(3);
@@ -76,12 +81,9 @@ for (const target of [
   });
 }
 
-test("Discord 1557652222744199228: declining Vademon's payment keeps the bot's Tamer, the source and memory", async ({
-  scenario,
-  page,
-}) => {
+test("declining Vademon's payment keeps the bot's Tamer, the source and memory", async ({ scenario, page }) => {
   test.setTimeout(120_000);
-  await scenario.open("arena-bt22-vademon-return-tamer");
+  await scenario.openFixture(fixtureBt22VademonReturnTamer);
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
   const botHand = (await scenario.snapshot()).players[1]!.handCount;
 

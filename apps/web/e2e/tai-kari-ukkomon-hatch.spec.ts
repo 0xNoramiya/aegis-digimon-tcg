@@ -1,3 +1,5 @@
+import fixtureTaiKariPromoUkkomonHatch from "../../api/src/engine/scenarios/tai-kari-promo-ukkomon-hatch.fixture";
+import fixtureTaiKariUkkomonHatch from "../../api/src/engine/scenarios/tai-kari-ukkomon-hatch.fixture";
 import { test, expect } from "./scenario-page";
 
 for (const promo of [false, true]) {
@@ -5,8 +7,8 @@ for (const promo of [false, true]) {
     test(`Tai/Kari reacts to an effect hatch, not a declined hatch (promo=${promo}, hatch=${hatch})`, async ({
       scenario,
     }) => {
-      await scenario.open(
-        promo ? "arena-tai-kari-promo-ukkomon-hatch" : "arena-tai-kari-ukkomon-hatch",
+      await scenario.openFixture(
+        promo ? fixtureTaiKariPromoUkkomonHatch : fixtureTaiKariUkkomonHatch,
         "normal",
         "move",
       );

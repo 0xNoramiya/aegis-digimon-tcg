@@ -5,7 +5,83 @@ import { observe } from "../../engine/testkit/observe.js";
 import { compiled } from "./BT9-102.js";
 import "./BT9-102.js";
 import "../BT19/BT19-065.js";
+import "../EX1/EX1-073.js";
 describe("BT9-102 Attack of the Heavy Mobile Digimon!", () => {
+  it("declining the hand trash grants no Rush to a later Machine", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: ["BT2-055"],
+          hand: [{ card: "BT9-102", as: "option" }, { card: "BT9-029", as: "machine" }, "BT6-061"],
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.engine.mainVerbContinuationsInFlight === 0 && !s.state.pendingDecision);
+    expect(s.state.players[0]!.hand.some((c) => c.cardId === "BT6-061")).toBe(true);
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("machine").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.engine.mainVerbContinuationsInFlight === 0 && !s.state.pendingDecision);
+    expect(observe(s.engine).hasKeyword(s.perm("machine"), "Rush")).toBe(false);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("machine").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toMatchObject({ ok: false });
+  });
+  it("Discord 1558754612205322250: grants Rush and On Play Blitz to two successive Machinedramon", async () => {
+    const preferred: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: ["BT2-055"],
+          hand: [
+            { card: "BT9-102", as: "option" },
+            { card: "BT9-029", as: "fodder" },
+            { card: "EX1-073", as: "first" },
+            { card: "EX1-073", as: "second" },
+            { card: "BT6-061", as: "source1" },
+            { card: "BT6-061", as: "source2" },
+          ],
+        },
+        1: { security: ["BT1-009", "BT1-009", "BT1-009"] },
+      },
+      { autoSelectCards: true, autoAcceptOptional: true, preferInstanceIds: preferred },
+    );
+    preferred.push(s.inst("fodder").instanceId);
+    s.state.memory = 10;
+    await s.ready();
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.players[0]!.trash.some((c) => c.cardId === "BT9-102") && !s.state.pendingDecision);
+    for (const alias of ["first", "second"]) {
+      s.state.memory = 10;
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst(alias).instanceId })).toEqual({ ok: true });
+      await settle(() => s.engine.pendingBlitzAttack !== undefined || s.engine.mainVerbContinuationsInFlight === 0);
+      expect(s.engine.pendingBlitzAttack?.attackerPermanentId).toBe(s.perm(alias).permanentId);
+      expect(
+        s.engine.applyIntent(0, {
+          type: "attack",
+          attackerPermanentId: s.perm(alias).permanentId,
+          target: { kind: "player" },
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.engine.mainVerbContinuationsInFlight === 0 && !s.state.pendingDecision);
+      expect(s.perm(alias).stack.length).toBeGreaterThan(0);
+      expect(observe(s.engine).hasKeyword(s.perm(alias), "Rush")).toBe(true);
+      expect(observe(s.engine).hasKeyword(s.perm(alias), "Blitz")).toBe(true);
+      expect(s.perm(alias).isSuspended).toBe(true);
+    }
+  });
   it("matches catalog values and all-Machine grant and security IR", () => {
     expect(getCardDefinition("BT9-102")).toMatchObject({
       colors: ["Black"],
@@ -62,8 +138,7 @@ describe("BT9-102 Attack of the Heavy Mobile Digimon!", () => {
       ],
     });
     const rush = compiled.effects.find((effect) => effect.trigger === "Main")!.actions[0]!;
-    expect(rush).not.toHaveProperty("playerWide");
-    expect(rush).toMatchObject({ kind: "GainKeyword", includeLaterEntrants: true });
+    expect(rush).toMatchObject({ kind: "GainKeyword", includeLaterEntrants: true, playerWide: true });
   });
 
   it("installs the Rush effect by trashing a hand card", async () => {

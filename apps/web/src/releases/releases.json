@@ -1,5 +1,38 @@
 [
   {
+    "version": "1.23.0-beta",
+    "releasedAt": "2026-10-11",
+    "summaryKey": "releases.1.23.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.23.0-beta.feature.timer"
+      },
+      {
+        "textKey": "releases.1.23.0-beta.feature.video"
+      },
+      {
+        "textKey": "releases.1.23.0-beta.feature.trash"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.23.0-beta.fix.combo"
+      },
+      {
+        "textKey": "releases.1.23.0-beta.fix.copies"
+      },
+      {
+        "textKey": "releases.1.23.0-beta.fix.cards"
+      },
+      {
+        "textKey": "releases.1.23.0-beta.fix.profile"
+      },
+      {
+        "textKey": "releases.1.23.0-beta.fix.reports"
+      }
+    ]
+  },
+  {
     "version": "1.22.1-beta",
     "releasedAt": "2026-10-11",
     "summaryKey": "releases.1.22.1-beta.summary",

@@ -1,7 +1,12 @@
+import prepared0 from "./gaiomon-attack.fixture.js";
+import { fixtureVariant, fixtureInstanceId, fixturePermanentId } from "../scenario/references.js";
+
+const preparedFixtures = { "gaiomon-attack": prepared0 };
+
 /* oxlint-disable vitest/no-conditional-expect -- Fixed table inputs select independent expected contracts; no branch depends on observed game state. */
 import { Phase, EffectDuration } from "@aegis/shared";
 import { advance } from "../testkit/advance.js";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { RED_DECK, BLUE_DECK } from "../testDecks.js";
 import { expect, it } from "vitest";
 import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
@@ -100,7 +105,7 @@ it.each(["fresh", "established", "decline"] as const)(
       autoChooseOption: true,
       declinePrompts: mode === "decline" ? ["attack", "Attack"] : ["Raid"],
     });
-    layDevScenario("arena-feedback70-gaiomon-attack", s.state, [RED_DECK, BLUE_DECK]);
+    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "gaiomon-attack"));
     const loop = s.engine.startTurnLoop();
     try {
       await settle(() => s.state.phase === Phase.Breeding);
@@ -112,8 +117,8 @@ it.each(["fresh", "established", "decline"] as const)(
         expect(
           s.engine.applyIntent(0, {
             type: "playCard",
-            instanceId: "feedback70-metal",
-            assembly: { materialInstanceIds: ["feedback70-source"] },
+            instanceId: fixtureInstanceId("feedback70-metal"),
+            assembly: { materialInstanceIds: [fixtureInstanceId("feedback70-source")] },
           }),
         ).toEqual({ ok: true });
         await settle(() => !s.state.pendingDecision && s.engine.mainVerbContinuationsInFlight === 0);
@@ -121,16 +126,19 @@ it.each(["fresh", "established", "decline"] as const)(
       }
       const host = human.battleArea.find((p) =>
         mode === "fresh"
-          ? p.topCard.instanceId === "feedback70-metal"
-          : p.permanentId === "dev-perm-0-feedback70-established",
+          ? p.topCard.instanceId === fixtureInstanceId("feedback70-metal")
+          : p.permanentId === fixturePermanentId("dev-perm-0-feedback70-established"),
       )!;
-      const source = mode === "fresh" ? "feedback70-source" : "dev-stack-0-feedback70-established-0";
+      const source =
+        mode === "fresh"
+          ? fixtureInstanceId("feedback70-source")
+          : fixtureInstanceId("dev-stack-0-feedback70-established-0");
       const top = host.topCard.instanceId;
       const entered = host.enterFieldTurnCount;
       expect(
         s.engine.applyIntent(0, {
           type: "digivolve",
-          instanceId: "feedback70-gaiomon",
+          instanceId: fixtureInstanceId("feedback70-gaiomon"),
           permanentId: host.permanentId,
           useAlternateCost: true,
           alternateRequirementIndex: 0,
@@ -143,12 +151,12 @@ it.each(["fresh", "established", "decline"] as const)(
           (mode !== "fresh" || (s.state.turnSeat === 1 && s.state.phase === Phase.Breeding)),
       );
       expect(host.stack.map((c) => c.instanceId)).toEqual([source, top]);
-      expect(host.topCard.instanceId).toBe("feedback70-gaiomon");
+      expect(host.topCard.instanceId).toBe(fixtureInstanceId("feedback70-gaiomon"));
       expect(host.enterFieldTurnCount).toBe(entered);
       expect(host.currentDP).toBe(14000);
       expect(observe(s.engine).hasKeyword(host, "Rush")).toBe(false);
       expect(human.deck).toHaveLength(deck - 1);
-      expect(human.hand.map((c) => c.instanceId)).toContain("feedback70-deck-0-1");
+      expect(human.hand.map((c) => c.instanceId)).toContain(fixtureInstanceId("feedback70-deck-0-1"));
       expect(s.state.players[1]!.battleArea[0]!.isSuspended).toBe(false);
       expect(s.events.filter((e) => e.kind === "attackDeclared")).toHaveLength(mode === "established" ? 1 : 0);
       expect(s.events.filter((e) => e.kind === "securityChecked")).toHaveLength(mode === "established" ? 1 : 0);
@@ -174,7 +182,7 @@ it.each(["fresh", "established", "decline"] as const)(
         ),
       ).toHaveLength(mode === "fresh" ? 0 : 1);
       expect(s.state.players[1]!.trash.map((c) => c.instanceId)).toEqual(
-        mode === "established" ? ["feedback70-security-1-0"] : [],
+        mode === "established" ? [fixtureInstanceId("feedback70-security-1-0")] : [],
       );
       const resolved = s.events.findIndex((e) => e.kind === "effectResolved" && e.sourceCardId === "BT22-014");
       expect(resolved).toBeGreaterThan(-1);

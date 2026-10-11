@@ -1,7 +1,12 @@
+import prepared0 from "./chaos-triangular-trash.fixture.js";
+import { fixtureVariant, fixtureInstanceId } from "../scenario/references.js";
+
+const preparedFixtures = { "chaos-triangular-trash": prepared0 };
+
 import { Phase, type DecisionResponse } from "@aegis/shared";
 import { expect, it } from "vitest";
 import "../../cards/index.js";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { RED_DECK, BLUE_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
 import { assertNoLoudGap, setupEngine, settle } from "../testkit/harness.js";
@@ -117,7 +122,7 @@ it.each([false, true])(
   "Feedback #63: real arena protection accepted=%s and off-turn bonus expires on opponent's end",
   async (accepted) => {
     const s = setupEngine({ autoOrderCards: true });
-    layDevScenario("arena-feedback63-chaos-triangular-trash", s.state, [RED_DECK, BLUE_DECK]);
+    layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "chaos-triangular-trash"));
     const loop = s.engine.startTurnLoop();
     try {
       await settle(() => s.state.phase === Phase.Breeding);
@@ -133,14 +138,14 @@ it.each([false, true])(
         s.engine.applyIntent(0, {
           type: "digivolve",
           permanentId: base.permanentId,
-          instanceId: "feedback63-kentauros",
+          instanceId: fixtureInstanceId("feedback63-kentauros"),
         }),
       ).toEqual({ ok: true });
       expect(
         await resolvePrintedDecisions(
           s,
           accepted,
-          "feedback63-chaos",
+          fixtureInstanceId("feedback63-chaos"),
           gundra.permanentId,
           base.permanentId,
           gundra.permanentId,
@@ -148,12 +153,15 @@ it.each([false, true])(
       ).toBe(0);
       expect(s.state.memory).toBe(3);
       expect(human.deck).toHaveLength(deck - 1);
-      expect(base.topCard.instanceId).toBe("dev-field-0-feedback63-base");
-      expect(human.security.map((c) => c.instanceId)).toEqual(["feedback63-kentauros", "feedback63-own-security"]);
+      expect(base.topCard.instanceId).toBe(fixtureInstanceId("dev-field-0-feedback63-base"));
+      expect(human.security.map((c) => c.instanceId)).toEqual([
+        fixtureInstanceId("feedback63-kentauros"),
+        fixtureInstanceId("feedback63-own-security"),
+      ]);
       expect(other.trash.map((c) => c.instanceId)).toEqual(
         accepted
-          ? ["feedback63-opponent-security", "feedback63-chaos"]
-          : ["feedback63-opponent-security", ...initialSources],
+          ? [fixtureInstanceId("feedback63-opponent-security"), fixtureInstanceId("feedback63-chaos")]
+          : [fixtureInstanceId("feedback63-opponent-security"), ...initialSources],
       );
       expect(other.security.map((c) => c.instanceId)).toEqual(accepted ? [] : [gundra.topCard.instanceId]);
       expect(other.battleArea.map((p) => p.permanentId)).toEqual(accepted ? [gundra.permanentId] : []);
@@ -164,7 +172,7 @@ it.each([false, true])(
       const survivor = other.battleArea.find((p) => p.permanentId === gundra.permanentId);
       expect(survivor?.currentDP).toBe(accepted ? 8000 : undefined);
       expect(survivor?.stack.map((c) => c.instanceId)).toEqual(
-        accepted ? initialSources.filter((id) => id !== "feedback63-chaos") : undefined,
+        accepted ? initialSources.filter((id) => id !== fixtureInstanceId("feedback63-chaos")) : undefined,
       );
       expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
       await settle(() => s.state.turnSeat === 1 && s.state.phase === Phase.Breeding);

@@ -38,6 +38,12 @@ export function createTrashVerbs(pc: PrimitivesContext) {
     instanceIds: string[],
     opts?: { byEffectSeat?: Seat; byRule?: boolean; trashedSources?: TrashedSources },
   ): Promise<CardInstance[]> => {
+    // A resolving effect can add a self-trash watcher to hand and discard it before the
+    // next timing boundary (BT24-098 drawing BT24-013/-026/-045). Derive its resident
+    // watcher while it is still in hand, before moving the batch to trash.
+    if (state.players.some((owner) => owner.hand.some((card) => instanceIds.includes(card.instanceId)))) {
+      await engine.recomputeContinuousEffects?.();
+    }
     // "Effects can't trash it" (§15-1-3, EX9-005). The restriction is keyed by permanent, so it
     // covers every card that permanent owns — its top card, digivolution stack, and link cards.
     // `stackTrashLock` remains the narrower, seat-aware lock for stack cards alone (EX11-070);
@@ -162,9 +168,14 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       }
       // Pass includeTrash=false: a card already in trash must not be removed-then-
       // re-pushed (this verb moves cards INTO trash, never out of it).
+      const sourceHost = hostOfStackInstance(state, instanceId);
+      const sourceHostCardId = sourceHost
+        ? access.permanentById(sourceHost.hostPermanentId)?.topCard.cardId
+        : undefined;
       const removed = removeLooseInstance(state, instanceId, false);
       if (removed === undefined) continue;
       insertFaceUpIntoTrash(removed);
+      removed.trashOriginCardId = opts?.trashedSources?.hostCardId ?? sourceHostCardId ?? "";
       moved.push(removed);
     }
     applyOverflow(

@@ -1,7 +1,8 @@
+import fixtureRevelationExpiry from "../../api/src/engine/scenarios/revelation-expiry.fixture";
 import { test, expect } from "./scenario-page";
 
 test("Revelation DP modifiers last through the pending attack and expire at turn pass", async ({ scenario }) => {
-  await scenario.open("arena-github5344-revelation-expiry");
+  await scenario.openFixture(fixtureRevelationExpiry);
   await scenario.resolveUntil((s) => !s.pendingDecision && s.phase === "Main");
   const initial = await scenario.snapshot();
   await scenario.evolve("Mistymon", initial.players[0]!.battleArea[0]!.permanentId, true);

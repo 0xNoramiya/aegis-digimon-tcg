@@ -10,7 +10,7 @@ it could not suspend. The committed catalog has four Wingdramon cards; only
 `EX3-020` prints Evade. The report does not identify the card that imposed the
 suspension prohibition, so the public reproduction uses `P-161` Bishop Device
 as an explicit representative, followed by `BT11-097` Crimson Flare. The
-`arena-ex3-wingdramon-evade-suspend-lock` layout exposes this sequence in
+`ex3-wingdramon-evade-suspend-lock.fixture.ts` layout exposes this sequence in
 `/dev/arena`.
 
 Comprehensive Rules §16-22-1/-3 (`data/kb/rules/comprehensive.md`) make
@@ -29,7 +29,7 @@ Alliance paths now exclude that ally. A paired unrestricted ally still pays
 Alliance by suspending. Attack-declaration suspension remains on its existing
 rules path.
 
-Proof: `apps/api/src/engine/scenarios/evadeCannotSuspendScenario.test.ts` runs public
+Proof: `apps/api/src/engine/scenarios/evade-cannot-suspend.test.ts` runs public
 `playCard` and `attack` intents for the printed cards, including the dev arena
 layout. It covers unrestricted Evade, restricted effect-deletion Evade,
 restricted Raid-battle Evade, restricted Alliance, and unrestricted Alliance.
@@ -40,7 +40,7 @@ mechanism without claiming to reconstruct the match.
 Subsequent read-only production logs identified `EX13-021` Wingdramon as the
 actual suspension-lock source. Its effect was applied to `EX3-020` Wingdramon;
 the server then issued `evadePrompt` and resolved the accepted Evade. The
-`arena-ex13-wingdramon-evade-suspend-lock` layout now uses `EX13-021` to trash
+`ex13-wingdramon-evade-suspend-lock.fixture.ts` layout now uses `EX13-021` to trash
 both digivolution sources and prevent `EX3-020` from suspending before Crimson
 Flare attempts deletion. This exact-card regression fails at the illegal
 `evadePrompt` with the original engine files and passes with the shared cost

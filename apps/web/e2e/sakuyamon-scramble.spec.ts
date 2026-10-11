@@ -1,3 +1,4 @@
+import fixtureSakuyamonMaidOptionTiming from "../../api/src/engine/scenarios/sakuyamon-maid-option-timing.fixture";
 import { writeFile } from "node:fs/promises";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import { RED_DECK } from "../../api/dist/engine/testDecks.js";
@@ -17,7 +18,7 @@ class SakuyamonScenario {
           displayName: "Sakuyamon regression",
           seed: 1,
           deck,
-          devScenario: "arena-sakuyamon-maid-option-timing",
+          devScenario: "local-fixture",
         };
         document.addEventListener("DOMContentLoaded", () => document.documentElement.classList.add("dark"));
       },
@@ -65,6 +66,7 @@ for (const speed of ["normal", "slow"] as const) {
     page,
   }, info) => {
     const server = await startBrowserServer({ holdBotAllTurns: false });
+    server.useFixture(fixtureSakuyamonMaidOptionTiming);
     const scenario = new SakuyamonScenario(page);
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));

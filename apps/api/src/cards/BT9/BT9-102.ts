@@ -40,6 +40,8 @@ export const compiled: CompiledCard = {
           cost: handCost,
           optional: true,
           includeLaterEntrants: true,
+          // Rush applies immediately on entry, before the gained On Play Blitz resolves.
+          playerWide: true,
         },
         {
           kind: "GrantStatic",

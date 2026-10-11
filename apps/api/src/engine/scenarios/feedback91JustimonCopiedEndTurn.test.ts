@@ -1,7 +1,12 @@
+import prepared0 from "./justimon-end-turn-copy.fixture.js";
+import { fixtureVariant } from "../scenario/references.js";
+
+const preparedFixtures = { "justimon-end-turn-copy": prepared0 };
+
 import { expect, it } from "vitest";
 import { Phase } from "@aegis/shared";
 import { advance } from "../testkit/advance.js";
-import { layDevScenario } from "../devScenario.js";
+import { layScenarioFixture } from "../scenario/fixture.js";
 import { RED_DECK } from "../testDecks.js";
 import { setupEngine, settle, assertNoLoudGap } from "../testkit/harness.js";
 import "../../cards/index.js";
@@ -63,7 +68,7 @@ it.each(
       },
     },
   );
-  if (arena) layDevScenario("arena-feedback91-justimon-end-turn-copy", s.state, [RED_DECK, RED_DECK]);
+  if (arena) layScenarioFixture(s.state, fixtureVariant(preparedFixtures, "justimon-end-turn-copy"));
   else s.state.memory = 6;
   await s.ready();
   const own = s.state.players[0]!;

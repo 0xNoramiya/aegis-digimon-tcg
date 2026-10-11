@@ -7,9 +7,9 @@ updated: 2026-09-27
 
 ## Evolution watcher entry snapshot (2026-09-27)
 
-`apps/api/src/engine/scenarios/bt20BakemonVioletRetroactiveScenario.test.ts` reproduces the
+`apps/api/src/engine/scenarios/bt20-bakemon-violet-retroactive.test.ts` reproduces the
 BT20-068/BT23-087 Discord report through a public `digivolve` intent and the
-`arena-bt20-bakemon-violet-retroactive` dev arena layout. Bakemon plays Violet
+`bt20-bakemon-violet-retroactive.fixture.ts` position. Bakemon plays Violet
 Inboots during its own `[When Digivolving]` effect. Before the fix, the trailing
 `whenOneOfYoursDigivolves` bus read the newly registered Violet watcher and
 incorrectly suspended it and granted Bakemon Rush. The two assertions failed

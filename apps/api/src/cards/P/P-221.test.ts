@@ -171,7 +171,10 @@ describe("P-221 Chaosmon — KB Q&A rulings", () => {
           deck: Array(10).fill("BT1-009"),
         },
         1: {
-          battleArea: [{ card: "P-221", as: "chaosmon" }, { card: "BT1-009", as: "fodder" }],
+          battleArea: [
+            { card: "P-221", as: "chaosmon" },
+            { card: "BT1-009", as: "fodder" },
+          ],
           deck: Array(10).fill("BT1-009"),
         },
       },

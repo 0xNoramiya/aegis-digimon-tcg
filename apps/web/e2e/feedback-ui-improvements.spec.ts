@@ -1,3 +1,4 @@
+import fixtureDrasilTurnHandoff from "../../api/src/engine/scenarios/drasil-turn-handoff.fixture";
 import { getCardDefinition } from "@aegis/shared";
 import { test, expect } from "./scenario-page";
 
@@ -16,7 +17,7 @@ test("the toolbar holds still, the opponent's card stays open, and the feedback 
 }) => {
   test.setTimeout(120_000);
   const { page } = scenario;
-  await scenario.open("arena-discord1558122159-drasil-turn-handoff", "normal", "none");
+  await scenario.openFixture(fixtureDrasilTurnHandoff, "normal", "none");
 
   await test.step("#53: no toolbar button moves while animations come and go", async () => {
     await page.evaluate(() => {

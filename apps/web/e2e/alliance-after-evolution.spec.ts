@@ -1,9 +1,10 @@
+import fixtureAllianceAfterEvolution from "../../api/src/engine/scenarios/alliance-after-evolution.fixture";
 import { test, expect } from "./scenario-page";
 
 for (const acceptAlliance of [true, false]) {
   test(`Alliance survives attacker evolution (accepted: ${acceptAlliance})`, async ({ scenario, page }) => {
     test.setTimeout(120_000);
-    await scenario.open("arena-github5320-alliance-after-evolution");
+    await scenario.openFixture(fixtureAllianceAfterEvolution);
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     const initial = await scenario.snapshot();
     const host = initial.players[0]!.battleArea[0]!;
