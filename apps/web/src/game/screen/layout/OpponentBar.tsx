@@ -309,21 +309,19 @@ export function OpponentBar({
             <button
               type="button"
               className="game-topbar-button"
-              onClick={onResetScenario}
-              {...tooltip.describe("reset", "Reset battle")}
+              {...tooltip.describe("reset", "Reset battle", onResetScenario)}
             >
               ↻
             </button>
           ) : null}
-          <button className="game-topbar-button" onClick={onOpenLog} {...tooltip.describe("log", t("game.matchLog"))}>
+          <button className="game-topbar-button" {...tooltip.describe("log", t("game.matchLog"), onOpenLog)}>
             <Icons.ScrollText size={17} />
           </button>
           {onToggleChat ? (
             <button
               className="game-topbar-button"
-              onClick={onToggleChat}
               aria-pressed={chatOpen}
-              {...tooltip.describe("chat", chatLabel)}
+              {...tooltip.describe("chat", chatLabel, onToggleChat)}
             >
               <Icons.MessageSquare size={17} />
               <ChatUnreadBadge count={chatUnread} />
@@ -332,8 +330,7 @@ export function OpponentBar({
           {fullscreen.supported ? (
             <button
               className="game-topbar-button"
-              onClick={fullscreen.toggle}
-              {...tooltip.describe("fullscreen", fullscreenLabel)}
+              {...tooltip.describe("fullscreen", fullscreenLabel, fullscreen.toggle)}
             >
               <FullscreenIcon size={17} />
             </button>
@@ -344,37 +341,30 @@ export function OpponentBar({
               Enter come free with the native button; the match has no global keys. */}
           <button
             className="game-topbar-button game-topbar-button--skip"
-            onClick={onSkipPresentation}
             aria-hidden={!skipShown}
             disabled={!skipShown}
             tabIndex={skipShown ? undefined : -1}
             data-skippable={skipShown}
             data-testid="skip-presentation"
-            {...tooltip.describe("skip", t("game.skipPresentation"))}
+            {...tooltip.describe("skip", t("game.skipPresentation"), onSkipPresentation)}
             onMouseEnter={skipShown ? (event) => tooltip.show("skip", event.currentTarget) : undefined}
             onFocus={skipShown ? (event) => tooltip.show("skip", event.currentTarget) : undefined}
           >
             <Icons.FastForward size={17} />
           </button>
           {/* Feedback sits with settings and leave so the three "about the match" controls read as one group. */}
-          <button
-            className="game-topbar-button"
-            onClick={onReportBug}
-            {...tooltip.describe("feedback", t("bugReport.button"))}
-          >
+          <button className="game-topbar-button" {...tooltip.describe("feedback", t("bugReport.button"), onReportBug)}>
             <Icons.Megaphone size={17} />
           </button>
           <button
             className="game-topbar-button game-topbar-button--look"
-            onClick={onOpenArenaLook}
-            {...tooltip.describe("look", t("redesign.arena.look.open"))}
+            {...tooltip.describe("look", t("redesign.arena.look.open"), onOpenArenaLook)}
           >
             <Icons.Settings size={17} />
           </button>
           <button
             className="game-topbar-button game-topbar-button--danger"
-            onClick={onSurrender}
-            {...tooltip.describe("leave", leaveLabel)}
+            {...tooltip.describe("leave", leaveLabel, onSurrender)}
           >
             <Icons.LogOut size={17} />
           </button>

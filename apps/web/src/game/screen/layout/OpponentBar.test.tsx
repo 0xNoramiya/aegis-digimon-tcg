@@ -142,6 +142,34 @@ describe("the desktop toolbar's trailing group", () => {
     expect(screen.getByRole("tooltip").textContent).toBe("Match settings");
   });
 
+  it("still runs each button's action when it is clicked", () => {
+    const callbacks = {
+      onOpenLog: vi.fn<() => void>(),
+      onReportBug: vi.fn<() => void>(),
+      onOpenArenaLook: vi.fn<() => void>(),
+      onSurrender: vi.fn<() => void>(),
+      onSkipPresentation: vi.fn<() => void>(),
+      onToggleChat: vi.fn<() => void>(),
+    };
+    render(
+      <I18nProvider>
+        <OpponentBar {...props({ skippable: true, ...callbacks })} />
+      </I18nProvider>,
+    );
+    const names: [string | RegExp, keyof typeof callbacks][] = [
+      ["Match log", "onOpenLog"],
+      ["Send feedback", "onReportBug"],
+      ["Match settings", "onOpenArenaLook"],
+      ["Surrender", "onSurrender"],
+      [/skip/i, "onSkipPresentation"],
+      [/chat/i, "onToggleChat"],
+    ];
+    for (const [name, callback] of names) {
+      fireEvent.click(screen.getByRole("button", { name }));
+      expect(callbacks[callback]).toHaveBeenCalledTimes(1);
+    }
+  });
+
   it("never opens a tooltip for the hidden skip slot", () => {
     renderBar(false);
     const skip = screen.getByTestId("skip-presentation");
