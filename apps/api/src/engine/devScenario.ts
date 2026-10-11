@@ -480,6 +480,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback75-tomoro-timing",
   "arena-feedback72-nokia-hand-evolution",
   "arena-feedback71-justimon-copied-opt",
+  "arena-feedback91-justimon-end-turn-copy",
   "arena-feedback70-gaiomon-attack",
   "arena-feedback68-arisa-effect-play",
   "arena-feedback60-duplicate-option-choice",
@@ -8607,6 +8608,35 @@ function layFeedback72NokiaHandEvolutionScenario(state: GameState): void {
   state.memory = 2;
 }
 
+/** #91: End of Turn copying remains legal after both lenders spent their own OPT. */
+function layFeedback91JustimonEndTurnCopyScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`feedback91-egg-${seat}`, "BT1-001", seat));
+    for (let i = 0; i < 20; i++)
+      insertCard(player, Zone.Deck, faceDownCard(`feedback91-deck-${seat}-${i}`, "BT1-009", seat));
+    for (let i = 0; i < (seat === 0 ? 5 : 9); i++)
+      insertCard(player, Zone.Security, faceDownCard(`feedback91-security-${seat}-${i}`, "BT1-009", seat));
+  }
+  const human = state.players[0]!;
+  placePermanent(human, establishedDigimon(0, ["EX13-006", "BT23-059"], "-feedback91-host"));
+  for (const name of ["first", "second", "third"]) {
+    const option = establishedDigimon(0, ["LM-058"], `-feedback91-${name}`);
+    option.placedByEffect = true;
+    placePermanent(human, option);
+  }
+  insertCard(human, Zone.Hand, faceUpCard("feedback91-accel", "P-203", 0));
+  insertCard(human, Zone.Hand, faceUpCard("feedback91-x", "EX8-054", 0));
+  const opponent = state.players[1]!;
+  placePermanent(opponent, establishedDigimon(1, ["BT1-009"], "-feedback91-bait"));
+  placePermanent(opponent, establishedDigimon(1, ["BT1-066", "BT1-073", "BT1-076"], "-feedback91-victim"));
+  placePermanent(opponent, establishedDigimon(1, ["BT1-081"], "-feedback91-other"));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 6;
+}
+
 /** #71: copied evolution processing does not share the lender's already-used OPT. */
 function layFeedback71JustimonCopiedOptScenario(state: GameState): void {
   for (const seat of [0, 1] as const) {
@@ -12115,6 +12145,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback75-tomoro-timing": (state) => layFeedback75TomoroScenario(state, true),
   "arena-feedback72-nokia-hand-evolution": layFeedback72NokiaHandEvolutionScenario,
   "arena-feedback71-justimon-copied-opt": layFeedback71JustimonCopiedOptScenario,
+  "arena-feedback91-justimon-end-turn-copy": layFeedback91JustimonEndTurnCopyScenario,
   "arena-feedback70-gaiomon-attack": layFeedback70GaiomonAttackScenario,
   "arena-feedback68-arisa-effect-play": layFeedback68ArisaEffectPlayScenario,
   "arena-feedback60-duplicate-option-choice": layFeedback60DuplicateOptionChoiceScenario,
