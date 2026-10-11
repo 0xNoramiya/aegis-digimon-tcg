@@ -772,6 +772,8 @@ export interface DecisionRequest {
     timing?: string; // printed timing label of the resolving effect (e.g. "On Play"), for the overlay to show only that clause
     /** Exact clause that raised this decision, preserving main/inherited provenance without client-side guessing. */
     effectText?: string;
+    /** Printed card supplying copied effect text; does not change the effect's rules source. */
+    effectTextCardId?: string;
     /** Exact resolving clause identity, including installed reactive effects. */
     effectKey?: string;
     /** Optional question accepts this effect's activation; false for choices inside an active effect. */

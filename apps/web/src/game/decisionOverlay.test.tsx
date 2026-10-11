@@ -19,6 +19,30 @@ import { choiceLabel } from "./overlay/choice/decisionChoiceLabels";
 
 afterEach(() => cleanup());
 
+it("feedback #51: copied donor text is shown while Jesmon GX remains the effect source", () => {
+  const clause = "Then, until your opponent's turn ends, their Digimon effects don't affect 1 of your white Digimon.";
+  renderDecision({
+    decisionId: "feedback51-copied-target",
+    seat: 0,
+    kind: "chooseTargets",
+    sourceCardId: "BT10-112",
+    sourceInstanceId: "gx",
+    sourcePermanentId: "gx-host",
+    promptText: "Jesmon GX",
+    options: {
+      timing: "WhenDigivolving",
+      effectTextCardId: "EX13-061",
+      effectText: getCardDefinition("EX13-061")!.effectText,
+      effectTextPart: clause,
+      candidateInstanceIds: ["gx-host"],
+      min: 1,
+      max: 1,
+    },
+  });
+  expect(screen.getByRole("dialog", { name: "Jesmon GX · effect" })).toBeTruthy();
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(clause);
+});
+
 it("keeps Sakuyamon's optional cost in the clause under the standard activation heading", () => {
   const cost = "By placing 1 of your opponent's Digimon with the lowest DP as the bottom security card";
   const clause =

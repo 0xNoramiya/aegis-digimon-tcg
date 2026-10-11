@@ -80,7 +80,7 @@ export function DecisionPrompts({
   const { t } = useTranslation();
   const clause = sourceCardId
     ? playerFacingEffectClause({
-        cardId: sourceCardId,
+        cardId: decision?.options?.effectTextCardId ?? sourceCardId,
         timing: decision?.options?.timing,
         description: decision?.options?.effectText,
         effectTextPart: decision?.options?.effectTextPart,

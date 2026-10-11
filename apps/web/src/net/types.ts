@@ -630,6 +630,7 @@ export interface AegisJoinOptions {
     | "arena-p108-training-delay-no-target"
     | "arena-feedback47-chronomon-security-return"
     | "arena-feedback50-progress-end-attack"
+    | "arena-feedback51-jesmon-gx-copied-text"
     | "arena-feedback46-jimmy-boltmon-single"
     | "arena-feedback46-jimmy-boltmon-double"
     | "arena-feedback45-jesmon-choice"

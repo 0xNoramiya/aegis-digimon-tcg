@@ -31,6 +31,7 @@ async function withEffectAttackOptions(
       sourcePermanentId: ctx.source.permanent()?.permanentId ?? ctx.sourcePermanentIdAtCreation,
       timing: ctx.activeTiming,
       effectText: ctx.activeEffectText,
+      effectTextCardId: ctx.activeEffectTextCardId,
       effectTextPart: ctx.activeEffectTextPart,
       isInherited: ctx.activeEffectIsInherited,
     },
