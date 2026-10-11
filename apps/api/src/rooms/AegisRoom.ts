@@ -1540,6 +1540,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         ? (evolvedBotOptions({
             engine: this.engine,
             seat: this.BOT_SEAT,
+            seed: this.engine.hooks.seed,
             decks: [humanDeck, deck],
           }) ??
           trainedBotOptions({

@@ -74,6 +74,47 @@ manifest's provisional Hoeffding plan before any held-out candidate games. This
 certificate concerns direct strength against current balanced; high-budget MCTS
 guide publication remains a separate gate.
 
+## Certified numeric policy
+
+The delivered `programs/certified-balanced.json` catalog contains the actual GEPA
+v6 selection: the projected balanced policy with a `sourceDp` residual weight of
+`0.2`. The frozen numerical proposal plan used the official GEPA custom proposer
+and made no model calls. Independent attempt 2 passed at the second preregistered
+look: 5,036 wins and 4,564 losses in 9,600 valid games across 2,400 independent
+four-game seed blocks. The family- and unique-seed-adjusted empirical Bernstein
+lower bound is 50.5706%, with an observed win rate of 52.4583% against the current
+projected balanced control. There were no invalid games, timeouts, rejections,
+engine errors or inference fallbacks. The first 1,200-block look did not pass;
+attempt 1 remains consumed and invalid due to its repaired projection defect.
+
+Activate the catalog explicitly and restart the API:
+
+```sh
+AEGIS_BOT_HEURISTIC="$PWD/apps/api/src/bot/evolution/programs/certified-balanced.json" pnpm dev
+```
+
+The catalog is generic, with no deck-specific pilots. This result establishes
+aggregate strength on the frozen 24-deck distribution, not superiority for every
+deck, aggressive/defensive profiles, tournaments or high-budget MCTS. It does not
+authorize strict guide publication. The default app policy remains unchanged
+unless the catalog is configured; no production deployment has occurred.
+
+The committed [strength evidence](../../apps/api/src/bot/evolution/strength-evidence.json)
+pins the policy, merged source/runtime, certifier, protocol, statistics and raw
+batch hashes. [proof.tgz](evidence/balanced-v6/proof.tgz) contains the original
+protocols, both fixed-look results, all 60 raw game batches and inputs, GEPA
+selection/plan/gate evidence, provenance records and independent audits. The full
+source/runtime archives remain in the local run directory with their hashes
+pinned in those records.
+
+The practice room now forwards the engine match seed to the configured policy;
+this wiring was added after the frozen certificate without changing its decision
+function. Desktop regressions verify actual startup, seeded policy selection,
+accepted main actions and exact catalog/evaluator event equality in both seats.
+The benchmark seeds both policies by match and seat; the ordinary unconfigured
+app control retains its existing fixed policy seed. Human opponents and real-time
+presentation also differ from the benchmark.
+
 ## MCTS and pilot evolution
 
 The official GEPA package evolves bounded JSON heuristics; the TypeScript
