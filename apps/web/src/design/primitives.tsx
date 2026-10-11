@@ -291,11 +291,16 @@ export function Dialog({
   className,
   labelledBy,
   onClose,
+  closeOnBackdrop = true,
+  closeOnEscape = true,
 }: {
   children: ReactNode;
   className?: string;
   labelledBy: string;
   onClose?: () => void;
+  /** False for a form whose typed text a stray click outside would throw away. */
+  closeOnBackdrop?: boolean;
+  closeOnEscape?: boolean;
 }) {
   const dialogRef = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -307,7 +312,7 @@ export function Dialog({
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === "Escape" && onClose) {
       event.preventDefault();
-      onClose();
+      if (closeOnEscape) onClose();
       return;
     }
     if (event.key !== "Tab") return;
@@ -330,7 +335,7 @@ export function Dialog({
     }
   };
   const layer = (
-    <div className="aegis-dialog-layer" onClick={onClose}>
+    <div className="aegis-dialog-layer" onClick={closeOnBackdrop ? onClose : undefined}>
       <section
         ref={dialogRef}
         className={`aegis-dialog${className ? ` ${className}` : ""}`}

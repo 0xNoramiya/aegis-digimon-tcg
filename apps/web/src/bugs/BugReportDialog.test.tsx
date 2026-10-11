@@ -191,4 +191,43 @@ describe("the feedback modal", () => {
       expect(screen.getByText("You sent a lot in a short time. Try again in a minute.")).toBeTruthy(),
     );
   });
+
+  // Issue #54: a misclick outside the dialog threw away a half-written report.
+  describe("keeps a draft from closing by accident", () => {
+    function renderClosable() {
+      const onClose = vi.fn();
+      render(
+        <I18nProvider>
+          <BugReportDialog signedIn onClose={onClose} />
+        </I18nProvider>,
+      );
+      return onClose;
+    }
+
+    it("stays open when the reporter clicks outside it", () => {
+      mockApi({});
+      const onClose = renderClosable();
+      fireEvent.click(document.querySelector(".aegis-dialog-layer")!);
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it("ignores Escape once something is typed, and keeps the text", () => {
+      mockApi({});
+      const onClose = renderClosable();
+      fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "half a sentence" } });
+      fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+      expect(onClose).not.toHaveBeenCalled();
+      expect(screen.getByLabelText<HTMLTextAreaElement>("What happened?").value).toBe("half a sentence");
+    });
+
+    it("still closes with Escape while the form is empty, and always with Cancel", () => {
+      mockApi({});
+      const onClose = renderClosable();
+      fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+      expect(onClose).toHaveBeenCalledTimes(1);
+      fireEvent.change(screen.getByLabelText("Title"), { target: { value: "draft" } });
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      expect(onClose).toHaveBeenCalledTimes(2);
+    });
+  });
 });
