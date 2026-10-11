@@ -468,6 +468,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-discord-richard-main-materials-face-down",
   "arena-discord-richard-main-fresh-materials",
   "arena-davis-both-colors",
+  "arena-feedback65-dracomon-selection",
   "arena-discord-taiki-keeps-xros-digimon",
   "arena-discord-vemmon-add-or-place",
   "arena-discord-speed-security-scene-stuck",
@@ -8363,6 +8364,35 @@ function layDavisBothColorsScenario(state: GameState): void {
   state.memory = 5;
 }
 
+/** #65/#67: real reveal and bottom-order confirmations using the shared prompt. */
+function layFeedback65DracomonSelectionScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`feedback65-egg-${seat}`, "BT1-001", seat));
+    for (let index = 0; index < 8; index++) {
+      insertCard(player, Zone.Deck, faceDownCard(`feedback65-deck-${seat}-${index}`, "BT1-009", seat));
+    }
+    for (let index = 0; index < 3; index++) {
+      insertCard(player, Zone.Security, faceDownCard(`feedback65-security-${seat}-${index}`, "BT1-009", seat));
+    }
+  }
+  const human = state.players[0]!;
+  // Top-first after the real turn-start draw: one matching card, two ordered leftovers.
+  for (const [id, card] of [
+    ["feedback65-reveal-second", "BT1-011"],
+    ["feedback65-reveal-first", "BT1-009"],
+    ["feedback65-reveal-match", "ST1-04"],
+    ["feedback65-turn-draw", "BT1-009"],
+  ])
+    insertCard(human, Zone.Deck, faceDownCard(id!, card!, 0), "top");
+  insertCard(human, Zone.Hand, faceDownCard("feedback65-dracomon", "EX13-008", 0));
+  insertCard(human, Zone.Hand, faceDownCard("feedback65-reserve", "BT1-009", 0));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 6;
+}
+
 /**
  * Discord 1558457266485731358: Taiki Kudo (BT10-087) reveals two Xros Heart Tamers, Taiki Kudo
  * (BT21-083) and Kotone Amano (P-224), the only Xros Heart Digimon, Shoutmon X7 (AD1-006), and
@@ -11758,6 +11788,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-discord-richard-main-materials-face-down": layDiscordRichardMainMaterialsFaceDownScenario,
   "arena-discord-richard-main-fresh-materials": layDiscordRichardMainFreshMaterialsScenario,
   "arena-davis-both-colors": layDavisBothColorsScenario,
+  "arena-feedback65-dracomon-selection": layFeedback65DracomonSelectionScenario,
   "arena-discord-taiki-keeps-xros-digimon": layDiscordTaikiKeepsXrosDigimonScenario,
   "arena-discord-vemmon-add-or-place": layDiscordVemmonAddOrPlaceScenario,
   "arena-discord-speed-security-scene-stuck": layDiscordSpeedSecuritySceneStuckScenario,
