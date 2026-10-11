@@ -163,13 +163,18 @@ describe("staged effect presentation", () => {
     ctx.activeEffectText = `[Start of Your Turn] Set memory to 3.\n${clause}`;
     ctx.activeEffectTextPart = "draw 1.";
     const first = ask.selectCards(ctx, { candidates: ["c1"], min: 1, max: 1 });
-    expect(sent[0]!.req.options).toMatchObject({ effectTextPart: clause, effectTextEmphasis: "draw 1." });
+    expect(sent[0]!.req.options).toMatchObject({
+      effectText: clause,
+      effectTextPart: "draw 1.",
+      effectTextEmphasis: "draw 1.",
+    });
     manager.respond(sent[0]!.seat, sent[0]!.req.decisionId, { kind: "selectCards", instanceIds: ["c1"] });
     expect(await first).toEqual(["c1"]);
     ctx.activeEffectTextPart = "Then, you may suspend 1 of your opponent's Digimon.";
     const second = ask.optional(ctx, "Use the second step?");
     expect(sent[1]!.req.options).toMatchObject({
-      effectTextPart: clause,
+      effectText: clause,
+      effectTextPart: ctx.activeEffectTextPart,
       effectTextEmphasis: ctx.activeEffectTextPart,
     });
     manager.respond(sent[1]!.seat, sent[1]!.req.decisionId, { kind: "optional", accept: false });
@@ -209,8 +214,12 @@ it("preserves a complete multiline modal effect while highlighting the selected 
   ctx.activeEffectTextPart = bullet;
   const decision = api.optional(ctx, "Activate the selected effect?");
   const clause = ctx.activeEffectText.slice(ctx.activeEffectText.indexOf("[On Play]"));
-  expect(sent[0]!.req.options).toMatchObject({ effectTextPart: clause, effectTextEmphasis: bullet });
-  expect(sent[0]!.req.options!.effectTextPart).toContain("Activate 1 of the effects below:");
+  expect(sent[0]!.req.options).toMatchObject({
+    effectText: clause,
+    effectTextPart: bullet,
+    effectTextEmphasis: bullet,
+  });
+  expect(sent[0]!.req.options!.effectText).toContain("Activate 1 of the effects below:");
   manager.respond(0, sent[0]!.req.decisionId, { kind: "optional", accept: false });
   expect(await decision).toBe(false);
 });

@@ -198,7 +198,9 @@ export function DecisionOverlay({
           cardId: request.options?.effectTextCardId ?? sourceCardId,
           timing: request.options?.timing,
           description: request.options?.effectText,
-          effectTextPart: request.options?.effectTextPart,
+          effectTextPart: request.options?.effectTextEmphasis
+            ? (request.options.effectText ?? request.options.effectTextPart)
+            : request.options?.effectTextPart,
           isInherited: request.options?.isInherited,
         })
       : undefined);

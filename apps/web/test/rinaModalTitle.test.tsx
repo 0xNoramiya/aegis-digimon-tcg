@@ -63,7 +63,10 @@ it.each([
     );
     const respond = mount(request);
     expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(activationTitle);
-    expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(request.options?.effectTextPart);
+    expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(request.options?.effectText);
+    expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(
+      request.options?.effectTextEmphasis,
+    );
     fireEvent.click(screen.getByRole("button", { name: /yes, activate|sim, ativar/i }));
     expect(respond).toHaveBeenCalledWith({ kind: "optional", accept: true });
     cleanup();
@@ -80,9 +83,7 @@ it.each([
     expect(followOn.options?.effectTextPart).toMatch(/^After, 1 of your Digimon may digivolve/);
     mount(followOn);
     expect(screen.getByRole("heading", { level: 2 }).textContent).toBe(activationTitle);
-    expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(
-      followOn.options?.effectTextPart,
-    );
+    expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(followOn.options?.effectText);
     cleanup();
     expect(
       s.engine.applyIntent(0, {

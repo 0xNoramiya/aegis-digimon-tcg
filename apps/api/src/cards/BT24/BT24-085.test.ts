@@ -173,7 +173,7 @@ describe("BT24-085 Dan Yuki & Kanan Yuki", () => {
     await settle(() => s.decisions.some(({ req }) => req.kind === "optional"));
     const optionPrompt = s.decisions.find(({ req }) => req.kind === "optional")!.req;
     expect(optionPrompt.options?.effectTextPart).toBe(
-      "[End of Your Turn] By suspending this Tamer, you may use 1 [TS] trait Option card with as high or lower a use cost as your opponent's memory from your hand without paying the cost.",
+      "[End of Your Turn] By suspending this Tamer, you may use 1 [TS] trait Option card with as high or lower a use cost as your opponent's memory from your hand without paying the cost. Then, 1 of your Digimon with the [TS] trait may attack.",
     );
     expect(
       s.engine.applyIntent(0, {

@@ -120,14 +120,13 @@ function buildSeatScopedApi(
       fullText.toLowerCase().includes(part.toLowerCase())
         ? part
         : undefined);
-    const displayedPart = emphasis && fullText ? fullText : part;
     return {
       timing: ctx.activeTiming,
       ...(ctx.activeEffectIsInherited === true ? { isInherited: true } : {}),
-      effectText: ctx.activeEffectText,
+      effectText: emphasis && fullText ? fullText : ctx.activeEffectText,
       ...(ctx.activeEffectTextCardId !== undefined ? { effectTextCardId: ctx.activeEffectTextCardId } : {}),
       ...(ctx.activeEffectKey !== undefined ? { effectKey: ctx.activeEffectKey } : {}),
-      ...(displayedPart !== undefined ? { effectTextPart: displayedPart } : {}),
+      ...(part !== undefined ? { effectTextPart: part } : {}),
       ...(emphasis !== undefined ? { effectTextEmphasis: emphasis } : {}),
       ...(ctx.activeSelectionContext !== undefined ? { selectionContext: ctx.activeSelectionContext } : {}),
       ...(ctx.affectedPermanentIds !== undefined ? { affectedPermanentIds: [...ctx.affectedPermanentIds] } : {}),

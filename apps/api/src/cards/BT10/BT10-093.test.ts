@@ -161,7 +161,8 @@ describe("BT10-093 cross-permanent scaled play-cost reducer", () => {
     expect(tamer.stack.length).toBe(1);
     expect(h.optionalRequests).toBe(1);
 
-    h.engine.applyIntent(0, { type: "playCard", instanceId: second.instanceId });
+    await settleEngine();
+    expect(h.engine.applyIntent(0, { type: "playCard", instanceId: second.instanceId })).toEqual({ ok: true });
     await settle(() => p0.battleArea.some((perm) => perm.topCard?.instanceId === second.instanceId));
 
     expect(h.optionalRequests).toBe(1);

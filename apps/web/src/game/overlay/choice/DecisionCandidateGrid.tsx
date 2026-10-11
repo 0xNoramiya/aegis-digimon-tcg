@@ -214,25 +214,20 @@ export function DecisionCandidateGrid({
                         {printedCardName(cand.hostCardId)}
                       </span>
                     ) : null}
-                    {copyLabel || pendingLabel ? (
+                    {copyLabel || pendingLabel || cand.trashOriginCardId ? (
                       <span className="decision-overlay__candidate-details" aria-hidden="true">
                         {copyLabel ? <span>{copyLabel}</span> : null}
                         {pendingLabel ? <span className="decision-overlay__pending-effect">{pendingLabel}</span> : null}
-                      </span>
-                    ) : null}
-                    {on && max > 1 ? (
-                      <span className="decision-overlay__order-badge" aria-hidden="true">
-                        {picks.indexOf(cand.instanceId) + 1}
-                      </span>
-                    ) : null}
-                    {copyLabel || cand.trashOriginCardId ? (
-                      <span className="decision-overlay__copy-details" aria-hidden="true">
-                        {copyLabel ? <span>{copyLabel}</span> : null}
                         {cand.trashOriginCardId ? (
                           <span>
                             {t("overlay.trashedFromSources", { name: printedCardName(cand.trashOriginCardId) })}
                           </span>
                         ) : null}
+                      </span>
+                    ) : null}
+                    {on && max > 1 ? (
+                      <span className="decision-overlay__order-badge" aria-hidden="true">
+                        {picks.indexOf(cand.instanceId) + 1}
                       </span>
                     ) : null}
                     {/* What the effect will do to this card, once it has been

@@ -249,6 +249,7 @@ describe("BT15-062 Gigadramon — KB Q&A rulings", () => {
       }),
     ).toEqual({ ok: true });
     await settle(() => inBattleArea(s, 0, s.inst("machinedramon").instanceId));
+    await settle();
     expect(s.state.players[0]!.breeding).toBeUndefined();
 
     const moved = s.state.players[0]!.battleArea.find(

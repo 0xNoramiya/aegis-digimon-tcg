@@ -187,6 +187,7 @@ describe("BT17-069 Fenriloogamon", () => {
     expect(s.state.turnSeat).toBe(0);
     expect(s.state.memory).toBe(-1);
 
+    await settle();
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("secondPlay").instanceId })).toEqual({
       ok: true,
     });
@@ -506,6 +507,7 @@ describe("BT17-069 Fenriloogamon — KB Q&A rulings", () => {
 
     const { s, turn } = await startTurnAndPlay(true, "BT1-009");
     expectTurnContinues(s, 1);
+    await settle();
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("secondPlay").instanceId })).toEqual({
       ok: true,
     });

@@ -4536,7 +4536,7 @@ it.each(["before", "after"] as const)("shows the full staged Ryutaro effect with
     kind: "optional",
     sourceCardId: "EX11-056",
     promptText: "Use this effect?",
-    options: { timing: "AllTurns", effectText: full, effectTextPart: full, effectTextEmphasis: passage },
+    options: { timing: "AllTurns", effectText: full, effectTextPart: passage, effectTextEmphasis: passage },
   });
   expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(full);
   expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(passage);
