@@ -240,7 +240,12 @@ describe("A3 LinkedMax — a link beyond linkMax(recipient) lands, then the rule
         targetPermanentId: host.permanentId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => host.linked.length === 1 && host.linked[0]!.instanceId === oldLink.instanceId);
+    await settle(
+      () =>
+        host.linked.length === 1 &&
+        host.linked[0]!.instanceId === oldLink.instanceId &&
+        s.engine.mainVerbContinuationsInFlight === 0,
+    );
     expect(
       s.engine.applyIntent(0, {
         type: "linkCard",
