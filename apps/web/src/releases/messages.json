@@ -1744,5 +1744,53 @@
     "pt-BR": "Os Digimon de segurança com \"No fim da batalha, jogue esta carta\" agora batalham com o atacante primeiro e entram em jogo depois da batalha: LM-007, BT18-035, RB1-028, ST21-03, EX10-024, P-165, BT22-050 e ST20-05.",
     "es": "Los Digimon de seguridad con \"Al final de la batalla, juega esta carta\" ahora combaten primero contra el atacante y entran en juego después de la batalla: LM-007, BT18-035, RB1-028, ST21-03, EX10-024, P-165, BT22-050 y ST20-05.",
     "it": "I Digimon di sicurezza con \"Alla fine della battaglia, gioca questa carta\" ora combattono prima contro l'attaccante ed entrano in gioco dopo la battaglia: LM-007, BT18-035, RB1-028, ST21-03, EX10-024, P-165, BT22-050 e ST20-05."
+  },
+  "releases.1.21.0-beta.summary": {
+    "en": "This minor release makes the match timer fairer, improves phone prompts, and fixes more than 30 reported card, rule and table problems.",
+    "pt-BR": "Esta versão minor deixa o cronômetro da partida mais justo, melhora os avisos no celular e corrige mais de 30 problemas relatados de cartas, regras e mesa.",
+    "es": "Esta versión minor hace más justo el reloj de la partida, mejora los avisos en el móvil y corrige más de 30 problemas reportados de cartas, reglas y mesa.",
+    "it": "Questa versione minor rende più equo il timer della partita, migliora i prompt sul telefono e corregge oltre 30 problemi segnalati su carte, regole e tavolo."
+  },
+  "releases.1.21.0-beta.feature.timer": {
+    "en": "Timed matches no longer skip animations: your clock stays paused while your screen plays them, at your own effect speed, and it never runs while your opponent is disconnected.",
+    "pt-BR": "Partidas com tempo não pulam mais animações: seu relógio fica pausado enquanto sua tela as exibe, na sua velocidade de efeitos, e nunca corre enquanto o oponente está desconectado.",
+    "es": "Las partidas con tiempo ya no saltan animaciones: tu reloj queda en pausa mientras tu pantalla las muestra, a tu velocidad de efectos, y nunca corre mientras tu oponente está desconectado.",
+    "it": "Le partite a tempo non saltano più le animazioni: il tuo orologio resta in pausa mentre lo schermo le mostra, alla tua velocità degli effetti, e non scorre mai mentre l'avversario è disconnesso."
+  },
+  "releases.1.21.0-beta.feature.timeBank": {
+    "en": "The mulligan has its own 30-second window that does not use the match clock, and each decision you make during a turn adds 3 seconds, up to 30 seconds per turn.",
+    "pt-BR": "O mulligan tem sua própria janela de 30 segundos, que não usa o relógio da partida, e cada decisão tomada durante um turno adiciona 3 segundos, até 30 segundos por turno.",
+    "es": "El mulligan tiene su propia ventana de 30 segundos, que no usa el reloj de la partida, y cada decisión que tomas durante un turno añade 3 segundos, hasta 30 segundos por turno.",
+    "it": "Il mulligan ha una propria finestra di 30 secondi che non usa l'orologio della partita, e ogni decisione presa durante un turno aggiunge 3 secondi, fino a 30 secondi per turno."
+  },
+  "releases.1.21.0-beta.feature.mobile": {
+    "en": "On phones, effect prompts stay clear of the card that triggered them, notices open with a tap while a prompt is open, and the Counter window keeps your hand visible.",
+    "pt-BR": "No celular, os avisos de efeito não cobrem mais a carta que os ativou, as notificações abrem com um toque mesmo com um aviso aberto, e a janela de Counter mantém sua mão visível.",
+    "es": "En el móvil, los avisos de efecto ya no tapan la carta que los activó, las notificaciones se abren con un toque aunque haya un aviso abierto, y la ventana de Counter mantiene tu mano visible.",
+    "it": "Sul telefono i prompt degli effetti non coprono più la carta che li ha attivati, le notifiche si aprono con un tocco anche con un prompt aperto e la finestra di Counter lascia visibile la mano."
+  },
+  "releases.1.21.0-beta.fix.cards": {
+    "en": "Fixed reported cards, including Burst Digivolve Tamer choice, Black Sabbath, DoruGreymon, Kakkinmon, Hiroko, Ignitemon and other \"By\" costs, Keenan's trigger order, Shoutmon X7 DigiXros, Davis Motomiya, BT18 Vemmon and High-Speed Plug-In H.",
+    "pt-BR": "Corrigidas cartas relatadas, incluindo a escolha de Tamer do Burst Digivolve, Black Sabbath, DoruGreymon, Kakkinmon, Hiroko, Ignitemon e outros custos \"Ao\", a ordem dos gatilhos de Keenan, o DigiXros de Shoutmon X7, Davis Motomiya, Vemmon BT18 e High-Speed Plug-In H.",
+    "es": "Se corrigieron cartas reportadas, incluida la elección de Tamer de Burst Digivolve, Black Sabbath, DoruGreymon, Kakkinmon, Hiroko, Ignitemon y otros costes \"Al\", el orden de activación de Keenan, el DigiXros de Shoutmon X7, Davis Motomiya, Vemmon BT18 y High-Speed Plug-In H.",
+    "it": "Corrette carte segnalate, tra cui la scelta del Tamer del Burst Digivolve, Black Sabbath, DoruGreymon, Kakkinmon, Hiroko, Ignitemon e altri costi \"Per\", l'ordine di attivazione di Keenan, il DigiXros di Shoutmon X7, Davis Motomiya, Vemmon BT18 e High-Speed Plug-In H."
+  },
+  "releases.1.21.0-beta.fix.rules": {
+    "en": "Effects no longer ask questions that cannot change anything, such as a Digivolve with no legal card or an attack by a Digimon that cannot attack, and a cost that was prevented no longer gives its effect for free.",
+    "pt-BR": "Os efeitos não fazem mais perguntas que não mudam nada, como um Digivolve sem carta válida ou um ataque de um Digimon que não pode atacar, e um custo impedido não concede mais o efeito de graça.",
+    "es": "Los efectos ya no hacen preguntas que no cambian nada, como un Digivolve sin carta válida o un ataque de un Digimon que no puede atacar, y un coste impedido ya no otorga el efecto gratis.",
+    "it": "Gli effetti non fanno più domande inutili, come un Digivolve senza carte valide o l'attacco di un Digimon che non può attaccare, e un costo impedito non concede più l'effetto gratis."
+  },
+  "releases.1.21.0-beta.fix.table": {
+    "en": "Fixed a security check that stayed on screen, battles that played before [When Attacking] effects, a freeze after Options used from the trash, and the Opponent field badge covering notices.",
+    "pt-BR": "Corrigidos uma checagem de segurança que ficava na tela, batalhas exibidas antes dos efeitos [Ao Atacar], um travamento após Options usadas da lixeira e o selo de campo do oponente cobrindo avisos.",
+    "es": "Se corrigieron una revisión de seguridad que quedaba en pantalla, batallas mostradas antes de los efectos [Al Atacar], un bloqueo tras Options usadas desde la papelera y la insignia de campo del oponente tapando avisos.",
+    "it": "Corretti un controllo di sicurezza che restava sullo schermo, battaglie mostrate prima degli effetti [Quando Attacca], un blocco dopo le Option usate dal cestino e il badge del campo avversario che copriva gli avvisi."
+  },
+  "releases.1.21.0-beta.fix.privacy": {
+    "en": "Face-down security cards no longer send their identity to the opponent's game.",
+    "pt-BR": "Cartas de segurança viradas para baixo não enviam mais sua identidade para o jogo do oponente.",
+    "es": "Las cartas de seguridad boca abajo ya no envían su identidad al juego del oponente.",
+    "it": "Le carte di sicurezza a faccia in giù non inviano più la loro identità al gioco dell'avversario."
   }
 }
