@@ -1,8 +1,7 @@
-/* The feedback modal: a bug, an improvement, or anything else, in the reporter's own words.
-   Everything the client can know on its own — the build, the browser — is captured rather than
-   asked, because a typed version number is a wrong version number. */
+/* The feedback modal: a bug or an idea, in two sentences. Everything the client can know on its
+   own — the match, the build, the browser — is captured rather than asked. The replay saved with an
+   in-match report carries the cards and both decks, so the form no longer asks for them. */
 
-import { MatchLogId } from "../game/MatchLogId";
 import { useEffect, useId, useState } from "react";
 import { Icons, type IconComponent } from "../design/icons";
 import { Alert, Button, Dialog } from "../design/primitives";
@@ -10,15 +9,12 @@ import { useTranslation, type TranslationKey } from "../i18n";
 import {
   bugReportApi,
   BugReportApiError,
-  FEEDBACK_KINDS,
-  MAX_BUG_REPORT_CARDS,
   MAX_BUG_REPORT_DESCRIPTION,
-  MAX_BUG_REPORT_OPPONENT_DECK,
   MAX_BUG_REPORT_SUMMARY,
-  type FeedbackKind,
+  OFFERED_FEEDBACK_KINDS,
   type FiledBugReport,
+  type OfferedFeedbackKind,
 } from "./client";
-import { CardAutocomplete } from "./CardAutocomplete";
 import "./bugReports.css";
 
 const ERROR_KEYS: Record<string, TranslationKey> = {
@@ -26,18 +22,14 @@ const ERROR_KEYS: Record<string, TranslationKey> = {
   summary_too_long: "bugReport.error.summaryTooLong",
   empty_description: "bugReport.error.emptyDescription",
   description_too_long: "bugReport.error.descriptionTooLong",
-  opponent_deck_too_long: "bugReport.error.opponentDeckTooLong",
-  too_many_cards: "bugReport.error.tooManyCards",
-  unknown_card: "bugReport.error.unknownCard",
   too_many_requests: "bugReport.error.tooManyRequests",
   reports_unavailable: "bugReport.error.unavailable",
   tracker_unavailable: "bugReport.error.unavailable",
 };
 
-const KIND_ICONS: Record<FeedbackKind, IconComponent> = {
+const KIND_ICONS: Record<OfferedFeedbackKind, IconComponent> = {
   bug: Icons.Bug,
   improvement: Icons.Lightbulb,
-  other: Icons.MessageSquare,
 };
 
 export function BugReportDialog({
@@ -54,19 +46,15 @@ export function BugReportDialog({
   const kindName = useId();
   const summaryId = useId();
   const descriptionId = useId();
-  const opponentDeckId = useId();
-  const [kind, setKind] = useState<FeedbackKind>("bug");
+  const [kind, setKind] = useState<OfferedFeedbackKind>("bug");
   const [summary, setSummary] = useState("");
-  const [cardIds, setCardIds] = useState<string[]>([]);
   const [description, setDescription] = useState("");
-  const [opponentDeck, setOpponentDeck] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [filed, setFiled] = useState<FiledBugReport>();
   const [error, setError] = useState<TranslationKey>();
   // Until the server says otherwise, assume the public copy is on: never understate where words go.
   const [publicMirror, setPublicMirror] = useState(true);
-  const isBug = kind === "bug";
-  const hasDraft = [summary, description, opponentDeck].some((text) => text.trim()) || cardIds.length > 0;
+  const hasDraft = [summary, description].some((text) => text.trim());
 
   useEffect(() => {
     const controller = new AbortController();
@@ -84,11 +72,9 @@ export function BugReportDialog({
       .submit({
         kind,
         summary,
-        // Cards and the opponent's deck are bug fields; switching away hides them, so they are not sent.
-        cardIds: isBug ? cardIds : [],
+        cardIds: [],
         description,
         ...(matchLogId ? { matchId: matchLogId } : {}),
-        ...(isBug && opponentDeck.trim() ? { opponentDeck } : {}),
       })
       .then(setFiled)
       .catch((failure: unknown) => {
@@ -126,8 +112,6 @@ export function BugReportDialog({
         </p>
       </header>
 
-      {matchLogId ? <MatchLogId id={matchLogId} /> : null}
-
       {filed ? (
         <Alert tone="success" title={t("bugReport.success")}>
           {t(signedIn ? "bugReport.successTracked" : "bugReport.successDescription")}
@@ -136,7 +120,7 @@ export function BugReportDialog({
         <>
           <fieldset className="bug-report__kinds">
             <legend className="aegis-sr-only">{t("bugReport.kindLabel")}</legend>
-            {FEEDBACK_KINDS.map((option) => {
+            {OFFERED_FEEDBACK_KINDS.map((option) => {
               const KindIcon = KIND_ICONS[option];
               return (
                 <label key={option} className="bug-report__kind">
@@ -156,7 +140,7 @@ export function BugReportDialog({
 
           <div className="aegis-field">
             <label className="aegis-field__label" htmlFor={summaryId}>
-              {t("bugReport.summaryLabel")}
+              {t(`bugReport.summaryLabel.${kind}`)}
             </label>
             <input
               id={summaryId}
@@ -167,8 +151,6 @@ export function BugReportDialog({
               onChange={(event) => setSummary(event.target.value)}
             />
           </div>
-
-          {isBug ? <CardAutocomplete selected={cardIds} onChange={setCardIds} limit={MAX_BUG_REPORT_CARDS} /> : null}
 
           <div className="aegis-field bug-report__description">
             <label className="aegis-field__label" htmlFor={descriptionId}>
@@ -187,23 +169,6 @@ export function BugReportDialog({
               {t("bugReport.charactersLeft", { count: MAX_BUG_REPORT_DESCRIPTION - description.length })}
             </span>
           </div>
-
-          {isBug ? (
-            <div className="aegis-field">
-              <label className="aegis-field__label" htmlFor={opponentDeckId}>
-                {t("bugReport.opponentDeckLabel")}
-              </label>
-              <input
-                id={opponentDeckId}
-                className="aegis-field__control"
-                maxLength={MAX_BUG_REPORT_OPPONENT_DECK}
-                value={opponentDeck}
-                placeholder={t("bugReport.opponentDeckPlaceholder")}
-                onChange={(event) => setOpponentDeck(event.target.value)}
-              />
-              <span className="aegis-field__message">{t("bugReport.opponentDeckHint")}</span>
-            </div>
-          ) : null}
 
           {error ? <Alert tone="danger">{t(error)}</Alert> : null}
         </>
