@@ -8,6 +8,7 @@
 - Build changed shared contracts before focused tests: `pnpm --filter @aegis/shared build`.
 - Write GitHub issue titles, descriptions, comments, and verification reports in English.
 - Follow the authorized branch and delivery scope. Distinguish local fixes from deployed fixes.
+- Keep mockups, prototypes, and browser captures in `.local/`, which git ignores. Do not commit them to `docs/` or `apps/web/public/`.
 
 ## KB and Rules
 
