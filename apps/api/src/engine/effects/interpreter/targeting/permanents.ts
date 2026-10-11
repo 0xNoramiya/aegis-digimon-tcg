@@ -128,6 +128,7 @@ export function candidatePermanents(
       }
     }
     for (const permanent of p.battleArea) {
+      if (permanent.topCard && ctx.reservedCostInstanceIds?.has(permanent.topCard.instanceId)) continue;
       const allowPendingRotationHost =
         opts?.allowPendingRotationHost === true && permanent.permanentId === ctx.pendingRotationHostPermanentId;
       if (

@@ -804,6 +804,8 @@ export interface DecisionRequest {
     playCostReductionBlocked?: boolean;
     /** Effect-driven play awaiting the existing DigiXros material picker for this card. */
     digiXrosCardId?: string;
+    /** Paid source cards that will enter trash before this DigiXros is placed. */
+    digiXrosRuleTrashInstanceIds?: string[];
   };
 }
 

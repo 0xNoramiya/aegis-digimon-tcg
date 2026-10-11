@@ -37,6 +37,9 @@ function isActivatableEffectObservation(value: unknown): value is ActivatableEff
 export function observe(engine: GameEngine) {
   const internals = internalsOf(engine);
   return {
+    preparedDigiXrosPlayCount: () => internals.preparedDigiXrosCosts.size,
+    pendingPlayCostPlacementCount: () =>
+      internals.pendingSelfReducerRelocations.size + internals.pendingPlayReducerPlacements.size,
     /** Record actual production bus calls while preserving their dispatch and restoring the observer. */
     async captureSubTriggers(
       run: () => Promise<void>,

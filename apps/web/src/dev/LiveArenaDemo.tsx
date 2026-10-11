@@ -2365,6 +2365,14 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Wisdom Training está no campo desde um turno anterior e você não tem Digimon. Ative o ＜Delay＞: a carta vai para o lixo e o efeito não faz nada.",
     en: "Wisdom Training has been in the battle area since an earlier turn and you have no Digimon. Activate its ＜Delay＞: the card goes to the trash and the effect does nothing.",
   },
+  "arena-feedback44-shoutmon-trash-bt21": {
+    en: "Feedback #44: play Superior Mode. First accept its optional Shoutmon placement, then select DigiXros materials from hand, trash and the old Shoutmon sources. Five materials reduce 15 to 9 after the paid -1; memory ends at 1. The paid Shoutmon is not another discounted material, and stored cards beneath the non-expander Tamer stay unavailable. Restart and decline the Shoutmon clause: only hand and field materials are available. Restart and accept the clause but choose Play without DigiXros: Shoutmon still goes underneath and cost is 14.",
+    ptBR: "Feedback #44: jogue Superior Mode. Primeiro aceite a colocação opcional de Shoutmon, depois selecione os materiais de DigiXros da mão, do lixo e das antigas fontes de Shoutmon. Cinco materiais reduzem 15 para 9 após o -1 pago; a memória fica em 1. O Shoutmon pago não é outro material com desconto e as cartas sob o Tamer sem expansão continuam indisponíveis. Reinicie e recuse a cláusula de Shoutmon: só materiais da mão e do campo ficam disponíveis. Aceite a cláusula mas escolha jogar sem DigiXros: Shoutmon ainda vai para baixo e o custo é 14.",
+  },
+  "arena-feedback44-shoutmon-trash-bt12": {
+    en: "Feedback #44 comparative control: BT12 Superior Mode uses the same paid Shoutmon-before-materials procedure. Its former source cards can be selected from the trash produced by the paid placement (Q2253). Select the hand card, three trash cards and Shoutmon X4 formerly underneath for cost 9; the paid Shoutmon is separate. Decline and skip-DigiXros controls work as in BT21.",
+    ptBR: "Feedback #44 controle comparativo: Superior Mode BT12 usa o mesmo procedimento de pagar Shoutmon antes dos materiais. As antigas fontes podem ser selecionadas do lixo gerado pela colocação paga (Q2253). Escolha a carta da mão, três do lixo e Shoutmon X4 que estava por baixo para pagar 9; o Shoutmon pago é separado. Os controles de recusar e jogar sem DigiXros são iguais aos de BT21.",
+  },
   "arena-feedback43-omnimon-name-dna": {
     en: "Feedback #43: end breeding, select AD1 Omnimon from hand and choose Digivolve, then click CresGarurumon to open the DNA/ordinary evolution choices. Select BlitzGreymon and CresGarurumon and confirm DNA Digivolve: printed substring names at level 6 qualify, cost is 0, both full stacks combine and one card is drawn. Level-4 Garurumon cannot replace CresGarurumon; level-6 Gallantmon lacks the required name. Both stay in play. This is Main-phase DNA; these materials' triggered effects specifically name Omnimon Alter-S, which is a different card. The observed source stacks are retained, with a neutral opponent and level/name refusal controls.",
     ptBR: "Feedback #43: encerre a criação, selecione Omnimon AD1 da mão e escolha Digievoluir, depois clique em CresGarurumon para abrir as opções de DNA e evolução normal. Selecione BlitzGreymon e CresGarurumon e confirme DNA Digievoluir: os nomes com os trechos impressos no nível 6 são válidos, o custo é 0, as duas pilhas completas se unem e você compra uma carta. Garurumon nível 4 não pode substituir CresGarurumon; Gallantmon nível 6 não tem o nome exigido. Ambos ficam no campo. É DNA na fase Principal; os efeitos desses materiais citam especificamente Omnimon Alter-S, outra carta. O cenário preserva as fontes observadas, com oponente neutro e controles de recusa por nível e nome.",
@@ -3374,6 +3382,8 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-ex5-attack-priority", "EX5 Etemon · attack trigger priority"],
   ["arena-ex5-biting-crush-delay", "EX5 Biting Crush · Delay on effect play"],
   ["arena-p108-training-delay-no-target", "P-108 Wisdom Training · Delay with no target"],
+  ["arena-feedback44-shoutmon-trash-bt21", "Feedback #44 · BT21 Superior Mode · paid trash DigiXros"],
+  ["arena-feedback44-shoutmon-trash-bt12", "Feedback #44 · BT12 Superior Mode · source trash DigiXros"],
   ["arena-feedback43-omnimon-name-dna", "Feedback #43 · Omnimon · substring-name Main DNA"],
   ["arena-feedback42-parkour-sequential", "Feedback #42 · Parkour Training sequential colors"],
   ["arena-github5306-training-use-memory", "#5306 Treadmill Training · use cost and turn pass"],
