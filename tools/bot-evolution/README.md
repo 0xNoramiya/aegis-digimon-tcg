@@ -56,6 +56,11 @@ The configured reflection model defaults to `openai/gpt-4.1`. Its credentials
 are supplied through the local environment. A run directory can be resumed only
 with the same engine and parameters; completed stage artifacts are reused and
 GEPA retains its own checkpoint state. Use a fresh directory after code changes.
+GEPA 0.0.27 does not checkpoint its random-number generator or shuffled batch
+sampler. Restarting the same command can therefore change later optimization
+choices even when it reuses completed evaluations. Keep a controlled run
+uninterrupted; if interruption is unavoidable, record the resume in its evidence
+instead of claiming an identical optimization trajectory.
 Four bounded desktop workers evaluate independent games while preserving batch order.
 A complete random-deck game exceeded the two-hour default deadline at 256
 rollouts per search, so this high-budget command allows six hours per game.
