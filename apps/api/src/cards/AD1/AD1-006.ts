@@ -174,7 +174,6 @@ const compiled: CompiledCard = {
               },
               from: ["digivolutionCards"],
               payCost: false,
-              digiXrosMaterialsPlacedThisEffect: true,
               digiXrosSourceMaterialName: "Shoutmon",
             },
           ],

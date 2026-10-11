@@ -10,7 +10,7 @@ import { tap } from "./scenarioHarness/tap";
 
 const mocked = vi.hoisted(() => ({
   roomResult: { current: undefined as unknown },
-  room: { roomId: "examon-ui-room", onMessage: () => () => {} },
+  room: { roomId: "examon-ui-room", onMessage: () => () => {}, send: () => {} },
   dnaDigivolve: vi.fn<typeof intents.dnaDigivolve>(),
   digivolve: vi.fn<typeof intents.digivolve>(),
 }));

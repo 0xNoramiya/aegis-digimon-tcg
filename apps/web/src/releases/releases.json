@@ -1,5 +1,35 @@
 [
   {
+    "version": "1.21.0-beta",
+    "releasedAt": "2026-10-10",
+    "summaryKey": "releases.1.21.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.21.0-beta.feature.timer"
+      },
+      {
+        "textKey": "releases.1.21.0-beta.feature.timeBank"
+      },
+      {
+        "textKey": "releases.1.21.0-beta.feature.mobile"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.21.0-beta.fix.cards"
+      },
+      {
+        "textKey": "releases.1.21.0-beta.fix.rules"
+      },
+      {
+        "textKey": "releases.1.21.0-beta.fix.table"
+      },
+      {
+        "textKey": "releases.1.21.0-beta.fix.privacy"
+      }
+    ]
+  },
+  {
     "version": "1.20.1-beta",
     "releasedAt": "2026-10-09",
     "summaryKey": "releases.1.20.1-beta.summary",

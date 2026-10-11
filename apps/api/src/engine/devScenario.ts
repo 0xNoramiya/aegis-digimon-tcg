@@ -7799,11 +7799,12 @@ function layFeedback36HirokoKeptByJupitermonScenario(state: GameState): void {
 
 /**
  * Discord 1558458433970380820: Shoutmon X7 (AD1-006) holds Shoutmon X4 (BT10-009), Starmons
- * (BT10-029), and Ballistamon (BT10-049). Tai Kamiya (BT1-085) already has an older Dorulumon
+ * (BT10-029), and Ballistamon (BT10-049). Taiki Kudo (BT10-087) already has an older Dorulumon
  * (BT10-034) under it, and another Dorulumon is in hand. X7 attacks the bot's suspended Omnimon
- * (BT1-084, 15000 DP) and loses. Its [All Turns] effect places Starmons and Ballistamon under Tai
- * and plays X4. The DigiXros materials for X4 come from the hand, the battle area (X7 itself,
- * Q6061), and the cards this effect just placed (Q6060), but never the older Dorulumon.
+ * (BT1-084, 15000 DP) and loses. Its [All Turns] effect places Starmons and Ballistamon under
+ * Taiki and plays X4. DigiXros uses the hand and battle area, including X7 itself (Q6061). Cards
+ * under Tamers, old or just placed (Q6060), are offered only if Taiki's [Your Turn] permission is
+ * used by suspending Taiki (Q2011/Q2012).
  */
 function layDiscordX7DigiXrosZonesScenario(state: GameState): void {
   for (const seat of [0, 1] as const) {
@@ -7818,7 +7819,7 @@ function layDiscordX7DigiXrosZonesScenario(state: GameState): void {
   }
   const human = state.players[0]!;
   placePermanent(human, establishedDigimon(0, ["BT10-009", "BT10-029", "BT10-049", "AD1-006"], "-discord-x7"));
-  placePermanent(human, establishedDigimon(0, ["BT10-034", "BT1-085"], "-discord-x7-tai"));
+  placePermanent(human, establishedDigimon(0, ["BT10-034", "BT10-087"], "-discord-x7-taiki"));
   insertCard(human, Zone.Hand, faceDownCard("dev-discord-x7-hand-dorulumon", "BT10-034", 0));
   const omnimon = establishedDigimon(1, ["BT1-084"], "-discord-x7-omnimon");
   omnimon.isSuspended = true;

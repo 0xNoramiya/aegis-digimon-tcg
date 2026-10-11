@@ -53,6 +53,37 @@ describe("match timer readouts", () => {
     rerender(view());
     expect(screen.queryByRole("timer")).toBeNull();
   });
+  it("shows the deciding seat's mulligan window instead of its match clock during the mulligan", () => {
+    const state = new GameState();
+    state.matchTimer = true;
+    state.timerRemaining0 = 300;
+    state.timerRemaining1 = 300;
+    state.mulliganTimerRemaining0 = 21;
+    state.timerActiveSeat = 0;
+    const decision = new PendingDecision();
+    decision.seat = 0;
+    decision.kind = "mulligan";
+    state.pendingDecision = decision;
+    const view = () => (
+      <I18nProvider>
+        <MatchTimer state={state} seat={0} />
+        <MatchTimer state={state} seat={1} opponent />
+      </I18nProvider>
+    );
+    const { rerender } = render(view());
+    const viewer = screen.getByTestId("viewer-match-timer");
+    expect(viewer.getAttribute("data-clock")).toBe("mulligan");
+    expect(viewer.textContent).toContain("Mulligan");
+    expect(viewer.textContent).toContain("21");
+    expect(viewer.getAttribute("aria-label")).toMatch(/^Your time \(Mulligan\): 00:21\./);
+    expect(screen.getByTestId("opponent-match-timer").getAttribute("data-clock")).toBe("match");
+    expect(screen.getByTestId("opponent-match-timer").textContent).toContain("300");
+
+    state.pendingDecision = undefined;
+    rerender(view());
+    expect(screen.getByTestId("viewer-match-timer").getAttribute("data-clock")).toBe("match");
+    expect(screen.getByTestId("viewer-match-timer").textContent).toContain("300");
+  });
   it("prints minute boundaries and clamps expired clocks", () => {
     expect([300, 60, 59, 0, -1].map(formatMatchTime)).toEqual(["05:00", "01:00", "00:59", "00:00", "00:00"]);
   });

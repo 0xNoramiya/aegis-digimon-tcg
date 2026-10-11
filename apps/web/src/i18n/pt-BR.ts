@@ -220,6 +220,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.timer.opponent": "Oponente",
   "game.timer.active": "Sua ação",
   "game.timer.paused": "Pausado",
+  "game.timer.mulligan": "Mulligan",
   "game.timer.low": "Tempo acabando",
   "game.timer.refill": "+{seconds}s / turno",
   "overlay.reason.win.timeout": "O tempo do seu oponente acabou.",
@@ -257,7 +258,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "nav.skipToContent": "Ir para o conteúdo principal",
   "brand.subtitle": "JOGO DE CARTAS",
 
-  "browser.outdated": "Este navegador está desatualizado, então algumas cores e painéis podem não aparecer. Atualize para Safari 16.4, Chrome 111, Firefox 113 ou mais recente.",
+  "browser.outdated":
+    "Este navegador está desatualizado, então algumas cores e painéis podem não aparecer. Atualize para Safari 16.4, Chrome 111, Firefox 113 ou mais recente.",
   "beta.tag": "Beta",
   "lobby.betaBattleMode": "Modo de batalha beta",
   "lobby.betaBattleHint":
@@ -319,6 +321,14 @@ export const ptBR: Record<keyof typeof en, string> = {
   "releases.1.20.1-beta.summary": releaseMessages["releases.1.20.1-beta.summary"]["pt-BR"],
   "releases.1.20.1-beta.fix.publimon": releaseMessages["releases.1.20.1-beta.fix.publimon"]["pt-BR"],
   "releases.1.20.1-beta.fix.endOfBattle": releaseMessages["releases.1.20.1-beta.fix.endOfBattle"]["pt-BR"],
+  "releases.1.21.0-beta.summary": releaseMessages["releases.1.21.0-beta.summary"]["pt-BR"],
+  "releases.1.21.0-beta.feature.timer": releaseMessages["releases.1.21.0-beta.feature.timer"]["pt-BR"],
+  "releases.1.21.0-beta.feature.timeBank": releaseMessages["releases.1.21.0-beta.feature.timeBank"]["pt-BR"],
+  "releases.1.21.0-beta.feature.mobile": releaseMessages["releases.1.21.0-beta.feature.mobile"]["pt-BR"],
+  "releases.1.21.0-beta.fix.cards": releaseMessages["releases.1.21.0-beta.fix.cards"]["pt-BR"],
+  "releases.1.21.0-beta.fix.rules": releaseMessages["releases.1.21.0-beta.fix.rules"]["pt-BR"],
+  "releases.1.21.0-beta.fix.table": releaseMessages["releases.1.21.0-beta.fix.table"]["pt-BR"],
+  "releases.1.21.0-beta.fix.privacy": releaseMessages["releases.1.21.0-beta.fix.privacy"]["pt-BR"],
   "releases.1.18.0-beta.summary": releaseMessages["releases.1.18.0-beta.summary"]["pt-BR"],
   "releases.1.18.0-beta.feature.unlimited": releaseMessages["releases.1.18.0-beta.feature.unlimited"]["pt-BR"],
   "releases.1.18.0-beta.feature.avatar": releaseMessages["releases.1.18.0-beta.feature.avatar"]["pt-BR"],

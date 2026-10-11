@@ -57,7 +57,7 @@ import type { AccountStore, DeckSnapshot } from "../accounts/AccountStore.js";
 import { seriesStore } from "../tournaments/runtime.js";
 import type { SeriesStore } from "../tournaments/series/index.js";
 import { createLocalRoomCodeDirectory, type RoomCodeDirectory } from "../cluster/roomCodes.js";
-import { MatchClock } from "./MatchClock.js";
+import { MatchClock, type ClockMode } from "./MatchClock.js";
 import { CasualSeries, type SeriesContinuationOptions, type SeriesRoomPort } from "./series/CasualSeries.js";
 import type { SeriesRecord } from "./series/SeriesDirectory.js";
 import { parsePresentationReport } from "./presentationReport.js";
@@ -1361,10 +1361,13 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     this.readyTimeout?.clear();
     this.readyTimeout = undefined;
     await this.lock();
+    this.syncMatchClock();
     this.withBatch(() => this.engine.handleDisconnect(seat, false));
+    this.syncMatchClock();
     try {
       const reconnectedClient = await this.allowReconnection(client, this.RECONNECT_GRACE_SECONDS);
       this.debug(`[AegisRoom] reconnected sessionId=${client.sessionId} seat=${seat}`);
+      this.syncMatchClock();
       this.withBatch(() => this.engine.handleReconnect(seat));
       this.syncMatchClock();
       this.matchClock?.resetPresentation(seat, performance.now());
@@ -1944,14 +1947,24 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   }
 
   private syncMatchClock(): void {
-    const expired = this.matchClock?.update(
-      performance.now(),
-      this.matchStartRequested ? this.engine.inputSeat : undefined,
-    );
+    const seat = this.matchStartRequested ? this.engine.inputSeat : undefined;
+    const expired = this.matchClock?.update(performance.now(), seat, this.clockMode(seat));
     if (expired !== undefined && !this.state.gameOver) {
-      this.withBatch(() => this.engine.expireMatchTimer(expired));
+      if (expired.clock === "mulligan")
+        this.withBatch(() => this.engine.applyIntent(expired.seat, { type: "mulligan", keep: true }));
+      else this.withBatch(() => this.engine.expireMatchTimer(expired.seat));
     }
     if (this.state.gameOver) this.matchClockInterval?.clear();
+  }
+
+  /**
+   * A seat never loses time waiting on an opponent who dropped. The dropped seat's own
+   * clock keeps running, so leaving costs the leaver, not the player left behind.
+   */
+  private clockMode(seat: Seat | undefined): ClockMode {
+    if (seat === undefined) return "match";
+    if (this.state.players[1 - seat]?.connected === false) return "frozen";
+    return this.state.pendingDecision?.kind === "mulligan" ? "mulligan" : "match";
   }
 
   private applyLoggedIntent(seat: Seat, intent: Intent) {
@@ -2023,6 +2036,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private requestDecision(seat: Seat, req: DecisionRequest): void {
     this.debug("decision.requested", { seat, request: req });
     this.pendingDecisionRequest = req;
+    if (req.kind !== "mulligan") this.matchClock?.grantDecisionBonus(seat);
     const bot = this.bots[seat];
     if (bot !== undefined) {
       this.debug(`[AegisRoom] requestDecision seat=${seat} kind=${req.kind} → bot`);

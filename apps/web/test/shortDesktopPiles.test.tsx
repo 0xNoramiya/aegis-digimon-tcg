@@ -41,7 +41,7 @@ async function mountGame(): Promise<HTMLElement> {
   s.state.phase = "Main";
   await s.ready();
   mocked.roomResult.current = {
-    room: { roomId: "short-desktop-piles-room", onMessage: () => () => {} },
+    room: { roomId: "short-desktop-piles-room", onMessage: () => () => {}, send: () => {} },
     status: "connected",
     state: s.state,
     events: [],
