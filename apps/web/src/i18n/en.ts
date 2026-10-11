@@ -1,3 +1,4 @@
+import { replayVideoEn } from "./replayVideo";
 import { profileReplayEn } from "./profileReplays";
 import { replayEn } from "./replays";
 import releaseMessages from "../releases/messages.json";
@@ -20,6 +21,7 @@ import { shellEn } from "./redesign/shell.en";
 export const en = {
   ...profileReplayEn,
   ...replayEn,
+  ...replayVideoEn,
   "feedback.title": "Player feedback",
   "feedback.subtitle": "Triage player reports, set their status and reply to the reporter.",
   "feedback.restricted": "Only administrators can view feedback.",

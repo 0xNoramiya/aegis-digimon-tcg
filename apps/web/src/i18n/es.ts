@@ -1,3 +1,4 @@
+import { replayVideoEs } from "./replayVideo";
 import { profileReplayEs } from "./profileReplays";
 import { replayEs } from "./replays";
 /* Latin American Spanish strings. Typed against the English source, so a new key
@@ -19,6 +20,7 @@ import { shellEs } from "./redesign/shell.es";
 export const es: Record<keyof typeof en, string> = {
   ...profileReplayEs,
   ...replayEs,
+  ...replayVideoEs,
   "feedback.title": "Comentarios de los jugadores",
   "feedback.subtitle": "Clasifica los informes, define su estado y responde a quien los envió.",
   "feedback.restricted": "Solo los administradores pueden ver los comentarios.",

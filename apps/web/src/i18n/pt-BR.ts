@@ -1,3 +1,4 @@
+import { replayVideoPtBR } from "./replayVideo";
 import { profileReplayPtBR } from "./profileReplays";
 import { replayPtBR } from "./replays";
 /* Brazilian Portuguese strings. Typed against the English source, so a new key
@@ -22,6 +23,7 @@ import { shellPtBR } from "./redesign/shell.pt-BR";
 export const ptBR: Record<keyof typeof en, string> = {
   ...profileReplayPtBR,
   ...replayPtBR,
+  ...replayVideoPtBR,
   "feedback.title": "Feedbacks dos jogadores",
   "feedback.subtitle": "Faça a triagem dos relatos, defina o status e responda a quem enviou.",
   "feedback.restricted": "Somente administradores podem ver os feedbacks.",

@@ -1,3 +1,4 @@
+import { replayVideoIt } from "./replayVideo";
 import { profileReplayIt } from "./profileReplays";
 import { replayIt } from "./replays";
 import releaseMessages from "../releases/messages.json";
@@ -8,6 +9,7 @@ import { en } from "./en";
 const interfaceMessages = {
   ...profileReplayIt,
   ...replayIt,
+  ...replayVideoIt,
   "feedback.title": "Feedback dei giocatori",
   "feedback.subtitle": "Classifica le segnalazioni, impostane lo stato e rispondi a chi le ha inviate.",
   "feedback.restricted": "Solo gli amministratori possono vedere i feedback.",

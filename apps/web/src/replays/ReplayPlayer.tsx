@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MatchReplay, Seat } from "@aegis/shared";
 import { GameScreen } from "../game/GameScreen";
 import { buildMatchLog } from "../game/matchLog";
@@ -9,6 +9,7 @@ import { Button } from "../design/primitives";
 import { createPlaybackClock, frameDelay, playbackState, presentationEnd, turnPositions } from "./playback";
 import { SEQUENTIAL_PACING_ENABLED } from "../features";
 import { createAnimationPlayback } from "../game/animationPlayback";
+import { ReplayRecording } from "./ReplayRecording";
 
 const emptyDeck = { mainDeck: [], eggDeck: [] };
 const acknowledgeDecision = () => undefined;
@@ -34,6 +35,7 @@ export function ReplayPlayer({
   const [viewerSeat, setViewerSeat] = useState<Seat>(replay.viewerSeat);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [recordingMode, setRecordingMode] = useState(false);
   const history = useRef<HTMLElement>(null);
   const historyToggle = useRef<HTMLButtonElement>(null);
   const surface = useRef<HTMLElement>(null);
@@ -208,12 +210,32 @@ export function ReplayPlayer({
     controls.current?.queue.resume();
     setPlaying(true);
   }
+  const stopRecordingPlayback = useCallback(() => {
+    controls.current?.queue.pause();
+    setPlaying(false);
+  }, []);
+  function startRecordingPlayback() {
+    setHistoryOpen(false);
+    seek(0);
+    setPlaying(true);
+  }
   const currentTurn = turns.filter((turn) => turn.index <= cursor.index).at(-1)!;
   const outcome =
     replay.winnerSeat < 0 ? t("replay.draw") : t("replay.winner", { name: replay.players[replay.winnerSeat]! });
 
   return (
-    <section ref={surface} className="replay-player" aria-label={t("replay.title")}>
+    <section
+      ref={surface}
+      className={`replay-player${recordingMode ? " replay-player--recording" : ""}`}
+      aria-label={t("replay.title")}
+    >
+      <ReplayRecording
+        replayId={replay.id}
+        finished={atEnd && settled && !playing}
+        onStart={startRecordingPlayback}
+        onStop={stopRecordingPlayback}
+        onActiveChange={setRecordingMode}
+      />
       <header className="replay-player__heading">
         <Button
           variant="secondary"
