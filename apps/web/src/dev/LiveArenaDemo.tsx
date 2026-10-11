@@ -1953,6 +1953,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Discord 1558451244815880332. Encerre a criação. No início da sua fase principal, recuse colocar a carta do topo do deck embaixo de Richard Sampson (EX13-071). A lixeira tem Reppamon (BT1-051) e Chirinmon (BT1-058), então o [Principal] de Richard aparece. Ative e aceite. As 3 cartas viradas para baixo vão para a lixeira. Pela Q7447, escolha o Reppamon (EX13-030) e o Chirinmon (EX13-032) que acabaram de ir para a lixeira. Os dois ficam embaixo de Kudamon (EX13-026), que digivolve em Kentaurosmon (BT3-043) por 2 de memória. BT1-051 e BT1-058 ficam na lixeira.",
     en: "Discord 1558451244815880332. End breeding. At the start of your main phase, decline to place your deck's top card under Richard Sampson (EX13-071). Your trash has Reppamon (BT1-051) and Chirinmon (BT1-058), so Richard's [Main] is offered. Activate it and accept. The 3 face-down cards go to the trash. Per Q7447, choose the Reppamon (EX13-030) and Chirinmon (EX13-032) you just trashed. Both go under Kudamon (EX13-026), which digivolves into Kentaurosmon (BT3-043) for 2 memory. BT1-051 and BT1-058 stay in the trash.",
   },
+  "arena-feedback65-dracomon-selection": {
+    en: "Play Dracomon, add the matching card, then confirm the order of both remaining cards. Verify that the shared confirmation controls stay reachable.",
+    ptBR: "Jogue Dracomon, adicione a carta correspondente e confirme a ordem das duas restantes. Verifique se os controles de confirmação continuam acessíveis.",
+  },
   "arena-davis-both-colors": {
     ptBR: "Encerre a criação. Jogue Davis Motomiya (BT3-093) da mão. O [Ao Jogar] revela Veemon (P-117, azul), Lighdramon (BT8-053, azul e verde) e Gravity Crush (BT1-090). A Q1123 manda adicionar 1 Digimon azul e 1 verde, então nenhuma das duas escolhas tem o botão Sem Seleção. Escolha Veemon como azul. Depois, Lighdramon é a única opção verde e precisa ser escolhida. As duas vão para a mão, e Gravity Crush vai para o fundo do deck.",
     en: "End breeding. Play Davis Motomiya (BT3-093) from hand. Its [On Play] reveals Veemon (P-117, blue), Lighdramon (BT8-053, blue and green), and Gravity Crush (BT1-090). Q1123 says to add 1 blue and 1 green Digimon card, so neither choice shows a No Selection button. Choose Veemon as the blue card. Then Lighdramon is the only green choice, and you must take it. Both go to your hand, and Gravity Crush goes to the bottom of the deck.",
@@ -3551,6 +3555,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
     "arena-discord-richard-main-fresh-materials",
     "Discord · EX13 Richard Sampson · [Main] stacks the cards it just trashed",
   ],
+  ["arena-feedback65-dracomon-selection", "Feedback 65/67 · Dracomon selection and order"],
   ["arena-davis-both-colors", "BT3 Davis · must add both the blue and the green Digimon"],
   ["arena-discord-taiki-keeps-xros-digimon", "Discord · BT10 Taiki may add or place the only Xros Heart Digimon"],
   ["arena-discord-vemmon-add-or-place", "Discord · BT18 Vemmon may add or place the only [Vemmon]"],
