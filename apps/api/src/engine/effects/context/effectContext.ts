@@ -184,6 +184,7 @@ export interface EffectContext {
   /** Live DP captured before the most recent deletion, for DP-bounded follow-up targets. */
   lastDeletedDP?: number;
   lastDigivolveResult?: boolean;
+  digivolutionPerformed?: boolean;
   lastOptionUsed?: boolean;
   lastOptionUsedInstanceId?: string;
   lastEffectActed?: boolean;

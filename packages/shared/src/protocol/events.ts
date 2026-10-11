@@ -351,6 +351,7 @@ export type ServerEvent =
       kind: "effectResolved";
       seat: Seat;
       sourceCardId: string;
+      digivolutionPerformed?: boolean;
       /** Physical source and host copied from the matching `effectTriggered`. */
       sourceInstanceId?: string;
       sourcePermanentId?: string;

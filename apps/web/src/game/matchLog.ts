@@ -331,9 +331,14 @@ export function describeEvent(
       // description down to the printed clause the way the overlay does. The activation line
       // comes first so the effect's results read as its own, not the previous entry's.
       return {
-        text: t(event.kind === "effectTriggered" ? "log.effectTriggered" : "log.effectResolved", {
-          card: cardName(event.sourceCardId),
-        }),
+        text: t(
+          event.kind === "effectTriggered"
+            ? "log.effectTriggered"
+            : event.digivolutionPerformed === false
+              ? "log.effectResolvedWithoutDigivolution"
+              : "log.effectResolved",
+          { card: cardName(event.sourceCardId) },
+        ),
         kind: "sys",
         cardIds: [event.sourceCardId],
       };

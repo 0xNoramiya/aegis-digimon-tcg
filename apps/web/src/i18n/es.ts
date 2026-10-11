@@ -1564,6 +1564,7 @@ export const es: Record<keyof typeof en, string> = {
   "log.cardRevealedByOpp": "El oponente reveló {card} con {source}",
   "log.effectActivated": "{card}: {description}",
   "log.effectResolved": "Se resolvió el efecto de {card}",
+  "log.effectResolvedWithoutDigivolution": "Se resolvió el efecto de {card} — no se realizó ninguna digievolución",
   "log.effectTriggered": "Se activó el efecto de {card}",
   "log.effectHadNoEffect": "El efecto de {card} no tuvo efecto",
   "log.cardMoved": "{count} carta movida: {from} → {to}",

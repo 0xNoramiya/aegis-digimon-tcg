@@ -1582,6 +1582,39 @@ describe("match log combat responses", () => {
     expect(line?.text).toBe("Tsukaimon's effect resolved");
     expect(line?.cardIds).toEqual(["BT1-045"]);
   });
+
+  it.each([
+    ["en", "Wall Training's effect resolved — no digivolution performed"],
+    ["pt-BR", "O efeito de Wall Training foi resolvido — nenhuma evolução realizada"],
+    ["es", "Se resolvió el efecto de Wall Training — no se realizó ninguna digievolución"],
+    ["it", "Effetto di Wall Training risolto — nessuna digievoluzione effettuata"],
+  ] as const)("explains a Training resolution without digivolution in %s", (locale, text) => {
+    const event: ServerEvent = {
+      kind: "effectResolved",
+      seat: 0,
+      sourceCardId: "LM-057",
+      effectKey: "delay",
+      description: "Digivolve with the cost reduced by 2.",
+      timing: "Main",
+      digivolutionPerformed: false,
+    };
+    expect(describeEvent(event, 0, new Map(), translator(locale))).toMatchObject({
+      text,
+      cardIds: ["LM-057"],
+    });
+  });
+
+  it.each([true, undefined])("keeps the standard resolution text for digivolution outcome %s", (performed) => {
+    const event: ServerEvent = {
+      kind: "effectResolved",
+      seat: 0,
+      sourceCardId: "LM-057",
+      effectKey: "delay",
+      description: "Digivolve with the cost reduced by 2.",
+      digivolutionPerformed: performed,
+    };
+    expect(describeEvent(event, 0, new Map(), t)?.text).toBe("Wall Training's effect resolved");
+  });
 });
 
 describe("exact vs substring name gates on digivolution routes (Q2868)", () => {

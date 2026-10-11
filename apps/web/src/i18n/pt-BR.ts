@@ -1617,6 +1617,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "log.cardRevealedByOpp": "O oponente revelou {card} com {source}",
   "log.effectActivated": "{card}: {description}",
   "log.effectResolved": "O efeito de {card} foi resolvido",
+  "log.effectResolvedWithoutDigivolution": "O efeito de {card} foi resolvido — nenhuma evolução realizada",
   "log.effectTriggered": "O efeito de {card} foi ativado",
   "log.effectHadNoEffect": "O efeito de {card} não teve efeito",
   "log.cardMoved": "{count} carta movida: {from} → {to}",
