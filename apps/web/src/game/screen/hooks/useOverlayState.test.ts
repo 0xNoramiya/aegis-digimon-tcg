@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { DecisionRequest, GameState } from "@aegis/shared";
+import { Phase, type DecisionRequest, type GameState } from "@aegis/shared";
 import { Side } from "../../side";
 import { useOverlayState } from "./useOverlayState";
 
 type Props = { decision: DecisionRequest | undefined; state: GameState };
 
 function gameState(overrides: Partial<GameState> = {}): GameState {
-  return { phase: "Main", turnSeat: 1, gameOver: false, ...overrides } as unknown as GameState;
+  return { phase: Phase.Main, turnSeat: 1, gameOver: false, ...overrides } as unknown as GameState;
 }
 
 function decisionFor(decisionId: string): DecisionRequest {
@@ -36,10 +36,10 @@ describe("windows that only show cards", () => {
     const { result, rerender } = renderOverlays();
     openReadOnlyWindows(result);
     for (const state of [
-      gameState({ phase: "Breeding" }),
-      gameState({ phase: "Main", pendingDecision: { decisionId: "bot-1" } } as Partial<GameState>),
-      gameState({ phase: "Main", combatWindow: { kind: "block" } } as Partial<GameState>),
-      gameState({ phase: "Unsuspend", turnSeat: 0 }),
+      gameState({ phase: Phase.Breeding }),
+      gameState({ phase: Phase.Main, pendingDecision: { decisionId: "bot-1" } } as Partial<GameState>),
+      gameState({ phase: Phase.Main, combatWindow: { kind: "block" } } as Partial<GameState>),
+      gameState({ phase: Phase.Active, turnSeat: 0 }),
     ])
       rerender({ decision: undefined, state });
     expect(result.current.cardMenu?.permanentId).toBe("opp-1");
@@ -59,7 +59,7 @@ describe("windows that only show cards", () => {
   it("leave the viewer's own action menu to close with the action window, as before", () => {
     const { result, rerender } = renderOverlays();
     act(() => result.current.setCardMenu({ permanentId: "mine-1", side: Side.Viewer, x: 0, y: 0 }));
-    rerender({ decision: undefined, state: gameState({ phase: "End" }) });
+    rerender({ decision: undefined, state: gameState({ phase: Phase.End }) });
     expect(result.current.cardMenu).toBeNull();
   });
 });

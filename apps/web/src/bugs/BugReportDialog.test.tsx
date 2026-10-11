@@ -195,7 +195,7 @@ describe("the feedback modal", () => {
   // Issue #54: a misclick outside the dialog threw away a half-written report.
   describe("keeps a draft from closing by accident", () => {
     function renderClosable() {
-      const onClose = vi.fn();
+      const onClose = vi.fn<() => void>();
       render(
         <I18nProvider>
           <BugReportDialog signedIn onClose={onClose} />
