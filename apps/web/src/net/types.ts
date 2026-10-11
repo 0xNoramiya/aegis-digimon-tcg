@@ -628,6 +628,7 @@ export interface AegisJoinOptions {
     | "arena-ex5-attack-priority"
     | "arena-ex5-biting-crush-delay"
     | "arena-p108-training-delay-no-target"
+    | "arena-feedback43-omnimon-name-dna"
     | "arena-feedback42-parkour-sequential"
     | "arena-github5306-training-use-memory"
     | "arena-github5306-training-delay-paid"
