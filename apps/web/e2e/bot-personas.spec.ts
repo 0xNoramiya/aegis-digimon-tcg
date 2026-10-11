@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { startBrowserServer } from "./server";
+import { PracticePage } from "./practice-page";
 
 let server: Awaited<ReturnType<typeof startBrowserServer>>;
 
@@ -18,10 +19,16 @@ for (const width of [320, 1440]) {
     }, testInfo) => {
       const errors: string[] = [];
       page.on("pageerror", (error) => errors.push(error.message));
-      await page.addInitScript(() => localStorage.setItem("aegis:locale", "en"));
+      await page.addInitScript((mode) => {
+        localStorage.setItem("aegis:locale", "en");
+        localStorage.setItem("aegis:darkMode", String(mode === "dark"));
+      }, colorScheme);
       await page.setViewportSize({ width, height: 1000 });
       await page.emulateMedia({ colorScheme });
       await page.goto("/play");
+      await expect
+        .poll(() => page.locator("html").evaluate((root) => root.classList.contains("dark")))
+        .toBe(colorScheme === "dark");
       await page.getByRole("button", { name: /Practice vs AI/i }).click();
       await expect(page.locator(".lobby-bot-preview")).toContainText("Aegis");
       await page.getByText("Advanced settings", { exact: true }).click();
@@ -41,6 +48,13 @@ for (const width of [320, 1440]) {
       await expect(page.locator(".lobby-bot-preview")).toContainText("UlforceVeedramon");
       await expect(page.locator(".lobby-bot-preview .bot-identity-badge")).toHaveText("Bot");
       await expect(page.locator(".lobby-bot-preview img")).toHaveAttribute("src", /BT11-112/);
+      await expect
+        .poll(() =>
+          page
+            .locator(".lobby-bot-preview img")
+            .evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),
+        )
+        .toBe(true);
       await page.getByText("Advanced settings", { exact: true }).click();
       await expect(page.locator(".lobby-bot-preview")).toBeVisible();
       await expect
@@ -56,6 +70,15 @@ for (const width of [320, 1440]) {
       await expect(opponent.locator("img")).toHaveAttribute("src", /BT11-112/);
       await expect(opponent.locator("img")).toHaveAttribute("alt", "");
       await expect(page.getByTestId("hand")).toBeVisible();
+      await new PracticePage(page).ready();
+      await expect
+        .poll(() =>
+          opponent.locator("img").evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),
+        )
+        .toBe(true);
+      await expect
+        .poll(() => page.locator("html").evaluate((root) => root.classList.contains("dark")))
+        .toBe(colorScheme === "dark");
       await expect
         .poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth))
         .toBeLessThanOrEqual(1);
