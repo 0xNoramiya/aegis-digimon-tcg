@@ -8680,6 +8680,9 @@ function layFeedback88DavisKenEndTurnScenario(state: GameState): void {
   ] as const)
     insertCard(human, Zone.Hand, faceUpCard(`feedback88-${slot}`, card, 0));
   placePermanent(state.players[1]!, establishedDigimon(1, ["BT1-009"], "-feedback88-opponent"));
+  // Fighter Mode removes the opponent's only battle-area Digimon. Keep a
+  // playable reserve so its next Main phase does not automatically pass.
+  insertCard(state.players[1]!, Zone.Hand, faceUpCard("feedback88-opponent-reserve", "ST1-03", 1));
   state.turnSeat = 0;
   state.turnCount = 5;
   state.isFirstPlayersFirstTurn = false;
