@@ -14,7 +14,6 @@ import {
   type ReplaySite,
 } from "./types.js";
 
-/** Thrown when the logs of a match cannot be turned into a complete replay. */
 /** The room's JSONL log segments (`localLogWriter.ts`). */
 const SEGMENT = /^api-.*\.jsonl$/;
 
@@ -66,6 +65,7 @@ export function sanitizeIntent(intent: { type: string } & Record<string, unknown
   return kept as Intent;
 }
 
+/** Thrown when the logs of a match cannot be turned into a complete replay. */
 export class ReplayExtractionError extends Error {
   override name = "ReplayExtractionError";
 }
