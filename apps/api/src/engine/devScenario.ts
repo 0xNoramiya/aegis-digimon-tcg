@@ -402,6 +402,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-feedback44-shoutmon-trash-bt21",
   "arena-feedback44-shoutmon-trash-bt12",
   "arena-feedback43-omnimon-name-dna",
+  "arena-feedback90-davis-ken-sources",
   "arena-feedback42-parkour-sequential",
   "arena-github5306-training-use-memory",
   "arena-github5306-training-delay-paid",
@@ -11326,6 +11327,28 @@ function layFeedback44ShoutmonTrashScenario(state: GameState, cardId: string): v
     insertCard(human, Zone.Trash, faceDownCard(`feedback44-trash-${index}`, material, 0));
 }
 
+/** Feedback #90: a played Tamer trashes three physical sources across opposing hosts. */
+function layFeedback90DavisKenSourcesScenario(state: GameState): void {
+  prepareGithubCardEffectsScenario(state, 5);
+  const human = state.players[0]!;
+  const opponent = state.players[1]!;
+  // Legal, already evolved material stacks; the Tamer is played through the UI first.
+  placePermanent(human, establishedDigimon(0, ["BT1-030", "BT1-037"], "-feedback90-blue"));
+  placePermanent(human, establishedDigimon(0, ["BT1-064", "BT1-071"], "-feedback90-green"));
+  insertCard(human, Zone.Hand, faceDownCard("feedback90-tamer", "BT16-085", 0));
+  insertCard(human, Zone.Hand, faceDownCard("feedback90-dna", "BT16-025", 0));
+  for (const [index, cards] of [
+    ["BT1-009", "BT1-018", "BT1-020"],
+    ["BT1-009", "BT1-018"],
+    ["BT1-009", "BT1-018"],
+  ].entries()) {
+    placePermanent(opponent, establishedDigimon(1, cards, `-feedback90-host${index}`));
+  }
+  const breeding = establishedDigimon(1, ["BT1-009", "BT1-018"], "-feedback90-breeding");
+  breeding.inBreeding = true;
+  setBreeding(opponent, breeding);
+}
+
 /** Feedback #43: Main DNA accepts level-6 substring names, including the observed AD1 stacks. */
 function layFeedback43OmnimonDnaScenario(state: GameState): void {
   prepareGithubCardEffectsScenario(state, 2);
@@ -12143,6 +12166,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-feedback44-shoutmon-trash-bt21": (state) => layFeedback44ShoutmonTrashScenario(state, "BT21-030"),
   "arena-feedback44-shoutmon-trash-bt12": (state) => layFeedback44ShoutmonTrashScenario(state, "BT12-112"),
   "arena-feedback43-omnimon-name-dna": (state) => layFeedback43OmnimonDnaScenario(state),
+  "arena-feedback90-davis-ken-sources": layFeedback90DavisKenSourcesScenario,
   "arena-feedback42-parkour-sequential": (state) => layFeedback42ParkourScenario(state),
   "arena-github5306-training-use-memory": (state) => layGithub5306TrainingMemoryScenario(state, "use"),
   "arena-github5306-training-delay-paid": (state) => layGithub5306TrainingMemoryScenario(state, "paid"),
