@@ -3,7 +3,14 @@ import { CardKind, type Seat } from "@aegis/shared";
 import type { CardSource } from "./CardSource.js";
 import type { EffectContext, GameAccess } from "./EffectContext.js";
 import type { Effect } from "./Effect.js";
-import { UseTracker, isOverMaxPerTurn, passesPlacementGuard, canTrigger, canActivate } from "./kernel.js";
+import {
+  UseTracker,
+  isOverMaxPerTurn,
+  passesPlacementGuard,
+  canTrigger,
+  canActivate,
+  inheritedDigimonHost,
+} from "./kernel.js";
 import { colorWaiverStatic, breeding, onPlay, security, staticModifier, whenAttacking } from "./builders.js";
 
 // --- Lightweight fakes (the kernel and builders are pure; no real schema needed) ---
@@ -380,7 +387,7 @@ describe("passesPlacementGuard (inherited/linked vs printed)", () => {
     expect(passesPlacementGuard(eff, ctx)).toBe(true);
   });
 
-  it("only treats a DP-bearing Digi-Egg host in the battle area as a Digimon", () => {
+  it("treats any Digi-Egg host in the battle area as a Digimon (CR 4-3-1, feedback #9)", () => {
     const stackSource = fakeSource({ instanceId: "ess#1", permanent: () => permanent });
     const eff = staticModifier({
       source: stackSource,
@@ -391,7 +398,7 @@ describe("passesPlacementGuard (inherited/linked vs printed)", () => {
     });
     const ctx = fakeContext(stackSource, digiEggTop);
 
-    expect(passesPlacementGuard(eff, ctx)).toBe(false);
+    expect(passesPlacementGuard(eff, ctx)).toBe(true);
 
     const motherTop: Partial<GameAccess> = {
       definitionOf: () => ({
@@ -442,4 +449,52 @@ describe("builders carry flags through to the Effect", () => {
     expect(eff.isLinked).toBe(false);
     expect(eff.maxPerTurn).toBe(-1);
   });
+});
+
+it.each([
+  { kinds: [CardKind.Tamer], allowed: false },
+  { kinds: [CardKind.Digimon], allowed: true },
+  { kinds: [CardKind.Tamer, CardKind.Digimon], allowed: true },
+  { kinds: [CardKind.DigiEgg], allowed: true },
+])("#5410: deleted host effective kinds $kinds preserve inherited eligibility=$allowed", ({ kinds, allowed }) => {
+  const source = fakeSource({ instanceId: "ess", permanent: () => undefined });
+  const effect = onPlay({
+    source,
+    effectKey: "inherited",
+    description: "",
+    isInherited: true,
+    resolve: async () => {},
+  });
+  const context = fakeContext(source);
+  context.trigger = {
+    deletedWasStackInstanceIds: ["ess"],
+    deletedInstanceIds: ["top", "ess"],
+    deletedPermanentSnapshots: [
+      {
+        permanentId: "host",
+        controllerSeat: 0,
+        topCardId: "EX13-074",
+        stackInstanceIds: ["ess"],
+        inheritedHostIsDigimon: inheritedDigimonHost({
+          definition: { kinds },
+          effectiveKinds: kinds,
+          inBattleArea: true,
+        }),
+      },
+    ],
+  };
+  expect(passesPlacementGuard(effect, context)).toBe(allowed);
+});
+
+it("#5410: the Digi-Egg exception preserves native identity when effective kinds change", () => {
+  const definition = { kinds: [CardKind.DigiEgg] };
+  expect(inheritedDigimonHost({ definition, effectiveKinds: [CardKind.Tamer], inBattleArea: true })).toBe(true);
+  expect(inheritedDigimonHost({ definition, effectiveKinds: [CardKind.Tamer], inBattleArea: false })).toBe(false);
+  expect(
+    inheritedDigimonHost({
+      definition: { kinds: [CardKind.Tamer] },
+      effectiveKinds: [CardKind.Digimon],
+      inBattleArea: true,
+    }),
+  ).toBe(true);
 });

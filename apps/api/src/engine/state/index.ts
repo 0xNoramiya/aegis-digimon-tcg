@@ -11,8 +11,8 @@ export {
   buildStateView,
   refreshStateView,
   syncPublicCounts,
-  revealSecurityCardToOpponent,
   privateZoneSnapshot,
   exposeCardInZone,
+  forgetWithheldCards,
   finalRevealOf,
 } from "./visibility.js";

@@ -23,10 +23,14 @@ import { deckSleeve } from "./020-deck-sleeve.js";
 import { deckEggSleeve } from "./021-deck-egg-sleeve.js";
 import { publicDeckHiddenStatus } from "./022-public-deck-hidden-status.js";
 import { accountAvatarCheckedAt } from "./023-account-avatar-checked-at.js";
-
 import { feedbackReports } from "./024-feedback-reports.js";
 import { savedDeckFormat } from "./025-deck-format.js";
-import { feedbackReportReplays } from "./026-feedback-report-replays.js";
+import { feedbackTriage } from "./026-feedback-triage.js";
+import { communityDeckReports } from "./027-community-deck-reports.js";
+import { resetFeedbackBaseline } from "./028-reset-feedback-baseline.js";
+import { accountReplays } from "./029-account-replays.js";
+import { replaySharingHistory } from "./030-replay-sharing-history.js";
+import { feedbackReportReplays } from "./031-feedback-report-replays.js";
 
 export const migrations: readonly Migration[] = [
   initialSchema,
@@ -54,5 +58,10 @@ export const migrations: readonly Migration[] = [
   accountAvatarCheckedAt,
   feedbackReports,
   savedDeckFormat,
+  feedbackTriage,
+  communityDeckReports,
+  resetFeedbackBaseline,
+  accountReplays,
+  replaySharingHistory,
   feedbackReportReplays,
 ];

@@ -6,14 +6,15 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import { Button } from "../design/primitives";
 import { CardMini } from "../design/cards";
 import { Icons } from "../design/icons";
-import { useTranslation } from "../i18n";
+import { useTranslation, type TranslationKey } from "../i18n";
 import { en } from "../i18n/en";
 import { cardDisplayName, useCardOpener } from "./cardLinks";
 import { DecisionBoardReturn } from "./overlay/choice/DecisionBoardReturn";
 import { useEffectPromptFocus } from "./overlay/choice/useEffectPromptFocus";
 import "./overlay/fieldDecisionRail.css";
-import { usePromptHandSpace } from "./overlay/choice/usePromptHandSpace";
+import { usePromptHandSpace, type PromptHandSpace } from "./overlay/choice/usePromptHandSpace";
 import { useDecisionSourceMask } from "./overlay/choice/useDecisionSourceMask";
+import { useNoticeBandPassThrough } from "./overlay/choice/useNoticeBandPassThrough";
 
 function useEscapeToDialog(onOpenDialog: (() => void) | undefined) {
   useEffect(() => {
@@ -72,6 +73,7 @@ export function BoardPromptRail({
   detail,
   budgetText,
   handClearance,
+  handSpace,
   className,
   onOpenDialog,
   showDialogButton,
@@ -90,6 +92,8 @@ export function BoardPromptRail({
   detail?: string;
   budgetText?: string;
   handClearance?: number;
+  /** On phones, whether the rail stays above the hand only while its cards answer, or always. */
+  handSpace?: PromptHandSpace;
   className?: string;
   /** Escape hands the decision back to its dialog whenever this is set. */
   onOpenDialog?: () => void;
@@ -101,15 +105,16 @@ export function BoardPromptRail({
   useEscapeToDialog(onOpenDialog);
   const modal = variant === "prompt";
   const sourceMask = useDecisionSourceMask(modal ? sourcePermanentId : undefined);
-  const focusProps = useEffectPromptFocus(!modal);
-  usePromptHandSpace(focusProps.ref, !modal);
+  const noticeBand = useNoticeBandPassThrough();
+  const focusProps = useEffectPromptFocus(!modal, handSpace);
+  usePromptHandSpace(focusProps.ref, !modal, handSpace);
   return (
     <>
       <div
         className={modal ? "decision-overlay-backdrop" : "board-prompt-scrim"}
         data-variant={variant}
         data-source-permanent-id={sourceMask ? sourcePermanentId : undefined}
-        style={sourceMask}
+        style={modal ? { ...sourceMask, ...noticeBand } : sourceMask}
         aria-hidden
       />
       <section
@@ -480,11 +485,11 @@ export function BoardOptionalPrompt({
 }
 
 /**
- * The opponent has a decision open. Their seat is public in the synchronized
- * state (only the decision's payload is view-gated), so this needs no extra
- * server signal and leaks nothing about what they are choosing.
+ * The game is waiting on the opponent. The status comes from public
+ * synchronized state (see `opponentStatusKey`), so it needs no extra server
+ * signal and leaks nothing about which cards they are choosing.
  */
-export function OpponentSelectingPill() {
+export function OpponentSelectingPill({ status = "game.opponentIsSelecting" }: { status?: TranslationKey }) {
   const { t } = useTranslation();
   return (
     <div className="board-opponent-pill" role="status" data-testid="opponent-selecting-pill">
@@ -493,7 +498,7 @@ export function OpponentSelectingPill() {
         <i />
         <i />
       </span>
-      {t("game.opponentIsSelecting")}
+      {t(status)}
     </div>
   );
 }

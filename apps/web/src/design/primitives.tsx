@@ -19,6 +19,7 @@ import { playSound, type SoundKind } from "./sound";
 import { useTranslation } from "../i18n";
 import { digimonAvatarUrl, type DigimonWorldAvatarId } from "../account/avatars";
 import { AegisLogo } from "./AegisLogo";
+import { BrowserSupportNotice } from "./BrowserSupportNotice";
 
 /** The lightweight identity carried across screens (name + accent color). */
 export interface PlayerIdentity {
@@ -41,8 +42,11 @@ export type Screen =
   | "community"
   | "tournaments"
   | "settings"
+  | "replays"
   | "releases"
   | "feedback"
+  | "privacy"
+  | "myFeedback"
   | "game";
 
 export function Stage({ children }: { children: ReactNode }) {
@@ -52,6 +56,7 @@ export function Stage({ children }: { children: ReactNode }) {
       <a className="aegis-skip-link" href="#aegis-main">
         {t("nav.skipToContent")}
       </a>
+      <BrowserSupportNotice />
       <div className="aegis-stage__content">{children}</div>
     </div>
   );
@@ -259,20 +264,51 @@ export function Switch({
   );
 }
 
+// Safari does not focus a button when it is clicked or tapped, so
+// document.activeElement still points at whatever had focus before (often a
+// screen region) when a dialog opens from one. A control the pointer pressed
+// just before the dialog opened is the element to refocus on close.
+const PRESS_OPENS_DIALOG_MS = 1000;
+let lastPress: { control: HTMLElement; at: number } | null = null;
+if (typeof document !== "undefined") {
+  document.addEventListener(
+    "pointerdown",
+    (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const control = target?.closest<HTMLElement>("button, [href], input, select, textarea, [tabindex]");
+      lastPress = control ? { control, at: performance.now() } : null;
+    },
+    true,
+  );
+}
+
+function focusToRestore(): HTMLElement | null {
+  if (lastPress?.control.isConnected && performance.now() - lastPress.at < PRESS_OPENS_DIALOG_MS)
+    return lastPress.control;
+  return document.activeElement instanceof HTMLElement ? document.activeElement : null;
+}
+
 export function Dialog({
   children,
   className,
   labelledBy,
   onClose,
+  style,
+  closeOnBackdrop = true,
+  closeOnEscape = true,
 }: {
   children: ReactNode;
   className?: string;
   labelledBy: string;
   onClose?: () => void;
+  style?: CSSProperties;
+  /** False for a form whose typed text a stray click outside would throw away. */
+  closeOnBackdrop?: boolean;
+  closeOnEscape?: boolean;
 }) {
   const dialogRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousFocus = focusToRestore();
     dialogRef.current?.focus();
     return () => previousFocus?.focus();
   }, []);
@@ -280,7 +316,7 @@ export function Dialog({
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === "Escape" && onClose) {
       event.preventDefault();
-      onClose();
+      if (closeOnEscape) onClose();
       return;
     }
     if (event.key !== "Tab") return;
@@ -303,7 +339,7 @@ export function Dialog({
     }
   };
   const layer = (
-    <div className="aegis-dialog-layer" onClick={onClose}>
+    <div className="aegis-dialog-layer" onClick={closeOnBackdrop ? onClose : undefined}>
       <section
         ref={dialogRef}
         className={`aegis-dialog${className ? ` ${className}` : ""}`}
@@ -311,6 +347,7 @@ export function Dialog({
         aria-modal="true"
         aria-labelledby={labelledBy}
         tabIndex={-1}
+        style={style}
         onKeyDown={handleKeyDown}
         onClick={(event) => event.stopPropagation()}
       >
@@ -504,17 +541,22 @@ export function TopNav({
   actions,
   signedIn = false,
   onOpenPlayerMenu,
+  playerMenuOpen,
   dark,
   onToggleDark,
   onOpenTheme,
   onSendFeedback,
+  notifications,
 }: {
   screen: Screen;
   onNav: (s: Screen) => void;
   player: PlayerIdentity;
   actions?: ReactNode;
+  /** The signed-in player's notification bell; rendered in both the wide and the mobile bar. */
+  notifications?: ReactNode;
   signedIn?: boolean;
-  onOpenPlayerMenu?: () => void;
+  onOpenPlayerMenu?: (anchor: HTMLButtonElement) => void;
+  playerMenuOpen?: boolean;
   /** Opens the palette chooser when available, otherwise toggles light/dark. */
   dark?: boolean;
   onToggleDark?: (dark: boolean) => void;
@@ -579,11 +621,12 @@ export function TopNav({
   const portrait = (size: number) => (
     <button
       className="aegis-portrait-button"
-      onClick={() => {
+      onClick={(event) => {
         playSound("nav");
-        onOpenPlayerMenu?.();
+        onOpenPlayerMenu?.(event.currentTarget);
       }}
-      aria-haspopup="dialog"
+      aria-expanded={playerMenuOpen ?? false}
+      aria-controls={playerMenuOpen ? "player-menu" : undefined}
       aria-label={t("playerMenu.open")}
       title={t("playerMenu.open")}
     >
@@ -612,6 +655,7 @@ export function TopNav({
         </div>
         <div className="aegis-top-nav__account">
           {actions}
+          {notifications}
           {feedback}
           {themeToggle}
           <button
@@ -635,6 +679,7 @@ export function TopNav({
           <AegisLogo size={30} />
         </button>
         <div className="aegis-mobile-bar__actions">
+          {notifications}
           {feedback}
           {themeToggle}
           {signIn}

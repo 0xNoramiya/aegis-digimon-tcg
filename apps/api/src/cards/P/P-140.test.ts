@@ -41,7 +41,68 @@ describe("P-140 MegaKabuterimon", () => {
         }),
       ]),
     );
-    expect(compiled.digivolutionRequirement).toEqual([{ level: 4, names: ["Insectoid"], cost: 3, isAlternate: true }]);
+    expect(compiled.digivolutionRequirement).toEqual([{ level: 4, traits: ["Insectoid"], cost: 3, isAlternate: true }]);
+  });
+
+  it("digivolves from an off-color level-4 [Insectoid] trait Digimon for the printed cost of 3", async () => {
+    const s = setupEngine({
+      0: {
+        battleArea: [{ card: "BT20-066", as: "stingmon" }],
+        hand: [{ card: "P-140", as: "megaKabuterimon" }],
+      },
+    });
+    s.state.memory = 3;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("stingmon").permanentId,
+        instanceId: s.inst("megaKabuterimon").instanceId,
+        useAlternateCost: true,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("stingmon").topCard.cardId === "P-140");
+    expect(s.state.memory).toBe(0);
+  });
+
+  for (const base of ["BT15-047", "BT26-041"]) {
+    it(`digivolves from an [Insectoid] trait Lv.4 ${base} for the alternate cost 3 (GitHub #5428)`, async () => {
+      const s = setupEngine({
+        0: { battleArea: [{ card: base, as: "base" }], hand: [{ card: "P-140", as: "mega" }] },
+      });
+      s.state.memory = 10;
+      await s.ready();
+      const baseInstanceId = s.perm("base").topCard.instanceId;
+      expect(
+        s.engine.applyIntent(0, {
+          type: "digivolve",
+          permanentId: s.perm("base").permanentId,
+          instanceId: s.inst("mega").instanceId,
+          alternateRequirementIndex: 0,
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.perm("base").topCard.instanceId === s.inst("mega").instanceId);
+      expect(s.state.memory).toBe(7);
+      expect(s.perm("base").stack.some((card) => card.instanceId === baseInstanceId)).toBe(true);
+    });
+  }
+
+  it("refuses the alternate cost on a Lv.4 without the [Insectoid] trait (GitHub #5428)", async () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "BT1-069", as: "base" }], hand: [{ card: "P-140", as: "mega" }] },
+    });
+    s.state.memory = 10;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("mega").instanceId,
+        alternateRequirementIndex: 0,
+      }),
+    ).toMatchObject({ ok: false });
+    expect(s.state.memory).toBe(10);
   });
 
   it("trashes security when the inherited host itself wins a battle", async () => {

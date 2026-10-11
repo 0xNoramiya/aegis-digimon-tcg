@@ -4,6 +4,7 @@ import type { Express, Request, Response } from "express";
 import type { AuthSession } from "../accounts/AccountStore.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
 import { captureReportReplay, type ReplayCapturer } from "./replayCapture.js";
+import { installFeedbackTriageRoutes } from "./triageRoutes.js";
 import {
   FEEDBACK_KINDS,
   MAX_BUG_REPORT_CARDS,
@@ -43,7 +44,7 @@ export type BugReportRouteDeps = {
   replays?: ReplayCapturer;
 };
 
-/** Public submissions persist before mirroring; only authenticated admins can read them. */
+/** Public submissions persist before mirroring. Admins triage them; signed-in reporters follow their own. */
 export function installBugReportRoutes({ app, store, tracker, session, replays }: BugReportRouteDeps): void {
   const limitAccount = tokenBucketLimiter(SIGNED_IN_RATE_LIMIT);
   const limitAddress = tokenBucketLimiter(ANONYMOUS_RATE_LIMIT);
@@ -55,6 +56,8 @@ export function installBugReportRoutes({ app, store, tracker, session, replays }
       maxDescription: MAX_BUG_REPORT_DESCRIPTION,
       maxOpponentDeck: MAX_BUG_REPORT_OPPONENT_DECK,
       enabled: true,
+      // The form tells reporters whether their words may end up on a public repository.
+      publicMirror: tracker !== undefined,
     });
   });
 
@@ -62,63 +65,7 @@ export function installBugReportRoutes({ app, store, tracker, session, replays }
     submit(req, res).catch(next);
   });
 
-  app.get("/account/feedback", (req, res, next) => {
-    list(req, res).catch(next);
-  });
-
-  app.get("/account/feedback/:id/replay", (req, res, next) => {
-    downloadReplay(req, res).catch(next);
-  });
-
-  /** Sets `no-store` and answers 401/403 unless the caller is an administrator right now. */
-  async function admin(req: Request, res: Response): Promise<boolean> {
-    res.set("Cache-Control", "no-store");
-    const auth = await session(req);
-    if (!auth) {
-      res.status(401).json({ error: "authentication_required" });
-      return false;
-    }
-    if (!auth.account.isAdmin) {
-      res.status(403).json({ error: "admin_required" });
-      return false;
-    }
-    return true;
-  }
-
-  async function list(req: Request, res: Response): Promise<void> {
-    if (!(await admin(req, res))) return;
-    const raw = req.query.before;
-    const before = raw === undefined ? undefined : Number(raw);
-    if (
-      raw !== undefined &&
-      (typeof raw !== "string" ||
-        !/^\d+$/.test(raw) ||
-        !Number.isSafeInteger(before) ||
-        before! <= 0 ||
-        before! > 2147483647)
-    ) {
-      res.status(400).json({ error: "invalid_cursor" });
-      return;
-    }
-    res.json(await store.list(before));
-  }
-
-  /** The private replay saved with a report: both decks and every action, so admins only. */
-  async function downloadReplay(req: Request, res: Response): Promise<void> {
-    if (!(await admin(req, res))) return;
-    const raw = req.params.id;
-    const id = Number(raw);
-    if (typeof raw !== "string" || !/^\d+$/.test(raw) || !Number.isSafeInteger(id) || id <= 0 || id > 2147483647) {
-      res.status(400).json({ error: "invalid_id" });
-      return;
-    }
-    const record = await store.replay(id);
-    if (!record) {
-      res.status(404).json({ error: "replay_not_found" });
-      return;
-    }
-    res.json(record);
-  }
+  installFeedbackTriageRoutes({ app, store, session });
 
   async function submit(req: Request, res: Response): Promise<void> {
     const auth = await session(req);

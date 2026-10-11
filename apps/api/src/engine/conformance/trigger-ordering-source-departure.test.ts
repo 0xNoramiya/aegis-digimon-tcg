@@ -797,16 +797,7 @@ describe("bounded trigger ordering and pending source departure", () => {
       expect(s.state.players[1]!.trash.map((card) => card.instanceId)).toContain(metalId);
       expect(s.state.players[1]!.battleArea.map((permanent) => permanent.topCard.instanceId)).toContain(survivorId);
       expect(s.decisions.some(({ req }) => req.promptText.includes("Delete 1 of your opponent's Digimon"))).toBe(false);
-      const engage = s.state.pendingDecision!;
-      expect(engage.kind).toBe("optional");
-      expect(
-        s.engine.applyIntent(0, {
-          type: "respondDecision",
-          decisionId: engage.decisionId,
-          response: { kind: "optional", accept: false },
-        }),
-      ).toMatchObject({ ok: true });
-      await settle();
+      // The attacker is suspended, so its end-of-turn ＜Engage＞ attack is not offered (Q2490).
       expect(s.state.pendingDecision).toBeUndefined();
       expect(observe(s.engine).isAttacking()).toBe(false);
     } finally {
@@ -916,16 +907,7 @@ describe("bounded trigger ordering and pending source departure", () => {
         }),
       ).toMatchObject({ ok: true });
       await settle();
-      const engage = s.state.pendingDecision!;
-      expect(engage.kind).toBe("optional");
-      expect(
-        s.engine.applyIntent(0, {
-          type: "respondDecision",
-          decisionId: engage.decisionId,
-          response: { kind: "optional", accept: false },
-        }),
-      ).toMatchObject({ ok: true });
-      await settle();
+      // The attacker is suspended, so its end-of-turn ＜Engage＞ attack is not offered (Q2490).
       expect(s.state.pendingDecision).toBeUndefined();
       expect(observe(s.engine).isAttacking()).toBe(false);
     } finally {

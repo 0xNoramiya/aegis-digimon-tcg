@@ -111,6 +111,58 @@ describe("EX2-026 Gargomon", () => {
     expect(s.state.memory).toBe(7);
   });
 
+  // Feedback report 11: the player's own match (Shu-Chong Wong in play) charged Salamon -> Gargomon its
+  // printed 2 and Gargomon -> Bastemon 3 - 1 = 2. The reduction belongs to Gargomon digivolving, not to
+  // digivolving into Gargomon.
+  it("feedback 11: reduces only digivolving from Gargomon, and projects the reduced cost", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "EX13-038", as: "salamon" },
+            { card: "EX2-026", as: "gargomon" },
+            { card: "EX6-064", as: "tamer" },
+          ],
+          hand: [
+            { card: "EX2-026", as: "intoGargomon" },
+            { card: "EX13-042", as: "bastemon" },
+          ],
+          deck: ["BT1-009", "BT1-010"],
+          security: ["BT1-011"],
+        },
+      },
+      { autoOrderTriggers: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    const projected = (alias: string, permanentAlias: string) =>
+      [...s.inst(alias).digivolveRoutes].find(
+        (route) => route.permanentId === s.perm(permanentAlias).permanentId && route.alternateRequirementIndex === -1,
+      )?.projectedCost;
+    expect(projected("intoGargomon", "salamon")).toBe(2);
+    expect(projected("bastemon", "gargomon")).toBe(2);
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("gargomon").permanentId,
+        instanceId: s.inst("bastemon").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("gargomon").topCard.cardId === "EX13-042" && s.state.pendingDecision === undefined);
+    expect(s.state.memory).toBe(8);
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("salamon").permanentId,
+        instanceId: s.inst("intoGargomon").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("salamon").topCard.cardId === "EX2-026" && s.state.pendingDecision === undefined);
+    expect(s.state.memory).toBe(6);
+  });
+
   it("gains inherited DP when an opponent's Digimon becomes suspended", async () => {
     const preferred: string[] = [];
     const s = setupEngine(

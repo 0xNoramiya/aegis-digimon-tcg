@@ -227,6 +227,77 @@ describe("BT19-082 Yao Qinglan", () => {
     assertNoLoudGap(s);
   });
 
+  it("suspends for its By-cost even with nothing to place, which lets Poseidia Lagoon trigger (GitHub #5431)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT22-096", as: "lagoon" },
+            { card: YAO, as: "yao" },
+            { card: "BT24-029", as: "attacker" },
+          ],
+          hand: [{ card: "BT22-027", as: "ryugumon" }],
+          deck: [...FILLER],
+          security: [...SECURITY],
+        },
+        1: { battleArea: [{ card: WALL, as: "wall", suspended: true }], security: [...SECURITY], deck: [...FILLER] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 3;
+    await s.ready();
+    s.perm("lagoon").enterFieldTurnCount = s.state.turnCount - 1;
+    s.perm("lagoon").placedByEffect = true;
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("wall").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("attacker").topCard.instanceId === s.inst("ryugumon").instanceId);
+    await settle(() => s.state.pendingDecision === undefined && s.state.players[1]!.battleArea.length === 0);
+
+    expect(s.perm("yao").isSuspended).toBe(true);
+    expect(s.state.memory).toBe(3);
+    expect(s.state.players[0]!.trash.some((card) => card.instanceId === s.inst("lagoon").instanceId)).toBe(true);
+    assertNoLoudGap(s);
+  });
+
+  it("declining the By-cost with nothing to place leaves Yao unsuspended (GitHub #5431)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: YAO, as: "yao" },
+            { card: AQUATIC_ATTACKER, as: "attacker", dp: 20_000 },
+          ],
+          hand: [PLAIN],
+          deck: [...FILLER],
+          security: [...SECURITY],
+        },
+        1: { battleArea: [{ card: WALL, as: "wall", suspended: true }], security: [...SECURITY], deck: [...FILLER] },
+      },
+      { autoDeclineOptional: true },
+    );
+    s.state.memory = 5;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("wall").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[1]!.battleArea.length === 0 && s.state.pendingDecision === undefined);
+
+    expect(s.decisions.some(({ req }) => req.kind === "optional" && req.sourceCardId === YAO)).toBe(true);
+    expect(s.perm("yao").isSuspended).toBe(false);
+    assertNoLoudGap(s);
+  });
+
   it("near miss: a level 6 [Sea Animal] card in hand is over the level gate", async () => {
     const s = setupEngine(
       {
@@ -259,7 +330,8 @@ describe("BT19-082 Yao Qinglan", () => {
 
     expect(s.perm("attacker").stack.map((c) => c.instanceId)).toEqual([]);
     expect(s.state.players[0]!.hand.map((c) => c.instanceId)).toContain(tooBigId);
-    expect(s.perm("yao").isSuspended).toBe(false);
+    // §15-7-5: the accepted By-cost is still paid when nothing can be placed (GitHub #5431).
+    expect(s.perm("yao").isSuspended).toBe(true);
     assertNoLoudGap(s);
   });
 

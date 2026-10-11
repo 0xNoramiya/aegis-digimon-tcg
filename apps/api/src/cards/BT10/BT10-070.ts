@@ -68,6 +68,8 @@ const compiled: CompiledCard = {
                 },
                 raw: "by trashing 1 of this Digimon's digivolution cards",
               },
+              optional: true,
+              abortOnDecline: true,
             },
           ],
         },

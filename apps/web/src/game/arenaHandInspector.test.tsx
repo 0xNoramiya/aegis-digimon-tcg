@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import {
+  ANIMATION_SPEED_CHANNEL,
   CardInstance,
   GameState,
   Permanent,
@@ -56,7 +57,11 @@ function arena(decision?: DecisionRequest) {
   base.currentDP = 2000;
   state.players[0]!.battleArea.push(base);
   const send = vi.fn<(type: string, payload: unknown) => void>();
-  const room = { connection: { isOpen: true }, send, onMessage: () => () => {} } as unknown as AegisRoom;
+  const room = {
+    connection: { isOpen: true },
+    send: (type: string, payload: unknown) => (type === ANIMATION_SPEED_CHANNEL ? undefined : send(type, payload)),
+    onMessage: () => () => {},
+  } as unknown as AegisRoom;
   const result = render(
     <I18nProvider>
       <GameScreen

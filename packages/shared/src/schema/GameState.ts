@@ -119,6 +119,9 @@ export class GameState extends Schema {
   @type("uint16") timerRemaining0 = 300;
   @type("uint16") timerRemaining1 = 300;
   @type("int8") timerActiveSeat = -1;
+  /** Each seat's own mulligan window; it is separate from the match clock. */
+  @type("uint8") mulliganTimerRemaining0 = 30;
+  @type("uint8") mulliganTimerRemaining1 = 30;
 
   @type("boolean") gameOver = false;
   @type("int8") winnerSeat = -1; // -1 until decided

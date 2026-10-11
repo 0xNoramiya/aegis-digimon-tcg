@@ -59,7 +59,9 @@ test("the bottom-left hand selection leaves notices readable and can reveal the 
   const hand = page.getByTestId("hand");
   expect(lane.y + lane.height).toBeLessThanOrEqual(prompt.y);
   expect(prompt.x).toBeCloseTo(8, 0);
-  expect(prompt.y + prompt.height).toBeCloseTo(972 - 8, 0);
+  // Hand selections sit above the physical cards they pick.
+  const handBounds = (await hand.locator(".game-hand-card").first().boundingBox())!;
+  expect(prompt.y + prompt.height).toBeLessThanOrEqual(handBounds.y);
   await page.getByRole("button", { name: "View board", exact: true }).click();
   await expect(page.getByRole("button", { name: "Return to decision", exact: true })).toBeVisible();
   const firstCard = hand.locator(".game-hand-card").first();

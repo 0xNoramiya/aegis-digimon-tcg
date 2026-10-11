@@ -56,7 +56,7 @@ export function createSuspendVerbs(pc: PrimitivesContext) {
     }
   }
 
-  const canSuspend: NonNullable<Primitives["canSuspend"]> = (permanentId: string): boolean => {
+  const canSuspend: NonNullable<Primitives["canSuspend"]> = (permanentId: string, effectSeat?: Seat): boolean => {
     const permanent = access.permanentById(permanentId);
     if (permanent === undefined) return false;
     // Only an actual unsuspended -> suspended TRANSITION counts as "becoming suspended":
@@ -71,7 +71,7 @@ export function createSuspendVerbs(pc: PrimitivesContext) {
     // here — KB BT19-101 Q3185: a "can't be suspended" Digimon may still attack via
     // <Overclock>). The restricted permanent stays unsuspended and opens no
     // whenSuspended/OnTappedAnyone window.
-    return !isRestricted(permanentId, "beSuspended");
+    return !isRestricted(permanentId, "beSuspended", effectSeat);
   };
 
   async function suspend(
@@ -124,7 +124,7 @@ export function createSuspendVerbs(pc: PrimitivesContext) {
     return true;
   };
 
-  const canUnsuspend: NonNullable<Primitives["canUnsuspend"]> = (permanentId: string): boolean => {
+  const canUnsuspend: NonNullable<Primitives["canUnsuspend"]> = (permanentId: string, effectSeat?: Seat): boolean => {
     const permanent = access.permanentById(permanentId);
     if (permanent === undefined) return false;
     // Only an actual suspended -> unsuspended TRANSITION counts as "becoming unsuspended"
@@ -136,11 +136,11 @@ export function createSuspendVerbs(pc: PrimitivesContext) {
     // (Samādhi Śānti and the wider freeze family). Active-phase code keeps its earlier
     // filter to report an accurate list of permanents that changed orientation.
     if (
-      isRestricted(permanentId, "unsuspend") ||
+      isRestricted(permanentId, "unsuspend", effectSeat) ||
       (state.phase === Phase.Active &&
-        (isRestricted(permanentId, "unsuspendDuringUnsuspendPhase") ||
+        (isRestricted(permanentId, "unsuspendDuringUnsuspendPhase", effectSeat) ||
           (state.turnSeat === permanent.controllerSeat &&
-            isRestricted(permanentId, "unsuspendDuringOwnUnsuspendPhase"))))
+            isRestricted(permanentId, "unsuspendDuringOwnUnsuspendPhase", effectSeat))))
     )
       return false;
     const handTrashCost = continuous.restrictionCount(permanentId, "unsuspendHandTrashCost");

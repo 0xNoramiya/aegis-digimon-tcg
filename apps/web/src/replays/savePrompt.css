@@ -1,0 +1,224 @@
+/* The end-of-match replay area. It sits on the result scrim, which stays dark in both themes, and
+   stays visually below Rematch and Main menu: a slim status line once the replay is handled, a
+   compact card only while the player still has a choice to make. */
+.replay-prompt {
+  width: 100%;
+  margin-top: var(--ds-space-4);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 0.7rem;
+  background: rgb(0 0 0 / 28%);
+  color: #fff;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.replay-prompt h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin: 0;
+  font: 700 var(--ds-text-lg) / 1.3 var(--ds-font-body);
+}
+
+.replay-prompt p {
+  margin: 0;
+  color: rgb(255 255 255 / 70%);
+  font-size: var(--ds-text-sm);
+  line-height: 1.5;
+}
+
+.replay-prompt p[role="alert"] {
+  color: var(--ds-danger);
+}
+
+.replay-prompt .drive-how-link {
+  display: inline;
+  min-height: 0;
+  color: var(--ds-accent);
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.replay-prompt__copy {
+  display: grid;
+  gap: var(--ds-space-1);
+  min-width: 0;
+}
+
+.replay-prompt__actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: var(--ds-space-3);
+}
+
+.replay-prompt__actions > .aegis-button {
+  justify-content: center;
+  min-height: 44px;
+}
+
+/* A choice still to make: title and hint, a close button, then two equal buttons. */
+.replay-prompt--card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--ds-space-4) var(--ds-space-3);
+}
+
+.replay-prompt--card .replay-prompt__actions {
+  grid-column: 1 / -1;
+}
+
+.replay-prompt__dismiss {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: -0.6rem -0.9rem 0 0;
+  place-items: center;
+  border: 0;
+  border-radius: var(--ds-radius-pill);
+  color: rgb(255 255 255 / 70%);
+  background: transparent;
+  cursor: pointer;
+}
+
+.replay-prompt__dismiss:hover,
+.replay-prompt__dismiss:focus-visible {
+  color: #fff;
+  background: rgb(255 255 255 / 10%);
+}
+
+/* An expired Drive sign-in: the message and one fix side by side. */
+.replay-prompt--inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3) var(--ds-space-4);
+}
+
+.replay-prompt--inline .replay-prompt__actions {
+  display: flex;
+  gap: var(--ds-space-2);
+}
+
+.replay-prompt--inline .aegis-button[aria-label] {
+  width: 44px;
+  padding-inline: 0;
+}
+
+/* Handled: one line with a status and quiet links. */
+.replay-prompt--row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  min-height: 3.5rem;
+  padding-block: var(--ds-space-3);
+}
+
+.replay-prompt--row h2 {
+  flex: 1 1 auto;
+  font: 500 var(--ds-text-base) / 1.4 var(--ds-font-body);
+}
+
+.replay-prompt--quiet h2 {
+  color: rgb(255 255 255 / 75%);
+}
+
+.replay-prompt__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: rgb(255 255 255 / 60%);
+}
+
+.replay-prompt--saved .replay-prompt__icon {
+  color: var(--ds-success);
+}
+
+.replay-prompt__spinner {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid rgb(255 255 255 / 25%);
+  border-top-color: var(--ds-accent);
+  border-radius: 50%;
+  animation: aegis-spin 0.9s linear infinite;
+}
+
+.replay-prompt__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--ds-space-1);
+  margin-left: auto;
+  padding-left: var(--ds-space-2);
+  border-left: 1px solid rgb(255 255 255 / 15%);
+}
+
+.replay-prompt__links > a,
+.replay-prompt__links > button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--ds-space-2);
+  border: 0;
+  color: var(--ds-accent);
+  background: none;
+  font: 600 var(--ds-text-sm) / 1 var(--ds-font-body);
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.replay-prompt__links > a:hover,
+.replay-prompt__links > button:hover {
+  color: #fff;
+}
+
+/* Dismissed: up to three quiet links, on their own line under the title. */
+.replay-prompt--quiet .replay-prompt__links {
+  flex-basis: 100%;
+  margin-left: calc(1.5rem + var(--ds-space-3));
+  padding-left: 0;
+  border-left: 0;
+  gap: 0 var(--ds-space-4);
+}
+
+.replay-prompt--quiet .replay-prompt__links > a,
+.replay-prompt--quiet .replay-prompt__links > button {
+  min-height: 36px;
+  padding: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .replay-prompt__spinner {
+    animation: none;
+  }
+}
+
+@media (max-width: 559px) {
+  .replay-prompt {
+    padding-inline: var(--ds-space-4);
+  }
+
+  .replay-prompt__actions {
+    grid-template-columns: 1fr;
+  }
+
+  .replay-prompt--inline .replay-prompt__actions {
+    width: 100%;
+  }
+
+  .replay-prompt--inline .replay-prompt__actions > .aegis-button:not([aria-label]) {
+    flex: 1;
+  }
+
+  .replay-prompt__links {
+    padding-left: 0;
+    border-left: 0;
+  }
+}

@@ -32,6 +32,8 @@ const compiled: CompiledCard = {
           fromTop: false,
         },
         {
+          effectTextPart:
+            "Then, 1 of their Digimon with 1 or fewer digivolution cards can't attack or block until their turn ends.",
           kind: "Restrict",
           target: {
             filter: {
@@ -65,6 +67,8 @@ const compiled: CompiledCard = {
           fromTop: false,
         },
         {
+          effectTextPart:
+            "Then, 1 of their Digimon with 1 or fewer digivolution cards can't attack or block until their turn ends.",
           kind: "Restrict",
           target: {
             filter: {

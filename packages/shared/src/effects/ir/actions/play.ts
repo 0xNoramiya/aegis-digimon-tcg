@@ -148,7 +148,10 @@ export interface PlayFromZoneAction extends ActionBase {
   kind: "PlayFromZone";
   target: Target;
   from: ZoneRef[];
-  /** Allow optional DigiXros material selection from these loose zones before the play. */
+  /**
+   * Extra loose zones for this play's optional DigiXros. The rule zones, hand and battle area
+   * (comprehensive 7-2-1), are always offered.
+   */
   digiXrosMaterialsFrom?: ZoneRef[];
   /** Treat the resolving source as this named DigiXros material when a ruling permits it. */
   digiXrosSourceMaterialName?: string;

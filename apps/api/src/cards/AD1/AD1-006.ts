@@ -174,7 +174,6 @@ const compiled: CompiledCard = {
               },
               from: ["digivolutionCards"],
               payCost: false,
-              digiXrosMaterialsFrom: ["battleArea", "underTamers"],
               digiXrosSourceMaterialName: "Shoutmon",
             },
           ],

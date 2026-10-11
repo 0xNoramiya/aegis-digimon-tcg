@@ -167,7 +167,7 @@ for (const width of [1440, 390]) {
         await expect(material).toHaveAttribute("aria-pressed", "true");
       }
       await panel.getByRole("button", { name: "Assembly (3 cards)", exact: true }).click();
-      await page.getByRole("button", { name: "Don't use", exact: true }).click();
+      await page.getByRole("button", { name: "No, decline", exact: true }).click();
       await expect(
         page.locator('[data-drop="perm-you"]').getByRole("img", { name: "KingSukamon", exact: true }),
       ).toBeVisible();

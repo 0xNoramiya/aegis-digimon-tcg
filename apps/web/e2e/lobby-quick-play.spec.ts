@@ -29,7 +29,7 @@ test("timer ignores old opt-outs and resets on reload while session choices surv
   await page.addInitScript(() => localStorage.setItem("aegis:match-timer", "false"));
   await page.goto("/e2e/lobby-formats.html");
   await expect(page.locator(".lobby-setup__summary")).toContainText("Timer ON");
-  const advanced = page.getByText("Advanced settings", { exact: true });
+  const advanced = page.locator(".lobby-advanced > summary");
   await advanced.focus();
   await page.keyboard.press("Enter");
   await page.getByRole("radio", { name: "Best of 3" }).click();

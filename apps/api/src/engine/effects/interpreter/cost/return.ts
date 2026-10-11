@@ -340,10 +340,10 @@ export async function payReturnCost(ctx: EffectContext, cost: Cost, out?: { paid
       ctx.namedCounts.set(cost.storeAsPlayCost, Math.max(0, playCost));
     }
   }
-  if (cost.to === "deckBottom") {
-    await ctx.fx.returnToDeck(ids, { toTop: false });
-  } else {
-    await ctx.fx.returnToHand(ids);
-  }
-  return true;
+  const moved =
+    cost.to === "deckBottom" ? await ctx.fx.returnToDeck(ids, { toTop: false }) : await ctx.fx.returnToHand(ids);
+  // A leave-play prevention (BT24-101 Jupitermon) can keep a selected permanent on the
+  // field. The "by returning" condition is then unmet and the rest of the effect does not
+  // run (Q7247, Q5169).
+  return moved.length >= ids.length;
 }

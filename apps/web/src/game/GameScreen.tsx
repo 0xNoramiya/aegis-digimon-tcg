@@ -1,3 +1,4 @@
+import { downloadReplay } from "../replays/files";
 /* The in-game board — the design's letterboxed board layout, driven entirely by
    the synchronized GameState and wired to the server through typed intents. The
    client owns zero rules: every action is an intent the server validates, and the
@@ -61,6 +62,7 @@ import {
 } from "./screen/model/handEntries";
 import { useAutoHatch } from "./screen/hooks/useAutoHatch";
 import { useHandAutoSort } from "./handAutoSort";
+import { setHandSortMode, useHandSortMode, type HandSortMode } from "./handSortMode";
 import { dnaFieldChoice, dnaMaterialPicks, toggleDnaMaterial } from "./screen/model/dnaMaterialSelection";
 import { presentedSeats } from "./screen/model/presentedSeats";
 import { visibleBoard } from "./screen/model/visibleBoard";
@@ -76,6 +78,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CardKind,
   PRESENTATION_CHANNEL,
+  ANIMATION_SPEED_CHANNEL,
+  type AnimationSpeedReport,
   SERIES_CHANNEL,
   getCardDefinition,
   type DecisionResponse,
@@ -84,6 +88,7 @@ import {
 } from "@aegis/shared";
 import { rejectionMessage } from "../rejectionMessages";
 import { useTranslation } from "../i18n";
+import { intents } from "../net/intents";
 import { useRoom, type MatchMode, type SeriesGameTicket, type UseRoomResult } from "../net/useRoom";
 import { seriesView } from "./seriesModel";
 import { singleServerBatch, type ServerBatch } from "../net/serverBatches";
@@ -119,6 +124,7 @@ import { buildInstanceIndex, instancePermanentId } from "./decisionModel";
 import { digivolveBasePermanentIds } from "./digivolveModel";
 import { buildMatchLog, type LogLine } from "./matchLog";
 import { useMatchCues } from "./useMatchCues";
+import { useAnimationSpeedReport } from "./useAnimationSpeedReport";
 import type { PresentationPacing, PresentationProbe } from "./presentationProbe";
 import { TIMINGS } from "./timings";
 import { loadReconnectSession } from "../net/reconnectSession";
@@ -140,6 +146,7 @@ export function GameScreen({
   signedIn = false,
   autoHatchReady = true,
   demoConnection,
+  replayMode = false,
   devProbe,
   presentationPacing,
   seriesGame,
@@ -185,6 +192,8 @@ export function GameScreen({
     /** No snapshots either, so the board it shows is always its live state. */
     snapshots?: readonly StateSnapshot[];
   };
+  /** Portable file playback uses the read-only board without live result dialogs. */
+  replayMode?: boolean;
   /** Dev inspector hooks (the effects lab): queue controls, step events, batches, decisions. */
   devProbe?: PresentationProbe;
   presentationPacing?: PresentationPacing;
@@ -192,12 +201,18 @@ export function GameScreen({
   seriesGame?: SeriesGameTicket;
   /** The series opened its next game; the caller remounts this screen on that ticket. */
   onSeriesNext?: (ticket: SeriesGameTicket) => void;
-  /** Whether leaving now would concede a live match; must be a stable callback. */
-  onLeaveForfeitsChange?: (forfeits: boolean) => void;
+  /**
+   * Receives a way to concede while leaving would forfeit a live match, and `undefined` once it
+   * would not. Conceding keeps the player on the result so they can still keep the replay.
+   * Must be a stable callback.
+   */
+  onLeaveForfeitsChange?: (concede: (() => void) | undefined) => void;
 }) {
   const { t } = useTranslation();
   const [handOrder, setHandOrder] = useState<readonly string[]>([]);
-  const [spectating] = useState(() => startMode === "spectator" || loadReconnectSession()?.spectator === true);
+  const [spectating] = useState(
+    () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
+  );
   const actionConfirmationsEnabled = areActionConfirmationsEnabled();
   const arenaLayout = useArenaLayout();
   const { narrowGameLayout, compactPiles, shortBoard, collapseNotices } = arenaLayout;
@@ -263,9 +278,11 @@ export function GameScreen({
   const leaveForfeits = !demoConnection && !spectating && !!state && bothSeated(state) && !state.gameOver;
   useEffect(() => {
     if (!leaveForfeits || !onLeaveForfeitsChange) return;
-    onLeaveForfeitsChange(true);
-    return () => onLeaveForfeitsChange(false);
-  }, [leaveForfeits, onLeaveForfeitsChange]);
+    onLeaveForfeitsChange(() => {
+      if (connectedRoom) intents.surrender(connectedRoom);
+    });
+    return () => onLeaveForfeitsChange(undefined);
+  }, [leaveForfeits, onLeaveForfeitsChange, connectedRoom]);
 
   const vsBot = startMode === "bot";
   const isPrivateMatch = startMode === "private_host" || startMode === "private_guest" || !!state?.roomCode;
@@ -448,13 +465,12 @@ export function GameScreen({
   // an answer the server refused.
   const mirroredWindow = state ? mirroredCombatWindow(state, viewerSeat) : null;
   const decisionPendingForViewer = decision?.seat === viewerSeat && decision.kind !== "mulligan";
-  const timedViewerQuestion =
-    state?.matchTimer === true && (decisionPendingForViewer || openCombatWindowForBarrier !== null);
+  const viewerQuestionPending = decisionPendingForViewer || openCombatWindowForBarrier !== null;
 
   // Every cue the server provokes: sounds, panels, banners, the security clash,
   // the draw flights. The hook sequences them on the animation queue; this
   // component only renders what it reports.
-  const presentationCues = useMatchCues({
+  const cues = useMatchCues({
     snapshots,
     batches: cueBatches,
     phaseEvents: events,
@@ -465,16 +481,13 @@ export function GameScreen({
     collapseNarration: collapseNotices,
     // A security check the server stopped to ask the viewer something cannot close until it
     // is answered, so the cue sequence needs to know a question is waiting.
-    decisionPending: decisionPendingForViewer || openCombatWindowForBarrier !== null,
+    decisionPending: viewerQuestionPending,
     // The barrier catches the presentation up to the board the question was asked about
     // before the prompt opens. An older server sends no revision, and no barrier is raised.
     decisionStateVersion: decisionPendingForViewer
       ? decision.stateVersion
       : (openCombatWindowForBarrier?.stateVersion ?? undefined),
     ...(decisionPendingForViewer && decision.sourceCardId ? { decisionSourceCardId: decision.sourceCardId } : {}),
-    ...(decisionPendingForViewer && typeof decision.options?.timing === "string"
-      ? { decisionTiming: decision.options.timing }
-      : {}),
     targetDecision:
       decisionPendingForViewer &&
       isFieldTargetDecision(
@@ -517,37 +530,6 @@ export function GameScreen({
     devProbe,
     presentationPacing,
   });
-  // Answering on the live board also requires live cards: presentation holds can
-  // hide a newly played target or paint a security reveal over the selection.
-  // An end-of-turn answer belongs after the preceding attack. Keep its finite
-  // security scene visible before offering Engage, even when the match is timed.
-  const timedViewerAnswer = timedViewerQuestion && !presentationCues.securityRevealPending;
-  const cues = timedViewerAnswer
-    ? {
-        ...presentationCues,
-        securityBreak: null,
-        securityClash: null,
-        securityBranch: null,
-        optionBranch: null,
-        zoneShowcase: null,
-        revealShowcase: null,
-        fieldClash: null,
-        phaseBanner: null,
-        pendingPermanentIds: new Set<string>(),
-        heldPhaseState: undefined,
-        heldBlowState: undefined,
-        heldSecurityEffectState: undefined,
-        heldDrawState: undefined,
-        heldBreedingState: undefined,
-        heldMemory: undefined,
-        heldDeletions: new Map<number, never>(),
-        heldStackStrips: new Map<number, never>(),
-        heldTrashArrivals: new Map<number, never>(),
-        heldHandArrivals: new Map<number, never>(),
-        heldSuspendedIds: new Set<string>(),
-        heldSecurityCounts: new Map<Seat, number>(),
-      }
-    : presentationCues;
   const you = state?.players[viewerSeat];
   const opp = state?.players[otherSeat(viewerSeat)];
   /**
@@ -560,13 +542,11 @@ export function GameScreen({
    * server changes independently of narration, except during the turn-start draw hold.
    * They are the same object whenever the queue is caught up.
    */
-  const shownState = timedViewerAnswer
-    ? state
-    : selectPresentedState({
-        live: state,
-        snapshots: snapshots ?? [],
-        presentedStateVersion: cues.presentedStateVersion,
-      });
+  const shownState = selectPresentedState({
+    live: state,
+    snapshots: snapshots ?? [],
+    presentedStateVersion: cues.presentedStateVersion,
+  });
 
   const seats =
     shownState && you && opp
@@ -597,6 +577,11 @@ export function GameScreen({
     : decisionPendingForViewer
       ? decision.decisionId
       : openCombatWindowForBarrier?.key;
+  const sendAnimationSpeed = useMemo(
+    () => (room ? (report: AnimationSpeedReport) => room.send(ANIMATION_SPEED_CHANNEL, report) : undefined),
+    [room],
+  );
+  useAnimationSpeedReport({ enabled: !spectating, send: sendAnimationSpeed });
   useReadoutAudio({
     memory: shownState
       ? displayMemory(
@@ -799,14 +784,15 @@ export function GameScreen({
   const presentedHand = seats?.handHeld ? seats.shownHand : you?.hand;
   const presentedHandKey = presentedHand?.map((card) => `${card.instanceId}\u0001${card.cardId}`).join("\0");
   const handAutoSort = useHandAutoSort();
+  const handSortMode = useHandSortMode();
   useEffect(() => {
     if (presentedHandKey === undefined) return;
     const hand = presentedHandKey.split("\0").map((card) => {
       const [instanceId = "", cardId = ""] = card.split("\u0001");
       return { instanceId, cardId };
     });
-    setHandOrder((order) => (handAutoSort ? sortedHandInstanceIds(hand) : retainHandOrder(order, hand)));
-  }, [presentedHandKey, handAutoSort]);
+    setHandOrder((order) => (handAutoSort ? sortedHandInstanceIds(hand, handSortMode) : retainHandOrder(order, hand)));
+  }, [presentedHandKey, handAutoSort, handSortMode]);
 
   if (
     status === "reconnecting" ||
@@ -958,7 +944,7 @@ export function GameScreen({
     viewerSeat,
     isMyTurn,
     mirroredWindow,
-    decisionPending: Boolean(decision || state.pendingDecision),
+    decision,
     openCombatWindow: openCombatWindowForBarrier,
     answeredCombatWindowKeyRef,
     rolledBackRejectionSeqRef,
@@ -1411,9 +1397,28 @@ export function GameScreen({
       signedIn={signedIn}
       opponentDropped={!spectating && !vsBot && !opp.connected && !state.gameOver}
       gameOver={
-        (state.gameOver || series?.stage === "over") && !cues.resultPending
+        !replayMode && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
+              onDownloadReplay:
+                !spectating && liveConnection.replayDownload?.kind === "ready"
+                  ? () => {
+                      if (liveConnection.replayDownload?.kind === "ready")
+                        downloadReplay(liveConnection.replayDownload);
+                    }
+                  : undefined,
+              replayFile:
+                !spectating && liveConnection.replayDownload?.kind === "ready"
+                  ? liveConnection.replayDownload
+                  : undefined,
+              replayStatus:
+                spectating || demoConnection || joinOptions.devScenario
+                  ? undefined
+                  : liveConnection.replayDownload?.kind === "unavailable"
+                    ? "unavailable"
+                    : liveConnection.replayDownload
+                      ? undefined
+                      : "preparing",
               reason: gameOverReason,
               revealed,
               series: series && {
@@ -1503,6 +1508,7 @@ export function GameScreen({
 
   return (
     <BoardStage
+      replayMode={replayMode}
       onResetScenario={onResetScenario}
       state={state}
       shownState={shownState}
@@ -1575,7 +1581,11 @@ export function GameScreen({
       }}
       chrome={{ permanentChrome, unsuspendStagger, dropIntentAttrs, baseDropIntentAttrs, trashEffectSource }}
       handDock={{
-        onSortHand: () => setHandOrder(sortedHandInstanceIds(shownHandEntries)),
+        handSortMode,
+        onSortHand: (mode: HandSortMode) => {
+          setHandSortMode(mode);
+          setHandOrder(sortedHandInstanceIds(shownHandEntries, mode));
+        },
         reorderDropBeforeInstanceId: hoveredDragIntent === "reorder" ? (dragHover?.id ?? null) : undefined,
         onMoveHandCard: (instanceId, direction) => {
           const index = shownHandEntries.findIndex((entry) => entry.instanceId === instanceId);

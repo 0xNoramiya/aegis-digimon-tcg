@@ -190,7 +190,7 @@ describe("BT22-090 Rie Kishibe", () => {
   });
 });
 
-describe("GitHub #5290: Rie Kishibe end-of-turn digivolution through public intents", () => {
+describe("GitHub #5290 / #5398: Rie Kishibe end-of-turn digivolution through public intents", () => {
   it.each([
     { into: "BT22-067", security: 3, sacrifice: "BT22-083", accept: true, evolves: true, deletes: true },
     { into: "EX13-064", security: 3, sacrifice: "BT22-083", accept: true, evolves: true, deletes: true },
@@ -236,6 +236,11 @@ describe("GitHub #5290: Rie Kishibe end-of-turn digivolution through public inte
         event.kind === "memoryChanged" && event.reason === "digivolve" ? [{ from: event.from, to: event.to }] : [],
       );
       expect(evolutionPayments).toEqual(evolves ? [{ from: -3, to: -5 }] : []);
+      // Feedback #40 follow-up: the "Digivolve" yes/no appears only when a legal LordKnightmon exists.
+      const offersDigivolve = s.decisions.some(
+        ({ req }) => req.sourceCardId === "BT22-090" && req.kind === "optional" && req.promptText === "Digivolve",
+      );
+      expect(offersDigivolve).toBe(evolves);
       expect(s.state.pendingDecision).toBeUndefined();
 
       expect(s.engine.applyIntent(1, { type: "surrender" })).toEqual({ ok: true });

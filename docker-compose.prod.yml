@@ -23,8 +23,9 @@
 # BREVO_API_KEY, BREVO_EMAIL_FROM (sign-in emails fall back to Brevo once Resend
 # reaches its daily limit), RESEND_DAILY_LIMIT and BREVO_DAILY_LIMIT (sends per UTC
 # day; default 100 and 300, the free plans),
-# GITHUB_TOKEN, GITHUB_BUG_REPOSITORY, GITHUB_BUG_LABELS (optional feedback mirror),
-# FEEDBACK_GITHUB_ENABLED (default true; false keeps feedback in Postgres only),
+# GITHUB_TOKEN, GITHUB_BUG_REPOSITORY, GITHUB_BUG_LABELS (optional public GitHub copy),
+# FEEDBACK_GITHUB_ENABLED and DECK_REPORTS_GITHUB_ENABLED (default false; "true" also
+# files player feedback and deck reports as GitHub issues; Postgres is always the record),
 # AEGIS_TRUSTED_PROXY_HOPS (proxies in
 # front of the API, which is how an anonymous reporter's address is read).
 #
@@ -65,10 +66,12 @@ x-api: &api
     ADMIN_DISPLAY_NAME: ${ADMIN_DISPLAY_NAME:-}
     GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     GITHUB_BUG_REPOSITORY: ${GITHUB_BUG_REPOSITORY:-}
-    FEEDBACK_GITHUB_ENABLED: ${FEEDBACK_GITHUB_ENABLED:-true}
+    FEEDBACK_GITHUB_ENABLED: ${FEEDBACK_GITHUB_ENABLED:-false}
+    DECK_REPORTS_GITHUB_ENABLED: ${DECK_REPORTS_GITHUB_ENABLED:-false}
     GITHUB_BUG_LABELS: ${GITHUB_BUG_LABELS:-}
     AEGIS_TRUSTED_PROXY_HOPS: ${AEGIS_TRUSTED_PROXY_HOPS:-2}
     AEGIS_WAITING_ROOM_TIMEOUT_SECONDS: ${AEGIS_WAITING_ROOM_TIMEOUT_SECONDS:-1800}
+    AEGIS_GOOGLE_API_KEY: ${AEGIS_GOOGLE_API_KEY:-}
   depends_on:
     postgres:
       condition: service_healthy
@@ -172,6 +175,7 @@ services:
         VITE_AEGIS_REVISION: ${AEGIS_REVISION:-production}
         VITE_AEGIS_PUBLIC_VERSION: ${AEGIS_PUBLIC_VERSION:-1.0.0-beta}
         VITE_AEGIS_DEPLOYMENT_MODE: ${AEGIS_DEPLOYMENT_MODE:-direct}
+        VITE_GOOGLE_CLIENT_ID: ${AEGIS_GOOGLE_CLIENT_ID:-}
     restart: unless-stopped
     cpus: 0.5
     mem_limit: 256m

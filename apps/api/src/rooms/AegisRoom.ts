@@ -3,8 +3,15 @@ import { log, logError, withMatchLog } from "../logger.js";
 import { CloseCode, Room, Client, ServerError, matchMaker, type Delayed } from "colyseus";
 import { canCreateRoom } from "../deployment/admission.js";
 import { randomBytes, randomUUID } from "node:crypto";
+import { ReplayRecording } from "../replays/recording.js";
+import { replayDownload } from "../replays/download.js";
+import { replayLibrary } from "../replays/runtime.js";
+import type { ReplayLibrary } from "../replays/ReplayLibrary.js";
 import {
   GameState,
+  REPLAY_CHANNEL,
+  type ReplaySummary,
+  type ReplayDownloadMessage,
   RECONNECT_GRACE_SECONDS,
   combatWindowKey,
   type CombatWindow,
@@ -16,6 +23,11 @@ import {
   EVENT_CHANNEL,
   DECISION_CHANNEL,
   PRESENTATION_CHANNEL,
+  ANIMATION_SPEED_CHANNEL,
+  DEFAULT_EFFECT_SPEED,
+  eventAnimationMs,
+  isEffectSpeed,
+  type EffectSpeed,
   CHAT_CHANNEL,
   CHAT_COOLDOWN_MS,
   parseChatMessage,
@@ -31,6 +43,7 @@ import {
   deckFormat,
   isDeckFormat,
   formatIsUnlimited,
+  isDigimonWorldAvatarId,
 } from "@aegis/shared";
 import { isDevScenarioId, type DevScenarioId } from "../engine/devScenario.js";
 import { createIssueReproBotPolicy } from "../engine/issueReproBotPolicy.js";
@@ -44,7 +57,7 @@ import type { AccountStore, DeckSnapshot } from "../accounts/AccountStore.js";
 import { seriesStore } from "../tournaments/runtime.js";
 import type { SeriesStore } from "../tournaments/series/index.js";
 import { createLocalRoomCodeDirectory, type RoomCodeDirectory } from "../cluster/roomCodes.js";
-import { MatchClock } from "./MatchClock.js";
+import { MatchClock, type ClockMode } from "./MatchClock.js";
 import { CasualSeries, type SeriesContinuationOptions, type SeriesRoomPort } from "./series/CasualSeries.js";
 import type { SeriesRecord } from "./series/SeriesDirectory.js";
 import { parsePresentationReport } from "./presentationReport.js";
@@ -61,6 +74,14 @@ import type {
 
 /** Hand-laid boards must never be reachable by a real player. */
 const DEV_SCENARIOS_ENABLED = process.env.NODE_ENV !== "production";
+/** Dev scenarios that reproduce timed-match presentation, so they keep the match clock against a bot. */
+const TIMED_DEV_SCENARIOS: ReadonlySet<DevScenarioId> = new Set<DevScenarioId>([
+  "arena-match-timer",
+  "arena-chronomon-engage-order",
+  "arena-github-5422-magnamon-timed-security",
+  "arena-discord-speed-security-scene-stuck",
+  "arena-feedback28-security-reveal-before-prompt",
+]);
 const WAITING_ROOM_TIMEOUT_SECONDS = positiveSeconds(process.env.AEGIS_WAITING_ROOM_TIMEOUT_SECONDS, 30 * 60);
 
 const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
@@ -226,7 +247,9 @@ interface OpenBatch {
   emitted: number;
   lastSeq: number;
   recipient?: Client;
-  presentation?: boolean;
+  events: SequencedServerEvent[];
+  /** How long each seat's screen spends on the events, at that seat's Effect speed. */
+  presentationMs: [number, number];
 }
 
 /**
@@ -240,6 +263,8 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private engine!: GameEngine;
   private spectatorClients = new Set<string>();
   private seatByClient = new Map<string, Seat>(); // sessionId -> seat
+  /** Each seat's Effect speed, which sets how long the seat's clock waits for a batch to play. */
+  private animationSpeed: [EffectSpeed, EffectSpeed] = [DEFAULT_EFFECT_SPEED, DEFAULT_EFFECT_SPEED];
   private presentationLogWindows = new Map<Seat, { start: number; count: number }>();
   /** Keyed by `seat:<n>` for players and by session id for spectators. */
   private lastChatAtBySender = new Map<string, number>();
@@ -249,6 +274,12 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   /** The raw name each spectator joined with; `spectatorChatName` decides whether to show it. */
   private spectatorJoinNames = new Map<string, string>();
   private accountByClient = new Map<string, string>();
+  private replayRecording?: ReplayRecording;
+  private replayDownloads = new Map<Seat, Promise<ReplayDownloadMessage>>();
+  private replayFinished = false;
+  private replayRequestTimes = new WeakMap<Client, number>();
+  /** Index entries per `seat:account`, so repeated replay requests write the row once. */
+  private replayIndexes = new Map<string, Promise<string | undefined>>();
   private rankedByClient = new Map<string, boolean>();
   /** Clients that pace chains of triggered effects themselves (`presentationPacing: "sequential"`). */
   private chainPacingClients = new Set<string>();
@@ -430,6 +461,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     options.unlimited = this.isUnlimitedRoom;
     options.format = this.state.format as DeckFormat;
     this.seriesSeatByClient.set(client.sessionId, seat);
+    if (entry.accountId) this.accountByClient.set(client.sessionId, entry.accountId);
     return true;
   }
 
@@ -652,6 +684,9 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       },
       emit: (event) => {
         this.engineEvents += 1;
+        if (event.kind === "matchStarted" && !this.devScenario && !this.replayRecording) {
+          this.replayRecording = new ReplayRecording();
+        }
         if (event.kind === "gameOver") {
           // A completed engine cannot accept replacement players. Locking also
           // guarantees a drawn tournament replay receives a fresh room. A failure here is worth
@@ -660,6 +695,9 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
           // in production kills the process and in tests hides every other failure behind noise.
           void this.lock().catch((error: unknown) =>
             this.debugError("[AegisRoom] failed to lock finished room", error),
+          );
+          void this.recordRecentResults(event).catch((error) =>
+            this.debugError("[AegisRoom] failed to persist recent match", error),
           );
           void this.recordAuthoritativeResult(event).catch((error) =>
             this.debugError("[AegisRoom] failed to persist match result", error),
@@ -747,8 +785,20 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // mutates state, and emits events. Rejections are surfaced as an
     // "actionRejected" event to the offending client only.
     this.onMessage("*", (client, type, payload) => {
+      if (type === REPLAY_CHANNEL) {
+        const now = performance.now();
+        if (now - (this.replayRequestTimes.get(client) ?? -Infinity) >= 10_000) {
+          this.replayRequestTimes.set(client, now);
+          this.sendReplayDownload(client);
+        }
+        return;
+      }
       if (type === PRESENTATION_CHANNEL) {
         this.handlePresentationReport(client, payload);
+        return;
+      }
+      if (type === ANIMATION_SPEED_CHANNEL) {
+        this.handleAnimationSpeed(client, payload);
         return;
       }
       if (type === CHAT_CHANNEL) {
@@ -764,7 +814,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     });
 
     // Optional clocks belong to casual/private rooms. Ignore crafted ranked/tournament options.
-    const devTimer = this.devScenario === "arena-match-timer" || this.devScenario === "arena-chronomon-engage-order";
+    const devTimer = this.devScenario !== undefined && TIMED_DEV_SCENARIOS.has(this.devScenario);
     this.matchClock = new MatchClock(
       this.state,
       {
@@ -801,6 +851,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         const deck = player ? this.deckByClient.get(player.sessionId) : undefined;
         if (!player || !deck) return undefined;
         return {
+          accountId: this.accountByClient.get(player.sessionId),
           displayName: player.displayName,
           ...(player.avatarId ? { avatarId: player.avatarId } : {}),
           deck: {
@@ -819,6 +870,43 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       createNextRoom: async (options) => (await matchMaker.createRoom(this.roomName, options)).roomId,
       logError: (...data) => this.debugError(...data),
     };
+  }
+
+  private async recordRecentResults(
+    event: Extract<import("@aegis/shared").ServerEvent, { kind: "gameOver" }>,
+  ): Promise<void> {
+    if (this.devScenario) return;
+    const finishedAt = Date.now();
+    // Snapshot both identities before I/O: onLeave clears accountByClient synchronously.
+    const participants = ([0, 1] as const).flatMap((seat) => {
+      const player = this.state.players[seat];
+      const owner = player && this.accountByClient.get(player.sessionId);
+      if (!owner) return [];
+      const opponent = this.state.players[seat === 0 ? 1 : 0];
+      return [
+        {
+          owner,
+          record: {
+            id: this.replayRecording?.id ?? this.roomId,
+            mode: this.replayMode(),
+            opponentName: opponent?.displayName ?? "Opponent",
+            opponentKind: this.bots[seat === 0 ? 1 : 0] ? ("bot" as const) : ("human" as const),
+            ...(isDigimonWorldAvatarId(opponent?.avatarId) ? { opponentAvatarId: opponent.avatarId } : {}),
+            result:
+              event.result.outcome === "draw"
+                ? ("draw" as const)
+                : event.result.winnerSeat === seat
+                  ? ("win" as const)
+                  : ("loss" as const),
+            reason: event.reason,
+            finishedAt,
+          },
+        },
+      ];
+    });
+    await Promise.all(
+      participants.map(({ owner, record }) => this.accounts().recordRecentMatch(owner, this.roomId, record)),
+    );
   }
 
   /**
@@ -1200,6 +1288,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     });
     // Per-client visibility: hide hidden zones from the other seat.
     this.assignView(client, seat);
+    if (this.replayFinished) this.sendReplayDownload(client);
     const accountId = this.accountByClient.get(client.sessionId);
     if (this.tournamentGameId && accountId) this.tournamentSeatHolders[seat] = { accountId };
   }
@@ -1308,13 +1397,19 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     this.readyTimeout?.clear();
     this.readyTimeout = undefined;
     await this.lock();
+    this.syncMatchClock();
     this.recordReplayInput({ kind: "disconnect", seat, final: false });
     this.withBatch(() => this.engine.handleDisconnect(seat, false));
+    this.syncMatchClock();
     try {
       const reconnectedClient = await this.allowReconnection(client, this.RECONNECT_GRACE_SECONDS);
       this.debug(`[AegisRoom] reconnected sessionId=${client.sessionId} seat=${seat}`);
+      this.syncMatchClock();
       this.recordReplayInput({ kind: "reconnect", seat });
       this.withBatch(() => this.engine.handleReconnect(seat));
+      this.syncMatchClock();
+      this.matchClock?.resetPresentation(seat, performance.now());
+      this.syncMatchClock();
       if (!this.matchStartRequested) {
         // Unlocking a full room lists it in matchmaking, where every join fails with "already full".
         if (this.seatByClient.size + this.occupiedBotSeats().length < 2) await this.unlock();
@@ -1326,6 +1421,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       // must go on the new Client; assigning it to `client` left the socket on the stale one.
       this.assignView(reconnectedClient, seat);
       this.resendOpenPrompts(reconnectedClient, seat);
+      if (this.replayFinished) this.sendReplayDownload(reconnectedClient);
       this.casualSeries?.resendSeat(seat);
     } catch {
       // Grace elapsed (or room disposed) without a reconnect: resolve as a real
@@ -1473,7 +1569,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // has no seatByClient entry for applyIntent to route through) — starting the
     // match directly here is the bot seat's stand-in for readiness.
     // Legacy bot joins can promote a waiting casual room to practice mode.
-    if (this.devScenario !== "arena-match-timer" && this.devScenario !== "arena-chronomon-engage-order") {
+    if (this.devScenario === undefined || !TIMED_DEV_SCENARIOS.has(this.devScenario)) {
       this.state.matchTimer = false;
       this.state.timerActiveSeat = -1;
       this.matchClockInterval?.clear();
@@ -1551,6 +1647,22 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   }
 
   /**
+   * After each patch, each view forgets the cards whose move out of its sight that patch
+   * carried (into a deck, or into the opponent's hand or face-down security). Otherwise a
+   * later change to such a card, such as a deck reveal, is encoded for a refId the client
+   * already dropped. Colyseus has no after-patch hook, and its patch timer calls this method.
+   */
+  override broadcastPatch(): boolean {
+    const hasChanges = super.broadcastPatch();
+    if (!this.engine) return hasChanges;
+    for (const client of this.clients) {
+      if (client.view === undefined) continue;
+      this.engine.forgetWithheldCards(client.view, this.seatByClient.get(client.sessionId));
+    }
+    return hasChanges;
+  }
+
+  /**
    * Run one entry into the engine as a single batch of events.
    *
    * Every path from this room into `GameEngine` that can emit goes through here, so the
@@ -1571,7 +1683,14 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
 
   private openBatch(recipient?: Client): OpenBatch {
     this.batchSeq += 1;
-    this.currentBatch = { id: `batch-${this.batchSeq}`, emitted: 0, lastSeq: 0, recipient };
+    this.currentBatch = {
+      id: `batch-${this.batchSeq}`,
+      emitted: 0,
+      lastSeq: 0,
+      recipient,
+      events: [],
+      presentationMs: [0, 0],
+    };
     return this.currentBatch;
   }
 
@@ -1586,22 +1705,11 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     const batch = this.currentBatch ?? this.openImplicitBatch();
     this.eventSeq += 1;
     batch.emitted += 1;
-    if (
-      [
-        "phaseChanged",
-        "cardPlayed",
-        "cardsMoved",
-        "digivolved",
-        "attackDeclared",
-        "securityRevealed",
-        "securityChecked",
-        "matchStarted",
-      ].includes(event.kind)
-    ) {
-      batch.presentation = true;
-    }
+    for (const seat of [0, 1] as const)
+      batch.presentationMs[seat] += eventAnimationMs(event, seat, this.animationSpeed[seat]);
     batch.lastSeq = this.eventSeq;
     const stamped = { ...event, seq: this.eventSeq, batch: batch.id, stateVersion: this.state.stateVersion };
+    if (!batch.recipient && this.replayRecording) batch.events.push(stamped);
     this.debug("engine.event", stamped);
     return stamped;
   }
@@ -1634,8 +1742,8 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     if (!batch || batch.emitted === 0) return;
     if (!batch.recipient) {
       this.atReplaySite("batchClose", () => this.syncMatchClock());
-      if (batch.presentation) this.matchClock?.pauseForPresentation(performance.now());
       this.state.stateVersion += 1;
+      this.matchClock?.presentBatch(performance.now(), batch.presentationMs);
     }
     const closed: ServerEvent = {
       kind: "batchClosed",
@@ -1647,8 +1755,80 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       batch.recipient.send(EVENT_CHANNEL, this.stampClose(closed, batch));
       return;
     }
+    if (this.replayRecording && !this.replayFinished) {
+      this.replayRecording.capture(this.state, batch.events);
+      if (this.state.gameOver) {
+        this.replayFinished = true;
+        for (const client of this.clients) this.sendReplayDownload(client);
+      }
+    }
     this.broadcast(EVENT_CHANNEL, this.stampClose(closed, batch), { afterNextPatch: true });
     this.atReplaySite("batchClose", () => this.broadcastPatch());
+  }
+
+  private replayMode(): ReplaySummary["mode"] {
+    if (this.isTournamentRoom) return "tournament";
+    if (this.isRankedRoom) return "ranked";
+    if (this.isBotRoom) return "bot";
+    if (this.isPrivate) return "private";
+    if (this.isUnlimitedRoom) return "unlimited";
+    return this.isBetaBattleRoom ? "beta" : "casual";
+  }
+
+  private sendReplayDownload(client: Client): void {
+    const seat = this.seatByClient.get(client.sessionId);
+    if (
+      seat === undefined ||
+      this.spectatorClients.has(client.sessionId) ||
+      !this.state.gameOver ||
+      !this.replayFinished
+    )
+      return;
+    if (!this.replayDownloads.has(seat)) {
+      const replay = this.replayRecording?.complete(this.replayMode());
+      this.replayDownloads.set(
+        seat,
+        replay ? replayDownload(replay, seat) : Promise.resolve({ kind: "unavailable", reason: "recording_limit" }),
+      );
+    }
+    // Snapshot the account before I/O: onLeave clears accountByClient synchronously.
+    const owner = this.accountByClient.get(client.sessionId);
+    void this.replayDownloads
+      .get(seat)!
+      .then(async (message) => {
+        if (message.kind !== "ready" || !owner) return message;
+        const indexId = await this.replayIndex(seat, owner, message);
+        return indexId ? { ...message, indexId } : message;
+      })
+      .then((message) => {
+        if (this.clients.includes(client)) client.send(REPLAY_CHANNEL, message);
+      })
+      .catch((error: unknown) => this.debugError("[AegisRoom] failed to export replay", error));
+  }
+
+  protected replays(): Pick<ReplayLibrary, "record"> {
+    return replayLibrary;
+  }
+
+  /** A failed index write still delivers the file; the player can download it or save it to Drive as a guest would. */
+  private replayIndex(
+    seat: Seat,
+    owner: string,
+    message: Extract<ReplayDownloadMessage, { kind: "ready" }>,
+  ): Promise<string | undefined> {
+    const key = `${seat}:${owner}`;
+    let pending = this.replayIndexes.get(key);
+    if (!pending) {
+      pending = this.replays()
+        .record(owner, message)
+        .catch((error: unknown) => {
+          this.replayIndexes.delete(key);
+          this.debugError("[AegisRoom] failed to index replay", error);
+          return undefined;
+        });
+      this.replayIndexes.set(key, pending);
+    }
+    return pending;
   }
 
   /** The close is part of the batch it ends, so it takes the next `seq` and that batch's id. */
@@ -1795,6 +1975,14 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     withMatchLog(this.state.matchLogId, this.roomId, () => log(...data));
   }
 
+  /** Spectators and unseated clients have no clock; an unknown speed is ignored. */
+  private handleAnimationSpeed(client: Client, payload: unknown): void {
+    const seat = this.seatByClient.get(client.sessionId);
+    if (seat === undefined) return;
+    const speed = (payload as { speed?: unknown } | null)?.speed;
+    if (isEffectSpeed(speed)) this.animationSpeed[seat] = speed;
+  }
+
   private handlePresentationReport(client: Client, payload: unknown): void {
     const seat = this.seatByClient.get(client.sessionId);
     if (seat === undefined) return;
@@ -1868,15 +2056,27 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   }
 
   private syncMatchClock(): void {
-    const expired = this.matchClock?.update(
-      performance.now(),
-      this.matchStartRequested ? this.engine.inputSeat : undefined,
-    );
+    const seat = this.matchStartRequested ? this.engine.inputSeat : undefined;
+    const expired = this.matchClock?.update(performance.now(), seat, this.clockMode(seat));
     if (expired !== undefined && !this.state.gameOver) {
-      this.recordReplayInput({ kind: "expireMatchTimer", seat: expired });
-      this.withBatch(() => this.engine.expireMatchTimer(expired));
+      if (expired.clock === "mulligan")
+        this.withBatch(() => this.engine.applyIntent(expired.seat, { type: "mulligan", keep: true }));
+      else {
+        this.recordReplayInput({ kind: "expireMatchTimer", seat: expired.seat });
+        this.withBatch(() => this.engine.expireMatchTimer(expired.seat));
+      }
     }
     if (this.state.gameOver) this.matchClockInterval?.clear();
+  }
+
+  /**
+   * A seat never loses time waiting on an opponent who dropped. The dropped seat's own
+   * clock keeps running, so leaving costs the leaver, not the player left behind.
+   */
+  private clockMode(seat: Seat | undefined): ClockMode {
+    if (seat === undefined) return "match";
+    if (this.state.players[1 - seat]?.connected === false) return "frozen";
+    return this.state.pendingDecision?.kind === "mulligan" ? "mulligan" : "match";
   }
 
   private applyLoggedIntent(seat: Seat, intent: Intent) {
@@ -1956,6 +2156,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private requestDecision(seat: Seat, req: DecisionRequest): void {
     this.debug("decision.requested", { seat, request: req });
     this.pendingDecisionRequest = req;
+    if (req.kind !== "mulligan") this.matchClock?.grantDecisionBonus(seat);
     const bot = this.bots[seat];
     if (bot !== undefined) {
       this.debug(`[AegisRoom] requestDecision seat=${seat} kind=${req.kind} → bot`);

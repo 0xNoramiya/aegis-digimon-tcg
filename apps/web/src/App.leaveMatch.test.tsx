@@ -11,11 +11,13 @@ vi.mock("./screens/Lobby", () => ({
   ),
 }));
 
+const concede = vi.hoisted(() => vi.fn<() => void>());
+
 vi.mock("./game/GameScreen", () => ({
-  GameScreen: ({ onLeaveForfeitsChange }: { onLeaveForfeitsChange?: (forfeits: boolean) => void }) => {
+  GameScreen: ({ onLeaveForfeitsChange }: { onLeaveForfeitsChange?: (concede: (() => void) | undefined) => void }) => {
     useEffect(() => {
-      onLeaveForfeitsChange?.(true);
-      return () => onLeaveForfeitsChange?.(false);
+      onLeaveForfeitsChange?.(concede);
+      return () => onLeaveForfeitsChange?.(undefined);
     }, [onLeaveForfeitsChange]);
     return <div data-testid="match" />;
   },
@@ -23,6 +25,7 @@ vi.mock("./game/GameScreen", () => ({
 
 afterEach(() => {
   cleanup();
+  concede.mockReset();
   vi.restoreAllMocks();
   sessionStorage.clear();
 });
@@ -74,15 +77,16 @@ it("keeps a live match open and asks before the browser Back button leaves it", 
   expect(screen.getByTestId("match")).toBeTruthy();
 });
 
-it("leaves the match once the player confirms", async () => {
+it("concedes in place once the player confirms, so the result can offer the replay", async () => {
   await startMatch();
-  const back = vi.spyOn(window.history, "back").mockImplementation(pressBrowserBack);
+  const back = vi.spyOn(window.history, "back");
 
   pressBrowserBack();
   fireEvent.click(screen.getByRole("button", { name: "Leave match" }));
 
-  expect(back).toHaveBeenCalledOnce();
-  expect(await screen.findByRole("button", { name: "Start match" })).toBeTruthy();
-  expect(screen.queryByTestId("match")).toBeNull();
-  expect(window.location.pathname).toBe("/play");
+  expect(concede).toHaveBeenCalledOnce();
+  expect(back).not.toHaveBeenCalled();
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(screen.getByTestId("match")).toBeTruthy();
+  expect(window.location.pathname).toBe("/play/game");
 });

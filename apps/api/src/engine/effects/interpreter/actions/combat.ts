@@ -80,6 +80,47 @@ export async function processBlitzGrant(ctx: EffectContext, permanentIds: readon
   for (const permanentId of permanentIds) await processBlitz(ctx, permanentId);
 }
 
+type AttackAction = Extract<Action, { kind: "Attack" }>;
+
+function attackActionOptions(action: AttackAction): ForceAttackOptions {
+  const attackSubject = action.attacker ?? action.subject ?? action.target;
+  return {
+    withoutSuspending: action.withoutSuspending ?? false,
+    vortex: action.vortex,
+    attackPlayer:
+      action.attackPlayer ??
+      (action.target !== undefined && action.target !== attackSubject && action.target.filter.kind?.includes("Digimon")
+        ? false
+        : undefined),
+    attackPlayerOnly: action.attackPlayerOnly,
+    attackMechanic: action.attackMechanic,
+  };
+}
+
+/**
+ * Whether some Digimon this action names could declare its attack right now: not suspended or
+ * barred from attacking, and with a legal target. Q2490: a "may attack" effect does not let a
+ * Digimon that can't attack attack, so its "you may" has nothing to offer.
+ */
+export function canAttemptAttack(ctx: EffectContext, action: AttackAction): boolean {
+  const canForceAttack = ctx.fx.canForceAttack;
+  const attackSubject = action.attacker ?? action.subject ?? action.target;
+  if (canForceAttack === undefined || attackSubject === undefined) return true;
+  // Q2859: during another attack the prompt still shows, and explains why no attack follows.
+  if (ctx.fx.isAttackResolving?.() === true) return true;
+  const options = attackActionOptions(action);
+  if (attackSubject.isSelf || attackSubject.filter?.isSelfRef) {
+    const self = ctx.source.permanent();
+    return self !== undefined && canForceAttack(self.permanentId, options);
+  }
+  // Choosing an opponent's Digimon that can't attack is still a legal choice (BT22-062 Q4917).
+  const subjectController = attackSubject.filter?.controller ?? attackSubject.filter?.controllerDefault;
+  if (subjectController === "opponent") return true;
+  return candidatePermanents(ctx, attackSubject, { includeUnaffectable: true }).some((permanent) =>
+    canForceAttack(permanent.permanentId, options),
+  );
+}
+
 export async function runCombatAction(ctx: EffectContext, action: Action, scope: ActionScope): Promise<boolean> {
   const { deferredCostSuspensions } = scope;
   switch (action.kind) {
@@ -104,17 +145,7 @@ export async function runCombatAction(ctx: EffectContext, action: Action, scope:
         return false;
       }
       const overrides: ForceAttackOptions = {
-        withoutSuspending: action.withoutSuspending ?? false,
-        vortex: action.vortex,
-        attackPlayer:
-          action.attackPlayer ??
-          (action.target !== undefined &&
-          action.target !== attackSubject &&
-          action.target.filter.kind?.includes("Digimon")
-            ? false
-            : undefined),
-        attackPlayerOnly: action.attackPlayerOnly,
-        attackMechanic: action.attackMechanic,
+        ...attackActionOptions(action),
         afterAttackTriggers: fireDeferredSuspensionTriggers,
       };
       await withEffectAttackOptions(ctx, overrides, async (opts) => {

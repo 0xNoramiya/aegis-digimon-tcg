@@ -49,6 +49,8 @@ export const compiled: CompiledCard = {
                 target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
                 raw: "by suspending this Tamer",
               },
+              optional: true,
+              abortOnDecline: true,
             },
           ],
         },

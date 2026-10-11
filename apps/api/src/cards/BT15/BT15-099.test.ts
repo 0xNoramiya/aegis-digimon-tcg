@@ -101,3 +101,32 @@ describe("BT15-099 Venom Infusion — KB Q&A rulings", () => {
     expect(await castVenomInfusionTrashing("BT15-076")).toEqual({ levellessDeleted: false, rookieDeleted: true });
   });
 });
+
+describe("BT15-099 — optional By cost (Discord 1558408701633757194)", () => {
+  it("trashes nothing and deletes nothing when no hand Digimon is chosen for the cost", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT15-068", as: "source" }],
+          hand: [
+            { card: "BT15-099", as: "option" },
+            { card: "BT15-076", as: "cost" },
+          ],
+        },
+        1: { battleArea: [{ card: "BT15-072", as: "eligible" }] },
+      },
+      { autoDeclineOptional: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.decisions.length > 0 && s.state.pendingDecision === undefined);
+
+    expect(s.decisions.map(({ req }) => [req.kind, req.options?.min])).toEqual([["selectCards", 0]]);
+
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual([s.inst("cost").instanceId]);
+    expect(s.state.players[1]!.battleArea).toHaveLength(1);
+  });
+});

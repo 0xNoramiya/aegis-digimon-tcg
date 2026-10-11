@@ -33,8 +33,23 @@ Both queues filter on this option, so timed and untimed players cannot meet.
 Omitting the option leaves the timer off. Public clocks start with 300 seconds
 per player. Subsequent turn starts grant 60 seconds to the turn owner and
 30 seconds to the opponent, with both reserves capped at 300 seconds.
-The opening turn uses the initial reserve without a bonus. Time already spent
-answering the mulligan is retained.
+The opening turn uses the initial reserve without a bonus.
+
+The mulligan has its own clock. Each player gets 30 seconds
+(`MULLIGAN_TIMER_SECONDS`) to answer their own mulligan, published as
+`mulliganTimerRemaining0` and `mulliganTimerRemaining1`. It never draws on the
+match clock. When it runs out, the server keeps the hand (as if the player sent
+`mulligan { keep: true }`). While a player's mulligan is open, the client shows
+that player's mulligan seconds, labelled "Mulligan", where the match clock usually is.
+
+Combo time: each decision the engine asks of a player (trigger order, targets,
+selections, optional "activate?" choices; every `DecisionRequest` except the
+mulligan) adds 3 seconds (`MATCH_TIMER_DECISION_BONUS_SECONDS`) to that player's
+match clock, up to 30 seconds per player per turn
+(`MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN`). Main-phase actions (playing
+a card, attacking, ending the turn) are not decisions and add nothing. Like the
+turn bonuses, combo time never raises a reserve above its starting value. All
+timer constants live in `packages/shared/src/matchTimer.ts`.
 
 Private-room creators may also choose `timerStartSeconds` (60, 180, 300, 600).
 Invalid values use the defaults; private reserves are capped at their chosen starting time.
@@ -56,13 +71,37 @@ The required responder is highlighted; the compact readout shows remaining secon
 The server owns elapsed time. `timerRemaining0` and `timerRemaining1` are rounded-up
 seconds; `timerActiveSeat` is 0 or 1 while that player must act, and -1 while paused.
 Decisions and combat responses charge their owner even during the opponent's turn.
-Automatic engine resolution pauses both banks. Visible game-event batches receive
-a fixed two-second presentation grace; client animation reports cannot extend it.
-In timed matches, an incoming decision or combat response takes priority over
-presentation: the client shows the live board and fast-forwards queued animations
-so a low reserve cannot expire behind a hidden response dialog.
-A disconnect or reconnect never resets either reserve, and an absent player's
-required response continues to consume time. Waiting rooms do not consume time.
+Automatic engine resolution pauses both banks.
+A match timer never skips animations. Instead, the server holds each seat's clock
+while that seat's screen plays what was broadcast. The client reports nothing about
+its playback:
+
+- Each seat has a presentation timeline. When a batch closes at time `t`, the
+  server sets `presentEnd[seat] = max(presentEnd[seat], t) + duration`, where
+  `duration` sums each event's length at that seat's Effect speed. A seat asked to
+  act is charged from `max(now, presentEnd[seat])`. Only the seat that must act is
+  charged.
+- Event lengths come from the table the web client animates to
+  (`packages/shared/src/protocol/animationTimings.ts` and `animationPause.ts`).
+  Effect beats scale with the speed (Slow 1.4x, Fast 0.55x); an opponent's played
+  or digivolved card adds the Slow showcase hold (2 s).
+- The client sends `animationSpeed { speed: "slow" | "normal" | "fast" }` on join
+  and whenever the player changes it. A seat that never sends it counts as Normal.
+  Unknown values and spectator messages are ignored. The skip control changes
+  nothing on the server.
+- A timeline may run at most 60 s ahead of now, so a client that queues actions far
+  faster than they can be watched cannot bank unlimited time.
+- A reconnecting client catches up without replaying, so its timeline ends at the
+  reconnect.
+
+A disconnect or reconnect never resets either reserve. While a player is
+disconnected, the opponent's clock never runs: if the opponent must act, their
+clock (match or mulligan) freezes until the player reconnects or the reconnect
+grace ends in a forfeit. An absent player's own required response keeps
+consuming that player's time once its pause ends. Waiting rooms do not consume time.
+A player's clock never runs before that player has a decision of their own: the
+opponent's end of turn and the automatic unsuspend, draw and breeding-entry steps
+charge nobody, and the new turn's clock starts after its animations.
 Expiry is checked before accepting an intent and ends the match through the ordinary
 `gameOver` pipeline with `reason: "timeout"`, cancelling open decision/phase waits.
 Clock-only schema patches do not advance the gameplay `stateVersion`.

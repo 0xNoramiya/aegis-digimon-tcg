@@ -1,12 +1,17 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type {
+  AvatarChoice,
+  AvatarSource,
   BanlistPolicy,
   DigimonWorldAvatarId,
+  MatchHistoryRecord,
+  MatchHistoryFilter,
+  MatchHistorySummary,
   TournamentBanlistCard,
   TournamentRules,
   TournamentStructure,
 } from "@aegis/shared";
-import { resolveCardArt } from "@aegis/shared";
+import { INITIALS_AVATAR, isDigimonWorldAvatarId, MATCH_HISTORY_LIMIT, resolveCardArt } from "@aegis/shared";
 import { Pool, type PoolClient, type PoolConfig } from "pg";
 import { migrations } from "../db/migrations/index.js";
 import { type Queryable, runMigrations } from "../db/migrator.js";
@@ -16,6 +21,7 @@ export type Account = {
   displayName: string;
   avatarUrl: string | null;
   avatarId: DigimonWorldAvatarId | null;
+  avatarSource: AvatarSource;
   isAdmin: boolean;
 };
 export type Deck = {
@@ -76,15 +82,7 @@ export type DeckStat = DeckSnapshot & {
 // `winner_account_id` null — the winner has no account — so a reader that infers the result from
 // that column alone reports the loss as a draw. This says it outright.
 export type MatchOutcomeSeat = "player0" | "player1" | "draw";
-export type MatchRecord = {
-  id: string;
-  mode: "ranked" | "tournament";
-  opponentName: string;
-  opponentKind: "human" | "bot";
-  result: "win" | "loss" | "draw";
-  reason: string;
-  finishedAt: number;
-};
+export type MatchRecord = MatchHistoryRecord;
 export type Tournament = {
   id: string;
   name: string;
@@ -145,7 +143,7 @@ type AccountRow = {
   id: string;
   display_name: string;
   avatar_url: string | null;
-  avatar_id: DigimonWorldAvatarId | null;
+  avatar_id: AvatarChoice;
   is_admin: boolean;
 };
 
@@ -229,6 +227,7 @@ export class AccountStore {
             displayName: await this.uniqueName(client, displayName),
             avatarUrl,
             avatarId: null,
+            avatarSource: avatarUrl ? "discord" : "initials",
             isAdmin: false,
           };
           const now = Date.now();
@@ -373,7 +372,17 @@ export class AccountStore {
     });
   }
 
-  async updateAvatar(accountId: string, avatarId: DigimonWorldAvatarId | null): Promise<Account | undefined> {
+  async account(accountId: string): Promise<Account | undefined> {
+    await this.ensureReady();
+    const row = (
+      await this.pool.query<AccountRow>(
+        "SELECT id,display_name,avatar_url,avatar_id,is_admin FROM accounts WHERE id=$1",
+        [accountId],
+      )
+    ).rows[0];
+    return row ? toAccount(row) : undefined;
+  }
+  async updateAvatar(accountId: string, avatarId: AvatarChoice): Promise<Account | undefined> {
     await this.ensureReady();
     const row = (
       await this.pool.query<AccountRow>(
@@ -410,7 +419,14 @@ export class AccountStore {
   }
 
   async updateDisplayName(accountId: string, input: string): Promise<Account | undefined> {
-    const displayName = normalizeDisplayName(input);
+    return this.updateProfile(accountId, { displayName: input });
+  }
+
+  /** Identity changes and registration names commit together, including avatar selection. */
+  async updateProfile(
+    accountId: string,
+    changes: { displayName: string; avatarId?: AvatarChoice },
+  ): Promise<Account | undefined> {
     return this.transaction(async (client) => {
       const current = (
         await client.query<AccountRow>(
@@ -419,11 +435,15 @@ export class AccountStore {
         )
       ).rows[0];
       if (!current) return undefined;
+      const displayName =
+        changes.displayName === current.display_name ? current.display_name : normalizeDisplayName(changes.displayName);
       try {
         const updated = (
           await client.query<AccountRow>(
-            "UPDATE accounts SET display_name=$1 WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,is_admin",
-            [displayName, accountId],
+            changes.avatarId === undefined
+              ? "UPDATE accounts SET display_name=$1 WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,is_admin"
+              : "UPDATE accounts SET display_name=$1,avatar_id=$3 WHERE id=$2 RETURNING id,display_name,avatar_url,avatar_id,is_admin",
+            changes.avatarId === undefined ? [displayName, accountId] : [displayName, accountId, changes.avatarId],
           )
         ).rows[0];
         await client.query(
@@ -640,6 +660,7 @@ export class AccountStore {
       const outcome = input.outcome ?? seatOutcome(input.playerAccountIds, input.winnerAccountId);
       const winnerAccountId =
         input.winnerAccountId ?? (outcome === "draw" ? null : input.playerAccountIds[outcome === "player0" ? 0 : 1]);
+      const finishedAt = Date.now();
       const inserted = await client.query<{ id: string }>(
         "INSERT INTO match_records (id,room_id,mode,player0_account_id,player1_account_id,winner_account_id,reason,finished_at,opponent_kind,outcome,opponent_display_name) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT (room_id) DO NOTHING RETURNING id",
         [
@@ -650,13 +671,37 @@ export class AccountStore {
           input.playerAccountIds[1],
           winnerAccountId,
           input.reason,
-          Date.now(),
+          finishedAt,
           opponentKind,
           outcome,
           input.opponentDisplayName ?? null,
         ],
       );
       if (!inserted.rows[0]) return false;
+      const names = new Map(
+        (
+          await client.query<{ id: string; display_name: string }>(
+            "SELECT id,display_name FROM accounts WHERE id=$1 OR id=$2",
+            [input.playerAccountIds[0], input.playerAccountIds[1] ?? input.playerAccountIds[0]],
+          )
+        ).rows.map((row) => [row.id, row.display_name]),
+      );
+      for (const [seat, accountId] of input.playerAccountIds.entries()) {
+        if (!accountId) continue;
+        const opponentId = input.playerAccountIds[seat === 0 ? 1 : 0];
+        await addToHistory(client, accountId, input.roomId, {
+          id: matchId,
+          mode: input.mode,
+          opponentName: (opponentId && names.get(opponentId)) || input.opponentDisplayName || "Bot",
+          opponentKind,
+          result: resultFor(
+            { outcome, winner_account_id: winnerAccountId, player0_account_id: input.playerAccountIds[0] },
+            accountId,
+          ),
+          reason: input.reason,
+          finishedAt,
+        });
+      }
       const rated = opponentKind === "human" ? input.playerAccountIds.filter((id): id is string => id !== null) : [];
       for (const accountId of rated)
         await client.query("INSERT INTO player_stats (account_id) VALUES ($1) ON CONFLICT DO NOTHING", [accountId]);
@@ -713,7 +758,72 @@ export class AccountStore {
     });
   }
 
-  async profile(accountId: string): Promise<{ stats: PlayerStats; matches: MatchRecord[]; decks: DeckStat[] }> {
+  /**
+   * The room's view of a finished game. It names the replay recording, so it replaces the entry
+   * `recordMatch` may have written for the same room first; a second report from the room changes nothing.
+   */
+  async recordRecentMatch(accountId: string, roomId: string, record: MatchRecord): Promise<void> {
+    await this.transaction(async (client) => {
+      const owner = await client.query("SELECT id FROM accounts WHERE id=$1 FOR UPDATE", [accountId]);
+      if (!owner.rowCount) return;
+      await addToHistory(client, accountId, roomId, record);
+      await client.query(
+        "UPDATE account_recent_matches SET match_id=$3,finished_at=$4,record=$5 WHERE account_id=$1 AND room_id=$2 AND match_id IN (SELECT id::text FROM match_records WHERE room_id=$2)",
+        [accountId, roomId, record.id, record.finishedAt, JSON.stringify(record)],
+      );
+    });
+  }
+
+  /** One numbered page of the kept history, newest first, and how many matches the filter selects. */
+  async matchHistory(
+    accountId: string,
+    { page, limit, ...filter }: { page: number; limit: number } & MatchHistoryFilter,
+  ): Promise<{ matches: MatchRecord[]; total: number }> {
+    await this.ensureReady();
+    const params: unknown[] = [accountId];
+    const conditions = ["account_id=$1"];
+    if (filter.result) conditions.push(`record->>'result'=$${params.push(filter.result)}`);
+    if (filter.mode) conditions.push(`record->>'mode'=$${params.push(filter.mode)}`);
+    // A backslash is Postgres's default LIKE escape, so the player's text matches literally.
+    if (filter.opponent)
+      conditions.push(
+        `record->>'opponentName' ILIKE $${params.push(`%${filter.opponent.replace(/[\\%_]/g, "\\$&")}%`)}`,
+      );
+    const where = `FROM account_recent_matches WHERE ${conditions.join(" AND ")}`;
+    const total = await this.pool.query<{ total: number }>(`SELECT count(*)::int total ${where}`, params);
+    const rows = await this.pool.query<{ record: MatchRecord }>(
+      `SELECT record ${where} ORDER BY finished_at DESC, room_id DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+      [...params, limit, (page - 1) * limit],
+    );
+    return { matches: rows.rows.map((row) => row.record), total: Number(total.rows[0]?.total ?? 0) };
+  }
+
+  async matchSummary(accountId: string): Promise<MatchHistorySummary> {
+    await this.ensureReady();
+    const counts = (
+      await this.pool.query<{ matches: number; wins: number; losses: number; draws: number }>(
+        `SELECT count(*)::int matches,
+           COALESCE(SUM(CASE WHEN record->>'result'='win' THEN 1 ELSE 0 END),0)::int wins,
+           COALESCE(SUM(CASE WHEN record->>'result'='loss' THEN 1 ELSE 0 END),0)::int losses,
+           COALESCE(SUM(CASE WHEN record->>'result'='draw' THEN 1 ELSE 0 END),0)::int draws
+         FROM account_recent_matches WHERE account_id=$1`,
+        [accountId],
+      )
+    ).rows[0];
+    const saved = await this.pool.query<{ total: number }>(
+      "SELECT count(*)::int total FROM account_replays WHERE account_id=$1 AND saved_at IS NOT NULL",
+      [accountId],
+    );
+    return {
+      matches: Number(counts?.matches ?? 0),
+      wins: Number(counts?.wins ?? 0),
+      losses: Number(counts?.losses ?? 0),
+      draws: Number(counts?.draws ?? 0),
+      replaysSaved: Number(saved.rows[0]?.total ?? 0),
+    };
+  }
+
+  async profile(accountId: string): Promise<{ stats: PlayerStats; summary: MatchHistorySummary; decks: DeckStat[] }> {
     await this.ensureReady();
     const statsResult = await this.pool.query<Record<string, string | number>>(
       "SELECT * FROM player_stats WHERE account_id=$1",
@@ -731,20 +841,6 @@ export class AccountStore {
       tournamentsPlayed: Number(r?.tournaments_played ?? 0),
       tournamentsWon: Number(r?.tournaments_won ?? 0),
     };
-    const matchesResult = await this.pool.query<{
-      id: string;
-      mode: "ranked" | "tournament";
-      winner_account_id: string | null;
-      outcome: MatchOutcomeSeat | null;
-      opponent_kind: "human" | "bot";
-      player0_account_id: string;
-      reason: string;
-      finished_at: string;
-      opponent_name: string;
-    }>(
-      "SELECT m.id,m.mode,m.winner_account_id,m.outcome,m.opponent_kind,m.player0_account_id,m.reason,m.finished_at,COALESCE(a.display_name,m.opponent_display_name,'Bot') opponent_name FROM match_records m LEFT JOIN accounts a ON a.id=CASE WHEN m.player0_account_id=$1 THEN m.player1_account_id ELSE m.player0_account_id END WHERE m.player0_account_id=$1 OR m.player1_account_id=$1 ORDER BY m.finished_at DESC LIMIT 50",
-      [accountId],
-    );
     const snapshotResult = await this.pool.query<{
       snapshot_id: string;
       deck_id: string | null;
@@ -777,15 +873,7 @@ export class AccountStore {
     const decks = [...deckMap.values()].sort((a, b) => b.matches - a.matches || a.deckName.localeCompare(b.deckName));
     return {
       stats,
-      matches: matchesResult.rows.map((m) => ({
-        id: m.id,
-        mode: m.mode,
-        opponentName: m.opponent_name,
-        opponentKind: m.opponent_kind,
-        result: resultFor(m, accountId),
-        reason: m.reason,
-        finishedAt: Number(m.finished_at),
-      })),
+      summary: await this.matchSummary(accountId),
       decks,
     };
   }
@@ -1122,12 +1210,29 @@ function isUniqueViolation(error: unknown): boolean {
     typeof error === "object" && error !== null && "code" in error && (error as { code?: unknown }).code === "23505"
   );
 }
+/** Adds a match unless the room already has one, then keeps the newest `MATCH_HISTORY_LIMIT` and every saved replay. */
+async function addToHistory(client: PoolClient, accountId: string, roomId: string, record: MatchRecord): Promise<void> {
+  await client.query(
+    "INSERT INTO account_recent_matches (account_id,room_id,match_id,finished_at,record) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (account_id,room_id) DO NOTHING",
+    [accountId, roomId, record.id, record.finishedAt, JSON.stringify(record)],
+  );
+  await client.query(
+    `DELETE FROM account_recent_matches WHERE account_id=$1
+       AND room_id IN (SELECT room_id FROM account_recent_matches WHERE account_id=$1 ORDER BY finished_at DESC,room_id DESC OFFSET $2)
+       AND match_id NOT IN (SELECT match_id FROM account_replays WHERE account_id=$1 AND saved_at IS NOT NULL)`,
+    [accountId, MATCH_HISTORY_LIMIT],
+  );
+}
+/** Choosing initials hides a linked Discord picture from every reader, so the url never leaves the store. */
 function toAccount(row: AccountRow): Account {
+  const avatarId = isDigimonWorldAvatarId(row.avatar_id) ? row.avatar_id : null;
+  const avatarUrl = row.avatar_id === INITIALS_AVATAR ? null : row.avatar_url;
   return {
     id: row.id,
     displayName: row.display_name,
-    avatarUrl: row.avatar_url,
-    avatarId: row.avatar_id,
+    avatarUrl,
+    avatarId,
+    avatarSource: avatarId ? "digimon" : avatarUrl ? "discord" : "initials",
     isAdmin: row.is_admin,
   };
 }

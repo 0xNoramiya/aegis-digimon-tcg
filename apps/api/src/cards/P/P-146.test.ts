@@ -164,7 +164,9 @@ describe("P-146 Reload Plug-In Q", () => {
     await loop;
   });
 
-  it("prevents a battle deletion by placing the exact inherited source at Security bottom", async () => {
+  // Discord 1558244573333954622: the printed cost names no face-up placement, so the card
+  // joins security face down like any other security card.
+  it("prevents a battle deletion by placing the exact inherited source face down at Security bottom", async () => {
     const s = setupEngine(
       {
         0: {
@@ -205,7 +207,7 @@ describe("P-146 Reload Plug-In Q", () => {
         !observe(s.engine).isAttacking(),
     );
     expect(s.state.players[0]!.security).toHaveLength(securityBefore + 1);
-    expect(s.state.players[0]!.security.at(-1)?.instanceId).toBe(sourceId);
+    expect(s.state.players[0]!.security.at(-1)).toMatchObject({ instanceId: sourceId, faceUp: false });
     expect(s.state.players[0]!.trash.some((card) => card.instanceId === sourceId)).toBe(false);
     expect(s.state.players[1]!.trash.some((card) => card.instanceId === s.inst("attacker").instanceId)).toBe(false);
     expect(s.perm("host").permanentId).toBe(hostId);
@@ -270,8 +272,8 @@ describe("P-146 Reload Plug-In Q — KB Q&A rulings", () => {
         !observe(s.engine).isAttacking(),
     );
     expect(s.state.players[0]!.security).toHaveLength(securityBefore + 2);
-    expect(s.state.players[0]!.security.at(-2)?.instanceId).toBe(source1Id);
-    expect(s.state.players[0]!.security.at(-1)?.instanceId).toBe(source2Id);
+    expect(s.state.players[0]!.security.at(-2)).toMatchObject({ instanceId: source1Id, faceUp: false });
+    expect(s.state.players[0]!.security.at(-1)).toMatchObject({ instanceId: source2Id, faceUp: false });
     expect(s.state.players[0]!.trash.some((card) => card.instanceId === source1Id)).toBe(false);
     expect(s.state.players[0]!.trash.some((card) => card.instanceId === source2Id)).toBe(false);
     expect(s.perm("host").permanentId).toBe(hostId);

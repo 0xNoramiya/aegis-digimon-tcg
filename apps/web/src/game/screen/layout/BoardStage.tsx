@@ -17,6 +17,7 @@ import { MatchChatWindow } from "../../chat/MatchChatWindow";
 import type { MatchChat } from "../../chat/useMatchChat";
 import { useUnreadChatCount } from "../../chat/useUnreadChatCount";
 import type { ArenaBoardLook } from "../../arenaLook";
+import type { HandSortMode } from "../../handSortMode";
 import { createPortal } from "react-dom";
 import type { GameState, Permanent, PlayerState, Seat } from "@aegis/shared";
 import type { RevealedZones } from "../model/gameOutcome";
@@ -29,6 +30,7 @@ import { SurrenderDialog } from "./SurrenderDialog";
 import { useTranslation } from "../../../i18n";
 import { CardOpenerProvider } from "../../cardLinks";
 import { OpponentSelectingPill } from "../../BoardDecisionRail";
+import { opponentStatusKey } from "../../opponentStatus";
 import { NarrationStack } from "../../NarrationStack";
 import { AttackAnnouncementBanner } from "../../SidePanelStack";
 import { TargetingSpotlight } from "../../TargetingSpotlight";
@@ -57,7 +59,7 @@ import { DragGhost } from "./DragGhost";
 import { FieldClashGhosts } from "./FieldClashGhosts";
 import { LeftPileColumn } from "./LeftPileColumn";
 import { LogTicker } from "./LogTicker";
-import { DecisionMatchTimer, MatchTimer, SeriesBadge } from "../../MatchTimer";
+import { DecisionMatchTimer, MatchTimer, SeriesBadge, viewerDecisionTimed } from "../../MatchTimer";
 import { MemoryBand } from "./MemoryBand";
 import { OpponentBar } from "./OpponentBar";
 import { OpponentBattleRow } from "./OpponentBattleRow";
@@ -135,7 +137,8 @@ export interface BoardChrome {
 export interface HandDockInputs {
   reorderDropBeforeInstanceId?: string | null;
   onMoveHandCard: (instanceId: string, direction: -1 | 1) => void;
-  onSortHand: () => void;
+  handSortMode: HandSortMode;
+  onSortHand: (mode: HandSortMode) => void;
   effectSourceInstanceId: string | undefined;
   effectSource?: EffectActivation;
   shakeInstanceId: string | undefined;
@@ -154,6 +157,7 @@ export interface HandDockInputs {
 
 export function BoardStage({
   spectating = false,
+  replayMode = false,
   onLeaveSpectator,
   state,
   shownState,
@@ -195,6 +199,7 @@ export function BoardStage({
   /** The card whose effect the viewer's open decision is about. */
   promptSourceCardId?: string | undefined;
   spectating?: boolean;
+  replayMode?: boolean;
   onLeaveSpectator?: () => void;
   room: Parameters<typeof intents.surrender>[0] | undefined;
   /** Absent when there is no live room to talk through, as in a demo. */
@@ -278,6 +283,10 @@ export function BoardStage({
     />
   );
   const resultShown = state.gameOver && !cues.resultPending;
+  const opponentStatus = opponentStatusKey(state, viewerSeat);
+  // An open turn reads as thinking only once the board has caught up; while the
+  // opponent's last action still plays, the board itself is the feedback.
+  const opponentIdle = !!state.pendingDecision || !!state.combatWindow || !cues.presenting;
 
   return (
     // Every surface that names a card — notices, side panels, combat prompts,
@@ -300,7 +309,7 @@ export function BoardStage({
           className="game-board aegis-arena-surface"
           ref={anchors.board}
           data-art={look.hasArt || undefined}
-          data-timer-decision={(state.matchTimer && !state.gameOver && !!state.pendingDecision) || undefined}
+          data-timer-decision={viewerDecisionTimed(state, viewerSeat) || undefined}
           style={{
             ...({
               "--arena-raising-width": `${layout.arenaRaisingWidth}px`,
@@ -336,7 +345,10 @@ export function BoardStage({
             memory={readouts.memory}
             eggDeckCount={breedingOpponent.eggDeckCount}
             handCount={seats.shownOpponentHandCount}
-            revealedHand={seats.revealed?.opponent.hand}
+            revealedHand={
+              seats.revealed?.opponent.hand ??
+              (replayMode && opponent.hand.length > 0 ? Array.from(opponent.hand) : undefined)
+            }
             deckCount={shownOpponent.deckCount}
             trashCount={shownOpponent.trash.length}
             portraitArena={layout.portraitArena}
@@ -357,12 +369,8 @@ export function BoardStage({
               centred slot; everywhere else the viewer reads the left corner and the
               opponent's moments arrive in the right one. */}
           <div className="game-board-notices">
-            {state.pendingDecision &&
-            state.pendingDecision.seat !== viewerSeat &&
-            !state.gameOver &&
-            !cues.zoneShowcase &&
-            !cues.revealShowcase ? (
-              <OpponentSelectingPill />
+            {opponentStatus && opponentIdle && !cues.zoneShowcase && !cues.revealShowcase ? (
+              <OpponentSelectingPill status={opponentStatus} />
             ) : null}
             {!resultShown ? (
               <NarrationStack
@@ -572,6 +580,8 @@ export function BoardStage({
 
           <PlayerDock
             spectating={spectating}
+            handSortMode={handDock.handSortMode}
+            showRecordedHand={replayMode && seats.shownHandEntries.length > 0}
             onSortHand={handDock.onSortHand}
             onMoveHandCard={handDock.onMoveHandCard}
             reorderDropBeforeInstanceId={handDock.reorderDropBeforeInstanceId}
@@ -599,7 +609,10 @@ export function BoardStage({
             startDrag={onStartHandDrag}
             selectCard={(index) => {
               const entry = seats.shownHandEntries[index];
-              if (entry) actions.selectHandCard(entry);
+              if (entry) {
+                if (replayMode) onOpenCard(entry.cardId, entry.artId);
+                else actions.selectHandCard(entry);
+              }
             }}
             onHoverChange={handDock.onHoverChange}
           />

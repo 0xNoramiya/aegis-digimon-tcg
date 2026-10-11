@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 import { accountApi, type RemoteAccount } from "./account/client";
@@ -211,19 +211,27 @@ describe("responsive application state", () => {
     await screen.findByRole("heading", { name: "Build a deck and play live. Free." });
     fireEvent.click(screen.getAllByRole("button", { name: "Open the player menu" })[0]!);
 
-    expect(await screen.findByRole("dialog")).toBeTruthy();
+    expect(await screen.findByRole("link", { name: "My profile" })).toBeTruthy();
+    expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByText("Guest \u00b7 saved on this device")).toBeTruthy();
   });
 
-  it("#5255 restores the provider portrait throughout the app after saving a reset", async () => {
+  it("#5255 restores the provider portrait throughout the app after choosing it again", async () => {
     const original: RemoteAccount = {
       id: "account-5255",
       displayName: "Revanche",
       avatarId: "tyrannomon",
+      avatarSource: "digimon",
       avatarUrl: "https://example.com/discord-avatar.png",
       isAdmin: false,
+      discordLinked: true,
     };
-    const updateAvatar = vi.spyOn(accountApi, "updateAvatar").mockResolvedValue({ ...original, avatarId: null });
+    window.history.replaceState(null, "", "/profile/customize");
+    vi.spyOn(accountApi, "profile").mockRejectedValue(new Error("offline"));
+    vi.spyOn(accountApi, "matches").mockRejectedValue(new Error("offline"));
+    const updateAvatar = vi
+      .spyOn(accountApi, "updateAvatar")
+      .mockResolvedValue({ ...original, avatarId: null, avatarSource: "discord" });
     function SignedInClient() {
       const [account, setAccount] = useState<RemoteAccount | null>(original);
       return (
@@ -240,7 +248,6 @@ describe("responsive application state", () => {
             deleteDeck={() => undefined}
             dark={false}
             setDark={() => undefined}
-            initialScreen="home"
           />
         </I18nProvider>
       );
@@ -249,17 +256,20 @@ describe("responsive application state", () => {
       render(<SignedInClient />);
       const menuButton = screen.getAllByRole("button", { name: "Open the player menu" })[0]!;
       expect(menuButton.querySelector("img")?.getAttribute("src")).not.toBe(original.avatarUrl);
-      fireEvent.click(menuButton);
-      fireEvent.click(await screen.findByRole("button", { name: "Use account avatar" }));
-      await screen.findByRole("button", { name: "Use account avatar", pressed: true });
+      expect(window.location.pathname).toBe("/profile");
+      fireEvent.click(await screen.findByRole("button", { name: "Change avatar" }));
+      fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Use Discord avatar" }));
+      await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
       expect(updateAvatar).toHaveBeenCalledWith(null);
       expect(menuButton.querySelector("img")?.getAttribute("src")).toBe(original.avatarUrl);
     } finally {
-      updateAvatar.mockRestore();
+      vi.restoreAllMocks();
+      window.history.replaceState(null, "", "/");
     }
   });
 
   it("preserves the active screen and form draft when the viewport crosses a breakpoint", async () => {
+    window.history.replaceState(null, "", "/profile");
     render(
       <I18nProvider>
         <AegisClient
@@ -272,19 +282,21 @@ describe("responsive application state", () => {
           deleteDeck={() => undefined}
           dark={false}
           setDark={() => undefined}
-          initialScreen="settings"
+          account={null}
         />
       </I18nProvider>,
     );
 
-    await screen.findByRole("heading", { name: "Preferences" }, { timeout: 10_000 });
+    await screen.findByRole("heading", { name: "My profile" }, { timeout: 10_000 });
+    fireEvent.click(screen.getByRole("button", { name: "Edit name: Resize Tamer" }));
     const nameInput = screen.getByDisplayValue("Resize Tamer");
     fireEvent.change(nameInput, { target: { value: "Unsaved responsive draft" } });
 
     setViewportWidth(500);
 
-    expect(await screen.findByRole("heading", { name: "Preferences" }, { timeout: 10_000 })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "My profile" }, { timeout: 10_000 })).toBeTruthy();
     expect(screen.getByDisplayValue("Unsaved responsive draft")).toBeTruthy();
+    window.history.replaceState(null, "", "/");
   }, 20_000);
 
   it("stores the action confirmation preference from settings", async () => {

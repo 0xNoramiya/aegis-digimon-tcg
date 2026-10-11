@@ -953,17 +953,17 @@
   animation: battle-security-count-pop var(--t-security-count-pop, 300ms) cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
+/* Scale only: the count is white on black shadows, which brightness() cannot lift,
+   and an animated filter repaints the shield on every frame in Firefox. */
 @keyframes battle-security-count-pop {
   0% {
     scale: 1.6;
-    filter: brightness(2.4);
   }
   62% {
     scale: 0.93;
   }
   100% {
     scale: 1;
-    filter: brightness(1);
   }
 }
 

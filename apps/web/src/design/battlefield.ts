@@ -210,7 +210,9 @@ export async function toStorableDataUrl(file: File): Promise<string> {
   if (!context) throw new Error("canvas unavailable");
   context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
-  return canvas.toDataURL("image/webp", 0.82);
+  const webp = canvas.toDataURL("image/webp", 0.82);
+  // Safari cannot encode WebP and silently returns a lossless PNG several times larger.
+  return webp.startsWith("data:image/webp") ? webp : canvas.toDataURL("image/jpeg", 0.82);
 }
 
 const listeners = new Set<() => void>();

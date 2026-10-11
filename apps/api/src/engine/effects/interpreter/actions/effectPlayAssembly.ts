@@ -5,7 +5,7 @@ import {
   satisfiedAssemblyRequirement,
 } from "../../../actions/assembly.js";
 import { type LooseCandidate, looseCardsInZone } from "../targeting/loose.js";
-import { prepareEffectPlayDigiXros } from "./effectPlayDigiXros.js";
+import { type EffectPlayDigiXrosOptions, prepareEffectPlayDigiXros } from "./effectPlayDigiXros.js";
 import { assemblyRequirementFor, type AssemblyRequirement, type Permanent } from "@aegis/shared";
 
 export interface EffectPlayAssemblyPreparation {
@@ -167,12 +167,13 @@ export async function playEffectInstances(
   ctx: EffectContext,
   playedCards: readonly LooseCandidate[],
   options: EffectPlayOptions = {},
+  digiXrosOptions: EffectPlayDigiXrosOptions = {},
 ): Promise<Permanent[]> {
   const callerChoseDigiXros =
     options?.digiXrosMaterialInstanceIds !== undefined || options?.digiXrosMaterialInstanceIdsByPlay !== undefined;
   const digiXrosMaterialInstanceIdsByPlay = callerChoseDigiXros
     ? (options?.digiXrosMaterialInstanceIdsByPlay ?? {})
-    : await prepareEffectPlayDigiXros(ctx, playedCards);
+    : await prepareEffectPlayDigiXros(ctx, playedCards, [], digiXrosOptions);
   const reservedDigiXrosMaterials = [
     ...(options?.digiXrosMaterialInstanceIds ?? []),
     ...Object.values(digiXrosMaterialInstanceIdsByPlay).flat(),

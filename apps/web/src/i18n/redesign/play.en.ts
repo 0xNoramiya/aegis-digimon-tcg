@@ -5,6 +5,7 @@ export const playEn = {
   "redesign.play.banlistIssue": "Banlist issue",
   "redesign.play.setupTitle": "Match setup",
   "redesign.play.advancedSettings": "Advanced settings",
+  "redesign.play.advancedSettingsHint": "Card pool, rules, best-of, timer and more",
   "redesign.play.timerOff": "Timer OFF",
   "redesign.play.short.queue": "Queue",
   "redesign.play.short.bot": "Play",

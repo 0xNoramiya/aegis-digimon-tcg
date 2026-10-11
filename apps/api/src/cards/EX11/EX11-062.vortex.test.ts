@@ -114,7 +114,8 @@ describe("EX11-062 — ＜Vortex＞ player-attack legality (real end-of-turn flo
     const { grantAtMain } = await runTurn();
 
     expect(grantAtMain).toBe(false);
-    expect(vortexPrompted(s)).toBe(true);
+    // With no legal target the "may attack" is not offered at all.
+    expect(vortexPrompted(s)).toBe(false);
     expect(declaredAttacks(s)).toEqual([]);
     expect(s.state.players[1]!.security).toHaveLength(1);
   });

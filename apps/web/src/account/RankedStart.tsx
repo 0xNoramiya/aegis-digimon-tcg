@@ -49,11 +49,11 @@ export function RankedStart({
         return;
       }
     }
-    if (ranked && localStorage.getItem(CONFIRMATION_KEY) !== "1") setConfirming(true);
+    if (ranked && !confirmationSkipped()) setConfirming(true);
     else onStart(ranked);
   }
   function confirm() {
-    if (skipNextTime) localStorage.setItem(CONFIRMATION_KEY, "1");
+    if (skipNextTime) skipConfirmation();
     setConfirming(false);
     onStart(true);
   }
@@ -120,4 +120,20 @@ export function RankedStart({
       ) : null}
     </>
   );
+}
+
+function confirmationSkipped(): boolean {
+  try {
+    return localStorage.getItem(CONFIRMATION_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function skipConfirmation(): void {
+  try {
+    localStorage.setItem(CONFIRMATION_KEY, "1");
+  } catch {
+    // Blocked storage asks again next time.
+  }
 }

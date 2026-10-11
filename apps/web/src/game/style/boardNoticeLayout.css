@@ -4,29 +4,37 @@
   display: contents;
 }
 
+/* Portrait notices float over the opponent's side of the field. A reserved row
+   pushed every zone down each time a notice arrived and back when it left. */
 @media (max-width: 1023px) and (orientation: portrait) {
-  .aegis-arena .game-board {
-    grid-template-rows:
-      var(--arena-header-height)
-      auto
-      minmax(0, 1fr)
-      calc(var(--arena-hand-height) + env(safe-area-inset-bottom, 0px));
-  }
-
   .aegis-arena .game-board-notices {
+    position: absolute;
+    top: calc(var(--arena-header-height) + 4px);
+    right: 0;
+    left: 0;
     display: flex;
     flex-direction: column;
     gap: 4px;
     min-width: 0;
+    /* Stops just above the viewer's own egg, security, deck and trash row, which sits
+       about 16rem above the screen's bottom edge. The opened column shrinks into what
+       the waiting pill leaves, instead of a fixed viewport share that left half of it
+       unused. */
+    max-height: calc(100dvh - var(--arena-header-height) - 18.5rem);
     padding-inline: max(8px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-right, 0px));
     z-index: var(--ds-z-notice);
+    pointer-events: none;
+  }
+
+  .aegis-arena .game-board-notices > .narration-slot {
+    pointer-events: auto;
   }
 
   .aegis-arena .game-board .game-board-notices .narration-slot[data-slot="narration"] {
     position: relative;
     inset: auto;
     width: 100%;
-    max-height: min(31rem, 30dvh);
+    max-height: 31rem;
     overflow-y: auto;
     animation: none;
   }
@@ -69,5 +77,27 @@
     translate: none;
     animation: none;
     max-width: 100%;
+  }
+
+  /* Without desktop's corner sizing, the center column grew to 512px wide and stacked
+     every notice and deletion panel over both battle rows. It stays compact and
+     scrolls instead, so the field and a security clash remain readable. */
+  .aegis-arena .game-board .game-board-notices > .narration-slot[data-slot] {
+    width: min(26rem, 100%);
+    max-height: min(26rem, 42svh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    pointer-events: auto;
+  }
+
+  .aegis-arena .game-board .game-board-notices .side-panel__cards {
+    --panel-row-w: 22rem;
+  }
+
+  /* The security clash plays in this same center lane. An earlier "Deleted" notice left
+     under it framed the attacker as if it were already deleted, so the column steps
+     aside until the clash closes. */
+  body:has(.battle-clash) .aegis-arena .game-board-notices {
+    visibility: hidden;
   }
 }

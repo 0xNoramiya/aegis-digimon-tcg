@@ -216,6 +216,56 @@ describe("BT22-095 Akemi Suedou", () => {
   });
 });
 
+describe("BT22-095 Akemi Suedou — inherited keywords on a battle-area Mother Eater", () => {
+  const KEYWORDS = ["Rush", "Alliance", "Scapegoat"];
+
+  it("feedback #9: [Main] under a fresh Mother Eater grants <Rush>, <Alliance> and <Scapegoat>", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          breeding: { card: "BT22-007" },
+          battleArea: [
+            { card: "BT22-095", as: "akemi" },
+            { card: "BT22-007", as: "mother", enteredThisTurn: true },
+          ],
+        },
+        1: { security: ["BT1-009"] },
+      },
+      { autoSelectCards: true },
+    );
+    await s.ready();
+    const view = observe(s.engine);
+    const motherId = s.perm("mother").permanentId;
+    expect(KEYWORDS.map((keyword) => view.hasKeyword(motherId, keyword))).toEqual([false, false, false]);
+    expect(
+      s.engine.applyIntent(0, { type: "attack", attackerPermanentId: motherId, target: { kind: "player" } }),
+    ).toMatchObject({ ok: false });
+
+    const akemiId = s.inst("akemi").instanceId;
+    const effect = view.activatableEffects(s.perm("akemi"))[0]!;
+    expect(
+      s.engine.applyIntent(0, { type: "activateEffect", sourceInstanceId: akemiId, effectKey: effect.effectKey }),
+    ).toEqual({ ok: true });
+    await settle(
+      () => s.perm("mother").stack.some((card) => card.instanceId === akemiId) && s.state.pendingDecision === undefined,
+    );
+
+    expect(KEYWORDS.map((keyword) => view.hasKeyword(motherId, keyword))).toEqual([true, true, true]);
+    expect(
+      s.engine.applyIntent(0, { type: "attack", attackerPermanentId: motherId, target: { kind: "player" } }),
+    ).toEqual({ ok: true });
+  });
+
+  it("feedback #9: grants nothing while the host is not [Mother Eater]", async () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "BT22-079", under: [{ card: "BT22-095" }], as: "eater" }] },
+    });
+    await s.ready();
+    const view = observe(s.engine);
+    expect(KEYWORDS.map((keyword) => view.hasKeyword(s.perm("eater"), keyword))).toEqual([false, false, false]);
+  });
+});
+
 describe("BT22-095 Akemi Suedou — KB Q&A rulings", () => {
   it.each([
     { suspended: false, memory: 1, hand: 2 },

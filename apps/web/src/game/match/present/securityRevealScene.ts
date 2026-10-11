@@ -124,6 +124,15 @@ export function securityRevealScene(deps: SecurityRevealSceneDeps) {
     securityCountOf,
   } = deps;
 
+  /**
+   * Checks whose battle hold gave the board up. A timed decision does that as soon as it
+   * arrives, which can be before the reveal has put the card on screen, so the hold's own
+   * clear finds nothing and the card the reveal paints afterwards is left for the close.
+   * A close with no battle to restage never clears it, so the card stayed on screen for
+   * the rest of the match.
+   */
+  const handedOver = new Set<number>();
+
   function stageSecurityReveal(
     key: number,
     scene: SecurityClashScene,
@@ -242,6 +251,11 @@ export function securityRevealScene(deps: SecurityRevealSceneDeps) {
           // The card is out of the stack and on the screen, so the shield may drop.
           releaseSecurityCard(scene.key);
           await context.wait((docking ? CLASH_DOCK_AT_MS : CLASH_OUTCOME_AT_MS) - CLASH_REVEAL_SHOWN_AT_MS);
+          if (handedOver.has(scene.key)) {
+            await exitSecurityCard({ key: scene.key, context, setSecurityClash });
+            setSecurityClash((current) => (current?.key === scene.key ? null : current));
+            return;
+          }
           if (!docking) return;
           // Keep the source geometry mounted through the next step's layout effect.
           // The dock carries the same card directly to its final position, while this
@@ -460,6 +474,7 @@ export function securityRevealScene(deps: SecurityRevealSceneDeps) {
         // The card has left without its verdict, so the close that eventually arrives has
         // to bring it back for its battle rather than settle a scene no longer on screen.
         function giveUp() {
+          handedOver.add(key);
           setSecurityClash((current) => (current?.key === key ? null : current));
           const staged = revealOnStageRef.current;
           if (staged?.key === key) revealOnStageRef.current = { ...staged, exited: true };

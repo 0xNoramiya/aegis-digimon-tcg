@@ -3,6 +3,7 @@ import { EffectTiming, Phase, getCardDefinition } from "@aegis/shared";
 import { advance } from "../../engine/testkit/advance.js";
 import { assertNoLoudGap, setupEngine, settle } from "../../engine/testkit/harness.js";
 import { observe } from "../../engine/testkit/observe.js";
+import "../BT20/BT20-101.js";
 import "../EX13/EX13-062.js";
 import { compiled } from "./P-245.js";
 
@@ -359,6 +360,83 @@ describe("P-245 Kakkinmon", () => {
     expect(s.state.players[0]!.hand).toHaveLength(8);
     expect(s.state.players[0]!.deck.some((card) => card.instanceId === s.inst("undrawn").instanceId)).toBe(true);
     assertNoLoudGap(s);
+  });
+
+  it("pays with a Craniamon immune to opponent effects at the end of the opponent's turn (feedback #33)", async () => {
+    const preferInstanceIds: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT2-060", as: "host", under: ["P-245"] }],
+          hand: [{ card: "EX13-062", as: "craniamon" }, "BT3-059", "BT3-059", "BT3-059", "BT3-059"],
+          deck: [
+            { card: "BT3-059", as: "evolutionDraw" },
+            { card: "BT3-059", as: "ownTurnDraw" },
+            { card: "BT3-059", as: "opponentTurnDraw" },
+            ...Array.from({ length: 10 }, () => "BT3-059"),
+          ],
+          security: Array.from({ length: 5 }, () => "BT3-059"),
+        },
+        1: {
+          hand: [{ card: "BT20-101", as: "zephagamon" }],
+          deck: Array.from({ length: 10 }, () => "BT3-059"),
+          security: Array.from({ length: 5 }, () => "BT3-059"),
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds },
+    );
+    s.state.turnSeat = 0;
+    s.state.memory = 3;
+    await s.ready();
+    const craniamonId = s.perm("host").permanentId;
+    preferInstanceIds.push(craniamonId);
+    const handHas = (alias: string) =>
+      s.state.players[0]!.hand.some((card) => card.instanceId === s.inst(alias).instanceId);
+    const loop = s.engine.startTurnLoop();
+
+    await advance(s.engine).waitForMainPhase(0);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: craniamonId,
+        instanceId: s.inst("craniamon").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("host").topCard.cardId === "EX13-062" && s.state.pendingDecision === undefined);
+    advance(s.engine).endMainPhaseIfOpen(0);
+    await advance(s.engine).waitForMainPhase(1);
+    expect(handHas("ownTurnDraw")).toBe(true);
+    expect(s.perm("host").isSuspended).toBe(false);
+
+    const opponentTurnStart = s.events.length;
+    expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("zephagamon").instanceId })).toEqual({
+      ok: true,
+    });
+    await advance(s.engine).waitForMainPhase(0);
+
+    const opponentTurn = s.events.slice(opponentTurnStart);
+    const turnEnd = opponentTurn.findIndex((event) => event.kind === "turnEnded");
+    const zephagamonResolved = opponentTurn.findIndex(
+      (event) => event.kind === "effectResolved" && event.sourceCardId === "BT20-101" && event.timing === "OnPlay",
+    );
+    const kakkinmonResolved = opponentTurn.findIndex(
+      (event) => event.kind === "effectResolved" && event.sourceCardId === "P-245",
+    );
+    expect(zephagamonResolved).toBeGreaterThanOrEqual(0);
+    expect(
+      opponentTurn
+        .slice(0, zephagamonResolved)
+        .some((event) => event.kind === "cardsMoved" && event.instanceIds.includes(craniamonId)),
+    ).toBe(false);
+    expect(kakkinmonResolved).toBeGreaterThan(zephagamonResolved);
+    expect(kakkinmonResolved).toBeLessThan(turnEnd);
+    expect(opponentTurn.slice(zephagamonResolved, kakkinmonResolved)).toContainEqual(
+      expect.objectContaining({ kind: "cardsMoved", instanceIds: [craniamonId], to: "suspended" }),
+    );
+    expect(handHas("opponentTurnDraw")).toBe(true);
+
+    expect(s.engine.applyIntent(0, { type: "surrender" })).toEqual({ ok: true });
+    await loop;
   });
 
   it("declines the optional cost without suspending or drawing", async () => {

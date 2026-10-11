@@ -240,6 +240,39 @@ describe("BT10-104 (Immortal Ruler)", () => {
     expect(s.state.memory).toBe(6);
   });
 
+  it("Discord 1558458433970380820: keeps hand DigiXros materials alongside trash materials", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: ["BT10-092"],
+          hand: [
+            { card: "BT10-104", as: "option" },
+            { card: "BT7-058", as: "handSkullKnightmon" },
+          ],
+          deck: ["BT1-001", "BT1-002", "BT1-003"],
+          trash: [
+            { card: "BT10-066", as: "darkKnightmon" },
+            { card: "BT7-059", as: "trashDeadlyAxemon" },
+          ],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.players[0]!.battleArea.some((permanent) => permanent.topCard?.cardId === "BT10-066"));
+
+    const darkKnightmon = s.state.players[0]!.battleArea.find((permanent) => permanent.topCard?.cardId === "BT10-066")!;
+    expect(darkKnightmon.stack.map((card) => card.instanceId)).toEqual(
+      expect.arrayContaining([s.inst("handSkullKnightmon").instanceId, s.inst("trashDeadlyAxemon").instanceId]),
+    );
+    expect(s.state.memory).toBe(6);
+  });
+
   it("routes [Main] to OnUseOption timing", () => {
     const source = makeSource();
     expect(module!.effectsForTiming(EffectTiming.OnUseOption, source).length).toBeGreaterThanOrEqual(1);

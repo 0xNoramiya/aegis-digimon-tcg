@@ -65,7 +65,6 @@ const compiled: CompiledCard = {
           kind: "SubTrigger",
           event: "whenAttacking",
           sourceFilter: {
-            controllerDefault: "mine",
             excludeSelf: true,
             kind: ["Digimon"],
           },

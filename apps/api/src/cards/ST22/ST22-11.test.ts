@@ -74,6 +74,28 @@ describe("ST22-11 Defense Plug-In F", () => {
     expect(observe(s.engine).hasKeyword(s.perm("linked"), "Reboot")).toBe(false);
     expect(s.state.pendingDecision).toBeUndefined();
   });
+
+  it("Main still grants <Reboot> and +3000 DP after declining the link (Discord 1558589221843771433)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          hand: [{ card: "ST22-11", as: "option" }],
+          battleArea: [{ card: "ST5-06", as: "boosted" }, { card: "ST22-07" }],
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    const option = s.inst("option").instanceId;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: option })).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.trash.some((card) => card.instanceId === option));
+
+    expect(s.perm("boosted").linked).toHaveLength(0);
+    expect(s.perm("boosted").currentDP).toBe(7000);
+    expect(observe(s.engine).hasKeyword(s.perm("boosted"), "Reboot")).toBe(true);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
 });
 
 describe("ST22-11 Defense Plug-In F — KB Q&A rulings", () => {

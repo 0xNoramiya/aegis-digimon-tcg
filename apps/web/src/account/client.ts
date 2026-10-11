@@ -1,14 +1,24 @@
 import type { DeckListing } from "../game/decks";
 import { dominantColor } from "../game/decks";
+import type {
+  AvatarChoice,
+  AvatarSource,
+  MatchHistoryFilter,
+  MatchHistoryPage,
+  MatchHistorySummary,
+} from "@aegis/shared";
 import type { DigimonWorldAvatarId } from "./avatars";
 
-const apiBase = (import.meta.env.VITE_AEGIS_API_URL ?? `http://${location.hostname}:2567`).replace(/^ws/, "http");
+// The match overlay imports this module, so it must also load where `location` is absent (Node tests).
+const fallbackHost = typeof location === "undefined" ? "localhost" : location.hostname;
+const apiBase = (import.meta.env.VITE_AEGIS_API_URL ?? `http://${fallbackHost}:2567`).replace(/^ws/, "http");
 
 export type RemoteAccount = {
   id: string;
   displayName: string;
   avatarUrl: string | null;
   avatarId: DigimonWorldAvatarId | null;
+  avatarSource: AvatarSource;
   isAdmin: boolean;
   /** Sent by `/auth/me` and the Discord avatar refresh; other account responses omit it. */
   discordLinked?: boolean;
@@ -47,13 +57,7 @@ export type AccountProfile = {
     draws: number;
     matches: number;
   }>;
-  matches: Array<{
-    id: string;
-    mode: "ranked" | "tournament";
-    opponentName: string;
-    result: "win" | "loss" | "draw";
-    finishedAt: number;
-  }>;
+  summary: MatchHistorySummary;
 };
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -83,7 +87,19 @@ export const accountApi = {
   base: apiBase,
   me: () => request<RemoteAccount | null>("/auth/me"),
   profile: () => request<AccountProfile>("/account/profile"),
-  updateAvatar: (avatarId: DigimonWorldAvatarId | null) =>
+  matches: ({ page, limit, result, mode, opponent }: { page: number; limit: number } & MatchHistoryFilter) =>
+    request<MatchHistoryPage>(
+      `/account/matches?${new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        ...(result ? { result } : {}),
+        ...(mode ? { mode } : {}),
+        ...(opponent ? { opponent } : {}),
+      })}`,
+    ),
+  updateProfile: (changes: { displayName: string; avatarId: AvatarChoice }) =>
+    request<RemoteAccount>("/account/profile", { method: "PUT", body: JSON.stringify(changes) }),
+  updateAvatar: (avatarId: AvatarChoice) =>
     request<RemoteAccount>("/account/profile/avatar", { method: "PUT", body: JSON.stringify({ avatarId }) }),
   refreshDiscordAvatar: () => request<RemoteAccount>("/account/avatar/discord", { method: "POST" }),
   updateDisplayName: (displayName: string) =>

@@ -55,10 +55,12 @@ export const compiled: CompiledCard = {
               duration: "forTheTurn",
             },
           ],
-          fireCondition: {
-            kind: "allOf",
-            conditions: [{ kind: "isYourTurn" }, { kind: "memoryAtLeast", value: 5, controller: "opponent" }],
-            raw: "it's your turn and your opponent has 5 or more memory",
+          fireCondition: { kind: "isYourTurn" },
+          activationCondition: {
+            kind: "memoryAtLeast",
+            value: 5,
+            controller: "opponent",
+            raw: "your opponent has 5 or more memory",
           },
         },
       ],

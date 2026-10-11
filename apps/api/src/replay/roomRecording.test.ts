@@ -22,7 +22,7 @@ type Internals = {
   handleIntent(client: Client, intent: Intent): void;
   syncMatchClock(): void;
   syncCombatWindowTimeout(): void;
-  matchClock: { update(now: number, seat: Seat | undefined): Seat | undefined };
+  matchClock: { update(now: number, seat: Seat | undefined): { seat: Seat; clock: "match" | "mulligan" } | undefined };
 };
 
 let lines: string[] = [];
@@ -159,7 +159,7 @@ describe("AegisRoom replay recording", () => {
     room.allowReconnection = vi.fn<() => Promise<Client>>(async () => b) as unknown as AegisRoom["allowReconnection"];
 
     await room.onLeave(b, CloseCode.ABNORMAL_CLOSURE);
-    internals(room).matchClock.update = () => 1;
+    internals(room).matchClock.update = () => ({ seat: 1, clock: "match" });
     internals(room).syncMatchClock();
 
     expect(room.state.gameOver).toBe(true);

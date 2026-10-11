@@ -19,6 +19,7 @@ import {
 } from "@aegis/shared";
 import { startPacingCapture, finishPacingCapture } from "./pacing-capture";
 import { installAudioCapture, readAudioCapture } from "./audio-capture";
+import { answerActivation } from "./scenario-page";
 import { MAX_SOUND_VOICES } from "../src/design/sound";
 import { AUDIO_CUES } from "../src/design/audioBank";
 import { cueKey } from "../src/design/audioRecipes";
@@ -180,6 +181,8 @@ class EffectsLabPage {
   async start(scenario = "effects-lab-opponent-chain", endTurn = true, speed = "normal", observePaint = true) {
     await this.page.addInitScript((initialSpeed) => {
       localStorage.setItem("aegis:locale", "en");
+      // END TURN must hand the turn over at once; the confirmation dialog is not under test.
+      localStorage.setItem("aegis.skip-end-turn-confirmation", "true");
       // Obsolete tuning must not shorten effects or switch the lab out of stacked.
       localStorage.setItem(
         "aegis.dev.effects-lab.pacing",
@@ -208,14 +211,17 @@ class EffectsLabPage {
         globals.__labArrivals = new Map<string, ArrivalPaint>();
         let focused: { key: string; cardId: string; at: number } | undefined;
         const record = () => {
-          for (const element of document.querySelectorAll<HTMLElement>("[data-narration-id]")) {
+          // A phone folds its notices into one band that names the newest moment.
+          for (const element of document.querySelectorAll<HTMLElement>(
+            "[data-narration-id], [data-narration-peek-id]",
+          )) {
             const bounds = element.getBoundingClientRect();
             const style = getComputedStyle(element);
             if (bounds.width > 0 && bounds.height > 0 && style.visibility !== "hidden" && Number(style.opacity) > 0) {
-              (globals.__labPaintedNotices as Set<string>).add(element.dataset.narrationId!);
+              const id = element.dataset.narrationId ?? element.dataset.narrationPeekId!;
+              (globals.__labPaintedNotices as Set<string>).add(id);
               const noticeAt = globals.__labNoticeAt as Map<string, number>;
-              if (!noticeAt.has(element.dataset.narrationId!))
-                noticeAt.set(element.dataset.narrationId!, performance.now());
+              if (!noticeAt.has(id)) noticeAt.set(id, performance.now());
             }
           }
           for (const element of document.querySelectorAll<SVGElement>('[data-testid="effect-focus"]'))
@@ -2433,7 +2439,10 @@ test.describe("effects lab pacing in the browser", () => {
       await page.getByRole("button", { name: "Select all, top to bottom", exact: true }).click();
       await page.getByRole("button", { name: "Resolve in this order", exact: true }).click();
       for (let index = 0; index < 2; index++) {
-        await expect(page.getByRole("button", { name: "Use", exact: true })).toBeVisible();
+        const activation = page
+          .getByRole("dialog")
+          .filter({ has: page.getByRole("button", { name: "Yes, activate", exact: true }) });
+        await expect(activation).toBeVisible();
         const before = await lab.read();
         expect(
           before.events.filter((event) => event.kind === "effectTriggered" && event.sourceCardId === "BT23-072"),
@@ -2458,7 +2467,7 @@ test.describe("effects lab pacing in the browser", () => {
           await expect(accepted).toBeVisible();
           if (!phone) {
             const lane = await page.locator('[data-slot="narration-text"]').boundingBox();
-            const prompt = await page.locator(".board-prompt").boundingBox();
+            const prompt = await activation.boundingBox();
             expect(lane!.y + lane!.height).toBeLessThanOrEqual(prompt!.y);
           }
         }
@@ -2467,7 +2476,7 @@ test.describe("effects lab pacing in the browser", () => {
           await page.getByRole("button", { name: "‹", exact: true }).click();
           if (phone) await page.getByRole("button", { name: "Return to decision", exact: true }).click();
         }
-        await page.getByRole("button", { name: accept ? "Use" : "Don't use", exact: true }).click();
+        await answerActivation(page, accept);
         if (accept && index === 0) {
           expect(
             before.decision?.sourcePermanentId,

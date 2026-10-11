@@ -24,7 +24,7 @@ describe("BT4-019 VictoryGreymon", () => {
         },
         1: { battleArea: [{ card: "BT3-017", dp: 8000, as: "target" }] },
       },
-      { autoSelectCards: true },
+      { autoSelectCards: true, autoAcceptOptional: true },
     );
     s.state.memory = 4;
     expect(
@@ -49,7 +49,7 @@ describe("BT4-019 VictoryGreymon", () => {
         },
         1: { battleArea: [{ card: "BT3-017", dp: 9000, as: "target" }] },
       },
-      { autoSelectCards: true },
+      { autoSelectCards: true, autoAcceptOptional: true },
     );
     s.state.memory = 4;
     const targetId = s.perm("target").permanentId;
@@ -66,5 +66,33 @@ describe("BT4-019 VictoryGreymon", () => {
     expect(s.state.players[1]!.battleArea.some((p) => p.permanentId === targetId)).toBe(true);
     expect(s.perm("base").stack).toHaveLength(2);
     expect(s.state.players[0]!.trash).toHaveLength(0);
+  });
+});
+
+describe("BT4-019 — optional By cost (Discord 1558408701633757194)", () => {
+  it("keeps its digivolution cards and the target when Digi-Burst is declined", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "AD1-002", under: ["BT1-010"], as: "base" }],
+          hand: [{ card: "BT4-019", as: "evolving" }],
+        },
+        1: { battleArea: [{ card: "BT3-017", dp: 8000, as: "target" }] },
+      },
+      { autoSelectCards: true, autoDeclineOptional: true },
+    );
+    s.state.memory = 4;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("evolving").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("base").topCard?.cardId === "BT4-019" && s.state.pendingDecision === undefined);
+
+    expect(s.decisions.some(({ req }) => req.kind === "optional")).toBe(true);
+    expect(s.perm("base").stack).toHaveLength(2);
+    expect(s.state.players[1]!.battleArea).toHaveLength(1);
   });
 });

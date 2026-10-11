@@ -59,7 +59,10 @@ function RoomInvitePanel({ roomCode }: { roomCode: string }) {
   }, [copied]);
   const inviteUrl = roomInviteUrl(roomCode);
   const copy = (kind: "link" | "code", text: string) => {
-    void navigator.clipboard?.writeText(text).then(() => setCopied(kind));
+    void navigator.clipboard
+      ?.writeText(text)
+      .then(() => setCopied(kind))
+      .catch(() => setCopied(null));
   };
   const canShare = typeof navigator.share === "function";
   const share = () => {

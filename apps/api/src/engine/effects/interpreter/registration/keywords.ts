@@ -181,6 +181,9 @@ export function executeActivatedEffect(): CardEffect {
     trigger: "EndOfYourTurn",
     description:
       "＜Execute＞: at the end of this turn, this Digimon may attack (including an unsuspended opponent's Digimon). At the end of the attack, this Digimon is deleted.",
+    // A Digimon that can't attack (already suspended, or a "can't attack" effect) has no attack to
+    // offer, so the keyword doesn't trigger instead of asking for an attack that can't happen.
+    condition: { kind: "selfCanDeclareAttack" },
     actions: [
       {
         kind: "GrantCanAttackUnsuspended",

@@ -71,10 +71,7 @@ export class DigivolveSupport {
 
   /**
    * The controller's battle-area Tamer permanents matching a Burst Digivolve requirement's
-   * `burstDigivolve.returnTamerNamesExact` (§8-3-3-2). When more than one qualifies (e.g. 2
-   * copies of the same Tamer in play), the first is used deterministically — the rule leaves
-   * the choice to the controller, but no conformance test exercises the multi-copy case, so a
-   * decision prompt is not wired here.
+   * `burstDigivolve.returnTamerNamesExact` (§8-3-3-2).
    */
   burstDigivolveTamerCandidates(seat: Seat, requirement: DigivolutionRequirement): Permanent[] {
     const names = requirement.burstDigivolve?.returnTamerNamesExact ?? [];
@@ -90,6 +87,32 @@ export class DigivolveSupport {
         effectiveExactNames(def).some((name) => names.some((wanted) => wanted.toLowerCase() === name.toLowerCase()))
       );
     });
+  }
+
+  /**
+   * Pay Burst Digivolve's Tamer-return cost (§8-3-3-2) for digivolving into `into`. The
+   * controller picks which qualifying Tamer goes back to hand when more than one qualifies
+   * (feedback #19); the pick matters because the Tamer's digivolution cards are trashed and its
+   * suspended state is lost. Payment is mandatory once the path is declared, so an empty
+   * response (decision timeout) falls back to the first candidate.
+   */
+  async payBurstDigivolveTamer(seat: Seat, requirement: DigivolutionRequirement, into: CardInstance): Promise<boolean> {
+    const candidates = this.burstDigivolveTamerCandidates(seat, requirement);
+    if (candidates.length === 0) return false;
+    let target = candidates[0]!;
+    if (candidates.length > 1) {
+      const ctx = this.deps.buildEffectContext(this.deps.cardSourceOf(into), {});
+      ctx.activeTiming = "Static";
+      ctx.activeTargetFate = "returnToHand";
+      const chosen = await this.deps.decisionApi.chooseTargets(ctx, {
+        candidates: candidates.map((permanent) => permanent.topCard.instanceId),
+        min: 1,
+        max: 1,
+      });
+      target = candidates.find((permanent) => permanent.topCard.instanceId === chosen[0]) ?? target;
+    }
+    const moved = await this.deps.primitives.returnToHand([target.topCard.instanceId]);
+    return moved.length > 0;
   }
 
   /**

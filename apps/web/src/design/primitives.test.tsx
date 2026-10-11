@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { Alert, Avatar, Badge, Dialog, Field, Switch, TopNav, type Screen } from "./primitives";
@@ -56,6 +57,35 @@ describe("design primitives", () => {
 
     fireEvent.keyDown(dialog, { key: "Escape" });
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("returns focus to the pressed trigger when the browser did not focus it", () => {
+    function Harness() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <div tabIndex={-1} data-testid="region" />
+          <button type="button" onClick={() => setOpen(true)}>
+            Change sleeves
+          </button>
+          {open ? (
+            <Dialog labelledBy="sleeve-dialog-title" onClose={() => setOpen(false)}>
+              <h2 id="sleeve-dialog-title">Sleeves</h2>
+            </Dialog>
+          ) : null}
+        </>
+      );
+    }
+    render(<Harness />);
+    const trigger = screen.getByRole("button", { name: "Change sleeves" });
+    screen.getByTestId("region").focus();
+    // Safari presses and clicks the button without focusing it.
+    fireEvent.pointerDown(trigger);
+    fireEvent.click(trigger);
+    expect(document.activeElement).not.toBe(trigger);
+
+    fireEvent.keyDown(screen.getByRole("dialog", { name: "Sleeves" }), { key: "Escape" });
+    expect(document.activeElement).toBe(trigger);
   });
 
   it("falls back from a Digimon portrait to the provider avatar and then initials", () => {

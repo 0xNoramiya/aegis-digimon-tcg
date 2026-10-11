@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { $changes, $refId, ArraySchema, Decoder, Encoder, type StateView } from "@colyseus/schema";
 import {
   GameState,
@@ -11,17 +11,12 @@ import {
   PRIVATE_DECISION_VIEW_TAG,
   CARD_ID_VIEW_TAG,
   PendingDecision,
+  type SecurityCardView,
   type Seat,
 } from "@aegis/shared";
-import {
-  buildStateView,
-  refreshStateView,
-  syncPublicCounts,
-  revealSecurityCardToOpponent,
-  privateZoneSnapshot,
-} from "./visibility.js";
-import { extractCardAt, insertCard, installVisibilityPort, placePermanent } from "./access.js";
-import { exposeCardInZone, finalRevealOf } from "./visibility.js";
+import { buildStateView, refreshStateView, syncPublicCounts, privateZoneSnapshot } from "./visibility.js";
+import { clearZone, extractCardAt, fillZone, insertCard, installVisibilityPort, placePermanent } from "./access.js";
+import { exposeCardInZone, finalRevealOf, forgetWithheldCards } from "./visibility.js";
 import { Zone } from "@aegis/shared";
 
 function makeCard(id: string, ownerSeat: Seat, faceUp = true): CardInstance {
@@ -284,16 +279,24 @@ describe("buildStateView", () => {
     });
   });
 
-  it("reveals an opponent security card that is already face-up", () => {
-    // Flip seat 1's top security card face-up before building seat 0's view.
+  it("shows an opponent security card that is already face-up through the public projection only", () => {
     const flipped = state.players[1]!.security[0]!;
     flipped.faceUp = true;
+    syncPublicCounts(state);
 
     const view = buildStateView(state, 0);
-    expect(view.has(flipped)).toBe(true);
-    // The still-face-down ones remain hidden from the opponent.
-    const faceDown = state.players[1]!.security[1]!;
-    expect(view.has(faceDown)).toBe(false);
+    const decoder = new Decoder(new GameState());
+    encodeAllForView(state, view, decoder);
+
+    expect(view.has(flipped)).toBe(false);
+    expect(view.has(state.players[1]!.security)).toBe(false);
+    expect(decoder.state.players[1]!.security).toHaveLength(0);
+    expect(decoder.state.players[1]!.securityView[0]).toMatchObject({
+      instanceId: flipped.instanceId,
+      cardId: "TEST-001",
+      faceUp: true,
+    });
+    expect(decoder.state.players[1]!.securityView[1]).toMatchObject({ instanceId: "", cardId: "", faceUp: false });
   });
 
   it("keeps all opponent security hidden when every card is face-down", () => {
@@ -809,7 +812,7 @@ describe("hidden zone redaction (what the owner's own client receives)", () => {
   });
 });
 
-describe("revealSecurityCardToOpponent", () => {
+describe("face-up security", () => {
   it("synchronizes a newly face-up security card to both player viewpoints", () => {
     const state = makeState();
     syncPublicCounts(state);
@@ -848,19 +851,8 @@ describe("revealSecurityCardToOpponent", () => {
         .filter(({ faceUp }) => !faceUp)
         .every(({ instanceId, cardId, artId }) => !instanceId && !cardId && !artId),
     ).toBe(true);
-  });
-
-  it("exposes a single security card and its identity to a view that otherwise hides it", () => {
-    const state = makeState();
-    const view = buildStateView(state, 0);
-    const card = state.players[1]!.security[2]!;
-    expect(view.has(card)).toBe(false);
-
-    card.faceUp = true;
-    revealSecurityCardToOpponent(view, card);
-
-    expect(view.has(card)).toBe(true);
-    expect(view.hasTag(card, CARD_ID_VIEW_TAG)).toBe(true);
+    expect(ownerDecoder.state.players[0]!.security[2]).toMatchObject({ cardId: "TEST-001", faceUp: true });
+    expect(opponentDecoder.state.players[0]!.security).toHaveLength(0);
   });
 });
 
@@ -940,5 +932,378 @@ describe("finalRevealOf", () => {
     expect(opponent.eggDeck).toHaveLength(4);
     expect(opponent.hand).toHaveLength(5);
     expect(opponent.security).toHaveLength(5);
+  });
+});
+
+/**
+ * Follow-up to feedback #24. A card both seats saw can move into a zone a viewer may not read:
+ * any deck, or the opponent's hand or face-down security. The client drops its copy when the
+ * departure arrives. If the view still counts the card as visible, the next change to one of
+ * its fields (a reveal's `faceUp` flip) is encoded for a refId the client no longer has, and
+ * the decoder logs `"refId" not found`.
+ */
+describe("a card that moves out of a viewer's sight", () => {
+  let state: GameState;
+  let targets: { seat: Seat; view: StateView; decoder: Decoder<GameState> }[];
+  let decoderErrors: string[];
+
+  beforeEach(() => {
+    state = makeState();
+    targets = ([0, 1] as const).map((seat) => ({
+      seat,
+      view: buildStateView(state, seat),
+      decoder: new Decoder(new GameState()),
+    }));
+    for (const player of state.players) {
+      installVisibilityPort(player, (ownerSeat, zone, card) => {
+        for (const target of targets) exposeCardInZone(target.view, target.seat, ownerSeat, zone, card);
+      });
+    }
+    decoderErrors = [];
+    vi.spyOn(console, "error").mockImplementation((message: unknown) => {
+      decoderErrors.push(String(message));
+    });
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    encodeAllForViews(state, targets);
+    patch();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  /** One `AegisRoom.broadcastPatch`: `onBeforePatch`, the encode, then the after-patch release. */
+  function patch(): void {
+    syncPublicCounts(state);
+    for (const target of targets) refreshStateView(target.view, state, target.seat);
+    encodePatchForViews(state, targets);
+    for (const target of targets) forgetWithheldCards(target.view, state, target.seat);
+  }
+
+  function seenBy(seat: Seat): GameState {
+    return targets[seat]!.decoder.state;
+  }
+
+  function trashCardSeenByBothSeats(id: string): CardInstance {
+    const card = makeCard(id, 0);
+    insertCard(state.players[0]!, Zone.Trash, card);
+    patch();
+    for (const seat of [0, 1] as const) {
+      expect(seenBy(seat).players[0]!.trash.find((entry) => entry.instanceId === id)?.cardId).toBe("TEST-001");
+    }
+    return card;
+  }
+
+  function moveOutOfTrash(card: CardInstance, zone: Zone.Deck | Zone.Hand | Zone.Security): void {
+    const player = state.players[0]!;
+    extractCardAt(player, Zone.Trash, player.trash.indexOf(card));
+    insertCard(player, zone, card);
+  }
+
+  it("sends nothing for a deck card revealed after both seats saw it", () => {
+    const card = trashCardSeenByBothSeats("returned-to-deck");
+    moveOutOfTrash(card, Zone.Deck);
+    card.faceUp = false;
+    patch();
+
+    card.faceUp = true;
+    patch();
+
+    expect(decoderErrors).toEqual([]);
+    for (const seat of [0, 1] as const) {
+      expect(seenBy(seat).players[0]!.trash.some((entry) => entry.instanceId === card.instanceId)).toBe(false);
+      expect(seenBy(seat).players[0]!.deck).toHaveLength(0);
+      expect(seenBy(seat).players[0]!.deckCount).toBe(state.players[0]!.deck.length);
+    }
+  });
+
+  it("shows the card again to both seats when it leaves the deck for the trash", () => {
+    const card = trashCardSeenByBothSeats("deck-round-trip");
+    moveOutOfTrash(card, Zone.Deck);
+    patch();
+    card.faceUp = false;
+    patch();
+
+    const player = state.players[0]!;
+    extractCardAt(player, Zone.Deck, player.deck.indexOf(card));
+    insertCard(player, Zone.Trash, card);
+    patch();
+
+    expect(decoderErrors).toEqual([]);
+    for (const seat of [0, 1] as const) {
+      const seen = seenBy(seat).players[0]!.trash.find((entry) => entry.instanceId === card.instanceId);
+      expect(seen?.cardId).toBe("TEST-001");
+      expect(seen?.faceUp).toBe(true);
+    }
+  });
+
+  it("still removes a card from its owner's hand when it goes into the deck", () => {
+    const player = state.players[0]!;
+    const card = player.hand[0]!;
+    extractCardAt(player, Zone.Hand, 0);
+    insertCard(player, Zone.Deck, card);
+    patch();
+    card.faceUp = !card.faceUp;
+    patch();
+
+    expect(decoderErrors).toEqual([]);
+    const ownerHand = seenBy(0).players[0]!.hand;
+    expect(ownerHand.map((entry) => entry.instanceId)).toEqual(player.hand.map((entry) => entry.instanceId));
+  });
+
+  it("sends the opponent nothing for a card that went back to its owner's hand", () => {
+    const card = trashCardSeenByBothSeats("returned-to-hand");
+    moveOutOfTrash(card, Zone.Hand);
+    patch();
+    card.faceUp = false;
+    patch();
+
+    expect(decoderErrors).toEqual([]);
+    expect(seenBy(1).players[0]!.hand).toHaveLength(0);
+    expect(seenBy(0).players[0]!.hand.find((entry) => entry.instanceId === card.instanceId)?.cardId).toBe("TEST-001");
+  });
+
+  /** Seat 0's security card as `seat` decoded it, from the raw array (owner only) or the public projection. */
+  function decodedSecurity(seat: Seat, card: CardInstance): { raw?: CardInstance; projected?: SecurityCardView } {
+    const decoded = seenBy(seat).players[0]!;
+    return {
+      raw: decoded.security.find((entry) => entry?.instanceId === card.instanceId),
+      projected: decoded.securityView.find((entry) => entry?.instanceId === card.instanceId),
+    };
+  }
+
+  /**
+   * No seat may read a face-down security card, its owner included (§3-7-2). Only the owner
+   * receives the raw security array; everyone reads face-up cards from `securityView`.
+   */
+  function expectNoHiddenSecurityIdentity(): void {
+    const leaks: string[] = [];
+    for (const seat of [0, 1] as const) {
+      for (const decoded of seenBy(seat).players) {
+        const raw = Array.from(decoded.security).filter(Boolean);
+        if (decoded.seat !== seat) leaks.push(...raw.map((entry) => `seat ${seat} holds ${entry.instanceId}`));
+        for (const entry of raw.filter((card) => !card.faceUp && (card.cardId || card.artId))) {
+          leaks.push(`seat ${seat} reads face-down ${entry.instanceId}`);
+        }
+        for (const entry of Array.from(decoded.securityView)) {
+          if (!entry.faceUp && (entry.instanceId || entry.cardId || entry.artId))
+            leaks.push(`seat ${seat} reads projected ${entry.instanceId}`);
+        }
+      }
+    }
+    expect(leaks).toEqual([]);
+  }
+
+  function revealTopSecurity(): CardInstance {
+    const top = state.players[0]!.security[0]!;
+    top.faceUp = true;
+    patch();
+    for (const seat of [0, 1] as const) expect(decodedSecurity(seat, top).projected?.cardId).toBe("TEST-001");
+    expect(decodedSecurity(0, top).raw?.cardId).toBe("TEST-001");
+    return top;
+  }
+
+  it("reveals a face-down security card to both seats once it turns face-up", () => {
+    const card = trashCardSeenByBothSeats("placed-in-security");
+    card.faceUp = false;
+    moveOutOfTrash(card, Zone.Security);
+    patch();
+    expect(decodedSecurity(1, card).raw).toBeUndefined();
+
+    card.faceUp = true;
+    patch();
+
+    expect(decoderErrors).toEqual([]);
+    expect(decodedSecurity(0, card).raw?.cardId).toBe("TEST-001");
+    for (const seat of [0, 1] as const) expect(decodedSecurity(seat, card).projected?.cardId).toBe("TEST-001");
+    expectNoHiddenSecurityIdentity();
+  });
+
+  it("keeps both seats' view of a partly face-up security stack in step with the server", () => {
+    const player = state.players[0]!;
+    player.security[0]!.faceUp = true;
+    patch();
+    const card = trashCardSeenByBothSeats("security-beside-face-up");
+    card.faceUp = false;
+    moveOutOfTrash(card, Zone.Security);
+    patch();
+    card.faceUp = true;
+    patch();
+    expect(decodedSecurity(1, card).projected?.cardId).toBe("TEST-001");
+    card.faceUp = false;
+    patch();
+
+    extractCardAt(player, Zone.Security, player.security.indexOf(card));
+    insertCard(player, Zone.Trash, card);
+    patch();
+
+    expect(decoderErrors).toEqual([]);
+    expectNoHiddenSecurityIdentity();
+    expect(seenBy(0).players[0]!.security.map((entry) => entry.instanceId)).toEqual(
+      player.security.map((entry) => entry.instanceId),
+    );
+    for (const seat of [0, 1] as const) {
+      const decoded = seenBy(seat).players[0]!;
+      expect(decoded.securityView.map((entry) => entry.instanceId)).toEqual(
+        player.securityView.map((entry) => entry.instanceId),
+      );
+      expect(decoded.trash.find((entry) => entry.instanceId === card.instanceId)?.cardId).toBe("TEST-001");
+    }
+  });
+
+  it("removes a face-down card from security for both seats when it leaves", () => {
+    const player = state.players[0]!;
+    player.security[0]!.faceUp = true;
+    patch();
+    const card = trashCardSeenByBothSeats("leaves-security-face-down");
+    card.faceUp = false;
+    moveOutOfTrash(card, Zone.Security);
+    patch();
+    patch();
+
+    extractCardAt(player, Zone.Security, player.security.indexOf(card));
+    insertCard(player, Zone.Trash, card);
+    patch();
+
+    expect(decoderErrors).toEqual([]);
+    for (const seat of [0, 1] as const) {
+      expect(decodedSecurity(seat, card)).toEqual({ raw: undefined, projected: undefined });
+      expect(seenBy(seat).players[0]!.trash.find((entry) => entry.instanceId === card.instanceId)?.cardId).toBe(
+        "TEST-001",
+      );
+    }
+  });
+
+  describe("face-down security identity", () => {
+    it("keeps a known card's identity from the opponent when it enters face-down security", () => {
+      revealTopSecurity();
+      const card = trashCardSeenByBothSeats("known-into-security");
+      card.faceUp = false;
+      moveOutOfTrash(card, Zone.Security);
+      patch();
+
+      expect(decoderErrors).toEqual([]);
+      expect(decodedSecurity(1, card)).toEqual({ raw: undefined, projected: undefined });
+      expect(seenBy(1).players[0]!.trash.some((entry) => entry.instanceId === card.instanceId)).toBe(false);
+      expectNoHiddenSecurityIdentity();
+    });
+
+    it("keeps a known card's identity from its owner when it enters face-down security", () => {
+      const card = trashCardSeenByBothSeats("known-into-own-security");
+      card.faceUp = false;
+      moveOutOfTrash(card, Zone.Security);
+      patch();
+
+      expect(decoderErrors).toEqual([]);
+      expect(decodedSecurity(0, card).raw).toMatchObject({ instanceId: card.instanceId, faceUp: false });
+      expectNoHiddenSecurityIdentity();
+    });
+
+    it("keeps a new face-down card's instance id from the opponent beside a face-up card", () => {
+      revealTopSecurity();
+      const player = state.players[0]!;
+      const card = extractCardAt(player, Zone.Deck, 0)!;
+      card.faceUp = false;
+      insertCard(player, Zone.Security, card, "top");
+      patch();
+
+      expect(decoderErrors).toEqual([]);
+      expect(decodedSecurity(1, card)).toEqual({ raw: undefined, projected: undefined });
+      expect(decodedSecurity(0, card).raw).toMatchObject({ instanceId: card.instanceId, faceUp: false });
+      expectNoHiddenSecurityIdentity();
+    });
+
+    it("takes the identity back from both seats when a security card turns face-down in place", () => {
+      const top = revealTopSecurity();
+      top.faceUp = false;
+      patch();
+
+      expect(decoderErrors).toEqual([]);
+      expect(decodedSecurity(0, top).raw).toMatchObject({ instanceId: top.instanceId, faceUp: false });
+      expect(decodedSecurity(1, top)).toEqual({ raw: undefined, projected: undefined });
+      expectNoHiddenSecurityIdentity();
+    });
+
+    it("shows a card turned face-down in place to both seats again when it turns face-up", () => {
+      const top = revealTopSecurity();
+      top.faceUp = false;
+      patch();
+      top.faceUp = true;
+      patch();
+
+      expect(decoderErrors).toEqual([]);
+      expect(decodedSecurity(0, top).raw).toMatchObject({ cardId: "TEST-001", artId: "TEST-001_P1", faceUp: true });
+      for (const seat of [0, 1] as const) {
+        expect(decodedSecurity(seat, top).projected).toMatchObject({
+          cardId: "TEST-001",
+          artId: "TEST-001_P1",
+          faceUp: true,
+        });
+      }
+    });
+
+    it("shows a known card that enters security face-up to both seats", () => {
+      const card = trashCardSeenByBothSeats("known-into-security-face-up");
+      moveOutOfTrash(card, Zone.Security);
+      patch();
+
+      expect(decoderErrors).toEqual([]);
+      expect(decodedSecurity(0, card).raw).toMatchObject({ cardId: "TEST-001", faceUp: true });
+      for (const seat of [0, 1] as const) {
+        expect(decodedSecurity(seat, card).projected).toMatchObject({ cardId: "TEST-001", faceUp: true });
+      }
+      expectNoHiddenSecurityIdentity();
+    });
+
+    it("hides every position after a shuffle turns face-up security cards face-down", () => {
+      const player = state.players[0]!;
+      player.security[1]!.faceUp = true;
+      player.security[3]!.faceUp = true;
+      patch();
+
+      const shuffled = clearZone(player, Zone.Security).reverse();
+      for (const card of shuffled) card.faceUp = false;
+      fillZone(player, Zone.Security, shuffled);
+      patch();
+
+      expect(decoderErrors).toEqual([]);
+      expect(seenBy(0).players[0]!.security.map((entry) => entry.instanceId)).toEqual(
+        player.security.map((entry) => entry.instanceId),
+      );
+      expectNoHiddenSecurityIdentity();
+    });
+
+    it("sends the opponent nothing from its owner's hand after a security card turns face-up", () => {
+      revealTopSecurity();
+      const player = state.players[0]!;
+      const drawn = extractCardAt(player, Zone.Deck, 0)!;
+      insertCard(player, Zone.Hand, drawn);
+      patch();
+      const known = trashCardSeenByBothSeats("known-into-hand");
+      moveOutOfTrash(known, Zone.Hand);
+      patch();
+      player.hand[0]!.faceUp = !player.hand[0]!.faceUp;
+      patch();
+
+      expect(decoderErrors).toEqual([]);
+      expect(seenBy(1).players[0]!.hand.filter(Boolean)).toHaveLength(0);
+    });
+
+    it("sends nothing about a known card that enters the egg deck", () => {
+      const card = trashCardSeenByBothSeats("known-into-egg-deck");
+      const player = state.players[0]!;
+      extractCardAt(player, Zone.Trash, player.trash.indexOf(card));
+      card.faceUp = false;
+      insertCard(player, Zone.EggDeck, card);
+      patch();
+      card.faceUp = true;
+      patch();
+
+      expect(decoderErrors).toEqual([]);
+      for (const seat of [0, 1] as const) {
+        expect(seenBy(seat).players[0]!.eggDeck).toHaveLength(0);
+        expect(seenBy(seat).players[0]!.trash.some((entry) => entry.instanceId === card.instanceId)).toBe(false);
+      }
+    });
   });
 });

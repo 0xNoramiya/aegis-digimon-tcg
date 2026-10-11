@@ -177,3 +177,33 @@ describe("BT10-070 Blastmon — KB Q&A rulings", () => {
     expect(withoutWhenAttacking.perm("blastmon").stack).toHaveLength(0);
   });
 });
+
+describe("BT10-070 — optional By cost (Discord 1558408701633757194)", () => {
+  it("keeps its digivolution cards and the attacker when the cost is declined", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT10-070", as: "blastmon", under: ["BT1-009", "BT1-009"] }],
+          security: ["BT1-009", "BT1-009"],
+        },
+        1: { battleArea: [{ card: "BT4-011", as: "attacker" }] },
+      },
+      { autoDeclineOptional: true, autoOrderTriggers: true, autoSelectCards: true },
+    );
+    const attackerId = s.perm("attacker").permanentId;
+    await s.ready();
+    s.state.turnSeat = 1;
+    s.state.memory = 0;
+    s.state.phase = Phase.Main;
+    s.perm("attacker").canAttackPlayer = true;
+
+    expect(
+      s.engine.applyIntent(1, { type: "attack", attackerPermanentId: attackerId, target: { kind: "player" } }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.security.length === 1 && s.state.pendingDecision === undefined);
+
+    expect(s.decisions.some(({ req }) => req.kind === "optional")).toBe(true);
+    expect(s.perm("blastmon").stack).toHaveLength(2);
+    expect(s.state.players[1]!.battleArea.some(({ permanentId }) => permanentId === attackerId)).toBe(true);
+  });
+});

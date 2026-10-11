@@ -130,6 +130,8 @@ export const compiled: CompiledCard = {
                 },
                 raw: "by deleting 1 of your other Digimon, end that attack",
               },
+              optional: true,
+              abortOnDecline: true,
             },
           ],
         },

@@ -89,7 +89,7 @@ describe("Detach departure lifecycle", () => {
     const targetInstanceId = s.perm("target").topCard.instanceId;
     const linkId = s.inst("link").instanceId;
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: optionId })).toEqual({ ok: true });
-    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    await settle(() => s.state.pendingDecision?.kind === "optional");
     const decision = s.state.pendingDecision!;
     const request = s.decisions.find(({ req }) => req.decisionId === decision.decisionId)!.req;
     expect(request.seat).toBe(1);
@@ -100,14 +100,14 @@ describe("Detach departure lifecycle", () => {
       s.engine.applyIntent(0, {
         type: "respondDecision",
         decisionId: decision.decisionId,
-        response: { kind: "selectCards", instanceIds: [] },
+        response: { kind: "optional", accept: false },
       }).ok,
     ).toBe(false);
     expect(
       s.engine.applyIntent(1, {
         type: "respondDecision",
         decisionId: decision.decisionId,
-        response: { kind: "selectCards", instanceIds: [] },
+        response: { kind: "optional", accept: false },
       }),
     ).toEqual({ ok: true });
     await settle(
@@ -148,20 +148,20 @@ describe("Detach departure lifecycle", () => {
         0: { battleArea: [{ card: "BT1-045" }], hand: [{ card: "BT1-106", as: "option" }] },
         1: { battleArea: [{ card: "BT26-019", as: "target", linked: [{ card: "BT26-010", as: "link" }] }] },
       },
-      { autoSelectCards: false, autoDeclineOptional: true },
+      { autoSelectCards: false, declinePrompts: ["Option"] },
     );
     s.state.memory = 10;
     await s.ready();
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
       ok: true,
     });
-    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    await settle(() => s.state.pendingDecision?.kind === "optional");
     const detachDecision = s.state.pendingDecision!;
     expect(
       s.engine.applyIntent(1, {
         type: "respondDecision",
         decisionId: detachDecision.decisionId,
-        response: { kind: "selectCards", instanceIds: [s.inst("link").instanceId] },
+        response: { kind: "optional", accept: true },
       }),
     ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision === undefined && s.state.players[1]!.battleArea.length === 0);

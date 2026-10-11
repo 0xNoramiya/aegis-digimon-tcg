@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { answerActivation } from "./scenario-page";
 import { startBrowserServer } from "./server";
 
 for (const width of [1440, 390]) {
@@ -19,19 +20,22 @@ for (const width of [1440, 390]) {
       await card.press("Enter");
       await page.getByRole("button", { name: /^Play Digimon$/i }).click();
       await page.getByRole("button", { name: "3 cards", exact: true }).click();
-      const prompt = page.getByTestId("board-prompt");
+      const prompt = page.getByRole("dialog", { name: "Arcturusmon · effect", exact: true });
       await expect(prompt).toBeVisible();
-      await expect(prompt.locator(".board-prompt__clause")).toHaveText(/^Then, by placing 2 cards/);
+      await expect(prompt.locator(".decision-overlay__effect-text")).toHaveText(/^Then, by placing 2 cards/);
       const source = page
         .locator('[data-drop="perm-you"]')
         .filter({ has: page.getByRole("img", { name: "Arcturusmon", exact: true }) });
       await expect(source).toHaveClass(/game-permanent--effect-linked/);
-      const backdrop = page.locator(".decision-overlay-backdrop");
-      await expect(backdrop).toHaveAttribute("data-source-permanent-id", (await source.getAttribute("data-id")) ?? "");
-      await expect
-        .poll(() => backdrop.evaluate((node) => getComputedStyle(node, "::before").clipPath))
-        .not.toBe("none");
-      await prompt.getByRole("button", { name: "Don't use", exact: true }).click();
+      // The phone sheet spans the screen width by design; "View board" or the drag handle reveal the source there.
+      if (width === 1440) {
+        const sourceBox = (await source.boundingBox())!;
+        const promptBox = (await prompt.boundingBox())!;
+        expect(promptBox.x + promptBox.width <= sourceBox.x || promptBox.y >= sourceBox.y + sourceBox.height).toBe(
+          true,
+        );
+      }
+      await answerActivation(page, false);
       await expect(prompt).toBeHidden();
       await expect(source).not.toHaveClass(/game-permanent--effect-linked/);
     } finally {

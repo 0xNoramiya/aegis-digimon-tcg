@@ -43,12 +43,17 @@ import type { DecisionManager } from "./index.js";
  * the decision round-trip those steps (and `activateEffect`) need; it does not
  * order or sequence multiple effects.
  */
-export function createDecisionApi(manager: DecisionManager): DecisionApi {
+export function createDecisionApi(
+  manager: DecisionManager,
+  playCostReductionBlocked?: (seat: Seat) => boolean,
+): DecisionApi {
   const controller = buildSeatScopedApi(manager, (ctx) => ctx.source.ownerSeat, {
+    playCostReductionBlocked,
     honorsPresets: true,
     asksController: true,
   });
   const opponent = buildSeatScopedApi(manager, (ctx) => ctx.game.opponentOf(ctx.source.ownerSeat), {
+    playCostReductionBlocked,
     honorsPresets: false,
     asksController: false,
   });
@@ -83,7 +88,15 @@ export function requireOpponentAsk(ctx: EffectContext): SeatScopedDecisionApi {
 function buildSeatScopedApi(
   manager: DecisionManager,
   resolveSeat: (ctx: EffectContext) => Seat,
-  { honorsPresets, asksController }: { honorsPresets: boolean; asksController: boolean },
+  {
+    honorsPresets,
+    asksController,
+    playCostReductionBlocked,
+  }: {
+    honorsPresets: boolean;
+    asksController: boolean;
+    playCostReductionBlocked?: (seat: Seat) => boolean;
+  },
 ): SeatScopedDecisionApi {
   const provenance = (ctx: EffectContext) => ({
     timing: ctx.activeTiming,
@@ -152,6 +165,7 @@ function buildSeatScopedApi(
         visible?: string[];
         maxTotalPlayCost?: number;
         maxTotalDP?: number;
+        promptKey?: "digivolveHost";
       },
     ): Promise<string[]> {
       const min = pickMinimum(ctx, opts.min, opts.max);
@@ -170,6 +184,7 @@ function buildSeatScopedApi(
           max: opts.max,
           ...(opts.maxTotalPlayCost !== undefined ? { maxTotalPlayCost: opts.maxTotalPlayCost } : {}),
           ...(opts.maxTotalDP !== undefined ? { maxTotalDP: opts.maxTotalDP } : {}),
+          ...(opts.promptKey !== undefined ? { promptKey: opts.promptKey } : {}),
           // What the running action will do to whatever is picked here, so the board
           // can badge a chosen target rather than parse the prompt's English.
           ...(ctx.activeTargetFate !== undefined ? { targetFate: ctx.activeTargetFate } : {}),
@@ -222,6 +237,10 @@ function buildSeatScopedApi(
           distinctCardIds: opts.distinctCardIds,
           distinctNames: opts.distinctNames,
           assemblyCardId: opts.assemblyCardId,
+          ...((opts.assemblyCardId !== undefined || opts.digiXrosCardId !== undefined) &&
+          playCostReductionBlocked !== undefined
+            ? { playCostReductionBlocked: playCostReductionBlocked(resolveSeat(ctx)) }
+            : {}),
           digiXrosCardId: opts.digiXrosCardId,
           ...provenance(ctx),
           ...backOutPurpose(min, opts.min),

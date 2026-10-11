@@ -45,6 +45,16 @@ describe("the feedback modal", () => {
     expect(screen.getByText(/signed with your display name/)).toBeTruthy();
   });
 
+  it.each([
+    [true, /Follow it in My feedback/],
+    [false, /Sign in first if you want to follow it/],
+  ])("drops the GitHub warning when the deployment keeps reports private (signed in: %s)", async (signedIn, text) => {
+    mockApi({ "GET /bug-reports/limits": { body: { enabled: true, publicMirror: false } } });
+    renderDialog(signedIn);
+    expect(await screen.findByText(text)).toBeTruthy();
+    expect(screen.queryByText(/GitHub/)).toBeNull();
+  });
+
   it("suggests cards by name and attaches the chosen one", async () => {
     mockApi({});
     renderDialog();
@@ -90,7 +100,9 @@ describe("the feedback modal", () => {
 
     expect(await screen.findByText("Feedback sent")).toBeTruthy();
     expect(screen.queryByRole("link", { name: /issue/i })).toBeNull();
-    const body = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as Record<string, unknown>;
+    const body = JSON.parse(
+      String(fetchMock.mock.calls.find(([, init]) => init?.method === "POST")?.[1]?.body),
+    ) as Record<string, unknown>;
     expect(body).toMatchObject({
       kind: "bug",
       summary: "on-play never fires",
@@ -114,7 +126,9 @@ describe("the feedback modal", () => {
       fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "broken" } });
       fireEvent.click(screen.getByRole("button", { name: "Send" }));
       await screen.findByText("Feedback sent");
-      const body = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as Record<string, unknown>;
+      const body = JSON.parse(
+        String(fetchMock.mock.calls.find(([, init]) => init?.method === "POST")?.[1]?.body),
+      ) as Record<string, unknown>;
       expect(body.matchId).toBe(matchId);
       expect(Object.hasOwn(body, "matchId")).toBe(matchId !== undefined);
     },
@@ -144,7 +158,9 @@ describe("the feedback modal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
 
     await screen.findByText("Feedback sent");
-    const body = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as Record<string, unknown>;
+    const body = JSON.parse(
+      String(fetchMock.mock.calls.find(([, init]) => init?.method === "POST")?.[1]?.body),
+    ) as Record<string, unknown>;
     expect(body).toMatchObject({ kind: "improvement", cardIds: [], description: "it would help" });
     // Typed while the form showed Bug, then hidden: a hidden field must not reach the issue.
     expect(body).not.toHaveProperty("opponentDeck");
@@ -174,5 +190,44 @@ describe("the feedback modal", () => {
     await waitFor(() =>
       expect(screen.getByText("You sent a lot in a short time. Try again in a minute.")).toBeTruthy(),
     );
+  });
+
+  // Issue #54: a misclick outside the dialog threw away a half-written report.
+  describe("keeps a draft from closing by accident", () => {
+    function renderClosable() {
+      const onClose = vi.fn<() => void>();
+      render(
+        <I18nProvider>
+          <BugReportDialog signedIn onClose={onClose} />
+        </I18nProvider>,
+      );
+      return onClose;
+    }
+
+    it("stays open when the reporter clicks outside it", () => {
+      mockApi({});
+      const onClose = renderClosable();
+      fireEvent.click(document.querySelector(".aegis-dialog-layer")!);
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it("ignores Escape once something is typed, and keeps the text", () => {
+      mockApi({});
+      const onClose = renderClosable();
+      fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "half a sentence" } });
+      fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+      expect(onClose).not.toHaveBeenCalled();
+      expect(screen.getByLabelText<HTMLTextAreaElement>("What happened?").value).toBe("half a sentence");
+    });
+
+    it("still closes with Escape while the form is empty, and always with Cancel", () => {
+      mockApi({});
+      const onClose = renderClosable();
+      fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+      expect(onClose).toHaveBeenCalledTimes(1);
+      fireEvent.change(screen.getByLabelText("Title"), { target: { value: "draft" } });
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      expect(onClose).toHaveBeenCalledTimes(2);
+    });
   });
 });

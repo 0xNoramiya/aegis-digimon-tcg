@@ -6,7 +6,7 @@ import { dragOnto } from "./scenarioHarness/dragDrop";
 
 const mocked = vi.hoisted(() => ({
   roomResult: { current: undefined as unknown },
-  room: { roomId: "ordinemon-ui-room", onMessage: () => () => {} },
+  room: { roomId: "ordinemon-ui-room", onMessage: () => () => {}, send: () => {} },
   dnaDigivolve: vi.fn(),
   digivolve: vi.fn(),
 }));

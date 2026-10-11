@@ -1,4 +1,46 @@
 {
+  "releases.1.22.0-beta.summary": {
+    "en": "This minor release adds match replays, a full match history on your profile and a redesigned Preferences screen, and fixes reported table and window problems.",
+    "pt-BR": "Esta versão minor adiciona replays das partidas, o histórico completo de partidas no seu perfil e uma nova tela de Preferências, e corrige problemas relatados na mesa e nas janelas.",
+    "es": "Esta versión minor añade repeticiones de partidas, el historial completo de partidas en tu perfil y una nueva pantalla de Preferencias, y corrige problemas reportados en la mesa y en las ventanas.",
+    "it": "Questa versione minor aggiunge i replay delle partite, lo storico completo delle partite nel profilo e una nuova schermata Preferenze, e corregge problemi segnalati sul tavolo e nelle finestre."
+  },
+  "releases.1.22.0-beta.feature.replays": {
+    "en": "After a match, you can watch its replay with seeking, turn navigation and card inspection. Your browser keeps your newest 100 replays, and you can save them to your Google Drive, download the file or share a link.",
+    "pt-BR": "Depois de uma partida, você pode assistir ao replay com avanço, navegação por turno e inspeção de cartas. Seu navegador guarda os 100 replays mais recentes, e você pode salvá-los no seu Google Drive, baixar o arquivo ou compartilhar um link.",
+    "es": "Después de una partida, puedes ver su repetición con avance, navegación por turnos e inspección de cartas. Tu navegador guarda las 100 repeticiones más recientes, y puedes guardarlas en tu Google Drive, descargar el archivo o compartir un enlace.",
+    "it": "Dopo una partita puoi guardarne il replay con avanzamento, navigazione per turni e ispezione delle carte. Il browser conserva i 100 replay più recenti, e puoi salvarli sul tuo Google Drive, scaricare il file o condividere un link."
+  },
+  "releases.1.22.0-beta.feature.profile": {
+    "en": "Your profile shows your last 100 matches on one page, with filters by result, mode and opponent. Signed-in casual, bot and private matches now appear there too.",
+    "pt-BR": "Seu perfil mostra suas últimas 100 partidas em uma página, com filtros por resultado, modo e oponente. Partidas casuais, contra bot e privadas com conta conectada agora também aparecem.",
+    "es": "Tu perfil muestra tus últimas 100 partidas en una página, con filtros por resultado, modo y oponente. Las partidas casuales, contra bot y privadas con sesión iniciada ahora también aparecen.",
+    "it": "Il profilo mostra le ultime 100 partite in una pagina, con filtri per risultato, modalità e avversario. Ora compaiono anche le partite casual, contro bot e private giocate con l'account connesso."
+  },
+  "releases.1.22.0-beta.feature.preferences": {
+    "en": "The Preferences screen has a new layout, you can upload your own egg sleeve image, and the hand sort button lets you sort by type, cost or color.",
+    "pt-BR": "A tela de Preferências tem um novo layout, você pode enviar sua própria imagem de sleeve de ovo, e o botão de ordenar a mão permite ordenar por tipo, custo ou cor.",
+    "es": "La pantalla de Preferencias tiene un nuevo diseño, puedes subir tu propia imagen de funda de huevo, y el botón de ordenar la mano permite ordenar por tipo, coste o color.",
+    "it": "La schermata Preferenze ha un nuovo layout, puoi caricare la tua immagine per la bustina delle uova, e il pulsante di ordinamento della mano ordina per tipo, costo o colore."
+  },
+  "releases.1.22.0-beta.feature.privacy": {
+    "en": "A privacy policy page explains what Aegis keeps and how the Google Drive integration works. Leaving a match with Back now concedes and stays on the result screen, so you can keep the replay.",
+    "pt-BR": "Uma página de política de privacidade explica o que o Aegis guarda e como funciona a integração com o Google Drive. Sair de uma partida com Voltar agora concede e fica na tela de resultado, para você poder guardar o replay.",
+    "es": "Una página de política de privacidad explica qué guarda Aegis y cómo funciona la integración con Google Drive. Salir de una partida con Atrás ahora concede y se queda en la pantalla de resultado, para que puedas guardar la repetición.",
+    "it": "Una pagina sull'informativa privacy spiega cosa conserva Aegis e come funziona l'integrazione con Google Drive. Uscire da una partita con Indietro ora concede e resta sulla schermata del risultato, così puoi tenere il replay."
+  },
+  "releases.1.22.0-beta.fix.table": {
+    "en": "Fixed a card selection window, such as Greymon's [Security] effect choosing from hand and trash, that grew below the screen and hid its buttons, and opponent card windows that closed on every phase change.",
+    "pt-BR": "Corrigidas uma janela de seleção de cartas, como o efeito [Segurança] de Greymon escolhendo da mão e da lixeira, que crescia para fora da tela e escondia seus botões, e janelas de cartas do oponente que fechavam a cada mudança de fase.",
+    "es": "Se corrigieron una ventana de selección de cartas, como el efecto [Seguridad] de Greymon eligiendo de la mano y la papelera, que crecía fuera de la pantalla y ocultaba sus botones, y ventanas de cartas del oponente que se cerraban en cada cambio de fase.",
+    "it": "Corrette una finestra di selezione delle carte, come l'effetto [Sicurezza] di Greymon che sceglie dalla mano e dal cestino, che usciva dallo schermo e nascondeva i pulsanti, e le finestre delle carte avversarie che si chiudevano a ogni cambio di fase."
+  },
+  "releases.1.22.0-beta.fix.interface": {
+    "en": "The feedback form keeps your text when you click outside it, the skip button no longer shifts the toolbar, and the advanced queue settings are easier to find.",
+    "pt-BR": "O formulário de feedback mantém seu texto quando você clica fora dele, o botão de pular não desloca mais a barra de ferramentas, e as configurações avançadas da fila ficaram mais fáceis de encontrar.",
+    "es": "El formulario de comentarios conserva tu texto cuando haces clic fuera, el botón de saltar ya no desplaza la barra de herramientas, y la configuración avanzada de la cola es más fácil de encontrar.",
+    "it": "Il modulo di feedback mantiene il testo quando fai clic fuori, il pulsante per saltare non sposta più la barra degli strumenti, e le impostazioni avanzate della coda sono più facili da trovare."
+  },
   "releases.1.19.0-beta.summary": {
     "en": "This minor release adds historical and Pauper deck formats, a better phone deck builder and an account-synced auto hatch setting, and fixes reported card, effect and table problems.",
     "pt-BR": "Esta versão minor adiciona formatos de deck históricos e Pauper, um construtor de decks melhor no celular e uma opção de auto hatch sincronizada com a conta, e corrige problemas reportados em cartas, efeitos e na mesa.",
@@ -1684,5 +1726,113 @@
     "en": "Counter decisions that time out can finish without leaving the match waiting for an unanswered response.",
     "pt-BR": "Decisões de Counter que expiram podem terminar sem deixar a partida aguardando uma resposta.",
     "es": "Las decisiones de Counter que agotan el tiempo pueden terminar sin dejar la partida esperando una respuesta que nunca llega."
+  },
+  "releases.1.20.0-beta.summary": {
+    "en": "This minor release adds feedback tracking with notifications and deck reports, shows what your opponent is doing, and fixes a Counter prompt that could stay hidden plus reported card and table problems.",
+    "pt-BR": "Esta versão minor adiciona o acompanhamento de feedback com notificações e denúncias de decks, mostra o que o oponente está fazendo e corrige um prompt de Counter que podia ficar escondido, além de problemas reportados em cartas e na mesa.",
+    "es": "Esta versión menor agrega el seguimiento de comentarios con notificaciones y denuncias de decks, muestra lo que hace tu oponente y corrige un aviso de Counter que podía quedar oculto, además de problemas reportados en cartas y en la mesa.",
+    "it": "Questa versione minor aggiunge il monitoraggio dei feedback con notifiche e segnalazioni dei mazzi, mostra cosa sta facendo l'avversario e corregge un prompt di Counter che poteva restare nascosto, oltre a problemi segnalati su carte e tavolo."
+  },
+  "releases.1.20.0-beta.feature.feedback": {
+    "en": "Follow your reports in My feedback and get a notification when their status changes. Public decks can now be reported for moderation.",
+    "pt-BR": "Acompanhe seus reports em Meu feedback e receba uma notificação quando o status mudar. Decks públicos agora podem ser denunciados para moderação.",
+    "es": "Sigue tus reportes en Mis comentarios y recibe una notificación cuando cambie su estado. Ahora los decks públicos se pueden denunciar para moderación.",
+    "it": "Segui le tue segnalazioni in I miei feedback e ricevi una notifica quando cambia il loro stato. Ora i mazzi pubblici si possono segnalare alla moderazione."
+  },
+  "releases.1.20.0-beta.feature.opponentStatus": {
+    "en": "The board says what your opponent is doing: selecting cards, choosing targets or effect order, making a combat choice, or thinking on their turn.",
+    "pt-BR": "A mesa mostra o que o oponente está fazendo: selecionando cartas, escolhendo alvos ou a ordem dos efeitos, fazendo uma escolha de combate ou pensando no turno dele.",
+    "es": "La mesa muestra lo que hace tu oponente: seleccionar cartas, elegir objetivos o el orden de los efectos, tomar una decisión de combate o pensar en su turno.",
+    "it": "Il tavolo mostra cosa sta facendo l'avversario: seleziona carte, sceglie bersagli o l'ordine degli effetti, fa una scelta di combattimento o pensa nel suo turno."
+  },
+  "releases.1.20.0-beta.feature.mobile": {
+    "en": "On phones, notices float over the board without moving it, match clocks stay in the header, and hand cards a selection cannot take are dimmed.",
+    "pt-BR": "No celular, os avisos flutuam sobre a mesa sem movê-la, os relógios da partida ficam no cabeçalho e as cartas da mão que a seleção não aceita ficam esmaecidas.",
+    "es": "En el móvil, los avisos flotan sobre la mesa sin moverla, los relojes de la partida quedan en la cabecera y las cartas de la mano que la selección no admite se atenúan.",
+    "it": "Sul telefono gli avvisi fluttuano sul tavolo senza spostarlo, gli orologi della partita restano nell'intestazione e le carte della mano che la selezione non può prendere sono attenuate."
+  },
+  "releases.1.20.0-beta.fix.counter": {
+    "en": "The Counter prompt now opens right after the attacker's decision, instead of staying hidden while your clock ran down.",
+    "pt-BR": "O prompt de Counter agora abre logo após a decisão do atacante, em vez de ficar escondido enquanto o seu relógio corria.",
+    "es": "El aviso de Counter ahora se abre justo después de la decisión del atacante, en lugar de quedar oculto mientras corría tu reloj.",
+    "it": "Il prompt di Counter ora si apre subito dopo la decisione dell'attaccante, invece di restare nascosto mentre il tuo orologio scorreva."
+  },
+  "releases.1.20.0-beta.fix.cards": {
+    "en": "Fixed Blast DNA requirements, Rie Kishibe's payment, inherited effects on deletion, Assembly cost reductions, optional evolutions after a paid cost and trait matching.",
+    "pt-BR": "Corrigidos os requisitos de Blast DNA, o pagamento da Rie Kishibe, efeitos herdados na deleção, reduções de custo de Assembly, evoluções opcionais após um custo pago e a leitura de traços.",
+    "es": "Se corrigieron los requisitos de Blast DNA, el pago de Rie Kishibe, los efectos heredados al ser eliminado, las reducciones de coste de Assembly, las evoluciones opcionales tras pagar un coste y la lectura de rasgos.",
+    "it": "Corretti i requisiti di Blast DNA, il pagamento di Rie Kishibe, gli effetti ereditati all'eliminazione, le riduzioni di costo di Assembly, le evoluzioni facoltative dopo un costo pagato e il riconoscimento dei tratti."
+  },
+  "releases.1.20.0-beta.fix.table": {
+    "en": "Effect sources stay on the field during a security battle, tablet notices no longer cover the clash, and card art can no longer be dragged by accident.",
+    "pt-BR": "As fontes de efeito ficam no campo durante a batalha de segurança, os avisos no tablet não cobrem mais o confronto e a arte das cartas não é mais arrastada sem querer.",
+    "es": "Las fuentes de efecto se quedan en el campo durante la batalla de seguridad, los avisos en la tableta ya no tapan el enfrentamiento y el arte de las cartas ya no se arrastra sin querer.",
+    "it": "Le fonti degli effetti restano sul campo durante la battaglia di sicurezza, gli avvisi sul tablet non coprono più lo scontro e l'arte delle carte non si trascina più per sbaglio."
+  },
+  "releases.1.20.1-beta.summary": {
+    "en": "This patch fixes Publimon returning to security after other Digimon attack, and security Digimon that were played before their battle.",
+    "pt-BR": "Este patch corrige o Publimon voltando para a segurança após ataques de outros Digimon e os Digimon de segurança que entravam em jogo antes da batalha.",
+    "es": "Este parche corrige que Publimon volviera a la seguridad tras los ataques de otros Digimon y los Digimon de seguridad que se jugaban antes de su batalla.",
+    "it": "Questa patch corregge Publimon che tornava nella sicurezza dopo gli attacchi di altri Digimon e i Digimon di sicurezza giocati prima della loro battaglia."
+  },
+  "releases.1.20.1-beta.fix.publimon": {
+    "en": "LM-007 Publimon's [End of Attack] now activates only at the end of its own attack, not after any Digimon's attack.",
+    "pt-BR": "O [Fim do Ataque] de Publimon LM-007 agora ativa apenas no fim do próprio ataque, e não após o ataque de qualquer Digimon.",
+    "es": "El [Fin del Ataque] de Publimon LM-007 ahora se activa solo al final de su propio ataque, no tras el ataque de cualquier Digimon.",
+    "it": "Il [Fine dell'Attacco] di Publimon LM-007 ora si attiva solo alla fine del suo attacco, non dopo l'attacco di qualsiasi Digimon."
+  },
+  "releases.1.20.1-beta.fix.endOfBattle": {
+    "en": "Security Digimon that read \"At the end of the battle, play this card\" now battle the attacker first and enter play after the battle: LM-007, BT18-035, RB1-028, ST21-03, EX10-024, P-165, BT22-050 and ST20-05.",
+    "pt-BR": "Os Digimon de segurança com \"No fim da batalha, jogue esta carta\" agora batalham com o atacante primeiro e entram em jogo depois da batalha: LM-007, BT18-035, RB1-028, ST21-03, EX10-024, P-165, BT22-050 e ST20-05.",
+    "es": "Los Digimon de seguridad con \"Al final de la batalla, juega esta carta\" ahora combaten primero contra el atacante y entran en juego después de la batalla: LM-007, BT18-035, RB1-028, ST21-03, EX10-024, P-165, BT22-050 y ST20-05.",
+    "it": "I Digimon di sicurezza con \"Alla fine della battaglia, gioca questa carta\" ora combattono prima contro l'attaccante ed entrano in gioco dopo la battaglia: LM-007, BT18-035, RB1-028, ST21-03, EX10-024, P-165, BT22-050 e ST20-05."
+  },
+  "releases.1.21.0-beta.summary": {
+    "en": "This minor release makes the match timer fairer, improves phone prompts, and fixes more than 30 reported card, rule and table problems.",
+    "pt-BR": "Esta versão minor deixa o cronômetro da partida mais justo, melhora os avisos no celular e corrige mais de 30 problemas relatados de cartas, regras e mesa.",
+    "es": "Esta versión minor hace más justo el reloj de la partida, mejora los avisos en el móvil y corrige más de 30 problemas reportados de cartas, reglas y mesa.",
+    "it": "Questa versione minor rende più equo il timer della partita, migliora i prompt sul telefono e corregge oltre 30 problemi segnalati su carte, regole e tavolo."
+  },
+  "releases.1.21.0-beta.feature.timer": {
+    "en": "Timed matches no longer skip animations: your clock stays paused while your screen plays them, at your own effect speed, and it never runs while your opponent is disconnected.",
+    "pt-BR": "Partidas com tempo não pulam mais animações: seu relógio fica pausado enquanto sua tela as exibe, na sua velocidade de efeitos, e nunca corre enquanto o oponente está desconectado.",
+    "es": "Las partidas con tiempo ya no saltan animaciones: tu reloj queda en pausa mientras tu pantalla las muestra, a tu velocidad de efectos, y nunca corre mientras tu oponente está desconectado.",
+    "it": "Le partite a tempo non saltano più le animazioni: il tuo orologio resta in pausa mentre lo schermo le mostra, alla tua velocità degli effetti, e non scorre mai mentre l'avversario è disconnesso."
+  },
+  "releases.1.21.0-beta.feature.timeBank": {
+    "en": "The mulligan has its own 30-second window that does not use the match clock, and each decision you make during a turn adds 3 seconds, up to 30 seconds per turn.",
+    "pt-BR": "O mulligan tem sua própria janela de 30 segundos, que não usa o relógio da partida, e cada decisão tomada durante um turno adiciona 3 segundos, até 30 segundos por turno.",
+    "es": "El mulligan tiene su propia ventana de 30 segundos, que no usa el reloj de la partida, y cada decisión que tomas durante un turno añade 3 segundos, hasta 30 segundos por turno.",
+    "it": "Il mulligan ha una propria finestra di 30 secondi che non usa l'orologio della partita, e ogni decisione presa durante un turno aggiunge 3 secondi, fino a 30 secondi per turno."
+  },
+  "releases.1.21.0-beta.feature.mobile": {
+    "en": "On phones, effect prompts stay clear of the card that triggered them, notices open with a tap while a prompt is open, and the Counter window keeps your hand visible.",
+    "pt-BR": "No celular, os avisos de efeito não cobrem mais a carta que os ativou, as notificações abrem com um toque mesmo com um aviso aberto, e a janela de Counter mantém sua mão visível.",
+    "es": "En el móvil, los avisos de efecto ya no tapan la carta que los activó, las notificaciones se abren con un toque aunque haya un aviso abierto, y la ventana de Counter mantiene tu mano visible.",
+    "it": "Sul telefono i prompt degli effetti non coprono più la carta che li ha attivati, le notifiche si aprono con un tocco anche con un prompt aperto e la finestra di Counter lascia visibile la mano."
+  },
+  "releases.1.21.0-beta.fix.cards": {
+    "en": "Fixed reported cards, including Burst Digivolve Tamer choice, Black Sabbath, DoruGreymon, Kakkinmon, Hiroko, Ignitemon and other \"By\" costs, Keenan's trigger order, Shoutmon X7 DigiXros, Davis Motomiya, BT18 Vemmon and High-Speed Plug-In H.",
+    "pt-BR": "Corrigidas cartas relatadas, incluindo a escolha de Tamer do Burst Digivolve, Black Sabbath, DoruGreymon, Kakkinmon, Hiroko, Ignitemon e outros custos \"Ao\", a ordem dos gatilhos de Keenan, o DigiXros de Shoutmon X7, Davis Motomiya, Vemmon BT18 e High-Speed Plug-In H.",
+    "es": "Se corrigieron cartas reportadas, incluida la elección de Tamer de Burst Digivolve, Black Sabbath, DoruGreymon, Kakkinmon, Hiroko, Ignitemon y otros costes \"Al\", el orden de activación de Keenan, el DigiXros de Shoutmon X7, Davis Motomiya, Vemmon BT18 y High-Speed Plug-In H.",
+    "it": "Corrette carte segnalate, tra cui la scelta del Tamer del Burst Digivolve, Black Sabbath, DoruGreymon, Kakkinmon, Hiroko, Ignitemon e altri costi \"Per\", l'ordine di attivazione di Keenan, il DigiXros di Shoutmon X7, Davis Motomiya, Vemmon BT18 e High-Speed Plug-In H."
+  },
+  "releases.1.21.0-beta.fix.rules": {
+    "en": "Effects no longer ask questions that cannot change anything, such as a Digivolve with no legal card or an attack by a Digimon that cannot attack, and a cost that was prevented no longer gives its effect for free.",
+    "pt-BR": "Os efeitos não fazem mais perguntas que não mudam nada, como um Digivolve sem carta válida ou um ataque de um Digimon que não pode atacar, e um custo impedido não concede mais o efeito de graça.",
+    "es": "Los efectos ya no hacen preguntas que no cambian nada, como un Digivolve sin carta válida o un ataque de un Digimon que no puede atacar, y un coste impedido ya no otorga el efecto gratis.",
+    "it": "Gli effetti non fanno più domande inutili, come un Digivolve senza carte valide o l'attacco di un Digimon che non può attaccare, e un costo impedito non concede più l'effetto gratis."
+  },
+  "releases.1.21.0-beta.fix.table": {
+    "en": "Fixed a security check that stayed on screen, battles that played before [When Attacking] effects, a freeze after Options used from the trash, and the Opponent field badge covering notices.",
+    "pt-BR": "Corrigidos uma checagem de segurança que ficava na tela, batalhas exibidas antes dos efeitos [Ao Atacar], um travamento após Options usadas da lixeira e o selo de campo do oponente cobrindo avisos.",
+    "es": "Se corrigieron una revisión de seguridad que quedaba en pantalla, batallas mostradas antes de los efectos [Al Atacar], un bloqueo tras Options usadas desde la papelera y la insignia de campo del oponente tapando avisos.",
+    "it": "Corretti un controllo di sicurezza che restava sullo schermo, battaglie mostrate prima degli effetti [Quando Attacca], un blocco dopo le Option usate dal cestino e il badge del campo avversario che copriva gli avvisi."
+  },
+  "releases.1.21.0-beta.fix.privacy": {
+    "en": "Face-down security cards no longer send their identity to the opponent's game.",
+    "pt-BR": "Cartas de segurança viradas para baixo não enviam mais sua identidade para o jogo do oponente.",
+    "es": "Las cartas de seguridad boca abajo ya no envían su identidad al juego del oponente.",
+    "it": "Le carte di sicurezza a faccia in giù non inviano più la loro identità al gioco dell'avversario."
   }
 }

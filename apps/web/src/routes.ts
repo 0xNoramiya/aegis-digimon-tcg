@@ -4,13 +4,19 @@ export type TournamentRoute = { kind: "catalog" } | { kind: "create" } | { kind:
 
 export interface AppRoute {
   screen: Screen;
+  profile?: boolean;
+  /** Only shared replay links open the replays screen; `/replays` itself redirects to the profile. */
+  replayId?: string;
   tournament?: TournamentRoute;
   /** The public deck open on the community screen; absent on the browse list. */
   communityDeckId?: string;
+  /** The report open on the admin triage or the reporter's own feedback screen. */
+  feedbackId?: number;
 }
 
 export const SCREEN_PATHS: Record<Screen, string> = {
   feedback: "/admin/feedback",
+  myFeedback: "/feedback",
   home: "/",
   login: "/login",
   lobby: "/play",
@@ -20,12 +26,19 @@ export const SCREEN_PATHS: Record<Screen, string> = {
   tournaments: "/tournaments",
   settings: "/settings",
   releases: "/whats-new",
+  replays: "/replays",
+  privacy: "/privacy",
   game: "/play/game",
 };
 
 export function routeFromPathname(pathname: string): AppRoute | undefined {
   const normalized = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
   if (normalized === "/admin/feedback") return { screen: "feedback" };
+  const triagedFeedback = /^\/admin\/feedback\/(\d{1,9})$/.exec(normalized)?.[1];
+  if (triagedFeedback) return { screen: "feedback", feedbackId: Number(triagedFeedback) };
+  if (normalized === "/feedback") return { screen: "myFeedback" };
+  const ownFeedback = /^\/feedback\/(\d{1,9})$/.exec(normalized)?.[1];
+  if (ownFeedback) return { screen: "myFeedback", feedbackId: Number(ownFeedback) };
   if (normalized === "/") return { screen: "home" };
   if (normalized === "/login") return { screen: "login" };
   if (normalized === "/play") return { screen: "lobby" };
@@ -35,14 +48,24 @@ export function routeFromPathname(pathname: string): AppRoute | undefined {
   if (normalized === "/community") return { screen: "community" };
   const communityDeck = /^\/community\/decks\/([^/]+)$/.exec(normalized)?.[1];
   if (communityDeck) return { screen: "community", communityDeckId: safeDecode(communityDeck) };
+  // The profile used to split into tabs and the replays screen had its own library; old links land on the profile.
+  if (["/profile", "/profile/replays", "/profile/customize", "/replays"].includes(normalized))
+    return { screen: "settings", profile: true };
+  const replayId = /^\/replays\/([^/]+)$/.exec(normalized)?.[1];
+  if (replayId) return { screen: "replays", replayId: safeDecode(replayId) };
   if (normalized === "/settings") return { screen: "settings" };
   if (normalized === "/whats-new") return { screen: "releases" };
+  if (normalized === "/privacy") return { screen: "privacy" };
   return undefined;
 }
 
 export function pathForRoute(route: AppRoute): string {
+  if (route.screen === "settings" && route.profile) return "/profile";
+  if (route.screen === "replays") return route.replayId ? `/replays/${encodeURIComponent(route.replayId)}` : "/profile";
   if (route.screen === "community" && route.communityDeckId)
     return `/community/decks/${encodeURIComponent(route.communityDeckId)}`;
+  if ((route.screen === "feedback" || route.screen === "myFeedback") && route.feedbackId !== undefined)
+    return `${SCREEN_PATHS[route.screen]}/${route.feedbackId}`;
   if (route.screen !== "tournaments") return SCREEN_PATHS[route.screen];
   if (route.tournament?.kind === "create") return "/tournaments/new";
   if (route.tournament?.kind === "detail") return `/tournaments/${encodeURIComponent(route.tournament.id)}`;

@@ -107,12 +107,13 @@ describe("match timer websocket contract", () => {
     });
     host.send("ready", {});
     guest.send("ready", {});
-    await vi.waitFor(() => expect(host.state.timerActiveSeat).not.toBe(-1), { timeout: 10_000 });
+    // The server holds the clock while the opening batches play at Normal speed.
+    await vi.waitFor(() => expect(host.state.timerActiveSeat).not.toBe(-1), { timeout: 30_000 });
     expect(guest.state.matchTimer).toBe(true);
     expect(guest.state.timerStartSeconds).toBe(60);
     expect(guest.state.timerRefillSeconds).toBe(60);
     await vi.waitFor(() => expect(Math.min(host.state.timerRemaining0, host.state.timerRemaining1)).toBeLessThan(60), {
-      timeout: 5000,
+      timeout: 15_000,
     });
     const before = [guest.state.timerRemaining0, guest.state.timerRemaining1];
     const token = host.reconnectionToken;
@@ -126,7 +127,7 @@ describe("match timer websocket contract", () => {
     expect(resumed.state.timerRemaining1).toBeLessThanOrEqual(before[1]!);
     expect(resumed.state.matchTimer).toBe(true);
     expect(resumed.state.timerRefillSeconds).toBe(60);
-  }, 20_000);
+  }, 60_000);
 
   it("resends an open timed decision after reconnect without restoring the reserve", async () => {
     server = await startTestServer();
@@ -154,8 +155,9 @@ describe("match timer websocket contract", () => {
     host.send("ready", {});
     guest.send("ready", {});
     await vi.waitFor(() => expect(initial?.kind).toBe("mulligan"), { timeout: 10_000 });
-    await vi.waitFor(() => expect(host.state.timerRemaining0).toBeLessThan(60), { timeout: 5000 });
-    const remaining = host.state.timerRemaining0;
+    await vi.waitFor(() => expect(host.state.mulliganTimerRemaining0).toBeLessThan(30), { timeout: 15_000 });
+    expect(host.state.timerRemaining0).toBe(60);
+    const remaining = host.state.mulliganTimerRemaining0;
     const token = host.reconnectionToken;
     const departed = new Promise<void>((resolve) => host.onLeave(() => resolve()));
     host.connection.close(4500, "open decision reconnect");
@@ -169,10 +171,10 @@ describe("match timer websocket contract", () => {
     });
     await vi.waitFor(() => expect(redelivered?.decisionId).toBe(initial!.decisionId), { timeout: 3000 });
     expect(resumed.state.pendingDecision?.seat).toBe(0);
-    expect(resumed.state.timerRemaining0).toBeLessThanOrEqual(remaining);
-    expect(resumed.state.timerRemaining0).toBeGreaterThan(0);
+    expect(resumed.state.mulliganTimerRemaining0).toBeLessThanOrEqual(remaining);
+    expect(resumed.state.mulliganTimerRemaining0).toBeGreaterThan(0);
     resumed.send("mulligan", { keep: true });
     await vi.waitFor(() => expect(resumed.state.pendingDecision?.decisionId).not.toBe(initial!.decisionId));
     expect(resumed.state.gameOver).toBe(false);
-  }, 20_000);
+  }, 60_000);
 });

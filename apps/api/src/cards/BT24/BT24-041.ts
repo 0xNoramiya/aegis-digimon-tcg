@@ -64,6 +64,7 @@ export const compiled: CompiledCard = {
         },
         {
           kind: "SelectBind",
+          effectTextPart: "Then, to 1 of your opponent's Digimon, ＜De-Digivolve 1＞ for each of your Digimon.",
           condition: { kind: "youHave", filter: { controller: "mine", kind: ["Digimon"] } },
           target: {
             filter: { controller: "opponent", kind: ["Digimon"] },
@@ -120,6 +121,7 @@ export const compiled: CompiledCard = {
         },
         {
           kind: "SelectBind",
+          effectTextPart: "Then, to 1 of your opponent's Digimon, ＜De-Digivolve 1＞ for each of your Digimon.",
           condition: { kind: "youHave", filter: { controller: "mine", kind: ["Digimon"] } },
           target: {
             filter: { controller: "opponent", kind: ["Digimon"] },
@@ -176,6 +178,7 @@ export const compiled: CompiledCard = {
         },
         {
           kind: "SelectBind",
+          effectTextPart: "Then, to 1 of your opponent's Digimon, ＜De-Digivolve 1＞ for each of your Digimon.",
           condition: { kind: "youHave", filter: { controller: "mine", kind: ["Digimon"] } },
           target: {
             filter: { controller: "opponent", kind: ["Digimon"] },

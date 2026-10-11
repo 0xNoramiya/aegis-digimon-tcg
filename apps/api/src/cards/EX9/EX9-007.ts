@@ -9,7 +9,6 @@ export const compiled: CompiledCard = {
         {
           kind: "RevealAdd",
           revealCount: 3,
-          sequentialSelections: true,
           add: [
             {
               filter: {

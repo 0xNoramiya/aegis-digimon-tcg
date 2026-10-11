@@ -1160,6 +1160,9 @@ export async function runSubTrigger(
     !hasCost(action) &&
     parsedBody.length > 0 &&
     parsedBody.every((candidate) => candidate.optional === true && !hasCost(candidate));
+  // CR 15-8-3-9-2: the watcher triggers even while its activation condition is false and stays
+  // pending, so a simultaneous effect resolved first can still satisfy it (BT24-078).
+  const activationCondition = action.activationCondition;
   const fireGates = [
     ...(delayArmedIntrinsic
       ? [
@@ -1186,10 +1189,11 @@ export async function runSubTrigger(
     ...(isLinkedSource ? { isLinkedSource: true } : {}),
     ...(sourceFilter?.isSelfRef === true ? { watchesSelf: true } : {}),
     ...(fireGates.length === 0 ? {} : { canFire: (subCtx) => fireGates.every((gate) => gate(subCtx)) }),
-    ...(costFreeOptionalBody || requiresSelfSuspend
+    ...(costFreeOptionalBody || requiresSelfSuspend || activationCondition !== undefined
       ? {
           hasLegalOutcome: (subCtx: EffectContext) =>
             (!requiresSelfSuspend || selfSuspendPayable(subCtx)) &&
+            (activationCondition === undefined || evaluateCondition(subCtx, activationCondition)) &&
             (!costFreeOptionalBody || canActivateEffect(subCtx, { actions: action.actions })),
         }
       : {}),

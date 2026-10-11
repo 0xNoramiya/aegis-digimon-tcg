@@ -276,6 +276,18 @@ const Bell = (p: IconProps) => (
     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
   </Svg>
 );
+const RotateCcw = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+    <path d="M3 3v5h5" />
+  </Svg>
+);
+const Lock = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="4" y="11" width="16" height="10" rx="2" />
+    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+  </Svg>
+);
 const Search = (p: IconProps) => (
   <Svg {...p}>
     <circle cx="11" cy="11" r="8" />
@@ -441,6 +453,24 @@ const MoreVertical = (p: IconProps) => (
     <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none" />
   </Svg>
 );
+const MoreHorizontal = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+    <circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" />
+    <circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" />
+  </Svg>
+);
+const Pencil = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+    <path d="m15 5 4 4" />
+  </Svg>
+);
+const Folder = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+  </Svg>
+);
 const Bot = (p: IconProps) => (
   <Svg {...p}>
     <path d="M12 8V4H8" />
@@ -495,6 +525,18 @@ const Upload = (p: IconProps) => (
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
     <polyline points="17 8 12 3 7 8" />
     <line x1="12" y1="3" x2="12" y2="15" />
+  </Svg>
+);
+const Cloud = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" />
+  </Svg>
+);
+const ExternalLink = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M15 3h6v6" />
+    <path d="M10 14 21 3" />
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
   </Svg>
 );
 const Download = (p: IconProps) => (
@@ -636,6 +678,8 @@ export const Icons = {
   PanelSplit,
   PanelDeck,
   Bell,
+  Lock,
+  RotateCcw,
   Search,
   Plus,
   Check,
@@ -658,6 +702,9 @@ export const Icons = {
   FileText,
   BookOpen,
   MoreVertical,
+  MoreHorizontal,
+  Pencil,
+  Folder,
   Bot,
   Palette,
   Calendar,
@@ -668,6 +715,8 @@ export const Icons = {
   StarOutline,
   Upload,
   Download,
+  Cloud,
+  ExternalLink,
   Ban,
   Bug,
   Discord,

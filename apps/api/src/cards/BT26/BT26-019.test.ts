@@ -360,7 +360,7 @@ describe("BT26-019 Mailmon", () => {
         },
         1: { battleArea: [{ card: "BT26-019", as: "defender", dp: 7000, suspended: true }] },
       },
-      { autoSelectCards: true, autoDeclineOptional: true },
+      { autoSelectCards: true, autoAcceptOptional: true },
     );
     await s.ready();
     const defenderId = s.perm("defender").permanentId;

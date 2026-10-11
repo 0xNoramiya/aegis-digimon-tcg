@@ -34,15 +34,21 @@ import { usePreferencesSync } from "./account/usePreferencesSync";
 import { BugReportDialog } from "./bugs/BugReportDialog";
 import { LeaveMatchDialog } from "./game/screen/layout/LeaveMatchDialog";
 import { PlayerMenu } from "./account/PlayerMenu";
-import type { DigimonWorldAvatarId } from "./account/avatars";
+import { NotificationBell } from "./notifications/NotificationBell";
+import { useNotificationInbox } from "./notifications/useNotificationInbox";
 import { pathForRoute, routeFromPathname, type AppRoute } from "./routes";
 import { roomCodeFromSearch } from "./roomInvite";
 import { isBattleLabPath } from "./dev/BattleLab";
 import { isUiPreviewPath } from "./prototype/routes";
 import { SEQUENTIAL_PACING_ENABLED } from "./features";
 import { clearReconnectSession, loadReconnectSession } from "./net/reconnectSession";
+import { setRoomTicketAccount } from "./net/roomAccount";
 
+const ProfileScreen = lazy(() => import("./account/ProfileScreen").then((m) => ({ default: m.ProfileScreen })));
+const ReplaysScreen = lazy(() => import("./replays/ReplaysScreen").then((m) => ({ default: m.ReplaysScreen })));
 const FeedbackScreen = lazy(() => import("./bugs/FeedbackScreen").then((m) => ({ default: m.FeedbackScreen })));
+const MyFeedbackScreen = lazy(() => import("./bugs/MyFeedbackScreen").then((m) => ({ default: m.MyFeedbackScreen })));
+const PrivacyScreen = lazy(() => import("./legal/PrivacyScreen").then((m) => ({ default: m.PrivacyScreen })));
 const Home = lazy(() => import("./screens/Home").then((m) => ({ default: m.Home })));
 const ReleasesScreen = lazy(() => import("./releases/ReleasesScreen").then((m) => ({ default: m.ReleasesScreen })));
 const Login = lazy(() => import("./screens/Login").then((m) => ({ default: m.Login })));
@@ -104,7 +110,19 @@ function ScreenFallback() {
   );
 }
 
-const NAV_SCREENS: Screen[] = ["home", "lobby", "deck", "community", "collection", "settings", "releases", "feedback"];
+const NAV_SCREENS: Screen[] = [
+  "home",
+  "lobby",
+  "deck",
+  "community",
+  "collection",
+  "settings",
+  "releases",
+  "replays",
+  "feedback",
+  "myFeedback",
+  "privacy",
+];
 
 export function withAccountAvatar(player: PlayerIdentity, account: RemoteAccount | null): PlayerIdentity {
   return {
@@ -187,6 +205,8 @@ function AppShell() {
   useEffect(() => {
     saveDecks(decks);
   }, [decks]);
+
+  useEffect(() => setRoomTicketAccount(!!account), [account]);
 
   useEffect(() => {
     void (async () => {
@@ -334,15 +354,16 @@ export function AegisClient({
   const [betaBattleMode, setBetaBattleMode] = useState(false);
   const [matchDeckId, setMatchDeckId] = useState<string>();
   const [matchNumber, setMatchNumber] = useState(0);
-  const [playerMenuOpen, setPlayerMenuOpen] = useState(false);
+  const [playerMenuAnchor, setPlayerMenuAnchor] = useState<HTMLElement | null>(null);
+  const playerMenuOpen = playerMenuAnchor !== null;
+  const [replayViewing, setReplayViewing] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [bugReportOpen, setBugReportOpen] = useState(false);
   const [leaveMatchPromptOpen, setLeaveMatchPromptOpen] = useState(false);
-  const leaveForfeitsMatchRef = useRef(false);
-  const leaveMatchConfirmedRef = useRef(false);
-  const setLeaveForfeitsMatch = useCallback((forfeits: boolean) => {
-    leaveForfeitsMatchRef.current = forfeits;
-    if (!forfeits) setLeaveMatchPromptOpen(false);
+  const concedeMatchRef = useRef<(() => void) | undefined>(undefined);
+  const setLeaveForfeitsMatch = useCallback((concede: (() => void) | undefined) => {
+    concedeMatchRef.current = concede;
+    if (!concede) setLeaveMatchPromptOpen(false);
   }, []);
   const screen = route.screen;
   useEffect(() => {
@@ -373,14 +394,15 @@ export function AegisClient({
         nextRoute?.screen === "game" && !loadReconnectSession()
           ? { screen: "lobby" }
           : (nextRoute ?? { screen: "home" });
-      /* The browser has already moved off the match URL, so the guard restores it and
-         asks. Confirming steps back again, which lands on the route the player chose. */
-      if (leaveForfeitsMatchRef.current && resolvedRoute.screen !== "game" && !leaveMatchConfirmedRef.current) {
+      /* The browser has already moved off the match URL, so the guard restores it and asks.
+         Confirming concedes in place: the result screen then offers to keep the replay. */
+      if (concedeMatchRef.current && resolvedRoute.screen !== "game") {
         window.history.pushState(null, "", pathForRoute({ screen: "game" }));
         setLeaveMatchPromptOpen(true);
         return;
       }
-      leaveMatchConfirmedRef.current = false;
+      const resolvedPath = pathForRoute(resolvedRoute);
+      if (window.location.pathname !== resolvedPath) window.history.replaceState(null, "", resolvedPath);
       setRoute(resolvedRoute);
     };
     window.addEventListener("popstate", onPopState);
@@ -388,12 +410,12 @@ export function AegisClient({
   }, [initialScreen]);
 
   const confirmLeaveMatch = () => {
-    leaveMatchConfirmedRef.current = true;
     setLeaveMatchPromptOpen(false);
-    window.history.back();
+    concedeMatchRef.current?.();
   };
 
   const navigate = (nextRoute: AppRoute) => {
+    setPlayerMenuAnchor(null);
     if (!initialScreen) {
       const path = pathForRoute(nextRoute);
       if (window.location.pathname !== path) window.history.pushState(null, "", path);
@@ -445,16 +467,10 @@ export function AegisClient({
     [effectivePlayer.name, effectivePlayer.avatarId, matchDeck, timerOptions, bestOf, customBotDeck, deckFormat],
   );
 
-  const showNav = NAV_SCREENS.includes(screen);
-
-  const selectAvatar = async (avatarId: DigimonWorldAvatarId | null) => {
-    if (account) {
-      const updated = await accountApi.updateAvatar(avatarId);
-      if (updated) setAccount?.({ ...account, ...updated });
-      return;
-    }
-    setPlayer((p) => ({ ...p, guestAvatarId: avatarId, color: accentForAvatar(avatarId, colorKey(p.color)) }));
-  };
+  const showNav = NAV_SCREENS.includes(screen) && !replayViewing;
+  // Kept outside the nav so the count survives a match, where the nav is hidden.
+  const inbox = useNotificationInbox(account?.id);
+  const openOwnFeedback = (feedbackId?: number) => navigate({ screen: "myFeedback", feedbackId });
 
   const refreshDiscordAvatar = async () => {
     const updated = await accountApi.refreshDiscordAvatar();
@@ -470,15 +486,21 @@ export function AegisClient({
           onNav={navigateScreen}
           player={effectivePlayer}
           signedIn={!!account}
-          onOpenPlayerMenu={() => setPlayerMenuOpen(true)}
+          onOpenPlayerMenu={(anchor) => setPlayerMenuAnchor(playerMenuOpen ? null : anchor)}
+          playerMenuOpen={playerMenuOpen}
           dark={dark}
           onToggleDark={setDark}
           onOpenTheme={() => setThemeOpen(true)}
           onSendFeedback={() => setBugReportOpen(true)}
+          notifications={account ? <NotificationBell inbox={inbox} onOpenFeedback={openOwnFeedback} /> : undefined}
         />
       ) : null}
 
-      <div id="aegis-main" className={`aegis-screen-region${showNav ? " aegis-screen-region--nav" : ""}`} tabIndex={-1}>
+      <div
+        id="aegis-main"
+        className={`aegis-screen-region${showNav ? " aegis-screen-region--nav" : ""}${screen === "replays" ? " aegis-screen-region--replays" : ""}${screen === "settings" && route.profile ? " aegis-screen-region--profile" : ""}`}
+        tabIndex={-1}
+      >
         <Suspense fallback={<ScreenFallback />}>
           {screen === "home" && (
             <Home
@@ -493,7 +515,24 @@ export function AegisClient({
             />
           )}
 
-          {screen === "feedback" && <FeedbackScreen key={account?.id ?? "guest"} isAdmin={account?.isAdmin === true} />}
+          {screen === "feedback" && (
+            <FeedbackScreen
+              key={account?.id ?? "guest"}
+              isAdmin={account?.isAdmin === true}
+              selectedId={route.feedbackId}
+              onSelect={(feedbackId) => navigate({ screen: "feedback", feedbackId })}
+              onOpenDeck={(communityDeckId) => navigate({ screen: "community", communityDeckId })}
+            />
+          )}
+          {screen === "myFeedback" && (
+            <MyFeedbackScreen
+              key={account?.id ?? "guest"}
+              signedIn={!!account}
+              focusId={route.feedbackId}
+              onSignIn={() => navigateScreen("login")}
+              onSendFeedback={() => setBugReportOpen(true)}
+            />
+          )}
           {screen === "login" && <Login onBack={() => navigateScreen("home")} />}
 
           {screen === "lobby" && (
@@ -605,18 +644,37 @@ export function AegisClient({
 
           {screen === "collection" && <Collection />}
 
-          {screen === "releases" && <ReleasesScreen />}
-
-          {screen === "settings" && (
-            <Settings
-              player={effectivePlayer}
-              account={account}
-              dark={dark}
-              onToggleDark={setDark}
-              onRename={(name) => setPlayer((p) => ({ ...p, name }))}
-              onSelectAvatar={(avatarId) => setPlayer((p) => ({ ...p, guestAvatarId: avatarId }))}
-              onAccountChange={(updated) => setAccount?.(updated && { ...account, ...updated })}
+          {screen === "replays" && route.replayId && (
+            <ReplaysScreen
+              key={route.replayId}
+              replayId={route.replayId}
+              onCloseLink={() => navigate({ screen: "settings", profile: true })}
+              onViewingChange={setReplayViewing}
             />
+          )}
+
+          {screen === "releases" && <ReleasesScreen />}
+          {screen === "privacy" && <PrivacyScreen />}
+
+          {screen === "settings" && route.profile && (
+            <ProfileScreen
+              account={account}
+              player={effectivePlayer}
+              onViewingChange={setReplayViewing}
+              onAccountChange={(updated) => setAccount?.({ ...account, ...updated })}
+              onGuestChange={(name, avatarId) =>
+                setPlayer((current) => ({
+                  ...current,
+                  name,
+                  guestAvatarId: avatarId,
+                  color: accentForAvatar(avatarId, colorKey(current.color)),
+                }))
+              }
+              onRefreshDiscordAvatar={account?.discordLinked ? refreshDiscordAvatar : undefined}
+            />
+          )}
+          {screen === "settings" && !route.profile && (
+            <Settings player={effectivePlayer} account={account} dark={dark} onToggleDark={setDark} />
           )}
 
           {screen === "game" && (
@@ -670,14 +728,19 @@ export function AegisClient({
         <PlayerMenu
           player={effectivePlayer}
           signedIn={!!account}
+          anchor={playerMenuAnchor}
           isAdmin={account?.isAdmin === true}
-          selectedAvatarId={effectivePlayer.avatarId ?? null}
-          onSelectAvatar={selectAvatar}
-          onRefreshDiscordAvatar={account?.discordLinked ? refreshDiscordAvatar : undefined}
           onNav={navigateScreen}
-          onSignOut={account ? () => void accountApi.logout().then(() => location.reload()) : undefined}
+          onProfile={() => navigate({ screen: "settings", profile: true })}
+          onSignOut={
+            account
+              ? () => {
+                  void accountApi.logout().then(() => location.reload());
+                }
+              : undefined
+          }
           onReportBug={() => setBugReportOpen(true)}
-          onClose={() => setPlayerMenuOpen(false)}
+          onClose={() => setPlayerMenuAnchor(null)}
         />
       ) : null}
 

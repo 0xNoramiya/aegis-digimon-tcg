@@ -184,6 +184,7 @@ export function DecisionPrompts({
           key={decision.decisionId}
           sourceCardId={sourceCardId}
           prompt={
+            (decision.options?.promptKey === "digivolveHost" ? t("overlay.digivolveHostPrompt") : undefined) ??
             playerFacingPromptText(decision.promptText, decision.kind) ??
             (min === max
               ? t("overlay.selectCardsSubtitle", { count: max })
@@ -212,6 +213,7 @@ export function DecisionPrompts({
         <AssemblyMaterialOverlay
           playingCardId={assemblyCardId}
           requirements={assemblyRequirements}
+          playCostReductionBlocked={decision.options?.playCostReductionBlocked}
           candidates={candidates.flatMap((candidate) =>
             candidate.cardId
               ? [{ instanceId: candidate.instanceId, cardId: candidate.cardId, artId: candidate.artId }]
@@ -227,6 +229,7 @@ export function DecisionPrompts({
           key={decision.decisionId}
           playingCardId={digiXrosCardId}
           requirements={digiXrosRequirements}
+          playCostReductionBlocked={decision.options?.playCostReductionBlocked}
           candidates={candidates.flatMap<DigiXrosCandidate>((candidate) => {
             if (!candidate.cardId || (candidate.zone !== "hand" && candidate.zone !== "battle")) return [];
             const permanent = permanents.find((entry) => entry.topCard?.instanceId === candidate.instanceId);

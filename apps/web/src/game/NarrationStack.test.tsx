@@ -235,6 +235,8 @@ it("collapses the whole portrait column into the accordion", () => {
   );
   expect(container.querySelectorAll('[data-slot="narration"] .narration-item')).toHaveLength(0);
   expect(container.querySelectorAll(".narration-peek")).toHaveLength(1);
+  // The band names the newest moment, so a browser check can tie it to its clause.
+  expect(container.querySelector<HTMLElement>(".narration-peek")!.dataset.narrationPeekId).toBe("two");
 });
 
 it("opens the whole portrait column from the accordion, and dismisses only the selected ID", () => {

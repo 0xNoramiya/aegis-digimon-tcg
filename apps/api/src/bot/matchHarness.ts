@@ -235,6 +235,8 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
               recordProjectionError(`projection seat ${target.seat}: deck order exposed for seat ${ownerSeat}`);
             if (ownerSeat !== target.seat && player.hand.length > 0)
               recordProjectionError(`projection seat ${target.seat}: opponent hand exposed for seat ${ownerSeat}`);
+            if (ownerSeat !== target.seat && player.security.length > 0)
+              recordProjectionError(`projection seat ${target.seat}: opponent security exposed for seat ${ownerSeat}`);
             const exposed = player.security.find((card) => !card.faceUp && Boolean(card.cardId || card.artId));
             if (exposed)
               recordProjectionError(
@@ -246,6 +248,7 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
             recordProjectionError(`projection seat ${target.seat}: own hand identity missing`);
         }
         encoder.discardChanges();
+        for (const target of targets) engine.forgetWithheldCards(target.view, target.seat);
         full = false;
         projectionChecks++;
       } catch (error) {

@@ -13,6 +13,8 @@ import type { Restriction } from "../EffectContext.js";
 import { normalizeCost } from "../verbs/cardPlacement.js";
 import { hostOfStackInstance } from "../verbs/looseInstances.js";
 
+import { inheritedDigimonHost } from "../kernel.js";
+import { effectiveKinds } from "../continuous/effective.js";
 import type { PrimitivesContext } from "./context.js";
 
 /**
@@ -118,6 +120,16 @@ export function createSharedHelpers(pc: PrimitivesContext) {
               permanentId,
               controllerSeat: permanent.controllerSeat,
               topCardId: permanent.topCard.cardId,
+              inheritedHostIsDigimon: inheritedDigimonHost({
+                definition: requireCardDefinition(permanent.topCard.cardId),
+                effectiveKinds: effectiveKinds(
+                  continuous,
+                  permanentId,
+                  requireCardDefinition(permanent.topCard.cardId).kinds,
+                ),
+                inBattleArea: !permanent.inBreeding,
+              }),
+              stackInstanceIds: permanent.stack.map((card) => card.instanceId),
               faceDownSourceInstanceIds: [...permanent.stack, ...permanent.linked]
                 .filter((card) => !card.faceUp)
                 .map((card) => card.instanceId),
@@ -363,13 +375,17 @@ export function createSharedHelpers(pc: PrimitivesContext) {
     return moved;
   };
 
-  const isOpponentEffectAgainst = (permanentId: string): boolean | undefined => {
+  /**
+   * `effectSeat` names the seat of an effect that is not resolving yet, such as a cost
+   * checked while its trigger is collected. Without it, the resolving seat is used.
+   */
+  const isOpponentEffectAgainst = (permanentId: string, effectSeat?: Seat): boolean | undefined => {
     const perm = access.permanentById(permanentId);
     if (perm === undefined) return undefined;
     // The resolution-owner stack is the accurate resolving seat when an effect pushed one; it
     // beats `controllerSeat()` (the turn seat), which misreads a [Counter] or [Opponent's Turn]
     // effect resolving on the other player's turn as an opponent's effect.
-    const resolvingSeat = effectSeatStack.at(-1) ?? engine.controllerSeat();
+    const resolvingSeat = effectSeat ?? effectSeatStack.at(-1) ?? engine.controllerSeat();
     return resolvingSeat !== perm.controllerSeat;
   };
 
@@ -377,8 +393,8 @@ export function createSharedHelpers(pc: PrimitivesContext) {
    * Shared gate for effect-driven mutations. In addition to the operation-specific rule,
    * honor `beAffected` against the physical kind(s) of the currently resolving source.
    */
-  const isRestricted = (permanentId: string, restriction: Restriction): boolean => {
-    const byOpponentEffect = isOpponentEffectAgainst(permanentId);
+  const isRestricted = (permanentId: string, restriction: Restriction, effectSeat?: Seat): boolean => {
+    const byOpponentEffect = isOpponentEffectAgainst(permanentId, effectSeat);
     if (continuous.hasRestriction(permanentId, restriction, undefined, { byOpponentEffect })) return true;
     if (byOpponentEffect === undefined) return false;
     // Target selection may preserve an immune target so downstream clauses can observe

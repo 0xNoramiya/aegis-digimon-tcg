@@ -7,6 +7,59 @@ import { observe } from "../../engine/testkit/observe.js";
 import "../../cards/index.js";
 
 describe("AD1-006 Shoutmon X7", () => {
+  it.each(["BT11-031", "BT10-024"])(
+    "GitHub #5418: preserves Blue Flare trait evolution eligibility for %s",
+    async (base) => {
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [{ card: base, as: "base", under: ["BT10-019"] }],
+            hand: [{ card: "AD1-006", as: "x7" }],
+            deck: ["BT1-009"],
+          },
+        },
+        { autoSelectCards: true, autoDeclineOptional: true },
+      );
+      s.state.memory = 10;
+      await s.ready();
+      const routes = s
+        .inst("x7")
+        .digivolveRoutes.filter(({ permanentId }) => permanentId === s.perm("base").permanentId);
+      expect(routes.map(({ projectedCost }) => projectedCost)).toContain(base === "BT11-031" ? 2 : 5);
+      expect(
+        s.engine.applyIntent(0, {
+          type: "digivolve",
+          permanentId: s.perm("base").permanentId,
+          instanceId: s.inst("x7").instanceId,
+          useAlternateCost: base === "BT11-031",
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.engine.mainVerbContinuationsInFlight === 0 && !s.state.pendingDecision);
+      expect(s.perm("base").topCard.cardId).toBe("AD1-006");
+      expect(s.perm("base").stack.map(({ cardId }) => cardId)).toEqual(["BT10-019", base]);
+      expect(s.state.memory).toBe(base === "BT11-031" ? 8 : 5);
+    },
+  );
+
+  it("GitHub #5418: rejects a rookie without the printed level or trait requirement", async () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "BT1-010", as: "base" }], hand: [{ card: "AD1-006", as: "x7" }] },
+    });
+    s.state.memory = 10;
+    await s.ready();
+    expect(s.inst("x7").digivolveRoutes).toHaveLength(0);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("x7").instanceId,
+        useAlternateCost: true,
+      }).ok,
+    ).toBe(false);
+    expect(s.perm("base").topCard.cardId).toBe("BT1-010");
+    expect(s.state.players[0]!.hand.some(({ instanceId }) => instanceId === s.inst("x7").instanceId)).toBe(true);
+  });
+
   it("bottom-decks an opposing Digimon within its DP ceiling when played", async () => {
     const s = setupEngine(
       {
@@ -310,8 +363,17 @@ describe("AD1-006 Shoutmon X7", () => {
     expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard?.cardId === "BT10-009")).toBe(false);
   });
 
-  it("uses newly placed cards and itself as DigiXros materials for the played card, per Q6060/Q6061", async () => {
+  // Q6060: the cards this effect just placed under a Tamer are eligible like any other card
+  // under a Tamer. They need a permission such as Taiki Kudo (BT10-087, [Your Turn]; Q2011/Q2012).
+  // Without one, DigiXros uses only the hand and battle area (rule 7-2-1), plus X7 itself (Q6061).
+  const PLACED_UNDER_TAMER = ["placedStarmons", "placedBallistamon", "extraStarmons", "extraBallistamon"];
+  async function x7LeavesWithTamer(options: {
+    tamer: string;
+    x7Turn: "own" | "opponent";
+    preferredAliases?: string[];
+  }) {
     const preferred: string[] = [];
+    const opponentAttacks = options.x7Turn === "opponent";
     const s = setupEngine(
       {
         0: {
@@ -319,58 +381,94 @@ describe("AD1-006 Shoutmon X7", () => {
             {
               card: "AD1-006",
               dp: 13000,
-              suspended: true,
+              suspended: opponentAttacks,
               as: "x7",
               under: [
                 { card: "BT10-009", as: "x4" },
-                { card: "BT10-049", as: "ballistamon" },
-                { card: "BT10-034", as: "dorulumon" },
-                { card: "BT10-029", as: "starmons" },
+                { card: "BT10-029", as: "placedStarmons" },
+                { card: "BT10-049", as: "placedBallistamon" },
+                { card: "BT10-029", as: "extraStarmons" },
                 { card: "BT10-049", as: "extraBallistamon" },
               ],
             },
-            { card: "BT10-087", as: "tamer" },
+            { card: options.tamer, as: "tamer", under: [{ card: "BT10-034", as: "olderDorulumon" }] },
           ],
+          hand: [{ card: "BT10-034", as: "handDorulumon" }],
         },
-        1: { battleArea: [{ card: "BT1-010", dp: 14000, as: "attacker" }] },
+        1: { battleArea: [{ card: "BT1-010", dp: 14000, suspended: !opponentAttacks, as: "rival" }] },
       },
       { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred },
     );
-    preferred.push(
-      s.inst("ballistamon").instanceId,
-      s.inst("dorulumon").instanceId,
-      s.inst("starmons").instanceId,
-      s.inst("extraBallistamon").instanceId,
-    );
-    s.state.turnSeat = 1;
-    const x7Id = s.perm("x7").permanentId;
     const x7InstanceId = s.perm("x7").topCard!.instanceId;
-    preferred.unshift(x7InstanceId);
-
+    preferred.push(
+      ...[...(options.preferredAliases ?? []), ...PLACED_UNDER_TAMER].map((alias) =>
+        alias === "x7" ? x7InstanceId : s.inst(alias).instanceId,
+      ),
+    );
+    s.state.turnSeat = opponentAttacks ? 1 : 0;
+    const x7Id = s.perm("x7").permanentId;
+    const rivalId = s.perm("rival").permanentId;
     expect(
-      s.engine.applyIntent(1, {
-        type: "attack",
-        attackerPermanentId: s.perm("attacker").permanentId,
-        target: { kind: "permanent", permanentId: x7Id },
-      }),
+      opponentAttacks
+        ? s.engine.applyIntent(1, {
+            type: "attack",
+            attackerPermanentId: rivalId,
+            target: { kind: "permanent", permanentId: x7Id },
+          })
+        : s.engine.applyIntent(0, {
+            type: "attack",
+            attackerPermanentId: x7Id,
+            target: { kind: "permanent", permanentId: rivalId },
+          }),
     ).toEqual({ ok: true });
     await settle(
       () =>
-        s.state.players[0]!.battleArea.some(
-          (permanent) => permanent.topCard?.cardId === "BT10-009" && permanent.stack.length === 4,
-        ),
+        s.state.players[0]!.battleArea.some((permanent) => permanent.topCard?.cardId === "BT10-009") &&
+        !s.state.pendingDecision,
       5000,
     );
-
-    const played = s.state.players[0]!.battleArea.find((permanent) => permanent.topCard?.cardId === "BT10-009")!;
-    // Either [Ballistamon] copy may serve: the player orders the cards placed under the Tamer.
-    expect(played.stack.map((card) => card.instanceId)).toEqual(
-      expect.arrayContaining([x7InstanceId, s.inst("dorulumon").instanceId, s.inst("starmons").instanceId]),
+    const materialPrompt = s.decisions.find(
+      ({ seat, req }) => seat === 0 && req.kind === "selectCards" && req.options?.digiXrosCardId === "BT10-009",
     );
-    expect(played.stack.map((card) => card.cardId)).toContain("BT10-049");
-    expect(s.state.players[0]!.battleArea.some((permanent) => permanent.permanentId === x7Id)).toBe(false);
-    expect(s.perm("tamer").stack).toHaveLength(1);
-    expect(s.perm("tamer").stack[0]?.cardId).toBe("BT10-049");
+    const offered = [...(materialPrompt?.req.options?.candidateInstanceIds ?? [])].sort();
+    const playedX4 = s.state.players[0]!.battleArea.find((permanent) => permanent.topCard?.cardId === "BT10-009")!;
+    return { s, x7InstanceId, offered, playedX4 };
+  }
+
+  it("Discord 1558458433970380820: Taiki's [Your Turn] permission does not apply on the opponent's turn", async () => {
+    const { s, x7InstanceId, offered } = await x7LeavesWithTamer({ tamer: "BT10-087", x7Turn: "opponent" });
+    expect(offered).toEqual([x7InstanceId, s.inst("handDorulumon").instanceId].sort());
+    expect(s.perm("tamer").isSuspended).toBe(false);
+    expect(s.perm("tamer").stack.map((card) => card.instanceId)).toEqual(
+      expect.arrayContaining([s.inst("olderDorulumon").instanceId]),
+    );
+  });
+
+  it("Discord 1558458433970380820: without a permission Tamer, cards under Tamers are not offered", async () => {
+    const { s, x7InstanceId, offered } = await x7LeavesWithTamer({ tamer: "BT1-085", x7Turn: "own" });
+    expect(offered).toEqual([x7InstanceId, s.inst("handDorulumon").instanceId].sort());
+  });
+
+  it("with Taiki on your turn, offers every card under Tamers, including newly placed ones, per Q6060/Q6061", async () => {
+    const { s, x7InstanceId, offered, playedX4 } = await x7LeavesWithTamer({
+      tamer: "BT10-087",
+      x7Turn: "own",
+      preferredAliases: ["x7", "placedStarmons", "placedBallistamon", "olderDorulumon"],
+    });
+    expect(offered).toEqual(
+      [
+        x7InstanceId,
+        s.inst("handDorulumon").instanceId,
+        s.inst("olderDorulumon").instanceId,
+        ...PLACED_UNDER_TAMER.map((alias) => s.inst(alias).instanceId),
+      ].sort(),
+    );
+    // Either copy of a placed card may serve: the player orders the cards placed under the Tamer.
+    expect(playedX4.stack.map((card) => card.cardId).sort()).toEqual(["AD1-006", "BT10-029", "BT10-034", "BT10-049"]);
+    expect(playedX4.stack.map((card) => card.instanceId)).toEqual(
+      expect.arrayContaining([x7InstanceId, s.inst("olderDorulumon").instanceId]),
+    );
+    expect(s.perm("tamer").isSuspended).toBe(true);
   });
 
   it("may decline the leave effect and lets the whole stack go to trash", async () => {

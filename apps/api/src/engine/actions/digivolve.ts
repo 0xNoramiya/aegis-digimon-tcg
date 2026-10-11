@@ -270,10 +270,16 @@ export interface DigivolveDeps {
   burstDigivolveTamerPayable?(state: GameState, seat: Seat, requirement: DigivolutionRequirement): boolean;
   /**
    * Pay a Burst Digivolve requirement's Tamer-return cost (§8-3-3-2): return the matching
-   * battle-area Tamer permanent to hand BEFORE the digivolve cost is paid. Returns true when
-   * paid. Consulted in apply ONLY for a path carrying `burstDigivolve`. Absent => treated as paid.
+   * battle-area Tamer permanent the controller picks to hand BEFORE the digivolve cost is paid.
+   * Returns true when paid. Consulted in apply ONLY for a path carrying `burstDigivolve`.
+   * Absent => treated as paid.
    */
-  payBurstDigivolveTamer?(state: GameState, seat: Seat, requirement: DigivolutionRequirement): Promise<boolean>;
+  payBurstDigivolveTamer?(
+    state: GameState,
+    seat: Seat,
+    requirement: DigivolutionRequirement,
+    evolving: CardInstance,
+  ): Promise<boolean>;
   /**
    * A base-GRANTED digivolution path for digivolving `evolving` onto `base`: the reverse of the
    * normal model, sourced from a static effect on the BASE permanent that lets a specific card in
@@ -877,7 +883,9 @@ async function digivolveDeclared(
   //      returned Tamer is a SEPARATE permanent from the evolving card (still in hand), so
   //      this never reindexes `player.hand` for the evolving-card lookup below.
   if (check.usedAlternate && check.altRequirement?.burstDigivolve) {
-    const paid = await deps.payBurstDigivolveTamer?.(state, seat, check.altRequirement);
+    const inHand = findInHand(player, intent.instanceId);
+    if (inHand === undefined) return { ok: false, reason: "card-not-in-zone" };
+    const paid = await deps.payBurstDigivolveTamer?.(state, seat, check.altRequirement, inHand.instance);
     if (paid === false) return { ok: false, reason: "invalid-evolution" };
   }
 

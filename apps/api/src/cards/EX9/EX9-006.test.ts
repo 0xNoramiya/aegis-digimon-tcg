@@ -31,7 +31,11 @@ describe("EX9-006", () => {
     expect(s.perm("source").topCard.cardId).toBe("EX9-007");
     expect(s.perm("source").stack.map(({ cardId }) => cardId)).toEqual(["EX9-006"]);
     expect(s.state.players[0]!.trash.map(({ cardId }) => cardId)).toEqual(["BT1-009"]);
-    expect(s.decisions.filter(({ req }) => req.kind === "optional")).toHaveLength(2);
+    // Only the By cost is asked: once BT1-009 is revealed in the trash, no Ver.5 card can be the
+    // digivolution, so no "Digivolve" yes/no follows (feedback #40 follow-up).
+    expect(s.decisions.filter(({ req }) => req.kind === "optional").map(({ req }) => req.promptText)).toEqual([
+      expect.stringMatching(/^Pay cost: By trashing/),
+    ]);
     expect(s.state.memory).toBe(3);
     expect(s.state.players[1]!.security).toHaveLength(0);
     expect(s.state.pendingDecision).toBeUndefined();

@@ -1,3 +1,13 @@
+import {
+  DEFAULT_EFFECT_SPEED,
+  EFFECT_SPEEDS,
+  EFFECT_SPEED_SCALE,
+  EFFECT_UNIT_MS,
+  OPPONENT_SHOWCASE_EXTRA_HOLD_MS,
+  isEffectSpeed,
+  type EffectSpeed,
+} from "@aegis/shared";
+
 /* Every timing knob sequential effect pacing reads, in one place.
 
    Code reads the knobs through `activePacing()` at the moment it waits, never at module load,
@@ -76,7 +86,7 @@ const SEQUENTIAL_PACING: PacingConfig = {
   minorSettleMs: 150,
   announceMaxMs: 8000,
   resultsMaxMs: 6000,
-  unitBudgetMs: 2500,
+  unitBudgetMs: EFFECT_UNIT_MS,
   budgetCeilingMs: 20000,
   clauseStackMs: 0,
   shortSourceHoldMs: 720,
@@ -130,19 +140,7 @@ export const SPEED_SCALED_KNOBS: readonly PacingKnob[] = [
   "clauseReadableMs",
 ];
 
-export type EffectSpeed = "slow" | "normal" | "fast";
-
-export const EFFECT_SPEEDS: readonly EffectSpeed[] = ["slow", "normal", "fast"];
-
-/** What each Effect speed multiplies the watched beats by. */
-export const EFFECT_SPEED_SCALE: Record<EffectSpeed, number> = { slow: 1.4, normal: 1, fast: 0.55 };
-
-/**
- * Extra time the opponent's played or digivolved card stays centre-screen. The showcase
- * itself keeps the reference client's 560 ms beat, which players who read the board
- * fast prefer; Slow is for the ones who could not tell what the opponent just did.
- */
-export const OPPONENT_SHOWCASE_EXTRA_HOLD_MS: Record<EffectSpeed, number> = { slow: 2000, normal: 0, fast: 0 };
+export { EFFECT_SPEEDS, EFFECT_SPEED_SCALE, OPPONENT_SHOWCASE_EXTRA_HOLD_MS, type EffectSpeed };
 
 export function scalePacing(config: PacingConfig, scale: number): PacingConfig {
   const scaled = { ...config };
@@ -155,9 +153,9 @@ const EFFECT_SPEED_STORAGE_KEY = "aegis.effect-speed";
 function readEffectSpeed(): EffectSpeed {
   try {
     const stored = localStorage.getItem(EFFECT_SPEED_STORAGE_KEY);
-    return EFFECT_SPEEDS.find((speed) => speed === stored) ?? "normal";
+    return isEffectSpeed(stored) ? stored : DEFAULT_EFFECT_SPEED;
   } catch {
-    return "normal";
+    return DEFAULT_EFFECT_SPEED;
   }
 }
 
@@ -189,9 +187,18 @@ export function showcaseExtraHoldMs(showcase: { mine: boolean }): number {
   return showcase.mine ? 0 : OPPONENT_SHOWCASE_EXTRA_HOLD_MS[effectSpeed];
 }
 
+const effectSpeedListeners = new Set<(speed: EffectSpeed) => void>();
+
+/** Calls `listener` whenever the player changes the Effect speed. Returns the unsubscribe. */
+export function subscribeEffectSpeed(listener: (speed: EffectSpeed) => void): () => void {
+  effectSpeedListeners.add(listener);
+  return () => effectSpeedListeners.delete(listener);
+}
+
 export function setEffectSpeed(next: EffectSpeed): void {
   effectSpeed = next;
   active = scalePacing(basePacing, EFFECT_SPEED_SCALE[effectSpeed]);
+  for (const listener of effectSpeedListeners) listener(next);
   try {
     localStorage.setItem(EFFECT_SPEED_STORAGE_KEY, next);
   } catch {

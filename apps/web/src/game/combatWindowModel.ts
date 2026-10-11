@@ -154,8 +154,10 @@ export function activeCounterWindow(
   isViewerTurn: boolean,
   mirrored?: MirroredCombatWindow | null,
 ): ActiveCounterWindow | null {
+  // The counter list is a private, view-tagged field. While it is empty for this view, the
+  // window offers nothing to answer, so it must not open a prompt or lock the hand.
   const fromState =
-    mirrored?.kind === "counter"
+    mirrored?.kind === "counter" && mirrored.eligibleCounters.length > 0
       ? { attackerPermanentId: mirrored.attackerPermanentId, eligibleCounters: mirrored.eligibleCounters }
       : null;
   if (isViewerTurn) return fromState;

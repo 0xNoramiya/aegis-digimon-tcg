@@ -152,8 +152,9 @@ export function StackViewerDialog({
         >
           {preview ? (
             <div
-              onMouseEnter={() => onPreviewZoomedChange(true)}
-              onMouseLeave={() => onPreviewZoomedChange(false)}
+              // Touch taps emulate mouseenter without a matching leave, so only a mouse zooms.
+              onPointerEnter={(event) => onPreviewZoomedChange(event.pointerType === "mouse")}
+              onPointerLeave={() => onPreviewZoomedChange(false)}
               style={{
                 transform: previewZoomed ? "scale(1.35)" : "scale(1)",
                 transformOrigin: "center",

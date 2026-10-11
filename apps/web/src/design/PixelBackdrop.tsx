@@ -129,10 +129,12 @@ export function PixelBackdrop() {
     let lastFrame = 0;
     let revealStart = reducedMotion ? -Infinity : performance.now();
     let pointer: { x: number; y: number; at: number } | null = null;
+    let width = 0;
+    let height = 0;
 
     const resize = () => {
-      const ratio = window.devicePixelRatio || 1;
-      const { width, height } = canvas.getBoundingClientRect();
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      ({ width, height } = canvas.getBoundingClientRect());
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -150,7 +152,6 @@ export function PixelBackdrop() {
         return;
       }
       lastFrame = now;
-      const { width, height } = canvas.getBoundingClientRect();
       context.clearRect(0, 0, width, height);
 
       for (const cell of cells) {

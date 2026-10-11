@@ -9,7 +9,7 @@ const compiled: CompiledCard = {
         {
           kind: "SubTrigger",
           event: "whenOpponentAttacks",
-          fireCondition: {
+          activationCondition: {
             kind: "allYoursMatchFilter",
             filter: {
               kind: ["Digimon", "Tamer"],

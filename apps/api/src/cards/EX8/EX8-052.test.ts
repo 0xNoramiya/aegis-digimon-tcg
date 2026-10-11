@@ -98,7 +98,7 @@ describe("EX8-052", () => {
         },
         1: { security: ["BT1-009", "BT1-010", "BT1-011", "BT1-012"], deck: ["BT1-013", "BT1-014"] },
       },
-      { autoSelectCards: true },
+      { autoSelectCards: true, autoAcceptOptional: true },
     );
     s.perm("option").placedByEffect = true;
     s.perm("option2").placedByEffect = true;
@@ -459,4 +459,39 @@ describe("EX8-052 Cyberdramon (X Antibody) — KB Q&A rulings", () => {
       }
     },
   );
+});
+
+describe("EX8-052 — optional By cost (Discord 1558408701633757194)", () => {
+  it("keeps the Option and the opponent's security when the inherited cost is declined", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "AD1-001", as: "host", under: ["EX8-052"] },
+            { card: "EX8-070", as: "option" },
+          ],
+          deck: ["BT1-009", "BT1-010", "BT1-011"],
+        },
+        1: { security: ["BT1-009", "BT1-010", "BT1-011", "BT1-012"], deck: ["BT1-013", "BT1-014"] },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    s.perm("option").placedByEffect = true;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("host").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[1]!.security.length === 3 && s.state.pendingDecision === undefined);
+
+    expect(s.decisions.some(({ req }) => req.kind === "optional")).toBe(true);
+    expect(
+      s.state.players[0]!.battleArea.some((permanent) => permanent.permanentId === s.perm("option").permanentId),
+    ).toBe(true);
+    expect(s.state.players[1]!.trash).toHaveLength(1);
+  });
 });
