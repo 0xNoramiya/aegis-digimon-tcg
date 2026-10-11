@@ -82,11 +82,11 @@ async function main(): Promise<void> {
     process.stderr.write(JSON.stringify({ phase, repetition, ...sample }) + "\n");
     return sample;
   };
-  const warmup = [];
+  const warmup: Awaited<ReturnType<typeof run>>[] = [];
   for (const enabled of [false, true]) warmup.push(await run(enabled, 8, 0, "warmup"));
   if (warmup[0]!.identity !== warmup[1]!.identity)
     throw new Error("Prefix acceleration changed the warm-up seeded game, actions or search report");
-  const samples = [];
+  const samples: Awaited<ReturnType<typeof run>>[] = [];
   for (let repetition = 0; repetition < repetitions; repetition++) {
     for (const enabled of repetition % 2 === 0 ? [false, true] : [true, false]) {
       const sample = await run(enabled, input.simulations, repetition, "measured");

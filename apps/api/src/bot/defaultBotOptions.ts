@@ -1,8 +1,7 @@
 import type { Seat } from "@aegis/shared/schema/enums";
 import type { GameEngine } from "#api/engine/GameEngine";
-import type { Decklist } from "#api/engine/setup";
 import type { BotOptions } from "#api/bot/BotPlayer";
-import { defaultBotProgram } from "#api/bot/defaultBotProgram";
+import { defaultBotProgram, type DefaultBotDeck } from "#api/bot/defaultBotProgram";
 import { createResidualPolicy } from "#api/bot/evolution/residualPolicy";
 import { DEFAULT_BOT_PROFILE, resolveBotProfile } from "#api/bot/profiles";
 import { createProjectedEvaluationPolicy } from "#api/bot/projectedPolicy";
@@ -11,7 +10,7 @@ import { mainActionReady } from "#api/bot/training/actions";
 export function defaultBotOptions(input: {
   engine: GameEngine;
   seat: Seat;
-  deck?: Pick<Decklist, "mainDeck" | "eggDeck">;
+  deck?: DefaultBotDeck;
   options?: BotOptions;
 }): BotOptions {
   if (input.options?.policy !== undefined) return input.options;

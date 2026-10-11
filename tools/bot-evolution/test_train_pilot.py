@@ -9,7 +9,7 @@ from pilot_splits import pilot_splits
 from train_pilot import train_pilot
 
 
-@pytest.mark.parametrize("mode", ("gain", "unchanged", "held-out-loss", "timeout"))
+@pytest.mark.parametrize("mode", ("gain", "multi-gain", "unchanged", "held-out-loss", "timeout"))
 def test_real_gepa_pilot_selection_requires_fresh_direct_generic_control_and_held_out_gate(
     tmp_path,
     monkeypatch,
@@ -31,6 +31,12 @@ def test_real_gepa_pilot_selection_requires_fresh_direct_generic_control_and_hel
             "when": {"kind": "main", "sourceCardIds": ["BT1-085"], "maximum": {"turn": 4}},
         }
     )
+    proposals = [{"strategy": "early-tamer", "program": pilot}]
+    if mode == "multi-gain":
+        for weight in (3, 4, 5):
+            alternative = deepcopy(pilot)
+            alternative["rules"][-1]["weight"] = weight
+            proposals.append({"strategy": f"early-tamer-{weight}", "program": alternative})
     calls = []
 
     class Adapter:
@@ -88,7 +94,7 @@ def test_real_gepa_pilot_selection_requires_fresh_direct_generic_control_and_hel
     monkeypatch.setattr("train_pilot.HeuristicAdapter", Adapter)
     values = {
         "directory": tmp_path,
-        "deck": {"id": "A", "proposals": [{"strategy": "early-tamer", "program": pilot}]},
+        "deck": {"id": "A", "proposals": proposals},
         "metadata": {
             "generic": generic,
             "node": "node",
@@ -117,7 +123,8 @@ def test_real_gepa_pilot_selection_requires_fresh_direct_generic_control_and_hel
         return
     selected = train_pilot(**values)
     assert selected["apiCalls"] == 0
-    assert selected["activated"] == (mode == "gain")
+    assert selected["activated"] == (mode in ("gain", "multi-gain"))
+    assert selected["proposals"] == len(proposals)
     assert selected["distinct"] == (mode != "unchanged")
     assert selected["selectedIndex"] == (0 if mode == "unchanged" else 1)
     assert train_pilot(**values) == selected
