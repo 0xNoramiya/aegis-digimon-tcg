@@ -189,9 +189,11 @@ export class ScenarioPage {
           const index = selection.choice ?? (selection.accept === false ? decision.options.declineIndex : 0) ?? 0;
           const choice = decision.options.digivolveCostChoice
             ? this.page.locator(".digivolve-cost-choice__option").nth(index)
-            : this.page
-                .getByRole("dialog")
-                .getByRole("button", { name: decision.options.choices![index]!, exact: true });
+            : decision.options.choiceEffects !== undefined
+              ? this.page.getByRole("dialog").locator(".effect-choice__option").nth(index)
+              : this.page
+                  .getByRole("dialog")
+                  .getByRole("button", { name: decision.options.choices![index]!, exact: true });
           await this.decisionReady(choice, decision, selection.decisionBudgetMs);
           await choice.click();
         } else if (decision.kind === "selectCards" && decision.options.digiXrosCardId) {

@@ -88,6 +88,11 @@ function timingGatePermanentId(
   return borrowed.sourcePermanentId ?? activatorPermanentId;
 }
 
+/** CR15-15-7-3: a transferred copy belongs to the activator, not the lender's usage. */
+function transfersBorrowedEffect(action: Extract<Action, { kind: "ActivateForeignEffect" }>): boolean {
+  return action.asEffectOf !== undefined && action.useLenderAsSource !== true;
+}
+
 function availableBorrowedEffects(
   ctx: EffectContext,
   action: Extract<Action, { kind: "ActivateForeignEffect" }>,
@@ -104,6 +109,7 @@ function availableBorrowedEffects(
     ) {
       return false;
     }
+    if (transfersBorrowedEffect(action)) return true;
     const registered = registeredBorrowedEffect(ctx, borrowed);
     return registered === undefined || ctx.usage === undefined
       ? true
@@ -379,7 +385,7 @@ export async function runActivateForeignEffect(
         resolvedNotice?.();
       }
       const registered = registeredBorrowedEffect(ctx, borrowed);
-      if (registered !== undefined && registered.maxPerTurn > 0) {
+      if (!transfersBorrowedEffect(action) && registered !== undefined && registered.maxPerTurn > 0) {
         ctx.usage?.register(borrowed.sourceInstanceId, registered.effectKey);
       }
     } finally {
