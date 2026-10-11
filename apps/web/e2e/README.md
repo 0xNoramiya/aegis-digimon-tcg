@@ -77,7 +77,9 @@ through visible controls. Screenshots are saved with each test.
 `acquisition-practice.spec.ts` independently exercises the same destination through
 the real product App at `/play?utm_source=strategy-guides&utm_content=fundamentals`,
 with a real Colyseus server and autonomous bot. It supplies no scenario, stored
-deck, account, or mocked request. This verifies the guest practice flow before a
+deck, account, or mocked request. It runs at 390px and 1440px in light and dark
+modes, checks horizontal overflow, and captures the player's main phase.
+This verifies the guest practice flow before a
 validated guide run is available; it does not prove that guides have been published.
 
 - `security.spec.ts`: the actual security-chain board. The test server temporarily
