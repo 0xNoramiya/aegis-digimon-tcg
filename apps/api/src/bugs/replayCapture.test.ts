@@ -6,12 +6,11 @@ import express from "express";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { AccountStore } from "../accounts/AccountStore.js";
 import { createMemoryPool } from "../db/memoryPool.fixture.js";
-import { extractReplay } from "../replays/inputs/extract.js";
+import { extractReplay, extractReplayFromLogDir } from "../replays/inputs/extract.js";
 import { recordRoomMatch, type RecordedRoomMatch } from "../replays/inputs/roomMatch.fixture.js";
 import type { ReplayRecord } from "../replays/inputs/types.js";
 import { FeedbackStore, replayRetentionMs } from "./FeedbackStore.js";
 import { issueBody, type IssueContext, type IssueTracker, type NewBugReport } from "./GitHubIssueTracker.js";
-import { extractReplayFromLogDir } from "../replays/inputs/extract.js";
 import { ReplayCapturer, type ReplayExtractor } from "./replayCapture.js";
 import { installBugReportRoutes } from "./routes.js";
 
@@ -343,8 +342,9 @@ describe("downloading a saved replay", () => {
     return `aegis_session=${(await h.accounts.issueSession(admin)).id}`;
   }
 
-  function download(h: Harness, id: string, cookie?: string): Promise<Response> {
-    return fetch(`${h.url}/account/feedback/${id}/replay`, { headers: cookie ? { Cookie: cookie } : {} });
+  // The gateway forwards only `/account`, so the tools use `/account/admin/…`; `/admin/…` is the direct address.
+  function download(h: Harness, id: string, cookie?: string, prefix = "/account/admin"): Promise<Response> {
+    return fetch(`${h.url}${prefix}/feedback/${id}/replay`, { headers: cookie ? { Cookie: cookie } : {} });
   }
 
   it("gives administrators the stored record and nobody else", async () => {
@@ -365,6 +365,9 @@ describe("downloading a saved replay", () => {
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect(response.headers.get("content-type")).toMatch(/application\/json/);
     expect(await response.json()).toEqual(record);
+    const direct = await download(h, "1", cookie, "/admin");
+    expect(direct.status).toBe(200);
+    expect(await direct.json()).toEqual(record);
 
     const missing = await download(h, "2", cookie);
     expect(missing.status).toBe(404);

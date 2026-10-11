@@ -310,7 +310,7 @@ describe("fetch", () => {
 
     expect((await fetchReplayFromApi("https://aegis.example/api/", "s3cret", 5, fake)).record).toEqual(record);
     expect(requests[0]).toEqual({
-      url: "https://aegis.example/api/account/feedback/5/replay",
+      url: "https://aegis.example/api/account/admin/feedback/5/replay",
       cookie: "aegis_session=s3cret",
     });
     await expect(fetchReplayFromApi("https://aegis.example", "s3cret", 6, fake)).rejects.toThrow(/403: .*admin/);

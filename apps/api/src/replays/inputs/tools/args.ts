@@ -27,7 +27,7 @@ const USAGE: Record<ReplayCommandName, string> = {
 
   Download the replay saved privately with a bug report (the "Replay" section of the issue).
   Reads feedback_report_replays through the API's database configuration (DATABASE_URL, or the
-  PG* variables). With --url, asks the API instead: GET <apiBase>/account/feedback/<id>/replay
+  PG* variables). With --url, asks the API instead: GET <apiBase>/account/admin/feedback/<id>/replay
   with the admin session cookie from AEGIS_SESSION.
   Default --out: <repo>/replays/report-<reportId>.json`,
   extract: `pnpm replay extract <matchId> [--log-dir <dir>] [--out <file>]

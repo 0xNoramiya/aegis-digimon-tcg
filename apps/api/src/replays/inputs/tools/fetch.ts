@@ -50,7 +50,7 @@ export type FetchLike = (
 /** The admin endpoint's cookie name (`SESSION_COOKIE` in `accounts/routes.ts`). */
 export const SESSION_COOKIE = "aegis_session";
 
-/** Read the replay through the API's admin endpoint `GET /account/feedback/:id/replay`. */
+/** Read the replay through the API's admin endpoint `GET /account/admin/feedback/:id/replay`. */
 export async function fetchReplayFromApi(
   baseUrl: string,
   session: string | undefined,
@@ -61,7 +61,7 @@ export async function fetchReplayFromApi(
     throw new ReplayRecordError(
       `--url needs an admin session: set AEGIS_SESSION to the value of your ${SESSION_COOKIE} cookie.`,
     );
-  const url = `${baseUrl.replace(/\/+$/, "")}/account/feedback/${reportId}/replay`;
+  const url = `${baseUrl.replace(/\/+$/, "")}/account/admin/feedback/${reportId}/replay`;
   const response = await fetchImpl(url, { headers: { cookie: `${SESSION_COOKIE}=${session}` } });
   if (!response.ok) {
     const hint =
