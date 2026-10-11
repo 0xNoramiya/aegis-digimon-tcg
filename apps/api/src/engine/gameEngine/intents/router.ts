@@ -49,13 +49,14 @@ export function applyIntent(engine: GameEngine, seat: Seat, intent: Intent): Int
   }
   const mainActionWhileResolving =
     engine.activeWindowToken !== undefined || engine.effectResolutionDepth > 0 || engine.optionResolutionDepth > 0;
-  // Main verbs are serialized behind an earlier Main verb. A reactive window
-  // outside that queue (for example during turn end) cannot protect its remaining
-  // mandatory effects through queuing, so reject new board actions until it finishes.
+  // CR 6-5-1: a new ordinary Main action requires all earlier processing to finish.
+  // Queuing it would let a paid action cross memory yet spend again before turn end.
+  // Reactive windows outside a Main verb also remain closed to ordinary actions.
   // Keep decision-pending precedence and Counter Timing's Blast declarations.
   const noDecisionOpen = engine.state.pendingDecision === undefined;
   if (
     (engine.mainPhase.hasEnded ||
+      engine.mainVerbContinuationsInFlight > 0 ||
       (mainActionWhileResolving &&
         (engine.mainEntryPending || engine.mainVerbContinuationsInFlight === 0 || intent.type === "activateEffect"))) &&
     noDecisionOpen &&
@@ -206,19 +207,16 @@ export function applyIntent(engine: GameEngine, seat: Seat, intent: Intent): Int
  * `DecisionManager.request`, aborting a card's clause halfway (memory never gained, a
  * card never drawn) in whichever card lost the race.
  *
- * Only these turn-player verbs queue. The replies that DRIVE a running resolution —
+ * Public ordinary verbs are refused while one is in flight (CR 6-5-1). The chain
+ * still protects internal continuation ordering. The replies that DRIVE a resolution —
  * respondDecision, respondCounter, and the combat decisions — deliberately bypass engine
  * seam, so serializing here cannot deadlock the chain they are answering.
  *
  * A verb arriving while nothing is in flight still begins SYNCHRONOUSLY, exactly as
  * before: a verb's synchronous prefix (paying cost, moving the card out of hand) has
  * always run by the time `applyIntent` returns, and callers read state expecting that.
- * Only a verb that arrives while another is still settling waits.
- *
- * The trade-off for that waiting verb is deliberate: it was validated when it arrived
- * but applies after the previous chain finishes, so it may find a board that moved.
- * That beats the alternative it replaces — applying against state another chain is
- * mutating underneath it.
+ * Only an internally scheduled continuation behind another waits; a client must
+ * submit a fresh legal intent after the current action finishes.
  */
 export function continueMainVerb<T>(
   engine: GameEngine,

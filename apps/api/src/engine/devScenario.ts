@@ -470,6 +470,8 @@ export const DEV_SCENARIO_IDS = [
   "arena-davis-both-colors",
   "arena-feedback65-dracomon-selection",
   "arena-feedback73-magnaangemon-decision",
+  "arena-feedback78-main-crossed",
+  "arena-feedback78-main-positive",
   "arena-feedback76-seiten-assembly",
   "arena-feedback75-tomoro-on-play",
   "arena-feedback75-tomoro-timing",
@@ -8398,6 +8400,27 @@ function layFeedback60DuplicateOptionChoiceScenario(state: GameState): void {
   state.memory = 10;
 }
 
+/** #78: finish Candlemon's actual no-match search before the next ordinary Main action. */
+function layFeedback78MainActionScenario(state: GameState, positive: boolean): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`feedback78-egg-${seat}`, "BT18-004", seat));
+    for (let i = 0; i < 3; i++)
+      insertCard(player, Zone.Security, faceDownCard(`feedback78-security-${seat}-${i}`, "BT1-009", seat));
+    for (let i = 0; i < 12; i++) {
+      const card = seat === 0 && (i === 1 || i === 2) ? "EX13-034" : seat === 0 && i === 3 ? "BT19-029" : "BT1-009";
+      insertCard(player, Zone.Deck, faceDownCard(`feedback78-deck-${seat}-${i}`, card, seat));
+    }
+    insertCard(player, Zone.Hand, faceDownCard(`feedback78-reserve-${seat}`, "BT1-009", seat));
+  }
+  insertCard(state.players[0]!, Zone.Hand, faceDownCard("feedback78-candle", "BT18-030", 0));
+  insertCard(state.players[0]!, Zone.Hand, faceDownCard("feedback78-wizard", "BT18-036", 0));
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = positive ? 8 : 0;
+}
+
 /** #76: exact named Assembly materials exclude another SeitenGokuumon. */
 function layFeedback76SeitenAssemblyScenario(state: GameState): void {
   for (const seat of [0, 1] as const) {
@@ -12017,6 +12040,8 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-davis-both-colors": layDavisBothColorsScenario,
   "arena-feedback65-dracomon-selection": layFeedback65DracomonSelectionScenario,
   "arena-feedback73-magnaangemon-decision": layFeedback73MagnaAngemonDecisionScenario,
+  "arena-feedback78-main-crossed": (state) => layFeedback78MainActionScenario(state, false),
+  "arena-feedback78-main-positive": (state) => layFeedback78MainActionScenario(state, true),
   "arena-feedback76-seiten-assembly": layFeedback76SeitenAssemblyScenario,
   "arena-feedback75-tomoro-on-play": (state) => layFeedback75TomoroScenario(state, false),
   "arena-feedback75-tomoro-timing": (state) => layFeedback75TomoroScenario(state, true),
