@@ -170,7 +170,7 @@ test("feedback API reaches the API while the admin screen reaches the web app", 
   assert.equal(isApiPath("/admin/feedback", { accept: "text/html" }), false);
 });
 
-test("static guide directories serve their HTML and missing guides do not become SPA pages", async (t) => {
+test("static guides coexist with replay API routing and missing guides do not become SPA pages", async (t) => {
   const state = mkdtempSync(`${tmpdir()}/aegis-guide-gateway-`);
   mkdirSync(`${state}/routing`, { recursive: true });
   const web = `${state}/releases/web-v1/web`;
@@ -190,9 +190,15 @@ test("static guide directories serve their HTML and missing guides do not become
       webRevision: "web-v1",
     }),
   );
-  const gateway = createGateway({ state });
+  const upstream = createServer((request, response) => {
+    response.setHeader("content-type", "application/json");
+    response.end(JSON.stringify({ path: request.url }));
+  });
+  const upstreamOrigin = await listen(upstream);
+  const gateway = createGateway({ state, upstreamFor: () => upstreamOrigin });
   t.after(async () => {
     await new Promise((done) => gateway.close(done));
+    await new Promise((done) => upstream.close(done));
     rmSync(state, { recursive: true });
   });
   const origin = await listen(gateway);
@@ -210,6 +216,12 @@ test("static guide directories serve their HTML and missing guides do not become
   assert.equal(await head.text(), "");
   assert.equal((await fetch(`${origin}/strategy-guides/missing/`)).status, 404);
   assert.equal(await (await fetch(`${origin}/play?utm_source=strategy-guides`)).text(), "React application");
+  const replay = await fetch(`${origin}/replays/example`, { headers: { accept: "application/json" } });
+  assert.deepEqual(await replay.json(), { path: "/replays/example" });
+  assert.equal(
+    await (await fetch(`${origin}/replays/example`, { headers: { accept: "text/html" } })).text(),
+    "React application",
+  );
   const css = await fetch(`${origin}/strategy-guides/guides.css`);
   assert.equal(css.headers.get("content-type"), "text/css; charset=utf-8");
   const sitemap = await fetch(`${origin}/strategy-guides/sitemap.xml`);
