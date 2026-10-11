@@ -50,16 +50,10 @@ export default defineConfig({
     port: 5173,
     host: true,
     proxy: {
-      // Production serves the deployed mirror; local development reads official card images.
       "/assets/card-images": {
-        target: process.env.AEGIS_CARD_IMAGE_ORIGIN ?? "https://world.digimoncard.com",
+        target: process.env.AEGIS_CARD_IMAGE_ORIGIN ?? "https://aegis-digi.online/assets/card-images",
         changeOrigin: true,
-        rewrite: (path) =>
-          process.env.AEGIS_CARD_IMAGE_ORIGIN
-            ? path.replace(/^\/assets\/card-images/, "")
-            : path
-                .replace(/^\/assets\/card-images/, "/images/cardlist/card")
-                .replace(/(?:-Sample)?\.webp(?=\?|$)/, ".png"),
+        rewrite: (path) => path.replace(/^\/assets\/card-images/, ""),
       },
     },
   },
