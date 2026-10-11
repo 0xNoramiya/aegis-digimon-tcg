@@ -15,6 +15,11 @@ Requires Node 26 and pnpm 10. Run commands from the repository root.
 
 Run `pnpm check:fix` to apply lint/format fixes; review the diff, then run `pnpm check`.
 
+The development server proxies card art to the upstream image host. If that host is
+unavailable, set `AEGIS_CARD_IMAGE_ORIGIN` to another mirror with the same filenames.
+For example, `AEGIS_CARD_IMAGE_ORIGIN=https://aegis-digi.online/assets/card-images pnpm dev`
+uses the deployed image mirror. The same environment variable applies to browser tests.
+
 ### API tests (`apps/api`)
 
 | Task                                                                   | Command                                                                        |
