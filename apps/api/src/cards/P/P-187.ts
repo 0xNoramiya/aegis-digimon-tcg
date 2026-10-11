@@ -62,6 +62,9 @@ const compiled: CompiledCard = {
       actions: [
         {
           kind: "PlayWithoutCost",
+          effectTextPart:
+            "By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.",
+          payCostBeforeOptional: true,
           target: {
             filter: {
               controller: "mine",
@@ -78,6 +81,7 @@ const compiled: CompiledCard = {
           payCost: false,
           cost: {
             kind: "trash",
+            optional: true,
             target: {
               filter: {
                 controller: "mine",
@@ -100,6 +104,9 @@ const compiled: CompiledCard = {
       actions: [
         {
           kind: "PlayWithoutCost",
+          effectTextPart:
+            "By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.",
+          payCostBeforeOptional: true,
           target: {
             filter: {
               controller: "mine",
@@ -116,6 +123,7 @@ const compiled: CompiledCard = {
           payCost: false,
           cost: {
             kind: "trash",
+            optional: true,
             target: {
               filter: {
                 controller: "mine",

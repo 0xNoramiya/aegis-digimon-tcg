@@ -202569,6 +202569,8 @@
         "actions": [
           {
             "kind": "PlayWithoutCost",
+            "effectTextPart": "By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.",
+            "payCostBeforeOptional": true,
             "target": {
               "filter": {
                 "controller": "mine",
@@ -202582,6 +202584,7 @@
             "payCost": false,
             "cost": {
               "kind": "trash",
+              "optional": true,
               "target": { "filter": { "controller": "mine", "zone": "security", "position": "top" }, "count": 1 },
               "raw": "By trashing your top security card"
             },
@@ -202597,6 +202600,8 @@
         "actions": [
           {
             "kind": "PlayWithoutCost",
+            "effectTextPart": "By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.",
+            "payCostBeforeOptional": true,
             "target": {
               "filter": {
                 "controller": "mine",
@@ -202610,6 +202615,7 @@
             "payCost": false,
             "cost": {
               "kind": "trash",
+              "optional": true,
               "target": { "filter": { "controller": "mine", "zone": "security", "position": "top" }, "count": 1 },
               "raw": "By trashing your top security card"
             },

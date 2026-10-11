@@ -83,6 +83,8 @@ export const DEV_SCENARIO_IDS = [
   "arena-raid-after-dedigivolve",
   "arena-lm007-publimon-end-of-attack",
   "arena-feedback4-shellmon-targets",
+  "arena-feedback84-mastemon-digivolve",
+  "arena-feedback84-mastemon-attack",
   "arena-source-strip-stacks",
   "arena-feedback5-execute-suspended",
   "arena-feedback6-deramon-breeding-level",
@@ -5278,6 +5280,44 @@ function layEx13ChirinmonCostChoiceScenario(state: GameState, decks: readonly [D
   state.turnCount = 0;
   state.isFirstPlayersFirstTurn = false;
   state.memory = 3;
+}
+
+/** Feedback #84: independent top-security payment and optional free play at both timings. */
+function layFeedback84MastemonScenario(
+  state: GameState,
+  decks: readonly [Decklist, Decklist],
+  timing: "digivolve" | "attack",
+): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat];
+    if (player === undefined) continue;
+    loadDeckInto(player, seat, decks[seat]);
+    clearBattleArea(player);
+    clearZone(player, Zone.Hand);
+    clearZone(player, Zone.Deck);
+    clearZone(player, Zone.Security);
+    clearZone(player, Zone.Trash);
+    for (let index = 0; index < 20; index += 1) {
+      insertCard(player, Zone.Deck, faceDownCard(`dev-feedback84-deck-${seat}-${index}`, "BT1-009", seat));
+    }
+    for (let index = 0; index < 3; index += 1) {
+      insertCard(player, Zone.Security, faceDownCard(`dev-feedback84-security-${seat}-${index}`, "BT1-009", seat));
+    }
+  }
+  const human = state.players[0];
+  if (human !== undefined) {
+    placePermanent(human, establishedDigimon(0, [timing === "digivolve" ? "BT10-079" : "P-187"], "-feedback84-host"));
+    if (timing === "digivolve") insertCard(human, Zone.Hand, faceUpCard("dev-feedback84-mastemon", "P-187", 0));
+    insertCard(human, Zone.Hand, faceUpCard("dev-feedback84-yellow", "BT1-057", 0));
+    insertCard(human, Zone.Hand, faceUpCard("dev-feedback84-too-large", "BT1-058", 0));
+    insertCard(human, Zone.Hand, faceUpCard("dev-feedback84-wrong-color", "BT1-020", 0));
+    insertCard(human, Zone.Hand, faceUpCard("dev-feedback84-tamer", "BT1-087", 0));
+    insertCard(human, Zone.Trash, faceUpCard("dev-feedback84-purple", "BT10-079", 0));
+  }
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 10;
 }
 
 /** Reduced reproduction of Taurus vs bageko3, Discord 1556544429438013471.
@@ -12041,6 +12081,8 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-ex13-flamewizardmon-optional-cost": layEx13FlameWizardmonOptionalCostScenario,
   "arena-bt18-lucemon-optional-hand-cost": layBt18LucemonOptionalHandCostScenario,
   "arena-bt26-cerberusmon-optional-cost": layBt26CerberusmonOptionalCostScenario,
+  "arena-feedback84-mastemon-digivolve": (state, decks) => layFeedback84MastemonScenario(state, decks, "digivolve"),
+  "arena-feedback84-mastemon-attack": (state, decks) => layFeedback84MastemonScenario(state, decks, "attack"),
   "arena-ex5-attack-priority": layEx5AttackPriorityScenario,
   "arena-ex5-biting-crush-delay": layEx5BitingCrushDelayScenario,
   "arena-p108-training-delay-no-target": (state, decks) => layP108TrainingDelayScenario(state, decks, false),

@@ -494,6 +494,8 @@ export interface AegisJoinOptions {
     | "arena-raid-after-dedigivolve"
     | "arena-lm007-publimon-end-of-attack"
     | "arena-feedback4-shellmon-targets"
+    | "arena-feedback84-mastemon-digivolve"
+    | "arena-feedback84-mastemon-attack"
     | "arena-feedback5-execute-suspended"
     | "arena-feedback6-deramon-breeding-level"
     | "arena-feedback15-gryphonmon-deramon"
