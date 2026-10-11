@@ -66,6 +66,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-raid-immune-atratusmon",
   "arena-shota-start-main-once",
   "arena-heavy-mobile-successive-machines",
+  "arena-ex6-sanzomon-named-search",
   "arena-heat-training-option-freeze",
   "arena-crescemon-hexeblaumon-cost",
   "arena-neptunemon-holy-cost",
@@ -11193,7 +11194,31 @@ function layHeavyMobileScenario(state: GameState, decks: readonly [Decklist, Dec
   hand.forEach((card, index) => insertCard(own, Zone.Hand, faceDownCard(`heavy-hand-${index}`, card, 0)));
 }
 
+/** Discord 1558813188479262720: one DigiXros material; only one of each named reveal can enter hand. */
+function laySanzomonSearchScenario(state: GameState, decks: readonly [Decklist, Decklist]): void {
+  prepareIssueScenario(state, decks, 10);
+  for (const player of state.players) {
+    clearBattleArea(player);
+    for (const zone of [Zone.Hand, Zone.Trash, Zone.Deck, Zone.Security, Zone.EggDeck] as const)
+      clearZone(player, zone);
+    for (let i = 0; i < 5; i++)
+      insertCard(player, Zone.Security, faceDownCard(`sanzo-${player.seat}-security-${i}`, "BT1-009", player.seat));
+    insertCard(player, Zone.EggDeck, faceDownCard(`sanzo-${player.seat}-egg`, "BT6-005", player.seat));
+  }
+  const own = state.players[0]!;
+  ["EX6-025", "EX6-023", "EX6-024", "EX6-026"].forEach((card, index) =>
+    insertCard(own, Zone.Hand, faceDownCard(`sanzo-hand-${index}`, card, 0)),
+  );
+  // The first card is the turn draw, followed by four revealed cards and an unrevealed sentinel.
+  ["BT1-011", "EX6-023", "EX6-023", "EX6-024", "BT1-009", "BT1-010"].forEach((card, index) =>
+    insertCard(own, Zone.Deck, faceDownCard(`sanzo-deck-${index}`, card, 0)),
+  );
+  for (let i = 0; i < 20; i++)
+    insertCard(state.players[1]!, Zone.Deck, faceDownCard(`sanzo-opponent-deck-${i}`, "BT1-009", 1));
+}
+
 const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
+  "arena-ex6-sanzomon-named-search": laySanzomonSearchScenario,
   "arena-heavy-mobile-successive-machines": layHeavyMobileScenario,
   ...(Object.fromEntries(
     CARDS_TURNS_SCENARIO_IDS.map((id) => [

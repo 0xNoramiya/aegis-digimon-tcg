@@ -145,6 +145,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     en: "Use Heavy Mobile, trash the Machine, then play Machinedramon placing five different Cyborgs. Attack with Rush. Play the second Machinedramon placing the remaining Gigadramon: accept Blitz and attack before the turn passes. Both attacks check security.",
     ptBR: "Use Heavy Mobile, descarte o Machine e jogue Machinedramon colocando cinco Cyborgs diferentes. Ataque com Rush. Jogue o segundo Machinedramon colocando o Gigadramon restante: aceite Blitz e ataque antes da troca de turno. Ambos verificam segurança.",
   },
+  "arena-ex6-sanzomon-named-search": {
+    en: "Play Sanzomon with one Gokuumon as DigiXros material: pay 5 (only one listed material is legal). Reveal two Gokuumon, one Sagomon and one Agumon. Add only one Gokuumon and one Sagomon; return the other Gokuumon and Agumon to the bottom of the deck.",
+    ptBR: "Jogue Sanzomon com um Gokuumon como material de DigiXros: pague 5 (somente um material listado é permitido). Revele dois Gokuumon, um Sagomon e um Agumon. Adicione apenas um Gokuumon e um Sagomon; devolva o outro Gokuumon e Agumon ao fundo do deck.",
+  },
   "arena-shota-start-main-once": {
     en: "Each of two Shota copies pays once at Main entry. No activation remains afterward.",
     ptBR: "Cada cópia de Shota paga uma vez na entrada de Main. Nenhuma ativação fica disponível depois.",
@@ -3196,6 +3200,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-raid-immune-atratusmon", "#5391 Raid / Atratusmon"],
   ["arena-shota-start-main-once", "#5389 Shota / Main"],
   ["arena-heavy-mobile-successive-machines", "BT9-102 / successive Machinedramon"],
+  ["arena-ex6-sanzomon-named-search", "EX6-025 / Sanzomon named search"],
   ["arena-heat-training-option-freeze", "#5388 Heat Training / freezing"],
   ["arena-crescemon-hexeblaumon-cost", "#5387 Crescemon / Hexeblaumon"],
   ["arena-neptunemon-holy-cost", "#5385 Neptunemon / Holy"],

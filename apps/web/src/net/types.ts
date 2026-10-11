@@ -252,6 +252,7 @@ export interface AegisJoinOptions {
     | "arena-raid-immune-atratusmon"
     | "arena-shota-start-main-once"
     | "arena-heavy-mobile-successive-machines"
+    | "arena-ex6-sanzomon-named-search"
     | "arena-heat-training-option-freeze"
     | "arena-crescemon-hexeblaumon-cost"
     | "arena-neptunemon-holy-cost"

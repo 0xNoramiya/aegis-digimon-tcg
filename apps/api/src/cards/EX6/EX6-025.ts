@@ -31,28 +31,28 @@ export const compiled: CompiledCard = {
           add: [
             {
               filter: {
-                name: "Gokuumon",
+                nameOrTrait: [{ tokens: ["Gokuumon"], match: "nameExact" }],
               },
               count: 1,
               to: "hand",
             },
             {
               filter: {
-                name: "Sagomon",
+                nameOrTrait: [{ tokens: ["Sagomon"], match: "nameExact" }],
               },
               count: 1,
               to: "hand",
             },
             {
               filter: {
-                name: "Cho-Hakkaimon",
+                nameOrTrait: [{ tokens: ["Cho-Hakkaimon"], match: "nameExact" }],
               },
               count: 1,
               to: "hand",
             },
             {
               filter: {
-                name: "Shakamon",
+                nameOrTrait: [{ tokens: ["Shakamon"], match: "nameExact" }],
               },
               count: 1,
               to: "hand",
@@ -97,28 +97,28 @@ export const compiled: CompiledCard = {
           add: [
             {
               filter: {
-                name: "Gokuumon",
+                nameOrTrait: [{ tokens: ["Gokuumon"], match: "nameExact" }],
               },
               count: 1,
               to: "hand",
             },
             {
               filter: {
-                name: "Sagomon",
+                nameOrTrait: [{ tokens: ["Sagomon"], match: "nameExact" }],
               },
               count: 1,
               to: "hand",
             },
             {
               filter: {
-                name: "Cho-Hakkaimon",
+                nameOrTrait: [{ tokens: ["Cho-Hakkaimon"], match: "nameExact" }],
               },
               count: 1,
               to: "hand",
             },
             {
               filter: {
-                name: "Shakamon",
+                nameOrTrait: [{ tokens: ["Shakamon"], match: "nameExact" }],
               },
               count: 1,
               to: "hand",

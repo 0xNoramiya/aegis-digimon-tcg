@@ -172897,10 +172897,26 @@
             "kind": "RevealAdd",
             "revealCount": 4,
             "add": [
-              { "filter": { "name": "Gokuumon" }, "count": 1, "to": "hand" },
-              { "filter": { "name": "Sagomon" }, "count": 1, "to": "hand" },
-              { "filter": { "name": "Cho-Hakkaimon" }, "count": 1, "to": "hand" },
-              { "filter": { "name": "Shakamon" }, "count": 1, "to": "hand" }
+              {
+                "filter": { "nameOrTrait": [{ "tokens": ["Gokuumon"], "match": "nameExact" }] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "filter": { "nameOrTrait": [{ "tokens": ["Sagomon"], "match": "nameExact" }] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "filter": { "nameOrTrait": [{ "tokens": ["Cho-Hakkaimon"], "match": "nameExact" }] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "filter": { "nameOrTrait": [{ "tokens": ["Shakamon"], "match": "nameExact" }] },
+                "count": 1,
+                "to": "hand"
+              }
             ],
             "rest": "deckBottom",
             "condition": { "kind": "digiXrosCount", "minimum": 1, "raw": "DigiXrosing" }
@@ -172924,10 +172940,26 @@
             "kind": "RevealAdd",
             "revealCount": 4,
             "add": [
-              { "filter": { "name": "Gokuumon" }, "count": 1, "to": "hand" },
-              { "filter": { "name": "Sagomon" }, "count": 1, "to": "hand" },
-              { "filter": { "name": "Cho-Hakkaimon" }, "count": 1, "to": "hand" },
-              { "filter": { "name": "Shakamon" }, "count": 1, "to": "hand" }
+              {
+                "filter": { "nameOrTrait": [{ "tokens": ["Gokuumon"], "match": "nameExact" }] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "filter": { "nameOrTrait": [{ "tokens": ["Sagomon"], "match": "nameExact" }] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "filter": { "nameOrTrait": [{ "tokens": ["Cho-Hakkaimon"], "match": "nameExact" }] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "filter": { "nameOrTrait": [{ "tokens": ["Shakamon"], "match": "nameExact" }] },
+                "count": 1,
+                "to": "hand"
+              }
             ],
             "rest": "deckBottom",
             "condition": { "kind": "digiXrosCount", "minimum": 1, "raw": "DigiXrosing" }
