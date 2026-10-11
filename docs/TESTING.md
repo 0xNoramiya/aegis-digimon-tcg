@@ -65,6 +65,9 @@ or synchronization. A rules-only regression need not duplicate every variant in
 the browser. Reuse `scenario.healthy()` and the timing guidance in
 [`apps/web/e2e/README.md`](../apps/web/e2e/README.md).
 
+The avatar regression allows five seconds for the profile's first lazy mount,
+which also loads ReplayViewer and GameScreen dependencies.
+
 Recorded reproductions still use the existing replay tooling and divergence checks
 from `AGENTS.md`. Preserve seeds, recorded identities, server revisions, and input
 order in the trimmed record. Read recorded intent identities from the fixture
