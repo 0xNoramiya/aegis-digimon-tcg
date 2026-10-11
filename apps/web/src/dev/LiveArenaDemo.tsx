@@ -1953,6 +1953,10 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Discord 1558451244815880332. Encerre a criação. No início da sua fase principal, recuse colocar a carta do topo do deck embaixo de Richard Sampson (EX13-071). A lixeira tem Reppamon (BT1-051) e Chirinmon (BT1-058), então o [Principal] de Richard aparece. Ative e aceite. As 3 cartas viradas para baixo vão para a lixeira. Pela Q7447, escolha o Reppamon (EX13-030) e o Chirinmon (EX13-032) que acabaram de ir para a lixeira. Os dois ficam embaixo de Kudamon (EX13-026), que digivolve em Kentaurosmon (BT3-043) por 2 de memória. BT1-051 e BT1-058 ficam na lixeira.",
     en: "Discord 1558451244815880332. End breeding. At the start of your main phase, decline to place your deck's top card under Richard Sampson (EX13-071). Your trash has Reppamon (BT1-051) and Chirinmon (BT1-058), so Richard's [Main] is offered. Activate it and accept. The 3 face-down cards go to the trash. Per Q7447, choose the Reppamon (EX13-030) and Chirinmon (EX13-032) you just trashed. Both go under Kudamon (EX13-026), which digivolves into Kentaurosmon (BT3-043) for 2 memory. BT1-051 and BT1-058 stay in the trash.",
   },
+  "arena-feedback76-seiten-assembly": {
+    en: "Play SeitenGokuumon. Assembly offers only exact Gokuumon, Sagomon and Cho-Hakkaimon; the second SeitenGokuumon stays in trash. Choose all 3 to pay 7 and reduce the opponent to 3000 DP, then decline the attack. Playing without Assembly costs 13 and passes the turn.",
+    ptBR: "Jogue SeitenGokuumon. Assembly oferece apenas Gokuumon, Sagomon e Cho-Hakkaimon exatos; o segundo SeitenGokuumon fica no trash. Escolha os 3 para pagar 7 e reduzir o oponente a 3000 DP, depois recuse o ataque. Sem Assembly custa 13 e passa o turno.",
+  },
   "arena-feedback75-tomoro-on-play": {
     en: "Play Tomoro with no opposing Digimon: placing the deck card does not gain memory, and the 4-cost play passes the turn.",
     ptBR: "Jogue Tomoro sem Digimon adversário: colocar a carta do deck não ganha memória, e o custo 4 passa o turno.",
@@ -3588,6 +3592,7 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
     "Discord · EX13 Richard Sampson · [Main] stacks the cards it just trashed",
   ],
   ["arena-feedback73-magnaangemon-decision", "Feedback 73 · MagnaAngemon recovery and target choice"],
+  ["arena-feedback76-seiten-assembly", "Feedback 76 · Seiten exact Assembly"],
   ["arena-feedback75-tomoro-on-play", "Feedback 75 · Tomoro conditional memory"],
   ["arena-feedback75-tomoro-timing", "Feedback 75 · Tomoro own-turn response"],
   ["arena-feedback72-nokia-hand-evolution", "Feedback 72 · Nokia zero-memory hand evolution"],

@@ -153086,7 +153086,7 @@
     "assemblyRequirement": [
       {
         "materials": [
-          { "count": 3, "names": ["Gokuumon", "Sagomon", "Cho-Hakkaimon", "Sanzomon"], "differentNames": true }
+          { "count": 3, "namesExact": ["Gokuumon", "Sagomon", "Cho-Hakkaimon", "Sanzomon"], "differentNames": true }
         ],
         "reduceCost": 6
       }

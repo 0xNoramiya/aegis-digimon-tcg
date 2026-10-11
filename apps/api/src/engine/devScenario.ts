@@ -470,6 +470,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-davis-both-colors",
   "arena-feedback65-dracomon-selection",
   "arena-feedback73-magnaangemon-decision",
+  "arena-feedback76-seiten-assembly",
   "arena-feedback75-tomoro-on-play",
   "arena-feedback75-tomoro-timing",
   "arena-feedback72-nokia-hand-evolution",
@@ -8397,6 +8398,36 @@ function layFeedback60DuplicateOptionChoiceScenario(state: GameState): void {
   state.memory = 10;
 }
 
+/** #76: exact named Assembly materials exclude another SeitenGokuumon. */
+function layFeedback76SeitenAssemblyScenario(state: GameState): void {
+  for (const seat of [0, 1] as const) {
+    const player = state.players[seat]!;
+    insertCard(player, Zone.EggDeck, faceDownCard(`feedback76-egg-${seat}`, "EX12-001", seat));
+    for (let i = 0; i < 10; i++)
+      insertCard(player, Zone.Deck, faceDownCard(`feedback76-deck-${seat}-${i}`, "BT1-009", seat));
+    for (let i = 0; i < 3; i++)
+      insertCard(player, Zone.Security, faceDownCard(`feedback76-security-${seat}-${i}`, "BT1-009", seat));
+    insertCard(player, Zone.Hand, faceDownCard(`feedback76-reserve-${seat}`, "BT1-009", seat));
+  }
+  const human = state.players[0]!;
+  insertCard(human, Zone.Hand, faceDownCard("feedback76-seiten", "EX12-048", 0));
+  for (const [id, card] of [
+    ["self", "EX12-048"],
+    ["gokuu", "EX12-015"],
+    ["sago", "EX12-029"],
+    ["cho", "EX12-056"],
+  ] as const)
+    insertCard(human, Zone.Trash, faceUpCard(`feedback76-${id}`, card, 0));
+  const target = establishedDigimon(1, ["BT1-024"], "-feedback76-target");
+  target.baseDP = 20000;
+  target.currentDP = 20000;
+  placePermanent(state.players[1]!, target);
+  state.turnSeat = 0;
+  state.turnCount = 0;
+  state.isFirstPlayersFirstTurn = false;
+  state.memory = 10;
+}
+
 /** #75: distinguish conditional memory from the own-turn-only source payment response. */
 function layFeedback75TomoroScenario(state: GameState, timing: boolean): void {
   for (const seat of [0, 1] as const) {
@@ -11986,6 +12017,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-davis-both-colors": layDavisBothColorsScenario,
   "arena-feedback65-dracomon-selection": layFeedback65DracomonSelectionScenario,
   "arena-feedback73-magnaangemon-decision": layFeedback73MagnaAngemonDecisionScenario,
+  "arena-feedback76-seiten-assembly": layFeedback76SeitenAssemblyScenario,
   "arena-feedback75-tomoro-on-play": (state) => layFeedback75TomoroScenario(state, false),
   "arena-feedback75-tomoro-timing": (state) => layFeedback75TomoroScenario(state, true),
   "arena-feedback72-nokia-hand-evolution": layFeedback72NokiaHandEvolutionScenario,

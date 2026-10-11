@@ -122,7 +122,7 @@ export const compiled: CompiledCard = {
       materials: [
         {
           count: 3,
-          names: ["Gokuumon", "Sagomon", "Cho-Hakkaimon", "Sanzomon"],
+          namesExact: ["Gokuumon", "Sagomon", "Cho-Hakkaimon", "Sanzomon"],
           differentNames: true,
         },
       ],
