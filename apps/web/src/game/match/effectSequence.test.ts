@@ -439,6 +439,53 @@ describe("settling a unit around a nested effect", () => {
     }
   });
 
+  it("hands off to the announcement that owns results shared by two sequential effects", async () => {
+    vi.useFakeTimers();
+    try {
+      const sequence = createEffectSequence();
+      const observed = sequence.observeBatch("shared", 1, [
+        triggered("first-material"),
+        memoryGain,
+        resolved("first-material"),
+        triggered("second-material"),
+        memoryGain,
+        resolved("second-material"),
+      ]);
+      const first = observed.opened[0]!.unit;
+      const second = observed.opened[1]!.unit;
+      expect(observed.owner).toBe(second);
+      const log: string[] = [];
+      const queue = createAnimationQueue();
+      const deps = {
+        sequence,
+        queue,
+        batchOf: () => "shared",
+        decisionPending: () => false,
+        onStarted: (unit: EffectUnit) => {
+          log.push(`${unit.effectKey}-announced`);
+          unit.announced.release();
+        },
+      };
+      first.announced.release();
+      queue.enqueue({
+        id: "shared-arrival",
+        track: "zoneChange",
+        async run(context) {
+          await waitForGate(second.announced, context, DEFAULT_PACING.announceMaxMs, "arrival/effectUnit");
+          await context.wait(200);
+          log.push("arrival");
+        },
+      });
+      queue.enqueue(effectUnitSteps(first, deps)[1]!);
+      for (const step of effectUnitSteps(second, deps)) queue.enqueue(step);
+      await vi.advanceTimersByTimeAsync(1500);
+      expect(log).toEqual(["second-material-announced", "arrival"]);
+      expect(queue.isIdle()).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("does not wait out the ceiling for results that belong to a nested effect (Discord 1557410815466938429)", async () => {
     // ST1-16 Gaia Force: "[Security] Activate this card's [Main] effect." The [Main] unit opens
     // inside the [Security] unit, and the deletion it causes waits for the [Main] clause.
