@@ -21,6 +21,7 @@ import { Side } from "../../side";
 import { PlayerLine } from "./PlayerLine";
 import { useFullscreen } from "../hooks/useFullscreen";
 import { useHeldFlag } from "../hooks/useHeldFlag";
+import { TopbarTooltip, useTopbarTooltip, type TopbarTooltipId } from "./TopbarTooltip";
 
 const OPPONENT_NAME_MAX_LENGTH = 12;
 /** Animation batches arrive with short gaps; the skip button outlasts them instead of blinking. */
@@ -106,6 +107,18 @@ export function OpponentBar({
   const chatLabel = chatUnread > 0 ? t("chat.openUnread", { count: chatUnread }) : t("chat.open");
   const openCard = useCardOpener();
   const skipShown = useHeldFlag(skippable, SKIP_BUTTON_HOLD_MS);
+  const tooltip = useTopbarTooltip();
+  const leaveLabel = t(spectating ? "spectator.leave" : "game.surrender");
+  const tooltipText: Record<TopbarTooltipId, string | undefined> = {
+    log: t("game.matchLog"),
+    feedback: t("bugReport.button"),
+    chat: chatLabel,
+    fullscreen: fullscreenLabel,
+    skip: skipShown ? t("game.skipPresentation") : undefined,
+    look: t("redesign.arena.look.open"),
+    leave: leaveLabel,
+    reset: "Reset battle",
+  };
   const fanned = revealedHand?.length ?? Math.max(0, handCount);
   const entering = useEnterAnimation(Array.from({ length: fanned }, (_, index) => String(index)));
   return (
@@ -270,17 +283,17 @@ export function OpponentBar({
               <ChatUnreadBadge count={chatUnread} />
             </button>
           ) : null}
+          {fullscreen.supported ? (
+            <button className="game-mobile-fullscreen" onClick={fullscreen.toggle} aria-label={fullscreenLabel}>
+              <FullscreenIcon size={16} />
+            </button>
+          ) : null}
           <button className="game-mobile-bug" onClick={onReportBug} aria-label={t("bugReport.button")}>
             <Icons.Megaphone size={16} />
           </button>
           <button className="game-mobile-look" onClick={onOpenArenaLook} aria-label={t("redesign.arena.look.open")}>
             <Icons.Settings size={16} />
           </button>
-          {fullscreen.supported ? (
-            <button className="game-mobile-fullscreen" onClick={fullscreen.toggle} aria-label={fullscreenLabel}>
-              <FullscreenIcon size={16} />
-            </button>
-          ) : null}
           <button
             className="game-mobile-surrender"
             onClick={onResetScenario ?? onSurrender}
@@ -297,25 +310,20 @@ export function OpponentBar({
               type="button"
               className="game-topbar-button"
               onClick={onResetScenario}
-              aria-label="Reset battle"
-              title="Reset battle"
+              {...tooltip.describe("reset", "Reset battle")}
             >
               ↻
             </button>
           ) : null}
-          <button className="game-topbar-button" onClick={onOpenLog} aria-label={t("game.matchLog")}>
+          <button className="game-topbar-button" onClick={onOpenLog} {...tooltip.describe("log", t("game.matchLog"))}>
             <Icons.ScrollText size={17} />
-          </button>
-          <button className="game-topbar-button" onClick={onReportBug} aria-label={t("bugReport.button")}>
-            <Icons.Megaphone size={17} />
           </button>
           {onToggleChat ? (
             <button
               className="game-topbar-button"
               onClick={onToggleChat}
-              aria-label={chatLabel}
               aria-pressed={chatOpen}
-              title={chatLabel}
+              {...tooltip.describe("chat", chatLabel)}
             >
               <Icons.MessageSquare size={17} />
               <ChatUnreadBadge count={chatUnread} />
@@ -325,8 +333,7 @@ export function OpponentBar({
             <button
               className="game-topbar-button"
               onClick={fullscreen.toggle}
-              aria-label={fullscreenLabel}
-              title={fullscreenLabel}
+              {...tooltip.describe("fullscreen", fullscreenLabel)}
             >
               <FullscreenIcon size={17} />
             </button>
@@ -338,31 +345,40 @@ export function OpponentBar({
           <button
             className="game-topbar-button game-topbar-button--skip"
             onClick={onSkipPresentation}
-            aria-label={t("game.skipPresentation")}
-            title={skipShown ? t("game.skipPresentation") : undefined}
             aria-hidden={!skipShown}
             disabled={!skipShown}
             tabIndex={skipShown ? undefined : -1}
             data-skippable={skipShown}
             data-testid="skip-presentation"
+            {...tooltip.describe("skip", t("game.skipPresentation"))}
+            onMouseEnter={skipShown ? (event) => tooltip.show("skip", event.currentTarget) : undefined}
+            onFocus={skipShown ? (event) => tooltip.show("skip", event.currentTarget) : undefined}
           >
             <Icons.FastForward size={17} />
+          </button>
+          {/* Feedback sits with settings and leave so the three "about the match" controls read as one group. */}
+          <button
+            className="game-topbar-button"
+            onClick={onReportBug}
+            {...tooltip.describe("feedback", t("bugReport.button"))}
+          >
+            <Icons.Megaphone size={17} />
           </button>
           <button
             className="game-topbar-button game-topbar-button--look"
             onClick={onOpenArenaLook}
-            aria-label={t("redesign.arena.look.open")}
-            title={t("redesign.arena.look.open")}
+            {...tooltip.describe("look", t("redesign.arena.look.open"))}
           >
             <Icons.Settings size={17} />
           </button>
           <button
             className="game-topbar-button game-topbar-button--danger"
             onClick={onSurrender}
-            aria-label={t(spectating ? "spectator.leave" : "game.surrender")}
+            {...tooltip.describe("leave", leaveLabel)}
           >
             <Icons.LogOut size={17} />
           </button>
+          <TopbarTooltip tooltip={tooltip} text={tooltip.open ? tooltipText[tooltip.open.id] : undefined} />
         </div>
       )}
     </header>

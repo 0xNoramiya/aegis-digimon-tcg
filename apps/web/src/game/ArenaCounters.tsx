@@ -110,7 +110,7 @@ export function ArenaCounters({
             <span
               id={tooltipId}
               role="tooltip"
-              className="game-arena-counter-tooltip"
+              className="game-anchored-tooltip"
               data-above={open.above}
               style={{ left: open.left, top: open.top }}
               onMouseEnter={cancelClose}
