@@ -24,6 +24,8 @@ import type { Action, CardEffect, CardInstance, Condition, Cost, Permanent, Scal
  */
 export interface WouldBePlayedSelfReducer {
   amount: number;
+  /** Granted only after this reducer's printed payment succeeds. */
+  grantsTrashDigiXros?: boolean;
   /** Cost reduction earned for each card committed by a deferred self-placement cost. */
   amountPerPaid?: number;
   raw: string;
@@ -224,6 +226,7 @@ function captureReducer(
     condition?: unknown;
     target?: unknown;
     amountFromPaidCost?: boolean;
+    additionalEffects?: Array<{ kind: string }>;
     whileInHand?: true;
   },
   scaling: Scaling | undefined,
@@ -249,7 +252,12 @@ function captureReducer(
   }
   if (costActionsRaw.length > 0) {
     if (condition !== undefined) return;
-    out.push({ costActions: costActionsRaw as Action[], amount, raw });
+    out.push({
+      costActions: costActionsRaw as Action[],
+      amount,
+      raw,
+      grantsTrashDigiXros: a.additionalEffects?.some((extra) => extra.kind === "AllowDigiXrosMaterialsFromTrash"),
+    });
     return;
   }
   if (condition !== undefined || scaling !== undefined) {
@@ -770,4 +778,21 @@ export function potentialWouldBePlayedSelfReduction(ctx: EffectContext, reducer:
   if (reducer.condition !== undefined && !evaluateCondition(ctx, reducer.condition)) return 0;
   const scale = reducer.scaling !== undefined ? scaleFactor(ctx, reducer.scaling) : 1;
   return Math.max(0, reducer.amount * scale);
+}
+
+/** Read-only availability of a paid action-body self reducer, before offering its clause. */
+export function canPayWouldBePlayedSelfReducer(ctx: EffectContext, reducer: WouldBePlayedSelfReducer): boolean {
+  return reducer.costActions !== undefined
+    ? hasPayableLeadingSelectBind(ctx, reducer.costActions)
+    : reducer.cost !== undefined
+      ? canPayCost(ctx, reducer.cost)
+      : false;
+}
+
+export function wouldBePlayedSelfReducerPaymentCandidates(
+  ctx: EffectContext,
+  reducer: WouldBePlayedSelfReducer,
+): Permanent[] {
+  const leading = reducer.costActions?.[0];
+  return leading?.kind === "SelectBind" ? candidatePermanents(ctx, leading.target) : [];
 }

@@ -1,3 +1,8 @@
+import {
+  conditionalDigiXrosTrashAllowed,
+  pendingDigiXrosSelfReduction,
+  preparedDigiXrosMaterials,
+} from "./timing/payCost.js";
 import { EffectTiming, type CardDefinition, type CardInstance, type Permanent, type ServerEvent } from "@aegis/shared";
 import { rollTurnActivity } from "../turnActivity.js";
 import { lookupDefinition, definitionOf, isDigimon, intrinsicDigivolutionCostReduction } from "../cards/cardData.js";
@@ -641,6 +646,7 @@ export function playCardDeps(engine: GameEngine): PlayCardDeps {
     // body (BT12-112) selected to become one of its digivolution cards. No-op when nothing was
     // committed/selected for engine play.
     placePendingDigivolution: async (playedInstanceId, permanentId) => {
+      engine.preparedDigiXrosCosts.delete(playedInstanceId);
       await placePendingReducerCards(engine, playedInstanceId, permanentId);
       const relocations = engine.pendingSelfReducerRelocations.get(playedInstanceId);
       if (relocations !== undefined && relocations.length > 0) {
@@ -850,6 +856,10 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
       ];
     },
     canSubstituteMaterial: (permanentId) => engine.continuous.hasKeyword(permanentId, "DigiXrosSubstitute"),
+    reservedMaterialInstanceIds: (instance) =>
+      preparedDigiXrosMaterials(engine, instance.instanceId).reservedInstanceIds,
+    conditionalTrashAllowed: (instance) => conditionalDigiXrosTrashAllowed(engine, instance),
+    pendingSelfReduction: (instance) => pendingDigiXrosSelfReduction(engine, instance),
     ruleTrashMaterialCandidates: (playedInstance) => wouldBePlayedRuleTrashMaterials(engine, playedInstance),
     digiXrosExpandedZones: (seat, playedInstanceId) =>
       engine.primitives.digiXrosExpandedZones?.(seat, playedInstanceId) ?? [],

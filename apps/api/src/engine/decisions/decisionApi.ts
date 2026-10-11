@@ -216,6 +216,8 @@ function buildSeatScopedApi(
         assemblyCardId?: string;
         digiXrosCardId?: string;
         digiXrosMaterialLimits?: { candidateInstanceIds: string[]; max: number }[];
+        /** Paid source cards that will enter trash before this DigiXros is placed. */
+        digiXrosRuleTrashInstanceIds?: string[];
       },
     ): Promise<string[]> {
       const min = pickMinimum(ctx, opts.min, opts.max);
@@ -244,6 +246,7 @@ function buildSeatScopedApi(
             : {}),
           digiXrosCardId: opts.digiXrosCardId,
           digiXrosMaterialLimits: opts.digiXrosMaterialLimits,
+          digiXrosRuleTrashInstanceIds: opts.digiXrosRuleTrashInstanceIds,
           ...provenance(ctx),
           ...backOutPurpose(min, opts.min),
         },

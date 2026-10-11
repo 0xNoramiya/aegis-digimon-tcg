@@ -149,6 +149,13 @@ export interface PrimitivesEngine {
     simultaneousPlayCount?: number,
   ) => Promise<number>;
   /** Activate matching would-be-played replacements before an effect-driven DigiXros picker. */
+  clearPreparedDigiXrosPlay?(instanceId: string): void;
+  placePendingPlayCosts?(instanceId: string, permanentId: string): Promise<void>;
+  preparedDigiXrosMaterials?(instanceId: string): {
+    allowsTrash: boolean;
+    reservedInstanceIds: string[];
+    ruleTrashMaterials: import("@aegis/shared").CardInstance[];
+  };
   prepareDigiXrosPlay?(instanceId: string): Promise<string[]>;
   prepareDigiXrosPlays?(
     instanceIds: readonly string[],

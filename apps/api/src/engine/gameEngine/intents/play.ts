@@ -1,4 +1,15 @@
-import { Phase, appFusionCostFor, type Intent, type IntentResult, type Seat } from "@aegis/shared";
+import { prepareEffectPlayDigiXros } from "../../effects/interpreter/actions/effectPlayDigiXros.js";
+import { buildEffectContext, cardSourceOf } from "../effectContext.js";
+import { clearPreparedDigiXrosPlay, hasOtherDigiXrosPlayCosts } from "../timing/payCost.js";
+import { maximumPreparedDigiXrosReduction, prepareDigiXrosPlay } from "../timing/digiXros.js";
+import {
+  digiXrosRequiresPreparationFor,
+  Phase,
+  appFusionCostFor,
+  type Intent,
+  type IntentResult,
+  type Seat,
+} from "@aegis/shared";
 import { effectiveNames } from "../../effects/continuous.js";
 import { lookupDefinition } from "../../cards/cardData.js";
 import {
@@ -50,6 +61,59 @@ export function handlePlayCard(engine: GameEngine, seat: Seat, intent: PlayCardI
   // a flat cost reduction, §7-3) routes to the dedicated Assembly play subsystem.
   if (intent.assembly !== undefined) {
     return handleAssembly(engine, seat, intent as AssemblyIntent);
+  }
+  const instance = engine.state.players[seat]?.hand.find((card) => card.instanceId === intent.instanceId);
+  if (instance !== undefined && digiXrosRequiresPreparationFor(instance.cardId)) {
+    const deps = playCardDeps(engine);
+    // A read-only upper bound permits material-affordable plays without paying for impossible ones.
+    const materialReduction = maximumPreparedDigiXrosReduction(engine, instance);
+    const check = validatePlayCard(engine.state, seat, intent, {
+      ...deps,
+      maxAffordable: (state, owner) => deps.maxAffordable(state, owner) + materialReduction,
+      hasBeforePayCost: () => hasOtherDigiXrosPlayCosts(engine, instance),
+      minimumDeferredPlayCost: () => undefined,
+    });
+    if (!check.ok) return { ok: false, reason: mapPlayCardReason(check.reason) };
+    continueMainVerb(
+      engine,
+      async () => {
+        try {
+          const ctx = buildEffectContext(engine, cardSourceOf(engine, instance), {});
+          const plans = await prepareEffectPlayDigiXros(ctx, [instance], [], { retainPlayExpansions: true });
+          const materials = plans[instance.instanceId] ?? [];
+          const outcome =
+            materials.length > 0
+              ? await applyDigiXros(
+                  engine.state,
+                  seat,
+                  { ...intent, digiXros: { materialInstanceIds: materials } },
+                  digiXrosDeps(engine),
+                )
+              : await applyPlayCard(engine.state, seat, intent, deps);
+          if (!outcome.ok) engine.hooks.emit({ kind: "actionRejected", intent: "playCard", reason: outcome.reason });
+          else if (engine.memory.hasCrossedToOpponent()) {
+            const played = engine.state.players[seat]?.battleArea.find(
+              (permanent) => permanent.topCard.instanceId === instance.instanceId,
+            );
+            if (played !== undefined && engine.continuous.hasKeyword(played.permanentId, "Rush"))
+              engine.crossedMemoryRushAttackers.add(played.permanentId);
+          }
+        } finally {
+          engine.primitives.consumeDigiXrosPlayExpansions?.(seat, instance.instanceId);
+          clearPreparedDigiXrosPlay(engine, instance.instanceId);
+        }
+      },
+      () => {},
+      (err) => {
+        logError("[engine] prepared DigiXros play failed:", err);
+        engine.hooks.emit({
+          kind: "actionRejected",
+          intent: "playCard",
+          reason: err instanceof Error ? err.message : "digixros-apply-error",
+        });
+      },
+    );
+    return { ok: true };
   }
   const deps = playCardDeps(engine);
   const check = validatePlayCard(engine.state, seat, intent, deps);
@@ -167,7 +231,18 @@ export function handleDigiXros(engine: GameEngine, seat: Seat, intent: DigiXrosI
   }
   continueMainVerb(
     engine,
-    () => applyDigiXros(engine.state, seat, intent, deps),
+    async () => {
+      try {
+        if (digiXrosRequiresPreparationFor(check.instance.cardId)) await prepareDigiXrosPlay(engine, intent.instanceId);
+        const outcome = await applyDigiXros(engine.state, seat, intent, deps);
+        if (!outcome.ok)
+          engine.hooks.emit({ kind: "actionRejected", intent: "playCard", reason: mapDigiXrosReason(outcome.reason) });
+        return outcome;
+      } finally {
+        engine.primitives.consumeDigiXrosPlayExpansions?.(seat, intent.instanceId);
+        clearPreparedDigiXrosPlay(engine, intent.instanceId);
+      }
+    },
     () => {},
     (err) => {
       logError("[engine] digiXros apply failed:", err);

@@ -5,7 +5,15 @@ import type { EffectContext } from "../../EffectContext.js";
 import { looseCardsInZone, type LooseCandidate } from "../targeting/loose.js";
 
 /** Read-only upper bound from material assignments the effect-play picker can actually offer. */
-export function availableEffectPlayDigiXrosReduction(ctx: EffectContext, playedCard: LooseCandidate): number {
+export function availableEffectPlayDigiXrosReduction(
+  ctx: EffectContext,
+  playedCard: LooseCandidate,
+  options: {
+    allowsTrash?: boolean;
+    ruleTrashMaterials?: readonly LooseCandidate[];
+    reservedInstanceIds?: readonly string[];
+  } = {},
+): number {
   const requirement = digiXrosRequirementFor(playedCard.cardId)?.[0];
   if (requirement === undefined) return 0;
   const seat = playedCard.ownerSeat;
@@ -28,7 +36,9 @@ export function availableEffectPlayDigiXrosReduction(ctx: EffectContext, playedC
       : underZones.reduce((sum, zone) => sum + (counts[zone] ?? 0), 0);
   const ledgerTrash = counts === undefined ? (zones.has("trash") ? 1 : 0) : (counts.trash ?? 0);
   const underQuota = ledgerUnder + expanders.reduce((sum, expander) => sum + expander.underTamerMax, 0);
-  const trashQuota = ledgerTrash + expanders.reduce((sum, expander) => sum + expander.trashMax, 0);
+  const trashQuota = options.allowsTrash
+    ? Infinity
+    : ledgerTrash + expanders.reduce((sum, expander) => sum + expander.trashMax, 0);
   const singleHost =
     ledgerUnder === 0 &&
     expanders.some((expander) => expander.underTamerMax > 0) &&
@@ -50,7 +60,7 @@ export function availableEffectPlayDigiXrosReduction(ctx: EffectContext, playedC
     ),
   ];
   const under = underQuota > 0 ? looseCardsInZone(ctx, seat, "underTamers") : [];
-  const trash = trashQuota > 0 ? looseCardsInZone(ctx, seat, "trash") : [];
+  const trash = trashQuota > 0 ? [...looseCardsInZone(ctx, seat, "trash"), ...(options.ruleTrashMaterials ?? [])] : [];
   const hosts = singleHost ? [...new Set(under.map((card) => card.hostPermanentId))] : [undefined];
   const cap =
     requirement.maxMaterials ??
@@ -58,7 +68,11 @@ export function availableEffectPlayDigiXrosReduction(ctx: EffectContext, playedC
   let maximum = 0;
   for (const host of hosts.length === 0 ? [undefined] : hosts) {
     const groups = [ordinary, singleHost ? under.filter((card) => card.hostPermanentId === host) : under, trash].map(
-      (cards) => cards.filter((card) => card.instanceId !== playedCard.instanceId),
+      (cards) =>
+        cards.filter(
+          (card) =>
+            card.instanceId !== playedCard.instanceId && !options.reservedInstanceIds?.includes(card.instanceId),
+        ),
     );
     // Maximum flow: zone quotas -> physical cards -> distinct recipe slots. A repeated
     // single-slot recipe has capacity `cap`; named multi-slot recipes allow one per slot.

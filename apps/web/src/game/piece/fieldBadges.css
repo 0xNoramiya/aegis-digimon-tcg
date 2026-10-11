@@ -62,6 +62,12 @@
   left: calc(var(--permanent-width, 116px) * -0.2 - 7px);
 }
 
+/* The opponent's raising card touches the top of the clipped field, right under
+   the opponent bar, so the count sits inside the card's top edge there. */
+.game-utility-slot--opp-raising .game-permanent .game-source-badge {
+  top: 0;
+}
+
 .game-permanent .game-source-badge svg {
   width: 1.1em;
   height: 1.1em;

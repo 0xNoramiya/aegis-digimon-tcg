@@ -23,6 +23,9 @@ import type { EffectContext } from "../effects/EffectContext.js";
  */
 export interface EngineInternals {
   readonly state: GameState;
+  readonly preparedDigiXrosCosts: ReadonlyMap<string, unknown>;
+  readonly pendingSelfReducerRelocations: ReadonlyMap<string, unknown>;
+  readonly pendingPlayReducerPlacements: ReadonlyMap<string, unknown>;
   readonly continuous: ContinuousEffectLedger;
   readonly modifiers: ModifierLedger;
   readonly subTriggers: SubTriggerRegistry;

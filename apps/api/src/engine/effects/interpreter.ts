@@ -57,6 +57,7 @@ export {
 export { irCardModule, registerIrCard } from "./interpreter/registration/module.js";
 export {
   applyWouldBePlayedSelfReducer,
+  canPayWouldBePlayedSelfReducer,
   applyWouldDigivolveSelfReducer,
   potentialWouldBePlayedSelfReduction,
   potentialWouldDigivolveSelfReduction,

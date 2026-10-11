@@ -7,6 +7,7 @@ export const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 export const DRIVE_FOLDER_NAME = "Aegis Replays";
 export const GOOGLE_IDENTITY_SCRIPT = "https://accounts.google.com/gsi/client";
 const DRIVE_FILES = "https://www.googleapis.com/drive/v3/files";
+const DRIVE_ABOUT = "https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)";
 const DRIVE_UPLOAD = "https://www.googleapis.com/upload/drive/v3/files";
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 const FILE_FIELDS = "id,name,createdTime,size,webViewLink,appProperties";
@@ -20,6 +21,8 @@ export const DRIVE_STORAGE_KEYS = {
   token: "aegis.drive.token",
   linked: "aegis.drive.linked",
   folder: "aegis.drive.folder",
+  /** The Google account last connected here, sent as `login_hint` to skip the account chooser. */
+  account: "aegis.drive.account",
 } as const;
 
 interface TokenResponse {
@@ -32,6 +35,7 @@ interface GoogleOAuth2 {
   initTokenClient(config: {
     client_id: string;
     scope: string;
+    login_hint?: string;
     callback: (response: TokenResponse) => void;
     error_callback?: (error: { type?: string }) => void;
   }): { requestAccessToken(overrides?: { prompt?: string }): void };
@@ -212,6 +216,17 @@ export function createGoogleDriveProvider(clientId: string): ReplayCloudProvider
     return folder;
   }
 
+  async function rememberAccount(token: string) {
+    try {
+      const response = await fetch(DRIVE_ABOUT, { headers: { Authorization: `Bearer ${token}` } });
+      if (!response.ok) return;
+      const email = ((await response.json()) as { user?: { emailAddress?: string } }).user?.emailAddress;
+      if (email) writeStorage(local, DRIVE_STORAGE_KEYS.account, email);
+    } catch {
+      // Without the hint the next sign-in shows Google's account chooser.
+    }
+  }
+
   function forgetFolder() {
     folder = undefined;
     writeStorage(local, DRIVE_STORAGE_KEYS.folder, undefined);
@@ -282,10 +297,12 @@ export function createGoogleDriveProvider(clientId: string): ReplayCloudProvider
       const oauth = identity ?? (await loadGoogleIdentity());
       identity = oauth;
       const linked = readStorage(local, DRIVE_STORAGE_KEYS.linked) === "1";
+      const account = readStorage(local, DRIVE_STORAGE_KEYS.account);
       await new Promise<void>((resolve, reject) => {
         const client = oauth.initTokenClient({
           client_id: clientId,
           scope: DRIVE_SCOPE,
+          ...(account ? { login_hint: account } : {}),
           callback: (response) => {
             if (response.error || !response.access_token || !oauth.hasGrantedAllScopes(response, DRIVE_SCOPE)) {
               reject(new CloudAuthError());
@@ -295,6 +312,7 @@ export function createGoogleDriveProvider(clientId: string): ReplayCloudProvider
             // Shared by every tab, so a new tab auto-saves until the hour-long token expires.
             writeStorage(local, DRIVE_STORAGE_KEYS.token, JSON.stringify({ token: response.access_token, expiresAt }));
             writeStorage(local, DRIVE_STORAGE_KEYS.linked, "1");
+            if (!account) void rememberAccount(response.access_token);
             notify();
             resolve();
           },
@@ -357,6 +375,7 @@ export function createGoogleDriveProvider(clientId: string): ReplayCloudProvider
       const token = accessToken();
       writeStorage(local, DRIVE_STORAGE_KEYS.token, undefined);
       writeStorage(local, DRIVE_STORAGE_KEYS.linked, undefined);
+      writeStorage(local, DRIVE_STORAGE_KEYS.account, undefined);
       forgetFolder();
       uploads.clear();
       notify();

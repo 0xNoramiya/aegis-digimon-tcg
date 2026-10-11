@@ -1,7 +1,8 @@
+import type { SavedReplay } from "@aegis/shared";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { ReadyReplay } from "../files";
 import { replayApi } from "../library";
-import { markLocalReplaySynced } from "../local";
+import { localReplayFile, markLocalReplaySynced, unsyncedLocalReplays } from "../local";
 import { createGoogleDriveProvider } from "./googleDrive";
 import { CloudAuthError, type CloudReplayFile, type ReplayCloudProvider } from "./provider";
 
@@ -22,7 +23,10 @@ function bump() {
   for (const listener of listeners) listener();
 }
 
-cloudReplays?.subscribe(bump);
+cloudReplays?.subscribe(() => {
+  bump();
+  syncWhenConnected();
+});
 
 function subscribe(listener: () => void) {
   listeners.add(listener);
@@ -45,6 +49,7 @@ export function setCloudAutoSave(on: boolean): void {
     // The choice lasts for this page when storage is unavailable.
   }
   bump();
+  syncWhenConnected();
 }
 
 /** The per-device cloud state. Re-renders when the session or the auto-save choice changes. */
@@ -88,10 +93,52 @@ class RegisterError extends Error {}
 async function saveToCloud(provider: ReplayCloudProvider, replay: ReadyReplay): Promise<CloudReplayFile> {
   const file = await provider.upload(replay);
   void markLocalReplaySynced(replay, file.id).catch(() => undefined);
-  if (replay.indexId)
-    await replayApi.registerDrive(replay.indexId, file.id).catch(() => Promise.reject(new RegisterError()));
+  if (replay.indexId) {
+    const saved = await replayApi
+      .registerDrive(replay.indexId, file.id)
+      .catch(() => Promise.reject(new RegisterError()));
+    for (const listener of registeredListeners) listener(saved);
+  }
   return file;
 }
+
+const registeredListeners = new Set<(replay: SavedReplay) => void>();
+
+/** Hears each replay a background save adds to the account library, so open lists can show it. */
+export function subscribeRegisteredReplays(listener: (replay: SavedReplay) => void): () => void {
+  registeredListeners.add(listener);
+  return () => registeredListeners.delete(listener);
+}
+
+let backlog: Promise<void> | undefined;
+
+/**
+ * Uploads the replays this device kept while the cloud session was expired. One run at a
+ * time; a lost session stops it, and the next sign-in starts it again.
+ */
+export function syncLocalReplays(provider: ReplayCloudProvider): Promise<void> {
+  backlog ??= (async () => {
+    for (const entry of await unsyncedLocalReplays()) {
+      if (!provider.isConnected()) return;
+      try {
+        await saveToCloud(provider, localReplayFile(entry));
+      } catch (error) {
+        if (error instanceof CloudAuthError) return;
+      }
+    }
+  })()
+    .catch(() => undefined)
+    .finally(() => {
+      backlog = undefined;
+    });
+  return backlog;
+}
+
+function syncWhenConnected() {
+  if (cloudReplays?.isConnected() && isCloudAutoSaveOn()) void syncLocalReplays(cloudReplays);
+}
+
+syncWhenConnected();
 
 /**
  * Saves one finished match to the player's cloud. With auto-save on and a live session it

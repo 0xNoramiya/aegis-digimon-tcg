@@ -71,6 +71,7 @@ const OPTION_CONSUMERS: Record<DecisionOptionKey, string | null> = {
   playCostReductionBlocked: "screen/layout/DecisionPrompts.tsx",
   digiXrosCardId: "screen/layout/DecisionPrompts.tsx",
   digiXrosMaterialLimits: "screen/layout/DecisionPrompts.tsx",
+  digiXrosRuleTrashInstanceIds: "decisionModel.ts",
 };
 
 describe("engine to UI decision contract", () => {

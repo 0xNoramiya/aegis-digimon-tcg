@@ -79,6 +79,8 @@ export interface SeatScopedDecisionApi {
       assemblyCardId?: string;
       digiXrosCardId?: string;
       digiXrosMaterialLimits?: { candidateInstanceIds: string[]; max: number }[];
+      /** Paid source cards that will enter trash before this DigiXros is placed. */
+      digiXrosRuleTrashInstanceIds?: string[];
     },
   ): Promise<string[]>;
   /** Arrange every offered card in deck order; the first id is nearest the deck top. */

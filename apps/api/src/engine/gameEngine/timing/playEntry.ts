@@ -263,22 +263,37 @@ export async function reactivateOnPlay(
   // fireBeforePayCost): canTrigger encodes the effect's declared `when` condition, which
   // canActivate alone does not — an effect whose trigger condition no longer holds must not
   // be offered/resolved even if its (often unconditional) canActivate would pass.
-  const candidates = [permanent.topCard, ...permanent.stack]
-    .flatMap((instance) => {
+  const instances = [permanent.topCard, ...permanent.stack];
+  const mainCandidates = timings.includes(EffectTiming.OnDeclaration)
+    ? engine.projection.activatableEffectsFor(instances).map((collected) => ({
+        effect: collected.effect,
+        source: collected.source,
+        ctx: { ...engine.projection.activationContext(collected), selections: new Map() },
+        timing: undefined,
+      }))
+    : [];
+  // Main activation must use the same gained/inherited effect identities as the public intent.
+  // Raw buried printed effects have no placement permission and silently fail after selection.
+  const candidates = [
+    ...mainCandidates,
+    ...instances.flatMap((instance) => {
       const source = cardSourceOf(engine, instance);
       const ctx: EffectContext = { ...buildEffectContext(engine, source, {}), selections: new Map() };
-      return timings.flatMap((timing) => {
-        const timingKey: "whenDigivolving" | "onPlay" | "whenAttacking" | undefined =
-          timing === EffectTiming.WhenDigivolving
-            ? "whenDigivolving"
-            : timing === EffectTiming.OnPlay
-              ? "onPlay"
-              : timing === EffectTiming.OnUseAttack
-                ? "whenAttacking"
-                : undefined;
-        return effectsOf(timing, source).map((effect) => ({ effect, source, ctx, timing: timingKey }));
-      });
-    })
+      return timings
+        .filter((timing) => timing !== EffectTiming.OnDeclaration)
+        .flatMap((timing) => {
+          const timingKey: "whenDigivolving" | "onPlay" | "whenAttacking" | undefined =
+            timing === EffectTiming.WhenDigivolving
+              ? "whenDigivolving"
+              : timing === EffectTiming.OnPlay
+                ? "onPlay"
+                : timing === EffectTiming.OnUseAttack
+                  ? "whenAttacking"
+                  : undefined;
+          return effectsOf(timing, source).map((effect) => ({ effect, source, ctx, timing: timingKey }));
+        });
+    }),
+  ]
     .filter(({ effect }) => !effect.isSecurity)
     .filter(({ effect, ctx }) => opts?.outsideTriggerWindow === true || canTrigger(effect, ctx, engine.tracker));
   const availableCandidates = candidates.filter(({ ctx, timing }) => {

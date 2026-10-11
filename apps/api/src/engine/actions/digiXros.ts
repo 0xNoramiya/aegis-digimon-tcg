@@ -101,6 +101,9 @@ export type DigiXrosCheck =
     };
 
 export interface DigiXrosDeps {
+  reservedMaterialInstanceIds?(instance: CardInstance): readonly string[];
+  conditionalTrashAllowed?(instance: CardInstance): boolean | undefined;
+  pendingSelfReduction?(instance: CardInstance): number;
   maxAffordable(state: GameState, seat: Seat): number;
   payMemory(state: GameState, seat: Seat, cost: number): void;
   /** Apply continuous play-cost modifiers to the printed cost (before the DigiXros reduction). */
@@ -191,6 +194,9 @@ export function validateDigiXros(
   deps: Pick<
     DigiXrosDeps,
     | "maxAffordable"
+    | "reservedMaterialInstanceIds"
+    | "conditionalTrashAllowed"
+    | "pendingSelfReduction"
     | "adjustedPlayCost"
     | "canReducePlayCost"
     | "digiXrosNamesOf"
@@ -219,6 +225,8 @@ export function validateDigiXros(
 
   const materialIds = intent.digiXros.materialInstanceIds;
   if (materialIds.length === 0) return { ok: false, reason: "no-materials" };
+  if (materialIds.some((id) => deps.reservedMaterialInstanceIds?.(instance).includes(id)))
+    return { ok: false, reason: "invalid-material" };
   if (new Set(materialIds).size !== materialIds.length) return { ok: false, reason: "invalid-material" };
 
   // Resolve the chosen expander Tamers and aggregate the unlocked per-zone maxima. Each Tamer
@@ -241,7 +249,9 @@ export function validateDigiXros(
         !materialDefinition.kinds.includes(CardKind.Digimon) || intrinsicTrashNames.includes(materialDefinition.nameEn)
       );
     });
-  let trashMax = allowsDigiXrosMaterialsFromTrash(instance.cardId) || intrinsicTrashAllowed ? Infinity : 0;
+  const conditionalTrash = deps.conditionalTrashAllowed?.(instance);
+  let trashMax =
+    (conditionalTrash ?? allowsDigiXrosMaterialsFromTrash(instance.cardId)) || intrinsicTrashAllowed ? Infinity : 0;
   if (allowsExtraDigiXrosMaterials(instance.cardId)) trashMax = 1;
   // A live effect grant can open the trash as a material source for THIS seat regardless of what
   // the played card itself declares (BT17-057's Static "while you have a black Tamer", Q2811). The
@@ -350,7 +360,8 @@ export function validateDigiXros(
         ? (requirement.costReduction ?? 1)
         : requirement.count;
   const cost = Math.max(0, base - materials.length * perMaterialReduction);
-  if (deps.maxAffordable(state, seat) < cost) return { ok: false, reason: "insufficient-memory" };
+  if (deps.maxAffordable(state, seat) < Math.max(0, cost - (deps.pendingSelfReduction?.(instance) ?? 0)))
+    return { ok: false, reason: "insufficient-memory" };
 
   return {
     ok: true,
@@ -379,6 +390,7 @@ export async function applyDigiXros(
   let cost = deps.finalizePlayCost
     ? await deps.finalizePlayCost(state, seat, check.instance, definition, check.cost)
     : check.cost;
+  if (cost > deps.maxAffordable(state, seat)) return { ok: false, reason: "insufficient-memory" };
   const player = state.players[seat]!;
 
   // (1) Pay the activation cost: suspend the chosen expander Tamers.
