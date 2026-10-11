@@ -4,6 +4,7 @@ import { en } from "./en";
 // Release notes before v1.19.0 keep their published English text. All interface
 // messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  "home.strategyGuides": "Impara a giocare un mazzo con le nostre guide strategiche",
   "feedback.title": "Feedback dei giocatori",
   "feedback.subtitle": "Classifica le segnalazioni, impostane lo stato e rispondi a chi le ha inviate.",
   "feedback.restricted": "Solo gli amministratori possono vedere i feedback.",
@@ -306,7 +307,8 @@ const interfaceMessages = {
   "nav.primaryAria": "Navigazione principale",
   "nav.skipToContent": "Vai al contenuto principale",
   "brand.subtitle": "GIOCO DI CARTE",
-  "browser.outdated": "Questo browser non è aggiornato, quindi alcuni colori e pannelli potrebbero non comparire. Aggiorna a Safari 16.4, Chrome 111, Firefox 113 o versioni successive.",
+  "browser.outdated":
+    "Questo browser non è aggiornato, quindi alcuni colori e pannelli potrebbero non comparire. Aggiorna a Safari 16.4, Chrome 111, Firefox 113 o versioni successive.",
   "beta.tag": "Beta",
   "lobby.betaBattleMode": "Modalità di gioco beta",
   "lobby.betaBattleHint":

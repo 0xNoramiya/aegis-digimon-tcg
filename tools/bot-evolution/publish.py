@@ -39,8 +39,14 @@ def verified_run(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
             "Publication requires a pinned engine and at least 128 completed rollouts per search"
         )
     for version, stage in pilots.items():
-        if version not in GUIDES or stage["engineSha256"] != engine or stage["candidates"] < 2:
-            raise ValueError("Every guide requires a reflected candidate pool from the same engine")
+        if (
+            version not in GUIDES
+            or stage["engineSha256"] != engine
+            or stage.get("validEvaluatedProposals", 0) < 1
+        ):
+            raise ValueError(
+                "Every guide requires a fitness-evaluated alternative policy from the same engine"
+            )
         evidence = report["results"][version]
         if not evidence["allValid"] or len(evidence["selected"]) < 4:
             raise ValueError("Publication requires valid held-out games in both seats")
@@ -128,15 +134,26 @@ def evidence_table(evidence: dict[str, Any]) -> str:
     )
 
 
-def publish(run_dir: Path, output: Path, base_url: str) -> None:
+def publish(run_dir: Path, output: Path, base_url: str, catalog_output: Path | None = None) -> None:
     manifest, pilots, report = verified_run(run_dir)
     output.mkdir(parents=True, exist_ok=True)
     metadata = manifest["metadata"]
     cards = {card["cardId"]: card for card in metadata["cards"]}
     decks = {deck["id"]: deck for deck in metadata["evolutionDecks"]}
     index_links = []
+    catalog = []
+    page_urls = [f"{base_url}/strategy-guides/"]
     for version, stage in pilots.items():
         slug, title, description = GUIDES[version]
+        catalog.append(
+            {
+                "slug": slug,
+                "title": title,
+                "description": description,
+                "url": f"/strategy-guides/{slug}/",
+            }
+        )
+        page_urls.append(f"{base_url}/strategy-guides/{slug}/")
         rules = [rule for rule in stage["program"]["rules"] if rule["weight"] != 0]
         # Preserve policy order and exact advice; the reader sees every active rule.
         principles = "".join(
@@ -160,11 +177,20 @@ def publish(run_dir: Path, output: Path, base_url: str) -> None:
             deck_html = (
                 '<section id="deck"><h2>The tested deck</h2>' + "".join(sections) + "</section>"
             )
+        selection_note = (
+            "The starting policy for this stage was retained."
+            if stage.get("retainedStageInitial")
+            else "A revised policy was selected."
+        )
+        if stage.get("retainedOriginalSeed"):
+            selection_note += (
+                " This is also the original baseline policy; improvement was not demonstrated."
+            )
         body = f"""<p class="eyebrow">Digimon Card Game · Strategy guide</p><h1>{escape(title)}</h1><p class="lede">{escape(description)}</p>
 <div class="practice"><p>Put these decisions into practice in a real game.</p><a class="button" href="/play?utm_source=strategy-guides&amp;utm_content={slug}">Play on Aegis</a></div>
 <nav class="contents" aria-label="In this guide"><a href="#decisions">Decision principles</a>{'<a href="#deck">Deck list</a>' if deck_html else ""}<a href="#results">Practice results</a></nav>
 <section id="decisions"><h2>Decision principles</h2><p>These principles describe the selected pilot's preferences. Combine them with the board and the printed card text; a preference is not a guarantee that a play is safe.</p><ul class="principles">{principles}</ul></section>{deck_html}
-<section id="results"><h2>Practice results</h2><p>The search opponent used {report["simulations"]} completed game simulations per main choice. Both player seats were tested. This small benchmark describes these particular decks and seeds; it does not establish tournament performance.</p>{evidence_table(report["results"][version])}<details><summary>How this guide was selected</summary><p>We evolved a general pilot on varied legal decks, then trained deck pilots against search and a frozen archive of other pilots. Final games were excluded from training and selection. Search samples unknown cards using an open deck list and applies to main choices.</p><p>{stage["candidates"]} candidates evaluated; selected validation score {stage["validationScore"]:.2f}. The final results above include the starting-policy control.</p><p>Engine fingerprint: <code>{escape(report["engineSha256"])}</code></p><a href="/strategy-guides/evidence.json">Download policy and benchmark evidence</a></details></section>"""
+<section id="results"><h2>Practice results</h2><p>The search opponent used {report["simulations"]} completed game simulations per main choice. Both player seats were tested. This small benchmark describes these particular decks and seeds; it does not establish tournament performance.</p>{evidence_table(report["results"][version])}<details><summary>How this guide was selected</summary><p>We evolved a general pilot on varied legal decks, then trained deck pilots against search and a frozen archive of other pilots. Final games were excluded from training and selection. Search samples unknown cards using an open deck list and applies to main choices.</p><p>{stage["validEvaluatedProposals"]} alternative policies tested in completed games. {selection_note} Selected validation score {stage["validationScore"]:.2f}. The final results above include the starting-policy control.</p><p>Engine fingerprint: <code>{escape(report["engineSha256"])}</code></p><a href="/strategy-guides/evidence.json">Download policy and benchmark evidence</a></details></section>"""
         page = output / slug
         page.mkdir(exist_ok=True)
         (page / "index.html").write_text(
@@ -193,11 +219,41 @@ def publish(run_dir: Path, output: Path, base_url: str) -> None:
         "policies": pilots,
         "results": {
             version: {
-                key: value for key, value in result.items() if key not in ("selected", "control")
+                **{
+                    key: value
+                    for key, value in result.items()
+                    if key not in ("selected", "control")
+                },
+                **{
+                    arm: [
+                        {
+                            "task": {
+                                key: value
+                                for key, value in game["task"].items()
+                                if key != "opponentProgram"
+                            },
+                            "score": game["score"],
+                            "valid": game["valid"],
+                            "candidateSha256": game["candidateSha256"],
+                            "searches": game.get("searches", []),
+                        }
+                        for game in result[arm]
+                    ]
+                    for arm in ("selected", "control")
+                },
             }
             for version, result in report["results"].items()
         },
     }
+    if catalog_output is not None:
+        catalog_output.parent.mkdir(parents=True, exist_ok=True)
+        catalog_output.write_text(json.dumps(catalog, indent=2) + "\n", encoding="utf-8")
+    (output / "sitemap.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        + "".join(f"<url><loc>{escape(url)}</loc></url>" for url in page_urls)
+        + "</urlset>\n",
+        encoding="utf-8",
+    )
     (output / "evidence.json").write_text(
         json.dumps(public_evidence, indent=2) + "\n", encoding="utf-8"
     )
@@ -208,13 +264,18 @@ def publish(run_dir: Path, output: Path, base_url: str) -> None:
 @click.option(
     "--output", default=Path("apps/web/public/strategy-guides"), type=click.Path(path_type=Path)
 )
+@click.option(
+    "--catalog-output",
+    default=Path("apps/web/src/guides/catalog.json"),
+    type=click.Path(path_type=Path),
+)
 @click.option("--base-url", required=True)
-def main(run_dir: Path, output: Path, base_url: str) -> None:
+def main(run_dir: Path, output: Path, base_url: str, catalog_output: Path) -> None:
     parsed = urlparse(base_url)
     if parsed.scheme != "https" or not parsed.netloc or parsed.path not in ("", "/"):
         raise click.ClickException("Use the canonical HTTPS site origin")
     try:
-        publish(run_dir, output, base_url.rstrip("/"))
+        publish(run_dir, output, base_url.rstrip("/"), catalog_output)
     except (ValueError, KeyError) as error:
         raise click.ClickException(str(error)) from error
     click.echo(f"Published guides to {output}")

@@ -21,7 +21,15 @@ def artifact_run(path: Path) -> Path:
             }
         ],
     }
-    stage = {"program": program, "engineSha256": "engine", "candidates": 2, "validationScore": 0.5}
+    stage = {
+        "program": program,
+        "engineSha256": "engine",
+        "candidates": 1,
+        "validEvaluatedProposals": 1,
+        "retainedStageInitial": True,
+        "retainedOriginalSeed": True,
+        "validationScore": 0.5,
+    }
     candidate = hashlib.sha256(json.dumps(program).encode()).hexdigest()
     games = [
         {
@@ -64,13 +72,31 @@ def artifact_run(path: Path) -> Path:
 
 def test_publication_escapes_exact_advice_and_links_to_practice(tmp_path: Path) -> None:
     run = artifact_run(tmp_path / "run")
-    publish(run, tmp_path / "public", "https://example.com")
+    publish(run, tmp_path / "public", "https://example.com", tmp_path / "catalog.json")
     html = (tmp_path / "public/fundamentals/index.html").read_text()
     assert "&lt;script&gt;pass&lt;/script&gt;" in html
     assert "<script>" not in html
     assert "/play?utm_source=strategy-guides&amp;utm_content=fundamentals" in html
     assert '<link rel="canonical" href="https://example.com/strategy-guides/fundamentals/"' in html
     assert "2 wins, 0 draws / 4 games" in html
+    assert "improvement was not demonstrated" in html
+    evidence = json.loads((tmp_path / "public/evidence.json").read_text())
+    selected = evidence["results"]["generic"]["selected"]
+    assert len(selected) == 4
+    assert {game["task"]["learnerSeat"] for game in selected} == {0, 1}
+    assert selected[0]["searches"] == [{"requested": 256, "completed": 256}]
+    assert "traces" not in selected[0]
+    catalog = json.loads((tmp_path / "catalog.json").read_text())
+    assert catalog[0]["url"] == "/strategy-guides/fundamentals/"
+    from xml.etree import ElementTree
+
+    sitemap = ElementTree.fromstring((tmp_path / "public/sitemap.xml").read_text())
+    assert [
+        element.text for element in sitemap.iter("{http://www.sitemaps.org/schemas/sitemap/0.9}loc")
+    ] == [
+        "https://example.com/strategy-guides/",
+        "https://example.com/strategy-guides/fundamentals/",
+    ]
 
 
 @pytest.mark.parametrize("change", ("budget", "policy", "smoke", "opponent", "pairing"))

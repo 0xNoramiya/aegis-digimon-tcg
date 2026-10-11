@@ -42,11 +42,12 @@ the current isolated desktop checkout:
 
 ```sh
 tools/bot-evolution/.venv/bin/python tools/bot-evolution/evolve.py \
-  --run-dir artifacts/bot-evolution/desktop-gepa-final-256 \
+  --run-dir artifacts/bot-evolution/desktop-gepa-parallel-256 \
   --desktop-host desktop \
   --node /home/vinicius/aegis-bot-lab/toolchain/node-v26.10.0-linux-x64/bin/node \
   --worker /home/vinicius/aegis-bot-lab/checkouts/gepa-2026-10-10-v2/apps/api/dist/bot/evolution/evaluateCli.js \
   --simulations 256 --metric-calls 24 --pairs 2 --generations 2 \
+  --evaluation-workers 4 \
   --reflection-model session
 ```
 
@@ -54,6 +55,10 @@ The configured reflection model defaults to `openai/gpt-4.1`. Its credentials
 are supplied through the local environment. A run directory can be resumed only
 with the same engine and parameters; completed stage artifacts are reused and
 GEPA retains its own checkpoint state. Use a fresh directory after code changes.
+Four bounded desktop workers evaluate independent games while preserving batch order.
+A shared cache reuses only valid games with identical policy, task, engine, and
+search budget; reflection additionally requires recorded traces. Official GEPA
+callbacks record proposed policies separately from the retained candidate pool.
 Raw games, stderr logs, selected pilots, lineage, and held-out results remain
 under the ignored run directory.
 
@@ -81,13 +86,16 @@ held-out results to static HTML (crawlable without JavaScript):
 
 ```sh
 tools/bot-evolution/.venv/bin/python tools/bot-evolution/publish.py \
-  --run-dir artifacts/bot-evolution/desktop-gepa-final-256 \
+  --run-dir artifacts/bot-evolution/desktop-gepa-parallel-256 \
   --base-url https://aegis-digi.online
 ```
 
 The publisher requires matching engine/policy fingerprints, both player seats,
 valid final games, and complete search budgets of at least 128 rollouts. It
-refuses low-budget smoke results. Publication preserves every active rule's
+refuses low-budget smoke results and requires an alternative policy evaluated
+in completed games. If selection retains the stage input or original baseline,
+the guide reports that explicitly without claiming improvement. Publication
+preserves every active rule's
 exact advice and conditions, exposes benchmark denominators and the paired
 starting-policy control, and links to Aegis practice. Generated pages live in
 `apps/web/public/strategy-guides/`; deploying those pages is a separate delivery
