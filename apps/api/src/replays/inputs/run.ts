@@ -59,6 +59,8 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
   const state = new GameState();
   state.format = record.rules.deckFormat;
   state.unlimited = record.rules.unlimited;
+  // The room keeps it in its own recording, so an exported frame carries it as a player's file does.
+  state.matchLogId = record.matchId;
   const inputs = record.inputs;
   const limit = Math.min(options.untilInput ?? inputs.length, inputs.length);
   const divergences: ReplayDivergence[] = [];
