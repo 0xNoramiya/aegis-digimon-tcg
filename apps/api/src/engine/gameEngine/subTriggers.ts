@@ -113,9 +113,11 @@ export async function fireSubTrigger(
   // A security card removed while another effect is resolving creates a pending trigger;
   // it does not interrupt that effect. Dynasmon BT6-044 must finish revealing its 6 cards
   // before its Recovery reaction can consume the next deck card (KB Q1430/Q1432).
+  // Security effects and their replacements can resolve before a timing window opens;
+  // their body depth still makes the removal pending until the Security checkpoint.
   if (
     event === "whenSecurityRemoved" &&
-    engine.activeWindowToken !== undefined &&
+    (engine.activeWindowToken !== undefined || engine.effectResolutionDepth > 0) &&
     !engine.resolvingBarrierSecurityCost &&
     !engine.flushingDeferredSecurityRemovalTriggers
   ) {

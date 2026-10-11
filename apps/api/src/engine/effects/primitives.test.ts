@@ -760,6 +760,44 @@ describe("primitives: trash / delete / suspend", () => {
     });
   });
 
+  it("Feedback #47: security deck returns notify each removed owner once for a committed batch", async () => {
+    const h = harness({
+      board: {
+        0: {
+          security: [
+            { card: OPTION, as: "first" },
+            { card: OPTION, as: "second" },
+          ],
+        },
+        1: { security: [{ card: OPTION, as: "opponent" }] },
+      },
+    });
+    const ids = ["first", "second", "opponent"].map((alias) => h.s.inst(alias).instanceId);
+    const moved = await h.fx.returnToDeck([...ids, ids[0]!], { toTop: false });
+    expect(moved.map((card) => card.instanceId)).toEqual(ids);
+    expect(h.subTriggerFires.filter(({ event }) => event === "whenSecurityRemoved")).toEqual([
+      { event: "whenSecurityRemoved", payload: { removedFromSecuritySeat: 0 } },
+      { event: "whenSecurityRemoved", payload: { removedFromSecuritySeat: 1 } },
+    ]);
+    expect(h.state.players[0]!.deck.map((card) => card.instanceId)).toEqual(ids.slice(0, 2));
+    expect(h.state.players[1]!.deck.map((card) => card.instanceId)).toEqual(ids.slice(2));
+    expect(
+      h.subTriggerFires.some(
+        ({ event }) => event === "whenCardTrashedFromSecurity" || event === "whenEffectTrashesFromSecurity",
+      ),
+    ).toBe(false);
+    expect(h.subTriggerFires.findIndex(({ event }) => event === "whenSecurityRemoved")).toBeLessThan(
+      h.subTriggerFires.findIndex(({ event }) => event === "whenEffectAddsToDeck"),
+    );
+  });
+
+  it("Feedback #47: a return with no moved security card creates no removal signal", async () => {
+    const h = harness({ board: { 0: { security: [{ card: OPTION, as: "kept" }] } } });
+    expect(await h.fx.returnToDeck(["absent-instance"], { toTop: false })).toEqual([]);
+    expect(h.state.players[0]!.security.map((card) => card.instanceId)).toEqual([h.s.inst("kept").instanceId]);
+    expect(h.subTriggerFires).toEqual([]);
+  });
+
   it("deletePermanent sends the whole permanent to trash and drops its modifiers", async () => {
     const h = harness({
       board: {

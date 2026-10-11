@@ -137,7 +137,7 @@ describe("useRoom reconnection token persistence", () => {
     });
   });
 
-  it.each(["arena-issue-4907-takato-end-turn", "arena-issue-4938-ruli-optional-reduction"] as const)(
+  it.each(["local-fixture", "local-fixture"] as const)(
     "opens the requested dev scenario %s instead of resuming the previous board",
     async (devScenario) => {
       saveReconnectSession({

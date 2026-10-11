@@ -20,4 +20,3 @@ The all-or-nothing requirement remains enforced. Battle deletion and deletion by
 - `engine/combat/executePartition.test.ts`: Q7274 engine regression proves Examon survives, Slayerdramon pays by suspending, and both Lv.5 materials are played.
 - `cards/EX13/EX13-024.test.ts`: focused card regression proves the same cross-card ruling through observable state.
 - Existing Partition negative controls continue to cover battle deletion, own-effect deletion, non-Partition holders, and Overflow independence.
-

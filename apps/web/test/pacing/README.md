@@ -58,16 +58,16 @@ One row per scenario, pacing and Effect speed. `pacing` is `current` or a pacing
 
 ## Production chains
 
-The `effects-lab-prod-*` scenarios rebuild the hardest trigger chains found in the production logs
+The `prod-*` scenarios rebuild the hardest trigger chains found in the production logs
 (Sep 24–30: 1,552 matches, 31,172 stack chains). The boards hold card ids only.
 
-| Scenario                                  | Logged chain                                                                           |
-| ----------------------------------------- | -------------------------------------------------------------------------------------- |
-| `effects-lab-prod-ghost-execute`          | Execute deletion: 8 [On Deletion] effects in one order prompt, a play from trash       |
-| `effects-lab-prod-ghost-execute-security` | The same chain with the bot's [Security] resolving between the attack and deletion     |
-| `effects-lab-prod-attack-stack`           | A digivolution attacks at once: 4 [When Attacking] effects, then the bot's watchers    |
-| `effects-lab-prod-security-removed`       | Taking a security card wakes 3 watchers; one digivolves, whose [When Digivolving] runs |
-| `effects-lab-prod-titan-cascade`          | A hand trash and a play from trash wake 5 effects (8 in the log; see devScenario.ts)   |
+| Scenario                      | Logged chain                                                                                        |
+| ----------------------------- | --------------------------------------------------------------------------------------------------- |
+| `prod-ghost-execute`          | Execute deletion: 8 [On Deletion] effects in one order prompt, a play from trash                    |
+| `prod-ghost-execute-security` | The same chain with the bot's [Security] resolving between the attack and deletion                  |
+| `prod-attack-stack`           | A digivolution attacks at once: 4 [When Attacking] effects, then the bot's watchers                 |
+| `prod-security-removed`       | Taking a security card wakes 3 watchers; one digivolves, whose [When Digivolving] runs              |
+| `prod-titan-cascade`          | A hand trash and a play from trash wake 5 effects (8 in the log; see prod-titan-cascade.fixture.ts) |
 
 The budget requires every paced production chain to show one active clause, no result before
 its cause, no board ahead, no unreadable clause and no gate expiry. There are no known-gap
@@ -210,8 +210,8 @@ cannot turn those failures into accepted budgets.
   snapshots or an authoritative result event that establishes ownership.
 - The human's think times are fixed. They move `chain ms`, not `shown ms`.
 - Fixed timing can miss a wait cycle that real browser timing closes (a start-of-main
-  chain froze every track in Chromium). `e2e/effects-lab-pacing.spec.ts` covers that in a
-  real browser; run it with `pnpm --filter @aegis/web test:browser effects-lab-pacing.spec.ts`.
+  chain froze every track in Chromium). `e2e/pacing.spec.ts` covers that in a
+  real browser; run it with `pnpm --filter @aegis/web test:browser pacing.spec.ts`.
   Its matrix covers the fixed stacked timing on desktop, phone and reduced motion, including
   obsolete saved tuning; it observes the actual room state, visible field, queue completion,
   painted notice identities and each field source's real focus duration. Separate

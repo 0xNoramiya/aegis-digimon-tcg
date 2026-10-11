@@ -1,0 +1,91 @@
+import type { ScenarioFixture } from "../scenario/types.js";
+
+const fixture: ScenarioFixture = {
+  name: "sukamon-ex13-deletion-search",
+  board: {
+    "0": {
+      deck: [
+        { card: "BT1-085", as: "latest-sukamon-reveal-0-card" },
+        { card: "BT3-061", as: "latest-sukamon-reveal-1-card" },
+        { card: "BT14-034", as: "latest-sukamon-reveal-2-card" },
+        { card: "BT1-010", as: "latest-sukamon-reveal-3-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-4-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-5-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-6-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-7-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-8-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-9-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-10-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-11-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-12-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-13-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-14-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-15-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-16-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-17-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-18-card" },
+        { card: "BT1-085", as: "latest-sukamon-reveal-19-card" },
+      ],
+      eggDeck: [{ card: "EX13-002", as: "latest-egg-card" }],
+      security: [
+        { card: "BT1-009", as: "latest-security-0-0-card" },
+        { card: "BT1-009", as: "latest-security-0-1-card" },
+        { card: "BT1-009", as: "latest-security-0-2-card" },
+      ],
+      battleArea: [
+        {
+          card: "EX13-028",
+          as: "latest-sukamon",
+          top: { card: "EX13-028", as: "own-card-latest-sukamon-card" },
+          dp: 2000,
+          placedByEffect: false,
+        },
+      ],
+    },
+    "1": {
+      deck: [
+        { card: "BT1-085", as: "latest-deck-1-0-card" },
+        { card: "BT1-085", as: "latest-deck-1-1-card" },
+        { card: "BT1-085", as: "latest-deck-1-2-card" },
+        { card: "BT1-085", as: "latest-deck-1-3-card" },
+        { card: "BT1-085", as: "latest-deck-1-4-card" },
+        { card: "BT1-085", as: "latest-deck-1-5-card" },
+        { card: "BT1-085", as: "latest-deck-1-6-card" },
+        { card: "BT1-085", as: "latest-deck-1-7-card" },
+        { card: "BT1-085", as: "latest-deck-1-8-card" },
+        { card: "BT1-085", as: "latest-deck-1-9-card" },
+        { card: "BT1-085", as: "latest-deck-1-10-card" },
+        { card: "BT1-085", as: "latest-deck-1-11-card" },
+        { card: "BT1-085", as: "latest-deck-1-12-card" },
+        { card: "BT1-085", as: "latest-deck-1-13-card" },
+        { card: "BT1-085", as: "latest-deck-1-14-card" },
+        { card: "BT1-085", as: "latest-deck-1-15-card" },
+        { card: "BT1-085", as: "latest-deck-1-16-card" },
+        { card: "BT1-085", as: "latest-deck-1-17-card" },
+        { card: "BT1-085", as: "latest-deck-1-18-card" },
+        { card: "BT1-085", as: "latest-deck-1-19-card" },
+      ],
+      security: [
+        { card: "BT1-009", as: "latest-security-1-0-card" },
+        { card: "BT1-009", as: "latest-security-1-1-card" },
+        { card: "BT1-009", as: "latest-security-1-2-card" },
+      ],
+      battleArea: [
+        {
+          card: "BT1-010",
+          as: "latest-target",
+          top: { card: "BT1-010", as: "opponent-card-latest-target-card" },
+          dp: 2000,
+          placedByEffect: false,
+          suspended: true,
+        },
+      ],
+    },
+  },
+  memory: 10,
+  turnSeat: 0,
+  turnCount: 0,
+  isFirstPlayersFirstTurn: false,
+};
+
+export default fixture;

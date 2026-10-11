@@ -298,9 +298,7 @@ describe("§18-2-4 uninterruptible overwrite processing (comprehensive-0269)", (
     await settle(() => s.perm("tactimon").stack.length === 0);
 
     const afterAccept = s.events.slice(eventsAtAccept);
-    const replacementTrash = afterAccept.findIndex(
-      (event) => event.kind === "cardsMoved" && event.to === "trash",
-    );
+    const replacementTrash = afterAccept.findIndex((event) => event.kind === "cardsMoved" && event.to === "trash");
     expect(replacementTrash).toBeGreaterThanOrEqual(0);
     const trashed = afterAccept[replacementTrash] as { instanceIds: string[] };
     expect([...trashed.instanceIds].sort()).toEqual([...tactimonSourceIds].sort());

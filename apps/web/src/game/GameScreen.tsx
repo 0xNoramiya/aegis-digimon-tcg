@@ -427,7 +427,7 @@ export function GameScreen({
   // intent and the reason, not the card, so the card is the one this client last
   // sent a play for — the only thing that could have been refused.
   const [shakeHandInstanceId, setShakeHandInstanceId] = useState<string | undefined>(undefined);
-  // The Digimon whose digivolution cards a one-card source pick is narrowed to. Keyed by the
+  // The Digimon whose digivolution cards a source pick is narrowed to. Keyed by the
   // decision, so the next decision starts back at choosing a Digimon.
   const [chosenSourceHost, setChosenSourceHost] = useState<{ decisionId: string; permanentId: string }>();
   const lastPlayAttemptRef = useRef<string | undefined>(undefined);
@@ -1207,8 +1207,7 @@ export function GameScreen({
     decision: viewerDecision,
     answerOnBoard: decisionView.answerOnBoard,
     candidates: decisionView.decisionVisible,
-    yourBattleArea: you.battleArea,
-    max: decisionMax,
+    battleArea: allPermanents,
   });
   const chosenSourceHostId =
     sourceHostChoice !== undefined &&
@@ -1219,7 +1218,7 @@ export function GameScreen({
       : undefined;
   const pickingSourceHost = sourceHostChoice !== undefined && chosenSourceHostId === undefined;
   const chooseSourceHost = (permanentId: string | undefined) => {
-    setPicks([]);
+    if (decisionMax === 1) setPicks([]);
     setChosenSourceHost(
       viewerDecision && permanentId ? { decisionId: viewerDecision.decisionId, permanentId } : undefined,
     );
@@ -1700,6 +1699,10 @@ export function GameScreen({
                   ? {
                       ...actions,
                       onYourPerm: (perm) => () => {
+                        if (sourceHostChoice?.cardIdsByHost.has(perm.permanentId)) chooseSourceHost(perm.permanentId);
+                        else setZoomCardId(perm.topCard.cardId);
+                      },
+                      onOppPerm: (perm) => () => {
                         if (sourceHostChoice?.cardIdsByHost.has(perm.permanentId)) chooseSourceHost(perm.permanentId);
                         else setZoomCardId(perm.topCard.cardId);
                       },

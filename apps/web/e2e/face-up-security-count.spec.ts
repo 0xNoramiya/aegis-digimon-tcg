@@ -37,10 +37,7 @@ for (const viewport of [
   { width: 390, height: 844 },
   { width: 320, height: 640 },
 ]) {
-  test(`Discord 1556677140253249656 keeps face-up security counts readable at ${viewport.width}x${viewport.height}`, async ({
-    page,
-    match,
-  }) => {
+  test(`keeps face-up security counts readable at ${viewport.width}x${viewport.height}`, async ({ page, match }) => {
     await page.setViewportSize(viewport);
     await match.start("security-count");
     await new GamePage(page).endBreeding();
@@ -55,10 +52,7 @@ for (const viewport of [
   });
 }
 
-test("Discord 1556677140253249656 keeps both counts after Invisimon reveals the opponent security", async ({
-  page,
-  match,
-}, testInfo) => {
+test("keeps both counts after Invisimon reveals the opponent security", async ({ page, match }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 700 });
   await match.start("security-count");
   await new GamePage(page).endBreeding();

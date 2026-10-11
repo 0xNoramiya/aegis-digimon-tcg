@@ -1,19 +1,18 @@
+import fixtureBt20DragonGeneSecurity from "../../api/src/engine/scenarios/bt20-dragon-gene-security.fixture";
+import { fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect, type DecisionPolicy } from "./scenario-page";
 
 test.use({ holdBotAfterTurn: 6 });
 
-const OPTION = "dev-dragon-gene-security-option";
-const HAND_DRACOMON = "dev-dragon-gene-security-hand";
-const TRASH_DRACOMON = "dev-dragon-gene-security-trash";
-const ESTABLISHED = "dev-field-0-dragon-gene-security-human";
+const OPTION = fixtureInstanceId("dragon-gene-security-option-card");
+const HAND_DRACOMON = fixtureInstanceId("dragon-gene-security-hand-card");
+const TRASH_DRACOMON = fixtureInstanceId("dragon-gene-security-trash-card");
+const ESTABLISHED = fixtureInstanceId("own-card-dragon-gene-security-human-card");
 
 for (const route of ["hand", "trash", "decline", "skip"] as const) {
-  test(`Discord 1557553612228665396: BT20-093's security effect activates on a real security check (${route})`, async ({
-    scenario,
-    page,
-  }) => {
+  test(`BT20-093's security effect activates on a real security check (${route})`, async ({ scenario, page }) => {
     test.setTimeout(120_000);
-    await scenario.open("arena-bt20-dragon-gene-security");
+    await scenario.openFixture(fixtureBt20DragonGeneSecurity);
     await scenario.resolveUntil((s) => s.turnSeat === 0 && s.phase === "Main" && !s.pendingDecision);
     const initial = await scenario.snapshot();
     expect(initial.players[0]!.security.map((c) => c.instanceId)).toEqual([OPTION]);

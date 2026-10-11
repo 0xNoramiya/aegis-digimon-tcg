@@ -9,15 +9,7 @@
       "archetype": "Adventure",
       "collection": "EX13",
       "formatBlock": "EX13",
-      "colors": [
-        "Red",
-        "Green",
-        "Purple",
-        "Yellow",
-        "Black",
-        "Blue",
-        "White"
-      ],
+      "colors": ["Red", "Green", "Purple", "Yellow", "Black", "Blue", "White"],
       "sourceType": "product_recipe",
       "sourceUrl": "https://world.digimoncard.com/products/pack/ex-13/",
       "mainDeck": [
@@ -140,12 +132,7 @@
       "archetype": "Imperialdramon",
       "collection": "EX13",
       "formatBlock": "EX13",
-      "colors": [
-        "Blue",
-        "Green",
-        "Red",
-        "White"
-      ],
+      "colors": ["Blue", "Green", "Red", "White"],
       "sourceType": "product_recipe",
       "sourceUrl": "https://world.digimoncard.com/products/pack/ex-13/",
       "mainDeck": [
@@ -262,10 +249,7 @@
       "archetype": "Mamemon",
       "collection": "EX13",
       "formatBlock": "EX13",
-      "colors": [
-        "Black",
-        "Blue"
-      ],
+      "colors": ["Black", "Blue"],
       "sourceType": "product_recipe",
       "sourceUrl": "https://world.digimoncard.com/products/pack/ex-13/",
       "mainDeck": [

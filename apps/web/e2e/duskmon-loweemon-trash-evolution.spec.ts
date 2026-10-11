@@ -1,19 +1,19 @@
+import fixtureTrashHybrids from "../../api/src/engine/scenarios/trash-hybrids.fixture";
+import fixtureLoweemonHosts from "../../api/src/engine/scenarios/loweemon-hosts.fixture";
+import { fixturePermanentId, fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
-const DUSKMON = "dev-perm-0-trash-hybrids-duskmon";
-const LOWEEMON = "dev-perm-0-trash-hybrids-loweemon";
-const DEMIDEVIMON = "dev-perm-0-trash-hybrids-rookie";
-const UKKOMON = "dev-perm-0-trash-hybrids-ukkomon";
-const VELGRMON_CARD = "trash-hybrids-BT18-079";
-const KAISERLEOMON_CARD = "trash-hybrids-BT18-077";
-const UKKOMON_CARD = "trash-hybrids-BT16-082";
+const DUSKMON = fixturePermanentId("own-trash-hybrids-duskmon");
+const LOWEEMON = fixturePermanentId("own-trash-hybrids-loweemon");
+const DEMIDEVIMON = fixturePermanentId("own-trash-hybrids-rookie");
+const UKKOMON = fixturePermanentId("own-trash-hybrids-ukkomon");
+const VELGRMON_CARD = fixtureInstanceId("trash-hybrids-BT18-079-card");
+const KAISERLEOMON_CARD = fixtureInstanceId("trash-hybrids-BT18-077-card");
+const UKKOMON_CARD = fixtureInstanceId("trash-hybrids-BT16-082-card");
 
-test("Discord 1557790296379625482: Duskmon and Loweemon attack-digivolve into Velgrmon and KaiserLeomon from trash", async ({
-  scenario,
-  page,
-}) => {
+test("Duskmon and Loweemon attack-digivolve into Velgrmon and KaiserLeomon from trash", async ({ scenario, page }) => {
   test.setTimeout(150_000);
-  await scenario.open("arena-discord-1557790296379625482-trash-hybrids");
+  await scenario.openFixture(fixtureTrashHybrids);
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
   expect((await scenario.snapshot()).memory).toBe(2);
 
@@ -63,12 +63,9 @@ test("Discord 1557790296379625482: Duskmon and Loweemon attack-digivolve into Ve
   await scenario.healthy();
 });
 
-test("Discord 1557790296379625482: an ordinary host chooses between both trash Hybrids; Ukkomon is refused", async ({
-  scenario,
-  page,
-}) => {
+test("an ordinary host chooses between both trash Hybrids; Ukkomon is refused", async ({ scenario, page }) => {
   test.setTimeout(120_000);
-  await scenario.open("arena-discord-1557790296379625482-trash-hybrids");
+  await scenario.openFixture(fixtureTrashHybrids);
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
   await scenario.attack(DUSKMON);
   let offered = false;
@@ -109,14 +106,14 @@ test("Discord 1557790296379625482: an ordinary host chooses between both trash H
 test.describe("mobile", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("Discord 1557790296379625482: the observed Loweemon host step is reachable on a phone and offers both Hybrids", async ({
+  test("the observed Loweemon host step is reachable on a phone and offers both Hybrids", async ({
     scenario,
     page,
   }) => {
     test.setTimeout(150_000);
-    await scenario.open("arena-discord-1557790296379625482-loweemon-hosts");
+    await scenario.openFixture(fixtureLoweemonHosts);
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
-    await page.locator('[data-drop="perm-you"][data-id="perm-5"]').click();
+    await page.locator(`[data-drop="perm-you"][data-id="${fixturePermanentId("perm-5")}"]`).click();
     await page.getByRole("button", { name: "Attack", exact: true }).click();
     await page.getByRole("button", { name: /^Opponent security/ }).click();
     const isHostStep = (s: Awaited<ReturnType<typeof scenario.snapshot>>) =>
@@ -131,28 +128,31 @@ test.describe("mobile", () => {
     const sheet = page.locator("[data-prompt-surface]").filter({ hasText: "[When Attacking]" });
     await expect(sheet).toContainText("Choose the card that will digivolve.");
     await sheet.getByRole("button", { name: "Select on board", exact: true }).click();
-    await page.locator('[data-id="perm-1"][role="button"]').click();
+    await page.locator(`[data-id="${fixturePermanentId("perm-1")}"][role="button"]`).click();
     await page.getByRole("button", { name: /Return to decision/i }).click();
     await page.getByRole("button", { name: /^Confirm targets$/i }).click();
 
     const dialog = page.getByRole("dialog");
-    await expect(dialog.locator('[data-instance-id="s0-20"]')).toBeEnabled();
-    await expect(dialog.locator('[data-instance-id="s0-12"]')).toBeEnabled();
-    await expect(dialog.locator('[data-instance-id="observed-ukkomon"]')).toBeDisabled();
+    await expect(dialog.locator(`[data-instance-id="${fixtureInstanceId("own-deck-slot-20-card")}"]`)).toBeEnabled();
+    await expect(dialog.locator(`[data-instance-id="${fixtureInstanceId("own-deck-slot-12-card")}"]`)).toBeEnabled();
+    await expect(dialog.locator(`[data-instance-id="${fixtureInstanceId("observed-ukkomon-card")}"]`)).toBeDisabled();
     await expect(dialog.getByRole("button", { name: /^Confirm targets$/i })).toBeInViewport();
     await scenario.resolveUntil(
       (s) => s.turnSeat === 1 && !s.pendingDecision && !s.combatWindow,
       (d) => {
-        if (d.kind === "selectCards" && d.sourceCardId === "BT18-076") return { instanceId: "s0-12" };
+        if (d.kind === "selectCards" && d.sourceCardId === "BT18-076")
+          return { instanceId: fixtureInstanceId("own-deck-slot-12-card") };
         if (d.kind === "orderTriggers") return {};
         // Decline Ai & Mako and Koichi so the memory change shows only the evolution cost.
         return { accept: false };
       },
     );
     const final = await scenario.snapshot();
-    const host = final.players[0]!.battleArea.find((p) => p.permanentId === "perm-1")!;
-    expect(host.topCard.instanceId).toBe("s0-12");
-    expect(final.players[0]!.trash.map((card) => card.instanceId)).not.toContain("s0-12");
+    const host = final.players[0]!.battleArea.find((p) => p.permanentId === fixturePermanentId("perm-1"))!;
+    expect(host.topCard.instanceId).toBe(fixtureInstanceId("own-deck-slot-12-card"));
+    expect(final.players[0]!.trash.map((card) => card.instanceId)).not.toContain(
+      fixtureInstanceId("own-deck-slot-12-card"),
+    );
     expect((await scenario.presentation()).events).toContainEqual(
       expect.objectContaining({ kind: "memoryChanged", from: 2, to: -2, reason: "digivolve" }),
     );

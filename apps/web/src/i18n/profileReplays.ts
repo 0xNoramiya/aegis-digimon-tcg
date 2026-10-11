@@ -32,6 +32,10 @@ export const profileReplayEn = {
   "profile.page": "Page {page}",
   "profile.stats.matches": "Matches",
   "profile.stats.wins": "Wins",
+  "profile.stats.humanMatches": "Human matches",
+  "profile.stats.humanWins": "Human wins",
+  "profile.stats.rateScope":
+    "Retained history against humans · mode and opponent filters apply · result filter affects only the list · bots excluded.",
   "profile.stats.winRate": "Win rate",
   "profile.stats.replays": "Replays saved",
   "profile.changeAvatar": "Change avatar",
@@ -102,6 +106,10 @@ export const profileReplayPtBR = {
   "profile.page": "Página {page}",
   "profile.stats.matches": "Partidas",
   "profile.stats.wins": "Vitórias",
+  "profile.stats.humanMatches": "Partidas contra humanos",
+  "profile.stats.humanWins": "Vitórias contra humanos",
+  "profile.stats.rateScope":
+    "Histórico mantido contra humanos · filtros de modo e adversário aplicados · resultado filtra apenas a lista · bots excluídos.",
   "profile.stats.winRate": "Taxa de vitória",
   "profile.stats.replays": "Replays salvos",
   "profile.changeAvatar": "Trocar avatar",
@@ -172,6 +180,10 @@ export const profileReplayEs = {
   "profile.page": "Página {page}",
   "profile.stats.matches": "Partidas",
   "profile.stats.wins": "Victorias",
+  "profile.stats.humanMatches": "Partidas contra humanos",
+  "profile.stats.humanWins": "Victorias contra humanos",
+  "profile.stats.rateScope":
+    "Historial conservado contra humanos · filtros de modo y rival aplicados · resultado filtra solo la lista · bots excluidos.",
   "profile.stats.winRate": "Tasa de victorias",
   "profile.stats.replays": "Replays guardados",
   "profile.changeAvatar": "Cambiar avatar",
@@ -242,6 +254,10 @@ export const profileReplayIt = {
   "profile.page": "Pagina {page}",
   "profile.stats.matches": "Partite",
   "profile.stats.wins": "Vittorie",
+  "profile.stats.humanMatches": "Partite contro umani",
+  "profile.stats.humanWins": "Vittorie contro umani",
+  "profile.stats.rateScope":
+    "Cronologia conservata contro umani · filtri modalità e avversario applicati · risultato filtra solo la lista · bot esclusi.",
   "profile.stats.winRate": "Percentuale di vittorie",
   "profile.stats.replays": "Replay salvati",
   "profile.changeAvatar": "Cambia avatar",

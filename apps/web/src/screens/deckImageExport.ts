@@ -33,9 +33,7 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
-async function loadFirstAvailable(
-  urls: readonly string[],
-): Promise<HTMLImageElement | null> {
+async function loadFirstAvailable(urls: readonly string[]): Promise<HTMLImageElement | null> {
   for (const url of urls) {
     try {
       return await loadImage(url);
@@ -60,10 +58,7 @@ function blockWidth(columns: number): number {
 
 /* Sections flow left to right like the dialog, each as a compact block of at most
    SECTION_MAX_COLUMNS cards per row, wrapping to a new line when the page is full. */
-function layoutSections(
-  sections: DeckSection[],
-  pageWidth: number,
-): { blocks: SectionBlock[]; height: number } {
+function layoutSections(sections: DeckSection[], pageWidth: number): { blocks: SectionBlock[]; height: number } {
   const blocks: SectionBlock[] = [];
   let x = 0;
   let y = 0;
@@ -72,8 +67,7 @@ function layoutSections(
     const columns = Math.min(section.entries.length, SECTION_MAX_COLUMNS);
     const rows = Math.ceil(section.entries.length / columns);
     const width = blockWidth(columns);
-    const height =
-      SECTION_TITLE_HEIGHT + rows * (CARD_HEIGHT + CARD_GAP) - CARD_GAP;
+    const height = SECTION_TITLE_HEIGHT + rows * (CARD_HEIGHT + CARD_GAP) - CARD_GAP;
     if (x > 0 && x + width > pageWidth) {
       x = 0;
       y += lineHeight + SECTION_ROW_GAP;
@@ -99,12 +93,7 @@ function roundedRect(
   context.closePath();
 }
 
-function drawPlaceholder(
-  context: CanvasRenderingContext2D,
-  cardId: string,
-  x: number,
-  y: number,
-) {
+function drawPlaceholder(context: CanvasRenderingContext2D, cardId: string, x: number, y: number) {
   context.fillStyle = PLACEHOLDER;
   roundedRect(context, x, y, CARD_WIDTH, CARD_HEIGHT, 10);
   context.fill();
@@ -112,29 +101,14 @@ function drawPlaceholder(
   context.textAlign = "center";
   context.font = `700 13px ${FONT_FAMILY}`;
   const name = getCardDefinition(cardId)?.nameEn ?? cardId;
-  context.fillText(
-    name,
-    x + CARD_WIDTH / 2,
-    y + CARD_HEIGHT / 2 - 8,
-    CARD_WIDTH - 16,
-  );
+  context.fillText(name, x + CARD_WIDTH / 2, y + CARD_HEIGHT / 2 - 8, CARD_WIDTH - 16);
   context.fillStyle = MUTED;
   context.font = `12px ${FONT_FAMILY}`;
-  context.fillText(
-    cardId,
-    x + CARD_WIDTH / 2,
-    y + CARD_HEIGHT / 2 + 14,
-    CARD_WIDTH - 16,
-  );
+  context.fillText(cardId, x + CARD_WIDTH / 2, y + CARD_HEIGHT / 2 + 14, CARD_WIDTH - 16);
   context.textAlign = "left";
 }
 
-function drawCount(
-  context: CanvasRenderingContext2D,
-  count: number,
-  x: number,
-  y: number,
-) {
+function drawCount(context: CanvasRenderingContext2D, count: number, x: number, y: number) {
   const label = `×${count}`;
   context.font = `800 16px ${FONT_FAMILY}`;
   const width = Math.ceil(context.measureText(label).width) + 16;
@@ -176,36 +150,19 @@ export async function renderDeckImage({
 
   context.fillStyle = FOREGROUND;
   context.font = `800 40px ${FONT_FAMILY}`;
-  context.fillText(
-    deck.name,
-    PAGE_PADDING,
-    PAGE_PADDING + 44,
-    width - PAGE_PADDING * 2,
-  );
+  context.fillText(deck.name, PAGE_PADDING, PAGE_PADDING + 44, width - PAGE_PADDING * 2);
   context.fillStyle = MUTED;
   context.font = `500 18px ${FONT_FAMILY}`;
   const meta = t("lobby.famousDeckCards", {
     main: deck.mainDeck.length,
     egg: deck.eggDeck.length,
   });
-  context.fillText(
-    subtitle ? `${subtitle} · ${meta}` : meta,
-    PAGE_PADDING,
-    PAGE_PADDING + 78,
-  );
+  context.fillText(subtitle ? `${subtitle} · ${meta}` : meta, PAGE_PADDING, PAGE_PADDING + 78);
 
-  const uniqueCardIds = [
-    ...new Set(
-      sections.flatMap((section) =>
-        section.entries.map((entry) => entry.cardId),
-      ),
-    ),
-  ];
+  const uniqueCardIds = [...new Set(sections.flatMap((section) => section.entries.map((entry) => entry.cardId)))];
   const images = new Map<string, HTMLImageElement | null>();
   await Promise.all(
-    uniqueCardIds.map(async (cardId) =>
-      images.set(cardId, await loadFirstAvailable(cardImageUrls(cardId))),
-    ),
+    uniqueCardIds.map(async (cardId) => images.set(cardId, await loadFirstAvailable(cardImageUrls(cardId)))),
   );
 
   const bodyTop = PAGE_PADDING + HEADER_HEIGHT;
@@ -218,8 +175,7 @@ export async function renderDeckImage({
     const gridTop = top + SECTION_TITLE_HEIGHT;
     section.entries.forEach(({ cardId, count }, index) => {
       const x = left + (index % columns) * (CARD_WIDTH + CARD_GAP);
-      const y =
-        gridTop + Math.floor(index / columns) * (CARD_HEIGHT + CARD_GAP);
+      const y = gridTop + Math.floor(index / columns) * (CARD_HEIGHT + CARD_GAP);
       const image = images.get(cardId);
       if (image) {
         context.save();
@@ -235,11 +191,7 @@ export async function renderDeckImage({
   }
 
   return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) =>
-        blob ? resolve(blob) : reject(new Error("Canvas export failed")),
-      "image/png",
-    );
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Canvas export failed"))), "image/png");
   });
 }
 

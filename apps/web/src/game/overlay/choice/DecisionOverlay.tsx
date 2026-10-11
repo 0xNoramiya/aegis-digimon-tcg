@@ -194,7 +194,7 @@ export function DecisionOverlay({
     contextText ??
     (sourceCardId
       ? playerFacingEffectClause({
-          cardId: sourceCardId,
+          cardId: request.options?.effectTextCardId ?? sourceCardId,
           timing: request.options?.timing,
           description: request.options?.effectText,
           effectTextPart: request.options?.effectTextPart,

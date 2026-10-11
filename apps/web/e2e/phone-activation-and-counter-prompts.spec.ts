@@ -1,3 +1,10 @@
+import { openFixturePage } from "./scenario-page";
+import fixtureP240ArcturusmonOrderedPlacement from "../../api/src/engine/scenarios/p240-arcturusmon-ordered-placement.fixture";
+import fixtureDrasilOptionalEffectPresets from "../../api/src/engine/scenarios/drasil-optional-effect-presets.fixture";
+import fixtureCounterNoEligible from "../../api/src/engine/scenarios/counter-no-eligible.fixture";
+import fixtureMobileBlastCounterTap from "../../api/src/engine/scenarios/mobile-blast-counter-tap.fixture";
+import fixtureNezhamonCounterBlock from "../../api/src/engine/scenarios/nezhamon-counter-block.fixture";
+import { fixturePermanentId } from "../../api/src/engine/scenario/references";
 import { expect, type Locator, type Page } from "@playwright/test";
 import { answerActivation, test } from "./scenario-page";
 import { startBrowserServer } from "./server";
@@ -35,7 +42,7 @@ for (const viewport of [PHONE, DESKTOP]) {
 
     test("the notice can be opened by tapping while the board stays locked", async ({ scenario }) => {
       const { page } = scenario;
-      await scenario.open("arena-drasil-optional-effect-presets");
+      await scenario.openFixture(fixtureDrasilOptionalEffectPresets);
       await scenario.play("Dracmon", "Digimon");
       await page.getByRole("button", { name: "Select all, top to bottom", exact: true }).click();
       await page.getByRole("button", { name: "Resolve in this order", exact: true }).click();
@@ -84,7 +91,7 @@ for (const viewport of [PHONE, { width: 360, height: 780 }, DESKTOP]) {
         localStorage.setItem("aegis:locale", "en");
         localStorage.setItem("aegis.action-confirmation.enabled", "false");
       });
-      await page.goto("/dev/arena?scenario=arena-p240-arcturusmon-ordered-placement");
+      await openFixturePage(page, fixtureP240ArcturusmonOrderedPlacement);
       await page.getByRole("button", { name: /^end breeding$/i }).click();
       const card = page.getByTestId("hand").getByRole("button", { name: "Select Arcturusmon", exact: true });
       await card.focus();
@@ -127,7 +134,7 @@ for (const viewport of [PHONE, DESKTOP]) {
 
     test("no Counter window opens when nothing can be used", async ({ scenario }) => {
       const { page } = scenario;
-      await scenario.open("arena-counter-no-eligible", "normal", "none");
+      await scenario.openFixture(fixtureCounterNoEligible, "normal", "none");
       await expect.poll(async () => (await scenario.snapshot()).combatWindow?.kind).toBe("block");
       expect((await scenario.presentation()).events.some((event) => event.kind === "counterWindowOpened")).toBe(false);
       await expect(counterPrompt(page)).toHaveCount(0);
@@ -135,7 +142,7 @@ for (const viewport of [PHONE, DESKTOP]) {
 
     test("a usable Blast Digivolve card still opens the Counter window above the hand", async ({ scenario }) => {
       const { page } = scenario;
-      await scenario.open("arena-mobile-blast-counter-tap", "normal", "none");
+      await scenario.openFixture(fixtureMobileBlastCounterTap, "normal", "none");
       const prompt = counterPrompt(page);
       await expect(prompt).toBeVisible();
       await expect.poll(async () => (await scenario.snapshot()).combatWindow?.kind).toBe("counter");
@@ -151,7 +158,7 @@ for (const viewport of [PHONE, DESKTOP]) {
       holdBotAfterTurn: 3,
       botMainIntents: [
         [
-          { type: "attack", attackerPermanentId: "dev-perm-1-feedback8-nezhamon", target: { kind: "player" } },
+          { type: "attack", attackerPermanentId: fixturePermanentId("opponent-nezhamon"), target: { kind: "player" } },
           { type: "endPhase" },
         ],
         { scope: "test" },
@@ -160,7 +167,7 @@ for (const viewport of [PHONE, DESKTOP]) {
 
     test("the Counter prompt leaves the locked hand visible", async ({ scenario }) => {
       const { page } = scenario;
-      await scenario.open("arena-feedback8-nezhamon-counter-block");
+      await scenario.openFixture(fixtureNezhamonCounterBlock);
       await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
       await page.getByRole("button", { name: /^End turn$/i }).click();
       await expect.poll(async () => (await scenario.snapshot()).pendingDecision?.seat).toBe(0);
@@ -170,7 +177,7 @@ for (const viewport of [PHONE, DESKTOP]) {
       await expect(prompt).toContainText("Takutoumon");
       if (viewport === PHONE) {
         await expectHandClear(page, prompt);
-        const source = page.locator('[data-drop="perm-you"][data-id="dev-perm-0-feedback8-takutoumon"]');
+        const source = page.locator(`[data-drop="perm-you"][data-id="${fixturePermanentId("own-takutoumon")}"]`);
         await expect
           .poll(async () => overlaps((await source.boundingBox())!, (await prompt.boundingBox())!))
           .toBe(false);

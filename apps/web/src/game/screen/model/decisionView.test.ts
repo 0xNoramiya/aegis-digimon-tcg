@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { expect, it } from "vitest";
-import type { DecisionRequest } from "@aegis/shared";
+import { CardInstance, type SequencedServerEvent, type DecisionRequest } from "@aegis/shared";
 import { createArenaDemoState } from "../../../dev/ArenaDemo";
 import { decisionViewFor } from "./decisionView";
 
@@ -100,4 +100,41 @@ it("keeps an activation source highlighted while answering its movable dialog", 
   };
   expect(decisionViewFor(inputs).answerOnBoard).toBe(false);
   expect(decisionViewFor(inputs).decisionHighlightPermanentId).toBe(source.permanentId);
+});
+
+it("#60 carries synchronized trash provenance into the decision model after reconnect", () => {
+  const state = createArenaDemoState();
+  for (const instanceId of ["old-shot", "source-shot"]) {
+    const card = new CardInstance();
+    card.instanceId = instanceId;
+    card.cardId = "EX7-071";
+    card.trashOriginCardId = instanceId === "source-shot" ? "BT25-083" : "";
+    state.players[0]!.trash.push(card);
+  }
+  const events: SequencedServerEvent[] = [];
+  const view = decisionViewFor({
+    decision: {
+      decisionId: "pick-shot",
+      seat: 0,
+      kind: "selectCards",
+      promptText: "Choose an Option",
+      options: { candidateInstanceIds: ["old-shot", "source-shot"], min: 1, max: 1 },
+    },
+    decisionAnimationsPending: false,
+    decisionAsDialog: false,
+    viewerSeat: 0,
+    events,
+    state,
+    instanceIndex: new Map([
+      ["old-shot", "EX7-071"],
+      ["source-shot", "EX7-071"],
+    ]),
+    permanents: [],
+    breedingPermanents: [],
+    handInstanceIds: [],
+  });
+  expect(view.decisionVisible).toEqual([
+    { instanceId: "old-shot", cardId: "EX7-071", zone: "trash" },
+    { instanceId: "source-shot", cardId: "EX7-071", zone: "trash", trashOriginCardId: "BT25-083" },
+  ]);
 });

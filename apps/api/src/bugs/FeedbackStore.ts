@@ -1,22 +1,22 @@
+import { FeedbackStatus, CLOSED_FEEDBACK_STATUSES, FEEDBACK_STATUSES } from "@aegis/shared/feedback/FeedbackStatus";
+import { FEEDBACK_REOPEN_WINDOW_MS } from "@aegis/shared/feedback/limits";
+import { isClosedFeedbackStatus } from "@aegis/shared/feedback/isClosedFeedbackStatus";
 import {
-  CLOSED_FEEDBACK_STATUSES,
-  FEEDBACK_REOPEN_WINDOW_MS,
-  FEEDBACK_STATUSES,
-  isClosedFeedbackStatus,
   type FeedbackKind,
   type FeedbackReopenFailure,
-  type FeedbackStatus,
   type FeedbackStatusChange,
   type FeedbackTriageFailure,
   type FeedbackTriageUpdate,
   type OwnFeedbackPage,
   type OwnFeedbackReport,
-} from "@aegis/shared";
+} from "@aegis/shared/feedback/types";
 import type { PoolClient } from "pg";
-import type { AccountStore } from "../accounts/AccountStore.js";
-import type { Queryable } from "../db/migrator.js";
-import { notify } from "../notifications/NotificationStore.js";
-import type { FiledBugReport, NewBugReport } from "./GitHubIssueTracker.js";
+import type { AccountStore } from "#api/accounts/AccountStore";
+import type { Queryable } from "#api/db/migrator";
+import { notify } from "#api/notifications/NotificationStore";
+import type { ReplayRecord } from "#api/replays/inputs/types";
+import type { FiledBugReport, NewBugReport } from "#api/bugs/GitHubIssueTracker";
+import { replayRetentionMs } from "#api/bugs/replayRetentionMs";
 
 const PAGE_SIZE = 50;
 const OWN_PAGE_SIZE = 20;
@@ -40,6 +40,15 @@ export type FeedbackRecord = {
   reopenedAt: number | null;
   /** An admin confirmed it as a real bug; a signed-in reporter earned a point for it. */
   confirmedBug: boolean;
+  /** Whether a private replay of the reported match is stored with the report. */
+  hasReplay: boolean;
+  replayInputs: number | null;
+};
+
+export type FeedbackStoreOptions = {
+  /** How long a saved replay is kept; defaults to {@link replayRetentionMs}. */
+  replayRetentionMs?: number;
+  now?: () => number;
 };
 
 export type FeedbackHistoryEntry = FeedbackStatusChange & { actorName: string | null };
@@ -84,11 +93,26 @@ type FeedbackRow = {
 
 const FEEDBACK_COLUMNS =
   "id, report, created_at, github_status, github_number, github_url, status, final_reply, internal_note, duplicate_of_id, revision, reporter_account_id, closed_at, reopened_at, confirmed_bug";
+/** A report row with the input count of its stored replay; `input_count` is null when it has none. */
+type FeedbackRecordRow = FeedbackRow & { input_count: number | null };
+const SELECT_WITH_REPLAY = `SELECT ${FEEDBACK_COLUMNS.split(", ")
+  .map((column) => `f.${column}`)
+  .join(", ")}, r.input_count
+  FROM feedback_reports f LEFT JOIN feedback_report_replays r ON r.report_id = f.id`;
 const CLOSED_LIST = CLOSED_FEEDBACK_STATUSES.map((status) => `'${status}'`).join(", ");
 const AWAITING_AFTER_REOPEN = `reopened_at IS NOT NULL AND status NOT IN (${CLOSED_LIST})`;
 
 export class FeedbackStore {
-  constructor(private readonly accounts: AccountStore) {}
+  private readonly replayRetentionMs: number;
+  private readonly now: () => number;
+
+  constructor(
+    private readonly accounts: AccountStore,
+    options: FeedbackStoreOptions = {},
+  ) {
+    this.replayRetentionMs = options.replayRetentionMs ?? replayRetentionMs();
+    this.now = options.now ?? Date.now;
+  }
 
   async save(report: NewBugReport, accountId: string | undefined, mirror: boolean): Promise<number> {
     await this.accounts.ensureReady();
@@ -118,6 +142,8 @@ export class FeedbackStore {
   /** The admin inbox, newest first. Counts ignore the status filter so every chip stays meaningful. */
   async list(filter: FeedbackFilter = {}): Promise<FeedbackListPage> {
     await this.accounts.ensureReady();
+    // An expired replay must not be listed as available; downloading it would 404.
+    await this.pruneReplays();
     const scope = new Conditions();
     if (filter.kind) scope.add("report->>'kind' = ?", filter.kind);
     if (filter.search) {
@@ -131,8 +157,8 @@ export class FeedbackStore {
     if (filter.reopened) page.add(AWAITING_AFTER_REOPEN);
     if (filter.before !== undefined) page.add("id < ?", filter.before);
 
-    const { rows } = await this.accounts.pool.query<FeedbackRow>(
-      `SELECT ${FEEDBACK_COLUMNS} FROM feedback_reports ${page.where()} ORDER BY id DESC LIMIT ${PAGE_SIZE + 1}`,
+    const { rows } = await this.accounts.pool.query<FeedbackRecordRow>(
+      `${SELECT_WITH_REPLAY} ${page.where()} ORDER BY f.id DESC LIMIT ${PAGE_SIZE + 1}`,
       page.values,
     );
     const { rows: tallies } = await this.accounts.pool.query<{
@@ -157,6 +183,7 @@ export class FeedbackStore {
 
   async detail(id: number): Promise<FeedbackDetail | undefined> {
     await this.accounts.ensureReady();
+    await this.pruneReplays();
     return this.readDetail(this.accounts.pool, id);
   }
 
@@ -182,7 +209,7 @@ export class FeedbackStore {
       if (!current) return { error: "not_found" as const };
       if (current.revision !== update.revision) return { error: "stale_revision" as const };
 
-      const duplicateOfId = update.status === "duplicate" ? update.duplicateOfId : null;
+      const duplicateOfId = update.status === FeedbackStatus.DUPLICATE.value ? update.duplicateOfId : null;
       if (duplicateOfId !== null) {
         const target = await client.query("SELECT 1 FROM feedback_reports WHERE id=$1", [duplicateOfId]);
         if (duplicateOfId === id || target.rows.length === 0) return { error: "invalid_duplicate_target" as const };
@@ -191,7 +218,8 @@ export class FeedbackStore {
       const internalNote = update.internalNote.trim() || null;
       const closed = isClosedFeedbackStatus(update.status);
       const closedAt = !closed ? null : isClosedFeedbackStatus(current.status) ? current.closed_at : at;
-      const confirmedBug = update.status !== "duplicate" && (update.confirmedBug ?? current.confirmed_bug);
+      const confirmedBug =
+        update.status !== FeedbackStatus.DUPLICATE.value && (update.confirmedBug ?? current.confirmed_bug);
 
       await client.query(
         `UPDATE feedback_reports
@@ -261,13 +289,13 @@ export class FeedbackStore {
       if (deadline === null || deadline < at) return { error: "reopen_window_closed" as const };
 
       await client.query(
-        "UPDATE feedback_reports SET status='triaged', closed_at=NULL, reopened_at=$2, revision=revision+1 WHERE id=$1",
-        [id, at],
+        "UPDATE feedback_reports SET status=$3, closed_at=NULL, reopened_at=$2, revision=revision+1 WHERE id=$1",
+        [id, at, FeedbackStatus.TRIAGED.value],
       );
       await client.query(
         `INSERT INTO feedback_status_events (feedback_id, actor_account_id, from_status, to_status, by_reporter, comment, created_at)
-         VALUES ($1,$2,$3,'triaged',true,$4,$5)`,
-        [id, accountId, current.status, comment, at],
+         VALUES ($1,$2,$3,$6,true,$4,$5)`,
+        [id, accountId, current.status, comment, at, FeedbackStatus.TRIAGED.value],
       );
       return (await this.readOwnWith(client, accountId, id))!;
     });
@@ -316,7 +344,7 @@ export class FeedbackStore {
   }
 
   private async readDetail(db: Queryable, id: number): Promise<FeedbackDetail | undefined> {
-    const { rows } = await db.query<FeedbackRow>(`SELECT ${FEEDBACK_COLUMNS} FROM feedback_reports WHERE id=$1`, [id]);
+    const { rows } = await db.query<FeedbackRecordRow>(`${SELECT_WITH_REPLAY} WHERE f.id=$1`, [id]);
     const row = rows[0];
     if (!row) return undefined;
     const histories = await this.histories(db, [id]);
@@ -329,7 +357,14 @@ export class FeedbackStore {
       ...toRecord(row),
       reporterConfirmedBugs: row.reporter_account_id ? (points[0]?.confirmed_bug_reports ?? 0) : null,
       history: [
-        { from: null, to: "new", at: Number(row.created_at), byReporter: false, comment: null, actorName: null },
+        {
+          from: null,
+          to: FeedbackStatus.NEW.value,
+          at: Number(row.created_at),
+          byReporter: false,
+          comment: null,
+          actorName: null,
+        },
         ...(histories.get(id) ?? []),
       ],
     };
@@ -383,6 +418,39 @@ export class FeedbackStore {
       client.release();
     }
   }
+
+  /**
+   * Keeps the replay of the reported match with the report. Expired replays are pruned here, at
+   * save time: captures only happen for accepted, rate-limited reports, so this runs rarely and
+   * needs no timer of its own.
+   */
+  async saveReplay(reportId: number, record: ReplayRecord): Promise<void> {
+    await this.accounts.pool.query(
+      "INSERT INTO feedback_report_replays (report_id, record, input_count, created_at) VALUES ($1,$2,$3,$4)",
+      [reportId, JSON.stringify(record), record.inputs.length, this.now()],
+    );
+    await this.pruneReplays();
+  }
+
+  /** The stored replay of a report, or undefined when it has none (or it has expired). */
+  async replay(reportId: number): Promise<ReplayRecord | undefined> {
+    await this.accounts.ensureReady();
+    await this.pruneReplays();
+    const { rows } = await this.accounts.pool.query<{ record: ReplayRecord | string }>(
+      "SELECT record FROM feedback_report_replays WHERE report_id=$1",
+      [reportId],
+    );
+    const record = rows[0]?.record;
+    return typeof record === "string" ? (JSON.parse(record) as ReplayRecord) : record;
+  }
+
+  /** Deletes replays older than the retention window; returns how many went. */
+  async pruneReplays(): Promise<number> {
+    const { rowCount } = await this.accounts.pool.query("DELETE FROM feedback_report_replays WHERE created_at < $1", [
+      this.now() - this.replayRetentionMs,
+    ]);
+    return rowCount ?? 0;
+  }
 }
 
 /** Builds a WHERE clause with numbered placeholders from `?` markers. */
@@ -412,7 +480,7 @@ class Conditions {
   }
 }
 
-function toRecord(row: FeedbackRow): FeedbackRecord {
+function toRecord(row: FeedbackRecordRow): FeedbackRecord {
   return {
     id: row.id,
     report: row.report,
@@ -428,6 +496,8 @@ function toRecord(row: FeedbackRow): FeedbackRecord {
     hasReporterAccount: row.reporter_account_id !== null,
     reopenedAt: row.reopened_at === null ? null : Number(row.reopened_at),
     confirmedBug: row.confirmed_bug,
+    hasReplay: row.input_count !== null,
+    replayInputs: row.input_count,
   };
 }
 
@@ -452,7 +522,7 @@ function toOwnReport(row: FeedbackRow, history: FeedbackHistoryEntry[]): OwnFeed
     finalReply: answered ? row.final_reply : null,
     duplicateOfId: closed ? row.duplicate_of_id : null,
     history: [
-      { from: null, to: "new", at: Number(row.created_at), byReporter: false, comment: null },
+      { from: null, to: FeedbackStatus.NEW.value, at: Number(row.created_at), byReporter: false, comment: null },
       ...history.map(({ from, to, at, byReporter, comment }) => ({ from, to, at, byReporter, comment })),
     ],
     reopenDeadline: reopenDeadline(row),

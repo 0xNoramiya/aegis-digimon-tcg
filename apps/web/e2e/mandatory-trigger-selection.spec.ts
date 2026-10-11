@@ -52,9 +52,7 @@ for (const locale of ["en", "pt-BR"] as const) {
       { width: 768, height: 1024 },
       { width: 1440, height: 1000 },
     ]) {
-      test(`Discord 1557582469409144852 bulk targets and explicit consent at ${viewport.width}x${viewport.height}`, async ({
-        page,
-      }, testInfo) => {
+      test(`bulk targets and explicit consent at ${viewport.width}x${viewport.height}`, async ({ page }, testInfo) => {
         await page.setViewportSize(viewport);
         await page.addInitScript((value) => localStorage.setItem("aegis:locale", value), locale);
         await page.goto("/dev/effect-prompts?case=resolution-plan&controls=0");

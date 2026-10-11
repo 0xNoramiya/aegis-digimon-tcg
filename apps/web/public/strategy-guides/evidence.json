@@ -123,10 +123,7 @@
           "task": {
             "seed": 3020100,
             "learnerSeat": 0,
-            "decks": [
-              20001,
-              20002
-            ],
+            "decks": [20001, 20002],
             "opponent": "mcts",
             "searchSeed": 20777
           },
@@ -175,10 +172,7 @@
           "task": {
             "seed": 3020100,
             "learnerSeat": 1,
-            "decks": [
-              20001,
-              20002
-            ],
+            "decks": [20001, 20002],
             "opponent": "mcts",
             "searchSeed": 20777
           },
@@ -360,10 +354,7 @@
           "task": {
             "seed": 3020101,
             "learnerSeat": 0,
-            "decks": [
-              20003,
-              20004
-            ],
+            "decks": [20003, 20004],
             "opponent": "mcts",
             "searchSeed": 20778
           },
@@ -461,10 +452,7 @@
           "task": {
             "seed": 3020101,
             "learnerSeat": 1,
-            "decks": [
-              20003,
-              20004
-            ],
+            "decks": [20003, 20004],
             "opponent": "mcts",
             "searchSeed": 20778
           },
@@ -585,10 +573,7 @@
           "task": {
             "seed": 3020100,
             "learnerSeat": 0,
-            "decks": [
-              20001,
-              20002
-            ],
+            "decks": [20001, 20002],
             "opponent": "mcts",
             "searchSeed": 20777
           },
@@ -637,10 +622,7 @@
           "task": {
             "seed": 3020100,
             "learnerSeat": 1,
-            "decks": [
-              20001,
-              20002
-            ],
+            "decks": [20001, 20002],
             "opponent": "mcts",
             "searchSeed": 20777
           },
@@ -822,10 +804,7 @@
           "task": {
             "seed": 3020101,
             "learnerSeat": 0,
-            "decks": [
-              20003,
-              20004
-            ],
+            "decks": [20003, 20004],
             "opponent": "mcts",
             "searchSeed": 20778
           },
@@ -923,10 +902,7 @@
           "task": {
             "seed": 3020101,
             "learnerSeat": 1,
-            "decks": [
-              20003,
-              20004
-            ],
+            "decks": [20003, 20004],
             "opponent": "mcts",
             "searchSeed": 20778
           },

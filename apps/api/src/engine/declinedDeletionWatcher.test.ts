@@ -1,3 +1,4 @@
+import fixturePiedmonDeclinedOpt from "./scenarios/piedmon-declined-opt.fixture.js";
 import { Phase } from "@aegis/shared";
 import { BLUE_DECK, RED_DECK } from "./testDecks.js";
 import { advance } from "./testkit/advance.js";
@@ -85,7 +86,7 @@ it("allows accepting Piedmon's second occurrence in the playable arena scenario"
   );
   s.engine.stagedDecks[0] = BLUE_DECK;
   s.engine.stagedDecks[1] = RED_DECK;
-  s.engine.startDevScenario("arena-piedmon-declined-opt");
+  s.engine.startScenarioFixture(fixturePiedmonDeclinedOpt);
   try {
     await settle(() => s.state.phase === Phase.Breeding);
     expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });

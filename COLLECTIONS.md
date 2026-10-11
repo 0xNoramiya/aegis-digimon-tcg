@@ -1,0 +1,113 @@
+# Persistent data inventory
+
+Aegis persists application data in PostgreSQL. This filename names the inventory;
+it does not imply a MongoDB collection layer. The API owns every query and write.
+The authoritative schema is the ordered [migration registry](apps/api/src/db/migrations/index.ts),
+currently migrations 001–031, plus the migrator's `schema_migrations` table.
+Append migrations for released schema changes and update this inventory with them.
+
+Tables below list their identity, important fields, and constraints. Foreign keys,
+column defaults, full JSON payload shapes, and CHECK expressions are defined in the
+linked migrations and domain owners; this document is not an executable schema.
+
+## Accounts, authentication, decks, and match history
+
+Owner: [AccountStore](apps/api/src/accounts/AccountStore.ts).
+Base schema: [001](apps/api/src/db/migrations/001-initial-schema.ts).
+
+| Table                  | Identity and important fields                                                          | Constraints and later schema                                                                                                                                                                            |
+| ---------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `accounts`             | UUID `id`; display name, avatar, creation time                                         | Unique case-insensitive display name. Migrations 012–014 add avatar ID, admin flag, and display-name change time; 017 adds JSON preferences; 023 adds avatar check time; 026 adds confirmed bug points. |
+| `login_identities`     | `(provider, subject)`; account FK                                                      | A provider identity belongs to one account.                                                                                                                                                             |
+| `sessions`             | Text `id`; account FK, expiry, revocation                                              | Server authentication state; never expose session identifiers in documentation or logs.                                                                                                                 |
+| `magic_links`          | `token_hash`; email, expiry, consumption                                               | One-use login tokens stored as hashes.                                                                                                                                                                  |
+| `saved_decks`          | `(account_id, id)`; name, main/egg JSON decks, revision, update time                   | Migrations 015–016 add alternate art arrays and cover card; 020–021 add sleeves; 025 adds deck format.                                                                                                  |
+| `match_records`        | UUID `id`; unique `room_id`, mode, players, winner, finish reason/time                 | Competitive matches. Migration 008 allows a missing second account for bots and adds opponent kind/name and explicit seat outcome.                                                                      |
+| `player_stats`         | Account FK as PK; ranked/tournament counters                                           | Persistent totals per account.                                                                                                                                                                          |
+| `ranked_dodge_records` | `(room_id, account_id)`; creation time                                                 | Idempotent dodge recording.                                                                                                                                                                             |
+| `match_deck_snapshots` | `(match_id, account_id)`; snapshot ID, deck identity and frozen JSON decklists, result | Match/account FKs; result restricted to win/loss/draw.                                                                                                                                                  |
+| `room_tickets`         | `token_hash`; account/match FKs, expiry, consumption                                   | One-use room authorization stored as a hash.                                                                                                                                                            |
+| `email_daily_usage`    | `(provider, day)`; sent count                                                          | Provider quotas; [018](apps/api/src/db/migrations/018-email-daily-usage.ts).                                                                                                                            |
+
+## Tournament program
+
+Owners: [participants](apps/api/src/tournaments/participants/ParticipantStore.ts),
+[series](apps/api/src/tournaments/series/SeriesStore.ts),
+[elimination](apps/api/src/tournaments/elimination/EliminationStore.ts),
+and [tournament domain](apps/api/src/tournaments/).
+
+| Table                            | Identity and important fields                                                                                   | Constraints and migration owners                                                                                                                                                          |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tournaments`                    | UUID `id`; organizer, name, block, status, schedule, capacity, winner                                           | 001 creates the event; 002–003 add structure, best-of, top cut, rules and ban list snapshots; 004 adds registration/check-in windows; 008 adds bracket seed and expands lifecycle states. |
+| `tournament_registrations`       | `(tournament_id, account_id)`; seed and registration time                                                       | Legacy single-elimination registrations from 001, retained alongside participants.                                                                                                        |
+| `tournament_matches`             | UUID `id`; tournament/round/position, seats, winner, unique room                                                | Unique `(tournament_id, round, position)`; 005 adds attendance/deadline timestamps; 006 adds phase/round IDs and pairing reason; 008 adds participant seat/winner FKs.                    |
+| `tournament_participants`        | UUID `id`; tournament, human/bot kind, optional account, display name, seed, status, deck snapshot, attendance  | [004](apps/api/src/db/migrations/004-tournament-participants.ts); unique human account per tournament through a partial index. 008 adds bot profile/deck version; 009 adds top-cut seed.  |
+| `match_series`                   | UUID `id`; unique match FK, wins needed and scores, status, shared deadline, overtime, official result, version | [005](apps/api/src/db/migrations/005-match-series-and-games.ts); the clock spans all games in a series.                                                                                   |
+| `tournament_games`               | UUID `id`; series FK, game index, unique room, status/result/timestamps                                         | 005; unique `(series_id, game_index)` with positive indexes. [011](apps/api/src/db/migrations/011-game-deck-snapshots.ts) adds both frozen deck snapshots.                                |
+| `tournament_game_authorizations` | `token_hash`; game/account FKs, issuance/expiry/consumption and room                                            | 005; [008](apps/api/src/db/migrations/008-bot-participants.ts) adds participant FK.                                                                                                       |
+| `tournament_phases`              | UUID `id`; tournament FK, kind, order, status, planned rounds                                                   | [006](apps/api/src/db/migrations/006-phases-and-rounds.ts); unique `(tournament_id, phase_order)`; 009 adds tournament round offset.                                                      |
+| `tournament_rounds`              | UUID `id`; phase FK, positive round number, status, timestamps, pairing audit                                   | 006; unique `(phase_id, number)`.                                                                                                                                                         |
+| `tournament_result_ledger`       | UUID `id`; tournament/participant/opponent FKs, opponent kind, round, outcome, timestamp                        | 006; unique participant result per tournament round. Standings derive from this ledger.                                                                                                   |
+| `tournament_deadlines`           | UUID `id`; kind, tournament FK, subject, due time, lease, execution/result                                      | [007](apps/api/src/db/migrations/007-deadline-scheduler.ts); unique `(kind, subject_id)` keeps enqueue idempotent.                                                                        |
+| `tournament_standings_snapshots` | UUID `id`; tournament/phase/participant FKs, frozen rank/rates/results, eligibility/cut seed                    | [009](apps/api/src/db/migrations/009-top-cut.ts); unique `(phase_id, participant_id)`.                                                                                                    |
+| `tournament_event_sequences`     | Tournament FK as PK; next sequence                                                                              | [010](apps/api/src/db/migrations/010-tournament-events.ts); sequence allocator locked by the audit writer.                                                                                |
+| `tournament_events`              | UUID `id`; tournament, sequence, actor, command/id, subject, reason/code, before/after JSON                     | 010; unique `(tournament_id, sequence)` and `(tournament_id, command_id)`; mandatory nonempty reason/code. Append-only audit.                                                             |
+
+## Community, feedback, notifications, and replays
+
+| Table                     | Identity and important fields                                                                          | Constraints and owners                                                                                                                                                                                                                                             |
+| ------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `public_decks`            | UUID `id`; account/source deck, frozen deck/art JSON, colors, cover, counts, status, timestamps        | [019](apps/api/src/db/migrations/019-community-decks.ts); unique `(account_id, source_deck_id)`. 022 constrains public/unpublished/hidden status. [CommunityDeckStore](apps/api/src/community/CommunityDeckStore.ts).                                              |
+| `public_deck_likes`       | `(public_deck_id, account_id)`; creation time                                                          | 019; deck/account FKs; like counters update transactionally.                                                                                                                                                                                                       |
+| `public_deck_copies`      | `(public_deck_id, account_id)`; creation time                                                          | 019; deck/account FKs; copy counters update transactionally.                                                                                                                                                                                                       |
+| `community_deck_reports`  | Serial `id`; deck/reporter FKs, reason/details, creation/dismissal                                     | [027](apps/api/src/db/migrations/027-community-deck-reports.ts); deck delete cascades; account delete nulls reporter. [DeckReportStore](apps/api/src/community/DeckReportStore.ts).                                                                                |
+| `feedback_reports`        | Serial `id`; optional reporter, report JSON, creation, GitHub delivery state/reference                 | [024](apps/api/src/db/migrations/024-feedback-reports.ts); 026 adds status, final reply, internal note, duplicate FK, revision, closure/reopening and confirmed bug fields. 028 resets the feedback baseline. [FeedbackStore](apps/api/src/bugs/FeedbackStore.ts). |
+| `feedback_status_events`  | Serial `id`; feedback/actor FKs, previous/next status, reporter flag, comment, creation                | [026](apps/api/src/db/migrations/026-feedback-triage.ts); feedback delete cascades; actor delete nulls actor.                                                                                                                                                      |
+| `notifications`           | Serial `id`; account FK, kind, subject, JSON payload, creation/read time                               | 026; account delete cascades. [NotificationStore](apps/api/src/notifications/NotificationStore.ts).                                                                                                                                                                |
+| `account_replays`         | UUID `id`; account FK, match, viewer seat, summary JSON, byte size, Drive file, saved time, visibility | [029](apps/api/src/db/migrations/029-account-replays.ts); unique `(account_id, match_id, viewer_seat)`; seat 0/1; bounded file size; Drive file and saved time must coexist; public requires a saved file.                                                         |
+| `account_recent_matches`  | `(account_id, room_id)`; match ID, finish time, JSON history record                                    | [030](apps/api/src/db/migrations/030-replay-sharing-history.ts); account FK; historical competitive matches backfilled.                                                                                                                                            |
+| `feedback_report_replays` | Feedback FK as PK; private input record JSON, input count, creation                                    | [031](apps/api/src/db/migrations/031-feedback-report-replays.ts); delete cascades; report replay downloads are admin-only.                                                                                                                                         |
+| `schema_migrations`       | Text migration `id`; application time                                                                  | [Migrator](apps/api/src/db/migrator.ts); one transaction per migration under an advisory lock.                                                                                                                                                                     |
+
+## Explicit indexes
+
+Primary keys and UNIQUE constraints also create indexes. The following are the
+additional explicitly named indexes in migrations 001–031; refer to their source
+for sort direction and predicates.
+
+| Table                            | Index name and columns                                                                                                                                                       |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `accounts`                       | `accounts_display_name_unique`: unique `lower(display_name)`                                                                                                                 |
+| `saved_decks`                    | `saved_decks_account`: `(account_id, updated_at DESC)`                                                                                                                       |
+| `match_records`                  | `match_records_players`: `(player0_account_id, player1_account_id, finished_at DESC)`                                                                                        |
+| `match_deck_snapshots`           | `match_deck_snapshots_account`: `(account_id, snapshot_id)`                                                                                                                  |
+| `tournament_participants`        | `tournament_participants_account_unique`: unique `(tournament_id, account_id)` where account is present; `tournament_participants_tournament`: `(tournament_id, created_at)` |
+| `tournament_games`               | `tournament_games_series`: `(series_id, game_index)`                                                                                                                         |
+| `tournament_game_authorizations` | `tournament_game_authorizations_game`: `(game_id, account_id)`                                                                                                               |
+| `tournament_phases`              | `tournament_phases_tournament`: `(tournament_id, phase_order)`                                                                                                               |
+| `tournament_rounds`              | `tournament_rounds_phase`: `(phase_id, number)`                                                                                                                              |
+| `tournament_matches`             | `tournament_matches_round`: `(round_id)`                                                                                                                                     |
+| `tournament_result_ledger`       | `tournament_result_ledger_round_unique`: unique `(tournament_id, participant_id, round_number)`; `tournament_result_ledger_tournament`: `(tournament_id, round_number)`      |
+| `tournament_deadlines`           | `tournament_deadlines_due`: `(executed_at, due_at)`                                                                                                                          |
+| `tournament_standings_snapshots` | `tournament_standings_snapshots_unique`: unique `(phase_id, participant_id)`; `tournament_standings_snapshots_tournament`: `(tournament_id, rank)`                           |
+| `tournament_events`              | `tournament_events_trail`: `(tournament_id, sequence)`; `tournament_events_subject`: `(subject_id)`                                                                          |
+| `public_decks`                   | `public_decks_top`: `(status, like_count DESC, published_at DESC)`; `public_decks_new`: `(status, published_at DESC)`                                                        |
+| `public_deck_likes`              | `public_deck_likes_recent`: `(created_at, public_deck_id)`                                                                                                                   |
+| `community_deck_reports`         | `community_deck_reports_deck_idx`: `(public_deck_id, dismissed_at)`                                                                                                          |
+| `feedback_reports`               | `feedback_reports_reporter_idx`: `(reporter_account_id, id)`; `feedback_reports_status_idx`: `(status, id)`                                                                  |
+| `feedback_status_events`         | `feedback_status_events_feedback_idx`: `(feedback_id, id)`                                                                                                                   |
+| `notifications`                  | `notifications_account_idx`: `(account_id, id)`                                                                                                                              |
+| `account_replays`                | `account_replays_library`: `(account_id, saved_at DESC, id DESC)`; `account_replays_unsaved`: `(created_at)`                                                                 |
+| `account_recent_matches`         | `account_recent_matches_order`: `(account_id, finished_at DESC, room_id DESC)`                                                                                               |
+
+## Other state boundaries
+
+Colyseus rooms and the game engine hold live match state in one API process; it is
+not a durable match database. Redis supports multiprocess coordination/presence
+when configured. Card catalogs, effect snapshots, and the rules KB are repository
+data, not PostgreSQL tables.
+
+Player replay files live in the player's Google Drive; `account_replays` stores
+their index and sharing metadata. Report replays store the private action record
+in PostgreSQL. Local replay reproduction files under ignored `replays/` contain
+decklists and actions; committed regressions use trimmed fixtures.

@@ -1,3 +1,5 @@
+import { openFixturePage } from "./scenario-page";
+import fixtureBt13RoyalPurgeDelayRush from "../../api/src/engine/scenarios/bt13-royal-purge-delay-rush.fixture";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 // Run against the coordinator-owned live API/web pair; this file starts no server
@@ -11,7 +13,7 @@ function resolutionPlan(page: Page) {
 async function openFixture(page: Page) {
   await page.addInitScript(() => localStorage.setItem("aegis:locale", "en"));
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/dev/arena?scenario=arena-bt13-royal-purge-delay-rush");
+  await openFixturePage(page, fixtureBt13RoyalPurgeDelayRush);
   // This fixture automatically passes breeding and settles Drasil's mandatory
   // Start of Main effect; no fabricated response or optional acceptance is needed.
   await expect(page.getByRole("button", { name: /^End turn$/i })).toBeEnabled();
@@ -121,7 +123,7 @@ for (const hasTouch of [false, true]) {
       { width: 768, height: 1024 },
       { width: 1440, height: 1000 },
     ]) {
-      test(`Discord 1557582673117970482 field chrome cannot intercept decisions at ${viewport.width}x${viewport.height}`, async ({
+      test(`field chrome cannot intercept decisions at ${viewport.width}x${viewport.height}`, async ({
         page,
       }, testInfo) => {
         await page.setViewportSize(viewport);

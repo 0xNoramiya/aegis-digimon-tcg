@@ -1,3 +1,4 @@
+import fixtureMoonPendingSourceDeleted from "./scenarios/moon-pending-source-deleted.fixture.js";
 import { Phase } from "@aegis/shared";
 import { BLUE_DECK, RED_DECK } from "./testDecks.js";
 import { advance } from "./testkit/advance.js";
@@ -41,7 +42,7 @@ it("runs the Moon source-residency arena and preserves the legitimate Tapirmon O
   const s = setupEngine({ 0: {}, 1: {} }, { autoAcceptOptional: true, autoSelectCards: true });
   s.engine.stagedDecks[0] = BLUE_DECK;
   s.engine.stagedDecks[1] = RED_DECK;
-  s.engine.startDevScenario("arena-moon-pending-source-deleted");
+  s.engine.startScenarioFixture(fixtureMoonPendingSourceDeleted);
   try {
     await settle(() => s.state.phase === Phase.Breeding);
     expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });

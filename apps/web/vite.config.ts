@@ -66,7 +66,7 @@ export default defineConfig({
     proxy: {
       // Production serves the mirror tools/deploy/card-images.mjs keeps; dev reads its source.
       "/assets/card-images": {
-        target: "https://web-garage.takaotaku.de",
+        target: process.env.AEGIS_CARD_IMAGE_ORIGIN ?? "https://web-garage.takaotaku.de",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/assets\/card-images/, ""),
       },

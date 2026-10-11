@@ -230,7 +230,6 @@ this mode does not claim an external API model produced the candidate. The
 same GEPA selection and real-engine evaluations still apply, but strict publication
 requires an API reflector.
 
-
 ## Numeric selection and publication gates
 
 Run `tune.py --manifest <run>/manifest.json --program <program.json> --tasks <tasks.json>
@@ -265,7 +264,6 @@ Preview catalogs set `strictVerified: false`, so Home exposes the guides link on
 strict publication. Pilots identical to generic have no deck page. Preview sitemaps
 contain no noindex URLs; canonical origins come from the required `--base-url` option.
 
-
 API reflection requires `--dollar-cap`, `--input-usd-per-million` and
 `--output-usd-per-million` with prices checked for the chosen model. The runner sends
 `--completion-tokens` (4096 by default) on the wire, disables automatic paid retries,
@@ -279,7 +277,6 @@ modifier ledgers, once-per-turn usage tracking, reducers and RNG closures. The c
 engine additionally owns promises, WeakMaps and callbacks bound to its original state.
 An engine-owned settled snapshot API would need full runtime export/import, explicit
 quiescence checks, serializable RNG and rebuilt callbacks before replacing prefix replay.
-
 
 Training selects a search rung adaptively by default (`--fixed-opponent` disables it).
 The seed first faces a seeded random legal-action control, then progressively larger

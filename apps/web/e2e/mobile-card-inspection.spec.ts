@@ -1,3 +1,7 @@
+import { openFixturePage } from "./scenario-page";
+import fixtureMobileInspection from "../../api/src/engine/scenarios/mobile-inspection.fixture";
+
+import { fixturePermanentId } from "../../api/src/engine/scenario/references";
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { startBrowserServer } from "./server";
 
@@ -18,7 +22,7 @@ class MobileInspectionArena {
         ),
       }),
     );
-    await this.page.goto("/dev/arena?scenario=arena-discord-1556882561995644928-mobile-inspection");
+    await openFixturePage(this.page, fixtureMobileInspection);
     await this.page.getByRole("button", { name: /^end breeding$/i }).click();
     await expect(this.page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
     await expect(this.page.locator(".game-permanent__inspect")).toHaveCount(0);
@@ -79,7 +83,7 @@ class MobileInspectionArena {
     await expect(this.page.getByRole("dialog")).toHaveCount(0);
     // Both copies are legal physical targets. Deliberately keep the first picked through inspection.
     await this.page
-      .locator('[data-drop="perm-opp"][data-id="dev-perm-1-inspection-dorumon-first"]')
+      .locator(`[data-drop="perm-opp"][data-id="${fixturePermanentId("opponent-inspection-dorumon-first")}"]`)
       .getByRole("img", { name: "Dorumon", exact: true })
       .tap();
     await expect(targets.getByRole("button", { name: "Confirm targets", exact: true })).toBeEnabled();
@@ -161,9 +165,7 @@ for (const viewport of [
   { width: 720, height: 700 },
   { width: 390, height: 844 },
 ]) {
-  test(`Discord 1556882561995644928: inspect Alphamon without changing a target at ${viewport.width}px`, async ({
-    page,
-  }) => {
+  test(`inspect Alphamon without changing a target at ${viewport.width}px`, async ({ page }) => {
     const server = await startBrowserServer();
     try {
       await page.setViewportSize(viewport);
@@ -194,8 +196,12 @@ for (const viewport of [
       expect(server.pendingBotDecision()?.kind).toBe("optional");
       server.releaseBotDecision();
       await expect(page.getByText("The opponent is selecting cards.", { exact: true })).toHaveCount(0);
-      await expect(page.locator('[data-permanent-id="dev-perm-1-inspection-dorumon-first"]')).toBeVisible();
-      await expect(page.locator('[data-permanent-id="dev-perm-1-inspection-dorumon-second"]')).toBeVisible();
+      await expect(
+        page.locator(`[data-permanent-id="${fixturePermanentId("opponent-inspection-dorumon-first")}"]`),
+      ).toBeVisible();
+      await expect(
+        page.locator(`[data-permanent-id="${fixturePermanentId("opponent-inspection-dorumon-second")}"]`),
+      ).toBeVisible();
       await expect(page.getByRole("button", { name: "Return to decision", exact: true })).toHaveCount(0);
       await expect(page.locator(".game-permanent__inspect")).toHaveCount(0);
     } finally {

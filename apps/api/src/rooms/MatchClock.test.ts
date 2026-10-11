@@ -108,36 +108,33 @@ describe("optional match clock", () => {
     expect(state.timerRemaining0).toBe(58);
   });
 
-  it.each([0, 15, 30, 60])(
-    "adds 60s to the owner and 30s to the opponent once, ignoring legacy refill %i",
-    (refill) => {
-      const { state, timer } = clock({ matchTimer: true, timerStartSeconds: 300, timerRefillSeconds: refill });
-      state.turnCount = 1;
-      timer.update(0, 0);
-      timer.update(100_000, 1);
-      timer.update(150_000, 1);
-      expect(state.timerRemaining0).toBe(200);
-      expect(state.timerRemaining1).toBe(250);
-      state.turnCount = 2;
-      state.turnSeat = 1;
-      timer.update(150_000, 1);
-      expect(state.timerRemaining0).toBe(230);
-      expect(state.timerRemaining1).toBe(300);
-      timer.update(170_000, 0);
-      expect(state.timerRemaining1).toBe(280);
-      timer.update(220_000, 0);
-      expect(state.timerRemaining0).toBe(180);
-      state.turnCount = 3;
-      state.turnSeat = 0;
-      timer.update(220_000, 0);
-      expect(state.timerRemaining0).toBe(240);
-      expect(state.timerRemaining1).toBe(300);
-      timer.update(220_000, 0);
-      expect(state.timerRemaining0).toBe(240);
-      timer.update(230_000, 0);
-      expect(state.timerRemaining0).toBe(230);
-    },
-  );
+  it.each([0, 15, 30, 60])("#37 resets both thinking windows once per turn, ignoring legacy refill %i", (refill) => {
+    const { state, timer } = clock({ matchTimer: true, timerStartSeconds: 300, timerRefillSeconds: refill });
+    state.turnCount = 1;
+    timer.update(0, 0);
+    timer.update(100_000, 1);
+    timer.update(150_000, 1);
+    expect(state.timerRemaining0).toBe(200);
+    expect(state.timerRemaining1).toBe(250);
+    state.turnCount = 2;
+    state.turnSeat = 1;
+    timer.update(150_000, 1);
+    expect(state.timerRemaining0).toBe(300);
+    expect(state.timerRemaining1).toBe(300);
+    timer.update(170_000, 0);
+    expect(state.timerRemaining1).toBe(280);
+    timer.update(220_000, 0);
+    expect(state.timerRemaining0).toBe(250);
+    state.turnCount = 3;
+    state.turnSeat = 0;
+    timer.update(220_000, 0);
+    expect(state.timerRemaining0).toBe(300);
+    expect(state.timerRemaining1).toBe(300);
+    timer.update(220_000, 0);
+    expect(state.timerRemaining0).toBe(300);
+    timer.update(230_000, 0);
+    expect(state.timerRemaining0).toBe(290);
+  });
 
   it("preserves the opening reserve without granting a bonus after mulligan", () => {
     const { state, timer } = clock();
@@ -226,4 +223,18 @@ describe("mulligan window, disconnect freeze and combo time", () => {
     timer.grantDecisionBonus(1);
     expect(state.timerRemaining1).toBe(60);
   });
+});
+
+it("#39 shares a bounded combo allowance between confirmed cards and effect decisions", () => {
+  const { state, timer } = clock();
+  state.turnCount = 1;
+  timer.update(0, 0);
+  timer.update(50_000, 0);
+  timer.grantCardBonus(0);
+  expect(state.timerRemaining0).toBe(10 + MATCH_TIMER_DECISION_BONUS_SECONDS);
+  for (let index = 0; index < 20; index++) {
+    timer.grantCardBonus(0);
+    timer.grantDecisionBonus(0);
+  }
+  expect(state.timerRemaining0).toBe(10 + MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN);
 });

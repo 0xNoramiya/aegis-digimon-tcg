@@ -135,11 +135,18 @@ export async function flushDeferredSecurityRemovalTriggers(engine: GameEngine): 
   }
 }
 
-/** Fold an effect-attack cost's security-removal reactions into its [When Attacking] pool. */
-export function parkDeferredSecurityRemovalTriggersForAttack(engine: GameEngine): void {
-  while (engine.deferredSecurityRemovalTriggers.length > 0) {
-    const deferred = engine.deferredSecurityRemovalTriggers.shift();
-    if (deferred === undefined) continue;
+/** Fold completed effect-body security removals into the next derived-trigger pool. */
+export function parkDeferredSecurityRemovalTriggers(
+  engine: GameEngine,
+  alreadyPending?: ReadonlySet<GameEngine["deferredSecurityRemovalTriggers"][number]>,
+): void {
+  for (let index = 0; index < engine.deferredSecurityRemovalTriggers.length;) {
+    const deferred = engine.deferredSecurityRemovalTriggers[index]!;
+    if (alreadyPending?.has(deferred)) {
+      index += 1;
+      continue;
+    }
+    engine.deferredSecurityRemovalTriggers.splice(index, 1);
     const armed = armedSubTriggers(engine, deferred.subscriptions, deferred.payload, deferred.contexts);
     const collected = armedAsPendingCollected(engine, armed);
     for (const entry of collected) {

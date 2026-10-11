@@ -1,3 +1,5 @@
+import fixtureChronomonEngageOrder from "../../api/src/engine/scenarios/chronomon-engage-order.fixture";
+import { fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test as base, expect } from "@playwright/test";
 import { RED_DECK, BLUE_DECK } from "../../api/dist/engine/testDecks.js";
 import { joinHeadlessOpponent } from "../test/scenarioHarness/headlessOpponent";
@@ -67,7 +69,7 @@ base("the mulligan runs its own 30 s window and keeps the hand when it runs out"
 
 scenarioTest("an effect decision adds combo time to the deciding player's clock", async ({ scenario, page }) => {
   scenarioTest.setTimeout(120_000);
-  await scenario.open("arena-chronomon-engage-order");
+  await scenario.openFixture(fixtureChronomonEngageOrder);
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
   expect((await scenario.snapshot()).matchTimer).toBe(true);
   // Spend a few seconds first so the bonus is not hidden by the 300 s ceiling.
@@ -91,7 +93,8 @@ scenarioTest("an effect decision adds combo time to the deciding player's clock"
       if (d.kind === "orderTriggers")
         return { triggerCardId: d.options.triggerCardIds?.includes("BT26-015") ? "BT26-015" : undefined };
       if (d.kind === "chooseOption") return { choice: 1 };
-      if (d.options.candidateInstanceIds?.includes("engage-filler-0")) return { instanceId: "engage-filler-0" };
+      if (d.options.candidateInstanceIds?.includes(fixtureInstanceId("engage-filler-0-card")))
+        return { instanceId: fixtureInstanceId("engage-filler-0-card") };
       return {};
     },
   );

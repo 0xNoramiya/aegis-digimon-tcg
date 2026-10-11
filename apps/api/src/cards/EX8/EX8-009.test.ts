@@ -152,6 +152,82 @@ describe("EX8-009", () => {
     expect(s.state.players[0]!.deck.map((card) => card.cardId)).toEqual(["BT1-045", "BT10-080", "AD1-001"]);
   });
 
+  it.each([
+    ["BT19-009", "ST7-05", "EX8-015"],
+    ["BT19-091", "BT19-009", "BT19-009"],
+  ] as const)("feedback #49: %s / %s / %s provide only one name-search slot", async (...revealed) => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "EX2-008", as: "base" }],
+          hand: [{ card: "EX8-009", as: "guilmon" }],
+          deck: [
+            { card: "BT1-045", as: "draw" },
+            ...revealed.map((card, index) => ({ card, as: `reveal${index}` })),
+            { card: "BT1-046", as: "anchor" },
+          ],
+        },
+      },
+      { autoOrderCards: false },
+    );
+    s.state.memory = 3;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("guilmon").instanceId,
+        useAlternateCost: true,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    const pick = s.state.pendingDecision!;
+    const candidates = s.decisions.at(-1)!.req.options!.candidateInstanceIds!;
+    expect(s.decisions.at(-1)!.req.options).toMatchObject({ min: 1, max: 1 });
+    expect(candidates).toEqual(
+      revealed[0] === "BT19-091"
+        ? [s.inst("reveal1").instanceId, s.inst("reveal2").instanceId]
+        : [s.inst("reveal0").instanceId, s.inst("reveal1").instanceId, s.inst("reveal2").instanceId],
+    );
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: pick.decisionId,
+        response: { kind: "selectCards", instanceIds: [candidates[0]!] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "orderCards");
+    const order = s.state.pendingDecision!;
+    const remaining = [0, 1, 2]
+      .map((index) => s.inst(`reveal${index}`).instanceId)
+      .filter((id) => id !== candidates[0]);
+    expect(s.decisions.at(-1)!.req.options!.candidateInstanceIds).toEqual(remaining);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: order.decisionId,
+        response: { kind: "orderCards", order: [...remaining].reverse() },
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () =>
+        !s.state.pendingDecision &&
+        s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "EX8-009"),
+    );
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual([s.inst("draw").instanceId, candidates[0]]);
+    expect(s.state.players[0]!.deck.map((card) => card.instanceId)).toEqual([
+      s.inst("anchor").instanceId,
+      ...remaining.reverse(),
+    ]);
+    expect(s.state.memory).toBe(3);
+    expect(s.perm("base").topCard.instanceId).toBe(s.inst("guilmon").instanceId);
+    expect(s.perm("base").stack.map((card) => card.cardId)).toEqual(["EX2-008"]);
+    expect(s.decisions.filter(({ req }) => req.sourceCardId === "EX8-009").map(({ req }) => req.kind)).toEqual([
+      "selectCards",
+      "orderCards",
+    ]);
+  });
+
   it("still adds X Antibody when no Growlmon or Gallantmon is revealed", async () => {
     const s = setupEngine(
       {

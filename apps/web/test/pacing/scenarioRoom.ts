@@ -1,6 +1,6 @@
 /* The real AegisRoom, hosted in-process with no transport, under the test's fake clock.
 
-   Everything the room decides is the shipping code: the engine, the dev scenario, the bot
+   Everything the room decides is the shipping code: the engine, the fixture, the bot
    seat with its own think delays, the batch envelope, the per-seat StateView and the
    Colyseus patch tick. Only the socket is replaced. The fake client decodes each state frame
    with a real schema Decoder, so the board the viewer receives is redacted exactly as in
@@ -23,7 +23,8 @@ import {
   type SequencedServerEvent,
 } from "@aegis/shared";
 import { AegisRoom } from "@aegis-api/rooms/AegisRoom.js";
-import type { DevScenarioId } from "@aegis-api/engine/devScenario.js";
+import type { ScenarioFixture } from "@aegis-api/engine/scenario/types.js";
+import { configureLocalScenario, clearLocalScenario } from "@aegis-api/engine/scenario/local.js";
 import "@aegis-api/cards/index.js";
 
 /** Colyseus `ClientState.JOINED`: the serializer only writes to joined clients. */
@@ -45,7 +46,7 @@ export interface ScenarioRoom {
 }
 
 export interface ScenarioRoomOptions {
-  scenario: DevScenarioId;
+  scenario: ScenarioFixture;
   seed: number;
   humanDeck: { mainDeck: string[]; eggDeck: string[] };
   botDeckId: string;
@@ -62,6 +63,7 @@ function wireCopy<T>(value: T): T {
 }
 
 export function openScenarioRoom(options: ScenarioRoomOptions): ScenarioRoom {
+  configureLocalScenario(options.scenario);
   const room = new AegisRoom();
   const decoder = new Decoder(new GameState());
   const wire: WireMessage[] = [];
@@ -113,10 +115,10 @@ export function openScenarioRoom(options: ScenarioRoomOptions): ScenarioRoom {
   };
 
   // The matchmaker's own set-up: it arms the state serializer and the patch tick.
-  room.roomId = `pacing-${options.scenario}`;
+  room.roomId = `pacing-${options.scenario.name}`;
   (room as unknown as { __init(): void }).__init();
   (room as unknown as { _listing: object })._listing = {};
-  room.onCreate({ seed: options.seed, botRoom: true, devScenario: options.scenario });
+  room.onCreate({ seed: options.seed, botRoom: true, devScenario: "local-fixture" });
   const asClient = client as unknown as Client;
   room.clients.push(asClient);
   room.onJoin(asClient, {
@@ -140,6 +142,7 @@ export function openScenarioRoom(options: ScenarioRoomOptions): ScenarioRoom {
     send: (intent) => handleIntent(asClient, intent),
     dispose() {
       room.onDispose();
+      clearLocalScenario();
       room.clock.clear();
       room.clock.stop();
     },

@@ -58,7 +58,8 @@ registerHooks({
     return nextResolve(specifier, context);
   },
   load(url, context, nextLoad) {
-    if (!url.startsWith("file:") || !url.endsWith(".ts") || url.includes("/node_modules/")) return nextLoad(url, context);
+    if (!url.startsWith("file:") || !url.endsWith(".ts") || url.includes("/node_modules/"))
+      return nextLoad(url, context);
     const path = fileURLToPath(url);
     const bundled = bundledCards?.[path];
     if (bundled) return { format: "module", source: stubSource(bundled), shortCircuit: true };

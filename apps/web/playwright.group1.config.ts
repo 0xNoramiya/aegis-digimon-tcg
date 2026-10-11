@@ -6,7 +6,7 @@ process.env.AEGIS_E2E_SERVER_PORT = "2595";
 
 export default defineConfig({
   ...config,
-  testMatch: "**/oct06-group1.spec.ts",
+  testMatch: "**/assembly-reveal-and-trash-evolution.spec.ts",
   use: { ...config.use, baseURL: "http://127.0.0.1:4194" },
   webServer: {
     command: "VITE_AEGIS_API_URL=ws://127.0.0.1:2594 pnpm exec vite --host 127.0.0.1 --port 4194 --strictPort",

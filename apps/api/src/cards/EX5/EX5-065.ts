@@ -54,9 +54,7 @@ if (yourTurn) {
         target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
         raw: "by suspending this Tamer",
       },
-      actions: [
-        { kind: "GainMemory", amount: 1 },
-      ],
+      actions: [{ kind: "GainMemory", amount: 1 }],
     },
   ];
 }

@@ -1,8 +1,9 @@
 import { peekCheckedCard, takeCheckedCard } from "../../security/checkedCard.js";
-import { CardInstance } from "@aegis/shared";
+import { CardInstance, Zone } from "@aegis/shared";
 import type { GameState, PlayerState, Seat, ZoneRef } from "@aegis/shared";
 import {
   extractPermanentAt,
+  extractCardById,
   findPermanentInState,
   noteRoutedUsedOption,
   setBreeding,
@@ -90,7 +91,7 @@ export function removeLooseInstance(
     const fromDeck = spliceById(owner.deck, instanceId);
     if (fromDeck) return fromDeck;
     if (includeTrash) {
-      const fromTrash = spliceById(owner.trash, instanceId);
+      const fromTrash = extractCardById(owner, Zone.Trash, instanceId);
       if (fromTrash) return fromTrash;
     }
     for (const permanent of owner.battleArea) {

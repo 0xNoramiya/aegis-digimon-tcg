@@ -24,7 +24,8 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
     anchorProduct: "EX13",
     archetype: "Omnimon",
     colors: [CardColor.Red, CardColor.Blue, CardColor.White, CardColor.Black],
-    source: "Built from the Omnimon deck guide on the EX13 product page. Nokia Shiramine drops Agumon and Gabumon into play, the Cyber Sleuth Greymon and Garurumon lines feed WarGreymon and MetalGarurumon, and the pair DNA digivolve for free into an Omnimon that deletes by digivolution-card count.",
+    source:
+      "Built from the Omnimon deck guide on the EX13 product page. Nokia Shiramine drops Agumon and Gabumon into play, the Cyber Sleuth Greymon and Garurumon lines feed WarGreymon and MetalGarurumon, and the pair DNA digivolve for free into an Omnimon that deletes by digivolution-card count.",
     sourceUrl: SOURCE_URL,
     mainDeck: entries([
       ["BT22-008", 4, "Agumon Lv.3"],
@@ -43,9 +44,7 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
       ["BT22-084", 3, "Nokia Shiramine Tamer"],
       ["BT22-094", 3, "Yuugo Kamishiro Tamer"],
     ]),
-    eggDeck: entries([
-      ["BT22-005", 4, "Tsumemon"],
-    ]),
+    eggDeck: entries([["BT22-005", 4, "Tsumemon"]]),
   }),
   defineMetaDeck({
     deckId: "ex13-alphamon-royal-knights",
@@ -55,7 +54,8 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
     anchorProduct: "EX13",
     archetype: "Alphamon",
     colors: [CardColor.Black, CardColor.Yellow, CardColor.Red],
-    source: "Built from the Alphamon deck guide on the EX13 product page. Raptordramon and Grademon chain digivolutions while attacking, Kota Domoto fuels the hand, and Alphamon's end-of-turn play sneaks an extra Chronicle attacker in for 6 less.",
+    source:
+      "Built from the Alphamon deck guide on the EX13 product page. Raptordramon and Grademon chain digivolutions while attacking, Kota Domoto fuels the hand, and Alphamon's end-of-turn play sneaks an extra Chronicle attacker in for 6 less.",
     sourceUrl: SOURCE_URL,
     mainDeck: entries([
       ["EX13-049", 4, "Dorumon Lv.3"],
@@ -89,7 +89,8 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
     anchorProduct: "EX13",
     archetype: "UlforceVeedramon",
     colors: [CardColor.Blue, CardColor.Yellow, CardColor.White, CardColor.Red, CardColor.Black, CardColor.Green],
-    source: "Built from the UlforceVeedramon deck guide on the EX13 product page. AeroVeedramon plays Rina Shinomiya for free, Rina draws and digivolves on every unsuspend, and UlforceVeedramon bounces the opponent's thinnest stacks while shrugging off removal.",
+    source:
+      "Built from the UlforceVeedramon deck guide on the EX13 product page. AeroVeedramon plays Rina Shinomiya for free, Rina draws and digivolves on every unsuspend, and UlforceVeedramon bounces the opponent's thinnest stacks while shrugging off removal.",
     sourceUrl: SOURCE_URL,
     mainDeck: entries([
       ["EX13-017", 4, "Veemon Lv.3"],
@@ -110,9 +111,7 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
       ["EX13-076", 2, "Imperialdramon: Paladin Mode Lv.7"],
       ["BT22-094", 2, "Yuugo Kamishiro Tamer"],
     ]),
-    eggDeck: entries([
-      ["EX13-002", 4, "DemiVeemon"],
-    ]),
+    eggDeck: entries([["EX13-002", 4, "DemiVeemon"]]),
   }),
   defineMetaDeck({
     deckId: "ex13-magnamon-royal-knights",
@@ -122,7 +121,8 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
     anchorProduct: "EX13",
     archetype: "Magnamon",
     colors: [CardColor.Blue, CardColor.Yellow, CardColor.Black, CardColor.White, CardColor.Red, CardColor.Green],
-    source: "Built from the Magnamon deck guide on the EX13 product page. Every Veemon feeds Magnamon's Assembly; Magnamon grows with the colours in the trashes, drains the opposing DP, and unsuspends a Royal Knight at the end of each turn.",
+    source:
+      "Built from the Magnamon deck guide on the EX13 product page. Every Veemon feeds Magnamon's Assembly; Magnamon grows with the colours in the trashes, drains the opposing DP, and unsuspends a Royal Knight at the end of each turn.",
     sourceUrl: SOURCE_URL,
     mainDeck: entries([
       ["EX13-017", 4, "Veemon Lv.3"],
@@ -157,7 +157,8 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
     anchorProduct: "EX13",
     archetype: "LordKnightmon",
     colors: [CardColor.Purple, CardColor.Black],
-    source: "Built from the LordKnightmon deck guide on the EX13 product page. Kotemon and Gladimon keep Knightmon cards flowing under Rie Kishibe, who digivolves into LordKnightmon for 3 once three Knightmon cards sit under her; LordKnightmon hands every Knightmon Alliance and Piercing.",
+    source:
+      "Built from the LordKnightmon deck guide on the EX13 product page. Kotemon and Gladimon keep Knightmon cards flowing under Rie Kishibe, who digivolves into LordKnightmon for 3 once three Knightmon cards sit under her; LordKnightmon hands every Knightmon Alliance and Piercing.",
     sourceUrl: SOURCE_URL,
     mainDeck: entries([
       ["EX13-048", 4, "Kotemon Lv.3"],
@@ -178,9 +179,7 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
       ["BT22-090", 2, "Rie Kishibe Tamer"],
       ["BT18-099", 3, "Fist of Athena Option"],
     ]),
-    eggDeck: entries([
-      ["BT16-005", 4, "Dorimon"],
-    ]),
+    eggDeck: entries([["BT16-005", 4, "Dorimon"]]),
   }),
   defineMetaDeck({
     deckId: "ex13-gallantmon-royal-knights",
@@ -190,7 +189,8 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
     anchorProduct: "EX13",
     archetype: "Gallantmon",
     colors: [CardColor.Red, CardColor.Purple],
-    source: "Built from the Gallantmon deck guide on the EX13 product page. Gigimon digivolves for cheap when Takato is played, WarGrowlmon's Engage brings Takato back, and Gallantmon deletes 12000 DP Digimon while staying on the field by deleting a smaller one.",
+    source:
+      "Built from the Gallantmon deck guide on the EX13 product page. Gigimon digivolves for cheap when Takato is played, WarGrowlmon's Engage brings Takato back, and Gallantmon deletes 12000 DP Digimon while staying on the field by deleting a smaller one.",
     sourceUrl: SOURCE_URL,
     mainDeck: entries([
       ["EX13-007", 4, "Guilmon Lv.3"],
@@ -224,7 +224,8 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
     anchorProduct: "EX13",
     archetype: "Dynasmon",
     colors: [CardColor.Yellow, CardColor.Red, CardColor.Purple, CardColor.Black],
-    source: "Built from the Dynasmon deck guide on the EX13 product page. Candlemon and Mistymon trash the deck's own security to shrink the opponent's board, DemiMeramon digivolves into a Witchelny card on the attack, and Dynasmon swings with +10000 DP once security is low.",
+    source:
+      "Built from the Dynasmon deck guide on the EX13 product page. Candlemon and Mistymon trash the deck's own security to shrink the opponent's board, DemiMeramon digivolves into a Witchelny card on the attack, and Dynasmon swings with +10000 DP once security is low.",
     sourceUrl: SOURCE_URL,
     mainDeck: entries([
       ["EX13-025", 4, "Candlemon Lv.3"],
@@ -259,7 +260,8 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
     anchorProduct: "EX13",
     archetype: "Craniamon",
     colors: [CardColor.Black],
-    source: "Built from the Craniamon deck guide on the EX13 product page. Guardromon keeps every other Blocker on the field, Giromon plays more Blockers whenever a Digimon suspends, and Craniamon wipes the opponent's cheapest Digimon each time it blocks.",
+    source:
+      "Built from the Craniamon deck guide on the EX13 product page. Guardromon keeps every other Blocker on the field, Giromon plays more Blockers whenever a Digimon suspends, and Craniamon wipes the opponent's cheapest Digimon each time it blocks.",
     sourceUrl: SOURCE_URL,
     mainDeck: entries([
       ["EX13-047", 4, "Gotsumon Lv.3"],
@@ -296,7 +298,8 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
     anchorProduct: "EX13",
     archetype: "Kentaurosmon",
     colors: [CardColor.Yellow, CardColor.Blue, CardColor.White],
-    source: "Built from the Kentaurosmon deck guide on the EX13 product page. Kudamon stacks cards under Richard Sampson, Sampson digivolves it straight into Kentaurosmon, Chirinmon keeps the stack safe, and Kentaurosmon's Counter turns Digimon into security cards mid-attack.",
+    source:
+      "Built from the Kentaurosmon deck guide on the EX13 product page. Kudamon stacks cards under Richard Sampson, Sampson digivolves it straight into Kentaurosmon, Chirinmon keeps the stack safe, and Kentaurosmon's Counter turns Digimon into security cards mid-attack.",
     sourceUrl: SOURCE_URL,
     mainDeck: entries([
       ["EX13-026", 4, "Kudamon Lv.3"],
@@ -330,7 +333,8 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
     anchorProduct: "EX13",
     archetype: "Leopardmon",
     colors: [CardColor.Green, CardColor.Yellow, CardColor.Red],
-    source: "Built from the Leopardmon deck guide on the EX13 product page. Salamon searches the beasts, Bastemon plays them for free while attacking, Mikemon suspends the opponent's board, and Leopardmon plays or uses a beast for 4 less plus 1 per suspended Digimon.",
+    source:
+      "Built from the Leopardmon deck guide on the EX13 product page. Salamon searches the beasts, Bastemon plays them for free while attacking, Mikemon suspends the opponent's board, and Leopardmon plays or uses a beast for 4 less plus 1 per suspended Digimon.",
     sourceUrl: SOURCE_URL,
     mainDeck: entries([
       ["EX13-038", 4, "Salamon Lv.3"],
@@ -349,9 +353,7 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
       ["BT13-056", 2, "Leopardmon Lv.6"],
       ["BT23-078", 4, "Gorou Matayoshi Tamer"],
     ]),
-    eggDeck: entries([
-      ["BT23-002", 4, "Yokomon"],
-    ]),
+    eggDeck: entries([["BT23-002", 4, "Yokomon"]]),
   }),
   defineMetaDeck({
     deckId: "ex13-examon-royal-knights",
@@ -361,7 +363,8 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
     anchorProduct: "EX13",
     archetype: "Examon",
     colors: [CardColor.Green, CardColor.Red, CardColor.Blue],
-    source: "Built from the Examon deck guide on the EX13 product page. Bebydomon and Coredramon cheat Dracomon-text cards into play, Wingdramon and Groundramon count as Slayerdramon and Breakdramon for DNA digivolution, and Examon attacks the moment it DNA digivolves.",
+    source:
+      "Built from the Examon deck guide on the EX13 product page. Bebydomon and Coredramon cheat Dracomon-text cards into play, Wingdramon and Groundramon count as Slayerdramon and Breakdramon for DNA digivolution, and Examon attacks the moment it DNA digivolves.",
     sourceUrl: SOURCE_URL,
     mainDeck: entries([
       ["EX13-008", 4, "Dracomon Lv.3"],
@@ -397,7 +400,8 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
     anchorProduct: "EX13",
     archetype: "Gankoomon & Jesmon",
     colors: [CardColor.Red, CardColor.White, CardColor.Black, CardColor.Yellow],
-    source: "Built from the Gankoomon & Jesmon deck guide on the EX13 product page. Huckmon searches the sisters, SaviorHuckmon plays the Awakened Sistermon for 3 less, Jesmon deletes on every play and brings out Atho, René & Por, and Gankoomon adds Hinukamuy with full effect immunity.",
+    source:
+      "Built from the Gankoomon & Jesmon deck guide on the EX13 product page. Huckmon searches the sisters, SaviorHuckmon plays the Awakened Sistermon for 3 less, Jesmon deletes on every play and brings out Atho, René & Por, and Gankoomon adds Hinukamuy with full effect immunity.",
     sourceUrl: SOURCE_URL,
     mainDeck: entries([
       ["EX13-009", 4, "Huckmon Lv.3"],
@@ -419,8 +423,6 @@ export const EX13_ROYAL_KNIGHTS_DECKS: readonly FamousDeck[] = Object.freeze([
       ["EX13-075", 4, "Mon Tamer"],
       ["BT23-099", 2, "The Sistermon Sisters Training Gym Option"],
     ]),
-    eggDeck: entries([
-      ["BT20-001", 4, "DemiVeemon"],
-    ]),
+    eggDeck: entries([["BT20-001", 4, "DemiVeemon"]]),
   }),
 ]);

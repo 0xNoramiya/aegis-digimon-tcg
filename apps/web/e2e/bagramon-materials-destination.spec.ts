@@ -1,3 +1,5 @@
+import fixtureEx10BagramonMaterialsDestination from "../../api/src/engine/scenarios/ex10-bagramon-materials-destination.fixture";
+import { fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
 for (const [destination, acceptCost] of [
@@ -10,7 +12,7 @@ for (const [destination, acceptCost] of [
     page,
   }) => {
     test.setTimeout(120_000);
-    await scenario.open("arena-ex10-bagramon-materials-destination");
+    await scenario.openFixture(fixtureEx10BagramonMaterialsDestination);
     await scenario.resolveUntil(
       (s) => s.phase === "Main" && !s.pendingDecision,
       () => ({ accept: false }),
@@ -44,11 +46,14 @@ for (const [destination, acceptCost] of [
     const final = await scenario.snapshot();
     const bagramon = final.players[0]!.battleArea.find((p) => p.topCard.cardId === "EX10-056")!;
     expect(final.memory).toBe(7);
-    const materialIds = ["dev-stack-0-bagramon-expander-0", "dev-bagramon-trash-material"];
+    const materialIds = [
+      fixtureInstanceId("own-source-bagramon-expander-0-card"),
+      fixtureInstanceId("bagramon-trash-material-card"),
+    ];
     expect(bagramon.stack.map((c) => c.instanceId).sort()).toEqual(acceptCost ? [] : materialIds.sort());
     expect(
       final.players[0]!.battleArea.find((p) => p.permanentId === expander.permanentId)!.stack.map((c) => c.instanceId),
-    ).toEqual(["dev-stack-0-bagramon-expander-1"]);
+    ).toEqual([fixtureInstanceId("own-source-bagramon-expander-1-card")]);
     expect(final.players[0]!.battleArea.find((p) => p.permanentId === expander.permanentId)!.isSuspended).toBe(true);
     expect(
       final.players[1]!.battleArea.find((p) => p.permanentId === host.permanentId)!.stack.map((c) => c.instanceId),

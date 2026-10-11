@@ -23,12 +23,15 @@ export async function awaitBlitzAttackDeclaration(
   targetIds: readonly string[],
   provenance?: AttackDecisionProvenance,
 ): Promise<string | undefined> {
+  const { sourceCardId, sourceInstanceId, sourcePermanentId, ...effectOptions } = provenance ?? {};
   const response = await engine.decisions.request({
     seat,
     kind: "optional",
     promptText: "Activate Blitz?",
-    ...(provenance?.sourceCardId === undefined ? {} : { sourceCardId: provenance.sourceCardId }),
-    options: { promptKey: "activateBlitz" },
+    ...(sourceCardId === undefined ? {} : { sourceCardId }),
+    ...(sourceInstanceId === undefined ? {} : { sourceInstanceId }),
+    ...(sourcePermanentId === undefined ? {} : { sourcePermanentId }),
+    options: { ...effectOptions, promptKey: "activateBlitz" },
   });
   if (engine.state.gameOver || response.kind !== "optional" || !response.accept) return undefined;
   const targetId = await new Promise<string | undefined>((resolve) => {

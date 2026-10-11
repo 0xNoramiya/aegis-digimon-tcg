@@ -19,6 +19,30 @@ import { choiceLabel } from "./overlay/choice/decisionChoiceLabels";
 
 afterEach(() => cleanup());
 
+it("feedback #51: copied donor text is shown while Jesmon GX remains the effect source", () => {
+  const clause = "Then, until your opponent's turn ends, their Digimon effects don't affect 1 of your white Digimon.";
+  renderDecision({
+    decisionId: "feedback51-copied-target",
+    seat: 0,
+    kind: "chooseTargets",
+    sourceCardId: "BT10-112",
+    sourceInstanceId: "gx",
+    sourcePermanentId: "gx-host",
+    promptText: "Jesmon GX",
+    options: {
+      timing: "WhenDigivolving",
+      effectTextCardId: "EX13-061",
+      effectText: getCardDefinition("EX13-061")!.effectText,
+      effectTextPart: clause,
+      candidateInstanceIds: ["gx-host"],
+      min: 1,
+      max: 1,
+    },
+  });
+  expect(screen.getByRole("dialog", { name: "Jesmon GX · effect" })).toBeTruthy();
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(clause);
+});
+
 it("keeps Sakuyamon's optional cost in the clause under the standard activation heading", () => {
   const cost = "By placing 1 of your opponent's Digimon with the lowest DP as the bottom security card";
   const clause =
@@ -4445,4 +4469,33 @@ it.each([0, 1] as const)("GitHub #5347: seat %i sees P-220's separate optional d
   expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe("Then, you may delete 1 Digimon.");
   fireEvent.click(screen.getByRole("button", { name: "None" }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "chooseTargets", instanceIds: [] });
+});
+
+it("#60 visibly identifies the copy trashed from LadyDevimon's sources and sends its exact identity", () => {
+  const onTogglePick = vi.fn<(instanceId: string) => void>();
+  render(
+    <I18nProvider>
+      <DecisionOverlay
+        request={{
+          decisionId: "source-copy",
+          seat: 0,
+          kind: "selectCards",
+          promptText: "Choose an Option",
+          options: { candidateInstanceIds: ["old-shot", "source-shot"], min: 1, max: 1 },
+        }}
+        candidates={[
+          { instanceId: "old-shot", cardId: "EX7-071", zone: "trash" },
+          { instanceId: "source-shot", cardId: "EX7-071", zone: "trash", trashOriginCardId: "BT25-083" },
+        ]}
+        picks={[]}
+        onTogglePick={onTogglePick}
+        onRespond={vi.fn<() => void>()}
+      />
+    </I18nProvider>,
+  );
+  expect(screen.getByText("copy 1 of 2")).toBeTruthy();
+  expect(screen.getByText("copy 2 of 2")).toBeTruthy();
+  expect(screen.getByText("Trashed from LadyDevimon’s sources")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: /Trashed from LadyDevimon’s sources/ }));
+  expect(onTogglePick).toHaveBeenCalledWith("source-shot");
 });

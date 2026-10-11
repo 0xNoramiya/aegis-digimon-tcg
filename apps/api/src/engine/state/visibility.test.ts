@@ -1009,7 +1009,7 @@ describe("a card that moves out of a viewer's sight", () => {
     insertCard(player, zone, card);
   }
 
-  it.each([Zone.Hand, Zone.Deck, Zone.EggDeck, Zone.Security])(
+  it.each([Zone.Hand, Zone.Deck, Zone.EggDeck, Zone.Security] as const)(
     "keeps both player slots when a new top card returns to %s before its first board patch",
     (destination) => {
       const player = state.players[0]!;

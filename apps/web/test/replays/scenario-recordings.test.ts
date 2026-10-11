@@ -19,7 +19,7 @@ describe("authoritative complex replay recordings", () => {
       let decision: DecisionRequest | undefined;
       const resolved: [number, number] = [0, 0];
       const session = openScenarioRoom({
-        scenario: id,
+        scenario: plan.fixture,
         seed: 412,
         humanDeck: { mainDeck: [...deck.decklist.mainDeck], eggDeck: [...deck.decklist.eggDeck] },
         botDeckId: "bt26-dgo-2026-08-28-8-plutomon",

@@ -47,7 +47,7 @@ All Vitest commands used `--maxWorkers=1 --no-file-parallelism`. Changes are loc
   security-search entry, and a paid play that is affordable only after Assembly. The retained
   Wizardmon and reveal regressions cover self-play and `RevealAdd`; the Mervamon tracer also proves
   its material is attached before Aegiochusmon: Dark opens its On Play decision.
-- `/dev/arena?scenario=arena-mervamon-effect-assembly` stages the reported Mervamon → Dark from
+- `pnpm scenario open mervamon-effect-assembly` stages the reported Mervamon → Dark from
   trash flow for manual verification with a valid Assembly material.
 - This follow-up is a targeted engine correction. It does not recalculate any collection score or
   claim a new full-engine certification.

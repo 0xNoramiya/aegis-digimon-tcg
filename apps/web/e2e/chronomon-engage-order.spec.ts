@@ -1,3 +1,5 @@
+import fixtureChronomonEngageOrder from "../../api/src/engine/scenarios/chronomon-engage-order.fixture";
+import { fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
 test("Chronomon presents the first security check before Engage and ends the turn after the second attack", async ({
@@ -5,7 +7,7 @@ test("Chronomon presents the first security check before Engage and ends the tur
   page,
 }) => {
   test.setTimeout(120_000);
-  await scenario.open("arena-chronomon-engage-order");
+  await scenario.openFixture(fixtureChronomonEngageOrder);
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
   const initial = await scenario.snapshot();
   const host = initial.players[0]!.battleArea.find((p) => p.topCard.cardId === "BT26-013")!;
@@ -25,7 +27,8 @@ test("Chronomon presents the first security check before Engage and ends the tur
       if (d.kind === "orderTriggers")
         return { triggerCardId: d.options.triggerCardIds?.includes("BT26-015") ? "BT26-015" : undefined };
       if (d.kind === "chooseOption") return { choice: 1 };
-      if (d.options.candidateInstanceIds?.includes("engage-filler-0")) return { instanceId: "engage-filler-0" };
+      if (d.options.candidateInstanceIds?.includes(fixtureInstanceId("engage-filler-0-card")))
+        return { instanceId: fixtureInstanceId("engage-filler-0-card") };
       return {};
     },
   );

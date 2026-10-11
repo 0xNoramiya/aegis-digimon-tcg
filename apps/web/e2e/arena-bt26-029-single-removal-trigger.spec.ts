@@ -1,15 +1,14 @@
+import fixtureBt26029SingleRemovalTrigger from "../../api/src/engine/scenarios/bt26-029-single-removal-trigger.fixture";
+import { fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
-const HOLY = "dev-bt26-029-holy";
+const HOLY = fixtureInstanceId("bt26-029-holy-card");
 
 // Feedback #20 follow-up (match 023effb9): one security trash listed Aegiochusmon: Holy's
 // "[All Turns] [Once Per Turn] When your security stack is removed from" effect twice in the
 // order prompt. Kari Kamiya reacts to the same removal, so a correct prompt lists each card once.
-test("feedback #20 follow-up: Aegiochusmon: Holy appears once in the order prompt and resolves once", async ({
-  scenario,
-  page,
-}) => {
-  await scenario.open("arena-bt26-029-single-removal-trigger");
+test("follow-up: Aegiochusmon: Holy appears once in the order prompt and resolves once", async ({ scenario, page }) => {
+  await scenario.openFixture(fixtureBt26029SingleRemovalTrigger);
   await scenario.resolveUntil((s) => s.phase === "Main" && s.turnSeat === 0 && !s.pendingDecision);
 
   await scenario.play("Aegiochusmon: Holy", "Digimon");

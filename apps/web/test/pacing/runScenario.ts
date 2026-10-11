@@ -294,7 +294,7 @@ export async function runScenario(options: RunOptions): Promise<Recording> {
   };
 
   const room = openScenarioRoom({
-    scenario: plan.id,
+    scenario: plan.fixture,
     seed: options.seed ?? 7,
     humanDeck: deckOf(HUMAN_DECK_ID),
     botDeckId: BOT_DECK_ID,

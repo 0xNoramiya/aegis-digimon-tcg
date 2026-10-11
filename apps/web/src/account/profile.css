@@ -872,3 +872,9 @@
     padding: var(--ds-space-4);
   }
 }
+
+.profile-rate-hint {
+  margin: 0;
+  color: var(--ds-text-3);
+  font-size: 0.75rem;
+}

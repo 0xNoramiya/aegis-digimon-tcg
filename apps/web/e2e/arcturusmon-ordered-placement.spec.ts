@@ -1,10 +1,11 @@
+import fixtureP240ArcturusmonOrderedPlacement from "../../api/src/engine/scenarios/p240-arcturusmon-ordered-placement.fixture";
 import { test, expect } from "./scenario-page";
 
 test("Arcturusmon orders recovered sources after De-Digivolve and preserves the chosen bottom order", async ({
   scenario,
   page,
 }) => {
-  await scenario.open("arena-p240-arcturusmon-ordered-placement");
+  await scenario.openFixture(fixtureP240ArcturusmonOrderedPlacement);
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
   const initial = await scenario.snapshot();
   const base = initial.players[0]!.battleArea.find((p) => p.topCard.cardId === "EX12-014")!;

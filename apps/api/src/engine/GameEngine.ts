@@ -3,7 +3,7 @@ import { CardKind, EffectTiming, GameState, type CardInstance, type Seat } from 
 import { buildCombatHooks } from "./gameEngine/combatHooks.js";
 import type { CardColor, Permanent, ZoneRef } from "@aegis/shared";
 import type { Client } from "colyseus";
-import type { DevScenarioId } from "./devScenario.js";
+import type { ScenarioFixture } from "./scenario/types.js";
 import type { VisibilityZone } from "./state/access.js";
 import {
   chooseFirstPlayer,
@@ -23,7 +23,7 @@ import {
   runMulliganWindow,
   runOneTurn,
   seatPlayer,
-  startDevScenario,
+  startScenarioFixture,
   startMatch,
   startTurnLoop,
   syncCounts,
@@ -809,8 +809,8 @@ export class GameEngine {
     return runMatch(this);
   }
 
-  startDevScenario(scenario: DevScenarioId): void {
-    return startDevScenario(this, scenario);
+  startScenarioFixture(fixture: ScenarioFixture): void {
+    return startScenarioFixture(this, fixture);
   }
 
   collectStagedDecks(): [Decklist, Decklist] | undefined {

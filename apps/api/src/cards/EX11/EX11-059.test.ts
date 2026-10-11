@@ -229,7 +229,9 @@ describe("EX11-059 Reina Oumi", () => {
     ).toEqual({ ok: true });
 
     await settle(
-      () => s.state.pendingDecision?.kind === "chooseTargets" && s.state.pendingDecision.decisionId !== costDecision.decisionId,
+      () =>
+        s.state.pendingDecision?.kind === "chooseTargets" &&
+        s.state.pendingDecision.decisionId !== costDecision.decisionId,
     );
     const targetDecision = s.state.pendingDecision!;
     expect(

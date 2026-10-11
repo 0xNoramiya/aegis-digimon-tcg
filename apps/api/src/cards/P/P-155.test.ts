@@ -164,7 +164,7 @@ describe("P-155 Pawn Device", () => {
 });
 
 describe("P-155 Pawn Device — KB Q&A rulings", () => {
-  it("is the placed Option an opponent's \"trash 1 of their Option cards in the battle area\" effect trashes (Q4269)", async () => {
+  it('is the placed Option an opponent\'s "trash 1 of their Option cards in the battle area" effect trashes (Q4269)', async () => {
     const s = setupEngine(
       {
         0: {

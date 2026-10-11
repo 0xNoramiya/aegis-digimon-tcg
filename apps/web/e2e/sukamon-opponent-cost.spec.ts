@@ -1,13 +1,16 @@
+import fixtureSukamonOpponentCost from "../../api/src/engine/scenarios/sukamon-opponent-cost.fixture";
+import { fixtureInstanceId } from "../../api/src/engine/scenario/references";
 import { test, expect } from "./scenario-page";
 
 test.use({ holdBotAfterTurn: 4 });
 
-test("GitHub #5379 / Q7288: Sukamon's inherited cost selects the opposing Sukamon", async ({ scenario, page }) => {
-  await scenario.open("arena-sukamon-opponent-cost");
+test("/ Q7288: Sukamon's inherited cost selects the opposing Sukamon", async ({ scenario, page }) => {
+  await scenario.openFixture(fixtureSukamonOpponentCost);
   await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
   await page.getByRole("button", { name: /^end turn$/i }).click();
   await scenario.resolveUntil(
-    (s) => s.players[1]!.trash.some((c) => c.instanceId === "report-gaia") && !s.pendingDecision,
+    (s) =>
+      s.players[1]!.trash.some((c) => c.instanceId === fixtureInstanceId("report-gaia-card")) && !s.pendingDecision,
     (d) => (d.kind === "chooseTargets" || d.kind === "selectCards" ? { cardId: "BT3-060" } : {}),
   );
   const final = await scenario.snapshot();

@@ -1,6 +1,7 @@
+import fixtureSecurityRevealBeforePrompt from "../../api/src/engine/scenarios/security-reveal-before-prompt.fixture";
 import { test, expect } from "./scenario-page";
 
-const SCENARIO = "arena-feedback28-security-reveal-before-prompt";
+const SCENARIO = fixtureSecurityRevealBeforePrompt;
 const DECOY_PROMPT = "delete this Digimon to prevent the other Digimon's deletion?";
 
 interface ClockSample {
@@ -43,7 +44,7 @@ test.describe("Match timer: the clock pauses for the animations, not the other w
         } else if (document.querySelector('[data-testid="security-clash"]')) seen.duringReveal.push(now);
       }).observe(document, { childList: true, subtree: true, characterData: true, attributes: true });
     }, DECOY_PROMPT);
-    await scenario.open(SCENARIO, "slow");
+    await scenario.openFixture(SCENARIO, "slow");
     await scenario.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
     expect((await scenario.snapshot()).matchTimer).toBe(true);
     const sinduramon = (await scenario.snapshot()).players[0]!.battleArea.find(

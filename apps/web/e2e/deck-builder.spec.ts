@@ -45,7 +45,7 @@ for (const viewport of layoutViewports) {
 }
 
 for (const locale of ["en", "pt-BR"] as const) {
-  test(`1555813766040391700: red Hybrid is searchable in the mobile deck builder (${locale})`, async ({ page }) => {
+  test(`red Hybrid is searchable in the mobile deck builder (${locale})`, async ({ page }) => {
     const t = (key: keyof typeof labels.en | "mobile.applyFilters", params?: { count: number }) =>
       key === "mobile.applyFilters"
         ? locale === "en"

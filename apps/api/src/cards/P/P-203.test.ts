@@ -349,7 +349,10 @@ describe("P-203 Justimon: Accel Arm — KB Q&A rulings", () => {
     const s = setupEngine(
       {
         0: {
-          battleArea: [{ card: "P-203", as: "source" }, { card: "P-035", as: "ownOption" }],
+          battleArea: [
+            { card: "P-203", as: "source" },
+            { card: "P-035", as: "ownOption" },
+          ],
           deck: Array(10).fill("BT1-009"),
         },
         1: {
@@ -374,7 +377,10 @@ describe("P-203 Justimon: Accel Arm — KB Q&A rulings", () => {
     const s = setupEngine(
       {
         0: {
-          battleArea: [{ card: "P-203", as: "source" }, { card: "P-035", as: "ownOption" }],
+          battleArea: [
+            { card: "P-203", as: "source" },
+            { card: "P-035", as: "ownOption" },
+          ],
           deck: Array(10).fill("BT1-009"),
         },
         1: {
@@ -416,16 +422,19 @@ describe("P-203 Justimon: Accel Arm — KB Q&A rulings", () => {
   it.each([
     ["mine", 0, "ownOption"],
     ["the opponent's", 1, "opponentOption"],
-  ] as const)("activates the [All Turns] watcher when %s battle-area Option is trashed (Q5198)", async (_, seat, alias) => {
-    const s = await boardWithOptions();
-    const optionId = s.inst(alias).instanceId;
-    expect(observe(s.engine).isRestricted(s.perm("victim"), "digivolve")).toBe(false);
+  ] as const)(
+    "activates the [All Turns] watcher when %s battle-area Option is trashed (Q5198)",
+    async (_, seat, alias) => {
+      const s = await boardWithOptions();
+      const optionId = s.inst(alias).instanceId;
+      expect(observe(s.engine).isRestricted(s.perm("victim"), "digivolve")).toBe(false);
 
-    await advance(s.engine).verb.trash([optionId], 0);
-    await settle(() => s.state.pendingDecision === undefined);
+      await advance(s.engine).verb.trash([optionId], 0);
+      await settle(() => s.state.pendingDecision === undefined);
 
-    expect(inTrash(s, seat, optionId)).toBe(true);
-    expect(observe(s.engine).isRestricted(s.perm("victim"), "digivolve")).toBe(true);
-    expect(observe(s.engine).isRestricted(s.perm("victim"), "attackPlayers")).toBe(true);
-  });
+      expect(inTrash(s, seat, optionId)).toBe(true);
+      expect(observe(s.engine).isRestricted(s.perm("victim"), "digivolve")).toBe(true);
+      expect(observe(s.engine).isRestricted(s.perm("victim"), "attackPlayers")).toBe(true);
+    },
+  );
 });

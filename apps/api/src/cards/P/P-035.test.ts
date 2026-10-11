@@ -95,7 +95,8 @@ describe("P-035 Red Memory Boost! — KB Q&A rulings (checked by BT23-047 Examon
       (event) => event.kind === "effectResolved" && event.sourceCardId === "P-035",
     );
     const examonTriggered = s.events.findIndex(
-      (event) => event.kind === "effectTriggered" && event.sourceCardId === "BT23-047" && event.timing === "whenSecurityRemoved",
+      (event) =>
+        event.kind === "effectTriggered" && event.sourceCardId === "BT23-047" && event.timing === "whenSecurityRemoved",
     );
     expect(placedFromSecurity).toBeGreaterThan(-1);
     expect(examonTriggered).toBeGreaterThan(placedFromSecurity);

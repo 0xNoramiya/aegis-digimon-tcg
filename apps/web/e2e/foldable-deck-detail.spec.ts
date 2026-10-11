@@ -61,9 +61,7 @@ for (const pointer of ["mouse", "touch"] as const) {
   test.describe(pointer, () => {
     test.use({ hasTouch: pointer === "touch" });
     for (const viewport of viewports) {
-      test(`1557582869973696582: detail artwork stays reachable at ${viewport.width}x${viewport.height}`, async ({
-        page,
-      }, testInfo) => {
+      test(`detail artwork stays reachable at ${viewport.width}x${viewport.height}`, async ({ page }, testInfo) => {
         await page.setViewportSize(viewport);
         await page.addInitScript(() => localStorage.setItem("aegis:locale", "en"));
         await page.goto("/e2e/deck-builder.html", { waitUntil: "domcontentloaded" });
@@ -142,7 +140,7 @@ for (const pointer of ["mouse", "touch"] as const) {
   });
 }
 
-test("1557582869973696582: desktop pool hover still previews cards", async ({ page }) => {
+test("desktop pool hover still previews cards", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.addInitScript(() => localStorage.setItem("aegis:locale", "en"));
   await page.goto("/e2e/deck-builder.html", { waitUntil: "domcontentloaded" });

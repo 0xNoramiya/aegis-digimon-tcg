@@ -1,13 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 import { Decoder } from "@colyseus/schema";
 import { ALL_FAMOUS_DECKS } from "@aegis/shared";
+import type { GameState } from "@aegis/shared/schema/GameState";
 import { runBotMatch } from "./matchHarness.js";
 
 describe("bot match client projections", () => {
   it("records a decoder warning as a projection failure even if both players survive", async () => {
     const decode = Decoder.prototype.decode;
     const warning = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    const injected = vi.spyOn(Decoder.prototype, "decode").mockImplementationOnce(function (...args) {
+    const injected = vi.spyOn(Decoder.prototype, "decode").mockImplementationOnce(function (
+      this: Decoder<GameState>,
+      ...args
+    ) {
       const changes = decode.apply(this, args);
       console.warn("projection decoder regression diagnostic");
       return changes;

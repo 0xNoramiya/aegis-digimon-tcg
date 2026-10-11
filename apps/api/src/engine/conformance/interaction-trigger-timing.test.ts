@@ -12,7 +12,7 @@ import "../../cards/index.js";
  *
  * Each describe block proves one rule with real card IDs. Seed cases from player reports
  * that already have a behavioral regression elsewhere are listed here instead of copied:
- * - EX13 Magnamon end-of-turn timing and Reboot: `ex13MagnamonEndTurnScenario.test.ts`.
+ * - EX13 Magnamon end-of-turn timing and Reboot: `ex13-magnamon-end-turn.test.ts`.
  * - KingSukamon ordering inside an Option body: `cards/EX13/EX13-031.test.ts`.
  * - Analogman against every redirect card: `opponentAttackRedirectOrdering.test.ts`.
  */

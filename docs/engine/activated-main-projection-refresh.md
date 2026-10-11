@@ -21,12 +21,12 @@ The engine itself accepted the attack. A harness run of the same board shows `ha
 
 ## Evidence
 
-| Case                                                                    | Test                                                                            | Before the fix          | After the fix                                             |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ----------------------- | --------------------------------------------------------- |
-| BT13-110 Delay plays BT20-102 from King Drasil with two BT20-091 Tamers | `BT13-110.test.ts` "publishes the Delay Rush…"                                  | `keywords` lacks Rush   | Rush projected, not summoning sick, can attack the player |
-| Same, through the live turn loop                                        | `bt13RoyalPurgeDelayRushScenario.test.ts` (`arena-bt13-royal-purge-delay-rush`) | `keywords` lacks Rush   | passes                                                    |
-| BT23-030 Etemon `[Main]` play, then Reboot and Blocker                  | `BT23-030.test.ts` "publishes the granted Reboot and Blocker…"                  | `keywords = [Alliance]` | Reboot and Blocker projected                              |
-| BT22-010 Meramon `[Main]` Raid and Piercing, attack declined            | `BT22-010.test.ts` "publishes Raid and Piercing…"                               | `keywords = []`         | Raid and Piercing projected                               |
+| Case                                                                    | Test                                                                             | Before the fix          | After the fix                                             |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------- | --------------------------------------------------------- |
+| BT13-110 Delay plays BT20-102 from King Drasil with two BT20-091 Tamers | `BT13-110.test.ts` "publishes the Delay Rush…"                                   | `keywords` lacks Rush   | Rush projected, not summoning sick, can attack the player |
+| Same, through the live turn loop                                        | `bt13-royal-purge-delay-rush.test.ts` (`bt13-royal-purge-delay-rush.fixture.ts`) | `keywords` lacks Rush   | passes                                                    |
+| BT23-030 Etemon `[Main]` play, then Reboot and Blocker                  | `BT23-030.test.ts` "publishes the granted Reboot and Blocker…"                   | `keywords = [Alliance]` | Reboot and Blocker projected                              |
+| BT22-010 Meramon `[Main]` Raid and Piercing, attack declined            | `BT22-010.test.ts` "publishes Raid and Piercing…"                                | `keywords = []`         | Raid and Piercing projected                               |
 
 Options used from the hand are not affected: they resolve inside the `OnUseOption` timing window, which already recomputes.
 

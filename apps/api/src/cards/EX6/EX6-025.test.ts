@@ -14,6 +14,115 @@ import {
 } from "./journeyWest.testSupport.js";
 
 describe("EX6-025 Sanzomon", () => {
+  it("Discord 1558813188479262720: refuses an unrelated revealed card and limits each named slot to one", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          hand: [
+            { card: "EX6-025", as: "sanzo" },
+            { card: "EX6-024", as: "material" },
+          ],
+          deck: [
+            { card: "EX6-023", as: "gokuA" },
+            { card: "EX6-023", as: "gokuB" },
+            { card: "BT1-009", as: "unrelated" },
+            "BT1-010",
+            "BT1-011",
+          ],
+        },
+      },
+      { autoAcceptOptional: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "playCard",
+        instanceId: s.inst("sanzo").instanceId,
+        digiXros: { materialInstanceIds: [s.inst("material").instanceId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    const decision = s.decisions.findLast(({ req }) => req.decisionId === s.state.pendingDecision!.decisionId)!.req;
+    const gokuIds = [s.inst("gokuA").instanceId, s.inst("gokuB").instanceId];
+    expect(decision.options?.candidateInstanceIds).toEqual(gokuIds);
+    const respond = (instanceIds: string[]) =>
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: decision.decisionId,
+        response: { kind: "selectCards", instanceIds },
+      });
+    expect(respond([s.inst("unrelated").instanceId]).ok).toBe(false);
+    expect(decision.options?.max).toBe(1);
+    expect(s.state.pendingDecision?.decisionId).toBe(decision.decisionId);
+    expect(respond([gokuIds[0]!])).toEqual({ ok: true });
+    const rest = [
+      s.inst("gokuB").instanceId,
+      s.inst("unrelated").instanceId,
+      s.state.players[0]!.deck.find((card) => card.cardId === "BT1-010")!.instanceId,
+    ];
+    await settle(() => !s.state.pendingDecision && s.engine.mainVerbContinuationsInFlight === 0);
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual([gokuIds[0]]);
+    expect(s.state.players[0]!.deck.slice(1).map((card) => card.instanceId)).toEqual(rest);
+    expect(s.state.memory).toBe(5);
+  });
+  it.each([
+    {
+      revealed: ["BT1-009", "BT1-010", "EX6-025", "BT1-062"],
+      added: [],
+      bottom: ["BT1-009", "BT1-010", "EX6-025", "BT1-062"],
+    },
+    {
+      revealed: ["EX6-023", "EX6-023", "EX6-024", "BT1-009"],
+      added: ["EX6-023", "EX6-024"],
+      bottom: ["EX6-023", "BT1-009"],
+    },
+    {
+      revealed: ["EX6-026", "EX6-031", "BT1-009", "EX6-025"],
+      added: ["EX6-026", "EX6-031"],
+      bottom: ["BT1-009", "EX6-025"],
+    },
+  ])(
+    "Discord 1558813188479262720: adds only one of each exact named card from $revealed",
+    async ({ revealed, added, bottom }) => {
+      const s = setupEngine(
+        {
+          0: {
+            hand: [
+              { card: "EX6-025", as: "sanzo" },
+              { card: "EX6-024", as: "material" },
+            ],
+            deck: [...revealed, "BT1-011"],
+          },
+        },
+        { autoAcceptOptional: true, autoSelectCards: true },
+      );
+      s.state.memory = 10;
+      await s.ready();
+      expect(
+        s.engine.applyIntent(0, {
+          type: "playCard",
+          instanceId: s.inst("sanzo").instanceId,
+          digiXros: { materialInstanceIds: [s.inst("material").instanceId] },
+        }),
+      ).toEqual({ ok: true });
+      await settle(
+        () =>
+          s.state.players[0]!.battleArea.length === 1 &&
+          !s.state.pendingDecision &&
+          s.engine.mainVerbContinuationsInFlight === 0,
+      );
+      expect(s.state.memory).toBe(5);
+      expect(s.perm("sanzo").stack.map((card) => card.instanceId)).toEqual([s.inst("material").instanceId]);
+      expect(s.state.players[0]!.hand.map((card) => card.cardId).sort()).toEqual([...added].sort());
+      expect(s.state.players[0]!.deck[0]!.cardId).toBe("BT1-011");
+      expect(
+        s.state.players[0]!.deck.slice(1)
+          .map((card) => card.cardId)
+          .sort(),
+      ).toEqual([...bottom].sort());
+    },
+  );
   it("during DigiXros grants Security Attack -1 and reveals four named cards", () => {
     expect(compiled.effects?.find((entry) => entry.trigger === "OnPlay")?.actions).toMatchObject([
       {

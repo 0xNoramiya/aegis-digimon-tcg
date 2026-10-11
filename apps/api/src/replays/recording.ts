@@ -39,6 +39,7 @@ export function recordingState(state: GameState): GameState {
         card.cardId = "";
         card.artId = "";
         card.activatableEffectsJson = "";
+        card.trashOriginCardId = "";
         card.digivolveRoutes = [] as never;
         card.dnaDigivolveRoutes = [] as never;
         card.appFusionRoutes = [] as never;

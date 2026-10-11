@@ -1,0 +1,111 @@
+import type { ScenarioFixture } from "../scenario/types.js";
+import { dealtCards } from "../scenario/dealtCards.js";
+import { RED_DECK } from "../testDecks.js";
+
+const fixture: ScenarioFixture = {
+  name: "paildramon-dna-inheritance",
+  board: {
+    "0": {
+      hand: [
+        { card: "BT12-022", as: "paildramon-dna-exveemon-card", faceUp: false },
+        { card: "BT12-028", as: "paildramon-dna-paildramon-card", faceUp: false },
+      ],
+      deck: [
+        { card: "BT12-047", as: "own-deck-slot-8-card", artId: "BT12-047" },
+        { card: "BT16-025", as: "own-deck-slot-31-card", artId: "BT16-025" },
+        { card: "BT12-022", as: "own-deck-slot-15-card", artId: "BT12-022" },
+        { card: "BT12-021", as: "own-deck-slot-1-card", artId: "BT12-021" },
+        { card: "BT12-050", as: "own-deck-slot-20-card", artId: "BT12-050" },
+        { card: "P-117", as: "own-deck-slot-4-card", artId: "P-117" },
+        { card: "BT16-085", as: "own-deck-slot-43-card", artId: "BT16-085" },
+        { card: "BT12-047", as: "own-deck-slot-9-card", artId: "BT12-047" },
+        { card: "BT12-050", as: "own-deck-slot-22-card", artId: "BT12-050" },
+        { card: "BT12-022", as: "own-deck-slot-17-card", artId: "BT12-022" },
+        { card: "AD1-011", as: "own-deck-slot-26-card", artId: "AD1-011" },
+        { card: "P-118", as: "own-deck-slot-12-card", artId: "P-118" },
+        { card: "BT17-097", as: "own-deck-slot-47-card", artId: "BT17-097" },
+        { card: "AD1-024", as: "own-deck-slot-34-card", artId: "AD1-024" },
+        { card: "P-117", as: "own-deck-slot-5-card", artId: "P-117" },
+        { card: "BT12-047", as: "own-deck-slot-11-card", artId: "BT12-047" },
+        { card: "BT16-025", as: "own-deck-slot-30-card", artId: "BT16-025" },
+        { card: "ST9-06", as: "own-deck-slot-35-card", artId: "ST9-06" },
+        { card: "LM-036", as: "own-deck-slot-48-card", artId: "LM-036" },
+        { card: "AD1-011", as: "own-deck-slot-25-card", artId: "AD1-011" },
+        { card: "BT12-021", as: "own-deck-slot-0-card", artId: "BT12-021" },
+        { card: "AD1-011", as: "own-deck-slot-27-card", artId: "AD1-011" },
+        { card: "BT16-085", as: "own-deck-slot-44-card", artId: "BT16-085" },
+        { card: "BT16-025", as: "own-deck-slot-29-card", artId: "BT16-025" },
+        { card: "BT3-093", as: "own-deck-slot-40-card", artId: "BT3-093" },
+        { card: "P-117", as: "own-deck-slot-7-card", artId: "P-117" },
+        { card: "AD1-024", as: "own-deck-slot-32-card", artId: "AD1-024" },
+        { card: "BT21-037", as: "own-deck-slot-19-card", artId: "BT21-037" },
+        { card: "BT12-021", as: "own-deck-slot-2-card", artId: "BT12-021" },
+        { card: "BT16-085", as: "own-deck-slot-41-card", artId: "BT16-085" },
+        { card: "BT17-097", as: "own-deck-slot-46-card", artId: "BT17-097" },
+        { card: "BT12-022", as: "own-deck-slot-14-card", artId: "BT12-022" },
+        { card: "BT12-022", as: "own-deck-slot-16-card", artId: "BT12-022" },
+        { card: "ST9-06", as: "own-deck-slot-36-card", artId: "ST9-06" },
+        { card: "BT3-093", as: "own-deck-slot-39-card", artId: "BT3-093" },
+        { card: "BT12-050", as: "own-deck-slot-23-card", artId: "BT12-050" },
+        { card: "BT16-025", as: "own-deck-slot-28-card", artId: "BT16-025" },
+        { card: "LM-036", as: "own-deck-slot-49-card", artId: "LM-036" },
+        { card: "BT12-021", as: "own-deck-slot-3-card", artId: "BT12-021" },
+        { card: "P-117", as: "own-deck-slot-6-card", artId: "P-117" },
+        { card: "ST9-06", as: "own-deck-slot-37-card", artId: "ST9-06" },
+        { card: "BT21-037", as: "own-deck-slot-18-card", artId: "BT21-037" },
+        { card: "AD1-024", as: "own-deck-slot-33-card", artId: "AD1-024" },
+        { card: "ST9-09", as: "own-deck-slot-24-card", artId: "ST9-09" },
+        { card: "BT12-050", as: "own-deck-slot-21-card", artId: "BT12-050" },
+      ],
+      eggDeck: [
+        { card: "BT12-002", as: "own-deck-slot-50-card", artId: "BT12-002" },
+        { card: "BT12-002", as: "own-deck-slot-51-card", artId: "BT12-002" },
+        { card: "BT12-002", as: "own-deck-slot-52-card", artId: "BT12-002" },
+      ],
+      security: [
+        { card: "BT16-085", as: "own-deck-slot-42-card", artId: "BT16-085" },
+        { card: "BT12-047", as: "own-deck-slot-10-card", artId: "BT12-047" },
+        { card: "ST2-13", as: "own-deck-slot-45-card", artId: "ST2-13" },
+        { card: "BT3-093", as: "own-deck-slot-38-card", artId: "BT3-093" },
+        { card: "BT16-040", as: "own-deck-slot-13-card", artId: "BT16-040" },
+      ],
+      battleArea: [
+        {
+          card: "BT21-037",
+          as: "own-paildramon-dna-lighdramon",
+          top: { card: "BT21-037", as: "own-card-paildramon-dna-lighdramon-card" },
+          dp: 6000,
+          placedByEffect: false,
+          under: [
+            { card: "BT12-002", as: "own-source-paildramon-dna-lighdramon-0-card" },
+            { card: "BT12-021", as: "own-source-paildramon-dna-lighdramon-1-card" },
+          ],
+        },
+      ],
+    },
+    "1": {
+      deck: dealtCards({
+        deck: RED_DECK,
+        seat: 1,
+        indices: [
+          22, 45, 44, 21, 34, 18, 39, 24, 17, 26, 43, 47, 25, 19, 8, 3, 27, 36, 10, 37, 4, 11, 1, 31, 38, 7, 6, 15, 29,
+          35, 28, 41, 5, 48, 13, 2, 46, 0, 32, 23, 30, 20, 16, 12, 40, 49,
+        ],
+      }),
+      eggDeck: dealtCards({ deck: RED_DECK, seat: 1, indices: [4, 2, 3, 0, 1], egg: true, aliasOffset: 50 }),
+      security: [
+        { card: "BT1-010", as: "paildramon-dna-weak-security-card" },
+        { card: "BT1-020", as: "opponent-deck-slot-33-card", artId: "BT1-020", fromDeck: { seat: 1, index: 33 } },
+        { card: "BT1-011", as: "opponent-deck-slot-9-card", artId: "BT1-011", fromDeck: { seat: 1, index: 9 } },
+        { card: "BT1-017", as: "opponent-deck-slot-42-card", artId: "BT1-017", fromDeck: { seat: 1, index: 42 } },
+        { card: "BT1-012", as: "opponent-deck-slot-14-card", artId: "BT1-012", fromDeck: { seat: 1, index: 14 } },
+      ],
+    },
+  },
+  memory: 4,
+  turnSeat: 0,
+  turnCount: 0,
+  isFirstPlayersFirstTurn: false,
+};
+
+export default fixture;

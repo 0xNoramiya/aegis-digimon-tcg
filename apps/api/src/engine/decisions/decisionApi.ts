@@ -102,6 +102,7 @@ function buildSeatScopedApi(
     timing: ctx.activeTiming,
     ...(ctx.activeEffectIsInherited === true ? { isInherited: true } : {}),
     effectText: ctx.activeEffectText,
+    ...(ctx.activeEffectTextCardId !== undefined ? { effectTextCardId: ctx.activeEffectTextCardId } : {}),
     ...(ctx.activeEffectKey !== undefined ? { effectKey: ctx.activeEffectKey } : {}),
     ...(ctx.activeEffectTextPart !== undefined ? { effectTextPart: ctx.activeEffectTextPart } : {}),
     ...(ctx.activeSelectionContext !== undefined ? { selectionContext: ctx.activeSelectionContext } : {}),

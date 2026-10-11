@@ -1,0 +1,82 @@
+.replay-recording-trigger {
+  position: absolute;
+  z-index: 4;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(116px, calc(env(safe-area-inset-right) + 104px));
+}
+.replay-player .replay-player__heading {
+  max-width: min(520px, calc(100% - 188px));
+}
+.replay-player--recording > .replay-player__heading,
+.replay-player--recording > .replay-player__tools,
+.replay-player--recording > .replay-controls {
+  display: none;
+}
+.replay-recording-stop {
+  position: absolute;
+  z-index: 4;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  min-height: 44px;
+  max-width: calc(100% - 24px);
+  opacity: 0.6;
+}
+.replay-recording-stop:hover,
+.replay-recording-stop:focus-visible {
+  opacity: 1;
+}
+.replay-recording-dialog {
+  width: min(480px, calc(100vw - 24px));
+  box-sizing: border-box;
+  max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  display: grid;
+  gap: var(--ds-space-4);
+}
+.replay-recording-dialog h2,
+.replay-recording-dialog p {
+  margin: 0;
+}
+.replay-recording-dialog > *,
+.replay-recording-dialog details > * {
+  min-width: 0;
+}
+.replay-recording-dialog .aegis-button {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  min-height: 44px;
+  height: auto;
+}
+.replay-recording-dialog p,
+.replay-recording-dialog li {
+  font-size: var(--ds-text-sm);
+  line-height: 1.5;
+  color: var(--ds-text-2);
+}
+.replay-recording-dialog [role="alert"] {
+  color: var(--ds-danger);
+}
+.replay-recording-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+}
+.replay-recording-dialog a.aegis-button {
+  text-decoration: none;
+  min-height: 44px;
+}
+.replay-recording-dialog details {
+  display: grid;
+  border-top: 1px solid var(--ds-line);
+  padding-top: var(--ds-space-3);
+}
+.replay-recording-dialog summary {
+  cursor: pointer;
+  min-height: 44px;
+  align-content: center;
+}
+.replay-recording-dialog details > p,
+.replay-recording-dialog details > button {
+  margin-top: var(--ds-space-3);
+}

@@ -2622,6 +2622,29 @@ describe("Search action from another player's hand", () => {
   });
 });
 
+it("feedback #51: copied forced attacks carry donor display text without replacing the host source", async () => {
+  const host = makeFakePermanent({ permanentId: "gx-host", controllerSeat: 0 });
+  const ctx = makeContext({
+    source: makeSource({ cardId: "BT10-112", permanent: () => host }),
+    recorder: { calls: [] },
+  });
+  ctx.activeTiming = "WhenDigivolving";
+  ctx.activeEffectText = "Copied attack clause";
+  ctx.activeEffectTextPart = "This Digimon attacks.";
+  ctx.activeEffectTextCardId = "BT10-016";
+  let provenance;
+  ctx.fx.forceAttack = async (_id, options) => {
+    provenance = options?.decisionProvenance;
+  };
+  await runAction(ctx, { kind: "Attack", target: { isSelf: true, count: 1, filter: { isSelfRef: true } } });
+  expect(provenance).toMatchObject({
+    sourceCardId: "BT10-112",
+    sourcePermanentId: "gx-host",
+    effectTextCardId: "BT10-016",
+    effectTextPart: "This Digimon attacks.",
+  });
+});
+
 describe("multiple borrowed effects", () => {
   it("chooses and processes each borrowed effect before choosing the next", async () => {
     const recorder: Recorder = { calls: [] };

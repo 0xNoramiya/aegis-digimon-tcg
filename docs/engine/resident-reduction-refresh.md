@@ -29,6 +29,6 @@ When a resident reduction is registered again, the fresh record replaces the exi
 - `subtriggers.test.ts`: re-registering a resident reduction replaces its amount.
 - `BT13-007.test.ts`: two same-name egg sources after an earlier play charge Jesmon 6 (pre-fix 7); three eggs and a Jesmon source charge 4 (pre-fix 6). The existing next-turn reset test expected the stale count (cost 2 with three sources) and now expects cost 0.
 - `EX2-007.test.ts`: Mother D-Reaper counts an ADR-02 Searcher placed after an earlier play (cost 1, pre-fix 2).
-- `bt13KingDrasilSourceCountScenario.test.ts` and `/dev/arena?scenario=arena-bt13-king-drasil-source-count`: Omekamon's play registers the reducer, its On Play adds a fourth source, and Jesmon then costs 4 (memory 5 to 1; pre-fix 5 to 0).
+- `bt13-king-drasil-source-count.test.ts` and `pnpm scenario open bt13-king-drasil-source-count`: Omekamon's play registers the reducer, its On Play adds a fourth source, and Jesmon then costs 4 (memory 5 to 1; pre-fix 5 to 0).
 
 Other scaled resident reducers share the same seam: EX2-007 (checked above), and the `YourTurn` digivolve reducers BT11-064 and P-076, whose amount scales with the destination's colors through `amountForInto` and is unaffected by board drift.

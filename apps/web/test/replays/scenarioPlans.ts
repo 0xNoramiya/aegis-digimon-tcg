@@ -1,3 +1,7 @@
+import fixtureBt24SilphymonDna from "@aegis-api/engine/scenarios/bt24-silphymon-dna.fixture.js";
+import fixturePhasePacingBotRaisingMove from "@aegis-api/engine/scenarios/phase-pacing-bot-raising-move.fixture.js";
+import fixtureKeywordPacingRecoveryMany from "@aegis-api/engine/scenarios/keyword-pacing-recovery-many.fixture.js";
+import fixtureKeywordPacingDrawMany from "@aegis-api/engine/scenarios/keyword-pacing-draw-many.fixture.js";
 import { Phase, type GameState, type Intent } from "@aegis/shared";
 import { SCENARIO_PLANS, SKIP, type ScenarioPlan } from "../pacing/scenarios";
 import { REPLAY_RECORDINGS } from "./recordings";
@@ -14,7 +18,8 @@ const play =
 export const REPLAY_PLANS: readonly ScenarioPlan[] = [
   ...SCENARIO_PLANS.filter((plan) => (REPLAY_RECORDINGS as readonly string[]).includes(plan.id)),
   {
-    id: "arena-bt24-silphymon-dna",
+    id: "bt24-silphymon-dna",
+    fixture: fixtureBt24SilphymonDna,
     answers: {},
     maxMs: 150000,
     moves: [
@@ -38,6 +43,7 @@ export const REPLAY_PLANS: readonly ScenarioPlan[] = [
   },
   {
     id: "phase-pacing-bot-raising-move",
+    fixture: fixturePhasePacingBotRaisingMove,
     answers: {},
     maxMs: 150000,
     moves: [passBreeding, passMain],
@@ -45,6 +51,7 @@ export const REPLAY_PLANS: readonly ScenarioPlan[] = [
   },
   {
     id: "keyword-pacing-recovery-many",
+    fixture: fixtureKeywordPacingRecoveryMany,
     answers: {},
     maxMs: 150000,
     moves: [passBreeding, play("BT2-039")],
@@ -52,6 +59,7 @@ export const REPLAY_PLANS: readonly ScenarioPlan[] = [
   },
   {
     id: "keyword-pacing-draw-many",
+    fixture: fixtureKeywordPacingDrawMany,
     answers: {},
     maxMs: 150000,
     moves: [passBreeding, play("BT1-041")],

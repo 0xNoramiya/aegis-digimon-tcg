@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { GameState, PlayerState, Permanent, CardInstance, type Seat, type ServerEvent } from "@aegis/shared";
-import { GameStateAccess } from "./access.js";
+import { GameStateAccess, setTopCard, pushOnStack } from "./access.js";
+
+import { removeLooseInstance } from "../effects/verbs/looseInstances.js";
 
 const CARD_ID = "AD1-001";
 
@@ -163,4 +165,25 @@ describe("GameStateAccess deletion narration", () => {
 
     expect(events).toEqual([]);
   });
+});
+
+describe("trash provenance", () => {
+  it.each(["top", "source"] as const)(
+    "clears the previous trash origin on a direct move to a %s card (#60)",
+    (destination) => {
+      const state = makeState();
+      const player = state.players[0]!;
+      const permanent = makePermanent("host", 0, false);
+      const card = new CardInstance();
+      card.instanceId = "source-option";
+      card.trashOriginCardId = "BT25-083";
+      player.trash.push(card);
+      const removed = removeLooseInstance(state, card.instanceId)!;
+      if (destination === "top") setTopCard(permanent, removed);
+      else pushOnStack(permanent, removed);
+      expect(card.trashOriginCardId).toBe("");
+      expect(player.trash).toHaveLength(0);
+      expect(destination === "top" ? permanent.topCard : permanent.stack[0]).toBe(card);
+    },
+  );
 });

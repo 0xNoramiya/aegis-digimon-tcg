@@ -1,3 +1,4 @@
+import { LocalScenarioHelp } from "./dev/LocalScenarioHelp";
 import { spectatorCodeFromSearch } from "./roomInvite";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { installAudioLifecycle } from "./design/sound";
@@ -38,7 +39,6 @@ import { NotificationBell } from "./notifications/NotificationBell";
 import { useNotificationInbox } from "./notifications/useNotificationInbox";
 import { pathForRoute, routeFromPathname, type AppRoute } from "./routes";
 import { roomCodeFromSearch } from "./roomInvite";
-import { isBattleLabPath } from "./dev/BattleLab";
 import { isUiPreviewPath } from "./prototype/routes";
 import { SEQUENTIAL_PACING_ENABLED } from "./features";
 import { clearReconnectSession, loadReconnectSession } from "./net/reconnectSession";
@@ -61,9 +61,6 @@ const CommunityScreen = lazy(() =>
 const GameScreen = lazy(() => import("./game/GameScreen").then((m) => ({ default: m.GameScreen })));
 const CardEffectsDemo = lazy(() => import("./dev/CardEffectsDemo").then((m) => ({ default: m.CardEffectsDemo })));
 const BoardShowcase = lazy(() => import("./dev/BoardShowcase").then((m) => ({ default: m.BoardShowcase })));
-const BattleLab = lazy(() => import("./dev/BattleLab").then((m) => ({ default: m.BattleLab })));
-const LiveArenaDemo = lazy(() => import("./dev/LiveArenaDemo").then((m) => ({ default: m.LiveArenaDemo })));
-const EffectsLab = lazy(() => import("./dev/EffectsLab").then((m) => ({ default: m.EffectsLab })));
 const EffectPromptGallery = lazy(() =>
   import("./dev/EffectPromptGallery").then((m) => ({ default: m.EffectPromptGallery })),
 );
@@ -168,16 +165,16 @@ export function App() {
           <CardEffectsDemo cardId={labCardId} />
         ) : /^\/dev\/arena\/?$/i.test(pathname) ? (
           <Stage>
-            {new URLSearchParams(window.location.search).get("mode") === "visual" ? <ArenaDemo /> : <LiveArenaDemo />}
+            <ArenaDemo />
           </Stage>
         ) : isEffectsLabPath(pathname) ? (
           <Stage>
-            <EffectsLab />
+            <LocalScenarioHelp />
           </Stage>
         ) : isBoardShowcasePath(pathname) ? (
           <BoardShowcase />
-        ) : isBattleLabPath(pathname) ? (
-          <BattleLab />
+        ) : /^\/dev\/battle\/?$/i.test(pathname) ? (
+          <LocalScenarioHelp />
         ) : isMobileComponentsLabPath(pathname) ? (
           <MobileComponentsLab />
         ) : isUiPreviewPath(pathname) ? (

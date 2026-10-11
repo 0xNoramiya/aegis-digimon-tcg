@@ -361,6 +361,72 @@ describe("trash [Main] activation", () => {
     expect(screen.queryByRole("dialog", { name: "MaloMyotismon" })).toBeNull();
   });
 
+  it.each([false, true])("#41 sorts duplicate copies without swapping their activations (sheet=%s)", (sheet) => {
+    const second = { ...malomyotismon, instanceId: "second-copy" };
+    const onActivateEffect = vi.fn<(effect: ActivatableEntry) => void>();
+    render(
+      <I18nProvider>
+        <TrashViewerOverlay
+          cardIds={["EX10-011", "ST1-03", "EX10-011"]}
+          effects={[[malomyotismon], [], [second]]}
+          title="Your trash"
+          sheet={sheet}
+          onActivateEffect={onActivateEffect}
+          onClose={noop}
+        />
+      </I18nProvider>,
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Sort trash" }), { target: { value: "name" } });
+    const row = document.querySelector(sheet ? ".trash-sheet__row" : ".trash-viewer__slot")!;
+    expect(row.querySelector("img")!.getAttribute("src")).toContain("ST1-03");
+    expect(screen.getByText("copy 1 of 2")).toBeTruthy();
+    expect(screen.getByText("copy 2 of 2")).toBeTruthy();
+    const copies = screen.getAllByRole("button", { name: /MaloMyotismon/ });
+    fireEvent.click(copies[0]!);
+    fireEvent.click(screen.getByRole("button", { name: "Activate [Main] effect: MaloMyotismon" }));
+    expect(onActivateEffect).toHaveBeenLastCalledWith(second);
+    fireEvent.click(copies[1]!);
+    fireEvent.click(screen.getByRole("button", { name: "Activate [Main] effect: MaloMyotismon" }));
+    expect(onActivateEffect).toHaveBeenLastCalledWith(malomyotismon);
+    fireEvent.change(screen.getByRole("combobox", { name: "Sort trash" }), { target: { value: "recent" } });
+    expect(
+      document.querySelector(sheet ? ".trash-sheet__row img" : ".trash-viewer__slot img")!.getAttribute("src"),
+    ).toContain("EX10-011");
+  });
+
+  it("keeps the confirmed physical copy when live trash positions change", () => {
+    const second = { ...malomyotismon, instanceId: "second-copy" };
+    const onActivateEffect = vi.fn<(effect: ActivatableEntry) => void>();
+    const props = {
+      title: "Your trash",
+      onClose: noop,
+      onActivateEffect,
+      cardIds: ["EX10-011", "EX10-011"],
+      instanceIds: [malomyotismon.instanceId, second.instanceId],
+      effects: [[malomyotismon], [second]],
+    };
+    const view = render(
+      <I18nProvider>
+        <TrashViewerOverlay {...props} />
+      </I18nProvider>,
+    );
+    fireEvent.click(screen.getAllByRole("button", { name: "MaloMyotismon" })[0]!);
+    view.rerender(
+      <I18nProvider>
+        <TrashViewerOverlay {...props} cardIds={["EX10-011"]} instanceIds={[second.instanceId]} effects={[[second]]} />
+      </I18nProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Activate [Main] effect: MaloMyotismon" }));
+    expect(onActivateEffect).toHaveBeenCalledWith(second);
+    fireEvent.click(screen.getByRole("button", { name: "MaloMyotismon" }));
+    view.rerender(
+      <I18nProvider>
+        <TrashViewerOverlay {...props} cardIds={[]} instanceIds={[]} effects={[]} />
+      </I18nProvider>,
+    );
+    expect(screen.queryByRole("button", { name: "Activate [Main] effect: MaloMyotismon" })).toBeNull();
+  });
+
   it("offers nothing when no trash card projects an effect", () => {
     render(
       <I18nProvider>

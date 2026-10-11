@@ -1,0 +1,101 @@
+import type { ScenarioFixture } from "../scenario/types.js";
+import { dealtCards } from "../scenario/dealtCards.js";
+import { BLUE_DECK, RED_DECK } from "../testDecks.js";
+
+const fixture: ScenarioFixture = {
+  name: "grandis-end-of-attack",
+  board: {
+    "0": {
+      deck: [
+        { card: "BT1-009", as: "deck-0-0-card" },
+        { card: "BT1-009", as: "deck-0-1-card" },
+        { card: "BT1-009", as: "deck-0-2-card" },
+        { card: "BT1-009", as: "deck-0-3-card" },
+        { card: "BT1-009", as: "deck-0-4-card" },
+        { card: "BT1-009", as: "deck-0-5-card" },
+        { card: "BT1-009", as: "deck-0-6-card" },
+        { card: "BT1-009", as: "deck-0-7-card" },
+        { card: "BT1-009", as: "deck-0-8-card" },
+        { card: "BT1-009", as: "deck-0-9-card" },
+        { card: "BT1-009", as: "deck-0-10-card" },
+        { card: "BT1-009", as: "deck-0-11-card" },
+        { card: "BT1-009", as: "deck-0-12-card" },
+        { card: "BT1-009", as: "deck-0-13-card" },
+        { card: "BT1-009", as: "deck-0-14-card" },
+        { card: "BT1-009", as: "deck-0-15-card" },
+        { card: "BT1-009", as: "deck-0-16-card" },
+        { card: "BT1-009", as: "deck-0-17-card" },
+        { card: "BT1-009", as: "deck-0-18-card" },
+        { card: "BT1-009", as: "deck-0-19-card" },
+      ],
+      eggDeck: dealtCards({ deck: BLUE_DECK, seat: 0, indices: [0, 1, 2, 3, 4], egg: true, aliasOffset: 50 }),
+      security: [
+        { card: "BT1-009", as: "security-0-0-card" },
+        { card: "BT1-009", as: "security-0-1-card" },
+        { card: "BT1-009", as: "security-0-2-card" },
+        { card: "BT1-009", as: "security-0-3-card" },
+        { card: "BT1-009", as: "security-0-4-card" },
+      ],
+      battleArea: [
+        {
+          card: "BT9-055",
+          as: "own-host",
+          top: { card: "BT9-055", as: "own-card-host-card" },
+          dp: 12000,
+          placedByEffect: false,
+          under: [
+            { card: "P-075", as: "own-source-host-0-card" },
+            { card: "BT1-083", as: "own-source-host-1-card" },
+          ],
+        },
+      ],
+    },
+    "1": {
+      deck: [
+        { card: "BT1-009", as: "deck-1-0-card" },
+        { card: "BT1-009", as: "deck-1-1-card" },
+        { card: "BT1-009", as: "deck-1-2-card" },
+        { card: "BT1-009", as: "deck-1-3-card" },
+        { card: "BT1-009", as: "deck-1-4-card" },
+        { card: "BT1-009", as: "deck-1-5-card" },
+        { card: "BT1-009", as: "deck-1-6-card" },
+        { card: "BT1-009", as: "deck-1-7-card" },
+        { card: "BT1-009", as: "deck-1-8-card" },
+        { card: "BT1-009", as: "deck-1-9-card" },
+        { card: "BT1-009", as: "deck-1-10-card" },
+        { card: "BT1-009", as: "deck-1-11-card" },
+        { card: "BT1-009", as: "deck-1-12-card" },
+        { card: "BT1-009", as: "deck-1-13-card" },
+        { card: "BT1-009", as: "deck-1-14-card" },
+        { card: "BT1-009", as: "deck-1-15-card" },
+        { card: "BT1-009", as: "deck-1-16-card" },
+        { card: "BT1-009", as: "deck-1-17-card" },
+        { card: "BT1-009", as: "deck-1-18-card" },
+        { card: "BT1-009", as: "deck-1-19-card" },
+      ],
+      eggDeck: dealtCards({ deck: RED_DECK, seat: 1, indices: [0, 1, 2, 3, 4], egg: true, aliasOffset: 50 }),
+      security: [
+        { card: "BT1-009", as: "security-1-0-card" },
+        { card: "BT1-009", as: "security-1-1-card" },
+        { card: "BT1-009", as: "security-1-2-card" },
+        { card: "BT1-009", as: "security-1-3-card" },
+        { card: "BT1-009", as: "security-1-4-card" },
+      ],
+      battleArea: [
+        {
+          card: "BT1-009",
+          as: "opponent-opponent",
+          top: { card: "BT1-009", as: "opponent-card-opponent-card" },
+          dp: 3000,
+          placedByEffect: false,
+        },
+      ],
+    },
+  },
+  memory: 3,
+  turnSeat: 0,
+  turnCount: 0,
+  isFirstPlayersFirstTurn: false,
+};
+
+export default fixture;

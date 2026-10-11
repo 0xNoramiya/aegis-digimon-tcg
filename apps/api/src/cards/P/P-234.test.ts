@@ -103,9 +103,7 @@ describe("P-234 engine behavior", () => {
       }),
     ).toEqual({ ok: true });
     await settle();
-    expect(
-      s.state.players[0]!.hand.some((card) => card.cardId === "BT21-047"),
-    ).toBe(true);
+    expect(s.state.players[0]!.hand.some((card) => card.cardId === "BT21-047")).toBe(true);
   });
 
   it("plays itself from Security", async () => {
@@ -113,20 +111,9 @@ describe("P-234 engine behavior", () => {
       0: { security: [{ card: "P-234", as: "yujin" }] },
     });
     await s.ready();
-    await advance(s.engine).fireForInstance(
-      EffectTiming.SecuritySkill,
-      s.inst("yujin"),
-    );
-    await settle(() =>
-      s.state.players[0]!.battleArea.some(
-        (p) => p.topCard.instanceId === s.inst("yujin").instanceId,
-      ),
-    );
-    expect(
-      s.state.players[0]!.battleArea.some(
-        (p) => p.topCard.instanceId === s.inst("yujin").instanceId,
-      ),
-    ).toBe(true);
+    await advance(s.engine).fireForInstance(EffectTiming.SecuritySkill, s.inst("yujin"));
+    await settle(() => s.state.players[0]!.battleArea.some((p) => p.topCard.instanceId === s.inst("yujin").instanceId));
+    expect(s.state.players[0]!.battleArea.some((p) => p.topCard.instanceId === s.inst("yujin").instanceId)).toBe(true);
   });
 
   it("links a matching hand card after a Digimon's link card is trashed", async () => {
@@ -152,13 +139,7 @@ describe("P-234 engine behavior", () => {
     await advance(s.engine).verb.trash([s.inst("oldLink").instanceId]);
     await settle();
     expect(s.perm("yujin").isSuspended).toBe(true);
-    expect(
-      s
-        .perm("host")
-        .linked.some(
-          (card) => card.instanceId === s.inst("newLink").instanceId,
-        ),
-    ).toBe(true);
+    expect(s.perm("host").linked.some((card) => card.instanceId === s.inst("newLink").instanceId)).toBe(true);
     expect(s.state.memory).toBe(memoryBefore - 1);
   });
 
@@ -178,9 +159,7 @@ describe("P-234 engine behavior", () => {
           deck: ["BT1-009"],
         },
         1: {
-          battleArea: [
-            { card: "BT1-014", as: "defender", suspended: true, dp: 7000 },
-          ],
+          battleArea: [{ card: "BT1-014", as: "defender", suspended: true, dp: 7000 }],
         },
       },
       { autoAcceptOptional: true, autoSelectCards: true },
@@ -197,19 +176,11 @@ describe("P-234 engine behavior", () => {
         },
       }),
     ).toEqual({ ok: true });
-    await settle(
-      () =>
-        !observe(s.engine).isAttacking() &&
-        s.state.pendingDecision === undefined,
-    );
+    await settle(() => !observe(s.engine).isAttacking() && s.state.pendingDecision === undefined);
 
     expect(s.perm("yujin").isSuspended).toBe(true);
-    expect(
-      s.perm("attacker").linked.map(({ instanceId }) => instanceId),
-    ).toEqual([s.inst("newLink").instanceId]);
-    expect(
-      s.state.players[0]!.trash.map(({ instanceId }) => instanceId),
-    ).toContain(s.inst("oldLink").instanceId);
+    expect(s.perm("attacker").linked.map(({ instanceId }) => instanceId)).toEqual([s.inst("newLink").instanceId]);
+    expect(s.state.players[0]!.trash.map(({ instanceId }) => instanceId)).toContain(s.inst("oldLink").instanceId);
     expect(s.state.players[1]!.battleArea).toHaveLength(0);
   });
 
@@ -248,23 +219,15 @@ describe("P-234 engine behavior", () => {
     ).toEqual({
       ok: true,
     });
-    await settle(
-      () =>
-        s.state.pendingDecision === undefined &&
-        s.perm("holder").linked.length === 0,
-    );
+    await settle(() => s.state.pendingDecision === undefined && s.perm("holder").linked.length === 0);
 
     expect(s.perm("yujin").isSuspended).toBe(false);
-    expect(
-      s.state.players[0]!.hand.map(({ instanceId }) => instanceId),
-    ).toContain(s.inst("newLink").instanceId);
-    expect(
-      s.state.players[0]!.trash.map(({ instanceId }) => instanceId),
-    ).toContain(s.inst("paymentLink").instanceId);
+    expect(s.state.players[0]!.hand.map(({ instanceId }) => instanceId)).toContain(s.inst("newLink").instanceId);
+    expect(s.state.players[0]!.trash.map(({ instanceId }) => instanceId)).toContain(s.inst("paymentLink").instanceId);
 
-    expect(
-      s.state.players[0]!.battleArea.map(({ permanentId }) => permanentId),
-    ).toContain(s.perm("holder").permanentId);
+    expect(s.state.players[0]!.battleArea.map(({ permanentId }) => permanentId)).toContain(
+      s.perm("holder").permanentId,
+    );
   });
 });
 
@@ -302,15 +265,9 @@ describe("P-234 Yujin Ozora — KB Q&A rulings", () => {
     ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision === undefined);
 
-    expect(s.perm("host").linked.map((card) => card.instanceId)).toEqual([
-      s.inst("replacement").instanceId,
-    ]);
-    expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toContain(
-      s.inst("oldLink").instanceId,
-    );
+    expect(s.perm("host").linked.map((card) => card.instanceId)).toEqual([s.inst("replacement").instanceId]);
+    expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toContain(s.inst("oldLink").instanceId);
     expect(s.perm("yujin").isSuspended).toBe(false);
-    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual([
-      s.inst("handLink").instanceId,
-    ]);
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual([s.inst("handLink").instanceId]);
   });
 });

@@ -1,11 +1,18 @@
 {
   "name": "@aegis/shared",
-  "version": "1.22.0-beta",
+  "version": "1.23.0-beta",
   "private": true,
   "description": "Aegis contract layer: shared TS types, card-data types, Colyseus state schema, and the client/server protocol.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "imports": {
+    "#shared/*": {
+      "types": "./src/*.ts",
+      "development": "./src/*.ts",
+      "default": "./dist/*.js"
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -22,6 +29,10 @@
     "./cards/*": {
       "types": "./dist/cards/*.d.ts",
       "default": "./dist/cards/*.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
     }
   },
   "scripts": {
