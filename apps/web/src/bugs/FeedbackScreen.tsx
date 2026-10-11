@@ -22,6 +22,7 @@ import {
   type FeedbackRecord,
 } from "./adminClient";
 import { FEEDBACK_STATUS_TONE, relativeTime } from "./feedbackStatus";
+import { PlaytestAdminPanel } from "./PlaytestAdminPanel";
 import { ReportedDecksPanel } from "./ReportedDecksPanel";
 import "./feedbackScreen.css";
 
@@ -52,6 +53,7 @@ export function FeedbackScreen({
         {isAdmin ? (
           <>
             <ReportedDecksPanel onOpenDeck={onOpenDeck} />
+            <PlaytestAdminPanel />
             <FeedbackTriage selectedId={selectedId} onSelect={onSelect} />
           </>
         ) : (

@@ -48,7 +48,10 @@ export function NotificationBell({
   const select = (notification: AccountNotification) => {
     void inbox.markRead([notification.id]);
     setOpen(false);
-    if (notification.kind !== "feedback_update") return;
+    if (notification.kind === "playtest_study") {
+      window.open(notification.payload.link, "_blank", "noopener");
+      return;
+    }
     onOpenFeedback(notification.payload.feedbackId);
   };
 
@@ -129,9 +132,30 @@ export function NotificationBell({
 
 function NotificationItem({ notification, onSelect }: { notification: AccountNotification; onSelect: () => void }) {
   const { t, locale } = useTranslation();
-  if (notification.kind !== "feedback_update") return null;
-  const { payload } = notification;
   const unread = notification.readAt === null;
+  const when = (
+    <time dateTime={new Date(notification.createdAt).toISOString()}>
+      {relativeTime(notification.createdAt, locale)}
+    </time>
+  );
+  if (notification.kind === "playtest_study") {
+    const { payload } = notification;
+    return (
+      <button className="aegis-notifications__item" data-unread={unread || undefined} onClick={onSelect}>
+        <span className="aegis-notifications__dot" aria-hidden="true" />
+        <span className="aegis-notifications__copy">
+          <span className="aegis-notifications__headline">
+            {unread ? <span className="aegis-sr-only">{t("notifications.unread")} </span> : null}
+            {t("notifications.playtest.invite", { title: payload.title })}
+          </span>
+          <span className="aegis-notifications__excerpt">{payload.blurb}</span>
+          {when}
+        </span>
+        <Badge tone="primary">{t("notifications.playtest.badge")}</Badge>
+      </button>
+    );
+  }
+  const { payload } = notification;
   return (
     <button className="aegis-notifications__item" data-unread={unread || undefined} onClick={onSelect}>
       <span className="aegis-notifications__dot" aria-hidden="true" />
@@ -146,9 +170,7 @@ function NotificationItem({ notification, onSelect }: { notification: AccountNot
         {payload.bugConfirmed ? (
           <span className="aegis-notifications__bonus">{t("notifications.bugConfirmedPoint")}</span>
         ) : null}
-        <time dateTime={new Date(notification.createdAt).toISOString()}>
-          {relativeTime(notification.createdAt, locale)}
-        </time>
+        {when}
       </span>
       <Badge tone={FEEDBACK_STATUS_TONE[payload.status]}>{t(`feedback.status.${payload.status}`)}</Badge>
     </button>

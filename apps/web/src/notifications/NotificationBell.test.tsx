@@ -160,4 +160,37 @@ describe("notification bell", () => {
     expect(screen.queryByRole("region", { name: "Notifications" })).toBeNull();
     expect(document.activeElement).toBe(bell);
   });
+
+  it("shows a study invitation and opens its link", async () => {
+    const invite: AccountNotification = {
+      id: 12,
+      kind: "playtest_study",
+      payload: {
+        studyId: 3,
+        title: "Deck builder interviews",
+        blurb: "Thirty minutes on a call about how you build decks.",
+        link: "https://cal.example/aegis",
+        closesAt: Date.now() + 86_400_000,
+      },
+      createdAt: Date.now() - 60_000,
+      readAt: null,
+    };
+    const page: NotificationPage = { items: [invite], nextBefore: null, unread: 1 };
+    mockApi((url) => {
+      if (url.endsWith("/notifications/unread-count")) return [200, { unread: 1 }];
+      if (url.endsWith("/notifications/read")) return [200, { unread: 0 }];
+      if (url.includes("/notifications")) return [200, page];
+      return [404, {}];
+    });
+    const openSpy = vi.spyOn(window, "open").mockReturnValue(null);
+    const onOpenFeedback = vi.fn<(id?: number) => void>();
+    render(<Harness accountId="a1" onOpenFeedback={onOpenFeedback} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Notifications/ }));
+    const item = await screen.findByRole("button", { name: /Deck builder interviews/ });
+    expect(item.textContent).toContain("Thirty minutes on a call");
+    fireEvent.click(item);
+    expect(openSpy).toHaveBeenCalledWith("https://cal.example/aegis", "_blank", "noopener");
+    expect(onOpenFeedback).not.toHaveBeenCalled();
+    openSpy.mockRestore();
+  });
 });
