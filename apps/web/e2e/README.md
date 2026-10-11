@@ -34,6 +34,23 @@ One worker uses loopback ports 4175 (Vite), 2569 (a TCP edge that stands in for 
 at once. Each test starts a new server/room and browser context. The Node heap is
 limited to 2048 MB; Chromium consumes additional memory. No CI is configured.
 
+The default browser is Chromium. Both the game and published-guide configurations
+also accept `AEGIS_E2E_BROWSER=firefox`. Install Firefox before selecting it:
+
+```sh
+pnpm --filter @aegis/web exec playwright install firefox
+AEGIS_E2E_BROWSER=firefox NODE_OPTIONS=--max-old-space-size=2048 \
+  pnpm --filter @aegis/web exec playwright test discord-x7-digixros-zones.spec.ts
+```
+
+Use the direct command only when the shared and API builds already match the
+checkout; it does not rebuild them. This is necessary while evolution games use
+the pinned compiled engine. A Firefox pass proves Firefox behavior only.
+On the Tailscale desktop, Chromium 153.0.8010.12 failed to produce animation
+frames or click a button even on an empty page, in both headless and virtual-display
+runs. Firefox 155 passed that probe and the real Shoutmon X7 DigiXros regression.
+The Chromium environment remains unverified; product input guards were unchanged.
+
 ## Coverage and boundaries
 
 ### Published strategy guides
@@ -43,11 +60,11 @@ gateway. It requires the three real published guides and their benchmark evidenc
 it fails when the catalog is empty. This lane is separate from the game harness
 and does not rebuild the API while evolution games are running.
 
-Run on the Tailscale desktop with one Chromium instance, after publishing the
+Run on the Tailscale desktop with one browser instance, after publishing the
 validated evolution run and building the web client:
 
 ```sh
-AEGIS_GUIDES_BASE_URL=http://127.0.0.1:4176 NODE_OPTIONS=--max-old-space-size=2048 \
+AEGIS_GUIDES_BASE_URL=http://127.0.0.1:4176 AEGIS_E2E_BROWSER=firefox NODE_OPTIONS=--max-old-space-size=2048 \
   pnpm --filter @aegis/web exec playwright test -c playwright.guides.config.ts
 ```
 
@@ -73,7 +90,8 @@ validation remains a separate check using the real Colyseus server and GameScree
   than 5 bot clauses reach the screen. It catches presentation wait cycles that
   only close under real browser timing, which the jsdom pacing harness misses.
 
-These cover desktop Chromium. They do not claim full lobby/account coverage,
+The default lane targets desktop Chromium; runs selecting Firefox establish
+Firefox coverage instead. They do not claim full lobby/account coverage,
 mobile-device validation, cross-browser parity, or screenshot baseline comparison.
 
 ## Mobile cross-browser lane
