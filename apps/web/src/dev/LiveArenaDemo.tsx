@@ -485,6 +485,14 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Encerre a criação e jogue Davis BT3. Nas três cartas reveladas, escolha Armadillomon para a busca azul e confirme; depois escolha Goblimon para a busca verde e confirme. Ambas vão à mão e Agumon volta ao fundo do deck. Bug 1557059213266522233.",
     en: "End breeding and play BT3 Davis. From the three revealed cards, select Armadillomon for the blue search and confirm; then select Goblimon for the green search and confirm. Both enter your hand and Agumon returns to the deck bottom. Bug 1557059213266522233.",
   },
+  "arena-feedback84-mastemon-digivolve": {
+    en: "Feedback #84: End breeding and digivolve Sandiramon into P-187 Mastemon for 5. Recovery resolves first. Accept trashing your top security, then decline the separate free-play choice: the security stays in trash and no Digimon is played. Attack with Mastemon: the shared Once Per Turn is already spent. Restart and decline the cost on evolution to keep the attack opportunity. If you accept play, only Sirenmon (hand) and Sandiramon (trash), both 6000 DP, are eligible; you can still choose no selection.",
+    ptBR: "Feedback #84: Encerre a criação e digievolua Sandiramon em P-187 Mastemon por 5. Recovery resolve primeiro. Aceite descartar o topo da segurança e recuse a escolha separada de jogar: a segurança permanece no lixo e nenhum Digimon é jogado. Ataque com Mastemon: o Once Per Turn compartilhado já foi gasto. Reinicie e recuse o custo na evolução para manter a oportunidade no ataque. Se aceitar jogar, apenas Sirenmon (mão) e Sandiramon (lixo), ambos com 6000 DP, são elegíveis; ainda é possível escolher nenhuma carta.",
+  },
+  "arena-feedback84-mastemon-attack": {
+    en: "Feedback #84: End breeding and attack with P-187 Mastemon. Accept trashing your top security, then decline playing a Digimon: the paid card remains in trash, no Digimon enters play, and the attack completes. Restart to accept the payload and select Sirenmon from hand or Sandiramon from trash at no memory cost; Chirinmon (7000 DP), Groundramon (red) and T.K. (Tamer) are illegal. Accepting the payload also allows no selection without refunding the security cost.",
+    ptBR: "Feedback #84: Encerre a criação e ataque com P-187 Mastemon. Aceite descartar o topo da segurança e recuse jogar um Digimon: a carta paga permanece no lixo, nenhum Digimon entra e o ataque termina. Reinicie para aceitar e escolher Sirenmon da mão ou Sandiramon do lixo sem custo de memória; Chirinmon (7000 DP), Groundramon (vermelho) e T.K. (Tamer) são ilegais. Aceitar jogar também permite nenhuma seleção, sem devolver o custo de segurança.",
+  },
   "arena-oct06-mastemon-owner-security": {
     ptBR: "Ataque com Mastemon e aceite All Turns. Escolha Gabumon do oponente: ele deve ir ao fundo da segurança do oponente. Os dois Tamers são alvos ilegais. Bug 1557044001453113455.",
     en: "Attack with Mastemon and accept All Turns. Choose the opponent's Gabumon: it must go to the bottom of its owner's security. Both Tamers are illegal targets. Bug 1557044001453113455.",
@@ -3087,6 +3095,8 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
   ["arena-oct06-sukamon-bt3-deletion-search", "06/10 · Sukamon BT3 · deleção e jogar revelada"],
   ["arena-oct06-sukamon-ex13-deletion-search", "06/10 · Sukamon EX13 · deleção e jogar revelada"],
   ["arena-oct06-revealed-search", "06/10 · Interface · selecionar reveladas do deck"],
+  ["arena-feedback84-mastemon-digivolve", "Feedback #84 · Mastemon · evolução e escolha opcional"],
+  ["arena-feedback84-mastemon-attack", "Feedback #84 · Mastemon · ataque e escolha opcional"],
   ["arena-oct06-mastemon-owner-security", "06/10 · Mastemon · segurança do dono"],
   ["arena-oct06-kyo-barrier", "06/10 · Kyo · Barrier"],
   ["arena-oct06-millennium-deck-order", "06/10 · Millenniummon · ordem no deck"],
