@@ -814,7 +814,12 @@ export function activateEffectDeps(engine: GameEngine): ActivateEffectDeps {
         ...(effect.isInherited ? { isInherited: true } : {}),
       };
       engine.hooks.emit({ kind: "effectTriggered", ...announced });
-      return () => engine.hooks.emit({ kind: "effectResolved", ...announced });
+      return () =>
+        engine.hooks.emit({
+          kind: "effectResolved",
+          ...announced,
+          ...(ctx.digivolutionPerformed === undefined ? {} : { digivolutionPerformed: ctx.digivolutionPerformed }),
+        });
     },
     enterEffectResolution: (seat, sourceKinds, sourcePermanentId) =>
       engine.primitives.enterEffectResolution?.(seat, sourceKinds, sourcePermanentId),

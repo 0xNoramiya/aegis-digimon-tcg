@@ -1247,6 +1247,7 @@ const interfaceMessages = {
   "log.effectTriggered": "Effetto di {card} attivato",
   "log.effectHadNoEffect": "L'effetto di {card} non ha avuto effetto",
   "log.effectResolved": "Effetto di {card} risolto",
+  "log.effectResolvedWithoutDigivolution": "Effetto di {card} risolto — nessuna digievoluzione effettuata",
   "log.cardMoved": "{count} carta spostata: {from} → {to}",
   "log.cardMovedNamed": "{card} spostato: {from} → {to}",
   "log.turnEndDeletion": "{card} è stato eliminato a fine turno dall'effetto di {source}",
