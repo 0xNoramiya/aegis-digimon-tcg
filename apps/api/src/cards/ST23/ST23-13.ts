@@ -54,7 +54,7 @@ const compiled: CompiledCard = {
       ],
     },
     {
-      trigger: "AllTurns",
+      trigger: "YourTurn",
       actions: [
         {
           kind: "SubTrigger",

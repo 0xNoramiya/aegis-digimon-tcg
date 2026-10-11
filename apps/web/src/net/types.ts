@@ -717,6 +717,8 @@ export interface AegisJoinOptions {
     | "arena-davis-both-colors"
     | "arena-feedback65-dracomon-selection"
     | "arena-feedback73-magnaangemon-decision"
+    | "arena-feedback75-tomoro-on-play"
+    | "arena-feedback75-tomoro-timing"
     | "arena-feedback72-nokia-hand-evolution"
     | "arena-feedback71-justimon-copied-opt"
     | "arena-feedback70-gaiomon-attack"

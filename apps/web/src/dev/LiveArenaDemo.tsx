@@ -1953,6 +1953,14 @@ export const SCENARIO_NOTES: Partial<Record<DevScenario, ScenarioCopy>> = {
     ptBR: "Discord 1558451244815880332. Encerre a criação. No início da sua fase principal, recuse colocar a carta do topo do deck embaixo de Richard Sampson (EX13-071). A lixeira tem Reppamon (BT1-051) e Chirinmon (BT1-058), então o [Principal] de Richard aparece. Ative e aceite. As 3 cartas viradas para baixo vão para a lixeira. Pela Q7447, escolha o Reppamon (EX13-030) e o Chirinmon (EX13-032) que acabaram de ir para a lixeira. Os dois ficam embaixo de Kudamon (EX13-026), que digivolve em Kentaurosmon (BT3-043) por 2 de memória. BT1-051 e BT1-058 ficam na lixeira.",
     en: "Discord 1558451244815880332. End breeding. At the start of your main phase, decline to place your deck's top card under Richard Sampson (EX13-071). Your trash has Reppamon (BT1-051) and Chirinmon (BT1-058), so Richard's [Main] is offered. Activate it and accept. The 3 face-down cards go to the trash. Per Q7447, choose the Reppamon (EX13-030) and Chirinmon (EX13-032) you just trashed. Both go under Kudamon (EX13-026), which digivolves into Kentaurosmon (BT3-043) for 2 memory. BT1-051 and BT1-058 stay in the trash.",
   },
+  "arena-feedback75-tomoro-on-play": {
+    en: "Play Tomoro with no opposing Digimon: placing the deck card does not gain memory, and the 4-cost play passes the turn.",
+    ptBR: "Jogue Tomoro sem Digimon adversário: colocar a carta do deck não ganha memória, e o custo 4 passa o turno.",
+  },
+  "arena-feedback75-tomoro-timing": {
+    en: "Decline the Start Main placement, then play Chiropmon and pay with Tomoro's bottom card. Accept or decline Tomoro's own-turn DP boost; Kyaromon's later opponent-turn payment cannot activate it.",
+    ptBR: "Recuse a colocação no início da fase principal, jogue Chiropmon e pague com a carta inferior de Tomoro. Aceite ou recuse o bônus de DP no seu turno; o pagamento de Kyaromon no turno adversário não pode ativá-lo.",
+  },
   "arena-feedback73-magnaangemon-decision": {
     en: "End Breeding. Use Patamon to evolve from security, replace security with the hand Angemon, then evolve the other Patamon into BT16 Angemon for 2. At memory 5, evolve the first Angemon into MagnaAngemon for 3. Recovery raises security from 5 to 6; select one opposing Digimon for -6000 DP. Agumon is deleted; WereGarurumon survives at 2000 DP. The other target is unchanged, and the reduction expires at turn end.",
     ptBR: "Encerre a Criação. Use Patamon para evoluir da segurança e repor a segurança com o Angemon da mão; evolua o outro Patamon para BT16 Angemon por 2. Com 5 de memória, evolua o primeiro Angemon para MagnaAngemon por 3. A Recuperação aumenta a segurança de 5 para 6; escolha um Digimon adversário para -6000 DP. Agumon é deletado; WereGarurumon fica com 2000 DP. O outro alvo não muda, e a redução termina no fim do turno.",
@@ -3580,6 +3588,8 @@ const SCENARIO_OPTIONS: readonly [DevScenario, string][] = [
     "Discord · EX13 Richard Sampson · [Main] stacks the cards it just trashed",
   ],
   ["arena-feedback73-magnaangemon-decision", "Feedback 73 · MagnaAngemon recovery and target choice"],
+  ["arena-feedback75-tomoro-on-play", "Feedback 75 · Tomoro conditional memory"],
+  ["arena-feedback75-tomoro-timing", "Feedback 75 · Tomoro own-turn response"],
   ["arena-feedback72-nokia-hand-evolution", "Feedback 72 · Nokia zero-memory hand evolution"],
   ["arena-feedback71-justimon-copied-opt", "Feedback 71 · Justimon copied OPT ownership"],
   ["arena-feedback70-gaiomon-attack", "Feedback 70 · Gaiomon fresh-play attack restriction"],
