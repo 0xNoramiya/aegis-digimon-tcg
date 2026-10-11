@@ -1,10 +1,4 @@
-import {
-  MATCH_TIMER_START_OPTIONS,
-  MATCH_TIMER_START_SECONDS,
-  MATCH_TIMER_REFILL_SECONDS,
-  MATCH_TIMER_OPPONENT_REFILL_SECONDS,
-  type MatchTimerOptions,
-} from "@aegis/shared";
+import { MATCH_TIMER_START_OPTIONS, MATCH_TIMER_START_SECONDS, type MatchTimerOptions } from "@aegis/shared";
 import { useId } from "react";
 import { Icons } from "../design/icons";
 import { useTranslation } from "../i18n";
@@ -22,11 +16,6 @@ export function MatchTimerSettings({
   const { t } = useTranslation();
   const id = useId();
   const startSeconds = privateRoom ? options.timerStartSeconds : MATCH_TIMER_START_SECONDS;
-  const reserve = [
-    ["lobby.timer.start", startSeconds, false],
-    ["lobby.timer.yourTurn", MATCH_TIMER_REFILL_SECONDS, true],
-    ["lobby.timer.opponentTurn", MATCH_TIMER_OPPONENT_REFILL_SECONDS, true],
-  ] as const;
   return (
     <div className="lobby-timer-settings">
       <div className="lobby-timer-settings__header">
@@ -55,15 +44,10 @@ export function MatchTimerSettings({
       </div>
       {options.matchTimer ? (
         <dl className="lobby-timer-reserve">
-          {reserve.map(([label, seconds, bonus]) => (
-            <div key={label}>
-              <dt>{t(label)}</dt>
-              <dd>
-                {bonus ? "+" : ""}
-                {t("lobby.timer.shortSeconds", { seconds })}
-              </dd>
-            </div>
-          ))}
+          <div>
+            <dt>{t("lobby.timer.start")}</dt>
+            <dd>{t("lobby.timer.shortSeconds", { seconds: startSeconds })}</dd>
+          </div>
         </dl>
       ) : null}
       <p id={`${id}-hint`} className="lobby-timer-settings__hint">

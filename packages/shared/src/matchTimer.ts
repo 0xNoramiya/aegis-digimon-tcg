@@ -1,4 +1,4 @@
-/** Optional casual/private match clock policy. Public queues always use the defaults. */
+/** Per-turn thinking windows. Public queues use defaults; private rooms can choose a duration. */
 export const MATCH_TIMER_START_SECONDS = 300;
 export const MATCH_TIMER_REFILL_SECONDS = 60;
 export const MATCH_TIMER_OPPONENT_REFILL_SECONDS = 30;
@@ -19,7 +19,7 @@ export const MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN = 30;
 export interface MatchTimerOptions {
   matchTimer: boolean;
   timerStartSeconds?: number;
-  /** Legacy join field; turn bonuses are fixed at 60s for the owner and 30s for the opponent. */
+  /** Legacy join field, ignored. Both windows reset to timerStartSeconds each turn. */
   timerRefillSeconds?: number;
 }
 export function matchTimerSettings(options: Partial<MatchTimerOptions>, privateRoom = false) {
