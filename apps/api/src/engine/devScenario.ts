@@ -383,6 +383,9 @@ export const DEV_SCENARIO_IDS = [
   "arena-p108-training-delay-with-target",
   "arena-feedback47-chronomon-security-return",
   "arena-feedback50-progress-end-attack",
+  "arena-feedback59-metalgarurumon-field-warp",
+  "arena-feedback59-metalgarurumon-printed-breeding",
+  "arena-feedback59-wargreymon-field-warp",
   "arena-feedback58-poseidomon-unsuspend-cost",
   "arena-feedback57-amaterasumon-empty-resolution",
   "arena-feedback57-amaterasumon-paid-resolution",
@@ -10661,6 +10664,29 @@ function layGithub5311CrescemonCostScenario(state: GameState): void {
   insertCard(human, Zone.Hand, faceDownCard("github5311-crescemon", "EX5-020", 0));
 }
 
+/** Feedback #59: conditional hand warps exclude breeding; printed Lv.5 routes do not. */
+function layFeedback59WarpScenario(state: GameState, mode: "metal" | "printed" | "war"): void {
+  prepareGithubCardEffectsScenario(state, 6);
+  const human = state.players[0]!;
+  const war = mode === "war";
+  const breeding = establishedDigimon(
+    0,
+    [mode === "printed" ? "BT2-078" : war ? "ST1-03" : "ST2-03"],
+    "-feedback59-breeding",
+  );
+  breeding.inBreeding = true;
+  setBreeding(human, breeding);
+  if (mode !== "printed") {
+    placePermanent(human, establishedDigimon(0, [war ? "ST1-03" : "ST2-03"], "-feedback59-field"));
+    placePermanent(human, establishedDigimon(0, [war ? "BT9-008" : "BT9-020"], "-feedback59-near"));
+    placePermanent(human, establishedDigimon(0, [war ? "BT1-085" : "BT1-086"], "-feedback59-tamer"));
+    const opponent = establishedDigimon(1, ["BT1-080"], "-feedback59-opponent");
+    opponent.baseDP = opponent.currentDP = 10000;
+    placePermanent(state.players[1]!, opponent);
+  }
+  insertCard(human, Zone.Hand, faceDownCard("feedback59-evolution", war ? "BT14-101" : "BT15-101", 0));
+}
+
 /** Feedback #58: an unpayable first Link does not consume the later unsuspend use. */
 function layFeedback58PoseidomonScenario(state: GameState): void {
   prepareGithubCardEffectsScenario(state, 5);
@@ -11602,6 +11628,9 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-p108-training-delay-with-target": (state, decks) => layP108TrainingDelayScenario(state, decks, true),
   "arena-feedback47-chronomon-security-return": layFeedback47ChronomonSecurityReturnScenario,
   "arena-feedback50-progress-end-attack": layFeedback50ProgressEndAttackScenario,
+  "arena-feedback59-metalgarurumon-field-warp": (state) => layFeedback59WarpScenario(state, "metal"),
+  "arena-feedback59-metalgarurumon-printed-breeding": (state) => layFeedback59WarpScenario(state, "printed"),
+  "arena-feedback59-wargreymon-field-warp": (state) => layFeedback59WarpScenario(state, "war"),
   "arena-feedback58-poseidomon-unsuspend-cost": layFeedback58PoseidomonScenario,
   "arena-feedback57-amaterasumon-empty-resolution": (state) => layFeedback57AmaterasumonScenario(state),
   "arena-feedback57-amaterasumon-paid-resolution": (state) => layFeedback57AmaterasumonScenario(state, true),
