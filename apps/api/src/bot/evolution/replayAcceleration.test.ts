@@ -38,6 +38,8 @@ describe("real-engine MCTS prefix restoration", () => {
       expect(accelerated.restoration.replays).toBe(reference.restoration.replays);
       expect(accelerated.restoration.replayedWindows).toBe(reference.restoration.replayedWindows);
       expect(accelerated.restoration.enumeratedMainCatalogs).toBe(0);
+      expect(accelerated.restoration.reusedActionIndices).toBe(accelerated.restoration.replayedWindows);
+      expect(reference.restoration.reusedActionIndices).toBe(0);
       expect(reference.restoration.reusedMainCatalogs).toBe(0);
       expect(accelerated.restoration.reusedMainCatalogs).toBeGreaterThan(0);
       expect(accelerated.restoration.reusedMainCatalogs).toBe(reference.restoration.enumeratedMainCatalogs);

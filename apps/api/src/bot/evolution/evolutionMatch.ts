@@ -21,6 +21,7 @@ interface RecordedChoice {
   kind: string;
   information: string;
   action: string;
+  actionIndex: number;
   mainActions?: readonly TrainingAction[];
 }
 export interface EvolutionMatchOptions {
@@ -64,7 +65,13 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
   const transcript: RecordedChoice[] = [];
   const traces: unknown[] = [];
   const searches: SearchReport[] = [];
-  const restoration = { replays: 0, replayedWindows: 0, reusedMainCatalogs: 0, enumeratedMainCatalogs: 0 };
+  const restoration = {
+    replays: 0,
+    replayedWindows: 0,
+    reusedActionIndices: 0,
+    reusedMainCatalogs: 0,
+    enumeratedMainCatalogs: 0,
+  };
   const opponentSeat: Seat = options.learnerSeat === 0 ? 1 : 0;
   const pilots = [SEED_HEURISTIC, SEED_HEURISTIC];
   pilots[options.learnerSeat] = options.program;
@@ -100,15 +107,23 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
             }
             const entry = prefix[cursor++];
             if (entry !== undefined) {
-              const action = window.actions.findIndex(
-                (_, actionIndex) => actionKey(window, actionIndex) === entry.action,
-              );
-              if (entry.seat !== seat || entry.information !== informationKey(window) || action < 0) {
+              const reuseIndex = options.mcts?.reusePrefixActions !== false;
+              const action = reuseIndex
+                ? entry.actionIndex
+                : window.actions.findIndex((_, actionIndex) => actionKey(window, actionIndex) === entry.action);
+              if (
+                entry.seat !== seat ||
+                entry.information !== informationKey(window) ||
+                action < 0 ||
+                action >= window.actions.length ||
+                (reuseIndex && actionKey(window, action) !== entry.action)
+              ) {
                 mismatch = true;
                 control.abort();
                 return rollout(seat, window);
               }
               restoration.replayedWindows++;
+              if (reuseIndex) restoration.reusedActionIndices++;
               return action;
             }
             if (!reachedRoot) {
@@ -191,6 +206,7 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
           kind: window.kind,
           information: informationKey(window),
           action: actionKey(window, action),
+          actionIndex: action,
           ...(window.kind === "main" && options.mcts !== undefined && options.mcts.reusePrefixActions !== false
             ? { mainActions: structuredClone(window.actions) }
             : {}),
