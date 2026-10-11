@@ -383,6 +383,7 @@ export const DEV_SCENARIO_IDS = [
   "arena-p108-training-delay-with-target",
   "arena-feedback47-chronomon-security-return",
   "arena-feedback50-progress-end-attack",
+  "arena-feedback63-chaos-triangular-trash",
   "arena-feedback62-dragons-roar-breeding",
   "arena-feedback62-dragons-roar-normal-colors",
   "arena-feedback59-metalgarurumon-field-warp",
@@ -10666,6 +10667,29 @@ function layGithub5311CrescemonCostScenario(state: GameState): void {
   insertCard(human, Zone.Hand, faceDownCard("github5311-crescemon", "EX5-020", 0));
 }
 
+/** Feedback #63: the exact source survives off-turn prevention and grants its discard bonus. */
+function layFeedback63ChaosTriangularScenario(state: GameState): void {
+  prepareGithubCardEffectsScenario(state, 6);
+  const human = state.players[0]!;
+  const opponent = state.players[1]!;
+  placePermanent(human, establishedDigimon(0, ["EX13-004", "EX13-026", "EX13-032"], "-feedback63-base"));
+  const gundra = establishedDigimon(
+    1,
+    ["EX7-066", "EX7-070", "EX7-005", "EX7-008", "EX7-010", "EX7-044", "EX7-048"],
+    "-feedback63-gundra",
+  );
+  // The bot ranks both loose source Options equally; put the exercised cost first.
+  gundra.stack[0]!.instanceId = "feedback63-chaos";
+  gundra.stack[1]!.instanceId = "feedback63-other-option";
+  placePermanent(opponent, gundra);
+  insertCard(human, Zone.Hand, faceDownCard("feedback63-kentauros", "EX13-036", 0));
+  insertCard(human, Zone.Hand, faceDownCard("feedback63-reserve", "BT1-009", 0));
+  clearZone(human, Zone.Security);
+  clearZone(opponent, Zone.Security);
+  insertCard(human, Zone.Security, faceDownCard("feedback63-own-security", "BT1-009", 0));
+  insertCard(opponent, Zone.Security, faceDownCard("feedback63-opponent-security", "BT1-009", 1));
+}
+
 /** Feedback #62: breeding colors meet ordinary requirements but cannot supply a trait waiver. */
 function layFeedback62DragonsRoarScenario(state: GameState, normalColors = false): void {
   prepareGithubCardEffectsScenario(state, 6);
@@ -11648,6 +11672,7 @@ const LAYOUTS: Record<DevScenarioId, typeof layBattleScenario> = {
   "arena-p108-training-delay-with-target": (state, decks) => layP108TrainingDelayScenario(state, decks, true),
   "arena-feedback47-chronomon-security-return": layFeedback47ChronomonSecurityReturnScenario,
   "arena-feedback50-progress-end-attack": layFeedback50ProgressEndAttackScenario,
+  "arena-feedback63-chaos-triangular-trash": layFeedback63ChaosTriangularScenario,
   "arena-feedback62-dragons-roar-breeding": (state) => layFeedback62DragonsRoarScenario(state),
   "arena-feedback62-dragons-roar-normal-colors": (state) => layFeedback62DragonsRoarScenario(state, true),
   "arena-feedback59-metalgarurumon-field-warp": (state) => layFeedback59WarpScenario(state, "metal"),
