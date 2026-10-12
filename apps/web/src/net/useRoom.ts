@@ -1,5 +1,6 @@
 import { resetRoomState } from "@/net/resetRoomState";
 import { ROLLBACK_RESET_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
+import { CONNECTION_REPORT_CHANNEL, type ConnectionReport } from "@aegis/shared/protocol/ConnectionReport";
 
 import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import { spectate } from "./client";
@@ -43,6 +44,10 @@ import {
 import { ResumeCancelledError, resumeSeat } from "./resumeSeat";
 import type { AegisJoinOptions } from "./types";
 import { keepLocalReplay } from "../replays/local";
+
+type ConnectionDrop = Pick<ConnectionReport, "closeCode" | "hiddenAtDrop" | "onlineAtDrop"> & {
+  droppedAt: number;
+};
 
 export type ConnectionStatus = "connecting" | "connected" | "reconnecting" | "error" | "closed";
 
@@ -374,11 +379,17 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
           setStatus("closed");
           return;
         }
-        void attemptReconnect(Date.now() + RECONNECT_GRACE_MS);
+        const drop: ConnectionDrop = {
+          closeCode: code,
+          droppedAt: Date.now(),
+          hiddenAtDrop: typeof document !== "undefined" && document.hidden,
+          onlineAtDrop: typeof navigator === "undefined" || navigator.onLine,
+        };
+        void attemptReconnect(drop.droppedAt + RECONNECT_GRACE_MS, drop);
       });
     };
 
-    const attemptReconnect = async (deadline: number) => {
+    const attemptReconnect = async (deadline: number, drop: ConnectionDrop) => {
       const token = roomRef.current?.reconnectionToken;
       if (!token) {
         clearReconnectSession();
@@ -393,9 +404,13 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         savedAt: Date.now(),
       };
       let next: AegisRoom;
+      let attempts = 0;
       try {
         next = await resumeSeat({
-          resume: () => resumeReconnectSession({ ...saved, reconnectionToken: token }),
+          resume: () => {
+            attempts += 1;
+            return resumeReconnectSession({ ...saved, reconnectionToken: token });
+          },
           deadline,
           isCancelled: () => cancelled,
           waitUntilVisible,
@@ -414,7 +429,16 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       }
       bindRoom(next);
       setStatus("connected");
-      if (!options.spectator) flushIntents(next);
+      if (!options.spectator) {
+        next.send(CONNECTION_REPORT_CHANNEL, {
+          closeCode: drop.closeCode,
+          offlineMs: Math.max(0, Date.now() - drop.droppedAt),
+          attempts,
+          hiddenAtDrop: drop.hiddenAtDrop,
+          onlineAtDrop: drop.onlineAtDrop,
+        } satisfies ConnectionReport);
+        flushIntents(next);
+      }
     };
 
     const resumeOrConnect = async (): Promise<AegisRoom> => {
