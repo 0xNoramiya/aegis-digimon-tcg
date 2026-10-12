@@ -68,6 +68,12 @@ export interface OpenCounterWindow {
   resolve: () => void;
 }
 
+export interface BlockTiming {
+  attackerPermanentId: string;
+  blockerPermanentId: string;
+  blockerSuspended: boolean;
+}
+
 /** Minimal trigger payload passed to the effect-stack seam for combat timings. */
 export interface CombatTrigger {
   subjectPermanentId?: string;
@@ -195,6 +201,7 @@ export interface CombatHooks {
    * 1557356892794388541). Absent => the window and the watcher bus run one after the other.
    */
   withPendingSuspensionSubTriggers?: (payload: TriggerInfo, runWindows: () => Promise<void>) => Promise<void>;
+  fireBlockTiming: (block: BlockTiming) => Promise<void>;
   /** Capture event-time eligibility before battle losers leave, without resolving reactions. */
   prepareFrozenSubTrigger?: (
     event: SubTriggerEventName,
