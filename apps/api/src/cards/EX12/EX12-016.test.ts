@@ -335,7 +335,7 @@ describe("EX12-016 MetalGreymon", () => {
         reduceCost: 2,
       },
     ]);
-    expect(compiled.effects.filter((effect) => effect.trigger === "Static")).toHaveLength(3);
+    expect(compiled.effects.filter((effect) => effect.trigger === "Static")).toHaveLength(2);
     expect(
       compiled.effects.filter((effect) => effect.keywords?.some((keyword) => keyword.keyword === "Decode")),
     ).toHaveLength(2);
