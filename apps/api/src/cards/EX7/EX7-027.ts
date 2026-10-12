@@ -51,6 +51,7 @@ export const compiled: CompiledCard = {
             isSelf: true,
           },
           attackPlayer: true,
+          attackPlayerOnly: true,
           withoutSuspending: true,
           optional: true,
           abortOnDecline: true,

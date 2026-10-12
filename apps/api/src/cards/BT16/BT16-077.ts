@@ -75,6 +75,7 @@ const compiled: CompiledCard = {
           kind: "Attack",
           target: { fromSelectionRef: "rushAttacker", filter: {}, count: 1 },
           attackPlayer: true,
+          attackPlayerOnly: true,
           withoutSuspending: false,
         },
       ],

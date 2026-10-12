@@ -53,6 +53,7 @@ const compiled: CompiledCard = {
               },
               withoutSuspending: false,
               attackPlayer: true,
+              attackPlayerOnly: true,
               mandatory: true,
             },
           ],

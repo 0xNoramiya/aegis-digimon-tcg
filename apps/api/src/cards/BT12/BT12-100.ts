@@ -33,6 +33,7 @@ const compiled: CompiledCard = {
           kind: "Attack",
           target: { filter: {}, count: 1, fromSelectionRef: "bt12_100_shoutmon_x7" },
           attackPlayer: true,
+          attackPlayerOnly: true,
           optional: true,
         },
       ],

@@ -34,6 +34,7 @@ describe("BT22-067 LordKnightmon", () => {
     expect(compiled.effects.find((entry) => entry.trigger === "OnPlay")?.actions[1]).toMatchObject({
       kind: "Attack",
       attackPlayer: true,
+      attackPlayerOnly: true,
       optional: true,
     });
     expect(compiled.effects.find((entry) => entry.trigger === "AllTurns")?.actions[0]).toMatchObject({

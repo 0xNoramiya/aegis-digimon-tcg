@@ -31,6 +31,7 @@ const compiled: CompiledCard = {
                 kind: "Attack",
                 target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
                 attackPlayer: true,
+                attackPlayerOnly: true,
                 mandatory: true,
                 cost: {
                   kind: "unsuspendNamed",
