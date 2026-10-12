@@ -1250,13 +1250,16 @@ export class CombatController {
   private async switchDefenderToBlocker(attacker: Permanent, blocker: Permanent): Promise<void> {
     const blockerSuspended = this.suspendInCombat(blocker);
     this.hooks.emit({ kind: "blocked", blockerPermanentId: blocker.permanentId });
-    await this.fireSuspended(blocker, blockerSuspended);
 
     const trigger: CombatTrigger = {
       attackerPermanentId: attacker.permanentId,
       defenderPermanentId: blocker.permanentId,
       blockerPermanentId: blocker.permanentId,
     };
+    if ((await this.hooks.fireBlockTiming?.(trigger, blockerSuspended)) === true) {
+      return;
+    }
+    await this.fireSuspended(blocker, blockerSuspended);
     await this.hooks.fireTiming(EffectTiming.OnBlockAnyone, trigger);
     await this.hooks.fireTiming(EffectTiming.OnAttackTargetChanged, trigger);
     await this.hooks.fireSubTrigger?.("whenAttackTargetSwitched", {

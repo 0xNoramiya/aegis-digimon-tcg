@@ -195,6 +195,7 @@ export interface CombatHooks {
    * 1557356892794388541). Absent => the window and the watcher bus run one after the other.
    */
   withPendingSuspensionSubTriggers?: (payload: TriggerInfo, runWindows: () => Promise<void>) => Promise<void>;
+  fireBlockTiming?: (trigger: CombatTrigger, blockerSuspended: boolean) => Promise<boolean>;
   /** Capture event-time eligibility before battle losers leave, without resolving reactions. */
   prepareFrozenSubTrigger?: (
     event: SubTriggerEventName,
