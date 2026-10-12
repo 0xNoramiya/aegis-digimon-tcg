@@ -1,4 +1,22 @@
 {
+  "releases.1.25.3-beta.summary": {
+    "en": "Deletion keywords follow the order you choose, and timed-out combat prompts close only once.",
+    "pt-BR": "Palavras-chave de deleção seguem a ordem que você escolher, e avisos de combate expirados fecham apenas uma vez.",
+    "es": "Las palabras clave de eliminación siguen el orden que elijas, y los avisos de combate caducados se cierran una sola vez.",
+    "it": "Le parole chiave di eliminazione seguono l’ordine che scegli e le richieste di combattimento scadute si chiudono una sola volta."
+  },
+  "releases.1.25.3-beta.fix.keywords": {
+    "en": "＜Evade＞, ＜Fragment＞, ＜Scapegoat＞ and ＜Decoy＞ now appear in the same order prompt as “would leave” and “would be deleted” effects, so you choose which resolves first. Answering Yes or No in that prompt no longer asks you again.",
+    "pt-BR": "＜Evade＞, ＜Fragment＞, ＜Scapegoat＞ e ＜Decoy＞ agora aparecem no mesmo aviso de ordem que os efeitos de “would leave” e “would be deleted”, então você escolhe qual resolve primeiro. Responder Sim ou Não nesse aviso não pergunta de novo.",
+    "es": "＜Evade＞, ＜Fragment＞, ＜Scapegoat＞ y ＜Decoy＞ ahora aparecen en el mismo aviso de orden que los efectos de “would leave” y “would be deleted”, así que eliges cuál se resuelve primero. Responder Sí o No en ese aviso ya no vuelve a preguntar.",
+    "it": "＜Evade＞, ＜Fragment＞, ＜Scapegoat＞ e ＜Decoy＞ ora compaiono nella stessa richiesta di ordine degli effetti “would leave” e “would be deleted”, così scegli quale si risolve per primo. Rispondere Sì o No in quella richiesta non chiede più una seconda volta."
+  },
+  "releases.1.25.3-beta.fix.combat": {
+    "en": "A combat prompt that runs out of time now expires only once, so the match does not skip an extra step.",
+    "pt-BR": "Um aviso de combate que fica sem tempo agora expira apenas uma vez, então a partida não pula uma etapa extra.",
+    "es": "Un aviso de combate que se queda sin tiempo ahora caduca una sola vez, así que la partida no se salta un paso extra.",
+    "it": "Una richiesta di combattimento che esaurisce il tempo ora scade una sola volta, così la partita non salta un passaggio in più."
+  },
   "releases.1.25.2-beta.summary": {
     "en": "Corrected effect timing in battles and blocks, “attack a player” targets, and once-per-turn [Main] effects.",
     "pt-BR": "Correções no momento dos efeitos em batalhas e bloqueios, nos alvos de “atacar um jogador” e nos efeitos [Main] de uma vez por turno.",
