@@ -1508,6 +1508,17 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     );
   }
 
+  requestBot({ reconnectionToken, botDeckId }: { reconnectionToken: string; botDeckId?: string }): number {
+    const player = this.clients.find(
+      (client) =>
+        client.reconnectionToken &&
+        `${this.roomId}:${client.reconnectionToken}` === reconnectionToken &&
+        this.seatByClient.has(client.sessionId),
+    );
+    if (!player) return 403;
+    return this.addBot(botDeckId) ? 200 : 409;
+  }
+
   addBot(botDeckId?: string): boolean {
     // Ordinary casual rooms remain accepted during the expand/contract rollout so
     // a tab with the previous web bundle can still start its bot match. New clients
