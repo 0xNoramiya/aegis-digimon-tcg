@@ -1,5 +1,22 @@
 [
   {
+    "version": "1.25.2-beta",
+    "releasedAt": "2026-10-12",
+    "summaryKey": "releases.1.25.2-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.25.2-beta.fix.timing"
+      },
+      {
+        "textKey": "releases.1.25.2-beta.fix.cards"
+      },
+      {
+        "textKey": "releases.1.25.2-beta.fix.activation"
+      }
+    ]
+  },
+  {
     "version": "1.25.1-beta",
     "releasedAt": "2026-10-12",
     "summaryKey": "releases.1.25.1-beta.summary",

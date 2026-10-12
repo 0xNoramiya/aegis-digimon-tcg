@@ -1,4 +1,28 @@
 {
+  "releases.1.25.2-beta.summary": {
+    "en": "Corrected effect timing in battles and blocks, “attack a player” targets, and once-per-turn [Main] effects.",
+    "pt-BR": "Correções no momento dos efeitos em batalhas e bloqueios, nos alvos de “atacar um jogador” e nos efeitos [Main] de uma vez por turno.",
+    "es": "Correcciones en el momento de los efectos en batallas y bloqueos, en los objetivos de “atacar a un jugador” y en los efectos [Main] de una vez por turno.",
+    "it": "Correzioni alla tempistica degli effetti in battaglie e blocchi, ai bersagli di “attacca un giocatore” e agli effetti [Main] una volta per turno."
+  },
+  "releases.1.25.2-beta.fix.timing": {
+    "en": "When a Digimon is blocked, the turn player’s effects resolve first. ＜Barrier＞ can be ordered with “would leave” effects. A Digimon reduced to 0 DP by an effect that orders an attack is deleted before [When Attacking] effects. “When played” effects now trigger when a rule check causes a Digimon to be played.",
+    "pt-BR": "Quando um Digimon é bloqueado, os efeitos do jogador do turno resolvem primeiro. ＜Barrier＞ pode ser ordenado junto com efeitos de “would leave”. Um Digimon reduzido a 0 DP por um efeito que ordena um ataque é deletado antes dos efeitos [When Attacking]. Efeitos de “when played” agora ativam quando uma verificação de regras faz um Digimon ser jogado.",
+    "es": "Cuando un Digimon es bloqueado, los efectos del jugador del turno se resuelven primero. ＜Barrier＞ se puede ordenar junto con efectos de “would leave”. Un Digimon reducido a 0 DP por un efecto que ordena un ataque se elimina antes de los efectos [When Attacking]. Los efectos de “when played” ahora se activan cuando una comprobación de reglas hace que se juegue un Digimon.",
+    "it": "Quando un Digimon viene bloccato, gli effetti del giocatore di turno si risolvono per primi. ＜Barrier＞ si può ordinare insieme agli effetti “would leave”. Un Digimon portato a 0 DP da un effetto che ordina un attacco viene eliminato prima degli effetti [When Attacking]. Gli effetti “when played” ora si attivano quando un controllo delle regole fa giocare un Digimon."
+  },
+  "releases.1.25.2-beta.fix.cards": {
+    "en": "Effects that say “attack a player”, such as BT22 LordKnightmon’s, can no longer target a Digimon. Assembly and DigiXros materials no longer trigger effects that react to cards placed by effects, such as BT21 Hiro Amanokawa’s.",
+    "pt-BR": "Efeitos que dizem “atacar um jogador”, como o de LordKnightmon BT22, não podem mais ter um Digimon como alvo. Materiais de Assembly e DigiXros não ativam mais efeitos que reagem a cartas colocadas por efeitos, como o de Hiro Amanokawa BT21.",
+    "es": "Los efectos que dicen “atacar a un jugador”, como el de LordKnightmon BT22, ya no pueden tener como objetivo a un Digimon. Los materiales de Assembly y DigiXros ya no activan efectos que reaccionan a cartas colocadas por efectos, como el de Hiro Amanokawa BT21.",
+    "it": "Gli effetti che dicono “attacca un giocatore”, come quello di LordKnightmon BT22, non possono più prendere come bersaglio un Digimon. I materiali di Assembly e DigiXros non attivano più gli effetti che reagiscono alle carte poste da effetti, come quello di Hiro Amanokawa BT21."
+  },
+  "releases.1.25.2-beta.fix.activation": {
+    "en": "Declining a [Main] effect after activating it no longer uses up its [Once Per Turn]. The optional part of a prompt is highlighted, so it is clear that declining it can still lead to a draw.",
+    "pt-BR": "Recusar um efeito [Main] depois de ativá-lo não gasta mais o seu [Once Per Turn]. A parte opcional de um aviso agora aparece destacada, deixando claro que recusar ainda pode levar a uma compra.",
+    "es": "Rechazar un efecto [Main] después de activarlo ya no gasta su [Once Per Turn]. La parte opcional de un aviso aparece resaltada, para que quede claro que rechazarla aún puede dar un robo.",
+    "it": "Rifiutare un effetto [Main] dopo averlo attivato non consuma più il suo [Once Per Turn]. La parte facoltativa di una richiesta è evidenziata, così è chiaro che rifiutarla può comunque portare a pescare."
+  },
   "releases.1.25.1-beta.summary": {
     "en": "Rollback limited to your own actions, corrected card effects, and more reliable effect presentation.",
     "pt-BR": "Rollback limitado às suas próprias ações, correções de efeitos de cartas e apresentação de efeitos mais confiável.",
