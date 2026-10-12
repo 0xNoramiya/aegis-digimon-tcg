@@ -3487,6 +3487,7 @@ describe("Primitives completeness guard (no declared-but-unassigned methods)", (
     placeOptionAsPermanent: true,
     placeOwnTopAtStackBottom: true,
     placeUnder: true,
+    placePlayMaterialsUnder: true,
     placeUnderFromDeck: true,
     placeUnderFromEggDeck: true,
     playFromHand: true,
