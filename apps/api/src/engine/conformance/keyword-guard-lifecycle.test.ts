@@ -3,6 +3,8 @@ import { cite } from "./_kb.js";
 import { advance } from "../testkit/advance.js";
 import { assertNoLoudGap, setupEngine, settle } from "../testkit/harness.js";
 import { observe } from "../testkit/observe.js";
+import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
+import { buildKeywordReactionId } from "#api/engine/effects/buildKeywordReactionId";
 import "../../cards/index.js";
 
 const NEUTRAL = "BT1-009";
@@ -387,7 +389,9 @@ describe("Guard departure lifecycle", () => {
     expect(order.kind).toBe("orderTriggers");
     expect(orderRequest.options?.triggerKeys).toHaveLength(2);
     const firstTrigger = orderRequest.options?.triggerKeys?.[0];
-    expect(firstTrigger).toMatch(/::replacement\/-3\//);
+    expect(firstTrigger).toContain(
+      `::replacement/${buildKeywordReactionId(KeywordReaction.GUARD.value, s.perm("first").permanentId)}/`,
+    );
     expect(
       s.engine.applyIntent(1, {
         type: "respondDecision",

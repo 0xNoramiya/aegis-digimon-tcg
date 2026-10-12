@@ -39,6 +39,7 @@ import { effectTextMayAskYesNo } from "../decisions/resolverDecisions.js";
 import { armorPurgeLeaveReplacements } from "../effects/armorPurge.js";
 import { evadeLeaveReplacements } from "../effects/evade.js";
 import { barrierLeaveReplacements } from "#api/engine/effects/barrier";
+import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
 import { canPaySuspendCost } from "../combat/legality.js";
 import { consultDigivolutionTrashRedirect } from "../effects/digivolutionTrashRedirect.js";
 import { findLooseInstance, instanceOnPermanent } from "./intents.js";
@@ -314,7 +315,6 @@ export async function engineConsultLeavePrevention(
       },
       keywordReplacements: (ids) => [
         ...partitionLeaveReplacements(ids, {
-          idOffset: ids.length + [...engine.state.players].reduce((n, player) => n + player.battleArea.length, 0),
           permanentById: (id) => engine.access.permanentById(id),
           hasPartition: (id) => engine.continuous.hasKeyword(id, "Partition"),
           select: async (_ctx, candidate) => {
@@ -356,7 +356,6 @@ export async function engineConsultLeavePrevention(
         ...guardLeaveReplacements(
           [...engine.state.players].flatMap((player) => player.battleArea.map((permanent) => permanent.permanentId)),
           {
-            idOffset: ids.length,
             permanentById: (id) => engine.access.permanentById(id),
             isBattleAreaDigimon: (permanent) => engine.access.isBattleAreaDigimon(permanent, engine.continuous),
             hasGuard: (id) => engine.continuous.hasKeyword(id, "Guard"),
@@ -413,7 +412,7 @@ export async function engineConsultLeavePrevention(
       // ＜Guard＞ is the one prevention keyword that resolves as a replacement subscription
       // rather than inline in the deletion paths, so its announcement is wired here.
       keywordPrevented: (activationIdentity, sourcePermanentId, sourceCardId, savedPermanentId, preventionKeyword) => {
-        const keyword = preventionKeyword ?? (activationIdentity === "keyword-guard" ? "Guard" : undefined);
+        const keyword = preventionKeyword ?? (activationIdentity === KeywordReaction.GUARD.value ? "Guard" : undefined);
         if (keyword === undefined) return;
         const saved = engine.access.permanentById(savedPermanentId);
         if (saved === undefined) return;

@@ -1,6 +1,6 @@
 import type { Permanent, PreventionKeyword, Seat, ZoneRef } from "@aegis/shared";
 import type { EffectContext, RemovalCause } from "./EffectContext.js";
-import type { ReplacementSubscription, SubTriggerRegistry } from "./subtriggers.js";
+import type { ReplacementId, ReplacementSubscription, SubTriggerRegistry } from "./subtriggers.js";
 function replacementActivationKey(replacement: ReplacementSubscription): string {
   const source = replacement.sourceInstanceId ?? replacement.sourcePermanentId ?? "unanchored";
   const action = replacement.activationIdentity ?? `subscription-${replacement.id}`;
@@ -11,7 +11,7 @@ function replacementActivationKey(replacement: ReplacementSubscription): string 
 export interface OrderedReplacements {
   order: ReplacementSubscription[];
   /** Preset yes/no answers by replacement id, for the reactions the player set one on. */
-  presetAnswers?: ReadonlyMap<number, boolean>;
+  presetAnswers?: ReadonlyMap<ReplacementId, boolean>;
 }
 
 /**
@@ -128,7 +128,7 @@ export async function consultLeavePrevention(
   if (replacements.length === 0) return prevented;
   const seat =
     opts.playerAction === true ? undefined : (resolvingSeat ?? (cause === "byEffect" ? host.turnSeat : undefined));
-  const firedAll = new Set<number>(); // affectsAll replacements that already paid this consult
+  const firedAll = new Set<ReplacementId>();
   for (const leavingId of permanentIds) {
     if (prevented.has(leavingId)) continue;
     const leaving = host.permanentById(leavingId);

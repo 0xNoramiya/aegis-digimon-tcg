@@ -1,5 +1,7 @@
 import type { Permanent, Seat } from "@aegis/shared";
 import type { ReplacementSubscriptionPrevent } from "./subtriggers.js";
+import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
+import { buildKeywordReactionId } from "#api/engine/effects/buildKeywordReactionId";
 
 export const EVADE_EFFECT_TEXT = "＜Evade＞: suspend this Digimon to prevent its deletion.";
 
@@ -20,7 +22,7 @@ export function evadeLeaveReplacements(
     suspend(permanentId: string, seat: Seat): Promise<boolean>;
   },
 ): ReplacementSubscriptionPrevent[] {
-  return permanentIds.flatMap((id, index) => {
+  return permanentIds.flatMap((id) => {
     const holder = deps.permanentById(id);
     if (holder?.topCard === undefined || !deps.hasEvade(id) || !deps.canSuspend(holder)) return [];
     const holderInstanceId = holder.topCard.instanceId;
@@ -31,13 +33,12 @@ export function evadeLeaveReplacements(
     };
     return [
       {
-        // Negative ids stay clear of the registry's; this band stays clear of Detach and Guard.
-        id: -(1_000_000 + index + 1),
+        id: buildKeywordReactionId(KeywordReaction.EVADE.value, id),
         event: "wouldBeDeleted" as const,
         mode: "prevent" as const,
         sourcePermanentId: id,
         sourceInstanceId: holderInstanceId,
-        activationIdentity: "keyword-evade",
+        activationIdentity: KeywordReaction.EVADE.value,
         description: EVADE_EFFECT_TEXT,
         yieldsToEarlierPrevention: true,
         protects: (_ctx, leavingId) => leavingId === id,

@@ -4,6 +4,8 @@ import type { RemovalCause } from "../EffectContext.js";
 import type { EffectContext } from "../EffectContext.js";
 import type { ReplacementSubscriptionInstead } from "../subtriggers.js";
 import type { PrimitivesContext } from "./context.js";
+import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
+import { buildKeywordReactionId } from "#api/engine/effects/buildKeywordReactionId";
 
 function matchPartitionSources(
   clauses: readonly PartitionClause[],
@@ -46,14 +48,13 @@ function partitionCandidate(permanent: Permanent) {
 export function partitionLeaveReplacements(
   permanentIds: readonly string[],
   deps: {
-    idOffset: number;
     permanentById(id: string): Permanent | undefined;
     hasPartition(id: string): boolean;
     select(ctx: EffectContext, candidate: NonNullable<ReturnType<typeof partitionCandidate>>): Promise<string[]>;
     play(sourceInstanceId: string, materialIds: string[]): Promise<unknown>;
   },
 ): ReplacementSubscriptionInstead[] {
-  return permanentIds.flatMap((id, index) => {
+  return permanentIds.flatMap((id) => {
     const permanent = deps.permanentById(id);
     if (permanent?.topCard === undefined || permanent.inBreeding || !deps.hasPartition(id)) return [];
     const candidate = partitionCandidate(permanent);
@@ -71,12 +72,12 @@ export function partitionLeaveReplacements(
     };
     return [
       {
-        id: -(deps.idOffset + index + 1),
+        id: buildKeywordReactionId(KeywordReaction.PARTITION.value, id),
         event: "wouldLeavePlay" as const,
         mode: "instead" as const,
         sourcePermanentId: id,
         sourceInstanceId: candidate.partitionSourceInstanceId,
-        activationIdentity: "keyword-partition",
+        activationIdentity: KeywordReaction.PARTITION.value,
         description: "＜Partition＞: you may play the specified digivolution cards without paying their costs.",
         causeAllows: (cause, seat) =>
           cause !== "byBattle" && !(cause === "byEffect" && seat === permanent.controllerSeat),

@@ -1,6 +1,8 @@
 import { getCardDefinition, type Permanent, type Seat } from "@aegis/shared";
 import { printedKeywordsOf } from "#api/engine/combat/keywords";
 import type { ReplacementSubscriptionPrevent } from "./subtriggers.js";
+import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
+import { buildKeywordReactionId } from "#api/engine/effects/buildKeywordReactionId";
 
 export const BARRIER_EFFECT_TEXT = "＜Barrier＞: trash your top security card to prevent this Digimon's deletion.";
 
@@ -15,7 +17,7 @@ export function barrierLeaveReplacements(
     paySecurity(seat: Seat): Promise<void>;
   },
 ): ReplacementSubscriptionPrevent[] {
-  return permanentIds.flatMap((id, index) => {
+  return permanentIds.flatMap((id) => {
     const holder = deps.permanentById(id);
     if (holder?.topCard === undefined || !deps.hasBarrier(id) || deps.securityCount(holder.controllerSeat) === 0) {
       return [];
@@ -29,12 +31,12 @@ export function barrierLeaveReplacements(
       : holder.stack.find((card) => card.faceUp && grantSourceIds.includes(card.instanceId));
     return [
       {
-        id: -(3_000_000 + index + 1),
+        id: buildKeywordReactionId(KeywordReaction.BARRIER.value, id),
         event: "wouldBeDeleted" as const,
         mode: "prevent" as const,
         sourcePermanentId: id,
         sourceInstanceId: inheritedSource?.instanceId ?? holderInstanceId,
-        activationIdentity: "keyword-barrier",
+        activationIdentity: KeywordReaction.BARRIER.value,
         description: BARRIER_EFFECT_TEXT,
         protects: (_ctx, leavingId) => leavingId === id,
         preventCheck: async () => {

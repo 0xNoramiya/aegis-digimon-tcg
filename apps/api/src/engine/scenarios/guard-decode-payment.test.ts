@@ -3,6 +3,7 @@ import { setupScenario } from "#api/engine/testkit/scenario";
 import { advance } from "#api/engine/testkit/advance";
 import { settle } from "#api/engine/testkit/harness";
 import fixture from "#api/engine/scenarios/guard-decode-payment.fixture";
+import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
 import "#api/cards/EX12/EX12-035";
 import "#api/cards/EX12/EX12-041";
 import "#api/cards/EX12/EX12-064";
@@ -19,7 +20,7 @@ it.each([true, false])(
       autoSelectCards: true,
       autoChooseOption: true,
       preferInstanceIds: preferred,
-      preferTriggerKeys: ["replacement/-2/"],
+      preferTriggerKeys: [KeywordReaction.GUARD.value],
     });
     preferred.push(s.inst("target").instanceId, s.inst("decoded").instanceId);
     const guardId = s.perm("guard").permanentId;
