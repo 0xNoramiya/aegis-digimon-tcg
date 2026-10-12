@@ -30,19 +30,41 @@ a stronger WarGreymon. They require exact Security-bottom source transfers, exac
 Barrier top-Security payment, surviving host and attacker identities, and completed
 combat. Card-specific contract and closing results remain in the [P ledger](../P.md).
 
-## Barrier ordering
+## Keyword reaction ordering
 
-＜Barrier＞ is a "would be deleted in battle" reaction, so it triggers at the same
-time as the holder's "would leave the battle area" effects. The controller orders
-them (Q6250). Both battle paths now offer Barrier inside the shared leave consult
-(`effects/barrier.ts`) instead of prompting it alone:
+＜Barrier＞, ＜Evade＞, ＜Armor Purge＞, ＜Fragment＞ and ＜Scapegoat＞ are
+immediate-type "would be deleted" effects (§16-19, §16-22, §16-25, §16-32, §16-37;
+§15-8-5-3). They trigger at the same time as the holder's "would leave the battle
+area" effects, and the controller orders them (Q5600, Q5906, Q6250, Q6884).
 
-- Field battles consult each Barrier holder once, at the Barrier step, and skip it
-  in the later consult.
-- Security battles add Barrier to the effect-path consult.
+Every deletion path offers them in one shared leave consult:
 
-Barrier is listed first, so an unanswered order keeps the previous Barrier-first
-flow. If an earlier reaction plays the card that granted Barrier, Barrier is no
-longer offered. `engine/scenarios/barrier-would-leave-order.test.ts` and
-`apps/web/e2e/barrier-would-leave-order.spec.ts` cover both orders with BT24-037
-Silphymon and an inherited ＜Barrier＞ source.
+- Field battles: `CombatController` makes one consult over the battle losers with
+  `keywordPreventions`. It no longer prompts any of these keywords on its own.
+- Security battles, effect deletions and rule deletions: the deletion primitive
+  passes `keywordPreventions` to the same consult.
+
+The engine host builds the entries in `keywordPreventionReplacements`
+(`effects/barrier.ts`, `effects/armorPurge.ts`, `effects/evade.ts`,
+`effects/fragmentLeaveReplacements.ts`, `effects/scapegoatLeaveReplacements.ts`).
+Each entry keeps its own cost and outcome. Barrier is listed before card
+reactions; the others follow them, so an unanswered order keeps the previous
+default. Barrier applies only to battle deletions. Scapegoat skips deletions by
+its controller's own effects. Its sacrifice is an effect deletion, so that
+Digimon's own reactions apply.
+
+Keyword reactions use `KeywordReaction` (`effects/KeywordReaction.ts`) as their
+activation identity, and `buildKeywordReactionId` gives each reaction the id
+`<keyword>/<permanentId>`. The order prompt key carries that id, so it does not
+collide with registry ids.
+
+Hosts without a leave consult (minimal combat test hooks) keep the inline fallback
+in `resolveBattleDeletionPreventionsInline` and in the deletion primitive.
+
+＜Decoy＞ is still prompted after the consult. It is an immediate-type effect too
+(§16-18-2), but it protects a different Digimon and lets the player choose which
+endangered Digimon it saves, which the per-Digimon consult does not model yet.
+
+Regressions: `engine/scenarios/{barrier,evade,fragment,scapegoat}-would-leave-order.test.ts`
+and `apps/web/e2e/{barrier,evade}-would-leave-order.spec.ts`, each with BT24-037
+Silphymon as the would-leave source.
