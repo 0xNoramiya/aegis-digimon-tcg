@@ -106,6 +106,18 @@ export interface NarrationStreamDeps {
   narrationRef: MutableRefObject<ReadonlyMap<string, NarrationItem>>;
 }
 
+type NarrationTrackParams = {
+  unitId: number | undefined;
+  resultUnitId: number | undefined;
+  sharedTrack: string;
+};
+
+function narrationTrack({ unitId, resultUnitId, sharedTrack }: NarrationTrackParams): string {
+  if (unitId !== undefined) return `effectClause-${unitId}`;
+  if (resultUnitId !== undefined) return `effectResults-${resultUnitId}`;
+  return sharedTrack;
+}
+
 /** An effect's draw on its way to the hand; a turn's own draw is no clause's result. */
 function isEffectDrawFlight(step: AnimationStep): boolean {
   return step.id.startsWith("draw-flight-") && step.track?.startsWith("drawFlight-") === true;
@@ -268,7 +280,11 @@ export function narrationStream(deps: NarrationStreamDeps) {
        the earlier effect, until a ceiling broke the cycle. The unit order already keeps
        clauses in turn; the wait below keeps one behind its card's arrival. */
     const ownTrack = unit !== undefined;
-    const track = ownTrack ? `effectClause-${unit.id}` : sharedTrack;
+    const resultUnit =
+      presentationPacingRef.current === "sequential" && itemVersion !== undefined && body?.variant !== "keyword"
+        ? effectSequence.unitAtVersion(itemVersion)
+        : undefined;
+    const track = narrationTrack({ unitId: unit?.id, resultUnitId: resultUnit?.id, sharedTrack });
     // The same permanent may evolve because of this very On Play. That future arrival
     // waits for this clause, so waiting on its id alone creates a cycle. An originless
     // physical arrival remains supported for legacy recipes; generic tracks need proof.
