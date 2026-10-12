@@ -83,6 +83,7 @@ const combatWindowExpiry = (seed: number): Match => ({
     // The open window parks the attack, so nothing else ticks the clock: the room's own patch
     // interval fires the timeout, between macrotasks rather than inside a room call.
     expect(expiries).toContainEqual(expect.not.objectContaining({ site: expect.anything() }));
+    expect(expiries).toHaveLength(1);
   },
 });
 

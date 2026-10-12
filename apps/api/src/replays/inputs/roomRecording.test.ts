@@ -256,8 +256,10 @@ describe("AegisRoom replay recording", () => {
 
     const inputs = replayLines(room, "replay.input");
     expect(inputs).toContainEqual(expect.objectContaining({ kind: "expireCombatWindow" }));
+    expect(inputs.filter((input) => input.kind === "expireCombatWindow")).toHaveLength(1);
     // Nobody sent `ready`, so the 60-second ready timeout started the match on the same tick.
     expect(inputs).toContainEqual(expect.objectContaining({ kind: "startMatch" }));
+    expect(inputs.filter((input) => input.kind === "startMatch")).toHaveLength(1);
   });
 
   it("records a bot's seat, and sends a tournament bot's ready as a recorded intent", async () => {

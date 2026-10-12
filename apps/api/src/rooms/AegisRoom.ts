@@ -1988,7 +1988,10 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     this.combatWindowTimeout = undefined;
     this.combatWindowTimeoutKey = key;
     if (key === undefined) return;
+    let fired = false;
     this.combatWindowTimeout = this.clock.setTimeout(() => {
+      if (fired) return;
+      fired = true;
       this.combatWindowTimeout = undefined;
       this.combatWindowTimeoutKey = undefined;
       if (!this.state.gameOver)
