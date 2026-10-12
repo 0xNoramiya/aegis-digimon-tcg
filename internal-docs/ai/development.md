@@ -6,12 +6,14 @@ Requires Node 26 and pnpm 10. Run commands from the repository root.
 | ---------------------------------------------------------- | ----------------------- |
 | Run shared (watch), API on `:2567`, web on `:5173`         | `pnpm dev`              |
 | Build everything                                           | `pnpm build`            |
-| Type-check all packages (also the `pre-push` hook)         | `pnpm typecheck`        |
+| Type-check application code (also the `pre-push` hook)     | `pnpm typecheck`        |
 | Lint and format check (Oxlint, Oxfmt)                      | `pnpm check`            |
 | Full CI suite                                              | `pnpm run ci`           |
 | Repository tool tests                                      | `pnpm test:tools`       |
 | Simulator verification gate                                | `pnpm verify:simulator` |
 | Replay a reported match (see [AGENTS.md](../../AGENTS.md)) | `pnpm replay --help`    |
+
+The API build and default typecheck exclude test files and test-only support directories. `pnpm typecheck:tests` explicitly checks the API test program when needed. Imported runtime fixtures remain part of the application module graph. Default builds and workspace typechecks run packages sequentially. The native TypeScript compiler uses `--singleThreaded` and Go heap targets of 1 GiB for the API and 512 MiB for shared/web. `GOMEMLIMIT` is a soft heap target, so total process RSS can exceed it. `NODE_OPTIONS` controls Node processes only. Do not overlap compiler commands during local bug investigations.
 
 Run `pnpm check:fix` to apply lint/format fixes; review the diff, then run `pnpm check`.
 
