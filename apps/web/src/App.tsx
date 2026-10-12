@@ -336,6 +336,7 @@ export function AegisClient({
     timerStartSeconds: 300,
     timerRefillSeconds: 60,
   }));
+  const [allowRollback, setAllowRollback] = useState(false);
   const [bestOf, setBestOf] = useState(loadMatchFormatPreference);
   /** Set between the games of a best-of-three: the next GameScreen takes this seat. */
   const [seriesGame, setSeriesGame] = useState<SeriesGameTicket>();
@@ -440,12 +441,14 @@ export function AegisClient({
   const joinOptions = useMemo<AegisJoinOptions>(
     () => ({
       ...timerOptions,
+      allowRollback,
       bestOf,
       format: deckFormat,
       displayName: effectivePlayer.name,
       avatarId: effectivePlayer.avatarId ?? undefined,
       deckId: matchDeck?.id,
       deckName: matchDeck?.name,
+      community: matchDeck?.community,
       botDeck: customBotDeck
         ? {
             mainDeck: customBotDeck.mainDeck,
@@ -461,7 +464,16 @@ export function AegisClient({
         eggDeckArts: matchDeck?.eggDeckArts,
       },
     }),
-    [effectivePlayer.name, effectivePlayer.avatarId, matchDeck, timerOptions, bestOf, customBotDeck, deckFormat],
+    [
+      effectivePlayer.name,
+      effectivePlayer.avatarId,
+      matchDeck,
+      timerOptions,
+      bestOf,
+      customBotDeck,
+      deckFormat,
+      allowRollback,
+    ],
   );
 
   const showNav = NAV_SCREENS.includes(screen) && !replayViewing;
@@ -563,6 +575,8 @@ export function AegisClient({
               onNav={navigateScreen}
               timerOptions={timerOptions}
               onTimerOptionsChange={setTimerOptions}
+              allowRollback={allowRollback}
+              onAllowRollbackChange={setAllowRollback}
               bestOf={bestOf}
               onBestOfChange={setBestOf}
               invitedRoomCode={invitedRoomCode}
@@ -590,7 +604,10 @@ export function AegisClient({
                 setDeckFormat(
                   requestedFormat ?? (mode === "unlimited" || requestedUnlimited ? "unlimited" : "standard"),
                 );
-                setMatchDeckId(requestedDeckId);
+                if (typeof requestedDeckId === "object") {
+                  setBorrowedDeck(structuredClone(requestedDeckId));
+                  setMatchDeckId(requestedDeckId.id);
+                } else setMatchDeckId(requestedDeckId);
                 navigateScreen("game");
               }}
             />
@@ -676,6 +693,7 @@ export function AegisClient({
 
           {screen === "game" && (
             <GameScreen
+              onCopyUsedDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
               autoHatchReady={preferencesReady}
               key={matchNumber}
               joinOptions={joinOptions}
