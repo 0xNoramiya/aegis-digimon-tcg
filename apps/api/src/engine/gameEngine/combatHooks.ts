@@ -249,22 +249,7 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
       }),
     withPendingSuspensionSubTriggers: (payload, runWindows) =>
       withPendingSubTriggers(engine, ["whenSuspended"], payload, runWindows, { onlyInitiallyArmed: true }),
-    fireBlockTiming: async (trigger, blockerSuspended) => {
-      if (
-        shouldDeferNestedTiming(engine) ||
-        trigger.attackerPermanentId === undefined ||
-        trigger.blockerPermanentId === undefined
-      ) {
-        return false;
-      }
-      await fireBlockTiming(engine, {
-        blockPayload: combatTriggerInfo(engine, trigger),
-        attackerPermanentId: trigger.attackerPermanentId,
-        blockerPermanentId: trigger.blockerPermanentId,
-        blockerSuspended,
-      });
-      return true;
-    },
+    fireBlockTiming: (block) => fireBlockTiming(engine, block),
     prepareFrozenSubTrigger: (event, payload) => prepareFrozenSubTrigger(engine, event, payload),
     refreshContinuousEffects: () => engine.recomputeContinuousEffects(),
     resolveDeletionReactions: async (trigger, candidates, transientCandidates = []) => {
