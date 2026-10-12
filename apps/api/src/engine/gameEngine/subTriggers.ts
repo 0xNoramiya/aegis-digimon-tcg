@@ -1,4 +1,5 @@
 import { resolveDerivedDuringAttackStep } from "#api/engine/gameEngine/resolveDerivedDuringAttackStep";
+import { buildSubTriggerEffectKey } from "#api/engine/gameEngine/buildSubTriggerEffectKey";
 import { observeEffectActivation } from "../effects/activationPresentation.js";
 import { EffectTiming, KEYWORDS, type Seat } from "@aegis/shared";
 import { rootZoneOfLooseInstance } from "../effects/primitives.js";
@@ -1044,7 +1045,7 @@ export function subTriggerAsCollected(engine: GameEngine, { sub, ctx, occurrence
     printedTiming: sub.printedTiming,
     ...triggerReasonOf(sub),
     effect: {
-      effectKey: subTriggerEffectKey(sub),
+      effectKey: buildSubTriggerEffectKey(sub),
       activationDeferred: sub.activationDeferred,
       ...(sub.activationContext !== undefined &&
       sub.sourcePermanentId === undefined &&
@@ -1079,7 +1080,7 @@ export function announceSubTrigger(
   ctx: EffectContext | undefined,
 ): void | (() => void) {
   if (ctx === undefined) return;
-  const effectKey = subTriggerEffectKey(sub);
+  const effectKey = buildSubTriggerEffectKey(sub);
   ctx.activeEffectKey = effectKey;
   let announced = false;
   const presentation = observeEffectActivation(ctx, sub.activationDeferred === true, () => {
@@ -1137,21 +1138,11 @@ function announceWithoutLegalOutcome(engine: GameEngine, item: ArmedSubTrigger):
     sourceCardId: ctx.source.cardId,
     sourceInstanceId: ctx.source.instanceId,
     sourcePermanentId: ctx.source.permanent()?.permanentId,
-    effectKey: subTriggerEffectKey(sub),
+    effectKey: buildSubTriggerEffectKey(sub),
     description: playerFacingWatcherClause(sub, ctx),
     timing: sub.event,
     ...(sub.isInheritedSource === true ? { isInherited: true } : {}),
   });
-}
-
-/**
- * Keep a printed [Once Per Turn] watcher's resolver identity stable across
- * continuous recomputes. Registry ids are intentionally ephemeral; using one
- * there makes the same pending occurrence look new after a nested evolution.
- */
-function subTriggerEffectKey(sub: SubTriggerSubscription): string {
-  if (sub.oncePerTurnKey === undefined) return `subtrigger/${sub.id}/${sub.description}`;
-  return `subtrigger/opt/${sub.oncePerTurnKey}/${sub.dedupeKey ?? sub.description}`;
 }
 
 /**
@@ -1190,7 +1181,7 @@ export async function fireOneSubTrigger(
     [sub],
     () => {
       const ctx = contextAtFireTime();
-      if (ctx !== undefined) ctx.activeEffectKey = subTriggerEffectKey(sub);
+      if (ctx !== undefined) ctx.activeEffectKey = buildSubTriggerEffectKey(sub);
       if (ctx !== undefined && drainCurrentTimingWindow !== undefined) {
         ctx.drainCurrentTimingWindow = drainCurrentTimingWindow;
       }
