@@ -22,6 +22,7 @@ export const compiled: CompiledCard = {
             count: 1,
           },
           attackPlayer: true,
+          attackPlayerOnly: true,
           optional: true,
           cost: { kind: "suspend", target: { filter: { isSelfRef: true }, count: 1 }, raw: "by suspending this Tamer" },
           condition: { kind: "handAtMost", value: 4 },

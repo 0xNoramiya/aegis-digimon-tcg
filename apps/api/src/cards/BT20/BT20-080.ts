@@ -76,6 +76,7 @@ export const compiled: CompiledCard = {
               },
               optional: true,
               attackPlayer: true,
+              attackPlayerOnly: true,
             },
           ],
         },

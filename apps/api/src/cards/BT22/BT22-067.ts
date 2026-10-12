@@ -15,6 +15,7 @@ const buffAndAttack: Action[] = [
     target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
     optional: true,
     attackPlayer: true,
+    attackPlayerOnly: true,
   },
 ];
 

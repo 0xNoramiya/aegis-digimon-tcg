@@ -20255,6 +20255,7 @@
             "kind": "Attack",
             "target": { "filter": {}, "count": 1, "fromSelectionRef": "bt12_099_hybrid" },
             "attackPlayer": true,
+            "attackPlayerOnly": true,
             "optional": true
           }
         ]
@@ -20304,6 +20305,7 @@
             "kind": "Attack",
             "target": { "filter": {}, "count": 1, "fromSelectionRef": "bt12_100_shoutmon_x7" },
             "attackPlayer": true,
+            "attackPlayerOnly": true,
             "optional": true
           }
         ]
@@ -41225,6 +41227,7 @@
             "kind": "Attack",
             "target": { "fromSelectionRef": "rushAttacker", "filter": {}, "count": 1 },
             "attackPlayer": true,
+            "attackPlayerOnly": true,
             "withoutSuspending": false
           }
         ]
@@ -42232,6 +42235,7 @@
               "count": 1
             },
             "attackPlayer": true,
+            "attackPlayerOnly": true,
             "condition": { "kind": "ifThisEffectActed", "raw": "only after choosing Security Attack +1" }
           }
         ]
@@ -48421,7 +48425,8 @@
               "count": 1
             },
             "optional": true,
-            "attackPlayer": true
+            "attackPlayer": true,
+            "attackPlayerOnly": true
           }
         ],
         "frequency": "OncePerTurn"
@@ -55407,6 +55412,7 @@
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "attackPlayer": true,
+            "attackPlayerOnly": true,
             "mandatory": false,
             "condition": {
               "kind": "selfHasTrait",
@@ -60033,6 +60039,7 @@
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "attackPlayer": true,
+            "attackPlayerOnly": true,
             "condition": {
               "kind": "opponentHas",
               "filter": { "controllerDefault": "opponent", "unsuspended": true, "kind": ["Digimon"] },
@@ -61338,6 +61345,7 @@
                 },
                 "withoutSuspending": false,
                 "attackPlayer": true,
+                "attackPlayerOnly": true,
                 "mandatory": true
               }
             ]
@@ -61968,6 +61976,7 @@
                   "kind": "Attack",
                   "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
                   "attackPlayer": true,
+                  "attackPlayerOnly": true,
                   "mandatory": true,
                   "cost": {
                     "kind": "unsuspendNamed",
@@ -70376,7 +70385,8 @@
                 "kind": "Attack",
                 "target": { "filter": { "controllerDefault": "mine", "kind": ["Digimon"] }, "count": 1 },
                 "optional": true,
-                "attackPlayer": true
+                "attackPlayer": true,
+                "attackPlayerOnly": true
               }
             ]
           }
@@ -71165,6 +71175,7 @@
               "count": 1
             },
             "attackPlayer": true,
+            "attackPlayerOnly": true,
             "optional": true,
             "cost": {
               "kind": "suspend",
@@ -83573,7 +83584,8 @@
             "kind": "Attack",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
             "optional": true,
-            "attackPlayer": true
+            "attackPlayer": true,
+            "attackPlayerOnly": true
           }
         ]
       },
@@ -83592,7 +83604,8 @@
             "kind": "Attack",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
             "optional": true,
-            "attackPlayer": true
+            "attackPlayer": true,
+            "attackPlayerOnly": true
           }
         ]
       },
@@ -177919,6 +177932,7 @@
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "attackPlayer": true,
+            "attackPlayerOnly": true,
             "withoutSuspending": true,
             "optional": true,
             "abortOnDecline": true,
@@ -178111,6 +178125,7 @@
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "attackPlayer": true,
+            "attackPlayerOnly": true,
             "withoutSuspending": true,
             "optional": true,
             "abortOnDecline": true,
@@ -183432,7 +183447,8 @@
           {
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "attackPlayer": true
+            "attackPlayer": true,
+            "attackPlayerOnly": true
           }
         ]
       }

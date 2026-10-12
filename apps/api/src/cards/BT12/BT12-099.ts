@@ -41,6 +41,7 @@ const compiled: CompiledCard = {
           kind: "Attack",
           target: { filter: {}, count: 1, fromSelectionRef: "bt12_099_hybrid" },
           attackPlayer: true,
+          attackPlayerOnly: true,
           optional: true,
         },
       ],
