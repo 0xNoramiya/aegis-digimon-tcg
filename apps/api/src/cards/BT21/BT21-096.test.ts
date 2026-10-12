@@ -53,7 +53,7 @@ describe("BT21-096 The Champion Ultimate Fighter!", () => {
       { kind: "Restrict", restriction: "digivolve" },
       { kind: "GainKeyword", keyword: { keyword: "Rush" } },
       { kind: "GrantCanAttackUnsuspended" },
-      { kind: "Attack", attackPlayer: false, optional: true },
+      { kind: "Attack", attackTargetScope: "digimon", optional: true },
     ]);
   });
 

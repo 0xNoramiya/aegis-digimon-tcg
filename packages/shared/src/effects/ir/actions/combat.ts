@@ -4,6 +4,7 @@ import type { EffectDurationRef } from "../durations.js";
 import type { Target } from "../filters/filter.js";
 import type { Controller } from "../filters/zones.js";
 import type { ActionBase } from "./base.js";
+import type { AttackTargetScope } from "#shared/effects/ir/actions/AttackTargetScope";
 
 export interface AttackAction extends ActionBase {
   kind: "Attack";
@@ -12,14 +13,7 @@ export interface AttackAction extends ActionBase {
   withoutSuspending?: boolean;
   /** Declare this as the keyword's Vortex attack. */
   vortex?: boolean;
-  /** The attack may target the player directly. */
-  attackPlayer?: boolean;
-  /**
-   * The attack may target ONLY the player: printed "may attack a player" (BT23-086), as opposed
-   * to the unqualified "may attack". `attackPlayer` merely ADDS the player to the candidate
-   * list; this narrows it to the player alone, so a suspended opposing Digimon is never offered.
-   */
-  attackPlayerOnly?: boolean;
+  attackTargetScope?: AttackTargetScope;
   /** Name of the keyword mechanic that declared this attack. */
   attackMechanic?: string;
   subject?: Target;

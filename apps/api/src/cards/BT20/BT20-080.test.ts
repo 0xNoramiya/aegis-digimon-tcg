@@ -77,7 +77,7 @@ describe("BT20-080 Fenriloogamon", () => {
               count: 1,
               target: { filter: { isSelfRef: true }, isSelf: true },
             },
-            { kind: "Attack", optional: true, attackPlayer: true },
+            { kind: "Attack", optional: true, attackTargetScope: "player" },
           ],
         },
       ],

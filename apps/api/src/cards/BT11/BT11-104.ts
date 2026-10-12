@@ -43,7 +43,7 @@ export const compiled: CompiledCard = {
           kind: "Attack",
           target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
           optional: true,
-          attackPlayer: false,
+          attackTargetScope: "digimon",
         },
       ],
     },

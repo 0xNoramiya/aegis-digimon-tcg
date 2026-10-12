@@ -9,6 +9,7 @@ import { registeredCompiledCards, registeredIrModules } from "../compiledCards.j
 import { describeEffect } from "../describe.js";
 import { runEffect } from "../dispatch.js";
 import { trashDelaySource } from "../optionTrash.js";
+import { AttackTargetScope } from "@aegis/shared/effects/ir/actions/AttackTargetScope";
 import {
   builderForTrigger,
   canActivateEffect,
@@ -106,7 +107,12 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
       ...effect,
       actions: effect.actions.map((action) =>
         action.kind === "Attack"
-          ? { ...action, attackPlayerOnly: true, attackMechanic: "Overclock", drainTimingWindowDuringAttack: true }
+          ? {
+              ...action,
+              attackTargetScope: AttackTargetScope.PLAYER.value,
+              attackMechanic: "Overclock",
+              drainTimingWindowDuringAttack: true,
+            }
           : action,
       ),
     };

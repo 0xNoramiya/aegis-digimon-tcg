@@ -12,6 +12,7 @@ import { countMatching, scaleFactor } from "../scaling.js";
 import { candidateLooseInstances, looseCardsInZone, pickLoose } from "../targeting/loose.js";
 import { resolvePermanentTargets } from "../targeting/permanents.js";
 import { CardKind, getCardDefinition } from "@aegis/shared";
+import { AttackTargetScope } from "@aegis/shared/effects/ir/actions/AttackTargetScope";
 import type { Action, EffectDurationRef, Target, ZoneRef } from "@aegis/shared";
 import { processBlitzGrant } from "./combat.js";
 import { playEffectInstances } from "./effectPlayAssembly.js";
@@ -379,7 +380,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
         let declared = false;
         for (const id of ids) {
           await ctx.fx.forceAttack(id, {
-            attackPlayer: true,
+            attackTargetScope: AttackTargetScope.ANY.value,
             afterAttackDeclaration: async () => {
               declared = true;
               ctx.fx.grantKeyword(id, kw, duration, keyword.amount, grantProvenance);

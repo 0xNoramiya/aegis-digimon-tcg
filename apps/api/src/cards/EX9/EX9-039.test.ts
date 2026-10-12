@@ -100,7 +100,7 @@ describe("EX9-039", () => {
         actions: [
           { kind: "PlaceUnder", optional: true },
           { kind: "Suspend", scaling: { unit: "digivolutionCards", per: 1, filter: { faceDown: true } } },
-          { kind: "Attack", attackPlayer: false, optional: true },
+          { kind: "Attack", attackTargetScope: "digimon", optional: true },
         ],
       });
   });

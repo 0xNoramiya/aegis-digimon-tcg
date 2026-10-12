@@ -30,7 +30,7 @@ describe("BT9-100 Grandis Scissor", () => {
                 filter: { nameOrTrait: [{ tokens: ["Insectoid"], match: "trait" }] },
               },
             },
-            { kind: "Attack", attackPlayer: false, target: { fromSelectionRef: "unsuspendedInsectoid" } },
+            { kind: "Attack", attackTargetScope: "digimon", target: { fromSelectionRef: "unsuspendedInsectoid" } },
           ],
         },
         {

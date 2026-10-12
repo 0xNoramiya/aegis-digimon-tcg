@@ -83,7 +83,7 @@ describe("EX13-045 Examon", () => {
         },
       ],
     });
-    expect(whenDigivolving?.actions[1]).not.toHaveProperty("attackPlayer");
+    expect(whenDigivolving?.actions[1]).not.toHaveProperty("attackTargetScope");
 
     const battleWon = compiled.effects.find(({ trigger }) => trigger === "YourTurn");
     expect(battleWon).toMatchObject({

@@ -25,7 +25,7 @@ describe("BT15-004 Motimon — [End of Your Turn][Inherited] Insectoid may attac
       actions: [
         {
           kind: "Attack",
-          attackPlayer: false,
+          attackTargetScope: "digimon",
           optional: true,
           drainTimingWindowDuringAttack: true,
           condition: { kind: "selfHasTrait" },

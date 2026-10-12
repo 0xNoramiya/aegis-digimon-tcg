@@ -9,7 +9,7 @@ const compiled: CompiledCard = {
         {
           kind: "Attack",
           target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
-          attackPlayer: false,
+          attackTargetScope: "digimon",
           optional: true,
           drainTimingWindowDuringAttack: true,
           condition: {
