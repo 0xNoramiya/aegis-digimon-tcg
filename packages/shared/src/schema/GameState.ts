@@ -140,4 +140,6 @@ export class GameState extends Schema {
   @type("boolean") rollbackBusy = false;
   @type("boolean") canUndoAction = false;
   @type("boolean") canRollbackTurn = false;
+  @type("int8") undoActionSeat = -1;
+  @type("int8") rollbackTurnSeat = -1;
 }

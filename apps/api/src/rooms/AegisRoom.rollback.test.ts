@@ -118,6 +118,44 @@ describe("consensual match rollback", () => {
     expect(room.state.memory).toBe(8);
   });
 
+  it.each([RollbackKind.ACTION.value, RollbackKind.TURN.value])(
+    "rejects undoing the opponent's actions with %s",
+    async (kind) => {
+      const { room, clients } = await start();
+      expect(send(room, 0, { type: "hatchEgg" })).toEqual({ ok: true });
+      await idle();
+      const before = room.state.toJSON();
+      expect(room.state.undoActionSeat).toBe(0);
+      expect(room.state.rollbackTurnSeat).toBe(0);
+      await request(room, clients[1]!, kind);
+      await answer(room, clients[0]!, true);
+      expect(room.state.toJSON()).toEqual(before);
+      await request(room, clients[0]!, kind);
+      await answer(room, clients[1]!, true);
+      expect(room.state.rollbackRevision).toBe(1);
+      expect(room.state.players[0]!.breeding).toBeUndefined();
+      expect(room.state.undoActionSeat).toBe(-1);
+    },
+  );
+
+  it("does not skip an opponent action to undo an older own action", async () => {
+    const { room, clients } = await start();
+    await main(room);
+    expect(send(room, 0, { type: "endPhase" })).toEqual({ ok: true });
+    await idle();
+    await main(room);
+    expect(room.state.undoActionSeat).toBe(1);
+    const before = room.state.toJSON();
+    await request(room, clients[0]!, RollbackKind.ACTION.value);
+    expect(room.state.toJSON()).toEqual(before);
+    await request(room, clients[1]!, RollbackKind.ACTION.value);
+    await answer(room, clients[0]!, true);
+    expect(room.state.rollbackRevision).toBe(1);
+    expect(room.state.turnSeat).toBe(1);
+    expect(room.state.phase).toBe(Phase.Breeding);
+    expect(room.state.undoActionSeat).toBe(0);
+  });
+
   it("refuses without changing play and invalidates the old consent request", async () => {
     const { room, clients } = await start();
     expect(send(room, 0, { type: "hatchEgg" })).toEqual({ ok: true });
@@ -150,7 +188,10 @@ describe("consensual match rollback", () => {
     expect(room.state.turnCount).toBe(2);
     expect(room.state.players[1]!.hand).toHaveLength(1);
     await request(room, clients[1]!, RollbackKind.TURN.value);
-    await answer(room, clients[0]!, true);
+    expect(room.state.rollbackRequestId).toBe("");
+    expect(room.state.rollbackTurnSeat).toBe(0);
+    await request(room, clients[0]!, RollbackKind.TURN.value);
+    await answer(room, clients[1]!, true);
     expect(room.state.turnCount).toBe(1);
     expect(room.state.players[1]!.deck.map((card) => card.instanceId)).toEqual(initialDeck);
     expect(room.state.players[1]!.hand).toHaveLength(0);
@@ -299,7 +340,15 @@ describe("consensual match rollback", () => {
         expect(replay.divergences).toEqual([]);
         const actual = comparableState(room.state) as Record<string, unknown>;
         const expected = comparableState(replay.state) as Record<string, unknown>;
-        for (const key of ["rollbackRevision", "allowRollback", "canUndoAction", "canRollbackTurn", "stateVersion"]) {
+        for (const key of [
+          "rollbackRevision",
+          "allowRollback",
+          "canUndoAction",
+          "canRollbackTurn",
+          "undoActionSeat",
+          "rollbackTurnSeat",
+          "stateVersion",
+        ]) {
           delete actual[key];
           delete expected[key];
         }

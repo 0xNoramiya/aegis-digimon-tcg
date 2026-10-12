@@ -1,5 +1,25 @@
 [
   {
+    "version": "1.25.1-beta",
+    "releasedAt": "2026-10-12",
+    "summaryKey": "releases.1.25.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.25.1-beta.fix.rollback"
+      },
+      {
+        "textKey": "releases.1.25.1-beta.fix.cards"
+      },
+      {
+        "textKey": "releases.1.25.1-beta.fix.scapegoat"
+      },
+      {
+        "textKey": "releases.1.25.1-beta.fix.presentation"
+      }
+    ]
+  },
+  {
     "version": "1.25.0-beta",
     "releasedAt": "2026-10-12",
     "summaryKey": "releases.1.25.0-beta.summary",

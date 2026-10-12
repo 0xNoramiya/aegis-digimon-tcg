@@ -1,4 +1,34 @@
 {
+  "releases.1.25.1-beta.summary": {
+    "en": "Rollback limited to your own actions, corrected card effects, and more reliable effect presentation.",
+    "pt-BR": "Rollback limitado às suas próprias ações, correções de efeitos de cartas e apresentação de efeitos mais confiável.",
+    "es": "Retroceso limitado a tus propias acciones, efectos de cartas corregidos y presentación de efectos más fiable.",
+    "it": "Ripristino limitato alle proprie azioni, effetti delle carte corretti e presentazione degli effetti più affidabile."
+  },
+  "releases.1.25.1-beta.fix.rollback": {
+    "en": "You can request rollback only for your own actions. Returning to the start of a turn is blocked if it would also undo an opponent’s action.",
+    "pt-BR": "Você só pode pedir rollback das suas próprias ações. Voltar ao início do turno fica bloqueado se isso também desfizer uma ação do adversário.",
+    "es": "Solo puedes solicitar el retroceso de tus propias acciones. Volver al inicio del turno se bloquea si también desharía una acción del rival.",
+    "it": "Puoi richiedere il ripristino solo delle tue azioni. Il ritorno all’inizio del turno è bloccato se annullerebbe anche un’azione dell’avversario."
+  },
+  "releases.1.25.1-beta.fix.cards": {
+    "en": "Belphemon discards only from its controller’s hand. Atomic Inferno’s memory effect expires at the end of your turn, and EX12 MetalGreymon no longer receives an unprinted Security Attack bonus.",
+    "pt-BR": "Belphemon descarta apenas da mão de seu controlador. O efeito de memória de Atomic Inferno termina no fim do seu turno, e MetalGreymon EX12 deixa de receber um bônus de Ataque de Segurança que não consta na carta.",
+    "es": "Belphemon descarta solo de la mano de su controlador. El efecto de memoria de Atomic Inferno termina al final de tu turno y MetalGreymon EX12 deja de recibir una bonificación de Ataque de Seguridad que no figura en la carta.",
+    "it": "Belphemon scarta solo dalla mano del suo controllore. L’effetto memoria di Atomic Inferno termina alla fine del tuo turno e MetalGreymon EX12 non riceve più un bonus di Attacco Sicurezza non presente sulla carta."
+  },
+  "releases.1.25.1-beta.fix.scapegoat": {
+    "en": "Scapegoat attributes its deletion cost to the correct controller and prevents deletion only when that cost is successfully paid.",
+    "pt-BR": "Scapegoat atribui seu custo de deleção ao controlador correto e só impede a deleção quando esse custo é pago com sucesso.",
+    "es": "Scapegoat atribuye su coste de eliminación al controlador correcto y solo impide la eliminación cuando el coste se paga correctamente.",
+    "it": "Scapegoat attribuisce il costo di eliminazione al controllore corretto e impedisce l’eliminazione solo quando il costo viene pagato con successo."
+  },
+  "releases.1.25.1-beta.fix.presentation": {
+    "en": "Effect results follow their own announcements more reliably, avoiding incorrect waits during nested effect sequences.",
+    "pt-BR": "Os resultados dos efeitos seguem seus próprios anúncios com mais confiabilidade, evitando esperas incorretas em sequências de efeitos encadeados.",
+    "es": "Los resultados de los efectos siguen sus propios anuncios con mayor fiabilidad, evitando esperas incorrectas en secuencias de efectos anidados.",
+    "it": "I risultati degli effetti seguono i propri annunci in modo più affidabile, evitando attese errate nelle sequenze di effetti annidati."
+  },
   "releases.1.25.0-beta.summary": {
     "en": "Casual match rollback, community deck discovery, and more reliable card effects and battle presentation.",
     "pt-BR": "Rollback em partidas casuais, descoberta de decks da comunidade e efeitos de cartas e apresentação das batalhas mais confiáveis.",

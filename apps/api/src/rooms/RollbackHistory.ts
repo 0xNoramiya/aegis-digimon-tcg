@@ -39,6 +39,18 @@ export class RollbackHistory {
     return index === undefined ? undefined : { index, turn: selected };
   }
 
+  targetSeat(target: { index: number }): number {
+    let seat = -1;
+    for (const index of this.actions) {
+      if (index < target.index) continue;
+      const input = this.inputs[index];
+      if (input?.kind !== "intent") return -1;
+      if (seat !== -1 && seat !== input.seat) return -1;
+      seat = input.seat;
+    }
+    return seat;
+  }
+
   async rebuild(target: { index: number; turn?: number }) {
     const seats = ([0, 1] as const).map((seat) => {
       const input = this.inputs.findLast((entry) => entry.kind === "seat" && entry.seat === seat);

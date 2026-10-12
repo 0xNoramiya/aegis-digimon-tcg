@@ -563,6 +563,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       try {
         parkDeferredSecurityRemovalTriggers(engine);
         parkDeferredTimingWindowsForAttack(engine);
+        engine.pendingNestedTimingEffects.push(...(await collectRuleProcessPending(engine)));
         // Settle the already-armed watcher tier before exposing the Option's older
         // printed entry/attack effects. Then settle the interrupted Option's rule
         // check in that same parent pool before Counter Timing/security can proceed.
