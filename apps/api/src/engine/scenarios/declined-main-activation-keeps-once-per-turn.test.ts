@@ -19,7 +19,8 @@ describe("Declined [Main] activation keeps its [Once Per Turn] use", () => {
       const host = s.perm("ulforceHost");
       const terriermon = s.inst("terriermonSource");
       const view = observe(s.engine);
-      const restack = () => view.activatableEffects(host).find(({ instanceId }) => instanceId === terriermon.instanceId);
+      const restack = () =>
+        view.activatableEffects(host).find(({ instanceId }) => instanceId === terriermon.instanceId);
       const activateRestack = () =>
         s.engine.applyIntent(0, {
           type: "activateEffect",
