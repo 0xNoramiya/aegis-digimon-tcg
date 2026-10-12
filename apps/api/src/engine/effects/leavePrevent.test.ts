@@ -3,7 +3,7 @@ import { GameState, PlayerState, Permanent, CardInstance, type Seat, type Server
 import type { CompiledCard } from "@aegis/shared";
 import { MemoryGauge } from "../MemoryGauge.js";
 import { ModifierLedger } from "./modifiers.js";
-import { SubTriggerRegistry } from "./subtriggers.js";
+import { SubTriggerRegistry, type ReplacementId } from "./subtriggers.js";
 import { createPrimitives, type PrimitivesEngine, type SelectionPort } from "./primitives.js";
 import { createCardSource, type CardStateLookup } from "../cards/CardSource.js";
 import { createGameAccess, createEffectContext } from "./context.js";
@@ -33,8 +33,8 @@ interface Harness {
   subTriggers: SubTriggerRegistry;
   /** Queue boolean answers for the prevent "you may pay?" prompt; default true. */
   optionalAnswers: boolean[];
-  replacementOrder: number[];
-  offeredReplacementIds: number[][];
+  replacementOrder: ReplacementId[];
+  offeredReplacementIds: ReplacementId[][];
   replacementFiredKeys: Set<string>;
   /** Resolve the consult exactly as GameEngine does (delegates to the real function). */
   consult(
@@ -66,8 +66,8 @@ function harness(opts?: { turnSeat?: Seat }): Harness {
   let permanentSeq = 0;
   const reentryGuard = { activeReplacementKeys: new Set<string>() };
   const optionalAnswers: boolean[] = [];
-  const replacementOrder: number[] = [];
-  const offeredReplacementIds: number[][] = [];
+  const replacementOrder: ReplacementId[] = [];
+  const offeredReplacementIds: ReplacementId[][] = [];
   const replacementFiredKeys = new Set<string>();
 
   const ask: SelectionPort = {
