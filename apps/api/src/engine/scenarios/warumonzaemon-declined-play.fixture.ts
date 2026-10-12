@@ -11,6 +11,7 @@ const fixture: ScenarioFixture = {
       hand: [
         { card: "P-216", as: "waru" },
         { card: "BT15-031", as: "master" },
+        { card: "BT2-066", as: "digivolution" },
       ],
       deck: Array.from({ length: 12 }, (_, index) => ({ card: "BT1-010", as: `ownDraw${index}` })),
       security: 3,
