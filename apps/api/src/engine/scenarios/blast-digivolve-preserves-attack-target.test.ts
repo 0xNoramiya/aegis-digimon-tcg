@@ -59,11 +59,25 @@ describe("Blast Digivolve preserves the attacked Digimon", () => {
     }
   });
 
-  it("keeps Gankoomon as the target through Jesmon GX's Counter and resolves the battle", async () => {
+  it("preserves the recorded attack target after the corrected Takato material flow", async () => {
     const events: ServerEvent[] = [];
-    const replay = await runReplay(record, { untilInput: 94, onBatch: (_state, batch) => events.push(...batch) });
+    const replay = await runReplay(record, { untilInput: 82, onBatch: (_state, batch) => events.push(...batch) });
     try {
       expect(replay.divergences).toEqual([]);
+      expect(replay.pendingRequest).toMatchObject({
+        kind: "selectCards",
+        sourceCardId: "BT12-089",
+        options: { candidateInstanceIds: ["s0-12", "s0-11"] },
+      });
+      for (const next of record.inputs.slice(83, 94)) {
+        if (next.kind !== "intent" || next.intent.type !== "respondDecision")
+          throw new Error("Expected the recorded post-Takato decisions");
+        const pending = replay.state.pendingDecision!;
+        expect(pending.kind).toBe(next.intent.response.kind);
+        expect(await replay.applyIntent(next.seat, { ...next.intent, decisionId: pending.decisionId })).toEqual({
+          ok: true,
+        });
+      }
       const input = record.inputs[94]!;
       if (input.kind !== "intent" || input.intent.type !== "respondCounter" || !input.intent.effectKey)
         throw new Error("Expected the recorded Blast Digivolve Counter");
@@ -82,8 +96,13 @@ describe("Blast Digivolve preserves the attacked Digimon", () => {
       expect(evolved.stack.some((card) => card.instanceId === gankoomonId)).toBe(true);
       const beforeBattle = events.length;
       for (const next of record.inputs.slice(95)) {
-        if (next.kind !== "intent") throw new Error("Expected the recorded placement decisions");
-        expect(await replay.applyIntent(next.seat, next.intent)).toEqual({ ok: true });
+        if (next.kind !== "intent" || next.intent.type !== "respondDecision")
+          throw new Error("Expected the recorded placement decisions");
+        const pending = replay.state.pendingDecision!;
+        expect(pending.kind).toBe(next.intent.response.kind);
+        expect(await replay.applyIntent(next.seat, { ...next.intent, decisionId: pending.decisionId })).toEqual({
+          ok: true,
+        });
       }
       const resolvedEvents = events.slice(beforeBattle);
       expect(resolvedEvents).toContainEqual(
