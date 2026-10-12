@@ -13,6 +13,7 @@ export interface SeriesSeat {
   deck: SeatJoinOptions["deck"];
   deckId?: string;
   deckName?: string;
+  community?: import("@aegis/shared/decks/UsedDeck").UsedDeck["community"];
   presentationPacing?: "current" | "sequential";
 }
 

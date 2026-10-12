@@ -60,6 +60,32 @@ decoder, queued intents, decisions, snapshots, and animation session. Recorded
 input replays retain the valid active prefix and normalize subsequent batch
 versions; participant replay frames also retain the visible rollback moment.
 
+## Random community decks and used decks
+
+`GET /community/decks/random?format=<DeckFormat>&beta=<true|false>` is public and
+returns `CommunityRandomResult`: one full deck or `null`, plus `eligibleCount`.
+The server scans every public publication in batches of 128 within a repeatable-read
+transaction, revalidates legality for the requested format and beta eligibility,
+and uses reservoir sampling. Hidden and unpublished decks never participate.
+Memory stays bounded and the browser receives only one list. Requests have a rate
+limit and at most two concurrent scans per API process; SQL statements have a
+five-second timeout and the scan checks a ten-second deadline between batches.
+A failed scan returns an error instead of a partial pool.
+
+The lobby's All mystery pool combines personal, famous and community decks. The
+community candidate is selected with probability `eligibleCount / totalCount`,
+so each eligible deck has the same chance. Mine and Famous stay local. A pending
+selection disables launch; leaving the lobby or changing its rules cancels the
+pending launch.
+
+A seated client requests `usedDeck` after joining or reconnecting. The room answers
+only that client's frozen initial `UsedDeck`, including card order, artwork,
+name, format and optional community attribution. It never fetches the publication
+again. Casual series continuations restore the first game's deck and attribution
+from the series record. Spectators cannot request another seat's deck. The
+post-duel viewer copies this snapshot through the ordinary personal-deck save
+workflow; source edits, unpublishing and moderation cannot change that copy.
+
 ## Optional match timer
 
 Casual (`aegis` and `aegis_beta`) join options include `matchTimer: boolean`.

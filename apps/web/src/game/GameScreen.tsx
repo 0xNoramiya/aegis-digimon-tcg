@@ -1,3 +1,5 @@
+import { UsedDeckDialog } from "@/game/UsedDeckDialog";
+import type { DeckListing } from "@/game/decks";
 import { downloadReplay } from "../replays/files";
 /* The in-game board — the design's letterboxed board layout, driven entirely by
    the synchronized GameState and wired to the server through typed intents. The
@@ -188,6 +190,7 @@ function GameScreenSession({
   botDeckId,
   onExit,
   onRematch,
+  onCopyUsedDeck,
   onResetScenario,
   signedIn = false,
   autoHatchReady = true,
@@ -212,6 +215,7 @@ function GameScreenSession({
   betaBattleMode?: boolean;
   unlimited?: boolean;
   onExit: (screen: Screen) => void;
+  onCopyUsedDeck?: (deck: DeckListing) => void;
   /** Restart a server-backed development scenario from the match controls. */
   onResetScenario?: () => void;
   /** Receives the private room code, so a private match can return to its room. */
@@ -255,6 +259,7 @@ function GameScreenSession({
   onLeaveForfeitsChange?: (concede: (() => void) | undefined) => void;
 }) {
   const { t } = useTranslation();
+  const [usedDeckOpen, setUsedDeckOpen] = useState(false);
   const [handOrder, setHandOrder] = useState<readonly string[]>([]);
   const [spectating] = useState(
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
@@ -1423,6 +1428,8 @@ function GameScreenSession({
         !replayMode && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
+              onViewUsedDeck:
+                !spectating && liveConnection.usedDeck && onCopyUsedDeck ? () => setUsedDeckOpen(true) : undefined,
               onDownloadReplay:
                 !spectating && liveConnection.replayDownload?.kind === "ready"
                   ? () => {
@@ -1752,7 +1759,18 @@ function GameScreenSession({
       senders={matchSenders}
       drag={{ state: drag, isPlay: dragIsPlay, cardId: dragCardId, hoveredIntent: hoveredDragIntent ?? undefined }}
       breedingDock={yourBreedingDock}
-      overlayStack={overlays}
+      overlayStack={
+        <>
+          {overlays}
+          {usedDeckOpen && liveConnection.usedDeck && onCopyUsedDeck ? (
+            <UsedDeckDialog
+              snapshot={liveConnection.usedDeck}
+              onCopy={onCopyUsedDeck}
+              onClose={() => setUsedDeckOpen(false)}
+            />
+          ) : null}
+        </>
+      }
       stageEl={stageEl}
       onStartHandDrag={(index, event, origin) => startHandDrag(index, shownHandEntries[index], event, origin)}
       onStartPermanentDrag={startPermDrag}

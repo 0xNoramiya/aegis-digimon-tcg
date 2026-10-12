@@ -2,6 +2,8 @@ import { RollbackHistory } from "#api/rooms/RollbackHistory";
 import { RollbackKind, ROLLBACK_CHANNEL, ROLLBACK_RESET_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
 import type { GameEngineHooks } from "#api/engine/gameEngine/types";
 import type { ReplayInput } from "#api/replays/inputs/types";
+
+import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import { validateDecklist } from "../engine/deckValidation.js";
 import { log, logError, withMatchLog } from "../logger.js";
 import { CloseCode, Room, Client, ServerError, matchMaker, type Delayed } from "colyseus";
@@ -212,6 +214,7 @@ export interface AegisJoinOptions extends SeatJoinOptions {
   seriesToken?: string;
   deckId?: string;
   deckName?: string;
+  community?: import("@aegis/shared/decks/UsedDeck").UsedDeck["community"];
   roomCode?: string; // for joining a private room by code
   ranked?: boolean;
   authTicket?: string;
@@ -308,7 +311,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private rankedByClient = new Map<string, boolean>();
   /** Clients that pace chains of triggered effects themselves (`presentationPacing: "sequential"`). */
   private chainPacingClients = new Set<string>();
-  private deckByClient = new Map<string, DeckSnapshot>();
+  private deckByClient = new Map<string, UsedDeck>();
   /**
    * Every StateView this room handed out, disposed with the room. @colyseus/schema's GC
    * backstop for undisposed views holds the state Root strongly, and the Root reaches this
@@ -492,6 +495,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     };
     options.deckId = entry.deckId;
     options.deckName = entry.deckName;
+    options.community = entry.community;
     options.presentationPacing = entry.presentationPacing;
     options.ranked = false;
     options.betaBattleMode = this.isBetaBattleRoom;
@@ -853,6 +857,12 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         void this.handleRollback(client, payload);
         return;
       }
+
+      if (type === USED_DECK_CHANNEL) {
+        const deck = this.deckByClient.get(client.sessionId);
+        if (deck && !this.spectatorClients.has(client.sessionId)) client.send(USED_DECK_CHANNEL, structuredClone(deck));
+        return;
+      }
       if (type === REPLAY_CHANNEL) {
         const now = performance.now();
         if (now - (this.replayRequestTimes.get(client) ?? -Infinity) >= 10_000) {
@@ -946,6 +956,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
           },
           ...(deck.deckId ? { deckId: deck.deckId } : {}),
           deckName: deck.deckName,
+          community: deck.community ? structuredClone(deck.community) : undefined,
           presentationPacing: this.chainPacingClients.has(player.sessionId) ? "sequential" : "current",
         };
       },
@@ -1317,6 +1328,8 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     this.deckByClient.set(client.sessionId, {
       deckId: options.deckId ?? null,
       deckName: options.deckName ?? "Deck sem nome",
+      format: this.state.format as DeckFormat,
+      community: validCommunityAttribution(options.community),
       mainDeck: [...options.deck.mainDeck],
       eggDeck: [...options.deck.eggDeck],
       mainDeckArts: options.deck.mainDeckArts?.slice(),
@@ -2547,4 +2560,18 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // The engine awaits the matching "respondDecision" intent (correlated by decisionId).
     client?.send(DECISION_CHANNEL, { ...req, stateVersion: this.decisionStateVersion() });
   }
+}
+
+function validCommunityAttribution(value: AegisJoinOptions["community"]): AegisJoinOptions["community"] {
+  if (
+    !value ||
+    typeof value.id !== "string" ||
+    value.id.length > 64 ||
+    typeof value.author?.id !== "string" ||
+    value.author.id.length > 64 ||
+    typeof value.author.displayName !== "string" ||
+    value.author.displayName.length > 100
+  )
+    return undefined;
+  return { id: value.id, author: { id: value.author.id, displayName: value.author.displayName } };
 }

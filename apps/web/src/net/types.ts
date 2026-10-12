@@ -12,6 +12,7 @@ export interface AegisJoinOptions {
   deck: { mainDeck: string[]; eggDeck: string[]; mainDeckArts?: string[]; eggDeckArts?: string[] }; // arrays of card ids
   deckId?: string;
   deckName?: string;
+  community?: import("@aegis/shared/decks/UsedDeck").UsedDeck["community"];
   /** Joins a private room by code, or reopens a finished one under its code. */
   roomCode?: string;
   matchTimer?: boolean;
