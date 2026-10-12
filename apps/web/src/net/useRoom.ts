@@ -1,3 +1,4 @@
+import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import { spectate } from "./client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GameState } from "@aegis/shared";
@@ -124,6 +125,7 @@ export interface UseRoomResult {
   /** This seat's claim on the next game of its best-of-three, once the series has handed it out. */
   seriesSeat: Omit<SeriesGameTicket, "roomId"> | undefined;
   replayDownload?: ReplayDownloadMessage;
+  usedDeck?: UsedDeck;
 }
 
 /** Where the next game of a series is and how this player takes their seat in it. */
@@ -213,6 +215,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
   const confirmedDecisionIdRef = useRef<string | undefined>(undefined);
   const answeredDecisionsRef = useRef(new Map<string, DecisionRequest>());
   const [error, setError] = useState<string>();
+  const [usedDeck, setUsedDeck] = useState<UsedDeck>();
   const [replayDownload, setReplayDownload] = useState<ReplayDownloadMessage>();
   const [sessionId, setSessionId] = useState<string>();
   const [roomCode, setRoomCode] = useState("");
@@ -228,6 +231,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     confirmedDecisionIdRef.current = undefined;
     answeredDecisionsRef.current.clear();
     setDecision(undefined);
+    setUsedDeck(undefined);
 
     let stopHeartbeat = () => {};
 
@@ -256,6 +260,8 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       const heartbeat = setInterval(stampSession, SESSION_HEARTBEAT_MS);
       stopHeartbeat = () => clearInterval(heartbeat);
 
+      room.onMessage<UsedDeck>(USED_DECK_CHANNEL, (message) => setUsedDeck(structuredClone(message)));
+      if (!options.spectator) room.send(USED_DECK_CHANNEL, {});
       room.onMessage<ReplayDownloadMessage>(REPLAY_CHANNEL, (message) => {
         setReplayDownload(message);
         // Every finished match stays in this browser, saved or not to Google Drive.
@@ -480,5 +486,6 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     roomCode,
     seriesSeat,
     replayDownload,
+    usedDeck,
   };
 }

@@ -446,6 +446,7 @@ export function AegisClient({
       avatarId: effectivePlayer.avatarId ?? undefined,
       deckId: matchDeck?.id,
       deckName: matchDeck?.name,
+      community: matchDeck?.community,
       botDeck: customBotDeck
         ? {
             mainDeck: customBotDeck.mainDeck,
@@ -590,7 +591,10 @@ export function AegisClient({
                 setDeckFormat(
                   requestedFormat ?? (mode === "unlimited" || requestedUnlimited ? "unlimited" : "standard"),
                 );
-                setMatchDeckId(requestedDeckId);
+                if (typeof requestedDeckId === "object") {
+                  setBorrowedDeck(structuredClone(requestedDeckId));
+                  setMatchDeckId(requestedDeckId.id);
+                } else setMatchDeckId(requestedDeckId);
                 navigateScreen("game");
               }}
             />
@@ -676,6 +680,7 @@ export function AegisClient({
 
           {screen === "game" && (
             <GameScreen
+              onCopyUsedDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
               autoHatchReady={preferencesReady}
               key={matchNumber}
               joinOptions={joinOptions}
