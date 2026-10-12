@@ -53,6 +53,15 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
   const trashDigivolutionCards: Primitives["trashDigivolutionCards"] = (...args) =>
     pc.fx.trashDigivolutionCards(...args);
 
+  async function payScapegoatDeletion(holder: Permanent, sacrifice: Permanent): Promise<number> {
+    pc.fx.enterEffectResolution?.(holder.controllerSeat, [CardKind.Digimon], holder.permanentId);
+    try {
+      return await deletePermanent([sacrifice.permanentId], "byEffect");
+    } finally {
+      pc.fx.leaveEffectResolution?.();
+    }
+  }
+
   /**
    * The first ＜Decoy＞ source that can still save one of `endangered`: its battle-area
    * holders and the endangered Digimon its specifier accepts. Holders sharing a source
@@ -438,7 +447,8 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
         if (chosen.length === 0) continue;
         const sacrifice = candidates.find((p) => p.topCard?.instanceId === chosen[0]);
         if (sacrifice === undefined) continue;
-        await deletePermanent([sacrifice.permanentId], "byEffect");
+        const costDeleted = await payScapegoatDeletion(perm, sacrifice);
+        if (costDeleted === 0) continue;
         emitDeletionPrevented("Scapegoat", perm, sacrifice.permanentId, sacrifice.topCard?.cardId);
         scapegoatSaved.add(permanentId);
       }
