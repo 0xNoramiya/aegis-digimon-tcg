@@ -98,8 +98,7 @@ export interface AssemblyDeps extends Pick<
   nextPermanentId(): string;
   /** Fire On Play for the placed permanent through the effect stack. */
   fireTiming(state: GameState, seat: Seat, timing: EffectTiming, sourceInstanceId: string): Promise<void>;
-  /** Place a loose trash card under a permanent as a bottom digivolution card. */
-  placeUnder(targetPermanentId: string, instanceIds: string[]): Promise<unknown>;
+  placeMaterialsUnder(targetPermanentId: string, instanceIds: string[]): Promise<unknown>;
   emit?: (event: { kind: string; [k: string]: unknown }) => void;
 }
 
@@ -242,7 +241,7 @@ export async function applyAssembly(
   // stacking order to the player, which is exactly the order they declared.
   const placedIds: string[] = [];
   for (const materialId of materialInstanceIds) {
-    await deps.placeUnder(permanent.permanentId, [materialId]);
+    await deps.placeMaterialsUnder(permanent.permanentId, [materialId]);
     placedIds.push(materialId);
   }
 
