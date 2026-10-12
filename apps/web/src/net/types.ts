@@ -5,6 +5,7 @@
  * must agree on it.
  */
 export interface AegisJoinOptions {
+  allowRollback?: boolean;
   spectator?: boolean;
   displayName: string;
   avatarId?: string;

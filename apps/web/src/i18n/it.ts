@@ -7,6 +7,24 @@ import { en } from "./en";
 // Release notes before v1.19.0 keep their published English text. All interface
 // messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  "rollback.failed": "Impossibile ripristinare questo punto in sicurezza. La partita attuale è stata mantenuta.",
+  "rollback.cancel": "Annulla richiesta",
+  "rollback.allow": "Consenti di annullare le mosse",
+  "rollback.optionHint":
+    "Disattivato per impostazione predefinita. Solo partite casuali, private e contro bot. Il rivale deve accettare; il bot accetta subito.",
+  "rollback.controls": "Annulla mosse",
+  "rollback.undo": "Annulla ultima azione",
+  "rollback.turn": "Torna all'inizio del turno",
+  "rollback.turnHint":
+    "Ripristina il turno corrente prima degli effetti iniziali, della riattivazione e della pesca. Se non è stata eseguita alcuna azione, ripristina l'inizio del turno precedente. Le partite concluse non possono essere ripristinate.",
+  "rollback.hiddenHint": "Le carte già viste non possono essere dimenticate. Concorda il ripristino con il rivale.",
+  "rollback.waiting": "In attesa dell'approvazione del rivale. Le azioni sono sospese.",
+  "rollback.requestAction": "Il rivale chiede di annullare l'ultima azione.",
+  "rollback.requestTurn": "Il rivale chiede di tornare all'inizio del turno.",
+  "rollback.accept": "Accetta",
+  "rollback.reject": "Rifiuta",
+  "rollback.restoring": "Ripristino della partita…",
+
   ...profileReplayIt,
   ...replayIt,
   ...replayVideoIt,
@@ -2022,4 +2040,8 @@ const releaseTranslations = Object.fromEntries(
   Object.entries(releaseMessages).flatMap(([key, message]) => ("it" in message ? [[key, message.it]] : [])),
 );
 
-export const it: Record<keyof typeof en, string> = { ...en, ...interfaceMessages, ...releaseTranslations };
+export const it: Record<keyof typeof en, string> = {
+  ...en,
+  ...interfaceMessages,
+  ...releaseTranslations,
+};

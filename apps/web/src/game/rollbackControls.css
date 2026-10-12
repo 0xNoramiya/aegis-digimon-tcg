@@ -1,0 +1,27 @@
+.rollback-controls {
+  position: absolute;
+  inset-block-start: var(--space-3, 0.75rem);
+  inset-inline-end: var(--space-3, 0.75rem);
+  z-index: calc(var(--ds-z-dialog) + 1);
+  max-width: min(22rem, calc(100% - 1.5rem));
+  padding: 0.75rem;
+  background: var(--ds-sheet);
+  color: var(--ds-text);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-md);
+  font-size: 0.875rem;
+}
+.rollback-controls summary {
+  cursor: pointer;
+}
+.rollback-controls p {
+  margin-block: 0.5rem;
+}
+.rollback-controls__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.aegis-dialog-layer:has(.rollback-consent) {
+  z-index: calc(var(--ds-z-dialog) + 2);
+}

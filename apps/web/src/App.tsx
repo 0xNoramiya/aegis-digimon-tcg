@@ -336,6 +336,7 @@ export function AegisClient({
     timerStartSeconds: 300,
     timerRefillSeconds: 60,
   }));
+  const [allowRollback, setAllowRollback] = useState(false);
   const [bestOf, setBestOf] = useState(loadMatchFormatPreference);
   /** Set between the games of a best-of-three: the next GameScreen takes this seat. */
   const [seriesGame, setSeriesGame] = useState<SeriesGameTicket>();
@@ -440,6 +441,7 @@ export function AegisClient({
   const joinOptions = useMemo<AegisJoinOptions>(
     () => ({
       ...timerOptions,
+      allowRollback,
       bestOf,
       format: deckFormat,
       displayName: effectivePlayer.name,
@@ -461,7 +463,16 @@ export function AegisClient({
         eggDeckArts: matchDeck?.eggDeckArts,
       },
     }),
-    [effectivePlayer.name, effectivePlayer.avatarId, matchDeck, timerOptions, bestOf, customBotDeck, deckFormat],
+    [
+      effectivePlayer.name,
+      effectivePlayer.avatarId,
+      matchDeck,
+      timerOptions,
+      bestOf,
+      customBotDeck,
+      deckFormat,
+      allowRollback,
+    ],
   );
 
   const showNav = NAV_SCREENS.includes(screen) && !replayViewing;
@@ -563,6 +574,8 @@ export function AegisClient({
               onNav={navigateScreen}
               timerOptions={timerOptions}
               onTimerOptionsChange={setTimerOptions}
+              allowRollback={allowRollback}
+              onAllowRollbackChange={setAllowRollback}
               bestOf={bestOf}
               onBestOfChange={setBestOf}
               invitedRoomCode={invitedRoomCode}

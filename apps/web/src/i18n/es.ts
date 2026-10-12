@@ -18,6 +18,24 @@ import { settingsEs } from "./redesign/settings.es";
 import { shellEs } from "./redesign/shell.es";
 
 export const es: Record<keyof typeof en, string> = {
+  "rollback.failed": "No se pudo restaurar este punto con seguridad. Se conservó la partida actual.",
+  "rollback.cancel": "Cancelar solicitud",
+  "rollback.allow": "Permitir retroceder jugadas",
+  "rollback.optionHint":
+    "Desactivado por defecto. Solo partidas aleatorias, privadas y contra bots. El rival debe aceptar; el bot acepta de inmediato.",
+  "rollback.controls": "Retroceder jugadas",
+  "rollback.undo": "Deshacer última acción",
+  "rollback.turn": "Volver al inicio del turno",
+  "rollback.turnHint":
+    "Restaura el turno actual antes de efectos iniciales, desuspender y robar. Si aún no hubo acciones, vuelve al inicio del turno anterior. No se puede retroceder una partida terminada.",
+  "rollback.hiddenHint": "Las cartas ya vistas no se pueden olvidar. Acuerda el retorno con tu rival.",
+  "rollback.waiting": "Esperando aprobación del rival. Las jugadas están pausadas.",
+  "rollback.requestAction": "El rival pide deshacer la última acción.",
+  "rollback.requestTurn": "El rival pide volver al inicio del turno.",
+  "rollback.accept": "Aceptar",
+  "rollback.reject": "Rechazar",
+  "rollback.restoring": "Restaurando partida…",
+
   ...profileReplayEs,
   ...replayEs,
   ...replayVideoEs,
