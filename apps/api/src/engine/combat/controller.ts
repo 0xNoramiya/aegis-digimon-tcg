@@ -1243,40 +1243,13 @@ export class CombatController {
     await this.hooks.fireSubTrigger?.("whenSuspended", trigger);
   }
 
-  /**
-   * Switch the attack onto the declared blocker: suspend the blocker, then fire
-   * OnBlock and OnAttackTargetChanged (AttackProcess.SwitchDefender, cs:514-626).
-   */
   private async switchDefenderToBlocker(attacker: Permanent, blocker: Permanent): Promise<void> {
     const blockerSuspended = this.suspendInCombat(blocker);
     this.hooks.emit({ kind: "blocked", blockerPermanentId: blocker.permanentId });
-    await this.fireSuspended(blocker, blockerSuspended);
-
-    const trigger: CombatTrigger = {
+    await this.hooks.fireBlockTiming({
       attackerPermanentId: attacker.permanentId,
-      defenderPermanentId: blocker.permanentId,
       blockerPermanentId: blocker.permanentId,
-    };
-    await this.hooks.fireTiming(EffectTiming.OnBlockAnyone, trigger);
-    await this.hooks.fireTiming(EffectTiming.OnAttackTargetChanged, trigger);
-    await this.hooks.fireSubTrigger?.("whenAttackTargetSwitched", {
-      ...trigger,
-      subjectPermanentId: attacker.permanentId,
-    });
-    // Kept alive as a genuine SubTrigger event (distinct from the OnBlockAnyone timing
-    // above) to serve BT4-098's temporary grant shape ("[Your Turn] when this Digimon is
-    // blocked, gain <effect> until end of turn") — a shape the timing dispatch alone can't
-    // express since it needs to install a SubTrigger watcher, not react from a card module.
-    await this.hooks.fireSubTrigger?.("whenBlocked", {
-      attackerPermanentId: attacker.permanentId,
-      defenderPermanentId: blocker.permanentId,
-      blockerPermanentId: blocker.permanentId,
-    });
-    await this.hooks.fireSubTrigger?.("whenBlockerActivated", {
-      attackerPermanentId: attacker.permanentId,
-      defenderPermanentId: blocker.permanentId,
-      blockerPermanentId: blocker.permanentId,
-      subjectPermanentId: blocker.permanentId,
+      blockerSuspended,
     });
   }
 
@@ -1425,7 +1398,23 @@ export class CombatController {
     // trashing the top card of your security stack, prevent that deletion. Each
     // separate battle deletion can trigger it; there is no once-per-turn limit.
     const barrieredIds = new Set<string>();
-    for (const permanentId of resolvedDeletedIds) {
+    const barrierHolderIds = resolvedDeletedIds.filter((permanentId) => this.hasKeyword(permanentId, "Barrier"));
+    const consultBarrier = this.hooks.consultLeavePrevention;
+    const barrierConsultedIds = new Set<string>(
+      this.hooks.barrierInLeavePrevention === true && consultBarrier !== undefined ? barrierHolderIds : [],
+    );
+    if (consultBarrier !== undefined && barrierConsultedIds.size > 0) {
+      const prevented = await consultBarrier([...barrierConsultedIds], {
+        barrier: { interruptsEffect: isAttackBattle },
+      });
+      if (this.access.game.gameOver) {
+        return;
+      }
+      for (const permanentId of prevented) {
+        barrieredIds.add(permanentId);
+      }
+    }
+    for (const permanentId of barrierConsultedIds.size > 0 ? [] : barrierHolderIds) {
       if (!this.hasKeyword(permanentId, "Barrier")) continue;
       const perm = this.access.permanentById(permanentId);
       if (perm === undefined) continue;
@@ -1445,7 +1434,7 @@ export class CombatController {
     // Q4262: Barrier does not cancel same-event prevention or instead siblings. The shared
     // consult still offers the instead reactions (Q6250) and lets eligible prevention
     // candidates such as P-146 (Q4261/Q4262) resolve independently.
-    if (barrieredIds.size > 0) {
+    if (barrieredIds.size > 0 && barrierConsultedIds.size === 0) {
       await this.hooks.consultLeavePrevention?.([...barrieredIds]);
     }
 
@@ -1562,7 +1551,10 @@ export class CombatController {
     }
     const postScapegoatDeletedIds = postFragmentDeletedIds.filter((id) => !scapegoatSavedIds.has(id));
 
-    const cardPreventedIds = (await this.hooks.consultLeavePrevention?.(postScapegoatDeletedIds)) ?? new Set<string>();
+    const cardPreventedIds =
+      (await this.hooks.consultLeavePrevention?.(
+        postScapegoatDeletedIds.filter((permanentId) => !barrierConsultedIds.has(permanentId)),
+      )) ?? new Set<string>();
     const postCardPreventionDeletedIds = postScapegoatDeletedIds.filter((id) => !cardPreventedIds.has(id));
 
     const resolveBattleWon =

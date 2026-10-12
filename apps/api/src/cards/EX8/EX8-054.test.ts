@@ -49,7 +49,11 @@ describe("EX8-054", () => {
         filter: { controllerDefault: "opponent", kind: ["Digimon"], unsuspended: true },
       },
       actions: [
-        { kind: "Attack", target: { filter: { isSelfRef: true }, count: 1, isSelf: true }, attackPlayer: true },
+        {
+          kind: "Attack",
+          target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
+          attackTargetScope: "player",
+        },
       ],
     });
     expect(digivolutionRequirementsFor("EX8-054")).toContainEqual({

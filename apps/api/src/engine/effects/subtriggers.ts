@@ -39,6 +39,7 @@ export type SubTriggerRootZone = "trash" | "hand" | "security";
 /** A delayed/triggered sub-effect installed during resolution. */
 export interface SubTriggerSubscription {
   id: number;
+  identicalInstallOrdinal?: number;
   event: SubTriggerEventName;
   /** Printed timing of the clause that installed this watcher. */
   printedTiming?: string;
@@ -460,7 +461,7 @@ export class SubTriggerRegistry {
    * typecheck and then silently never fire; failing loudly at install time turns
    * that class of bug into an immediate crash instead of a mystery.
    */
-  subscribe(sub: Omit<SubTriggerSubscription, "id">): number {
+  subscribe(sub: Omit<SubTriggerSubscription, "id" | "identicalInstallOrdinal">): number {
     if (
       sub.matches !== undefined &&
       sub.sourcePermanentId === undefined &&
@@ -484,8 +485,30 @@ export class SubTriggerRegistry {
       if (existing !== undefined) return existing.id;
     }
     const id = this.seq++;
-    this.subs.push({ ...sub, id });
+    const ordinal = this.findFreeIdenticalInstallOrdinal(sub);
+    this.subs.push({ ...sub, id, ...(ordinal > 1 ? { identicalInstallOrdinal: ordinal } : {}) });
     return id;
+  }
+
+  private findFreeIdenticalInstallOrdinal(sub: Omit<SubTriggerSubscription, "id">): number {
+    const taken = new Set(
+      this.subs
+        .filter(
+          (candidate) =>
+            candidate.oncePerTurnKey === undefined &&
+            candidate.event === sub.event &&
+            candidate.sourcePermanentId === sub.sourcePermanentId &&
+            candidate.sourceInstanceId === sub.sourceInstanceId &&
+            candidate.dedupeKey === sub.dedupeKey &&
+            candidate.description === sub.description,
+        )
+        .map((candidate) => candidate.identicalInstallOrdinal ?? 1),
+    );
+    let ordinal = 1;
+    while (taken.has(ordinal)) {
+      ordinal += 1;
+    }
+    return ordinal;
   }
 
   /** Install a replacement effect. Returns its id. */

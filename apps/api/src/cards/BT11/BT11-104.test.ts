@@ -18,7 +18,11 @@ describe("BT11-104 Buster Dive", () => {
         trigger: "Main",
         actions: [
           { kind: "ModifyDP", amount: 5000, alsoGainKeywords: [{ keyword: "Rush" }] },
-          { kind: "Attack", target: { filter: { controller: "mine", kind: ["Digimon"] } }, attackPlayer: false },
+          {
+            kind: "Attack",
+            target: { filter: { controller: "mine", kind: ["Digimon"] } },
+            attackTargetScope: "digimon",
+          },
         ],
       },
       { trigger: "Security", isSecurity: true, actions: [{ kind: "AddToHandSelf" }] },

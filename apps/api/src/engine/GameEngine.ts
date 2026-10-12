@@ -754,6 +754,7 @@ export class GameEngine {
       isDigiXros?: boolean;
       includeEvade?: boolean;
       includeArmorPurge?: boolean;
+      barrier?: { interruptsEffect: boolean };
     },
   ): Promise<Set<string>> {
     return engineConsultLeavePrevention(this, permanentIds, cause, resolvingSeat, opts);

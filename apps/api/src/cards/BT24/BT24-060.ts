@@ -70,7 +70,7 @@ export const compiled: CompiledCard = {
                 count: 1,
                 isSelf: true,
               },
-              attackPlayer: false,
+              attackTargetScope: "digimon",
               optional: true,
             },
           ],

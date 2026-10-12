@@ -173,7 +173,9 @@ export async function applyActivateEffect(
     presentation.restore();
     finishPresentation?.();
   }
-  deps.tracker.register(source.instanceId, effect.effectKey);
+  if (ctx.oncePerTurnActivationDeclined !== true) {
+    deps.tracker.register(source.instanceId, effect.effectKey);
+  }
 
   return {
     ok: true,

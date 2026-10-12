@@ -31,7 +31,7 @@ describe("BT22-036 Chaperomon", () => {
     const endTurn = compiled.effects.find((entry) => entry.trigger === "EndOfYourTurn");
     expect(endTurn?.actions[0]).toMatchObject({
       kind: "Attack",
-      attackPlayer: true,
+      attackTargetScope: "any",
       withoutSuspending: true,
       optional: true,
       cost: { kind: "deleteOwn" },

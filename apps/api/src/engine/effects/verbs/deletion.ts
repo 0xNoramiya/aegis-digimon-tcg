@@ -231,6 +231,7 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
       const prevented = await engine.consultLeavePrevention(permanentIds, cause, resolvingSeat, {
         includeEvade: true,
         includeArmorPurge: true,
+        barrier: { interruptsEffect: false },
       });
       if (prevented.size > 0) toDelete = permanentIds.filter((id) => !prevented.has(id));
     }
@@ -263,7 +264,7 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
     // barrierPrompt/respondBarrier window as the combat (battle-loss) path.
     {
       const barriered = new Set<string>();
-      for (const permanentId of cause === "byBattle" ? toDelete : []) {
+      for (const permanentId of cause === "byBattle" && !engine.consultLeavePrevention ? toDelete : []) {
         if (!continuous.hasKeyword(permanentId, "Barrier")) continue;
         const perm = access.permanentById(permanentId);
         if (perm === undefined) continue;

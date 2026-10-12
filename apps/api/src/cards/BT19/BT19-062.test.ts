@@ -64,7 +64,7 @@ describe("BT19-062 Cyberdramon", () => {
         actions: [
           {
             kind: "Attack",
-            attackPlayer: true,
+            attackTargetScope: "player",
             target: { count: 1, isSelf: true, filter: { isSelfRef: true } },
             condition: {
               kind: "opponentHas",

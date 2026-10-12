@@ -135,7 +135,7 @@ describe("EX12-048 SeitenGokuumon", () => {
     expect(s.events.some(({ kind }) => kind === "attackDeclared")).toBe(false);
   });
 
-  it("Q6822 keeps a 0-DP target present through the optional attack and Raid redirection", async () => {
+  it("Q6822 deletes a 0-DP target before Raid can redirect the optional attack to it", async () => {
     const s = setupEngine(
       {
         0: { battleArea: [{ card: "EX12-048", as: "source" }] },
@@ -149,13 +149,18 @@ describe("EX12-048 SeitenGokuumon", () => {
     await advance(s.engine).fire(EffectTiming.OnPlay, s.perm("source"));
     await settle(() => s.events.some((event) => event.kind === "attackDeclared"));
 
-    await settle(() => s.state.players[1]!.battleArea.every(({ permanentId }) => permanentId !== targetId));
-    expect(s.events.filter((event) => event.kind === "attackDeclared").at(-1)).toMatchObject({
-      target: { kind: "permanent", permanentId: targetId },
-    });
-    // The 0-DP target is deleted by the subsequent rule check, not by battle.
-    // Piercing therefore has no battle deletion to convert into security checks.
-    expect(s.state.players[1]!.security).toHaveLength(2);
+    await settle(() => s.events.some((event) => event.kind === "attackEnded") && !s.state.pendingDecision);
+    const deletion = s.events.find(
+      (event) =>
+        event.kind === "cardsMoved" &&
+        (event.deletedPermanents ?? []).some(({ permanentId }) => permanentId === targetId),
+    );
+    expect(s.state.players[1]!.battleArea.map(({ permanentId }) => permanentId)).not.toContain(targetId);
+    expect(deletion).toBeDefined();
+    expect(deletion).not.toMatchObject({ battleDeletion: true });
+    expect(s.events.flatMap((event) => (event.kind === "attackDeclared" ? [event.target] : []))).toEqual([
+      { kind: "player" },
+    ]);
   });
 
   it("assembles with 3 allowed different names and clamps the reduced play cost to 0", async () => {

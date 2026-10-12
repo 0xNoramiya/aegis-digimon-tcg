@@ -98,6 +98,7 @@ function controllerHarness(onAttack?: (combat: CombatController) => void): Contr
   let combatRef: CombatController | undefined;
   const hooks: CombatHooks = {
     emit: (e) => events.push(e),
+    fireBlockTiming: async () => {},
     fireTiming: async (timing) => {
       if (timing === EffectTiming.OnUseAttack && combatRef) onAttack?.(combatRef);
     },
