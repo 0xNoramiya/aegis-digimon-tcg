@@ -80,7 +80,8 @@ Database authorization, attachment ownership, rollback, idempotency, notificatio
 and privacy regressions run against an isolated PostgreSQL database:
 
 ```sh
-POSTGRES_TESTS=1 POSTGRES_TEST_URL=postgresql://127.0.0.1:5441/aegis_forum +  pnpm --filter @aegis/api exec vitest run src/db/postgres.atomicity.feedbackForum.test.ts
+POSTGRES_TESTS=1 POSTGRES_TEST_URL=postgresql://127.0.0.1:5441/aegis_forum \
+  pnpm --filter @aegis/api exec vitest run src/db/postgres.atomicity.feedbackForum.test.ts
 ```
 
 UI flow and layout regressions use the real product components with controlled
