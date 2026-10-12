@@ -1,7 +1,9 @@
 import prepared0 from "../../api/src/engine/scenarios/dracomon-selection.fixture";
 import { fixtureVariant, fixtureInstanceId } from "../../api/src/engine/scenario/references";
 
-const preparedFixtures = { "dracomon-selection": prepared0 };
+import fixtureDavis from "../../api/src/engine/scenarios/davis-both-colors.fixture";
+
+const preparedFixtures = { "dracomon-selection": prepared0, "arena-davis-both-colors": fixtureDavis };
 
 import { test, expect } from "./scenario-page";
 
@@ -36,7 +38,9 @@ for (const width of [1440, 390]) {
             state.players[0]!.hand.some(
               (candidate) =>
                 candidate.instanceId ===
-                (card === "davis" ? "dev-davis-reveal-lighdramon" : fixtureInstanceId("feedback65-reveal-match")),
+                (card === "davis"
+                  ? fixtureInstanceId("davis-reveal-lighdramon-card")
+                  : fixtureInstanceId("feedback65-reveal-match")),
             ),
           async (decision) => {
             if (decision.kind !== "selectCards" && decision.kind !== "orderCards") return {};
@@ -67,8 +71,8 @@ for (const width of [1440, 390]) {
             const instanceId =
               card === "davis"
                 ? selections === 1
-                  ? "dev-davis-reveal-veemon"
-                  : "dev-davis-reveal-lighdramon"
+                  ? fixtureInstanceId("davis-reveal-veemon-card")
+                  : fixtureInstanceId("davis-reveal-lighdramon-card")
                 : fixtureInstanceId("feedback65-reveal-match");
             expect(decision.options.candidateInstanceIds).toContain(instanceId);
             return { instanceId };
@@ -84,21 +88,22 @@ for (const width of [1440, 390]) {
         expect(after.players[0]!.hand.map((candidate) => candidate.instanceId)).toEqual(
           expect.arrayContaining(
             card === "davis"
-              ? ["dev-davis-reveal-veemon", "dev-davis-reveal-lighdramon"]
+              ? [fixtureInstanceId("davis-reveal-veemon-card"), fixtureInstanceId("davis-reveal-lighdramon-card")]
               : [fixtureInstanceId("feedback65-reveal-match"), fixtureInstanceId("feedback65-reserve")],
           ),
         );
         expect(
           after.players[0]!.hand.some(
             (candidate) =>
-              candidate.instanceId === (card === "davis" ? "dev-davis-bt3" : fixtureInstanceId("feedback65-dracomon")),
+              candidate.instanceId ===
+              (card === "davis" ? fixtureInstanceId("davis-bt3-card") : fixtureInstanceId("feedback65-dracomon")),
           ),
         ).toBe(false);
         expect(
           after.players[0]!.battleArea.some(
             (permanent) =>
               permanent.topCard.instanceId ===
-              (card === "davis" ? "dev-davis-bt3" : fixtureInstanceId("feedback65-dracomon")),
+              (card === "davis" ? fixtureInstanceId("davis-bt3-card") : fixtureInstanceId("feedback65-dracomon")),
           ),
         ).toBe(true);
         expect(after.players[0]!.trash).toHaveLength(0);
