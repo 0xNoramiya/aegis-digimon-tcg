@@ -1339,3 +1339,26 @@ describe("recovery following an evolution draw", () => {
     }
   });
 });
+
+it("settles parent result receipts before a nested replacement announcement", async () => {
+  setBasePacing(PACING_BY_STYLE.stacked);
+  const view = renderChain("sequential");
+  await advance(0);
+  view.feedChain([
+    [triggered("AD1-002", "src-a", "a/delete")],
+    [{ ...triggered("BT18-015", "src-b", "b/replacement"), timing: "wouldLeavePlay" }],
+    [resolved("BT18-015", "src-b", "b/replacement")],
+    [
+      {
+        kind: "cardsMoved",
+        from: "battleArea",
+        to: "trash",
+        instanceIds: ["src-b"],
+        deletedPermanents: [{ permanentId: "perm-b", instanceId: "src-b", cardId: "BT18-015", seat: 0 }],
+      },
+    ],
+    [resolved("AD1-002", "src-a", "a/delete")],
+  ]);
+  await advance(4000);
+  expect(view.result.current.decisionAnimationsPending).toBe(false);
+});

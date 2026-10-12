@@ -24,6 +24,8 @@ export function rollbackStateFingerprint(state: GameState): string {
     "rollbackRequesterSeat",
     "rollbackKind",
     "rollbackBusy",
+    "undoActionSeat",
+    "rollbackTurnSeat",
     "canUndoAction",
     "canRollbackTurn",
   ])

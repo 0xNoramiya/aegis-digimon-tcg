@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test";
 import type { AegisRoom } from "@/net/client";
 import { GameState } from "@aegis/shared/schema/GameState";
 import { Client } from "@colyseus/sdk";
-import { RollbackKind, ROLLBACK_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
+import { ROLLBACK_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
 import { RED_DECK, BLUE_DECK } from "../../api/dist/engine/testDecks.js";
 import { roomRegistry } from "../../api/dist/rooms/AegisRoom.js";
 import fixture from "../../api/src/engine/scenarios/matchRollback.fixture";
@@ -54,7 +54,7 @@ test("bot undo and turn rollback fully synchronize hidden hands and public perma
   }
 });
 
-test("opponent consent stays accessible over a pending effect and restores that action on both live clients", async ({
+test("own-action rollback waits for opponent consent over a pending effect and restores both live clients", async ({
   page,
 }) => {
   const server = await startBrowserServer();
@@ -84,11 +84,21 @@ test("opponent consent stays accessible over a pending effect and restores that 
     await page.getByRole("button", { name: /^end breeding$/i }).click();
     await scenario.play("Agumon", "Digimon");
     await expect.poll(async () => (await scenario.snapshot()).pendingDecision?.kind).toBe("selectCards");
-    opponent.send(ROLLBACK_CHANNEL, { type: "request", kind: RollbackKind.ACTION.value, revision: 0 });
+    await expect.poll(() => opponent!.state.undoActionSeat).toBe(0);
+    await page.getByRole("button", { name: "Rollback", exact: true }).click();
+    await page.getByRole("button", { name: "Undo last action", exact: true }).click();
     const consent = page.getByRole("dialog", { name: "Rollback", exact: true });
     await expect(consent).toBeVisible();
-    await consent.getByRole("button", { name: "Accept", exact: true }).focus();
-    await page.keyboard.press("Enter");
+    await expect(consent.getByRole("button", { name: "Cancel request", exact: true })).toBeVisible();
+    await expect.poll(() => opponent!.state.rollbackRequestId).not.toBe("");
+    expect(opponent.state.rollbackRequesterSeat).toBe(0);
+    expect(opponent.state.rollbackRevision).toBe(0);
+    opponent.send(ROLLBACK_CHANNEL, {
+      type: "respond",
+      requestId: opponent.state.rollbackRequestId,
+      accept: true,
+      revision: 0,
+    });
     await expect.poll(async () => (await scenario.snapshot()).rollbackRevision).toBe(1);
     await expect.poll(() => opponent!.state.rollbackRevision).toBe(1);
     await expect(page.getByTestId("hand").getByRole("img", { name: "Agumon", exact: true })).toBeVisible();

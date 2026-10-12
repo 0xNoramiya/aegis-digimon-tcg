@@ -118,6 +118,28 @@ function narrationTrack({ unitId, resultUnitId, sharedTrack }: NarrationTrackPar
   return sharedTrack;
 }
 
+type NarrationCauseGateParams = {
+  isClause: boolean;
+  resultAnnouncement: PresentationGate | undefined;
+  latestAnnouncement: PresentationGate | null;
+  itemVersion: number | undefined;
+  latestAnnouncementVersion: number | undefined;
+};
+
+function narrationCauseGate({
+  isClause,
+  resultAnnouncement,
+  latestAnnouncement,
+  itemVersion,
+  latestAnnouncementVersion,
+}: NarrationCauseGateParams): PresentationGate | null {
+  if (isClause) return null;
+  if (resultAnnouncement) return resultAnnouncement;
+  if (itemVersion !== undefined && latestAnnouncementVersion !== undefined && latestAnnouncementVersion > itemVersion)
+    return null;
+  return latestAnnouncement;
+}
+
 /** An effect's draw on its way to the hand; a turn's own draw is no clause's result. */
 function isEffectDrawFlight(step: AnimationStep): boolean {
   return step.id.startsWith("draw-flight-") && step.track?.startsWith("drawFlight-") === true;
@@ -246,16 +268,23 @@ export function narrationStream(deps: NarrationStreamDeps) {
     // Sequential pacing: this clause is its unit's announcement, and the unit ahead of it has
     // to settle before it is read. That order supersedes the latest-announcement wait.
     const unit = presentationPacingRef.current === "sequential" ? effectSequence.unitOf(item.notice) : undefined;
+    const resultUnit =
+      presentationPacingRef.current === "sequential" && itemVersion !== undefined && body?.variant !== "keyword"
+        ? effectSequence.unitAtVersion(itemVersion)
+        : undefined;
     // A later answer may replace the unit's announcement gate while this step is
     // still finishing. This clause can release only the gate it was raised for.
     const unitAnnouncement = unit?.announced;
     // Paying Delay precedes this unit's clause, but still follows the earlier units.
     // Its own ceiling starts when this unit may focus, not while those units are reading.
     if (unit && costClause) costClause.focused.after = unit.started;
-    const causingEffectGate =
-      unit || (itemVersion !== undefined && latestAnnounceVersion !== undefined && latestAnnounceVersion > itemVersion)
-        ? null
-        : latestAnnounceGate;
+    const causingEffectGate = narrationCauseGate({
+      isClause: unit !== undefined,
+      resultAnnouncement: resultUnit?.announced,
+      latestAnnouncement: latestAnnounceGate,
+      itemVersion,
+      latestAnnouncementVersion: latestAnnounceVersion,
+    });
     if (announceGate) {
       effectAnnounceGateRef.current = announceGate;
       if (itemVersion !== undefined) announceGateVersions.set(announceGate, itemVersion);
@@ -280,10 +309,6 @@ export function narrationStream(deps: NarrationStreamDeps) {
        the earlier effect, until a ceiling broke the cycle. The unit order already keeps
        clauses in turn; the wait below keeps one behind its card's arrival. */
     const ownTrack = unit !== undefined;
-    const resultUnit =
-      presentationPacingRef.current === "sequential" && itemVersion !== undefined && body?.variant !== "keyword"
-        ? effectSequence.unitAtVersion(itemVersion)
-        : undefined;
     const track = narrationTrack({ unitId: unit?.id, resultUnitId: resultUnit?.id, sharedTrack });
     // The same permanent may evolve because of this very On Play. That future arrival
     // waits for this clause, so waiting on its id alone creates a cycle. An originless

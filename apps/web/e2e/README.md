@@ -68,6 +68,8 @@ its own decision becomes visible.
 
 The `battle-entry-effects-before-end-of-attack` sequence allows 12 seconds for Grademon's End of Attack decision after Minervamon's deletion and Lunamon's source play, three-card reveal, search, hand arrivals, and return of the remaining card. The allowance belongs only to that decision; the sequence still requires the presentation queue to drain without failed steps or expired gates.
 
+`ScenarioPage.resolveUntil` uses its presentation timeout for both the observed state predicate and queue completion. Atomic Inferno allows 30 seconds for the opponent's full turn and the following own-turn banners at normal animation speed. The test still requires two blocks, unchanged memory after the effect expires, and a healthy presentation without expired gates.
+
 When parallel execution is requested, use separate Playwright processes with
 unique `AEGIS_E2E_WEB_PORT`, `AEGIS_E2E_EDGE_PORT`, and `AEGIS_E2E_SERVER_PORT`
 values, each with one worker. Build shared contracts and the API once before
