@@ -17,10 +17,15 @@ test("bot undo and turn rollback fully synchronize hidden hands and public perma
     const scenario = new ScenarioPage(page, useBrowserFixture);
     await scenario.openFixture(fixture, "normal", "end", true);
     await scenario.idle();
+    await page.getByRole("button", { name: "Rollback", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Undo last action", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Return to turn start", exact: true })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("button", { name: "Undo last action", exact: true })).not.toBeVisible();
     const initial = await scenario.snapshot();
     await scenario.play("Monodramon", "Digimon");
     await expect.poll(async () => (await scenario.snapshot()).players[0].hand.length).toBe(1);
-    await page.getByText("Rollback", { exact: true }).click();
+    await page.getByRole("button", { name: "Rollback", exact: true }).click();
     await page.getByRole("button", { name: "Undo last action", exact: true }).click();
     await expect.poll(async () => (await scenario.snapshot()).rollbackRevision).toBe(1);
     await expect(page.getByTestId("hand").getByRole("img", { name: "Monodramon", exact: true })).toBeVisible();
@@ -30,7 +35,7 @@ test("bot undo and turn rollback fully synchronize hidden hands and public perma
     );
     expect(restored.players[0].battleArea).toHaveLength(initial.players[0].battleArea.length);
     expect(restored.players[1].hand).toHaveLength(0);
-    await page.getByText("Rollback", { exact: true }).click();
+    await page.getByRole("button", { name: "Rollback", exact: true }).click();
     await page.getByRole("button", { name: "Return to turn start", exact: true }).click();
     await expect.poll(async () => (await scenario.snapshot()).rollbackRevision).toBe(2);
     await expect(page.getByRole("button", { name: /^end breeding$/i })).toBeEnabled();

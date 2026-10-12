@@ -22,8 +22,9 @@ export const en = {
   "rollback.failed": "Could not safely restore this point. The current game was kept.",
   "rollback.cancel": "Cancel request",
   "rollback.allow": "Allow rollback",
+  "rollback.help": "How rollback works",
   "rollback.optionHint":
-    "Off by default. Random, private and bot matches only. Humans must agree; bots accept immediately.",
+    "Rollback lets you undo the last action or return to the start of a turn, restoring cards, memory and the match state.",
   "rollback.controls": "Rollback",
   "rollback.undo": "Undo last action",
   "rollback.turn": "Return to turn start",

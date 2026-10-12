@@ -21,8 +21,9 @@ export const es: Record<keyof typeof en, string> = {
   "rollback.failed": "No se pudo restaurar este punto con seguridad. Se conservó la partida actual.",
   "rollback.cancel": "Cancelar solicitud",
   "rollback.allow": "Permitir retroceder jugadas",
+  "rollback.help": "Cómo funciona",
   "rollback.optionHint":
-    "Desactivado por defecto. Solo partidas aleatorias, privadas y contra bots. El rival debe aceptar; el bot acepta de inmediato.",
+    "Retroceder jugadas permite deshacer la última acción o volver al inicio de un turno, restaurando las cartas, la memoria y el estado de la partida.",
   "rollback.controls": "Retroceder jugadas",
   "rollback.undo": "Deshacer última acción",
   "rollback.turn": "Volver al inicio del turno",

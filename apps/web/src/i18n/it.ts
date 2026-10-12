@@ -10,8 +10,9 @@ const interfaceMessages = {
   "rollback.failed": "Impossibile ripristinare questo punto in sicurezza. La partita attuale è stata mantenuta.",
   "rollback.cancel": "Annulla richiesta",
   "rollback.allow": "Consenti di annullare le mosse",
+  "rollback.help": "Come funziona",
   "rollback.optionHint":
-    "Disattivato per impostazione predefinita. Solo partite casuali, private e contro bot. Il rivale deve accettare; il bot accetta subito.",
+    "Annullare le mosse permette di annullare l’ultima azione o tornare all’inizio di un turno, ripristinando carte, memoria e stato della partita.",
   "rollback.controls": "Annulla mosse",
   "rollback.undo": "Annulla ultima azione",
   "rollback.turn": "Torna all'inizio del turno",

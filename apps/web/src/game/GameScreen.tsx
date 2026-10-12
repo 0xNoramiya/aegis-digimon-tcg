@@ -1,4 +1,3 @@
-import { RollbackControls } from "@/game/RollbackControls";
 import { downloadReplay } from "../replays/files";
 /* The in-game board — the design's letterboxed board layout, driven entirely by
    the synchronized GameState and wired to the server through typed intents. The
@@ -1773,10 +1772,5 @@ function GameScreenSession({
       }}
     />
   );
-  return (
-    <>
-      {state && room && !spectating ? <RollbackControls state={state} room={room} seat={viewerSeat} /> : null}
-      {board}
-    </>
-  );
+  return board;
 }

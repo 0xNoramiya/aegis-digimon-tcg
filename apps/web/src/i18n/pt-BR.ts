@@ -24,8 +24,9 @@ export const ptBR: Record<keyof typeof en, string> = {
   "rollback.failed": "Não foi possível restaurar este ponto com segurança. A partida atual foi mantida.",
   "rollback.cancel": "Cancelar pedido",
   "rollback.allow": "Permitir voltar jogadas",
+  "rollback.help": "Como funciona",
   "rollback.optionHint":
-    "Desativado por padrão. Só em partidas aleatórias, privadas e contra bot. O adversário precisa aceitar; o bot aceita imediatamente.",
+    "Rollback permite desfazer a última ação ou voltar ao início de um turno, restaurando as cartas, a memória e o estado da partida.",
   "rollback.controls": "Voltar jogadas",
   "rollback.undo": "Desfazer última ação",
   "rollback.turn": "Voltar ao início do turno",
