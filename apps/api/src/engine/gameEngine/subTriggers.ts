@@ -29,7 +29,7 @@ import { trashArrivalOf } from "../state/access.js";
 import type { GameEngine } from "../GameEngine.js";
 import { shouldDeferNestedTiming, withTriggeredMutations } from "./windows.js";
 import { buildEffectContext, cardSourceOf } from "./effectContext.js";
-import { drainPendingAttackTriggers } from "./timing/fire.js";
+import { drainPendingAttackTriggers, runPendingTimingWindow } from "#api/engine/gameEngine/timing/fire";
 import { ResolutionPlan } from "../decisions/resolutionPlan.js";
 
 /**
@@ -175,8 +175,12 @@ export async function fireSubTrigger(
     // simultaneous triggers is fixed when the event happens anyway. The single-watcher case
     // keeps the plain pass below — no snapshot, no prompt, and a `matches` gate that only
     // becomes true once an earlier body has resolved still gets its chance.
-    const armed = armedSubTriggers(engine, subscriptionsFor(), payload);
-    if (event === "whenLinked" || armed.length > 1) {
+    const subscriptions = subscriptionsFor();
+    const armed = armedSubTriggers(engine, subscriptions, payload);
+    if (engine.activeWindowToken === undefined && armed.length > 0) {
+      await runPendingTimingWindow(engine, armedAsPendingCollected(engine, armed));
+      await fireContextlessSubTriggers(engine, subscriptions, payload);
+    } else if (event === "whenLinked" || armed.length > 1) {
       await runSubTriggersInChosenOrder(engine, armed);
     } else {
       await engine.subTriggers.fire(
@@ -523,6 +527,10 @@ export async function runSubTriggersInChosenOrder(
   engine: GameEngine,
   armed: readonly ArmedSubTrigger[],
 ): Promise<void> {
+  if (engine.activeWindowToken === undefined) {
+    await runPendingTimingWindow(engine, armedAsPendingCollected(engine, armed));
+    return;
+  }
   // Nested resolution can expose the same armed watcher through both the
   // enclosing deletion window and its resumed remainder. A printed
   // [Once Per Turn] effect is still one occurrence in that simultaneous
@@ -801,6 +809,25 @@ function isContextlessOneShot(sub: SubTriggerSubscription): boolean {
   );
 }
 
+async function fireContextlessSubTriggers(
+  engine: GameEngine,
+  subscriptions: readonly SubTriggerSubscription[],
+  payload: TriggerInfo = {},
+): Promise<void> {
+  const pending = subscriptions.filter(
+    (sub) => isContextlessOneShot(sub) && engine.subTriggers.subscriptionsFor(sub.event).includes(sub),
+  );
+  if (pending.length === 0) return;
+  await engine.subTriggers.fireSnapshot(
+    pending,
+    () => undefined,
+    engine.effectBodyTokens.at(-1) ?? engine.activeWindowToken,
+    subTriggerTurnLedger(engine),
+    (sub) => engine.consumedSubTriggerKeys.has(subTriggerIdentity(sub, payload)),
+    (sub, ctx) => announceSubTrigger(engine, sub, ctx),
+  );
+}
+
 /**
  * Run `fireWindows` — the timing windows for one event — with that event's SubTrigger watchers
  * folded into them, so one player orders their printed effects and their watchers in a SINGLE
@@ -850,18 +877,7 @@ export async function withPendingSubTriggers(
       );
       await withTriggeredMutations(engine, async () => {
         await runSubTriggersInChosenOrder(engine, remaining);
-        const stillSubscribed = initialContextless.filter((sub) =>
-          engine.subTriggers.subscriptionsFor(sub.event).includes(sub),
-        );
-        if (stillSubscribed.length === 0) return;
-        await engine.subTriggers.fireSnapshot(
-          stillSubscribed,
-          () => undefined,
-          engine.effectBodyTokens.at(-1) ?? engine.activeWindowToken,
-          subTriggerTurnLedger(engine),
-          undefined,
-          (sub, ctx) => announceSubTrigger(engine, sub, ctx),
-        );
+        await fireContextlessSubTriggers(engine, initialContextless, payload);
       });
       return;
     }
@@ -1065,9 +1081,14 @@ export function subTriggerAsCollected(engine: GameEngine, { sub, ctx, occurrence
     effect: {
       effectKey: subTriggerEffectKey(sub),
       activationDeferred: sub.activationDeferred,
+      ...(sub.activationContext !== undefined &&
+      sub.sourcePermanentId === undefined &&
+      sub.sourceInstanceId === undefined
+        ? { isActivatedConsequence: true }
+        : {}),
       description: playerFacingWatcherClause(sub, ctx),
       optional: false,
-      isInherited: sub.isInheritedSource === true,
+      isInherited: sub.isInheritedSource === true || ctx.discardedStackSourceProof !== undefined,
       isSecurity: false,
       isLinked: sub.isLinkedSource === true,
       maxPerTurn: -1,
@@ -1376,7 +1397,10 @@ export async function fireSubTriggerSnapshot(
   boundContexts?: ReadonlyMap<number, EffectContext>,
 ): Promise<void> {
   const armed = armedSubTriggers(engine, subscriptions, payload, boundContexts);
-  if (armed.length > 1) {
+  if (engine.activeWindowToken === undefined && armed.length > 0) {
+    await runPendingTimingWindow(engine, armedAsPendingCollected(engine, armed));
+    await fireContextlessSubTriggers(engine, subscriptions, payload);
+  } else if (armed.length > 1) {
     await runSubTriggersInChosenOrder(engine, armed);
   } else {
     await engine.subTriggers.fireSnapshot(
