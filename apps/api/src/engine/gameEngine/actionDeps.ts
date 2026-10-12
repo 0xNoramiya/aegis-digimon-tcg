@@ -871,7 +871,8 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
     digiXrosExpandedZoneCounts: (seat, playedInstanceId) =>
       engine.primitives.digiXrosExpandedZoneCounts?.(seat, playedInstanceId) ?? {},
     nextPermanentId: () => nextPermanentId(engine),
-    placeUnder: (targetPermanentId, instanceIds) => engine.primitives.placeUnder(targetPermanentId, instanceIds),
+    placeMaterialsUnder: (targetPermanentId, instanceIds) =>
+      engine.primitives.placePlayMaterialsUnder(targetPermanentId, instanceIds),
     placePendingReducerCards: (playedInstanceId, permanentId) =>
       placePendingReducerCards(engine, playedInstanceId, permanentId),
     placePendingDigivolution: playCardDeps(engine).placePendingDigivolution,
