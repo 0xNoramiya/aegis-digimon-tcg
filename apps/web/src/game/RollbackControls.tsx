@@ -35,6 +35,8 @@ export function RollbackControls({
     [room],
   );
   if (!state.allowRollback || state.gameOver || state.turnCount === 0) return null;
+  const canUndoAction = state.canUndoAction && state.undoActionSeat === seat;
+  const canRollbackTurn = state.canRollbackTurn && state.rollbackTurnSeat === seat;
   const pending = !!state.rollbackRequestId;
   const respond = (accept: boolean) =>
     room.send(ROLLBACK_CHANNEL, {
@@ -60,7 +62,7 @@ export function RollbackControls({
             }}
             aria-label={t("rollback.controls")}
             title={t("rollback.controls")}
-            disabled={pending || state.rollbackBusy}
+            disabled={pending || state.rollbackBusy || (!canUndoAction && !canRollbackTurn)}
           >
             <Icons.RotateCcw size={17} />
             {menu ? t("rollback.controls") : null}
@@ -83,7 +85,7 @@ export function RollbackControls({
             <button
               type="button"
               className="rollback-menu__action"
-              disabled={!state.canUndoAction}
+              disabled={!canUndoAction}
               onClick={() => request(RollbackKind.ACTION.value)}
             >
               <Icons.RotateCcw size={18} />
@@ -92,7 +94,7 @@ export function RollbackControls({
             <button
               type="button"
               className="rollback-menu__action"
-              disabled={!state.canRollbackTurn}
+              disabled={!canRollbackTurn}
               onClick={() => request(RollbackKind.TURN.value)}
             >
               <Icons.Clock size={18} />
