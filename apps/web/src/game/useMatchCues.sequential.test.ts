@@ -1290,7 +1290,7 @@ describe("recovery following an evolution draw", () => {
       description: "[When Digivolving] <Recovery +1 (Deck)>.",
     };
     const view = renderHook(
-      ({ fed }: { fed: readonly ServerBatch[] }) =>
+      ({ fed }: ChainProps) =>
         useMatchCues({
           batches: fed,
           state: BOARD,
