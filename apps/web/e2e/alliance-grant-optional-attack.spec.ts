@@ -4,8 +4,12 @@ import { allianceGrantOptionalAttack } from "@api-fixtures/alliance-grant-option
 
 test.beforeEach(async ({ page }) => stubCardArtwork(page));
 
-for (const simultaneousWatcher of [false, true]) {
-  test(`Alliance remains after declining the attack with simultaneous watcher ${simultaneousWatcher}`, async ({
+for (const { simultaneousWatcher, presetActivation } of [
+  { simultaneousWatcher: false, presetActivation: false },
+  { simultaneousWatcher: true, presetActivation: false },
+  { simultaneousWatcher: true, presetActivation: true },
+]) {
+  test(`Alliance remains after declining the attack with simultaneous watcher ${simultaneousWatcher} and activation preset ${presetActivation}`, async ({
     scenario,
     page,
   }) => {
@@ -15,6 +19,15 @@ for (const simultaneousWatcher of [false, true]) {
     await scenario.resolveUntil(
       (state) => attackChoices === (simultaneousWatcher ? 2 : 1) && !state.pendingDecision && state.memory === 7,
       async (decision) => {
+        if (decision.kind === "orderTriggers" && presetActivation) {
+          const preset = page.getByRole("group", { name: /Lillymon/ });
+          await expect(preset).toBeVisible();
+          await preset.getByRole("button", { name: "Yes", exact: true }).click();
+          await expect(preset.getByRole("button", { name: "Yes", exact: true })).toHaveAttribute(
+            "aria-pressed",
+            "true",
+          );
+        }
         if (decision.kind === "chooseTargets") {
           expect(decision.options.selectionContext).not.toBe("attackSource");
           return { instanceId: refs.permanentId("allianceRecipient") };
