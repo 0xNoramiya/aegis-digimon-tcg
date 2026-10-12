@@ -1181,7 +1181,9 @@ export async function fireOneSubTrigger(
     [sub],
     () => {
       const ctx = contextAtFireTime();
-      if (ctx !== undefined) ctx.activeEffectKey = buildSubTriggerEffectKey(sub);
+      if (ctx !== undefined) {
+        ctx.activeEffectKey = buildSubTriggerEffectKey(sub);
+      }
       if (ctx !== undefined && drainCurrentTimingWindow !== undefined) {
         ctx.drainCurrentTimingWindow = drainCurrentTimingWindow;
       }
