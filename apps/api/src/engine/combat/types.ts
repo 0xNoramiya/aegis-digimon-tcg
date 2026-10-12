@@ -208,7 +208,11 @@ export interface CombatHooks {
    * raw state access and would pay a prevention cost without actually saving the Digimon.
    */
   armorPurgeInLeavePrevention?: boolean;
-  consultLeavePrevention?: (permanentIds: string[], opts?: { insteadOnly?: boolean }) => Promise<Set<string>>;
+  barrierInLeavePrevention?: boolean;
+  consultLeavePrevention?: (
+    permanentIds: string[],
+    opts?: { insteadOnly?: boolean; barrier?: { interruptsEffect: boolean } },
+  ) => Promise<Set<string>>;
   /**
    * Drop a battle-deleted permanent's modifier / continuous / SubTrigger ledgers as it
    * leaves the field (subsystems: static-continuous-effects, delayed-and-rule-effects).
