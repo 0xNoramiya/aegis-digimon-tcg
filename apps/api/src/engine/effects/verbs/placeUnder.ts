@@ -20,14 +20,17 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
     const placed: CardInstance[] = [];
     const securitySources = new Set<Seat>();
     const permanent = access.permanentById(targetPermanentId);
-    if (permanent?.topCard === undefined) return { placed, securitySources };
+    if (permanent?.topCard === undefined) {
+      return { placed, securitySources };
+    }
     // Validate the complete physical batch before moving anything. A duplicate can
     // otherwise remove the first card again from the destination stack itself.
     if (
       new Set(instanceIds).size !== instanceIds.length ||
       instanceIds.some((id) => peekLooseInstance(state, id) === undefined)
-    )
+    ) {
       return { placed, securitySources };
+    }
     const deckSources = new Map<Seat, number>();
     for (const instanceId of instanceIds) {
       for (const owner of state.players) {
