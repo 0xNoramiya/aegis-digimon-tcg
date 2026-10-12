@@ -16,7 +16,7 @@ import {
 } from "../screens/deckBuilderPreferences";
 import { setAutoHatchEnabled, useAutoHatch } from "../game/autoHatch";
 import { useTranslation } from "../i18n";
-import { isLocale } from "../i18n/locales";
+import { isLocale } from "@/i18n/isLocale";
 import { accountApi, type AccountPreferences } from "./client";
 
 /**

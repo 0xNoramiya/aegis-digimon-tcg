@@ -23,6 +23,19 @@
 - **Tournaments** with fixed rules, a frozen ban list and a server-owned clock.
 - **Server-authoritative rules**: the API decides every legal play, so a patched client changes nothing.
 
+## Languages
+
+Choose your interface language in Settings. Aegis supports English, Brazilian Portuguese,
+Spanish, Italian, Korean, Japanese, Simplified Chinese, Traditional Chinese, French,
+German, and Indonesian. The first visit uses your browser languages; your selected
+language is saved and synchronized through account preferences when signed in.
+
+Translations ship with the app and need no translation service during gameplay.
+The seven newest language dictionaries are machine translated with selected gameplay
+terms corrected; native-speaker review is still needed. Card names, printed effects,
+and server-provided effect descriptions remain in English. Release notes and the
+privacy policy fall back to English where a published translation is unavailable.
+
 ## Screens
 
 |                                                                Lobby                                                                |                                                        Deck builder                                                        |
