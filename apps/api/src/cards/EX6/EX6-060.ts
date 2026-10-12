@@ -12,6 +12,7 @@ export const compiled: CompiledCard = {
           kind: "Trash",
           target: {
             filter: {
+              controller: "mine",
               zone: "hand",
             },
             count: 3,
@@ -64,6 +65,7 @@ export const compiled: CompiledCard = {
           kind: "Trash",
           target: {
             filter: {
+              controller: "mine",
               zone: "hand",
             },
             count: 3,

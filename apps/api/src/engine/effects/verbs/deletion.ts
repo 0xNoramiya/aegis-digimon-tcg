@@ -15,6 +15,11 @@ import { createPartitionReactions } from "./partition.js";
 import { isOptionPermanent } from "../../cards/cardData.js";
 import { canPaySuspendCost } from "../../combat/legality.js";
 
+type PayScapegoatDeletionParams = {
+  holder: Permanent;
+  sacrifice: Permanent;
+};
+
 /**
  * Deleting permanents: the prevention consult, the snapshots the deletion
  * triggers read, and the removal itself.
@@ -52,6 +57,15 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
   const suspend: Primitives["suspend"] = (...args) => pc.fx.suspend(...args);
   const trashDigivolutionCards: Primitives["trashDigivolutionCards"] = (...args) =>
     pc.fx.trashDigivolutionCards(...args);
+
+  async function payScapegoatDeletion({ holder, sacrifice }: PayScapegoatDeletionParams): Promise<number> {
+    pc.fx.enterEffectResolution?.(holder.controllerSeat, [CardKind.Digimon], holder.permanentId);
+    try {
+      return await deletePermanent([sacrifice.permanentId], "byEffect");
+    } finally {
+      pc.fx.leaveEffectResolution?.();
+    }
+  }
 
   /**
    * The first ＜Decoy＞ source that can still save one of `endangered`: its battle-area
@@ -438,7 +452,8 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
         if (chosen.length === 0) continue;
         const sacrifice = candidates.find((p) => p.topCard?.instanceId === chosen[0]);
         if (sacrifice === undefined) continue;
-        await deletePermanent([sacrifice.permanentId], "byEffect");
+        const costDeleted = await payScapegoatDeletion({ holder: perm, sacrifice });
+        if (costDeleted === 0) continue;
         emitDeletionPrevented("Scapegoat", perm, sacrifice.permanentId, sacrifice.topCard?.cardId);
         scapegoatSaved.add(permanentId);
       }

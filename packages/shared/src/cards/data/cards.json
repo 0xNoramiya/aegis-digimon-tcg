@@ -74211,7 +74211,7 @@
     "forms": ["Ultimate"],
     "attributes": ["Vaccine"],
     "types": ["Cyborg", "ME", "VB"],
-    "effectText": "[Digivolve] Lv.4 w/[Greymon] in name or w/[ME]/[VB] trait: Cost 3 \n[Assembly -2] Lv.4 or lower w/[Agumon]/[Greymon] in name or w/[ME]/[VB] trait\n\n＜Security A. +1＞ \n＜Decode (Lv.4 or lower w/[Agumon]/[Greymon] in name or w/[ME]/[VB] trait)＞ \n[On Play] [When Digivolving] Delete 1 of your opponent's Digimon with 6000 DP or less. Then, give 1 of their Digimon \"[Start of Your Main Phase] This Digimon attacks.\" until their turn ends.",
+    "effectText": "[Digivolve] Lv.4 w/[Greymon] in name or w/[ME]/[VB] trait: Cost 3 \n[Assembly -2] Lv.4 or lower w/[Agumon]/[Greymon] in name or w/[ME]/[VB] trait\n\n＜Decode (Lv.4 or lower w/[Agumon]/[Greymon] in name or w/[ME]/[VB] trait)＞ \n[On Play] [When Digivolving] Delete 1 of your opponent's Digimon with 6000 DP or less. Then, give 1 of their Digimon \"[Start of Your Main Phase] This Digimon attacks.\" until their turn ends.",
     "inheritedEffectText": "＜Decode (Lv.4 or lower w/[Agumon]/[Greymon] in name or w/[ME]/[VB] trait)＞ ",
     "nameJp": "メタルグレイモン"
   },
