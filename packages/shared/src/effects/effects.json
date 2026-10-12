@@ -175624,7 +175624,7 @@
           {
             "effectTextPart": "[On Play] [When Digivolving] You may trash up to 3 cards in your hand. For each one, suspend 1 of your opponent's level 5 or lower Digimon.",
             "kind": "Trash",
-            "target": { "filter": { "zone": "hand" }, "count": 3, "upTo": true },
+            "target": { "filter": { "controller": "mine", "zone": "hand" }, "count": 3, "upTo": true },
             "optional": true,
             "trackCount": "trashedCards"
           },
@@ -175665,7 +175665,7 @@
           {
             "effectTextPart": "[On Play] [When Digivolving] You may trash up to 3 cards in your hand. For each one, suspend 1 of your opponent's level 5 or lower Digimon.",
             "kind": "Trash",
-            "target": { "filter": { "zone": "hand" }, "count": 3, "upTo": true },
+            "target": { "filter": { "controller": "mine", "zone": "hand" }, "count": 3, "upTo": true },
             "optional": true,
             "trackCount": "trashedCards"
           },
