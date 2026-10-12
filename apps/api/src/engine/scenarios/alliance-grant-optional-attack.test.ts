@@ -8,6 +8,7 @@ import { settle } from "#api/engine/testkit/harness";
 import { observe } from "#api/engine/testkit/observe";
 import { allianceGrantOptionalAttack } from "#api/engine/scenarios/alliance-grant-optional-attack.fixture";
 import { runReplay } from "#api/replays/inputs/run";
+import { translateLegacySubTriggerKeys } from "#api/replays/inputs/translateLegacySubTriggerKeys";
 import type { ReplayRecord } from "#api/replays/inputs/types";
 
 const record = JSON.parse(
@@ -95,7 +96,10 @@ describe("Alliance grant with an independently optional attack", () => {
         expect(replay.state.pendingDecision?.kind).toBe(expectedDecisionKind);
         if (intent.type === "respondDecision") {
           const pending = replay.state.pendingDecision!;
-          intent = { ...intent, decisionId: pending.decisionId };
+          intent = translateLegacySubTriggerKeys(
+            { ...intent, decisionId: pending.decisionId },
+            { decisionId: pending.decisionId, triggerKeys: JSON.parse(pending.payloadJson).triggerKeys },
+          );
         }
         expect(await replay.applyIntent(input.seat, intent)).toEqual({ ok: true });
       }
