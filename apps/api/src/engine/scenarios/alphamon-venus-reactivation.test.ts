@@ -19,7 +19,17 @@ it.each([false, true])(
             1: { ...fixture.board[1], battleArea: [{ card: "BT10-042", as: "venus" }], hand: [] },
           },
         };
-    const s = setupScenario(board, { autoAcceptOptional: true, autoSelectCards: true });
+    const prepared = {
+      ...board,
+      board: {
+        ...board.board,
+        0: {
+          ...board.board[0],
+          hand: [...(board.board[0]?.hand ?? []), { card: "BT20-010", as: "secondChronicle" }],
+        },
+      },
+    };
+    const s = setupScenario(prepared, { autoAcceptOptional: true, autoSelectCards: true });
     const loop = s.engine.startTurnLoop();
     try {
       await advance(s.engine).waitForMainPhase(1);
@@ -52,11 +62,31 @@ it.each([false, true])(
       );
       expect(s.perm("venus").currentDP).toBe(applied ? 12000 : 4000);
       expect(
+        s.decisions.some(
+          ({ req }) => req.kind === "optional" && req.promptText.includes("Then, you may activate 1 of this Digimon"),
+        ),
+      ).toBe(!applied);
+      expect(
         s.events.some(
           (event) =>
             event.kind === "effectTriggered" && event.sourceCardId === "EX13-060" && event.timing === "WhenDigivolving",
         ),
       ).toBe(!applied);
+      const securityAfterFirstEntry = s.state.players[1]!.security.length;
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("secondChronicle").instanceId })).toEqual({
+        ok: true,
+      });
+      await settle(
+        () => s.state.turnSeat === 1 && !s.state.pendingDecision && s.engine.mainVerbContinuationsInFlight === 0,
+      );
+      expect(s.perm("alphamon").isSuspended).toBe(true);
+      expect(s.state.players[1]!.security).toHaveLength(securityAfterFirstEntry);
+      expect(
+        s.events.filter(
+          (event) =>
+            event.kind === "effectTriggered" && event.sourceCardId === "EX13-060" && event.timing === "whenPlayed",
+        ),
+      ).toHaveLength(1);
     } finally {
       s.engine.applyIntent(0, { type: "surrender" });
       await loop;
