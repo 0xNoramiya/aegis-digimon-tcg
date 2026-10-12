@@ -1,6 +1,8 @@
 import { resetRoomState } from "../src/net/resetRoomState";
 import { ROLLBACK_RESET_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
 import { test, expect } from "@playwright/test";
+import type { AegisRoom } from "@/net/client";
+import { GameState } from "@aegis/shared/schema/GameState";
 import { Client } from "@colyseus/sdk";
 import { RollbackKind, ROLLBACK_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
 import { RED_DECK, BLUE_DECK } from "../../api/dist/engine/testDecks.js";
@@ -24,17 +26,17 @@ test("bot undo and turn rollback fully synchronize hidden hands and public perma
     await expect(page.getByRole("button", { name: "Undo last action", exact: true })).not.toBeVisible();
     const initial = await scenario.snapshot();
     await scenario.play("Monodramon", "Digimon");
-    await expect.poll(async () => (await scenario.snapshot()).players[0].hand.length).toBe(1);
+    await expect.poll(async () => (await scenario.snapshot()).players[0]!.hand.length).toBe(1);
     await page.getByRole("button", { name: "Rollback", exact: true }).click();
     await page.getByRole("button", { name: "Undo last action", exact: true }).click();
     await expect.poll(async () => (await scenario.snapshot()).rollbackRevision).toBe(1);
     await expect(page.getByTestId("hand").getByRole("img", { name: "Monodramon", exact: true })).toBeVisible();
     const restored = await scenario.snapshot();
-    expect(restored.players[0].hand.map((card: { instanceId: string }) => card.instanceId)).toEqual(
-      initial.players[0].hand.map((card: { instanceId: string }) => card.instanceId),
+    expect(restored.players[0]!.hand.map((card: { instanceId: string }) => card.instanceId)).toEqual(
+      initial.players[0]!.hand.map((card: { instanceId: string }) => card.instanceId),
     );
-    expect(restored.players[0].battleArea).toHaveLength(initial.players[0].battleArea.length);
-    expect(restored.players[1].hand).toHaveLength(0);
+    expect(restored.players[0]!.battleArea).toHaveLength(initial.players[0]!.battleArea.length);
+    expect(restored.players[1]!.hand).toHaveLength(0);
     await page.getByRole("button", { name: "Rollback", exact: true }).click();
     await page.getByRole("button", { name: "Return to turn start", exact: true }).click();
     await expect.poll(async () => (await scenario.snapshot()).rollbackRevision).toBe(2);
@@ -44,7 +46,7 @@ test("bot undo and turn rollback fully synchronize hidden hands and public perma
     await scenario.idle();
     await scenario.play("Monodramon", "Digimon");
     await scenario.idle();
-    expect((await scenario.snapshot()).players[0].battleArea).toHaveLength(initial.players[0].battleArea.length + 1);
+    expect((await scenario.snapshot()).players[0]!.battleArea).toHaveLength(initial.players[0]!.battleArea.length + 1);
     expect(scenario.errors).toEqual([]);
   } finally {
     await page.close();
@@ -56,7 +58,7 @@ test("opponent consent stays accessible over a pending effect and restores that 
   page,
 }) => {
   const server = await startBrowserServer();
-  let opponent: Awaited<ReturnType<Client["joinById"]>> | undefined;
+  let opponent: AegisRoom | undefined;
   try {
     await page.addInitScript((deck) => {
       localStorage.setItem("aegis:locale", "en");
@@ -69,7 +71,7 @@ test("opponent consent stays accessible over a pending effect and restores that 
       .poll(() => [...roomRegistry.values()].find((candidate) => candidate.state.players.length === 1)?.roomId)
       .toBeTruthy();
     const room = [...roomRegistry.values()].find((candidate) => candidate.state.players.length === 1)!;
-    opponent = await new Client(server.directEndpoint).joinById(room.roomId, {
+    opponent = await new Client(server.directEndpoint).joinById<GameState>(room.roomId, {
       displayName: "Opponent",
       deck: BLUE_DECK,
       allowRollback: true,
@@ -90,7 +92,7 @@ test("opponent consent stays accessible over a pending effect and restores that 
     await expect.poll(async () => (await scenario.snapshot()).rollbackRevision).toBe(1);
     await expect.poll(() => opponent!.state.rollbackRevision).toBe(1);
     await expect(page.getByTestId("hand").getByRole("img", { name: "Agumon", exact: true })).toBeVisible();
-    expect(opponent.state.players[0].hand).toHaveLength(0);
+    expect(opponent.state.players[0]!.hand).toHaveLength(0);
     expect(opponent.state.pendingDecision).toBeUndefined();
     await scenario.play("Agumon", "Digimon");
     await expect.poll(async () => (await scenario.snapshot()).pendingDecision?.kind).toBe("selectCards");
