@@ -1,6 +1,7 @@
 import { GameState, type Intent, type IntentResult, type Seat, type SequencedServerEvent } from "@aegis/shared";
 import { GameEngine } from "../../engine/GameEngine.js";
 import type { ReplayDivergence, ReplayInput, ReplayRecord, ReplaySite } from "./types.js";
+import { translateLegacySubTriggerKeys } from "#api/replays/inputs/translateLegacySubTriggerKeys";
 import "../../cards/index.js";
 
 export interface RunReplayOptions {
@@ -241,7 +242,13 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
         );
         return undefined;
       case "intent": {
-        const result = withBatch(() => engine.applyIntent(input.seat, structuredClone(input.intent)));
+        const intent = translateLegacySubTriggerKeys(
+          structuredClone(input.intent),
+          state.pendingDecision && pendingRequest
+            ? { decisionId: pendingRequest.decisionId, triggerKeys: pendingRequest.options?.triggerKeys }
+            : undefined,
+        );
+        const result = withBatch(() => engine.applyIntent(input.seat, intent));
         applyDueAt("afterIntent");
         return result;
       }
