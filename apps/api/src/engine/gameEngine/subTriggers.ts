@@ -822,8 +822,9 @@ export async function withPendingSubTriggers(
   } = {},
 ): Promise<void> {
   // A rule sweep parks watchers wholesale (see fireSubTrigger); leave that path alone.
+  const ruleSweepDefersWatchers = engine.ruleProcessing;
   const armed = [
-    ...(engine.ruleProcessing || payload === undefined
+    ...(ruleSweepDefersWatchers || payload === undefined
       ? []
       : events.flatMap((event) => armedSubTriggers(engine, engine.subTriggers.subscriptionsFor(event), payload))),
     ...(opts.alsoArmed ?? []),
@@ -835,7 +836,7 @@ export async function withPendingSubTriggers(
       ? events.flatMap((event) => engine.subTriggers.subscriptionsFor(event).filter(isContextlessOneShot))
       : [];
   const busFire = async (): Promise<void> => {
-    if (opts.onlyInitiallyArmed === true) {
+    if (opts.onlyInitiallyArmed === true && !ruleSweepDefersWatchers) {
       const remaining = armed.filter(
         (item) => !engine.consumedSubTriggerKeys.has(subTriggerIdentity(item.sub, item.ctx.trigger)),
       );
