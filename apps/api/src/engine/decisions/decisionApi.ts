@@ -2,6 +2,7 @@ import { splitPrintedClauses, type Seat } from "@aegis/shared";
 import type { DecisionApi, EffectContext, SeatScopedDecisionApi } from "../effects/EffectContext.js";
 import type { ChooseOptionExtras } from "../effects/context/decisions.js";
 import type { DecisionManager } from "./index.js";
+import { printedPassage } from "#api/engine/decisions/printedPassage";
 
 /**
  * Concrete {@link DecisionApi} (`ctx.ask.*`) backed by the {@link DecisionManager}
@@ -102,9 +103,7 @@ function buildSeatScopedApi(
     const part = ctx.activeEffectTextPart;
     const focus = ctx.activeEffectTextEmphasis ?? part;
     const matchingClauses = focus
-      ? splitPrintedClauses(ctx.activeEffectText).filter((clause) =>
-          clause.text.toLowerCase().includes(focus.toLowerCase()),
-        )
+      ? splitPrintedClauses(ctx.activeEffectText).filter((clause) => printedPassage(clause.text, focus) !== undefined)
       : undefined;
     // Catalog fallback text may include other timing windows.
     // Retain the complete resolving clause rather than unrelated card effects.
@@ -112,13 +111,15 @@ function buildSeatScopedApi(
     // Every staged action uses the same display contract, including target picks
     // and decisions addressed to the opponent. A passage must actually belong to
     // this effect before it can replace the narrower description with full text.
+    const printedPart =
+      fullText && part && !fullText.toLowerCase().includes(part.toLowerCase()) ? printedPassage(fullText, part) : part;
     const emphasis =
       ctx.activeEffectTextEmphasis ??
       (fullText &&
-      part &&
-      fullText.toLowerCase() !== part.toLowerCase() &&
-      fullText.toLowerCase().includes(part.toLowerCase())
-        ? part
+      printedPart &&
+      fullText.toLowerCase() !== printedPart.toLowerCase() &&
+      fullText.toLowerCase().includes(printedPart.toLowerCase())
+        ? printedPart
         : undefined);
     return {
       timing: ctx.activeTiming,

@@ -308,6 +308,7 @@ export function unimplementedPrimitives(): Primitives {
     appFuseInto: () => refuse("effect-primitives", "appFuseInto"),
     deDigivolve: () => refuse("effect-primitives", "deDigivolve"),
     placeUnder: () => refuse("effect-primitives", "placeUnder"),
+    placePlayMaterialsUnder: () => refuse("effect-primitives", "placePlayMaterialsUnder"),
     placeOwnTopAtStackBottom: () => refuse("effect-primitives", "placeOwnTopAtStackBottom"),
     relocatePermanent: () => refuse("effect-primitives", "relocatePermanent"),
     movePermanentZone: () => refuse("effect-primitives", "movePermanentZone"),

@@ -28,7 +28,12 @@ describe("BT14-054", () => {
     expect(compiled.effects?.find((entry) => entry.trigger === "EndOfYourTurn")).toMatchObject({
       optional: true,
       actions: [
-        { kind: "Attack", attackPlayer: false, mandatory: true, target: { filter: { controller: "opponent" } } },
+        {
+          kind: "Attack",
+          attackTargetScope: "digimon",
+          mandatory: true,
+          target: { filter: { controller: "opponent" } },
+        },
       ],
     }));
 

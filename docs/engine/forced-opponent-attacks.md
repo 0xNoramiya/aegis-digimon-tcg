@@ -10,7 +10,7 @@ BT13-077 Craniamon Q2316/Q2317 permit the effect controller to refuse choosing a
 
 `runCombatAction` in `apps/api/src/engine/effects/interpreter/actions/combat.ts` formerly resolved all non-self Attack subjects through ordinary affectability filtering. `resolvePermanentTargets` allows an immune permanent to be selected, then drops that identity unless `preserveUnaffectableSelection` is set. That silently prevents Q2320’s player instruction.
 
-The bounded correction preserves the selected identity when an Attack allows a player target (`attackPlayer: true`) and explicitly targets an opponent-controlled subject (`controller` or `controllerDefault` equals `opponent`). Own/self/unspecified Attack subjects retain ordinary filtering. The same direct author pattern appears in BT18-069; it must be included in focused regression. `forceAttack` still evaluates actual attack legality, refuses nested attacks, asks the attacker’s controller for the legal attack target, and resolves ordinary combat.
+The bounded correction preserves the selected identity when an Attack allows a player target (`attackTargetScope` of `"any"`) and explicitly targets an opponent-controlled subject (`controller` or `controllerDefault` equals `opponent`). Own/self/unspecified Attack subjects retain ordinary filtering. The same direct author pattern appears in BT18-069; it must be included in focused regression. `forceAttack` still evaluates actual attack legality, refuses nested attacks, asks the attacker’s controller for the legal attack target, and resolves ordinary combat.
 
 ## Proof and outstanding gates
 

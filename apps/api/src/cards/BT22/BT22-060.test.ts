@@ -32,7 +32,7 @@ describe("BT22-060 Datamon", () => {
         {
           kind: "Attack",
           optional: true,
-          attackPlayer: true,
+          attackTargetScope: "any",
           drainTimingWindowDuringAttack: true,
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
         },

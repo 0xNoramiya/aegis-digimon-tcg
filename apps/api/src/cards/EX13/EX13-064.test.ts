@@ -145,8 +145,7 @@ describe("EX13-064 LordKnightmon", () => {
       ],
     });
     const attack = (compiled.effects[2]!.actions[0] as { actions: unknown[] }).actions[3]!;
-    expect(attack).not.toHaveProperty("attackPlayer");
-    expect(attack).not.toHaveProperty("attackPlayerOnly");
+    expect(attack).not.toHaveProperty("attackTargetScope");
     const bindAs = (compiled.effects[2]!.actions[0] as { actions: { target: { bindAs?: string } }[] }).actions[0]!
       .target.bindAs;
     for (const index of [1, 2, 3]) {

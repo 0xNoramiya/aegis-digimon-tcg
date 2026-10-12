@@ -55,7 +55,7 @@ export const compiled: CompiledCard = {
             },
             count: 1,
           },
-          attackPlayer: false,
+          attackTargetScope: "digimon",
           mandatory: true,
         },
       ],

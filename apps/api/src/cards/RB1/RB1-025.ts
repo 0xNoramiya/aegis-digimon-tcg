@@ -50,7 +50,7 @@ export const compiled: CompiledCard = {
         {
           kind: "Attack",
           target: { filter: {}, count: 1, fromSelectionRef: "angoramonAttacker" },
-          attackPlayer: false,
+          attackTargetScope: "digimon",
           drainTimingWindowDuringAttack: true,
         },
       ],

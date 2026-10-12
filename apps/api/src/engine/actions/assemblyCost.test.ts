@@ -29,7 +29,7 @@ describe("#5341 Assembly revalidation after interactive costs", () => {
       nextPermanentId: () => {
         throw new Error("must not place");
       },
-      placeUnder: async () => {
+      placeMaterialsUnder: async () => {
         throw new Error("must not move materials");
       },
       fireTiming: async () => {
@@ -82,7 +82,7 @@ describe("#5341 Assembly revalidation after interactive costs", () => {
         nextPermanentId: () => {
           throw new Error("must not place");
         },
-        placeUnder: async () => {
+        placeMaterialsUnder: async () => {
           throw new Error("must not move materials");
         },
         fireTiming: async () => {

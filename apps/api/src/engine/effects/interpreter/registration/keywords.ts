@@ -3,6 +3,7 @@
 import { registerDigisorption, registerDigisorptionRedirector } from "../../../cards/digisorptionDigivolve.js";
 import { registerTamerOntoDigivolve } from "../../../cards/tamerOntoDigivolve.js";
 import type { Action, CardDefinition, CardEffect, CompiledCard, DigivolutionRequirement } from "@aegis/shared";
+import { AttackTargetScope } from "@aegis/shared/effects/ir/actions/AttackTargetScope";
 
 type TamerBaseColor = NonNullable<DigivolutionRequirement["baseColors"]>[number];
 
@@ -133,8 +134,7 @@ export function overclockActivatedEffect(trait: string): CardEffect {
       {
         kind: "Attack",
         target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
-        attackPlayer: true,
-        attackPlayerOnly: true,
+        attackTargetScope: AttackTargetScope.PLAYER.value,
         attackMechanic: "Overclock",
         drainTimingWindowDuringAttack: true,
         withoutSuspending: true,

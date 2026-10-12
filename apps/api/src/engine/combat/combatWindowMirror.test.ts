@@ -120,6 +120,7 @@ function keywordHarness() {
   const events: ServerEvent[] = [];
   const hooks: CombatHooks = {
     emit: (event) => events.push(event),
+    fireBlockTiming: async () => {},
     fireTiming: async () => {},
     checkSecurity: async () => {},
   };

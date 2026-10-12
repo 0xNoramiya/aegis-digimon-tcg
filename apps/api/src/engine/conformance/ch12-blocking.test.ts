@@ -235,6 +235,7 @@ function controllerHarness(extra?: Partial<CombatHooks>): ControllerHarness {
   const events: { kind: string }[] = [];
   const hooks: CombatHooks = {
     emit: (e) => events.push(e),
+    fireBlockTiming: async () => {},
     fireTiming: async () => {},
     checkSecurity: async () => {},
     ...extra,

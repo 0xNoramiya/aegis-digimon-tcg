@@ -43,7 +43,7 @@ export const compiled: CompiledCard = {
           kind: "Attack",
           target: chosenMarcus,
           withoutSuspending: false,
-          attackPlayer: false,
+          attackTargetScope: "digimon",
           optional: true,
         },
       ],

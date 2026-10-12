@@ -20,6 +20,7 @@ export const compiled: CompiledCard = {
       trigger: "OnPlay",
       actions: [
         {
+          effectTextPart: "You may return 1 [TS] trait Option card from your trash to the hand.",
           kind: "Return",
           target: {
             filter: {
