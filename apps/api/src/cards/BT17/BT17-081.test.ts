@@ -67,7 +67,7 @@ describe("BT17-081 Tai Kamiya & Matt Ishida", () => {
       actions: [
         {
           kind: "Attack",
-          attackPlayer: true,
+          attackTargetScope: "player",
           optional: true,
           target: { filter: { nameOrTrait: [{ tokens: ["Omnimon"], match: "name" }], suspended: false } },
         },

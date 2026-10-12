@@ -92,7 +92,7 @@ describe("BT18-088 Takuya Kanbara & Koji Minamoto", () => {
         actions: [
           {
             kind: "Attack",
-            attackPlayer: true,
+            attackTargetScope: "player",
             condition: {
               kind: "selfHasTrait",
               filter: { nameOrTrait: [{ tokens: ["Hybrid", "Ten Warriors"], match: "trait" }] },

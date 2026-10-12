@@ -68,7 +68,7 @@ describe("EX12-056 Cho-Hakkaimon", () => {
             kind: "Attack",
             mandatory: true,
             condition: { kind: "ifThisEffectActed" },
-            attackPlayer: true,
+            attackTargetScope: "any",
             target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1, sameTarget: true },
           },
         ],

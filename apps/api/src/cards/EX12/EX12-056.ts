@@ -61,7 +61,7 @@ export const compiled: CompiledCard = {
           },
           mandatory: true,
           withoutSuspending: false,
-          attackPlayer: true,
+          attackTargetScope: "any",
           condition: {
             kind: "ifThisEffectActed",
             raw: "if a Digimon gained Alliance",
@@ -122,7 +122,7 @@ export const compiled: CompiledCard = {
           },
           mandatory: true,
           withoutSuspending: false,
-          attackPlayer: true,
+          attackTargetScope: "any",
           condition: {
             kind: "ifThisEffectActed",
             raw: "if a Digimon gained Alliance",
