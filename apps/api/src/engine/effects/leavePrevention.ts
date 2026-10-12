@@ -1,6 +1,7 @@
 import type { Permanent, PreventionKeyword, Seat, ZoneRef } from "@aegis/shared";
 import type { EffectContext, RemovalCause } from "./EffectContext.js";
-import type { ReplacementSubscription, SubTriggerRegistry } from "./subtriggers.js";
+import type { ReplacementId, ReplacementSubscription, SubTriggerRegistry } from "./subtriggers.js";
+import { isKeywordReactionPrecedingCardReactions } from "#api/engine/effects/isKeywordReactionPrecedingCardReactions";
 function replacementActivationKey(replacement: ReplacementSubscription): string {
   const source = replacement.sourceInstanceId ?? replacement.sourcePermanentId ?? "unanchored";
   const action = replacement.activationIdentity ?? `subscription-${replacement.id}`;
@@ -11,7 +12,7 @@ function replacementActivationKey(replacement: ReplacementSubscription): string 
 export interface OrderedReplacements {
   order: ReplacementSubscription[];
   /** Preset yes/no answers by replacement id, for the reactions the player set one on. */
-  presetAnswers?: ReadonlyMap<number, boolean>;
+  presetAnswers?: ReadonlyMap<ReplacementId, boolean>;
 }
 
 /**
@@ -23,10 +24,7 @@ export interface LeavePreventionHost {
   subTriggers: SubTriggerRegistry;
   /** Live keyword reactions use the same ordering and reentry guards as authored effects. */
   keywordReplacements?(permanentIds: string[]): ReplacementSubscription[];
-  /** ＜Evade＞ preventions, offered after the authored reactions when a caller asks for them. */
-  armorPurgeReplacements?(permanentIds: string[]): ReplacementSubscription[];
-  evadeReplacements?(permanentIds: string[]): ReplacementSubscription[];
-  barrierReplacements?(permanentIds: string[], interruptsEffect: boolean): ReplacementSubscription[];
+  keywordPreventionReplacements?(permanentIds: string[], interruptsEffect: boolean): ReplacementSubscription[];
   /** The live permanent for an id (undefined when it already left). */
   permanentById(permanentId: string): Permanent | undefined;
   /** Build the reaction's EffectContext for a source permanent (with the leaving id in trigger). */
@@ -101,10 +99,7 @@ export async function consultLeavePrevention(
      * the same event's sibling replacement, which is still offered (KB Q6250).
      */
     insteadOnly?: boolean;
-    /** Offer ＜Evade＞ with the other reactions (the effect/rule deletion path). */
-    includeEvade?: boolean;
-    includeArmorPurge?: boolean;
-    barrier?: { interruptsEffect: boolean };
+    keywordPreventions?: { interruptsEffect: boolean };
     reentryGuard: { activeReplacementKeys: Set<string> };
   },
 ): Promise<Set<string>> {
@@ -113,22 +108,26 @@ export async function consultLeavePrevention(
   // deletion ONLY — a bounce must NOT trigger a deletion-only reaction (BT9-044, RB1-016).
   // replacementsFor already excludes "reduceCost" (unrelated to leave/delete), leaving the
   // "prevent" and "instead" modes this consult handles.
+  const keywordPreventions =
+    opts.keywordPreventions === undefined || opts.isBounce === true
+      ? []
+      : (host.keywordPreventionReplacements?.(permanentIds, opts.keywordPreventions.interruptsEffect) ?? []);
   let replacements = [
-    ...(opts.barrier !== undefined && cause === "byBattle"
-      ? (host.barrierReplacements?.(permanentIds, opts.barrier.interruptsEffect) ?? [])
-      : []),
+    ...keywordPreventions.filter((replacement) =>
+      isKeywordReactionPrecedingCardReactions(replacement.activationIdentity),
+    ),
     ...(host.keywordReplacements?.(permanentIds) ?? []),
     ...(opts.isBounce === true ? [] : host.subTriggers.replacementsFor("wouldBeDeleted")),
     ...host.subTriggers.replacementsFor("wouldLeavePlay"),
-    ...(opts.includeArmorPurge === true && opts.isBounce !== true
-      ? (host.armorPurgeReplacements?.(permanentIds) ?? [])
-      : []),
-    ...(opts.includeEvade === true && opts.isBounce !== true ? (host.evadeReplacements?.(permanentIds) ?? []) : []),
+    ...keywordPreventions.filter(
+      (replacement) => !isKeywordReactionPrecedingCardReactions(replacement.activationIdentity),
+    ),
   ];
   if (replacements.length === 0) return prevented;
   const seat =
     opts.playerAction === true ? undefined : (resolvingSeat ?? (cause === "byEffect" ? host.turnSeat : undefined));
-  const firedAll = new Set<number>(); // affectsAll replacements that already paid this consult
+  const firedAll = new Set<ReplacementId>();
+  const resolvedOneOf = new Set<ReplacementId>();
   for (const leavingId of permanentIds) {
     if (prevented.has(leavingId)) continue;
     const leaving = host.permanentById(leavingId);
@@ -146,6 +145,7 @@ export async function consultLeavePrevention(
       if (repl.mode !== "instead" && repl.mode !== "prevent") continue;
       if (opts.isDigiXros === true && repl.exceptDigiXros === true) continue;
       if (opts.insteadOnly === true && repl.mode !== "instead") continue;
+      if (repl.mode === "prevent" && repl.preventOneOf !== undefined && resolvedOneOf.has(repl.id)) continue;
       const activationKey = replacementActivationKey(repl);
       if (opts.reentryGuard.activeReplacementKeys.has(activationKey)) continue;
       if (repl.sourcePermanentId === undefined && repl.sourceInstanceId === undefined) continue;
@@ -295,6 +295,40 @@ export async function consultLeavePrevention(
       // activation key/reentry guard still prevents only the replacement already resolving
       // from recursively re-entering itself.
       if (repl.mode !== "prevent") continue;
+      const announce = (savedId: string) => {
+        if (repl.activationIdentity === undefined && repl.preventionKeyword === undefined) return;
+        host.keywordPrevented?.(
+          repl.activationIdentity,
+          repl.sourcePermanentId,
+          sourceCardId,
+          savedId,
+          repl.preventionKeyword,
+        );
+      };
+      if (repl.preventOneOf !== undefined) {
+        if (resolvedOneOf.has(repl.id)) continue;
+        resolvedOneOf.add(repl.id);
+        const candidates = permanentIds.filter(
+          (candidateId) =>
+            !prevented.has(candidateId) &&
+            host.permanentById(candidateId) !== undefined &&
+            (repl.protects?.(ctx, candidateId) ?? true),
+        );
+        if (candidates.length === 0) continue;
+        if (repl.oncePerTurnKey !== undefined && host.oncePerTurnFired?.(repl.oncePerTurnKey)) continue;
+        opts.reentryGuard.activeReplacementKeys.add(activationKey);
+        let savedId: string | undefined;
+        try {
+          savedId = await repl.preventOneOf({ ...ctx, affectedPermanentIds: candidates }, candidates);
+        } finally {
+          opts.reentryGuard.activeReplacementKeys.delete(activationKey);
+        }
+        if (savedId === undefined) continue;
+        announce(savedId);
+        prevented.add(savedId);
+        if (repl.oncePerTurnKey !== undefined) host.markOncePerTurnFired?.(repl.oncePerTurnKey);
+        continue;
+      }
       if (repl.yieldsToEarlierPrevention === true && prevented.has(leavingId)) continue;
       if (repl.affectsAll && firedAll.has(repl.id)) {
         prevented.add(leavingId);
@@ -321,16 +355,6 @@ export async function consultLeavePrevention(
         opts.reentryGuard.activeReplacementKeys.delete(activationKey);
       }
       if (!did) continue;
-      const announce = (savedId: string) => {
-        if (repl.activationIdentity === undefined && repl.preventionKeyword === undefined) return;
-        host.keywordPrevented?.(
-          repl.activationIdentity,
-          repl.sourcePermanentId,
-          sourceCardId,
-          savedId,
-          repl.preventionKeyword,
-        );
-      };
       announce(leavingId);
       prevented.add(leavingId);
       if (repl.affectsAll) {

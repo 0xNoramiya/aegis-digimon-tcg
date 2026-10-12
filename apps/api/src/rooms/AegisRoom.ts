@@ -71,6 +71,11 @@ import { MatchClock, type ClockMode } from "./MatchClock.js";
 import { CasualSeries, type SeriesContinuationOptions, type SeriesRoomPort } from "./series/CasualSeries.js";
 import type { SeriesRecord } from "./series/SeriesDirectory.js";
 import { parsePresentationReport } from "./presentationReport.js";
+import { CONNECTION_REPORT_CHANNEL } from "@aegis/shared/protocol/ConnectionReport";
+import { ConnectionDropOutcome, type ResolvedConnectionDropOutcome } from "#api/connections/ConnectionDropOutcome";
+import type { ConnectionDropStore } from "#api/connections/ConnectionDropStore";
+import { connectionDropStore } from "#api/connections/runtime";
+import { parseConnectionReport } from "#api/connections/parseConnectionReport";
 import { hasBlockedWord, maskBlockedWords } from "../moderation/blockedWords.js";
 import type {
   ReplayDeck,
@@ -273,6 +278,12 @@ interface OpenBatch {
   presentationMs: [number, number];
 }
 
+type ConnectionDropParams = {
+  seat: Seat;
+  accountId: string | undefined;
+  closeCode: number | undefined;
+};
+
 /**
  * The one and only room class (REQUIRED name "AegisRoom"), registered as room
  * type "aegis" in src/index.ts. It is a thin transport adapter: it seats players,
@@ -304,6 +315,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private replayDownloads = new Map<Seat, Promise<ReplayDownloadMessage>>();
   private replayFinished = false;
   private replayRequestTimes = new WeakMap<Client, number>();
+  private reportableDropBySeat = new Map<Seat, Promise<number | undefined>>();
   private readonly allowClientMessage = tokenBucketLimiter(CLIENT_MESSAGE_RATE_LIMIT);
   private readonly allowDroppedClientMessage = tokenBucketLimiter(CLIENT_DROPPED_MESSAGE_LIMIT);
   /** Index entries per `seat:account`, so repeated replay requests write the row once. */
@@ -397,6 +409,12 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   /** Seam: the account store this room reads identity and legacy bracket state from. */
   protected accounts(): AccountStore {
     return accountStore;
+  }
+
+  protected connectionDrops():
+    | Pick<ConnectionDropStore, "recordDrop" | "resolveDrop" | "recordClientReport">
+    | undefined {
+    return connectionDropStore;
   }
 
   // How long the in-memory match is held open for a client that dropped without
@@ -858,6 +876,10 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         return;
       }
 
+      if (type === CONNECTION_REPORT_CHANNEL) {
+        this.handleConnectionReport(client, payload);
+        return;
+      }
       if (type === USED_DECK_CHANNEL) {
         const deck = this.deckByClient.get(client.sessionId);
         if (deck && !this.spectatorClients.has(client.sessionId)) client.send(USED_DECK_CHANNEL, structuredClone(deck));
@@ -1502,8 +1524,12 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     this.recordReplayInput({ kind: "disconnect", seat, final: false });
     this.withBatch(() => this.engine.handleDisconnect(seat, false));
     this.syncMatchClock();
+    this.reportableDropBySeat.delete(seat);
+    const drop = this.recordConnectionDrop({ seat, accountId, closeCode: code });
     try {
       const reconnectedClient = await this.allowReconnection(client, this.RECONNECT_GRACE_SECONDS);
+      this.resolveConnectionDrop(drop, ConnectionDropOutcome.RECONNECTED.value);
+      this.reportableDropBySeat.set(seat, drop);
       this.debug(`[AegisRoom] reconnected sessionId=${client.sessionId} seat=${seat}`);
       this.syncMatchClock();
       this.recordReplayInput({ kind: "reconnect", seat });
@@ -1528,6 +1554,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       // Grace elapsed (or room disposed) without a reconnect: resolve as a real
       // departure — the opponent wins an in-progress match.
       this.debug(`[AegisRoom] reconnect grace elapsed sessionId=${client.sessionId} seat=${seat}`);
+      this.resolveConnectionDrop(drop, ConnectionDropOutcome.EXPIRED.value);
       this.seatByClient.delete(client.sessionId);
       this.readyTimeout?.clear();
       this.readyTimeout = undefined;
@@ -1988,7 +2015,10 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     this.combatWindowTimeout = undefined;
     this.combatWindowTimeoutKey = key;
     if (key === undefined) return;
+    let fired = false;
     this.combatWindowTimeout = this.clock.setTimeout(() => {
+      if (fired) return;
+      fired = true;
       this.combatWindowTimeout = undefined;
       this.combatWindowTimeoutKey = undefined;
       if (!this.state.gameOver)
@@ -2220,6 +2250,50 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     if (!name || hasBlockedWord(name)) return;
     if (this.state.players.some((player) => player?.displayName.trim().toLocaleLowerCase() === folded)) return;
     return name;
+  }
+
+  private recordConnectionDrop({ seat, accountId, closeCode }: ConnectionDropParams): Promise<number | undefined> {
+    const store = this.connectionDrops();
+    if (!store) {
+      return Promise.resolve(undefined);
+    }
+    return store
+      .recordDrop({
+        roomId: this.roomId,
+        matchId: this.state.matchLogId,
+        accountId,
+        displayName: this.state.players[seat]?.displayName ?? "",
+        seat,
+        closeCode,
+        droppedAt: Date.now(),
+      })
+      .catch((error: unknown) => {
+        this.debugError("[AegisRoom] failed to record connection drop", error);
+        return undefined;
+      });
+  }
+
+  private resolveConnectionDrop(drop: Promise<number | undefined>, outcome: ResolvedConnectionDropOutcome): void {
+    const resolvedAt = Date.now();
+    void drop
+      .then((id) => (id === undefined ? undefined : this.connectionDrops()?.resolveDrop({ id, outcome, resolvedAt })))
+      .catch((error: unknown) => this.debugError("[AegisRoom] failed to resolve connection drop", error));
+  }
+
+  private handleConnectionReport(client: Client, payload: unknown): void {
+    const seat = this.seatByClient.get(client.sessionId);
+    if (seat === undefined) {
+      return;
+    }
+    const drop = this.reportableDropBySeat.get(seat);
+    this.reportableDropBySeat.delete(seat);
+    const report = parseConnectionReport(payload);
+    if (!drop || !report) {
+      return;
+    }
+    void drop
+      .then((id) => (id === undefined ? undefined : this.connectionDrops()?.recordClientReport({ id, report })))
+      .catch((error: unknown) => this.debugError("[AegisRoom] failed to record connection report", error));
   }
 
   private debugError(...data: unknown[]): void {

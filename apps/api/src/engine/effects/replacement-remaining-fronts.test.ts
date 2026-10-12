@@ -3,7 +3,7 @@ import { CardInstance, Permanent as PermanentClass } from "@aegis/shared";
 import type { Permanent, Seat } from "@aegis/shared";
 import { consultLeavePrevention, type LeavePreventionHost } from "./leavePrevention.js";
 import { createCardSource } from "../cards/CardSource.js";
-import { SubTriggerRegistry } from "./subtriggers.js";
+import { SubTriggerRegistry, type ReplacementId } from "./subtriggers.js";
 
 /** Synthetic witnesses for current provider intersections; no production card is inferred. */
 function perm(id: string, seat: Seat): Permanent {
@@ -25,7 +25,7 @@ function perm(id: string, seat: Seat): Permanent {
 function host(
   state: Map<string, Permanent>,
   registry: SubTriggerRegistry,
-  orderIds: number[] = [],
+  orderIds: ReplacementId[] = [],
 ): LeavePreventionHost {
   return {
     subTriggers: registry,

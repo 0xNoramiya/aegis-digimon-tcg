@@ -74,8 +74,3 @@ export async function fetchReplayFromApi(
   }
   return { record: asReplayRecord(await response.json(), `The replay of report #${reportId}`) };
 }
-
-/** Whether the environment configures a database the way the API reads it (`AccountStore`). */
-export function hasDatabaseConfig(env: NodeJS.ProcessEnv): boolean {
-  return Boolean(env.DATABASE_URL || env.PGHOST || env.PGDATABASE || env.PGSERVICE);
-}

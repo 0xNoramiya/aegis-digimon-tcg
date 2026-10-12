@@ -1,4 +1,5 @@
 import { replayRetentionMs } from "#api/bugs/replayRetentionMs";
+import { hasDatabaseConfig } from "#api/db/hasDatabaseConfig";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,13 +8,7 @@ import { exportPlayerReplay } from "#api/replays/inputs/export";
 import { runReplay } from "#api/replays/inputs/run";
 import type { ReplayCommand } from "#api/replays/inputs/tools/args";
 import { usageFor } from "#api/replays/inputs/tools/args";
-import {
-  fetchReplayFromApi,
-  fetchReplayFromDb,
-  hasDatabaseConfig,
-  type FetchLike,
-  type Queryable,
-} from "#api/replays/inputs/tools/fetch";
+import { fetchReplayFromApi, fetchReplayFromDb, type FetchLike, type Queryable } from "#api/replays/inputs/tools/fetch";
 import { listInputs } from "#api/replays/inputs/tools/inputs";
 import { readRecord, writeJson } from "#api/replays/inputs/tools/records";
 import { renderScaffold, writeScaffold } from "#api/replays/inputs/tools/scaffold";

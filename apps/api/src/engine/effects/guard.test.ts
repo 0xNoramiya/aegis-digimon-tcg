@@ -16,7 +16,6 @@ function fixture() {
   let present = true;
   let hasGuard = true;
   const [reaction] = guardLeaveReplacements([holder.permanentId], {
-    idOffset: 2,
     permanentById: () => (present ? holder : undefined),
     isBattleAreaDigimon: (permanent) => permanent !== undefined && !permanent.inBreeding,
     hasGuard: () => hasGuard,

@@ -804,7 +804,7 @@ describe("EX13-063 PrinceMamemon", () => {
       sourceCardId: MAT_BIG,
       sourceInstanceId: s.inst("payer").instanceId,
       options: {
-        effectText: "＜Guard＞: delete this Digimon to prevent your other Digimon from leaving.",
+        effectText: "＜Guard＞: you may delete this Digimon to prevent your other Digimon from leaving.",
       },
     });
     expect(
