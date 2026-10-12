@@ -32,6 +32,7 @@ export const compiled: CompiledCard = {
           on: { filter: {}, count: 1, fromSelectionRef: "atomicInfernoTarget" },
           actions: [{ kind: "GainMemory", amount: 3 }],
           condition: { kind: "isYourTurn" },
+          duration: "untilYourTurnEnd",
         },
       ],
     },

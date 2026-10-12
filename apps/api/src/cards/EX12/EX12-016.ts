@@ -4,17 +4,6 @@ import { registerIrCard } from "../../engine/effects/interpreter.js";
 const compiled: CompiledCard = {
   effects: [
     {
-      trigger: "Static",
-      actions: [],
-      keywords: [
-        {
-          keyword: "SecurityAttack",
-          amount: 1,
-          raw: "＜Security Attack +1＞",
-        },
-      ],
-    },
-    {
       trigger: "AllTurns",
       actions: [
         {

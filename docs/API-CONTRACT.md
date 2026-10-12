@@ -43,9 +43,15 @@ inputs invalidate pending consent. Finished games are final before result
 persistence; they cannot be reopened and rewards cannot be granted twice.
 
 Action rollback restores the point before the last accepted gameplay intent,
-including effect and combat answers. Turn rollback restores the current turn
+including effect and combat answers. Only the player who submitted that intent
+may request its rollback; an older own action cannot be selected across an
+opponent action. Turn rollback restores the current turn
 before start effects, unsuspending, and drawing; if no gameplay action has been
-accepted since that start, it restores the previous turn start. The API rebuilds
+accepted since that start, it restores the previous turn start. A turn rollback
+is available only when every accepted gameplay intent it removes belongs to
+the requester. The synchronized `undoActionSeat` and `rollbackTurnSeat` identify
+the eligible player, or `-1` when unavailable; the API enforces this independently
+of the button state. The API rebuilds
 a fresh engine from its seed, decks, fixture when applicable, and exact input
 prefix. Replay divergence or a mismatch against the captured private-state
 fingerprint refuses the restoration. This rebuild recreates private zones, RNG

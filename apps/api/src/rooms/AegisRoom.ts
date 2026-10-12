@@ -2342,10 +2342,12 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
 
   private refreshRollbackAvailability(): void {
     const enabled = this.state.allowRollback && !this.state.gameOver && this.state.turnCount > 0;
-    this.state.canUndoAction =
-      enabled && this.rollbackHistory?.target(RollbackKind.ACTION.value, this.state.turnCount) !== undefined;
-    this.state.canRollbackTurn =
-      enabled && this.rollbackHistory?.target(RollbackKind.TURN.value, this.state.turnCount) !== undefined;
+    const action = enabled ? this.rollbackHistory?.target(RollbackKind.ACTION.value, this.state.turnCount) : undefined;
+    const turn = enabled ? this.rollbackHistory?.target(RollbackKind.TURN.value, this.state.turnCount) : undefined;
+    this.state.undoActionSeat = action ? (this.rollbackHistory?.targetSeat(action) ?? -1) : -1;
+    this.state.rollbackTurnSeat = turn ? (this.rollbackHistory?.targetSeat(turn) ?? -1) : -1;
+    this.state.canUndoAction = this.state.undoActionSeat !== -1;
+    this.state.canRollbackTurn = this.state.rollbackTurnSeat !== -1;
     if (this.state.gameOver) this.invalidateRollbackRequest();
   }
 
@@ -2386,7 +2388,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     const kind = message.kind;
     if (kind !== RollbackKind.ACTION.value && kind !== RollbackKind.TURN.value) return;
     const target = this.rollbackHistory.target(kind, this.state.turnCount);
-    if (!target) return;
+    if (!target || this.rollbackHistory.targetSeat(target) !== seat) return;
     const opponent = (1 - seat) as Seat;
     if (this.bots[opponent]) {
       await this.performRollback(target);

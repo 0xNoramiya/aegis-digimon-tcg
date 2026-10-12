@@ -2,14 +2,19 @@ import { test, expect } from "@e2e/scenario-page";
 import { stubCardArtwork } from "@e2e/card-artwork";
 import fixture from "@api-fixtures/self-deletion-effect-continuation.fixture";
 
+import dualOnlyFixture from "@api-fixtures/self-deletion-dual-only.fixture";
+
 test.beforeEach(async ({ page }) => stubCardArtwork(page));
 
-for (const onlyDualTarget of [true, false]) {
+for (const { fixture: scenarioFixture, onlyDualTarget } of [
+  { fixture: dualOnlyFixture, onlyDualTarget: true },
+  { fixture, onlyDualTarget: false },
+]) {
   test(`BigMamemon finishes its self-deletion effect with only DUAL targets: ${onlyDualTarget}`, async ({
     scenario,
     page,
   }) => {
-    const refs = await scenario.openFixture(fixture({ onlyDualTarget }));
+    const refs = await scenario.openFixture(scenarioFixture);
     await scenario.resolveUntil((state) => state.phase === "Main" && !state.pendingDecision);
     await page.getByRole("button", { name: /^end turn$/i }).click();
     await scenario.resolveUntil(
