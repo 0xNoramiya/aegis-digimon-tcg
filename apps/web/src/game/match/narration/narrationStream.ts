@@ -341,6 +341,12 @@ export function narrationStream(deps: NarrationStreamDeps) {
               (step.origin?.stateVersion === undefined ? !unit : step.origin.stateVersion < (itemVersion ?? 0)),
           )
         : new Set<string>();
+    const earlierDrawGate = earlierDrawFlights.size > 0 && !costClause ? createPresentationGate() : undefined;
+    if (earlierDrawGate) {
+      earlierDrawGate.after = unit?.started ?? announceGate?.after;
+      if (unitAnnouncement) unitAnnouncement.after = earlierDrawGate;
+      if (announceGate) announceGate.after = earlierDrawGate;
+    }
     queue.enqueue({
       id: `narration-step-${item.id}`,
       origin,
@@ -355,6 +361,7 @@ export function narrationStream(deps: NarrationStreamDeps) {
       holdsBoard: false,
       blocksDecision: false,
       onDiscard() {
+        earlierDrawGate?.release();
         announceGate?.release();
         unitAnnouncement?.release();
         costClause?.focused.release();
@@ -370,6 +377,7 @@ export function narrationStream(deps: NarrationStreamDeps) {
         try {
           await runNarrationStep();
         } finally {
+          earlierDrawGate?.release();
           announceGate?.release();
           unitAnnouncement?.release();
           costClause?.focused.release();
@@ -453,6 +461,7 @@ export function narrationStream(deps: NarrationStreamDeps) {
             // Let this batch register its deletion beats before locating the source.
             await Promise.resolve();
             await waitForEarlierBeats(earlierDrawFlights, context);
+            earlierDrawGate?.release();
             if (context.cancelled || narrationSkipRef.current) return;
             for (const deleted of item.notice?.afterDeletions ?? []) {
               const burst = deletionReadyAtRef.current.get(`${deleted.seat}:${deleted.cardId}`);
@@ -641,7 +650,7 @@ export function narrationStream(deps: NarrationStreamDeps) {
 
   /** A later clause waits for draws that were already in flight when it was raised. */
   async function waitForEarlierBeats(earlierDrawFlights: ReadonlySet<string>, context: AnimationStepContext) {
-    const deadline = Date.now() + CONSEQUENCE_GATE_MAX_MS;
+    const deadline = Date.now() + QUEUED_GATE_MAX_MS;
     while (
       queue.hasPendingStep((step) => earlierDrawFlights.has(step.id)) &&
       Date.now() < deadline &&
