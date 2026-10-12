@@ -7,6 +7,7 @@ export const KeywordReaction = {
   EVADE: { name: "EVADE", value: "keyword-evade", precedesCardReactions: false },
   FRAGMENT: { name: "FRAGMENT", value: "keyword-fragment", precedesCardReactions: false },
   SCAPEGOAT: { name: "SCAPEGOAT", value: "keyword-scapegoat", precedesCardReactions: false },
+  DECOY: { name: "DECOY", value: "keyword-decoy", precedesCardReactions: false },
 } as const;
 
 export type KeywordReaction = (typeof KeywordReaction)[keyof typeof KeywordReaction]["value"];

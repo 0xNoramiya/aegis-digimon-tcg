@@ -369,6 +369,7 @@ export interface ReplacementSubscriptionPrevent extends ReplacementSubscriptionB
    * `leavingPermanentId` is prevented (the cost was paid / the choice made).
    */
   preventCheck: (ctx: EffectContext, leavingPermanentId: string) => Promise<boolean>;
+  preventOneOf?: (ctx: EffectContext, candidatePermanentIds: readonly string[]) => Promise<string | undefined>;
   /** Prevents ALL matching permanents on one activation ("they don't leave"). */
   affectsAll?: boolean;
   /**

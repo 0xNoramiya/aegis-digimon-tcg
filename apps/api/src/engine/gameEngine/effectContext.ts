@@ -9,6 +9,7 @@ import {
   Zone,
   buildTriggerKey,
   getCardDefinition,
+  requireCardDefinition,
   type CardInstance,
   type Permanent,
   type Seat,
@@ -41,6 +42,9 @@ import { evadeLeaveReplacements } from "../effects/evade.js";
 import { barrierLeaveReplacements } from "#api/engine/effects/barrier";
 import { fragmentLeaveReplacements } from "#api/engine/effects/fragmentLeaveReplacements";
 import { scapegoatLeaveReplacements } from "#api/engine/effects/scapegoatLeaveReplacements";
+import { decoyLeaveReplacements } from "#api/engine/effects/decoyLeaveReplacements";
+import { listDecoySources } from "#api/engine/effects/listDecoySources";
+import { isDecoySourceProtecting } from "#api/engine/effects/isDecoySourceProtecting";
 import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
 import { requestOptionalCardSelection } from "#api/engine/gameEngine/requestOptionalCardSelection";
 import { emitKeywordDeletionPrevented } from "#api/engine/gameEngine/emitKeywordDeletionPrevented";
@@ -422,6 +426,39 @@ export async function engineConsultLeavePrevention(
           announce: (saved, sacrifice) =>
             emitKeywordDeletionPrevented(engine, { keyword: "Scapegoat", saved, paid: sacrifice }),
         }),
+        ...decoyLeaveReplacements(
+          [...engine.state.players].flatMap((player) => player.battleArea.map((permanent) => permanent.permanentId)),
+          {
+            permanentById: (id) => engine.access.permanentById(id),
+            isBattleAreaDigimon: (permanent) => engine.access.isBattleAreaDigimon(permanent, engine.continuous),
+            hasDecoy: (id) => engine.continuous.hasKeyword(id, "Decoy"),
+            isDecoyCost: (id) => engine.decoyCostPermanentIds.has(id),
+            protectingSource: (holder, target) => {
+              const targetDefinition = requireCardDefinition(target.topCard.cardId);
+              return listDecoySources(engine.continuous, holder).find((source) =>
+                isDecoySourceProtecting(source, targetDefinition),
+              );
+            },
+            select: async (seat, candidateInstanceIds, min, promptText, source) => {
+              const response = await engine.decisions.request({
+                seat,
+                kind: "selectCards",
+                promptText,
+                sourceCardId: source.sourceCardId,
+                options: { candidateInstanceIds, min, max: 1, timing: "Static", effectText: source.effectText },
+              });
+              return response.kind === "selectCards" ? response.instanceIds : [];
+            },
+            deleteAsCost: async (holderId) => {
+              engine.decoyCostPermanentIds.add(holderId);
+              try {
+                return (await engine.primitives.deletePermanent([holderId], "byEffect")) > 0;
+              } finally {
+                engine.decoyCostPermanentIds.delete(holderId);
+              }
+            },
+          },
+        ),
       ],
       permanentById: (id) => engine.access.permanentById(id),
       buildContext: (srcPerm, leavingId) =>
@@ -683,6 +720,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
     modifiers: engine.modifiers,
     continuous: engine.continuous,
     subTriggers: engine.subTriggers,
+    decoyCostPermanentIds: engine.decoyCostPermanentIds,
     securityDp: engine.securityDp,
     deletionMaxDp: engine.deletionMaxDp,
     dpDeleteBudget: engine.dpDeleteBudget,

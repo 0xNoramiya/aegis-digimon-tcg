@@ -127,6 +127,7 @@ export async function consultLeavePrevention(
   const seat =
     opts.playerAction === true ? undefined : (resolvingSeat ?? (cause === "byEffect" ? host.turnSeat : undefined));
   const firedAll = new Set<ReplacementId>();
+  const resolvedOneOf = new Set<ReplacementId>();
   for (const leavingId of permanentIds) {
     if (prevented.has(leavingId)) continue;
     const leaving = host.permanentById(leavingId);
@@ -144,6 +145,7 @@ export async function consultLeavePrevention(
       if (repl.mode !== "instead" && repl.mode !== "prevent") continue;
       if (opts.isDigiXros === true && repl.exceptDigiXros === true) continue;
       if (opts.insteadOnly === true && repl.mode !== "instead") continue;
+      if (repl.mode === "prevent" && repl.preventOneOf !== undefined && resolvedOneOf.has(repl.id)) continue;
       const activationKey = replacementActivationKey(repl);
       if (opts.reentryGuard.activeReplacementKeys.has(activationKey)) continue;
       if (repl.sourcePermanentId === undefined && repl.sourceInstanceId === undefined) continue;
@@ -293,6 +295,40 @@ export async function consultLeavePrevention(
       // activation key/reentry guard still prevents only the replacement already resolving
       // from recursively re-entering itself.
       if (repl.mode !== "prevent") continue;
+      const announce = (savedId: string) => {
+        if (repl.activationIdentity === undefined && repl.preventionKeyword === undefined) return;
+        host.keywordPrevented?.(
+          repl.activationIdentity,
+          repl.sourcePermanentId,
+          sourceCardId,
+          savedId,
+          repl.preventionKeyword,
+        );
+      };
+      if (repl.preventOneOf !== undefined) {
+        if (resolvedOneOf.has(repl.id)) continue;
+        resolvedOneOf.add(repl.id);
+        const candidates = permanentIds.filter(
+          (candidateId) =>
+            !prevented.has(candidateId) &&
+            host.permanentById(candidateId) !== undefined &&
+            (repl.protects?.(ctx, candidateId) ?? true),
+        );
+        if (candidates.length === 0) continue;
+        if (repl.oncePerTurnKey !== undefined && host.oncePerTurnFired?.(repl.oncePerTurnKey)) continue;
+        opts.reentryGuard.activeReplacementKeys.add(activationKey);
+        let savedId: string | undefined;
+        try {
+          savedId = await repl.preventOneOf({ ...ctx, affectedPermanentIds: candidates }, candidates);
+        } finally {
+          opts.reentryGuard.activeReplacementKeys.delete(activationKey);
+        }
+        if (savedId === undefined) continue;
+        announce(savedId);
+        prevented.add(savedId);
+        if (repl.oncePerTurnKey !== undefined) host.markOncePerTurnFired?.(repl.oncePerTurnKey);
+        continue;
+      }
       if (repl.yieldsToEarlierPrevention === true && prevented.has(leavingId)) continue;
       if (repl.affectsAll && firedAll.has(repl.id)) {
         prevented.add(leavingId);
@@ -319,16 +355,6 @@ export async function consultLeavePrevention(
         opts.reentryGuard.activeReplacementKeys.delete(activationKey);
       }
       if (!did) continue;
-      const announce = (savedId: string) => {
-        if (repl.activationIdentity === undefined && repl.preventionKeyword === undefined) return;
-        host.keywordPrevented?.(
-          repl.activationIdentity,
-          repl.sourcePermanentId,
-          sourceCardId,
-          savedId,
-          repl.preventionKeyword,
-        );
-      };
       announce(leavingId);
       prevented.add(leavingId);
       if (repl.affectsAll) {

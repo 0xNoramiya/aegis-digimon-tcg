@@ -6,7 +6,9 @@ import {
   type Permanent,
   type Seat,
 } from "@aegis/shared";
-import { decoyMatches, decoySpecFromText, decoySpecMatches, fragmentCountOf } from "../../combat/keywords.js";
+import { fragmentCountOf } from "../../combat/keywords.js";
+import { listDecoySources } from "#api/engine/effects/listDecoySources";
+import { isDecoySourceProtecting } from "#api/engine/effects/isDecoySourceProtecting";
 import type { Primitives } from "../EffectContext.js";
 import { effectiveNames } from "../continuous.js";
 
@@ -96,30 +98,15 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
         }
       >();
       for (const holder of holders) {
-        const sources = continuous.keywordGrantSources(holder.permanentId, "Decoy");
-        const provenances =
-          sources.length > 0
-            ? sources
-            : [
-                {
-                  sourceCardId: holder.topCard.cardId,
-                  effectText: requireCardDefinition(holder.topCard.cardId).effectText,
-                  specifiers: continuous.keywordSpecifiers(holder.permanentId, "Decoy"),
-                },
-              ];
-        for (const source of provenances) {
-          const sourceCardId = source.sourceCardId ?? holder.topCard.cardId;
-          const effectText = source.effectText ?? requireCardDefinition(sourceCardId).effectText ?? "";
+        for (const source of listDecoySources(continuous, holder)) {
+          const { sourceCardId, effectText } = source;
           const key = `${seat}\u0000${sourceCardId}\u0000${effectText}`;
           if (closedSources.has(key)) continue;
-          const specifiers = source.specifiers ?? decoySpecFromText(effectText);
-          const protectable = targets.filter(({ permanentId, topCard }) => {
-            if (permanentId === holder.permanentId) return false;
-            const targetDef = requireCardDefinition(topCard.cardId);
-            return specifiers !== undefined && specifiers.length > 0
-              ? decoySpecMatches(specifiers, targetDef)
-              : decoyMatches(sourceCardId, targetDef);
-          });
+          const protectable = targets.filter(
+            ({ permanentId, topCard }) =>
+              permanentId !== holder.permanentId &&
+              isDecoySourceProtecting(source, requireCardDefinition(topCard.cardId)),
+          );
           if (protectable.length === 0) continue;
           const offer = offers.get(key) ?? { key, seat, sourceCardId, effectText, holders: [], protectable: [] };
           if (!offer.holders.includes(holder)) offer.holders.push(holder);
@@ -290,7 +277,7 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
     // deleted together, the controller picks which one (Discord 1555594986756767896).
     {
       const decoySaved = new Set<string>();
-      if (cause === "byEffect") {
+      if (cause === "byEffect" && !engine.consultLeavePrevention) {
         const resolvingSeat = effectSeatStack.at(-1) ?? engine.controllerSeat();
         const endangered = toDelete
           .filter((permanentId) => !decoyCostPermanentIds.has(permanentId))

@@ -1260,3 +1260,54 @@ describe("immediate replacement activation identity", () => {
     expect(siblingActivations).toBe(0);
   });
 });
+
+describe("leave-area prevention that saves one of several permanents", () => {
+  function installSavesOneOf(h: Harness, source: Permanent, protectedIds: readonly string[], offers: string[][]) {
+    return h.subTriggers.subscribeReplacement({
+      event: "wouldBeDeleted",
+      sourcePermanentId: source.permanentId,
+      sourceInstanceId: source.topCard!.instanceId,
+      mode: "prevent",
+      description: "save 1 of those Digimon",
+      protects: (_ctx, leavingId) => protectedIds.includes(leavingId),
+      preventCheck: async () => false,
+      preventOneOf: async (_ctx, candidateIds) => {
+        offers.push([...candidateIds]);
+        return candidateIds.at(-1);
+      },
+    });
+  }
+
+  it("resolves once for the whole deletion and saves the permanent it picks", async () => {
+    const h = harness();
+    const source = putPermanent(h.state, 0, "source");
+    const first = putPermanent(h.state, 0, "first");
+    const second = putPermanent(h.state, 0, "second");
+    const offers: string[][] = [];
+    installSavesOneOf(h, source, [first.permanentId, second.permanentId], offers);
+
+    expect(await h.consult([first.permanentId, second.permanentId])).toEqual(new Set([second.permanentId]));
+    expect(offers).toEqual([[first.permanentId, second.permanentId]]);
+  });
+
+  it("fizzles without asking when an earlier prevention already saved what it protects", async () => {
+    const h = harness();
+    const source = putPermanent(h.state, 0, "source");
+    const endangered = putPermanent(h.state, 0, "endangered");
+    const offers: string[][] = [];
+    const earlierId = h.subTriggers.subscribeReplacement({
+      event: "wouldBeDeleted",
+      sourcePermanentId: endangered.permanentId,
+      sourceInstanceId: endangered.topCard!.instanceId,
+      mode: "prevent",
+      description: "self prevention",
+      protects: (_ctx, leavingId) => leavingId === endangered.permanentId,
+      preventCheck: async () => true,
+    });
+    const savesOneOfId = installSavesOneOf(h, source, [endangered.permanentId], offers);
+    h.replacementOrder.push(earlierId, savesOneOfId);
+
+    expect(await h.consult([endangered.permanentId])).toEqual(new Set([endangered.permanentId]));
+    expect(offers).toEqual([]);
+  });
+});

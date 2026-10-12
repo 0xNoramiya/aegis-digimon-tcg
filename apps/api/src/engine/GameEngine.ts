@@ -582,6 +582,8 @@ export class GameEngine {
   /** Guards each immediate prevention from reactivating during its own resolution. */
   preventReentryGuard = { activeReplacementKeys: new Set<string>() };
 
+  readonly decoyCostPermanentIds = new Set<string>();
+
   /** Stable effect key for a BT3-056-style ＜Digisorption＞ redirect's once-per-turn accounting. */
 
   /**
