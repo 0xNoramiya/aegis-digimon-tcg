@@ -1,0 +1,26 @@
+import { useTranslation } from "@/i18n/useTranslation";
+
+export function ForumHubNav({
+  roadmap = false,
+  onDiscussions,
+  onRoadmap,
+  onReleases,
+}: {
+  roadmap?: boolean;
+  onDiscussions: () => void;
+  onRoadmap: () => void;
+  onReleases: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <nav className="forum-hub-nav" aria-label={t("forum.hubNavigation")}>
+      <button aria-current={!roadmap ? "page" : undefined} onClick={onDiscussions}>
+        {t("forum.discussions")}
+      </button>
+      <button aria-current={roadmap ? "page" : undefined} onClick={onRoadmap}>
+        {t("forum.roadmap")}
+      </button>
+      <button onClick={onReleases}>{t("forum.releases")}</button>
+    </nav>
+  );
+}

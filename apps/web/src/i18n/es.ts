@@ -1,3 +1,4 @@
+import { forumEs } from "@/i18n/forumMessages";
 import { replayVideoEs } from "./replayVideo";
 import { profileReplayEs } from "./profileReplays";
 import { replayEs } from "./replays";
@@ -18,6 +19,7 @@ import { settingsEs } from "./redesign/settings.es";
 import { shellEs } from "./redesign/shell.es";
 
 export const es: Record<keyof typeof en, string> = {
+  ...forumEs,
   ...profileReplayEs,
   ...replayEs,
   ...replayVideoEs,

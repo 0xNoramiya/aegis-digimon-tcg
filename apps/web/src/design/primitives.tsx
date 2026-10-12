@@ -610,9 +610,8 @@ export function TopNav({
     <button
       className="aegis-icon-button aegis-feedback-button"
       onClick={onSendFeedback}
-      aria-haspopup="dialog"
-      aria-label={t("bugReport.button")}
-      title={t("bugReport.button")}
+      aria-label={t("forum.title")}
+      title={t("forum.title")}
     >
       <Icons.Megaphone size={18} />
     </button>

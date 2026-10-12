@@ -1,3 +1,4 @@
+import { notifyForumUpdate } from "#api/bugs/notifyForumUpdate";
 import { FeedbackStatus, CLOSED_FEEDBACK_STATUSES, FEEDBACK_STATUSES } from "@aegis/shared/feedback/FeedbackStatus";
 import { FEEDBACK_REOPEN_WINDOW_MS } from "@aegis/shared/feedback/limits";
 import { isClosedFeedbackStatus } from "@aegis/shared/feedback/isClosedFeedbackStatus";
@@ -89,10 +90,11 @@ type FeedbackRow = {
   closed_at: string | null;
   reopened_at: string | null;
   confirmed_bug: boolean;
+  is_public: boolean;
 };
 
 const FEEDBACK_COLUMNS =
-  "id, report, created_at, github_status, github_number, github_url, status, final_reply, internal_note, duplicate_of_id, revision, reporter_account_id, closed_at, reopened_at, confirmed_bug";
+  "id, report, created_at, github_status, github_number, github_url, status, final_reply, internal_note, duplicate_of_id, revision, reporter_account_id, closed_at, reopened_at, confirmed_bug, is_public";
 /** A report row with the input count of its stored replay; `input_count` is null when it has none. */
 type FeedbackRecordRow = FeedbackRow & { input_count: number | null };
 const SELECT_WITH_REPLAY = `SELECT ${FEEDBACK_COLUMNS.split(", ")
@@ -245,7 +247,11 @@ export class FeedbackStore {
       const replyChanged = closed && finalReply !== current.final_reply;
       const duplicateChanged = closed && duplicateOfId !== current.duplicate_of_id;
       const bugConfirmed = confirmedBug && !current.confirmed_bug;
-      if (current.reporter_account_id && (statusChanged || replyChanged || duplicateChanged || bugConfirmed)) {
+      if (
+        !current.is_public &&
+        current.reporter_account_id &&
+        (statusChanged || replyChanged || duplicateChanged || bugConfirmed)
+      ) {
         await notify(client, {
           accountId: current.reporter_account_id,
           kind: "feedback_update",
@@ -256,6 +262,22 @@ export class FeedbackStore {
             status: update.status,
             previousStatus: current.status,
             replyExcerpt: closed && finalReply ? excerpt(finalReply) : null,
+            bugConfirmed,
+          },
+          at,
+        });
+      }
+      if (statusChanged || replyChanged || duplicateChanged || bugConfirmed) {
+        await notifyForumUpdate({
+          db: client,
+          id,
+          actorAccountId,
+          payload: {
+            feedbackId: id,
+            summary: current.report.summary,
+            status: update.status,
+            previousStatus: current.status,
+            replyExcerpt: (closed || current.reopened_at !== null) && finalReply ? excerpt(finalReply) : null,
             bugConfirmed,
           },
           at,
@@ -297,6 +319,20 @@ export class FeedbackStore {
          VALUES ($1,$2,$3,$6,true,$4,$5)`,
         [id, accountId, current.status, comment, at, FeedbackStatus.TRIAGED.value],
       );
+      await notifyForumUpdate({
+        db: client,
+        id,
+        actorAccountId: accountId,
+        payload: {
+          feedbackId: id,
+          summary: current.report.summary,
+          status: FeedbackStatus.TRIAGED.value,
+          previousStatus: current.status,
+          replyExcerpt: excerpt(comment),
+          bugConfirmed: false,
+        },
+        at,
+      });
       return (await this.readOwnWith(client, accountId, id))!;
     });
   }

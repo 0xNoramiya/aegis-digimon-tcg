@@ -17,6 +17,9 @@ test("the toolbar holds still, the opponent's card stays open, and the feedback 
 }) => {
   test.setTimeout(120_000);
   const { page } = scenario;
+  await page.addInitScript(() => {
+    window.browserTestAccountId = "forum-match-fixture";
+  });
   await scenario.openFixture(fixtureDrasilTurnHandoff, "normal", "none");
 
   await test.step("#53: no toolbar button moves while animations come and go", async () => {
@@ -69,20 +72,20 @@ test("the toolbar holds still, the opponent's card stays open, and the feedback 
   });
 
   await test.step("#54: only Cancel closes a started feedback report", async () => {
-    // The browser test server has no account API; the dialog only asks it where reports go.
     await page.route("**/bug-reports/limits", (route) =>
       route.fulfill({ json: { enabled: true, publicMirror: false } }),
     );
     await page.getByRole("button", { name: "Send feedback", exact: true }).click();
-    const dialog = page.getByRole("dialog", { name: "Send feedback" });
+    const dialog = page.getByRole("dialog", { name: "New topic" });
     await expect(dialog).toBeVisible();
-    const description = dialog.getByLabel("What happened?");
+    const description = dialog.getByLabel("Your report");
     await description.fill("The window closed on me");
     await page.mouse.click(8, 500);
     await expect(dialog).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(dialog).toBeVisible();
     await expect(description).toHaveValue("The window closed on me");
+    page.once("dialog", (confirmation) => confirmation.accept());
     await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
     await expect(dialog).toHaveCount(0);
   });

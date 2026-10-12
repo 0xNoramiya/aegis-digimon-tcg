@@ -144,6 +144,7 @@ export function GameScreen({
   onRematch,
   onResetScenario,
   signedIn = false,
+  accountId,
   autoHatchReady = true,
   demoConnection,
   replayMode = false,
@@ -175,8 +176,8 @@ export function GameScreen({
     privateHost?: boolean,
     format?: import("@aegis/shared").DeckFormat,
   ) => void;
-  /** Only shapes what the report dialog says about follow-up questions; reporting needs no account. */
   signedIn?: boolean;
+  accountId?: string;
   /** Automated hatching waits for the current account’s preferences to load. */
   autoHatchReady?: boolean;
   demoConnection?: Pick<
@@ -1394,6 +1395,7 @@ export function GameScreen({
       collapseNotices={collapseNotices}
       log={log}
       signedIn={signedIn}
+      accountId={accountId}
       opponentDropped={!spectating && !vsBot && !opp.connected && !state.gameOver}
       gameOver={
         !replayMode && (state.gameOver || series?.stage === "over") && !cues.resultPending

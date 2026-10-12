@@ -21,6 +21,7 @@ export function MatchStatusOverlays({
   arenaLook,
   matchLogId,
   signedIn,
+  accountId,
   opponentDropped,
   gameOver,
   onCloseHistory,
@@ -42,6 +43,7 @@ export function MatchStatusOverlays({
   matchLogId: string;
   /** Only shapes what the report dialog says about follow-up questions. */
   signedIn: boolean;
+  accountId?: string;
   /** The opponent's socket is gone and the match has not ended, so the board waits. */
   opponentDropped: boolean;
   /** The result and its stats, or nothing while the match is still running. */
@@ -74,7 +76,7 @@ export function MatchStatusOverlays({
       {zoomCardId ? <CardZoomOverlay cardId={zoomCardId} artId={zoomArtId} onClose={onCloseZoom} /> : null}
 
       {bugReportOpen ? (
-        <BugReportDialog signedIn={signedIn} matchLogId={matchLogId} onClose={onCloseBugReport} />
+        <BugReportDialog accountId={accountId} signedIn={signedIn} matchLogId={matchLogId} onClose={onCloseBugReport} />
       ) : null}
 
       {arenaLook ? <ArenaLookDialog deckColors={arenaLook.deckColors} onClose={arenaLook.onClose} /> : null}

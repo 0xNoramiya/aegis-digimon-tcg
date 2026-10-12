@@ -1,0 +1,301 @@
+import { expect, test, type Page } from "@playwright/test";
+
+test.use({ video: "on" });
+
+const topic = {
+  id: 7,
+  kind: "bug",
+  summary: "Effect timing after digivolution",
+  authorName: "Kai",
+  createdAt: 1791700000000,
+  updatedAt: 1791700000000,
+  status: "triaged",
+  supportCount: 12,
+  commentCount: 1,
+  supported: false,
+  following: false,
+  hidden: false,
+  description:
+    "## What happened\n\nThe effect did not activate.\n\n## How to reproduce\n\n1. Start a match.\n2. Digivolve.",
+  cardIds: ["BT1-010"],
+  images: [],
+  finalReply: null,
+  duplicateOfId: null,
+  history: [{ from: null, to: "new", at: 1791700000000, byReporter: false, comment: null }],
+  comments: [
+    {
+      id: 1,
+      authorName: "Aegis team",
+      official: true,
+      body: "We are investigating the effect timing.",
+      createdAt: 1791700000000,
+      images: [],
+      hidden: false,
+    },
+  ],
+  nextAfter: null,
+};
+
+class PublicForumPage {
+  constructor(readonly page: Page) {}
+  async open({
+    signedIn = false,
+    path = "/feedback",
+    failPublication = false,
+    isAdmin = false,
+  }: { signedIn?: boolean; path?: string; failPublication?: boolean; isAdmin?: boolean } = {}) {
+    const current = structuredClone(topic);
+    const submissions: Record<string, unknown>[] = [];
+    await this.page.route("http://127.0.0.1:2569/**", async (route) => {
+      const requestPath = new URL(route.request().url()).pathname;
+      const method = route.request().method();
+      let body: unknown = {};
+      if (requestPath === "/auth/me") {
+        if (!signedIn) {
+          await route.fulfill({ status: 401, json: { error: "authentication_required" } });
+          return;
+        }
+        body = { id: "forum-fixture", displayName: "Kai", isAdmin, avatarUrl: null, avatarId: null };
+      } else if (requestPath === "/account/decks") body = [];
+      else if (requestPath === "/feedback/topics" && method === "GET") {
+        const status = new URL(route.request().url()).searchParams.get("status");
+        const variants = [
+          current,
+          { ...current, id: 8, kind: "improvement", status: "new", summary: "Save collection filters" },
+          { ...current, id: 9, status: "in_progress", summary: "Improve mobile effects" },
+          { ...current, id: 10, status: "resolved", summary: "Completed layout fix" },
+        ];
+        body = { items: status ? variants.filter((item) => item.status === status) : [current], nextOffset: null };
+      } else if (requestPath === "/feedback/topics" && method === "POST") {
+        submissions.push(route.request().postDataJSON());
+        if (failPublication) {
+          await route.fulfill({ status: 503, json: { error: "reports_unavailable" } });
+          return;
+        }
+        body = { id: 7 };
+      } else if (requestPath === "/feedback/topics/7") body = current;
+      else if (requestPath === "/feedback/topics/7/member") {
+        Object.assign(current, route.request().postDataJSON());
+        current.supportCount = current.supported ? 13 : 12;
+        body = { ok: true };
+      } else if (requestPath === "/feedback/topics/7/comments") {
+        const draft = route.request().postDataJSON() as { body: string };
+        current.comments.push({
+          id: 2,
+          authorName: "Kai",
+          official: false,
+          body: draft.body,
+          createdAt: Date.now(),
+          images: [],
+          hidden: false,
+        });
+        body = current.comments.at(-1);
+      } else if (requestPath === "/feedback/images" && method === "POST") {
+        body = { id: "e42249e5-ba6e-4528-b517-63bee8fbbb0f", name: "board.png", width: 1, height: 1 };
+      } else if (requestPath.startsWith("/feedback/images/")) {
+        await route.fulfill({
+          contentType: "image/png",
+          body: Buffer.from(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==",
+            "base64",
+          ),
+        });
+        return;
+      }
+      await route.fulfill({ json: body });
+    });
+    await this.page.goto(path);
+    return submissions;
+  }
+  async openTopic() {
+    await this.page.getByRole("link", { name: /Effect timing after digivolution/ }).click();
+    await expect(this.page.getByRole("heading", { name: topic.summary, exact: true })).toBeVisible();
+  }
+  async fillReport() {
+    await this.page.getByLabel("Title", { exact: true }).fill("A detailed effect timing report");
+    await this.page
+      .getByLabel("Your report", { exact: true })
+      .fill(
+        "## What happened\n\nThe effect did not activate.\n\n## What I expected\n\nThe card effect should resolve.",
+      );
+  }
+}
+
+for (const width of [320, 768, 1440]) {
+  for (const dark of [false, true]) {
+    test(`public forum and discussion fit ${width}px in ${dark ? "dark" : "light"} mode`, async ({ page }, info) => {
+      const errors: string[] = [];
+      page.on("pageerror", (error) => errors.push(error.message));
+      await page.setViewportSize({ width, height: 900 });
+      const forum = new PublicForumPage(page);
+      await forum.open();
+      await page.evaluate((darkMode) => document.documentElement.classList.toggle("dark", darkMode), dark);
+      await expect(page.getByRole("heading", { name: "Community feedback", exact: true })).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+      await page.screenshot({ path: info.outputPath("forum.png"), fullPage: true });
+      await forum.openTopic();
+      await expect(page.getByText("Official response", { exact: true })).toBeVisible();
+      await expect(page.getByText("Sign in to participate", { exact: true })).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+      await page.screenshot({ path: info.outputPath("discussion.png"), fullPage: true });
+      expect(errors).toEqual([]);
+    });
+  }
+}
+
+test.describe("public forum participation", () => {
+  test("signed-in players publish an image, support, follow and reply to public topics", async ({ page }) => {
+    const forum = new PublicForumPage(page);
+    const submissions = await forum.open({ signedIn: true });
+    await page.getByRole("button", { name: "New topic", exact: true }).click();
+    await expect(page).toHaveURL(/\/feedback\/new$/);
+    await forum.fillReport();
+    await page.getByRole("button", { name: "Preview", exact: true }).click();
+    await expect(
+      page.getByRole("region", { name: "Preview" }).getByRole("heading", { name: "What happened" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Write", exact: true }).click();
+    await page
+      .locator('input[type="file"]')
+      .setInputFiles({ name: "board.png", mimeType: "image/png", buffer: Buffer.from("fixture") });
+    await expect(page.getByRole("button", { name: "Remove board.png" })).toBeVisible();
+    await page.getByRole("button", { name: "Publish topic", exact: true }).click();
+    await expect(page).toHaveURL(/\/feedback\/7$/);
+    expect(submissions).toHaveLength(1);
+    expect(submissions[0]!.imageIds).toEqual(["e42249e5-ba6e-4528-b517-63bee8fbbb0f"]);
+    await page.getByRole("button", { name: "Also happens to me · 12" }).click();
+    await expect(page.getByRole("button", { name: "Also happens to me · 13" })).toHaveAttribute("aria-pressed", "true");
+    await page.getByRole("button", { name: "Follow", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Following", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await page.getByLabel("Add details or a screenshot").fill("I reproduced this issue with another card.");
+    await page.getByRole("button", { name: "Reply", exact: true }).click();
+    await expect(page.getByText("I reproduced this issue with another card.", { exact: true })).toBeVisible();
+  });
+});
+
+test("composer preserves drafts on navigation and failed publication", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  const forum = new PublicForumPage(page);
+  await forum.open({ signedIn: true, path: "/feedback/new", failPublication: true });
+  await forum.fillReport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+  await page.getByRole("button", { name: "Publish topic", exact: true }).click();
+  await expect(page.getByText("Could not save. Your text is still here; try again.")).toBeVisible();
+  await expect(page.getByLabel("Title", { exact: true })).toHaveValue("A detailed effect timing report");
+  await page.reload();
+  await expect(page.getByLabel("Title", { exact: true })).toHaveValue("A detailed effect timing report");
+});
+
+test("roadmap uses public topic stages and published release features", async ({ page }) => {
+  const forum = new PublicForumPage(page);
+  await forum.open();
+  await page.getByRole("button", { name: "Roadmap", exact: true }).click();
+  await expect(page).toHaveURL(/\/feedback\/roadmap$/);
+  await expect(page.getByRole("heading", { name: "Community roadmap", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Community ideas", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "In development", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Delivered", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Save collection filters/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Completed layout fix/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Already available in Aegis" })).toBeVisible();
+  await page.getByRole("button", { name: "All release notes" }).click();
+  await expect(page).toHaveURL(/\/whats-new$/);
+});
+
+test("long discussions keep loaded pages and display new replies immediately", async ({ page }) => {
+  const forum = new PublicForumPage(page);
+  await forum.open({ signedIn: true });
+  const comments = Array.from({ length: 21 }, (_, index) => ({
+    id: index + 1,
+    authorName: "Player",
+    official: false,
+    body: `Chronological reply ${index + 1}`,
+    createdAt: topic.createdAt,
+    images: [],
+    hidden: false,
+  }));
+  const detail = { ...structuredClone(topic), comments: comments.slice(0, 20), nextAfter: 20, commentCount: 21 };
+  await page.route("**/feedback/topics/7", (route) => route.fulfill({ json: detail }));
+  await page.route("**/feedback/topics/7/comments*", async (route) => {
+    if (route.request().method() === "POST") {
+      const body = route.request().postDataJSON().body as string;
+      const comment = { ...comments[0]!, id: 22, body };
+      comments.push(comment);
+      await route.fulfill({ json: comment });
+    } else await route.fulfill({ json: { items: comments.slice(20), nextAfter: null } });
+  });
+  await page.route("**/feedback/topics/7/member", async (route) => {
+    Object.assign(detail, route.request().postDataJSON());
+    await route.fulfill({ json: { ok: true } });
+  });
+  await forum.openTopic();
+  await page.getByLabel("Add details or a screenshot").fill("New reply beyond the first page");
+  await page.getByRole("button", { name: "Reply", exact: true }).click();
+  await expect(page.getByText("New reply beyond the first page", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "More replies", exact: true }).click();
+  await expect(page.getByText("Chronological reply 21", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Also happens to me · 12" }).click();
+  await expect(page.getByRole("button", { name: "Also happens to me · 12" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText("Chronological reply 21", { exact: true })).toBeVisible();
+});
+
+test("moderation reconciles replies published beyond loaded pages", async ({ page }) => {
+  const forum = new PublicForumPage(page);
+  await forum.open({ signedIn: true, isAdmin: true });
+  const firstPage = Array.from({ length: 20 }, (_, index) => ({
+    id: index + 1,
+    authorName: "Player",
+    official: false,
+    body: `Earlier reply ${index + 1}`,
+    createdAt: topic.createdAt,
+    images: [],
+    hidden: false,
+  }));
+  const posted = {
+    id: 30,
+    authorName: "Team",
+    official: true,
+    body: "Newest official reply",
+    createdAt: topic.createdAt,
+    images: [],
+    hidden: false,
+  };
+  await page.route("**/feedback/topics/7", (route) =>
+    route.fulfill({ json: { ...topic, comments: firstPage, nextAfter: 20 } }),
+  );
+  await page.route("**/feedback/topics/7/flags", (route) => route.fulfill({ json: [] }));
+  await page.route("**/feedback/topics/7/comments", (route) => route.fulfill({ json: posted }));
+  await page.route("**/feedback/topics/7/moderation", async (route) => {
+    posted.hidden = route.request().postDataJSON().hidden as boolean;
+    await route.fulfill({ json: { ok: true } });
+  });
+  await forum.openTopic();
+  await page.getByLabel("Add details or a screenshot").fill(posted.body);
+  await page.getByRole("button", { name: "Reply", exact: true }).click();
+  const reply = page.getByRole("article").filter({ hasText: "Newest official reply" });
+  await reply.getByRole("button", { name: "Hide content" }).click();
+  await expect(reply.getByText("Hidden", { exact: true })).toBeVisible();
+  await expect(reply.getByRole("button", { name: "Restore content" })).toBeVisible();
+});
+
+for (const width of [320, 1440]) {
+  test(`ordinary scrolling reaches the publication controls at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await new PublicForumPage(page).open({ signedIn: true, path: "/feedback/new" });
+    const editor = page.getByRole("region", { name: "Tell us what happened", exact: true });
+    const bounds = await editor.evaluate((element) => ({
+      overflow: getComputedStyle(element).overflowY,
+      height: element.clientHeight,
+      content: element.scrollHeight,
+    }));
+    expect(bounds.overflow).toBe("auto");
+    expect(bounds.content).toBeGreaterThan(bounds.height);
+    await editor.hover();
+    await page.mouse.wheel(0, 3000);
+    await expect.poll(() => editor.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    const publish = page.getByRole("button", { name: "Publish topic", exact: true });
+    await expect(publish).toBeInViewport();
+    const button = await publish.boundingBox();
+    expect(button!.y + button!.height).toBeLessThanOrEqual(width < 960 ? 832 : 900);
+  });
+}

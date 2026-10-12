@@ -31,6 +31,7 @@ import { resetFeedbackBaseline } from "./028-reset-feedback-baseline.js";
 import { accountReplays } from "./029-account-replays.js";
 import { replaySharingHistory } from "./030-replay-sharing-history.js";
 import { feedbackReportReplays } from "./031-feedback-report-replays.js";
+import { publicFeedbackForum } from "#api/db/migrations/033-public-feedback-forum";
 
 export const migrations: readonly Migration[] = [
   initialSchema,
@@ -64,4 +65,5 @@ export const migrations: readonly Migration[] = [
   accountReplays,
   replaySharingHistory,
   feedbackReportReplays,
+  publicFeedbackForum,
 ];

@@ -1,3 +1,4 @@
+import { forumEn } from "@/i18n/forumMessages";
 import { replayVideoIt } from "./replayVideo";
 import { profileReplayIt } from "./profileReplays";
 import { replayIt } from "./replays";
@@ -7,6 +8,7 @@ import { en } from "./en";
 // Release notes before v1.19.0 keep their published English text. All interface
 // messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  ...forumEn,
   ...profileReplayIt,
   ...replayIt,
   ...replayVideoIt,

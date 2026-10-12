@@ -1,6 +1,8 @@
+import { forumEn } from "@/i18n/forumMessages";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...forumEn,
   "profile.matches": "一致",
   "profile.guestHint":
     "あなたの名前とアバターはこのデバイスにのみ保存されます。試合履歴とリプレイを保存するにはサインインしてください。",

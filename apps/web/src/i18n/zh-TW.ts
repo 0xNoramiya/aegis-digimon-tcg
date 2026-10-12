@@ -1,6 +1,8 @@
+import { forumEn } from "@/i18n/forumMessages";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...forumEn,
   "profile.matches": "火柴",
   "profile.guestHint": "您的姓名和頭像僅保存在此裝置上。登入以保留比賽記錄和重播。",
   "profile.help": "幫助和社區",

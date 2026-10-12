@@ -1,6 +1,8 @@
+import { forumEn } from "@/i18n/forumMessages";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...forumEn,
   "profile.matches": "경기",
   "profile.guestHint": "귀하의 이름과 아바타는 이 기기에만 저장됩니다. 경기 기록과 리플레이를 보관하려면 로그인하세요.",
   "profile.help": "도움말 및 커뮤니티",

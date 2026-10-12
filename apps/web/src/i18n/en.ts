@@ -1,3 +1,4 @@
+import { forumEn } from "@/i18n/forumMessages";
 import { replayVideoEn } from "./replayVideo";
 import { profileReplayEn } from "./profileReplays";
 import { replayEn } from "./replays";
@@ -19,6 +20,7 @@ import { shellEn } from "./redesign/shell.en";
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  ...forumEn,
   ...profileReplayEn,
   ...replayEn,
   ...replayVideoEn,

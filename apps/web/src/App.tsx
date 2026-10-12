@@ -1,3 +1,4 @@
+import { FORUM_NAVIGATION_EVENT } from "@/bugs/forumNavigationEvent";
 import { LocalScenarioHelp } from "./dev/LocalScenarioHelp";
 import { spectatorCodeFromSearch } from "./roomInvite";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -32,7 +33,6 @@ import { accountApi, type RemoteAccount } from "./account/client";
 import { communityApi } from "./community/client";
 import { communityDeckListing } from "./community/communityDeckListing";
 import { usePreferencesSync } from "./account/usePreferencesSync";
-import { BugReportDialog } from "./bugs/BugReportDialog";
 import { LeaveMatchDialog } from "./game/screen/layout/LeaveMatchDialog";
 import { PlayerMenu } from "./account/PlayerMenu";
 import { NotificationBell } from "./notifications/NotificationBell";
@@ -47,7 +47,7 @@ import { setRoomTicketAccount } from "./net/roomAccount";
 const ProfileScreen = lazy(() => import("./account/ProfileScreen").then((m) => ({ default: m.ProfileScreen })));
 const ReplaysScreen = lazy(() => import("./replays/ReplaysScreen").then((m) => ({ default: m.ReplaysScreen })));
 const FeedbackScreen = lazy(() => import("./bugs/FeedbackScreen").then((m) => ({ default: m.FeedbackScreen })));
-const MyFeedbackScreen = lazy(() => import("./bugs/MyFeedbackScreen").then((m) => ({ default: m.MyFeedbackScreen })));
+const ForumScreen = lazy(() => import("@/bugs/ForumScreen").then((m) => ({ default: m.ForumScreen })));
 const PrivacyScreen = lazy(() => import("./legal/PrivacyScreen").then((m) => ({ default: m.PrivacyScreen })));
 const Home = lazy(() => import("./screens/Home").then((m) => ({ default: m.Home })));
 const ReleasesScreen = lazy(() => import("./releases/ReleasesScreen").then((m) => ({ default: m.ReleasesScreen })));
@@ -355,7 +355,6 @@ export function AegisClient({
   const playerMenuOpen = playerMenuAnchor !== null;
   const [replayViewing, setReplayViewing] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
-  const [bugReportOpen, setBugReportOpen] = useState(false);
   const [leaveMatchPromptOpen, setLeaveMatchPromptOpen] = useState(false);
   const concedeMatchRef = useRef<(() => void) | undefined>(undefined);
   const setLeaveForfeitsMatch = useCallback((concede: (() => void) | undefined) => {
@@ -386,6 +385,7 @@ export function AegisClient({
   useEffect(() => {
     if (initialScreen) return;
     const onPopState = () => {
+      if (!window.dispatchEvent(new Event(FORUM_NAVIGATION_EVENT, { cancelable: true }))) return;
       const nextRoute = routeFromPathname(window.location.pathname);
       const resolvedRoute: AppRoute =
         nextRoute?.screen === "game" && !loadReconnectSession()
@@ -412,6 +412,7 @@ export function AegisClient({
   };
 
   const navigate = (nextRoute: AppRoute) => {
+    if (!window.dispatchEvent(new Event(FORUM_NAVIGATION_EVENT, { cancelable: true }))) return;
     setPlayerMenuAnchor(null);
     if (!initialScreen) {
       const path = pathForRoute(nextRoute);
@@ -488,7 +489,7 @@ export function AegisClient({
           dark={dark}
           onToggleDark={setDark}
           onOpenTheme={() => setThemeOpen(true)}
-          onSendFeedback={() => setBugReportOpen(true)}
+          onSendFeedback={() => navigate({ screen: "myFeedback" })}
           notifications={account ? <NotificationBell inbox={inbox} onOpenFeedback={openOwnFeedback} /> : undefined}
         />
       ) : null}
@@ -507,7 +508,7 @@ export function AegisClient({
               onBuildDeck={() => navigateScreen("deck")}
               onOpenCollection={() => navigateScreen("collection")}
               onSignIn={() => navigateScreen("login")}
-              onReportBug={() => setBugReportOpen(true)}
+              onReportBug={() => navigate({ screen: "myFeedback", feedbackView: "new" })}
               onOpenReleases={() => navigateScreen("releases")}
             />
           )}
@@ -522,12 +523,20 @@ export function AegisClient({
             />
           )}
           {screen === "myFeedback" && (
-            <MyFeedbackScreen
+            <ForumScreen
               key={account?.id ?? "guest"}
               signedIn={!!account}
-              focusId={route.feedbackId}
+              selectedId={route.feedbackId}
+              view={route.feedbackView}
+              onRoadmap={() => navigate({ screen: "myFeedback", feedbackView: "roadmap" })}
+              onReleases={() => navigateScreen("releases")}
+              accountId={account?.id}
+              isAdmin={account?.isAdmin === true}
+              onSelect={openOwnFeedback}
+              onNew={() => navigate({ screen: "myFeedback", feedbackView: "new" })}
+              onPrivate={() => navigate({ screen: "myFeedback", feedbackView: "private" })}
+              onTriage={(feedbackId) => navigate({ screen: "feedback", feedbackId })}
               onSignIn={() => navigateScreen("login")}
-              onSendFeedback={() => setBugReportOpen(true)}
             />
           )}
           {screen === "login" && <Login onBack={() => navigateScreen("home")} />}
@@ -676,6 +685,7 @@ export function AegisClient({
 
           {screen === "game" && (
             <GameScreen
+              accountId={account?.id}
               autoHatchReady={preferencesReady}
               key={matchNumber}
               joinOptions={joinOptions}
@@ -736,7 +746,7 @@ export function AegisClient({
                 }
               : undefined
           }
-          onReportBug={() => setBugReportOpen(true)}
+          onReportBug={() => navigate({ screen: "myFeedback", feedbackView: "new" })}
           onClose={() => setPlayerMenuAnchor(null)}
         />
       ) : null}
@@ -744,7 +754,6 @@ export function AegisClient({
       {themeOpen ? (
         <InterfaceThemeDialog dark={dark} onToggleDark={setDark} onClose={() => setThemeOpen(false)} />
       ) : null}
-      {bugReportOpen ? <BugReportDialog signedIn={!!account} onClose={() => setBugReportOpen(false)} /> : null}
       {leaveMatchPromptOpen ? (
         <LeaveMatchDialog onConfirm={confirmLeaveMatch} onClose={() => setLeaveMatchPromptOpen(false)} />
       ) : null}

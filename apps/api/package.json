@@ -42,7 +42,8 @@
     "colyseus": "^0.18.8",
     "express": "^5.2.1",
     "obscenity": "^0.4.6",
-    "pg": "^8.23.0"
+    "pg": "^8.23.0",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

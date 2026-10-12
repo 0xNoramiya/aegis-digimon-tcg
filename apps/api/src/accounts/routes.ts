@@ -1,3 +1,4 @@
+import { ForumStore } from "#api/bugs/ForumStore";
 import { isDeckFormat, type DeckFormat } from "@aegis/shared";
 import { randomBytes } from "node:crypto";
 import { ReplayLibrary } from "../replays/ReplayLibrary.js";
@@ -109,6 +110,7 @@ export function installAccountRoutes(
   installBugReportRoutes({
     app,
     store: new FeedbackStore(store),
+    forum: new ForumStore(store),
     tracker: bugTracker,
     session: sessionFromRequest,
     replayCapture: ReplayCapturer.fromEnvironment(),

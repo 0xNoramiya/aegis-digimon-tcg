@@ -1,3 +1,4 @@
+import { installForumRoutes } from "#api/bugs/installForumRoutes";
 import type { FeedbackStore } from "./FeedbackStore.js";
 import { getCardDefinition } from "@aegis/shared";
 import type { Express, Request, Response } from "express";
@@ -32,6 +33,7 @@ const MAX_CLIENT_REVISION = 60;
 
 export type BugReportRouteDeps = {
   app: Express;
+  forum?: import("#api/bugs/ForumStore").ForumStore;
   store: FeedbackStore;
   /** Optional GitHub mirror; database storage is always enabled. */
   tracker?: IssueTracker;
@@ -45,7 +47,14 @@ export type BugReportRouteDeps = {
 };
 
 /** Public submissions persist before mirroring. Admins triage them; signed-in reporters follow their own. */
-export function installBugReportRoutes({ app, store, tracker, session, replayCapture }: BugReportRouteDeps): void {
+export function installBugReportRoutes({
+  app,
+  store,
+  tracker,
+  session,
+  replayCapture,
+  forum,
+}: BugReportRouteDeps): void {
   const limitAccount = tokenBucketLimiter(SIGNED_IN_RATE_LIMIT);
   const limitAddress = tokenBucketLimiter(ANONYMOUS_RATE_LIMIT);
 
@@ -66,6 +75,7 @@ export function installBugReportRoutes({ app, store, tracker, session, replayCap
   });
 
   installFeedbackTriageRoutes({ app, store, session });
+  if (forum) installForumRoutes({ app, forum, feedback: store, session, replayCapture });
 
   async function submit(req: Request, res: Response): Promise<void> {
     const auth = await session(req);

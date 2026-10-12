@@ -1,6 +1,8 @@
+import { forumEn } from "@/i18n/forumMessages";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...forumEn,
   "profile.matches": "Cocok",
   "profile.guestHint":
     "Nama dan avatar Anda hanya disimpan di perangkat ini. Masuk untuk menyimpan riwayat pertandingan dan tayangan ulang.",

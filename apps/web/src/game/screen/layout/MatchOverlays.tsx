@@ -74,6 +74,7 @@ export function MatchOverlays({
   collapseNotices,
   log,
   signedIn,
+  accountId,
   opponentDropped,
   gameOver,
   overlays,
@@ -145,6 +146,7 @@ export function MatchOverlays({
   collapseNotices: boolean;
   log: LogLine[];
   signedIn: boolean;
+  accountId?: string;
   opponentDropped: boolean;
   gameOver:
     | (ReplaySaveProps & {
@@ -324,6 +326,7 @@ export function MatchOverlays({
         }
         matchLogId={state.matchLogId}
         signedIn={signedIn}
+        accountId={accountId}
         opponentDropped={opponentDropped}
         gameOver={
           gameOver

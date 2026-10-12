@@ -1,233 +1,199 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { I18nProvider } from "../i18n";
-import { BugReportDialog } from "./BugReportDialog";
+import { I18nProvider } from "@/i18n/I18nProvider";
+import { BugReportDialog } from "@/bugs/BugReportDialog";
+import { ForumScreen } from "@/bugs/ForumScreen";
+import { ForumMarkdown } from "@/bugs/ForumMarkdown";
 
-type Route = { status?: number; body: unknown };
-
-function mockApi(routes: Record<string, Route>) {
+function mockApi(status = 201) {
   const fetchMock = vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>(async (input, init) => {
-    const key = `${init?.method ?? "GET"} ${new URL(String(input)).pathname}`;
-    const route = routes[key] ?? { status: 404, body: {} };
-    return new Response(JSON.stringify(route.body), {
-      status: route.status ?? 200,
+    const path = new URL(String(input)).pathname;
+    const body =
+      path === "/feedback/images"
+        ? { id: "e42249e5-ba6e-4528-b517-63bee8fbbb0f", name: "board.png", width: 10, height: 10 }
+        : init?.method === "POST"
+          ? { id: 7 }
+          : { items: [], nextOffset: null };
+    return new Response(JSON.stringify(body), {
+      status: init?.method === "POST" ? status : 200,
       headers: { "Content-Type": "application/json" },
     });
   });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
 }
-
-function renderDialog(signedIn = true, matchLogId?: string) {
+function dialog(signedIn = true, matchLogId?: string, onClose = vi.fn<() => void>()) {
   return render(
     <I18nProvider>
-      <BugReportDialog signedIn={signedIn} matchLogId={matchLogId} onClose={() => undefined} />
+      <BugReportDialog signedIn={signedIn} matchLogId={matchLogId} onClose={onClose} />
     </I18nProvider>,
   );
+}
+function fill() {
+  fireEvent.change(screen.getByLabelText("Title"), { target: { value: "Effect timing" } });
+  fireEvent.change(screen.getByLabelText("Your report"), { target: { value: "What I did and what happened" } });
 }
 
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+  localStorage.clear();
 });
 
-describe("the feedback modal", () => {
-  // Reporting needs no account: a player who hits a broken card should not have to sign up first.
-  it("takes feedback from a visitor with no account", () => {
-    renderDialog(false);
-    expect(screen.getByRole("button", { name: "Send" })).toBeTruthy();
-    expect(screen.getByText(/sign in first if you want us to reply/)).toBeTruthy();
+describe("public topic composer", () => {
+  it("lets guests read the forum but requires sign-in before publishing", () => {
+    dialog(false);
+    expect(screen.getByText("Sign in to participate")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Publish topic" })).toBeNull();
   });
-
-  it("tells a signed-in reporter their display name signs the issue", () => {
-    renderDialog(true);
-    expect(screen.getByText(/signed with your display name/)).toBeTruthy();
-  });
-
-  it.each([
-    [true, /Follow it in My feedback/],
-    [false, /Sign in first if you want to follow it/],
-  ])("drops the GitHub warning when the deployment keeps reports private (signed in: %s)", async (signedIn, text) => {
-    mockApi({ "GET /bug-reports/limits": { body: { enabled: true, publicMirror: false } } });
-    renderDialog(signedIn);
-    expect(await screen.findByText(text)).toBeTruthy();
-    expect(screen.queryByText(/GitHub/)).toBeNull();
-  });
-
-  it("suggests cards by name and attaches the chosen one", async () => {
-    mockApi({});
-    renderDialog();
-    fireEvent.change(screen.getByLabelText("Cards involved"), { target: { value: "agumon" } });
-
-    const option = await screen.findByRole("option", { name: /BT1-010/ });
-    fireEvent.click(option);
-
-    expect(screen.getByLabelText("Remove BT1-010")).toBeTruthy();
-    expect(screen.queryByRole("listbox")).toBeNull();
-  });
-
-  it("says so when no card matches the search", async () => {
-    renderDialog();
-    fireEvent.change(screen.getByLabelText("Cards involved"), { target: { value: "zzzz-not-a-card" } });
-    expect(await screen.findByText("No card matches that search.")).toBeTruthy();
-  });
-
-  it("keeps the send button disabled until both the title and the details are filled in", () => {
-    renderDialog();
-    const send = screen.getByRole("button", { name: "Send" }) as HTMLButtonElement;
-    expect(send.disabled).toBe(true);
-
-    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "on-play never fires" } });
-    expect(send.disabled).toBe(true);
-
-    fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "play it, nothing" } });
-    expect(send.disabled).toBe(false);
-  });
-
-  it("sends the attached cards and the description, without linking the issue", async () => {
-    const fetchMock = mockApi({
-      "POST /bug-reports": { status: 201, body: { number: 42, url: "https://github.com/example/repo/issues/42" } },
+  it("accepts long reports and captures match context without publishing it as a form field", async () => {
+    const fetchMock = mockApi();
+    dialog(true, "e42249e5-ba6e-4528-b517-63bee8fbbb0f");
+    fill();
+    const description = "Detailed report ".repeat(400);
+    fireEvent.change(screen.getByLabelText("Your report"), { target: { value: description } });
+    expect((screen.getByLabelText("Your report") as HTMLTextAreaElement).maxLength).toBe(20000);
+    expect(screen.getByText("Visible to everyone. Do not include personal information.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Publish topic" }));
+    await screen.findByText("Your topic has been published");
+    const call = fetchMock.mock.calls.find(([, init]) => init?.method === "POST");
+    expect(JSON.parse(call![1]!.body as string)).toMatchObject({
+      description,
+      matchId: "e42249e5-ba6e-4528-b517-63bee8fbbb0f",
+      imageIds: [],
     });
-    renderDialog();
-
-    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "on-play never fires" } });
-    fireEvent.change(screen.getByLabelText("Cards involved"), { target: { value: "BT1-010" } });
-    fireEvent.click(await screen.findByRole("option", { name: /BT1-010/ }));
-    fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "play it, nothing happens" } });
-    fireEvent.change(screen.getByLabelText("Opponent's deck"), { target: { value: "Red Hybrid" } });
-    fireEvent.click(screen.getByRole("button", { name: "Send" }));
-
-    expect(await screen.findByText("Feedback sent")).toBeTruthy();
-    expect(screen.queryByRole("link", { name: /issue/i })).toBeNull();
-    const body = JSON.parse(
-      String(fetchMock.mock.calls.find(([, init]) => init?.method === "POST")?.[1]?.body),
-    ) as Record<string, unknown>;
-    expect(body).toMatchObject({
-      kind: "bug",
-      summary: "on-play never fires",
-      cardIds: ["BT1-010"],
-      description: "play it, nothing happens",
-      opponentDeck: "Red Hybrid",
-    });
-    // Never typed by the reporter: the client knows which build it is.
-    expect(body.clientRevision).toBeTruthy();
-    expect(body.userAgent).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Open topic" }).getAttribute("href")).toBe("/feedback/7");
   });
-
-  it.each([undefined, "f62249e5-ba6e-4528-b517-63bee8fbbb0f"])(
-    "carries the current match ID when available (%s)",
-    async (matchId) => {
-      const fetchMock = mockApi({
-        "POST /bug-reports": { status: 201, body: { number: 42, url: "https://github.com/example/repo/issues/42" } },
-      });
-      renderDialog(false, matchId);
-      fireEvent.change(screen.getByLabelText("Title"), { target: { value: "broken" } });
-      fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "broken" } });
-      fireEvent.click(screen.getByRole("button", { name: "Send" }));
-      await screen.findByText("Feedback sent");
-      const body = JSON.parse(
-        String(fetchMock.mock.calls.find(([, init]) => init?.method === "POST")?.[1]?.body),
-      ) as Record<string, unknown>;
-      expect(body.matchId).toBe(matchId);
-      expect(Object.hasOwn(body, "matchId")).toBe(matchId !== undefined);
-    },
-  );
-
-  it("starts on Bug, with the card and opponent fields", () => {
-    renderDialog();
-    expect((screen.getByRole("radio", { name: "Bug" }) as HTMLInputElement).checked).toBe(true);
-    expect(screen.getByLabelText("Cards involved")).toBeTruthy();
-    expect(screen.getByLabelText("Opponent's deck")).toBeTruthy();
-    expect(screen.queryByLabelText("Discord link")).toBeNull();
+  it("keeps text after a failed submission", async () => {
+    mockApi(503);
+    dialog();
+    fill();
+    fireEvent.click(screen.getByRole("button", { name: "Publish topic" }));
+    await screen.findByText("Could not save. Your text is still here; try again.");
+    expect((screen.getByLabelText("Your report") as HTMLTextAreaElement).value).toBe("What I did and what happened");
   });
-
-  it("drops the bug-only fields for an improvement and sends its kind", async () => {
-    const fetchMock = mockApi({
-      "POST /bug-reports": { status: 201, body: { number: 7, url: "https://github.com/example/repo/issues/7" } },
-    });
-    renderDialog();
-
-    fireEvent.change(screen.getByLabelText("Opponent's deck"), { target: { value: "Red Hybrid" } });
-    fireEvent.click(screen.getByRole("radio", { name: "Improvement" }));
-    expect(screen.queryByLabelText("Cards involved")).toBeNull();
-    expect(screen.queryByLabelText("Opponent's deck")).toBeNull();
-
-    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "show the trash count" } });
-    fireEvent.change(screen.getByLabelText("What would you change?"), { target: { value: "it would help" } });
-    fireEvent.click(screen.getByRole("button", { name: "Send" }));
-
-    await screen.findByText("Feedback sent");
-    const body = JSON.parse(
-      String(fetchMock.mock.calls.find(([, init]) => init?.method === "POST")?.[1]?.body),
-    ) as Record<string, unknown>;
-    expect(body).toMatchObject({ kind: "improvement", cardIds: [], description: "it would help" });
-    // Typed while the form showed Bug, then hidden: a hidden field must not reach the issue.
-    expect(body).not.toHaveProperty("opponentDeck");
+  it("does not dismiss drafts with Escape or backdrop clicks", () => {
+    mockApi();
+    const close = vi.fn<() => void>();
+    dialog(true, undefined, close);
+    fill();
+    fireEvent.keyDown(document, { key: "Escape" });
+    fireEvent.click(document.querySelector(".aegis-dialog-layer")!);
+    expect(close).not.toHaveBeenCalled();
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(close).not.toHaveBeenCalled();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(close).toHaveBeenCalledOnce();
   });
-
-  it("tells the reporter to use Discord when the tracker is unreachable", async () => {
-    mockApi({ "POST /bug-reports": { status: 502, body: { error: "tracker_unavailable" } } });
-    renderDialog();
-
-    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "broken" } });
-    fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "broken" } });
-    fireEvent.click(screen.getByRole("button", { name: "Send" }));
-
-    await waitFor(() =>
-      expect(screen.getByText("Feedback is unavailable right now. Tell us on Discord instead.")).toBeTruthy(),
+  it("restores a match report draft for the authenticated account", async () => {
+    mockApi();
+    render(
+      <I18nProvider>
+        <BugReportDialog signedIn accountId="match-account" matchLogId="match-example" onClose={() => undefined} />
+      </I18nProvider>,
     );
-  });
-
-  it("renders the refusal the API names", async () => {
-    mockApi({ "POST /bug-reports": { status: 429, body: { error: "too_many_requests" } } });
-    renderDialog();
-
-    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "again" } });
-    fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "again" } });
-    fireEvent.click(screen.getByRole("button", { name: "Send" }));
-
+    fill();
     await waitFor(() =>
-      expect(screen.getByText("You sent a lot in a short time. Try again in a minute.")).toBeTruthy(),
+      expect(localStorage.getItem("aegis.forum.draft:match-account:match-example")).toContain(
+        "What I did and what happened",
+      ),
     );
+    cleanup();
+    render(
+      <I18nProvider>
+        <BugReportDialog signedIn accountId="match-account" matchLogId="match-example" onClose={() => undefined} />
+      </I18nProvider>,
+    );
+    expect((screen.getByLabelText("Your report") as HTMLTextAreaElement).value).toBe("What I did and what happened");
   });
-
-  // Issue #54: a misclick outside the dialog threw away a half-written report.
-  describe("keeps a draft from closing by accident", () => {
-    function renderClosable() {
-      const onClose = vi.fn<() => void>();
-      render(
-        <I18nProvider>
-          <BugReportDialog signedIn onClose={onClose} />
-        </I18nProvider>,
-      );
-      return onClose;
-    }
-
-    it("stays open when the reporter clicks outside it", () => {
-      mockApi({});
-      const onClose = renderClosable();
-      fireEvent.click(document.querySelector(".aegis-dialog-layer")!);
-      expect(onClose).not.toHaveBeenCalled();
+  it("uploads images before publication and attaches the server receipt", async () => {
+    const fetchMock = mockApi();
+    const { container } = dialog();
+    fill();
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [new File(["png"], "board.png", { type: "image/png" })] },
     });
-
-    it("ignores Escape once something is typed, and keeps the text", () => {
-      mockApi({});
-      const onClose = renderClosable();
-      fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "half a sentence" } });
-      fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
-      expect(onClose).not.toHaveBeenCalled();
-      expect(screen.getByLabelText<HTMLTextAreaElement>("What happened?").value).toBe("half a sentence");
+    await screen.findByRole("button", { name: "Remove board.png" });
+    fireEvent.click(screen.getByRole("button", { name: "Publish topic" }));
+    await screen.findByText("Your topic has been published");
+    const call = fetchMock.mock.calls.find(
+      ([path, init]) => String(path).includes("/topics") && init?.method === "POST",
+    );
+    expect(JSON.parse(call![1]!.body as string).imageIds).toEqual(["e42249e5-ba6e-4528-b517-63bee8fbbb0f"]);
+  });
+  it("prevents invalid image files from reaching the upload endpoint", async () => {
+    const fetchMock = mockApi();
+    const { container } = dialog();
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [new File(["<svg/>"], "image.svg", { type: "image/svg+xml" })] },
     });
+    await screen.findByText(/Could not upload images/);
+    expect(fetchMock.mock.calls.some(([path]) => String(path).includes("/images"))).toBe(false);
+  });
+});
 
-    it("still closes with Escape while the form is empty, and always with Cancel", () => {
-      mockApi({});
-      const onClose = renderClosable();
-      fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
-      expect(onClose).toHaveBeenCalledTimes(1);
-      fireEvent.change(screen.getByLabelText("Title"), { target: { value: "draft" } });
-      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-      expect(onClose).toHaveBeenCalledTimes(2);
-    });
+describe("public forum hub", () => {
+  it("loads public topics for guests and opens shareable topic links", async () => {
+    const selected = vi.fn<() => void>();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              items: [
+                {
+                  id: 9,
+                  kind: "bug",
+                  summary: "Effect timing",
+                  authorName: "Kai",
+                  status: "new",
+                  createdAt: Date.now(),
+                  updatedAt: Date.now(),
+                  supportCount: 3,
+                  commentCount: 2,
+                  supported: false,
+                  following: false,
+                  hidden: false,
+                },
+              ],
+              nextOffset: null,
+            }),
+            { status: 200 },
+          ),
+      ),
+    );
+    render(
+      <I18nProvider>
+        <ForumScreen
+          signedIn={false}
+          isAdmin={false}
+          onSelect={selected}
+          onNew={vi.fn<() => void>()}
+          onPrivate={vi.fn<() => void>()}
+          onSignIn={vi.fn<() => void>()}
+          onTriage={vi.fn<() => void>()}
+        />
+      </I18nProvider>,
+    );
+    const link = await screen.findByRole("link", { name: /Effect timing/ });
+    expect(link.getAttribute("href")).toBe("/feedback/9");
+    fireEvent.click(link);
+    expect(selected).toHaveBeenCalledWith(9);
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Community feedback" })).toBeTruthy());
+  });
+  it("renders Markdown without executable HTML or remote image tracking", () => {
+    const { container } = render(
+      <ForumMarkdown>
+        {"<script>alert(1)</script>\n\n![tracker](https://example.com/tracker)\n\n[bad](javascript:alert(1))"}
+      </ForumMarkdown>,
+    );
+    expect(container.querySelector("script")).toBeNull();
+    expect(container.querySelector("img")).toBeNull();
+    expect(container.querySelector("a")?.getAttribute("href")).not.toContain("javascript:");
   });
 });

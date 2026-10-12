@@ -13,6 +13,9 @@ describe("application routes", () => {
     ["/admin/feedback", { screen: "feedback" }],
     ["/admin/feedback/412", { screen: "feedback", feedbackId: 412 }],
     ["/feedback", { screen: "myFeedback" }],
+    ["/feedback/roadmap", { screen: "myFeedback", feedbackView: "roadmap" }],
+    ["/feedback/new", { screen: "myFeedback", feedbackView: "new" }],
+    ["/feedback/private", { screen: "myFeedback", feedbackView: "private" }],
     ["/feedback/412/", { screen: "myFeedback", feedbackId: 412 }],
     ["/settings", { screen: "settings" }],
     ["/profile", { screen: "settings", profile: true }],
@@ -40,6 +43,8 @@ describe("application routes", () => {
     expect(pathForRoute({ screen: "feedback", feedbackId: 7 })).toBe("/admin/feedback/7");
     expect(pathForRoute({ screen: "myFeedback", feedbackId: 7 })).toBe("/feedback/7");
     expect(pathForRoute({ screen: "myFeedback" })).toBe("/feedback");
+    expect(pathForRoute({ screen: "myFeedback", feedbackView: "new" })).toBe("/feedback/new");
+    expect(pathForRoute({ screen: "myFeedback", feedbackView: "private" })).toBe("/feedback/private");
   });
 
   it("rejects unknown paths, tournaments included while the feature is hidden", () => {

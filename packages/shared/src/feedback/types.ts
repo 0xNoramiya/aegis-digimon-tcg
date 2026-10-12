@@ -1,6 +1,7 @@
 import type { FeedbackStatus } from "#shared/feedback/FeedbackStatus";
 
-export type FeedbackKind = "bug" | "improvement" | "other";
+export type { FeedbackKind } from "#shared/feedback/FeedbackKind";
+import type { FeedbackKind } from "#shared/feedback/FeedbackKind";
 
 export type FeedbackStatusChange = {
   from: FeedbackStatus | null;

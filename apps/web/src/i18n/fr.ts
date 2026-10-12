@@ -1,6 +1,8 @@
+import { forumEn } from "@/i18n/forumMessages";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...forumEn,
   "profile.matches": "Matchs",
   "profile.guestHint":
     "Votre nom et votre avatar sont enregistrés uniquement sur cet appareil. Connectez-vous pour conserver l'historique des matchs et les rediffusions.",

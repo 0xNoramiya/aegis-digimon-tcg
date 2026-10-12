@@ -1,6 +1,8 @@
+import { forumEn } from "@/i18n/forumMessages";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...forumEn,
   "profile.matches": "Streichhölzer",
   "profile.guestHint":
     "Ihr Name und Ihr Avatar werden nur auf diesem Gerät gespeichert. Melden Sie sich an, um den Spielverlauf und Wiederholungen zu speichern.",

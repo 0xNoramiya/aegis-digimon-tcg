@@ -12,6 +12,7 @@ export interface AppRoute {
   communityDeckId?: string;
   /** The report open on the admin triage or the reporter's own feedback screen. */
   feedbackId?: number;
+  feedbackView?: "new" | "private" | "roadmap";
 }
 
 export const SCREEN_PATHS: Record<Screen, string> = {
@@ -36,6 +37,9 @@ export function routeFromPathname(pathname: string): AppRoute | undefined {
   if (normalized === "/admin/feedback") return { screen: "feedback" };
   const triagedFeedback = /^\/admin\/feedback\/(\d{1,9})$/.exec(normalized)?.[1];
   if (triagedFeedback) return { screen: "feedback", feedbackId: Number(triagedFeedback) };
+  if (normalized === "/feedback/roadmap") return { screen: "myFeedback", feedbackView: "roadmap" };
+  if (normalized === "/feedback/new") return { screen: "myFeedback", feedbackView: "new" };
+  if (normalized === "/feedback/private") return { screen: "myFeedback", feedbackView: "private" };
   if (normalized === "/feedback") return { screen: "myFeedback" };
   const ownFeedback = /^\/feedback\/(\d{1,9})$/.exec(normalized)?.[1];
   if (ownFeedback) return { screen: "myFeedback", feedbackId: Number(ownFeedback) };
@@ -60,6 +64,7 @@ export function routeFromPathname(pathname: string): AppRoute | undefined {
 }
 
 export function pathForRoute(route: AppRoute): string {
+  if (route.screen === "myFeedback" && route.feedbackView) return `/feedback/${route.feedbackView}`;
   if (route.screen === "settings" && route.profile) return "/profile";
   if (route.screen === "replays") return route.replayId ? `/replays/${encodeURIComponent(route.replayId)}` : "/profile";
   if (route.screen === "community" && route.communityDeckId)

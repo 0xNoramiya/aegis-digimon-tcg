@@ -21,6 +21,7 @@ declare global {
   interface Window {
     browserTestOptions: AegisJoinOptions & { seed: number };
     browserTestLab?: boolean;
+    browserTestAccountId?: string;
     browserTestMode?: "casual" | "bot";
     browserTestBotDeckId?: string;
     browserTestSnapshot: () => ReturnType<GameState["toJSON"]>;
@@ -125,6 +126,8 @@ createRoot(document.getElementById("root")!).render(
       <EffectsLab joinOptions={window.browserTestOptions} botDeckId={window.browserTestBotDeckId} />
     ) : (
       <GameScreen
+        signedIn={window.browserTestAccountId !== undefined}
+        accountId={window.browserTestAccountId}
         joinOptions={window.browserTestOptions}
         identityColor="Red"
         startMode={window.browserTestMode ?? (window.browserTestOptions.devScenario ? "bot" : "casual")}

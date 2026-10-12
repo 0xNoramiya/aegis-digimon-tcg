@@ -160,7 +160,7 @@ describe("design primitives", () => {
       </I18nProvider>,
     );
 
-    const buttons = screen.getAllByRole("button", { name: "Send feedback" });
+    const buttons = screen.getAllByRole("button", { name: "Community feedback" });
     expect(buttons).toHaveLength(2);
     buttons.forEach((button) => fireEvent.click(button));
     expect(onSendFeedback).toHaveBeenCalledTimes(2);

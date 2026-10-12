@@ -1,3 +1,4 @@
+import { forumPtBR } from "@/i18n/forumMessages";
 import { replayVideoPtBR } from "./replayVideo";
 import { profileReplayPtBR } from "./profileReplays";
 import { replayPtBR } from "./replays";
@@ -21,6 +22,7 @@ import { settingsPtBR } from "./redesign/settings.pt-BR";
 import { shellPtBR } from "./redesign/shell.pt-BR";
 
 export const ptBR: Record<keyof typeof en, string> = {
+  ...forumPtBR,
   ...profileReplayPtBR,
   ...replayPtBR,
   ...replayVideoPtBR,
