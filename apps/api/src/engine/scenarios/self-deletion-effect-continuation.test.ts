@@ -10,11 +10,16 @@ import { runReplay } from "#api/replays/inputs/run";
 import type { ReplayRecord } from "#api/replays/inputs/types";
 import fixture from "#api/engine/scenarios/self-deletion-effect-continuation.fixture";
 
+import dualOnlyFixture from "#api/engine/scenarios/self-deletion-dual-only.fixture";
+
 describe("Self-deletion cost preserves the resolving effect", () => {
-  it.each([true, false])(
-    "pays the cost and resolves On Deletion with only DUAL targets: %s",
-    async (onlyDualTarget) => {
-      const s = setupScenario(fixture({ onlyDualTarget }), {
+  it.each([
+    { fixture: dualOnlyFixture, onlyDualTarget: true },
+    { fixture, onlyDualTarget: false },
+  ])(
+    "pays the cost and resolves On Deletion with only DUAL targets: $onlyDualTarget",
+    async ({ fixture: scenarioFixture, onlyDualTarget }) => {
+      const s = setupScenario(scenarioFixture, {
         autoAcceptOptional: true,
         autoSelectCards: true,
         autoChooseOption: true,
