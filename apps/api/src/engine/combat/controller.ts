@@ -1243,43 +1243,13 @@ export class CombatController {
     await this.hooks.fireSubTrigger?.("whenSuspended", trigger);
   }
 
-  /**
-   * Switch the attack onto the declared blocker: suspend the blocker, then fire
-   * OnBlock and OnAttackTargetChanged (AttackProcess.SwitchDefender, cs:514-626).
-   */
   private async switchDefenderToBlocker(attacker: Permanent, blocker: Permanent): Promise<void> {
     const blockerSuspended = this.suspendInCombat(blocker);
     this.hooks.emit({ kind: "blocked", blockerPermanentId: blocker.permanentId });
-
-    const trigger: CombatTrigger = {
+    await this.hooks.fireBlockTiming({
       attackerPermanentId: attacker.permanentId,
-      defenderPermanentId: blocker.permanentId,
       blockerPermanentId: blocker.permanentId,
-    };
-    if ((await this.hooks.fireBlockTiming?.(trigger, blockerSuspended)) === true) {
-      return;
-    }
-    await this.fireSuspended(blocker, blockerSuspended);
-    await this.hooks.fireTiming(EffectTiming.OnBlockAnyone, trigger);
-    await this.hooks.fireTiming(EffectTiming.OnAttackTargetChanged, trigger);
-    await this.hooks.fireSubTrigger?.("whenAttackTargetSwitched", {
-      ...trigger,
-      subjectPermanentId: attacker.permanentId,
-    });
-    // Kept alive as a genuine SubTrigger event (distinct from the OnBlockAnyone timing
-    // above) to serve BT4-098's temporary grant shape ("[Your Turn] when this Digimon is
-    // blocked, gain <effect> until end of turn") — a shape the timing dispatch alone can't
-    // express since it needs to install a SubTrigger watcher, not react from a card module.
-    await this.hooks.fireSubTrigger?.("whenBlocked", {
-      attackerPermanentId: attacker.permanentId,
-      defenderPermanentId: blocker.permanentId,
-      blockerPermanentId: blocker.permanentId,
-    });
-    await this.hooks.fireSubTrigger?.("whenBlockerActivated", {
-      attackerPermanentId: attacker.permanentId,
-      defenderPermanentId: blocker.permanentId,
-      blockerPermanentId: blocker.permanentId,
-      subjectPermanentId: blocker.permanentId,
+      blockerSuspended,
     });
   }
 

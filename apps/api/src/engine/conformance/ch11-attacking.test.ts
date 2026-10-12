@@ -82,6 +82,7 @@ function controllerHarness(extra?: Partial<CombatHooks>): ControllerHarness {
   const events: ServerEvent[] = [];
   const hooks: CombatHooks = {
     emit: (e) => events.push(e),
+    fireBlockTiming: async () => {},
     fireTiming: async (timing) => {
       firedTimings.push(timing);
     },
