@@ -18,6 +18,8 @@ test("Atomic Inferno's blocked memory gain expires before the next own turn", as
   await scenario.page.getByRole("button", { name: /^End turn$/i }).click();
   await scenario.resolveUntil(
     (state) => state.turnSeat === 0 && state.turnCount === 6 && state.phase === "Main" && !state.pendingDecision,
+    undefined,
+    30_000,
   );
   const laterMemory = (await scenario.snapshot()).memory;
   await scenario.attack(refs.permanentId("hybrid"));

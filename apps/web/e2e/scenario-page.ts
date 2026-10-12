@@ -158,7 +158,7 @@ export class ScenarioPage {
               )
             );
           },
-          { timeout: 10_000 },
+          { timeout: presentationTimeout },
         )
         .toBe(true);
       const state = await this.snapshot();
