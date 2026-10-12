@@ -169,7 +169,11 @@ describe("BT25-070 Logamon", () => {
     expect(s.state.memory).toBe(3);
     expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toEqual(beforeTrash);
     expect(s.perm("logamon").linked.map((card) => card.instanceId)).toEqual(beforeLinked);
-    expect(observe(s.engine).activatableEffects(s.perm("logamon"))).toHaveLength(0);
+    expect(
+      observe(s.engine)
+        .activatableEffects(s.perm("logamon"))
+        .map(({ effectKey }) => effectKey),
+    ).toEqual([effect!.effectKey]);
   });
 
   it("accepts a valid Link card from this Logamon's stack, but never another Digimon's stack", async () => {

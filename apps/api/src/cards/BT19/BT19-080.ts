@@ -52,7 +52,7 @@ const compiled: CompiledCard = {
                 sourceRef: "triggerSubject",
               },
               withoutSuspending: false,
-              attackPlayer: true,
+              attackTargetScope: "player",
               mandatory: true,
             },
           ],

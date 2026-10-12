@@ -12,23 +12,26 @@ import type { PrimitivesContext } from "./context.js";
 export function createPlaceUnderVerbs(pc: PrimitivesContext) {
   const { engine, access, continuous, effectSeatStack, player, state } = pc;
 
-  const placeUnder = async (
+  const moveLooseCardsUnder = async (
     targetPermanentId: string,
     instanceIds: string[],
     opts?: { belowTop?: boolean; faceUp?: boolean },
-  ): Promise<CardInstance[]> => {
+  ): Promise<{ placed: CardInstance[]; securitySources: Set<Seat> }> => {
+    const placed: CardInstance[] = [];
+    const securitySources = new Set<Seat>();
     const permanent = access.permanentById(targetPermanentId);
-    if (permanent?.topCard === undefined) return [];
+    if (permanent?.topCard === undefined) {
+      return { placed, securitySources };
+    }
     // Validate the complete physical batch before moving anything. A duplicate can
     // otherwise remove the first card again from the destination stack itself.
     if (
       new Set(instanceIds).size !== instanceIds.length ||
       instanceIds.some((id) => peekLooseInstance(state, id) === undefined)
-    )
-      return [];
-    const placed: CardInstance[] = [];
+    ) {
+      return { placed, securitySources };
+    }
     const deckSources = new Map<Seat, number>();
-    const securitySources = new Set<Seat>();
     for (const instanceId of instanceIds) {
       for (const owner of state.players) {
         if (owner.security.some((card) => card.instanceId === instanceId)) securitySources.add(owner.seat);
@@ -64,13 +67,24 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
             }
           : {}),
       });
+      // Continuous properties derived from the new stack must be live before
+      // placement reactions and the next action read them (BT8-084 colors).
+      await engine.recomputeContinuousEffects?.();
+    }
+    return { placed, securitySources };
+  };
+
+  const placeUnder = async (
+    targetPermanentId: string,
+    instanceIds: string[],
+    opts?: { belowTop?: boolean; faceUp?: boolean },
+  ): Promise<CardInstance[]> => {
+    const { placed, securitySources } = await moveLooseCardsUnder(targetPermanentId, instanceIds, opts);
+    if (placed.length > 0) {
       // SubTrigger bus: "when [Tamer] cards are placed in this Digimon's digivolution cards"
       // watchers. No co-located EffectTiming analogue (a fresh fire point per RESEARCH A1).
       // The permanent that GAINED the cards is the event subject; a watcher's sourceFilter
       // ("under one of YOUR Digimon") gates on it.
-      // Continuous properties derived from the new stack must be live before
-      // placement reactions and the next action read them (BT8-084 colors).
-      await engine.recomputeContinuousEffects?.();
       await engine.fireSubTrigger?.("onAddDigivolutionCards", {
         subjectPermanentId: targetPermanentId,
         addedDigivolutionCardInstanceIds: placed.map((card) => card.instanceId),
@@ -87,6 +101,9 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
     }
     return placed;
   };
+
+  const placePlayMaterialsUnder = async (targetPermanentId: string, instanceIds: string[]): Promise<CardInstance[]> =>
+    (await moveLooseCardsUnder(targetPermanentId, instanceIds)).placed;
 
   const placeUnderFromDeck = async (targetPermanentId: string, seat: Seat): Promise<CardInstance | undefined> => {
     const permanent = access.permanentById(targetPermanentId);
@@ -198,5 +215,5 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
    * the caller opts in only when the applicable placement rule requires shedding.
    */
 
-  return { placeUnder, placeUnderFromDeck, materialSave };
+  return { placeUnder, placePlayMaterialsUnder, placeUnderFromDeck, materialSave };
 }

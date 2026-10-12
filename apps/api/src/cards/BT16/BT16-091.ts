@@ -77,7 +77,7 @@ const compiled: CompiledCard = {
             },
             count: 1,
           },
-          attackPlayer: true,
+          attackTargetScope: "player",
           condition: {
             kind: "ifThisEffectActed",
             raw: "only after choosing Security Attack +1",

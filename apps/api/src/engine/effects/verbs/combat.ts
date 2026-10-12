@@ -2,6 +2,8 @@ import { requireCardDefinition, type AttackTarget } from "@aegis/shared";
 import type { Primitives } from "../EffectContext.js";
 import type { ForceAttackOptions } from "../context/primitives/index.js";
 import { canAttackerDeclare, canAttackTarget } from "../../combat/legality.js";
+import { AttackTargetScope } from "@aegis/shared/effects/ir/actions/AttackTargetScope";
+import { getForcedAttackCandidateIds } from "#api/engine/effects/verbs/getForcedAttackCandidateIds";
 
 import type { PrimitivesContext } from "./context.js";
 
@@ -47,13 +49,12 @@ export function createCombatVerbs(pc: PrimitivesContext) {
           ) === null,
       )
       .map((permanent) => permanent.permanentId);
-    return [
-      ...(opts?.attackPlayer !== false &&
-      canAttackTarget(access, controllerSeat, attacker, playerTarget, continuous, opts?.vortex) === null
-        ? [PLAYER]
-        : []),
-      ...(opts?.attackPlayerOnly === true ? [] : legalEnemyIds),
-    ];
+    return getForcedAttackCandidateIds({
+      scope: opts?.attackTargetScope ?? AttackTargetScope.ANY.value,
+      isPlayerLegal: canAttackTarget(access, controllerSeat, attacker, playerTarget, continuous, opts?.vortex) === null,
+      playerCandidateId: PLAYER,
+      legalDigimonIds: legalEnemyIds,
+    });
   };
 
   const canForceAttack = (attackerPermanentId: string, opts?: ForceAttackOptions): boolean =>

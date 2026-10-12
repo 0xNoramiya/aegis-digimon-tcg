@@ -61,9 +61,34 @@ describe("Battle entry effects resolve before End of Attack", () => {
 
   it("activates the Lunamon played from sources before Grademon's End of Attack in the recorded match", async () => {
     const events: ServerEvent[] = [];
-    const replay = await runReplay(record, { untilInput: 88, onBatch: (_state, batch) => events.push(...batch) });
+    const replay = await runReplay(record, { untilInput: 86, onBatch: (_state, batch) => events.push(...batch) });
     try {
       expect(replay.divergences).toEqual([]);
+      const order = replay.pendingRequest;
+      expect(order).toMatchObject({ kind: "orderTriggers", seat: 1 });
+      const barrierKey =
+        order!.options!.triggerKeys![
+          order!.options!.triggerDescriptions!.findIndex((description) => description.startsWith("＜Barrier＞"))
+        ]!;
+      expect(
+        await replay.applyIntent(1, {
+          type: "respondDecision",
+          decisionId: replay.state.pendingDecision!.decisionId,
+          response: { kind: "orderTriggers", order: [barrierKey] },
+        }),
+      ).toEqual({ ok: true });
+      const barrier = record.inputs[86]!;
+      const sourcePlay = record.inputs[87]!;
+      if (barrier.kind !== "intent" || sourcePlay.kind !== "intent" || sourcePlay.intent.type !== "respondDecision") {
+        throw new Error("Expected the recorded Barrier and source-play answers");
+      }
+      expect(await replay.applyIntent(barrier.seat, barrier.intent)).toEqual({ ok: true });
+      expect(
+        await replay.applyIntent(sourcePlay.seat, {
+          ...sourcePlay.intent,
+          decisionId: replay.state.pendingDecision!.decisionId,
+        }),
+      ).toEqual({ ok: true });
       const input = record.inputs[88]!;
       if (
         input.kind !== "intent" ||
@@ -78,7 +103,9 @@ describe("Battle entry effects resolve before End of Attack", () => {
           .find((card) => card.instanceId === playedId)?.cardId,
       ).toBe("BT25-022");
       const beforePlay = events.length;
-      expect(await replay.applyIntent(input.seat, input.intent)).toEqual({ ok: true });
+      expect(
+        await replay.applyIntent(input.seat, { ...input.intent, decisionId: replay.state.pendingDecision!.decisionId }),
+      ).toEqual({ ok: true });
       const emitted = events.slice(beforePlay);
       expect(replay.state.pendingDecision).toMatchObject({
         promptText: "Lunamon",

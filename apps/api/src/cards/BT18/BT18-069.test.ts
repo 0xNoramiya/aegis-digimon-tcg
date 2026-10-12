@@ -18,7 +18,7 @@ describe("BT18-069 Knightmon", () => {
         {
           kind: "Attack",
           mandatory: true,
-          attackPlayer: true,
+          attackTargetScope: "any",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
         },
       ],

@@ -67,7 +67,7 @@ describe("BT19-090 Meteor Rock Soul — catalog and IR", () => {
               [
                 {
                   kind: "Attack",
-                  attackPlayer: true,
+                  attackTargetScope: "player",
                   mandatory: true,
                   cost: {
                     kind: "unsuspendNamed",

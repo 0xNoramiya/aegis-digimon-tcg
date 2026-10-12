@@ -38,6 +38,7 @@ import { consultLeavePrevention } from "../effects/leavePrevention.js";
 import { effectTextMayAskYesNo } from "../decisions/resolverDecisions.js";
 import { armorPurgeLeaveReplacements } from "../effects/armorPurge.js";
 import { evadeLeaveReplacements } from "../effects/evade.js";
+import { barrierLeaveReplacements } from "#api/engine/effects/barrier";
 import { canPaySuspendCost } from "../combat/legality.js";
 import { consultDigivolutionTrashRedirect } from "../effects/digivolutionTrashRedirect.js";
 import { findLooseInstance, instanceOnPermanent } from "./intents.js";
@@ -279,6 +280,7 @@ export async function engineConsultLeavePrevention(
     isDigiXros?: boolean;
     includeEvade?: boolean;
     includeArmorPurge?: boolean;
+    barrier?: { interruptsEffect: boolean };
   },
 ): Promise<Set<string>> {
   // Immediate reactions must observe the rebuilt continuous registry, never its
@@ -375,6 +377,18 @@ export async function engineConsultLeavePrevention(
           decide: (seat, permanentId) => engine.combat.runEvadeDecision(seat, permanentId),
           suspend: async (permanentId, seat) =>
             (await engine.primitives.suspend([permanentId], { byEffectSeat: seat })).length > 0,
+        }),
+      barrierReplacements: (ids, interruptsEffect) =>
+        barrierLeaveReplacements(ids, {
+          permanentById: (id) => engine.access.permanentById(id),
+          hasBarrier: (id) => engine.continuous.hasKeyword(id, "Barrier"),
+          grantSourceInstanceIds: (id) =>
+            engine.continuous
+              .keywordGrantSources(id, "Barrier")
+              .flatMap((source) => (source.sourceInstanceId === undefined ? [] : [source.sourceInstanceId])),
+          securityCount: (seat) => engine.access.securityCount(seat),
+          decide: (seat, permanentId) => engine.combat.runBarrierDecision(seat, permanentId),
+          paySecurity: (seat) => payBarrierSecurityCost(engine, seat, interruptsEffect),
         }),
       permanentById: (id) => engine.access.permanentById(id),
       buildContext: (srcPerm, leavingId) =>
@@ -487,6 +501,7 @@ export async function engineConsultLeavePrevention(
       insteadOnly: opts?.insteadOnly,
       includeEvade: opts?.includeEvade,
       includeArmorPurge: opts?.includeArmorPurge,
+      barrier: opts?.barrier,
       reentryGuard: engine.preventReentryGuard,
     },
   );
@@ -563,6 +578,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       try {
         parkDeferredSecurityRemovalTriggers(engine);
         parkDeferredTimingWindowsForAttack(engine);
+        engine.pendingNestedTimingEffects.push(...(await collectRuleProcessPending(engine)));
         // Settle the already-armed watcher tier before exposing the Option's older
         // printed entry/attack effects. Then settle the interrupted Option's rule
         // check in that same parent pool before Counter Timing/security can proceed.

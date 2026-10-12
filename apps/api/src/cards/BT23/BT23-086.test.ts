@@ -601,7 +601,7 @@ describe("BT23-086 Yuugo", () => {
     const endOfTurn = compiled.effects.find((effect) => effect.trigger === "EndOfYourTurn");
     expect(endOfTurn?.actions[0]).toMatchObject({
       kind: "Attack",
-      attackPlayer: true,
+      attackTargetScope: "player",
       optional: true,
       abortOnDecline: true,
       cost: { kind: "suspend", target: { isSelf: true, filter: { isSelfRef: true } } },

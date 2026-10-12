@@ -64,6 +64,9 @@ describe("BT25-091 Monica Simmons", () => {
     const resolving = advance(s.engine).fire(EffectTiming.OnPlay, s.perm("monica"));
     await settle(() => s.state.pendingDecision?.kind === "optional");
     const pending = s.state.pendingDecision!;
+    expect(s.decisions.at(-1)!.req.options?.effectTextEmphasis?.replace(/\s+/g, " ")).toBe(
+      "You may return 1 [TS] trait Option card from your trash to the hand.",
+    );
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
