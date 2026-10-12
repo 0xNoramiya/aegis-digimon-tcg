@@ -15,7 +15,7 @@
   "scripts": {
     "dev": "GOMEMLIMIT=1GiB tsc -p tsconfig.dev.json --incremental --singleThreaded && node --enable-source-maps dist/index.js",
     "dev:fast": "GOMEMLIMIT=1GiB tsc -p tsconfig.dev.json --incremental --noCheck --singleThreaded && node --enable-source-maps dist/index.js",
-    "build": "GOMEMLIMIT=1GiB tsc --noCheck -p tsconfig.json --singleThreaded",
+    "build": "GOMEMLIMIT=1GiB tsc --noCheck -p tsconfig.build.json --singleThreaded",
     "start": "node dist/index.js",
     "typecheck": "GOMEMLIMIT=1GiB tsc --noEmit -p tsconfig.json --singleThreaded",
     "test": "pnpm --filter @aegis/shared build && TEST_BATCH_CARDS=1 vitest run",

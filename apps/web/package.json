@@ -12,7 +12,7 @@
     "test": "vitest run --passWithNoTests",
     "pacing:measure": "PACING_MEASURE=1 vitest run test/pacing/pacing.measure.test.ts",
     "pacing:baseline": "PACING_MEASURE=1 PACING_UPDATE_BASELINE=1 vitest run test/pacing/pacing.measure.test.ts",
-    "test:browser": "pnpm --filter @aegis/shared build && GOMEMLIMIT=1GiB pnpm --filter @aegis/api exec tsc -p tsconfig.dev.json --noCheck --singleThreaded && NODE_OPTIONS=--max-old-space-size=2048 playwright test"
+    "test:browser": "pnpm --filter @aegis/shared build && pnpm --filter @aegis/api build && NODE_OPTIONS=--max-old-space-size=2048 playwright test"
   },
   "dependencies": {
     "@aegis/shared": "workspace:*",
