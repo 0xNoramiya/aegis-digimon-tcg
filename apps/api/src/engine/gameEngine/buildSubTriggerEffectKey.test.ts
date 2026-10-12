@@ -86,7 +86,12 @@ describe("buildSubTriggerEffectKey", () => {
     quiet.subscribe(buildWatcher());
     const busy = new SubTriggerRegistry();
     busy.subscribe(buildWatcher({ event: "whenAttacking", description: "whenAttacking" }));
-    busy.subscribeReplacement({ event: "wouldLeavePlay", mode: "prevent", preventCheck: async () => false });
+    busy.subscribeReplacement({
+      event: "wouldLeavePlay",
+      mode: "prevent",
+      description: "prevent",
+      preventCheck: async () => false,
+    });
     busy.subscribe(buildWatcher());
     expect(getInstalledKeys(busy)).toEqual(getInstalledKeys(quiet));
   });
