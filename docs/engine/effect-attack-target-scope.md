@@ -12,14 +12,14 @@ The enum lives in `packages/shared/src/effects/ir/actions/AttackTargetScope.ts`.
 
 ## Default
 
-When the field is omitted, `attackActionTargetScope` picks the scope:
+When the field is omitted, `getAttackActionTargetScope` picks the scope:
 
 - `DIGIMON` when the action names a separate defender: `target` differs from `attacker` or `subject`, and the `target` filter kind includes `Digimon`.
 - `ANY` in every other case.
 
 ## Legality still applies
 
-The scope only narrows the candidate list. `forcedAttackCandidateIds` still drops a player or Digimon target that ordinary attack legality refuses, such as a player under an `attackPlayers` restriction or a protected Digimon. When nothing is left, the attack does not happen and no target prompt opens.
+The scope only narrows the candidate list. `getForcedAttackCandidateIds` still drops a player or Digimon target that ordinary attack legality refuses, such as a player under an `attackPlayers` restriction or a protected Digimon. When nothing is left, the attack does not happen and no target prompt opens.
 
 ## History
 

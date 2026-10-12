@@ -1,7 +1,7 @@
 import { AttackTargetScope } from "@aegis/shared/effects/ir/actions/AttackTargetScope";
 import type { AttackAction } from "@aegis/shared/effects/ir/actions/combat";
 
-export function attackActionTargetScope(action: AttackAction): AttackTargetScope {
+export function getAttackActionTargetScope(action: AttackAction): AttackTargetScope {
   if (action.attackTargetScope !== undefined) {
     return action.attackTargetScope;
   }

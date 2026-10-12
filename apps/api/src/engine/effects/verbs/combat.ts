@@ -3,7 +3,7 @@ import type { Primitives } from "../EffectContext.js";
 import type { ForceAttackOptions } from "../context/primitives/index.js";
 import { canAttackerDeclare, canAttackTarget } from "../../combat/legality.js";
 import { AttackTargetScope } from "@aegis/shared/effects/ir/actions/AttackTargetScope";
-import { forcedAttackCandidateIds } from "#api/engine/effects/verbs/forcedAttackCandidateIds";
+import { getForcedAttackCandidateIds } from "#api/engine/effects/verbs/getForcedAttackCandidateIds";
 
 import type { PrimitivesContext } from "./context.js";
 
@@ -49,7 +49,7 @@ export function createCombatVerbs(pc: PrimitivesContext) {
           ) === null,
       )
       .map((permanent) => permanent.permanentId);
-    return forcedAttackCandidateIds({
+    return getForcedAttackCandidateIds({
       scope: opts?.attackTargetScope ?? AttackTargetScope.ANY.value,
       isPlayerLegal: canAttackTarget(access, controllerSeat, attacker, playerTarget, continuous, opts?.vortex) === null,
       playerCandidateId: PLAYER,

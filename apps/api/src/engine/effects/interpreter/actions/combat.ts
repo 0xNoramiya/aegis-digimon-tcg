@@ -8,7 +8,7 @@ import { candidatePermanents, resolvePermanentTargets } from "../targeting/perma
 import type { Action } from "@aegis/shared";
 import type { ForceAttackOptions } from "../../context/primitives/index.js";
 import { subscribeLaterEntrants } from "./laterEntrants.js";
-import { attackActionTargetScope } from "#api/engine/effects/interpreter/actions/attackActionTargetScope";
+import { getAttackActionTargetScope } from "#api/engine/effects/interpreter/actions/getAttackActionTargetScope";
 
 /**
  * Run an effect-directed attack with the resolving effect's attack plumbing: the attack
@@ -88,7 +88,7 @@ function attackActionOptions(action: AttackAction): ForceAttackOptions {
   return {
     withoutSuspending: action.withoutSuspending ?? false,
     vortex: action.vortex,
-    attackTargetScope: attackActionTargetScope(action),
+    attackTargetScope: getAttackActionTargetScope(action),
     attackMechanic: action.attackMechanic,
   };
 }
