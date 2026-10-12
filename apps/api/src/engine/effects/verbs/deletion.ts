@@ -229,9 +229,7 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
       // resolution owner that was pushed by the interpreter.
       const resolvingSeat = effectSeatStack.at(-1) ?? engine.controllerSeat();
       const prevented = await engine.consultLeavePrevention(permanentIds, cause, resolvingSeat, {
-        includeEvade: true,
-        includeArmorPurge: true,
-        barrier: { interruptsEffect: false },
+        keywordPreventions: { interruptsEffect: false },
       });
       if (prevented.size > 0) toDelete = permanentIds.filter((id) => !prevented.has(id));
     }
@@ -386,7 +384,7 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
     // deleted, you MAY choose and trash N of ITS OWN digivolution cards to prevent the
     // deletion (§16-37-3: optional activation, all-or-nothing once accepted). Requires >= N
     // digivolution cards to pay the cost.
-    {
+    if (!engine.consultLeavePrevention) {
       const fragmentSaved = new Set<string>();
       for (const permanentId of toDelete) {
         if (!continuous.hasKeyword(permanentId, "Fragment")) continue;
@@ -430,7 +428,7 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
     // OTHER Digimon, prevent the deletion. "Other than by one of your effects" excludes only
     // an effect resolving under the deleted permanent's OWN controller — a rule-based
     // (`byRule`) or an opponent's-effect deletion both qualify.
-    {
+    if (!engine.consultLeavePrevention) {
       const scapegoatSaved = new Set<string>();
       for (const permanentId of toDelete) {
         if (!continuous.hasKeyword(permanentId, "Scapegoat")) continue;

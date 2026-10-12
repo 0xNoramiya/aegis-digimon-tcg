@@ -1,6 +1,7 @@
 import type { Permanent, PreventionKeyword, Seat, ZoneRef } from "@aegis/shared";
 import type { EffectContext, RemovalCause } from "./EffectContext.js";
 import type { ReplacementId, ReplacementSubscription, SubTriggerRegistry } from "./subtriggers.js";
+import { isKeywordReactionPrecedingCardReactions } from "#api/engine/effects/isKeywordReactionPrecedingCardReactions";
 function replacementActivationKey(replacement: ReplacementSubscription): string {
   const source = replacement.sourceInstanceId ?? replacement.sourcePermanentId ?? "unanchored";
   const action = replacement.activationIdentity ?? `subscription-${replacement.id}`;
@@ -23,10 +24,7 @@ export interface LeavePreventionHost {
   subTriggers: SubTriggerRegistry;
   /** Live keyword reactions use the same ordering and reentry guards as authored effects. */
   keywordReplacements?(permanentIds: string[]): ReplacementSubscription[];
-  /** ＜Evade＞ preventions, offered after the authored reactions when a caller asks for them. */
-  armorPurgeReplacements?(permanentIds: string[]): ReplacementSubscription[];
-  evadeReplacements?(permanentIds: string[]): ReplacementSubscription[];
-  barrierReplacements?(permanentIds: string[], interruptsEffect: boolean): ReplacementSubscription[];
+  keywordPreventionReplacements?(permanentIds: string[], interruptsEffect: boolean): ReplacementSubscription[];
   /** The live permanent for an id (undefined when it already left). */
   permanentById(permanentId: string): Permanent | undefined;
   /** Build the reaction's EffectContext for a source permanent (with the leaving id in trigger). */
@@ -101,10 +99,7 @@ export async function consultLeavePrevention(
      * the same event's sibling replacement, which is still offered (KB Q6250).
      */
     insteadOnly?: boolean;
-    /** Offer ＜Evade＞ with the other reactions (the effect/rule deletion path). */
-    includeEvade?: boolean;
-    includeArmorPurge?: boolean;
-    barrier?: { interruptsEffect: boolean };
+    keywordPreventions?: { interruptsEffect: boolean };
     reentryGuard: { activeReplacementKeys: Set<string> };
   },
 ): Promise<Set<string>> {
@@ -113,17 +108,20 @@ export async function consultLeavePrevention(
   // deletion ONLY — a bounce must NOT trigger a deletion-only reaction (BT9-044, RB1-016).
   // replacementsFor already excludes "reduceCost" (unrelated to leave/delete), leaving the
   // "prevent" and "instead" modes this consult handles.
+  const keywordPreventions =
+    opts.keywordPreventions === undefined || opts.isBounce === true
+      ? []
+      : (host.keywordPreventionReplacements?.(permanentIds, opts.keywordPreventions.interruptsEffect) ?? []);
   let replacements = [
-    ...(opts.barrier !== undefined && cause === "byBattle"
-      ? (host.barrierReplacements?.(permanentIds, opts.barrier.interruptsEffect) ?? [])
-      : []),
+    ...keywordPreventions.filter((replacement) =>
+      isKeywordReactionPrecedingCardReactions(replacement.activationIdentity),
+    ),
     ...(host.keywordReplacements?.(permanentIds) ?? []),
     ...(opts.isBounce === true ? [] : host.subTriggers.replacementsFor("wouldBeDeleted")),
     ...host.subTriggers.replacementsFor("wouldLeavePlay"),
-    ...(opts.includeArmorPurge === true && opts.isBounce !== true
-      ? (host.armorPurgeReplacements?.(permanentIds) ?? [])
-      : []),
-    ...(opts.includeEvade === true && opts.isBounce !== true ? (host.evadeReplacements?.(permanentIds) ?? []) : []),
+    ...keywordPreventions.filter(
+      (replacement) => !isKeywordReactionPrecedingCardReactions(replacement.activationIdentity),
+    ),
   ];
   if (replacements.length === 0) return prevented;
   const seat =

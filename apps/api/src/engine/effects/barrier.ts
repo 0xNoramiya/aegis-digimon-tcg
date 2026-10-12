@@ -38,6 +38,7 @@ export function barrierLeaveReplacements(
         sourceInstanceId: inheritedSource?.instanceId ?? holderInstanceId,
         activationIdentity: KeywordReaction.BARRIER.value,
         description: BARRIER_EFFECT_TEXT,
+        causeAllows: (cause) => cause === "byBattle",
         protects: (_ctx, leavingId) => leavingId === id,
         preventCheck: async () => {
           const live = deps.permanentById(id);

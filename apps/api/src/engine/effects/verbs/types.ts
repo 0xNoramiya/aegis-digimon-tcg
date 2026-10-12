@@ -277,9 +277,7 @@ export interface PrimitivesEngine {
       isBounce?: boolean;
       destination?: ZoneRef;
       playerAction?: boolean;
-      includeEvade?: boolean;
-      includeArmorPurge?: boolean;
-      barrier?: { interruptsEffect: boolean };
+      keywordPreventions?: { interruptsEffect: boolean };
     },
   ) => Promise<Set<string>>;
   /** The shared memory gauge (memory-gauge subsystem); single owner of memory math. */

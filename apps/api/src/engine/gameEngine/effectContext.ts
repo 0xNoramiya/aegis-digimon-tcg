@@ -39,7 +39,12 @@ import { effectTextMayAskYesNo } from "../decisions/resolverDecisions.js";
 import { armorPurgeLeaveReplacements } from "../effects/armorPurge.js";
 import { evadeLeaveReplacements } from "../effects/evade.js";
 import { barrierLeaveReplacements } from "#api/engine/effects/barrier";
+import { fragmentLeaveReplacements } from "#api/engine/effects/fragmentLeaveReplacements";
+import { scapegoatLeaveReplacements } from "#api/engine/effects/scapegoatLeaveReplacements";
 import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
+import { requestOptionalCardSelection } from "#api/engine/gameEngine/requestOptionalCardSelection";
+import { emitKeywordDeletionPrevented } from "#api/engine/gameEngine/emitKeywordDeletionPrevented";
+import { fragmentCountOf } from "#api/engine/combat/keywords";
 import { canPaySuspendCost } from "../combat/legality.js";
 import { consultDigivolutionTrashRedirect } from "../effects/digivolutionTrashRedirect.js";
 import { findLooseInstance, instanceOnPermanent } from "./intents.js";
@@ -279,9 +284,7 @@ export async function engineConsultLeavePrevention(
     insteadOnly?: boolean;
     playerAction?: boolean;
     isDigiXros?: boolean;
-    includeEvade?: boolean;
-    includeArmorPurge?: boolean;
-    barrier?: { interruptsEffect: boolean };
+    keywordPreventions?: { interruptsEffect: boolean };
   },
 ): Promise<Set<string>> {
   // Immediate reactions must observe the rebuilt continuous registry, never its
@@ -362,23 +365,8 @@ export async function engineConsultLeavePrevention(
           },
         ),
       ],
-      armorPurgeReplacements: (ids) =>
-        armorPurgeLeaveReplacements(ids, {
-          permanentById: (id) => engine.access.permanentById(id),
-          hasArmorPurge: (id) => engine.continuous.hasKeyword(id, "Armor Purge"),
-          purge: (id) => engine.primitives.armorPurge(id),
-        }),
-      evadeReplacements: (ids) =>
-        evadeLeaveReplacements(ids, {
-          permanentById: (id) => engine.access.permanentById(id),
-          hasEvade: (id) => engine.continuous.hasKeyword(id, "Evade"),
-          canSuspend: (permanent) => canPaySuspendCost(permanent, engine.continuous),
-          decide: (seat, permanentId) => engine.combat.runEvadeDecision(seat, permanentId),
-          suspend: async (permanentId, seat) =>
-            (await engine.primitives.suspend([permanentId], { byEffectSeat: seat })).length > 0,
-        }),
-      barrierReplacements: (ids, interruptsEffect) =>
-        barrierLeaveReplacements(ids, {
+      keywordPreventionReplacements: (ids, interruptsEffect) => [
+        ...barrierLeaveReplacements(ids, {
           permanentById: (id) => engine.access.permanentById(id),
           hasBarrier: (id) => engine.continuous.hasKeyword(id, "Barrier"),
           grantSourceInstanceIds: (id) =>
@@ -389,6 +377,52 @@ export async function engineConsultLeavePrevention(
           decide: (seat, permanentId) => engine.combat.runBarrierDecision(seat, permanentId),
           paySecurity: (seat) => payBarrierSecurityCost(engine, seat, interruptsEffect),
         }),
+        ...armorPurgeLeaveReplacements(ids, {
+          permanentById: (id) => engine.access.permanentById(id),
+          hasArmorPurge: (id) => engine.continuous.hasKeyword(id, "Armor Purge"),
+          purge: (id) => engine.primitives.armorPurge(id),
+        }),
+        ...evadeLeaveReplacements(ids, {
+          permanentById: (id) => engine.access.permanentById(id),
+          hasEvade: (id) => engine.continuous.hasKeyword(id, "Evade"),
+          canSuspend: (permanent) => canPaySuspendCost(permanent, engine.continuous),
+          decide: (seat, permanentId) => engine.combat.runEvadeDecision(seat, permanentId),
+          suspend: async (permanentId, seat) =>
+            (await engine.primitives.suspend([permanentId], { byEffectSeat: seat })).length > 0,
+        }),
+        ...fragmentLeaveReplacements(ids, {
+          permanentById: (id) => engine.access.permanentById(id),
+          fragmentCount: (id) => {
+            const permanent = engine.access.permanentById(id);
+            if (permanent?.topCard === undefined || !engine.continuous.hasKeyword(id, "Fragment")) {
+              return undefined;
+            }
+            return fragmentCountOf(permanent.topCard.cardId, engine.continuous.grantedKeywords(id));
+          },
+          select: (seat, candidateInstanceIds, count, promptText, source) =>
+            requestOptionalCardSelection(engine, { seat, candidateInstanceIds, max: count, promptText, source }),
+          trash: (hostPermanentId, instanceIds, provenance) =>
+            engine.primitives.trashDigivolutionCards(hostPermanentId, instanceIds, provenance),
+          announce: (saved) => emitKeywordDeletionPrevented(engine, { keyword: "Fragment", saved }),
+        }),
+        ...scapegoatLeaveReplacements(ids, {
+          permanentById: (id) => engine.access.permanentById(id),
+          hasScapegoat: (id) => engine.continuous.hasKeyword(id, "Scapegoat"),
+          sacrificeCandidates: (holder) =>
+            engine.access
+              .battleAreaPermanents(holder.controllerSeat)
+              .filter(
+                (permanent) =>
+                  permanent.permanentId !== holder.permanentId &&
+                  permanent.topCard !== undefined &&
+                  engine.access.isBattleAreaDigimon(permanent, engine.continuous),
+              ),
+          select: async (seat, candidateInstanceIds, promptText, source) =>
+            (await requestOptionalCardSelection(engine, { seat, candidateInstanceIds, max: 1, promptText, source }))[0],
+          announce: (saved, sacrifice) =>
+            emitKeywordDeletionPrevented(engine, { keyword: "Scapegoat", saved, paid: sacrifice }),
+        }),
+      ],
       permanentById: (id) => engine.access.permanentById(id),
       buildContext: (srcPerm, leavingId) =>
         buildEffectContext(engine, cardSourceOf(engine, srcPerm.topCard!), {
@@ -498,9 +532,7 @@ export async function engineConsultLeavePrevention(
       playerAction: opts?.playerAction,
       isDigiXros: opts?.isDigiXros,
       insteadOnly: opts?.insteadOnly,
-      includeEvade: opts?.includeEvade,
-      includeArmorPurge: opts?.includeArmorPurge,
-      barrier: opts?.barrier,
+      keywordPreventions: opts?.keywordPreventions,
       reentryGuard: engine.preventReentryGuard,
     },
   );
