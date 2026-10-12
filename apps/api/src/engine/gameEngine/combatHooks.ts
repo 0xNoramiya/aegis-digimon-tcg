@@ -294,6 +294,7 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
       return permanent === undefined ? [] : effectiveColorsOf(engine, permanent);
     },
     armorPurgeInLeavePrevention: true,
+    barrierInLeavePrevention: true,
     consultLeavePrevention: async (permanentIds, opts) =>
       engine.consultLeavePrevention(permanentIds, "byBattle", undefined, { ...opts, includeArmorPurge: true }),
     dropPermanentSubscriptions: (permanentId) => dropPermanentSubscriptions(engine, permanentId),

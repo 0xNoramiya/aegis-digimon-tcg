@@ -29,3 +29,20 @@ physical Reload sources, and native Barrier Unimon with one Reload source, again
 a stronger WarGreymon. They require exact Security-bottom source transfers, exact
 Barrier top-Security payment, surviving host and attacker identities, and completed
 combat. Card-specific contract and closing results remain in the [P ledger](../P.md).
+
+## Barrier ordering
+
+＜Barrier＞ is a "would be deleted in battle" reaction, so it triggers at the same
+time as the holder's "would leave the battle area" effects. The controller orders
+them (Q6250). Both battle paths now offer Barrier inside the shared leave consult
+(`effects/barrier.ts`) instead of prompting it alone:
+
+- Field battles consult each Barrier holder once, at the Barrier step, and skip it
+  in the later consult.
+- Security battles add Barrier to the effect-path consult.
+
+Barrier is listed first, so an unanswered order keeps the previous Barrier-first
+flow. If an earlier reaction plays the card that granted Barrier, Barrier is no
+longer offered. `engine/scenarios/barrier-would-leave-order.test.ts` and
+`apps/web/e2e/barrier-would-leave-order.spec.ts` cover both orders with BT24-037
+Silphymon and an inherited ＜Barrier＞ source.

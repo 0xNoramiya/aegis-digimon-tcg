@@ -26,6 +26,7 @@ export interface LeavePreventionHost {
   /** ＜Evade＞ preventions, offered after the authored reactions when a caller asks for them. */
   armorPurgeReplacements?(permanentIds: string[]): ReplacementSubscription[];
   evadeReplacements?(permanentIds: string[]): ReplacementSubscription[];
+  barrierReplacements?(permanentIds: string[], interruptsEffect: boolean): ReplacementSubscription[];
   /** The live permanent for an id (undefined when it already left). */
   permanentById(permanentId: string): Permanent | undefined;
   /** Build the reaction's EffectContext for a source permanent (with the leaving id in trigger). */
@@ -103,6 +104,7 @@ export async function consultLeavePrevention(
     /** Offer ＜Evade＞ with the other reactions (the effect/rule deletion path). */
     includeEvade?: boolean;
     includeArmorPurge?: boolean;
+    barrier?: { interruptsEffect: boolean };
     reentryGuard: { activeReplacementKeys: Set<string> };
   },
 ): Promise<Set<string>> {
@@ -112,6 +114,9 @@ export async function consultLeavePrevention(
   // replacementsFor already excludes "reduceCost" (unrelated to leave/delete), leaving the
   // "prevent" and "instead" modes this consult handles.
   let replacements = [
+    ...(opts.barrier !== undefined && cause === "byBattle"
+      ? (host.barrierReplacements?.(permanentIds, opts.barrier.interruptsEffect) ?? [])
+      : []),
     ...(host.keywordReplacements?.(permanentIds) ?? []),
     ...(opts.isBounce === true ? [] : host.subTriggers.replacementsFor("wouldBeDeleted")),
     ...host.subTriggers.replacementsFor("wouldLeavePlay"),
