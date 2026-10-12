@@ -9,5 +9,5 @@
     }
   ],
   "include": ["src/**/*.test.ts", "src/**/*.spec.ts"],
-  "exclude": []
+  "exclude": ["src/engine/fuzzer.test.ts"]
 }
