@@ -43,7 +43,17 @@ Build `@aegis/shared` first when a focused test depends on changed shared code. 
 
 ## Releasing
 
-See the "Releasing" section of `README.md`. Release text needs English, Portuguese (`pt-BR`), and Spanish (`es`) entries in `apps/web/src/releases/`.
+`develop` is the default branch for development and the base for feature and fix
+branches. Target development PRs at `develop` and use
+`.github/PULL_REQUEST_TEMPLATE.md`. `main` is the release branch. Normal releases
+use a PR from `develop` into `main` and the template at
+`.github/PULL_REQUEST_TEMPLATE/release.md`. Use merge commits and preserve both
+long-lived branches. After a release or hotfix, synchronize `main` back into
+`develop` through a PR. Do not publish from a development branch.
+
+See the "Releasing" section of `README.md` for preparation and publication.
+Release text needs English, Portuguese (`pt-BR`), Spanish (`es`), and Italian (`it`)
+entries in `apps/web/src/releases/`.
 
 ## Direct imports and aliases
 

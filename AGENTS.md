@@ -19,5 +19,6 @@
 - Follow [testing guidance](internal-docs/ai/testing.md) for engine, card, conformance, and browser changes. Never use fixed sleeps or `waitForTimeout` for E2E synchronization. Fix shared product code, not only fixtures.
 - Use Orca Browser through the public `orca` CLI for requested manual checks. Verify narrow/wide viewports and dark/light modes for layout changes.
 - Write GitHub issue titles, descriptions, comments, and verification reports in English. Follow the authorized branch and delivery scope; distinguish local changes from deployed fixes.
+- Use `develop` as the default development branch: create feature and fix branches from it and target it in PRs. Normal releases use a PR from `develop` into `main`, merged with a merge commit. See [development and release workflow](internal-docs/ai/development.md).
 - Never commit credentials or `.env` files, rewrite pushed history, force push, rebase, squash merge, hard reset, or push directly to main. Do not edit git identity or `.git/config`.
 - Do not create task-specific planning documents unless requested.
