@@ -166,6 +166,7 @@ export interface BoardPrimitives {
     instanceIds: string[],
     opts?: { belowTop?: boolean; faceUp?: boolean },
   ): Promise<CardInstance[]>;
+  placePlayMaterialsUnder(targetPermanentId: string, instanceIds: string[]): Promise<CardInstance[]>;
   /** Atomically place ordered loose cards and whole permanent materials at stack bottom.
    * The first material group is nearest the bottom; each source keeps its attached cards.
    * Existing host sources remain above the added materials.

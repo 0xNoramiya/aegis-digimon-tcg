@@ -905,8 +905,8 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
 
 /**
  * Side-effect dependencies for the Assembly play subsystem (§7-3). Memory math is the shared
- * gauge (identical to playCard / DigiXros / digivolve); placement is delegated to the canonical
- * `placeUnder` primitive; On Play fires through the effect stack scoped to the played instance,
+ * gauge (identical to playCard / DigiXros / digivolve); placement is delegated to the
+ * `placePlayMaterialsUnder` primitive; On Play fires through the effect stack scoped to the played instance,
  * plus the board-wide OnEnterFieldAnyone / whenPlayed seams (mirroring digiXrosDeps.fireTiming).
  */
 export function assemblyDeps(engine: GameEngine): AssemblyDeps {
@@ -923,7 +923,8 @@ export function assemblyDeps(engine: GameEngine): AssemblyDeps {
     minimumDeferredPlayCost: play.minimumDeferredPlayCost,
     placePendingDigivolution: play.placePendingDigivolution,
     nextPermanentId: () => nextPermanentId(engine),
-    placeUnder: (targetPermanentId, instanceIds) => engine.primitives.placeUnder(targetPermanentId, instanceIds),
+    placeMaterialsUnder: (targetPermanentId, instanceIds) =>
+      engine.primitives.placePlayMaterialsUnder(targetPermanentId, instanceIds),
     fireTiming: async (_state, _seat, timing, sourceInstanceId) =>
       firePlayEntryWindows(engine, timing, sourceInstanceId),
     emit: (event) => engine.hooks.emit(event as ServerEvent),

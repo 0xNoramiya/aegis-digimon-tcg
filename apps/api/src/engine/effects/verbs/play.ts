@@ -39,6 +39,8 @@ export function createPlayVerbs(pc: PrimitivesContext) {
   const effectDrivenPlayCost: PrimitivesContext["helpers"]["effectDrivenPlayCost"] = (...args) =>
     pc.helpers.effectDrivenPlayCost(...args);
   const placeUnder: Primitives["placeUnder"] = (...args) => pc.fx.placeUnder(...args);
+  const placePlayMaterialsUnder: Primitives["placePlayMaterialsUnder"] = (...args) =>
+    pc.fx.placePlayMaterialsUnder(...args);
   const relocatePermanent: Primitives["relocatePermanent"] = (...args) => pc.fx.relocatePermanent(...args);
 
   const playFromHand = async (
@@ -371,7 +373,7 @@ export function createPlayVerbs(pc: PrimitivesContext) {
           const assemblyMaterials =
             opts?.assemblyMaterialInstanceIdsByPlay?.[instanceId] ?? opts?.assemblyMaterialInstanceIds;
           for (const materialInstanceId of assemblyMaterials ?? []) {
-            await placeUnder(permanent.permanentId, [materialInstanceId]);
+            await placePlayMaterialsUnder(permanent.permanentId, [materialInstanceId]);
           }
           engine.emit({
             kind: "cardPlayed",
