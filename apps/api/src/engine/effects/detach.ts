@@ -1,6 +1,8 @@
 import type { CardDefinition } from "@aegis/shared";
 import type { CardInstance } from "@aegis/shared/schema/CardInstance.js";
 import type { ReplacementSubscriptionPrevent } from "./subtriggers.js";
+import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
+import { buildKeywordReactionId } from "#api/engine/effects/buildKeywordReactionId";
 import type { Permanent } from "@aegis/shared/schema/Permanent.js";
 
 /**
@@ -72,17 +74,17 @@ export function detachLeaveReplacements(
     trash(instanceIds: string[]): Promise<CardInstance[]>;
   },
 ): ReplacementSubscriptionPrevent[] {
-  return permanentIds.flatMap((id, index) => {
+  return permanentIds.flatMap((id) => {
     const permanent = deps.permanentById(id);
     if (permanent?.topCard === undefined || permanent.inBreeding || !deps.hasDetach(id)) return [];
     return [
       {
-        id: -(index + 1),
+        id: buildKeywordReactionId(KeywordReaction.DETACH.value, id),
         event: "wouldLeavePlay" as const,
         mode: "prevent" as const,
         sourcePermanentId: id,
         sourceInstanceId: permanent.topCard.instanceId,
-        activationIdentity: "keyword-detach",
+        activationIdentity: KeywordReaction.DETACH.value,
         description: "＜Detach＞: by trashing 1 eligible link card, this Digimon doesn't leave the battle area.",
         causeAllows: (cause, resolvingSeat) => !(cause === "byEffect" && resolvingSeat === permanent.controllerSeat),
         protects: (_ctx, leavingId) => leavingId === id && deps.hasDetach(id),

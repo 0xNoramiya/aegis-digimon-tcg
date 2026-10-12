@@ -9,6 +9,7 @@ import {
   Zone,
   buildTriggerKey,
   getCardDefinition,
+  requireCardDefinition,
   type CardInstance,
   type Permanent,
   type Seat,
@@ -39,6 +40,15 @@ import { effectTextMayAskYesNo } from "../decisions/resolverDecisions.js";
 import { armorPurgeLeaveReplacements } from "../effects/armorPurge.js";
 import { evadeLeaveReplacements } from "../effects/evade.js";
 import { barrierLeaveReplacements } from "#api/engine/effects/barrier";
+import { fragmentLeaveReplacements } from "#api/engine/effects/fragmentLeaveReplacements";
+import { scapegoatLeaveReplacements } from "#api/engine/effects/scapegoatLeaveReplacements";
+import { decoyLeaveReplacements } from "#api/engine/effects/decoyLeaveReplacements";
+import { listDecoySources } from "#api/engine/effects/listDecoySources";
+import { isDecoySourceProtecting } from "#api/engine/effects/isDecoySourceProtecting";
+import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
+import { requestCardSelection } from "#api/engine/gameEngine/requestCardSelection";
+import { emitKeywordDeletionPrevented } from "#api/engine/gameEngine/emitKeywordDeletionPrevented";
+import { fragmentCountOf } from "#api/engine/combat/keywords";
 import { canPaySuspendCost } from "../combat/legality.js";
 import { consultDigivolutionTrashRedirect } from "../effects/digivolutionTrashRedirect.js";
 import { findLooseInstance, instanceOnPermanent } from "./intents.js";
@@ -278,9 +288,7 @@ export async function engineConsultLeavePrevention(
     insteadOnly?: boolean;
     playerAction?: boolean;
     isDigiXros?: boolean;
-    includeEvade?: boolean;
-    includeArmorPurge?: boolean;
-    barrier?: { interruptsEffect: boolean };
+    keywordPreventions?: { interruptsEffect: boolean };
   },
 ): Promise<Set<string>> {
   // Immediate reactions must observe the rebuilt continuous registry, never its
@@ -314,7 +322,6 @@ export async function engineConsultLeavePrevention(
       },
       keywordReplacements: (ids) => [
         ...partitionLeaveReplacements(ids, {
-          idOffset: ids.length + [...engine.state.players].reduce((n, player) => n + player.battleArea.length, 0),
           permanentById: (id) => engine.access.permanentById(id),
           hasPartition: (id) => engine.continuous.hasKeyword(id, "Partition"),
           select: async (_ctx, candidate) => {
@@ -356,30 +363,14 @@ export async function engineConsultLeavePrevention(
         ...guardLeaveReplacements(
           [...engine.state.players].flatMap((player) => player.battleArea.map((permanent) => permanent.permanentId)),
           {
-            idOffset: ids.length,
             permanentById: (id) => engine.access.permanentById(id),
             isBattleAreaDigimon: (permanent) => engine.access.isBattleAreaDigimon(permanent, engine.continuous),
             hasGuard: (id) => engine.continuous.hasKeyword(id, "Guard"),
           },
         ),
       ],
-      armorPurgeReplacements: (ids) =>
-        armorPurgeLeaveReplacements(ids, {
-          permanentById: (id) => engine.access.permanentById(id),
-          hasArmorPurge: (id) => engine.continuous.hasKeyword(id, "Armor Purge"),
-          purge: (id) => engine.primitives.armorPurge(id),
-        }),
-      evadeReplacements: (ids) =>
-        evadeLeaveReplacements(ids, {
-          permanentById: (id) => engine.access.permanentById(id),
-          hasEvade: (id) => engine.continuous.hasKeyword(id, "Evade"),
-          canSuspend: (permanent) => canPaySuspendCost(permanent, engine.continuous),
-          decide: (seat, permanentId) => engine.combat.runEvadeDecision(seat, permanentId),
-          suspend: async (permanentId, seat) =>
-            (await engine.primitives.suspend([permanentId], { byEffectSeat: seat })).length > 0,
-        }),
-      barrierReplacements: (ids, interruptsEffect) =>
-        barrierLeaveReplacements(ids, {
+      keywordPreventionReplacements: (ids, interruptsEffect) => [
+        ...barrierLeaveReplacements(ids, {
           permanentById: (id) => engine.access.permanentById(id),
           hasBarrier: (id) => engine.continuous.hasKeyword(id, "Barrier"),
           grantSourceInstanceIds: (id) =>
@@ -390,6 +381,85 @@ export async function engineConsultLeavePrevention(
           decide: (seat, permanentId) => engine.combat.runBarrierDecision(seat, permanentId),
           paySecurity: (seat) => payBarrierSecurityCost(engine, seat, interruptsEffect),
         }),
+        ...armorPurgeLeaveReplacements(ids, {
+          permanentById: (id) => engine.access.permanentById(id),
+          hasArmorPurge: (id) => engine.continuous.hasKeyword(id, "Armor Purge"),
+          purge: (id) => engine.primitives.armorPurge(id),
+        }),
+        ...evadeLeaveReplacements(ids, {
+          permanentById: (id) => engine.access.permanentById(id),
+          hasEvade: (id) => engine.continuous.hasKeyword(id, "Evade"),
+          canSuspend: (permanent) => canPaySuspendCost(permanent, engine.continuous),
+          decide: (seat, permanentId) => engine.combat.runEvadeDecision(seat, permanentId),
+          suspend: async (permanentId, seat) =>
+            (await engine.primitives.suspend([permanentId], { byEffectSeat: seat })).length > 0,
+        }),
+        ...fragmentLeaveReplacements(ids, {
+          permanentById: (id) => engine.access.permanentById(id),
+          fragmentCount: (id) => {
+            const permanent = engine.access.permanentById(id);
+            if (permanent?.topCard === undefined || !engine.continuous.hasKeyword(id, "Fragment")) {
+              return undefined;
+            }
+            return fragmentCountOf(permanent.topCard.cardId, engine.continuous.grantedKeywords(id));
+          },
+          select: (seat, candidateInstanceIds, { min, max }, promptText, source) =>
+            requestCardSelection(engine, { seat, candidateInstanceIds, min, max, promptText, source }),
+          trash: (hostPermanentId, instanceIds, provenance) =>
+            engine.primitives.trashDigivolutionCards(hostPermanentId, instanceIds, provenance),
+          announce: (saved) => emitKeywordDeletionPrevented(engine, { keyword: "Fragment", saved }),
+        }),
+        ...scapegoatLeaveReplacements(ids, {
+          permanentById: (id) => engine.access.permanentById(id),
+          hasScapegoat: (id) => engine.continuous.hasKeyword(id, "Scapegoat"),
+          sacrificeCandidates: (holder) =>
+            engine.access
+              .battleAreaPermanents(holder.controllerSeat)
+              .filter(
+                (permanent) =>
+                  permanent.permanentId !== holder.permanentId &&
+                  permanent.topCard !== undefined &&
+                  engine.access.isBattleAreaDigimon(permanent, engine.continuous),
+              ),
+          select: async (seat, candidateInstanceIds, min, promptText, source) =>
+            (await requestCardSelection(engine, { seat, candidateInstanceIds, min, max: 1, promptText, source }))[0],
+          announce: (saved, sacrifice) =>
+            emitKeywordDeletionPrevented(engine, { keyword: "Scapegoat", saved, paid: sacrifice }),
+        }),
+        ...decoyLeaveReplacements(
+          [...engine.state.players].flatMap((player) => player.battleArea.map((permanent) => permanent.permanentId)),
+          {
+            permanentById: (id) => engine.access.permanentById(id),
+            isBattleAreaDigimon: (permanent) => engine.access.isBattleAreaDigimon(permanent, engine.continuous),
+            hasDecoy: (id) => engine.continuous.hasKeyword(id, "Decoy"),
+            isDecoyCost: (id) => engine.decoyCostPermanentIds.has(id),
+            protectingSource: (holder, target) => {
+              const targetDefinition = requireCardDefinition(target.topCard.cardId);
+              return listDecoySources(engine.continuous, holder).find((source) =>
+                isDecoySourceProtecting(source, targetDefinition),
+              );
+            },
+            select: async (seat, candidateInstanceIds, min, promptText, source) => {
+              const response = await engine.decisions.request({
+                seat,
+                kind: "selectCards",
+                promptText,
+                sourceCardId: source.sourceCardId,
+                options: { candidateInstanceIds, min, max: 1, timing: "Static", effectText: source.effectText },
+              });
+              return response.kind === "selectCards" ? response.instanceIds : [];
+            },
+            deleteAsCost: async (holderId) => {
+              engine.decoyCostPermanentIds.add(holderId);
+              try {
+                return (await engine.primitives.deletePermanent([holderId], "byEffect")) > 0;
+              } finally {
+                engine.decoyCostPermanentIds.delete(holderId);
+              }
+            },
+          },
+        ),
+      ],
       permanentById: (id) => engine.access.permanentById(id),
       buildContext: (srcPerm, leavingId) =>
         buildEffectContext(engine, cardSourceOf(engine, srcPerm.topCard!), {
@@ -413,7 +483,7 @@ export async function engineConsultLeavePrevention(
       // ＜Guard＞ is the one prevention keyword that resolves as a replacement subscription
       // rather than inline in the deletion paths, so its announcement is wired here.
       keywordPrevented: (activationIdentity, sourcePermanentId, sourceCardId, savedPermanentId, preventionKeyword) => {
-        const keyword = preventionKeyword ?? (activationIdentity === "keyword-guard" ? "Guard" : undefined);
+        const keyword = preventionKeyword ?? (activationIdentity === KeywordReaction.GUARD.value ? "Guard" : undefined);
         if (keyword === undefined) return;
         const saved = engine.access.permanentById(savedPermanentId);
         if (saved === undefined) return;
@@ -499,9 +569,7 @@ export async function engineConsultLeavePrevention(
       playerAction: opts?.playerAction,
       isDigiXros: opts?.isDigiXros,
       insteadOnly: opts?.insteadOnly,
-      includeEvade: opts?.includeEvade,
-      includeArmorPurge: opts?.includeArmorPurge,
-      barrier: opts?.barrier,
+      keywordPreventions: opts?.keywordPreventions,
       reentryGuard: engine.preventReentryGuard,
     },
   );
@@ -652,6 +720,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
     modifiers: engine.modifiers,
     continuous: engine.continuous,
     subTriggers: engine.subTriggers,
+    decoyCostPermanentIds: engine.decoyCostPermanentIds,
     securityDp: engine.securityDp,
     deletionMaxDp: engine.deletionMaxDp,
     dpDeleteBudget: engine.dpDeleteBudget,

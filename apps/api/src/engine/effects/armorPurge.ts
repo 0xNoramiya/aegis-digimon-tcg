@@ -1,5 +1,7 @@
 import type { CardInstance, Permanent } from "@aegis/shared";
 import type { ReplacementSubscriptionPrevent } from "./subtriggers.js";
+import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
+import { buildKeywordReactionId } from "#api/engine/effects/buildKeywordReactionId";
 
 /** CR §16-19: order the top-card payment with the other reactions to this deletion. */
 export function armorPurgeLeaveReplacements(
@@ -10,19 +12,19 @@ export function armorPurgeLeaveReplacements(
     purge(id: string): Promise<CardInstance | undefined>;
   },
 ): ReplacementSubscriptionPrevent[] {
-  return permanentIds.flatMap((id, index) => {
+  return permanentIds.flatMap((id) => {
     const holder = deps.permanentById(id);
     if (holder?.topCard === undefined || holder.inBreeding || holder.stack.length === 0 || !deps.hasArmorPurge(id))
       return [];
     const sourceInstanceId = holder.topCard.instanceId;
     return [
       {
-        id: -(2_000_000 + index + 1),
+        id: buildKeywordReactionId(KeywordReaction.ARMOR_PURGE.value, id),
         event: "wouldBeDeleted" as const,
         mode: "prevent" as const,
         sourcePermanentId: id,
         sourceInstanceId,
-        activationIdentity: "keyword-armor-purge",
+        activationIdentity: KeywordReaction.ARMOR_PURGE.value,
         preventionKeyword: "Armor Purge",
         description: "＜Armor Purge＞: you may trash this Digimon's top card to prevent its deletion.",
         yieldsToEarlierPrevention: true,

@@ -170,7 +170,7 @@ describe("EX3-046 Commandramon", () => {
     expect(s.decisions.filter(({ req }) => req.sourceCardId === "EX3-046")).toHaveLength(2);
   });
 
-  it("offers every eligible Decoy copy and deletes only the one selected", async () => {
+  it("orders every eligible Decoy copy as its own reaction and deletes only the one used", async () => {
     const s = setupEngine({
       0: {
         battleArea: [
@@ -184,26 +184,29 @@ describe("EX3-046 Commandramon", () => {
     await s.ready();
     const protectedId = s.perm("protected").permanentId;
     const plainId = s.perm("plainDecoy").permanentId;
+    const plainTopId = s.perm("plainDecoy").topCard.instanceId;
     const stackedId = s.perm("stackedDecoy").permanentId;
     const stackedTopId = s.perm("stackedDecoy").topCard.instanceId;
+    const answerDecoy = async (holderTopId: string, use: boolean) => {
+      await settle(() => s.state.pendingDecision?.kind === "selectCards");
+      expect(s.decisions.at(-1)!.req.options!.candidateInstanceIds).toEqual([holderTopId]);
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: s.state.pendingDecision!.decisionId,
+          response: { kind: "selectCards", instanceIds: use ? [holderTopId] : [] },
+        }),
+      ).toEqual({ ok: true });
+    };
 
     const deletion = advance(s.engine).verb.deletePermanent([protectedId], "byEffect");
-    await settle(() => s.state.pendingDecision?.kind === "selectCards");
-    const decision = s.state.pendingDecision!;
-    const request = s.decisions.at(-1)!.req;
-    const options = request.options!;
-    expect(options.candidateInstanceIds).toEqual(
-      expect.arrayContaining([s.perm("plainDecoy").topCard.instanceId, stackedTopId]),
-    );
-    expect(options.candidateInstanceIds).toHaveLength(2);
-
-    expect(
-      s.engine.applyIntent(0, {
-        type: "respondDecision",
-        decisionId: decision.decisionId,
-        response: { kind: "selectCards", instanceIds: [stackedTopId] },
-      }),
-    ).toEqual({ ok: true });
+    await answerDecoy(plainTopId, false);
+    const orderKeys = s.decisions.find(({ req }) => req.kind === "orderTriggers")?.req.options?.triggerKeys ?? [];
+    expect(orderKeys).toEqual([
+      expect.stringContaining(`keyword-decoy/${plainId}/`),
+      expect.stringContaining(`keyword-decoy/${stackedId}/`),
+    ]);
+    await answerDecoy(stackedTopId, true);
     await deletion;
 
     expect(s.state.players[0]!.battleArea.some(({ permanentId }) => permanentId === protectedId)).toBe(true);

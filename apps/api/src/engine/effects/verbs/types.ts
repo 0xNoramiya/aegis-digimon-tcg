@@ -277,9 +277,7 @@ export interface PrimitivesEngine {
       isBounce?: boolean;
       destination?: ZoneRef;
       playerAction?: boolean;
-      includeEvade?: boolean;
-      includeArmorPurge?: boolean;
-      barrier?: { interruptsEffect: boolean };
+      keywordPreventions?: { interruptsEffect: boolean };
     },
   ) => Promise<Set<string>>;
   /** The shared memory gauge (memory-gauge subsystem); single owner of memory math. */
@@ -295,6 +293,7 @@ export interface PrimitivesEngine {
   readonly continuous?: ContinuousEffectLedger;
   /** Delayed / triggered sub-effect + replacement registry (optional; see `continuous`). */
   readonly subTriggers?: SubTriggerRegistry;
+  readonly decoyCostPermanentIds?: Set<string>;
   /**
    * Combat lifecycle driver (attack-and-block subsystem), used by the effect-driven
    * attack / redirect verbs. Optional on the port so the existing fake engines in
