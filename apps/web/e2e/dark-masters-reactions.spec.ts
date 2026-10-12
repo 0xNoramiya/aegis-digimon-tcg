@@ -4,6 +4,37 @@ import { test, expect } from "./scenario-page";
 
 test.use({ holdBotAfterTurn: 1 });
 
+test("WaruMonzaemon can evolve after declining its free play and survives the turn", async ({ scenario }) => {
+  const refs = await scenario.openFixture(waruFixture, "normal", "none");
+  await scenario.resolveUntil((state) => state.phase === "Main" && !state.pendingDecision);
+  await scenario.play("WaruMonzaemon", "Digimon");
+  await scenario.resolveUntil(
+    (state) =>
+      !state.pendingDecision &&
+      state.players[0]!.battleArea.some((permanent) => permanent.topCard.instanceId === refs.instanceId("waru")),
+    () => ({ accept: false, instanceIds: [] }),
+  );
+  const waru = (await scenario.snapshot()).players[0]!.battleArea.find(
+    (permanent) => permanent.topCard.instanceId === refs.instanceId("waru"),
+  )!;
+  await scenario.evolve("Machinedramon", waru.permanentId);
+  await scenario.resolveUntil(
+    (state) =>
+      !state.pendingDecision &&
+      state.players[0]!.battleArea.some(
+        (permanent) => permanent.topCard.instanceId === refs.instanceId("digivolution"),
+      ),
+  );
+  await scenario.page.getByRole("button", { name: /^End turn$/i }).click();
+  await scenario.resolveUntil((state) => state.turnSeat === 1 && !state.pendingDecision);
+  expect(
+    (await scenario.snapshot()).players[0]!.battleArea.find(
+      (permanent) => permanent.permanentId === waru.permanentId,
+    )!.stack.map((card) => card.instanceId),
+  ).toContain(refs.instanceId("waru"));
+  await scenario.healthy();
+});
+
 test("declining WaruMonzaemon's free play keeps it alive at turn end", async ({ scenario, page }) => {
   const refs = await scenario.openFixture(waruFixture, "normal", "none");
   await scenario.resolveUntil((state) => state.phase === "Main" && !state.pendingDecision);
