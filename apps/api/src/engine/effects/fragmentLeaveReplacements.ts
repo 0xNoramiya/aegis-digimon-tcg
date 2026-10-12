@@ -15,7 +15,7 @@ type FragmentReactionDeps = {
   select(
     seat: Seat,
     candidateInstanceIds: string[],
-    count: number,
+    bounds: { min: number; max: number },
     promptText: string,
     source: FragmentReactionSource,
   ): Promise<string[]>;
@@ -62,13 +62,20 @@ export function fragmentLeaveReplacements(
           if (live.stack.length < liveCount || ctx.presetOptionalAnswer === false) {
             return false;
           }
-          const chosen = await deps.select(
-            ownerSeat,
-            live.stack.map((card) => card.instanceId),
-            liveCount,
-            `＜Fragment (${liveCount})＞: trash ${liveCount} of this Digimon's digivolution cards to prevent its deletion?`,
-            { sourceCardId: live.topCard.cardId, sourceInstanceId: holderInstanceId, sourcePermanentId: id },
-          );
+          const candidateInstanceIds = live.stack.map((card) => card.instanceId);
+          const accepted = ctx.presetOptionalAnswer === true;
+          const chosen =
+            accepted && candidateInstanceIds.length === liveCount
+              ? candidateInstanceIds
+              : await deps.select(
+                  ownerSeat,
+                  candidateInstanceIds,
+                  { min: accepted ? liveCount : 0, max: liveCount },
+                  accepted
+                    ? `＜Fragment (${liveCount})＞: choose ${liveCount} of this Digimon's digivolution cards to trash.`
+                    : `＜Fragment (${liveCount})＞: trash ${liveCount} of this Digimon's digivolution cards to prevent its deletion?`,
+                  { sourceCardId: live.topCard.cardId, sourceInstanceId: holderInstanceId, sourcePermanentId: id },
+                );
           if (chosen.length < liveCount) {
             return false;
           }

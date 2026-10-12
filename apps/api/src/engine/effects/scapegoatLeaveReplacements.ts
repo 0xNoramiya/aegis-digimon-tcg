@@ -16,6 +16,7 @@ type ScapegoatReactionDeps = {
   select(
     seat: Seat,
     candidateInstanceIds: string[],
+    min: number,
     promptText: string,
     source: ScapegoatReactionSource,
   ): Promise<string | undefined>;
@@ -57,12 +58,20 @@ export function scapegoatLeaveReplacements(
           if (candidates.length === 0 || ctx.presetOptionalAnswer === false) {
             return false;
           }
-          const chosenInstanceId = await deps.select(
-            ownerSeat,
-            candidates.map((candidate) => candidate.topCard.instanceId),
-            "＜Scapegoat＞: delete 1 of your other Digimon to prevent this deletion?",
-            { sourceCardId: live.topCard.cardId, sourceInstanceId: holderInstanceId, sourcePermanentId: id },
-          );
+          const candidateInstanceIds = candidates.map((candidate) => candidate.topCard.instanceId);
+          const accepted = ctx.presetOptionalAnswer === true;
+          const chosenInstanceId =
+            accepted && candidateInstanceIds.length === 1
+              ? candidateInstanceIds[0]
+              : await deps.select(
+                  ownerSeat,
+                  candidateInstanceIds,
+                  accepted ? 1 : 0,
+                  accepted
+                    ? "＜Scapegoat＞: choose 1 of your other Digimon to delete."
+                    : "＜Scapegoat＞: delete 1 of your other Digimon to prevent this deletion?",
+                  { sourceCardId: live.topCard.cardId, sourceInstanceId: holderInstanceId, sourcePermanentId: id },
+                );
           const sacrifice = candidates.find((candidate) => candidate.topCard.instanceId === chosenInstanceId);
           if (sacrifice === undefined) {
             return false;

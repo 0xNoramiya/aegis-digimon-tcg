@@ -760,7 +760,7 @@ describe("Guard departure lifecycle", () => {
     expect(request.req).toMatchObject({
       sourceCardId: TARGET,
       sourceInstanceId: s.inst("guard").instanceId,
-      options: { effectText: "＜Guard＞: delete this Digimon to prevent your other Digimon from leaving." },
+      options: { effectText: "＜Guard＞: you may delete this Digimon to prevent your other Digimon from leaving." },
     });
     expect(
       s.engine.applyIntent(0, {

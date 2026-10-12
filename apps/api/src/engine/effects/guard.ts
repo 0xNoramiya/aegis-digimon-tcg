@@ -3,7 +3,7 @@ import type { ReplacementSubscriptionPrevent } from "./subtriggers.js";
 import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
 import { buildKeywordReactionId } from "#api/engine/effects/buildKeywordReactionId";
 
-export const GUARD_EFFECT_TEXT = "＜Guard＞: delete this Digimon to prevent your other Digimon from leaving.";
+export const GUARD_EFFECT_TEXT = "＜Guard＞: you may delete this Digimon to prevent your other Digimon from leaving.";
 
 /** CR §16-45: each live Guard holder protects its controller's OTHER Digimon. */
 export function guardLeaveReplacements(

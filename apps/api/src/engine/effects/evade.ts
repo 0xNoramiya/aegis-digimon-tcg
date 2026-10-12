@@ -3,7 +3,7 @@ import type { ReplacementSubscriptionPrevent } from "./subtriggers.js";
 import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
 import { buildKeywordReactionId } from "#api/engine/effects/buildKeywordReactionId";
 
-export const EVADE_EFFECT_TEXT = "＜Evade＞: suspend this Digimon to prevent its deletion.";
+export const EVADE_EFFECT_TEXT = "＜Evade＞: you may suspend this Digimon to prevent its deletion.";
 
 /**
  * CR §16-22: ＜Evade＞ as a deletion prevention inside the leave consult, so the affected player
@@ -42,10 +42,14 @@ export function evadeLeaveReplacements(
         description: EVADE_EFFECT_TEXT,
         yieldsToEarlierPrevention: true,
         protects: (_ctx, leavingId) => leavingId === id,
-        preventCheck: async () => {
+        preventCheck: async (ctx) => {
           const live = liveHolder();
-          if (live === undefined || !deps.canSuspend(live)) return false;
-          if (!(await deps.decide(ownerSeat, id))) return false;
+          if (live === undefined || !deps.canSuspend(live) || ctx.presetOptionalAnswer === false) {
+            return false;
+          }
+          if (ctx.presetOptionalAnswer !== true && !(await deps.decide(ownerSeat, id))) {
+            return false;
+          }
           return deps.suspend(id, ownerSeat);
         },
       },

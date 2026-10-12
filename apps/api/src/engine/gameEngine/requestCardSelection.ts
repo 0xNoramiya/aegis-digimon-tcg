@@ -1,24 +1,25 @@
 import type { Seat } from "@aegis/shared";
 import type { GameEngine } from "#api/engine/GameEngine";
 
-type OptionalCardSelectionParams = {
+type CardSelectionParams = {
   seat: Seat;
   candidateInstanceIds: string[];
+  min: number;
   max: number;
   promptText: string;
   source: { sourceCardId: string; sourceInstanceId: string; sourcePermanentId: string };
 };
 
-export async function requestOptionalCardSelection(
+export async function requestCardSelection(
   engine: GameEngine,
-  { seat, candidateInstanceIds, max, promptText, source }: OptionalCardSelectionParams,
+  { seat, candidateInstanceIds, min, max, promptText, source }: CardSelectionParams,
 ): Promise<string[]> {
   const response = await engine.decisions.request({
     seat,
     kind: "selectCards",
     promptText,
     ...source,
-    options: { candidateInstanceIds, min: 0, max },
+    options: { candidateInstanceIds, min, max },
   });
   return response.kind === "selectCards" ? response.instanceIds : [];
 }

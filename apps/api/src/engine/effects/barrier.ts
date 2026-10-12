@@ -4,7 +4,8 @@ import type { ReplacementSubscriptionPrevent } from "./subtriggers.js";
 import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
 import { buildKeywordReactionId } from "#api/engine/effects/buildKeywordReactionId";
 
-export const BARRIER_EFFECT_TEXT = "＜Barrier＞: trash your top security card to prevent this Digimon's deletion.";
+export const BARRIER_EFFECT_TEXT =
+  "＜Barrier＞: you may trash your top security card to prevent this Digimon's deletion.";
 
 export function barrierLeaveReplacements(
   permanentIds: readonly string[],
@@ -40,15 +41,15 @@ export function barrierLeaveReplacements(
         description: BARRIER_EFFECT_TEXT,
         causeAllows: (cause) => cause === "byBattle",
         protects: (_ctx, leavingId) => leavingId === id,
-        preventCheck: async () => {
+        preventCheck: async (ctx) => {
           const live = deps.permanentById(id);
           if (live?.topCard?.instanceId !== holderInstanceId || !deps.hasBarrier(id)) {
             return false;
           }
-          if (deps.securityCount(ownerSeat) === 0) {
+          if (deps.securityCount(ownerSeat) === 0 || ctx.presetOptionalAnswer === false) {
             return false;
           }
-          if (!(await deps.decide(ownerSeat, id))) {
+          if (ctx.presetOptionalAnswer !== true && !(await deps.decide(ownerSeat, id))) {
             return false;
           }
           await deps.paySecurity(ownerSeat);

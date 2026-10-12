@@ -46,7 +46,7 @@ import { decoyLeaveReplacements } from "#api/engine/effects/decoyLeaveReplacemen
 import { listDecoySources } from "#api/engine/effects/listDecoySources";
 import { isDecoySourceProtecting } from "#api/engine/effects/isDecoySourceProtecting";
 import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
-import { requestOptionalCardSelection } from "#api/engine/gameEngine/requestOptionalCardSelection";
+import { requestCardSelection } from "#api/engine/gameEngine/requestCardSelection";
 import { emitKeywordDeletionPrevented } from "#api/engine/gameEngine/emitKeywordDeletionPrevented";
 import { fragmentCountOf } from "#api/engine/combat/keywords";
 import { canPaySuspendCost } from "../combat/legality.js";
@@ -403,8 +403,8 @@ export async function engineConsultLeavePrevention(
             }
             return fragmentCountOf(permanent.topCard.cardId, engine.continuous.grantedKeywords(id));
           },
-          select: (seat, candidateInstanceIds, count, promptText, source) =>
-            requestOptionalCardSelection(engine, { seat, candidateInstanceIds, max: count, promptText, source }),
+          select: (seat, candidateInstanceIds, { min, max }, promptText, source) =>
+            requestCardSelection(engine, { seat, candidateInstanceIds, min, max, promptText, source }),
           trash: (hostPermanentId, instanceIds, provenance) =>
             engine.primitives.trashDigivolutionCards(hostPermanentId, instanceIds, provenance),
           announce: (saved) => emitKeywordDeletionPrevented(engine, { keyword: "Fragment", saved }),
@@ -421,8 +421,8 @@ export async function engineConsultLeavePrevention(
                   permanent.topCard !== undefined &&
                   engine.access.isBattleAreaDigimon(permanent, engine.continuous),
               ),
-          select: async (seat, candidateInstanceIds, promptText, source) =>
-            (await requestOptionalCardSelection(engine, { seat, candidateInstanceIds, max: 1, promptText, source }))[0],
+          select: async (seat, candidateInstanceIds, min, promptText, source) =>
+            (await requestCardSelection(engine, { seat, candidateInstanceIds, min, max: 1, promptText, source }))[0],
           announce: (saved, sacrifice) =>
             emitKeywordDeletionPrevented(engine, { keyword: "Scapegoat", saved, paid: sacrifice }),
         }),
