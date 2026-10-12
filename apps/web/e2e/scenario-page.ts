@@ -40,29 +40,36 @@ export class ScenarioPage {
     fixture: ScenarioFixture,
     speed: "normal" | "slow" = "normal",
     breeding: "end" | "move" | "none" = fixture.turnSeat === 0 ? "end" : "none",
+    allowRollback = false,
   ) {
     if (!this.useFixture) throw new Error("This ScenarioPage has no fixture server");
     const references = this.useFixture(fixture);
-    await this.open("local-fixture", speed, breeding);
+    await this.open("local-fixture", speed, breeding, allowRollback);
     return references;
   }
   /** `none`: the scenario opens on the opponent's turn, or the engine passes this Breeding phase itself. */
-  async open(id: string, speed: "normal" | "slow" = "normal", breeding: "end" | "move" | "none" = "end") {
+  async open(
+    id: string,
+    speed: "normal" | "slow" = "normal",
+    breeding: "end" | "move" | "none" = "end",
+    allowRollback = false,
+  ) {
     this.speed = speed;
     await this.page.addInitScript(
-      ({ id: scenarioId, speed: effectSpeed, deck }) => {
+      ({ id: scenarioId, speed: effectSpeed, deck, allowRollback: rollbackAllowed }) => {
         localStorage.setItem("aegis:locale", "en");
         localStorage.setItem("aegis.effect-speed", effectSpeed);
         localStorage.setItem("aegis.action-confirmation.enabled", "false");
         localStorage.setItem("aegis.skip-end-turn-confirmation", "true");
         window.browserTestOptions = {
           displayName: "Scenario E2E",
+          allowRollback: rollbackAllowed,
           seed: 1,
           deck,
           devScenario: scenarioId as Window["browserTestOptions"]["devScenario"],
         };
       },
-      { id, speed, deck: RED_DECK },
+      { id, speed, deck: RED_DECK, allowRollback },
     );
     await this.page.goto("/e2e/harness.html");
     if (breeding === "move") {

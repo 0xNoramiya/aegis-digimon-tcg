@@ -1,6 +1,25 @@
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "rollback.failed": "Tidak dapat memulihkan titik ini dengan aman. Kondisi pertandingan saat ini dipertahankan.",
+  "rollback.cancel": "Batalkan permintaan",
+  "rollback.allow": "Izinkan rollback",
+  "rollback.help": "Cara kerja rollback",
+  "rollback.optionHint":
+    "Rollback memungkinkan Anda membatalkan aksi terakhir atau kembali ke awal giliran, dengan memulihkan kartu, memori, dan kondisi pertandingan.",
+  "rollback.controls": "Rollback",
+  "rollback.undo": "Batalkan aksi terakhir",
+  "rollback.turn": "Kembali ke awal giliran",
+  "rollback.turnHint":
+    "Memulihkan giliran saat ini sebelum efek awal giliran, mengaktifkan kembali kartu, dan menarik kartu. Jika belum ada aksi, memulihkan awal giliran sebelumnya. Pertandingan yang sudah selesai tidak dapat dipulihkan.",
+  "rollback.hiddenHint":
+    "Kartu yang sudah terlihat tidak dapat dilupakan. Sepakati rollback dengan lawan terlebih dahulu.",
+  "rollback.waiting": "Menunggu persetujuan lawan. Pertandingan dijeda.",
+  "rollback.requestAction": "Lawan meminta untuk membatalkan aksi terakhir.",
+  "rollback.requestTurn": "Lawan meminta untuk kembali ke awal giliran.",
+  "rollback.accept": "Setujui",
+  "rollback.reject": "Tolak",
+  "rollback.restoring": "Memulihkan pertandingan…",
   "profile.matches": "Cocok",
   "profile.guestHint":
     "Nama dan avatar Anda hanya disimpan di perangkat ini. Masuk untuk menyimpan riwayat pertandingan dan tayangan ulang.",

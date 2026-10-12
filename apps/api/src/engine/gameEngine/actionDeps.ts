@@ -1079,6 +1079,7 @@ export function dnaDigivolveDeps(engine: GameEngine): DnaDigivolveDeps {
  */
 export function buildTurnFlowHooks(engine: GameEngine): TurnFlowHooks {
   return {
+    beforeTurn: (turn) => engine.hooks.beforeTurn?.(turn),
     fireTiming: async (timing) => engine.fireTiming(timing),
     draw: async (seat, count) => (await drawCards(engine, seat, count)).length,
     deckCount: (seat) => engine.state.players[seat]?.deck.length ?? 0,

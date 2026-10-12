@@ -108,7 +108,10 @@ for sort direction and predicates.
 Colyseus rooms and the game engine hold live match state in one API process; it is
 not a durable match database. Redis supports multiprocess coordination/presence
 when configured. Card catalogs, effect snapshots, and the rules KB are repository
-data, not PostgreSQL tables.
+data, not PostgreSQL tables. Rollback input journals and private-state
+fingerprints exist only inside an eligible live room and disappear with it.
+Casual-series continuation records in presence/Redis retain the optional
+`allowRollback` setting; this introduces no PostgreSQL table or migration.
 
 Player replay files live in the player's Google Drive; `account_replays` stores
 their index and sharing metadata. Report replays store the private action record

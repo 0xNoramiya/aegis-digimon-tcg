@@ -1,6 +1,23 @@
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "rollback.failed": "無法安全還原至此時點。目前的對局狀態已保留。",
+  "rollback.cancel": "取消請求",
+  "rollback.allow": "允許回溯",
+  "rollback.help": "回溯功能說明",
+  "rollback.optionHint": "回溯可以撤銷上一次行動或返回回合開始時，還原卡牌、記憶體及對局狀態。",
+  "rollback.controls": "回溯",
+  "rollback.undo": "撤銷上一次行動",
+  "rollback.turn": "返回回合開始",
+  "rollback.turnHint":
+    "還原至目前回合的回合開始效果、重置及抽牌之前。如果尚未進行行動，則還原至上一回合開始時。已結束的對局無法回溯。",
+  "rollback.hiddenHint": "已經看過的卡牌資訊無法忘記。回溯前請與對手達成共識。",
+  "rollback.waiting": "正在等待對手同意。對局已暫停。",
+  "rollback.requestAction": "對手請求撤銷上一次行動。",
+  "rollback.requestTurn": "對手請求返回回合開始。",
+  "rollback.accept": "同意",
+  "rollback.reject": "拒絕",
+  "rollback.restoring": "正在還原對局…",
   "profile.matches": "火柴",
   "profile.guestHint": "您的姓名和頭像僅保存在此裝置上。登入以保留比賽記錄和重播。",
   "profile.help": "幫助和社區",

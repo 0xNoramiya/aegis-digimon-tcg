@@ -1,3 +1,5 @@
+import { resetRoomState } from "@/net/resetRoomState";
+import { ROLLBACK_RESET_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
 import { spectate } from "./client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GameState } from "@aegis/shared";
@@ -317,6 +319,17 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       // A spectator can receive the full state before the join promise resolves.
       // Idle matches may publish no subsequent patch, so consume that decoded state now.
       if (room.state?.players?.length === 2) acceptState(room.state);
+      room.onMessage(ROLLBACK_RESET_CHANNEL, () => {
+        resetRoomState(room);
+        clearPendingIntents();
+        answeredDecisionsRef.current.clear();
+        confirmedDecisionIdRef.current = undefined;
+        setDecision(undefined);
+        setEvents([]);
+        setInbox(emptyBatchInbox);
+        snapshotsRef.current = [];
+        setSnapshots([]);
+      });
       room.onMessage<SequencedServerEvent>(EVENT_CHANNEL, (event) => {
         if (event.kind === "actionRejected" && event.decisionId) {
           const rejected = answeredDecisionsRef.current.get(event.decisionId);

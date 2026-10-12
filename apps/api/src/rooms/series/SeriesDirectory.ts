@@ -27,6 +27,7 @@ export interface SeriesRecord {
   nonce: string;
   roomName: string;
   bestOf: MatchBestOf;
+  allowRollback?: boolean;
   matchTimer: boolean;
   timerStartSeconds: number;
   unlimited?: boolean;

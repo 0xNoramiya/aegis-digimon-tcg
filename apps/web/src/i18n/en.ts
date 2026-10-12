@@ -19,6 +19,25 @@ import { shellEn } from "./redesign/shell.en";
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  "rollback.failed": "Could not safely restore this point. The current game was kept.",
+  "rollback.cancel": "Cancel request",
+  "rollback.allow": "Allow rollback",
+  "rollback.help": "How rollback works",
+  "rollback.optionHint":
+    "Rollback lets you undo the last action or return to the start of a turn, restoring cards, memory and the match state.",
+  "rollback.controls": "Rollback",
+  "rollback.undo": "Undo last action",
+  "rollback.turn": "Return to turn start",
+  "rollback.turnHint":
+    "Restores the current turn before start effects, unsuspending and drawing. If no action was taken yet, restores the previous turn start. Finished games cannot be rolled back.",
+  "rollback.hiddenHint": "Cards already seen cannot be forgotten. Agree with your opponent before rolling back.",
+  "rollback.waiting": "Waiting for opponent approval. Play is paused.",
+  "rollback.requestAction": "Opponent asks to undo the last action.",
+  "rollback.requestTurn": "Opponent asks to return to the turn start.",
+  "rollback.accept": "Accept",
+  "rollback.reject": "Reject",
+  "rollback.restoring": "Restoring match…",
+
   ...profileReplayEn,
   ...replayEn,
   ...replayVideoEn,

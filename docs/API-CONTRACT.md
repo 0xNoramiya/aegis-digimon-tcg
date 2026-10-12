@@ -26,6 +26,40 @@ all deckable catalog entries remain visible, including preview cards. A deck
 containing beta-only cards needs the checkbox in Quick Match or Practice vs AI
 before launch.
 
+## Optional rollback
+
+`allowRollback` defaults to `false`. Casual random queues, including Beta and
+Unlimited, filter on the explicit boolean so both players choose the same rule.
+Private hosts and bot-room creators choose it for their room; casual series keep
+it for subsequent games. Ranked and tournament handlers refuse rollback even
+when a client forges the option or request.
+
+On the `rollback` channel, a seated client sends `{ type: "request", kind:
+"action" | "turn", revision }`. A human opponent must answer `{ type:
+"respond", requestId, accept, revision }`; the requester may send `cancel` with
+the request ID and revision. Bots accept immediately. Normal play is blocked
+while consent or reconstruction is pending. Disconnects and room-issued engine
+inputs invalidate pending consent. Finished games are final before result
+persistence; they cannot be reopened and rewards cannot be granted twice.
+
+Action rollback restores the point before the last accepted gameplay intent,
+including effect and combat answers. Turn rollback restores the current turn
+before start effects, unsuspending, and drawing; if no gameplay action has been
+accepted since that start, it restores the previous turn start. The API rebuilds
+a fresh engine from its seed, decks, fixture when applicable, and exact input
+prefix. Replay divergence or a mismatch against the captured private-state
+fingerprint refuses the restoration. This rebuild recreates private zones, RNG
+streams, effect continuations, decisions, modifiers, and turn/use bookkeeping.
+Real elapsed match-clock time is not refunded.
+
+Successful restoration increments `rollbackRevision`. Gameplay intents and
+presentation reports carry that revision, so obsolete work is rejected. The API
+retires the previous engine and bot jobs, recreates visibility views, and sends
+`rollbackReset` before a full state snapshot. The client resets its schema
+decoder, queued intents, decisions, snapshots, and animation session. Recorded
+input replays retain the valid active prefix and normalize subsequent batch
+versions; participant replay frames also retain the visible rollback moment.
+
 ## Optional match timer
 
 Casual (`aegis` and `aegis_beta`) join options include `matchTimer: boolean`.

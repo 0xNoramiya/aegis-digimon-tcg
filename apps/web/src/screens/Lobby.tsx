@@ -41,6 +41,7 @@ import { DeckColorDots, DeckPicker } from "./DeckPicker";
 import { FamousDeckListDialog } from "./FamousDeckListDialog";
 import { DeckFormatSelector, deckFormatLabel } from "./DeckFormatSelector";
 import { MatchFormatSettings } from "./MatchFormatSettings";
+import { RollbackSettings } from "@/screens/RollbackSettings";
 import { MatchTimerSettings } from "./MatchTimerSettings";
 import { loadMatchFormatPreference, saveMatchFormatPreference } from "./matchFormatPreference";
 import "./lobby.css";
@@ -185,7 +186,11 @@ export function Lobby({
   onTimerOptionsChange,
   bestOf: initialBestOf,
   onBestOfChange,
+  allowRollback = false,
+  onAllowRollbackChange,
 }: {
+  allowRollback?: boolean;
+  onAllowRollbackChange?: (allow: boolean) => void;
   timerOptions?: MatchTimerOptions;
   onTimerOptionsChange?: (options: Required<MatchTimerOptions>) => void;
   bestOf?: MatchBestOf;
@@ -834,8 +839,9 @@ export function Lobby({
               ) : null}
               <div className="lobby-setup__body">
                 <div className="lobby-setup__column">
-                  {mode === "casual" || (mode === "private" && privateSub === "create" && !privateRoom) ? (
+                  {mode === "casual" || vsBot || (mode === "private" && privateSub === "create" && !privateRoom) ? (
                     <div className="lobby-match-rules">
+                      <RollbackSettings enabled={allowRollback} onChange={onAllowRollbackChange ?? (() => {})} />
                       {!vsBot ? (
                         <>
                           <MatchFormatSettings bestOf={bestOf} onChange={changeBestOf} />

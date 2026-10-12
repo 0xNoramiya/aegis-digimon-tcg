@@ -21,6 +21,25 @@ import { settingsPtBR } from "./redesign/settings.pt-BR";
 import { shellPtBR } from "./redesign/shell.pt-BR";
 
 export const ptBR: Record<keyof typeof en, string> = {
+  "rollback.failed": "Não foi possível restaurar este ponto com segurança. A partida atual foi mantida.",
+  "rollback.cancel": "Cancelar pedido",
+  "rollback.allow": "Permitir voltar jogadas",
+  "rollback.help": "Como funciona",
+  "rollback.optionHint":
+    "Rollback permite desfazer a última ação ou voltar ao início de um turno, restaurando as cartas, a memória e o estado da partida.",
+  "rollback.controls": "Voltar jogadas",
+  "rollback.undo": "Desfazer última ação",
+  "rollback.turn": "Voltar ao início do turno",
+  "rollback.turnHint":
+    "Restaura o turno atual antes dos efeitos de início, desvirar e comprar. Se nenhuma ação foi feita, restaura o início do turno anterior. Partidas encerradas não permitem retorno.",
+  "rollback.hiddenHint": "Cartas já vistas não podem ser esquecidas. Combine o retorno com o adversário.",
+  "rollback.waiting": "Aguardando a aprovação do adversário. As jogadas estão pausadas.",
+  "rollback.requestAction": "O adversário pede para desfazer a última ação.",
+  "rollback.requestTurn": "O adversário pede para voltar ao início do turno.",
+  "rollback.accept": "Aceitar",
+  "rollback.reject": "Recusar",
+  "rollback.restoring": "Restaurando partida…",
+
   ...profileReplayPtBR,
   ...replayPtBR,
   ...replayVideoPtBR,

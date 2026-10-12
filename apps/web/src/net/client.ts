@@ -66,6 +66,7 @@ function withQueueFilters(options: AegisJoinOptions): AegisJoinOptions {
   return {
     ...options,
     matchTimer: options.matchTimer === true,
+    allowRollback: options.allowRollback === true,
     bestOf: options.bestOf === 3 ? 3 : 1,
     format,
     unlimited: formatIsUnlimited(format),
@@ -455,7 +456,8 @@ async function withLegacyRoomTicket(options: AegisJoinOptions): Promise<AegisJoi
 const pendingIntents: { type: string; payload: Record<string, unknown> }[] = [];
 
 export function sendIntent(room: AegisRoom, intent: Intent): void {
-  const { type, ...payload } = intent;
+  const { type, ...fields } = intent;
+  const payload = { ...fields, rollbackRevision: room.state.rollbackRevision ?? 0 };
   if (room.connection?.isOpen) room.send(type, payload);
   else pendingIntents.push({ type, payload });
 }
