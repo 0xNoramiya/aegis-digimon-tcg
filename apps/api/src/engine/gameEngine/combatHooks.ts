@@ -27,6 +27,7 @@ import { cardSourceOf, dropPermanentSubscriptions, effectEnvironment } from "./e
 import { beginBattleScope, endBattleScope, sweepBattleDurations, sweepCombatDurations } from "./turnFlow.js";
 import type { GameEngine } from "../GameEngine.js";
 import type { CombatHooks } from "../combat/types.js";
+import { fireBlockTiming } from "#api/engine/gameEngine/fireBlockTiming";
 
 /**
  * The combat controller's hook seam: everything CombatController calls back into the engine
@@ -248,6 +249,22 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
       }),
     withPendingSuspensionSubTriggers: (payload, runWindows) =>
       withPendingSubTriggers(engine, ["whenSuspended"], payload, runWindows, { onlyInitiallyArmed: true }),
+    fireBlockTiming: async (trigger, blockerSuspended) => {
+      if (
+        shouldDeferNestedTiming(engine) ||
+        trigger.attackerPermanentId === undefined ||
+        trigger.blockerPermanentId === undefined
+      ) {
+        return false;
+      }
+      await fireBlockTiming(engine, {
+        blockPayload: combatTriggerInfo(engine, trigger),
+        attackerPermanentId: trigger.attackerPermanentId,
+        blockerPermanentId: trigger.blockerPermanentId,
+        blockerSuspended,
+      });
+      return true;
+    },
     prepareFrozenSubTrigger: (event, payload) => prepareFrozenSubTrigger(engine, event, payload),
     refreshContinuousEffects: () => engine.recomputeContinuousEffects(),
     resolveDeletionReactions: async (trigger, candidates, transientCandidates = []) => {
