@@ -155,7 +155,7 @@ export function resolutionDeps(
     turnSeat: engine.state.turnSeat,
     listCandidateInstances: listCandidate,
     ruleProcess: async () => {
-      if (engine.optionResolutionDepth > 0 || engine.effectResolutionDepth > 0) return;
+      if (engine.optionMainDepth > 0 || engine.effectResolutionDepth > 0) return;
       derivedPending.push(...(await collectRuleProcessPending(engine)));
     },
     isGameOver: () => engine.state.gameOver,
