@@ -65,7 +65,7 @@ export const compiled: CompiledCard = {
             {
               effectTextPart: "Then, 1 of your Digimon may attack your opponent's Digimon.",
               kind: "Attack",
-              attackPlayer: false,
+              attackTargetScope: "digimon",
               target: {
                 filter: { controller: "mine", kind: ["Digimon"] },
                 count: 1,

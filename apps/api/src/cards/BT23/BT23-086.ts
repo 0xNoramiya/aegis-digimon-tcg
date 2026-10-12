@@ -69,8 +69,7 @@ export const compiled: CompiledCard = {
             count: 1,
           },
           optional: true,
-          attackPlayer: true,
-          attackPlayerOnly: true,
+          attackTargetScope: "player",
           cost: {
             kind: "suspend",
             target: {

@@ -14859,7 +14859,7 @@
             "kind": "Attack",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
             "optional": true,
-            "attackPlayer": false
+            "attackTargetScope": "digimon"
           }
         ]
       },
@@ -15114,8 +15114,7 @@
               "count": 1
             },
             "optional": true,
-            "attackPlayer": true,
-            "attackPlayerOnly": true
+            "attackTargetScope": "player"
           }
         ]
       },
@@ -20254,8 +20253,7 @@
             "effectTextPart": "Then, 1 of your Digimon with a [Hybrid] trait gets +3000 DP and you may attack a player with that Digimon for the turn.",
             "kind": "Attack",
             "target": { "filter": {}, "count": 1, "fromSelectionRef": "bt12_099_hybrid" },
-            "attackPlayer": true,
-            "attackPlayerOnly": true,
+            "attackTargetScope": "player",
             "optional": true
           }
         ]
@@ -20304,8 +20302,7 @@
             "effectTextPart": "Then, unsuspend 1 of your [Shoutmon X7: Superior Mode] cards, and you may attack a player with that Digimon.",
             "kind": "Attack",
             "target": { "filter": {}, "count": 1, "fromSelectionRef": "bt12_100_shoutmon_x7" },
-            "attackPlayer": true,
-            "attackPlayerOnly": true,
+            "attackTargetScope": "player",
             "optional": true
           }
         ]
@@ -24597,7 +24594,7 @@
             "kind": "Attack",
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
             "optional": true,
-            "attackPlayer": true
+            "attackTargetScope": "any"
           }
         ]
       },
@@ -28769,7 +28766,7 @@
             "kind": "Attack",
             "attacker": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
-            "attackPlayer": false,
+            "attackTargetScope": "digimon",
             "mandatory": true
           }
         ]
@@ -31370,7 +31367,7 @@
           {
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "attackPlayer": false,
+            "attackTargetScope": "digimon",
             "optional": true,
             "drainTimingWindowDuringAttack": true,
             "condition": {
@@ -41226,8 +41223,7 @@
             "effectTextPart": "Then, 1 of your Digimon may gain <Rush> for the turn and attack a player.",
             "kind": "Attack",
             "target": { "fromSelectionRef": "rushAttacker", "filter": {}, "count": 1 },
-            "attackPlayer": true,
-            "attackPlayerOnly": true,
+            "attackTargetScope": "player",
             "withoutSuspending": false
           }
         ]
@@ -42234,8 +42230,7 @@
               "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "boundRef": "bt16091DnaResult" },
               "count": 1
             },
-            "attackPlayer": true,
-            "attackPlayerOnly": true,
+            "attackTargetScope": "player",
             "condition": { "kind": "ifThisEffectActed", "raw": "only after choosing Security Attack +1" }
           }
         ]
@@ -45456,7 +45451,7 @@
             "effectTextPart": "Then, 1 of your Digimon may attack an opponent's Digimon.",
             "kind": "Attack",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
-            "attackPlayer": false,
+            "attackTargetScope": "digimon",
             "optional": true
           }
         ],
@@ -48425,8 +48420,7 @@
               "count": 1
             },
             "optional": true,
-            "attackPlayer": true,
-            "attackPlayerOnly": true
+            "attackTargetScope": "player"
           }
         ],
         "frequency": "OncePerTurn"
@@ -54031,7 +54025,7 @@
             "kind": "Attack",
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
             "mandatory": true,
-            "attackPlayer": true
+            "attackTargetScope": "any"
           }
         ]
       },
@@ -55411,8 +55405,7 @@
           {
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "attackPlayer": true,
-            "attackPlayerOnly": true,
+            "attackTargetScope": "player",
             "mandatory": false,
             "condition": {
               "kind": "selfHasTrait",
@@ -60038,8 +60031,7 @@
           {
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "attackPlayer": true,
-            "attackPlayerOnly": true,
+            "attackTargetScope": "player",
             "condition": {
               "kind": "opponentHas",
               "filter": { "controllerDefault": "opponent", "unsuspended": true, "kind": ["Digimon"] },
@@ -61344,8 +61336,7 @@
                   "sourceRef": "triggerSubject"
                 },
                 "withoutSuspending": false,
-                "attackPlayer": true,
-                "attackPlayerOnly": true,
+                "attackTargetScope": "player",
                 "mandatory": true
               }
             ]
@@ -61975,8 +61966,7 @@
                 {
                   "kind": "Attack",
                   "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
-                  "attackPlayer": true,
-                  "attackPlayerOnly": true,
+                  "attackTargetScope": "player",
                   "mandatory": true,
                   "cost": {
                     "kind": "unsuspendNamed",
@@ -67536,7 +67526,7 @@
               {
                 "effectTextPart": "Then, 1 of your Digimon may attack your opponent's Digimon.",
                 "kind": "Attack",
-                "attackPlayer": false,
+                "attackTargetScope": "digimon",
                 "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
                 "optional": true
               }
@@ -70385,8 +70375,7 @@
                 "kind": "Attack",
                 "target": { "filter": { "controllerDefault": "mine", "kind": ["Digimon"] }, "count": 1 },
                 "optional": true,
-                "attackPlayer": true,
-                "attackPlayerOnly": true
+                "attackTargetScope": "player"
               }
             ]
           }
@@ -71174,8 +71163,7 @@
               },
               "count": 1
             },
-            "attackPlayer": true,
-            "attackPlayerOnly": true,
+            "attackTargetScope": "player",
             "optional": true,
             "cost": {
               "kind": "suspend",
@@ -78540,7 +78528,7 @@
             "kind": "Attack",
             "target": { "filter": {}, "count": 1, "fromSelectionRef": "chosenMarcus" },
             "withoutSuspending": false,
-            "attackPlayer": false,
+            "attackTargetScope": "digimon",
             "optional": true
           }
         ]
@@ -81435,7 +81423,7 @@
           {
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "attackPlayer": true,
+            "attackTargetScope": "any",
             "withoutSuspending": true,
             "optional": true,
             "abortOnDecline": true,
@@ -83096,7 +83084,7 @@
             "kind": "Attack",
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
             "optional": true,
-            "attackPlayer": true,
+            "attackTargetScope": "any",
             "drainTimingWindowDuringAttack": true
           }
         ],
@@ -83584,8 +83572,7 @@
             "kind": "Attack",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
             "optional": true,
-            "attackPlayer": true,
-            "attackPlayerOnly": true
+            "attackTargetScope": "player"
           }
         ]
       },
@@ -83604,8 +83591,7 @@
             "kind": "Attack",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
             "optional": true,
-            "attackPlayer": true,
-            "attackPlayerOnly": true
+            "attackTargetScope": "player"
           }
         ]
       },
@@ -86550,7 +86536,7 @@
           {
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "attackPlayer": true,
+            "attackTargetScope": "any",
             "drainTimingWindowDuringAttack": true,
             "optional": true
           }
@@ -92431,8 +92417,7 @@
               "count": 1
             },
             "optional": true,
-            "attackPlayer": true,
-            "attackPlayerOnly": true,
+            "attackTargetScope": "player",
             "cost": {
               "kind": "suspend",
               "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
@@ -97454,7 +97439,7 @@
             "kind": "Attack",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1, "sameTarget": true },
             "withoutSuspending": false,
-            "attackPlayer": false,
+            "attackTargetScope": "digimon",
             "optional": false
           }
         ]
@@ -97478,7 +97463,7 @@
             "kind": "Attack",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1, "sameTarget": true },
             "withoutSuspending": false,
-            "attackPlayer": false,
+            "attackTargetScope": "digimon",
             "optional": false
           }
         ]
@@ -98095,7 +98080,7 @@
                 "effectTextPart": "Then, this Digimon may attack your opponent's Digimon.",
                 "kind": "Attack",
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-                "attackPlayer": false,
+                "attackTargetScope": "digimon",
                 "optional": true
               }
             ]
@@ -114675,7 +114660,7 @@
             "effectTextPart": "Then, it can attack your opponent's Digimon. This effect allows you to attack unsuspended Digimon as well.",
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "attackPlayer": false,
+            "attackTargetScope": "digimon",
             "optional": true
           }
         ]
@@ -133837,8 +133822,7 @@
               },
               "count": 1
             },
-            "attackPlayer": true,
-            "attackPlayerOnly": true,
+            "attackTargetScope": "player",
             "optional": true
           }
         ]
@@ -134111,7 +134095,7 @@
               "count": 1,
               "fromSelectionRef": "unsuspendedInsectoid"
             },
-            "attackPlayer": false,
+            "attackTargetScope": "digimon",
             "raw": "it attacks your opponent's Digimon"
           }
         ]
@@ -153679,7 +153663,7 @@
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1, "sameTarget": true },
             "mandatory": true,
             "withoutSuspending": false,
-            "attackPlayer": true,
+            "attackTargetScope": "any",
             "condition": { "kind": "ifThisEffectActed", "raw": "if a Digimon gained Alliance" }
           }
         ]
@@ -153716,7 +153700,7 @@
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1, "sameTarget": true },
             "mandatory": true,
             "withoutSuspending": false,
-            "attackPlayer": true,
+            "attackTargetScope": "any",
             "condition": { "kind": "ifThisEffectActed", "raw": "if a Digimon gained Alliance" }
           }
         ]
@@ -177932,8 +177916,7 @@
           {
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "attackPlayer": true,
-            "attackPlayerOnly": true,
+            "attackTargetScope": "player",
             "withoutSuspending": true,
             "optional": true,
             "abortOnDecline": true,
@@ -178125,8 +178108,7 @@
           {
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "attackPlayer": true,
-            "attackPlayerOnly": true,
+            "attackTargetScope": "player",
             "withoutSuspending": true,
             "optional": true,
             "abortOnDecline": true,
@@ -183448,8 +183430,7 @@
           {
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "attackPlayer": true,
-            "attackPlayerOnly": true
+            "attackTargetScope": "player"
           }
         ]
       }
@@ -187420,7 +187401,7 @@
             "effectTextPart": "Then, 1 of your Digimon may attack your opponent's Digimon.",
             "kind": "Attack",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
-            "attackPlayer": false,
+            "attackTargetScope": "digimon",
             "optional": true
           }
         ]
@@ -187447,7 +187428,7 @@
             "effectTextPart": "Then, 1 of your Digimon may attack your opponent's Digimon.",
             "kind": "Attack",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
-            "attackPlayer": false,
+            "attackTargetScope": "digimon",
             "optional": true
           }
         ]
@@ -207908,7 +207889,7 @@
           {
             "kind": "Attack",
             "target": { "filter": {}, "count": 1, "fromSelectionRef": "angoramonAttacker" },
-            "attackPlayer": false,
+            "attackTargetScope": "digimon",
             "drainTimingWindowDuringAttack": true
           }
         ]
@@ -216736,7 +216717,7 @@
           {
             "kind": "Attack",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "attackPlayer": true,
+            "attackTargetScope": "any",
             "drainTimingWindowDuringAttack": true,
             "optional": true
           }

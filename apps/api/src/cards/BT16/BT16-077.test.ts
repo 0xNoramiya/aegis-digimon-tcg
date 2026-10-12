@@ -42,7 +42,7 @@ describe("BT16-077", () => {
     expect(compiled.effects?.[1]?.actions?.[3]).toMatchObject({
       kind: "Attack",
       target: { fromSelectionRef: "rushAttacker" },
-      attackPlayer: true,
+      attackTargetScope: "player",
       withoutSuspending: false,
     });
   });

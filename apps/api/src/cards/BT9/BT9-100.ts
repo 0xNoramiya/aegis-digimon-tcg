@@ -48,7 +48,7 @@ export const compiled: CompiledCard = {
             count: 1,
             fromSelectionRef: "unsuspendedInsectoid",
           },
-          attackPlayer: false,
+          attackTargetScope: "digimon",
           raw: "it attacks your opponent's Digimon",
         },
       ],

@@ -57,7 +57,7 @@ const compiled: CompiledCard = {
         {
           kind: "Attack",
           target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
-          attackPlayer: true,
+          attackTargetScope: "any",
           drainTimingWindowDuringAttack: true,
           optional: true,
         },

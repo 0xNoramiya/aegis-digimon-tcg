@@ -45,8 +45,7 @@ describe("BT9-095 Gaia Force ZERO", () => {
             { kind: "Delete", target: { filter: { dp: { op: "lte", value: 13000 } } } },
             {
               kind: "Attack",
-              attackPlayer: true,
-              attackPlayerOnly: true,
+              attackTargetScope: "player",
               optional: true,
               target: { filter: { nameOrTrait: [{ tokens: ["Greymon"], match: "name" }] } },
             },
