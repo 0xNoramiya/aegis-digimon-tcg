@@ -33,6 +33,7 @@ import { replaySharingHistory } from "./030-replay-sharing-history.js";
 import { feedbackReportReplays } from "./031-feedback-report-replays.js";
 
 import { magicLinkRequestLimits } from "#api/db/migrations/032-magic-link-request-limits";
+import { connectionDrops } from "#api/db/migrations/033-connection-drops";
 
 export const migrations: readonly Migration[] = [
   initialSchema,
@@ -67,4 +68,5 @@ export const migrations: readonly Migration[] = [
   replaySharingHistory,
   feedbackReportReplays,
   magicLinkRequestLimits,
+  connectionDrops,
 ];
