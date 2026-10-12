@@ -33,6 +33,7 @@ for (const applied of [false, true]) {
       .toBe(true);
     await scenario.idle();
     await scenario.play("Ryudamon", "Digimon");
+    let reactivationPrompts = 0;
     await scenario.resolveUntil(
       (state) =>
         !state.pendingDecision &&
@@ -44,7 +45,13 @@ for (const applied of [false, true]) {
           .isSuspended &&
         state.players[1]!.battleArea.find((permanent) => permanent.permanentId === refs.permanentId("venus"))!
           .currentDP === (applied ? 12000 : 4000),
+      (decision) => {
+        if (decision.kind === "optional" && decision.promptText.includes("Then, you may activate 1 of this Digimon"))
+          reactivationPrompts++;
+        return {};
+      },
     );
+    expect(reactivationPrompts).toBe(applied ? 0 : 1);
     expect(
       (await scenario.presentation()).events.some(
         (event) =>
