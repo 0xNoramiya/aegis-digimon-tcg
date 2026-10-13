@@ -21,19 +21,16 @@ import type { AegisJoinOptions } from "./net/types";
 import type { SeriesGameTicket } from "./net/useRoom";
 import type { PrivateRoom, StartMode } from "./screens/Lobby";
 import { loadMatchFormatPreference } from "./screens/matchFormatPreference";
-import { Settings } from "./screens/Settings";
 import { loadIdentity, saveIdentity, loadDecks, saveDecks, loadActiveDeckId, saveActiveDeckId } from "./identity";
 import { accentForAvatar } from "./guest";
 import { applyDarkMode, setDarkMode, useDarkMode } from "./design/darkMode";
 import { setDeckEggSleeveId, setDeckSleeveId } from "./design/sleeve";
 import { applyTextScale } from "./design/textScale";
-import { InterfaceThemeDialog } from "./design/InterfaceThemePicker";
 import { I18nProvider, useTranslation } from "./i18n";
 import { accountApi, type RemoteAccount } from "./account/client";
 import { communityApi } from "./community/client";
 import { communityDeckListing } from "./community/communityDeckListing";
 import { usePreferencesSync } from "./account/usePreferencesSync";
-import { BugReportDialog } from "./bugs/BugReportDialog";
 import { LeaveMatchDialog } from "./game/screen/layout/LeaveMatchDialog";
 import { PlayerMenu } from "./account/PlayerMenu";
 import { NotificationBell } from "./notifications/NotificationBell";
@@ -51,6 +48,11 @@ const FeedbackScreen = lazy(() => import("./bugs/FeedbackScreen").then((m) => ({
 const MyFeedbackScreen = lazy(() => import("./bugs/MyFeedbackScreen").then((m) => ({ default: m.MyFeedbackScreen })));
 const PrivacyScreen = lazy(() => import("./legal/PrivacyScreen").then((m) => ({ default: m.PrivacyScreen })));
 const Home = lazy(() => import("./screens/Home").then((m) => ({ default: m.Home })));
+const Settings = lazy(() => import("./screens/Settings").then((m) => ({ default: m.Settings })));
+const InterfaceThemeDialog = lazy(() =>
+  import("./design/InterfaceThemePicker").then((m) => ({ default: m.InterfaceThemeDialog })),
+);
+const BugReportDialog = lazy(() => import("./bugs/BugReportDialog").then((m) => ({ default: m.BugReportDialog })));
 const ReleasesScreen = lazy(() => import("./releases/ReleasesScreen").then((m) => ({ default: m.ReleasesScreen })));
 const Login = lazy(() => import("./screens/Login").then((m) => ({ default: m.Login })));
 const Lobby = lazy(() => import("./screens/Lobby").then((m) => ({ default: m.Lobby })));
@@ -780,9 +782,15 @@ function LoadedAegisClient({
       ) : null}
 
       {themeOpen ? (
-        <InterfaceThemeDialog dark={dark} onToggleDark={setDark} onClose={() => setThemeOpen(false)} />
+        <Suspense fallback={null}>
+          <InterfaceThemeDialog dark={dark} onToggleDark={setDark} onClose={() => setThemeOpen(false)} />
+        </Suspense>
       ) : null}
-      {bugReportOpen ? <BugReportDialog signedIn={!!account} onClose={() => setBugReportOpen(false)} /> : null}
+      {bugReportOpen ? (
+        <Suspense fallback={null}>
+          <BugReportDialog signedIn={!!account} onClose={() => setBugReportOpen(false)} />
+        </Suspense>
+      ) : null}
       {leaveMatchPromptOpen ? (
         <LeaveMatchDialog onConfirm={confirmLeaveMatch} onClose={() => setLeaveMatchPromptOpen(false)} />
       ) : null}
