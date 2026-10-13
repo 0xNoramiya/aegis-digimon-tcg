@@ -129,3 +129,63 @@ export function sourceJapaneseArts(card) {
     .sort((a, b) => a.artId.localeCompare(b.artId, "en", { numeric: true }));
   return [base, ...alternates];
 }
+
+export function encodeCardArts(artsByCard, previousLabels = []) {
+  const used = new Set(Object.values(artsByCard).flatMap((arts) => arts.map((art) => art.label)));
+  const labels = previousLabels.filter((label) => used.has(label));
+  for (const label of used) {
+    if (!labels.includes(label)) {
+      labels.push(label);
+    }
+  }
+  const labelIndex = new Map(labels.map((label, index) => [label, index]));
+  const cards = Object.fromEntries(
+    Object.entries(artsByCard)
+      .sort(([a], [b]) => a.localeCompare(b, "en"))
+      .map(([cardId, arts]) => [
+        cardId,
+        arts.map((art) => {
+          if (!art.artId.startsWith(cardId)) {
+            throw new Error(`Art ${art.artId} does not belong to ${cardId}`);
+          }
+          const encoded = [art.artId.slice(cardId.length), labelIndex.get(art.label)];
+          return art.imageId === art.artId ? encoded : [...encoded, art.imageId];
+        }),
+      ]),
+  );
+  return { labels, cards };
+}
+
+export function serializeCardArts({ labels, cards }) {
+  const formatTuple = (tuple) => `[${tuple.map((value) => JSON.stringify(value)).join(", ")}]`;
+  const formatCard = ([cardId, arts]) => {
+    if (arts.length === 1) {
+      return `    ${JSON.stringify(cardId)}: [${formatTuple(arts[0])}]`;
+    }
+    return `    ${JSON.stringify(cardId)}: [\n${arts.map((art) => `      ${formatTuple(art)}`).join(",\n")}\n    ]`;
+  };
+  return [
+    "{",
+    '  "labels": [',
+    labels.map((label) => `    ${JSON.stringify(label)}`).join(",\n"),
+    "  ],",
+    '  "cards": {',
+    Object.entries(cards).map(formatCard).join(",\n"),
+    "  }",
+    "}",
+    "",
+  ].join("\n");
+}
+
+export function decodeCardArts({ labels, cards }) {
+  return Object.fromEntries(
+    Object.entries(cards).map(([cardId, arts]) => [
+      cardId,
+      arts.map(([suffix, labelIndex, imageId]) => ({
+        artId: `${cardId}${suffix}`,
+        imageId: imageId ?? `${cardId}${suffix}`,
+        label: labels[labelIndex],
+      })),
+    ]),
+  );
+}

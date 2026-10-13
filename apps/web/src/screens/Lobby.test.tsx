@@ -4,7 +4,9 @@ import { act, cleanup, fireEvent, render, screen, within, waitFor } from "@testi
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { Lobby, deckHasBetaCards, randomDeckPool } from "./Lobby";
-import { DECKS, selectableDecks } from "../game/decks";
+import { DECKS } from "../game/decks";
+import { FAMOUS_DECKS } from "../game/famousDecks";
+import { selectableDecks } from "../game/selectableDecks";
 
 const randomCommunityDeck = vi.hoisted(() =>
   vi.fn<(...args: unknown[]) => Promise<CommunityRandomResult>>(async () => ({ deck: null, eligibleCount: 0 })),
@@ -228,7 +230,9 @@ describe("famous deck selection", () => {
 
     await waitFor(() => expect(onStart).toHaveBeenCalledTimes(1));
     const [startMode, code, botDeckId, betaBattleMode, deckId] = onStart.mock.calls[0]!;
-    const drawn = selectableDecks(DECKS).find((deck) => deck.id === deckId);
+    const drawn = selectableDecks({ personalDecks: DECKS, famousDecks: FAMOUS_DECKS }).find(
+      (deck) => deck.id === deckId,
+    );
     expect(drawn).toBeDefined();
     const drawnBeta = deckHasBetaCards(drawn!);
     expect([startMode, code, botDeckId]).toEqual([drawnBeta ? "beta" : "casual", undefined, undefined]);

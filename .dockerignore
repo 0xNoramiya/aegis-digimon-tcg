@@ -6,3 +6,16 @@ tools
 !tools/deploy
 !tools/deploy/*.mjs
 docs
+internal-docs
+.local
+.claude
+.vitest
+artifacts
+output
+replays
+data
+!data/kb/banlist.json
+apps/web/e2e
+apps/web/test
+apps/api/logs
+**/*.tsbuildinfo

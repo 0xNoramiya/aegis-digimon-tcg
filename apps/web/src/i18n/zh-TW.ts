@@ -960,6 +960,8 @@ const interfaceMessages = {
   "game.fieldEffects.untilActivePhase": "直到 {player} 的取消暫停階段",
   "game.fieldEffects.untilCost": "直到計算出成本",
   "game.restriction.cannotAttack": "無法攻擊",
+  "game.restriction.cannotPlayByEffects": "無法透過效果登場",
+  "game.restriction.cannotPlay": "無法登場",
   "game.restriction.immuneToOpponentDigimonEffects": "免受敵對數碼獸效果的影響",
   "game.protectionBadge.immuneToOpponentDigimonEffects": "普羅特。數碼寶貝",
   "game.restriction.immuneToOpponentEffects": "免受相反影響",

@@ -1,7 +1,8 @@
 /* Card and deck data are real: they come from @aegis/shared and the lobby deck lists. */
 
 import { allCards, getCardDefinition, isTamer } from "@aegis/shared";
-import { DECKS, FAMOUS_DECKS, FAMOUS_DECK_GROUPS, displayCoverCard, type DeckListing } from "@/game/decks";
+import { DECKS, displayCoverCard, type DeckListing } from "@/game/decks";
+import { FAMOUS_DECKS, FAMOUS_DECK_GROUPS } from "@/game/famousDecks";
 
 export function deckColors(deck: DeckListing): string[] {
   const counts = new Map<string, number>();

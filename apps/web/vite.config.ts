@@ -27,7 +27,11 @@ export default defineConfig({
   },
   test: {
     exclude: [...configDefaults.exclude, "e2e/**"],
-    setupFiles: ["./test/scenarioHarness/setupJsdomPolyfills.ts", "./test/setupGateExpiry.ts"],
+    setupFiles: [
+      "./test/scenarioHarness/setupJsdomPolyfills.ts",
+      "./test/setupGateExpiry.ts",
+      "./test/setupLazyModules.ts",
+    ],
     // The scenario harness boots a real in-process websocket server; vitest's
     // default forked-process pool serializes console/log traffic across an IPC
     // boundary and chokes on the non-plain objects Colyseus logs there. Threads
@@ -72,6 +76,9 @@ export default defineConfig({
       },
     },
   },
+  json: {
+    stringify: true,
+  },
   build: {
     target: "es2022",
     cssMinify: "lightningcss",
@@ -85,11 +92,21 @@ export default defineConfig({
           ) {
             return "react-vendor";
           }
-          if (id.includes("node_modules/colyseus") || id.includes("node_modules/@colyseus")) {
-            return "colyseus-vendor";
+          if (id.includes("node_modules/@colyseus/schema")) {
+            return "colyseus-schema";
           }
-          if (id.includes("cards.json") || id.includes("effects.json")) {
+          if (
+            id.includes("node_modules/colyseus") ||
+            id.includes("node_modules/@colyseus") ||
+            id.includes("node_modules/msgpackr")
+          ) {
+            return "colyseus-sdk";
+          }
+          if (id.includes("cards.json")) {
             return "cards-data";
+          }
+          if (id.includes("effects.json")) {
+            return "effects-data";
           }
         },
       },

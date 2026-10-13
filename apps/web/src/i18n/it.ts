@@ -1,11 +1,9 @@
 import { replayVideoIt } from "./replayVideo";
 import { profileReplayIt } from "./profileReplays";
 import { replayIt } from "./replays";
-import releaseMessages from "../releases/messages.json";
 import { en } from "./en";
 
-// Release notes before v1.19.0 keep their published English text. All interface
-// messages are translated; printed card names and effects remain in English.
+// All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
   "rollback.failed": "Impossibile ripristinare questo punto in sicurezza. La partita attuale è stata mantenuta.",
   "rollback.cancel": "Annulla richiesta",
@@ -850,6 +848,8 @@ const interfaceMessages = {
   "game.fieldEffects.untilActivePhase": "Fino alla fase di attivazione di {player}",
   "game.fieldEffects.untilCost": "Fino al calcolo del costo",
   "game.restriction.cannotAttack": "Non può attaccare",
+  "game.restriction.cannotPlayByEffects": "Non può giocare tramite effetti",
+  "game.restriction.cannotPlay": "Non può giocare",
   "game.restriction.immuneToOpponentDigimonEffects": "Protetto dagli effetti dei Digimon avversari",
   "game.protectionBadge.immuneToOpponentDigimonEffects": "Prot. Digimon",
   "game.restriction.immuneToOpponentEffects": "Protetto dagli effetti avversari",
@@ -2045,12 +2045,7 @@ const interfaceMessages = {
   "overlay.series.reason.aborted": "Impossibile avviare la prossima partita.",
 } satisfies Record<Exclude<keyof typeof en, `releases.${string}`>, string>;
 
-const releaseTranslations = Object.fromEntries(
-  Object.entries(releaseMessages).flatMap(([key, message]) => ("it" in message ? [[key, message.it]] : [])),
-);
-
 export const it: Record<keyof typeof en, string> = {
   ...en,
   ...interfaceMessages,
-  ...releaseTranslations,
 };

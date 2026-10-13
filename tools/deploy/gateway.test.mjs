@@ -1,5 +1,5 @@
 import { createRequire } from "node:module";
-import { createServer } from "node:http";
+import { createServer, get as httpGet } from "node:http";
 import { once } from "node:events";
 import { mkdtempSync, mkdirSync, writeFileSync, renameSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -174,4 +174,49 @@ test("shared replay API calls reach the API while page navigation gets the web a
   assert.equal(isApiPath("/replays/replay-1", { accept: "application/json" }), true);
   assert.equal(isApiPath("/replays/replay-1/file", {}), true);
   assert.equal(isApiPath("/replays/replay-1", { accept: "text/html,application/xhtml+xml" }), false);
+});
+
+test("static files use the best precompressed variant the client accepts", async (t) => {
+  const state = mkdtempSync(`${tmpdir()}/aegis-gateway-`);
+  const gateway = createGateway({ state, upstreamFor: () => undefined });
+  t.after(async () => {
+    await new Promise((done) => gateway.close(done));
+    rmSync(state, { recursive: true });
+  });
+  for (const directory of ["routing", "assets", "releases/v1/web"]) {
+    mkdirSync(`${state}/${directory}`, { recursive: true });
+  }
+  writeFileSync(
+    `${state}/routing/manifest.json`,
+    JSON.stringify({ version: 1, active: { slot: "blue", revision: "v1" }, draining: [] }),
+  );
+  writeFileSync(`${state}/releases/v1/web/index.html`, "web");
+  writeFileSync(`${state}/assets/chunk.js`, "plain");
+  writeFileSync(`${state}/assets/chunk.js.br`, "brotli");
+  writeFileSync(`${state}/assets/chunk.js.gz`, "gzipped");
+  const origin = await listen(gateway);
+  const fetchRaw = (acceptEncoding) =>
+    new Promise((done, fail) => {
+      const headers = acceptEncoding === undefined ? {} : { "accept-encoding": acceptEncoding };
+      httpGet(`${origin}/assets/chunk.js`, { headers }, (response) => {
+        let body = "";
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => (body += chunk));
+        response.on("end", () => done({ body, headers: response.headers }));
+      }).on("error", fail);
+    });
+
+  const brotli = await fetchRaw("gzip, deflate, br");
+  assert.equal(brotli.body, "brotli");
+  assert.equal(brotli.headers["content-encoding"], "br");
+  assert.equal(brotli.headers["content-type"], "text/javascript; charset=utf-8");
+  assert.equal(brotli.headers.vary, "accept-encoding");
+
+  const gzip = await fetchRaw("gzip, br;q=0");
+  assert.equal(gzip.body, "gzipped");
+  assert.equal(gzip.headers["content-encoding"], "gzip");
+
+  const plain = await fetchRaw(undefined);
+  assert.equal(plain.body, "plain");
+  assert.equal(plain.headers["content-encoding"], undefined);
 });

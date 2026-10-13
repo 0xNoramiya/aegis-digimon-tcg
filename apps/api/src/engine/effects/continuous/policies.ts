@@ -103,6 +103,8 @@ export interface PlayProhibition {
   byEffectOnly?: boolean;
   duration: EffectDuration;
   continuous?: boolean;
+  sourceCardId?: string;
+  effectText?: string;
 }
 
 /** A serializable card-definition predicate for a PlayProhibition (mirrors the IR Filter subset). */

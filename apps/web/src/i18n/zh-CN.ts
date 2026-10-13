@@ -959,6 +959,8 @@ const interfaceMessages = {
   "game.fieldEffects.untilActivePhase": "直到 {player} 的取消暂停阶段",
   "game.fieldEffects.untilCost": "直到计算出成本",
   "game.restriction.cannotAttack": "无法攻击",
+  "game.restriction.cannotPlayByEffects": "无法通过效果登场",
+  "game.restriction.cannotPlay": "无法登场",
   "game.restriction.immuneToOpponentDigimonEffects": "免受敌对数码兽效果的影响",
   "game.protectionBadge.immuneToOpponentDigimonEffects": "普罗特。数码兽",
   "game.restriction.immuneToOpponentEffects": "免受相反影响",

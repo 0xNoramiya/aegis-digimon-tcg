@@ -1010,6 +1010,8 @@ const interfaceMessages = {
   "game.fieldEffects.untilActivePhase": "Hingga fase pembatalan penangguhan {player}",
   "game.fieldEffects.untilCost": "Sampai biayanya dihitung",
   "game.restriction.cannotAttack": "Tidak bisa menyerang",
+  "game.restriction.cannotPlayByEffects": "Tidak bisa memainkan lewat efek",
+  "game.restriction.cannotPlay": "Tidak bisa memainkan",
   "game.restriction.immuneToOpponentDigimonEffects": "Terlindungi dari efek Digimon lawan",
   "game.protectionBadge.immuneToOpponentDigimonEffects": "Prot. Digimon",
   "game.restriction.immuneToOpponentEffects": "Terlindungi dari pengaruh yang berlawanan",

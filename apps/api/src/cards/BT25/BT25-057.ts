@@ -132,6 +132,7 @@ export const compiled: CompiledCard = {
           duration: "forTheTurn",
         },
         {
+          effectTextPart: "Then, it may attack.",
           kind: "Attack",
           target: {
             filter: { controllerDefault: "mine", kind: ["Digimon"] },

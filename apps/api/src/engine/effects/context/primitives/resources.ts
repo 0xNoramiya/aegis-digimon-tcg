@@ -31,6 +31,7 @@ export interface ResourcePrimitives {
     mode: "play" | "move" | "playOrMove",
     duration: EffectDuration,
     byEffectOnly?: boolean,
+    provenance?: { sourceCardId?: string; effectText?: string },
   ): void;
   /**
    * Read-only query: is `seat`'s own action/effect forbidden from playing/moving `cardId`

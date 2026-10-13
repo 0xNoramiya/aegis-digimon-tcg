@@ -35,7 +35,9 @@ import {
 import { CoverThumb } from "../design/cards";
 import { Panel } from "../design/surfaces";
 import { Icons, type IconComponent } from "../design/icons";
-import { FAMOUS_DECKS, FAMOUS_DECK_GROUPS, displayCoverCard, selectableDecks, type DeckListing } from "../game/decks";
+import { displayCoverCard, type DeckListing } from "../game/decks";
+import { FAMOUS_DECKS, FAMOUS_DECK_GROUPS } from "@/game/famousDecks";
+import { selectableDecks } from "@/game/selectableDecks";
 import { useTranslation, type Translate } from "../i18n";
 import { RankedStart } from "../account/RankedStart";
 import { RANKED_ENABLED } from "../features";
@@ -84,7 +86,11 @@ export function randomDeckPool(
   format?: DeckFormat,
 ): DeckListing[] {
   const candidates =
-    scope === "mine" ? personalDecks : scope === "famous" ? FAMOUS_DECKS : selectableDecks(personalDecks);
+    scope === "mine"
+      ? personalDecks
+      : scope === "famous"
+        ? FAMOUS_DECKS
+        : selectableDecks({ personalDecks, famousDecks: FAMOUS_DECKS });
   const eligible = candidates.filter(
     (deck) => deckLegality(deck, { unlimited, format }).legal && (betaAllowed || !deckHasBetaCards(deck)),
   );
@@ -356,7 +362,8 @@ export function Lobby({
     [onBorrowCommunityDeck],
   );
   const openCommunityDeck = useCallback((id: string) => onOpenCommunityDeck?.(id), [onOpenCommunityDeck]);
-  const availableDecks = borrowedDeck ? [borrowedDeck, ...selectableDecks(decks)] : selectableDecks(decks);
+  const selectable = selectableDecks({ personalDecks: decks, famousDecks: FAMOUS_DECKS });
+  const availableDecks = borrowedDeck ? [borrowedDeck, ...selectable] : selectable;
   const active = availableDecks.find((d) => d.id === activeDeckId) ?? availableDecks[0];
   const activeCollection = FAMOUS_DECK_GROUPS.find((group) =>
     group.decks.some((deck) => deck.id === active?.id),
