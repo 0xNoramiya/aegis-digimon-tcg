@@ -3,7 +3,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { CARD_IMAGE_ORIGINS } from "./deploy/card-images.mjs";
-import { encodeCardArts, sourceCardArts, sourceJapaneseArts } from "./lib/card-arts.mjs";
+import { encodeCardArts, serializeCardArts, sourceCardArts, sourceJapaneseArts } from "./lib/card-arts.mjs";
 const sourceIndex = process.argv.indexOf("--source");
 if (sourceIndex < 0 || !process.argv[sourceIndex + 1]) throw new Error("--source <DigimonCards.json> required");
 const cards = JSON.parse(
@@ -56,7 +56,7 @@ const entries = sourceCards
   .sort(([a], [b]) => a.localeCompare(b, "en"));
 const artsPath = fileURLToPath(new URL("../packages/shared/src/cards/data/arts.json", import.meta.url));
 const previousLabels = JSON.parse(readFileSync(artsPath, "utf8")).labels ?? [];
-writeFileSync(artsPath, JSON.stringify(encodeCardArts(Object.fromEntries(entries), previousLabels), null, 2) + "\n");
+writeFileSync(artsPath, serializeCardArts(encodeCardArts(Object.fromEntries(entries), previousLabels)));
 console.log(
   `Imported ${entries.reduce((sum, [, arts]) => sum + arts.length, 0)} alternate arts for ${entries.length} canonical cards`,
 );

@@ -156,6 +156,27 @@ export function encodeCardArts(artsByCard, previousLabels = []) {
   return { labels, cards };
 }
 
+export function serializeCardArts({ labels, cards }) {
+  const formatTuple = (tuple) => `[${tuple.map((value) => JSON.stringify(value)).join(", ")}]`;
+  const formatCard = ([cardId, arts]) => {
+    if (arts.length === 1) {
+      return `    ${JSON.stringify(cardId)}: [${formatTuple(arts[0])}]`;
+    }
+    return `    ${JSON.stringify(cardId)}: [\n${arts.map((art) => `      ${formatTuple(art)}`).join(",\n")}\n    ]`;
+  };
+  return [
+    "{",
+    '  "labels": [',
+    labels.map((label) => `    ${JSON.stringify(label)}`).join(",\n"),
+    "  ],",
+    '  "cards": {',
+    Object.entries(cards).map(formatCard).join(",\n"),
+    "  }",
+    "}",
+    "",
+  ].join("\n");
+}
+
 export function decodeCardArts({ labels, cards }) {
   return Object.fromEntries(
     Object.entries(cards).map(([cardId, arts]) => [

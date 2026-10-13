@@ -1,6 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decodeCardArts, encodeCardArts, sourceCardArts, sourceJapaneseArts } from "./card-arts.mjs";
+import { readFileSync } from "node:fs";
+import { decodeCardArts, encodeCardArts, serializeCardArts, sourceCardArts, sourceJapaneseArts } from "./card-arts.mjs";
+
+test("serializes the art index exactly as the committed formatter writes it", () => {
+  const committed = readFileSync(new URL("../../packages/shared/src/cards/data/arts.json", import.meta.url), "utf8");
+  assert.equal(serializeCardArts(JSON.parse(committed)), committed);
+});
 
 test("encodes arts as card suffixes and shared labels, keeping existing label positions", () => {
   const arts = {

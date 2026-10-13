@@ -23,7 +23,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { decodeCardArts, encodeCardArts, sourceCardArts } from "./lib/card-arts.mjs";
+import { decodeCardArts, encodeCardArts, serializeCardArts, sourceCardArts } from "./lib/card-arts.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CARDS_PATH = resolve(ROOT, "packages/shared/src/cards/data/cards.json");
@@ -278,6 +278,6 @@ if (validateSet) {
     if (variants.length) arts[card.cardNumber] = variants;
     else delete arts[card.cardNumber];
   }
-  writeFileSync(artsPath, JSON.stringify(encodeCardArts(arts, encodedArts.labels), null, 2) + "\n");
+  writeFileSync(artsPath, serializeCardArts(encodeCardArts(arts, encodedArts.labels)));
   console.log(`Added ${added.length} cards: ${added.sort().join(", ")}`);
 }
