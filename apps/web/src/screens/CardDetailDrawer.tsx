@@ -23,6 +23,7 @@ export function CardDetailDrawer({
   footer,
   artId,
   onArtChange,
+  onArtApply,
 }: {
   cardId: string;
   format?: DeckFormat;
@@ -30,6 +31,7 @@ export function CardDetailDrawer({
   footer?: ReactNode;
   artId?: string;
   onArtChange?: (artId: string) => void;
+  onArtApply?: (artId: string) => void;
 }) {
   const { t } = useTranslation();
   const [browsedArt, setBrowsedArt] = useState<{ cardId: string; artId: string } | null>(null);
@@ -62,6 +64,11 @@ export function CardDetailDrawer({
             <div className="card-art-selector__label">
               {t("library.artworks")} · {arts.length}
             </div>
+            {onArtApply ? (
+              <p className="card-art-selector__hint" id="card-art-apply-hint">
+                {t("deck.artDoubleClickHint")}
+              </p>
+            ) : null}
             <div className="card-art-selector__choices">
               {arts.map((art, index) => {
                 const label = index === 0 ? t("library.baseArt") : t("library.alternateArt", { number: index });
@@ -71,10 +78,12 @@ export function CardDetailDrawer({
                     key={art.artId}
                     aria-label={label}
                     aria-pressed={art.artId === selectedArt}
+                    aria-describedby={onArtApply ? "card-art-apply-hint" : undefined}
                     onClick={() => {
                       setBrowsedArt({ cardId, artId: art.artId });
                       onArtChange?.(art.artId);
                     }}
+                    onDoubleClick={onArtApply ? () => onArtApply(art.artId) : undefined}
                   >
                     <CardFull cardId={cardId} artId={art.artId} width={56} zoomOnHover={false} />
                     <span>{label}</span>

@@ -2001,6 +2001,7 @@ const interfaceMessages = {
   "deck.artCopyPrompt": "Wählen Sie eine Kopie",
   "deck.artEditingCopy": "Bearbeitungskopie {number}. Wählen Sie ein Bild aus, um es sofort zu speichern.",
   "deck.artApplyAll": "Auf allen Kopien verwenden",
+  "deck.artDoubleClickHint": "Doppelklicke auf ein Artwork, um es für alle Kopien in diesem Deck zu verwenden.",
   "common.done": "Fertig",
   "redesign.foundation.arena.preview": "Spielbrettvorschau mit Ihren Farben und Ihrem Schlachtfeld",
   "redesign.foundation.arena.opponent": "Gegner",

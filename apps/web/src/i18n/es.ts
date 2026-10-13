@@ -1746,6 +1746,7 @@ export const es: Record<keyof typeof en, string> = {
   "deck.artCopyPrompt": "Elige una copia",
   "deck.artEditingCopy": "Editando la copia {number}. Elige un arte para guardarlo al instante.",
   "deck.artApplyAll": "Usar en todas las copias",
+  "deck.artDoubleClickHint": "Haz doble clic en un arte para usarlo en todas las copias de este mazo.",
   "common.done": "Listo",
   "settings.musicTrack": "Banda sonora",
   "settings.musicTrackDesc": "Elige la música que suena durante las partidas",

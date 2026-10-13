@@ -1795,6 +1795,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "deck.artCopyPrompt": "Escolha uma cópia",
   "deck.artEditingCopy": "Editando a cópia {number}. Escolha uma arte para salvar imediatamente.",
   "deck.artApplyAll": "Usar em todas as cópias",
+  "deck.artDoubleClickHint": "Clique duas vezes em uma arte para usá-la em todas as cópias deste deck.",
   "common.done": "Concluir",
   ...foundationPtBR,
   ...shellPtBR,

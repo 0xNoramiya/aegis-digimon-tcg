@@ -1818,6 +1818,7 @@ const interfaceMessages = {
   "deck.artCopyPrompt": "Scegli una copia",
   "deck.artEditingCopy": "Stai modificando la copia {number}. Scegli un'illustrazione per salvarla subito.",
   "deck.artApplyAll": "Usa per tutte le copie",
+  "deck.artDoubleClickHint": "Fai doppio clic su un'illustrazione per usarla su tutte le copie di questo mazzo.",
   "common.done": "Fatto",
   "redesign.foundation.arena.preview": "Anteprima del campo con i tuoi colori e scenario",
   "redesign.foundation.arena.opponent": "Avversario",

@@ -1980,6 +1980,7 @@ const interfaceMessages = {
   "deck.artCopyPrompt": "Choisissez une copie",
   "deck.artEditingCopy": "Copie d'édition {number}. Choisissez une illustration pour la sauvegarder immédiatement.",
   "deck.artApplyAll": "Utiliser sur toutes les copies",
+  "deck.artDoubleClickHint": "Double-cliquez sur une illustration pour l'utiliser sur toutes les copies de ce deck.",
   "common.done": "Terminé",
   "redesign.foundation.arena.preview": "Aperçu du tableau avec vos couleurs et votre champ de bataille",
   "redesign.foundation.arena.opponent": "Adversaire",
