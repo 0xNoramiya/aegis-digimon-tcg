@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { en } from "@/i18n/en";
-import { dictionaries } from "@/i18n/dictionaries";
+import { loadDictionary } from "@/i18n/loadDictionary";
 import { LOCALES, type Locale } from "@/i18n/locales";
+import type { Dictionary } from "@/i18n/translationTypes";
 
 const translatedLocales = LOCALES.filter((locale): locale is Exclude<Locale, "en"> => locale !== "en");
+const dictionaries = Object.fromEntries(
+  await Promise.all(translatedLocales.map(async (locale) => [locale, await loadDictionary(locale)] as const)),
+) as Record<Exclude<Locale, "en">, Dictionary>;
 
 function placeholders(text: string): string[] {
   return [...new Set([...text.matchAll(/\{\w+\}/g)].map(([placeholder]) => placeholder))].sort();

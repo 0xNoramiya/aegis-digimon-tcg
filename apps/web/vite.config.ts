@@ -27,7 +27,11 @@ export default defineConfig({
   },
   test: {
     exclude: [...configDefaults.exclude, "e2e/**"],
-    setupFiles: ["./test/scenarioHarness/setupJsdomPolyfills.ts", "./test/setupGateExpiry.ts"],
+    setupFiles: [
+      "./test/scenarioHarness/setupJsdomPolyfills.ts",
+      "./test/setupGateExpiry.ts",
+      "./test/setupDictionaries.ts",
+    ],
     // The scenario harness boots a real in-process websocket server; vitest's
     // default forked-process pool serializes console/log traffic across an IPC
     // boundary and chokes on the non-plain objects Colyseus logs there. Threads
