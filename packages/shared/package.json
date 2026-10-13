@@ -30,6 +30,7 @@
       "types": "./dist/protocol/*.d.ts",
       "default": "./dist/protocol/*.js"
     },
+    "./cards/data/cards.json": "./dist/cards/data/cards.json",
     "./cards/*": {
       "types": "./dist/cards/*.d.ts",
       "default": "./dist/cards/*.js"

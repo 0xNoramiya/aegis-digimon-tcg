@@ -4,6 +4,7 @@ import { configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { motionReferenceAssets } from "./dev/motionReferenceAssets";
+import { lazyCardData } from "./dev/lazyCardData";
 
 const requestedTestMaxThreads = Number(process.env.TEST_MAX_THREADS ?? 4);
 const testMaxThreads =
@@ -11,6 +12,7 @@ const testMaxThreads =
 
 export default defineConfig({
   plugins: [
+    lazyCardData(fileURLToPath(new URL("./src/cardData/cardDataStore.ts", import.meta.url)), "cards-data"),
     react(),
     tailwindcss(),
     motionReferenceAssets(fileURLToPath(new URL("./.motion-reference", import.meta.url)), ["MuhkUzGAeHA"]),
