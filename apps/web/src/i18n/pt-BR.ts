@@ -526,6 +526,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "library.cardType": "Tipo de carta",
   "library.level": "Nível",
   "library.playCost": "Custo de jogo",
+  "library.digivolutionCost": "Custo de digievolução",
   "library.rarity": "Raridade",
   "library.sort": "Ordenar",
   "library.sort.releaseDate": "Ordenar: Data de lançamento (mais recentes)",

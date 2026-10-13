@@ -731,6 +731,7 @@ const interfaceMessages = {
   "library.cardType": "Kartentyp",
   "library.level": "Ebene",
   "library.playCost": "Spielkosten",
+  "library.digivolutionCost": "Digitationskosten",
   "library.rarity": "Seltenheit",
   "library.sort": "Sortieren",
   "library.sort.releaseDate": "Sortierung: Erscheinungsdatum (neueste zuerst)",

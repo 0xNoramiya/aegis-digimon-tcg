@@ -698,6 +698,7 @@ const interfaceMessages = {
   "library.cardType": "카드 종류",
   "library.level": "레벨",
   "library.playCost": "플레이 비용",
+  "library.digivolutionCost": "진화 비용",
   "library.rarity": "희귀성",
   "library.sort": "정렬",
   "library.sort.releaseDate": "정렬: 출시일(최신순)",

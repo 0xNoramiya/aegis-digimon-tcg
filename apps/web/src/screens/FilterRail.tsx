@@ -10,11 +10,25 @@ import {
   COST_FILTERS,
   CardFilter,
   CardSort,
+  HIGHEST_COST_FILTER,
   KIND_FILTERS,
   LEVEL_FILTERS,
   RARITY_FILTERS,
 } from "./cardFilters";
+import { DIGIVOLUTION_COST_FILTERS, HIGHEST_DIGIVOLUTION_COST_FILTER } from "@/screens/matchesDigivolutionCostFilter";
 import "./cardLibrary.css";
+
+type GetCostChipLabelParams = {
+  cost: number;
+  highestCost: number;
+};
+
+function getCostChipLabel({ cost, highestCost }: GetCostChipLabelParams): string {
+  if (cost === highestCost) {
+    return `${cost}+`;
+  }
+  return String(cost);
+}
 
 /* ---------- the shared left filter rail ---------- */
 export function FilterRail({
@@ -162,7 +176,25 @@ export function FilterRail({
                   onClick={() => filter.toggleCost(cost)}
                   aria-pressed={filter.costs.includes(cost)}
                 >
-                  {cost === 7 ? "7+" : cost}
+                  {getCostChipLabel({ cost, highestCost: HIGHEST_COST_FILTER })}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {showCostFilter ? (
+          <div className="card-filter-group">
+            <div className="card-filter-label">{t("library.digivolutionCost")}</div>
+            <div className="card-filter-chips" role="group" aria-label={t("library.digivolutionCost")}>
+              {DIGIVOLUTION_COST_FILTERS.map((cost) => (
+                <button
+                  key={cost}
+                  className="card-filter-chip"
+                  onClick={() => filter.toggleDigivolutionCost(cost)}
+                  aria-pressed={filter.digivolutionCosts.includes(cost)}
+                >
+                  {getCostChipLabel({ cost, highestCost: HIGHEST_DIGIVOLUTION_COST_FILTER })}
                 </button>
               ))}
             </div>

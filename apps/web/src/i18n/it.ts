@@ -566,6 +566,7 @@ const interfaceMessages = {
   "library.cardType": "Tipo di carta",
   "library.level": "Livello",
   "library.playCost": "Costo di gioco",
+  "library.digivolutionCost": "Costo di digievoluzione",
   "library.rarity": "Rarità",
   "library.sort": "Ordina",
   "library.sort.releaseDate": "Ordine: data di pubblicazione (prima le più recenti)",

@@ -524,6 +524,7 @@ export const en = {
   "library.cardType": "Card type",
   "library.level": "Level",
   "library.playCost": "Play cost",
+  "library.digivolutionCost": "Digivolution cost",
   "library.rarity": "Rarity",
   "library.sort": "Sort",
   "library.sort.releaseDate": "Sort: Release date (newest first)",

@@ -517,6 +517,7 @@ export const es: Record<keyof typeof en, string> = {
   "library.cardType": "Tipo de carta",
   "library.level": "Nivel",
   "library.playCost": "Costo de juego",
+  "library.digivolutionCost": "Costo de digievolución",
   "library.rarity": "Rareza",
   "library.sort": "Ordenar",
   "library.sort.releaseDate": "Ordenar: Fecha de lanzamiento (más recientes primero)",
