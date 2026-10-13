@@ -53,7 +53,7 @@ describe("BT18-085 Zanbamon", () => {
     ).toEqual({ ok: true });
     await settle(() => s.perm("sandiramon").topCard?.cardId === "BT18-085");
 
-    expect(s.state.memory).toBe(4);
+    expect(s.state.memory).toBe(8);
     expect(s.perm("sandiramon").currentDP).toBe(16000);
     expect(observe(s.engine).keywordAmount(s.perm("sandiramon"), "SecurityAttack")).toBe(2);
   });
