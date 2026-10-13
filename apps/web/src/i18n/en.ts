@@ -678,6 +678,8 @@ export const en = {
   "settings.pileCountsDesc": "Show the Eggs, Hand, Deck and Trash counters on the board",
   "settings.sound": "Sound effects",
   "settings.soundDesc": "Clicks, selections and combat cues",
+  "settings.decisionPing": "Decision ping",
+  "settings.decisionPingDesc": "Play a sound when the opponent's action needs your input, even in another tab",
   "settings.music": "Background ambience",
   "settings.musicDesc": "A quiet original soundtrack during matches",
   "settings.musicVolume": "Music volume",

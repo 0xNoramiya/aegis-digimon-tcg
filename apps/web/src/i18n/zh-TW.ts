@@ -817,6 +817,8 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "在棋盤上顯示雞蛋、手牌、牌組和垃圾計數器",
   "settings.sound": "音效",
   "settings.soundDesc": "點擊、選擇和戰鬥提示",
+  "settings.decisionPing": "決策提示音",
+  "settings.decisionPingDesc": "對手的行動需要你操作時播放提示音，即使在其他分頁中",
   "settings.music": "背景氛圍",
   "settings.musicDesc": "比賽期間安靜的原聲帶",
   "settings.musicVolume": "音樂音量",

@@ -103,6 +103,9 @@ import type { DigimonWorldAvatarId } from "../account/avatars";
 import type { ColorName } from "../design/theme";
 import { playSound } from "../design/sound";
 import { useTurnAttentionSound } from "./useTurnAttentionSound";
+import { useDecisionPing } from "@/game/useDecisionPing";
+import { resolveDecisionPromptKeys } from "@/game/resolveDecisionPromptKeys";
+import { isDecisionPingEnabled } from "@/design/decisionPing";
 import { usePresentationAudio, useReadoutAudio } from "./usePresentationAudio";
 import { audioBoardFromPresentedSeats } from "./match/present/presentationAudio";
 import { areActionConfirmationsEnabled } from "../design/actionConfirmation";
@@ -614,6 +617,13 @@ function GameScreenSession({
     [room],
   );
   useAnimationSpeedReport({ enabled: !spectating, send: sendAnimationSpeed });
+  const { readoutPromptKey, pingPromptKey } = resolveDecisionPromptKeys({
+    promptKey: viewerPromptKey,
+    spectating,
+    opponentTurn: !!state && state.turnSeat !== viewerSeat,
+    pingEnabled: isDecisionPingEnabled(),
+  });
+  useDecisionPing(pingPromptKey);
   useReadoutAudio({
     memory: shownState
       ? displayMemory(
@@ -624,7 +634,7 @@ function GameScreenSession({
           viewerSeat,
         )
       : undefined,
-    promptKey: spectating ? undefined : viewerPromptKey,
+    promptKey: readoutPromptKey,
     timerSeconds: viewerTimerRunning
       ? Math.ceil(viewerSeat === 0 ? state.timerRemaining0 : state.timerRemaining1)
       : undefined,
