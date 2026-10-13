@@ -18,3 +18,31 @@ it("offers Option use without offering to play a Dual card as a Digimon", () => 
   fireEvent.click(screen.getByRole("button", { name: t("overlay.useAsOption") }));
   expect(onChoose).toHaveBeenCalledWith("option");
 });
+
+function renderDualChoice(cardId: string) {
+  return render(
+    <I18nProvider>
+      <DualPlayChoiceOverlay
+        cardId={cardId}
+        onChoose={vi.fn<(useAs: "digimon" | "option") => void>()}
+        onCancel={vi.fn<() => void>()}
+      />
+    </I18nProvider>,
+  ).container.querySelector(".action-confirmation__detail")!;
+}
+
+it("shows the Option effect without its use requirement and emphasizes Final Judgment's immediate passage", () => {
+  const detail = renderDualChoice("BT25-057");
+  expect(detail.textContent).not.toContain("Use Req.");
+  expect(detail.textContent).toContain("Then, it may attack.");
+  expect(detail.querySelector(".decision-overlay__effect-step")?.textContent).toBe(
+    "[Main] 1 of your Digimon gains ＜Rush＞ , ＜Security A. +1＞ and +5000 DP for the turn.",
+  );
+});
+
+it("drops the use requirement without emphasizing other DUAL Options", () => {
+  const detail = renderDualChoice("ST24-07");
+  expect(detail.textContent).not.toContain("Use Req.");
+  expect(detail.textContent).toContain("[Main] 1 of your opponent's Digimon gets -6000 DP");
+  expect(detail.querySelector(".decision-overlay__effect-step")).toBeNull();
+});
