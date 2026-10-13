@@ -49,13 +49,16 @@ type Reply = [status: number, body: unknown];
 type Handler = (url: string, init?: RequestInit) => Reply;
 
 const REPORTED_DECKS = "/admin/community/reports";
+const PLAYTEST = "/admin/playtest/";
 
-/** Feedback calls go to `handler`; the reported-deck queue is empty unless `reportedDecks` says otherwise. */
 function mockApi(handler: Handler, reportedDecks: unknown[] = []) {
   const fetchMock = vi.fn<typeof fetch>(async (input, init) => {
-    const [status, body] = String(input).endsWith(REPORTED_DECKS)
+    const url = String(input);
+    const [status, body] = url.endsWith(REPORTED_DECKS)
       ? [200, { decks: reportedDecks }]
-      : handler(String(input), init);
+      : url.includes(PLAYTEST)
+        ? [200, url.endsWith("/members") ? { members: [] } : { open: [], past: [] }]
+        : handler(url, init);
     return new Response(JSON.stringify(body), { status });
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -83,7 +86,9 @@ function show(
 }
 
 const urls = (fetchMock: ReturnType<typeof mockApi>) =>
-  fetchMock.mock.calls.map(([input]) => String(input)).filter((url) => !url.endsWith(REPORTED_DECKS));
+  fetchMock.mock.calls
+    .map(([input]) => String(input))
+    .filter((url) => !url.endsWith(REPORTED_DECKS) && !url.includes(PLAYTEST));
 
 afterEach(() => {
   cleanup();

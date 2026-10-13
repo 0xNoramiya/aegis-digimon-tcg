@@ -56,6 +56,14 @@ compose -p aegis-deployer \
              --env-file /etc/dokploy/compose/aegis-rgise8/code/.env
 ```
 
+## Source maps
+
+The web build emits hidden source maps. Both `deploy` and `deploy-web` move every `.map`
+file out of the extracted release into `/opt/aegis-rollout/sourcemaps/<revision>/` before
+copying assets, so no served directory holds them. The gateway also refuses any `.map`
+path. Maintenance removes a revision's maps when it removes the release. See
+[client errors](../internal-docs/ai/client-errors.md) for symbolication.
+
 ## Card images
 
 The gateway serves card images from `/opt/aegis-rollout/assets/card-images`, at `/assets/card-images/<id>.webp`. The upstream card app (TakaOtaku/Digimon-Card-App) is the source. It keeps its images in a public bucket at `web-garage.takaotaku.de`. Commit `9f666f1` of the upstream repository is a second source.

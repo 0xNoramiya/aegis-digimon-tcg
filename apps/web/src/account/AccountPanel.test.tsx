@@ -35,6 +35,8 @@ describe("AccountPanel magic link", () => {
     fireEvent.click(screen.getByRole("button", { name: "Send magic link" }));
 
     expect(await screen.findByText(/today's sign-in email limit/)).toBeTruthy();
-    expect(screen.queryByText("Check your email to sign in.")).toBeNull();
+    expect(
+      screen.queryByText("Check your email to sign in. If it isn't in your inbox, look in Spam or Junk."),
+    ).toBeNull();
   });
 });

@@ -1,3 +1,7 @@
+import { ociSmtpProvider } from "#api/email/ociSmtpProvider";
+
+const OCI_TENANCY_DAILY_LIMIT = 50_000;
+
 export interface EmailMessage {
   to: string;
   subject: string;
@@ -143,6 +147,16 @@ export function mailerFromEnv(quota: EmailQuota, env: NodeJS.ProcessEnv = proces
         apiKey: env.BREVO_API_KEY,
         from: env.BREVO_EMAIL_FROM,
         dailyLimit: parseDailyLimit(env.BREVO_DAILY_LIMIT, 300),
+      }),
+    );
+  if (env.OCI_SMTP_HOST && env.OCI_SMTP_USER && env.OCI_SMTP_PASSWORD && env.OCI_EMAIL_FROM)
+    providers.push(
+      ociSmtpProvider({
+        host: env.OCI_SMTP_HOST,
+        user: env.OCI_SMTP_USER,
+        password: env.OCI_SMTP_PASSWORD,
+        from: env.OCI_EMAIL_FROM,
+        dailyLimit: parseDailyLimit(env.OCI_DAILY_LIMIT, OCI_TENANCY_DAILY_LIMIT),
       }),
     );
   return providers.length ? createMailer({ providers, quota }) : undefined;
