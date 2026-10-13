@@ -1983,6 +1983,7 @@ const interfaceMessages = {
   "redesign.shell.theme.useLight": "ライトテーマを使用する",
   "redesign.shell.theme.useDark": "ダークテーマを使用する",
   "redesign.shell.theme.title": "テーマと色",
+  "redesign.shell.music.open": "音楽を変更",
   "redesign.shell.theme.description": "デジモンパレットまたはインターフェイス用の独自の色。",
   "redesign.shell.theme.choose": "テーマを選択してください",
   "redesign.shell.theme.mode": "外観",

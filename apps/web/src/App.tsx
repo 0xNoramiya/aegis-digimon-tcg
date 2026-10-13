@@ -33,6 +33,8 @@ import { communityDeckListing } from "./community/communityDeckListing";
 import { usePreferencesSync } from "./account/usePreferencesSync";
 import { LeaveMatchDialog } from "./game/screen/layout/LeaveMatchDialog";
 import { PlayerMenu } from "./account/PlayerMenu";
+import { MusicMenu } from "@/design/MusicMenu";
+import { SOUND_SETTINGS_SECTION_ID } from "@/screens/soundSettingsSectionId";
 import { NotificationBell } from "./notifications/NotificationBell";
 import { useNotificationInbox } from "./notifications/useNotificationInbox";
 import { pathForRoute, routeFromPathname, type AppRoute } from "./routes";
@@ -526,6 +528,11 @@ function LoadedAegisClient({
           onToggleDark={setDark}
           onOpenTheme={() => setThemeOpen(true)}
           onSendFeedback={() => setBugReportOpen(true)}
+          music={
+            <MusicMenu
+              onOpenSoundSettings={() => navigate({ screen: "settings", settingsSectionId: SOUND_SETTINGS_SECTION_ID })}
+            />
+          }
           notifications={account ? <NotificationBell inbox={inbox} onOpenFeedback={openOwnFeedback} /> : undefined}
         />
       ) : null}
@@ -727,7 +734,13 @@ function LoadedAegisClient({
               />
             )}
             {screen === "settings" && !route.profile && (
-              <Settings player={effectivePlayer} account={account} dark={dark} onToggleDark={setDark} />
+              <Settings
+                player={effectivePlayer}
+                account={account}
+                dark={dark}
+                onToggleDark={setDark}
+                initialSectionId={route.settingsSectionId}
+              />
             )}
 
             {screen === "game" && (
