@@ -18,6 +18,7 @@ import "./BT23/index.js";
 import "./BT24/index.js";
 import "./BT25/index.js";
 import "./BT26/index.js";
+import "./BT27/index.js";
 import "./BT3/index.js";
 import "./BT4/index.js";
 import "./BT5/index.js";
