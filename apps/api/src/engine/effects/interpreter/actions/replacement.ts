@@ -18,6 +18,12 @@ import { getCardDefinition } from "@aegis/shared";
 import { digiXrosZoneExpanderFor } from "../../../digiXros/zoneExpanders.js";
 import type { Action, Condition, Cost, Filter, Permanent, ZoneRef } from "@aegis/shared";
 
+function filterReachesBreeding(filter: Filter): boolean {
+  if (filter.isSelfRef === true) return true;
+  const zones = filter.zone === undefined ? [] : Array.isArray(filter.zone) ? filter.zone : [filter.zone];
+  return zones.includes("breeding");
+}
+
 const REPLACEMENT_EVENT_MAP: Record<string, ReplacementEventName | undefined> = {
   wouldLeavePlay: "wouldLeavePlay",
   wouldBeDeleted: "wouldBeDeleted",
@@ -615,7 +621,9 @@ export async function runReplacement(
         : mode === "reduceCost" && replacementSourceFilter !== undefined
           ? {
               appliesTo: (target: Permanent) =>
-                residentTurnMatches() && permanentMatchesFilter(ctx, target, replacementSourceFilter, ctx.source),
+                residentTurnMatches() &&
+                (!target.inBreeding || filterReachesBreeding(replacementSourceFilter)) &&
+                permanentMatchesFilter(ctx, target, replacementSourceFilter, ctx.source),
             }
           : {}),
       ...(interactiveCosts.length > 0 || interactiveOptional || amountChoices !== undefined
