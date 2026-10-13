@@ -1,3 +1,4 @@
+import { RoadmapPublishPanel } from "@/roadmap/RoadmapPublishPanel";
 import { relativeTime } from "@/i18n/relativeTime";
 import { FeedbackStatus, FEEDBACK_STATUSES } from "@aegis/shared/feedback/FeedbackStatus";
 import { isClosedFeedbackStatus } from "@aegis/shared/feedback/isClosedFeedbackStatus";
@@ -433,6 +434,8 @@ function FeedbackDetailPanel({
         }}
         onConflict={setDetail}
       />
+
+      <RoadmapPublishPanel feedbackId={detail.id} summary={report.summary} description={report.description} />
 
       <section className="feedback-history" aria-labelledby={`feedback-${id}-history`}>
         <h3 id={`feedback-${id}-history`}>{t("feedback.triage.history")}</h3>

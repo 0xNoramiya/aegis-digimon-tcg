@@ -80,6 +80,13 @@
 	handle @community_api {
 		import api_upstreams
 	}
+	@roadmap_api {
+		path /roadmap /roadmap/*
+		not header Accept *text/html*
+	}
+	handle @roadmap_api {
+		import api_upstreams
+	}
 
 	# Recovery endpoint for clients that retained HTML from an older release.
 	# It clears only the caller's HTTP cache; cookies and local storage are preserved.

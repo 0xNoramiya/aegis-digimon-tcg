@@ -17,6 +17,7 @@ export function CommunityScreen({
   isAdmin,
   onOpenDeck,
   onBack,
+  onRoadmap,
   onPlay,
   onCopy,
 }: {
@@ -26,6 +27,7 @@ export function CommunityScreen({
   isAdmin: boolean;
   onOpenDeck: (id: string) => void;
   onBack: () => void;
+  onRoadmap: () => void;
   onPlay: (deck: CommunityDeck) => void;
   onCopy: (deck: CommunityDeck) => void;
 }) {
@@ -64,6 +66,7 @@ export function CommunityScreen({
           signedIn={signedIn}
           accountId={accountId}
           onOpenDeck={onOpenDeck}
+          onRoadmap={onRoadmap}
           onPlay={withDeck(onPlay)}
           onCopy={withDeck(copy)}
         />

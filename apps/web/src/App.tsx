@@ -61,6 +61,7 @@ const DeckBuilder = lazy(() => import("./screens/DeckBuilder").then((m) => ({ de
 const CommunityScreen = lazy(() =>
   import("./screens/community/CommunityScreen").then((m) => ({ default: m.CommunityScreen })),
 );
+const RoadmapScreen = lazy(() => import("@/roadmap/RoadmapScreen").then((m) => ({ default: m.RoadmapScreen })));
 const GameScreen = lazy(() => import("./game/GameScreen").then((m) => ({ default: m.GameScreen })));
 const CardEffectsDemo = lazy(() => import("./dev/CardEffectsDemo").then((m) => ({ default: m.CardEffectsDemo })));
 const BoardShowcase = lazy(() => import("./dev/BoardShowcase").then((m) => ({ default: m.BoardShowcase })));
@@ -115,6 +116,7 @@ const NAV_SCREENS: Screen[] = [
   "lobby",
   "deck",
   "community",
+  "roadmap",
   "collection",
   "settings",
   "releases",
@@ -659,6 +661,7 @@ function LoadedAegisClient({
               isAdmin={account?.isAdmin === true}
               onOpenDeck={(id) => navigate({ screen: "community", communityDeckId: id })}
               onBack={() => navigate({ screen: "community" })}
+              onRoadmap={() => navigate({ screen: "roadmap" })}
               onPlay={(deck) => {
                 const listing = communityDeckListing(deck);
                 setBorrowedDeck(listing);
@@ -675,6 +678,18 @@ function LoadedAegisClient({
                 );
                 if (account) void communityApi.recordCopy(deck.id).catch(() => undefined);
               }}
+            />
+          )}
+
+          {screen === "roadmap" && (
+            <RoadmapScreen
+              itemId={route.roadmapItemId}
+              signedIn={!!account}
+              isAdmin={account?.isAdmin === true}
+              onSignIn={() => navigateScreen("login")}
+              onOpen={(id) => navigate({ screen: "roadmap", roadmapItemId: id })}
+              onDecks={() => navigate({ screen: "community" })}
+              onSuggest={() => setBugReportOpen(true)}
             />
           )}
 

@@ -452,3 +452,38 @@ describe("replay retention", () => {
     expect(await storedReplays(h)).toEqual([]);
   });
 });
+
+describe("the public replay download linked from a GitHub issue", () => {
+  function download(h: Harness, id: number) {
+    return fetch(`${h.url}/bug-reports/${id}/replay`);
+  }
+
+  it("serves the anonymous replay of a bug report that reached GitHub", async () => {
+    const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir }) });
+    expect((await submit(h, { matchId: match.matchId })).status).toBe(201);
+
+    const response = await download(h, 1);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-disposition")).toBe('attachment; filename="aegis-report-1.replay.json"');
+    const body = await response.text();
+    expect(JSON.parse(body)).toEqual(record);
+    expect(body).not.toContain("Tamer");
+  });
+
+  it.each([
+    ["an idea, which never goes to GitHub", { kind: "improvement" }, true],
+    ["a bug saved while the GitHub mirror is off", {}, false],
+  ])("keeps the replay of %s private", async (_case, fields, tracker) => {
+    const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir }), tracker });
+    expect((await submit(h, { matchId: match.matchId, ...fields })).status).toBe(201);
+    expect(await h.feedback.replay(1)).toEqual(record);
+    expect((await download(h, 1)).status).toBe(404);
+  });
+
+  it("answers 404 for a report without a replay or an invalid id", async () => {
+    const h = await startHarness();
+    expect((await submit(h, {})).status).toBe(201);
+    expect((await download(h, 1)).status).toBe(404);
+    expect((await download(h, 0)).status).toBe(404);
+  });
+});
