@@ -1964,6 +1964,7 @@ const interfaceMessages = {
   "redesign.shell.theme.useLight": "밝은 테마 사용",
   "redesign.shell.theme.useDark": "어두운 테마 사용",
   "redesign.shell.theme.title": "테마 및 색상",
+  "redesign.shell.music.open": "음악 변경",
   "redesign.shell.theme.description": "인터페이스를 위한 디지몬 팔레트 또는 자신만의 색상.",
   "redesign.shell.theme.choose": "테마를 선택하세요",
   "redesign.shell.theme.mode": "외관",

@@ -8,9 +8,7 @@ import { ArenaLookSettings } from "../design/ArenaLookSettings";
 import { Icons, type IconComponent } from "../design/icons";
 import { getInterfaceColors, useInterfaceTheme } from "../design/interfaceTheme";
 import {
-  getMusicTrack,
   getMusicVolume,
-  isMusicEnabled,
   setMusicTrack,
   setMusicEnabled,
   setMusicVolume,
@@ -20,8 +18,10 @@ import {
   setSoundEnabled,
   setSoundVolume,
   unlockAudio,
+  useMusicEnabled,
+  useMusicTrack,
 } from "../design/sound";
-import { MUSIC_TRACK_LABEL_KEYS, MUSIC_TRACKS, type MusicTrack } from "../design/musicTracks";
+import { MUSIC_TRACK_LABEL_KEYS, MUSIC_TRACKS } from "../design/musicTracks";
 import { areActionConfirmationsEnabled, setActionConfirmationsEnabled } from "../design/actionConfirmation";
 import { isKeepAwakeEnabled, setKeepAwakeEnabled } from "../design/keepAwake";
 import { FieldLayout, setFieldLayout, useFieldLayout } from "../design/fieldLayout";
@@ -38,6 +38,7 @@ import {
 } from "../game/effectPromptPosition";
 import { setHandAutoSortEnabled, useHandAutoSort } from "../game/handAutoSort";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../game/noticeDuration";
+import { SOUND_SETTINGS_SECTION_ID } from "@/screens/soundSettingsSectionId";
 import { LOCALES, LOCALE_LABELS, useTranslation, type TranslationKey } from "../i18n";
 import type { RemoteAccount } from "../account/client";
 import { setProfileStatsShown, useProfileStatsShown } from "../account/profileStats";
@@ -65,7 +66,7 @@ const SECTIONS: readonly SettingsSection[] = [
   { id: "settings-language", label: "redesign.settings.languageText", icon: Icons.FileText },
   { id: "settings-sleeves", label: "settings.cardSleeve", icon: Icons.LayoutGrid },
   { id: REPLAYS_SECTION_ID, label: "replay.drive.settingsTitle", icon: Icons.Cloud },
-  { id: "settings-sound", label: "redesign.settings.sound", icon: Icons.Play },
+  { id: SOUND_SETTINGS_SECTION_ID, label: "redesign.settings.sound", icon: Icons.Play },
   { id: PROFILE_SECTION_ID, label: "profile.title", icon: Icons.User },
   { id: "settings-gameplay", label: "settings.sectionGameplay", icon: Icons.Swords },
   { id: "settings-arena", label: "redesign.settings.arena", icon: Icons.Map },
@@ -73,6 +74,19 @@ const SECTIONS: readonly SettingsSection[] = [
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+}
+
+type ScrollToSectionParams = {
+  root: HTMLElement;
+  section: HTMLElement;
+  behavior: ScrollBehavior;
+};
+
+function scrollToSection({ root, section, behavior }: ScrollToSectionParams): void {
+  const margin = Number.parseFloat(getComputedStyle(section).scrollMarginTop) || 0;
+  const top = root.scrollTop + section.getBoundingClientRect().top - root.getBoundingClientRect().top - margin;
+  root.scrollTo({ top, behavior });
+  section.focus({ preventScroll: true });
 }
 
 /** Highlights the section nearest the top of the scrolling page. */
@@ -122,10 +136,7 @@ function SettingsNav({ sections, root }: { sections: readonly SettingsSection[];
     // scrollIntoView would also scroll the app's overflow-hidden stage, so scroll only the page.
     event.preventDefault();
     setActiveId(id);
-    const margin = Number.parseFloat(getComputedStyle(section).scrollMarginTop) || 0;
-    const top = root.scrollTop + section.getBoundingClientRect().top - root.getBoundingClientRect().top - margin;
-    root.scrollTo({ top, behavior: prefersReducedMotion() ? "auto" : "smooth" });
-    section.focus({ preventScroll: true });
+    scrollToSection({ root, section, behavior: prefersReducedMotion() ? "auto" : "smooth" });
   }
 
   return (
@@ -233,19 +244,21 @@ export function Settings({
   account,
   dark,
   onToggleDark,
+  initialSectionId,
 }: {
   player: PlayerIdentity;
   account: RemoteAccount | null | undefined;
   dark: boolean;
   onToggleDark: (v: boolean) => void;
+  initialSectionId?: string;
 }) {
   const { t, locale, setLocale } = useTranslation();
   const textScale = useTextScale();
   const [page, setPage] = useState<HTMLElement | null>(null);
   const [themeOpen, setThemeOpen] = useState(false);
-  const [musicOn, setMusicOn] = useState(isMusicEnabled());
+  const musicOn = useMusicEnabled();
   const [musicVolume, setMusicVolumeChoice] = useState(Math.round(getMusicVolume() * 100));
-  const [musicTrack, setMusicTrackChoice] = useState<MusicTrack>(getMusicTrack);
+  const musicTrack = useMusicTrack();
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [volume, setVolume] = useState(Math.round(getSoundVolume() * 100));
   const [actionConfirmationsOn, setActionConfirmationsOn] = useState(areActionConfirmationsEnabled());
@@ -273,6 +286,13 @@ export function Settings({
       ),
     [hasCloudReplays, signedIn],
   );
+  useEffect(() => {
+    const section = initialSectionId ? document.getElementById(initialSectionId) : null;
+    if (!page || !section) {
+      return;
+    }
+    scrollToSection({ root: page, section, behavior: "auto" });
+  }, [page, initialSectionId]);
   const accountStatus = account ? t("account.connected") : account === null ? t("redesign.settings.guest") : null;
 
   return (
@@ -416,7 +436,6 @@ export function Settings({
                   onChange={(next) => {
                     unlockAudio();
                     setMusicEnabled(next);
-                    setMusicOn(next);
                   }}
                 />
               </div>
@@ -455,7 +474,6 @@ export function Settings({
                   label={(track) => t(MUSIC_TRACK_LABEL_KEYS[track])}
                   onSelect={(track) => {
                     setMusicTrack(track);
-                    setMusicTrackChoice(track);
                   }}
                 />
                 <MusicCredits track={musicTrack} />

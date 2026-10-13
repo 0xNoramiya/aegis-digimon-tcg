@@ -42,17 +42,28 @@ let musicEnabled = readFlag("aegis.music.enabled");
 let musicVolume = readVolume("aegis.music.volume", 0.25);
 let musicTrack = readTrack();
 let customMusic: { url: string; name: string } | undefined;
-const customMusicListeners = new Set<() => void>();
+const musicListeners = new Set<() => void>();
 const musicUrl = () => customMusic?.url ?? MUSIC_TRACK_URLS[musicTrack];
 export function getCustomMusicName(): string | undefined {
   return customMusic?.name;
 }
-function subscribeCustomMusic(listener: () => void): () => void {
-  customMusicListeners.add(listener);
-  return () => customMusicListeners.delete(listener);
+function subscribeMusic(listener: () => void): () => void {
+  musicListeners.add(listener);
+  return () => musicListeners.delete(listener);
+}
+function notifyMusicListeners(): void {
+  for (const listener of musicListeners) {
+    listener();
+  }
 }
 export function useCustomMusicName(): string | undefined {
-  return useSyncExternalStore(subscribeCustomMusic, getCustomMusicName, () => undefined);
+  return useSyncExternalStore(subscribeMusic, getCustomMusicName, () => undefined);
+}
+export function useMusicEnabled(): boolean {
+  return useSyncExternalStore(subscribeMusic, isMusicEnabled, isMusicEnabled);
+}
+export function useMusicTrack(): MusicTrack {
+  return useSyncExternalStore(subscribeMusic, getMusicTrack, getMusicTrack);
 }
 function releaseCustomMusic(): void {
   if (!customMusic) return;
@@ -67,7 +78,7 @@ function reloadMusic(): void {
   stopMusicVoices();
   syncMusic();
   void prepareAudio();
-  for (const listener of customMusicListeners) listener();
+  notifyMusicListeners();
 }
 /** Local files remain on this device and are selected again after a reload. */
 export function setCustomMusicFile(file: File): boolean {
@@ -201,6 +212,7 @@ export function setMusicEnabled(next: boolean): void {
   musicEnabled = next;
   persist("aegis.music.enabled", next);
   syncMusic();
+  notifyMusicListeners();
 }
 export function setMusicVolume(next: number): void {
   musicVolume = clamp(next);

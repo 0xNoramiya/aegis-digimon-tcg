@@ -1915,6 +1915,7 @@ const interfaceMessages = {
   "redesign.shell.theme.useLight": "使用淺色主題",
   "redesign.shell.theme.useDark": "使用深色主題",
   "redesign.shell.theme.title": "主題和顏色",
+  "redesign.shell.music.open": "更換音樂",
   "redesign.shell.theme.description": "數碼寶貝調色板或您自己的介面顏色。",
   "redesign.shell.theme.choose": "選擇一個主題",
   "redesign.shell.theme.mode": "外觀",

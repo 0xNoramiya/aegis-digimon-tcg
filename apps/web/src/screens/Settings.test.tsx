@@ -60,6 +60,26 @@ describe("settings layout", () => {
 
     expect(onToggleDark).toHaveBeenCalledWith(true);
   });
+
+  it("opens on the sound section when the music menu asks for it", () => {
+    const scrollTo = vi.fn<(options?: ScrollToOptions) => void>();
+    Object.defineProperty(HTMLElement.prototype, "scrollTo", { configurable: true, value: scrollTo });
+    render(
+      <I18nProvider>
+        <Settings
+          player={player}
+          account={null}
+          dark={false}
+          onToggleDark={() => undefined}
+          initialSectionId="settings-sound"
+        />
+      </I18nProvider>,
+    );
+
+    expect(document.activeElement).toBe(screen.getByRole("region", { name: "Sound & music" }));
+    expect(scrollTo).toHaveBeenCalledOnce();
+    Reflect.deleteProperty(HTMLElement.prototype, "scrollTo");
+  });
 });
 
 describe("settings effect speed", () => {

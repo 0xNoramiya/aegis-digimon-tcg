@@ -548,6 +548,7 @@ export function TopNav({
   onOpenTheme,
   onSendFeedback,
   notifications,
+  music,
 }: {
   screen: Screen;
   onNav: (s: Screen) => void;
@@ -563,6 +564,7 @@ export function TopNav({
   onToggleDark?: (dark: boolean) => void;
   onOpenTheme?: () => void;
   onSendFeedback?: () => void;
+  music?: ReactNode;
 }) {
   const { t } = useTranslation();
   const navActive = (key: Screen) => screen === key || (screen === "roadmap" && key === "community");
@@ -659,6 +661,7 @@ export function TopNav({
           {actions}
           {notifications}
           {feedback}
+          {music}
           {themeToggle}
           <button
             className="aegis-icon-button"
@@ -683,6 +686,7 @@ export function TopNav({
         <div className="aegis-mobile-bar__actions">
           {notifications}
           {feedback}
+          {music}
           {themeToggle}
           {signIn}
           {portrait(32)}

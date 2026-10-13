@@ -1997,6 +1997,7 @@ const interfaceMessages = {
   "redesign.shell.theme.useLight": "Gunakan tema terang",
   "redesign.shell.theme.useDark": "Gunakan tema gelap",
   "redesign.shell.theme.title": "Tema dan warna",
+  "redesign.shell.music.open": "Ganti musik",
   "redesign.shell.theme.description": "Palet Digimon atau warna Anda sendiri untuk antarmuka.",
   "redesign.shell.theme.choose": "Pilih tema",
   "redesign.shell.theme.mode": "Penampilan",

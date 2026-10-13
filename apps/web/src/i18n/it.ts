@@ -1863,6 +1863,7 @@ const interfaceMessages = {
   "redesign.shell.theme.useLight": "Usa il tema chiaro",
   "redesign.shell.theme.useDark": "Usa il tema scuro",
   "redesign.shell.theme.title": "Temi e colori",
+  "redesign.shell.music.open": "Cambia musica",
   "redesign.shell.theme.description": "Palette Digimon o i tuoi colori per l’interfaccia.",
   "redesign.shell.theme.choose": "Scegli un tema",
   "redesign.shell.theme.mode": "Aspetto",

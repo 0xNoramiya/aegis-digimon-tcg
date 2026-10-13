@@ -1913,6 +1913,7 @@ const interfaceMessages = {
   "redesign.shell.theme.useLight": "使用浅色主题",
   "redesign.shell.theme.useDark": "使用深色主题",
   "redesign.shell.theme.title": "主题和颜色",
+  "redesign.shell.music.open": "更换音乐",
   "redesign.shell.theme.description": "数码宝贝调色板或您自己的界面颜色。",
   "redesign.shell.theme.choose": "选择一个主题",
   "redesign.shell.theme.mode": "外观",

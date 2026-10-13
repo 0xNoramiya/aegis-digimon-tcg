@@ -2046,6 +2046,7 @@ const interfaceMessages = {
   "redesign.shell.theme.useLight": "Verwenden Sie ein helles Thema",
   "redesign.shell.theme.useDark": "Verwenden Sie ein dunkles Thema",
   "redesign.shell.theme.title": "Themen und Farben",
+  "redesign.shell.music.open": "Musik wechseln",
   "redesign.shell.theme.description": "Digimon-Paletten oder eigene Farben für die Benutzeroberfläche.",
   "redesign.shell.theme.choose": "Wählen Sie ein Thema",
   "redesign.shell.theme.mode": "Aussehen",
