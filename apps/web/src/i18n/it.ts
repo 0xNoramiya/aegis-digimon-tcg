@@ -1726,10 +1726,13 @@ const interfaceMessages = {
   "account.emailLabel": "Email",
   "account.emailPlaceholder": "tu@email.com",
   "account.sendMagicLink": "Invia il link di accesso",
-  "account.magicLinkSent": "Controlla la tua email per accedere.",
+  "account.magicLinkSent":
+    "Controlla la tua email per accedere. Se non è nella posta in arrivo, guarda nello spam o nella posta indesiderata.",
   "account.magicLinkDailyLimit":
     "Abbiamo raggiunto il limite giornaliero di email di accesso. Accedi con Discord o riprova domani.",
   "account.magicLinkError": "Impossibile inviare l'email di accesso. Riprova.",
+  "account.magicLinkTooMany": "Troppe email di accesso richieste. Attendi qualche minuto o accedi con Discord.",
+  "account.magicLinkHumanCheck": "Impossibile confermare che sei una persona. Completa la verifica e riprova.",
   "account.connected": "Account collegato",
   "account.nickname.label": "Nickname",
   "account.nickname.invalid": "Usa da 3 a 32 lettere, numeri, spazi, trattini bassi o trattini.",
@@ -1878,6 +1881,10 @@ const interfaceMessages = {
   "redesign.shell.startup.reserved":
     "Il tuo posto nella partita è ancora riservato. Questa pagina si ripristinerà automaticamente.",
   "redesign.shell.startup.retry": "Riprova ora",
+  "redesign.shell.crash.title": "Qualcosa è andato storto",
+  "redesign.shell.crash.body":
+    "Questa schermata ha smesso di funzionare. Abbiamo inviato una segnalazione di errore al team di Aegis. Ricarica la pagina per continuare.",
+  "redesign.shell.crash.reload": "Ricarica",
   "redesign.shell.ranked.eyebrow": "Partita classificata",
   "redesign.home.login.eyebrow": "Account Aegis",
   "redesign.play.deckCounts": "{main} principali · {egg} uova",

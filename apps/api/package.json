@@ -1,6 +1,6 @@
 {
   "name": "@aegis/api",
-  "version": "1.25.5-beta",
+  "version": "1.25.6-beta",
   "private": true,
   "description": "Aegis authoritative game server: Node + TypeScript + Colyseus. Owns 100% of game state and rules.",
   "type": "module",
@@ -42,12 +42,14 @@
     "@colyseus/ws-transport": "^0.18.3",
     "colyseus": "^0.18.8",
     "express": "^5.2.1",
+    "nodemailer": "^7.0.13",
     "obscenity": "^0.4.6",
     "pg": "^8.23.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.2",
+    "@types/nodemailer": "^7.0.12",
     "@types/pg": "^8.23.1",
     "@vitest/ui": "5.0.1",
     "concurrently": "^10.0.0",

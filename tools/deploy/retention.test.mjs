@@ -84,8 +84,12 @@ test("retention preserves live, draining, web-only, orphan, recent and shared as
     calls.some((args) => args.includes("rm")),
     false,
   );
+  mkdirSync(`${f.state}/sourcemaps/old-e/assets`, { recursive: true });
+  mkdirSync(`${f.state}/sourcemaps/live/assets`, { recursive: true });
   calls.length = 0;
   await retainArtifacts({ ...f, run });
+  assert.equal(existsSync(`${f.state}/sourcemaps/old-e`), false);
+  assert.ok(existsSync(`${f.state}/sourcemaps/live`));
   assert.equal(existsSync(`${f.state}/releases/old-e`), false);
   assert.equal(existsSync(`${f.state}/assets/old-e.js`), false);
   for (const revision of ["live", "web-only", "draining", "orphan", "recent"])

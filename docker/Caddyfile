@@ -66,6 +66,10 @@
 	handle /bug-reports* {
 		reverse_proxy api:2567
 	}
+	@sourcemaps path *.map
+	handle @sourcemaps {
+		respond 404
+	}
 	@tournament_api {
 		path /tournaments*
 		not header Accept *text/html*

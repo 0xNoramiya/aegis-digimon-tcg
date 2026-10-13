@@ -1867,10 +1867,14 @@ const interfaceMessages = {
   "account.emailLabel": "Surel",
   "account.emailPlaceholder": "kamu@email.com",
   "account.sendMagicLink": "Kirim tautan ajaib",
-  "account.magicLinkSent": "Periksa email Anda untuk masuk.",
+  "account.magicLinkSent":
+    "Periksa email Anda untuk masuk. Jika tidak ada di kotak masuk, periksa folder Spam atau Junk.",
   "account.magicLinkDailyLimit":
     "Kami telah mencapai batas email masuk hari ini. Masuk dengan Discord, atau coba lagi besok.",
   "account.magicLinkError": "Tidak dapat mengirim email masuk. Coba lagi.",
+  "account.magicLinkTooMany":
+    "Terlalu banyak email masuk yang diminta. Tunggu beberapa menit, atau masuk dengan Discord.",
+  "account.magicLinkHumanCheck": "Tidak dapat memastikan bahwa Anda manusia. Selesaikan pemeriksaan dan coba lagi.",
   "account.connected": "Akun terhubung",
   "account.nickname.label": "Nama panggilan",
   "account.nickname.invalid": "Gunakan 3–32 huruf, angka, spasi, garis bawah, atau tanda hubung.",
@@ -2007,6 +2011,10 @@ const interfaceMessages = {
   "redesign.shell.startup.reconnecting": "Menghubungkan kembali ke Aegis…",
   "redesign.shell.startup.reserved": "Pertandingan Anda masih dipesan. Halaman ini akan pulih secara otomatis.",
   "redesign.shell.startup.retry": "Coba sekarang",
+  "redesign.shell.crash.title": "Terjadi kesalahan",
+  "redesign.shell.crash.body":
+    "Layar ini berhenti berfungsi. Kami telah mengirim laporan kesalahan ke tim Aegis. Muat ulang halaman untuk melanjutkan.",
+  "redesign.shell.crash.reload": "Muat ulang",
   "redesign.shell.ranked.eyebrow": "Pertandingan peringkat",
   "redesign.home.login.eyebrow": "akun Aegis",
   "redesign.play.deckCounts": "{main} utama · {egg} telur",

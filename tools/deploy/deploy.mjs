@@ -7,6 +7,7 @@ import { describeSync, syncCardImages } from "./card-images.mjs";
 import { FIXED_SLOTS, isDeploymentSlot, readManifest, validateManifest, assertEmptySlot } from "./shared.mjs";
 import { API_MEMORY_MIB, REDIS_MEMORY_MIB, sampleHostCapacity, waitForHostCapacity } from "./resources.mjs";
 import { retainArtifacts } from "./retention.mjs";
+import { relocateSourceMaps } from "./sourcemaps.mjs";
 
 // Reserve the new services' full limits plus headroom for builds and host services.
 const OVERFLOW_REQUIRED_KIB = (3 * API_MEMORY_MIB + REDIS_MEMORY_MIB + 2048) * 1024;
@@ -276,6 +277,8 @@ export async function controller({
         "VITE_AEGIS_DEPLOYMENT_MODE=slots",
         "--build-arg",
         `VITE_GOOGLE_CLIENT_ID=${config.services.web?.build?.args?.VITE_GOOGLE_CLIENT_ID ?? ""}`,
+        "--build-arg",
+        `VITE_TURNSTILE_SITE_KEY=${config.services.web?.build?.args?.VITE_TURNSTILE_SITE_KEY ?? ""}`,
         "-t",
         `aegis-static:${webRevision}`,
         "-f",
@@ -289,6 +292,11 @@ export async function controller({
         mkdirSync(`${release}/web`, { recursive: true, mode: 0o755 });
         await run("docker", ["cp", `${extractor}:/usr/share/caddy/.`, `${release}/web`]);
         if (!existsSync(`${release}/web/index.html`)) throw new Error("Static web extraction failed");
+        const sourceMaps = relocateSourceMaps({
+          webDirectory: `${release}/web`,
+          destination: `${state}/sourcemaps/${webRevision}`,
+        });
+        console.log(`${sourceMaps} source maps kept outside the served release in sourcemaps/${webRevision}`);
         cpSync(`${release}/web/assets`, `${state}/assets`, { recursive: true });
       } finally {
         await run("docker", ["rm", extractor], { capture: true });

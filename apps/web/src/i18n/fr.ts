@@ -1894,10 +1894,14 @@ const interfaceMessages = {
   "account.emailLabel": "Courriel",
   "account.emailPlaceholder": "vous@email.com",
   "account.sendMagicLink": "Envoyer un lien magique",
-  "account.magicLinkSent": "Vérifiez votre courrier électronique pour vous connecter.",
+  "account.magicLinkSent":
+    "Vérifiez votre e-mail pour vous connecter. S'il n'est pas dans votre boîte de réception, regardez dans les spams ou le courrier indésirable.",
   "account.magicLinkDailyLimit":
     "Nous avons atteint la limite d'e-mails de connexion d'aujourd'hui. Connectez-vous avec Discord ou réessayez demain.",
   "account.magicLinkError": "Impossible d'envoyer l'e-mail de connexion. Essayer à nouveau.",
+  "account.magicLinkTooMany":
+    "Trop d'e-mails de connexion demandés. Attendez quelques minutes ou connectez-vous avec Discord.",
+  "account.magicLinkHumanCheck": "Impossible de confirmer que vous êtes humain. Terminez la vérification et réessayez.",
   "account.connected": "Compte connecté",
   "account.nickname.label": "Surnom",
   "account.nickname.invalid": "Utilisez 3 à 32 lettres, chiffres, espaces, traits de soulignement ou traits d'union.",
@@ -2035,6 +2039,10 @@ const interfaceMessages = {
   "redesign.shell.startup.reconnecting": "Reconnexion à Aegis…",
   "redesign.shell.startup.reserved": "Votre match est toujours réservé. Cette page sera récupérée automatiquement.",
   "redesign.shell.startup.retry": "Essayez maintenant",
+  "redesign.shell.crash.title": "Un problème est survenu",
+  "redesign.shell.crash.body":
+    "Cet écran a cessé de fonctionner. Nous avons envoyé un rapport d'erreur à l'équipe Aegis. Rechargez la page pour continuer.",
+  "redesign.shell.crash.reload": "Recharger",
   "redesign.shell.ranked.eyebrow": "Match classé",
   "redesign.home.login.eyebrow": "Compte égide",
   "redesign.play.deckCounts": "{main} plat principal · {egg} œuf",
