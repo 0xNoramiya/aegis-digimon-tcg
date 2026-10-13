@@ -6,12 +6,14 @@ import { evolutionPilotDecks } from "#api/bot/evolution/evolutionPilotDecks";
 import { generatePilotPrograms } from "#api/bot/evolution/generatePilotPrograms";
 import { generateComboPilotPrograms } from "#api/bot/evolution/generateComboPilotPrograms";
 import certifiedCatalog from "#api/bot/evolution/programs/certified-balanced.json" with { type: "json" };
+import type { SearchReport } from "#api/bot/evolution/mcts";
 
 // Each evaluation creates an isolated game; application diagnostics stay off JSON stdout.
 process.env.NODE_ENV = "test";
 console.log = (...values: unknown[]) => console.error(...values);
 const { runEvolutionMatch } = await import("./evolutionMatch.js");
 const { runResidualMatch } = await import("./residualMatch.js");
+const { runMctsResidualMatch } = await import("#api/bot/evolution/runMctsResidualMatch");
 const { SEED_RESIDUAL } = await import("./residualPolicy.js");
 const { evolutionDeck, EVOLUTION_DECK_VERSIONS } = await import("./decks.js");
 const { trainingMetadata } = await import("../training/metadata.js");
@@ -24,6 +26,9 @@ type EvaluationInput = {
   opponentProgram?: unknown;
   opponent?: "heuristic" | "mcts" | "balanced";
   simulations?: number;
+  learnerMctsSimulations?: number;
+  mctsMaxSearches?: number;
+  mctsStartAfterDecisions?: number;
   searchSeed?: number;
   turnLimit?: number;
   captureTraces?: boolean;
@@ -43,6 +48,13 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
       (input.opponent !== undefined && !["mcts", "heuristic", "balanced"].includes(input.opponent)) ||
       (input.simulations !== undefined &&
         (!Number.isSafeInteger(input.simulations) || input.simulations < 1 || input.simulations > 10000)) ||
+      (input.learnerMctsSimulations !== undefined &&
+        (!Number.isSafeInteger(input.learnerMctsSimulations) ||
+          input.learnerMctsSimulations < 0 ||
+          input.learnerMctsSimulations > 10000)) ||
+      [input.mctsMaxSearches, input.mctsStartAfterDecisions].some(
+        (limit) => limit !== undefined && (!Number.isSafeInteger(limit) || limit < 0),
+      ) ||
       (input.searchSeed !== undefined && !Number.isSafeInteger(input.searchSeed))
     )
       throw new Error("Invalid evaluation configuration");
@@ -53,28 +65,56 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
     const decks = input.decks.map((source) =>
       typeof source === "number" ? randomDeck(source) : evolutionDeck(source),
     );
-    if ((input.opponent === "balanced" || program.basePolicy) && input.opponent === "mcts")
-      throw new Error("Residual matches currently certify against balanced, not MCTS");
+    if (input.learnerMctsSimulations !== undefined && !program.basePolicy)
+      throw new Error("Learner search requires a residual policy");
+    if (input.learnerMctsSimulations !== undefined && input.opponent === "mcts")
+      throw new Error("Only one search seat may be enabled per comparison");
     if (input.opponent === "balanced" && program.basePolicy !== "projected-balanced")
       throw new Error("Balanced comparison requires a residual program");
     if (input.opponent === "balanced" && opponentProgram !== undefined)
       throw new Error("Balanced comparison cannot override the control policy");
-    const runner = program.basePolicy ? runResidualMatch : runEvolutionMatch;
+    const residualSearch = Boolean(
+      program.basePolicy && (input.opponent === "mcts" || input.learnerMctsSimulations !== undefined),
+    );
+    const runner = residualSearch ? runMctsResidualMatch : program.basePolicy ? runResidualMatch : runEvolutionMatch;
     const { result, valid, decisions, traces, searches } = await runner({
       seed: input.seed,
       decks: [decks[0]!.deck, decks[1]!.deck],
       learnerSeat: input.learnerSeat,
       program,
+      simulations: input.learnerMctsSimulations ?? input.simulations ?? 256,
+      searchSeed: input.searchSeed ?? 0x5ea2c4,
       ...(program.basePolicy
-        ? { opponent: input.opponent === "heuristic" ? ("heuristic" as const) : ("balanced" as const) }
+        ? {
+            opponent: input.opponent === "heuristic" ? ("heuristic" as const) : ("balanced" as const),
+          }
         : {}),
       opponentProgram,
+      ...(residualSearch
+        ? {
+            searchSeat:
+              input.learnerMctsSimulations !== undefined
+                ? input.learnerSeat
+                : input.learnerSeat === 0
+                  ? (1 as const)
+                  : (0 as const),
+            maxSearches: input.mctsMaxSearches,
+            startAfterDecisions: input.mctsStartAfterDecisions,
+          }
+        : {}),
       ...(input.opponent === "mcts"
-        ? { mcts: { simulations: input.simulations ?? 256, seed: input.searchSeed ?? 0x5ea2c4 } }
+        ? {
+            mcts: {
+              simulations: input.simulations ?? 256,
+              seed: input.searchSeed ?? 0x5ea2c4,
+              maxSearches: input.mctsMaxSearches,
+              startAfterDecisions: input.mctsStartAfterDecisions,
+            },
+          }
         : {}),
       turnLimit: input.turnLimit,
       captureTraces: input.captureTraces,
-      onSearch: (report) =>
+      onSearch: (report: SearchReport) =>
         process.stderr.write(
           `${JSON.stringify({
             type: "mcts-search",
@@ -113,7 +153,11 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
       searches,
     };
   } catch (error) {
-    return { error: error instanceof Error ? error.message : String(error), valid: false, score: null };
+    return {
+      error: error instanceof Error ? error.message : String(error),
+      valid: false,
+      score: null,
+    };
   }
 }
 
@@ -145,7 +189,12 @@ if (process.argv.includes("--describe-combo-pilots")) {
         const deck = evolutionDeck(version);
         return {
           ...deck,
-          proposals: generateComboPilotPrograms({ version, deck: deck.deck, name: deck.name, generic }),
+          proposals: generateComboPilotPrograms({
+            version,
+            deck: deck.deck,
+            name: deck.name,
+            generic,
+          }),
         };
       }),
     })}\n`,
@@ -196,7 +245,11 @@ if (process.argv.includes("--describe-combo-pilots")) {
           inheritedEffectText: card.inheritedEffectText,
         };
       }),
-      mcts: { defaultSimulations: 256, reconstruction: "exact-engine-replay", belief: "uniform-open-decklist" },
+      mcts: {
+        defaultSimulations: 256,
+        reconstruction: "exact-engine-replay",
+        belief: "uniform-open-decklist",
+      },
     })}\n`,
   );
   process.exitCode = 0;

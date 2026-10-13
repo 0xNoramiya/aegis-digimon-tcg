@@ -195,6 +195,33 @@ See the [persona mapping and source rationale](../../packages/shared/src/bot/per
 for Rina/Ulforce, other printed Tamer associations, Digimon portraits and fallback
 behavior for custom or substituted recipes.
 
+## Residual MCTS experiments
+
+The compiled `evaluateCli.js` accepts `learnerMctsSimulations` to put real-engine
+search on the residual learner. With `opponent: "mcts"`, it instead searches for
+the opponent. These modes cannot be combined in one comparison. A zero learner
+budget preserves the current residual policy's choices and game events.
+
+Search runs at settled Main windows. The current policy's preferred intent is
+the first root candidate; other affordable legal declarations are shuffled with
+the recorded search seed. Activation-effect choices stay with the current policy
+to preserve its per-turn activation tracking. Breeding, combat responses and
+private selections also retain that policy. Rollouts reconstruct every recorded
+intent, advance the original policy's RNG and guards, verify the visible root and
+offered intents, then sample hidden zones with the existing open-decklist belief.
+Future rollout choices use the same residual policies. Search reports include
+completed/invalid rollouts, the searched seat and elapsed milliseconds. Captured
+residual traces are explicitly baseline traces, rather than searched choices.
+
+`mctsMaxSearches` and `mctsStartAfterDecisions` support latency and restoration
+probes. A capped-search probe is not a full-game strength result. Strength tests
+should freeze their scheduling policy, compare matched seeds and seats against
+the same control, and keep invalid games and timeouts unscored. The local
+experiment uses one Docker container with a shared 4 GiB RAM ceiling and zero
+additional swap; this covers the coordinator and evaluation workers together.
+This interface does not establish a new strength certificate or activate MCTS
+for ordinary application matches.
+
 ## Guarded MCTS prefix acceleration
 
 The engine still reconstructs simulation state through real prefix replay. It can

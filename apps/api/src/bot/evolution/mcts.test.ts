@@ -6,6 +6,35 @@ import { searchMcts } from "./mcts.js";
 import { determinize } from "./determinize.js";
 
 describe("information-set MCTS", () => {
+  it("stops simulation work when an active search is cancelled", async () => {
+    const setup = setupEngine({});
+    await setup.ready();
+    const root: TrainingWindow = {
+      observation: trainingObservation(setup.state, 0),
+      kind: "main",
+      selected: [],
+      actions: [{ intent: { type: "endPhase" }, label: "Pass" }],
+    };
+    const controller = new AbortController();
+    let calls = 0;
+    await expect(
+      searchMcts({
+        root,
+        seat: 0,
+        simulations: 8,
+        signal: controller.signal,
+        rolloutChoose: () => 0,
+        simulate: async (choose) => {
+          calls++;
+          choose(root);
+          controller.abort(new Error("Search cancelled"));
+          return { reward: 1, valid: true };
+        },
+      }),
+    ).rejects.toThrow("Search cancelled");
+    expect(calls).toBe(1);
+  });
+
   it("uses exploration and backpropagation to prefer the winning branch", async () => {
     const setup = setupEngine({});
     await setup.ready();
