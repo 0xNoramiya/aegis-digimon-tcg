@@ -12,27 +12,25 @@ import {
   deckById,
   filterDeckToKnownCards,
   removeDeck,
-  selectableDecks,
   upsertDeck,
   type DeckListing,
 } from "./game/decks";
+import { selectableDecks } from "@/game/selectableDecks";
+import { useFamousDecks } from "@/game/useFamousDecks";
 import type { AegisJoinOptions } from "./net/types";
 import type { SeriesGameTicket } from "./net/useRoom";
 import type { PrivateRoom, StartMode } from "./screens/Lobby";
 import { loadMatchFormatPreference } from "./screens/matchFormatPreference";
-import { Settings } from "./screens/Settings";
 import { loadIdentity, saveIdentity, loadDecks, saveDecks, loadActiveDeckId, saveActiveDeckId } from "./identity";
 import { accentForAvatar } from "./guest";
 import { applyDarkMode, setDarkMode, useDarkMode } from "./design/darkMode";
 import { setDeckEggSleeveId, setDeckSleeveId } from "./design/sleeve";
 import { applyTextScale } from "./design/textScale";
-import { InterfaceThemeDialog } from "./design/InterfaceThemePicker";
 import { I18nProvider, useTranslation } from "./i18n";
 import { accountApi, type RemoteAccount } from "./account/client";
 import { communityApi } from "./community/client";
 import { communityDeckListing } from "./community/communityDeckListing";
 import { usePreferencesSync } from "./account/usePreferencesSync";
-import { BugReportDialog } from "./bugs/BugReportDialog";
 import { LeaveMatchDialog } from "./game/screen/layout/LeaveMatchDialog";
 import { PlayerMenu } from "./account/PlayerMenu";
 import { NotificationBell } from "./notifications/NotificationBell";
@@ -50,6 +48,11 @@ const FeedbackScreen = lazy(() => import("./bugs/FeedbackScreen").then((m) => ({
 const MyFeedbackScreen = lazy(() => import("./bugs/MyFeedbackScreen").then((m) => ({ default: m.MyFeedbackScreen })));
 const PrivacyScreen = lazy(() => import("./legal/PrivacyScreen").then((m) => ({ default: m.PrivacyScreen })));
 const Home = lazy(() => import("./screens/Home").then((m) => ({ default: m.Home })));
+const Settings = lazy(() => import("./screens/Settings").then((m) => ({ default: m.Settings })));
+const InterfaceThemeDialog = lazy(() =>
+  import("./design/InterfaceThemePicker").then((m) => ({ default: m.InterfaceThemeDialog })),
+);
+const BugReportDialog = lazy(() => import("./bugs/BugReportDialog").then((m) => ({ default: m.BugReportDialog })));
 const ReleasesScreen = lazy(() => import("./releases/ReleasesScreen").then((m) => ({ default: m.ReleasesScreen })));
 const Login = lazy(() => import("./screens/Login").then((m) => ({ default: m.Login })));
 const Lobby = lazy(() => import("./screens/Lobby").then((m) => ({ default: m.Lobby })));
@@ -188,9 +191,19 @@ export function App() {
 }
 
 function AppShell() {
+  const famousDecks = useFamousDecks();
+  if (!famousDecks) {
+    return <ScreenFallback />;
+  }
+  return <LoadedAppShell famousDecks={famousDecks.decks} />;
+}
+
+function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }) {
   const [player, setPlayer] = useState<PlayerIdentity>(loadIdentity);
   const [decks, setDecks] = useState<DeckListing[]>(loadDecks);
-  const [activeDeckId, setActiveDeckId] = useState<string>(() => loadActiveDeckId(selectableDecks(loadDecks())));
+  const [activeDeckId, setActiveDeckId] = useState<string>(() =>
+    loadActiveDeckId(selectableDecks({ personalDecks: loadDecks(), famousDecks })),
+  );
   const dark = useDarkMode();
   const setDark = setDarkMode;
   const [account, setAccount] = useState<RemoteAccount | null>();
@@ -248,7 +261,7 @@ function AppShell() {
   const deleteDeck = (id: string) => {
     const remaining = removeDeck(decks, id);
     setDecks(remaining);
-    if (activeDeckId === id) setActiveDeckId(selectableDecks(remaining)[0]?.id ?? "");
+    if (activeDeckId === id) setActiveDeckId(selectableDecks({ personalDecks: remaining, famousDecks })[0]?.id ?? "");
     void accountApi
       .me()
       .then((remoteAccount) => (remoteAccount ? accountApi.deleteDeck(id) : undefined))
@@ -289,7 +302,16 @@ interface ClientProps {
   initialScreen?: Screen;
 }
 
-export function AegisClient({
+export function AegisClient(props: ClientProps) {
+  const famousDecks = useFamousDecks();
+  if (!famousDecks) {
+    return <ScreenFallback />;
+  }
+  return <LoadedAegisClient {...props} famousDecks={famousDecks.decks} />;
+}
+
+function LoadedAegisClient({
+  famousDecks,
   preferencesReady = true,
   player,
   setPlayer,
@@ -303,7 +325,7 @@ export function AegisClient({
   dark,
   setDark,
   initialScreen,
-}: ClientProps) {
+}: ClientProps & { famousDecks: readonly DeckListing[] }) {
   const { t } = useTranslation();
   const effectivePlayer = useMemo<PlayerIdentity>(
     () =>
@@ -422,10 +444,10 @@ export function AegisClient({
   };
   const navigateScreen = (nextScreen: Screen) => navigate({ screen: nextScreen });
 
-  const availableDecks = useMemo(
-    () => (borrowedDeck ? [borrowedDeck, ...selectableDecks(decks)] : selectableDecks(decks)),
-    [borrowedDeck, decks],
-  );
+  const availableDecks = useMemo(() => {
+    const selectable = selectableDecks({ personalDecks: decks, famousDecks });
+    return borrowedDeck ? [borrowedDeck, ...selectable] : selectable;
+  }, [borrowedDeck, decks, famousDecks]);
   const matchDeck = deckById(availableDecks, matchDeckId ?? activeDeckId);
   const matchSleeveId = screen === "game" ? matchDeck?.sleeveId : undefined;
   useEffect(() => setDeckSleeveId(matchSleeveId), [matchSleeveId]);
@@ -760,9 +782,15 @@ export function AegisClient({
       ) : null}
 
       {themeOpen ? (
-        <InterfaceThemeDialog dark={dark} onToggleDark={setDark} onClose={() => setThemeOpen(false)} />
+        <Suspense fallback={null}>
+          <InterfaceThemeDialog dark={dark} onToggleDark={setDark} onClose={() => setThemeOpen(false)} />
+        </Suspense>
       ) : null}
-      {bugReportOpen ? <BugReportDialog signedIn={!!account} onClose={() => setBugReportOpen(false)} /> : null}
+      {bugReportOpen ? (
+        <Suspense fallback={null}>
+          <BugReportDialog signedIn={!!account} onClose={() => setBugReportOpen(false)} />
+        </Suspense>
+      ) : null}
       {leaveMatchPromptOpen ? (
         <LeaveMatchDialog onConfirm={confirmLeaveMatch} onClose={() => setLeaveMatchPromptOpen(false)} />
       ) : null}

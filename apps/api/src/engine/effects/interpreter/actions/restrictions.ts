@@ -269,7 +269,10 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
           : {}),
       };
       for (const seat of seats)
-        ctx.fx.restrictPlay(seat, ctx.source.ownerSeat, match, action.mode, duration, action.byEffectOnly);
+        ctx.fx.restrictPlay(seat, ctx.source.ownerSeat, match, action.mode, duration, action.byEffectOnly, {
+          sourceCardId: ctx.source.definition.cardId,
+          effectText: action.effectTextPart ?? action.raw ?? ctx.source.definition.effectText,
+        });
       return false;
     }
     case "GlobalRestrict": {

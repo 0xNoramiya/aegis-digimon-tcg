@@ -1004,6 +1004,8 @@ const interfaceMessages = {
   "game.fieldEffects.untilActivePhase": "{player}のサスペンド解除フェーズまで",
   "game.fieldEffects.untilCost": "費用が計算されるまで",
   "game.restriction.cannotAttack": "攻撃できない",
+  "game.restriction.cannotPlayByEffects": "効果で登場できない",
+  "game.restriction.cannotPlay": "登場できない",
   "game.restriction.immuneToOpponentDigimonEffects": "相手のデジモンの効果から守られる",
   "game.protectionBadge.immuneToOpponentDigimonEffects": "プロット。デジモン",
   "game.restriction.immuneToOpponentEffects": "反対の効果から保護される",

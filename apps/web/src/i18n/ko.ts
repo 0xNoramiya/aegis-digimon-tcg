@@ -994,6 +994,8 @@ const interfaceMessages = {
   "game.fieldEffects.untilActivePhase": "{player}의 정지 해제 단계까지",
   "game.fieldEffects.untilCost": "비용이 계산될 때까지",
   "game.restriction.cannotAttack": "공격할 수 없습니다",
+  "game.restriction.cannotPlayByEffects": "효과로 등장할 수 없음",
+  "game.restriction.cannotPlay": "등장할 수 없음",
   "game.restriction.immuneToOpponentDigimonEffects": "반대 디지몬 효과로부터 보호됨",
   "game.protectionBadge.immuneToOpponentDigimonEffects": "Prot. 디지몬",
   "game.restriction.immuneToOpponentEffects": "반대 효과로부터 보호됨",

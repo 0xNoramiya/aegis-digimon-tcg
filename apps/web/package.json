@@ -1,12 +1,12 @@
 {
   "name": "@aegis/web",
-  "version": "1.25.4-beta",
+  "version": "1.25.5-beta",
   "private": true,
   "description": "Aegis client: React + TypeScript + Vite. A pure function of synchronized state; sends intents, contains no rules.",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "GOMEMLIMIT=512MiB tsc -p tsconfig.build.json --singleThreaded && vite build",
+    "build": "GOMEMLIMIT=512MiB tsc -p tsconfig.build.json --singleThreaded && vite build && node scripts/precompress-assets.mjs",
     "preview": "vite preview",
     "typecheck": "GOMEMLIMIT=512MiB tsc --noEmit -p tsconfig.json --singleThreaded",
     "test": "vitest run --passWithNoTests",

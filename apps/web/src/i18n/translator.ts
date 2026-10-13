@@ -1,6 +1,6 @@
-import { dictionaries } from "@/i18n/dictionaries";
+import { dictionaryCache } from "@/i18n/dictionaryCache";
 import { en } from "@/i18n/en";
-import { DEFAULT_LOCALE, type Locale } from "@/i18n/locales";
+import type { Locale } from "@/i18n/locales";
 import type { Translate, TranslationParams } from "@/i18n/translationTypes";
 
 function interpolate(template: string, params?: TranslationParams): string {
@@ -9,6 +9,6 @@ function interpolate(template: string, params?: TranslationParams): string {
 }
 
 export function translator(locale: Locale): Translate {
-  const dictionary = dictionaries[locale] ?? dictionaries[DEFAULT_LOCALE];
+  const dictionary = dictionaryCache.get(locale) ?? en;
   return (key, params) => interpolate(dictionary[key] ?? en[key] ?? key, params);
 }

@@ -37,6 +37,19 @@ test("lists base, errata, and alternate art images but not tokens", (t) => {
   assert.deepEqual(cardImageIds(source), ["BT1-001", "BT1-001_P1", "BT16-077", "BT16-077-Errata"]);
 });
 
+test("lists alternate art images from the compact art index", (t) => {
+  const { source } = fixture(t, [{ cardId: "BT1-001" }], {
+    labels: ["Promotion", "Japanese printing"],
+    cards: {
+      "BT1-001": [
+        ["_P1", 0],
+        ["-J", 1, "BT1-001-j"],
+      ],
+    },
+  });
+  assert.deepEqual(cardImageIds(source), ["BT1-001", "BT1-001-j", "BT1-001_P1"]);
+});
+
 test("downloads missing images, falling back across origins and to the sample scan", async (t) => {
   const paths = fixture(t, [
     { cardId: "BT1-001" },

@@ -1,5 +1,10 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
+  },
   "references": [{ "path": "../../packages/shared" }],
   "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts", "src/engine/testkit/**", "src/engine/conformance/**"]
 }
