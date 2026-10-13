@@ -1917,6 +1917,7 @@ const interfaceMessages = {
   "deck.artCopyPrompt": "사본을 선택하세요",
   "deck.artEditingCopy": "사본 {number}을(를) 편집 중입니다. 즉시 저장하려면 작품을 선택하세요.",
   "deck.artApplyAll": "모든 복사본에 사용",
+  "deck.artDoubleClickHint": "아트를 두 번 클릭하면 이 덱의 모든 사본에 적용됩니다.",
   "common.done": "완료",
   "redesign.foundation.arena.preview": "색상과 전장이 포함된 보드 미리보기",
   "redesign.foundation.arena.opponent": "상대",

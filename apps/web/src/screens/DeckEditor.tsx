@@ -154,6 +154,13 @@ export function DeckEditor({
     }));
     (eggCard ? setEgg : setMain)({ ...map, [cardId]: cur + 1 });
   };
+  const applyArt = (cardId: string, artId: string, copy: number | "all") =>
+    setArts((previous) => ({
+      ...previous,
+      [cardId]: (previous[cardId] ?? Array.from({ length: main[cardId] ?? egg[cardId] ?? 0 }, () => cardId)).map(
+        (current, index) => (copy === "all" || index === copy ? artId : current),
+      ),
+    }));
   const remove = (cardId: string) => {
     const def = getCardDefinition(cardId);
     if (!def) return;
@@ -495,15 +502,7 @@ export function DeckEditor({
           arts={arts[artPickerCard] ?? []}
           count={main[artPickerCard] ?? egg[artPickerCard] ?? 0}
           onClose={() => setArtPickerCard(null)}
-          onChoose={(artId, copy) =>
-            setArts((previous) => ({
-              ...previous,
-              [artPickerCard]: (
-                previous[artPickerCard] ??
-                Array.from({ length: main[artPickerCard] ?? egg[artPickerCard] ?? 0 }, () => artPickerCard)
-              ).map((current, index) => (copy === "all" || index === copy ? artId : current)),
-            }))
-          }
+          onChoose={(artId, copy) => applyArt(artPickerCard, artId, copy)}
         />
       ) : null}
       {sel ? (
@@ -515,6 +514,9 @@ export function DeckEditor({
           onArtChange={(artId) => {
             setChosenArt((previous) => ({ ...previous, [sel]: artId }));
           }}
+          onArtApply={
+            selectedCount > 0 && getCardArts(sel).length > 1 ? (artId) => applyArt(sel, artId, "all") : undefined
+          }
           onClose={() => setSel(null)}
           footer={
             <div className="deck-drawer-actions">

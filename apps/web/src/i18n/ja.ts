@@ -1939,6 +1939,7 @@ const interfaceMessages = {
   "deck.artCopyPrompt": "コピーを選択してください",
   "deck.artEditingCopy": "コピー {number} を編集中です。アートワークを選択してすぐに保存します。",
   "deck.artApplyAll": "すべてのコピーで使用する",
+  "deck.artDoubleClickHint": "アートをダブルクリックすると、このデッキのすべてのコピーに使用されます。",
   "common.done": "終わり",
   "redesign.foundation.arena.preview": "あなたの色と戦場を含むボードのプレビュー",
   "redesign.foundation.arena.opponent": "対戦相手",

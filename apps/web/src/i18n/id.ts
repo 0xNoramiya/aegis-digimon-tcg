@@ -1949,6 +1949,7 @@ const interfaceMessages = {
   "deck.artCopyPrompt": "Pilih salinan",
   "deck.artEditingCopy": "Mengedit salinan {number}. Pilih karya seni untuk segera menyimpannya.",
   "deck.artApplyAll": "Gunakan pada semua salinan",
+  "deck.artDoubleClickHint": "Klik dua kali sebuah karya seni untuk memakainya pada semua salinan di dek ini.",
   "common.done": "Selesai",
   "redesign.foundation.arena.preview": "Pratinjau papan dengan warna dan medan perang Anda",
   "redesign.foundation.arena.opponent": "Lawan",

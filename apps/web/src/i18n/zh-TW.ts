@@ -1869,6 +1869,7 @@ const interfaceMessages = {
   "deck.artCopyPrompt": "選擇一個副本",
   "deck.artEditingCopy": "編輯副本{number}。選擇藝術品立即保存。",
   "deck.artApplyAll": "在所有副本上使用",
+  "deck.artDoubleClickHint": "雙擊一張卡圖，即可用於此牌組中的所有副本。",
   "common.done": "完成",
   "redesign.foundation.arena.preview": "帶有您的顏色和戰場的棋盤預覽",
   "redesign.foundation.arena.opponent": "對手",
