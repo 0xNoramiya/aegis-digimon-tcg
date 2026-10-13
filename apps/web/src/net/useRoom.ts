@@ -42,6 +42,7 @@ import {
   type ReconnectSession,
 } from "./reconnectSession";
 import { ResumeCancelledError, resumeSeat } from "./resumeSeat";
+import { watchRoomLiveness } from "@/net/watchRoomLiveness";
 import type { AegisJoinOptions } from "./types";
 import { keepLocalReplay } from "../replays/local";
 
@@ -242,6 +243,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     setUsedDeck(undefined);
 
     let stopHeartbeat = () => {};
+    let stopLiveness = () => {};
 
     const bindRoom = (room: AegisRoom) => {
       // attemptReconnect owns recovery; the SDK's own reconnection would race it for the seat.
@@ -267,6 +269,8 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       stopHeartbeat();
       const heartbeat = setInterval(stampSession, SESSION_HEARTBEAT_MS);
       stopHeartbeat = () => clearInterval(heartbeat);
+      stopLiveness();
+      stopLiveness = watchRoomLiveness({ room });
 
       room.onMessage<UsedDeck>(USED_DECK_CHANNEL, (message) => setUsedDeck(structuredClone(message)));
       if (!options.spectator) room.send(USED_DECK_CHANNEL, {});
@@ -373,6 +377,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       });
       room.onLeave((code) => {
         stopHeartbeat();
+        stopLiveness();
         if (cancelled) return;
         if (FINAL_CLOSE_CODES.has(code)) {
           clearReconnectSession();
@@ -483,6 +488,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     return () => {
       cancelled = true;
       stopHeartbeat();
+      stopLiveness();
       // A reload never runs this cleanup, so only a deliberate exit forgets the seat.
       clearReconnectSession();
       void roomRef.current?.leave();

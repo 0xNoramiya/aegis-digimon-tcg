@@ -249,7 +249,11 @@ because they belong to the attack sequence.
 The synchronized `pendingDecision` and `combatWindow` mirror live room state. The
 decision manager and combat controller also hold in-memory promises, validation
 state and execution position. A reconnect token resumes a seat only while its
-owning room process remains available. Production deployments route new rooms to
+owning room process remains available. A socket can die without closing, for
+example after a phone suspends the tab. The client pings the room every 4 s while
+the tab is visible, and again when the tab becomes visible or the browser comes
+back online. If no answer arrives within 10 s, the client closes the socket and
+resumes its seat with the reconnect token. Production deployments route new rooms to
 the active blue, red, or green slot and retain older slots until their rooms drain.
 
 ## Events and errors

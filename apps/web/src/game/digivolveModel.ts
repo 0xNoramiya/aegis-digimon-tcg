@@ -610,12 +610,7 @@ export function getDigivolveCostOptions(
   // A SET static replaces the printed base cost on EVERY path (KB BT7-040 Q1568), so it is
   // resolved once, before the paths are priced.
   const setCost = handResidentSetDigivolveCost(handCardId, baseDef, viewer);
-  const intrinsicReduction = intrinsicDigivolutionCostReductionFor(
-    handCardId,
-    base.stack.map((card) => card.cardId),
-    base.topCard?.cardId,
-    base.stack.filter((card) => !card.faceUp).length,
-  );
+  const intrinsicReduction = intrinsicDigivolutionCostReductionFor(handCardId, base);
 
   // Normal printed EvoCosts
   const baseColors = baseColorsOf(base, baseDef);
