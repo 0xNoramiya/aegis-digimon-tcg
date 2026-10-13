@@ -219,6 +219,7 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
       response.writeHead(303, { location: "/", "clear-site-data": '"cache"', "cache-control": "no-store" });
       return response.end();
     }
+    if (pathname.endsWith(".map")) return json(response, 404, { error: "Not found" });
     const assets = pathname.startsWith("/assets/");
     const root = resolve(state, assets ? "assets" : `releases/${manifest.webRevision ?? manifest.active.revision}/web`);
     let file = resolve(root, `.${assets ? pathname.slice(7) : pathname}`);

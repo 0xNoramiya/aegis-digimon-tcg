@@ -225,3 +225,24 @@ test("client error reports reach the API", () => {
   assert.equal(isApiPath("/client-errors", { accept: "*/*" }), true);
   assert.equal(isApiPath("/client-errors-page", { accept: "*/*" }), false);
 });
+
+test("source maps are never served even when one reaches a served directory", async (t) => {
+  const state = mkdtempSync(`${tmpdir()}/aegis-gateway-`);
+  const gateway = createGateway({ state, upstreamFor: () => undefined });
+  t.after(async () => {
+    await new Promise((done) => gateway.close(done));
+    rmSync(state, { recursive: true });
+  });
+  for (const directory of ["routing", "assets", "releases/v1/web"]) {
+    mkdirSync(`${state}/${directory}`, { recursive: true });
+  }
+  writeFileSync(
+    `${state}/routing/manifest.json`,
+    JSON.stringify({ version: 1, active: { slot: "blue", revision: "v1" }, draining: [] }),
+  );
+  writeFileSync(`${state}/releases/v1/web/index.html`, "web");
+  writeFileSync(`${state}/assets/chunk.js.map`, "{}");
+  const origin = await listen(gateway);
+  const response = await fetch(`${origin}/assets/chunk.js.map`);
+  assert.equal(response.status, 404);
+});

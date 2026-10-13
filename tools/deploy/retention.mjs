@@ -101,7 +101,10 @@ export async function retainArtifacts({ state, manifest, run, dryRun = false, no
     }
   }
   if (!dryRun) {
-    for (const revision of plan.expiredReleases) rmSync(`${state}/releases/${revision}`, { recursive: true });
+    for (const revision of plan.expiredReleases) {
+      rmSync(`${state}/releases/${revision}`, { recursive: true });
+      rmSync(`${state}/sourcemaps/${revision}`, { recursive: true, force: true });
+    }
     for (const file of plan.expiredAssets) rmSync(join(state, "assets", file));
     for (const tag of imageTags) {
       try {

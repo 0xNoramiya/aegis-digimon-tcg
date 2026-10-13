@@ -69,6 +69,10 @@
 	handle /client-errors {
 		import api_upstreams
 	}
+	@sourcemaps path *.map
+	handle @sourcemaps {
+		respond 404
+	}
 	@tournament_api {
 		path /tournaments*
 		not header Accept *text/html*

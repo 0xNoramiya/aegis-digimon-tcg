@@ -464,7 +464,7 @@ test("deploy-web atomically publishes static content without touching API slots"
 const fs=require('node:fs');const args=process.argv.slice(2);fs.appendFileSync(process.env.TEST_DOCKER_LOG,JSON.stringify(args)+'\\n');
 if(args.includes('config')) console.log(JSON.stringify({services:{api:{environment:{AEGIS_API_URL:'https://aegis.test'}}}}));
 if(args[0]==='create') console.log('static-extractor');
-if(args[0]==='cp'){const destination=args.at(-1);fs.mkdirSync(destination+'/assets',{recursive:true});fs.writeFileSync(destination+'/index.html','new web');fs.writeFileSync(destination+'/assets/index.js','asset');}
+if(args[0]==='cp'){const destination=args.at(-1);fs.mkdirSync(destination+'/assets',{recursive:true});fs.writeFileSync(destination+'/index.html','new web');fs.writeFileSync(destination+'/assets/index.js','asset');fs.writeFileSync(destination+'/assets/index.js.map','map');}
 `,
     { mode: 0o755 },
   );
@@ -496,6 +496,10 @@ if(args[0]==='cp'){const destination=args.at(-1);fs.mkdirSync(destination+'/asse
     draining: [],
   });
   assert.equal(readFileSync(`${root}/state/releases/${revision}/web/index.html`, "utf8"), "new web");
+  assert.equal(readFileSync(`${root}/state/sourcemaps/${revision}/assets/index.js.map`, "utf8"), "map");
+  assert.equal(existsSync(`${root}/state/releases/${revision}/web/assets/index.js.map`), false);
+  assert.equal(existsSync(`${root}/state/assets/index.js.map`), false);
+  assert.equal(readFileSync(`${root}/state/assets/index.js`, "utf8"), "asset");
   const calls = readFileSync(`${root}/calls.jsonl`, "utf8")
     .trim()
     .split("\n")
