@@ -1,6 +1,8 @@
+import { roadmapDe } from "@/i18n/roadmap";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...roadmapDe,
   "rollback.failed":
     "Dieser Zeitpunkt konnte nicht sicher wiederhergestellt werden. Das aktuelle Spiel wurde beibehalten.",
   "rollback.cancel": "Anfrage abbrechen",

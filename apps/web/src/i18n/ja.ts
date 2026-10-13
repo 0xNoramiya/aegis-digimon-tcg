@@ -1,6 +1,8 @@
+import { roadmapJa } from "@/i18n/roadmap";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...roadmapJa,
   "rollback.failed": "この時点を安全に復元できませんでした。現在の対戦状態は維持されています。",
   "rollback.cancel": "リクエストを取り消す",
   "rollback.allow": "巻き戻しを許可",

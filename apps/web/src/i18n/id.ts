@@ -1,6 +1,8 @@
+import { roadmapId } from "@/i18n/roadmap";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...roadmapId,
   "rollback.failed": "Tidak dapat memulihkan titik ini dengan aman. Kondisi pertandingan saat ini dipertahankan.",
   "rollback.cancel": "Batalkan permintaan",
   "rollback.allow": "Izinkan rollback",

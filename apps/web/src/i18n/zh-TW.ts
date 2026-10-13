@@ -1,6 +1,8 @@
+import { roadmapZhTW } from "@/i18n/roadmap";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...roadmapZhTW,
   "rollback.failed": "無法安全還原至此時點。目前的對局狀態已保留。",
   "rollback.cancel": "取消請求",
   "rollback.allow": "允許回溯",

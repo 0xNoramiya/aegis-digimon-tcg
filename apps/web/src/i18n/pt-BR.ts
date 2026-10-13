@@ -1,5 +1,6 @@
 import { replayVideoPtBR } from "./replayVideo";
 import { profileReplayPtBR } from "./profileReplays";
+import { roadmapPtBR } from "@/i18n/roadmap";
 import { replayPtBR } from "./replays";
 /* Brazilian Portuguese strings. Typed against the English source, so a new key
    there fails typecheck here until it is translated. Game terms that are printed
@@ -41,6 +42,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "rollback.restoring": "Restaurando partida…",
 
   ...profileReplayPtBR,
+  ...roadmapPtBR,
   ...replayPtBR,
   ...replayVideoPtBR,
   "feedback.title": "Feedbacks dos jogadores",

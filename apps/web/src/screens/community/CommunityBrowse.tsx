@@ -1,3 +1,5 @@
+import { CommunityHubNav } from "@/community/CommunityHubNav";
+import { CommunityHubSection } from "@/community/CommunityHubSection";
 import { useEffect, useState } from "react";
 import { CardColor, type CommunityDeckSummary, type CommunityPeriod, type CommunitySort } from "@aegis/shared";
 import { communityApi } from "../../community/client";
@@ -30,12 +32,14 @@ export function CommunityBrowse({
   signedIn,
   accountId,
   onOpenDeck,
+  onRoadmap,
   onPlay,
   onCopy,
 }: {
   signedIn: boolean;
   accountId: string | undefined;
   onOpenDeck: (id: string) => void;
+  onRoadmap: () => void;
   onPlay: (id: string) => void;
   onCopy: (id: string) => void;
 }) {
@@ -112,6 +116,7 @@ export function CommunityBrowse({
               />
             </label>
           </div>
+          <CommunityHubNav section={CommunityHubSection.DECKS.value} onDecks={() => undefined} onRoadmap={onRoadmap} />
           <div className="community-toolbar">
             <div className="community-segmented" role="group" aria-label={t("community.sortLabel")}>
               {SORTS.map((option) => (

@@ -1,5 +1,6 @@
 import { replayVideoIt } from "./replayVideo";
 import { profileReplayIt } from "./profileReplays";
+import { roadmapIt } from "@/i18n/roadmap";
 import { replayIt } from "./replays";
 import releaseMessages from "../releases/messages.json";
 import { en } from "./en";
@@ -27,6 +28,7 @@ const interfaceMessages = {
   "rollback.restoring": "Ripristino della partita…",
 
   ...profileReplayIt,
+  ...roadmapIt,
   ...replayIt,
   ...replayVideoIt,
   "feedback.title": "Feedback dei giocatori",

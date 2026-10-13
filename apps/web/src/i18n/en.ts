@@ -1,5 +1,6 @@
 import { replayVideoEn } from "./replayVideo";
 import { profileReplayEn } from "./profileReplays";
+import { roadmapEn } from "@/i18n/roadmap";
 import { replayEn } from "./replays";
 import releaseMessages from "../releases/messages.json";
 import { arenaEn } from "./redesign/arena.en";
@@ -39,6 +40,7 @@ export const en = {
   "rollback.restoring": "Restoring match…",
 
   ...profileReplayEn,
+  ...roadmapEn,
   ...replayEn,
   ...replayVideoEn,
   "feedback.title": "Player feedback",

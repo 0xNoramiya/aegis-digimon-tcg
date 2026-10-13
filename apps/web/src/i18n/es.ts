@@ -1,5 +1,6 @@
 import { replayVideoEs } from "./replayVideo";
 import { profileReplayEs } from "./profileReplays";
+import { roadmapEs } from "@/i18n/roadmap";
 import { replayEs } from "./replays";
 /* Latin American Spanish strings. Typed against the English source, so a new key
    there fails typecheck here until it is translated. Game terms that are printed
@@ -38,6 +39,7 @@ export const es: Record<keyof typeof en, string> = {
   "rollback.restoring": "Restaurando partida…",
 
   ...profileReplayEs,
+  ...roadmapEs,
   ...replayEs,
   ...replayVideoEs,
   "feedback.title": "Comentarios de los jugadores",

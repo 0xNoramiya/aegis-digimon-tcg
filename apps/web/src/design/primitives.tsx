@@ -40,6 +40,7 @@ export type Screen =
   | "deck"
   | "collection"
   | "community"
+  | "roadmap"
   | "tournaments"
   | "settings"
   | "replays"
@@ -564,6 +565,7 @@ export function TopNav({
   onSendFeedback?: () => void;
 }) {
   const { t } = useTranslation();
+  const navActive = (key: Screen) => screen === key || (screen === "roadmap" && key === "community");
   const navTo = (s: Screen) => {
     playSound("nav");
     onNav(s);
@@ -649,7 +651,7 @@ export function TopNav({
           </button>
           <nav className="aegis-top-nav__links" aria-label={t("nav.primaryAria")}>
             {items.map((it) => (
-              <NavItem key={it.key} item={it} active={screen === it.key} onSelect={() => navTo(it.key)} />
+              <NavItem key={it.key} item={it} active={navActive(it.key)} onSelect={() => navTo(it.key)} />
             ))}
           </nav>
         </div>
@@ -688,7 +690,7 @@ export function TopNav({
       </header>
       <nav className="aegis-bottom-nav" aria-label={t("nav.primaryAria")}>
         {items.map((it) => (
-          <NavItem key={it.key} item={it} active={screen === it.key} onSelect={() => navTo(it.key)} compact />
+          <NavItem key={it.key} item={it} active={navActive(it.key)} onSelect={() => navTo(it.key)} compact />
         ))}
       </nav>
     </>

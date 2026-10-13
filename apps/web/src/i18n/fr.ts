@@ -1,6 +1,8 @@
+import { roadmapFr } from "@/i18n/roadmap";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...roadmapFr,
   "rollback.failed": "Impossible de restaurer ce point en toute sécurité. La partie actuelle a été conservée.",
   "rollback.cancel": "Annuler la demande",
   "rollback.allow": "Autoriser le retour en arrière",

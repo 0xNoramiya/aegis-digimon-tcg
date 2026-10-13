@@ -1,6 +1,8 @@
+import { roadmapZhCN } from "@/i18n/roadmap";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...roadmapZhCN,
   "rollback.failed": "无法安全恢复到此时点。当前对局状态已保留。",
   "rollback.cancel": "取消请求",
   "rollback.allow": "允许回退",

@@ -1,6 +1,8 @@
+import { roadmapKo } from "@/i18n/roadmap";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...roadmapKo,
   "rollback.failed": "이 시점으로 안전하게 복원하지 못했습니다. 현재 대전 상태는 유지됩니다.",
   "rollback.cancel": "요청 취소",
   "rollback.allow": "되돌리기 허용",
