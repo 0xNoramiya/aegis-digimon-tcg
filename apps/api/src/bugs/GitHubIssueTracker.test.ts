@@ -187,6 +187,16 @@ describe("the issue a report becomes", () => {
       expect(body.indexOf("### Replay")).toBeLessThan(body.indexOf("Reported in-game by"));
     });
 
+    it("links the anonymous download when the public API origin is known", () => {
+      const body = issueBody(report({ matchId }), undefined, undefined, {
+        replay: { saved: true, reportId: 7, inputCount: 3 },
+        replayOrigin: "https://aegis-digi.online/",
+      });
+      expect(body).toContain(
+        "### Replay\n[Download the replay](https://aegis-digi.online/bug-reports/7/replay) (3 inputs; decks and inputs only, no player names; kept for a limited time). Maintainers: `pnpm replay fetch 7`.",
+      );
+    });
+
     it.each([
       ["logs_not_found", "logs not found"],
       ["timed_out", "timed out"],

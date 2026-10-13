@@ -5,6 +5,7 @@ import type { AuthSession } from "../accounts/AccountStore.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
 import { captureReportReplay, type ReplayCapturer } from "./replayCapture.js";
 import { installFeedbackTriageRoutes } from "./triageRoutes.js";
+import { parseId } from "#api/http/parseId";
 import {
   FEEDBACK_KINDS,
   MAX_BUG_REPORT_CARDS,
@@ -25,6 +26,9 @@ const SIGNED_IN_RATE_LIMIT: TokenBucketOptions = { capacity: 5, refillMs: 60_000
 // so the anonymous budget is much smaller than the one an account gets. It is still several reports
 // per session for anyone hitting a genuinely broken card.
 const ANONYMOUS_RATE_LIMIT: TokenBucketOptions = { capacity: 3, refillMs: 5 * 60_000 };
+
+// Replays are linked from public issues; the limit only stops a scraper from walking every report id.
+const REPLAY_DOWNLOAD_RATE_LIMIT: TokenBucketOptions = { capacity: 30, refillMs: 60_000 };
 
 // Long enough for any real browser string, short enough that it cannot become the payload.
 const MAX_USER_AGENT = 300;
@@ -48,6 +52,7 @@ export type BugReportRouteDeps = {
 export function installBugReportRoutes({ app, store, tracker, session, replayCapture }: BugReportRouteDeps): void {
   const limitAccount = tokenBucketLimiter(SIGNED_IN_RATE_LIMIT);
   const limitAddress = tokenBucketLimiter(ANONYMOUS_RATE_LIMIT);
+  const limitDownload = tokenBucketLimiter(REPLAY_DOWNLOAD_RATE_LIMIT);
 
   app.get("/bug-reports/limits", (_req, res) => {
     res.json({
@@ -65,7 +70,26 @@ export function installBugReportRoutes({ app, store, tracker, session, replayCap
     submit(req, res).catch(next);
   });
 
+  app.get("/bug-reports/:id/replay", (req, res, next) => {
+    downloadReplay(req, res).catch(next);
+  });
+
   installFeedbackTriageRoutes({ app, store, session });
+
+  async function downloadReplay(req: Request, res: Response): Promise<void> {
+    res.set("Cache-Control", "no-store");
+    if (!limitDownload(req.ip ?? "unknown")) {
+      res.status(429).json({ error: "too_many_requests" });
+      return;
+    }
+    const id = parseId(req.params.id);
+    const record = id === undefined ? undefined : await store.publishedReplay(id);
+    if (!record) {
+      res.status(404).json({ error: "replay_not_found" });
+      return;
+    }
+    res.set("Content-Disposition", `attachment; filename="aegis-report-${id}.replay.json"`).json(record);
+  }
 
   async function submit(req: Request, res: Response): Promise<void> {
     const auth = await session(req);
@@ -81,9 +105,10 @@ export function installBugReportRoutes({ app, store, tracker, session, replayCap
       res.status(400).json({ error: report.error });
       return;
     }
+    const mirror = report.kind === "bug" ? tracker : undefined;
     let id: number;
     try {
-      id = await store.save(report, auth?.account.id, tracker !== undefined);
+      id = await store.save(report, auth?.account.id, mirror !== undefined);
     } catch (failure) {
       console.error("[bug-reports] could not save feedback", failure);
       res.status(503).json({ error: "reports_unavailable" });
@@ -94,13 +119,13 @@ export function installBugReportRoutes({ app, store, tracker, session, replayCap
     // response by at most that budget and can never fail it.
     let replay: ReplayOutcome | undefined;
     if (report.matchId && replayCapture) replay = await captureReportReplay(store, replayCapture, id, report.matchId);
-    if (!tracker) {
+    if (!mirror) {
       res.status(201).json({ number: id });
       return;
     }
     let issue;
     try {
-      issue = await tracker.file(report, replay ? { replay } : {});
+      issue = await mirror.file(report, replay ? { replay } : {});
     } catch (failure) {
       console.error("[bug-reports] saved feedback but GitHub mirror failed", failure);
     }
