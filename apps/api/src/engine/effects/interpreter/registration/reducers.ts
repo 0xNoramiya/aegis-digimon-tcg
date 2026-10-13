@@ -397,6 +397,7 @@ const VERIFIED_DIGIVOLVE_SELF_REDUCER_CARDS = new Set([
   "EX9-063", // Ver.4 base: this card's own evolution costs -1 per face-down source
   "EX9-031", // Ver.3 base: this card's own evolution costs -1 per face-down source
   "EX9-041", // Ver.5 base: this card's own evolution costs -1 per face-down source
+  "BT18-085",
 ]);
 
 /**
@@ -441,7 +442,7 @@ export function collectWouldDigivolveSelfReducers(cardId: string, effects: reado
           reducers.push({
             ...(action.cost !== undefined ? { cost: action.cost } : {}),
             ...(action.condition !== undefined ? { condition: action.condition } : {}),
-            ...(action.scaling !== undefined ? { scaling: action.scaling } : {}),
+            ...((action.scaling ?? outer.scaling) !== undefined ? { scaling: action.scaling ?? outer.scaling } : {}),
             ...(outer.sourceFilter !== undefined ? { sourceFilter: outer.sourceFilter } : {}),
             ...(outer.condition?.kind === "selfDigivolutionStackMatchesFilter" && outer.condition.filter !== undefined
               ? { sourceStackFilter: outer.condition.filter }
