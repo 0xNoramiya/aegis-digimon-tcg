@@ -14,6 +14,7 @@ import { getDeckBuilderPreferences, setDeckBuilderPreferences } from "../screens
 import { I18nProvider, useTranslation } from "../i18n";
 import { accountApi, type AccountPreferences } from "./client";
 import { isAutoHatchEnabled, setAutoHatchEnabled } from "../game/autoHatch";
+import { areProfileStatsShown, setProfileStatsShown } from "./profileStats";
 import { usePreferencesSync } from "./usePreferencesSync";
 
 function wrapper({ children }: { children: ReactNode }) {
@@ -41,6 +42,7 @@ function echoUpdates(stored: AccountPreferences) {
 
 beforeEach(() => {
   setAutoHatchEnabled(false);
+  setProfileStatsShown(false);
   clearCustomCardSleeve();
   localStorage.clear();
   setCardSleeveId("digimon-standard");
@@ -156,6 +158,26 @@ it("defaults missing auto hatch to false when switching accounts", async () => {
   await waitFor(() => expect(isAutoHatchEnabled()).toBe(true));
   rerender({ id: "account-2" });
   await waitFor(() => expect(isAutoHatchEnabled()).toBe(false));
+});
+
+it("loads the profile stats choice from the account and syncs changes", async () => {
+  const stored = { profileStats: true };
+  vi.spyOn(accountApi, "preferences").mockResolvedValue(stored);
+  const update = echoUpdates(stored);
+  renderSync("account-1");
+  await waitFor(() => expect(areProfileStatsShown()).toBe(true));
+  act(() => setProfileStatsShown(false));
+  await waitFor(() => expect(update).toHaveBeenLastCalledWith({ profileStats: false }));
+});
+
+it("hides profile stats for accounts without a saved choice and does not write the default", async () => {
+  setProfileStatsShown(true);
+  vi.spyOn(accountApi, "preferences").mockResolvedValue({});
+  const update = echoUpdates({});
+  renderSync("account-1");
+  await waitFor(() => expect(areProfileStatsShown()).toBe(false));
+  await waitFor(() => expect(update).toHaveBeenCalled());
+  expect(update.mock.calls.some(([changes]) => "profileStats" in changes)).toBe(false);
 });
 
 it("blocks automation while a new account's preferences are loading", async () => {

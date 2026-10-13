@@ -5,8 +5,18 @@ import { Settings } from "./Settings";
 import { I18nProvider } from "../i18n";
 import { arePileCountsShown, setPileCountsShown } from "../design/pileCounts";
 import { isKeepAwakeEnabled, setKeepAwakeEnabled } from "../design/keepAwake";
+import { areProfileStatsShown, setProfileStatsShown } from "../account/profileStats";
+import type { RemoteAccount } from "../account/client";
 
 const player = { name: "Guest Tamer", color: "Blue", shards: 0, guestAvatarId: null };
+const account: RemoteAccount = {
+  id: "account-1",
+  displayName: "Tamer",
+  avatarUrl: null,
+  avatarId: null,
+  avatarSource: "initials",
+  isAdmin: false,
+};
 
 describe("settings layout", () => {
   afterEach(() => cleanup());
@@ -132,5 +142,38 @@ describe("settings keep awake", () => {
     expect(toggle.getAttribute("aria-checked")).toBe("false");
     expect(isKeepAwakeEnabled()).toBe(false);
     expect(localStorage.getItem("aegis.keep-awake.enabled")).toBe("false");
+  });
+});
+
+describe("settings profile stats", () => {
+  afterEach(() => {
+    cleanup();
+    setProfileStatsShown(false);
+  });
+
+  it("starts hidden and lets a signed-in player show the profile match stats", () => {
+    setProfileStatsShown(false);
+    render(
+      <I18nProvider>
+        <Settings player={player} account={account} dark={false} onToggleDark={() => undefined} />
+      </I18nProvider>,
+    );
+
+    const navigation = screen.getByRole("navigation", { name: "Preferences sections" });
+    expect(within(navigation).getByRole("link", { name: "My profile" })).toBeTruthy();
+    const toggle = screen.getByRole("switch", { name: /Show match stats/ });
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(toggle);
+    expect(areProfileStatsShown()).toBe(true);
+  });
+
+  it("leaves the profile section out for guests", () => {
+    render(
+      <I18nProvider>
+        <Settings player={player} account={null} dark={false} onToggleDark={() => undefined} />
+      </I18nProvider>,
+    );
+
+    expect(screen.queryByRole("switch", { name: /Show match stats/ })).toBeNull();
   });
 });

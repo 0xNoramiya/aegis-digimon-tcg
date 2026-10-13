@@ -44,6 +44,9 @@ export const profileReplayEn = {
   "profile.cancelName": "Cancel name change",
   "profile.nameRules": "3–32 characters · letters, numbers, spaces, - and _",
   "profile.preferences": "Preferences",
+  "profile.showStats": "Show match stats",
+  "profile.showStatsDesc":
+    "Show your matches, wins, win rate and saved replays at the top of your profile. Saved to your account.",
   "profile.avatarMenu.title": "Choose avatar",
   "profile.avatarMenu.default": "Use default avatar",
   "profile.avatarMenu.discord": "Use Discord avatar",
@@ -118,6 +121,9 @@ export const profileReplayPtBR = {
   "profile.cancelName": "Cancelar alteração do nome",
   "profile.nameRules": "3–32 caracteres · letras, números, espaços, - e _",
   "profile.preferences": "Preferências",
+  "profile.showStats": "Mostrar estatísticas de partidas",
+  "profile.showStatsDesc":
+    "Mostra suas partidas, vitórias, taxa de vitória e replays salvos no topo do seu perfil. Salvo na sua conta.",
   "profile.avatarMenu.title": "Escolher avatar",
   "profile.avatarMenu.default": "Usar avatar padrão",
   "profile.avatarMenu.discord": "Usar avatar do Discord",
@@ -192,6 +198,9 @@ export const profileReplayEs = {
   "profile.cancelName": "Cancelar cambio de nombre",
   "profile.nameRules": "3–32 caracteres · letras, números, espacios, - y _",
   "profile.preferences": "Preferencias",
+  "profile.showStats": "Mostrar estadísticas de partidas",
+  "profile.showStatsDesc":
+    "Muestra tus partidas, victorias, tasa de victorias y replays guardados en la parte superior de tu perfil. Se guarda en tu cuenta.",
   "profile.avatarMenu.title": "Elegir avatar",
   "profile.avatarMenu.default": "Usar avatar predeterminado",
   "profile.avatarMenu.discord": "Usar avatar de Discord",
@@ -266,6 +275,9 @@ export const profileReplayIt = {
   "profile.cancelName": "Annulla modifica del nome",
   "profile.nameRules": "3–32 caratteri · lettere, numeri, spazi, - e _",
   "profile.preferences": "Preferenze",
+  "profile.showStats": "Mostra statistiche delle partite",
+  "profile.showStatsDesc":
+    "Mostra partite, vittorie, percentuale di vittorie e replay salvati in cima al tuo profilo. Salvato nel tuo account.",
   "profile.avatarMenu.title": "Scegli avatar",
   "profile.avatarMenu.default": "Usa avatar predefinito",
   "profile.avatarMenu.discord": "Usa avatar di Discord",

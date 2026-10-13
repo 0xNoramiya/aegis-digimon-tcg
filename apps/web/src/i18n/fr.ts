@@ -112,6 +112,9 @@ const interfaceMessages = {
   "profile.cancelName": "Annuler le changement de nom",
   "profile.nameRules": "3 à 32 caractères · lettres, chiffres, espaces, - et _",
   "profile.preferences": "Préférences",
+  "profile.showStats": "Afficher les statistiques de match",
+  "profile.showStatsDesc":
+    "Affiche tes matchs, victoires, taux de victoire et replays sauvegardés en haut de ton profil. Enregistré sur ton compte.",
   "profile.avatarMenu.title": "Choisir un avatar",
   "profile.avatarMenu.default": "Utiliser l'avatar par défaut",
   "profile.avatarMenu.discord": "Utiliser l'avatar Discord",
