@@ -92,8 +92,11 @@ export default defineConfig({
           if (id.includes("node_modules/colyseus") || id.includes("node_modules/@colyseus")) {
             return "colyseus-vendor";
           }
-          if (id.includes("cards.json") || id.includes("effects.json")) {
+          if (id.includes("cards.json")) {
             return "cards-data";
+          }
+          if (id.includes("effects.json")) {
+            return "effects-data";
           }
         },
       },
