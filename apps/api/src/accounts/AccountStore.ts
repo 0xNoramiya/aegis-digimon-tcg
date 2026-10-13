@@ -140,6 +140,9 @@ export class DeckLimitError extends Error {}
 export class DisplayNameTakenError extends Error {}
 export class InvalidDisplayNameError extends Error {}
 
+const MAGIC_LINK_SHORT_WINDOW_MS = 900_000;
+const MAGIC_LINK_DAY_WINDOW_MS = 86_400_000;
+
 type AccountRow = {
   id: string;
   display_name: string;
@@ -473,12 +476,16 @@ export class AccountStore {
     if (now - this.lastMagicLinkCleanup >= 60_000) {
       this.lastMagicLinkCleanup = now;
       await this.pool.query("DELETE FROM magic_links WHERE expires_at <= $1", [now]);
-      await this.pool.query("DELETE FROM magic_link_request_limits WHERE window_started_at <= $1", [now - 86_400_000]);
+      await this.pool.query("DELETE FROM magic_link_request_limits WHERE window_started_at <= $1", [
+        now - MAGIC_LINK_DAY_WINDOW_MS,
+      ]);
     }
-    const windowMs = 900_000;
-    for (const [key, capacity] of [
-      [`ip:${ip}`, 10],
-      [`email:${email.trim().toLowerCase()}`, 3],
+    const recipient = email.trim().toLowerCase();
+    for (const [key, capacity, windowMs] of [
+      [`ip:${ip}`, 10, MAGIC_LINK_SHORT_WINDOW_MS],
+      [`email:${recipient}`, 3, MAGIC_LINK_SHORT_WINDOW_MS],
+      [`ip-day:${ip}`, 20, MAGIC_LINK_DAY_WINDOW_MS],
+      [`email-day:${recipient}`, 5, MAGIC_LINK_DAY_WINDOW_MS],
     ] as const) {
       const keyHash = hash(key);
       await this.pool.query(
@@ -529,6 +536,14 @@ export class AccountStore {
       day,
       limit,
     ]);
+  }
+  async magicLinkIsLive(token: string): Promise<boolean> {
+    await this.ensureReady();
+    const result = await this.pool.query(
+      "SELECT 1 FROM magic_links WHERE token_hash=$1 AND consumed_at IS NULL AND expires_at>$2",
+      [hash(token), Date.now()],
+    );
+    return (result.rowCount ?? 0) > 0;
   }
   async consumeMagicLink(token: string): Promise<Account | undefined> {
     const email = await this.transaction(

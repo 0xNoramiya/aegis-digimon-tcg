@@ -30,6 +30,7 @@ import { DeploymentServer } from "./deployment/DeploymentServer.js";
 import { isActiveDeploymentSlot, setRoomCreationAdmission } from "./deployment/admission.js";
 import { corsOriginForRequest } from "./http/cors.js";
 import { mailerFromEnv } from "./email/mailer.js";
+import { turnstileVerifier } from "#api/accounts/turnstileVerifier";
 import { createClusterRuntime } from "./cluster/runtime.js";
 import { setRoomCodeDirectory } from "./rooms/AegisRoom.js";
 import { createSeriesDirectory, setSeriesDirectory } from "./rooms/series/SeriesDirectory.js";
@@ -85,6 +86,7 @@ installAccountRoutes(
   GitHubDeckReportTracker.fromEnvironment(),
   discordAvatars,
   replayLibrary,
+  process.env.TURNSTILE_SECRET_KEY ? turnstileVerifier({ secret: process.env.TURNSTILE_SECRET_KEY }) : undefined,
 );
 if (discordAvatarBackfill) void backfillDiscordAvatars(accountStore, discordAvatarBackfill).catch(() => undefined);
 function scheduleReplayCleanup() {

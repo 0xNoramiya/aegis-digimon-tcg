@@ -1894,10 +1894,14 @@ const interfaceMessages = {
   "account.emailLabel": "Courriel",
   "account.emailPlaceholder": "vous@email.com",
   "account.sendMagicLink": "Envoyer un lien magique",
-  "account.magicLinkSent": "Vérifiez votre courrier électronique pour vous connecter.",
+  "account.magicLinkSent":
+    "Vérifiez votre e-mail pour vous connecter. S'il n'est pas dans votre boîte de réception, regardez dans les spams ou le courrier indésirable.",
   "account.magicLinkDailyLimit":
     "Nous avons atteint la limite d'e-mails de connexion d'aujourd'hui. Connectez-vous avec Discord ou réessayez demain.",
   "account.magicLinkError": "Impossible d'envoyer l'e-mail de connexion. Essayer à nouveau.",
+  "account.magicLinkTooMany":
+    "Trop d'e-mails de connexion demandés. Attendez quelques minutes ou connectez-vous avec Discord.",
+  "account.magicLinkHumanCheck": "Impossible de confirmer que vous êtes humain. Terminez la vérification et réessayez.",
   "account.connected": "Compte connecté",
   "account.nickname.label": "Surnom",
   "account.nickname.invalid": "Utilisez 3 à 32 lettres, chiffres, espaces, traits de soulignement ou traits d'union.",

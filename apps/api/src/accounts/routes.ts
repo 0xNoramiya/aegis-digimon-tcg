@@ -18,7 +18,7 @@ import {
   type TournamentSummary,
   type TournamentView,
 } from "@aegis/shared";
-import type { Express, NextFunction, Request, Response } from "express";
+import express, { type Express, type NextFunction, type Request, type Response } from "express";
 import {
   defaultBanlistPolicy,
   LEGACY_DEFAULT_PRESET_ID,
@@ -54,6 +54,8 @@ import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.j
 import { EmailQuotaExceededError, type Mailer } from "../email/mailer.js";
 import { TOURNAMENT_RULES_PRESETS, type TournamentRulesPreset } from "../tournaments/rules/index.js";
 import { type DiscordAvatarSource, discordAvatarUrl, refreshDiscordAvatarNow } from "./discordAvatars.js";
+import { MAGIC_LINK_PAGE_HEADERS, magicLinkPage } from "#api/accounts/magicLinkPage";
+import type { HumanVerifier } from "#api/accounts/turnstileVerifier";
 import {
   AccountStore,
   DeckLimitError,
@@ -100,6 +102,7 @@ export function installAccountRoutes(
   deckReports?: DeckReportTracker,
   discordAvatars?: DiscordAvatarSource,
   replays: ReplayLibrary = new ReplayLibrary(store),
+  humanVerifier?: HumanVerifier,
 ): void {
   const sessionFromRequest = (req: Request) => store.session(cookie(req, SESSION_COOKIE));
   installReplayRoutes({ app, library: replays, session: sessionFromRequest });
@@ -175,7 +178,13 @@ export function installAccountRoutes(
   post("/auth/magic-link", async (req, res) => {
     const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
     if (email.length <= 254 && email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      if (!(await store.allowMagicLinkRequest({ ip: req.ip ?? "unknown", email }))) {
+      const ip = req.ip ?? "unknown";
+      const humanToken = typeof req.body?.turnstileToken === "string" ? req.body.turnstileToken : "";
+      if (humanVerifier && !(await humanVerifier({ token: humanToken, ip }))) {
+        res.status(403).json({ error: "human_check_failed" });
+        return;
+      }
+      if (!(await store.allowMagicLinkRequest({ ip, email }))) {
         res.status(429).json({ error: "too_many_requests" });
         return;
       }
@@ -198,14 +207,34 @@ export function installAccountRoutes(
   });
   get("/auth/magic-link/consume", async (req, res) => {
     const token = typeof req.query.token === "string" ? req.query.token : "";
-    const account = await store.consumeMagicLink(token);
-    if (!account) {
-      res.status(400).json({ error: "invalid or expired sign-in link" });
+    res.set(MAGIC_LINK_PAGE_HEADERS);
+    if (await store.magicLinkIsLive(token)) {
+      res.type("html").send(magicLinkPage({ kind: "confirm", token }));
       return;
     }
-    setSession(res, await store.issueSession(account));
-    res.redirect(process.env.AEGIS_WEB_URL ?? "/");
+    res
+      .status(410)
+      .type("html")
+      .send(magicLinkPage({ kind: "unavailable", homeUrl: webUrl() }));
   });
+  app.post(
+    "/auth/magic-link/consume",
+    express.urlencoded({ extended: false, limit: "4kb" }),
+    asyncRoute(async (req, res) => {
+      const token = typeof req.body?.token === "string" ? req.body.token : "";
+      const account = await store.consumeMagicLink(token);
+      res.set(MAGIC_LINK_PAGE_HEADERS);
+      if (!account) {
+        res
+          .status(410)
+          .type("html")
+          .send(magicLinkPage({ kind: "unavailable", homeUrl: webUrl() }));
+        return;
+      }
+      setSession(res, await store.issueSession(account));
+      res.redirect(303, webUrl());
+    }),
+  );
 
   get("/auth/discord", (_req, res) => {
     const clientId = process.env.DISCORD_CLIENT_ID;
@@ -966,6 +995,9 @@ function cookie(req: Request, key: string): string | undefined {
     ?.split(";")
     .map((part) => part.trim().split("="))
     .find(([name]) => name === key)?.[1];
+}
+function webUrl(): string {
+  return process.env.AEGIS_WEB_URL ?? "/";
 }
 function setSession(res: Response, session: AuthSession): void {
   setCookie(res, SESSION_COOKIE, session.id, Math.max(1, Math.floor((session.expiresAt - Date.now()) / 1000)));

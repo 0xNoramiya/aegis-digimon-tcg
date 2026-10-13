@@ -1838,10 +1838,12 @@ const interfaceMessages = {
   "account.emailLabel": "이메일",
   "account.emailPlaceholder": "you@email.com",
   "account.sendMagicLink": "매직 링크 보내기",
-  "account.magicLinkSent": "이메일을 확인하여 로그인하세요.",
+  "account.magicLinkSent": "이메일을 확인하여 로그인하세요. 받은편지함에 없으면 스팸함을 확인하세요.",
   "account.magicLinkDailyLimit":
     "오늘의 로그인 이메일 한도에 도달했습니다. Discord로 로그인하거나 내일 다시 시도해 보세요.",
   "account.magicLinkError": "로그인 이메일을 보낼 수 없습니다. 다시 시도해 보세요.",
+  "account.magicLinkTooMany": "로그인 이메일 요청이 너무 많습니다. 몇 분 후에 다시 시도하거나 Discord로 로그인하세요.",
+  "account.magicLinkHumanCheck": "사람인지 확인할 수 없습니다. 확인을 완료한 후 다시 시도하세요.",
   "account.connected": "계정이 연결되었습니다",
   "account.nickname.label": "닉네임",
   "account.nickname.invalid": "3~32자의 문자, 숫자, 공백, 밑줄 또는 하이픈을 사용하세요.",

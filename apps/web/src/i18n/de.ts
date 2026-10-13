@@ -1914,10 +1914,15 @@ const interfaceMessages = {
   "account.emailLabel": "E-Mail",
   "account.emailPlaceholder": "you@email.com",
   "account.sendMagicLink": "Senden Sie einen magischen Link",
-  "account.magicLinkSent": "Überprüfen Sie Ihre E-Mails, um sich anzumelden.",
+  "account.magicLinkSent":
+    "Prüfe deine E-Mails, um dich anzumelden. Falls die E-Mail nicht im Posteingang ist, sieh im Spam- oder Junk-Ordner nach.",
   "account.magicLinkDailyLimit":
     "Wir haben das heutige E-Mail-Limit für die Anmeldung erreicht. Melden Sie sich bei Discord an oder versuchen Sie es morgen erneut.",
   "account.magicLinkError": "Die Anmelde-E-Mail konnte nicht gesendet werden. Versuchen Sie es erneut.",
+  "account.magicLinkTooMany":
+    "Zu viele Anmelde-E-Mails angefordert. Warte ein paar Minuten oder melde dich mit Discord an.",
+  "account.magicLinkHumanCheck":
+    "Wir konnten nicht bestätigen, dass du ein Mensch bist. Schließe die Prüfung ab und versuche es erneut.",
   "account.connected": "Konto verbunden",
   "account.nickname.label": "Spitzname",
   "account.nickname.invalid": "Verwenden Sie 3–32 Buchstaben, Zahlen, Leerzeichen, Unterstriche oder Bindestriche.",

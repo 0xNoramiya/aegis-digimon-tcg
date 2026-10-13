@@ -8,6 +8,9 @@ import { Icons } from "../design/icons";
 import { Alert, Button, Field } from "../design/primitives";
 import { Panel } from "../design/surfaces";
 import { accountApi } from "../account/client";
+import { TurnstileWidget } from "@/account/TurnstileWidget";
+import { TURNSTILE_SITE_KEY } from "@/account/turnstileSiteKey";
+import { useMagicLinkRequest } from "@/account/useMagicLinkRequest";
 import { useTranslation } from "../i18n";
 import "./login.css";
 
@@ -15,23 +18,16 @@ export function Login({ onBack }: { onBack: () => void }) {
   const { t } = useTranslation();
   const [redirecting, setRedirecting] = useState(false);
   const [email, setEmail] = useState("");
-  const [sendingLink, setSendingLink] = useState(false);
-  const [linkSent, setLinkSent] = useState(false);
+  const magicLink = useMagicLinkRequest();
 
   const signInWithDiscord = () => {
     setRedirecting(true);
     location.href = `${accountApi.base}/auth/discord`;
   };
 
-  const sendMagicLink = async (event: FormEvent) => {
+  const sendMagicLink = (event: FormEvent) => {
     event.preventDefault();
-    setSendingLink(true);
-    try {
-      await accountApi.magicLink(email);
-      setLinkSent(true);
-    } finally {
-      setSendingLink(false);
-    }
+    void magicLink.send(email);
   };
 
   return (
@@ -72,7 +68,7 @@ export function Login({ onBack }: { onBack: () => void }) {
               <span>{t("account.orEmail")}</span>
             </div>
 
-            <form className="login-email" onSubmit={(event) => void sendMagicLink(event)}>
+            <form className="login-email" onSubmit={sendMagicLink}>
               <Field
                 required
                 type="email"
@@ -83,11 +79,25 @@ export function Login({ onBack }: { onBack: () => void }) {
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder={t("account.emailPlaceholder")}
               />
-              <Button type="submit" variant="secondary" icon={Icons.Send} disabled={sendingLink} full>
+              {TURNSTILE_SITE_KEY ? (
+                <TurnstileWidget
+                  key={magicLink.challenge}
+                  siteKey={TURNSTILE_SITE_KEY}
+                  onToken={magicLink.onHumanToken}
+                />
+              ) : null}
+              <Button
+                type="submit"
+                variant="secondary"
+                icon={Icons.Send}
+                disabled={magicLink.sending || magicLink.waitingForHuman}
+                full
+              >
                 {t("account.sendMagicLink")}
               </Button>
             </form>
-            {linkSent ? <Alert tone="success">{t("account.magicLinkSent")}</Alert> : null}
+            {magicLink.sent ? <Alert tone="success">{t("account.magicLinkSent")}</Alert> : null}
+            {magicLink.errorKey ? <Alert tone="danger">{t(magicLink.errorKey)}</Alert> : null}
           </div>
 
           <div className="login-card__guest">

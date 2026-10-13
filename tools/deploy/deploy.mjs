@@ -277,6 +277,8 @@ export async function controller({
         "VITE_AEGIS_DEPLOYMENT_MODE=slots",
         "--build-arg",
         `VITE_GOOGLE_CLIENT_ID=${config.services.web?.build?.args?.VITE_GOOGLE_CLIENT_ID ?? ""}`,
+        "--build-arg",
+        `VITE_TURNSTILE_SITE_KEY=${config.services.web?.build?.args?.VITE_TURNSTILE_SITE_KEY ?? ""}`,
         "-t",
         `aegis-static:${webRevision}`,
         "-f",

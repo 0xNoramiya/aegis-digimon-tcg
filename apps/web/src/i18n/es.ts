@@ -1653,10 +1653,14 @@ export const es: Record<keyof typeof en, string> = {
   "account.emailLabel": "Correo electrónico",
   "account.emailPlaceholder": "tu@email.com",
   "account.sendMagicLink": "Enviar enlace mágico",
-  "account.magicLinkSent": "Revisa tu correo para iniciar sesión.",
+  "account.magicLinkSent":
+    "Revisa tu correo para iniciar sesión. Si no está en la bandeja de entrada, busca en Spam o Correo no deseado.",
   "account.magicLinkDailyLimit":
     "Alcanzamos el límite diario de correos de inicio de sesión. Inicia sesión con Discord o inténtalo de nuevo mañana.",
   "account.magicLinkError": "No se pudo enviar el correo de inicio de sesión. Inténtalo de nuevo.",
+  "account.magicLinkTooMany":
+    "Se solicitaron demasiados correos de inicio de sesión. Espera unos minutos o inicia sesión con Discord.",
+  "account.magicLinkHumanCheck": "No pudimos confirmar que eres humano. Completa la verificación e inténtalo de nuevo.",
   "account.connected": "Cuenta conectada",
   "account.nickname.label": "Apodo",
   "account.nickname.invalid": "Usa de 3 a 32 letras, números, espacios, guiones bajos o guiones.",
