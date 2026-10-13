@@ -1,5 +1,23 @@
 [
   {
+    "version": "1.25.5-beta",
+    "releasedAt": "2026-10-13",
+    "summaryKey": "releases.1.25.5-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.25.5-beta.feature.loading"
+      },
+      {
+        "textKey": "releases.1.25.5-beta.feature.playRestrictions"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.25.5-beta.fix.dualOption"
+      }
+    ]
+  },
+  {
     "version": "1.25.4-beta",
     "releasedAt": "2026-10-12",
     "summaryKey": "releases.1.25.4-beta.summary",

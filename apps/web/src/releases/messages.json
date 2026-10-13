@@ -1,4 +1,28 @@
 {
+  "releases.1.25.5-beta.summary": {
+    "en": "Aegis loads faster, play restrictions appear in the field effects panel, and DUAL Option dialogs are clearer.",
+    "pt-BR": "O Aegis carrega mais rápido, restrições de jogada aparecem no painel de efeitos de campo, e as janelas de Option DUAL ficaram mais claras.",
+    "es": "Aegis carga más rápido, las restricciones de juego aparecen en el panel de efectos de campo, y los diálogos de Option DUAL son más claros.",
+    "it": "Aegis si carica più velocemente, le restrizioni di gioco compaiono nel pannello degli effetti di campo e le finestre delle Option DUAL sono più chiare."
+  },
+  "releases.1.25.5-beta.feature.loading": {
+    "en": "The first screen downloads much less. Languages, card effects, famous decks, settings and release notes now load only when you open them.",
+    "pt-BR": "A primeira tela baixa bem menos. Idiomas, efeitos de cartas, decks famosos, configurações e notas de versão agora carregam só quando você os abre.",
+    "es": "La primera pantalla descarga mucho menos. Idiomas, efectos de cartas, mazos famosos, ajustes y notas de versión ahora se cargan solo cuando los abres.",
+    "it": "La prima schermata scarica molto meno. Lingue, effetti delle carte, mazzi famosi, impostazioni e note di rilascio ora si caricano solo quando li apri."
+  },
+  "releases.1.25.5-beta.feature.playRestrictions": {
+    "en": "Effects that stop a player from playing Digimon, such as Crimson Blaze, now show in that player’s field effects panel with their source card.",
+    "pt-BR": "Efeitos que impedem um jogador de jogar Digimon, como Crimson Blaze, agora aparecem no painel de efeitos de campo desse jogador com a carta de origem.",
+    "es": "Los efectos que impiden a un jugador jugar Digimon, como Crimson Blaze, ahora aparecen en el panel de efectos de campo de ese jugador con su carta de origen.",
+    "it": "Gli effetti che impediscono a un giocatore di giocare Digimon, come Crimson Blaze, ora compaiono nel pannello degli effetti di campo di quel giocatore con la carta di origine."
+  },
+  "releases.1.25.5-beta.fix.dualOption": {
+    "en": "The DUAL card dialog shows the Option effect without its use requirement, and Final Judgment highlights the attack that follows.",
+    "pt-BR": "A janela de carta DUAL mostra o efeito de Option sem o requisito de uso, e Final Judgment destaca o ataque que vem em seguida.",
+    "es": "El diálogo de carta DUAL muestra el efecto de Option sin su requisito de uso, y Final Judgment resalta el ataque que sigue.",
+    "it": "La finestra delle carte DUAL mostra l’effetto Option senza il requisito d’uso, e Final Judgment evidenzia l’attacco che segue."
+  },
   "releases.1.25.4-beta.summary": {
     "en": "The screen stays awake during a match, dropped connections resume your seat, and several card cost and timing fixes.",
     "pt-BR": "A tela fica ligada durante a partida, conexões perdidas retomam seu lugar, e várias correções de custo e momento de cartas.",
