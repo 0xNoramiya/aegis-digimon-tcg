@@ -104,6 +104,7 @@ const PRODUCT_RELEASES: Readonly<Record<string, ProductRelease>> = {
   BT26: { date: "2026-09-04", label: "BT26" },
   // Announced, not yet in stores as of this table's last verification (2026-09-11).
   EX13: { date: "2026-10-02", label: "EX13" },
+  BT27: { date: "2026-12-11", label: "BT27" },
 };
 
 /**
