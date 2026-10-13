@@ -445,6 +445,7 @@ export async function runResourceAction(ctx: EffectContext, action: Action, scop
               // digivolve into the same card id (CR-01).
               if (m.into === undefined || m.into.cardId !== selfCardId) return false;
               if (m.target.controllerSeat !== ctx.source.ownerSeat) return false;
+              if (m.target.inBreeding && !setMode) return false;
               // Some hand-resident reducers constrain the BASE as well as the destination.
               // BT3-031, for example, reduces only when the Digimon being evolved is
               // Paildramon/Dinobeemon. Its sourceFilter also gates effect installation, but
