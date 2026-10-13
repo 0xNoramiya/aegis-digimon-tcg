@@ -49892,6 +49892,39 @@
     "nameJp": "コンロン"
   },
   {
+    "cardId": "BT27-084",
+    "set": "BT27",
+    "nameEn": "LordKnightmon (X Antibody)",
+    "colors": ["Purple", "Black"],
+    "kinds": ["Digimon", "Option"],
+    "level": 6,
+    "playCost": 5,
+    "dp": 12000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 5,
+        "memoryCost": 4
+      },
+      {
+        "color": "Black",
+        "level": 5,
+        "memoryCost": 4
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Virus"],
+    "types": ["Holy Warrior", "X Antibody", "Royal Knight"],
+    "effectText": "[Digivolve] [LordKnightmon]: Cost 2 \n\n＜Alliance＞ \n＜Collision＞ \n＜Piercing＞ \n＜Blocker＞ \n[When Digivolving] You may play up to 8 play cost's total worth of cards with [Knightmon] in their texts from your hand without paying the cost.\n[All Turns] [Once Per Turn] When any of your other Digimon are played or deleted, by trashing 1 [LordKnightmon] or [X Antibody] from this Digimon's digivolution cards, activate 1 [Main] effect on this card's Option side.",
+    "rarity": "SR",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-084",
+    "dualEffect": "Ultimate Thrusting Sword Gran Rozerio",
+    "optionEffect": "[Main] Delete 1 of your opponent's lowest level Digimon. If this effect didn't delete, until your turn ends, all of your Digimon with [Knightmon] in their texts gain ＜Blocker＞, your opponent's Digimon effects don't affect them and they get +3000 DP.",
+    "optionColorRequirements": ["Purple", "Black"],
+    "isDualCard": true
+  },
+  {
     "cardId": "BT3-001",
     "set": "BT3",
     "nameEn": "Poromon",
