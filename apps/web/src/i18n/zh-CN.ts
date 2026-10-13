@@ -668,6 +668,7 @@ const interfaceMessages = {
   "library.cardType": "卡型",
   "library.level": "等级",
   "library.playCost": "游玩费用",
+  "library.digivolutionCost": "进化费用",
   "library.rarity": "稀有度",
   "library.sort": "排序",
   "library.sort.releaseDate": "排序：发布日期（最新的在前）",

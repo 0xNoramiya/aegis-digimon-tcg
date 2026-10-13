@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { CardColor, CardKind, allCards } from "@aegis/shared";
 import { readableEffectText } from "./CardDetailDrawer";
 import {
+  COST_FILTERS,
+  HIGHEST_COST_FILTER,
   matchesColorFilter,
   matchesCostFilter,
   matchesLevelFilter,
@@ -49,12 +51,23 @@ describe("card level and trait filtering", () => {
     expect(matchesLevelFilter(undefined, [])).toBe(true);
   });
 
-  it("matches selected play costs and keeps seven as a high-cost bucket", () => {
+  it("matches exact play costs and keeps the highest chip as an or-more bucket", () => {
     expect(matchesCostFilter(4, [3, 4])).toBe(true);
     expect(matchesCostFilter(5, [3, 4])).toBe(false);
-    expect(matchesCostFilter(10, [7])).toBe(true);
+    expect(matchesCostFilter(12, [12])).toBe(true);
+    expect(matchesCostFilter(13, [12])).toBe(false);
+    expect(matchesCostFilter(10, [7])).toBe(false);
+    expect(matchesCostFilter(20, [HIGHEST_COST_FILTER])).toBe(true);
+    expect(matchesCostFilter(HIGHEST_COST_FILTER - 1, [HIGHEST_COST_FILTER])).toBe(false);
     expect(matchesCostFilter(-1, [0])).toBe(false);
     expect(matchesCostFilter(-1, [])).toBe(true);
+  });
+
+  it("reaches every printed play cost with a cost chip", () => {
+    const unreachable = allCards().filter(
+      (card) => card.playCost >= 0 && !COST_FILTERS.some((cost) => matchesCostFilter(card.playCost, [cost])),
+    );
+    expect(unreachable).toEqual([]);
   });
 
   it("matches printed traits and attributes, but not absent values", () => {

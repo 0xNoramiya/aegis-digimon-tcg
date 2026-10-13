@@ -704,6 +704,7 @@ const interfaceMessages = {
   "library.cardType": "カードの種類",
   "library.level": "レベル",
   "library.playCost": "プレイコスト",
+  "library.digivolutionCost": "進化コスト",
   "library.rarity": "レアリティ",
   "library.sort": "並べ替え",
   "library.sort.releaseDate": "並び替え: 発売日(新しい順)",

@@ -706,6 +706,7 @@ const interfaceMessages = {
   "library.cardType": "Jenis kartu",
   "library.level": "Tingkat",
   "library.playCost": "Biaya bermain",
+  "library.digivolutionCost": "Biaya digivolusi",
   "library.rarity": "Kelangkaan",
   "library.sort": "Sortir",
   "library.sort.releaseDate": "Urutkan: Tanggal rilis (terbaru dulu)",
