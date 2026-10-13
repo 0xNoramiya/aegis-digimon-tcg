@@ -1249,6 +1249,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.fieldEffects.untilActivePhase": "Até a ativação de {player}",
   "game.fieldEffects.untilCost": "Até calcular o custo",
   "game.restriction.cannotAttack": "Não pode atacar",
+  "game.restriction.cannotPlayByEffects": "Não pode jogar por efeitos",
+  "game.restriction.cannotPlay": "Não pode jogar",
   "game.restriction.cannotBlock": "Não pode bloquear",
   "game.restriction.cannotSuspend": "Não pode suspender",
   "game.restriction.cannotUnsuspend": "Não reativa",

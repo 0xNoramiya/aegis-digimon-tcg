@@ -34,6 +34,9 @@ const restrictionLabels: Record<string, TranslationKey> = {
   beAffected: "game.restriction.immuneToOpponentEffects",
   beDeleted: "game.restriction.protectedFromEffectDeletion",
   beReturned: "game.restriction.protectedFromEffectReturn",
+  playByEffects: "game.restriction.cannotPlayByEffects",
+  play: "game.restriction.cannotPlay",
+  playOrMove: "game.restriction.cannotPlay",
 };
 
 export function FieldEffectsIndicator({

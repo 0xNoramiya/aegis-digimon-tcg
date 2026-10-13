@@ -850,6 +850,8 @@ const interfaceMessages = {
   "game.fieldEffects.untilActivePhase": "Fino alla fase di attivazione di {player}",
   "game.fieldEffects.untilCost": "Fino al calcolo del costo",
   "game.restriction.cannotAttack": "Non può attaccare",
+  "game.restriction.cannotPlayByEffects": "Non può giocare tramite effetti",
+  "game.restriction.cannotPlay": "Non può giocare",
   "game.restriction.immuneToOpponentDigimonEffects": "Protetto dagli effetti dei Digimon avversari",
   "game.protectionBadge.immuneToOpponentDigimonEffects": "Prot. Digimon",
   "game.restriction.immuneToOpponentEffects": "Protetto dagli effetti avversari",

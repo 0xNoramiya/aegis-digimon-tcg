@@ -1224,6 +1224,8 @@ export const en = {
   "game.fieldEffects.untilActivePhase": "Until {player}’s unsuspend phase",
   "game.fieldEffects.untilCost": "Until the cost is calculated",
   "game.restriction.cannotAttack": "Can't attack",
+  "game.restriction.cannotPlayByEffects": "Can't play by effects",
+  "game.restriction.cannotPlay": "Can't play",
   "game.restriction.immuneToOpponentDigimonEffects": "Protected from opposing Digimon effects",
   "game.protectionBadge.immuneToOpponentDigimonEffects": "Prot. Digimon",
   "game.restriction.immuneToOpponentEffects": "Protected from opposing effects",

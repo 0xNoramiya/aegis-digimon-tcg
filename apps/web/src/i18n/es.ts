@@ -1212,6 +1212,8 @@ export const es: Record<keyof typeof en, string> = {
   "game.fieldEffects.untilActivePhase": "Hasta la fase de activación de {player}",
   "game.fieldEffects.untilCost": "Hasta calcular el coste",
   "game.restriction.cannotAttack": "No puede atacar",
+  "game.restriction.cannotPlayByEffects": "No puede jugar mediante efectos",
+  "game.restriction.cannotPlay": "No puede jugar",
   "game.restriction.cannotBlock": "No puede bloquear",
   "game.restriction.cannotSuspend": "No puede suspenderse",
   "game.restriction.cannotUnsuspend": "No se reactiva",

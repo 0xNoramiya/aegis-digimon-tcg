@@ -29,6 +29,7 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Your opponent can't play Digimon by effects until the end of their turn.",
           kind: "RestrictPlay",
           seat: "opponent",
           filter: {
