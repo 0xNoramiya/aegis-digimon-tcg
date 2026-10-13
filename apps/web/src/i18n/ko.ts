@@ -1977,6 +1977,10 @@ const interfaceMessages = {
   "redesign.shell.startup.reconnecting": "Aegis에 다시 연결하는 중…",
   "redesign.shell.startup.reserved": "귀하의 경기는 아직 예약되어 있습니다. 이 페이지는 자동으로 복구됩니다.",
   "redesign.shell.startup.retry": "지금 사용해 보세요",
+  "redesign.shell.crash.title": "문제가 발생했습니다",
+  "redesign.shell.crash.body":
+    "이 화면이 작동을 멈췄습니다. Aegis 팀에 오류 보고서를 보냈습니다. 계속하려면 페이지를 새로 고치세요.",
+  "redesign.shell.crash.reload": "새로 고침",
   "redesign.shell.ranked.eyebrow": "순위전",
   "redesign.home.login.eyebrow": "이지스 계정",
   "redesign.play.deckCounts": "{main} 메인 · {egg} 계란",

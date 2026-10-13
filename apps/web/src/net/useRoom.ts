@@ -45,6 +45,7 @@ import { ResumeCancelledError, resumeSeat } from "./resumeSeat";
 import { watchRoomLiveness } from "@/net/watchRoomLiveness";
 import type { AegisJoinOptions } from "./types";
 import { keepLocalReplay } from "../replays/local";
+import { clientErrorReporter } from "@/clientErrors/clientErrorReporter";
 
 type ConnectionDrop = Pick<ConnectionReport, "closeCode" | "hiddenAtDrop" | "onlineAtDrop"> & {
   droppedAt: number;
@@ -251,6 +252,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       answeredDecisionsRef.current.clear();
       roomRef.current = room;
       roomSlotRef.current = connectionSlot(room);
+      clientErrorReporter.setMatchContext(() => ({ roomId: room.roomId, matchId: room.state?.matchLogId }));
       setSessionId(room.sessionId);
       const session: ReconnectSession = {
         reconnectionToken: room.reconnectionToken,
@@ -489,6 +491,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       cancelled = true;
       stopHeartbeat();
       stopLiveness();
+      clientErrorReporter.setMatchContext(undefined);
       // A reload never runs this cleanup, so only a deliberate exit forgets the seat.
       clearReconnectSession();
       void roomRef.current?.leave();

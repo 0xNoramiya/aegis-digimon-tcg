@@ -1878,6 +1878,10 @@ const interfaceMessages = {
   "redesign.shell.startup.reserved":
     "Il tuo posto nella partita è ancora riservato. Questa pagina si ripristinerà automaticamente.",
   "redesign.shell.startup.retry": "Riprova ora",
+  "redesign.shell.crash.title": "Qualcosa è andato storto",
+  "redesign.shell.crash.body":
+    "Questa schermata ha smesso di funzionare. Abbiamo inviato una segnalazione di errore al team di Aegis. Ricarica la pagina per continuare.",
+  "redesign.shell.crash.reload": "Ricarica",
   "redesign.shell.ranked.eyebrow": "Partita classificata",
   "redesign.home.login.eyebrow": "Account Aegis",
   "redesign.play.deckCounts": "{main} principali · {egg} uova",

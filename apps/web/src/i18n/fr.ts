@@ -2035,6 +2035,10 @@ const interfaceMessages = {
   "redesign.shell.startup.reconnecting": "Reconnexion à Aegis…",
   "redesign.shell.startup.reserved": "Votre match est toujours réservé. Cette page sera récupérée automatiquement.",
   "redesign.shell.startup.retry": "Essayez maintenant",
+  "redesign.shell.crash.title": "Un problème est survenu",
+  "redesign.shell.crash.body":
+    "Cet écran a cessé de fonctionner. Nous avons envoyé un rapport d'erreur à l'équipe Aegis. Rechargez la page pour continuer.",
+  "redesign.shell.crash.reload": "Recharger",
   "redesign.shell.ranked.eyebrow": "Match classé",
   "redesign.home.login.eyebrow": "Compte égide",
   "redesign.play.deckCounts": "{main} plat principal · {egg} œuf",

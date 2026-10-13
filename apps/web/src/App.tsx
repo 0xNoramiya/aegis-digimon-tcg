@@ -41,6 +41,7 @@ import { isUiPreviewPath } from "./prototype/routes";
 import { SEQUENTIAL_PACING_ENABLED } from "./features";
 import { clearReconnectSession, loadReconnectSession } from "./net/reconnectSession";
 import { setRoomTicketAccount } from "./net/roomAccount";
+import { ClientErrorBoundary } from "@/clientErrors/ClientErrorBoundary";
 
 const ProfileScreen = lazy(() => import("./account/ProfileScreen").then((m) => ({ default: m.ProfileScreen })));
 const ReplaysScreen = lazy(() => import("./replays/ReplaysScreen").then((m) => ({ default: m.ReplaysScreen })));
@@ -534,246 +535,248 @@ function LoadedAegisClient({
         className={`aegis-screen-region${showNav ? " aegis-screen-region--nav" : ""}${screen === "replays" ? " aegis-screen-region--replays" : ""}${screen === "settings" && route.profile ? " aegis-screen-region--profile" : ""}`}
         tabIndex={-1}
       >
-        <Suspense fallback={<ScreenFallback />}>
-          {screen === "home" && (
-            <Home
-              collectionSize={collectionSize}
-              signedIn={!!account}
-              onPlay={() => navigateScreen("lobby")}
-              onBuildDeck={() => navigateScreen("deck")}
-              onOpenCollection={() => navigateScreen("collection")}
-              onSignIn={() => navigateScreen("login")}
-              onReportBug={() => setBugReportOpen(true)}
-              onOpenReleases={() => navigateScreen("releases")}
-            />
-          )}
+        <ClientErrorBoundary key={screen}>
+          <Suspense fallback={<ScreenFallback />}>
+            {screen === "home" && (
+              <Home
+                collectionSize={collectionSize}
+                signedIn={!!account}
+                onPlay={() => navigateScreen("lobby")}
+                onBuildDeck={() => navigateScreen("deck")}
+                onOpenCollection={() => navigateScreen("collection")}
+                onSignIn={() => navigateScreen("login")}
+                onReportBug={() => setBugReportOpen(true)}
+                onOpenReleases={() => navigateScreen("releases")}
+              />
+            )}
 
-          {screen === "feedback" && (
-            <FeedbackScreen
-              key={account?.id ?? "guest"}
-              isAdmin={account?.isAdmin === true}
-              selectedId={route.feedbackId}
-              onSelect={(feedbackId) => navigate({ screen: "feedback", feedbackId })}
-              onOpenDeck={(communityDeckId) => navigate({ screen: "community", communityDeckId })}
-            />
-          )}
-          {screen === "myFeedback" && (
-            <MyFeedbackScreen
-              key={account?.id ?? "guest"}
-              signedIn={!!account}
-              focusId={route.feedbackId}
-              onSignIn={() => navigateScreen("login")}
-              onSendFeedback={() => setBugReportOpen(true)}
-            />
-          )}
-          {screen === "login" && <Login onBack={() => navigateScreen("home")} />}
+            {screen === "feedback" && (
+              <FeedbackScreen
+                key={account?.id ?? "guest"}
+                isAdmin={account?.isAdmin === true}
+                selectedId={route.feedbackId}
+                onSelect={(feedbackId) => navigate({ screen: "feedback", feedbackId })}
+                onOpenDeck={(communityDeckId) => navigate({ screen: "community", communityDeckId })}
+              />
+            )}
+            {screen === "myFeedback" && (
+              <MyFeedbackScreen
+                key={account?.id ?? "guest"}
+                signedIn={!!account}
+                focusId={route.feedbackId}
+                onSignIn={() => navigateScreen("login")}
+                onSendFeedback={() => setBugReportOpen(true)}
+              />
+            )}
+            {screen === "login" && <Login onBack={() => navigateScreen("home")} />}
 
-          {screen === "lobby" && (
-            <Lobby
-              player={effectivePlayer}
-              decks={decks}
-              borrowedDeck={borrowedDeck}
-              onBorrowCommunityDeck={(id) => {
-                void communityApi
-                  .deck(id)
-                  .then((deck) => {
-                    const listing = communityDeckListing(deck);
-                    setBorrowedDeck(listing);
-                    setActiveDeckId(listing.id);
-                  })
-                  .catch(() => undefined);
-              }}
-              onOpenCommunityDeck={(id) => navigate({ screen: "community", communityDeckId: id })}
-              accountId={account?.id}
-              activeDeckId={activeDeckId}
-              onSelectDeck={setActiveDeckId}
-              onCopyDeck={(preset) => {
-                const copy = copyDeckPreset(preset, decks);
-                saveDeck(copy, true);
-                navigateScreen("deck");
-              }}
-              onEditDeck={(deck) => {
-                setEditingDeck(deck);
-                navigateScreen("deck");
-              }}
-              onNav={navigateScreen}
-              timerOptions={timerOptions}
-              onTimerOptionsChange={setTimerOptions}
-              allowRollback={allowRollback}
-              onAllowRollbackChange={setAllowRollback}
-              bestOf={bestOf}
-              onBestOfChange={setBestOf}
-              invitedRoomCode={invitedRoomCode}
-              privateRoom={privateRoom}
-              onLeavePrivateRoom={() => setPrivateRoom(undefined)}
-              onStart={(
-                mode,
-                code,
-                requestedBotDeckId,
-                requestedBetaBattleMode,
-                requestedDeckId,
-                requestedUnlimited,
-                requestedFormat,
-              ) => {
-                // A lobby start explicitly requests a new match, even if a page
-                // reload left a resumable seat from the previous match in storage.
-                clearReconnectSession();
-                setSeriesGame(undefined);
-                if (mode !== "private_host" && mode !== "private_guest") setPrivateRoom(undefined);
-                setStartMode(mode);
-                setRoomCode(code);
-                setBotDeckId(requestedBotDeckId);
-                setBetaBattleMode(requestedBetaBattleMode === true);
-                setUnlimited(requestedUnlimited === true);
-                setDeckFormat(
-                  requestedFormat ?? (mode === "unlimited" || requestedUnlimited ? "unlimited" : "standard"),
-                );
-                if (typeof requestedDeckId === "object") {
-                  setBorrowedDeck(structuredClone(requestedDeckId));
-                  setMatchDeckId(requestedDeckId.id);
-                } else setMatchDeckId(requestedDeckId);
-                navigateScreen("game");
-              }}
-            />
-          )}
+            {screen === "lobby" && (
+              <Lobby
+                player={effectivePlayer}
+                decks={decks}
+                borrowedDeck={borrowedDeck}
+                onBorrowCommunityDeck={(id) => {
+                  void communityApi
+                    .deck(id)
+                    .then((deck) => {
+                      const listing = communityDeckListing(deck);
+                      setBorrowedDeck(listing);
+                      setActiveDeckId(listing.id);
+                    })
+                    .catch(() => undefined);
+                }}
+                onOpenCommunityDeck={(id) => navigate({ screen: "community", communityDeckId: id })}
+                accountId={account?.id}
+                activeDeckId={activeDeckId}
+                onSelectDeck={setActiveDeckId}
+                onCopyDeck={(preset) => {
+                  const copy = copyDeckPreset(preset, decks);
+                  saveDeck(copy, true);
+                  navigateScreen("deck");
+                }}
+                onEditDeck={(deck) => {
+                  setEditingDeck(deck);
+                  navigateScreen("deck");
+                }}
+                onNav={navigateScreen}
+                timerOptions={timerOptions}
+                onTimerOptionsChange={setTimerOptions}
+                allowRollback={allowRollback}
+                onAllowRollbackChange={setAllowRollback}
+                bestOf={bestOf}
+                onBestOfChange={setBestOf}
+                invitedRoomCode={invitedRoomCode}
+                privateRoom={privateRoom}
+                onLeavePrivateRoom={() => setPrivateRoom(undefined)}
+                onStart={(
+                  mode,
+                  code,
+                  requestedBotDeckId,
+                  requestedBetaBattleMode,
+                  requestedDeckId,
+                  requestedUnlimited,
+                  requestedFormat,
+                ) => {
+                  // A lobby start explicitly requests a new match, even if a page
+                  // reload left a resumable seat from the previous match in storage.
+                  clearReconnectSession();
+                  setSeriesGame(undefined);
+                  if (mode !== "private_host" && mode !== "private_guest") setPrivateRoom(undefined);
+                  setStartMode(mode);
+                  setRoomCode(code);
+                  setBotDeckId(requestedBotDeckId);
+                  setBetaBattleMode(requestedBetaBattleMode === true);
+                  setUnlimited(requestedUnlimited === true);
+                  setDeckFormat(
+                    requestedFormat ?? (mode === "unlimited" || requestedUnlimited ? "unlimited" : "standard"),
+                  );
+                  if (typeof requestedDeckId === "object") {
+                    setBorrowedDeck(structuredClone(requestedDeckId));
+                    setMatchDeckId(requestedDeckId.id);
+                  } else setMatchDeckId(requestedDeckId);
+                  navigateScreen("game");
+                }}
+              />
+            )}
 
-          {screen === "deck" && (
-            <DeckBuilder
-              initialEditingDeck={editingDeck}
-              decks={decks}
-              activeDeckId={activeDeckId}
-              onSelectDeck={setActiveDeckId}
-              onSaveDeck={saveDeck}
-              onDeleteDeck={deleteDeck}
-              signedIn={!!account}
-              onNav={(next) => {
-                setEditingDeck(null);
-                navigateScreen(next);
-              }}
-            />
-          )}
+            {screen === "deck" && (
+              <DeckBuilder
+                initialEditingDeck={editingDeck}
+                decks={decks}
+                activeDeckId={activeDeckId}
+                onSelectDeck={setActiveDeckId}
+                onSaveDeck={saveDeck}
+                onDeleteDeck={deleteDeck}
+                signedIn={!!account}
+                onNav={(next) => {
+                  setEditingDeck(null);
+                  navigateScreen(next);
+                }}
+              />
+            )}
 
-          {screen === "community" && (
-            <CommunityScreen
-              deckId={route.communityDeckId}
-              signedIn={!!account}
-              accountId={account?.id}
-              isAdmin={account?.isAdmin === true}
-              onOpenDeck={(id) => navigate({ screen: "community", communityDeckId: id })}
-              onBack={() => navigate({ screen: "community" })}
-              onRoadmap={() => navigate({ screen: "roadmap" })}
-              onPlay={(deck) => {
-                const listing = communityDeckListing(deck);
-                setBorrowedDeck(listing);
-                setActiveDeckId(listing.id);
-                navigateScreen("lobby");
-              }}
-              onCopy={(deck) => {
-                saveDeck(
-                  {
-                    ...copyDeckPreset(communityDeckListing(deck), decks),
-                    blurb: t("community.byAuthor", { name: deck.author.displayName }),
-                  },
-                  false,
-                );
-                if (account) void communityApi.recordCopy(deck.id).catch(() => undefined);
-              }}
-            />
-          )}
-
-          {screen === "roadmap" && (
-            <RoadmapScreen
-              itemId={route.roadmapItemId}
-              signedIn={!!account}
-              isAdmin={account?.isAdmin === true}
-              onSignIn={() => navigateScreen("login")}
-              onOpen={(id) => navigate({ screen: "roadmap", roadmapItemId: id })}
-              onDecks={() => navigate({ screen: "community" })}
-              onSuggest={() => setBugReportOpen(true)}
-            />
-          )}
-
-          {screen === "collection" && <Collection />}
-
-          {screen === "replays" && route.replayId && (
-            <ReplaysScreen
-              key={route.replayId}
-              replayId={route.replayId}
-              onCloseLink={() => navigate({ screen: "settings", profile: true })}
-              onViewingChange={setReplayViewing}
-            />
-          )}
-
-          {screen === "releases" && <ReleasesScreen />}
-          {screen === "privacy" && <PrivacyScreen />}
-
-          {screen === "settings" && route.profile && (
-            <ProfileScreen
-              account={account}
-              player={effectivePlayer}
-              onViewingChange={setReplayViewing}
-              onAccountChange={(updated) => setAccount?.({ ...account, ...updated })}
-              onGuestChange={(name, avatarId) =>
-                setPlayer((current) => ({
-                  ...current,
-                  name,
-                  guestAvatarId: avatarId,
-                  color: accentForAvatar(avatarId, colorKey(current.color)),
-                }))
-              }
-              onRefreshDiscordAvatar={account?.discordLinked ? refreshDiscordAvatar : undefined}
-            />
-          )}
-          {screen === "settings" && !route.profile && (
-            <Settings player={effectivePlayer} account={account} dark={dark} onToggleDark={setDark} />
-          )}
-
-          {screen === "game" && (
-            <GameScreen
-              onCopyUsedDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
-              autoHatchReady={preferencesReady}
-              key={matchNumber}
-              joinOptions={joinOptions}
-              identityColor={identityColor}
-              identityAvatarId={effectivePlayer.avatarId}
-              identityAvatarUrl={effectivePlayer.avatarUrl}
-              startMode={startMode}
-              roomCode={roomCode}
-              waitForHost={startMode === "private_guest" && privateRoom?.code === roomCode}
-              botDeckId={botDeckId}
-              betaBattleMode={betaBattleMode}
-              unlimited={unlimited}
-              seriesGame={seriesGame}
-              onSeriesNext={(ticket) => {
-                clearReconnectSession();
-                setSeriesGame(ticket);
-                setMatchNumber((current) => current + 1);
-              }}
-              presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}
-              signedIn={!!account}
-              onLeaveForfeitsChange={setLeaveForfeitsMatch}
-              onExit={(next) => {
-                setSeriesGame(undefined);
-                navigateScreen(next);
-              }}
-              onRematch={(privateRoomCode, roomUnlimited, roomHost, roomFormat) => {
-                clearReconnectSession();
-                setSeriesGame(undefined);
-                if (privateRoomCode) {
-                  setPrivateRoom({
-                    code: privateRoomCode,
-                    host: roomHost ?? startMode === "private_host",
-                    unlimited: roomUnlimited,
-                    format: roomFormat,
-                  });
+            {screen === "community" && (
+              <CommunityScreen
+                deckId={route.communityDeckId}
+                signedIn={!!account}
+                accountId={account?.id}
+                isAdmin={account?.isAdmin === true}
+                onOpenDeck={(id) => navigate({ screen: "community", communityDeckId: id })}
+                onBack={() => navigate({ screen: "community" })}
+                onRoadmap={() => navigate({ screen: "roadmap" })}
+                onPlay={(deck) => {
+                  const listing = communityDeckListing(deck);
+                  setBorrowedDeck(listing);
+                  setActiveDeckId(listing.id);
                   navigateScreen("lobby");
-                  return;
+                }}
+                onCopy={(deck) => {
+                  saveDeck(
+                    {
+                      ...copyDeckPreset(communityDeckListing(deck), decks),
+                      blurb: t("community.byAuthor", { name: deck.author.displayName }),
+                    },
+                    false,
+                  );
+                  if (account) void communityApi.recordCopy(deck.id).catch(() => undefined);
+                }}
+              />
+            )}
+
+            {screen === "roadmap" && (
+              <RoadmapScreen
+                itemId={route.roadmapItemId}
+                signedIn={!!account}
+                isAdmin={account?.isAdmin === true}
+                onSignIn={() => navigateScreen("login")}
+                onOpen={(id) => navigate({ screen: "roadmap", roadmapItemId: id })}
+                onDecks={() => navigate({ screen: "community" })}
+                onSuggest={() => setBugReportOpen(true)}
+              />
+            )}
+
+            {screen === "collection" && <Collection />}
+
+            {screen === "replays" && route.replayId && (
+              <ReplaysScreen
+                key={route.replayId}
+                replayId={route.replayId}
+                onCloseLink={() => navigate({ screen: "settings", profile: true })}
+                onViewingChange={setReplayViewing}
+              />
+            )}
+
+            {screen === "releases" && <ReleasesScreen />}
+            {screen === "privacy" && <PrivacyScreen />}
+
+            {screen === "settings" && route.profile && (
+              <ProfileScreen
+                account={account}
+                player={effectivePlayer}
+                onViewingChange={setReplayViewing}
+                onAccountChange={(updated) => setAccount?.({ ...account, ...updated })}
+                onGuestChange={(name, avatarId) =>
+                  setPlayer((current) => ({
+                    ...current,
+                    name,
+                    guestAvatarId: avatarId,
+                    color: accentForAvatar(avatarId, colorKey(current.color)),
+                  }))
                 }
-                setMatchNumber((current) => current + 1);
-              }}
-            />
-          )}
-        </Suspense>
+                onRefreshDiscordAvatar={account?.discordLinked ? refreshDiscordAvatar : undefined}
+              />
+            )}
+            {screen === "settings" && !route.profile && (
+              <Settings player={effectivePlayer} account={account} dark={dark} onToggleDark={setDark} />
+            )}
+
+            {screen === "game" && (
+              <GameScreen
+                onCopyUsedDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
+                autoHatchReady={preferencesReady}
+                key={matchNumber}
+                joinOptions={joinOptions}
+                identityColor={identityColor}
+                identityAvatarId={effectivePlayer.avatarId}
+                identityAvatarUrl={effectivePlayer.avatarUrl}
+                startMode={startMode}
+                roomCode={roomCode}
+                waitForHost={startMode === "private_guest" && privateRoom?.code === roomCode}
+                botDeckId={botDeckId}
+                betaBattleMode={betaBattleMode}
+                unlimited={unlimited}
+                seriesGame={seriesGame}
+                onSeriesNext={(ticket) => {
+                  clearReconnectSession();
+                  setSeriesGame(ticket);
+                  setMatchNumber((current) => current + 1);
+                }}
+                presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}
+                signedIn={!!account}
+                onLeaveForfeitsChange={setLeaveForfeitsMatch}
+                onExit={(next) => {
+                  setSeriesGame(undefined);
+                  navigateScreen(next);
+                }}
+                onRematch={(privateRoomCode, roomUnlimited, roomHost, roomFormat) => {
+                  clearReconnectSession();
+                  setSeriesGame(undefined);
+                  if (privateRoomCode) {
+                    setPrivateRoom({
+                      code: privateRoomCode,
+                      host: roomHost ?? startMode === "private_host",
+                      unlimited: roomUnlimited,
+                      format: roomFormat,
+                    });
+                    navigateScreen("lobby");
+                    return;
+                  }
+                  setMatchNumber((current) => current + 1);
+                }}
+              />
+            )}
+          </Suspense>
+        </ClientErrorBoundary>
       </div>
 
       {playerMenuOpen ? (

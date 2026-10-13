@@ -1,0 +1,7 @@
+export const MAX_CLIENT_ERROR_MESSAGE = 1000;
+export const MAX_CLIENT_ERROR_STACK = 8000;
+export const MAX_CLIENT_ERROR_SIGNATURE = 400;
+export const MAX_CLIENT_ERROR_RELEASE = 64;
+export const MAX_CLIENT_ERROR_ROUTE = 200;
+export const MAX_CLIENT_ERROR_ID = 64;
+export const MAX_CLIENT_ERROR_USER_AGENT = 300;

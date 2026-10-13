@@ -65,6 +65,8 @@ import {
   type Tournament,
 } from "./AccountStore.js";
 import { installRoadmapRoutes } from "#api/roadmap/installRoadmapRoutes";
+import { installClientErrorRoutes } from "#api/clientErrors/installClientErrorRoutes";
+import { createClientErrorAlertsFromEnvironment } from "#api/clientErrors/createClientErrorAlertsFromEnvironment";
 import { RoadmapStore } from "#api/roadmap/RoadmapStore";
 
 const SESSION_COOKIE = "aegis_session";
@@ -121,6 +123,7 @@ export function installAccountRoutes(
   installNotificationRoutes({ app, store: new NotificationStore(store), session: sessionFromRequest });
   installPlaytestRoutes({ app, store: new PlaytestStore(store), session: sessionFromRequest });
   installRoadmapRoutes({ app, store: new RoadmapStore(store), session: sessionFromRequest });
+  installClientErrorRoutes({ app, session: sessionFromRequest, alerts: createClientErrorAlertsFromEnvironment() });
   // Public decks, likes and copies. See src/community.
   installCommunityDeckRoutes({
     app,
