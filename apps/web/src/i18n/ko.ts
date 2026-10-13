@@ -2215,6 +2215,8 @@ const interfaceMessages = {
   "chat.send": "보내기",
   "chat.mute": "상대 음소거",
   "chat.muteSpectators": "관중을 음소거",
+  "chat.sound": "채팅 알림음",
+  "chat.soundDesc": "상대나 관전자가 새 메시지를 보낼 때마다 소리를 재생합니다.",
   "chat.you": "당신",
   "chat.spectator": "관중 {number}",
   "chat.spectatorTag": "관중",

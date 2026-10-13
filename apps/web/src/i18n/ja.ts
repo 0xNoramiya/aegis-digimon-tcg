@@ -2240,6 +2240,8 @@ const interfaceMessages = {
   "chat.send": "送信",
   "chat.mute": "相手をミュートする",
   "chat.muteSpectators": "沈黙の観客",
+  "chat.sound": "チャットの通知音",
+  "chat.soundDesc": "対戦相手や観戦者から新しいメッセージが届くたびに音を鳴らします。",
   "chat.you": "あなた",
   "chat.spectator": "観客{number}",
   "chat.spectatorTag": "観客",

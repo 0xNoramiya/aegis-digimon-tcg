@@ -2064,6 +2064,8 @@ const interfaceMessages = {
   "chat.send": "Invia",
   "chat.mute": "Silenzia l'avversario",
   "chat.muteSpectators": "Silenzia gli spettatori",
+  "chat.sound": "Suono della chat",
+  "chat.soundDesc": "Riproduce un suono per ogni nuovo messaggio dell'avversario o degli spettatori.",
   "chat.you": "Tu",
   "chat.spectator": "Spettatore {number}",
   "chat.spectatorTag": "spettatore",

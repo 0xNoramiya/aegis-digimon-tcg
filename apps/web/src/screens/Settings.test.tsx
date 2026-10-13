@@ -5,6 +5,8 @@ import { Settings } from "./Settings";
 import { I18nProvider } from "../i18n";
 import { arePileCountsShown, setPileCountsShown } from "../design/pileCounts";
 import { isKeepAwakeEnabled, setKeepAwakeEnabled } from "../design/keepAwake";
+import { setSoundEnabled } from "../design/sound";
+import { isChatSoundEnabled, setChatSoundEnabled } from "../game/chat/chatSound";
 
 const player = { name: "Guest Tamer", color: "Blue", shards: 0, guestAvatarId: null };
 
@@ -132,5 +134,42 @@ describe("settings keep awake", () => {
     expect(toggle.getAttribute("aria-checked")).toBe("false");
     expect(isKeepAwakeEnabled()).toBe(false);
     expect(localStorage.getItem("aegis.keep-awake.enabled")).toBe("false");
+  });
+});
+
+describe("settings chat sound", () => {
+  afterEach(() => {
+    cleanup();
+    setChatSoundEnabled(false);
+    setSoundEnabled(true);
+    localStorage.clear();
+  });
+
+  function renderSettings() {
+    render(
+      <I18nProvider>
+        <Settings player={player} account={null} dark={false} onToggleDark={() => undefined} />
+      </I18nProvider>,
+    );
+    return screen.getByRole("switch", { name: /Chat sound/ });
+  }
+
+  it("starts off and stores the player's choice", () => {
+    const toggle = renderSettings();
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+
+    fireEvent.click(toggle);
+
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
+    expect(isChatSoundEnabled()).toBe(true);
+    expect(localStorage.getItem("aegis.chat.sound")).toBe("on");
+  });
+
+  it("is unavailable while sound effects are off", () => {
+    const toggle = renderSettings();
+
+    fireEvent.click(screen.getByRole("switch", { name: /^Sound effects/ }));
+
+    expect(toggle).toHaveProperty("disabled", true);
   });
 });
