@@ -1,4 +1,34 @@
 {
+  "releases.1.25.6-beta.summary": {
+    "en": "Email sign-in links work again, a quick human check blocks automated requests, and sign-in errors are clear.",
+    "pt-BR": "Os links de login por e-mail voltaram a funcionar, uma verificação rápida bloqueia pedidos automáticos, e os erros de login ficaram claros.",
+    "es": "Los enlaces de inicio de sesión por correo vuelven a funcionar, una verificación rápida bloquea solicitudes automáticas, y los errores de inicio de sesión son claros.",
+    "it": "I link di accesso via email funzionano di nuovo, un rapido controllo blocca le richieste automatiche e gli errori di accesso sono chiari."
+  },
+  "releases.1.25.6-beta.feature.humanCheck": {
+    "en": "Requesting a sign-in email now includes a quick Cloudflare check, so bots can no longer use up the daily email limit.",
+    "pt-BR": "Pedir um e-mail de login agora inclui uma verificação rápida da Cloudflare, para que bots não esgotem mais o limite diário de e-mails.",
+    "es": "Pedir un correo de inicio de sesión ahora incluye una verificación rápida de Cloudflare, para que los bots ya no agoten el límite diario de correos.",
+    "it": "La richiesta di un'email di accesso ora include un rapido controllo di Cloudflare, così i bot non possono più esaurire il limite giornaliero di email."
+  },
+  "releases.1.25.6-beta.feature.errorReports": {
+    "en": "When the game hits an unexpected error in your browser, it sends a short technical report so we can fix it faster. The privacy policy explains what it contains.",
+    "pt-BR": "Quando o jogo encontra um erro inesperado no seu navegador, ele envia um breve relatório técnico para corrigirmos mais rápido. A política de privacidade explica o que ele contém.",
+    "es": "Cuando el juego encuentra un error inesperado en tu navegador, envía un breve informe técnico para que lo corrijamos más rápido. La política de privacidad explica qué contiene.",
+    "it": "Quando il gioco incontra un errore imprevisto nel browser, invia un breve rapporto tecnico così possiamo correggerlo più in fretta. L'informativa sulla privacy spiega cosa contiene."
+  },
+  "releases.1.25.6-beta.fix.emailSignIn": {
+    "en": "Sign-in links no longer show as expired when you click them. The link now opens a page with a Sign in button, so email security scanners can't use it up first.",
+    "pt-BR": "Os links de login não aparecem mais como expirados ao clicar. O link agora abre uma página com um botão Entrar, para que scanners de segurança de e-mail não o usem antes.",
+    "es": "Los enlaces de inicio de sesión ya no aparecen como caducados al hacer clic. El enlace ahora abre una página con un botón para iniciar sesión, así los escáneres de seguridad del correo no lo gastan antes.",
+    "it": "I link di accesso non risultano più scaduti quando li apri. Il link ora apre una pagina con un pulsante di accesso, così gli scanner di sicurezza delle email non lo consumano prima."
+  },
+  "releases.1.25.6-beta.fix.emailErrors": {
+    "en": "The sign-in screen explains when the email limit is reached or too many links were requested, and reminds you to check spam.",
+    "pt-BR": "A tela de login explica quando o limite de e-mails foi atingido ou quando muitos links foram pedidos, e lembra de verificar o spam.",
+    "es": "La pantalla de inicio de sesión explica cuándo se alcanzó el límite de correos o se pidieron demasiados enlaces, y recuerda revisar el spam.",
+    "it": "La schermata di accesso spiega quando è stato raggiunto il limite di email o sono stati richiesti troppi link, e ricorda di controllare lo spam."
+  },
   "releases.1.25.5-beta.summary": {
     "en": "Aegis loads faster, play restrictions appear in the field effects panel, and DUAL Option dialogs are clearer.",
     "pt-BR": "O Aegis carrega mais rápido, restrições de jogada aparecem no painel de efeitos de campo, e as janelas de Option DUAL ficaram mais claras.",

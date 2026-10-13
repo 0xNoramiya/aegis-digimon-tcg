@@ -1,5 +1,26 @@
 [
   {
+    "version": "1.25.6-beta",
+    "releasedAt": "2026-10-13",
+    "summaryKey": "releases.1.25.6-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.25.6-beta.feature.humanCheck"
+      },
+      {
+        "textKey": "releases.1.25.6-beta.feature.errorReports"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.25.6-beta.fix.emailSignIn"
+      },
+      {
+        "textKey": "releases.1.25.6-beta.fix.emailErrors"
+      }
+    ]
+  },
+  {
     "version": "1.25.5-beta",
     "releasedAt": "2026-10-13",
     "summaryKey": "releases.1.25.5-beta.summary",
