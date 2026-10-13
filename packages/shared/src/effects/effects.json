@@ -240251,5 +240251,157 @@
     ],
     "coverage": "full",
     "residual": []
+  },
+  "BT27-084": {
+    "effects": [
+      {
+        "trigger": "Static",
+        "actions": [],
+        "keywords": [
+          { "keyword": "Alliance", "raw": "＜Alliance＞" },
+          { "keyword": "Collision", "raw": "＜Collision＞" },
+          { "keyword": "Piercing", "raw": "＜Piercing＞" },
+          { "keyword": "Blocker", "raw": "＜Blocker＞" }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "PlayMultiple",
+            "filter": {
+              "controllerDefault": "mine",
+              "kind": ["Digimon", "Tamer"],
+              "nameOrTrait": [{ "tokens": ["Knightmon"], "match": "text" }]
+            },
+            "from": ["hand"],
+            "payCost": false,
+            "totalCost": 8,
+            "optional": true
+          }
+        ]
+      },
+      {
+        "trigger": "AllTurns",
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "event": "whenPlayed",
+            "sourceFilter": { "controller": "mine", "kind": ["Digimon"], "excludeSelf": true },
+            "oncePerTurnKey": "BT27-084/activate-option-main",
+            "actions": [
+              {
+                "kind": "CostGatedBlock",
+                "cost": {
+                  "kind": "trash",
+                  "target": {
+                    "filter": {
+                      "isSelfRef": true,
+                      "zone": "digivolutionCards",
+                      "nameOrTrait": [
+                        { "tokens": ["LordKnightmon"], "match": "nameExact" },
+                        { "tokens": ["X Antibody"], "match": "nameExact" }
+                      ]
+                    },
+                    "count": 1
+                  },
+                  "raw": "by trashing 1 [LordKnightmon] or [X Antibody] from this Digimon's digivolution cards"
+                },
+                "optional": true,
+                "abortOnDecline": true,
+                "actions": [{ "kind": "ActivateMain" }]
+              }
+            ]
+          },
+          {
+            "kind": "SubTrigger",
+            "event": "onDeletionOf",
+            "sourceFilter": { "controller": "mine", "kind": ["Digimon"], "excludeSelf": true },
+            "oncePerTurnKey": "BT27-084/activate-option-main",
+            "actions": [
+              {
+                "kind": "CostGatedBlock",
+                "cost": {
+                  "kind": "trash",
+                  "target": {
+                    "filter": {
+                      "isSelfRef": true,
+                      "zone": "digivolutionCards",
+                      "nameOrTrait": [
+                        { "tokens": ["LordKnightmon"], "match": "nameExact" },
+                        { "tokens": ["X Antibody"], "match": "nameExact" }
+                      ]
+                    },
+                    "count": 1
+                  },
+                  "raw": "by trashing 1 [LordKnightmon] or [X Antibody] from this Digimon's digivolution cards"
+                },
+                "optional": true,
+                "abortOnDecline": true,
+                "actions": [{ "kind": "ActivateMain" }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Main",
+        "actions": [
+          {
+            "kind": "Delete",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "superlative": "lowestLevel" },
+              "count": 1
+            }
+          },
+          {
+            "kind": "GainKeyword",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["Knightmon"], "match": "text" }]
+              },
+              "count": "all"
+            },
+            "keyword": { "keyword": "Blocker", "raw": "＜Blocker＞" },
+            "duration": "untilYourTurnEnd",
+            "condition": { "kind": "ifThisEffectDidNotDelete", "raw": "this effect didn't delete" }
+          },
+          {
+            "kind": "GrantStatic",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["Knightmon"], "match": "text" }]
+              },
+              "count": "all"
+            },
+            "grant": "immuneToOpponentDigimonEffects",
+            "duration": "untilYourTurnEnd",
+            "condition": { "kind": "ifThisEffectDidNotDelete", "raw": "this effect didn't delete" }
+          },
+          {
+            "kind": "ModifyDP",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["Knightmon"], "match": "text" }]
+              },
+              "count": "all"
+            },
+            "amount": 3000,
+            "duration": "untilYourTurnEnd",
+            "condition": { "kind": "ifThisEffectDidNotDelete", "raw": "this effect didn't delete" }
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "namesExact": ["LordKnightmon"], "cost": 2, "isAlternate": true }]
   }
 }
