@@ -1812,10 +1812,14 @@ const interfaceMessages = {
   "account.emailLabel": "電子メール",
   "account.emailPlaceholder": "you@email.com",
   "account.sendMagicLink": "マジックリンクを送信する",
-  "account.magicLinkSent": "メールを確認してサインインしてください。",
+  "account.magicLinkSent":
+    "メールを確認してサインインしてください。受信トレイにない場合は、迷惑メールフォルダを確認してください。",
   "account.magicLinkDailyLimit":
     "本日のサインインメール制限に達しました。 Discord でサインインするか、明日もう一度試してください。",
   "account.magicLinkError": "サインイン電子メールを送信できませんでした。もう一度やり直してください。",
+  "account.magicLinkTooMany":
+    "サインインメールのリクエストが多すぎます。数分待つか、Discord でサインインしてください。",
+  "account.magicLinkHumanCheck": "人間であることを確認できませんでした。確認を完了して、もう一度お試しください。",
   "account.connected": "アカウントが接続されました",
   "account.nickname.label": "ニックネーム",
   "account.nickname.invalid": "3 ～ 32 文字の文字、数字、スペース、アンダースコア、またはハイフンを使用します。",

@@ -1821,10 +1821,14 @@ const interfaceMessages = {
   "account.emailLabel": "Surel",
   "account.emailPlaceholder": "kamu@email.com",
   "account.sendMagicLink": "Kirim tautan ajaib",
-  "account.magicLinkSent": "Periksa email Anda untuk masuk.",
+  "account.magicLinkSent":
+    "Periksa email Anda untuk masuk. Jika tidak ada di kotak masuk, periksa folder Spam atau Junk.",
   "account.magicLinkDailyLimit":
     "Kami telah mencapai batas email masuk hari ini. Masuk dengan Discord, atau coba lagi besok.",
   "account.magicLinkError": "Tidak dapat mengirim email masuk. Coba lagi.",
+  "account.magicLinkTooMany":
+    "Terlalu banyak email masuk yang diminta. Tunggu beberapa menit, atau masuk dengan Discord.",
+  "account.magicLinkHumanCheck": "Tidak dapat memastikan bahwa Anda manusia. Selesaikan pemeriksaan dan coba lagi.",
   "account.connected": "Akun terhubung",
   "account.nickname.label": "Nama panggilan",
   "account.nickname.invalid": "Gunakan 3–32 huruf, angka, spasi, garis bawah, atau tanda hubung.",

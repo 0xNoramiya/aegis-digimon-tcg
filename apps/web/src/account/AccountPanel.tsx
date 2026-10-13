@@ -2,27 +2,20 @@ import { useState, type FormEvent } from "react";
 import { Alert, Button, Field } from "../design/primitives";
 import { Icons } from "../design/icons";
 import { useTranslation } from "../i18n";
-import { AccountApiError, accountApi, type RemoteAccount } from "./client";
+import { accountApi, type RemoteAccount } from "./client";
+import { TurnstileWidget } from "@/account/TurnstileWidget";
+import { TURNSTILE_SITE_KEY } from "@/account/turnstileSiteKey";
+import { useMagicLinkRequest } from "@/account/useMagicLinkRequest";
 import "./AccountPanel.css";
 
 /** The sign-in invitation. Signed-in players manage their identity on the profile. */
 export function AccountPanel({ account }: { account: RemoteAccount | null | undefined }) {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
-  const [linkSent, setLinkSent] = useState(false);
-  const [linkError, setLinkError] = useState("");
-  async function sendLink(event: FormEvent) {
+  const magicLink = useMagicLinkRequest();
+  function sendLink(event: FormEvent) {
     event.preventDefault();
-    setLinkSent(false);
-    setLinkError("");
-    try {
-      await accountApi.magicLink(email);
-      setLinkSent(true);
-    } catch (error) {
-      if (error instanceof AccountApiError && error.code === "email_daily_limit")
-        setLinkError(t("account.magicLinkDailyLimit"));
-      else setLinkError(t("account.magicLinkError"));
-    }
+    void magicLink.send(email);
   }
   if (account === undefined) return <div className="account-panel__loading">{t("account.loading")}</div>;
   if (account) return null;
@@ -48,7 +41,7 @@ export function AccountPanel({ account }: { account: RemoteAccount | null | unde
       <div className="account-panel__or" role="separator">
         <span>{t("account.orEmail")}</span>
       </div>
-      <form className="account-panel__magic-link" onSubmit={(event) => void sendLink(event)}>
+      <form className="account-panel__magic-link" onSubmit={sendLink}>
         <Field
           required
           type="email"
@@ -59,12 +52,20 @@ export function AccountPanel({ account }: { account: RemoteAccount | null | unde
           onChange={(event) => setEmail(event.target.value)}
           placeholder={t("account.emailPlaceholder")}
         />
-        <Button type="submit" variant="secondary" icon={Icons.Send}>
+        {TURNSTILE_SITE_KEY ? (
+          <TurnstileWidget key={magicLink.challenge} siteKey={TURNSTILE_SITE_KEY} onToken={magicLink.onHumanToken} />
+        ) : null}
+        <Button
+          type="submit"
+          variant="secondary"
+          icon={Icons.Send}
+          disabled={magicLink.sending || magicLink.waitingForHuman}
+        >
           {t("account.sendMagicLink")}
         </Button>
       </form>
-      {linkSent ? <Alert tone="success">{t("account.magicLinkSent")}</Alert> : null}
-      {linkError ? <Alert tone="danger">{linkError}</Alert> : null}
+      {magicLink.sent ? <Alert tone="success">{t("account.magicLinkSent")}</Alert> : null}
+      {magicLink.errorKey ? <Alert tone="danger">{t(magicLink.errorKey)}</Alert> : null}
     </div>
   );
 }

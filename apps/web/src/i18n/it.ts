@@ -1661,10 +1661,13 @@ const interfaceMessages = {
   "account.emailLabel": "Email",
   "account.emailPlaceholder": "tu@email.com",
   "account.sendMagicLink": "Invia il link di accesso",
-  "account.magicLinkSent": "Controlla la tua email per accedere.",
+  "account.magicLinkSent":
+    "Controlla la tua email per accedere. Se non è nella posta in arrivo, guarda nello spam o nella posta indesiderata.",
   "account.magicLinkDailyLimit":
     "Abbiamo raggiunto il limite giornaliero di email di accesso. Accedi con Discord o riprova domani.",
   "account.magicLinkError": "Impossibile inviare l'email di accesso. Riprova.",
+  "account.magicLinkTooMany": "Troppe email di accesso richieste. Attendi qualche minuto o accedi con Discord.",
+  "account.magicLinkHumanCheck": "Impossibile confermare che sei una persona. Completa la verifica e riprova.",
   "account.connected": "Account collegato",
   "account.nickname.label": "Nickname",
   "account.nickname.invalid": "Usa da 3 a 32 lettere, numeri, spazi, trattini bassi o trattini.",

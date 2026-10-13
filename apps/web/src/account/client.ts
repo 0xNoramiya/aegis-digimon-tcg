@@ -107,8 +107,8 @@ export const accountApi = {
   preferences: () => request<AccountPreferences>("/account/preferences"),
   updatePreferences: (changes: AccountPreferences) =>
     request<AccountPreferences>("/account/preferences", { method: "PUT", body: JSON.stringify(changes) }),
-  magicLink: (email: string) =>
-    request<{ ok: true }>("/auth/magic-link", { method: "POST", body: JSON.stringify({ email }) }),
+  magicLink: (email: string, turnstileToken?: string) =>
+    request<{ ok: true }>("/auth/magic-link", { method: "POST", body: JSON.stringify({ email, turnstileToken }) }),
   logout: () => fetch(`${apiBase}/auth/logout`, { method: "POST", credentials: "include" }),
   decks: async (): Promise<DeckListing[]> =>
     (
