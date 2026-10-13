@@ -627,6 +627,9 @@ const interfaceMessages = {
   "settings.textSizeDefault": "Predefinita",
   "settings.textSizeLarge": "Grande",
   "settings.textSizeLarger": "Molto grande",
+  "settings.keepAwake": "Mantieni lo schermo acceso",
+  "settings.keepAwakeDesc":
+    "Tenere acceso lo schermo mentre una partita è aperta, invece di lasciare che il dispositivo si addormenti tra i turni",
   "settings.actionConfirmations": "Conferma le azioni",
   "settings.actionConfirmationsDesc":
     "Chiedi conferma prima di giocare, digievolvere o usare una digievoluzione DNA facoltativa",

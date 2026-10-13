@@ -807,6 +807,9 @@ const interfaceMessages = {
   "settings.textSizeDefault": "Standard",
   "settings.textSizeLarge": "Groß",
   "settings.textSizeLarger": "Extra groß",
+  "settings.keepAwake": "Bildschirm wach halten",
+  "settings.keepAwakeDesc":
+    "Den Bildschirm eingeschaltet lassen, solange ein Duell läuft, statt das Gerät zwischen den Zügen schlafen zu lassen",
   "settings.actionConfirmations": "Bestätigen Sie Aktionen",
   "settings.actionConfirmationsDesc":
     "Fragen Sie, bevor Sie spielen, digitalisieren oder eine optionale DNA-Digitalisierung verwenden",

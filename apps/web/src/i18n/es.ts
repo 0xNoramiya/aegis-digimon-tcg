@@ -991,6 +991,9 @@ export const es: Record<keyof typeof en, string> = {
   "settings.textSizeDefault": "Predeterminado",
   "settings.textSizeLarge": "Grande",
   "settings.textSizeLarger": "Muy grande",
+  "settings.keepAwake": "Mantener la pantalla encendida",
+  "settings.keepAwakeDesc":
+    "Mantener la pantalla encendida mientras hay un combate abierto, en lugar de dejar que el dispositivo se duerma entre turnos",
   "settings.actionConfirmations": "Confirmar acciones",
   "settings.actionConfirmationsDesc": "Preguntar antes de jugar, digievolucionar o usar una digievolución DNA opcional",
   "overlay.moveEffectPrompt": "Mover panel de efecto",

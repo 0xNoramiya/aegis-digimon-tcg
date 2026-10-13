@@ -1022,6 +1022,9 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.textSizeDefault": "Padrão",
   "settings.textSizeLarge": "Grande",
   "settings.textSizeLarger": "Muito grande",
+  "settings.keepAwake": "Manter a tela ligada",
+  "settings.keepAwakeDesc":
+    "Manter a tela ligada enquanto uma partida está aberta, em vez de deixar o aparelho dormir entre os turnos",
   "settings.actionConfirmations": "Confirmar ações",
   "settings.actionConfirmationsDesc": "Perguntar antes de jogar, digievoluir ou fazer uma digievolução DNA opcional",
   "overlay.moveEffectPrompt": "Mover painel de efeito",
