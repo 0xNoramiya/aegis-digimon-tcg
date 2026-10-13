@@ -92,8 +92,15 @@ export default defineConfig({
           ) {
             return "react-vendor";
           }
-          if (id.includes("node_modules/colyseus") || id.includes("node_modules/@colyseus")) {
-            return "colyseus-vendor";
+          if (id.includes("node_modules/@colyseus/schema")) {
+            return "colyseus-schema";
+          }
+          if (
+            id.includes("node_modules/colyseus") ||
+            id.includes("node_modules/@colyseus") ||
+            id.includes("node_modules/msgpackr")
+          ) {
+            return "colyseus-sdk";
           }
           if (id.includes("cards.json")) {
             return "cards-data";
