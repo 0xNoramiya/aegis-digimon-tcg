@@ -111,6 +111,9 @@ const interfaceMessages = {
   "profile.cancelName": "名前変更をキャンセルする",
   "profile.nameRules": "3 ～ 32 文字 · 文字、数字、スペース、-、_",
   "profile.preferences": "設定",
+  "profile.showStats": "対戦成績を表示",
+  "profile.showStatsDesc":
+    "プロフィール上部に対戦数、勝利数、勝率、保存したリプレイを表示します。アカウントに保存されます。",
   "profile.avatarMenu.title": "アバターを選択",
   "profile.avatarMenu.default": "デフォルトのアバターを使用する",
   "profile.avatarMenu.discord": "Discordのアバターを使用する",

@@ -33,6 +33,7 @@ export type AccountPreferences = {
   deckShare?: number;
   deckView?: "grid" | "list";
   deckSort?: string;
+  profileStats?: boolean;
 };
 export type AccountProfile = {
   account: RemoteAccount;

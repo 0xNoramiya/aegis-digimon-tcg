@@ -76,7 +76,7 @@ async function setup(page: Page, { count = 37, dark = false } = {}) {
   });
   await page.route("**/auth/me", (route) => route.fulfill({ json: current }));
   await page.route("**/account/decks", (route) => route.fulfill({ json: [] }));
-  await page.route("**/account/preferences", (route) => route.fulfill({ json: {} }));
+  await page.route("**/account/preferences", (route) => route.fulfill({ json: { profileStats: true } }));
   await page.route("**/account/profile", (route) => {
     const replays = matches.filter((match) => match.replay).length;
     const wins = matches.filter((match) => match.result === "win").length;

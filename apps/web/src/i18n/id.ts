@@ -112,6 +112,9 @@ const interfaceMessages = {
   "profile.cancelName": "Batalkan perubahan nama",
   "profile.nameRules": "3–32 karakter · huruf, angka, spasi, - dan _",
   "profile.preferences": "Preferensi",
+  "profile.showStats": "Tampilkan statistik pertandingan",
+  "profile.showStatsDesc":
+    "Tampilkan pertandingan, kemenangan, tingkat kemenangan, dan replay tersimpan di bagian atas profilmu. Disimpan ke akunmu.",
   "profile.avatarMenu.title": "Pilih avatar",
   "profile.avatarMenu.default": "Gunakan avatar bawaan",
   "profile.avatarMenu.discord": "Gunakan avatar Perselisihan",

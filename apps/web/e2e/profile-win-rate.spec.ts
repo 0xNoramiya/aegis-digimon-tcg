@@ -22,6 +22,7 @@ for (const [width, dark] of [
     installAccountRoutes(app, store);
     const owner = await store.accountForIdentity("email", "rate@test.invalid", "Rate Tamer");
     const session = await store.issueSession(owner);
+    await store.updatePreferences(owner.id, { profileStats: true });
     // Three eligible human games (one of each result), then 26 bot wins fill the first page.
     for (let index = 0; index < 29; index++) {
       await store.recordRecentMatch(owner.id, `rate-room-${index}`, {

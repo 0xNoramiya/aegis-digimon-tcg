@@ -39,6 +39,7 @@ import { setHandAutoSortEnabled, useHandAutoSort } from "../game/handAutoSort";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../game/noticeDuration";
 import { LOCALES, LOCALE_LABELS, useTranslation, type TranslationKey } from "../i18n";
 import type { RemoteAccount } from "../account/client";
+import { setProfileStatsShown, useProfileStatsShown } from "../account/profileStats";
 import { useCloudReplays } from "../replays/cloud";
 import { CloudReplaySettings } from "../replays/cloud/CloudReplaySettings";
 import "./settings.css";
@@ -56,6 +57,7 @@ interface SettingsSection {
 }
 
 const REPLAYS_SECTION_ID = "settings-replays";
+const PROFILE_SECTION_ID = "settings-profile";
 
 const SECTIONS: readonly SettingsSection[] = [
   { id: "settings-appearance", label: "settings.sectionAppearance", icon: Icons.Palette },
@@ -63,6 +65,7 @@ const SECTIONS: readonly SettingsSection[] = [
   { id: "settings-sleeves", label: "settings.cardSleeve", icon: Icons.LayoutGrid },
   { id: REPLAYS_SECTION_ID, label: "replay.drive.settingsTitle", icon: Icons.Cloud },
   { id: "settings-sound", label: "redesign.settings.sound", icon: Icons.Play },
+  { id: PROFILE_SECTION_ID, label: "profile.title", icon: Icons.User },
   { id: "settings-gameplay", label: "settings.sectionGameplay", icon: Icons.Swords },
   { id: "settings-arena", label: "redesign.settings.arena", icon: Icons.Map },
 ];
@@ -257,10 +260,16 @@ export function Settings({
   const handAutoSort = useHandAutoSort();
   const effectPromptPosition = useEffectPromptPosition();
   const noticeDuration = useNoticeDuration();
+  const profileStatsShown = useProfileStatsShown();
   const hasCloudReplays = useCloudReplays().provider !== undefined;
+  const signedIn = Boolean(account);
   const sections = useMemo(
-    () => (hasCloudReplays ? SECTIONS : SECTIONS.filter((section) => section.id !== REPLAYS_SECTION_ID)),
-    [hasCloudReplays],
+    () =>
+      SECTIONS.filter(
+        (section) =>
+          (hasCloudReplays || section.id !== REPLAYS_SECTION_ID) && (signedIn || section.id !== PROFILE_SECTION_ID),
+      ),
+    [hasCloudReplays, signedIn],
   );
   const accountStatus = account ? t("account.connected") : account === null ? t("redesign.settings.guest") : null;
 
@@ -439,6 +448,19 @@ export function Settings({
                 <CustomMusicPicker />
               </div>
             </SettingsCard>
+
+            {signedIn ? (
+              <SettingsCard id={PROFILE_SECTION_ID} title={t("profile.title")}>
+                <div className="settings-row">
+                  <Switch
+                    checked={profileStatsShown}
+                    label={t("profile.showStats")}
+                    description={t("profile.showStatsDesc")}
+                    onChange={setProfileStatsShown}
+                  />
+                </div>
+              </SettingsCard>
+            ) : null}
 
             <SettingsCard id="settings-gameplay" title={t("settings.sectionGameplay")}>
               <div className="settings-row">

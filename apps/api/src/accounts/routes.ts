@@ -904,8 +904,18 @@ function positiveInteger(value: unknown, fallback: number): number | undefined {
 }
 function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
-  const { autoHatch, darkMode, locale, sleeve, eggSleeve, deckShare, deckView, deckSort, ...unknownKeys } =
-    value as Record<string, unknown>;
+  const {
+    autoHatch,
+    darkMode,
+    locale,
+    sleeve,
+    eggSleeve,
+    deckShare,
+    deckView,
+    deckSort,
+    profileStats,
+    ...unknownKeys
+  } = value as Record<string, unknown>;
   if (Object.keys(unknownKeys).length > 0) return undefined;
   const isShortText = (text: unknown) => typeof text === "string" && text.length <= MAX_PREFERENCE_LENGTH;
   if (autoHatch !== undefined && typeof autoHatch !== "boolean") return undefined;
@@ -916,6 +926,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (deckShare !== undefined && !(typeof deckShare === "number" && deckShare > 0 && deckShare < 1)) return undefined;
   if (deckView !== undefined && deckView !== "grid" && deckView !== "list") return undefined;
   if (deckSort !== undefined && !isShortText(deckSort)) return undefined;
+  if (profileStats !== undefined && typeof profileStats !== "boolean") return undefined;
   return {
     ...(autoHatch !== undefined && { autoHatch }),
     ...(darkMode !== undefined && { darkMode }),
@@ -925,6 +936,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     ...(deckShare !== undefined && { deckShare: deckShare as number }),
     ...(deckView !== undefined && { deckView: deckView as "grid" | "list" }),
     ...(deckSort !== undefined && { deckSort: deckSort as string }),
+    ...(profileStats !== undefined && { profileStats }),
   };
 }
 

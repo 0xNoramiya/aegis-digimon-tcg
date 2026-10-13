@@ -170,6 +170,14 @@ describe("/account/preferences", () => {
     expect(await getPreferences()).toEqual({ autoHatch: false });
   });
 
+  it("stores and restores the profile stats choice, including false", async () => {
+    expect((await putPreferences({ profileStats: true })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ profileStats: true });
+    expect((await putPreferences({ profileStats: false })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ profileStats: false });
+    expect((await putPreferences({ profileStats: "true" })).status).toBe(400);
+  });
+
   it("stores the deck builder layout", async () => {
     const layout = { deckShare: 0.6, deckView: "list", deckSort: "level" };
     expect((await putPreferences(layout)).status).toBe(200);
