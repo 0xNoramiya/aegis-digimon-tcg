@@ -457,7 +457,7 @@ export class GameEngine {
     this.win = new WinCheck(this.state, this.hooks.emit);
     this.tracker = new UseTracker();
     this.modifiers = new ModifierLedger();
-    this.modifiers.bindContinuous(this.continuous);
+    this.modifiers.bindContinuous(this.continuous, () => this.combat?.currentAttackerId);
     this.subTriggers = new SubTriggerRegistry();
     this.decisions = new DecisionManager(
       this.state,
@@ -581,6 +581,8 @@ export class GameEngine {
 
   /** Guards each immediate prevention from reactivating during its own resolution. */
   preventReentryGuard = { activeReplacementKeys: new Set<string>() };
+
+  readonly decoyCostPermanentIds = new Set<string>();
 
   /** Stable effect key for a BT3-056-style ＜Digisorption＞ redirect's once-per-turn accounting. */
 
@@ -752,8 +754,7 @@ export class GameEngine {
       insteadOnly?: boolean;
       playerAction?: boolean;
       isDigiXros?: boolean;
-      includeEvade?: boolean;
-      includeArmorPurge?: boolean;
+      keywordPreventions?: { interruptsEffect: boolean };
     },
   ): Promise<Set<string>> {
     return engineConsultLeavePrevention(this, permanentIds, cause, resolvingSeat, opts);

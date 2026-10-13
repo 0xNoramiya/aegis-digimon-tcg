@@ -245,4 +245,16 @@ const it: PrivacyPolicy = {
   ],
 };
 
-export const PRIVACY_POLICIES: Record<Locale, PrivacyPolicy> = { en, "pt-BR": ptBR, es, it };
+export const PRIVACY_POLICIES: Record<Locale, PrivacyPolicy> = {
+  en,
+  "pt-BR": ptBR,
+  es,
+  it,
+  ko: en,
+  ja: en,
+  "zh-CN": en,
+  "zh-TW": en,
+  fr: en,
+  de: en,
+  id: en,
+};

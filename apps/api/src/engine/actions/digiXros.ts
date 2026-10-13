@@ -142,8 +142,7 @@ export interface DigiXrosDeps {
     sourceInstanceId: string,
     materialCount?: number,
   ): Promise<void>;
-  /** Place loose cards (hand / trash / under-Tamer) under a permanent as bottom digivolution cards. */
-  placeUnder(targetPermanentId: string, instanceIds: string[]): Promise<unknown>;
+  placeMaterialsUnder(targetPermanentId: string, instanceIds: string[]): Promise<unknown>;
   /**
    * Place the cards a cross-permanent play-cost reducer (BT10-093) committed. Its "when you would
    * play" effect resolves before the DigiXros, so the DigiXros materials go beneath these cards
@@ -476,7 +475,7 @@ export async function applyDigiXros(
       if (material.awaitsRuleTrash === true && !player.trash.some((card) => card.instanceId === material.instanceId)) {
         continue;
       }
-      await deps.placeUnder(permanent.permanentId, [material.instanceId]);
+      await deps.placeMaterialsUnder(permanent.permanentId, [material.instanceId]);
     }
     placedIds.push(material.instanceId);
   }

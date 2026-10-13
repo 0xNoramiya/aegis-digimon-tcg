@@ -12,27 +12,25 @@ import {
   deckById,
   filterDeckToKnownCards,
   removeDeck,
-  selectableDecks,
   upsertDeck,
   type DeckListing,
 } from "./game/decks";
+import { selectableDecks } from "@/game/selectableDecks";
+import { useFamousDecks } from "@/game/useFamousDecks";
 import type { AegisJoinOptions } from "./net/types";
 import type { SeriesGameTicket } from "./net/useRoom";
 import type { PrivateRoom, StartMode } from "./screens/Lobby";
 import { loadMatchFormatPreference } from "./screens/matchFormatPreference";
-import { Settings } from "./screens/Settings";
 import { loadIdentity, saveIdentity, loadDecks, saveDecks, loadActiveDeckId, saveActiveDeckId } from "./identity";
 import { accentForAvatar } from "./guest";
 import { applyDarkMode, setDarkMode, useDarkMode } from "./design/darkMode";
 import { setDeckEggSleeveId, setDeckSleeveId } from "./design/sleeve";
 import { applyTextScale } from "./design/textScale";
-import { InterfaceThemeDialog } from "./design/InterfaceThemePicker";
 import { I18nProvider, useTranslation } from "./i18n";
 import { accountApi, type RemoteAccount } from "./account/client";
 import { communityApi } from "./community/client";
 import { communityDeckListing } from "./community/communityDeckListing";
 import { usePreferencesSync } from "./account/usePreferencesSync";
-import { BugReportDialog } from "./bugs/BugReportDialog";
 import { LeaveMatchDialog } from "./game/screen/layout/LeaveMatchDialog";
 import { PlayerMenu } from "./account/PlayerMenu";
 import { NotificationBell } from "./notifications/NotificationBell";
@@ -50,6 +48,11 @@ const FeedbackScreen = lazy(() => import("./bugs/FeedbackScreen").then((m) => ({
 const MyFeedbackScreen = lazy(() => import("./bugs/MyFeedbackScreen").then((m) => ({ default: m.MyFeedbackScreen })));
 const PrivacyScreen = lazy(() => import("./legal/PrivacyScreen").then((m) => ({ default: m.PrivacyScreen })));
 const Home = lazy(() => import("./screens/Home").then((m) => ({ default: m.Home })));
+const Settings = lazy(() => import("./screens/Settings").then((m) => ({ default: m.Settings })));
+const InterfaceThemeDialog = lazy(() =>
+  import("./design/InterfaceThemePicker").then((m) => ({ default: m.InterfaceThemeDialog })),
+);
+const BugReportDialog = lazy(() => import("./bugs/BugReportDialog").then((m) => ({ default: m.BugReportDialog })));
 const ReleasesScreen = lazy(() => import("./releases/ReleasesScreen").then((m) => ({ default: m.ReleasesScreen })));
 const Login = lazy(() => import("./screens/Login").then((m) => ({ default: m.Login })));
 const Lobby = lazy(() => import("./screens/Lobby").then((m) => ({ default: m.Lobby })));
@@ -58,6 +61,7 @@ const DeckBuilder = lazy(() => import("./screens/DeckBuilder").then((m) => ({ de
 const CommunityScreen = lazy(() =>
   import("./screens/community/CommunityScreen").then((m) => ({ default: m.CommunityScreen })),
 );
+const RoadmapScreen = lazy(() => import("@/roadmap/RoadmapScreen").then((m) => ({ default: m.RoadmapScreen })));
 const GameScreen = lazy(() => import("./game/GameScreen").then((m) => ({ default: m.GameScreen })));
 const CardEffectsDemo = lazy(() => import("./dev/CardEffectsDemo").then((m) => ({ default: m.CardEffectsDemo })));
 const BoardShowcase = lazy(() => import("./dev/BoardShowcase").then((m) => ({ default: m.BoardShowcase })));
@@ -112,6 +116,7 @@ const NAV_SCREENS: Screen[] = [
   "lobby",
   "deck",
   "community",
+  "roadmap",
   "collection",
   "settings",
   "releases",
@@ -188,9 +193,19 @@ export function App() {
 }
 
 function AppShell() {
+  const famousDecks = useFamousDecks();
+  if (!famousDecks) {
+    return <ScreenFallback />;
+  }
+  return <LoadedAppShell famousDecks={famousDecks.decks} />;
+}
+
+function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }) {
   const [player, setPlayer] = useState<PlayerIdentity>(loadIdentity);
   const [decks, setDecks] = useState<DeckListing[]>(loadDecks);
-  const [activeDeckId, setActiveDeckId] = useState<string>(() => loadActiveDeckId(selectableDecks(loadDecks())));
+  const [activeDeckId, setActiveDeckId] = useState<string>(() =>
+    loadActiveDeckId(selectableDecks({ personalDecks: loadDecks(), famousDecks })),
+  );
   const dark = useDarkMode();
   const setDark = setDarkMode;
   const [account, setAccount] = useState<RemoteAccount | null>();
@@ -248,7 +263,7 @@ function AppShell() {
   const deleteDeck = (id: string) => {
     const remaining = removeDeck(decks, id);
     setDecks(remaining);
-    if (activeDeckId === id) setActiveDeckId(selectableDecks(remaining)[0]?.id ?? "");
+    if (activeDeckId === id) setActiveDeckId(selectableDecks({ personalDecks: remaining, famousDecks })[0]?.id ?? "");
     void accountApi
       .me()
       .then((remoteAccount) => (remoteAccount ? accountApi.deleteDeck(id) : undefined))
@@ -289,7 +304,16 @@ interface ClientProps {
   initialScreen?: Screen;
 }
 
-export function AegisClient({
+export function AegisClient(props: ClientProps) {
+  const famousDecks = useFamousDecks();
+  if (!famousDecks) {
+    return <ScreenFallback />;
+  }
+  return <LoadedAegisClient {...props} famousDecks={famousDecks.decks} />;
+}
+
+function LoadedAegisClient({
+  famousDecks,
   preferencesReady = true,
   player,
   setPlayer,
@@ -303,7 +327,7 @@ export function AegisClient({
   dark,
   setDark,
   initialScreen,
-}: ClientProps) {
+}: ClientProps & { famousDecks: readonly DeckListing[] }) {
   const { t } = useTranslation();
   const effectivePlayer = useMemo<PlayerIdentity>(
     () =>
@@ -336,6 +360,7 @@ export function AegisClient({
     timerStartSeconds: 300,
     timerRefillSeconds: 60,
   }));
+  const [allowRollback, setAllowRollback] = useState(false);
   const [bestOf, setBestOf] = useState(loadMatchFormatPreference);
   /** Set between the games of a best-of-three: the next GameScreen takes this seat. */
   const [seriesGame, setSeriesGame] = useState<SeriesGameTicket>();
@@ -421,10 +446,10 @@ export function AegisClient({
   };
   const navigateScreen = (nextScreen: Screen) => navigate({ screen: nextScreen });
 
-  const availableDecks = useMemo(
-    () => (borrowedDeck ? [borrowedDeck, ...selectableDecks(decks)] : selectableDecks(decks)),
-    [borrowedDeck, decks],
-  );
+  const availableDecks = useMemo(() => {
+    const selectable = selectableDecks({ personalDecks: decks, famousDecks });
+    return borrowedDeck ? [borrowedDeck, ...selectable] : selectable;
+  }, [borrowedDeck, decks, famousDecks]);
   const matchDeck = deckById(availableDecks, matchDeckId ?? activeDeckId);
   const matchSleeveId = screen === "game" ? matchDeck?.sleeveId : undefined;
   useEffect(() => setDeckSleeveId(matchSleeveId), [matchSleeveId]);
@@ -440,12 +465,14 @@ export function AegisClient({
   const joinOptions = useMemo<AegisJoinOptions>(
     () => ({
       ...timerOptions,
+      allowRollback,
       bestOf,
       format: deckFormat,
       displayName: effectivePlayer.name,
       avatarId: effectivePlayer.avatarId ?? undefined,
       deckId: matchDeck?.id,
       deckName: matchDeck?.name,
+      community: matchDeck?.community,
       botDeck: customBotDeck
         ? {
             mainDeck: customBotDeck.mainDeck,
@@ -461,7 +488,16 @@ export function AegisClient({
         eggDeckArts: matchDeck?.eggDeckArts,
       },
     }),
-    [effectivePlayer.name, effectivePlayer.avatarId, matchDeck, timerOptions, bestOf, customBotDeck, deckFormat],
+    [
+      effectivePlayer.name,
+      effectivePlayer.avatarId,
+      matchDeck,
+      timerOptions,
+      bestOf,
+      customBotDeck,
+      deckFormat,
+      allowRollback,
+    ],
   );
 
   const showNav = NAV_SCREENS.includes(screen) && !replayViewing;
@@ -563,6 +599,8 @@ export function AegisClient({
               onNav={navigateScreen}
               timerOptions={timerOptions}
               onTimerOptionsChange={setTimerOptions}
+              allowRollback={allowRollback}
+              onAllowRollbackChange={setAllowRollback}
               bestOf={bestOf}
               onBestOfChange={setBestOf}
               invitedRoomCode={invitedRoomCode}
@@ -590,7 +628,10 @@ export function AegisClient({
                 setDeckFormat(
                   requestedFormat ?? (mode === "unlimited" || requestedUnlimited ? "unlimited" : "standard"),
                 );
-                setMatchDeckId(requestedDeckId);
+                if (typeof requestedDeckId === "object") {
+                  setBorrowedDeck(structuredClone(requestedDeckId));
+                  setMatchDeckId(requestedDeckId.id);
+                } else setMatchDeckId(requestedDeckId);
                 navigateScreen("game");
               }}
             />
@@ -620,6 +661,7 @@ export function AegisClient({
               isAdmin={account?.isAdmin === true}
               onOpenDeck={(id) => navigate({ screen: "community", communityDeckId: id })}
               onBack={() => navigate({ screen: "community" })}
+              onRoadmap={() => navigate({ screen: "roadmap" })}
               onPlay={(deck) => {
                 const listing = communityDeckListing(deck);
                 setBorrowedDeck(listing);
@@ -636,6 +678,18 @@ export function AegisClient({
                 );
                 if (account) void communityApi.recordCopy(deck.id).catch(() => undefined);
               }}
+            />
+          )}
+
+          {screen === "roadmap" && (
+            <RoadmapScreen
+              itemId={route.roadmapItemId}
+              signedIn={!!account}
+              isAdmin={account?.isAdmin === true}
+              onSignIn={() => navigateScreen("login")}
+              onOpen={(id) => navigate({ screen: "roadmap", roadmapItemId: id })}
+              onDecks={() => navigate({ screen: "community" })}
+              onSuggest={() => setBugReportOpen(true)}
             />
           )}
 
@@ -676,6 +730,7 @@ export function AegisClient({
 
           {screen === "game" && (
             <GameScreen
+              onCopyUsedDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
               autoHatchReady={preferencesReady}
               key={matchNumber}
               joinOptions={joinOptions}
@@ -742,9 +797,15 @@ export function AegisClient({
       ) : null}
 
       {themeOpen ? (
-        <InterfaceThemeDialog dark={dark} onToggleDark={setDark} onClose={() => setThemeOpen(false)} />
+        <Suspense fallback={null}>
+          <InterfaceThemeDialog dark={dark} onToggleDark={setDark} onClose={() => setThemeOpen(false)} />
+        </Suspense>
       ) : null}
-      {bugReportOpen ? <BugReportDialog signedIn={!!account} onClose={() => setBugReportOpen(false)} /> : null}
+      {bugReportOpen ? (
+        <Suspense fallback={null}>
+          <BugReportDialog signedIn={!!account} onClose={() => setBugReportOpen(false)} />
+        </Suspense>
+      ) : null}
       {leaveMatchPromptOpen ? (
         <LeaveMatchDialog onConfirm={confirmLeaveMatch} onClose={() => setLeaveMatchPromptOpen(false)} />
       ) : null}

@@ -8,6 +8,7 @@ import { candidatePermanents, resolvePermanentTargets } from "../targeting/perma
 import type { Action } from "@aegis/shared";
 import type { ForceAttackOptions } from "../../context/primitives/index.js";
 import { subscribeLaterEntrants } from "./laterEntrants.js";
+import { getAttackActionTargetScope } from "#api/engine/effects/interpreter/actions/getAttackActionTargetScope";
 
 /**
  * Run an effect-directed attack with the resolving effect's attack plumbing: the attack
@@ -84,16 +85,10 @@ export async function processBlitzGrant(ctx: EffectContext, permanentIds: readon
 type AttackAction = Extract<Action, { kind: "Attack" }>;
 
 function attackActionOptions(action: AttackAction): ForceAttackOptions {
-  const attackSubject = action.attacker ?? action.subject ?? action.target;
   return {
     withoutSuspending: action.withoutSuspending ?? false,
     vortex: action.vortex,
-    attackPlayer:
-      action.attackPlayer ??
-      (action.target !== undefined && action.target !== attackSubject && action.target.filter.kind?.includes("Digimon")
-        ? false
-        : undefined),
-    attackPlayerOnly: action.attackPlayerOnly,
+    attackTargetScope: getAttackActionTargetScope(action),
     attackMechanic: action.attackMechanic,
   };
 }

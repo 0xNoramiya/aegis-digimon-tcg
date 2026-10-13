@@ -22,7 +22,7 @@
 }
 
 :80 {
-	encode gzip
+	encode zstd gzip
 
 	# One route per API process. Colyseus hands the client the public address of the process
 	# that owns its room (`/p1`, `/p2`, `/p3`), so these paths must reach that process and no
@@ -80,6 +80,13 @@
 	handle @community_api {
 		import api_upstreams
 	}
+	@roadmap_api {
+		path /roadmap /roadmap/*
+		not header Accept *text/html*
+	}
+	handle @roadmap_api {
+		import api_upstreams
+	}
 
 	# Recovery endpoint for clients that retained HTML from an older release.
 	# It clears only the caller's HTTP cache; cookies and local storage are preserved.
@@ -93,7 +100,9 @@
 	handle @versioned_assets {
 		header Cache-Control "public, max-age=31536000, immutable"
 		root * /usr/share/caddy
-		file_server
+		file_server {
+			precompressed br gzip
+		}
 	}
 
 	@html path / /index.html
@@ -103,13 +112,17 @@
 		header Expires "0"
 		root * /usr/share/caddy
 		rewrite * /index.html
-		file_server
+		file_server {
+			precompressed br gzip
+		}
 	}
 
 	handle {
 		header Cache-Control "no-cache, must-revalidate, max-age=0"
 		root * /usr/share/caddy
 		try_files {path} /index.html
-		file_server
+		file_server {
+			precompressed br gzip
+		}
 	}
 }

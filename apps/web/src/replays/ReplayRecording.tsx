@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import { Video } from "lucide-react";
 import { Button, Dialog } from "../design/primitives";
+import { useScreenWakeLock } from "../design/useScreenWakeLock";
 import { useTranslation } from "../i18n";
 import { canRecordScreen } from "./screenRecording";
 import { RecordedVideo } from "./RecordedVideo";
@@ -46,29 +47,7 @@ export function ReplayRecording({
       onStop();
     }
   }, [finished, native, state.kind, stop, onStop]);
-  // A best-effort wake lock also helps native phone recordings. The OS still owns its recorder.
-  useEffect(() => {
-    if (!active || !navigator.wakeLock) return;
-    let released = false;
-    let lock: WakeLockSentinel | undefined;
-    const acquire = async () => {
-      if (document.hidden) return;
-      try {
-        const next = await navigator.wakeLock.request("screen");
-        if (released) await next.release();
-        else lock = next;
-      } catch {
-        // Playback and recording remain usable when the OS refuses a wake lock.
-      }
-    };
-    void acquire();
-    document.addEventListener("visibilitychange", acquire);
-    return () => {
-      released = true;
-      document.removeEventListener("visibilitychange", acquire);
-      void lock?.release();
-    };
-  }, [active]);
+  useScreenWakeLock(active);
   function close() {
     if (state.kind === "requesting") recording.reset();
     setOpen(false);

@@ -3,7 +3,7 @@ import { GameState, PlayerState, Permanent, CardInstance, type Seat, type Server
 import type { CompiledCard } from "@aegis/shared";
 import { MemoryGauge } from "../MemoryGauge.js";
 import { ModifierLedger } from "./modifiers.js";
-import { SubTriggerRegistry } from "./subtriggers.js";
+import { SubTriggerRegistry, type ReplacementId } from "./subtriggers.js";
 import { createPrimitives, type PrimitivesEngine, type SelectionPort } from "./primitives.js";
 import { createCardSource, type CardStateLookup } from "../cards/CardSource.js";
 import { createGameAccess, createEffectContext } from "./context.js";
@@ -33,8 +33,8 @@ interface Harness {
   subTriggers: SubTriggerRegistry;
   /** Queue boolean answers for the prevent "you may pay?" prompt; default true. */
   optionalAnswers: boolean[];
-  replacementOrder: number[];
-  offeredReplacementIds: number[][];
+  replacementOrder: ReplacementId[];
+  offeredReplacementIds: ReplacementId[][];
   replacementFiredKeys: Set<string>;
   /** Resolve the consult exactly as GameEngine does (delegates to the real function). */
   consult(
@@ -66,8 +66,8 @@ function harness(opts?: { turnSeat?: Seat }): Harness {
   let permanentSeq = 0;
   const reentryGuard = { activeReplacementKeys: new Set<string>() };
   const optionalAnswers: boolean[] = [];
-  const replacementOrder: number[] = [];
-  const offeredReplacementIds: number[][] = [];
+  const replacementOrder: ReplacementId[] = [];
+  const offeredReplacementIds: ReplacementId[][] = [];
   const replacementFiredKeys = new Set<string>();
 
   const ask: SelectionPort = {
@@ -1258,5 +1258,56 @@ describe("immediate replacement activation identity", () => {
     });
     await h.consult([victim.permanentId]);
     expect(siblingActivations).toBe(0);
+  });
+});
+
+describe("leave-area prevention that saves one of several permanents", () => {
+  function installSavesOneOf(h: Harness, source: Permanent, protectedIds: readonly string[], offers: string[][]) {
+    return h.subTriggers.subscribeReplacement({
+      event: "wouldBeDeleted",
+      sourcePermanentId: source.permanentId,
+      sourceInstanceId: source.topCard!.instanceId,
+      mode: "prevent",
+      description: "save 1 of those Digimon",
+      protects: (_ctx, leavingId) => protectedIds.includes(leavingId),
+      preventCheck: async () => false,
+      preventOneOf: async (_ctx, candidateIds) => {
+        offers.push([...candidateIds]);
+        return candidateIds.at(-1);
+      },
+    });
+  }
+
+  it("resolves once for the whole deletion and saves the permanent it picks", async () => {
+    const h = harness();
+    const source = putPermanent(h.state, 0, "source");
+    const first = putPermanent(h.state, 0, "first");
+    const second = putPermanent(h.state, 0, "second");
+    const offers: string[][] = [];
+    installSavesOneOf(h, source, [first.permanentId, second.permanentId], offers);
+
+    expect(await h.consult([first.permanentId, second.permanentId])).toEqual(new Set([second.permanentId]));
+    expect(offers).toEqual([[first.permanentId, second.permanentId]]);
+  });
+
+  it("fizzles without asking when an earlier prevention already saved what it protects", async () => {
+    const h = harness();
+    const source = putPermanent(h.state, 0, "source");
+    const endangered = putPermanent(h.state, 0, "endangered");
+    const offers: string[][] = [];
+    const earlierId = h.subTriggers.subscribeReplacement({
+      event: "wouldBeDeleted",
+      sourcePermanentId: endangered.permanentId,
+      sourceInstanceId: endangered.topCard!.instanceId,
+      mode: "prevent",
+      description: "self prevention",
+      protects: (_ctx, leavingId) => leavingId === endangered.permanentId,
+      preventCheck: async () => true,
+    });
+    const savesOneOfId = installSavesOneOf(h, source, [endangered.permanentId], offers);
+    h.replacementOrder.push(earlierId, savesOneOfId);
+
+    expect(await h.consult([endangered.permanentId])).toEqual(new Set([endangered.permanentId]));
+    expect(offers).toEqual([]);
   });
 });

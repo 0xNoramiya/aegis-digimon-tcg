@@ -1,3 +1,8 @@
+import { resetRoomState } from "@/net/resetRoomState";
+import { ROLLBACK_RESET_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
+import { CONNECTION_REPORT_CHANNEL, type ConnectionReport } from "@aegis/shared/protocol/ConnectionReport";
+
+import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import { spectate } from "./client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GameState } from "@aegis/shared";
@@ -37,8 +42,13 @@ import {
   type ReconnectSession,
 } from "./reconnectSession";
 import { ResumeCancelledError, resumeSeat } from "./resumeSeat";
+import { watchRoomLiveness } from "@/net/watchRoomLiveness";
 import type { AegisJoinOptions } from "./types";
 import { keepLocalReplay } from "../replays/local";
+
+type ConnectionDrop = Pick<ConnectionReport, "closeCode" | "hiddenAtDrop" | "onlineAtDrop"> & {
+  droppedAt: number;
+};
 
 export type ConnectionStatus = "connecting" | "connected" | "reconnecting" | "error" | "closed";
 
@@ -124,6 +134,7 @@ export interface UseRoomResult {
   /** This seat's claim on the next game of its best-of-three, once the series has handed it out. */
   seriesSeat: Omit<SeriesGameTicket, "roomId"> | undefined;
   replayDownload?: ReplayDownloadMessage;
+  usedDeck?: UsedDeck;
 }
 
 /** Where the next game of a series is and how this player takes their seat in it. */
@@ -213,6 +224,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
   const confirmedDecisionIdRef = useRef<string | undefined>(undefined);
   const answeredDecisionsRef = useRef(new Map<string, DecisionRequest>());
   const [error, setError] = useState<string>();
+  const [usedDeck, setUsedDeck] = useState<UsedDeck>();
   const [replayDownload, setReplayDownload] = useState<ReplayDownloadMessage>();
   const [sessionId, setSessionId] = useState<string>();
   const [roomCode, setRoomCode] = useState("");
@@ -228,8 +240,10 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     confirmedDecisionIdRef.current = undefined;
     answeredDecisionsRef.current.clear();
     setDecision(undefined);
+    setUsedDeck(undefined);
 
     let stopHeartbeat = () => {};
+    let stopLiveness = () => {};
 
     const bindRoom = (room: AegisRoom) => {
       // attemptReconnect owns recovery; the SDK's own reconnection would race it for the seat.
@@ -255,7 +269,11 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       stopHeartbeat();
       const heartbeat = setInterval(stampSession, SESSION_HEARTBEAT_MS);
       stopHeartbeat = () => clearInterval(heartbeat);
+      stopLiveness();
+      stopLiveness = watchRoomLiveness({ room });
 
+      room.onMessage<UsedDeck>(USED_DECK_CHANNEL, (message) => setUsedDeck(structuredClone(message)));
+      if (!options.spectator) room.send(USED_DECK_CHANNEL, {});
       room.onMessage<ReplayDownloadMessage>(REPLAY_CHANNEL, (message) => {
         setReplayDownload(message);
         // Every finished match stays in this browser, saved or not to Google Drive.
@@ -317,6 +335,17 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       // A spectator can receive the full state before the join promise resolves.
       // Idle matches may publish no subsequent patch, so consume that decoded state now.
       if (room.state?.players?.length === 2) acceptState(room.state);
+      room.onMessage(ROLLBACK_RESET_CHANNEL, () => {
+        resetRoomState(room);
+        clearPendingIntents();
+        answeredDecisionsRef.current.clear();
+        confirmedDecisionIdRef.current = undefined;
+        setDecision(undefined);
+        setEvents([]);
+        setInbox(emptyBatchInbox);
+        snapshotsRef.current = [];
+        setSnapshots([]);
+      });
       room.onMessage<SequencedServerEvent>(EVENT_CHANNEL, (event) => {
         if (event.kind === "actionRejected" && event.decisionId) {
           const rejected = answeredDecisionsRef.current.get(event.decisionId);
@@ -348,17 +377,24 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       });
       room.onLeave((code) => {
         stopHeartbeat();
+        stopLiveness();
         if (cancelled) return;
         if (FINAL_CLOSE_CODES.has(code)) {
           clearReconnectSession();
           setStatus("closed");
           return;
         }
-        void attemptReconnect(Date.now() + RECONNECT_GRACE_MS);
+        const drop: ConnectionDrop = {
+          closeCode: code,
+          droppedAt: Date.now(),
+          hiddenAtDrop: typeof document !== "undefined" && document.hidden,
+          onlineAtDrop: typeof navigator === "undefined" || navigator.onLine,
+        };
+        void attemptReconnect(drop.droppedAt + RECONNECT_GRACE_MS, drop);
       });
     };
 
-    const attemptReconnect = async (deadline: number) => {
+    const attemptReconnect = async (deadline: number, drop: ConnectionDrop) => {
       const token = roomRef.current?.reconnectionToken;
       if (!token) {
         clearReconnectSession();
@@ -373,9 +409,13 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         savedAt: Date.now(),
       };
       let next: AegisRoom;
+      let attempts = 0;
       try {
         next = await resumeSeat({
-          resume: () => resumeReconnectSession({ ...saved, reconnectionToken: token }),
+          resume: () => {
+            attempts += 1;
+            return resumeReconnectSession({ ...saved, reconnectionToken: token });
+          },
           deadline,
           isCancelled: () => cancelled,
           waitUntilVisible,
@@ -394,7 +434,16 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       }
       bindRoom(next);
       setStatus("connected");
-      if (!options.spectator) flushIntents(next);
+      if (!options.spectator) {
+        next.send(CONNECTION_REPORT_CHANNEL, {
+          closeCode: drop.closeCode,
+          offlineMs: Math.max(0, Date.now() - drop.droppedAt),
+          attempts,
+          hiddenAtDrop: drop.hiddenAtDrop,
+          onlineAtDrop: drop.onlineAtDrop,
+        } satisfies ConnectionReport);
+        flushIntents(next);
+      }
     };
 
     const resumeOrConnect = async (): Promise<AegisRoom> => {
@@ -439,6 +488,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     return () => {
       cancelled = true;
       stopHeartbeat();
+      stopLiveness();
       // A reload never runs this cleanup, so only a deliberate exit forgets the seat.
       clearReconnectSession();
       void roomRef.current?.leave();
@@ -480,5 +530,6 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     roomCode,
     seriesSeat,
     replayDownload,
+    usedDeck,
   };
 }

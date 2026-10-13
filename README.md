@@ -23,6 +23,19 @@
 - **Tournaments** with fixed rules, a frozen ban list and a server-owned clock.
 - **Server-authoritative rules**: the API decides every legal play, so a patched client changes nothing.
 
+## Languages
+
+Choose your interface language in Settings. Aegis supports English, Brazilian Portuguese,
+Spanish, Italian, Korean, Japanese, Simplified Chinese, Traditional Chinese, French,
+German, and Indonesian. The first visit uses your browser languages; your selected
+language is saved and synchronized through account preferences when signed in.
+
+Translations ship with the app and need no translation service during gameplay.
+The seven newest language dictionaries are machine translated with selected gameplay
+terms corrected; native-speaker review is still needed. Card names, printed effects,
+and server-provided effect descriptions remain in English. Release notes and the
+privacy policy fall back to English where a published translation is unavailable.
+
 ## Screens
 
 |                                                                Lobby                                                                |                                                        Deck builder                                                        |
@@ -217,17 +230,32 @@ rules for card changes, rules research and tests. Before you open a PR:
 3. Run `pnpm run ci` and `git diff --check`.
 4. Keep commits focused, and say what changed for players or for the rules.
 
+`develop` is the default development branch. Create feature and fix branches from
+`develop` and open their PRs against `develop`, using the default PR template.
+`main` contains releases. Both long-lived branches require PRs and preserve commit
+history with merge commits; do not squash, rebase, force-push, or delete them.
+
 ## Releasing
 
-A release takes two steps. It is not public until you run step 2.
+A normal release uses a PR from `develop` into `main`. Merging the PR does not
+publish a GitHub release or deploy the application.
 
 1. **Prepare.** Run `pnpm release:set X.Y.Z-beta`. Add the release to
    `apps/web/src/releases/releases.json` and its English (`en`), Portuguese (`pt-BR`),
    Spanish (`es`) and Italian (`it`) text to `messages.json`. Commit as
-   `chore(release): prepare vX.Y.Z-BETA` and push `main`.
-2. **Publish.** From a clean worktree at that commit, run
+   `chore(release): prepare vX.Y.Z-BETA` on a branch from `develop`, then merge its
+   PR into `develop`.
+2. **Review.** Open a PR with base `main` and head `develop`, titled
+   `Release vX.Y.Z-BETA`. Use the [release PR template](.github/PULL_REQUEST_TEMPLATE/release.md)
+   by adding `?template=release.md` to the GitHub compare URL. Review the complete
+   release diff, run the checks, and merge using a merge commit. Keep `develop`.
+3. **Publish.** Check out `main`, run `git pull --ff-only origin main`, and from a
+   clean worktree at the merged release commit run
    `pnpm release:publish -- vX.Y.Z-BETA`. It runs the release checks, pushes the tag and
    creates the GitHub release, marked as latest, with the notes from `pnpm release:notes`.
+
+After release, synchronize `main` back into `develop` through a PR with a merge
+commit. Hotfixes released from `main` must also be merged back into `develop`.
 
 `pnpm release:notes -- vX.Y.Z-BETA` prints the notes for an older release.
 

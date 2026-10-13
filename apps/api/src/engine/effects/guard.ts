@@ -1,20 +1,20 @@
 import { CardKind, type Permanent } from "@aegis/shared";
 import type { ReplacementSubscriptionPrevent } from "./subtriggers.js";
+import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
+import { buildKeywordReactionId } from "#api/engine/effects/buildKeywordReactionId";
 
-export const GUARD_EFFECT_TEXT = "＜Guard＞: delete this Digimon to prevent your other Digimon from leaving.";
+export const GUARD_EFFECT_TEXT = "＜Guard＞: you may delete this Digimon to prevent your other Digimon from leaving.";
 
 /** CR §16-45: each live Guard holder protects its controller's OTHER Digimon. */
 export function guardLeaveReplacements(
   holderIds: readonly string[],
   deps: {
-    /** Keep generated IDs disjoint from the same consult's Detach reactions. */
-    idOffset: number;
     permanentById(id: string): Permanent | undefined;
     isBattleAreaDigimon(permanent: Permanent | undefined): boolean;
     hasGuard(id: string): boolean;
   },
 ): ReplacementSubscriptionPrevent[] {
-  return holderIds.flatMap((id, index) => {
+  return holderIds.flatMap((id) => {
     const holder = deps.permanentById(id);
     if (holder?.topCard === undefined || !deps.isBattleAreaDigimon(holder) || !deps.hasGuard(id)) return [];
     const holderInstanceId = holder.topCard.instanceId;
@@ -30,12 +30,12 @@ export function guardLeaveReplacements(
     };
     return [
       {
-        id: -(deps.idOffset + index + 1),
+        id: buildKeywordReactionId(KeywordReaction.GUARD.value, id),
         event: "wouldLeavePlay" as const,
         mode: "prevent" as const,
         sourcePermanentId: id,
         sourceInstanceId: holderInstanceId,
-        activationIdentity: "keyword-guard",
+        activationIdentity: KeywordReaction.GUARD.value,
         description: GUARD_EFFECT_TEXT,
         affectsAll: true,
         causeAllows: (cause, resolvingSeat) =>

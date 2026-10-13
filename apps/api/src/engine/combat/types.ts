@@ -68,6 +68,12 @@ export interface OpenCounterWindow {
   resolve: () => void;
 }
 
+export interface BlockTiming {
+  attackerPermanentId: string;
+  blockerPermanentId: string;
+  blockerSuspended: boolean;
+}
+
 /** Minimal trigger payload passed to the effect-stack seam for combat timings. */
 export interface CombatTrigger {
   subjectPermanentId?: string;
@@ -195,6 +201,7 @@ export interface CombatHooks {
    * 1557356892794388541). Absent => the window and the watcher bus run one after the other.
    */
   withPendingSuspensionSubTriggers?: (payload: TriggerInfo, runWindows: () => Promise<void>) => Promise<void>;
+  fireBlockTiming: (block: BlockTiming) => Promise<void>;
   /** Capture event-time eligibility before battle losers leave, without resolving reactions. */
   prepareFrozenSubTrigger?: (
     event: SubTriggerEventName,
@@ -207,8 +214,11 @@ export interface CombatHooks {
    * effect-path primitive already uses the same shared consult; combat otherwise deletes by
    * raw state access and would pay a prevention cost without actually saving the Digimon.
    */
-  armorPurgeInLeavePrevention?: boolean;
-  consultLeavePrevention?: (permanentIds: string[], opts?: { insteadOnly?: boolean }) => Promise<Set<string>>;
+  keywordReactionsInLeavePrevention?: boolean;
+  consultLeavePrevention?: (
+    permanentIds: string[],
+    opts?: { insteadOnly?: boolean; keywordPreventions?: { interruptsEffect: boolean } },
+  ) => Promise<Set<string>>;
   /**
    * Drop a battle-deleted permanent's modifier / continuous / SubTrigger ledgers as it
    * leaves the field (subsystems: static-continuous-effects, delayed-and-rule-effects).

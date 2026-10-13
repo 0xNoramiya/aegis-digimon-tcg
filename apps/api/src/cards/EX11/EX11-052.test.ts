@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { runtimeCompiledCard } from "../../engine/effects/interpreter.js";
 import { assertNoLoudGap, setupEngine, settle } from "../../engine/testkit/harness.js";
 import { observe } from "../../engine/testkit/observe.js";
+import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
 import "../index.js";
 
 const cardId = "EX11-052";
@@ -150,7 +151,12 @@ describe("EX11-052 HeavyMetaldramon", () => {
           security: ["BT1-009", "BT1-010"],
         },
       },
-      { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true },
+      {
+        autoAcceptOptional: true,
+        autoSelectCards: true,
+        autoChooseOption: true,
+        preferTriggerKeys: [KeywordReaction.SCAPEGOAT.value],
+      },
     );
     s.state.turnSeat = 1;
     await s.ready();
@@ -173,7 +179,7 @@ describe("EX11-052 HeavyMetaldramon", () => {
     expect(s.state.players[0]!.trash.some((card) => card.instanceId === s.inst("scapegoatProvider").instanceId)).toBe(
       true,
     );
-    expect(s.state.players[1]!.security).toHaveLength(2);
+    expect(s.state.players[1]!.security).toHaveLength(1);
     assertNoLoudGap(s);
   });
 

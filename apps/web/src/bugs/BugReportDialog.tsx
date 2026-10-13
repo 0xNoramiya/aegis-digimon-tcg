@@ -126,7 +126,7 @@ export function BugReportDialog({
         </span>
         <p>
           {t(
-            publicMirror
+            publicMirror && kind === "bug"
               ? signedIn
                 ? "bugReport.notice.signed"
                 : "bugReport.notice.anonymous"

@@ -1,5 +1,6 @@
 import { describe, it, expect, onTestFinished } from "vitest";
 import { $changes, Encoder, StateView } from "@colyseus/schema";
+import { AttackTargetScope } from "@aegis/shared/effects/ir/actions/AttackTargetScope";
 import {
   DNA_DIGIVOLUTION_REQUIREMENT_OVERRIDES,
   GameState,
@@ -3273,7 +3274,7 @@ describe("primitives: forced-attack target legality", () => {
     h.continuous.addRestriction(h.s.perm("protected").permanentId, "cantBeAttacked", EffectDuration.UntilEachTurnEnd);
     h.selections.push([h.s.perm("legal").permanentId]);
 
-    await h.fx.forceAttack(h.s.perm("grandis").permanentId, { attackPlayer: false });
+    await h.fx.forceAttack(h.s.perm("grandis").permanentId, { attackTargetScope: AttackTargetScope.DIGIMON.value });
 
     expect(h.selectionCandidates.at(-1)).toEqual([h.s.perm("legal").permanentId]);
     expect(resolvedTarget).toEqual({ kind: "permanent", permanentId: h.s.perm("legal").permanentId });
@@ -3294,7 +3295,7 @@ describe("primitives: forced-attack target legality", () => {
     };
     const h = harness({ combat, board: { 0: { battleArea: [{ card: "BT9-055", as: "grandis" }] } } });
 
-    await h.fx.forceAttack(h.s.perm("grandis").permanentId, { attackPlayer: false });
+    await h.fx.forceAttack(h.s.perm("grandis").permanentId, { attackTargetScope: AttackTargetScope.DIGIMON.value });
 
     expect(h.selectionCandidates).toHaveLength(0);
     expect(resolvedTarget).toBeUndefined();
@@ -3486,6 +3487,7 @@ describe("Primitives completeness guard (no declared-but-unassigned methods)", (
     placeOptionAsPermanent: true,
     placeOwnTopAtStackBottom: true,
     placeUnder: true,
+    placePlayMaterialsUnder: true,
     placeUnderFromDeck: true,
     placeUnderFromEggDeck: true,
     playFromHand: true,

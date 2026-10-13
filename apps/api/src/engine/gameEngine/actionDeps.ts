@@ -155,7 +155,7 @@ export function resolutionDeps(
     turnSeat: engine.state.turnSeat,
     listCandidateInstances: listCandidate,
     ruleProcess: async () => {
-      if (engine.optionResolutionDepth > 0 || engine.effectResolutionDepth > 0) return;
+      if (engine.optionMainDepth > 0 || engine.effectResolutionDepth > 0) return;
       derivedPending.push(...(await collectRuleProcessPending(engine)));
     },
     isGameOver: () => engine.state.gameOver,
@@ -871,7 +871,8 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
     digiXrosExpandedZoneCounts: (seat, playedInstanceId) =>
       engine.primitives.digiXrosExpandedZoneCounts?.(seat, playedInstanceId) ?? {},
     nextPermanentId: () => nextPermanentId(engine),
-    placeUnder: (targetPermanentId, instanceIds) => engine.primitives.placeUnder(targetPermanentId, instanceIds),
+    placeMaterialsUnder: (targetPermanentId, instanceIds) =>
+      engine.primitives.placePlayMaterialsUnder(targetPermanentId, instanceIds),
     placePendingReducerCards: (playedInstanceId, permanentId) =>
       placePendingReducerCards(engine, playedInstanceId, permanentId),
     placePendingDigivolution: playCardDeps(engine).placePendingDigivolution,
@@ -905,8 +906,8 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
 
 /**
  * Side-effect dependencies for the Assembly play subsystem (§7-3). Memory math is the shared
- * gauge (identical to playCard / DigiXros / digivolve); placement is delegated to the canonical
- * `placeUnder` primitive; On Play fires through the effect stack scoped to the played instance,
+ * gauge (identical to playCard / DigiXros / digivolve); placement is delegated to the
+ * `placePlayMaterialsUnder` primitive; On Play fires through the effect stack scoped to the played instance,
  * plus the board-wide OnEnterFieldAnyone / whenPlayed seams (mirroring digiXrosDeps.fireTiming).
  */
 export function assemblyDeps(engine: GameEngine): AssemblyDeps {
@@ -923,7 +924,8 @@ export function assemblyDeps(engine: GameEngine): AssemblyDeps {
     minimumDeferredPlayCost: play.minimumDeferredPlayCost,
     placePendingDigivolution: play.placePendingDigivolution,
     nextPermanentId: () => nextPermanentId(engine),
-    placeUnder: (targetPermanentId, instanceIds) => engine.primitives.placeUnder(targetPermanentId, instanceIds),
+    placeMaterialsUnder: (targetPermanentId, instanceIds) =>
+      engine.primitives.placePlayMaterialsUnder(targetPermanentId, instanceIds),
     fireTiming: async (_state, _seat, timing, sourceInstanceId) =>
       firePlayEntryWindows(engine, timing, sourceInstanceId),
     emit: (event) => engine.hooks.emit(event as ServerEvent),
@@ -1079,6 +1081,7 @@ export function dnaDigivolveDeps(engine: GameEngine): DnaDigivolveDeps {
  */
 export function buildTurnFlowHooks(engine: GameEngine): TurnFlowHooks {
   return {
+    beforeTurn: (turn) => engine.hooks.beforeTurn?.(turn),
     fireTiming: async (timing) => engine.fireTiming(timing),
     draw: async (seat, count) => (await drawCards(engine, seat, count)).length,
     deckCount: (seat) => engine.state.players[seat]?.deck.length ?? 0,

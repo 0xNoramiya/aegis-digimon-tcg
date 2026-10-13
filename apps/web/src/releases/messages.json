@@ -1,4 +1,178 @@
 {
+  "releases.1.25.5-beta.summary": {
+    "en": "Aegis loads faster, play restrictions appear in the field effects panel, and DUAL Option dialogs are clearer.",
+    "pt-BR": "O Aegis carrega mais rápido, restrições de jogada aparecem no painel de efeitos de campo, e as janelas de Option DUAL ficaram mais claras.",
+    "es": "Aegis carga más rápido, las restricciones de juego aparecen en el panel de efectos de campo, y los diálogos de Option DUAL son más claros.",
+    "it": "Aegis si carica più velocemente, le restrizioni di gioco compaiono nel pannello degli effetti di campo e le finestre delle Option DUAL sono più chiare."
+  },
+  "releases.1.25.5-beta.feature.loading": {
+    "en": "The first screen downloads much less. Languages, card effects, famous decks, settings and release notes now load only when you open them.",
+    "pt-BR": "A primeira tela baixa bem menos. Idiomas, efeitos de cartas, decks famosos, configurações e notas de versão agora carregam só quando você os abre.",
+    "es": "La primera pantalla descarga mucho menos. Idiomas, efectos de cartas, mazos famosos, ajustes y notas de versión ahora se cargan solo cuando los abres.",
+    "it": "La prima schermata scarica molto meno. Lingue, effetti delle carte, mazzi famosi, impostazioni e note di rilascio ora si caricano solo quando li apri."
+  },
+  "releases.1.25.5-beta.feature.playRestrictions": {
+    "en": "Effects that stop a player from playing Digimon, such as Crimson Blaze, now show in that player’s field effects panel with their source card.",
+    "pt-BR": "Efeitos que impedem um jogador de jogar Digimon, como Crimson Blaze, agora aparecem no painel de efeitos de campo desse jogador com a carta de origem.",
+    "es": "Los efectos que impiden a un jugador jugar Digimon, como Crimson Blaze, ahora aparecen en el panel de efectos de campo de ese jugador con su carta de origen.",
+    "it": "Gli effetti che impediscono a un giocatore di giocare Digimon, come Crimson Blaze, ora compaiono nel pannello degli effetti di campo di quel giocatore con la carta di origine."
+  },
+  "releases.1.25.5-beta.fix.dualOption": {
+    "en": "The DUAL card dialog shows the Option effect without its use requirement, and Final Judgment highlights the attack that follows.",
+    "pt-BR": "A janela de carta DUAL mostra o efeito de Option sem o requisito de uso, e Final Judgment destaca o ataque que vem em seguida.",
+    "es": "El diálogo de carta DUAL muestra el efecto de Option sin su requisito de uso, y Final Judgment resalta el ataque que sigue.",
+    "it": "La finestra delle carte DUAL mostra l’effetto Option senza il requisito d’uso, e Final Judgment evidenzia l’attacco che segue."
+  },
+  "releases.1.25.4-beta.summary": {
+    "en": "The screen stays awake during a match, dropped connections resume your seat, and several card cost and timing fixes.",
+    "pt-BR": "A tela fica ligada durante a partida, conexões perdidas retomam seu lugar, e várias correções de custo e momento de cartas.",
+    "es": "La pantalla sigue encendida durante la partida, las conexiones perdidas recuperan tu asiento, y varias correcciones de coste y momento de cartas.",
+    "it": "Lo schermo resta acceso durante la partita, le connessioni perse riprendono il tuo posto e diverse correzioni di costo e tempistica delle carte."
+  },
+  "releases.1.25.4-beta.feature.wakeLock": {
+    "en": "The screen no longer turns off while a match is open. Turn this off with “Keep the screen awake” in the gameplay settings.",
+    "pt-BR": "A tela não desliga mais enquanto uma partida está aberta. Desative com “Manter a tela ligada” nas configurações de jogo.",
+    "es": "La pantalla ya no se apaga mientras hay una partida abierta. Desactívalo con “Mantener la pantalla encendida” en los ajustes de juego.",
+    "it": "Lo schermo non si spegne più mentre una partita è aperta. Disattivalo con “Mantieni lo schermo acceso” nelle impostazioni di gioco."
+  },
+  "releases.1.25.4-beta.fix.connection": {
+    "en": "A phone tab that goes silent now reconnects and resumes your seat, instead of showing a frozen board and losing by forfeit. A fast double tap on End breeding no longer ends your turn.",
+    "pt-BR": "Uma aba de celular que fica sem resposta agora reconecta e retoma seu lugar, em vez de mostrar um tabuleiro congelado e perder por W.O. Um toque duplo rápido em Encerrar criação não encerra mais seu turno.",
+    "es": "Una pestaña del móvil que deja de responder ahora se reconecta y recupera tu asiento, en lugar de mostrar un tablero congelado y perder por abandono. Un doble toque rápido en Terminar crianza ya no termina tu turno.",
+    "it": "Una scheda del telefono che smette di rispondere ora si riconnette e riprende il tuo posto, invece di mostrare un campo bloccato e perdere a tavolino. Un doppio tocco rapido su Termina allevamento non termina più il tuo turno."
+  },
+  "releases.1.25.4-beta.fix.costs": {
+    "en": "Cost reductions are fixed: Zanbamon’s digivolve cut applies, breeding Digimon no longer get digivolve cuts from hand, a card’s own play-cost cut no longer discounts later plays, and Royal Knights and every Assembly option are offered when affordable.",
+    "pt-BR": "Reduções de custo corrigidas: o corte de digievolução do Zanbamon funciona, Digimon na área de criação não recebem mais cortes de digievolução da mão, o corte de custo de jogar de uma carta não desconta mais jogadas seguintes, e Royal Knights e todas as opções de Assembly são oferecidos quando pagáveis.",
+    "es": "Reducciones de coste corregidas: el recorte de digievolución de Zanbamon se aplica, los Digimon en el área de crianza ya no reciben recortes de digievolución desde la mano, el recorte de coste de juego de una carta ya no descuenta jugadas posteriores, y Royal Knights y todas las opciones de Assembly se ofrecen cuando se pueden pagar.",
+    "it": "Riduzioni di costo corrette: lo sconto di digievoluzione di Zanbamon si applica, i Digimon nell’area di allevamento non ricevono più sconti di digievoluzione dalla mano, lo sconto sul costo di gioco di una carta non riduce più le giocate successive, e i Royal Knights e tutte le opzioni Assembly vengono offerti quando pagabili."
+  },
+  "releases.1.25.4-beta.fix.timing": {
+    "en": "[On Play] from a Digimon played by a [Security] effect waits until that effect and the rule check finish, and “when security is removed” effects wait until a used Option is trashed or Arts Digivolved.",
+    "pt-BR": "[On Play] de um Digimon jogado por um efeito [Security] espera esse efeito e a verificação de regras terminarem, e efeitos de “when security is removed” esperam até a Option usada ir para o lixo ou fazer Arts Digivolve.",
+    "es": "[On Play] de un Digimon jugado por un efecto [Security] espera a que terminen ese efecto y la comprobación de reglas, y los efectos de “when security is removed” esperan hasta que la Option usada vaya a la papelera o haga Arts Digivolve.",
+    "it": "[On Play] di un Digimon giocato da un effetto [Security] attende la fine di quell’effetto e del controllo delle regole, e gli effetti “when security is removed” attendono che l’Option usata vada negli scarti o faccia Arts Digivolve."
+  },
+  "releases.1.25.3-beta.summary": {
+    "en": "Deletion keywords follow the order you choose, and timed-out combat prompts close only once.",
+    "pt-BR": "Palavras-chave de deleção seguem a ordem que você escolher, e avisos de combate expirados fecham apenas uma vez.",
+    "es": "Las palabras clave de eliminación siguen el orden que elijas, y los avisos de combate caducados se cierran una sola vez.",
+    "it": "Le parole chiave di eliminazione seguono l’ordine che scegli e le richieste di combattimento scadute si chiudono una sola volta."
+  },
+  "releases.1.25.3-beta.fix.keywords": {
+    "en": "＜Evade＞, ＜Fragment＞, ＜Scapegoat＞ and ＜Decoy＞ now appear in the same order prompt as “would leave” and “would be deleted” effects, so you choose which resolves first. Answering Yes or No in that prompt no longer asks you again.",
+    "pt-BR": "＜Evade＞, ＜Fragment＞, ＜Scapegoat＞ e ＜Decoy＞ agora aparecem no mesmo aviso de ordem que os efeitos de “would leave” e “would be deleted”, então você escolhe qual resolve primeiro. Responder Sim ou Não nesse aviso não pergunta de novo.",
+    "es": "＜Evade＞, ＜Fragment＞, ＜Scapegoat＞ y ＜Decoy＞ ahora aparecen en el mismo aviso de orden que los efectos de “would leave” y “would be deleted”, así que eliges cuál se resuelve primero. Responder Sí o No en ese aviso ya no vuelve a preguntar.",
+    "it": "＜Evade＞, ＜Fragment＞, ＜Scapegoat＞ e ＜Decoy＞ ora compaiono nella stessa richiesta di ordine degli effetti “would leave” e “would be deleted”, così scegli quale si risolve per primo. Rispondere Sì o No in quella richiesta non chiede più una seconda volta."
+  },
+  "releases.1.25.3-beta.fix.combat": {
+    "en": "A combat prompt that runs out of time now expires only once, so the match does not skip an extra step.",
+    "pt-BR": "Um aviso de combate que fica sem tempo agora expira apenas uma vez, então a partida não pula uma etapa extra.",
+    "es": "Un aviso de combate que se queda sin tiempo ahora caduca una sola vez, así que la partida no se salta un paso extra.",
+    "it": "Una richiesta di combattimento che esaurisce il tempo ora scade una sola volta, così la partita non salta un passaggio in più."
+  },
+  "releases.1.25.2-beta.summary": {
+    "en": "Corrected effect timing in battles and blocks, “attack a player” targets, and once-per-turn [Main] effects.",
+    "pt-BR": "Correções no momento dos efeitos em batalhas e bloqueios, nos alvos de “atacar um jogador” e nos efeitos [Main] de uma vez por turno.",
+    "es": "Correcciones en el momento de los efectos en batallas y bloqueos, en los objetivos de “atacar a un jugador” y en los efectos [Main] de una vez por turno.",
+    "it": "Correzioni alla tempistica degli effetti in battaglie e blocchi, ai bersagli di “attacca un giocatore” e agli effetti [Main] una volta per turno."
+  },
+  "releases.1.25.2-beta.fix.timing": {
+    "en": "When a Digimon is blocked, the turn player’s effects resolve first. ＜Barrier＞ can be ordered with “would leave” effects. A Digimon reduced to 0 DP by an effect that orders an attack is deleted before [When Attacking] effects. “When played” effects now trigger when a rule check causes a Digimon to be played.",
+    "pt-BR": "Quando um Digimon é bloqueado, os efeitos do jogador do turno resolvem primeiro. ＜Barrier＞ pode ser ordenado junto com efeitos de “would leave”. Um Digimon reduzido a 0 DP por um efeito que ordena um ataque é deletado antes dos efeitos [When Attacking]. Efeitos de “when played” agora ativam quando uma verificação de regras faz um Digimon ser jogado.",
+    "es": "Cuando un Digimon es bloqueado, los efectos del jugador del turno se resuelven primero. ＜Barrier＞ se puede ordenar junto con efectos de “would leave”. Un Digimon reducido a 0 DP por un efecto que ordena un ataque se elimina antes de los efectos [When Attacking]. Los efectos de “when played” ahora se activan cuando una comprobación de reglas hace que se juegue un Digimon.",
+    "it": "Quando un Digimon viene bloccato, gli effetti del giocatore di turno si risolvono per primi. ＜Barrier＞ si può ordinare insieme agli effetti “would leave”. Un Digimon portato a 0 DP da un effetto che ordina un attacco viene eliminato prima degli effetti [When Attacking]. Gli effetti “when played” ora si attivano quando un controllo delle regole fa giocare un Digimon."
+  },
+  "releases.1.25.2-beta.fix.cards": {
+    "en": "Effects that say “attack a player”, such as BT22 LordKnightmon’s, can no longer target a Digimon. Assembly and DigiXros materials no longer trigger effects that react to cards placed by effects, such as BT21 Hiro Amanokawa’s.",
+    "pt-BR": "Efeitos que dizem “atacar um jogador”, como o de LordKnightmon BT22, não podem mais ter um Digimon como alvo. Materiais de Assembly e DigiXros não ativam mais efeitos que reagem a cartas colocadas por efeitos, como o de Hiro Amanokawa BT21.",
+    "es": "Los efectos que dicen “atacar a un jugador”, como el de LordKnightmon BT22, ya no pueden tener como objetivo a un Digimon. Los materiales de Assembly y DigiXros ya no activan efectos que reaccionan a cartas colocadas por efectos, como el de Hiro Amanokawa BT21.",
+    "it": "Gli effetti che dicono “attacca un giocatore”, come quello di LordKnightmon BT22, non possono più prendere come bersaglio un Digimon. I materiali di Assembly e DigiXros non attivano più gli effetti che reagiscono alle carte poste da effetti, come quello di Hiro Amanokawa BT21."
+  },
+  "releases.1.25.2-beta.fix.activation": {
+    "en": "Declining a [Main] effect after activating it no longer uses up its [Once Per Turn]. The optional part of a prompt is highlighted, so it is clear that declining it can still lead to a draw.",
+    "pt-BR": "Recusar um efeito [Main] depois de ativá-lo não gasta mais o seu [Once Per Turn]. A parte opcional de um aviso agora aparece destacada, deixando claro que recusar ainda pode levar a uma compra.",
+    "es": "Rechazar un efecto [Main] después de activarlo ya no gasta su [Once Per Turn]. La parte opcional de un aviso aparece resaltada, para que quede claro que rechazarla aún puede dar un robo.",
+    "it": "Rifiutare un effetto [Main] dopo averlo attivato non consuma più il suo [Once Per Turn]. La parte facoltativa di una richiesta è evidenziata, così è chiaro che rifiutarla può comunque portare a pescare."
+  },
+  "releases.1.25.1-beta.summary": {
+    "en": "Rollback limited to your own actions, corrected card effects, and more reliable effect presentation.",
+    "pt-BR": "Rollback limitado às suas próprias ações, correções de efeitos de cartas e apresentação de efeitos mais confiável.",
+    "es": "Retroceso limitado a tus propias acciones, efectos de cartas corregidos y presentación de efectos más fiable.",
+    "it": "Ripristino limitato alle proprie azioni, effetti delle carte corretti e presentazione degli effetti più affidabile."
+  },
+  "releases.1.25.1-beta.fix.rollback": {
+    "en": "You can request rollback only for your own actions. Returning to the start of a turn is blocked if it would also undo an opponent’s action.",
+    "pt-BR": "Você só pode pedir rollback das suas próprias ações. Voltar ao início do turno fica bloqueado se isso também desfizer uma ação do adversário.",
+    "es": "Solo puedes solicitar el retroceso de tus propias acciones. Volver al inicio del turno se bloquea si también desharía una acción del rival.",
+    "it": "Puoi richiedere il ripristino solo delle tue azioni. Il ritorno all’inizio del turno è bloccato se annullerebbe anche un’azione dell’avversario."
+  },
+  "releases.1.25.1-beta.fix.cards": {
+    "en": "Belphemon discards only from its controller’s hand. Atomic Inferno’s memory effect expires at the end of your turn, and EX12 MetalGreymon no longer receives an unprinted Security Attack bonus.",
+    "pt-BR": "Belphemon descarta apenas da mão de seu controlador. O efeito de memória de Atomic Inferno termina no fim do seu turno, e MetalGreymon EX12 deixa de receber um bônus de Ataque de Segurança que não consta na carta.",
+    "es": "Belphemon descarta solo de la mano de su controlador. El efecto de memoria de Atomic Inferno termina al final de tu turno y MetalGreymon EX12 deja de recibir una bonificación de Ataque de Seguridad que no figura en la carta.",
+    "it": "Belphemon scarta solo dalla mano del suo controllore. L’effetto memoria di Atomic Inferno termina alla fine del tuo turno e MetalGreymon EX12 non riceve più un bonus di Attacco Sicurezza non presente sulla carta."
+  },
+  "releases.1.25.1-beta.fix.scapegoat": {
+    "en": "Scapegoat attributes its deletion cost to the correct controller and prevents deletion only when that cost is successfully paid.",
+    "pt-BR": "Scapegoat atribui seu custo de deleção ao controlador correto e só impede a deleção quando esse custo é pago com sucesso.",
+    "es": "Scapegoat atribuye su coste de eliminación al controlador correcto y solo impide la eliminación cuando el coste se paga correctamente.",
+    "it": "Scapegoat attribuisce il costo di eliminazione al controllore corretto e impedisce l’eliminazione solo quando il costo viene pagato con successo."
+  },
+  "releases.1.25.1-beta.fix.presentation": {
+    "en": "Effect results follow their own announcements more reliably, avoiding incorrect waits during nested effect sequences.",
+    "pt-BR": "Os resultados dos efeitos seguem seus próprios anúncios com mais confiabilidade, evitando esperas incorretas em sequências de efeitos encadeados.",
+    "es": "Los resultados de los efectos siguen sus propios anuncios con mayor fiabilidad, evitando esperas incorrectas en secuencias de efectos anidados.",
+    "it": "I risultati degli effetti seguono i propri annunci in modo più affidabile, evitando attese errate nelle sequenze di effetti annidati."
+  },
+  "releases.1.25.0-beta.summary": {
+    "en": "Casual match rollback, community deck discovery, and more reliable card effects and battle presentation.",
+    "pt-BR": "Rollback em partidas casuais, descoberta de decks da comunidade e efeitos de cartas e apresentação das batalhas mais confiáveis.",
+    "es": "Retroceso en partidas casuales, descubrimiento de mazos de la comunidad y efectos de cartas y presentación de batallas más fiables.",
+    "it": "Ripristino nelle partite casuali, scoperta dei mazzi della community ed effetti delle carte e presentazione delle battaglie più affidabili."
+  },
+  "releases.1.25.0-beta.feature.rollback": {
+    "en": "Casual matches support returning to an earlier state with opponent consent, with rollback controls translated into all supported languages.",
+    "pt-BR": "Partidas casuais permitem voltar a um estado anterior com o consentimento do adversário, com controles de rollback traduzidos para todos os idiomas disponíveis.",
+    "es": "Las partidas casuales permiten volver a un estado anterior con el consentimiento del rival, con controles traducidos a todos los idiomas disponibles.",
+    "it": "Le partite casuali consentono di tornare a uno stato precedente con il consenso dell’avversario, con comandi tradotti in tutte le lingue disponibili."
+  },
+  "releases.1.25.0-beta.feature.decks": {
+    "en": "Random deck selection includes eligible community decks, and you can copy a deck after a match.",
+    "pt-BR": "A seleção aleatória inclui decks elegíveis da comunidade, e você pode copiar um deck depois da partida.",
+    "es": "La selección aleatoria incluye mazos aptos de la comunidad y permite copiar un mazo después de una partida.",
+    "it": "La selezione casuale include i mazzi idonei della community ed è possibile copiare un mazzo dopo una partita."
+  },
+  "releases.1.25.0-beta.fix.choices": {
+    "en": "Lillymon ST21-09 and similar effects keep their later attack optional after accepting the effect. Takato BT12-089 correctly uses the activating Tamer and eligible trash materials.",
+    "pt-BR": "Lillymon ST21-09 e efeitos semelhantes mantêm o ataque posterior opcional após aceitar o efeito. Takato BT12-089 usa corretamente o Tamer que ativou o efeito e os materiais elegíveis do lixo.",
+    "es": "Lillymon ST21-09 y efectos similares mantienen opcional el ataque posterior tras aceptar el efecto. Takato BT12-089 usa correctamente al Tamer activador y los materiales aptos de la basura.",
+    "it": "Lillymon ST21-09 ed effetti simili mantengono facoltativo l’attacco successivo dopo aver accettato l’effetto. Takato BT12-089 usa correttamente il Tamer attivante e i materiali idonei negli scarti."
+  },
+  "releases.1.25.0-beta.fix.engine": {
+    "en": "Corrected battle-prevention reaction timing, Progress DP immunity, Thetismon inherited effects, Dark Masters reactions and evolution after WaruMonzaemon security plays.",
+    "pt-BR": "Corrigidos o momento das reações de prevenção de batalha, a imunidade de DP de Progress, os efeitos herdados de Thetismon, as reações de Dark Masters e a digivolução após jogar WaruMonzaemon da segurança.",
+    "es": "Corregidos el orden de las reacciones de prevención de batalla, la inmunidad de DP de Progress, los efectos heredados de Thetismon, las reacciones de Dark Masters y la digievolución tras jugar a WaruMonzaemon desde seguridad.",
+    "it": "Corretti i tempi delle reazioni di prevenzione della battaglia, l’immunità DP di Progress, gli effetti ereditati di Thetismon, le reazioni dei Dark Masters e la digievoluzione dopo aver giocato WaruMonzaemon dalla sicurezza."
+  },
+  "releases.1.25.0-beta.fix.bot": {
+    "en": "Bots respect distinct-card requirements when choosing evolution sources, preventing rejected choices from stalling their turns.",
+    "pt-BR": "Bots respeitam a exigência de cartas distintas ao escolher fontes de digivolução, evitando que escolhas rejeitadas travem seus turnos.",
+    "es": "Los bots respetan los requisitos de cartas distintas al elegir fuentes de digievolución, evitando que elecciones rechazadas bloqueen sus turnos.",
+    "it": "I bot rispettano i requisiti di carte distinte nella scelta delle fonti di digievoluzione, evitando che scelte rifiutate blocchino i turni."
+  },
+  "releases.1.25.0-beta.fix.presentation": {
+    "en": "Improved effect announcements, recovery presentation and watcher checkpoints so pending animations and reactions resolve in the correct order.",
+    "pt-BR": "Melhorados os anúncios de efeitos, a apresentação de recuperação e os pontos de resolução de reações para respeitar a ordem das animações e efeitos pendentes.",
+    "es": "Mejorados los anuncios de efectos, la presentación de recuperación y los puntos de resolución de reacciones para respetar el orden de las animaciones y efectos pendientes.",
+    "it": "Migliorati gli annunci degli effetti, la presentazione del recupero e i punti di risoluzione delle reazioni per rispettare l’ordine delle animazioni e degli effetti in attesa."
+  },
+  "releases.1.25.0-beta.fix.access": {
+    "en": "Strengthened sign-in validation and bot-room access checks.",
+    "pt-BR": "Reforçadas as validações de login e de acesso às salas com bots.",
+    "es": "Reforzadas las validaciones de inicio de sesión y de acceso a salas con bots.",
+    "it": "Rafforzate le verifiche di accesso e di ingresso nelle stanze con bot."
+  },
   "releases.1.24.0-beta.summary": {
     "en": "Clearer staged effects and fixes for optional costs, card choices and action timing.",
     "pt-BR": "Efeitos por etapa mais claros e correções de custos opcionais, escolhas de cartas e ordem das ações.",

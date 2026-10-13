@@ -3,7 +3,7 @@ import { Phase } from "@aegis/shared";
 
 const SKIP_CONFIRMATION_KEY = "aegis.skip-end-turn-confirmation";
 
-/** Confirm Main-phase passes, and discard the question when the live action window changes. */
+/** Confirm Main-phase passes, send each pass once per phase, and discard stale questions. */
 export function useEndTurnConfirmation({
   phase,
   turnCount,
@@ -35,11 +35,12 @@ export function useEndTurnConfirmation({
     open,
     request() {
       if (blocked || submitting.current) return;
-      if (phase === Phase.Main && skipConfirmation) {
-        submitting.current = true;
-        onEndPhase();
-      } else if (phase === Phase.Main) setRequestedTurn(turnCount);
-      else onEndPhase();
+      if (phase === Phase.Main && !skipConfirmation) {
+        setRequestedTurn(turnCount);
+        return;
+      }
+      submitting.current = true;
+      onEndPhase();
     },
     cancel() {
       setRequestedTurn(null);

@@ -1,10 +1,12 @@
+import { communityApi } from "@/community/client";
+import { communityDeckListing } from "@/community/communityDeckListing";
 /* Lobby / matchmaking. Pick a deck and enter the queue. "Quick Match" waits for a
    second human client; "Practice vs AI" seats a bot automatically server-side;
    "Private Match" creates or joins a code-locked room. A sticky bar keeps the
    chosen deck and the button that starts the chosen mode in reach while the
    player scrolls the deck picker. */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   allCards,
   MATCH_TIMER_REFILL_SECONDS,
@@ -33,7 +35,9 @@ import {
 import { CoverThumb } from "../design/cards";
 import { Panel } from "../design/surfaces";
 import { Icons, type IconComponent } from "../design/icons";
-import { FAMOUS_DECKS, FAMOUS_DECK_GROUPS, displayCoverCard, selectableDecks, type DeckListing } from "../game/decks";
+import { displayCoverCard, type DeckListing } from "../game/decks";
+import { FAMOUS_DECKS, FAMOUS_DECK_GROUPS } from "@/game/famousDecks";
+import { selectableDecks } from "@/game/selectableDecks";
 import { useTranslation, type Translate } from "../i18n";
 import { RankedStart } from "../account/RankedStart";
 import { RANKED_ENABLED } from "../features";
@@ -41,6 +45,7 @@ import { DeckColorDots, DeckPicker } from "./DeckPicker";
 import { FamousDeckListDialog } from "./FamousDeckListDialog";
 import { DeckFormatSelector, deckFormatLabel } from "./DeckFormatSelector";
 import { MatchFormatSettings } from "./MatchFormatSettings";
+import { RollbackSettings } from "@/screens/RollbackSettings";
 import { MatchTimerSettings } from "./MatchTimerSettings";
 import { loadMatchFormatPreference, saveMatchFormatPreference } from "./matchFormatPreference";
 import "./lobby.css";
@@ -81,7 +86,11 @@ export function randomDeckPool(
   format?: DeckFormat,
 ): DeckListing[] {
   const candidates =
-    scope === "mine" ? personalDecks : scope === "famous" ? FAMOUS_DECKS : selectableDecks(personalDecks);
+    scope === "mine"
+      ? personalDecks
+      : scope === "famous"
+        ? FAMOUS_DECKS
+        : selectableDecks({ personalDecks, famousDecks: FAMOUS_DECKS });
   const eligible = candidates.filter(
     (deck) => deckLegality(deck, { unlimited, format }).legal && (betaAllowed || !deckHasBetaCards(deck)),
   );
@@ -185,7 +194,11 @@ export function Lobby({
   onTimerOptionsChange,
   bestOf: initialBestOf,
   onBestOfChange,
+  allowRollback = false,
+  onAllowRollbackChange,
 }: {
+  allowRollback?: boolean;
+  onAllowRollbackChange?: (allow: boolean) => void;
   timerOptions?: MatchTimerOptions;
   onTimerOptionsChange?: (options: Required<MatchTimerOptions>) => void;
   bestOf?: MatchBestOf;
@@ -208,7 +221,7 @@ export function Lobby({
     roomCode?: string,
     botDeckId?: string,
     betaBattleMode?: boolean,
-    deckId?: string,
+    deckId?: string | DeckListing,
     unlimited?: boolean,
     format?: DeckFormat,
   ) => void;
@@ -307,6 +320,9 @@ export function Lobby({
     },
     [onStartRequested, format, unlimited],
   );
+  const randomDrawVersion = useRef(0);
+  const [randomDrawing, setRandomDrawing] = useState(false);
+  const [randomError, setRandomError] = useState(false);
   const [randomSelected, setRandomSelected] = useState(false);
   const [randomPoolScope, setRandomPoolScope] = useState<RandomDeckPool>("all");
   const [viewedDeck, setViewedDeck] = useState<DeckListing | null>(null);
@@ -346,7 +362,8 @@ export function Lobby({
     [onBorrowCommunityDeck],
   );
   const openCommunityDeck = useCallback((id: string) => onOpenCommunityDeck?.(id), [onOpenCommunityDeck]);
-  const availableDecks = borrowedDeck ? [borrowedDeck, ...selectableDecks(decks)] : selectableDecks(decks);
+  const selectable = selectableDecks({ personalDecks: decks, famousDecks: FAMOUS_DECKS });
+  const availableDecks = borrowedDeck ? [borrowedDeck, ...selectable] : selectable;
   const active = availableDecks.find((d) => d.id === activeDeckId) ?? availableDecks[0];
   const activeCollection = FAMOUS_DECK_GROUPS.find((group) =>
     group.decks.some((deck) => deck.id === active?.id),
@@ -415,11 +432,20 @@ export function Lobby({
     () => randomDeckPool(decks, randomPoolScope, betaAllowed, unlimited, format),
     [decks, randomPoolScope, betaAllowed, unlimited, format],
   );
-  const randomPoolLabel = t(randomPool.length === 1 ? "lobby.randomPoolOne" : "lobby.randomPool", {
+  const localRandomPoolLabel = t(randomPool.length === 1 ? "lobby.randomPoolOne" : "lobby.randomPool", {
     count: randomPool.length,
   });
+  const randomPoolLabel = randomPoolScope === "all" ? t("lobby.randomCommunityPool") : localRandomPoolLabel;
+  useEffect(() => {
+    setRandomDrawing(false);
+    setRandomError(false);
+    return () => {
+      randomDrawVersion.current += 1;
+    };
+  }, [mode, format, randomPoolScope, randomSelected, betaAllowed]);
   const selectionLegal =
-    (randomSelected ? randomPool.length > 0 : deckLegal) &&
+    !randomDrawing &&
+    (randomSelected ? randomPoolScope === "all" || randomPool.length > 0 : deckLegal) &&
     (!privateGuest || !!privateRoom || guestRules?.code === guestCode) &&
     (!customBotDeck || deckLegality(customBotDeck, { unlimited, format }).legal);
   const selectDeck = useCallback(
@@ -430,13 +456,35 @@ export function Lobby({
     [onSelectDeck],
   );
   const start = useCallback(
-    (startMode: StartMode, code?: string, requestedBotDeckId?: string, requestedBetaBattleMode?: boolean) => {
+    async (startMode: StartMode, code?: string, requestedBotDeckId?: string, requestedBetaBattleMode?: boolean) => {
       if (randomSelected) {
-        // Ranked never takes unreleased cards, so a ranked start draws from the released subset.
+        if (randomDrawing) return;
+        const drawVersion = ++randomDrawVersion.current;
+        setRandomDrawing(true);
+        setRandomError(false);
         const pool = startMode === "ranked" ? randomPool.filter((deck) => !deckHasBetaCards(deck)) : randomPool;
         const drawnId = randomDeckId(pool);
-        const drawn = pool.find((deck) => deck.id === drawnId);
-        if (!drawn) return;
+        let drawn = pool.find((deck) => deck.id === drawnId);
+        try {
+          if (randomPoolScope === "all") {
+            const result = await communityApi.randomDeck({
+              format: startMode === "ranked" ? "standard" : format,
+              betaAllowed: startMode !== "ranked" && betaAllowed,
+            });
+            if (result.deck && Math.random() * (pool.length + result.eligibleCount) < result.eligibleCount)
+              drawn = communityDeckListing(result.deck);
+          }
+        } catch {
+          if (drawVersion === randomDrawVersion.current) setRandomError(true);
+          return;
+        } finally {
+          if (drawVersion === randomDrawVersion.current) setRandomDrawing(false);
+        }
+        if (drawVersion !== randomDrawVersion.current) return;
+        if (!drawn) {
+          setRandomError(true);
+          return;
+        }
         const betaBattleMode =
           betaQueueMode && (deckHasBetaCards(drawn) || (customBotDeck !== undefined && deckHasBetaCards(customBotDeck)))
             ? true
@@ -447,7 +495,7 @@ export function Lobby({
           code,
           requestedBotDeckId,
           betaBattleMode,
-          drawn.id,
+          drawn.community ? drawn : drawn.id,
           ...(unlimited && queueMode !== "unlimited" ? ([true] as const) : []),
         );
         return;
@@ -466,7 +514,19 @@ export function Lobby({
         onStart(startMode);
       }
     },
-    [active?.id, betaQueueMode, onStart, randomPool, randomSelected, customBotDeck, unlimited],
+    [
+      active?.id,
+      betaQueueMode,
+      onStart,
+      randomPool,
+      randomSelected,
+      customBotDeck,
+      unlimited,
+      randomDrawing,
+      randomPoolScope,
+      format,
+      betaAllowed,
+    ],
   );
   const launch: LaunchAction | null =
     mode === "private" && privateRoom
@@ -534,6 +594,8 @@ export function Lobby({
   return (
     <main className="lobby-page">
       <div className="lobby-content aegis-page-sheet">
+        {randomError ? <Alert tone="danger">{t("lobby.randomFailed")}</Alert> : null}
+        {randomDrawing ? <p role="status">{t("lobby.randomDrawing")}</p> : null}
         <Panel as="section" className="lobby-active-strip" aria-label={t("lobby.battleDeck")}>
           {randomSelected ? (
             <div className="lobby-active-strip__jump">
@@ -834,8 +896,9 @@ export function Lobby({
               ) : null}
               <div className="lobby-setup__body">
                 <div className="lobby-setup__column">
-                  {mode === "casual" || (mode === "private" && privateSub === "create" && !privateRoom) ? (
+                  {mode === "casual" || vsBot || (mode === "private" && privateSub === "create" && !privateRoom) ? (
                     <div className="lobby-match-rules">
+                      <RollbackSettings enabled={allowRollback} onChange={onAllowRollbackChange ?? (() => {})} />
                       {!vsBot ? (
                         <>
                           <MatchFormatSettings bestOf={bestOf} onChange={changeBestOf} />
@@ -963,7 +1026,7 @@ export function Lobby({
           format={format}
           activeDeckId={activeDeckId}
           randomSelected={randomSelected}
-          randomPoolSize={randomPool.length}
+          randomPoolSize={randomPoolScope === "all" ? undefined : randomPool.length}
           onSelectRandom={() => setRandomSelected(true)}
           onSelectDeck={selectDeck}
           onCopyDeck={onCopyDeck}

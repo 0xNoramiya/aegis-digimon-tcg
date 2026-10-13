@@ -1,4 +1,5 @@
 import type { EffectDuration, Seat } from "@aegis/shared";
+import type { AttackTargetScope } from "@aegis/shared/effects/ir/actions/AttackTargetScope";
 
 export interface AttackDecisionProvenance {
   sourceCardId?: string;
@@ -13,8 +14,7 @@ export interface AttackDecisionProvenance {
 
 export interface ForceAttackOptions {
   withoutSuspending?: boolean;
-  attackPlayer?: boolean;
-  attackPlayerOnly?: boolean;
+  attackTargetScope?: AttackTargetScope;
   vortex?: boolean;
   attackMechanic?: string;
   /** Resolve an attack-cost payload after attack declaration and before declaration-triggered effects. */

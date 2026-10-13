@@ -363,7 +363,7 @@ function MatchSpecimen({
   );
 }
 
-const LONG_EFFECT_LABELS: Record<Exclude<Locale, "it">, string[]> = {
+const LONG_EFFECT_LABELS: Record<"en" | "pt-BR" | "es", string[]> = {
   en: [
     "[Main] By suspending this Digimon, delete 1 of your opponent's Digimon with 6000 DP or less.",
     "[Main] [Once Per Turn] Trash 1 card in your hand to draw 2 cards.",
@@ -780,7 +780,10 @@ export const SPECIMENS: readonly Specimen[] = [
           { cardId: CARDS.champion, role: "stack" },
           { cardId: CARDS.rookie, role: "stack" },
         ]}
-        effects={LONG_EFFECT_LABELS[locale === "it" ? "en" : locale].map((label) => ({ label, onActivate: noop }))}
+        effects={LONG_EFFECT_LABELS[locale === "pt-BR" || locale === "es" ? locale : "en"].map((label) => ({
+          label,
+          onActivate: noop,
+        }))}
         canAttack
         onViewStack={noop}
         onAttack={noop}

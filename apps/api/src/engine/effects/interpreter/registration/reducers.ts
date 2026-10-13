@@ -347,6 +347,24 @@ export function collectWouldBePlayedSelfReducers(cardId: string, effects: readon
   if (out.length > 0) WOULD_BE_PLAYED_SELF_REDUCERS.set(cardId, out);
 }
 
+export function isIntrinsicWouldBePlayedSelfReducerMarker(cardId: string, effect: CardEffect): boolean {
+  if (effect.trigger !== "Static" || wouldBePlayedSelfReducersFor(cardId).length === 0) return false;
+  const actions = effect.actions ?? [];
+  return (
+    actions.length > 0 &&
+    actions.every((action) => {
+      if (action.kind !== "Replacement" || action.event !== "wouldBePlayed") return false;
+      if (sourceFilterDiscriminates(action.sourceFilter as SourceFilter | undefined)) return false;
+      return (
+        action.mode === "reduceCost" ||
+        (action.actions ?? []).some(
+          (inner) => inner.kind === "Replacement" && inner.event === "wouldBePlayed" && inner.mode === "reduceCost",
+        )
+      );
+    })
+  );
+}
+
 /** The self-targeted pay-time cost reducers for a played card (empty when none). */
 export function wouldBePlayedSelfReducersFor(cardId: string): WouldBePlayedSelfReducer[] {
   return WOULD_BE_PLAYED_SELF_REDUCERS.get(cardId) ?? [];
@@ -379,6 +397,7 @@ const VERIFIED_DIGIVOLVE_SELF_REDUCER_CARDS = new Set([
   "EX9-063", // Ver.4 base: this card's own evolution costs -1 per face-down source
   "EX9-031", // Ver.3 base: this card's own evolution costs -1 per face-down source
   "EX9-041", // Ver.5 base: this card's own evolution costs -1 per face-down source
+  "BT18-085",
 ]);
 
 /**
@@ -423,7 +442,7 @@ export function collectWouldDigivolveSelfReducers(cardId: string, effects: reado
           reducers.push({
             ...(action.cost !== undefined ? { cost: action.cost } : {}),
             ...(action.condition !== undefined ? { condition: action.condition } : {}),
-            ...(action.scaling !== undefined ? { scaling: action.scaling } : {}),
+            ...((action.scaling ?? outer.scaling) !== undefined ? { scaling: action.scaling ?? outer.scaling } : {}),
             ...(outer.sourceFilter !== undefined ? { sourceFilter: outer.sourceFilter } : {}),
             ...(outer.condition?.kind === "selfDigivolutionStackMatchesFilter" && outer.condition.filter !== undefined
               ? { sourceStackFilter: outer.condition.filter }

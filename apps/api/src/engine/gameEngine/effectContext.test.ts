@@ -177,7 +177,7 @@ describe("effect-attack wrapper retains parent costs until every pre-Counter poo
         { suspended: true, payable: false },
       ]);
       expect(log.slice(0, 2)).toEqual(
-        enabler === "rule" ? ["ordinary-1", "rule-collection"] : ["ordinary-1", "ordinary-2"],
+        enabler === "rule" ? ["rule-collection", "ordinary-1"] : ["ordinary-1", "ordinary-2"],
       );
       expect(log.indexOf("ordinary-2")).toBeLessThan(log.indexOf("declaration-pool"));
       expect(log.indexOf("declaration-pool")).toBeLessThan(log.indexOf("final-retirement"));

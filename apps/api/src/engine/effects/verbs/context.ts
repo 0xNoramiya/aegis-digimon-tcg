@@ -55,7 +55,7 @@ function createContextState(engine: PrimitivesEngine) {
   const access = new GameStateAccess(state, engine.memory, (event) => engine.emit(event));
   const ledger = engine.modifiers;
   const continuous = engine.continuous ?? new ContinuousEffectLedger();
-  const decoyCostPermanentIds = new Set<string>();
+  const decoyCostPermanentIds = engine.decoyCostPermanentIds ?? new Set<string>();
   const subTriggers = engine.subTriggers ?? new SubTriggerRegistry();
   const effectSeatStack: Seat[] = [];
   const effectSourceKindsStack: string[][] = [];

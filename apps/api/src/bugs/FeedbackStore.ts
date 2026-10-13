@@ -444,6 +444,16 @@ export class FeedbackStore {
     return typeof record === "string" ? (JSON.parse(record) as ReplayRecord) : record;
   }
 
+  /** The replay of a bug report already filed on GitHub, the only replays the public issue links to. */
+  async publishedReplay(reportId: number): Promise<ReplayRecord | undefined> {
+    await this.accounts.ensureReady();
+    const { rows } = await this.accounts.pool.query<{ id: number }>(
+      "SELECT id FROM feedback_reports WHERE id=$1 AND github_status='sent' AND report->>'kind'='bug'",
+      [reportId],
+    );
+    return rows.length ? this.replay(reportId) : undefined;
+  }
+
   /** Deletes replays older than the retention window; returns how many went. */
   async pruneReplays(): Promise<number> {
     const { rowCount } = await this.accounts.pool.query("DELETE FROM feedback_report_replays WHERE created_at < $1", [

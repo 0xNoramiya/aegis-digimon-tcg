@@ -1,0 +1,3 @@
+export const MAX_ROADMAP_TITLE = 120;
+export const MAX_ROADMAP_DESCRIPTION = 4000;
+export const MAX_ROADMAP_DISCUSSION_URL = 300;

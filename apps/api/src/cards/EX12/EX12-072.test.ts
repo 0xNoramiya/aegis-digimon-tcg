@@ -123,7 +123,7 @@ describe("EX12-072 Metal Empire", () => {
     expect(request).toMatchObject({
       sourceCardId: "EX12-008",
       sourceInstanceId: s.inst("guard").instanceId,
-      options: { effectText: "＜Guard＞: delete this Digimon to prevent your other Digimon from leaving." },
+      options: { effectText: "＜Guard＞: you may delete this Digimon to prevent your other Digimon from leaving." },
     });
 
     expect(

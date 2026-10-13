@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { EffectDuration, type PlayerState } from "@aegis/shared";
+import { EffectDuration, type Permanent, type PlayerState } from "@aegis/shared";
 import { advance } from "../testkit/advance.js";
 import { makeInstance as instance, makeDigimon as digimon, setupEngine as setup, settle } from "../testkit/harness.js";
 import "../../cards/index.js";
@@ -364,7 +364,7 @@ describe("§16-18 <Decoy> — delete this Digimon to prevent an opponent-effect 
     ]);
   });
 
-  it("offers every matching <Decoy> holder and pays only the selected permanent", async () => {
+  it("orders every matching <Decoy> holder as its own reaction and pays only the one used", async () => {
     const s = setup();
     const p0 = s.state.players[0] as PlayerState;
     const firstDecoy = digimon(0, 6000, "BT11-082");
@@ -379,24 +379,26 @@ describe("§16-18 <Decoy> — delete this Digimon to prevent an opponent-effect 
         primitives: { deletePermanent(ids: string[], cause?: string): Promise<number> };
       }
     ).primitives;
+    const answerDecoy = async (holder: Permanent, use: boolean) => {
+      await settle(() => s.state.pendingDecision?.kind === "selectCards");
+      expect(s.decisions.at(-1)!.req.options!.candidateInstanceIds).toEqual([holder.topCard.instanceId]);
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: s.state.pendingDecision!.decisionId,
+          response: { kind: "selectCards", instanceIds: use ? [holder.topCard.instanceId] : [] },
+        }),
+      ).toEqual({ ok: true });
+    };
 
     const deletion = primitives.deletePermanent([protectedDigimon.permanentId], "byEffect");
-    await settle(() => s.state.pendingDecision?.kind === "selectCards");
-    const decision = s.state.pendingDecision!;
-    const request = s.decisions.at(-1)!.req;
-    const options = request.options!;
-    expect(options.candidateInstanceIds).toEqual(
-      expect.arrayContaining([firstDecoy.topCard.instanceId, secondDecoy.topCard.instanceId]),
-    );
-    expect(options.candidateInstanceIds).toHaveLength(2);
-
-    expect(
-      s.engine.applyIntent(0, {
-        type: "respondDecision",
-        decisionId: decision.decisionId,
-        response: { kind: "selectCards", instanceIds: [secondDecoy.topCard.instanceId] },
-      }),
-    ).toEqual({ ok: true });
+    await answerDecoy(firstDecoy, false);
+    const orderKeys = s.decisions.find(({ req }) => req.kind === "orderTriggers")?.req.options?.triggerKeys ?? [];
+    expect(orderKeys).toEqual([
+      expect.stringContaining(`keyword-decoy/${firstDecoy.permanentId}/`),
+      expect.stringContaining(`keyword-decoy/${secondDecoy.permanentId}/`),
+    ]);
+    await answerDecoy(secondDecoy, true);
     await deletion;
 
     expect(p0.battleArea.some(({ permanentId }) => permanentId === protectedDigimon.permanentId)).toBe(true);

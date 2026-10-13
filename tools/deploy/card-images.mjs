@@ -17,6 +17,15 @@ const TOKEN_ID_PREFIX = "TOKEN-";
  * Each printing the client can show, with the image ids `cardImageUrls` in @aegis/shared tries
  * for it, read from the committed card data. An errata printing falls back to the pre-errata art.
  */
+function listArtPrintings(arts) {
+  if (!Array.isArray(arts.labels) || typeof arts.cards !== "object") {
+    return Object.values(arts).flat();
+  }
+  return Object.entries(arts.cards).flatMap(([cardId, encoded]) =>
+    encoded.map(([suffix, , imageId]) => ({ artId: `${cardId}${suffix}`, imageId: imageId ?? `${cardId}${suffix}` })),
+  );
+}
+
 export function cardPrintings(source) {
   const data = `${source}/packages/shared/src/cards/data`;
   const cards = JSON.parse(readFileSync(`${data}/cards.json`, "utf8"));
@@ -26,7 +35,7 @@ export function cardPrintings(source) {
     ...cards
       .filter((card) => !card.cardId.startsWith(TOKEN_ID_PREFIX))
       .map((card) => printing(card.cardId, card.imageId ?? card.cardId)),
-    ...Object.values(arts).flatMap((printings) => printings.map((art) => printing(art.artId, art.imageId))),
+    ...listArtPrintings(arts).map((art) => printing(art.artId, art.imageId)),
   ];
 }
 

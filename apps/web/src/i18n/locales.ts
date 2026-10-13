@@ -1,7 +1,4 @@
-/* Locale identity and persistence. Kept free of React so non-component code
-   (storage, formatting helpers) can import it without pulling in the provider. */
-
-export const LOCALES = ["en", "pt-BR", "es", "it"] as const;
+export const LOCALES = ["en", "pt-BR", "es", "it", "ko", "ja", "zh-CN", "zh-TW", "fr", "de", "id"] as const;
 
 export type Locale = (typeof LOCALES)[number];
 
@@ -12,44 +9,13 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   "pt-BR": "Português (Brasil)",
   es: "Español",
   it: "Italiano",
+  ko: "한국어",
+  ja: "日本語",
+  "zh-CN": "简体中文",
+  "zh-TW": "繁體中文",
+  fr: "Français",
+  de: "Deutsch",
+  id: "Bahasa Indonesia",
 };
 
-const STORAGE_KEY = "aegis:locale";
-
-export function isLocale(value: string | null | undefined): value is Locale {
-  return value != null && (LOCALES as readonly string[]).includes(value);
-}
-
-/** Best match for a browser language tag, e.g. `pt-PT` → `pt-BR`, `es-419` → `es`. */
-export function matchLocale(languageTag: string): Locale | undefined {
-  const tag = languageTag.toLowerCase();
-  return (
-    LOCALES.find((locale) => locale.toLowerCase() === tag) ??
-    LOCALES.find((locale) => locale.toLowerCase().split("-")[0] === tag.split("-")[0])
-  );
-}
-
-/** Stored choice first, then the browser's languages, then English. */
-export function loadLocale(): Locale {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (isLocale(stored)) return stored;
-  } catch {
-    // ignore unavailable or malformed storage
-  }
-  if (typeof navigator !== "undefined") {
-    for (const tag of navigator.languages ?? [navigator.language]) {
-      const match = matchLocale(tag ?? "");
-      if (match) return match;
-    }
-  }
-  return DEFAULT_LOCALE;
-}
-
-export function saveLocale(locale: Locale): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, locale);
-  } catch {
-    // ignore unavailable storage
-  }
-}
+export const LOCALE_STORAGE_KEY = "aegis:locale";

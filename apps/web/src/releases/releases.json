@@ -1,5 +1,125 @@
 [
   {
+    "version": "1.25.5-beta",
+    "releasedAt": "2026-10-13",
+    "summaryKey": "releases.1.25.5-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.25.5-beta.feature.loading"
+      },
+      {
+        "textKey": "releases.1.25.5-beta.feature.playRestrictions"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.25.5-beta.fix.dualOption"
+      }
+    ]
+  },
+  {
+    "version": "1.25.4-beta",
+    "releasedAt": "2026-10-12",
+    "summaryKey": "releases.1.25.4-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.25.4-beta.feature.wakeLock"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.25.4-beta.fix.connection"
+      },
+      {
+        "textKey": "releases.1.25.4-beta.fix.costs"
+      },
+      {
+        "textKey": "releases.1.25.4-beta.fix.timing"
+      }
+    ]
+  },
+  {
+    "version": "1.25.3-beta",
+    "releasedAt": "2026-10-12",
+    "summaryKey": "releases.1.25.3-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.25.3-beta.fix.keywords"
+      },
+      {
+        "textKey": "releases.1.25.3-beta.fix.combat"
+      }
+    ]
+  },
+  {
+    "version": "1.25.2-beta",
+    "releasedAt": "2026-10-12",
+    "summaryKey": "releases.1.25.2-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.25.2-beta.fix.timing"
+      },
+      {
+        "textKey": "releases.1.25.2-beta.fix.cards"
+      },
+      {
+        "textKey": "releases.1.25.2-beta.fix.activation"
+      }
+    ]
+  },
+  {
+    "version": "1.25.1-beta",
+    "releasedAt": "2026-10-12",
+    "summaryKey": "releases.1.25.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.25.1-beta.fix.rollback"
+      },
+      {
+        "textKey": "releases.1.25.1-beta.fix.cards"
+      },
+      {
+        "textKey": "releases.1.25.1-beta.fix.scapegoat"
+      },
+      {
+        "textKey": "releases.1.25.1-beta.fix.presentation"
+      }
+    ]
+  },
+  {
+    "version": "1.25.0-beta",
+    "releasedAt": "2026-10-12",
+    "summaryKey": "releases.1.25.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.25.0-beta.feature.rollback"
+      },
+      {
+        "textKey": "releases.1.25.0-beta.feature.decks"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.25.0-beta.fix.choices"
+      },
+      {
+        "textKey": "releases.1.25.0-beta.fix.engine"
+      },
+      {
+        "textKey": "releases.1.25.0-beta.fix.bot"
+      },
+      {
+        "textKey": "releases.1.25.0-beta.fix.presentation"
+      },
+      {
+        "textKey": "releases.1.25.0-beta.fix.access"
+      }
+    ]
+  },
+  {
     "version": "1.24.0-beta",
     "releasedAt": "2026-10-11",
     "summaryKey": "releases.1.24.0-beta.summary",

@@ -1,7 +1,7 @@
-import type { Migration } from "../migrator.js";
+import type { Migration } from "#api/db/migrator";
 
 export const playtestGroup: Migration = {
-  id: "032-playtest-group",
+  id: "035-playtest-group",
   up: async (db) => {
     await db.query("ALTER TABLE accounts ADD COLUMN IF NOT EXISTS playtest_opt_in_at bigint");
     await db.query(`

@@ -1243,40 +1243,13 @@ export class CombatController {
     await this.hooks.fireSubTrigger?.("whenSuspended", trigger);
   }
 
-  /**
-   * Switch the attack onto the declared blocker: suspend the blocker, then fire
-   * OnBlock and OnAttackTargetChanged (AttackProcess.SwitchDefender, cs:514-626).
-   */
   private async switchDefenderToBlocker(attacker: Permanent, blocker: Permanent): Promise<void> {
     const blockerSuspended = this.suspendInCombat(blocker);
     this.hooks.emit({ kind: "blocked", blockerPermanentId: blocker.permanentId });
-    await this.fireSuspended(blocker, blockerSuspended);
-
-    const trigger: CombatTrigger = {
+    await this.hooks.fireBlockTiming({
       attackerPermanentId: attacker.permanentId,
-      defenderPermanentId: blocker.permanentId,
       blockerPermanentId: blocker.permanentId,
-    };
-    await this.hooks.fireTiming(EffectTiming.OnBlockAnyone, trigger);
-    await this.hooks.fireTiming(EffectTiming.OnAttackTargetChanged, trigger);
-    await this.hooks.fireSubTrigger?.("whenAttackTargetSwitched", {
-      ...trigger,
-      subjectPermanentId: attacker.permanentId,
-    });
-    // Kept alive as a genuine SubTrigger event (distinct from the OnBlockAnyone timing
-    // above) to serve BT4-098's temporary grant shape ("[Your Turn] when this Digimon is
-    // blocked, gain <effect> until end of turn") — a shape the timing dispatch alone can't
-    // express since it needs to install a SubTrigger watcher, not react from a card module.
-    await this.hooks.fireSubTrigger?.("whenBlocked", {
-      attackerPermanentId: attacker.permanentId,
-      defenderPermanentId: blocker.permanentId,
-      blockerPermanentId: blocker.permanentId,
-    });
-    await this.hooks.fireSubTrigger?.("whenBlockerActivated", {
-      attackerPermanentId: attacker.permanentId,
-      defenderPermanentId: blocker.permanentId,
-      blockerPermanentId: blocker.permanentId,
-      subjectPermanentId: blocker.permanentId,
+      blockerSuspended,
     });
   }
 
@@ -1334,70 +1307,25 @@ export class CombatController {
     );
   }
 
-  private async resolveDigimonBattleResult(
-    attacker: Permanent,
-    defender: Permanent,
-    { isAttackBattle = false, comparison }: DigimonBattleKind,
-  ): Promise<void> {
-    const outcome = resolvePermanentBattle({
-      attackerPermanentId: attacker.permanentId,
-      attackerDP: attacker.currentDP,
-      defenderPermanentId: defender.permanentId,
-      defenderDP: defender.currentDP,
-      // ＜Iceclad＞ (§16-35): compare digivolution-card counts instead of DP.
-      attackerHasIceclad: comparison === "digivolutionCards" || this.hasKeyword(attacker.permanentId, "IceClad"),
-      defenderHasIceclad: this.hasKeyword(defender.permanentId, "IceClad"),
-      attackerDigivolutionCount: attacker.stack.length,
-      defenderDigivolutionCount: defender.stack.length,
-      attackerSparedFromDeletion: this.sparedFromBattleDeletion(attacker.permanentId),
-      defenderSparedFromDeletion: this.sparedFromBattleDeletion(defender.permanentId),
-    });
+  private async resolveBattleDeletionPreventions(
+    finalDeletedIds: string[],
+    isAttackBattle: boolean,
+  ): Promise<string[] | undefined> {
+    const consult = this.hooks.consultLeavePrevention;
+    if (this.hooks.keywordReactionsInLeavePrevention !== true || consult === undefined) {
+      return this.resolveBattleDeletionPreventionsInline(finalDeletedIds, isAttackBattle);
+    }
+    const prevented = await consult(finalDeletedIds, { keywordPreventions: { interruptsEffect: isAttackBattle } });
+    if (this.access.game.gameOver) {
+      return undefined;
+    }
+    return finalDeletedIds.filter((id) => !prevented.has(id));
+  }
 
-    // The blow precedes the "would be deleted" questions. Final deletions are published
-    // later, so they cannot tell the client which surviving protected card took that blow.
-    this.hooks.emit({
-      kind: "battleCompared",
-      attackerPermanentId: attacker.permanentId,
-      defenderPermanentId: defender.permanentId,
-      loserPermanentIds: [...outcome.deletedPermanentIds],
-      ...(isAttackBattle
-        ? {}
-        : {
-            effectBattle: {
-              attackerSeat: attacker.controllerSeat,
-              attackerCardId: attacker.topCard.cardId,
-              ...(attacker.topCard.artId ? { attackerArtId: attacker.topCard.artId } : {}),
-              defenderCardId: defender.topCard.cardId,
-              ...(defender.topCard.artId ? { defenderArtId: defender.topCard.artId } : {}),
-            },
-          }),
-    });
-
-    // Capture the winner now, but publish only after every "would be deleted/leave" replacement
-    // has resolved (Q7022). The win is based on the comparison, not successful deletion (Q7023).
-    const winningPermanentId =
-      outcome.comparison === "attackerWins"
-        ? attacker.permanentId
-        : outcome.comparison === "defenderWins"
-          ? defender.permanentId
-          : undefined;
-    const winningSeat =
-      outcome.comparison === "attackerWins"
-        ? attacker.controllerSeat
-        : outcome.comparison === "defenderWins"
-          ? defender.controllerSeat
-          : undefined;
-    const fireBattleWon = async (_options?: { deferIntoDeletionWindow?: boolean }): Promise<void> => {
-      if (winningPermanentId === undefined) return;
-      await this.hooks.fireSubTrigger?.("whenBattleWon", {
-        attackerPermanentId: attacker.permanentId,
-        defenderPermanentId: defender.permanentId,
-        subjectPermanentId: winningPermanentId,
-      });
-    };
-
-    const finalDeletedIds = [...outcome.deletedPermanentIds];
-
+  private async resolveBattleDeletionPreventionsInline(
+    finalDeletedIds: string[],
+    isAttackBattle: boolean,
+  ): Promise<string[] | undefined> {
     // ＜Evade＞ (§16-35): when this Digimon would be deleted by battle, you may
     // suspend it to prevent that deletion. Only usable when unsuspended (the
     // suspension IS the cost). Prompt the controller for each eligible permanent.
@@ -1408,7 +1336,9 @@ export class CombatController {
       const perm = this.access.permanentById(permanentId);
       if (perm === undefined || !canPaySuspendCost(perm, this.hooks.continuous)) continue;
       const accepted = await this.runEvadeDecision(perm.controllerSeat, permanentId);
-      if (this.access.game.gameOver) return;
+      if (this.access.game.gameOver) {
+        return undefined;
+      }
       if (accepted) {
         // Cost then prevention, with no yield between them; watchers run once the whole
         // ＜Evade＞ resolution is settled.
@@ -1431,7 +1361,9 @@ export class CombatController {
       if (perm === undefined) continue;
       if (this.access.securityCount(perm.controllerSeat) === 0) continue;
       const accepted = await this.runBarrierDecision(perm.controllerSeat, permanentId);
-      if (this.access.game.gameOver) return;
+      if (this.access.game.gameOver) {
+        return undefined;
+      }
       if (accepted) {
         if (this.hooks.trashTopSecurityForBarrier !== undefined) {
           await this.hooks.trashTopSecurityForBarrier(perm.controllerSeat, isAttackBattle);
@@ -1453,7 +1385,7 @@ export class CombatController {
     // digivolution card beneath it to the new top), prevent this Digimon's deletion. Requires
     // >= 1 digivolution card to promote.
     const armorPurgedIds = new Set<string>();
-    for (const permanentId of this.hooks.armorPurgeInLeavePrevention === true ? [] : postBarrierDeletedIds) {
+    for (const permanentId of postBarrierDeletedIds) {
       if (!this.hasKeyword(permanentId, "Armor Purge")) continue;
       const perm = this.access.permanentById(permanentId);
       if (perm === undefined || perm.topCard === undefined || perm.stack.length === 0) continue;
@@ -1564,6 +1496,76 @@ export class CombatController {
 
     const cardPreventedIds = (await this.hooks.consultLeavePrevention?.(postScapegoatDeletedIds)) ?? new Set<string>();
     const postCardPreventionDeletedIds = postScapegoatDeletedIds.filter((id) => !cardPreventedIds.has(id));
+    return postCardPreventionDeletedIds;
+  }
+
+  private async resolveDigimonBattleResult(
+    attacker: Permanent,
+    defender: Permanent,
+    { isAttackBattle = false, comparison }: DigimonBattleKind,
+  ): Promise<void> {
+    const outcome = resolvePermanentBattle({
+      attackerPermanentId: attacker.permanentId,
+      attackerDP: attacker.currentDP,
+      defenderPermanentId: defender.permanentId,
+      defenderDP: defender.currentDP,
+      // ＜Iceclad＞ (§16-35): compare digivolution-card counts instead of DP.
+      attackerHasIceclad: comparison === "digivolutionCards" || this.hasKeyword(attacker.permanentId, "IceClad"),
+      defenderHasIceclad: this.hasKeyword(defender.permanentId, "IceClad"),
+      attackerDigivolutionCount: attacker.stack.length,
+      defenderDigivolutionCount: defender.stack.length,
+      attackerSparedFromDeletion: this.sparedFromBattleDeletion(attacker.permanentId),
+      defenderSparedFromDeletion: this.sparedFromBattleDeletion(defender.permanentId),
+    });
+
+    // The blow precedes the "would be deleted" questions. Final deletions are published
+    // later, so they cannot tell the client which surviving protected card took that blow.
+    this.hooks.emit({
+      kind: "battleCompared",
+      attackerPermanentId: attacker.permanentId,
+      defenderPermanentId: defender.permanentId,
+      loserPermanentIds: [...outcome.deletedPermanentIds],
+      ...(isAttackBattle
+        ? {}
+        : {
+            effectBattle: {
+              attackerSeat: attacker.controllerSeat,
+              attackerCardId: attacker.topCard.cardId,
+              ...(attacker.topCard.artId ? { attackerArtId: attacker.topCard.artId } : {}),
+              defenderCardId: defender.topCard.cardId,
+              ...(defender.topCard.artId ? { defenderArtId: defender.topCard.artId } : {}),
+            },
+          }),
+    });
+
+    // Capture the winner now, but publish only after every "would be deleted/leave" replacement
+    // has resolved (Q7022). The win is based on the comparison, not successful deletion (Q7023).
+    const winningPermanentId =
+      outcome.comparison === "attackerWins"
+        ? attacker.permanentId
+        : outcome.comparison === "defenderWins"
+          ? defender.permanentId
+          : undefined;
+    const winningSeat =
+      outcome.comparison === "attackerWins"
+        ? attacker.controllerSeat
+        : outcome.comparison === "defenderWins"
+          ? defender.controllerSeat
+          : undefined;
+    const fireBattleWon = async (_options?: { deferIntoDeletionWindow?: boolean }): Promise<void> => {
+      if (winningPermanentId === undefined) return;
+      await this.hooks.fireSubTrigger?.("whenBattleWon", {
+        attackerPermanentId: attacker.permanentId,
+        defenderPermanentId: defender.permanentId,
+        subjectPermanentId: winningPermanentId,
+      });
+    };
+
+    const finalDeletedIds = [...outcome.deletedPermanentIds];
+    const postCardPreventionDeletedIds = await this.resolveBattleDeletionPreventions(finalDeletedIds, isAttackBattle);
+    if (postCardPreventionDeletedIds === undefined) {
+      return;
+    }
 
     const resolveBattleWon =
       winningPermanentId === undefined
