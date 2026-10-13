@@ -774,6 +774,9 @@ const interfaceMessages = {
   "settings.textSizeDefault": "기본값",
   "settings.textSizeLarge": "대형",
   "settings.textSizeLarger": "초대형",
+  "settings.keepAwake": "화면 켜짐 유지",
+  "settings.keepAwakeDesc":
+    "대전이 열려 있는 동안 화면을 켜진 상태로 유지합니다(턴을 기다리는 동안에도 잠들지 않습니다)",
   "settings.actionConfirmations": "작업 확인",
   "settings.actionConfirmationsDesc": "재생, 디지털 진화 또는 선택적 DNA 디지털 진화를 사용하기 전에 물어보십시오.",
   "overlay.moveEffectPrompt": "이동 효과 프롬프트",

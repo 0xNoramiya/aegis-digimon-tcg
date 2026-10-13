@@ -998,6 +998,9 @@ export const en = {
   "settings.textSizeDefault": "Default",
   "settings.textSizeLarge": "Large",
   "settings.textSizeLarger": "Extra large",
+  "settings.keepAwake": "Keep the screen awake",
+  "settings.keepAwakeDesc":
+    "Hold the screen on while a match is open, instead of letting the device sleep between turns",
   "settings.actionConfirmations": "Confirm actions",
   "settings.actionConfirmationsDesc": "Ask before playing, digivolving, or using an optional DNA digivolution",
   "overlay.moveEffectPrompt": "Move effect prompt",

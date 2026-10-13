@@ -782,6 +782,8 @@ const interfaceMessages = {
   "settings.textSizeDefault": "デフォルト",
   "settings.textSizeLarge": "大",
   "settings.textSizeLarger": "特大",
+  "settings.keepAwake": "画面をオフにしない",
+  "settings.keepAwakeDesc": "対戦が開いている間は画面を点灯したままにします（自分の手番を待つ間もスリープさせません）",
   "settings.actionConfirmations": "アクションの確認",
   "settings.actionConfirmationsDesc":
     "プレイ、デジタル進化、またはオプションの DNA デジタル進化を使用する前に質問してください",

@@ -743,6 +743,8 @@ const interfaceMessages = {
   "settings.textSizeDefault": "默认",
   "settings.textSizeLarge": "大号",
   "settings.textSizeLarger": "特大号",
+  "settings.keepAwake": "保持屏幕常亮",
+  "settings.keepAwakeDesc": "对局进行期间保持屏幕常亮，等待回合时设备不会自动休眠",
   "settings.actionConfirmations": "确认行动",
   "settings.actionConfirmationsDesc": "在玩、数字进化或使用可选的 DNA 数字进化之前先询问",
   "overlay.moveEffectPrompt": "移动效果提示",

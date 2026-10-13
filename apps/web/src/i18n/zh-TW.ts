@@ -744,6 +744,8 @@ const interfaceMessages = {
   "settings.textSizeDefault": "預設",
   "settings.textSizeLarge": "大號",
   "settings.textSizeLarger": "特大號",
+  "settings.keepAwake": "保持螢幕恆亮",
+  "settings.keepAwakeDesc": "對局進行期間保持螢幕恆亮，等待回合時裝置不會自動休眠",
   "settings.actionConfirmations": "確認行動",
   "settings.actionConfirmationsDesc": "在玩、數位進化或使用可選的 DNA 數位進化之前先詢問",
   "overlay.moveEffectPrompt": "移動效果提示",

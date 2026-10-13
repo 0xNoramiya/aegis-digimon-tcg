@@ -784,6 +784,9 @@ const interfaceMessages = {
   "settings.textSizeDefault": "Bawaan",
   "settings.textSizeLarge": "Besar",
   "settings.textSizeLarger": "Ekstra besar",
+  "settings.keepAwake": "Biarkan layar tetap menyala",
+  "settings.keepAwakeDesc":
+    "Menahan layar tetap menyala selama pertandingan terbuka, bukan membiarkan perangkat tidur di antara giliran",
   "settings.actionConfirmations": "Konfirmasikan tindakan",
   "settings.actionConfirmationsDesc":
     "Tanyakan sebelum bermain, melakukan digivolving, atau menggunakan digivolusi DNA opsional",

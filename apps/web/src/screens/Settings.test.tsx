@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Settings } from "./Settings";
 import { I18nProvider } from "../i18n";
 import { arePileCountsShown, setPileCountsShown } from "../design/pileCounts";
+import { isKeepAwakeEnabled, setKeepAwakeEnabled } from "../design/keepAwake";
 
 const player = { name: "Guest Tamer", color: "Blue", shards: 0, guestAvatarId: null };
 
@@ -107,5 +108,29 @@ describe("settings pile counts", () => {
     expect(toggle.getAttribute("aria-checked")).toBe("true");
     expect(arePileCountsShown()).toBe(true);
     expect(localStorage.getItem("aegis.pile-counts")).toBe("shown");
+  });
+});
+
+describe("settings keep awake", () => {
+  afterEach(() => {
+    cleanup();
+    setKeepAwakeEnabled(true);
+    localStorage.clear();
+  });
+
+  it("starts on and stores the player's choice", () => {
+    render(
+      <I18nProvider>
+        <Settings player={player} account={null} dark={false} onToggleDark={() => undefined} />
+      </I18nProvider>,
+    );
+    const toggle = screen.getByRole("switch", { name: /Keep the screen awake/ });
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
+
+    fireEvent.click(toggle);
+
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    expect(isKeepAwakeEnabled()).toBe(false);
+    expect(localStorage.getItem("aegis.keep-awake.enabled")).toBe("false");
   });
 });

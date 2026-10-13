@@ -23,6 +23,7 @@ import {
 } from "../design/sound";
 import { MUSIC_TRACK_LABEL_KEYS, MUSIC_TRACKS, type MusicTrack } from "../design/musicTracks";
 import { areActionConfirmationsEnabled, setActionConfirmationsEnabled } from "../design/actionConfirmation";
+import { isKeepAwakeEnabled, setKeepAwakeEnabled } from "../design/keepAwake";
 import { FieldLayout, setFieldLayout, useFieldLayout } from "../design/fieldLayout";
 import { setPileCountsShown, usePileCountsShown } from "../design/pileCounts";
 import { CardSleevePicker, EggSleevePicker } from "../design/sleevePicker";
@@ -244,6 +245,7 @@ export function Settings({
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [volume, setVolume] = useState(Math.round(getSoundVolume() * 100));
   const [actionConfirmationsOn, setActionConfirmationsOn] = useState(areActionConfirmationsEnabled());
+  const [keepAwakeOn, setKeepAwakeOn] = useState(isKeepAwakeEnabled());
   const [effectSpeed, setEffectSpeedChoice] = useState<EffectSpeed>(getEffectSpeed);
   const effectSpeedLabels: Record<EffectSpeed, string> = {
     slow: t("settings.effectSpeedSlow"),
@@ -447,6 +449,17 @@ export function Settings({
                   onChange={(next) => {
                     setActionConfirmationsEnabled(next);
                     setActionConfirmationsOn(next);
+                  }}
+                />
+              </div>
+              <div className="settings-row">
+                <Switch
+                  checked={keepAwakeOn}
+                  label={t("settings.keepAwake")}
+                  description={t("settings.keepAwakeDesc")}
+                  onChange={(next) => {
+                    setKeepAwakeEnabled(next);
+                    setKeepAwakeOn(next);
                   }}
                 />
               </div>
