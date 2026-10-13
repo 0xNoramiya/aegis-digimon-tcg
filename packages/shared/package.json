@@ -37,7 +37,7 @@
   },
   "scripts": {
     "dev": "GOMEMLIMIT=512MiB tsc -w -p tsconfig.json --singleThreaded",
-    "build": "GOMEMLIMIT=512MiB tsc -p tsconfig.json --singleThreaded && pnpm run copy:data",
+    "build": "GOMEMLIMIT=512MiB tsc -p tsconfig.build.json --singleThreaded && pnpm run copy:data",
     "copy:data": "node scripts/copy-data.mjs",
     "typecheck": "GOMEMLIMIT=512MiB tsc --noEmit -p tsconfig.json --singleThreaded",
     "test": "vitest run --passWithNoTests"
