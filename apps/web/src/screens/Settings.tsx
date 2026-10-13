@@ -24,6 +24,7 @@ import {
 import { MUSIC_TRACK_LABEL_KEYS, MUSIC_TRACKS } from "../design/musicTracks";
 import { areActionConfirmationsEnabled, setActionConfirmationsEnabled } from "../design/actionConfirmation";
 import { isKeepAwakeEnabled, setKeepAwakeEnabled } from "../design/keepAwake";
+import { isDecisionPingEnabled, setDecisionPingEnabled } from "@/design/decisionPing";
 import { FieldLayout, setFieldLayout, useFieldLayout } from "../design/fieldLayout";
 import { setPileCountsShown, usePileCountsShown } from "../design/pileCounts";
 import { setChatSoundEnabled, useChatSoundEnabled } from "../game/chat/chatSound";
@@ -263,6 +264,7 @@ export function Settings({
   const [volume, setVolume] = useState(Math.round(getSoundVolume() * 100));
   const [actionConfirmationsOn, setActionConfirmationsOn] = useState(areActionConfirmationsEnabled());
   const [keepAwakeOn, setKeepAwakeOn] = useState(isKeepAwakeEnabled());
+  const [decisionPingOn, setDecisionPingOn] = useState(isDecisionPingEnabled());
   const [effectSpeed, setEffectSpeedChoice] = useState<EffectSpeed>(getEffectSpeed);
   const effectSpeedLabels: Record<EffectSpeed, string> = {
     slow: t("settings.effectSpeedSlow"),
@@ -422,6 +424,21 @@ export function Settings({
                   description={t("chat.soundDesc")}
                   onChange={(next) => {
                     setChatSoundEnabled(next);
+                    if (next) {
+                      playSound("prompt");
+                    }
+                  }}
+                />
+              </div>
+              <div className="settings-row">
+                <Switch
+                  checked={decisionPingOn}
+                  disabled={!soundOn}
+                  label={t("settings.decisionPing")}
+                  description={t("settings.decisionPingDesc")}
+                  onChange={(next) => {
+                    setDecisionPingEnabled(next);
+                    setDecisionPingOn(next);
                     if (next) {
                       playSound("prompt");
                     }

@@ -881,6 +881,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Montrez les pions Œufs, Main, Deck et Déchets sur le plateau.",
   "settings.sound": "Effets sonores",
   "settings.soundDesc": "Clics, sélections et signaux de combat",
+  "settings.decisionPing": "Alerte de décision",
+  "settings.decisionPingDesc":
+    "Joue un son quand une action de l'adversaire demande votre réponse, même dans un autre onglet",
   "settings.music": "Ambiance de fond",
   "settings.musicDesc": "Une bande-son originale et silencieuse pendant les matchs",
   "settings.musicVolume": "Volume de la musique",

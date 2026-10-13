@@ -674,6 +674,9 @@ export const es: Record<keyof typeof en, string> = {
   "settings.pileCountsDesc": "Muestra los contadores de Huevos, Mano, Deck y Descarte en el tablero",
   "settings.sound": "Efectos de sonido",
   "settings.soundDesc": "Clics, selecciones y señales de combate",
+  "settings.decisionPing": "Aviso de decisión",
+  "settings.decisionPingDesc":
+    "Reproduce un sonido cuando una acción del rival requiere tu respuesta, incluso en otra pestaña",
   "settings.music": "Ambiente de fondo",
   "settings.musicDesc": "Una banda sonora original y tranquila durante las partidas",
   "settings.musicVolume": "Volumen de la música",

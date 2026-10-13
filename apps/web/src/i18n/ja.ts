@@ -863,6 +863,8 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "ボード上にエッグ、ハンド、デッキ、トラッシュカウンターを表示します",
   "settings.sound": "効果音",
   "settings.soundDesc": "クリック、選択、戦闘合図",
+  "settings.decisionPing": "判断の通知音",
+  "settings.decisionPingDesc": "相手の行動で自分の操作が必要になったとき、別のタブにいても音で知らせます",
   "settings.music": "背景の雰囲気",
   "settings.musicDesc": "試合中の静かなオリジナルサウンドトラック",
   "settings.musicVolume": "音楽の音量",

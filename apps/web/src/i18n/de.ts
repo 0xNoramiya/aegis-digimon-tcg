@@ -891,6 +891,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Zeigen Sie die Eier-, Hand-, Deck- und Müllmarken auf dem Spielbrett",
   "settings.sound": "Soundeffekte",
   "settings.soundDesc": "Klicks, Auswahlmöglichkeiten und Kampfhinweise",
+  "settings.decisionPing": "Entscheidungs-Ping",
+  "settings.decisionPingDesc":
+    "Spielt einen Ton, wenn eine Aktion des Gegners Ihre Eingabe braucht, auch in einem anderen Tab",
   "settings.music": "Hintergrundambiente",
   "settings.musicDesc": "Ein leiser Original-Soundtrack während der Spiele",
   "settings.musicVolume": "Musiklautstärke",

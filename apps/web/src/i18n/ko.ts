@@ -853,6 +853,8 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "보드에 계란, 손, 갑판 및 쓰레기 카운터 표시",
   "settings.sound": "음향 효과",
   "settings.soundDesc": "클릭, 선택 및 전투 신호",
+  "settings.decisionPing": "결정 알림음",
+  "settings.decisionPingDesc": "상대의 행동으로 내 입력이 필요할 때 다른 탭에 있어도 소리로 알립니다",
   "settings.music": "배경 분위기",
   "settings.musicDesc": "경기 중 조용한 오리지널 사운드트랙",
   "settings.musicVolume": "음악 볼륨",

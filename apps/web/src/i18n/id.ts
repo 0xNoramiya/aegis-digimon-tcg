@@ -866,6 +866,8 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Tunjukkan penghitung Telur, Tangan, Dek, dan Sampah di papan",
   "settings.sound": "Efek suara",
   "settings.soundDesc": "Klik, pilihan, dan isyarat pertarungan",
+  "settings.decisionPing": "Ping keputusan",
+  "settings.decisionPingDesc": "Putar suara saat aksi lawan membutuhkan tanggapanmu, bahkan di tab lain",
   "settings.music": "Suasana latar belakang",
   "settings.musicDesc": "Soundtrack orisinal yang tenang selama pertandingan",
   "settings.musicVolume": "Volume musik",

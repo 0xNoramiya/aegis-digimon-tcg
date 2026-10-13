@@ -723,6 +723,9 @@ const interfaceMessages = {
   "settings.pileCountsDesc": "Mostra sul campo i contatori di uova, mano, mazzo e trash",
   "settings.sound": "Effetti sonori",
   "settings.soundDesc": "Clic, selezioni e suoni di combattimento",
+  "settings.decisionPing": "Avviso di decisione",
+  "settings.decisionPingDesc":
+    "Riproduce un suono quando un'azione dell'avversario richiede la tua risposta, anche in un'altra scheda",
   "settings.music": "Musica di sottofondo",
   "settings.musicDesc": "Una colonna sonora originale discreta durante le partite",
   "settings.musicVolume": "Volume della musica",

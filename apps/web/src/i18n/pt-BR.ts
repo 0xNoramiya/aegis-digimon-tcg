@@ -680,6 +680,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.pileCountsDesc": "Mostra os contadores de Ovos, Mão, Deck e Lixo no tabuleiro",
   "settings.sound": "Efeitos sonoros",
   "settings.soundDesc": "Cliques, seleções e sinais de combate",
+  "settings.decisionPing": "Aviso de decisão",
+  "settings.decisionPingDesc": "Toca um som quando uma ação do oponente pede sua resposta, mesmo em outra aba",
   "settings.music": "Ambiente de fundo",
   "settings.musicDesc": "Trilha original suave durante as partidas",
   "settings.musicVolume": "Volume da música",
