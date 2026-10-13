@@ -66,9 +66,6 @@
 	handle /bug-reports* {
 		reverse_proxy api:2567
 	}
-	handle /client-errors {
-		import api_upstreams
-	}
 	@sourcemaps path *.map
 	handle @sourcemaps {
 		respond 404

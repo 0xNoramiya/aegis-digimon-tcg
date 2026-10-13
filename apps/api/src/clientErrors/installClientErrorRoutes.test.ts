@@ -50,7 +50,7 @@ async function startHarness({
   const server = app.listen(0);
   await new Promise((resolve) => server.once("listening", resolve));
   servers.push(() => new Promise<void>((resolve) => server.close(() => resolve())));
-  const url = `http://127.0.0.1:${(server.address() as AddressInfo).port}/client-errors`;
+  const url = `http://127.0.0.1:${(server.address() as AddressInfo).port}/bug-reports/client-errors`;
   const post = (body: string, contentType = "text/plain;charset=UTF-8") =>
     fetch(url, { method: "POST", headers: { "Content-Type": contentType }, body });
   return { records, post };

@@ -221,9 +221,8 @@ test("static files use the best precompressed variant the client accepts", async
   assert.equal(plain.headers["content-encoding"], undefined);
 });
 
-test("client error reports reach the API", () => {
-  assert.equal(isApiPath("/client-errors", { accept: "*/*" }), true);
-  assert.equal(isApiPath("/client-errors-page", { accept: "*/*" }), false);
+test("client error reports reach the API through the bug report route", () => {
+  assert.equal(isApiPath("/bug-reports/client-errors", { accept: "*/*" }), true);
 });
 
 test("source maps are never served even when one reaches a served directory", async (t) => {

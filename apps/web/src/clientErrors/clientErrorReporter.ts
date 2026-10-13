@@ -14,5 +14,5 @@ export const clientErrorReporter = createClientErrorReporter({
   enabled: import.meta.env.PROD || import.meta.env.VITE_AEGIS_CLIENT_ERRORS === "on",
   release: import.meta.env.VITE_AEGIS_REVISION ?? "development",
   readPage,
-  send: (report) => sendClientErrorReport({ url: `${accountApi.base}/client-errors`, report }),
+  send: (report) => sendClientErrorReport({ url: `${accountApi.base}/bug-reports/client-errors`, report }),
 });

@@ -158,7 +158,7 @@ describe("client error delivery", () => {
     const sendBeacon = vi.fn(() => true);
     const fetcher = vi.fn();
     sendClientErrorReport({
-      url: "/client-errors",
+      url: "/bug-reports/client-errors",
       report,
       beacon: { sendBeacon },
       fetcher: fetcher as unknown as typeof fetch,
@@ -170,13 +170,13 @@ describe("client error delivery", () => {
   it("falls back to a keepalive request when the beacon is refused", () => {
     const fetcher = vi.fn(() => Promise.reject(new Error("offline")));
     sendClientErrorReport({
-      url: "/client-errors",
+      url: "/bug-reports/client-errors",
       report,
       beacon: { sendBeacon: () => false },
       fetcher: fetcher as unknown as typeof fetch,
     });
     expect(fetcher).toHaveBeenCalledWith(
-      "/client-errors",
+      "/bug-reports/client-errors",
       expect.objectContaining({ method: "POST", keepalive: true, body: JSON.stringify(report) }),
     );
   });

@@ -46,7 +46,7 @@ to the web image build. Local builds report `development`. The API adds its own
 
 ## API endpoint
 
-`POST /client-errors` (`apps/api/src/clientErrors/installClientErrorRoutes.ts`):
+`POST /bug-reports/client-errors` (`apps/api/src/clientErrors/installClientErrorRoutes.ts`):
 
 - accepts a JSON or plain-text body up to 32 KB;
 - validates every field against the shared limits, and answers `400` with a reason;
@@ -60,9 +60,9 @@ Each accepted report is one INFO line in the API JSONL logs (`AEGIS_LOG_DIR`, on
 report. INFO keeps these lines out of the Resend error emails. Log segments are kept for
 12 hours.
 
-The gateway (`tools/deploy/gateway.mjs`) and `docker/Caddyfile` route `/client-errors` to
-the API. The installed gateway only picks this up after it is reinstalled; until then the
-gateway answers the request with the web app and reports are lost.
+The endpoint lives under `/bug-reports` because the installed gateway
+(`tools/deploy/gateway.mjs`) and `docker/Caddyfile` already route that prefix to the API.
+A new top-level path would need a gateway reinstall, which drops live WebSockets.
 
 ## Discord alerts
 

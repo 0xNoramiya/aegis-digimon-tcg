@@ -66,7 +66,11 @@ export function installClientErrorRoutes({
     res.status(204).end();
   }
 
-  app.post("/client-errors", express.text({ type: "text/plain", limit: MAX_CLIENT_ERROR_BODY }), (req, res, next) => {
-    accept(req, res).catch(next);
-  });
+  app.post(
+    "/bug-reports/client-errors",
+    express.text({ type: "text/plain", limit: MAX_CLIENT_ERROR_BODY }),
+    (req, res, next) => {
+      accept(req, res).catch(next);
+    },
+  );
 }
