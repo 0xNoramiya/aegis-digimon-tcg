@@ -385,4 +385,34 @@ describe("BT27-084 LordKnightmon (X Antibody)", () => {
     expect(s.perm("knightmon").immuneToOpponentDigimonEffects).toBe(false);
     expect(s.perm("knightmon").currentDP).toBe(7000);
   });
+
+  it("Arts Digivolves into itself onto a purple Lv.5 for free after its Option side is used", async () => {
+    const preferred: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: PURPLE_LEVEL_5, as: "host" },
+            { card: BLACK_LEVEL_5, as: "colorSource", suspended: true },
+          ],
+          hand: [{ card: "BT27-084", as: "dual" }],
+        },
+        1: { battleArea: [{ card: PLAIN_LEVEL_3, as: "lowest" }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred },
+    );
+    preferred.push(s.perm("host").topCard.instanceId);
+    s.state.memory = 5;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("dual").instanceId, useAs: "option" }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("host").topCard.cardId === "BT27-084" && s.state.pendingDecision === undefined, 5000);
+
+    expect(stackCardIds(s, "host")).toEqual([PURPLE_LEVEL_5]);
+    expect(s.state.players[0]!.trash.some((card) => card.cardId === "BT27-084")).toBe(false);
+    expect(battleAreaCardIds(s, 1)).toEqual([]);
+    expect(s.state.memory).toBe(0);
+  });
 });
