@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Switch } from "../../design/primitives";
 import { useTranslation } from "../../i18n";
+import { setChatSoundEnabled, useChatSoundEnabled } from "./chatSound";
 import { useDismissOnOutsidePress } from "./useDismissOnOutsidePress";
 import type { MatchChat } from "./useMatchChat";
 
@@ -18,6 +19,7 @@ export function ChatSettingsMenu({
 }) {
   const { t } = useTranslation();
   const menuRef = useRef<HTMLDivElement>(null);
+  const chatSoundEnabled = useChatSoundEnabled();
   useDismissOnOutsidePress(menuRef, anchor, onClose);
 
   useEffect(() => {
@@ -42,6 +44,7 @@ export function ChatSettingsMenu({
         <Switch checked={chat.mutedOpponent} label={t("chat.mute")} onChange={chat.setMutedOpponent} />
       )}
       <Switch checked={chat.mutedSpectators} label={t("chat.muteSpectators")} onChange={chat.setMutedSpectators} />
+      <Switch checked={chatSoundEnabled} label={t("chat.sound")} onChange={setChatSoundEnabled} />
     </div>
   );
 }

@@ -1874,6 +1874,8 @@ export const es: Record<keyof typeof en, string> = {
   "chat.send": "Enviar",
   "chat.mute": "Silenciar al oponente",
   "chat.muteSpectators": "Silenciar a los espectadores",
+  "chat.sound": "Sonido del chat",
+  "chat.soundDesc": "Reproduce un sonido con cada mensaje nuevo de tu oponente o de los espectadores.",
   "chat.you": "Tú",
   "chat.spectator": "Espectador {number}",
   "chat.spectatorTag": "espectador",

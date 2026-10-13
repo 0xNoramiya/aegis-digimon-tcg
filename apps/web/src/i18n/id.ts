@@ -2259,6 +2259,8 @@ const interfaceMessages = {
   "chat.send": "Kirim",
   "chat.mute": "Bisukan lawan",
   "chat.muteSpectators": "Bisukan penonton",
+  "chat.sound": "Suara obrolan",
+  "chat.soundDesc": "Putar suara untuk setiap pesan baru dari lawan atau penonton.",
   "chat.you": "kamu",
   "chat.spectator": "Penonton {number}",
   "chat.spectatorTag": "penonton",

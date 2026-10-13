@@ -2159,6 +2159,8 @@ const interfaceMessages = {
   "chat.send": "发送",
   "chat.mute": "将对手静音",
   "chat.muteSpectators": "观众静音",
+  "chat.sound": "聊天提示音",
+  "chat.soundDesc": "对手或观众发送新消息时播放提示音。",
   "chat.you": "你",
   "chat.spectator": "观众{number}",
   "chat.spectatorTag": "旁观者",

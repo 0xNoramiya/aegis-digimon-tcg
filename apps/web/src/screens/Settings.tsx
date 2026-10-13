@@ -26,6 +26,7 @@ import { areActionConfirmationsEnabled, setActionConfirmationsEnabled } from "..
 import { isKeepAwakeEnabled, setKeepAwakeEnabled } from "../design/keepAwake";
 import { FieldLayout, setFieldLayout, useFieldLayout } from "../design/fieldLayout";
 import { setPileCountsShown, usePileCountsShown } from "../design/pileCounts";
+import { setChatSoundEnabled, useChatSoundEnabled } from "../game/chat/chatSound";
 import { CardSleevePicker, EggSleevePicker } from "../design/sleevePicker";
 import { TEXT_SCALES, setTextScale, useTextScale, type TextScale } from "../design/textScale";
 import { SEQUENTIAL_PACING_ENABLED } from "../features";
@@ -257,6 +258,7 @@ export function Settings({
   };
   const fieldLayout = useFieldLayout();
   const pileCountsShown = usePileCountsShown();
+  const chatSoundEnabled = useChatSoundEnabled();
   const handAutoSort = useHandAutoSort();
   const effectPromptPosition = useEffectPromptPosition();
   const noticeDuration = useNoticeDuration();
@@ -390,6 +392,20 @@ export function Settings({
                   }}
                   onPointerUp={() => soundOn && playSound("select")}
                   className="settings-volume__control"
+                />
+              </div>
+              <div className="settings-row">
+                <Switch
+                  checked={chatSoundEnabled}
+                  disabled={!soundOn}
+                  label={t("chat.sound")}
+                  description={t("chat.soundDesc")}
+                  onChange={(next) => {
+                    setChatSoundEnabled(next);
+                    if (next) {
+                      playSound("prompt");
+                    }
+                  }}
                 />
               </div>
               <div className="settings-row">
