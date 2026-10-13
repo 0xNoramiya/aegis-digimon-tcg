@@ -52,6 +52,40 @@ describe("magic link request limits", () => {
     );
   });
 
+  it("caps one recipient per day even when the requests are spread across short windows", async () => {
+    const accounts = store();
+    const now = Date.now();
+    for (let attempt = 0; attempt < 5; attempt++) {
+      expect(
+        await accounts.allowMagicLinkRequest({
+          ip: `caller-${attempt}`,
+          email: "tamer@example.com",
+          now: now + attempt * 900_000,
+        }),
+      ).toBe(true);
+    }
+    expect(
+      await accounts.allowMagicLinkRequest({ ip: "caller-5", email: "tamer@example.com", now: now + 5 * 900_000 }),
+    ).toBe(false);
+    expect(
+      await accounts.allowMagicLinkRequest({ ip: "caller-6", email: "tamer@example.com", now: now + 86_400_000 }),
+    ).toBe(true);
+  });
+
+  it("caps one caller per day even when the requests are spread across short windows", async () => {
+    const accounts = store();
+    const now = Date.now();
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const at = now + Math.floor(attempt / 10) * 900_000;
+      expect(
+        await accounts.allowMagicLinkRequest({ ip: "caller", email: `tamer-${attempt}@example.com`, now: at }),
+      ).toBe(true);
+    }
+    expect(
+      await accounts.allowMagicLinkRequest({ ip: "caller", email: "new@example.com", now: now + 2 * 900_000 }),
+    ).toBe(false);
+  });
+
   it("removes expired tokens and stale limit keys without removing live tokens", async () => {
     const accounts = store();
     const now = Date.now();
