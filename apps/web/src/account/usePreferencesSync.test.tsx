@@ -16,6 +16,9 @@ import { accountApi, type AccountPreferences } from "./client";
 import { isAutoHatchEnabled, setAutoHatchEnabled } from "../game/autoHatch";
 import { areProfileStatsShown, setProfileStatsShown } from "./profileStats";
 import { usePreferencesSync } from "./usePreferencesSync";
+import { getFavoriteDeckIds } from "@/screens/favoriteDecks/getFavoriteDeckIds";
+import { setDeckFavorite } from "@/screens/favoriteDecks/setDeckFavorite";
+import { setFavoriteDeckIds } from "@/screens/favoriteDecks/setFavoriteDeckIds";
 
 function wrapper({ children }: { children: ReactNode }) {
   return <I18nProvider>{children}</I18nProvider>;
@@ -48,6 +51,7 @@ beforeEach(() => {
   setCardSleeveId("digimon-standard");
   setEggSleeveId("digimon-egg");
   setDeckBuilderPreferences({ deckShare: 0.45, deckView: "grid", deckSort: "releaseDate" });
+  setFavoriteDeckIds([]);
 });
 
 afterEach(() => {
@@ -199,4 +203,27 @@ it("blocks automation while a new account's preferences are loading", async () =
   await act(async () => resolvePreferences({ autoHatch: false }));
   expect(result.current.preferencesReady).toBe(true);
   expect(isAutoHatchEnabled()).toBe(false);
+});
+
+it("applies the account's favorite decks and sends later changes as the whole list", async () => {
+  const stored = { favoriteDeckIds: ["custom-2"] };
+  const load = vi.spyOn(accountApi, "preferences").mockResolvedValue(stored);
+  const update = echoUpdates(stored);
+  renderSync("account-1");
+  await act(async () => {
+    await load.mock.results[0]!.value;
+  });
+  expect(getFavoriteDeckIds()).toEqual(["custom-2"]);
+  await waitFor(() => expect(update).toHaveBeenCalled());
+  expect(update).not.toHaveBeenCalledWith(expect.objectContaining({ favoriteDeckIds: expect.anything() }));
+  act(() => setDeckFavorite({ deckId: "custom-5", favorite: true }));
+  await waitFor(() => expect(update).toHaveBeenLastCalledWith({ favoriteDeckIds: ["custom-2", "custom-5"] }));
+});
+
+it("backfills this device's favorite decks to an account without any", async () => {
+  setDeckFavorite({ deckId: "custom-3", favorite: true });
+  vi.spyOn(accountApi, "preferences").mockResolvedValue({});
+  const update = echoUpdates({});
+  renderSync("account-1");
+  await waitFor(() => expect(update).toHaveBeenCalledWith(expect.objectContaining({ favoriteDeckIds: ["custom-3"] })));
 });

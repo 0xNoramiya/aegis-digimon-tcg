@@ -34,6 +34,7 @@ export type AccountPreferences = {
   deckView?: "grid" | "list";
   deckSort?: string;
   profileStats?: boolean;
+  favoriteDeckIds?: string[];
 };
 export type AccountProfile = {
   account: RemoteAccount;

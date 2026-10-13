@@ -184,6 +184,28 @@ describe("/account/preferences", () => {
     expect(await getPreferences()).toEqual(layout);
   });
 
+  it("stores favorite deck ids and replaces the whole list on update", async () => {
+    expect((await putPreferences({ favoriteDeckIds: ["custom-1", "custom-3"] })).status).toBe(200);
+    expect((await putPreferences({ favoriteDeckIds: ["custom-3"] })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ favoriteDeckIds: ["custom-3"] });
+    expect((await putPreferences({ favoriteDeckIds: [] })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ favoriteDeckIds: [] });
+  });
+
+  it("rejects favorite deck lists that are malformed, repeated or longer than the deck limit", async () => {
+    for (const invalid of [
+      { favoriteDeckIds: "custom-1" },
+      { favoriteDeckIds: [1] },
+      { favoriteDeckIds: [""] },
+      { favoriteDeckIds: ["x".repeat(65)] },
+      { favoriteDeckIds: ["custom-1", "custom-1"] },
+      { favoriteDeckIds: Array.from({ length: 101 }, (_, index) => `custom-${index}`) },
+    ]) {
+      expect((await putPreferences(invalid)).status).toBe(400);
+    }
+    expect(await getPreferences()).toEqual({});
+  });
+
   it("rejects wrong types, unknown keys and long values without changing anything", async () => {
     await putPreferences({ darkMode: true });
     for (const invalid of [

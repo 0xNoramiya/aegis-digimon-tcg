@@ -51,6 +51,8 @@ export const decksEs: Record<keyof typeof decksEn, string> = {
   "redesign.decks.list.sortRecent": "Editados recientemente",
   "redesign.decks.list.sortName": "Nombre (A–Z)",
   "redesign.decks.list.sortColor": "Color",
+  "redesign.decks.list.favorite": "Deck favorito",
+  "redesign.decks.list.unfavorite": "Quitar de favoritos",
   "redesign.decks.list.noMatches": "Ningún nombre de deck contiene “{query}”.",
   "redesign.decks.editor.pool": "Cartas disponibles",
   "redesign.decks.editor.name": "Nombre del deck",

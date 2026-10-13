@@ -2113,6 +2113,8 @@ const interfaceMessages = {
   "redesign.decks.list.sortRecent": "Dernière modification",
   "redesign.decks.list.sortName": "Nom (A à Z)",
   "redesign.decks.list.sortColor": "Couleur",
+  "redesign.decks.list.favorite": "Deck favori",
+  "redesign.decks.list.unfavorite": "Retirer des favoris",
   "redesign.decks.list.noMatches": "Aucun nom de deck ne contient « {query} ».",
   "redesign.decks.editor.pool": "Pool de cartes",
   "redesign.decks.editor.name": "Nom du pont",

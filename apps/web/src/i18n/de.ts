@@ -2134,6 +2134,8 @@ const interfaceMessages = {
   "redesign.decks.list.sortRecent": "Zuletzt bearbeitet",
   "redesign.decks.list.sortName": "Name (A–Z)",
   "redesign.decks.list.sortColor": "Farbe",
+  "redesign.decks.list.favorite": "Lieblingsdeck",
+  "redesign.decks.list.unfavorite": "Aus Favoriten entfernen",
   "redesign.decks.list.noMatches": "Kein Deckname enthält „{query}“.",
   "redesign.decks.editor.pool": "Kartenpool",
   "redesign.decks.editor.name": "Deckname",

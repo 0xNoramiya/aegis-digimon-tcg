@@ -31,6 +31,7 @@ import { accountApi, type RemoteAccount } from "./account/client";
 import { communityApi } from "./community/client";
 import { communityDeckListing } from "./community/communityDeckListing";
 import { usePreferencesSync } from "./account/usePreferencesSync";
+import { setDeckFavorite } from "@/screens/favoriteDecks/setDeckFavorite";
 import { LeaveMatchDialog } from "./game/screen/layout/LeaveMatchDialog";
 import { PlayerMenu } from "./account/PlayerMenu";
 import { NotificationBell } from "./notifications/NotificationBell";
@@ -263,6 +264,7 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
 
   const deleteDeck = (id: string) => {
     const remaining = removeDeck(decks, id);
+    setDeckFavorite({ deckId: id, favorite: false });
     setDecks(remaining);
     if (activeDeckId === id) setActiveDeckId(selectableDecks({ personalDecks: remaining, famousDecks })[0]?.id ?? "");
     void accountApi

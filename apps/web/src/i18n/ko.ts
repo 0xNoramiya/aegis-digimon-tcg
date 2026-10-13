@@ -2048,6 +2048,8 @@ const interfaceMessages = {
   "redesign.decks.list.sortRecent": "마지막으로 수정됨",
   "redesign.decks.list.sortName": "이름(A~Z)",
   "redesign.decks.list.sortColor": "색상",
+  "redesign.decks.list.favorite": "즐겨찾는 덱",
+  "redesign.decks.list.unfavorite": "즐겨찾기에서 제거",
   "redesign.decks.list.noMatches": '덱 이름에 "{query}"이(가) 포함되어 있지 않습니다.',
   "redesign.decks.editor.pool": "카드풀",
   "redesign.decks.editor.name": "덱 이름",

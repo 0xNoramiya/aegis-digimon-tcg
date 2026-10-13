@@ -914,6 +914,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     deckView,
     deckSort,
     profileStats,
+    favoriteDeckIds,
     ...unknownKeys
   } = value as Record<string, unknown>;
   if (Object.keys(unknownKeys).length > 0) return undefined;
@@ -927,6 +928,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (deckView !== undefined && deckView !== "grid" && deckView !== "list") return undefined;
   if (deckSort !== undefined && !isShortText(deckSort)) return undefined;
   if (profileStats !== undefined && typeof profileStats !== "boolean") return undefined;
+  if (favoriteDeckIds !== undefined && !isFavoriteDeckIdList(favoriteDeckIds)) return undefined;
   return {
     ...(autoHatch !== undefined && { autoHatch }),
     ...(darkMode !== undefined && { darkMode }),
@@ -937,7 +939,16 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     ...(deckView !== undefined && { deckView: deckView as "grid" | "list" }),
     ...(deckSort !== undefined && { deckSort: deckSort as string }),
     ...(profileStats !== undefined && { profileStats }),
+    ...(favoriteDeckIds !== undefined && { favoriteDeckIds: favoriteDeckIds as string[] }),
   };
+}
+
+function isFavoriteDeckIdList(value: unknown): value is string[] {
+  if (!Array.isArray(value) || value.length > MAX_SAVED_DECKS) {
+    return false;
+  }
+  const isDeckId = (id: unknown) => typeof id === "string" && id.length > 0 && id.length <= MAX_PREFERENCE_LENGTH;
+  return value.every(isDeckId) && new Set(value).size === value.length;
 }
 
 /**

@@ -2082,6 +2082,8 @@ const interfaceMessages = {
   "redesign.decks.list.sortRecent": "Terakhir diedit",
   "redesign.decks.list.sortName": "Nama (A–Z)",
   "redesign.decks.list.sortColor": "Warna",
+  "redesign.decks.list.favorite": "Dek favorit",
+  "redesign.decks.list.unfavorite": "Hapus dari favorit",
   "redesign.decks.list.noMatches": "Tidak ada nama dek yang mengandung “{query}”.",
   "redesign.decks.editor.pool": "Kumpulan kartu",
   "redesign.decks.editor.name": "Nama dek",

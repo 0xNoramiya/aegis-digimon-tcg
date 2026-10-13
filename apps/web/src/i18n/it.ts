@@ -1918,6 +1918,8 @@ const interfaceMessages = {
   "redesign.decks.list.sortRecent": "Ultima modifica",
   "redesign.decks.list.sortName": "Nome (A–Z)",
   "redesign.decks.list.sortColor": "Colore",
+  "redesign.decks.list.favorite": "Mazzo preferito",
+  "redesign.decks.list.unfavorite": "Rimuovi dai preferiti",
   "redesign.decks.list.noMatches": "Nessun nome di mazzo contiene “{query}”.",
   "redesign.decks.editor.pool": "Selezione di carte",
   "redesign.decks.editor.name": "Nome del mazzo",
