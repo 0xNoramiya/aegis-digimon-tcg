@@ -66,6 +66,9 @@
 	handle /bug-reports* {
 		reverse_proxy api:2567
 	}
+	handle /client-errors {
+		import api_upstreams
+	}
 	@tournament_api {
 		path /tournaments*
 		not header Accept *text/html*

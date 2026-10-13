@@ -220,3 +220,8 @@ test("static files use the best precompressed variant the client accepts", async
   assert.equal(plain.body, "plain");
   assert.equal(plain.headers["content-encoding"], undefined);
 });
+
+test("client error reports reach the API", () => {
+  assert.equal(isApiPath("/client-errors", { accept: "*/*" }), true);
+  assert.equal(isApiPath("/client-errors-page", { accept: "*/*" }), false);
+});
