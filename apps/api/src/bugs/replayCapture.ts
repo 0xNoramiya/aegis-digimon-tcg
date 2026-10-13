@@ -1,32 +1,25 @@
 import { log, logDirectory } from "../logger.js";
-import { extractReplayFromLogDir, ReplayExtractionError } from "../replays/inputs/extract.js";
+import { ReplayExtractionError } from "../replays/inputs/extract.js";
+import { extractReplayFromMatchLog } from "#api/replays/inputs/extractReplayFromMatchLog";
 import type { ReplayRecord } from "../replays/inputs/types.js";
 import type { FeedbackStore } from "./FeedbackStore.js";
 import type { ReplayFailure, ReplayOutcome } from "./GitHubIssueTracker.js";
 
 /** How long a report waits for its replay before it is filed without one. */
 export const DEFAULT_REPLAY_CAPTURE_TIMEOUT_MS = 3_000;
-// Scans read the shared log directory; a few at once is plenty for hand-typed reports, and the cap
-// keeps a burst of reports from many accounts from turning into a burst of full-directory reads.
 const DEFAULT_MAX_CONCURRENT_CAPTURES = 2;
 // A full real match serializes to tens of kilobytes; this leaves ample room for long games.
 export const DEFAULT_MAX_RECORD_CHARS = 2_000_000;
-// The log writer prunes a segment once its last write is 12 hours old (see localLogWriter.ts). A
-// segment older than that cannot hold a match a player is reporting from now, even if pruning lags.
-const SCAN_WINDOW_MS = 12 * 60 * 60 * 1000;
 
 /** Reads one match's replay out of the logs; it must stop reading when `signal` aborts. */
 export type ReplayExtractor = (matchId: string, signal: AbortSignal) => Promise<ReplayRecord>;
 
 export type ReplayCapturerOptions = {
-  /** Where the room's `api-*.jsonl` segments are. */
   logDir: string;
   timeoutMs?: number;
   maxConcurrent?: number;
   maxRecordChars?: number;
-  /** Replaces the log scan, so a test can stall or fail it. */
   extract?: ReplayExtractor;
-  now?: () => number;
 };
 
 class CaptureTimedOut extends Error {}
@@ -47,11 +40,9 @@ export class ReplayCapturer {
     this.timeoutMs = options.timeoutMs ?? DEFAULT_REPLAY_CAPTURE_TIMEOUT_MS;
     this.maxConcurrent = options.maxConcurrent ?? DEFAULT_MAX_CONCURRENT_CAPTURES;
     this.maxRecordChars = options.maxRecordChars ?? DEFAULT_MAX_RECORD_CHARS;
-    const now = options.now ?? Date.now;
     this.extract =
       options.extract ??
-      ((matchId, signal) =>
-        extractReplayFromLogDir(options.logDir, matchId, { signal, modifiedAfter: now() - SCAN_WINDOW_MS }));
+      ((matchId, signal) => extractReplayFromMatchLog({ logDirectory: options.logDir, matchId, signal }));
   }
 
   /**
