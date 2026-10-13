@@ -43,6 +43,7 @@ import {
 import {
   collectWouldBePlayedSelfReducers,
   collectWouldDigivolveSelfReducers,
+  isIntrinsicWouldBePlayedSelfReducerMarker,
   isIntrinsicWouldDigivolveSelfReducerMarker,
 } from "./reducers.js";
 import { normalizeCompiledCard } from "./normalize.js";
@@ -200,6 +201,7 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
     // card is still in hand; retaining its marker as a field Static replacement would discount a
     // later evolution after the card has entered play (BT17-048).
     if (isIntrinsicWouldDigivolveSelfReducerMarker(cardId, effect)) continue;
+    if (isIntrinsicWouldBePlayedSelfReducerMarker(cardId, effect)) continue;
     const isOptionPlayBody = cardIsOption && isPlainMain(effect) && !seenOptionPlayMain;
     if (cardIsOption && isPlainMain(effect)) seenOptionPlayMain = true;
     const timings = timingsForTrigger(effect, isOptionPlayBody);

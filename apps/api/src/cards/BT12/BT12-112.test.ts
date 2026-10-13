@@ -68,7 +68,7 @@ describe("BT12-112 ＜when played＞ cost reduction (place 1 [Shoutmon] → -1)"
     const source = { instanceId: "source-112", cardId: BT12_112, ownerSeat: 0, isOnBattleArea: () => true } as never;
     expect(module!.effectsForTiming(EffectTiming.OnPlay, source)).toHaveLength(1);
     expect(module!.effectsForTiming(EffectTiming.BeforePayCost, source)).toHaveLength(0);
-    expect(module!.effectsForTiming(EffectTiming.None, source)).toHaveLength(2);
+    expect(module!.effectsForTiming(EffectTiming.None, source)).toHaveLength(1);
   });
 
   it("accepts the minimum one-card DigiXros and charges one memory less", async () => {
