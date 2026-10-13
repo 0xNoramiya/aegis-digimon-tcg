@@ -50,6 +50,7 @@ export type AccountPreferences = {
   deckShare?: number;
   deckView?: "grid" | "list";
   deckSort?: string;
+  favoriteDeckIds?: string[];
 };
 export type AuthSession = { id: string; account: Account; expiresAt: number };
 export type RoomTicket = { account: Account; tournamentMatchId: string | null };

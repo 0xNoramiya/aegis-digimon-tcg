@@ -48,6 +48,8 @@ export const decksEn = {
   "redesign.decks.list.sortRecent": "Last edited",
   "redesign.decks.list.sortName": "Name (A–Z)",
   "redesign.decks.list.sortColor": "Color",
+  "redesign.decks.list.favorite": "Favorite deck",
+  "redesign.decks.list.unfavorite": "Remove from favorites",
   "redesign.decks.list.noMatches": "No deck name contains “{query}”.",
   "redesign.decks.editor.pool": "Card pool",
   "redesign.decks.editor.name": "Deck name",

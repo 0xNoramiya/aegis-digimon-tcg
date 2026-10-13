@@ -1993,6 +1993,8 @@ const interfaceMessages = {
   "redesign.decks.list.sortRecent": "最后编辑",
   "redesign.decks.list.sortName": "姓名（A-Z）",
   "redesign.decks.list.sortColor": "颜色",
+  "redesign.decks.list.favorite": "收藏卡组",
+  "redesign.decks.list.unfavorite": "取消收藏",
   "redesign.decks.list.noMatches": "没有牌组名称包含“{query}”。",
   "redesign.decks.editor.pool": "卡池",
   "redesign.decks.editor.name": "卡组名称",

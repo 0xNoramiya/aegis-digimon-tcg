@@ -2070,6 +2070,8 @@ const interfaceMessages = {
   "redesign.decks.list.sortRecent": "最終編集",
   "redesign.decks.list.sortName": "名前 (A ～ Z)",
   "redesign.decks.list.sortColor": "色",
+  "redesign.decks.list.favorite": "お気に入りのデッキ",
+  "redesign.decks.list.unfavorite": "お気に入りから外す",
   "redesign.decks.list.noMatches": "デッキ名に「{query}」が含まれていません。",
   "redesign.decks.editor.pool": "カードプール",
   "redesign.decks.editor.name": "デッキ名",
