@@ -30,7 +30,7 @@ export default defineConfig({
     setupFiles: [
       "./test/scenarioHarness/setupJsdomPolyfills.ts",
       "./test/setupGateExpiry.ts",
-      "./test/setupDictionaries.ts",
+      "./test/setupLazyModules.ts",
     ],
     // The scenario harness boots a real in-process websocket server; vitest's
     // default forked-process pool serializes console/log traffic across an IPC

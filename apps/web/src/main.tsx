@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { synchronizeDeploymentRevision, usesSlotDeploymentRouter } from "./net/deployment";
 import { translator } from "./i18n";
+import { loadFamousDecks } from "@/game/loadFamousDecks";
 import { loadDictionary } from "@/i18n/loadDictionary";
 import { loadLocale } from "@/i18n/loadLocale";
 import { AegisEmblem } from "./design/AegisLogo";
@@ -81,6 +82,7 @@ applyDarkMode();
 applyInterfaceTheme();
 preventIosFocusZoom();
 installTranslationCompatibility(container);
+loadFamousDecks().catch(() => undefined);
 void loadDictionary(loadLocale())
   .catch(() => undefined)
   .finally(() => createRoot(container).render(<Startup />));

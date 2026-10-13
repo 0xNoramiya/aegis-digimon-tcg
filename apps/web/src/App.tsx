@@ -12,10 +12,11 @@ import {
   deckById,
   filterDeckToKnownCards,
   removeDeck,
-  selectableDecks,
   upsertDeck,
   type DeckListing,
 } from "./game/decks";
+import { selectableDecks } from "@/game/selectableDecks";
+import { useFamousDecks } from "@/game/useFamousDecks";
 import type { AegisJoinOptions } from "./net/types";
 import type { SeriesGameTicket } from "./net/useRoom";
 import type { PrivateRoom, StartMode } from "./screens/Lobby";
@@ -188,9 +189,19 @@ export function App() {
 }
 
 function AppShell() {
+  const famousDecks = useFamousDecks();
+  if (!famousDecks) {
+    return <ScreenFallback />;
+  }
+  return <LoadedAppShell famousDecks={famousDecks.decks} />;
+}
+
+function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }) {
   const [player, setPlayer] = useState<PlayerIdentity>(loadIdentity);
   const [decks, setDecks] = useState<DeckListing[]>(loadDecks);
-  const [activeDeckId, setActiveDeckId] = useState<string>(() => loadActiveDeckId(selectableDecks(loadDecks())));
+  const [activeDeckId, setActiveDeckId] = useState<string>(() =>
+    loadActiveDeckId(selectableDecks({ personalDecks: loadDecks(), famousDecks })),
+  );
   const dark = useDarkMode();
   const setDark = setDarkMode;
   const [account, setAccount] = useState<RemoteAccount | null>();
@@ -248,7 +259,7 @@ function AppShell() {
   const deleteDeck = (id: string) => {
     const remaining = removeDeck(decks, id);
     setDecks(remaining);
-    if (activeDeckId === id) setActiveDeckId(selectableDecks(remaining)[0]?.id ?? "");
+    if (activeDeckId === id) setActiveDeckId(selectableDecks({ personalDecks: remaining, famousDecks })[0]?.id ?? "");
     void accountApi
       .me()
       .then((remoteAccount) => (remoteAccount ? accountApi.deleteDeck(id) : undefined))
@@ -289,7 +300,16 @@ interface ClientProps {
   initialScreen?: Screen;
 }
 
-export function AegisClient({
+export function AegisClient(props: ClientProps) {
+  const famousDecks = useFamousDecks();
+  if (!famousDecks) {
+    return <ScreenFallback />;
+  }
+  return <LoadedAegisClient {...props} famousDecks={famousDecks.decks} />;
+}
+
+function LoadedAegisClient({
+  famousDecks,
   preferencesReady = true,
   player,
   setPlayer,
@@ -303,7 +323,7 @@ export function AegisClient({
   dark,
   setDark,
   initialScreen,
-}: ClientProps) {
+}: ClientProps & { famousDecks: readonly DeckListing[] }) {
   const { t } = useTranslation();
   const effectivePlayer = useMemo<PlayerIdentity>(
     () =>
@@ -422,10 +442,10 @@ export function AegisClient({
   };
   const navigateScreen = (nextScreen: Screen) => navigate({ screen: nextScreen });
 
-  const availableDecks = useMemo(
-    () => (borrowedDeck ? [borrowedDeck, ...selectableDecks(decks)] : selectableDecks(decks)),
-    [borrowedDeck, decks],
-  );
+  const availableDecks = useMemo(() => {
+    const selectable = selectableDecks({ personalDecks: decks, famousDecks });
+    return borrowedDeck ? [borrowedDeck, ...selectable] : selectable;
+  }, [borrowedDeck, decks, famousDecks]);
   const matchDeck = deckById(availableDecks, matchDeckId ?? activeDeckId);
   const matchSleeveId = screen === "game" ? matchDeck?.sleeveId : undefined;
   useEffect(() => setDeckSleeveId(matchSleeveId), [matchSleeveId]);
