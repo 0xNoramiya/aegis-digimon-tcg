@@ -76,6 +76,9 @@ export default defineConfig({
       },
     },
   },
+  json: {
+    stringify: true,
+  },
   build: {
     target: "es2022",
     cssMinify: "lightningcss",
