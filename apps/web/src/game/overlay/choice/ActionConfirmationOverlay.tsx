@@ -10,6 +10,7 @@ export function ActionConfirmationOverlay({
   cardId,
   title,
   detail,
+  emphasis,
   showSummary = true,
   confirmLabel,
   alternateLabel,
@@ -20,6 +21,7 @@ export function ActionConfirmationOverlay({
   cardId: string;
   title: string;
   detail: string;
+  emphasis?: string;
   showSummary?: boolean;
   confirmLabel: string;
   alternateLabel?: string;
@@ -31,6 +33,7 @@ export function ActionConfirmationOverlay({
   const { isViewingBoard, openBoard, boardReturn } = useBoardPreview();
   const focusProps = useEffectPromptFocus(isViewingBoard);
   if (isViewingBoard) return boardReturn;
+  const emphasisStart = emphasis ? detail.indexOf(emphasis) : -1;
   return (
     <div className="effect-prompt-layer" onClick={(event) => event.stopPropagation()}>
       <div className="decision-overlay-backdrop decision-overlay-backdrop--side" aria-hidden="true" />
@@ -50,7 +53,19 @@ export function ActionConfirmationOverlay({
             </span>
             <div className="action-confirmation__copy">
               <h2 className="action-confirmation__title">{title}</h2>
-              <p className="action-confirmation__detail">{detail}</p>
+              <p className="action-confirmation__detail">
+                {emphasis && emphasisStart >= 0 ? (
+                  <>
+                    {detail.slice(0, emphasisStart)}
+                    <strong className="decision-overlay__effect-step">
+                      {detail.slice(emphasisStart, emphasisStart + emphasis.length)}
+                    </strong>
+                    {detail.slice(emphasisStart + emphasis.length)}
+                  </>
+                ) : (
+                  detail
+                )}
+              </p>
             </div>
           </div>
         ) : (
