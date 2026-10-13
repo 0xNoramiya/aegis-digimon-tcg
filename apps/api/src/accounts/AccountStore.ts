@@ -530,6 +530,14 @@ export class AccountStore {
       limit,
     ]);
   }
+  async magicLinkUsable(token: string): Promise<boolean> {
+    await this.ensureReady();
+    const result = await this.pool.query(
+      "SELECT token_hash FROM magic_links WHERE token_hash=$1 AND consumed_at IS NULL AND expires_at>$2",
+      [hash(token), Date.now()],
+    );
+    return (result.rowCount ?? 0) > 0;
+  }
   async consumeMagicLink(token: string): Promise<Account | undefined> {
     const email = await this.transaction(
       async (client) =>

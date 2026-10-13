@@ -192,13 +192,22 @@ export function installAccountRoutes(
   });
   get("/auth/magic-link/consume", async (req, res) => {
     const token = typeof req.query.token === "string" ? req.query.token : "";
+    if (!token || !(await store.magicLinkUsable(token))) {
+      res.status(400).json({ error: "invalid or expired sign-in link" });
+      return;
+    }
+    res.setHeader("Cache-Control", "no-store");
+    res.type("html").send(signInPage(token));
+  });
+  post("/auth/magic-link/consume", async (req, res) => {
+    const token = typeof req.query.token === "string" ? req.query.token : "";
     const account = await store.consumeMagicLink(token);
     if (!account) {
       res.status(400).json({ error: "invalid or expired sign-in link" });
       return;
     }
     setSession(res, await store.issueSession(account));
-    res.redirect(process.env.AEGIS_WEB_URL ?? "/");
+    res.redirect(303, process.env.AEGIS_WEB_URL ?? "/");
   });
 
   get("/auth/discord", (_req, res) => {
@@ -732,6 +741,26 @@ type TournamentDetailExtras = {
   matches: unknown[];
   series: SeriesScoreView[];
 };
+
+function signInPage(token: string): string {
+  const safe = token.replace(/[^A-Za-z0-9_-]/g, "");
+  return [
+    "<!doctype html>",
+    '<html lang="en">',
+    "<head>",
+    '<meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<meta name="robots" content="noindex">',
+    "<title>Sign in to Aegis</title>",
+    "</head>",
+    "<body>",
+    `<form method="post" action="/auth/magic-link/consume?token=${safe}">`,
+    '<button type="submit">Sign in to Aegis</button>',
+    "</form>",
+    "</body>",
+    "</html>",
+  ].join("");
+}
 
 /**
  * The wire shape of a tournament. `status` is translated into the shared vocabulary — the table

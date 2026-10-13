@@ -76,6 +76,116 @@ describe("POST /auth/magic-link", () => {
   });
 });
 
+async function accountApp(mailer: Mailer): Promise<string> {
+  const store = new AccountStore(createMemoryPool());
+  const app = express();
+  app.use(express.json());
+  installAccountRoutes(
+    app,
+    store,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    mailer,
+  );
+  const server = app.listen(0);
+  await new Promise((resolve) => server.once("listening", resolve));
+  close = async () => {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+    await store.close();
+  };
+  return `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+}
+
+function signInPath(html: string): string {
+  const href = /href="([^"]+)"/.exec(html)?.[1] ?? "";
+  const url = new URL(href);
+  return `${url.pathname}${url.search}`;
+}
+
+describe("GET /auth/magic-link/consume", () => {
+  it("leaves the link unspent, so a link scanner cannot sign itself in", async () => {
+    const mailer = vi.fn<Mailer>(async () => undefined);
+    const base = await accountApp(mailer);
+    await fetch(`${base}/auth/magic-link`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "Tamer@Example.com" }),
+    });
+    const path = signInPath(mailer.mock.calls[0]?.[0]?.html ?? "");
+
+    const scanner = await fetch(`${base}${path}`, { redirect: "manual" });
+    expect(scanner.status).toBe(200);
+    expect(scanner.headers.get("set-cookie")).toBeNull();
+    expect(await scanner.text()).toContain("<form");
+
+    const person = await fetch(`${base}${path}`, { method: "POST", redirect: "manual" });
+    expect(person.status).toBe(303);
+    expect(person.headers.get("set-cookie")).toContain("aegis_session");
+  });
+
+  it("still spends the link once, and reports a link that is already used", async () => {
+    const mailer = vi.fn<Mailer>(async () => undefined);
+    const base = await accountApp(mailer);
+    await fetch(`${base}/auth/magic-link`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "Tamer@Example.com" }),
+    });
+    const path = signInPath(mailer.mock.calls[0]?.[0]?.html ?? "");
+
+    expect((await fetch(`${base}${path}`, { method: "POST", redirect: "manual" })).status).toBe(303);
+    const again = await fetch(`${base}${path}`, { method: "POST", redirect: "manual" });
+
+    expect(again.status).toBe(400);
+    expect(await again.json()).toEqual({ error: "invalid or expired sign-in link" });
+  });
+
+  it("reports a spent link on the page instead of offering the button", async () => {
+    const store = new AccountStore(createMemoryPool());
+    const app = express();
+    app.use(express.json());
+    const mailer = vi.fn<Mailer>(async () => undefined);
+    installAccountRoutes(
+      app,
+      store,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      mailer,
+    );
+    const server = app.listen(0);
+    await new Promise((resolve) => server.once("listening", resolve));
+    close = async () => {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      await store.close();
+    };
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    await fetch(`${base}/auth/magic-link`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "Tamer@Example.com" }),
+    });
+    const path = signInPath(mailer.mock.calls[0]?.[0]?.html ?? "");
+    await store.pool.query("UPDATE magic_links SET consumed_at=$1", [Date.now()]);
+
+    const response = await fetch(`${base}${path}`);
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "invalid or expired sign-in link" });
+  });
+});
+
 describe("magic link request throttling", () => {
   it("rejects repeated requests before creating a token or sending another email", async () => {
     const store = new AccountStore(createMemoryPool());
