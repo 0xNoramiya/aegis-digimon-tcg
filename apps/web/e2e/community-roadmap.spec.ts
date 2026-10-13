@@ -121,6 +121,8 @@ class RoadmapPage {
         });
       if (path === "/community/decks") return route.fulfill({ json: { decks: [], hasMore: false } });
       if (path === "/account/admin/community/reports") return route.fulfill({ json: { decks: [] } });
+      if (path === "/account/admin/playtest/members") return route.fulfill({ json: { members: [] } });
+      if (path === "/account/admin/playtest/studies") return route.fulfill({ json: { open: [], past: [] } });
       if (path === "/account/decks") return route.fulfill({ json: [] });
       return route.fulfill({ json: {} });
     });

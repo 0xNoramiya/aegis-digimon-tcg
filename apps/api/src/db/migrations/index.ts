@@ -35,6 +35,7 @@ import { feedbackReportReplays } from "./031-feedback-report-replays.js";
 import { magicLinkRequestLimits } from "#api/db/migrations/032-magic-link-request-limits";
 import { connectionDrops } from "#api/db/migrations/033-connection-drops";
 import { communityRoadmap } from "#api/db/migrations/034-community-roadmap";
+import { playtestGroup } from "#api/db/migrations/035-playtest-group";
 
 export const migrations: readonly Migration[] = [
   initialSchema,
@@ -71,4 +72,5 @@ export const migrations: readonly Migration[] = [
   magicLinkRequestLimits,
   connectionDrops,
   communityRoadmap,
+  playtestGroup,
 ];

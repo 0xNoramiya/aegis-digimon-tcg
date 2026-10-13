@@ -9,6 +9,7 @@ import { OpenReplayFile } from "./OpenReplayFile";
 import { ProfileIdentity } from "./ProfileIdentity";
 import type { DigimonWorldAvatarId } from "./avatars";
 import { ReplayViewer, useReplayFile } from "../replays/ReplayViewer";
+import { PlaytestPanel } from "./PlaytestPanel";
 import { DriveConnectCard } from "../replays/cloud/DriveOnboarding";
 import { CloudReplayLibrary } from "../replays/cloud/CloudReplayLibrary";
 import "./profile.css";
@@ -81,6 +82,7 @@ export function ProfileScreen({
       ) : account ? (
         <>
           <DriveConnectCard signedIn />
+          <PlaytestPanel />
           <MatchHistory
             key={account.id}
             onWinRateChange={updateRate}

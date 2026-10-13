@@ -1,5 +1,5 @@
 import type { FeedbackStore } from "./FeedbackStore.js";
-import { getCardDefinition } from "@aegis/shared";
+import { getCardDefinition, isFeedbackKind } from "@aegis/shared";
 import type { Express, Request, Response } from "express";
 import type { AuthSession } from "../accounts/AccountStore.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
@@ -7,12 +7,10 @@ import { captureReportReplay, type ReplayCapturer } from "./replayCapture.js";
 import { installFeedbackTriageRoutes } from "./triageRoutes.js";
 import { parseId } from "#api/http/parseId";
 import {
-  FEEDBACK_KINDS,
   MAX_BUG_REPORT_CARDS,
   MAX_BUG_REPORT_DESCRIPTION,
   MAX_BUG_REPORT_OPPONENT_DECK,
   MAX_BUG_REPORT_SUMMARY,
-  type FeedbackKind,
   type IssueTracker,
   type NewBugReport,
   type ReplayOutcome,
@@ -225,8 +223,4 @@ function clip(value: unknown, limit: number): string | undefined {
 
 function optional<K extends string>(key: K, value: string | undefined): Record<K, string> | Record<string, never> {
   return value ? ({ [key]: value } as Record<K, string>) : {};
-}
-
-function isFeedbackKind(value: unknown): value is FeedbackKind {
-  return FEEDBACK_KINDS.includes(value as FeedbackKind);
 }

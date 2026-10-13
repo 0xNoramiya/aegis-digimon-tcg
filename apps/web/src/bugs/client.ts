@@ -1,13 +1,13 @@
-import type { OwnFeedbackPage, OwnFeedbackReport } from "@aegis/shared";
+import { FEEDBACK_KINDS, type FeedbackKind, type OwnFeedbackPage, type OwnFeedbackReport } from "@aegis/shared";
 import { accountApi } from "../account/client";
 
-export const MAX_BUG_REPORT_CARDS = 20;
 export const MAX_BUG_REPORT_SUMMARY = 120;
 export const MAX_BUG_REPORT_DESCRIPTION = 4000;
-export const MAX_BUG_REPORT_OPPONENT_DECK = 120;
 
-export const FEEDBACK_KINDS = ["bug", "improvement", "other"] as const;
-export type FeedbackKind = (typeof FEEDBACK_KINDS)[number];
+export { FEEDBACK_KINDS, type FeedbackKind };
+
+export const OFFERED_FEEDBACK_KINDS = ["bug", "improvement"] as const;
+export type OfferedFeedbackKind = (typeof OFFERED_FEEDBACK_KINDS)[number];
 
 /** What the reporter fills in. The build and the browser are added on the way out. */
 export type BugReportDraft = {

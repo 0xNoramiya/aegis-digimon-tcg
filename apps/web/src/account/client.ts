@@ -6,6 +6,7 @@ import type {
   MatchHistoryFilter,
   MatchHistoryPage,
   MatchHistorySummary,
+  PlaytestMembership,
 } from "@aegis/shared";
 import type { DigimonWorldAvatarId } from "./avatars";
 
@@ -87,6 +88,9 @@ export const accountApi = {
   base: apiBase,
   me: () => request<RemoteAccount | null>("/auth/me"),
   profile: () => request<AccountProfile>("/account/profile"),
+  playtest: () => request<PlaytestMembership>("/account/playtest"),
+  setPlaytest: (member: boolean) =>
+    request<PlaytestMembership>("/account/playtest", { method: "PUT", body: JSON.stringify({ member }) }),
   matches: ({ page, limit, result, mode, opponent }: { page: number; limit: number } & MatchHistoryFilter) =>
     request<MatchHistoryPage>(
       `/account/matches?${new URLSearchParams({

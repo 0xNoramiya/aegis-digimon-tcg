@@ -1,4 +1,10 @@
-import type { FeedbackStatus, FeedbackStatusChange, FeedbackTriageUpdate } from "@aegis/shared";
+import type {
+  FeedbackStatus,
+  FeedbackStatusChange,
+  FeedbackTriageUpdate,
+  PlaytestMember,
+  PlaytestStudy,
+} from "@aegis/shared";
 import { accountApi } from "../account/client";
 import { BugReportApiError, type BugReportDraft, type FeedbackKind } from "./client";
 
@@ -103,4 +109,40 @@ export async function triageFeedback(id: number, update: FeedbackTriageUpdate): 
     throw new FeedbackConflictError(body.current);
   }
   return read(response);
+}
+
+export async function listPlaytestMembers(signal?: AbortSignal): Promise<{ members: PlaytestMember[] }> {
+  return read(
+    await fetch(`${accountApi.base}/account/admin/playtest/members`, {
+      credentials: "include",
+      cache: "no-store",
+      signal,
+    }),
+  );
+}
+
+export async function listStudies(signal?: AbortSignal): Promise<{ open: PlaytestStudy[]; past: PlaytestStudy[] }> {
+  return read(
+    await fetch(`${accountApi.base}/account/admin/playtest/studies`, {
+      credentials: "include",
+      cache: "no-store",
+      signal,
+    }),
+  );
+}
+
+export async function createStudy(input: {
+  title: string;
+  blurb: string;
+  link: string;
+  closesAt: number;
+}): Promise<{ study: PlaytestStudy; notified: number }> {
+  return read(
+    await fetch(`${accountApi.base}/account/admin/playtest/studies`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    }),
+  );
 }

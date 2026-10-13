@@ -55,24 +55,6 @@ describe("the feedback modal", () => {
     expect(screen.queryByText(/GitHub/)).toBeNull();
   });
 
-  it("suggests cards by name and attaches the chosen one", async () => {
-    mockApi({});
-    renderDialog();
-    fireEvent.change(screen.getByLabelText("Cards involved"), { target: { value: "agumon" } });
-
-    const option = await screen.findByRole("option", { name: /BT1-010/ });
-    fireEvent.click(option);
-
-    expect(screen.getByLabelText("Remove BT1-010")).toBeTruthy();
-    expect(screen.queryByRole("listbox")).toBeNull();
-  });
-
-  it("says so when no card matches the search", async () => {
-    renderDialog();
-    fireEvent.change(screen.getByLabelText("Cards involved"), { target: { value: "zzzz-not-a-card" } });
-    expect(await screen.findByText("No card matches that search.")).toBeTruthy();
-  });
-
   it("keeps the send button disabled until both the title and the details are filled in", () => {
     renderDialog();
     const send = screen.getByRole("button", { name: "Send" }) as HTMLButtonElement;
@@ -85,17 +67,14 @@ describe("the feedback modal", () => {
     expect(send.disabled).toBe(false);
   });
 
-  it("sends the attached cards and the description, without linking the issue", async () => {
+  it("sends the title and the description, without linking the issue", async () => {
     const fetchMock = mockApi({
       "POST /bug-reports": { status: 201, body: { number: 42, url: "https://github.com/example/repo/issues/42" } },
     });
     renderDialog();
 
     fireEvent.change(screen.getByLabelText("Title"), { target: { value: "on-play never fires" } });
-    fireEvent.change(screen.getByLabelText("Cards involved"), { target: { value: "BT1-010" } });
-    fireEvent.click(await screen.findByRole("option", { name: /BT1-010/ }));
     fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "play it, nothing happens" } });
-    fireEvent.change(screen.getByLabelText("Opponent's deck"), { target: { value: "Red Hybrid" } });
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
 
     expect(await screen.findByText("Feedback sent")).toBeTruthy();
@@ -106,13 +85,42 @@ describe("the feedback modal", () => {
     expect(body).toMatchObject({
       kind: "bug",
       summary: "on-play never fires",
-      cardIds: ["BT1-010"],
+      cardIds: [],
       description: "play it, nothing happens",
-      opponentDeck: "Red Hybrid",
     });
-    // Never typed by the reporter: the client knows which build it is.
+    expect(body).not.toHaveProperty("opponentDeck");
     expect(body.clientRevision).toBeTruthy();
     expect(body.userAgent).toBeTruthy();
+  });
+
+  it("offers a bug and an idea, nothing else, and asks two questions for each", () => {
+    renderDialog();
+    expect(screen.getAllByRole("radio").map((radio) => (radio as HTMLInputElement).value)).toEqual([
+      "bug",
+      "improvement",
+    ]);
+    expect(screen.getByLabelText("Title")).toBeTruthy();
+    expect(screen.getByLabelText("What happened?")).toBeTruthy();
+    expect(screen.queryByLabelText("Cards involved")).toBeNull();
+    expect(screen.queryByLabelText("Opponent's deck")).toBeNull();
+
+    fireEvent.click(screen.getByRole("radio", { name: "Idea" }));
+    expect(screen.getByLabelText("Idea", { selector: "input[type=text], input:not([type])" })).toBeTruthy();
+    expect(screen.getByLabelText("What problem would it solve?")).toBeTruthy();
+  });
+
+  it("keeps the match ID out of the form but in the report", async () => {
+    const fetchMock = mockApi({ "POST /bug-reports": { status: 201, body: { number: 7 } } });
+    renderDialog(true, "f62249e5-ba6e-4528-b517-63bee8fbbb0f");
+    expect(screen.queryByText(/f62249e5/)).toBeNull();
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "x" } });
+    fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "y" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    await screen.findByText("Feedback sent");
+    const body = JSON.parse(
+      String(fetchMock.mock.calls.find(([, init]) => init?.method === "POST")?.[1]?.body),
+    ) as Record<string, unknown>;
+    expect(body.matchId).toBe("f62249e5-ba6e-4528-b517-63bee8fbbb0f");
   });
 
   it.each([undefined, "f62249e5-ba6e-4528-b517-63bee8fbbb0f"])(
@@ -134,27 +142,23 @@ describe("the feedback modal", () => {
     },
   );
 
-  it("starts on Bug, with the card and opponent fields", () => {
+  it("starts on Bug without the discontinued fields", () => {
     renderDialog();
     expect((screen.getByRole("radio", { name: "Bug" }) as HTMLInputElement).checked).toBe(true);
-    expect(screen.getByLabelText("Cards involved")).toBeTruthy();
-    expect(screen.getByLabelText("Opponent's deck")).toBeTruthy();
     expect(screen.queryByLabelText("Discord link")).toBeNull();
   });
 
-  it("drops the bug-only fields for an improvement and sends its kind", async () => {
+  it("sends an idea with its kind", async () => {
     const fetchMock = mockApi({
       "POST /bug-reports": { status: 201, body: { number: 7, url: "https://github.com/example/repo/issues/7" } },
     });
     renderDialog();
 
-    fireEvent.change(screen.getByLabelText("Opponent's deck"), { target: { value: "Red Hybrid" } });
-    fireEvent.click(screen.getByRole("radio", { name: "Improvement" }));
-    expect(screen.queryByLabelText("Cards involved")).toBeNull();
-    expect(screen.queryByLabelText("Opponent's deck")).toBeNull();
-
-    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "show the trash count" } });
-    fireEvent.change(screen.getByLabelText("What would you change?"), { target: { value: "it would help" } });
+    fireEvent.click(screen.getByRole("radio", { name: "Idea" }));
+    fireEvent.change(screen.getByLabelText("Idea", { selector: "input[type=text], input:not([type])" }), {
+      target: { value: "show the trash count" },
+    });
+    fireEvent.change(screen.getByLabelText("What problem would it solve?"), { target: { value: "it would help" } });
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
 
     await screen.findByText("Feedback sent");
@@ -162,7 +166,6 @@ describe("the feedback modal", () => {
       String(fetchMock.mock.calls.find(([, init]) => init?.method === "POST")?.[1]?.body),
     ) as Record<string, unknown>;
     expect(body).toMatchObject({ kind: "improvement", cardIds: [], description: "it would help" });
-    // Typed while the form showed Bug, then hidden: a hidden field must not reach the issue.
     expect(body).not.toHaveProperty("opponentDeck");
   });
 
@@ -229,5 +232,65 @@ describe("the feedback modal", () => {
       fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
       expect(onClose).toHaveBeenCalledTimes(2);
     });
+  });
+});
+
+describe("the playtest group opt-in", () => {
+  it("is not offered to a visitor without an account", () => {
+    mockApi({});
+    renderDialog(false);
+    expect(screen.queryByLabelText("Join the playtest group")).toBeNull();
+  });
+
+  it("is pre-checked for a member and saves the change after the report is sent", async () => {
+    const fetchMock = mockApi({
+      "GET /account/playtest": { body: { member: true, since: 1 } },
+      "PUT /account/playtest": { body: { member: false, since: null } },
+      "POST /bug-reports": { status: 201, body: { number: 7 } },
+    });
+    renderDialog(true);
+    const box = (await screen.findByLabelText("Join the playtest group")) as HTMLInputElement;
+    expect(box.checked).toBe(true);
+    fireEvent.click(box);
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "x" } });
+    fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "y" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    await screen.findByText("Feedback sent");
+    await waitFor(() => {
+      const put = fetchMock.mock.calls.find(([, init]) => init?.method === "PUT");
+      expect(put).toBeTruthy();
+      expect(JSON.parse(String(put![1]?.body))).toEqual({ member: false });
+    });
+    const order = fetchMock.mock.calls.map(([, init]) => init?.method ?? "GET");
+    expect(order.indexOf("POST")).toBeLessThan(order.indexOf("PUT"));
+  });
+
+  it("does not call the opt-in when nothing changed", async () => {
+    const fetchMock = mockApi({
+      "GET /account/playtest": { body: { member: false, since: null } },
+      "POST /bug-reports": { status: 201, body: { number: 7 } },
+    });
+    renderDialog(true);
+    await screen.findByLabelText("Join the playtest group");
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "x" } });
+    fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "y" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    await screen.findByText("Feedback sent");
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === "PUT")).toBe(false);
+  });
+
+  it("keeps the report's success when saving the opt-in fails", async () => {
+    mockApi({
+      "GET /account/playtest": { body: { member: false, since: null } },
+      "PUT /account/playtest": { status: 500, body: {} },
+      "POST /bug-reports": { status: 201, body: { number: 7 } },
+    });
+    renderDialog(true);
+    fireEvent.click(await screen.findByLabelText("Join the playtest group"));
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "x" } });
+    fireEvent.change(screen.getByLabelText("What happened?"), { target: { value: "y" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    expect(await screen.findByText("Feedback sent")).toBeTruthy();
+    expect(await screen.findByText(/could not save your playtest group choice/i)).toBeTruthy();
   });
 });
