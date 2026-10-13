@@ -10,6 +10,7 @@ re-encoded as WebP, and scaled to at most 430 px wide.
 | BT11-023_P1, BT17-059_P1, BT20-014_P1, BT21-009_P2, BT22-004_P1, BT22-063_P2, BT22-099_P1, BT5-090_P2                                                           | Bandai's English card list, `https://world.digimoncard.com/images/cardlist/card/<id>.png` |
 | P-147 (the wiki's P-147_P1 scan), BT21-005_P1, BT21-018_P2, BT21-023_P2, BT24-011_P2, BT24-059_P2, BT25-041_P2, BT25-053_P2, EX8-055_P2 (the wiki's EX8-055_P3) | DigimonCardGame Wiki, `https://static.wikia.nocookie.net/digimoncardgame/images/`         |
 | LM-063 to LM-068, ST24-11_P2, ST24-11_P3                                                                                                                        | `https://images.digimoncard.io/images/cards/`                                             |
+| BT27-084, BT27-084_P1 (downloaded on 2026-10-13)                                                                                                                | Official SAMPLE scans posted on X, `https://pbs.twimg.com/media/`                         |
 
 The client tries the upstream image first, so a file here stops being used once
 upstream publishes that printing. Delete it then, and drop its id from
