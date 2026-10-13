@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import type { Seat } from "@aegis/shared/schema/enums";
+import { ALL_FAMOUS_DECKS } from "@aegis/shared/decks/index";
 import type { GameEngine } from "#api/engine/GameEngine";
 import { setupEngine } from "#api/engine/testkit/harness";
 import { DEFAULT_BOT_PROFILE } from "#api/bot/profiles";
@@ -12,8 +13,60 @@ import { parseHeuristic } from "#api/bot/evolution/heuristic";
 import { randomDeck } from "#api/bot/evolution/randomDecks";
 import { runResidualMatch } from "#api/bot/evolution/residualMatch";
 import { runBotMatch } from "#api/bot/matchHarness";
+import pilotCatalog from "#api/bot/evolution/programs/certified-pilots.json" with { type: "json" };
+import genericCatalog from "#api/bot/evolution/programs/certified-balanced.json" with { type: "json" };
 
 describe("certified default bot options", () => {
+  it.each([0, 1] as const)(
+    "replays the validated Chronomon pilot through default options in seat %i",
+    async (learnerSeat) => {
+      const version = "bt26-dgo-2026-08-28-7-chronomon@1";
+      const learnerPreset = ALL_FAMOUS_DECKS.find((deck) => deck.deckVersion === version)!.decklist;
+      const opponentPreset = ALL_FAMOUS_DECKS.find((deck) => deck.deckId === "bt6-red-jesmon")!.decklist;
+      const learner = { mainDeck: [...learnerPreset.mainDeck], eggDeck: [...learnerPreset.eggDeck] };
+      const opponent = { mainDeck: [...opponentPreset.mainDeck], eggDeck: [...opponentPreset.eggDeck] };
+      const decks = learnerSeat === 0 ? ([learner, opponent] as const) : ([opponent, learner] as const);
+      const seed = 1_300_000_019;
+      const direct = await runResidualMatch({
+        seed,
+        learnerSeat,
+        decks,
+        program: parseHeuristic(pilotCatalog.pilots[version]),
+        opponent: "heuristic",
+        opponentProgram: parseHeuristic(genericCatalog.generic),
+      });
+      const seats = decks.map((deck) => ({
+        deck,
+        canChooseMainAction: mainActionReady,
+        policyFactory(engine: GameEngine, seat: Seat) {
+          const options = defaultBotOptions({ engine, seat, deck });
+          expect(options.policy?.name).toBe(
+            seat === learnerSeat
+              ? "validated-pilot:Deterministic residual: sourceDp=0.25"
+              : "certified:Deterministic residual: sourceDp=0.2",
+          );
+          return options.policy!;
+        },
+      }));
+      const live = await runBotMatch({
+        seed,
+        seats: [seats[0]!, seats[1]!],
+        captureEvents: true,
+        verifyProjections: true,
+      });
+      expect(direct.valid).toBe(true);
+      expect(live.timedOut).toBe(false);
+      expect(live.errors).toEqual([]);
+      expect(live.rejections).toEqual([]);
+      expect(live.events).toEqual(direct.result.events);
+      expect(live.projectionChecks).toBe(direct.result.projectionChecks);
+      expect(live.seats.map((seat) => seat.inferenceFallbacks)).toEqual([
+        { timeout: 0, error: 0 },
+        { timeout: 0, error: 0 },
+      ]);
+    },
+  );
+
   it("preserves explicit policies, profiles, seeds, pacing and action limits", () => {
     const setup = setupEngine({});
     const explicit = { policy: createEvaluationPolicy({ seed: 17 }), minThinkMs: 8 };

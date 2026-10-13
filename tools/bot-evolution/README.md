@@ -152,7 +152,7 @@ still override startup, with validation before room admission:
 AEGIS_BOT_HEURISTIC="$PWD/apps/api/src/bot/evolution/programs/certified-balanced.json" pnpm dev
 ```
 
-The catalog is generic, with no deck-specific pilots. This result establishes
+This historical catalog is generic. Its result establishes
 aggregate strength on the frozen 24-deck distribution, not superiority for every
 deck, aggressive/defensive profiles, tournaments or high-budget MCTS. It does not
 authorize strict guide publication. The certificate describes its pinned historical
@@ -172,6 +172,29 @@ function. Desktop regressions verify actual startup, seeded policy selection,
 accepted main actions and exact catalog/evaluator event equality in both seats.
 The benchmark and ordinary default policy now seed decisions by match and seat.
 Human opponents and real-time presentation differ from the benchmark.
+
+### Validated Chronomon pilot
+
+`programs/certified-pilots.json` now selects `sourceDp=0.25` for the exact main
+and egg card multisets of `bt26-dgo-2026-08-28-7-chronomon@1`. Other decks retain
+the generic `0.2` policy. The global `0.25` proposal failed confirmation; its
+exploratory Chronomon result selected this separate, deck-specific hypothesis.
+
+A frozen screen used eight new opponents and 960 games. Confirmation used twelve
+different opponents, 1,440 fresh seed blocks, both seats, and 2,880 games per arm.
+The incumbent won 1,894 games (65.7639%); the pilot won 2,042 (70.9028%). The paired
+gain was 5.1389 percentage points, with an empirical Bernstein lower bound of
+1.6757 points at alpha 0.01. Only the confirmation games count toward acceptance;
+this consumes reservation 3 of the existing five-candidate family.
+
+[Chronomon strength evidence](../../apps/api/src/bot/evolution/chronomon-strength-evidence.json)
+pins the scope, engine, protocol and statistics.
+[The proof archive](evidence/chronomon-quarter-v1/proof.tgz) includes all 6,720 raw
+games, frozen inputs, independent audits, runner sources and resource evidence.
+Full-game tests compare the normal default policy with the evaluated policy in
+both seats. These results concern the fixed opponent distribution using the
+incumbent policy; they do not establish superiority against humans or all decks.
+No production deployment or strict guide publication is implied.
 
 ## Historical matchups and identities
 

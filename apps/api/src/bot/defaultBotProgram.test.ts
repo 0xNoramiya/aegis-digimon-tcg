@@ -19,13 +19,27 @@ describe("default pilot routing", () => {
       const selected = defaultBotProgram({ deck });
       expect(selected.specialized).toBe(true);
       expect(selected.program).toEqual(parseHeuristic(candidate));
-      expect(selected.program.rules.some((rule) => rule.weight !== 0 && rule.when?.sourceCardIds?.length)).toBe(true);
+      expect(selected.program).not.toEqual(defaultBotProgram({}).program);
       expect(
         defaultBotProgram({ deck: { mainDeck: [...deck.mainDeck].reverse(), eggDeck: [...deck.eggDeck].reverse() } }),
       ).toEqual(selected);
       expect(defaultBotProgram({ deck: { mainDeck: deck.mainDeck.slice(1), eggDeck: deck.eggDeck } }).specialized).toBe(
         false,
       );
+      expect(defaultBotProgram({ deck: { mainDeck: deck.mainDeck, eggDeck: deck.eggDeck.slice(1) } }).specialized).toBe(
+        false,
+      );
     });
   }
+
+  it("uses the validated Chronomon weight and keeps other presets on the generic policy", () => {
+    const version = "bt26-dgo-2026-08-28-7-chronomon@1";
+    const chronomon = ALL_FAMOUS_DECKS.find((deck) => deck.deckVersion === version)!;
+    const selected = defaultBotProgram({ deck: chronomon.decklist });
+    expect(selected.specialized).toBe(true);
+    expect(selected.program.rules.find((rule) => rule.feature === "sourceDp")?.weight).toBe(0.25);
+    for (const preset of ALL_FAMOUS_DECKS.filter((deck) => deck.deckVersion !== version)) {
+      expect(defaultBotProgram({ deck: preset.decklist })).toEqual(defaultBotProgram({}));
+    }
+  });
 });
