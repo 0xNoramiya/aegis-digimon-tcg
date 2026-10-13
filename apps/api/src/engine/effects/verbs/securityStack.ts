@@ -8,7 +8,7 @@ import type { PrimitivesContext } from "./context.js";
  */
 
 export function createSecurityStackVerbs(pc: PrimitivesContext) {
-  const { engine, continuous, effectSeatStack, player } = pc;
+  const { engine, continuous, currentHandAddProvenance, effectSeatStack, player } = pc;
 
   const shuffleSecurity = (seat: Seat): void => {
     // Shuffle a detached copy, never the ArraySchema itself: overwriting a slot drops the old
@@ -81,6 +81,9 @@ export function createSecurityStackVerbs(pc: PrimitivesContext) {
       // same generic removal event used by checks and effect-driven trash so watchers
       // such as BT4-097 react to every printed form of security removal (KB Q1250).
       await engine.fireSubTrigger?.("whenSecurityRemoved", { removedFromSecuritySeat: seat });
+      const addedToHand = { instanceIds: moved.map((card) => card.instanceId), byEffect: currentHandAddProvenance() };
+      await engine.fireSubTrigger?.("whenEffectAddsToOpponentHand", { effectAddedToHandSeat: seat, addedToHand });
+      await engine.fireSubTrigger?.("whenEffectAddsToHand", { effectAddedToHandSeat: seat, addedToHand });
     }
     return moved;
   };
