@@ -2007,6 +2007,10 @@ const interfaceMessages = {
   "redesign.shell.startup.reconnecting": "Menghubungkan kembali ke Aegis…",
   "redesign.shell.startup.reserved": "Pertandingan Anda masih dipesan. Halaman ini akan pulih secara otomatis.",
   "redesign.shell.startup.retry": "Coba sekarang",
+  "redesign.shell.crash.title": "Terjadi kesalahan",
+  "redesign.shell.crash.body":
+    "Layar ini berhenti berfungsi. Kami telah mengirim laporan kesalahan ke tim Aegis. Muat ulang halaman untuk melanjutkan.",
+  "redesign.shell.crash.reload": "Muat ulang",
   "redesign.shell.ranked.eyebrow": "Pertandingan peringkat",
   "redesign.home.login.eyebrow": "akun Aegis",
   "redesign.play.deckCounts": "{main} utama · {egg} telur",

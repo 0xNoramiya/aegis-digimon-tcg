@@ -1997,6 +1997,10 @@ const interfaceMessages = {
   "redesign.shell.startup.reconnecting": "Aegis に再接続しています…",
   "redesign.shell.startup.reserved": "あなたの試合はまだ予約されています。このページは自動的に復元されます。",
   "redesign.shell.startup.retry": "今すぐ試してください",
+  "redesign.shell.crash.title": "問題が発生しました",
+  "redesign.shell.crash.body":
+    "この画面が動作を停止しました。Aegis チームにエラーレポートを送信しました。続行するにはページを再読み込みしてください。",
+  "redesign.shell.crash.reload": "再読み込み",
   "redesign.shell.ranked.eyebrow": "ランクマッチ",
   "redesign.home.login.eyebrow": "イージスアカウント",
   "redesign.play.deckCounts": "{main} メイン · {egg} エッグ",

@@ -2055,6 +2055,10 @@ const interfaceMessages = {
   "redesign.shell.startup.reconnecting": "Verbindung zu Aegis wird wiederhergestellt…",
   "redesign.shell.startup.reserved": "Ihr Match ist noch reserviert. Diese Seite wird automatisch wiederhergestellt.",
   "redesign.shell.startup.retry": "Versuchen Sie es jetzt",
+  "redesign.shell.crash.title": "Etwas ist schiefgelaufen",
+  "redesign.shell.crash.body":
+    "Dieser Bildschirm funktioniert nicht mehr. Wir haben einen Fehlerbericht an das Aegis-Team gesendet. Lade die Seite neu, um fortzufahren.",
+  "redesign.shell.crash.reload": "Neu laden",
   "redesign.shell.ranked.eyebrow": "Ranglistenspiel",
   "redesign.home.login.eyebrow": "Aegis-Konto",
   "redesign.play.deckCounts": "{main} Haupt-{egg} Ei",

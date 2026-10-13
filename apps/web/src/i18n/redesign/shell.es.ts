@@ -23,5 +23,9 @@ export const shellEs: Record<keyof typeof shellEn, string> = {
   "redesign.shell.startup.reconnecting": "Reconectando con Aegis…",
   "redesign.shell.startup.reserved": "Tu partida sigue reservada. Esta página se recuperará sola.",
   "redesign.shell.startup.retry": "Intentar ahora",
+  "redesign.shell.crash.title": "Algo salió mal",
+  "redesign.shell.crash.body":
+    "Esta pantalla dejó de funcionar. Enviamos un informe de error al equipo de Aegis. Recarga la página para continuar.",
+  "redesign.shell.crash.reload": "Recargar",
   "redesign.shell.ranked.eyebrow": "Partida clasificatoria",
 };

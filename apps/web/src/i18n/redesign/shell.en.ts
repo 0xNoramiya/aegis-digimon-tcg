@@ -21,5 +21,9 @@ export const shellEn = {
   "redesign.shell.startup.reconnecting": "Reconnecting to Aegis…",
   "redesign.shell.startup.reserved": "Your match is still reserved. This page will recover automatically.",
   "redesign.shell.startup.retry": "Try now",
+  "redesign.shell.crash.title": "Something went wrong",
+  "redesign.shell.crash.body":
+    "This screen stopped working. We sent an error report to the Aegis team. Reload the page to continue.",
+  "redesign.shell.crash.reload": "Reload",
   "redesign.shell.ranked.eyebrow": "Ranked match",
 } as const;
