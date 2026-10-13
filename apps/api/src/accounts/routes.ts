@@ -62,6 +62,8 @@ import {
   type AuthSession,
   type Tournament,
 } from "./AccountStore.js";
+import { installRoadmapRoutes } from "#api/roadmap/installRoadmapRoutes";
+import { RoadmapStore } from "#api/roadmap/RoadmapStore";
 
 const SESSION_COOKIE = "aegis_session";
 const DISPLAY_NAME_RATE_LIMIT: TokenBucketOptions = { capacity: 10, refillMs: 3_000 };
@@ -115,6 +117,7 @@ export function installAccountRoutes(
   });
   // The signed-in player's inbox; feedback triage is its first producer. See src/notifications.
   installNotificationRoutes({ app, store: new NotificationStore(store), session: sessionFromRequest });
+  installRoadmapRoutes({ app, store: new RoadmapStore(store), session: sessionFromRequest });
   // Public decks, likes and copies. See src/community.
   installCommunityDeckRoutes({
     app,
