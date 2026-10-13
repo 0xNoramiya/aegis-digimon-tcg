@@ -104,6 +104,7 @@ const CLIENT_DROPPED_MESSAGE_LIMIT: TokenBucketOptions = { capacity: 400, refill
  */
 export const MATCH_INACTIVITY_LIMIT_MS = 15 * 60_000;
 export const DRAINING_MATCH_LIMIT_MS = 60 * 60_000;
+export const FINISHED_MATCH_LIMIT_MS = 10 * 60_000;
 const MATCH_LIMIT_CHECK_MS = 60_000;
 const WAITING_ROOM_TIMEOUT_SECONDS = positiveSeconds(process.env.AEGIS_WAITING_ROOM_TIMEOUT_SECONDS, 30 * 60);
 
@@ -362,6 +363,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private matchClock: MatchClock | undefined;
   private matchClockInterval: Delayed | undefined;
   private matchLimitInterval: Delayed | undefined;
+  private gameOverAt: number | undefined;
   private lastPlayerActionAt: number | undefined;
   private drainingSince: number | undefined;
   /** How many games this room's match runs to; only casual and private rooms play more than one. */
@@ -2174,14 +2176,19 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
    * result: nothing is recorded, and the tournament scheduler voids an unfinished Tournament Game.
    */
   private enforceMatchLimits(): void {
-    if (!this.matchStartRequested || this.state.gameOver) return;
+    if (!this.matchStartRequested) return;
     const now = Date.now();
-    this.lastPlayerActionAt ??= now;
     this.drainingSince = canCreateRoom() ? undefined : (this.drainingSince ?? now);
     if (this.drainingSince !== undefined && now - this.drainingSince >= DRAINING_MATCH_LIMIT_MS) {
       this.expireMatch("draining");
       return;
     }
+    if (this.state.gameOver) {
+      this.gameOverAt ??= now;
+      if (now - this.gameOverAt >= FINISHED_MATCH_LIMIT_MS) this.expireMatch("finished");
+      return;
+    }
+    this.lastPlayerActionAt ??= now;
     if (now - this.lastPlayerActionAt < MATCH_INACTIVITY_LIMIT_MS) return;
     const awaitedSeat = this.state.pendingDecision?.seat ?? this.state.turnSeat;
     const playerConnected = this.clients.some((client) => this.seatByClient.has(client.sessionId));
@@ -2193,7 +2200,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     this.expireMatch("inactive");
   }
 
-  private expireMatch(reason: "inactive" | "draining"): void {
+  private expireMatch(reason: "inactive" | "draining" | "finished"): void {
     log(`[MATCH_LIMIT] ${JSON.stringify({ roomId: this.roomId, outcome: "expired", reason })}`);
     this.matchLimitInterval?.clear();
     void this.disconnect(MATCH_EXPIRED_CLOSE_CODE).catch((error: unknown) =>

@@ -96,6 +96,14 @@ Replacing the sole gateway disconnects established WebSockets. Upgrade gateway r
 
 deploy status reports the active and draining slots with process status. deploy cleanup checks every draining slot and removes only those proven empty. deploy rollback reactivates the most recent draining slot while retaining the current owner for existing rooms.
 
+A draining slot empties because rooms close on their own (`apps/api/src/rooms/AegisRoom.ts`):
+
+| Limit                                     | Default                         | Result                                                                                          |
+| ----------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------- |
+| No player action during a match           | 15 minutes                      | The player the game waits on concedes; with nobody connected, the room closes without a result. |
+| Match finished, results screen still open | 10 minutes                      | The room closes with code `4408`. The result is already recorded.                               |
+| Slot draining                             | 60 minutes after draining began | Any match, finished or not, closes with code `4408`.                                            |
+
 The API and web bundles must remain protocol-compatible while active and draining slots overlap. A retained browser bundle checks that its replacement HTML is available before navigating, so a transient gateway error does not replace a working screen.
 
 ## Infrastructure boundary
