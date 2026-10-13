@@ -697,7 +697,6 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
       const costReduction = paidReduction(ctx, action) ?? action.costReduction;
       if (action.payCost === true && ctx.fx.canAffordEffectPlay !== undefined) {
         const affordability: { candidate: (typeof candidates)[number]; play: boolean; use: boolean }[] = [];
-        const reservedAssemblyMaterials: string[] = [];
         for (const candidate of candidates) {
           const definition = ctx.game.definitionOf({ cardId: candidate.cardId } as never);
           const hasOption = definition.kinds.includes(CardKind.Option);
@@ -718,9 +717,7 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
               costDelta: (costReduction ?? 0) + digiXrosReduction,
               controllerSeat: ctx.source.ownerSeat,
             }));
-          const assembly = basePlayAffordable
-            ? undefined
-            : availableEffectPlayAssembly(ctx, candidate, reservedAssemblyMaterials);
+          const assembly = basePlayAffordable ? undefined : availableEffectPlayAssembly(ctx, candidate);
           const play =
             basePlayAffordable ||
             (hasPermanent &&
@@ -729,9 +726,6 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
                 costDelta: (costReduction ?? 0) + assembly.reduction,
                 controllerSeat: ctx.source.ownerSeat,
               })));
-          if (play && !basePlayAffordable && assembly !== undefined) {
-            reservedAssemblyMaterials.push(...assembly.materialInstanceIds);
-          }
           const use =
             canUseByColor &&
             (await ctx.fx.canAffordEffectPlay!(candidate.instanceId, {

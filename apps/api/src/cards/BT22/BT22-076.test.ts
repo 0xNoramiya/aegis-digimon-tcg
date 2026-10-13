@@ -70,6 +70,23 @@ describe("BT22-076 ShinMonzaemon", () => {
     expect(s.state.memory).toBe(7);
   });
 
+  it("charges the full cost when the Ver.1 Digimon digivolves in the breeding area", async () => {
+    const s = setupEngine({
+      0: { breeding: { card: "BT22-038", as: "monzaemon" }, hand: [{ card: "BT22-076", as: "shin" }] },
+    });
+    s.state.memory = 10;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("monzaemon").permanentId,
+        instanceId: s.inst("shin").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("monzaemon").topCard?.cardId === "BT22-076");
+    expect(s.state.memory).toBe(5);
+  });
+
   it("does not multiply the incoming card's intrinsic reduction for extra copies in hand", async () => {
     const s = setupEngine({
       0: {

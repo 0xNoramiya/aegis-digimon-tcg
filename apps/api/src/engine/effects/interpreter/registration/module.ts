@@ -43,6 +43,7 @@ import {
 import {
   collectWouldBePlayedSelfReducers,
   collectWouldDigivolveSelfReducers,
+  isIntrinsicWouldBePlayedSelfReducerMarker,
   isIntrinsicWouldDigivolveSelfReducerMarker,
 } from "./reducers.js";
 import { normalizeCompiledCard } from "./normalize.js";
@@ -50,6 +51,7 @@ import { withPrintedClauses } from "./printedClauses.js";
 import { CardKind, compiledEffects, EffectTiming, getCardDefinition, isOption } from "@aegis/shared";
 import type { Action, CardEffect, CompiledCard } from "@aegis/shared";
 import { permanentMatchesFilter } from "../matching/permanent.js";
+import { scaleFactor } from "../scaling.js";
 import { candidatePermanents } from "../targeting/permanents.js";
 
 function containsPlayCostReduction(actions: Action[]): boolean {
@@ -61,21 +63,54 @@ function containsPlayCostReduction(actions: Action[]): boolean {
   });
 }
 
+type ReplacementAction = Extract<Action, { kind: "Replacement" }>;
+
+function nestedPlayCostReductions(action: Action): ReplacementAction[] {
+  if (action.kind !== "Replacement" || action.event !== "wouldBePlayed" || action.mode !== undefined) return [];
+  return (action.actions ?? []).filter(
+    (nested): nested is ReplacementAction =>
+      nested.kind === "Replacement" && nested.event === "wouldBePlayed" && nested.mode === "reduceCost",
+  );
+}
+
+function declaresPlayCostReduction(action: Action): boolean {
+  return (
+    (action.kind === "Replacement" && action.event === "wouldBePlayed" && action.mode === "reduceCost") ||
+    nestedPlayCostReductions(action).length > 0
+  );
+}
+
+function potentialNestedPlayCostReduction(
+  nested: ReplacementAction[],
+  ctx: Parameters<NonNullable<BuilderOptions["when"]>>[0],
+): number {
+  if (nested.some((reduction) => reduction.cost !== undefined || typeof reduction.amount !== "number")) return 0;
+  return nested.reduce((total, reduction) => {
+    if (typeof reduction.amount !== "number") return total;
+    if (reduction.condition !== undefined && !evaluateCondition(ctx, reduction.condition)) return total;
+    const scale = reduction.scaling === undefined ? 1 : scaleFactor(ctx, reduction.scaling);
+    return total + Math.max(0, reduction.amount * scale);
+  }, 0);
+}
+
 function potentialPlayCostReduction(
   actions: Action[],
   ctx: Parameters<NonNullable<BuilderOptions["when"]>>[0],
   target?: import("@aegis/shared").Permanent,
 ): number {
   return actions.reduce((total, action) => {
-    if (action.kind !== "Replacement" || action.event !== "wouldBePlayed" || action.mode !== "reduceCost") return total;
+    if (action.kind !== "Replacement" || !declaresPlayCostReduction(action)) return total;
     if (
       target === undefined ||
       action.sourceFilter === undefined ||
+      action.cost !== undefined ||
       !permanentMatchesFilter(ctx, target, action.sourceFilter, ctx.source)
     )
       return total;
+    if (action.mode === undefined)
+      return total + potentialNestedPlayCostReduction(nestedPlayCostReductions(action), ctx);
     const choices = action.amountChoices;
-    if (choices === undefined || action.cost !== undefined) return total;
+    if (choices === undefined) return total;
     const eligible = choices.filter(
       (choice) => choice.condition === undefined || evaluateCondition(ctx, choice.condition),
     );
@@ -200,6 +235,7 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
     // card is still in hand; retaining its marker as a field Static replacement would discount a
     // later evolution after the card has entered play (BT17-048).
     if (isIntrinsicWouldDigivolveSelfReducerMarker(cardId, effect)) continue;
+    if (isIntrinsicWouldBePlayedSelfReducerMarker(cardId, effect)) continue;
     const isOptionPlayBody = cardIsOption && isPlainMain(effect) && !seenOptionPlayMain;
     if (cardIsOption && isPlainMain(effect)) seenOptionPlayMain = true;
     const timings = timingsForTrigger(effect, isOptionPlayBody);
@@ -223,9 +259,7 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
                 candidatePermanents(ctx, sacrifice).length > 0,
             }),
         ...(containsPlayCostReduction(effect.actions) ? { isPlayCostReduction: true } : {}),
-        ...(effect.actions.some(
-          (action) => action.kind === "Replacement" && action.event === "wouldBePlayed" && action.mode === "reduceCost",
-        )
+        ...(effect.actions.some(declaresPlayCostReduction)
           ? {
               potentialPlayCostReduction: (
                 ctx: Parameters<NonNullable<BuilderOptions["when"]>>[0],

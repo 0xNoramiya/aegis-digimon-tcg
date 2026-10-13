@@ -59,12 +59,7 @@ export function lookupDefinition(cardId: string): CardDefinition | undefined {
  */
 export function intrinsicDigivolutionCostReduction(evolving: CardDefinition | undefined, base: Permanent): number {
   if (!evolving) return 0;
-  return intrinsicDigivolutionCostReductionFor(
-    evolving.cardId,
-    base.stack.map((card) => card.cardId),
-    base.topCard?.cardId,
-    base.stack.filter((card) => !card.faceUp).length,
-  );
+  return intrinsicDigivolutionCostReductionFor(evolving.cardId, base);
 }
 
 /**

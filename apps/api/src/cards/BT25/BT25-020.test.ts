@@ -9,9 +9,9 @@ import "./BT25-020.js";
 import "../index.js";
 
 describe("BT25-020 Marsmon", () => {
-  it("installs the hand-resident 13000 DP play-cost reduction", () => {
+  it("keeps its own play-cost reduction out of the field effects", () => {
     const module = getEffectModule("BT25-020");
-    expect(module?.effectsForTiming(EffectTiming.None, { cardId: "BT25-020" } as never)).toHaveLength(2);
+    expect(module?.effectsForTiming(EffectTiming.None, { cardId: "BT25-020" } as never)).toHaveLength(1);
   });
 
   it("installs a once-per-turn battle-won watcher for own TS Digimon", () => {
@@ -30,12 +30,12 @@ describe("BT25-020 Marsmon", () => {
       }),
     } as never;
     const effects = module?.effectsForTiming(EffectTiming.None, source) ?? [];
-    expect(effects).toHaveLength(2);
+    expect(effects).toHaveLength(1);
     const ctx = {
       source,
       fx: { subscribeSubTrigger },
     } as never;
-    return effects[1]!.resolve(ctx).then(() => {
+    return effects[0]!.resolve(ctx).then(() => {
       expect(subscribeSubTrigger).toHaveBeenCalledWith(
         expect.objectContaining({ event: "whenBattleWon", once: false }),
       );

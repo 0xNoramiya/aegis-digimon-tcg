@@ -106,6 +106,8 @@ import { useTurnAttentionSound } from "./useTurnAttentionSound";
 import { usePresentationAudio, useReadoutAudio } from "./usePresentationAudio";
 import { audioBoardFromPresentedSeats } from "./match/present/presentationAudio";
 import { areActionConfirmationsEnabled } from "../design/actionConfirmation";
+import { isKeepAwakeEnabled } from "../design/keepAwake";
+import { useScreenWakeLock } from "../design/useScreenWakeLock";
 import { useArenaBoardLook } from "./arenaLook";
 import "./game.css";
 import "./arena.css";
@@ -598,6 +600,7 @@ function GameScreenSession({
         })
       : undefined;
   usePresentationAudio(cues, seats ? audioBoardFromPresentedSeats(seats, viewerSeat) : undefined);
+  useScreenWakeLock(isKeepAwakeEnabled() && !!state && !state.gameOver);
   useTurnAttentionSound(!spectating && !!state && !state.gameOver && state.turnSeat === viewerSeat);
   const viewerTimerRunning =
     !spectating && state?.matchTimer === true && !state.gameOver && state.timerActiveSeat === viewerSeat;

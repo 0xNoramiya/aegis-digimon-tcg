@@ -121,7 +121,7 @@ export function takeLeaveReplacementPending(engine: GameEngine): CollectedEffect
 }
 
 export async function flushDeferredSecurityRemovalTriggers(engine: GameEngine): Promise<void> {
-  if (engine.flushingDeferredSecurityRemovalTriggers) return;
+  if (engine.flushingDeferredSecurityRemovalTriggers || engine.optionMainDepth > 0) return;
   engine.flushingDeferredSecurityRemovalTriggers = true;
   try {
     while (engine.deferredSecurityRemovalTriggers.length > 0) {

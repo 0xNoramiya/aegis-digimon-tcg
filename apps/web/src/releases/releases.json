@@ -1,5 +1,26 @@
 [
   {
+    "version": "1.25.4-beta",
+    "releasedAt": "2026-10-12",
+    "summaryKey": "releases.1.25.4-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.25.4-beta.feature.wakeLock"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.25.4-beta.fix.connection"
+      },
+      {
+        "textKey": "releases.1.25.4-beta.fix.costs"
+      },
+      {
+        "textKey": "releases.1.25.4-beta.fix.timing"
+      }
+    ]
+  },
+  {
     "version": "1.25.3-beta",
     "releasedAt": "2026-10-12",
     "summaryKey": "releases.1.25.3-beta.summary",

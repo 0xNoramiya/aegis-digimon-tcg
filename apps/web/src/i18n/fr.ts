@@ -798,6 +798,9 @@ const interfaceMessages = {
   "settings.textSizeDefault": "Par défaut",
   "settings.textSizeLarge": "Grand",
   "settings.textSizeLarger": "Très grand",
+  "settings.keepAwake": "Garder l'écran allumé",
+  "settings.keepAwakeDesc":
+    "Garder l'écran allumé tant qu'un combat est ouvert, au lieu de laisser l'appareil s'endormir entre les tours",
   "settings.actionConfirmations": "Confirmer les actions",
   "settings.actionConfirmationsDesc":
     "Renseignez-vous avant de jouer, de digivolution ou d'utiliser une digivolution ADN facultative",

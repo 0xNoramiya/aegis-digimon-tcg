@@ -49,7 +49,7 @@ interface FakeRoom {
   emitUsedDeck: (deck: UsedDeck) => void;
 }
 
-function fakeRoom(roomId: string): FakeRoom {
+function fakeRoom(roomId: string, { answersPings = true }: { answersPings?: boolean } = {}): FakeRoom {
   let onState: ((state: GameState) => void) | undefined;
   let onLeave: ((code: number) => void) | undefined;
   const messages = new Map<string, (message: DecisionRequest | SequencedServerEvent | UsedDeck) => void>();
@@ -57,8 +57,11 @@ function fakeRoom(roomId: string): FakeRoom {
     roomId,
     sessionId: `${roomId}-session`,
     reconnectionToken: `${roomId}:token`,
-    connection: { isOpen: true },
+    connection: { isOpen: true, close: vi.fn<(code: number) => void>((code) => onLeave?.(code)) },
     reconnection: { enabled: true },
+    ping: (answer: (ms: number) => void) => {
+      if (answersPings) answer(20);
+    },
     send: vi.fn(),
     leave: vi.fn(async () => 1000),
     onStateChange: (handler: (state: GameState) => void) => {
@@ -223,6 +226,43 @@ describe("useRoom reconnection token persistence", () => {
       vi.advanceTimersByTime(4 * 60_000);
       expect(loadReconnectSession()).toMatchObject({ roomId: "long-match" });
       expect(Date.now() - loadReconnectSession()!.savedAt).toBeLessThanOrEqual(5_000);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("resumes the seat when the socket goes silent without ever closing", async () => {
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval", "Date"], shouldAdvanceTime: true });
+    try {
+      const silent = fakeRoom("silent-match", { answersPings: false });
+      const resumed = fakeRoom("silent-match");
+      joinOrCreate.mockResolvedValue(silent.room);
+      reconnect.mockResolvedValue(resumed.room);
+      const { result } = renderHook(() => useRoom(OPTIONS));
+      await waitFor(() => expect(result.current.status).toBe("connected"));
+
+      act(() => vi.advanceTimersByTime(20_000));
+
+      await waitFor(() => expect(result.current.room).toBe(resumed.room));
+      expect(reconnect).toHaveBeenCalledExactlyOnceWith("silent-match:token", "legacy");
+      expect(result.current.status).toBe("connected");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps a connection that answers its liveness probes", async () => {
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval", "Date"], shouldAdvanceTime: true });
+    try {
+      const joined = fakeRoom("live-match");
+      joinOrCreate.mockResolvedValue(joined.room);
+      const { result } = renderHook(() => useRoom(OPTIONS));
+      await waitFor(() => expect(result.current.status).toBe("connected"));
+
+      act(() => vi.advanceTimersByTime(5 * 60_000));
+
+      expect(reconnect).not.toHaveBeenCalled();
+      expect(result.current.room).toBe(joined.room);
     } finally {
       vi.useRealTimers();
     }

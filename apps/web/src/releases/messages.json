@@ -1,4 +1,34 @@
 {
+  "releases.1.25.4-beta.summary": {
+    "en": "The screen stays awake during a match, dropped connections resume your seat, and several card cost and timing fixes.",
+    "pt-BR": "A tela fica ligada durante a partida, conexões perdidas retomam seu lugar, e várias correções de custo e momento de cartas.",
+    "es": "La pantalla sigue encendida durante la partida, las conexiones perdidas recuperan tu asiento, y varias correcciones de coste y momento de cartas.",
+    "it": "Lo schermo resta acceso durante la partita, le connessioni perse riprendono il tuo posto e diverse correzioni di costo e tempistica delle carte."
+  },
+  "releases.1.25.4-beta.feature.wakeLock": {
+    "en": "The screen no longer turns off while a match is open. Turn this off with “Keep the screen awake” in the gameplay settings.",
+    "pt-BR": "A tela não desliga mais enquanto uma partida está aberta. Desative com “Manter a tela ligada” nas configurações de jogo.",
+    "es": "La pantalla ya no se apaga mientras hay una partida abierta. Desactívalo con “Mantener la pantalla encendida” en los ajustes de juego.",
+    "it": "Lo schermo non si spegne più mentre una partita è aperta. Disattivalo con “Mantieni lo schermo acceso” nelle impostazioni di gioco."
+  },
+  "releases.1.25.4-beta.fix.connection": {
+    "en": "A phone tab that goes silent now reconnects and resumes your seat, instead of showing a frozen board and losing by forfeit. A fast double tap on End breeding no longer ends your turn.",
+    "pt-BR": "Uma aba de celular que fica sem resposta agora reconecta e retoma seu lugar, em vez de mostrar um tabuleiro congelado e perder por W.O. Um toque duplo rápido em Encerrar criação não encerra mais seu turno.",
+    "es": "Una pestaña del móvil que deja de responder ahora se reconecta y recupera tu asiento, en lugar de mostrar un tablero congelado y perder por abandono. Un doble toque rápido en Terminar crianza ya no termina tu turno.",
+    "it": "Una scheda del telefono che smette di rispondere ora si riconnette e riprende il tuo posto, invece di mostrare un campo bloccato e perdere a tavolino. Un doppio tocco rapido su Termina allevamento non termina più il tuo turno."
+  },
+  "releases.1.25.4-beta.fix.costs": {
+    "en": "Cost reductions are fixed: Zanbamon’s digivolve cut applies, breeding Digimon no longer get digivolve cuts from hand, a card’s own play-cost cut no longer discounts later plays, and Royal Knights and every Assembly option are offered when affordable.",
+    "pt-BR": "Reduções de custo corrigidas: o corte de digievolução do Zanbamon funciona, Digimon na área de criação não recebem mais cortes de digievolução da mão, o corte de custo de jogar de uma carta não desconta mais jogadas seguintes, e Royal Knights e todas as opções de Assembly são oferecidos quando pagáveis.",
+    "es": "Reducciones de coste corregidas: el recorte de digievolución de Zanbamon se aplica, los Digimon en el área de crianza ya no reciben recortes de digievolución desde la mano, el recorte de coste de juego de una carta ya no descuenta jugadas posteriores, y Royal Knights y todas las opciones de Assembly se ofrecen cuando se pueden pagar.",
+    "it": "Riduzioni di costo corrette: lo sconto di digievoluzione di Zanbamon si applica, i Digimon nell’area di allevamento non ricevono più sconti di digievoluzione dalla mano, lo sconto sul costo di gioco di una carta non riduce più le giocate successive, e i Royal Knights e tutte le opzioni Assembly vengono offerti quando pagabili."
+  },
+  "releases.1.25.4-beta.fix.timing": {
+    "en": "[On Play] from a Digimon played by a [Security] effect waits until that effect and the rule check finish, and “when security is removed” effects wait until a used Option is trashed or Arts Digivolved.",
+    "pt-BR": "[On Play] de um Digimon jogado por um efeito [Security] espera esse efeito e a verificação de regras terminarem, e efeitos de “when security is removed” esperam até a Option usada ir para o lixo ou fazer Arts Digivolve.",
+    "es": "[On Play] de un Digimon jugado por un efecto [Security] espera a que terminen ese efecto y la comprobación de reglas, y los efectos de “when security is removed” esperan hasta que la Option usada vaya a la papelera o haga Arts Digivolve.",
+    "it": "[On Play] di un Digimon giocato da un effetto [Security] attende la fine di quell’effetto e del controllo delle regole, e gli effetti “when security is removed” attendono che l’Option usata vada negli scarti o faccia Arts Digivolve."
+  },
   "releases.1.25.3-beta.summary": {
     "en": "Deletion keywords follow the order you choose, and timed-out combat prompts close only once.",
     "pt-BR": "Palavras-chave de deleção seguem a ordem que você escolher, e avisos de combate expirados fecham apenas uma vez.",
