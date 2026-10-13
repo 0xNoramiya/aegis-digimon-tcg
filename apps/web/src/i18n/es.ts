@@ -1,6 +1,5 @@
 import { replayVideoEs } from "./replayVideo";
 import { profileReplayEs } from "./profileReplays";
-import { roadmapEs } from "@/i18n/roadmap";
 import { replayEs } from "./replays";
 /* Latin American Spanish strings. Typed against the English source, so a new key
    there fails typecheck here until it is translated. Game terms that are printed
@@ -39,7 +38,53 @@ export const es: Record<keyof typeof en, string> = {
   "rollback.restoring": "Restaurando partida…",
 
   ...profileReplayEs,
-  ...roadmapEs,
+  "roadmap.hub.label": "Secciones de la comunidad",
+  "roadmap.hub.decks": "Mazos",
+  "roadmap.hub.roadmap": "Hoja de ruta",
+  "roadmap.title": "Hoja de ruta de la comunidad",
+  "roadmap.subtitle": "Lo que el equipo planea y construye, guiado por lo que piden los jugadores.",
+  "roadmap.note":
+    "Los elementos vienen de los comentarios de los jugadores y de Discord, revisados por el equipo. No son promesas ni fechas de lanzamiento. Apoya los que más quieras; cada columna muestra los {count} más apoyados.",
+  "roadmap.suggest": "Sugerir una idea",
+  "roadmap.status.planned": "Planificado",
+  "roadmap.status.in_progress": "En desarrollo",
+  "roadmap.status.under_review": "En revisión",
+  "roadmap.status.completed": "Completado",
+  "roadmap.empty": "Todavía no hay nada aquí.",
+  "roadmap.loadError": "No se pudo cargar la hoja de ruta.",
+  "roadmap.retry": "Reintentar",
+  "roadmap.missing": "Este elemento de la hoja de ruta no existe.",
+  "roadmap.back": "Volver a la hoja de ruta",
+  "roadmap.updated": "Actualizado {when}",
+  "roadmap.supportItem": "Apoyar {title} ({count} apoyos)",
+  "roadmap.discuss": "Comentar en Discord",
+  "roadmap.admin.manage": "Gestionar este elemento",
+  "roadmap.admin.publishTitle": "Publicar en la hoja de ruta",
+  "roadmap.admin.privacyHint":
+    "El reporte sigue siendo privado. Solo el título y la descripción de abajo se vuelven públicos, atribuidos al equipo de Aegis. Quita nombres, detalles de partidas y cualquier cosa que el jugador no quiera compartir.",
+  "roadmap.admin.itemTitle": "Título público",
+  "roadmap.admin.description": "Descripción pública",
+  "roadmap.admin.column": "Columna",
+  "roadmap.admin.discussionUrl": "Hilo de Discord (opcional)",
+  "roadmap.admin.discussionHint":
+    "Un enlace de discord.com o discord.gg donde los jugadores puedan comentar este elemento.",
+  "roadmap.admin.publish": "Publicar",
+  "roadmap.admin.save": "Guardar cambios",
+  "roadmap.admin.remove": "Quitar de la hoja de ruta",
+  "roadmap.admin.confirmRemove": "Quitarlo junto con sus apoyos",
+  "roadmap.admin.saved": "Guardado",
+  "roadmap.admin.saveFailed": "No se pudo guardar",
+  "roadmap.admin.loadFailed": "No se pudo comprobar si este reporte está en la hoja de ruta.",
+  "roadmap.admin.alreadyOnRoadmap": "Publicado en la hoja de ruta como “{title}”.",
+  "roadmap.admin.openItem": "Abrir el elemento",
+  "roadmap.admin.failure.invalid_status": "Elige una columna.",
+  "roadmap.admin.failure.empty_title": "Escribe un título.",
+  "roadmap.admin.failure.title_too_long": "El título es demasiado largo.",
+  "roadmap.admin.failure.empty_description": "Escribe una descripción.",
+  "roadmap.admin.failure.description_too_long": "La descripción es demasiado larga.",
+  "roadmap.admin.failure.invalid_discussion_url": "Usa un enlace https de discord.com o discord.gg.",
+  "roadmap.admin.failure.already_published": "Este reporte ya está en la hoja de ruta.",
+  "roadmap.admin.failure.source_not_found": "Este reporte ya no existe.",
   ...replayEs,
   ...replayVideoEs,
   "feedback.title": "Comentarios de los jugadores",

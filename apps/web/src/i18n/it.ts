@@ -1,6 +1,5 @@
 import { replayVideoIt } from "./replayVideo";
 import { profileReplayIt } from "./profileReplays";
-import { roadmapIt } from "@/i18n/roadmap";
 import { replayIt } from "./replays";
 import releaseMessages from "../releases/messages.json";
 import { en } from "./en";
@@ -28,7 +27,53 @@ const interfaceMessages = {
   "rollback.restoring": "Ripristino della partita…",
 
   ...profileReplayIt,
-  ...roadmapIt,
+  "roadmap.hub.label": "Sezioni della community",
+  "roadmap.hub.decks": "Mazzi",
+  "roadmap.hub.roadmap": "Roadmap",
+  "roadmap.title": "Roadmap della community",
+  "roadmap.subtitle": "Cosa il team sta pianificando e sviluppando, in base a ciò che chiedono i giocatori.",
+  "roadmap.note":
+    "Gli elementi arrivano dai feedback dei giocatori e da Discord, revisionati dal team. Non sono promesse né date di uscita. Supporta quelli che desideri di più; ogni colonna mostra i {count} più supportati.",
+  "roadmap.suggest": "Suggerisci un'idea",
+  "roadmap.status.planned": "Pianificato",
+  "roadmap.status.in_progress": "In sviluppo",
+  "roadmap.status.under_review": "In valutazione",
+  "roadmap.status.completed": "Completato",
+  "roadmap.empty": "Ancora niente qui.",
+  "roadmap.loadError": "Impossibile caricare la roadmap.",
+  "roadmap.retry": "Riprova",
+  "roadmap.missing": "Questo elemento della roadmap non esiste.",
+  "roadmap.back": "Torna alla roadmap",
+  "roadmap.updated": "Aggiornato {when}",
+  "roadmap.supportItem": "Supporta {title} ({count} sostenitori)",
+  "roadmap.discuss": "Discuti su Discord",
+  "roadmap.admin.manage": "Gestisci questo elemento",
+  "roadmap.admin.publishTitle": "Pubblica nella roadmap",
+  "roadmap.admin.privacyHint":
+    "La segnalazione resta privata. Solo il titolo e la descrizione qui sotto diventano pubblici, attribuiti al team Aegis. Rimuovi nomi, dettagli delle partite e tutto ciò che il giocatore non vorrebbe condividere.",
+  "roadmap.admin.itemTitle": "Titolo pubblico",
+  "roadmap.admin.description": "Descrizione pubblica",
+  "roadmap.admin.column": "Colonna",
+  "roadmap.admin.discussionUrl": "Thread Discord (facoltativo)",
+  "roadmap.admin.discussionHint":
+    "Un link discord.com o discord.gg dove i giocatori possono discutere questo elemento.",
+  "roadmap.admin.publish": "Pubblica",
+  "roadmap.admin.save": "Salva modifiche",
+  "roadmap.admin.remove": "Rimuovi dalla roadmap",
+  "roadmap.admin.confirmRemove": "Rimuovilo insieme ai supporti",
+  "roadmap.admin.saved": "Salvato",
+  "roadmap.admin.saveFailed": "Impossibile salvare",
+  "roadmap.admin.loadFailed": "Impossibile verificare se questa segnalazione è nella roadmap.",
+  "roadmap.admin.alreadyOnRoadmap": "Pubblicato nella roadmap come “{title}”.",
+  "roadmap.admin.openItem": "Apri l'elemento della roadmap",
+  "roadmap.admin.failure.invalid_status": "Scegli una colonna.",
+  "roadmap.admin.failure.empty_title": "Inserisci un titolo.",
+  "roadmap.admin.failure.title_too_long": "Il titolo è troppo lungo.",
+  "roadmap.admin.failure.empty_description": "Inserisci una descrizione.",
+  "roadmap.admin.failure.description_too_long": "La descrizione è troppo lunga.",
+  "roadmap.admin.failure.invalid_discussion_url": "Usa un link https di discord.com o discord.gg.",
+  "roadmap.admin.failure.already_published": "Questa segnalazione è già nella roadmap.",
+  "roadmap.admin.failure.source_not_found": "Questa segnalazione non esiste più.",
   ...replayIt,
   ...replayVideoIt,
   "feedback.title": "Feedback dei giocatori",
