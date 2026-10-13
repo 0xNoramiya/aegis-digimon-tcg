@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { allReleases, currentRelease, displayVersion, issueUrl, parseCatalog } from "@/releases/catalog";
 import { LOCALES } from "@/i18n/locales";
-import { translator } from "@/i18n/translator";
-import type { TranslationKey } from "@/i18n/translationTypes";
 import messages from "@/releases/messages.json";
+import { translateReleaseMessage } from "@/releases/translateReleaseMessage";
 
 describe("release catalog", () => {
   it("exposes the latest beta as the current release", () => {
@@ -12,8 +11,7 @@ describe("release catalog", () => {
     expect(allReleases()).toHaveLength(62);
   });
 
-  it.each(LOCALES)("resolves every release message through the %s translator", (locale) => {
-    const t = translator(locale);
+  it.each(LOCALES)("resolves every release message in %s", (locale) => {
     for (const release of allReleases()) {
       const keys = [
         release.summaryKey,
@@ -23,13 +21,13 @@ describe("release catalog", () => {
       for (const key of keys) {
         const message: Record<string, string> = messages[key as keyof typeof messages];
         // Italian release notes start at v1.19.0; older ones keep their English text.
-        expect(t(key as TranslationKey)).toBe(message[locale] ?? message.en);
+        expect(translateReleaseMessage({ key, locale })).toBe(message[locale] ?? message.en);
       }
     }
   });
 
   it("translates the v1.19.0 notes into Italian", () => {
-    expect(translator("it")("releases.1.19.0-beta.feature.hatch" as TranslationKey)).toBe(
+    expect(translateReleaseMessage({ key: "releases.1.19.0-beta.feature.hatch", locale: "it" })).toBe(
       messages["releases.1.19.0-beta.feature.hatch"].it,
     );
   });

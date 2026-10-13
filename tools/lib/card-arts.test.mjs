@@ -1,6 +1,41 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { sourceCardArts, sourceJapaneseArts } from "./card-arts.mjs";
+import { readFileSync } from "node:fs";
+import { decodeCardArts, encodeCardArts, serializeCardArts, sourceCardArts, sourceJapaneseArts } from "./card-arts.mjs";
+
+test("serializes the art index exactly as the committed formatter writes it", () => {
+  const committed = readFileSync(new URL("../../packages/shared/src/cards/data/arts.json", import.meta.url), "utf8");
+  assert.equal(serializeCardArts(JSON.parse(committed)), committed);
+});
+
+test("encodes arts as card suffixes and shared labels, keeping existing label positions", () => {
+  const arts = {
+    "BT1-010": [
+      { artId: "BT1-010_P1", imageId: "BT1-010_P1", label: "Promotion" },
+      { artId: "BT1-010-J", imageId: "BT1-010-j", label: "Japanese printing" },
+    ],
+    "BT1-009": [{ artId: "BT1-009_P1", imageId: "BT1-009_P1", label: "Promotion" }],
+  };
+  const encoded = encodeCardArts(arts, ["Japanese printing", "Retired label"]);
+  assert.deepEqual(encoded, {
+    labels: ["Japanese printing", "Promotion"],
+    cards: {
+      "BT1-009": [["_P1", 1]],
+      "BT1-010": [
+        ["_P1", 1],
+        ["-J", 0, "BT1-010-j"],
+      ],
+    },
+  });
+  assert.deepEqual(decodeCardArts(encoded), arts);
+});
+
+test("rejects an art that does not belong to its card", () => {
+  assert.throws(
+    () => encodeCardArts({ "BT1-010": [{ artId: "BT1-011_P1", imageId: "BT1-011_P1", label: "Promotion" }] }),
+    /does not belong/,
+  );
+});
 
 test("imports only declared printings for the canonical card, deduplicated and sorted", () => {
   assert.deepEqual(
