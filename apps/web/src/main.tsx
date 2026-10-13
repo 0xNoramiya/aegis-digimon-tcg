@@ -3,8 +3,6 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { synchronizeDeploymentRevision, usesSlotDeploymentRouter } from "./net/deployment";
 import { translator } from "./i18n";
-import { loadCardData } from "@/cardData/loadCardData";
-import { useCardDataReady } from "@/cardData/useCardDataReady";
 import { loadFamousDecks } from "@/game/loadFamousDecks";
 import { loadDictionary } from "@/i18n/loadDictionary";
 import { loadLocale } from "@/i18n/loadLocale";
@@ -32,7 +30,6 @@ export function Startup() {
       }),
   );
   const [waitingForNetwork, setWaitingForNetwork] = useState(false);
-  const cardDataReady = useCardDataReady();
 
   useEffect(() => {
     if (ready) return;
@@ -57,17 +54,7 @@ export function Startup() {
     };
   }, [attempt, ready]);
 
-  if (ready && cardDataReady) return <App />;
-  if (ready) {
-    return (
-      <main className="aegis-startup" role="status" aria-busy="true">
-        <span className="aegis-screen-fallback__mark" aria-hidden="true">
-          <span className="aegis-loading-mark" />
-          <AegisEmblem size={36} />
-        </span>
-      </main>
-    );
-  }
+  if (ready) return <App />;
   // Runs before <App> mounts its I18nProvider, so it reads the locale directly.
   const t = translator(loadLocale());
   return (
@@ -95,7 +82,6 @@ applyDarkMode();
 applyInterfaceTheme();
 preventIosFocusZoom();
 installTranslationCompatibility(container);
-loadCardData().catch(() => undefined);
 loadFamousDecks().catch(() => undefined);
 void loadDictionary(loadLocale())
   .catch(() => undefined)

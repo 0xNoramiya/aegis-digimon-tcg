@@ -36,14 +36,6 @@ One game event produces one pool of triggers. A single loop resolves the pool:
 
 `docs/ARCHITECTURE.md` explains the SubTrigger consumption identity and the multi-process (Redis) setup.
 
-### Web startup loading
-
-The production web build keeps large data out of the entry chunk:
-
-- **Card data.** `apps/web/dev/lazyCardData.ts` swaps the shared `cards/data/index` module for `src/cardData/cardDataStore.ts` in `vite build` only. `main.tsx` renders the app after `loadCardData()` fills the store. The entry preloads the `cards-data` chunk, so it still downloads in parallel. Dev, Vitest and the API keep the static import.
-- **Rule.** A module that the entry chunk evaluates must not read card data at load time (top-level `allCards()`, `getCardDefinition()` or deck catalogs). Read it inside functions, or keep the module behind a lazy import. Only the production bundle would break, so check a new startup module with a production build.
-- **Other lazy data.** Locale dictionaries (`loadDictionary`), the famous-deck catalog (`loadFamousDecks`, which waits for card data), effect data and release notes load on demand.
-
 ### Persistence and processes
 
 - Migrations in `apps/api/src/db/migrations` are sequential and run at startup.
