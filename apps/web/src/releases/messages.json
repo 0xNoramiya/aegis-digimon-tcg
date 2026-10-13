@@ -1,9 +1,27 @@
 {
   "releases.1.25.6-beta.summary": {
-    "en": "Email sign-in links work again, a quick human check blocks automated requests, and sign-in errors are clear.",
-    "pt-BR": "Os links de login por e-mail voltaram a funcionar, uma verificação rápida bloqueia pedidos automáticos, e os erros de login ficaram claros.",
-    "es": "Los enlaces de inicio de sesión por correo vuelven a funcionar, una verificación rápida bloquea solicitudes automáticas, y los errores de inicio de sesión son claros.",
-    "it": "I link di accesso via email funzionano di nuovo, un rapido controllo blocca le richieste automatiche e gli errori di accesso sono chiari."
+    "en": "A community roadmap, simpler feedback, a playtest group, and email sign-in links that work again.",
+    "pt-BR": "Um roadmap da comunidade, feedback mais simples, um grupo de playtest, e links de login por e-mail que voltaram a funcionar.",
+    "es": "Una hoja de ruta de la comunidad, comentarios más simples, un grupo de playtest, y enlaces de inicio de sesión por correo que vuelven a funcionar.",
+    "it": "Una roadmap della community, feedback più semplice, un gruppo di playtest e link di accesso via email che funzionano di nuovo."
+  },
+  "releases.1.25.6-beta.feature.roadmap": {
+    "en": "The community page has a Roadmap tab that shows what is planned, in development, under review and completed, with the most supported items first.",
+    "pt-BR": "A página da comunidade tem uma aba Roadmap que mostra o que está planejado, em desenvolvimento, em análise e concluído, com os itens mais apoiados primeiro.",
+    "es": "La página de la comunidad tiene una pestaña Hoja de ruta que muestra lo planeado, en desarrollo, en revisión y completado, con los elementos más apoyados primero.",
+    "it": "La pagina della community ha una scheda Roadmap che mostra cosa è pianificato, in sviluppo, in revisione e completato, con gli elementi più supportati in cima."
+  },
+  "releases.1.25.6-beta.feature.feedback": {
+    "en": "Reports ask two short questions instead of a long form. In a match, feedback sits with settings and leave, and toolbar icons explain what they do.",
+    "pt-BR": "Os relatos fazem duas perguntas curtas em vez de um formulário longo. Na partida, o feedback fica junto de configurações e sair, e os ícones da barra explicam o que fazem.",
+    "es": "Los reportes hacen dos preguntas cortas en lugar de un formulario largo. En una partida, los comentarios están junto a ajustes y salir, y los iconos de la barra explican qué hacen.",
+    "it": "Le segnalazioni pongono due brevi domande invece di un modulo lungo. In partita, il feedback è accanto a impostazioni ed esci, e le icone della barra spiegano cosa fanno."
+  },
+  "releases.1.25.6-beta.feature.playtest": {
+    "en": "Signed-in players who send feedback can join the playtest group, get study invites through the bell, and leave it from their profile.",
+    "pt-BR": "Jogadores conectados que enviam feedback podem entrar no grupo de playtest, receber convites de estudos pelo sino e sair pelo perfil.",
+    "es": "Los jugadores con sesión iniciada que envían comentarios pueden unirse al grupo de playtest, recibir invitaciones a estudios en la campana y salir desde su perfil.",
+    "it": "I giocatori connessi che inviano feedback possono entrare nel gruppo di playtest, ricevere inviti agli studi tramite la campanella e uscirne dal profilo."
   },
   "releases.1.25.6-beta.feature.humanCheck": {
     "en": "Requesting a sign-in email now includes a quick Cloudflare check, so bots can no longer use up the daily email limit.",

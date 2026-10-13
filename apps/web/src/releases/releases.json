@@ -5,6 +5,15 @@
     "summaryKey": "releases.1.25.6-beta.summary",
     "features": [
       {
+        "textKey": "releases.1.25.6-beta.feature.roadmap"
+      },
+      {
+        "textKey": "releases.1.25.6-beta.feature.feedback"
+      },
+      {
+        "textKey": "releases.1.25.6-beta.feature.playtest"
+      },
+      {
         "textKey": "releases.1.25.6-beta.feature.humanCheck"
       },
       {
