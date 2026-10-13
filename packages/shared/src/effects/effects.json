@@ -21201,11 +21201,7 @@
           {
             "kind": "SubTrigger",
             "event": "whenOptionPlayed",
-            "sourceFilter": {
-              "controller": "mine",
-              "kind": ["Option"],
-              "nameOrTrait": [{ "tokens": ["Royal Knight"], "match": "trait" }]
-            },
+            "sourceFilter": { "kind": ["Option"], "nameOrTrait": [{ "tokens": ["Royal Knight"], "match": "trait" }] },
             "actions": [{ "kind": "GainMemory", "amount": 1 }],
             "raw": "When an Option card with the [Royal Knight] trait is placed in the battle area, gain 1 memory"
           }
