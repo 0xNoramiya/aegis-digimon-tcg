@@ -413,12 +413,13 @@ function attentionClipUrls(bytes: ArrayBuffer): Map<string, string> {
   return urls;
 }
 /**
- * Calls the player back to a hidden tab. Presentation cues stay silent there, and the
- * suspended AudioContext cannot play, so a hidden tab uses a media element instead.
+ * Calls the player back to the match. A focused window hears `kind`; an unfocused window or
+ * hidden tab hears the doorbell instead. Presentation cues stay silent in a hidden tab, and
+ * the suspended AudioContext cannot play, so a hidden tab uses a media element.
  */
 export function playAttentionSound(kind: SoundKind): void {
   if (!document.hidden) {
-    playSound(kind);
+    playSound(document.hasFocus() ? kind : "attention");
     return;
   }
   const bank = assets.get(AUDIO_BANK_URL);
@@ -426,7 +427,7 @@ export function playAttentionSound(kind: SoundKind): void {
   attentionClips ??= bank.then(attentionClipUrls);
   void attentionClips
     .then((urls) => {
-      const url = urls.get(cueKey(kind));
+      const url = urls.get(cueKey("attention"));
       if (!url) return;
       const player = new Audio(url);
       player.volume = volume * SFX_MIX_GAIN;
