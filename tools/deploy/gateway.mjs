@@ -20,6 +20,8 @@ const MIME_TYPES = {
   ".woff2": "font/woff2",
   ".mp3": "audio/mpeg",
   ".ogg": "audio/ogg",
+  ".flac": "audio/flac",
+  ".wav": "audio/wav",
   ".mp4": "video/mp4",
 };
 
@@ -56,6 +58,45 @@ function findPrecompressedFile(file, acceptEncoding) {
     }
   }
   return null;
+}
+
+const IMMUTABLE_CACHE = "public, max-age=31536000, immutable";
+const MEDIA_CACHE = "public, max-age=86400";
+const MEDIA_EXTENSIONS = new Set([
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".avif",
+  ".svg",
+  ".ico",
+  ".woff",
+  ".woff2",
+  ".mp3",
+  ".ogg",
+  ".flac",
+  ".wav",
+  ".mp4",
+]);
+
+function getCacheControl(url, file, assets) {
+  const extension = extname(file);
+  if (extension === ".html") return "no-store";
+  if (assets || url.searchParams.has("v")) return IMMUTABLE_CACHE;
+  return MEDIA_EXTENSIONS.has(extension) ? MEDIA_CACHE : "no-cache";
+}
+
+function getEntityTag(info, encoding = "identity") {
+  return `W/"${info.size.toString(16)}-${Math.floor(info.mtimeMs).toString(16)}-${encoding}"`;
+}
+
+function isNotModified(headers, entityTag, modified) {
+  const candidates = headers["if-none-match"];
+  if (candidates) {
+    return candidates.split(",").some((candidate) => ["*", entityTag].includes(candidate.trim()));
+  }
+  const since = Date.parse(headers["if-modified-since"] ?? "");
+  return !Number.isNaN(since) && Math.floor(modified.getTime() / 1000) * 1000 <= since;
 }
 
 function json(response, status, value) {
@@ -234,12 +275,23 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
       info = statSync(file);
     }
     const precompressed = findPrecompressedFile(file, request.headers["accept-encoding"]);
+    const served = precompressed?.info ?? info;
+    const cacheControl = getCacheControl(new URL(request.url, "http://gateway"), file, assets);
+    const validators =
+      cacheControl === "no-store"
+        ? {}
+        : { etag: getEntityTag(served, precompressed?.encoding), "last-modified": served.mtime.toUTCString() };
+    if (validators.etag && isNotModified(request.headers, validators.etag, served.mtime)) {
+      response.writeHead(304, { "cache-control": cacheControl, vary: "accept-encoding", ...validators });
+      return response.end();
+    }
     response.writeHead(200, {
       "content-type": MIME_TYPES[extname(file)] ?? "application/octet-stream",
-      "content-length": precompressed?.info.size ?? info.size,
-      "cache-control": assets ? "public, max-age=31536000, immutable" : "no-store",
+      "content-length": served.size,
+      "cache-control": cacheControl,
       "x-content-type-options": "nosniff",
       vary: "accept-encoding",
+      ...validators,
       ...(precompressed ? { "content-encoding": precompressed.encoding } : {}),
     });
     if (request.method === "HEAD") return response.end();
