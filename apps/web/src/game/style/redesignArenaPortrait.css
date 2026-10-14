@@ -118,6 +118,10 @@
     right: 16px;
   }
 
+  .aegis-arena .game-board .game-opponent-bar > .game-player-line[data-acting] {
+    max-width: 62vw;
+  }
+
   .aegis-arena .game-board .game-opponent-bar .game-arena-counter {
     color: var(--ds-on-ink);
     border-color: color-mix(in srgb, var(--arena-opponent) 55%, transparent);
