@@ -1937,6 +1937,8 @@ const interfaceMessages = {
   "library.baseArt": "Asli",
   "library.alternateArt": "Alternatif {number}",
   "library.japaneseArt": "{label}, cetakan Jepang",
+  "library.koreanArt": "{label}, cetakan Korea",
+  "library.chineseArt": "{label}, cetakan Tiongkok",
   "deck.copyArtwork": "Salinan {number}",
   "deck.editArtwork": "Pilih artwork",
   "deck.splitResize": "Seret untuk mengubah ukuran panel deck",

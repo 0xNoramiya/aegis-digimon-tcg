@@ -1980,6 +1980,8 @@ const interfaceMessages = {
   "library.baseArt": "Original",
   "library.alternateArt": "Alternativ {number}",
   "library.japaneseArt": "{label}, japanischer Druck",
+  "library.koreanArt": "{label}, koreanischer Druck",
+  "library.chineseArt": "{label}, chinesischer Druck",
   "deck.copyArtwork": "Kopie {number}",
   "deck.editArtwork": "Artwork wählen",
   "deck.splitResize": "Ziehen, um die Breite des Deckbereichs zu ändern",

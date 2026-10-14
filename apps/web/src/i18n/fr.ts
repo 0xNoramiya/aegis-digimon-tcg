@@ -1969,6 +1969,8 @@ const interfaceMessages = {
   "library.baseArt": "Originale",
   "library.alternateArt": "Alternative {number}",
   "library.japaneseArt": "{label}, impression japonaise",
+  "library.koreanArt": "{label}, impression coréenne",
+  "library.chineseArt": "{label}, impression chinoise",
   "deck.copyArtwork": "Exemplaire {number}",
   "deck.editArtwork": "Choisir l'illustration",
   "deck.splitResize": "Faites glisser pour redimensionner le panneau du deck",

@@ -1854,6 +1854,8 @@ const interfaceMessages = {
   "library.baseArt": "原始",
   "library.alternateArt": "异画 {number}",
   "library.japaneseArt": "{label}，日版印刷",
+  "library.koreanArt": "{label}，韩版印刷",
+  "library.chineseArt": "{label}，简体中文版印刷",
   "deck.copyArtwork": "复制 {number}",
   "deck.editArtwork": "选择插画",
   "deck.splitResize": "拖动以调整卡组面板宽度",

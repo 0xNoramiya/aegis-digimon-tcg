@@ -270,6 +270,8 @@ const interfaceMessages = {
   "game.leaveConfirmTitle": "Lasciare questa partita?",
   "game.leaveConfirmBody": "Se esci, la partita termina e conta come una sconfitta. Puoi ancora salvare il replay.",
   "library.japaneseArt": "{label}, edizione giapponese",
+  "library.koreanArt": "{label}, edizione coreana",
+  "library.chineseArt": "{label}, edizione cinese",
   "community.publish.errorHidden":
     "Un moderatore ha nascosto questo deck dopo una segnalazione, quindi non può essere pubblico.",
   "community.report.open": "Segnala deck",

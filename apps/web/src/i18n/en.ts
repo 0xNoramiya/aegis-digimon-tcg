@@ -1772,6 +1772,8 @@ export const en = {
   "library.baseArt": "Original",
   "library.alternateArt": "Alternate {number}",
   "library.japaneseArt": "{label}, Japanese printing",
+  "library.koreanArt": "{label}, Korean printing",
+  "library.chineseArt": "{label}, Chinese printing",
   "deck.copyArtwork": "Copy {number}",
   "deck.editArtwork": "Choose artwork",
   "deck.splitResize": "Drag to resize the deck panel",

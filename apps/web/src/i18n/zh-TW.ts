@@ -1861,6 +1861,8 @@ const interfaceMessages = {
   "library.baseArt": "原版",
   "library.alternateArt": "異畫 {number}",
   "library.japaneseArt": "{label}，日文印刷",
+  "library.koreanArt": "{label}，韓文印刷",
+  "library.chineseArt": "{label}，簡體中文印刷",
   "deck.copyArtwork": "第 {number} 張",
   "deck.editArtwork": "選擇卡圖",
   "deck.splitResize": "拖曳以調整卡組面板的大小",
