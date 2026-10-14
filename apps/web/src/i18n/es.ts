@@ -489,6 +489,7 @@ export const es: Record<keyof typeof en, string> = {
   "lobby.playVsBot": "Jugar contra el bot",
   "lobby.botDeck": "Deck del bot",
   "lobby.botDeckRandom": "Aleatorio",
+  "lobby.botDeckRandomSet": "Aleatorio de {set}",
   "lobby.enterQueue": "Entrar en la cola",
   "lobby.create": "Crear",
   "lobby.join": "Unirse",

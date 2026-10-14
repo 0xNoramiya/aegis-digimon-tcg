@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { Lobby, deckHasBetaCards, randomDeckPool } from "./Lobby";
 import { DECKS } from "../game/decks";
-import { FAMOUS_DECKS } from "../game/famousDecks";
+import { FAMOUS_DECKS, FAMOUS_DECK_GROUPS } from "../game/famousDecks";
 import { selectableDecks } from "../game/selectableDecks";
 
 const randomCommunityDeck = vi.hoisted(() =>
@@ -300,6 +300,42 @@ describe("famous deck selection", () => {
 
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(onStart).toHaveBeenCalledWith("beta", undefined, undefined, true);
+  });
+
+  it("offers a random bot deck from each famous deck set and keeps the pick hidden", () => {
+    const onStart = vi.fn();
+    renderConfiguredLobby(
+      <I18nProvider>
+        <Lobby
+          player={{ name: "Tamer", color: "Blue", shards: 0 }}
+          decks={DECKS}
+          activeDeckId={DECKS[0]!.id}
+          onSelectDeck={() => undefined}
+          onCopyDeck={() => undefined}
+          onNav={() => undefined}
+          onStart={onStart}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Practice vs AI/ }));
+    const botDeck = screen.getByLabelText("Bot's deck") as HTMLSelectElement;
+    const setGroups = [...botDeck.querySelectorAll("optgroup")].slice(1);
+    expect(setGroups.map((group) => group.label)).toEqual(FAMOUS_DECK_GROUPS.map((group) => group.collection));
+    for (const group of setGroups) {
+      const [randomOption] = group.querySelectorAll("option");
+      expect([randomOption?.textContent, randomOption?.value]).toEqual([
+        `Random from ${group.label}`,
+        `random-set:${group.label}`,
+      ]);
+    }
+
+    const playableSet = setGroups.find((group) => !group.querySelector("option")!.disabled)!;
+    fireEvent.change(botDeck, { target: { value: `random-set:${playableSet.label}` } });
+    expect(botDeck.parentElement!.querySelector(".lobby-bot-preview")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
+
+    expect(onStart.mock.calls[0]?.slice(0, 3)).toEqual(["bot", undefined, `random-set:${playableSet.label}`]);
   });
 
   it("lets an ordinary deck face the beta bot", () => {

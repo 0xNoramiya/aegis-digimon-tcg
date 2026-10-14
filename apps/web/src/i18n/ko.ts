@@ -672,6 +672,7 @@ const interfaceMessages = {
   "lobby.playVsBot": "플레이 대 봇",
   "lobby.botDeck": "봇의 데크",
   "lobby.botDeckRandom": "무작위",
+  "lobby.botDeckRandomSet": "{set}에서 무작위",
   "lobby.enterQueue": "대기열 입력",
   "lobby.create": "만들기",
   "lobby.join": "가입",

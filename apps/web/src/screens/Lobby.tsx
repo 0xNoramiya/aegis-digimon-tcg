@@ -38,6 +38,7 @@ import { Icons, type IconComponent } from "../design/icons";
 import { displayCoverCard, type DeckListing } from "../game/decks";
 import { FAMOUS_DECKS, FAMOUS_DECK_GROUPS } from "@/game/famousDecks";
 import { selectableDecks } from "@/game/selectableDecks";
+import { RANDOM_SET_BOT_DECK_PREFIX } from "@aegis/shared/decks/randomSetBotDeckPrefix";
 import { useTranslation, type Translate } from "../i18n";
 import { RankedStart } from "../account/RankedStart";
 import { RANKED_ENABLED } from "../features";
@@ -291,6 +292,12 @@ export function Lobby({
     setSelectedFormat(next);
     const preset = FAMOUS_DECKS.find((deck) => deck.id === botDeckId);
     if (preset && !deckLegality(preset, { format: next }).legal) setBotDeckId("");
+    const randomSet = FAMOUS_DECK_GROUPS.find(
+      (group) => `${RANDOM_SET_BOT_DECK_PREFIX}${group.collection}` === botDeckId,
+    );
+    if (randomSet && !randomSet.decks.some((deck) => deckLegality(deck, { format: next }).legal)) {
+      setBotDeckId("");
+    }
   }
   const banlistLimit = (id: string) => formatCopyLimit(id, format);
   const onStart = useCallback(
@@ -391,6 +398,8 @@ export function Lobby({
     () => (active && !unlimited ? formatPairViolations([...active.mainDeck, ...active.eggDeck], format) : []),
     [active, unlimited, format],
   );
+  const isBotPresetUnplayable = (deck: DeckListing) =>
+    !deckLegality(deck, { format }).legal || (!betaAllowed && deckHasBetaCards(deck));
   const customBotDeck =
     vsBot && botDeckId.startsWith("mine:") ? decks.find((deck) => deck.id === botDeckId.slice(5)) : undefined;
   const botPreview = vsBot
@@ -932,14 +941,14 @@ export function Lobby({
                         </optgroup>
                         {FAMOUS_DECK_GROUPS.map((group) => (
                           <optgroup key={group.collection} label={group.collection}>
+                            <option
+                              value={`${RANDOM_SET_BOT_DECK_PREFIX}${group.collection}`}
+                              disabled={group.decks.every(isBotPresetUnplayable)}
+                            >
+                              {t("lobby.botDeckRandomSet", { set: group.collection })}
+                            </option>
                             {group.decks.map((deck) => (
-                              <option
-                                key={deck.id}
-                                value={deck.id}
-                                disabled={
-                                  !deckLegality(deck, { format }).legal || (!betaAllowed && deckHasBetaCards(deck))
-                                }
-                              >
+                              <option key={deck.id} value={deck.id} disabled={isBotPresetUnplayable(deck)}>
                                 {deck.name}
                               </option>
                             ))}

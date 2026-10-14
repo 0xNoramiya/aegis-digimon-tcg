@@ -496,6 +496,7 @@ export const en = {
   "lobby.playVsBot": "Play vs Bot",
   "lobby.botDeck": "Bot's deck",
   "lobby.botDeckRandom": "Random",
+  "lobby.botDeckRandomSet": "Random from {set}",
   "lobby.enterQueue": "Enter queue",
   "lobby.create": "Create",
   "lobby.join": "Join",

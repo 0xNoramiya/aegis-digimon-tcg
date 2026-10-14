@@ -681,6 +681,7 @@ const interfaceMessages = {
   "lobby.playVsBot": "Mainkan vs Bot",
   "lobby.botDeck": "Dek bot",
   "lobby.botDeckRandom": "Acak",
+  "lobby.botDeckRandomSet": "Acak dari {set}",
   "lobby.enterQueue": "Masuk antrian",
   "lobby.create": "Buat",
   "lobby.join": "Bergabunglah",
