@@ -60,6 +60,7 @@ const BugReportDialog = lazy(() => import("./bugs/BugReportDialog").then((m) => 
 const ReleasesScreen = lazy(() => import("./releases/ReleasesScreen").then((m) => ({ default: m.ReleasesScreen })));
 const Login = lazy(() => import("./screens/Login").then((m) => ({ default: m.Login })));
 const Lobby = lazy(() => import("./screens/Lobby").then((m) => ({ default: m.Lobby })));
+const WatchScreen = lazy(() => import("./screens/WatchScreen").then((m) => ({ default: m.WatchScreen })));
 const Collection = lazy(() => import("./screens/Collection").then((m) => ({ default: m.Collection })));
 const DeckBuilder = lazy(() => import("./screens/DeckBuilder").then((m) => ({ default: m.DeckBuilder })));
 const CommunityScreen = lazy(() =>
@@ -118,6 +119,7 @@ function ScreenFallback() {
 const NAV_SCREENS: Screen[] = [
   "home",
   "lobby",
+  "watch",
   "deck",
   "community",
   "roadmap",
@@ -149,7 +151,8 @@ export function initialAppRoute({
   hasReconnectSession: boolean;
   spectatorCode?: string;
 }): AppRoute {
-  if (invitedRoomCode || spectatorCode) return { screen: "lobby" };
+  if (invitedRoomCode) return { screen: "lobby" };
+  if (spectatorCode) return { screen: "watch" };
   const directRoute = routeFromPathname(pathname);
   if (directRoute?.screen === "game" && !hasReconnectSession) return { screen: "lobby" };
   return directRoute ?? { screen: "home" };
@@ -351,12 +354,15 @@ function LoadedAegisClient({
     [account, player],
   );
   const [invitedRoomCode] = useState(() => (initialScreen ? undefined : roomCodeFromSearch(window.location.search)));
+  const [sharedSpectatorCode] = useState(() =>
+    initialScreen ? undefined : spectatorCodeFromSearch(window.location.search),
+  );
   const [route, setRoute] = useState<AppRoute>(() => {
     if (initialScreen) return { screen: initialScreen };
     return initialAppRoute({
       pathname: window.location.pathname,
       invitedRoomCode,
-      spectatorCode: spectatorCodeFromSearch(window.location.search),
+      spectatorCode: sharedSpectatorCode,
       hasReconnectSession: loadReconnectSession() !== undefined,
     });
   });
@@ -450,6 +456,33 @@ function LoadedAegisClient({
     setRoute(nextRoute);
   };
   const navigateScreen = (nextScreen: Screen) => navigate({ screen: nextScreen });
+
+  const startMatch = (
+    mode: StartMode,
+    code?: string,
+    requestedBotDeckId?: string,
+    requestedBetaBattleMode?: boolean,
+    requestedDeckId?: string | DeckListing,
+    requestedUnlimited?: boolean,
+    requestedFormat?: import("@aegis/shared").DeckFormat,
+  ) => {
+    // A lobby start explicitly requests a new match, even if a page
+    // reload left a resumable seat from the previous match in storage.
+    clearReconnectSession();
+    setSeriesGame(undefined);
+    if (mode !== "private_host" && mode !== "private_guest") setPrivateRoom(undefined);
+    setStartMode(mode);
+    setRoomCode(code);
+    setBotDeckId(requestedBotDeckId);
+    setBetaBattleMode(requestedBetaBattleMode === true);
+    setUnlimited(requestedUnlimited === true);
+    setDeckFormat(requestedFormat ?? (mode === "unlimited" || requestedUnlimited ? "unlimited" : "standard"));
+    if (typeof requestedDeckId === "object") {
+      setBorrowedDeck(structuredClone(requestedDeckId));
+      setMatchDeckId(requestedDeckId.id);
+    } else setMatchDeckId(requestedDeckId);
+    navigateScreen("game");
+  };
 
   const availableDecks = useMemo(() => {
     const selectable = selectableDecks({ personalDecks: decks, famousDecks });
@@ -617,34 +650,17 @@ function LoadedAegisClient({
                 invitedRoomCode={invitedRoomCode}
                 privateRoom={privateRoom}
                 onLeavePrivateRoom={() => setPrivateRoom(undefined)}
-                onStart={(
-                  mode,
-                  code,
-                  requestedBotDeckId,
-                  requestedBetaBattleMode,
-                  requestedDeckId,
-                  requestedUnlimited,
-                  requestedFormat,
-                ) => {
-                  // A lobby start explicitly requests a new match, even if a page
-                  // reload left a resumable seat from the previous match in storage.
-                  clearReconnectSession();
-                  setSeriesGame(undefined);
-                  if (mode !== "private_host" && mode !== "private_guest") setPrivateRoom(undefined);
-                  setStartMode(mode);
-                  setRoomCode(code);
-                  setBotDeckId(requestedBotDeckId);
-                  setBetaBattleMode(requestedBetaBattleMode === true);
-                  setUnlimited(requestedUnlimited === true);
-                  setDeckFormat(
-                    requestedFormat ?? (mode === "unlimited" || requestedUnlimited ? "unlimited" : "standard"),
-                  );
-                  if (typeof requestedDeckId === "object") {
-                    setBorrowedDeck(structuredClone(requestedDeckId));
-                    setMatchDeckId(requestedDeckId.id);
-                  } else setMatchDeckId(requestedDeckId);
-                  navigateScreen("game");
-                }}
+                onStart={startMatch}
+                openMatchSettings={route.matchSettings === true}
+              />
+            )}
+
+            {screen === "watch" && (
+              <WatchScreen
+                initialCode={sharedSpectatorCode}
+                onWatch={(code) => startMatch("spectator", code)}
+                onBack={() => navigateScreen("lobby")}
+                onOpenMatchSettings={() => navigate({ screen: "lobby", matchSettings: true })}
               />
             )}
 

@@ -51,7 +51,8 @@ import { MatchTimerSettings } from "./MatchTimerSettings";
 import { loadMatchFormatPreference, saveMatchFormatPreference } from "./matchFormatPreference";
 import "./lobby.css";
 import { lookupPrivateRoom } from "../net/client";
-import { SpectatorPanel } from "./SpectatorPanel";
+import { LiveMatchListingSetting } from "@/account/LiveMatchListingSetting";
+import { useLiveMatches } from "./useLiveMatches";
 import { deckHasBetaCards } from "@/screens/deckHasBetaCards";
 import { isBetaCard } from "@/screens/isBetaCard";
 
@@ -192,7 +193,9 @@ export function Lobby({
   onBestOfChange,
   allowRollback = false,
   onAllowRollbackChange,
+  openMatchSettings = false,
 }: {
+  openMatchSettings?: boolean;
   allowRollback?: boolean;
   onAllowRollbackChange?: (allow: boolean) => void;
   timerOptions?: MatchTimerOptions;
@@ -323,6 +326,11 @@ export function Lobby({
     [onStartRequested, format, unlimited],
   );
   const randomDrawVersion = useRef(0);
+  const matchSetup = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (openMatchSettings) matchSetup.current?.scrollIntoView({ block: "center" });
+  }, [openMatchSettings]);
+  const liveMatchCount = useLiveMatches({ pageSize: 1 }).page?.total;
   const [randomDrawing, setRandomDrawing] = useState(false);
   const [randomError, setRandomError] = useState(false);
   const [randomSelected, setRandomSelected] = useState(false);
@@ -730,7 +738,21 @@ export function Lobby({
           <div className="aegis-section-heading">
             <h1 className="aegis-section-heading__title">{t("lobby.title")}</h1>
             <span className="aegis-section-heading__rule" aria-hidden="true" />
-            <SpectatorPanel onWatch={(code) => onStart("spectator", code)} />
+            <Button
+              className="lobby-spectator-action"
+              variant="secondary"
+              icon={Icons.Eye}
+              onClick={() => onNav("watch")}
+            >
+              {t("spectator.title")}
+              {liveMatchCount !== undefined ? (
+                <span className="lobby-live-count" data-live={liveMatchCount > 0 || undefined}>
+                  <span className="lobby-live-count__dot" aria-hidden="true" />
+                  <span aria-hidden="true">{liveMatchCount}</span>
+                  <span className="lobby-live-count__label">{t("spectator.liveCount", { count: liveMatchCount })}</span>
+                </span>
+              ) : null}
+            </Button>
           </div>
         </header>
 
@@ -764,10 +786,13 @@ export function Lobby({
           })}
         </div>
 
-        <section className="lobby-setup" aria-labelledby="lobby-setup-title">
-          <h2 id="lobby-setup-title" className="lobby-setup__title">
-            {t("redesign.play.setupTitle")}
-          </h2>
+        <section className="lobby-setup" aria-labelledby="lobby-setup-title" ref={matchSetup}>
+          <div className="lobby-setup__header">
+            <h2 id="lobby-setup-title" className="lobby-setup__title">
+              {t("redesign.play.setupTitle")}
+            </h2>
+            <LiveMatchListingSetting key={accountId ?? "guest"} signedIn={accountId !== undefined} compact />
+          </div>
           <div className="lobby-setup__summary" aria-label={t("redesign.play.setupTitle")}>
             <span>{deckFormatLabel(format, t)}</span>
             {!privateGuest && !privateRoom ? (

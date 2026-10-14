@@ -1,5 +1,6 @@
 import { TokenArtPicker } from "@/design/tokenArt/TokenArtPicker";
 import { ShareDeckAfterMatchSetting } from "@/account/ShareDeckAfterMatchSetting";
+import { LiveMatchListingSetting } from "@/account/LiveMatchListingSetting";
 import { CustomMusicPicker } from "../design/CustomMusicPicker";
 import { MusicCredits } from "../design/MusicCredits";
 import { InterfaceThemeDialog } from "../design/InterfaceThemePicker";
@@ -513,6 +514,7 @@ export function Settings({
             {signedIn ? (
               <SettingsCard id={PROFILE_SECTION_ID} title={t("profile.title")}>
                 <ShareDeckAfterMatchSetting key={account?.id} />
+                <LiveMatchListingSetting key={`live-${account?.id}`} signedIn />
                 <div className="settings-row">
                   <Switch
                     checked={profileStatsShown}
