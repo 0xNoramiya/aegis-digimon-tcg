@@ -8278,11 +8278,11 @@
     "dp": 0,
     "evoCosts": [],
     "types": ["Xros Heart", "BlueFlare", "General"],
-    "effectText": "[Start of Your Main Phase] By placing 1 Digimon card with [Xros Heart] or [Blue Flare] in its traits from your hand under this Tamer, gain 1 memory and ＜Draw 1＞.[Your Turn] When you would play a Digimon card with a DigiXros requirement, by suspending this Tamer, you may place cards from under your Tamers as digivolution cards for a DigiXros.",
+    "effectText": "[Start of Your Main Phase] By placing 1 Digimon card with [Xros Heart] or [Blue Flare] in its traits from your hand under this Tamer, ＜Draw 1＞ and gain 1 memory.[Your Turn] When you would play a Digimon card with a DigiXros requirement, by suspending this Tamer, you may place cards from under your Tamers as digivolution cards for a DigiXros.",
     "securityEffectText": "[Security] Play this card without paying its memory cost.",
     "rarity": "R",
     "maxCountInDeck": 4,
-    "imageId": "BT11-095",
+    "imageId": "BT11-095_P1",
     "nameJp": "タイキ＆キリハ＆ネネ"
   },
   {
@@ -100836,11 +100836,11 @@
     "playCost": 3,
     "dp": 0,
     "evoCosts": [],
-    "effectText": "[Start of Your Main Phase] By placing 1 Digimon card with [Gammamon] in its name from your hand as 1 of your Digimon's bottom digivolution card, gain 1 memory and ＜Draw 1＞.[Your Turn] When one of your Digimon digivolves into a Digimon with [Gammamon] in its text, by suspending this Tamer, that Digimon gets +2000 DP for the turn.",
+    "effectText": "[Start of Your Main Phase] By placing 1 Digimon card with [Gammamon] in its name from your hand as 1 of your Digimon's bottom digivolution card, ＜Draw 1＞ and gain 1 memory.[Your Turn] When one of your Digimon digivolves into a Digimon with [Gammamon] in its text, by suspending this Tamer, that Digimon gets +2000 DP for the turn.",
     "securityEffectText": "[Security] Play this card without paying the cost.",
     "rarity": "R",
     "maxCountInDeck": 4,
-    "imageId": "RB1-032",
+    "imageId": "RB1-032_P4",
     "nameJp": "天ノ河宙"
   },
   {
