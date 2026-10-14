@@ -13,6 +13,8 @@ export const chatPtBR: Record<keyof typeof chatEn, string> = {
   "chat.send": "Enviar",
   "chat.mute": "Silenciar oponente",
   "chat.muteSpectators": "Silenciar espectadores",
+  "chat.sound": "Som do chat",
+  "chat.soundDesc": "Toca um som a cada nova mensagem do oponente ou dos espectadores.",
   "chat.you": "Você",
   "chat.spectator": "Espectador {number}",
   "chat.spectatorTag": "espectador",

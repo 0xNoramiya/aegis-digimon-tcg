@@ -480,6 +480,13 @@
     min-height: 44px;
     flex: 1;
   }
+  .decision-board-return--selection {
+    flex-wrap: wrap;
+    row-gap: var(--ds-space-2);
+  }
+  .decision-board-return--selection > .decision-board-return__status {
+    flex-basis: 100%;
+  }
   .action-confirmation > div:first-child {
     flex-wrap: nowrap !important;
     align-items: flex-start !important;

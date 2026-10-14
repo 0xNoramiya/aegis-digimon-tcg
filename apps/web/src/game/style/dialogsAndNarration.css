@@ -568,6 +568,16 @@ button.side-panel__name:focus-visible {
   background: rgb(255 45 31 / 22%);
 }
 
+.match-notice[data-variant="timeWarning"]::before,
+.match-notice[data-variant="timeWarning"]::after {
+  border-color: #ffd16a;
+}
+
+.match-notice[data-variant="timeWarning"] .match-notice__icon {
+  color: #ffe7b0;
+  background: rgb(255 209 106 / 22%);
+}
+
 .match-notice__copy {
   display: flex;
   min-width: 0;
@@ -619,6 +629,10 @@ button.side-panel__name:focus-visible {
 
 .match-notice[data-variant="rejection"] .match-notice__label {
   color: #ff9a90;
+}
+
+.match-notice[data-variant="timeWarning"] .match-notice__label {
+  color: #ffd16a;
 }
 
 .match-notice__title {

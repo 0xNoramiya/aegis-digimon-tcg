@@ -1,4 +1,4 @@
-import { uniqueOncePerTurnWatcherOccurrences } from "./subTriggerIdentity.js";
+import { uniqueOncePerTurnWatcherOccurrences, type ArmedSubTrigger } from "./subTriggerIdentity.js";
 import { EffectTiming, Permanent, type CardInstance } from "@aegis/shared";
 import { rootZoneOfLooseInstance } from "../effects/primitives.js";
 import { trashArrivalOf } from "../state/access.js";
@@ -10,7 +10,7 @@ import { findInstance, findLooseInstance } from "./intents.js";
 import { resolveDeletionReactions, runTimingWindow } from "./timing.js";
 import { armedAsPendingCollected, runSubTriggersInChosenOrder, subTriggerStillActivatable } from "./subTriggers.js";
 import type { GameEngine } from "../GameEngine.js";
-import { collectNestedTimingEffects, withTriggeredMutations } from "./windows.js";
+import { collectNestedTimingEffects, takeLeaveReplacementPending, withTriggeredMutations } from "./windows.js";
 import { cardSourceOf } from "./effectContext.js";
 
 /**
@@ -129,19 +129,22 @@ export async function collectRuleProcessPending(engine: GameEngine): Promise<Col
   const watcherEvents = engine.deferredRuleSubTriggers.splice(0);
   const pending = collectDeletionPending(engine, pool);
   const armed = uniqueOncePerTurnWatcherOccurrences(watcherEvents.flatMap(({ armed: items }) => items));
-  pending.push(
-    ...armedAsPendingCollected(engine, armed).map((collected, index) => {
-      const canActivate = collected.effect.canActivate;
-      return {
-        ...collected,
-        effect: {
-          ...collected.effect,
-          canActivate: (ctx: EffectContext) => subTriggerStillActivatable(engine, armed[index]!) && canActivate(ctx),
-        },
-      };
-    }),
-  );
+  pending.push(...ruleWatchersAsPending(engine, armed));
+  pending.push(...takeLeaveReplacementPending(engine));
   return pending;
+}
+
+function ruleWatchersAsPending(engine: GameEngine, armed: readonly ArmedSubTrigger[]): CollectedEffect[] {
+  return armedAsPendingCollected(engine, armed).map((collected, index) => {
+    const canActivate = collected.effect.canActivate;
+    return {
+      ...collected,
+      effect: {
+        ...collected.effect,
+        canActivate: (ctx: EffectContext) => subTriggerStillActivatable(engine, armed[index]!) && canActivate(ctx),
+      },
+    };
+  });
 }
 
 /** Collect deletion reactions without opening a competing timing window. */
@@ -337,18 +340,19 @@ export async function flushRuleTriggerPool(engine: GameEngine, pool: readonly Po
       await withTriggeredMutations(engine, () => runSubTriggersInChosenOrder(engine, armed));
     } else {
       const merged = mergeRuleDeletions(pool);
+      const nestedWindowWatchers =
+        engine.activeWindowToken === undefined
+          ? []
+          : ruleWatchersAsPending(engine, uniqueOncePerTurnWatcherOccurrences(armed));
       await resolveDeletionReactions(
         engine,
         merged.trigger,
         merged.ascensionCandidates,
         (deletionTrigger, simultaneousPending = []) =>
-          runTimingWindow(
-            engine,
-            EffectTiming.OnDestroyedAnyone,
-            deletionTrigger,
-            merged.transientCandidates,
-            simultaneousPending,
-          ),
+          runTimingWindow(engine, EffectTiming.OnDestroyedAnyone, deletionTrigger, merged.transientCandidates, [
+            ...simultaneousPending,
+            ...nestedWindowWatchers,
+          ]),
         merged.transientCandidates,
         false,
       );

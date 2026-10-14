@@ -11,6 +11,8 @@ export const chatEn = {
   "chat.send": "Send",
   "chat.mute": "Mute opponent",
   "chat.muteSpectators": "Mute spectators",
+  "chat.sound": "Chat sound",
+  "chat.soundDesc": "Play a sound for each new message from your opponent or spectators.",
   "chat.you": "You",
   "chat.spectator": "Spectator {number}",
   "chat.spectatorTag": "spectator",

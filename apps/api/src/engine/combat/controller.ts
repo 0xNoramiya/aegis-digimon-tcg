@@ -710,6 +710,7 @@ export class CombatController {
         // The pre-Counter drain above cannot see effects that have not triggered yet, so drain
         // the same attack window again after the Counter response resolves.
         if (opts.drainTimingWindow !== undefined) await opts.drainTimingWindow();
+        const targetAfterCounter = this.currentAttack?.target ?? effectiveTarget;
 
         // source fires OnEndAttack (AttackProcess.EndAttack) whenever the attack reaches its
         // end, including an early end (Comprehensive Rules §11-5-1-4 / §11-6: an unsuccessful
@@ -718,7 +719,7 @@ export class CombatController {
         // sibling path, rather than returning silently and skipping the window.
         if (!this.attackerStillValid(attacker)) {
           if (settleBetweenSteps !== undefined) await settleBetweenSteps();
-          await this.fireEndOfAttack({ ...attackTrigger, target: effectiveTarget });
+          await this.fireEndOfAttack({ ...attackTrigger, target: targetAfterCounter });
           return;
         }
 
@@ -727,12 +728,12 @@ export class CombatController {
         // (AttackProcess.EndAttack). The attack does not succeed.
         if (this.endRequested) {
           if (settleBetweenSteps !== undefined) await settleBetweenSteps();
-          await this.fireEndOfAttack({ ...attackTrigger, target: effectiveTarget });
+          await this.fireEndOfAttack({ ...attackTrigger, target: targetAfterCounter });
           return;
         }
 
         // 3. Block window (AttackProcess.BlockTiming, cs:322-405).
-        let defender = this.currentDefender(effectiveTarget);
+        let defender = this.currentDefender(targetAfterCounter);
         const blockerId = await this.runBlockWindow(attackerSeat, attacker);
         if (this.access.game.gameOver) return;
         if (blockerId !== null) {
@@ -745,7 +746,7 @@ export class CombatController {
 
         if (!this.attackerStillValid(attacker)) {
           if (settleBetweenSteps !== undefined) await settleBetweenSteps();
-          await this.fireEndOfAttack({ ...attackTrigger, target: effectiveTarget });
+          await this.fireEndOfAttack({ ...attackTrigger, target: targetAfterCounter });
           return;
         }
 
@@ -754,13 +755,13 @@ export class CombatController {
         // pre-block endRequested check, so honor the newly-requested end before comparing DP.
         if (this.endRequested) {
           if (settleBetweenSteps !== undefined) await settleBetweenSteps();
-          await this.fireEndOfAttack({ ...attackTrigger, target: effectiveTarget });
+          await this.fireEndOfAttack({ ...attackTrigger, target: targetAfterCounter });
           return;
         }
 
         // 4. Battle resolution (AttackProcess.DetermineAttackOutcome, cs:407-468).
         let ordinarySecurityProcessed = false;
-        if (!this.defenderStillValid(effectiveTarget, defender)) {
+        if (!this.defenderStillValid(targetAfterCounter, defender)) {
           // Comprehensive Rules §11-2-6: even though the attack target Digimon was removed
           // mid-resolution (e.g. deleted/bounced during When Attacking or the block window),
           // that Digimon REMAINS the attack target — the attack simply fails. It must NOT fall
@@ -796,7 +797,7 @@ export class CombatController {
 
         // 5. End of attack (AttackProcess.EndAttack, cs:473-484).
         if (settleBetweenSteps !== undefined) await settleBetweenSteps();
-        await this.fireEndOfAttack({ ...attackTrigger, target: effectiveTarget });
+        await this.fireEndOfAttack({ ...attackTrigger, target: targetAfterCounter });
       });
     } finally {
       await this.cleanup();

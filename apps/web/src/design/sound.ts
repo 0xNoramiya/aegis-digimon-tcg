@@ -42,17 +42,28 @@ let musicEnabled = readFlag("aegis.music.enabled");
 let musicVolume = readVolume("aegis.music.volume", 0.25);
 let musicTrack = readTrack();
 let customMusic: { url: string; name: string } | undefined;
-const customMusicListeners = new Set<() => void>();
+const musicListeners = new Set<() => void>();
 const musicUrl = () => customMusic?.url ?? MUSIC_TRACK_URLS[musicTrack];
 export function getCustomMusicName(): string | undefined {
   return customMusic?.name;
 }
-function subscribeCustomMusic(listener: () => void): () => void {
-  customMusicListeners.add(listener);
-  return () => customMusicListeners.delete(listener);
+function subscribeMusic(listener: () => void): () => void {
+  musicListeners.add(listener);
+  return () => musicListeners.delete(listener);
+}
+function notifyMusicListeners(): void {
+  for (const listener of musicListeners) {
+    listener();
+  }
 }
 export function useCustomMusicName(): string | undefined {
-  return useSyncExternalStore(subscribeCustomMusic, getCustomMusicName, () => undefined);
+  return useSyncExternalStore(subscribeMusic, getCustomMusicName, () => undefined);
+}
+export function useMusicEnabled(): boolean {
+  return useSyncExternalStore(subscribeMusic, isMusicEnabled, isMusicEnabled);
+}
+export function useMusicTrack(): MusicTrack {
+  return useSyncExternalStore(subscribeMusic, getMusicTrack, getMusicTrack);
 }
 function releaseCustomMusic(): void {
   if (!customMusic) return;
@@ -67,7 +78,7 @@ function reloadMusic(): void {
   stopMusicVoices();
   syncMusic();
   void prepareAudio();
-  for (const listener of customMusicListeners) listener();
+  notifyMusicListeners();
 }
 /** Local files remain on this device and are selected again after a reload. */
 export function setCustomMusicFile(file: File): boolean {
@@ -201,6 +212,7 @@ export function setMusicEnabled(next: boolean): void {
   musicEnabled = next;
   persist("aegis.music.enabled", next);
   syncMusic();
+  notifyMusicListeners();
 }
 export function setMusicVolume(next: number): void {
   musicVolume = clamp(next);
@@ -401,12 +413,13 @@ function attentionClipUrls(bytes: ArrayBuffer): Map<string, string> {
   return urls;
 }
 /**
- * Calls the player back to a hidden tab. Presentation cues stay silent there, and the
- * suspended AudioContext cannot play, so a hidden tab uses a media element instead.
+ * Calls the player back to the match. A focused window hears `kind`; an unfocused window or
+ * hidden tab hears the doorbell instead. Presentation cues stay silent in a hidden tab, and
+ * the suspended AudioContext cannot play, so a hidden tab uses a media element.
  */
 export function playAttentionSound(kind: SoundKind): void {
   if (!document.hidden) {
-    playSound(kind);
+    playSound(document.hasFocus() ? kind : "attention");
     return;
   }
   const bank = assets.get(AUDIO_BANK_URL);
@@ -414,7 +427,7 @@ export function playAttentionSound(kind: SoundKind): void {
   attentionClips ??= bank.then(attentionClipUrls);
   void attentionClips
     .then((urls) => {
-      const url = urls.get(cueKey(kind));
+      const url = urls.get(cueKey("attention"));
       if (!url) return;
       const player = new Audio(url);
       player.volume = volume * SFX_MIX_GAIN;

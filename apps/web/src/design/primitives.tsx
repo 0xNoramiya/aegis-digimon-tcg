@@ -10,6 +10,7 @@ import {
   type CSSProperties,
   type InputHTMLAttributes,
   type KeyboardEvent,
+  type MouseEvent,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
@@ -70,7 +71,7 @@ type AegisButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onClick">
   variant?: ButtonVariant;
   size?: ButtonSize;
   icon?: IconComponent;
-  onClick?: () => void;
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
   full?: boolean;
   sound?: SoundKind | false;
 };
@@ -97,9 +98,9 @@ export function Button({
       onClick={
         disabled
           ? undefined
-          : () => {
+          : (event) => {
               if (sound) playSound(sound);
-              onClick?.();
+              onClick?.(event);
             }
       }
       disabled={disabled}
@@ -548,6 +549,7 @@ export function TopNav({
   onOpenTheme,
   onSendFeedback,
   notifications,
+  music,
 }: {
   screen: Screen;
   onNav: (s: Screen) => void;
@@ -563,6 +565,7 @@ export function TopNav({
   onToggleDark?: (dark: boolean) => void;
   onOpenTheme?: () => void;
   onSendFeedback?: () => void;
+  music?: ReactNode;
 }) {
   const { t } = useTranslation();
   const navActive = (key: Screen) => screen === key || (screen === "roadmap" && key === "community");
@@ -659,6 +662,7 @@ export function TopNav({
           {actions}
           {notifications}
           {feedback}
+          {music}
           {themeToggle}
           <button
             className="aegis-icon-button"
@@ -683,6 +687,7 @@ export function TopNav({
         <div className="aegis-mobile-bar__actions">
           {notifications}
           {feedback}
+          {music}
           {themeToggle}
           {signIn}
           {portrait(32)}

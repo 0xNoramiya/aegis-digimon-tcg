@@ -6,6 +6,7 @@ import { I18nProvider } from "../i18n";
 import { AccountApiError, accountApi, type AccountProfile, type RemoteAccount } from "./client";
 import { ProfileScreen } from "./ProfileScreen";
 import type { DigimonWorldAvatarId } from "./avatars";
+import { setProfileStatsShown } from "./profileStats";
 import { replayApi } from "../replays/library";
 import { fakeDrive } from "../replays/cloud/fakeProvider.fixture";
 import { syncLocalReplays } from "../replays/cloud";
@@ -106,6 +107,7 @@ beforeEach(() => {
   document.body.append(stage);
   vi.spyOn(accountApi, "profile").mockResolvedValue(PROFILE);
   vi.spyOn(accountApi, "playtest").mockResolvedValue({ member: false, since: null });
+  setProfileStatsShown(true);
 });
 afterEach(() => {
   cleanup();
@@ -143,6 +145,18 @@ it("shows the identity header with totals and no tabs", async () => {
   expect(screen.queryByRole("navigation", { name: "Profile sections" })).toBeNull();
   expect(screen.queryByRole("link", { name: "Edit profile" })).toBeNull();
   expect(await screen.findByRole("heading", { name: "Your completed matches will appear here." })).toBeTruthy();
+});
+
+it("hides the match stats unless the player turns them on", async () => {
+  setProfileStatsShown(false);
+  vi.spyOn(accountApi, "matches").mockResolvedValue(
+    page([match(0)], { winRate: { matches: 3, wins: 1, losses: 1, draws: 1 } }),
+  );
+  renderProfile();
+  expect(await screen.findByText("Rival 0")).toBeTruthy();
+  expect(screen.queryByText("Win rate")).toBeNull();
+  expect(screen.queryByText("33%")).toBeNull();
+  expect(screen.getByRole("link", { name: "Preferences" })).toBeTruthy();
 });
 
 it("shows a dash for the win rate before the first match", async () => {

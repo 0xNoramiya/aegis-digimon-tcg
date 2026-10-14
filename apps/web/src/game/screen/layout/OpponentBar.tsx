@@ -48,6 +48,7 @@ export function OpponentBar({
   viewerSeat,
   displayedTurnSeat,
   displayedTurnCount,
+  actingLabel,
   phase,
   memory,
   eggDeckCount,
@@ -78,6 +79,7 @@ export function OpponentBar({
   viewerSeat: Seat;
   displayedTurnSeat: Seat;
   displayedTurnCount: number;
+  actingLabel?: string;
   phase: Phase;
   memory: number;
   eggDeckCount: number;
@@ -142,7 +144,7 @@ export function OpponentBar({
         side="opponent"
         maxLength={OPPONENT_NAME_MAX_LENGTH}
         timer={timer}
-        playing={displayedTurnSeat !== viewerSeat}
+        actingLabel={actingLabel}
       />
       <div
         className="game-opponent-hand"

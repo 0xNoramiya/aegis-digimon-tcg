@@ -23,10 +23,10 @@ describe("BT16-052", () => {
   });
 
   it("maps the KoHagurumon Token descriptor and its executable effects", () => {
+    expect(getCardDefinition("TOKEN-KoHagurumon-Token")).not.toHaveProperty("level");
     expect(getCardDefinition("TOKEN-KoHagurumon-Token")).toMatchObject({
-      level: 3,
       dp: 1000,
-      playCost: 3,
+      playCost: -1,
       colors: ["Black"],
       effectText: "＜Blocker＞ ＜Decoy (Black)＞ [Your Turn] This Digimon can't attack.",
       isToken: true,

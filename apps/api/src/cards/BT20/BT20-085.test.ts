@@ -61,25 +61,31 @@ describe("BT20-085 Shoto Kazama", () => {
     expect(effect?.actions).toHaveLength(2);
   });
 
-  it("gates the Vortex Warriors DP effect on the suspend cost", () => {
+  it("gates the opposing suspend and the Vortex Warriors DP effect only on the suspend cost", () => {
     const effect = compiled.effects.find((entry) => entry.trigger === "EndOfYourTurn");
     expect(effect).toMatchObject({
       actions: [
         {
-          kind: "Suspend",
-          target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
+          kind: "CostGatedBlock",
           cost: { kind: "suspend", target: { isSelf: true } },
           optional: true,
           abortOnDecline: true,
-        },
-        {
-          kind: "ModifyDP",
-          target: { filter: { controller: "mine", kind: ["Digimon"], nameOrTrait: [{ match: "trait" }] } },
-          amount: 2000,
-          duration: "untilOpponentTurnEnd",
+          actions: [
+            {
+              kind: "Suspend",
+              target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
+            },
+            {
+              kind: "ModifyDP",
+              target: { filter: { controller: "mine", kind: ["Digimon"], nameOrTrait: [{ match: "trait" }] } },
+              amount: 2000,
+              duration: "untilOpponentTurnEnd",
+            },
+          ],
         },
       ],
     });
+    expect(effect?.actions[0]).not.toHaveProperty("actions.0.abortOnDecline");
   });
 
   it("registers exactly one security play effect", () => {
