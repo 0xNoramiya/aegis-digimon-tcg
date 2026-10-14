@@ -13,6 +13,8 @@ export const CARD_IMAGE_ORIGINS = [
 
 const TOKEN_ID_PREFIX = "TOKEN-";
 
+export const LOCAL_CARD_IMAGES = "data/card-images";
+
 /**
  * Each printing the client can show, with the image ids `cardImageUrls` in @aegis/shared tries
  * for it, read from the committed card data. An errata printing falls back to the pre-errata art.
@@ -62,7 +64,8 @@ async function download(fetch, name) {
 }
 
 /**
- * Downloads `<id>.webp` for each id, or `<id>-Sample.webp` when only the sample scan exists.
+ * Downloads `<id>.webp` for each id. Without it, stores `<id>-Sample.webp` from the local scans
+ * or, failing that, from an origin's sample scan.
  * A sample never blocks the real image: the next sync still looks for `<id>.webp`.
  */
 export async function syncCardImages({ source, destination, fetch = globalThis.fetch, concurrency = 16 }) {
@@ -92,6 +95,12 @@ export async function syncCardImages({ source, destination, fetch = globalThis.f
       result.present += 1;
       return;
     }
+    const local = `${source}/${LOCAL_CARD_IMAGES}/${id}.webp`;
+    if (existsSync(local)) {
+      write(`${id}-Sample.webp`, readFileSync(local));
+      result.downloaded += 1;
+      return;
+    }
     const sample = await download(fetch, `${id}-Sample.webp`);
     if (sample) {
       write(`${id}-Sample.webp`, sample);
@@ -106,10 +115,8 @@ export async function syncCardImages({ source, destination, fetch = globalThis.f
       while (queue.length) await syncOne(queue.shift());
     }),
   );
-  // The client also falls back to scans bundled with the web app (apps/web/public/cards/unpublished).
-  const bundled = (id) => existsSync(`${source}/apps/web/public/cards/unpublished/${id}.webp`);
   result.missing = printings
-    .filter((printing) => printing.imageIds.every((id) => unavailable.has(id) && !bundled(id)))
+    .filter((printing) => printing.imageIds.every((id) => unavailable.has(id)))
     .map((printing) => printing.id)
     .sort();
   return result;

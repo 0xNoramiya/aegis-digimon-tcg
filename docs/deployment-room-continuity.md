@@ -72,6 +72,7 @@ The gateway serves card images from `/opt/aegis-rollout/assets/card-images`, at 
 
 - It reads the image ids from the committed card data and downloads only the missing files.
 - It never replaces a file, except a `-Sample` scan once the real image appears.
+- When no origin has an image, it copies the scan from `data/card-images/<id>.webp` in the source checkout as `<id>-Sample.webp`. See [local card scans](../data/card-images/README.md).
 - Every `deploy` and `deploy-web` runs it after extracting the web release. A failed sync logs a warning and does not block the release.
 - A daily root cron job on the VPS runs it too, to pick up images upstream publishes between releases. Its log is `/opt/aegis-rollout/logs/card-images.log`.
 

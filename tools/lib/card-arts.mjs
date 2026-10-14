@@ -1,7 +1,7 @@
 /**
  * English printings which the source's English arts (`AAs`) omit: some sit only among its
  * Japanese arts (`JAAs`), others are not listed at all. The source hosts most of their
- * images; the rest are bundled by `packages/shared/src/cards/images.ts`. Mapped to
+ * images; the rest are local scans in `data/card-images`. Mapped to
  * their English product label. Before adding one, view the upstream image and confirm the
  * English product (the wiki the source scrapes, digimoncard.io, or a matching stamp on a
  * listed printing): Japanese labels often name Japan-only products, and the source also
