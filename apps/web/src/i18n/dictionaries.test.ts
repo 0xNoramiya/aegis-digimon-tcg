@@ -45,3 +45,14 @@ describe.each(translatedLocales)("%s dictionary", (locale) => {
     expect(mismatches).toEqual([]);
   });
 });
+
+const literalChineseMistranslations = /甲板|火柴|沃尔沃|沃爾沃|主菜(?!单)/;
+
+describe.each(["zh-CN", "zh-TW"] as const)("%s game terminology", (locale) => {
+  it("avoids literal mistranslations of deck, match, Digivolve and main deck", () => {
+    const mistranslated = Object.entries(dictionaries[locale])
+      .filter(([, value]) => literalChineseMistranslations.test(value))
+      .map(([key, value]) => ({ key, value }));
+    expect(mistranslated).toEqual([]);
+  });
+});
