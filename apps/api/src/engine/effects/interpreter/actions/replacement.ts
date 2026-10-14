@@ -567,7 +567,8 @@ export async function runReplacement(
     const ownerSeat = ctx.source.ownerSeat;
     const residentTiming =
       ctx.residentCostRegistration === true || ctx.continuousPass === true ? ctx.activeTiming : undefined;
-    const residentTurnMatches = () =>
+    const isResidentReductionActive = () =>
+      (ctx.residentCostRegistration !== true || ctx.isResidentCostSourceActive?.() !== false) &&
       (residentTiming !== "YourTurn" || ctx.game.state.turnSeat === ownerSeat) &&
       (residentTiming !== "OpponentsTurn" || ctx.game.state.turnSeat !== ownerSeat);
     ctx.fx.subscribeReplacement({
@@ -609,7 +610,7 @@ export async function runReplacement(
       ...(mode === "increaseCost"
         ? {
             appliesTo: (target: Permanent) => {
-              if (!residentTurnMatches()) return false;
+              if (!isResidentReductionActive()) return false;
               // A Tamer used through a Hybrid "as if level 3 Digimon" path is the Digimon
               // that would digivolve for this reaction (EX3-016 Q3382/Q3383). The action verb
               // has already established that special identity, so do not reject it merely
@@ -621,7 +622,7 @@ export async function runReplacement(
         : mode === "reduceCost" && replacementSourceFilter !== undefined
           ? {
               appliesTo: (target: Permanent) =>
-                residentTurnMatches() &&
+                isResidentReductionActive() &&
                 (!target.inBreeding || filterReachesBreeding(replacementSourceFilter)) &&
                 permanentMatchesFilter(ctx, target, replacementSourceFilter, ctx.source),
             }
@@ -635,7 +636,7 @@ export async function runReplacement(
             // without this identity check every later play by the same seat would be offered the
             // bearer's cost (BT15-102's "place up to 3 [Dark Masters]" prompt on any other card).
             appliesTo: (target: Permanent, originZone?: ZoneRef) =>
-              residentTurnMatches() &&
+              isResidentReductionActive() &&
               target.controllerSeat === ownerSeat &&
               !target.inBreeding &&
               // The base remains on the field; an into-zone constraint describes
