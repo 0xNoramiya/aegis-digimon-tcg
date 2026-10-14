@@ -169,7 +169,7 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
   for (const seat of [0, 1] as const) {
     const config = options.seats[seat];
     const send = (intent: Intent) => {
-      if (closed) return;
+      if (closed || options.signal?.aborted) return;
       const rejectedCardId =
         intent.type === "digivolve"
           ? state.players[seat]?.hand.find((card) => card.instanceId === intent.instanceId)?.cardId

@@ -28,6 +28,10 @@ type EvaluationInput = {
   simulations?: number;
   learnerMctsSimulations?: number;
   mctsMaxSearches?: number;
+  mctsExploration?: number;
+  mctsMaxSearchTimeMs?: number;
+  mctsRolloutTurns?: number;
+  mctsMoveOrderingProgram?: unknown;
   mctsStartAfterDecisions?: number;
   searchSeed?: number;
   turnLimit?: number;
@@ -43,6 +47,13 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
       !Array.isArray(input.decks) ||
       input.decks.length !== 2 ||
       !input.decks.every((deck) => typeof deck === "string" || Number.isSafeInteger(deck)) ||
+      (input.mctsRolloutTurns !== undefined &&
+        (!Number.isSafeInteger(input.mctsRolloutTurns) ||
+          input.mctsRolloutTurns < 1 ||
+          input.mctsRolloutTurns > 200)) ||
+      (input.mctsExploration !== undefined && (!Number.isFinite(input.mctsExploration) || input.mctsExploration < 0)) ||
+      (input.mctsMaxSearchTimeMs !== undefined &&
+        (!Number.isFinite(input.mctsMaxSearchTimeMs) || input.mctsMaxSearchTimeMs <= 0)) ||
       (input.turnLimit !== undefined &&
         (!Number.isSafeInteger(input.turnLimit) || input.turnLimit < 1 || input.turnLimit > 200)) ||
       (input.opponent !== undefined && !["mcts", "heuristic", "balanced"].includes(input.opponent)) ||
@@ -62,6 +73,8 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
       throw new Error("Worker engine changed since experiment was pinned");
     const program = parseHeuristic(input.program);
     const opponentProgram = input.opponentProgram === undefined ? undefined : parseHeuristic(input.opponentProgram);
+    const moveOrderingProgram =
+      input.mctsMoveOrderingProgram === undefined ? undefined : parseHeuristic(input.mctsMoveOrderingProgram);
     const decks = input.decks.map((source) =>
       typeof source === "number" ? randomDeck(source) : evolutionDeck(source),
     );
@@ -76,6 +89,15 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
     const residualSearch = Boolean(
       program.basePolicy && (input.opponent === "mcts" || input.learnerMctsSimulations !== undefined),
     );
+    if (
+      !residualSearch &&
+      (input.mctsExploration !== undefined ||
+        input.mctsMaxSearchTimeMs !== undefined ||
+        input.mctsRolloutTurns !== undefined ||
+        moveOrderingProgram !== undefined)
+    ) {
+      throw new Error("Search tuning requires residual MCTS");
+    }
     const runner = residualSearch ? runMctsResidualMatch : program.basePolicy ? runResidualMatch : runEvolutionMatch;
     const { result, valid, decisions, traces, searches } = await runner({
       seed: input.seed,
@@ -99,6 +121,10 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
                   ? (1 as const)
                   : (0 as const),
             maxSearches: input.mctsMaxSearches,
+            exploration: input.mctsExploration,
+            maxSearchTimeMs: input.mctsMaxSearchTimeMs,
+            rolloutTurns: input.mctsRolloutTurns,
+            moveOrderingProgram,
             startAfterDecisions: input.mctsStartAfterDecisions,
           }
         : {}),
@@ -123,6 +149,8 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
             completed: report.completed,
             invalid: report.invalid,
             nodes: report.nodes,
+            ...(report.leafEvaluations === undefined ? {} : { leafEvaluations: report.leafEvaluations }),
+            ...(report.timeBudget === undefined ? {} : { timeBudget: report.timeBudget }),
           })}\n`,
         ),
     });

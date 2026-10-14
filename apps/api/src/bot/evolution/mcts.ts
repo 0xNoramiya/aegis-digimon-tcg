@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { performance } from "node:perf_hooks";
 import type { Seat } from "@aegis/shared";
 import type { TrainingWindow } from "../training/policy.js";
 
@@ -18,6 +19,8 @@ export interface SearchReport {
   completed: number;
   invalid: number;
   nodes: number;
+  leafEvaluations?: number;
+  timeBudget?: { requestedMs: number; elapsedMs: number; exhausted: boolean };
   root: { action: number; visits: number; meanReward: number }[];
 }
 
@@ -49,6 +52,7 @@ export async function searchMcts(options: {
   seat: Seat;
   simulations: number;
   exploration?: number;
+  maxDurationMs?: number;
   signal?: AbortSignal;
   rolloutChoose: (window: TrainingWindow) => number;
   simulate: (
@@ -60,13 +64,22 @@ export async function searchMcts(options: {
     throw new Error("MCTS simulations must be an integer from 1 to 10000");
   const exploration = options.exploration ?? Math.SQRT2;
   if (!Number.isFinite(exploration) || exploration < 0) throw new Error("Invalid UCT exploration constant");
+  if (options.maxDurationMs !== undefined && (!Number.isFinite(options.maxDurationMs) || options.maxDurationMs <= 0)) {
+    throw new Error("MCTS time budget must be positive and finite");
+  }
+  const started = performance.now();
+  const timeExhausted = () =>
+    options.maxDurationMs !== undefined && performance.now() - started >= options.maxDurationMs;
   const nodes = new Map<string, SearchNode>();
   let completed = 0;
   let invalid = 0;
   let attempted = 0;
   for (let simulation = 0; simulation < options.simulations * 3 && completed < options.simulations; simulation++) {
-    attempted++;
     options.signal?.throwIfAborted();
+    if (attempted > 0 && timeExhausted()) {
+      break;
+    }
+    attempted++;
     const path: { node: SearchNode; edge: SearchEdge }[] = [];
     let expanded = false;
     const choose = (window: TrainingWindow): number => {
@@ -132,6 +145,22 @@ export async function searchMcts(options: {
   if (completed === 0 || root[0]!.visits === 0) throw new Error("No valid MCTS rollouts reached the root");
   return {
     action: root[0]!.action,
-    report: { requested: options.simulations, attempted, completed, invalid, nodes: nodes.size, root },
+    report: {
+      requested: options.simulations,
+      attempted,
+      completed,
+      invalid,
+      nodes: nodes.size,
+      root,
+      ...(options.maxDurationMs === undefined
+        ? {}
+        : {
+            timeBudget: {
+              requestedMs: options.maxDurationMs,
+              elapsedMs: performance.now() - started,
+              exhausted: timeExhausted(),
+            },
+          }),
+    },
   };
 }

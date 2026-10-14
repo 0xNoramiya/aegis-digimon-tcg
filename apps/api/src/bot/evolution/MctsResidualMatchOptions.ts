@@ -11,6 +11,10 @@ export type MctsResidualMatchOptions = {
   opponentProgram?: HeuristicProgram;
   searchSeat?: Seat;
   simulations: number;
+  exploration?: number;
+  maxSearchTimeMs?: number;
+  rolloutTurns?: number;
+  moveOrderingProgram?: HeuristicProgram;
   searchSeed: number;
   maxSearches?: number;
   startAfterDecisions?: number;

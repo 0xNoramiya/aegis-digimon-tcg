@@ -15,6 +15,9 @@ import { informationKey, searchMcts, type SearchReport } from "#api/bot/evolutio
 import type { MctsResidualMatchOptions } from "#api/bot/evolution/MctsResidualMatchOptions";
 import type { RecordedResidualChoice } from "#api/bot/evolution/RecordedResidualChoice";
 import { SEED_RESIDUAL } from "#api/bot/evolution/residualPolicy";
+import { evaluateSearchPosition } from "#api/bot/evolution/evaluateSearchPosition";
+import { orderMctsActions } from "#api/bot/evolution/orderMctsActions";
+import type { HeuristicProgram } from "#api/bot/evolution/heuristic";
 
 type RecordedIntent = {
   seat: Seat;
@@ -36,7 +39,7 @@ function observedChoice(choice: RecordedResidualChoice): string {
     .digest("hex");
 }
 
-function searchWindow(choice: RecordedResidualChoice, seed: number): TrainingWindow {
+function searchWindow(choice: RecordedResidualChoice, seed: number, program?: HeuristicProgram): TrainingWindow {
   const view = buildBotView(choice.engine.state, choice.seat);
   if (view === undefined) throw new Error("Residual search requires a seated observation");
   const actions = mainActions(choice.engine, choice.seat, {
@@ -46,12 +49,13 @@ function searchWindow(choice: RecordedResidualChoice, seed: number): TrainingWin
   const key = JSON.stringify(choice.baseline);
   const alternatives = actions.filter((action) => JSON.stringify(action.intent) !== key);
   shuffleInPlace(alternatives, makeRng(seed));
-  return {
+  const window: TrainingWindow = {
     observation: trainingObservation(choice.engine.state, choice.seat),
     kind: "main",
     selected: [],
     actions: [{ intent: choice.baseline, label: "Current residual policy" }, ...alternatives],
   };
+  return program === undefined ? window : orderMctsActions({ window, program });
 }
 
 function searchable(choice: RecordedResidualChoice): boolean {
@@ -64,10 +68,18 @@ function searchable(choice: RecordedResidualChoice): boolean {
 }
 
 export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
+  if (options.moveOrderingProgram?.basePolicy !== undefined) {
+    throw new Error("MCTS ordering requires a standalone heuristic program");
+  }
   if (
     !Number.isSafeInteger(options.simulations) ||
     options.simulations < 0 ||
     options.simulations > 10000 ||
+    (options.rolloutTurns !== undefined &&
+      (!Number.isSafeInteger(options.rolloutTurns) || options.rolloutTurns < 1 || options.rolloutTurns > 200)) ||
+    (options.exploration !== undefined && (!Number.isFinite(options.exploration) || options.exploration < 0)) ||
+    (options.maxSearchTimeMs !== undefined &&
+      (!Number.isFinite(options.maxSearchTimeMs) || options.maxSearchTimeMs <= 0)) ||
     [options.maxSearches, options.startAfterDecisions].some(
       (limit) => limit !== undefined && (!Number.isSafeInteger(limit) || limit < 0),
     )
@@ -113,6 +125,7 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
     let cursor = 0;
     let reachedRoot = false;
     let mismatch = false;
+    let leafValue: number | undefined;
     const control = new AbortController();
     const seats = seatsFor(async (choice) => {
       const entry = prefix[cursor++];
@@ -138,7 +151,7 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
           control.abort();
           return choice.baseline;
         }
-        const restored = searchWindow(choice, options.searchSeed + prefix.length);
+        const restored = searchWindow(choice, options.searchSeed + prefix.length, options.moveOrderingProgram);
         if (
           informationKey(restored) !== informationKey(root) ||
           JSON.stringify(restored.actions.map((action) => action.intent)) !==
@@ -152,8 +165,19 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
         await determinize(choice.engine, searchSeat, sampleSeed);
         return structuredClone(root.actions[choose(root)]!.intent);
       }
+      if (
+        options.rolloutTurns !== undefined &&
+        choice.engine.state.turnCount >= root.observation.turn + options.rolloutTurns &&
+        choice.method === "chooseMainAction" &&
+        choice.engine.state.pendingDecision === undefined &&
+        choice.engine.state.combatWindow === undefined
+      ) {
+        leafValue = evaluateSearchPosition(trainingObservation(choice.engine.state, searchSeat));
+        control.abort();
+        return choice.baseline;
+      }
       if (choice.seat !== searchSeat || !searchable(choice)) return choice.baseline;
-      const window = searchWindow(choice, sampleSeed + cursor);
+      const window = searchWindow(choice, sampleSeed + cursor, options.moveOrderingProgram);
       return structuredClone(window.actions[choose(window)]!.intent);
     }, false);
     const result = await runBotMatch({
@@ -165,9 +189,31 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
       measureDecisionLatencies: false,
       signal: AbortSignal.any([control.signal, signal]),
     });
+    const healthyCutoff =
+      leafValue !== undefined &&
+      result.reason === "cancelled" &&
+      !signal.aborted &&
+      !result.timedOut &&
+      result.errors.length === 0 &&
+      result.rejections.length === 0 &&
+      !result.events?.some((event) => event.kind === "actionRejected") &&
+      result.seats.every((seat) => seat.inferenceFallbacks.error === 0 && seat.inferenceFallbacks.timeout === 0);
+    function getReward(): number {
+      if (healthyCutoff) {
+        return leafValue!;
+      }
+      if (result.winnerSeat === searchSeat) {
+        return 1;
+      }
+      if (result.winnerSeat === undefined) {
+        return 0.5;
+      }
+      return 0;
+    }
     return {
-      valid: reachedRoot && !mismatch && validEvolutionGame(result),
-      reward: result.winnerSeat === searchSeat ? 1 : result.winnerSeat === undefined ? 0.5 : 0,
+      valid: reachedRoot && !mismatch && (validEvolutionGame(result) || healthyCutoff),
+      reward: getReward(),
+      evaluatedLeaf: healthyCutoff,
     };
   };
   const seats = seatsFor(async (choice) => {
@@ -180,28 +226,41 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
       transcript.length >= (options.startAfterDecisions ?? 0) &&
       searches.length < (options.maxSearches ?? Number.POSITIVE_INFINITY)
     ) {
-      const root = searchWindow(choice, options.searchSeed + transcript.length);
+      const root = searchWindow(choice, options.searchSeed + transcript.length, options.moveOrderingProgram);
       if (root.actions.length > 1) {
         const prefix = [...transcript];
         const start = performance.now();
         const signal = choice.signal ?? new AbortController().signal;
+        let leafEvaluations = 0;
         const search = await searchMcts({
           root,
           seat: searchSeat,
           simulations: options.simulations,
+          exploration: options.exploration,
+          maxDurationMs: options.maxSearchTimeMs,
           signal,
           rolloutChoose: () => 0,
-          simulate: (choose, simulation) =>
-            simulate(
+          simulate: async (choose, simulation) => {
+            const result = await simulate(
               prefix,
               root,
               choose,
               (options.searchSeed + prefix.length * 7919 + simulation * 104729) >>> 0,
               signal,
-            ),
+            );
+            if (result.valid && result.evaluatedLeaf) {
+              leafEvaluations++;
+            }
+            return result;
+          },
         });
         intent = structuredClone(root.actions[search.action]!.intent);
-        const report = { ...search.report, seat: searchSeat, elapsedMs: performance.now() - start };
+        const report = {
+          ...search.report,
+          seat: searchSeat,
+          elapsedMs: performance.now() - start,
+          ...(options.rolloutTurns === undefined ? {} : { leafEvaluations }),
+        };
         searches.push(report);
         options.onSearch?.(report);
       }
@@ -225,7 +284,13 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
   });
   return {
     result,
-    valid: validEvolutionGame(result) && searches.every((search) => search.completed === search.requested),
+    valid:
+      validEvolutionGame(result) &&
+      searches.every(
+        (search) =>
+          search.invalid === 0 &&
+          (search.completed === search.requested || (search.completed > 0 && search.timeBudget?.exhausted === true)),
+      ),
     decisions: transcript.length,
     traces,
     searches,

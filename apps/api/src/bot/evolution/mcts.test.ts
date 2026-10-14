@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { performance } from "node:perf_hooks";
+import { describe, expect, it, vi } from "vitest";
 import { setupEngine } from "../../engine/testkit/harness.js";
 import { trainingObservation } from "../training/observation.js";
 import type { TrainingWindow } from "../training/policy.js";
@@ -6,6 +7,81 @@ import { searchMcts } from "./mcts.js";
 import { determinize } from "./determinize.js";
 
 describe("information-set MCTS", () => {
+  it("returns the best completed sample when the time budget expires between rollouts", async () => {
+    const setup = setupEngine({});
+    await setup.ready();
+    const root: TrainingWindow = {
+      observation: trainingObservation(setup.state, 0),
+      kind: "main",
+      selected: [],
+      actions: [
+        { intent: { type: "endPhase" }, label: "Pass" },
+        { intent: { type: "hatchEgg" }, label: "Hatch" },
+      ],
+    };
+    let now = 0;
+    const clock = vi.spyOn(performance, "now").mockImplementation(() => now);
+    try {
+      const result = await searchMcts({
+        root,
+        seat: 0,
+        simulations: 128,
+        maxDurationMs: 10,
+        exploration: 0,
+        rolloutChoose: () => 0,
+        simulate: async (choose) => {
+          const action = choose(root);
+          now += 6;
+          return { valid: true, reward: action === 1 ? 1 : 0 };
+        },
+      });
+      expect(result.action).toBe(1);
+      expect(result.report).toMatchObject({
+        requested: 128,
+        completed: 2,
+        attempted: 2,
+        invalid: 0,
+        timeBudget: { requestedMs: 10, elapsedMs: 12, exhausted: true },
+      });
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
+  it("does not turn an invalid rollout into a valid result when time expires", async () => {
+    const setup = setupEngine({});
+    await setup.ready();
+    const root: TrainingWindow = {
+      observation: trainingObservation(setup.state, 0),
+      kind: "main",
+      selected: [],
+      actions: [{ intent: { type: "endPhase" }, label: "Pass" }],
+    };
+    let now = 0;
+    let attempts = 0;
+    const clock = vi.spyOn(performance, "now").mockImplementation(() => now);
+    try {
+      await expect(
+        searchMcts({
+          root,
+          seat: 0,
+          simulations: 128,
+          maxDurationMs: 10,
+          rolloutChoose: () => 0,
+          simulate: async (choose) => {
+            attempts++;
+            choose(root);
+            now = 11;
+            return { valid: false, reward: 1 };
+          },
+        }),
+      ).rejects.toThrow("No valid MCTS rollouts");
+      expect(attempts).toBe(1);
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
   it("stops simulation work when an active search is cancelled", async () => {
     const setup = setupEngine({});
     await setup.ready();
