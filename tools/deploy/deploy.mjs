@@ -4,6 +4,7 @@ import { mkdirSync, readFileSync, writeFileSync, renameSync, existsSync, rmSync,
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { describeSync, syncCardImages } from "./card-images.mjs";
+import { describeRegionalSync, hasCwebp, syncRegionalCardImages } from "./regional-card-images.mjs";
 import { FIXED_SLOTS, isDeploymentSlot, readManifest, validateManifest, assertEmptySlot } from "./shared.mjs";
 import { API_MEMORY_MIB, REDIS_MEMORY_MIB, sampleHostCapacity, waitForHostCapacity } from "./resources.mjs";
 import { retainArtifacts } from "./retention.mjs";
@@ -11,6 +12,7 @@ import { relocateSourceMaps } from "./sourcemaps.mjs";
 
 // Reserve the new services' full limits plus headroom for builds and host services.
 const OVERFLOW_REQUIRED_KIB = (3 * API_MEMORY_MIB + REDIS_MEMORY_MIB + 2048) * 1024;
+const REGIONAL_IMAGE_BUDGET_MS = 5 * 60_000;
 
 export function assertOverflowCapacity(meminfo, requiredKiB = OVERFLOW_REQUIRED_KIB) {
   const available = /^MemAvailable:\s+(\d+)\s+kB\s*$/m.exec(meminfo);
@@ -306,6 +308,20 @@ export async function controller({
       } catch (error) {
         // A failed sync leaves new cards without art until the next run; it must not block a release.
         console.warn(`[aegis/deploy] card image sync failed: ${error.message}`);
+      }
+      try {
+        if (await hasCwebp()) {
+          const regional = await syncRegionalCardImages({
+            source,
+            destination: `${state}/assets/card-images`,
+            deadline: Date.now() + REGIONAL_IMAGE_BUDGET_MS,
+          });
+          console.log(describeRegionalSync(regional));
+        } else {
+          console.warn("[aegis/deploy] regional card images skipped: cwebp is not installed");
+        }
+      } catch (error) {
+        console.warn(`[aegis/deploy] regional card image sync failed: ${error.message}`);
       }
     }
 

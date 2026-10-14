@@ -1912,6 +1912,8 @@ const interfaceMessages = {
   "library.baseArt": "원본",
   "library.alternateArt": "이색 일러스트 {number}",
   "library.japaneseArt": "{label}, 일본판",
+  "library.koreanArt": "{label}, 한국판",
+  "library.chineseArt": "{label}, 중국판",
   "deck.copyArtwork": "{number}번째 카드",
   "deck.editArtwork": "일러스트 선택",
   "deck.splitResize": "드래그해서 덱 패널 크기 조절",

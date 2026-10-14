@@ -4,6 +4,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { describeRegionalSync, hasCwebp, syncRegionalCardImages } from "./regional-card-images.mjs";
 
 export const CARD_IMAGE_ORIGINS = [
   "https://web-garage.takaotaku.de",
@@ -134,10 +135,18 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     return index < 0 ? fallback : args[index + 1];
   };
   const state = resolve(option("state", "/opt/aegis-rollout"));
-  syncCardImages({ source: resolve(option("source", "/source")), destination: `${state}/assets/card-images` })
-    .then((result) => console.log(`[aegis/card-images] ${describeSync(result)}`))
-    .catch((error) => {
-      console.error(`[aegis/card-images] ${error.message}`);
-      process.exitCode = 1;
-    });
+  const source = resolve(option("source", "/source"));
+  const destination = `${state}/assets/card-images`;
+  const main = async () => {
+    console.log(`[aegis/card-images] ${describeSync(await syncCardImages({ source, destination }))}`);
+    if (!(await hasCwebp())) {
+      console.warn("[aegis/card-images] regional card images skipped: cwebp is not installed");
+      return;
+    }
+    console.log(`[aegis/card-images] ${describeRegionalSync(await syncRegionalCardImages({ source, destination }))}`);
+  };
+  main().catch((error) => {
+    console.error(`[aegis/card-images] ${error.message}`);
+    process.exitCode = 1;
+  });
 }

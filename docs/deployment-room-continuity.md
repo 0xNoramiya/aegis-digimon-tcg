@@ -85,6 +85,43 @@ docker run --rm -v /etc/dokploy:/etc/dokploy:ro -v /opt/aegis-rollout:/opt/aegis
 In local development, Vite proxies `/assets/card-images` to the deployed Oracle VPS mirror at
 `https://aegis-digi.online/assets/card-images`. `AEGIS_CARD_IMAGE_ORIGIN` overrides that mirror.
 
+## Regional card art
+
+Korean and Chinese printings come from the official regional sites, not from the upstream card app. The repository keeps only their data. The VPS downloads and converts the images, like the upstream mirror.
+
+| Region  | Source                                                                  | Art IDs                      |
+| ------- | ----------------------------------------------------------------------- | ---------------------------- |
+| Chinese | JSON card list at `dtcgweb-api.digimoncard.cn`                          | `BT1-010-C`, `BT1-010_P1-C`… |
+| Korean  | HTML card list at `digimoncard.co.kr`, behind a JavaScript cookie check | `BT1-010-K`, `BT1-010_P1-K`… |
+
+Both sites stamp their images as samples: Korean images carry "SAMPLE", and Chinese images carry "样品图禁止转载" ("sample image, reproduction prohibited").
+
+### Refresh the data
+
+Run `node tools/sync-regional-card-arts.mjs` on a maintainer machine and commit the two changed files:
+
+1. It reads both card lists and maps each printing to a canonical card. It accepts unpadded numbers (`EX5-43`) and parallel suffixes (`EX1-001P`, `P-220_BT24`).
+2. It rejects a printing whose level, DP, or play cost differs from the committed card. These are mostly pre-errata prints, and their art would show stats the game does not use.
+3. It assigns art IDs. The first base printing becomes `-C` or `-K`, and the other printings become `_P<n>-C` or `_P<n>-K`. `packages/shared/src/cards/data/regional-art-sources.json` records the source key and image URL of each ID. Later syncs keep those IDs and never reuse one, so a saved deck keeps its chosen art.
+4. It writes `packages/shared/src/cards/data/regional-arts.json`, the art list the client reads.
+
+`--images <dir>` also converts the images into that directory for a local preview. It needs `cwebp` (macOS: `brew install webp`). `--limit <n>` and `--concurrency <n>` bound that preview.
+
+### Mirror the images
+
+`tools/deploy/regional-card-images.mjs` reads `regional-art-sources.json`, downloads each missing image, converts it with `cwebp` to a 430-pixel-wide WebP, and writes `<artId>.webp` to `/opt/aegis-rollout/assets/card-images`. Like the upstream mirror, it only adds files. That matters because Cloudflare caches card images as `immutable` for a year.
+
+- Every `deploy` and `deploy-web` runs it for up to five minutes after the upstream sync. The deployer image installs `libwebp-tools`. A failure logs a warning and does not block the release.
+- The daily cron job runs it after the upstream sync, with no time limit. Without `cwebp` it logs that it skipped the regional images. The cron container installs `libwebp-tools` first:
+
+```sh
+docker run --rm --cpus 1 -v /etc/dokploy:/etc/dokploy:ro -v /opt/aegis-rollout:/opt/aegis-rollout node:26-alpine \
+  sh -c "apk add --no-cache libwebp-tools >/dev/null && node /etc/dokploy/compose/aegis-rgise8/code/tools/deploy/card-images.mjs \
+  --source /etc/dokploy/compose/aegis-rgise8/code --state /opt/aegis-rollout"
+```
+
+The first fill converts about 13,000 images in one long cron run. Until an image is mirrored, the client falls back to the card's base art.
+
 ## Migration from revision-named generations
 
 The controller and gateway continue to read and route existing g-<12 hex> identifiers so those processes can drain. New deploys prefer a fixed blue, red, or green slot and use an additional generation when all fixed slots remain occupied. Do not edit the manifest or remove a generation's state directory by hand.

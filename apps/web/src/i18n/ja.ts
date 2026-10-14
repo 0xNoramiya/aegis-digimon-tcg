@@ -1935,6 +1935,8 @@ const interfaceMessages = {
   "library.baseArt": "オリジナル",
   "library.alternateArt": "別イラスト{number}",
   "library.japaneseArt": "{label}、日本語版",
+  "library.koreanArt": "{label}、韓国語版",
+  "library.chineseArt": "{label}、中国語版",
   "deck.copyArtwork": "{number}枚目",
   "deck.editArtwork": "イラストを選択",
   "deck.splitResize": "ドラッグしてデッキパネルのサイズを変更",
