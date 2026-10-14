@@ -134,3 +134,29 @@ describe("de game terminology", () => {
     expect(informal).toEqual([]);
   });
 });
+
+const literalJapaneseMistranslations =
+  /デジボル|デジボリューション|デジエッグ|エッグデッキ|卵|繁殖|飼育|ハッチ|パイル|サスペンド|一時停止|防犯|調教師|試合|プレーヤー|イージス|アイギス|＜/;
+
+describe("ja game terminology", () => {
+  it("avoids literal mistranslations of Digivolve, Digi-Egg, breeding, hatch, suspend, match and Aegis", () => {
+    const mistranslated = Object.entries(dictionaries.ja)
+      .filter(([key, value]) => literalJapaneseMistranslations.test(value) && !pauseKeys.has(key))
+      .map(([key, value]) => ({ key, value }));
+    expect(mistranslated).toEqual([]);
+  });
+
+  it("uses トラッシュ for the card-game trash and keeps ゴミ箱 for Google Drive", () => {
+    const misused = Object.entries(dictionaries.ja)
+      .filter(([key, value]) => /ゴミ/.test(value) && !googleDriveTrashKeys.has(key))
+      .map(([key, value]) => ({ key, value }));
+    expect(misused).toEqual([]);
+  });
+
+  it("uses 消滅 for deleting Digimon, not file deletion", () => {
+    const misused = Object.entries(dictionaries.ja)
+      .filter(([key, value]) => inGameKey.test(key) && /削除|消去/.test(value))
+      .map(([key, value]) => ({ key, value }));
+    expect(misused).toEqual([]);
+  });
+});
