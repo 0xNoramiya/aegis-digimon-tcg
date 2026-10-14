@@ -1046,6 +1046,11 @@ const interfaceMessages = {
   "game.fullscreen.enter": "Plein écran",
   "game.fullscreen.exit": "Quitter le plein écran",
   "game.skipPresentation": "Passer les animations",
+  "game.effectConfirm": "OK",
+  "game.effectConfirmLabel": "Passer à l'effet suivant",
+  "settings.effectConfirmationHold": "Garder les effets jusqu'à OK",
+  "settings.effectConfirmationHoldDesc":
+    "Contre le bot, chaque effet reste à l'écran jusqu'à ce que vous appuyiez sur OK.",
   "game.noActions": "Aucune action pour l'instant.",
   "game.surrender": "Abandonner",
   "game.surrenderConfirmTitle": "Abandonner ce match ?",

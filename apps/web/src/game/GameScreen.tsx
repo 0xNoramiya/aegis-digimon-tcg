@@ -138,6 +138,7 @@ import type { PresentationPacing, PresentationProbe } from "./presentationProbe"
 import { TIMINGS } from "./timings";
 import { loadReconnectSession } from "../net/reconnectSession";
 import { pendingFateBadges } from "./pendingFate";
+import { useEffectConfirmationHold } from "./effectConfirmationHold";
 
 const SERIES_HOP_DELAY_MS = 1500;
 
@@ -321,6 +322,7 @@ function GameScreenSession({
   }, [leaveForfeits, onLeaveForfeitsChange, connectedRoom]);
 
   const vsBot = startMode === "bot";
+  const effectConfirmationHold = useEffectConfirmationHold();
   const isPrivateMatch = startMode === "private_host" || startMode === "private_guest" || !!state?.roomCode;
 
   const botCalledRef = useRef(false);
@@ -566,6 +568,7 @@ function GameScreenSession({
     },
     devProbe,
     presentationPacing,
+    holdEffectsForConfirmation: vsBot && !spectating && effectConfirmationHold,
   });
   const you = state?.players[viewerSeat];
   const opp = state?.players[otherSeat(viewerSeat)];
