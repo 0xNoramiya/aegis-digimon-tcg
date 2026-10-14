@@ -86,8 +86,46 @@ Results varied by deck and do not establish superiority. The learned model is
 not the hand-authored evaluator shipped here and is not enabled by a CLI option.
 Its provenance includes the model and hook hashes as well as the engine hash.
 
-A residual scoring optimization was removed after paired CPU measurements found
-no consistent improvement. Learned action ordering, adaptive allocation of time
-across decisions, shared-tree parallelism and an AlphaZero-style self-play
-training loop remain unimplemented. Independent match concurrency benchmarks
-must not be described as parallelizing an individual search tree.
+`policy-target-dataset-v1` contains 24 valid full matches with 32-simulation
+search targets. Both seats of each seed stay together: 12 games supply training
+and 12 supply validation. `policy-ordering-model-v1` fits a linear softmax model
+to visit frequencies among non-baseline alternatives, with game-equal weighting
+and scales fitted on training data only. Validation cross entropy decreased from
+2.25285034 for uniform probabilities to 2.25170267. This small imitation gain is
+not evidence of stronger play. Exported heuristic scores were checked on 3471
+alternatives. The resulting program is frozen before fresh-seed match testing;
+it remains an experimental artifact, not a default policy.
+
+`learned-ordering-confirmation-v1` completed 48 valid games: 24 paired
+comparisons across six decks, two fresh seed blocks and both seats. Both arms
+used 16 simulations and the same frozen learned value model; only ordering
+differed. The control won 14/24 and learned ordering won 9/24, with one gained
+game and six lost games. The descriptive paired-seed-block sign-flip p-value was
+0.125. Observed regressions affected Plutomon, Alphamon, Mamemon and Chronomon;
+Craniamon gained one game and Glowing Dawn retained its outcomes. Do not adopt
+this ordering model on this evidence. The independent audit recalculates pairs
+from raw results and rejects stale summaries; this rejection has a regression
+check using deliberately changed raw outcomes.
+
+`search-concurrency-full-v1` compares one, two and four independent match workers
+over the same four deck/seed cases, with a reversed second pass. Mean batch times
+were 85.04, 58.96 and 46.13 seconds respectively, including process startup.
+Four workers achieved 1.84 times the one-worker throughput, with identical
+non-timing outputs and a sampled peak of 1.50 GiB. The shared cgroup enforced
+4 GiB RAM and zero swap, with no memory-limit events. This is local batch
+throughput evidence, not parallelization of an individual search tree.
+
+The first-decision `ordering-exploration-pilot-v1` diagnostic did not recover the
+manual short-value evaluator's failure by switching from shuffled to heuristic
+ordering or reducing exploration from `sqrt(2)` to 0.1. Its two-seat sample is
+too small to select a general exploration constant. A residual scoring
+optimization was also removed after paired CPU measurements found no consistent
+improvement.
+
+Adaptive allocation of time across decisions, shared-tree parallelism and an
+AlphaZero-style self-play training loop remain unimplemented. The
+[OpenSpiel AlphaZero documentation](https://github.com/google-deepmind/open_spiel/blob/master/docs/alpha_zero.md)
+describes learned policy/value guidance and self-play for perfect-information
+games. Our experiments borrow the policy/value separation while retaining
+filtered observations and information-set search for hidden cards; they are
+not a direct AlphaZero implementation.
