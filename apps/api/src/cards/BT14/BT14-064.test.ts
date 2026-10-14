@@ -14,14 +14,14 @@ describe("BT14-064", () => {
         add: [{ to: "play", optional: true, filter: { playCostLte: 4 } }],
       });
   });
-  it("inherits a once-per-turn Commandramon play response when another own Digimon is deleted", () =>
+  it("inherits a once-per-turn Commandramon play response that trashes the rest when another own Digimon is deleted", () =>
     expect(compiled.effects?.find((entry) => entry.isInherited)).toMatchObject({
       frequency: "OncePerTurn",
       actions: [
         {
           kind: "SubTrigger",
           event: "onDeletionOf",
-          actions: [{ kind: "RevealAdd", revealCount: 3, rest: "deckBottom", add: [{ to: "play", payCost: false }] }],
+          actions: [{ kind: "RevealAdd", revealCount: 3, rest: "trash", add: [{ to: "play", payCost: false }] }],
         },
       ],
     }));
@@ -103,9 +103,10 @@ describe("BT14-064", () => {
     await settle(
       () =>
         s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.cardId === "BT16-050") &&
-        s.state.players[0]!.deck.map((card) => card.cardId).join(",") ===
-          "BT14-083,BT14-084,BT14-085,BT14-087,BT14-082,BT14-089" &&
-        s.state.players[0]!.trash.some((card) => card.cardId === "BT14-055"),
+        s.state.players[0]!.deck.map((card) => card.cardId).join(",") === "BT14-083,BT14-084,BT14-085,BT14-087" &&
+        ["BT14-055", "BT14-082", "BT14-089"].every((cardId) =>
+          s.state.players[0]!.trash.some((card) => card.cardId === cardId),
+        ),
     );
 
     expect(
@@ -118,14 +119,14 @@ describe("BT14-064", () => {
     ).toBe(true);
     expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.cardId === "BT16-050")).toBe(true);
     expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.cardId === "BT14-055")).toBe(false);
-    expect(s.state.players[0]!.trash.some((card) => card.cardId === "BT14-055")).toBe(true);
+    expect(s.state.players[0]!.trash.map((card) => card.cardId)).toEqual(
+      expect.arrayContaining(["BT14-055", "BT14-082", "BT14-089"]),
+    );
     expect(s.state.players[0]!.deck.map((card) => card.cardId)).toEqual([
       "BT14-083",
       "BT14-084",
       "BT14-085",
       "BT14-087",
-      "BT14-082",
-      "BT14-089",
     ]);
     expect(s.state.players[0]!.deck.every((card) => card.faceUp === false)).toBe(true);
   });

@@ -81,7 +81,7 @@ export const compiled: CompiledCard = {
                   optional: true,
                 },
               ],
-              rest: "deckBottom",
+              rest: "trash",
             },
           ],
         },

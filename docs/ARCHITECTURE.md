@@ -135,10 +135,10 @@ matchmaking state, and each one advertises the public path where clients reach i
 | `AEGIS_REDIS_URL`                 | Shared matchmaking state. Unset means single-process: local presence, local driver, no public address.                                       |
 | `AEGIS_PROCESS_PATH`              | This process's unique path segment (`p1`, `p2`, …). Required whenever `AEGIS_REDIS_URL` is set.                                              |
 | `AEGIS_PUBLIC_HOST`               | Host clients connect to; falls back to `AEGIS_API_URL`. Combined with the path into the address Colyseus returns with each seat reservation. |
-| `AEGIS_LOG_DIR`                   | JSONL log directory. Production mounts the persistent rollout directory at `/logs`.                                                          |
-| `AEGIS_LOG_MAX_BYTES`             | Maximum bytes per JSONL segment before rotation. Production uses 256 MiB. Segments are deleted 12 hours after their last write.              |
+| `AEGIS_LOG_DIR`                   | JSONL log directory. Production mounts the persistent rollout directory at `/logs`. Replay lines also go to `replays/<matchId>.jsonl`.       |
+| `AEGIS_LOG_MAX_BYTES`             | Maximum bytes per JSONL segment before rotation. Production uses 256 MiB. Segments and match replay logs go 12 hours after their last write. |
 | `AEGIS_REPLAY_CAPTURE_ENABLED`    | `false` stops saving a match replay with bug reports filed from a match.                                                                     |
-| `AEGIS_REPLAY_CAPTURE_TIMEOUT_MS` | Time budget for copying a reported match's replay out of the logs (default 3000).                                                            |
+| `AEGIS_REPLAY_CAPTURE_TIMEOUT_MS` | Time budget for reading a reported match's replay log (default 3000).                                                                        |
 | `AEGIS_REPLAY_RETENTION_DAYS`     | Days a saved replay is kept (default 30).                                                                                                    |
 | `AEGIS_REPLAY_MAX_CHARS`          | Largest serialized replay kept with a report (default 2000000).                                                                              |
 | `AEGIS_STRICT_EFFECTS`            | `1` makes unsupported card effects throw, `0` makes them log and continue. Unset: throw unless `NODE_ENV=production`.                        |

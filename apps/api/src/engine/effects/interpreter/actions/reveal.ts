@@ -353,9 +353,10 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
     }
     let matches = revealed.filter((c) => !taken.has(c.instanceId) && qualifies(c));
     if (spec.to === "play") {
+      const playTarget = { filter: spec.filter, orFilters: spec.orFilters, count: 1 } as Target;
       matches = matches.filter(
         (card) =>
-          !playProhibited(card) ||
+          (!playProhibited(card) && playableCandidates(ctx, playTarget, [card]).length > 0) ||
           (spec.orDispositions ?? []).some(
             (choice) =>
               choice.to !== "play" &&

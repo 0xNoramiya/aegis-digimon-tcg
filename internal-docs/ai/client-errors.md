@@ -58,7 +58,8 @@ to the web image build. Local builds report `development`. The API adds its own
 Each accepted report is one INFO line in the API JSONL logs (`AEGIS_LOG_DIR`, on the VPS
 `/opt/aegis-rollout/logs`). The line's `data[0]` is `client_error` and `data[1]` is the
 report. INFO keeps these lines out of the Resend error emails. Log segments are kept for
-12 hours.
+12 hours. Bug report replays come from a separate per-match file; see
+[replay capture](../../docs/FEEDBACK.md#replay-capture).
 
 The endpoint lives under `/bug-reports` because the installed gateway
 (`tools/deploy/gateway.mjs`) and `docker/Caddyfile` already route that prefix to the API.

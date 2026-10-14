@@ -50,6 +50,11 @@ export function subTriggerIdentity(sub: SubTriggerSubscription, trigger?: Trigge
       trigger.subjectPermanentIds ?? (trigger.suspendedPermanentId ? [trigger.suspendedPermanentId] : []);
     if (subjects.length > 0) return `${identity}|suspend:${[...subjects].sort().join(",")}`;
   }
+  if (trigger !== undefined && sub.event === "whenHandTrashed") {
+    const trashed = trigger.handTrashedInstanceIds ?? [];
+    if (trashed.length > 0)
+      return `${identity}|handTrash:${trigger.handTrashedSeat ?? ""}:${[...trashed].sort().join(",")}`;
+  }
   return identity;
 }
 
@@ -72,7 +77,8 @@ export function uniqueOncePerTurnWatcherOccurrences(items: readonly ArmedSubTrig
       item.sub,
       item.sub.event === "whenLinked" ||
         item.sub.event === "whenAnyDigivolves" ||
-        item.sub.event === "whenOneOfYoursDigivolves"
+        item.sub.event === "whenOneOfYoursDigivolves" ||
+        item.sub.event === "whenHandTrashed"
         ? item.ctx.trigger
         : undefined,
     );

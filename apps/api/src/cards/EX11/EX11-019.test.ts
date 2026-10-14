@@ -25,11 +25,11 @@ describe("EX11-019 Shoemon", () => {
     expect(getCardDefinition(tokenId)).toMatchObject({
       nameEn: "Familiar Token",
       colors: ["Yellow"],
-      level: 3,
-      playCost: 0,
+      playCost: -1,
       dp: 3000,
       isToken: true,
     });
+    expect(getCardDefinition(tokenId)).not.toHaveProperty("level");
     const compiled = runtimeCompiledCard(cardId)!;
     expect(compiled).toMatchObject({ coverage: "full", residual: [] });
     expect(compiled.effects).toEqual([

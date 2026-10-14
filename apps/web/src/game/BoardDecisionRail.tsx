@@ -259,8 +259,27 @@ export function BoardSelectionRail({
     if (isViewingBoard) returnControlRef.current?.querySelector("button")?.focus();
   }, [isViewingBoard]);
 
+  const detail = t("overlay.selectedOfRange", { count: pickCount, range: min === max ? `${max}` : `${min}–${max}` });
+  const resolvedConfirmLabel =
+    confirmLabel ?? t(fieldSelection || attackSelection ? "overlay.confirmTargets" : "overlay.endSelection");
+
   if (isViewingBoard) {
-    return <DecisionBoardReturn returnControlRef={returnControlRef} onReturn={() => setIsViewingBoard(false)} />;
+    return (
+      <DecisionBoardReturn
+        returnControlRef={returnControlRef}
+        onReturn={() => setIsViewingBoard(false)}
+        selection={
+          fieldSelection || attackSelection
+            ? {
+                status: detail,
+                confirmLabel: resolvedConfirmLabel,
+                canConfirm: pickCount > 0 && canConfirm,
+                onConfirm,
+              }
+            : undefined
+        }
+      />
+    );
   }
 
   const selectionLabel = attackSelection
@@ -277,7 +296,7 @@ export function BoardSelectionRail({
       art={sourceCardId}
       prompt={prompt}
       clause={clause}
-      detail={t("overlay.selectedOfRange", { count: pickCount, range: min === max ? `${max}` : `${min}–${max}` })}
+      detail={detail}
       budgetText={budgetText}
       handClearance={handClearance}
       onOpenDialog={fieldSelection ? undefined : onOpenDialog}
@@ -287,7 +306,7 @@ export function BoardSelectionRail({
           one (BT24-016 forcing the opponent to place a card as security) has no way out,
           so offering the button would promise an answer the server rejects. */}
       <Button full icon={Icons.Check} disabled={pickCount === 0 || !canConfirm} onClick={onConfirm}>
-        {confirmLabel ?? t(fieldSelection || attackSelection ? "overlay.confirmTargets" : "overlay.endSelection")}
+        {resolvedConfirmLabel}
       </Button>
       {min === 0 ? (
         <Button full variant="secondary" onClick={onNoSelection}>

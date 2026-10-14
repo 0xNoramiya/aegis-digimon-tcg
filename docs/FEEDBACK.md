@@ -9,6 +9,30 @@ The report dialog posts to `POST /bug-reports`. The API always saves the report 
 `feedback_reports`. A report sent from a match also keeps a copy of the match replay
 in `feedback_report_replays` for 30 days (`AEGIS_REPLAY_RETENTION_DAYS`).
 
+### Replay capture
+
+While a room plays, the logger copies each replay line (`replay.*` and `intent.*`) of
+the match to `<AEGIS_LOG_DIR>/replays/<matchId>.jsonl`, besides the normal log segment.
+The folder is created on the first write. All API instances share the log directory, so
+any instance can answer a report about a match another instance hosted.
+
+When a report names a match, the API reads only that file and rebuilds the replay with
+`extractReplay`. It never scans the `api-*.jsonl` segments. The read has a 3-second
+budget (`AEGIS_REPLAY_CAPTURE_TIMEOUT_MS`) and runs at most two at a time. The report
+carries one of these outcomes:
+
+| Outcome          | Cause                                                                    |
+| ---------------- | ------------------------------------------------------------------------ |
+| saved            | The file rebuilt a complete replay.                                      |
+| `logs_not_found` | No file (pruned, or match played before this change), bad ID, no header. |
+| `timed_out`      | The read took longer than the budget.                                    |
+| `busy`           | Two captures were already running.                                       |
+| `too_large`      | The record is over `AEGIS_REPLAY_MAX_CHARS`.                             |
+| `error`          | Any other failure.                                                       |
+
+The API deletes a match file 12 hours after its last write, the same rule as the log
+segments. A failed write goes to stderr and never stops the match.
+
 Admins triage reports at `/admin/feedback`. Signed-in reporters follow their own
 reports at `/feedback`.
 
