@@ -104,6 +104,7 @@ export interface NarrationStreamDeps {
   lastBatchIdRef: MutableRefObject<string>;
   narrationSequenceRef: MutableRefObject<number>;
   narrationRef: MutableRefObject<ReadonlyMap<string, NarrationItem>>;
+  awaitEffectConfirmation: (context: AnimationStepContext) => Promise<void> | undefined;
 }
 
 type NarrationTrackParams = {
@@ -209,6 +210,7 @@ export function narrationStream(deps: NarrationStreamDeps) {
     lastBatchIdRef,
     narrationSequenceRef,
     narrationRef,
+    awaitEffectConfirmation,
   } = deps;
 
   /** Publish the clause before the results queued behind its arrival. */
@@ -651,7 +653,8 @@ export function narrationStream(deps: NarrationStreamDeps) {
           if (published) reportShown(`narration-step-${item.id}`, context);
           if (unit) {
             // Sequential pacing: nothing the effect did plays until its clause has been read.
-            await context.wait(announceMsFor(unit));
+            const confirmation = published ? awaitEffectConfirmation(context) : undefined;
+            await (confirmation ?? context.wait(announceMsFor(unit)));
             announceGate?.release();
             unitAnnouncement?.release();
             costClause?.read.release();

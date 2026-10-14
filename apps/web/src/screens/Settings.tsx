@@ -23,6 +23,7 @@ import {
 } from "../design/sound";
 import { MUSIC_TRACK_LABEL_KEYS, MUSIC_TRACKS } from "../design/musicTracks";
 import { areActionConfirmationsEnabled, setActionConfirmationsEnabled } from "../design/actionConfirmation";
+import { setEffectConfirmationHoldEnabled, useEffectConfirmationHold } from "../game/effectConfirmationHold";
 import { isKeepAwakeEnabled, setKeepAwakeEnabled } from "../design/keepAwake";
 import { isDecisionPingEnabled, setDecisionPingEnabled } from "@/design/decisionPing";
 import { FieldLayout, setFieldLayout, useFieldLayout } from "../design/fieldLayout";
@@ -263,6 +264,7 @@ export function Settings({
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [volume, setVolume] = useState(Math.round(getSoundVolume() * 100));
   const [actionConfirmationsOn, setActionConfirmationsOn] = useState(areActionConfirmationsEnabled());
+  const effectConfirmationHold = useEffectConfirmationHold();
   const [keepAwakeOn, setKeepAwakeOn] = useState(isKeepAwakeEnabled());
   const [decisionPingOn, setDecisionPingOn] = useState(isDecisionPingEnabled());
   const [effectSpeed, setEffectSpeedChoice] = useState<EffectSpeed>(getEffectSpeed);
@@ -523,6 +525,14 @@ export function Settings({
                     setActionConfirmationsEnabled(next);
                     setActionConfirmationsOn(next);
                   }}
+                />
+              </div>
+              <div className="settings-row">
+                <Switch
+                  checked={effectConfirmationHold}
+                  label={t("settings.effectConfirmationHold")}
+                  description={t("settings.effectConfirmationHoldDesc")}
+                  onChange={setEffectConfirmationHoldEnabled}
                 />
               </div>
               <div className="settings-row">
