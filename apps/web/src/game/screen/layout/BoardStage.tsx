@@ -33,6 +33,7 @@ import { useTranslation } from "../../../i18n";
 import { CardOpenerProvider } from "../../cardLinks";
 import { OpponentSelectingPill } from "../../BoardDecisionRail";
 import { opponentStatusKey } from "../../opponentStatus";
+import { getActingPlateKeys } from "@/game/getActingPlateKeys";
 import { NarrationStack } from "../../NarrationStack";
 import { AttackAnnouncementBanner } from "../../SidePanelStack";
 import { TargetingSpotlight } from "../../TargetingSpotlight";
@@ -290,6 +291,12 @@ export function BoardStage({
   const opponentStatus = opponentStatusKey(state, viewerSeat);
   // An open turn reads as thinking only once the board has caught up; while the
   // opponent's last action still plays, the board itself is the feedback.
+  const actingPlateKeys = getActingPlateKeys({
+    state,
+    displayedTurnSeat: readouts.displayedTurnSeat,
+    viewerSeat,
+    spectating,
+  });
   const opponentIdle = !!state.pendingDecision || !!state.combatWindow || !cues.presenting;
 
   return (
@@ -345,6 +352,7 @@ export function BoardStage({
             viewerSeat={viewerSeat}
             displayedTurnSeat={readouts.displayedTurnSeat}
             displayedTurnCount={readouts.displayedTurnCount}
+            actingLabel={actingPlateKeys.opponent ? t(actingPlateKeys.opponent) : undefined}
             phase={shownState.phase}
             memory={readouts.memory}
             eggDeckCount={breedingOpponent.eggDeckCount}
@@ -604,6 +612,7 @@ export function BoardStage({
             timer={state.matchTimer ? <MatchTimer state={state} seat={viewerSeat} /> : undefined}
             playerName={viewer.displayName || t("game.you")}
             playerAvatarId={viewer.avatarId}
+            actingLabel={actingPlateKeys.viewer ? t(actingPlateKeys.viewer) : undefined}
             breedingDock={!layout.portraitArena ? breedingDock : null}
             pileDock={layout.dockViewerPiles ? viewerPiles : null}
             handDockRef={anchors.viewerHandDock}
