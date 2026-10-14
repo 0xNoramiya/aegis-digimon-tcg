@@ -50842,7 +50842,7 @@
     "forms": ["Ultimate"],
     "attributes": ["Vaccine"],
     "types": ["Archangel"],
-    "effectText": "[When Digivolving] 1 of your opponent's Digimon gains ＜Security Attack -2＞ (This Digimon checks 2 fewer security cards) until the end of your opponent's next turn.",
+    "effectText": "[When Digivolving] 1 of your opponent's Digimon gains ＜Security Attack -2＞ (This Digimon checks 2 fewer security cards) until their turn ends.",
     "inheritedEffectText": "[When Attacking] If you have 3 or fewer security cards, you may play 1 yellow level 3 Digimon card from your hand without paying its memory cost.",
     "rarity": "R",
     "maxCountInDeck": 4,
@@ -55063,11 +55063,11 @@
     "playCost": 2,
     "dp": 0,
     "evoCosts": [],
-    "effectText": "[Main] 1 of your Digimon gets +3000 DP until the end of your opponent's next turn. Then, if that Digimon has 16000 DP or more, that Digimon gains ＜Blocker＞ (When an opponent's Digimon attacks, you may suspend this Digimon to force the opponent to attack it instead), ＜Reboot＞ (Unsuspend this Digimon during your opponent's unsuspend phase), and ＜Security Attack +1＞ (This Digimon checks 1 additional security card) until the end of your opponent's next turn.",
+    "effectText": "[Main] 1 of your Digimon gets +3000 DP until your opponent's turn ends. Then, if that Digimon has 16000 DP or more, that Digimon gains ＜Blocker＞ (When an opponent's Digimon attacks, you may suspend this Digimon to force the opponent to attack it instead), ＜Reboot＞ (Unsuspend this Digimon during your opponent's unsuspend phase), and ＜Security Attack +1＞ (This Digimon checks 1 additional security card) until your opponent's turn ends.",
     "securityEffectText": "[Security] Add this card to its owner's hand.",
     "rarity": "C",
     "maxCountInDeck": 4,
-    "imageId": "BT4-109",
+    "imageId": "BT4-109_P1",
     "nameJp": "ファイナルズバゴーンパンチ"
   },
   {
@@ -63934,10 +63934,10 @@
     "forms": ["ArmorForm"],
     "attributes": ["Free"],
     "types": ["Holy Warrior", "Royal Knight"],
-    "effectText": "＜Blocker＞＜Armor Purge＞ (When this Digimon would be deleted, you may trash the top card of this Digimon to prevent that deletion.)[When Digivolving] Unsuspend this Digimon, and it gets +2000 DP until the end of your opponent's next turn for each card with [Armor Form] in its traits in your trash.",
+    "effectText": "＜Blocker＞＜Armor Purge＞ (When this Digimon would be deleted, you may trash the top card of this Digimon to prevent that deletion.)[When Digivolving] Unsuspend this Digimon, and it gets +2000 DP until your opponent's turn ends for each card with [Armor Form] in its traits in your trash.",
     "rarity": "SR",
     "maxCountInDeck": 4,
-    "imageId": "BT8-038",
+    "imageId": "BT8-038_P3",
     "nameJp": "マグナモン"
   },
   {
@@ -70059,11 +70059,11 @@
     "playCost": 1,
     "dp": 0,
     "evoCosts": [],
-    "effectText": "[Main] All of your opponent's Digimon gain \"[When Attacking] Lose 2 memory\" until the end of their next turn.",
+    "effectText": "[Main] All of your opponent's Digimon gain \"[When Attacking] Lose 2 memory\" until their turn ends.",
     "securityEffectText": "[Security] Gain 2 memory.",
     "rarity": "R",
     "maxCountInDeck": 4,
-    "imageId": "EX1-068",
+    "imageId": "EX1-068_P1",
     "nameJp": "アイスウォール！！"
   },
   {
