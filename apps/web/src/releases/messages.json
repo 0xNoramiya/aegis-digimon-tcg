@@ -42,10 +42,10 @@
     "it": "Il bot può giocare con un mazzo casuale di un set a tua scelta."
   },
   "releases.1.26.0-beta.feature.profileStats": {
-    "en": "Your match stats stay hidden on your profile unless you choose to show them.",
-    "pt-BR": "Suas estatísticas de partidas ficam ocultas no perfil, a menos que você escolha mostrá-las.",
-    "es": "Tus estadísticas de partidas quedan ocultas en tu perfil salvo que elijas mostrarlas.",
-    "it": "Le statistiche delle tue partite restano nascoste nel profilo, a meno che tu non scelga di mostrarle."
+    "en": "Show or hide your match stats right from your profile.",
+    "pt-BR": "Mostre ou oculte suas estatísticas de partidas direto no seu perfil.",
+    "es": "Muestra u oculta tus estadísticas de partidas directamente desde tu perfil.",
+    "it": "Mostra o nascondi le statistiche delle tue partite direttamente dal profilo."
   },
   "releases.1.26.0-beta.feature.board": {
     "en": "The acting player's plate is highlighted, board DP follows the text size setting, and long candidate lists scroll with the mouse wheel.",
