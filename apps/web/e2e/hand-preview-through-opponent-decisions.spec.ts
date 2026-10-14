@@ -1,10 +1,17 @@
+import { fixturePermanentId } from "../../api/src/engine/scenario/references";
 import fixtureSecurityChain from "../../api/src/engine/scenarios/security-chain.fixture";
 import { expect, test } from "@playwright/test";
 import { ScenarioPage } from "./scenario-page";
 import { startBrowserServer } from "./server";
 
 test("an enlarged hand card stays open while the opponent answers a chained decision", async ({ page }) => {
-  const server = await startBrowserServer();
+  const server = await startBrowserServer({
+    botMainIntents: [
+      { type: "attack", attackerPermanentId: fixturePermanentId("opponent"), target: { kind: "player" } },
+      { type: "endPhase" },
+    ],
+    holdBotAfterTurn: 2,
+  });
   const scenario = new ScenarioPage(page, server.useFixture);
   try {
     await scenario.openFixture(fixtureSecurityChain);
@@ -29,6 +36,7 @@ test("an enlarged hand card stays open while the opponent answers a chained deci
     await expect(zoom).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(zoom).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^End breeding$/i })).toBeEnabled();
     await scenario.healthy();
   } finally {
     await page.close();
