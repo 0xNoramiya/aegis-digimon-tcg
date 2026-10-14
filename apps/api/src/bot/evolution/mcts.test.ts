@@ -7,6 +7,38 @@ import { searchMcts } from "./mcts.js";
 import { determinize } from "./determinize.js";
 
 describe("information-set MCTS", () => {
+  it.each([false, true])(
+    "counts a repeated position once per valid rollout with initial rejection %s",
+    async (rejectFirst) => {
+      const setup = setupEngine({});
+      await setup.ready();
+      const root: TrainingWindow = {
+        observation: trainingObservation(setup.state, 0),
+        kind: "main",
+        selected: [],
+        actions: [
+          { intent: { type: "endPhase" }, label: "Pass" },
+          { intent: { type: "hatchEgg" }, label: "Hatch" },
+        ],
+      };
+      const result = await searchMcts({
+        root,
+        seat: 0,
+        simulations: 4,
+        exploration: 0,
+        rolloutChoose: () => 0,
+        simulate: async (choose, simulation) => {
+          choose(root);
+          choose(structuredClone(root));
+          return { valid: !rejectFirst || simulation > 0, reward: 1 };
+        },
+      });
+      expect(result.report.completed).toBe(4);
+      expect(result.report.invalid).toBe(rejectFirst ? 1 : 0);
+      expect(result.report.root.reduce((total, edge) => total + edge.visits, 0)).toBe(4);
+    },
+  );
+
   it("returns the best completed sample when the time budget expires between rollouts", async () => {
     const setup = setupEngine({});
     await setup.ready();

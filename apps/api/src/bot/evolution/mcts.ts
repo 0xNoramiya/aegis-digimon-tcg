@@ -81,10 +81,16 @@ export async function searchMcts(options: {
     }
     attempted++;
     const path: { node: SearchNode; edge: SearchEdge }[] = [];
+    const visitedInformation = new Set<string>();
     let expanded = false;
     const choose = (window: TrainingWindow): number => {
       if (expanded) return options.rolloutChoose(window);
       const key = informationKey(window);
+      if (visitedInformation.has(key)) {
+        expanded = true;
+        return options.rolloutChoose(window);
+      }
+      visitedInformation.add(key);
       let node = nodes.get(key);
       if (node === undefined) {
         node = { visits: 0, edges: new Map() };
