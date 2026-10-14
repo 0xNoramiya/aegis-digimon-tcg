@@ -165,21 +165,22 @@ it("defaults missing auto hatch to false when switching accounts", async () => {
 });
 
 it("loads the profile stats choice from the account and syncs changes", async () => {
-  const stored = { profileStats: true };
+  setProfileStatsShown(true);
+  const stored = { profileStats: false };
   vi.spyOn(accountApi, "preferences").mockResolvedValue(stored);
   const update = echoUpdates(stored);
   renderSync("account-1");
-  await waitFor(() => expect(areProfileStatsShown()).toBe(true));
-  act(() => setProfileStatsShown(false));
-  await waitFor(() => expect(update).toHaveBeenLastCalledWith({ profileStats: false }));
+  await waitFor(() => expect(areProfileStatsShown()).toBe(false));
+  act(() => setProfileStatsShown(true));
+  await waitFor(() => expect(update).toHaveBeenLastCalledWith({ profileStats: true }));
 });
 
-it("hides profile stats for accounts without a saved choice and does not write the default", async () => {
-  setProfileStatsShown(true);
+it("shows profile stats for accounts without a saved choice and does not write the default", async () => {
+  setProfileStatsShown(false);
   vi.spyOn(accountApi, "preferences").mockResolvedValue({});
   const update = echoUpdates({});
   renderSync("account-1");
-  await waitFor(() => expect(areProfileStatsShown()).toBe(false));
+  await waitFor(() => expect(areProfileStatsShown()).toBe(true));
   await waitFor(() => expect(update).toHaveBeenCalled());
   expect(update.mock.calls.some(([changes]) => "profileStats" in changes)).toBe(false);
 });

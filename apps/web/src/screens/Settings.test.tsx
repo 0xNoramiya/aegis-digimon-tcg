@@ -173,7 +173,7 @@ describe("settings profile stats", () => {
     setProfileStatsShown(false);
   });
 
-  it("starts hidden and lets a signed-in player show the profile match stats", () => {
+  it("lets a signed-in player show hidden profile match stats", () => {
     setProfileStatsShown(false);
     render(
       <I18nProvider>
