@@ -8278,11 +8278,11 @@
     "dp": 0,
     "evoCosts": [],
     "types": ["Xros Heart", "BlueFlare", "General"],
-    "effectText": "[Start of Your Main Phase] By placing 1 Digimon card with [Xros Heart] or [Blue Flare] in its traits from your hand under this Tamer, gain 1 memory and ＜Draw 1＞.[Your Turn] When you would play a Digimon card with a DigiXros requirement, by suspending this Tamer, you may place cards from under your Tamers as digivolution cards for a DigiXros.",
+    "effectText": "[Start of Your Main Phase] By placing 1 Digimon card with [Xros Heart] or [Blue Flare] in its traits from your hand under this Tamer, ＜Draw 1＞ and gain 1 memory.[Your Turn] When you would play a Digimon card with a DigiXros requirement, by suspending this Tamer, you may place cards from under your Tamers as digivolution cards for a DigiXros.",
     "securityEffectText": "[Security] Play this card without paying its memory cost.",
     "rarity": "R",
     "maxCountInDeck": 4,
-    "imageId": "BT11-095",
+    "imageId": "BT11-095_P1",
     "nameJp": "タイキ＆キリハ＆ネネ"
   },
   {
@@ -50842,7 +50842,7 @@
     "forms": ["Ultimate"],
     "attributes": ["Vaccine"],
     "types": ["Archangel"],
-    "effectText": "[When Digivolving] 1 of your opponent's Digimon gains ＜Security Attack -2＞ (This Digimon checks 2 fewer security cards) until the end of your opponent's next turn.",
+    "effectText": "[When Digivolving] 1 of your opponent's Digimon gains ＜Security Attack -2＞ (This Digimon checks 2 fewer security cards) until their turn ends.",
     "inheritedEffectText": "[When Attacking] If you have 3 or fewer security cards, you may play 1 yellow level 3 Digimon card from your hand without paying its memory cost.",
     "rarity": "R",
     "maxCountInDeck": 4,
@@ -55063,11 +55063,11 @@
     "playCost": 2,
     "dp": 0,
     "evoCosts": [],
-    "effectText": "[Main] 1 of your Digimon gets +3000 DP until the end of your opponent's next turn. Then, if that Digimon has 16000 DP or more, that Digimon gains ＜Blocker＞ (When an opponent's Digimon attacks, you may suspend this Digimon to force the opponent to attack it instead), ＜Reboot＞ (Unsuspend this Digimon during your opponent's unsuspend phase), and ＜Security Attack +1＞ (This Digimon checks 1 additional security card) until the end of your opponent's next turn.",
+    "effectText": "[Main] 1 of your Digimon gets +3000 DP until your opponent's turn ends. Then, if that Digimon has 16000 DP or more, that Digimon gains ＜Blocker＞ (When an opponent's Digimon attacks, you may suspend this Digimon to force the opponent to attack it instead), ＜Reboot＞ (Unsuspend this Digimon during your opponent's unsuspend phase), and ＜Security Attack +1＞ (This Digimon checks 1 additional security card) until your opponent's turn ends.",
     "securityEffectText": "[Security] Add this card to its owner's hand.",
     "rarity": "C",
     "maxCountInDeck": 4,
-    "imageId": "BT4-109",
+    "imageId": "BT4-109_P1",
     "nameJp": "ファイナルズバゴーンパンチ"
   },
   {
@@ -63934,10 +63934,10 @@
     "forms": ["ArmorForm"],
     "attributes": ["Free"],
     "types": ["Holy Warrior", "Royal Knight"],
-    "effectText": "＜Blocker＞＜Armor Purge＞ (When this Digimon would be deleted, you may trash the top card of this Digimon to prevent that deletion.)[When Digivolving] Unsuspend this Digimon, and it gets +2000 DP until the end of your opponent's next turn for each card with [Armor Form] in its traits in your trash.",
+    "effectText": "＜Blocker＞＜Armor Purge＞ (When this Digimon would be deleted, you may trash the top card of this Digimon to prevent that deletion.)[When Digivolving] Unsuspend this Digimon, and it gets +2000 DP until your opponent's turn ends for each card with [Armor Form] in its traits in your trash.",
     "rarity": "SR",
     "maxCountInDeck": 4,
-    "imageId": "BT8-038",
+    "imageId": "BT8-038_P3",
     "nameJp": "マグナモン"
   },
   {
@@ -68134,10 +68134,10 @@
     "dp": 0,
     "evoCosts": [],
     "effectText": "[Main] You may trash 1 card with [Cyborg] or [Machine] in its traits in your hand to have all of your level 6 Digimon with [Machine] in their traits gain ＜Rush＞ (This Digimon can attack the turn it comes into play) and “[On Play] If this Digimon has a digivolution card, ＜Blitz＞. (This Digimon can attack when your opponent has 1 or more memory.)” for the turn.",
-    "securityEffectText": "[Security] You may trash 1 Digimon card with [Cyborg] or [Machine] in its traits in your hand to delete 1 of your opponent’s Digimon whose play cost is less than or equal to the trashed card’s play cost.",
+    "securityEffectText": "[Security] You may trash 1 card with [Cyborg] or [Machine] in its traits in your hand to delete 1 of your opponent’s Digimon whose play cost is less than or equal to the trashed card’s play cost.",
     "rarity": "C",
     "maxCountInDeck": 4,
-    "imageId": "BT9-102",
+    "imageId": "BT9-102_P2",
     "nameJp": "重機動デジモンの進撃！！"
   },
   {
@@ -70059,11 +70059,11 @@
     "playCost": 1,
     "dp": 0,
     "evoCosts": [],
-    "effectText": "[Main] All of your opponent's Digimon gain \"[When Attacking] Lose 2 memory\" until the end of their next turn.",
+    "effectText": "[Main] All of your opponent's Digimon gain \"[When Attacking] Lose 2 memory\" until their turn ends.",
     "securityEffectText": "[Security] Gain 2 memory.",
     "rarity": "R",
     "maxCountInDeck": 4,
-    "imageId": "EX1-068",
+    "imageId": "EX1-068_P1",
     "nameJp": "アイスウォール！！"
   },
   {
@@ -100836,11 +100836,11 @@
     "playCost": 3,
     "dp": 0,
     "evoCosts": [],
-    "effectText": "[Start of Your Main Phase] By placing 1 Digimon card with [Gammamon] in its name from your hand as 1 of your Digimon's bottom digivolution card, gain 1 memory and ＜Draw 1＞.[Your Turn] When one of your Digimon digivolves into a Digimon with [Gammamon] in its text, by suspending this Tamer, that Digimon gets +2000 DP for the turn.",
+    "effectText": "[Start of Your Main Phase] By placing 1 Digimon card with [Gammamon] in its name from your hand as 1 of your Digimon's bottom digivolution card, ＜Draw 1＞ and gain 1 memory.[Your Turn] When one of your Digimon digivolves into a Digimon with [Gammamon] in its text, by suspending this Tamer, that Digimon gets +2000 DP for the turn.",
     "securityEffectText": "[Security] Play this card without paying the cost.",
     "rarity": "R",
     "maxCountInDeck": 4,
-    "imageId": "RB1-032",
+    "imageId": "RB1-032_P4",
     "nameJp": "天ノ河宙"
   },
   {
