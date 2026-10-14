@@ -73,3 +73,36 @@ describe.each(["zh-CN", "zh-TW"] as const)("%s game terminology", (locale) => {
     expect(misused).toEqual([]);
   });
 });
+
+const literalFrenchMistranslations =
+  /\b(?:[Pp]onts?|[Tt]errasses?|[Pp]latines?|[Tt]rappe|[Pp]oubelle|[Rr]eproduction|[Cc]orrespondance|[Dd]ompteurs?|[Rr]ediffusions?|[Pp]ieux?|[Rr]ebondir|[Tt]irages)\b|Digi-(?:Egg|[Oo]euf)/;
+const informalFrenchAddress = /(?<!\p{L})(?:[Tt]u|[Tt]on|[Tt]a|[Tt]es|[Tt]oi)(?!\p{L})/u;
+const googleDriveTrashKeys = new Set([
+  "replay.trashOffer",
+  "replay.trashConfirm",
+  "replay.trashDone",
+  "replay.trashFailed",
+]);
+
+describe("fr game terminology", () => {
+  it("avoids literal mistranslations of deck, hatch, breeding, trash, match and Tamer", () => {
+    const mistranslated = Object.entries(dictionaries.fr)
+      .filter(([, value]) => literalFrenchMistranslations.test(value))
+      .map(([key, value]) => ({ key, value }));
+    expect(mistranslated).toEqual([]);
+  });
+
+  it("uses défausse for the card-game trash and keeps corbeille for Google Drive", () => {
+    const misused = Object.entries(dictionaries.fr)
+      .filter(([key, value]) => /[Cc]orbeille/.test(value) && !googleDriveTrashKeys.has(key))
+      .map(([key, value]) => ({ key, value }));
+    expect(misused).toEqual([]);
+  });
+
+  it("addresses the player with vous", () => {
+    const informal = Object.entries(dictionaries.fr)
+      .filter(([, value]) => informalFrenchAddress.test(value))
+      .map(([key, value]) => ({ key, value }));
+    expect(informal).toEqual([]);
+  });
+});
