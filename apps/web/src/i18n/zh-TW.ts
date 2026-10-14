@@ -779,6 +779,9 @@ const interfaceMessages = {
   "settings.playmatRemove": "移除你的圖片",
   "settings.playmatInvalid": "請選擇一個圖片檔案。",
   "settings.playmatTooLarge": "該圖片太大，無法儲存。請換一張較小的圖片。",
+  "settings.tokenArt": "衍生物圖片",
+  "settings.tokenArtDesc":
+    "為每種衍生物上傳圖片。僅儲存在此瀏覽器中，場地雙方的衍生物圖片僅對你可見。建議使用直式圖片。",
   "settings.cardSleeve": "卡套",
   "settings.sleeveUpload": "上傳卡套圖片",
   "settings.sleeveReplace": "更換卡套圖片",

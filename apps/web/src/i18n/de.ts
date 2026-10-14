@@ -835,6 +835,9 @@ const interfaceMessages = {
   "settings.playmatRemove": "Ihr Bild entfernen",
   "settings.playmatInvalid": "Wählen Sie eine Bilddatei aus.",
   "settings.playmatTooLarge": "Das Bild ist zu groß zum Speichern. Versuchen Sie ein kleineres.",
+  "settings.tokenArt": "Token-Bilder",
+  "settings.tokenArtDesc":
+    "Laden Sie für jeden Token ein Bild hoch. Es wird nur in diesem Browser gespeichert und ist nur für Sie auf beiden Spielfeldseiten sichtbar. Hochformat eignet sich am besten.",
   "settings.cardSleeve": "Kartenhüllen",
   "settings.sleeveUpload": "Hüllenbild hochladen",
   "settings.sleeveReplace": "Hüllenbild ersetzen",

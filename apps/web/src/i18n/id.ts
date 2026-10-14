@@ -816,6 +816,9 @@ const interfaceMessages = {
   "settings.playmatRemove": "Hapus gambar Anda",
   "settings.playmatInvalid": "Pilih file gambar.",
   "settings.playmatTooLarge": "Gambar itu terlalu besar untuk disimpan. Coba yang lebih kecil.",
+  "settings.tokenArt": "Gambar token",
+  "settings.tokenArtDesc":
+    "Unggah gambar untuk setiap token. Disimpan hanya di browser ini dan hanya terlihat olehmu, di kedua sisi arena. Gambar vertikal paling cocok.",
   "settings.cardSleeve": "Sleeve kartu",
   "settings.sleeveUpload": "Unggah gambar sleeve",
   "settings.sleeveReplace": "Ganti gambar sleeve",

@@ -672,6 +672,9 @@ const interfaceMessages = {
   "settings.playmatRemove": "Rimuovi la tua immagine",
   "settings.playmatInvalid": "Scegli un file immagine.",
   "settings.playmatTooLarge": "L'immagine è troppo grande per essere salvata. Prova con una più piccola.",
+  "settings.tokenArt": "Illustrazioni dei token",
+  "settings.tokenArtDesc":
+    "Carica un’immagine per ogni token. Viene salvata solo in questo browser ed è visibile solo a te, su entrambi i lati del campo. Le immagini verticali funzionano meglio.",
   "settings.cardSleeve": "Bustine delle carte",
   "settings.sleeveUpload": "Carica un'immagine per le bustine",
   "settings.sleeveReplace": "Sostituisci l'immagine delle bustine",

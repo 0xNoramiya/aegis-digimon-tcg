@@ -633,6 +633,9 @@ export const en = {
   "settings.playmatRemove": "Remove your image",
   "settings.playmatInvalid": "Pick an image file.",
   "settings.playmatTooLarge": "That image is too large to store. Try a smaller one.",
+  "settings.tokenArt": "Token art",
+  "settings.tokenArtDesc":
+    "Upload an image for each token. Saved only in this browser and visible only to you, for tokens on both sides of the field. Portrait images work best.",
   "settings.cardSleeve": "Card sleeves",
   "settings.sleeveUpload": "Upload sleeve image",
   "settings.sleeveReplace": "Replace sleeve image",

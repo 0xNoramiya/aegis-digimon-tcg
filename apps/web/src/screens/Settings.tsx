@@ -1,3 +1,4 @@
+import { TokenArtPicker } from "@/design/tokenArt/TokenArtPicker";
 import { CustomMusicPicker } from "../design/CustomMusicPicker";
 import { MusicCredits } from "../design/MusicCredits";
 import { InterfaceThemeDialog } from "../design/InterfaceThemePicker";
@@ -66,6 +67,7 @@ const SECTIONS: readonly SettingsSection[] = [
   { id: "settings-appearance", label: "settings.sectionAppearance", icon: Icons.Palette },
   { id: "settings-language", label: "redesign.settings.languageText", icon: Icons.FileText },
   { id: "settings-sleeves", label: "settings.cardSleeve", icon: Icons.LayoutGrid },
+  { id: "settings-token-art", label: "settings.tokenArt", icon: Icons.LayoutGrid },
   { id: REPLAYS_SECTION_ID, label: "replay.drive.settingsTitle", icon: Icons.Cloud },
   { id: SOUND_SETTINGS_SECTION_ID, label: "redesign.settings.sound", icon: Icons.Play },
   { id: PROFILE_SECTION_ID, label: "profile.title", icon: Icons.User },
@@ -376,6 +378,13 @@ export function Settings({
               <SettingRow stacked label={t("settings.eggSleeve")} description={t("settings.eggSleeveDesc")}>
                 <EggSleevePicker />
               </SettingRow>
+            </SettingsCard>
+
+            <SettingsCard id="settings-token-art" title={t("settings.tokenArt")}>
+              <div className="settings-row settings-row--stack">
+                <p className="settings-row__lede">{t("settings.tokenArtDesc")}</p>
+                <TokenArtPicker />
+              </div>
             </SettingsCard>
 
             <CloudReplaySettings />
