@@ -61,7 +61,7 @@ export function usePreferencesSync({
         if (preferences.eggSleeve && getEggSleeveId() !== CUSTOM_CARD_SLEEVE_ID) setEggSleeveId(preferences.eggSleeve);
         setDeckBuilderPreferences(sanitizeDeckBuilderPreferences(preferences));
         setAutoHatchEnabled(preferences.autoHatch === true);
-        setProfileStatsShown(preferences.profileStats === true);
+        setProfileStatsShown(preferences.profileStats !== false);
         if (preferences.favoriteDeckIds) {
           setFavoriteDeckIds(preferences.favoriteDeckIds);
         }
@@ -77,7 +77,7 @@ export function usePreferencesSync({
     if (!accountId || !stored) return;
     const current: AccountPreferences = {
       ...(autoHatch || stored.autoHatch !== undefined ? { autoHatch } : {}),
-      ...(profileStats || stored.profileStats !== undefined ? { profileStats } : {}),
+      ...(!profileStats || stored.profileStats !== undefined ? { profileStats } : {}),
       darkMode: dark,
       locale,
       ...(sleeve !== CUSTOM_CARD_SLEEVE_ID && { sleeve }),

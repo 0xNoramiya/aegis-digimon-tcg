@@ -1,12 +1,12 @@
 import { useId, useRef, useState, type FormEvent } from "react";
 import type { MatchHistorySummary, MatchWinRate } from "@aegis/shared";
-import { Avatar, Badge, type PlayerIdentity } from "../design/primitives";
+import { Avatar, Badge, Switch, type PlayerIdentity } from "../design/primitives";
 import { Icons } from "../design/icons";
 import { useTranslation, type TranslationKey } from "../i18n";
 import { AccountApiError, accountApi, type RemoteAccount } from "./client";
 import { AvatarMenu, avatarChoice, type AvatarSelection } from "./AvatarMenu";
 import type { DigimonWorldAvatarId } from "./avatars";
-import { useProfileStatsShown } from "./profileStats";
+import { setProfileStatsShown, useProfileStatsShown } from "./profileStats";
 
 const NAME_MIN = 3;
 const NAME_MAX = 32;
@@ -201,6 +201,11 @@ export function ProfileIdentity({
           <Icons.Settings size={18} />
         </a>
       </div>
+      {account ? (
+        <div className="profile-stats-toggle">
+          <Switch checked={statsShown} label={t("profile.showStats")} onChange={setProfileStatsShown} />
+        </div>
+      ) : null}
       {account && statsShown ? (
         <>
           <dl className="profile-stats">
