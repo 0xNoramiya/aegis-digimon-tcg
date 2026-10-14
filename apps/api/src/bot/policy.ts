@@ -1,4 +1,5 @@
 import { CardKind } from "@aegis/shared/schema/enums";
+import { getCardDefinition } from "@aegis/shared/cards/registry";
 import type { DecisionRequest, ServerEvent } from "@aegis/shared/protocol/events";
 import type { Intent } from "@aegis/shared/protocol/intents";
 import { enumerateMainPhaseCandidates, digivolveCost, type Candidate } from "#api/bot/candidates";
@@ -52,6 +53,7 @@ export type AllianceContext = Extract<ServerEvent, { kind: "alliancePrompt" }>;
 export interface EvaluationPolicyOptions {
   profile?: BotProfile;
   seed?: number;
+  preferBeneficialSelections?: boolean;
 }
 
 /**
@@ -182,7 +184,7 @@ export function createEvaluationPolicy(options: EvaluationPolicyOptions = {}): B
     },
 
     answerDecision(view: BotView | undefined, request: DecisionRequest): Intent {
-      return answerDecisionWith(view, request, profile);
+      return answerDecisionWith(view, request, profile, options.preferBeneficialSelections);
     },
 
     noteRejected(intent: Intent): void {
@@ -217,7 +219,20 @@ function candidateKeyOf(intent: Intent): string | undefined {
  * risk appetite genuinely applies: these are effect resolutions where the printed text is
  * not available to reason over, so the safe general rule is to take the beneficial branch.
  */
-export function answerDecisionWith(view: BotView | undefined, request: DecisionRequest, _profile: BotProfile): Intent {
+export function answerDecisionWith(
+  view: BotView | undefined,
+  request: DecisionRequest,
+  profile: BotProfile,
+  preferBeneficialSelections = false,
+): Intent {
+  if (preferBeneficialSelections && view !== undefined && isOptionalFreePlaySelection({ view, request })) {
+    return answerDecisionWith(
+      view,
+      { ...request, options: { ...request.options, purpose: "acceptedOptional" } },
+      profile,
+      preferBeneficialSelections,
+    );
+  }
   switch (request.kind) {
     case "mulligan":
       return { type: "mulligan", keep: shouldKeepHand(view) };
@@ -231,7 +246,7 @@ export function answerDecisionWith(view: BotView | undefined, request: DecisionR
       };
 
     case "selectCards": {
-      const instanceIds = pickInstances(view, request);
+      const instanceIds = pickInstances(view, request, preferBeneficialSelections);
       return {
         type: "respondDecision",
         decisionId: request.decisionId,
@@ -297,7 +312,11 @@ function shouldKeepHand(view: BotView | undefined): boolean {
  * board is almost always something we want gone (biggest first), and a candidate we own
  * is almost always something we are being asked to give up (cheapest first).
  */
-function pickInstances(view: BotView | undefined, request: DecisionRequest): string[] {
+function pickInstances(
+  view: BotView | undefined,
+  request: DecisionRequest,
+  preferBeneficialSelections = false,
+): string[] {
   const candidates = request.options?.candidateInstanceIds ?? [];
   const min = request.options?.min ?? 0;
   if (candidates.length === 0) return [];
@@ -355,6 +374,22 @@ function pickInstances(view: BotView | undefined, request: DecisionRequest): str
   return firstIsOpponent ? ranked.slice(0, 1) : [];
 
   function rank(instanceId: string): number {
+    const effectText = request.options?.effectTextPart ?? request.options?.effectText ?? "";
+    if (
+      preferBeneficialSelections &&
+      request.kind === "selectCards" &&
+      request.options?.purpose === "acceptedOptional" &&
+      !ownUnits.has(instanceId) &&
+      !opponentUnits.has(instanceId) &&
+      (/\bplay\b[\s\S]*\bwithout paying (?:the|its) cost\b/i.test(effectText) ||
+        /\breturn\b[\s\S]*\btrash\b[\s\S]*\b(?:the |your )?hand\b/i.test(effectText))
+    ) {
+      const cardId = visibleCardIds.get(instanceId) ?? ownHand.get(instanceId)?.cardId;
+      const card = cardId === undefined ? undefined : getCardDefinition(cardId);
+      if (card !== undefined) {
+        return (card.level ?? 0) + Math.max(0, card.playCost) / 10 + (card.dp ?? 0) / 10000;
+      }
+    }
     const enemy = opponentUnits.get(instanceId);
     if (unsuspending) {
       const mine = ownUnits.get(instanceId);
@@ -374,6 +409,33 @@ function pickInstances(view: BotView | undefined, request: DecisionRequest): str
     }
     return 0;
   }
+}
+
+interface OptionalFreePlaySelectionInput {
+  view: BotView;
+  request: DecisionRequest;
+}
+
+function isOptionalFreePlaySelection(input: OptionalFreePlaySelectionInput): boolean {
+  const { view, request } = input;
+  const text = request.options?.effectTextPart ?? request.options?.effectText ?? "";
+  const candidates = request.options?.candidateInstanceIds ?? [];
+  const board = [...view.board, ...view.opponentBoard, ...(view.breeding === undefined ? [] : [view.breeding])];
+  const unmarkedReveal =
+    request.options?.purpose === undefined &&
+    (request.options?.min ?? 0) === 0 &&
+    /Reveal the top [0-9]+ cards of your deck[.] You may play 1 [^.]*among them without paying (?:the|its) cost[.]/i.test(
+      text,
+    ) &&
+    candidates.every((id) => request.options?.visibleCards?.some((card) => card.instanceId === id));
+  return (
+    request.kind === "selectCards" &&
+    (request.options?.purpose === "optionalTarget" || unmarkedReveal) &&
+    (request.options?.max ?? 1) === 1 &&
+    candidates.length > 0 &&
+    /\bplay\b[\s\S]*\bwithout paying (?:the|its) cost\b/i.test(text) &&
+    candidates.every((id) => !board.some((unit) => unit.permanentId === id || unit.topCardInstanceId === id))
+  );
 }
 
 /** Index units under every id a decision request might name them by. */

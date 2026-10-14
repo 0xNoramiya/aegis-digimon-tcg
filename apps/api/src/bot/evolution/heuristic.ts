@@ -74,6 +74,7 @@ export interface HeuristicProgram {
   schemaVersion: 1;
   basePolicy?: "projected-balanced";
   breedingDeployLevel?: number;
+  preferBeneficialSelections?: boolean;
   title: string;
   rules: HeuristicRule[];
 }
@@ -83,6 +84,12 @@ export function parseHeuristic(value: unknown): HeuristicProgram {
   const program = value as HeuristicProgram;
   if (program.basePolicy !== undefined && program.basePolicy !== "projected-balanced")
     throw new Error("Unknown heuristic base policy");
+  if (
+    program.preferBeneficialSelections !== undefined &&
+    (program.basePolicy !== "projected-balanced" || typeof program.preferBeneficialSelections !== "boolean")
+  ) {
+    throw new Error("Invalid beneficial selection preference");
+  }
   if (
     program.breedingDeployLevel !== undefined &&
     (program.basePolicy !== "projected-balanced" ||
@@ -171,6 +178,9 @@ export function parseHeuristic(value: unknown): HeuristicProgram {
     schemaVersion: 1,
     ...(program.basePolicy === undefined ? {} : { basePolicy: program.basePolicy }),
     ...(program.breedingDeployLevel === undefined ? {} : { breedingDeployLevel: program.breedingDeployLevel }),
+    ...(program.preferBeneficialSelections === undefined
+      ? {}
+      : { preferBeneficialSelections: program.preferBeneficialSelections }),
     title: program.title,
     rules: program.rules.map((rule) => ({ ...rule })),
   };

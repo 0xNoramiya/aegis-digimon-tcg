@@ -61,6 +61,7 @@ export function createResidualPolicy(input: {
     engine: input.engine,
     seat: input.seat,
     seed: input.seed,
+    preferBeneficialSelections: input.program.preferBeneficialSelections,
     ...(input.program.breedingDeployLevel === undefined
       ? {}
       : {

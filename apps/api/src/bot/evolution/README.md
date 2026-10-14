@@ -16,6 +16,22 @@ budget. Time-budgeted residual searches may stop early after at least one valid
 rollout, with no invalid rollouts and explicit budget-exhaustion evidence. Invalid games and timeouts have null fitness; incomplete batches stop training. Traces retain actual chosen actions,
 source cards, public features, and rule contributions for GEPA reflection.
 
+## Optional benefit selections
+
+A `projected-balanced` program can set `preferBeneficialSelections: true` to
+prefer higher-level, higher-cost, higher-DP cards when selecting an accepted
+free-play or return-from-trash benefit. It also accepts single-card optional
+free-play selections and visible reveal-and-free-play selections whose requests
+have no purpose marker. Cost selections, board targets and unrecognized effects
+retain their existing behavior. Recognition uses the effect text supplied in the
+request and only card identities visible to the acting bot.
+
+The flag is optional and boolean. Omitted or false preserves the previous policy;
+standalone rule-only programs reject it. The default live program remains unchanged.
+Include the flag in experiment manifests and rebuild the API before comparing the
+compiled policy with an earlier runtime. This option does not enable MCTS or
+certify a deck's win rate.
+
 ## Residual search tuning
 
 The evaluation worker accepts `mctsExploration` (finite, nonnegative; default
