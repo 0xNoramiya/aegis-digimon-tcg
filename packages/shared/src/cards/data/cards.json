@@ -87761,7 +87761,7 @@
     "inheritedEffectText": "[All Turns] [Once Per Turn] When this Digimon would leave the battle area other than by your effects, by deleting 1 of your Tokens or other [Puppet] trait Digimon, it doesn't leave.",
     "rarity": "R",
     "maxCountInDeck": 4,
-    "imageId": "EX7-027_P3"
+    "imageId": "EX7-027"
   },
   {
     "cardId": "EX7-028",
@@ -87841,7 +87841,7 @@
     "effectText": "＜Overclock ([Puppet] trait)＞(At the end of your turn, by deleting 1 of your Tokens or other [Puppet] trait Digimon, this Digimon attacks a player without suspending)\n[Start of Your Main Phase] [When Digivolving] You may play 1 [Familiar] Token (Digimon/Yellow/3000 DP/[On Deletion] 1 of your opponent's Digimon gets -3000 DP for the turn)\n[When Attacking] 1 of your opponent's Digimon gets -6000 DP for the turn.",
     "rarity": "SR",
     "maxCountInDeck": 4,
-    "imageId": "EX7-030_P3"
+    "imageId": "EX7-030"
   },
   {
     "cardId": "EX7-031",
@@ -101465,7 +101465,7 @@
     "effectText": "＜DNA Digivolution: 0 from yellow Lv.5 + purple Lv.5＞ Digivolve unsuspended with the 2 specified Digimon stacked on top of each other. [When Digivolving] Place 1 yellow or purple Digimon card from your trash on top of your security stack face down. When DNA digivolving, you may search your security stack for 1 level 5 or lower Digimon card and play it without paying its memory cost. Then, shuffle your security stack. [All Turns] When you play another Digimon using an effect, delete 1 of your opponent's Digimon whose level is less than or equal to the played Digimon's level.",
     "rarity": "SR",
     "maxCountInDeck": 4,
-    "imageId": "ST10-06_P3",
+    "imageId": "ST10-06",
     "nameJp": "マスティモン"
   },
   {
