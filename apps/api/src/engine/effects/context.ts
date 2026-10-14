@@ -1,4 +1,5 @@
 import { isTimingActivationDisabled } from "./timingActivation.js";
+import { preparedCardLocation } from "#api/engine/effects/preparedCardLocation";
 import {
   CardKind,
   EffectTiming,
@@ -59,7 +60,7 @@ function permanentHolds(permanent: Permanent, instanceId: string): boolean {
  * into GameState directly (card-module contract): the framework owns it.
  */
 export function createCardStateLookup(state: GameState): CardStateLookup {
-  const findPermanent = (
+  const findUncachedPermanent = (
     instanceId: string,
   ): { permanent: Permanent; inBattleArea: boolean; inBreedingArea: boolean } | undefined => {
     for (const p of state.players) {
@@ -79,6 +80,19 @@ export function createCardStateLookup(state: GameState): CardStateLookup {
       }
     }
     return undefined;
+  };
+
+  const findPermanent = (instanceId: string) => {
+    if (preparedCardLocation.state !== state) {
+      return findUncachedPermanent(instanceId);
+    }
+    if (preparedCardLocation.instanceId === instanceId) {
+      return preparedCardLocation.location;
+    }
+    const location = findUncachedPermanent(instanceId);
+    preparedCardLocation.instanceId = instanceId;
+    preparedCardLocation.location = location;
+    return location;
   };
 
   const isInTrash = (instanceId: string): boolean =>

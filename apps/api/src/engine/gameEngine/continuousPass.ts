@@ -11,6 +11,7 @@ import { sameNumericMap } from "./schemaSync.js";
 import { listCandidateInstances } from "./ruleProcess.js";
 import { buildEffectContext, cardSourceOf } from "./effectContext.js";
 import type { GameEngine } from "../GameEngine.js";
+import { runWithPreparedCardLocation } from "#api/engine/effects/runWithPreparedCardLocation";
 
 /**
  * Re-derive every continuous (persistent / `EffectTiming.None`) effect from a clean
@@ -180,14 +181,26 @@ async function derivePass(
     (left, right) => (left.effect.continuousPriority ?? 0) - (right.effect.continuousPriority ?? 0),
   );
   for (const { source, effect } of continuousEffects) {
-    const ctx = buildEffectContext(engine, source, {}, noPromptAsk);
-    ctx.activeTiming = effect.irTrigger ?? EffectTiming[EffectTiming.None];
-    ctx.continuousPass = true;
-    // Persistent effects re-apply whenever their guard holds; canTrigger here is
-    // the builder's on-field/`when` gate (maxPerTurn is irrelevant — uncounted).
-    if (!canTrigger(effect, ctx, engine.tracker)) continue;
-    if (!canActivate(effect, ctx, engine.tracker)) continue;
-    const restoreSource = enterContinuousEffectSource(ctx, effect);
+    const prepared = runWithPreparedCardLocation({
+      state: engine.state,
+      execute: () => {
+        const ctx = buildEffectContext(engine, source, {}, noPromptAsk);
+        ctx.activeTiming = effect.irTrigger ?? EffectTiming[EffectTiming.None];
+        ctx.continuousPass = true;
+        if (!canTrigger(effect, ctx, engine.tracker)) {
+          return undefined;
+        }
+        if (!canActivate(effect, ctx, engine.tracker)) {
+          return undefined;
+        }
+        const restoreSource = enterContinuousEffectSource(ctx, effect);
+        return { ctx, restoreSource };
+      },
+    });
+    if (prepared === undefined) {
+      continue;
+    }
+    const { ctx, restoreSource } = prepared;
     try {
       await effect.resolve(ctx);
     } finally {

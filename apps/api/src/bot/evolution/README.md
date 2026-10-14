@@ -264,3 +264,182 @@ describes learned policy/value guidance and self-play for perfect-information
 games. Our experiments borrow the policy/value separation while retaining
 filtered observations and information-set search for hidden cards; they are
 not a direct AlphaZero implementation.
+
+### Reconstruction cost investigation
+
+`mcts-cost-profile-v1` replays the previously completed Mamemon and Plutomon
+confirmation cases with 32 simulations, paired root worlds, the incumbent value
+model and a one-turn cutoff. Both full-match outputs match their archived
+references after excluding timing fields. One worker runs inside the shared
+4 GiB, zero-swap cgroup. Instrumentation and V8 sampling make these runs unsuitable
+for speedup claims.
+
+| Case     | Simulations | Reconstruction CPU | Determinization CPU | Rollout CPU | Leaf evaluation CPU |
+| -------- | ----------: | -----------------: | ------------------: | ----------: | ------------------: |
+| Mamemon  |         640 |           85.235 s |             0.379 s |    12.550 s |             0.039 s |
+| Plutomon |         960 |          343.709 s |             0.822 s |    37.568 s |             0.053 s |
+
+Reconstruction accounts for 86.8% and 89.9% of measured simulation CPU.
+Sampled caller stacks locate much of the card-location scan cost in continuous
+effect context creation and eligibility guards. Changing collection iteration
+or indexing only projection publication did not yield a consistent two-deck
+improvement in the exploratory root pilots; these candidates were not adopted.
+
+`effect-preparation-location-cache-diagnostic-v1` tests a narrower experimental
+cache around synchronous context creation, eligibility guards and provenance
+setup for one continuous effect. The scope ends before invoking effect
+resolution, and restores its predecessor on exceptions and nested calls.
+Every reused location is checked against a fresh scan. The two root replays
+retain the original actions, sampled worlds, rewards and visit reports.
+Mamemon verifies 1,361,553 cached results among 2,623,122 lookups (51.9%);
+Plutomon verifies 4,040,844 among 7,438,664 (54.3%). These counts include the
+forced prefix and searched root. They demonstrate reduced scanning, not reduced
+CPU: the initial cache implementation regressed on Plutomon in both timing
+pairs. Module encapsulation and fixed-CPU confirmation remain under investigation.
+Preparation must remain synchronous and must not
+change card placement; the diagnostic does not establish this for arbitrary
+custom guards outside the exercised cases.
+
+Timing interpretation is limited by the host environment. A later ten-second
+sample in `host-paging-diagnostic-v1.json` recorded 39,333 swap-in pages and
+44,164 swap-out pages of 16 KiB each, while macOS reported approximately
+11.3 GiB of swap in use on a 16 GiB host. The container's 4 GiB memory limit and
+zero-swap setting do not prevent host paging of its virtual machine. This
+observation does not attribute every earlier excursion to paging, but speedup
+claims require a repeat under stable host conditions. The predictable-V8 and
+warmed-Map diagnostics were stopped with their partial results retained.
+Instrumented full-match equivalence remains useful independently of timing.
+
+Standalone scope behavior checks must preload their transformation with Node's
+`--import` option before loading the engine module. A static side-effect import
+inside the check was insufficient to guarantee that order. The checks now assert
+that the candidate source contains the transformation; the corrected single-entry
+cache check passes 756 comparisons, including negative lookup results, nested
+scopes and exception cleanup. The root replay drivers already used explicit
+preloading. See `lookup-behavior-preload-correction.json` for the affected
+experimental checks and validation limits.
+
+`single-effect-preparation-cache-full-equivalence-v1` validates a single-entry
+cache over both complete reference games. The independent audit verifies all
+368 decisions, 50 searches and 1,600 simulations against the original traces,
+including sampled worlds, rewards and visit reports. Every reused location is
+also compared with a fresh scan: Mamemon verifies 11,106,168 hits among
+21,583,651 lookups (51.5%), and Plutomon verifies 44,453,923 among 82,440,579
+(53.9%). Both non-timing match outputs match their references. These instrumented
+runs establish equivalence for the exercised games, not a speedup or universal
+correctness. These measurements use an experimental runtime hook; the TypeScript
+candidate requires its own compiled-code verification before adoption.
+
+`single-effect-preparation-equal-cpu-roots-v1` compares the most expensive
+profiled root of each deck with a nominal ten-second search CPU ceiling,
+repeating each arm twice in reversed order. All eight roots match the reference
+state. Counting actual CPU, including the last atomic simulation's overshoot,
+Mamemon completes 19 simulations in 21.014 seconds without the cache and 21 in
+23.912 seconds with it: throughput decreases by 2.9%. Plutomon completes 12 in
+21.622 seconds and 16 in 21.217 seconds respectively: throughput increases by
+35.9%. Mamemon's first comparison favors the cache but its second reverses that
+result. This small screen does not establish a consistent two-deck speedup or
+justify adoption. The independent audit checks source hashes, root equivalence,
+simulation counts and CPU accounting. A contemporaneous ten-second host sample
+records 90 swap-in pages and no swap-out pages; host paging is lower than in the
+earlier diagnostic but is not eliminated.
+
+These throughput measurements also include different simulation mixtures:
+longer searches reach additional actions and sampled worlds. The traces share
+the first eight simulations for Mamemon and the first five for Plutomon, but
+their CPU cost was not recorded separately. Equal-budget throughput therefore
+does not isolate savings on identical work. In addition, pairing eligibility
+uses the requested count of 10,000 simulations; CPU stopping can finish before
+two samples per action. Six of the eight root runs sampled only one realized
+world. Both arms share this behavior, but the earlier fixed-count diversity
+guard does not establish equivalent coverage under these CPU ceilings.
+
+`single-effect-preparation-cpu-pilot-v1` completes four valid full games at
+nominal 20-second search CPU ceilings and one-second decision ceilings. Both
+versions win both reference cases. `single-effect-preparation-cpu-fresh-v1`
+then completes 16 valid games over eight paired cases: two decks, two new
+seeds per deck and both learner seats. The cache wins four cases versus five
+for the reference, with no paired gains, one regression and seven ties.
+Mamemon completes 1,137 simulations in 79.331 seconds of search CPU with the
+cache versus 1,089 in 75.999 seconds without it. Plutomon completes 611 in
+74.206 seconds versus 677 in 69.660 seconds. All games pass the independent
+output, sample and CPU-accounting audit. Game-ending times and divergent
+trajectories make these totals unsuitable for isolating lookup savings, and
+eight pairs cannot establish playing strength. This fresh screen does not
+support adopting the cache as a general improvement.
+
+`single-effect-preparation-common-prefix-v1` isolates identical work by running
+the first eight Mamemon or five Plutomon simulations in each arm, three times
+in alternating order. Requested simulation counts remain 10,000 to preserve
+paired-world eligibility; complete sample prefixes and root states are checked
+against the earlier traces. Mamemon uses 20.099 seconds of aggregate CPU in the
+reference and 16.014 with the cache (20.3% less); Plutomon uses 24.797 and 21.177
+seconds respectively (14.6% less). The third repetition regresses in both decks,
+so the aggregate reductions are exploratory rather than a stable speedup
+guarantee. These runs omit CPU-budget instrumentation in both arms, and their
+absolute timings must not be compared directly with the equal-budget screen.
+
+The local TypeScript candidate preserves the prototype's narrow synchronous
+scope: context construction, eligibility guards and provenance setup for one
+continuous effect. The scope ends before effect resolution is invoked, restores
+the preceding scope on exceptions, and isolates lookups by game-state identity.
+Preparation must remain placement-read-only.
+
+`compiled-card-location-full-equivalence-v1` verifies the emitted TypeScript
+candidate against both complete reference traces: all 368 decisions, 50 searches
+and 1,600 simulations match, as do both non-timing match outputs. Its independent
+audit checks archived compiled files, instrumentation sources and the value-model
+hash. The final targeted regression run passes 115 tests across 15 files, including an
+integration test checking live source placement both before and after an await
+inside continuous-effect resolution. Subsequent timing comparisons use the same compiled
+tree in both arms, loading only the original context and continuous-pass modules
+for the control, to exclude unrelated earlier formatting and reward-helper changes.
+
+`compiled-card-location-common-prefix-v1` completes all twelve runs with exact
+matching roots, sample prefixes, chosen actions and search reports. Across three
+paired repetitions, Mamemon uses 11.843 seconds of reference CPU versus 10.877
+seconds for the candidate (8.2% less); Plutomon uses 19.604 versus 17.289 seconds
+(11.8% less). Every pair favors the candidate, with reductions ranging from
+5.1% to 12.6% for Mamemon and 4.8% to 15.6% for Plutomon. This establishes a
+local benefit on the measured fixed work, not a universal speedup guarantee.
+
+`compiled-card-location-cpu-pilot-v1` completes four valid full games under the
+same 20-second match and one-second decision search CPU ceilings. Both versions
+lose the Mamemon case and win the Plutomon case. The candidate completes 290
+versus 287 simulations in Mamemon and 203 versus 170 in Plutomon. Actual search
+CPU ranges from 20.100 to 20.382 seconds, including atomic-simulation overshoot.
+`compiled-card-location-cpu-fresh-v1` completes 16 valid games over eight new
+paired cases, with six wins per version, one paired gain, one regression and
+six ties. It additionally records first-search CPU checkpoints so matching
+sample prefixes can be compared independently of later divergent trajectories.
+Each checkpoint is after the completed rollout and before its backpropagation,
+consistently in both arms.
+
+The first-root audit verifies identical roots and common samples in all eight
+pairs, but does not confirm a CPU improvement in its single measurements:
+Mamemon uses 3.853 versus 3.601 seconds for 254 common simulations (7.0% more),
+and Plutomon uses 3.890 versus 3.826 seconds for 245 (1.7% more). Five individual
+pairs favor the cache; two of the slower pairs have large excursions. These
+results remain part of the record.
+
+`compiled-card-location-fresh-prefix-repeats-v1` completes three predeclared
+repetitions of every fresh root with alternating order and unchanged candidate
+code. All 48 runs have identical root states, sample sequences, decisions and
+search reports within each case. Mamemon uses 9.504 seconds of reference CPU
+versus 9.423 for the candidate (0.8% less); Plutomon uses 10.979 versus 10.778
+seconds (1.8% less). Three of four root means favor the candidate in each deck;
+individual pairs favor it in 7/12 Mamemon and 11/12 Plutomon comparisons.
+These repeated measurements use a full-search boundary and omit CPU-budget
+instrumentation in both arms, so their absolute times are not comparable with
+the earlier first-root checkpoints. The small early-position gains and the
+larger measured expensive-root gains must remain separate: this is a bounded
+reconstruction optimization, not evidence of a universal 8–12% speedup or
+stronger play. All workloads retain the shared 4 GiB, zero-swap cgroup limit.
+
+Final application type checking passes, and the repository-wide style gate passes
+with zero errors and 1,406 existing lint warnings. The complete test type check
+is incomplete: the cgroup killed it at the 4 GiB limit (exit 137). This validation
+failure occurred after the benchmarks; their zero-OOM observations do not apply
+to the subsequent validation run. The memory limit was not raised. A focused type check of the new regression
+file and its dependencies passes with the shared-project reference preserved;
+it does not replace the incomplete repository test type check.
