@@ -363,7 +363,7 @@ describe("famous deck selection", () => {
   });
 
   it("hides the beta queue option when no set is in preview", () => {
-    vi.setSystemTime(new Date("2026-10-15T12:00:00.000Z"));
+    vi.setSystemTime(new Date("2026-12-12T12:00:00.000Z"));
     renderConfiguredLobby(
       <I18nProvider>
         <Lobby
