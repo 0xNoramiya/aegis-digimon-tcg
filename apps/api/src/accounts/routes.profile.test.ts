@@ -186,6 +186,15 @@ describe("/account/preferences", () => {
     expect((await putPreferences({ shareDeckAfterMatch: "false" })).status).toBe(400);
   });
 
+  it("persists the live match listing opt-in and rejects non-booleans", async () => {
+    expect(await getPreferences()).toEqual({});
+    expect((await putPreferences({ listLiveMatches: true })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ listLiveMatches: true });
+    expect((await putPreferences({ listLiveMatches: false })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ listLiveMatches: false });
+    expect((await putPreferences({ listLiveMatches: "true" })).status).toBe(400);
+  });
+
   it("stores the deck builder layout", async () => {
     const layout = { deckShare: 0.6, deckView: "list", deckSort: "level" };
     expect((await putPreferences(layout)).status).toBe(200);
