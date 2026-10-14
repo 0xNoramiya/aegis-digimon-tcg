@@ -34,7 +34,9 @@ function ruleTraitsOf(def: Pick<CardDefinition, "effectText">): string[] {
  * Rule text adds. Hand, trash, deck, and material matchers must read this rather than the three
  * printed arrays, or a Rule trait such as EX13-025 Candlemon's [Witchelny] goes unseen.
  */
-export function effectiveStaticTraits(def: CardDefinition): string[] {
+export function effectiveStaticTraits(
+  def: Pick<CardDefinition, "forms" | "attributes" | "types" | "effectText">,
+): string[] {
   const byLowercase = new Map<string, string>();
   for (const trait of [...(def.forms ?? []), ...(def.attributes ?? []), ...(def.types ?? []), ...ruleTraitsOf(def)]) {
     if (!byLowercase.has(trait.toLowerCase())) byLowercase.set(trait.toLowerCase(), trait);

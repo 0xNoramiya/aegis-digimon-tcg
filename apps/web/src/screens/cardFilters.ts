@@ -3,6 +3,7 @@
 
 import { useMemo, useState } from "react";
 import { type CardColor, type CardDefinition } from "@aegis/shared";
+import { isCardInQueriedFieldGroup } from "@aegis/shared/cards/isCardInQueriedFieldGroup";
 import { colorKey, kindOf, type ColorName } from "../design/theme";
 import { collectionOrder, sortCards } from "./cardSorting";
 import { matchesCostBucket } from "@/screens/matchesCostBucket";
@@ -66,13 +67,15 @@ export function matchesRarityFilter(
 }
 
 export function matchesTraitOrAttributeFilter(
-  card: Pick<CardDefinition, "forms" | "types" | "attributes">,
+  card: Pick<CardDefinition, "forms" | "types" | "attributes" | "effectText">,
   query: string,
 ): boolean {
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) return true;
-  return [...(card.forms ?? []), ...(card.types ?? []), ...(card.attributes ?? [])].some((value) =>
-    value.toLowerCase().includes(normalizedQuery),
+  return (
+    [...(card.forms ?? []), ...(card.types ?? []), ...(card.attributes ?? [])].some((value) =>
+      value.toLowerCase().includes(normalizedQuery),
+    ) || isCardInQueriedFieldGroup({ card, query })
   );
 }
 
@@ -123,6 +126,7 @@ export function cardSearchMatch(card: CardDefinition, query: string): CardSearch
   if (!normalizedQuery) return "name";
   const index = searchIndexFor(card);
   if (index.identity.includes(normalizedQuery)) return "name";
+  if (isCardInQueriedFieldGroup({ card, query })) return "name";
   if (index.text.includes(normalizedQuery)) return "text";
   return "none";
 }
