@@ -221,7 +221,7 @@ export function PermanentView({
         ...({ "--permanent-width": `${permanentWidth}px` } as CSSProperties),
         position: "relative",
         cursor: interactive ? "pointer" : "default",
-        touchAction: "none",
+        touchAction: "pan-x",
         opacity: dimmed ? 0.4 : 1,
         // The reference client hides the destination until the centre-screen
         // announcement is over, rather than flying the card across the board.
