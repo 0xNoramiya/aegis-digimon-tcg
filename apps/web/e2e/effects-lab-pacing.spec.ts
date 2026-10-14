@@ -1787,6 +1787,7 @@ test.describe("effects lab pacing in the browser", () => {
                 );
               })
               .toBe(true);
+            await expect(page.locator(".narration-peek")).toHaveCount(0);
             await boundary("attack-security");
             await game.attack(attacker.permanentId, page.locator('[data-drop="opp-security"]'));
           } else {
