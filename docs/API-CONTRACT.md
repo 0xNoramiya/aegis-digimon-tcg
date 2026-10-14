@@ -20,7 +20,9 @@ normal deck eligibility. Bot matches use one `aegis_bot` room type. Like a
 private room, it accepts preview cards without a beta opt-in, because it has
 one human seat and no public queue. The bot's own preset or random deck never
 contains preview cards; a custom bot deck the player picks may. Handler-owned
-beta settings cannot be overridden by client creation options.
+beta settings cannot be overridden by client creation options. The legacy
+`aegis_beta_bot` wire name remains registered as an alias with the same bot rules
+so already-loaded clients can start practice matches during the rollout.
 
 Collection and deck-builder visibility is independent of battle eligibility:
 all deckable catalog entries remain visible, including preview cards. A deck

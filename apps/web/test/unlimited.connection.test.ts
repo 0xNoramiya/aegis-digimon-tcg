@@ -180,6 +180,21 @@ describe("authoritative bot/private Unlimited over websockets", () => {
     expect(await matchMaker.remoteRoomCall(bot.roomId, "addBot", [])).toBe(true);
   });
 
+  it("accepts the deployed beta-bot room name with the unified bot boundaries", async () => {
+    const betaDeck = deckWith("EX13-007");
+    await expect(create("aegis_beta_bot", { betaBattleMode: true, deck: bannedRestricted() })).rejects.toThrow(
+      /illegal deck|auth/i,
+    );
+    const bot = await create("aegis_beta_bot", {
+      betaBattleMode: true,
+      deck: betaDeck,
+      botDeck: betaDeck,
+    });
+    expect(bot.state.unlimited).toBe(false);
+    expect(await matchMaker.remoteRoomCall(bot.roomId, "addBot", [])).toBe(true);
+    await vi.waitFor(() => expect(bot.state.players.length).toBe(2));
+  });
+
   it("keeps public, ranked and tournament registrations immutable and public Unlimited usable", async () => {
     for (const type of ["aegis", "aegis_beta", "aegis_ranked", "aegis_tournament"]) {
       await expect(
