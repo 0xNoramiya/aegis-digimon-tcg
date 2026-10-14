@@ -28,6 +28,39 @@ Collection and deck-builder visibility is independent of battle eligibility:
 all deckable catalog entries remain visible, including preview cards. A deck
 containing beta-only cards needs the checkbox in Quick Match before launch.
 
+## Live match list
+
+`GET /spectate/live?offset=0&limit=10` returns a `LiveMatchPage`:
+`{ matches: LiveMatch[], total: number }`. Both types live in
+`packages/shared/src/protocol/LiveMatch.ts`. Each entry holds the spectator
+code, both display names, the deck format, the start time in epoch
+milliseconds, and the current spectator count.
+
+- Matches are sorted by spectator count, then by newest start.
+- `offset` is 0 to 10000 and defaults to 0. `limit` is 1 to 50 and defaults
+  to 10. Other values return 400.
+- `total` counts every listed match in this slot, not only the page.
+- Each API process caches the full list for 5 seconds and shares one room
+  query between concurrent requests, so the cost does not grow with the number
+  of viewers. A failed query is not cached and returns 503.
+
+A match is listed only when all of these are true:
+
+- It is a casual room: `aegis`, `aegis_unlimited` or `aegis_beta`. Private,
+  ranked, bot and tournament rooms are never listed.
+- Both seats belong to accounts whose preferences hold `listLiveMatches: true`.
+  A guest seat keeps the match unlisted.
+- The match has started, has not ended, and has fewer than 20 spectators.
+
+The room publishes the entry in its matchmaking metadata as `live`, and updates
+it when spectators join or leave. Each deployment slot answers only for its own
+rooms, so the web client asks each active and draining slot for its first
+`limit` matches, merges and sorts them, and keeps `limit`. "Show more" raises
+`limit` by one page, up to 50, instead of sending an `offset`, because offsets
+cannot be merged correctly across slots.
+Watching a listed match still goes through `POST /spectate/join` with the
+spectator code, which rechecks admission on the room's own process.
+
 ## Optional rollback
 
 `allowRollback` defaults to `false`. Casual random queues, including Beta and

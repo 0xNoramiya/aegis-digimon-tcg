@@ -915,6 +915,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     deckSort,
     profileStats,
     shareDeckAfterMatch,
+    listLiveMatches,
     favoriteDeckIds,
     ...unknownKeys
   } = value as Record<string, unknown>;
@@ -932,6 +933,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     return undefined;
   }
   if (profileStats !== undefined && typeof profileStats !== "boolean") return undefined;
+  if (listLiveMatches !== undefined && typeof listLiveMatches !== "boolean") return undefined;
   if (favoriteDeckIds !== undefined && !isFavoriteDeckIdList(favoriteDeckIds)) return undefined;
   return {
     ...(autoHatch !== undefined && { autoHatch }),
@@ -944,6 +946,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     ...(deckSort !== undefined && { deckSort: deckSort as string }),
     ...(profileStats !== undefined && { profileStats }),
     ...(shareDeckAfterMatch !== undefined && { shareDeckAfterMatch }),
+    ...(listLiveMatches !== undefined && { listLiveMatches }),
     ...(favoriteDeckIds !== undefined && { favoriteDeckIds: favoriteDeckIds as string[] }),
   };
 }
