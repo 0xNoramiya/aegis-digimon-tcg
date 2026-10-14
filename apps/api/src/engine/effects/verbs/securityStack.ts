@@ -80,7 +80,11 @@ export function createSecurityStackVerbs(pc: PrimitivesContext) {
       // A card added from security to hand still left the security stack. Publish the
       // same generic removal event used by checks and effect-driven trash so watchers
       // such as BT4-097 react to every printed form of security removal (KB Q1250).
-      await engine.fireSubTrigger?.("whenSecurityRemoved", { removedFromSecuritySeat: seat });
+      await engine.fireSubTrigger?.("whenEffectRemovesFromSecurity", { removedFromSecuritySeat: seat });
+      await engine.fireSubTrigger?.("whenSecurityRemoved", {
+        removedFromSecuritySeat: seat,
+        securityRemovedByEffect: true,
+      });
       const addedToHand = { instanceIds: moved.map((card) => card.instanceId), byEffect: currentHandAddProvenance() };
       await engine.fireSubTrigger?.("whenEffectAddsToOpponentHand", { effectAddedToHandSeat: seat, addedToHand });
       await engine.fireSubTrigger?.("whenEffectAddsToHand", { effectAddedToHandSeat: seat, addedToHand });
