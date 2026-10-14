@@ -10,6 +10,7 @@ import { useTranslation, type TranslationKey } from "../i18n";
 import { en } from "../i18n/en";
 import { cardDisplayName, useCardOpener } from "./cardLinks";
 import { DecisionBoardReturn } from "./overlay/choice/DecisionBoardReturn";
+import { recordViewBoardOrigin } from "@/game/overlay/choice/recordViewBoardOrigin";
 import { useEffectPromptFocus } from "./overlay/choice/useEffectPromptFocus";
 import "./overlay/fieldDecisionRail.css";
 import { usePromptHandSpace, type PromptHandSpace } from "./overlay/choice/usePromptHandSpace";
@@ -298,7 +299,10 @@ export function BoardSelectionRail({
         full
         variant="secondary"
         icon={Icons.Map}
-        onClick={() => setIsViewingBoard(true)}
+        onClick={(event) => {
+          recordViewBoardOrigin({ element: event.currentTarget });
+          setIsViewingBoard(true);
+        }}
       >
         {t(fieldSelection || attackSelection ? "overlay.selectOnBoard" : "overlay.viewBoard")}
       </Button>
@@ -367,7 +371,14 @@ export function BoardAlliancePrompt({ attackerCardId, onPass }: { attackerCardId
       <Button variant="secondary" onClick={onPass}>
         {t("overlay.passAlliance")}
       </Button>
-      <Button variant="secondary" icon={Icons.Map} onClick={() => setIsViewingBoard(true)}>
+      <Button
+        variant="secondary"
+        icon={Icons.Map}
+        onClick={(event) => {
+          recordViewBoardOrigin({ element: event.currentTarget });
+          setIsViewingBoard(true);
+        }}
+      >
         {t("overlay.viewBoard")}
       </Button>
     </BoardPromptRail>
@@ -393,7 +404,15 @@ function useBoardView() {
 export function ViewBoardButton({ onClick }: { onClick: () => void }) {
   const { t } = useTranslation();
   return (
-    <Button full variant="secondary" icon={Icons.Map} onClick={onClick}>
+    <Button
+      full
+      variant="secondary"
+      icon={Icons.Map}
+      onClick={(event) => {
+        recordViewBoardOrigin({ element: event.currentTarget });
+        onClick();
+      }}
+    >
       {t("overlay.viewBoard")}
     </Button>
   );

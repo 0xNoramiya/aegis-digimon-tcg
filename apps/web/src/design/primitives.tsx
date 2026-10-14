@@ -10,6 +10,7 @@ import {
   type CSSProperties,
   type InputHTMLAttributes,
   type KeyboardEvent,
+  type MouseEvent,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
@@ -70,7 +71,7 @@ type AegisButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onClick">
   variant?: ButtonVariant;
   size?: ButtonSize;
   icon?: IconComponent;
-  onClick?: () => void;
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
   full?: boolean;
   sound?: SoundKind | false;
 };
@@ -97,9 +98,9 @@ export function Button({
       onClick={
         disabled
           ? undefined
-          : () => {
+          : (event) => {
               if (sound) playSound(sound);
-              onClick?.();
+              onClick?.(event);
             }
       }
       disabled={disabled}
