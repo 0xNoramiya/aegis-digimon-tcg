@@ -1876,8 +1876,7 @@ const interfaceMessages = {
   "account.emailLabel": "Email",
   "account.emailPlaceholder": "nama@email.com",
   "account.sendMagicLink": "Kirim tautan masuk",
-  "account.magicLinkSent":
-    "Cek emailmu untuk masuk. Kalau tidak ada di kotak masuk, periksa folder Spam atau Junk.",
+  "account.magicLinkSent": "Cek emailmu untuk masuk. Kalau tidak ada di kotak masuk, periksa folder Spam atau Junk.",
   "account.magicLinkDailyLimit":
     "Batas email masuk hari ini sudah tercapai. Masuk dengan Discord, atau coba lagi besok.",
   "account.magicLinkError": "Tidak bisa mengirim email untuk masuk. Coba lagi.",
