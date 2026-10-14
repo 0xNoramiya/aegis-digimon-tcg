@@ -106,3 +106,31 @@ describe("fr game terminology", () => {
     expect(informal).toEqual([]);
   });
 });
+
+const literalGermanMistranslations =
+  /Streichh|Übereinstimmung|Luke|Müll|Brut(?:gebiet|bereich|phase)|\bZucht|Bändiger|Zähmer|Ärmel|Wiederholung|[Dd]igitalisier|Eierdeck|Sicherheit|\bSpeicher\b|Wirbelangriff|\[(?:Zähler|Gegen|Haupt)\]/;
+const informalGermanAddress = /(?<!\p{L})(?:[Dd]u|[Dd]ein(?:e|en|em|er|es)?|[Dd]ich|[Dd]ir)(?!\p{L})/u;
+const tamerCommandKey = /^chat\.emote\./;
+
+describe("de game terminology", () => {
+  it("avoids literal mistranslations of match, hatch, breeding, trash, security, memory and replay", () => {
+    const mistranslated = Object.entries(dictionaries.de)
+      .filter(([, value]) => literalGermanMistranslations.test(value))
+      .map(([key, value]) => ({ key, value }));
+    expect(mistranslated).toEqual([]);
+  });
+
+  it("uses Ablage for the card-game trash and keeps Papierkorb for Google Drive", () => {
+    const misused = Object.entries(dictionaries.de)
+      .filter(([key, value]) => /Papierkorb/.test(value) && !googleDriveTrashKeys.has(key))
+      .map(([key, value]) => ({ key, value }));
+    expect(misused).toEqual([]);
+  });
+
+  it("addresses the player with Sie outside Tamer commands", () => {
+    const informal = Object.entries(dictionaries.de)
+      .filter(([key, value]) => !tamerCommandKey.test(key) && informalGermanAddress.test(value))
+      .map(([key, value]) => ({ key, value }));
+    expect(informal).toEqual([]);
+  });
+});
