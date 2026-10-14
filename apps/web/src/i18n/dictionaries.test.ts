@@ -160,3 +160,36 @@ describe("ja game terminology", () => {
     expect(misused).toEqual([]);
   });
 });
+
+const literalKoreanMistranslations =
+  /데크|갑판|해치|파일 수|디지볼|디지털화|디지털 진화|계란|번식|사육|쓰레기|보안|성냥|일치 항목|Digi-?Egg|플레이 비용|진화 비용|당신|귀하|[<＜〈]/;
+
+describe("ko game terminology", () => {
+  it("avoids literal mistranslations of deck, hatch, pile, Digivolve, Digi-Egg, breeding, trash and security", () => {
+    const mistranslated = Object.entries(dictionaries.ko)
+      .filter(([, value]) => literalKoreanMistranslations.test(value))
+      .map(([key, value]) => ({ key, value }));
+    expect(mistranslated).toEqual([]);
+  });
+
+  it("uses 트래시 for the card-game trash and keeps 휴지통 for Google Drive", () => {
+    const misused = Object.entries(dictionaries.ko)
+      .filter(([key, value]) => /휴지통/.test(value) && !googleDriveTrashKeys.has(key))
+      .map(([key, value]) => ({ key, value }));
+    expect(misused).toEqual([]);
+  });
+
+  it("uses 레스트 for suspending cards and keeps pause wording for pausing", () => {
+    const misused = Object.entries(dictionaries.ko)
+      .filter(([key, value]) => /일시 ?정지|일시 ?중/.test(value) && !pauseKeys.has(key))
+      .map(([key, value]) => ({ key, value }));
+    expect(misused).toEqual([]);
+  });
+
+  it("uses 소멸 for deleting Digimon, not file deletion", () => {
+    const misused = Object.entries(dictionaries.ko)
+      .filter(([key, value]) => inGameKey.test(key) && /삭제/.test(value))
+      .map(([key, value]) => ({ key, value }));
+    expect(misused).toEqual([]);
+  });
+});
