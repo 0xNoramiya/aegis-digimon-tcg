@@ -107,6 +107,71 @@ this ordering model on this evidence. The independent audit recalculates pairs
 from raw results and rejects stale summaries; this rejection has a regression
 check using deliberately changed raw outcomes.
 
+`ordering-regression-diagnosis-v1` reproduced both arms of all six losses,
+including every non-timing output. The first changed decision in each pair had
+identical observed information and legal intent sets. The twelve isolated roots
+in `ordering-root-reproduction-v2` reproduce the archived choices and search
+statistics in seconds. At these decisions, the selected action had only one or
+two visits. In 36 healthy root probes, holding the sampled world fixed made both
+orderings choose the same intent in all six pairs; increasing only the budget
+from 16 to 64 simulations did so in five pairs; increasing only the rollout
+horizon from one to two turns did so in none. These are decision-level
+mechanisms, not proof that the first changed move caused the eventual loss or
+that fixed-world sampling improves play. Fixed-world sampling sacrifices hidden
+state diversity and is not an adoption candidate.
+
+`tactical-value-model-v1` tested six additional public-observation features:
+unblocked security pressure, unblocked finishing potential, material exposed to
+legal opposing attacks, potential next-turn attackers, breeding growth and a
+public trash recovery pool. These are approximate signals, not exact tactical
+solvers. Combined validation log loss was 0.50138749, worse than the incumbent
+six-feature model's 0.49587461. A development ablation over threat, vulnerability,
+resources and combined groups selected vulnerability alone at 0.49417245.
+`tactical-value-ablation-v1` retains every candidate and the frozen selected
+model. Training uses 48 games and validation 24; both seats remain in the same
+seed group. The previously exposed test split was excluded. An independent
+runtime audit checked all 1546 development positions. Small validation gains
+require fresh-seed full-match confirmation before adoption.
+
+`tactical-value-confirmation-v1` completed 48 valid games on 24 fresh paired
+cases, using 16 simulations and a one-turn cutoff in both arms. The incumbent
+value model won 13/24 and the vulnerability candidate won 12/24: no gained games
+and one regression, on Glowing Dawn. The other five decks retained their paired
+outcomes. The descriptive paired-seed-block sign-flip p-value was 1. The raw
+results and model identities passed an independent audit. Do not adopt this
+candidate: its small development validation improvement did not translate into
+improved playing strength in this screen.
+
+`search-cpu-match-smoke-v1` exercises an experimental runtime hook for a shared
+20-second process-CPU search budget per match. Fixed allocation allows one
+second per decision; adaptive allocation allows 0.25 to two seconds and can
+stop when every action has at least two visits and the top mean rewards differ
+by at least 0.12. Both modes retain the incumbent value model. CPU is measured
+between simulations, so the final simulation can overshoot the ceiling; wall
+time and actual CPU consumption must also be reported. The full-match smoke
+used 20.505 seconds, completed without invalid simulations and returned to the
+baseline policy after exhausting the budget. Six of its nine searched decisions
+left some actions unvisited, and none stopped for separated values. This is
+integration evidence, not evidence of stronger play or effective early stopping
+in representative matches. The allocation remains an ignored experimental
+hook, not a production CLI option.
+
+`search-cpu-confirmation-v1` completed 48 valid games on 24 fresh paired cases.
+Fixed allocation won 9/24 and adaptive allocation won 7/24, with two gained
+games and four regressions. The descriptive paired-seed-block sign-flip p-value
+was 0.625. The equal 20-second ceilings did not imply equal realized consumption:
+fixed allocation used 338.35 seconds of search CPU in total (14.10 per game),
+and adaptive used 457.15 seconds (19.05 per game). Summed game wall times were
+313.21 and 412.74 seconds; these are not batch elapsed times, and process CPU can
+exceed wall time through runtime worker threads. Adaptive search stopped early
+for separated values in 7 of 228 decisions. It left actions unvisited in 79/228
+decisions, versus 206/298 for fixed allocation, but the improved coverage did
+not produce an aggregate strength gain. Both modes fell back to the residual
+policy after exhausting their match budget. The raw-result audit verifies CPU
+accounting, per-decision caps, stopping conditions and reported overshoot. Do not
+adopt this allocation: it consumed more CPU and did not improve paired outcomes.
+This screen does not rule out other allocation rules or larger budgets.
+
 `search-concurrency-full-v1` compares one, two and four independent match workers
 over the same four deck/seed cases, with a reversed second pass. Mean batch times
 were 85.04, 58.96 and 46.13 seconds respectively, including process startup.
@@ -122,7 +187,7 @@ too small to select a general exploration constant. A residual scoring
 optimization was also removed after paired CPU measurements found no consistent
 improvement.
 
-Adaptive allocation of time across decisions, shared-tree parallelism and an
+Production support for adaptive allocation, shared-tree parallelism and an
 AlphaZero-style self-play training loop remain unimplemented. The
 [OpenSpiel AlphaZero documentation](https://github.com/google-deepmind/open_spiel/blob/master/docs/alpha_zero.md)
 describes learned policy/value guidance and self-play for perfect-information
