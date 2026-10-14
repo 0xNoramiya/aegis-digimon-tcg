@@ -274,7 +274,7 @@ export async function runSubTrigger(
   // match and enforce the trash provenance in the dedicated gate below.
   const subjectFilter =
     (event === "whenDigivolutionTrashed" || event === "onAddDigivolutionCards") && sourceFilter?.byEffect === true
-      ? { ...sourceFilter, byEffect: undefined }
+      ? { ...sourceFilter, byEffect: undefined, byOwnEffect: undefined }
       : sourceFilter;
   const filterMatch =
     subjectFilter === undefined ||
@@ -329,7 +329,9 @@ export async function runSubTrigger(
   const addDigivolutionByEffectGate =
     event === "onAddDigivolutionCards" && sourceFilter?.byEffect === true
       ? (subCtx: EffectContext): boolean =>
-          subCtx.trigger.byEffectSeat !== undefined || subCtx.trigger.byEffectCardId !== undefined
+          sourceFilter.byOwnEffect === true
+            ? subCtx.trigger.byEffectSeat === subCtx.source.ownerSeat
+            : subCtx.trigger.byEffectSeat !== undefined || subCtx.trigger.byEffectCardId !== undefined
       : undefined;
   const digimonReturnsToHandGate =
     event === "whenDigimonReturnsToHand"

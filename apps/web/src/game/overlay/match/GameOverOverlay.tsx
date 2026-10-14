@@ -6,6 +6,7 @@ import { gameOverSplash, type GameOverOutcome } from "../../gameOverSplash";
 import type { SeriesView } from "../../seriesModel";
 import { SeriesNextGame, SeriesScore } from "./SeriesStatus";
 import { ReplaySavePrompt, type ReplaySaveProps } from "../../../replays/ReplaySavePrompt";
+import { RematchPanel, type RematchProps } from "@/game/overlay/match/RematchPanel";
 
 /** The best-of-three this game belongs to, for a seated player. */
 export interface SeriesResultProps {
@@ -104,6 +105,7 @@ export function GameOverOverlay({
   onRematch,
   returnsToRoom = false,
   series,
+  rematch,
 }: ReplaySaveProps & {
   spectatorResult?: string;
   usedDeckDialog?: (onClose: () => void) => ReactNode;
@@ -118,6 +120,7 @@ export function GameOverOverlay({
   returnsToRoom?: boolean;
   /** Set in a best-of-three: the splash shows the series and, between games, the next one. */
   series?: SeriesResultProps;
+  rematch?: RematchProps;
 }) {
   const { t } = useTranslation();
   const splash = gameOverSplash(result, reason);
@@ -137,6 +140,8 @@ export function GameOverOverlay({
   }, [reviewingBoard]);
   const seriesOutcome = series?.view.outcome;
   const seriesRunning = series !== undefined && seriesOutcome === undefined;
+  const rematchStarting = rematch?.view.stage === "accepted";
+  const keepsMatchOpen = seriesRunning || rematchStarting;
   const title = spectatorResult
     ? t("spectator.finished")
     : seriesOutcome
@@ -212,7 +217,8 @@ export function GameOverOverlay({
             onChooseTurnOrder={series.onChooseTurnOrder}
           />
         ) : null}
-        {seriesRunning ? null : (
+        {rematch && !spectatorResult ? <RematchPanel {...rematch} /> : null}
+        {keepsMatchOpen ? null : (
           <div className="game-actions-row">
             <Button full autoFocus icon={returnsToRoom ? Icons.Link2 : Icons.Swords} onClick={onRematch}>
               {t(spectatorResult ? "spectator.back" : returnsToRoom ? "overlay.backToRoom" : "overlay.findRematch")}
@@ -237,7 +243,7 @@ export function GameOverOverlay({
           replayFile={replayFile}
           replayStatus={replayStatus}
           signedIn={signedIn}
-          keepsMatchOpen={seriesRunning}
+          keepsMatchOpen={keepsMatchOpen}
         />
         <Button
           className="game-result__view-board"

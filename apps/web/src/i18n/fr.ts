@@ -557,6 +557,7 @@ const interfaceMessages = {
   "browser.outdated":
     "Ce navigateur est obsolète, certaines couleurs et certains panneaux peuvent donc ne pas s'afficher. Mettez à jour vers Safari 16.4, Chrome 111, Firefox 113 ou version ultérieure.",
   "beta.tag": "Bêta",
+  "beta.cardHint": "Pas encore sortie. Jouable uniquement en mode de partie bêta.",
   "lobby.betaBattleMode": "Mode de partie bêta",
   "lobby.betaBattleHint":
     "Vous utilisez des cartes qui ne sont pas encore sorties : vous jouerez donc dans une file d'attente spéciale avec des joueurs utilisant le même pool de cartes.",
@@ -2355,6 +2356,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "Partie {game} · {name} commence",
   "overlay.series.joining": "Lancement de la partie suivante…",
   "overlay.series.leave": "Quitter la série",
+  "overlay.rematch.offer": "Rejouer contre {name} · Au meilleur des 3",
+  "overlay.rematch.hint": "Mêmes decks. Le perdant de cette partie choisit qui commence.",
+  "overlay.rematch.incoming": "{name} veut une revanche",
+  "overlay.rematch.accept": "Accepter",
+  "overlay.rematch.decline": "Refuser",
+  "overlay.rematch.waiting": "En attente de la réponse de {name}…",
+  "overlay.rematch.declined": "La revanche a été refusée.",
+  "overlay.rematch.closed": "La revanche n’est plus disponible.",
   "overlay.series.won": "Série gagnée",
   "overlay.series.lost": "Série perdue",
   "overlay.series.drawn": "Série à égalité",

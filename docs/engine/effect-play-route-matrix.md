@@ -207,3 +207,17 @@ Verification under Node 26.5.0 and pnpm 10.30.1: all 66 tooling tests pass, incl
 The full tooling suite reproduced the catalog fingerprint failure. A field-by-field comparison against the reviewed catalog at `bfc57a04e9` finds exactly one changed field: EX12-016 MetalGreymon's `effectText` removes the unprinted Security Attack +1 keyword. Its Assembly requirement, alternate digivolution requirement, Decode and removal effects remain identical. All card IDs and other catalog fields are unchanged.
 
 All DNA, App Fusion and Burst matching effect, inherited and security fields retain identical complete text. The removal introduces no provider, recipient zone or route requirement. The 22 covered cells, eight absence classifications, scenario evidence and rule-source fingerprint remain unchanged. The reviewed catalog fingerprint moves from `268f0ababc2de8e15a5ac50194bca5ca645a0709d8ef41b9fd704feba9afcc3a` to `f1f65e7c8771028cad7360a90ca223a5048878ac96250d20f89cce8f0a5cf45e`; drift guards remain enforced.
+
+### Catalog review after BT27-084 addition (2026-10-13)
+
+The simulator verification check on PR #5462 failed on the catalog fingerprint. The only catalog change since the previous review is one new card: BT27-084 LordKnightmon (X Antibody). Its texts contain no Assembly, DigiXros, DNA, App Fusion or Burst requirement or provider. Its [When Digivolving] effect plays cards from hand, and its [Digivolve] requirement is an ordinary hand digivolution from LordKnightmon. It adds no provider for any of the eight reviewed absence cells.
+
+The 22 covered cells, eight absence classifications, scenario evidence and rule-source fingerprint remain unchanged. After merging `develop`, whose EX8-071 text fix was reviewed separately as route-neutral, the reviewed catalog fingerprint moves from `abe2764d45739099111feb6cb447c0e40511078598300889ad549867df8c2d07` to `d162e1967d88f030cfcfdedee7b00ff885443b279ce2c912b1d182069848fd44`; drift guards remain enforced.
+
+### Catalog review after reprint and errata updates (2026-10-14)
+
+The simulator verification check on PR #5526 failed on the catalog fingerprint. A field-by-field comparison against `origin/develop` finds no added or removed cards. Twenty-four existing cards change only `effectText`, `inheritedEffectText`, `securityEffectText`, `nameEn` or `imageId`: newer printing wording (BT3-039, BT4-109, BT8-038, EX1-068, BT9-102, BT11-095, RB1-032), errata text (EX4-072, EX2-028, BT12-037, BT12-051, BT14-002, BT14-029, BT14-091, BT16-060, BT20-095, ST10-06, P-115), errata names (BT10-101, BT4-031) and default art (BT1-042, BT12-094, P-071, P-123).
+
+None of these changes adds or alters an Assembly, DigiXros, DNA, App Fusion or Burst requirement or provider, or an alternate digivolution requirement. ST10-06 keeps its DNA requirement and changes only its security-search sentence. BT12-037 and BT12-051 keep their DigiXros text and change only the Ryoma Mogami spelling. EX4-072 digivolves from hand while ignoring requirements, which is not one of the matrix mechanics.
+
+The 22 covered cells, eight absence classifications, scenario evidence and rule-source fingerprint remain unchanged. The reviewed catalog fingerprint moves from `d162e1967d88f030cfcfdedee7b00ff885443b279ce2c912b1d182069848fd44` to `abe6ef929a8d8c1e0834af8186f839d891da3816089cc71b94fdb98def69872e`; drift guards remain enforced.

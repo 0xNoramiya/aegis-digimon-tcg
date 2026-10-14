@@ -406,6 +406,7 @@ const interfaceMessages = {
   "browser.outdated":
     "Questo browser non è aggiornato, quindi alcuni colori e pannelli potrebbero non comparire. Aggiorna a Safari 16.4, Chrome 111, Firefox 113 o versioni successive.",
   "beta.tag": "Beta",
+  "beta.cardHint": "Non ancora uscita. Utilizzabile solo nella modalità di gioco beta.",
   "lobby.betaBattleMode": "Modalità di gioco beta",
   "lobby.betaBattleHint":
     "Stai usando carte non ancora pubblicate: giocherai in una coda speciale con giocatori che usano la stessa selezione di carte.",
@@ -2121,6 +2122,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "Partita {game} · Comincia {name}",
   "overlay.series.joining": "Avvio della prossima partita…",
   "overlay.series.leave": "Lascia la serie",
+  "overlay.rematch.offer": "Gioca ancora contro {name} · Al meglio di 3",
+  "overlay.rematch.hint": "Stessi mazzi. Chi ha perso questa partita sceglie chi inizia.",
+  "overlay.rematch.incoming": "{name} vuole la rivincita",
+  "overlay.rematch.accept": "Accetta",
+  "overlay.rematch.decline": "Rifiuta",
+  "overlay.rematch.waiting": "In attesa della risposta di {name}…",
+  "overlay.rematch.declined": "La rivincita è stata rifiutata.",
+  "overlay.rematch.closed": "La rivincita non è più disponibile.",
   "overlay.series.won": "Serie vinta",
   "overlay.series.lost": "Serie persa",
   "overlay.series.drawn": "Serie pareggiata",

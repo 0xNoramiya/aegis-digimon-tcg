@@ -19,13 +19,12 @@ const securityHandCost: Cost = {
     filter: {
       zone: "hand",
       controller: "mine",
-      kind: ["Digimon"],
       nameOrTrait: [{ tokens: ["Cyborg", "Machine"], match: "trait" }],
     },
     count: 1,
   },
   bindResultAs: "trashedSecurityCard",
-  raw: "by trashing 1 Digimon card with [Cyborg] or [Machine] in its traits in your hand",
+  raw: "by trashing 1 card with [Cyborg] or [Machine] in its traits in your hand",
 };
 export const compiled: CompiledCard = {
   effects: [

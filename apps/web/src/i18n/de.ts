@@ -563,6 +563,7 @@ const interfaceMessages = {
   "browser.outdated":
     "Dieser Browser ist veraltet, daher werden einige Farben und Bedienfelder möglicherweise nicht angezeigt. Aktualisieren Sie auf Safari 16.4, Chrome 111, Firefox 113 oder neuer.",
   "beta.tag": "Beta",
+  "beta.cardHint": "Noch nicht erschienen. Nur im Beta-Modus spielbar.",
   "lobby.betaBattleMode": "Beta-Modus",
   "lobby.betaBattleHint":
     "Sie verwenden Karten, die noch nicht erschienen sind. Daher spielen Sie in einer eigenen Warteschlange mit Spielern, die denselben Kartenpool verwenden.",
@@ -2366,6 +2367,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "Spiel {game} · {name} beginnt",
   "overlay.series.joining": "Das nächste Spiel beginnt…",
   "overlay.series.leave": "Serie verlassen",
+  "overlay.rematch.offer": "Erneut gegen {name} · Best of 3",
+  "overlay.rematch.hint": "Gleiche Decks. Wer dieses Spiel verloren hat, wählt, wer beginnt.",
+  "overlay.rematch.incoming": "{name} möchte eine Revanche",
+  "overlay.rematch.accept": "Annehmen",
+  "overlay.rematch.decline": "Ablehnen",
+  "overlay.rematch.waiting": "Warte auf die Antwort von {name}…",
+  "overlay.rematch.declined": "Die Revanche wurde abgelehnt.",
+  "overlay.rematch.closed": "Die Revanche ist nicht mehr verfügbar.",
   "overlay.series.won": "Serie gewonnen",
   "overlay.series.lost": "Serie verloren",
   "overlay.series.drawn": "Serie unentschieden",

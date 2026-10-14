@@ -70,6 +70,8 @@ import { createLocalRoomCodeDirectory, type RoomCodeDirectory } from "../cluster
 import { MatchClock, type ClockMode } from "./MatchClock.js";
 import { CasualSeries, type SeriesContinuationOptions, type SeriesRoomPort } from "./series/CasualSeries.js";
 import type { SeriesRecord } from "./series/SeriesDirectory.js";
+import { RematchOffer } from "#api/rooms/series/RematchOffer";
+import { REMATCH_BEST_OF } from "@aegis/shared/protocol/RematchStatus";
 import { parsePresentationReport } from "./presentationReport.js";
 import { CONNECTION_REPORT_CHANNEL } from "@aegis/shared/protocol/ConnectionReport";
 import { ConnectionDropOutcome, type ResolvedConnectionDropOutcome } from "#api/connections/ConnectionDropOutcome";
@@ -369,6 +371,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   /** How many games this room's match runs to; only casual and private rooms play more than one. */
   private bestOf: MatchBestOf = 1;
   private casualSeries: CasualSeries | undefined;
+  private rematchOffer: RematchOffer | undefined;
   /** Seats claimed by series token in onAuth, for onJoin to honour. */
   private seriesSeatByClient = new Map<string, Seat>();
   /** Series seats that arrived before their opponent, waiting to be seated together. */
@@ -739,6 +742,11 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
           timerStartSeconds: options.timerStartSeconds ?? 300,
           ...(this.isPrivate ? { roomCode: this.state.roomCode } : {}),
         });
+      else
+        this.rematchOffer = new RematchOffer({
+          readState: () => this.state,
+          startSeries: (chooser) => this.startRematchSeries(chooser),
+        });
     }
     this.state.allowRollback = options.allowRollback === true && !this.isRankedRoom && !this.isTournamentRoom;
     if (this.state.allowRollback)
@@ -794,8 +802,15 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
             event.result.outcome === "draw" ? -1 : event.result.winnerSeat,
             this.departingSeat,
           );
+          this.rematchOffer?.open({
+            result: event.result.outcome === "draw" ? -1 : event.result.winnerSeat,
+            departed: this.departingSeat !== undefined,
+          });
         }
-        if (event.kind === "matchStarted") this.casualSeries?.noteFirstSeat(event.firstSeat);
+        if (event.kind === "matchStarted") {
+          this.casualSeries?.noteFirstSeat(event.firstSeat);
+          this.rematchOffer?.noteFirstSeat(event.firstSeat);
+        }
         if (event.kind === "counterWindowOpened") {
           const stamped = this.stamp(event);
           for (const client of this.clients) {
@@ -915,7 +930,14 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       }
       if (type === SERIES_CHANNEL) {
         const seat = this.seatByClient.get(client.sessionId);
-        if (seat !== undefined) this.casualSeries?.handleMessage(seat, payload, this.matchStartRequested);
+        if (seat === undefined) {
+          return;
+        }
+        if (this.casualSeries) {
+          this.casualSeries.handleMessage(seat, payload, this.matchStartRequested);
+        } else {
+          this.rematchOffer?.handleMessage(seat, payload);
+        }
         return;
       }
       if (this.state.rollbackBusy || this.rollbackPending) return;
@@ -953,6 +975,26 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   /** Bot, ranked, tournament and hand-laid rooms always play a single game. */
   private offersSeries(): boolean {
     return !this.isBotRoom && !this.isRankedRoom && !this.isTournamentRoom && this.devScenario === undefined;
+  }
+
+  private startRematchSeries(chooser: Seat): boolean {
+    if (this.casualSeries || !this.state.gameOver) {
+      return false;
+    }
+    this.casualSeries = CasualSeries.rematch(
+      this.seriesPort(),
+      {
+        bestOf: REMATCH_BEST_OF,
+        unlimited: this.isUnlimitedRoom,
+        format: this.state.format as DeckFormat,
+        allowRollback: this.state.allowRollback,
+        matchTimer: this.state.matchTimer,
+        timerStartSeconds: this.state.timerStartSeconds,
+        ...(this.isPrivate ? { roomCode: this.state.roomCode } : {}),
+      },
+      chooser,
+    );
+    return true;
   }
 
   private seriesPort(): SeriesRoomPort {
@@ -1587,6 +1629,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     }
     // A planned hop to the next game is not a departure from the series.
     if (!this.casualSeries?.hopping) this.casualSeries?.departed(seat, this.matchStartRequested);
+    this.rematchOffer?.close();
   }
 
   /**

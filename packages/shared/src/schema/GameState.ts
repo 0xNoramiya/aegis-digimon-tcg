@@ -2,6 +2,7 @@ import { Schema, ArraySchema, type, view } from "@colyseus/schema";
 import { PlayerState } from "./PlayerState.js";
 import { Phase } from "./enums.js";
 import type { Seat } from "./enums.js";
+import { RematchStatus } from "#shared/protocol/RematchStatus";
 
 /** View tag for decision details that are private to the responding seat. */
 export const PRIVATE_DECISION_VIEW_TAG = 2;
@@ -80,6 +81,8 @@ export class SeriesState extends Schema {
   /** -1 while the series runs, and for a drawn series. */
   @type("int8") winnerSeat = -1;
   @type("string") endReason: SeriesEndReason = "";
+  @type("string") rematchStatus: RematchStatus = RematchStatus.NONE.value;
+  @type("int8") rematchOfferSeat = -1;
 }
 
 /**

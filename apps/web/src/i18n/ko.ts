@@ -540,6 +540,7 @@ const interfaceMessages = {
   "browser.outdated":
     "이 브라우저는 최신 버전이 아니므로 일부 색상과 패널이 표시되지 않을 수 있습니다. Safari 16.4, Chrome 111, Firefox 113 이상으로 업데이트하세요.",
   "beta.tag": "베타",
+  "beta.cardHint": "아직 출시되지 않았습니다. 베타 대전 모드에서만 사용할 수 있습니다.",
   "lobby.betaBattleMode": "베타 대전 모드",
   "lobby.betaBattleHint":
     "아직 발매되지 않은 카드를 사용하고 있으므로, 같은 카드 풀을 사용하는 플레이어와 전용 대기열에서 플레이합니다.",
@@ -2270,6 +2271,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "{game}게임 · {name} 선공",
   "overlay.series.joining": "다음 게임 시작 중…",
   "overlay.series.leave": "시리즈 나가기",
+  "overlay.rematch.offer": "{name}와 다시 대전 · 3판 2선승",
+  "overlay.rematch.hint": "같은 덱을 사용합니다. 이번 게임의 패자가 선공을 정합니다.",
+  "overlay.rematch.incoming": "{name}님이 재대결을 원합니다",
+  "overlay.rematch.accept": "수락",
+  "overlay.rematch.decline": "거절",
+  "overlay.rematch.waiting": "{name}님의 응답을 기다리는 중…",
+  "overlay.rematch.declined": "재대결이 거절되었습니다.",
+  "overlay.rematch.closed": "재대결을 더 이상 할 수 없습니다.",
   "overlay.series.won": "시리즈 승리",
   "overlay.series.lost": "시리즈 패배",
   "overlay.series.drawn": "시리즈 무승부",
