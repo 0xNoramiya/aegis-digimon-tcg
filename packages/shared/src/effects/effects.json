@@ -95750,9 +95750,7 @@
             },
             "affectsAll": true,
             "leaveCause": "byOpponentEffect",
-            "actions": [
-              { "kind": "Replacement", "event": "wouldLeavePlay", "mode": "prevent", "raw": "they don't leave" }
-            ],
+            "actions": [{ "kind": "Prevent", "raw": "they don't leave" }],
             "cost": {
               "kind": "suspend",
               "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
