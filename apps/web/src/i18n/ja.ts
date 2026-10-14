@@ -681,6 +681,7 @@ const interfaceMessages = {
   "lobby.playVsBot": "対ボットでプレイする",
   "lobby.botDeck": "ボットのデッキ",
   "lobby.botDeckRandom": "ランダム",
+  "lobby.botDeckRandomSet": "{set}からランダム",
   "lobby.enterQueue": "キューに入る",
   "lobby.create": "作成",
   "lobby.join": "参加する",

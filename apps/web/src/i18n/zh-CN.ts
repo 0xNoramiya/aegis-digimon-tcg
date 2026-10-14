@@ -645,6 +645,7 @@ const interfaceMessages = {
   "lobby.playVsBot": "与机器人对战",
   "lobby.botDeck": "机器人的卡组",
   "lobby.botDeckRandom": "随机",
+  "lobby.botDeckRandomSet": "从 {set} 中随机",
   "lobby.enterQueue": "进入队列",
   "lobby.create": "创建",
   "lobby.join": "加入",

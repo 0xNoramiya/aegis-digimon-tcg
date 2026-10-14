@@ -692,6 +692,7 @@ const interfaceMessages = {
   "lobby.playVsBot": "Jouer contre le bot",
   "lobby.botDeck": "Deck du bot",
   "lobby.botDeckRandom": "Aléatoire",
+  "lobby.botDeckRandomSet": "Aléatoire parmi {set}",
   "lobby.enterQueue": "Entrer dans la file d'attente",
   "lobby.create": "Créer",
   "lobby.join": "Rejoindre",
