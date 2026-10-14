@@ -549,6 +549,7 @@ const interfaceMessages = {
   "browser.outdated":
     "このブラウザは古いため、一部の色やパネルが正しく表示されない可能性があります。Safari 16.4、Chrome 111、Firefox 113以降に更新してください。",
   "beta.tag": "ベータ",
+  "beta.cardHint": "未発売です。ベータバトルモードでのみ使用できます。",
   "lobby.betaBattleMode": "ベータバトルモード",
   "lobby.betaBattleHint":
     "まだ発売されていないカードを使っているため、同じカードプールのプレイヤーと専用のキューで対戦します。",

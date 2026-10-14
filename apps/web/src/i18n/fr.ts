@@ -557,6 +557,7 @@ const interfaceMessages = {
   "browser.outdated":
     "Ce navigateur est obsolète, certaines couleurs et certains panneaux peuvent donc ne pas s'afficher. Mettez à jour vers Safari 16.4, Chrome 111, Firefox 113 ou version ultérieure.",
   "beta.tag": "Bêta",
+  "beta.cardHint": "Pas encore sortie. Jouable uniquement en mode de partie bêta.",
   "lobby.betaBattleMode": "Mode de partie bêta",
   "lobby.betaBattleHint":
     "Vous utilisez des cartes qui ne sont pas encore sorties : vous jouerez donc dans une file d'attente spéciale avec des joueurs utilisant le même pool de cartes.",

@@ -352,6 +352,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "browser.outdated":
     "Este navegador está desatualizado, então algumas cores e painéis podem não aparecer. Atualize para Safari 16.4, Chrome 111, Firefox 113 ou mais recente.",
   "beta.tag": "Beta",
+  "beta.cardHint": "Ainda não lançada. Só pode ser usada no modo de batalha beta.",
   "lobby.betaBattleMode": "Modo de batalha beta",
   "lobby.betaBattleHint":
     "Você está usando cartas que ainda não foram lançadas, então vai jogar em uma fila especial com jogadores que usam as mesmas cartas.",

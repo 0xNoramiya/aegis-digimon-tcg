@@ -41,6 +41,7 @@ import {
 import { placeFavoriteDecksFirst } from "@/screens/favoriteDecks/placeFavoriteDecksFirst";
 import { setDeckFavorite } from "@/screens/favoriteDecks/setDeckFavorite";
 import { useFavoriteDeckIds } from "@/screens/favoriteDecks/useFavoriteDeckIds";
+import { deckHasBetaCards } from "@/screens/deckHasBetaCards";
 import "./deckList.css";
 
 const SORT_LABELS: Record<DeckListSort, TranslationKey> = {
@@ -282,6 +283,7 @@ function DeckListRow({
               <h3>{deck.name}</h3>
             </span>
             {deck.format && deck.format !== "standard" ? <Badge>{deckFormatLabel(deck.format, t)}</Badge> : null}
+            {deckHasBetaCards(deck) ? <Badge tone="primary">{t("beta.tag")}</Badge> : null}
             {active ? (
               <Badge tone="primary">
                 <Icons.Check size={12} />

@@ -3,7 +3,8 @@ import type { CommunityRandomResult } from "@aegis/shared/decks/CommunityRandomR
 import { act, cleanup, fireEvent, render, screen, within, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
-import { Lobby, deckHasBetaCards, randomDeckPool } from "./Lobby";
+import { Lobby, randomDeckPool } from "./Lobby";
+import { deckHasBetaCards } from "@/screens/deckHasBetaCards";
 import { DECKS } from "../game/decks";
 import { FAMOUS_DECKS, FAMOUS_DECK_GROUPS } from "../game/famousDecks";
 import { selectableDecks } from "../game/selectableDecks";

@@ -548,6 +548,7 @@ const interfaceMessages = {
   "browser.outdated":
     "Browser ini sudah usang, sehingga beberapa warna dan panel mungkin tidak ditampilkan. Perbarui ke Safari 16.4, Chrome 111, Firefox 113 atau lebih baru.",
   "beta.tag": "Beta",
+  "beta.cardHint": "Belum dirilis. Hanya bisa dimainkan di mode pertandingan beta.",
   "lobby.betaBattleMode": "Mode pertandingan beta",
   "lobby.betaBattleHint":
     "Anda menggunakan kartu yang belum dirilis, jadi Anda akan bermain di antrean khusus dengan pemain yang menggunakan card pool yang sama.",

@@ -347,6 +347,7 @@ export const es: Record<keyof typeof en, string> = {
   "browser.outdated":
     "Este navegador está desactualizado, así que algunos colores y paneles pueden no mostrarse. Actualiza a Safari 16.4, Chrome 111, Firefox 113 o posterior.",
   "beta.tag": "Beta",
+  "beta.cardHint": "Aún no se ha lanzado. Solo se puede usar en el modo de batalla beta.",
   "lobby.betaBattleMode": "Modo de batalla beta",
   "lobby.betaBattleHint":
     "Estás usando cartas que aún no salen, así que jugarás en una cola especial con jugadores que usan las mismas cartas.",
