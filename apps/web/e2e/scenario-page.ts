@@ -204,6 +204,7 @@ export class ScenarioPage {
             const name = getCardDefinition(selection.triggerCardId)!.nameEn;
             await panel
               .getByRole("button", { name: new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) })
+              .and(panel.locator("[aria-pressed]"))
               .first()
               .click();
           } else {
