@@ -349,8 +349,9 @@ function GameScreenSession({
     vortexMode,
     setVortexMode,
     clearSel,
+    clearDeclarations,
   } = selectionState;
-  const overlayState = useOverlayState({ decision, state, clearSel });
+  const overlayState = useOverlayState({ decision, state, clearSel, clearDeclarations, viewerSeat });
   const {
     cardMenu,
     setCardMenu,

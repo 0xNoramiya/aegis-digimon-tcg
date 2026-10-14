@@ -12,6 +12,8 @@
 
 import { useEffect, useState } from "react";
 import type { DecisionRequest, GameState } from "@aegis/shared";
+import { combatWindowKey } from "@aegis/shared/schema/GameState";
+import type { Seat } from "@aegis/shared/schema/enums";
 import { Side } from "../../side";
 import type { RevealedZoneView } from "../model/gameOutcome";
 import type { DnaMaterialSelection } from "../model/dnaMaterialSelection";
@@ -29,10 +31,14 @@ export function useOverlayState({
   decision,
   state,
   clearSel,
+  clearDeclarations,
+  viewerSeat,
 }: {
   decision: DecisionRequest | undefined;
   state: GameState | undefined;
   clearSel: () => void;
+  clearDeclarations: () => void;
+  viewerSeat: Seat;
 }) {
   /** The permanent whose action menu is open, and where to anchor it. */
   const [cardMenu, setCardMenu] = useState<CardMenuAnchor | null>(null);
@@ -68,7 +74,7 @@ export function useOverlayState({
 
   // Discard unfinished declarations when server authority changes their action window.
   useEffect(() => {
-    clearSel();
+    clearDeclarations();
     setCardMenu((menu) => (menu?.side === Side.Opponent ? menu : null));
     setDigiXrosPick(null);
     setAssemblyPick(null);
@@ -77,8 +83,8 @@ export function useOverlayState({
     setEvoCostChoice(null);
     setAppFusionChoice(null);
     setDecisionAsDialog(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    clearDeclarations,
     decision?.decisionId,
     state?.pendingDecision?.decisionId,
     state?.combatWindow?.kind,
@@ -89,12 +95,16 @@ export function useOverlayState({
 
   const ownDecisionId = decision?.decisionId;
   const gameOver = state?.gameOver;
+  const ownCombatWindowKey = state?.combatWindow?.seat === viewerSeat ? combatWindowKey(state.combatWindow) : undefined;
   useEffect(() => {
-    if (!ownDecisionId && !gameOver) return;
+    if (!ownDecisionId && !gameOver && !ownCombatWindowKey) {
+      return;
+    }
+    clearSel();
     setCardMenu(null);
     setTrashView(null);
     setSecurityView(null);
-  }, [ownDecisionId, gameOver]);
+  }, [ownDecisionId, gameOver, ownCombatWindowKey, clearSel]);
 
   return {
     cardMenu,
