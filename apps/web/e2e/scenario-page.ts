@@ -107,6 +107,7 @@ export class ScenarioPage {
     await this.page.getByRole("button", { name: `Play ${kind}`, exact: true }).click();
   }
   async evolve(name: string, permanentId: string, cheapest = false) {
+    await expect(this.page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
     await this.hand(name);
     await this.page.getByRole("button", { name: "Digivolve", exact: true }).click();
     await this.page.locator(`[data-drop="perm-you"][data-id="${permanentId}"]`).click();
