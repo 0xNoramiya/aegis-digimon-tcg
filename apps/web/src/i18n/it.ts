@@ -242,6 +242,7 @@ const interfaceMessages = {
   "redesign.decks.editor.expandSheet": "Espandi pannello del mazzo",
   "redesign.decks.editor.collapseSheet": "Riduci pannello del mazzo",
   "redesign.decks.editor.openSheet": "Vedi mazzo",
+  "redesign.decks.editor.openSheetHint": "Lista, curve e proporzioni",
   "redesign.decks.editor.closeSheet": "Chiudi pannello del mazzo",
   "deckFormat.poolHint": "Carte fino a {set}.",
   "deckFormat.allSetsHint": "Tutte le espansioni disponibili.",

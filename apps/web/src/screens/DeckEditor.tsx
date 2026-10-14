@@ -47,6 +47,8 @@ import { setDeckBuilderPreferences, useDeckBuilderPreferences } from "./deckBuil
 import { DeckArtworkPicker } from "./DeckArtworkPicker";
 import { useTranslation } from "../i18n";
 import { ColorBalance } from "./ColorBalance";
+import { DeckCostCurve } from "@/screens/DeckCostCurve";
+import { DeckTypeBreakdown } from "@/screens/DeckTypeBreakdown";
 import { CountChip } from "./CountChip";
 import { DeckExportModal, DeckImportModal } from "./DeckTextModals";
 import { PoolCard } from "./PoolCard";
@@ -424,6 +426,8 @@ export function DeckEditor({
             />
 
             <div className="deck-current__stats">
+              <DeckTypeBreakdown main={main} egg={egg} />
+              <DeckCostCurve main={main} />
               <ColorBalance main={main} />
             </div>
           </div>
@@ -482,16 +486,24 @@ export function DeckEditor({
         type="button"
         className="deck-info-trigger"
         ref={sheetTrigger}
-        aria-label={t("deck.detailsCta")}
         onClick={() => {
           setDeckInfoExpanded(false);
           setDeckInfoOpen(true);
         }}
         aria-expanded={deckInfoOpen}
       >
-        <span>{t("redesign.decks.editor.openSheet")}</span>
+        <Icons.ChevronUp size={18} className="deck-info-trigger__chevron" />
+        <span className="deck-info-trigger__text">
+          <span className="deck-info-trigger__title">{t("redesign.decks.editor.openSheet")}</span>
+          <span className="deck-info-trigger__hint">{t("redesign.decks.editor.openSheetHint")}</span>
+        </span>
         <span className="deck-info-trigger__counts">
-          {mainCount}/{MAIN_TARGET} · {eggCount}/{EGG_TARGET}
+          <span data-done={validMain}>
+            {t("deck.main")} {mainCount}/{MAIN_TARGET}
+          </span>
+          <span data-done={eggCount === EGG_TARGET}>
+            {t("deck.egg")} {eggCount}/{EGG_TARGET}
+          </span>
         </span>
       </button>
 

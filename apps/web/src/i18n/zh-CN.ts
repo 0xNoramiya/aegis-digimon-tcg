@@ -1971,6 +1971,7 @@ const interfaceMessages = {
   "redesign.decks.editor.expandSheet": "展开卡组面板",
   "redesign.decks.editor.collapseSheet": "缩小卡组面板",
   "redesign.decks.editor.openSheet": "查看卡组",
+  "redesign.decks.editor.openSheetHint": "列表、曲线和比例",
   "redesign.decks.editor.closeSheet": "关闭卡组面板",
   "deckFormat.poolHint": "卡池截至 {set}。",
   "deckFormat.allSetsHint": "所有可用卡包。",

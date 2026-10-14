@@ -2045,6 +2045,7 @@ const interfaceMessages = {
   "redesign.decks.editor.expandSheet": "デッキパネルを展開する",
   "redesign.decks.editor.collapseSheet": "デッキパネルを減らす",
   "redesign.decks.editor.openSheet": "展望デッキ",
+  "redesign.decks.editor.openSheetHint": "リスト・カーブ・比率",
   "redesign.decks.editor.closeSheet": "デッキパネルを閉じる",
   "deckFormat.poolHint": "{set} までのカードプール。",
   "deckFormat.allSetsHint": "利用可能なすべてのセット。",
