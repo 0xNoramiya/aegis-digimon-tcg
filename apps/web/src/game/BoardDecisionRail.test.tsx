@@ -262,6 +262,44 @@ describe("BoardSelectionRail board view", () => {
     fireEvent.click(screen.getByRole("button", { name: "Return to decision" }));
     expect(screen.getByRole("region", { name: "Confirm targets" })).toBeTruthy();
   });
+
+  it("counts and confirms the field picks while the board is in view", () => {
+    const onConfirm = vi.fn<() => void>();
+    const { rerender } = renderIn(
+      <BoardSelectionRail
+        fieldSelection
+        prompt="＜Decoy＞: delete this Digimon to prevent the other Digimon's deletion?"
+        min={0}
+        max={1}
+        pickCount={0}
+        canConfirm
+        onConfirm={onConfirm}
+        onNoSelection={noop}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Select on board" }));
+    expect(screen.getByText("0 selected of 0–1")).toBeTruthy();
+    expect((screen.getByRole("button", { name: "Confirm targets" }) as HTMLButtonElement).disabled).toBe(true);
+
+    rerender(
+      <I18nProvider>
+        <BoardSelectionRail
+          fieldSelection
+          prompt="＜Decoy＞: delete this Digimon to prevent the other Digimon's deletion?"
+          min={0}
+          max={1}
+          pickCount={1}
+          canConfirm
+          onConfirm={onConfirm}
+          onNoSelection={noop}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.getByText("1 selected of 0–1")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
+    expect(onConfirm).toHaveBeenCalledOnce();
+  });
 });
 
 describe("BoardBlockPrompt", () => {
