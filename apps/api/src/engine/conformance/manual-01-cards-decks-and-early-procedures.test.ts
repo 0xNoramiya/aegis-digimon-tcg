@@ -121,8 +121,8 @@ describe("manual-0006 — Token sub-rules: can a token digivolve?", () => {
     // `matchingEvoCost`/`matchingEvoCostIgnoringColor` (src/engine/cards/cardData.ts) nor
     // `validateDigivolve` (src/engine/actions/digivolve.ts) ever reads `CardDefinition.isToken`
     // — grep confirms `isToken` is consulted only by playCard/token-play code and targeting
-    // filters, nowhere in the digivolve path. A real token permanent (KoHagurumon Token: Lv.3
-    // Black) therefore satisfies an ordinary EvoCost the same as a printed Lv.3 Black Digimon
+    // filters, nowhere in the digivolve path. A real token permanent (Volée & Zerdrücken: Lv.4
+    // Purple) therefore satisfies an ordinary EvoCost the same as a printed Lv.4 Purple Digimon
     // would, and a legal-looking digivolve onto it succeeds — contradicting the manual's own
     // "Tokens can't digivolve" rule.
     const s = setup();
@@ -134,24 +134,24 @@ describe("manual-0006 — Token sub-rules: can a token digivolve?", () => {
           playToken(seat: Seat, name: string, opts?: { payCost?: boolean }): Promise<Permanent | undefined>;
         };
       }
-    ).primitives.playToken(0, "KoHagurumon Token", { payCost: false });
+    ).primitives.playToken(0, "Volée & Zerdrücken", { payCost: false });
     expect(permanent).toBeDefined();
     const tokenDef = requireCardDefinition(permanent!.topCard!.cardId);
     expect(tokenDef.isToken).toBe(true);
-    expect(tokenDef.level).toBe(3);
+    expect(tokenDef.level).toBe(4);
 
-    // Golemon (BT10-062): plain EvoCost {color: Black, level: 3}, no name gate — a clean probe.
-    const golemon = s.give(0, Zone.Hand, "BT10-062");
-    s.state.memory = 1; // Golemon's evoCost memoryCost
+    // Sandiramon (BT10-079): plain EvoCost {color: Purple, level: 4}, no name gate — a clean probe.
+    const sandiramon = s.give(0, Zone.Hand, "BT10-079");
+    s.state.memory = 2; // Sandiramon's evoCost memoryCost
 
     const result = s.engine.applyIntent(0, {
       type: "digivolve",
       permanentId: permanent!.permanentId,
-      instanceId: golemon.instanceId,
+      instanceId: sandiramon.instanceId,
     });
 
     // EXPECTED (per manual-0006, "Tokens can't digivolve"): rejected. ACTUAL (engine bug): the
-    // digivolve is accepted and Golemon stacks onto the token permanent.
+    // digivolve is accepted and Sandiramon stacks onto the token permanent.
     expect(result).toEqual({ ok: false, reason: "invalid-evolution" });
   });
 });
