@@ -1035,6 +1035,7 @@ export function subTriggerAsCollected(engine: GameEngine, { sub, ctx, occurrence
     sub.event === "whenOneOfYoursDigivolves"
       ? { triggerOccurrence: subTriggerIdentity(sub, ctx.trigger) }
       : {}),
+    watcherEventIdentity: subTriggerIdentity(sub, ctx.trigger),
     ...(sub.orderedByTurnPlayer === true ? { orderingSeat: engine.state.turnSeat } : {}),
     // The stack resolver re-creates a context for every collected effect. Carry the event
     // snapshot along with engine watcher so placement guards and action filters see the same

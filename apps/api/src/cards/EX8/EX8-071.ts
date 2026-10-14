@@ -52,6 +52,7 @@ export const compiled: CompiledCard = {
             filter: {
               controller: "mine",
               kind: ["Digimon"],
+              levelComparison: { op: "gte", value: 4 },
               nameOrTrait: [
                 {
                   tokens: ["NSo"],

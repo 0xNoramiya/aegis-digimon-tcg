@@ -1,14 +1,25 @@
 import {
   ALL_FAMOUS_DECKS,
   famousDeckById,
+  famousDeckGroups,
   allCards,
   CardKind,
   formatCardViolation,
   formatCopyLimit,
   type DeckFormat,
+  type FamousDeck,
 } from "@aegis/shared";
+import { RANDOM_SET_BOT_DECK_PREFIX } from "@aegis/shared/decks/randomSetBotDeckPrefix";
 import { validateDecklist } from "./deckValidation.js";
 import { BOT_DECKS, type Decklist } from "./testDecks.js";
+
+function findRandomSetPool(requestedDeckId: string | undefined): readonly FamousDeck[] {
+  if (!requestedDeckId?.startsWith(RANDOM_SET_BOT_DECK_PREFIX)) {
+    return [];
+  }
+  const collection = requestedDeckId.slice(RANDOM_SET_BOT_DECK_PREFIX.length);
+  return famousDeckGroups().find((group) => group.collection === collection)?.decks ?? [];
+}
 
 /**
  * The deck the bot actually sits down with, guaranteed to pass the same gate the room
@@ -33,9 +44,9 @@ export function playableBotDeck(
     return { mainDeck: [...requested.decklist.mainDeck], eggDeck: [...requested.decklist.eggDeck] };
   }
 
-  const candidates = ALL_FAMOUS_DECKS.filter(
-    (preset) => validateDecklist(preset.decklist, { betaBattleMode, format }).ok,
-  );
+  const isLegal = (preset: FamousDeck) => validateDecklist(preset.decklist, { betaBattleMode, format }).ok;
+  const setCandidates = findRandomSetPool(requestedDeckId).filter(isLegal);
+  const candidates = setCandidates.length > 0 ? setCandidates : ALL_FAMOUS_DECKS.filter(isLegal);
   if (candidates.length > 0) {
     const selected = candidates[Math.floor(Math.random() * candidates.length)]!;
     return { mainDeck: [...selected.decklist.mainDeck], eggDeck: [...selected.decklist.eggDeck] };

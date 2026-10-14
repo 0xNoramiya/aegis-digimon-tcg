@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { CardBack, CardFull } from "../../../design/cards";
 import { NARROW_DIALOG_QUERY, useMediaQuery } from "../../../design/useMediaQuery";
 import { Icons } from "../../../design/icons";
@@ -9,6 +10,7 @@ import { abstractTargetLabel, cardCopyLabelsByInstance } from "./decisionCandida
 import type { DecisionCandidate } from "./decisionTypes";
 import { playCostBudgetAllowsCandidate } from "./decisionPlayCost";
 import { dpBudgetAllowsCandidate } from "./decisionDpBudget";
+import { DecisionScrollRow } from "@/game/overlay/choice/DecisionScrollRow";
 
 /** The grid of selectable targets for a `chooseTargets` / `selectCards` decision. */
 export function DecisionCandidateGrid({
@@ -136,7 +138,7 @@ export function DecisionCandidateGrid({
             ) : null}
             {/* Past six options a row would wrap into rows taller than the sheet, so it
               becomes one scrolling row with a visible track instead (reference #110). */}
-            <div className={`decision-overlay__grid${items.length > 6 ? " decision-overlay__grid--scroll" : ""}`}>
+            <CandidateRow scrolls={items.length > 6}>
               {items.map((cand) => {
                 const on = picks.includes(cand.instanceId);
                 const selectable =
@@ -263,12 +265,28 @@ export function DecisionCandidateGrid({
                   </button>
                 );
               })}
-            </div>
+            </CandidateRow>
           </div>
         ))}
       </div>
     </div>
   );
+}
+
+type CandidateRowParams = {
+  scrolls: boolean;
+  children: ReactNode;
+};
+
+function CandidateRow({ scrolls, children }: CandidateRowParams) {
+  if (scrolls) {
+    return (
+      <DecisionScrollRow className="decision-overlay__grid decision-overlay__grid--scroll">
+        {children}
+      </DecisionScrollRow>
+    );
+  }
+  return <div className="decision-overlay__grid">{children}</div>;
 }
 
 /** Candidates split by the zone they sit in, each zone keeping the order it arrived in. */

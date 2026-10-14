@@ -10,6 +10,7 @@ import { useTranslation, type TranslationKey } from "../i18n";
 import { en } from "../i18n/en";
 import { cardDisplayName, useCardOpener } from "./cardLinks";
 import { DecisionBoardReturn } from "./overlay/choice/DecisionBoardReturn";
+import { recordViewBoardOrigin } from "@/game/overlay/choice/recordViewBoardOrigin";
 import { useEffectPromptFocus } from "./overlay/choice/useEffectPromptFocus";
 import "./overlay/fieldDecisionRail.css";
 import { usePromptHandSpace, type PromptHandSpace } from "./overlay/choice/usePromptHandSpace";
@@ -258,8 +259,27 @@ export function BoardSelectionRail({
     if (isViewingBoard) returnControlRef.current?.querySelector("button")?.focus();
   }, [isViewingBoard]);
 
+  const detail = t("overlay.selectedOfRange", { count: pickCount, range: min === max ? `${max}` : `${min}–${max}` });
+  const resolvedConfirmLabel =
+    confirmLabel ?? t(fieldSelection || attackSelection ? "overlay.confirmTargets" : "overlay.endSelection");
+
   if (isViewingBoard) {
-    return <DecisionBoardReturn returnControlRef={returnControlRef} onReturn={() => setIsViewingBoard(false)} />;
+    return (
+      <DecisionBoardReturn
+        returnControlRef={returnControlRef}
+        onReturn={() => setIsViewingBoard(false)}
+        selection={
+          fieldSelection || attackSelection
+            ? {
+                status: detail,
+                confirmLabel: resolvedConfirmLabel,
+                canConfirm: pickCount > 0 && canConfirm,
+                onConfirm,
+              }
+            : undefined
+        }
+      />
+    );
   }
 
   const selectionLabel = attackSelection
@@ -276,7 +296,7 @@ export function BoardSelectionRail({
       art={sourceCardId}
       prompt={prompt}
       clause={clause}
-      detail={t("overlay.selectedOfRange", { count: pickCount, range: min === max ? `${max}` : `${min}–${max}` })}
+      detail={detail}
       budgetText={budgetText}
       handClearance={handClearance}
       onOpenDialog={fieldSelection ? undefined : onOpenDialog}
@@ -286,7 +306,7 @@ export function BoardSelectionRail({
           one (BT24-016 forcing the opponent to place a card as security) has no way out,
           so offering the button would promise an answer the server rejects. */}
       <Button full icon={Icons.Check} disabled={pickCount === 0 || !canConfirm} onClick={onConfirm}>
-        {confirmLabel ?? t(fieldSelection || attackSelection ? "overlay.confirmTargets" : "overlay.endSelection")}
+        {resolvedConfirmLabel}
       </Button>
       {min === 0 ? (
         <Button full variant="secondary" onClick={onNoSelection}>
@@ -298,7 +318,10 @@ export function BoardSelectionRail({
         full
         variant="secondary"
         icon={Icons.Map}
-        onClick={() => setIsViewingBoard(true)}
+        onClick={(event) => {
+          recordViewBoardOrigin({ element: event.currentTarget });
+          setIsViewingBoard(true);
+        }}
       >
         {t(fieldSelection || attackSelection ? "overlay.selectOnBoard" : "overlay.viewBoard")}
       </Button>
@@ -367,7 +390,14 @@ export function BoardAlliancePrompt({ attackerCardId, onPass }: { attackerCardId
       <Button variant="secondary" onClick={onPass}>
         {t("overlay.passAlliance")}
       </Button>
-      <Button variant="secondary" icon={Icons.Map} onClick={() => setIsViewingBoard(true)}>
+      <Button
+        variant="secondary"
+        icon={Icons.Map}
+        onClick={(event) => {
+          recordViewBoardOrigin({ element: event.currentTarget });
+          setIsViewingBoard(true);
+        }}
+      >
         {t("overlay.viewBoard")}
       </Button>
     </BoardPromptRail>
@@ -393,7 +423,15 @@ function useBoardView() {
 export function ViewBoardButton({ onClick }: { onClick: () => void }) {
   const { t } = useTranslation();
   return (
-    <Button full variant="secondary" icon={Icons.Map} onClick={onClick}>
+    <Button
+      full
+      variant="secondary"
+      icon={Icons.Map}
+      onClick={(event) => {
+        recordViewBoardOrigin({ element: event.currentTarget });
+        onClick();
+      }}
+    >
       {t("overlay.viewBoard")}
     </Button>
   );

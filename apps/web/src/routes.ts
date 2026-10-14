@@ -5,6 +5,7 @@ export type TournamentRoute = { kind: "catalog" } | { kind: "create" } | { kind:
 export interface AppRoute {
   screen: Screen;
   profile?: boolean;
+  settingsSectionId?: string;
   /** Only shared replay links open the replays screen; `/replays` itself redirects to the profile. */
   replayId?: string;
   tournament?: TournamentRoute;

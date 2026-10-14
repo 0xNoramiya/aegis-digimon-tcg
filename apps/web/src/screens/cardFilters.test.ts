@@ -61,4 +61,32 @@ describe("card search box", () => {
       sortSearchResults({ cards: [cards[0]!, cards[1]!], sort: "name", query: "agumon" }).map((c) => c.nameEn),
     ).toEqual(["Agumon", "Greymon"]);
   });
+
+  it("lists a field group's members by its name or abbreviation alongside normal matches (issue 5330)", () => {
+    const cards = [
+      testCard("BT1-020", "Seadramon", { types: ["Aquatic", "DS"] }),
+      testCard("BT1-021", "Deep Savers", { kinds: [CardKind.Option], types: ["DS"] }),
+      testCard("BT1-022", "Gotsumon", { types: ["Rock", "ME"] }),
+      testCard("BT1-023", "Dsamon", { effectText: "Mentions deep savers in text." }),
+    ];
+
+    expect(searchIds(cards, "deep savers")).toEqual(["BT1-020", "BT1-021", "BT1-023"]);
+    expect(searchIds(cards, "DS")).toEqual(["BT1-020", "BT1-021", "BT1-023"]);
+    expect(searchIds(cards, "metal empire")).toEqual(["BT1-022"]);
+    expect(searchIds(cards, "dsa")).toEqual(["BT1-023"]);
+  });
+
+  it("filters the trait box by a field group's name or abbreviation", () => {
+    const cards = [
+      testCard("BT1-030", "Rosemon", { types: ["Fairy", "WG"] }),
+      testCard("BT1-031", "Agumon", { types: ["Reptile"] }),
+    ];
+    const { result } = renderHook(() => useCardFilter(cards));
+
+    act(() => result.current.setTraitQuery("wind guardians"));
+    expect(result.current.filtered.map((card) => card.cardId)).toEqual(["BT1-030"]);
+
+    act(() => result.current.setTraitQuery("wg"));
+    expect(result.current.filtered.map((card) => card.cardId)).toEqual(["BT1-030"]);
+  });
 });

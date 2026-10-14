@@ -3,6 +3,7 @@ export const shellEn = {
   "redesign.shell.theme.useLight": "Use light theme",
   "redesign.shell.theme.useDark": "Use dark theme",
   "redesign.shell.theme.title": "Themes and colors",
+  "redesign.shell.music.open": "Change music",
   "redesign.shell.theme.description": "Digimon palettes or your own colors for the interface.",
   "redesign.shell.theme.choose": "Choose a theme",
   "redesign.shell.theme.mode": "Appearance",

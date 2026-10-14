@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, utimesSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -6,7 +6,11 @@ import express from "express";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { AccountStore } from "#api/accounts/AccountStore";
 import { createMemoryPool } from "#api/db/memoryPool.fixture";
+import { addMatchReplayLogSink } from "#api/logger";
 import { extractReplay, extractReplayFromLogDir } from "#api/replays/inputs/extract";
+import { extractReplayFromMatchLog } from "#api/replays/inputs/extractReplayFromMatchLog";
+import { MatchReplayLogWriter } from "#api/replays/inputs/MatchReplayLogWriter";
+import { matchReplayLogDirectory } from "#api/replays/inputs/matchReplayLogDirectory";
 import { recordRoomMatch, type RecordedRoomMatch } from "#api/replays/inputs/roomMatch.fixture";
 import type { ReplayRecord } from "#api/replays/inputs/types";
 import { FeedbackStore } from "#api/bugs/FeedbackStore";
@@ -15,23 +19,28 @@ import { issueBody, type IssueContext, type IssueTracker, type NewBugReport } fr
 import { ReplayCapturer, type ReplayExtractor } from "#api/bugs/replayCapture";
 import { installBugReportRoutes } from "#api/bugs/routes";
 
-/**
- * A report filed from a match keeps a private copy of the match's replay, and the public issue
- * says only whether it did. The match is a real room match whose log lines are written to a temp
- * log directory exactly as the room wrote them.
- */
-
 const UNKNOWN_MATCH = "00000000-0000-4000-8000-000000000000";
 
 let match: RecordedRoomMatch;
 let record: ReplayRecord;
 let logDir: string;
 
+function writeMatchReplayLog(directory: string, lines: readonly string[]): void {
+  mkdirSync(matchReplayLogDirectory(directory), { recursive: true });
+  writeFileSync(join(matchReplayLogDirectory(directory), `${match.matchId}.jsonl`), lines.join("\n") + "\n");
+}
+
 beforeAll(async () => {
-  match = await recordRoomMatch({ seed: 20261009, turnLimit: 2 });
-  record = extractReplay(match.lines, match.matchId);
   logDir = mkdtempSync(join(tmpdir(), "aegis-bug-replay-"));
-  // Two segments whose names do not sort in write order, plus another match's noise.
+  const writer = new MatchReplayLogWriter(logDir);
+  const stopWriting = addMatchReplayLogSink(writer.write);
+  try {
+    match = await recordRoomMatch({ seed: 20261009, turnLimit: 2 });
+  } finally {
+    stopWriting();
+    await writer.close();
+  }
+  record = extractReplay(match.lines, match.matchId);
   const half = Math.floor(match.lines.length / 2);
   writeFileSync(join(logDir, "api-2026-10-09-ffff.jsonl"), match.lines.slice(0, half).join("\n") + "\n");
   writeFileSync(join(logDir, "api-2026-10-09-0000.jsonl"), match.lines.slice(half).join("\n") + '\n{"cut":');
@@ -191,8 +200,10 @@ describe("capturing the replay of a reported match", () => {
   it("treats a match the logs cannot rebuild (no replay header) as logs not found", async () => {
     const headless = mkdtempSync(join(tmpdir(), "aegis-bug-replay-headless-"));
     try {
-      const lines = match.lines.filter((line) => !line.includes('"replay.header"'));
-      writeFileSync(join(headless, "api-2026-10-09-aaaa.jsonl"), lines.join("\n") + "\n");
+      writeMatchReplayLog(
+        headless,
+        match.lines.filter((line) => !line.includes('"replay.header"')),
+      );
       const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir: headless }) });
 
       expect((await submit(h, { matchId: match.matchId })).status).toBe(201);
@@ -306,7 +317,37 @@ describe("the capturer's bounds", () => {
     expect(await new ReplayCapturer({ logDir, maxConcurrent: 1 }).capture(match.matchId)).toEqual(record);
   });
 
-  it("skips segments last written before the scan window", async () => {
+  it("reads only the match's own replay log and never scans the log segments", async () => {
+    const segmentsOnly = mkdtempSync(join(tmpdir(), "aegis-bug-replay-segments-"));
+    try {
+      writeFileSync(join(segmentsOnly, "api-2026-10-13-aaaa.jsonl"), match.lines.join("\n") + "\n");
+
+      expect(await new ReplayCapturer({ logDir: segmentsOnly }).capture(match.matchId)).toMatchObject({
+        failure: "logs_not_found",
+      });
+    } finally {
+      rmSync(segmentsOnly, { recursive: true, force: true });
+    }
+  });
+
+  it("refuses a match id that is not a UUID instead of using it in a path", async () => {
+    const capturer = new ReplayCapturer({ logDir });
+
+    for (const matchId of ["../../etc/passwd", `../replays/${match.matchId}`, match.matchId.toUpperCase(), ""])
+      expect(await capturer.capture(matchId)).toMatchObject({ failure: "logs_not_found" });
+  });
+
+  it("stops reading once its signal aborts", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      extractReplayFromMatchLog({ logDirectory: logDir, matchId: match.matchId, signal: controller.signal }),
+    ).rejects.toThrow(/abort/i);
+  });
+});
+
+describe("extracting a replay from raw log segments for the replay tool", () => {
+  it("skips segments last written before the requested window", async () => {
     const old = mkdtempSync(join(tmpdir(), "aegis-bug-replay-old-"));
     try {
       const path = join(old, "api-2026-10-08-aaaa.jsonl");
@@ -319,9 +360,6 @@ describe("the capturer's bounds", () => {
       await expect(
         extractReplayFromLogDir(old, match.matchId, { signal, modifiedAfter: Date.now() - 12 * 60 * 60 * 1000 }),
       ).rejects.toThrow(/No log lines/);
-      expect(await new ReplayCapturer({ logDir: old }).capture(match.matchId)).toMatchObject({
-        failure: "logs_not_found",
-      });
     } finally {
       rmSync(old, { recursive: true, force: true });
     }

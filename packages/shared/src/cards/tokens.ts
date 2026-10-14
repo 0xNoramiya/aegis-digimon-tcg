@@ -25,9 +25,8 @@ export const tokenDefinitions: readonly CardDefinition[] = [
     types: ["Unidentified"],
   }),
   tok("Familiar Token", {
-    level: 3,
     dp: 3000,
-    playCost: 0,
+    playCost: -1,
     colors: [CardColor.Yellow],
     effectText: "[On Deletion] 1 of your opponent's Digimon gets -3000 DP for the turn.",
   }),
@@ -35,9 +34,8 @@ export const tokenDefinitions: readonly CardDefinition[] = [
   tok("Amon of Crimson Flame", { dp: 6000, playCost: -1, colors: [CardColor.Red], effectText: "＜Rush＞" }),
   tok("Umon of Blue Thunder", { dp: 6000, playCost: -1, colors: [CardColor.Yellow], effectText: "＜Blocker＞" }),
   tok("KoHagurumon Token", {
-    level: 3,
     dp: 1000,
-    playCost: 3,
+    playCost: -1,
     colors: [CardColor.Black],
     effectText: "＜Blocker＞ ＜Decoy (Black)＞ [Your Turn] This Digimon can't attack.",
   }),
@@ -66,9 +64,8 @@ export const tokenDefinitions: readonly CardDefinition[] = [
     effectText: "＜Alliance＞ ＜Reboot＞ ＜Blocker＞",
   }),
   tok("Fujitsumon Token", {
-    level: 4,
     dp: 3000,
-    playCost: 0,
+    playCost: -1,
     colors: [CardColor.Purple],
     effectText: "[All Turns] This Digimon doesn't unsuspend.\n[On Deletion] Trash 1 card in your hand.",
   }),
@@ -101,7 +98,7 @@ export const tokenDefinitions: readonly CardDefinition[] = [
     colors: [CardColor.Yellow],
     effectText: "＜Blocker＞",
   }),
-  tok("Paishu", { dp: 6000, playCost: 0, colors: [CardColor.Yellow], effectText: "＜Blocker＞ ＜Guard＞" }),
+  tok("Paishu", { dp: 6000, playCost: -1, colors: [CardColor.Yellow], effectText: "＜Blocker＞ ＜Guard＞" }),
   tok("Kotenken", {
     dp: 9000,
     playCost: -1,

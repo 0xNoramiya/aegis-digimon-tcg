@@ -5,6 +5,7 @@ export const shellEs: Record<keyof typeof shellEn, string> = {
   "redesign.shell.theme.useLight": "Usar tema claro",
   "redesign.shell.theme.useDark": "Usar tema oscuro",
   "redesign.shell.theme.title": "Temas y colores",
+  "redesign.shell.music.open": "Cambiar música",
   "redesign.shell.theme.description": "Paletas de Digimon o tus propios colores para la interfaz.",
   "redesign.shell.theme.choose": "Elegir tema",
   "redesign.shell.theme.mode": "Apariencia",

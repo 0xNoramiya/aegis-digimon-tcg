@@ -135,6 +135,7 @@ createRoot(document.getElementById("root")!).render(
         devProbe={presentationProbe}
         presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}
         onExit={() => {}}
+        onCopyUsedDeck={() => {}}
       />
     )}
   </I18nProvider>,
