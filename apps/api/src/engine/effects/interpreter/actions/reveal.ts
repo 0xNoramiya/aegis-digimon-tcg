@@ -561,6 +561,7 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
           if (choice.to === "play") {
             return (
               (definition.kinds.includes(CardKind.Digimon) || definition.kinds.includes(CardKind.Tamer)) &&
+              !definition.kinds.includes(CardKind.Option) &&
               !playProhibited(c)
             );
           }
