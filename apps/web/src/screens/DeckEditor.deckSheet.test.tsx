@@ -13,10 +13,10 @@ const deck: DeckListing = {
   eggDeck: ["BT1-001", "BT1-001", "BT1-001", "BT1-001", "BT1-001"],
 };
 
-function renderEditor() {
+function renderEditor(editorDeck: DeckListing = deck) {
   render(
     <I18nProvider>
-      <DeckEditor deck={deck} onSave={() => undefined} onClose={() => undefined} onNav={() => undefined} />
+      <DeckEditor deck={editorDeck} onSave={() => undefined} onClose={() => undefined} onNav={() => undefined} />
     </I18nProvider>,
   );
 }
@@ -53,5 +53,35 @@ describe("deck sheet bar", () => {
     expect(screen.getByRole("button", { name: /^View deck/ }).textContent).toContain("Main 7/50");
     fireEvent.click(within(sheet).getByRole("button", { name: "Add Tai Kamiya" }));
     expect(screen.getByRole("button", { name: /^View deck/ }).textContent).toContain("Main 8/50");
+  });
+});
+
+describe("limited cards in historical deck pools", () => {
+  it.each([
+    ["LM-001", "Siriusmon", "BT15"],
+    ["LM-051", "Alexandrite Memory Boost!", "EX13"],
+  ] as const)("selects and adds copies of %s from its historical pool", async (cardId, name, format) => {
+    renderEditor({ ...deck, mainDeck: [], eggDeck: [], format });
+    fireEvent.change(screen.getByRole("textbox", { name: "Search name, number or text…" }), {
+      target: { value: cardId },
+    });
+    fireEvent.click(await screen.findByRole("button", { name: "Add" }));
+    fireEvent.click(screen.getByRole("button", { name: /^View deck/ }));
+    const sheet = screen.getByRole("complementary", { name: "Deck information" });
+    const add = within(sheet).getByRole("button", { name: `Add ${name}` });
+    expect(add).toHaveProperty("disabled", false);
+    fireEvent.click(add);
+    expect(screen.getByRole("button", { name: /^View deck/ }).textContent).toContain("Main 2/50");
+  });
+
+  it("keeps later limited cards unavailable in an earlier pool", () => {
+    renderEditor({ ...deck, mainDeck: ["LM-051"], eggDeck: [], format: "BT13" });
+    fireEvent.click(screen.getByRole("button", { name: /^View deck/ }));
+    const sheet = screen.getByRole("complementary", { name: "Deck information" });
+    expect(within(sheet).getByRole("button", { name: "Add Alexandrite Memory Boost!" })).toHaveProperty(
+      "disabled",
+      true,
+    );
+    expect(screen.getByRole("button", { name: /^View deck/ }).textContent).toContain("Main 1/50");
   });
 });
