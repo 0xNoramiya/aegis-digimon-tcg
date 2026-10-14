@@ -884,7 +884,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // Route zone arrivals to the per-client StateViews (see exposeCardToClients). Installed
     // before any seat is filled so `seatPlayer` picks it up for both PlayerStates. Not a replay
     // input: it only wires per-client views, which never feed back into engine state.
-    this.engine.installVisibility(this.exposeCardToClients);
+    this.engine.installVisibility(this.guardedVisibilityPort());
 
     // One catch-all handler: every client intent type is reassembled into a
     // discriminated-union Intent and handed to the engine, which validates,
@@ -2502,6 +2502,13 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     };
   }
 
+  private guardedVisibilityPort(): VisibilityPort {
+    const generation = this.engineGeneration;
+    return (ownerSeat, zone, card) => {
+      if (generation === this.engineGeneration) this.exposeCardToClients(ownerSeat, zone, card);
+    };
+  }
+
   private rollbackPlacement() {
     return {
       stateVersion: this.state.stateVersion - (this.rollbackHistory?.versionOffset ?? 0),
@@ -2597,7 +2604,6 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       this.engineGeneration += 1;
       for (const bot of this.bots) bot?.dispose();
       source.state.gameOver = true;
-      source.installVisibility(() => {});
       source.decisions.cancel();
       source.combat.cancel();
       source.mainPhase.abort();
@@ -2628,7 +2634,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       this.engineEvents = rebuilt.engineEvents;
       this.matchClock?.rebindAfterRollback(restored, previous, performance.now());
       this.pendingDecisionRequest = rebuilt.pendingRequest;
-      this.engine.installVisibility(this.exposeCardToClients);
+      this.engine.installVisibility(this.guardedVisibilityPort());
       for (const client of this.clients) {
         const seat = this.seatByClient.get(client.sessionId);
         if (seat !== undefined || this.spectatorClients.has(client.sessionId)) this.assignView(client, seat);
