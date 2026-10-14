@@ -556,8 +556,6 @@ const interfaceMessages = {
   "lobby.betaQueueOption": "ベータ版のキューでプレイする",
   "lobby.betaQueueOptionHint":
     "まだ発売されていないセットのカードをテストするプレイヤーと対戦してください。これらのカードはまだ変更される可能性があります。",
-  "lobby.betaQueueOptionBotHint":
-    "AI は、まだ発売されていないセットのカードを含むデッキを使用できます。これらのカードはまだ変更される可能性があります。",
   "beta.message": "アイギスはまだベータ版です。物が壊れたり、データがリセットされたりする可能性があります。",
   "beta.reportLink": "Discord でバグを報告する",
   "beta.dismiss": "わかりました",

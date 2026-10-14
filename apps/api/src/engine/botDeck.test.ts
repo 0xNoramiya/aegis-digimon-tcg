@@ -17,9 +17,9 @@ describe("playableBotDeck", () => {
     const random = vi.spyOn(Math, "random");
     try {
       random.mockReturnValue(0);
-      expect(playableBotDeck(undefined, false).mainDeck).toEqual([...candidates[0]!.decklist.mainDeck]);
+      expect(playableBotDeck(undefined).mainDeck).toEqual([...candidates[0]!.decklist.mainDeck]);
       random.mockReturnValue(0.999999);
-      expect(playableBotDeck("not-a-deck-id", false).mainDeck).toEqual([...candidates.at(-1)!.decklist.mainDeck]);
+      expect(playableBotDeck("not-a-deck-id").mainDeck).toEqual([...candidates.at(-1)!.decklist.mainDeck]);
     } finally {
       random.mockRestore();
     }
@@ -27,7 +27,7 @@ describe("playableBotDeck", () => {
 
   it("never returns a deck the room would reject", () => {
     const rejected = ALL_FAMOUS_DECKS.map(
-      (preset) => [preset.deckId, validateDecklist(playableBotDeck(preset.deckId, false))] as const,
+      (preset) => [preset.deckId, validateDecklist(playableBotDeck(preset.deckId))] as const,
     )
       .filter(([, verdict]) => !verdict.ok)
       .map(([deckId]) => deckId);
@@ -39,7 +39,7 @@ describe("playableBotDeck", () => {
       (preset) => isFamousDeckAvailable(preset) && validateDecklist(preset.decklist).ok,
     );
     expect(playable).toBeDefined();
-    expect(playableBotDeck(playable!.deckId, false).mainDeck).toEqual([...playable!.decklist.mainDeck]);
+    expect(playableBotDeck(playable!.deckId).mainDeck).toEqual([...playable!.decklist.mainDeck]);
   });
 
   it("draws from the legal catalog for an unplayable preset", () => {
@@ -47,10 +47,10 @@ describe("playableBotDeck", () => {
       (preset) => isFamousDeckAvailable(preset) && !validateDecklist(preset.decklist).ok,
     );
     if (unplayable === undefined) return;
-    expect(validateDecklist(playableBotDeck(unplayable.deckId, false)).ok).toBe(true);
+    expect(validateDecklist(playableBotDeck(unplayable.deckId)).ok).toBe(true);
   });
 
-  it("still plays an unreleased preset inside beta battle mode", () => {
+  it("replaces an unreleased preset with a released deck", () => {
     const betaOnly = ALL_FAMOUS_DECKS.find(
       (preset) =>
         isFamousDeckAvailable(preset) &&
@@ -58,6 +58,6 @@ describe("playableBotDeck", () => {
         validateDecklist(preset.decklist, { betaBattleMode: true }).ok,
     );
     if (betaOnly === undefined) return;
-    expect(playableBotDeck(betaOnly.deckId, true).mainDeck).toEqual([...betaOnly.decklist.mainDeck]);
+    expect(validateDecklist(playableBotDeck(betaOnly.deckId)).ok).toBe(true);
   });
 });

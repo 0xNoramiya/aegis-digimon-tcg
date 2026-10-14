@@ -360,8 +360,6 @@ export const en = {
   "lobby.betaQueueOption": "Play in the beta queue",
   "lobby.betaQueueOptionHint":
     "Face players who test cards from sets that are not out yet. Those cards can still change.",
-  "lobby.betaQueueOptionBotHint":
-    "The AI can use decks with cards from sets that are not out yet. Those cards can still change.",
   "beta.message": "Aegis is still in beta. Things may break and data can be reset.",
   "beta.reportLink": "Report a bug on Discord",
   "beta.dismiss": "Got it",

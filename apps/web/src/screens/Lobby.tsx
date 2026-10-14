@@ -253,7 +253,7 @@ export function Lobby({
       : deckFormat(decks.find((deck) => deck.id === activeDeckId)?.format),
   );
   const [mode, setMode] = useState(invitedRoomCode || privateRoom ? "private" : "casual");
-  const [betaConfirmation, setBetaConfirmation] = useState<"beta" | "bot" | null>(null);
+  const [betaConfirmationOpen, setBetaConfirmationOpen] = useState(false);
   const [privateSub, setPrivateSub] = useState<"create" | "join">(invitedRoomCode ? "join" : "create");
   const [roomCodeInput, setRoomCodeInput] = useState(invitedRoomCode ?? "");
   // "" is the random pool; any other value is a famous-deck preset id the bot will play.
@@ -328,12 +328,10 @@ export function Lobby({
   const [viewedDeck, setViewedDeck] = useState<DeckListing | null>(null);
   const [betaQueueChosen, setBetaQueueChosen] = useState(false);
   // Which modes route an unreleased-card deck into the separate beta queue.
-  const betaQueueMode =
-    (format === "standard" && (mode === "casual" || mode === "practice")) ||
-    (format === "unlimited" && mode === "practice");
-  // A private room is invite-only and both seats opt in by sharing the code, so it takes
-  // an unreleased-card deck without the queue routing a public match needs.
-  const betaAllowed = betaQueueMode || mode === "private";
+  const betaQueueMode = format === "standard" && mode === "casual";
+  // Private and bot rooms have no public queue, so they take an unreleased-card deck
+  // without the queue routing a public match needs.
+  const betaAllowed = betaQueueMode || mode === "private" || mode === "practice";
   const userDecks = useMemo(() => {
     return decks
       .map((deck) => ({
@@ -413,9 +411,7 @@ export function Lobby({
         : [],
     [active, customBotDeck],
   );
-  const betaEnabled =
-    betaQueueMode &&
-    ((!randomSelected && betaCards.length > 0) || (customBotDeck !== undefined && deckHasBetaCards(customBotDeck)));
+  const betaEnabled = betaQueueMode && !randomSelected && betaCards.length > 0;
   const betaPeriod = useMemo(() => allCards().some((card) => isBetaOnlyCard(card)), []);
   // While a set is in preview, a deck without its cards may still join the beta queue on request.
   const betaOptional = betaPeriod && betaQueueMode && (randomSelected || betaCards.length === 0);
@@ -485,10 +481,7 @@ export function Lobby({
           setRandomError(true);
           return;
         }
-        const betaBattleMode =
-          betaQueueMode && (deckHasBetaCards(drawn) || (customBotDeck !== undefined && deckHasBetaCards(customBotDeck)))
-            ? true
-            : requestedBetaBattleMode;
+        const betaBattleMode = betaQueueMode && deckHasBetaCards(drawn) ? true : requestedBetaBattleMode;
         const queueMode = betaBattleMode && startMode === "casual" ? "beta" : startMode;
         onStart(
           queueMode,
@@ -559,10 +552,7 @@ export function Lobby({
                 shortLabel: t("redesign.play.short.bot"),
                 icon: Icons.Bot,
                 disabled: !selectionLegal,
-                onClick: () =>
-                  betaEnabled
-                    ? setBetaConfirmation("bot")
-                    : start("bot", undefined, botDeckId || undefined, betaOptedIn),
+                onClick: () => start("bot", undefined, botDeckId || undefined),
               }
             : betaEnabled || betaOptedIn
               ? {
@@ -572,7 +562,7 @@ export function Lobby({
                   icon: Icons.Swords,
                   disabled: !selectionLegal,
                   onClick: () =>
-                    betaEnabled ? setBetaConfirmation("beta") : start("beta", undefined, undefined, true),
+                    betaEnabled ? setBetaConfirmationOpen(true) : start("beta", undefined, undefined, true),
                 }
               : RANKED_ENABLED && format === "standard"
                 ? // RankedStart owns its ranked toggle and button, so it stays in the setup panel.
@@ -977,9 +967,7 @@ export function Lobby({
                       />
                       <span>
                         <strong>{t("lobby.betaQueueOption")}</strong>
-                        <span className="lobby-beta-option__description">
-                          {t(vsBot ? "lobby.betaQueueOptionBotHint" : "lobby.betaQueueOptionHint")}
-                        </span>
+                        <span className="lobby-beta-option__description">{t("lobby.betaQueueOptionHint")}</span>
                       </span>
                     </label>
                   ) : null}
@@ -1056,20 +1044,18 @@ export function Lobby({
           onClose={() => setViewedDeck(null)}
         />
       ) : null}
-      {betaConfirmation ? (
-        <Dialog labelledBy="lobby-beta-confirm-title" onClose={() => setBetaConfirmation(null)}>
+      {betaConfirmationOpen ? (
+        <Dialog labelledBy="lobby-beta-confirm-title" onClose={() => setBetaConfirmationOpen(false)}>
           <h2 id="lobby-beta-confirm-title">{t("lobby.betaConfirmTitle")}</h2>
           <p>{t("lobby.betaConfirmHint", { deck: active?.name ?? "" })}</p>
           <div className="lobby-beta-confirm-actions">
-            <Button variant="secondary" onClick={() => setBetaConfirmation(null)}>
+            <Button variant="secondary" onClick={() => setBetaConfirmationOpen(false)}>
               {t("common.cancel")}
             </Button>
             <Button
               onClick={() => {
-                const startMode = betaConfirmation;
-                setBetaConfirmation(null);
-                if (selectionLegal && betaEnabled)
-                  start(startMode, undefined, startMode === "bot" ? botDeckId || undefined : undefined, true);
+                setBetaConfirmationOpen(false);
+                if (selectionLegal && betaEnabled) start("beta", undefined, undefined, true);
               }}
             >
               {t("common.confirm")}

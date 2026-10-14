@@ -462,9 +462,9 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       return false;
     if ((options.ranked === true) !== this.isRankedRoom || ((this.isRankedRoom || this.isTournamentRoom) && !account))
       return false;
-    // A private room allows beta cards without the client asking for them, so only the
-    // public room types have to agree with the joiner's beta flag.
-    if (!this.isPrivate && (options.betaBattleMode === true) !== this.isBetaBattleRoom) return false;
+    // Private and bot rooms allow beta cards without the client asking for them, so only the
+    // public queues have to agree with the joiner's beta flag.
+    if (!this.isPrivate && !this.isBotRoom && (options.betaBattleMode === true) !== this.isBetaBattleRoom) return false;
     if ((options.unlimited === true) !== this.isUnlimitedRoom) return false;
     if (options.format !== undefined && !isDeckFormat(options.format)) return false;
     if (!this.isPrivate && deckFormat(options.format, options.unlimited) !== this.state.format) return false;
@@ -1638,7 +1638,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // exactly as it was rather than half-seated.
     let deck;
     try {
-      deck = this.customBotDeck ?? playableBotDeck(botDeckId, this.isBetaBattleRoom, this.state.format as DeckFormat);
+      deck = this.customBotDeck ?? playableBotDeck(botDeckId, this.state.format as DeckFormat);
     } catch (error) {
       logError("[AegisRoom] addBot could not resolve a legal bot deck", error);
       return false;

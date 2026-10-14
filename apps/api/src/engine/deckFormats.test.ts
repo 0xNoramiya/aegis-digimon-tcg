@@ -44,7 +44,7 @@ describe("authoritative format validation", () => {
   it.each(["BT13", "pauper", "unlimited", "BT13:pauper", "BT13:unlimited"] as const)(
     "selects a legal bot deck for %s even when the requested preset is incompatible",
     (format) => {
-      expect(validateDecklist(playableBotDeck("missing-preset", false, format), { format })).toEqual({ ok: true });
+      expect(validateDecklist(playableBotDeck("missing-preset", format), { format })).toEqual({ ok: true });
     },
   );
   it("set Unlimited accepts historical banned cards but never later cards", () => {

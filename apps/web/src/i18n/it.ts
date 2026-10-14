@@ -416,8 +416,6 @@ const interfaceMessages = {
   "lobby.betaQueueOption": "Gioca nella coda beta",
   "lobby.betaQueueOptionHint":
     "Affronta giocatori che provano carte di espansioni non ancora pubblicate. Queste carte potrebbero cambiare.",
-  "lobby.betaQueueOptionBotHint":
-    "L'IA può usare mazzi con carte di espansioni non ancora pubblicate. Queste carte potrebbero cambiare.",
   "beta.message": "Aegis è ancora in beta. Potrebbero verificarsi problemi e i dati potrebbero essere azzerati.",
   "beta.reportLink": "Segnala un bug su Discord",
   "beta.dismiss": "Ho capito",

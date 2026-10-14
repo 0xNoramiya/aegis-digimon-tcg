@@ -550,8 +550,6 @@ const interfaceMessages = {
   "lobby.betaQueueOption": "베타 대기열에서 플레이",
   "lobby.betaQueueOptionHint":
     "아직 나오지 않은 세트의 카드를 테스트하는 플레이어와 마주하십시오. 그 카드는 여전히 바뀔 수 있습니다.",
-  "lobby.betaQueueOptionBotHint":
-    "AI는 아직 나오지 않은 세트의 카드로 덱을 사용할 수 있습니다. 그 카드는 여전히 바뀔 수 있습니다.",
   "beta.message": "Aegis는 아직 베타 버전입니다. 문제가 발생하고 데이터가 재설정될 수 있습니다.",
   "beta.reportLink": "Discord에 버그 신고",
   "beta.dismiss": "알았어요",
