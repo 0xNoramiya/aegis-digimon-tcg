@@ -69,14 +69,7 @@ export const compiled: CompiledCard = {
       trigger: "EndOfYourTurn",
       actions: [
         {
-          kind: "Suspend",
-          target: {
-            filter: {
-              controller: "opponent",
-              kind: ["Digimon"],
-            },
-            count: 1,
-          },
+          kind: "CostGatedBlock",
           cost: {
             kind: "suspend",
             target: {
@@ -90,24 +83,36 @@ export const compiled: CompiledCard = {
           },
           optional: true,
           abortOnDecline: true,
-        },
-        {
-          kind: "ModifyDP",
-          target: {
-            filter: {
-              controller: "mine",
-              kind: ["Digimon"],
-              nameOrTrait: [
-                {
-                  tokens: ["Vortex Warriors"],
-                  match: "trait",
+          actions: [
+            {
+              kind: "Suspend",
+              target: {
+                filter: {
+                  controller: "opponent",
+                  kind: ["Digimon"],
                 },
-              ],
+                count: 1,
+              },
             },
-            count: 1,
-          },
-          amount: 2000,
-          duration: "untilOpponentTurnEnd",
+            {
+              kind: "ModifyDP",
+              target: {
+                filter: {
+                  controller: "mine",
+                  kind: ["Digimon"],
+                  nameOrTrait: [
+                    {
+                      tokens: ["Vortex Warriors"],
+                      match: "trait",
+                    },
+                  ],
+                },
+                count: 1,
+              },
+              amount: 2000,
+              duration: "untilOpponentTurnEnd",
+            },
+          ],
         },
       ],
     },
