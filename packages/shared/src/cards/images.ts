@@ -23,6 +23,8 @@ const UNPUBLISHED_IMAGE_IDS = new Set([
   "BT24-059_P2",
   "BT25-041_P2",
   "BT25-053_P2",
+  "BT27-084",
+  "BT27-084_P1",
   "BT5-090_P2",
   "EX8-055_P2",
   "LM-063",

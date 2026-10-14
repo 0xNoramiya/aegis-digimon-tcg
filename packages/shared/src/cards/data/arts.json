@@ -550,7 +550,8 @@
     "DUAL REVOLUTION BT-25 Release Event (Japanese)",
     "TIMELESS BONDS BT-26 Release Event",
     "Great Legend Pre-Release Promotion",
-    "Starter Deck Complete Set 2021 (Japanese)"
+    "Starter Deck Complete Set 2021 (Japanese)",
+    "BT-27: BOOSTER IGNITION OF X"
   ],
   "cards": {
     "AD1-001": [
@@ -7270,6 +7271,7 @@
       ["_P1-J", 325],
       ["_P2-J", 325]
     ],
+    "BT27-084": [["_P1", 551]],
     "BT3-001": [["-J", 1]],
     "BT3-002": [
       ["_P1", 248],
