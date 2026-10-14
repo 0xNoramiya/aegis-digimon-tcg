@@ -335,6 +335,15 @@ export async function consultLeavePrevention(
         continue;
       }
       if (repl.oncePerTurnKey !== undefined && host.oncePerTurnFired?.(repl.oncePerTurnKey)) continue;
+      const protectedIds = repl.affectsAll
+        ? permanentIds.filter(
+            (candidateId) =>
+              candidateId === leavingId ||
+              (!prevented.has(candidateId) &&
+                host.permanentById(candidateId) !== undefined &&
+                (repl.protects?.(ctx, candidateId) ?? true)),
+          )
+        : [leavingId];
       opts.reentryGuard.activeReplacementKeys.add(activationKey);
       let did: boolean;
       try {
@@ -344,7 +353,7 @@ export async function consultLeavePrevention(
         did = await repl.preventCheck(
           {
             ...ctx,
-            affectedPermanentIds: [leavingId],
+            affectedPermanentIds: protectedIds,
             onActivationChosen: () => {
               if (repl.oncePerTurnKey !== undefined) host.markOncePerTurnFired?.(repl.oncePerTurnKey);
             },
@@ -359,9 +368,8 @@ export async function consultLeavePrevention(
       prevented.add(leavingId);
       if (repl.affectsAll) {
         firedAll.add(repl.id);
-        for (const simultaneousId of permanentIds) {
+        for (const simultaneousId of protectedIds) {
           if (host.permanentById(simultaneousId) === undefined) continue;
-          if (repl.protects !== undefined && !repl.protects(ctx, simultaneousId)) continue;
           // One payment saving several permanents earns one announcement each: the viewer is
           // told about every card the keyword actually kept on the board.
           if (simultaneousId !== leavingId && !prevented.has(simultaneousId)) announce(simultaneousId);

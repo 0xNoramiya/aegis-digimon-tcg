@@ -2,6 +2,7 @@ import type { DecisionRequest } from "@aegis/shared";
 import { CardFull } from "../../../design/cards";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
+import { recordViewBoardOrigin } from "@/game/overlay/choice/recordViewBoardOrigin";
 import "./decisionDigivolveCostChoice.css";
 
 type DigivolveCostChoice = NonNullable<NonNullable<DecisionRequest["options"]>["digivolveCostChoice"]>;
@@ -61,7 +62,14 @@ export function DecisionDigivolveCostChoice({
           );
         })}
       </div>
-      <button type="button" className="digivolve-cost-choice__view-board" onClick={onViewBoard}>
+      <button
+        type="button"
+        className="digivolve-cost-choice__view-board"
+        onClick={(event) => {
+          recordViewBoardOrigin({ element: event.currentTarget });
+          onViewBoard();
+        }}
+      >
         <Icons.Map size={18} />
         {t("overlay.viewBoard")}
       </button>

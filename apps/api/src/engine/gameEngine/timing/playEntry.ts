@@ -151,7 +151,7 @@ export async function fireEnteredByEffectTiming(
     );
     return;
   }
-  await engine.fireTimingForInstance(timing, instanceId, {
+  const scopedTrigger: TriggerInfo = {
     enteredByEffect: ownerSeat,
     ...(attackerPermanentId !== undefined ? { attackerPermanentId } : {}),
     ...(opts?.isDnaDigivolve === true ? { isDnaDigivolve: true } : {}),
@@ -161,45 +161,53 @@ export async function fireEnteredByEffectTiming(
     ...(opts?.playedByEffectSourceCardId !== undefined
       ? { playedByEffectSourceCardId: opts.playedByEffectSourceCardId }
       : {}),
-  });
+  };
   const subjectPermanentId = subjectPermanent?.permanentId;
-  if (subjectPermanentId === undefined) return;
-  if (timing === EffectTiming.WhenDigivolving) {
-    await engine.fireTiming(EffectTiming.OnEnterFieldAnyone, {
-      subjectPermanentId,
-      entryCause: "digivolve",
-      enteredByEffect: ownerSeat,
-      ...(opts?.isDnaDigivolve === true ? { isDnaDigivolve: true } : {}),
-    });
-    await engine.fireSubTrigger("onEnterFieldAnyone", {
-      subjectPermanentId,
-      entryCause: "digivolve",
-      enteredByEffect: ownerSeat,
-      ...(opts?.isDnaDigivolve === true ? { isDnaDigivolve: true } : {}),
-    });
-    // Q6671/Q6708: a Tamer base digivolves as a Tamer, so the payload is tagged and the
-    // SubTrigger gate withholds plain "when a Digimon digivolves" watchers while Tamer-naming
-    // watchers still fire. The caller's report reads EFFECTIVE kinds, so a Tamer treated as a
-    // Digimon is not tagged; callers that report nothing (App Fusion) fall back to the printed
-    // base. The entering card's own [When Digivolving] window above, and the bonus draw
-    // (Q6709), are unaffected.
-    const fromTamer = digivolvedFromTamerBase(subjectPermanent);
-    const tamerDigivolved = fromTamer && opts?.baseWasDigimon !== true;
-    const watcherTrigger = {
-      subjectPermanentId,
-      digivolvedInstanceId: instanceId,
-      enteredByEffect: ownerSeat,
-      ...(opts?.previousDigivolutionLevel === undefined
-        ? {}
-        : { previousDigivolutionLevel: opts.previousDigivolutionLevel }),
-      ...(opts?.isDnaDigivolve === true ? { isDnaDigivolve: true } : {}),
-      ...(opts?.digivolvedFromZone !== undefined ? { digivolvedFromZone: opts.digivolvedFromZone } : {}),
-      ...(fromTamer ? { digivolvedFromTamer: true } : {}),
-      ...(tamerDigivolved ? { tamerDigivolved: true } : {}),
-    };
-    await engine.fireSubTrigger("whenOneOfYoursDigivolves", watcherTrigger);
-    await engine.fireSubTrigger("whenAnyDigivolves", watcherTrigger);
+  if (timing !== EffectTiming.WhenDigivolving || subjectPermanent === undefined || subjectPermanentId === undefined) {
+    await engine.fireTimingForInstance(timing, instanceId, scopedTrigger);
+    return;
   }
+  const enterFieldTrigger = {
+    subjectPermanentId,
+    entryCause: "digivolve" as const,
+    enteredByEffect: ownerSeat,
+    ...(opts?.isDnaDigivolve === true ? { isDnaDigivolve: true } : {}),
+  };
+  // Q6671/Q6708: a Tamer base digivolves as a Tamer, so the payload is tagged and the
+  // SubTrigger gate withholds plain "when a Digimon digivolves" watchers while Tamer-naming
+  // watchers still fire. The caller's report reads EFFECTIVE kinds, so a Tamer treated as a
+  // Digimon is not tagged; callers that report nothing (App Fusion) fall back to the printed
+  // base. The entering card's own [When Digivolving] window, and the bonus draw (Q6709),
+  // are unaffected.
+  const fromTamer = digivolvedFromTamerBase(subjectPermanent);
+  const tamerDigivolved = fromTamer && opts?.baseWasDigimon !== true;
+  const watcherTrigger = {
+    subjectPermanentId,
+    digivolvedInstanceId: instanceId,
+    enteredByEffect: ownerSeat,
+    ...(opts?.previousDigivolutionLevel === undefined
+      ? {}
+      : { previousDigivolutionLevel: opts.previousDigivolutionLevel }),
+    ...(opts?.isDnaDigivolve === true ? { isDnaDigivolve: true } : {}),
+    ...(opts?.digivolvedFromZone !== undefined ? { digivolvedFromZone: opts.digivolvedFromZone } : {}),
+    ...(fromTamer ? { digivolvedFromTamer: true } : {}),
+    ...(tamerDigivolved ? { tamerDigivolved: true } : {}),
+  };
+  const fireEntryWindows = async (): Promise<void> => {
+    await engine.fireTimingForInstance(timing, instanceId, scopedTrigger);
+    await engine.fireTiming(EffectTiming.OnEnterFieldAnyone, enterFieldTrigger);
+    await engine.fireSubTrigger("onEnterFieldAnyone", enterFieldTrigger);
+  };
+  const watcherEvents = ["whenOneOfYoursDigivolves", "whenAnyDigivolves"] as const;
+  if (shouldDeferNestedTiming(engine)) {
+    await fireEntryWindows();
+    for (const event of watcherEvents) await engine.fireSubTrigger(event, watcherTrigger);
+    return;
+  }
+  await engine.recomputeContinuousEffects();
+  await withPendingSubTriggers(engine, watcherEvents, watcherTrigger, fireEntryWindows, {
+    onlyInitiallyArmed: !engine.ruleProcessing,
+  });
 }
 
 /** Materialize filtered player-scoped named grants before a new permanent's On Play window. */
