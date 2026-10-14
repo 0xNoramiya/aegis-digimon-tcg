@@ -1,0 +1,1205 @@
+{
+  "format": "aegis-replay-inputs/1",
+  "matchId": "f4a1c525-5331-42fc-941c-def450b3f196",
+  "serverRevision": "17d74783121bf58eaef6a42f2a39cc74051fedee",
+  "seed": 915916605,
+  "rules": {
+    "deckFormat": "standard",
+    "unlimited": false,
+    "betaBattle": false
+  },
+  "seats": [
+    {
+      "deck": {
+        "mainDeck": [
+          "BT21-009",
+          "BT25-007",
+          "BT25-007",
+          "BT25-007",
+          "BT25-007",
+          "BT25-045",
+          "BT25-045",
+          "BT25-045",
+          "BT25-045",
+          "BT25-036",
+          "BT25-036",
+          "BT25-036",
+          "BT25-036",
+          "BT25-052",
+          "BT25-052",
+          "BT25-052",
+          "BT25-052",
+          "BT21-073",
+          "BT25-056",
+          "BT25-056",
+          "BT25-056",
+          "BT25-056",
+          "BT25-072",
+          "BT25-072",
+          "BT25-072",
+          "BT25-072",
+          "BT25-060",
+          "BT25-060",
+          "BT25-060",
+          "BT25-060",
+          "P-217",
+          "P-217",
+          "P-217",
+          "BT25-089",
+          "BT25-089",
+          "BT25-089",
+          "BT3-103",
+          "BT19-089",
+          "BT25-098",
+          "BT25-098",
+          "BT25-098",
+          "BT25-098",
+          "BT26-086",
+          "BT21-070",
+          "BT21-070",
+          "BT26-010",
+          "BT26-010",
+          "BT23-022",
+          "ST22-08",
+          "ST22-08"
+        ],
+        "eggDeck": ["BT21-005", "BT21-005", "BT21-005", "BT21-005", "BT25-004"],
+        "mainDeckArts": [
+          "BT21-009",
+          "BT25-007",
+          "BT25-007",
+          "BT25-007",
+          "BT25-007",
+          "BT25-045",
+          "BT25-045",
+          "BT25-045",
+          "BT25-045",
+          "BT25-036",
+          "BT25-036",
+          "BT25-036",
+          "BT25-036",
+          "BT25-052",
+          "BT25-052",
+          "BT25-052",
+          "BT25-052",
+          "BT21-073",
+          "BT25-056",
+          "BT25-056",
+          "BT25-056",
+          "BT25-056",
+          "BT25-072",
+          "BT25-072",
+          "BT25-072",
+          "BT25-072",
+          "BT25-060",
+          "BT25-060",
+          "BT25-060",
+          "BT25-060",
+          "P-217",
+          "P-217",
+          "P-217",
+          "BT25-089",
+          "BT25-089",
+          "BT25-089",
+          "BT3-103",
+          "BT19-089",
+          "BT25-098",
+          "BT25-098",
+          "BT25-098",
+          "BT25-098",
+          "BT26-086",
+          "BT21-070",
+          "BT21-070",
+          "BT26-010",
+          "BT26-010",
+          "BT23-022",
+          "ST22-08",
+          "ST22-08"
+        ],
+        "eggDeckArts": ["BT21-005", "BT21-005", "BT21-005", "BT21-005", "BT25-004"]
+      }
+    },
+    {
+      "deck": {
+        "mainDeck": [
+          "BT12-021",
+          "BT12-021",
+          "BT12-021",
+          "BT12-021",
+          "BT12-047",
+          "BT12-047",
+          "BT12-047",
+          "BT12-047",
+          "P-117",
+          "P-117",
+          "P-117",
+          "P-117",
+          "P-248",
+          "P-248",
+          "BT12-022",
+          "BT12-022",
+          "BT12-022",
+          "BT12-022",
+          "BT12-050",
+          "BT12-050",
+          "BT12-050",
+          "BT12-050",
+          "BT21-037",
+          "BT21-037",
+          "BT21-037",
+          "ST9-09",
+          "BT16-025",
+          "BT16-025",
+          "BT16-025",
+          "BT16-025",
+          "AD1-011",
+          "AD1-011",
+          "AD1-011",
+          "AD1-024",
+          "AD1-024",
+          "AD1-024",
+          "ST9-06",
+          "ST9-06",
+          "EX13-076",
+          "EX13-076",
+          "EX13-076",
+          "BT16-085",
+          "BT16-085",
+          "BT16-085",
+          "BT16-085",
+          "EX13-070",
+          "EX13-070",
+          "EX13-070",
+          "BT17-097",
+          "BT17-097"
+        ],
+        "eggDeck": ["BT12-002", "BT12-002", "BT12-002", "BT12-002"]
+      },
+      "bot": true
+    }
+  ],
+  "inputs": [
+    {
+      "kind": "seat",
+      "seat": 0,
+      "deck": {
+        "mainDeck": [
+          "BT21-009",
+          "BT25-007",
+          "BT25-007",
+          "BT25-007",
+          "BT25-007",
+          "BT25-045",
+          "BT25-045",
+          "BT25-045",
+          "BT25-045",
+          "BT25-036",
+          "BT25-036",
+          "BT25-036",
+          "BT25-036",
+          "BT25-052",
+          "BT25-052",
+          "BT25-052",
+          "BT25-052",
+          "BT21-073",
+          "BT25-056",
+          "BT25-056",
+          "BT25-056",
+          "BT25-056",
+          "BT25-072",
+          "BT25-072",
+          "BT25-072",
+          "BT25-072",
+          "BT25-060",
+          "BT25-060",
+          "BT25-060",
+          "BT25-060",
+          "P-217",
+          "P-217",
+          "P-217",
+          "BT25-089",
+          "BT25-089",
+          "BT25-089",
+          "BT3-103",
+          "BT19-089",
+          "BT25-098",
+          "BT25-098",
+          "BT25-098",
+          "BT25-098",
+          "BT26-086",
+          "BT21-070",
+          "BT21-070",
+          "BT26-010",
+          "BT26-010",
+          "BT23-022",
+          "ST22-08",
+          "ST22-08"
+        ],
+        "eggDeck": ["BT21-005", "BT21-005", "BT21-005", "BT21-005", "BT25-004"],
+        "mainDeckArts": [
+          "BT21-009",
+          "BT25-007",
+          "BT25-007",
+          "BT25-007",
+          "BT25-007",
+          "BT25-045",
+          "BT25-045",
+          "BT25-045",
+          "BT25-045",
+          "BT25-036",
+          "BT25-036",
+          "BT25-036",
+          "BT25-036",
+          "BT25-052",
+          "BT25-052",
+          "BT25-052",
+          "BT25-052",
+          "BT21-073",
+          "BT25-056",
+          "BT25-056",
+          "BT25-056",
+          "BT25-056",
+          "BT25-072",
+          "BT25-072",
+          "BT25-072",
+          "BT25-072",
+          "BT25-060",
+          "BT25-060",
+          "BT25-060",
+          "BT25-060",
+          "P-217",
+          "P-217",
+          "P-217",
+          "BT25-089",
+          "BT25-089",
+          "BT25-089",
+          "BT3-103",
+          "BT19-089",
+          "BT25-098",
+          "BT25-098",
+          "BT25-098",
+          "BT25-098",
+          "BT26-086",
+          "BT21-070",
+          "BT21-070",
+          "BT26-010",
+          "BT26-010",
+          "BT23-022",
+          "ST22-08",
+          "ST22-08"
+        ],
+        "eggDeckArts": ["BT21-005", "BT21-005", "BT21-005", "BT21-005", "BT25-004"]
+      },
+      "deckRules": {
+        "betaBattleMode": false,
+        "unlimited": false,
+        "format": "standard"
+      },
+      "stateVersion": 0,
+      "engineEvents": 0
+    },
+    {
+      "kind": "seat",
+      "seat": 1,
+      "deck": {
+        "mainDeck": [
+          "BT12-021",
+          "BT12-021",
+          "BT12-021",
+          "BT12-021",
+          "BT12-047",
+          "BT12-047",
+          "BT12-047",
+          "BT12-047",
+          "P-117",
+          "P-117",
+          "P-117",
+          "P-117",
+          "P-248",
+          "P-248",
+          "BT12-022",
+          "BT12-022",
+          "BT12-022",
+          "BT12-022",
+          "BT12-050",
+          "BT12-050",
+          "BT12-050",
+          "BT12-050",
+          "BT21-037",
+          "BT21-037",
+          "BT21-037",
+          "ST9-09",
+          "BT16-025",
+          "BT16-025",
+          "BT16-025",
+          "BT16-025",
+          "AD1-011",
+          "AD1-011",
+          "AD1-011",
+          "AD1-024",
+          "AD1-024",
+          "AD1-024",
+          "ST9-06",
+          "ST9-06",
+          "EX13-076",
+          "EX13-076",
+          "EX13-076",
+          "BT16-085",
+          "BT16-085",
+          "BT16-085",
+          "BT16-085",
+          "EX13-070",
+          "EX13-070",
+          "EX13-070",
+          "BT17-097",
+          "BT17-097"
+        ],
+        "eggDeck": ["BT12-002", "BT12-002", "BT12-002", "BT12-002"]
+      },
+      "deckRules": {
+        "betaBattleMode": false,
+        "unlimited": false,
+        "format": "standard"
+      },
+      "bot": true,
+      "stateVersion": 0,
+      "engineEvents": 0
+    },
+    {
+      "kind": "startMatch",
+      "stateVersion": 0,
+      "engineEvents": 0
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "ready"
+      },
+      "ok": true,
+      "stateVersion": 1,
+      "engineEvents": 5
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "mulligan",
+        "keep": true
+      },
+      "ok": true,
+      "stateVersion": 1,
+      "engineEvents": 5
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "mulligan",
+        "keep": false
+      },
+      "ok": true,
+      "stateVersion": 1,
+      "engineEvents": 5
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "hatchEgg"
+      },
+      "ok": true,
+      "stateVersion": 5,
+      "engineEvents": 10
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-1",
+        "instanceId": "s1-8"
+      },
+      "ok": true,
+      "stateVersion": 7,
+      "engineEvents": 13
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "endPhase"
+      },
+      "ok": true,
+      "stateVersion": 9,
+      "engineEvents": 16
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "hatchEgg"
+      },
+      "ok": true,
+      "stateVersion": 14,
+      "engineEvents": 21
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "playCard",
+        "instanceId": "s0-2"
+      },
+      "ok": true,
+      "stateVersion": 16,
+      "engineEvents": 24
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-1",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-12"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 18,
+      "engineEvents": 32
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-2",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-26"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 18,
+      "engineEvents": 32
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-2",
+        "instanceId": "s0-6"
+      },
+      "ok": true,
+      "stateVersion": 21,
+      "engineEvents": 35
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "linkCard",
+        "instanceId": "s0-12",
+        "targetPermanentId": "perm-3"
+      },
+      "ok": true,
+      "stateVersion": 23,
+      "engineEvents": 38
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-3",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-17"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 24,
+      "engineEvents": 40
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "moveFromBreeding",
+        "permanentId": "perm-1"
+      },
+      "ok": true,
+      "stateVersion": 32,
+      "engineEvents": 48
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "attack",
+        "attackerPermanentId": "perm-1",
+        "target": {
+          "kind": "player"
+        }
+      },
+      "ok": true,
+      "stateVersion": 34,
+      "engineEvents": 51
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "playCard",
+        "instanceId": "s1-32"
+      },
+      "ok": true,
+      "stateVersion": 39,
+      "engineEvents": 59
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "moveFromBreeding",
+        "permanentId": "perm-2"
+      },
+      "ok": true,
+      "stateVersion": 44,
+      "engineEvents": 67
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "linkCard",
+        "instanceId": "s0-2",
+        "targetPermanentId": "perm-2"
+      },
+      "ok": true,
+      "stateVersion": 46,
+      "engineEvents": 70
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-4",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        }
+      },
+      "ok": true,
+      "stateVersion": 46,
+      "engineEvents": 70
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-5",
+        "response": {
+          "kind": "orderTriggers",
+          "order": [
+            "s0-53::subtrigger/opt/s0-53/printed/BT21-005/ir-35-0/s0-53/BT21-005/ir-35-0/0/occurrence/whenLinked%7Cperm-2%7Cs0-53%7CwhenLinked%7Cs0-53%2Fprinted%2FBT21-005%2Fir-35-0%7Cs0-53%2FBT21-005%2Fir-35-0%2F0%7Clink%3Aperm-2%3As0-2",
+            "s0-2::BT25-007/ir-37-0"
+          ]
+        }
+      },
+      "ok": true,
+      "stateVersion": 47,
+      "engineEvents": 72
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "appFusion",
+        "permanentId": "perm-2",
+        "instanceId": "s0-16",
+        "linkedInstanceId": "s0-2"
+      },
+      "ok": true,
+      "stateVersion": 54,
+      "engineEvents": 80
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "activateEffect",
+        "sourceInstanceId": "s0-39",
+        "effectKey": "BT25-098/ir-27-0"
+      },
+      "ok": true,
+      "stateVersion": 55,
+      "engineEvents": 83
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-6",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-31"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 57,
+      "engineEvents": 85
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-7",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-24"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 60,
+      "engineEvents": 92
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-8",
+        "response": {
+          "kind": "orderCards",
+          "order": ["s0-30", "s0-34"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 61,
+      "engineEvents": 93
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-2",
+        "instanceId": "s0-18",
+        "useAlternateCost": true,
+        "alternateRequirementIndex": 0
+      },
+      "ok": true,
+      "stateVersion": 64,
+      "engineEvents": 96
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-9",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        }
+      },
+      "ok": true,
+      "stateVersion": 66,
+      "engineEvents": 101
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-10",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-22"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 67,
+      "engineEvents": 102
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-11",
+        "response": {
+          "kind": "orderTriggers",
+          "order": [
+            "s0-18::subtrigger/whenLinked~perm-2~s0-18~s0-18%2FBT25-056%2Fir-35-1%2F0/whenLinked/occurrence/whenLinked%7Cperm-2%7Cs0-18%7CwhenLinked%7C%7Cs0-18%2FBT25-056%2Fir-35-1%2F0%7Clink%3Aperm-2%3As0-22",
+            "s0-22::subtrigger/whenLinked~perm-2~s0-22~s0-22%2FBT25-072%2Fir-35-2%2F0/whenLinked/occurrence/whenLinked%7Cperm-2%7Cs0-22%7CwhenLinked%7C%7Cs0-22%2FBT25-072%2Fir-35-2%2F0%7Clink%3Aperm-2%3As0-22",
+            "s0-31::subtrigger/whenLinked~perm-6~s0-31~s0-31%2FP-217%2Flinked-trigger%2F0/whenLinked/occurrence/whenLinked%7Cperm-6%7Cs0-31%7CwhenLinked%7C%7Cs0-31%2FP-217%2Flinked-trigger%2F0%7Clink%3Aperm-2%3As0-22"
+          ],
+          "optionalAnswers": {
+            "s0-31::subtrigger/whenLinked~perm-6~s0-31~s0-31%2FP-217%2Flinked-trigger%2F0/whenLinked/occurrence/whenLinked%7Cperm-6%7Cs0-31%7CwhenLinked%7C%7Cs0-31%2FP-217%2Flinked-trigger%2F0%7Clink%3Aperm-2%3As0-22": true
+          }
+        }
+      },
+      "ok": true,
+      "stateVersion": 69,
+      "engineEvents": 105
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "appFusion",
+        "permanentId": "perm-2",
+        "instanceId": "s0-26",
+        "linkedInstanceId": "s0-22"
+      },
+      "ok": true,
+      "stateVersion": 79,
+      "engineEvents": 115
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-12",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        }
+      },
+      "ok": true,
+      "stateVersion": 80,
+      "engineEvents": 118
+    },
+    {
+      "kind": "disconnect",
+      "seat": 0,
+      "final": false,
+      "stateVersion": 81,
+      "engineEvents": 119
+    },
+    {
+      "kind": "reconnect",
+      "seat": 0,
+      "stateVersion": 81,
+      "engineEvents": 119
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-13",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-47"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 81,
+      "engineEvents": 119
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "attack",
+        "attackerPermanentId": "perm-2",
+        "target": {
+          "kind": "permanent",
+          "permanentId": "perm-5"
+        },
+        "vortex": false
+      },
+      "ok": true,
+      "stateVersion": 85,
+      "engineEvents": 123
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "playCard",
+        "instanceId": "hidden-s0-426528f2d61a4fdee05976a8"
+      },
+      "ok": true,
+      "stateVersion": 97,
+      "engineEvents": 138
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-14",
+        "response": {
+          "kind": "optional",
+          "accept": false
+        }
+      },
+      "ok": true,
+      "stateVersion": 98,
+      "engineEvents": 142
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "hatchEgg"
+      },
+      "ok": true,
+      "stateVersion": 105,
+      "engineEvents": 149
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-15",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        }
+      },
+      "ok": true,
+      "stateVersion": 107,
+      "engineEvents": 152
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-16",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s1-33"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 111,
+      "engineEvents": 160
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-17",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s1-42"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 111,
+      "engineEvents": 160
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-10",
+        "instanceId": "s1-21"
+      },
+      "ok": true,
+      "stateVersion": 114,
+      "engineEvents": 163
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-18",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        }
+      },
+      "ok": true,
+      "stateVersion": 116,
+      "engineEvents": 168
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-9",
+        "instanceId": "s1-9"
+      },
+      "ok": true,
+      "stateVersion": 120,
+      "engineEvents": 172
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-10",
+        "instanceId": "s1-31"
+      },
+      "ok": true,
+      "stateVersion": 122,
+      "engineEvents": 175
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "hatchEgg"
+      },
+      "ok": true,
+      "stateVersion": 133,
+      "engineEvents": 189
+    },
+    {
+      "kind": "disconnect",
+      "seat": 0,
+      "final": false,
+      "stateVersion": 137,
+      "engineEvents": 195
+    },
+    {
+      "kind": "reconnect",
+      "seat": 0,
+      "stateVersion": 137,
+      "engineEvents": 195
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "ready"
+      },
+      "ok": true,
+      "stateVersion": 137,
+      "engineEvents": 195
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "activateEffect",
+        "sourceInstanceId": "hidden-s0-426528f2d61a4fdee05976a8",
+        "effectKey": "BT25-089/ir-27-0"
+      },
+      "ok": true,
+      "stateVersion": 137,
+      "engineEvents": 195
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-19",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        }
+      },
+      "ok": true,
+      "stateVersion": 137,
+      "engineEvents": 195
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-20",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-15"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 139,
+      "engineEvents": 197
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-21",
+        "response": {
+          "kind": "orderTriggers",
+          "order": [
+            "s0-53::subtrigger/opt/s0-53/printed/BT21-005/ir-35-0/s0-53/BT21-005/ir-35-0/0/occurrence/whenLinked%7Cperm-2%7Cs0-53%7CwhenLinked%7Cs0-53%2Fprinted%2FBT21-005%2Fir-35-0%7Cs0-53%2FBT21-005%2Fir-35-0%2F0%7Clink%3Aperm-2%3As0-15",
+            "s0-15::BT25-052/ir-37-0",
+            "s0-31::subtrigger/whenLinked~perm-6~s0-31~s0-31%2FP-217%2Flinked-trigger%2F0/whenLinked/occurrence/whenLinked%7Cperm-6%7Cs0-31%7CwhenLinked%7C%7Cs0-31%2FP-217%2Flinked-trigger%2F0%7Clink%3Aperm-2%3As0-15"
+          ],
+          "optionalAnswers": {
+            "s0-31::subtrigger/whenLinked~perm-6~s0-31~s0-31%2FP-217%2Flinked-trigger%2F0/whenLinked/occurrence/whenLinked%7Cperm-6%7Cs0-31%7CwhenLinked%7C%7Cs0-31%2FP-217%2Flinked-trigger%2F0%7Clink%3Aperm-2%3As0-15": true
+          }
+        }
+      },
+      "ok": true,
+      "stateVersion": 141,
+      "engineEvents": 199
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-22",
+        "response": {
+          "kind": "orderTriggers",
+          "order": [
+            "s0-15::BT25-052/ir-37-0",
+            "s0-31::subtrigger/whenLinked~perm-6~s0-31~s0-31%2FP-217%2Flinked-trigger%2F0/whenLinked/occurrence/whenLinked%7Cperm-6%7Cs0-31%7CwhenLinked%7C%7Cs0-31%2FP-217%2Flinked-trigger%2F0%7Clink%3Aperm-2%3As0-15"
+          ],
+          "optionalAnswers": {
+            "s0-31::subtrigger/whenLinked~perm-6~s0-31~s0-31%2FP-217%2Flinked-trigger%2F0/whenLinked/occurrence/whenLinked%7Cperm-6%7Cs0-31%7CwhenLinked%7C%7Cs0-31%2FP-217%2Flinked-trigger%2F0%7Clink%3Aperm-2%3As0-15": true
+          }
+        }
+      },
+      "ok": true,
+      "stateVersion": 144,
+      "engineEvents": 203
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-23",
+        "response": {
+          "kind": "chooseTargets",
+          "instanceIds": ["perm-10"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 146,
+      "engineEvents": 205
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-24",
+        "response": {
+          "kind": "orderTriggers",
+          "order": [
+            "s0-31::subtrigger/whenLinked~perm-6~s0-31~s0-31%2FP-217%2Flinked-trigger%2F0/whenLinked/occurrence/whenLinked%7Cperm-6%7Cs0-31%7CwhenLinked%7C%7Cs0-31%2FP-217%2Flinked-trigger%2F0%7Clink%3Aperm-2%3As0-15"
+          ],
+          "optionalAnswers": {
+            "s0-31::subtrigger/whenLinked~perm-6~s0-31~s0-31%2FP-217%2Flinked-trigger%2F0/whenLinked/occurrence/whenLinked%7Cperm-6%7Cs0-31%7CwhenLinked%7C%7Cs0-31%2FP-217%2Flinked-trigger%2F0%7Clink%3Aperm-2%3As0-15": true
+          }
+        }
+      },
+      "ok": true,
+      "stateVersion": 148,
+      "engineEvents": 207
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "attack",
+        "attackerPermanentId": "perm-2",
+        "target": {
+          "kind": "permanent",
+          "permanentId": "perm-10"
+        },
+        "vortex": false
+      },
+      "ok": true,
+      "stateVersion": 156,
+      "engineEvents": 215
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-25",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        }
+      },
+      "ok": true,
+      "stateVersion": 157,
+      "engineEvents": 216
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-26",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["hidden-s0-9acd780c0bf746535b9a51fd"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 158,
+      "engineEvents": 217
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-27",
+        "response": {
+          "kind": "chooseTargets",
+          "instanceIds": ["perm-2"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 159,
+      "engineEvents": 218
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-28",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-15"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 161,
+      "engineEvents": 220
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "attack",
+        "attackerPermanentId": "perm-2",
+        "target": {
+          "kind": "permanent",
+          "permanentId": "perm-10"
+        },
+        "vortex": false
+      },
+      "ok": true,
+      "stateVersion": 164,
+      "engineEvents": 224
+    }
+  ]
+}
