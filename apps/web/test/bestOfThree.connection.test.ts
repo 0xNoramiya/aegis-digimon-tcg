@@ -9,6 +9,7 @@ import {
   type Seat,
   type SeriesSeatMessage,
 } from "@aegis/shared";
+import { RematchStatus } from "@aegis/shared/protocol/RematchStatus";
 import { RED_DECK, BLUE_DECK } from "@aegis-api/engine/testDecks.js";
 import { startTestServer, type TestServer } from "./scenarioHarness/server";
 
@@ -169,5 +170,99 @@ describe("casual best-of-three websocket contract", () => {
         GameState,
       ),
     ).rejects.toThrow(/auth/i);
+  }, 20_000);
+});
+
+describe("rematch after a best-of-one", () => {
+  it("starts a fresh best-of-three when both players accept, with the loser choosing turn order", async () => {
+    server = await startTestServer();
+    const alice = await queue(server.endpoint, "Alice", 1);
+    const bob = await queue(server.endpoint, "Bob", 1, BLUE_DECK);
+    const players = [alice, bob];
+    const aliceSeat = seatOf(alice);
+
+    await concede(alice, players);
+    await vi.waitFor(() => expect(bob.room.state.series.rematchStatus).toBe(RematchStatus.OPEN.value));
+    bob.room.send(SERIES_CHANNEL, { action: "offerRematch" });
+    await vi.waitFor(() => expect(alice.room.state.series.rematchStatus).toBe(RematchStatus.OFFERED.value));
+    expect(alice.room.state.series.rematchOfferSeat).toBe(seatOf(bob));
+    alice.room.send(SERIES_CHANNEL, { action: "answerRematch", accept: true });
+
+    await vi.waitFor(() => expect(alice.room.state.series.rematchStatus).toBe(RematchStatus.ACCEPTED.value));
+    expect(alice.room.state.series.bestOf).toBe(3);
+    await nextGame(players, alice, false);
+
+    await startedGame(players);
+    const game1 = alice.room.state;
+    expect(game1.series.bestOf).toBe(3);
+    expect(game1.series.gameNumber).toBe(1);
+    expect([...game1.series.results]).toEqual([]);
+    expect(seatOf(alice)).toBe(aliceSeat);
+    expect(game1.players[aliceSeat]!.displayName).toBe("Alice");
+    expect(game1.turnSeat).toBe(1 - aliceSeat);
+
+    await concede(alice, players);
+    await vi.waitFor(() => expect(alice.room.state.series.phase).toBe("choosing"));
+    expect(alice.room.state.series.rematchStatus).toBe(RematchStatus.NONE.value);
+    expect([...alice.room.state.series.results]).toEqual([1 - aliceSeat]);
+  }, 60_000);
+
+  it("starts the series when both players offer", async () => {
+    server = await startTestServer();
+    const alice = await queue(server.endpoint, "Alice", 1);
+    const bob = await queue(server.endpoint, "Bob", 1, BLUE_DECK);
+
+    await concede(alice, [alice, bob]);
+    await vi.waitFor(() => expect(bob.room.state.series.rematchStatus).toBe(RematchStatus.OPEN.value));
+    alice.room.send(SERIES_CHANNEL, { action: "offerRematch" });
+    await vi.waitFor(() => expect(bob.room.state.series.rematchStatus).toBe(RematchStatus.OFFERED.value));
+    bob.room.send(SERIES_CHANNEL, { action: "offerRematch" });
+
+    await vi.waitFor(() => expect(bob.room.state.series.phase).toBe("choosing"));
+    expect(bob.room.state.series.chooserSeat).toBe(seatOf(alice));
+  }, 20_000);
+
+  it("keeps the match single when the opponent declines", async () => {
+    server = await startTestServer();
+    const alice = await queue(server.endpoint, "Alice", 1);
+    const bob = await queue(server.endpoint, "Bob", 1, BLUE_DECK);
+
+    await concede(alice, [alice, bob]);
+    await vi.waitFor(() => expect(alice.room.state.series.rematchStatus).toBe(RematchStatus.OPEN.value));
+    alice.room.send(SERIES_CHANNEL, { action: "offerRematch" });
+    await vi.waitFor(() => expect(bob.room.state.series.rematchStatus).toBe(RematchStatus.OFFERED.value));
+    alice.room.send(SERIES_CHANNEL, { action: "answerRematch", accept: true });
+    bob.room.send(SERIES_CHANNEL, { action: "answerRematch", accept: false });
+
+    await vi.waitFor(() => expect(alice.room.state.series.rematchStatus).toBe(RematchStatus.DECLINED.value));
+    alice.room.send(SERIES_CHANNEL, { action: "offerRematch" });
+    await vi.waitFor(() => expect(alice.room.state.series.rematchStatus).toBe(RematchStatus.DECLINED.value));
+    expect(alice.room.state.series.bestOf).toBe(1);
+    expect(alice.room.state.series.phase).toBe("playing");
+  }, 20_000);
+
+  it("closes the offer when the opponent leaves the finished room", async () => {
+    server = await startTestServer();
+    const alice = await queue(server.endpoint, "Alice", 1);
+    const bob = await queue(server.endpoint, "Bob", 1, BLUE_DECK);
+
+    await concede(alice, [alice, bob]);
+    await vi.waitFor(() => expect(bob.room.state.series.rematchStatus).toBe(RematchStatus.OPEN.value));
+    bob.room.send(SERIES_CHANNEL, { action: "offerRematch" });
+    await vi.waitFor(() => expect(alice.room.state.series.rematchStatus).toBe(RematchStatus.OFFERED.value));
+    await alice.room.leave();
+    rooms.splice(rooms.indexOf(alice.room), 1);
+
+    await vi.waitFor(() => expect(bob.room.state.series.rematchStatus).toBe(RematchStatus.CLOSED.value));
+  }, 20_000);
+
+  it("never offers a rematch inside a best-of-three", async () => {
+    server = await startTestServer();
+    const alice = await queue(server.endpoint, "Alice", 3);
+    const bob = await queue(server.endpoint, "Bob", 3, BLUE_DECK);
+
+    await concede(alice, [alice, bob]);
+    await vi.waitFor(() => expect(bob.room.state.series.phase).toBe("choosing"));
+    expect(bob.room.state.series.rematchStatus).toBe(RematchStatus.NONE.value);
   }, 20_000);
 });
