@@ -531,7 +531,6 @@ const interfaceMessages = {
   "lobby.enterBetaQueue": "進入測試版佇列",
   "lobby.betaQueueOption": "在測試版佇列中對戰",
   "lobby.betaQueueOptionHint": "與測試尚未發售卡包卡片的玩家對戰。這些卡片仍可能變更。",
-  "lobby.betaQueueOptionBotHint": "AI 可以使用包含尚未發售卡包卡片的卡組。這些卡片仍可能變更。",
   "beta.message": "Aegis 仍處於測試階段。可能會出現故障，資料也可能被重置。",
   "beta.reportLink": "在 Discord 上回報錯誤",
   "beta.dismiss": "知道了",

@@ -13,11 +13,8 @@ export const DECISION_CHANNEL = "decision" as const;
 /** The Colyseus room type registered via gameServer.define(ROOM_TYPE, AegisRoom). */
 export const ROOM_TYPE = "aegis" as const;
 
-/** One-human room created directly for a match against the server bot. */
+/** One-human room created directly for a match against the server bot. It accepts beta-only cards. */
 export const ROOM_TYPE_BOT = "aegis_bot" as const;
-
-/** One-human room created directly for a match against the server bot using beta-only cards. */
-export const ROOM_TYPE_BETA_BOT = "aegis_beta_bot" as const;
 
 /** Public matchmaking queue whose result affects player statistics. */
 export const ROOM_TYPE_RANKED = "aegis_ranked" as const;
@@ -31,7 +28,8 @@ export const RECONNECT_GRACE_SECONDS = 30;
 /**
  * Public matchmaking queue that allows cards from an announced-but-unreleased product
  * (`isBetaOnlyCard`, e.g. EX13 ahead of its street date). Ranked and tournament rooms reject
- * such a card at deck-validation time; a private room accepts it (see {@link ROOM_TYPE_PRIVATE}).
+ * such a card at deck-validation time; private and bot rooms accept it (see {@link ROOM_TYPE_PRIVATE}
+ * and {@link ROOM_TYPE_BOT}).
  */
 export const ROOM_TYPE_BETA = "aegis_beta" as const;
 

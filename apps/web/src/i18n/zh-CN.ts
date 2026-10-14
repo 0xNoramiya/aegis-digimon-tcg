@@ -525,7 +525,6 @@ const interfaceMessages = {
   "lobby.enterBetaQueue": "进入 Beta 队列",
   "lobby.betaQueueOption": "在 Beta 队列中对战",
   "lobby.betaQueueOptionHint": "与同样在测试未发售系列卡牌的玩家对战。这些卡牌仍可能有变动。",
-  "lobby.betaQueueOptionBotHint": "AI 可以使用含有未发售系列卡牌的卡组。这些卡牌仍可能有变动。",
   "beta.message": "Aegis 仍处于测试阶段，可能会出故障，数据也可能被重置。",
   "beta.reportLink": "在 Discord 反馈问题",
   "beta.dismiss": "知道了",

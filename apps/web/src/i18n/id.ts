@@ -561,8 +561,6 @@ const interfaceMessages = {
   "lobby.betaQueueOption": "Bermain di antrean beta",
   "lobby.betaQueueOptionHint":
     "Hadapi pemain yang menguji kartu dari set yang belum dirilis. Kartu-kartu itu masih bisa berubah.",
-  "lobby.betaQueueOptionBotHint":
-    "AI dapat menggunakan deck berisi kartu dari set yang belum dirilis. Kartu-kartu itu masih bisa berubah.",
   "beta.message": "Aegis masih dalam versi beta. Beberapa hal mungkin rusak dan data dapat direset.",
   "beta.reportLink": "Laporkan bug di Discord",
   "beta.dismiss": "Mengerti",

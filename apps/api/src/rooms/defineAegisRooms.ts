@@ -3,7 +3,6 @@ import {
   ROOM_TYPE,
   ROOM_TYPE_UNLIMITED,
   ROOM_TYPE_BETA,
-  ROOM_TYPE_BETA_BOT,
   ROOM_TYPE_BOT,
   ROOM_TYPE_PRIVATE,
   ROOM_TYPE_RANKED,
@@ -38,13 +37,6 @@ export function defineAegisRooms(gameServer: Pick<Server, "define">): void {
     })
     .filterBy(["matchTimer", "bestOf", "format", "allowRollback"]);
   gameServer.define(ROOM_TYPE_BOT, AegisRoom, {
-    ...publicMode,
-    botRoom: true,
-    allowUnlimitedSelection: true,
-    allowFormatSelection: true,
-    betaBattleRoom: false,
-  });
-  gameServer.define(ROOM_TYPE_BETA_BOT, AegisRoom, {
     ...publicMode,
     botRoom: true,
     allowUnlimitedSelection: true,
