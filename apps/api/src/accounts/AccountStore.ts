@@ -51,6 +51,7 @@ export type AccountPreferences = {
   deckView?: "grid" | "list";
   deckSort?: string;
   profileStats?: boolean;
+  shareDeckAfterMatch?: boolean;
   favoriteDeckIds?: string[];
 };
 export type AuthSession = { id: string; account: Account; expiresAt: number };

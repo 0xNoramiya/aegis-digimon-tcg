@@ -21,6 +21,13 @@ import { settingsPtBR } from "./redesign/settings.pt-BR";
 import { shellPtBR } from "./redesign/shell.pt-BR";
 
 export const ptBR: Record<keyof typeof en, string> = {
+  "settings.shareDeckAfterMatch": "Compartilhar meu deck após a partida",
+  "settings.shareDeckAfterMatchDesc":
+    "Permitir que o adversário veja e copie a lista inicial do meu deck após a partida. Ativado por padrão.",
+  "settings.shareDeckAfterMatchFailed":
+    "Não foi possível carregar ou salvar o compartilhamento. Tente novamente ou reabra as configurações.",
+  "overlay.viewOpponentDeck": "Ver deck do adversário",
+  "overlay.opponentDeck": "Deck do adversário",
   "rollback.failed": "Não foi possível restaurar este ponto com segurança. A partida atual foi mantida.",
   "rollback.cancel": "Cancelar pedido",
   "rollback.allow": "Permitir voltar jogadas",

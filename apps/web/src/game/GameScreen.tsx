@@ -1453,6 +1453,17 @@ function GameScreenSession({
         !replayMode && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
+              opponentDeckDialog:
+                !spectating && liveConnection.opponentDeck && onCopyUsedDeck
+                  ? (onClose: () => void) => (
+                      <UsedDeckDialog
+                        snapshot={liveConnection.opponentDeck!}
+                        onCopy={onCopyUsedDeck}
+                        onClose={onClose}
+                        opponent
+                      />
+                    )
+                  : undefined,
               usedDeckDialog:
                 usedDeck && onCopyUsedDeck
                   ? (onClose: () => void) => (

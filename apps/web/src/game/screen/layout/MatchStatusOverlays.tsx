@@ -51,6 +51,7 @@ export function MatchStatusOverlays({
     | (ReplaySaveProps & {
         spectatorResult?: string;
         onDownloadReplay?: () => void;
+        opponentDeckDialog?: (onClose: () => void) => ReactNode;
         usedDeckDialog?: (onClose: () => void) => ReactNode;
         replayStatus?: "preparing" | "unavailable";
         result: GameOverOutcome;
@@ -89,6 +90,7 @@ export function MatchStatusOverlays({
         <GameOverOverlay
           spectatorResult={gameOver.spectatorResult}
           usedDeckDialog={gameOver.usedDeckDialog}
+          opponentDeckDialog={gameOver.opponentDeckDialog}
           onDownloadReplay={gameOver.onDownloadReplay}
           replayFile={gameOver.replayFile}
           replayStatus={gameOver.replayStatus}

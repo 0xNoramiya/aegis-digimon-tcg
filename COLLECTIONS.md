@@ -125,3 +125,5 @@ Player replay files live in the player's Google Drive; `account_replays` stores
 their index and sharing metadata. Report replays store the private action record
 in PostgreSQL. Local replay reproduction files under ignored `replays/` contain
 decklists and actions; committed regressions use trimmed fixtures.
+
+The account JSON preferences include optional boolean `shareDeckAfterMatch`. Missing values enable post-match deck-list sharing. The room checks the deck owner’s stored preference before sending the initial list to a seated opponent after game over; this setting does not change existing board review or replay exports.

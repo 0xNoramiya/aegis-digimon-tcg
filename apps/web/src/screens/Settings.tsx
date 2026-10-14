@@ -1,3 +1,4 @@
+import { ShareDeckAfterMatchSetting } from "@/account/ShareDeckAfterMatchSetting";
 import { CustomMusicPicker } from "../design/CustomMusicPicker";
 import { MusicCredits } from "../design/MusicCredits";
 import { InterfaceThemeDialog } from "../design/InterfaceThemePicker";
@@ -502,6 +503,7 @@ export function Settings({
 
             {signedIn ? (
               <SettingsCard id={PROFILE_SECTION_ID} title={t("profile.title")}>
+                <ShareDeckAfterMatchSetting key={account?.id} />
                 <div className="settings-row">
                   <Switch
                     checked={profileStatsShown}
