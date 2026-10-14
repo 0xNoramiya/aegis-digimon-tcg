@@ -624,6 +624,9 @@ export const es: Record<keyof typeof en, string> = {
   "settings.playmatRemove": "Quitar tu imagen",
   "settings.playmatInvalid": "Elige un archivo de imagen.",
   "settings.playmatTooLarge": "La imagen es demasiado grande para guardarla. Prueba con una más pequeña.",
+  "settings.tokenArt": "Ilustraciones de tokens",
+  "settings.tokenArtDesc":
+    "Sube una imagen para cada token. Se guarda solo en este navegador y solo tú la ves, en ambos lados del campo. Las imágenes verticales funcionan mejor.",
   "settings.cardSleeve": "Fundas de cartas",
   "settings.sleeveUpload": "Subir imagen de funda",
   "settings.sleeveReplace": "Reemplazar imagen de funda",

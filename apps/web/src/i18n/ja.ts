@@ -816,6 +816,9 @@ const interfaceMessages = {
   "settings.playmatRemove": "画像を削除",
   "settings.playmatInvalid": "画像ファイルを選択してください。",
   "settings.playmatTooLarge": "画像が大きすぎて保存できません。小さい画像をお試しください。",
+  "settings.tokenArt": "トークンの画像",
+  "settings.tokenArtDesc":
+    "トークンごとに画像をアップロードできます。このブラウザーにのみ保存され、フィールドの両側で自分にだけ表示されます。縦長の画像がおすすめです。",
   "settings.cardSleeve": "カードスリーブ",
   "settings.sleeveUpload": "スリーブ画像をアップロード",
   "settings.sleeveReplace": "スリーブ画像を差し替え",

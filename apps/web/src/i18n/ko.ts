@@ -804,6 +804,9 @@ const interfaceMessages = {
   "settings.playmatRemove": "내 이미지 제거",
   "settings.playmatInvalid": "이미지 파일을 선택하세요.",
   "settings.playmatTooLarge": "이미지가 너무 커서 저장할 수 없습니다. 더 작은 이미지를 사용하세요.",
+  "settings.tokenArt": "토큰 이미지",
+  "settings.tokenArtDesc":
+    "토큰마다 이미지를 업로드하세요. 이 브라우저에만 저장되며 필드 양쪽에서 나에게만 표시됩니다. 세로 이미지가 적합합니다.",
   "settings.cardSleeve": "카드 슬리브",
   "settings.sleeveUpload": "슬리브 이미지 업로드",
   "settings.sleeveReplace": "슬리브 이미지 교체",

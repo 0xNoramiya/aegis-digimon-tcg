@@ -634,6 +634,9 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.playmatRemove": "Remover sua imagem",
   "settings.playmatInvalid": "Escolha um arquivo de imagem.",
   "settings.playmatTooLarge": "A imagem é grande demais para guardar. Use uma menor.",
+  "settings.tokenArt": "Artes dos tokens",
+  "settings.tokenArtDesc":
+    "Envie uma imagem para cada token. Salva apenas neste navegador e visível só para você, nos dois lados do campo. Imagens verticais funcionam melhor.",
   "settings.cardSleeve": "Verso das cartas",
   "settings.sleeveUpload": "Enviar imagem de sleeve",
   "settings.sleeveReplace": "Substituir imagem de sleeve",

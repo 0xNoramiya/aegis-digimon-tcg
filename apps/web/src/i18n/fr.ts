@@ -826,6 +826,9 @@ const interfaceMessages = {
   "settings.playmatRemove": "Supprimer votre image",
   "settings.playmatInvalid": "Choisissez un fichier image.",
   "settings.playmatTooLarge": "Cette image est trop grande pour être stockée. Essayez-en une plus petite.",
+  "settings.tokenArt": "Illustrations des jetons",
+  "settings.tokenArtDesc":
+    "Importez une image pour chaque jeton. Elle est enregistrée dans ce navigateur et visible uniquement par vous, des deux côtés du terrain. Privilégiez les images verticales.",
   "settings.cardSleeve": "Protège-cartes",
   "settings.sleeveUpload": "Importer une image de protège-cartes",
   "settings.sleeveReplace": "Remplacer l'image du protège-cartes",

@@ -26,6 +26,16 @@ export default defineConfig({
     },
   },
   test: {
+    projects: [
+      {
+        extends: true,
+        test: { name: "default", exclude: [...configDefaults.exclude, "e2e/**", "src/design/tokenArt/**/*.test.tsx"] },
+      },
+      {
+        extends: true,
+        test: { name: "token-art", include: ["src/design/tokenArt/**/*.test.tsx"], environment: "jsdom" },
+      },
+    ],
     exclude: [...configDefaults.exclude, "e2e/**"],
     setupFiles: [
       "./test/scenarioHarness/setupJsdomPolyfills.ts",
