@@ -73,6 +73,7 @@ export interface HeuristicRule {
 export interface HeuristicProgram {
   schemaVersion: 1;
   basePolicy?: "projected-balanced";
+  breedingDeployLevel?: number;
   title: string;
   rules: HeuristicRule[];
 }
@@ -82,6 +83,15 @@ export function parseHeuristic(value: unknown): HeuristicProgram {
   const program = value as HeuristicProgram;
   if (program.basePolicy !== undefined && program.basePolicy !== "projected-balanced")
     throw new Error("Unknown heuristic base policy");
+  if (
+    program.breedingDeployLevel !== undefined &&
+    (program.basePolicy !== "projected-balanced" ||
+      !Number.isSafeInteger(program.breedingDeployLevel) ||
+      program.breedingDeployLevel < 3 ||
+      program.breedingDeployLevel > 7)
+  ) {
+    throw new Error("Invalid breeding deployment level");
+  }
   if (
     program.schemaVersion !== 1 ||
     typeof program.title !== "string" ||
@@ -160,6 +170,7 @@ export function parseHeuristic(value: unknown): HeuristicProgram {
   return {
     schemaVersion: 1,
     ...(program.basePolicy === undefined ? {} : { basePolicy: program.basePolicy }),
+    ...(program.breedingDeployLevel === undefined ? {} : { breedingDeployLevel: program.breedingDeployLevel }),
     title: program.title,
     rules: program.rules.map((rule) => ({ ...rule })),
   };

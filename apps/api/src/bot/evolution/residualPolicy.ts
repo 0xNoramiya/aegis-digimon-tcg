@@ -6,6 +6,7 @@ import type { BotView } from "../view.js";
 import { trainingObservation } from "../training/observation.js";
 import type { TrainingAction } from "../training/actions.js";
 import { actionCardId, actionFeatures, scoreHeuristicRules, type HeuristicProgram } from "./heuristic.js";
+import { DEFAULT_BOT_PROFILE } from "#api/bot/profiles";
 
 /** Start with exactly the certified balanced policy; evolve bounded score adjustments. */
 export const SEED_RESIDUAL: HeuristicProgram = {
@@ -60,6 +61,14 @@ export function createResidualPolicy(input: {
     engine: input.engine,
     seat: input.seat,
     seed: input.seed,
+    ...(input.program.breedingDeployLevel === undefined
+      ? {}
+      : {
+          profile: {
+            ...DEFAULT_BOT_PROFILE,
+            weights: { ...DEFAULT_BOT_PROFILE.weights, deployLevel: input.program.breedingDeployLevel },
+          },
+        }),
     adjustMainScore({ view, candidate, action, score }) {
       if (lastView !== view) {
         lastView = view;

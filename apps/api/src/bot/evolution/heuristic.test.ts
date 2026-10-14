@@ -7,6 +7,28 @@ import { actionFeatures, chooseHeuristic, parseHeuristic, SEED_HEURISTIC } from 
 import "../../cards/index.js";
 
 describe("evolved heuristic interpreter", () => {
+  it.each([3, 4, 5, 6, 7])("preserves a residual breeding deployment level of %s", (breedingDeployLevel) => {
+    const program = parseHeuristic({ ...SEED_HEURISTIC, basePolicy: "projected-balanced", breedingDeployLevel });
+    expect(program).toHaveProperty("breedingDeployLevel", breedingDeployLevel);
+    expect(parseHeuristic(JSON.parse(JSON.stringify(program)))).toEqual(program);
+    expect(parseHeuristic(SEED_HEURISTIC)).not.toHaveProperty("breedingDeployLevel");
+  });
+
+  it.each([null, 2, 8, 3.5, "3", NaN, Infinity])(
+    "rejects an invalid breeding deployment level %s",
+    (breedingDeployLevel) => {
+      expect(() =>
+        parseHeuristic({ ...SEED_HEURISTIC, basePolicy: "projected-balanced", breedingDeployLevel }),
+      ).toThrow("Invalid breeding deployment level");
+    },
+  );
+
+  it("requires a residual base for a breeding deployment override", () => {
+    expect(() => parseHeuristic({ ...SEED_HEURISTIC, breedingDeployLevel: 3 })).toThrow(
+      "Invalid breeding deployment level",
+    );
+  });
+
   it("counts and executes the actual Assembly materials for learned preferences", async () => {
     const setup = setupEngine(
       { 0: { hand: ["EX9-055"], trash: Array(4).fill("EX9-005") } },

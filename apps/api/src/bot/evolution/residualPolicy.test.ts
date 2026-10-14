@@ -4,7 +4,30 @@ import { buildBotView } from "../view.js";
 import { createProjectedEvaluationPolicy } from "../projectedPolicy.js";
 import { createResidualPolicy, SEED_RESIDUAL } from "./residualPolicy.js";
 import { parseHeuristic } from "./heuristic.js";
+import { Phase } from "@aegis/shared/schema/enums";
 import "../../cards/index.js";
+
+it.each([0, 1] as const)("deploys a rookie with an explicit breeding override in seat %s", async (seat) => {
+  const setup = setupEngine({ [seat]: { breeding: { card: "BT1-010", as: "raising" }, hand: ["BT1-015"] } });
+  await setup.ready();
+  setup.state.turnSeat = seat;
+  setup.state.phase = Phase.Breeding;
+  setup.state.memory = seat === 0 ? 3 : -3;
+  const candidate = createResidualPolicy({
+    engine: setup.engine,
+    seat,
+    seed: 719,
+    program: parseHeuristic({ ...SEED_RESIDUAL, breedingDeployLevel: 3 }),
+  });
+  const control = createResidualPolicy({ engine: setup.engine, seat, seed: 719, program: SEED_RESIDUAL });
+  const view = buildBotView(setup.state, seat)!;
+  expect(control.chooseBreedingAction(view)).toEqual({ type: "endPhase" });
+  const intent = candidate.chooseBreedingAction(view);
+  expect(intent).toEqual({ type: "moveFromBreeding", permanentId: setup.perm("raising").permanentId });
+  expect(setup.engine.applyIntent(seat, intent)).toEqual({ ok: true });
+  await settle(() => setup.state.players[seat]!.battleArea.some((unit) => unit.topCard.cardId === "BT1-010"));
+  expect(setup.events.filter((event) => event.kind === "actionRejected")).toEqual([]);
+});
 
 it("starts with the identical seeded balanced actions and rejects unknown bases", async () => {
   const setup = setupEngine({ 0: { hand: ["BT1-010", "BT1-011"] } });
