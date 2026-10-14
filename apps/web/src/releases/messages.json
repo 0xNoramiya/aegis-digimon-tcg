@@ -1,4 +1,136 @@
 {
+  "releases.1.26.0-beta.summary": {
+    "en": "Over a dozen card and rules fixes from your reports, a low-clock warning, decision alerts, and a stronger deck builder.",
+    "pt-BR": "Mais de uma dúzia de correções de cartas e regras vindas dos seus relatos, aviso de relógio baixo, alertas de decisão e um deck builder mais completo.",
+    "es": "Más de una docena de correcciones de cartas y reglas gracias a tus reportes, aviso de reloj bajo, alertas de decisión y un constructor de mazos más completo.",
+    "it": "Oltre una dozzina di correzioni a carte e regole dalle vostre segnalazioni, avviso di tempo in esaurimento, avvisi di decisione e un deck builder più completo."
+  },
+  "releases.1.26.0-beta.feature.timer": {
+    "en": "The game warns you when your clock is running low.",
+    "pt-BR": "O jogo avisa quando o seu relógio está acabando.",
+    "es": "El juego te avisa cuando tu reloj se está agotando.",
+    "it": "Il gioco ti avvisa quando il tuo tempo sta per finire."
+  },
+  "releases.1.26.0-beta.feature.alerts": {
+    "en": "You hear a ping when the opponent is waiting on your decision, and a doorbell if the game window is in the background.",
+    "pt-BR": "Você ouve um aviso sonoro quando o oponente espera a sua decisão, e uma campainha se a janela do jogo estiver em segundo plano.",
+    "es": "Escuchas un aviso cuando el oponente espera tu decisión, y un timbre si la ventana del juego está en segundo plano.",
+    "it": "Senti un avviso sonoro quando l'avversario aspetta una tua decisione, e un campanello se la finestra del gioco è in secondo piano."
+  },
+  "releases.1.26.0-beta.feature.sound": {
+    "en": "A music menu in the app header, and an optional sound for new chat messages.",
+    "pt-BR": "Um menu de música no topo do app e um som opcional para novas mensagens de chat.",
+    "es": "Un menú de música en la cabecera de la app y un sonido opcional para nuevos mensajes de chat.",
+    "it": "Un menu musica nell'intestazione dell'app e un suono facoltativo per i nuovi messaggi in chat."
+  },
+  "releases.1.26.0-beta.feature.deckBuilder": {
+    "en": "The deck builder filters by exact and digivolution cost, searches by field group, shows deck stats on phones, and applies alternate art with a double-click.",
+    "pt-BR": "O deck builder filtra por custo exato e de digivolução, busca por grupo de campo, mostra as estatísticas do deck no celular e aplica arte alternativa com clique duplo.",
+    "es": "El constructor de mazos filtra por coste exacto y de digievolución, busca por grupo de campo, muestra las estadísticas del mazo en el móvil y aplica arte alternativo con doble clic.",
+    "it": "Il deck builder filtra per costo esatto e di digievoluzione, cerca per gruppo di campo, mostra le statistiche del mazzo su telefono e applica l'arte alternativa con un doppio clic."
+  },
+  "releases.1.26.0-beta.feature.favorites": {
+    "en": "Star your favorite decks to keep them at hand.",
+    "pt-BR": "Marque seus decks favoritos com uma estrela para tê-los sempre à mão.",
+    "es": "Marca tus mazos favoritos con una estrella para tenerlos a mano.",
+    "it": "Aggiungi una stella ai tuoi mazzi preferiti per averli sempre a portata di mano."
+  },
+  "releases.1.26.0-beta.feature.botDeck": {
+    "en": "The bot can play a random deck from a set you choose.",
+    "pt-BR": "O bot pode jogar com um deck aleatório de uma coleção que você escolher.",
+    "es": "El bot puede jugar con un mazo aleatorio de una colección que elijas.",
+    "it": "Il bot può giocare con un mazzo casuale di un set a tua scelta."
+  },
+  "releases.1.26.0-beta.feature.profileStats": {
+    "en": "Your match stats stay hidden on your profile unless you choose to show them.",
+    "pt-BR": "Suas estatísticas de partidas ficam ocultas no perfil, a menos que você escolha mostrá-las.",
+    "es": "Tus estadísticas de partidas quedan ocultas en tu perfil salvo que elijas mostrarlas.",
+    "it": "Le statistiche delle tue partite restano nascoste nel profilo, a meno che tu non scelga di mostrarle."
+  },
+  "releases.1.26.0-beta.feature.board": {
+    "en": "The acting player's plate is highlighted, board DP follows the text size setting, and long candidate lists scroll with the mouse wheel.",
+    "pt-BR": "A placa do jogador da vez fica destacada, o DP no tabuleiro segue o tamanho do texto, e listas longas de candidatos rolam com a roda do mouse.",
+    "es": "La placa del jugador activo se resalta, el DP del tablero sigue el tamaño de texto, y las listas largas de candidatos se desplazan con la rueda del ratón.",
+    "it": "La targa del giocatore di turno è evidenziata, i DP sul campo seguono la dimensione del testo e le liste lunghe di candidati scorrono con la rotella del mouse."
+  },
+  "releases.1.26.0-beta.feature.reportReplays": {
+    "en": "Bug reports filed from a match now keep that match's replay, so we can reproduce your report exactly.",
+    "pt-BR": "Relatos de bug enviados de uma partida agora guardam o replay dela, para reproduzirmos o seu relato com exatidão.",
+    "es": "Los reportes de errores enviados desde una partida ahora guardan su repetición, para reproducir tu reporte con exactitud.",
+    "it": "Le segnalazioni di bug inviate da una partita ora conservano il replay di quella partita, così possiamo riprodurle esattamente."
+  },
+  "releases.1.26.0-beta.fix.boardTargets": {
+    "en": "On phones, choosing targets on the board now shows how many you picked and a Confirm targets button, so prompts such as Sistermon Blanc's Decoy no longer block the board.",
+    "pt-BR": "No celular, escolher alvos no tabuleiro agora mostra quantos você escolheu e um botão Confirmar alvos, então prompts como o Decoy de Sistermon Blanc não bloqueiam mais o tabuleiro.",
+    "es": "En el móvil, elegir objetivos en el tablero ahora muestra cuántos elegiste y un botón para confirmar, así avisos como el Decoy de Sistermon Blanc ya no bloquean el tablero.",
+    "it": "Su telefono, scegliere i bersagli sul campo ora mostra quanti ne hai scelti e un pulsante di conferma, così richieste come il Decoy di Sistermon Blanc non bloccano più il campo."
+  },
+  "releases.1.26.0-beta.fix.securityToHand": {
+    "en": "Effects that add security cards to the hand now trigger \"added to hand\" and \"removed from security\" effects, such as MirageGaogamon (BT11-033) and Kyo Sawashiro.",
+    "pt-BR": "Efeitos que adicionam cartas de segurança à mão agora ativam efeitos de \"adicionada à mão\" e \"removida da segurança\", como MirageGaogamon (BT11-033) e Kyo Sawashiro.",
+    "es": "Los efectos que añaden cartas de seguridad a la mano ahora activan efectos de \"añadida a la mano\" y \"quitada de la seguridad\", como MirageGaogamon (BT11-033) y Kyo Sawashiro.",
+    "it": "Gli effetti che aggiungono carte della sicurezza alla mano ora attivano gli effetti di \"aggiunta alla mano\" e \"rimossa dalla sicurezza\", come MirageGaogamon (BT11-033) e Kyo Sawashiro."
+  },
+  "releases.1.26.0-beta.fix.playNotOptions": {
+    "en": "\"Play\" effects such as Andromon (EX12-055) and Cargodramon no longer offer Option cards, which can only be used. Cards that say \"play or use\" still offer them. Cargodramon now trashes the rest as printed.",
+    "pt-BR": "Efeitos de \"jogar\" como Andromon (EX12-055) e Cargodramon não oferecem mais cartas Option, que só podem ser usadas. Cartas que dizem \"jogar ou usar\" ainda as oferecem. Cargodramon agora descarta o resto, como impresso.",
+    "es": "Los efectos de \"jugar\" como Andromon (EX12-055) y Cargodramon ya no ofrecen cartas Option, que solo se pueden usar. Las cartas que dicen \"jugar o usar\" siguen ofreciéndolas. Cargodramon ahora descarta el resto, como está impreso.",
+    "it": "Gli effetti di \"giocare\" come Andromon (EX12-055) e Cargodramon non offrono più carte Option, che si possono solo usare. Le carte che dicono \"gioca o usa\" le offrono ancora. Cargodramon ora scarta il resto, come stampato."
+  },
+  "releases.1.26.0-beta.fix.counterRedirect": {
+    "en": "When a [Counter] effect changes the attack target, such as WarGreymon (EX12-017), the attack now battles the new target instead of checking security.",
+    "pt-BR": "Quando um efeito [Counter] muda o alvo do ataque, como WarGreymon (EX12-017), o ataque agora batalha com o novo alvo em vez de checar a segurança.",
+    "es": "Cuando un efecto [Counter] cambia el objetivo del ataque, como WarGreymon (EX12-017), el ataque ahora combate con el nuevo objetivo en vez de revisar la seguridad.",
+    "it": "Quando un effetto [Counter] cambia il bersaglio dell'attacco, come WarGreymon (EX12-017), l'attacco ora combatte con il nuovo bersaglio invece di controllare la sicurezza."
+  },
+  "releases.1.26.0-beta.fix.triggerOrder": {
+    "en": "Trigger order follows the rules in more cases: you choose the order after declaring a DNA digivolution, and a newly triggered turn-player effect such as Plutomon's resolves before the opponent's.",
+    "pt-BR": "A ordem dos gatilhos segue as regras em mais casos: você escolhe a ordem após declarar uma digivolução DNA, e um novo efeito do jogador da vez, como o de Plutomon, resolve antes do efeito do oponente.",
+    "es": "El orden de los disparadores sigue las reglas en más casos: eliges el orden tras declarar una digievolución ADN, y un nuevo efecto del jugador activo, como el de Plutomon, se resuelve antes que el del oponente.",
+    "it": "L'ordine degli effetti attivati segue le regole in più casi: scegli l'ordine dopo aver dichiarato una digievoluzione DNA, e un nuovo effetto del giocatore di turno, come quello di Plutomon, si risolve prima di quello dell'avversario."
+  },
+  "releases.1.26.0-beta.fix.optionalAttack": {
+    "en": "Mistymon (EX13-033) and similar \"by paying a cost, you may\" effects ask about the cost first and let you decline the attack after paying.",
+    "pt-BR": "Mistymon (EX13-033) e efeitos parecidos de \"pagando um custo, você pode\" perguntam primeiro sobre o custo e deixam você recusar o ataque depois de pagar.",
+    "es": "Mistymon (EX13-033) y efectos similares de \"pagando un coste, puedes\" preguntan primero por el coste y te dejan rechazar el ataque después de pagar.",
+    "it": "Mistymon (EX13-033) ed effetti simili \"pagando un costo, puoi\" chiedono prima del costo e ti lasciano rifiutare l'attacco dopo aver pagato."
+  },
+  "releases.1.26.0-beta.fix.leavePrevention": {
+    "en": "Leopardmon (EX13-043) now protects itself when it is the Digimon you unsuspend to pay the cost, and the prompt highlights every Digimon it will save.",
+    "pt-BR": "Leopardmon (EX13-043) agora se protege quando é o Digimon que você desvira para pagar o custo, e o prompt destaca todos os Digimon que ele vai salvar.",
+    "es": "Leopardmon (EX13-043) ahora se protege cuando es el Digimon que enderezas para pagar el coste, y el aviso resalta todos los Digimon que salvará.",
+    "it": "Leopardmon (EX13-043) ora protegge se stesso quando è il Digimon che raddrizzi per pagare il costo, e la richiesta evidenzia tutti i Digimon che salverà."
+  },
+  "releases.1.26.0-beta.fix.cardFixes": {
+    "en": "Card fixes: Monica Simmons (BT25-091) responds to In-Between Theater, Nightmare Soldiers (EX8-071) gives Scapegoat only to level 4 or higher, Royal Base no longer reduces costs in the breeding area, BT20-085 boosts DP without a suspend target, and King Drasil_7D6 triggers on any Royal Knight Option.",
+    "pt-BR": "Correções de cartas: Monica Simmons (BT25-091) responde a In-Between Theater, Nightmare Soldiers (EX8-071) dá Scapegoat só a nível 4 ou maior, Royal Base não reduz mais custos na área de criação, BT20-085 aumenta o DP sem alvo para virar, e King Drasil_7D6 ativa com qualquer Option de Royal Knight.",
+    "es": "Correcciones de cartas: Monica Simmons (BT25-091) responde a In-Between Theater, Nightmare Soldiers (EX8-071) da Scapegoat solo a nivel 4 o superior, Royal Base ya no reduce costes en la zona de crianza, BT20-085 aumenta el DP sin objetivo para girar, y King Drasil_7D6 se activa con cualquier Option de Royal Knight.",
+    "it": "Correzioni alle carte: Monica Simmons (BT25-091) risponde a In-Between Theater, Nightmare Soldiers (EX8-071) dà Scapegoat solo ai livelli 4 o superiori, Royal Base non riduce più i costi nell'area di allevamento, BT20-085 aumenta i DP senza un bersaglio da girare e King Drasil_7D6 si attiva con qualsiasi Option dei Royal Knight."
+  },
+  "releases.1.26.0-beta.fix.tokens": {
+    "en": "Familiar, KoHagurumon and Fujitsumon tokens no longer have a level or play cost, so level and cost effects no longer target them.",
+    "pt-BR": "Os tokens Familiar, KoHagurumon e Fujitsumon não têm mais nível nem custo de jogo, então efeitos de nível e custo não os escolhem mais.",
+    "es": "Los tokens Familiar, KoHagurumon y Fujitsumon ya no tienen nivel ni coste de juego, así que los efectos de nivel y coste ya no los eligen.",
+    "it": "I token Familiar, KoHagurumon e Fujitsumon non hanno più livello né costo di gioco, quindi gli effetti di livello e costo non li scelgono più."
+  },
+  "releases.1.26.0-beta.fix.ruleCheckOrder": {
+    "en": "[On Play] effects of a Digimon played by a rule-check replacement now resolve in the right order.",
+    "pt-BR": "Efeitos [On Play] de um Digimon jogado por uma substituição de checagem de regra agora resolvem na ordem certa.",
+    "es": "Los efectos [On Play] de un Digimon jugado por un reemplazo de comprobación de reglas ahora se resuelven en el orden correcto.",
+    "it": "Gli effetti [On Play] di un Digimon giocato da una sostituzione del controllo delle regole ora si risolvono nell'ordine corretto."
+  },
+  "releases.1.26.0-beta.fix.screens": {
+    "en": "The results screen shows your used deck in front of the board, every View board offers a way back to the decision, and the acting plate fits on phones.",
+    "pt-BR": "A tela de resultado mostra o deck usado na frente do tabuleiro, todo Ver tabuleiro oferece um caminho de volta para a decisão, e a placa do jogador da vez cabe no celular.",
+    "es": "La pantalla de resultados muestra el mazo usado delante del tablero, cada Ver tablero ofrece volver a la decisión, y la placa del jugador activo cabe en el móvil.",
+    "it": "La schermata dei risultati mostra il mazzo usato davanti al campo, ogni Vedi campo offre un modo per tornare alla decisione e la targa del giocatore di turno entra su telefono."
+  },
+  "releases.1.26.0-beta.fix.translations": {
+    "en": "Corrected machine translations in Chinese, French, German, Indonesian, Japanese and Korean, with official Digimon Card Game terms in Chinese.",
+    "pt-BR": "Traduções automáticas corrigidas em chinês, francês, alemão, indonésio, japonês e coreano, com os termos oficiais do Digimon Card Game em chinês.",
+    "es": "Traducciones automáticas corregidas en chino, francés, alemán, indonesio, japonés y coreano, con los términos oficiales de Digimon Card Game en chino.",
+    "it": "Traduzioni automatiche corrette in cinese, francese, tedesco, indonesiano, giapponese e coreano, con i termini ufficiali del Digimon Card Game in cinese."
+  },
   "releases.1.25.6-beta.summary": {
     "en": "A community roadmap, simpler feedback, a playtest group, and email sign-in links that work again.",
     "pt-BR": "Um roadmap da comunidade, feedback mais simples, um grupo de playtest, e links de login por e-mail que voltaram a funcionar.",
