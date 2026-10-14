@@ -10,6 +10,7 @@ import { foundationEn } from "./redesign/foundation.en";
 import { homeEn } from "./redesign/home.en";
 import { playEn } from "./redesign/play.en";
 import { seriesEn } from "./redesign/series.en";
+import { rematchEn } from "@/i18n/redesign/rematch.en";
 import { settingsEn } from "./redesign/settings.en";
 import { shellEn } from "./redesign/shell.en";
 
@@ -349,6 +350,7 @@ export const en = {
   "browser.outdated":
     "This browser is out of date, so some colours and panels may not show. Update to Safari 16.4, Chrome 111, Firefox 113 or newer.",
   "beta.tag": "Beta",
+  "beta.cardHint": "Not released yet. Only playable in beta battle mode.",
   "lobby.betaBattleMode": "Beta battle mode",
   "lobby.betaBattleHint":
     "You are using cards that have not been released yet, so you will play in a special queue with players using the same card pool.",
@@ -1805,4 +1807,5 @@ export const en = {
   ...arenaEn,
   ...chatEn,
   ...seriesEn,
+  ...rematchEn,
 } as const;

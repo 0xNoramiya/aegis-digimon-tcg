@@ -410,7 +410,12 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
           };
     return { spec, eligible: matches, requireDifferentColors, costBudget, capacity, allocation };
   };
-  const slotPlans = action.add.map(planSlot);
+  const plannedSlots = action.add.map(planSlot);
+  const declinedAfterReveal =
+    action.optionalAfterReveal === true &&
+    plannedSlots.some((plan) => plan !== undefined && plan.eligible.length > 0) &&
+    !(await ctx.ask.optional(ctx, "Resolve this effect with the revealed cards?"));
+  const slotPlans = plannedSlots.map((plan) => (declinedAfterReveal ? undefined : plan));
   // Same-destination categories may assign their shared card to either slot (Q1050/Q1985).
   // Reuse ordinary selectCards decisions: skipping a sole overlap reserves it for slot two.
   const canDeferToSecond =

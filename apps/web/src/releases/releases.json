@@ -1,5 +1,32 @@
 [
   {
+    "version": "1.26.2-beta",
+    "releasedAt": "2026-10-14",
+    "summaryKey": "releases.1.26.2-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.26.2-beta.feature.rematch"
+      },
+      {
+        "textKey": "releases.1.26.2-beta.feature.betaBadge"
+      },
+      {
+        "textKey": "releases.1.26.2-beta.feature.lordKnightmon"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.26.2-beta.fix.cardRules"
+      },
+      {
+        "textKey": "releases.1.26.2-beta.fix.reprints"
+      },
+      {
+        "textKey": "releases.1.26.2-beta.fix.errata"
+      }
+    ]
+  },
+  {
     "version": "1.26.1-beta",
     "releasedAt": "2026-10-14",
     "summaryKey": "releases.1.26.1-beta.summary",

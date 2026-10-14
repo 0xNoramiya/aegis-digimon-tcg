@@ -1,4 +1,46 @@
 {
+  "releases.1.26.2-beta.summary": {
+    "en": "Best-of-three rematches after Bo1, beta badges for unreleased cards, LordKnightmon (X), and card text brought in line with the newest printings and errata.",
+    "pt-BR": "Revanches em melhor de três após partidas Bo1, selos beta para cartas não lançadas, LordKnightmon (X) e textos de cartas alinhados às impressões e erratas mais recentes.",
+    "es": "Revanchas al mejor de tres después de partidas Bo1, insignias beta para cartas no lanzadas, LordKnightmon (X) y textos de cartas alineados con las impresiones y erratas más recientes.",
+    "it": "Rivincite al meglio delle tre dopo le partite Bo1, badge beta per le carte non ancora uscite, LordKnightmon (X) e testi delle carte allineati alle stampe e alle errata più recenti."
+  },
+  "releases.1.26.2-beta.feature.rematch": {
+    "en": "After a casual or private best-of-one match, either player can offer a rematch. If the other player accepts, a best-of-three starts at 0-0 with the same decks, and the loser of the Bo1 picks the turn order.",
+    "pt-BR": "Depois de uma partida casual ou privada em melhor de um, qualquer jogador pode oferecer uma revanche. Se o outro aceitar, começa uma melhor de três em 0-0 com os mesmos decks, e quem perdeu a Bo1 escolhe a ordem dos turnos.",
+    "es": "Después de una partida casual o privada al mejor de uno, cualquier jugador puede ofrecer una revancha. Si el otro acepta, comienza un mejor de tres desde 0-0 con los mismos mazos, y quien perdió la Bo1 elige el orden de turnos.",
+    "it": "Dopo una partita casuale o privata al meglio di una, entrambi i giocatori possono offrire una rivincita. Se l’altro accetta, inizia un meglio delle tre da 0-0 con gli stessi mazzi e chi ha perso la Bo1 sceglie l’ordine dei turni."
+  },
+  "releases.1.26.2-beta.feature.betaBadge": {
+    "en": "Unreleased cards show a Beta badge in the card pool, deck views, and card details, and saved decks that contain them are flagged.",
+    "pt-BR": "Cartas ainda não lançadas exibem um selo Beta no acervo, nas visualizações de deck e nos detalhes da carta, e decks salvos que as contêm são sinalizados.",
+    "es": "Las cartas aún no lanzadas muestran una insignia Beta en la colección, en las vistas de mazo y en los detalles de la carta, y se marcan los mazos guardados que las contienen.",
+    "it": "Le carte non ancora uscite mostrano un badge Beta nella collezione, nelle viste dei mazzi e nei dettagli della carta, e i mazzi salvati che le contengono vengono segnalati."
+  },
+  "releases.1.26.2-beta.feature.lordKnightmon": {
+    "en": "LordKnightmon (X) (BT27-084) returns as a beta card with its base and alternate art.",
+    "pt-BR": "LordKnightmon (X) (BT27-084) volta como carta beta, com a arte original e a alternativa.",
+    "es": "LordKnightmon (X) (BT27-084) vuelve como carta beta, con su arte original y la alternativa.",
+    "it": "LordKnightmon (X) (BT27-084) torna come carta beta, con l’illustrazione originale e quella alternativa."
+  },
+  "releases.1.26.2-beta.fix.cardRules": {
+    "en": "Digital Translator only chooses Digimon named exactly Gallantmon, Sakuyamon or MegaGargomon; Burning Star Crusher always reveals before you choose; Impmon (P-071) battles before its Security effect resolves; Ouryumon and the Dorumon line react only to your own effects; Taiki, Kiriha, & Nene and Hiro Amanokawa draw before gaining memory; and Attack of the Heavy Mobile Digimon! accepts any Cyborg or Machine trait card for its Security cost.",
+    "pt-BR": "Digital Translator só escolhe Digimon chamados exatamente Gallantmon, Sakuyamon ou MegaGargomon; Burning Star Crusher sempre revela antes da escolha; Impmon (P-071) batalha antes de resolver seu efeito de Segurança; Ouryumon e a linha de Dorumon só reagem aos seus próprios efeitos; Taiki, Kiriha, & Nene e Hiro Amanokawa compram antes de ganhar memória; e Attack of the Heavy Mobile Digimon! aceita qualquer carta com traço Cyborg ou Machine como custo de Segurança.",
+    "es": "Digital Translator solo elige Digimon llamados exactamente Gallantmon, Sakuyamon o MegaGargomon; Burning Star Crusher siempre revela antes de elegir; Impmon (P-071) combate antes de resolver su efecto de Seguridad; Ouryumon y la línea de Dorumon solo reaccionan a tus propios efectos; Taiki, Kiriha, & Nene y Hiro Amanokawa roban antes de ganar memoria; y Attack of the Heavy Mobile Digimon! acepta cualquier carta con rasgo Cyborg o Machine como coste de Seguridad.",
+    "it": "Digital Translator sceglie solo Digimon chiamati esattamente Gallantmon, Sakuyamon o MegaGargomon; Burning Star Crusher rivela sempre prima della scelta; Impmon (P-071) combatte prima di risolvere il suo effetto Sicurezza; Ouryumon e la linea di Dorumon reagiscono solo ai tuoi effetti; Taiki, Kiriha, & Nene e Hiro Amanokawa pescano prima di ottenere memoria; e Attack of the Heavy Mobile Digimon! accetta qualsiasi carta con tratto Cyborg o Machine come costo Sicurezza."
+  },
+  "releases.1.26.2-beta.fix.reprints": {
+    "en": "Angewomon, Final Zubagon Punch, Magnamon, and Ice Wall! now show the newest printing’s “until their turn ends” wording, and several cards show newer art that matches their current text.",
+    "pt-BR": "Angewomon, Final Zubagon Punch, Magnamon e Ice Wall! agora exibem o texto “até o fim do turno dele” da impressão mais recente, e várias cartas exibem artes mais novas que correspondem ao texto atual.",
+    "es": "Angewomon, Final Zubagon Punch, Magnamon e Ice Wall! ahora muestran el texto “hasta el final de su turno” de la impresión más reciente, y varias cartas muestran artes más nuevas que coinciden con su texto actual.",
+    "it": "Angewomon, Final Zubagon Punch, Magnamon e Ice Wall! ora mostrano la dicitura “fino alla fine del suo turno” della stampa più recente, e diverse carte mostrano illustrazioni più nuove coerenti con il testo attuale."
+  },
+  "releases.1.26.2-beta.fix.errata": {
+    "en": "Thirteen errata cards now show their corrected text or names, including MarineChimairamon and Lónkhē Adistakto, and six show art that prints the errata.",
+    "pt-BR": "Treze cartas com errata agora exibem o texto ou nome corrigido, incluindo MarineChimairamon e Lónkhē Adistakto, e seis exibem uma arte que já traz a errata.",
+    "es": "Trece cartas con errata ahora muestran su texto o nombre corregido, incluidos MarineChimairamon y Lónkhē Adistakto, y seis muestran un arte que ya incluye la errata.",
+    "it": "Tredici carte con errata ora mostrano il testo o il nome corretto, inclusi MarineChimairamon e Lónkhē Adistakto, e sei mostrano un’illustrazione che riporta l’errata."
+  },
   "releases.1.26.1-beta.summary": {
     "en": "Card protection and effect-order fixes, more reliable card inspection, and smoother mobile and bot play.",
     "pt-BR": "Correções de proteção de cartas e ordem dos efeitos, inspeção de cartas mais confiável e melhorias no celular e nas partidas contra bots.",

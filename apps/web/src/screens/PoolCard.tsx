@@ -5,6 +5,7 @@ import { formatCopyLimit, formatRestrictionLabel, type DeckFormat } from "@aegis
 import { CardFull } from "../design/cards";
 import { Icons } from "../design/icons";
 import { useTranslation } from "../i18n";
+import { isBetaCard } from "@/screens/isBetaCard";
 import "./deckBuilder.css";
 
 export function PoolCard({
@@ -34,6 +35,7 @@ export function PoolCard({
   const banned = formatCopyLimit(cardId, format) === 0;
   const blocked = banned || pairConflict;
   const hasCopies = inDeck > 0;
+  const beta = isBetaCard(cardId);
   return (
     <div
       className="deck-pool-card"
@@ -54,14 +56,23 @@ export function PoolCard({
         />
         {blocked ? <div className="deck-pool-card__tint" /> : null}
       </div>
-      {banLabel ? (
-        <div className="deck-pool-card__restriction" data-tone={blocked ? "danger" : "warning"}>
-          {banLabel}
+      {banLabel || beta ? (
+        <div className="deck-pool-card__badges">
+          {banLabel ? (
+            <div className="deck-pool-card__restriction" data-tone={blocked ? "danger" : "warning"}>
+              {banLabel}
+            </div>
+          ) : null}
+          {beta ? (
+            <div className="deck-pool-card__restriction" data-tone="beta" title={t("beta.cardHint")}>
+              {t("beta.tag")}
+            </div>
+          ) : null}
         </div>
       ) : null}
       <button
         className="deck-pool-card__info"
-        data-shifted={Boolean(banLabel)}
+        data-shifted={Boolean(banLabel || beta)}
         onClick={(e) => {
           e.stopPropagation();
           onOpen();

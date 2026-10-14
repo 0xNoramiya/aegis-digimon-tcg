@@ -347,6 +347,7 @@ export const es: Record<keyof typeof en, string> = {
   "browser.outdated":
     "Este navegador está desactualizado, así que algunos colores y paneles pueden no mostrarse. Actualiza a Safari 16.4, Chrome 111, Firefox 113 o posterior.",
   "beta.tag": "Beta",
+  "beta.cardHint": "Aún no se ha lanzado. Solo se puede usar en el modo de batalla beta.",
   "lobby.betaBattleMode": "Modo de batalla beta",
   "lobby.betaBattleHint":
     "Estás usando cartas que aún no salen, así que jugarás en una cola especial con jugadores que usan las mismas cartas.",
@@ -1927,6 +1928,14 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.series.startingOpponent": "Juego {game} · Empieza {name}",
   "overlay.series.joining": "Iniciando el siguiente juego…",
   "overlay.series.leave": "Salir de la serie",
+  "overlay.rematch.offer": "Jugar de nuevo con {name} · Al mejor de 3",
+  "overlay.rematch.hint": "Mismos mazos. Quien perdió esta partida elige quién empieza.",
+  "overlay.rematch.incoming": "{name} quiere una revancha",
+  "overlay.rematch.accept": "Aceptar",
+  "overlay.rematch.decline": "Rechazar",
+  "overlay.rematch.waiting": "Esperando la respuesta de {name}…",
+  "overlay.rematch.declined": "La revancha fue rechazada.",
+  "overlay.rematch.closed": "La revancha ya no está disponible.",
   "overlay.series.won": "Serie ganada",
   "overlay.series.lost": "Serie perdida",
   "overlay.series.drawn": "Serie empatada",

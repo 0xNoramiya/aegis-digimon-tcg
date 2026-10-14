@@ -548,6 +548,7 @@ const interfaceMessages = {
   "browser.outdated":
     "Browser ini sudah usang, sehingga beberapa warna dan panel mungkin tidak ditampilkan. Perbarui ke Safari 16.4, Chrome 111, Firefox 113 atau lebih baru.",
   "beta.tag": "Beta",
+  "beta.cardHint": "Belum dirilis. Hanya bisa dimainkan di mode pertandingan beta.",
   "lobby.betaBattleMode": "Mode pertandingan beta",
   "lobby.betaBattleHint":
     "Anda menggunakan kartu yang belum dirilis, jadi Anda akan bermain di antrean khusus dengan pemain yang menggunakan card pool yang sama.",
@@ -2315,6 +2316,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "Game {game} · {name} jalan pertama",
   "overlay.series.joining": "Memulai game berikutnya…",
   "overlay.series.leave": "Tinggalkan series",
+  "overlay.rematch.offer": "Main lagi melawan {name} · Best of 3",
+  "overlay.rematch.hint": "Deck yang sama. Yang kalah di game ini memilih siapa yang jalan duluan.",
+  "overlay.rematch.incoming": "{name} ingin rematch",
+  "overlay.rematch.accept": "Terima",
+  "overlay.rematch.decline": "Tolak",
+  "overlay.rematch.waiting": "Menunggu jawaban {name}…",
+  "overlay.rematch.declined": "Rematch ditolak.",
+  "overlay.rematch.closed": "Rematch sudah tidak tersedia.",
   "overlay.series.won": "Menang series",
   "overlay.series.lost": "Kalah series",
   "overlay.series.drawn": "Series berakhir seri",

@@ -549,6 +549,7 @@ const interfaceMessages = {
   "browser.outdated":
     "このブラウザは古いため、一部の色やパネルが正しく表示されない可能性があります。Safari 16.4、Chrome 111、Firefox 113以降に更新してください。",
   "beta.tag": "ベータ",
+  "beta.cardHint": "未発売です。ベータバトルモードでのみ使用できます。",
   "lobby.betaBattleMode": "ベータバトルモード",
   "lobby.betaBattleHint":
     "まだ発売されていないカードを使っているため、同じカードプールのプレイヤーと専用のキューで対戦します。",
@@ -2296,6 +2297,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "第{game}ゲーム · {name}が先攻",
   "overlay.series.joining": "次のゲームを開始します…",
   "overlay.series.leave": "シリーズを離れる",
+  "overlay.rematch.offer": "{name}ともう一度 · 3本勝負",
+  "overlay.rematch.hint": "同じデッキを使用します。このゲームの敗者が先攻・後攻を選びます。",
+  "overlay.rematch.incoming": "{name}が再戦を希望しています",
+  "overlay.rematch.accept": "受ける",
+  "overlay.rematch.decline": "断る",
+  "overlay.rematch.waiting": "{name}の返答を待っています…",
+  "overlay.rematch.declined": "再戦は断られました。",
+  "overlay.rematch.closed": "再戦はもう利用できません。",
   "overlay.series.won": "シリーズ勝利",
   "overlay.series.lost": "シリーズ敗北",
   "overlay.series.drawn": "シリーズ引き分け",

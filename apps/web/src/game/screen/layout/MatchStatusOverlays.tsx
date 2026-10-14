@@ -7,6 +7,7 @@ import { BugReportDialog } from "../../../bugs/BugReportDialog";
 import { PlayLogSidebar } from "../../PlayLogSidebar";
 import { CardZoomOverlay, GameOverOverlay, OpponentDroppedOverlay } from "../../overlay";
 import type { SeriesResultProps } from "../../overlay/match/GameOverOverlay";
+import type { RematchProps } from "@/game/overlay/match/RematchPanel";
 import type { LogLine } from "../../matchLog";
 import type { GameOverOutcome } from "../../gameOverSplash";
 import type { ArenaDeckColors } from "../../../design/arenaPalette";
@@ -57,6 +58,7 @@ export function MatchStatusOverlays({
         stats: { value: number; label: string }[];
         cardsRevealed: boolean;
         series?: SeriesResultProps;
+        rematch?: RematchProps;
       })
     | undefined;
   onCloseHistory: () => void;
@@ -99,6 +101,7 @@ export function MatchStatusOverlays({
           onRematch={onRematch}
           returnsToRoom={returnsToRoom}
           series={gameOver.series}
+          rematch={gameOver.rematch}
         />
       ) : null}
     </>
