@@ -8920,7 +8920,7 @@
               }
             ],
             "rest": "deckBottom",
-            "optional": true
+            "optionalAfterReveal": true
           }
         ],
         "isSecurity": true
