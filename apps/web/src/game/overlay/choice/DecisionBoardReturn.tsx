@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Button } from "../../../design/primitives";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
-import { takeViewBoardOrigin } from "./DecisionViewBoardButton";
+import { takeViewBoardOrigin } from "@/game/overlay/choice/takeViewBoardOrigin";
 
 const VIEWPORT_MARGIN_PX = 16;
 
@@ -16,15 +16,24 @@ const clamp = (value: number, low: number, high: number) => Math.min(Math.max(va
  * 100dvh. Keep the only route back to the pending decision in the document viewport.
  *
  * Where it appears: centred on the View board button that opened the board, so going
- * back is one click in the same spot. Without that origin (a keyboard press, a board
- * prompt) it sits below the opponent bar, and phones always use that full-width strip.
+ * back is one click in the same spot. Without that origin it sits below the opponent
+ * bar, and phones always use that full-width strip.
  */
+export type DecisionBoardReturnSelection = {
+  status: string;
+  confirmLabel: string;
+  canConfirm: boolean;
+  onConfirm: () => void;
+};
+
 export function DecisionBoardReturn({
   returnControlRef,
   onReturn,
+  selection,
 }: {
   returnControlRef: RefObject<HTMLDivElement | null>;
   onReturn: () => void;
+  selection?: DecisionBoardReturnSelection;
 }) {
   const { t } = useTranslation();
   const [origin] = useState(takeViewBoardOrigin);
@@ -42,7 +51,7 @@ export function DecisionBoardReturn({
   const returnControl = (
     <div
       ref={returnControlRef}
-      className="decision-board-return"
+      className={`decision-board-return${selection ? " decision-board-return--selection" : ""}`}
       data-anchored={origin ? "" : undefined}
       style={{
         position: "fixed",
@@ -51,11 +60,21 @@ export function DecisionBoardReturn({
       }}
     >
       <span className="decision-board-return__status" aria-live="polite">
-        {t("overlay.decisionPending")}
+        {selection?.status ?? t("overlay.decisionPending")}
       </span>
-      <Button icon={Icons.ArrowLeft} onClick={onReturn}>
-        {t("overlay.returnToDecision")}
+      <Button
+        variant={selection ? "secondary" : undefined}
+        icon={Icons.ArrowLeft}
+        aria-label={t("overlay.returnToDecision")}
+        onClick={onReturn}
+      >
+        <span className="decision-board-return__label">{t("overlay.returnToDecision")}</span>
       </Button>
+      {selection ? (
+        <Button icon={Icons.Check} disabled={!selection.canConfirm} onClick={selection.onConfirm}>
+          {selection.confirmLabel}
+        </Button>
+      ) : null}
     </div>
   );
   return typeof document === "undefined" ? returnControl : createPortal(returnControl, document.body);

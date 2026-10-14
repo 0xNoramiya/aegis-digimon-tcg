@@ -43,6 +43,7 @@ import { installEffectRunner, runAction } from "./dispatch.js";
 import { ACTION_TYPE_KEYWORDS } from "./errors.js";
 import { isBlastDigivolveMarker } from "./registration/keywords.js";
 import { allowsOptionalProcessingCostWithoutTarget } from "./processingCondition.js";
+import { paysProcessingCostBeforeOptional } from "./paysProcessingCostBeforeOptional.js";
 import { candidateLooseInstances } from "./targeting/loose.js";
 import { targetAfterSelfPlacementCost } from "./targeting/afterCost.js";
 import { candidatePermanents, raiseDeletionDpCap } from "./targeting/permanents.js";
@@ -600,10 +601,11 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
   )
     return;
   const canPay = canPayCost(ctx, effectiveCost);
+  const paysCostFirst = paysProcessingCostBeforeOptional(action);
   const costChoice =
     effectiveCost.optional === true ||
     action.optional !== true ||
-    action.payCostBeforeOptional === true ||
+    paysCostFirst ||
     action.kind === "CostGatedBlock" ||
     action.kind === "CostModifier";
   const outerEffectTextPart = ctx.activeEffectTextPart;
@@ -611,7 +613,7 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
   const outerPayingCostDepth = ctx.payingCostDepth;
   const outerTargetFate = ctx.activeTargetFate;
   if (action.effectTextPart !== undefined) ctx.activeEffectTextPart = action.effectTextPart;
-  if (costChoice && action.payCostBeforeOptional === true && effectiveCost.raw !== undefined) {
+  if (costChoice && paysCostFirst && effectiveCost.raw !== undefined) {
     ctx.activeEffectTextPart = ctx.activeEffectText;
     ctx.activeEffectTextEmphasis = effectiveCost.raw;
   }

@@ -244,13 +244,13 @@ describe("EX13-033 Mistymon", () => {
     expect(s.state.players[1]!.security).toHaveLength(2);
     expect(observe(s.engine).hasAttackedThisTurn(s.perm("attacker"))).toBe(true);
     expect(s.state.pendingDecision).toBeUndefined();
-    // Each "by [cost]" processing condition is asked when its own clause is reached, in printed order.
     expect(
       s.decisions
         .filter(({ req }) => req.kind === "optional" && req.sourceCardId === CARD_ID)
-        .map(({ req }) => req.options?.effectTextPart),
+        .map(({ req }) => req.options?.effectTextEmphasis),
     ).toEqual([
       "[On Play] [When Digivolving] You may place 1 [Witchelny] text card from your hand as the bottom security card.",
+      "by trashing your top security card",
       "Then, by trashing your top security card, 1 of your Digimon may attack.",
     ]);
   });

@@ -84,13 +84,21 @@ export function endResolvingWindow(engine: GameEngine, wasOutermost: boolean): v
  * triggers (the [On Play] of a Tamer it plays, and that play's watchers) only triggers here: it
  * activates together with the replaced leave's [On Deletion], and the controller orders them
  * (Q2934, Q2994, Q3021). A body reached inside an open window already parks those effects for
- * that window, so only the outermost call collects them.
+ * that window, so only the outermost call collects them, unless a rule check caused the leave:
+ * its deletion reactions and watchers resolve in the rule check's own window, so the body's
+ * effects join that window instead of waiting for the enclosing one.
  */
 export async function resolveLeaveReplacementBody<T>(engine: GameEngine, body: () => Promise<T>): Promise<T> {
-  if (!beginResolvingWindow(engine)) return body();
+  const wasOutermost = beginResolvingWindow(engine);
+  if (!wasOutermost && engine.ruleTriggerPool === undefined) return body();
   const nestedBefore = new Set(engine.pendingNestedTimingEffects);
   let triggered: CollectedEffect[] = [];
   try {
+    if (!wasOutermost) {
+      const result = await body();
+      triggered = engine.pendingNestedTimingEffects.filter((pending) => !nestedBefore.has(pending));
+      return result;
+    }
     let result!: T;
     await withPendingPoolDrain(engine, true, async () => {
       result = await body();
@@ -101,7 +109,7 @@ export async function resolveLeaveReplacementBody<T>(engine: GameEngine, body: (
     engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter((pending) =>
       nestedBefore.has(pending),
     );
-    endResolvingWindow(engine, true);
+    endResolvingWindow(engine, wasOutermost);
     engine.pendingLeaveReplacementEffects.push(
       ...triggered.map((pending) => ({
         ...pending,

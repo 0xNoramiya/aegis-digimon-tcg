@@ -34,7 +34,7 @@ for (const viewport of layoutViewports) {
     expect(pool!.x + pool!.width).toBeLessThanOrEqual(viewport.width);
 
     const deck = page.getByRole("complementary", { name: "Deck information" });
-    const sheetTrigger = page.getByRole("button", { name: /Tap to see more about the deck/ });
+    const sheetTrigger = page.getByRole("button", { name: /^View deck/ });
     if (await sheetTrigger.isVisible()) await sheetTrigger.click();
     const deckList = deck.locator(".deck-preview");
     await deckList.scrollIntoViewIfNeeded();

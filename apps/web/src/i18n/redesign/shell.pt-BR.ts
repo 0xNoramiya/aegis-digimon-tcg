@@ -5,6 +5,7 @@ export const shellPtBR: Record<keyof typeof shellEn, string> = {
   "redesign.shell.theme.useLight": "Usar tema claro",
   "redesign.shell.theme.useDark": "Usar tema escuro",
   "redesign.shell.theme.title": "Temas e cores",
+  "redesign.shell.music.open": "Trocar música",
   "redesign.shell.theme.description": "Paletas de Digimon ou suas próprias cores para a interface.",
   "redesign.shell.theme.choose": "Escolher tema",
   "redesign.shell.theme.mode": "Aparência",

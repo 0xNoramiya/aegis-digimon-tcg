@@ -41,6 +41,40 @@ describe("reviewing the board after the match", () => {
   });
 });
 
+describe("viewing the used deck from the result", () => {
+  it("hides the result behind the deck and leaves the board in review once the deck closes", () => {
+    render(
+      <I18nProvider>
+        <GameOverOverlay
+          result="win"
+          reason="security"
+          stats={[{ value: 7, label: "Turns" }]}
+          onMenu={() => {}}
+          onRematch={() => {}}
+          usedDeckDialog={(onClose) => (
+            <div role="dialog" aria-label="Used deck">
+              <button type="button" onClick={onClose}>
+                Close deck
+              </button>
+            </div>
+          )}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "View used deck" }));
+    expect(screen.getAllByRole("dialog").map((dialog) => dialog.getAttribute("aria-label"))).toEqual(["Used deck"]);
+    expect(screen.queryByRole("status")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Close deck" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("status").textContent).toContain("Victory");
+
+    fireEvent.click(screen.getByRole("button", { name: "Show result" }));
+    expect(screen.getByRole("button", { name: "Find rematch" })).toBeTruthy();
+  });
+});
+
 describe("revealed cards hint", () => {
   it("points at the piles only once the server revealed them", () => {
     renderOverlay(true);
@@ -144,7 +178,7 @@ it("opens the exact used deck after a duel and saves an independent personal cop
     community: { id: "publication", author: { id: "author", displayName: "Original Author" } },
   };
   const onCopy = vi.fn<(deck: DeckListing) => void>((deck: DeckListing) => saveDecks([copyDeckPreset(deck, [])]));
-  const view = render(
+  render(
     <I18nProvider>
       <GameOverOverlay
         result="win"
@@ -152,13 +186,7 @@ it("opens the exact used deck after a duel and saves an independent personal cop
         stats={[]}
         onMenu={() => undefined}
         onRematch={() => undefined}
-        onViewUsedDeck={() =>
-          view.rerender(
-            <I18nProvider>
-              <UsedDeckDialog snapshot={snapshot} onCopy={onCopy} onClose={() => undefined} />
-            </I18nProvider>,
-          )
-        }
+        usedDeckDialog={(onClose) => <UsedDeckDialog snapshot={snapshot} onCopy={onCopy} onClose={onClose} />}
       />
     </I18nProvider>,
   );

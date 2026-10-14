@@ -208,6 +208,24 @@ function RejectionNoticeBody({ reason }: { reason: string }) {
   );
 }
 
+type TimeWarningNoticeBodyParams = { seconds: number };
+
+function TimeWarningNoticeBody({ seconds }: TimeWarningNoticeBodyParams) {
+  const { t } = useTranslation();
+  const title = seconds === 60 ? t("game.timer.minuteLeft") : t("game.timer.secondsLeft", { seconds });
+  return (
+    <>
+      <span className="match-notice__icon">
+        <Icons.Clock size={20} />
+      </span>
+      <div className="match-notice__copy">
+        <span className="match-notice__label">{t("game.timer.low")}</span>
+        <strong className="match-notice__title">{title}</strong>
+      </div>
+    </>
+  );
+}
+
 export function NoticeStack({
   notice,
   remainingMs,
@@ -268,6 +286,8 @@ export function NoticeStack({
           />
         ) : body.variant === "rejection" ? (
           <RejectionNoticeBody reason={body.reason} />
+        ) : body.variant === "timeWarning" ? (
+          <TimeWarningNoticeBody seconds={body.seconds} />
         ) : /* A deletion is a titled list of cards, so the board draws it with the panel
                component the trashed-cards list already uses (`narration.ts`,
                `deletionPanel`) rather than in this frame. */

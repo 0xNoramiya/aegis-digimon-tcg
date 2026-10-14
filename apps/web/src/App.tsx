@@ -31,8 +31,11 @@ import { accountApi, type RemoteAccount } from "./account/client";
 import { communityApi } from "./community/client";
 import { communityDeckListing } from "./community/communityDeckListing";
 import { usePreferencesSync } from "./account/usePreferencesSync";
+import { setDeckFavorite } from "@/screens/favoriteDecks/setDeckFavorite";
 import { LeaveMatchDialog } from "./game/screen/layout/LeaveMatchDialog";
 import { PlayerMenu } from "./account/PlayerMenu";
+import { MusicMenu } from "@/design/MusicMenu";
+import { SOUND_SETTINGS_SECTION_ID } from "@/screens/soundSettingsSectionId";
 import { NotificationBell } from "./notifications/NotificationBell";
 import { useNotificationInbox } from "./notifications/useNotificationInbox";
 import { pathForRoute, routeFromPathname, type AppRoute } from "./routes";
@@ -263,6 +266,7 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
 
   const deleteDeck = (id: string) => {
     const remaining = removeDeck(decks, id);
+    setDeckFavorite({ deckId: id, favorite: false });
     setDecks(remaining);
     if (activeDeckId === id) setActiveDeckId(selectableDecks({ personalDecks: remaining, famousDecks })[0]?.id ?? "");
     void accountApi
@@ -526,6 +530,11 @@ function LoadedAegisClient({
           onToggleDark={setDark}
           onOpenTheme={() => setThemeOpen(true)}
           onSendFeedback={() => setBugReportOpen(true)}
+          music={
+            <MusicMenu
+              onOpenSoundSettings={() => navigate({ screen: "settings", settingsSectionId: SOUND_SETTINGS_SECTION_ID })}
+            />
+          }
           notifications={account ? <NotificationBell inbox={inbox} onOpenFeedback={openOwnFeedback} /> : undefined}
         />
       ) : null}
@@ -727,7 +736,13 @@ function LoadedAegisClient({
               />
             )}
             {screen === "settings" && !route.profile && (
-              <Settings player={effectivePlayer} account={account} dark={dark} onToggleDark={setDark} />
+              <Settings
+                player={effectivePlayer}
+                account={account}
+                dark={dark}
+                onToggleDark={setDark}
+                initialSectionId={route.settingsSectionId}
+              />
             )}
 
             {screen === "game" && (

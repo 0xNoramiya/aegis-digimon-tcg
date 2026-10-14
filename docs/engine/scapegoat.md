@@ -2,7 +2,7 @@
 
 Bounded public proof covers the §16-32 optional sacrifice and deletion
 prevention contract. The conformance cases use the granted EX8-071 provider,
-the resulting EX8-057 holder, and the native EX11-023 provider. They assert
+the resulting level 4 EX8-059 holder, and the native EX11-023 provider. They assert
 the exact sacrificed and preserved physical instances, including explicit
 refusal and the own-effect deletion exception. This is not whole-keyword
 certification.

@@ -1,8 +1,8 @@
 import { createWriteStream, mkdirSync, readdirSync, statSync, rmSync, type WriteStream } from "node:fs";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
+import { LOG_RETENTION_MS } from "#api/logRetentionMs";
 
-const RETENTION_MS = 12 * 60 * 60 * 1000;
 const SEGMENT = /^api-\d{4}-\d{2}-\d{2}-.*\.jsonl$|^api\.log(?:\.\d+)?$/;
 
 /**
@@ -13,7 +13,7 @@ export function pruneLogs(directory: string, now = Date.now()): void {
   for (const name of readdirSync(directory)) {
     if (!SEGMENT.test(name)) continue;
     const path = join(directory, name);
-    if (statSync(path).mtimeMs <= now - RETENTION_MS) rmSync(path, { force: true });
+    if (statSync(path).mtimeMs <= now - LOG_RETENTION_MS) rmSync(path, { force: true });
   }
 }
 

@@ -884,6 +884,18 @@
   }
 }
 
+@media (width < 500px) {
+  .aegis-mobile-bar:has(.aegis-sign-in-button) .aegis-brand-logo__wordmark {
+    display: none;
+  }
+}
+
+@media (width < 380px) {
+  .aegis-mobile-bar .aegis-brand-logo__wordmark {
+    display: none;
+  }
+}
+
 @media (width < 400px) {
   .aegis-mobile-bar {
     gap: var(--ds-space-1);

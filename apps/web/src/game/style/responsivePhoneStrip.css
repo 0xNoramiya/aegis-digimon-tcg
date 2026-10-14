@@ -480,6 +480,29 @@
     min-height: 44px;
     flex: 1;
   }
+  .decision-board-return--selection {
+    gap: var(--ds-space-2);
+  }
+  .decision-board-return--selection > .decision-board-return__status {
+    flex: none;
+    padding-left: var(--ds-space-1);
+    white-space: nowrap;
+  }
+  .decision-board-return--selection > button:first-of-type {
+    flex: none;
+    width: 44px;
+    padding: 0;
+  }
+  .decision-board-return--selection > button:last-of-type {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: var(--ds-space-2);
+    white-space: normal;
+    line-height: 1.2;
+  }
+  .decision-board-return--selection .decision-board-return__label {
+    display: none;
+  }
   .action-confirmation > div:first-child {
     flex-wrap: nowrap !important;
     align-items: flex-start !important;
