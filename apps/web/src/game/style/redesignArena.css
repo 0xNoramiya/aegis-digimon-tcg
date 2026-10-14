@@ -1176,3 +1176,23 @@ button.game-player-line__name {
 .game-confirm-dialog__preference input {
   accent-color: var(--ds-accent);
 }
+
+@media (max-width: 1023px) and (orientation: portrait), (orientation: landscape) and (max-height: 759px) {
+  .aegis-arena .game-player-line[data-acting] {
+    border-color: color-mix(in srgb, var(--arena-side) 80%, transparent);
+    background: color-mix(in srgb, var(--arena-side) 12%, var(--ds-ink));
+    box-shadow: none;
+    animation: none;
+  }
+
+  .game-player-line__acting {
+    gap: 0.1875rem;
+    padding: 0.0625rem 0.375rem;
+    font-size: 0.625rem;
+  }
+
+  .game-player-line__acting > i {
+    width: 5px;
+    height: 5px;
+  }
+}
