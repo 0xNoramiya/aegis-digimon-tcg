@@ -501,7 +501,7 @@ export function digivolveDeps(engine: GameEngine): DigivolveDeps {
         engine.drawingDigivolutionBonus = false;
       }
     },
-    fireWhenDigivolving: async (_state, seat, permanent, previousLevel, baseWasDigimon) => {
+    fireWhenDigivolving: async (_state, seat, permanent, previousLevel, baseWasDigimon, isDnaDigivolve) => {
       // Turn-scoped fact consumed by inherited effects such as BT1-007. Register before
       // firing When Digivolving so effects in that window can observe the completed evolution.
       // Effects do not inspect the breeding area unless their text explicitly says so (BT1-007
@@ -532,6 +532,7 @@ export function digivolveDeps(engine: GameEngine): DigivolveDeps {
         subjectPermanentId: permanent.permanentId,
         digivolvedInstanceId: permanent.topCard.instanceId,
         previousDigivolutionLevel: previousLevel,
+        ...(isDnaDigivolve === true ? { isDnaDigivolve: true } : {}),
         ...(fromTamer ? { digivolvedFromTamer: true } : {}),
         ...(tamerDigivolved ? { tamerDigivolved: true } : {}),
       };
