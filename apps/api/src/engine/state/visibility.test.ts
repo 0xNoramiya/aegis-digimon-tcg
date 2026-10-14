@@ -993,6 +993,32 @@ describe("a card that moves out of a viewer's sight", () => {
     return targets[seat]!.decoder.state;
   }
 
+  it.each(["top", "bottom"] as const)(
+    "synchronizes a deck card passing through %s security into hand before a patch",
+    (position) => {
+      const player = state.players[0]!;
+      for (let round = 0; round < 3; round++) {
+        const card = extractCardAt(player, Zone.Deck, 0)!;
+        card.faceUp = false;
+        insertCard(player, Zone.Security, card, position);
+        extractCardAt(player, Zone.Security, player.security.indexOf(card));
+        card.faceUp = true;
+        insertCard(player, Zone.Hand, card);
+        patch();
+
+        expect(decoderErrors).toEqual([]);
+        expect(seenBy(0).players[0]!.hand.map((entry) => entry.instanceId)).toEqual(
+          player.hand.map((entry) => entry.instanceId),
+        );
+        expect(seenBy(0).players[0]!.hand.find((entry) => entry.instanceId === card.instanceId)?.cardId).toBe(
+          card.cardId,
+        );
+        expect(seenBy(1).players[0]!.hand).toHaveLength(0);
+        expectNoHiddenSecurityIdentity();
+      }
+    },
+  );
+
   function trashCardSeenByBothSeats(id: string): CardInstance {
     const card = makeCard(id, 0);
     insertCard(state.players[0]!, Zone.Trash, card);

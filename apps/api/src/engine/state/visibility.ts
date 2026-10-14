@@ -445,6 +445,7 @@ const pendingCardsByView = new WeakMap<StateView, Set<CardInstance>>();
 
 function exposeCard(view: StateView, card: CardInstance, snapshot = false): void {
   view.add(card);
+  orderCardChangesAfterParent({ view, tree: card[$changes] });
   if (snapshot) {
     let bound = boundCardsByView.get(view);
     if (bound === undefined) boundCardsByView.set(view, (bound = new WeakSet()));
@@ -454,6 +455,16 @@ function exposeCard(view: StateView, card: CardInstance, snapshot = false): void
     if (pending === undefined) pendingCardsByView.set(view, (pending = new Set()));
     pending.add(card);
   }
+}
+
+function orderCardChangesAfterParent({ view, tree }: { view: StateView; tree: ChangeTree }): void {
+  const refId = tree.ref[$refId];
+  const changes = view.changes.get(refId);
+  if (changes !== undefined) {
+    view.changes.delete(refId);
+    view.changes.set(refId, changes);
+  }
+  tree.forEachChild((child) => orderCardChangesAfterParent({ view, tree: child }));
 }
 
 function cancelPendingCard(view: StateView, tree: ChangeTree): void {
