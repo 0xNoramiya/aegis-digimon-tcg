@@ -16,6 +16,7 @@ import { foundationPtBR } from "./redesign/foundation.pt-BR";
 import { homePtBR } from "./redesign/home.pt-BR";
 import { playPtBR } from "./redesign/play.pt-BR";
 import { seriesPtBR } from "./redesign/series.pt-BR";
+import { rematchPtBR } from "@/i18n/redesign/rematch.pt-BR";
 import { settingsPtBR } from "./redesign/settings.pt-BR";
 import { shellPtBR } from "./redesign/shell.pt-BR";
 
@@ -1815,4 +1816,5 @@ export const ptBR: Record<keyof typeof en, string> = {
   ...arenaPtBR,
   ...chatPtBR,
   ...seriesPtBR,
+  ...rematchPtBR,
 };

@@ -8,6 +8,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { I18nProvider } from "../../../i18n";
 import { GameOverOverlay } from "./GameOverOverlay";
 import type { SeriesView } from "../../seriesModel";
+import type { RematchStage } from "@/game/getRematchView";
 
 afterEach(cleanup);
 
@@ -162,6 +163,71 @@ describe("best-of-three result", () => {
   it("explains a forfeit from the winner's side", () => {
     renderSeries({ stage: "over", outcome: "win", endReason: "forfeit", viewerWins: 1, opponentWins: 0 });
     expect(screen.getByText("Nova left the series.")).toBeTruthy();
+  });
+});
+
+describe("rematch after a best-of-one", () => {
+  function renderRematch(stage: RematchStage, series?: SeriesView) {
+    const calls: string[] = [];
+    render(
+      <I18nProvider>
+        <GameOverOverlay
+          result="loss"
+          reason="security"
+          stats={[]}
+          onMenu={() => calls.push("menu")}
+          onRematch={() => calls.push("queue")}
+          rematch={{
+            view: { stage, series },
+            opponentName: "Nova",
+            onOffer: () => calls.push("offer"),
+            onAnswer: (accept) => calls.push(accept ? "accept" : "decline"),
+            onChooseTurnOrder: (goFirst) => calls.push(goFirst ? "first" : "second"),
+          }}
+        />
+      </I18nProvider>,
+    );
+    return calls;
+  }
+
+  it("offers a best-of-three beside the usual actions", () => {
+    const calls = renderRematch("open");
+    fireEvent.click(screen.getByRole("button", { name: "Play Nova again · Best of 3" }));
+    fireEvent.click(screen.getByRole("button", { name: "Find rematch" }));
+    expect(calls).toEqual(["offer", "queue"]);
+  });
+
+  it("lets the invited player accept or decline", () => {
+    const calls = renderRematch("offeredToYou");
+    expect(screen.getByText("Nova wants a rematch")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Decline" }));
+    fireEvent.click(screen.getByRole("button", { name: "Accept" }));
+    expect(calls).toEqual(["decline", "accept"]);
+  });
+
+  it("tells the offering player who they are waiting for", () => {
+    renderRematch("offeredByYou");
+    expect(screen.getByText("Waiting for Nova to answer…")).toBeTruthy();
+  });
+
+  it("runs the turn-order choice for game 1 without the leave actions", () => {
+    const calls = renderRematch("accepted", {
+      bestOf: 3,
+      gameNumber: 0,
+      viewerWins: 0,
+      opponentWins: 0,
+      pips: ["pending", "pending", "pending"],
+      stage: "choosing",
+      viewerChooses: true,
+      choiceSecondsLeft: 20,
+      viewerGoesFirst: undefined,
+      outcome: undefined,
+      endReason: "",
+    });
+    expect(screen.getByText("You choose for game 1")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Find rematch" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Go first" }));
+    expect(calls).toEqual(["first"]);
   });
 });
 

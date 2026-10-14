@@ -93,6 +93,7 @@ import { useTranslation } from "../i18n";
 import { intents } from "../net/intents";
 import { useRoom, type MatchMode, type SeriesGameTicket, type UseRoomResult } from "../net/useRoom";
 import { seriesView } from "./seriesModel";
+import { getRematchView } from "@/game/getRematchView";
 import { singleServerBatch, type ServerBatch } from "../net/serverBatches";
 import { selectPresentedState, type StateSnapshot } from "../net/presentedState";
 import { joinWithBot } from "../net/client";
@@ -1162,7 +1163,8 @@ function GameScreenSession({
 
   const revealed = state.gameOver ? modelRevealedZones({ events, viewerSeat }) : undefined;
 
-  const series = spectating ? undefined : seriesView(state.series, viewerSeat);
+  const rematch = spectating ? undefined : getRematchView({ series: state.series, viewerSeat });
+  const series = spectating || rematch ? undefined : seriesView(state.series, viewerSeat);
 
   const attackerPerm = selPerm ? you.battleArea.find((p) => p.permanentId === selPerm) : undefined;
   const draggedAttackerPerm =
@@ -1483,6 +1485,13 @@ function GameScreenSession({
                 opponentName: opp.displayName || t("game.opponent"),
                 onChooseTurnOrder: (goFirst) => room?.send(SERIES_CHANNEL, { action: "chooseTurnOrder", goFirst }),
                 onLeave: () => room?.send(SERIES_CHANNEL, { action: "leave" }),
+              },
+              rematch: rematch && {
+                view: rematch,
+                opponentName: opp.displayName || t("game.opponent"),
+                onOffer: () => room?.send(SERIES_CHANNEL, { action: "offerRematch" }),
+                onAnswer: (accept) => room?.send(SERIES_CHANNEL, { action: "answerRematch", accept }),
+                onChooseTurnOrder: (goFirst) => room?.send(SERIES_CHANNEL, { action: "chooseTurnOrder", goFirst }),
               },
               spectatorResult: spectating
                 ? state.winnerSeat < 0

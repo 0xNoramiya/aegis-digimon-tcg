@@ -10,6 +10,7 @@ import { foundationEn } from "./redesign/foundation.en";
 import { homeEn } from "./redesign/home.en";
 import { playEn } from "./redesign/play.en";
 import { seriesEn } from "./redesign/series.en";
+import { rematchEn } from "@/i18n/redesign/rematch.en";
 import { settingsEn } from "./redesign/settings.en";
 import { shellEn } from "./redesign/shell.en";
 
@@ -1805,4 +1806,5 @@ export const en = {
   ...arenaEn,
   ...chatEn,
   ...seriesEn,
+  ...rematchEn,
 } as const;
