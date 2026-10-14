@@ -30727,7 +30727,7 @@
             }
           },
           {
-            "effectTextPart": "Then, if you have a Tamer with [Joe Kido] in its name, choose 1 of your Digimon. If your opponent has no Digimon with more digivolution cards than the chosen Digimon, unsuspend it.",
+            "effectTextPart": "Then, if you have a Tamer with [Joe Kido] in its name, choose 1 of your Digimon. If your opponent has no Digimon with as many or more digivolution cards as the chosen Digimon, unsuspend it.",
             "kind": "Unsuspend",
             "target": { "fromSelectionRef": "chosen", "filter": {}, "count": 1 },
             "condition": {
@@ -198522,7 +198522,7 @@
         "trigger": "OnDeletion",
         "actions": [
           {
-            "effectTextPart": "[On Deletion] You may play 1 Tamer card with [Amano] in its name from your hand or trash without paying the cost.",
+            "effectTextPart": "[On Deletion] You may play 1 Tamer card with [Nene Amano]/[Yuu Amano] in its name from your hand or trash without paying the cost.",
             "kind": "PlayWithoutCost",
             "target": {
               "filter": {
@@ -209126,7 +209126,7 @@
         "trigger": "WhenDigivolving",
         "actions": [
           {
-            "effectTextPart": "[When Digivolving] Place 1 yellow or purple Digimon card from your trash on top of your security stack face down. When DNA digivolving, you may search your security stack for 1 level 5 or lower Digimon card and play it without paying its memory cost.",
+            "effectTextPart": "[When Digivolving] Place 1 yellow or purple Digimon card from your trash on top of your security stack face down. When DNA digivolving, search your security stack, and you may play 1 level 5 or lower Digimon card among it without paying its cost.",
             "kind": "SecurityManipulation",
             "op": "placeAsSecurity",
             "controller": "mine",
@@ -209139,7 +209139,7 @@
             "faceDown": true
           },
           {
-            "effectTextPart": "[When Digivolving] Place 1 yellow or purple Digimon card from your trash on top of your security stack face down. When DNA digivolving, you may search your security stack for 1 level 5 or lower Digimon card and play it without paying its memory cost.",
+            "effectTextPart": "[When Digivolving] Place 1 yellow or purple Digimon card from your trash on top of your security stack face down. When DNA digivolving, search your security stack, and you may play 1 level 5 or lower Digimon card among it without paying its cost.",
             "kind": "SearchSecurity",
             "target": {
               "filter": {
