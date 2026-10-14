@@ -166550,7 +166550,7 @@
             "playerWide": true,
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": "all" },
             "amount": -5000,
-            "duration": "untilOpponentNextTurnEnd"
+            "duration": "untilOpponentTurnEnd"
           }
         ]
       },
@@ -166562,7 +166562,7 @@
             "playerWide": true,
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": "all" },
             "amount": -5000,
-            "duration": "untilOpponentNextTurnEnd"
+            "duration": "untilOpponentTurnEnd"
           }
         ]
       },
