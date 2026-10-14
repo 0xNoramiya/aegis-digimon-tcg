@@ -117,6 +117,12 @@ export function resolutionDeps(
     engine.optionMainDepth > 0 ? [] : pendingWindowWatchersCollected(engine);
   const announced = new Set<CollectedEffect>();
   return {
+    registerPendingEffects: (read) => {
+      engine.pendingEffectReaders.add(read);
+      return () => {
+        engine.pendingEffectReaders.delete(read);
+      };
+    },
     // The outermost loop settles deferred queues between effects. A nested resolver normally
     // cannot reach into the enclosing pool while its card body is still running; a settlement
     // window that starts at effect depth zero may opt into only entries added after its opening

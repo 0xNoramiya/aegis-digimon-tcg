@@ -1088,3 +1088,64 @@ describe("resolveTiming: a pending effect whose source card changes permanent id
     expect(resolvedKeys).toEqual(["selfMove:start", "other", "selfMove:end"]);
   });
 });
+
+it("exposes only unresolved effects across nested resolver windows and removes readers on errors", async () => {
+  const readers = new Set<() => readonly CollectedEffect[]>();
+  const readKeys = () => [...readers].flatMap((read) => read().map((entry) => entry.effect.effectKey));
+  const registerPendingEffects: NonNullable<ResolutionEnv["registerPendingEffects"]> = (read) => {
+    readers.add(read);
+    return () => {
+      readers.delete(read);
+    };
+  };
+  const waiting = collected(1, "waiting", fakeEffect("waiting"));
+  const first = collected(
+    0,
+    "first",
+    fakeEffect("first", {
+      onResolve: async () => {
+        expect(readKeys()).toEqual(["waiting"]);
+        const nested = collected(
+          0,
+          "nested",
+          fakeEffect("nested", {
+            onResolve: () => {
+              expect(readKeys()).toEqual(["waiting"]);
+              throw new Error("failed body");
+            },
+          }),
+        );
+        const { env } = envOver([nested], { registerPendingEffects });
+        await expect(resolveTiming(EffectTiming.OnPlay, env)).rejects.toThrow("failed body");
+        expect(readers.size).toBe(1);
+        expect(readKeys()).toEqual(["waiting"]);
+      },
+    }),
+  );
+  const { env } = envOver([first, waiting], { registerPendingEffects });
+  await resolveTiming(EffectTiming.OnPlay, env);
+  expect(readers.size).toBe(0);
+});
+
+it("retires declined optional effects from the pending display reader", async () => {
+  let read: (() => readonly CollectedEffect[]) | undefined;
+  const declined = collected(0, "declined", fakeEffect("declined", { optional: true, maxPerTurn: -1 }));
+  const next = collected(
+    1,
+    "next",
+    fakeEffect("next", {
+      onResolve: () => expect(read?.()).toEqual([]),
+    }),
+  );
+  const { env } = envOver([declined, next], {
+    registerPendingEffects: (reader) => {
+      read = reader;
+      return () => {
+        read = undefined;
+      };
+    },
+    askOptional: async () => false,
+  });
+  await resolveTiming(EffectTiming.OnPlay, env);
+  expect(read).toBeUndefined();
+});
