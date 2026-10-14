@@ -128,7 +128,12 @@ export interface PrimitivesEngine {
   /** Complete a rule check before an effect-driven digivolution's own timing window. */
   processRulesBeforeWhenDigivolving?: () => Promise<void>;
   /** Resolve the normal When Digivolving window for a public digivolution-like entry. */
-  fireWhenDigivolving?: (seat: Seat, permanent: Permanent, previousLevel?: number) => Promise<void>;
+  fireWhenDigivolving?: (
+    seat: Seat,
+    permanent: Permanent,
+    previousLevel?: number,
+    isDnaDigivolve?: boolean,
+  ) => Promise<void>;
   /** Run the would-digivolve and before-cost windows for effect-driven App Fusion. */
   prepareAppFusion?: (seat: Seat, target: Permanent, result: CardInstance, into: CardDefinition) => Promise<void>;
   /** Apply active ordinary-digivolution target restrictions to effect-driven App Fusion. */

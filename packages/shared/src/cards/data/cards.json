@@ -75285,7 +75285,7 @@
     "forms": ["Mega"],
     "attributes": ["Vaccine"],
     "types": ["Beast Knight", "NSp"],
-    "effectText": "[Digivolve] Lv.5 w/[Angoramon] in text or w/[NSp] trait: Cost 3 \n\n＜Piercing＞ \n＜Vortex＞ \n[When Digivolving] Your opponent's Digimon effects don't affect 1 of your Digimon until their turn ends.\n[When Digivolving] [When Attacking] [Counter] [Once Per Turn] 1 of your Digimon gets +3000 DP until your opponent's turn ends, then it may battle 1 of their Digimon.",
+    "effectText": "[Digivolve] Lv.5 w/[Angoramon] in text or w/[NSp] trait: Cost 3 \n\n＜Piercing＞ \n＜Vortex＞ \n[When Digivolving] Your opponent's Digimon effects don't affect 1 of your Digimon until their turn ends.\n[When Digivolving] [When Attacking] [Counter] [Once Per Turn] 1 of your Digimon may get +3000 DP until your opponent's turn ends and battle 1 of their Digimon.",
     "isDualCard": true,
     "nameJp": "ディルビットモン/トラスゲイン",
     "dualEffect": "Truskmore Advance",
@@ -83378,10 +83378,10 @@
     "forms": ["Mega"],
     "attributes": ["Vaccine"],
     "types": ["Light Dragon"],
-    "effectText": "Digivolve: 4 from [ShineGreymon][When Digivolving][On Deletion] Until the end of your opponent's next turn, all of your opponent's Digimon get -5000DP. [End of Attack] Delete this Digimon and 1 of your opponent's Digimon, and ＜Recovery +1 (Deck)＞. Then, if you have a Tamer in play, hatch 1 Digi-Egg card to an empty space in your breeding area.",
+    "effectText": "Digivolve: 4 from [ShineGreymon][When Digivolving][On Deletion] All of your opponent's Digimon get -5000 DP until their turn ends. [End of Attack] Delete this Digimon and 1 of your opponent's Digimon, and ＜Recovery +1 (Deck)＞. Then, if you have a Tamer in play, hatch 1 Digi-Egg card to an empty space in your breeding area.",
     "rarity": "UR",
     "maxCountInDeck": 4,
-    "imageId": "EX4-074",
+    "imageId": "EX4-074_P3",
     "nameJp": "シャイングレイモン：ルインモード"
   },
   {

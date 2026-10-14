@@ -570,8 +570,6 @@ const interfaceMessages = {
   "lobby.betaQueueOption": "Jouer dans la file d'attente bêta",
   "lobby.betaQueueOptionHint":
     "Affrontez des joueurs qui testent des cartes d'extensions qui ne sont pas encore sorties. Ces cartes peuvent encore changer.",
-  "lobby.betaQueueOptionBotHint":
-    "L'IA peut utiliser des decks contenant des cartes d'extensions qui ne sont pas encore sorties. Ces cartes peuvent encore changer.",
   "beta.message":
     "Aegis est encore en version bêta. Des bugs peuvent survenir et les données peuvent être réinitialisées.",
   "beta.reportLink": "Signaler un bug sur Discord",

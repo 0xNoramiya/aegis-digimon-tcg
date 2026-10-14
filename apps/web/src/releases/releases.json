@@ -1,5 +1,47 @@
 [
   {
+    "version": "1.26.1-beta",
+    "releasedAt": "2026-10-14",
+    "summaryKey": "releases.1.26.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.26.1-beta.fix.neptunemon",
+        "issue": 5522
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.inherited",
+        "issue": 5515
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.priority",
+        "issue": 5513
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.cardRules"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.dna"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.inspection"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.mobile",
+        "issue": 5518
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.limited"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.bot"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.profile"
+      }
+    ]
+  },
+  {
     "version": "1.26.0-beta",
     "releasedAt": "2026-10-14",
     "summaryKey": "releases.1.26.0-beta.summary",

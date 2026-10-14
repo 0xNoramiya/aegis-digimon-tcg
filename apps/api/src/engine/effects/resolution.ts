@@ -26,6 +26,7 @@ import { isTimingActivationDisabled } from "./timingActivation.js";
 
 /** The engine-side dependencies the resolver composition needs beyond the framework env. */
 export interface ResolutionDeps {
+  registerPendingEffects?: ResolutionEnv["registerPendingEffects"];
   /** Active player (turn-player-first ordering). Usually `state.turnSeat`. */
   turnSeat: Seat;
 
@@ -109,6 +110,7 @@ export function eventGrantSnapshot(env: EffectEnvironment): NonNullable<Paramete
 export function buildResolutionEnv(env: EffectEnvironment, deps: ResolutionDeps): ResolutionEnv {
   const grantSnapshot = eventGrantSnapshot(env);
   return {
+    registerPendingEffects: deps.registerPendingEffects,
     turnSeat: deps.turnSeat,
     tracker: env.tracker,
     collect: (timing: EffectTiming): CollectedEffect[] => [

@@ -95750,9 +95750,7 @@
             },
             "affectsAll": true,
             "leaveCause": "byOpponentEffect",
-            "actions": [
-              { "kind": "Replacement", "event": "wouldLeavePlay", "mode": "prevent", "raw": "they don't leave" }
-            ],
+            "actions": [{ "kind": "Prevent", "raw": "they don't leave" }],
             "cost": {
               "kind": "suspend",
               "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
@@ -153333,6 +153331,7 @@
             "defender": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 }
           }
         ],
+        "optional": true,
         "frequency": "OncePerTurn",
         "sharedUseKey": "ir-shared-0"
       },
@@ -153359,6 +153358,7 @@
             "defender": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 }
           }
         ],
+        "optional": true,
         "frequency": "OncePerTurn",
         "sharedUseKey": "ir-shared-0"
       },
@@ -153385,6 +153385,7 @@
             "defender": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 }
           }
         ],
+        "optional": true,
         "frequency": "OncePerTurn",
         "sharedUseKey": "ir-shared-0"
       },
@@ -166547,7 +166548,7 @@
             "playerWide": true,
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": "all" },
             "amount": -5000,
-            "duration": "untilOpponentNextTurnEnd"
+            "duration": "untilOpponentTurnEnd"
           }
         ]
       },
@@ -166559,7 +166560,7 @@
             "playerWide": true,
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": "all" },
             "amount": -5000,
-            "duration": "untilOpponentNextTurnEnd"
+            "duration": "untilOpponentTurnEnd"
           }
         ]
       },

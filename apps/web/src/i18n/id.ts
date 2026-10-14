@@ -561,8 +561,6 @@ const interfaceMessages = {
   "lobby.betaQueueOption": "Bermain di antrean beta",
   "lobby.betaQueueOptionHint":
     "Hadapi pemain yang menguji kartu dari set yang belum dirilis. Kartu-kartu itu masih bisa berubah.",
-  "lobby.betaQueueOptionBotHint":
-    "AI dapat menggunakan deck berisi kartu dari set yang belum dirilis. Kartu-kartu itu masih bisa berubah.",
   "beta.message": "Aegis masih dalam versi beta. Beberapa hal mungkin rusak dan data dapat direset.",
   "beta.reportLink": "Laporkan bug di Discord",
   "beta.dismiss": "Mengerti",
@@ -1878,8 +1876,7 @@ const interfaceMessages = {
   "account.emailLabel": "Email",
   "account.emailPlaceholder": "nama@email.com",
   "account.sendMagicLink": "Kirim tautan masuk",
-  "account.magicLinkSent":
-    "Cek emailmu untuk masuk. Kalau tidak ada di kotak masuk, periksa folder Spam atau Junk.",
+  "account.magicLinkSent": "Cek emailmu untuk masuk. Kalau tidak ada di kotak masuk, periksa folder Spam atau Junk.",
   "account.magicLinkDailyLimit":
     "Batas email masuk hari ini sudah tercapai. Masuk dengan Discord, atau coba lagi besok.",
   "account.magicLinkError": "Tidak bisa mengirim email untuk masuk. Coba lagi.",

@@ -27,7 +27,6 @@ import { isSameDeckIdList } from "@/screens/favoriteDecks/isSameDeckIdList";
  * Keeps the theme, language, sleeves, auto hatch, profile stats and deck builder layout in step with the signed-in account.
  * localStorage stays the instant source, so guests and the first render never wait on the network.
  * On sign-in the account's stored values win; keys the account lacks are backfilled from this device.
- * Auto hatch and profile stats default to false for accounts without a saved choice.
  */
 export function usePreferencesSync({
   accountId,

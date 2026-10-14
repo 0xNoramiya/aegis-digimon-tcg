@@ -193,7 +193,7 @@ describe("room-scoped deployment affinity", () => {
     expect(create).toHaveBeenCalledWith("aegis_bot", { ...OPTIONS, authTicket: "ticket-1" });
   });
 
-  it("creates beta bot matches in a beta-isolated room", async () => {
+  it("creates beta bot matches in the single bot room", async () => {
     const botRoom = room("beta-bot-room");
     const greenCreate = vi.fn(async () => botRoom);
     const client = router({
@@ -203,7 +203,7 @@ describe("room-scoped deployment affinity", () => {
     });
 
     await expect(client.createBot({ ...OPTIONS, betaBattleMode: true })).resolves.toBe(botRoom);
-    expect(greenCreate).toHaveBeenCalledWith("aegis_beta_bot", expect.objectContaining({ betaBattleMode: true }));
+    expect(greenCreate).toHaveBeenCalledWith("aegis_bot", expect.objectContaining({ betaBattleMode: true }));
   });
 
   it("refreshes the manifest when the active slot starts draining while creating a bot room", async () => {
@@ -391,7 +391,7 @@ it("preserves Unlimited and beta bot flags on the production and private paths",
   });
   await client.createBot({ ...OPTIONS, unlimited: true, betaBattleMode: true });
   expect(create).toHaveBeenLastCalledWith(
-    "aegis_beta_bot",
+    "aegis_bot",
     expect.objectContaining({ unlimited: true, betaBattleMode: true }),
   );
   await client.createPrivate({ ...OPTIONS, unlimited: true });

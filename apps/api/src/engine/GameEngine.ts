@@ -280,8 +280,11 @@ export class GameEngine {
     contexts: Map<number, EffectContext>;
   }> = [];
   flushingDeferredSecurityRemovalTriggers = false;
+  readonly pendingEffectReaders = new Set<() => readonly CollectedEffect[]>();
+
   /** Trigger windows created inside a resolving effect and activated only after that effect ends. */
   readonly deferredTimingWindows: Array<{
+    readPendingEffects?: () => readonly CollectedEffect[];
     timing: EffectTiming;
     trigger: TriggerInfo;
     transientCandidates: readonly CardInstance[];
@@ -410,7 +413,12 @@ export class GameEngine {
           const permanent = player.battleArea.find((candidate) => candidate.permanentId === permanentId);
           if (permanent !== undefined) {
             const definition = lookupDefinition(permanent.topCard.cardId);
-            if (definition !== undefined && isDigimon(definition)) return permanent.controllerSeat;
+            if (
+              (definition !== undefined && isDigimon(definition)) ||
+              this.continuous.grantedKinds(permanentId).includes(CardKind.Digimon)
+            ) {
+              return permanent.controllerSeat;
+            }
           }
         }
         return undefined;

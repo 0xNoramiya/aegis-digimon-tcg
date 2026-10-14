@@ -1,4 +1,70 @@
 {
+  "releases.1.26.1-beta.summary": {
+    "en": "Card protection and effect-order fixes, more reliable card inspection, and smoother mobile and bot play.",
+    "pt-BR": "Correções de proteção de cartas e ordem dos efeitos, inspeção de cartas mais confiável e melhorias no celular e nas partidas contra bots.",
+    "es": "Correcciones de protección de cartas y orden de efectos, inspección de cartas más fiable y mejoras en móviles y partidas contra bots.",
+    "it": "Correzioni alla protezione delle carte e all’ordine degli effetti, ispezione delle carte più affidabile e miglioramenti su dispositivi mobili e nelle partite contro i bot."
+  },
+  "releases.1.26.1-beta.fix.neptunemon": {
+    "en": "Neptunemon now requires a new suspension payment for every protection; it no longer creates extra protection without a cost.",
+    "pt-BR": "Neptunemon agora exige um novo pagamento de suspensão a cada proteção; não cria mais proteções extras sem custo.",
+    "es": "Neptunemon ahora exige pagar una nueva suspensión por cada protección; ya no crea protecciones adicionales sin coste.",
+    "it": "Neptunemon ora richiede una nuova sospensione come costo per ogni protezione; non crea più protezioni aggiuntive gratuite."
+  },
+  "releases.1.26.1-beta.fix.inherited": {
+    "en": "Declining a Mother Eater inherited protection no longer spends that copy’s once-per-turn use.",
+    "pt-BR": "Recusar uma proteção herdada de Mother Eater não consome mais o uso por turno daquela cópia.",
+    "es": "Rechazar una protección heredada de Mother Eater ya no consume el uso por turno de esa copia.",
+    "it": "Rifiutare una protezione ereditata di Mother Eater non consuma più l’utilizzo per turno di quella copia."
+  },
+  "releases.1.26.1-beta.fix.priority": {
+    "en": "Effect-directed attacks preserve the priority of pending effects, including Erlangmon interactions.",
+    "pt-BR": "Ataques iniciados por efeitos preservam a prioridade dos efeitos pendentes, incluindo interações com Erlangmon.",
+    "es": "Los ataques iniciados por efectos respetan la prioridad de los efectos pendientes, incluidas las interacciones con Erlangmon.",
+    "it": "Gli attacchi avviati dagli effetti rispettano la priorità degli effetti in attesa, comprese le interazioni con Erlangmon."
+  },
+  "releases.1.26.1-beta.fix.cardRules": {
+    "en": "Corrected ShineGreymon: Ruin Mode’s debuff duration, made Diarbbitmon’s DP-and-battle effect optional, stopped CannonBeemon de-digivolution when no valid target remains, and applied Security Attack reductions to Tamers treated as Digimon.",
+    "pt-BR": "Corrigimos a duração da redução de DP de ShineGreymon: Ruin Mode, tornamos opcional o efeito de DP e batalha de Diarbbitmon, interrompemos a desdigivolução de CannonBeemon quando não há alvo válido e aplicamos reduções de Ataque à Segurança a Tamers tratados como Digimon.",
+    "es": "Corregimos la duración de la reducción de DP de ShineGreymon: Ruin Mode, hicimos opcional el efecto de DP y batalla de Diarbbitmon, detuvimos la desdigievolución de CannonBeemon cuando no quedan objetivos válidos y aplicamos reducciones de Ataque a la Seguridad a Tamers tratados como Digimon.",
+    "it": "Corretta la durata della riduzione dei DP di ShineGreymon: Ruin Mode, reso facoltativo l’effetto di DP e battaglia di Diarbbitmon, interrotta la de-digievoluzione di CannonBeemon quando non restano bersagli validi e applicate le riduzioni di Attacco alla Sicurezza ai Tamer trattati come Digimon."
+  },
+  "releases.1.26.1-beta.fix.dna": {
+    "en": "Manual DNA digivolution is no longer treated as digivolving by an effect.",
+    "pt-BR": "A digivolução DNA manual não é mais tratada como uma digivolução realizada por efeito.",
+    "es": "La digievolución ADN manual ya no se trata como una digievolución realizada por un efecto.",
+    "it": "La digievoluzione DNA manuale non viene più trattata come una digievoluzione effettuata da un effetto."
+  },
+  "releases.1.26.1-beta.fix.inspection": {
+    "en": "Keep hand previews open during opponent actions, inspect inherited effects in breeding, and identify pending deletion effects in trash selections.",
+    "pt-BR": "Mantenha a visualização de cartas da mão durante ações do oponente, inspecione efeitos herdados na criação e identifique efeitos de deleção pendentes nas escolhas do lixo.",
+    "es": "Mantén abiertas las vistas de cartas de la mano durante las acciones del rival, inspecciona efectos heredados en crianza e identifica efectos de eliminación pendientes al elegir cartas de la basura.",
+    "it": "Mantieni aperte le anteprime delle carte in mano durante le azioni avversarie, ispeziona gli effetti ereditati nell’area di allevamento e identifica gli effetti di eliminazione in attesa durante le selezioni dagli scarti."
+  },
+  "releases.1.26.1-beta.fix.mobile": {
+    "en": "Swipe directly over cards to scroll a crowded battlefield on mobile and reach Digimon on the right.",
+    "pt-BR": "Deslize diretamente sobre as cartas para rolar um campo cheio no celular e alcançar os Digimon à direita.",
+    "es": "Desliza el dedo sobre las cartas para desplazar un campo lleno en el móvil y acceder a los Digimon de la derecha.",
+    "it": "Scorri direttamente sulle carte per spostarti su un campo affollato da mobile e raggiungere i Digimon sulla destra."
+  },
+  "releases.1.26.1-beta.fix.limited": {
+    "en": "Released limited-set cards remain eligible in historical decks according to their actual release dates.",
+    "pt-BR": "Cartas já lançadas de coleções limitadas continuam válidas em decks históricos conforme suas datas reais de lançamento.",
+    "es": "Las cartas ya publicadas de colecciones limitadas siguen siendo válidas en mazos históricos según sus fechas reales de lanzamiento.",
+    "it": "Le carte già pubblicate delle espansioni limitate restano valide nei mazzi storici in base alle loro date effettive di uscita."
+  },
+  "releases.1.26.1-beta.fix.bot": {
+    "en": "Bot matches accept preview cards without a separate beta confirmation while keeping the selected deck format.",
+    "pt-BR": "Partidas contra bots aceitam cartas em prévia sem uma confirmação beta separada, mantendo o formato de deck selecionado.",
+    "es": "Las partidas contra bots aceptan cartas en avance sin una confirmación beta adicional y mantienen el formato de mazo seleccionado.",
+    "it": "Le partite contro i bot accettano carte in anteprima senza una conferma beta separata, mantenendo il formato del mazzo selezionato."
+  },
+  "releases.1.26.1-beta.fix.profile": {
+    "en": "Match statistics are visible by default and can be hidden directly from your profile.",
+    "pt-BR": "As estatísticas de partidas ficam visíveis por padrão e podem ser ocultadas diretamente no perfil.",
+    "es": "Las estadísticas de partidas se muestran por defecto y se pueden ocultar directamente desde el perfil.",
+    "it": "Le statistiche delle partite sono visibili per impostazione predefinita e possono essere nascoste direttamente dal profilo."
+  },
   "releases.1.26.0-beta.summary": {
     "en": "Over a dozen card and rules fixes from your reports, a low-clock warning, decision alerts, and a stronger deck builder.",
     "pt-BR": "Mais de uma dúzia de correções de cartas e regras vindas dos seus relatos, aviso de relógio baixo, alertas de decisão e um deck builder mais completo.",

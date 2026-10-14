@@ -1,11 +1,10 @@
 import { EffectDuration, EffectTiming, type CardInstance } from "@aegis/shared";
 import { effectiveColorsOf } from "./matchLifecycle.js";
 import { printedKeywordsOf, resolveKeywords } from "../combat/keywords.js";
-import { buildResolutionEnv, permanentIdentityOf } from "../effects/index.js";
+import { permanentIdentityOf } from "#api/engine/effects/stack";
 import { effectsOf } from "../effects/collect.js";
 import type { CollectedEffect } from "../effects/collect.js";
 import { engineRunSecurityCheck, payBarrierSecurityCost } from "./securityCheck.js";
-import { resolutionDeps } from "./actionDeps.js";
 import { counterEligibleSources } from "./intents.js";
 import {
   combatTriggerInfo,
@@ -21,9 +20,13 @@ import {
   prepareSubTrigger,
   withPendingSubTriggers,
 } from "./subTriggers.js";
-import { deferNestedTimingEffects, shouldDeferNestedTiming } from "./windows.js";
-import { collectPermanentInstances } from "./ruleProcess.js";
-import { cardSourceOf, dropPermanentSubscriptions, effectEnvironment } from "./effectContext.js";
+import {
+  collectNestedTimingEffects,
+  deferNestedTimingEffects,
+  shouldDeferNestedTiming,
+} from "#api/engine/gameEngine/windows";
+import { collectPermanentInstances, listCandidateInstances } from "#api/engine/gameEngine/ruleProcess";
+import { cardSourceOf, dropPermanentSubscriptions } from "./effectContext.js";
 import { beginBattleScope, endBattleScope, sweepBattleDurations, sweepCombatDurations } from "./turnFlow.js";
 import type { GameEngine } from "../GameEngine.js";
 import type { CombatHooks } from "../combat/types.js";
@@ -165,20 +168,20 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
               subjectPermanentId: opts.suspendedPermanentId,
               suspendedPermanentId: opts.suspendedPermanentId,
             };
-      const attackEnvironment = buildResolutionEnv(
-        effectEnvironment(engine, { ...attackPayload, ...(suspensionPayload ?? {}) }),
-        resolutionDeps(engine),
+      const attackCandidates = listCandidateInstances(engine);
+      const allyAttackEffects = collectNestedTimingEffects(
+        engine,
+        EffectTiming.OnAllyAttack,
+        { ...attackPayload, ...(suspensionPayload ?? {}) },
+        attackCandidates,
       );
-      const allyAttackEffects = attackEnvironment.collect(EffectTiming.OnAllyAttack);
       // Suspending the attacker and declaring the attack are the same game event. Effects
       // triggered by either part share one activation order (§11-2-8, §15-4-3), including
       // [On Tapped] timing effects and the `whenSuspended` watcher bus.
       const suspensionEffects =
         suspensionPayload === undefined
           ? []
-          : attackEnvironment
-              .collect(EffectTiming.OnTappedAnyone)
-              .map((effect) => ({ ...effect, triggerInfo: suspensionPayload }));
+          : collectNestedTimingEffects(engine, EffectTiming.OnTappedAnyone, suspensionPayload, attackCandidates);
       const pendingAttackEffects = [...allyAttackEffects, ...suspensionEffects, ...allianceEffects, ...raidEffects];
       if (shouldDeferNestedTiming(engine)) {
         // An effect-directed declaration joins its enclosing pool. Keyword instances

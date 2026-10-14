@@ -349,8 +349,9 @@ function GameScreenSession({
     vortexMode,
     setVortexMode,
     clearSel,
+    clearDeclarations,
   } = selectionState;
-  const overlayState = useOverlayState({ decision, state, clearSel });
+  const overlayState = useOverlayState({ decision, state, clearSel, clearDeclarations, viewerSeat });
   const {
     cardMenu,
     setCardMenu,
@@ -1368,6 +1369,13 @@ function GameScreenSession({
       }
       slotDrop={{ "data-drop": "breeding-you", ...dropIntentAttrs("breeding-you") }}
       onHatch={onBreeding}
+      onInspect={() => {
+        if (!breedingYou.breeding) {
+          return;
+        }
+        cancelDrag();
+        actions.showCardMenu(breedingYou.breeding.permanentId, Side.Viewer, { preserveSelection: true });
+      }}
       onOpenEggDeck={
         revealed ? () => overlayState.setRevealedZoneView({ side: Side.Viewer, zone: "eggDeck" }) : undefined
       }
