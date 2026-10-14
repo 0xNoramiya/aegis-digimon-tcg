@@ -485,7 +485,7 @@ function TokenInfo({ def, width, dp }: { def: CardDefinition; width: number; dp?
               style={{
                 flexShrink: 0,
                 fontFamily: "var(--ds-font-mono)",
-                fontSize: px(9),
+                fontSize: `calc(${px(10)}px * var(--ds-text-scale, 1))`,
                 fontWeight: 700,
                 color: "#fff",
                 // A dual-colour Digimon carries both of its colours on the chip,

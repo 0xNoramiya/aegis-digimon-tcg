@@ -148,6 +148,16 @@ describe("NoticeStack", () => {
     expect(shown.textContent).toContain("Not enough memory.");
   });
 
+  it("tells the viewer how much time is left on their clock", () => {
+    renderNotice(notice({ body: { variant: "timeWarning", seconds: 60 } }));
+    expect(screen.getByTestId("match-notice").getAttribute("data-variant")).toBe("timeWarning");
+    expect(screen.getByTestId("match-notice").textContent).toContain("1 minute left");
+    cleanup();
+
+    renderNotice(notice({ body: { variant: "timeWarning", seconds: 30 } }));
+    expect(screen.getByTestId("match-notice").textContent).toContain("30 seconds left");
+  });
+
   it("names the card behind an effect and opens it", () => {
     const opened: string[] = [];
     render(

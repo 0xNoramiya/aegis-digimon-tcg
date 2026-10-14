@@ -45,7 +45,7 @@ for (const width of [320, 768, 1024, 1440]) {
     for (let i = 0; i < 3; i++) await poolStepper.click();
     await expect(poolStepper).toBeDisabled();
     await builder.pool().selectOption("all");
-    const details = page.getByRole("button", { name: /Tap to see more about the deck/ });
+    const details = page.getByRole("button", { name: /^View deck/ });
     if (await details.isVisible()) await details.click();
     await expect(page.getByText(/GeoGreymon.*4.*1/)).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);

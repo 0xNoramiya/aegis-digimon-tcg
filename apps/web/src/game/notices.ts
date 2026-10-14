@@ -12,6 +12,7 @@
    Card text and translation belong to NoticeStack.tsx. */
 
 import { type PreventionKeyword, type Seat, type ServerEvent } from "@aegis/shared";
+import { noticeDurationScale } from "./noticeDuration";
 import { Side } from "./side";
 import { TIMINGS } from "./timings";
 
@@ -62,6 +63,7 @@ export type NoticeBody =
   | { variant: "recovery"; amount: number }
   | { variant: "securityGain"; amount: number }
   | { variant: "rejection"; reason: string }
+  | { variant: "timeWarning"; seconds: number }
   | { variant: "keyword"; keyword: NoticeKeyword; cardId: string; materialCardIds?: readonly string[] };
 
 /** Why a permanent lost its top card without leaving the field. */
@@ -349,8 +351,17 @@ export function rejectionNotice(reason: string, id: string, nowMs: number): Matc
 
 /** Milliseconds left on a notice's clock, never negative. */
 export function noticeRemaining(notice: MatchNotice, nowMs: number): number {
-  const lifetime = notice.body.variant === "rejection" ? REJECTION_LIFETIME_MS : NOTICE_LIFETIME_MS;
-  return Math.max(0, notice.createdAt + lifetime - nowMs);
+  return Math.max(0, notice.createdAt + getNoticeLifetime(notice) - nowMs);
+}
+
+function getNoticeLifetime(notice: MatchNotice): number {
+  if (notice.body.variant === "rejection") {
+    return REJECTION_LIFETIME_MS;
+  }
+  if (notice.body.variant === "timeWarning") {
+    return Math.round(REJECTION_LIFETIME_MS * noticeDurationScale());
+  }
+  return NOTICE_LIFETIME_MS;
 }
 
 /**

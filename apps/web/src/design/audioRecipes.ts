@@ -39,6 +39,7 @@ export const SOUND_KINDS = [
   "group",
   "win",
   "lose",
+  "attention",
 ] as const;
 export type SoundKind = (typeof SOUND_KINDS)[number];
 export interface SoundDetails {
@@ -285,6 +286,15 @@ export function audioRecipe(
       play("touch", 0, 0.2);
       play("tap", 0.09, 0.13);
       chime(0, [88, 93], 0.07, 0.024, "pluck", 0.1);
+      break;
+    case "attention":
+      for (const ring of [0, 0.62]) {
+        play("tap", ring, 0.22);
+        tone("glass", ring, 0.55, 0.09, midi(88));
+        tone("body", ring, 0.3, 0.05, midi(64));
+        tone("glass", ring + 0.24, 0.7, 0.085, midi(84));
+        tone("body", ring + 0.24, 0.36, 0.05, midi(60));
+      }
       break;
     case "timerTick":
       play("tap", 0, 0.2);

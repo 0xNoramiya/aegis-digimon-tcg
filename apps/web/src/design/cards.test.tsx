@@ -22,3 +22,11 @@ it.each([CardFull, CardMini])("#5394: artwork cannot start a browser-native imag
   render(<Card cardId="ST1-02" zoomOnHover={false} />);
   expect((screen.getByRole("img") as HTMLImageElement).draggable).toBe(false);
 });
+
+describe("CardMini board DP", () => {
+  it("grows the DP number with the player's text size", () => {
+    render(<CardMini cardId="ST1-02" width={92} dp={3000} info zoomOnHover={false} />);
+
+    expect(screen.getByText("3K").style.fontSize).toBe("calc(10px * var(--ds-text-scale, 1))");
+  });
+});

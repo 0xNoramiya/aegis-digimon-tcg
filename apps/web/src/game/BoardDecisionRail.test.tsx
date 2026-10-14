@@ -8,6 +8,7 @@ import {
   BoardBlockPrompt,
   BoardOptionalPrompt,
   BoardSelectionRail,
+  BoardSourceHostPrompt,
   OpponentSelectingPill,
 } from "./BoardDecisionRail";
 import { CardOpenerProvider } from "./cardLinks";
@@ -527,4 +528,51 @@ it("focuses the left optional dialog and keeps Tab within its controls", () => {
   expect(document.activeElement).toBe(viewBoard);
   expect(use).not.toHaveBeenCalled();
   expect(decline).not.toHaveBeenCalled();
+});
+
+describe("Return to decision position", () => {
+  const pressedButton = new DOMRect(300, 540, 200, 40);
+  const returnControl = new DOMRect(0, 0, 320, 56);
+
+  function pressAndFindReturn(name: string) {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      return this.classList.contains("decision-board-return") ? returnControl : pressedButton;
+    });
+    fireEvent.click(screen.getByRole("button", { name }));
+    return screen.getByRole("button", { name: "Return to decision" }).parentElement!;
+  }
+
+  it.each([
+    [
+      "optional prompt",
+      <BoardOptionalPrompt key="optional" sourceCardId="ST1-07" onUse={noop} onDecline={noop} />,
+      "View board",
+    ],
+    ["block window", <BoardBlockPrompt key="block" mustBlock={false} onDecline={noop} />, "View board"],
+    ["source host choice", <BoardSourceHostPrompt key="host" />, "View board"],
+    ["alliance window", <BoardAlliancePrompt key="alliance" onPass={noop} />, "View board"],
+    [
+      "field selection",
+      <BoardSelectionRail
+        key="selection"
+        fieldSelection
+        prompt="Choose 1 target"
+        min={1}
+        max={1}
+        pickCount={0}
+        canConfirm={false}
+        onConfirm={noop}
+        onNoSelection={noop}
+      />,
+      "Select on board",
+    ],
+  ])("opens the %s return control centred on the button that was pressed", (_, prompt, buttonName) => {
+    renderIn(prompt);
+
+    const control = pressAndFindReturn(buttonName);
+
+    expect(control.hasAttribute("data-anchored")).toBe(true);
+    expect(control.style.getPropertyValue("--decision-return-left")).toBe("240px");
+    expect(control.style.getPropertyValue("--decision-return-top")).toBe("532px");
+  });
 });

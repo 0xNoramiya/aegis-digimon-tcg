@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Button } from "../../../design/primitives";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
-import { takeViewBoardOrigin } from "./DecisionViewBoardButton";
+import { takeViewBoardOrigin } from "@/game/overlay/choice/takeViewBoardOrigin";
 
 const VIEWPORT_MARGIN_PX = 16;
 
@@ -16,8 +16,8 @@ const clamp = (value: number, low: number, high: number) => Math.min(Math.max(va
  * 100dvh. Keep the only route back to the pending decision in the document viewport.
  *
  * Where it appears: centred on the View board button that opened the board, so going
- * back is one click in the same spot. Without that origin (a keyboard press, a board
- * prompt) it sits below the opponent bar, and phones always use that full-width strip.
+ * back is one click in the same spot. Without that origin it sits below the opponent
+ * bar, and phones always use that full-width strip.
  */
 export function DecisionBoardReturn({
   returnControlRef,

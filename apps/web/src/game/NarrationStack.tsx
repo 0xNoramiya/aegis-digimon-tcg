@@ -22,6 +22,7 @@ import {
   type NarrationSlot,
 } from "./narration";
 import { noticeRemaining, type MatchNotice } from "./notices";
+import type { LowTimeWarning } from "@/game/useLowTimeWarning";
 
 /** The art on the folded band: enough to recognise the card, not enough to read it. */
 const PEEK_ART_WIDTH = 34;
@@ -413,7 +414,15 @@ function PeekLine({
   );
 }
 
-function RejectionView({ notice, nowMs, onDismiss }: { notice: MatchNotice; nowMs: number; onDismiss: () => void }) {
+function ImmediateNoticeView({
+  notice,
+  nowMs,
+  onDismiss,
+}: {
+  notice: MatchNotice;
+  nowMs: number;
+  onDismiss: () => void;
+}) {
   const [mountedAt] = useState(nowMs);
   return <NoticeStack notice={notice} remainingMs={noticeRemaining(notice, mountedAt)} onDismiss={onDismiss} />;
 }
@@ -427,6 +436,7 @@ export function NarrationStack({
   securityDockActive = false,
   onAdvance,
   onDismissRejection,
+  timeWarning,
   onHold,
 }: {
   /** Recent items keyed by occurrence ID. */
@@ -446,6 +456,7 @@ export function NarrationStack({
   /** Dismiss only the named record. */
   onAdvance: (id: string) => void;
   onDismissRejection: () => void;
+  timeWarning?: LowTimeWarning;
   /** Stop or restart the reading clocks while the viewer reads a column. */
   onHold?: (held: boolean) => void;
 }) {
@@ -475,7 +486,9 @@ export function NarrationStack({
           ...(item.notice && isCardListNotice(item.notice) ? [{ ...item, panel: undefined }] : []),
         ])
         .slice(-MAX_VISIBLE_TOASTS);
-  const shownTextItems = compact ? textItems : textItems.slice(-(MAX_VISIBLE_TOASTS - (rejection ? 1 : 0)));
+  const timeWarningNotice = timeWarning?.notice ?? null;
+  const immediateCount = (rejection ? 1 : 0) + (timeWarningNotice ? 1 : 0);
+  const shownTextItems = compact ? textItems : textItems.slice(-(MAX_VISIBLE_TOASTS - immediateCount));
   const isPromptEffect = (item: NarrationItem) => isEffectOf(narration.get(item.id) ?? item, promptSourceCardId);
   const body = (half: "text" | "cards") => (shown: NarrationItem) => (
     <div
@@ -518,7 +531,7 @@ export function NarrationStack({
       ) : null}
       {/* A refusal answers the viewer's own tap, so it never folds: while one is on screen
           the phone's column opens whatever the band was doing. */}
-      {compact && !expanded && !rejection && textItems.length > 0 ? (
+      {compact && !expanded && immediateCount === 0 && textItems.length > 0 ? (
         <Slot slot="narration" count={1} securityDockActive={securityDockActive}>
           {/* Keyed on the moment it names: the band is one row reused for every moment, and
               without a remount a new moment would slide into it with no entrance to see. */}
@@ -531,10 +544,10 @@ export function NarrationStack({
             onDismiss={() => textItems.forEach((item) => onAdvance(item.id))}
           />
         </Slot>
-      ) : textItems.length > 0 || rejection ? (
+      ) : textItems.length > 0 || immediateCount > 0 ? (
         <Slot
           slot={textSlot}
-          count={shownTextItems.length + (rejection ? 1 : 0)}
+          count={shownTextItems.length + immediateCount}
           securityDockActive={securityDockActive}
           {...(compact ? { onTogglePeek: () => setExpanded(false), anchor: "top" as const } : {})}
           peekLabel={t("notice.collapse")}
@@ -543,7 +556,15 @@ export function NarrationStack({
         >
           {shownTextItems.map(compact ? compactBody : body("text"))}
           {rejection ? (
-            <RejectionView key={rejection.id} notice={rejection} nowMs={now} onDismiss={onDismissRejection} />
+            <ImmediateNoticeView key={rejection.id} notice={rejection} nowMs={now} onDismiss={onDismissRejection} />
+          ) : null}
+          {timeWarning && timeWarningNotice ? (
+            <ImmediateNoticeView
+              key={timeWarningNotice.id}
+              notice={timeWarningNotice}
+              nowMs={now}
+              onDismiss={timeWarning.dismiss}
+            />
           ) : null}
         </Slot>
       ) : null}

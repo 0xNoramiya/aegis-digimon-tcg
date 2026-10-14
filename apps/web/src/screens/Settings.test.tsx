@@ -5,8 +5,20 @@ import { Settings } from "./Settings";
 import { I18nProvider } from "../i18n";
 import { arePileCountsShown, setPileCountsShown } from "../design/pileCounts";
 import { isKeepAwakeEnabled, setKeepAwakeEnabled } from "../design/keepAwake";
+import { areProfileStatsShown, setProfileStatsShown } from "../account/profileStats";
+import type { RemoteAccount } from "../account/client";
+import { setSoundEnabled } from "../design/sound";
+import { isChatSoundEnabled, setChatSoundEnabled } from "../game/chat/chatSound";
 
 const player = { name: "Guest Tamer", color: "Blue", shards: 0, guestAvatarId: null };
+const account: RemoteAccount = {
+  id: "account-1",
+  displayName: "Tamer",
+  avatarUrl: null,
+  avatarId: null,
+  avatarSource: "initials",
+  isAdmin: false,
+};
 
 describe("settings layout", () => {
   afterEach(() => cleanup());
@@ -47,6 +59,26 @@ describe("settings layout", () => {
     fireEvent.click(screen.getByRole("switch", { name: /Dark mode/ }));
 
     expect(onToggleDark).toHaveBeenCalledWith(true);
+  });
+
+  it("opens on the sound section when the music menu asks for it", () => {
+    const scrollTo = vi.fn<(options?: ScrollToOptions) => void>();
+    Object.defineProperty(HTMLElement.prototype, "scrollTo", { configurable: true, value: scrollTo });
+    render(
+      <I18nProvider>
+        <Settings
+          player={player}
+          account={null}
+          dark={false}
+          onToggleDark={() => undefined}
+          initialSectionId="settings-sound"
+        />
+      </I18nProvider>,
+    );
+
+    expect(document.activeElement).toBe(screen.getByRole("region", { name: "Sound & music" }));
+    expect(scrollTo).toHaveBeenCalledOnce();
+    Reflect.deleteProperty(HTMLElement.prototype, "scrollTo");
   });
 });
 
@@ -132,5 +164,75 @@ describe("settings keep awake", () => {
     expect(toggle.getAttribute("aria-checked")).toBe("false");
     expect(isKeepAwakeEnabled()).toBe(false);
     expect(localStorage.getItem("aegis.keep-awake.enabled")).toBe("false");
+  });
+});
+
+describe("settings profile stats", () => {
+  afterEach(() => {
+    cleanup();
+    setProfileStatsShown(false);
+  });
+
+  it("starts hidden and lets a signed-in player show the profile match stats", () => {
+    setProfileStatsShown(false);
+    render(
+      <I18nProvider>
+        <Settings player={player} account={account} dark={false} onToggleDark={() => undefined} />
+      </I18nProvider>,
+    );
+
+    const navigation = screen.getByRole("navigation", { name: "Preferences sections" });
+    expect(within(navigation).getByRole("link", { name: "My profile" })).toBeTruthy();
+    const toggle = screen.getByRole("switch", { name: /Show match stats/ });
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(toggle);
+    expect(areProfileStatsShown()).toBe(true);
+  });
+
+  it("leaves the profile section out for guests", () => {
+    render(
+      <I18nProvider>
+        <Settings player={player} account={null} dark={false} onToggleDark={() => undefined} />
+      </I18nProvider>,
+    );
+
+    expect(screen.queryByRole("switch", { name: /Show match stats/ })).toBeNull();
+  });
+});
+
+describe("settings chat sound", () => {
+  afterEach(() => {
+    cleanup();
+    setChatSoundEnabled(false);
+    setSoundEnabled(true);
+    localStorage.clear();
+  });
+
+  function renderSettings() {
+    render(
+      <I18nProvider>
+        <Settings player={player} account={null} dark={false} onToggleDark={() => undefined} />
+      </I18nProvider>,
+    );
+    return screen.getByRole("switch", { name: /Chat sound/ });
+  }
+
+  it("starts off and stores the player's choice", () => {
+    const toggle = renderSettings();
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+
+    fireEvent.click(toggle);
+
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
+    expect(isChatSoundEnabled()).toBe(true);
+    expect(localStorage.getItem("aegis.chat.sound")).toBe("on");
+  });
+
+  it("is unavailable while sound effects are off", () => {
+    const toggle = renderSettings();
+
+    fireEvent.click(screen.getByRole("switch", { name: /^Sound effects/ }));
+
+    expect(toggle).toHaveProperty("disabled", true);
   });
 });
