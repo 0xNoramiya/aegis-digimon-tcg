@@ -3,12 +3,12 @@ import {
   ROOM_TYPE,
   ROOM_TYPE_UNLIMITED,
   ROOM_TYPE_BETA,
-  ROOM_TYPE_BETA_BOT,
   ROOM_TYPE_BOT,
+  ROOM_TYPE_BETA_BOT,
   ROOM_TYPE_PRIVATE,
   ROOM_TYPE_RANKED,
   ROOM_TYPE_TOURNAMENT,
-} from "@aegis/shared";
+} from "@aegis/shared/protocol/messages";
 import { AegisRoom } from "./AegisRoom.js";
 
 const publicMode = {
@@ -37,20 +37,15 @@ export function defineAegisRooms(gameServer: Pick<Server, "define">): void {
       betaBattleRoom: false,
     })
     .filterBy(["matchTimer", "bestOf", "format", "allowRollback"]);
-  gameServer.define(ROOM_TYPE_BOT, AegisRoom, {
-    ...publicMode,
-    botRoom: true,
-    allowUnlimitedSelection: true,
-    allowFormatSelection: true,
-    betaBattleRoom: false,
-  });
-  gameServer.define(ROOM_TYPE_BETA_BOT, AegisRoom, {
-    ...publicMode,
-    botRoom: true,
-    allowUnlimitedSelection: true,
-    allowFormatSelection: true,
-    betaBattleRoom: true,
-  });
+  for (const roomType of [ROOM_TYPE_BOT, ROOM_TYPE_BETA_BOT]) {
+    gameServer.define(roomType, AegisRoom, {
+      ...publicMode,
+      botRoom: true,
+      allowUnlimitedSelection: true,
+      allowFormatSelection: true,
+      betaBattleRoom: true,
+    });
+  }
   gameServer.define(ROOM_TYPE_RANKED, AegisRoom, { ...publicMode, rankedRoom: true, betaBattleRoom: false });
   gameServer
     .define(ROOM_TYPE_BETA, AegisRoom, {

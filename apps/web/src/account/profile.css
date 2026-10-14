@@ -48,12 +48,18 @@
 }
 .profile-identity,
 .profile-history,
+.profile-playtest,
 .profile-page .account-panel {
   background: var(--ds-sheet);
   border: 1px solid var(--ds-line);
   border-radius: var(--ds-radius-md);
 }
 .profile-page .account-panel {
+  padding: var(--ds-space-5);
+}
+.profile-playtest {
+  display: grid;
+  gap: 0.75rem;
   padding: var(--ds-space-5);
 }
 
@@ -192,6 +198,14 @@
 .profile-page .profile-identity__settings:hover {
   color: var(--ds-accent);
   border-color: var(--ds-accent);
+}
+.profile-stats-toggle {
+  margin-top: var(--ds-space-5);
+  padding-top: var(--ds-space-4);
+  border-top: 1px solid var(--ds-line);
+}
+.profile-stats-toggle + .profile-stats {
+  margin-top: var(--ds-space-4);
 }
 .profile-stats {
   display: grid;

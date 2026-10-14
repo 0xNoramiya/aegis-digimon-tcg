@@ -25,13 +25,13 @@ describe("EX8-071", () => {
       forms: ["-"],
       attributes: ["-"],
       types: ["NSo"],
-      effectText: expect.stringContaining("no face-up security cards"),
+      effectText: expect.stringContaining("All of your level 4 or higher Digimon with the [NSo] trait gain"),
       securityEffectText: expect.stringContaining("level 5 or lower Digimon"),
     });
     expect(getCardDefinition("EX8-071")?.effectText).toContain("bottom security card");
     expect(getCardDefinition("EX8-071")?.inheritedEffectText).toBeUndefined();
   });
-  it("waives its color requirement with no face-up security cards and grants all NSo Digimon Scapegoat", () => {
+  it("waives its color requirement with no face-up security cards and grants level 4+ NSo Digimon Scapegoat", () => {
     expect(compiled.effects?.find((entry) => entry.trigger === "Static")?.actions[0]).toMatchObject({
       kind: "WaiveColorRequirement",
       target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
@@ -41,7 +41,12 @@ describe("EX8-071", () => {
       kind: "GainKeyword",
       keyword: { keyword: "Scapegoat" },
       target: {
-        filter: { controller: "mine", kind: ["Digimon"], nameOrTrait: [{ tokens: ["NSo"], match: "trait" }] },
+        filter: {
+          controller: "mine",
+          kind: ["Digimon"],
+          levelComparison: { op: "gte", value: 4 },
+          nameOrTrait: [{ tokens: ["NSo"], match: "trait" }],
+        },
         count: "all",
       },
       duration: "permanent",
@@ -180,7 +185,7 @@ describe("EX8-071", () => {
       {
         0: {
           battleArea: [
-            { card: "EX8-057", as: "nso", suspended: true },
+            { card: "EX8-059", as: "nso", suspended: true },
             { card: "BT1-010", as: "sacrifice" },
           ],
           security: [{ card: "EX8-071", as: "source", faceUp: true }],
@@ -210,7 +215,7 @@ describe("EX8-071", () => {
       {
         0: {
           battleArea: [
-            { card: "EX8-057", as: "nso", suspended: true },
+            { card: "EX8-059", as: "nso", suspended: true },
             { card: "BT1-010", as: "sacrifice" },
           ],
           security: [{ card: "EX8-071", as: "source", faceUp: true }],
@@ -246,7 +251,7 @@ describe("EX8-071", () => {
   it("lapses the face-up security grants when Nightmare Soldiers leaves security", async () => {
     const s = setupEngine({
       0: {
-        battleArea: [{ card: "EX8-057", as: "nso" }],
+        battleArea: [{ card: "EX8-059", as: "nso" }],
         security: [{ card: "EX8-071", as: "source", faceUp: true }],
       },
       1: { battleArea: [{ card: "BT1-016", as: "attacker" }] },

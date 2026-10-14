@@ -46,13 +46,30 @@ describe("DecisionBoardReturn", () => {
     expect(control.style.getPropertyValue("--decision-return-top")).toBe("532px");
   });
 
-  it("keeps the fixed strip when no press told it where to appear", () => {
+  it("centres on View board after keyboard activation, which sends a click without a pointer", () => {
     render(
       <I18nProvider>
         <Decision />
       </I18nProvider>,
     );
-    fireEvent.click(screen.getByRole("button", { name: /view board/i }));
+    const viewBoard = screen.getByRole("button", { name: /view board/i });
+    vi.spyOn(viewBoard, "getBoundingClientRect").mockReturnValue(rect(300, 540, 200, 40));
+    vi.spyOn(HTMLDivElement.prototype, "getBoundingClientRect").mockReturnValue(rect(0, 0, 320, 56));
+
+    fireEvent.click(viewBoard);
+
+    const control = screen.getByRole("button", { name: /return to decision/i }).parentElement!;
+    expect(control.hasAttribute("data-anchored")).toBe(true);
+    expect(control.style.getPropertyValue("--decision-return-left")).toBe("240px");
+    expect(control.style.getPropertyValue("--decision-return-top")).toBe("532px");
+  });
+
+  it("keeps the fixed strip when no View board press told it where to appear", () => {
+    render(
+      <I18nProvider>
+        <DecisionBoardReturn returnControlRef={{ current: null }} onReturn={() => {}} />
+      </I18nProvider>,
+    );
 
     const control = screen.getByRole("button", { name: /return to decision/i }).parentElement!;
     expect(control.hasAttribute("data-anchored")).toBe(false);

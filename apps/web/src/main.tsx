@@ -13,6 +13,9 @@ import { installTranslationCompatibility } from "./translationCompatibility";
 import { applyDarkMode } from "./design/darkMode";
 import { applyInterfaceTheme } from "./design/interfaceTheme";
 import { preventIosFocusZoom } from "./design/iosViewport";
+import { clientErrorReporter } from "@/clientErrors/clientErrorReporter";
+import { installClientErrorListeners } from "@/clientErrors/installClientErrorListeners";
+import { installPreloadErrorRecovery } from "@/net/installPreloadErrorRecovery";
 import "./design/tokens.css";
 import "./design/base.css";
 import "./design/layout.css";
@@ -76,6 +79,12 @@ export function Startup() {
   );
 }
 
+installClientErrorListeners({ target: window, reporter: clientErrorReporter });
+installPreloadErrorRecovery({
+  target: window,
+  readStorage: () => window.sessionStorage,
+  reload: () => window.location.reload(),
+});
 const container = document.getElementById("root");
 if (!container) throw new Error("#root not found");
 applyDarkMode();

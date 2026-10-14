@@ -56,6 +56,14 @@ compose -p aegis-deployer \
              --env-file /etc/dokploy/compose/aegis-rgise8/code/.env
 ```
 
+## Source maps
+
+The web build emits hidden source maps. Both `deploy` and `deploy-web` move every `.map`
+file out of the extracted release into `/opt/aegis-rollout/sourcemaps/<revision>/` before
+copying assets, so no served directory holds them. The gateway also refuses any `.map`
+path. Maintenance removes a revision's maps when it removes the release. See
+[client errors](../internal-docs/ai/client-errors.md) for symbolication.
+
 ## Card images
 
 The gateway serves card images from `/opt/aegis-rollout/assets/card-images`, at `/assets/card-images/<id>.webp`. The upstream card app (TakaOtaku/Digimon-Card-App) is the source. It keeps its images in a public bucket at `web-garage.takaotaku.de`. Commit `9f666f1` of the upstream repository is a second source.
@@ -87,6 +95,14 @@ Replacing the sole gateway disconnects established WebSockets. Upgrade gateway r
 ## Status, cleanup, and rollback
 
 deploy status reports the active and draining slots with process status. deploy cleanup checks every draining slot and removes only those proven empty. deploy rollback reactivates the most recent draining slot while retaining the current owner for existing rooms.
+
+A draining slot empties because rooms close on their own (`apps/api/src/rooms/AegisRoom.ts`):
+
+| Limit                                     | Default                         | Result                                                                                          |
+| ----------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------- |
+| No player action during a match           | 15 minutes                      | The player the game waits on concedes; with nobody connected, the room closes without a result. |
+| Match finished, results screen still open | 10 minutes                      | The room closes with code `4408`. The result is already recorded.                               |
+| Slot draining                             | 60 minutes after draining began | Any match, finished or not, closes with code `4408`.                                            |
 
 The API and web bundles must remain protocol-compatible while active and draining slots overlap. A retained browser bundle checks that its replacement HTML is available before navigating, so a transient gateway error does not replace a working screen.
 

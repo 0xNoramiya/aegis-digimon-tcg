@@ -1,5 +1,149 @@
 [
   {
+    "version": "1.26.1-beta",
+    "releasedAt": "2026-10-14",
+    "summaryKey": "releases.1.26.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.26.1-beta.fix.neptunemon",
+        "issue": 5522
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.inherited",
+        "issue": 5515
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.priority",
+        "issue": 5513
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.cardRules"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.dna"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.inspection"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.mobile",
+        "issue": 5518
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.limited"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.bot"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.profile"
+      }
+    ]
+  },
+  {
+    "version": "1.26.0-beta",
+    "releasedAt": "2026-10-14",
+    "summaryKey": "releases.1.26.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.26.0-beta.feature.timer"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.feature.alerts"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.feature.sound"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.feature.deckBuilder"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.feature.favorites"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.feature.botDeck"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.feature.profileStats"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.feature.board"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.feature.reportReplays"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.26.0-beta.fix.boardTargets"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.fix.securityToHand"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.fix.playNotOptions"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.fix.counterRedirect"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.fix.triggerOrder"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.fix.optionalAttack"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.fix.leavePrevention"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.fix.cardFixes"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.fix.tokens"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.fix.ruleCheckOrder"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.fix.screens"
+      },
+      {
+        "textKey": "releases.1.26.0-beta.fix.translations"
+      }
+    ]
+  },
+  {
+    "version": "1.25.6-beta",
+    "releasedAt": "2026-10-13",
+    "summaryKey": "releases.1.25.6-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.25.6-beta.feature.roadmap"
+      },
+      {
+        "textKey": "releases.1.25.6-beta.feature.feedback"
+      },
+      {
+        "textKey": "releases.1.25.6-beta.feature.playtest"
+      },
+      {
+        "textKey": "releases.1.25.6-beta.feature.humanCheck"
+      },
+      {
+        "textKey": "releases.1.25.6-beta.feature.errorReports"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.25.6-beta.fix.emailSignIn"
+      },
+      {
+        "textKey": "releases.1.25.6-beta.fix.emailErrors"
+      }
+    ]
+  },
+  {
     "version": "1.25.5-beta",
     "releasedAt": "2026-10-13",
     "summaryKey": "releases.1.25.5-beta.summary",

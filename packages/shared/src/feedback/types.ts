@@ -1,6 +1,8 @@
 import type { FeedbackStatus } from "#shared/feedback/FeedbackStatus";
+import type { PlaytestStudyNotification } from "#shared/playtest/types";
 
-export type FeedbackKind = "bug" | "improvement" | "other";
+export const FEEDBACK_KINDS = ["bug", "improvement", "other"] as const;
+export type FeedbackKind = (typeof FEEDBACK_KINDS)[number];
 
 export type FeedbackStatusChange = {
   from: FeedbackStatus | null;
@@ -59,7 +61,7 @@ export type FeedbackTriageFailure =
   | "stale_revision"
   | "not_found";
 
-export const NOTIFICATION_KINDS = ["feedback_update"] as const;
+export const NOTIFICATION_KINDS = ["feedback_update", "playtest_study"] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
 export type FeedbackUpdateNotification = {
@@ -71,12 +73,10 @@ export type FeedbackUpdateNotification = {
   bugConfirmed: boolean;
 };
 
-export type AccountNotification = {
-  id: number;
-  kind: "feedback_update";
-  payload: FeedbackUpdateNotification;
-  createdAt: number;
-  readAt: number | null;
-};
+export type NotificationBody =
+  | { kind: "feedback_update"; payload: FeedbackUpdateNotification }
+  | { kind: "playtest_study"; payload: PlaytestStudyNotification };
+
+export type AccountNotification = { id: number; createdAt: number; readAt: number | null } & NotificationBody;
 
 export type NotificationPage = { items: AccountNotification[]; nextBefore: number | null; unread: number };

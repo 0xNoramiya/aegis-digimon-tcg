@@ -104,7 +104,7 @@ export function resolutionDeps(
     const unique = new Map<string, CollectedEffect>();
     for (const item of items) {
       const key = item.effect.effectKey.startsWith("subtrigger/opt/")
-        ? `${item.source.instanceId} ${item.effect.effectKey} ${item.triggerOccurrence ?? ""}`
+        ? `${item.source.instanceId} ${item.effect.effectKey} ${item.triggerOccurrence ?? item.watcherEventIdentity ?? ""}`
         : String(unique.size);
       if (!unique.has(key)) unique.set(key, item);
     }
@@ -117,6 +117,12 @@ export function resolutionDeps(
     engine.optionMainDepth > 0 ? [] : pendingWindowWatchersCollected(engine);
   const announced = new Set<CollectedEffect>();
   return {
+    registerPendingEffects: (read) => {
+      engine.pendingEffectReaders.add(read);
+      return () => {
+        engine.pendingEffectReaders.delete(read);
+      };
+    },
     // The outermost loop settles deferred queues between effects. A nested resolver normally
     // cannot reach into the enclosing pool while its card body is still running; a settlement
     // window that starts at effect depth zero may opt into only entries added after its opening
@@ -501,7 +507,7 @@ export function digivolveDeps(engine: GameEngine): DigivolveDeps {
         engine.drawingDigivolutionBonus = false;
       }
     },
-    fireWhenDigivolving: async (_state, seat, permanent, previousLevel, baseWasDigimon) => {
+    fireWhenDigivolving: async (_state, seat, permanent, previousLevel, baseWasDigimon, isDnaDigivolve) => {
       // Turn-scoped fact consumed by inherited effects such as BT1-007. Register before
       // firing When Digivolving so effects in that window can observe the completed evolution.
       // Effects do not inspect the breeding area unless their text explicitly says so (BT1-007
@@ -532,6 +538,7 @@ export function digivolveDeps(engine: GameEngine): DigivolveDeps {
         subjectPermanentId: permanent.permanentId,
         digivolvedInstanceId: permanent.topCard.instanceId,
         previousDigivolutionLevel: previousLevel,
+        ...(isDnaDigivolve === true ? { isDnaDigivolve: true } : {}),
         ...(fromTamer ? { digivolvedFromTamer: true } : {}),
         ...(tamerDigivolved ? { tamerDigivolved: true } : {}),
       };

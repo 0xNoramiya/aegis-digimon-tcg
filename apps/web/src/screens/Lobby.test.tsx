@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { Lobby, deckHasBetaCards, randomDeckPool } from "./Lobby";
 import { DECKS } from "../game/decks";
-import { FAMOUS_DECKS } from "../game/famousDecks";
+import { FAMOUS_DECKS, FAMOUS_DECK_GROUPS } from "../game/famousDecks";
 import { selectableDecks } from "../game/selectableDecks";
 
 const randomCommunityDeck = vi.hoisted(() =>
@@ -95,7 +95,7 @@ describe("famous deck selection", () => {
     expect(screen.getByRole("combobox", { name: "Rules" })).toHaveProperty("value", "standard");
     expect(screen.getByRole("button", { name: "Enter queue" })).toHaveProperty("disabled", true);
   });
-  it("GitHub #5236: a personal beta bot deck routes random human practice through the beta room", async () => {
+  it("GitHub #5236: a personal beta bot deck starts random practice without a beta prompt", async () => {
     const onStart = vi.fn();
     const human = { ...DECKS[0]!, id: "human", name: "Human" };
     const bot = { ...human, id: "personal-bot", name: "Personal beta bot", mainDeck: [...human.mainDeck] };
@@ -117,9 +117,9 @@ describe("famous deck selection", () => {
     fireEvent.change(screen.getByLabelText("Bot's deck"), { target: { value: "mine:personal-bot" } });
     fireEvent.click(screen.getByRole("button", { name: /Surprise me/ }));
     fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
-    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
     await waitFor(() =>
-      expect(onStart.mock.calls[0]?.slice(0, 4)).toEqual(["bot", undefined, "mine:personal-bot", true]),
+      expect(onStart.mock.calls[0]?.slice(0, 4)).toEqual(["bot", undefined, "mine:personal-bot", undefined]),
     );
   });
   it("translates automatic beta confirmation into Portuguese and confirms the human queue", () => {
@@ -302,7 +302,7 @@ describe("famous deck selection", () => {
     expect(onStart).toHaveBeenCalledWith("beta", undefined, undefined, true);
   });
 
-  it("lets an ordinary deck face the beta bot", () => {
+  it("offers a random bot deck from each famous deck set and keeps the pick hidden", () => {
     const onStart = vi.fn();
     renderConfiguredLobby(
       <I18nProvider>
@@ -319,15 +319,51 @@ describe("famous deck selection", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Practice vs AI/ }));
-    fireEvent.click(screen.getByRole("checkbox", { name: /Play in the beta queue/ }));
+    const botDeck = screen.getByLabelText("Bot's deck") as HTMLSelectElement;
+    const setGroups = [...botDeck.querySelectorAll("optgroup")].slice(1);
+    expect(setGroups.map((group) => group.label)).toEqual(FAMOUS_DECK_GROUPS.map((group) => group.collection));
+    for (const group of setGroups) {
+      const [randomOption] = group.querySelectorAll("option");
+      expect([randomOption?.textContent, randomOption?.value]).toEqual([
+        `Random from ${group.label}`,
+        `random-set:${group.label}`,
+      ]);
+    }
+
+    const playableSet = setGroups.find((group) => !group.querySelector("option")!.disabled)!;
+    fireEvent.change(botDeck, { target: { value: `random-set:${playableSet.label}` } });
+    expect(botDeck.parentElement!.querySelector(".lobby-bot-preview")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
+
+    expect(onStart.mock.calls[0]?.slice(0, 3)).toEqual(["bot", undefined, `random-set:${playableSet.label}`]);
+  });
+
+  it("offers no beta queue option in practice", () => {
+    const onStart = vi.fn();
+    renderConfiguredLobby(
+      <I18nProvider>
+        <Lobby
+          player={{ name: "Tamer", color: "Blue", shards: 0 }}
+          decks={DECKS}
+          activeDeckId={DECKS[0]!.id}
+          onSelectDeck={() => undefined}
+          onCopyDeck={() => undefined}
+          onNav={() => undefined}
+          onStart={onStart}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Practice vs AI/ }));
+    expect(screen.queryByRole("checkbox", { name: /Play in the beta queue/ })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
 
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(onStart).toHaveBeenCalledWith("bot", undefined, undefined, true);
+    expect(onStart).toHaveBeenCalledWith("bot");
   });
 
   it("hides the beta queue option when no set is in preview", () => {
-    vi.setSystemTime(new Date("2026-10-15T12:00:00.000Z"));
+    vi.setSystemTime(new Date("2026-12-12T12:00:00.000Z"));
     renderConfiguredLobby(
       <I18nProvider>
         <Lobby
@@ -397,7 +433,7 @@ describe("famous deck selection", () => {
     expect((screen.getByRole("button", { name: "Create Room" }) as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it("confirms beta bot battles before starting", () => {
+  it("starts beta bot battles without a confirmation", () => {
     const onStart = vi.fn();
     const deck = { ...DECKS[0]!, mainDeck: [...DECKS[0]!.mainDeck] };
     deck.mainDeck[0] = "EX13-007";
@@ -417,13 +453,8 @@ describe("famous deck selection", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Practice vs AI/ }));
     fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
-    expect(onStart).not.toHaveBeenCalled();
-    expect(screen.getByRole("dialog", { name: "Play with beta cards?" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    expect(onStart).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
-    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
-    expect(onStart).toHaveBeenCalledWith("bot", undefined, undefined, true);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(onStart).toHaveBeenCalledWith("bot");
   });
   it("separates personal decks and groups available famous decks by collection", () => {
     renderConfiguredLobby(
@@ -796,7 +827,7 @@ describe("bot and private Unlimited selection", () => {
     expect(within(botSelect).getByRole("option", { name: deck.name })).toHaveProperty("disabled", false);
     fireEvent.change(botSelect, { target: { value: `mine:${deck.id}` } });
     fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
-    expect(onStart).toHaveBeenCalledWith("bot", undefined, `mine:${deck.id}`, false, undefined, true);
+    expect(onStart).toHaveBeenCalledWith("bot", undefined, `mine:${deck.id}`, undefined, undefined, true);
     fireEvent.change(screen.getByRole("combobox", { name: "Rules" }), {
       target: {
         value:
@@ -814,7 +845,7 @@ describe("bot and private Unlimited selection", () => {
     fireEvent.click(screen.getByRole("button", { name: /Practice vs AI/ }));
     expect(screen.getByRole("button", { name: "Play vs Bot" })).toHaveProperty("disabled", false);
     fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
-    expect(onStart).toHaveBeenLastCalledWith("bot", undefined, undefined, false, undefined, true);
+    expect(onStart).toHaveBeenLastCalledWith("bot", undefined, undefined, undefined, undefined, true);
     fireEvent.click(screen.getByRole("button", { name: /Quick Match/ }));
     expect(screen.getByRole("combobox", { name: "Rules" })).toHaveProperty("value", "unlimited");
     fireEvent.click(screen.getByRole("button", { name: "Enter queue" }));
@@ -924,7 +955,7 @@ describe("bot and private Unlimited selection", () => {
     expect(screen.getByRole("button", { name: "Play vs Bot" })).toHaveProperty("disabled", true);
   });
 
-  it("keeps beta bot confirmation and Unlimited independent", () => {
+  it("starts a beta bot deck under Unlimited without a confirmation", () => {
     const { onStart } = setup({ beta: true });
     fireEvent.click(screen.getByRole("button", { name: /Practice vs AI/ }));
     fireEvent.change(screen.getByRole("combobox", { name: "Rules" }), {
@@ -936,8 +967,8 @@ describe("bot and private Unlimited selection", () => {
       },
     });
     fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
-    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
-    expect(onStart).toHaveBeenCalledWith("bot", undefined, undefined, true, undefined, true);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(onStart).toHaveBeenCalledWith("bot", undefined, undefined, undefined, undefined, true);
   });
 
   it("localizes the host's mode in Portuguese", async () => {

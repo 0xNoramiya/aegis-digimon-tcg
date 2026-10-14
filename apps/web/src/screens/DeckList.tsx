@@ -38,6 +38,9 @@ import {
   useDeckListSort,
   type DeckListSort,
 } from "./deckListOrder";
+import { placeFavoriteDecksFirst } from "@/screens/favoriteDecks/placeFavoriteDecksFirst";
+import { setDeckFavorite } from "@/screens/favoriteDecks/setDeckFavorite";
+import { useFavoriteDeckIds } from "@/screens/favoriteDecks/useFavoriteDeckIds";
 import "./deckList.css";
 
 const SORT_LABELS: Record<DeckListSort, TranslationKey> = {
@@ -71,7 +74,8 @@ export function DeckList({
   const [deleting, setDeleting] = useState<DeckListing | null>(null);
   const [query, setQuery] = useState("");
   const sort = useDeckListSort();
-  const shownDecks = orderDecks(decks, sort, query);
+  const favoriteDeckIds = useFavoriteDeckIds();
+  const shownDecks = placeFavoriteDecksFirst({ decks: orderDecks(decks, sort, query), favoriteDeckIds });
   const [publishing, setPublishing] = useState<{ deck: DeckListing; mode: PublishMode } | null>(null);
   const { publications, publish, unpublish } = useCommunityPublications(signedIn);
 
@@ -203,6 +207,7 @@ export function DeckList({
                     key={deck.id}
                     deck={deck}
                     active={deck.id === activeDeckId}
+                    favorite={favoriteDeckIds.includes(deck.id)}
                     onEdit={() => onEdit(deck)}
                     onSelect={() => onSelectDeck(deck.id)}
                     onPlay={onPlay}
@@ -224,6 +229,7 @@ export function DeckList({
 function DeckListRow({
   deck,
   active,
+  favorite,
   onEdit,
   onSelect,
   onPlay,
@@ -234,6 +240,7 @@ function DeckListRow({
 }: {
   deck: DeckListing;
   active: boolean;
+  favorite: boolean;
   onEdit: () => void;
   onSelect: () => void;
   onPlay: () => void;
@@ -261,7 +268,19 @@ function DeckListRow({
         </span>
         <div className="deck-list-row__identity">
           <div className="deck-list-row__name">
-            <h3>{deck.name}</h3>
+            <span className="deck-list-row__title">
+              <button
+                type="button"
+                className="deck-list-row__favorite"
+                aria-label={t("redesign.decks.list.favorite")}
+                aria-pressed={favorite}
+                title={favorite ? t("redesign.decks.list.unfavorite") : t("redesign.decks.list.favorite")}
+                onClick={() => setDeckFavorite({ deckId: deck.id, favorite: !favorite })}
+              >
+                {favorite ? <Icons.Star size={18} /> : <Icons.StarOutline size={18} />}
+              </button>
+              <h3>{deck.name}</h3>
+            </span>
             {deck.format && deck.format !== "standard" ? <Badge>{deckFormatLabel(deck.format, t)}</Badge> : null}
             {active ? (
               <Badge tone="primary">

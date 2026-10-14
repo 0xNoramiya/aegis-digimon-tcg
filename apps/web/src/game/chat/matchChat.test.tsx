@@ -10,10 +10,17 @@ import {
   type ChatSender,
   type Seat,
 } from "@aegis/shared";
+import { playSound } from "../../design/sound";
 import { I18nProvider } from "../../i18n";
 import type { AegisRoom } from "../../net/client";
+import { isChatSoundEnabled, setChatSoundEnabled } from "./chatSound";
 import { MatchChatWindow } from "./MatchChatWindow";
 import { useMatchChat, type ChatEntry, type MatchChat } from "./useMatchChat";
+
+vi.mock("../../design/sound", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../design/sound")>()),
+  playSound: vi.fn<typeof playSound>(),
+}));
 
 const player = (seat: Seat): ChatSender => ({ kind: "player", seat });
 const spectator = (sessionId: string, number: number): Extract<ChatSender, { kind: "spectator" }> => ({
@@ -94,6 +101,44 @@ describe("useMatchChat", () => {
     expect(result.current.coolingDown).toBe(false);
     act(() => result.current.send?.(message));
     expect(fake.send).toHaveBeenCalledTimes(2);
+  });
+
+  describe("chat sound", () => {
+    afterEach(() => {
+      setChatSoundEnabled(false);
+      localStorage.clear();
+      vi.mocked(playSound).mockClear();
+    });
+
+    it("stays silent by default", () => {
+      const fake = fakeRoom();
+      renderHook(() => useMatchChat({ room: fake.room, viewerSeat: 0, spectating: false }));
+      fake.receive({ sender: player(1), message: { kind: "text", text: "hi" } });
+      expect(playSound).not.toHaveBeenCalled();
+    });
+
+    it("chimes for each live message from someone else once turned on", () => {
+      setChatSoundEnabled(true);
+      const fake = fakeRoom();
+      renderHook(() => useMatchChat({ room: fake.room, viewerSeat: 0, spectating: false }));
+      fake.receive({ sender: player(0), message: { kind: "text", text: "mine" } });
+      expect(playSound).not.toHaveBeenCalled();
+      fake.receive({ sender: player(1), message: { kind: "text", text: "hi" } });
+      fake.receive({ sender: spectator("someone", 1), message: { kind: "emote", emote: "praise" } });
+      expect(playSound).toHaveBeenCalledTimes(2);
+      expect(playSound).toHaveBeenCalledWith("prompt");
+    });
+
+    it("stays silent for muted senders", () => {
+      setChatSoundEnabled(true);
+      const fake = fakeRoom();
+      const { result } = renderHook(() => useMatchChat({ room: fake.room, viewerSeat: 0, spectating: false }));
+      act(() => result.current.setMutedOpponent(true));
+      act(() => result.current.setMutedSpectators(true));
+      fake.receive({ sender: player(1), message: { kind: "text", text: "hi" } });
+      fake.receive({ sender: spectator("someone", 1), message: { kind: "text", text: "go" } });
+      expect(playSound).not.toHaveBeenCalled();
+    });
   });
 
   it("unsubscribes when the room goes away", () => {
@@ -228,7 +273,7 @@ describe("MatchChatWindow", () => {
     renderWindow();
     expect(screen.queryByRole("switch")).toBeNull();
     openSettings();
-    expect(screen.getAllByRole("switch")).toHaveLength(2);
+    expect(screen.getAllByRole("switch")).toHaveLength(3);
     fireEvent.pointerDown(screen.getByRole("list"));
     expect(screen.queryByRole("switch")).toBeNull();
   });
@@ -242,6 +287,17 @@ describe("MatchChatWindow", () => {
     expect(chat.setMutedSpectators).toHaveBeenCalledWith(true);
     fireEvent.click(screen.getByRole("button", { name: "Close chat" }));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("turns the chat sound on from the settings menu", () => {
+    renderWindow();
+    openSettings();
+    const toggle = screen.getByRole("switch", { name: "Chat sound" });
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
+    expect(isChatSoundEnabled()).toBe(true);
+    setChatSoundEnabled(false);
   });
 
   it("moves with its title bar and stays inside the viewport", () => {

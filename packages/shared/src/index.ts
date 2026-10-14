@@ -20,3 +20,6 @@ export * from "./feedback/isFeedbackStatus.js";
 export * from "./feedback/isClosedFeedbackStatus.js";
 export * from "./feedback/limits.js";
 export * from "./feedback/types.js";
+export * from "./feedback/isFeedbackKind.js";
+export * from "./playtest/limits.js";
+export * from "./playtest/types.js";

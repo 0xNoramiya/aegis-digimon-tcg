@@ -418,7 +418,11 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
         if (movedIds.has(instanceId)) securityReturnSeats.add(seat);
       }
       for (const seat of securityReturnSeats) {
-        await engine.fireSubTrigger?.("whenSecurityRemoved", { removedFromSecuritySeat: seat });
+        await engine.fireSubTrigger?.("whenEffectRemovesFromSecurity", { removedFromSecuritySeat: seat });
+        await engine.fireSubTrigger?.("whenSecurityRemoved", {
+          removedFromSecuritySeat: seat,
+          securityRemovedByEffect: true,
+        });
       }
       // The whenEffectAddsToHand sibling for deck-bound returns (BT26-015). Fire once per
       // distinct recipient seat, mirroring returnToHand's own-hand fire above. Revealed cards

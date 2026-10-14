@@ -37,8 +37,11 @@ See [replay reproduction](../../../internal-docs/ai/replays.md) for the commands
    `pnpm replay fetch <id>`: it reads `feedback_report_replays` through `DATABASE_URL`
    (production access follows the host's instructions), or the admin endpoint with
    `--url <apiBase>` and `AEGIS_SESSION`.
-2. **Match ID without a replay.** Find the match's segments with the queries below and
-   stream only its lines into a scratchpad directory:
+2. **Match ID without a replay.** Within 12 hours of the match, copy its replay log:
+   `ssh oracle-vps 'aegis-safe cat /opt/aegis-rollout/logs/replays/<matchId>.jsonl' > <dir>/api-<matchId>.jsonl`.
+   For an older match, or one played before per-match replay logs existed, find the
+   match's segments with the queries below and stream only its lines into a scratchpad
+   directory:
    `ssh oracle-vps 'cd /opt/aegis-rollout/logs && aegis-safe grep -h "<matchId>" <files>' > <dir>/api-<matchId>.jsonl`.
    Then `pnpm replay extract <matchId> --log-dir <dir>`. Those raw lines include names and
    chat; delete them in step 9. A match from before replay recording has no

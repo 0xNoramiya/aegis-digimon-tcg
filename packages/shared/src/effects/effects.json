@@ -21201,11 +21201,7 @@
           {
             "kind": "SubTrigger",
             "event": "whenOptionPlayed",
-            "sourceFilter": {
-              "controller": "mine",
-              "kind": ["Option"],
-              "nameOrTrait": [{ "tokens": ["Royal Knight"], "match": "trait" }]
-            },
+            "sourceFilter": { "kind": ["Option"], "nameOrTrait": [{ "tokens": ["Royal Knight"], "match": "trait" }] },
             "actions": [{ "kind": "GainMemory", "amount": 1 }],
             "raw": "When an Option card with the [Royal Knight] trait is placed in the battle area, gain 1 memory"
           }
@@ -29206,7 +29202,7 @@
                     "optional": true
                   }
                 ],
-                "rest": "deckBottom"
+                "rest": "trash"
               }
             ]
           }
@@ -70742,28 +70738,33 @@
         "trigger": "EndOfYourTurn",
         "actions": [
           {
-            "kind": "Suspend",
-            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "kind": "CostGatedBlock",
             "cost": {
               "kind": "suspend",
               "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
               "raw": "By suspending this Tamer"
             },
             "optional": true,
-            "abortOnDecline": true
-          },
-          {
-            "kind": "ModifyDP",
-            "target": {
-              "filter": {
-                "controller": "mine",
-                "kind": ["Digimon"],
-                "nameOrTrait": [{ "tokens": ["Vortex Warriors"], "match": "trait" }]
+            "abortOnDecline": true,
+            "actions": [
+              {
+                "kind": "Suspend",
+                "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 }
               },
-              "count": 1
-            },
-            "amount": 2000,
-            "duration": "untilOpponentTurnEnd"
+              {
+                "kind": "ModifyDP",
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "kind": ["Digimon"],
+                    "nameOrTrait": [{ "tokens": ["Vortex Warriors"], "match": "trait" }]
+                  },
+                  "count": 1
+                },
+                "amount": 2000,
+                "duration": "untilOpponentTurnEnd"
+              }
+            ]
           }
         ]
       },
@@ -95749,9 +95750,7 @@
             },
             "affectsAll": true,
             "leaveCause": "byOpponentEffect",
-            "actions": [
-              { "kind": "Replacement", "event": "wouldLeavePlay", "mode": "prevent", "raw": "they don't leave" }
-            ],
+            "actions": [{ "kind": "Prevent", "raw": "they don't leave" }],
             "cost": {
               "kind": "suspend",
               "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
@@ -153332,6 +153331,7 @@
             "defender": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 }
           }
         ],
+        "optional": true,
         "frequency": "OncePerTurn",
         "sharedUseKey": "ir-shared-0"
       },
@@ -153358,6 +153358,7 @@
             "defender": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 }
           }
         ],
+        "optional": true,
         "frequency": "OncePerTurn",
         "sharedUseKey": "ir-shared-0"
       },
@@ -153384,6 +153385,7 @@
             "defender": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 }
           }
         ],
+        "optional": true,
         "frequency": "OncePerTurn",
         "sharedUseKey": "ir-shared-0"
       },
@@ -166546,7 +166548,7 @@
             "playerWide": true,
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": "all" },
             "amount": -5000,
-            "duration": "untilOpponentNextTurnEnd"
+            "duration": "untilOpponentTurnEnd"
           }
         ]
       },
@@ -166558,7 +166560,7 @@
             "playerWide": true,
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": "all" },
             "amount": -5000,
-            "duration": "untilOpponentNextTurnEnd"
+            "duration": "untilOpponentTurnEnd"
           }
         ]
       },
@@ -184631,6 +184633,7 @@
               "filter": {
                 "controller": "mine",
                 "kind": ["Digimon"],
+                "levelComparison": { "op": "gte", "value": 4 },
                 "nameOrTrait": [{ "tokens": ["NSo"], "match": "trait" }]
               },
               "count": "all"

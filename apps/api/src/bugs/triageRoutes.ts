@@ -1,11 +1,11 @@
 import { isFeedbackStatus } from "@aegis/shared/feedback/isFeedbackStatus";
+import { FEEDBACK_KINDS, type FeedbackKind } from "@aegis/shared/feedback/types";
 import { MAX_FEEDBACK_SEARCH } from "@aegis/shared/feedback/limits";
 import type { Express, NextFunction, Request, Response } from "express";
 import type { AuthSession } from "#api/accounts/AccountStore";
 import { parseId } from "#api/http/parseId";
 import { tokenBucketLimiter, type TokenBucketOptions } from "#api/http/rateLimit";
 import type { FeedbackFilter, FeedbackStore } from "#api/bugs/FeedbackStore";
-import { FEEDBACK_KINDS, type FeedbackKind } from "#api/bugs/GitHubIssueTracker";
 import { validateReopenComment } from "#api/bugs/validateReopenComment";
 import { validateTriage } from "#api/bugs/validateTriage";
 

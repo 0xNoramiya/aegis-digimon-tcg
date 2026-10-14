@@ -17,6 +17,15 @@ test("the toolbar holds still, the opponent's card stays open, and the feedback 
 }) => {
   test.setTimeout(120_000);
   const { page } = scenario;
+  await page.route("**/assets/card-images/**", (route) =>
+    route.fulfill({
+      contentType: "image/png",
+      body: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGP4/x8AAwAB//wl3FEAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    }),
+  );
   await scenario.openFixture(fixtureDrasilTurnHandoff, "normal", "none");
 
   await test.step("#53: no toolbar button moves while animations come and go", async () => {
@@ -69,7 +78,17 @@ test("the toolbar holds still, the opponent's card stays open, and the feedback 
     await expect(page.getByTestId("skip-presentation")).toHaveAttribute("data-skippable", "false");
   });
 
-  await test.step("#54: only Cancel closes a started feedback report", async () => {
+  await test.step("the feedback button sits with settings and leave, and explains itself", async () => {
+    const buttons = page.locator(".game-topbar-actions > button:not([aria-hidden='true'])");
+    const names = await buttons.evaluateAll((nodes) => nodes.map((node) => node.getAttribute("aria-label")));
+    expect(names.slice(-3)).toEqual(["Send feedback", "Match settings", "Surrender"]);
+    await page.getByRole("button", { name: "Send feedback", exact: true }).hover();
+    await expect(page.getByRole("tooltip")).toHaveText("Send feedback");
+    await page.mouse.move(8, 8);
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+  });
+
+  await test.step("#54: the form asks two questions, and only Cancel closes a started report", async () => {
     // The browser test server has no account API; the dialog only asks it where reports go.
     await page.route("**/bug-reports/limits", (route) =>
       route.fulfill({ json: { enabled: true, publicMirror: false } }),
@@ -77,6 +96,11 @@ test("the toolbar holds still, the opponent's card stays open, and the feedback 
     await page.getByRole("button", { name: "Send feedback", exact: true }).click();
     const dialog = page.getByRole("dialog", { name: "Send feedback" });
     await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("radio")).toHaveCount(2);
+    await expect(dialog.getByLabel("Title")).toBeVisible();
+    await expect(dialog.getByLabel("Cards involved")).toHaveCount(0);
+    await expect(dialog.getByLabel("Opponent's deck")).toHaveCount(0);
+    await expect(dialog.getByText(/Match ID/)).toHaveCount(0);
     const description = dialog.getByLabel("What happened?");
     await description.fill("The window closed on me");
     await page.mouse.click(8, 500);

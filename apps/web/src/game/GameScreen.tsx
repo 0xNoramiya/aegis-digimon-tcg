@@ -103,6 +103,10 @@ import type { DigimonWorldAvatarId } from "../account/avatars";
 import type { ColorName } from "../design/theme";
 import { playSound } from "../design/sound";
 import { useTurnAttentionSound } from "./useTurnAttentionSound";
+import { useDecisionPing } from "@/game/useDecisionPing";
+import { resolveDecisionPromptKeys } from "@/game/resolveDecisionPromptKeys";
+import { isDecisionPingEnabled } from "@/design/decisionPing";
+import { useLowTimeWarning } from "@/game/useLowTimeWarning";
 import { usePresentationAudio, useReadoutAudio } from "./usePresentationAudio";
 import { audioBoardFromPresentedSeats } from "./match/present/presentationAudio";
 import { areActionConfirmationsEnabled } from "../design/actionConfirmation";
@@ -261,11 +265,11 @@ function GameScreenSession({
   onLeaveForfeitsChange?: (concede: (() => void) | undefined) => void;
 }) {
   const { t } = useTranslation();
-  const [usedDeckOpen, setUsedDeckOpen] = useState(false);
   const [handOrder, setHandOrder] = useState<readonly string[]>([]);
   const [spectating] = useState(
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
   );
+  const usedDeck = spectating ? undefined : liveConnection.usedDeck;
   const actionConfirmationsEnabled = areActionConfirmationsEnabled();
   const arenaLayout = useArenaLayout();
   const { narrowGameLayout, compactPiles, shortBoard, collapseNotices } = arenaLayout;
@@ -345,8 +349,9 @@ function GameScreenSession({
     vortexMode,
     setVortexMode,
     clearSel,
+    clearDeclarations,
   } = selectionState;
-  const overlayState = useOverlayState({ decision, state, clearSel });
+  const overlayState = useOverlayState({ decision, state, clearSel, clearDeclarations, viewerSeat });
   const {
     cardMenu,
     setCardMenu,
@@ -602,6 +607,7 @@ function GameScreenSession({
   usePresentationAudio(cues, seats ? audioBoardFromPresentedSeats(seats, viewerSeat) : undefined);
   useScreenWakeLock(isKeepAwakeEnabled() && !!state && !state.gameOver);
   useTurnAttentionSound(!spectating && !!state && !state.gameOver && state.turnSeat === viewerSeat);
+  const lowTimeWarning = useLowTimeWarning({ state, viewerSeat, spectating });
   const viewerTimerRunning =
     !spectating && state?.matchTimer === true && !state.gameOver && state.timerActiveSeat === viewerSeat;
   const viewerPromptKey = cues.decisionAnimationsPending
@@ -614,6 +620,13 @@ function GameScreenSession({
     [room],
   );
   useAnimationSpeedReport({ enabled: !spectating, send: sendAnimationSpeed });
+  const { readoutPromptKey, pingPromptKey } = resolveDecisionPromptKeys({
+    promptKey: viewerPromptKey,
+    spectating,
+    opponentTurn: !!state && state.turnSeat !== viewerSeat,
+    pingEnabled: isDecisionPingEnabled(),
+  });
+  useDecisionPing(pingPromptKey);
   useReadoutAudio({
     memory: shownState
       ? displayMemory(
@@ -624,7 +637,7 @@ function GameScreenSession({
           viewerSeat,
         )
       : undefined,
-    promptKey: spectating ? undefined : viewerPromptKey,
+    promptKey: readoutPromptKey,
     timerSeconds: viewerTimerRunning
       ? Math.ceil(viewerSeat === 0 ? state.timerRemaining0 : state.timerRemaining1)
       : undefined,
@@ -1356,6 +1369,13 @@ function GameScreenSession({
       }
       slotDrop={{ "data-drop": "breeding-you", ...dropIntentAttrs("breeding-you") }}
       onHatch={onBreeding}
+      onInspect={() => {
+        if (!breedingYou.breeding) {
+          return;
+        }
+        cancelDrag();
+        actions.showCardMenu(breedingYou.breeding.permanentId, Side.Viewer, { preserveSelection: true });
+      }}
       onOpenEggDeck={
         revealed ? () => overlayState.setRevealedZoneView({ side: Side.Viewer, zone: "eggDeck" }) : undefined
       }
@@ -1431,8 +1451,12 @@ function GameScreenSession({
         !replayMode && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
-              onViewUsedDeck:
-                !spectating && liveConnection.usedDeck && onCopyUsedDeck ? () => setUsedDeckOpen(true) : undefined,
+              usedDeckDialog:
+                usedDeck && onCopyUsedDeck
+                  ? (onClose: () => void) => (
+                      <UsedDeckDialog snapshot={usedDeck} onCopy={onCopyUsedDeck} onClose={onClose} />
+                    )
+                  : undefined,
               onDownloadReplay:
                 !spectating && liveConnection.replayDownload?.kind === "ready"
                   ? () => {
@@ -1557,6 +1581,7 @@ function GameScreenSession({
       layout={layout}
       anchors={anchors}
       cues={cues}
+      timeWarning={lowTimeWarning}
       seats={{
         shownViewer: shownYou,
         shownOpponent: shownOpp,
@@ -1762,18 +1787,7 @@ function GameScreenSession({
       senders={matchSenders}
       drag={{ state: drag, isPlay: dragIsPlay, cardId: dragCardId, hoveredIntent: hoveredDragIntent ?? undefined }}
       breedingDock={yourBreedingDock}
-      overlayStack={
-        <>
-          {overlays}
-          {usedDeckOpen && liveConnection.usedDeck && onCopyUsedDeck ? (
-            <UsedDeckDialog
-              snapshot={liveConnection.usedDeck}
-              onCopy={onCopyUsedDeck}
-              onClose={() => setUsedDeckOpen(false)}
-            />
-          ) : null}
-        </>
-      }
+      overlayStack={overlays}
       stageEl={stageEl}
       onStartHandDrag={(index, event, origin) => startHandDrag(index, shownHandEntries[index], event, origin)}
       onStartPermanentDrag={startPermDrag}

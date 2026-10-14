@@ -1,3 +1,4 @@
+import { RoadmapPublishPanel } from "@/roadmap/RoadmapPublishPanel";
 import { relativeTime } from "@/i18n/relativeTime";
 import { FeedbackStatus, FEEDBACK_STATUSES } from "@aegis/shared/feedback/FeedbackStatus";
 import { isClosedFeedbackStatus } from "@aegis/shared/feedback/isClosedFeedbackStatus";
@@ -22,6 +23,7 @@ import {
   type FeedbackRecord,
 } from "@/bugs/adminClient";
 import { FEEDBACK_STATUS_TONE } from "@/bugs/feedbackStatus";
+import { PlaytestAdminPanel } from "@/bugs/PlaytestAdminPanel";
 import { ReportedDecksPanel } from "@/bugs/ReportedDecksPanel";
 import "@/bugs/feedbackScreen.css";
 
@@ -52,6 +54,7 @@ export function FeedbackScreen({
         {isAdmin ? (
           <>
             <ReportedDecksPanel onOpenDeck={onOpenDeck} />
+            <PlaytestAdminPanel />
             <FeedbackTriage selectedId={selectedId} onSelect={onSelect} />
           </>
         ) : (
@@ -433,6 +436,8 @@ function FeedbackDetailPanel({
         }}
         onConflict={setDetail}
       />
+
+      <RoadmapPublishPanel feedbackId={detail.id} summary={report.summary} description={report.description} />
 
       <section className="feedback-history" aria-labelledby={`feedback-${id}-history`}>
         <h3 id={`feedback-${id}-history`}>{t("feedback.triage.history")}</h3>

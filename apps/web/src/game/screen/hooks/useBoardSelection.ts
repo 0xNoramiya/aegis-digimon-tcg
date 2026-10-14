@@ -6,7 +6,7 @@
    attacker the server has taken the attack away from is dropped, because the board would
    otherwise keep a highlight on a card that can no longer declare. */
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { GameState, Seat } from "@aegis/shared";
 import { canAttackWith, canVortexAttackWith } from "../../boardModel";
 import type { LinkDeclaration } from "../types";
@@ -24,13 +24,17 @@ export function useBoardSelection({ state, viewerSeat }: { state: GameState | un
   /** The selected attack is a ＜Vortex＞ declaration. */
   const [vortexMode, setVortexMode] = useState(false);
 
-  const clearSel = () => {
-    setHandPreview(null);
+  const clearDeclarations = useCallback(() => {
     setHandSel(null);
     setSelPerm(null);
     setVortexMode(false);
     setLinkSel(null);
-  };
+  }, []);
+
+  const clearSel = useCallback(() => {
+    setHandPreview(null);
+    clearDeclarations();
+  }, [clearDeclarations]);
 
   useEffect(() => {
     if ((!handSel || handPreview) && !selPerm) return;
@@ -66,5 +70,6 @@ export function useBoardSelection({ state, viewerSeat }: { state: GameState | un
     vortexMode,
     setVortexMode,
     clearSel,
+    clearDeclarations,
   };
 }

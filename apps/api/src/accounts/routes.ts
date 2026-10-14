@@ -18,7 +18,7 @@ import {
   type TournamentSummary,
   type TournamentView,
 } from "@aegis/shared";
-import type { Express, NextFunction, Request, Response } from "express";
+import express, { type Express, type NextFunction, type Request, type Response } from "express";
 import {
   defaultBanlistPolicy,
   LEGACY_DEFAULT_PRESET_ID,
@@ -42,6 +42,8 @@ import { ReplayCapturer } from "#api/bugs/replayCapture";
 import type { IssueTracker } from "#api/bugs/GitHubIssueTracker";
 import { NotificationStore } from "../notifications/NotificationStore.js";
 import { installNotificationRoutes } from "../notifications/routes.js";
+import { PlaytestStore } from "#api/playtest/PlaytestStore";
+import { installPlaytestRoutes } from "#api/playtest/routes";
 import { CommunityDeckStore } from "../community/CommunityDeckStore.js";
 import type { DeckReportTracker } from "../community/deckReports.js";
 import { installCommunityDeckRoutes } from "../community/routes.js";
@@ -52,6 +54,8 @@ import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.j
 import { EmailQuotaExceededError, type Mailer } from "../email/mailer.js";
 import { TOURNAMENT_RULES_PRESETS, type TournamentRulesPreset } from "../tournaments/rules/index.js";
 import { type DiscordAvatarSource, discordAvatarUrl, refreshDiscordAvatarNow } from "./discordAvatars.js";
+import { MAGIC_LINK_PAGE_HEADERS, magicLinkPage } from "#api/accounts/magicLinkPage";
+import type { HumanVerifier } from "#api/accounts/turnstileVerifier";
 import {
   AccountStore,
   DeckLimitError,
@@ -62,6 +66,10 @@ import {
   type AuthSession,
   type Tournament,
 } from "./AccountStore.js";
+import { installRoadmapRoutes } from "#api/roadmap/installRoadmapRoutes";
+import { installClientErrorRoutes } from "#api/clientErrors/installClientErrorRoutes";
+import { createClientErrorAlertsFromEnvironment } from "#api/clientErrors/createClientErrorAlertsFromEnvironment";
+import { RoadmapStore } from "#api/roadmap/RoadmapStore";
 
 const SESSION_COOKIE = "aegis_session";
 const DISPLAY_NAME_RATE_LIMIT: TokenBucketOptions = { capacity: 10, refillMs: 3_000 };
@@ -94,6 +102,7 @@ export function installAccountRoutes(
   deckReports?: DeckReportTracker,
   discordAvatars?: DiscordAvatarSource,
   replays: ReplayLibrary = new ReplayLibrary(store),
+  humanVerifier?: HumanVerifier,
 ): void {
   const sessionFromRequest = (req: Request) => store.session(cookie(req, SESSION_COOKIE));
   installReplayRoutes({ app, library: replays, session: sessionFromRequest });
@@ -115,6 +124,9 @@ export function installAccountRoutes(
   });
   // The signed-in player's inbox; feedback triage is its first producer. See src/notifications.
   installNotificationRoutes({ app, store: new NotificationStore(store), session: sessionFromRequest });
+  installPlaytestRoutes({ app, store: new PlaytestStore(store), session: sessionFromRequest });
+  installRoadmapRoutes({ app, store: new RoadmapStore(store), session: sessionFromRequest });
+  installClientErrorRoutes({ app, session: sessionFromRequest, alerts: createClientErrorAlertsFromEnvironment() });
   // Public decks, likes and copies. See src/community.
   installCommunityDeckRoutes({
     app,
@@ -166,7 +178,13 @@ export function installAccountRoutes(
   post("/auth/magic-link", async (req, res) => {
     const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
     if (email.length <= 254 && email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      if (!(await store.allowMagicLinkRequest({ ip: req.ip ?? "unknown", email }))) {
+      const ip = req.ip ?? "unknown";
+      const humanToken = typeof req.body?.turnstileToken === "string" ? req.body.turnstileToken : "";
+      if (humanVerifier && !(await humanVerifier({ token: humanToken, ip }))) {
+        res.status(403).json({ error: "human_check_failed" });
+        return;
+      }
+      if (!(await store.allowMagicLinkRequest({ ip, email }))) {
         res.status(429).json({ error: "too_many_requests" });
         return;
       }
@@ -189,14 +207,34 @@ export function installAccountRoutes(
   });
   get("/auth/magic-link/consume", async (req, res) => {
     const token = typeof req.query.token === "string" ? req.query.token : "";
-    const account = await store.consumeMagicLink(token);
-    if (!account) {
-      res.status(400).json({ error: "invalid or expired sign-in link" });
+    res.set(MAGIC_LINK_PAGE_HEADERS);
+    if (await store.magicLinkIsLive(token)) {
+      res.type("html").send(magicLinkPage({ kind: "confirm", token }));
       return;
     }
-    setSession(res, await store.issueSession(account));
-    res.redirect(process.env.AEGIS_WEB_URL ?? "/");
+    res
+      .status(410)
+      .type("html")
+      .send(magicLinkPage({ kind: "unavailable", homeUrl: webUrl() }));
   });
+  app.post(
+    "/auth/magic-link/consume",
+    express.urlencoded({ extended: false, limit: "4kb" }),
+    asyncRoute(async (req, res) => {
+      const token = typeof req.body?.token === "string" ? req.body.token : "";
+      const account = await store.consumeMagicLink(token);
+      res.set(MAGIC_LINK_PAGE_HEADERS);
+      if (!account) {
+        res
+          .status(410)
+          .type("html")
+          .send(magicLinkPage({ kind: "unavailable", homeUrl: webUrl() }));
+        return;
+      }
+      setSession(res, await store.issueSession(account));
+      res.redirect(303, webUrl());
+    }),
+  );
 
   get("/auth/discord", (_req, res) => {
     const clientId = process.env.DISCORD_CLIENT_ID;
@@ -866,8 +904,19 @@ function positiveInteger(value: unknown, fallback: number): number | undefined {
 }
 function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
-  const { autoHatch, darkMode, locale, sleeve, eggSleeve, deckShare, deckView, deckSort, ...unknownKeys } =
-    value as Record<string, unknown>;
+  const {
+    autoHatch,
+    darkMode,
+    locale,
+    sleeve,
+    eggSleeve,
+    deckShare,
+    deckView,
+    deckSort,
+    profileStats,
+    favoriteDeckIds,
+    ...unknownKeys
+  } = value as Record<string, unknown>;
   if (Object.keys(unknownKeys).length > 0) return undefined;
   const isShortText = (text: unknown) => typeof text === "string" && text.length <= MAX_PREFERENCE_LENGTH;
   if (autoHatch !== undefined && typeof autoHatch !== "boolean") return undefined;
@@ -878,6 +927,8 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (deckShare !== undefined && !(typeof deckShare === "number" && deckShare > 0 && deckShare < 1)) return undefined;
   if (deckView !== undefined && deckView !== "grid" && deckView !== "list") return undefined;
   if (deckSort !== undefined && !isShortText(deckSort)) return undefined;
+  if (profileStats !== undefined && typeof profileStats !== "boolean") return undefined;
+  if (favoriteDeckIds !== undefined && !isFavoriteDeckIdList(favoriteDeckIds)) return undefined;
   return {
     ...(autoHatch !== undefined && { autoHatch }),
     ...(darkMode !== undefined && { darkMode }),
@@ -887,7 +938,17 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     ...(deckShare !== undefined && { deckShare: deckShare as number }),
     ...(deckView !== undefined && { deckView: deckView as "grid" | "list" }),
     ...(deckSort !== undefined && { deckSort: deckSort as string }),
+    ...(profileStats !== undefined && { profileStats }),
+    ...(favoriteDeckIds !== undefined && { favoriteDeckIds: favoriteDeckIds as string[] }),
   };
+}
+
+function isFavoriteDeckIdList(value: unknown): value is string[] {
+  if (!Array.isArray(value) || value.length > MAX_SAVED_DECKS) {
+    return false;
+  }
+  const isDeckId = (id: unknown) => typeof id === "string" && id.length > 0 && id.length <= MAX_PREFERENCE_LENGTH;
+  return value.every(isDeckId) && new Set(value).size === value.length;
 }
 
 /**
@@ -957,6 +1018,9 @@ function cookie(req: Request, key: string): string | undefined {
     ?.split(";")
     .map((part) => part.trim().split("="))
     .find(([name]) => name === key)?.[1];
+}
+function webUrl(): string {
+  return process.env.AEGIS_WEB_URL ?? "/";
 }
 function setSession(res: Response, session: AuthSession): void {
   setCookie(res, SESSION_COOKIE, session.id, Math.max(1, Math.floor((session.expiresAt - Date.now()) / 1000)));

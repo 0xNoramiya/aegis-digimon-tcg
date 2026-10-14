@@ -1,4 +1,4 @@
-import type { AccountNotification, NotificationKind, NotificationPage } from "@aegis/shared";
+import type { AccountNotification, NotificationBody, NotificationPage } from "@aegis/shared";
 import type { AccountStore } from "../accounts/AccountStore.js";
 import type { Queryable } from "../db/migrator.js";
 
@@ -8,12 +8,9 @@ export const MAX_MARK_READ_IDS = 100;
 
 export type NewNotification = {
   accountId: string;
-  kind: NotificationKind;
-  /** What the notification is about, e.g. `feedback:412`. A newer unread one replaces an older one. */
   subject: string;
-  payload: AccountNotification["payload"];
   at: number;
-};
+} & NotificationBody;
 
 /**
  * Records a notification on the caller's connection, so it commits or rolls back with the change
@@ -38,13 +35,7 @@ export async function notify(db: Queryable, notification: NewNotification): Prom
   ]);
 }
 
-type NotificationRow = {
-  id: number;
-  kind: AccountNotification["kind"];
-  payload: AccountNotification["payload"];
-  created_at: string;
-  read_at: string | null;
-};
+type NotificationRow = { id: number; created_at: string; read_at: string | null } & NotificationBody;
 
 export class NotificationStore {
   constructor(private readonly accounts: AccountStore) {}
@@ -100,5 +91,5 @@ function toNotification(row: NotificationRow): AccountNotification {
     payload: row.payload,
     createdAt: Number(row.created_at),
     readAt: row.read_at === null ? null : Number(row.read_at),
-  };
+  } as AccountNotification;
 }

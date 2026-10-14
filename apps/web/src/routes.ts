@@ -5,6 +5,7 @@ export type TournamentRoute = { kind: "catalog" } | { kind: "create" } | { kind:
 export interface AppRoute {
   screen: Screen;
   profile?: boolean;
+  settingsSectionId?: string;
   /** Only shared replay links open the replays screen; `/replays` itself redirects to the profile. */
   replayId?: string;
   tournament?: TournamentRoute;
@@ -12,6 +13,7 @@ export interface AppRoute {
   communityDeckId?: string;
   /** The report open on the admin triage or the reporter's own feedback screen. */
   feedbackId?: number;
+  roadmapItemId?: number;
 }
 
 export const SCREEN_PATHS: Record<Screen, string> = {
@@ -23,6 +25,7 @@ export const SCREEN_PATHS: Record<Screen, string> = {
   deck: "/decks",
   collection: "/collection",
   community: "/community",
+  roadmap: "/roadmap",
   tournaments: "/tournaments",
   settings: "/settings",
   releases: "/whats-new",
@@ -46,6 +49,9 @@ export function routeFromPathname(pathname: string): AppRoute | undefined {
   if (normalized === "/decks") return { screen: "deck" };
   if (normalized === "/collection") return { screen: "collection" };
   if (normalized === "/community") return { screen: "community" };
+  if (normalized === "/roadmap") return { screen: "roadmap" };
+  const roadmapItem = /^\/roadmap\/(\d{1,9})$/.exec(normalized)?.[1];
+  if (roadmapItem) return { screen: "roadmap", roadmapItemId: Number(roadmapItem) };
   const communityDeck = /^\/community\/decks\/([^/]+)$/.exec(normalized)?.[1];
   if (communityDeck) return { screen: "community", communityDeckId: safeDecode(communityDeck) };
   // The profile used to split into tabs and the replays screen had its own library; old links land on the profile.
@@ -64,6 +70,7 @@ export function pathForRoute(route: AppRoute): string {
   if (route.screen === "replays") return route.replayId ? `/replays/${encodeURIComponent(route.replayId)}` : "/profile";
   if (route.screen === "community" && route.communityDeckId)
     return `/community/decks/${encodeURIComponent(route.communityDeckId)}`;
+  if (route.screen === "roadmap" && route.roadmapItemId !== undefined) return `/roadmap/${route.roadmapItemId}`;
   if ((route.screen === "feedback" || route.screen === "myFeedback") && route.feedbackId !== undefined)
     return `${SCREEN_PATHS[route.screen]}/${route.feedbackId}`;
   if (route.screen !== "tournaments") return SCREEN_PATHS[route.screen];

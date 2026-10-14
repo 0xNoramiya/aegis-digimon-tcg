@@ -20,7 +20,7 @@ describe("§16-32 Scapegoat lifecycle", () => {
       {
         0: {
           battleArea: [
-            { card: "EX8-057", as: "holder", suspended: true },
+            { card: "EX8-059", as: "holder", suspended: true },
             { card: "BT1-010", as: "sacrifice" },
             { card: "BT1-009", as: "untouched" },
           ],
@@ -54,7 +54,7 @@ describe("§16-32 Scapegoat lifecycle", () => {
       {
         0: {
           battleArea: [
-            { card: "EX8-057", as: "holder", suspended: true },
+            { card: "EX8-059", as: "holder", suspended: true },
             { card: "BT1-010", as: "sacrifice" },
             { card: "BT1-009", as: "untouched" },
           ],

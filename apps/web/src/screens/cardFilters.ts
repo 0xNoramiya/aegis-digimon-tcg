@@ -3,14 +3,19 @@
 
 import { useMemo, useState } from "react";
 import { type CardColor, type CardDefinition } from "@aegis/shared";
+import { isCardInQueriedFieldGroup } from "@aegis/shared/cards/isCardInQueriedFieldGroup";
 import { colorKey, kindOf, type ColorName } from "../design/theme";
 import { collectionOrder, sortCards } from "./cardSorting";
+import { matchesCostBucket } from "@/screens/matchesCostBucket";
+import { matchesDigivolutionCostFilter, type DigivolutionCostFilter } from "@/screens/matchesDigivolutionCostFilter";
 
 export const KIND_FILTERS = ["Digimon", "DigiEgg", "Tamer", "Option"] as const;
 
 export const LEVEL_FILTERS = [2, 3, 4, 5, 6, 7] as const;
 
-export const COST_FILTERS = [0, 1, 2, 3, 4, 5, 6, 7] as const;
+export const HIGHEST_COST_FILTER = 16;
+
+export const COST_FILTERS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, HIGHEST_COST_FILTER] as const;
 
 export const RARITY_FILTERS = ["C", "U", "R", "SR", "UR", "SEC", "P", "-"] as const;
 
@@ -47,10 +52,10 @@ export function matchesLevelFilter(cardLevel: number | undefined, selectedLevels
   return selectedLevels.length === 0 || selectedLevels.some((level) => level === cardLevel);
 }
 
-/** The final cost chip is a 7-or-more bucket, so high-cost cards remain discoverable. */
 export function matchesCostFilter(playCost: number, selectedCosts: readonly CostFilter[]): boolean {
   return (
-    selectedCosts.length === 0 || selectedCosts.some((cost) => (cost === 7 ? playCost >= cost : playCost === cost))
+    selectedCosts.length === 0 ||
+    selectedCosts.some((bucket) => matchesCostBucket({ cost: playCost, bucket, highestBucket: HIGHEST_COST_FILTER }))
   );
 }
 
@@ -62,13 +67,15 @@ export function matchesRarityFilter(
 }
 
 export function matchesTraitOrAttributeFilter(
-  card: Pick<CardDefinition, "forms" | "types" | "attributes">,
+  card: Pick<CardDefinition, "forms" | "types" | "attributes" | "effectText">,
   query: string,
 ): boolean {
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) return true;
-  return [...(card.forms ?? []), ...(card.types ?? []), ...(card.attributes ?? [])].some((value) =>
-    value.toLowerCase().includes(normalizedQuery),
+  return (
+    [...(card.forms ?? []), ...(card.types ?? []), ...(card.attributes ?? [])].some((value) =>
+      value.toLowerCase().includes(normalizedQuery),
+    ) || isCardInQueriedFieldGroup({ card, query })
   );
 }
 
@@ -119,6 +126,7 @@ export function cardSearchMatch(card: CardDefinition, query: string): CardSearch
   if (!normalizedQuery) return "name";
   const index = searchIndexFor(card);
   if (index.identity.includes(normalizedQuery)) return "name";
+  if (isCardInQueriedFieldGroup({ card, query })) return "name";
   if (index.text.includes(normalizedQuery)) return "text";
   return "none";
 }
@@ -145,6 +153,7 @@ export interface CardFilter {
   kinds: KindFilter[];
   levels: LevelFilter[];
   costs: CostFilter[];
+  digivolutionCosts: DigivolutionCostFilter[];
   rarities: RarityFilter[];
   sort: CardSort;
   traitQuery: string;
@@ -157,6 +166,7 @@ export interface CardFilter {
   toggleKind: (v: KindFilter) => void;
   toggleLevel: (v: LevelFilter) => void;
   toggleCost: (v: CostFilter) => void;
+  toggleDigivolutionCost: (v: DigivolutionCostFilter) => void;
   toggleRarity: (v: RarityFilter) => void;
   setSort: (v: CardSort) => void;
   clear: () => void;
@@ -179,6 +189,7 @@ export function useCardFilter(
   const [kinds, setKinds] = useState<KindFilter[]>([]);
   const [levels, setLevels] = useState<LevelFilter[]>([]);
   const [costs, setCosts] = useState<CostFilter[]>([]);
+  const [digivolutionCosts, setDigivolutionCosts] = useState<DigivolutionCostFilter[]>([]);
   const [rarities, setRarities] = useState<RarityFilter[]>([]);
   const [localSort, setLocalSort] = useState<CardSort>("releaseDate");
   const sort = savedSort?.sort ?? localSort;
@@ -201,6 +212,7 @@ export function useCardFilter(
       if (kinds.length && !kinds.includes(kindOf(c) as KindFilter)) return false;
       if (!matchesLevelFilter(c.level, levels)) return false;
       if (!matchesCostFilter(c.playCost, costs)) return false;
+      if (!matchesDigivolutionCostFilter({ evoCosts: c.evoCosts, selectedCosts: digivolutionCosts })) return false;
       if (!matchesRarityFilter(c.rarity, rarities)) return false;
       if (!matchesTraitOrAttributeFilter(c, traitQuery)) return false;
       if (set && c.set !== set) return false;
@@ -211,7 +223,7 @@ export function useCardFilter(
       return true;
     });
     return [...nameMatches, ...textMatches];
-  }, [all, query, colors, kinds, levels, costs, rarities, traitQuery, set, colorFilterMode]);
+  }, [all, query, colors, kinds, levels, costs, digivolutionCosts, rarities, traitQuery, set, colorFilterMode]);
 
   return {
     query,
@@ -220,6 +232,7 @@ export function useCardFilter(
     kinds,
     levels,
     costs,
+    digivolutionCosts,
     rarities,
     sort,
     traitQuery,
@@ -232,6 +245,8 @@ export function useCardFilter(
     toggleKind: (v) => setKinds((ks) => (ks.includes(v) ? ks.filter((x) => x !== v) : [...ks, v])),
     toggleLevel: (v) => setLevels((ls) => (ls.includes(v) ? ls.filter((x) => x !== v) : [...ls, v])),
     toggleCost: (v) => setCosts((cs) => (cs.includes(v) ? cs.filter((x) => x !== v) : [...cs, v])),
+    toggleDigivolutionCost: (v) =>
+      setDigivolutionCosts((cs) => (cs.includes(v) ? cs.filter((x) => x !== v) : [...cs, v])),
     toggleRarity: (v) => setRarities((rs) => (rs.includes(v) ? rs.filter((x) => x !== v) : [...rs, v])),
     setSort,
     clear: () => {
@@ -240,6 +255,7 @@ export function useCardFilter(
       setKinds([]);
       setLevels([]);
       setCosts([]);
+      setDigivolutionCosts([]);
       setRarities([]);
       setTraitQuery("");
       setSet("");

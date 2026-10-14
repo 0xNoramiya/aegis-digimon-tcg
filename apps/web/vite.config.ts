@@ -82,8 +82,10 @@ export default defineConfig({
   build: {
     target: "es2022",
     cssMinify: "lightningcss",
+    sourcemap: "hidden",
     rollupOptions: {
       output: {
+        sourcemapExcludeSources: true,
         manualChunks(id) {
           if (
             id.includes("node_modules/react") ||
