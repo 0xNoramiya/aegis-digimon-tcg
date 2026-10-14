@@ -62,8 +62,13 @@ export function DecisionBoardReturn({
       <span className="decision-board-return__status" aria-live="polite">
         {selection?.status ?? t("overlay.decisionPending")}
       </span>
-      <Button variant={selection ? "secondary" : undefined} icon={Icons.ArrowLeft} onClick={onReturn}>
-        {t("overlay.returnToDecision")}
+      <Button
+        variant={selection ? "secondary" : undefined}
+        icon={Icons.ArrowLeft}
+        aria-label={t("overlay.returnToDecision")}
+        onClick={onReturn}
+      >
+        <span className="decision-board-return__label">{t("overlay.returnToDecision")}</span>
       </Button>
       {selection ? (
         <Button icon={Icons.Check} disabled={!selection.canConfirm} onClick={selection.onConfirm}>
