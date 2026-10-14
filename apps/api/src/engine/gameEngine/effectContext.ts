@@ -856,8 +856,15 @@ export function buildPrimitives(engine: GameEngine): Primitives {
     reactivateOnPlay: (permanentId, opts) => reactivateOnPlay(engine, permanentId, opts),
     fireEnteredByEffect: (timing, instanceId, ownerSeat, opts) =>
       fireEnteredByEffectTiming(engine, timing, instanceId, ownerSeat, opts),
-    fireWhenDigivolving: (seat, permanent, previousLevel) =>
-      digivolveDeps(engine).fireWhenDigivolving!(engine.state, seat, permanent, previousLevel),
+    fireWhenDigivolving: (seat, permanent, previousLevel, isDnaDigivolve) =>
+      digivolveDeps(engine).fireWhenDigivolving!(
+        engine.state,
+        seat,
+        permanent,
+        previousLevel,
+        undefined,
+        isDnaDigivolve,
+      ),
     prepareAppFusion: async (seat, target, result, into) => {
       const deps = digivolveDeps(engine);
       await deps.prepareDigivolveCost?.(engine.state, seat, target, result, into);

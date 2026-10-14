@@ -26,6 +26,17 @@ describe("authoritative format validation", () => {
       reason: expect.stringContaining("BT13 card pool"),
     });
   });
+  it("accepts released limited cards in historical decks while rejecting later products", () => {
+    expect(validateDecklist(deckFor("EX13", "LM-051"), { format: "EX13" })).toEqual({ ok: true });
+    expect(validateDecklist(deckFor("EX13", "LM-063"), { format: "EX13", betaBattleMode: true })).toMatchObject({
+      ok: false,
+      reason: expect.stringContaining("EX13 card pool"),
+    });
+    expect(validateDecklist(deckFor("BT13", "LM-051"), { format: "BT13", betaBattleMode: true })).toMatchObject({
+      ok: false,
+      reason: expect.stringContaining("BT13 card pool"),
+    });
+  });
   it("Pauper checks main and egg rarities", () => {
     const deck = deckFor("pauper");
     expect(validateDecklist(deck, { format: "pauper" })).toEqual({ ok: true });

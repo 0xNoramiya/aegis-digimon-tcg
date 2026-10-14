@@ -49,6 +49,7 @@ export function createDnaDigivolveVerbs(pc: PrimitivesContext) {
       extraMaterialInstanceIds?: string[];
       extraMaterialsOnBottom?: boolean;
       costOverride?: number;
+      publicEntry?: boolean;
     },
   ): Promise<Permanent | undefined> => {
     const materials = materialPermanentIds
@@ -251,12 +252,13 @@ export function createDnaDigivolveVerbs(pc: PrimitivesContext) {
     // CR 8-2-3-3: the DNA digivolution procedure itself draws 1 card — unconditional, part of
     // the placement procedure (mirrors applyDigivolve step 6), not an optional card effect.
     await draw(seat, 1, { drawReason: "digivolution" });
-    // The DNA-digivolved card's OWN [When Digivolving] fires (it was digivolved BY AN EFFECT), with
-    // `enteredByEffect` set to its controller (the producer for the BT25-084 by-effect gate) and
-    // `isDnaDigivolve` set so an `isDnaDigivolving` condition resolves its DNA-only branch.
-    await engine.fireEnteredByEffect?.(EffectTiming.WhenDigivolving, instance.instanceId, seat, {
-      isDnaDigivolve: true,
-    });
+    if (opts?.publicEntry === true) {
+      await engine.fireWhenDigivolving?.(seat, permanent, undefined, true);
+    } else {
+      await engine.fireEnteredByEffect?.(EffectTiming.WhenDigivolving, instance.instanceId, seat, {
+        isDnaDigivolve: true,
+      });
+    }
     return permanent;
   };
 

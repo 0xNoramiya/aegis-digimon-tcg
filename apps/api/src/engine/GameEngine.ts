@@ -280,8 +280,11 @@ export class GameEngine {
     contexts: Map<number, EffectContext>;
   }> = [];
   flushingDeferredSecurityRemovalTriggers = false;
+  readonly pendingEffectReaders = new Set<() => readonly CollectedEffect[]>();
+
   /** Trigger windows created inside a resolving effect and activated only after that effect ends. */
   readonly deferredTimingWindows: Array<{
+    readPendingEffects?: () => readonly CollectedEffect[];
     timing: EffectTiming;
     trigger: TriggerInfo;
     transientCandidates: readonly CardInstance[];

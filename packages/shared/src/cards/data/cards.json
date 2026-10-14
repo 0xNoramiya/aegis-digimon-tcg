@@ -75285,7 +75285,7 @@
     "forms": ["Mega"],
     "attributes": ["Vaccine"],
     "types": ["Beast Knight", "NSp"],
-    "effectText": "[Digivolve] Lv.5 w/[Angoramon] in text or w/[NSp] trait: Cost 3 \n\n＜Piercing＞ \n＜Vortex＞ \n[When Digivolving] Your opponent's Digimon effects don't affect 1 of your Digimon until their turn ends.\n[When Digivolving] [When Attacking] [Counter] [Once Per Turn] 1 of your Digimon gets +3000 DP until your opponent's turn ends, then it may battle 1 of their Digimon.",
+    "effectText": "[Digivolve] Lv.5 w/[Angoramon] in text or w/[NSp] trait: Cost 3 \n\n＜Piercing＞ \n＜Vortex＞ \n[When Digivolving] Your opponent's Digimon effects don't affect 1 of your Digimon until their turn ends.\n[When Digivolving] [When Attacking] [Counter] [Once Per Turn] 1 of your Digimon may get +3000 DP until your opponent's turn ends and battle 1 of their Digimon.",
     "isDualCard": true,
     "nameJp": "ディルビットモン/トラスゲイン",
     "dualEffect": "Truskmore Advance",
