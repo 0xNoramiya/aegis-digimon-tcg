@@ -540,6 +540,7 @@ const interfaceMessages = {
   "browser.outdated":
     "이 브라우저는 최신 버전이 아니므로 일부 색상과 패널이 표시되지 않을 수 있습니다. Safari 16.4, Chrome 111, Firefox 113 이상으로 업데이트하세요.",
   "beta.tag": "베타",
+  "beta.cardHint": "아직 출시되지 않았습니다. 베타 대전 모드에서만 사용할 수 있습니다.",
   "lobby.betaBattleMode": "베타 대전 모드",
   "lobby.betaBattleHint":
     "아직 발매되지 않은 카드를 사용하고 있으므로, 같은 카드 풀을 사용하는 플레이어와 전용 대기열에서 플레이합니다.",

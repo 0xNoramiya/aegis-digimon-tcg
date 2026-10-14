@@ -349,6 +349,7 @@ export const en = {
   "browser.outdated":
     "This browser is out of date, so some colours and panels may not show. Update to Safari 16.4, Chrome 111, Firefox 113 or newer.",
   "beta.tag": "Beta",
+  "beta.cardHint": "Not released yet. Only playable in beta battle mode.",
   "lobby.betaBattleMode": "Beta battle mode",
   "lobby.betaBattleHint":
     "You are using cards that have not been released yet, so you will play in a special queue with players using the same card pool.",

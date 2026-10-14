@@ -521,6 +521,7 @@ const interfaceMessages = {
   "browser.outdated":
     "此瀏覽器已過時，因此某些顏色和面板可能無法顯示。請更新至 Safari 16.4、Chrome 111、Firefox 113 或更高版本。",
   "beta.tag": "測試版",
+  "beta.cardHint": "尚未發售。僅可在測試版對戰模式中使用。",
   "lobby.betaBattleMode": "測試版對戰模式",
   "lobby.betaBattleHint": "你使用了尚未發售的卡片，因此你將在特殊佇列中與使用相同卡池的玩家對戰。",
   "lobby.betaRequiredTitle": "此卡組需要測試版對戰模式",

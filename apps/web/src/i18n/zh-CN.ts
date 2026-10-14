@@ -515,6 +515,7 @@ const interfaceMessages = {
   "brand.subtitle": "卡牌对战",
   "browser.outdated": "浏览器版本较旧，请更新浏览器以确保对局正常运行。",
   "beta.tag": "测试版",
+  "beta.cardHint": "尚未发售。仅可在 Beta 对战模式中使用。",
   "lobby.betaBattleMode": "Beta 对战模式",
   "lobby.betaBattleHint": "你使用的卡牌尚未发售，因此会进入特殊队列，对手也在使用相同的卡池。",
   "lobby.betaRequiredTitle": "这副卡组需要 Beta 对战模式",

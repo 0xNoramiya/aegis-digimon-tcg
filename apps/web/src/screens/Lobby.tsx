@@ -52,6 +52,8 @@ import { loadMatchFormatPreference, saveMatchFormatPreference } from "./matchFor
 import "./lobby.css";
 import { lookupPrivateRoom } from "../net/client";
 import { SpectatorPanel } from "./SpectatorPanel";
+import { deckHasBetaCards } from "@/screens/deckHasBetaCards";
+import { isBetaCard } from "@/screens/isBetaCard";
 
 /** The private room a finished match returns to. Its host reopens it under the same code. */
 export interface PrivateRoom {
@@ -71,13 +73,6 @@ export type StartMode =
   | "private_guest"
   | "spectator";
 export type RandomDeckPool = "mine" | "famous" | "all";
-
-export function deckHasBetaCards(deck: DeckListing): boolean {
-  return [...deck.mainDeck, ...deck.eggDeck].some((id) => {
-    const card = getCardDefinition(id);
-    return card !== undefined && isBetaOnlyCard(card);
-  });
-}
 
 export function randomDeckPool(
   personalDecks: readonly DeckListing[],
@@ -413,10 +408,7 @@ export function Lobby({
               ...(customBotDeck?.mainDeck ?? []),
               ...(customBotDeck?.eggDeck ?? []),
             ]),
-          ].filter((id) => {
-            const card = getCardDefinition(id);
-            return card !== undefined && isBetaOnlyCard(card);
-          })
+          ].filter(isBetaCard)
         : [],
     [active, customBotDeck],
   );

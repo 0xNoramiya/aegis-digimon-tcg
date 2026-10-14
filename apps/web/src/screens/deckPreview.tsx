@@ -11,6 +11,7 @@ import { ColorDot } from "../design/primitives";
 import { colorKey, kindOf } from "../design/theme";
 import { Icons } from "../design/icons";
 import { useTranslation } from "../i18n";
+import { isBetaCard } from "@/screens/isBetaCard";
 import { sortCardIds } from "./cardSorting";
 import { countDeckCardTypes } from "@/screens/countDeckCardTypes";
 import { DeckCurveChart } from "@/screens/DeckCurveChart";
@@ -209,6 +210,7 @@ function entryLimits(cardId: string, count: number, pairConflict: boolean, pairL
   return {
     definition,
     banLabel: pairConflict ? pairLabel : formatRestrictionLabel(cardId, format),
+    beta: isBetaCard(cardId),
     banned,
     addDisabled: banned || count >= cap,
   };
@@ -255,7 +257,7 @@ function DeckGridCard({
 }: DeckEntryProps) {
   const { t } = useTranslation();
   if (!getCardDefinition(cardId)) return null;
-  const { definition, banLabel, banned, addDisabled } = entryLimits(
+  const { definition, banLabel, beta, banned, addDisabled } = entryLimits(
     cardId,
     count,
     pairConflict,
@@ -271,9 +273,18 @@ function DeckGridCard({
         onClick={onOpen}
       >
         <CardFull cardId={cardId} artId={artId} width={cardWidth} count={count} />
-        {banLabel ? (
-          <span className="deck-grid-card__restriction" data-tone={banned ? "danger" : "warning"}>
-            {banLabel}
+        {banLabel || beta ? (
+          <span className="deck-grid-card__badges">
+            {banLabel ? (
+              <span className="deck-grid-card__restriction" data-tone={banned ? "danger" : "warning"}>
+                {banLabel}
+              </span>
+            ) : null}
+            {beta ? (
+              <span className="deck-grid-card__restriction" data-tone="beta" title={t("beta.cardHint")}>
+                {t("beta.tag")}
+              </span>
+            ) : null}
           </span>
         ) : null}
         {isCover ? (
@@ -300,7 +311,7 @@ function DeckListRow({
 }: DeckEntryProps) {
   const { t } = useTranslation();
   if (!getCardDefinition(cardId)) return null;
-  const { definition, banLabel, banned, addDisabled } = entryLimits(
+  const { definition, banLabel, beta, banned, addDisabled } = entryLimits(
     cardId,
     count,
     pairConflict,
@@ -327,9 +338,18 @@ function DeckListRow({
             {definition.nameEn}
             {isCover ? <Icons.Star size={11} /> : null}
           </span>
-          {banLabel ? (
-            <span className="deck-tag" data-tone={banned ? "danger" : "warning"}>
-              {banLabel}
+          {banLabel || beta ? (
+            <span className="deck-list-row__tags">
+              {banLabel ? (
+                <span className="deck-tag" data-tone={banned ? "danger" : "warning"}>
+                  {banLabel}
+                </span>
+              ) : null}
+              {beta ? (
+                <span className="deck-tag" data-tone="beta" title={t("beta.cardHint")}>
+                  {t("beta.tag")}
+                </span>
+              ) : null}
             </span>
           ) : null}
           <span className="deck-list-row__id">{cardId}</span>

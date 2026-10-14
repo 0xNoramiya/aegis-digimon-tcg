@@ -13,6 +13,7 @@ import { Eyebrow } from "../design/primitives";
 import { CardFull } from "../design/cards";
 import { formLabel, kindOf } from "../design/theme";
 import { useTranslation } from "../i18n";
+import { isBetaCard } from "@/screens/isBetaCard";
 import "./cardLibrary.css";
 
 /* ---------- the shared right detail drawer ---------- */
@@ -96,6 +97,11 @@ export function CardDetailDrawer({
         <div className="card-detail-summary">
           <div className="card-detail-limit">
             {banLabel ? <span className="card-detail-restriction">{banLabel}</span> : null}
+            {isBetaCard(cardId) ? (
+              <span className="card-detail-restriction" data-tone="beta" title={t("beta.cardHint")}>
+                {t("beta.tag")}
+              </span>
+            ) : null}
             <span className="card-detail-copy-limit">{t("library.maxPerDeck", { count: copyLimit })}</span>
           </div>
           <div className="card-detail-metadata">
