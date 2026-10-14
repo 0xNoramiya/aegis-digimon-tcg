@@ -120,6 +120,76 @@ mechanisms, not proof that the first changed move caused the eventual loss or
 that fixed-world sampling improves play. Fixed-world sampling sacrifices hidden
 state diversity and is not an adoption candidate.
 
+`paired-root-worlds-v1` compares independent simulation seeds with seeds indexed
+by each root action's visit ordinal. Alternative actions therefore share a
+sequence of sampled hidden worlds, while later visits can sample other worlds.
+All 48 isolated searches completed successfully. Independent controls reproduced
+the archived choices and statistics. At 16 simulations, agreement between the
+two action orderings rose from 0/6 to 6/6; at 64, it rose from 5/6 to 6/6.
+Audits compare realized hidden-world fingerprints, not only seed identities.
+The 16-simulation version can collapse to one world when there are 16 actions,
+so it is diagnostic only. The protected version enables pairing only when the
+budget is at least twice the number of root actions; otherwise it preserves the
+independent seed schedule. This threshold permits, but does not guarantee, two
+visits per action under adaptive tree selection.
+
+`paired-tactical-interventions-v1` completed 15 valid full-match replays of the
+six exposed ordering losses. All six original-action controls reproduced their
+archived non-timing results. Each intervention changes only the first divergent
+action, then resumes the original learned-ordering policy. The unguarded
+16-simulation paired choice recovered four losses: one Plutomon case, both
+Mamemon cases and the Chronomon case. The other Plutomon case and Alphamon
+remained losses. The alternative action from the old winning arm recovered
+Alphamon but did not recover Chronomon under the ordered continuation. These
+results identify helpful interventions in specific replays; they do not show
+optimal actions or establish fresh-seed playing strength. Duplicate action
+interventions were collapsed, yielding 15 rather than 18 games.
+
+`paired-root-worlds-v2` completed 48 protected-root searches. All twelve
+independent 32-simulation controls reproduced the unmodified runtime, and all
+twelve 16-simulation fallback controls reproduced the archived independent
+search. At 32 simulations, ordering agreement was 3/6 for independent sampling
+and 6/6 for paired sampling. Every paired root retained multiple realized hidden
+worlds, and its selected action matched the successful one-action intervention
+in all four recovered cases. This passed the screening criteria recorded before
+the experiment and justified a fresh-seed comparison. It does not establish a
+win-rate improvement. Both confirmation arms use 32 simulations per decision,
+the same frozen six-feature value model and no learned ordering; only the
+sampling mode changes. Equal per-decision budgets need not yield equal total
+match CPU consumption.
+
+`paired-world-confirmation-v1` finished all 48 planned executions: 46 valid games
+and two paired-sampling games interrupted at the 900-second process deadline,
+on Plutomon and Mamemon. Interrupted games retain null scores. Among the 22
+complete valid pairs, independent sampling won 10 and paired sampling won 12,
+with four gains and two regressions. The descriptive complete-case seed-block
+sign-flip p-value was 0.6875; outcome-dependent timeouts limit this comparison.
+Allowing either possible result for each missing game leaves the full planned
+score difference between +1 and +3. This small exploratory advantage does not
+justify default activation, especially with two deadline failures in the new
+arm. The original strict audit correctly fails its requirement for 24 valid
+pairs. A separate coverage audit verifies raw results, sampling and missing-data
+bounds without weakening that requirement or scoring failures as losses.
+
+`paired-timeout-replays-v1` reran only those two interrupted inputs, one worker
+at a time with a 3600-second deadline and the same frozen model and sampling
+hooks. Plutomon won in 569.577 seconds and Mamemon lost in 106.843 seconds. Their
+26 and 19 available original search reports, respectively, matched the replay
+prefixes exactly. Both replays passed game-health and sampling audits. They
+completed below the original deadline in isolation, but this does not identify
+the precise cause of the concurrent-run slowdowns. Original failure files and
+their hashes remain unchanged.
+
+Including these separately identified supplemental outcomes yields 13/24 wins
+for paired sampling versus 11/24 for independent sampling, with five gains and
+three regressions. The descriptive seed-block sign-flip p-value is 0.7265625.
+Glowing Dawn, Plutomon and Craniamon each gained one game; Alphamon lost one;
+Mamemon and Chronomon each exchanged one gain and one loss. Keep the candidate
+experimental: this small screen shows better ordering consistency and a modest
+observed aggregate gain, with deck regressions and unresolved concurrent-run
+latency. It does not establish a reliable strength improvement. The primary
+22-pair analysis and the supplemental 24-pair analysis remain distinct.
+
 `tactical-value-model-v1` tested six additional public-observation features:
 unblocked security pressure, unblocked finishing potential, material exposed to
 legal opposing attacks, potential next-turn attackers, breeding growth and a
