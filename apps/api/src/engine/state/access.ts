@@ -92,6 +92,8 @@ export function isPermanentZone(zone: VisibilityZone): boolean {
 /** Install the visibility port for one seat. Call once per player when the match is wired up. */
 export function installVisibilityPort(player: PlayerState, port: VisibilityPort): void {
   (player as PortHost)[VISIBILITY_PORT] = port;
+  for (const permanent of player.battleArea) (permanent as PortHost)[VISIBILITY_PORT] = port;
+  if (player.breeding !== undefined) (player.breeding as PortHost)[VISIBILITY_PORT] = port;
 }
 
 /** Notify the installed port, if any, that `card` just landed in `zone`. */
