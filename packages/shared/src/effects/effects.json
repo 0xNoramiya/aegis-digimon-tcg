@@ -153333,6 +153333,7 @@
             "defender": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 }
           }
         ],
+        "optional": true,
         "frequency": "OncePerTurn",
         "sharedUseKey": "ir-shared-0"
       },
@@ -153359,6 +153360,7 @@
             "defender": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 }
           }
         ],
+        "optional": true,
         "frequency": "OncePerTurn",
         "sharedUseKey": "ir-shared-0"
       },
@@ -153385,6 +153387,7 @@
             "defender": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 }
           }
         ],
+        "optional": true,
         "frequency": "OncePerTurn",
         "sharedUseKey": "ir-shared-0"
       },
