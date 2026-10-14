@@ -46,13 +46,30 @@ describe.each(translatedLocales)("%s dictionary", (locale) => {
   });
 });
 
-const literalChineseMistranslations = /甲板|火柴|沃尔沃|沃爾沃|主菜(?!单)/;
+const literalChineseMistranslations =
+  /甲板|火柴|沃尔沃|沃爾沃|主菜(?!单)|繁殖|育种|育種|养殖|養殖|数码兽|數碼獸|数字进化|數位進化|数字革命|數位革命|宙斯盾|神盾|套牌|牌组|牌組|抽奖|抽獎|节省|拦截者|攔截者/;
+const pauseKeys = new Set(["rollback.waiting", "replay.pause", "lobby.timer.rules", "game.timer.paused"]);
+const inGameKey = /^(game|overlay|log|notice|panel|showcase|reject|mobile\.overlay|mobile\.board|redesign\.arena)\./;
 
 describe.each(["zh-CN", "zh-TW"] as const)("%s game terminology", (locale) => {
-  it("avoids literal mistranslations of deck, match, Digivolve and main deck", () => {
+  it("avoids literal mistranslations of deck, match, Digivolve, breeding and Digimon", () => {
     const mistranslated = Object.entries(dictionaries[locale])
       .filter(([, value]) => literalChineseMistranslations.test(value))
       .map(([key, value]) => ({ key, value }));
     expect(mistranslated).toEqual([]);
+  });
+
+  it("uses pause wording only for pausing, not for suspending cards", () => {
+    const misused = Object.entries(dictionaries[locale])
+      .filter(([key, value]) => /暂停|暫停/.test(value) && !pauseKeys.has(key))
+      .map(([key, value]) => ({ key, value }));
+    expect(misused).toEqual([]);
+  });
+
+  it("uses the card-game term, not file deletion, for deleting Digimon", () => {
+    const misused = Object.entries(dictionaries[locale])
+      .filter(([key, value]) => inGameKey.test(key) && /删除|刪除/.test(value))
+      .map(([key, value]) => ({ key, value }));
+    expect(misused).toEqual([]);
   });
 });
