@@ -1,3 +1,4 @@
+import { trashArrivalOf } from "#api/engine/state/access";
 import { EffectTiming } from "@aegis/shared";
 import type { Seat } from "@aegis/shared";
 import type { CardSource } from "./CardSource.js";
@@ -59,6 +60,7 @@ export function orderingSeatOf(collected: CollectedEffect): Seat {
  * `gatherTriggeredEffects` + `createEffectContext`), and tests supply fakes.
  */
 export interface ResolutionEnv {
+  registerPendingEffects?: (read: () => readonly CollectedEffect[]) => () => void;
   /** The active player; used for turn-player-first ordering. */
   readonly turnSeat: Seat;
   /** Per-turn use ledger (maxPerTurn accounting). Engine-owned; reset each turn. */
@@ -311,6 +313,33 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
   let passBudget = MAX_RESOLUTION_PASSES;
   let stopAttempts = 0;
 
+  let lastCollected: readonly CollectedEffect[] = [];
+  const sourceArrivals = new Map<string, { source: number | undefined; host: number | undefined }>();
+  const readPendingEffects = (): CollectedEffect[] =>
+    lastCollected.flatMap((collected) => {
+      const key = declineKey(collected);
+      if (
+        declined.has(key) ||
+        resolved.has(key) ||
+        inProgress.has(key) ||
+        departed.has(key) ||
+        loopStopped.has(collected.effect.effectKey)
+      ) {
+        return [];
+      }
+      const ctx = env.makeContext(collected);
+      const proof = sourceArrivals.get(key);
+      const hostId = ctx.trigger?.deletedHostInstanceByInstanceId?.[collected.source.instanceId];
+      if (proof?.source !== undefined && trashArrivalOf(ctx.game.state, collected.source.instanceId) !== proof.source) {
+        return [];
+      }
+      if (hostId !== undefined && proof?.host !== undefined && trashArrivalOf(ctx.game.state, hostId) !== proof.host) {
+        return [];
+      }
+      return canActivate(collected.effect, ctx, env.tracker) ? [{ ...collected, triggerInfo: ctx.trigger }] : [];
+    });
+  const unregisterPending = env.registerPendingEffects?.(readPendingEffects);
+
   // A re-entrant drain runs inside an effect whose derived processing can still enable a
   // pending effect (CR 15-4-3-4, 15-4-5-2/3), so
   // only the outermost drain, with nothing in progress, reports what stayed without one.
@@ -338,6 +367,22 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
 
       // Re-collect every pass: this is the TriggeredSkillProcess re-entry.
       const collectedThisPass = env.collect(timing);
+      lastCollected = collectedThisPass;
+      for (const collected of collectedThisPass) {
+        const key = declineKey(collected);
+        if (!sourceArrivals.has(key)) {
+          const ctx = env.makeContext(collected);
+          const hostId = ctx.trigger?.deletedHostInstanceByInstanceId?.[collected.source.instanceId];
+          sourceArrivals.set(key, {
+            source:
+              ctx.game?.state === undefined ? undefined : trashArrivalOf(ctx.game.state, collected.source.instanceId),
+            host:
+              hostId === undefined || ctx.game?.state === undefined
+                ? undefined
+                : trashArrivalOf(ctx.game.state, hostId),
+          });
+        }
+      }
 
       // Retire anything that was collectable earlier this window and is not any more (§15-4-4-3
       // / §15-4-4-5, see `departed` above). Recorded before the activatable filter so a card
@@ -509,7 +554,11 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
     }
   };
 
-  await drainCurrentTimingWindow();
+  try {
+    await drainCurrentTimingWindow();
+  } finally {
+    unregisterPending?.();
+  }
 }
 
 /**
