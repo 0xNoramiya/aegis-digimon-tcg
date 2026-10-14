@@ -310,6 +310,8 @@ export const es: Record<keyof typeof en, string> = {
   "game.timer.mulligan": "Mulligan",
   "game.timer.low": "Se acaba el tiempo",
   "game.timer.refill": "+{seconds}s / turno",
+  "game.timer.minuteLeft": "Queda 1 minuto",
+  "game.timer.secondsLeft": "Quedan {seconds} segundos",
   "overlay.reason.win.timeout": "Tu oponente se quedó sin tiempo.",
   "overlay.reason.loss.timeout": "Te quedaste sin tiempo.",
   "overlay.reason.draw.timeout": "La partida terminó por tiempo.",

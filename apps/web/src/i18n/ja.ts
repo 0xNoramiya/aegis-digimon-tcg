@@ -508,6 +508,8 @@ const interfaceMessages = {
   "game.timer.mulligan": "マリガン",
   "game.timer.low": "残り時間が少なくなってきました",
   "game.timer.refill": "+{seconds}秒/ターン",
+  "game.timer.minuteLeft": "残り1分",
+  "game.timer.secondsLeft": "残り{seconds}秒",
   "overlay.reason.win.timeout": "相手の時間切れになりました。",
   "overlay.reason.loss.timeout": "時間がなくなってしまいました。",
   "overlay.reason.draw.timeout": "試合は時間通りに終了した。",

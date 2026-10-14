@@ -519,6 +519,8 @@ const interfaceMessages = {
   "game.timer.mulligan": "Mulligan",
   "game.timer.low": "Le temps presse",
   "game.timer.refill": "+{seconds}s / tour",
+  "game.timer.minuteLeft": "Plus qu'une minute",
+  "game.timer.secondsLeft": "Plus que {seconds} secondes",
   "overlay.reason.win.timeout": "Votre adversaire a manqué de temps.",
   "overlay.reason.loss.timeout": "Vous avez manqué de temps.",
   "overlay.reason.draw.timeout": "Le jeu s'est terminé à l'heure.",

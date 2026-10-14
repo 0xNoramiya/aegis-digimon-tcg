@@ -103,6 +103,7 @@ import type { DigimonWorldAvatarId } from "../account/avatars";
 import type { ColorName } from "../design/theme";
 import { playSound } from "../design/sound";
 import { useTurnAttentionSound } from "./useTurnAttentionSound";
+import { useLowTimeWarning } from "@/game/useLowTimeWarning";
 import { usePresentationAudio, useReadoutAudio } from "./usePresentationAudio";
 import { audioBoardFromPresentedSeats } from "./match/present/presentationAudio";
 import { areActionConfirmationsEnabled } from "../design/actionConfirmation";
@@ -602,6 +603,7 @@ function GameScreenSession({
   usePresentationAudio(cues, seats ? audioBoardFromPresentedSeats(seats, viewerSeat) : undefined);
   useScreenWakeLock(isKeepAwakeEnabled() && !!state && !state.gameOver);
   useTurnAttentionSound(!spectating && !!state && !state.gameOver && state.turnSeat === viewerSeat);
+  const lowTimeWarning = useLowTimeWarning({ state, viewerSeat, spectating });
   const viewerTimerRunning =
     !spectating && state?.matchTimer === true && !state.gameOver && state.timerActiveSeat === viewerSeat;
   const viewerPromptKey = cues.decisionAnimationsPending
@@ -1557,6 +1559,7 @@ function GameScreenSession({
       layout={layout}
       anchors={anchors}
       cues={cues}
+      timeWarning={lowTimeWarning}
       seats={{
         shownViewer: shownYou,
         shownOpponent: shownOpp,

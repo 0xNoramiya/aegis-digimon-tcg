@@ -1,3 +1,4 @@
+import type { LowTimeWarning } from "@/game/useLowTimeWarning";
 import { RollbackControls } from "@/game/RollbackControls";
 /* The arena itself: the opponent's bar, the narration and the ticker, the field's three
    columns, the player's dock, and the free-floating cue layers over all of it.
@@ -191,6 +192,7 @@ export function BoardStage({
   onOpenCard,
   promptSourceCardId,
   onResetScenario,
+  timeWarning,
 }: {
   state: GameState;
   shownState: GameState;
@@ -236,6 +238,7 @@ export function BoardStage({
   onInspectPermanent: { viewer: (perm: Permanent) => void; opponent: (perm: Permanent) => void };
   onOpenCard: (cardId: string, artId?: string) => void;
   onResetScenario?: () => void;
+  timeWarning: LowTimeWarning;
 }) {
   const { t } = useTranslation();
   useBreedingTransferOrigins(anchors.board);
@@ -393,6 +396,7 @@ export function BoardStage({
                 securityDockActive={cues.securityBranch !== null || cues.optionBranch !== null}
                 onAdvance={cues.advanceNarration}
                 onDismissRejection={cues.dismissRejection}
+                timeWarning={timeWarning}
                 onHold={cues.holdNarration}
               />
             ) : null}

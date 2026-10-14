@@ -526,6 +526,8 @@ const interfaceMessages = {
   "game.timer.mulligan": "Mulligan",
   "game.timer.low": "Die Zeit wird knapp",
   "game.timer.refill": "+{seconds}s / Runde",
+  "game.timer.minuteLeft": "Noch 1 Minute",
+  "game.timer.secondsLeft": "Noch {seconds} Sekunden",
   "overlay.reason.win.timeout": "Deinem Gegner ist die Zeit ausgegangen.",
   "overlay.reason.loss.timeout": "Dir ist die Zeit davongelaufen.",
   "overlay.reason.draw.timeout": "Das Spiel endete pünktlich.",

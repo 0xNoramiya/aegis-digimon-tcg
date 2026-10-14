@@ -502,6 +502,8 @@ const interfaceMessages = {
   "game.timer.mulligan": "멀리건",
   "game.timer.low": "시간이 부족함",
   "game.timer.refill": "+{seconds}s/턴",
+  "game.timer.minuteLeft": "1분 남음",
+  "game.timer.secondsLeft": "{seconds}초 남음",
   "overlay.reason.win.timeout": "상대의 시간이 부족했습니다.",
   "overlay.reason.loss.timeout": "시간이 부족합니다.",
   "overlay.reason.draw.timeout": "게임이 정시에 종료되었습니다.",

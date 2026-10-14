@@ -311,6 +311,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.timer.mulligan": "Mulligan",
   "game.timer.low": "Tempo acabando",
   "game.timer.refill": "+{seconds}s / turno",
+  "game.timer.minuteLeft": "Falta 1 minuto",
+  "game.timer.secondsLeft": "Faltam {seconds} segundos",
   "overlay.reason.win.timeout": "O tempo do seu oponente acabou.",
   "overlay.reason.loss.timeout": "Seu tempo acabou.",
   "overlay.reason.draw.timeout": "A partida terminou por tempo.",

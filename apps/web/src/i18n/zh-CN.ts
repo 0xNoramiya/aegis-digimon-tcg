@@ -479,6 +479,8 @@ const interfaceMessages = {
   "game.timer.mulligan": "调度",
   "game.timer.low": "时间所剩无几",
   "game.timer.refill": "+{seconds} 秒/转",
+  "game.timer.minuteLeft": "剩余 1 分钟",
+  "game.timer.secondsLeft": "剩余 {seconds} 秒",
   "overlay.reason.win.timeout": "你的对手已经没有时间了。",
   "overlay.reason.loss.timeout": "你没时间了。",
   "overlay.reason.draw.timeout": "比赛准时结束。",
