@@ -46,6 +46,14 @@ use the exact game result; healthy cutoffs use `evaluateSearchPosition`. Externa
 cancellation, engine errors, rejected actions, and policy fallbacks remain invalid.
 `leafEvaluations` counts accepted heuristic cutoffs in each search report.
 
+Turn-limited rollouts also default to a soft limit of 64 decision callbacks after
+the replayed prefix, counting both seats and the root choice. The cutoff is checked
+after the root, at the next stable main-phase choice, so pending effects and combat
+can exceed the limit. This prevents repeated choices within one turn from bypassing
+the turn horizon. Direct `runMctsResidualMatch` callers can override this limit with
+`maxRolloutDecisions`, an integer from 1 to 10000, or use it without a turn horizon.
+The decision limit does not truncate the live match or provide a wall-clock deadline.
+
 The initial position evaluator is hand-authored, not trained or calibrated as a
 win probability. It applies a bounded logistic transform to the difference in
 security count (0.65 each), hand count (0.08), permanent levels (0.12), DP (0.10 per
@@ -53,7 +61,7 @@ security count (0.65 each), hand count (0.08), permanent levels (0.12), DP (0.10
 permanents contribute material too. It reads only the filtered observation and
 does not inspect hidden identities or deck order. Its weights require validation
 across decks and reserved seeds; short-rollout results are a separate experiment
-from full terminal rollouts. Omitting the option retains full-game simulations.
+from full terminal rollouts. Omitting both cutoff controls retains full-game simulations.
 
 `mctsMoveOrderingProgram` accepts a standalone heuristic program validated by the
 same parser as other evaluation programs. The baseline action remains first;

@@ -77,14 +77,20 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
     options.simulations > 10000 ||
     (options.rolloutTurns !== undefined &&
       (!Number.isSafeInteger(options.rolloutTurns) || options.rolloutTurns < 1 || options.rolloutTurns > 200)) ||
+    (options.maxRolloutDecisions !== undefined &&
+      (!Number.isSafeInteger(options.maxRolloutDecisions) ||
+        options.maxRolloutDecisions < 1 ||
+        options.maxRolloutDecisions > 10000)) ||
     (options.exploration !== undefined && (!Number.isFinite(options.exploration) || options.exploration < 0)) ||
     (options.maxSearchTimeMs !== undefined &&
       (!Number.isFinite(options.maxSearchTimeMs) || options.maxSearchTimeMs <= 0)) ||
     [options.maxSearches, options.startAfterDecisions].some(
       (limit) => limit !== undefined && (!Number.isSafeInteger(limit) || limit < 0),
     )
-  )
+  ) {
     throw new Error("Invalid residual MCTS search budget");
+  }
+  const maxRolloutDecisions = options.maxRolloutDecisions ?? (options.rolloutTurns === undefined ? undefined : 64);
   const searchSeat = options.searchSeat ?? options.learnerSeat;
   if (searchSeat !== 0 && searchSeat !== 1) throw new Error("Residual search needs a valid seat");
   const programs = [SEED_RESIDUAL, SEED_RESIDUAL];
@@ -166,8 +172,9 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
         return structuredClone(root.actions[choose(root)]!.intent);
       }
       if (
-        options.rolloutTurns !== undefined &&
-        choice.engine.state.turnCount >= root.observation.turn + options.rolloutTurns &&
+        ((options.rolloutTurns !== undefined &&
+          choice.engine.state.turnCount >= root.observation.turn + options.rolloutTurns) ||
+          (maxRolloutDecisions !== undefined && cursor - prefix.length >= maxRolloutDecisions)) &&
         choice.method === "chooseMainAction" &&
         choice.engine.state.pendingDecision === undefined &&
         choice.engine.state.combatWindow === undefined
@@ -259,7 +266,7 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
           ...search.report,
           seat: searchSeat,
           elapsedMs: performance.now() - start,
-          ...(options.rolloutTurns === undefined ? {} : { leafEvaluations }),
+          ...(maxRolloutDecisions === undefined ? {} : { leafEvaluations }),
         };
         searches.push(report);
         options.onSearch?.(report);

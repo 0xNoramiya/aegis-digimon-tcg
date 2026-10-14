@@ -14,6 +14,7 @@ export type MctsResidualMatchOptions = {
   exploration?: number;
   maxSearchTimeMs?: number;
   rolloutTurns?: number;
+  maxRolloutDecisions?: number;
   moveOrderingProgram?: HeuristicProgram;
   searchSeed: number;
   maxSearches?: number;

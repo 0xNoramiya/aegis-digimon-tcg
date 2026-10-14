@@ -7,6 +7,44 @@ import { SEED_RESIDUAL } from "#api/bot/evolution/residualPolicy";
 import { runMctsResidualMatch } from "#api/bot/evolution/runMctsResidualMatch";
 
 describe("residual policy with real-engine MCTS", () => {
+  it.each([
+    { learnerSeat: 0, rolloutTurns: undefined },
+    { learnerSeat: 1, rolloutTurns: undefined },
+    { learnerSeat: 0, rolloutTurns: 200 },
+    { learnerSeat: 1, rolloutTurns: 200 },
+  ] as const)(
+    "bounds rollout decisions in seat $learnerSeat with turn horizon $rolloutTurns",
+    async ({ learnerSeat, rolloutTurns }) => {
+      const game = await runMctsResidualMatch({
+        seed: 719,
+        learnerSeat,
+        decks: [RED_DECK, BLUE_DECK],
+        program: SEED_RESIDUAL,
+        simulations: 4,
+        searchSeed: 917,
+        maxSearches: 2,
+        maxRolloutDecisions: 2,
+        rolloutTurns,
+      });
+      expect(game.valid).toBe(true);
+      expect(game.result.reason).not.toBe("cancelled");
+      expect(game.result.errors).toEqual([]);
+      expect(game.result.rejections).toEqual([]);
+      expect(game.searches).toHaveLength(2);
+      for (const search of game.searches) {
+        expect(search.completed).toBe(4);
+        expect(search.invalid).toBe(0);
+        expect(search.leafEvaluations).toBeGreaterThan(0);
+        expect(search.leafEvaluations).toBeLessThanOrEqual(search.completed);
+        expect(search.root.reduce((sum, row) => sum + row.visits, 0)).toBe(search.completed);
+      }
+      expect(game.result.seats.map((seat) => seat.inferenceFallbacks)).toEqual([
+        { error: 0, timeout: 0 },
+        { error: 0, timeout: 0 },
+      ]);
+    },
+  );
+
   it("restores policy-ordered alternatives consistently through consecutive searches", async () => {
     const game = await runMctsResidualMatch({
       seed: 719,
@@ -82,6 +120,10 @@ describe("residual policy with real-engine MCTS", () => {
   });
 
   it.each([
+    { maxRolloutDecisions: 0 },
+    { maxRolloutDecisions: 1.5 },
+    { maxRolloutDecisions: Infinity },
+    { maxRolloutDecisions: 10001 },
     { rolloutTurns: 0 },
     { rolloutTurns: 1.5 },
     { exploration: -1 },
@@ -211,21 +253,24 @@ describe("residual policy with real-engine MCTS", () => {
     ).rejects.toThrow("Invalid residual MCTS search budget");
   });
 
-  it.each([undefined, 1])("keeps external cancellation invalid with rollout cutoff %s", async (rolloutTurns) => {
-    const controller = new AbortController();
-    const game = await runMctsResidualMatch({
-      seed: 719,
-      learnerSeat: 0,
-      decks: [RED_DECK, BLUE_DECK],
-      program: SEED_RESIDUAL,
-      simulations: 1,
-      searchSeed: 917,
-      rolloutTurns,
-      signal: controller.signal,
-      onSearch: () => controller.abort(),
-    });
-    expect(game.valid).toBe(false);
-    expect(game.result.reason).toBe("cancelled");
-    expect(game.searches).toHaveLength(1);
-  });
+  it.each([{}, { rolloutTurns: 1 }, { maxRolloutDecisions: 2 }])(
+    "keeps external cancellation invalid with rollout cutoff %j",
+    async (cutoff) => {
+      const controller = new AbortController();
+      const game = await runMctsResidualMatch({
+        seed: 719,
+        learnerSeat: 0,
+        decks: [RED_DECK, BLUE_DECK],
+        program: SEED_RESIDUAL,
+        simulations: 1,
+        searchSeed: 917,
+        ...cutoff,
+        signal: controller.signal,
+        onSearch: () => controller.abort(),
+      });
+      expect(game.valid).toBe(false);
+      expect(game.result.reason).toBe("cancelled");
+      expect(game.searches).toHaveLength(1);
+    },
+  );
 });
