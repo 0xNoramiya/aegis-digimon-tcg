@@ -8,6 +8,11 @@ import {
 } from "@aegis/shared";
 import type { EffectContext, RemovalCause, ReplacementEventName, SubTriggerEventName } from "./EffectContext.js";
 import { effectProvenanceKinds } from "./effectProvenance.js";
+import type { KeywordReactionId } from "#api/engine/effects/KeywordReaction";
+
+export type ReplacementId = number | KeywordReactionId;
+
+type RegisteredReplacement = ReplacementSubscription & { id: number };
 
 /**
  * Sub-trigger / delayed-effect + replacement registry
@@ -39,6 +44,7 @@ export type SubTriggerRootZone = "trash" | "hand" | "security";
 /** A delayed/triggered sub-effect installed during resolution. */
 export interface SubTriggerSubscription {
   id: number;
+  identicalInstallOrdinal?: number;
   event: SubTriggerEventName;
   /** Printed timing of the clause that installed this watcher. */
   printedTiming?: string;
@@ -210,7 +216,7 @@ export interface SubTriggerTurnLedger {
 
 /** Fields common to every mode of an installed replacement subscription. */
 export interface ReplacementSubscriptionBase {
-  id: number;
+  id: ReplacementId;
   event: ReplacementEventName;
   sourcePermanentId?: string;
   /**
@@ -363,6 +369,7 @@ export interface ReplacementSubscriptionPrevent extends ReplacementSubscriptionB
    * `leavingPermanentId` is prevented (the cost was paid / the choice made).
    */
   preventCheck: (ctx: EffectContext, leavingPermanentId: string) => Promise<boolean>;
+  preventOneOf?: (ctx: EffectContext, candidatePermanentIds: readonly string[]) => Promise<string | undefined>;
   /** Prevents ALL matching permanents on one activation ("they don't leave"). */
   affectsAll?: boolean;
   /**
@@ -427,7 +434,7 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K>
 
 export class SubTriggerRegistry {
   private subs: SubTriggerSubscription[] = [];
-  private replacements: ReplacementSubscription[] = [];
+  private replacements: RegisteredReplacement[] = [];
   private seq = 0;
   /**
    * The `windowToken` each `oncePerTiming` subscription last fired for (by subscription
@@ -460,7 +467,7 @@ export class SubTriggerRegistry {
    * typecheck and then silently never fire; failing loudly at install time turns
    * that class of bug into an immediate crash instead of a mystery.
    */
-  subscribe(sub: Omit<SubTriggerSubscription, "id">): number {
+  subscribe(sub: Omit<SubTriggerSubscription, "id" | "identicalInstallOrdinal">): number {
     if (
       sub.matches !== undefined &&
       sub.sourcePermanentId === undefined &&
@@ -484,8 +491,30 @@ export class SubTriggerRegistry {
       if (existing !== undefined) return existing.id;
     }
     const id = this.seq++;
-    this.subs.push({ ...sub, id });
+    const ordinal = this.findFreeIdenticalInstallOrdinal(sub);
+    this.subs.push({ ...sub, id, ...(ordinal > 1 ? { identicalInstallOrdinal: ordinal } : {}) });
     return id;
+  }
+
+  private findFreeIdenticalInstallOrdinal(sub: Omit<SubTriggerSubscription, "id">): number {
+    const taken = new Set(
+      this.subs
+        .filter(
+          (candidate) =>
+            candidate.oncePerTurnKey === undefined &&
+            candidate.event === sub.event &&
+            candidate.sourcePermanentId === sub.sourcePermanentId &&
+            candidate.sourceInstanceId === sub.sourceInstanceId &&
+            candidate.dedupeKey === sub.dedupeKey &&
+            candidate.description === sub.description,
+        )
+        .map((candidate) => candidate.identicalInstallOrdinal ?? 1),
+    );
+    let ordinal = 1;
+    while (taken.has(ordinal)) {
+      ordinal += 1;
+    }
+    return ordinal;
   }
 
   /** Install a replacement effect. Returns its id. */
@@ -516,7 +545,7 @@ export class SubTriggerRegistry {
       // digivolution cards"). Keeping the earlier window's record would charge the old count
       // (BT13-007 paid for 1 source while holding 2), so the fresh derivation replaces it.
       if (residentReduction && existing.mode === "reduceCost" && existing.residentReduction === true) {
-        this.replacements[existingIndex] = { ...sub, id: existing.id } as ReplacementSubscription;
+        this.replacements[existingIndex] = { ...sub, id: existing.id } as RegisteredReplacement;
       }
       return existing.id;
     }
@@ -524,7 +553,7 @@ export class SubTriggerRegistry {
     // The spread below loses the sub/mode correlation TS tracks on the discriminated union
     // (it widens to the members' common shape) — `sub`'s own type already guarantees the
     // mode-specific fields (e.g. `preventCheck` on "prevent") are present, so re-assert it.
-    this.replacements.push({ ...sub, id } as ReplacementSubscription);
+    this.replacements.push({ ...sub, id } as RegisteredReplacement);
     return id;
   }
 
@@ -968,7 +997,7 @@ export class SubTriggerRegistry {
   ): Promise<number> {
     if (event !== "wouldBePlayed") return 0;
     const candidates = this.replacements.filter(
-      (replacement): replacement is ReplacementSubscriptionInstead =>
+      (replacement): replacement is ReplacementSubscriptionInstead & { id: number } =>
         replacement.event === event && replacement.mode === "instead",
     );
     let activated = 0;

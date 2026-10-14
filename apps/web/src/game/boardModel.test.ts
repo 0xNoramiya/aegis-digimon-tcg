@@ -1033,6 +1033,14 @@ describe("BT22-061 intrinsic face-down-source digivolution reduction", () => {
     const options = getDigivolveCostOptions("BT22-061", base);
     expect(options).toContainEqual(expect.objectContaining({ type: "alternate", cost: 1 }));
   });
+
+  it("shows the full cost 3 from a Ver.2 Vegiemon in the breeding area", () => {
+    const base = permOf("BT22-049");
+    base.inBreeding = true;
+    base.stack = [{ cardId: "BT1-001", instanceId: "fd-1", faceUp: false }] as typeof base.stack;
+    const options = getDigivolveCostOptions("BT22-061", base);
+    expect(options).toContainEqual(expect.objectContaining({ type: "alternate", cost: 3 }));
+  });
 });
 
 describe("Lopmon base-granted evolution pricing", () => {

@@ -1,4 +1,4 @@
-FROM node:26-alpine
+FROM node:26-alpine AS manifests
 RUN npm install --global pnpm@10.30.1
 WORKDIR /app
 
@@ -7,13 +7,31 @@ COPY patches ./patches
 COPY packages/shared/package.json ./packages/shared/
 COPY apps/api/package.json ./apps/api/
 
-RUN pnpm install --frozen-lockfile
+FROM manifests AS dependencies
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store,sharing=locked \
+    pnpm install --frozen-lockfile --prod
+
+FROM manifests AS builder
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store,sharing=locked \
+    pnpm install --frozen-lockfile
 
 COPY packages/shared ./packages/shared
 COPY apps/api ./apps/api
-COPY data/kb/banlist.json ./data/kb/banlist.json
 
 RUN pnpm --filter @aegis/shared build && pnpm --filter @aegis/api build
+
+FROM node:26-alpine
+WORKDIR /app
+
+COPY --from=dependencies /app/package.json ./
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=dependencies /app/packages/shared/package.json ./packages/shared/
+COPY --from=dependencies /app/packages/shared/node_modules ./packages/shared/node_modules
+COPY --from=dependencies /app/apps/api/package.json ./apps/api/
+COPY --from=dependencies /app/apps/api/node_modules ./apps/api/node_modules
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY data/kb/banlist.json ./data/kb/banlist.json
 
 ENV PORT=2567
 EXPOSE 2567

@@ -178,6 +178,46 @@ describe("card artwork choices", () => {
     expect(loadDecks()[0]?.mainDeckArts).toEqual(existing.mainDeckArts);
   });
 
+  it("double-clicking a detail art thumbnail uses it on every copy in the deck", async () => {
+    const onSave = vi.fn<(deck: DeckListing, setActive: boolean) => void>();
+    render(
+      <I18nProvider>
+        <DeckBuilder
+          decks={[deck()]}
+          activeDeckId="art-deck"
+          initialEditingDeck={deck()}
+          onDeleteDeck={() => undefined}
+          onSelectDeck={() => undefined}
+          onSaveDeck={onSave}
+          onNav={() => undefined}
+        />
+      </I18nProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Agumon, 2 in deck" }));
+    const drawer = within(screen.getByRole("dialog", { name: "Card detail" }));
+    expect(drawer.getByText("Double-click an art to use it on every copy in this deck.")).toBeTruthy();
+    const alternateButton = drawer.getByRole("button", { name: "Alternate 1" });
+    expect(alternateButton.getAttribute("aria-describedby")).toBe("card-art-apply-hint");
+    fireEvent.doubleClick(alternateButton);
+    await waitFor(() => expect(onSave.mock.lastCall?.[0].mainDeckArts).toEqual([alternate(), alternate()]));
+    fireEvent.doubleClick(drawer.getByRole("button", { name: "Original" }));
+    await waitFor(() => expect(onSave.mock.lastCall?.[0].mainDeckArts).toEqual([cardId, cardId]));
+    expect(onSave.mock.lastCall?.[0].mainDeck).toEqual([cardId, cardId]);
+  });
+
+  it("does not offer double-click art use when the card has no copies to change", () => {
+    render(
+      <I18nProvider>
+        <CardDetailDrawer cardId={cardId} onClose={() => undefined} />
+      </I18nProvider>,
+    );
+    expect(screen.queryByText("Double-click an art to use it on every copy in this deck.")).toBeNull();
+    const button = screen.getByRole("button", { name: "Alternate 1" });
+    expect(button.getAttribute("aria-describedby")).toBeNull();
+    fireEvent.doubleClick(button);
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+  });
+
   it("marks Japanese printings with a JP badge", () => {
     render(
       <I18nProvider>

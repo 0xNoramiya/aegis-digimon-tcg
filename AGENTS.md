@@ -6,7 +6,7 @@
 - Every exported helper must have its own file, named after the helper. Only helpers private to their owning module may stay in that module.
 - Do not create `index` files or barrels. Import the owning file directly through configured aliases: `@/` in the web app, `#api/` in the API, `#shared/` inside shared, and `@aegis/shared/<domain>/<file>` across workspaces.
 - Organize source by domain and responsibility, colocate tests, types, enums, and helpers, and avoid generic helper/utility dumping grounds. Preserve the workspace, card-set, and scenario paths used by tooling.
-- Apply [coding-style](.agents/skills/coding-style/SKILL.md) to application changes and [enums](.agents/skills/enums/SKILL.md) to fixed domain values. Preserve serialized values and numeric engine enum ordering.
+- Apply [coding-style](.agents/skills/coding-style/SKILL.md) to application changes and [enums](.agents/skills/enums/SKILL.md) to fixed domain values. Preserve serialized values and numeric engine enum ordering. Read [coding preferences](internal-docs/ai/coding-preferences.md) when changing application code.
 - Run [quality-gate](.agents/skills/quality-gate/SKILL.md), relevant tests, and `git diff --check`; report failures and coverage limits. Build changed shared contracts before focused tests.
 - Keep these instructions canonical. `CLAUDE.md` is only a pointer. Follow [agent-file-convention](.agents/skills/agent-file-convention/SKILL.md) for instruction changes and update [COLLECTIONS.md](COLLECTIONS.md) with persistence schema changes.
 - Start with `pnpm dev`; restart after API changes because the API runs compiled code without source watching. See [development commands](internal-docs/ai/development.md) and [architecture map](internal-docs/ai/architecture-map.md).
@@ -19,5 +19,6 @@
 - Follow [testing guidance](internal-docs/ai/testing.md) for engine, card, conformance, and browser changes. Never use fixed sleeps or `waitForTimeout` for E2E synchronization. Fix shared product code, not only fixtures.
 - Use Orca Browser through the public `orca` CLI for requested manual checks. Verify narrow/wide viewports and dark/light modes for layout changes.
 - Write GitHub issue titles, descriptions, comments, and verification reports in English. Follow the authorized branch and delivery scope; distinguish local changes from deployed fixes.
+- Use `develop` as the default development branch: create feature and fix branches from it and target it in PRs. Normal releases use a PR from `develop` into `main`, merged with a merge commit. See [development and release workflow](internal-docs/ai/development.md).
 - Never commit credentials or `.env` files, rewrite pushed history, force push, rebase, squash merge, hard reset, or push directly to main. Do not edit git identity or `.git/config`.
 - Do not create task-specific planning documents unless requested.

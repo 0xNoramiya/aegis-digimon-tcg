@@ -1,3 +1,5 @@
+import type { LowTimeWarning } from "@/game/useLowTimeWarning";
+import { RollbackControls } from "@/game/RollbackControls";
 /* The arena itself: the opponent's bar, the narration and the ticker, the field's three
    columns, the player's dock, and the free-floating cue layers over all of it.
 
@@ -31,6 +33,7 @@ import { useTranslation } from "../../../i18n";
 import { CardOpenerProvider } from "../../cardLinks";
 import { OpponentSelectingPill } from "../../BoardDecisionRail";
 import { opponentStatusKey } from "../../opponentStatus";
+import { getActingPlateKeys } from "@/game/getActingPlateKeys";
 import { NarrationStack } from "../../NarrationStack";
 import { AttackAnnouncementBanner } from "../../SidePanelStack";
 import { TargetingSpotlight } from "../../TargetingSpotlight";
@@ -190,6 +193,7 @@ export function BoardStage({
   onOpenCard,
   promptSourceCardId,
   onResetScenario,
+  timeWarning,
 }: {
   state: GameState;
   shownState: GameState;
@@ -235,6 +239,7 @@ export function BoardStage({
   onInspectPermanent: { viewer: (perm: Permanent) => void; opponent: (perm: Permanent) => void };
   onOpenCard: (cardId: string, artId?: string) => void;
   onResetScenario?: () => void;
+  timeWarning: LowTimeWarning;
 }) {
   const { t } = useTranslation();
   useBreedingTransferOrigins(anchors.board);
@@ -286,6 +291,12 @@ export function BoardStage({
   const opponentStatus = opponentStatusKey(state, viewerSeat);
   // An open turn reads as thinking only once the board has caught up; while the
   // opponent's last action still plays, the board itself is the feedback.
+  const actingPlateKeys = getActingPlateKeys({
+    state,
+    displayedTurnSeat: readouts.displayedTurnSeat,
+    viewerSeat,
+    spectating,
+  });
   const opponentIdle = !!state.pendingDecision || !!state.combatWindow || !cues.presenting;
 
   return (
@@ -342,6 +353,7 @@ export function BoardStage({
             viewerSeat={viewerSeat}
             displayedTurnSeat={readouts.displayedTurnSeat}
             displayedTurnCount={readouts.displayedTurnCount}
+            actingLabel={actingPlateKeys.opponent ? t(actingPlateKeys.opponent) : undefined}
             phase={shownState.phase}
             memory={readouts.memory}
             eggDeckCount={breedingOpponent.eggDeckCount}
@@ -352,6 +364,17 @@ export function BoardStage({
             }
             deckCount={shownOpponent.deckCount}
             trashCount={shownOpponent.trash.length}
+            rollbackControls={
+              room && !spectating ? (
+                <RollbackControls
+                  state={state}
+                  room={room}
+                  seat={viewerSeat}
+                  menu={layout.portraitArena}
+                  compact={layout.narrowGameLayout}
+                />
+              ) : undefined
+            }
             portraitArena={layout.portraitArena}
             narrowGameLayout={layout.narrowGameLayout}
             skippable={cues.presenting || cues.decisionAnimationsPending}
@@ -382,6 +405,7 @@ export function BoardStage({
                 securityDockActive={cues.securityBranch !== null || cues.optionBranch !== null}
                 onAdvance={cues.advanceNarration}
                 onDismissRejection={cues.dismissRejection}
+                timeWarning={timeWarning}
                 onHold={cues.holdNarration}
               />
             ) : null}
@@ -590,6 +614,7 @@ export function BoardStage({
             playerName={viewer.displayName || t("game.you")}
             playerAvatarId={viewer.avatarId}
             playerBotPersonaId={viewer.botPersonaId}
+            actingLabel={actingPlateKeys.viewer ? t(actingPlateKeys.viewer) : undefined}
             breedingDock={!layout.portraitArena ? breedingDock : null}
             pileDock={layout.dockViewerPiles ? viewerPiles : null}
             handDockRef={anchors.viewerHandDock}

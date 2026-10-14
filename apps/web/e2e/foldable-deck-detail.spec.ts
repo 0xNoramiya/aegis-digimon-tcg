@@ -67,7 +67,7 @@ for (const pointer of ["mouse", "touch"] as const) {
         await page.goto("/e2e/deck-builder.html", { waitUntil: "domcontentloaded" });
         await searchGaiomon(page);
         await page.getByRole("button", { name: "Add", exact: true }).click();
-        const sheet = page.getByRole("button", { name: /Tap to see more about the deck/ });
+        const sheet = page.getByRole("button", { name: /^View deck/ });
         if (await sheet.isVisible()) await sheet.click();
         await page.getByRole("button", { name: "Gaiomon, 1 in deck" }).click();
         const drawer = page.getByRole("dialog", { name: "Card detail", exact: true });

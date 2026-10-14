@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Panel, SectionHeading } from "../design/surfaces";
-import { useTranslation, type TranslationKey } from "../i18n";
+import { useTranslation } from "../i18n";
 import { allReleases, displayVersion, issueUrl, type Release, type ReleaseItem } from "./catalog";
+import { translateReleaseMessage } from "@/releases/translateReleaseMessage";
 import "./releases.css";
 
 export function ReleasesScreen() {
@@ -47,7 +48,7 @@ function ReleaseEntry({ release, current = false }: { release: Release; current?
           )}
         </time>
       </header>
-      <p className="release__summary">{t(release.summaryKey as TranslationKey)}</p>
+      <p className="release__summary">{translateReleaseMessage({ key: release.summaryKey, locale })}</p>
       {release.features.length ? <ReleaseSection title={t("releases.features")} items={release.features} /> : null}
       {release.fixes.length ? <ReleaseSection title={t("releases.fixes")} items={release.fixes} /> : null}
     </>
@@ -55,14 +56,14 @@ function ReleaseEntry({ release, current = false }: { release: Release; current?
 }
 
 function ReleaseSection({ title, items }: { title: ReactNode; items: ReleaseItem[] }) {
-  const { t } = useTranslation();
+  const { locale, t } = useTranslation();
   return (
     <section className="release__section">
       <SectionHeading title={title} level={3} />
       <ul>
         {items.map((item) => (
           <li key={`${item.textKey}:${item.issue ?? "none"}`}>
-            <p>{t(item.textKey as TranslationKey)}</p>
+            <p>{translateReleaseMessage({ key: item.textKey, locale })}</p>
             {item.issue ? (
               <a className="release__reported" href={issueUrl(item.issue)} target="_blank" rel="noreferrer">
                 {t("releases.reported", { issue: item.issue })}

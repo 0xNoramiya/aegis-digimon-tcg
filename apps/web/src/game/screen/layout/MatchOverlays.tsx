@@ -10,7 +10,7 @@ import type { ReplaySaveProps } from "../../../replays/ReplaySavePrompt";
    Each surface is its own component; this file owns only what the match's state means for
    each of them. */
 
-import type { RefObject } from "react";
+import type { ReactNode, RefObject } from "react";
 import { canMoveFromBreeding, canUseBreedingAction, displayMemory, parseActivatable } from "../../boardModel";
 import type { GameState, DecisionRequest, Permanent, PlayerState, Seat } from "@aegis/shared";
 import type { RevealedZones } from "../model/gameOutcome";
@@ -150,6 +150,7 @@ export function MatchOverlays({
     | (ReplaySaveProps & {
         spectatorResult?: string;
         onDownloadReplay?: () => void;
+        usedDeckDialog?: (onClose: () => void) => ReactNode;
         replayStatus?: "preparing" | "unavailable";
         result: GameOverOutcome;
         reason: string;

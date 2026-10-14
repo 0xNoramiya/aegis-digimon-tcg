@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { BotOpponentPreview } from "@/bot/personas/BotOpponentPreview";
 import { PlayerLine } from "@/game/screen/layout/PlayerLine";
-import { FAMOUS_DECKS } from "@/game/decks";
+import { FAMOUS_DECKS } from "@/game/famousDecks";
 import { I18nProvider } from "@/i18n";
 
 afterEach(cleanup);

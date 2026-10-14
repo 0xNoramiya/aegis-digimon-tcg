@@ -10,6 +10,7 @@ import {
   type CSSProperties,
   type InputHTMLAttributes,
   type KeyboardEvent,
+  type MouseEvent,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
@@ -40,6 +41,7 @@ export type Screen =
   | "deck"
   | "collection"
   | "community"
+  | "roadmap"
   | "tournaments"
   | "settings"
   | "replays"
@@ -69,7 +71,7 @@ type AegisButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onClick">
   variant?: ButtonVariant;
   size?: ButtonSize;
   icon?: IconComponent;
-  onClick?: () => void;
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
   full?: boolean;
   sound?: SoundKind | false;
 };
@@ -96,9 +98,9 @@ export function Button({
       onClick={
         disabled
           ? undefined
-          : () => {
+          : (event) => {
               if (sound) playSound(sound);
-              onClick?.();
+              onClick?.(event);
             }
       }
       disabled={disabled}
@@ -547,6 +549,7 @@ export function TopNav({
   onOpenTheme,
   onSendFeedback,
   notifications,
+  music,
 }: {
   screen: Screen;
   onNav: (s: Screen) => void;
@@ -562,8 +565,10 @@ export function TopNav({
   onToggleDark?: (dark: boolean) => void;
   onOpenTheme?: () => void;
   onSendFeedback?: () => void;
+  music?: ReactNode;
 }) {
   const { t } = useTranslation();
+  const navActive = (key: Screen) => screen === key || (screen === "roadmap" && key === "community");
   const navTo = (s: Screen) => {
     playSound("nav");
     onNav(s);
@@ -649,7 +654,7 @@ export function TopNav({
           </button>
           <nav className="aegis-top-nav__links" aria-label={t("nav.primaryAria")}>
             {items.map((it) => (
-              <NavItem key={it.key} item={it} active={screen === it.key} onSelect={() => navTo(it.key)} />
+              <NavItem key={it.key} item={it} active={navActive(it.key)} onSelect={() => navTo(it.key)} />
             ))}
           </nav>
         </div>
@@ -657,6 +662,7 @@ export function TopNav({
           {actions}
           {notifications}
           {feedback}
+          {music}
           {themeToggle}
           <button
             className="aegis-icon-button"
@@ -681,6 +687,7 @@ export function TopNav({
         <div className="aegis-mobile-bar__actions">
           {notifications}
           {feedback}
+          {music}
           {themeToggle}
           {signIn}
           {portrait(32)}
@@ -688,7 +695,7 @@ export function TopNav({
       </header>
       <nav className="aegis-bottom-nav" aria-label={t("nav.primaryAria")}>
         {items.map((it) => (
-          <NavItem key={it.key} item={it} active={screen === it.key} onSelect={() => navTo(it.key)} compact />
+          <NavItem key={it.key} item={it} active={navActive(it.key)} onSelect={() => navTo(it.key)} compact />
         ))}
       </nav>
     </>

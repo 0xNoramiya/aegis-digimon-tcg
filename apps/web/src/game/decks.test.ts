@@ -4,12 +4,12 @@ import {
   activeCollectionCards,
   copyDeckPreset,
   DECKS,
-  FAMOUS_DECKS,
   filterDeckToKnownCards,
   parseDeckList,
   removeDeck,
   type DeckListing,
 } from "./decks";
+import { FAMOUS_DECKS } from "./famousDecks";
 
 describe("removeDeck", () => {
   it("drops only the matching deck and keeps order", () => {

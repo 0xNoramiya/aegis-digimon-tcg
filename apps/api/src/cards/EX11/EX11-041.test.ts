@@ -147,6 +147,33 @@ describe("EX11-041 Oblivimon", () => {
     assertNoLoudGap(s);
   });
 
+  it.each([
+    { faceUp: false, side: "face-down" },
+    { faceUp: true, side: "face-up" },
+  ])("battles as a checked $side security Digimon and stays in the trash after the turn ends", async ({ faceUp }) => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "BT1-009", as: "attacker", dp: 6000 }] },
+      1: { security: [{ card: cardId, as: "oblivimon", faceUp }, "BT1-019"] },
+    });
+    await s.ready();
+    const oblivimonInstanceId = s.inst("oblivimon").instanceId;
+    const turn = s.engine.runOneTurn();
+    await advance(s.engine).waitForMainPhase(0);
+
+    await attackPlayer(s, 0, "attacker");
+    advance(s.engine).endMainPhaseIfOpen(0);
+    await turn;
+
+    expect(s.events.find((event) => event.kind === "securityChecked")).toMatchObject({
+      revealedCardId: cardId,
+      resolution: "battle",
+    });
+    expect(s.state.players[1]!.trash.map(({ instanceId }) => instanceId)).toContain(oblivimonInstanceId);
+    expect(s.state.players[1]!.battleArea).toHaveLength(0);
+    expect(s.events.some((event) => event.kind === "cardPlayed" && event.cardId === cardId)).toBe(false);
+    assertNoLoudGap(s);
+  });
+
   it("publicly plays, flips the next face-down security, and de-digivolves one opposing Digimon", async () => {
     const s = setupEngine(
       {

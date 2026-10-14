@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Button } from "../../../design/primitives";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
@@ -42,6 +42,8 @@ const HEADER_GAP_PX = 12;
 type BarDensity = "full" | "brief" | "compact";
 
 const BAR_DENSITIES: readonly BarDensity[] = ["full", "brief", "compact"];
+
+type ResultView = "splash" | "board" | "usedDeck";
 
 interface BarPlacement {
   density: BarDensity;
@@ -90,6 +92,7 @@ function placeBar(bar: HTMLElement): BarPlacement | undefined {
 export function GameOverOverlay({
   spectatorResult,
   onDownloadReplay,
+  usedDeckDialog,
   replayFile,
   replayStatus,
   signedIn,
@@ -103,6 +106,7 @@ export function GameOverOverlay({
   series,
 }: ReplaySaveProps & {
   spectatorResult?: string;
+  usedDeckDialog?: (onClose: () => void) => ReactNode;
   result: GameOverOutcome;
   reason: string;
   stats: { value: number | string; label: string }[];
@@ -117,7 +121,8 @@ export function GameOverOverlay({
 }) {
   const { t } = useTranslation();
   const splash = gameOverSplash(result, reason);
-  const [reviewingBoard, setReviewingBoard] = useState(false);
+  const [view, setView] = useState<ResultView>("splash");
+  const reviewingBoard = view === "board";
   const barRef = useRef<HTMLDivElement>(null);
   const [placement, setPlacement] = useState<BarPlacement>({ density: "full" });
 
@@ -144,6 +149,8 @@ export function GameOverOverlay({
       : t("overlay.series.gameComplete", { game: series.view.gameNumber, bestOf: series.view.bestOf });
   const reasonText = spectatorResult ?? (series && seriesOutcome ? seriesReason(t, series) : t(splash.reasonKey));
 
+  if (view === "usedDeck" && usedDeckDialog) return usedDeckDialog(() => setView("board"));
+
   if (reviewingBoard) {
     return (
       <div
@@ -161,7 +168,7 @@ export function GameOverOverlay({
           icon={Icons.Maximize}
           aria-label={t("overlay.showResult")}
           title={t("overlay.showResult")}
-          onClick={() => setReviewingBoard(false)}
+          onClick={() => setView("splash")}
         >
           <span className="game-result-bar__label">{t("overlay.showResult")}</span>
         </Button>
@@ -215,6 +222,16 @@ export function GameOverOverlay({
             </Button>
           </div>
         )}
+        {usedDeckDialog ? (
+          <Button
+            className="game-result__used-deck"
+            variant="secondary"
+            icon={Icons.FileText}
+            onClick={() => setView("usedDeck")}
+          >
+            {t("overlay.viewUsedDeck")}
+          </Button>
+        ) : null}
         <ReplaySavePrompt
           onDownloadReplay={onDownloadReplay}
           replayFile={replayFile}
@@ -227,7 +244,7 @@ export function GameOverOverlay({
           variant="ghost"
           size="sm"
           icon={Icons.Eye}
-          onClick={() => setReviewingBoard(true)}
+          onClick={() => setView("board")}
         >
           {t("overlay.viewBoard")}
         </Button>

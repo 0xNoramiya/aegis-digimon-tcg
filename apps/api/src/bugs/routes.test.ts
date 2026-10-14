@@ -219,15 +219,6 @@ describe("submitting a bug report", () => {
     expect(await response.json()).toEqual({ error: "unknown_card" });
   });
 
-  it("files an improvement with its kind", async () => {
-    const response = await submit(
-      { kind: "improvement", summary: "show trash count", description: "it would help" },
-      harness.cookie,
-    );
-    expect(response.status).toBe(201);
-    expect(harness.filed[0]).toMatchObject({ kind: "improvement", summary: "show trash count" });
-  });
-
   it("refuses a kind it does not know", async () => {
     for (const kind of ["question", 3, ""]) {
       const response = await submit({ kind, summary: "broken", description: "broken" }, harness.cookie);
@@ -261,6 +252,17 @@ describe("submitting a bug report", () => {
       report: { summary: "broken" },
     });
     vi.restoreAllMocks();
+  });
+
+  it.each(["improvement", "other"])("keeps %s feedback private even when the GitHub tracker is on", async (kind) => {
+    const response = await submit({ kind, summary: "an idea", description: "details" }, harness.cookie);
+    expect(response.status).toBe(201);
+    expect(await response.json()).toEqual({ number: 1 });
+    expect(harness.filed).toEqual([]);
+    expect((await new FeedbackStore(harness.store).list()).items[0]).toMatchObject({
+      githubStatus: "disabled",
+      report: { kind, summary: "an idea" },
+    });
   });
 
   it("saves feedback without a GitHub tracker", async () => {

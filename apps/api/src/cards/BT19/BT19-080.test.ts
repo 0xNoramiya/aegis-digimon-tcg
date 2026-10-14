@@ -59,7 +59,7 @@ describe("BT19-080 Takato Matsuki", () => {
                 target: { sourceRef: "triggerSubject" },
                 cost: { kind: "suspend", target: { filter: { isSelfRef: true }, isSelf: true } },
               },
-              { kind: "Attack", attackPlayer: true, mandatory: true, target: { sourceRef: "triggerSubject" } },
+              { kind: "Attack", attackTargetScope: "player", mandatory: true, target: { sourceRef: "triggerSubject" } },
             ],
           },
         ],

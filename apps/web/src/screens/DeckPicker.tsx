@@ -10,7 +10,8 @@ import { Button, Field, IconButton } from "../design/primitives";
 import { SectionHeading } from "../design/surfaces";
 import { Icons } from "../design/icons";
 import { COLORS, colorKey, type ColorName } from "../design/theme";
-import { FAMOUS_DECK_GROUPS, type DeckListing, type FamousDeckListingGroup } from "../game/decks";
+import type { DeckListing } from "../game/decks";
+import { FAMOUS_DECK_GROUPS, type FamousDeckListingGroup } from "@/game/famousDecks";
 import { useTranslation } from "../i18n";
 import { DeckListCard } from "./DeckListCard";
 import { LobbyCommunityDecks } from "./community/LobbyCommunityDecks";
@@ -97,7 +98,7 @@ function DeckPickerView({
   format?: import("@aegis/shared").DeckFormat;
   activeDeckId: string;
   randomSelected: boolean;
-  randomPoolSize: number;
+  randomPoolSize: number | undefined;
   onSelectRandom: () => void;
   onSelectDeck: (id: string) => void;
   onCopyDeck: (deck: DeckListing) => void;

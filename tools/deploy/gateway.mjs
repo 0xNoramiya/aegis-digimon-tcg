@@ -25,6 +25,41 @@ const MIME_TYPES = {
   ".mp4": "video/mp4",
 };
 
+const PRECOMPRESSED_EXTENSIONS = [
+  ["br", ".br"],
+  ["gzip", ".gz"],
+];
+
+function getAcceptedEncodings(header) {
+  const accepted = new Set();
+  for (const entry of String(header ?? "").split(",")) {
+    const [name, ...parameters] = entry.trim().toLowerCase().split(";");
+    const quality = parameters.map((parameter) => parameter.trim()).find((parameter) => parameter.startsWith("q="));
+    if (name && (!quality || Number(quality.slice(2)) > 0)) {
+      accepted.add(name);
+    }
+  }
+  return accepted;
+}
+
+function findPrecompressedFile(file, acceptEncoding) {
+  const accepted = getAcceptedEncodings(acceptEncoding);
+  for (const [encoding, extension] of PRECOMPRESSED_EXTENSIONS) {
+    if (!accepted.has(encoding)) {
+      continue;
+    }
+    try {
+      const info = statSync(`${file}${extension}`);
+      if (info.isFile()) {
+        return { encoding, file: `${file}${extension}`, info };
+      }
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
 function json(response, status, value) {
   response.writeHead(status, { "content-type": "application/json", "cache-control": "no-store" });
   response.end(JSON.stringify(value));
@@ -33,7 +68,7 @@ function json(response, status, value) {
 export function isApiPath(path, headers) {
   return (
     /^\/(health|ready|matchmake|auth|account|room|bot|bug-reports)(\/|$)/.test(path) ||
-    (/^\/(tournaments|community|replays)(\/|$)/.test(path) && !headers.accept?.includes("text/html"))
+    (/^\/(tournaments|community|replays|roadmap)(\/|$)/.test(path) && !headers.accept?.includes("text/html"))
   );
 }
 
@@ -186,6 +221,7 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
       response.writeHead(303, { location: "/", "clear-site-data": '"cache"', "cache-control": "no-store" });
       return response.end();
     }
+    if (pathname.endsWith(".map")) return json(response, 404, { error: "Not found" });
     const assets = pathname.startsWith("/assets/");
     const root = resolve(state, assets ? "assets" : `releases/${manifest.webRevision ?? manifest.active.revision}/web`);
     let file = resolve(root, `.${assets ? pathname.slice(7) : pathname}`);
@@ -204,14 +240,17 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
       file = resolve(root, "index.html");
       info = statSync(file);
     }
+    const precompressed = findPrecompressedFile(file, request.headers["accept-encoding"]);
     response.writeHead(200, {
       "content-type": MIME_TYPES[extname(file)] ?? "application/octet-stream",
-      "content-length": info.size,
+      "content-length": precompressed?.info.size ?? info.size,
       "cache-control": assets ? "public, max-age=31536000, immutable" : "no-store",
       "x-content-type-options": "nosniff",
+      vary: "accept-encoding",
+      ...(precompressed ? { "content-encoding": precompressed.encoding } : {}),
     });
     if (request.method === "HEAD") return response.end();
-    const stream = createReadStream(file);
+    const stream = createReadStream(precompressed?.file ?? file);
     stream.on("error", () => response.destroy());
     response.on("close", () => stream.destroy());
     stream.pipe(response);

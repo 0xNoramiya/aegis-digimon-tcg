@@ -9,7 +9,7 @@ import { test, expect, type DecisionPolicy } from "./scenario-page";
 test.use({ holdBotAfterTurn: 2 });
 
 const MATERIALS = ["BT26-001", "BT24-034", "BT26-009", "BT26-015", "BT26-016"];
-const SOURCE_IDS = MATERIALS.map((_, i) => `feedback79-material-${i}`);
+const SOURCE_IDS = MATERIALS.map((_, i) => fixtureInstanceId(`feedback79-material-${i}`));
 const OMNI = fixturePermanentId("dev-perm-1-feedback79-omni");
 
 for (const mode of ["accept", "decline", "ordinary"] as const) {
@@ -40,7 +40,7 @@ for (const mode of ["accept", "decline", "ordinary"] as const) {
         if (prevention && decision.sourceCardId === "BT26-016") {
           holyOffers++;
           expect(decision.sourceInstanceId).toBe(fixtureInstanceId("feedback79-material-4"));
-          return { accept: mode === "accept" };
+          return { accept: mode === "accept", decisionBudgetMs: 8_000 };
         }
         return { accept: decision.sourceCardId === "BT26-078" || decision.sourceCardId === "BT26-085" };
       }
@@ -88,21 +88,17 @@ for (const mode of ["accept", "decline", "ordinary"] as const) {
       (p) => p.topCard.instanceId === fixtureInstanceId("feedback79-destroy"),
     );
     expect(after.players[0]!.battleArea).toHaveLength(mode === "decline" ? 0 : 1);
+    expect(after.players[1]!.battleArea.map((p) => p.topCard.cardId)).toEqual(["AD1-004"]);
     if (mode !== "decline") {
       expect(survivor!.stack.map((c) => c.instanceId)).toEqual([...SOURCE_IDS, fixtureInstanceId("feedback79-giant")]);
       if (ordinary) expect(survivor!.permanentId).toBe(fixturePermanentId("dev-perm-0-feedback79-giant"));
     }
     expect(after.players[0]!.trash.map((c) => c.instanceId)).toEqual(
       mode === "decline"
-        ? [
-            ...SOURCE_IDS,
-            fixtureInstanceId("feedback79-giant"),
-            fixtureInstanceId("feedback79-destroy"),
-            fixtureInstanceId("feedback79-security-0-0"),
-          ]
+        ? [...SOURCE_IDS, fixtureInstanceId("feedback79-giant"), fixtureInstanceId("feedback79-destroy")]
         : [],
     );
-    expect(after.players[0]!.securityCount).toBe(ordinary ? 3 : 2);
+    expect(after.players[0]!.securityCount).toBe(mode === "accept" ? 2 : 3);
     expect(after.players[0]!.deckCount).toBe(
       before.players[0]!.deckCount + (mode === "accept" ? 0 : ordinary ? -2 : -1),
     );
@@ -126,20 +122,20 @@ for (const mode of ["accept", "decline", "ordinary"] as const) {
       events.filter(
         (e) => e.kind === "effectTriggered" && e.sourceCardId === "AD1-025" && e.timing === "whenLeavesPlay",
       ),
-    ).toHaveLength(mode === "decline" ? 1 : 0);
+    ).toHaveLength(0);
     expect(
       events.filter(
         (e) => e.kind === "cardsMoved" && e.instanceIds.includes(fixtureInstanceId("feedback79-security-0-0")),
       ),
     ).toEqual(
-      ordinary
-        ? []
-        : [
+      mode === "accept"
+        ? [
             expect.objectContaining({
-              to: mode === "accept" ? "deckBottom" : "trash",
+              to: "deckBottom",
               instanceIds: [fixtureInstanceId("feedback79-security-0-0")],
             }),
-          ],
+          ]
+        : [],
     );
     expect(
       events.flatMap((e) => (e.kind === "memoryChanged" && e.reason === "payCost" ? [[e.from, e.to]] : [])),

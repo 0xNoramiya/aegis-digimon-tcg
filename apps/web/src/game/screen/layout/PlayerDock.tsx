@@ -22,6 +22,7 @@ export function PlayerDock({
   playerName,
   playerAvatarId,
   playerBotPersonaId,
+  actingLabel,
   breedingDock,
   pileDock,
   handDockRef,
@@ -60,7 +61,7 @@ export function PlayerDock({
   playerName?: string;
   playerAvatarId?: string;
   playerBotPersonaId?: string;
-  /** The board is showing the viewer's own turn, so their line does not wait. */
+  actingLabel?: string;
   /** The raising area, when this screen puts it here rather than in the field. */
   breedingDock: ReactNode;
   /** The deck and trash, when this screen puts them here rather than in the rail. */
@@ -116,6 +117,7 @@ export function PlayerDock({
           botPersonaId={playerBotPersonaId}
           side="player"
           timer={timer}
+          actingLabel={actingLabel}
         />
       ) : null}
       <div className="game-hand-dock" ref={handDockRef} style={{ flex: 1, minWidth: 0, padding: "8px 20px 12px" }}>

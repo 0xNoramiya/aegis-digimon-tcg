@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { createInterface } from "node:readline";
 import type { DeckFormat, Intent, Seat } from "@aegis/shared";
 import type { ScenarioFixture } from "../../engine/scenario/types.js";
+import { REPLAY_LINE_NAMES } from "#api/replays/inputs/replayLineNames";
 import {
   REPLAY_FORMAT,
   type ReplayDeck,
@@ -80,14 +81,6 @@ interface Entry {
   position: number;
 }
 
-const RELEVANT = new Set([
-  "replay.header",
-  "replay.seat",
-  "replay.input",
-  "intent.received",
-  "intent.result",
-  "intent.failed",
-]);
 const SITES = new Set<string>(["bothReady", "batchClose", "decisionRequest", "matchStarted", "afterIntent"]);
 const ROOM_INPUT_KINDS = new Set([
   "startMatch",
@@ -174,7 +167,7 @@ function parseEntry(line: string, matchId: string, position: number): Entry | un
   }
   if (!isObject(parsed) || parsed.matchId !== matchId || !Array.isArray(parsed.data)) return undefined;
   const [name, payload] = parsed.data as unknown[];
-  if (typeof name !== "string" || !RELEVANT.has(name) || !isObject(payload)) return undefined;
+  if (typeof name !== "string" || !REPLAY_LINE_NAMES.has(name) || !isObject(payload)) return undefined;
   const replaySeq = payload.replaySeq;
   // Lines written before the replay format existed carry no ordinal and cannot be ordered safely.
   if (typeof replaySeq !== "number") return undefined;
@@ -199,9 +192,23 @@ function buildRecord(entries: Entry[], matchId: string): ReplayRecord {
   const inputs: ReplayInput[] = [];
   const seats: (ReplaySeat | undefined)[] = [undefined, undefined];
   let started = false;
+  let versionOffset = 0;
   for (const { name, payload, replaySeq } of entries) {
+    if (name === "replay.rollback") {
+      if (
+        Number.isInteger(payload.index) &&
+        typeof payload.index === "number" &&
+        payload.index >= 0 &&
+        payload.index <= inputs.length &&
+        typeof payload.versionOffset === "number"
+      ) {
+        inputs.length = payload.index;
+        versionOffset = payload.versionOffset;
+      }
+      continue;
+    }
     const placed = {
-      stateVersion: typeof payload.stateVersion === "number" ? payload.stateVersion : 0,
+      stateVersion: typeof payload.stateVersion === "number" ? payload.stateVersion - versionOffset : 0,
       ...(typeof payload.engineEvents === "number" ? { engineEvents: payload.engineEvents } : {}),
     };
     if (name === "replay.seat") {

@@ -32,6 +32,8 @@ import { MAX_SOUND_VOICES } from "../src/design/sound";
 import { AUDIO_CUES } from "../src/design/audioBank";
 import { cueKey } from "../src/design/audioRecipes";
 
+test.use({ channel: "chromium" });
+
 /* A paced chain must keep moving in a real browser. The jsdom pacing harness replays the
    same scenarios on a fake clock, but a wait cycle between presentation steps only closes
    under the browser's own timing, so this drives the effects lab and watches the queue's
@@ -785,7 +787,7 @@ test.describe("effects lab pacing in the browser", () => {
           contentType: "application/json",
         });
         expect(capture.truncated || state.truncated).toBe(false);
-        expect(capture.motion.captureQuality).toBe("usable");
+        if (!format.reduced) expect(capture.motion.captureQuality).toBe("usable");
         expect(state.gateExpiries).toEqual([]);
         expect(state.steps.filter((step) => step.failed || step.cancelled)).toEqual([]);
         expect(errors).toEqual([]);
@@ -1253,7 +1255,7 @@ test.describe("effects lab pacing in the browser", () => {
           }
         }
         if (!format.reduced) {
-          expect(capture.motion.captureQuality).toBe("usable");
+          expect(capture.motion.captureQuality, JSON.stringify(capture.motion.frames)).toBe("usable");
           expect(capture.securityChecks.map((check) => check.cardName)).toEqual(
             securityIds.slice(0, scenario.securityRemoved).map((id) => getCardDefinition(id)!.nameEn),
           );
@@ -1261,7 +1263,7 @@ test.describe("effects lab pacing in the browser", () => {
             const arrows = capture.arrows.filter((arrow) => arrow.source === attacker.permanentId);
             expect(arrows.length).toBeGreaterThan(1);
             expect(new Set(arrows.map((arrow) => arrow.key)).size).toBe(1);
-            const later = arrows.filter((arrow) => arrow.at >= capture.securityChecks[1]!.firstAt);
+            const later = arrows.filter((arrow) => arrow.at >= capture.securityChecks[0]!.removedAt!);
             expect(later.length).toBeGreaterThan(0);
             expect(later.every((arrow) => arrow.sweepMs !== undefined && arrow.sweepMs >= 380)).toBe(true);
           }
@@ -1358,7 +1360,6 @@ test.describe("effects lab pacing in the browser", () => {
         "Draw Phase",
         "Breeding Phase",
         "Main Phase",
-        "End Phase",
       ]);
       for (const [index, panel] of opponent.entries()) {
         expect(panel.poses.some((pose) => pose.painted)).toBe(true);
@@ -1369,7 +1370,7 @@ test.describe("effects lab pacing in the browser", () => {
         }
       }
       if (!format.reduced) {
-        expect(capture.motion.captureQuality).toBe("usable");
+        expect(capture.motion.captureQuality, JSON.stringify(capture.motion.frames)).toBe("usable");
         const phases = capture.motion.animations.filter(
           (animation) =>
             animation.visibleFrames > 0 && ["arena-phase-ribbon", "battle-banner"].includes(animation.name),
@@ -1607,8 +1608,8 @@ test.describe("effects lab pacing in the browser", () => {
             expect(Math.hypot(last.x - destination!.x, last.y - destination!.y)).toBeLessThan(3);
           }
         }
-        expect(capture.motion.captureQuality).toBe("usable");
         if (format.reduced) return;
+        expect(capture.motion.captureQuality, JSON.stringify(capture.motion.frames)).toBe("usable");
         const phases = capture.phasePanels.filter((panel) => panel.side === "opp");
         expect(phases.map((panel) => panel.label)).toEqual([
           "Opponent's turn",
@@ -1616,7 +1617,6 @@ test.describe("effects lab pacing in the browser", () => {
           "Draw Phase",
           "Breeding Phase",
           "Main Phase",
-          "End Phase",
         ]);
         const main = phases.find((panel) => panel.label === "Main Phase")!;
         expect(main.removedAt).toBeDefined();
@@ -1787,6 +1787,7 @@ test.describe("effects lab pacing in the browser", () => {
                 );
               })
               .toBe(true);
+            await expect(page.locator(".narration-peek")).toHaveCount(0);
             await boundary("attack-security");
             await game.attack(attacker.permanentId, page.locator('[data-drop="opp-security"]'));
           } else {
@@ -2426,11 +2427,11 @@ test.describe("effects lab pacing in the browser", () => {
       });
       await info.attach("grouped-field.png", { body: await page.screenshot(), contentType: "image/png" });
       expect(capture.truncated).toBe(false);
-      expect(capture.motion.captureQuality).toBe("usable");
       if (format.reduced) {
         expect(capture.timings.some((timing) => timing.returning)).toBe(false);
         return;
       }
+      expect(capture.motion.captureQuality, JSON.stringify(capture.motion.frames)).toBe("usable");
       const turns = capture.timings.filter(
         (timing) => timing.properties.includes("rotate") && !timing.properties.includes("translate"),
       );

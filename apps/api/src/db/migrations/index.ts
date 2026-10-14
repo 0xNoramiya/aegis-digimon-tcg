@@ -32,6 +32,11 @@ import { accountReplays } from "./029-account-replays.js";
 import { replaySharingHistory } from "./030-replay-sharing-history.js";
 import { feedbackReportReplays } from "./031-feedback-report-replays.js";
 
+import { magicLinkRequestLimits } from "#api/db/migrations/032-magic-link-request-limits";
+import { connectionDrops } from "#api/db/migrations/033-connection-drops";
+import { communityRoadmap } from "#api/db/migrations/034-community-roadmap";
+import { playtestGroup } from "#api/db/migrations/035-playtest-group";
+
 export const migrations: readonly Migration[] = [
   initialSchema,
   tournamentProgramColumns,
@@ -64,4 +69,8 @@ export const migrations: readonly Migration[] = [
   accountReplays,
   replaySharingHistory,
   feedbackReportReplays,
+  magicLinkRequestLimits,
+  connectionDrops,
+  communityRoadmap,
+  playtestGroup,
 ];

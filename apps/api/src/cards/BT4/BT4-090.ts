@@ -22,7 +22,7 @@ export const compiled: CompiledCard = {
             "Then, it can attack your opponent's Digimon. This effect allows you to attack unsuspended Digimon as well.",
           kind: "Attack",
           target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
-          attackPlayer: false,
+          attackTargetScope: "digimon",
           optional: true,
         },
       ],

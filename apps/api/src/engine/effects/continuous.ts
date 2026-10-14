@@ -252,6 +252,17 @@ export class ContinuousEffectLedger {
           effectText: entry.effectText,
           continuous: entry.continuous,
         })),
+      ...this.playProhibitions
+        .filter((entry) => entry.seat === seat)
+        .map((entry) => ({
+          kind: "restriction" as const,
+          value: entry.byEffectOnly === true ? "playByEffects" : entry.mode,
+          duration: entry.duration,
+          ownerSeat: entry.sourceSeat,
+          sourceCardId: entry.sourceCardId,
+          effectText: entry.effectText,
+          continuous: entry.continuous,
+        })),
       ...this.playerKeywordGrants
         .filter((entry) => entry.seat === seat)
         .map((entry) => ({
@@ -627,7 +638,7 @@ export class ContinuousEffectLedger {
     match: PlayMatch,
     mode: "play" | "move" | "playOrMove",
     duration: EffectDuration,
-    opts?: { continuous?: boolean; byEffectOnly?: boolean },
+    opts?: { continuous?: boolean; byEffectOnly?: boolean; sourceCardId?: string; effectText?: string },
   ): void {
     this.playProhibitions.push(
       this.anchorDuration({
@@ -638,6 +649,8 @@ export class ContinuousEffectLedger {
         duration,
         continuous: opts?.continuous,
         byEffectOnly: opts?.byEffectOnly,
+        ...(opts?.sourceCardId === undefined ? {} : { sourceCardId: opts.sourceCardId }),
+        ...(opts?.effectText === undefined ? {} : { effectText: opts.effectText }),
       }),
     );
   }

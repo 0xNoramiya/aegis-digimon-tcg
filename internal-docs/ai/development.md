@@ -2,16 +2,19 @@
 
 Requires Node 26 and pnpm 10. Run commands from the repository root.
 
-| Task                                                       | Command                 |
-| ---------------------------------------------------------- | ----------------------- |
-| Run shared (watch), API on `:2567`, web on `:5173`         | `pnpm dev`              |
-| Build everything                                           | `pnpm build`            |
-| Type-check all packages (also the `pre-push` hook)         | `pnpm typecheck`        |
-| Lint and format check (Oxlint, Oxfmt)                      | `pnpm check`            |
-| Full CI suite                                              | `pnpm run ci`           |
-| Repository tool tests                                      | `pnpm test:tools`       |
-| Simulator verification gate                                | `pnpm verify:simulator` |
-| Replay a reported match (see [AGENTS.md](../../AGENTS.md)) | `pnpm replay --help`    |
+| Task                                                               | Command                                      |
+| ------------------------------------------------------------------ | -------------------------------------------- |
+| Run shared (watch), API on `:2567`, web on `:5173`                 | `pnpm dev`                                   |
+| Build everything                                                   | `pnpm build`                                 |
+| Type-check application code (also the `pre-push` hook)             | `pnpm typecheck`                             |
+| Lint and format check (Oxlint, Oxfmt)                              | `pnpm check`                                 |
+| Full CI suite                                                      | `pnpm run ci`                                |
+| Repository tool tests                                              | `pnpm test:tools`                            |
+| Simulator verification gate                                        | `pnpm verify:simulator`                      |
+| Replay a reported match (see [AGENTS.md](../../AGENTS.md))         | `pnpm replay --help`                         |
+| Symbolicate a client error (see [client errors](client-errors.md)) | `pnpm client-error symbolicate --maps <dir>` |
+
+The API build and default typecheck exclude test files and test-only support directories. The build also emits shared scenario fixtures for CLI and browser imports; the default typecheck excludes unreferenced fixtures. `pnpm typecheck:tests` explicitly checks the API test program when needed. It preserves the previous exclusion of `src/engine/fuzzer.test.ts`, whose existing strict-nullability errors remain outside the type gate; runtime verification still executes that suite. Imported runtime fixtures remain part of the application module graph. Default builds and workspace typechecks run packages sequentially. The native TypeScript compiler uses `--singleThreaded` and Go heap targets of 1 GiB for the API and 512 MiB for shared/web. `GOMEMLIMIT` is a soft heap target, so total process RSS can exceed it. `NODE_OPTIONS` controls Node processes only. Do not overlap compiler commands during local bug investigations.
 
 Run `pnpm check:fix` to apply lint/format fixes; review the diff, then run `pnpm check`.
 
@@ -41,7 +44,17 @@ Build `@aegis/shared` first when a focused test depends on changed shared code. 
 
 ## Releasing
 
-See the "Releasing" section of `README.md`. Release text needs English, Portuguese (`pt-BR`), and Spanish (`es`) entries in `apps/web/src/releases/`.
+`develop` is the default branch for development and the base for feature and fix
+branches. Target development PRs at `develop` and use
+`.github/PULL_REQUEST_TEMPLATE.md`. `main` is the release branch. Normal releases
+use a PR from `develop` into `main` and the template at
+`.github/PULL_REQUEST_TEMPLATE/release.md`. Use merge commits and preserve both
+long-lived branches. After a release or hotfix, synchronize `main` back into
+`develop` through a PR. Do not publish from a development branch.
+
+See the "Releasing" section of `README.md` for preparation and publication.
+Release text needs English, Portuguese (`pt-BR`), Spanish (`es`), and Italian (`it`)
+entries in `apps/web/src/releases/`.
 
 ## Direct imports and aliases
 

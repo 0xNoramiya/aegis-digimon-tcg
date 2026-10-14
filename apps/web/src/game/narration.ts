@@ -63,7 +63,7 @@ export const TOUCH_NARRATION_LIFETIME_SCALE = 2.4;
  * waits behind a queue the viewer is trying to act on.
  */
 export function isQueuedNotice(notice: MatchNotice): boolean {
-  return notice.body.variant !== "rejection";
+  return notice.body.variant !== "rejection" && notice.body.variant !== "timeWarning";
 }
 
 /** The card a notice is about, when it names one. */

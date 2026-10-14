@@ -16,14 +16,18 @@ import {
 } from "../screens/deckBuilderPreferences";
 import { setAutoHatchEnabled, useAutoHatch } from "../game/autoHatch";
 import { useTranslation } from "../i18n";
-import { isLocale } from "../i18n/locales";
+import { isLocale } from "@/i18n/isLocale";
 import { accountApi, type AccountPreferences } from "./client";
+import { setProfileStatsShown, useProfileStatsShown } from "./profileStats";
+import { setFavoriteDeckIds } from "@/screens/favoriteDecks/setFavoriteDeckIds";
+import { useFavoriteDeckIds } from "@/screens/favoriteDecks/useFavoriteDeckIds";
+import { isSameDeckIdList } from "@/screens/favoriteDecks/isSameDeckIdList";
 
 /**
- * Keeps the theme, language, sleeves, auto hatch and deck builder layout in step with the signed-in account.
+ * Keeps the theme, language, sleeves, auto hatch, profile stats and deck builder layout in step with the signed-in account.
  * localStorage stays the instant source, so guests and the first render never wait on the network.
  * On sign-in the account's stored values win; keys the account lacks are backfilled from this device.
- * Auto hatch defaults to false for accounts without a saved choice.
+ * Auto hatch and profile stats default to false for accounts without a saved choice.
  */
 export function usePreferencesSync({
   accountId,
@@ -36,9 +40,11 @@ export function usePreferencesSync({
 }): boolean {
   const { locale, setLocale } = useTranslation();
   const autoHatch = useAutoHatch();
+  const profileStats = useProfileStatsShown();
   const sleeve = useSyncExternalStore(subscribeCardSleeve, getCardSleeveId, () => DEFAULT_CARD_SLEEVE.id);
   const eggSleeve = useSyncExternalStore(subscribeCardSleeve, getEggSleeveId, () => DEFAULT_EGG_SLEEVE.id);
   const { deckShare, deckView, deckSort } = useDeckBuilderPreferences();
+  const favoriteDeckIds = useFavoriteDeckIds();
   const [synced, setSynced] = useState<{ accountId: string; preferences: AccountPreferences }>();
   const stored = synced && synced.accountId === accountId ? synced.preferences : undefined;
 
@@ -55,6 +61,10 @@ export function usePreferencesSync({
         if (preferences.eggSleeve && getEggSleeveId() !== CUSTOM_CARD_SLEEVE_ID) setEggSleeveId(preferences.eggSleeve);
         setDeckBuilderPreferences(sanitizeDeckBuilderPreferences(preferences));
         setAutoHatchEnabled(preferences.autoHatch === true);
+        setProfileStatsShown(preferences.profileStats !== false);
+        if (preferences.favoriteDeckIds) {
+          setFavoriteDeckIds(preferences.favoriteDeckIds);
+        }
         setSynced({ accountId, preferences });
       })
       .catch(() => undefined);
@@ -67,6 +77,7 @@ export function usePreferencesSync({
     if (!accountId || !stored) return;
     const current: AccountPreferences = {
       ...(autoHatch || stored.autoHatch !== undefined ? { autoHatch } : {}),
+      ...(!profileStats || stored.profileStats !== undefined ? { profileStats } : {}),
       darkMode: dark,
       locale,
       ...(sleeve !== CUSTOM_CARD_SLEEVE_ID && { sleeve }),
@@ -76,15 +87,47 @@ export function usePreferencesSync({
       deckShare,
       deckView,
       deckSort,
+      ...((favoriteDeckIds.length > 0 || stored.favoriteDeckIds !== undefined) && {
+        favoriteDeckIds: [...favoriteDeckIds],
+      }),
     };
     const changes = Object.fromEntries(
-      Object.entries(current).filter(([key, value]) => stored[key as keyof AccountPreferences] !== value),
+      Object.entries(current).filter(
+        ([key, value]) => !isStoredPreference({ stored, key: key as keyof AccountPreferences, value }),
+      ),
     ) as AccountPreferences;
     if (Object.keys(changes).length === 0) return;
     void accountApi
       .updatePreferences(changes)
       .then((preferences) => setSynced({ accountId, preferences }))
       .catch(() => undefined);
-  }, [accountId, stored, autoHatch, dark, locale, sleeve, eggSleeve, deckShare, deckView, deckSort]);
+  }, [
+    accountId,
+    stored,
+    autoHatch,
+    profileStats,
+    dark,
+    locale,
+    sleeve,
+    eggSleeve,
+    deckShare,
+    deckView,
+    deckSort,
+    favoriteDeckIds,
+  ]);
   return !accountId || stored !== undefined;
+}
+
+type StoredPreferenceParams = {
+  stored: AccountPreferences;
+  key: keyof AccountPreferences;
+  value: unknown;
+};
+
+function isStoredPreference({ stored, key, value }: StoredPreferenceParams): boolean {
+  const storedValue = stored[key];
+  if (Array.isArray(storedValue) && Array.isArray(value)) {
+    return isSameDeckIdList({ first: storedValue, second: value });
+  }
+  return storedValue === value;
 }

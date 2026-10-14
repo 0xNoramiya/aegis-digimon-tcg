@@ -118,3 +118,16 @@ describe("BT20-017 Atho, René & Por Token", () => {
     expect(token).not.toHaveProperty("level");
   });
 });
+
+describe("tokens whose reminder prints only color and DP", () => {
+  it.each([
+    ["Familiar", "Yellow", 3000],
+    ["KoHagurumon Token", "Black", 1000],
+    ["Fujitsumon Token", "Purple", 3000],
+    ["Paishu", "Yellow", 6000],
+  ] as const)("%s has no level or play cost", (name, color, dp) => {
+    const token = tokenDefinitions.find(({ cardId }) => cardId === resolveTokenCardId(name));
+    expect(token).toMatchObject({ colors: [color], dp, playCost: -1, isToken: true });
+    expect(token).not.toHaveProperty("level");
+  });
+});

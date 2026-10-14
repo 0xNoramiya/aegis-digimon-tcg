@@ -1,3 +1,5 @@
+import { UsedDeckDialog } from "@/game/UsedDeckDialog";
+import type { DeckListing } from "@/game/decks";
 import { downloadReplay } from "../replays/files";
 /* The in-game board — the design's letterboxed board layout, driven entirely by
    the synchronized GameState and wired to the server through typed intents. The
@@ -101,9 +103,15 @@ import type { DigimonWorldAvatarId } from "../account/avatars";
 import type { ColorName } from "../design/theme";
 import { playSound } from "../design/sound";
 import { useTurnAttentionSound } from "./useTurnAttentionSound";
+import { useDecisionPing } from "@/game/useDecisionPing";
+import { resolveDecisionPromptKeys } from "@/game/resolveDecisionPromptKeys";
+import { isDecisionPingEnabled } from "@/design/decisionPing";
+import { useLowTimeWarning } from "@/game/useLowTimeWarning";
 import { usePresentationAudio, useReadoutAudio } from "./usePresentationAudio";
 import { audioBoardFromPresentedSeats } from "./match/present/presentationAudio";
 import { areActionConfirmationsEnabled } from "../design/actionConfirmation";
+import { isKeepAwakeEnabled } from "../design/keepAwake";
+import { useScreenWakeLock } from "../design/useScreenWakeLock";
 import { useArenaBoardLook } from "./arenaLook";
 import "./game.css";
 import "./arena.css";
@@ -132,16 +140,63 @@ import { pendingFateBadges } from "./pendingFate";
 
 const SERIES_HOP_DELAY_MS = 1500;
 
-export function GameScreen({
+export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], "liveConnection">) {
+  const {
+    joinOptions,
+    startMode = "casual",
+    roomCode,
+    waitForHost,
+    betaBattleMode,
+    unlimited,
+    presentationPacing,
+    seriesGame,
+    demoConnection,
+    replayMode,
+  } = props;
+  const [spectating] = useState(
+    () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
+  );
+  const matchConfig = useMemo(() => {
+    if (startMode === "spectator") return { mode: "spectator" as const, roomCode };
+    if (seriesGame) return { mode: "series" as const, seriesGame };
+    if (startMode === "casual" || startMode === "unlimited" || startMode === "ranked" || startMode === "beta")
+      return undefined;
+    if (startMode === "bot") return { mode: "bot" as MatchMode };
+    return { mode: startMode, roomCode, waitForHost };
+  }, [startMode, roomCode, waitForHost, seriesGame]);
+  const roomOptions = useMemo(
+    () => ({
+      ...joinOptions,
+      spectator: spectating,
+      ranked: startMode === "ranked",
+      unlimited:
+        startMode === "unlimited" ||
+        ((startMode === "bot" || startMode === "private_host" || startMode === "private_guest") && unlimited === true),
+      betaBattleMode: startMode === "beta" || (startMode === "bot" && betaBattleMode === true),
+      presentationPacing,
+    }),
+    [joinOptions, startMode, betaBattleMode, unlimited, presentationPacing, spectating],
+  );
+  const liveConnection = useRoom(roomOptions, matchConfig, demoConnection !== undefined);
+  return (
+    <GameScreenSession
+      key={`${(demoConnection ?? liveConnection).room?.roomId ?? "preview"}:${(demoConnection?.state ?? liveConnection.state)?.rollbackRevision ?? 0}`}
+      {...props}
+      liveConnection={liveConnection}
+    />
+  );
+}
+
+function GameScreenSession({
+  liveConnection,
   joinOptions,
-  startMode = "casual",
   roomCode,
-  waitForHost,
+  seriesGame,
+  startMode = "casual",
   botDeckId,
-  betaBattleMode,
-  unlimited,
   onExit,
   onRematch,
+  onCopyUsedDeck,
   onResetScenario,
   signedIn = false,
   autoHatchReady = true,
@@ -149,10 +204,10 @@ export function GameScreen({
   replayMode = false,
   devProbe,
   presentationPacing,
-  seriesGame,
   onSeriesNext,
   onLeaveForfeitsChange,
 }: {
+  liveConnection: UseRoomResult;
   joinOptions: AegisJoinOptions;
   identityColor: ColorName;
   identityAvatarId?: DigimonWorldAvatarId | null;
@@ -166,6 +221,7 @@ export function GameScreen({
   betaBattleMode?: boolean;
   unlimited?: boolean;
   onExit: (screen: Screen) => void;
+  onCopyUsedDeck?: (deck: DeckListing) => void;
   /** Restart a server-backed development scenario from the match controls. */
   onResetScenario?: () => void;
   /** Receives the private room code, so a private match can return to its room. */
@@ -213,31 +269,10 @@ export function GameScreen({
   const [spectating] = useState(
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
   );
+  const usedDeck = spectating ? undefined : liveConnection.usedDeck;
   const actionConfirmationsEnabled = areActionConfirmationsEnabled();
   const arenaLayout = useArenaLayout();
   const { narrowGameLayout, compactPiles, shortBoard, collapseNotices } = arenaLayout;
-  const matchConfig = useMemo(() => {
-    if (startMode === "spectator") return { mode: "spectator" as const, roomCode };
-    if (seriesGame) return { mode: "series" as const, seriesGame };
-    if (startMode === "casual" || startMode === "unlimited" || startMode === "ranked" || startMode === "beta")
-      return undefined;
-    if (startMode === "bot") return { mode: "bot" as MatchMode };
-    return { mode: startMode, roomCode, waitForHost };
-  }, [startMode, roomCode, waitForHost, seriesGame]);
-  const roomOptions = useMemo(
-    () => ({
-      ...joinOptions,
-      spectator: spectating,
-      ranked: startMode === "ranked",
-      unlimited:
-        startMode === "unlimited" ||
-        ((startMode === "bot" || startMode === "private_host" || startMode === "private_guest") && unlimited === true),
-      betaBattleMode: startMode === "beta" || (startMode === "bot" && betaBattleMode === true),
-      presentationPacing,
-    }),
-    [joinOptions, startMode, betaBattleMode, unlimited, presentationPacing, spectating],
-  );
-  const liveConnection = useRoom(roomOptions, matchConfig, demoConnection !== undefined);
   const {
     room: connectedRoom,
     status,
@@ -525,7 +560,7 @@ export function GameScreen({
     },
     onActionRejected: (reason) => ping(rejectionMessage(reason, t)),
     onPresentationReport: (report) => {
-      room?.send(PRESENTATION_CHANNEL, report);
+      room?.send(PRESENTATION_CHANNEL, { ...report, rollbackRevision: room.state.rollbackRevision });
     },
     devProbe,
     presentationPacing,
@@ -569,7 +604,9 @@ export function GameScreen({
         })
       : undefined;
   usePresentationAudio(cues, seats ? audioBoardFromPresentedSeats(seats, viewerSeat) : undefined);
+  useScreenWakeLock(isKeepAwakeEnabled() && !!state && !state.gameOver);
   useTurnAttentionSound(!spectating && !!state && !state.gameOver && state.turnSeat === viewerSeat);
+  const lowTimeWarning = useLowTimeWarning({ state, viewerSeat, spectating });
   const viewerTimerRunning =
     !spectating && state?.matchTimer === true && !state.gameOver && state.timerActiveSeat === viewerSeat;
   const viewerPromptKey = cues.decisionAnimationsPending
@@ -582,6 +619,13 @@ export function GameScreen({
     [room],
   );
   useAnimationSpeedReport({ enabled: !spectating, send: sendAnimationSpeed });
+  const { readoutPromptKey, pingPromptKey } = resolveDecisionPromptKeys({
+    promptKey: viewerPromptKey,
+    spectating,
+    opponentTurn: !!state && state.turnSeat !== viewerSeat,
+    pingEnabled: isDecisionPingEnabled(),
+  });
+  useDecisionPing(pingPromptKey);
   useReadoutAudio({
     memory: shownState
       ? displayMemory(
@@ -592,7 +636,7 @@ export function GameScreen({
           viewerSeat,
         )
       : undefined,
-    promptKey: spectating ? undefined : viewerPromptKey,
+    promptKey: readoutPromptKey,
     timerSeconds: viewerTimerRunning
       ? Math.ceil(viewerSeat === 0 ? state.timerRemaining0 : state.timerRemaining1)
       : undefined,
@@ -1399,6 +1443,12 @@ export function GameScreen({
         !replayMode && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
+              usedDeckDialog:
+                usedDeck && onCopyUsedDeck
+                  ? (onClose: () => void) => (
+                      <UsedDeckDialog snapshot={usedDeck} onCopy={onCopyUsedDeck} onClose={onClose} />
+                    )
+                  : undefined,
               onDownloadReplay:
                 !spectating && liveConnection.replayDownload?.kind === "ready"
                   ? () => {
@@ -1505,7 +1555,7 @@ export function GameScreen({
     heldDeletionIds: new Set([...cues.heldDeletions.values()].map((hold) => hold.permanent.permanentId)),
   };
 
-  return (
+  const board = (
     <BoardStage
       replayMode={replayMode}
       onResetScenario={onResetScenario}
@@ -1523,6 +1573,7 @@ export function GameScreen({
       layout={layout}
       anchors={anchors}
       cues={cues}
+      timeWarning={lowTimeWarning}
       seats={{
         shownViewer: shownYou,
         shownOpponent: shownOpp,
@@ -1748,4 +1799,5 @@ export function GameScreen({
       }}
     />
   );
+  return board;
 }

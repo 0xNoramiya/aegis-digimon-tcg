@@ -35,7 +35,7 @@ describe("BT13-077 Craniamon", () => {
           kind: "Attack",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
           optional: true,
-          attackPlayer: true,
+          attackTargetScope: "any",
         },
       ],
     });

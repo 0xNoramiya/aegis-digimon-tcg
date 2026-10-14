@@ -50,6 +50,8 @@ export type AccountPreferences = {
   deckShare?: number;
   deckView?: "grid" | "list";
   deckSort?: string;
+  profileStats?: boolean;
+  favoriteDeckIds?: string[];
 };
 export type AuthSession = { id: string; account: Account; expiresAt: number };
 export type RoomTicket = { account: Account; tournamentMatchId: string | null };
@@ -140,6 +142,9 @@ export class DeckLimitError extends Error {}
 export class DisplayNameTakenError extends Error {}
 export class InvalidDisplayNameError extends Error {}
 
+const MAGIC_LINK_SHORT_WINDOW_MS = 900_000;
+const MAGIC_LINK_DAY_WINDOW_MS = 86_400_000;
+
 type AccountRow = {
   id: string;
   display_name: string;
@@ -149,6 +154,7 @@ type AccountRow = {
 };
 
 export class AccountStore {
+  private lastMagicLinkCleanup = 0;
   // Exposed so sibling domain stores (see src/tournaments/participants) can share one connection
   // pool and one migration run instead of opening a second pool against the same database.
   readonly pool: Pool;
@@ -459,6 +465,48 @@ export class AccountStore {
     });
   }
 
+  async allowMagicLinkRequest({
+    ip,
+    email,
+    now = Date.now(),
+  }: {
+    ip: string;
+    email: string;
+    now?: number;
+  }): Promise<boolean> {
+    await this.ensureReady();
+    if (now - this.lastMagicLinkCleanup >= 60_000) {
+      this.lastMagicLinkCleanup = now;
+      await this.pool.query("DELETE FROM magic_links WHERE expires_at <= $1", [now]);
+      await this.pool.query("DELETE FROM magic_link_request_limits WHERE window_started_at <= $1", [
+        now - MAGIC_LINK_DAY_WINDOW_MS,
+      ]);
+    }
+    const recipient = email.trim().toLowerCase();
+    for (const [key, capacity, windowMs] of [
+      [`ip:${ip}`, 10, MAGIC_LINK_SHORT_WINDOW_MS],
+      [`email:${recipient}`, 3, MAGIC_LINK_SHORT_WINDOW_MS],
+      [`ip-day:${ip}`, 20, MAGIC_LINK_DAY_WINDOW_MS],
+      [`email-day:${recipient}`, 5, MAGIC_LINK_DAY_WINDOW_MS],
+    ] as const) {
+      const keyHash = hash(key);
+      await this.pool.query(
+        "INSERT INTO magic_link_request_limits (key_hash, window_started_at, attempts) VALUES ($1,$2,0) ON CONFLICT (key_hash) DO NOTHING",
+        [keyHash, now],
+      );
+      const result = await this.pool.query(
+        `UPDATE magic_link_request_limits SET
+           attempts=CASE WHEN window_started_at <= $2 THEN 1 ELSE attempts+1 END,
+           window_started_at=CASE WHEN window_started_at <= $2 THEN $3 ELSE window_started_at END
+         WHERE key_hash=$1 AND (window_started_at <= $2 OR attempts < $4)
+         RETURNING key_hash`,
+        [keyHash, now - windowMs, now, capacity],
+      );
+      if (!result.rowCount) return false;
+    }
+    return true;
+  }
+
   async createMagicLink(email: string): Promise<{ token: string; expiresAt: number }> {
     await this.ensureReady();
     const token = randomBytes(32).toString("base64url");
@@ -490,6 +538,14 @@ export class AccountStore {
       day,
       limit,
     ]);
+  }
+  async magicLinkIsLive(token: string): Promise<boolean> {
+    await this.ensureReady();
+    const result = await this.pool.query(
+      "SELECT 1 FROM magic_links WHERE token_hash=$1 AND consumed_at IS NULL AND expires_at>$2",
+      [hash(token), Date.now()],
+    );
+    return (result.rowCount ?? 0) > 0;
   }
   async consumeMagicLink(token: string): Promise<Account | undefined> {
     const email = await this.transaction(

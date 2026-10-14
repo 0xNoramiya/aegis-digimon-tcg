@@ -74,7 +74,7 @@ const compiled: CompiledCard = {
           effectTextPart: "Then, 1 of your Digimon may gain <Rush> for the turn and attack a player.",
           kind: "Attack",
           target: { fromSelectionRef: "rushAttacker", filter: {}, count: 1 },
-          attackPlayer: true,
+          attackTargetScope: "player",
           withoutSuspending: false,
         },
       ],

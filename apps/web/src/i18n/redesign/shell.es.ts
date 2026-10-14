@@ -5,6 +5,7 @@ export const shellEs: Record<keyof typeof shellEn, string> = {
   "redesign.shell.theme.useLight": "Usar tema claro",
   "redesign.shell.theme.useDark": "Usar tema oscuro",
   "redesign.shell.theme.title": "Temas y colores",
+  "redesign.shell.music.open": "Cambiar música",
   "redesign.shell.theme.description": "Paletas de Digimon o tus propios colores para la interfaz.",
   "redesign.shell.theme.choose": "Elegir tema",
   "redesign.shell.theme.mode": "Apariencia",
@@ -23,5 +24,9 @@ export const shellEs: Record<keyof typeof shellEn, string> = {
   "redesign.shell.startup.reconnecting": "Reconectando con Aegis…",
   "redesign.shell.startup.reserved": "Tu partida sigue reservada. Esta página se recuperará sola.",
   "redesign.shell.startup.retry": "Intentar ahora",
+  "redesign.shell.crash.title": "Algo salió mal",
+  "redesign.shell.crash.body":
+    "Esta pantalla dejó de funcionar. Enviamos un informe de error al equipo de Aegis. Recarga la página para continuar.",
+  "redesign.shell.crash.reload": "Recargar",
   "redesign.shell.ranked.eyebrow": "Partida clasificatoria",
 };

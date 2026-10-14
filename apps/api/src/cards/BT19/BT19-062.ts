@@ -52,7 +52,7 @@ const compiled: CompiledCard = {
             count: 1,
             isSelf: true,
           },
-          attackPlayer: true,
+          attackTargetScope: "player",
           condition: {
             kind: "opponentHas",
             filter: {

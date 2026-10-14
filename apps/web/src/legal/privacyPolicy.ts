@@ -1,7 +1,7 @@
 import type { Locale } from "../i18n/locales";
 
 export const PRIVACY_CONTACT = "support@aegis-digi.online";
-export const PRIVACY_UPDATED = "2026-10-09";
+export const PRIVACY_UPDATED = "2026-10-13";
 
 export interface PrivacySection {
   id: string;
@@ -31,6 +31,7 @@ const en: PrivacyPolicy = {
         "Game data: your saved decks, match results, statistics, recent matches, and the list of replays you saved.",
         "Reports you send: bug and feedback reports, including the match details you attach. They can be copied to our public issue tracker on GitHub without your email address.",
         "Technical data: server logs and match logs, including IP addresses, used to keep the game running, stop abuse, and fix bugs.",
+        "Error reports: when the game breaks in your browser, it sends us the error message, the code location (stack), your browser user agent, the game version, and the match ID if you were in a match. We store these reports on Aegis servers and use them only to fix bugs.",
         "On your device: a sign-in cookie and your interface preferences. We use no advertising or analytics trackers.",
       ],
     },
@@ -88,6 +89,7 @@ const ptBR: PrivacyPolicy = {
         "Dados de jogo: seus decks salvos, resultados de partidas, estatísticas, partidas recentes e a lista de replays que você salvou.",
         "Relatos que você envia: relatos de bugs e feedback, incluindo os detalhes da partida anexados. Eles podem ser copiados para nosso rastreador público de problemas no GitHub, sem seu e-mail.",
         "Dados técnicos: logs do servidor e das partidas, incluindo endereços IP, usados para manter o jogo funcionando, impedir abusos e corrigir bugs.",
+        "Relatórios de erro: quando o jogo falha no seu navegador, ele nos envia a mensagem de erro, o local no código (stack), o user agent do navegador, a versão do jogo e o ID da partida, se você estava em uma. Guardamos esses relatórios nos servidores do Aegis e os usamos só para corrigir bugs.",
         "No seu dispositivo: um cookie de login e suas preferências de interface. Não usamos rastreadores de anúncios ou de análise.",
       ],
     },
@@ -145,6 +147,7 @@ const es: PrivacyPolicy = {
         "Datos de juego: tus mazos guardados, resultados de partidas, estadísticas, partidas recientes y la lista de replays que guardaste.",
         "Reportes que envías: reportes de errores y comentarios, incluidos los detalles de la partida adjuntos. Pueden copiarse a nuestro gestor público de incidencias en GitHub, sin tu correo.",
         "Datos técnicos: registros del servidor y de partidas, incluidas direcciones IP, usados para mantener el juego, evitar abusos y corregir errores.",
+        "Informes de errores: cuando el juego falla en tu navegador, nos envía el mensaje de error, la ubicación en el código (stack), el user agent de tu navegador, la versión del juego y el ID de la partida si estabas en una. Guardamos estos informes en los servidores de Aegis y los usamos solo para corregir errores.",
         "En tu dispositivo: una cookie de sesión y tus preferencias de interfaz. No usamos rastreadores de publicidad ni de analítica.",
       ],
     },
@@ -202,6 +205,7 @@ const it: PrivacyPolicy = {
         "Dati di gioco: i mazzi salvati, i risultati delle partite, le statistiche, le partite recenti e l’elenco dei replay che hai salvato.",
         "Segnalazioni che invii: segnalazioni di bug e feedback, inclusi i dettagli della partita allegati. Possono essere copiate nel nostro issue tracker pubblico su GitHub, senza il tuo indirizzo email.",
         "Dati tecnici: log del server e delle partite, inclusi gli indirizzi IP, usati per far funzionare il gioco, prevenire abusi e correggere bug.",
+        "Segnalazioni di errore: quando il gioco si blocca nel tuo browser, ci invia il messaggio di errore, la posizione nel codice (stack), lo user agent del browser, la versione del gioco e l’ID della partita, se eri in partita. Conserviamo queste segnalazioni sui server di Aegis e le usiamo solo per correggere bug.",
         "Sul tuo dispositivo: un cookie di accesso e le preferenze dell’interfaccia. Non usiamo tracker pubblicitari o di analisi.",
       ],
     },
@@ -245,4 +249,16 @@ const it: PrivacyPolicy = {
   ],
 };
 
-export const PRIVACY_POLICIES: Record<Locale, PrivacyPolicy> = { en, "pt-BR": ptBR, es, it };
+export const PRIVACY_POLICIES: Record<Locale, PrivacyPolicy> = {
+  en,
+  "pt-BR": ptBR,
+  es,
+  it,
+  ko: en,
+  ja: en,
+  "zh-CN": en,
+  "zh-TW": en,
+  fr: en,
+  de: en,
+  id: en,
+};

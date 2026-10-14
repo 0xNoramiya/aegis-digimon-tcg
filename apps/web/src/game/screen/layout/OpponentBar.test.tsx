@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { createRef, type ComponentProps } from "react";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../../../i18n";
 import { OpponentBar, SKIP_BUTTON_HOLD_MS } from "./OpponentBar";
@@ -92,5 +92,91 @@ describe("the desktop toolbar's skip button", () => {
     act(() => vi.advanceTimersByTime(100));
     expect(skip.getAttribute("data-skippable")).toBe("false");
     expect(screen.getByTestId("skip-presentation")).toBe(skip);
+  });
+});
+
+describe("the desktop toolbar's trailing group", () => {
+  it("ends with feedback, settings and leave, in that order", () => {
+    renderBar(false);
+    const order = toolbarButtonOrder();
+    expect(order.slice(-3)).toEqual(["Send feedback", "Match settings", "Surrender"]);
+  });
+
+  it("explains an icon on hover and on focus", () => {
+    renderBar(false);
+    const feedback = screen.getByRole("button", { name: "Send feedback" });
+    expect(screen.queryByRole("tooltip")).toBeNull();
+    act(() => {
+      fireEvent.mouseEnter(feedback);
+    });
+    expect(screen.getByRole("tooltip").textContent).toBe("Send feedback");
+    expect(feedback.getAttribute("aria-describedby")).toBe(screen.getByRole("tooltip").id);
+    act(() => {
+      fireEvent.mouseLeave(feedback);
+      vi.advanceTimersByTime(200);
+    });
+    expect(screen.queryByRole("tooltip")).toBeNull();
+
+    const cog = screen.getByRole("button", { name: "Match settings" });
+    act(() => cog.focus());
+    expect(screen.getByRole("tooltip").textContent).toBe("Match settings");
+  });
+
+  it("closes the tooltip on a mouse click and leaves nothing open after the pointer leaves", () => {
+    renderBar(false);
+    const feedback = screen.getByRole("button", { name: "Send feedback" });
+    act(() => {
+      fireEvent.mouseEnter(feedback);
+      fireEvent.pointerDown(feedback);
+      fireEvent.focus(feedback);
+      fireEvent.click(feedback);
+    });
+    expect(screen.queryByRole("tooltip")).toBeNull();
+    act(() => {
+      fireEvent.mouseLeave(feedback);
+      vi.advanceTimersByTime(200);
+    });
+    expect(screen.queryByRole("tooltip")).toBeNull();
+    const cog = screen.getByRole("button", { name: "Match settings" });
+    act(() => cog.focus());
+    expect(screen.getByRole("tooltip").textContent).toBe("Match settings");
+  });
+
+  it("still runs each button's action when it is clicked", () => {
+    const callbacks = {
+      onOpenLog: vi.fn<() => void>(),
+      onReportBug: vi.fn<() => void>(),
+      onOpenArenaLook: vi.fn<() => void>(),
+      onSurrender: vi.fn<() => void>(),
+      onSkipPresentation: vi.fn<() => void>(),
+      onToggleChat: vi.fn<() => void>(),
+    };
+    render(
+      <I18nProvider>
+        <OpponentBar {...props({ skippable: true, ...callbacks })} />
+      </I18nProvider>,
+    );
+    const names: [string | RegExp, keyof typeof callbacks][] = [
+      ["Match log", "onOpenLog"],
+      ["Send feedback", "onReportBug"],
+      ["Match settings", "onOpenArenaLook"],
+      ["Surrender", "onSurrender"],
+      [/skip/i, "onSkipPresentation"],
+      [/chat/i, "onToggleChat"],
+    ];
+    for (const [name, callback] of names) {
+      fireEvent.click(screen.getByRole("button", { name }));
+      expect(callbacks[callback]).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it("never opens a tooltip for the hidden skip slot", () => {
+    renderBar(false);
+    const skip = screen.getByTestId("skip-presentation");
+    act(() => {
+      fireEvent.mouseEnter(skip);
+      fireEvent.focus(skip);
+    });
+    expect(screen.queryByRole("tooltip")).toBeNull();
   });
 });

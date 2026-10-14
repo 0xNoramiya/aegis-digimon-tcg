@@ -73,3 +73,17 @@ it("ends the breeding step immediately without a turn confirmation", () => {
   expect(result.current.open).toBe(false);
   expect(p.onEndPhase).toHaveBeenCalledTimes(1);
 });
+
+it("sends one breeding pass for a double tap before the server reports Main", () => {
+  const p = { ...props(), phase: Phase.Breeding };
+  const { result, rerender } = renderHook(useEndTurnConfirmation, { initialProps: p });
+  act(() => {
+    result.current.request();
+    result.current.request();
+  });
+  expect(p.onEndPhase).toHaveBeenCalledTimes(1);
+  rerender({ ...p, phase: Phase.Main });
+  act(() => result.current.request());
+  expect(result.current.open).toBe(true);
+  expect(p.onEndPhase).toHaveBeenCalledTimes(1);
+});

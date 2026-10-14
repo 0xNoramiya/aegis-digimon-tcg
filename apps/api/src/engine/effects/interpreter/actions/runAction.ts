@@ -26,6 +26,7 @@ import { canReactivateOwnEffect, runMetaAction } from "./meta.js";
 import { DECLINE_MODAL_CHOICE_LABEL, declinableModalChoices, modalHasAvailableOption } from "./modal.js";
 import { canAttemptPlaceUnder } from "./placeUnder.js";
 import { allowsOptionalProcessingCostWithoutTarget } from "../processingCondition.js";
+import { paysProcessingCostBeforeOptional } from "../paysProcessingCostBeforeOptional.js";
 import {
   applyDecodeHostScope,
   applyPlayDpCeilingModifier,
@@ -429,13 +430,7 @@ function optionalDigivolveImpossibleAfterCost(ctx: EffectContext, action: Action
 
 async function runActionInner(ctx: EffectContext, action: Action): Promise<boolean> {
   let acceptedBeforeItsPick = false;
-  const paysProcessingCostBeforeOptional =
-    action.kind !== "RawUnparsed" &&
-    action.optional === true &&
-    (action.payCostBeforeOptional === true ||
-      (action.payCostBeforeOptional !== false &&
-        allowsOptionalProcessingCostWithoutTarget(action) &&
-        /\bmay\b/i.test(action.effectTextPart ?? "")));
+  const paysCostFirst = paysProcessingCostBeforeOptional(action);
   // A placement tally is scoped to this action's current resolution.  In particular, a
   // declined/blocked optional placement must overwrite a prior activation's count rather
   // than allowing a later conditional to borrow it (EX6-073 Q3825).
@@ -699,7 +694,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   if (isDetachTopAction(action) && !canDetachPermanentTop(ctx, action)) {
     return unavailableAction(ctx, action, action.abortOnDecline === true);
   }
-  if (action.kind === "ReactivateEffect" && action.cost !== undefined && !canReactivateOwnEffect(ctx, action)) {
+  if (action.kind === "ReactivateEffect" && !canReactivateOwnEffect(ctx, action)) {
     return unavailableAction(ctx, action, action.abortOnDecline === true);
   }
   if (
@@ -1119,7 +1114,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
     // "By [cost], you may [effect]" pays first and asks afterwards: the leading prompt would make
     // a decline skip the cost too. The pay-then-ask block further down raises the payload prompt
     // once the cost is spent.
-    if (!costUnpayable && !costAsksThisAction && !targetAsksThisAction && !paysProcessingCostBeforeOptional) {
+    if (!costUnpayable && !costAsksThisAction && !targetAsksThisAction && !paysCostFirst) {
       const chooser =
         action.kind === "Delete" && action.target.chooser === "opponent" ? requireOpponentAsk(ctx) : ctx.ask;
       const predecided = ctx.predecidedOptionalActions?.get(action);
@@ -1206,7 +1201,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
         costAsksItself ||
         (ctx.predecidedOptionalCosts?.get(action) ??
           (await ctx.ask.optional(
-            paysProcessingCostBeforeOptional && payableActionCost.raw !== undefined
+            paysCostFirst && payableActionCost.raw !== undefined
               ? { ...ctx, activeEffectTextPart: ctx.activeEffectText, activeEffectTextEmphasis: payableActionCost.raw }
               : ctx,
             `Pay cost: ${describeCost(payableActionCost)}?`,
@@ -1268,12 +1263,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   // first, then offer the payload choice (e.g. Q6255: trash, then decline return).
   // `payCostBeforeOptional` reaches the same place from the other direction: a MANDATORY
   // activation cost under an optional payload (Q2813, Q2853, Q2804).
-  if (
-    action.kind !== "RawUnparsed" &&
-    action.optional &&
-    actionCost?.optional === true &&
-    !paysProcessingCostBeforeOptional
-  ) {
+  if (action.kind !== "RawUnparsed" && action.optional && actionCost?.optional === true && !paysCostFirst) {
     if (optionalDigivolveImpossibleAfterCost(ctx, action)) {
       ctx.lastEffectActed = false;
       return false;
@@ -1308,7 +1298,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   // cost and every additional cost of the same "By placing A and B and C" clause — is paid, and
   // only then is the payload offered. Asking before the extra costs would leave Q2853's placement
   // half-done (this Tamer placed, [Growlmon] and [WarGrowlmon] left in the trash).
-  if (action.kind !== "RawUnparsed" && paysProcessingCostBeforeOptional) {
+  if (action.kind !== "RawUnparsed" && paysCostFirst) {
     if (optionalDigivolveImpossibleAfterCost(ctx, action)) {
       ctx.lastEffectActed = false;
       return false;

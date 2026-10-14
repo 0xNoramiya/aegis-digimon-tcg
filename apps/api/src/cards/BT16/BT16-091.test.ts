@@ -38,7 +38,7 @@ describe("BT16-091", () => {
     });
     expect(compiled.effects?.[0]?.actions?.[3]).toMatchObject({
       kind: "Attack",
-      attackPlayer: true,
+      attackTargetScope: "player",
       condition: { kind: "ifThisEffectActed" },
     });
   });

@@ -49,13 +49,23 @@ it.each(["none", "barrier", "grademon"])(
         },
         1: { security: ["BT1-084"] },
       },
-      { autoSelectCards: true, autoAcceptOptional: false },
+      { autoSelectCards: true, autoAcceptOptional: false, autoOrderTriggers: false },
     );
     await s.ready();
     const id = s.perm("alpha").permanentId;
     expect(s.engine.applyIntent(0, { type: "attack", attackerPermanentId: id, target: { kind: "player" } })).toEqual({
       ok: true,
     });
+    await settle(() => s.state.pendingDecision?.kind === "orderTriggers");
+    const order = s.decisions.at(-1)!.req.options!;
+    expect([...order.triggerCardIds!].sort()).toEqual(["BT20-056", "EX13-057"]);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "orderTriggers", order: [order.triggerKeys![order.triggerCardIds!.indexOf("EX13-057")]!] },
+      }),
+    ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision?.kind === "optional");
     expect(s.decisions.at(-1)!.req.sourceCardId).toBe("EX13-057");
     expect(s.state.players[0]!.security).toHaveLength(3);

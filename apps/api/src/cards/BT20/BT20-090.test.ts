@@ -49,7 +49,7 @@ describe("BT20-090 Yuuki — Tamer effects", () => {
     });
     expect(compiled.effects[1]?.actions[0]).toMatchObject({
       kind: "Attack",
-      attackPlayer: true,
+      attackTargetScope: "player",
       cost: { kind: "suspend" },
       condition: { kind: "handAtMost", value: 4 },
       target: {

@@ -80,10 +80,19 @@ export function createResourcesVerbs(pc: PrimitivesContext) {
     continuous.addUnsuspendedDigivolveProhibition(seat, sourceSeat, duration);
   };
 
-  const restrictPlay: Primitives["restrictPlay"] = (seat, sourceSeat, match, mode, duration, byEffectOnly) => {
+  const restrictPlay: Primitives["restrictPlay"] = (
+    seat,
+    sourceSeat,
+    match,
+    mode,
+    duration,
+    byEffectOnly,
+    provenance,
+  ) => {
     continuous.addPlayProhibition(seat, sourceSeat, match, mode, duration, {
       ...continuousOpt(),
       byEffectOnly,
+      ...provenance,
     });
   };
 

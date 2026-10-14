@@ -1,13 +1,13 @@
 /* A player's name as one thin line: the opponent's in the top bar, the viewer's
-   on the hand tray, after their portrait. Animated dots mark a player who is
-   taking their turn, the way a typing indicator reads in a chat. A name past
-   `maxLength` is cut, and tapping it shows the whole name. */
+   on the hand tray, after their portrait. A glowing outline and a chip mark the
+   player who must act now. A name past `maxLength` is cut, and tapping it shows
+   the whole name. */
 
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { isDigimonWorldAvatarId } from "@aegis/shared";
 import { Avatar } from "../../../design/primitives";
-import { useTranslation } from "../../../i18n";
+import { useTranslation } from "@/i18n/useTranslation";
 import { useAnchoredTooltip } from "../../useAnchoredTooltip";
 import { botPersonaById } from "@aegis/shared/bot/personas/botPersonaById";
 import { BotPortrait } from "@/bot/personas/BotPortrait";
@@ -17,7 +17,7 @@ export function PlayerLine({
   avatarId,
   botPersonaId,
   side,
-  playing = false,
+  actingLabel,
   maxLength,
   timer,
 }: {
@@ -25,7 +25,7 @@ export function PlayerLine({
   avatarId?: string;
   botPersonaId?: string;
   side: "player" | "opponent";
-  playing?: boolean;
+  actingLabel?: string;
   maxLength?: number;
   timer?: ReactNode;
 }) {
@@ -37,7 +37,12 @@ export function PlayerLine({
   const characters = Array.from(name);
   const shortened = maxLength !== undefined && characters.length > maxLength;
   return (
-    <div className="game-player-line" data-side={side} data-timed={timer ? true : undefined}>
+    <div
+      className="game-player-line"
+      data-side={side}
+      data-timed={timer ? true : undefined}
+      data-acting={actingLabel ? true : undefined}
+    >
       <span className="game-player-line__avatar">
         {persona ? (
           <BotPortrait persona={persona} size={18} />
@@ -67,12 +72,10 @@ export function PlayerLine({
           {botPersonaId ? <span className="bot-identity-badge">{t("bot.identity.label")}</span> : null}
         </span>
       )}
-      {playing ? (
-        <span className="game-player-line__waiting">
-          <span className="aegis-sr-only">{t("game.playing")}</span>
+      {actingLabel ? (
+        <span className="game-player-line__acting" data-testid={`${side}-acting`}>
           <i aria-hidden="true" />
-          <i aria-hidden="true" />
-          <i aria-hidden="true" />
+          {actingLabel}
         </span>
       ) : null}
       {timer}
@@ -81,7 +84,7 @@ export function PlayerLine({
           <span
             id={tooltipId}
             role="tooltip"
-            className="game-arena-counter-tooltip"
+            className="game-anchored-tooltip"
             data-above={open.above}
             style={{ left: open.left, top: open.top }}
             onMouseEnter={cancelClose}

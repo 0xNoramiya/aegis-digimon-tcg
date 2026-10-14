@@ -12,6 +12,8 @@ import { colorKey, kindOf } from "../design/theme";
 import { Icons } from "../design/icons";
 import { useTranslation } from "../i18n";
 import { sortCardIds } from "./cardSorting";
+import { countDeckCardTypes } from "@/screens/countDeckCardTypes";
+import { DeckCurveChart } from "@/screens/DeckCurveChart";
 import { setDeckBuilderPreferences, useDeckBuilderPreferences, type DeckView } from "./deckBuilderPreferences";
 import "./deckBuilder.css";
 
@@ -341,12 +343,7 @@ function DeckListRow({
 /** Main-deck card counts by kind: Digimon, Tamer, Option. */
 export function DeckKindCounts({ main }: { main: CountMap }) {
   const { t } = useTranslation();
-  const counts = { Digimon: 0, Tamer: 0, Option: 0 };
-  for (const [cardId, count] of Object.entries(main)) {
-    const definition = getCardDefinition(cardId);
-    const kind = definition ? kindOf(definition) : null;
-    if (kind === "Digimon" || kind === "Tamer" || kind === "Option") counts[kind] += count;
-  }
+  const counts = countDeckCardTypes({ main });
   return (
     <div className="deck-kind-counts">
       <span>
@@ -372,28 +369,7 @@ export function DeckLevelCurve({ main, compact = false }: { main: CountMap; comp
     counts.set(definition.level, (counts.get(definition.level) ?? 0) + count);
   }
   const levels = [...new Set([2, 3, 4, 5, 6, 7, ...counts.keys()])].sort((a, b) => a - b);
-  const peak = Math.max(1, ...counts.values());
-  const tallestBar = compact ? 14 : 52;
+  const columns = levels.map((level) => ({ key: String(level), label: `Lv.${level}`, count: counts.get(level) ?? 0 }));
 
-  return (
-    <div className="deck-level-curve-stat" data-compact={compact}>
-      <div className={compact ? "aegis-sr-only" : "deck-stat-label"}>{t("deck.levelCurve")}</div>
-      <div className="deck-level-curve" title={compact ? t("deck.levelCurve") : undefined}>
-        {levels.map((level) => {
-          const count = counts.get(level) ?? 0;
-          return (
-            <div key={level} className="deck-level-curve__column">
-              <span>{count || ""}</span>
-              <div
-                className="deck-level-curve__bar"
-                data-empty={count === 0}
-                style={{ height: `${(count / peak) * tallestBar}px` }}
-              />
-              <span>Lv.{level}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+  return <DeckCurveChart label={t("deck.levelCurve")} columns={columns} compact={compact} />;
 }

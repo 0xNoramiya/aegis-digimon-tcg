@@ -94,7 +94,6 @@ export const compiled: CompiledCard = {
           kind: "SubTrigger",
           event: "whenOptionPlayed",
           sourceFilter: {
-            controller: "mine",
             kind: ["Option"],
             nameOrTrait: [
               {

@@ -3,6 +3,7 @@ export const shellEn = {
   "redesign.shell.theme.useLight": "Use light theme",
   "redesign.shell.theme.useDark": "Use dark theme",
   "redesign.shell.theme.title": "Themes and colors",
+  "redesign.shell.music.open": "Change music",
   "redesign.shell.theme.description": "Digimon palettes or your own colors for the interface.",
   "redesign.shell.theme.choose": "Choose a theme",
   "redesign.shell.theme.mode": "Appearance",
@@ -21,5 +22,9 @@ export const shellEn = {
   "redesign.shell.startup.reconnecting": "Reconnecting to Aegis…",
   "redesign.shell.startup.reserved": "Your match is still reserved. This page will recover automatically.",
   "redesign.shell.startup.retry": "Try now",
+  "redesign.shell.crash.title": "Something went wrong",
+  "redesign.shell.crash.body":
+    "This screen stopped working. We sent an error report to the Aegis team. Reload the page to continue.",
+  "redesign.shell.crash.reload": "Reload",
   "redesign.shell.ranked.eyebrow": "Ranked match",
 } as const;

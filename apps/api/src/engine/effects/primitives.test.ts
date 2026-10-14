@@ -1,5 +1,6 @@
 import { describe, it, expect, onTestFinished } from "vitest";
 import { $changes, Encoder, StateView } from "@colyseus/schema";
+import { AttackTargetScope } from "@aegis/shared/effects/ir/actions/AttackTargetScope";
 import {
   DNA_DIGIVOLUTION_REQUIREMENT_OVERRIDES,
   GameState,
@@ -740,7 +741,7 @@ describe("primitives: trash / delete / suspend", () => {
     ]);
   });
 
-  it("securityToHand publishes the generic security-removal event after the move", async () => {
+  it("securityToHand publishes effect-driven security-removal events after the move", async () => {
     const h = harness({
       board: { 0: { security: [{ card: OPTION, as: "securityCard" }] } },
     });
@@ -755,8 +756,12 @@ describe("primitives: trash / delete / suspend", () => {
     expect(h.state.players[0]!.security).toHaveLength(0);
     expect(h.state.players[0]!.hand.map((card) => card.instanceId)).toEqual([instanceId]);
     expect(h.subTriggerFires).toContainEqual({
-      event: "whenSecurityRemoved",
+      event: "whenEffectRemovesFromSecurity",
       payload: { removedFromSecuritySeat: 0 },
+    });
+    expect(h.subTriggerFires).toContainEqual({
+      event: "whenSecurityRemoved",
+      payload: { removedFromSecuritySeat: 0, securityRemovedByEffect: true },
     });
   });
 
@@ -776,8 +781,12 @@ describe("primitives: trash / delete / suspend", () => {
     const moved = await h.fx.returnToDeck([...ids, ids[0]!], { toTop: false });
     expect(moved.map((card) => card.instanceId)).toEqual(ids);
     expect(h.subTriggerFires.filter(({ event }) => event === "whenSecurityRemoved")).toEqual([
-      { event: "whenSecurityRemoved", payload: { removedFromSecuritySeat: 0 } },
-      { event: "whenSecurityRemoved", payload: { removedFromSecuritySeat: 1 } },
+      { event: "whenSecurityRemoved", payload: { removedFromSecuritySeat: 0, securityRemovedByEffect: true } },
+      { event: "whenSecurityRemoved", payload: { removedFromSecuritySeat: 1, securityRemovedByEffect: true } },
+    ]);
+    expect(h.subTriggerFires.filter(({ event }) => event === "whenEffectRemovesFromSecurity")).toEqual([
+      { event: "whenEffectRemovesFromSecurity", payload: { removedFromSecuritySeat: 0 } },
+      { event: "whenEffectRemovesFromSecurity", payload: { removedFromSecuritySeat: 1 } },
     ]);
     expect(h.state.players[0]!.deck.map((card) => card.instanceId)).toEqual(ids.slice(0, 2));
     expect(h.state.players[1]!.deck.map((card) => card.instanceId)).toEqual(ids.slice(2));
@@ -3273,7 +3282,7 @@ describe("primitives: forced-attack target legality", () => {
     h.continuous.addRestriction(h.s.perm("protected").permanentId, "cantBeAttacked", EffectDuration.UntilEachTurnEnd);
     h.selections.push([h.s.perm("legal").permanentId]);
 
-    await h.fx.forceAttack(h.s.perm("grandis").permanentId, { attackPlayer: false });
+    await h.fx.forceAttack(h.s.perm("grandis").permanentId, { attackTargetScope: AttackTargetScope.DIGIMON.value });
 
     expect(h.selectionCandidates.at(-1)).toEqual([h.s.perm("legal").permanentId]);
     expect(resolvedTarget).toEqual({ kind: "permanent", permanentId: h.s.perm("legal").permanentId });
@@ -3294,7 +3303,7 @@ describe("primitives: forced-attack target legality", () => {
     };
     const h = harness({ combat, board: { 0: { battleArea: [{ card: "BT9-055", as: "grandis" }] } } });
 
-    await h.fx.forceAttack(h.s.perm("grandis").permanentId, { attackPlayer: false });
+    await h.fx.forceAttack(h.s.perm("grandis").permanentId, { attackTargetScope: AttackTargetScope.DIGIMON.value });
 
     expect(h.selectionCandidates).toHaveLength(0);
     expect(resolvedTarget).toBeUndefined();
@@ -3486,6 +3495,7 @@ describe("Primitives completeness guard (no declared-but-unassigned methods)", (
     placeOptionAsPermanent: true,
     placeOwnTopAtStackBottom: true,
     placeUnder: true,
+    placePlayMaterialsUnder: true,
     placeUnderFromDeck: true,
     placeUnderFromEggDeck: true,
     playFromHand: true,

@@ -6,6 +6,7 @@ import { I18nProvider } from "../i18n";
 import { AccountApiError, accountApi, type AccountProfile, type RemoteAccount } from "./client";
 import { ProfileScreen } from "./ProfileScreen";
 import type { DigimonWorldAvatarId } from "./avatars";
+import { areProfileStatsShown, setProfileStatsShown } from "./profileStats";
 import { replayApi } from "../replays/library";
 import { fakeDrive } from "../replays/cloud/fakeProvider.fixture";
 import { syncLocalReplays } from "../replays/cloud";
@@ -105,6 +106,8 @@ beforeEach(() => {
   stage.id = "aegis-stage";
   document.body.append(stage);
   vi.spyOn(accountApi, "profile").mockResolvedValue(PROFILE);
+  vi.spyOn(accountApi, "playtest").mockResolvedValue({ member: false, since: null });
+  setProfileStatsShown(true);
 });
 afterEach(() => {
   cleanup();
@@ -142,6 +145,25 @@ it("shows the identity header with totals and no tabs", async () => {
   expect(screen.queryByRole("navigation", { name: "Profile sections" })).toBeNull();
   expect(screen.queryByRole("link", { name: "Edit profile" })).toBeNull();
   expect(await screen.findByRole("heading", { name: "Your completed matches will appear here." })).toBeTruthy();
+});
+
+it("lets the player show hidden match stats from the profile", async () => {
+  setProfileStatsShown(false);
+  vi.spyOn(accountApi, "matches").mockResolvedValue(
+    page([match(0)], { winRate: { matches: 3, wins: 1, losses: 1, draws: 1 } }),
+  );
+  renderProfile();
+  expect(await screen.findByText("Rival 0")).toBeTruthy();
+  expect(screen.queryByText("Win rate")).toBeNull();
+  expect(screen.queryByText("33%")).toBeNull();
+  expect(screen.getByRole("link", { name: "Preferences" })).toBeTruthy();
+
+  const toggle = screen.getByRole("switch", { name: "Show match stats" });
+  expect(toggle.getAttribute("aria-checked")).toBe("false");
+  fireEvent.click(toggle);
+  expect(areProfileStatsShown()).toBe(true);
+  expect(toggle.getAttribute("aria-checked")).toBe("true");
+  expect(await screen.findByText("33%")).toBeTruthy();
 });
 
 it("shows a dash for the win rate before the first match", async () => {
@@ -227,6 +249,7 @@ it("lets a guest rename and pick an avatar on this device", async () => {
   const { onGuestChange } = renderProfile({ account: null, player: { ...PLAYER, guestAvatarId: "greymon" } });
   expect(screen.getByRole("button", { name: "Sign in with Discord" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Open replay file" })).toBeTruthy();
+  expect(screen.queryByRole("switch", { name: "Show match stats" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Change avatar" }));
   const menu = screen.getByRole("dialog", { name: "Choose avatar" });
   expect(within(menu).getByRole("button", { name: "Use Greymon as your avatar" }).getAttribute("aria-pressed")).toBe(

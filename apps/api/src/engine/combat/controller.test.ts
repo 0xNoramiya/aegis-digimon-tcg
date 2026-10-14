@@ -10,6 +10,7 @@ import {
 } from "@aegis/shared";
 import { GameStateAccess } from "../state/access.js";
 import { CombatController, type CombatHooks } from "./controller.js";
+import type { BlockTiming } from "#api/engine/combat/types";
 import type { TriggerInfo } from "../effects/EffectContext.js";
 
 const DIGIMON_A = "AD1-001";
@@ -64,6 +65,7 @@ interface Harness {
   firedTimings: EffectTiming[];
   securityCalls: { defenderSeat: Seat; attackerPermanentId: string }[];
   firedSubTriggers: { event: string; payload: TriggerInfo }[];
+  blockTimings: BlockTiming[];
   timeline: string[];
   attackPayloads: TriggerInfo[];
 }
@@ -83,12 +85,16 @@ function harness(opts?: {
   const firedTimings: EffectTiming[] = [];
   const securityCalls: Harness["securityCalls"] = [];
   const firedSubTriggers: Harness["firedSubTriggers"] = [];
+  const blockTimings: BlockTiming[] = [];
   const timeline: string[] = [];
   const attackPayloads = opts?.captureAttackPayloads ?? [];
   let hasPiercing = opts?.piercingChange?.initial ?? false;
 
   const hooks: CombatHooks = {
     emit: (e) => events.push(e),
+    fireBlockTiming: async (block) => {
+      blockTimings.push(block);
+    },
     sweepEndOfAttack: opts?.sweepEndOfAttack,
     fireTiming: async (timing) => {
       firedTimings.push(timing);
@@ -136,6 +142,7 @@ function harness(opts?: {
     firedTimings,
     securityCalls,
     firedSubTriggers,
+    blockTimings,
     timeline,
     attackPayloads,
   };
@@ -684,14 +691,9 @@ describe("CombatController — block window", () => {
     // Security was NOT checked because the attack was blocked.
     expect(h.securityCalls).toHaveLength(0);
     expect(ids(h.events, "blocked")).toHaveLength(1);
-    expect(h.firedTimings).toContain(EffectTiming.OnBlockAnyone);
-    // FAILS-WHEN-REVERTED: drop the fireSubTrigger("whenBlocked", …) in
-    // switchDefenderToBlocker => this stays empty => RED. Distinct from the OnBlockAnyone
-    // timing above — this is the SubTrigger bus's own event (BT4-098's temporary grant shape).
-    const blocked = h.firedSubTriggers.filter((f) => f.event === "whenBlocked");
-    expect(blocked).toHaveLength(1);
-    expect(blocked[0]?.payload.attackerPermanentId).toBe(attacker.permanentId);
-    expect(blocked[0]?.payload.blockerPermanentId).toBe(blocker.permanentId);
+    expect(h.blockTimings).toEqual([
+      { attackerPermanentId: attacker.permanentId, blockerPermanentId: blocker.permanentId, blockerSuspended: true },
+    ]);
   });
 
   it("declineBlock lets the player-directed attack proceed to the security hand-off", async () => {
@@ -766,6 +768,7 @@ describe("CombatController.resolveAttack — attack target vanishes mid-resoluti
     const securityCalls: Harness["securityCalls"] = [];
     const hooks: CombatHooks = {
       emit: (e) => events.push(e),
+      fireBlockTiming: async () => {},
       fireTiming: async (timing) => {
         firedTimings.push(timing);
         // Simulate a When-Attacking effect deleting the attack target mid-resolution.
@@ -809,6 +812,7 @@ describe("CombatController.resolveAttack — attacker invalidated mid-resolution
     const securityCalls: Harness["securityCalls"] = [];
     const hooks: CombatHooks = {
       emit: () => {},
+      fireBlockTiming: async () => {},
       fireTiming: async (timing) => {
         firedTimings.push(timing);
         // Simulate a When-Attacking effect removing the attacker itself.
@@ -880,7 +884,7 @@ describe("combat suspension fires the whenSuspended bus", () => {
     );
   });
 
-  it("fires for the blocker, whose suspension is also a rules suspension", async () => {
+  it("hands the blocker's rules suspension to block timing", async () => {
     const h = harness();
     const attacker = digimon(0, 9000);
     const blocker = digimon(1, 3000, { cardId: DIGIMON_B });
@@ -892,7 +896,9 @@ describe("combat suspension fires the whenSuspended bus", () => {
     h.combat.resolveBlock(1, blocker.permanentId);
     await done;
 
-    expect(suspensionsFired(h)).toContain(blocker.permanentId);
+    expect(h.blockTimings).toEqual([
+      { attackerPermanentId: attacker.permanentId, blockerPermanentId: blocker.permanentId, blockerSuspended: true },
+    ]);
   });
 
   it("does not fire for an attack declared without tapping", async () => {
