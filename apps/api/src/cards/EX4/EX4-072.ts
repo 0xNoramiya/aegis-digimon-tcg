@@ -32,8 +32,7 @@ const compiled: CompiledCard = {
             filter: {
               controllerDefault: "mine",
               kind: ["Digimon"],
-              levels: [6],
-              nameOrTrait: [{ tokens: ["Gallantmon", "Sakuyamon", "MegaGargomon"], match: "name" }],
+              nameOrTrait: [{ tokens: ["Gallantmon", "Sakuyamon", "MegaGargomon"], match: "nameExact" }],
             },
             count: 1,
             bindAs: "chosenBase",
