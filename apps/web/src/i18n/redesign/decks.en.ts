@@ -8,6 +8,7 @@ export const decksEn = {
   "redesign.decks.editor.expandSheet": "Expand deck panel",
   "redesign.decks.editor.collapseSheet": "Reduce deck panel",
   "redesign.decks.editor.openSheet": "View deck",
+  "redesign.decks.editor.openSheetHint": "List, curves and ratios",
   "redesign.decks.editor.closeSheet": "Close deck panel",
   "deckFormat.poolHint": "Card pool through {set}.",
   "deckFormat.allSetsHint": "All available sets.",

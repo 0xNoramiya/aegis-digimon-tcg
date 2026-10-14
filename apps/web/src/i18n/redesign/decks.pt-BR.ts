@@ -10,6 +10,7 @@ export const decksPtBR: Record<keyof typeof decksEn, string> = {
   "redesign.decks.editor.expandSheet": "Ampliar painel do deck",
   "redesign.decks.editor.collapseSheet": "Reduzir painel do deck",
   "redesign.decks.editor.openSheet": "Ver deck",
+  "redesign.decks.editor.openSheetHint": "Lista, curvas e proporções",
   "redesign.decks.editor.closeSheet": "Fechar painel do deck",
   "deckFormat.poolHint": "Cartas até {set}.",
   "deckFormat.allSetsHint": "Todas as coleções disponíveis.",

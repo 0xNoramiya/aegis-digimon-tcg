@@ -2086,6 +2086,7 @@ const interfaceMessages = {
   "redesign.decks.editor.expandSheet": "Agrandir le panneau du deck",
   "redesign.decks.editor.collapseSheet": "Réduire le panneau du deck",
   "redesign.decks.editor.openSheet": "Voir le deck",
+  "redesign.decks.editor.openSheetHint": "Liste, courbes et répartition",
   "redesign.decks.editor.closeSheet": "Fermer le panneau du deck",
   "deckFormat.poolHint": "Pool de cartes jusqu'à {set}.",
   "deckFormat.allSetsHint": "Toutes les extensions disponibles.",

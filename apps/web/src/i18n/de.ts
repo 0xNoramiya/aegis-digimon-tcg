@@ -2096,6 +2096,7 @@ const interfaceMessages = {
   "redesign.decks.editor.expandSheet": "Deckbereich erweitern",
   "redesign.decks.editor.collapseSheet": "Deckbereich verkleinern",
   "redesign.decks.editor.openSheet": "Deck ansehen",
+  "redesign.decks.editor.openSheetHint": "Liste, Kurven und Verteilung",
   "redesign.decks.editor.closeSheet": "Deckbereich schließen",
   "deckFormat.poolHint": "Kartenpool bis {set}.",
   "deckFormat.allSetsHint": "Alle verfügbaren Sets.",

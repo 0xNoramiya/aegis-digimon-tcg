@@ -2055,6 +2055,7 @@ const interfaceMessages = {
   "redesign.decks.editor.expandSheet": "Perluas panel dek",
   "redesign.decks.editor.collapseSheet": "Kurangi panel dek",
   "redesign.decks.editor.openSheet": "Lihat dek",
+  "redesign.decks.editor.openSheetHint": "Daftar, kurva, dan rasio",
   "redesign.decks.editor.closeSheet": "Tutup panel dek",
   "deckFormat.poolHint": "Kumpulan kartu melalui {set}.",
   "deckFormat.allSetsHint": "Semua set tersedia.",

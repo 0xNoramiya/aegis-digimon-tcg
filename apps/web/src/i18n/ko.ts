@@ -2022,6 +2022,7 @@ const interfaceMessages = {
   "redesign.decks.editor.expandSheet": "데크 패널 확장",
   "redesign.decks.editor.collapseSheet": "데크 패널 축소",
   "redesign.decks.editor.openSheet": "데크보기",
+  "redesign.decks.editor.openSheetHint": "목록, 곡선, 비율",
   "redesign.decks.editor.closeSheet": "데크 패널 닫기",
   "deckFormat.poolHint": "{set}까지의 카드 풀입니다.",
   "deckFormat.allSetsHint": "사용 가능한 모든 세트.",
