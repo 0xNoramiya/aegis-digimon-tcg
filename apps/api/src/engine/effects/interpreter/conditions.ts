@@ -59,6 +59,14 @@ function memoryForCondition(ctx: EffectContext, cond: Condition): number {
   return seat === ctx.game.state.turnSeat ? ctx.game.state.memory : -ctx.game.state.memory;
 }
 
+function placedOptionByInstance(ctx: EffectContext, instanceId: string) {
+  for (const player of ctx.game.state.players) {
+    const placed = player.battleArea.find((permanent) => permanent.topCard?.instanceId === instanceId);
+    if (placed !== undefined) return placed.topCard;
+  }
+  return undefined;
+}
+
 /** Evaluate a parsed Condition. An unrecognized ("raw") condition is treated as
  *  unmet so the interpreter never guesses a gate it could not parse. */
 export function evaluateCondition(ctx: EffectContext, cond: Condition): boolean {
@@ -917,7 +925,8 @@ export function evaluateCondition(ctx: EffectContext, cond: Condition): boolean 
       // The use event precedes Main; its Option is already in the no-area slot.
       const candidate =
         ctx.game.state.players.find((player) => player.resolvingOption?.instanceId === instanceId)?.resolvingOption ??
-        findLooseCandidateByInstance(ctx, instanceId);
+        findLooseCandidateByInstance(ctx, instanceId) ??
+        placedOptionByInstance(ctx, instanceId);
       return (
         candidate !== undefined && definitionMatches(cond.filter, ctx.game.definitionOf({ cardId: candidate.cardId }))
       );
