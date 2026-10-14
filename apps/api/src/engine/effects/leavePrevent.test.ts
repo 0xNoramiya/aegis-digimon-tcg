@@ -1311,3 +1311,28 @@ describe("leave-area prevention that saves one of several permanents", () => {
     expect(offers).toEqual([]);
   });
 });
+
+it.each([false, true, undefined])(
+  "consumes an instead replacement only after activation (result=%s)",
+  async (result) => {
+    const h = harness();
+    const source = putPermanent(h.state, 0, "replacement-source");
+    let activations = 0;
+    h.subTriggers.subscribeReplacement({
+      event: "wouldLeavePlay",
+      sourcePermanentId: source.permanentId,
+      mode: "instead",
+      description: "optional leave reaction",
+      oncePerTurnKey: "optional-leave-reaction",
+      appliesTo: () => true,
+      apply: async () => {
+        activations += 1;
+        return result;
+      },
+    });
+    await h.consult([source.permanentId]);
+    await h.consult([source.permanentId]);
+    expect(activations).toBe(result === false ? 2 : 1);
+    expect(h.replacementFiredKeys.has("optional-leave-reaction")).toBe(result !== false);
+  },
+);
