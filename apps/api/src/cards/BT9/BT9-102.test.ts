@@ -88,7 +88,7 @@ describe("BT9-102 Attack of the Heavy Mobile Digimon!", () => {
       kinds: ["Option"],
       playCost: 0,
       securityEffectText:
-        "[Security] You may trash 1 Digimon card with [Cyborg] or [Machine] in its traits in your hand to delete 1 of your opponent’s Digimon whose play cost is less than or equal to the trashed card’s play cost.",
+        "[Security] You may trash 1 card with [Cyborg] or [Machine] in its traits in your hand to delete 1 of your opponent’s Digimon whose play cost is less than or equal to the trashed card’s play cost.",
     });
     expect(compiled).toMatchObject({
       coverage: "full",
@@ -123,7 +123,7 @@ describe("BT9-102 Attack of the Heavy Mobile Digimon!", () => {
               optional: true,
               cost: {
                 kind: "trash",
-                target: { filter: { kind: ["Digimon"] }, count: 1 },
+                target: { filter: { nameOrTrait: [{ tokens: ["Cyborg", "Machine"], match: "trait" }] }, count: 1 },
                 bindResultAs: "trashedSecurityCard",
               },
               target: {
@@ -152,6 +152,11 @@ describe("BT9-102 Attack of the Heavy Mobile Digimon!", () => {
     });
     await settle(() => s.state.players[0]!.trash.some((c) => c.cardId === "BT9-102"));
     expect(s.state.players[0]!.trash.some((c) => c.cardId === "BT9-102")).toBe(true);
+  });
+
+  it("accepts any [Cyborg] or [Machine] trait card for its Security cost, as the LM-08 printing reads", () => {
+    const security = compiled.effects.find((effect) => effect.trigger === "Security")!.actions[0]!;
+    expect(security.cost?.target?.filter).not.toHaveProperty("kind");
   });
 });
 
