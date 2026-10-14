@@ -11,6 +11,7 @@ export interface CollectedEffect {
   grantedEffectId?: number;
   /** Stable identity of an event occurrence, separate from the effect's per-turn usage key. */
   triggerOccurrence?: string;
+  watcherEventIdentity?: string;
   source: CardSource;
   effect: Effect;
   /** Internal firing window retained so nested decisions can preserve effect provenance. */

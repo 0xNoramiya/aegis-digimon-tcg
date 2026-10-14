@@ -460,9 +460,9 @@ describe("Effects Lab dev scenarios", () => {
           "attack",
           "0:BT26-059",
           "0:BT25-080",
-          "0:BT24-098",
-          "0:BT24-098",
           "0:BT26-059",
+          "0:BT24-098",
+          "0:BT24-098",
           "check",
         ]);
         expect(largestOrderPrompt(s, 0, firstDecision)).toBe(5);
