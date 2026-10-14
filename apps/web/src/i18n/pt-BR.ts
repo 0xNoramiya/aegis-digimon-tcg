@@ -364,8 +364,6 @@ export const ptBR: Record<keyof typeof en, string> = {
   "lobby.betaQueueOption": "Jogar na fila beta",
   "lobby.betaQueueOptionHint":
     "Enfrente jogadores que testam cartas de sets que ainda não foram lançados. Essas cartas ainda podem mudar.",
-  "lobby.betaQueueOptionBotHint":
-    "A IA pode usar decks com cartas de sets que ainda não foram lançados. Essas cartas ainda podem mudar.",
   "beta.message": "O Aegis ainda está em beta. Coisas podem quebrar e os dados podem ser reiniciados.",
   "beta.reportLink": "Relate um bug no Discord",
   "beta.dismiss": "Entendi",

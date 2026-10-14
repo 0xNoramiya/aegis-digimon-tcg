@@ -19,6 +19,7 @@ export function BreedingSlot({
   highlight,
   width,
   onClick,
+  onInspect,
   drop,
 }: {
   perm?: Permanent;
@@ -41,6 +42,7 @@ export function BreedingSlot({
   /** Explicit slot width; overrides the `compact` default. */
   width?: number;
   onClick?: () => void;
+  onInspect?: () => void;
   drop?: DropAttrs;
 }) {
   const { t } = useTranslation();
@@ -102,6 +104,8 @@ export function BreedingSlot({
             effectSource={effectSource}
             effectLinked={effectLinked}
             highlight={highlight}
+            onInspect={onInspect}
+            showInspect={focused}
           />
         ) : (
           <span

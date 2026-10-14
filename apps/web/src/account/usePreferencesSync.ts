@@ -27,7 +27,6 @@ import { isSameDeckIdList } from "@/screens/favoriteDecks/isSameDeckIdList";
  * Keeps the theme, language, sleeves, auto hatch, profile stats and deck builder layout in step with the signed-in account.
  * localStorage stays the instant source, so guests and the first render never wait on the network.
  * On sign-in the account's stored values win; keys the account lacks are backfilled from this device.
- * Auto hatch and profile stats default to false for accounts without a saved choice.
  */
 export function usePreferencesSync({
   accountId,
@@ -61,7 +60,7 @@ export function usePreferencesSync({
         if (preferences.eggSleeve && getEggSleeveId() !== CUSTOM_CARD_SLEEVE_ID) setEggSleeveId(preferences.eggSleeve);
         setDeckBuilderPreferences(sanitizeDeckBuilderPreferences(preferences));
         setAutoHatchEnabled(preferences.autoHatch === true);
-        setProfileStatsShown(preferences.profileStats === true);
+        setProfileStatsShown(preferences.profileStats !== false);
         if (preferences.favoriteDeckIds) {
           setFavoriteDeckIds(preferences.favoriteDeckIds);
         }
@@ -77,7 +76,7 @@ export function usePreferencesSync({
     if (!accountId || !stored) return;
     const current: AccountPreferences = {
       ...(autoHatch || stored.autoHatch !== undefined ? { autoHatch } : {}),
-      ...(profileStats || stored.profileStats !== undefined ? { profileStats } : {}),
+      ...(!profileStats || stored.profileStats !== undefined ? { profileStats } : {}),
       darkMode: dark,
       locale,
       ...(sleeve !== CUSTOM_CARD_SLEEVE_ID && { sleeve }),

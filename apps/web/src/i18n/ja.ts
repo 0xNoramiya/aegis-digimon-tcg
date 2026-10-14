@@ -562,8 +562,6 @@ const interfaceMessages = {
   "lobby.betaQueueOption": "ベータキューで対戦",
   "lobby.betaQueueOptionHint":
     "まだ発売されていないセットのカードを試すプレイヤーと対戦します。これらのカードは今後変更される可能性があります。",
-  "lobby.betaQueueOptionBotHint":
-    "AIが、まだ発売されていないセットのカードを含むデッキを使う場合があります。これらのカードは今後変更される可能性があります。",
   "beta.message": "Aegisはまだベータ版です。不具合が起きたり、データがリセットされたりする可能性があります。",
   "beta.reportLink": "Discordでバグを報告",
   "beta.dismiss": "わかりました",

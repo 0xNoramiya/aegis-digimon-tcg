@@ -70,18 +70,21 @@ const compiled: CompiledCard = {
     {
       trigger: "WhenDigivolving",
       actions: dpAndBattleActions,
+      optional: true,
       frequency: "OncePerTurn",
       sharedUseKey,
     },
     {
       trigger: "WhenAttacking",
       actions: dpAndBattleActions,
+      optional: true,
       frequency: "OncePerTurn",
       sharedUseKey,
     },
     {
       trigger: "Counter",
       actions: dpAndBattleActions,
+      optional: true,
       frequency: "OncePerTurn",
       sharedUseKey,
     },

@@ -3,12 +3,22 @@
 import type { EffectContext } from "../../EffectContext.js";
 import type { ActionScope } from "../dispatch.js";
 import { toDuration } from "../duration.js";
-import { resolvePermanentTargets } from "../targeting/permanents.js";
+import { candidatePermanents, resolvePermanentTargets } from "../targeting/permanents.js";
 import { runDigivolve, runDigivolveViaPlacement } from "./digivolve.js";
 import { runAppFuse, runDnaDigivolve } from "./dna.js";
 import { runLink, runMindLink } from "./link.js";
 import { runPlaceUnder, runTrashDigivolution } from "./placeUnder.js";
-import { CardKind, type Action } from "@aegis/shared";
+import { CardKind, type Action, type Target } from "@aegis/shared";
+
+function hasDeDigivolvableCandidate(ctx: EffectContext, target: Target, stopAtLevel: number | undefined): boolean {
+  const levelFloor = stopAtLevel ?? 3;
+  return candidatePermanents(ctx, target).some((permanent) => {
+    if (permanent.stack.length === 0 || permanent.topCard === undefined) return false;
+    const definition = ctx.game.definitionOf(permanent.topCard);
+    const isDigimonOrEgg = definition.kinds.includes(CardKind.Digimon) || definition.kinds.includes(CardKind.DigiEgg);
+    return isDigimonOrEgg && (definition.level === undefined || definition.level > levelFloor);
+  });
+}
 
 export async function runDigivolutionAction(ctx: EffectContext, action: Action, scope: ActionScope): Promise<boolean> {
   const { scale } = scope;
@@ -50,6 +60,7 @@ export async function runDigivolutionAction(ctx: EffectContext, action: Action, 
             },
           };
         }
+        if (scale !== undefined && !hasDeDigivolvableCandidate(ctx, target, action.stopAtLevel)) break;
         const ids = await resolvePermanentTargets(ctx, target);
         // The trashing effect's seat gates EX11-070's stacked-trash-lock (KB Q5943).
         for (const id of ids)

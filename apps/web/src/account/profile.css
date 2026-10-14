@@ -199,6 +199,14 @@
   color: var(--ds-accent);
   border-color: var(--ds-accent);
 }
+.profile-stats-toggle {
+  margin-top: var(--ds-space-5);
+  padding-top: var(--ds-space-4);
+  border-top: 1px solid var(--ds-line);
+}
+.profile-stats-toggle + .profile-stats {
+  margin-top: var(--ds-space-4);
+}
 .profile-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

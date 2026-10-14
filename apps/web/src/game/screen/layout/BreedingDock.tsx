@@ -30,6 +30,7 @@ export function BreedingDock({
   onHatch,
   onOpenEggDeck,
   onSlotClick,
+  onInspect,
 }: {
   eggDeckCount: number;
   breeding: Permanent | undefined;
@@ -52,6 +53,7 @@ export function BreedingDock({
   /** Opens the revealed egg deck once the match is over. */
   onOpenEggDeck?: () => void;
   onSlotClick: (() => void) | undefined;
+  onInspect?: () => void;
 }) {
   const { t } = useTranslation();
   return (
@@ -107,6 +109,7 @@ export function BreedingDock({
             focused={actionsOpen}
             drop={slotDrop}
             onClick={onSlotClick}
+            onInspect={onInspect}
           />
         </div>
       </div>

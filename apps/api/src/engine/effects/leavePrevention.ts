@@ -275,13 +275,16 @@ export async function consultLeavePrevention(
       if (repl.mode === "instead") {
         if (repl.oncePerTurnKey !== undefined && host.oncePerTurnFired?.(repl.oncePerTurnKey)) continue;
         opts.reentryGuard.activeReplacementKeys.add(activationKey);
+        let activated: boolean | void;
         try {
-          await (host.resolveInsteadBody?.(repl, ctx, () => repl.apply(ctx)) ?? repl.apply(ctx));
+          activated = await (host.resolveInsteadBody?.(repl, ctx, () => repl.apply(ctx)) ?? repl.apply(ctx));
         } finally {
           opts.reentryGuard.activeReplacementKeys.delete(activationKey);
         }
         const relocated = host.permanentById(leavingId) === undefined;
-        if (repl.oncePerTurnKey !== undefined) host.markOncePerTurnFired?.(repl.oncePerTurnKey);
+        if (activated !== false && repl.oncePerTurnKey !== undefined) {
+          host.markOncePerTurnFired?.(repl.oncePerTurnKey);
+        }
         if (relocated) {
           prevented.add(leavingId);
           break;
