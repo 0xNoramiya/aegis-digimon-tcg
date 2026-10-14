@@ -368,6 +368,8 @@ const interfaceMessages = {
   "game.timer.mulligan": "Mulligan",
   "game.timer.low": "Tempo quasi esaurito",
   "game.timer.refill": "+{seconds}s / turno",
+  "game.timer.minuteLeft": "Manca 1 minuto",
+  "game.timer.secondsLeft": "Mancano {seconds} secondi",
   "overlay.reason.win.timeout": "L'avversario ha esaurito il tempo.",
   "overlay.reason.loss.timeout": "Hai esaurito il tempo.",
   "overlay.reason.draw.timeout": "La partita è terminata per tempo scaduto.",

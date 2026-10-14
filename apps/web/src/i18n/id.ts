@@ -510,6 +510,8 @@ const interfaceMessages = {
   "game.timer.mulligan": "Mulligan",
   "game.timer.low": "Waktu hampir habis",
   "game.timer.refill": "+{seconds}s / putar",
+  "game.timer.minuteLeft": "Sisa 1 menit",
+  "game.timer.secondsLeft": "Sisa {seconds} detik",
   "overlay.reason.win.timeout": "Lawanmu kehabisan waktu.",
   "overlay.reason.loss.timeout": "Anda kehabisan waktu.",
   "overlay.reason.draw.timeout": "Pertandingan berakhir tepat waktu.",

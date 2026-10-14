@@ -309,6 +309,8 @@ export const en = {
   "game.timer.mulligan": "Mulligan",
   "game.timer.low": "Time running low",
   "game.timer.refill": "+{seconds}s / turn",
+  "game.timer.minuteLeft": "1 minute left",
+  "game.timer.secondsLeft": "{seconds} seconds left",
   "overlay.reason.win.timeout": "Your opponent ran out of time.",
   "overlay.reason.loss.timeout": "You ran out of time.",
   "overlay.reason.draw.timeout": "The game ended on time.",

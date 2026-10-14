@@ -482,6 +482,8 @@ const interfaceMessages = {
   "game.timer.mulligan": "調度",
   "game.timer.low": "時間所剩無幾",
   "game.timer.refill": "+{seconds} 秒/轉",
+  "game.timer.minuteLeft": "剩餘 1 分鐘",
+  "game.timer.secondsLeft": "剩餘 {seconds} 秒",
   "overlay.reason.win.timeout": "你的對手已經沒有時間了。",
   "overlay.reason.loss.timeout": "你沒時間了。",
   "overlay.reason.draw.timeout": "比賽準時結束。",
