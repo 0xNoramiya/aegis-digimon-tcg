@@ -410,7 +410,12 @@ export class GameEngine {
           const permanent = player.battleArea.find((candidate) => candidate.permanentId === permanentId);
           if (permanent !== undefined) {
             const definition = lookupDefinition(permanent.topCard.cardId);
-            if (definition !== undefined && isDigimon(definition)) return permanent.controllerSeat;
+            if (
+              (definition !== undefined && isDigimon(definition)) ||
+              this.continuous.grantedKinds(permanentId).includes(CardKind.Digimon)
+            ) {
+              return permanent.controllerSeat;
+            }
           }
         }
         return undefined;
