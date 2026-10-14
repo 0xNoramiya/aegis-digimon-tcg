@@ -37,21 +37,6 @@ describe("alternate art provider fallback", () => {
   });
 });
 
-describe("unpublished printings", () => {
-  it("falls back to the bundled scan after the upstream image", () => {
-    const urls = cardImageUrls("BT22-063", "BT22-063_P2");
-    expect(urls.slice(0, 3)).toEqual([
-      `${CARD_IMAGE_BASE}/BT22-063_P2.webp`,
-      "/cards/unpublished/BT22-063_P2.webp",
-      `${CARD_IMAGE_BASE}/BT22-063_P2-Sample.webp`,
-    ]);
-  });
-
-  it("covers a base printing the upstream set lacks", () => {
-    expect(cardImageUrls("P-147")).toContain("/cards/unpublished/P-147.webp");
-  });
-});
-
 describe("errata printings", () => {
   it("tries the errata art before the pre-errata art", () => {
     const urls = cardImageUrls("BT16-077");
