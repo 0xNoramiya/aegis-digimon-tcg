@@ -193,3 +193,39 @@ describe("ko game terminology", () => {
     expect(misused).toEqual([]);
   });
 });
+
+const literalIndonesianMistranslations =
+  /(?<!\p{L})(?:[Dd]ek|[Tt]elur|[Kk]eamanan|[Pp]emblokir|[Pp]enjinak|[Pp]erselisihan|[Ss]elongsong|[Kk]ecocokan|[Dd]igivolusi|[Pp]embiakan|[Pp]erkembangbiakan|[Dd]itangguhkan|[Pp]enangguhan|[Tt]ayangan ulang|[Pp]emutaran ulang)(?!\p{L})|\[Penghitung\]/u;
+const informalIndonesianAddress =
+  /(?<!\p{L})(?:[Kk]amu|[Aa]ku)(?!\p{L})|(?:[Gg]iliran|[Ll]awan|[Tt]angan|Digimon|[Pp]rofil|[Aa]kun|[Ww]aktu|[Ll]aporan|[Mm]ilik|[Ss]ampah)-?mu(?!\p{L})/u;
+const eggPlaceNameKey = "redesign.foundation.battlefield.egg-village";
+
+describe("id game terminology", () => {
+  it("avoids literal mistranslations of deck, Digi-Egg, security, Blocker, Tamer, Discord, sleeve, match and suspend", () => {
+    const mistranslated = Object.entries(dictionaries.id)
+      .filter(([key, value]) => key !== eggPlaceNameKey && literalIndonesianMistranslations.test(value))
+      .map(([key, value]) => ({ key, value }));
+    expect(mistranslated).toEqual([]);
+  });
+
+  it("uses trash for the card-game trash and keeps sampah for Google Drive", () => {
+    const misused = Object.entries(dictionaries.id)
+      .filter(([key, value]) => /[Ss]ampah/.test(value) && !googleDriveTrashKeys.has(key))
+      .map(([key, value]) => ({ key, value }));
+    expect(misused).toEqual([]);
+  });
+
+  it("addresses the player with Anda", () => {
+    const informal = Object.entries(dictionaries.id)
+      .filter(([, value]) => informalIndonesianAddress.test(value))
+      .map(([key, value]) => ({ key, value }));
+    expect(informal).toEqual([]);
+  });
+
+  it("uses delete for deleting Digimon, not file removal", () => {
+    const misused = Object.entries(dictionaries.id)
+      .filter(([key, value]) => inGameKey.test(key) && /[Hh]apus|[Hh]ancurkan/.test(value))
+      .map(([key, value]) => ({ key, value }));
+    expect(misused).toEqual([]);
+  });
+});
