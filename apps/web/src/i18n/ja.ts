@@ -47,6 +47,12 @@ const interfaceMessages = {
   "roadmap.admin.failure.invalid_discussion_url": "discord.comまたはdiscord.ggのhttpsリンクを使ってください。",
   "roadmap.admin.failure.already_published": "この報告はすでにロードマップにあります。",
   "roadmap.admin.failure.source_not_found": "この報告はもう存在しません。",
+  "settings.shareDeckAfterMatch": "対戦後にデッキを共有",
+  "settings.shareDeckAfterMatchDesc":
+    "対戦終了後、対戦相手が開始時のデッキリストを閲覧・コピーできるようにします。初期設定で有効です。",
+  "settings.shareDeckAfterMatchFailed": "設定を読み込むか保存できませんでした。再試行するか設定を開き直してください。",
+  "overlay.viewOpponentDeck": "相手のデッキを見る",
+  "overlay.opponentDeck": "相手のデッキ",
   "rollback.failed": "この時点を安全に復元できませんでした。現在の対戦状態は維持されています。",
   "rollback.cancel": "リクエストを取り消す",
   "rollback.allow": "巻き戻しを許可",

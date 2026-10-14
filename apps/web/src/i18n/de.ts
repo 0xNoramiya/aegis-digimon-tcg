@@ -48,6 +48,13 @@ const interfaceMessages = {
   "roadmap.admin.failure.invalid_discussion_url": "Verwenden Sie einen https-Link von discord.com oder discord.gg.",
   "roadmap.admin.failure.already_published": "Dieser Bericht steht bereits auf der Roadmap.",
   "roadmap.admin.failure.source_not_found": "Dieser Bericht existiert nicht mehr.",
+  "settings.shareDeckAfterMatch": "Mein Deck nach dem Spiel teilen",
+  "settings.shareDeckAfterMatchDesc":
+    "Erlaube deinem Gegner, deine ursprüngliche Deckliste nach dem Spiel anzusehen und zu kopieren. Standardmäßig aktiviert.",
+  "settings.shareDeckAfterMatchFailed":
+    "Diese Einstellung konnte nicht geladen oder gespeichert werden. Versuche es erneut oder öffne die Einstellungen neu.",
+  "overlay.viewOpponentDeck": "Gegnerisches Deck ansehen",
+  "overlay.opponentDeck": "Gegnerisches Deck",
   "rollback.failed":
     "Dieser Zeitpunkt konnte nicht sicher wiederhergestellt werden. Das aktuelle Spiel wurde beibehalten.",
   "rollback.cancel": "Anfrage abbrechen",

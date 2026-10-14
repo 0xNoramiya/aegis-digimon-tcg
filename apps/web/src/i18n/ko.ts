@@ -47,6 +47,12 @@ const interfaceMessages = {
   "roadmap.admin.failure.invalid_discussion_url": "discord.com 또는 discord.gg의 https 링크를 사용하세요.",
   "roadmap.admin.failure.already_published": "이 신고는 이미 로드맵에 있습니다.",
   "roadmap.admin.failure.source_not_found": "이 신고는 더 이상 존재하지 않습니다.",
+  "settings.shareDeckAfterMatch": "경기 후 내 덱 공유",
+  "settings.shareDeckAfterMatchDesc":
+    "경기 종료 후 상대가 시작 덱 목록을 보고 복사할 수 있습니다. 기본으로 활성화됩니다.",
+  "settings.shareDeckAfterMatchFailed": "설정을 불러오거나 저장하지 못했습니다. 다시 시도하거나 설정을 다시 여세요.",
+  "overlay.viewOpponentDeck": "상대 덱 보기",
+  "overlay.opponentDeck": "상대 덱",
   "rollback.failed": "이 시점으로 안전하게 복원하지 못했습니다. 현재 대전 상태는 유지됩니다.",
   "rollback.cancel": "요청 취소",
   "rollback.allow": "되돌리기 허용",

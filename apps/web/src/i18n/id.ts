@@ -47,6 +47,12 @@ const interfaceMessages = {
   "roadmap.admin.failure.invalid_discussion_url": "Gunakan tautan https dari discord.com atau discord.gg.",
   "roadmap.admin.failure.already_published": "Laporan ini sudah ada di roadmap.",
   "roadmap.admin.failure.source_not_found": "Laporan ini sudah tidak ada.",
+  "settings.shareDeckAfterMatch": "Bagikan deck saya setelah pertandingan",
+  "settings.shareDeckAfterMatchDesc":
+    "Izinkan lawan melihat dan menyalin daftar deck awal setelah pertandingan. Aktif secara bawaan.",
+  "settings.shareDeckAfterMatchFailed": "Gagal memuat atau menyimpan pengaturan. Coba lagi atau buka ulang pengaturan.",
+  "overlay.viewOpponentDeck": "Lihat deck lawan",
+  "overlay.opponentDeck": "Deck lawan",
   "rollback.failed": "Tidak bisa memulihkan titik ini dengan aman. Kondisi pertandingan saat ini dipertahankan.",
   "rollback.cancel": "Batalkan permintaan",
   "rollback.allow": "Izinkan rollback",

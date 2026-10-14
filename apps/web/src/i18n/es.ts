@@ -17,6 +17,13 @@ import { settingsEs } from "./redesign/settings.es";
 import { shellEs } from "./redesign/shell.es";
 
 export const es: Record<keyof typeof en, string> = {
+  "settings.shareDeckAfterMatch": "Compartir mi deck al finalizar la partida",
+  "settings.shareDeckAfterMatchDesc":
+    "Permite que tu rival vea y copie la lista inicial de tu deck al finalizar la partida. Activado por defecto.",
+  "settings.shareDeckAfterMatchFailed":
+    "No se pudo cargar o guardar esta opción. Inténtalo de nuevo o abre los ajustes otra vez.",
+  "overlay.viewOpponentDeck": "Ver deck del rival",
+  "overlay.opponentDeck": "Deck del rival",
   "rollback.failed": "No se pudo restaurar este punto con seguridad. Se conservó la partida actual.",
   "rollback.cancel": "Cancelar solicitud",
   "rollback.allow": "Permitir retroceder jugadas",

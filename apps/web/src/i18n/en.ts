@@ -19,6 +19,12 @@ import { shellEn } from "./redesign/shell.en";
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  "settings.shareDeckAfterMatch": "Share my deck after the match",
+  "settings.shareDeckAfterMatchDesc":
+    "Allow your opponent to view and copy your starting deck list after the match. Enabled by default.",
+  "settings.shareDeckAfterMatchFailed": "Could not load or save deck sharing. Try again or reopen settings.",
+  "overlay.viewOpponentDeck": "View opponent’s deck",
+  "overlay.opponentDeck": "Opponent’s deck",
   "rollback.failed": "Could not safely restore this point. The current game was kept.",
   "rollback.cancel": "Cancel request",
   "rollback.allow": "Allow rollback",

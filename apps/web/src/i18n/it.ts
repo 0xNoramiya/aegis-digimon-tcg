@@ -5,6 +5,13 @@ import { en } from "./en";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  "settings.shareDeckAfterMatch": "Condividi il mio mazzo dopo la partita",
+  "settings.shareDeckAfterMatchDesc":
+    "Consenti all’avversario di vedere e copiare la lista iniziale del tuo mazzo dopo la partita. Attivo per impostazione predefinita.",
+  "settings.shareDeckAfterMatchFailed":
+    "Impossibile caricare o salvare questa opzione. Riprova o riapri le impostazioni.",
+  "overlay.viewOpponentDeck": "Visualizza il mazzo avversario",
+  "overlay.opponentDeck": "Mazzo avversario",
   "rollback.failed": "Impossibile ripristinare questo punto in sicurezza. La partita attuale è stata mantenuta.",
   "rollback.cancel": "Annulla richiesta",
   "rollback.allow": "Consenti di annullare le mosse",

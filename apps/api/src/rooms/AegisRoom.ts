@@ -3,6 +3,7 @@ import { RollbackKind, ROLLBACK_CHANNEL, ROLLBACK_RESET_CHANNEL } from "@aegis/s
 import type { GameEngineHooks } from "#api/engine/gameEngine/types";
 import type { ReplayInput } from "#api/replays/inputs/types";
 
+import { OPPONENT_DECK_CHANNEL } from "@aegis/shared/decks/OPPONENT_DECK_CHANNEL";
 import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import { validateDecklist } from "../engine/deckValidation.js";
 import { log, logError, withMatchLog } from "../logger.js";
@@ -326,6 +327,9 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private rankedByClient = new Map<string, boolean>();
   /** Clients that pace chains of triggered effects themselves (`presentationPacing: "sequential"`). */
   private chainPacingClients = new Set<string>();
+  private initialDeckBySeat = new Map<Seat, UsedDeck>();
+  private deckOwnerBySeat = new Map<Seat, string>();
+  private opponentDeckRequestTimes = new WeakMap<Client, number>();
   private deckByClient = new Map<string, UsedDeck>();
   /**
    * Every StateView this room handed out, disposed with the room. @colyseus/schema's GC
@@ -895,6 +899,16 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
 
       if (type === CONNECTION_REPORT_CHANNEL) {
         this.handleConnectionReport(client, payload);
+        return;
+      }
+      if (type === OPPONENT_DECK_CHANNEL) {
+        const now = performance.now();
+        if (now - (this.opponentDeckRequestTimes.get(client) ?? -Infinity) >= 10_000) {
+          this.opponentDeckRequestTimes.set(client, now);
+          void this.sendOpponentDeck(client).catch((error: unknown) =>
+            this.debugError("[AegisRoom] failed to share opponent deck", error),
+          );
+        }
         return;
       }
       if (type === USED_DECK_CHANNEL) {
@@ -1953,6 +1967,25 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     this.atReplaySite("batchClose", () => this.broadcastPatch());
   }
 
+  private async sendOpponentDeck(client: Client): Promise<void> {
+    const seat = this.seatByClient.get(client.sessionId);
+    if (seat === undefined || this.spectatorClients.has(client.sessionId) || !this.state.gameOver) {
+      return;
+    }
+    const opponentSeat = seat === 0 ? 1 : 0;
+    const deck = this.initialDeckBySeat.get(opponentSeat);
+    if (!deck) {
+      return;
+    }
+    const owner = this.deckOwnerBySeat.get(opponentSeat);
+    if (owner && (await this.accounts().preferences(owner)).shareDeckAfterMatch === false) {
+      return;
+    }
+    if (this.clients.includes(client)) {
+      client.send(OPPONENT_DECK_CHANNEL, structuredClone({ ...deck, deckId: null }));
+    }
+  }
+
   private replayMode(): ReplaySummary["mode"] {
     if (this.isTournamentRoom) return "tournament";
     if (this.isRankedRoom) return "ranked";
@@ -2147,6 +2180,25 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
 
   /** Log the deck a seat was just given; `player.join` names the session but not the seat. */
   private recordReplaySeat(seat: Seat, deck: ReplayDeck, deckRules: ReplayDeckRules, bot?: true): void {
+    const player = this.state.players[seat];
+    const snapshot = player && this.deckByClient.get(player.sessionId);
+    this.initialDeckBySeat.set(
+      seat,
+      structuredClone(
+        snapshot ?? {
+          deckId: null,
+          deckName: player?.displayName ?? "Opponent",
+          format: this.state.format as DeckFormat,
+          ...deck,
+        },
+      ),
+    );
+    const owner = player && this.accountByClient.get(player.sessionId);
+    if (owner) {
+      this.deckOwnerBySeat.set(seat, owner);
+    } else {
+      this.deckOwnerBySeat.delete(seat);
+    }
     this.rollbackHistory?.append({
       kind: "seat",
       seat,

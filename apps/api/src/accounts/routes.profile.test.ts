@@ -178,6 +178,14 @@ describe("/account/preferences", () => {
     expect((await putPreferences({ profileStats: "true" })).status).toBe(400);
   });
 
+  it("persists the post-match sharing opt-out and rejects non-booleans", async () => {
+    expect((await putPreferences({ shareDeckAfterMatch: false })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ shareDeckAfterMatch: false });
+    expect((await putPreferences({ shareDeckAfterMatch: true })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ shareDeckAfterMatch: true });
+    expect((await putPreferences({ shareDeckAfterMatch: "false" })).status).toBe(400);
+  });
+
   it("stores the deck builder layout", async () => {
     const layout = { deckShare: 0.6, deckView: "list", deckSort: "level" };
     expect((await putPreferences(layout)).status).toBe(200);
