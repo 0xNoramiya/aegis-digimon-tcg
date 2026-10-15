@@ -160,7 +160,7 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
     const result = await runBotMatch({
       seed: options.seed,
       seats: [seats[0]!, seats[1]!],
-      turnLimit: options.turnLimit ?? 60,
+      turnLimit: root.observation.turn + (options.turnLimit ?? 60),
       captureEvents: true,
       ...(options.mcts?.reusePrefixActions === false
         ? {}

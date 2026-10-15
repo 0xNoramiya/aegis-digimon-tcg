@@ -289,6 +289,17 @@ streams are resampled. This belief discards remembered hidden locations and
 ordered-deck knowledge, rather than pinning cards to privileged server locations.
 The other seat uses the candidate heuristic during rollouts. Search expands one
 new edge per rollout and uses UCT and terminal-game reward backpropagation.
+Each rollout receives a turn horizon measured from its search root: the root turn
+plus the configured match turn limit (60 by default). The outer match retains its
+original absolute turn limit. Reaching either limit without a terminal result
+remains invalid; a cutoff is never scored as a draw. Late searches therefore do
+not lose their rollout horizon merely because the outer game is near turn 60.
+
+The late-terminal-rollout regression restores recorded MCTS choices from a random
+deck match, verifies root information hashes and offered action counts, and runs
+one real determinized rollout. That rollout previously stopped at turn 61 and
+now reaches a security win at turn 62, with both prefix replay modes. Its forced
+search choices are regression data, not strength or publication evidence.
 
 Search is currently applied to settled Main windows; other windows use the
 rollout heuristic. Full engine replay is expensive. Logs report actual completed
