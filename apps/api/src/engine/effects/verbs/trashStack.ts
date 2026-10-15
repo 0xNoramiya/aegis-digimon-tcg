@@ -1,3 +1,5 @@
+import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
+import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin";
 import { Zone, CardInstance } from "@aegis/shared";
 import { applyOverflow, insertCard, removeFromStackAt } from "../../state/access.js";
 import type { Primitives } from "../EffectContext.js";
@@ -50,6 +52,7 @@ export function createTrashStackVerbs(pc: PrimitivesContext) {
       });
     }
 
+    const origins = locateMoveOrigins({ state, instanceIds: validated.map(({ card }) => card.instanceId) });
     // Commit every move before publishing any event/trigger.
     for (const entry of validated) {
       const host = access.permanentById(entry.hostPermanentId)!;
@@ -61,12 +64,14 @@ export function createTrashStackVerbs(pc: PrimitivesContext) {
     }
     const moved = validated.map(({ card }) => card);
     applyOverflow(engine.memory, moved, state.turnSeat);
-    engine.emit({
-      kind: "cardsMoved",
-      instanceIds: moved.map((card) => card.instanceId),
-      from: "various",
-      to: Zone.Trash,
-    });
+    for (const { cards, ...origin } of groupCardsByOrigin({ origins, cards: moved })) {
+      engine.emit({
+        kind: "cardsMoved",
+        instanceIds: cards.map((card) => card.instanceId),
+        ...origin,
+        to: Zone.Trash,
+      });
+    }
     if (engine.fireSubTrigger) {
       const byHost = new Map<string, typeof validated>();
       for (const entry of validated) {

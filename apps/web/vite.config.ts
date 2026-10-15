@@ -41,6 +41,7 @@ export default defineConfig({
             "src/design/tokenArt/**/*.test.tsx",
             "src/screens/community/**/*.test.tsx",
             "src/game/arenaInspectorSources.test.tsx",
+            "src/game/log/**/*.test.tsx",
           ],
         },
       },
@@ -55,6 +56,10 @@ export default defineConfig({
       {
         extends: true,
         test: { name: "community-ui", include: ["src/screens/community/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "match-log-ui", include: ["src/game/log/**/*.test.tsx"], environment: "jsdom" },
       },
     ],
     exclude: [...configDefaults.exclude, "e2e/**"],

@@ -2,11 +2,9 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { getCardDefinition } from "@aegis/shared/cards/registry";
 import { useCardImageUrls } from "@/design/tokenArt/useCardImageUrls";
-import { Sigil } from "@/design/cards";
+import { Sigil } from "@/design/Sigil";
 import { colorKey } from "@/design/theme";
 
-const ZOOM_W = 380;
-const ZOOM_H = Math.round(ZOOM_W * 1.4);
 const ZOOM_GAP = 14;
 
 export function CardZoomPreview({
@@ -15,13 +13,16 @@ export function CardZoomPreview({
   x,
   y,
   fallbackIndex,
+  width = 380,
 }: {
   cardId: string;
   artId?: string;
   x: number;
   y: number;
   fallbackIndex: number;
+  width?: number;
 }) {
+  const height = Math.round(width * 1.4);
   const def = getCardDefinition(cardId);
   const urls = useCardImageUrls({ cardId, artId });
   const [extra, setExtra] = useState(0);
@@ -30,17 +31,19 @@ export function CardZoomPreview({
 
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const left = x + ZOOM_GAP + ZOOM_W > vw ? x - ZOOM_GAP - ZOOM_W : x + ZOOM_GAP;
-  const top = Math.max(ZOOM_GAP, Math.min(y - ZOOM_H / 2, vh - ZOOM_H - ZOOM_GAP));
+  const preferredLeft = x + ZOOM_GAP + width > vw ? x - ZOOM_GAP - width : x + ZOOM_GAP;
+  const left = Math.max(ZOOM_GAP, Math.min(preferredLeft, vw - width - ZOOM_GAP));
+  const top = Math.max(ZOOM_GAP, Math.min(y - height / 2, vh - height - ZOOM_GAP));
 
   return createPortal(
     <div
+      data-testid="card-zoom-preview"
       style={{
         position: "fixed",
         left,
         top,
-        width: ZOOM_W,
-        height: ZOOM_H,
+        width: width,
+        height: height,
         borderRadius: 14,
         overflow: "hidden",
         boxShadow: "0 30px 70px rgba(15,23,42,0.6), 0 0 0 1px rgba(255,255,255,0.08)",
@@ -59,7 +62,7 @@ export function CardZoomPreview({
             placeItems: "center",
           }}
         >
-          <Sigil cardId={cardId} color={colorKey(def?.colors[0])} size={ZOOM_W * 0.5} />
+          <Sigil cardId={cardId} color={colorKey(def?.colors[0])} size={width * 0.5} />
         </div>
       ) : (
         <img

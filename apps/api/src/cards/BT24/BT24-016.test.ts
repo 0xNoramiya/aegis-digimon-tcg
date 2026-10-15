@@ -164,7 +164,8 @@ describe("BT24-016 Lamiamon", () => {
     expect(s.events).toContainEqual({
       kind: "cardsMoved",
       instanceIds: [s.inst("placed").instanceId],
-      from: "various",
+      from: "hand",
+      fromSeat: 1,
       to: "security",
       seat: 1,
     });

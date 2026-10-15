@@ -1,38 +1,12 @@
+import { CardZoomPreview } from "@/design/CardZoomPreview";
+import { useHoverZoomEnabled } from "@/design/useHoverZoomEnabled";
+import { Sigil } from "@/design/Sigil";
 import { useCardImageUrls } from "@/design/tokenArt/useCardImageUrls";
 import { getCardDefinition, type CardColor, type CardDefinition } from "@aegis/shared";
 import { useEffect, useState } from "react";
-import { CardZoomPreview } from "@/design/CardZoomPreview";
-import { useHoverZoomEnabled } from "@/design/useHoverZoomEnabled";
 import { DEFAULT_CARD_SLEEVE, DEFAULT_EGG_SLEEVE, useCardSleeve, useEggSleeve } from "./sleeve";
-import { COLORS, colorKey, emblemFor, paletteFor, palettePairFor, sigilPaths } from "./theme";
+import { COLORS, colorKey, paletteFor, palettePairFor } from "./theme";
 import { CARD_SUSPEND_MOTION } from "./cardMotion";
-
-/** Inline geometric sigil (emblem derived from the card id unless given). */
-export function Sigil({
-  cardId,
-  emblem,
-  color = "Neutral",
-  size = 84,
-  faded = false,
-}: {
-  cardId?: string;
-  emblem?: string;
-  color?: string;
-  size?: number;
-  faded?: boolean;
-}) {
-  const c = COLORS[colorKey(color)];
-  const body = sigilPaths(emblem ?? (cardId ? emblemFor(cardId) : "sigil"));
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      style={{ color: c.base, opacity: faded ? 0.5 : 1, flexShrink: 0 }}
-      dangerouslySetInnerHTML={{ __html: body }}
-    />
-  );
-}
 
 /** Level pips — filled dots up to level, hollow remainder (max 6). */
 export function LevelPips({ level, color }: { level?: number; color: string }) {

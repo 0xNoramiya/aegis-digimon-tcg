@@ -1,3 +1,5 @@
+import { Phase } from "@aegis/shared/schema/enums";
+import type { LogTurnGroup } from "@/game/log/LogEntry";
 /* Fixtures for the mobile components lab (/dev/mobile). Server-originated text — prompt
    sentences, choice labels, effect clauses — is not translated by the client, but the lab
    still offers pt-BR and es variants of each so the longest realistic strings can be tried on
@@ -5,7 +7,7 @@
 
 import { getCardDefinition, splitPrintedClauses, type DecisionRequest } from "@aegis/shared";
 import type { Locale } from "../i18n";
-import type { LogLine } from "../game/matchLog";
+import type { LogLine } from "@/game/log/LogEntry";
 import type { NarrationItem } from "../game/narration";
 import type { MatchNotice } from "../game/notices";
 import type { TriggerDetail } from "../game/overlay";
@@ -439,4 +441,19 @@ export const LAB_LOG: LogLine[] = [
     cardIds: ["BT26-067"],
   },
   { text: `Security check revealed ${cardName(CARDS.rookie)}.`, kind: "sys", cardIds: [CARDS.rookie] },
+];
+
+export const LAB_LOG_TURNS: readonly LogTurnGroup[] = [
+  {
+    turnCount: 1,
+    turnSeat: 0,
+    phases: [
+      {
+        phase: Phase.Main,
+        entries: [...LAB_LOG]
+          .reverse()
+          .map((line, index) => ({ ...line, id: `fixture-${index}`, turnCount: 1, turnSeat: 0, phase: Phase.Main })),
+      },
+    ],
+  },
 ];

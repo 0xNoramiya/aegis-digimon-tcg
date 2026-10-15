@@ -1,3 +1,5 @@
+import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
+import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin";
 import { Permanent, Zone, EffectTiming, CardInstance, type Seat, type ServerEvent } from "@aegis/shared";
 import {
   applyOverflow,
@@ -137,6 +139,7 @@ export function createTrashVerbs(pc: PrimitivesContext) {
         }
       }
     }
+    const origins = locateMoveOrigins({ state, instanceIds });
     for (const instanceId of instanceIds) {
       // Options placed in the battle area are permanents, but their printed
       // trash cost names the Option card itself. Remove that permanent as a
@@ -183,18 +186,21 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       moved.filter((c) => underCard.has(c.instanceId)),
       state.turnSeat,
     );
-    if (moved.length > 0) {
+    for (const { cards, ...origin } of groupCardsByOrigin({ origins, cards: moved })) {
+      const fieldTrashes = trashedPermanents.filter((permanent) =>
+        cards.some((card) => card.instanceId === permanent.instanceId),
+      );
       engine.emit({
         kind: "cardsMoved",
-        instanceIds: moved.map((c) => c.instanceId),
-        from: "various",
+        instanceIds: cards.map((card) => card.instanceId),
+        ...origin,
         to: Zone.Trash,
-        ...(trashedPermanents.length > 0 ? { trashedPermanents } : {}),
+        ...(fieldTrashes.length > 0 ? { trashedPermanents: fieldTrashes } : {}),
         ...(opts?.trashedSources !== undefined
           ? {
-              cardIds: moved.map((c) => c.cardId),
-              artIds: moved.map((c) => c.artId || c.cardId),
-              seat: moved[0]!.ownerSeat,
+              cardIds: cards.map((card) => card.cardId),
+              artIds: cards.map((card) => card.artId || card.cardId),
+              seat: cards[0]!.ownerSeat,
               trashedSources: opts.trashedSources,
             }
           : {}),

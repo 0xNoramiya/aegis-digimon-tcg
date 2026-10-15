@@ -131,7 +131,9 @@ import {
 import { openCombatWindow, mirroredCombatWindow } from "./combatWindowModel";
 import { buildInstanceIndex, instancePermanentId } from "./decisionModel";
 import { digivolveBasePermanentIds } from "./digivolveModel";
-import { buildMatchLog, type LogLine } from "./matchLog";
+import { useMatchLogHistory } from "@/game/log/useMatchLogHistory";
+import { getSeatNames } from "@/game/log/getSeatNames";
+import type { ServerEvent } from "@aegis/shared/protocol/events";
 import { useMatchCues } from "./useMatchCues";
 import { useAnimationSpeedReport } from "./useAnimationSpeedReport";
 import type { PresentationPacing, PresentationProbe } from "./presentationProbe";
@@ -204,6 +206,8 @@ function GameScreenSession({
   autoHatchReady = true,
   demoConnection,
   replayMode = false,
+  historyEvents,
+  replayPlayers,
   devProbe,
   presentationPacing,
   onSeriesNext,
@@ -252,6 +256,8 @@ function GameScreenSession({
   };
   /** Portable file playback uses the read-only board without live result dialogs. */
   replayMode?: boolean;
+  historyEvents?: readonly ServerEvent[];
+  replayPlayers?: readonly string[];
   /** Dev inspector hooks (the effects lab): queue controls, step events, batches, decisions. */
   devProbe?: PresentationProbe;
   presentationPacing?: PresentationPacing;
@@ -843,6 +849,32 @@ function GameScreenSession({
     setHandOrder((order) => (handAutoSort ? sortedHandInstanceIds(hand, handSortMode) : retainHandOrder(order, hand)));
   }, [presentedHandKey, handAutoSort, handSortMode]);
 
+  const instanceIndex = state ? buildInstanceIndex(state, viewerSeat) : new Map<string, string>();
+  const playerName0 = state?.players[0]?.displayName;
+  const playerName1 = state?.players[1]?.displayName;
+  const seatNames = useMemo(
+    () =>
+      getSeatNames({
+        players: [{ displayName: playerName0 }, { displayName: playerName1 }],
+        viewerSeat: spectating ? undefined : viewerSeat,
+        replayPlayers,
+        t,
+      }),
+    [playerName0, playerName1, spectating, viewerSeat, replayPlayers, t],
+  );
+  const { turns: logTurns, recent: log } = useMatchLogHistory({
+    events: historyEvents ?? events,
+    initialTurn: state
+      ? { turnCount: Math.max(1, state.turnCount), turnSeat: state.turnSeat, phase: state.phase }
+      : undefined,
+    batches: historyEvents ? undefined : batches,
+    resetKey: `${connectedRoom?.roomId ?? "preview"}:${liveConnection.rollbackCount}`,
+    viewerSeat,
+    seatNames,
+    instanceIndex,
+    t,
+  });
+
   if (
     status === "reconnecting" ||
     status === "error" ||
@@ -922,7 +954,6 @@ function GameScreenSession({
     },
     viewerSeat,
   );
-  const instanceIndex = buildInstanceIndex(state, viewerSeat);
 
   const { handEntries, shownHandEntries } = handEntriesOf({
     handOrder,
@@ -1152,7 +1183,6 @@ function GameScreenSession({
   });
 
   // ----- log + game over -----
-  const log: LogLine[] = buildMatchLog(events, viewerSeat, instanceIndex, t);
 
   const gameOverReason = modelGameOverReason({ events });
 
@@ -1449,7 +1479,9 @@ function GameScreenSession({
       }}
       scenes={{ securityBreak, securityClash, securityBranch, optionBranch, zoneShowcase, revealShowcase }}
       collapseNotices={collapseNotices}
-      log={log}
+      logTurns={logTurns}
+      seatNames={seatNames}
+      logViewerSeat={spectating ? undefined : viewerSeat}
       signedIn={signedIn}
       opponentDropped={!spectating && !vsBot && !opp.connected && !state.gameOver}
       gameOver={

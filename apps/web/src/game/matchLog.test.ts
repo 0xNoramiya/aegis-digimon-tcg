@@ -42,8 +42,8 @@ describe("match log effect lifecycle", () => {
   it("names the activating effect before its results (Discord 1557481090870939840)", () => {
     expect(chronologicalLog(endOfTurnEvents).slice(0, 4)).toEqual([
       "Kakkinmon's effect activated",
-      "Craniamon moved: unsuspended → suspended",
-      "1 card moved: deck → hand",
+      "Craniamon suspended",
+      "You drew 1",
       "Kakkinmon's effect resolved",
     ]);
   });
@@ -61,5 +61,145 @@ describe("match log effect lifecycle", () => {
         { kind: "effectActivated", ...main, receiptOnly: true },
       ]),
     ).toEqual(["Tai Kamiya's effect activated", "Tai Kamiya's effect resolved"]);
+  });
+});
+
+describe("readable match history", () => {
+  const t = translator("en");
+  const names = { 0: "Alice", 1: "Bob" };
+
+  it("uses both display names regardless of viewer perspective", () => {
+    const events: ServerEvent[] = [
+      { kind: "cardPlayed", seat: 0, cardId: "ST1-03" },
+      { kind: "cardPlayed", seat: 1, cardId: "ST1-02" },
+    ];
+    for (const viewerSeat of [0, 1] as const) {
+      expect(buildMatchLog(events, viewerSeat, new Map(), t, 30, names).map((line) => line.text)).toEqual([
+        "Bob played Biyomon",
+        "Alice played Agumon",
+      ]);
+    }
+  });
+
+  it("keeps participant fallback names when display names are unavailable", () => {
+    expect(buildMatchLog([{ kind: "cardPlayed", seat: 0, cardId: "ST1-03" }], 0, new Map(), t)[0]?.text).toBe(
+      "You played Agumon",
+    );
+    expect(buildMatchLog([{ kind: "cardPlayed", seat: 1, cardId: "ST1-03" }], 0, new Map(), t)[0]?.text).toBe(
+      "Opponent played Agumon",
+    );
+  });
+
+  it("attaches paid memory to the action without a duplicate physical move", () => {
+    const events: ServerEvent[] = [
+      { kind: "matchStarted", firstSeat: 1 },
+      { kind: "memoryChanged", from: 4, to: -1, reason: "payCost" },
+      { kind: "cardsMoved", instanceIds: ["played"], from: "hand", to: "battleArea" },
+      { kind: "memoryChanged", from: 4, to: -1, reason: "playCard" },
+      { kind: "cardPlayed", seat: 1, cardId: "ST1-03", instanceId: "played" },
+    ];
+    const lines = buildMatchLog(events, 0, new Map(), t, 30, names);
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toMatchObject({ text: "Bob played Agumon", memory: { delta: -5, after: -1 } });
+  });
+
+  it("keeps Overflow as a separate source-attributed gain", () => {
+    const events: ServerEvent[] = [
+      { kind: "effectTriggered", ...kakkinmon },
+      { kind: "memoryChanged", from: 0, to: 3, reason: "overflow" },
+      { kind: "effectResolved", ...kakkinmon },
+    ];
+    expect(buildMatchLog(events, 0, new Map(), t, 30, names).map((line) => line.text)).toEqual([
+      "Kakkinmon's effect resolved",
+      "Kakkinmon: memory 0 → 3",
+      "Kakkinmon's effect activated",
+    ]);
+  });
+
+  it("narrates every deleted permanent with its own owner", () => {
+    const events: ServerEvent[] = [
+      {
+        kind: "cardsMoved",
+        from: "battleArea",
+        to: "trash",
+        instanceIds: ["a", "b"],
+        battleDeletion: true,
+        deletedPermanents: [
+          { permanentId: "pa", instanceId: "a", cardId: "ST1-03", seat: 0 },
+          { permanentId: "pb", instanceId: "b", cardId: "ST1-02", seat: 1 },
+        ],
+      },
+    ];
+    const lines = buildMatchLog(events, 0, new Map(), t, 30, names);
+    expect(lines.map((line) => line.text)).toEqual([
+      "Bob: Biyomon was deleted in battle",
+      "Alice: Agumon was deleted in battle",
+    ]);
+    expect(lines.map((line) => line.kind)).toEqual(["opp", "you"]);
+    expect(lines.map((line) => line.cardIds)).toEqual([["ST1-02"], ["ST1-03"]]);
+  });
+
+  it("renders unknown origins from old replays without inventing ownership", () => {
+    const lines = buildMatchLog(
+      [{ kind: "cardsMoved", from: "various", to: "trash", instanceIds: ["unknown"] }],
+      0,
+      new Map(),
+      t,
+      30,
+      names,
+    );
+    expect(lines[0]?.text).toBe("1 card moved: other areas → trash");
+  });
+
+  it("silences pass-turn resets", () => {
+    expect(buildMatchLog([{ kind: "memoryChanged", from: 1, to: -3, reason: "passTurn" }], 0, new Map(), t)).toEqual(
+      [],
+    );
+  });
+});
+
+describe("movement origin narration", () => {
+  it("names the origin owner independently of the destination owner", () => {
+    const log = buildMatchLog(
+      [{ kind: "cardsMoved", instanceIds: ["card"], from: "trash", fromSeat: 0, to: "hand", seat: 1 }],
+      0,
+      new Map([["card", "ST1-03"]]),
+      translator("en"),
+      30,
+      { 0: "Alice", 1: "Bob" },
+    );
+    expect(log[0]?.text).toContain("Alice's trash");
+    expect(log[0]?.text).toContain("Bob's hand");
+  });
+
+  it("names and links the original host even after its top changes", () => {
+    const log = buildMatchLog(
+      [
+        {
+          kind: "cardsMoved",
+          instanceIds: ["source"],
+          from: "digivolutionCards",
+          fromSeat: 0,
+          fromHost: { permanentId: "host", hostCardId: "ST1-07" },
+          to: "trash",
+        },
+      ],
+      0,
+      new Map([["source", "ST1-03"]]),
+      translator("en"),
+    );
+    expect(log[0]?.text).toContain("under Greymon");
+    expect(log[0]?.cardIds).toEqual(["ST1-03", "ST1-07"]);
+  });
+
+  it("uses a grammatical participant fallback for an owned zone", () => {
+    const log = buildMatchLog(
+      [{ kind: "cardsMoved", instanceIds: ["card"], from: "trash", fromSeat: 0, to: "hand", seat: 0 }],
+      0,
+      new Map(),
+      translator("en"),
+    );
+    expect(log[0]?.text).toContain("your trash");
+    expect(log[0]?.text).toContain("your hand");
   });
 });
