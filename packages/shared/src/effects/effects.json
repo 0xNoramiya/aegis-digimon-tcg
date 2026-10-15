@@ -240424,5 +240424,96 @@
     "coverage": "full",
     "residual": [],
     "digivolutionRequirement": [{ "namesExact": ["LordKnightmon"], "cost": 2, "isAlternate": true }]
+  },
+  "BT27-070": {
+    "effects": [
+      { "trigger": "Static", "actions": [], "keywords": [{ "keyword": "Reboot" }, { "keyword": "Blocker" }] },
+      {
+        "trigger": "AllTurns",
+        "actions": [
+          {
+            "kind": "Replacement",
+            "event": "wouldLeavePlay",
+            "mode": "prevent",
+            "optional": true,
+            "affectsAll": true,
+            "sourceFilter": { "controller": "mine", "kind": ["Digimon"] },
+            "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": "all" },
+            "cost": { "kind": "suspend", "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true } }
+          }
+        ]
+      },
+      {
+        "trigger": "AllTurns",
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "event": "whenSuspended",
+            "sourceFilter": { "isSelfRef": true },
+            "actions": [
+              {
+                "kind": "Delete",
+                "effectTextPart": "[All Turns] [Once Per Turn] When this Digimon suspends, you may delete all of your opponent's lowest DP Digimon.",
+                "optional": true,
+                "target": {
+                  "filter": { "controller": "opponent", "kind": ["Digimon"], "superlative": "lowestDP" },
+                  "count": "all"
+                }
+              },
+              {
+                "kind": "CostGatedBlock",
+                "effectTextPart": "Then, by trashing 1 [Craniamon] or [X Antibody] from this Digimon's digivolution cards, activate 1 [Main] effect on this card's Option side.",
+                "optional": true,
+                "cost": {
+                  "kind": "trash",
+                  "target": {
+                    "filter": {
+                      "isSelfRef": true,
+                      "zone": "digivolutionCards",
+                      "nameOrTrait": [{ "tokens": ["Craniamon", "X Antibody"], "match": "nameExact" }]
+                    },
+                    "count": 1
+                  }
+                },
+                "actions": [{ "kind": "ActivateMain" }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Main",
+        "actions": [
+          {
+            "kind": "GrantStatic",
+            "effectTextPart": "[Main] Until your opponent's turn ends, 1 of your Digimon with ＜Blocker＞ isn't affected by their Digimon effects and gets +5000 DP.",
+            "target": { "filter": { "controller": "mine", "kind": ["Digimon"], "keywords": ["Blocker"] }, "count": 1 },
+            "grant": "immuneToOpponentDigimonEffects",
+            "duration": "untilOpponentTurnEnd"
+          },
+          {
+            "kind": "ModifyDP",
+            "effectTextPart": "[Main] Until your opponent's turn ends, 1 of your Digimon with ＜Blocker＞ isn't affected by their Digimon effects and gets +5000 DP.",
+            "target": {
+              "filter": { "controller": "mine", "kind": ["Digimon"], "keywords": ["Blocker"] },
+              "count": 1,
+              "sameTarget": true
+            },
+            "amount": 5000,
+            "duration": "untilOpponentTurnEnd"
+          },
+          {
+            "kind": "Unsuspend",
+            "effectTextPart": "Then, 1 of your Digimon may unsuspend.",
+            "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+            "optional": true
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "namesExact": ["Craniamon"], "cost": 2, "isAlternate": true }]
   }
 }
