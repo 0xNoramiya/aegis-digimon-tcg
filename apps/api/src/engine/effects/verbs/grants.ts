@@ -10,6 +10,7 @@ import {
 } from "@aegis/shared";
 import { effectiveColors, effectiveNames } from "../continuous.js";
 import type { Primitives } from "../EffectContext.js";
+import { orderDnaMaterials } from "#api/engine/effects/verbs/orderDnaMaterials";
 import { dnaDigivolveCostFor } from "../verbs/digivolveCost.js";
 import { peekLooseInstance } from "../verbs/looseInstances.js";
 
@@ -268,6 +269,8 @@ export function createGrantsVerbs(pc: PrimitivesContext) {
     grantKeyword,
     grantDnaLevel,
     canDnaDigivolve,
+    orderDnaMaterials: (materialPermanentIds: string[], resultInstanceId: string) =>
+      orderDnaMaterials({ pc, materialPermanentIds, resultInstanceId }),
     grantedKeywords,
     grantPlayerKeyword,
     revokeKeyword,

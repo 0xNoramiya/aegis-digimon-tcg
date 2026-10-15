@@ -343,7 +343,7 @@
 @media (width < 768px) {
   .board-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions > button {
     width: 100%;
-    grid-column: 1 / -1;
+    grid-column: auto;
     max-width: none;
   }
 }
@@ -463,4 +463,54 @@
 }
 .board-prompt[data-prompt-surface] .board-prompt__heading {
   padding-right: 3rem;
+}
+
+.board-prompt__toggle-text {
+  min-height: 32px;
+  padding: var(--ds-space-1) 0;
+  border: 0;
+  background: none;
+  color: var(--ds-accent);
+  font: 600 var(--ds-text-xs) / 1.3 var(--ds-font-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+@media (width < 768px), (height < 520px) and (orientation: landscape) {
+  .board-prompt.combat-prompt[data-prompt-surface][data-variant="field-selection"] {
+    padding: var(--ds-space-3) !important;
+  }
+  .board-prompt.combat-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__text {
+    font-size: var(--ds-text-sm);
+    line-height: 1.3;
+  }
+  .board-prompt.combat-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__eyebrow {
+    font-size: var(--ds-text-xs);
+  }
+  .board-prompt.combat-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions > button {
+    min-height: 36px;
+    padding: var(--ds-space-1) var(--ds-space-2);
+    font-size: var(--ds-text-xs);
+    line-height: 1.25;
+    gap: var(--ds-space-1);
+  }
+  .board-prompt.combat-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions > button svg {
+    width: 16px;
+    height: 16px;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"][data-text-hidden] {
+    grid-template-areas:
+      "art heading"
+      "art detail"
+      "actions actions";
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"][data-text-hidden]:has(
+      .board-prompt__budget
+    ) {
+    grid-template-areas:
+      "art heading"
+      "art detail"
+      "budget budget"
+      "actions actions";
+  }
 }

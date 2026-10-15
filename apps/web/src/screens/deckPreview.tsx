@@ -1,3 +1,5 @@
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
 import {
   formatCopyLimit,
   getCardDefinition,
@@ -256,6 +258,7 @@ function DeckGridCard({
   onRemove,
 }: DeckEntryProps) {
   const { t } = useTranslation();
+  const translations = useCardTranslations();
   if (!getCardDefinition(cardId)) return null;
   const { definition, banLabel, beta, banned, addDisabled } = entryLimits(
     cardId,
@@ -269,7 +272,10 @@ function DeckGridCard({
       <button
         type="button"
         className="deck-grid-card__open"
-        aria-label={t("deck.openCard", { name: definition.nameEn, count })}
+        aria-label={t("deck.openCard", {
+          name: getTranslatedCardName({ name: definition.nameEn, translations }),
+          count,
+        })}
         onClick={onOpen}
       >
         <CardFull cardId={cardId} artId={artId} width={cardWidth} count={count} />
@@ -293,7 +299,13 @@ function DeckGridCard({
           </span>
         ) : null}
       </button>
-      <DeckStepper name={definition.nameEn} count={count} addDisabled={addDisabled} onAdd={onAdd} onRemove={onRemove} />
+      <DeckStepper
+        name={getTranslatedCardName({ name: definition.nameEn, translations })}
+        count={count}
+        addDisabled={addDisabled}
+        onAdd={onAdd}
+        onRemove={onRemove}
+      />
     </div>
   );
 }
@@ -310,6 +322,7 @@ function DeckListRow({
   onRemove,
 }: DeckEntryProps) {
   const { t } = useTranslation();
+  const translations = useCardTranslations();
   if (!getCardDefinition(cardId)) return null;
   const { definition, banLabel, beta, banned, addDisabled } = entryLimits(
     cardId,
@@ -325,7 +338,10 @@ function DeckListRow({
       <button
         type="button"
         className="deck-list-row__open"
-        aria-label={t("deck.openCard", { name: definition.nameEn, count })}
+        aria-label={t("deck.openCard", {
+          name: getTranslatedCardName({ name: definition.nameEn, translations }),
+          count,
+        })}
         onClick={onOpen}
       >
         <span className="deck-list-row__art" aria-hidden="true">
@@ -335,7 +351,7 @@ function DeckListRow({
           <ColorDot color={colorKey(definition.colors[0])} size={8} />
           <span className="deck-list-row__type">{typeLabel}</span>
           <span className="deck-list-row__name">
-            {definition.nameEn}
+            {getTranslatedCardName({ name: definition.nameEn, translations })}
             {isCover ? <Icons.Star size={11} /> : null}
           </span>
           {banLabel || beta ? (
@@ -355,7 +371,13 @@ function DeckListRow({
           <span className="deck-list-row__id">{cardId}</span>
         </span>
       </button>
-      <DeckStepper name={definition.nameEn} count={count} addDisabled={addDisabled} onAdd={onAdd} onRemove={onRemove} />
+      <DeckStepper
+        name={getTranslatedCardName({ name: definition.nameEn, translations })}
+        count={count}
+        addDisabled={addDisabled}
+        onAdd={onAdd}
+        onRemove={onRemove}
+      />
     </div>
   );
 }

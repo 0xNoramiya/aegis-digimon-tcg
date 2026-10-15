@@ -1,5 +1,29 @@
 [
   {
+    "version": "1.28.0-beta",
+    "releasedAt": "2026-10-15",
+    "summaryKey": "releases.1.28.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.28.0-beta.feature.cards"
+      },
+      {
+        "textKey": "releases.1.28.0-beta.feature.export"
+      },
+      {
+        "textKey": "releases.1.28.0-beta.feature.spectators"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.28.0-beta.fix.effects"
+      },
+      {
+        "textKey": "releases.1.28.0-beta.fix.rules"
+      }
+    ]
+  },
+  {
     "version": "1.27.0-beta",
     "releasedAt": "2026-10-15",
     "summaryKey": "releases.1.27.0-beta.summary",

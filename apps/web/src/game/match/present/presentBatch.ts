@@ -1,3 +1,4 @@
+import { enqueuePublicPileMoves, type FlyPublicPileCard } from "@/game/match/present/enqueuePublicPileMoves";
 /* Present one server batch: everything the rules resolved in one entry into the engine.
 
    The batch is the unit every heuristic here reasons about — the combat lead-in, the
@@ -95,6 +96,14 @@ export type PresentSegment = (
   continuingBatch?: boolean,
 ) => void;
 
+function isPassageBoundary(event: ServerEvent | undefined): boolean {
+  return (
+    event?.kind === "effectTargetsSelected" ||
+    event?.kind === "effectClauseAdvanced" ||
+    (event?.kind === "cardsMoved" && event.from === "hand" && event.to === "trash" && !event.optionUsed)
+  );
+}
+
 /**
  * The board a batch that announces an effect is narrated over. The server can emit an
  * effect's first results in the same batch as its `effectTriggered`, and that batch's board
@@ -154,9 +163,11 @@ export function presentServerBatch({
   flushHeldNotices,
   launchDrawFlight,
   launchDeckToUnderFlight,
+  flyPublicPileCard,
   flyDockedOptionUnder,
   flyCardToDeck,
   flyCardToHand,
+  launchHandTrashFlight,
   releaseTrashArrivalsThrough,
   launchSecurityGainFlight,
   securityCountOf,
@@ -275,9 +286,11 @@ export function presentServerBatch({
     draw?: DrawHandArrival,
   ) => void;
   launchDeckToUnderFlight: (seat: Seat, permanentId: string) => void;
+  flyPublicPileCard: FlyPublicPileCard;
   flyDockedOptionUnder: FlyDockedOptionUnder;
   flyCardToDeck: FlyCardToDeck;
   flyCardToHand: FlyCardToHand;
+  launchHandTrashFlight?: (seat: Seat, card: DrawFlightCard) => void;
   releaseTrashArrivalsThrough: (stateVersion: number) => void;
   launchSecurityGainFlight: (seat: Seat) => void;
   securityCountOf: (seat: Seat) => number | undefined;
@@ -395,12 +408,7 @@ export function presentServerBatch({
   const segments = phaseSegments.flatMap(securityCheckSegments).flatMap((events) => {
     const parts: ServerEvent[][] = [];
     for (const event of events) {
-      if (
-        !parts.length ||
-        event.kind === "effectTargetsSelected" ||
-        parts.at(-1)?.at(-1)?.kind === "effectTargetsSelected"
-      )
-        parts.push([]);
+      if (!parts.length || isPassageBoundary(event) || isPassageBoundary(parts.at(-1)?.at(-1))) parts.push([]);
       parts.at(-1)!.push(event);
     }
     return parts.flatMap((part) => {
@@ -560,6 +568,9 @@ export function presentServerBatch({
     // behind earlier effects; what waits on the targets starts its ceiling once that clause has.
     if (preceding && !preceding.open) selected.after = preceding;
     effectAnnounceGateRef.current = selected;
+    if (sequenced?.owner) {
+      sequenced.owner.announced = selected;
+    }
     const key = ++effectSourceKeyRef.current;
     enqueue({
       id: `effect-targets-${key}`,
@@ -970,14 +981,35 @@ export function presentServerBatch({
       releaseTrashArrivalsThrough,
       enqueue,
     });
+    const deferredPileSteps: AnimationStep[] = [];
+    const continuedParent = sequenced?.owner;
+    const waitsForNestedEffect =
+      continuedParent !== undefined &&
+      earlierUnitsSettled !== null &&
+      earlierUnitsSettled !== continuedParent.settled &&
+      sequenced?.opened.length === 0;
+    const deferredPilePanels = enqueuePublicPileMoves({
+      fresh,
+      panels: opened,
+      panelAt,
+      causingEffectGate: waitsForNestedEffect ? earlierUnitsSettled : causingEffectGateRef.current,
+      flyPublicPileCard,
+      enqueue: (step) => {
+        if (waitsForNestedEffect) {
+          continuedParent.stepsAfterClose.add(step.id);
+        }
+        deferredPileSteps.push(step);
+      },
+      narrate: (panels) => narrate([], panels, batchId),
+    });
     ({ heldNotices, heldPanels, afterArrivalNotices, afterArrivalPanels, deferredZoneChanges, playLeadInMs } =
       routeBatchNotices({
         fresh,
         batchId,
         raised,
-        opened,
+        opened: opened.filter((panel) => !deferredPilePanels.has(panel)),
         noticeAt,
-        panelAt,
+        panelAt: panelAt.filter((_, index) => !deferredPilePanels.has(opened[index]!)),
         presenting,
         arriving,
         showcased,
@@ -997,6 +1029,9 @@ export function presentServerBatch({
         openHeld,
         enqueue,
       }));
+    for (const step of deferredPileSteps) {
+      enqueue(step);
+    }
     // After the notice routing, so a showcase or security cue this batch put on the centre
     // stage — and the clause it reads out — plays first.
     enqueueRevealShowcases({
@@ -1195,6 +1230,26 @@ export function presentServerBatch({
     flyCardToDeck,
     enqueue,
   });
+  for (const event of fresh) {
+    if (
+      replayingHistory ||
+      event.kind !== "cardsMoved" ||
+      event.from !== "hand" ||
+      event.to !== "trash" ||
+      event.optionUsed ||
+      event.seat === undefined
+    ) {
+      continue;
+    }
+    causingEffectGateRef.current = effectAnnounceGateRef.current ?? causingEffectGateRef.current;
+    for (const [index, instanceId] of event.instanceIds.entries()) {
+      const cardId = event.cardIds?.[index] ?? sidePanelLookupRef.current.cardId(instanceId);
+      const artId = event.artIds?.[index] ?? sidePanelLookupRef.current.artId?.(instanceId);
+      if (cardId) {
+        launchHandTrashFlight?.(event.seat, { cardId, ...(artId ? { artId } : {}) });
+      }
+    }
+  }
   enqueueHandReturns({
     queue,
     plan: handReturns,

@@ -259,9 +259,10 @@ export function BoardStage({
   const endTurnDialog = endTurnConfirmation.open ? (
     <EndTurnDialog onConfirm={endTurnConfirmation.confirm} onClose={endTurnConfirmation.cancel} />
   ) : null;
-  const opponentName = opponent.displayName || t("game.opponent");
+  const opponentName =
+    opponent.displayName || (spectating ? t("log.player", { n: opponent.seat + 1 }) : t("game.opponent"));
   // A spectator watches from one player's seat but is not that player.
-  const viewerName = spectating ? viewer.displayName || t("game.you") : t("chat.you");
+  const viewerName = spectating ? viewer.displayName || t("log.player", { n: viewer.seat + 1 }) : t("chat.you");
   const { shownViewer, shownOpponent, breedingViewer, breedingOpponent } = seats;
   const surrenderDialog = overlays.surrenderConfirmOpen ? (
     <SurrenderDialog
@@ -337,6 +338,8 @@ export function BoardStage({
           <OpponentBar
             spectating={spectating}
             spectatorCode={!state.gameOver ? state.spectatorCode : undefined}
+            spectatorNamesJson={!spectating ? state.players[viewerSeat]?.spectatorNamesJson : undefined}
+            anonymousSpectatorCount={state.players[viewerSeat]?.anonymousSpectatorCount}
             onResetScenario={onResetScenario}
             timer={
               (state.series?.bestOf ?? 1) > 1 ? (
@@ -349,7 +352,7 @@ export function BoardStage({
               ) : undefined
             }
             handStripRef={anchors.opponentHandStrip}
-            opponentName={opponent.displayName || t("game.opponent")}
+            opponentName={opponentName}
             opponentAvatarId={opponent.avatarId}
             viewerSeat={viewerSeat}
             displayedTurnSeat={readouts.displayedTurnSeat}
@@ -486,12 +489,18 @@ export function BoardStage({
             <FieldEffectsIndicator
               json={shownOpponent.fieldEffectsJson}
               ownField={false}
-              playerNames={[shownState.players[0]?.displayName ?? "", shownState.players[1]?.displayName ?? ""]}
+              playerNames={[
+                shownState.players[0]?.displayName || t("log.player", { n: 1 }),
+                shownState.players[1]?.displayName || t("log.player", { n: 2 }),
+              ]}
             />
             <FieldEffectsIndicator
               json={shownViewer.fieldEffectsJson}
               ownField
-              playerNames={[shownState.players[0]?.displayName ?? "", shownState.players[1]?.displayName ?? ""]}
+              playerNames={[
+                shownState.players[0]?.displayName || t("log.player", { n: 1 }),
+                shownState.players[1]?.displayName || t("log.player", { n: 2 }),
+              ]}
             />
             <BattleZones
               opponentFieldEffects={readFieldEffects(shownOpponent.fieldEffectsJson).length > 0}
@@ -615,7 +624,7 @@ export function BoardStage({
             onMoveHandCard={handDock.onMoveHandCard}
             reorderDropBeforeInstanceId={handDock.reorderDropBeforeInstanceId}
             timer={state.matchTimer ? <MatchTimer state={state} seat={viewerSeat} /> : undefined}
-            playerName={viewer.displayName || t("game.you")}
+            playerName={spectating ? viewerName : viewer.displayName || t("game.you")}
             playerAvatarId={viewer.avatarId}
             actingLabel={actingPlateKeys.viewer ? t(actingPlateKeys.viewer) : undefined}
             breedingDock={!layout.portraitArena ? breedingDock : null}

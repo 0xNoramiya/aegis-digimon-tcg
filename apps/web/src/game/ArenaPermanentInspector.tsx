@@ -1,8 +1,13 @@
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
+import { getTranslatedCardMeta } from "@/i18n/getTranslatedCardMeta";
+import { EffectText } from "./EffectText";
 import { ArenaInspectorSourcesColumn } from "@/game/ArenaInspectorSourcesColumn";
+import { ArenaInspectorSourcesResizer } from "@/game/ArenaInspectorSourcesResizer";
 import { ArenaInspectorSourcesStrip } from "@/game/ArenaInspectorSourcesStrip";
+import { useInspectorSourcesWidth } from "@/game/useInspectorSourcesWidth";
 import { INSPECTOR_SIDE_SOURCES_QUERY } from "@/game/inspectorSourcesLayoutQuery";
 import { useMediaQuery } from "@/design/useMediaQuery";
-import { EffectText } from "@/game/EffectText";
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { getCardDefinition } from "@aegis/shared/cards/registry";
@@ -16,7 +21,6 @@ import {
   inspectedArenaHalf,
 } from "@/game/arenaInspectorModel";
 import { forcedAttackGrantText } from "@/game/fieldBadges";
-import { formatResolvedKeyword } from "@/game/keywordDisplay";
 import type { CardInspectionDetail } from "@/game/permanentDetail";
 import type { PendingFateBadge } from "@/game/pendingFate";
 import { Side } from "@/game/side";
@@ -47,8 +51,10 @@ export function ArenaPermanentInspector({
   onClose: () => void;
 }) {
   const { locale, t } = useTranslation();
+  const translations = useCardTranslations();
   const sideSources = useMediaQuery(INSPECTOR_SIDE_SOURCES_QUERY);
   const sourcesLayout = sideSources ? "column" : "strip";
+  const { width: sourcesWidth } = useInspectorSourcesWidth();
   const titleId = useId();
   const panelRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -56,9 +62,11 @@ export function ArenaPermanentInspector({
   closeCallback.current = onClose;
   const top = getCardDefinition(detail.cardId);
   const supporting = inspectorCardsTopToBottom(detail.cards).filter((card) => card.role !== "top");
-  const traits = [...(top?.forms ?? []), ...(top?.attributes ?? []), ...(top?.types ?? [])].filter(
-    (trait) => trait && trait !== "-",
-  );
+  const traits = [
+    ...(top?.forms ?? []).map((value) => getTranslatedCardMeta({ value, group: "forms", translations })),
+    ...(top?.attributes ?? []).map((value) => getTranslatedCardMeta({ value, group: "attributes", translations })),
+    ...(top?.types ?? []).map((value) => getTranslatedCardMeta({ value, group: "traits", translations })),
+  ].filter((trait) => trait && trait !== "-");
   const anchor = useArenaHalfAnchor({
     container: inspection.container,
     half: inspectedArenaHalf(inspection.side),
@@ -105,7 +113,7 @@ export function ArenaPermanentInspector({
     <section
       ref={panelRef}
       className="arena-permanent-inspector"
-      style={anchor}
+      style={{ ...anchor, "--inspector-sources-width": `${sourcesWidth}px` } as CSSProperties}
       data-half={inspectedArenaHalf(inspection.side)}
       data-card-side={inspection.side}
       data-sources={supporting.length > 0 ? sourcesLayout : undefined}
@@ -131,7 +139,7 @@ export function ArenaPermanentInspector({
                 {top?.rarity ? <span>{top.rarity}</span> : null}
               </p>
               <div className="arena-permanent-inspector__title">
-                <h2 id={titleId}>{detail.name}</h2>
+                <h2 id={titleId}>{getTranslatedCardName({ name: detail.name, translations })}</h2>
                 {top?.level ? <span>Lv.{top.level}</span> : null}
               </div>
               {top?.colors.length || traits.length ? (
@@ -207,17 +215,7 @@ export function ArenaPermanentInspector({
               );
             })}
           </div>
-          <div
-            className="arena-permanent-inspector__state"
-            role={detail.keywords.length ? "region" : undefined}
-            aria-label={detail.keywords.length ? t("game.activeKeywords") : undefined}
-            tabIndex={0}
-          >
-            {detail.keywords.map((keyword) => (
-              <span key={keyword} data-granted={detail.grantedKeywords.includes(keyword) || undefined}>
-                {formatResolvedKeyword(keyword, detail.securityAttackModifier, detail.keywordLabels?.[keyword])}
-              </span>
-            ))}
+          <div className="arena-permanent-inspector__state">
             {detail.suspended ? <span>{t("overlay.suspended")}</span> : null}
             {detail.restrictions.map((restriction) => (
               <span
@@ -315,7 +313,10 @@ export function ArenaPermanentInspector({
           {actions ? <div className="arena-permanent-inspector__actions">{actions}</div> : null}
         </div>
         {supporting.length > 0 && sideSources ? (
-          <ArenaInspectorSourcesColumn cards={supporting} onZoom={onZoom} />
+          <>
+            <ArenaInspectorSourcesResizer />
+            <ArenaInspectorSourcesColumn cards={supporting} onZoom={onZoom} />
+          </>
         ) : null}
       </div>
     </section>

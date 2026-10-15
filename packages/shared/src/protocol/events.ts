@@ -303,6 +303,7 @@ export type ServerEvent =
       sourcePermanentId?: string;
       effectKey: string;
       description: string;
+      effectTextPart?: string;
       timing?: string;
       /** Printed clause timing, separate from the watcher event that fired. */
       printedTiming?: string;
@@ -342,6 +343,17 @@ export type ServerEvent =
       timing?: string;
       isInherited?: boolean;
       /** The chosen option's printed bullet, without the leading "・". */
+      clause: string;
+    }
+  | {
+      kind: "effectClauseAdvanced";
+      effectKey?: string;
+      seat: Seat;
+      sourceCardId: string;
+      sourceInstanceId?: string;
+      sourcePermanentId?: string;
+      timing?: string;
+      isInherited?: boolean;
       clause: string;
     }
   | {
@@ -594,6 +606,7 @@ export const SERVER_EVENT_KINDS = [
   "effectTriggered",
   "resolutionOrderChosen",
   "effectOptionChosen",
+  "effectClauseAdvanced",
   "effectResolved",
   "effectHadNoEffect",
   "dpModifierApplied",
@@ -700,6 +713,7 @@ export interface DecisionRequest {
     min?: number;
     max?: number; // selection count bounds
     maxTotalPlayCost?: number; // summed printed play-cost budget for multi-card selections
+    allowedTargetCombinations?: string[][];
     maxTotalDP?: number; // summed live-DP budget for aggregate permanent selections
     differentColors?: boolean; // prevent selecting cards that share a color with an already-picked card
     distinctCardIds?: boolean; // prevent selecting multiple instances with the same card number

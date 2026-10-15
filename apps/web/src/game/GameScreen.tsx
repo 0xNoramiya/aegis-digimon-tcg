@@ -1,3 +1,4 @@
+import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
 import { UsedDeckDialog } from "@/game/UsedDeckDialog";
 import type { DeckListing } from "@/game/decks";
 import { downloadReplay } from "../replays/files";
@@ -1194,7 +1195,7 @@ function GameScreenSession({
 
   const viewerTurnOrder = modelViewerTurnOrder({ events, viewerSeat });
 
-  const revealed = state.gameOver ? modelRevealedZones({ events, viewerSeat }) : undefined;
+  const revealed = modelRevealedZones({ events, viewerSeat, resultShown: state.gameOver && !cues.resultPending });
 
   const rematch = spectating ? undefined : getRematchView({ series: state.series, viewerSeat });
   const series = spectating || rematch ? undefined : seriesView(state.series, viewerSeat);
@@ -1241,6 +1242,7 @@ function GameScreenSession({
     decisionDifferentColors,
     decisionDistinctCardIds,
     decisionDistinctNames,
+    decisionAllowedTargetCombinations,
     decisionMaxTotalPlayCost,
     decisionMaxTotalDP,
     decisionCandidateDP,
@@ -1269,6 +1271,7 @@ function GameScreenSession({
       decisionVisibleCardIds,
       decisionDistinctCardIds,
       decisionDistinctNames,
+      decisionAllowedTargetCombinations,
       decisionMaxTotalPlayCost,
       decisionMaxTotalDP,
       decisionCandidateDP,
@@ -1542,7 +1545,10 @@ function GameScreenSession({
               spectatorResult: spectating
                 ? state.winnerSeat < 0
                   ? t("spectator.draw")
-                  : t("spectator.winner", { name: state.players[state.winnerSeat]?.displayName ?? "" })
+                  : t("spectator.winner", {
+                      name:
+                        state.players[state.winnerSeat]?.displayName || t("log.player", { n: state.winnerSeat + 1 }),
+                    })
                 : undefined,
             }
           : undefined
@@ -1606,7 +1612,7 @@ function GameScreenSession({
     decisionPickedInstanceIds: dnaChoosing ? new Set(dnaPicks) : fieldDecision ? new Set(picks) : new Set<string>(),
     materialSelectionOrder: dnaChoosing
       ? new Map(dnaChoice.orderedPicks.map((id, index) => [id, index + 1]))
-      : undefined,
+      : getDecisionMaterialSelectionOrder({ allowedTargetCombinations: decisionAllowedTargetCombinations, picks }),
     permanentBursts,
     pendingPermanentIds,
     fateBadges,

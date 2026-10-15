@@ -1,8 +1,8 @@
-import { splitPrintedClauses, type Seat } from "@aegis/shared";
+import type { Seat } from "@aegis/shared/schema/enums";
 import type { DecisionApi, EffectContext, SeatScopedDecisionApi } from "../effects/EffectContext.js";
 import type { ChooseOptionExtras } from "../effects/context/decisions.js";
 import type { DecisionManager } from "./index.js";
-import { printedPassage } from "#api/engine/decisions/printedPassage";
+import { getEffectDecisionText } from "#api/engine/decisions/getEffectDecisionText";
 
 /**
  * Concrete {@link DecisionApi} (`ctx.ask.*`) backed by the {@link DecisionManager}
@@ -100,35 +100,12 @@ function buildSeatScopedApi(
   },
 ): SeatScopedDecisionApi {
   const provenance = (ctx: EffectContext) => {
-    const part = ctx.activeEffectTextPart;
-    const focus = ctx.activeEffectTextEmphasis ?? part;
-    const matchingClauses = focus
-      ? splitPrintedClauses(ctx.activeEffectText).filter((clause) => printedPassage(clause.text, focus) !== undefined)
-      : undefined;
-    // Catalog fallback text may include other timing windows.
-    // Retain the complete resolving clause rather than unrelated card effects.
-    const fullText = matchingClauses?.length === 1 ? matchingClauses[0]!.text : ctx.activeEffectText;
-    // Every staged action uses the same display contract, including target picks
-    // and decisions addressed to the opponent. A passage must actually belong to
-    // this effect before it can replace the narrower description with full text.
-    const printedPart =
-      fullText && part && !fullText.toLowerCase().includes(part.toLowerCase()) ? printedPassage(fullText, part) : part;
-    const emphasis =
-      ctx.activeEffectTextEmphasis ??
-      (fullText &&
-      printedPart &&
-      fullText.toLowerCase() !== printedPart.toLowerCase() &&
-      fullText.toLowerCase().includes(printedPart.toLowerCase())
-        ? printedPart
-        : undefined);
     return {
       timing: ctx.activeTiming,
       ...(ctx.activeEffectIsInherited === true ? { isInherited: true } : {}),
-      effectText: emphasis && fullText ? fullText : ctx.activeEffectText,
+      ...getEffectDecisionText(ctx),
       ...(ctx.activeEffectTextCardId !== undefined ? { effectTextCardId: ctx.activeEffectTextCardId } : {}),
       ...(ctx.activeEffectKey !== undefined ? { effectKey: ctx.activeEffectKey } : {}),
-      ...(part !== undefined ? { effectTextPart: part } : {}),
-      ...(emphasis !== undefined ? { effectTextEmphasis: emphasis } : {}),
       ...(ctx.activeSelectionContext !== undefined ? { selectionContext: ctx.activeSelectionContext } : {}),
       ...(ctx.affectedPermanentIds !== undefined ? { affectedPermanentIds: [...ctx.affectedPermanentIds] } : {}),
       // Raised by `payCost` for as long as a cost payment is on the stack. Without it a
@@ -190,6 +167,7 @@ function buildSeatScopedApi(
         max: number;
         visible?: string[];
         maxTotalPlayCost?: number;
+        allowedTargetCombinations?: string[][];
         maxTotalDP?: number;
         promptKey?: "digivolveHost";
       },
@@ -209,6 +187,9 @@ function buildSeatScopedApi(
           min,
           max: opts.max,
           ...(opts.maxTotalPlayCost !== undefined ? { maxTotalPlayCost: opts.maxTotalPlayCost } : {}),
+          ...(opts.allowedTargetCombinations !== undefined
+            ? { allowedTargetCombinations: opts.allowedTargetCombinations }
+            : {}),
           ...(opts.maxTotalDP !== undefined ? { maxTotalDP: opts.maxTotalDP } : {}),
           ...(opts.promptKey !== undefined ? { promptKey: opts.promptKey } : {}),
           // What the running action will do to whatever is picked here, so the board

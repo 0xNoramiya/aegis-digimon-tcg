@@ -2536,5 +2536,41 @@
     "pt-BR": "Cartas de segurança viradas para baixo não enviam mais sua identidade para o jogo do oponente.",
     "es": "Las cartas de seguridad boca abajo ya no envían su identidad al juego del oponente.",
     "it": "Le carte di sicurezza a faccia in giù non inviano più la loro identità al gioco dell'avversario."
+  },
+  "releases.1.28.0-beta.summary": {
+    "en": "Five new BT27 and EX14 cards arrive in beta, alongside TCGplayer deck export, spectator privacy controls, and clearer effect decisions.",
+    "pt-BR": "Cinco novas cartas BT27 e EX14 chegam ao beta, junto da exportação de decks para TCGplayer, controles de privacidade de espectadores e decisões de efeitos mais claras.",
+    "es": "Cinco nuevas cartas BT27 y EX14 llegan a la beta, junto con exportación de mazos para TCGplayer, controles de privacidad de espectadores y decisiones de efectos más claras.",
+    "it": "Cinque nuove carte BT27 ed EX14 arrivano in beta, insieme all’esportazione dei mazzi per TCGplayer, ai controlli sulla privacy degli spettatori e a decisioni degli effetti più chiare."
+  },
+  "releases.1.28.0-beta.feature.cards": {
+    "en": "Play MirageGaogamon: Burst Mode (BT27-035), Craniamon (X Antibody) (BT27-070), Alphamon: Ouryuken (BT27-103), VictoryGreymon (EX14-012), and Barbamon (EX14-054). Unreleased EX14 cards now use the beta card pool.",
+    "pt-BR": "Jogue com MirageGaogamon: Burst Mode (BT27-035), Craniamon (X Antibody) (BT27-070), Alphamon: Ouryuken (BT27-103), VictoryGreymon (EX14-012) e Barbamon (EX14-054). As cartas EX14 ainda não lançadas agora usam o cardpool beta.",
+    "es": "Juega con MirageGaogamon: Burst Mode (BT27-035), Craniamon (X Antibody) (BT27-070), Alphamon: Ouryuken (BT27-103), VictoryGreymon (EX14-012) y Barbamon (EX14-054). Las cartas EX14 aún no publicadas ahora usan el conjunto beta.",
+    "it": "Gioca con MirageGaogamon: Burst Mode (BT27-035), Craniamon (X Antibody) (BT27-070), Alphamon: Ouryuken (BT27-103), VictoryGreymon (EX14-012) e Barbamon (EX14-054). Le carte EX14 non ancora uscite ora utilizzano il pool beta."
+  },
+  "releases.1.28.0-beta.feature.export": {
+    "en": "Export deck lists in TCGplayer format for easier deck sharing and shopping.",
+    "pt-BR": "Exporte listas de decks no formato TCGplayer para facilitar o compartilhamento e a compra de cartas.",
+    "es": "Exporta listas de mazos en formato TCGplayer para compartirlos y comprar cartas más fácilmente.",
+    "it": "Esporta le liste dei mazzi nel formato TCGplayer per condividerle e acquistare carte più facilmente."
+  },
+  "releases.1.28.0-beta.feature.spectators": {
+    "en": "Control spectator identity visibility and public match listings, with separate player and spectator chats.",
+    "pt-BR": "Controle a visibilidade da identidade dos espectadores e a listagem pública de partidas, com chats separados para jogadores e espectadores.",
+    "es": "Controla la visibilidad de la identidad de los espectadores y las partidas públicas, con chats separados para jugadores y espectadores.",
+    "it": "Controlla la visibilità dell’identità degli spettatori e delle partite pubbliche, con chat separate per giocatori e spettatori."
+  },
+  "releases.1.28.0-beta.fix.effects": {
+    "en": "Effect prompts preserve the full printed text and highlight the current step. DNA digivolution validates material pairs, and discarded cards animate from their correct origin.",
+    "pt-BR": "Os prompts de efeitos preservam o texto impresso completo e destacam a etapa atual. A digivolução DNA valida os pares de materiais, e as cartas descartadas são animadas a partir da origem correta.",
+    "es": "Los mensajes de efectos conservan el texto impreso completo y resaltan el paso actual. La digievolución DNA valida las parejas de materiales y las cartas descartadas se animan desde su origen correcto.",
+    "it": "I messaggi degli effetti mantengono il testo completo e ne evidenziano il passaggio attuale. La digievoluzione DNA verifica le coppie di materiali e le carte scartate vengono animate dalla loro origine corretta."
+  },
+  "releases.1.28.0-beta.fix.rules": {
+    "en": "Correct Tweetmon and DoGatchmon linking effects and verify Kongou attack restrictions. Improve mobile field selection and remove duplicate keyword badges.",
+    "pt-BR": "Corrige os efeitos de link de Tweetmon e DoGatchmon e verifica as restrições de ataque de Kongou. Melhora a seleção no campo em dispositivos móveis e remove badges de palavras-chave duplicados.",
+    "es": "Corrige los efectos de enlace de Tweetmon y DoGatchmon y verifica las restricciones de ataque de Kongou. Mejora la selección en el campo en móviles y elimina insignias de palabras clave duplicadas.",
+    "it": "Corregge gli effetti di collegamento di Tweetmon e DoGatchmon e verifica le restrizioni di attacco di Kongou. Migliora la selezione sul campo da mobile e rimuove i badge duplicati delle parole chiave."
   }
 }

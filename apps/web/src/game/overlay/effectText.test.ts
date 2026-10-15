@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cardEffectClauseForTiming, playerFacingEffectClause } from "./effectText";
+import { cardEffectClauseForTiming, noticeEffectClause, playerFacingEffectClause } from "./effectText";
 
 describe("printed clause lookup", () => {
   it("stops a clause at a timing printed with a typographic apostrophe (BT13-103 [End of Opponent’s Turn])", () => {
@@ -40,4 +40,25 @@ it.each(["WhenDigivolving", "WhenAttacking"])("shows Mastemon free play as a sep
       effectTextPart: part.replace("6000", "7000"),
     }),
   ).not.toContain("7000");
+});
+
+const barbamonDeletion =
+  "[All Turns] [Once Per Turn] When your opponent's hand is trashed from, you may delete all of their lowest level Digimon.";
+
+it.each([
+  undefined,
+  barbamonDeletion,
+  `${barbamonDeletion}\n＜Assembly -5＞ 3 [Greed] trait cards w/different levels.`,
+])("omits the trailing Assembly requirement from Barbamon's modal and notice: %s", (description) => {
+  const input = { cardId: "EX14-054", timing: "AllTurns", description };
+  expect(playerFacingEffectClause(input)).toBe(barbamonDeletion);
+  expect(noticeEffectClause(input)).toBe(barbamonDeletion);
+  expect(cardEffectClauseForTiming("EX14-054", "AllTurns")).toContain("＜Assembly -5＞");
+});
+
+it("keeps Barbamon's emphasized deletion passage without appending its Assembly requirement", () => {
+  const effectTextPart = "When your opponent's hand is trashed from, you may delete all of their lowest level Digimon.";
+  const input = { cardId: "EX14-054", timing: "AllTurns", description: undefined, effectTextPart };
+  expect(playerFacingEffectClause(input)).toBe(effectTextPart);
+  expect(noticeEffectClause(input)).toBe(effectTextPart);
 });

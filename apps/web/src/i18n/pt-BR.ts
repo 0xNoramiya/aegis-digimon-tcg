@@ -290,13 +290,15 @@ export const ptBR: Record<keyof typeof en, string> = {
   "spectator.winner": "Vencedor: {name}",
   "spectator.draw": "Empate",
   "spectator.back": "Voltar ao lobby",
+  "settings.hideIdentityFromSpectators": "Ocultar minha identidade dos espectadores",
+  "settings.hideIdentityFromSpectatorsDesc":
+    "Nas próximas partidas, espectadores veem um jogador numerado no lugar do seu apelido e avatar. Seu oponente continua vendo sua identidade.",
+  "spectator.audience": "Espectadores",
+  "spectator.anonymousCount": "Visitantes: {count}",
   "settings.listLiveMatches": "Listar minhas partidas para espectadores",
   "settings.listLiveMatchesDesc":
-    "Suas partidas casuais aparecem em Partidas ao vivo quando os dois jogadores ativarem. Desligado por padrão.",
+    "Ligado por padrão. Suas partidas casuais aparecem nas partidas ao vivo, salvo se um dos jogadores desativar esta opção. Partidas privadas ficam fora da lista. Vale para novas partidas.",
   "settings.listLiveMatchesFailed": "Não foi possível carregar ou salvar esta opção. Tente novamente.",
-  "settings.listLiveMatchesSignIn": "Entre na sua conta para listar suas partidas.",
-  "settings.listLiveMatchesLockedHelp":
-    "Só jogadores com conta podem listar partidas. Entre na sua conta e ative esta opção. Suas partidas casuais aparecem em Partidas ao vivo quando o oponente também tiver ativado.",
   "spectator.liveEyebrow": "Assistir",
   "spectator.liveTitle": "Partidas ao vivo",
   "spectator.liveBadge": "Ao vivo",
@@ -648,6 +650,11 @@ export const ptBR: Record<keyof typeof en, string> = {
   "deck.exportImageRendering": "Gerando…",
   "deck.exportImageFailed": "Falha ao exportar imagem",
   "deck.exportPng": "Exportar PNG",
+  "deck.exportFormat": "Formato",
+  "deck.exportTcgplayerHint":
+    "Selecione Digimon Card Game no Mass Entry do TCGplayer e cole esta lista. Inclui Digi-Ovos; a arte pode variar.",
+  "deck.exportUnsupportedCards":
+    "Exportação para TCGplayer indisponível para: {cards}. A cópia fica desativada enquanto essas cartas não tiverem uma coleção compatível.",
   "deck.exportTabText": "Lista",
   "deck.exportTabImage": "Imagem (PNG)",
   "deck.exportDownloadPng": "Baixar PNG",
@@ -1094,6 +1101,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.selectTargets": "Escolha {range}",
   "overlay.sourceCountOne": "{count} fonte",
   "overlay.sourceCountMany": "{count} fontes",
+  "overlay.sourcesResize": "Arraste para redimensionar o painel de fontes",
   "overlay.chosen": "{count} escolhidas",
   "overlay.playCostBudget": "Custo de jogo: {selected} / {max}",
   "overlay.dpBudget": "DP total: {selected} / {max}",
@@ -1408,7 +1416,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "panel.deDigivolvedCards": "Removidas por De-Digivolve",
   "panel.strippedTopCards": "Enviadas do topo de um Digimon ao lixo",
   "notice.deletion": "Deletada",
-  "panel.trashedCards": "Cartas enviadas ao lixo",
+  "panel.trashedCards": "Cartas enviadas para o lixo",
   "panel.trashedDigivolutionCards": "Cartas de digivolução enviadas ao lixo",
   "panel.revealedCards": "Cartas reveladas",
   "panel.playedCard": "Carta jogada",

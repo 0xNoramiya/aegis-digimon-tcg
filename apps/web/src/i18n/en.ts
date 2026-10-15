@@ -287,13 +287,15 @@ export const en = {
   "spectator.winner": "Winner: {name}",
   "spectator.draw": "Draw",
   "spectator.back": "Back to lobby",
+  "settings.hideIdentityFromSpectators": "Hide my identity from spectators",
+  "settings.hideIdentityFromSpectatorsDesc":
+    "In future matches, spectators see a numbered player label instead of your nickname and avatar. Your opponent still sees your identity.",
+  "spectator.audience": "Spectators",
+  "spectator.anonymousCount": "Guests: {count}",
   "settings.listLiveMatches": "List my matches for spectators",
   "settings.listLiveMatchesDesc":
-    "Your casual matches appear in Live matches when both players turn this on. Off by default.",
+    "On by default. Your casual matches appear in Live matches unless either player disables this. Private matches stay unlisted. Applies to new matches.",
   "settings.listLiveMatchesFailed": "Could not load or save this setting. Try again.",
-  "settings.listLiveMatchesSignIn": "Sign in to list your matches.",
-  "settings.listLiveMatchesLockedHelp":
-    "Only signed-in players can list their matches. Sign in, then turn this on. Your casual matches appear in Live matches when your opponent has it on too.",
   "spectator.liveEyebrow": "Watch",
   "spectator.liveTitle": "Live matches",
   "spectator.liveBadge": "Live",
@@ -646,6 +648,11 @@ export const en = {
   "deck.exportImageRendering": "Rendering…",
   "deck.exportImageFailed": "Image export failed",
   "deck.exportPng": "Export PNG",
+  "deck.exportFormat": "Format",
+  "deck.exportTcgplayerHint":
+    "Select Digimon Card Game in TCGplayer Mass Entry, then paste this list. Includes Digi-Eggs; artwork may vary.",
+  "deck.exportUnsupportedCards":
+    "TCGplayer export is unavailable for: {cards}. Copy is disabled until these cards have a supported set.",
   "deck.exportTabText": "Deck list",
   "deck.exportTabImage": "Image (PNG)",
   "deck.exportDownloadPng": "Download PNG",
@@ -1090,6 +1097,7 @@ export const en = {
   "overlay.selectTargets": "Select {range} target(s)",
   "overlay.sourceCountOne": "{count} source",
   "overlay.sourceCountMany": "{count} sources",
+  "overlay.sourcesResize": "Drag to resize the sources panel",
   "overlay.chosen": "{count} chosen",
   "overlay.playCostBudget": "Play cost: {selected} / {max}",
   "overlay.dpBudget": "Total DP: {selected} / {max}",

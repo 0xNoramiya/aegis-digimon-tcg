@@ -36,6 +36,7 @@ export type AccountPreferences = {
   profileStats?: boolean;
   shareDeckAfterMatch?: boolean;
   listLiveMatches?: boolean;
+  hideIdentityFromSpectators?: boolean;
   favoriteDeckIds?: string[];
 };
 export type AccountProfile = {

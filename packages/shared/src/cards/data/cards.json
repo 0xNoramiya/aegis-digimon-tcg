@@ -49892,6 +49892,34 @@
     "nameJp": "コンロン"
   },
   {
+    "cardId": "BT27-035",
+    "nameEn": "MirageGaogamon: Burst Mode",
+    "colors": ["Blue", "Yellow"],
+    "level": 7,
+    "playCost": 6,
+    "dp": 15000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 6,
+        "memoryCost": 5
+      }
+    ],
+    "attributes": ["Data"],
+    "types": ["Beast Knight", "DATA SQUAD"],
+    "rarity": "R",
+    "dualEffect": "Full Moon Meteor Impact",
+    "effectText": "[Digivolve] Lv.6 w/[DATA SQUAD] trait: Cost 5\n[Burst Digivolve] [MirageGaogamon]: Cost 0 by returning 1 [Thomas H. Norstein] to the hand.\n＜Reboot＞ ＜Blocker＞ ＜Evade＞\n[When Digivolving] [When Attacking] [Once Per Turn] You may activate 1 [Main] effect on this card's Option side.\n[When Digivolving] [When Attacking] If your opponent's hand has 8 or more cards, by returning cards without looking to the bottom of the deck so that it has 7 left, return their top security card to the bottom of the deck.",
+    "optionEffect": "Use Req. ＜[DATA SQUAD] trait＞\n[Main] Return 1 of your opponent's Digimon to the hand. Then, if their hand has 8 or more cards, 1 of your Digimon may unsuspend.\n＜Arts Digivolve＞",
+    "set": "BT27",
+    "kinds": ["Digimon", "Option"],
+    "forms": ["Mega"],
+    "maxCountInDeck": 4,
+    "imageId": "BT27-035",
+    "isDualCard": true,
+    "optionColorRequirements": ["Blue"]
+  },
+  {
     "cardId": "BT27-084",
     "set": "BT27",
     "nameEn": "LordKnightmon (X Antibody)",
@@ -70096,7 +70124,7 @@
     "securityEffectText": "[Security] Gain 2 memory.",
     "rarity": "R",
     "maxCountInDeck": 4,
-    "imageId": "EX1-068_P1",
+    "imageId": "EX1-068",
     "nameJp": "アイスウォール！！"
   },
   {
@@ -109069,5 +109097,124 @@
     "maxCountInDeck": 4,
     "imageId": "ST9-15",
     "nameJp": "ヘルマスカレード"
+  },
+  {
+    "cardId": "BT27-070",
+    "nameEn": "Craniamon (X Antibody)",
+    "colors": ["Black"],
+    "level": 6,
+    "playCost": 5,
+    "dp": 13000,
+    "evoCosts": [
+      {
+        "color": "Black",
+        "level": 5,
+        "memoryCost": 4
+      }
+    ],
+    "attributes": ["Vaccine"],
+    "types": ["Holy Warrior", "X Antibody", "Royal Knight"],
+    "rarity": "SR",
+    "dualEffect": "Ultimate Crossblade Dainsleif",
+    "effectText": "[Digivolve] [Craniamon]: Cost 2\n＜Reboot＞ ＜Blocker＞\n[All Turns] When any of your Digimon would leave the battle area, by suspending this Digimon, they don't leave.\n[All Turns] [Once Per Turn] When this Digimon suspends, you may delete all of your opponent's lowest DP Digimon. Then, by trashing 1 [Craniamon] or [X Antibody] from this Digimon's digivolution cards, activate 1 [Main] effect on this card's Option side.",
+    "optionEffect": "[Main] Until your opponent's turn ends, 1 of your Digimon with ＜Blocker＞ isn't affected by their Digimon effects and gets +5000 DP. Then, 1 of your Digimon may unsuspend.\n＜Arts Digivolve＞",
+    "set": "BT27",
+    "kinds": ["Digimon", "Option"],
+    "forms": ["Mega"],
+    "maxCountInDeck": 4,
+    "imageId": "BT27-070",
+    "isDualCard": true,
+    "optionColorRequirements": ["Black"]
+  },
+  {
+    "cardId": "BT27-103",
+    "nameEn": "Alphamon: Ouryuken",
+    "colors": ["Black", "Yellow", "Red"],
+    "level": 7,
+    "playCost": 6,
+    "dp": 16000,
+    "evoCosts": [
+      {
+        "color": "Black",
+        "level": 6,
+        "memoryCost": 6
+      },
+      {
+        "color": "Yellow",
+        "level": 6,
+        "memoryCost": 6
+      },
+      {
+        "color": "Red",
+        "level": 6,
+        "memoryCost": 6
+      }
+    ],
+    "attributes": ["Vaccine"],
+    "types": ["NO DATA", "X Antibody", "Royal Knight", "Chronicle"],
+    "rarity": "SEC",
+    "dualEffect": "Ultimate Ouryuken",
+    "effectText": "[DNA Digivolve] [Alphamon] + [Ouryumon]: Cost 0\n＜Piercing＞ ＜Security Attack +1＞ ＜Blocker＞\n＜Partition ([Alphamon] & [Ouryumon])＞\n[When Digivolving] [When Attacking] [Once Per Turn] You may delete 1 of your opponent's Digimon. Then, if DNA digivolving, ＜Recovery +2＞.\n[All Turns] During attacks, your opponent's effects don't affect this Digimon.",
+    "optionEffect": "[Main] Delete 1 of your opponent's Digimon. Then, 2 of your Digimon may DNA digivolve into this card.\n＜Arts Digivolve＞",
+    "set": "BT27",
+    "kinds": ["Digimon", "Option"],
+    "forms": ["Mega"],
+    "maxCountInDeck": 4,
+    "imageId": "BT27-103",
+    "isDualCard": true,
+    "optionColorRequirements": ["Black"]
+  },
+  {
+    "cardId": "EX14-012",
+    "nameEn": "VictoryGreymon",
+    "colors": ["Red"],
+    "level": 6,
+    "playCost": 7,
+    "dp": 12000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 5,
+        "memoryCost": 3
+      }
+    ],
+    "attributes": ["Vaccine"],
+    "types": ["Dragonkin", "TWIN", "TERMINAL"],
+    "rarity": "R",
+    "dualEffect": "Dramon Breaker",
+    "effectText": "[Digivolve] Lv.5 w/[TERMINAL] trait: Cost 3\n＜Security Attack +1＞ ＜Engage＞\n[When Digivolving] [When Attacking] [Once Per Turn] 1 of your Digimon gets +3000 DP until the end of your opponent's turn. Then, by trashing the bottom face-down card from under any of your Tamers, delete 1 of your opponent's Digimon with as much DP as this Digimon or less.\n[Security] [On Deletion] You may use this card without paying the cost.",
+    "securityEffectText": "[Security] You may use this card without paying the cost.",
+    "optionEffect": "Use Req. ＜[TERMINAL] trait＞\n[Main] Delete up to 15000 DP total worth of your opponent's Digimon.\n＜Arts Digivolve＞",
+    "set": "EX14",
+    "kinds": ["Digimon", "Option"],
+    "forms": ["Mega"],
+    "maxCountInDeck": 4,
+    "imageId": "EX14-012",
+    "isDualCard": true,
+    "optionColorRequirements": ["Red"]
+  },
+  {
+    "cardId": "EX14-054",
+    "nameEn": "Barbamon",
+    "colors": ["Purple"],
+    "level": 6,
+    "playCost": 13,
+    "dp": 13000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 5,
+        "memoryCost": 4
+      }
+    ],
+    "attributes": ["Virus"],
+    "types": ["Demon Lord", "Greed", "Seven Great Demon Lords"],
+    "rarity": "SR",
+    "effectText": "[Digivolve] Lv.5 w/[Fallen Angel]/[Greed] trait: Cost 3\n＜Alliance＞ ＜Engage＞\n[On Play] [When Digivolving] [When Attacking] [Once Per Turn] You may play 1 play cost 6 or lower [Evil], [Wizard], [Fallen Angel] or [Greed] trait Digimon card from your trash without paying the cost. Then, your opponent trashes 1 card in their hand.\n[All Turns] [Once Per Turn] When your opponent's hand is trashed from, you may delete all of their lowest level Digimon.\n＜Assembly -5＞ 3 [Greed] trait cards w/different levels.",
+    "set": "EX14",
+    "kinds": ["Digimon"],
+    "forms": ["Mega"],
+    "maxCountInDeck": 4,
+    "imageId": "EX14-054"
   }
 ]

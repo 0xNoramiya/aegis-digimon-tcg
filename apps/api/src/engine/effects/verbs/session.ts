@@ -25,6 +25,7 @@ export function createSessionVerbs(pc: PrimitivesContext) {
       sourcePermanentId: ctx.source.permanent()?.permanentId,
       effectKey: effect.effectKey,
       description: effect.description,
+      ...(effect.effectTextPart !== undefined ? { effectTextPart: effect.effectTextPart } : {}),
       timing: effect.timing,
       ...(effect.beforeRemoval === true ? { beforeRemoval: true } : {}),
       ...(effect.isInherited === true ? { isInherited: true } : {}),
@@ -36,6 +37,19 @@ export function createSessionVerbs(pc: PrimitivesContext) {
   const announceEffectOption: Primitives["announceEffectOption"] = (ctx, clause) => {
     engine.emit({
       kind: "effectOptionChosen",
+      seat: ctx.source.ownerSeat,
+      sourceCardId: ctx.source.cardId,
+      sourceInstanceId: ctx.source.instanceId,
+      sourcePermanentId: ctx.source.permanent()?.permanentId,
+      timing: ctx.activeTiming,
+      ...(ctx.activeEffectIsInherited === true ? { isInherited: true } : {}),
+      clause,
+    });
+  };
+  const announceEffectClauseAdvanced: Primitives["announceEffectClauseAdvanced"] = (ctx, clause) => {
+    engine.emit({
+      kind: "effectClauseAdvanced",
+      ...(ctx.activeEffectKey !== undefined ? { effectKey: ctx.activeEffectKey } : {}),
       seat: ctx.source.ownerSeat,
       sourceCardId: ctx.source.cardId,
       sourceInstanceId: ctx.source.instanceId,
@@ -78,6 +92,7 @@ export function createSessionVerbs(pc: PrimitivesContext) {
   return {
     announceEffect,
     announceEffectOption,
+    announceEffectClauseAdvanced,
     enterEffectResolution,
     leaveEffectResolution,
     resolvingEffectSourceKinds,

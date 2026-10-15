@@ -34,6 +34,7 @@ export type DrawFlight = {
   duration: number;
   /** The card's face, when the move made its identity public; a card back otherwise. */
   card?: DrawFlightCard;
+  handTrash?: boolean;
   /** A physical field stack returning upright to its owner's deck. */
   deckReturn?: import("../fieldShatter").FieldShatterFace;
   /** A whole field stack preserves its orientation while approaching the owner's hand. */

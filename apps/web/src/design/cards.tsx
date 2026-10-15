@@ -1,3 +1,6 @@
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
+import { getTranslatedCardMeta } from "@/i18n/getTranslatedCardMeta";
 import { CardZoomPreview } from "@/design/CardZoomPreview";
 import { useHoverZoomEnabled } from "@/design/useHoverZoomEnabled";
 import { Sigil } from "@/design/Sigil";
@@ -37,11 +40,13 @@ export function CardBack({
   label,
   useSelectedSleeve = true,
   egg = false,
+  selected = false,
 }: {
   width?: number;
   label?: number | string;
   useSelectedSleeve?: boolean;
   egg?: boolean;
+  selected?: boolean;
 }) {
   const h = Math.round(width * 1.4);
   const selectedSleeve = useCardSleeve();
@@ -61,6 +66,10 @@ export function CardBack({
         borderRadius: Math.max(6, width * 0.07),
         background: sleeve.src ? "#0b1020" : "linear-gradient(150deg, var(--ds-fill), var(--ds-sheet))",
         border: "1px solid var(--ds-line-strong)",
+        boxShadow: selected
+          ? "0 0 0 2px var(--card-highlight-rim, var(--ds-rim-attention)), 0 0 18px var(--card-highlight-glow, color-mix(in srgb, var(--ds-rim-attention) 40%, transparent)), var(--ds-shadow-raise)"
+          : undefined,
+        transition: "box-shadow 150ms",
         display: "grid",
         placeItems: "center",
         position: "relative",
@@ -137,13 +146,14 @@ export function CardFull({
    */
   zoomOnHover?: boolean;
 }) {
+  const translations = useCardTranslations();
   const def = getCardDefinition(cardId);
   const urls = useCardImageUrls({ cardId, artId });
   const [urlIndex, setUrlIndex] = useState(0);
   useEffect(() => setUrlIndex(0), [artId, cardId, urls]);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const zoomEnabled = useHoverZoomEnabled();
-  if (!def) return <CardBack width={width} label={cardId} />;
+  if (!def) return <CardBack width={width} label={cardId} selected={selected} />;
   const c = paletteFor(def.colors);
   const key = colorKey(def.colors[0]);
   const h = Math.round(width * 1.4);
@@ -190,14 +200,14 @@ export function CardFull({
           }}
         >
           <Sigil cardId={cardId} color={key} size={Math.round(h * 0.32)} />
-          <span>{def.nameEn}</span>
+          <span>{getTranslatedCardName({ name: def.nameEn, translations })}</span>
           <span style={{ fontFamily: "var(--ds-font-mono)", color: "var(--ds-text-3)" }}>{cardId}</span>
         </div>
       ) : (
         <img
           draggable={false}
           src={urls[urlIndex]}
-          alt={def.nameEn}
+          alt={getTranslatedCardName({ name: def.nameEn, translations })}
           loading="lazy"
           decoding="async"
           onError={() => setUrlIndex((i) => i + 1)}
@@ -275,13 +285,18 @@ type TokenInfoParams = {
 };
 
 function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) {
+  const translations = useCardTranslations();
   const scale = width / 92;
   const px = (n: number) => Math.round(n * scale);
   const c = paletteFor(def.colors);
   const dpChip = palettePairFor(def.colors);
   const cost = def.playCost;
   const dpValue = dp ?? def.dp;
-  const traits = [def.forms?.[0], def.attributes?.[0], def.types?.[0]].filter((t) => t && t !== "-") as string[];
+  const traits = [
+    getTranslatedCardMeta({ value: def.forms?.[0] ?? "", group: "forms", translations }),
+    getTranslatedCardMeta({ value: def.attributes?.[0] ?? "", group: "attributes", translations }),
+    getTranslatedCardMeta({ value: def.types?.[0] ?? "", group: "traits", translations }),
+  ].filter((value) => value && value !== "-");
   const showTraits = width >= 84 && traits.length > 0;
   const showLevel = def.level != null && width >= 66;
 
@@ -431,7 +446,7 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
               textShadow: "0 1px 2px rgba(0,0,0,0.6)",
             }}
           >
-            {def.nameEn}
+            {getTranslatedCardName({ name: def.nameEn, translations })}
           </span>
           {!stacked ? dpReadout : null}
         </div>
@@ -478,6 +493,7 @@ export function CardMini({
   /** Show the floating full-card preview on hover. */
   zoomOnHover?: boolean;
 }) {
+  const translations = useCardTranslations();
   const printed = cardId ? getCardDefinition(cardId) : undefined;
   const def =
     printed && identity
@@ -492,7 +508,7 @@ export function CardMini({
   useEffect(() => setUrlIndex(0), [artId, cardId, urls]);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const zoomEnabled = useHoverZoomEnabled();
-  if (faceDown || !def) return <CardBack width={width} />;
+  if (faceDown || !def) return <CardBack width={width} selected={selected} />;
   const c = paletteFor(def.colors);
   const key = colorKey(def.colors[0]);
   const h = Math.round(width * 1.4);
@@ -502,7 +518,7 @@ export function CardMini({
       onClick={onClick}
       onMouseMove={zoomEnabled && zoomOnHover ? (e) => setMousePos({ x: e.clientX, y: e.clientY }) : undefined}
       onMouseLeave={zoomEnabled && zoomOnHover ? () => setMousePos(null) : undefined}
-      title={def.nameEn}
+      title={getTranslatedCardName({ name: def.nameEn, translations })}
       style={{
         width,
         height: h,
@@ -543,7 +559,7 @@ export function CardMini({
         <img
           draggable={false}
           src={urls[urlIndex]}
-          alt={def.nameEn}
+          alt={getTranslatedCardName({ name: def.nameEn, translations })}
           decoding="async"
           onError={() => setUrlIndex((i) => i + 1)}
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}

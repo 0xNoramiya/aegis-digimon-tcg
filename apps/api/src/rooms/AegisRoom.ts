@@ -1,3 +1,4 @@
+import type { AccountPreferences } from "#api/accounts/AccountStore";
 import { RollbackHistory } from "#api/rooms/RollbackHistory";
 import { RollbackKind, ROLLBACK_CHANNEL, ROLLBACK_RESET_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
 import { LIVE_MATCH_SPECTATOR_LIMIT, type LiveMatch } from "@aegis/shared/protocol/LiveMatch";
@@ -302,6 +303,8 @@ export class AegisRoom extends Room<{
   override maxClients = 2;
   private engine!: GameEngine;
   private spectatorClients = new Set<string>();
+  private spectatorIdentities = new Map<string, { id: string; displayName: string }>();
+  private spectatorPrivacyReady = false;
   private seatByClient = new Map<string, Seat>(); // sessionId -> seat
   /** Each seat's Effect speed, which sets how long the seat's clock waits for a batch to play. */
   private animationSpeed: [EffectSpeed, EffectSpeed] = [DEFAULT_EFFECT_SPEED, DEFAULT_EFFECT_SPEED];
@@ -457,7 +460,17 @@ export class AegisRoom extends Room<{
 
   override async onAuth(client: Client, options: AegisJoinOptions): Promise<boolean> {
     if (options.spectator === true) {
-      return this.spectatorInfo(options.roomCode) !== null;
+      if (!this.spectatorInfo(options.roomCode)) {
+        return false;
+      }
+      if (options.authTicket) {
+        const ticket = await this.accounts().consumeRoomTicket(options.authTicket);
+        if (!ticket || ticket.tournamentMatchId) {
+          return false;
+        }
+        this.spectatorIdentities.set(client.sessionId, ticket.account);
+      }
+      return true;
     }
     if (this.matchStartRequested || this.seatByClient.size + this.occupiedBotSeats().length >= 2) return false;
     if (this.casualSeries?.continuation)
@@ -1360,7 +1373,7 @@ export class AegisRoom extends Room<{
     if (this.liveListingStartedAt === undefined || this.state.gameOver) return undefined;
     return {
       spectatorCode: this.state.spectatorCode,
-      players: this.state.players.map((player) => player.displayName),
+      players: this.state.players.map((player) => (player.hideIdentityFromSpectators ? "" : player.displayName)),
       format: this.state.format as DeckFormat,
       startedAt: this.liveListingStartedAt,
       spectators: this.spectatorClients.size,
@@ -1368,13 +1381,42 @@ export class AegisRoom extends Room<{
   }
 
   private async listLiveMatchWhenBothPlayersConsent(): Promise<void> {
-    if (this.isBotRoom || this.isRankedRoom || this.isTournamentRoom || this.isPrivate) return;
+    if (this.isBotRoom || this.isRankedRoom || this.isTournamentRoom) {
+      return;
+    }
     const owners = [this.deckOwnerBySeat.get(0), this.deckOwnerBySeat.get(1)];
-    if (!owners.every((owner): owner is string => owner !== undefined)) return;
-    const preferences = await Promise.all(owners.map((owner) => this.accounts().preferences(owner)));
-    if (!preferences.every((preference) => preference.listLiveMatches === true) || this.state.gameOver) return;
+    const preferences: AccountPreferences[] = await Promise.all(
+      owners.map((owner) => (owner ? this.accounts().preferences(owner) : {})),
+    );
+    for (const player of this.state.players) {
+      player.hideIdentityFromSpectators = preferences[player.seat]?.hideIdentityFromSpectators === true;
+    }
+    this.spectatorPrivacyReady = true;
+    if (this.isPrivate || !owners.every((owner) => owner !== undefined)) {
+      return;
+    }
+    if (!preferences.every((preference) => preference.listLiveMatches !== false) || this.state.gameOver) {
+      return;
+    }
     this.liveListingStartedAt = Date.now();
     await this.publishRoomRules();
+  }
+
+  private syncSpectatorRoster(): void {
+    const names = new Map<string, string>();
+    let anonymous = 0;
+    for (const sessionId of this.spectatorClients) {
+      const identity = this.spectatorIdentities.get(sessionId);
+      if (identity) {
+        names.set(identity.id, identity.displayName);
+      } else {
+        anonymous += 1;
+      }
+    }
+    for (const player of this.state.players) {
+      player.spectatorNamesJson = JSON.stringify([...names.values()]);
+      player.anonymousSpectatorCount = anonymous;
+    }
   }
 
   private refreshLiveListing(): void {
@@ -1396,6 +1438,7 @@ export class AegisRoom extends Room<{
       this.isRankedRoom ||
       this.isTournamentRoom ||
       !this.matchStartRequested ||
+      !this.spectatorPrivacyReady ||
       this.state.gameOver
     )
       return null;
@@ -1403,7 +1446,7 @@ export class AegisRoom extends Room<{
     if (this.spectatorClients.size >= LIVE_MATCH_SPECTATOR_LIMIT) return null;
     return {
       roomId: this.roomId,
-      players: this.state.players.map((player) => player.displayName),
+      players: this.state.players.map((player) => (player.hideIdentityFromSpectators ? "" : player.displayName)),
       spectators: this.spectatorClients.size,
     };
   }
@@ -1413,8 +1456,12 @@ export class AegisRoom extends Room<{
       // Recheck after reservation: a match can end while the socket is connecting.
       if (!this.spectatorInfo(options.roomCode)) throw new ServerError(403, "Match is not available to spectators");
       this.spectatorClients.add(client.sessionId);
+      this.syncSpectatorRoster();
       this.refreshLiveListing();
-      if (typeof options.displayName === "string") this.spectatorJoinNames.set(client.sessionId, options.displayName);
+      const identity = this.spectatorIdentities.get(client.sessionId);
+      if (identity) {
+        this.spectatorJoinNames.set(client.sessionId, identity.displayName);
+      }
       this.assignView(client, undefined);
       if (this.openSecurityReveal)
         this.withBatch(() => client.send(EVENT_CHANNEL, this.stamp(this.openSecurityReveal!)), client);
@@ -1564,6 +1611,8 @@ export class AegisRoom extends Room<{
         // Spectator expiry has no effect on either player or the match clock.
       }
       this.spectatorClients.delete(client.sessionId);
+      this.spectatorIdentities.delete(client.sessionId);
+      this.syncSpectatorRoster();
       this.refreshLiveListing();
       this.spectatorNumbers.delete(client.sessionId);
       this.spectatorJoinNames.delete(client.sessionId);
@@ -2368,7 +2417,14 @@ export class AegisRoom extends Room<{
     if (lastChatAt !== undefined && now - lastChatAt < CHAT_COOLDOWN_MS) return;
     this.lastChatAtBySender.set(cooldownKey, now);
     this.debug("client.chat", { sender, sessionId: client.sessionId, ...message });
-    this.broadcast(CHAT_CHANNEL, { sender, message } satisfies ChatBroadcast);
+    const broadcast: ChatBroadcast = { sender, message };
+    for (const recipient of this.clients) {
+      const receivesPlayerChat = this.seatByClient.has(recipient.sessionId);
+      const receivesSpectatorChat = this.spectatorClients.has(recipient.sessionId) && !receivesPlayerChat;
+      if ((sender.kind === "player" && receivesPlayerChat) || (sender.kind === "spectator" && receivesSpectatorChat)) {
+        recipient.send(CHAT_CHANNEL, broadcast);
+      }
+    }
   }
 
   private chatSender(client: Client): ChatSender | undefined {
@@ -2668,6 +2724,9 @@ export class AegisRoom extends Room<{
         player.sessionId = identity.sessionId;
         player.displayName = identity.displayName;
         player.avatarId = identity.avatarId;
+        player.hideIdentityFromSpectators = identity.hideIdentityFromSpectators;
+        player.spectatorNamesJson = identity.spectatorNamesJson;
+        player.anonymousSpectatorCount = identity.anonymousSpectatorCount;
         player.connected = identity.connected;
       }
       restored.stateVersion = version;

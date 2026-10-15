@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import fixtureKudamonMoving from "../../api/src/engine/scenarios/kudamon-moving.fixture";
-import { openFixturePage } from "./scenario-page";
+import { ScenarioPage } from "./scenario-page";
 import { startBrowserServer } from "./server";
 
 for (const { viewport, dark } of [
@@ -18,7 +18,8 @@ for (const { viewport, dark } of [
     }, dark);
     const server = await startBrowserServer();
     try {
-      await openFixturePage(page, fixtureKudamonMoving);
+      const arena = new ScenarioPage(page, server.useFixture);
+      await arena.openFixture(fixtureKudamonMoving, "normal", "none");
       if (dark) {
         await expect(page.locator("html")).toHaveClass(/dark/);
       } else {
@@ -36,13 +37,33 @@ for (const { viewport, dark } of [
       await expect(endBreeding).toBeEnabled();
       await expect(raised.getByRole("img", { name: "Kudamon", exact: true })).toBeVisible();
       const read = raised.getByRole("button", { name: "Read Kudamon", exact: true });
-      await expect(read).toBeInViewport();
-      await read.click();
+      if (viewport.width < 768) {
+        await expect(read).toBeHidden();
+        await raised.locator(".game-permanent").dispatchEvent("pointerdown", {
+          pointerId: 1,
+          pointerType: "touch",
+          isPrimary: true,
+          bubbles: true,
+        });
+        await expect(inspector).toBeVisible();
+        await raised.locator(".game-permanent").dispatchEvent("pointerup", {
+          pointerId: 1,
+          pointerType: "touch",
+          isPrimary: true,
+          bubbles: true,
+        });
+      } else {
+        await expect(read).toBeInViewport();
+        await read.click();
+      }
       await expect(inspector).toBeVisible();
       await inspector.getByRole("button", { name: "Close", exact: true }).click();
-      await endBreeding.click();
-      await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
-      await expect(raised.getByRole("img", { name: "Kudamon", exact: true })).toBeVisible();
+      await expect(endBreeding).toBeEnabled();
+      await raised.locator(".game-permanent").click();
+      await expect(raised.getByRole("img", { name: "Kudamon", exact: true })).toHaveCount(0);
+      await expect(
+        page.locator('[data-drop="perm-you"]').getByRole("img", { name: "Kudamon", exact: true }),
+      ).toBeVisible();
     } finally {
       await page.close();
       await server.close();

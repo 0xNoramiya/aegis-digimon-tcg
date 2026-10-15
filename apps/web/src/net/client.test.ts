@@ -465,3 +465,36 @@ it("merges each slot's first page of live matches and skips an unreachable slot"
   expect(page.total).toBe(5);
   expect(fetcher).toHaveBeenCalledWith("https://example.test/api/green/spectate/live?limit=2");
 });
+
+it("attaches an account ticket when a signed-in viewer reserves spectator access", async () => {
+  setRoomTicketAccount(true);
+  onTestFinished(() => setRoomTicketAccount(false));
+  const watched = room("watched-match");
+  const fetcher = vi.fn<typeof fetch>(
+    async (input) =>
+      new Response(
+        JSON.stringify(
+          String(input).endsWith("/auth/room-ticket")
+            ? { ticket: "spectator-account-ticket" }
+            : { sessionId: "observer", roomId: "watched-match" },
+        ),
+      ),
+  );
+  const client = new AegisConnectionRouter({
+    loadManifest: async () => ({ version: 1, active: { slot: "green", revision: "new" }, draining: [] }),
+    endpointForSlot: () => ({ http: "https://example.test/api/green", websocket: "wss://example.test/api/green" }),
+    createClient: () => clientPort({ consumeSeatReservation: async () => watched }),
+    fetcher,
+  });
+  expect(await client.spectate({ roomCode: "ABCDEF" })).toBe(watched);
+  expect(fetcher).toHaveBeenNthCalledWith(
+    1,
+    "https://example.test/api/green/auth/room-ticket",
+    expect.objectContaining({ credentials: "include" }),
+  );
+  expect(fetcher).toHaveBeenNthCalledWith(
+    2,
+    "https://example.test/api/green/spectate/join",
+    expect.objectContaining({ body: JSON.stringify({ roomCode: "ABCDEF", authTicket: "spectator-account-ticket" }) }),
+  );
+});

@@ -39,11 +39,12 @@ export function ChatSettingsMenu({
         anchor?.focus();
       }}
     >
-      {/* A spectator has no opponent; muting either player would only hide half the match. */}
       {spectating ? null : (
         <Switch checked={chat.mutedOpponent} label={t("chat.mute")} onChange={chat.setMutedOpponent} />
       )}
-      <Switch checked={chat.mutedSpectators} label={t("chat.muteSpectators")} onChange={chat.setMutedSpectators} />
+      {spectating ? (
+        <Switch checked={chat.mutedSpectators} label={t("chat.muteSpectators")} onChange={chat.setMutedSpectators} />
+      ) : null}
       <Switch checked={chatSoundEnabled} label={t("chat.sound")} onChange={setChatSoundEnabled} />
     </div>
   );

@@ -4560,3 +4560,33 @@ it.each(["before", "after"] as const)("shows the full staged Ryutaro effect with
   fireEvent.click(screen.getByRole("button", { name: "No, decline" }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: false });
 });
+
+it.each([
+  {
+    kind: "chooseTargets" as const,
+    effectTextEmphasis: "[When Digivolving] Delete up to 10000 DP total worth of your opponent's Digimon.",
+    candidate: "target",
+  },
+  { kind: "selectCards" as const, effectTextEmphasis: "Then, this Digimon may attack.", candidate: "player" },
+])("keeps Gallantmon's full effect and emphasizes its $kind step", ({ kind, effectTextEmphasis, candidate }) => {
+  const effectText =
+    "[When Digivolving] Delete up to 10000 DP total worth of your opponent's Digimon. Then, this Digimon may attack.";
+  renderDecision({
+    decisionId: "gallantmon-current-step",
+    seat: 0,
+    kind,
+    sourceCardId: "AD1-008",
+    promptText: "Gallantmon",
+    options: {
+      timing: "WhenDigivolving",
+      effectText,
+      effectTextPart: effectTextEmphasis,
+      effectTextEmphasis,
+      candidateInstanceIds: [candidate],
+      min: 1,
+      max: 1,
+    },
+  });
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(effectText);
+  expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(effectTextEmphasis);
+});

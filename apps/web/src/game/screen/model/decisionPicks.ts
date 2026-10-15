@@ -1,3 +1,4 @@
+import { isAllowedTargetSelection } from "@/game/screen/model/isAllowedTargetSelection";
 import { playCostBudgetAllowsCandidate } from "../../overlay/choice/decisionPlayCost";
 import { dpBudgetAllowsCandidate } from "../../overlay/choice/decisionDpBudget";
 import { differentColorsAllowCandidate, distinctCardIdsAllow, distinctNamesAllow } from "../../decisionModel";
@@ -13,6 +14,7 @@ export function decisionAllowsPick(input: {
   decisionVisibleCardIds: ReadonlyMap<string, string | undefined>;
   decisionDistinctCardIds: boolean;
   decisionDistinctNames?: boolean;
+  decisionAllowedTargetCombinations?: readonly (readonly string[])[];
   decisionMaxTotalPlayCost?: number;
   decisionMaxTotalDP?: number;
   decisionCandidateDP?: ReadonlyMap<string, number>;
@@ -26,12 +28,18 @@ export function decisionAllowsPick(input: {
     decisionVisibleCardIds,
     decisionDistinctCardIds,
     decisionDistinctNames,
+    decisionAllowedTargetCombinations,
     decisionMaxTotalPlayCost,
     decisionMaxTotalDP,
     decisionCandidateDP,
   } = input;
   return (
     decisionSelectable.has(instanceId) &&
+    (picks.includes(instanceId) ||
+      isAllowedTargetSelection({
+        allowedTargetCombinations: decisionAllowedTargetCombinations,
+        picks: [...picks, instanceId],
+      })) &&
     differentColorsAllowCandidate(instanceId, picks, decisionInstanceColors, decisionDifferentColors) &&
     distinctCardIdsAllow(instanceId, picks, decisionVisibleCardIds, decisionDistinctCardIds) &&
     distinctNamesAllow(instanceId, picks, decisionVisibleCardIds, decisionDistinctNames === true) &&

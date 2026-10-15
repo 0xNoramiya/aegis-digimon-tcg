@@ -36,6 +36,13 @@ describe("release dates", () => {
     expect(isBetaOnlyCard(card("BT10-001"), "2026-09-11")).toBe(false);
   });
 
+  it.each(["EX14-012", "EX14-054"])("keeps %s in beta until the EX14 release", (cardId) => {
+    expect(releaseDateForCard(card(cardId))).toBe("2027-01-22");
+    expect(isBetaOnlyCard(card(cardId), "2026-10-15")).toBe(true);
+    expect(isBetaOnlyCard(card(cardId), "2027-01-21")).toBe(true);
+    expect(isBetaOnlyCard(card(cardId), "2027-01-22")).toBe(false);
+  });
+
   it("keeps each limited product behind its own release date", () => {
     expect(releaseDateForSet("LM")).toBeUndefined();
     expect(releaseDateForCard(card("LM-001"))).toBe("2024-02-16");

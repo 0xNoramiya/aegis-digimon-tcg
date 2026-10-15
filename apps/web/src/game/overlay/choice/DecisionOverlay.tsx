@@ -1,3 +1,5 @@
+import { isAllowedTargetSelection } from "@/game/screen/model/isAllowedTargetSelection";
+import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { printedModalPreamble, type DecisionRequest, type DecisionResponse } from "@aegis/shared";
 import { CardMini } from "../../../design/cards";
@@ -151,7 +153,17 @@ export function DecisionOverlay({
     dpOf: (id) => candidates.find((candidate) => candidate.instanceId === id)?.currentDP,
   });
   const withinDPBudget = maxTotalDP === undefined || selectedDP <= maxTotalDP;
-  const canConfirm = picks.length >= min && picks.length <= max && withinPlayCostBudget && withinDPBudget;
+  const canConfirm =
+    picks.length >= min &&
+    picks.length <= max &&
+    withinPlayCostBudget &&
+    withinDPBudget &&
+    ((picks.length === 0 && min === 0) ||
+      isAllowedTargetSelection({
+        allowedTargetCombinations: request.options?.allowedTargetCombinations,
+        picks,
+        complete: true,
+      }));
   // The fate every picked target meets, or nothing when the engine did not
   // project one for the action that raised this prompt.
   const fateBadge = request.options?.targetFate ? pendingFateBadge(request.options.targetFate) : undefined;
@@ -255,20 +267,9 @@ export function DecisionOverlay({
   // Keep that context in the body while all activations share the same heading.
   const displayedEffectText = sourceEffectText ?? (isOptional ? specificPrompt : undefined);
   const emphasis = request.options?.effectTextEmphasis;
-  const emphasisStart =
-    emphasis && displayedEffectText ? displayedEffectText.toLowerCase().indexOf(emphasis.toLowerCase()) : -1;
-  const renderedEffectText =
-    emphasis && displayedEffectText && emphasisStart >= 0 ? (
-      <>
-        {displayedEffectText.slice(0, emphasisStart)}
-        <strong className="decision-overlay__effect-step">
-          {displayedEffectText.slice(emphasisStart, emphasisStart + emphasis.length)}
-        </strong>
-        {displayedEffectText.slice(emphasisStart + emphasis.length)}
-      </>
-    ) : (
-      displayedEffectText
-    );
+  const renderedEffectText = displayedEffectText ? (
+    <EffectStepText text={displayedEffectText} emphasis={emphasis} />
+  ) : undefined;
 
   const boardReturn = isViewingBoard ? (
     <DecisionBoardReturn returnControlRef={returnControlRef} onReturn={() => setIsViewingBoard(false)} />
