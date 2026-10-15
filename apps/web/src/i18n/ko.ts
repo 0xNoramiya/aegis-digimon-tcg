@@ -817,6 +817,11 @@ const interfaceMessages = {
   "deck.exportImageRendering": "렌더링 중…",
   "deck.exportImageFailed": "이미지 내보내기 실패",
   "deck.exportPng": "PNG 내보내기",
+  "deck.exportFormat": "형식",
+  "deck.exportTcgplayerHint":
+    "TCGplayer Mass Entry에서 Digimon Card Game을 선택한 후 이 목록을 붙여 넣으세요. 디지타마가 포함되며 일러스트는 다를 수 있습니다.",
+  "deck.exportUnsupportedCards":
+    "TCGplayer로 내보낼 수 없는 카드: {cards}. 지원되는 세트가 등록될 때까지 복사할 수 없습니다.",
   "deck.exportTabText": "덱 리스트",
   "deck.exportTabImage": "이미지 (PNG)",
   "deck.exportDownloadPng": "PNG 다운로드",

@@ -712,6 +712,11 @@ const interfaceMessages = {
   "deck.exportImageRendering": "Creazione dell'immagine…",
   "deck.exportImageFailed": "Esportazione dell'immagine non riuscita",
   "deck.exportPng": "Esporta PNG",
+  "deck.exportFormat": "Formato",
+  "deck.exportTcgplayerHint":
+    "Seleziona Digimon Card Game in Mass Entry di TCGplayer e incolla questa lista. Include le Digi-Uova; le illustrazioni possono variare.",
+  "deck.exportUnsupportedCards":
+    "Esportazione TCGplayer non disponibile per: {cards}. La copia è disabilitata finché queste carte non hanno un set supportato.",
   "deck.exportTabText": "Lista del mazzo",
   "deck.exportTabImage": "Immagine (PNG)",
   "deck.exportDownloadPng": "Scarica PNG",
