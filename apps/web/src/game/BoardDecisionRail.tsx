@@ -90,7 +90,7 @@ export function BoardPromptRail({
   artWidth?: number;
   eyebrow?: ReactNode;
   prompt: string;
-  clause?: string;
+  clause?: ReactNode;
   clauseLang?: string;
   detail?: string;
   budgetText?: string;
@@ -216,7 +216,7 @@ export function BoardSelectionRail({
   sourceCardId?: string;
   prompt: string;
   /** The printed clause that asked for the selection, so the rail carries the same context the dialog did. */
-  clause?: string;
+  clause?: ReactNode;
   min: number;
   max: number;
   pickCount: number;
@@ -461,7 +461,7 @@ export function BoardSourceHostPrompt({
   onNoSelection,
 }: {
   sourceCardId?: string;
-  clause?: string;
+  clause?: ReactNode;
   /** Set when the pick may be declined. */
   onNoSelection?: () => void;
 }) {
@@ -502,7 +502,7 @@ export function BoardOptionalPrompt({
   sourcePermanentId?: string;
   /** Additional decision context belongs below the standard activation heading. */
   contextText?: string;
-  clause?: string;
+  clause?: ReactNode;
   onUse: () => void;
   onDecline: () => void;
   onOpenDialog?: () => void;

@@ -190,6 +190,7 @@ function buildSeatScopedApi(
         max: number;
         visible?: string[];
         maxTotalPlayCost?: number;
+        allowedTargetCombinations?: string[][];
         maxTotalDP?: number;
         promptKey?: "digivolveHost";
       },
@@ -209,6 +210,9 @@ function buildSeatScopedApi(
           min,
           max: opts.max,
           ...(opts.maxTotalPlayCost !== undefined ? { maxTotalPlayCost: opts.maxTotalPlayCost } : {}),
+          ...(opts.allowedTargetCombinations !== undefined
+            ? { allowedTargetCombinations: opts.allowedTargetCombinations }
+            : {}),
           ...(opts.maxTotalDP !== undefined ? { maxTotalDP: opts.maxTotalDP } : {}),
           ...(opts.promptKey !== undefined ? { promptKey: opts.promptKey } : {}),
           // What the running action will do to whatever is picked here, so the board

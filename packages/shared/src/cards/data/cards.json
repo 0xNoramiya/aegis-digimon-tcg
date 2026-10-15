@@ -49925,6 +49925,44 @@
     "isDualCard": true
   },
   {
+    "cardId": "BT27-103",
+    "nameEn": "Alphamon: Ouryuken",
+    "colors": ["Black", "Yellow", "Red"],
+    "level": 7,
+    "playCost": 6,
+    "dp": 16000,
+    "evoCosts": [
+      {
+        "color": "Black",
+        "level": 6,
+        "memoryCost": 6
+      },
+      {
+        "color": "Yellow",
+        "level": 6,
+        "memoryCost": 6
+      },
+      {
+        "color": "Red",
+        "level": 6,
+        "memoryCost": 6
+      }
+    ],
+    "attributes": ["Vaccine"],
+    "types": ["NO DATA", "X Antibody", "Royal Knight", "Chronicle"],
+    "rarity": "SEC",
+    "dualEffect": "Ultimate Ouryuken",
+    "effectText": "[DNA Digivolve] [Alphamon] + [Ouryumon]: Cost 0\n＜Piercing＞ ＜Security Attack +1＞ ＜Blocker＞\n＜Partition ([Alphamon] & [Ouryumon])＞\n[When Digivolving] [When Attacking] [Once Per Turn] You may delete 1 of your opponent's Digimon. Then, if DNA digivolving, ＜Recovery +2＞.\n[All Turns] During attacks, your opponent's effects don't affect this Digimon.",
+    "optionEffect": "[Main] Delete 1 of your opponent's Digimon. Then, 2 of your Digimon may DNA digivolve into this card.\n＜Arts Digivolve＞",
+    "set": "BT27",
+    "kinds": ["Digimon", "Option"],
+    "forms": ["Mega"],
+    "maxCountInDeck": 4,
+    "imageId": "BT27-103",
+    "isDualCard": true,
+    "optionColorRequirements": ["Black"]
+  },
+  {
     "cardId": "BT3-001",
     "set": "BT3",
     "nameEn": "Poromon",
