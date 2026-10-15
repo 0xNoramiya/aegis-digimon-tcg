@@ -394,6 +394,7 @@ function LoadedAegisClient({
   const [bugReportOpen, setBugReportOpen] = useState(false);
   const [leaveMatchPromptOpen, setLeaveMatchPromptOpen] = useState(false);
   const concedeMatchRef = useRef<(() => void) | undefined>(undefined);
+  const leaveMatchRouteRef = useRef<AppRoute | undefined>(undefined);
   const setLeaveForfeitsMatch = useCallback((concede: (() => void) | undefined) => {
     concedeMatchRef.current = concede;
     if (!concede) setLeaveMatchPromptOpen(false);
@@ -427,9 +428,8 @@ function LoadedAegisClient({
         nextRoute?.screen === "game" && !loadReconnectSession()
           ? { screen: "lobby" }
           : (nextRoute ?? { screen: "home" });
-      /* The browser has already moved off the match URL, so the guard restores it and asks.
-         Confirming concedes in place: the result screen then offers to keep the replay. */
       if (concedeMatchRef.current && resolvedRoute.screen !== "game") {
+        leaveMatchRouteRef.current = resolvedRoute;
         window.history.pushState(null, "", pathForRoute({ screen: "game" }));
         setLeaveMatchPromptOpen(true);
         return;
@@ -445,6 +445,12 @@ function LoadedAegisClient({
   const confirmLeaveMatch = () => {
     setLeaveMatchPromptOpen(false);
     concedeMatchRef.current?.();
+    const nextRoute = leaveMatchRouteRef.current ?? { screen: "lobby" };
+    leaveMatchRouteRef.current = undefined;
+    setSeriesGame(undefined);
+    clearReconnectSession();
+    window.history.replaceState(null, "", pathForRoute(nextRoute));
+    setRoute(nextRoute);
   };
 
   const navigate = (nextRoute: AppRoute) => {

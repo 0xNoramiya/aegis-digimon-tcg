@@ -874,7 +874,7 @@ export const es: Record<keyof typeof en, string> = {
   "game.surrenderConfirmTitle": "¿Rendirte en esta partida?",
   "game.surrenderConfirmBody": "La partida termina ahora y cuenta como derrota.",
   "game.leaveConfirmTitle": "¿Salir de esta partida?",
-  "game.leaveConfirmBody": "Salir termina la partida y cuenta como derrota. Aún puedes guardar el replay.",
+  "game.leaveConfirmBody": "Salir termina la partida y cuenta como derrota.",
   "game.stats.turns": "Turnos",
   "game.stats.oppBoard": "Mesa rival",
   "game.stats.yourSecurity": "Tu seguridad",
