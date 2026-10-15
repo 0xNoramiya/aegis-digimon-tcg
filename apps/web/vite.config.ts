@@ -29,7 +29,19 @@ export default defineConfig({
     projects: [
       {
         extends: true,
-        test: { name: "default", exclude: [...configDefaults.exclude, "e2e/**", "src/design/tokenArt/**/*.test.tsx"] },
+        test: { name: "dp-hint", include: ["src/game/piece/PermanentDpDeltaHint.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: {
+          name: "default",
+          exclude: [
+            ...configDefaults.exclude,
+            "e2e/**",
+            "src/design/tokenArt/**/*.test.tsx",
+            "src/game/piece/PermanentDpDeltaHint.test.tsx",
+          ],
+        },
       },
       {
         extends: true,

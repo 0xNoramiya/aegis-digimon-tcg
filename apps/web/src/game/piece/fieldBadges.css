@@ -162,28 +162,16 @@
   font: 800 calc(var(--badge-status-size) * 0.45) / 1 var(--ds-font-mono);
 }
 
-/* ---- DP change, just above the card's own DP ---- */
-.game-permanent .game-dp-delta-badge {
+.game-permanent .game-dp-delta {
+  position: relative;
+  pointer-events: auto;
+  cursor: help;
+}
+
+.game-permanent .game-dp-delta::before {
   position: absolute;
-  right: 11px;
-  bottom: calc(var(--permanent-width, 116px) * (0.07 + 0.136 * var(--ds-text-scale, 1)) + 4px);
-  width: auto;
-  height: auto;
-  padding: 1px 4px;
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--ds-ink) 90%, transparent);
-  box-shadow: 0 1px 4px rgb(0 0 0 / 45%);
-  font: 700 calc(var(--badge-font) * var(--ds-text-scale, 1)) / 1.25 var(--ds-font-mono);
-}
-
-.game-permanent .game-dp-delta-badge[data-dp="up"] {
-  color: color-mix(in srgb, var(--ds-success) 35%, white);
-  background: color-mix(in srgb, var(--ds-ink) 90%, transparent);
-}
-
-.game-permanent .game-dp-delta-badge[data-dp="down"] {
-  color: color-mix(in srgb, var(--ds-danger) 40%, white);
-  background: color-mix(in srgb, var(--ds-ink) 90%, transparent);
+  inset: -6px;
+  content: "";
 }
 
 /* ---- Keywords on one line just above the card (the pre-redesign pills) ----

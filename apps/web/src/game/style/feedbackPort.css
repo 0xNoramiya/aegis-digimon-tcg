@@ -111,16 +111,6 @@
   background: var(--ds-accent-soft);
 }
 
-.game-restriction-badge[data-dp="down"] {
-  color: var(--ds-on-status);
-  background: var(--ds-danger);
-}
-
-.game-restriction-badge[data-dp="up"] {
-  color: var(--ds-on-status);
-  background: var(--ds-success);
-}
-
 .game-restriction-badge b {
   font-size: 0.52rem;
   line-height: 1;
