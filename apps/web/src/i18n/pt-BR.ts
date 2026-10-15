@@ -290,6 +290,11 @@ export const ptBR: Record<keyof typeof en, string> = {
   "spectator.winner": "Vencedor: {name}",
   "spectator.draw": "Empate",
   "spectator.back": "Voltar ao lobby",
+  "settings.hideIdentityFromSpectators": "Ocultar minha identidade dos espectadores",
+  "settings.hideIdentityFromSpectatorsDesc":
+    "Nas próximas partidas, espectadores veem um jogador numerado no lugar do seu apelido e avatar. Seu oponente continua vendo sua identidade.",
+  "spectator.audience": "Espectadores",
+  "spectator.anonymousCount": "Visitantes: {count}",
   "settings.listLiveMatches": "Listar minhas partidas para espectadores",
   "settings.listLiveMatchesDesc":
     "Suas partidas casuais aparecem em Partidas ao vivo quando os dois jogadores ativarem. Desligado por padrão.",

@@ -505,6 +505,11 @@ const interfaceMessages = {
   "spectator.winner": "Gewinner: {name}",
   "spectator.draw": "Unentschieden",
   "spectator.back": "Zurück zur Lobby",
+  "settings.hideIdentityFromSpectators": "Meine Identität vor Zuschauern verbergen",
+  "settings.hideIdentityFromSpectatorsDesc":
+    "In zukünftigen Spielen sehen Zuschauer eine Spielernummer statt deines Namens und Avatars. Dein Gegner sieht weiterhin deine Identität.",
+  "spectator.audience": "Zuschauer",
+  "spectator.anonymousCount": "Gäste: {count}",
   "settings.listLiveMatches": "Meine Matches für Zuschauer listen",
   "settings.listLiveMatchesDesc":
     "Ihre Casual-Matches erscheinen unter Live-Matches, wenn beide Spieler dies aktivieren. Standardmäßig aus.",

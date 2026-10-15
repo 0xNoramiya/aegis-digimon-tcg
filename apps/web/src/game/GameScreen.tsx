@@ -1542,7 +1542,10 @@ function GameScreenSession({
               spectatorResult: spectating
                 ? state.winnerSeat < 0
                   ? t("spectator.draw")
-                  : t("spectator.winner", { name: state.players[state.winnerSeat]?.displayName ?? "" })
+                  : t("spectator.winner", {
+                      name:
+                        state.players[state.winnerSeat]?.displayName || t("log.player", { n: state.winnerSeat + 1 }),
+                    })
                 : undefined,
             }
           : undefined

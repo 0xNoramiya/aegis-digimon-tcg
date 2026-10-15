@@ -373,6 +373,11 @@ const interfaceMessages = {
   "spectator.winner": "Vincitore: {name}",
   "spectator.draw": "Pareggio",
   "spectator.back": "Torna alla lobby",
+  "settings.hideIdentityFromSpectators": "Nascondi la mia identità agli spettatori",
+  "settings.hideIdentityFromSpectatorsDesc":
+    "Nelle prossime partite, gli spettatori vedranno un giocatore numerato al posto del tuo nome e avatar. Il tuo avversario continuerà a vedere la tua identità.",
+  "spectator.audience": "Spettatori",
+  "spectator.anonymousCount": "Ospiti: {count}",
   "settings.listLiveMatches": "Elenca le mie partite per gli spettatori",
   "settings.listLiveMatchesDesc":
     "Le tue partite casual appaiono in Partite dal vivo quando entrambi i giocatori lo attivano. Disattivato per impostazione predefinita.",

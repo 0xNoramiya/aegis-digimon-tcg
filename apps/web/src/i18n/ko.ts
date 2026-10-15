@@ -481,6 +481,11 @@ const interfaceMessages = {
   "spectator.winner": "승자: {name}",
   "spectator.draw": "무승부",
   "spectator.back": "로비로 돌아가기",
+  "settings.hideIdentityFromSpectators": "관전자에게 내 신원 숨기기",
+  "settings.hideIdentityFromSpectatorsDesc":
+    "다음 경기부터 관전자에게 닉네임과 아바타 대신 플레이어 번호가 표시됩니다. 상대에게는 계속 표시됩니다.",
+  "spectator.audience": "관전자",
+  "spectator.anonymousCount": "방문자: {count}",
   "settings.listLiveMatches": "관전 목록에 내 매치 표시",
   "settings.listLiveMatchesDesc":
     "두 플레이어가 모두 켜면 캐주얼 매치가 라이브 매치에 표시됩니다. 기본값은 꺼짐입니다.",

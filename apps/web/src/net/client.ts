@@ -175,7 +175,13 @@ export class AegisConnectionRouter {
     const deployments = [manifest.active, ...manifest.draining];
     for (const { slot } of deployments) {
       const { http } = this.dependencies.endpointForSlot(slot);
-      const response = await this.fetch(`${http}/spectate/join`, spectatorJoinRequest(target));
+      const response = await this.fetch(
+        `${http}/spectate/join`,
+        spectatorJoinRequest(
+          target,
+          (await this.withRoomTicket({ displayName: "", deck: { mainDeck: [], eggDeck: [] } }, slot)).authTicket,
+        ),
+      );
       if (response.status === 404) continue;
       if (!response.ok) throw new Error("Match is not available to spectators");
       const reservation = await response.json();
@@ -495,8 +501,12 @@ export interface SpectateTarget {
   displayName?: string;
 }
 
-function spectatorJoinRequest(target: SpectateTarget): RequestInit {
-  return { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(target) };
+function spectatorJoinRequest(target: SpectateTarget, authTicket?: string): RequestInit {
+  return {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...target, ...(authTicket ? { authTicket } : {}) }),
+  };
 }
 
 async function fetchLiveMatches(http: string, limit: number, fetcher: typeof fetch): Promise<LiveMatchPage> {
@@ -514,7 +524,10 @@ export async function spectate(target: SpectateTarget): Promise<AegisRoom> {
   if (useProductionRouter()) return getProductionRouter().spectate(target);
   const response = await fetch(
     `${legacyEndpoint().replace(/^ws/, "http")}/spectate/join`,
-    spectatorJoinRequest(target),
+    spectatorJoinRequest(
+      target,
+      (await withLegacyRoomTicket({ displayName: "", deck: { mainDeck: [], eggDeck: [] } })).authTicket,
+    ),
   );
   if (!response.ok) throw new Error("Match is not available to spectators");
   return rememberLegacy(await getLegacyClient().consumeSeatReservation<GameState>(await response.json(), GameState));

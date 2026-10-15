@@ -59,6 +59,7 @@ describe("spectator admission", () => {
       const response = await request({
         roomCode: "abcdef",
         displayName: "Watcher",
+        authTicket: "account-ticket",
         spectator: false,
         ranked: true,
         deck: { mainDeck: ["forged"] },
@@ -70,6 +71,7 @@ describe("spectator admission", () => {
         spectator: true,
         roomCode: "ABCDEF",
         displayName: "Watcher",
+        authTicket: "account-ticket",
         deck: { mainDeck: [], eggDeck: [] },
       });
     });

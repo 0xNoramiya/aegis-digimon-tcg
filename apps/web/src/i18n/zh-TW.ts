@@ -463,6 +463,11 @@ const interfaceMessages = {
   "spectator.winner": "獲勝者：{name}",
   "spectator.draw": "平手",
   "spectator.back": "返回大廳",
+  "settings.hideIdentityFromSpectators": "向觀眾隱藏我的身分",
+  "settings.hideIdentityFromSpectatorsDesc":
+    "在之後的對戰中，觀眾將看到玩家編號，而不是你的暱稱和頭像。對手仍可看到你的身分。",
+  "spectator.audience": "觀眾",
+  "spectator.anonymousCount": "訪客：{count}",
   "settings.listLiveMatches": "將我的對戰列入觀戰列表",
   "settings.listLiveMatchesDesc": "雙方玩家都開啟後，你的休閒對戰會出現在直播對戰中。預設關閉。",
   "settings.listLiveMatchesFailed": "無法載入或儲存此設定。請重試。",

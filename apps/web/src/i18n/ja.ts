@@ -490,6 +490,11 @@ const interfaceMessages = {
   "spectator.winner": "勝者: {name}",
   "spectator.draw": "引き分け",
   "spectator.back": "ロビーに戻る",
+  "settings.hideIdentityFromSpectators": "観戦者に自分の名前とアバターを非表示",
+  "settings.hideIdentityFromSpectatorsDesc":
+    "次の対戦から、観戦者には名前とアバターの代わりにプレイヤー番号が表示されます。対戦相手には引き続き表示されます。",
+  "spectator.audience": "観戦者",
+  "spectator.anonymousCount": "ゲスト：{count}",
   "settings.listLiveMatches": "自分の対戦を観戦リストに載せる",
   "settings.listLiveMatchesDesc":
     "両方のプレイヤーがオンにすると、カジュアル対戦がライブ対戦に表示されます。初期設定はオフです。",

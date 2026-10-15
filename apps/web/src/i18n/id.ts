@@ -489,6 +489,11 @@ const interfaceMessages = {
   "spectator.winner": "Pemenang: {name}",
   "spectator.draw": "Seri",
   "spectator.back": "Kembali ke lobi",
+  "settings.hideIdentityFromSpectators": "Sembunyikan identitasku dari penonton",
+  "settings.hideIdentityFromSpectatorsDesc":
+    "Pada pertandingan berikutnya, penonton melihat nomor pemain, bukan nama dan avatarmu. Lawan tetap melihat identitasmu.",
+  "spectator.audience": "Penonton",
+  "spectator.anonymousCount": "Tamu: {count}",
   "settings.listLiveMatches": "Tampilkan pertandinganku untuk penonton",
   "settings.listLiveMatchesDesc":
     "Pertandingan kasualmu muncul di Pertandingan langsung jika kedua pemain mengaktifkannya. Nonaktif secara bawaan.",

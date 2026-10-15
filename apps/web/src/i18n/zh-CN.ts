@@ -458,6 +458,11 @@ const interfaceMessages = {
   "spectator.winner": "胜者：{name}",
   "spectator.draw": "平局",
   "spectator.back": "返回大厅",
+  "settings.hideIdentityFromSpectators": "向观众隐藏我的身份",
+  "settings.hideIdentityFromSpectatorsDesc":
+    "在之后的对战中，观众将看到玩家编号，而不是你的昵称和头像。对手仍可看到你的身份。",
+  "spectator.audience": "观众",
+  "spectator.anonymousCount": "访客：{count}",
   "settings.listLiveMatches": "将我的对战列入观战列表",
   "settings.listLiveMatchesDesc": "双方玩家都开启后，你的休闲对战会出现在直播对战中。默认关闭。",
   "settings.listLiveMatchesFailed": "无法加载或保存此设置。请重试。",

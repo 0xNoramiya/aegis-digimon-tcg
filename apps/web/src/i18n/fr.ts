@@ -499,6 +499,11 @@ const interfaceMessages = {
   "spectator.winner": "Gagnant : {name}",
   "spectator.draw": "Match nul",
   "spectator.back": "Retour au lobby",
+  "settings.hideIdentityFromSpectators": "Masquer mon identité aux spectateurs",
+  "settings.hideIdentityFromSpectatorsDesc":
+    "Lors des prochaines parties, les spectateurs verront un joueur numéroté au lieu de votre pseudo et avatar. Votre adversaire verra toujours votre identité.",
+  "spectator.audience": "Spectateurs",
+  "spectator.anonymousCount": "Invités : {count}",
   "settings.listLiveMatches": "Lister mes parties pour les spectateurs",
   "settings.listLiveMatchesDesc":
     "Vos parties occasionnelles apparaissent dans Parties en direct quand les deux joueurs l’activent. Désactivé par défaut.",

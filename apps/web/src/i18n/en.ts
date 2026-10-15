@@ -287,6 +287,11 @@ export const en = {
   "spectator.winner": "Winner: {name}",
   "spectator.draw": "Draw",
   "spectator.back": "Back to lobby",
+  "settings.hideIdentityFromSpectators": "Hide my identity from spectators",
+  "settings.hideIdentityFromSpectatorsDesc":
+    "In future matches, spectators see a numbered player label instead of your nickname and avatar. Your opponent still sees your identity.",
+  "spectator.audience": "Spectators",
+  "spectator.anonymousCount": "Guests: {count}",
   "settings.listLiveMatches": "List my matches for spectators",
   "settings.listLiveMatchesDesc":
     "Your casual matches appear in Live matches when both players turn this on. Off by default.",

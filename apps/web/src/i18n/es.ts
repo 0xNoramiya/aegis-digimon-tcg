@@ -289,6 +289,11 @@ export const es: Record<keyof typeof en, string> = {
   "spectator.winner": "Ganador: {name}",
   "spectator.draw": "Empate",
   "spectator.back": "Volver al lobby",
+  "settings.hideIdentityFromSpectators": "Ocultar mi identidad a los espectadores",
+  "settings.hideIdentityFromSpectatorsDesc":
+    "En próximas partidas, los espectadores verán un jugador numerado en lugar de tu apodo y avatar. Tu oponente seguirá viendo tu identidad.",
+  "spectator.audience": "Espectadores",
+  "spectator.anonymousCount": "Visitantes: {count}",
   "settings.listLiveMatches": "Mostrar mis partidas a espectadores",
   "settings.listLiveMatchesDesc":
     "Tus partidas casuales aparecen en Partidas en vivo cuando ambos jugadores lo activan. Desactivado por defecto.",

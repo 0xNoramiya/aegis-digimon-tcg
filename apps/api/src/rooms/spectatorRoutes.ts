@@ -67,7 +67,7 @@ export function installSpectatorRoutes(app: Express, { now = Date.now }: { now?:
   });
 
   app.post("/spectate/join", async (req, res) => {
-    const { roomCode, displayName } = req.body ?? {};
+    const { roomCode, displayName, authTicket } = req.body ?? {};
     if (typeof roomCode !== "string" || !/^[A-Z2-9]{6}$/i.test(roomCode)) {
       res.status(400).json({ error: "A six-character roomCode is required" });
       return;
@@ -92,6 +92,7 @@ export function installSpectatorRoutes(app: Express, { now = Date.now }: { now?:
       // still verify role, code, match lifecycle and observer capacity on the owning process.
       const reservation = await matchMaker.reserveSeatFor(listing, {
         spectator: true,
+        ...(typeof authTicket === "string" ? { authTicket } : {}),
         roomCode: code,
         // Only shown in chat, and the room cleans it up before anyone sees it.
         displayName: typeof displayName === "string" ? displayName.slice(0, 200) : "",
