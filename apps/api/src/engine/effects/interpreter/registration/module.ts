@@ -53,6 +53,7 @@ import type { Action, CardEffect, CompiledCard } from "@aegis/shared";
 import { permanentMatchesFilter } from "../matching/permanent.js";
 import { scaleFactor } from "../scaling.js";
 import { candidatePermanents } from "../targeting/permanents.js";
+import { isDigiXrosPickerReplacement } from "#api/engine/effects/interpreter/actions/isDigiXrosPickerReplacement";
 
 function containsPlayCostReduction(actions: Action[]): boolean {
   return actions.some((action) => {
@@ -252,6 +253,11 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
           : undefined;
       return {
         ...built,
+        ...(effect.cost === undefined &&
+        onlyAction !== undefined &&
+        isDigiXrosPickerReplacement({ cardId, action: onlyAction })
+          ? { canAttemptPlayCostReduction: () => false }
+          : {}),
         ...(sacrifice === undefined
           ? {}
           : {

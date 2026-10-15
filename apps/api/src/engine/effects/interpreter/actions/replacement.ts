@@ -15,7 +15,7 @@ import { candidatePermanents } from "../targeting/permanents.js";
 import { canAttemptDnaDigivolve } from "./dna.js";
 import { playEffectInstances } from "./effectPlayAssembly.js";
 import { getCardDefinition } from "@aegis/shared";
-import { digiXrosZoneExpanderFor } from "../../../digiXros/zoneExpanders.js";
+import { isDigiXrosPickerReplacement } from "#api/engine/effects/interpreter/actions/isDigiXrosPickerReplacement";
 import type { Action, Condition, Cost, Filter, Permanent, ZoneRef } from "@aegis/shared";
 
 function filterReachesBreeding(filter: Filter): boolean {
@@ -110,12 +110,9 @@ export async function runReplacement(
   // These legacy PlaceUnder declarations are executed by the DigiXros picker, which
   // pays the suspension and enforces the material host. Installing a second listener
   // at pay time leaves a no-op replacement that suppresses that picker on later plays.
-  if (
-    event === "wouldBePlayed" &&
-    digiXrosZoneExpanderFor(ctx.source.cardId) !== undefined &&
-    action.actions?.some((nested) => nested.kind === "PlaceUnder" && nested.asDigiXrosMaterial)
-  )
+  if (isDigiXrosPickerReplacement({ cardId: ctx.source.cardId, action })) {
     return;
+  }
   // A self-scoped replacement explicitly restricted to the battle area is inactive while
   // its source is in breeding. Other sourceFilter shapes describe the event subject and must
   // remain deferred to the replacement's appliesTo predicate.
