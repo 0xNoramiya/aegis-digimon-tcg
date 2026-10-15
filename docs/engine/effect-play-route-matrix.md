@@ -221,3 +221,15 @@ The simulator verification check on PR #5526 failed on the catalog fingerprint. 
 None of these changes adds or alters an Assembly, DigiXros, DNA, App Fusion or Burst requirement or provider, or an alternate digivolution requirement. ST10-06 keeps its DNA requirement and changes only its security-search sentence. BT12-037 and BT12-051 keep their DigiXros text and change only the Ryoma Mogami spelling. EX4-072 digivolves from hand while ignoring requirements, which is not one of the matrix mechanics.
 
 The 22 covered cells, eight absence classifications, scenario evidence and rule-source fingerprint remain unchanged. The reviewed catalog fingerprint moves from `d162e1967d88f030cfcfdedee7b00ff885443b279ce2c912b1d182069848fd44` to `abe6ef929a8d8c1e0834af8186f839d891da3816089cc71b94fdb98def69872e`; drift guards remain enforced.
+
+### Catalog review for BT27 and EX14 additions (2026-10-15)
+
+Compared with the reviewed catalog at `68d82b6773`, five cards were added (BT27-035, BT27-070, BT27-103, EX14-012, EX14-054), EX1-068 changed, and no cards were removed. The review includes DUAL `optionEffect` text as well as effect, inherited and security fields.
+
+- BT27-035 adds a manual Burst requirement; neither side instructs Burst digivolution by effect. It is included in all four Burst absence candidate lists.
+- BT27-103 adds a manual DNA requirement and an Option action that DNA digivolves into the resolving card itself. It does not select a result from security or revealed deck cards. Both DNA absence reviews now explicitly include this provider.
+- BT27-070 and EX14-012 add alternate requirements and Arts Digivolve; neither provides DNA, App Fusion or Burst from an excluded zone. EX14-012's security action uses itself as an Option, not as a DNA/App Fusion/Burst result.
+- EX14-054 adds an Assembly requirement and a trash-play effect. These routes are already covered; it adds no excluded digivolution provider.
+- EX1-068 changes only the Ice Wall memory-loss wording, unrelated to these routes.
+
+The App Fusion search still finds seven explicit providers: six target hand and BT24-087 targets trash. The 22 covered cells, eight absence classifications, scenario proof and rules fingerprint remain unchanged. The catalog fingerprint is renewed only after this review; catalog drift remains an error.
