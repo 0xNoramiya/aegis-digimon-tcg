@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "@/i18n/useTranslation";
 
-type Props = { query: string; matchCount: number; onChange: (value: string) => void };
+type Props = { query: string; onChange: (value: string) => void };
 
-export function PlayLogSearchField({ query, matchCount, onChange }: Props) {
+export function PlayLogSearchField({ query, onChange }: Props) {
   const { t } = useTranslation();
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -40,9 +40,6 @@ export function PlayLogSearchField({ query, matchCount, onChange }: Props) {
           ×
         </button>
       ) : null}
-      <span className="play-log__match-count" aria-live="polite">
-        {t("feed.matchCount", { count: matchCount })}
-      </span>
     </div>
   );
 }

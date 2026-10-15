@@ -9,7 +9,7 @@ export function MemoryBadge({ memory }: Props) {
   return (
     <span className="play-log__memory">
       <span>{t("feed.memoryDelta", { delta: formatSignedMemory(memory.delta) })}</span>
-      <span>{t("feed.memoryAfter", { after: formatSignedMemory(memory.after) })}</span>
+      <span>{t("feed.memoryTransition", { before: memory.after - memory.delta, after: memory.after })}</span>
     </span>
   );
 }

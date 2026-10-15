@@ -114,12 +114,12 @@
   display: grid;
   grid-template-columns: 6px minmax(0, 1fr);
   gap: var(--ds-space-2);
-  align-items: start;
+  align-items: first baseline;
 }
 .play-log__line > span {
   width: 6px;
   height: 6px;
-  margin-top: 0.45rem;
+  transform: translateY(-0.2em);
   border-radius: 50%;
   background: var(--ds-text-off);
 }
@@ -166,10 +166,6 @@
   min-width: 2rem;
   min-height: 2rem;
   cursor: pointer;
-}
-.play-log__match-count {
-  color: var(--ds-text-3);
-  font-size: var(--ds-text-xs);
 }
 .play-log__turn-heading {
   position: sticky;
@@ -237,11 +233,6 @@
   border: 1px solid var(--ds-accent);
   border-radius: 999px;
   cursor: pointer;
-}
-@media (max-width: 399px) {
-  .play-log__match-count {
-    display: none;
-  }
 }
 
 /* A named card is a link into its own art, so a player can check what just hit

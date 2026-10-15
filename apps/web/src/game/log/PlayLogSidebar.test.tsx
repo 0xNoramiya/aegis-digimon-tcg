@@ -19,7 +19,7 @@ const turns: LogTurnGroup[] = [
             text: "Alice played Agumon",
             kind: "you",
             cardIds: ["ST1-03"],
-            memory: { delta: -3, after: -1 },
+            memory: { delta: -5, after: -2 },
             turnCount: 1,
             turnSeat: 0,
             phase: Phase.Main,
@@ -51,8 +51,8 @@ describe("searchable chronological play log", () => {
     renderPanel();
     expect(screen.getByRole("heading", { name: "Turn 1 · Alice" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Main Phase" })).toBeTruthy();
-    expect(screen.getByText("-3 Memory")).toBeTruthy();
-    expect(screen.getByText("Memory: -1")).toBeTruthy();
+    expect(screen.getByText("-5 Memory")).toBeTruthy();
+    expect(screen.getByText("Memory: 3 → -2")).toBeTruthy();
   });
 
   it("filters and highlights matching card names", () => {
@@ -60,7 +60,7 @@ describe("searchable chronological play log", () => {
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "agumon" } });
     expect(screen.queryByText("Match started")).toBeNull();
     expect(screen.getByText("Agumon").tagName).toBe("MARK");
-    expect(screen.getByText("1 matches")).toBeTruthy();
+    expect(screen.queryByText("1 matches")).toBeNull();
   });
 
   it("clears search on the first Escape and closes on the second", () => {

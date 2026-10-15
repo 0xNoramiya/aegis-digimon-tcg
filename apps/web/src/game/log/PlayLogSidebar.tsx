@@ -42,7 +42,7 @@ export function PlayLogSidebar({ turns, viewerSeat, playerNames, onClose, onOpen
           {t("common.close")}
         </Button>
       </header>
-      <PlayLogSearchField query={query} matchCount={matchCount} onChange={setQuery} />
+      <PlayLogSearchField query={query} onChange={setQuery} />
       <div className="play-log__list" ref={listRef} onScroll={handleScroll}>
         {matchCount === 0 ? (
           <p className="play-log__empty">{t(filtering ? "feed.noMatches" : "feed.noHistory")}</p>
