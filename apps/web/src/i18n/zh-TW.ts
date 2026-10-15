@@ -1022,7 +1022,7 @@ const interfaceMessages = {
   "game.surrenderConfirmTitle": "投降並結束這場對局？",
   "game.surrenderConfirmBody": "對局將立即結束，並計為落敗。",
   "game.leaveConfirmTitle": "離開這場對局？",
-  "game.leaveConfirmBody": "離開將結束對局並計為落敗。你仍然可以儲存其重播。",
+  "game.leaveConfirmBody": "離開將結束對局並計為落敗。",
   "game.stats.turns": "回合數",
   "game.stats.oppBoard": "對手場面",
   "game.stats.yourSecurity": "你的安防區",

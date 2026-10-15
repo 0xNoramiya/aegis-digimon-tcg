@@ -1090,8 +1090,7 @@ const interfaceMessages = {
   "game.surrenderConfirmTitle": "Abandonner ce match ?",
   "game.surrenderConfirmBody": "Le match se termine maintenant et compte comme une défaite.",
   "game.leaveConfirmTitle": "Quitter ce match ?",
-  "game.leaveConfirmBody":
-    "Partir met fin au match et compte comme une défaite. Vous pouvez toujours enregistrer son replay.",
+  "game.leaveConfirmBody": "Partir met fin au match et compte comme une défaite.",
   "game.stats.turns": "Tours",
   "game.stats.oppBoard": "Terrain adv.",
   "game.stats.yourSecurity": "Votre sécurité",
