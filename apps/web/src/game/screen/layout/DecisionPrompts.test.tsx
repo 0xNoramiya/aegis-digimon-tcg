@@ -398,3 +398,58 @@ it.each(["chooseTargets", "selectCards", "optional"] as const)(
     expect(container.querySelector("strong.decision-overlay__effect-step")?.textContent).toBe(activePassage);
   },
 );
+
+it.each([true, false])("confirms both DNA materials together on board/dialog (%s)", (answerOnBoard) => {
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  function renderPair(picks: string[]) {
+    return (
+      <I18nProvider>
+        <DecisionPrompts
+          decision={{
+            decisionId: "dna-pair",
+            seat: 0,
+            kind: "chooseTargets",
+            promptText: "Choose DNA materials",
+            options: {
+              min: 2,
+              max: 2,
+              candidateInstanceIds: ["alpha-one", "alpha-two", "ouryu"],
+              allowedTargetCombinations: [
+                ["alpha-one", "ouryu"],
+                ["alpha-two", "ouryu"],
+              ],
+            },
+          }}
+          answerOnBoard={answerOnBoard}
+          permanents={[]}
+          sourceCardId="BT27-103"
+          candidates={[
+            { instanceId: "alpha-one", cardId: "BT6-111", zone: "battle" },
+            { instanceId: "alpha-two", cardId: "BT13-075", zone: "battle" },
+            { instanceId: "ouryu", cardId: "BT8-069", zone: "battle" },
+          ]}
+          allowsPick={() => true}
+          picks={picks}
+          min={2}
+          max={2}
+          triggerDetails={[]}
+          opponentSecurityCount={5}
+          onTogglePick={() => {}}
+          onRespond={onRespond}
+          onOpenDialog={() => {}}
+        />
+      </I18nProvider>
+    );
+  }
+  const view = render(renderPair(["alpha-one"]));
+  function getConfirm() {
+    return screen.getByRole("button", { name: /confirm targets/i }) as HTMLButtonElement;
+  }
+  expect(getConfirm().disabled).toBe(true);
+  view.rerender(renderPair(["alpha-one", "alpha-two"]));
+  expect(getConfirm().disabled).toBe(true);
+  view.rerender(renderPair(["ouryu", "alpha-two"]));
+  expect(getConfirm().disabled).toBe(false);
+  fireEvent.click(getConfirm());
+  expect(onRespond).toHaveBeenCalledExactlyOnceWith({ kind: "chooseTargets", instanceIds: ["ouryu", "alpha-two"] });
+});

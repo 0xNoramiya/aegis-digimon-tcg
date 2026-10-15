@@ -60,6 +60,7 @@ export interface SeatScopedDecisionApi {
       max: number;
       visible?: string[];
       maxTotalPlayCost?: number;
+      allowedTargetCombinations?: string[][];
       maxTotalDP?: number;
       promptKey?: "digivolveHost";
     },

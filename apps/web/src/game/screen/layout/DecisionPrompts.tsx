@@ -1,3 +1,4 @@
+import { isAllowedTargetSelection } from "@/game/screen/model/isAllowedTargetSelection";
 import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
 /* The viewer's open decision, in whichever surface answers it.
 
@@ -220,6 +221,12 @@ export function DecisionPrompts({
           max={max}
           pickCount={picks.length}
           canConfirm={
+            ((picks.length === 0 && min === 0) ||
+              isAllowedTargetSelection({
+                allowedTargetCombinations: decision.options?.allowedTargetCombinations,
+                picks,
+                complete: true,
+              })) &&
             picks.length >= min &&
             picks.length <= max &&
             picks.every((id) => allowsPick(id)) &&

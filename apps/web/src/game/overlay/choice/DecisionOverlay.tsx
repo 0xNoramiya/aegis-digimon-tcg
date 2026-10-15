@@ -1,3 +1,4 @@
+import { isAllowedTargetSelection } from "@/game/screen/model/isAllowedTargetSelection";
 import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { printedModalPreamble, type DecisionRequest, type DecisionResponse } from "@aegis/shared";
@@ -152,7 +153,17 @@ export function DecisionOverlay({
     dpOf: (id) => candidates.find((candidate) => candidate.instanceId === id)?.currentDP,
   });
   const withinDPBudget = maxTotalDP === undefined || selectedDP <= maxTotalDP;
-  const canConfirm = picks.length >= min && picks.length <= max && withinPlayCostBudget && withinDPBudget;
+  const canConfirm =
+    picks.length >= min &&
+    picks.length <= max &&
+    withinPlayCostBudget &&
+    withinDPBudget &&
+    ((picks.length === 0 && min === 0) ||
+      isAllowedTargetSelection({
+        allowedTargetCombinations: request.options?.allowedTargetCombinations,
+        picks,
+        complete: true,
+      }));
   // The fate every picked target meets, or nothing when the engine did not
   // project one for the action that raised this prompt.
   const fateBadge = request.options?.targetFate ? pendingFateBadge(request.options.targetFate) : undefined;

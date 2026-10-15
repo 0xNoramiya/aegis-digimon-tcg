@@ -1,3 +1,4 @@
+import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
 import { UsedDeckDialog } from "@/game/UsedDeckDialog";
 import type { DeckListing } from "@/game/decks";
 import { downloadReplay } from "../replays/files";
@@ -1241,6 +1242,7 @@ function GameScreenSession({
     decisionDifferentColors,
     decisionDistinctCardIds,
     decisionDistinctNames,
+    decisionAllowedTargetCombinations,
     decisionMaxTotalPlayCost,
     decisionMaxTotalDP,
     decisionCandidateDP,
@@ -1269,6 +1271,7 @@ function GameScreenSession({
       decisionVisibleCardIds,
       decisionDistinctCardIds,
       decisionDistinctNames,
+      decisionAllowedTargetCombinations,
       decisionMaxTotalPlayCost,
       decisionMaxTotalDP,
       decisionCandidateDP,
@@ -1609,7 +1612,7 @@ function GameScreenSession({
     decisionPickedInstanceIds: dnaChoosing ? new Set(dnaPicks) : fieldDecision ? new Set(picks) : new Set<string>(),
     materialSelectionOrder: dnaChoosing
       ? new Map(dnaChoice.orderedPicks.map((id, index) => [id, index + 1]))
-      : undefined,
+      : getDecisionMaterialSelectionOrder({ allowedTargetCombinations: decisionAllowedTargetCombinations, picks }),
     permanentBursts,
     pendingPermanentIds,
     fateBadges,
