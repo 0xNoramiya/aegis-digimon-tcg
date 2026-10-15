@@ -109097,5 +109097,33 @@
     "maxCountInDeck": 4,
     "imageId": "ST9-15",
     "nameJp": "ヘルマスカレード"
+  },
+  {
+    "cardId": "BT27-070",
+    "nameEn": "Craniamon (X Antibody)",
+    "colors": ["Black"],
+    "level": 6,
+    "playCost": 5,
+    "dp": 13000,
+    "evoCosts": [
+      {
+        "color": "Black",
+        "level": 5,
+        "memoryCost": 4
+      }
+    ],
+    "attributes": ["Vaccine"],
+    "types": ["Holy Warrior", "X Antibody", "Royal Knight"],
+    "rarity": "SR",
+    "dualEffect": "Ultimate Crossblade Dainsleif",
+    "effectText": "[Digivolve] [Craniamon]: Cost 2\n＜Reboot＞ ＜Blocker＞\n[All Turns] When any of your Digimon would leave the battle area, by suspending this Digimon, they don't leave.\n[All Turns] [Once Per Turn] When this Digimon suspends, you may delete all of your opponent's lowest DP Digimon. Then, by trashing 1 [Craniamon] or [X Antibody] from this Digimon's digivolution cards, activate 1 [Main] effect on this card's Option side.",
+    "optionEffect": "[Main] Until your opponent's turn ends, 1 of your Digimon with ＜Blocker＞ isn't affected by their Digimon effects and gets +5000 DP. Then, 1 of your Digimon may unsuspend.\n＜Arts Digivolve＞",
+    "set": "BT27",
+    "kinds": ["Digimon", "Option"],
+    "forms": ["Mega"],
+    "maxCountInDeck": 4,
+    "imageId": "BT27-070",
+    "isDualCard": true,
+    "optionColorRequirements": ["Black"]
   }
 ]
