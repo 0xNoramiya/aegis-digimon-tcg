@@ -418,6 +418,12 @@
   font-weight: 600;
   background: color-mix(in srgb, var(--ds-accent) 32%, transparent);
 }
+.arena-permanent-inspector .card-effect-text mark[data-kind="keyword"] {
+  padding: 0.0625rem 0.4375rem;
+  border-radius: 0.25rem;
+  font-size: 1.125em;
+  line-height: 1.35;
+}
 
 .arena-permanent-inspector__effect--source {
   display: grid;
