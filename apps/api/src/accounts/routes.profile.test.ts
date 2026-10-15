@@ -193,6 +193,11 @@ describe("/account/preferences", () => {
     expect((await putPreferences({ listLiveMatches: false })).status).toBe(200);
     expect(await getPreferences()).toEqual({ listLiveMatches: false });
     expect((await putPreferences({ listLiveMatches: "true" })).status).toBe(400);
+    expect((await putPreferences({ hideIdentityFromSpectators: true })).status).toBe(200);
+    expect(await getPreferences()).toMatchObject({ hideIdentityFromSpectators: true });
+    expect((await putPreferences({ hideIdentityFromSpectators: false })).status).toBe(200);
+    expect(await getPreferences()).toMatchObject({ hideIdentityFromSpectators: false });
+    expect((await putPreferences({ hideIdentityFromSpectators: "true" })).status).toBe(400);
   });
 
   it("stores the deck builder layout", async () => {

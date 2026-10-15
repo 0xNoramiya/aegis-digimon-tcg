@@ -229,7 +229,7 @@ describe("buildStateView", () => {
   it("does NOT unlock the opponent's PlayerState private zones", () => {
     const view = buildStateView(state, 0);
     const opponent = state.players[1]!;
-    expect(view.has(opponent)).toBe(false);
+    expect(view.hasTag(opponent, PRIVATE_VIEW_TAG)).toBe(false);
     expect(view.has(opponent.hand)).toBe(false);
     expect(view.has(opponent.deck)).toBe(false);
     expect(view.has(opponent.security)).toBe(false);
@@ -1306,4 +1306,41 @@ describe("a card that moves out of a viewer's sight", () => {
       }
     });
   });
+});
+
+it("keeps identity and spectator roster private across patches and fresh observer views", () => {
+  const state = makeState();
+  const hidden = state.players[0]!;
+  hidden.displayName = "Hidden Tamer";
+  hidden.avatarId = "hidden-avatar";
+  hidden.sessionId = "hidden-session";
+  hidden.hideIdentityFromSpectators = true;
+  hidden.spectatorNamesJson = '["Mimi"]';
+  state.players[1]!.displayName = "Public Tamer";
+  const spectator = { view: buildStateView(state, undefined), decoder: new Decoder(new GameState()) };
+  const participant = { view: buildStateView(state, 0), decoder: new Decoder(new GameState()) };
+  encodeAllForViews(state, [spectator, participant]);
+  hidden.displayName = "Updated Hidden Tamer";
+  hidden.avatarId = "updated-hidden-avatar";
+  hidden.sessionId = "updated-hidden-session";
+  hidden.spectatorNamesJson = '["Mimi","Joe"]';
+  hidden.anonymousSpectatorCount = 2;
+  state.players[1]!.displayName = "Updated Public Tamer";
+  refreshStateView(spectator.view, state, undefined);
+  refreshStateView(participant.view, state, 0);
+  encodePatchForViews(state, [spectator, participant]);
+  expect(participant.decoder.state.players[0]!.displayName).toBe("Updated Hidden Tamer");
+  expect(participant.decoder.state.players[0]!.spectatorNamesJson).toBe('["Mimi","Joe"]');
+  expect(participant.decoder.state.players[0]!.anonymousSpectatorCount).toBe(2);
+  const reconnected = { view: buildStateView(state, undefined), decoder: new Decoder(new GameState()) };
+  encodeAllForViews(state, [reconnected]);
+  for (const target of [spectator, reconnected]) {
+    expect(target.decoder.state.players[0]!.displayName).toBe("");
+    expect(target.decoder.state.players[0]!.avatarId).toBe("");
+    expect(target.decoder.state.players[0]!.sessionId).toBe("");
+    expect(target.decoder.state.players[0]!.spectatorNamesJson).toBe("[]");
+    expect(target.decoder.state.players[0]!.anonymousSpectatorCount).toBe(0);
+    expect(target.decoder.state.players[1]!.displayName).toBe("Updated Public Tamer");
+    expect(target.decoder.state.players[0]!.hand).toHaveLength(0);
+  }
 });

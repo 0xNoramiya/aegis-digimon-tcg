@@ -75,14 +75,14 @@ export function MatchChatWindow({
       data-moved={position ? true : undefined}
       data-expanded={expanded || undefined}
       style={position ? { left: position.left, top: position.top } : undefined}
-      aria-label={t("chat.title")}
+      aria-label={t(spectating ? "chat.titleSpectators" : "chat.title")}
       onKeyDown={(event) => {
         if (event.key === "Escape") onClose();
       }}
     >
       <header className="match-chat-window__title" {...handleProps}>
         <Icons.MessageSquare size={14} aria-hidden="true" />
-        <h2>{t("chat.title")}</h2>
+        <h2>{t(spectating ? "chat.titleSpectators" : "chat.title")}</h2>
         <button
           ref={settingsButtonRef}
           type="button"

@@ -28,6 +28,15 @@ Collection and deck-builder visibility is independent of battle eligibility:
 all deckable catalog entries remain visible, including preview cards. A deck
 containing beta-only cards needs the checkbox in Quick Match before launch.
 
+## Match chat
+
+The `chat` message transport carries two isolated conversations. The API derives
+membership from the authenticated room role: seated players receive only player
+messages, and spectators receive only spectator messages. Both text and emotes
+follow this rule. Unseated clients receive neither conversation, and payloads
+cannot select a different sender role or audience. Existing moderation and
+per-sender cooldowns apply within each conversation.
+
 ## Live match list
 
 `GET /spectate/live?offset=0&limit=10` returns a `LiveMatchPage`:

@@ -61,7 +61,7 @@ describe("useMatchChat", () => {
     fake.receive({ sender: player(0), message: { kind: "text", text: "hi" } });
     fake.receive({ sender: spectator("someone", 1), message: { kind: "text", text: "go" } });
     fake.receive({ sender: player(1), message: { kind: "emote", emote: "runAway" } });
-    expect(result.current.entries.map((entry) => entry.own)).toEqual([false, true, false, false]);
+    expect(result.current.entries.map((entry) => entry.own)).toEqual([false, true, false]);
     expect(result.current.latest[1]?.message).toEqual({ kind: "emote", emote: "runAway" });
     expect(result.current.latest[0]?.message).toEqual({ kind: "text", text: "hi" });
   });
@@ -71,7 +71,8 @@ describe("useMatchChat", () => {
     const { result } = renderHook(() => useMatchChat({ room: fake.room, viewerSeat: 0, spectating: true }));
     fake.receive({ sender: player(0), message: { kind: "text", text: "player" } });
     fake.receive({ sender: spectator("watcher", 1), message: { kind: "text", text: "me" } });
-    expect(result.current.entries.map((entry) => entry.own)).toEqual([false, true]);
+    expect(result.current.entries.map((entry) => entry.own)).toEqual([true]);
+    expect(result.current.latest).toEqual({});
   });
 
   it("hides the opponent and the spectators separately, but never the viewer's own messages", () => {
@@ -81,7 +82,7 @@ describe("useMatchChat", () => {
     fake.receive({ sender: player(0), message: { kind: "emote", emote: "praise" } });
     fake.receive({ sender: spectator("someone", 1), message: { kind: "text", text: "lol" } });
     act(() => result.current.setMutedOpponent(true));
-    expect(result.current.entries.map((entry) => entry.sender.kind)).toEqual(["player", "spectator"]);
+    expect(result.current.entries.map((entry) => entry.sender.kind)).toEqual(["player"]);
     expect(result.current.latest[1]).toBeUndefined();
     act(() => result.current.setMutedSpectators(true));
     expect(result.current.entries.map((entry) => entry.own)).toEqual([true]);
@@ -125,7 +126,7 @@ describe("useMatchChat", () => {
       expect(playSound).not.toHaveBeenCalled();
       fake.receive({ sender: player(1), message: { kind: "text", text: "hi" } });
       fake.receive({ sender: spectator("someone", 1), message: { kind: "emote", emote: "praise" } });
-      expect(playSound).toHaveBeenCalledTimes(2);
+      expect(playSound).toHaveBeenCalledTimes(1);
       expect(playSound).toHaveBeenCalledWith("prompt");
     });
 
@@ -196,7 +197,7 @@ describe("MatchChatWindow", () => {
 
   it("expands and shrinks from the title bar", () => {
     renderWindow();
-    const chatWindow = screen.getByRole("region", { name: "Chat" });
+    const chatWindow = screen.getByRole("region", { name: "Players’ chat" });
     const expand = screen.getByRole("button", { name: "Expand chat" });
     fireEvent.click(expand);
     expect(chatWindow.hasAttribute("data-expanded")).toBe(true);
@@ -260,7 +261,8 @@ describe("MatchChatWindow", () => {
 
   it("lets a spectator write and mute other spectators, but not mute a player", () => {
     const { chat } = renderWindow({}, true);
-    fireEvent.change(screen.getByRole("textbox", { name: "Message the match" }), { target: { value: "gg" } });
+    expect(screen.getByRole("region", { name: "Spectators’ chat" })).toBeTruthy();
+    fireEvent.change(screen.getByRole("textbox", { name: "Message other spectators" }), { target: { value: "gg" } });
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
     expect(chat.send).toHaveBeenCalledWith({ kind: "text", text: "gg" });
     openSettings();
@@ -273,18 +275,17 @@ describe("MatchChatWindow", () => {
     renderWindow();
     expect(screen.queryByRole("switch")).toBeNull();
     openSettings();
-    expect(screen.getAllByRole("switch")).toHaveLength(3);
+    expect(screen.getAllByRole("switch")).toHaveLength(2);
     fireEvent.pointerDown(screen.getByRole("list"));
     expect(screen.queryByRole("switch")).toBeNull();
   });
 
-  it("gives a player both mute switches and closes from the title bar", () => {
+  it("gives a player only the opponent mute switch and closes from the title bar", () => {
     const { chat, onClose } = renderWindow();
     openSettings();
     fireEvent.click(screen.getByRole("switch", { name: "Mute opponent" }));
     expect(chat.setMutedOpponent).toHaveBeenCalledWith(true);
-    fireEvent.click(screen.getByRole("switch", { name: "Mute spectators" }));
-    expect(chat.setMutedSpectators).toHaveBeenCalledWith(true);
+    expect(screen.queryByRole("switch", { name: "Mute spectators" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Close chat" }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -302,9 +303,9 @@ describe("MatchChatWindow", () => {
 
   it("moves with its title bar and stays inside the viewport", () => {
     renderWindow();
-    const chatWindow = screen.getByRole("region", { name: "Chat" });
+    const chatWindow = screen.getByRole("region", { name: "Players’ chat" });
     vi.spyOn(chatWindow, "getBoundingClientRect").mockReturnValue(new DOMRect(700, 80, 288, 300));
-    const title = screen.getByRole("heading", { name: "Chat" }).parentElement!;
+    const title = screen.getByRole("heading", { name: "Players’ chat" }).parentElement!;
     fireEvent.pointerDown(title, { pointerId: 1, button: 0, clientX: 720, clientY: 90 });
     fireEvent.pointerMove(title, { pointerId: 1, clientX: 420, clientY: 190 });
     expect(chatWindow.style.left).toBe("400px");
