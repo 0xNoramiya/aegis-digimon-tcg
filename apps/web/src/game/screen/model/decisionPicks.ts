@@ -18,6 +18,7 @@ export function decisionAllowsPick(input: {
   decisionMaxTotalPlayCost?: number;
   decisionMaxTotalDP?: number;
   decisionCandidateDP?: ReadonlyMap<string, number>;
+  decisionMax?: number;
 }): boolean {
   const {
     decisionSelectable,
@@ -32,9 +33,11 @@ export function decisionAllowsPick(input: {
     decisionMaxTotalPlayCost,
     decisionMaxTotalDP,
     decisionCandidateDP,
+    decisionMax,
   } = input;
   return (
     decisionSelectable.has(instanceId) &&
+    !multiPickLimitReached({ picks, instanceId, max: decisionMax }) &&
     (picks.includes(instanceId) ||
       isAllowedTargetSelection({
         allowedTargetCombinations: decisionAllowedTargetCombinations,
@@ -61,6 +64,12 @@ export function decisionAllowsPick(input: {
 export function nextDecisionPicks(input: { picks: readonly string[]; instanceId: string; max: number }): string[] {
   const { picks, instanceId, max } = input;
   if (picks.includes(instanceId)) return picks.filter((id) => id !== instanceId);
-  const keep = max > 1 ? picks.slice(-(max - 1)) : [];
-  return [...keep, instanceId];
+  if (max <= 1) return [instanceId];
+  if (multiPickLimitReached({ picks, instanceId, max })) return [...picks];
+  return [...picks, instanceId];
+}
+
+function multiPickLimitReached(input: { picks: readonly string[]; instanceId: string; max: number | undefined }) {
+  const { picks, instanceId, max } = input;
+  return max !== undefined && max > 1 && !picks.includes(instanceId) && picks.length >= max;
 }

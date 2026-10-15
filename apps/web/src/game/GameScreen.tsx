@@ -1275,6 +1275,7 @@ function GameScreenSession({
       decisionMaxTotalPlayCost,
       decisionMaxTotalDP,
       decisionCandidateDP,
+      decisionMax,
     });
 
   const decisionAllowsPermanent = (perm: Permanent) => {
