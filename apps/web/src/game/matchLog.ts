@@ -249,7 +249,7 @@ export function describeEvent({
         !event.strippedStackTops &&
         !event.trashedSources &&
         !event.returnedPermanents &&
-        !("fromHost" in event)
+        !event.fromHost
       ) {
         return null;
       }
@@ -275,7 +275,7 @@ export function describeEvent({
           text: t(key, {
             player: seatNames[permanent.seat],
             card: cardName(permanent.cardId),
-            to: describeZone({ zone: event.to, seat: event.seat ?? permanent.seat, seatNames, t }),
+            to: describeZone({ zone: event.to, seat: event.seat ?? permanent.seat, viewerSeat, seatNames, t }),
           }),
           kind: mine(permanent.seat),
           actorSeat: permanent.seat,
@@ -323,15 +323,23 @@ export function describeEvent({
           cardIds: movedIds,
         };
       }
-      const from = describeZone({ zone: event.from, seatNames, t });
-      const to = describeZone({ zone: event.to, seat: event.seat, seatNames, t });
+      const from = describeZone({
+        zone: event.from,
+        seat: event.fromSeat,
+        hostCardId: event.fromHost?.hostCardId,
+        viewerSeat,
+        seatNames,
+        t,
+      });
+      const to = describeZone({ zone: event.to, seat: event.seat, viewerSeat, seatNames, t });
 
+      const hostCardIds = event.fromHost ? [event.fromHost.hostCardId] : [];
       const movedCardId = event.instanceIds.length === 1 ? identities.get(event.instanceIds[0]!) : undefined;
       if (movedCardId !== undefined) {
         return {
           text: t("log.cardMovedNamed", { card: cardName(movedCardId), from, to }),
           kind: "sys",
-          cardIds: [movedCardId],
+          cardIds: [...new Set([movedCardId, ...hostCardIds])],
         };
       }
       return {
@@ -341,6 +349,7 @@ export function describeEvent({
           to,
         }),
         kind: "sys",
+        cardIds: hostCardIds,
       };
     }
     case "gameOver": {

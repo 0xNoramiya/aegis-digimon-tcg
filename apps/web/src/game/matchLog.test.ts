@@ -157,3 +157,49 @@ describe("readable match history", () => {
     );
   });
 });
+
+describe("movement origin narration", () => {
+  it("names the origin owner independently of the destination owner", () => {
+    const log = buildMatchLog(
+      [{ kind: "cardsMoved", instanceIds: ["card"], from: "trash", fromSeat: 0, to: "hand", seat: 1 }],
+      0,
+      new Map([["card", "ST1-03"]]),
+      translator("en"),
+      30,
+      { 0: "Alice", 1: "Bob" },
+    );
+    expect(log[0]?.text).toContain("Alice's trash");
+    expect(log[0]?.text).toContain("Bob's hand");
+  });
+
+  it("names and links the original host even after its top changes", () => {
+    const log = buildMatchLog(
+      [
+        {
+          kind: "cardsMoved",
+          instanceIds: ["source"],
+          from: "digivolutionCards",
+          fromSeat: 0,
+          fromHost: { permanentId: "host", hostCardId: "ST1-07" },
+          to: "trash",
+        },
+      ],
+      0,
+      new Map([["source", "ST1-03"]]),
+      translator("en"),
+    );
+    expect(log[0]?.text).toContain("under Greymon");
+    expect(log[0]?.cardIds).toEqual(["ST1-03", "ST1-07"]);
+  });
+
+  it("uses a grammatical participant fallback for an owned zone", () => {
+    const log = buildMatchLog(
+      [{ kind: "cardsMoved", instanceIds: ["card"], from: "trash", fromSeat: 0, to: "hand", seat: 0 }],
+      0,
+      new Map(),
+      translator("en"),
+    );
+    expect(log[0]?.text).toContain("your trash");
+    expect(log[0]?.text).toContain("your hand");
+  });
+});

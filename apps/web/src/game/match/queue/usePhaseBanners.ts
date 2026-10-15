@@ -1,3 +1,4 @@
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { useLayoutEffect, useMemo, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
 import type { GameState, Seat, ServerEvent } from "@aegis/shared";
 import type { AnimationQueue, AnimationStep, AnimationStepContext } from "../../animationQueue";
@@ -74,7 +75,10 @@ export function releaseHandMoves({
     if ("stateVersion" in move && typeof move.stateVersion === "number" && move.stateVersion < held.stateVersion)
       continue;
     for (const instanceId of move.instanceIds) {
-      const seat = move.seat ?? heldSeats.get(instanceId) ?? liveSeats.get(instanceId);
+      const seat =
+        (move.to === "hand" ? move.seat : (move.fromSeat ?? move.seat)) ??
+        heldSeats.get(instanceId) ??
+        liveSeats.get(instanceId);
       if (seat === undefined) continue;
       const player = players[seat];
       if (!player) continue;
@@ -89,7 +93,7 @@ export function releaseHandMoves({
       } else {
         // An effect play names no origin ("various"): only a card the held hand still shows
         // left the hand. A named origin other than the hand never touches it.
-        if (move.from !== "hand" && (move.from !== "various" || !inHeldHand)) continue;
+        if (move.from !== "hand" && (move.from !== CardMovePosition.VARIOUS.value || !inHeldHand)) continue;
         if (!inHeldHand && handFullyVisible) continue;
         player.hand = player.hand.filter((card) => card.instanceId !== instanceId);
         player.handCount = Math.max(0, player.handCount - 1);

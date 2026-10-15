@@ -1493,6 +1493,7 @@ const interfaceMessages = {
   "log.optionResolved": "{card} selesai diselesaikan",
   "log.suspended": "{card} disuspend",
   "log.unsuspended": "{card} diunsuspend",
+  "log.zone.yours": "area Anda: {zone}",
   "log.zone.owned": "{zone} milik {player}",
   "log.zone.under": "di bawah {card}",
   "log.zone.digivolutionCards": "kartu digivolution",

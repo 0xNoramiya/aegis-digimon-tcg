@@ -1306,6 +1306,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "log.optionResolved": "{card} terminou de resolver",
   "log.suspended": "{card} foi suspenso",
   "log.unsuspended": "{card} foi reativado",
+  "log.zone.yours": "sua área: {zone}",
   "log.zone.owned": "{zone} de {player}",
   "log.zone.under": "debaixo de {card}",
   "log.zone.digivolutionCards": "cartas de digievolução",

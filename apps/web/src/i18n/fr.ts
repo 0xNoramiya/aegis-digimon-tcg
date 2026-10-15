@@ -1514,6 +1514,7 @@ const interfaceMessages = {
   "log.optionResolved": "La résolution de {card} est terminée",
   "log.suspended": "{card} a été suspendu",
   "log.unsuspended": "{card} a été réactivé",
+  "log.zone.yours": "votre zone : {zone}",
   "log.zone.owned": "{zone} de {player}",
   "log.zone.under": "sous {card}",
   "log.zone.digivolutionCards": "cartes de digivolution",

@@ -1426,6 +1426,7 @@ const interfaceMessages = {
   "log.optionResolved": "{card}处理完毕",
   "log.suspended": "{card}休眠",
   "log.unsuspended": "{card}激活",
+  "log.zone.yours": "你的{zone}",
   "log.zone.owned": "{player}的{zone}",
   "log.zone.under": "{card}下方",
   "log.zone.digivolutionCards": "进化源",

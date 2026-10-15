@@ -1483,6 +1483,7 @@ const interfaceMessages = {
   "log.optionResolved": "{card}の処理が完了した",
   "log.suspended": "{card}がレストした",
   "log.unsuspended": "{card}がアクティブになった",
+  "log.zone.yours": "あなたの{zone}",
   "log.zone.owned": "{player}の{zone}",
   "log.zone.under": "{card}の下",
   "log.zone.digivolutionCards": "進化元",

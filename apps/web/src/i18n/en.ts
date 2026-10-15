@@ -1302,6 +1302,7 @@ export const en = {
   "log.optionResolved": "{card} finished resolving",
   "log.suspended": "{card} suspended",
   "log.unsuspended": "{card} unsuspended",
+  "log.zone.yours": "your {zone}",
   "log.zone.owned": "{player}'s {zone}",
   "log.zone.under": "under {card}",
   "log.zone.digivolutionCards": "digivolution cards",

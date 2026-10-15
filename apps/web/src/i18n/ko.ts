@@ -1466,6 +1466,7 @@ const interfaceMessages = {
   "log.optionResolved": "{card}의 처리가 완료되었습니다",
   "log.suspended": "{card}가 레스트했습니다",
   "log.unsuspended": "{card}가 액티브가 되었습니다",
+  "log.zone.yours": "자신의 {zone}",
   "log.zone.owned": "{player}의 {zone}",
   "log.zone.under": "{card} 아래",
   "log.zone.digivolutionCards": "진화원",

@@ -1278,6 +1278,7 @@ export const es: Record<keyof typeof en, string> = {
   "log.optionResolved": "{card} terminó de resolverse",
   "log.suspended": "{card} se suspendió",
   "log.unsuspended": "{card} se reactivó",
+  "log.zone.yours": "tu zona: {zone}",
   "log.zone.owned": "{zone} de {player}",
   "log.zone.under": "debajo de {card}",
   "log.zone.digivolutionCards": "cartas de digievolución",

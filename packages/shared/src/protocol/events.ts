@@ -1,3 +1,4 @@
+import { CardMovePosition } from "#shared/protocol/CardMovePosition";
 import type { Seat } from "../schema/enums.js";
 import type { AttackTarget } from "./intents.js";
 
@@ -465,6 +466,8 @@ export type ServerEvent =
       optionUsed?: true;
       instanceIds: string[];
       from: string;
+      fromSeat?: Seat;
+      fromHost?: { permanentId: string; hostCardId: string };
       to: string;
       /**
        * Card identities, in `instanceIds` order — present only when the movement
@@ -629,7 +632,7 @@ export interface FinalRevealPlayer {
  * would push a non-array through every one of those switches. `cardsMoved.to` is a free-form
  * display label that no rules code branches on, which is why the position is safe to name here.
  */
-export const DECK_BOTTOM = "deckBottom";
+export const DECK_BOTTOM = CardMovePosition.DECK_BOTTOM.value;
 
 /**
  * The ServerEvent kinds answered by a dedicated intent (declareBlock/
