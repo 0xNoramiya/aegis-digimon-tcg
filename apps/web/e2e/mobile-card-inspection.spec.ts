@@ -1,3 +1,5 @@
+import { getCardDefinition } from "@aegis/shared/cards/registry";
+import { normalizeKeywordBrackets } from "@/game/keywordReminders";
 import { openFixturePage, ScenarioPage } from "./scenario-page";
 import fixtureMobileInspection from "../../api/src/engine/scenarios/mobile-inspection.fixture";
 
@@ -169,6 +171,8 @@ test.use({
 
 for (const viewport of [
   { width: 2048, height: 1191 },
+  { width: 1366, height: 768 },
+  { width: 1920, height: 1080 },
   { width: 720, height: 700 },
   { width: 390, height: 844 },
 ]) {
@@ -182,7 +186,27 @@ for (const viewport of [
       await arena.hold(arena.alphamon());
       const inspector = page.getByRole("dialog", { name: "Alphamon", exact: true });
       await expect(inspector).toContainText("When any of your [Chronicle] trait Digimon would leave");
-      await inspector.getByRole("button", { name: "Enlarge card", exact: true }).tap();
+      if (viewport.width >= 768) {
+        const sources = inspector.getByRole("region", { name: "4 sources" });
+        await expect(sources).toBeInViewport();
+        await expect(sources.getByRole("button", { name: "Open Grademon" })).toBeInViewport();
+        expect(await sources.evaluate((element) => element.scrollTop)).toBe(0);
+        await expect
+          .poll(() => sources.evaluate((element) => element.scrollHeight - element.clientHeight))
+          .toBeLessThanOrEqual(1);
+        await expect(sources.getByRole("button", { name: "Open Bebydomon" })).toBeInViewport();
+      } else {
+        const strip = inspector.getByRole("group", { name: "4 sources" });
+        const second = strip.getByRole("button").nth(1);
+        await second.tap();
+        await expect(second).toHaveAttribute("aria-pressed", "true");
+        const selected = inspector.locator(".arena-permanent-inspector__strip-detail");
+        await expect(selected).toBeInViewport();
+        await expect(selected).toContainText(
+          normalizeKeywordBrackets(getCardDefinition("EX13-055")!.inheritedEffectText!),
+        );
+      }
+      await inspector.locator(".arena-permanent-inspector__art").tap();
       await expect(page.locator(".card-zoom")).toBeVisible();
       await page.locator(".card-zoom").getByRole("button", { name: "Close", exact: true }).tap();
       await inspector.getByRole("button", { name: "Close", exact: true }).tap();
