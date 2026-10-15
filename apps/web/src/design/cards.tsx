@@ -62,11 +62,13 @@ export function CardBack({
   label,
   useSelectedSleeve = true,
   egg = false,
+  selected = false,
 }: {
   width?: number;
   label?: number | string;
   useSelectedSleeve?: boolean;
   egg?: boolean;
+  selected?: boolean;
 }) {
   const h = Math.round(width * 1.4);
   const selectedSleeve = useCardSleeve();
@@ -86,6 +88,10 @@ export function CardBack({
         borderRadius: Math.max(6, width * 0.07),
         background: sleeve.src ? "#0b1020" : "linear-gradient(150deg, var(--ds-fill), var(--ds-sheet))",
         border: "1px solid var(--ds-line-strong)",
+        boxShadow: selected
+          ? "0 0 0 2px var(--card-highlight-rim, var(--ds-rim-attention)), 0 0 18px var(--card-highlight-glow, color-mix(in srgb, var(--ds-rim-attention) 40%, transparent)), var(--ds-shadow-raise)"
+          : undefined,
+        transition: "box-shadow 150ms",
         display: "grid",
         placeItems: "center",
         position: "relative",
@@ -168,7 +174,7 @@ export function CardFull({
   useEffect(() => setUrlIndex(0), [artId, cardId, urls]);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const zoomEnabled = useHoverZoomEnabled();
-  if (!def) return <CardBack width={width} label={cardId} />;
+  if (!def) return <CardBack width={width} label={cardId} selected={selected} />;
   const c = paletteFor(def.colors);
   const key = colorKey(def.colors[0]);
   const h = Math.round(width * 1.4);
@@ -472,7 +478,7 @@ export function CardMini({
   useEffect(() => setUrlIndex(0), [artId, cardId, urls]);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const zoomEnabled = useHoverZoomEnabled();
-  if (faceDown || !def) return <CardBack width={width} />;
+  if (faceDown || !def) return <CardBack width={width} selected={selected} />;
   const c = paletteFor(def.colors);
   const key = colorKey(def.colors[0]);
   const h = Math.round(width * 1.4);

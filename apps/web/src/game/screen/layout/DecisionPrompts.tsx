@@ -1,3 +1,4 @@
+import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
 /* The viewer's open decision, in whichever surface answers it.
 
    Field targets use the physical cards and a confirmation rail. Selections from other
@@ -85,15 +86,20 @@ export function DecisionPrompts({
   sourceHost?: SourceHostStep;
 }) {
   const { t } = useTranslation();
-  const clause = sourceCardId
+  const clauseText = sourceCardId
     ? playerFacingEffectClause({
         cardId: decision?.options?.effectTextCardId ?? sourceCardId,
         timing: decision?.options?.timing,
         description: decision?.options?.effectText,
-        effectTextPart: decision?.options?.effectTextPart,
+        effectTextPart: decision?.options?.effectTextEmphasis
+          ? (decision.options.effectText ?? decision.options.effectTextPart)
+          : decision?.options?.effectTextPart,
         isInherited: decision?.options?.isInherited,
       })
     : undefined;
+  const clause = clauseText ? (
+    <EffectStepText text={clauseText} emphasis={decision?.options?.effectTextEmphasis} />
+  ) : undefined;
   const attack = attackTargetPrompt(decision, permanents);
   const attackClause = (() => {
     if (attack?.attackerCardId === undefined) return undefined;

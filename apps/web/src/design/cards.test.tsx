@@ -30,3 +30,15 @@ describe("CardMini board DP", () => {
     expect(screen.getByText("3K").style.fontSize).toBe("calc(10px * var(--ds-text-scale, 1))");
   });
 });
+
+it("keeps a selected face-down mini card concealed while showing the selection rim", () => {
+  const { container, rerender } = render(<CardMini cardId="ST1-02" faceDown selected zoomOnHover={false} />);
+  const back = container.firstElementChild;
+  expect(back).toBeInstanceOf(HTMLElement);
+  expect(back?.getAttribute("style")).toContain("--ds-rim-attention");
+  expect(screen.queryByTitle("Biyomon")).toBeNull();
+  const concealedMarkup = back!.innerHTML;
+  rerender(<CardMini cardId="ST1-02" faceDown zoomOnHover={false} />);
+  expect(back?.getAttribute("style")).not.toContain("--ds-rim-attention");
+  expect(back!.innerHTML).toBe(concealedMarkup);
+});
