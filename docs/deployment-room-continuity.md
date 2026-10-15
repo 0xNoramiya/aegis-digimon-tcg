@@ -64,6 +64,18 @@ copying assets, so no served directory holds them. The gateway also refuses any 
 path. Maintenance removes a revision's maps when it removes the release. See
 [client errors](../internal-docs/ai/client-errors.md) for symbolication.
 
+## Page load limit
+
+The gateway answers `429` with `Retry-After` when one client loads more than 20 pages in a
+10-second window. It counts only web app navigations (`Sec-Fetch-Dest: document`), never
+assets or API calls. The client is the first `X-Forwarded-For` address, which the edge Caddy
+sets from the Cloudflare client IP.
+
+Real players load at most 3 pages per 10 seconds from one address. The limit stops embedded
+browsers that reload a page in a loop, such as one seen on October 15, 2026 at about 55 loads
+per 10 seconds. Cloudflare's single Free plan rate limiting rule protects `/matchmake/` and
+`/auth/` and cannot also count page loads without lowering that limit.
+
 ## Card images
 
 The gateway serves card images from `/opt/aegis-rollout/assets/card-images`, at `/assets/card-images/<id>.webp`. The upstream card app (TakaOtaku/Digimon-Card-App) is the source. It keeps its images in a public bucket at `web-garage.takaotaku.de`. Commit `9f666f1` of the upstream repository is a second source.

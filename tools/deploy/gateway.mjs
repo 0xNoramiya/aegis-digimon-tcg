@@ -104,6 +104,47 @@ function json(response, status, value) {
   response.end(JSON.stringify(value));
 }
 
+const PAGE_LOAD_LIMIT = { requests: 20, windowMs: 10_000 };
+
+function getClientAddress(request) {
+  const forwarded = request.headers["x-forwarded-for"];
+  if (typeof forwarded === "string" && forwarded.trim()) {
+    return forwarded.split(",")[0].trim();
+  }
+  return request.socket.remoteAddress ?? "unknown";
+}
+
+function createPageLoadLimiter({ requests, windowMs, now }) {
+  let windowStart = now();
+  let counts = new Map();
+  return function getPageLoadRetrySeconds(request) {
+    if (request.headers["sec-fetch-dest"] !== "document") {
+      return 0;
+    }
+    const time = now();
+    if (time - windowStart >= windowMs) {
+      windowStart = time;
+      counts = new Map();
+    }
+    const address = getClientAddress(request);
+    const count = (counts.get(address) ?? 0) + 1;
+    counts.set(address, count);
+    if (count <= requests) {
+      return 0;
+    }
+    return Math.max(1, Math.ceil((windowStart + windowMs - time) / 1000));
+  };
+}
+
+function rejectPageLoad(response, retrySeconds) {
+  response.writeHead(429, {
+    "content-type": "text/plain; charset=utf-8",
+    "cache-control": "no-store",
+    "retry-after": String(retrySeconds),
+  });
+  response.end("Too many page loads. Wait a few seconds and try again.");
+}
+
 export function isApiPath(path, headers) {
   return (
     /^\/(health|ready|matchmake|auth|account|room|bot|bug-reports)(\/|$)/.test(path) ||
@@ -112,7 +153,13 @@ export function isApiPath(path, headers) {
 }
 
 /** Config stays loaded while only the on-disk routing decision changes. */
-export function createGateway({ state, upstreamFor = (slot, index) => `http://aegis-${slot}-api${index}:2567` }) {
+export function createGateway({
+  state,
+  upstreamFor = (slot, index) => `http://aegis-${slot}-api${index}:2567`,
+  pageLoadLimit = PAGE_LOAD_LIMIT,
+  now = Date.now,
+}) {
+  const getPageLoadRetrySeconds = createPageLoadLimiter({ ...pageLoadLimit, now });
   let roundRobin = 0;
   const healthy = new Map();
   const healthRevisions = new Map();
@@ -334,7 +381,13 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
           error: "Game server unavailable for this request",
         });
       }
-      if (!destination) return staticFile(request, response, manifest);
+      if (!destination) {
+        const retrySeconds = getPageLoadRetrySeconds(request);
+        if (retrySeconds) {
+          return rejectPageLoad(response, retrySeconds);
+        }
+        return staticFile(request, response, manifest);
+      }
       proxyHttp(request, response, destination);
     } catch {
       if (!response.headersSent) json(response, 503, { error: "Deployment routing unavailable" });
