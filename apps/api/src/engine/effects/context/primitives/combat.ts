@@ -9,6 +9,7 @@ export interface AttackDecisionProvenance {
   effectText?: string;
   effectTextCardId?: string;
   effectTextPart?: string;
+  effectTextEmphasis?: string;
   isInherited?: boolean;
 }
 

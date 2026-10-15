@@ -306,3 +306,12 @@ describe("NoticeStack stack strip", () => {
     expect(art?.getAttribute("src")).not.toContain("EX13-063");
   });
 });
+
+it.each([
+  "[When Digivolving] Delete up to 10000 DP total worth of your opponent's Digimon. Then, this Digimon may attack.",
+  "[When Digivolving] [When Attacking] [Once Per Turn] Delete 1 of your opponent's lowest DP Digimon.",
+  "[When Digivolving] ＜Blitz＞",
+])("keeps Gallantmon's separate pending effects distinct: %s", (description) => {
+  renderNotice(notice({ body: { variant: "effect", cardId: "AD1-008", timing: "WhenDigivolving", description } }));
+  expect(document.querySelector(".match-notice__text")?.textContent).toBe(description);
+});

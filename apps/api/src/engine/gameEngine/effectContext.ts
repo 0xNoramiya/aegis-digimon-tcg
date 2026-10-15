@@ -908,6 +908,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
             timing: provenance?.timing,
             effectText: provenance?.effectText,
             effectTextPart: provenance?.effectTextPart,
+            effectTextEmphasis: provenance?.effectTextEmphasis,
             isInherited: provenance?.isInherited,
             selectionContext: provenance?.selectionContext,
             visibleInstanceIds: provenance?.visibleInstanceIds,

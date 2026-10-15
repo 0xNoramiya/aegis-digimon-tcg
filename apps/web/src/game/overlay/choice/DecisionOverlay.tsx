@@ -1,3 +1,4 @@
+import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { printedModalPreamble, type DecisionRequest, type DecisionResponse } from "@aegis/shared";
 import { CardMini } from "../../../design/cards";
@@ -255,20 +256,9 @@ export function DecisionOverlay({
   // Keep that context in the body while all activations share the same heading.
   const displayedEffectText = sourceEffectText ?? (isOptional ? specificPrompt : undefined);
   const emphasis = request.options?.effectTextEmphasis;
-  const emphasisStart =
-    emphasis && displayedEffectText ? displayedEffectText.toLowerCase().indexOf(emphasis.toLowerCase()) : -1;
-  const renderedEffectText =
-    emphasis && displayedEffectText && emphasisStart >= 0 ? (
-      <>
-        {displayedEffectText.slice(0, emphasisStart)}
-        <strong className="decision-overlay__effect-step">
-          {displayedEffectText.slice(emphasisStart, emphasisStart + emphasis.length)}
-        </strong>
-        {displayedEffectText.slice(emphasisStart + emphasis.length)}
-      </>
-    ) : (
-      displayedEffectText
-    );
+  const renderedEffectText = displayedEffectText ? (
+    <EffectStepText text={displayedEffectText} emphasis={emphasis} />
+  ) : undefined;
 
   const boardReturn = isViewingBoard ? (
     <DecisionBoardReturn returnControlRef={returnControlRef} onReturn={() => setIsViewingBoard(false)} />
