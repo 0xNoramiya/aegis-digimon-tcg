@@ -106020,11 +106020,13 @@
         "sharedUseKey": "ir-shared-0",
         "actions": [
           {
+            "effectTextPart": "[On Play] [When Digivolving] [When Attacking] [Once Per Turn] You may suspend 1 of your opponent's Digimon or Tamers.",
             "kind": "Suspend",
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon", "Tamer"] }, "count": 1 },
             "optional": true
           },
           {
+            "effectTextPart": "Then, 1 of their Digimon or Tamers can't unsuspend until their turn ends.",
             "kind": "Restrict",
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon", "Tamer"] }, "count": 1 },
             "restriction": "unsuspend",
@@ -106038,11 +106040,13 @@
         "sharedUseKey": "ir-shared-0",
         "actions": [
           {
+            "effectTextPart": "[On Play] [When Digivolving] [When Attacking] [Once Per Turn] You may suspend 1 of your opponent's Digimon or Tamers.",
             "kind": "Suspend",
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon", "Tamer"] }, "count": 1 },
             "optional": true
           },
           {
+            "effectTextPart": "Then, 1 of their Digimon or Tamers can't unsuspend until their turn ends.",
             "kind": "Restrict",
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon", "Tamer"] }, "count": 1 },
             "restriction": "unsuspend",
@@ -106056,11 +106060,13 @@
         "sharedUseKey": "ir-shared-0",
         "actions": [
           {
+            "effectTextPart": "[On Play] [When Digivolving] [When Attacking] [Once Per Turn] You may suspend 1 of your opponent's Digimon or Tamers.",
             "kind": "Suspend",
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon", "Tamer"] }, "count": 1 },
             "optional": true
           },
           {
+            "effectTextPart": "Then, 1 of their Digimon or Tamers can't unsuspend until their turn ends.",
             "kind": "Restrict",
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon", "Tamer"] }, "count": 1 },
             "restriction": "unsuspend",
@@ -106085,6 +106091,7 @@
                 "condition": { "kind": "triggerPlayedOrDigivolvedByEffect" }
               },
               {
+                "effectTextPart": "Then, this Digimon may battle 1 of your opponent's Digimon.",
                 "kind": "Battle",
                 "attacker": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
                 "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
@@ -106106,6 +106113,7 @@
                 "condition": { "kind": "triggerPlayedOrDigivolvedByEffect" }
               },
               {
+                "effectTextPart": "Then, this Digimon may battle 1 of your opponent's Digimon.",
                 "kind": "Battle",
                 "attacker": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
                 "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
