@@ -1,4 +1,64 @@
 {
+  "releases.1.26.3-beta.summary": {
+    "en": "Live match browsing, optional deck sharing, more card artwork, and fixes for Option costs and rollback stability.",
+    "pt-BR": "Lista de partidas ao vivo, compartilhamento opcional de decks, mais artes de cartas e correções nos custos de Opções e na estabilidade do rollback.",
+    "es": "Lista de partidas en vivo, intercambio opcional de mazos, más ilustraciones y correcciones en los costes de Opciones y la estabilidad al deshacer jugadas.",
+    "it": "Elenco delle partite in diretta, condivisione facoltativa dei mazzi, nuove illustrazioni e correzioni ai costi delle Opzioni e alla stabilità del ripristino delle mosse."
+  },
+  "releases.1.26.3-beta.feature.spectating": {
+    "en": "Browse live casual matches when both players opt into public listing, or watch a match by code.",
+    "pt-BR": "Veja partidas casuais ao vivo quando ambos os jogadores ativam a listagem pública, ou assista usando um código.",
+    "es": "Explora partidas casuales en vivo cuando ambos jugadores activan la lista pública, o mira una partida mediante un código.",
+    "it": "Sfoglia le partite casuali in diretta quando entrambi i giocatori attivano la visibilità pubblica, oppure guarda una partita tramite codice."
+  },
+  "releases.1.26.3-beta.feature.deckSharing": {
+    "en": "View and copy your opponent’s deck after a match when they allow deck sharing. Account deck sharing is enabled by default and can be disabled in Settings.",
+    "pt-BR": "Veja e copie o deck do oponente após a partida quando ele permite compartilhar. O compartilhamento da conta vem ativado e pode ser desativado nas Configurações.",
+    "es": "Consulta y copia el mazo del rival tras la partida si permite compartirlo. La opción está activada por defecto y se puede desactivar en Ajustes.",
+    "it": "Visualizza e copia il mazzo avversario dopo la partita se il giocatore ne consente la condivisione. La condivisione è attiva per impostazione predefinita e può essere disattivata nelle Impostazioni."
+  },
+  "releases.1.26.3-beta.feature.artwork": {
+    "en": "Choose Korean and Chinese card printings, 65 additional official alternate arts, and custom token artwork stored on your device.",
+    "pt-BR": "Escolha impressões coreanas e chinesas, 65 artes alternativas oficiais adicionais e artes personalizadas para tokens salvas no seu dispositivo.",
+    "es": "Elige impresiones coreanas y chinas, 65 ilustraciones alternativas oficiales adicionales e imágenes personalizadas para fichas guardadas en tu dispositivo.",
+    "it": "Scegli stampe coreane e cinesi, 65 illustrazioni alternative ufficiali aggiuntive e immagini personalizzate per i token salvate sul tuo dispositivo."
+  },
+  "releases.1.26.3-beta.feature.effectReading": {
+    "en": "Enable the Gameplay setting to hold each effect clause in bot matches until you press OK or Enter.",
+    "pt-BR": "Ative a opção de Jogabilidade para manter cada trecho de efeito na tela em partidas contra bots até pressionar OK ou Enter.",
+    "es": "Activa la opción de Juego para mantener cada parte del efecto en pantalla contra bots hasta pulsar OK o Enter.",
+    "it": "Attiva l’opzione di Gioco per mantenere ogni parte dell’effetto sullo schermo nelle partite contro i bot finché non premi OK o Invio."
+  },
+  "releases.1.26.3-beta.feature.profileStats": {
+    "en": "Control match stats visibility directly from your profile. Stats are shown by default unless you turn them off.",
+    "pt-BR": "Controle a visibilidade das estatísticas de partidas diretamente no perfil. Elas são exibidas por padrão até você desativá-las.",
+    "es": "Controla la visibilidad de las estadísticas de partidas desde tu perfil. Se muestran por defecto hasta que las desactives.",
+    "it": "Controlla la visibilità delle statistiche delle partite direttamente dal profilo. Sono visibili per impostazione predefinita finché non le disattivi."
+  },
+  "releases.1.26.3-beta.fix.dualOptions": {
+    "en": "Revealed DUAL cards used as Options now resolve as Options instead of being played as Digimon.",
+    "pt-BR": "Cartas DUAL reveladas usadas como Opções agora resolvem como Opções, em vez de entrarem como Digimon.",
+    "es": "Las cartas DUAL reveladas usadas como Opciones ahora se resuelven como Opciones en lugar de jugarse como Digimon.",
+    "it": "Le carte DUAL rivelate e usate come Opzioni ora si risolvono come Opzioni invece di essere giocate come Digimon."
+  },
+  "releases.1.26.3-beta.fix.costReduction": {
+    "en": "Cost reductions from Armalizamon, Togemon, and Parasaurmon stop applying when their source becomes a digivolution card.",
+    "pt-BR": "Reduções de custo de Armalizamon, Togemon e Parasaurmon deixam de valer quando sua fonte se torna uma carta de digivolução.",
+    "es": "Las reducciones de coste de Armalizamon, Togemon y Parasaurmon dejan de aplicarse cuando su fuente pasa a ser una carta de digievolución.",
+    "it": "Le riduzioni di costo di Armalizamon, Togemon e Parasaurmon cessano quando la fonte diventa una carta di digievoluzione."
+  },
+  "releases.1.26.3-beta.fix.rollback": {
+    "en": "Fixed a server crash after rollback and restored visibility updates for cards added to permanents already on the field.",
+    "pt-BR": "Corrigida uma falha do servidor após rollback e restauradas as atualizações de visibilidade de cartas adicionadas a permanentes já em campo.",
+    "es": "Corregido un fallo del servidor al deshacer jugadas y restauradas las actualizaciones de visibilidad de cartas añadidas a permanentes que ya están en el campo.",
+    "it": "Corretto un arresto del server dopo il ripristino di una mossa e ripristinati gli aggiornamenti di visibilità delle carte aggiunte a permanenti già in campo."
+  },
+  "releases.1.26.3-beta.fix.loading": {
+    "en": "Static media now benefits from browser caching, and supported audio playback uses a smaller lossless sound bank.",
+    "pt-BR": "Arquivos de mídia agora aproveitam o cache do navegador, e a reprodução de áudio compatível usa um banco de sons menor e sem perda de qualidade.",
+    "es": "Los archivos multimedia ahora aprovechan la caché del navegador y la reproducción compatible usa un banco de sonidos más pequeño sin pérdida de calidad.",
+    "it": "I contenuti multimediali ora sfruttano la cache del browser e la riproduzione audio compatibile usa una raccolta di suoni più piccola senza perdita di qualità."
+  },
   "releases.1.26.2-beta.summary": {
     "en": "Best-of-three rematches after Bo1, beta badges for unreleased cards, LordKnightmon (X), and card text brought in line with the newest printings and errata.",
     "pt-BR": "Revanches em melhor de três após partidas Bo1, selos beta para cartas não lançadas, LordKnightmon (X) e textos de cartas alinhados às impressões e erratas mais recentes.",
