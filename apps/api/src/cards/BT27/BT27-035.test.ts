@@ -517,3 +517,77 @@ describe("MirageGaogamon security return privacy", () => {
     },
   );
 });
+
+describe("MirageGaogamon dual card lifecycle", () => {
+  it("cannot play its Digimon face directly to the field", async () => {
+    const s = setupEngine({ 0: { hand: [{ card: "BT27-035", as: "dual" }] } });
+    await s.ready();
+    s.state.memory = 10;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("dual").instanceId }).ok).toBe(false);
+    expect(s.state.players[0]!.hand.map((card) => card.cardId)).toEqual(["BT27-035"]);
+    expect(s.state.players[0]!.battleArea).toHaveLength(0);
+    expect(s.state.memory).toBe(10);
+  });
+
+  it("can unsuspend with eight opposing hand cards even when there is no Digimon to return", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT27-035", as: "source", suspended: true }],
+          hand: [{ card: "BT27-035", as: "option" }],
+        },
+        1: { hand: Array(8).fill("BT1-009"), battleArea: [{ card: "BT1-087", as: "tamer" }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, declinePrompts: ["Arts Digivolve"] },
+    );
+    await s.ready();
+    s.state.memory = 10;
+    expect(
+      s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId, useAs: "option" }).ok,
+    ).toBe(true);
+    await settle(() => s.state.players[0]!.trash.some((card) => card.instanceId === s.inst("option").instanceId));
+    expect(s.perm("source").isSuspended).toBe(false);
+    expect(s.state.players[1]!.hand).toHaveLength(8);
+    expect(s.state.players[1]!.battleArea.map((permanent) => permanent.topCard.cardId)).toEqual(["BT1-087"]);
+    expect(s.state.memory).toBe(4);
+  });
+
+  it("trashes only the Burst top at turn end and restores the previous evolution stack", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT4-035", as: "base", under: ["ST2-03"] },
+            { card: "BT4-093", as: "thomas" },
+          ],
+          hand: [{ card: "BT27-035", as: "burst" }],
+          deck: Array(5).fill("BT1-009"),
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    const priorTopId = s.perm("base").topCard.instanceId;
+    const ownTurn = s.engine.runOneTurn();
+    await advance(s.engine).waitForMainPhase(0);
+    const memoryBefore = s.state.memory;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("burst").instanceId,
+        alternateRequirementIndex: 1,
+      }).ok,
+    ).toBe(true);
+    await settle(() => s.perm("base").topCard.cardId === "BT27-035");
+    expect(s.state.memory).toBe(memoryBefore);
+    expect(s.perm("base").stack.map((card) => card.cardId)).toEqual(["ST2-03", "BT4-035"]);
+    expect(s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("thomas").instanceId)).toBe(true);
+    advance(s.engine).endMainPhaseIfOpen(0);
+    await ownTurn;
+    expect(s.perm("base").topCard.instanceId).toBe(priorTopId);
+    expect(s.perm("base").stack.map((card) => card.cardId)).toEqual(["ST2-03"]);
+    expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toEqual([s.inst("burst").instanceId]);
+    expect(observe(s.engine).hasKeyword(s.perm("base"), "Evade")).toBe(false);
+  });
+});
