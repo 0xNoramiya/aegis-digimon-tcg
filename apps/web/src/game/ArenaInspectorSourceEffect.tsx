@@ -21,6 +21,7 @@ export function ArenaInspectorSourceEffect({ card, onZoom, showThumbnail }: Para
       data-role={card.role}
       data-card-id={card.cardId || undefined}
       data-thumbnail={showThumbnail}
+      data-empty={(card.cardId && !card.faceDown && !effect) || undefined}
     >
       {showThumbnail &&
         (card.cardId ? (

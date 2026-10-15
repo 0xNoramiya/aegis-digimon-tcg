@@ -119,8 +119,10 @@ it.each([true, false])("shows link effects and the missing-effect fallback at wi
     ],
   });
   expect(document.querySelector(".arena-permanent-inspector__effect--source p")?.textContent).toBe("No printed effect");
+  expect(document.querySelector('[data-card-id="ST1-02"]')?.hasAttribute("data-empty")).toBe(true);
   if (!wide) {
     fireEvent.click(within(screen.getByRole("group")).getByRole("button", { name: "Gatchmon" }));
   }
   expect(document.querySelector('[data-role="linked"] p')?.textContent).toContain("Raid");
+  expect(document.querySelector('[data-role="linked"]')?.hasAttribute("data-empty")).toBe(false);
 });
