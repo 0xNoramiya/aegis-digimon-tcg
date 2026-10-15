@@ -425,6 +425,7 @@ export interface SelectionPort {
       timing?: string;
       effectText?: string;
       effectTextPart?: string;
+      effectTextEmphasis?: string;
       sourceInstanceId?: string;
       sourcePermanentId?: string;
       isInherited?: boolean;

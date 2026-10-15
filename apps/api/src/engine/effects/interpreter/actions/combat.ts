@@ -8,6 +8,7 @@ import { candidatePermanents, resolvePermanentTargets } from "../targeting/perma
 import type { Action } from "@aegis/shared";
 import type { ForceAttackOptions } from "../../context/primitives/index.js";
 import { subscribeLaterEntrants } from "./laterEntrants.js";
+import { getEffectDecisionText } from "#api/engine/decisions/getEffectDecisionText";
 import { getAttackActionTargetScope } from "#api/engine/effects/interpreter/actions/getAttackActionTargetScope";
 
 /**
@@ -31,9 +32,8 @@ async function withEffectAttackOptions(
       sourceInstanceId: ctx.source.instanceId,
       sourcePermanentId: ctx.source.permanent()?.permanentId ?? ctx.sourcePermanentIdAtCreation,
       timing: ctx.activeTiming,
-      effectText: ctx.activeEffectText,
+      ...getEffectDecisionText(ctx),
       effectTextCardId: ctx.activeEffectTextCardId,
-      effectTextPart: ctx.activeEffectTextPart,
       isInherited: ctx.activeEffectIsInherited,
     },
     ...overrides,

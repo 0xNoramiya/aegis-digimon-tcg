@@ -662,3 +662,31 @@ describe("board prompt move handle", () => {
     expect(onConfirm).not.toHaveBeenCalled();
   });
 });
+
+it.each(["selection", "optional", "sourceHost"] as const)("highlights the active passage in the %s prompt", (kind) => {
+  const props = {
+    clause: "Delete a Digimon. Then, this Digimon may attack.",
+    clauseEmphasis: "Then, this Digimon may attack.",
+  };
+  const { container } = renderIn(
+    kind === "selection" ? (
+      <BoardSelectionRail
+        {...props}
+        fieldSelection
+        prompt="Select a target"
+        min={0}
+        max={1}
+        pickCount={0}
+        canConfirm={false}
+        onConfirm={noop}
+        onNoSelection={noop}
+      />
+    ) : kind === "optional" ? (
+      <BoardOptionalPrompt {...props} onUse={noop} onDecline={noop} />
+    ) : (
+      <BoardSourceHostPrompt {...props} />
+    ),
+  );
+  expect(container.querySelector(".board-prompt__clause")?.textContent).toBe(props.clause);
+  expect(container.querySelector(".decision-overlay__effect-step")?.textContent).toBe(props.clauseEmphasis);
+});
