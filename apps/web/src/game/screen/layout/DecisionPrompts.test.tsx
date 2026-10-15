@@ -354,3 +354,47 @@ it("retains pending physical-source provenance through the shared gallery adapte
   fireEvent.click(screen.getByRole("button", { name: /Hurricane Screw Shot, Pending effect, copy 2 of 2/ }));
   expect(onTogglePick).toHaveBeenCalledWith("pending");
 });
+
+const stagedClause =
+  "[On Play] You may return 1 [TS] trait Option card from your trash to the hand. If this effect didn't return, ＜Draw 1＞.";
+const activePassage = "You may return 1 [TS] trait Option card from your trash to the hand.";
+
+it.each(["chooseTargets", "selectCards", "optional"] as const)(
+  "preserves the full printed effect and highlights its active step on the board: %s",
+  (kind) => {
+    const { container } = render(
+      <I18nProvider>
+        <DecisionPrompts
+          decision={{
+            decisionId: "staged-effect",
+            promptText: "Resolve this effect",
+            seat: 0,
+            kind,
+            sourceCardId: "BT25-091",
+            options: {
+              timing: "OnPlay",
+              effectText: stagedClause,
+              effectTextPart: activePassage,
+              effectTextEmphasis: activePassage,
+            },
+          }}
+          answerOnBoard
+          permanents={[]}
+          sourceCardId="BT25-091"
+          candidates={[]}
+          allowsPick={() => true}
+          picks={[]}
+          min={0}
+          max={1}
+          triggerDetails={[]}
+          opponentSecurityCount={5}
+          onTogglePick={() => {}}
+          onRespond={() => {}}
+          onOpenDialog={() => {}}
+        />
+      </I18nProvider>,
+    );
+    expect(container.querySelector(".board-prompt__clause")?.textContent).toBe(stagedClause);
+    expect(container.querySelector("strong.decision-overlay__effect-step")?.textContent).toBe(activePassage);
+  },
+);

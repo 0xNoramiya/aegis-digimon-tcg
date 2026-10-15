@@ -284,7 +284,7 @@ export async function resolveTotalDpCapTargets(ctx: EffectContext, target: Targe
 
   const selected = await ctx.ask.chooseTargets(ctx, {
     candidates: candidates.map(({ permanentId }) => permanentId),
-    min: 1,
+    min: target.upTo === true ? 0 : 1,
     max: candidates.length,
     maxTotalDP: budget,
   });
