@@ -13,7 +13,7 @@ from gepa.core.adapter import EvaluationBatch
 
 from adapter import REFLECTION_TEMPLATE
 from evidence import policy_hash
-from evolve import EvolutionAudit, main, optimize_stage, task_sets
+from evolve import EvolutionAudit, final_evaluation, main, optimize_stage, task_sets
 
 
 def test_training_selection_and_test_are_separate_across_generations() -> None:
@@ -340,8 +340,9 @@ def test_campaign_seed_offset_separates_random_decks_and_game_and_search_seeds()
 
 
 @pytest.mark.parametrize("final_pairs", [None, 100])
+@pytest.mark.parametrize("turn_limit", [60, 120])
 def test_final_sample_size_is_frozen_without_expanding_training(
-    tmp_path: Path, monkeypatch, final_pairs: int | None
+    tmp_path: Path, monkeypatch, final_pairs: int | None, turn_limit: int
 ) -> None:
     worker = tmp_path / "worker.js"
     worker.write_text("")
@@ -381,6 +382,8 @@ def test_final_sample_size_is_frozen_without_expanding_training(
         "1",
         "--seed-offset",
         "420000000",
+        "--turn-limit",
+        str(turn_limit),
     ]
     if final_pairs is not None:
         args += ["--final-pairs", str(final_pairs)]
@@ -392,3 +395,61 @@ def test_final_sample_size_is_frozen_without_expanding_training(
     manifest = json.loads((tmp_path / "run" / "manifest.json").read_text())
     assert manifest["config"]["finalPairs"] == (final_pairs or 24)
     assert final_calls[0]["metadata"]["seedOffset"] == 420000000
+    assert manifest["config"]["turnLimit"] == turn_limit
+    assert final_calls[0]["metadata"]["turnLimit"] == turn_limit
+    assert all(
+        task["turnLimit"] == turn_limit
+        for stage in stages
+        for tasks in stage["splits"].values()
+        for task in tasks
+    )
+    changed = args.copy()
+    changed[changed.index("--turn-limit") + 1] = str(turn_limit + 1)
+    resumed = CliRunner().invoke(main, changed)
+    assert resumed.exit_code != 0
+    assert "Run configuration or engine changed" in resumed.output
+
+
+def test_held_out_candidates_and_controls_keep_the_campaign_turn_limit(
+    tmp_path: Path, monkeypatch
+) -> None:
+    calls = []
+
+    class Adapter:
+        def __init__(self, config, metadata):
+            pass
+
+        def evaluate(self, tasks, candidate, capture_traces):
+            calls.append(tasks)
+            return EvaluationBatch(
+                outputs=[{"valid": True} for task in tasks],
+                scores=[0.5 for task in tasks],
+                trajectories=None,
+            )
+
+    monkeypatch.setattr("evolve.HeuristicAdapter", Adapter)
+    monkeypatch.setattr("evolve.paired_evidence", lambda selected, control: {})
+    final_evaluation(
+        stages={name: {"program": {"rules": []}} for name in ["generic", "a", "b"]},
+        run_dir=tmp_path,
+        metadata={
+            "deckVersions": ["a", "b"],
+            "worker": "worker.js",
+            "engineSha256": "engine",
+            "runnerSha256": "runner",
+            "evaluationTimeout": 600,
+            "evaluationWorkers": 1,
+            "evaluationCache": str(tmp_path / "cache"),
+            "seedProgram": {"rules": []},
+            "turnLimit": 120,
+        },
+        node="node",
+        simulations=128,
+        pairs=2,
+        generations=2,
+    )
+    assert len(calls) == 6
+    assert all(task["turnLimit"] == 120 for tasks in calls for task in tasks)
+    assert calls[0] == calls[1]
+    assert calls[2] == calls[3]
+    assert calls[4] == calls[5]

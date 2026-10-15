@@ -62,6 +62,7 @@ def task_sets(
     pairs: int,
     generation: int,
     seed_offset: int = 0,
+    turn_limit: int | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
     splits = {}
     for split_index, split in enumerate(("train", "validation", "test")):
@@ -86,6 +87,8 @@ def task_sets(
                     "opponent": "mcts",
                     "searchSeed": seed_offset + 777 + split_index * 10000 + pair,
                 }
+                if turn_limit is not None:
+                    task["turnLimit"] = turn_limit
                 tasks.append(task)
                 if pilot is not None:
                     # Freeze every opponent at generation start: later pilots cannot
@@ -356,6 +359,7 @@ def final_evaluation(
             pairs,
             generations + 1,
             metadata.get("seedOffset", 0),
+            metadata.get("turnLimit", 60),
         )
         adapter = HeuristicAdapter(
             EvaluationConfig(
@@ -410,6 +414,7 @@ def final_evaluation(
 )
 @click.option("--evaluation-workers", default=4, type=click.IntRange(1, 4), show_default=True)
 @click.option("--simulations", default=8, type=click.IntRange(1, 10000), show_default=True)
+@click.option("--turn-limit", default=60, type=click.IntRange(1, 200), show_default=True)
 @click.option("--metric-calls", default=512, type=click.IntRange(12, 10000), show_default=True)
 @click.option("--pairs", default=24, type=click.IntRange(1, 100), show_default=True)
 @click.option("--final-pairs", default=None, type=click.IntRange(24, 1000))
@@ -428,6 +433,7 @@ def main(
     desktop_host: str | None,
     worker_override: Path | None,
     simulations: int,
+    turn_limit: int,
     evaluation_timeout: int,
     evaluation_workers: int,
     metric_calls: int,
@@ -479,6 +485,7 @@ def main(
         "pairedProposalGates": True,
         "adaptiveLadder": adaptive_ladder,
         "seedOffset": seed_offset,
+        "turnLimit": turn_limit,
         "desktopHost": desktop_host,
         "evaluationTimeout": evaluation_timeout,
         "evaluationWorkers": evaluation_workers,
@@ -514,6 +521,7 @@ def main(
         "metricCalls": metric_calls,
         "pairs": pairs,
         "finalPairs": final_pairs,
+        "turnLimit": turn_limit,
         "generations": generations,
         "seedOffset": seed_offset,
         "reflectionModel": reflection_model,
@@ -548,7 +556,7 @@ def main(
     generic = optimize_stage(
         stage="generic",
         initial=metadata["seedProgram"],
-        splits=task_sets(metadata["deckVersions"], None, {}, pairs, 0, seed_offset),
+        splits=task_sets(metadata["deckVersions"], None, {}, pairs, 0, seed_offset, turn_limit),
         run_dir=run_dir,
         metadata=metadata,
         node=node,
@@ -567,7 +575,13 @@ def main(
                 stage=f"generation-{generation}-pilot-{index}",
                 initial=pilots[version]["program"],
                 splits=task_sets(
-                    metadata["deckVersions"], version, archive, pairs, generation, seed_offset
+                    metadata["deckVersions"],
+                    version,
+                    archive,
+                    pairs,
+                    generation,
+                    seed_offset,
+                    turn_limit,
                 ),
                 run_dir=run_dir,
                 metadata=metadata,

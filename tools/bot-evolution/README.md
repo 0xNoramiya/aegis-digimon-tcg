@@ -563,6 +563,13 @@ Changing the offset does not by itself prove that a range is unused: check prior
 experiment manifests before allocation. Runtime calibration games must remain
 outside the campaign's training, selection, proposal-gate, and final-test ranges.
 
+`--turn-limit` fixes the outer match horizon for every training, selection, and
+held-out task, including both selected policies and controls. It defaults to 60
+and accepts 1–200 turns. The manifest pins this value, and task cache keys include
+it; changing it requires a new campaign. Use a prospectively chosen longer limit
+when random-deck matches need more turns to reach a terminal result. A cutoff
+remains invalid and never becomes a draw or a fitness loss.
+
 `--final-pairs` independently fixes the number of reserved seed blocks per pilot
 for final evaluation (24–1000). When omitted, it inherits `--pairs`. Training and
 validation sizes remain controlled by `--pairs`; the manifest records both values.
