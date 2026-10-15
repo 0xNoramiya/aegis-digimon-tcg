@@ -1194,7 +1194,7 @@ function GameScreenSession({
 
   const viewerTurnOrder = modelViewerTurnOrder({ events, viewerSeat });
 
-  const revealed = state.gameOver ? modelRevealedZones({ events, viewerSeat }) : undefined;
+  const revealed = modelRevealedZones({ events, viewerSeat, resultShown: state.gameOver && !cues.resultPending });
 
   const rematch = spectating ? undefined : getRematchView({ series: state.series, viewerSeat });
   const series = spectating || rematch ? undefined : seriesView(state.series, viewerSeat);
