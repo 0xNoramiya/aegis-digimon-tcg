@@ -94,6 +94,7 @@ export function GameOverOverlay({
   spectatorResult,
   onDownloadReplay,
   usedDeckDialog,
+  opponentDeckDialog,
   replayFile,
   replayStatus,
   signedIn,
@@ -108,6 +109,7 @@ export function GameOverOverlay({
   rematch,
 }: ReplaySaveProps & {
   spectatorResult?: string;
+  opponentDeckDialog?: (onClose: () => void) => ReactNode;
   usedDeckDialog?: (onClose: () => void) => ReactNode;
   result: GameOverOutcome;
   reason: string;
@@ -124,6 +126,7 @@ export function GameOverOverlay({
 }) {
   const { t } = useTranslation();
   const splash = gameOverSplash(result, reason);
+  const [opponentDeckOpen, setOpponentDeckOpen] = useState(false);
   const [view, setView] = useState<ResultView>("splash");
   const reviewingBoard = view === "board";
   const barRef = useRef<HTMLDivElement>(null);
@@ -153,6 +156,10 @@ export function GameOverOverlay({
       ? t("overlay.series.complete")
       : t("overlay.series.gameComplete", { game: series.view.gameNumber, bestOf: series.view.bestOf });
   const reasonText = spectatorResult ?? (series && seriesOutcome ? seriesReason(t, series) : t(splash.reasonKey));
+
+  if (opponentDeckOpen && opponentDeckDialog) {
+    return opponentDeckDialog(() => setOpponentDeckOpen(false));
+  }
 
   if (view === "usedDeck" && usedDeckDialog) return usedDeckDialog(() => setView("board"));
 
@@ -228,6 +235,16 @@ export function GameOverOverlay({
             </Button>
           </div>
         )}
+        {opponentDeckDialog ? (
+          <Button
+            className="game-result__used-deck"
+            variant="secondary"
+            icon={Icons.FileText}
+            onClick={() => setOpponentDeckOpen(true)}
+          >
+            {t("overlay.viewOpponentDeck")}
+          </Button>
+        ) : null}
         {usedDeckDialog ? (
           <Button
             className="game-result__used-deck"

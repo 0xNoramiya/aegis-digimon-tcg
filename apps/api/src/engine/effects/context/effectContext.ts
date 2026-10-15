@@ -44,6 +44,7 @@ export interface EffectContext {
   continuousPass?: boolean;
   /** Registering a resident clause at a payment window; cleared for future triggered bodies. */
   residentCostRegistration?: boolean;
+  isResidentCostSourceActive?: () => boolean;
   /** Exact rules clause currently resolving, including inherited/security provenance. Display-only. */
   activeEffectText?: string;
   /** Catalog provenance for a copied clause, independent of its activating rules source. */

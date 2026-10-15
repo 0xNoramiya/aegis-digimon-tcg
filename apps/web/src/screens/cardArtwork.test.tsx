@@ -2,7 +2,9 @@
 import {} from "./deckCounts";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getCardArts, isJapaneseArt } from "@aegis/shared";
+import { getCardArts } from "@aegis/shared";
+import { ArtRegion } from "@aegis/shared/cards/ArtRegion";
+import { artRegionOf } from "@aegis/shared/cards/artRegionOf";
 import { I18nProvider } from "../i18n";
 import { loadDecks, saveDecks } from "../identity";
 import { type DeckListing } from "../game/decks";
@@ -218,7 +220,11 @@ describe("card artwork choices", () => {
     expect(button.getAttribute("aria-pressed")).toBe("false");
   });
 
-  it("marks Japanese printings with a JP badge", () => {
+  it.each([
+    [ArtRegion.JAPANESE, "Japanese printing"],
+    [ArtRegion.KOREAN, "Korean printing"],
+    [ArtRegion.CHINESE, "Chinese printing"],
+  ])("marks a $badge printing with its region badge", (region, printing) => {
     render(
       <I18nProvider>
         <DeckBuilder
@@ -235,9 +241,9 @@ describe("card artwork choices", () => {
     fireEvent.click(screen.getByRole("button", { name: "Agumon, 2 in deck" }));
     fireEvent.click(screen.getByRole("button", { name: "Agumon · Choose artwork" }));
     const picker = within(screen.getByRole("dialog", { name: "Choose artwork" }));
-    const japaneseIndex = getCardArts(cardId).findIndex((art) => isJapaneseArt(art.artId));
-    const japanese = picker.getByRole("button", { name: `Alternate ${japaneseIndex}, Japanese printing` });
-    expect(within(japanese).getByText("JP")).toBeTruthy();
-    expect(within(picker.getByRole("button", { name: "Original" })).queryByText("JP")).toBeNull();
+    const regionalIndex = getCardArts(cardId).findIndex((art) => artRegionOf(art.artId)?.value === region.value);
+    const regional = picker.getByRole("button", { name: `Alternate ${regionalIndex}, ${printing}` });
+    expect(within(regional).getByText(region.badge)).toBeTruthy();
+    expect(within(picker.getByRole("button", { name: "Original" })).queryByText(region.badge)).toBeNull();
   });
 });

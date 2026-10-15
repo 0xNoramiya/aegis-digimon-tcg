@@ -1,3 +1,4 @@
+import { OPPONENT_DECK_CHANNEL } from "@aegis/shared/decks/OPPONENT_DECK_CHANNEL";
 import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 // @vitest-environment jsdom
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
@@ -47,6 +48,7 @@ interface FakeRoom {
   emitDecision: (decision: DecisionRequest) => void;
   emitEvent: (event: SequencedServerEvent) => void;
   emitUsedDeck: (deck: UsedDeck) => void;
+  emitOpponentDeck: (deck: UsedDeck) => void;
 }
 
 function fakeRoom(roomId: string, { answersPings = true }: { answersPings?: boolean } = {}): FakeRoom {
@@ -87,6 +89,7 @@ function fakeRoom(roomId: string, { answersPings = true }: { answersPings?: bool
     emitLeave: (code) => act(() => onLeave?.(code)),
     emitDecision: (decision) => act(() => messages.get(DECISION_CHANNEL)?.(decision)),
     emitEvent: (event) => act(() => messages.get(EVENT_CHANNEL)?.(event)),
+    emitOpponentDeck: (deck) => act(() => messages.get(OPPONENT_DECK_CHANNEL)?.(deck)),
     emitUsedDeck: (deck) => act(() => messages.get(USED_DECK_CHANNEL)?.(deck)),
   };
 }
@@ -497,4 +500,27 @@ it("requests the authoritative used deck again after reconnect and keeps an immu
   expect(resumed.room.send).toHaveBeenCalledWith(USED_DECK_CHANNEL, {});
   resumed.emitUsedDeck({ ...deck, mainDeck: ["BT1-009"] });
   expect(result.current.usedDeck?.mainDeck).toEqual(["BT1-009"]);
+});
+
+it("requests opponent decks only after completion and recovers them on reconnect", async () => {
+  sessionStorage.clear();
+  const joined = fakeRoom("opponent-deck-match");
+  const resumed = fakeRoom("opponent-deck-resumed");
+  joinOrCreate.mockResolvedValue(joined.room);
+  reconnect.mockResolvedValue(resumed.room);
+  const { result } = renderHook(() => useRoom(OPTIONS));
+  await waitFor(() => expect(result.current.room).toBe(joined.room));
+  expect(joined.room.send).not.toHaveBeenCalledWith(OPPONENT_DECK_CHANNEL, {});
+  joined.emitState({ gameOver: true, players: [] as unknown as GameState["players"] });
+  expect(joined.room.send).toHaveBeenCalledWith(OPPONENT_DECK_CHANNEL, {});
+  const deck: UsedDeck = { deckId: null, deckName: "Opponent", mainDeck: ["BT1-009"], eggDeck: [] };
+  joined.emitOpponentDeck(deck);
+  deck.mainDeck[0] = "BT1-010";
+  expect(result.current.opponentDeck?.mainDeck).toEqual(["BT1-009"]);
+  joined.emitLeave(1006);
+  await waitFor(() => expect(result.current.room).toBe(resumed.room));
+  resumed.emitState({ gameOver: true, players: [] as unknown as GameState["players"] });
+  expect(resumed.room.send).toHaveBeenCalledWith(OPPONENT_DECK_CHANNEL, {});
+  resumed.emitOpponentDeck(deck);
+  expect(result.current.opponentDeck?.mainDeck).toEqual(["BT1-010"]);
 });

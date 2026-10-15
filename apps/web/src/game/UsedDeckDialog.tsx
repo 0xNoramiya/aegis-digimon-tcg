@@ -7,10 +7,12 @@ import { useTranslation } from "@/i18n/useTranslation";
 
 export function UsedDeckDialog({
   snapshot,
+  opponent = false,
   onCopy,
   onClose,
 }: {
   snapshot: UsedDeck;
+  opponent?: boolean;
   onCopy: (deck: DeckListing) => void;
   onClose: () => void;
 }) {
@@ -20,7 +22,7 @@ export function UsedDeckDialog({
     <FamousDeckListDialog
       deck={usedDeckListing({ snapshot })}
       collection={snapshot.community?.author.displayName ?? ""}
-      eyebrow={t("overlay.usedDeck")}
+      eyebrow={t(opponent ? "overlay.opponentDeck" : "overlay.usedDeck")}
       active={false}
       copied={copied}
       onCopy={() => {

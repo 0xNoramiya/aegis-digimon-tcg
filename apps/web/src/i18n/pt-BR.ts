@@ -21,6 +21,13 @@ import { settingsPtBR } from "./redesign/settings.pt-BR";
 import { shellPtBR } from "./redesign/shell.pt-BR";
 
 export const ptBR: Record<keyof typeof en, string> = {
+  "settings.shareDeckAfterMatch": "Compartilhar meu deck após a partida",
+  "settings.shareDeckAfterMatchDesc":
+    "Permitir que o adversário veja e copie a lista inicial do meu deck após a partida. Ativado por padrão.",
+  "settings.shareDeckAfterMatchFailed":
+    "Não foi possível carregar ou salvar o compartilhamento. Tente novamente ou reabra as configurações.",
+  "overlay.viewOpponentDeck": "Ver deck do adversário",
+  "overlay.opponentDeck": "Deck do adversário",
   "rollback.failed": "Não foi possível restaurar este ponto com segurança. A partida atual foi mantida.",
   "rollback.cancel": "Cancelar pedido",
   "rollback.allow": "Permitir voltar jogadas",
@@ -283,6 +290,33 @@ export const ptBR: Record<keyof typeof en, string> = {
   "spectator.winner": "Vencedor: {name}",
   "spectator.draw": "Empate",
   "spectator.back": "Voltar ao lobby",
+  "settings.listLiveMatches": "Listar minhas partidas para espectadores",
+  "settings.listLiveMatchesDesc":
+    "Suas partidas casuais aparecem em Partidas ao vivo quando os dois jogadores ativarem. Desligado por padrão.",
+  "settings.listLiveMatchesFailed": "Não foi possível carregar ou salvar esta opção. Tente novamente.",
+  "settings.listLiveMatchesSignIn": "Entre na sua conta para listar suas partidas.",
+  "settings.listLiveMatchesLockedHelp":
+    "Só jogadores com conta podem listar partidas. Entre na sua conta e ative esta opção. Suas partidas casuais aparecem em Partidas ao vivo quando o oponente também tiver ativado.",
+  "spectator.liveEyebrow": "Assistir",
+  "spectator.liveTitle": "Partidas ao vivo",
+  "spectator.liveBadge": "Ao vivo",
+  "spectator.liveSubtitle": "Somente partidas em que os dois jogadores permitiram espectadores.",
+  "spectator.liveRefresh": "Atualizar",
+  "spectator.liveEmpty": "Nenhuma partida ao vivo agora.",
+  "spectator.liveEmptyHint": "Volte em instantes ou assista por código.",
+  "spectator.liveError": "Não foi possível carregar as partidas ao vivo. Tente novamente.",
+  "spectator.liveShowMore": "Mostrar mais ({count})",
+  "spectator.liveVersus": "vs",
+  "spectator.liveMinutes": "{minutes} min",
+  "spectator.liveSpectators": "{count} assistindo",
+  "spectator.liveWatch": "Assistir {first} vs {second}",
+  "spectator.codeTitle": "Tem um código?",
+  "spectator.codeHint": "Digite o código que o jogador compartilhou.",
+  "spectator.liveOptIn":
+    "Quer aparecer aqui? Ative “Listar minhas partidas para espectadores” em Configurar partida, na tela Jogar.",
+  "spectator.liveCount": "{count} partidas ao vivo",
+  "spectator.liveOpenSettings": "Abrir configurações da partida",
+  "spectator.backToPlay": "Voltar para Jogar",
 
   "lobby.timer.label": "Tempo de partida",
   "lobby.timer.with": "Com timer",
@@ -634,6 +668,9 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.playmatRemove": "Remover sua imagem",
   "settings.playmatInvalid": "Escolha um arquivo de imagem.",
   "settings.playmatTooLarge": "A imagem é grande demais para guardar. Use uma menor.",
+  "settings.tokenArt": "Artes dos tokens",
+  "settings.tokenArtDesc":
+    "Envie uma imagem para cada token. Salva apenas neste navegador e visível só para você, nos dois lados do campo. Imagens verticais funcionam melhor.",
   "settings.cardSleeve": "Verso das cartas",
   "settings.sleeveUpload": "Enviar imagem de sleeve",
   "settings.sleeveReplace": "Substituir imagem de sleeve",
@@ -833,6 +870,10 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.fullscreen.enter": "Tela cheia",
   "game.fullscreen.exit": "Sair da tela cheia",
   "game.skipPresentation": "Pular animações",
+  "game.effectConfirm": "OK",
+  "game.effectConfirmLabel": "Continuar para o próximo efeito",
+  "settings.effectConfirmationHold": "Segurar efeitos até o OK",
+  "settings.effectConfirmationHoldDesc": "Contra o bot, cada efeito fica na tela até você apertar OK.",
   "game.noActions": "Nenhuma ação ainda.",
   "game.surrender": "Desistir",
   "game.surrenderConfirmTitle": "Desistir desta partida?",
@@ -1784,6 +1825,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "library.baseArt": "Original",
   "library.alternateArt": "Alternativa {number}",
   "library.japaneseArt": "{label}, impressão japonesa",
+  "library.koreanArt": "{label}, impressão coreana",
+  "library.chineseArt": "{label}, impressão chinesa",
   "deck.copyArtwork": "Cópia {number}",
   "deck.editArtwork": "Escolher arte",
   "deck.splitResize": "Arraste para redimensionar o painel do deck",

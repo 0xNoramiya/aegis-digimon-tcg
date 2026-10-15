@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Client } from "colyseus";
+import { ClientState, type Client } from "colyseus";
 import { Phase, type Intent, type Seat } from "@aegis/shared";
 import { RollbackKind } from "@aegis/shared/protocol/RollbackKind";
 import { AegisRoom } from "#api/rooms/AegisRoom";
@@ -14,6 +14,7 @@ import { GameState } from "@aegis/shared/schema/GameState";
 import type { GameEngine } from "#api/engine/GameEngine";
 import { createEvaluationPolicy } from "#api/bot/policy";
 import { BotPlayer } from "#api/bot/BotPlayer";
+import { pushOnStack } from "#api/engine/state/access";
 
 const rooms: AegisRoom[] = [];
 
@@ -42,7 +43,13 @@ async function start(options: Record<string, unknown> = {}, board = fixture) {
   await room.onCreate({ seed: 0, allowRollback: true, ...options });
   const clients = [0, 1].map(
     (seat) =>
-      ({ sessionId: `seat-${seat}`, send: vi.fn<Client["send"]>(), raw: vi.fn<Client["raw"]>() }) as unknown as Client,
+      ({
+        sessionId: `seat-${seat}`,
+        state: ClientState.JOINED,
+        send: vi.fn<Client["send"]>(),
+        raw: vi.fn<Client["raw"]>(),
+        enqueueRaw: vi.fn<Client["enqueueRaw"]>(),
+      }) as unknown as Client,
   );
   for (const [seat, client] of clients.entries()) {
     room.clients.push(client);
@@ -315,6 +322,20 @@ describe("consensual match rollback", () => {
     expect(opponent.state.players[0]!.battleArea[0]!.topCard.cardId).toBe("BT1-019");
     expect(owner.state.players[0]!.deck).toHaveLength(0);
     expect(opponent.state.players[0]!.security).toHaveLength(0);
+  });
+
+  it("keeps card moves of the replaced engine out of the restored views", async () => {
+    const { room, clients } = await start();
+    send(room, 0, { type: "hatchEgg" });
+    await idle();
+    const replaced = room.state;
+    const permanent = replaced.players[0]!.breeding!;
+    const card = replaced.players[0]!.hand[0]!;
+    await request(room, clients[0]!, RollbackKind.ACTION.value);
+    await answer(room, clients[1]!, true);
+    expect(room.state).not.toBe(replaced);
+    pushOnStack(permanent, card);
+    expect(() => room.broadcastPatch()).not.toThrow();
   });
 
   it("keeps an exact playable replay after repeated action and turn rollbacks", async () => {

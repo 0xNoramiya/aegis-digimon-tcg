@@ -5,6 +5,13 @@ import { en } from "./en";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  "settings.shareDeckAfterMatch": "Condividi il mio mazzo dopo la partita",
+  "settings.shareDeckAfterMatchDesc":
+    "Consenti all’avversario di vedere e copiare la lista iniziale del tuo mazzo dopo la partita. Attivo per impostazione predefinita.",
+  "settings.shareDeckAfterMatchFailed":
+    "Impossibile caricare o salvare questa opzione. Riprova o riapri le impostazioni.",
+  "overlay.viewOpponentDeck": "Visualizza il mazzo avversario",
+  "overlay.opponentDeck": "Mazzo avversario",
   "rollback.failed": "Impossibile ripristinare questo punto in sicurezza. La partita attuale è stata mantenuta.",
   "rollback.cancel": "Annulla richiesta",
   "rollback.allow": "Consenti di annullare le mosse",
@@ -270,6 +277,8 @@ const interfaceMessages = {
   "game.leaveConfirmTitle": "Lasciare questa partita?",
   "game.leaveConfirmBody": "Se esci, la partita termina e conta come una sconfitta. Puoi ancora salvare il replay.",
   "library.japaneseArt": "{label}, edizione giapponese",
+  "library.koreanArt": "{label}, edizione coreana",
+  "library.chineseArt": "{label}, edizione cinese",
   "community.publish.errorHidden":
     "Un moderatore ha nascosto questo deck dopo una segnalazione, quindi non può essere pubblico.",
   "community.report.open": "Segnala deck",
@@ -341,6 +350,33 @@ const interfaceMessages = {
   "spectator.winner": "Vincitore: {name}",
   "spectator.draw": "Pareggio",
   "spectator.back": "Torna alla lobby",
+  "settings.listLiveMatches": "Elenca le mie partite per gli spettatori",
+  "settings.listLiveMatchesDesc":
+    "Le tue partite casual appaiono in Partite dal vivo quando entrambi i giocatori lo attivano. Disattivato per impostazione predefinita.",
+  "settings.listLiveMatchesFailed": "Impossibile caricare o salvare questa opzione. Riprova.",
+  "settings.listLiveMatchesSignIn": "Accedi per elencare le tue partite.",
+  "settings.listLiveMatchesLockedHelp":
+    "Solo i giocatori che hanno effettuato l’accesso possono elencare le partite. Accedi e attiva questa opzione. Le tue partite casual appaiono in Partite dal vivo quando anche l’avversario l’ha attivata.",
+  "spectator.liveEyebrow": "Guarda",
+  "spectator.liveTitle": "Partite dal vivo",
+  "spectator.liveBadge": "Dal vivo",
+  "spectator.liveSubtitle": "Solo partite in cui entrambi i giocatori consentono spettatori.",
+  "spectator.liveRefresh": "Aggiorna",
+  "spectator.liveEmpty": "Nessuna partita dal vivo ora.",
+  "spectator.liveEmptyHint": "Torna presto o guarda con un codice.",
+  "spectator.liveError": "Impossibile caricare le partite dal vivo. Riprova.",
+  "spectator.liveShowMore": "Mostra altro ({count})",
+  "spectator.liveVersus": "vs",
+  "spectator.liveMinutes": "{minutes} min",
+  "spectator.liveSpectators": "{count} spettatori",
+  "spectator.liveWatch": "Guarda {first} vs {second}",
+  "spectator.codeTitle": "Hai un codice?",
+  "spectator.codeHint": "Inserisci il codice condiviso dal giocatore.",
+  "spectator.liveOptIn":
+    "Vuoi apparire qui? Attiva “Elenca le mie partite per gli spettatori” in Configurazione della partita, nella schermata Gioca.",
+  "spectator.liveCount": "{count} partite dal vivo",
+  "spectator.liveOpenSettings": "Apri impostazioni partita",
+  "spectator.backToPlay": "Torna a Gioca",
   "lobby.timer.label": "Timer della partita",
   "lobby.timer.with": "Con timer",
   "lobby.timer.without": "Senza timer",
@@ -672,6 +708,9 @@ const interfaceMessages = {
   "settings.playmatRemove": "Rimuovi la tua immagine",
   "settings.playmatInvalid": "Scegli un file immagine.",
   "settings.playmatTooLarge": "L'immagine è troppo grande per essere salvata. Prova con una più piccola.",
+  "settings.tokenArt": "Illustrazioni dei token",
+  "settings.tokenArtDesc":
+    "Carica un’immagine per ogni token. Viene salvata solo in questo browser ed è visibile solo a te, su entrambi i lati del campo. Le immagini verticali funzionano meglio.",
   "settings.cardSleeve": "Bustine delle carte",
   "settings.sleeveUpload": "Carica un'immagine per le bustine",
   "settings.sleeveReplace": "Sostituisci l'immagine delle bustine",
@@ -878,6 +917,10 @@ const interfaceMessages = {
   "game.fullscreen.enter": "Schermo intero",
   "game.fullscreen.exit": "Esci dallo schermo intero",
   "game.skipPresentation": "Salta le animazioni",
+  "game.effectConfirm": "OK",
+  "game.effectConfirmLabel": "Continua con l'effetto successivo",
+  "settings.effectConfirmationHold": "Tieni gli effetti fino a OK",
+  "settings.effectConfirmationHoldDesc": "Contro il bot, ogni effetto resta sullo schermo finché non premi OK.",
   "game.noActions": "Ancora nessuna azione.",
   "game.surrender": "Arrenditi",
   "game.surrenderConfirmTitle": "Arrenderti in questa partita?",

@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { CARD_IMAGE_ORIGINS, cardImageIds, syncCardImages } from "./card-images.mjs";
+import { CARD_IMAGE_ORIGINS, LOCAL_CARD_IMAGES, cardImageIds, syncCardImages } from "./card-images.mjs";
 
 const webp = (label) => Buffer.concat([Buffer.from("RIFF\0\0\0\0WEBP"), Buffer.from(label)]);
 
@@ -106,8 +106,8 @@ test("reports only printings with no image under any fallback the client tries",
     [{ cardId: "BT16-077", imageId: "BT16-077-Errata" }, { cardId: "P-147" }, { cardId: "BT1-001" }],
     { "BT1-001": [{ artId: "BT1-001_P1", imageId: "BT1-001_P1" }] },
   );
-  mkdirSync(`${paths.source}/apps/web/public/cards/unpublished`, { recursive: true });
-  writeFileSync(`${paths.source}/apps/web/public/cards/unpublished/P-147.webp`, "bundled");
+  mkdirSync(`${paths.source}/${LOCAL_CARD_IMAGES}`, { recursive: true });
+  writeFileSync(`${paths.source}/${LOCAL_CARD_IMAGES}/P-147.webp`, webp("local"));
   const { fetch } = fakeFetch({
     [`${bucket}/BT16-077-Errata.webp`]: webp("errata"),
     [`${bucket}/BT1-001.webp`]: webp("base"),
@@ -116,4 +116,34 @@ test("reports only printings with no image under any fallback the client tries",
   const result = await syncCardImages({ ...paths, fetch });
 
   assert.deepEqual(result.missing, ["BT1-001_P1"]);
+});
+
+test("stores a local scan as the sample until an origin publishes the real image", async (t) => {
+  const paths = fixture(t, [{ cardId: "BT18-083" }], {
+    "BT18-083": [{ artId: "BT18-083_P2", imageId: "BT18-083_P2" }],
+  });
+  mkdirSync(`${paths.source}/${LOCAL_CARD_IMAGES}`, { recursive: true });
+  writeFileSync(`${paths.source}/${LOCAL_CARD_IMAGES}/BT18-083_P2.webp`, webp("local"));
+  const origins = { [`${bucket}/BT18-083.webp`]: webp("base") };
+
+  const before = await syncCardImages({ ...paths, fetch: fakeFetch(origins).fetch });
+  assert.deepEqual(before, { present: 0, downloaded: 2, missing: [] });
+  assert.equal(readFileSync(`${paths.destination}/BT18-083_P2-Sample.webp`, "utf8").slice(12), "local");
+
+  const after = await syncCardImages({
+    ...paths,
+    fetch: fakeFetch({ ...origins, [`${bucket}/BT18-083_P2.webp`]: webp("real") }).fetch,
+  });
+  assert.deepEqual(after, { present: 1, downloaded: 1, missing: [] });
+  assert.equal(readFileSync(`${paths.destination}/BT18-083_P2.webp`, "utf8").slice(12), "real");
+  assert.equal(existsSync(`${paths.destination}/BT18-083_P2-Sample.webp`), false);
+});
+
+test("keeps only local scans the card catalog still references", () => {
+  const root = new URL("../..", import.meta.url).pathname;
+  const referenced = new Set(cardImageIds(root));
+  const orphans = readdirSync(`${root}/${LOCAL_CARD_IMAGES}`)
+    .filter((name) => name.endsWith(".webp"))
+    .filter((name) => !referenced.has(name.slice(0, -".webp".length)));
+  assert.deepEqual(orphans, []);
 });

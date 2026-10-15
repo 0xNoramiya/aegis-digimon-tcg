@@ -366,4 +366,6 @@ export interface MatchCues {
   playCue: (kind: SoundKind) => void;
   /** Fast-forward the decorative cues currently in flight. */
   skipAnimations: () => void;
+  effectAwaitingConfirmation: boolean;
+  confirmEffect: () => void;
 }

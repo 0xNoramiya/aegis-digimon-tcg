@@ -156,7 +156,9 @@ describe("BT9-102 Attack of the Heavy Mobile Digimon!", () => {
 
   it("accepts any [Cyborg] or [Machine] trait card for its Security cost, as the LM-08 printing reads", () => {
     const security = compiled.effects.find((effect) => effect.trigger === "Security")!.actions[0]!;
-    expect(security.cost?.target?.filter).not.toHaveProperty("kind");
+    const cost = security.cost;
+    if (typeof cost !== "object" || !("target" in cost)) throw new Error("BT9-102 Security cost has no target");
+    expect(cost.target?.filter).not.toHaveProperty("kind");
   });
 });
 

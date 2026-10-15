@@ -431,3 +431,37 @@ it("reads the private host rules from a draining slot before joining there", asy
   );
   expect(connectionSlot(joined)).toBe("blue");
 });
+
+it("merges each slot's first page of live matches and skips an unreachable slot", async () => {
+  const live = (spectatorCode: string, spectators: number, startedAt: number) => ({
+    spectatorCode,
+    players: ["A", "B"],
+    format: "standard",
+    startedAt,
+    spectators,
+  });
+  const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes("/green/"))
+      return Response.json({ matches: [live("BUSYXX", 9, 1), live("QUIETX", 0, 5)], total: 4 });
+    if (url.includes("/blue/")) return Response.json({ matches: [live("NEWERX", 0, 8)], total: 1 });
+    return new Response("{}", { status: 503 });
+  }) as unknown as typeof fetch;
+  const client = new AegisConnectionRouter({
+    loadManifest: async () => ({
+      version: 1,
+      active: { slot: "green", revision: "new" },
+      draining: [
+        { slot: "blue", revision: "old" },
+        { slot: "red", revision: "older" },
+      ],
+    }),
+    endpointForSlot: (slot) => ({ http: `https://example.test/api/${slot}`, websocket: "" }),
+    createClient: () => clientPort(),
+    fetcher,
+  });
+  const page = await client.liveMatches(2);
+  expect(page.matches.map((match) => match.spectatorCode)).toEqual(["BUSYXX", "NEWERX"]);
+  expect(page.total).toBe(5);
+  expect(fetcher).toHaveBeenCalledWith("https://example.test/api/green/spectate/live?limit=2");
+});
