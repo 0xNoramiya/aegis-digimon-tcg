@@ -405,12 +405,13 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
       data-dp={dpDelta < 0 ? "down" : "up"}
       style={{
         fontSize: "0.62em",
-        fontWeight: 800,
-        lineHeight: 1,
-        padding: `0 ${px(2)}px`,
+        fontWeight: 900,
+        lineHeight: 1.25,
+        padding: `${px(1)}px ${px(2)}px`,
         borderRadius: px(3),
-        background: "color-mix(in srgb, var(--ds-ink) 88%, transparent)",
-        color:
+        color: "var(--ds-ink)",
+        boxShadow: "inset 0 0 0 1px rgb(255 255 255 / 55%)",
+        background:
           dpDelta < 0
             ? "color-mix(in srgb, var(--ds-danger) 40%, white)"
             : "color-mix(in srgb, var(--ds-success) 35%, white)",
