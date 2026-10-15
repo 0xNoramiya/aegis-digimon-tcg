@@ -1271,6 +1271,7 @@ const interfaceMessages = {
   "overlay.selectTargets": "対象を{range}つ選んでください",
   "overlay.sourceCountOne": "進化元{count}枚",
   "overlay.sourceCountMany": "進化元{count}枚",
+  "overlay.sourcesResize": "ドラッグして進化元パネルのサイズを変更",
   "overlay.chosen": "{count}つ選択済み",
   "overlay.playCostBudget": "登場コスト: {selected} / {max}",
   "overlay.dpBudget": "合計DP: {selected} / {max}",

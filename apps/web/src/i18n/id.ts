@@ -1280,6 +1280,7 @@ const interfaceMessages = {
   "overlay.selectTargets": "Pilih {range} target",
   "overlay.sourceCountOne": "{count} digivolution card",
   "overlay.sourceCountMany": "{count} digivolution card",
+  "overlay.sourcesResize": "Seret untuk mengubah ukuran panel digivolution card",
   "overlay.chosen": "{count} dipilih",
   "overlay.playCostBudget": "Play cost: {selected} / {max}",
   "overlay.dpBudget": "Total DP: {selected} / {max}",

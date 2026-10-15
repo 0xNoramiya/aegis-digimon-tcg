@@ -1090,6 +1090,7 @@ export const en = {
   "overlay.selectTargets": "Select {range} target(s)",
   "overlay.sourceCountOne": "{count} source",
   "overlay.sourceCountMany": "{count} sources",
+  "overlay.sourcesResize": "Drag to resize the sources panel",
   "overlay.chosen": "{count} chosen",
   "overlay.playCostBudget": "Play cost: {selected} / {max}",
   "overlay.dpBudget": "Total DP: {selected} / {max}",

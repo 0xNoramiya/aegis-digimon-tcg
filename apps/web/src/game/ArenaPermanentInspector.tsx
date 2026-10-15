@@ -1,5 +1,7 @@
 import { ArenaInspectorSourcesColumn } from "@/game/ArenaInspectorSourcesColumn";
+import { ArenaInspectorSourcesResizer } from "@/game/ArenaInspectorSourcesResizer";
 import { ArenaInspectorSourcesStrip } from "@/game/ArenaInspectorSourcesStrip";
+import { useInspectorSourcesWidth } from "@/game/useInspectorSourcesWidth";
 import { INSPECTOR_SIDE_SOURCES_QUERY } from "@/game/inspectorSourcesLayoutQuery";
 import { useMediaQuery } from "@/design/useMediaQuery";
 import { EffectText } from "@/game/EffectText";
@@ -49,6 +51,7 @@ export function ArenaPermanentInspector({
   const { locale, t } = useTranslation();
   const sideSources = useMediaQuery(INSPECTOR_SIDE_SOURCES_QUERY);
   const sourcesLayout = sideSources ? "column" : "strip";
+  const { width: sourcesWidth } = useInspectorSourcesWidth();
   const titleId = useId();
   const panelRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -105,7 +108,7 @@ export function ArenaPermanentInspector({
     <section
       ref={panelRef}
       className="arena-permanent-inspector"
-      style={anchor}
+      style={{ ...anchor, "--inspector-sources-width": `${sourcesWidth}px` } as CSSProperties}
       data-half={inspectedArenaHalf(inspection.side)}
       data-card-side={inspection.side}
       data-sources={supporting.length > 0 ? sourcesLayout : undefined}
@@ -315,7 +318,10 @@ export function ArenaPermanentInspector({
           {actions ? <div className="arena-permanent-inspector__actions">{actions}</div> : null}
         </div>
         {supporting.length > 0 && sideSources ? (
-          <ArenaInspectorSourcesColumn cards={supporting} onZoom={onZoom} />
+          <>
+            <ArenaInspectorSourcesResizer />
+            <ArenaInspectorSourcesColumn cards={supporting} onZoom={onZoom} />
+          </>
         ) : null}
       </div>
     </section>

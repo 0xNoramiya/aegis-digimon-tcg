@@ -1309,6 +1309,7 @@ const interfaceMessages = {
   "overlay.selectTargets": "{range} Ziel(e) wählen",
   "overlay.sourceCountOne": "{count} Digitationskarte",
   "overlay.sourceCountMany": "{count} Digitationskarten",
+  "overlay.sourcesResize": "Ziehen, um die Breite der Digitationskarten zu ändern",
   "overlay.chosen": "{count} ausgewählt",
   "overlay.playCostBudget": "Spielkosten: {selected} / {max}",
   "overlay.dpBudget": "Gesamt-DP: {selected} / {max}",

@@ -1215,6 +1215,7 @@ const interfaceMessages = {
   "overlay.selectTargets": "选择 {range} 个目标",
   "overlay.sourceCountOne": "{count} 个素材",
   "overlay.sourceCountMany": "{count} 个素材",
+  "overlay.sourcesResize": "拖动以调整素材面板宽度",
   "overlay.chosen": "已选 {count}",
   "overlay.playCostBudget": "登场费用：{selected} / {max}",
   "overlay.dpBudget": "DP 合计：{selected} / {max}",

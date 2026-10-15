@@ -1094,6 +1094,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.selectTargets": "Escolha {range}",
   "overlay.sourceCountOne": "{count} fonte",
   "overlay.sourceCountMany": "{count} fontes",
+  "overlay.sourcesResize": "Arraste para redimensionar o painel de fontes",
   "overlay.chosen": "{count} escolhidas",
   "overlay.playCostBudget": "Custo de jogo: {selected} / {max}",
   "overlay.dpBudget": "DP total: {selected} / {max}",
