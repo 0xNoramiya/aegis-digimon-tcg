@@ -577,3 +577,132 @@ button.community-report-link:hover {
   align-items: center;
   gap: var(--ds-space-3);
 }
+
+.community-guide {
+  margin-block: 1.5rem;
+  min-width: 0;
+}
+
+.community-guide__body,
+.community-guide__editor {
+  max-width: 68ch;
+  overflow-wrap: anywhere;
+  line-height: 1.65;
+}
+
+.community-guide__body h3,
+.community-guide__input h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-block: 1rem 0.5rem;
+}
+
+.community-guide__body p,
+.community-guide__input p {
+  margin-block: 0.75rem;
+}
+
+.community-guide__body ul,
+.community-guide__input ul {
+  list-style: disc;
+  padding-inline-start: 1.5rem;
+}
+
+.community-guide__card {
+  display: inline;
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  background: var(--ds-fill);
+  border: 1px solid var(--ds-line);
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.community-guide__card span,
+.community-guide__suggestions span {
+  font-family: monospace;
+}
+
+.community-guide__rich-text {
+  position: relative;
+  border: 1px solid var(--ds-line);
+  border-radius: 0.5rem;
+  background: var(--ds-fill);
+}
+
+.community-guide__toolbar,
+.community-guide__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-block: 0.5rem;
+}
+
+.community-guide__toolbar {
+  padding-inline: 0.5rem;
+  border-bottom: 1px solid var(--ds-line);
+}
+
+.community-guide__toolbar button {
+  border: 1px solid var(--ds-line);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.community-guide__toolbar button[aria-pressed="true"] {
+  background: var(--ds-line);
+  font-weight: 700;
+}
+
+.community-guide__input {
+  min-height: 16rem;
+  padding: 0.75rem 1rem;
+  max-height: 32rem;
+  overflow-y: auto;
+}
+
+.community-guide__input:focus-visible,
+.community-guide__card:focus-visible,
+.community-guide__toolbar button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.community-guide__hint {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.community-guide__suggestions {
+  list-style: none;
+  padding: 0.25rem;
+  margin: 0;
+  max-height: 16rem;
+  overflow-y: auto;
+  border-top: 1px solid var(--ds-line);
+}
+
+.community-guide__suggestions button {
+  width: 100%;
+  text-align: start;
+  padding: 0.5rem;
+  color: inherit;
+  cursor: pointer;
+}
+
+.community-guide__suggestions [aria-selected="true"] {
+  background: var(--ds-line);
+}
+
+.community-tile__guide {
+  display: inline-flex;
+  align-items: center;
+}

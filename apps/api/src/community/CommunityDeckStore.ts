@@ -49,7 +49,11 @@ export type ReportTarget =
   | { ok: true; deck: { id: string; name: string; authorName: string } }
   | { ok: false; error: "deck_not_found" | "own_deck" };
 
+type UpdateGuideParams = { accountId: string; publicDeckId: string; guide: string | null };
+
 type PublicDeckRow = {
+  guide: string | null;
+  has_guide: boolean;
   id: string;
   account_id: string;
   display_name: string;
@@ -68,7 +72,7 @@ type PublicDeckRow = {
 };
 
 const PUBLIC_DECK_COLUMNS =
-  "p.id,p.account_id,a.display_name,p.name,p.colors,p.main_deck,p.egg_deck,p.main_deck_arts,p.egg_deck_arts,p.cover_card_id,p.like_count,p.copy_count,p.published_at,p.updated_at,p.status";
+  "p.id,p.account_id,a.display_name,p.name,p.colors,p.main_deck,p.egg_deck,p.main_deck_arts,p.egg_deck_arts,p.cover_card_id,p.like_count,p.copy_count,p.published_at,p.updated_at,p.status,p.guide,(p.guide IS NOT NULL) AS has_guide";
 
 /**
  * Public decks: publishing, browsing, likes and copies. Shares the AccountStore's pool and
@@ -236,6 +240,7 @@ export class CommunityDeckStore {
     return {
       ...toSummary(row, liked.has(row.id)),
       status: row.status,
+      guide: row.guide,
       mainDeck: row.main_deck,
       eggDeck: row.egg_deck,
       mainDeckArts: row.main_deck_arts,
@@ -288,6 +293,7 @@ export class CommunityDeckStore {
           ? {
               ...toSummary(selected, false),
               status: selected.status,
+              guide: selected.guide,
               mainDeck: selected.main_deck,
               eggDeck: selected.egg_deck,
               mainDeckArts: selected.main_deck_arts,
@@ -296,6 +302,18 @@ export class CommunityDeckStore {
           : null,
       };
     });
+  }
+
+  async updateGuide({ accountId, publicDeckId, guide }: UpdateGuideParams): Promise<boolean> {
+    if (!isUuid(publicDeckId)) {
+      return false;
+    }
+    await this.accounts.ensureReady();
+    const result = await this.accounts.pool.query(
+      "UPDATE public_decks SET guide=$3 WHERE id=$2 AND account_id=$1 AND status='public'",
+      [accountId, publicDeckId, guide],
+    );
+    return result.rowCount === 1;
   }
 
   async like(accountId: string, id: string): Promise<LikeResult> {
@@ -423,6 +441,7 @@ function toSummary(row: PublicDeckRow, likedByMe: boolean): CommunityDeckSummary
     likeCount: row.like_count,
     copyCount: row.copy_count,
     likedByMe,
+    hasGuide: row.has_guide,
     // The banlist moves after a deck goes public, so legality is judged on every read.
     legal: deckLegality({ mainDeck: row.main_deck, eggDeck: row.egg_deck }).legal,
     publishedAt: Number(row.published_at),
