@@ -140,6 +140,8 @@ it("Discord 1557581905220730932: preserves the reported Cool Boy Main clause and
   ]);
   try {
     const rail = screen.getByRole("region", { name: "Hand selection" });
+    expect(rail.textContent).not.toContain("with the play cost reduced by 2.");
+    fireEvent.click(within(rail).getByRole("button", { name: "View effect" }));
     expect(rail.textContent).toContain("with the play cost reduced by 2.");
     expect(game.physical("copy-first").getAttribute("aria-pressed")).toBe("false");
     expect(game.physical("ineligible").getAttribute("aria-disabled")).toBe("true");
