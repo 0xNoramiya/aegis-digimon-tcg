@@ -109163,5 +109163,34 @@
     "imageId": "BT27-103",
     "isDualCard": true,
     "optionColorRequirements": ["Black"]
+  },
+  {
+    "cardId": "EX14-012",
+    "nameEn": "VictoryGreymon",
+    "colors": ["Red"],
+    "level": 6,
+    "playCost": 7,
+    "dp": 12000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 5,
+        "memoryCost": 3
+      }
+    ],
+    "attributes": ["Vaccine"],
+    "types": ["Dragonkin", "TWIN", "TERMINAL"],
+    "rarity": "R",
+    "dualEffect": "Dramon Breaker",
+    "effectText": "[Digivolve] Lv.5 w/[TERMINAL] trait: Cost 3\n＜Security Attack +1＞ ＜Engage＞\n[When Digivolving] [When Attacking] [Once Per Turn] 1 of your Digimon gets +3000 DP until the end of your opponent's turn. Then, by trashing the bottom face-down card from under any of your Tamers, delete 1 of your opponent's Digimon with as much DP as this Digimon or less.\n[Security] [On Deletion] You may use this card without paying the cost.",
+    "securityEffectText": "[Security] You may use this card without paying the cost.",
+    "optionEffect": "Use Req. ＜[TERMINAL] trait＞\n[Main] Delete up to 15000 DP total worth of your opponent's Digimon.\n＜Arts Digivolve＞",
+    "set": "EX14",
+    "kinds": ["Digimon", "Option"],
+    "forms": ["Mega"],
+    "maxCountInDeck": 4,
+    "imageId": "EX14-012",
+    "isDualCard": true,
+    "optionColorRequirements": ["Red"]
   }
 ]
