@@ -216956,6 +216956,20 @@
           }
         ],
         "frequency": "OncePerTurn"
+      },
+      {
+        "trigger": "WhenLinking",
+        "isLinked": true,
+        "actions": [
+          {
+            "kind": "Return",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "dp": { "op": "lte", "value": 5000 } },
+              "count": 1
+            },
+            "to": "deckBottom"
+          }
+        ]
       }
     ],
     "coverage": "full",
