@@ -717,6 +717,7 @@ it.each(["selection", "optional", "sourceHost"] as const)("highlights the active
       <BoardSourceHostPrompt {...props} />
     ),
   );
+  if (kind !== "optional") fireEvent.click(screen.getByRole("button", { name: "View effect" }));
   expect(container.querySelector(".board-prompt__clause")?.textContent).toBe(props.clause);
   expect(container.querySelector(".decision-overlay__effect-step")?.textContent).toBe(props.clauseEmphasis);
 });

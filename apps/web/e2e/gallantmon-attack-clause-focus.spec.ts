@@ -23,6 +23,7 @@ test("Gallantmon distinguishes deletion and attack steps and finishes both pendi
         return {};
       }
       if (decision.options.effectKey === "AD1-008/ir-7-0" && decision.kind === "chooseTargets") {
+        await page.getByRole("button", { name: "View effect", exact: true }).click();
         await expect(page.locator(".decision-overlay__effect-step")).toHaveText(
           "[When Digivolving] Delete up to 10000 DP total worth of your opponent's Digimon.",
         );
