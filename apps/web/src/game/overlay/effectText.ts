@@ -501,7 +501,7 @@ export function playerFacingEffectClause({
     normalize(supplied) !== normalize(clause) &&
     normalize(supplied).includes(normalize(clause))
   )
-    return stripTrailingArtsDigivolve(supplied);
+    return stripTrailingCardRequirements(supplied);
   // A clause extracted after a processing cost starts its own sentence in the dialog.
   // Permit its initial capital without accepting changes to the printed words.
   const sentencePart = part?.replace(/^[A-Z]/, (letter) => letter.toLowerCase());
@@ -516,8 +516,8 @@ export function playerFacingEffectClause({
     (printedPart ||
       [clause, timingClause].some((candidate) => candidate && normalize(candidate).includes(normalize(part))))
   )
-    return stripTrailingArtsDigivolve(part);
-  return stripTrailingArtsDigivolve(clause ?? (grantedPrefix ? supplied : undefined));
+    return stripTrailingCardRequirements(part);
+  return stripTrailingCardRequirements(clause ?? (grantedPrefix ? supplied : undefined));
 }
 
 /**
@@ -537,6 +537,11 @@ export function noticeEffectClause(options: {
   return printedModalBullets(clause).length >= 2 ? printedModalPreamble(clause) : clause;
 }
 
-function stripTrailingArtsDigivolve(text: string | undefined): string | undefined {
-  return text?.replace(/(?:\s*[＜<]Arts Digivolve[＞>])+\s*$/i, "").trim() || undefined;
+function stripTrailingCardRequirements(text: string | undefined): string | undefined {
+  return (
+    text
+      ?.replace(/\n\s*[＜<[]Assembly\s*[-−–]\s*\d+\s*[＞>\]][\s\S]*$/i, "")
+      .replace(/(?:\s*[＜<]Arts Digivolve[＞>])+\s*$/i, "")
+      .trim() || undefined
+  );
 }

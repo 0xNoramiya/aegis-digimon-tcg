@@ -115,14 +115,16 @@ export function createTrashVerbs(pc: PrimitivesContext) {
     // can gate on its own hand.
     const handTrashedSeats = new Set<Seat>();
     const fromHand: { instanceId: string; cardId: string; seat: Seat }[] = [];
-    if (engine.fireSubTrigger) {
-      for (const p of state.players) {
-        if (p === undefined) continue;
-        for (const card of p.hand) {
-          if (!instanceIds.includes(card.instanceId)) continue;
-          handTrashedSeats.add(p.seat);
-          fromHand.push({ instanceId: card.instanceId, cardId: card.cardId, seat: p.seat });
+    for (const p of state.players) {
+      if (p === undefined) {
+        continue;
+      }
+      for (const card of p.hand) {
+        if (!instanceIds.includes(card.instanceId)) {
+          continue;
         }
+        handTrashedSeats.add(p.seat);
+        fromHand.push({ instanceId: card.instanceId, cardId: card.cardId, seat: p.seat });
       }
     }
     // "When an effect trashes this card in your battle area" (BT19-093, BT19-098, P-159) reads
@@ -195,7 +197,7 @@ export function createTrashVerbs(pc: PrimitivesContext) {
         instanceIds: cards.map((card) => card.instanceId),
         ...origin,
         to: Zone.Trash,
-        ...(origin.from === Zone.Deck
+        ...(origin.from === Zone.Deck || origin.from === Zone.Hand
           ? {
               cardIds: cards.map((card) => card.cardId),
               artIds: cards.map((card) => card.artId || card.cardId),
@@ -265,16 +267,17 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       const handTrashedInstanceIds = fromHand
         .filter((entry) => entry.seat === seat && movedIds.has(entry.instanceId))
         .map((entry) => entry.instanceId);
-      if (handTrashedInstanceIds.length > 0)
-        await engine.fireSubTrigger!("whenHandTrashed", {
+      if (handTrashedInstanceIds.length > 0) {
+        await engine.fireSubTrigger?.("whenHandTrashed", {
           handTrashedSeat: seat,
           handTrashedInstanceIds,
           ...(opts?.byEffectSeat !== undefined ? { byEffectSeat: opts.byEffectSeat } : {}),
         });
+      }
     }
     for (const entry of fromHand) {
       if (!movedIds.has(entry.instanceId)) continue;
-      await engine.fireSubTrigger!("whenTrashedFromHand", {
+      await engine.fireSubTrigger?.("whenTrashedFromHand", {
         handTrashedSeat: entry.seat,
         trashedFromHandCardId: entry.cardId,
         trashedFromHandInstanceId: entry.instanceId,

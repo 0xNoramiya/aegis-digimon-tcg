@@ -37,6 +37,7 @@ export interface DeckPrimitives {
   ): () => void;
   /** Emits `effectOptionChosen` for the printed bullet of the modal option about to resolve. */
   announceEffectOption?(ctx: EffectContext, clause: string): void;
+  announceEffectClauseAdvanced?(ctx: EffectContext, clause: string): void;
   restrictSecurityAddsFromEffect?(blockedEffectSeat: Seat, granterSeat: Seat, duration: EffectDuration): void;
   grantPierce(permanentId: string, duration: EffectDuration, opts?: { continuous?: boolean }): void;
   /**

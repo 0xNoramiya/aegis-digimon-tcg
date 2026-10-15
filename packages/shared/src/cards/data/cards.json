@@ -109192,5 +109192,29 @@
     "imageId": "EX14-012",
     "isDualCard": true,
     "optionColorRequirements": ["Red"]
+  },
+  {
+    "cardId": "EX14-054",
+    "nameEn": "Barbamon",
+    "colors": ["Purple"],
+    "level": 6,
+    "playCost": 13,
+    "dp": 13000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 5,
+        "memoryCost": 4
+      }
+    ],
+    "attributes": ["Virus"],
+    "types": ["Demon Lord", "Greed", "Seven Great Demon Lords"],
+    "rarity": "SR",
+    "effectText": "[Digivolve] Lv.5 w/[Fallen Angel]/[Greed] trait: Cost 3\n＜Alliance＞ ＜Engage＞\n[On Play] [When Digivolving] [When Attacking] [Once Per Turn] You may play 1 play cost 6 or lower [Evil], [Wizard], [Fallen Angel] or [Greed] trait Digimon card from your trash without paying the cost. Then, your opponent trashes 1 card in their hand.\n[All Turns] [Once Per Turn] When your opponent's hand is trashed from, you may delete all of their lowest level Digimon.\n＜Assembly -5＞ 3 [Greed] trait cards w/different levels.",
+    "set": "EX14",
+    "kinds": ["Digimon"],
+    "forms": ["Mega"],
+    "maxCountInDeck": 4,
+    "imageId": "EX14-054"
   }
 ]

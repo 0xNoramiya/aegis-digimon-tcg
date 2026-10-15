@@ -346,6 +346,17 @@ export type ServerEvent =
       clause: string;
     }
   | {
+      kind: "effectClauseAdvanced";
+      effectKey?: string;
+      seat: Seat;
+      sourceCardId: string;
+      sourceInstanceId?: string;
+      sourcePermanentId?: string;
+      timing?: string;
+      isInherited?: boolean;
+      clause: string;
+    }
+  | {
       // A triggered effect (On Play / When Digivolving / On Deletion / ...) finished
       // resolving. `timing` is the enum member name (e.g. "OnPlay") so the client can
       // slice the matching printed clause out of the card's effect text for a transient
@@ -595,6 +606,7 @@ export const SERVER_EVENT_KINDS = [
   "effectTriggered",
   "resolutionOrderChosen",
   "effectOptionChosen",
+  "effectClauseAdvanced",
   "effectResolved",
   "effectHadNoEffect",
   "dpModifierApplied",
