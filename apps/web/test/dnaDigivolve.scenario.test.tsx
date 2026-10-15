@@ -141,8 +141,14 @@ scenario("dna-digivolve", () => {
       .closest('[data-drop="perm-you"]') as HTMLElement;
     expect(within(resultEl).getByText(/^×2$/i)).toBeTruthy();
     tap(resultEl);
-    expect(await screen.findByRole("button", { name: /^open kokatorimon$/i }, { timeout: 10_000 })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /^open reppamon$/i })).toBeTruthy();
+    expect(
+      within(await screen.findByRole("group", { name: /^\d+ sources?$/i })).getByRole("button", {
+        name: /^kokatorimon$/i,
+      }),
+    ).toBeTruthy();
+    expect(
+      within(screen.getByRole("group", { name: /^\d+ sources?$/i })).getByRole("button", { name: /^reppamon$/i }),
+    ).toBeTruthy();
     await opponent.leave();
   }, 60_000);
 });

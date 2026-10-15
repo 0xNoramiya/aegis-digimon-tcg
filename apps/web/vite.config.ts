@@ -29,11 +29,42 @@ export default defineConfig({
     projects: [
       {
         extends: true,
-        test: { name: "default", exclude: [...configDefaults.exclude, "e2e/**", "src/design/tokenArt/**/*.test.tsx"] },
+        test: { name: "inspector-sources", include: ["src/game/arenaInspectorSources.test.tsx"], environment: "jsdom" },
       },
       {
         extends: true,
-        test: { name: "token-art", include: ["src/design/tokenArt/**/*.test.tsx"], environment: "jsdom" },
+        test: { name: "dp-hint", include: ["src/game/piece/PermanentDpDeltaHint.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: {
+          name: "default",
+          exclude: [
+            ...configDefaults.exclude,
+            "e2e/**",
+            "src/design/tokenArt/**/*.test.tsx",
+            "src/screens/community/**/*.test.tsx",
+            "src/game/arenaInspectorSources.test.tsx",
+            "src/game/piece/PermanentDpDeltaHint.test.tsx",
+            "src/game/log/**/*.test.tsx",
+          ],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "token-art",
+          include: ["src/design/tokenArt/**/*.test.tsx"],
+          environment: "jsdom",
+        },
+      },
+      {
+        extends: true,
+        test: { name: "community-ui", include: ["src/screens/community/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "match-log-ui", include: ["src/game/log/**/*.test.tsx"], environment: "jsdom" },
       },
     ],
     exclude: [...configDefaults.exclude, "e2e/**"],

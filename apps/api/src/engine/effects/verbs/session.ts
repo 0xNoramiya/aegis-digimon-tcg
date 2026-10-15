@@ -8,7 +8,14 @@ import type { PrimitivesContext } from "./context.js";
  */
 
 export function createSessionVerbs(pc: PrimitivesContext) {
-  const { engine, continuous, effectSeatStack, effectSourceKindsStack, effectSourcePermanentIdStack } = pc;
+  const {
+    engine,
+    continuous,
+    effectSeatStack,
+    effectSourceKindsStack,
+    effectSourcePermanentIdStack,
+    effectTargetsEmittedStack,
+  } = pc;
 
   const announceEffect: Primitives["announceEffect"] = (ctx, effect) => {
     const announced = {
@@ -42,12 +49,14 @@ export function createSessionVerbs(pc: PrimitivesContext) {
     effectSeatStack.push(seat);
     effectSourceKindsStack.push(sourceKinds);
     effectSourcePermanentIdStack.push(sourcePermanentId);
+    effectTargetsEmittedStack.push(new Set());
     engine.beginEffectBody?.();
   };
   const leaveEffectResolution: Primitives["leaveEffectResolution"] = () => {
     effectSeatStack.pop();
     effectSourceKindsStack.pop();
     effectSourcePermanentIdStack.pop();
+    effectTargetsEmittedStack.pop();
     engine.finishEffectBody?.();
   };
   const resolvingEffectSourceKinds: Primitives["resolvingEffectSourceKinds"] = () => effectSourceKindsStack.at(-1);

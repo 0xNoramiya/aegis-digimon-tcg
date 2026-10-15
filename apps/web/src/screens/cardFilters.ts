@@ -177,14 +177,16 @@ export function useCardFilter(
   all: readonly CardDefinition[],
   {
     colorFilterMode = "any",
+    initialQuery = "",
     savedSort,
   }: {
     colorFilterMode?: ColorFilterMode;
+    initialQuery?: string;
     /** Keeps the sort in a store owned by the caller, such as a saved preference. */
     savedSort?: { sort: CardSort; setSort: (sort: CardSort) => void };
   } = {},
 ): CardFilter {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [colors, setColors] = useState<ColorName[]>([]);
   const [kinds, setKinds] = useState<KindFilter[]>([]);
   const [levels, setLevels] = useState<LevelFilter[]>([]);

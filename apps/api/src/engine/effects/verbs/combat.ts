@@ -1,3 +1,4 @@
+import { EffectDuration } from "@aegis/shared/schema/enums";
 import { requireCardDefinition, type AttackTarget } from "@aegis/shared";
 import type { Primitives } from "../EffectContext.js";
 import type { ForceAttackOptions } from "../context/primitives/index.js";
@@ -97,7 +98,18 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     await combat.resolveAttack(controllerSeat, attacker, target, {
       withoutTap: opts?.withoutSuspending ?? false,
       attackMechanic: opts?.attackMechanic,
-      afterAttackDeclaration: opts?.afterAttackDeclaration,
+      afterAttackDeclaration: async () => {
+        if (opts?.attackMechanic === "Execute") {
+          continuous.addCustomEffectGrant(
+            attacker.topCard.instanceId,
+            controllerSeat,
+            "Execute deletion",
+            EffectDuration.UntilEndAttack,
+            { sourceCardId: opts.decisionProvenance?.sourceCardId ?? attacker.topCard.cardId },
+          );
+        }
+        await opts?.afterAttackDeclaration?.();
+      },
       afterAttackTriggers: async () => {
         await opts?.afterAttackTriggers?.();
         const option = player(controllerSeat).resolvingOption;

@@ -7,6 +7,7 @@ import { useSyncExternalStore } from "react";
  */
 export interface RowCardWidths {
   heightFitted: number;
+  standard: number;
   drawn: number;
   beside: number;
 }
@@ -28,12 +29,14 @@ function settle() {
   const next = all.length
     ? {
         heightFitted: Math.min(...all.map((widths) => widths.heightFitted)),
+        standard: Math.min(...all.map((widths) => widths.standard)),
         drawn: Math.min(...all.map((widths) => widths.drawn)),
         beside: Math.min(...all.map((widths) => widths.beside)),
       }
     : undefined;
   if (
     next?.heightFitted === narrowest?.heightFitted &&
+    next?.standard === narrowest?.standard &&
     next?.drawn === narrowest?.drawn &&
     next?.beside === narrowest?.beside
   )

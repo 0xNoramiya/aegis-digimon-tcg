@@ -1,3 +1,5 @@
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
+import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
 import {
   CardKind,
   Permanent,
@@ -267,6 +269,7 @@ export function createDigivolveVerbs(pc: PrimitivesContext) {
     // Option, which this digivolution routes instead of the trash step. Same marker the
     // trash and self-placement routes carry, so the client's resolving-Option dock closes.
     const routesUsedOption = state.players.some((owner) => owner.resolvingOption?.instanceId === sourceInstanceId);
+    const origin = locateMoveOrigins({ state, instanceIds: [sourceInstanceId] }).get(sourceInstanceId);
     const instance = removeLooseInstance(state, sourceInstanceId);
     if (instance === undefined) return undefined;
     instance.faceUp = true;
@@ -289,7 +292,8 @@ export function createDigivolveVerbs(pc: PrimitivesContext) {
     engine.emit({
       kind: "cardsMoved",
       instanceIds: [instance.instanceId],
-      from: "various",
+      from: origin?.from ?? CardMovePosition.VARIOUS.value,
+      ...origin,
       to: permanent.inBreeding ? Zone.Breeding : Zone.BattleArea,
       ...(routesUsedOption ? { optionUsed: true as const } : {}),
     });

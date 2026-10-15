@@ -2,6 +2,7 @@ import { EffectDuration, type CardDefinition, type Seat } from "@aegis/shared";
 import type { Primitives } from "../EffectContext.js";
 
 import type { PrimitivesContext } from "./context.js";
+import { emitEffectTargetsSelected } from "./emitEffectTargetsSelected.js";
 
 /**
  * The static-continuous prohibitions: what a permanent or player cannot do,
@@ -36,6 +37,9 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
       continuous?: boolean;
     },
   ): void => {
+    if (opts?.continuous !== true && continuousOpt() === undefined) {
+      emitEffectTargetsSelected({ pc, permanentIds: [permanentId] });
+    }
     continuous.addRestriction(permanentId, restriction, durationForTarget(permanentId, duration), {
       ...(opts?.continuous === true ? { continuous: true } : continuousOpt()),
       fromSourceKind: opts?.fromSourceKind,
@@ -84,6 +88,9 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
     targetPermanentId: string,
     duration: EffectDuration,
   ): void => {
+    if (continuousOpt() === undefined) {
+      emitEffectTargetsSelected({ pc, permanentIds: [attackerPermanentId] });
+    }
     continuous.addAttackTargetRestriction(
       attackerPermanentId,
       targetPermanentId,

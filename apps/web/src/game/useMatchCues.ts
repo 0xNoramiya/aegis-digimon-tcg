@@ -1,3 +1,4 @@
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { createDiscardedSourceResolution } from "./match/present/announcements";
 import { createDiscardedSourcePanels } from "./match/narration/presentableNarration";
 /* Everything the board plays back at the player because the server said
@@ -476,7 +477,9 @@ export function useMatchCues({
             (event) =>
               event.kind === "cardsMoved" &&
               event.to === "hand" &&
-              (event.from === "various" || event.from === "battleArea"),
+              (event.from === CardMovePosition.VARIOUS.value ||
+                event.from === "battleArea" ||
+                event.from === CardMovePosition.DIGIVOLUTION_CARDS.value),
           )
           .flatMap((event) => (event.kind === "cardsMoved" ? event.instanceIds : []))
           .find((instanceId) =>
@@ -1086,6 +1089,7 @@ export function useMatchCues({
     previousDrawStateRef,
     phaseStateRef,
     state,
+    presentedStateVersion,
     setPendingPhaseBanners,
     setTurnTransition,
     setAnnouncedTurn,

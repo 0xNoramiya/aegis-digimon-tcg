@@ -66,6 +66,7 @@ function narratedEventKinds(relativePath: string, functionName: string): Set<str
  * the only difference between a deliberate silence and a forgotten event is this note.
  */
 const DELIBERATELY_SILENT: Partial<Record<ServerEventKind, string>> = {
+  phaseChanged: "rendered as turn and phase headings in the chronological match history",
   stackTopResolved: "supplies the resolved DP for the physical stack peel; cardsMoved narrates the removal",
   // Starts the physical clash before protection questions; it reports potential losses,
   // not deletions. combatResolved narrates the final result after those questions.

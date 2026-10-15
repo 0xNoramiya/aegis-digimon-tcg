@@ -198,6 +198,12 @@ export function CommunityBrowse({
                           ))}
                         </span>
                         {deck.legal ? null : <span className="community-tile__illegal">{t("community.notLegal")}</span>}
+                        {deck.hasGuide ? (
+                          <span className="community-tile__guide" title={t("community.guide.badge")}>
+                            <Icons.BookOpen size={14} />
+                            <span className="sr-only">{t("community.guide.badge")}</span>
+                          </span>
+                        ) : null}
                         <LikeButton
                           key={`${deck.id}:${deck.likeCount}:${deck.likedByMe}`}
                           deck={deck}

@@ -1,5 +1,12 @@
 import type { FreezePulse } from "../freezePulse";
 
+const STATUS_PULSE_CLASSES: Record<FreezePulse["kind"], string> = {
+  cannotAttack: "game-permanent-freeze",
+  cannotBlock: "game-permanent-freeze",
+  debuff: "game-permanent-debuff",
+  buff: "game-permanent-buff",
+};
+
 /** The permanent wrapper's class list, one cue per standing visual state. */
 export function permanentClassName({
   shake,
@@ -19,7 +26,7 @@ export function permanentClassName({
   return [
     "game-permanent",
     shake ? "game-permanent-shake" : "",
-    freezePulse ? "game-permanent-freeze" : "",
+    freezePulse ? STATUS_PULSE_CLASSES[freezePulse.kind] : "",
     effectSource ? "game-permanent--effect-source" : "",
     effectLinked ? "game-permanent--effect-linked" : "",
     candidate ? "game-permanent--candidate" : "",

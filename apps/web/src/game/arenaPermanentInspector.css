@@ -46,6 +46,84 @@
   box-shadow: var(--ds-shadow-dialog);
 }
 
+.arena-permanent-inspector[data-sources="column"] .arena-permanent-inspector__body {
+  grid-template-columns: clamp(7rem, 15vw, 11rem) minmax(0, 1fr) minmax(14rem, 1.3fr);
+  max-width: 80rem;
+}
+
+.arena-permanent-inspector__sources {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--inspector-muted) transparent;
+  overscroll-behavior: contain;
+  border-left: 1px solid var(--inspector-line);
+  padding-left: clamp(0.75rem, 1.6vw, 1.5rem);
+}
+
+.arena-permanent-inspector__sources > h3 {
+  margin-top: 0;
+}
+
+.arena-permanent-inspector__sources .arena-permanent-inspector__effect {
+  margin-bottom: 0.5rem;
+}
+
+.arena-permanent-inspector__sources .arena-permanent-inspector__effect:last-child {
+  margin-bottom: 0;
+}
+
+.arena-permanent-inspector .arena-permanent-inspector__sources .arena-permanent-inspector__effect p {
+  font-size: calc(0.8125rem * var(--ds-text-scale));
+  line-height: 1.4;
+}
+
+.arena-permanent-inspector__strip {
+  display: flex;
+  gap: 0.375rem;
+  overflow-x: auto;
+  flex-shrink: 0;
+  padding: 0.25rem;
+}
+
+.arena-permanent-inspector__strip .arena-permanent-inspector__source {
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.arena-permanent-inspector__strip .arena-permanent-inspector__source > div {
+  width: 2.125rem !important;
+}
+
+.arena-permanent-inspector__strip [aria-pressed="true"] {
+  outline: 2px solid var(--ds-ink-accent);
+}
+
+.arena-permanent-inspector__strip-detail {
+  display: flex;
+  gap: 0.375rem;
+  flex-shrink: 0;
+  max-height: 7rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.arena-permanent-inspector__strip-detail > .arena-permanent-inspector__source {
+  flex-shrink: 0;
+  align-self: flex-start;
+  color: var(--inspector-ink);
+}
+
+.arena-permanent-inspector__effect--source[data-thumbnail="false"] {
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1;
+  min-width: 0;
+}
+
 .arena-permanent-inspector__art,
 .arena-permanent-inspector__source {
   display: block;
@@ -448,7 +526,12 @@
   /* One scroll for the whole reading column: nested scroll boxes a few lines tall
      cut text mid-line. The actions stay pinned under it. */
   .arena-permanent-inspector
-    :is(.arena-permanent-inspector__stats, .arena-permanent-inspector__state, .arena-permanent-inspector__effects) {
+    :is(
+      .arena-permanent-inspector__stats,
+      .arena-permanent-inspector__state,
+      .arena-permanent-inspector__effects,
+      .arena-permanent-inspector__strip-detail
+    ) {
     flex: none;
     max-height: none;
     overflow: visible;
@@ -465,6 +548,9 @@
 }
 
 @media (max-height: 650px) {
+  .arena-permanent-inspector__strip-detail {
+    max-height: 4.5rem;
+  }
   .arena-permanent-inspector__reading {
     gap: 0.25rem;
   }

@@ -86,8 +86,10 @@ export function ReplayPlayer({
     () =>
       replay.frames.map(
         (entry) =>
-          buildMatchLog(entry.events, replay.viewerSeat, new Map(), t, 1)[0]?.text ??
-          `${t("replay.turn")} ${entry.state.turnCount} · ${entry.state.phase}`,
+          buildMatchLog(entry.events, replay.viewerSeat, new Map(), t, 1, {
+            0: replay.players[0],
+            1: replay.players[1],
+          })[0]?.text ?? `${t("replay.turn")} ${entry.state.turnCount} · ${entry.state.phase}`,
       ),
     [replay, t],
   );
@@ -105,6 +107,10 @@ export function ReplayPlayer({
     [presentedFrames, cursor.from],
   );
   // Every dependency in this causal span arrives before the queue waits for it.
+  const historyEvents = useMemo(
+    () => replay.frames.slice(0, cursor.index + 1).flatMap((frame) => frame.events),
+    [replay, cursor.index],
+  );
   const events = useMemo(() => presentedFrames.flatMap((entry) => entry.events), [presentedFrames]);
   const snapshotStart = Math.min(Math.max(0, cursor.index - 39), Math.max(0, cursor.from - 1));
   const connection = useMemo(
@@ -263,6 +269,8 @@ export function ReplayPlayer({
           <GameScreen
             key={`${cursor.epoch}-${viewerSeat}`}
             replayMode
+            historyEvents={historyEvents}
+            replayPlayers={replay.players}
             presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}
             joinOptions={{ displayName: replay.players[viewerSeat], deck: emptyDeck }}
             identityColor="Blue"

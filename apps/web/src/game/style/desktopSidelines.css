@@ -39,13 +39,6 @@
     --arena-security-bottom: -3.5rem;
   }
 
-  .game-board .game-field .game-battle-zones > .game-battle-row[data-field-layout="organized"] {
-    --field-support-scale: 1;
-    --field-reserve-support: 1;
-    --field-overlap-lanes: 1;
-    --field-fit-width: 1;
-  }
-
   /* Both rows clear the wider sideline on each side, so their cards centre on the
      board's axis instead of drifting toward the narrower deck and trash column. */
   .aegis-arena .game-board .game-battle-zones > :is(.game-battle-row--opp, .game-battle-row--you) {

@@ -26,7 +26,7 @@ describe("bot match client projections", () => {
       const moves = result.events!.filter((event) => event.kind === "cardsMoved");
       expect(
         moves.some((recovery, recoveryIndex) => {
-          if (recovery.from !== "various" || recovery.to !== "hand") return false;
+          if (recovery.from !== "trash" || recovery.to !== "hand") return false;
           const discardIndex = moves.findIndex(
             (move, index) =>
               index > recoveryIndex &&

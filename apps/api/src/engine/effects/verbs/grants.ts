@@ -14,6 +14,7 @@ import { dnaDigivolveCostFor } from "../verbs/digivolveCost.js";
 import { peekLooseInstance } from "../verbs/looseInstances.js";
 
 import type { PrimitivesContext } from "./context.js";
+import { emitEffectTargetsSelected } from "./emitEffectTargetsSelected.js";
 
 /**
  * The static-continuous grants: keywords, names, colors, kinds and custom
@@ -64,6 +65,11 @@ export function createGrantsVerbs(pc: PrimitivesContext) {
               : opts?.sourceCardId !== undefined || opts?.sourceSeat !== undefined
                 ? provenance
                 : undefined;
+    const isContinuousGrant =
+      opts?.continuous === true || (duration === EffectDuration.Permanent && continuousOpt() !== undefined);
+    if (!isContinuousGrant) {
+      emitEffectTargetsSelected({ pc, permanentIds: [permanentId] });
+    }
     continuous.addKeywordGrant(permanentId, keyword, durationForTarget(permanentId, duration), amount, continuousOpts);
   };
 
