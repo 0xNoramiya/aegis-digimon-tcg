@@ -8,7 +8,14 @@ import type { PrimitivesContext } from "./context.js";
  */
 
 export function createSessionVerbs(pc: PrimitivesContext) {
-  const { engine, continuous, effectSeatStack, effectSourceKindsStack, effectSourcePermanentIdStack } = pc;
+  const {
+    engine,
+    continuous,
+    effectSeatStack,
+    effectSourceKindsStack,
+    effectSourcePermanentIdStack,
+    effectTargetsEmittedStack,
+  } = pc;
 
   const announceEffect: Primitives["announceEffect"] = (ctx, effect) => {
     const announced = {
@@ -18,6 +25,7 @@ export function createSessionVerbs(pc: PrimitivesContext) {
       sourcePermanentId: ctx.source.permanent()?.permanentId,
       effectKey: effect.effectKey,
       description: effect.description,
+      ...(effect.effectTextPart !== undefined ? { effectTextPart: effect.effectTextPart } : {}),
       timing: effect.timing,
       ...(effect.beforeRemoval === true ? { beforeRemoval: true } : {}),
       ...(effect.isInherited === true ? { isInherited: true } : {}),
@@ -42,12 +50,14 @@ export function createSessionVerbs(pc: PrimitivesContext) {
     effectSeatStack.push(seat);
     effectSourceKindsStack.push(sourceKinds);
     effectSourcePermanentIdStack.push(sourcePermanentId);
+    effectTargetsEmittedStack.push(new Set());
     engine.beginEffectBody?.();
   };
   const leaveEffectResolution: Primitives["leaveEffectResolution"] = () => {
     effectSeatStack.pop();
     effectSourceKindsStack.pop();
     effectSourcePermanentIdStack.pop();
+    effectTargetsEmittedStack.pop();
     engine.finishEffectBody?.();
   };
   const resolvingEffectSourceKinds: Primitives["resolvingEffectSourceKinds"] = () => effectSourceKindsStack.at(-1);

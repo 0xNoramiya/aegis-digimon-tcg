@@ -61,7 +61,11 @@ export async function runReplacement(
         : undefined;
   const oncePerTurnKey = action.oncePerTurnKey;
   const replacementBudget =
-    oncePerTurnKey === undefined ? {} : { oncePerTurnKey: `${ctx.source.instanceId}/${oncePerTurnKey}` };
+    oncePerTurnKey === undefined
+      ? {}
+      : {
+          oncePerTurnKey: `${ctx.source.instanceId}/${ctx.conferralGranterInstanceId ?? "printed"}/${oncePerTurnKey}`,
+        };
   // The prose compiler also emits a CROSS-CARD reduceCost as a nested Replacement — an outer
   // `wouldBePlayed` reaction scoped by `sourceFilter` ("an [Eater] Digimon", not "this card")
   // wrapping the inner `{mode:"reduceCost", amount}` Replacement, rather than setting mode/amount

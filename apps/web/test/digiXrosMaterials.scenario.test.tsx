@@ -100,8 +100,14 @@ scenario("digi-xros-materials", () => {
         .closest('[data-drop="perm-you"]') as HTMLElement;
       expect(within(result).getByText("×2")).toBeTruthy();
       tap(result);
-      expect(await screen.findByRole("button", { name: /^open shoutmon$/i })).toBeTruthy();
-      expect(screen.getByRole("button", { name: /^open ballistamon$/i })).toBeTruthy();
+      expect(
+        within(await screen.findByRole("group", { name: /^\d+ sources?$/i })).getByRole("button", {
+          name: /^shoutmon$/i,
+        }),
+      ).toBeTruthy();
+      expect(
+        within(screen.getByRole("group", { name: /^\d+ sources?$/i })).getByRole("button", { name: /^ballistamon$/i }),
+      ).toBeTruthy();
       await opponent.leave();
     },
     45_000,

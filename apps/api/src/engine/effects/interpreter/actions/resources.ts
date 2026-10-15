@@ -96,7 +96,6 @@ export async function runResourceAction(ctx: EffectContext, action: Action, scop
       ctx.fx.setTurnEndMinMemory?.(ctx.source.ownerSeat, action.minimum);
       return false;
     case "TrashTopDeck": {
-      // No dedicated "mill" primitive; reveal then trash the revealed top N.
       const seats: Seat[] =
         action.controller === "both"
           ? [ctx.source.ownerSeat, ctx.game.opponentOf(ctx.source.ownerSeat)]
@@ -117,23 +116,36 @@ export async function runResourceAction(ctx: EffectContext, action: Action, scop
               ),
             ))
           : maximum;
-      for (const seat of seats) {
-        const revealed = await ctx.fx.reveal(seat, amount, ctx.source.cardId);
-        if (revealed.length > 0) {
-          const ids = revealed.map((c) => c.instanceId);
-          await ctx.fx.trash(ids, { byEffectSeat: ctx.source.ownerSeat });
-          totalTrashed += ids.length;
-          await ctx.fx.fireOnDiscardLibrary(seat, ids);
-          // Fire whenTrashedFromDeck once per trashed card so a card-specific watcher
-          // (BT19-097 "when THIS card is trashed from the deck") can match by card ID.
-          for (const card of revealed) {
-            await ctx.fx.fireWhenTrashedFromDeck(card.cardId, card.instanceId, ctx.source.cardId);
+      const finishAnnouncement =
+        action.effectTextPart !== undefined && ctx.activeTiming !== undefined
+          ? ctx.fx.announceEffect?.(ctx, {
+              effectKey: `${ctx.activeEffectKey ?? ctx.source.cardId}/processing/${action.kind}`,
+              description: action.effectTextPart,
+              effectTextPart: action.effectTextPart,
+              timing: ctx.activeTiming,
+            })
+          : undefined;
+      try {
+        for (const seat of seats) {
+          const revealed = [...ctx.game.player(seat).deck].slice(0, amount);
+          if (revealed.length > 0) {
+            const ids = revealed.map((c) => c.instanceId);
+            await ctx.fx.trash(ids, { byEffectSeat: ctx.source.ownerSeat });
+            totalTrashed += ids.length;
+            await ctx.fx.fireOnDiscardLibrary(seat, ids);
+            // Fire whenTrashedFromDeck once per trashed card so a card-specific watcher
+            // (BT19-097 "when THIS card is trashed from the deck") can match by card ID.
+            for (const card of revealed) {
+              await ctx.fx.fireWhenTrashedFromDeck(card.cardId, card.instanceId, ctx.source.cardId);
+            }
           }
         }
-      }
-      if (action.trackCount !== undefined) {
-        ctx.namedCounts ??= new Map();
-        ctx.namedCounts.set(action.trackCount, totalTrashed);
+        if (action.trackCount !== undefined) {
+          ctx.namedCounts ??= new Map();
+          ctx.namedCounts.set(action.trackCount, totalTrashed);
+        }
+      } finally {
+        finishAnnouncement?.();
       }
       return false;
     }

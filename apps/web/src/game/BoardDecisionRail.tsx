@@ -16,6 +16,8 @@ import "./overlay/fieldDecisionRail.css";
 import { usePromptHandSpace, type PromptHandSpace } from "./overlay/choice/usePromptHandSpace";
 import { useDecisionSourceMask } from "./overlay/choice/useDecisionSourceMask";
 import { useNoticeBandPassThrough } from "./overlay/choice/useNoticeBandPassThrough";
+import { PromptMoveHandle } from "./overlay/choice/PromptMoveHandle";
+import { useDraggableWindow } from "./chat/useDraggableWindow";
 
 function useEscapeToDialog(onOpenDialog: (() => void) | undefined) {
   useEffect(() => {
@@ -109,6 +111,10 @@ export function BoardPromptRail({
   const noticeBand = useNoticeBandPassThrough();
   const focusProps = useEffectPromptFocus(!modal, handSpace);
   usePromptHandSpace(focusProps.ref, !modal, handSpace);
+  const drag = useDraggableWindow(focusProps.ref, {
+    viewportGutter: 16,
+    resetKey: `${variant}:${label}:${sourcePermanentId ?? ""}`,
+  });
   return (
     <>
       <div
@@ -128,9 +134,16 @@ export function BoardPromptRail({
         data-testid="board-prompt"
         data-variant={variant}
         data-prompt-surface="left"
+        data-prompt-dragged={drag.position === undefined ? undefined : true}
         style={
           {
             "--decision-hand-clearance": handClearance === undefined ? undefined : `${handClearance}px`,
+            ...(drag.position
+              ? {
+                  "--effect-prompt-drag-left": `${drag.position.left}px`,
+                  "--effect-prompt-drag-top": `${drag.position.top}px`,
+                }
+              : {}),
           } as CSSProperties
         }
       >
@@ -173,6 +186,7 @@ export function BoardPromptRail({
           </p>
         ) : null}
         <div className="board-prompt__actions">{children}</div>
+        <PromptMoveHandle drag={drag} className="board-prompt__move-handle" tabIndex={-1} />
       </section>
     </>
   );

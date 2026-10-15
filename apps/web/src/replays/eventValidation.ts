@@ -85,6 +85,8 @@ export function validReplayEvent(value: unknown): boolean {
   for (const [key, check] of Object.entries({
     seat,
     cardId: string,
+    fromSeat: seat,
+    fromHost: (host: unknown) => record(host) && string(host.permanentId) && string(host.hostCardId),
     artId: string,
     permanentId: string,
     instanceId: string,

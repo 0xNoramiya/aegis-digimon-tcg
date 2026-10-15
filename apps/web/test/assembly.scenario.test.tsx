@@ -105,7 +105,11 @@ scenario("assembly", () => {
       .closest('[data-drop="perm-you"]') as HTMLElement;
     expect(within(result).getByText("×1")).toBeTruthy();
     tap(result);
-    expect(await screen.findByRole("button", { name: /^open musyamon$/i })).toBeTruthy();
+    expect(
+      within(await screen.findByRole("group", { name: /^\d+ sources?$/i })).getByRole("button", {
+        name: /^musyamon$/i,
+      }),
+    ).toBeTruthy();
     await opponent.leave();
   }, 60_000);
 });

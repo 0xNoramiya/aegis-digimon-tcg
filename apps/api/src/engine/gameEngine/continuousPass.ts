@@ -11,6 +11,7 @@ import { sameNumericMap } from "./schemaSync.js";
 import { listCandidateInstances } from "./ruleProcess.js";
 import { buildEffectContext, cardSourceOf } from "./effectContext.js";
 import type { GameEngine } from "../GameEngine.js";
+import { nestedTriggerSourceStillResident } from "#api/engine/gameEngine/subTriggers";
 
 /**
  * Re-derive every continuous (persistent / `EffectTiming.None`) effect from a clean
@@ -38,6 +39,9 @@ import type { GameEngine } from "../GameEngine.js";
  * the timing/boundary hooks do not already cover.
  */
 export async function recomputeContinuousEffects(engine: GameEngine, publish = true): Promise<void> {
+  engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter((pending) =>
+    nestedTriggerSourceStillResident(engine, pending),
+  );
   if (engine.recomputeInFlight !== undefined) {
     if (engine.continuousScope.getStore() === true) return;
     engine.recomputeQueued = true;

@@ -162,6 +162,7 @@ export function effectNoticeFromEvent(
       effectKey: event.effectKey,
       ...(event.beforeRemoval === true ? { beforeRemoval: true } : {}),
       description: event.description,
+      ...(event.effectTextPart !== undefined ? { effectTextPart: event.effectTextPart } : {}),
       isInherited: event.isInherited,
       ...(event.sourceInstanceId ? { sourceInstanceId: event.sourceInstanceId } : {}),
       ...(event.sourcePermanentId ? { sourcePermanentId: event.sourcePermanentId } : {}),

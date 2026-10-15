@@ -1188,6 +1188,8 @@ describe("community mystery deck selection", () => {
       publishedAt: 1,
       updatedAt: 1,
       status: "public" as const,
+      guide: null,
+      hasGuide: false,
       mainDeck: [...personal.mainDeck],
       eggDeck: [...personal.eggDeck],
       mainDeckArts: [...personal.mainDeck],

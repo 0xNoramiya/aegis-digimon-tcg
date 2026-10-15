@@ -1,3 +1,5 @@
+import { DeckGuide } from "@/screens/community/DeckGuide";
+import { DeckGuideEditor } from "@/screens/community/DeckGuideEditor";
 import { useEffect, useState } from "react";
 import { getCardDefinition, type CommunityDeck } from "@aegis/shared";
 import { communityApi } from "../../community/client";
@@ -37,6 +39,7 @@ export function CommunityDeckPage({
 }) {
   const { t, locale } = useTranslation();
   const [load, setLoad] = useState<Load>({ status: "loading" });
+  const [editingGuide, setEditingGuide] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [reported, setReported] = useState(false);
   const [moderating, setModerating] = useState(false);
@@ -45,6 +48,7 @@ export function CommunityDeckPage({
   useEffect(() => {
     let current = true;
     setLoad({ status: "loading" });
+    setEditingGuide(false);
     communityApi
       .deck(deckId)
       .then((deck) => {
@@ -187,6 +191,39 @@ export function CommunityDeckPage({
               onNotice(t("community.report.sent"));
             }}
           />
+        ) : null}
+
+        {deck.guide || (ownDeck && !hidden) ? (
+          <section className="community-guide" aria-labelledby="community-guide-title">
+            <SectionHeading
+              id="community-guide-title"
+              title={t("community.guide.title")}
+              action={
+                ownDeck && !hidden && !editingGuide ? (
+                  <Button size="sm" variant="secondary" icon={Icons.Pencil} onClick={() => setEditingGuide(true)}>
+                    {t(deck.guide ? "community.guide.edit" : "community.guide.add")}
+                  </Button>
+                ) : undefined
+              }
+            />
+            {editingGuide && ownDeck && !hidden ? (
+              <DeckGuideEditor
+                key={deck.id}
+                deckId={deck.id}
+                initialGuide={deck.guide}
+                onCancel={() => setEditingGuide(false)}
+                onSaved={(guide) => {
+                  setLoad({ status: "ready", deck: { ...deck, guide, hasGuide: guide !== null } });
+                  setEditingGuide(false);
+                  onNotice(t("community.guide.saved"));
+                }}
+              />
+            ) : deck.guide ? (
+              <DeckGuide guide={deck.guide} />
+            ) : (
+              <p className="community-guide__empty">{t("community.guide.emptyOwner")}</p>
+            )}
+          </section>
         ) : null}
 
         <section className="community-decklist" aria-labelledby="community-decklist-title">

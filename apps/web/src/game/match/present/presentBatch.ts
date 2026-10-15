@@ -1,3 +1,4 @@
+import { enqueuePublicPileMoves, type FlyPublicPileCard } from "@/game/match/present/enqueuePublicPileMoves";
 /* Present one server batch: everything the rules resolved in one entry into the engine.
 
    The batch is the unit every heuristic here reasons about — the combat lead-in, the
@@ -154,6 +155,7 @@ export function presentServerBatch({
   flushHeldNotices,
   launchDrawFlight,
   launchDeckToUnderFlight,
+  flyPublicPileCard,
   flyDockedOptionUnder,
   flyCardToDeck,
   flyCardToHand,
@@ -275,6 +277,7 @@ export function presentServerBatch({
     draw?: DrawHandArrival,
   ) => void;
   launchDeckToUnderFlight: (seat: Seat, permanentId: string) => void;
+  flyPublicPileCard: FlyPublicPileCard;
   flyDockedOptionUnder: FlyDockedOptionUnder;
   flyCardToDeck: FlyCardToDeck;
   flyCardToHand: FlyCardToHand;
@@ -560,6 +563,9 @@ export function presentServerBatch({
     // behind earlier effects; what waits on the targets starts its ceiling once that clause has.
     if (preceding && !preceding.open) selected.after = preceding;
     effectAnnounceGateRef.current = selected;
+    if (sequenced?.owner) {
+      sequenced.owner.announced = selected;
+    }
     const key = ++effectSourceKeyRef.current;
     enqueue({
       id: `effect-targets-${key}`,
@@ -970,14 +976,35 @@ export function presentServerBatch({
       releaseTrashArrivalsThrough,
       enqueue,
     });
+    const deferredPileSteps: AnimationStep[] = [];
+    const continuedParent = sequenced?.owner;
+    const waitsForNestedEffect =
+      continuedParent !== undefined &&
+      earlierUnitsSettled !== null &&
+      earlierUnitsSettled !== continuedParent.settled &&
+      sequenced?.opened.length === 0;
+    const deferredPilePanels = enqueuePublicPileMoves({
+      fresh,
+      panels: opened,
+      panelAt,
+      causingEffectGate: waitsForNestedEffect ? earlierUnitsSettled : causingEffectGateRef.current,
+      flyPublicPileCard,
+      enqueue: (step) => {
+        if (waitsForNestedEffect) {
+          continuedParent.stepsAfterClose.add(step.id);
+        }
+        deferredPileSteps.push(step);
+      },
+      narrate: (panels) => narrate([], panels, batchId),
+    });
     ({ heldNotices, heldPanels, afterArrivalNotices, afterArrivalPanels, deferredZoneChanges, playLeadInMs } =
       routeBatchNotices({
         fresh,
         batchId,
         raised,
-        opened,
+        opened: opened.filter((panel) => !deferredPilePanels.has(panel)),
         noticeAt,
-        panelAt,
+        panelAt: panelAt.filter((_, index) => !deferredPilePanels.has(opened[index]!)),
         presenting,
         arriving,
         showcased,
@@ -997,6 +1024,9 @@ export function presentServerBatch({
         openHeld,
         enqueue,
       }));
+    for (const step of deferredPileSteps) {
+      enqueue(step);
+    }
     // After the notice routing, so a showcase or security cue this batch put on the centre
     // stage — and the clause it reads out — plays first.
     enqueueRevealShowcases({

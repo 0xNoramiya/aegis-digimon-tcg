@@ -1,5 +1,32 @@
 [
   {
+    "version": "1.27.0-beta",
+    "releasedAt": "2026-10-15",
+    "summaryKey": "releases.1.27.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.27.0-beta.feature.history"
+      },
+      {
+        "textKey": "releases.1.27.0-beta.feature.guides"
+      },
+      {
+        "textKey": "releases.1.27.0-beta.feature.field"
+      },
+      {
+        "textKey": "releases.1.27.0-beta.feature.effects"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.27.0-beta.fix.rules"
+      },
+      {
+        "textKey": "releases.1.27.0-beta.fix.presentation"
+      }
+    ]
+  },
+  {
     "version": "1.26.3-beta",
     "releasedAt": "2026-10-14",
     "summaryKey": "releases.1.26.3-beta.summary",

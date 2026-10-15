@@ -1,8 +1,5 @@
-/* The community-deck wire contract. A public deck is a frozen copy of a saved deck: editing the
-   saved deck changes nothing here until its owner publishes again. Public decks carry only the
-   deck name as free text, and the api screens that name before it is stored. */
-
 export const COMMUNITY_DECK_NAME_MAX = 40;
+export const COMMUNITY_GUIDE_MAX = 5000;
 export const COMMUNITY_PAGE_SIZE = 24;
 
 export const COMMUNITY_SORTS = ["top", "new"] as const;
@@ -28,12 +25,14 @@ export interface CommunityDeckSummary {
   likeCount: number;
   copyCount: number;
   likedByMe: boolean;
+  hasGuide: boolean;
   legal: boolean;
   publishedAt: number;
   updatedAt: number;
 }
 
 export interface CommunityDeck extends CommunityDeckSummary {
+  guide: string | null;
   /** Always `public` for players; only moderators can open a hidden deck. */
   status: CommunityPublicationStatus;
   mainDeck: string[];
@@ -94,3 +93,5 @@ export interface ReportedCommunityDeck {
 
 export const COMMUNITY_MODERATION_ACTIONS = ["hide", "restore"] as const;
 export type CommunityModerationAction = (typeof COMMUNITY_MODERATION_ACTIONS)[number];
+
+export type CommunityGuideError = "deck_not_found" | "guide_too_long" | "guide_not_allowed" | "invalid_guide";

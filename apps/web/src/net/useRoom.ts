@@ -114,6 +114,7 @@ export function reconcileDecisionPatch({
 }
 
 export interface UseRoomResult {
+  rollbackCount: number;
   room: AegisRoom | undefined;
   status: ConnectionStatus;
   state: GameState | undefined;
@@ -222,6 +223,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
   const [snapshots, setSnapshots] = useState<readonly StateSnapshot[]>([]);
   const snapshotsRef = useRef<readonly StateSnapshot[]>([]);
   const [events, setEvents] = useState<SequencedServerEvent[]>([]);
+  const [rollbackCount, setRollbackCount] = useState(0);
   const [inbox, setInbox] = useState<BatchInbox>(emptyBatchInbox);
   const [decision, setDecision] = useState<DecisionRequest>();
   const confirmedDecisionIdRef = useRef<string | undefined>(undefined);
@@ -350,6 +352,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         confirmedDecisionIdRef.current = undefined;
         setDecision(undefined);
         setEvents([]);
+        setRollbackCount((count) => count + 1);
         setInbox(emptyBatchInbox);
         snapshotsRef.current = [];
         setSnapshots([]);
@@ -530,6 +533,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     state: stateRef.current,
     events,
     batches: inbox.batches,
+    rollbackCount,
     decision,
     acknowledgeDecision,
     error,

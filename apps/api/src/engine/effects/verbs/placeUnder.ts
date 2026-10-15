@@ -1,3 +1,5 @@
+import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
+import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin";
 import { CardKind, Zone, requireCardDefinition, CardInstance, type Seat } from "@aegis/shared";
 import { pushOnStack, takeTop, unshiftOnStack } from "../../state/access.js";
 import { digiXrosMatches, materialSaveCountOf } from "../../combat/keywords.js";
@@ -31,17 +33,10 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
     ) {
       return { placed, securitySources };
     }
-    const deckSources = new Map<Seat, number>();
+    const origins = locateMoveOrigins({ state, instanceIds });
     for (const instanceId of instanceIds) {
       for (const owner of state.players) {
         if (owner.security.some((card) => card.instanceId === instanceId)) securitySources.add(owner.seat);
-      }
-      if (opts?.faceUp === false) {
-        for (const owner of state.players) {
-          if (owner.deck.some((card) => card.instanceId === instanceId)) {
-            deckSources.set(owner.seat as Seat, (deckSources.get(owner.seat as Seat) ?? 0) + 1);
-          }
-        }
       }
       const instance = removeLooseInstance(state, instanceId);
       if (instance === undefined) continue;
@@ -51,22 +46,27 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
       placed.push(instance);
     }
     if (placed.length > 0) {
-      engine.emit({
-        kind: "cardsMoved",
-        instanceIds: placed.map((c) => c.instanceId),
-        from: "various",
-        to: Zone.BattleArea,
-        placedUnder: { permanentId: targetPermanentId },
-        ...(deckSources.size === 1
-          ? {
-              deckToUnder: {
-                seat: [...deckSources.keys()][0]!,
-                permanentId: targetPermanentId,
-                count: [...deckSources.values()][0]!,
-              },
-            }
-          : {}),
-      });
+      for (const { cards, ...origin } of groupCardsByOrigin({ origins, cards: placed })) {
+        engine.emit({
+          kind: "cardsMoved",
+          instanceIds: cards.map((card) => card.instanceId),
+          ...origin,
+          to: Zone.BattleArea,
+          placedUnder: { permanentId: targetPermanentId },
+          ...(opts?.faceUp !== false
+            ? {
+                cardIds: cards.map((card) => card.cardId),
+                artIds: cards.map((card) => card.artId || card.cardId),
+                seat: cards[0]!.ownerSeat,
+              }
+            : {}),
+          ...(opts?.faceUp === false && origin.from === Zone.Deck && origin.fromSeat !== undefined
+            ? {
+                deckToUnder: { seat: origin.fromSeat, permanentId: targetPermanentId, count: cards.length },
+              }
+            : {}),
+        });
+      }
       // Continuous properties derived from the new stack must be live before
       // placement reactions and the next action read them (BT8-084 colors).
       await engine.recomputeContinuousEffects?.();

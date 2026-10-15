@@ -2,20 +2,30 @@ import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
 import { getTranslatedCardMeta } from "@/i18n/getTranslatedCardMeta";
 import { EffectText } from "./EffectText";
+import { ArenaInspectorSourcesColumn } from "@/game/ArenaInspectorSourcesColumn";
+import { ArenaInspectorSourcesResizer } from "@/game/ArenaInspectorSourcesResizer";
+import { ArenaInspectorSourcesStrip } from "@/game/ArenaInspectorSourcesStrip";
+import { useInspectorSourcesWidth } from "@/game/useInspectorSourcesWidth";
+import { INSPECTOR_SIDE_SOURCES_QUERY } from "@/game/inspectorSourcesLayoutQuery";
+import { useMediaQuery } from "@/design/useMediaQuery";
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { getCardDefinition } from "@aegis/shared";
-import { CardBack, CardFull } from "../design/cards";
-import { Icons } from "../design/icons";
-import { COLORS, colorKey } from "../design/theme";
-import { useTranslation } from "../i18n";
-import { groupedInspectorEvolutionCosts, inspectorCardsTopToBottom, inspectedArenaHalf } from "./arenaInspectorModel";
-import { forcedAttackGrantText } from "./fieldBadges";
-import { formatResolvedKeyword } from "./keywordDisplay";
-import type { CardInspectionDetail } from "./permanentDetail";
-import type { PendingFateBadge } from "./pendingFate";
-import { Side } from "./side";
-import "./arenaPermanentInspector.css";
+import { getCardDefinition } from "@aegis/shared/cards/registry";
+import { CardFull } from "@/design/cards";
+import { Icons } from "@/design/icons";
+import { COLORS, colorKey } from "@/design/theme";
+import { useTranslation } from "@/i18n/useTranslation";
+import {
+  groupedInspectorEvolutionCosts,
+  inspectorCardsTopToBottom,
+  inspectedArenaHalf,
+} from "@/game/arenaInspectorModel";
+import { forcedAttackGrantText } from "@/game/fieldBadges";
+import { formatResolvedKeyword } from "@/game/keywordDisplay";
+import type { CardInspectionDetail } from "@/game/permanentDetail";
+import type { PendingFateBadge } from "@/game/pendingFate";
+import { Side } from "@/game/side";
+import "@/game/arenaPermanentInspector.css";
 
 export interface ArenaInspectionOptions {
   side: Side;
@@ -43,6 +53,9 @@ export function ArenaPermanentInspector({
 }) {
   const { locale, t } = useTranslation();
   const translations = useCardTranslations();
+  const sideSources = useMediaQuery(INSPECTOR_SIDE_SOURCES_QUERY);
+  const sourcesLayout = sideSources ? "column" : "strip";
+  const { width: sourcesWidth } = useInspectorSourcesWidth();
   const titleId = useId();
   const panelRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -101,9 +114,10 @@ export function ArenaPermanentInspector({
     <section
       ref={panelRef}
       className="arena-permanent-inspector"
-      style={anchor}
+      style={{ ...anchor, "--inspector-sources-width": `${sourcesWidth}px` } as CSSProperties}
       data-half={inspectedArenaHalf(inspection.side)}
       data-card-side={inspection.side}
+      data-sources={supporting.length > 0 ? sourcesLayout : undefined}
       role="dialog"
       aria-modal="false"
       aria-labelledby={titleId}
@@ -238,6 +252,9 @@ export function ArenaPermanentInspector({
             ) : null}
             {fate ? <span data-warning="true">{t(fate.labelKey)}</span> : null}
           </div>
+          {supporting.length > 0 && !sideSources ? (
+            <ArenaInspectorSourcesStrip key={detail.cardId} cards={supporting} onZoom={onZoom} />
+          ) : null}
           <div
             className="arena-permanent-inspector__effects"
             role="region"
@@ -303,56 +320,15 @@ export function ArenaPermanentInspector({
                     </div>
                   ))
               : null}
-            {supporting.map((card, index) => {
-              if (!card.cardId)
-                return (
-                  <div
-                    key={`hidden-${index}`}
-                    className="arena-permanent-inspector__effect arena-permanent-inspector__effect--source"
-                    data-role={card.role}
-                  >
-                    <CardBack width={34} />
-                    <span>{t("game.hiddenCard")}</span>
-                  </div>
-                );
-              const definition = getCardDefinition(card.cardId);
-              const effect = card.role === "linked" ? definition?.linkEffect : definition?.inheritedEffectText;
-              return (
-                <div
-                  key={`${card.cardId}-${index}`}
-                  className="arena-permanent-inspector__effect arena-permanent-inspector__effect--source"
-                  data-role={card.role}
-                  data-card-id={card.cardId}
-                >
-                  <button
-                    type="button"
-                    className="arena-permanent-inspector__source"
-                    onClick={() => onZoom(card.cardId, card.artId)}
-                    aria-label={t("feed.openCard", {
-                      card: definition?.nameEn ?? card.cardId,
-                    })}
-                  >
-                    <CardFull cardId={card.cardId} artId={card.artId} width={34} zoomOnHover={false} />
-                  </button>
-                  <div>
-                    <span className="arena-permanent-inspector__effect-label">
-                      {getTranslatedCardName({ name: definition?.nameEn ?? card.cardId, translations })} ·{" "}
-                      {card.faceDown
-                        ? t("game.faceDownSource")
-                        : t(card.role === "linked" ? "overlay.role.linked" : "overlay.role.inherited")}
-                    </span>
-                    {card.faceDown ? null : (
-                      <p>
-                        <EffectText asciiBrackets text={effect || t("overlay.noPrintedEffect")} />
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
           </div>
           {actions ? <div className="arena-permanent-inspector__actions">{actions}</div> : null}
         </div>
+        {supporting.length > 0 && sideSources ? (
+          <>
+            <ArenaInspectorSourcesResizer />
+            <ArenaInspectorSourcesColumn cards={supporting} onZoom={onZoom} />
+          </>
+        ) : null}
       </div>
     </section>
   );
