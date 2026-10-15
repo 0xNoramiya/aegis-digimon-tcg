@@ -34,6 +34,7 @@ import type { DecisionCandidate } from "./decisionTypes";
 import "../effectPromptFamily.css";
 import { usePromptHandSpace } from "./usePromptHandSpace";
 import { useSourceClearPlacement } from "./useSourceClearPlacement";
+import { PromptMoveHandle } from "./PromptMoveHandle";
 import { useNoticeBandPassThrough } from "./useNoticeBandPassThrough";
 
 /** The art of the card asking the question, big enough to recognise beside its clause. */
@@ -381,35 +382,7 @@ export function DecisionOverlay({
                 </Button>
               ) : null}
             </div>
-            {draggableActivation ? (
-              <button
-                {...drag.handleProps}
-                type="button"
-                className="decision-overlay__move-handle"
-                aria-label={t("overlay.moveEffectPrompt")}
-                title={t("overlay.moveEffectPromptHelp")}
-                onKeyDown={(event) => {
-                  const deltas: Record<string, [number, number]> = {
-                    ArrowLeft: [-20, 0],
-                    ArrowRight: [20, 0],
-                    ArrowUp: [0, -20],
-                    ArrowDown: [0, 20],
-                  };
-                  const delta = deltas[event.key];
-                  if (delta) {
-                    event.preventDefault();
-                    drag.moveBy(...delta);
-                  } else if (event.key === "Home") {
-                    event.preventDefault();
-                    drag.resetPosition();
-                  }
-                }}
-              >
-                <svg width="16" height="20" viewBox="0 0 16 20" fill="currentColor" aria-hidden="true">
-                  {[5, 10, 15].flatMap((y) => [5, 11].map((x) => <circle key={`${x}-${y}`} cx={x} cy={y} r="1.25" />))}
-                </svg>
-              </button>
-            ) : null}
+            {draggableActivation ? <PromptMoveHandle drag={drag} className="decision-overlay__move-handle" /> : null}
           </div>
 
           {isPartitionActivation ? (

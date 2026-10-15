@@ -3,6 +3,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { Phase, type GameState, type ServerEvent } from "@aegis/shared";
+import { CardInstance } from "@aegis/shared/schema/CardInstance";
 import { createArenaDemoState } from "../dev/ArenaDemo";
 import { singleServerBatch, type ServerBatch } from "../net/serverBatches";
 import { snapshotGameState } from "../net/presentedState";
@@ -418,5 +419,110 @@ it.each([0, 1] as const)(
       await advance(32);
       stop();
     }
+  },
+);
+
+it.each([
+  { presentationPacing: "current", advancedTurnCount: false },
+  { presentationPacing: "current", advancedTurnCount: true },
+  { presentationPacing: "sequential", advancedTurnCount: false },
+  { presentationPacing: "sequential", advancedTurnCount: true },
+] as const)(
+  "updates the held hand after a start-of-turn search and discard before drawing ($presentationPacing, counter advanced=$advancedTurnCount)",
+  async ({ presentationPacing, advancedTurnCount }) => {
+    const before = snapshotGameState(createArenaDemoState());
+    before.phase = Phase.End;
+    before.turnSeat = 1;
+    before.stateVersion = 1;
+    const active = snapshotGameState(before);
+    active.phase = Phase.Active;
+    active.turnSeat = 0;
+    active.stateVersion = 2;
+    active.turnCount += Number(advancedTurnCount);
+    const searched = snapshotGameState(active);
+    searched.stateVersion = 3;
+    const card = new CardInstance();
+    card.instanceId = "searched-card";
+    card.cardId = searched.players[0]!.hand[0]!.cardId;
+    searched.players[0]!.hand.push(card);
+    searched.players[0]!.handCount += 1;
+    searched.players[0]!.deckCount -= 1;
+    const discarded = snapshotGameState(searched);
+    discarded.stateVersion = 4;
+    const removed = discarded.players[0]!.hand.shift()!;
+    discarded.players[0]!.trash.push(removed);
+    discarded.players[0]!.handCount -= 1;
+    const drawn = snapshotGameState(discarded);
+    drawn.stateVersion = 5;
+    drawn.phase = Phase.Draw;
+    drawn.turnCount = before.turnCount + 1;
+    const turnDraw = new CardInstance();
+    turnDraw.instanceId = "turn-draw";
+    turnDraw.cardId = card.cardId;
+    drawn.players[0]!.hand.push(turnDraw);
+    drawn.players[0]!.handCount += 1;
+    drawn.players[0]!.deckCount -= 1;
+    const states = [before, active, searched, discarded, drawn];
+    const batches = [
+      singleServerBatch([{ kind: "phaseChanged", phase: Phase.Active, turnSeat: 0, turnCount: active.turnCount }], 2),
+      singleServerBatch(
+        [
+          {
+            kind: "cardsMoved",
+            from: "deck",
+            to: "hand",
+            seat: 0,
+            instanceIds: [card.instanceId],
+            handAddition: "transfer",
+          },
+        ],
+        3,
+      ),
+      singleServerBatch([{ kind: "cardsMoved", from: "various", to: "trash", instanceIds: [removed.instanceId] }], 4),
+      singleServerBatch([{ kind: "phaseChanged", phase: Phase.Draw, turnSeat: 0, turnCount: drawn.turnCount }], 5),
+    ];
+    const anchors: MatchCueAnchors = {
+      board: { current: null },
+      yourDeck: { current: null },
+      oppDeck: { current: null },
+      yourHandDock: { current: null },
+      oppHandStrip: { current: null },
+      yourSecurity: { current: null },
+      oppSecurity: { current: null },
+    };
+    const { result, rerender } = renderHook(
+      ({ state, count }: { state: GameState; count: number }) =>
+        useMatchCues({
+          state,
+          batches: batches.slice(0, count),
+          snapshots: states.slice(0, count + 1).map((entry) => ({ stateVersion: entry.stateVersion, state: entry })),
+          viewerSeat: 0,
+          mulliganOpen: false,
+          presentationPacing,
+          anchors,
+          onActionRejected() {},
+        }),
+      { initialProps: { state: before, count: 0 } },
+    );
+    await advance(0);
+    rerender({ state: active, count: 1 });
+    await advance(2000);
+    rerender({ state: searched, count: 2 });
+    await advance(2000);
+    expect(result.current.heldDrawState?.state.players[0]!.hand.map((entry) => entry.instanceId)).toContain(
+      card.instanceId,
+    );
+    rerender({ state: discarded, count: 3 });
+    await advance(2000);
+    expect(result.current.heldDrawState?.state.players[0]!.hand.map((entry) => entry.instanceId)).toEqual(
+      discarded.players[0]!.hand.map((entry) => entry.instanceId),
+    );
+    expect(result.current.heldDrawState?.state.players[0]!.handCount).toBe(discarded.players[0]!.handCount);
+    rerender({ state: drawn, count: 4 });
+    expect(result.current.heldDrawState?.state.players[0]!.hand.map((entry) => entry.instanceId)).not.toContain(
+      "turn-draw",
+    );
+    await advance(2000);
+    expect(result.current.heldDrawState).toBeUndefined();
   },
 );

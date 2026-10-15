@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import {
@@ -612,5 +612,53 @@ describe("Return to decision position", () => {
     expect(control.hasAttribute("data-anchored")).toBe(true);
     expect(control.style.getPropertyValue("--decision-return-left")).toBe("240px");
     expect(control.style.getPropertyValue("--decision-return-top")).toBe("532px");
+  });
+});
+
+describe("board prompt move handle", () => {
+  function pointer(element: Element, type: string, x: number, y: number) {
+    act(() => {
+      element.dispatchEvent(
+        new PointerEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+          pointerId: 1,
+          pointerType: "touch",
+          clientX: x,
+          clientY: y,
+        }),
+      );
+    });
+  }
+
+  it("drags the selection rail to viewport coordinates without confirming", () => {
+    const onConfirm = vi.fn();
+    renderIn(
+      <BoardSelectionRail
+        prompt="Select 1 card."
+        min={1}
+        max={1}
+        pickCount={1}
+        canConfirm
+        onConfirm={onConfirm}
+        onNoSelection={noop}
+      />,
+    );
+    const rail = screen.getByTestId("board-prompt");
+    vi.spyOn(rail, "getBoundingClientRect").mockImplementation(() => {
+      const left = Number.parseFloat(rail.style.getPropertyValue("--effect-prompt-drag-left")) || 100;
+      const top = Number.parseFloat(rail.style.getPropertyValue("--effect-prompt-drag-top")) || 200;
+      return new DOMRect(left, top, 320, 200);
+    });
+    const handle = screen.getByRole("button", { name: "Move effect prompt" });
+    expect(rail.dataset.promptDragged).toBeUndefined();
+    pointer(handle, "pointerdown", 120, 220);
+    pointer(handle, "pointermove", 220, 320);
+    pointer(handle, "pointerup", 220, 320);
+    expect(rail.dataset.promptDragged).toBe("true");
+    expect(rail.style.getPropertyValue("--effect-prompt-drag-left")).toBe("200px");
+    expect(rail.style.getPropertyValue("--effect-prompt-drag-top")).toBe("300px");
+    expect(onConfirm).not.toHaveBeenCalled();
   });
 });

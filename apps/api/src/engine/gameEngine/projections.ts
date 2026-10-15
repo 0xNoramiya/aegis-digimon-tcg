@@ -10,6 +10,7 @@ import {
   DnaDigivolveRoute,
 } from "@aegis/shared";
 import { hasSummoningSickness } from "../combat/legality.js";
+import { effectiveKinds } from "../effects/continuous.js";
 import { resolveKeywords } from "../combat/keywords.js";
 import { lookupDefinition } from "../cards/cardData.js";
 import { linkEligible } from "../effects/mindLink.js";
@@ -89,6 +90,14 @@ export interface ProjectionDeps {
  * validator the matching intent would, so a lit affordance and an accepted intent can
  * never disagree.
  */
+function canDeclareAttacks(permanent: Permanent, continuous: ContinuousEffectLedger): boolean {
+  if (permanent.topCard === undefined) {
+    return false;
+  }
+  const printedKinds = lookupDefinition(permanent.topCard.cardId)?.kinds ?? [];
+  return effectiveKinds(continuous, permanent.permanentId, printedKinds).includes(CardKind.Digimon);
+}
+
 export class BoardProjection {
   private projectedRouteInstances: Set<CardInstance> | undefined;
   private projectedLinkInstances: Set<CardInstance> | undefined;
@@ -500,7 +509,9 @@ export class BoardProjection {
   syncSummoningSickness(): void {
     for (const player of this.deps.state.players) {
       for (const perm of player.battleArea) {
-        perm.summoningSick = hasSummoningSickness(perm, this.deps.state.turnCount, this.deps.continuous);
+        perm.summoningSick =
+          canDeclareAttacks(perm, this.deps.continuous) &&
+          hasSummoningSickness(perm, this.deps.state.turnCount, this.deps.continuous);
       }
       // A permanent in the raising area cannot attack at all, so summoning sickness has
       // nothing to say about it.

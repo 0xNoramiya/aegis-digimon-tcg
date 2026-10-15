@@ -111,16 +111,6 @@
   background: var(--ds-accent-soft);
 }
 
-.game-restriction-badge[data-dp="down"] {
-  color: var(--ds-on-status);
-  background: var(--ds-danger);
-}
-
-.game-restriction-badge[data-dp="up"] {
-  color: var(--ds-on-status);
-  background: var(--ds-success);
-}
-
 .game-restriction-badge b {
   font-size: 0.52rem;
   line-height: 1;
@@ -286,6 +276,43 @@
   }
   45% {
     filter: brightness(1.15) saturate(0.4) drop-shadow(0 0 12px var(--battle-cyan));
+  }
+}
+
+/* A generic gain or loss landing on a permanent from an effect: a keyword, a
+   protection, an immunity or Security Attack for a buff; a lock that is not an
+   attack or block lock, or lost Security Attack, for a debuff. A buff lifts the
+   card in a warm glow; a debuff sinks it in a cold red one. The DP figure keeps its
+   own pulse, and the attack and block locks keep their jolt above. */
+.game-permanent-buff {
+  animation: battle-permanent-buff var(--t-status-pulse, 600ms) ease-out both;
+}
+
+.game-permanent-debuff {
+  animation: battle-permanent-debuff var(--t-status-pulse, 600ms) ease-out both;
+}
+
+@keyframes battle-permanent-buff {
+  0%,
+  100% {
+    filter: none;
+    translate: 0 0;
+  }
+  35% {
+    filter: brightness(1.25) saturate(1.2) drop-shadow(0 0 14px rgb(253 162 65 / 90%));
+    translate: 0 -6px;
+  }
+}
+
+@keyframes battle-permanent-debuff {
+  0%,
+  100% {
+    filter: none;
+    translate: 0 0;
+  }
+  35% {
+    filter: brightness(0.82) saturate(0.55) drop-shadow(0 0 14px rgb(255 86 86 / 90%));
+    translate: 0 4px;
   }
 }
 
@@ -1026,6 +1053,8 @@
      and the refreshed figure on the card already say what happened. */
   .game-permanent-shake,
   .game-permanent-freeze,
+  .game-permanent-buff,
+  .game-permanent-debuff,
   .game-hand-card--shake,
   .game-permanent[data-combat-impact] > .game-card-enter > [data-state],
   .game-field-clash-ghost[data-combat-impact] > :not(.game-claw) {

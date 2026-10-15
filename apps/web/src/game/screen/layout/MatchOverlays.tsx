@@ -31,7 +31,8 @@ import type { GameOverOutcome } from "../../gameOverSplash";
 import type { SeriesResultProps } from "../../overlay/match/GameOverOverlay";
 import type { RematchProps } from "@/game/overlay/match/RematchPanel";
 import type { TurnOrder } from "../../overlay";
-import type { LogLine } from "../../matchLog";
+import type { LogTurnGroup } from "@/game/log/LogEntry";
+import type { SeatNames } from "@/game/log/SeatNames";
 import type { PendingFateBadge } from "../../pendingFate";
 import type { HandEntry } from "../../piece";
 import type { AppFusionRoute } from "../../AppFusionChoiceOverlay";
@@ -73,7 +74,9 @@ export function MatchOverlays({
   onCancelAllianceConfirmation,
   scenes,
   collapseNotices,
-  log,
+  logTurns,
+  seatNames,
+  logViewerSeat,
   signedIn,
   opponentDropped,
   gameOver,
@@ -144,7 +147,9 @@ export function MatchOverlays({
     revealShowcase: RevealShowcaseCue | null;
   };
   collapseNotices: boolean;
-  log: LogLine[];
+  logTurns: readonly LogTurnGroup[];
+  seatNames: SeatNames;
+  logViewerSeat?: Seat;
   signedIn: boolean;
   opponentDropped: boolean;
   gameOver:
@@ -316,7 +321,9 @@ export function MatchOverlays({
       {!gameOver ? <SecurityScenes {...scenes} compact={collapseNotices} /> : null}
 
       <MatchStatusOverlays
-        log={log}
+        turns={logTurns}
+        playerNames={seatNames}
+        viewerSeat={logViewerSeat}
         historyOpen={overlays.historyOpen}
         zoomCardId={overlays.zoomCardId}
         zoomArtId={overlays.zoomArtId}

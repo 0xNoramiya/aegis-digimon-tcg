@@ -139,7 +139,7 @@ export const ANIMATION_FAMILIES = {
   restriction: {
     label: "Suspend and restrictions",
     owner: "match/watchers/useRestrictionPulses.ts",
-    timings: ["freezeShake", "suspendRotate", "suspendStagger"],
+    timings: ["freezeShake", "statusPulse", "suspendRotate", "suspendStagger"],
     sequence: "Clause/action → rotate or lock pulse → persistent state",
   },
   shuffle: {

@@ -453,15 +453,15 @@ describe("eventsAfter", () => {
 });
 
 describe("friendly movement log", () => {
-  it("uses singular grammar and player-facing zone names", () => {
-    const line = describeEvent(
-      { kind: "cardsMoved", instanceIds: ["egg"], from: "eggDeck", to: "breeding" },
-      0,
-      new Map(),
-      translator("pt-BR"),
-    );
+  it("silences the physical move of a hatched egg", () => {
+    const line = describeEvent({
+      event: { kind: "cardsMoved", instanceIds: ["egg"], from: "eggDeck", to: "breeding" },
+      viewerSeat: 0,
+      identities: new Map(),
+      t: translator("pt-BR"),
+    });
 
-    expect(line?.text).toBe("1 carta movida: deck de Digi-Eggs → área de criação");
+    expect(line).toBeNull();
   });
 
   it("names only the chosen publicly revealed card and its source", () => {
@@ -472,25 +472,25 @@ describe("friendly movement log", () => {
       sourceCardId: "EX3-029",
     };
 
-    expect(describeEvent(revealed, 0, new Map(), translator("pt-BR"))?.text).toBe(
+    expect(describeEvent({ event: revealed, viewerSeat: 0, identities: new Map(), t: translator("pt-BR") })?.text).toBe(
       "Você revelou Tsukaimon com Airdramon",
     );
-    expect(describeEvent(revealed, 1, new Map(), translator("pt-BR"))?.text).toBe(
-      "O oponente revelou Tsukaimon com Airdramon",
+    expect(describeEvent({ event: revealed, viewerSeat: 1, identities: new Map(), t: translator("pt-BR") })?.text).toBe(
+      "Oponente revelou Tsukaimon com Airdramon",
     );
   });
 });
 
 describe("friendly memory log", () => {
   it("does not expose internal engine reasons", () => {
-    const line = describeEvent(
-      { kind: "memoryChanged", from: 0, to: -5, reason: "playCard" },
-      0,
-      new Map(),
-      translator("pt-BR"),
-    );
+    const line = describeEvent({
+      event: { kind: "memoryChanged", from: 0, to: -5, reason: "playCard" },
+      viewerSeat: 0,
+      identities: new Map(),
+      t: translator("pt-BR"),
+    });
 
-    expect(line?.text).toBe("Memória alterada: 0 → -5");
+    expect(line?.text).toBe("Memória de Você: 0 → -5");
     expect(line?.text).not.toContain("playCard");
   });
 
@@ -501,7 +501,7 @@ describe("friendly memory log", () => {
     ];
 
     expect(buildMatchLog(events, 0, new Map(), translator("pt-BR")).map((line) => line.text)).toEqual([
-      "Memória alterada: 3 → 1",
+      "Memória de Você: 3 → 1",
     ]);
   });
 
@@ -1461,7 +1461,7 @@ describe("match log card identity", () => {
     // to stay readable, so it reads the identity out of the event instead.
     const log = buildMatchLog([attack("BT1-010")], 0, new Map(), t);
 
-    expect(log[0]?.text).toBe("Attack on security by Agumon");
+    expect(log[0]?.text).toBe("You: Agumon attacks security");
     expect(log[0]?.cardIds).toEqual(["BT1-010"]);
   });
 
@@ -1476,9 +1476,9 @@ describe("match log card identity", () => {
     };
 
     const line = buildMatchLog([declared], 0, new Map(), t)[0];
-    expect(line?.text).toBe("Attack on Tsukaimon by Agumon");
+    expect(line?.text).toBe("You: Agumon attacks Tsukaimon");
     // Ordered as the sentence names them, so each name links to its own card.
-    expect(line?.cardIds).toEqual(["BT1-045", "BT1-010"]);
+    expect(line?.cardIds).toEqual(["BT1-010", "BT1-045"]);
   });
 
   it("names the Digimon combat deleted", () => {
@@ -1518,7 +1518,7 @@ describe("match log card identity", () => {
     // Both printings are called Agumon, so only the order tells the link apart.
     const revealed: ServerEvent = { kind: "cardRevealed", seat: 0, cardId: "ST1-03", sourceCardId: "BT1-010" };
 
-    const line = describeEvent(revealed, 0, new Map(), t);
+    const line = describeEvent({ event: revealed, viewerSeat: 0, identities: new Map(), t: t });
     expect(line?.text).toBe("You revealed Agumon with Agumon");
     expect(line?.cardIds).toEqual(["ST1-03", "BT1-010"]);
   });
@@ -1529,8 +1529,10 @@ describe("match log combat responses", () => {
     const activated: ServerEvent = { kind: "counterResolved", attackerPermanentId: "attacker", activated: true };
     const passed: ServerEvent = { kind: "counterResolved", attackerPermanentId: "attacker", activated: false };
 
-    expect(describeEvent(activated, 0, new Map(), t)?.text).toBe("The defender activated a [Counter] effect");
-    expect(describeEvent(passed, 0, new Map(), t)).toBeNull();
+    expect(describeEvent({ event: activated, viewerSeat: 0, identities: new Map(), t: t })?.text).toBe(
+      "The defender activated a [Counter] effect",
+    );
+    expect(describeEvent({ event: passed, viewerSeat: 0, identities: new Map(), t: t })).toBeNull();
   });
 
   it("records an accepted Evade and Barrier, naming the Digimon they saved", () => {
@@ -1548,14 +1550,33 @@ describe("match log combat responses", () => {
   });
 
   it("stays quiet about a declined Evade or Barrier", () => {
-    expect(describeEvent({ kind: "evadeResolved", permanentId: "p", accepted: false }, 0, new Map(), t)).toBeNull();
-    expect(describeEvent({ kind: "barrierResolved", permanentId: "p", accepted: false }, 0, new Map(), t)).toBeNull();
+    expect(
+      describeEvent({
+        event: { kind: "evadeResolved", permanentId: "p", accepted: false },
+        viewerSeat: 0,
+        identities: new Map(),
+        t: t,
+      }),
+    ).toBeNull();
+    expect(
+      describeEvent({
+        event: { kind: "barrierResolved", permanentId: "p", accepted: false },
+        viewerSeat: 0,
+        identities: new Map(),
+        t: t,
+      }),
+    ).toBeNull();
   });
 
   it("closes the block window it opened", () => {
-    expect(describeEvent({ kind: "blockDeclined", attackerPermanentId: "a" }, 0, new Map(), t)?.text).toBe(
-      "No block was declared",
-    );
+    expect(
+      describeEvent({
+        event: { kind: "blockDeclined", attackerPermanentId: "a" },
+        viewerSeat: 0,
+        identities: new Map(),
+        t: t,
+      })?.text,
+    ).toBe("No block was declared");
   });
 
   it("names Shoemon and Karakurumon for a scheduled deletion without a state patch", () => {
@@ -1566,11 +1587,11 @@ describe("match log combat responses", () => {
       to: "trash",
       turnEndDeletion: { deletedCardId: "ST19-03", sourceCardId: "EX11-022" },
     };
-    expect(describeEvent(event, 0, new Map(), t)).toMatchObject({
+    expect(describeEvent({ event: event, viewerSeat: 0, identities: new Map(), t: t })).toMatchObject({
       text: "Shoemon was deleted at turn end by Karakurumon's effect",
       cardIds: ["ST19-03", "EX11-022"],
     });
-    expect(describeEvent(event, 0, new Map(), translator("pt-BR"))?.text).toBe(
+    expect(describeEvent({ event: event, viewerSeat: 0, identities: new Map(), t: translator("pt-BR") })?.text).toBe(
       "Shoemon foi excluída no fim do turno pelo efeito de Karakurumon",
     );
   });
@@ -1586,7 +1607,7 @@ describe("match log combat responses", () => {
     };
 
     // The wording stays with the overlay: the log records that it resolved, not the clause.
-    const line = describeEvent(resolved, 0, new Map(), t);
+    const line = describeEvent({ event: resolved, viewerSeat: 0, identities: new Map(), t: t });
     expect(line?.text).toBe("Tsukaimon's effect resolved");
     expect(line?.cardIds).toEqual(["BT1-045"]);
   });
@@ -1606,7 +1627,7 @@ describe("match log combat responses", () => {
       timing: "Main",
       digivolutionPerformed: false,
     };
-    expect(describeEvent(event, 0, new Map(), translator(locale))).toMatchObject({
+    expect(describeEvent({ event: event, viewerSeat: 0, identities: new Map(), t: translator(locale) })).toMatchObject({
       text,
       cardIds: ["LM-057"],
     });
@@ -1621,7 +1642,9 @@ describe("match log combat responses", () => {
       description: "Digivolve with the cost reduced by 2.",
       digivolutionPerformed: performed,
     };
-    expect(describeEvent(event, 0, new Map(), t)?.text).toBe("Wall Training's effect resolved");
+    expect(describeEvent({ event: event, viewerSeat: 0, identities: new Map(), t: t })?.text).toBe(
+      "Wall Training's effect resolved",
+    );
   });
 });
 

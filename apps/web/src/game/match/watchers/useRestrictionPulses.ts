@@ -4,6 +4,7 @@ import type { AnimationQueue } from "../../animationQueue";
 import { freezePulses as diffFreezePulses, type FreezeFlags, type FreezePulse } from "../../freezePulse";
 import { TIMINGS } from "../../timings";
 import { CONSEQUENCE_GATE_MAX_MS, waitForGate, type PresentationGate } from "../presentationGate";
+import { readStatusFlags } from "./readStatusFlags";
 
 /**
  * A permanent that just had "can't attack" / "can't block" imposed on it jolts.
@@ -36,9 +37,10 @@ export function useRestrictionPulses({
   const restrictionSignature = state
     ? [...state.players]
         .flatMap((player) => [...player.battleArea, ...(player.breeding ? [player.breeding] : [])])
-        .map(
-          (permanent) => `${permanent.permanentId}:${permanent.cannotAttack ? 1 : 0}${permanent.cannotBlock ? 1 : 0}`,
-        )
+        .map((permanent) => {
+          const flags = readStatusFlags(permanent);
+          return `${permanent.permanentId}:${flags.cannotAttack ? 1 : 0}${flags.cannotBlock ? 1 : 0}:${flags.debuffs}:${flags.buffs}`;
+        })
         .join(",")
     : "";
   useEffect(() => {
@@ -46,10 +48,7 @@ export function useRestrictionPulses({
     const current = new Map<string, FreezeFlags>();
     for (const player of state.players) {
       for (const permanent of player.battleArea) {
-        current.set(permanent.permanentId, {
-          cannotAttack: permanent.cannotAttack,
-          cannotBlock: permanent.cannotBlock,
-        });
+        current.set(permanent.permanentId, readStatusFlags(permanent));
       }
     }
     const previous = restrictionsByPermanentRef.current;
@@ -70,7 +69,9 @@ export function useRestrictionPulses({
           if (context.cancelled) return;
           try {
             setFreezePulses((pulsing) => new Map(pulsing).set(pulse.permanentId, pulse));
-            await context.wait(TIMINGS.freezeShake);
+            await context.wait(
+              pulse.kind === "buff" || pulse.kind === "debuff" ? TIMINGS.statusPulse : TIMINGS.freezeShake,
+            );
           } finally {
             setFreezePulses((pulsing) => {
               if (pulsing.get(pulse.permanentId)?.key !== pulse.key) return pulsing;
