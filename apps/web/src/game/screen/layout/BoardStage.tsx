@@ -325,6 +325,7 @@ export function BoardStage({
           style={{
             ...({
               "--arena-raising-width": `${layout.arenaRaisingWidth}px`,
+              "--arena-field-pile-width": `${layout.arenaPileWidth}px`,
               "--arena-sideline-basis-width": `${layout.arenaSidelineBasisWidth}px`,
             } as CSSProperties),
             flex: 1,

@@ -59,7 +59,7 @@ beforeEach(() => {
   localStorage.clear();
   setBattleLanes(BattleLanes.Two);
   vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1200);
-  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(320);
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(400);
 });
 
 afterEach(() => {
@@ -138,6 +138,62 @@ describe("organized battle lanes", () => {
     expect(oneLane.drawn).toBeGreaterThan(twoLaneWidth.drawn);
     expect(oneLane.beside).toBe(twoLaneWidth.drawn);
     expect(oneLane.heightFitted).toBe(twoLaneWidth.heightFitted);
+  });
+
+  it("stacks the lanes only when the viewport keeps both rows at a readable size", () => {
+    mockViewport({ phone: false });
+    const placement = (width: number, height: number) => {
+      vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(width);
+      vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(height);
+      const { container, unmount } = render(view([permanent("tamer")], false, 116));
+      const lanes = container.querySelector("[data-field-layout]")!.getAttribute("data-lanes");
+      const digimon = Number.parseFloat(
+        container.querySelector<HTMLElement>('[data-field-key="digimon"]')!.style.width,
+      );
+      unmount();
+      return { lanes, digimon };
+    };
+    const tall = placement(1200, 420);
+    expect(tall.lanes).toBe("stacked");
+    expect(tall.digimon).toBeGreaterThanOrEqual(84);
+    expect(placement(1200, 260).lanes).toBe("side-by-side");
+    expect(placement(560, 420).lanes).toBe("stacked");
+  });
+
+  it("keeps the placement and shared size when the cards in play change", () => {
+    mockViewport({ phone: false });
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1200);
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(420);
+    const row = (digimon: Permanent[]) => (
+      <I18nProvider>
+        <OrganizedBattleRow
+          arrangement={{ digimon, support: [{ key: "tamer", members: [permanent("tamer")] }] }}
+          layoutWidth={116}
+          supportFirst={false}
+          digimonLabel="Digimon"
+          supportLabel="Support"
+          emptyLabel={null}
+          rowProps={{ style: { "--field-reserve-support": "1", "--field-support-scale": "1" } as React.CSSProperties }}
+          isSuspended={(member) => member.isSuspended}
+          renderCard={(card) => (
+            <div key={card.fieldKey} data-field-key={card.fieldKey} style={{ width: card.width }} />
+          )}
+        />
+      </I18nProvider>
+    );
+    const lone = render(row([permanent("lone")]));
+    const loneLanes = lone.container.querySelector("[data-field-layout]")!.getAttribute("data-lanes");
+    const loneShared = renderHook(useFieldCardWidth).result.current!.heightFitted;
+    lone.unmount();
+    const deep = permanent("deep");
+    for (let source = 0; source < 12; source++) {
+      const instance = new CardInstance();
+      instance.instanceId = `deep-source-${source}`;
+      deep.stack.push(instance);
+    }
+    const stacked = render(row([deep]));
+    expect(stacked.container.querySelector("[data-field-layout]")!.getAttribute("data-lanes")).toBe(loneLanes);
+    expect(renderHook(useFieldCardWidth).result.current!.heightFitted).toBe(loneShared);
   });
 
   it("keeps one card size on a fixed-size board whatever the row holds", () => {
