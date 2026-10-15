@@ -1,7 +1,8 @@
 import { useCardImageUrls } from "@/design/tokenArt/useCardImageUrls";
 import { useState, useEffect } from "react";
 import { getCardDefinition } from "@aegis/shared";
-import { CardBack, Sigil } from "../../design/cards";
+import { CardBack } from "../../design/cards";
+import { Sigil } from "@/design/Sigil";
 import { COLORS, colorKey } from "../../design/theme";
 
 /** Self-contained card art with image fallback to the color Sigil (no hover zoom). */

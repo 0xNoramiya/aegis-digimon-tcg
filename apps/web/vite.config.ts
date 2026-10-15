@@ -29,11 +29,23 @@ export default defineConfig({
     projects: [
       {
         extends: true,
-        test: { name: "default", exclude: [...configDefaults.exclude, "e2e/**", "src/design/tokenArt/**/*.test.tsx"] },
+        test: {
+          name: "default",
+          exclude: [
+            ...configDefaults.exclude,
+            "e2e/**",
+            "src/design/tokenArt/**/*.test.tsx",
+            "src/game/log/**/*.test.tsx",
+          ],
+        },
       },
       {
         extends: true,
         test: { name: "token-art", include: ["src/design/tokenArt/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "match-log-ui", include: ["src/game/log/**/*.test.tsx"], environment: "jsdom" },
       },
     ],
     exclude: [...configDefaults.exclude, "e2e/**"],
