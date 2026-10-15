@@ -20,6 +20,7 @@ import {
 } from "../verbs/looseInstances.js";
 
 import type { PrimitivesContext } from "./context.js";
+import { emitEffectTargetsSelected } from "./emitEffectTargetsSelected.js";
 import { createPartitionReactions } from "./partition.js";
 
 /**
@@ -78,6 +79,13 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
       const targetedPermanentId = targetedPermanentByInstance.get(instanceId);
       if (targetedPermanentId === undefined) return true;
       return access.permanentById(targetedPermanentId)?.topCard?.instanceId === instanceId;
+    });
+    emitEffectTargetsSelected({
+      pc,
+      permanentIds: instanceIds.flatMap((instanceId) => {
+        const targetedPermanentId = targetedPermanentByInstance.get(instanceId);
+        return targetedPermanentId === undefined ? [] : [targetedPermanentId];
+      }),
     });
     await fireWhenReturnedPermanentsLeave(instanceIds, opts);
     // Record which of the requested instances start in TRASH before the move, for
@@ -303,6 +311,13 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
       const targetedPermanentId = targetedPermanentByInstance.get(instanceId);
       if (targetedPermanentId === undefined) return true;
       return access.permanentById(targetedPermanentId)?.topCard?.instanceId === instanceId;
+    });
+    emitEffectTargetsSelected({
+      pc,
+      permanentIds: instanceIds.flatMap((instanceId) => {
+        const targetedPermanentId = targetedPermanentByInstance.get(instanceId);
+        return targetedPermanentId === undefined ? [] : [targetedPermanentId];
+      }),
     });
     // Digivolution-stack cards being returned to the deck BOTTOM (toTop === false): record each
     // one's host permanent + cardId BEFORE removal so onDigivolutionCardReturnToDeckBottom can fire
