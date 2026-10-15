@@ -275,7 +275,7 @@ const interfaceMessages = {
   "deckFormat.violations":
     "{count} carta/e di questo mazzo sono fuori dal formato selezionato. Rimuovile o cambia formato.",
   "game.leaveConfirmTitle": "Lasciare questa partita?",
-  "game.leaveConfirmBody": "Se esci, la partita termina e conta come una sconfitta. Puoi ancora salvare il replay.",
+  "game.leaveConfirmBody": "Se esci, la partita termina e conta come una sconfitta.",
   "library.japaneseArt": "{label}, edizione giapponese",
   "library.koreanArt": "{label}, edizione coreana",
   "library.chineseArt": "{label}, edizione cinese",

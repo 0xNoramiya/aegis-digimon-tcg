@@ -1073,8 +1073,7 @@ const interfaceMessages = {
   "game.surrenderConfirmTitle": "Menyerah dalam pertandingan ini?",
   "game.surrenderConfirmBody": "Pertandingan berakhir sekarang dan dihitung sebagai kekalahan.",
   "game.leaveConfirmTitle": "Tinggalkan pertandingan ini?",
-  "game.leaveConfirmBody":
-    "Keluar akan mengakhiri pertandingan dan dihitung sebagai kekalahan. Anda masih dapat menyimpan replay-nya.",
+  "game.leaveConfirmBody": "Keluar akan mengakhiri pertandingan dan dihitung sebagai kekalahan.",
   "game.stats.turns": "Giliran",
   "game.stats.oppBoard": "Papan lawan",
   "game.stats.yourSecurity": "Security Anda",

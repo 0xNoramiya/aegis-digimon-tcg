@@ -1052,7 +1052,7 @@ const interfaceMessages = {
   "game.surrenderConfirmTitle": "이 대전에서 항복하시겠습니까?",
   "game.surrenderConfirmBody": "대전이 즉시 끝나고 패배로 기록됩니다.",
   "game.leaveConfirmTitle": "이 대전에서 나가시겠습니까?",
-  "game.leaveConfirmBody": "나가면 대전이 끝나고 패배로 기록됩니다. 리플레이는 저장할 수 있습니다.",
+  "game.leaveConfirmBody": "나가면 대전이 끝나고 패배로 기록됩니다.",
   "game.stats.turns": "턴",
   "game.stats.oppBoard": "상대 보드",
   "game.stats.yourSecurity": "내 시큐리티",

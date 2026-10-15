@@ -1066,7 +1066,7 @@ const interfaceMessages = {
   "game.surrenderConfirmTitle": "この対戦を投了しますか？",
   "game.surrenderConfirmBody": "対戦はここで終了し、敗北として記録されます。",
   "game.leaveConfirmTitle": "この対戦を離れますか？",
-  "game.leaveConfirmBody": "離れると対戦は終了し、敗北として記録されます。リプレイは保存できます。",
+  "game.leaveConfirmBody": "離れると対戦は終了し、敗北として記録されます。",
   "game.stats.turns": "ターン",
   "game.stats.oppBoard": "相手の盤面",
   "game.stats.yourSecurity": "あなたのセキュリティ",
