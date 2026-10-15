@@ -418,8 +418,13 @@ under the stage's `reflections/` directory and waits for a matching response
 fingerprint. The coding session reviews the real feedback and supplies a fenced
 JSON candidate. These prompt/response records make the provenance explicit;
 this mode does not claim an external API model produced the candidate. The
-same GEPA selection and real-engine evaluations still apply, but strict publication
-requires an API reflector.
+same GEPA selection and real-engine evaluations still apply. Session runs can pass
+strict publication when each selected stage includes an audited prompt/response
+archive frozen with its selection. The publisher verifies both file hashes, prompt
+fingerprints, complete response coverage, and the exact selected stage. Missing or
+modified archives are rejected. Public evidence identifies session reflection and
+includes archive hashes, but does not expose private prompts or responses. This
+records provenance; it does not claim an independent API model authored the proposals.
 
 ## Numeric selection and publication gates
 
@@ -485,7 +490,9 @@ faces the frozen initial control on the same seeds. At least 48 distinct games a
 required, rechecks add no samples, and paired confidence calculations group seats and
 opponents by engine seed. Numeric selection uses an approximate paired Wilson win test with one task-hash
 representative per seed and corrects for the number of predeclared proposals. The
-strict publisher retains the more conservative Hoeffding bound on complete seed blocks. Its output is selection evidence: freeze the winner
+strict publisher retains the more conservative Hoeffding bound on complete seed blocks.
+The MCTS-only subset must independently pass that same paired improvement gate;
+archive wins cannot compensate for no demonstrated gain against MCTS. Its output is selection evidence: freeze the winner
 and evaluate new held-out seed blocks before claiming improved strength.
 
 Each structural proposal is screened on at least 48 fresh same-seed games against
@@ -514,8 +521,10 @@ API reflection requires `--dollar-cap`, `--input-usd-per-million` and
 `--completion-tokens` (4096 by default) on the wire, disables automatic paid retries,
 and reserves a conservative upper cost before each call across all stages. Reservations
 are never refunded for missing usage or unknown library pricing. Prompts, raw API
-responses and the shared budget ledger are saved with the run. Session reflection is
-restricted to smoke work and cannot pass the strict publisher.
+responses and the shared budget ledger are saved with the run. Session reflection incurs no reflection API charges. Its audited provenance is
+required for strict publication; the same high-budget MCTS and held-out improvement
+gates apply regardless of reflection origin. Existing session runs without frozen
+reflection records remain ineligible; do not retroactively certify their provenance.
 
 A cheap engine snapshot is not currently safe. GameState omits runtime effect and
 modifier ledgers, once-per-turn usage tracking, reducers and RNG closures. The complete
@@ -531,3 +540,20 @@ budget. This is a heuristic bracket: larger MCTS budgets are not guaranteed to b
 monotonically stronger. Each rung records played games, independent seed blocks and its mastery result.
 Archive opponents remain frozen while the search budget changes. These are training
 screens; the final held-out report uses the independently configured search budget.
+
+### Independent campaign seed allocation
+
+`evolve.py --seed-offset <integer>` offsets game seeds, search seeds, and random
+composition seeds across training, validation, and final testing. The default zero
+preserves existing task generation. Choose an unused range before starting a new
+campaign; the offset is frozen in its manifest and cannot change on resume.
+Changing the offset does not by itself prove that a range is unused: check prior
+experiment manifests before allocation. Runtime calibration games must remain
+outside the campaign's training, selection, proposal-gate, and final-test ranges.
+
+`--final-pairs` independently fixes the number of reserved seed blocks per pilot
+for final evaluation (24–1000). When omitted, it inherits `--pairs`. Training and
+validation sizes remain controlled by `--pairs`; the manifest records both values.
+Choose the final sample size before running the campaign and do not increase it
+in response to an unfavorable confidence bound. Both seats are played for every
+block, and archive opponents do not replace the required MCTS comparisons.

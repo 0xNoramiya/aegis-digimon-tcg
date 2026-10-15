@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 import click
 
 from audit_pilot_family import audit_pilot_family
+from audit_session_reflections import audit_session_reflections
 from evidence import paired_evidence, policy_hash, program_hash
 
 GUIDES = {
@@ -39,13 +40,9 @@ def verified_run(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
         audit_pilot_family(registry=Path(family["registry"]), attempt=family["attempt"])
     pilots = json.loads((run_dir / "pilots.json").read_text(encoding="utf-8"))
     report = json.loads((run_dir / "held-out.json").read_text(encoding="utf-8"))
-    if manifest["config"].get("reflectionModel", manifest["config"].get("model")) in (
-        "session",
-        "deterministic",
-    ):
-        raise ValueError(
-            "Strict publication requires reproducible API reflection; session and deterministic proposals certify strength separately"
-        )
+    reflection_model = manifest["config"].get("reflectionModel", manifest["config"].get("model"))
+    if reflection_model == "deterministic":
+        raise ValueError("Strict publication requires API reflection or audited session reflection")
     engine = manifest["config"]["engineSha256"]
     if (
         report["engineSha256"] != engine
@@ -57,6 +54,25 @@ def verified_run(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
             "Publication requires a pinned engine and at least 128 completed rollouts per search"
         )
     for version, stage in pilots.items():
+        if reflection_model == "session":
+            stage_name = stage.get("stage")
+            if (
+                not isinstance(stage_name, str)
+                or not stage_name
+                or Path(stage_name).name != stage_name
+                or stage_name in (".", "..")
+            ):
+                raise ValueError("Session publication requires a local stage name")
+            stage_dir = run_dir / stage_name
+            records = audit_session_reflections(stage_dir / "reflections")
+            if records != stage.get("sessionReflections"):
+                raise ValueError("Session reflection records differ from the frozen selection")
+            selected_path = stage_dir / "selected.json"
+            if (
+                not selected_path.is_file()
+                or json.loads(selected_path.read_text(encoding="utf-8")) != stage
+            ):
+                raise ValueError("Session publication requires the exact frozen stage selection")
         if (
             version not in GUIDES
             or stage["engineSha256"] != engine
@@ -86,6 +102,14 @@ def verified_run(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
         if not paired_evidence(evidence["selected"], evidence["control"])["accepted"]:
             raise ValueError(
                 "Publication requires at least 48 paired games and a positive lower confidence bound against control"
+            )
+        mcts_evidence = paired_evidence(
+            [game for game in evidence["selected"] if game["task"]["opponent"] == "mcts"],
+            [game for game in evidence["control"] if game["task"]["opponent"] == "mcts"],
+        )
+        if not mcts_evidence["accepted"]:
+            raise ValueError(
+                "Publication requires a positive paired improvement against MCTS itself"
             )
         if not evidence["allValid"] or len(evidence["selected"]) < 4:
             raise ValueError("Publication requires valid held-out games in both seats")
@@ -364,6 +388,12 @@ def render_guides(
             deck_html = (
                 '<section id="deck"><h2>The tested deck</h2>' + "".join(sections) + "</section>"
             )
+        reflection_note = (
+            "Proposals were authored through an audited coding session and evaluated by GEPA; no paid reflection API was used."
+            if manifest["config"].get("reflectionModel", manifest["config"].get("model"))
+            == "session"
+            else ""
+        )
         selection_note = (
             "The starting policy for this stage was retained."
             if stage.get("retainedStageInitial")
@@ -382,7 +412,7 @@ def render_guides(
 <div class="practice"><p>Put these decisions into practice in a real game.</p><a class="button" href="/play?utm_source=strategy-guides&amp;utm_content={slug}">Play on Aegis</a></div>
 <nav class="contents" aria-label="In this guide"><a href="#decisions">Decision principles</a>{'<a href="#deck">Deck list</a>' if deck_html else ""}<a href="#results">Practice results</a></nav>
 <section id="decisions"><h2>Decision principles</h2><p>These principles describe the selected pilot's preferences. Combine them with the board and the printed card text; a preference is not a guarantee that a play is safe.</p><ul class="principles">{principles}</ul></section>{deck_html}
-<section id="results"><h2>Practice results</h2><p>The search opponent used {report["simulations"]} completed game simulations per main choice. Both player seats were tested. This small benchmark describes these particular decks and seeds; it does not establish tournament performance.</p>{evidence_table(report["results"][version])}<details><summary>How this guide was selected</summary><p>We evolved a general pilot on varied legal decks, then trained deck pilots against {training_opponent} and a frozen archive of other pilots. Final games were excluded from training and selection. Search samples unknown cards using an open deck list and applies to main choices.</p><p>{stage["validEvaluatedProposals"]} alternative policies tested in completed games. {selection_note} Selected validation score {stage["validationScore"]:.2f}. The final results above include the starting-policy control.</p><p>Engine fingerprint: <code>{escape(report["engineSha256"])}</code></p><a href="/strategy-guides/evidence.json">Download policy and benchmark evidence</a></details></section>"""
+<section id="results"><h2>Practice results</h2><p>The search opponent used {report["simulations"]} completed game simulations per main choice. Both player seats were tested. This small benchmark describes these particular decks and seeds; it does not establish tournament performance.</p>{evidence_table(report["results"][version])}<details><summary>How this guide was selected</summary><p>We evolved a general pilot on varied legal decks, then trained deck pilots against {training_opponent} and a frozen archive of other pilots. Final games were excluded from training and selection. Search samples unknown cards using an open deck list and applies to main choices.</p><p>{stage["validEvaluatedProposals"]} alternative policies tested in completed games. {selection_note} {reflection_note} Selected validation score {stage["validationScore"]:.2f}. The final results above include the starting-policy control.</p><p>Engine fingerprint: <code>{escape(report["engineSha256"])}</code></p><a href="/strategy-guides/evidence.json">Download policy and benchmark evidence</a></details></section>"""
         if experimental:
             body = (
                 '<p class="practice"><strong>Experimental training preview.</strong> This short evaluation uses a small search budget. Improved playing strength has not been established.</p>'
@@ -423,6 +453,9 @@ def render_guides(
         encoding="utf-8",
     )
     public_evidence = {
+        "reflectionModel": manifest["config"].get(
+            "reflectionModel", manifest["config"].get("model")
+        ),
         "engineSha256": report["engineSha256"],
         "runnerSha256": report["runnerSha256"],
         "simulations": report["simulations"],

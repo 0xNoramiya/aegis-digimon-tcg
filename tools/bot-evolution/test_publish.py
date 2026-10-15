@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from audit_session_reflections import audit_session_reflections
 from publish import context, publish, verified_run
 
 
@@ -122,10 +123,9 @@ def artifact_run(path: Path) -> Path:
     (
         ("model", "deterministic"),
         ("reflectionModel", "deterministic"),
-        ("reflectionModel", "session"),
     ),
 )
-def test_strict_guides_require_api_origin_even_when_strength_can_be_certified(
+def test_strict_guides_reject_deterministic_origin_even_when_strength_can_be_certified(
     tmp_path, field, model
 ):
     run = artifact_run(tmp_path / "run")
@@ -237,3 +237,102 @@ def test_publication_names_the_random_training_rung(tmp_path):
     html = (tmp_path / "public/fundamentals/index.html").read_text()
     assert "trained deck pilots against seeded random legal actions" in html
     assert "trained deck pilots against search" not in html
+
+
+def _record_session(run: Path) -> Path:
+    manifest_path = run / "manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["config"]["reflectionModel"] = "session"
+    manifest_path.write_text(json.dumps(manifest))
+    directory = run / "generic" / "reflections"
+    directory.mkdir(parents=True)
+    prompt = "Measured training feedback"
+    fingerprint = hashlib.sha256(prompt.encode()).hexdigest()
+    (directory / "0001.prompt.json").write_text(
+        json.dumps({"prompt": prompt, "promptSha256": fingerprint})
+    )
+    response_path = directory / "0001.response.json"
+    response_path.write_text(
+        json.dumps({"promptSha256": fingerprint, "response": '```json\n{"rules": []}\n```'})
+    )
+    pilots = json.loads((run / "pilots.json").read_text())
+    pilots["generic"]["stage"] = "generic"
+    pilots["generic"]["sessionReflections"] = audit_session_reflections(directory)
+    (run / "pilots.json").write_text(json.dumps(pilots))
+    (run / "generic" / "selected.json").write_text(json.dumps(pilots["generic"]))
+    return response_path
+
+
+def test_session_publication_requires_auditable_records(tmp_path: Path) -> None:
+    run = artifact_run(tmp_path / "run")
+    _record_session(run)
+    verified_run(run)
+    publish(run, tmp_path / "public", "https://example.com", None)
+    evidence = json.loads((tmp_path / "public" / "evidence.json").read_text())
+    assert evidence["reflectionModel"] == "session"
+    assert evidence["policies"]["generic"]["sessionReflections"]
+    assert (
+        "no paid reflection API was used"
+        in (tmp_path / "public/fundamentals/index.html").read_text()
+    )
+    assert "Measured training feedback" not in (tmp_path / "public" / "evidence.json").read_text()
+
+
+@pytest.mark.parametrize(
+    "change",
+    ["missing", "fingerprint", "edited", "empty", "orphan", "stage", "selection", "no-records"],
+)
+def test_session_publication_rejects_incomplete_or_modified_provenance(
+    tmp_path: Path, change: str
+) -> None:
+    run = artifact_run(tmp_path / "run")
+    response_path = _record_session(run)
+    response = json.loads(response_path.read_text())
+    if change == "missing":
+        response_path.unlink()
+    elif change == "fingerprint":
+        response["promptSha256"] = "wrong"
+        response_path.write_text(json.dumps(response))
+    elif change in ("edited", "empty"):
+        response["response"] = "different" if change == "edited" else " "
+        response_path.write_text(json.dumps(response))
+    elif change == "orphan":
+        (response_path.parent / "0002.response.json").write_text(json.dumps(response))
+    elif change == "selection":
+        (run / "generic" / "selected.json").write_text("{}")
+    else:
+        pilots = json.loads((run / "pilots.json").read_text())
+        if change == "stage":
+            pilots["generic"]["stage"] = "../outside"
+        else:
+            pilots["generic"].pop("sessionReflections")
+        (run / "pilots.json").write_text(json.dumps(pilots))
+    with pytest.raises(ValueError):
+        verified_run(run)
+
+
+def test_archive_wins_cannot_substitute_for_improvement_against_mcts(tmp_path: Path) -> None:
+    run = artifact_run(tmp_path / "run")
+    path = run / "held-out.json"
+    report = json.loads(path.read_text())
+    evidence = report["results"]["generic"]
+    for arm in ("selected", "control"):
+        archive = []
+        for game in evidence[arm]:
+            for offset in (1000, 2000, 3000):
+                archive.append(
+                    {
+                        **game,
+                        "task": {
+                            **game["task"],
+                            "seed": game["task"]["seed"] + offset,
+                            "opponent": "heuristic",
+                        },
+                        "searches": [],
+                    }
+                )
+            game["score"] = 0
+        evidence[arm].extend(archive)
+    path.write_text(json.dumps(report))
+    with pytest.raises(ValueError, match="against MCTS itself"):
+        verified_run(run)

@@ -89,6 +89,7 @@ def main(
         "proposals.py",
         "api_reflection.py",
         "session_reflection.py",
+        "audit_session_reflections.py",
         "ladder.py",
         "deterministic_proposals.py",
     ]

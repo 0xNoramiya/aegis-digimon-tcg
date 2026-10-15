@@ -3,6 +3,9 @@
 import json
 from contextlib import nullcontext
 from pathlib import Path
+from types import SimpleNamespace
+
+from click.testing import CliRunner
 
 import gepa
 import pytest
@@ -10,7 +13,7 @@ from gepa.core.adapter import EvaluationBatch
 
 from adapter import REFLECTION_TEMPLATE
 from evidence import policy_hash
-from evolve import EvolutionAudit, optimize_stage, task_sets
+from evolve import EvolutionAudit, main, optimize_stage, task_sets
 
 
 def test_training_selection_and_test_are_separate_across_generations() -> None:
@@ -317,3 +320,75 @@ def test_official_gepa_stage_runs_custom_guarded_proposer_without_duplicate_temp
         for path in (tmp_path / "generic/proposal-gates").glob("proposal-*.json")
     ]
     assert any(gate.get("pairedEvidence", {}).get("accepted") is True for gate in gates)
+
+
+def test_campaign_seed_offset_separates_random_decks_and_game_and_search_seeds() -> None:
+    original = task_sets(["a", "b"], None, {}, 24, 0)
+    shifted = task_sets(["a", "b"], None, {}, 24, 0, 420_000_000)
+    assert shifted == task_sets(["a", "b"], None, {}, 24, 0, 420_000_000)
+    for split in original:
+        for before, after in zip(original[split], shifted[split], strict=True):
+            assert after["seed"] == before["seed"] + 420_000_000
+            assert after["searchSeed"] == before["searchSeed"] + 420_000_000
+            assert after["decks"] == [deck + 420_000_000 for deck in before["decks"]]
+            assert after["learnerSeat"] == before["learnerSeat"]
+    train = {task["seed"] for task in shifted["train"]}
+    validation = {task["seed"] for task in shifted["validation"]}
+    final = task_sets(["a", "b"], None, {}, 24, 3, 420_000_000)
+    assert not train & validation
+    assert not (train | validation) & {task["seed"] for task in final["test"]}
+
+
+@pytest.mark.parametrize("final_pairs", [None, 100])
+def test_final_sample_size_is_frozen_without_expanding_training(
+    tmp_path: Path, monkeypatch, final_pairs: int | None
+) -> None:
+    worker = tmp_path / "worker.js"
+    worker.write_text("")
+    description = {
+        "engineSha256": "engine",
+        "deckVersions": ["a", "b"],
+        "seedProgram": {"rules": []},
+    }
+    monkeypatch.setattr(
+        "evolve.subprocess.run",
+        lambda *args, **kwargs: SimpleNamespace(stdout=json.dumps(description)),
+    )
+    monkeypatch.setattr("evolve.shutil.which", lambda name: name)
+    stages = []
+    final_calls = []
+
+    def optimize(**kwargs):
+        stages.append(kwargs)
+        return {"program": kwargs["initial"]}
+
+    def evaluate(**kwargs):
+        final_calls.append(kwargs)
+        return {"results": {"generic": {"allValid": True}}}
+
+    monkeypatch.setattr("evolve.optimize_stage", optimize)
+    monkeypatch.setattr("evolve.final_evaluation", evaluate)
+    args = [
+        "--run-dir",
+        str(tmp_path / "run"),
+        "--worker",
+        str(worker),
+        "--reflection-model",
+        "session",
+        "--pairs",
+        "24",
+        "--generations",
+        "1",
+        "--seed-offset",
+        "420000000",
+    ]
+    if final_pairs is not None:
+        args += ["--final-pairs", str(final_pairs)]
+    result = CliRunner().invoke(main, args)
+    assert result.exit_code == 0, result.output
+    assert len(stages[0]["splits"]["train"]) == 48
+    assert all(len(stage["splits"]["train"]) == 96 for stage in stages[1:])
+    assert final_calls[0]["pairs"] == (final_pairs or 24)
+    manifest = json.loads((tmp_path / "run" / "manifest.json").read_text())
+    assert manifest["config"]["finalPairs"] == (final_pairs or 24)
+    assert final_calls[0]["metadata"]["seedOffset"] == 420000000

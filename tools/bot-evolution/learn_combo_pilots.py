@@ -201,6 +201,7 @@ def main(
         "proposals.py",
         "residual_weights.py",
         "session_reflection.py",
+        "audit_session_reflections.py",
         "tune.py",
         "pyproject.toml",
         "uv.lock",

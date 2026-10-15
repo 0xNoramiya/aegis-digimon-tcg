@@ -15,6 +15,7 @@ import gepa
 
 from adapter import REFLECTION_TEMPLATE, EvaluationConfig, HeuristicAdapter
 from api_reflection import ApiReflection
+from audit_session_reflections import audit_session_reflections
 from deterministic_proposals import DeterministicProposer, validate_plan
 from evidence import paired_evidence, policy_hash, verify_neutral_control
 from ladder import choose_training_rung, ladder_tasks
@@ -60,13 +61,14 @@ def task_sets(
     archive: dict[str, dict[str, Any]],
     pairs: int,
     generation: int,
+    seed_offset: int = 0,
 ) -> dict[str, list[dict[str, Any]]]:
     splits = {}
     for split_index, split in enumerate(("train", "validation", "test")):
         tasks = []
         for pair in range(pairs):
-            seed = 100 + generation * 1000000 + split_index * 10000 + pair
-            random_base = 1 + split_index * 10000 + pair * 2
+            seed = seed_offset + 100 + generation * 1000000 + split_index * 10000 + pair
+            random_base = seed_offset + 1 + split_index * 10000 + pair * 2
             for learner_seat in (0, 1):
                 if pilot is None:
                     decks: list[str | int] = [random_base, random_base + 1]
@@ -82,7 +84,7 @@ def task_sets(
                     "learnerSeat": learner_seat,
                     "decks": decks,
                     "opponent": "mcts",
-                    "searchSeed": 777 + split_index * 10000 + pair,
+                    "searchSeed": seed_offset + 777 + split_index * 10000 + pair,
                 }
                 tasks.append(task)
                 if pilot is not None:
@@ -322,6 +324,12 @@ def optimize_stage(
         if deterministic
         else None,
     }
+    if reflection_model == "session":
+        selected["sessionReflections"] = (
+            audit_session_reflections(stage_dir / "reflections")
+            if any((stage_dir / "reflections").glob("*.prompt.json"))
+            else []
+        )
     result_path.write_text(json.dumps(selected, indent=2) + "\n", encoding="utf-8")
     return selected
 
@@ -347,6 +355,7 @@ def final_evaluation(
             archive,
             pairs,
             generations + 1,
+            metadata.get("seedOffset", 0),
         )
         adapter = HeuristicAdapter(
             EvaluationConfig(
@@ -403,7 +412,9 @@ def final_evaluation(
 @click.option("--simulations", default=8, type=click.IntRange(1, 10000), show_default=True)
 @click.option("--metric-calls", default=512, type=click.IntRange(12, 10000), show_default=True)
 @click.option("--pairs", default=24, type=click.IntRange(1, 100), show_default=True)
+@click.option("--final-pairs", default=None, type=click.IntRange(24, 1000))
 @click.option("--generations", default=2, type=click.IntRange(1, 100), show_default=True)
+@click.option("--seed-offset", default=0, type=click.IntRange(0, 2_000_000_000), show_default=True)
 @click.option("--reflection-model", default="openai/gpt-4.1", show_default=True)
 @click.option("--adaptive-ladder/--fixed-opponent", default=True, show_default=True)
 @click.option("--numeric-proposals", default=24, type=click.IntRange(0, 1000))
@@ -421,7 +432,9 @@ def main(
     evaluation_workers: int,
     metric_calls: int,
     pairs: int,
+    final_pairs: int | None,
     generations: int,
+    seed_offset: int,
     reflection_model: str,
     numeric_proposals: int,
     adaptive_ladder: bool,
@@ -430,6 +443,7 @@ def main(
     input_usd_per_million: float | None,
     output_usd_per_million: float | None,
 ) -> None:
+    final_pairs = pairs if final_pairs is None else final_pairs
     reflection_budget = None
     if reflection_model != "session":
         if any(
@@ -464,6 +478,7 @@ def main(
         "node": node,
         "pairedProposalGates": True,
         "adaptiveLadder": adaptive_ladder,
+        "seedOffset": seed_offset,
         "desktopHost": desktop_host,
         "evaluationTimeout": evaluation_timeout,
         "evaluationWorkers": evaluation_workers,
@@ -483,6 +498,7 @@ def main(
                     "residual_weights.py",
                     "evolve.py",
                     "session_reflection.py",
+                    "audit_session_reflections.py",
                     "pyproject.toml",
                     "uv.lock",
                 )
@@ -497,7 +513,9 @@ def main(
         "simulations": simulations,
         "metricCalls": metric_calls,
         "pairs": pairs,
+        "finalPairs": final_pairs,
         "generations": generations,
+        "seedOffset": seed_offset,
         "reflectionModel": reflection_model,
         "numericProposals": numeric_proposals,
         "reflectionBudget": reflection_budget,
@@ -530,7 +548,7 @@ def main(
     generic = optimize_stage(
         stage="generic",
         initial=metadata["seedProgram"],
-        splits=task_sets(metadata["deckVersions"], None, {}, pairs, 0),
+        splits=task_sets(metadata["deckVersions"], None, {}, pairs, 0, seed_offset),
         run_dir=run_dir,
         metadata=metadata,
         node=node,
@@ -548,7 +566,9 @@ def main(
             next_pilots[version] = optimize_stage(
                 stage=f"generation-{generation}-pilot-{index}",
                 initial=pilots[version]["program"],
-                splits=task_sets(metadata["deckVersions"], version, archive, pairs, generation),
+                splits=task_sets(
+                    metadata["deckVersions"], version, archive, pairs, generation, seed_offset
+                ),
                 run_dir=run_dir,
                 metadata=metadata,
                 node=node,
@@ -565,7 +585,7 @@ def main(
         metadata=metadata,
         node=node,
         simulations=simulations,
-        pairs=pairs,
+        pairs=final_pairs,
         generations=generations,
     )
     (run_dir / "pilots.json").write_text(
