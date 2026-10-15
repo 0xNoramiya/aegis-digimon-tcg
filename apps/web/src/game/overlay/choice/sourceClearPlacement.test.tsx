@@ -8,25 +8,11 @@ import { sourceClearPlacement } from "./useSourceClearPlacement";
 
 describe("sourceClearPlacement", () => {
   it("caps the prompt below a source card on the viewer's field", () => {
-    expect(sourceClearPlacement({ source: { top: 400, bottom: 484 }, viewportHeight: 844, topLimit: 120 })).toEqual({
-      side: "below",
-      top: 492,
-      space: 336,
-    });
+    expect(sourceClearPlacement({ source: { bottom: 244 }, viewportHeight: 844 })).toEqual({ space: 576 });
   });
 
-  it("moves the prompt above a source card that sits too low", () => {
-    expect(sourceClearPlacement({ source: { top: 560, bottom: 644 }, viewportHeight: 844, topLimit: 120 })).toEqual({
-      side: "above",
-      top: 120,
-      space: 432,
-    });
-  });
-
-  it("keeps the usual placement when neither side has room for the answers", () => {
-    expect(
-      sourceClearPlacement({ source: { top: 300, bottom: 600 }, viewportHeight: 844, topLimit: 120 }),
-    ).toBeUndefined();
+  it("keeps the usual placement when the card sits too low for a readable clause", () => {
+    expect(sourceClearPlacement({ source: { bottom: 484 }, viewportHeight: 844 })).toBeUndefined();
   });
 });
 
@@ -62,7 +48,7 @@ describe("phone activation prompt", () => {
     source.dataset.drop = "perm-you";
     source.dataset.id = "source";
     source.getBoundingClientRect = () =>
-      ({ top: 400, bottom: 484, left: 150, right: 210, width: 60, height: 84 }) as DOMRect;
+      ({ top: 160, bottom: 244, left: 150, right: 210, width: 60, height: 84 }) as DOMRect;
     document.body.append(source);
     render(
       <I18nProvider>
@@ -86,6 +72,6 @@ describe("phone activation prompt", () => {
     });
     const panel = screen.getByRole("dialog");
     expect(panel.dataset.sourceClear).toBe("below");
-    expect(panel.style.getPropertyValue("--effect-prompt-source-space")).toBe("336px");
+    expect(panel.style.getPropertyValue("--effect-prompt-source-space")).toBe("576px");
   });
 });
