@@ -1,3 +1,6 @@
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
+import { getTranslatedCardMeta } from "@/i18n/getTranslatedCardMeta";
 import { CardZoomPreview } from "@/design/CardZoomPreview";
 import { useHoverZoomEnabled } from "@/design/useHoverZoomEnabled";
 import { Sigil } from "@/design/Sigil";
@@ -137,6 +140,7 @@ export function CardFull({
    */
   zoomOnHover?: boolean;
 }) {
+  const translations = useCardTranslations();
   const def = getCardDefinition(cardId);
   const urls = useCardImageUrls({ cardId, artId });
   const [urlIndex, setUrlIndex] = useState(0);
@@ -190,14 +194,14 @@ export function CardFull({
           }}
         >
           <Sigil cardId={cardId} color={key} size={Math.round(h * 0.32)} />
-          <span>{def.nameEn}</span>
+          <span>{getTranslatedCardName({ name: def.nameEn, translations })}</span>
           <span style={{ fontFamily: "var(--ds-font-mono)", color: "var(--ds-text-3)" }}>{cardId}</span>
         </div>
       ) : (
         <img
           draggable={false}
           src={urls[urlIndex]}
-          alt={def.nameEn}
+          alt={getTranslatedCardName({ name: def.nameEn, translations })}
           loading="lazy"
           decoding="async"
           onError={() => setUrlIndex((i) => i + 1)}
@@ -275,13 +279,18 @@ type TokenInfoParams = {
 };
 
 function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) {
+  const translations = useCardTranslations();
   const scale = width / 92;
   const px = (n: number) => Math.round(n * scale);
   const c = paletteFor(def.colors);
   const dpChip = palettePairFor(def.colors);
   const cost = def.playCost;
   const dpValue = dp ?? def.dp;
-  const traits = [def.forms?.[0], def.attributes?.[0], def.types?.[0]].filter((t) => t && t !== "-") as string[];
+  const traits = [
+    getTranslatedCardMeta({ value: def.forms?.[0] ?? "", group: "forms", translations }),
+    getTranslatedCardMeta({ value: def.attributes?.[0] ?? "", group: "attributes", translations }),
+    getTranslatedCardMeta({ value: def.types?.[0] ?? "", group: "traits", translations }),
+  ].filter((value) => value && value !== "-");
   const showTraits = width >= 84 && traits.length > 0;
   const showLevel = def.level != null && width >= 66;
 
@@ -431,7 +440,7 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
               textShadow: "0 1px 2px rgba(0,0,0,0.6)",
             }}
           >
-            {def.nameEn}
+            {getTranslatedCardName({ name: def.nameEn, translations })}
           </span>
           {!stacked ? dpReadout : null}
         </div>
@@ -478,6 +487,7 @@ export function CardMini({
   /** Show the floating full-card preview on hover. */
   zoomOnHover?: boolean;
 }) {
+  const translations = useCardTranslations();
   const printed = cardId ? getCardDefinition(cardId) : undefined;
   const def =
     printed && identity
@@ -502,7 +512,7 @@ export function CardMini({
       onClick={onClick}
       onMouseMove={zoomEnabled && zoomOnHover ? (e) => setMousePos({ x: e.clientX, y: e.clientY }) : undefined}
       onMouseLeave={zoomEnabled && zoomOnHover ? () => setMousePos(null) : undefined}
-      title={def.nameEn}
+      title={getTranslatedCardName({ name: def.nameEn, translations })}
       style={{
         width,
         height: h,
@@ -543,7 +553,7 @@ export function CardMini({
         <img
           draggable={false}
           src={urls[urlIndex]}
-          alt={def.nameEn}
+          alt={getTranslatedCardName({ name: def.nameEn, translations })}
           decoding="async"
           onError={() => setUrlIndex((i) => i + 1)}
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}

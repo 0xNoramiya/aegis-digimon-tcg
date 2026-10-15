@@ -5,6 +5,7 @@ import { useTranslation } from "@/i18n/useTranslation";
 import { ArenaInspectorSourceEffect } from "@/game/ArenaInspectorSourceEffect";
 import type { StackCard } from "@/game/overlay/types";
 import { stackCardCaption } from "@/game/overlay/viewer/stackCardCaption";
+import { useCardTranslations } from "@/i18n/useCardTranslations";
 
 type Params = {
   cards: readonly StackCard[];
@@ -13,6 +14,7 @@ type Params = {
 
 export function ArenaInspectorSourcesStrip({ cards, onZoom }: Params) {
   const { t } = useTranslation();
+  const translations = useCardTranslations();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const activeIndex = Math.min(selectedIndex, cards.length - 1);
   const selected = cards[activeIndex];
@@ -30,7 +32,7 @@ export function ArenaInspectorSourcesStrip({ cards, onZoom }: Params) {
             key={`${card.cardId}-${index}`}
             type="button"
             className="arena-permanent-inspector__source"
-            aria-label={stackCardCaption(card, t)}
+            aria-label={stackCardCaption(card, t, translations)}
             aria-pressed={activeIndex === index}
             onClick={() => setSelectedIndex(index)}
           >

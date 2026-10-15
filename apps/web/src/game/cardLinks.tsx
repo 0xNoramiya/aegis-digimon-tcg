@@ -1,3 +1,5 @@
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
 import { CardZoomPreview } from "@/design/CardZoomPreview";
 import { useCardHoverPreview } from "@/game/useCardHoverPreview";
 /* Card names as links, shared by every surface that names a card.
@@ -120,8 +122,9 @@ export function CardLink({
   className?: string;
 }) {
   const { t } = useTranslation();
+  const translations = useCardTranslations();
   const openCard = useCardOpener();
-  const text = label ?? cardDisplayName(cardId, t);
+  const text = label ?? getTranslatedCardName({ name: cardDisplayName(cardId, t), translations });
   if (!openCard || !cardId || !getCardDefinition(cardId)) return <span className={className}>{text}</span>;
   return <CardLinkButton cardId={cardId} artId={artId} text={text} className={className} onOpenCard={openCard} />;
 }
@@ -145,6 +148,7 @@ export function CardLinkedText({
   cardIds?: readonly (string | undefined)[];
   onOpenCard?: (cardId: string, artId?: string) => void;
 }) {
+  const translations = useCardTranslations();
   const contextOpener = useCardOpener();
   const openCard = onOpenCard ?? contextOpener;
   if (!openCard) {
@@ -157,12 +161,16 @@ export function CardLinkedText({
           <CardLinkButton
             key={index}
             cardId={segment.cardId}
-            text={segment.text}
+            text={getTranslatedCardName({ name: segment.text, translations })}
             highlight={highlight}
             onOpenCard={openCard}
           />
         ) : (
-          <HighlightedText key={index} text={segment.text} highlight={highlight} />
+          <HighlightedText
+            key={index}
+            text={getTranslatedCardName({ name: segment.text, translations })}
+            highlight={highlight}
+          />
         ),
       )}
     </>
