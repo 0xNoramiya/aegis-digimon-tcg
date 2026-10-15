@@ -830,6 +830,11 @@ const interfaceMessages = {
   "deck.exportImageRendering": "レンダリング中…",
   "deck.exportImageFailed": "画像をエクスポートできませんでした",
   "deck.exportPng": "PNGをエクスポート",
+  "deck.exportFormat": "形式",
+  "deck.exportTcgplayerHint":
+    "TCGplayer Mass EntryでDigimon Card Gameを選択し、このリストを貼り付けてください。デジタマを含みます。イラストは異なる場合があります。",
+  "deck.exportUnsupportedCards":
+    "TCGplayerにエクスポートできないカード：{cards}。対応するセットが登録されるまでコピーできません。",
   "deck.exportTabText": "デッキリスト",
   "deck.exportTabImage": "画像（PNG）",
   "deck.exportDownloadPng": "PNGをダウンロード",

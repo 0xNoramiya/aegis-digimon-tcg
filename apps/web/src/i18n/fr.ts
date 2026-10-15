@@ -841,6 +841,11 @@ const interfaceMessages = {
   "deck.exportImageRendering": "Rendu…",
   "deck.exportImageFailed": "Échec de l'exportation de l'image",
   "deck.exportPng": "Exporter en PNG",
+  "deck.exportFormat": "Format",
+  "deck.exportTcgplayerHint":
+    "Sélectionnez Digimon Card Game dans Mass Entry de TCGplayer, puis collez cette liste. Les Digi-Œufs sont inclus ; les illustrations peuvent varier.",
+  "deck.exportUnsupportedCards":
+    "Export TCGplayer indisponible pour : {cards}. La copie est désactivée tant que ces cartes ne disposent pas d’une extension prise en charge.",
   "deck.exportTabText": "Liste du deck",
   "deck.exportTabImage": "Image (PNG)",
   "deck.exportDownloadPng": "Télécharger le PNG",

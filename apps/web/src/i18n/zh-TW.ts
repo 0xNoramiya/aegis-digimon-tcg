@@ -790,6 +790,11 @@ const interfaceMessages = {
   "deck.exportImageRendering": "正在渲染…",
   "deck.exportImageFailed": "圖片匯出失敗",
   "deck.exportPng": "匯出 PNG",
+  "deck.exportFormat": "格式",
+  "deck.exportTcgplayerHint":
+    "在 TCGplayer Mass Entry 中選擇 Digimon Card Game，然後貼上此清單。包含數碼蛋；卡圖可能不同。",
+  "deck.exportUnsupportedCards":
+    "以下卡牌暫不支援匯出至 TCGplayer：{cards}。在這些卡牌有對應的受支援卡組系列之前，無法複製。",
   "deck.exportTabText": "卡組清單",
   "deck.exportTabImage": "圖片（PNG）",
   "deck.exportDownloadPng": "下載 PNG",

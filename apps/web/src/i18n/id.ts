@@ -830,6 +830,11 @@ const interfaceMessages = {
   "deck.exportImageRendering": "Merender…",
   "deck.exportImageFailed": "Ekspor gambar gagal",
   "deck.exportPng": "Ekspor PNG",
+  "deck.exportFormat": "Format",
+  "deck.exportTcgplayerHint":
+    "Pilih Digimon Card Game di TCGplayer Mass Entry, lalu tempel daftar ini. Termasuk Digi-Egg; ilustrasi dapat berbeda.",
+  "deck.exportUnsupportedCards":
+    "Ekspor TCGplayer tidak tersedia untuk: {cards}. Penyalinan dinonaktifkan hingga kartu ini memiliki set yang didukung.",
   "deck.exportTabText": "Daftar deck",
   "deck.exportTabImage": "Gambar (PNG)",
   "deck.exportDownloadPng": "Unduh PNG",

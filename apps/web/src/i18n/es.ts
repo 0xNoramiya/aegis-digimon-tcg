@@ -639,6 +639,11 @@ export const es: Record<keyof typeof en, string> = {
   "deck.exportImageRendering": "Generando…",
   "deck.exportImageFailed": "No se pudo exportar la imagen",
   "deck.exportPng": "Exportar PNG",
+  "deck.exportFormat": "Formato",
+  "deck.exportTcgplayerHint":
+    "Selecciona Digimon Card Game en Mass Entry de TCGplayer y pega esta lista. Incluye Digi-Huevos; la ilustración puede variar.",
+  "deck.exportUnsupportedCards":
+    "Exportación a TCGplayer no disponible para: {cards}. No se puede copiar hasta que estas cartas tengan una colección compatible.",
   "deck.exportTabText": "Lista del deck",
   "deck.exportTabImage": "Imagen (PNG)",
   "deck.exportDownloadPng": "Descargar PNG",

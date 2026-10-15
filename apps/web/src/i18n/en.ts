@@ -646,6 +646,11 @@ export const en = {
   "deck.exportImageRendering": "Rendering…",
   "deck.exportImageFailed": "Image export failed",
   "deck.exportPng": "Export PNG",
+  "deck.exportFormat": "Format",
+  "deck.exportTcgplayerHint":
+    "Select Digimon Card Game in TCGplayer Mass Entry, then paste this list. Includes Digi-Eggs; artwork may vary.",
+  "deck.exportUnsupportedCards":
+    "TCGplayer export is unavailable for: {cards}. Copy is disabled until these cards have a supported set.",
   "deck.exportTabText": "Deck list",
   "deck.exportTabImage": "Image (PNG)",
   "deck.exportDownloadPng": "Download PNG",

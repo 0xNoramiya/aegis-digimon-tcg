@@ -851,6 +851,11 @@ const interfaceMessages = {
   "deck.exportImageRendering": "Wird gerendert…",
   "deck.exportImageFailed": "Der Bildexport ist fehlgeschlagen",
   "deck.exportPng": "PNG exportieren",
+  "deck.exportFormat": "Format",
+  "deck.exportTcgplayerHint":
+    "Wähle Digimon Card Game in TCGplayer Mass Entry und füge diese Liste ein. Digi-Eier sind enthalten; die Illustrationen können variieren.",
+  "deck.exportUnsupportedCards":
+    "TCGplayer-Export nicht verfügbar für: {cards}. Kopieren ist deaktiviert, bis diese Karten ein unterstütztes Set haben.",
   "deck.exportTabText": "Deckliste",
   "deck.exportTabImage": "Bild (PNG)",
   "deck.exportDownloadPng": "PNG herunterladen",
