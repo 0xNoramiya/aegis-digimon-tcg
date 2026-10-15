@@ -33,6 +33,10 @@ export default defineConfig({
       },
       {
         extends: true,
+        test: { name: "dp-hint", include: ["src/game/piece/PermanentDpDeltaHint.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: {
           name: "default",
           exclude: [
@@ -41,6 +45,7 @@ export default defineConfig({
             "src/design/tokenArt/**/*.test.tsx",
             "src/screens/community/**/*.test.tsx",
             "src/game/arenaInspectorSources.test.tsx",
+            "src/game/piece/PermanentDpDeltaHint.test.tsx",
             "src/game/log/**/*.test.tsx",
           ],
         },
