@@ -668,6 +668,17 @@ describe("primitives: trash / delete / suspend", () => {
         artIds: ["alternate-option-art"],
         seat: 0,
         from: "hand",
+        fromSeat: 0,
+        to: "trash",
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [h.s.inst("deckCard").instanceId],
+        cardIds: [DIGIMON],
+        artIds: [DIGIMON],
+        from: "deck",
+        fromSeat: 0,
+        seat: 0,
         to: "trash",
       },
       {
@@ -676,10 +687,10 @@ describe("primitives: trash / delete / suspend", () => {
         cardIds: [TAMER, OPTION],
         artIds: [TAMER, OPTION],
         seat: 1,
+        fromSeat: 1,
         from: "hand",
         to: "trash",
       },
-      { kind: "cardsMoved", instanceIds: [h.s.inst("deckCard").instanceId], from: "various", to: "trash" },
     ]);
     expect(moved).toHaveLength(4);
     expect(moved.every((card) => card.faceUp)).toBe(true);
@@ -3874,9 +3885,36 @@ describe("movement origin narration", () => {
     const ids = ["first", "middle", "last"].map((alias) => h.s.inst(alias).instanceId);
     await h.fx.trash(ids);
     expect(h.events.filter((event) => event.kind === "cardsMoved")).toEqual([
-      { kind: "cardsMoved", instanceIds: [ids[0]], from: "hand", fromSeat: 0, to: "trash" },
-      { kind: "cardsMoved", instanceIds: [ids[1]], from: "hand", fromSeat: 1, to: "trash" },
-      { kind: "cardsMoved", instanceIds: [ids[2]], from: "hand", fromSeat: 0, to: "trash" },
+      {
+        kind: "cardsMoved",
+        instanceIds: [ids[0]],
+        cardIds: [DIGIMON],
+        artIds: [DIGIMON],
+        seat: 0,
+        from: "hand",
+        fromSeat: 0,
+        to: "trash",
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [ids[1]],
+        cardIds: [OPTION],
+        artIds: [OPTION],
+        seat: 1,
+        from: "hand",
+        fromSeat: 1,
+        to: "trash",
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [ids[2]],
+        cardIds: [TAMER],
+        artIds: [TAMER],
+        seat: 0,
+        from: "hand",
+        fromSeat: 0,
+        to: "trash",
+      },
     ]);
     expect(h.state.players[0]!.trash.map((card) => card.instanceId)).toEqual([ids[0], ids[2]]);
     expect(h.state.players[1]!.trash.map((card) => card.instanceId)).toEqual([ids[1]]);
