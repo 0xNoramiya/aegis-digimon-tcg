@@ -1,3 +1,5 @@
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
 /* Card names as links, shared by every surface that names a card.
 
    The play log set the pattern: a named card is a button that opens the card,
@@ -98,8 +100,9 @@ export function CardLink({
   className?: string;
 }) {
   const { t } = useTranslation();
+  const translations = useCardTranslations();
   const openCard = useCardOpener();
-  const text = label ?? cardDisplayName(cardId, t);
+  const text = label ?? getTranslatedCardName({ name: cardDisplayName(cardId, t), translations });
   if (!openCard || !cardId || !getCardDefinition(cardId)) return <span className={className}>{text}</span>;
   return <CardLinkButton cardId={cardId} artId={artId} text={text} className={className} onOpenCard={openCard} />;
 }
@@ -121,6 +124,7 @@ export function CardLinkedText({
   cardIds?: readonly (string | undefined)[];
   onOpenCard?: (cardId: string, artId?: string) => void;
 }) {
+  const translations = useCardTranslations();
   const contextOpener = useCardOpener();
   const openCard = onOpenCard ?? contextOpener;
   if (!openCard) return <>{text}</>;
@@ -128,7 +132,12 @@ export function CardLinkedText({
     <>
       {logSegments(text, namedCards(cardIds)).map((segment, index) =>
         segment.cardId ? (
-          <CardLinkButton key={index} cardId={segment.cardId} text={segment.text} onOpenCard={openCard} />
+          <CardLinkButton
+            key={index}
+            cardId={segment.cardId}
+            text={getTranslatedCardName({ name: segment.text, translations })}
+            onOpenCard={openCard}
+          />
         ) : (
           <span key={index}>{segment.text}</span>
         ),

@@ -1,3 +1,6 @@
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
+import { getTranslatedCardMeta } from "@/i18n/getTranslatedCardMeta";
 import { EffectText } from "./EffectText";
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -39,6 +42,7 @@ export function ArenaPermanentInspector({
   onClose: () => void;
 }) {
   const { locale, t } = useTranslation();
+  const translations = useCardTranslations();
   const titleId = useId();
   const panelRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -46,9 +50,11 @@ export function ArenaPermanentInspector({
   closeCallback.current = onClose;
   const top = getCardDefinition(detail.cardId);
   const supporting = inspectorCardsTopToBottom(detail.cards).filter((card) => card.role !== "top");
-  const traits = [...(top?.forms ?? []), ...(top?.attributes ?? []), ...(top?.types ?? [])].filter(
-    (trait) => trait && trait !== "-",
-  );
+  const traits = [
+    ...(top?.forms ?? []).map((value) => getTranslatedCardMeta({ value, group: "forms", translations })),
+    ...(top?.attributes ?? []).map((value) => getTranslatedCardMeta({ value, group: "attributes", translations })),
+    ...(top?.types ?? []).map((value) => getTranslatedCardMeta({ value, group: "traits", translations })),
+  ].filter((trait) => trait && trait !== "-");
   const anchor = useArenaHalfAnchor({
     container: inspection.container,
     half: inspectedArenaHalf(inspection.side),
@@ -120,7 +126,7 @@ export function ArenaPermanentInspector({
                 {top?.rarity ? <span>{top.rarity}</span> : null}
               </p>
               <div className="arena-permanent-inspector__title">
-                <h2 id={titleId}>{detail.name}</h2>
+                <h2 id={titleId}>{getTranslatedCardName({ name: detail.name, translations })}</h2>
                 {top?.level ? <span>Lv.{top.level}</span> : null}
               </div>
               {top?.colors.length || traits.length ? (
@@ -330,7 +336,7 @@ export function ArenaPermanentInspector({
                   </button>
                   <div>
                     <span className="arena-permanent-inspector__effect-label">
-                      {definition?.nameEn ?? card.cardId} ·{" "}
+                      {getTranslatedCardName({ name: definition?.nameEn ?? card.cardId, translations })} ·{" "}
                       {card.faceDown
                         ? t("game.faceDownSource")
                         : t(card.role === "linked" ? "overlay.role.linked" : "overlay.role.inherited")}
