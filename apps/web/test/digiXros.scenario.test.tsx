@@ -174,7 +174,11 @@ scenario("digi-xros", () => {
     );
 
     tap(xrosPermEl);
-    expect(await screen.findByRole("button", { name: /^open shoutmon$/i }, { timeout: 10_000 })).toBeTruthy();
+    expect(
+      within(await screen.findByRole("group", { name: /^\d+ sources?$/i })).getByRole("button", {
+        name: /^shoutmon$/i,
+      }),
+    ).toBeTruthy();
 
     await opponent.leave();
   }, 20_000);
