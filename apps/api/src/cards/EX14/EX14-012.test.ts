@@ -1,8 +1,14 @@
-import { describe, expect, it } from "vitest";
-import { EffectTiming } from "@aegis/shared/schema/enums";
+import { afterEach, describe, expect, it } from "vitest";
+import { CardColor, EffectTiming } from "@aegis/shared/schema/enums";
 import { setupEngine, settle } from "#api/engine/testkit/harness";
 import { advance } from "#api/engine/testkit/advance";
+import { getCardDefinition } from "@aegis/shared/cards/registry";
+import { syntheticDefinitions } from "#api/engine/testkit/syntheticDefinitions";
 import "#api/cards/index";
+
+afterEach(() => {
+  syntheticDefinitions.delete("TEST-TERMINAL-BASE");
+});
 
 describe("VictoryGreymon", () => {
   it("boosts before paying the bottom face-down Tamer card and shares its turn limit", async () => {
@@ -542,4 +548,85 @@ describe("VictoryGreymon Arts Digivolve paid deletion", () => {
       expect(s.state.pendingDecision).toBeUndefined();
     },
   );
+});
+
+describe("VictoryGreymon alternative requirements", () => {
+  it.each([
+    { traits: ["TERMINAL"], level: 5, evolves: true, uses: true },
+    { traits: ["Dragonkin", "TERMINAL"], level: 5, evolves: true, uses: true },
+    { traits: ["TERMINAL"], level: 4, evolves: false, uses: true },
+    { traits: ["TERMINAL X"], level: 5, evolves: false, uses: false },
+    { traits: ["TWIN"], level: 5, evolves: false, uses: false },
+  ])("checks a blue level $level base with $traits", async ({ traits, level, evolves, uses }) => {
+    syntheticDefinitions.set("TEST-TERMINAL-BASE", {
+      ...getCardDefinition("BT1-009")!,
+      cardId: "TEST-TERMINAL-BASE",
+      colors: [CardColor.Blue],
+      level,
+      types: traits,
+    });
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "TEST-TERMINAL-BASE", as: "base", under: ["BT1-009"] }],
+          hand: [
+            { card: "EX14-012", as: "evolution" },
+            { card: "EX14-012", as: "option" },
+          ],
+          deck: ["BT1-009"],
+        },
+        1: { battleArea: ["BT1-009"] },
+      },
+      { autoSelectCards: true, autoDeclineOptional: true, declinePrompts: ["Arts Digivolve"] },
+    );
+    await s.ready();
+    s.state.memory = 10;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "playCard",
+        instanceId: s.inst("option").instanceId,
+        useAs: "option",
+      }).ok,
+    ).toBe(uses);
+    if (uses) {
+      await settle(() =>
+        s.state.players[0]!.trash.some(({ instanceId }) => instanceId === s.inst("option").instanceId),
+      );
+    }
+    expect(s.state.memory).toBe(uses ? 3 : 10);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("evolution").instanceId,
+      }).ok,
+    ).toBe(evolves);
+    if (evolves) {
+      await settle(() => s.perm("base").currentDP === 15000);
+    }
+    expect(s.perm("base").stack.map(({ cardId }) => cardId)).toEqual(
+      evolves ? ["BT1-009", "TEST-TERMINAL-BASE"] : ["BT1-009"],
+    );
+    expect(s.perm("base").topCard.instanceId).toBe(s.inst(evolves ? "evolution" : "base").instanceId);
+    expect(s.state.memory).toBe(10 - Number(uses) * 7 - Number(evolves) * 3);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
+});
+
+describe("VictoryGreymon end-of-turn attack", () => {
+  it.each([true, false])("offers Engage and applies two security checks when accepted (%s)", async (accept) => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: "EX14-012", as: "source" }], deck: ["BT1-009", "BT1-009"] },
+        1: { security: ["BT1-009", "BT1-009", "BT1-009"] },
+      },
+      { autoSelectCards: true, autoAcceptOptional: accept, autoDeclineOptional: !accept },
+    );
+    await s.ready();
+    await advance(s.engine).runTurn(0);
+    expect(s.state.players[1]!.security).toHaveLength(accept ? 1 : 3);
+    expect(s.perm("source").isSuspended).toBe(accept);
+    expect(s.perm("source").currentDP).toBe(accept ? 15000 : 12000);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
 });
