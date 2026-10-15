@@ -402,7 +402,8 @@ tools/bot-evolution/.venv/bin/python tools/bot-evolution/publish.py \
 ```
 
 The publisher requires matching engine/policy fingerprints, both player seats,
-valid final games, and complete search budgets of at least 128 rollouts. It
+valid final games, explicit zero invalid simulations in every search, and complete
+search budgets of at least 128 rollouts. It
 refuses low-budget smoke results and requires an alternative policy evaluated
 in completed games. The selected policy must differ semantically from the original baseline and beat its
 paired held-out control with a positive confidence lower bound. Publication

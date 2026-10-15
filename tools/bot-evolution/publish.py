@@ -142,10 +142,13 @@ def verified_run(run_dir: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
                     or any(
                         search["requested"] != report["simulations"]
                         or search["completed"] != search["requested"]
+                        or search.get("invalid") != 0
                         for search in game["searches"]
                     )
                 ):
-                    raise ValueError("Held-out search budget was incomplete")
+                    raise ValueError(
+                        "Held-out search budget was incomplete or contained invalid simulations"
+                    )
     return manifest, pilots, report
 
 

@@ -82,7 +82,7 @@ def artifact_run(path: Path) -> Path:
             "engineSha256": "engine",
             "candidateSha256": candidate,
             "task": {"learnerSeat": seat, "opponent": "mcts", "seed": seed},
-            "searches": [{"requested": 256, "completed": 256}],
+            "searches": [{"requested": 256, "completed": 256, "invalid": 0}],
         }
         for seed in range(100, 124)
         for seat in (0, 1)
@@ -151,7 +151,7 @@ def test_publication_escapes_exact_advice_and_links_to_practice(tmp_path: Path) 
     selected = evidence["results"]["generic"]["selected"]
     assert len(selected) == 48
     assert {game["task"]["learnerSeat"] for game in selected} == {0, 1}
-    assert selected[0]["searches"] == [{"requested": 256, "completed": 256}]
+    assert selected[0]["searches"] == [{"requested": 256, "completed": 256, "invalid": 0}]
     assert "traces" not in selected[0]
     catalog = json.loads((tmp_path / "catalog.json").read_text())
     assert catalog[0]["url"] == "/strategy-guides/fundamentals/"
@@ -335,4 +335,21 @@ def test_archive_wins_cannot_substitute_for_improvement_against_mcts(tmp_path: P
         evidence[arm].extend(archive)
     path.write_text(json.dumps(report))
     with pytest.raises(ValueError, match="against MCTS itself"):
+        verified_run(run)
+
+
+@pytest.mark.parametrize("invalid", [None, 1])
+def test_completed_searches_require_explicit_zero_invalid_simulations(
+    tmp_path: Path, invalid: int | None
+) -> None:
+    run = artifact_run(tmp_path / "run")
+    path = run / "held-out.json"
+    report = json.loads(path.read_text())
+    search = report["results"]["generic"]["selected"][0]["searches"][0]
+    if invalid is None:
+        search.pop("invalid")
+    else:
+        search["invalid"] = invalid
+    path.write_text(json.dumps(report))
+    with pytest.raises(ValueError, match="invalid simulations"):
         verified_run(run)

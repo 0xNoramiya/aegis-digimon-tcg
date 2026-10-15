@@ -70,7 +70,7 @@ def test_public_evidence_omits_search_actions_and_private_rollout_details(tmp_pa
     evidence = (output / "evidence.json").read_text()
     assert "private-choice" not in evidence
     assert json.loads(evidence)["results"]["generic"]["selected"][0]["searches"] == [
-        {"requested": 256, "completed": 256}
+        {"requested": 256, "completed": 256, "invalid": 0}
     ]
 
 
