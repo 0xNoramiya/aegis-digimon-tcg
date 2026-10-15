@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
+import { Bold, Heading, List, CornerDownLeft } from "lucide-react";
 import ListItem from "@tiptap/extension-list-item";
 import StarterKit from "@tiptap/starter-kit";
 import { buildGuideEditorContent } from "@/screens/community/guide/buildGuideEditorContent";
@@ -119,7 +120,8 @@ export function GuideRichText({ initialGuide, disabled, onChange }: Props) {
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => editor.chain().focus().toggleBold().run()}
         >
-          {t("community.guide.bold")}
+          <Bold size={16} aria-hidden="true" />
+          <span>{t("community.guide.bold")}</span>
         </button>
         <button
           type="button"
@@ -128,7 +130,8 @@ export function GuideRichText({ initialGuide, disabled, onChange }: Props) {
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
         >
-          {t("community.guide.heading")}
+          <Heading size={16} aria-hidden="true" />
+          <span>{t("community.guide.heading")}</span>
         </button>
         <button
           type="button"
@@ -137,7 +140,8 @@ export function GuideRichText({ initialGuide, disabled, onChange }: Props) {
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
         >
-          {t("community.guide.bullets")}
+          <List size={16} aria-hidden="true" />
+          <span>{t("community.guide.bullets")}</span>
         </button>
       </div>
       <EditorContent editor={editor} />
@@ -162,7 +166,9 @@ export function GuideRichText({ initialGuide, disabled, onChange }: Props) {
                     .run()
                 }
               >
-                <span>{card.cardId}</span> {card.nameEn}
+                <span className="community-guide__suggestion-code">{card.cardId}</span>
+                <span className="community-guide__suggestion-name">{card.nameEn}</span>
+                <CornerDownLeft className="community-guide__suggestion-enter" size={14} aria-hidden="true" />
               </button>
             </li>
           ))}
