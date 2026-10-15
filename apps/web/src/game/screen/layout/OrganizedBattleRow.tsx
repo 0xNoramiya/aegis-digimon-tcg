@@ -38,11 +38,6 @@ const SUPPORT_GAP_SHARE = 0.3;
 const SINGLE_LANE_GROWTH = 1.2;
 const TWO_ROW_GUIDE_SLOTS = 5;
 
-/**
- * Stacked puts the support lane under the Digimon (above them for the opponent). A row
- * too short for two lanes puts the lanes side by side. Merged draws one lane, Digimon
- * first: the player's one-lane choice, and every phone.
- */
 export enum LanePlacement {
   Stacked = "stacked",
   SideBySide = "side-by-side",
@@ -730,7 +725,7 @@ export function fitLanes(row: { width: number; height: number }, layoutWidth: nu
   if (content.twoRows !== undefined && !content.preferStacked) {
     return content.twoRows
       ? stackedWidths(row.height, layoutWidth, content)
-      : sideBySideLanes(row.height, layoutWidth, content);
+      : mergedLanes(row.height, layoutWidth, content);
   }
   if (content.supportCount === 0 || content.digimonCount === 0) {
     const placement = LanePlacement.Stacked;
@@ -748,9 +743,7 @@ export function fitLanes(row: { width: number; height: number }, layoutWidth: nu
   }
   const stacked = stackedLanes(row.height, layoutWidth, content);
   if (stacked) return stacked;
-  return content.preferStacked
-    ? mergedLanes(row.height, layoutWidth, content)
-    : sideBySideLanes(row.height, layoutWidth, content);
+  return mergedLanes(row.height, layoutWidth, content);
 }
 
 /**
