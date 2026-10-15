@@ -1255,6 +1255,7 @@ const interfaceMessages = {
   "overlay.selectTargets": "대상 {range}개 선택",
   "overlay.sourceCountOne": "진화원 {count}장",
   "overlay.sourceCountMany": "진화원 {count}장",
+  "overlay.sourcesResize": "드래그해서 진화원 패널 크기 조절",
   "overlay.chosen": "{count}개 선택됨",
   "overlay.playCostBudget": "등장 코스트: {selected} / {max}",
   "overlay.dpBudget": "DP 합계: {selected} / {max}",

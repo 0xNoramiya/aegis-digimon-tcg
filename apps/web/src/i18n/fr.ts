@@ -1298,6 +1298,7 @@ const interfaceMessages = {
   "overlay.selectTargets": "Sélectionnez {range} cible(s)",
   "overlay.sourceCountOne": "{count} source",
   "overlay.sourceCountMany": "{count} sources",
+  "overlay.sourcesResize": "Faites glisser pour redimensionner le panneau des sources",
   "overlay.chosen": "{count} choisi(s)",
   "overlay.playCostBudget": "Coût de jeu : {selected} / {max}",
   "overlay.dpBudget": "DP total : {selected} / {max}",

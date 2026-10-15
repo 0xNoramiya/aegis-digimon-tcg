@@ -1222,6 +1222,7 @@ const interfaceMessages = {
   "overlay.selectTargets": "選擇 {range} 個目標",
   "overlay.sourceCountOne": "{count} 張進化源",
   "overlay.sourceCountMany": "{count} 張進化源",
+  "overlay.sourcesResize": "拖曳以調整進化源面板的大小",
   "overlay.chosen": "已選擇 {count}",
   "overlay.playCostBudget": "登場費用：{selected} / {max}",
   "overlay.dpBudget": "DP 總計：{selected} / {max}",

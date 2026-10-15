@@ -126,3 +126,22 @@ it.each([true, false])("shows link effects and the missing-effect fallback at wi
   expect(document.querySelector('[data-role="linked"] p')?.textContent).toContain("Raid");
   expect(document.querySelector('[data-role="linked"]')?.hasAttribute("data-empty")).toBe(false);
 });
+
+it("resizes the side sources column from its separator and saves the width", () => {
+  renderInspector({ wide: true });
+  const separator = screen.getByRole("separator", { name: "Drag to resize the sources panel" });
+  const panel = screen.getByRole("dialog");
+  fireEvent.keyDown(separator, { key: "End" });
+  expect(separator.getAttribute("aria-valuenow")).toBe("192");
+  fireEvent.keyDown(separator, { key: "ArrowLeft" });
+  expect(separator.getAttribute("aria-valuenow")).toBe("208");
+  expect(panel.style.getPropertyValue("--inspector-sources-width")).toBe("208px");
+  expect(localStorage.getItem("aegis.inspector-sources-width")).toBe("208");
+  fireEvent.doubleClick(separator);
+  expect(separator.getAttribute("aria-valuenow")).toBe("272");
+});
+
+it("keeps the strip layout without a separator on narrow screens", () => {
+  renderInspector({ wide: false });
+  expect(screen.queryByRole("separator")).toBeNull();
+});

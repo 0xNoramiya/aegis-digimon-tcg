@@ -1160,6 +1160,7 @@ const interfaceMessages = {
   "overlay.selectTargets": "Seleziona {range} bersagli",
   "overlay.sourceCountOne": "{count} fonte",
   "overlay.sourceCountMany": "{count} fonti",
+  "overlay.sourcesResize": "Trascina per ridimensionare il pannello delle fonti",
   "overlay.chosen": "{count} scelti",
   "overlay.playCostBudget": "Costo di gioco: {selected} / {max}",
   "overlay.dpBudget": "DP totali: {selected} / {max}",

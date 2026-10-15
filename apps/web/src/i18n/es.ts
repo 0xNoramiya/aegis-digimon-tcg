@@ -1079,6 +1079,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.selectTargets": "Selecciona {range} objetivo(s)",
   "overlay.sourceCountOne": "{count} fuente",
   "overlay.sourceCountMany": "{count} fuentes",
+  "overlay.sourcesResize": "Arrastra para cambiar el tamaño del panel de fuentes",
   "overlay.chosen": "{count} elegidas",
   "overlay.playCostBudget": "Costo de juego: {selected} / {max}",
   "overlay.dpBudget": "DP total: {selected} / {max}",
