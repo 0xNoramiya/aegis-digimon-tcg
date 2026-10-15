@@ -1,4 +1,46 @@
 {
+  "releases.1.27.0-beta.summary": {
+    "en": "Searchable match history, community deck guides, clearer field information, and fixes to effect resolution.",
+    "pt-BR": "Histórico pesquisável de partidas, guias de decks da comunidade, informações mais claras no campo e correções na resolução de efeitos.",
+    "es": "Historial de partidas con búsqueda, guías de mazos de la comunidad, información más clara en el campo y correcciones en la resolución de efectos.",
+    "it": "Cronologia delle partite con ricerca, guide ai mazzi della community, informazioni più chiare sul campo e correzioni alla risoluzione degli effetti."
+  },
+  "releases.1.27.0-beta.feature.history": {
+    "en": "Search the full match history, grouped by turn, with memory changes and card movements showing their original zones and owners.",
+    "pt-BR": "Pesquise todo o histórico da partida, agrupado por turno, com mudanças de memória e movimentos de cartas mostrando suas zonas e donos de origem.",
+    "es": "Busca en todo el historial de la partida, agrupado por turno, con cambios de memoria y movimientos de cartas que muestran sus zonas y propietarios de origen.",
+    "it": "Cerca nella cronologia completa della partita, raggruppata per turno, con variazioni di memoria e movimenti delle carte che mostrano zone e proprietari di origine."
+  },
+  "releases.1.27.0-beta.feature.guides": {
+    "en": "Write formatted guides for your community decks to explain how to play them.",
+    "pt-BR": "Escreva guias formatados para seus decks da comunidade e explique como jogar com eles.",
+    "es": "Escribe guías con formato para tus mazos de la comunidad y explica cómo jugarlos.",
+    "it": "Scrivi guide formattate per i tuoi mazzi della community e spiega come giocarli."
+  },
+  "releases.1.27.0-beta.feature.field": {
+    "en": "Read larger DP values and clearer field badges, inspect digivolution cards beside card text, and use movable prompts on phones.",
+    "pt-BR": "Leia valores de DP maiores e indicadores mais claros no campo, inspecione cartas de digievolução ao lado do texto e mova as janelas de decisão no celular.",
+    "es": "Lee valores de DP más grandes e indicadores más claros, consulta las cartas de digievolución junto al texto y mueve los paneles de decisión en el móvil.",
+    "it": "Leggi valori DP più grandi e indicatori più chiari, consulta le carte digievoluzione accanto al testo e sposta i pannelli di scelta sul telefono."
+  },
+  "releases.1.27.0-beta.feature.effects": {
+    "en": "Follow effect targets and stat changes with clearer visual feedback and field cards sized for your screen.",
+    "pt-BR": "Acompanhe alvos de efeitos e alterações de atributos com indicações visuais mais claras e cartas no campo dimensionadas para sua tela.",
+    "es": "Sigue los objetivos de efectos y los cambios de atributos con indicaciones visuales más claras y cartas adaptadas a tu pantalla.",
+    "it": "Segui i bersagli degli effetti e le modifiche alle statistiche con indicazioni visive più chiare e carte adattate al tuo schermo."
+  },
+  "releases.1.27.0-beta.fix.rules": {
+    "en": "Correct Execute deletion after digivolution, replacement effect limits after Succession, pending play effects lost through de-digivolution, and Glowing Dawn inherited unsuspend restrictions.",
+    "pt-BR": "Corrige a deleção de Execute após digievolução, limites de efeitos de substituição após Succession, efeitos de entrada pendentes perdidos por de-digievolução e restrições de dessuspensão herdada de Glowing Dawn.",
+    "es": "Corrige la eliminación de Execute tras digievolucionar, los límites de efectos de reemplazo tras Succession, efectos de entrada pendientes perdidos por de-digievolución y las restricciones de reactivación heredada de Glowing Dawn.",
+    "it": "Corregge l’eliminazione di Execute dopo la digievoluzione, i limiti degli effetti sostitutivi dopo Succession, gli effetti di entrata pendenti persi tramite de-digievoluzione e le restrizioni di riattivazione ereditata di Glowing Dawn."
+  },
+  "releases.1.27.0-beta.fix.presentation": {
+    "en": "Keep the hand display synchronized during start-of-turn effects and correct summoning-ring visibility and placement.",
+    "pt-BR": "Mantém a mão sincronizada durante efeitos de início de turno e corrige a visibilidade e a posição do anel de invocação.",
+    "es": "Mantiene la mano sincronizada durante los efectos de inicio de turno y corrige la visibilidad y posición del anillo de invocación.",
+    "it": "Mantiene la mano sincronizzata durante gli effetti di inizio turno e corregge visibilità e posizione dell’anello di evocazione."
+  },
   "releases.1.26.3-beta.summary": {
     "en": "Live match browsing, optional deck sharing, more card artwork, and fixes for Option costs and rollback stability.",
     "pt-BR": "Lista de partidas ao vivo, compartilhamento opcional de decks, mais artes de cartas e correções nos custos de Opções e na estabilidade do rollback.",
