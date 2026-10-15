@@ -1145,6 +1145,11 @@
    only draws it. Each star's resting position on the ellipse comes from its index, so
    with the orbit stopped the ring still reads as a ring.
 
+   The ring box hangs from the lane's badge strip (`--field-lane-top`), not from the
+   card's height: the lane clips above that strip, and a percentage of a tall card put
+   the top star past it. The highest star sits a tenth of the box below its top, so
+   nine pixels of offset keep the star and its glow inside the strip at any card size.
+
    The orbit is two sine waves, not `offset-path`: Firefox re-flattens a motion path
    into Bezier segments for every star on every frame, which cost about 40% of the
    main thread on a busy board. A cosine on `translate` (x) and the same wave a quarter
@@ -1153,7 +1158,7 @@
 
 .game-summoning-ring {
   position: absolute;
-  top: -26%;
+  top: calc(9px - var(--field-lane-top, 22px));
   right: 0;
   left: 0;
   z-index: 2;
