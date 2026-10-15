@@ -32,6 +32,21 @@ Include the flag in experiment manifests and rebuild the API before comparing th
 compiled policy with an earlier runtime. This option does not enable MCTS or
 certify a deck's win rate.
 
+## Optional free Option selections
+
+A `projected-balanced` program can independently enable
+`preferFreeOptionSelections: true`. It selects the first offered visible Option
+when a single-card, zero-minimum request explicitly allows using an Option without
+paying its cost and has no purpose marker. It requires visible catalog identities
+for every candidate and excludes cards currently on either board or in the bot's
+breeding area. The current effect fragment takes precedence over the full text.
+
+Omitted or false preserves the previous policy. Cost selections, required
+selections, multi-card requests, unknown effects and hidden identities keep their
+existing answers. The flag does not rank Option effects or enable MCTS; combine
+it explicitly with other experimental preferences when comparing configurations.
+The default live program remains unchanged.
+
 ## Residual search tuning
 
 The evaluation worker accepts `mctsExploration` (finite, nonnegative; default

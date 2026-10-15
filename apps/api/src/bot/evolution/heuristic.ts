@@ -75,6 +75,7 @@ export interface HeuristicProgram {
   basePolicy?: "projected-balanced";
   breedingDeployLevel?: number;
   preferBeneficialSelections?: boolean;
+  preferFreeOptionSelections?: boolean;
   title: string;
   rules: HeuristicRule[];
 }
@@ -82,6 +83,12 @@ export interface HeuristicProgram {
 export function parseHeuristic(value: unknown): HeuristicProgram {
   if (typeof value !== "object" || value === null) throw new Error("Expected heuristic object");
   const program = value as HeuristicProgram;
+  if (
+    program.preferFreeOptionSelections !== undefined &&
+    (program.basePolicy !== "projected-balanced" || typeof program.preferFreeOptionSelections !== "boolean")
+  ) {
+    throw new Error("Invalid free Option selection preference");
+  }
   if (program.basePolicy !== undefined && program.basePolicy !== "projected-balanced")
     throw new Error("Unknown heuristic base policy");
   if (
@@ -181,6 +188,9 @@ export function parseHeuristic(value: unknown): HeuristicProgram {
     ...(program.preferBeneficialSelections === undefined
       ? {}
       : { preferBeneficialSelections: program.preferBeneficialSelections }),
+    ...(program.preferFreeOptionSelections === undefined
+      ? {}
+      : { preferFreeOptionSelections: program.preferFreeOptionSelections }),
     title: program.title,
     rules: program.rules.map((rule) => ({ ...rule })),
   };

@@ -62,6 +62,7 @@ export function createResidualPolicy(input: {
     seat: input.seat,
     seed: input.seed,
     preferBeneficialSelections: input.program.preferBeneficialSelections,
+    preferFreeOptionSelections: input.program.preferFreeOptionSelections,
     ...(input.program.breedingDeployLevel === undefined
       ? {}
       : {

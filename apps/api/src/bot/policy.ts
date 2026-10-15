@@ -54,6 +54,7 @@ export interface EvaluationPolicyOptions {
   profile?: BotProfile;
   seed?: number;
   preferBeneficialSelections?: boolean;
+  preferFreeOptionSelections?: boolean;
 }
 
 /**
@@ -184,7 +185,13 @@ export function createEvaluationPolicy(options: EvaluationPolicyOptions = {}): B
     },
 
     answerDecision(view: BotView | undefined, request: DecisionRequest): Intent {
-      return answerDecisionWith(view, request, profile, options.preferBeneficialSelections);
+      return answerDecisionWith(
+        view,
+        request,
+        profile,
+        options.preferBeneficialSelections,
+        options.preferFreeOptionSelections,
+      );
     },
 
     noteRejected(intent: Intent): void {
@@ -224,13 +231,22 @@ export function answerDecisionWith(
   request: DecisionRequest,
   profile: BotProfile,
   preferBeneficialSelections = false,
+  preferFreeOptionSelections = false,
 ): Intent {
+  if (preferFreeOptionSelections && view !== undefined && isOptionalFreeOptionSelection({ view, request })) {
+    return {
+      type: "respondDecision",
+      decisionId: request.decisionId,
+      response: { kind: "selectCards", instanceIds: request.options!.candidateInstanceIds!.slice(0, 1) },
+    };
+  }
   if (preferBeneficialSelections && view !== undefined && isOptionalFreePlaySelection({ view, request })) {
     return answerDecisionWith(
       view,
       { ...request, options: { ...request.options, purpose: "acceptedOptional" } },
       profile,
       preferBeneficialSelections,
+      preferFreeOptionSelections,
     );
   }
   switch (request.kind) {
@@ -411,12 +427,32 @@ function pickInstances(
   }
 }
 
-interface OptionalFreePlaySelectionInput {
+interface OptionalCardSelectionInput {
   view: BotView;
   request: DecisionRequest;
 }
 
-function isOptionalFreePlaySelection(input: OptionalFreePlaySelectionInput): boolean {
+function isOptionalFreeOptionSelection(input: OptionalCardSelectionInput): boolean {
+  const { view, request } = input;
+  const text = request.options?.effectTextPart ?? request.options?.effectText ?? "";
+  const candidates = request.options?.candidateInstanceIds ?? [];
+  const board = [...view.board, ...view.opponentBoard, ...(view.breeding === undefined ? [] : [view.breeding])];
+  return (
+    request.kind === "selectCards" &&
+    request.options?.purpose === undefined &&
+    (request.options?.min ?? 0) === 0 &&
+    request.options?.max === 1 &&
+    /You may use 1 [^.]*Option card[^.]*without paying (?:the|its) cost[.]/i.test(text) &&
+    candidates.length > 0 &&
+    candidates.every((id) => {
+      const cardId = request.options?.visibleCards?.find((card) => card.instanceId === id)?.cardId;
+      return cardId !== undefined && getCardDefinition(cardId)?.kinds.includes(CardKind.Option);
+    }) &&
+    candidates.every((id) => !board.some((unit) => unit.permanentId === id || unit.topCardInstanceId === id))
+  );
+}
+
+function isOptionalFreePlaySelection(input: OptionalCardSelectionInput): boolean {
   const { view, request } = input;
   const text = request.options?.effectTextPart ?? request.options?.effectText ?? "";
   const candidates = request.options?.candidateInstanceIds ?? [];
