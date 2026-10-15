@@ -110,7 +110,13 @@ export function soundsForPresentation(cues: MatchCues, board?: PresentationAudio
     add(`flight:${flight.key}`, flight.deckReturn || flight.handReturn ? "move" : "draw");
   if (cues.revealShowcase) add(`reveal:${cues.revealShowcase.key}`, "reveal");
   for (const pulse of cues.dpPulses.values()) add(`dp:${pulse.key}`, pulse.kind === "buff" ? "buff" : "debuff");
-  for (const pulse of cues.freezePulses.values()) add(`freeze:${pulse.key}`, "freeze");
+  for (const pulse of cues.freezePulses.values()) {
+    if (pulse.kind === "buff" || pulse.kind === "debuff") {
+      add(`status:${pulse.key}`, pulse.kind);
+    } else {
+      add(`freeze:${pulse.key}`, "freeze");
+    }
+  }
   // Unsuspend and Draw already sound through their sweep and draw flight.
   if (cues.phaseBanner && (cues.phaseBanner.phase === Phase.Breeding || cues.phaseBanner.phase === Phase.Main))
     add(`phase:${cues.phaseBanner.key}`, "phase");
