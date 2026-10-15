@@ -294,11 +294,8 @@ export const en = {
   "spectator.anonymousCount": "Guests: {count}",
   "settings.listLiveMatches": "List my matches for spectators",
   "settings.listLiveMatchesDesc":
-    "Your casual matches appear in Live matches when both players turn this on. Off by default.",
+    "On by default. Your casual matches appear in Live matches unless either player disables this. Private matches stay unlisted. Applies to new matches.",
   "settings.listLiveMatchesFailed": "Could not load or save this setting. Try again.",
-  "settings.listLiveMatchesSignIn": "Sign in to list your matches.",
-  "settings.listLiveMatchesLockedHelp":
-    "Only signed-in players can list their matches. Sign in, then turn this on. Your casual matches appear in Live matches when your opponent has it on too.",
   "spectator.liveEyebrow": "Watch",
   "spectator.liveTitle": "Live matches",
   "spectator.liveBadge": "Live",

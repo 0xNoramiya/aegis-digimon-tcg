@@ -296,11 +296,8 @@ export const es: Record<keyof typeof en, string> = {
   "spectator.anonymousCount": "Visitantes: {count}",
   "settings.listLiveMatches": "Mostrar mis partidas a espectadores",
   "settings.listLiveMatchesDesc":
-    "Tus partidas casuales aparecen en Partidas en vivo cuando ambos jugadores lo activan. Desactivado por defecto.",
+    "Activado por defecto. Tus partidas casuales aparecen en las partidas en vivo salvo que un jugador desactive esta opción. Las privadas no se muestran. Se aplica a partidas nuevas.",
   "settings.listLiveMatchesFailed": "No se pudo cargar o guardar esta opción. Inténtalo de nuevo.",
-  "settings.listLiveMatchesSignIn": "Inicia sesión para mostrar tus partidas.",
-  "settings.listLiveMatchesLockedHelp":
-    "Solo los jugadores con sesión iniciada pueden mostrar sus partidas. Inicia sesión y activa esta opción. Tus partidas casuales aparecen en Partidas en vivo cuando tu rival también la tiene activada.",
   "spectator.liveEyebrow": "Ver",
   "spectator.liveTitle": "Partidas en vivo",
   "spectator.liveBadge": "En vivo",

@@ -512,12 +512,9 @@ const interfaceMessages = {
   "spectator.anonymousCount": "Gäste: {count}",
   "settings.listLiveMatches": "Meine Matches für Zuschauer listen",
   "settings.listLiveMatchesDesc":
-    "Ihre Casual-Matches erscheinen unter Live-Matches, wenn beide Spieler dies aktivieren. Standardmäßig aus.",
+    "Standardmäßig aktiviert. Gelegenheitsspiele werden live gelistet, sofern kein Spieler diese Option deaktiviert. Private Spiele bleiben ungelistet. Gilt für neue Spiele.",
   "settings.listLiveMatchesFailed":
     "Diese Einstellung konnte nicht geladen oder gespeichert werden. Versuchen Sie es erneut.",
-  "settings.listLiveMatchesSignIn": "Melden Sie sich an, um Ihre Matches zu listen.",
-  "settings.listLiveMatchesLockedHelp":
-    "Nur angemeldete Spieler können ihre Matches listen. Melden Sie sich an und aktivieren Sie diese Option. Ihre Casual-Matches erscheinen unter Live-Matches, wenn Ihr Gegner sie ebenfalls aktiviert hat.",
   "spectator.liveEyebrow": "Zuschauen",
   "spectator.liveTitle": "Live-Matches",
   "spectator.liveBadge": "Live",

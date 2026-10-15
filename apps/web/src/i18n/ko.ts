@@ -488,11 +488,8 @@ const interfaceMessages = {
   "spectator.anonymousCount": "방문자: {count}",
   "settings.listLiveMatches": "관전 목록에 내 매치 표시",
   "settings.listLiveMatchesDesc":
-    "두 플레이어가 모두 켜면 캐주얼 매치가 라이브 매치에 표시됩니다. 기본값은 꺼짐입니다.",
+    "기본적으로 켜져 있습니다. 한 플레이어라도 끄지 않는 한 캐주얼 매치가 실시간 목록에 표시됩니다. 비공개 매치는 표시되지 않습니다. 새 매치부터 적용됩니다.",
   "settings.listLiveMatchesFailed": "이 설정을 불러오거나 저장하지 못했습니다. 다시 시도하세요.",
-  "settings.listLiveMatchesSignIn": "매치를 표시하려면 로그인하세요.",
-  "settings.listLiveMatchesLockedHelp":
-    "로그인한 플레이어만 매치를 표시할 수 있습니다. 로그인한 뒤 이 설정을 켜세요. 상대도 켜 두면 캐주얼 매치가 라이브 매치에 표시됩니다.",
   "spectator.liveEyebrow": "관전",
   "spectator.liveTitle": "라이브 매치",
   "spectator.liveBadge": "라이브",

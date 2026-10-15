@@ -469,11 +469,9 @@ const interfaceMessages = {
   "spectator.audience": "觀眾",
   "spectator.anonymousCount": "訪客：{count}",
   "settings.listLiveMatches": "將我的對戰列入觀戰列表",
-  "settings.listLiveMatchesDesc": "雙方玩家都開啟後，你的休閒對戰會出現在直播對戰中。預設關閉。",
+  "settings.listLiveMatchesDesc":
+    "預設開啟。除非任一玩家關閉此選項，否則休閒對戰會顯示在直播對戰列表中。私人對戰不會列出。適用於新對戰。",
   "settings.listLiveMatchesFailed": "無法載入或儲存此設定。請重試。",
-  "settings.listLiveMatchesSignIn": "登入後才能列出你的對戰。",
-  "settings.listLiveMatchesLockedHelp":
-    "只有已登入的玩家才能列出對戰。請先登入，再開啟此選項。對手也開啟後，你的休閒對戰會出現在直播對戰中。",
   "spectator.liveEyebrow": "觀戰",
   "spectator.liveTitle": "直播對戰",
   "spectator.liveBadge": "直播",

@@ -464,11 +464,9 @@ const interfaceMessages = {
   "spectator.audience": "观众",
   "spectator.anonymousCount": "访客：{count}",
   "settings.listLiveMatches": "将我的对战列入观战列表",
-  "settings.listLiveMatchesDesc": "双方玩家都开启后，你的休闲对战会出现在直播对战中。默认关闭。",
+  "settings.listLiveMatchesDesc":
+    "默认开启。除非任一玩家关闭此选项，否则休闲对战会显示在直播对战列表中。私人对战不会列出。适用于新对战。",
   "settings.listLiveMatchesFailed": "无法加载或保存此设置。请重试。",
-  "settings.listLiveMatchesSignIn": "登录后才能列出你的对战。",
-  "settings.listLiveMatchesLockedHelp":
-    "只有已登录的玩家才能列出对战。请先登录，再开启此选项。对手也开启后，你的休闲对战会出现在直播对战中。",
   "spectator.liveEyebrow": "观战",
   "spectator.liveTitle": "直播对战",
   "spectator.liveBadge": "直播",

@@ -517,7 +517,7 @@ export function Settings({
             {signedIn ? (
               <SettingsCard id={PROFILE_SECTION_ID} title={t("profile.title")}>
                 <ShareDeckAfterMatchSetting key={account?.id} />
-                <LiveMatchListingSetting key={`live-${account?.id}`} signedIn />
+                <LiveMatchListingSetting key={`live-${account?.id}`} />
                 <SpectatorIdentitySetting key={`identity-${account?.id}`} />
                 <div className="settings-row">
                   <Switch

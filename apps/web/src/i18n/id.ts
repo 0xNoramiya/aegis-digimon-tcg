@@ -496,11 +496,8 @@ const interfaceMessages = {
   "spectator.anonymousCount": "Tamu: {count}",
   "settings.listLiveMatches": "Tampilkan pertandinganku untuk penonton",
   "settings.listLiveMatchesDesc":
-    "Pertandingan kasualmu muncul di Pertandingan langsung jika kedua pemain mengaktifkannya. Nonaktif secara bawaan.",
+    "Aktif secara default. Pertandingan kasual tampil di daftar langsung kecuali salah satu pemain menonaktifkannya. Pertandingan privat tidak ditampilkan. Berlaku untuk pertandingan baru.",
   "settings.listLiveMatchesFailed": "Gagal memuat atau menyimpan pengaturan ini. Coba lagi.",
-  "settings.listLiveMatchesSignIn": "Masuk untuk menampilkan pertandinganmu.",
-  "settings.listLiveMatchesLockedHelp":
-    "Hanya pemain yang sudah masuk yang bisa menampilkan pertandingan. Masuk, lalu aktifkan opsi ini. Pertandingan kasualmu muncul di Pertandingan langsung jika lawan juga mengaktifkannya.",
   "spectator.liveEyebrow": "Tonton",
   "spectator.liveTitle": "Pertandingan langsung",
   "spectator.liveBadge": "Langsung",

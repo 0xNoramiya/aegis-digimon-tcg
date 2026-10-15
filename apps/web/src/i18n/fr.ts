@@ -506,11 +506,8 @@ const interfaceMessages = {
   "spectator.anonymousCount": "Invités : {count}",
   "settings.listLiveMatches": "Lister mes parties pour les spectateurs",
   "settings.listLiveMatchesDesc":
-    "Vos parties occasionnelles apparaissent dans Parties en direct quand les deux joueurs l’activent. Désactivé par défaut.",
+    "Activé par défaut. Vos parties amicales apparaissent en direct sauf si un joueur désactive cette option. Les parties privées restent masquées. S’applique aux nouvelles parties.",
   "settings.listLiveMatchesFailed": "Impossible de charger ou enregistrer cette option. Réessayez.",
-  "settings.listLiveMatchesSignIn": "Connectez-vous pour lister vos parties.",
-  "settings.listLiveMatchesLockedHelp":
-    "Seuls les joueurs connectés peuvent lister leurs parties. Connectez-vous, puis activez cette option. Vos parties occasionnelles apparaissent dans Parties en direct quand votre adversaire l’a aussi activée.",
   "spectator.liveEyebrow": "Regarder",
   "spectator.liveTitle": "Parties en direct",
   "spectator.liveBadge": "En direct",

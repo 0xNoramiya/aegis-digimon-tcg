@@ -1395,7 +1395,7 @@ export class AegisRoom extends Room<{
     if (this.isPrivate || !owners.every((owner) => owner !== undefined)) {
       return;
     }
-    if (!preferences.every((preference) => preference.listLiveMatches === true) || this.state.gameOver) {
+    if (!preferences.every((preference) => preference.listLiveMatches !== false) || this.state.gameOver) {
       return;
     }
     this.liveListingStartedAt = Date.now();

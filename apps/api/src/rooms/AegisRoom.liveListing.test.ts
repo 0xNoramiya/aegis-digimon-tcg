@@ -50,10 +50,14 @@ function startedRoom(options: {
 const bothAccounts = { first: "first-account", second: "second-account" };
 
 describe("live match listing", () => {
-  it("lists a casual match once both players opted in", async () => {
+  it.each([
+    {},
+    { "first-account": { listLiveMatches: true } },
+    { "first-account": { listLiveMatches: true }, "second-account": { listLiveMatches: true } },
+  ])("lists casual matches unless an account opts out: %j", async (preferences) => {
     const { room, latestLive } = startedRoom({
       accounts: bothAccounts,
-      preferences: { "first-account": { listLiveMatches: true }, "second-account": { listLiveMatches: true } },
+      preferences,
     });
     try {
       await vi.waitFor(() => expect(latestLive()).toBeDefined());
@@ -69,8 +73,12 @@ describe("live match listing", () => {
   });
 
   it.each([
-    ["one player opted in", { "first-account": { listLiveMatches: true } }, bothAccounts],
-    ["neither player opted in", {}, bothAccounts],
+    ["one player opted out", { "first-account": { listLiveMatches: false } }, bothAccounts],
+    [
+      "both players opted out",
+      { "first-account": { listLiveMatches: false }, "second-account": { listLiveMatches: false } },
+      bothAccounts,
+    ],
     ["a guest is seated", { "first-account": { listLiveMatches: true } }, { first: "first-account" }],
   ])("keeps the match unlisted when %s", async (_case, preferences, accounts) => {
     const { room, setMatchmaking, latestLive } = startedRoom({ accounts, preferences });

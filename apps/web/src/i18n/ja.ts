@@ -497,11 +497,8 @@ const interfaceMessages = {
   "spectator.anonymousCount": "ゲスト：{count}",
   "settings.listLiveMatches": "自分の対戦を観戦リストに載せる",
   "settings.listLiveMatchesDesc":
-    "両方のプレイヤーがオンにすると、カジュアル対戦がライブ対戦に表示されます。初期設定はオフです。",
+    "初期設定はオンです。どちらかのプレイヤーがオフにしない限り、カジュアル対戦がライブ対戦一覧に表示されます。プライベート対戦は表示されません。新しい対戦から適用されます。",
   "settings.listLiveMatchesFailed": "この設定を読み込むか保存できませんでした。再試行してください。",
-  "settings.listLiveMatchesSignIn": "対戦をリストに載せるにはサインインしてください。",
-  "settings.listLiveMatchesLockedHelp":
-    "対戦をリストに載せられるのはサインインしたプレイヤーだけです。サインインしてこの設定をオンにしてください。相手もオンにしている場合、カジュアル対戦がライブ対戦に表示されます。",
   "spectator.liveEyebrow": "観戦",
   "spectator.liveTitle": "ライブ対戦",
   "spectator.liveBadge": "ライブ",

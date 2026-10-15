@@ -380,11 +380,8 @@ const interfaceMessages = {
   "spectator.anonymousCount": "Ospiti: {count}",
   "settings.listLiveMatches": "Elenca le mie partite per gli spettatori",
   "settings.listLiveMatchesDesc":
-    "Le tue partite casual appaiono in Partite dal vivo quando entrambi i giocatori lo attivano. Disattivato per impostazione predefinita.",
+    "Attivo per impostazione predefinita. Le partite casuali appaiono in diretta salvo che un giocatore disattivi questa opzione. Le private non vengono elencate. Vale per le nuove partite.",
   "settings.listLiveMatchesFailed": "Impossibile caricare o salvare questa opzione. Riprova.",
-  "settings.listLiveMatchesSignIn": "Accedi per elencare le tue partite.",
-  "settings.listLiveMatchesLockedHelp":
-    "Solo i giocatori che hanno effettuato l’accesso possono elencare le partite. Accedi e attiva questa opzione. Le tue partite casual appaiono in Partite dal vivo quando anche l’avversario l’ha attivata.",
   "spectator.liveEyebrow": "Guarda",
   "spectator.liveTitle": "Partite dal vivo",
   "spectator.liveBadge": "Dal vivo",
