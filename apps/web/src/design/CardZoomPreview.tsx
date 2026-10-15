@@ -4,6 +4,8 @@ import { getCardDefinition } from "@aegis/shared/cards/registry";
 import { useCardImageUrls } from "@/design/tokenArt/useCardImageUrls";
 import { Sigil } from "@/design/Sigil";
 import { colorKey } from "@/design/theme";
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
 
 const ZOOM_GAP = 14;
 
@@ -23,6 +25,7 @@ export function CardZoomPreview({
   width?: number;
 }) {
   const height = Math.round(width * 1.4);
+  const translations = useCardTranslations();
   const def = getCardDefinition(cardId);
   const urls = useCardImageUrls({ cardId, artId });
   const [extra, setExtra] = useState(0);
@@ -69,7 +72,7 @@ export function CardZoomPreview({
           draggable={false}
           src={urls[idx]}
           decoding="async"
-          alt={def?.nameEn}
+          alt={def ? getTranslatedCardName({ name: def.nameEn, translations }) : undefined}
           onError={() => setExtra((e) => e + 1)}
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
         />

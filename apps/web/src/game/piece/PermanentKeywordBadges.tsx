@@ -1,3 +1,6 @@
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedKeyword } from "@/i18n/getTranslatedKeyword";
+import { getTranslatedKeywordReminder } from "@/i18n/getTranslatedKeywordReminder";
 import { useTranslation } from "../../i18n";
 import { keywordReminder, keywordRuleHintLink } from "../keywordReminders";
 import { BadgeHint } from "./BadgeHint";
@@ -14,7 +17,11 @@ const PILL_PADDING_PX = 8;
 const PILL_GAP_PX = 2;
 const MORE_CHIP_WIDTH_PX = 22;
 
-const pillWidth = (label: string) => label.length * CHARACTER_WIDTH_PX + PILL_PADDING_PX;
+const pillWidth = (label: string) =>
+  Array.from(label).reduce(
+    (width, character) => width + ((character.codePointAt(0) ?? 0) > 255 ? 9 : CHARACTER_WIDTH_PX),
+    PILL_PADDING_PX,
+  );
 
 /**
  * How many pills fit on the single line above a card of `cardWidth`, leaving room for the
@@ -46,16 +53,21 @@ export function PermanentKeywordBadges({
   cardWidth: number;
 }) {
   const { t } = useTranslation();
+  const translations = useCardTranslations();
+  const displayedKeywords = keywords.map((entry) => ({
+    ...entry,
+    label: getTranslatedKeyword({ keyword: entry.label, translations }),
+  }));
   const shownCount = visibleKeywordCount(
-    keywords.map((entry) => entry.label),
+    displayedKeywords.map((entry) => entry.label),
     cardWidth,
   );
-  const visibleKeywords = keywords.slice(0, shownCount);
+  const visibleKeywords = displayedKeywords.slice(0, shownCount);
   const hiddenKeywordCount = keywords.length - visibleKeywords.length;
   return (
     <div
       className="game-keyword-badges"
-      aria-label={`Active keywords: ${keywords.map((entry) => entry.label).join(", ")}`}
+      aria-label={`Active keywords: ${displayedKeywords.map((entry) => entry.label).join(", ")}`}
     >
       {visibleKeywords.map(({ keyword, label }) => (
         <BadgeHint
@@ -63,7 +75,12 @@ export function PermanentKeywordBadges({
           className="game-keyword-badge"
           hint={{
             title: `<${label}>`,
-            description: keywordReminder(keyword, t, securityAttackModifier),
+            description: getTranslatedKeywordReminder({
+              keyword,
+              fallback: keywordReminder(keyword, t, securityAttackModifier),
+              translations,
+              modifier: securityAttackModifier,
+            }),
             link: keywordRuleHintLink(keyword),
           }}
         >
@@ -75,7 +92,7 @@ export function PermanentKeywordBadges({
           className="game-keyword-badge game-keyword-badge--more"
           aria-label={`${hiddenKeywordCount} more keywords`}
           hint={{
-            title: keywords
+            title: displayedKeywords
               .slice(shownCount)
               .map((entry) => entry.label)
               .join(" · "),

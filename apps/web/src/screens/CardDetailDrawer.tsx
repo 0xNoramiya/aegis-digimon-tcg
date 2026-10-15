@@ -1,3 +1,7 @@
+import { EffectText } from "@/game/EffectText";
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
+import { getTranslatedCardMeta } from "@/i18n/getTranslatedCardMeta";
 /* The card detail drawer: the full card, its printed numbers and its effect text. */
 
 import { useState, type ReactNode } from "react";
@@ -35,6 +39,7 @@ export function CardDetailDrawer({
   onArtApply?: (artId: string) => void;
 }) {
   const { t } = useTranslation();
+  const translations = useCardTranslations();
   const [browsedArt, setBrowsedArt] = useState<{ cardId: string; artId: string } | null>(null);
   const selectedArt = resolveCardArt(
     cardId,
@@ -95,6 +100,7 @@ export function CardDetailDrawer({
           </div>
         ) : null}
         <div className="card-detail-summary">
+          <h2>{getTranslatedCardName({ name: def.nameEn, translations })}</h2>
           <div className="card-detail-limit">
             {banLabel ? <span className="card-detail-restriction">{banLabel}</span> : null}
             {isBetaCard(cardId) ? (
@@ -107,11 +113,19 @@ export function CardDetailDrawer({
           <div className="card-detail-metadata">
             <DetailRow label={t("library.rowSet")} value={def.set} mono />
             <DetailRow label={t("library.rowColor")} value={def.colors.join(" / ")} />
-            <DetailRow label={t("library.rowType")} value={formLabel(def)} />
+            <DetailRow
+              label={t("library.rowType")}
+              value={getTranslatedCardMeta({ value: formLabel(def), group: "forms", translations })}
+            />
             <DetailRow label={t("library.rowPlayCost")} value={def.playCost < 0 ? "—" : String(def.playCost)} mono />
             {isDigi ? <DetailRow label={t("library.rowDp")} value={def.dp.toLocaleString()} mono /> : null}
             {def.types && def.types.length ? (
-              <DetailRow label={t("library.rowTraits")} value={def.types.join(", ")} />
+              <DetailRow
+                label={t("library.rowTraits")}
+                value={def.types
+                  .map((value) => getTranslatedCardMeta({ value, group: "traits", translations }))
+                  .join(", ")}
+              />
             ) : null}
             {def.rarity ? <DetailRow label={t("library.rowRarity")} value={def.rarity} mono /> : null}
           </div>
@@ -150,7 +164,9 @@ function DetailEffect({
   return (
     <div className="card-detail-effect" data-tone={tone}>
       <div className="card-detail-effect__title">{title}</div>
-      <p>{readableEffectText(text)}</p>
+      <p>
+        <EffectText text={readableEffectText(text)} />
+      </p>
     </div>
   );
 }
