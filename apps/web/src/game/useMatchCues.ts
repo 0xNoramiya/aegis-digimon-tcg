@@ -1086,6 +1086,7 @@ export function useMatchCues({
     previousDrawStateRef,
     phaseStateRef,
     state,
+    presentedStateVersion,
     setPendingPhaseBanners,
     setTurnTransition,
     setAnnouncedTurn,
