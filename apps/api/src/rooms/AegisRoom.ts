@@ -2417,7 +2417,14 @@ export class AegisRoom extends Room<{
     if (lastChatAt !== undefined && now - lastChatAt < CHAT_COOLDOWN_MS) return;
     this.lastChatAtBySender.set(cooldownKey, now);
     this.debug("client.chat", { sender, sessionId: client.sessionId, ...message });
-    this.broadcast(CHAT_CHANNEL, { sender, message } satisfies ChatBroadcast);
+    const broadcast: ChatBroadcast = { sender, message };
+    for (const recipient of this.clients) {
+      const receivesPlayerChat = this.seatByClient.has(recipient.sessionId);
+      const receivesSpectatorChat = this.spectatorClients.has(recipient.sessionId) && !receivesPlayerChat;
+      if ((sender.kind === "player" && receivesPlayerChat) || (sender.kind === "spectator" && receivesSpectatorChat)) {
+        recipient.send(CHAT_CHANNEL, broadcast);
+      }
+    }
   }
 
   private chatSender(client: Client): ChatSender | undefined {

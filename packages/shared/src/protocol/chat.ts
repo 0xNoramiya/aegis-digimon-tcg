@@ -1,11 +1,5 @@
 import type { Seat } from "../schema/enums.js";
 
-/**
- * Match chat for players and spectators. It travels on its own channel, outside the
- * event sequence, and never changes game state. client -> server carries a
- * `ChatMessage`; server -> client carries a `ChatBroadcast` to both seats and every
- * spectator.
- */
 export const CHAT_CHANNEL = "chat" as const;
 
 /** The tamer commands from Digimon World (PS1), shouted at the opponent as emotes. */
