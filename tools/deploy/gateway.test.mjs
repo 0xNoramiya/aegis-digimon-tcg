@@ -303,3 +303,45 @@ test("static files are cached by content version and media revalidates without a
   assert.equal(stale.status, 200);
   assert.equal(await stale.text(), "sleeve");
 });
+
+test("page reload floods from one client are throttled without affecting other clients or assets", async (t) => {
+  const state = mkdtempSync(`${tmpdir()}/aegis-gateway-`);
+  let time = 0;
+  const gateway = createGateway({
+    state,
+    upstreamFor: () => undefined,
+    pageLoadLimit: { requests: 2, windowMs: 10_000 },
+    now: () => time,
+  });
+  t.after(async () => {
+    await new Promise((done) => gateway.close(done));
+    rmSync(state, { recursive: true });
+  });
+  for (const directory of ["routing", "assets", "releases/v1/web"]) {
+    mkdirSync(`${state}/${directory}`, { recursive: true });
+  }
+  writeFileSync(
+    `${state}/routing/manifest.json`,
+    JSON.stringify({ version: 1, active: { slot: "blue", revision: "v1" }, draining: [] }),
+  );
+  writeFileSync(`${state}/releases/v1/web/index.html`, "web");
+  writeFileSync(`${state}/assets/chunk.js`, "chunk");
+  const origin = await listen(gateway);
+  const loadPage = (client) =>
+    fetch(`${origin}/decks`, { headers: { "sec-fetch-dest": "document", "x-forwarded-for": client } });
+
+  assert.equal((await loadPage("203.0.113.7")).status, 200);
+  assert.equal((await loadPage("203.0.113.7")).status, 200);
+  time = 4_000;
+  const throttled = await loadPage("203.0.113.7");
+  assert.equal(throttled.status, 429);
+  assert.equal(throttled.headers.get("retry-after"), "6");
+  assert.equal(throttled.headers.get("cache-control"), "no-store");
+
+  assert.equal((await loadPage("198.51.100.4")).status, 200);
+  const asset = await fetch(`${origin}/assets/chunk.js`, { headers: { "x-forwarded-for": "203.0.113.7" } });
+  assert.equal(asset.status, 200);
+
+  time = 10_000;
+  assert.equal((await loadPage("203.0.113.7")).status, 200);
+});
