@@ -25,6 +25,7 @@ export function createSessionVerbs(pc: PrimitivesContext) {
       sourcePermanentId: ctx.source.permanent()?.permanentId,
       effectKey: effect.effectKey,
       description: effect.description,
+      ...(effect.effectTextPart !== undefined ? { effectTextPart: effect.effectTextPart } : {}),
       timing: effect.timing,
       ...(effect.beforeRemoval === true ? { beforeRemoval: true } : {}),
       ...(effect.isInherited === true ? { isInherited: true } : {}),

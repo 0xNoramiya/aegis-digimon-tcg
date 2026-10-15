@@ -303,6 +303,7 @@ export type ServerEvent =
       sourcePermanentId?: string;
       effectKey: string;
       description: string;
+      effectTextPart?: string;
       timing?: string;
       /** Printed clause timing, separate from the watcher event that fired. */
       printedTiming?: string;

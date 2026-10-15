@@ -120,3 +120,67 @@ describe("draw flight source-peel ordering", () => {
     expect(sequence.log).toContain("later-strip-end");
   });
 });
+
+it("flies public cards from trash under the host and from deck into trash", async () => {
+  const board = document.createElement("div");
+  const trash = document.createElement("div");
+  const deck = document.createElement("div");
+  trash.className = "game-utility-slot--you-trash";
+  board.append(trash, deck);
+  board.getBoundingClientRect = () => new DOMRect(0, 0, 800, 600);
+  trash.getBoundingClientRect = () => new DOMRect(600, 400, 60, 80);
+  deck.getBoundingClientRect = () => new DOMRect(600, 200, 60, 80);
+  let flights: readonly DrawFlight[] = [];
+  const observed: DrawFlight[] = [];
+  const queue = createAnimationQueue();
+  const { flyPublicPileCard } = cueFlights({
+    queue,
+    anchors: {
+      board: { current: board },
+      yourDeck: { current: deck },
+      oppDeck: { current: null },
+      yourHandDock: { current: null },
+      oppHandStrip: { current: null },
+      yourSecurity: { current: null },
+      oppSecurity: { current: null },
+      permanentCenter: () => ({ x: 300, y: 300 }),
+    },
+    viewerSeat: 0,
+    causingEffectGateRef: { current: null },
+    securityGainKeyRef: { current: 0 },
+    drawFlightKeyRef: { current: 0 },
+    setSecurityFlights: () => {},
+    setSecurityDealCounts: () => {},
+    setDrawBursts: () => {},
+    setHeldHandArrivals: () => {},
+    setDrawFlights: (next) => {
+      flights = typeof next === "function" ? next(flights) : next;
+      observed.push(...flights);
+    },
+  });
+  const context = { mode: "live" as const, cancelled: false, skipping: false, wait: async () => {} };
+  await flyPublicPileCard({
+    event: {
+      kind: "cardsMoved",
+      from: "trash",
+      to: "battleArea",
+      fromSeat: 0,
+      placedUnder: { permanentId: "host" },
+      instanceIds: ["source"],
+      cardIds: ["BT15-031"],
+    },
+    index: 0,
+    context,
+  });
+  await flyPublicPileCard({
+    event: { kind: "cardsMoved", from: "deck", to: "trash", fromSeat: 0, instanceIds: ["milled"], cardIds: ["ST1-03"] },
+    index: 0,
+    context,
+  });
+  expect(observed).toMatchObject([
+    { x: 630, y: 440, dx: -330, dy: -140, card: { cardId: "BT15-031" } },
+    { x: 630, y: 240, dx: 0, dy: 200, card: { cardId: "ST1-03" } },
+  ]);
+  expect(flights).toEqual([]);
+  queue.clear();
+});

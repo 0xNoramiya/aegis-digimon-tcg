@@ -1,3 +1,5 @@
+import { Zone } from "@aegis/shared/schema/enums";
+import type { FlyPublicPileCard } from "@/game/match/present/enqueuePublicPileMoves";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import type { Seat } from "@aegis/shared";
 import type { AnimationQueue, AnimationStepContext } from "../animationQueue";
@@ -467,7 +469,58 @@ export function cueFlights(deps: CueFlightsDeps) {
     return true;
   }
 
+  async function flyPublicPileCard({ event, index, context }: Parameters<FlyPublicPileCard>[0]): Promise<void> {
+    const board = anchors.board.current;
+    const seat = event.fromSeat ?? event.seat;
+    if (!board || seat === undefined || context.mode !== "live" || context.cancelled || context.skipping) {
+      return;
+    }
+    const trash = board.querySelector(
+      seat === viewerSeat ? ".game-utility-slot--you-trash" : ".game-utility-slot--opp-trash",
+    );
+    const deck = seat === viewerSeat ? anchors.yourDeck.current : anchors.oppDeck.current;
+    const source = event.from === Zone.Deck ? deck : trash;
+    const destination = event.placedUnder ? anchors.permanentCenter?.(event.placedUnder.permanentId) : undefined;
+    if (!source || (event.placedUnder && !destination) || (!destination && !trash)) {
+      return;
+    }
+    const boardRect = board.getBoundingClientRect();
+    const sourceRect = source.getBoundingClientRect();
+    const targetRect = trash?.getBoundingClientRect();
+    if (!sourceRect.width || (!destination && !targetRect?.width)) {
+      return;
+    }
+    const x = sourceRect.left + sourceRect.width / 2 - boardRect.left;
+    const y = sourceRect.top + sourceRect.height / 2 - boardRect.top;
+    const target = destination ?? {
+      x: targetRect!.left + targetRect!.width / 2 - boardRect.left,
+      y: targetRect!.top + targetRect!.height / 2 - boardRect.top,
+    };
+    const key = ++drawFlightKeyRef.current;
+    const duration = isTouchLayout() ? TIMINGS.drawFlightTouch : TIMINGS.drawFlight;
+    const cardId = event.cardIds?.[index];
+    const artId = event.artIds?.[index];
+    setDrawFlights((flights) => [
+      ...flights,
+      {
+        key,
+        x,
+        y,
+        dx: target.x - x,
+        dy: target.y - y,
+        duration,
+        ...(cardId ? { card: { cardId, ...(artId ? { artId } : {}) } } : {}),
+      },
+    ]);
+    try {
+      await context.wait(duration);
+    } finally {
+      setDrawFlights((flights) => flights.filter((flight) => flight.key !== key));
+    }
+  }
+
   return {
+    flyPublicPileCard,
     flyCardUnder,
     flyCardToDeck,
     flyCardToHand,

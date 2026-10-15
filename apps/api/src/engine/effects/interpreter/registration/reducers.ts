@@ -1,5 +1,6 @@
 // Self-cost reducers a card applies to its own play or digivolve.
 
+import { splitPrintedClauses } from "@aegis/shared/effects/printedClauses";
 import type { EffectContext } from "../../EffectContext.js";
 import { evaluateCondition } from "../conditions.js";
 import { canPayCost, payCost } from "../costs.js";
@@ -637,8 +638,12 @@ export async function applyWouldBePlayedSelfReducer(
  */
 function printedSelfReducerClause(ctx: EffectContext, reducer: WouldBePlayedSelfReducer): string | undefined {
   const normalize = (text: string) => text.replace(/\s+/g, " ").trim().toLowerCase();
-  const lines = (ctx.source.definition.effectText ?? "")
-    .split("\n")
+  const text = ctx.source.definition.effectText ?? "";
+  const clauses = splitPrintedClauses(text);
+  const firstClause = clauses[0];
+  const prefix = firstClause === undefined ? text : text.slice(0, text.indexOf(firstClause.text));
+  const lines = [prefix, ...clauses.map((clause) => clause.text)]
+    .flatMap((clause) => clause.split("\n"))
     .map((line) => line.trim())
     .filter(Boolean);
   const raw = normalize(reducer.raw);
@@ -720,34 +725,21 @@ async function resolveWouldBePlayedSelfReducer(
       if (candidates.length === 0) return;
 
       const maxPlacements = typeof target.count === "number" ? target.count : candidates.length;
-      const minimumPerPick = target.upTo === true ? 0 : 1;
-      const chosenInstanceIds = new Set<string>();
-      const chosenPermanentIds = new Set<string>();
-      const chosenNames = new Set<string>();
+      const chosenIds = await ctx.ask.selectCards(ctx, {
+        candidates: candidates.map(({ instanceId }) => instanceId),
+        min: target.upTo === true ? 0 : Math.min(maxPlacements, candidates.length),
+        max: maxPlacements,
+        distinctNames: true,
+        visibleCards: candidates.map(({ instanceId, cardId }) => ({ instanceId, cardId })),
+      });
       const chosenPlacements: string[] = [];
       const chosenRelocations: { permanentId: string; shedOwnCards?: boolean }[] = [];
-      for (let pick = 0; pick < maxPlacements; pick += 1) {
-        const available = candidates.filter((candidate) => {
-          if (chosenInstanceIds.has(candidate.instanceId)) return false;
-          if (candidate.permanentId !== undefined && chosenPermanentIds.has(candidate.permanentId)) return false;
-          const name = (ctx.game.definitionOf(candidate as never).nameEn ?? candidate.cardId).toLowerCase();
-          return !chosenNames.has(name);
-        });
-        if (available.length === 0) break;
-        const [chosenId] = await ctx.ask.selectCards(ctx, {
-          candidates: available.map(({ instanceId }) => instanceId),
-          min: minimumPerPick,
-          max: 1,
-          visibleCards: available.map(({ instanceId, cardId }) => ({ instanceId, cardId })),
-        });
-        if (chosenId === undefined) break;
-        const selected = available.find(({ instanceId }) => instanceId === chosenId);
-        if (selected === undefined) return;
-        const name = (ctx.game.definitionOf(selected as never).nameEn ?? selected.cardId).toLowerCase();
-        chosenNames.add(name);
-        chosenInstanceIds.add(selected.instanceId);
+      for (const chosenId of chosenIds) {
+        const selected = candidates.find(({ instanceId }) => instanceId === chosenId);
+        if (selected === undefined) {
+          return;
+        }
         if (selected.permanentId !== undefined) {
-          chosenPermanentIds.add(selected.permanentId);
           chosenRelocations.push({ permanentId: selected.permanentId, shedOwnCards: true });
         } else {
           chosenPlacements.push(selected.instanceId);
