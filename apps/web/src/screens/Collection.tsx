@@ -22,7 +22,7 @@ const PAGE_SIZE = 48;
 export function Collection() {
   const { t } = useTranslation();
   const all = useMemo<CardDefinition[]>(() => sortCards(activeCollectionCards(), "releaseDate"), []);
-  const filter = useCardFilter(all);
+  const filter = useCardFilter(all, { initialQuery: new URLSearchParams(window.location.search).get("q") ?? "" });
   const [selected, setSelected] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const totalRef = useRef(filter.filtered.length);

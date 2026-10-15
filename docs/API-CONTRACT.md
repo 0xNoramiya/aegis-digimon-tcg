@@ -329,3 +329,13 @@ by engine tests.
 Protocol changes must remain compatible with the currently deployed web client
 or ship with the controlled reload/versioning policy. Persistence compatibility
 is handled separately by the numbered database migrations.
+
+## Community deck guides
+
+`PUT /community/decks/:id/guide` requires a session and the owner of the public deck ID. Body: `{ "guide": "text" }` or `{ "guide": null }`. Returns `200 { "guide": "normalized text" }`; null or blank clears the guide. Normalization applies NFKC, Unix newlines, trailing whitespace removal, at most one blank line, and trimming. The 5,000-character limit applies after normalization and rejects rather than truncates content.
+
+Errors: `400 invalid_guide`, `404 deck_not_found` (including another owner's or hidden deck), `422 guide_too_long`, `422 guide_not_allowed`, and `429 too_many_requests`. Guests receive 401. Guide edits share the publication rate limit. Saving changes no deck contents, publication timestamps, or `outdated` state. Republishing preserves the guide. Administrators can read hidden guides through the existing deck endpoint, but cannot edit them through this endpoint.
+
+Deck detail and random-deck responses contain `guide: string | null`; browse summaries contain only `hasGuide: boolean`. Search does not index guides.
+
+The client provides a rich text editor with headings, bold, and flat bullet lists, stored as a small text format: `## ` headings, `- ` bullets, `**bold**`, and blank-line paragraphs. Backslash escapes preserve literal backslashes, asterisks, hashes, and hyphens. No HTML is evaluated. Uppercase card codes are confirmed against the catalog; unknown codes remain text. Card suggestions include code and name. Rendered card links preview artwork on hover and open `/collection?q=<card-code>` with the collection search populated.

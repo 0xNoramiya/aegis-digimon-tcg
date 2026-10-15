@@ -50,6 +50,11 @@ export const communityApi = {
     return request<CommunityDeckPage>(`/community/decks?${params}`);
   },
   deck: (id: string) => request<CommunityDeck>(`/community/decks/${encodeURIComponent(id)}`),
+  updateGuide: (id: string, guide: string | null) =>
+    request<{ guide: string | null }>(`/community/decks/${encodeURIComponent(id)}/guide`, {
+      method: "PUT",
+      body: JSON.stringify({ guide }),
+    }),
   setLike: (id: string, liked: boolean) =>
     request<CommunityLikeResult>(`/community/decks/${encodeURIComponent(id)}/like`, {
       method: liked ? "PUT" : "DELETE",

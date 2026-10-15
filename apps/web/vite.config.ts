@@ -29,11 +29,27 @@ export default defineConfig({
     projects: [
       {
         extends: true,
-        test: { name: "default", exclude: [...configDefaults.exclude, "e2e/**", "src/design/tokenArt/**/*.test.tsx"] },
+        test: {
+          name: "default",
+          exclude: [
+            ...configDefaults.exclude,
+            "e2e/**",
+            "src/design/tokenArt/**/*.test.tsx",
+            "src/screens/community/**/*.test.tsx",
+          ],
+        },
       },
       {
         extends: true,
-        test: { name: "token-art", include: ["src/design/tokenArt/**/*.test.tsx"], environment: "jsdom" },
+        test: {
+          name: "token-art",
+          include: ["src/design/tokenArt/**/*.test.tsx"],
+          environment: "jsdom",
+        },
+      },
+      {
+        extends: true,
+        test: { name: "community-ui", include: ["src/screens/community/**/*.test.tsx"], environment: "jsdom" },
       },
     ],
     exclude: [...configDefaults.exclude, "e2e/**"],
