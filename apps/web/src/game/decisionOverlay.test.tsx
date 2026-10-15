@@ -4590,3 +4590,43 @@ it.each([
   expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(effectText);
   expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(effectTextEmphasis);
 });
+
+it.each([
+  {
+    timing: "WhenDigivolving",
+    passage:
+      "[On Play] [When Digivolving] [When Attacking] [Once Per Turn] You may suspend 1 of your opponent's Digimon or Tamers.",
+  },
+  {
+    timing: "WhenDigivolving",
+    passage: "Then, 1 of their Digimon or Tamers can't unsuspend until their turn ends.",
+  },
+  {
+    timing: "AllTurns",
+    passage:
+      "[All Turns] [Once Per Turn] When effects play or digivolve any Digimon, ＜De-Digivolve 1＞ 1 of your opponent's Digimon.",
+  },
+  {
+    timing: "AllTurns",
+    passage: "Then, this Digimon may battle 1 of your opponent's Digimon.",
+  },
+])("highlights Callismon's current effect passage: $passage", ({ timing, passage }) => {
+  const effectText = cardEffectClauseForTiming("BT25-058", timing)!;
+  renderDecision({
+    decisionId: "callismon-current-step",
+    seat: 0,
+    kind: "chooseTargets",
+    sourceCardId: "BT25-058",
+    promptText: "Callismon",
+    options: {
+      timing,
+      effectText,
+      effectTextPart: passage,
+      effectTextEmphasis: passage,
+      candidateInstanceIds: ["target"],
+      min: 1,
+      max: 1,
+    },
+  });
+  expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(passage);
+});
