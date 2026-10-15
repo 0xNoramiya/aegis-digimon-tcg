@@ -49892,6 +49892,34 @@
     "nameJp": "コンロン"
   },
   {
+    "cardId": "BT27-035",
+    "nameEn": "MirageGaogamon: Burst Mode",
+    "colors": ["Blue", "Yellow"],
+    "level": 7,
+    "playCost": 6,
+    "dp": 15000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 6,
+        "memoryCost": 5
+      }
+    ],
+    "attributes": ["Data"],
+    "types": ["Beast Knight", "DATA SQUAD"],
+    "rarity": "R",
+    "dualEffect": "Full Moon Meteor Impact",
+    "effectText": "[Digivolve] Lv.6 w/[DATA SQUAD] trait: Cost 5\n[Burst Digivolve] [MirageGaogamon]: Cost 0 by returning 1 [Thomas H. Norstein] to the hand.\n＜Reboot＞ ＜Blocker＞ ＜Evade＞\n[When Digivolving] [When Attacking] [Once Per Turn] You may activate 1 [Main] effect on this card's Option side.\n[When Digivolving] [When Attacking] If your opponent's hand has 8 or more cards, by returning cards without looking to the bottom of the deck so that it has 7 left, return their top security card to the bottom of the deck.",
+    "optionEffect": "Use Req. ＜[DATA SQUAD] trait＞\n[Main] Return 1 of your opponent's Digimon to the hand. Then, if their hand has 8 or more cards, 1 of your Digimon may unsuspend.\n＜Arts Digivolve＞",
+    "set": "BT27",
+    "kinds": ["Digimon", "Option"],
+    "forms": ["Mega"],
+    "maxCountInDeck": 4,
+    "imageId": "BT27-035",
+    "isDualCard": true,
+    "optionColorRequirements": ["Blue"]
+  },
+  {
     "cardId": "BT27-084",
     "set": "BT27",
     "nameEn": "LordKnightmon (X Antibody)",
