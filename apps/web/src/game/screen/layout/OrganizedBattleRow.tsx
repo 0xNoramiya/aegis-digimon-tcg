@@ -31,7 +31,7 @@ const MIN_PORTRAIT_CARD_WIDTH = 65;
 /** Enough sources to reach the fan's cap, which `sourceFanStepLimit` holds at a quarter of the card width. */
 const FIXED_SIZE_SOURCE_RESERVE = 12;
 /** Each lane's horizontal padding, from fieldLayout.css. */
-const LANE_INLINE_PADDING = 12;
+const LANE_INLINE_PADDING = 16;
 const DIGIMON_GAP_SHARE = 0.25;
 const SUPPORT_GAP_SHARE = 0.3;
 /** One lane has the row's whole height, so its cards may grow past the layout's card width, up to this share. */
@@ -580,7 +580,7 @@ export function fitLanesToWidth(
 function laneMetrics(placement: LanePlacement, content: LaneContent, widths = { digimon: 0, support: 0 }): LaneMetrics {
   const base = LANE_METRICS[placement];
   const shadow = content.preferStacked ? 8 : 10;
-  const top = content.preferStacked ? 18 : 22;
+  const top = 22;
   const sourceBottom = (count = 0, width: number) =>
     count
       ? (content.sourceTop ?? 6) +

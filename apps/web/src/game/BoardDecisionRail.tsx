@@ -106,6 +106,7 @@ export function BoardPromptRail({
 }) {
   const { t } = useTranslation();
   useEscapeToDialog(onOpenDialog);
+  const [isTextVisible, setIsTextVisible] = useState(false);
   const modal = variant === "prompt";
   const sourceMask = useDecisionSourceMask(modal ? sourcePermanentId : undefined);
   const noticeBand = useNoticeBandPassThrough();
@@ -134,6 +135,7 @@ export function BoardPromptRail({
         data-testid="board-prompt"
         data-variant={variant}
         data-prompt-surface="left"
+        data-text-hidden={!isTextVisible || undefined}
         data-prompt-dragged={drag.position === undefined ? undefined : true}
         style={
           {
@@ -166,12 +168,22 @@ export function BoardPromptRail({
           <p className="board-prompt__text" aria-live="polite">
             {prompt}
           </p>
+          {clause && !modal ? (
+            <button
+              type="button"
+              className="board-prompt__toggle-text"
+              aria-expanded={isTextVisible}
+              onClick={() => setIsTextVisible((visible) => !visible)}
+            >
+              {t(isTextVisible ? "overlay.hideEffect" : "overlay.showEffect")}
+            </button>
+          ) : null}
         </div>
         {/* The clause leads and the art sits beside it, against the top: the text is what
             the player reads, the picture only says which card is asking. */}
         {clause || art ? (
           <div className="board-prompt__body">
-            {clause ? (
+            {clause && (modal || isTextVisible) ? (
               <p className="board-prompt__clause" lang={clauseLang}>
                 {clause}
               </p>
