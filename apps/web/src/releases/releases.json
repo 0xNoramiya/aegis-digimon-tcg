@@ -1,5 +1,44 @@
 [
   {
+    "version": "1.26.3-beta",
+    "releasedAt": "2026-10-14",
+    "summaryKey": "releases.1.26.3-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.26.3-beta.feature.spectating"
+      },
+      {
+        "textKey": "releases.1.26.3-beta.feature.deckSharing"
+      },
+      {
+        "textKey": "releases.1.26.3-beta.feature.artwork"
+      },
+      {
+        "textKey": "releases.1.26.3-beta.feature.effectReading",
+        "issue": 5465
+      },
+      {
+        "textKey": "releases.1.26.3-beta.feature.profileStats"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.26.3-beta.fix.dualOptions",
+        "issue": 5528
+      },
+      {
+        "textKey": "releases.1.26.3-beta.fix.costReduction",
+        "issue": 5531
+      },
+      {
+        "textKey": "releases.1.26.3-beta.fix.rollback"
+      },
+      {
+        "textKey": "releases.1.26.3-beta.fix.loading"
+      }
+    ]
+  },
+  {
     "version": "1.26.2-beta",
     "releasedAt": "2026-10-14",
     "summaryKey": "releases.1.26.2-beta.summary",

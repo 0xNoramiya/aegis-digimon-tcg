@@ -53,6 +53,17 @@ describe("game reload routing", () => {
       { screen: "lobby" },
     );
   });
+
+  it("opens shared spectator links on the watch screen", () => {
+    expect(
+      initialAppRoute({
+        pathname: "/play",
+        invitedRoomCode: undefined,
+        spectatorCode: "ABCDEF",
+        hasReconnectSession: false,
+      }),
+    ).toEqual({ screen: "watch" });
+  });
 });
 
 describe("responsive application state", () => {

@@ -22,7 +22,10 @@ const lookupPrivateRoom = vi.hoisted(() =>
     }),
   ),
 );
-vi.mock("../net/client", () => ({ lookupPrivateRoom }));
+const liveMatches = vi.hoisted(() =>
+  vi.fn<(limit: number) => Promise<{ matches: never[]; total: number }>>(async () => ({ matches: [], total: 0 })),
+);
+vi.mock("../net/client", () => ({ lookupPrivateRoom, liveMatches }));
 
 // Existing configuration scenarios explicitly enter the advanced panel.
 function renderConfiguredLobby(...args: Parameters<typeof render>) {
@@ -36,6 +39,7 @@ function renderConfiguredLobby(...args: Parameters<typeof render>) {
 beforeEach(() => {
   randomCommunityDeck.mockResolvedValue({ deck: null, eligibleCount: 0 });
   lookupPrivateRoom.mockResolvedValue({ roomId: "private-room", unlimited: false });
+  liveMatches.mockResolvedValue({ matches: [], total: 0 });
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-09-15T12:00:00.000Z"));
 });
@@ -1250,4 +1254,55 @@ it("does not launch a delayed mystery draw after leaving the lobby", async () =>
   view.unmount();
   await act(async () => finish({ deck: null, eligibleCount: 0 }));
   expect(onStart).not.toHaveBeenCalled();
+});
+
+describe("live spectating entry points", () => {
+  function renderLobby(accountId?: string) {
+    const onNav = vi.fn();
+    render(
+      <I18nProvider>
+        <Lobby
+          player={{ name: "Tamer", color: "Blue", shards: 0 }}
+          decks={DECKS}
+          activeDeckId={DECKS[0]!.id}
+          accountId={accountId}
+          onSelectDeck={() => undefined}
+          onCopyDeck={() => undefined}
+          onNav={onNav}
+          onStart={() => undefined}
+        />
+      </I18nProvider>,
+    );
+    return onNav;
+  }
+
+  it("shows how many matches are live on the watch button and opens the watch screen", async () => {
+    liveMatches.mockResolvedValue({ matches: [], total: 3 });
+    const onNav = renderLobby();
+    const watch = await screen.findByRole("button", { name: /Watch a match.*3 live matches/ });
+    expect(liveMatches).toHaveBeenCalledWith(1);
+    fireEvent.click(watch);
+    expect(onNav).toHaveBeenCalledWith("watch");
+  });
+
+  it("keeps the spectator listing switch beside the match setup title, disabled for guests", () => {
+    renderLobby();
+    const setup = screen.getByRole("region", { name: "Match setup" });
+    const header = setup.querySelector(".lobby-setup__header")!;
+    const listing = within(header as HTMLElement).getByRole("switch", { name: "List my matches for spectators" });
+    expect((listing as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("explains how to unlock the spectator listing switch from the keyboard and on tap", async () => {
+    renderLobby();
+    const locked = document.querySelector(".live-match-listing-setting__locked") as HTMLElement;
+    fireEvent.focus(locked);
+    expect((await screen.findByRole("tooltip")).textContent).toContain(
+      "Only signed-in players can list their matches.",
+    );
+    fireEvent.click(locked);
+    await waitFor(() => expect(screen.queryByRole("tooltip")).toBeNull());
+    fireEvent.click(locked);
+    expect(await screen.findByRole("tooltip")).toBeTruthy();
+  });
 });

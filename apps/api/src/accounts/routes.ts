@@ -914,6 +914,8 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     deckView,
     deckSort,
     profileStats,
+    shareDeckAfterMatch,
+    listLiveMatches,
     favoriteDeckIds,
     ...unknownKeys
   } = value as Record<string, unknown>;
@@ -927,7 +929,11 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (deckShare !== undefined && !(typeof deckShare === "number" && deckShare > 0 && deckShare < 1)) return undefined;
   if (deckView !== undefined && deckView !== "grid" && deckView !== "list") return undefined;
   if (deckSort !== undefined && !isShortText(deckSort)) return undefined;
+  if (shareDeckAfterMatch !== undefined && typeof shareDeckAfterMatch !== "boolean") {
+    return undefined;
+  }
   if (profileStats !== undefined && typeof profileStats !== "boolean") return undefined;
+  if (listLiveMatches !== undefined && typeof listLiveMatches !== "boolean") return undefined;
   if (favoriteDeckIds !== undefined && !isFavoriteDeckIdList(favoriteDeckIds)) return undefined;
   return {
     ...(autoHatch !== undefined && { autoHatch }),
@@ -939,6 +945,8 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     ...(deckView !== undefined && { deckView: deckView as "grid" | "list" }),
     ...(deckSort !== undefined && { deckSort: deckSort as string }),
     ...(profileStats !== undefined && { profileStats }),
+    ...(shareDeckAfterMatch !== undefined && { shareDeckAfterMatch }),
+    ...(listLiveMatches !== undefined && { listLiveMatches }),
     ...(favoriteDeckIds !== undefined && { favoriteDeckIds: favoriteDeckIds as string[] }),
   };
 }

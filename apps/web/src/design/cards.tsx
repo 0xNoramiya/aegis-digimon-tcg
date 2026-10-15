@@ -1,4 +1,5 @@
-import { cardImageUrls, getCardDefinition, type CardColor, type CardDefinition } from "@aegis/shared";
+import { useCardImageUrls } from "@/design/tokenArt/useCardImageUrls";
+import { getCardDefinition, type CardColor, type CardDefinition } from "@aegis/shared";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { DEFAULT_CARD_SLEEVE, DEFAULT_EGG_SLEEVE, useCardSleeve, useEggSleeve } from "./sleeve";
@@ -170,9 +171,9 @@ function CardZoomPreview({
   fallbackIndex: number;
 }) {
   const def = getCardDefinition(cardId);
-  const urls = cardImageUrls(cardId, artId);
+  const urls = useCardImageUrls({ cardId, artId });
   const [extra, setExtra] = useState(0);
-  useEffect(() => setExtra(0), [cardId, artId]);
+  useEffect(() => setExtra(0), [cardId, artId, urls]);
   const idx = fallbackIndex + extra;
 
   const vw = window.innerWidth;
@@ -248,9 +249,9 @@ export function CardFull({
   zoomOnHover?: boolean;
 }) {
   const def = getCardDefinition(cardId);
-  const urls = cardImageUrls(cardId, artId);
+  const urls = useCardImageUrls({ cardId, artId });
   const [urlIndex, setUrlIndex] = useState(0);
-  useEffect(() => setUrlIndex(0), [artId, cardId]);
+  useEffect(() => setUrlIndex(0), [artId, cardId, urls]);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const zoomEnabled = useHoverZoomEnabled();
   if (!def) return <CardBack width={width} label={cardId} />;
@@ -356,10 +357,10 @@ export function CoverThumb({
   sigilColor?: string;
   sigilSize?: number;
 }) {
+  const urls = useCardImageUrls({ cardId: coverCardId, artId });
   const [urlIndex, setUrlIndex] = useState(0);
-  useEffect(() => setUrlIndex(0), [artId, coverCardId]);
+  useEffect(() => setUrlIndex(0), [artId, coverCardId, urls]);
   if (!coverCardId) return <Sigil emblem="crest" color={sigilColor} size={sigilSize} />;
-  const urls = cardImageUrls(coverCardId, artId);
   if (urlIndex >= urls.length) return <Sigil emblem="crest" color={sigilColor} size={sigilSize} />;
   return (
     <img
@@ -552,9 +553,9 @@ export function CardMini({
           colors: identity.colors.length > 0 ? [...identity.colors] : printed.colors,
         }
       : printed;
-  const urls = cardImageUrls(cardId, artId);
+  const urls = useCardImageUrls({ cardId, artId });
   const [urlIndex, setUrlIndex] = useState(0);
-  useEffect(() => setUrlIndex(0), [artId, cardId]);
+  useEffect(() => setUrlIndex(0), [artId, cardId, urls]);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const zoomEnabled = useHoverZoomEnabled();
   if (faceDown || !def) return <CardBack width={width} />;

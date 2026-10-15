@@ -20,6 +20,8 @@ import {
   usesSlotDeploymentRouter,
 } from "./deployment";
 import type { AegisJoinOptions } from "./types";
+import type { LiveMatchPage } from "@aegis/shared/protocol/LiveMatch";
+import { sortLiveMatches } from "@aegis/shared/protocol/sortLiveMatches";
 import type { ReconnectSession } from "./reconnectSession";
 import { hasRoomTicketAccount } from "./roomAccount";
 
@@ -180,6 +182,22 @@ export class AegisConnectionRouter {
       return this.remember(await this.client(slot).consumeSeatReservation(reservation), slot);
     }
     throw new Error("Match is not available to spectators");
+  }
+
+  async liveMatches(limit: number): Promise<LiveMatchPage> {
+    const manifest = await this.dependencies.loadManifest();
+    const deployments = [manifest.active, ...manifest.draining];
+    const pages = await Promise.allSettled(
+      deployments.map(({ slot }) =>
+        fetchLiveMatches(this.dependencies.endpointForSlot(slot).http, limit, this.dependencies.fetcher),
+      ),
+    );
+    const loaded = pages.flatMap((page) => (page.status === "fulfilled" ? [page.value] : []));
+    if (loaded.length === 0) throw new Error("Live matches are unavailable");
+    return {
+      matches: sortLiveMatches(loaded.flatMap((page) => page.matches)).slice(0, limit),
+      total: loaded.reduce((total, page) => total + page.total, 0),
+    };
   }
 
   async reconnect(reconnectionToken: string, slot: DeploymentSlot): Promise<AegisRoom> {
@@ -479,6 +497,17 @@ export interface SpectateTarget {
 
 function spectatorJoinRequest(target: SpectateTarget): RequestInit {
   return { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(target) };
+}
+
+async function fetchLiveMatches(http: string, limit: number, fetcher: typeof fetch): Promise<LiveMatchPage> {
+  const response = await fetcher(`${http}/spectate/live?limit=${limit}`);
+  if (!response.ok) throw new Error("Live matches are unavailable");
+  return (await response.json()) as LiveMatchPage;
+}
+
+export async function liveMatches(limit: number): Promise<LiveMatchPage> {
+  if (useProductionRouter()) return getProductionRouter().liveMatches(limit);
+  return fetchLiveMatches(legacyEndpoint().replace(/^ws/, "http"), limit, fetch);
 }
 
 export async function spectate(target: SpectateTarget): Promise<AegisRoom> {

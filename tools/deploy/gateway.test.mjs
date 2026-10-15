@@ -247,3 +247,59 @@ test("source maps are never served even when one reaches a served directory", as
   const response = await fetch(`${origin}/assets/chunk.js.map`);
   assert.equal(response.status, 404);
 });
+
+test("static files are cached by content version and media revalidates without a body", async (t) => {
+  const state = mkdtempSync(`${tmpdir()}/aegis-gateway-`);
+  const gateway = createGateway({ state, upstreamFor: () => undefined });
+  t.after(async () => {
+    await new Promise((done) => gateway.close(done));
+    rmSync(state, { recursive: true });
+  });
+  for (const directory of ["routing", "assets", "releases/v1/web/sleeves", "releases/v1/web/audio"]) {
+    mkdirSync(`${state}/${directory}`, { recursive: true });
+  }
+  writeFileSync(
+    `${state}/routing/manifest.json`,
+    JSON.stringify({ version: 1, active: { slot: "blue", revision: "v1" }, draining: [] }),
+  );
+  writeFileSync(`${state}/releases/v1/web/index.html`, "web");
+  writeFileSync(`${state}/releases/v1/web/sleeves/standard.webp`, "sleeve");
+  writeFileSync(`${state}/releases/v1/web/audio/bank.flac`, "bank");
+  writeFileSync(`${state}/releases/v1/web/data.json`, "{}");
+  writeFileSync(`${state}/assets/chunk.js`, "chunk");
+  const origin = await listen(gateway);
+
+  const page = await fetch(`${origin}/?v=1`);
+  assert.equal(page.headers.get("cache-control"), "no-store");
+  assert.equal(page.headers.get("etag"), null);
+  assert.equal((await fetch(`${origin}/deck/1`)).headers.get("cache-control"), "no-store");
+
+  const versioned = await fetch(`${origin}/audio/bank.flac?v=abc123`);
+  assert.equal(versioned.headers.get("cache-control"), "public, max-age=31536000, immutable");
+  assert.equal(versioned.headers.get("content-type"), "audio/flac");
+  assert.equal(
+    (await fetch(`${origin}/assets/chunk.js`)).headers.get("cache-control"),
+    "public, max-age=31536000, immutable",
+  );
+  assert.equal((await fetch(`${origin}/data.json`)).headers.get("cache-control"), "no-cache");
+
+  const sleeve = await fetch(`${origin}/sleeves/standard.webp`);
+  const entityTag = sleeve.headers.get("etag");
+  const modified = sleeve.headers.get("last-modified");
+  assert.equal(sleeve.headers.get("cache-control"), "public, max-age=86400");
+  assert.equal(await sleeve.text(), "sleeve");
+  assert.match(entityTag, /^W\/".+"$/);
+
+  const unchanged = await fetch(`${origin}/sleeves/standard.webp`, { headers: { "if-none-match": entityTag } });
+  assert.equal(unchanged.status, 304);
+  assert.equal(unchanged.headers.get("etag"), entityTag);
+  assert.equal(await unchanged.text(), "");
+  const unchangedSince = await fetch(`${origin}/sleeves/standard.webp`, { headers: { "if-modified-since": modified } });
+  assert.equal(unchangedSince.status, 304);
+
+  const stale = await fetch(`${origin}/sleeves/standard.webp`, {
+    headers: { "if-none-match": 'W/"other"', "if-modified-since": modified },
+  });
+  assert.equal(stale.status, 200);
+  assert.equal(await stale.text(), "sleeve");
+});

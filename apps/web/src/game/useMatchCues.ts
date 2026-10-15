@@ -140,6 +140,7 @@ export function useMatchCues({
   onPresentationReport,
   devProbe,
   presentationPacing = "current",
+  holdEffectsForConfirmation = false,
 }: {
   /** The closed server batches, in order. One batch is one moment of the rules. */
   batches: readonly ServerBatch[];
@@ -183,6 +184,7 @@ export function useMatchCues({
    * announce, results and settle beats, one after the other (match/effectSequence.ts).
    */
   presentationPacing?: PresentationPacing;
+  holdEffectsForConfirmation?: boolean;
 }): MatchCues {
   // How far the presentation has got, in server revisions. Every step is counted into the
   // batch it was enqueued for, so the board can be rendered from the snapshot of the batch
@@ -204,6 +206,16 @@ export function useMatchCues({
   // The watchdog fired: the queue stopped moving while the viewer had a question to answer,
   // so the prompt is handed over whatever the queue still claims to owe.
   const [decisionStalled, setDecisionStalled] = useState(false);
+  const [effectAwaitingConfirmation, setEffectAwaitingConfirmation] = useState(false);
+  const effectConfirmationRef = useRef<(() => void) | null>(null);
+  const holdEffectsRef = useRef(holdEffectsForConfirmation);
+  holdEffectsRef.current = holdEffectsForConfirmation;
+  const viewerReadingRef = useRef(false);
+  const readingHeldRef = useRef(false);
+  useEffect(() => {
+    if (!holdEffectsForConfirmation) effectConfirmationRef.current?.();
+  }, [holdEffectsForConfirmation]);
+  useEffect(() => () => effectConfirmationRef.current?.(), []);
   const queueChangedRef = useRef<() => void>(() => {});
   const visiblePhaseBannerRef = useRef(false);
   // A cue belongs after its preceding phase announcement, not merely after whichever
@@ -765,6 +777,7 @@ export function useMatchCues({
     lastBatchIdRef,
     narrationSequenceRef,
     narrationRef,
+    awaitEffectConfirmation,
   });
 
   /* A lit source belongs to the clause it raised: it goes out when that clause does, not
@@ -1427,7 +1440,36 @@ export function useMatchCues({
 
   /** Stop every reading clock while the viewer reads, and restart them where they left off. */
   function holdNarration(held: boolean) {
+    viewerReadingRef.current = held;
+    applyReadingHold();
+  }
+
+  function applyReadingHold() {
+    const held = viewerReadingRef.current || effectConfirmationRef.current !== null;
+    if (held === readingHeldRef.current) return;
+    readingHeldRef.current = held;
     setNarration((items) => (held ? pauseNarration(items, Date.now()) : resumeNarration(items, Date.now())));
+  }
+
+  function awaitEffectConfirmation(context: AnimationStepContext): Promise<void> | undefined {
+    if (!holdEffectsRef.current || context.mode !== "live" || context.skipping || context.cancelled) return undefined;
+    effectConfirmationRef.current?.();
+    return new Promise<void>((resolve) => {
+      effectConfirmationRef.current = () => {
+        effectConfirmationRef.current = null;
+        setEffectAwaitingConfirmation(false);
+        applyReadingHold();
+        queue.resume();
+        resolve();
+      };
+      queue.pause();
+      applyReadingHold();
+      setEffectAwaitingConfirmation(true);
+    });
+  }
+
+  function confirmEffect() {
+    effectConfirmationRef.current?.();
   }
 
   /**
@@ -1437,6 +1479,7 @@ export function useMatchCues({
    */
   function fastForwardWithFilter(eligible?: (step: AnimationStep) => boolean) {
     presentationTelemetry.countSkip();
+    confirmEffect();
     narrationSkipRef.current = true;
     targetClausesRef.current.clear();
     effectSequence.skipClauses();
@@ -1623,5 +1666,7 @@ export function useMatchCues({
     drawBursts,
     playCue,
     skipAnimations: fastForward,
+    effectAwaitingConfirmation,
+    confirmEffect,
   };
 }

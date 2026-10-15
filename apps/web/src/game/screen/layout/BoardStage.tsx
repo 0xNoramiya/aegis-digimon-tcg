@@ -72,6 +72,7 @@ import { Sidebar } from "./Sidebar";
 import { TurnBanner } from "./TurnBanner";
 import { ViewerBattleRow } from "./ViewerBattleRow";
 import { ViewerPiles } from "./ViewerPiles";
+import { EffectConfirmButton } from "../../EffectConfirmButton";
 import { useBreedingTransferOrigins } from "../../breedingTransfer";
 import { useFieldShatterOrigins } from "../../fieldShatter";
 
@@ -406,6 +407,9 @@ export function BoardStage({
                 onDismissRejection={cues.dismissRejection}
                 timeWarning={timeWarning}
                 onHold={cues.holdNarration}
+                confirmation={
+                  cues.effectAwaitingConfirmation ? <EffectConfirmButton onConfirm={cues.confirmEffect} /> : undefined
+                }
               />
             ) : null}
           </div>

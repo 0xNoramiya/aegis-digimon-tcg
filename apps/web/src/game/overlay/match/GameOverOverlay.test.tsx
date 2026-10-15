@@ -277,3 +277,31 @@ it("opens the exact used deck after a duel and saves an independent personal cop
   expect(loadDecks()[0]!.community!.author.displayName).toBe("Original Author");
   localStorage.removeItem("aegis:decks");
 });
+
+it("opens the shared opponent deck and returns to the result", () => {
+  render(
+    <I18nProvider>
+      <GameOverOverlay
+        result="win"
+        reason="security"
+        stats={[]}
+        onMenu={() => {}}
+        onRematch={() => {}}
+        opponentDeckDialog={(onClose) => (
+          <div role="dialog" aria-label="Opponent deck">
+            <button onClick={onClose}>Close opponent deck</button>
+          </div>
+        )}
+      />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "View opponent’s deck" }));
+  expect(screen.getByRole("dialog", { name: "Opponent deck" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Close opponent deck" }));
+  expect(screen.getByRole("button", { name: "View opponent’s deck" })).toBeTruthy();
+});
+
+it("does not offer an unavailable opponent deck", () => {
+  renderOverlay();
+  expect(screen.queryByRole("button", { name: "View opponent’s deck" })).toBeNull();
+});

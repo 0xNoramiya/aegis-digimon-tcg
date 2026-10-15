@@ -438,6 +438,7 @@ export function NarrationStack({
   onDismissRejection,
   timeWarning,
   onHold,
+  confirmation,
 }: {
   /** Recent items keyed by occurrence ID. */
   narration: ReadonlyMap<string, NarrationItem>;
@@ -459,6 +460,7 @@ export function NarrationStack({
   timeWarning?: LowTimeWarning;
   /** Stop or restart the reading clocks while the viewer reads a column. */
   onHold?: (held: boolean) => void;
+  confirmation?: ReactNode;
 }) {
   const { t } = useTranslation();
   const now = nowMs ?? Date.now();
@@ -543,6 +545,7 @@ export function NarrationStack({
             onOpen={() => setExpanded(true)}
             onDismiss={() => textItems.forEach((item) => onAdvance(item.id))}
           />
+          {confirmation}
         </Slot>
       ) : textItems.length > 0 || immediateCount > 0 ? (
         <Slot
@@ -566,6 +569,11 @@ export function NarrationStack({
               onDismiss={timeWarning.dismiss}
             />
           ) : null}
+          {confirmation}
+        </Slot>
+      ) : confirmation ? (
+        <Slot slot={textSlot} count={0} securityDockActive={securityDockActive}>
+          {confirmation}
         </Slot>
       ) : null}
     </>

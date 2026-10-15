@@ -1,8 +1,10 @@
 import { RollbackHistory } from "#api/rooms/RollbackHistory";
 import { RollbackKind, ROLLBACK_CHANNEL, ROLLBACK_RESET_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
+import { LIVE_MATCH_SPECTATOR_LIMIT, type LiveMatch } from "@aegis/shared/protocol/LiveMatch";
 import type { GameEngineHooks } from "#api/engine/gameEngine/types";
 import type { ReplayInput } from "#api/replays/inputs/types";
 
+import { OPPONENT_DECK_CHANNEL } from "@aegis/shared/decks/OPPONENT_DECK_CHANNEL";
 import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import { validateDecklist } from "../engine/deckValidation.js";
 import { log, logError, withMatchLog } from "../logger.js";
@@ -293,7 +295,10 @@ type ConnectionDropParams = {
  * forwards intents to the GameEngine, relays decision requests, and broadcasts the
  * event log. All rules live in the engine (API-CONTRACT.md section 1).
  */
-export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: boolean; format: DeckFormat } }> {
+export class AegisRoom extends Room<{
+  state: GameState;
+  metadata: { unlimited: boolean; format: DeckFormat; live?: LiveMatch };
+}> {
   override maxClients = 2;
   private engine!: GameEngine;
   private spectatorClients = new Set<string>();
@@ -326,6 +331,9 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private rankedByClient = new Map<string, boolean>();
   /** Clients that pace chains of triggered effects themselves (`presentationPacing: "sequential"`). */
   private chainPacingClients = new Set<string>();
+  private initialDeckBySeat = new Map<Seat, UsedDeck>();
+  private deckOwnerBySeat = new Map<Seat, string>();
+  private opponentDeckRequestTimes = new WeakMap<Client, number>();
   private deckByClient = new Map<string, UsedDeck>();
   /**
    * Every StateView this room handed out, disposed with the room. @colyseus/schema's GC
@@ -362,6 +370,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
   private readyTimeout: Delayed | undefined;
   private waitingRoomTimeout: Delayed | undefined;
   private matchStartRequested = false;
+  private liveListingStartedAt: number | undefined;
   private matchClock: MatchClock | undefined;
   private matchClockInterval: Delayed | undefined;
   private matchLimitInterval: Delayed | undefined;
@@ -798,6 +807,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
           // Frees the code for the next game, which the players open from the same private room.
           if (this.state.roomCode) roomCodes.release(this.state.roomCode, this.roomId);
           if (this.state.spectatorCode && !this.isPrivate) roomCodes.release(this.state.spectatorCode, this.roomId);
+          this.refreshLiveListing();
           this.casualSeries?.recordGame(
             event.result.outcome === "draw" ? -1 : event.result.winnerSeat,
             this.departingSeat,
@@ -880,7 +890,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // Route zone arrivals to the per-client StateViews (see exposeCardToClients). Installed
     // before any seat is filled so `seatPlayer` picks it up for both PlayerStates. Not a replay
     // input: it only wires per-client views, which never feed back into engine state.
-    this.engine.installVisibility(this.exposeCardToClients);
+    this.engine.installVisibility(this.guardedVisibilityPort());
 
     // One catch-all handler: every client intent type is reassembled into a
     // discriminated-union Intent and handed to the engine, which validates,
@@ -895,6 +905,16 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
 
       if (type === CONNECTION_REPORT_CHANNEL) {
         this.handleConnectionReport(client, payload);
+        return;
+      }
+      if (type === OPPONENT_DECK_CHANNEL) {
+        const now = performance.now();
+        if (now - (this.opponentDeckRequestTimes.get(client) ?? -Infinity) >= 10_000) {
+          this.opponentDeckRequestTimes.set(client, now);
+          void this.sendOpponentDeck(client).catch((error: unknown) =>
+            this.debugError("[AegisRoom] failed to share opponent deck", error),
+          );
+        }
         return;
       }
       if (type === USED_DECK_CHANNEL) {
@@ -1327,8 +1347,41 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     // Standalone room lifecycle consumers have no matchmaker listing to publish into.
     if (!Reflect.get(this, "_listing")) return;
     await this.setMatchmaking({
-      metadata: { ...this.metadata, unlimited: this.isUnlimitedRoom, format: this.state.format as DeckFormat },
+      metadata: {
+        ...this.metadata,
+        unlimited: this.isUnlimitedRoom,
+        format: this.state.format as DeckFormat,
+        live: this.liveMatch(),
+      },
     });
+  }
+
+  private liveMatch(): LiveMatch | undefined {
+    if (this.liveListingStartedAt === undefined || this.state.gameOver) return undefined;
+    return {
+      spectatorCode: this.state.spectatorCode,
+      players: this.state.players.map((player) => player.displayName),
+      format: this.state.format as DeckFormat,
+      startedAt: this.liveListingStartedAt,
+      spectators: this.spectatorClients.size,
+    };
+  }
+
+  private async listLiveMatchWhenBothPlayersConsent(): Promise<void> {
+    if (this.isBotRoom || this.isRankedRoom || this.isTournamentRoom || this.isPrivate) return;
+    const owners = [this.deckOwnerBySeat.get(0), this.deckOwnerBySeat.get(1)];
+    if (!owners.every((owner): owner is string => owner !== undefined)) return;
+    const preferences = await Promise.all(owners.map((owner) => this.accounts().preferences(owner)));
+    if (!preferences.every((preference) => preference.listLiveMatches === true) || this.state.gameOver) return;
+    this.liveListingStartedAt = Date.now();
+    await this.publishRoomRules();
+  }
+
+  private refreshLiveListing(): void {
+    if (this.liveListingStartedAt === undefined) return;
+    void this.publishRoomRules().catch((error: unknown) =>
+      this.debugError("[AegisRoom] failed to refresh live match listing", error),
+    );
   }
 
   /** Fixed host rules, read by the private-code lookup across processes. */
@@ -1347,7 +1400,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     )
       return null;
     if (!roomCode || roomCode !== this.state.spectatorCode) return null;
-    if (this.spectatorClients.size >= 20) return null;
+    if (this.spectatorClients.size >= LIVE_MATCH_SPECTATOR_LIMIT) return null;
     return {
       roomId: this.roomId,
       players: this.state.players.map((player) => player.displayName),
@@ -1360,6 +1413,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       // Recheck after reservation: a match can end while the socket is connecting.
       if (!this.spectatorInfo(options.roomCode)) throw new ServerError(403, "Match is not available to spectators");
       this.spectatorClients.add(client.sessionId);
+      this.refreshLiveListing();
       if (typeof options.displayName === "string") this.spectatorJoinNames.set(client.sessionId, options.displayName);
       this.assignView(client, undefined);
       if (this.openSecurityReveal)
@@ -1484,6 +1538,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         if (!this.isBotRoom && !this.isRankedRoom && !this.isTournamentRoom) {
           await this.setMatchmaking({ maxClients: 22 });
         }
+        await this.listLiveMatchWhenBothPlayersConsent();
       })
       .catch((error: unknown) => this.debugError("[AegisRoom] failed to open observer capacity", error));
     // Advertise that the game is genuinely under way, so a scheduler can tell a room that never
@@ -1509,6 +1564,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
         // Spectator expiry has no effect on either player or the match clock.
       }
       this.spectatorClients.delete(client.sessionId);
+      this.refreshLiveListing();
       this.spectatorNumbers.delete(client.sessionId);
       this.spectatorJoinNames.delete(client.sessionId);
       this.lastChatAtBySender.delete(client.sessionId);
@@ -1953,6 +2009,25 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     this.atReplaySite("batchClose", () => this.broadcastPatch());
   }
 
+  private async sendOpponentDeck(client: Client): Promise<void> {
+    const seat = this.seatByClient.get(client.sessionId);
+    if (seat === undefined || this.spectatorClients.has(client.sessionId) || !this.state.gameOver) {
+      return;
+    }
+    const opponentSeat = seat === 0 ? 1 : 0;
+    const deck = this.initialDeckBySeat.get(opponentSeat);
+    if (!deck) {
+      return;
+    }
+    const owner = this.deckOwnerBySeat.get(opponentSeat);
+    if (owner && (await this.accounts().preferences(owner)).shareDeckAfterMatch === false) {
+      return;
+    }
+    if (this.clients.includes(client)) {
+      client.send(OPPONENT_DECK_CHANNEL, structuredClone({ ...deck, deckId: null }));
+    }
+  }
+
   private replayMode(): ReplaySummary["mode"] {
     if (this.isTournamentRoom) return "tournament";
     if (this.isRankedRoom) return "ranked";
@@ -2147,6 +2222,25 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
 
   /** Log the deck a seat was just given; `player.join` names the session but not the seat. */
   private recordReplaySeat(seat: Seat, deck: ReplayDeck, deckRules: ReplayDeckRules, bot?: true): void {
+    const player = this.state.players[seat];
+    const snapshot = player && this.deckByClient.get(player.sessionId);
+    this.initialDeckBySeat.set(
+      seat,
+      structuredClone(
+        snapshot ?? {
+          deckId: null,
+          deckName: player?.displayName ?? "Opponent",
+          format: this.state.format as DeckFormat,
+          ...deck,
+        },
+      ),
+    );
+    const owner = player && this.accountByClient.get(player.sessionId);
+    if (owner) {
+      this.deckOwnerBySeat.set(seat, owner);
+    } else {
+      this.deckOwnerBySeat.delete(seat);
+    }
     this.rollbackHistory?.append({
       kind: "seat",
       seat,
@@ -2450,6 +2544,13 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
     };
   }
 
+  private guardedVisibilityPort(): VisibilityPort {
+    const generation = this.engineGeneration;
+    return (ownerSeat, zone, card) => {
+      if (generation === this.engineGeneration) this.exposeCardToClients(ownerSeat, zone, card);
+    };
+  }
+
   private rollbackPlacement() {
     return {
       stateVersion: this.state.stateVersion - (this.rollbackHistory?.versionOffset ?? 0),
@@ -2545,7 +2646,6 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       this.engineGeneration += 1;
       for (const bot of this.bots) bot?.dispose();
       source.state.gameOver = true;
-      source.installVisibility(() => {});
       source.decisions.cancel();
       source.combat.cancel();
       source.mainPhase.abort();
@@ -2576,7 +2676,7 @@ export class AegisRoom extends Room<{ state: GameState; metadata: { unlimited: b
       this.engineEvents = rebuilt.engineEvents;
       this.matchClock?.rebindAfterRollback(restored, previous, performance.now());
       this.pendingDecisionRequest = rebuilt.pendingRequest;
-      this.engine.installVisibility(this.exposeCardToClients);
+      this.engine.installVisibility(this.guardedVisibilityPort());
       for (const client of this.clients) {
         const seat = this.seatByClient.get(client.sessionId);
         if (seat !== undefined || this.spectatorClients.has(client.sessionId)) this.assignView(client, seat);

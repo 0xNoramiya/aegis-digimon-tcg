@@ -1,10 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { getCardArts, getCardDefinition, isJapaneseArt, resolveCardArt } from "@aegis/shared";
+import { getCardArts, getCardDefinition, resolveCardArt } from "@aegis/shared";
+import { ArtRegion } from "@aegis/shared/cards/ArtRegion";
+import { artRegionOf } from "@aegis/shared/cards/artRegionOf";
 import { CardFull } from "../design/cards";
 import { Badge, Button } from "../design/primitives";
-import { useTranslation } from "../i18n";
+import { useTranslation, type TranslationKey } from "../i18n";
 import "./deckArtworkPicker.css";
+
+const REGION_LABEL_KEYS: Record<ArtRegion, TranslationKey> = {
+  [ArtRegion.JAPANESE.value]: "library.japaneseArt",
+  [ArtRegion.KOREAN.value]: "library.koreanArt",
+  [ArtRegion.CHINESE.value]: "library.chineseArt",
+};
 
 /** Edits cosmetic choices for physical copies, leaving the canonical deck untouched. */
 export function DeckArtworkPicker({
@@ -95,20 +103,20 @@ export function DeckArtworkPicker({
         <div className="deck-art-picker__grid" role="group" aria-label={t("library.artworks")}>
           {getCardArts(cardId).map((art, index) => {
             const label = index === 0 ? t("library.baseArt") : t("library.alternateArt", { number: index });
-            const japanese = isJapaneseArt(art.artId);
+            const region = artRegionOf(art.artId);
             return (
               <button
                 className="deck-art-picker__art"
                 key={art.artId}
                 type="button"
-                aria-label={japanese ? t("library.japaneseArt", { label }) : label}
+                aria-label={region ? t(REGION_LABEL_KEYS[region.value], { label }) : label}
                 aria-pressed={art.artId === selected}
                 onClick={() => onChoose(art.artId, copy)}
               >
                 <CardFull cardId={cardId} artId={art.artId} width={140} zoomOnHover={false} />
-                {japanese ? (
+                {region ? (
                   <Badge tone="primary" className="deck-art-picker__region">
-                    JP
+                    {region.badge}
                   </Badge>
                 ) : null}
                 <span className="deck-art-picker__label">{label}</span>
