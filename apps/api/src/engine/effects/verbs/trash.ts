@@ -195,6 +195,13 @@ export function createTrashVerbs(pc: PrimitivesContext) {
         instanceIds: cards.map((card) => card.instanceId),
         ...origin,
         to: Zone.Trash,
+        ...(origin.from === Zone.Deck
+          ? {
+              cardIds: cards.map((card) => card.cardId),
+              artIds: cards.map((card) => card.artId || card.cardId),
+              seat: cards[0]!.ownerSeat,
+            }
+          : {}),
         ...(fieldTrashes.length > 0 ? { trashedPermanents: fieldTrashes } : {}),
         ...(opts?.trashedSources !== undefined
           ? {

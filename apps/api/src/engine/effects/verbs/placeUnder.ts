@@ -53,6 +53,13 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
           ...origin,
           to: Zone.BattleArea,
           placedUnder: { permanentId: targetPermanentId },
+          ...(opts?.faceUp !== false
+            ? {
+                cardIds: cards.map((card) => card.cardId),
+                artIds: cards.map((card) => card.artId || card.cardId),
+                seat: cards[0]!.ownerSeat,
+              }
+            : {}),
           ...(opts?.faceUp === false && origin.from === Zone.Deck && origin.fromSeat !== undefined
             ? {
                 deckToUnder: { seat: origin.fromSeat, permanentId: targetPermanentId, count: cards.length },
