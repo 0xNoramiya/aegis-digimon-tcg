@@ -986,6 +986,7 @@ export function useMatchCues({
       flyDockedOptionUnder,
       flyCardToDeck,
       flyCardToHand,
+      launchHandTrashFlight,
       releaseTrashArrivalsThrough,
       launchSecurityGainFlight,
       securityCountOf,
@@ -1332,6 +1333,7 @@ export function useMatchCues({
     flyCardUnder,
     flyCardToDeck,
     flyCardToHand,
+    launchHandTrashFlight,
   } = cueFlights({
     queue,
     anchors,

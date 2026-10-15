@@ -96,6 +96,14 @@ export type PresentSegment = (
   continuingBatch?: boolean,
 ) => void;
 
+function isPassageBoundary(event: ServerEvent | undefined): boolean {
+  return (
+    event?.kind === "effectTargetsSelected" ||
+    event?.kind === "effectClauseAdvanced" ||
+    (event?.kind === "cardsMoved" && event.from === "hand" && event.to === "trash" && !event.optionUsed)
+  );
+}
+
 /**
  * The board a batch that announces an effect is narrated over. The server can emit an
  * effect's first results in the same batch as its `effectTriggered`, and that batch's board
@@ -159,6 +167,7 @@ export function presentServerBatch({
   flyDockedOptionUnder,
   flyCardToDeck,
   flyCardToHand,
+  launchHandTrashFlight,
   releaseTrashArrivalsThrough,
   launchSecurityGainFlight,
   securityCountOf,
@@ -281,6 +290,7 @@ export function presentServerBatch({
   flyDockedOptionUnder: FlyDockedOptionUnder;
   flyCardToDeck: FlyCardToDeck;
   flyCardToHand: FlyCardToHand;
+  launchHandTrashFlight?: (seat: Seat, card: DrawFlightCard) => void;
   releaseTrashArrivalsThrough: (stateVersion: number) => void;
   launchSecurityGainFlight: (seat: Seat) => void;
   securityCountOf: (seat: Seat) => number | undefined;
@@ -398,12 +408,7 @@ export function presentServerBatch({
   const segments = phaseSegments.flatMap(securityCheckSegments).flatMap((events) => {
     const parts: ServerEvent[][] = [];
     for (const event of events) {
-      if (
-        !parts.length ||
-        event.kind === "effectTargetsSelected" ||
-        parts.at(-1)?.at(-1)?.kind === "effectTargetsSelected"
-      )
-        parts.push([]);
+      if (!parts.length || isPassageBoundary(event) || isPassageBoundary(parts.at(-1)?.at(-1))) parts.push([]);
       parts.at(-1)!.push(event);
     }
     return parts.flatMap((part) => {
@@ -1225,6 +1230,26 @@ export function presentServerBatch({
     flyCardToDeck,
     enqueue,
   });
+  for (const event of fresh) {
+    if (
+      replayingHistory ||
+      event.kind !== "cardsMoved" ||
+      event.from !== "hand" ||
+      event.to !== "trash" ||
+      event.optionUsed ||
+      event.seat === undefined
+    ) {
+      continue;
+    }
+    causingEffectGateRef.current = effectAnnounceGateRef.current ?? causingEffectGateRef.current;
+    for (const [index, instanceId] of event.instanceIds.entries()) {
+      const cardId = event.cardIds?.[index] ?? sidePanelLookupRef.current.cardId(instanceId);
+      const artId = event.artIds?.[index] ?? sidePanelLookupRef.current.artId?.(instanceId);
+      if (cardId) {
+        launchHandTrashFlight?.(event.seat, { cardId, ...(artId ? { artId } : {}) });
+      }
+    }
+  }
   enqueueHandReturns({
     queue,
     plan: handReturns,

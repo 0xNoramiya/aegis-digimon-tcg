@@ -21,7 +21,6 @@ import {
   inspectedArenaHalf,
 } from "@/game/arenaInspectorModel";
 import { forcedAttackGrantText } from "@/game/fieldBadges";
-import { formatResolvedKeyword } from "@/game/keywordDisplay";
 import type { CardInspectionDetail } from "@/game/permanentDetail";
 import type { PendingFateBadge } from "@/game/pendingFate";
 import { Side } from "@/game/side";
@@ -216,17 +215,7 @@ export function ArenaPermanentInspector({
               );
             })}
           </div>
-          <div
-            className="arena-permanent-inspector__state"
-            role={detail.keywords.length ? "region" : undefined}
-            aria-label={detail.keywords.length ? t("game.activeKeywords") : undefined}
-            tabIndex={0}
-          >
-            {detail.keywords.map((keyword) => (
-              <span key={keyword} data-granted={detail.grantedKeywords.includes(keyword) || undefined}>
-                {formatResolvedKeyword(keyword, detail.securityAttackModifier, detail.keywordLabels?.[keyword])}
-              </span>
-            ))}
+          <div className="arena-permanent-inspector__state">
             {detail.suspended ? <span>{t("overlay.suspended")}</span> : null}
             {detail.restrictions.map((restriction) => (
               <span

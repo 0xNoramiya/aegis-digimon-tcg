@@ -59,6 +59,34 @@ describe("BoardSelectionRail", () => {
     expect(rail.style.getPropertyValue("--decision-hand-clearance")).toBe(`${window.innerHeight - 570}px`);
   });
 
+  it("hides and restores effect text while keeping target selection available", () => {
+    const onConfirm = vi.fn<() => void>();
+    renderIn(
+      <BoardSelectionRail
+        fieldSelection
+        prompt="Choose a Digimon."
+        clause="Delete one opposing Digimon."
+        min={0}
+        max={1}
+        pickCount={1}
+        canConfirm
+        onConfirm={onConfirm}
+        onNoSelection={noop}
+      />,
+    );
+    expect(screen.queryByText("Delete one opposing Digimon.")).toBeNull();
+    expect(screen.getByText("Choose a Digimon.")).toBeTruthy();
+    expect(screen.getByText("1 selected of 0–1")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "View effect" }).getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
+    expect(onConfirm).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole("button", { name: "View effect" }));
+    expect(screen.getByText("Delete one opposing Digimon.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Hide effect" }).getAttribute("aria-expanded")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Hide effect" }));
+    expect(screen.queryByText("Delete one opposing Digimon.")).toBeNull();
+  });
+
   it("shows the server's own prompt and the running count", () => {
     renderIn(
       <BoardSelectionRail
@@ -222,7 +250,7 @@ describe("board prompt scrim", () => {
 });
 
 describe("BoardSelectionRail board view", () => {
-  it("shows the field effect without an expand or collapse action", () => {
+  it("hides the field effect initially with an option to expand it", () => {
     const { container } = renderIn(
       <BoardSelectionRail
         fieldSelection
@@ -238,8 +266,8 @@ describe("BoardSelectionRail board view", () => {
       />,
     );
 
-    expect(screen.getByText("Draw 1 card.")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "View effect" })).toBeNull();
+    expect(screen.queryByText("Draw 1 card.")).toBeNull();
+    expect(screen.getByRole("button", { name: "View effect" }).getAttribute("aria-expanded")).toBe("false");
     expect(screen.queryByRole("button", { name: "Hide effect" })).toBeNull();
     expect(container.querySelector(".board-prompt--target-selection")).toBeTruthy();
   });
@@ -329,6 +357,8 @@ describe("BoardAlliancePrompt", () => {
     expect(screen.getByRole("region", { name: "Alliance window" }).classList.contains("board-prompt--alliance")).toBe(
       true,
     );
+    expect(screen.queryByText(/When this Digimon attacks, by suspending 1 of your other Digimon/)).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "View effect" }));
     expect(screen.getByText(/When this Digimon attacks, by suspending 1 of your other Digimon/)).toBeTruthy();
     expect(screen.getByText("＜Alliance＞").classList.contains("board-prompt__eyebrow")).toBe(true);
     expect(screen.queryByRole("dialog", { name: "Alliance window" })).toBeNull();
@@ -633,7 +663,7 @@ describe("board prompt move handle", () => {
   }
 
   it("drags the selection rail to viewport coordinates without confirming", () => {
-    const onConfirm = vi.fn();
+    const onConfirm = vi.fn<() => void>();
     renderIn(
       <BoardSelectionRail
         prompt="Select 1 card."
@@ -661,4 +691,33 @@ describe("board prompt move handle", () => {
     expect(rail.style.getPropertyValue("--effect-prompt-drag-top")).toBe("300px");
     expect(onConfirm).not.toHaveBeenCalled();
   });
+});
+
+it.each(["selection", "optional", "sourceHost"] as const)("highlights the active passage in the %s prompt", (kind) => {
+  const props = {
+    clause: "Delete a Digimon. Then, this Digimon may attack.",
+    clauseEmphasis: "Then, this Digimon may attack.",
+  };
+  const { container } = renderIn(
+    kind === "selection" ? (
+      <BoardSelectionRail
+        {...props}
+        fieldSelection
+        prompt="Select a target"
+        min={0}
+        max={1}
+        pickCount={0}
+        canConfirm={false}
+        onConfirm={noop}
+        onNoSelection={noop}
+      />
+    ) : kind === "optional" ? (
+      <BoardOptionalPrompt {...props} onUse={noop} onDecline={noop} />
+    ) : (
+      <BoardSourceHostPrompt {...props} />
+    ),
+  );
+  if (kind !== "optional") fireEvent.click(screen.getByRole("button", { name: "View effect" }));
+  expect(container.querySelector(".board-prompt__clause")?.textContent).toBe(props.clause);
+  expect(container.querySelector(".decision-overlay__effect-step")?.textContent).toBe(props.clauseEmphasis);
 });

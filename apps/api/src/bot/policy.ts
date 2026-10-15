@@ -301,7 +301,8 @@ function pickInstances(view: BotView | undefined, request: DecisionRequest): str
   const candidates = request.options?.candidateInstanceIds ?? [];
   const min = request.options?.min ?? 0;
   if (candidates.length === 0) return [];
-  if (view === undefined) return candidates.slice(0, min);
+  const allowedCombinations = request.kind === "chooseTargets" ? request.options?.allowedTargetCombinations : undefined;
+  if (view === undefined) return allowedCombinations?.[0] ?? candidates.slice(0, min);
 
   // A board candidate arrives as a permanent id from a targeting clause and as a card
   // instance id from a selection clause, and the request never says which. Indexing units
@@ -326,6 +327,13 @@ function pickInstances(view: BotView | undefined, request: DecisionRequest): str
       return true;
     });
 
+  if (allowedCombinations !== undefined) {
+    return (
+      [...allowedCombinations].sort(
+        (left, right) => right.reduce((sum, id) => sum + rank(id), 0) - left.reduce((sum, id) => sum + rank(id), 0),
+      )[0] ?? []
+    );
+  }
   if (min > 0) return ranked.slice(0, min);
   // The bot already accepted this "you may" clause; its pick floor of zero only exists so a
   // human can back out.

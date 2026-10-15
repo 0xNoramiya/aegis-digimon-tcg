@@ -206,6 +206,7 @@ it("Discord 1555307552223264829: names the attacker and its only target, and con
     </I18nProvider>,
   );
 
+  fireEvent.click(screen.getByRole("button", { name: "View effect" }));
   expect(screen.getByText("Grademon attacks. The only target is your opponent's security.")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Attack" }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: ["player"] });
@@ -240,6 +241,7 @@ it("shows Taiki and the DigiXros instruction when selecting a material-zone Tame
       />
     </I18nProvider>,
   );
+  fireEvent.click(screen.getByRole("button", { name: "View effect" }));
   expect(screen.getByTestId("board-prompt").textContent).toContain(effectText);
   expect(container.querySelector('img[src*="BT10-087"]')).toBeTruthy();
   expect(container.querySelector('img[src*="P-224"]')).toBeNull();
@@ -353,4 +355,106 @@ it("retains pending physical-source provenance through the shared gallery adapte
   expect(screen.getByText("copy 2 of 2")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: /Hurricane Screw Shot, Pending effect, copy 2 of 2/ }));
   expect(onTogglePick).toHaveBeenCalledWith("pending");
+});
+
+const stagedClause =
+  "[On Play] You may return 1 [TS] trait Option card from your trash to the hand. If this effect didn't return, ＜Draw 1＞.";
+const activePassage = "You may return 1 [TS] trait Option card from your trash to the hand.";
+
+it.each(["chooseTargets", "selectCards", "optional"] as const)(
+  "preserves the full printed effect and highlights its active step on the board: %s",
+  (kind) => {
+    const { container } = render(
+      <I18nProvider>
+        <DecisionPrompts
+          decision={{
+            decisionId: "staged-effect",
+            promptText: "Resolve this effect",
+            seat: 0,
+            kind,
+            sourceCardId: "BT25-091",
+            options: {
+              timing: "OnPlay",
+              effectText: stagedClause,
+              effectTextPart: activePassage,
+              effectTextEmphasis: activePassage,
+            },
+          }}
+          answerOnBoard
+          permanents={[]}
+          sourceCardId="BT25-091"
+          candidates={[]}
+          allowsPick={() => true}
+          picks={[]}
+          min={0}
+          max={1}
+          triggerDetails={[]}
+          opponentSecurityCount={5}
+          onTogglePick={() => {}}
+          onRespond={() => {}}
+          onOpenDialog={() => {}}
+        />
+      </I18nProvider>,
+    );
+    if (kind !== "optional") {
+      fireEvent.click(screen.getByRole("button", { name: "View effect" }));
+    }
+    expect(container.querySelector(".board-prompt__clause")?.textContent).toBe(stagedClause);
+    expect(container.querySelector("strong.decision-overlay__effect-step")?.textContent).toBe(activePassage);
+  },
+);
+
+it.each([true, false])("confirms both DNA materials together on board/dialog (%s)", (answerOnBoard) => {
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  function renderPair(picks: string[]) {
+    return (
+      <I18nProvider>
+        <DecisionPrompts
+          decision={{
+            decisionId: "dna-pair",
+            seat: 0,
+            kind: "chooseTargets",
+            promptText: "Choose DNA materials",
+            options: {
+              min: 2,
+              max: 2,
+              candidateInstanceIds: ["alpha-one", "alpha-two", "ouryu"],
+              allowedTargetCombinations: [
+                ["alpha-one", "ouryu"],
+                ["alpha-two", "ouryu"],
+              ],
+            },
+          }}
+          answerOnBoard={answerOnBoard}
+          permanents={[]}
+          sourceCardId="BT27-103"
+          candidates={[
+            { instanceId: "alpha-one", cardId: "BT6-111", zone: "battle" },
+            { instanceId: "alpha-two", cardId: "BT13-075", zone: "battle" },
+            { instanceId: "ouryu", cardId: "BT8-069", zone: "battle" },
+          ]}
+          allowsPick={() => true}
+          picks={picks}
+          min={2}
+          max={2}
+          triggerDetails={[]}
+          opponentSecurityCount={5}
+          onTogglePick={() => {}}
+          onRespond={onRespond}
+          onOpenDialog={() => {}}
+        />
+      </I18nProvider>
+    );
+  }
+  const view = render(renderPair(["alpha-one"]));
+  function getConfirm() {
+    return screen.getByRole("button", { name: /confirm targets/i }) as HTMLButtonElement;
+  }
+  expect(getConfirm().disabled).toBe(true);
+  view.rerender(renderPair(["alpha-one", "alpha-two"]));
+  expect(getConfirm().disabled).toBe(true);
+  view.rerender(renderPair(["ouryu", "alpha-two"]));
+  expect(getConfirm().disabled).toBe(false);
+  fireEvent.click(getConfirm());
+  expect(onRespond).toHaveBeenCalledExactlyOnceWith({ kind: "chooseTargets", instanceIds: ["ouryu", "alpha-two"] });
 });

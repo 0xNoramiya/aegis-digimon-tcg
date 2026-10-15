@@ -1,3 +1,4 @@
+import { SpectatorIdentitySetting } from "@/account/SpectatorIdentitySetting";
 import { ShareDeckAfterMatchSetting } from "@/account/ShareDeckAfterMatchSetting";
 import { accountApi } from "@/account/client";
 // @vitest-environment jsdom
@@ -276,5 +277,44 @@ describe("account deck sharing", () => {
     fireEvent.click(toggle);
     await waitFor(() => expect(screen.getByRole("alert")).toBeTruthy());
     expect(toggle.getAttribute("aria-checked")).toBe("false");
+  });
+});
+
+describe("spectator identity privacy", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it("defaults to public identity and persists hiding it", async () => {
+    vi.spyOn(accountApi, "preferences").mockResolvedValue({});
+    const save = vi.spyOn(accountApi, "updatePreferences").mockResolvedValue({ hideIdentityFromSpectators: true });
+    render(
+      <I18nProvider>
+        <SpectatorIdentitySetting />
+      </I18nProvider>,
+    );
+    const toggle = screen.getByRole("switch", { name: /Hide my identity from spectators/ });
+    await waitFor(() => expect(toggle.hasAttribute("disabled")).toBe(false));
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(toggle);
+    await waitFor(() => expect(toggle.getAttribute("aria-checked")).toBe("true"));
+    expect(save).toHaveBeenCalledWith({ hideIdentityFromSpectators: true });
+  });
+
+  it("restores an opt-out and preserves it when saving fails", async () => {
+    vi.spyOn(accountApi, "preferences").mockResolvedValue({ hideIdentityFromSpectators: true });
+    vi.spyOn(accountApi, "updatePreferences").mockRejectedValue(new Error("offline"));
+    render(
+      <I18nProvider>
+        <SpectatorIdentitySetting />
+      </I18nProvider>,
+    );
+    const toggle = screen.getByRole("switch", { name: /Hide my identity from spectators/ });
+    await waitFor(() => expect(toggle.hasAttribute("disabled")).toBe(false));
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(toggle);
+    await waitFor(() => expect(screen.getByRole("alert")).toBeTruthy());
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
   });
 });

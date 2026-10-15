@@ -34,7 +34,8 @@ export function LiveMatchList({
     <>
       <ul className="live-matches__list">
         {matches.map((match) => {
-          const [first = "", second = ""] = match.players;
+          const first = match.players[0] || t("log.player", { n: 1 });
+          const second = match.players[1] || t("log.player", { n: 2 });
           const minutes = Math.max(1, Math.floor((now - match.startedAt) / 60_000));
           return (
             <li key={match.spectatorCode} className="live-match">

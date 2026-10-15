@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { useState } from "react";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { I18nProvider, translator, type Locale } from "../../../i18n";
@@ -57,4 +58,43 @@ it("does not show a pending badge for concealed identities or cards outside tras
     { instanceId: "hand", cardId: "EX7-071", zone: "hand", pendingEffect: true },
   ]);
   expect(screen.queryByText("Pending effect")).toBeNull();
+});
+
+function BlindHandSelection() {
+  const [picks, setPicks] = useState<string[]>([]);
+  return (
+    <DecisionCandidateGrid
+      candidates={[{ instanceId: "hidden-hand-card" }]}
+      picks={picks}
+      min={1}
+      max={1}
+      selectedPlayCost={0}
+      withinPlayCostBudget
+      selectedDP={0}
+      wideDialog={false}
+      onTogglePick={(instanceId) => setPicks((current) => (current.includes(instanceId) ? [] : [instanceId]))}
+    />
+  );
+}
+
+it("highlights a selected opponent hand back and clears the highlight without exposing its identity", () => {
+  render(
+    <I18nProvider>
+      <BlindHandSelection />
+    </I18nProvider>,
+  );
+  const candidate = screen.getByRole("button", { name: "Card" });
+  const back = candidate.querySelector("div");
+  const concealedMarkup = back!.innerHTML;
+  expect(candidate.getAttribute("aria-pressed")).toBe("false");
+  expect(back!.style.boxShadow).not.toContain("--ds-rim-attention");
+  fireEvent.click(candidate);
+  expect(candidate.getAttribute("aria-pressed")).toBe("true");
+  expect(back!.style.boxShadow).toContain("--ds-rim-attention");
+  expect(back!.innerHTML).toBe(concealedMarkup);
+  expect(candidate.querySelector("[data-card-id]")).toBeNull();
+  fireEvent.click(candidate);
+  expect(candidate.getAttribute("aria-pressed")).toBe("false");
+  expect(back!.style.boxShadow).not.toContain("--ds-rim-attention");
+  expect(back!.innerHTML).toBe(concealedMarkup);
 });

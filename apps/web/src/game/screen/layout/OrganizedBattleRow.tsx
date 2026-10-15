@@ -31,18 +31,13 @@ const MIN_PORTRAIT_CARD_WIDTH = 65;
 /** Enough sources to reach the fan's cap, which `sourceFanStepLimit` holds at a quarter of the card width. */
 const FIXED_SIZE_SOURCE_RESERVE = 12;
 /** Each lane's horizontal padding, from fieldLayout.css. */
-const LANE_INLINE_PADDING = 12;
+const LANE_INLINE_PADDING = 16;
 const DIGIMON_GAP_SHARE = 0.25;
 const SUPPORT_GAP_SHARE = 0.3;
 /** One lane has the row's whole height, so its cards may grow past the layout's card width, up to this share. */
 const SINGLE_LANE_GROWTH = 1.2;
 const TWO_ROW_GUIDE_SLOTS = 5;
 
-/**
- * Stacked puts the support lane under the Digimon (above them for the opponent). A row
- * too short for two lanes puts the lanes side by side. Merged draws one lane, Digimon
- * first: the player's one-lane choice, and every phone.
- */
 export enum LanePlacement {
   Stacked = "stacked",
   SideBySide = "side-by-side",
@@ -585,7 +580,7 @@ export function fitLanesToWidth(
 function laneMetrics(placement: LanePlacement, content: LaneContent, widths = { digimon: 0, support: 0 }): LaneMetrics {
   const base = LANE_METRICS[placement];
   const shadow = content.preferStacked ? 8 : 10;
-  const top = content.preferStacked ? 18 : 22;
+  const top = 22;
   const sourceBottom = (count = 0, width: number) =>
     count
       ? (content.sourceTop ?? 6) +
@@ -730,7 +725,7 @@ export function fitLanes(row: { width: number; height: number }, layoutWidth: nu
   if (content.twoRows !== undefined && !content.preferStacked) {
     return content.twoRows
       ? stackedWidths(row.height, layoutWidth, content)
-      : sideBySideLanes(row.height, layoutWidth, content);
+      : mergedLanes(row.height, layoutWidth, content);
   }
   if (content.supportCount === 0 || content.digimonCount === 0) {
     const placement = LanePlacement.Stacked;
@@ -748,9 +743,7 @@ export function fitLanes(row: { width: number; height: number }, layoutWidth: nu
   }
   const stacked = stackedLanes(row.height, layoutWidth, content);
   if (stacked) return stacked;
-  return content.preferStacked
-    ? mergedLanes(row.height, layoutWidth, content)
-    : sideBySideLanes(row.height, layoutWidth, content);
+  return mergedLanes(row.height, layoutWidth, content);
 }
 
 /**

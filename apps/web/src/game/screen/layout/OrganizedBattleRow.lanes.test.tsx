@@ -114,6 +114,23 @@ describe("organized battle lanes", () => {
     expect(keys).toEqual(["digimon", "tamer"]);
   });
 
+  it.each([false, true])("joins short rows into one lane with equal card sizes (support first: %s)", (supportFirst) => {
+    mockViewport({ phone: false });
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(180);
+    const { container } = render(view([permanent("tamer"), permanent("option")], supportFirst));
+    expect(container.querySelector("[data-field-layout]")!.getAttribute("data-lanes")).toBe("merged");
+    expect(container.querySelectorAll(".game-battle-lane")).toHaveLength(1);
+    const cards = [...container.querySelectorAll<HTMLElement>(".game-battle-lane [data-field-key]")];
+    expect(cards.map((card) => card.getAttribute("data-field-key"))).toEqual(["digimon", "tamer", "option"]);
+    expect(new Set(cards.map((card) => card.style.width)).size).toBe(1);
+    expect(localStorage.getItem("aegis.battle-lanes")).toBe("two");
+
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(400);
+    act(() => window.dispatchEvent(new Event("resize")));
+    expect(container.querySelector("[data-field-layout]")!.getAttribute("data-lanes")).toBe("stacked");
+    expect(container.querySelectorAll(".game-battle-lane")).toHaveLength(2);
+  });
+
   it("draws one lane on a phone and restores the saved two lanes on a wider screen", () => {
     const resize = mockViewport({ phone: true });
     const { container } = render(view([permanent("tamer")]));
@@ -156,7 +173,7 @@ describe("organized battle lanes", () => {
     const tall = placement(1200, 420);
     expect(tall.lanes).toBe("stacked");
     expect(tall.digimon).toBeGreaterThanOrEqual(84);
-    expect(placement(1200, 260).lanes).toBe("side-by-side");
+    expect(placement(1200, 260).lanes).toBe("merged");
     expect(placement(560, 420).lanes).toBe("stacked");
   });
 

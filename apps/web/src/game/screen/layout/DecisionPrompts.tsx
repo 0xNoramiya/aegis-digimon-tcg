@@ -1,3 +1,4 @@
+import { isAllowedTargetSelection } from "@/game/screen/model/isAllowedTargetSelection";
 /* The viewer's open decision, in whichever surface answers it.
 
    Field targets use the physical cards and a confirmation rail. Selections from other
@@ -90,7 +91,9 @@ export function DecisionPrompts({
         cardId: decision?.options?.effectTextCardId ?? sourceCardId,
         timing: decision?.options?.timing,
         description: decision?.options?.effectText,
-        effectTextPart: decision?.options?.effectTextPart,
+        effectTextPart: decision?.options?.effectTextEmphasis
+          ? (decision.options.effectText ?? decision.options.effectTextPart)
+          : decision?.options?.effectTextPart,
         isInherited: decision?.options?.isInherited,
       })
     : undefined;
@@ -141,6 +144,7 @@ export function DecisionPrompts({
         <BoardSourceHostPrompt
           sourceCardId={sourceCardId}
           clause={clause}
+          clauseEmphasis={decision.options?.effectTextEmphasis}
           onNoSelection={
             min === 0 && boardSelectionKind ? () => onRespond({ kind: boardSelectionKind, instanceIds: [] }) : undefined
           }
@@ -156,7 +160,7 @@ export function DecisionPrompts({
                 request={decision}
                 sourceCardId={sourceCardId}
                 confirmLabel={attackConfirmLabel}
-                contextText={attackClause}
+                contextText={decision.options?.effectTextEmphasis ? undefined : attackClause}
                 candidates={candidates
                   .filter((card) => sourceHost?.cardIds === undefined || sourceHost.cardIds.has(card.instanceId))
                   .map((card) => {
@@ -207,11 +211,18 @@ export function DecisionPrompts({
               ? t("overlay.selectCardsSubtitle", { count: max })
               : t("overlay.selectCardsRangeSubtitle", { range: `${min}–${max}` }))
           }
-          clause={attackClause ?? clause}
+          clause={decision.options?.effectTextEmphasis ? (clause ?? attackClause) : (attackClause ?? clause)}
+          clauseEmphasis={decision.options?.effectTextEmphasis}
           min={min}
           max={max}
           pickCount={picks.length}
           canConfirm={
+            ((picks.length === 0 && min === 0) ||
+              isAllowedTargetSelection({
+                allowedTargetCombinations: decision.options?.allowedTargetCombinations,
+                picks,
+                complete: true,
+              })) &&
             picks.length >= min &&
             picks.length <= max &&
             picks.every((id) => allowsPick(id)) &&
@@ -303,6 +314,7 @@ export function DecisionPrompts({
           }
           sourcePermanentId={decision.sourcePermanentId}
           clause={clause}
+          clauseEmphasis={decision.options?.effectTextEmphasis}
           onUse={() => onRespond({ kind: "optional", accept: true })}
           onDecline={() => onRespond({ kind: "optional", accept: false })}
           onOpenDialog={onOpenDialog}

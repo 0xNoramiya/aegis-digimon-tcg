@@ -50,6 +50,7 @@ const shapes = {
   effectTriggered: { seat, sourceCardId: string, effectKey: string, description: string },
   resolutionOrderChosen: { seat, entries: records },
   effectOptionChosen: { seat, sourceCardId: string, clause: string },
+  effectClauseAdvanced: { seat, sourceCardId: string, clause: string },
   effectResolved: { seat, sourceCardId: string, effectKey: string, description: string },
   effectHadNoEffect: { seat, sourceCardId: string, effectKey: string, description: string },
   cardsMoved: { instanceIds: strings, from: string, to: string },

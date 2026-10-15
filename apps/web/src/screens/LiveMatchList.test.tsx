@@ -19,7 +19,10 @@ function match(index: number): LiveMatch {
   };
 }
 
-function renderList(matches: LiveMatch[], { total = matches.length, onWatch = vi.fn(), onShowMore = vi.fn() } = {}) {
+function renderList(
+  matches: LiveMatch[],
+  { total = matches.length, onWatch = vi.fn<(code: string) => void>(), onShowMore = vi.fn<() => void>() } = {},
+) {
   render(
     <I18nProvider>
       <LiveMatchList matches={matches} total={total} now={NOW} onWatch={onWatch} onShowMore={onShowMore} />
@@ -55,4 +58,10 @@ it("explains the empty list", () => {
   renderList([]);
   expect(screen.getByText("No live matches right now.")).toBeTruthy();
   expect(screen.queryByRole("list")).toBeNull();
+});
+
+it("labels hidden identities by seat without changing the watch target", () => {
+  const { onWatch } = renderList([{ ...match(1), players: ["", "Sora"] }]);
+  fireEvent.click(screen.getByRole("button", { name: "Watch Player 1 vs Sora" }));
+  expect(onWatch).toHaveBeenCalledWith(match(1).spectatorCode);
 });

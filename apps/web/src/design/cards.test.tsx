@@ -245,3 +245,15 @@ it("caps non-round DP so the total and bonus fit the card", () => {
   expect(screen.getByText((12500).toLocaleString()).style.fontSize).toMatch(/^min\(calc\(16px/);
   expect(screen.getByText("+500").parentElement?.textContent).toBe(`${(12500).toLocaleString()}+500`);
 });
+
+it("keeps a selected face-down mini card concealed while showing the selection rim", () => {
+  const { container, rerender } = render(<CardMini cardId="ST1-02" faceDown selected zoomOnHover={false} />);
+  const back = container.firstElementChild;
+  expect(back).toBeInstanceOf(HTMLElement);
+  expect(back?.getAttribute("style")).toContain("--ds-rim-attention");
+  expect(screen.queryByTitle("Biyomon")).toBeNull();
+  const concealedMarkup = back!.innerHTML;
+  rerender(<CardMini cardId="ST1-02" faceDown zoomOnHover={false} />);
+  expect(back?.getAttribute("style")).not.toContain("--ds-rim-attention");
+  expect(back!.innerHTML).toBe(concealedMarkup);
+});

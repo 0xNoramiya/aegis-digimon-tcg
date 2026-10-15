@@ -51,7 +51,6 @@ import { MatchTimerSettings } from "./MatchTimerSettings";
 import { loadMatchFormatPreference, saveMatchFormatPreference } from "./matchFormatPreference";
 import "./lobby.css";
 import { lookupPrivateRoom } from "../net/client";
-import { LiveMatchListingSetting } from "@/account/LiveMatchListingSetting";
 import { useLiveMatches } from "./useLiveMatches";
 import { deckHasBetaCards } from "@/screens/deckHasBetaCards";
 import { isBetaCard } from "@/screens/isBetaCard";
@@ -791,7 +790,6 @@ export function Lobby({
             <h2 id="lobby-setup-title" className="lobby-setup__title">
               {t("redesign.play.setupTitle")}
             </h2>
-            <LiveMatchListingSetting key={accountId ?? "guest"} signedIn={accountId !== undefined} compact />
           </div>
           <div className="lobby-setup__summary" aria-label={t("redesign.play.setupTitle")}>
             <span>{deckFormatLabel(format, t)}</span>
