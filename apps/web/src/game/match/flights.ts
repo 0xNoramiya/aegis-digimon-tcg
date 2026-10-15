@@ -467,7 +467,65 @@ export function cueFlights(deps: CueFlightsDeps) {
     return true;
   }
 
+  function launchHandTrashFlight(seat: Seat, card: DrawFlightCard) {
+    const key = ++drawFlightKeyRef.current;
+    const causingEffectGate = causingEffectGateRef.current;
+    queue.enqueue({
+      id: `hand-trash-${key}`,
+      ...(presentationBatchRef?.current ? { origin: { ...presentationBatchRef.current } } : {}),
+      track: "handTrash",
+      holdsBoard: true,
+      async run(context) {
+        try {
+          await waitForGate(causingEffectGate, context, CONSEQUENCE_GATE_MAX_MS, "handTrash/causingEffect");
+          if (context.mode !== "live" || context.cancelled || context.skipping) {
+            return;
+          }
+          const board = anchors.board.current;
+          const hand = seat === viewerSeat ? anchors.yourHandDock.current : anchors.oppHandStrip.current;
+          const trash = board?.querySelector<HTMLElement>(
+            seat === viewerSeat ? ".game-utility-slot--you-trash" : ".game-utility-slot--opp-trash",
+          );
+          if (!board || !hand || !trash) {
+            return;
+          }
+          const boardRect = board.getBoundingClientRect();
+          const handRect = hand.getBoundingClientRect();
+          const trashRect = trash.getBoundingClientRect();
+          if (!handRect.width || !trashRect.width) {
+            return;
+          }
+          const x = handRect.left + handRect.width / 2 - boardRect.left;
+          const y = handRect.top + handRect.height / 2 - boardRect.top;
+          setDrawFlights((flights) => [
+            ...flights,
+            {
+              key,
+              x,
+              y,
+              dx: trashRect.left + trashRect.width / 2 - boardRect.left - x,
+              dy: trashRect.top + trashRect.height / 2 - boardRect.top - y,
+              duration: TIMINGS.handReturn,
+              card,
+              handTrash: true,
+            },
+          ]);
+          await context.wait(TIMINGS.handReturn);
+          await waitForPaintedAnimation(
+            () => board.querySelector<HTMLElement>(`[data-hand-trash="${key}"]`),
+            "battle-hand-trash",
+            TIMINGS.handReturn,
+            context,
+          );
+        } finally {
+          setDrawFlights((flights) => flights.filter((flight) => flight.key !== key));
+        }
+      },
+    });
+  }
+
   return {
+    launchHandTrashFlight,
     flyCardUnder,
     flyCardToDeck,
     flyCardToHand,

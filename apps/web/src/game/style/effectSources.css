@@ -594,8 +594,6 @@ body:has([aria-modal="true"]) .game-hand-hover {
 
 /* --- Landing bounce and dust ----------------------- */
 
-/* Field deletion uses the authored 41-piece mesh. All pieces start together,
-   keep their printed scale/opacity and accelerate twentyfold after 100 ms. */
 .game-field-shatter,
 .game-field-shatter__shard,
 .game-field-shatter__face {
@@ -615,9 +613,6 @@ body:has([aria-modal="true"]) .game-hand-hover {
   }
   40% {
     translate: calc(var(--field-shard-x) / 31) calc(var(--field-shard-y) / 31);
-    opacity: 1;
-  }
-  99.9999% {
     opacity: 1;
   }
   100% {

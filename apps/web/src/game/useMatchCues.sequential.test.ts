@@ -1362,3 +1362,110 @@ it("settles parent result receipts before a nested replacement announcement", as
   await advance(4000);
   expect(view.result.current.decisionAnimationsPending).toBe(false);
 });
+
+it.each(["current", "sequential"] as const)(
+  "orders a same-batch discard continuation, flight and nested reaction with %s pacing",
+  async (presentationPacing) => {
+    const anchors = geometry();
+    const trash = document.createElement("div");
+    trash.className = "game-utility-slot--opp-trash";
+    vi.spyOn(trash, "getBoundingClientRect").mockReturnValue(new DOMRect(700, 100, 80, 100));
+    anchors.board.current!.append(trash);
+    const expiries: GateExpiry[] = [];
+    const stop = observeGateExpiry((expiry) => expiries.push(expiry));
+    const first = { ...triggered("EX14-054", "src-a", "barbamon/play"), timing: "OnPlay" };
+    const reaction = {
+      ...triggered("EX14-054", "src-a", "barbamon/discard"),
+      timing: "whenHandTrashed",
+      description:
+        "[All Turns] [Once Per Turn] When your opponent's hand is trashed from, you may delete all of their lowest level Digimon.",
+    };
+    const passage = "Then, your opponent trashes 1 card in their hand.";
+    const steps: { id: string; phase: string; at: number }[] = [];
+    const view = renderHook(
+      ({ fed }: ChainProps) =>
+        useMatchCues({
+          batches: fed,
+          state: BOARD,
+          viewerSeat: 0,
+          mulliganOpen: false,
+          anchors,
+          onActionRejected: () => {},
+          presentationPacing,
+          devProbe: {
+            onStep(event) {
+              steps.push({ id: event.step.id, phase: event.phase, at: Date.now() });
+            },
+          },
+        }),
+      { initialProps: { fed: [] as readonly ServerBatch[] } },
+    );
+    try {
+      await advance(0);
+      view.rerender({
+        fed: [
+          singleServerBatch(
+            [
+              first,
+              {
+                kind: "effectClauseAdvanced",
+                seat: 0,
+                sourceCardId: "EX14-054",
+                sourceInstanceId: "src-a",
+                timing: "OnPlay",
+                clause: passage,
+              },
+              {
+                kind: "cardsMoved",
+                from: "hand",
+                to: "trash",
+                seat: 1,
+                instanceIds: ["discard"],
+                cardIds: ["BT1-009"],
+              },
+              reaction,
+              { ...reaction, kind: "effectResolved" },
+              { ...first, kind: "effectResolved" },
+            ],
+            1,
+          ),
+        ],
+      });
+      const parentNoticeIds = new Set<string>();
+      let continuationAt: number | undefined;
+      let flightAt: number | undefined;
+      let flightDoneAt: number | undefined;
+      let reactionAt: number | undefined;
+      for (let elapsed = 0; elapsed < 12000; elapsed += 16) {
+        const notices = view.result.current.notices;
+        for (const notice of notices) {
+          if (notice.body.variant === "effect" && notice.body.effectKey !== reaction.effectKey) {
+            parentNoticeIds.add(notice.id);
+          }
+        }
+        if (notices.some(({ body }) => body.variant === "effect" && body.effectTextPart === passage)) {
+          continuationAt ??= elapsed;
+        }
+        if (view.result.current.drawFlights.some((flight) => flight.handTrash)) {
+          flightAt ??= elapsed;
+        } else if (flightAt !== undefined) {
+          flightDoneAt ??= elapsed;
+        }
+        if (notices.some(({ body }) => body.variant === "effect" && body.effectKey === reaction.effectKey)) {
+          reactionAt ??= elapsed;
+        }
+        await advance(16);
+      }
+      expect(parentNoticeIds.size).toBe(1);
+      expect(continuationAt).toBeDefined();
+      expect(flightAt).toBeGreaterThanOrEqual(continuationAt!);
+      expect(flightDoneAt).toBeDefined();
+      expect(reactionAt).toBeGreaterThanOrEqual(flightDoneAt!);
+      expect(expiries).toEqual([]);
+      expect(steps.some((step) => step.id.startsWith("hand-trash-") && step.phase === "finished")).toBe(true);
+      expect(view.result.current.decisionAnimationsPending).toBe(false);
+    } finally {
+      stop();
+    }
+  },
+);

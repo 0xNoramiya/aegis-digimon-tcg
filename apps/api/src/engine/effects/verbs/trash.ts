@@ -113,14 +113,16 @@ export function createTrashVerbs(pc: PrimitivesContext) {
     // can gate on its own hand.
     const handTrashedSeats = new Set<Seat>();
     const fromHand: { instanceId: string; cardId: string; seat: Seat }[] = [];
-    if (engine.fireSubTrigger) {
-      for (const p of state.players) {
-        if (p === undefined) continue;
-        for (const card of p.hand) {
-          if (!instanceIds.includes(card.instanceId)) continue;
-          handTrashedSeats.add(p.seat);
-          fromHand.push({ instanceId: card.instanceId, cardId: card.cardId, seat: p.seat });
+    for (const p of state.players) {
+      if (p === undefined) {
+        continue;
+      }
+      for (const card of p.hand) {
+        if (!instanceIds.includes(card.instanceId)) {
+          continue;
         }
+        handTrashedSeats.add(p.seat);
+        fromHand.push({ instanceId: card.instanceId, cardId: card.cardId, seat: p.seat });
       }
     }
     // "When an effect trashes this card in your battle area" (BT19-093, BT19-098, P-159) reads
@@ -183,18 +185,35 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       moved.filter((c) => underCard.has(c.instanceId)),
       state.turnSeat,
     );
-    if (moved.length > 0) {
+    const handSeatByInstance = new Map(fromHand.map(({ instanceId, seat }) => [instanceId, seat]));
+    for (const seat of handTrashedSeats) {
+      const handCards = moved.filter((card) => handSeatByInstance.get(card.instanceId) === seat);
+      if (handCards.length === 0) {
+        continue;
+      }
       engine.emit({
         kind: "cardsMoved",
-        instanceIds: moved.map((c) => c.instanceId),
+        instanceIds: handCards.map((card) => card.instanceId),
+        cardIds: handCards.map((card) => card.cardId),
+        artIds: handCards.map((card) => card.artId || card.cardId),
+        seat,
+        from: Zone.Hand,
+        to: Zone.Trash,
+      });
+    }
+    const otherCards = moved.filter((card) => !handSeatByInstance.has(card.instanceId));
+    if (otherCards.length > 0) {
+      engine.emit({
+        kind: "cardsMoved",
+        instanceIds: otherCards.map((card) => card.instanceId),
         from: "various",
         to: Zone.Trash,
         ...(trashedPermanents.length > 0 ? { trashedPermanents } : {}),
         ...(opts?.trashedSources !== undefined
           ? {
-              cardIds: moved.map((c) => c.cardId),
-              artIds: moved.map((c) => c.artId || c.cardId),
-              seat: moved[0]!.ownerSeat,
+              cardIds: otherCards.map((card) => card.cardId),
+              artIds: otherCards.map((card) => card.artId || card.cardId),
+              seat: otherCards[0]!.ownerSeat,
               trashedSources: opts.trashedSources,
             }
           : {}),
@@ -252,16 +271,17 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       const handTrashedInstanceIds = fromHand
         .filter((entry) => entry.seat === seat && movedIds.has(entry.instanceId))
         .map((entry) => entry.instanceId);
-      if (handTrashedInstanceIds.length > 0)
-        await engine.fireSubTrigger!("whenHandTrashed", {
+      if (handTrashedInstanceIds.length > 0) {
+        await engine.fireSubTrigger?.("whenHandTrashed", {
           handTrashedSeat: seat,
           handTrashedInstanceIds,
           ...(opts?.byEffectSeat !== undefined ? { byEffectSeat: opts.byEffectSeat } : {}),
         });
+      }
     }
     for (const entry of fromHand) {
       if (!movedIds.has(entry.instanceId)) continue;
-      await engine.fireSubTrigger!("whenTrashedFromHand", {
+      await engine.fireSubTrigger?.("whenTrashedFromHand", {
         handTrashedSeat: entry.seat,
         trashedFromHandCardId: entry.cardId,
         trashedFromHandInstanceId: entry.instanceId,

@@ -45,6 +45,19 @@ export function createSessionVerbs(pc: PrimitivesContext) {
       clause,
     });
   };
+  const announceEffectClauseAdvanced: Primitives["announceEffectClauseAdvanced"] = (ctx, clause) => {
+    engine.emit({
+      kind: "effectClauseAdvanced",
+      ...(ctx.activeEffectKey !== undefined ? { effectKey: ctx.activeEffectKey } : {}),
+      seat: ctx.source.ownerSeat,
+      sourceCardId: ctx.source.cardId,
+      sourceInstanceId: ctx.source.instanceId,
+      sourcePermanentId: ctx.source.permanent()?.permanentId,
+      timing: ctx.activeTiming,
+      ...(ctx.activeEffectIsInherited === true ? { isInherited: true } : {}),
+      clause,
+    });
+  };
   const enterEffectResolution: Primitives["enterEffectResolution"] = (seat, sourceKinds = [], sourcePermanentId) => {
     effectSeatStack.push(seat);
     effectSourceKindsStack.push(sourceKinds);
@@ -78,6 +91,7 @@ export function createSessionVerbs(pc: PrimitivesContext) {
   return {
     announceEffect,
     announceEffectOption,
+    announceEffectClauseAdvanced,
     enterEffectResolution,
     leaveEffectResolution,
     resolvingEffectSourceKinds,
