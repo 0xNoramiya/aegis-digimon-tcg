@@ -121,11 +121,10 @@ export function useArenaLayout(): ArenaLayout {
   const fieldCardWidth = useFieldCardWidth();
   // Eggs and raising remain readable when a crowded battle row narrows its cards.
   // Its height-fitted width already accounts for the space in both battle lanes.
-  const sharedRaisingWidth = fieldCardWidth?.heightFitted ?? arenaPermanentWidth;
-  const standardFieldWidth = fieldCardWidth?.standard ?? arenaPermanentWidth;
+  const heightFittedFieldWidth = fieldCardWidth?.heightFitted ?? arenaPermanentWidth;
   const sharedPileWidth =
     organized && !portraitArena && !landscapePhone && !shortNarrowDock
-      ? Math.max(MIN_PILE_WIDTH, standardFieldWidth)
+      ? Math.max(MIN_PILE_WIDTH, heightFittedFieldWidth)
       : arenaPileWidth;
   const coarsePointer = useMediaQuery(COARSE_POINTER_QUERY);
   const collapseNotices = narrowGameLayout && !landscapePhone;
@@ -150,9 +149,9 @@ export function useArenaLayout(): ArenaLayout {
               ? 48
               : TALL_PHONE_RAISING_WIDTH
         : sidelineArena
-          ? sharedRaisingWidth
+          ? heightFittedFieldWidth
           : organized
-            ? Math.max(MIN_PILE_WIDTH, standardFieldWidth)
+            ? Math.max(MIN_PILE_WIDTH, heightFittedFieldWidth)
             : arenaPileWidth,
     arenaSidelineBasisWidth: sidelineArena ? (fieldCardWidth?.heightFitted ?? arenaPermanentWidth) : arenaPileWidth,
     handCardWidth: portraitArena
