@@ -1,6 +1,18 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
+  "settings.cardImageLanguage": "卡牌圖片語言",
+  "settings.cardImageLanguageDesc":
+    "選擇收藏和新加入卡組的卡牌的預設語言。按鈕也會替換現有卡組中的異畫。沒有該語言版本的卡牌將保留目前圖片。",
+  "settings.cardImageLanguageApply": "套用到我的所有卡組",
+  "settings.cardImageLanguageLoading": "正在等待卡組載入。如果持續出現，請重新整理頁面。",
+  "settings.cardImageLanguageEmpty": "沒有可更新的個人卡組。",
+  "settings.cardImageLanguageProgress": "正在更新卡組：{completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "已更新卡組：{saved}。失敗：{failed}。沒有該語言的卡牌數量：{unavailable}。再次套用可重試失敗的卡組。",
+
   "roadmap.hub.label": "社群區塊",
   "roadmap.hub.decks": "卡組",
   "roadmap.hub.roadmap": "路線圖",
@@ -50,6 +62,10 @@ const interfaceMessages = {
   "settings.shareDeckAfterMatch": "對局結束後分享我的卡組",
   "settings.shareDeckAfterMatchDesc": "允許對手在對局結束後查看並複製我的初始卡組列表。預設開啟。",
   "settings.shareDeckAfterMatchFailed": "無法載入或儲存此設定。請重試或重新開啟設定。",
+  "overlay.useNegamon": "使用尼格獸",
+  "overlay.negamonPlayDetail":
+    "發動育成區尼格獸的效果，以降低的費用登場數碼獸，然後將尼格獸放在其下方。你將在效果的下一步選擇卡牌。",
+  "overlay.playNormally": "正常登場",
   "overlay.viewOpponentDeck": "查看對手卡組",
   "overlay.opponentDeck": "對手卡組",
   "rollback.failed": "無法安全還原至此時點。目前的對局狀態已保留。",
@@ -2019,6 +2035,8 @@ const interfaceMessages = {
   "redesign.shell.crash.title": "發生問題",
   "redesign.shell.crash.body": "此畫面已停止運作。我們已向 Aegis 團隊傳送錯誤報告。請重新載入頁面以繼續。",
   "redesign.shell.crash.reload": "重新載入",
+  "redesign.shell.loadFailed.title": "無法載入此頁面",
+  "redesign.shell.loadFailed.body": "Aegis 無法下載此頁面的部分內容。請檢查網路連線並重新載入頁面。",
   "redesign.shell.ranked.eyebrow": "排位對局",
   "redesign.home.login.eyebrow": "Aegis 帳戶",
   "redesign.play.deckCounts": "主卡組 {main} 張 · 數碼蛋 {egg} 張",

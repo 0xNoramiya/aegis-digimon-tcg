@@ -1,18 +1,36 @@
 // @vitest-environment jsdom
 
-import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { I18nContext } from "@/i18n/I18nContext";
+import { translator } from "@/i18n/translator";
+import { getCardDefinition } from "@aegis/shared/cards/registry";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import {
   BoardAlliancePrompt,
   BoardBlockPrompt,
   BoardOptionalPrompt,
+  BoardPromptRail,
   BoardSelectionRail,
   BoardSourceHostPrompt,
   OpponentSelectingPill,
 } from "./BoardDecisionRail";
 import { CardOpenerProvider } from "./cardLinks";
 import { Hand } from "./piece";
+
+it("translates a board selection's resolving clause with its source card", async () => {
+  const clause = getCardDefinition("LM-034")!.effectText!.split("\n")[1]!;
+  const { container } = render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <BoardPromptRail variant="selection" label="Select a card" prompt="Select a card" clause={clause} art="LM-034">
+        <button type="button">Confirm</button>
+      </BoardPromptRail>
+    </I18nContext.Provider>,
+  );
+  await waitFor(() =>
+    expect(container.querySelector(".board-prompt__clause")?.textContent).toContain("蓝色/红色数码宝贝卡牌"),
+  );
+});
 
 afterEach(() => {
   cleanup();

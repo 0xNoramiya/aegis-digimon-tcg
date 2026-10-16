@@ -1,6 +1,6 @@
 {
   "name": "aegis",
-  "version": "1.28.1-beta",
+  "version": "1.29.0-beta",
   "private": true,
   "description": "Aegis - a server-authoritative Digimon-style trading card game (React + PixiJS client, Colyseus API).",
   "license": "MIT",
@@ -56,7 +56,9 @@
     "build": "pnpm --filter @aegis/shared build && pnpm --filter @aegis/api build && pnpm --filter @aegis/web build",
     "typecheck": "pnpm --filter @aegis/shared build && pnpm -r --workspace-concurrency=1 typecheck",
     "test": "pnpm -r --workspace-concurrency=1 test",
-    "test:tools": "node --test tools/*.test.mjs tools/kb/*.test.mjs tools/client-errors/*.test.mjs",
+    "test:tools": "node --test tools/*.test.mjs tools/kb/*.test.mjs tools/client-errors/*.test.mjs tools/translations/*.test.mjs",
+    "translations:audit": "node tools/translations/audit-card-translations.mjs",
+    "translations:check": "node tools/translations/audit-card-translations.mjs --check",
     "effects:sync:set": "node tools/sync-effects-from-card-modules.mjs",
     "effects:check:set": "node tools/sync-effects-from-card-modules.mjs --check",
     "ci": "pnpm check && pnpm typecheck && pnpm test:tools && pnpm test",

@@ -725,7 +725,7 @@ export function fitLanes(row: { width: number; height: number }, layoutWidth: nu
   if (content.twoRows !== undefined && !content.preferStacked) {
     return content.twoRows
       ? stackedWidths(row.height, layoutWidth, content)
-      : mergedLanes(row.height, layoutWidth, content);
+      : sideBySideLanes(row.height, layoutWidth, content);
   }
   if (content.supportCount === 0 || content.digimonCount === 0) {
     const placement = LanePlacement.Stacked;
@@ -742,8 +742,13 @@ export function fitLanes(row: { width: number; height: number }, layoutWidth: nu
     return { placement, digimon, support };
   }
   const stacked = stackedLanes(row.height, layoutWidth, content);
-  if (stacked) return stacked;
-  return mergedLanes(row.height, layoutWidth, content);
+  if (stacked) {
+    return stacked;
+  }
+  if (content.preferStacked) {
+    return mergedLanes(row.height, layoutWidth, content);
+  }
+  return sideBySideLanes(row.height, layoutWidth, content);
 }
 
 /**
@@ -857,9 +862,11 @@ function useRowSize() {
     const overlapLanes = style.getPropertyValue("--field-overlap-lanes").trim() === "1";
     const fitWidth = style.getPropertyValue("--field-fit-width").trim() === "1";
     const fixedWidth = Number.parseFloat(style.getPropertyValue("--field-fixed-width")) || 0;
+    const width = row.clientWidth;
+    const height = row.clientHeight;
     setSize((previous) =>
-      previous.width === row.clientWidth &&
-      previous.height === row.clientHeight &&
+      previous.width === width &&
+      previous.height === height &&
       previous.sourceTop === sourceTop &&
       previous.sourceStep === sourceStep &&
       previous.preferStacked === preferStacked &&
@@ -870,8 +877,8 @@ function useRowSize() {
       previous.fixedWidth === fixedWidth
         ? previous
         : {
-            width: row.clientWidth,
-            height: row.clientHeight,
+            width,
+            height,
             sourceTop,
             sourceStep,
             preferStacked,
@@ -883,11 +890,14 @@ function useRowSize() {
           },
     );
   }
-  // Media-query renders can precede ResizeObserver delivery, especially in background tabs.
-  useLayoutEffect(measure);
+  useLayoutEffect(() => {
+    const frame = requestAnimationFrame(measure);
+    return () => cancelAnimationFrame(frame);
+  });
   useLayoutEffect(() => {
     const row = ref.current;
     if (!row) return;
+    measure();
     const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(measure);
     observer?.observe(row);
     window.addEventListener("resize", measure);
@@ -1077,7 +1087,7 @@ export function OrganizedBattleRow({
         minHeight: keepsDigimonSlot ? laneHeight(lanes.digimon, metrics.digimonPadding) : 0,
         display: "flex",
         gap: laneGap(lanes.digimon, size.preferStacked, DIGIMON_GAP_SHARE),
-        justifyContent: "safe center",
+        justifyContent: "flex-start",
         alignItems: "center",
         ...({
           "--field-lane-top": `${metrics.digimonPadding.top}px`,
@@ -1104,7 +1114,7 @@ export function OrganizedBattleRow({
         flex: "0 1 auto",
         display: "flex",
         gap: laneGap(lanes.support, size.preferStacked, SUPPORT_GAP_SHARE),
-        justifyContent: "safe center",
+        justifyContent: "flex-start",
         alignItems: "center",
         ...({
           "--field-lane-top": `${metrics.supportPadding.top}px`,

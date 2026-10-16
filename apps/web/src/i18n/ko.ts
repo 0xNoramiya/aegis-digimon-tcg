@@ -1,6 +1,19 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
+  "digilab.cardCounts": "메인 카드 {main}장 · 디지타마 {eggs}장",
+  "settings.cardImageLanguage": "카드 이미지 언어",
+  "settings.cardImageLanguageDesc":
+    "컬렉션과 덱에 새로 추가할 카드의 기본 언어를 선택하세요. 버튼을 누르면 기존 덱의 대체 일러스트도 교체합니다. 해당 언어가 없는 카드는 현재 이미지를 유지합니다.",
+  "settings.cardImageLanguageApply": "모든 내 덱에 적용",
+  "settings.cardImageLanguageLoading": "덱을 불러오는 중입니다. 계속되면 페이지를 새로고침하세요.",
+  "settings.cardImageLanguageEmpty": "업데이트할 개인 덱이 없습니다.",
+  "settings.cardImageLanguageProgress": "덱 업데이트 중: {completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "업데이트된 덱: {saved}. 실패: {failed}. 해당 언어가 없는 카드 수: {unavailable}. 다시 적용하면 실패한 덱을 재시도합니다.",
+
   "roadmap.hub.label": "커뮤니티 섹션",
   "roadmap.hub.decks": "덱",
   "roadmap.hub.roadmap": "로드맵",
@@ -51,6 +64,10 @@ const interfaceMessages = {
   "settings.shareDeckAfterMatchDesc":
     "경기 종료 후 상대가 시작 덱 목록을 보고 복사할 수 있습니다. 기본으로 활성화됩니다.",
   "settings.shareDeckAfterMatchFailed": "설정을 불러오거나 저장하지 못했습니다. 다시 시도하거나 설정을 다시 여세요.",
+  "overlay.useNegamon": "네거몬 사용",
+  "overlay.negamonPlayDetail":
+    "육성 영역의 네거몬 효과로 등장 코스트를 줄여 디지몬을 등장시키고 네거몬을 그 아래에 놓습니다. 카드는 효과의 다음 단계에서 선택합니다.",
+  "overlay.playNormally": "일반 등장",
   "overlay.viewOpponentDeck": "상대 덱 보기",
   "overlay.opponentDeck": "상대 덱",
   "rollback.failed": "이 시점으로 안전하게 복원하지 못했습니다. 현재 대전 상태는 유지됩니다.",
@@ -2064,6 +2081,9 @@ const interfaceMessages = {
   "redesign.shell.crash.body":
     "이 화면이 작동을 멈췄습니다. Aegis 팀에 오류 보고서를 보냈습니다. 계속하려면 페이지를 새로고침하세요.",
   "redesign.shell.crash.reload": "새로고침",
+  "redesign.shell.loadFailed.title": "이 화면을 불러오지 못했습니다",
+  "redesign.shell.loadFailed.body":
+    "Aegis가 이 화면의 일부를 내려받지 못했습니다. 연결을 확인한 뒤 페이지를 새로고침하세요.",
   "redesign.shell.ranked.eyebrow": "랭크전",
   "redesign.home.login.eyebrow": "Aegis 계정",
   "redesign.play.deckCounts": "메인 {main} · 디지타마 {egg}",

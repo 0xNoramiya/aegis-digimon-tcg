@@ -352,6 +352,7 @@ export function createTrashVerbs(pc: PrimitivesContext) {
           [...seat.battleArea].map(({ permanentId, currentDP }) => ({ permanentId, currentDP })),
         )
       : undefined;
+    const discardedHostSnapshot = hostBeforeTrash.clone();
     const topStackCardInstanceId = hostBeforeTrash?.stack.at(-1)?.instanceId;
     const faceDownBeforeTrash = new Set(
       hostBeforeTrash?.stack.filter((card) => !card.faceUp).map((card) => card.instanceId) ?? [],
@@ -378,6 +379,7 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       if (opts?.isDigiBurst === true) {
         await engine.fireSubTrigger("onDigiBurstCardDiscarded", {
           subjectPermanentId: hostPermanentId,
+          trashedDigivolutionHost: discardedHostSnapshot,
           trashedDigivolutionInstanceIds: moved.map((card) => card.instanceId),
           ...(opts.byEffectSeat !== undefined ? { byEffectSeat: opts.byEffectSeat } : {}),
           ...(opts.byEffectCardId !== undefined ? { byEffectCardId: opts.byEffectCardId } : {}),
@@ -389,6 +391,7 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       // the other just-trashed sources' subscriptions.
       await engine.fireSubTrigger("onDigivolutionCardsDiscardedBatch", {
         subjectPermanentId: hostPermanentId,
+        trashedDigivolutionHost: discardedHostSnapshot,
         trashedDigivolutionInstanceIds: moved.map((card) => card.instanceId),
         trashedFaceDownDigivolutionInstanceIds: moved
           .filter((card) => faceDownBeforeTrash.has(card.instanceId))
@@ -407,6 +410,7 @@ export function createTrashVerbs(pc: PrimitivesContext) {
         // permanent (the host / another card), so they are order-insensitive.
         await engine.fireSubTrigger("onDigivolutionCardDiscarded", {
           subjectPermanentId: hostPermanentId,
+          trashedDigivolutionHost: discardedHostSnapshot,
           trashedDigivolutionInstanceId: trashedCard.instanceId,
           ...(opts?.byEffectSeat !== undefined ? { byEffectSeat: opts.byEffectSeat } : {}),
           ...(opts?.byEffectCardId !== undefined ? { byEffectCardId: opts.byEffectCardId } : {}),

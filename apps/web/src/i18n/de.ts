@@ -1,6 +1,18 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
+  "settings.cardImageLanguage": "Sprache der Kartenbilder",
+  "settings.cardImageLanguageDesc":
+    "Wähle die Standardsprache für die Sammlung und neue Kartenexemplare in Decks. Die Schaltfläche ersetzt auch alternative Bilder in bestehenden Decks. Karten ohne diese Sprache behalten ihr aktuelles Bild.",
+  "settings.cardImageLanguageApply": "Auf alle meine Decks anwenden",
+  "settings.cardImageLanguageLoading": "Warten auf die Decks. Falls dies anhält, lade die Seite neu.",
+  "settings.cardImageLanguageEmpty": "Keine eigenen Decks zum Aktualisieren.",
+  "settings.cardImageLanguageProgress": "Decks werden aktualisiert: {completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "Aktualisierte Decks: {saved}. Fehlgeschlagen: {failed}. Exemplare ohne diese Sprache: {unavailable}. Erneut anwenden, um fehlgeschlagene Decks nochmals zu versuchen.",
+
   "roadmap.hub.label": "Community-Bereiche",
   "roadmap.hub.decks": "Decks",
   "roadmap.hub.roadmap": "Roadmap",
@@ -53,6 +65,10 @@ const interfaceMessages = {
     "Erlauben Sie Ihrem Gegner, Ihre ursprüngliche Deckliste nach dem Spiel anzusehen und zu kopieren. Standardmäßig aktiviert.",
   "settings.shareDeckAfterMatchFailed":
     "Diese Einstellung konnte nicht geladen oder gespeichert werden. Versuche es erneut oder öffne die Einstellungen neu.",
+  "overlay.useNegamon": "Negamon verwenden",
+  "overlay.negamonPlayDetail":
+    "Aktiviere Negamons Effekt im Aufzuchtbereich, um ein Digimon mit reduzierten Kosten zu spielen und Negamon darunterzulegen. Die Karte wählst du im nächsten Schritt des Effekts.",
+  "overlay.playNormally": "Normal spielen",
   "overlay.viewOpponentDeck": "Gegnerisches Deck ansehen",
   "overlay.opponentDeck": "Gegnerisches Deck",
   "rollback.failed":
@@ -2147,6 +2163,9 @@ const interfaceMessages = {
   "redesign.shell.crash.body":
     "Dieser Bildschirm funktioniert nicht mehr. Wir haben einen Fehlerbericht an das Aegis-Team gesendet. Laden Sie die Seite neu, um fortzufahren.",
   "redesign.shell.crash.reload": "Neu laden",
+  "redesign.shell.loadFailed.title": "Dieser Bildschirm konnte nicht geladen werden",
+  "redesign.shell.loadFailed.body":
+    "Aegis konnte einen Teil dieses Bildschirms nicht herunterladen. Prüfen Sie Ihre Verbindung und laden Sie die Seite neu.",
   "redesign.shell.ranked.eyebrow": "Gewertetes Match",
   "redesign.home.login.eyebrow": "Aegis-Konto",
   "redesign.play.deckCounts": "{main} Hauptdeck · {egg} Digi-Ei",

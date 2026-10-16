@@ -43,6 +43,8 @@ export function PlayChoicePrompts({
   onConfirmAction,
   onDigivolveNormally,
   onConfirmCancel,
+  onPlayNormally,
+  canPlayNormally,
   onAppFusion,
   onAppFusionNormalEvolution,
   onAppFusionCancel,
@@ -94,6 +96,8 @@ export function PlayChoicePrompts({
   /** Only offered when the confirmed DNA play also has a normal digivolution. */
   onDigivolveNormally: (() => void) | undefined;
   onConfirmCancel: () => void;
+  onPlayNormally: () => void;
+  canPlayNormally: boolean;
   onAppFusion: (linkedInstanceId: string) => void;
   onAppFusionNormalEvolution: (() => void) | undefined;
   onAppFusionCancel: () => void;
@@ -114,7 +118,18 @@ export function PlayChoicePrompts({
         <DualPlayChoiceOverlay cardId={dualPlay.cardId} onChoose={onDualPlay} onCancel={onDualPlayCancel} />
       ) : null}
 
-      {actionConfirm?.kind === "dna" ? (
+      {actionConfirm?.kind === "negamon" ? (
+        <ActionConfirmationOverlay
+          cardId="EX9-005"
+          title={t("overlay.useNegamon")}
+          detail={t("overlay.negamonPlayDetail")}
+          confirmLabel={t("overlay.useNegamon")}
+          alternateLabel={canPlayNormally ? t("overlay.playNormally") : undefined}
+          onConfirm={() => onConfirmAction()}
+          onAlternate={onPlayNormally}
+          onCancel={onConfirmCancel}
+        />
+      ) : actionConfirm?.kind === "dna" ? (
         <DnaMaterialChoiceOverlay
           key={actionConfirm.instanceId}
           routes={dnaRoutes}

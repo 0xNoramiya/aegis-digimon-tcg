@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { I18nContext } from "@/i18n/I18nContext";
+import { translator } from "@/i18n/translator";
 import { afterEach, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { CardOpenerProvider } from "./cardLinks";
@@ -10,6 +12,35 @@ import { Side } from "./side";
 import { TIMINGS } from "./timings";
 
 afterEach(cleanup);
+
+it("translates the folded resolving clause using the notice card", async () => {
+  const shown: NarrationItem = {
+    ...item("translated-effect"),
+    notice: {
+      id: "translated-effect",
+      side: Side.Viewer,
+      fromSecurity: false,
+      createdAt: 0,
+      body: { variant: "effect", cardId: "LM-034", timing: "Main" },
+    },
+  };
+  const { container } = render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <NarrationStack
+        narration={new Map([[shown.id, shown]])}
+        compact
+        nowMs={0}
+        rejection={null}
+        onAdvance={() => undefined}
+        onDismissRejection={() => undefined}
+      />
+    </I18nContext.Provider>,
+  );
+  await waitFor(() =>
+    expect(container.querySelector(".narration-peek__clause")?.textContent).toContain("蓝色/红色数码宝贝卡牌"),
+  );
+  expect(container.querySelector(".narration-peek__clause")?.textContent).not.toContain("内存值");
+});
 
 // The dock holds the upper right, which is the card column's corner — so that is the
 // column that steps out of its way.

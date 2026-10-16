@@ -1,3 +1,4 @@
+import { getFieldEffectText } from "#api/engine/effects/interpreter/getFieldEffectText";
 // Suspend state, DP, keywords, and moving a permanent.
 
 import { requireOpponentAsk } from "../../../decisions/decisionApi.js";
@@ -250,7 +251,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
             ctx.fx.modifyPlayerDP(seat, amount, duration, {
               ownerSeat: ctx.source.ownerSeat,
               sourceCardId: ctx.source.definition.cardId,
-              effectText: action.effectTextPart ?? action.raw ?? ctx.source.definition.effectText,
+              effectText: getFieldEffectText({ action, ctx }),
               ...sourceProvenance,
               ...(nextOpponentTurnDuration ? { skipsCurrentOpponentTurnEnd: !ctx.source.isOwnersTurn() } : {}),
               ...(matches === undefined ? {} : { matches }),
@@ -260,7 +261,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
             ctx.fx.grantPlayerKeyword(seat, keyword.keyword, duration, keyword.amount, {
               ownerSeat: ctx.source.ownerSeat,
               sourceCardId: ctx.source.definition.cardId,
-              effectText: action.effectTextPart ?? action.raw ?? ctx.source.definition.effectText,
+              effectText: getFieldEffectText({ action, ctx }),
               matches: keywordMatches,
             });
           }
@@ -404,7 +405,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
             ownerSeat: ctx.source.ownerSeat,
             matches,
             sourceCardId: ctx.source.definition.cardId,
-            effectText: action.effectTextPart ?? action.raw ?? ctx.source.definition.effectText,
+            effectText: getFieldEffectText({ action, ctx }),
           });
         }
         // A player-wide grant is an activated effect even when no matching permanent is
@@ -552,7 +553,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
         ctx.fx.grantPlayerKeyword(playerSeat, kw, duration, keyword.amount, {
           ownerSeat: ctx.source.ownerSeat,
           sourceCardId: ctx.source.definition.cardId,
-          effectText: action.effectTextPart ?? action.raw ?? ctx.source.definition.effectText,
+          effectText: getFieldEffectText({ action, ctx }),
         });
         return false;
       }

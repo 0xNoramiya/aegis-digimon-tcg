@@ -34,6 +34,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@2toad/profanity':
+        specifier: ^3.3.0
+        version: 3.3.0
       '@aegis/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -55,6 +58,9 @@ importers:
       express:
         specifier: ^5.2.1
         version: 5.2.1
+      naughty-words:
+        specifier: ^1.2.0
+        version: 1.2.0
       nodemailer:
         specifier: ^7.0.13
         version: 7.0.13
@@ -68,6 +74,9 @@ importers:
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
+      '@types/naughty-words':
+        specifier: ^1.2.3
+        version: 1.2.3
       '@types/node':
         specifier: ^26.6.2
         version: 26.6.2
@@ -228,6 +237,10 @@ importers:
         version: 5.0.0(@types/node@26.6.2)(@vitest/ui@5.0.0)(jsdom@25.0.1)(vite@8.3.1(@types/node@26.6.2)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
 packages:
+
+  '@2toad/profanity@3.3.0':
+    resolution: {integrity: sha512-hBptHbB6Regs5AgtHiLr/WfgHRh6ZGdA9EexOWU14n2eNjQekvK9/gg18iFUYvL2WrNb4X3Ci0bzgzJXhzmpNQ==}
+    engines: {node: '>=12'}
 
   '@asamuzakjp/css-color@3.2.0':
     resolution: {integrity: sha512-K1A6z8tS3XsmCMM86xoWdn7Fkdn9m6RSVtocUrJYIwZnFVkng/PvkEoWtOWmP+Scc6saYWHWZYbndEEXxl24jw==}
@@ -2478,6 +2491,9 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
+  '@types/naughty-words@1.2.3':
+    resolution: {integrity: sha512-Cf70ztEQzMJrAGtkCWeG65puU4dyL9sskYytOXMRXUNsAHxb5d2eetKUy9gBdg3nVDHNe4sbWfNCDwHJ/TeCEg==}
+
   '@types/node@22.19.19':
     resolution: {integrity: sha512-dyh/xO2Fh5bYrfWaaqGrRQQGkNdmYw6AmaAUvYeUMNTWQtvb796ikLdmTchRmOlOiIJ1TDXfWgVx1QkUlQ6Hew==}
 
@@ -3624,6 +3640,9 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
+  naughty-words@1.2.0:
+    resolution: {integrity: sha512-0iadX6fN+3NsfvIRtWmmpEX9VsoIQ6n9FwyIxmew9w5yzFNqMgs/Ky0eAC/z5xXSHtqlVoByiovdROikwH9SXQ==}
+
   nearley@2.20.1:
     resolution: {integrity: sha512-+Mc8UaAebFzgV+KpI5n7DasuuQCHA89dmwm7JXw3TV43ukfNQ9DnBH3Mdb2g/I4Fdxc26pwimBWvjIw0UAILSQ==}
     hasBin: true
@@ -4635,6 +4654,8 @@ packages:
     resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
 
 snapshots:
+
+  '@2toad/profanity@3.3.0': {}
 
   '@asamuzakjp/css-color@3.2.0':
     dependencies:
@@ -6532,6 +6553,8 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
+  '@types/naughty-words@1.2.3': {}
+
   '@types/node@22.19.19':
     dependencies:
       undici-types: 6.21.0
@@ -7730,6 +7753,8 @@ snapshots:
   nanoid@3.3.12: {}
 
   nanoid@3.3.19: {}
+
+  naughty-words@1.2.0: {}
 
   nearley@2.20.1:
     dependencies:

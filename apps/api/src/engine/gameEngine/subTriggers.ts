@@ -697,6 +697,8 @@ function selfTrashedSourceInstanceId(sub: SubTriggerSubscription, payload: Trigg
   const sourceInstanceId = sub.sourceInstanceId;
   if (sourceInstanceId === undefined) return undefined;
   switch (sub.event) {
+    case "whenTrashedFromDeck":
+      return payload.trashedFromDeckInstanceId === sourceInstanceId ? sourceInstanceId : undefined;
     case "whenTrashedFromHand":
       return payload.trashedFromHandInstanceId === sourceInstanceId ? sourceInstanceId : undefined;
     case "onDigivolutionCardDiscarded":
@@ -1247,7 +1249,14 @@ export function discardedStackSourceContextPayload(
   )
     return undefined;
   if (payload.subjectPermanentId === undefined) return undefined;
-  if (engine.access.permanentById(payload.subjectPermanentId) === undefined) return undefined;
+  const activatesFromDiscardedCard =
+    sub.watchesSelf === true &&
+    sub.sourcePermanentId === undefined &&
+    payload.trashedDigivolutionHost?.permanentId === payload.subjectPermanentId &&
+    payload.trashedDigivolutionHost.stack.some((card) => card.instanceId === sourceInstanceId);
+  if (!activatesFromDiscardedCard && engine.access.permanentById(payload.subjectPermanentId) === undefined) {
+    return undefined;
+  }
   if (sub.sourcePermanentId !== undefined && payload.subjectPermanentId !== sub.sourcePermanentId) return undefined;
   const listed =
     sub.event === "onDigivolutionCardDiscarded"
@@ -1256,7 +1265,7 @@ export function discardedStackSourceContextPayload(
   if (!listed || rootZoneOfLooseInstance(engine.state, sourceInstanceId) !== "trash") return undefined;
   return {
     payload,
-    proof: { sourceInstanceId, hostPermanentId: payload.subjectPermanentId },
+    proof: { sourceInstanceId, hostPermanentId: payload.subjectPermanentId, activatesFromDiscardedCard },
   };
 }
 

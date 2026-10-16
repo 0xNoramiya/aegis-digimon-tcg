@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { I18nContext } from "@/i18n/I18nContext";
+import { translator } from "@/i18n/translator";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { CardOpenerProvider } from "./cardLinks";
@@ -34,6 +36,28 @@ function renderNotice(
 }
 
 describe("NoticeStack", () => {
+  it("translates the resolving Main clause from a complete Chinese option-card entry", async () => {
+    render(
+      <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+        <NoticeStack
+          notice={notice({ body: { variant: "effect", cardId: "LM-034", timing: "Main" } })}
+          remainingMs={NOTICE_LIFETIME_MS}
+          onDismiss={() => undefined}
+        />
+      </I18nContext.Provider>,
+    );
+    const shown = screen.getByTestId("match-notice");
+    await waitFor(() =>
+      expect(shown.querySelector(".match-notice__text")?.textContent).toContain("蓝色/红色数码宝贝卡牌"),
+    );
+    const text = shown.querySelector(".match-notice__text")!.textContent;
+    expect(text).toContain("此后，将此卡牌置于战斗区。");
+    expect(text).not.toContain("Reveal");
+    expect(text).not.toContain("延迟");
+    expect(text).not.toContain("内存值");
+    expect(shown.querySelector('mark[data-kind="timing"]')?.textContent).toBe("[主要]");
+  });
+
   it("shows the resolving clause under its printed timing label", () => {
     renderNotice(
       notice({
