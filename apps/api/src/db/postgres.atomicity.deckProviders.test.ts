@@ -165,7 +165,7 @@ describe.skipIf(!enabled)("provider caching and weekly extraction across replica
       (await first.pool.query("SELECT completed_at FROM deck_provider_sync_runs")).rows[0].completed_at,
     ).toBeNull();
   });
-  it("collects format metadata, browsing lists, archetypes and full card lists", async () => {
+  it("collects every released format with browsing lists, archetypes and full card lists", async () => {
     const get = vi.fn<(path: string) => Promise<unknown>>(async (path) => {
       if (path.startsWith("decklist/")) {
         return { result_id: 12, decklist: null };
@@ -183,16 +183,20 @@ describe.skipIf(!enabled)("provider caching and weekly extraction across replica
         ],
       };
     });
-    expect(await runProviderSync({ store: first, client: { get }, providerId: "digilab" })).toBe(5);
+    expect(await runProviderSync({ store: first, client: { get }, providerId: "digilab" })).toBe(9);
     expect(get.mock.calls.map(([path]) => path)).toEqual([
       "meta?page=1&per_page=20&sort=entries&sort_dir=desc",
       "meta?page=1&per_page=25&format=EX13&sort=entries&sort_dir=desc",
       "decklists?page=1&per_page=20&format=EX13&sort=date&sort_dir=desc",
       "decklists?page=1&per_page=3&format=EX13&archetype_id=1&sort=date&sort_dir=desc",
       "decklist/12",
+      "meta?page=1&per_page=25&format=BT1&sort=entries&sort_dir=desc",
+      "decklists?page=1&per_page=20&format=BT1&sort=date&sort_dir=desc",
+      "decklists?page=1&per_page=3&format=BT1&archetype_id=1&sort=date&sort_dir=desc",
+      "decklist/12",
     ]);
     expect(
       (await first.pool.query("SELECT collected_count FROM deck_provider_sync_runs")).rows[0].collected_count,
-    ).toBe(5);
+    ).toBe(9);
   }, 15_000);
 });

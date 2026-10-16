@@ -1,3 +1,4 @@
+import { isTrainingMaterialSelectionComplete } from "#api/bot/training/isTrainingMaterialSelectionComplete";
 import { canAssignDistinctColors, type DecisionRequest, type Intent } from "@aegis/shared";
 
 /** Public metadata only: never resolve a blind choice from the engine's hidden zones. */
@@ -111,9 +112,8 @@ export function* decisionSteps(
     }
     case "selectCards":
     case "chooseTargets": {
-      if (options.assemblyCardId || options.digiXrosCardId) {
-        throw new Error("Training material recipes require a specialized selection validator");
-      }
+      const isComplete = (selected: readonly string[]): boolean =>
+        isTrainingMaterialSelectionComplete({ options, cards, selected });
       const offered = [...new Set(options.candidateInstanceIds ?? [])];
       // An accepted "you may" pick already answered its yes/no; its floor of zero is a human
       // back-out, not a second decline the policy should learn.
@@ -158,7 +158,7 @@ export function* decisionSteps(
       };
       const canFinish = (ids: readonly string[], remaining: readonly string[]): boolean => {
         if (!valid(ids)) return false;
-        if (ids.length >= minimum) return true;
+        if (ids.length >= minimum && isComplete(ids)) return true;
         if (ids.length + remaining.length < minimum || ids.length >= maximum) return false;
         return remaining.some((id, index) => canFinish([...ids, id], remaining.slice(index + 1)));
       };
@@ -173,7 +173,8 @@ export function* decisionSteps(
             ),
           )
           .map((id) => ({ key: id, label: "Select", referenceId: id }));
-        if (selected.length >= minimum && valid(selected)) choices.push({ key: "finish", label: "Finish selection" });
+        if (selected.length >= minimum && valid(selected) && isComplete(selected))
+          choices.push({ key: "finish", label: "Finish selection" });
         const choice = yield* selectedIndex({ request, selected: [...selected], choices });
         if (choice.referenceId === undefined) return respond({ kind: request.kind, instanceIds: selected });
         selected.push(choice.referenceId);

@@ -1,3 +1,4 @@
+import { selectAllianceAlly } from "#api/bot/selectAllianceAlly";
 import { CardKind } from "@aegis/shared/schema/enums";
 import type { DecisionRequest, ServerEvent } from "@aegis/shared/protocol/events";
 import type { Intent } from "@aegis/shared/protocol/intents";
@@ -160,12 +161,14 @@ export function createEvaluationPolicy(options: EvaluationPolicyOptions = {}): B
     },
 
     chooseAllianceResponse(view: BotView, context: AllianceContext): Intent {
-      // ＜Alliance＞ suspends an ally to add its DP to the attack. Worth it only when
-      // something on the other side could actually survive or block the attack unaided.
-      const contested = view.opponentBoard.some((unit) => !unit.suspended);
-      const ally = context.eligibleAllyIds[0];
-      if (!contested || ally === undefined) return { type: "respondAlliance" };
-      return { type: "respondAlliance", allyPermanentId: ally };
+      const ally = selectAllianceAlly({
+        view,
+        attackerId: context.permanentId,
+        eligibleAllyIds: context.eligibleAllyIds,
+      });
+      return ally === undefined
+        ? { type: "respondAlliance" }
+        : { type: "respondAlliance", allyPermanentId: ally.permanentId };
     },
 
     chooseEvadeResponse(_view: BotView, permanentId: string): Intent {
