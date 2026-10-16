@@ -1,6 +1,9 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
+  "digilab.cardCounts": "메인 카드 {main}장 · 디지타마 {eggs}장",
   "settings.cardImageLanguage": "카드 이미지 언어",
   "settings.cardImageLanguageDesc":
     "컬렉션과 덱에 새로 추가할 카드의 기본 언어를 선택하세요. 버튼을 누르면 기존 덱의 대체 일러스트도 교체합니다. 해당 언어가 없는 카드는 현재 이미지를 유지합니다.",

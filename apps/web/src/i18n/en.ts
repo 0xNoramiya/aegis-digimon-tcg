@@ -1,3 +1,4 @@
+import { providerEn } from "@/i18n/providers.en";
 import { replayVideoEn } from "./replayVideo";
 import { profileReplayEn } from "./profileReplays";
 import { replayEn } from "./replays";
@@ -19,6 +20,7 @@ import { shellEn } from "./redesign/shell.en";
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  ...providerEn,
   "settings.cardImageLanguage": "Card image language",
   "settings.cardImageLanguageDesc":
     "Choose the default language for the collection and new deck copies. The button also replaces artwork, including alternate art, in existing decks. Cards without this language keep their current image.",

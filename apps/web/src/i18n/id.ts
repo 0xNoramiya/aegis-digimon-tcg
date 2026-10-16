@@ -1,6 +1,8 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
   "settings.cardImageLanguage": "Bahasa gambar kartu",
   "settings.cardImageLanguageDesc":
     "Pilih bahasa default untuk koleksi dan salinan baru yang ditambahkan ke deck. Tombol ini juga mengganti ilustrasi alternatif di deck yang sudah ada. Kartu tanpa bahasa ini tetap memakai gambar saat ini.",

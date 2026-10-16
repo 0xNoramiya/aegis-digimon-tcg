@@ -1,3 +1,4 @@
+import { providerPtBR } from "@/i18n/providers.pt-BR";
 import { replayVideoPtBR } from "./replayVideo";
 import { profileReplayPtBR } from "./profileReplays";
 import { replayPtBR } from "./replays";
@@ -21,6 +22,7 @@ import { settingsPtBR } from "./redesign/settings.pt-BR";
 import { shellPtBR } from "./redesign/shell.pt-BR";
 
 export const ptBR: Record<keyof typeof en, string> = {
+  ...providerPtBR,
   "settings.cardImageLanguage": "Idioma das imagens das cartas",
   "settings.cardImageLanguageDesc":
     "Escolha o idioma padrão da Coleção e das novas cópias adicionadas aos decks. O botão também substitui as imagens, incluindo artes alternativas, dos decks existentes. Cartas sem esse idioma mantêm a imagem atual.",

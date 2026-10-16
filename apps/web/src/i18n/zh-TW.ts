@@ -1,6 +1,8 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
   "settings.cardImageLanguage": "卡牌圖片語言",
   "settings.cardImageLanguageDesc":
     "選擇收藏和新加入卡組的卡牌的預設語言。按鈕也會替換現有卡組中的異畫。沒有該語言版本的卡牌將保留目前圖片。",

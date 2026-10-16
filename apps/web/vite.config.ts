@@ -29,6 +29,10 @@ export default defineConfig({
     projects: [
       {
         extends: true,
+        test: { name: "deck-providers", include: ["src/deckProviders/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: { name: "card-language", include: ["src/screens/cardLanguage/**/*.test.tsx"], environment: "jsdom" },
       },
       {
@@ -52,6 +56,7 @@ export default defineConfig({
             "src/game/arenaInspectorSources.test.tsx",
             "src/game/piece/PermanentDpDeltaHint.test.tsx",
             "src/game/log/**/*.test.tsx",
+            "src/deckProviders/**/*.test.tsx",
           ],
         },
       },

@@ -1,3 +1,4 @@
+import { providerEs } from "@/i18n/providers.es";
 import { replayVideoEs } from "./replayVideo";
 import { profileReplayEs } from "./profileReplays";
 import { replayEs } from "./replays";
@@ -17,6 +18,7 @@ import { settingsEs } from "./redesign/settings.es";
 import { shellEs } from "./redesign/shell.es";
 
 export const es: Record<keyof typeof en, string> = {
+  ...providerEs,
   "settings.cardImageLanguage": "Idioma de las imágenes de cartas",
   "settings.cardImageLanguageDesc":
     "Elige el idioma predeterminado de la Colección y de las nuevas copias añadidas a los mazos. El botón también reemplaza las imágenes alternativas de los mazos existentes. Las cartas sin este idioma conservan su imagen actual.",

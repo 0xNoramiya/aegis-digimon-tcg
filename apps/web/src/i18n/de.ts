@@ -1,6 +1,8 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
   "settings.cardImageLanguage": "Sprache der Kartenbilder",
   "settings.cardImageLanguageDesc":
     "Wähle die Standardsprache für die Sammlung und neue Kartenexemplare in Decks. Die Schaltfläche ersetzt auch alternative Bilder in bestehenden Decks. Karten ohne diese Sprache behalten ihr aktuelles Bild.",

@@ -1,6 +1,8 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
   "settings.cardImageLanguage": "カード画像の言語",
   "settings.cardImageLanguageDesc":
     "コレクションとデッキに新しく追加するカードの既定の言語を選びます。ボタンを押すと既存デッキの別イラストも置き換えます。この言語の画像がないカードは現在の画像を維持します。",

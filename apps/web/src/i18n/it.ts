@@ -1,3 +1,4 @@
+import { providerEn } from "@/i18n/providers.en";
 import { replayVideoIt } from "./replayVideo";
 import { profileReplayIt } from "./profileReplays";
 import { replayIt } from "./replays";
@@ -5,6 +6,7 @@ import { en } from "./en";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  ...providerEn,
   "settings.cardImageLanguage": "Lingua delle immagini delle carte",
   "settings.cardImageLanguageDesc":
     "Scegli la lingua predefinita della Collezione e delle nuove copie aggiunte ai mazzi. Il pulsante sostituisce anche le immagini alternative nei mazzi esistenti. Le carte senza questa lingua mantengono la loro immagine attuale.",

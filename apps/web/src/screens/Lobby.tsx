@@ -175,6 +175,7 @@ export function Lobby({
   decks,
   borrowedDeck,
   onBorrowCommunityDeck,
+  onUseProviderDeck,
   onOpenCommunityDeck,
   accountId,
   activeDeckId,
@@ -206,6 +207,7 @@ export function Lobby({
   /** A community deck picked to play with; selectable like a preset but never saved. */
   borrowedDeck?: DeckListing;
   onBorrowCommunityDeck?: (id: string) => void;
+  onUseProviderDeck?: (deck: DeckListing) => void;
   onOpenCommunityDeck?: (id: string) => void;
   /** The signed-in account, so community tiles can be liked from the picker. */
   accountId?: string;
@@ -644,7 +646,9 @@ export function Lobby({
                     </span>
                   ) : activeIsBorrowed ? (
                     <span className="lobby-active-strip__source">
-                      {t("community.lobbySource", { name: active.blurb })}
+                      {active.id.startsWith("provider-")
+                        ? active.blurb
+                        : t("community.lobbySource", { name: active.blurb })}
                     </span>
                   ) : null}
                 </span>
@@ -1042,7 +1046,10 @@ export function Lobby({
           onSelectRandom={() => setRandomSelected(true)}
           onSelectDeck={selectDeck}
           onCopyDeck={onCopyDeck}
-          onViewDeck={setViewedDeck}
+          onUseProviderDeck={(deck) => {
+            setRandomSelected(false);
+            onUseProviderDeck?.(deck);
+          }}
           onEditDeck={editDeck}
           onBuildDeck={buildDeck}
           onPickCommunityDeck={pickCommunityDeck}

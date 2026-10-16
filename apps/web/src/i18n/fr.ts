@@ -1,6 +1,9 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
+  "digilab.cardCounts": "{main} cartes principales · {eggs} Digi-Œufs",
   "settings.cardImageLanguage": "Langue des images des cartes",
   "settings.cardImageLanguageDesc":
     "Choisissez la langue par défaut de la collection et des nouveaux exemplaires ajoutés aux decks. Le bouton remplace aussi les illustrations alternatives des decks existants. Les cartes indisponibles dans cette langue conservent leur image actuelle.",
