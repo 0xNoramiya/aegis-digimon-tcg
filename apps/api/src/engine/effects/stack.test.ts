@@ -100,6 +100,100 @@ function envOver(
 }
 
 describe("derived activation tiers", () => {
+  it.each([
+    { seat: 0, nested: false },
+    { seat: 1, nested: false },
+    { seat: 0, nested: true },
+    { seat: 1, nested: true },
+  ] as const)(
+    "retires an exhausted derived effect before an older effect enables it ($seat, nested=$nested)",
+    async ({ seat, nested }) => {
+      let derived = false;
+      let targetExists = false;
+      const order: string[] = [];
+      const parent = collected(
+        0,
+        "parent",
+        fakeEffect("parent", {
+          onResolve: () => {
+            derived = true;
+            order.push("parent");
+          },
+        }),
+      );
+      const older = collected(
+        1,
+        "older",
+        fakeEffect("older", {
+          onResolve: () => {
+            targetExists = true;
+            order.push("older");
+          },
+        }),
+      );
+      const child = collected(
+        seat,
+        "child",
+        fakeEffect("child", {
+          canActivate: () => targetExists,
+          onResolve: () => order.push("child"),
+        }),
+      );
+      const attack = collected(
+        0,
+        "attack",
+        fakeEffect("attack", {
+          onResolve: async (ctx) => {
+            await ctx.drainCurrentTimingWindow?.();
+          },
+        }),
+      );
+      const { env } = envOver([], {
+        collect: () => [...(nested ? [attack] : []), parent, older, ...(derived ? [child] : [])],
+      });
+      await resolveTiming(EffectTiming.OnEndTurn, env);
+      expect(order).toEqual(["parent", "older"]);
+    },
+  );
+
+  it("keeps an unavailable derived effect pending while its simultaneous sibling enables it", async () => {
+    let derived = false;
+    let targetExists = false;
+    const order: string[] = [];
+    const parent = collected(
+      0,
+      "parent",
+      fakeEffect("parent", {
+        onResolve: () => {
+          derived = true;
+          order.push("parent");
+        },
+      }),
+    );
+    const older = collected(0, "older", fakeEffect("older", { onResolve: () => order.push("older") }));
+    const child = collected(
+      0,
+      "child",
+      fakeEffect("child", {
+        canActivate: () => targetExists,
+        onResolve: () => order.push("child"),
+      }),
+    );
+    const sibling = collected(
+      1,
+      "sibling",
+      fakeEffect("sibling", {
+        onResolve: () => {
+          targetExists = true;
+          order.push("sibling");
+        },
+      }),
+    );
+    const { env } = envOver([], { collect: () => [parent, older, ...(derived ? [child, sibling] : [])] });
+    await resolveTiming(EffectTiming.OnEndTurn, env);
+    expect(order).toEqual(["parent", "sibling", "child", "older"]);
+  });
+
   it("keeps granted copies and event occurrences distinct without reactivating after evolution", async () => {
     let top = "original-top";
     const resolved: string[] = [];
