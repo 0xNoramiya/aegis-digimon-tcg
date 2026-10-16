@@ -250,6 +250,8 @@ export class ContinuousEffectLedger {
           ownerSeat: entry.ownerSeat,
           sourceCardId: entry.sourceCardId,
           effectText: entry.effectText,
+          fromSourceKind: entry.fromSourceKind,
+          byOpponentEffectsOnly: entry.byOpponentEffectsOnly,
           continuous: entry.continuous,
         })),
       ...this.playProhibitions

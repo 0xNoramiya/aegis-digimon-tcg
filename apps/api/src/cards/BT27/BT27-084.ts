@@ -89,21 +89,28 @@ export const compiled: CompiledCard = {
         },
         {
           kind: "GainKeyword",
+          effectTextPart: "All of your Digimon with [Knightmon] in their texts gain ＜Blocker＞.",
           target: { filter: ownKnightmonTextDigimon, count: "all" },
+          playerWide: true,
           keyword: { keyword: "Blocker", raw: "＜Blocker＞" },
           duration: "untilYourTurnEnd",
           condition: { kind: "ifThisEffectDidNotDelete", raw: "this effect didn't delete" },
         },
         {
           kind: "GrantStatic",
+          effectTextPart:
+            "Your opponent's Digimon effects don't affect any of your Digimon with [Knightmon] in their texts.",
           target: { filter: ownKnightmonTextDigimon, count: "all" },
+          playerWide: true,
           grant: "immuneToOpponentDigimonEffects",
           duration: "untilYourTurnEnd",
           condition: { kind: "ifThisEffectDidNotDelete", raw: "this effect didn't delete" },
         },
         {
           kind: "ModifyDP",
+          effectTextPart: "All of your Digimon with [Knightmon] in their texts get +3000 DP.",
           target: { filter: ownKnightmonTextDigimon, count: "all" },
+          playerWide: true,
           amount: 3000,
           duration: "untilYourTurnEnd",
           condition: { kind: "ifThisEffectDidNotDelete", raw: "this effect didn't delete" },

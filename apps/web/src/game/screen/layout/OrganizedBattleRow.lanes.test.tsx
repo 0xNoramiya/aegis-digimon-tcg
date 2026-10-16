@@ -271,3 +271,51 @@ describe("organized battle lanes", () => {
     expect(new Set(widths(full.container))).toEqual(new Set(["64px"]));
   });
 });
+
+it("keeps changing layout measurements out of the synchronous commit loop", () => {
+  mockViewport({ phone: false });
+  const frames = new Map<number, FrameRequestCallback>();
+  let frameId = 0;
+  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+    frames.set(++frameId, callback);
+    return frameId;
+  });
+  vi.stubGlobal("cancelAnimationFrame", (id: number) => frames.delete(id));
+  let measurements = 0;
+  let resizing = true;
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockImplementation(function (this: HTMLElement) {
+    if (this.hasAttribute("data-field-layout")) {
+      measurements += 1;
+      return resizing ? 1200 + measurements : 1200;
+    }
+    return 1200;
+  });
+  const screen = render(view([permanent("tamer")]));
+  expect(screen.container.querySelector("[data-field-layout]")).not.toBeNull();
+  expect(measurements).toBeLessThan(20);
+  for (let frame = 0; frame < 10; frame += 1) {
+    const callbacks = [...frames.values()];
+    frames.clear();
+    const before = measurements;
+    act(() => {
+      for (const callback of callbacks) {
+        callback(frame * 16);
+      }
+    });
+    expect(measurements - before).toBeLessThan(20);
+    expect(screen.container.querySelector("[data-field-layout]")).not.toBeNull();
+  }
+  resizing = false;
+  for (let frame = 0; frame < 5; frame += 1) {
+    const callbacks = [...frames.values()];
+    frames.clear();
+    act(() => {
+      for (const callback of callbacks) {
+        callback((frame + 10) * 16);
+      }
+    });
+  }
+  expect(frames.size).toBe(0);
+  screen.unmount();
+  expect(frames.size).toBe(0);
+});

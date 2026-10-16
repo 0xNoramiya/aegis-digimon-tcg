@@ -15,6 +15,7 @@ export const compiled: CompiledCard = {
         },
         {
           kind: "PlaceUnder",
+          position: "bottom",
           target: {
             filter: {
               controller: "mine",

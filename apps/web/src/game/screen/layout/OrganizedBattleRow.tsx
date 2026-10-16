@@ -862,9 +862,11 @@ function useRowSize() {
     const overlapLanes = style.getPropertyValue("--field-overlap-lanes").trim() === "1";
     const fitWidth = style.getPropertyValue("--field-fit-width").trim() === "1";
     const fixedWidth = Number.parseFloat(style.getPropertyValue("--field-fixed-width")) || 0;
+    const width = row.clientWidth;
+    const height = row.clientHeight;
     setSize((previous) =>
-      previous.width === row.clientWidth &&
-      previous.height === row.clientHeight &&
+      previous.width === width &&
+      previous.height === height &&
       previous.sourceTop === sourceTop &&
       previous.sourceStep === sourceStep &&
       previous.preferStacked === preferStacked &&
@@ -875,8 +877,8 @@ function useRowSize() {
       previous.fixedWidth === fixedWidth
         ? previous
         : {
-            width: row.clientWidth,
-            height: row.clientHeight,
+            width,
+            height,
             sourceTop,
             sourceStep,
             preferStacked,
@@ -888,11 +890,14 @@ function useRowSize() {
           },
     );
   }
-  // Media-query renders can precede ResizeObserver delivery, especially in background tabs.
-  useLayoutEffect(measure);
+  useLayoutEffect(() => {
+    const frame = requestAnimationFrame(measure);
+    return () => cancelAnimationFrame(frame);
+  });
   useLayoutEffect(() => {
     const row = ref.current;
     if (!row) return;
+    measure();
     const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(measure);
     observer?.observe(row);
     window.addEventListener("resize", measure);
