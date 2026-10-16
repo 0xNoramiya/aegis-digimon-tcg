@@ -1,3 +1,4 @@
+import { getAttackRedirection } from "#api/engine/gameEngine/getAttackRedirection";
 import { ContinuousEffectScope } from "./effects/ContinuousEffectScope.js";
 import { CardKind, EffectTiming, GameState, type CardInstance, type Seat } from "@aegis/shared";
 import { buildCombatHooks } from "./gameEngine/combatHooks.js";
@@ -521,6 +522,8 @@ export class GameEngine {
       isNewlyPlayedRushAttacker: (permanentId) => isNewlyPlayedRushAttacker(this, permanentId),
       listCandidateInstances: () => listCandidateInstances(this),
       validateAppFusion: (seat, intent) => validateAppFusion(this, seat, intent),
+      attackRedirectTargetIds: (attacker, targetPermanentId) =>
+        getAttackRedirection({ engine: this, attacker, targetPermanentId }),
       attackDeps: () => attackDeps(this),
       digivolveDeps: () => digivolveDeps(this),
       dnaDigivolveDeps: () => dnaDigivolveDeps(this),

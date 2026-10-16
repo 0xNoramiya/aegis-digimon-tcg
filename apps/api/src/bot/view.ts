@@ -1,3 +1,4 @@
+import type { AttackRedirection } from "@aegis/shared/schema/AttackRedirection";
 import { CardKind, Phase, getCardDefinition, type CardDefinition, type GameState, type Seat } from "@aegis/shared";
 
 /**
@@ -19,6 +20,7 @@ const GAUGE_RANGE = 10;
 const FULL_SECURITY_STACK = 5;
 
 export interface BotUnit {
+  attackRedirectTargets?: Readonly<Record<string, AttackRedirection>>;
   permanentId: string;
   /**
    * The top card's instance id. Decision candidates are permanent ids when an effect targets
@@ -111,6 +113,7 @@ function toUnit(permanent: PermanentLike): BotUnit {
   const definition = cardId === undefined ? undefined : getCardDefinition(cardId);
   return {
     permanentId: permanent.permanentId,
+    attackRedirectTargets: { ...permanent.attackRedirectTargets },
     topCardInstanceId: permanent.topCard?.instanceId,
     cardId,
     definition,
@@ -215,6 +218,7 @@ export function isDigiEggCard(definition: CardDefinition | undefined): boolean {
 
 /** Structural shapes the view reads. Kept local so tests can hand in plain objects. */
 interface PermanentLike {
+  attackRedirectTargets?: Readonly<Record<string, AttackRedirection>>;
   permanentId: string;
   topCard?: { cardId: string; instanceId?: string };
   currentDP?: number;

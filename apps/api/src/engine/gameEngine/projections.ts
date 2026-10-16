@@ -1,3 +1,4 @@
+import type { AttackRedirection } from "@aegis/shared/schema/AttackRedirection";
 import { getNegamonPlayCandidates } from "#api/engine/gameEngine/getNegamonPlayCandidates";
 import {
   CardKind,
@@ -57,6 +58,7 @@ import type { PendingBlitzAttack } from "./blitz.js";
  * factories rather than duplicated here.
  */
 export interface ProjectionDeps {
+  readonly attackRedirectTargetIds: (attacker: Permanent, targetPermanentId?: string) => AttackRedirection;
   readonly state: GameState;
   readonly access: GameStateAccess;
   readonly continuous: ContinuousEffectLedger;
@@ -561,7 +563,10 @@ export class BoardProjection {
    */
   syncAttackTargets(): void {
     for (const player of this.deps.state.players) {
-      for (const perm of player.battleArea) clearAttackProjection(perm);
+      for (const perm of player.battleArea) {
+        clearAttackProjection(perm);
+        perm.attackRedirectTargets = {};
+      }
       if (player.breeding) clearAttackProjection(player.breeding);
     }
 
@@ -584,13 +589,22 @@ export class BoardProjection {
           attackerPermanentId: attacker.permanentId,
           target: { kind: "player" },
         }) === null;
+      if (attacker.canAttackPlayer) {
+        attacker.attackRedirectTargets.player = this.deps.attackRedirectTargetIds(attacker);
+      }
       for (const defender of opponent.battleArea) {
         const legal =
           validateAttack(deps, seat, {
             attackerPermanentId: attacker.permanentId,
             target: { kind: "permanent", permanentId: defender.permanentId },
           }) === null;
-        if (legal) attacker.attackablePermanentIds.push(defender.permanentId);
+        if (legal) {
+          attacker.attackablePermanentIds.push(defender.permanentId);
+          attacker.attackRedirectTargets[defender.permanentId] = this.deps.attackRedirectTargetIds(
+            attacker,
+            defender.permanentId,
+          );
+        }
       }
       // The ＜Vortex＞ declaration is a separate legality question (§16-33 / §16-33-1),
       // so it gets its own pass — but only for a Digimon that actually has the keyword,

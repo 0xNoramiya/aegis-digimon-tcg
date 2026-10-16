@@ -156,6 +156,24 @@ seeing each other's rooms: Colyseus's own matchmaking keys are fixed names, so a
 would merge the two slots' room listings. `AEGIS_REDIS_URL` therefore points at the slot's own
 instance, and the slot-scoped prefix applies only to the keys Aegis writes itself.
 
+## Bot attack evaluation
+
+The engine derives server-only `Permanent.attackRedirectTargets` for each legal
+attack target from installed opponent-attack watchers. The bot consumes these
+projections alongside Blocker when scoring battles and lethal sequences. Inherited
+sources, target filters, payable public costs, and spent once-per-turn budgets use
+the same live effect context as resolution. Distinct targets of one watcher share
+its interception budget; self-suspension costs share the source permanent’s budget. The projection is neither synchronized nor persisted.
+
+Hidden hand costs are estimated from public hand size, never card identities.
+This is a tactical estimate: it does not simulate preceding actions that create or
+bind a new redirect target, and treats repeatable watchers without an explicit
+one-use budget conservatively. Card resolution remains authoritative.
+
+The `bot-attack-redirection` scenario covers the regression reported in
+[issue #5601](https://github.com/vinicius3333/aegis-digimon-tcg/issues/5601), including
+Negamon's inherited effect, Tamer costs, consumed limits, and player-only redirects.
+
 ## Verification
 
 ```bash

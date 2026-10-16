@@ -46,6 +46,8 @@ export interface SubTriggerSubscription {
   id: number;
   identicalInstallOrdinal?: number;
   event: SubTriggerEventName;
+  attackRedirectTargetIds?: (ctx: EffectContext) => string[];
+  attackRedirectRequiresSelfSuspend?: boolean;
   /** Printed timing of the clause that installed this watcher. */
   printedTiming?: string;
   /** The printed clause this watcher implements, for players; identity and prompts keep `description`. */

@@ -1,3 +1,5 @@
+import { hasAttackRedirection } from "#api/engine/effects/interpreter/hasAttackRedirection";
+import { getAttackRedirectTargetIds } from "#api/engine/effects/interpreter/getAttackRedirectTargetIds";
 // Arming a watcher that fires on a later game event.
 
 import { effectProvenanceKinds } from "../../effectProvenance.js";
@@ -1186,6 +1188,13 @@ export async function runSubTrigger(
     (ctx.continuousPass === true && (action.on.isSelf === true || action.on.filter?.isSelfRef === true));
   ctx.fx.subscribeSubTrigger({
     event,
+    ...(event === "whenOpponentAttacks" && hasAttackRedirection(action.actions)
+      ? {
+          attackRedirectRequiresSelfSuspend: requiresSelfSuspend,
+          attackRedirectTargetIds: (subCtx: EffectContext) =>
+            getAttackRedirectTargetIds({ ctx: subCtx, actions: action.actions, activation: action }),
+        }
+      : {}),
     activationDeferred: true,
     ...(ctx.activeEffectKey !== undefined || ctx.activeActionPath !== undefined
       ? { dedupeKey: `${ctx.source.instanceId}/${ctx.activeEffectKey ?? "effect"}/${ctx.activeActionPath ?? "0"}` }
