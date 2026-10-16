@@ -1,5 +1,5 @@
 import { createPortal } from "react-dom";
-import type { GameState, Seat } from "@aegis/shared";
+import { MATCH_TIMER_ROPE_SECONDS, MATCH_TIMER_STRIKE_LIMIT, type GameState, type Seat } from "@aegis/shared";
 import { useTranslation } from "../i18n";
 import { RematchStatus } from "@aegis/shared/protocol/RematchStatus";
 import "./matchTimer.css";
@@ -23,19 +23,32 @@ export function MatchTimer({ state, seat, opponent = false }: { state: GameState
       : state.timerRemaining1;
   const remaining = Math.max(0, Math.ceil(bank));
   const active = !state.gameOver && state.timerActiveSeat === seat;
-  const low = remaining <= (mulligan ? 10 : 30);
+  const low = remaining <= (mulligan ? 10 : 60);
+  const rope =
+    !mulligan && active && state.timerWindowSeat === seat && state.timerWindowRemaining <= MATCH_TIMER_ROPE_SECONDS
+      ? state.timerWindowRemaining
+      : undefined;
+  const strikes = seat === 0 ? state.timerStrikes0 : state.timerStrikes1;
+  const shown = mulligan ? String(remaining) : formatMatchTime(remaining);
   const owner = t(opponent ? "game.timer.opponent" : "game.timer.you");
   const label = mulligan ? `${owner} (${t("game.timer.mulligan")})` : owner;
+  const details = [
+    `${label}: ${formatMatchTime(remaining)}`,
+    t(active ? "game.playing" : "game.timer.paused"),
+    ...(rope === undefined ? [] : [t("game.timer.window", { seconds: rope })]),
+    ...(strikes > 0 ? [t("game.timer.strikes", { count: strikes, limit: MATCH_TIMER_STRIKE_LIMIT })] : []),
+  ];
   return (
     <div
       className="match-timer"
       data-clock={mulligan ? "mulligan" : "match"}
       data-active={active || undefined}
       data-low={low || undefined}
+      data-rope={rope === undefined ? undefined : true}
       data-side={opponent ? "opponent" : "player"}
       data-testid={opponent ? "opponent-match-timer" : "viewer-match-timer"}
       role="timer"
-      aria-label={`${label}: ${formatMatchTime(remaining)}. ${t(active ? "game.playing" : "game.timer.paused")}`}
+      aria-label={details.join(". ")}
     >
       <svg
         className="match-timer__icon"
@@ -55,7 +68,17 @@ export function MatchTimer({ state, seat, opponent = false }: { state: GameState
           {t("game.timer.mulligan")}
         </span>
       ) : null}
-      <strong className="match-timer__time">{remaining}</strong>
+      <strong className="match-timer__time">{shown}</strong>
+      {rope === undefined ? null : (
+        <span className="match-timer__rope" aria-hidden="true">
+          {t("lobby.timer.shortSeconds", { seconds: rope })}
+        </span>
+      )}
+      {strikes > 0 ? (
+        <span className="match-timer__strikes" aria-hidden="true">
+          {`${strikes}/${MATCH_TIMER_STRIKE_LIMIT}`}
+        </span>
+      ) : null}
     </div>
   );
 }

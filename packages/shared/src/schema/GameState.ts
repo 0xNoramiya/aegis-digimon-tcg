@@ -146,4 +146,9 @@ export class GameState extends Schema {
   @type("boolean") canRollbackTurn = false;
   @type("int8") undoActionSeat = -1;
   @type("int8") rollbackTurnSeat = -1;
+  @type("int8") timerWindowSeat = -1;
+  @type("uint8") timerWindowRemaining = 0;
+  @type("uint8") timerWindowSeconds = 0;
+  @type("uint8") timerStrikes0 = 0;
+  @type("uint8") timerStrikes1 = 0;
 }

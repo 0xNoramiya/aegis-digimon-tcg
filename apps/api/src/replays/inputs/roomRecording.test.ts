@@ -222,6 +222,39 @@ describe("AegisRoom replay recording", () => {
     expect(comparableState(replay.state)).toEqual(comparableState(room.state));
   });
 
+  it("records an action window running out, and the replay gives the same strike", async () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(0);
+    const room = makeRoom({ private: true, matchTimer: true, timerStartSeconds: 600 });
+    const clients: [Client, Client] = [join(room, "a", RED_DECK), join(room, "b", BLUE_DECK)];
+    for (const client of clients) internals(room).handleIntent(client, { type: "ready" });
+    for (let window = 0; window < 2; window++) {
+      for (let round = 0; round < 50 && room.state.pendingDecision?.kind !== "mulligan"; round++) await macrotask();
+      const seat = room.state.pendingDecision!.seat as Seat;
+      internals(room).handleIntent(clients[seat], { type: "mulligan", keep: true });
+    }
+    for (let round = 0; round < 200 && room.state.timerWindowSeat === -1; round++) {
+      await macrotask();
+      internals(room).syncMatchClock();
+    }
+    const seat = room.state.timerWindowSeat as Seat;
+    const strikes = () => (seat === 0 ? room.state.timerStrikes0 : room.state.timerStrikes1);
+    now.mockReturnValue(2 * 60_000);
+    internals(room).syncMatchClock();
+    expect(strikes()).toBe(1);
+    expect(room.state.gameOver).toBe(false);
+    for (let round = 0; round < 50; round++) await macrotask();
+
+    const record = extractReplay(lines, room.state.matchLogId);
+    expect(record.inputs.filter((input) => input.kind === "expireActionWindow")).toEqual([
+      expect.objectContaining({ seat }),
+    ]);
+    const replay = await runReplay(JSON.parse(JSON.stringify(record)));
+    expect(replay.divergences).toEqual([]);
+    internals(room).engine.syncCounts();
+    replay.engine.syncCounts();
+    expect(comparableState(replay.state)).toEqual(comparableState(room.state));
+  });
+
   it("records a departure as clearReady then a final disconnect, and the replacement's seat", async () => {
     const room = makeRoom();
     const a = join(room, "a", RED_DECK);

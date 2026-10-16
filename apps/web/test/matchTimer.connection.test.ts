@@ -53,7 +53,7 @@ describe("match timer websocket contract", () => {
       );
       rooms.push(host);
       await vi.waitFor(() => expect(host.state.matchTimer).toBe(true));
-      expect(host.state.timerStartSeconds).toBe(300);
+      expect(host.state.timerStartSeconds).toBe(720);
       expect(host.state.roomCode).toBe("");
       const guest = await join(server.endpoint, true, type);
       expect(guest.roomId).toBe(host.roomId);
@@ -81,7 +81,7 @@ describe("match timer websocket contract", () => {
     const client = new Client(server.endpoint);
     const host = await client.create<GameState>(
       "aegis_private",
-      { displayName: "Host", deck: RED_DECK, matchTimer: true, timerStartSeconds: 60, timerRefillSeconds: 0 },
+      { displayName: "Host", deck: RED_DECK, matchTimer: true, timerStartSeconds: 300, timerRefillSeconds: 0 },
       GameState,
     );
     rooms.push(host);
@@ -110,9 +110,9 @@ describe("match timer websocket contract", () => {
     // The server holds the clock while the opening batches play at Normal speed.
     await vi.waitFor(() => expect(host.state.timerActiveSeat).not.toBe(-1), { timeout: 30_000 });
     expect(guest.state.matchTimer).toBe(true);
-    expect(guest.state.timerStartSeconds).toBe(60);
+    expect(guest.state.timerStartSeconds).toBe(300);
     expect(guest.state.timerRefillSeconds).toBe(60);
-    await vi.waitFor(() => expect(Math.min(host.state.timerRemaining0, host.state.timerRemaining1)).toBeLessThan(60), {
+    await vi.waitFor(() => expect(Math.min(host.state.timerRemaining0, host.state.timerRemaining1)).toBeLessThan(300), {
       timeout: 15_000,
     });
     const before = [guest.state.timerRemaining0, guest.state.timerRemaining1];
@@ -134,7 +134,7 @@ describe("match timer websocket contract", () => {
     const client = new Client(server.endpoint);
     const host = await client.create<GameState>(
       "aegis_private",
-      { displayName: "Decision host", deck: RED_DECK, matchTimer: true, timerStartSeconds: 60 },
+      { displayName: "Decision host", deck: RED_DECK, matchTimer: true, timerStartSeconds: 300 },
       GameState,
     );
     rooms.push(host);
@@ -156,7 +156,7 @@ describe("match timer websocket contract", () => {
     guest.send("ready", {});
     await vi.waitFor(() => expect(initial?.kind).toBe("mulligan"), { timeout: 10_000 });
     await vi.waitFor(() => expect(host.state.mulliganTimerRemaining0).toBeLessThan(30), { timeout: 15_000 });
-    expect(host.state.timerRemaining0).toBe(60);
+    expect(host.state.timerRemaining0).toBe(300);
     const remaining = host.state.mulliganTimerRemaining0;
     const token = host.reconnectionToken;
     const departed = new Promise<void>((resolve) => host.onLeave(() => resolve()));

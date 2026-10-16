@@ -1,6 +1,13 @@
 import { getAttackRedirection } from "#api/engine/gameEngine/getAttackRedirection";
 import { ContinuousEffectScope } from "./effects/ContinuousEffectScope.js";
-import { CardKind, EffectTiming, GameState, type CardInstance, type Seat } from "@aegis/shared";
+import {
+  CardKind,
+  EffectTiming,
+  GameState,
+  MATCH_TIMER_STRIKE_LIMIT,
+  type CardInstance,
+  type Seat,
+} from "@aegis/shared";
 import { buildCombatHooks } from "./gameEngine/combatHooks.js";
 import type { CardColor, Permanent, ZoneRef } from "@aegis/shared";
 import type { Client } from "colyseus";
@@ -727,6 +734,26 @@ export class GameEngine {
     this.combat.cancel();
     this.mainPhase.abort();
     this.breeding.abort();
+  }
+
+  expireActionWindow(seat: Seat): void {
+    if (this.inputSeat !== seat || this.state.pendingDecision?.kind === "mulligan") return;
+    const strikes = (seat === 0 ? this.state.timerStrikes0 : this.state.timerStrikes1) + 1;
+    if (seat === 0) this.state.timerStrikes0 = strikes;
+    else this.state.timerStrikes1 = strikes;
+    if (strikes >= MATCH_TIMER_STRIKE_LIMIT) {
+      this.expireMatchTimer(seat);
+      return;
+    }
+    if (this.state.pendingDecision?.seat === seat) {
+      this.decisions.expire();
+      return;
+    }
+    if (this.state.combatWindow?.seat === seat) {
+      this.expireCombatWindow();
+      return;
+    }
+    this.applyIntent(seat, { type: "endPhase" });
   }
 
   applyIntent(seat: Seat, intent: Intent): IntentResult {

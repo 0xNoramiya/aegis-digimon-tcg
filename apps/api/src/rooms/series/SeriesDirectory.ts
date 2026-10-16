@@ -31,6 +31,7 @@ export interface SeriesRecord {
   allowRollback?: boolean;
   matchTimer: boolean;
   timerStartSeconds: number;
+  timerRemainingSeconds?: [number, number];
   unlimited?: boolean;
   format?: import("@aegis/shared").DeckFormat;
   /** A private series reopens every game under the same code. */

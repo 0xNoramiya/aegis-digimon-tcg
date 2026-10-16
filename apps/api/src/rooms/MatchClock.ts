@@ -3,67 +3,61 @@ import {
   type Seat,
   matchTimerSettings,
   type MatchTimerOptions,
-  MATCH_TIMER_OPPONENT_REFILL_SECONDS,
-  MATCH_TIMER_DECISION_BONUS_SECONDS,
-  MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN,
   MULLIGAN_TIMER_SECONDS,
 } from "@aegis/shared";
 
-/**
- * The furthest ahead a seat's presentation timeline may run. Honest play never comes near
- * it: it takes a minute of animation queued faster than it plays. It stops a client that
- * fires actions far faster than anyone can watch them from banking unlimited free time.
- */
 export const PRESENTATION_BACKLOG_MAX_MS = 60_000;
 
-/**
- * Which bank the deciding seat draws on:
- * - `match`: the match clock.
- * - `mulligan`: the seat's own mulligan window, which never touches the match clock.
- * - `frozen`: nothing runs, because the deciding seat's opponent is disconnected.
- */
 export type ClockMode = "match" | "mulligan" | "frozen";
 
 export interface ClockExpiry {
   seat: Seat;
-  clock: Exclude<ClockMode, "frozen">;
+  clock: "match" | "mulligan" | "window";
 }
 
-/**
- * Server monotonic-time accounting.
- *
- * Each seat has its own presentation timeline, `presentEnd`: when that seat's screen
- * finishes the batches sent so far, at the seat's own Effect speed. A seat asked to act is
- * charged from `max(now, presentEnd[seat])`, so it never pays for animations still playing.
- * The server computes the timeline from the shared animation table; the client reports
- * nothing but its speed.
- */
+export interface ClockWindow {
+  key: string;
+  seconds: number;
+}
+
+export interface MatchClockSetup {
+  privateRoom: boolean;
+  bestOf: number;
+  carriedSeconds?: readonly [number, number];
+}
+
+interface OpenWindow extends ClockWindow {
+  seat: Seat;
+  remainingMs: number;
+}
+
 export class MatchClock {
   private remaining: [number, number];
   private mulliganRemaining: [number, number] = [MULLIGAN_TIMER_SECONDS * 1000, MULLIGAN_TIMER_SECONDS * 1000];
   private lastTime: number;
   private running: { seat: Seat; mode: ClockMode } | undefined;
+  private window: OpenWindow | undefined;
   private presentEnd: [number, number] = [0, 0];
-  private lastTurn = 0;
-  private bonusTurn = 0;
-  private bonusGranted: [number, number] = [0, 0];
 
   constructor(
     private state: GameState,
     options: Partial<MatchTimerOptions>,
-    privateRoom: boolean,
+    setup: MatchClockSetup,
     now: number,
   ) {
-    const settings = matchTimerSettings(options, privateRoom);
+    const settings = matchTimerSettings(options, setup.privateRoom, setup.bestOf);
     state.matchTimer = settings.enabled;
     state.timerStartSeconds = settings.startSeconds;
     state.timerRefillSeconds = settings.refillSeconds;
-    this.remaining = [settings.startSeconds * 1000, settings.startSeconds * 1000];
+    const start = settings.startSeconds * 1000;
+    const carried = setup.carriedSeconds;
+    this.remaining = carried
+      ? [Math.min(start, carried[0] * 1000), Math.min(start, carried[1] * 1000)]
+      : [start, start];
     this.lastTime = now;
     this.publish();
   }
 
-  /** Charge the previous owner before changing turns/owners or accepting a late answer. */
   rebindAfterRollback(state: GameState, previous: GameState, now: number): void {
     state.matchTimer = previous.matchTimer;
     state.timerStartSeconds = previous.timerStartSeconds;
@@ -71,16 +65,25 @@ export class MatchClock {
     this.state = state;
     this.presentEnd = [0, 0];
     this.running = undefined;
+    this.window = undefined;
     this.lastTime = now;
-    this.lastTurn = state.turnCount;
     this.publish();
   }
 
-  update(now: number, inputSeat: Seat | undefined, mode: ClockMode = "match"): ClockExpiry | undefined {
+  update(
+    now: number,
+    inputSeat: Seat | undefined,
+    mode: ClockMode = "match",
+    window?: ClockWindow,
+  ): ClockExpiry | undefined {
     if (!this.state.matchTimer || this.state.gameOver) {
       this.running = undefined;
       this.state.timerActiveSeat = -1;
       this.lastTime = now;
+      if (this.window) {
+        this.window = undefined;
+        this.publish();
+      }
       return;
     }
     const charged = this.running;
@@ -88,57 +91,24 @@ export class MatchClock {
       const bank = this.bank(charged.mode);
       const elapsed = Math.max(0, now - Math.max(this.lastTime, this.presentEnd[charged.seat]));
       bank[charged.seat] = Math.max(0, bank[charged.seat] - elapsed);
+      const openWindow = charged.mode === "match" && this.window?.seat === charged.seat ? this.window : undefined;
+      if (openWindow) openWindow.remainingMs = Math.max(0, openWindow.remainingMs - elapsed);
       this.lastTime = now;
-      // Expiry wins over a turn bonus or an answer arriving at the deadline.
-      if (bank[charged.seat] === 0) {
-        this.running = undefined;
-        this.publish();
-        this.state.timerActiveSeat = -1;
-        return { seat: charged.seat, clock: charged.mode };
-      }
+      if (bank[charged.seat] === 0) return this.expire({ seat: charged.seat, clock: charged.mode });
+      if (openWindow?.remainingMs === 0) return this.expire({ seat: charged.seat, clock: "window" });
     }
     this.lastTime = now;
-    if (this.state.turnCount > this.lastTurn) {
-      // The opening turn uses the initial reserve; later turns grant both seats their bonuses.
-      if (this.lastTurn > 0) {
-        const owner = this.state.turnSeat;
-        const opponent = (1 - owner) as Seat;
-        this.addTime(owner, this.state.timerRefillSeconds * 1000);
-        this.addTime(opponent, MATCH_TIMER_OPPONENT_REFILL_SECONDS * 1000);
-      }
-      this.lastTurn = this.state.turnCount;
-    }
     this.running = inputSeat === undefined ? undefined : { seat: inputSeat, mode };
+    this.openWindow(inputSeat, mode, window);
     this.publish();
     this.state.timerActiveSeat =
       inputSeat !== undefined && mode !== "frozen" && now >= this.presentEnd[inputSeat] ? inputSeat : -1;
   }
 
-  /**
-   * Combo time: an effect asked `seat` to decide something. Adds a few seconds to its match
-   * clock, up to a per-turn ceiling, so a long chain of effects does not drain the bank.
-   */
-  grantDecisionBonus(seat: Seat): void {
-    this.grantComboBonus(seat);
+  remainingSeconds(): [number, number] {
+    return [Math.ceil(this.remaining[0] / 1000), Math.ceil(this.remaining[1] / 1000)];
   }
 
-  /** Feedback #39: a confirmed card play or digivolution earns the same bounded combo time. */
-  grantCardBonus(seat: Seat): void {
-    this.grantComboBonus(seat);
-  }
-
-  private grantComboBonus(seat: Seat): void {
-    if (!this.state.matchTimer || this.state.gameOver) return;
-    if (this.state.turnCount !== this.bonusTurn) {
-      this.bonusTurn = this.state.turnCount;
-      this.bonusGranted = [0, 0];
-    }
-    const allowance = MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN * 1000 - this.bonusGranted[seat];
-    this.bonusGranted[seat] += this.addTime(seat, Math.min(MATCH_TIMER_DECISION_BONUS_SECONDS * 1000, allowance));
-    this.publish();
-  }
-
-  /** Each seat's screen plays the batch that just closed, after what it still has queued. */
   presentBatch(now: number, durationMs: readonly [number, number]): void {
     for (const seat of [0, 1] as const) {
       const end = Math.max(this.presentEnd[seat], now) + durationMs[seat];
@@ -147,21 +117,29 @@ export class MatchClock {
     this.state.timerActiveSeat = -1;
   }
 
-  /** A reconnecting client catches up without replaying, so its screen is current now. */
   resetPresentation(seat: Seat, now: number): void {
     this.presentEnd[seat] = Math.min(this.presentEnd[seat], now);
   }
 
-  private bank(mode: Exclude<ClockMode, "frozen">): [number, number] {
-    return mode === "mulligan" ? this.mulliganRemaining : this.remaining;
+  private openWindow(inputSeat: Seat | undefined, mode: ClockMode, window: ClockWindow | undefined): void {
+    if (inputSeat === undefined || mode !== "match" || window === undefined) {
+      if (mode !== "frozen") this.window = undefined;
+      return;
+    }
+    if (this.window?.seat === inputSeat && this.window.key === window.key) return;
+    this.window = { ...window, seat: inputSeat, remainingMs: window.seconds * 1000 };
   }
 
-  /** Adds up to `ms` to the seat's match clock without passing its starting reserve. */
-  private addTime(seat: Seat, ms: number): number {
-    if (ms <= 0) return 0;
-    const before = this.remaining[seat];
-    this.remaining[seat] = Math.min(this.state.timerStartSeconds * 1000, before + ms);
-    return this.remaining[seat] - before;
+  private expire(expiry: ClockExpiry): ClockExpiry {
+    this.running = undefined;
+    this.window = undefined;
+    this.publish();
+    this.state.timerActiveSeat = -1;
+    return expiry;
+  }
+
+  private bank(mode: Exclude<ClockMode, "frozen">): [number, number] {
+    return mode === "mulligan" ? this.mulliganRemaining : this.remaining;
   }
 
   private publish(): void {
@@ -169,5 +147,8 @@ export class MatchClock {
     this.state.timerRemaining1 = Math.ceil(this.remaining[1] / 1000);
     this.state.mulliganTimerRemaining0 = Math.ceil(this.mulliganRemaining[0] / 1000);
     this.state.mulliganTimerRemaining1 = Math.ceil(this.mulliganRemaining[1] / 1000);
+    this.state.timerWindowSeat = this.window?.seat ?? -1;
+    this.state.timerWindowSeconds = this.window?.seconds ?? 0;
+    this.state.timerWindowRemaining = this.window ? Math.ceil(this.window.remainingMs / 1000) : 0;
   }
 }

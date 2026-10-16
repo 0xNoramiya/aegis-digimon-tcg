@@ -119,7 +119,8 @@ when configured. Card catalogs, effect snapshots, and the rules KB are repositor
 data, not PostgreSQL tables. Rollback input journals and private-state
 fingerprints exist only inside an eligible live room and disappear with it.
 Casual-series continuation records in presence/Redis retain the optional
-`allowRollback` setting; this introduces no PostgreSQL table or migration.
+`allowRollback` setting and, for timed series, each player's remaining total time
+(`timerRemainingSeconds`); this introduces no PostgreSQL table or migration.
 
 Player replay files live in the player's Google Drive; `account_replays` stores
 their index and sharing metadata. Report replays store the private action record

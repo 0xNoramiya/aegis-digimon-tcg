@@ -924,7 +924,12 @@ export function Lobby({
                       {!vsBot ? (
                         <>
                           <MatchFormatSettings bestOf={bestOf} onChange={changeBestOf} />
-                          <MatchTimerSettings options={timer} onChange={changeTimer} privateRoom={mode === "private"} />
+                          <MatchTimerSettings
+                            options={timer}
+                            onChange={changeTimer}
+                            privateRoom={mode === "private"}
+                            bestOf={bestOf}
+                          />
                         </>
                       ) : null}
                     </div>

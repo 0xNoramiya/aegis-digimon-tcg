@@ -165,10 +165,41 @@ workflow; source edits, unpublishing and moderation cannot change that copy.
 
 Casual (`aegis` and `aegis_beta`) join options include `matchTimer: boolean`.
 Both queues filter on this option, so timed and untimed players cannot meet.
-Omitting the option leaves the timer off. Public clocks start with 300 seconds
-per player. Unused time carries over between turns. Each later turn start adds
-60 seconds to the turn owner and 30 seconds to the opponent, with both reserves
-capped at the starting time. The opening turn uses the initial reserve without a bonus.
+Omitting the option leaves the timer off. The match clock has two layers, modeled
+on digital card games such as MTG Arena and Pokémon TCG Live:
+
+| Layer                                                                     | Default                                             | When it runs out                         |
+| ------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------- |
+| Total time per player (`MATCH_TIMER_START_SECONDS`)                       | 720 s in a best of 1                                | The player loses (`reason: "timeout"`)   |
+| Total time per player in a best of 3 (`MATCH_TIMER_SERIES_START_SECONDS`) | 900 s for the whole series                          | The player loses the game                |
+| Action window (`MATCH_TIMER_ACTION_SECONDS`)                              | 60 s between Main-phase, Breeding and Blitz actions | The server ends the phase (`endPhase`)   |
+| Decision window (`MATCH_TIMER_DECISION_SECONDS`)                          | 30 s per effect decision or combat window           | The server answers with the safe default |
+| Timeouts (`MATCH_TIMER_STRIKE_LIMIT`)                                     | 3 per game                                          | The third timeout loses the game         |
+
+The total time never refills: unused time carries over between turns, and in a
+best of 3 the series record carries each player's remaining time into the next
+game. The defaults target about 30 minutes for a best of 1 and 45 minutes for a
+best of 3, including animations, which never consume time. Official Bandai events
+use 30 minutes per best-of-1 match and treat about 2 minutes per action as slow play.
+
+The action and decision windows run alongside the total time and pause with it.
+A window restarts when the player acts (the synchronized `stateVersion` changes),
+when a new decision opens, or when the deciding seat changes. The server publishes
+`timerWindowSeat`, `timerWindowSeconds` and `timerWindowRemaining` (-1, 0 and 0 when
+no window runs) and each seat's `timerStrikes0` / `timerStrikes1`. The client shows
+the rope (the remaining window seconds) once 15 seconds or fewer are left
+(`MATCH_TIMER_ROPE_SECONDS`) and the seat's timeouts as `n/3`.
+
+When a window runs out, the room records an `expireActionWindow` replay input and
+the engine counts a timeout for that seat. Unless it is the last one, the engine
+then applies the default for what the seat was asked:
+
+- Effect decision: decline optional prompts and "you may" selections (including
+  costs), take the decline option of a choice, keep the offered order, and fill a
+  mandatory selection with the first legal candidates (or the first allowed
+  combination). A mandatory drawback is never skipped.
+- Combat window: pass, as the combat-window timeout already does.
+- Main phase, Breeding or a pending Blitz: `endPhase`.
 
 The mulligan has its own clock. Each player gets 30 seconds
 (`MULLIGAN_TIMER_SECONDS`) to answer their own mulligan, published as
@@ -177,30 +208,22 @@ match clock. When it runs out, the server keeps the hand (as if the player sent
 `mulligan { keep: true }`). While a player's mulligan is open, the client shows
 that player's mulligan seconds, labelled "Mulligan", where the match clock usually is.
 
-Combo time: each decision the engine asks of a player (trigger order, targets,
-selections, optional "activate?" choices; every `DecisionRequest` except the
-mulligan), confirmed card play and confirmed digivolution adds 3 seconds
-(`MATCH_TIMER_DECISION_BONUS_SECONDS`) to that player's match clock. These actions
-share a limit of 30 seconds per player per turn
-(`MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN`). Rejected actions, attacks
-and ending the turn add nothing. Combo time never raises a reserve above its
-starting value. All
-timer constants live in `packages/shared/src/matchTimer.ts`.
+All timer constants live in `packages/shared/src/matchTimer.ts`.
 
-Private-room creators may also choose `timerStartSeconds` (60, 180, 300, 600).
-Invalid values use the defaults; private reserves are capped at their chosen starting time.
-`timerRefillSeconds` remains in the wire contract for compatibility, but join payloads
-cannot override the fixed 60-second owner bonus; the opponent bonus is always 30 seconds.
-The synchronized `timerRefillSeconds` field reports 60, and the settings do not offer a refill control.
-The lobby uses a labelled on/off switch and a compact strip showing the starting time and both turn bonuses.
-Private hosts can change the starting time; its displayed value and cap update together.
+Private-room creators may also choose the total time `timerStartSeconds`
+(300, 600, 720, 900 or 1200). In a private best of 3, it covers the whole series.
+Invalid values use the defaults for the room's format.
+`timerRefillSeconds` remains in the wire contract for compatibility; join payloads
+cannot change it, and the synchronized field always reports 60.
+The lobby uses a labelled on/off switch and a compact strip showing the total time
+and both windows. Private hosts can change the total time.
 The on/off preference is saved under `aegis:match-timer` in browser localStorage
 and restored on reload for guests and signed-in users. It is local to that browser;
 joining a private room or entering a mode without timers does not overwrite it.
 The creator's settings apply to both seats; guest join payloads cannot change them.
 Ranked, tournament and ordinary bot rooms ignore clock opt-in. Outside production,
-`pnpm scenario open match-timer` enables a live bot test with the same
-300-second reserves renewed each turn. Both clocks remain visible next to their player identities, including during pauses.
+`pnpm scenario open match-timer` enables a live bot test with the default
+best-of-1 total time and both windows. Both clocks remain visible next to their player identities, including during pauses.
 The required responder is highlighted; the compact readout shows remaining seconds without status text.
 
 The server owns elapsed time. `timerRemaining0` and `timerRemaining1` are rounded-up
