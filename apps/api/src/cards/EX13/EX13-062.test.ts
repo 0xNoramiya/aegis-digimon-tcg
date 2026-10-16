@@ -32,6 +32,27 @@ async function openOwnMain(s: ReturnType<typeof setupEngine>): Promise<void> {
 }
 
 describe("EX13-062 Craniamon", () => {
+  it("does not treat a DUAL Digimon's use cost as a play cost when deleting the lowest cost", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: CARD_ID, as: "craniamon" }] },
+        1: { battleArea: [{ card: "LM-067", as: "gundramon", under: ["BT25-082"] }], security: 3 },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("craniamon").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await advance(s.engine).finishAttack();
+    await settle();
+    expect(s.state.players[1]!.battleArea.map((permanent) => permanent.topCard.cardId)).toEqual(["LM-067"]);
+  });
+
   it("matches the catalog identity and every printed clause", () => {
     expect(getCardDefinition(CARD_ID)).toMatchObject({
       cardId: CARD_ID,
