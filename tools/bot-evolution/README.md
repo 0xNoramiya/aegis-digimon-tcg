@@ -576,3 +576,20 @@ validation sizes remain controlled by `--pairs`; the manifest records both value
 Choose the final sample size before running the campaign and do not increase it
 in response to an unfavorable confidence bound. Both seats are played for every
 block, and archive opponents do not replace the required MCTS comparisons.
+
+### Paired reflection batches
+
+`evolve.py --reflection-pairs 4` samples four complete training seed blocks per
+GEPA reflection. Generic batches contain eight games; pilot batches additionally
+include the frozen archive opponent in both seats. Blocks rotate deterministically
+without replacement within an epoch, and the final short batch is not padded with
+duplicate games. Incomplete or duplicated seat pairs are rejected. The setting is
+pinned in both campaign and stage fingerprints; changing it requires a new run.
+
+This reduces feedback collection per proposal while preserving the full initial
+validation, fresh proposal gates, and final held-out sample. It does not accelerate
+the initial validation or establish a strength gain. The strong MCTS reference,
+invalid-game rejection, and strict publication criteria remain applicable.
+The [TCG bot comparison](../../docs/tcg-bot-training-comparison.md) records the
+sources and limits motivating shorter reflection cycles and future opponent
+diversity. Four pairs is an engineering starting point, not a proven optimum.

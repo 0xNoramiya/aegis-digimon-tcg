@@ -217,8 +217,9 @@ def test_pilot_test_split_excludes_mirrors_and_rotates_opponents():
 
 
 @pytest.mark.parametrize("api_failure", (False, True))
+@pytest.mark.parametrize("reflection_pairs", (None, 4))
 def test_official_gepa_stage_runs_custom_guarded_proposer_without_duplicate_template(
-    tmp_path, monkeypatch, api_failure
+    tmp_path, monkeypatch, api_failure, reflection_pairs
 ):
     """Exercise the real GEPA public API with its custom-proposer path, without paid calls."""
     initial = {
@@ -239,6 +240,12 @@ def test_official_gepa_stage_runs_custom_guarded_proposer_without_duplicate_temp
             self.calls = 0
 
         def evaluate(self, tasks, candidate, capture_traces=False):
+            if capture_traces and reflection_pairs is not None:
+                assert len(tasks) == 2 * reflection_pairs
+                assert all(
+                    {task["learnerSeat"] for task in tasks if task["seed"] == seed} == {0, 1}
+                    for seed in {task["seed"] for task in tasks}
+                )
             program = json.loads(candidate["heuristic"])
             score = int("when" in program["rules"][0])
             outputs = []
@@ -281,7 +288,11 @@ def test_official_gepa_stage_runs_custom_guarded_proposer_without_duplicate_temp
     monkeypatch.setattr("evolve.HeuristicAdapter", Adapter)
     monkeypatch.setattr("evolve.SessionReflection", lambda directory: reflect)
     splits = {
-        name: [{"seed": base + n, "learnerSeat": 0} for n in range(48)]
+        name: [
+            {"seed": base + n, "learnerSeat": seat, "opponent": "mcts"}
+            for n in range(24)
+            for seat in (0, 1)
+        ]
         for name, base in (("train", 0), ("validation", 100))
     }
     context = (
@@ -306,6 +317,7 @@ def test_official_gepa_stage_runs_custom_guarded_proposer_without_duplicate_temp
                 "evaluationCache": str(tmp_path / "cache"),
                 "seedProgram": initial,
                 "pairedProposalGates": True,
+                "reflectionPairs": reflection_pairs,
             },
         )
     assert prompts and "Focus on structural edits" in prompts[0]
@@ -394,6 +406,8 @@ def test_final_sample_size_is_frozen_without_expanding_training(
     assert final_calls[0]["pairs"] == (final_pairs or 24)
     manifest = json.loads((tmp_path / "run" / "manifest.json").read_text())
     assert manifest["config"]["finalPairs"] == (final_pairs or 24)
+    assert manifest["config"]["reflectionPairs"] == 4
+    assert all(stage["metadata"]["reflectionPairs"] == 4 for stage in stages)
     assert final_calls[0]["metadata"]["seedOffset"] == 420000000
     assert manifest["config"]["turnLimit"] == turn_limit
     assert final_calls[0]["metadata"]["turnLimit"] == turn_limit
@@ -408,6 +422,9 @@ def test_final_sample_size_is_frozen_without_expanding_training(
     resumed = CliRunner().invoke(main, changed)
     assert resumed.exit_code != 0
     assert "Run configuration or engine changed" in resumed.output
+    changed_reflection = CliRunner().invoke(main, [*args, "--reflection-pairs", "2"])
+    assert changed_reflection.exit_code != 0
+    assert "Run configuration or engine changed" in changed_reflection.output
 
 
 def test_held_out_candidates_and_controls_keep_the_campaign_turn_limit(

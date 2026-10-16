@@ -21,6 +21,7 @@ from evidence import paired_evidence, policy_hash, verify_neutral_control
 from ladder import choose_training_rung, ladder_tasks
 from proposals import guarded_proposer
 from session_reflection import SessionReflection
+from SeedBlockBatchSampler import SeedBlockBatchSampler
 from tune import tune
 
 
@@ -138,6 +139,7 @@ def optimize_stage(
                 "adaptiveLadder": metadata.get("adaptiveLadder", False),
                 "pairedProposalGates": metadata.get("pairedProposalGates", False),
                 "reflectionBudget": reflection_budget,
+                "reflectionPairs": metadata.get("reflectionPairs"),
                 "deterministicPlan": metadata.get("deterministicPlan"),
                 "proposalGateTasks": metadata.get("proposalGateTasks"),
             },
@@ -247,7 +249,12 @@ def optimize_stage(
         reflection_prompt_template=None
         if adapter.propose_new_texts is not None
         else REFLECTION_TEMPLATE,
-        reflection_minibatch_size=min(
+        batch_sampler=SeedBlockBatchSampler(metadata["reflectionPairs"])
+        if metadata.get("reflectionPairs") is not None
+        else "epoch_shuffled",
+        reflection_minibatch_size=None
+        if metadata.get("reflectionPairs") is not None
+        else min(
             metadata.get(
                 "reflectionMinibatchSize", 24 if metadata.get("feedbackMode") == "thin" else 48
             ),
@@ -417,6 +424,7 @@ def final_evaluation(
 @click.option("--turn-limit", default=60, type=click.IntRange(1, 200), show_default=True)
 @click.option("--metric-calls", default=512, type=click.IntRange(12, 10000), show_default=True)
 @click.option("--pairs", default=24, type=click.IntRange(1, 100), show_default=True)
+@click.option("--reflection-pairs", default=4, type=click.IntRange(1, 100), show_default=True)
 @click.option("--final-pairs", default=None, type=click.IntRange(24, 1000))
 @click.option("--generations", default=2, type=click.IntRange(1, 100), show_default=True)
 @click.option("--seed-offset", default=0, type=click.IntRange(0, 2_000_000_000), show_default=True)
@@ -438,6 +446,7 @@ def main(
     evaluation_workers: int,
     metric_calls: int,
     pairs: int,
+    reflection_pairs: int,
     final_pairs: int | None,
     generations: int,
     seed_offset: int,
@@ -489,6 +498,7 @@ def main(
         "desktopHost": desktop_host,
         "evaluationTimeout": evaluation_timeout,
         "evaluationWorkers": evaluation_workers,
+        "reflectionPairs": reflection_pairs,
         "evaluationCache": str(run_dir.parent / "game-cache"),
         "runnerSha256": hashlib.sha256(
             b"".join(
@@ -504,6 +514,7 @@ def main(
                     "ladder.py",
                     "residual_weights.py",
                     "evolve.py",
+                    "SeedBlockBatchSampler.py",
                     "session_reflection.py",
                     "audit_session_reflections.py",
                     "pyproject.toml",
@@ -520,6 +531,7 @@ def main(
         "simulations": simulations,
         "metricCalls": metric_calls,
         "pairs": pairs,
+        "reflectionPairs": reflection_pairs,
         "finalPairs": final_pairs,
         "turnLimit": turn_limit,
         "generations": generations,
