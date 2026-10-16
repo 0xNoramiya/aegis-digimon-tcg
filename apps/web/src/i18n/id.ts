@@ -1,6 +1,27 @@
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "story.tagline": "Pilih karaktermu. Hidupkan kembali pertarungannya.",
+  "story.adaptation": "Adaptasi",
+  "story.adaptationHint": "Detail cerita yang hilang direkonstruksi untuk adaptasi yang dapat dimainkan ini.",
+  "story.notice":
+    "Bab resmi tetap dalam bahasa aslinya. Adaptasi merekonstruksi arena, dek dan perubahan fiktif menggunakan aturan kartu dalam simulator.",
+
+  "story.title": "Mode cerita",
+  "story.all": "Semua karakter",
+  "story.character": "Karakter",
+  "story.start": "Mulai pertarungan",
+  "story.replay": "Main lagi",
+  "story.locked": "Selesaikan pertarungan sebelumnya",
+  "story.pending": "Skenario sedang disiapkan",
+  "story.completed": "Selesai",
+  "story.ready": "Tersedia",
+  "story.signin": "Bermain sebagai tamu. Progres terikat pada browser ini; masuk menggunakan progres akun Anda.",
+  "story.progress": "{completed} / {total} pertarungan selesai",
+  "story.error": "Progres tidak dapat dimuat.",
+  "story.retry": "Coba lagi",
+  "story.source": "Liputan resmi pertarungan",
+
   "roadmap.hub.label": "Bagian komunitas",
   "roadmap.hub.decks": "Deck",
   "roadmap.hub.roadmap": "Roadmap",

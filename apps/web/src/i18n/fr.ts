@@ -1,6 +1,28 @@
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "story.tagline": "Choisissez votre personnage. Revivez les combats.",
+  "story.adaptation": "Adaptation",
+  "story.adaptationHint": "Les détails manquants sont reconstitués pour cette adaptation jouable.",
+  "story.notice":
+    "Les chapitres officiels restent dans leur langue originale. Les adaptations reconstituent les terrains, les decks et les changements fictifs selon les règles imprimées du simulateur.",
+
+  "story.title": "Mode histoire",
+  "story.all": "Tous les personnages",
+  "story.character": "Personnage",
+  "story.start": "Lancer le combat",
+  "story.replay": "Rejouer",
+  "story.locked": "Terminez le combat précédent",
+  "story.pending": "Scénario en préparation",
+  "story.completed": "Terminé",
+  "story.ready": "Disponible",
+  "story.signin":
+    "Vous jouez en invité. La progression reste liée à ce navigateur ; la connexion utilise celle de votre compte.",
+  "story.progress": "{completed} / {total} combats terminés",
+  "story.error": "Impossible de charger votre progression.",
+  "story.retry": "Réessayer",
+  "story.source": "Compte rendu officiel du combat",
+
   "roadmap.hub.label": "Sections de la communauté",
   "roadmap.hub.decks": "Decks",
   "roadmap.hub.roadmap": "Feuille de route",

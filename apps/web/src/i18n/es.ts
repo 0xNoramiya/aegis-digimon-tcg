@@ -17,6 +17,28 @@ import { settingsEs } from "./redesign/settings.es";
 import { shellEs } from "./redesign/shell.es";
 
 export const es: Record<keyof typeof en, string> = {
+  "story.tagline": "Elige tu personaje. Revive las batallas.",
+  "story.adaptation": "Adaptación",
+  "story.adaptationHint": "Los detalles que no aparecen en la historia se reconstruyen en esta adaptación jugable.",
+  "story.notice":
+    "Los capítulos oficiales conservan su idioma original. Las adaptaciones reconstruyen campos, mazos y cambios ficticios con las reglas impresas del simulador.",
+
+  "story.title": "Modo historia",
+  "story.all": "Todos los personajes",
+  "story.character": "Personaje",
+  "story.start": "Iniciar batalla",
+  "story.replay": "Volver a jugar",
+  "story.locked": "Completa la batalla anterior",
+  "story.pending": "Escenario en preparación",
+  "story.completed": "Completada",
+  "story.ready": "Disponible",
+  "story.signin":
+    "Juegas como invitado. El progreso queda vinculado a este navegador; al iniciar sesión se usa el de tu cuenta.",
+  "story.progress": "{completed} / {total} batallas completadas",
+  "story.error": "No se pudo cargar tu progreso.",
+  "story.retry": "Reintentar",
+  "story.source": "Cobertura oficial de la batalla",
+
   "settings.shareDeckAfterMatch": "Compartir mi deck al finalizar la partida",
   "settings.shareDeckAfterMatchDesc":
     "Permite que tu rival vea y copie la lista inicial de tu deck al finalizar la partida. Activado por defecto.",

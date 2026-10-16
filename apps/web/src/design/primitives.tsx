@@ -38,6 +38,7 @@ export type Screen =
   | "home"
   | "login"
   | "lobby"
+  | "story"
   | "watch"
   | "deck"
   | "collection"
@@ -570,7 +571,9 @@ export function TopNav({
 }) {
   const { t } = useTranslation();
   const navActive = (key: Screen) =>
-    screen === key || (screen === "roadmap" && key === "community") || (screen === "watch" && key === "lobby");
+    screen === key ||
+    (screen === "roadmap" && key === "community") ||
+    ((screen === "watch" || screen === "story") && key === "lobby");
   const navTo = (s: Screen) => {
     playSound("nav");
     onNav(s);

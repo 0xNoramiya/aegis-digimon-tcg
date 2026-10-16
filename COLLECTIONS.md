@@ -131,3 +131,11 @@ The account JSON preferences include optional boolean `shareDeckAfterMatch`. Mis
 The account JSON preferences also include optional boolean `listLiveMatches`. A missing value means on; an explicit `false` remains an opt-out. When neither seated account in a casual room has opted out, the room adds a `live` entry to its Colyseus matchmaking metadata (in presence/Redis when configured). The entry holds the spectator code, display names, format, start time and spectator count, and the room removes it at game over. The web client never copies this preference from device storage, because public listing is an account preference. This introduces no PostgreSQL table or migration.
 
 The account JSON preferences include optional boolean `hideIdentityFromSpectators` (default false). Rooms capture it before admitting spectators for each game. It withholds that player’s nickname, avatar and session identifier from spectator state and uses an empty name in public listings, rendered as a numbered player label. Participants retain both identities. The spectator roster is transient room state visible only to participants; authenticated names come from single-use account room tickets, and guests contribute only to a count. No PostgreSQL migration is required.
+
+### story_battle_completions
+
+Account-scoped solo story victories. Primary key `(account_id, battle_id)`; `account_id` references `accounts(id)` with cascade deletion. Stores the authoritative `match_id` and `completed_at` timestamp. Only the game room records a victory; HTTP exposes read-only progress. No chapter text or hidden combat state is stored here.
+
+### story_guest_completions
+
+Anonymous story victories keyed by a SHA-256 hash of a random browser token and battle ID. Stores match ID and completion time. Only authoritative match wins write this table. Guest progress is separate from account progress; clearing browser storage loses access to it.
