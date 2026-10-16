@@ -1,4 +1,40 @@
 {
+  "releases.1.30.0-beta.summary": {
+    "en": "Liberator story battles, more deck collections, and fixes for deck loading and digivolution choices.",
+    "pt-BR": "Batalhas da história de Liberator, mais coleções de decks e correções no carregamento de decks e nas opções de evolução.",
+    "es": "Batallas de la historia de Liberator, más colecciones de mazos y correcciones en la carga de mazos y las opciones de digievolución.",
+    "it": "Battaglie della storia di Liberator, più collezioni di mazzi e correzioni al caricamento dei mazzi e alle opzioni di digievoluzione."
+  },
+  "releases.1.30.0-beta.feature.story": {
+    "en": "Play 30 Liberator story encounters across 12 characters, with progression for guests and signed-in players.",
+    "pt-BR": "Jogue 30 encontros da história de Liberator com 12 personagens, com progressão para visitantes e jogadores conectados.",
+    "es": "Juega 30 encuentros de la historia de Liberator con 12 personajes y progresión para invitados y jugadores con sesión iniciada.",
+    "it": "Gioca 30 incontri della storia di Liberator con 12 personaggi e progressione per ospiti e giocatori connessi."
+  },
+  "releases.1.30.0-beta.feature.collections": {
+    "en": "DigiLab now synchronizes every released set it provides, with up to 25 archetypes per set and three recent lists per archetype.",
+    "pt-BR": "O DigiLab agora sincroniza todos os sets lançados que disponibiliza, com até 25 arquétipos por set e três listas recentes por arquétipo.",
+    "es": "DigiLab ahora sincroniza todos los sets publicados que ofrece, con hasta 25 arquetipos por set y tres listas recientes por arquetipo.",
+    "it": "DigiLab ora sincronizza tutti i set pubblicati disponibili, con fino a 25 archetipi per set e tre liste recenti per archetipo."
+  },
+  "releases.1.30.0-beta.fix.presets": {
+    "en": "Restored built-in historical decks for collections outside DigiLab coverage, including selection, copying, and card list viewing.",
+    "pt-BR": "Restauradas as listas históricas fixas para coleções sem cobertura do DigiLab, incluindo seleção, cópia e visualização das cartas.",
+    "es": "Restaurados los mazos históricos incluidos para colecciones sin cobertura de DigiLab, con selección, copia y vista de cartas.",
+    "it": "Ripristinati i mazzi storici inclusi per le collezioni non coperte da DigiLab, con selezione, copia e visualizzazione delle carte."
+  },
+  "releases.1.30.0-beta.fix.digivolve": {
+    "en": "Digivolution choices now hide alternate routes whose requirements the base Digimon does not meet.",
+    "pt-BR": "As opções de evolução agora ocultam rotas alternativas cujos requisitos o Digimon base não atende.",
+    "es": "Las opciones de digievolución ahora ocultan rutas alternativas cuyos requisitos no cumple el Digimon base.",
+    "it": "Le opzioni di digievoluzione ora nascondono i percorsi alternativi i cui requisiti non sono soddisfatti dal Digimon base."
+  },
+  "releases.1.30.0-beta.fix.provider": {
+    "en": "Fixed the Play screen reporting DigiLab as unavailable even after deck synchronization completed.",
+    "pt-BR": "Corrigida a tela Jogar que mostrava o DigiLab como indisponível mesmo após a sincronização dos decks.",
+    "es": "Corregida la pantalla Jugar que mostraba DigiLab como no disponible incluso tras completar la sincronización de mazos.",
+    "it": "Corretta la schermata Gioca che mostrava DigiLab come non disponibile anche dopo la sincronizzazione dei mazzi."
+  },
   "releases.1.29.0-beta.summary": {
     "en": "DigiLab tournament decks, preferred card languages, clearer card inspection, and more reliable effect resolution.",
     "pt-BR": "Decks de torneios do DigiLab, idioma preferido das cartas, inspeção mais clara e resolução de efeitos mais confiável.",

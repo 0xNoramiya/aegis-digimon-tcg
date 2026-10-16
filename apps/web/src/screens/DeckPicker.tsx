@@ -1,3 +1,6 @@
+import { useFamousDecks } from "@/game/useFamousDecks";
+import { deckLegality } from "@aegis/shared/decks/legality";
+import { FamousDeckListDialog } from "@/screens/FamousDeckListDialog";
 import { ProviderDeckBrowser } from "@/deckProviders/ProviderDeckBrowser";
 
 import { memo, useEffect, useMemo, useState } from "react";
@@ -109,6 +112,8 @@ function DeckPickerView({
 }) {
   const { t } = useTranslation();
   const deckCount = (count: number) => t(count === 1 ? "lobby.deckCountOne" : "lobby.deckCount", { count });
+  const presets = useFamousDecks();
+  const [viewedPreset, setViewedPreset] = useState<DeckListing>();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<DeckFilter>("all");
   const [collection, setCollection] = useState(ALL_COLLECTIONS);
@@ -144,9 +149,22 @@ function DeckPickerView({
   const collectionChosen = collectionApplies && collection !== ALL_COLLECTIONS;
 
   const visibleOwnDecks = useMemo(() => ownDecks.filter(({ deck }) => matchesQuery(deck, query)), [ownDecks, query]);
-  const visibleGroups = (catalog?.formats ?? []).filter(
-    (group) => collection === ALL_COLLECTIONS || group.id === collection,
+  const presetGroups = (!catalog && !catalogError ? [] : (presets?.groups ?? [])).filter(
+    (group) => !catalog?.formats.some((entry) => entry.id === group.collection),
   );
+  const collections = [
+    ...(catalog?.formats.map((group) => group.id) ?? []),
+    ...presetGroups.map((group) => group.collection),
+  ];
+  const visibleGroups = collections
+    .filter((id) => collection === ALL_COLLECTIONS || id === collection)
+    .map((id) => ({
+      id,
+      decks: presetGroups
+        .find((group) => group.collection === id)
+        ?.decks.filter((deck) => matchesQuery(deck, query, id)),
+    }))
+    .filter((group) => !group.decks || group.decks.length > 0);
   const showCommunity = filter === "community";
   const showOwn = filter !== "famous" && !showCommunity && !collectionChosen;
   const showFamous = filter !== "mine" && !showCommunity;
@@ -186,9 +204,9 @@ function DeckPickerView({
             onChange={(event) => setCollection(event.target.value)}
           >
             <option value={ALL_COLLECTIONS}>{t("redesign.play.allCollections")}</option>
-            {catalog?.formats.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.id}
+            {collections.map((id) => (
+              <option key={id} value={id}>
+                {id}
               </option>
             ))}
           </select>
@@ -224,6 +242,25 @@ function DeckPickerView({
         )}
       </div>
 
+      {viewedPreset ? (
+        <FamousDeckListDialog
+          deck={viewedPreset}
+          collection={
+            presets?.groups.find((group) => group.decks.some((deck) => deck.id === viewedPreset.id))?.collection ?? ""
+          }
+          active={!randomSelected && viewedPreset.id === activeDeckId}
+          onUse={
+            deckLegality(viewedPreset, { format }).legal
+              ? () => {
+                  onSelectDeck(viewedPreset.id);
+                  setViewedPreset(undefined);
+                }
+              : undefined
+          }
+          onCopy={() => onCopyDeck(viewedPreset)}
+          onClose={() => setViewedPreset(undefined)}
+        />
+      ) : null}
       {showCommunity ? (
         <LobbyCommunityDecks
           search={search.trim()}
@@ -311,7 +348,7 @@ function DeckPickerView({
           ) : null}
           {visibleGroups.map((group) => {
             const headingId = `famous-${group.id.toLowerCase()}`;
-            const open = collectionChosen || openCollections.has(group.id);
+            const open = collectionChosen || openCollections.has(group.id) || (searching && Boolean(group.decks));
             return (
               <section className="deck-picker__collection" aria-labelledby={headingId} key={group.id}>
                 <details open={open}>
@@ -336,7 +373,41 @@ function DeckPickerView({
                     </h4>
                     <Icons.ChevronDown className="deck-picker__chevron" size={16} />
                   </summary>
-                  {open ? (
+                  {open && group.decks ? (
+                    <div className="lobby-decks">
+                      {group.decks.map((deck) => (
+                        <DeckListCard
+                          key={deck.id}
+                          deck={deck}
+                          format={format}
+                          active={!randomSelected && deck.id === activeDeckId}
+                          disabled={!deckLegality(deck, { format }).legal}
+                          onSelect={() => onSelectDeck(deck.id)}
+                          actions={
+                            <>
+                              <DeckColorDots deck={deck} />
+                              <IconButton
+                                size="sm"
+                                variant="secondary"
+                                label={t("lobby.copyPreset")}
+                                onClick={() => onCopyDeck(deck)}
+                              >
+                                <Icons.Copy size={16} />
+                              </IconButton>
+                              <IconButton
+                                size="sm"
+                                variant="secondary"
+                                label={t("lobby.viewList")}
+                                onClick={() => setViewedPreset(deck)}
+                              >
+                                <Icons.Eye size={16} />
+                              </IconButton>
+                            </>
+                          }
+                        />
+                      ))}
+                    </div>
+                  ) : open ? (
                     <ProviderDeckBrowser
                       key={group.id}
                       collection={group.id}

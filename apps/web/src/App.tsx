@@ -1,3 +1,4 @@
+import { getStoryGuestToken } from "@/story/getStoryGuestToken";
 import { LocalScenarioHelp } from "./dev/LocalScenarioHelp";
 import { spectatorCodeFromSearch } from "./roomInvite";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -136,6 +137,10 @@ const MobileComponentsLab = createLazyComponent({
   load: () => import("./dev/MobileComponentsLab"),
   pick: (module) => module.MobileComponentsLab,
 });
+const StoryScreen = createLazyComponent({
+  load: () => import("@/story/StoryScreen"),
+  pick: (module) => module.StoryScreen,
+});
 
 export function isBoardShowcasePath(pathname: string): boolean {
   return /^\/dev\/board\/?$/i.test(pathname);
@@ -175,6 +180,7 @@ function ScreenFallback() {
 const NAV_SCREENS: Screen[] = [
   "home",
   "lobby",
+  "story",
   "watch",
   "deck",
   "community",
@@ -450,6 +456,7 @@ function LoadedAegisClient({
   const [bestOf, setBestOf] = useState(loadMatchFormatPreference);
   /** Set between the games of a best-of-three: the next GameScreen takes this seat. */
   const [seriesGame, setSeriesGame] = useState<SeriesGameTicket>();
+  const [storyBattleId, setStoryBattleId] = useState<string>();
   const [startMode, setStartMode] = useState<StartMode>("casual");
   const [editingDeck, setEditingDeck] = useState<DeckListing | null>(null);
   // A community deck picked to play with. It lives for this session only and is never saved.
@@ -552,6 +559,7 @@ function LoadedAegisClient({
     clearReconnectSession();
     setSeriesGame(undefined);
     if (mode !== "private_host" && mode !== "private_guest") setPrivateRoom(undefined);
+    setStoryBattleId(undefined);
     setStartMode(mode);
     setRoomCode(code);
     setBotDeckId(requestedBotDeckId);
@@ -584,6 +592,8 @@ function LoadedAegisClient({
   const joinOptions = useMemo<AegisJoinOptions>(
     () => ({
       ...timerOptions,
+      storyBattleId,
+      storyGuestToken: storyBattleId ? getStoryGuestToken() : undefined,
       allowRollback,
       bestOf,
       format: deckFormat,
@@ -608,6 +618,7 @@ function LoadedAegisClient({
       },
     }),
     [
+      storyBattleId,
       effectivePlayer.name,
       effectivePlayer.avatarId,
       matchDeck,
@@ -693,6 +704,17 @@ function LoadedAegisClient({
             )}
             {screen === "login" && <Login onBack={() => navigateScreen("home")} />}
 
+            {screen === "story" && (
+              <StoryScreen
+                key={account?.id ?? "guest"}
+                signedIn={!!account}
+                onSignIn={() => navigateScreen("login")}
+                onStart={(battleId) => {
+                  startMatch("bot");
+                  setStoryBattleId(battleId);
+                }}
+              />
+            )}
             {screen === "lobby" && (
               <Lobby
                 player={effectivePlayer}
@@ -875,7 +897,7 @@ function LoadedAegisClient({
                 onLeaveForfeitsChange={setLeaveForfeitsMatch}
                 onExit={(next) => {
                   setSeriesGame(undefined);
-                  navigateScreen(next);
+                  navigateScreen(storyBattleId ? "story" : next);
                 }}
                 onRematch={(privateRoomCode, roomUnlimited, roomHost, roomFormat) => {
                   clearReconnectSession();

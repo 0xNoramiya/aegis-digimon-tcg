@@ -30,6 +30,26 @@ export const en = {
   "settings.cardImageLanguageProgress": "Updating decks: {completed}/{total}",
   "settings.cardImageLanguageResult":
     "Decks updated: {saved}. Failed: {failed}. Copies without this language: {unavailable}. You can apply again to retry failed decks.",
+  "story.tagline": "Choose your character. Relive the battles.",
+  "story.adaptation": "Adaptation",
+  "story.adaptationHint": "Missing story details are reconstructed for this playable adaptation.",
+  "story.notice":
+    "Official chapters stay in their original language. Adaptations reconstruct missing boards, decks and fictional card changes using the simulator’s printed rules.",
+
+  "story.title": "Story mode",
+  "story.all": "All characters",
+  "story.character": "Character",
+  "story.start": "Start battle",
+  "story.replay": "Play again",
+  "story.locked": "Complete the previous battle",
+  "story.pending": "Scenario in preparation",
+  "story.completed": "Completed",
+  "story.ready": "Available",
+  "story.signin": "Playing as a guest. Progress stays with this browser; signing in uses your account progress.",
+  "story.progress": "{completed} / {total} battles completed",
+  "story.error": "Could not load your progress.",
+  "story.retry": "Try again",
+  "story.source": "Official battle coverage",
 
   "settings.shareDeckAfterMatch": "Share my deck after the match",
   "settings.shareDeckAfterMatchDesc":
