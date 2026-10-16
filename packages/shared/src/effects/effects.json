@@ -26600,6 +26600,7 @@
           },
           {
             "kind": "PlaceUnder",
+            "position": "bottom",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
             "from": ["hand"],
             "underFilter": {
