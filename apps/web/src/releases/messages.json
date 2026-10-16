@@ -1,4 +1,82 @@
 {
+  "releases.1.29.0-beta.summary": {
+    "en": "DigiLab tournament decks, preferred card languages, clearer card inspection, and more reliable effect resolution.",
+    "pt-BR": "Decks de torneios do DigiLab, idioma preferido das cartas, inspeção mais clara e resolução de efeitos mais confiável.",
+    "es": "Mazos de torneos de DigiLab, idioma preferido de las cartas, inspección más clara y resolución de efectos más fiable.",
+    "it": "Mazzi da torneo DigiLab, lingua preferita delle carte, dettagli più leggibili e risoluzione degli effetti più affidabile."
+  },
+  "releases.1.29.0-beta.feature.digilab": {
+    "en": "Browse tournament archetypes and recent deck lists from DigiLab, refreshed weekly, and select a deck without waiting for another provider request.",
+    "pt-BR": "Explore arquétipos de torneios e listas recentes do DigiLab, atualizados semanalmente, e selecione um deck sem esperar uma nova consulta ao provedor.",
+    "es": "Explora arquetipos de torneos y listas recientes de DigiLab, actualizados semanalmente, y selecciona un mazo sin esperar otra consulta al proveedor.",
+    "it": "Esplora archetipi da torneo e liste recenti di DigiLab, aggiornati ogni settimana, e seleziona un mazzo senza attendere un’altra richiesta al servizio."
+  },
+  "releases.1.29.0-beta.feature.languages": {
+    "en": "Choose a preferred card language, apply it to existing decks, and read official Japanese or Korean card text where available. Missing translations retain English.",
+    "pt-BR": "Escolha o idioma preferido das cartas, aplique-o aos decks existentes e leia textos oficiais em japonês ou coreano quando disponíveis. Traduções ausentes permanecem em inglês.",
+    "es": "Elige el idioma preferido de las cartas, aplícalo a tus mazos y lee textos oficiales en japonés o coreano cuando estén disponibles. Las traducciones ausentes se mantienen en inglés.",
+    "it": "Scegli la lingua preferita delle carte, applicala ai mazzi esistenti e leggi i testi ufficiali giapponesi o coreani quando disponibili. Le traduzioni mancanti restano in inglese."
+  },
+  "releases.1.29.0-beta.feature.inspector": {
+    "en": "Read stacked cards more easily with clearer source cards, active keywords and protections, a compact mobile layout, and field bonuses explained by their relevant effect clause.",
+    "pt-BR": "Leia cartas com fontes de digievolução com mais facilidade: fontes, palavras-chave e proteções mais claras, layout compacto no celular e bônus de campo explicados pela cláusula correspondente.",
+    "es": "Lee cartas con fuentes de digievolución más fácilmente: fuentes, palabras clave y protecciones más claras, diseño compacto en móvil y bonificaciones de campo explicadas por su cláusula correspondiente.",
+    "it": "Leggi più facilmente le carte con fonti di digievoluzione: fonti, parole chiave e protezioni più chiare, layout compatto su mobile e bonus sul terreno spiegati dalla relativa clausola."
+  },
+  "releases.1.29.0-beta.feature.negamon": {
+    "en": "Playing an eligible card from hand now offers the choice to use Negamon’s breeding effect, play normally, or cancel.",
+    "pt-BR": "Ao jogar uma carta elegível da mão, agora você pode escolher usar o efeito do Negamon na criação, jogar normalmente ou cancelar.",
+    "es": "Al jugar una carta válida de la mano, ahora puedes elegir usar el efecto de Negamon en crianza, jugar normalmente o cancelar.",
+    "it": "Quando giochi una carta idonea dalla mano, puoi scegliere di usare l’effetto di Negamon nell’area di allevamento, giocare normalmente o annullare."
+  },
+  "releases.1.29.0-beta.fix.rules": {
+    "en": "Corrected discarded-card and end-of-turn trigger timing, repeated Impmon activations, Takemikazuchi memory resets, Royal Knights of the Purge source order, and LordKnightmon X bonuses for later arrivals.",
+    "pt-BR": "Corrigidos o momento dos efeitos de cartas descartadas e de fim de turno, ativações repetidas do Impmon, o ajuste de memória do Takemikazuchi, a ordem das fontes de Royal Knights of the Purge e os bônus do LordKnightmon X para cartas que entram depois.",
+    "es": "Corregidos el momento de los efectos de cartas descartadas y de fin de turno, las activaciones repetidas de Impmon, el ajuste de memoria de Takemikazuchi, el orden de fuentes de Royal Knights of the Purge y los bonos de LordKnightmon X para cartas que entran después.",
+    "it": "Corretti i tempi degli effetti delle carte scartate e di fine turno, le attivazioni ripetute di Impmon, la memoria di Takemikazuchi, l’ordine delle fonti di Royal Knights of the Purge e i bonus di LordKnightmon X per le carte entrate successivamente."
+  },
+  "releases.1.29.0-beta.fix.hidden": {
+    "en": "Blind selections from an opponent’s hand now keep previously revealed cards hidden, including DarknessBagramon’s placement effect.",
+    "pt-BR": "Escolhas às cegas na mão adversária agora mantêm ocultas as cartas reveladas anteriormente, incluindo o efeito de colocar cartas do DarknessBagramon.",
+    "es": "Las elecciones a ciegas de la mano rival ahora mantienen ocultas las cartas reveladas anteriormente, incluido el efecto de colocación de DarknessBagramon.",
+    "it": "Le scelte alla cieca dalla mano avversaria mantengono nascoste anche le carte rivelate in precedenza, incluso l’effetto di collocamento di DarknessBagramon."
+  },
+  "releases.1.29.0-beta.fix.battlefield": {
+    "en": "Battle rows remain accessible when crowded, preserve the two-lane preference on short desktop screens, and no longer go blank during resizing.",
+    "pt-BR": "As áreas de batalha continuam acessíveis quando cheias, preservam a preferência por duas faixas em telas de computador com pouca altura e não ficam mais em branco ao redimensionar.",
+    "es": "Las áreas de batalla siguen siendo accesibles cuando están llenas, conservan la preferencia de dos filas en pantallas de escritorio de poca altura y ya no quedan en blanco al cambiar de tamaño.",
+    "it": "Le aree di battaglia restano accessibili quando affollate, rispettano la preferenza per due corsie sugli schermi desktop poco alti e non diventano più vuote durante il ridimensionamento."
+  },
+  "releases.1.29.0-beta.fix.artwork": {
+    "en": "Added English alternate art for BT27-035 and BT27-103, plus Japanese BT27/EX14 printings available in the artwork picker.",
+    "pt-BR": "Adicionadas artes alternativas em inglês de BT27-035 e BT27-103, além de versões japonesas de BT27/EX14 disponíveis no seletor de artes.",
+    "es": "Añadidas ilustraciones alternativas en inglés de BT27-035 y BT27-103, además de versiones japonesas de BT27/EX14 disponibles en el selector de ilustraciones.",
+    "it": "Aggiunte illustrazioni alternative inglesi di BT27-035 e BT27-103 e versioni giapponesi di BT27/EX14 disponibili nel selettore delle illustrazioni."
+  },
+  "releases.1.29.0-beta.fix.loading": {
+    "en": "Failed screen downloads now keep the recovery loading state or show a connection message with a reload action instead of a generic crash screen.",
+    "pt-BR": "Falhas ao baixar telas agora mantêm o carregamento de recuperação ou exibem uma mensagem de conexão com opção de recarregar, em vez de uma tela genérica de erro.",
+    "es": "Los fallos al descargar pantallas ahora mantienen la carga de recuperación o muestran un mensaje de conexión con una opción para recargar, en lugar de una pantalla de error genérica.",
+    "it": "Gli errori di download delle schermate mantengono il caricamento di recupero o mostrano un messaggio di connessione con un’opzione per ricaricare, anziché una schermata di errore generica."
+  },
+  "releases.1.29.0-beta.fix.community": {
+    "en": "Published deck names and guides now receive broader multilingual filtering while preserving legitimate official card references.",
+    "pt-BR": "Nomes de decks publicados e guias agora passam por uma filtragem multilíngue mais ampla, preservando referências legítimas a cartas oficiais.",
+    "es": "Los nombres de mazos publicados y las guías ahora tienen un filtrado multilingüe más amplio que conserva las referencias legítimas a cartas oficiales.",
+    "it": "I nomi dei mazzi pubblicati e le guide ora ricevono un filtro multilingue più ampio che preserva i riferimenti legittimi alle carte ufficiali."
+  },
+  "releases.1.29.0-beta.fix.targets": {
+    "en": "Eligible cards appear first in hand/trash choices, including Nokia’s effect, so valid targets remain easy to find on small screens.",
+    "pt-BR": "Cartas elegíveis aparecem primeiro nas escolhas de mão/lixo, incluindo o efeito da Nokia, facilitando encontrar alvos válidos em telas pequenas.",
+    "es": "Las cartas válidas aparecen primero en las elecciones de mano/basura, incluido el efecto de Nokia, para facilitar su selección en pantallas pequeñas.",
+    "it": "Le carte idonee compaiono per prime nelle scelte da mano/scarti, incluso l’effetto di Nokia, rendendo più facile trovare bersagli validi su schermi piccoli."
+  },
+  "releases.1.29.0-beta.fix.bot": {
+    "en": "The bot accounts for effect-based attack redirection when evaluating battles and security attacks.",
+    "pt-BR": "O bot considera o redirecionamento de ataques por efeitos ao avaliar batalhas e ataques à segurança.",
+    "es": "El bot tiene en cuenta la redirección de ataques por efectos al evaluar batallas y ataques a la seguridad.",
+    "it": "Il bot tiene conto degli effetti che reindirizzano gli attacchi quando valuta battaglie e attacchi alla sicurezza."
+  },
   "releases.1.28.2-beta.summary": {
     "en": "Corrected colors for BT27 and EX14 beta cards.",
     "pt-BR": "Cores corrigidas nas cartas beta de BT27 e EX14.",

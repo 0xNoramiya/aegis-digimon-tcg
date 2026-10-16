@@ -1,5 +1,50 @@
 [
   {
+    "version": "1.29.0-beta",
+    "releasedAt": "2026-10-16",
+    "summaryKey": "releases.1.29.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.29.0-beta.feature.digilab"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.feature.languages"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.feature.inspector"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.feature.negamon"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.29.0-beta.fix.rules"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.hidden"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.battlefield"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.artwork"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.loading"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.community"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.targets"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.bot"
+      }
+    ]
+  },
+  {
     "version": "1.28.2-beta",
     "releasedAt": "2026-10-15",
     "summaryKey": "releases.1.28.2-beta.summary",
