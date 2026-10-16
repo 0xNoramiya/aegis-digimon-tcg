@@ -944,6 +944,15 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.protectionBadge.immuneToOpponentOptionEffects": "Proteção: Option",
   "game.restriction.immuneToOpponentTamerEffects": "Protegido contra efeitos de Tamers adversários",
   "game.protectionBadge.immuneToOpponentTamerEffects": "Proteção: Tamer",
+  "game.restriction.protectedFromStackTrash": "Cartas da stack protegidas contra descarte por efeitos adversários",
+  "game.protectionBadge.protectedFromStackTrash": "Proteção: descarte da stack",
+  "redesign.arena.restriction.protectedFromStackTrash":
+    "Cartas da stack protegidas contra descarte por efeitos adversários",
+  "game.restriction.protectedFromStackReturn":
+    "Cartas da stack protegidas contra retorno à mão ou ao deck por efeitos adversários",
+  "game.protectionBadge.protectedFromStackReturn": "Proteção: retorno da stack",
+  "redesign.arena.restriction.protectedFromStackReturn":
+    "Cartas da stack protegidas contra retorno à mão ou ao deck por efeitos adversários",
   "game.restriction.protectedFromDpReduction": "Protegido contra redução de DP por efeitos adversários",
   "game.protectionBadge.protectedFromDpReduction": "Proteção: DP",
   "game.restriction.protectedFromDeDigivolve": "Protegido contra De-Digivolve por efeitos adversários",

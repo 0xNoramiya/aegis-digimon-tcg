@@ -17,6 +17,27 @@ import "../../cards/index.js";
 const VANILLA_CARD = "AD1-001"; // no keywords
 
 describe("Permanent combat-restriction projection", () => {
+  it("publishes stacked-card protections only while UlforceVeedramon is unsuspended", async () => {
+    const s = setup({
+      0: { battleArea: [{ card: "EX13-023", as: "ulforce", under: ["EX13-022", "EX13-019", "EX13-016"] }] },
+      1: { battleArea: [{ card: VANILLA_CARD, as: "other" }] },
+    });
+    await s.ready();
+    for (const isSuspended of [false, true, false]) {
+      s.perm("ulforce").isSuspended = isSuspended;
+      await s.engine.recomputeContinuousEffects();
+      expect(s.perm("ulforce")).toMatchObject({
+        protectedFromStackTrash: !isSuspended,
+        protectedFromStackReturn: !isSuspended,
+        protectedFromEffectReturn: false,
+      });
+      expect(s.perm("other")).toMatchObject({
+        protectedFromStackTrash: false,
+        protectedFromStackReturn: false,
+      });
+    }
+  });
+
   it.each([
     ["immuneToOpponentOptionEffects", "beAffected", "Option"],
     ["immuneToOpponentTamerEffects", "beAffected", "Tamer"],

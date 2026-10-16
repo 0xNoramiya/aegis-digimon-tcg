@@ -936,6 +936,14 @@ export const en = {
   "game.protectionBadge.immuneToOpponentOptionEffects": "Option protection",
   "game.restriction.immuneToOpponentTamerEffects": "Protected from opposing Tamer effects",
   "game.protectionBadge.immuneToOpponentTamerEffects": "Tamer protection",
+  "game.restriction.protectedFromStackTrash": "Stacked cards protected from trashing by opposing effects",
+  "game.protectionBadge.protectedFromStackTrash": "Stack trash protection",
+  "redesign.arena.restriction.protectedFromStackTrash": "Stacked cards protected from trashing by opposing effects",
+  "game.restriction.protectedFromStackReturn":
+    "Stacked cards protected from returning to hand or deck by opposing effects",
+  "game.protectionBadge.protectedFromStackReturn": "Stack return protection",
+  "redesign.arena.restriction.protectedFromStackReturn":
+    "Stacked cards protected from returning to hand or deck by opposing effects",
   "game.restriction.protectedFromDpReduction": "Protected from DP reduction by opposing effects",
   "game.protectionBadge.protectedFromDpReduction": "DP protection",
   "game.restriction.protectedFromDeDigivolve": "Protected from De-Digivolve by opposing effects",
