@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   allCards,
   MATCH_TIMER_REFILL_SECONDS,
+  MATCH_TIMER_START_SECONDS,
   type MatchBestOf,
   type MatchTimerOptions,
   formatPairViolations,
@@ -234,7 +235,7 @@ export function Lobby({
   const MODES = modesFor(t);
   const [timer, setTimer] = useState<Required<MatchTimerOptions>>(() => ({
     matchTimer: timerOptions?.matchTimer ?? true,
-    timerStartSeconds: timerOptions?.timerStartSeconds ?? 300,
+    timerStartSeconds: timerOptions?.timerStartSeconds ?? MATCH_TIMER_START_SECONDS,
     timerRefillSeconds: MATCH_TIMER_REFILL_SECONDS,
   }));
   function changeTimer(options: Required<MatchTimerOptions>) {
