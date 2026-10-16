@@ -2033,6 +2033,8 @@ const interfaceMessages = {
   "redesign.shell.crash.title": "發生問題",
   "redesign.shell.crash.body": "此畫面已停止運作。我們已向 Aegis 團隊傳送錯誤報告。請重新載入頁面以繼續。",
   "redesign.shell.crash.reload": "重新載入",
+  "redesign.shell.loadFailed.title": "無法載入此頁面",
+  "redesign.shell.loadFailed.body": "Aegis 無法下載此頁面的部分內容。請檢查網路連線並重新載入頁面。",
   "redesign.shell.ranked.eyebrow": "排位對局",
   "redesign.home.login.eyebrow": "Aegis 帳戶",
   "redesign.play.deckCounts": "主卡組 {main} 張 · 數碼蛋 {egg} 張",

@@ -2115,6 +2115,9 @@ const interfaceMessages = {
   "redesign.shell.crash.body":
     "Layar ini berhenti berfungsi. Kami telah mengirim laporan kesalahan ke tim Aegis. Muat ulang halaman untuk melanjutkan.",
   "redesign.shell.crash.reload": "Muat ulang",
+  "redesign.shell.loadFailed.title": "Layar ini gagal dimuat",
+  "redesign.shell.loadFailed.body":
+    "Aegis tidak dapat mengunduh sebagian layar ini. Periksa koneksi Anda dan muat ulang halaman.",
   "redesign.shell.ranked.eyebrow": "Pertandingan ranked",
   "redesign.home.login.eyebrow": "Akun Aegis",
   "redesign.play.deckCounts": "{main} utama · {egg} Digi-Egg",

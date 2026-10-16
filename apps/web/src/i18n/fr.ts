@@ -2151,6 +2151,9 @@ const interfaceMessages = {
   "redesign.shell.crash.body":
     "Cet écran a cessé de fonctionner. Nous avons envoyé un rapport d'erreur à l'équipe Aegis. Rechargez la page pour continuer.",
   "redesign.shell.crash.reload": "Recharger",
+  "redesign.shell.loadFailed.title": "Impossible de charger cet écran",
+  "redesign.shell.loadFailed.body":
+    "Aegis n’a pas pu télécharger une partie de cet écran. Vérifiez votre connexion et rechargez la page.",
   "redesign.shell.ranked.eyebrow": "Match classé",
   "redesign.home.login.eyebrow": "Compte Aegis",
   "redesign.play.deckCounts": "{main} principal · {egg} Digi-Œuf",
