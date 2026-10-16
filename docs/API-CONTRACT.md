@@ -166,8 +166,9 @@ workflow; source edits, unpublishing and moderation cannot change that copy.
 Casual (`aegis` and `aegis_beta`) join options include `matchTimer: boolean`.
 Both queues filter on this option, so timed and untimed players cannot meet.
 Omitting the option leaves the timer off. Public clocks start with 300 seconds
-per player. Each subsequent turn starts a fresh 300-second reserve for both
-players; unused time does not accumulate. The opening turn uses the initial reserve.
+per player. Unused time carries over between turns. Each later turn start adds
+60 seconds to the turn owner and 30 seconds to the opponent, with both reserves
+capped at the starting time. The opening turn uses the initial reserve without a bonus.
 
 The mulligan has its own clock. Each player gets 30 seconds
 (`MULLIGAN_TIMER_SECONDS`) to answer their own mulligan, published as
@@ -189,10 +190,10 @@ timer constants live in `packages/shared/src/matchTimer.ts`.
 Private-room creators may also choose `timerStartSeconds` (60, 180, 300, 600).
 Invalid values use the defaults; private reserves are capped at their chosen starting time.
 `timerRefillSeconds` remains in the wire contract for compatibility, but join payloads
-cannot override the turn reset. The synchronized `timerRefillSeconds` field
-reports the legacy value 60, which no longer controls clock refills.
-The lobby uses a labelled on/off switch and a compact strip showing time per turn.
-Private hosts can change the per-turn reserve; its displayed value and cap update together.
+cannot override the fixed 60-second owner bonus; the opponent bonus is always 30 seconds.
+The synchronized `timerRefillSeconds` field reports 60, and the settings do not offer a refill control.
+The lobby uses a labelled on/off switch and a compact strip showing the starting time and both turn bonuses.
+Private hosts can change the starting time; its displayed value and cap update together.
 The on/off preference is saved under `aegis:match-timer` in browser localStorage
 and restored on reload for guests and signed-in users. It is local to that browser;
 joining a private room or entering a mode without timers does not overwrite it.
