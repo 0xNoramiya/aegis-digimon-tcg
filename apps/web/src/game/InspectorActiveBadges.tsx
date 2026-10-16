@@ -89,6 +89,23 @@ export function InspectorActiveBadges({ detail }: Params) {
           </span>
         );
       })}
+      {detail.heldDpEffects.map((held, index) => (
+        <span
+          key={`held-dp-${index}`}
+          className="arena-inspector-badge"
+          data-tone={held.delta < 0 ? InspectorTone.RESTRICTION.value : InspectorTone.EFFECT.value}
+          data-held-dp={held.delta}
+        >
+          <i aria-hidden="true">
+            <Icons.Clock size={14} />
+          </i>
+          {t("overlay.heldDp", {
+            delta: `${held.delta > 0 ? "+" : "−"}${Math.abs(held.delta).toLocaleString()}`,
+          })}
+          {" · "}
+          {t(held.expiryKey)}
+        </span>
+      ))}
     </>
   );
 }

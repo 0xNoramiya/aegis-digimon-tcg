@@ -3,7 +3,8 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { CardKind, EffectDuration, type FieldEffectView } from "@aegis/shared";
 import { I18nProvider } from "../../../i18n";
-import { FieldEffectsIndicator, readFieldEffects } from "./FieldEffectsIndicator";
+import { FieldEffectsIndicator } from "./FieldEffectsIndicator";
+import { readFieldEffects } from "@/game/readFieldEffects";
 
 afterEach(() => {
   cleanup();

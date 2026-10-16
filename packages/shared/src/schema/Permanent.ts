@@ -149,4 +149,5 @@ export class Permanent extends Schema {
   @type("boolean") canVortexAttackPlayer = false;
   @type("boolean") protectedFromStackTrash = false;
   @type("boolean") protectedFromStackReturn = false;
+  @type("string") heldDpEffectsJson = "";
 }

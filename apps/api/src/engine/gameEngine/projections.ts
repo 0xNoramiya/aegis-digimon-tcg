@@ -236,6 +236,9 @@ export class BoardProjection {
     if (forcedAttackGrants.length > 0) perm.attacksAtStartOfMainPhase = true;
     const forcedAttackGrantsJson = forcedAttackGrants.length > 0 ? JSON.stringify(forcedAttackGrants) : "";
     if (perm.forcedAttackGrantsJson !== forcedAttackGrantsJson) perm.forcedAttackGrantsJson = forcedAttackGrantsJson;
+    const heldDpEffects = this.deps.modifiers.heldDpEffectViews(this.deps.state, perm);
+    const heldDpEffectsJson = heldDpEffects.length > 0 ? JSON.stringify(heldDpEffects) : "";
+    if (perm.heldDpEffectsJson !== heldDpEffectsJson) perm.heldDpEffectsJson = heldDpEffectsJson;
     perm.immuneToOpponentDigimonEffects = this.deps.continuous.hasRestriction(
       perm.permanentId,
       "beAffected",

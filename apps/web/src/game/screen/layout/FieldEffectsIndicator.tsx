@@ -1,28 +1,12 @@
 import { CardKind } from "@aegis/shared/schema/enums";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { EffectDuration, getCardDefinition, type FieldEffectView, type Seat } from "@aegis/shared";
+import { getCardDefinition, type FieldEffectView } from "@aegis/shared";
 import { Layers, Clock } from "lucide-react";
+import { fieldEffectExpiry } from "@/game/fieldEffectExpiry";
+import { readFieldEffects } from "@/game/readFieldEffects";
 import { useTranslation, type TranslationKey } from "../../../i18n";
 import "./fieldEffects.css";
-
-export function readFieldEffects(json: string | undefined): FieldEffectView[] {
-  if (!json) return [];
-  try {
-    const value: unknown = JSON.parse(json);
-    if (!Array.isArray(value)) return [];
-    return value.filter(
-      (entry): entry is FieldEffectView =>
-        entry !== null &&
-        typeof entry === "object" &&
-        ["dp", "restriction", "keyword"].includes(entry.kind) &&
-        (typeof entry.value === "number" || typeof entry.value === "string") &&
-        typeof entry.duration === "number",
-    );
-  } catch {
-    return [];
-  }
-}
 
 const restrictionLabels: Record<string, TranslationKey> = {
   attack: "game.restriction.cannotAttack",
@@ -138,27 +122,25 @@ export function FieldEffectsIndicator({
     return `${effect.value}${effect.amount === undefined ? "" : ` ${effect.amount >= 0 ? "+" : "−"}${Math.abs(effect.amount)}`}`;
   }
   function duration(effect: FieldEffectView): string {
-    if (effect.continuous || effect.duration === EffectDuration.Permanent) return t("game.fieldEffects.whileActive");
-    const owner = effect.ownerSeat === 1 ? 1 : 0;
-    if (
-      effect.duration === EffectDuration.UntilOpponentTurnEnd ||
-      effect.duration === EffectDuration.UntilOwnerTurnEnd
-    ) {
-      const seat: Seat = effect.duration === EffectDuration.UntilOpponentTurnEnd ? (owner === 0 ? 1 : 0) : owner;
-      return t(
-        effect.skipsCurrentOpponentTurnEnd
-          ? "game.fieldEffects.untilPlayerNextTurnEnd"
-          : "game.fieldEffects.untilPlayerTurnEnd",
-        { player: playerNames[seat] },
-      );
+    const expiry = fieldEffectExpiry(effect);
+    switch (expiry.kind) {
+      case "whileActive":
+        return t("game.fieldEffects.whileActive");
+      case "turnEnd":
+        return t(expiry.next ? "game.fieldEffects.untilPlayerNextTurnEnd" : "game.fieldEffects.untilPlayerTurnEnd", {
+          player: playerNames[expiry.seat],
+        });
+      case "attackEnd":
+        return t("game.fieldEffects.untilAttackEnd");
+      case "battleEnd":
+        return t("game.fieldEffects.untilBattleEnd");
+      case "activePhase":
+        return t("game.fieldEffects.untilActivePhase", { player: playerNames[expiry.seat] });
+      case "costCalculated":
+        return t("game.fieldEffects.untilCost");
+      case "thisTurn":
+        return t("game.fieldEffects.untilTurnEnd");
     }
-    if (effect.duration === EffectDuration.UntilEndAttack) return t("game.fieldEffects.untilAttackEnd");
-    if (effect.duration === EffectDuration.UntilEndBattle) return t("game.fieldEffects.untilBattleEnd");
-    if (effect.duration === EffectDuration.UntilNextUntap || effect.duration === EffectDuration.UntilOwnerActivePhase) {
-      return t("game.fieldEffects.untilActivePhase", { player: playerNames[owner] });
-    }
-    if (effect.duration === EffectDuration.UntilCalculateFixedCost) return t("game.fieldEffects.untilCost");
-    return t("game.fieldEffects.untilTurnEnd");
   }
   const summary = effects.length === 1 ? label(effects[0]!) : t("game.fieldEffects.count", { count: effects.length });
   const harmful = effects.some(
