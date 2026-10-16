@@ -112,7 +112,7 @@ for (const available of [true, false]) {
     await screen.findByRole("option", { name: "BT1" });
     fireEvent.change(document.querySelector(".deck-picker__collection-filter select")!, { target: { value: "BT1" } });
     const region = within(await screen.findByRole("region", { name: "BT1" }));
-    fireEvent.click(await region.findByRole("button", { name: deck.name, exact: true }));
+    fireEvent.click(await region.findByRole("button", { name: deck.name }));
     expect(select).toHaveBeenCalledWith(deck.id);
     fireEvent.click(region.getAllByRole("button", { name: "Copy to edit" })[0]!);
     expect(copy).toHaveBeenCalledWith(deck);
