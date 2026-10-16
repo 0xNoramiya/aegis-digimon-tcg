@@ -8,6 +8,7 @@ import {
   Zone,
   digiXrosRequirementFor,
   digiXrosSlotMatches,
+  effectiveExactNames,
   type CardDefinition,
   type DigiXrosMaterial,
   type DigiXrosRequirement,
@@ -16,6 +17,7 @@ import {
   type PlayerState,
   type Seat,
 } from "@aegis/shared";
+import { hasDistinctRepresentatives } from "@aegis/shared/effects/hasDistinctRepresentatives";
 import { cardHasTrait, definitionOf, dpOf } from "../cards/cardData.js";
 import { extractCardAt, placePermanent as appendPermanent, setTopCard } from "../state/access.js";
 import { digiXrosZoneExpanderFor } from "../digiXros/zoneExpanders.js";
@@ -610,9 +612,15 @@ export function materialsSatisfyRecipe(
       const ids = materials.map((m) => m.cardId);
       if (new Set(ids).size !== ids.length) return false;
     }
-    if (slot.differentNames === true) {
-      const names = materials.map((material) => material.nameEn.toLowerCase());
-      if (new Set(names).size !== names.length) return false;
+    if (
+      slot.differentNames === true &&
+      !hasDistinctRepresentatives(
+        materials.map((material, index) =>
+          [...effectiveExactNames(material), ...(digiXrosNamesAt?.(index) ?? [])].map((name) => name.toLowerCase()),
+        ),
+      )
+    ) {
+      return false;
     }
     return true;
   }
