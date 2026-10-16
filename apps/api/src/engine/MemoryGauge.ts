@@ -130,14 +130,6 @@ export class MemoryGauge {
     this.addMemoryForSeat(this.state.turnSeat, amount, reason);
   }
 
-  /**
-   * Set the turn player's memory to an absolute (turn-relative) value; clamps and
-   * emits. The seatless Primitives form (EffectContext.Primitives.setMemory).
-   * Effects that target a specific seat call `setMemoryForSeat`.
-   *
-   * NOTE: this seatless wrapper sets unconditionally. The source "only raise"
-   * guard lives in `setMemoryForSeat`, which is the faithful `SetFixedMemory`.
-   */
   setMemory(value: number, reason = "setMemory"): void {
     this.setAbsolute(value, reason);
   }
@@ -164,19 +156,8 @@ export class MemoryGauge {
     this.setAbsolute(this.state.memory + delta, reason);
   }
 
-  /**
-   * Force `seat`'s own-perspective memory to `value` (source `Player.SetFixedMemory`).
-   * Faithful to the source gate: the value is only applied when it would RAISE
-   * that seat's memory (`memoryFor(seat) < value`); a set that would lower it is
-   * ignored, matching `SetFixedMemory`'s `if (MemoryForPlayer < Memory)` guard
-   * around its CanAddMemory check (the documented rules only ever uses this to raise, e.g.
-   * "set your memory to 3"). Clamps and emits.
-   */
   setMemoryForSeat(seat: Seat, value: number, reason = "setMemory"): void {
-    if (value <= this.memoryFor(seat)) {
-      return;
-    }
-    if (!this.canGainMemory(seat)) {
+    if (value > this.memoryFor(seat) && !this.canGainMemory(seat)) {
       return;
     }
     const raw = seat === this.state.turnSeat ? value : -value;
