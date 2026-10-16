@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+import { COLORS, colorKey } from "@/design/theme";
 import { getCardDefinition } from "@aegis/shared/cards/registry";
 import { CardBack, CardFull } from "@/design/cards";
 import { useTranslation } from "@/i18n/useTranslation";
@@ -17,9 +19,14 @@ export function ArenaInspectorSourceEffect({ card, onZoom, showThumbnail }: Para
   const translations = useCardTranslations();
   const definition = getCardDefinition(card.cardId);
   const effect = card.role === "linked" ? definition?.linkEffect : definition?.inheritedEffectText;
+  const colors =
+    card.cardId && !card.faceDown ? definition?.colors.map((color) => COLORS[colorKey(color)].base) : undefined;
+  const borderColors = colors?.length ? colors : [COLORS.Neutral.base];
+  const border = `linear-gradient(to bottom, ${borderColors.flatMap((color, index) => [`${color} ${(index * 100) / borderColors.length}%`, `${color} ${((index + 1) * 100) / borderColors.length}%`]).join(", ")})`;
   return (
     <div
       className="arena-permanent-inspector__effect arena-permanent-inspector__effect--source"
+      style={{ "--source-border": border } as CSSProperties}
       data-role={card.role}
       data-card-id={card.cardId || undefined}
       data-thumbnail={showThumbnail}
@@ -47,7 +54,7 @@ export function ArenaInspectorSourceEffect({ card, onZoom, showThumbnail }: Para
         </span>
         {card.cardId && !card.faceDown ? (
           <p>
-            <EffectText asciiBrackets text={effect || t("overlay.noPrintedEffect")} />
+            <EffectText inspector asciiBrackets text={effect || t("overlay.noPrintedEffect")} />
           </p>
         ) : null}
       </div>

@@ -19,7 +19,10 @@ export function ArenaInspectorSourcesStrip({ cards, onZoom }: Params) {
   const activeIndex = Math.min(selectedIndex, cards.length - 1);
   const selected = cards[activeIndex];
   return (
-    <>
+    <section className="arena-permanent-inspector__mobile-sources">
+      <h3 className="arena-permanent-inspector__effect-label">
+        {t(cards.length === 1 ? "overlay.sourceCountOne" : "overlay.sourceCountMany", { count: cards.length })}
+      </h3>
       <div
         className="arena-permanent-inspector__strip"
         role="group"
@@ -59,6 +62,6 @@ export function ArenaInspectorSourcesStrip({ cards, onZoom }: Params) {
           ) : null}
         </div>
       ) : null}
-    </>
+    </section>
   );
 }
