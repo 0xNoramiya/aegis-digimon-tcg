@@ -1,6 +1,8 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
   "roadmap.hub.label": "Community-Bereiche",
   "roadmap.hub.decks": "Decks",
   "roadmap.hub.roadmap": "Roadmap",

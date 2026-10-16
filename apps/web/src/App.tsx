@@ -623,6 +623,10 @@ function LoadedAegisClient({
                 player={effectivePlayer}
                 decks={decks}
                 borrowedDeck={borrowedDeck}
+                onUseProviderDeck={(deck) => {
+                  setBorrowedDeck(deck);
+                  setActiveDeckId(deck.id);
+                }}
                 onBorrowCommunityDeck={(id) => {
                   void communityApi
                     .deck(id)

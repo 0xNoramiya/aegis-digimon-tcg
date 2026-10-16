@@ -1,3 +1,4 @@
+import { providerEs } from "@/i18n/providers.es";
 import { replayVideoEs } from "./replayVideo";
 import { profileReplayEs } from "./profileReplays";
 import { replayEs } from "./replays";
@@ -17,6 +18,7 @@ import { settingsEs } from "./redesign/settings.es";
 import { shellEs } from "./redesign/shell.es";
 
 export const es: Record<keyof typeof en, string> = {
+  ...providerEs,
   "settings.shareDeckAfterMatch": "Compartir mi deck al finalizar la partida",
   "settings.shareDeckAfterMatchDesc":
     "Permite que tu rival vea y copie la lista inicial de tu deck al finalizar la partida. Activado por defecto.",

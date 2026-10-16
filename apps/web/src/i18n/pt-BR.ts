@@ -1,3 +1,4 @@
+import { providerPtBR } from "@/i18n/providers.pt-BR";
 import { replayVideoPtBR } from "./replayVideo";
 import { profileReplayPtBR } from "./profileReplays";
 import { replayPtBR } from "./replays";
@@ -21,6 +22,7 @@ import { settingsPtBR } from "./redesign/settings.pt-BR";
 import { shellPtBR } from "./redesign/shell.pt-BR";
 
 export const ptBR: Record<keyof typeof en, string> = {
+  ...providerPtBR,
   "settings.shareDeckAfterMatch": "Compartilhar meu deck após a partida",
   "settings.shareDeckAfterMatchDesc":
     "Permitir que o adversário veja e copie a lista inicial do meu deck após a partida. Ativado por padrão.",

@@ -1,6 +1,9 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
+  "digilab.cardCounts": "메인 카드 {main}장 · 디지타마 {eggs}장",
   "roadmap.hub.label": "커뮤니티 섹션",
   "roadmap.hub.decks": "덱",
   "roadmap.hub.roadmap": "로드맵",

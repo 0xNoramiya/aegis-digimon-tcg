@@ -1,3 +1,4 @@
+import { providerEn } from "@/i18n/providers.en";
 import { replayVideoIt } from "./replayVideo";
 import { profileReplayIt } from "./profileReplays";
 import { replayIt } from "./replays";
@@ -5,6 +6,7 @@ import { en } from "./en";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  ...providerEn,
   "settings.shareDeckAfterMatch": "Condividi il mio mazzo dopo la partita",
   "settings.shareDeckAfterMatchDesc":
     "Consenti all’avversario di vedere e copiare la lista iniziale del tuo mazzo dopo la partita. Attivo per impostazione predefinita.",

@@ -1,3 +1,4 @@
+import { providerEn } from "@/i18n/providers.en";
 import { replayVideoEn } from "./replayVideo";
 import { profileReplayEn } from "./profileReplays";
 import { replayEn } from "./replays";
@@ -19,6 +20,7 @@ import { shellEn } from "./redesign/shell.en";
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  ...providerEn,
   "settings.shareDeckAfterMatch": "Share my deck after the match",
   "settings.shareDeckAfterMatchDesc":
     "Allow your opponent to view and copy your starting deck list after the match. Enabled by default.",

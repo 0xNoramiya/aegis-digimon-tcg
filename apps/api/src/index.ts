@@ -1,3 +1,8 @@
+import { startProviderSync } from "#api/deckProviders/startProviderSync";
+import { digilabProvider } from "#api/deckProviders/providers/digilab";
+import { ProviderSnapshotReader } from "#api/deckProviders/ProviderSnapshotReader";
+import { ProviderClient } from "#api/deckProviders/ProviderClient";
+import { installProviderRoutes } from "#api/deckProviders/installProviderRoutes";
 import { installBotRoutes } from "#api/rooms/installBotRoutes";
 import { installPrivateRoomRoutes } from "./rooms/privateRoomRoutes.js";
 import { installSpectatorRoutes } from "./rooms/spectatorRoutes.js";
@@ -88,6 +93,24 @@ installAccountRoutes(
   replayLibrary,
   process.env.TURNSTILE_SECRET_KEY ? turnstileVerifier({ secret: process.env.TURNSTILE_SECRET_KEY }) : undefined,
 );
+const providerClient = new ProviderClient({
+  store: accountStore,
+  providerId: digilabProvider.value,
+  apiKey: process.env[digilabProvider.keyVariable],
+});
+installProviderRoutes({
+  app,
+  client: new ProviderSnapshotReader({ store: accountStore, providerId: digilabProvider.value }),
+});
+const stopProviderSync = startProviderSync({
+  store: accountStore,
+  client: providerClient,
+  providerId: digilabProvider.value,
+  enabled:
+    Boolean(process.env[digilabProvider.keyVariable]) &&
+    (process.env.AEGIS_PROVIDER_SYNC_ENABLED === "true" ||
+      (process.env.NODE_ENV === "production" && process.env.AEGIS_PROVIDER_SYNC_ENABLED !== "false")),
+});
 if (discordAvatarBackfill) void backfillDiscordAvatars(accountStore, discordAvatarBackfill).catch(() => undefined);
 function scheduleReplayCleanup() {
   let cleaning = false;
@@ -227,6 +250,7 @@ const shutdown = (signal: string) => {
     return;
   }
   shuttingDown = true;
+  stopProviderSync();
   log(`[aegis/api] ${signal} received — shutting down gracefully`);
   // Close the HTTP server immediately so the port is freed before node --watch
   // spawns the next instance, avoiding EADDRINUSE on fast restarts.

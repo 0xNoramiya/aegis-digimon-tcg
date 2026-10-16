@@ -131,3 +131,15 @@ The account JSON preferences include optional boolean `shareDeckAfterMatch`. Mis
 The account JSON preferences also include optional boolean `listLiveMatches`. A missing value means on; an explicit `false` remains an opt-out. When neither seated account in a casual room has opted out, the room adds a `live` entry to its Colyseus matchmaking metadata (in presence/Redis when configured). The entry holds the spectator code, display names, format, start time and spectator count, and the room removes it at game over. The web client never copies this preference from device storage, because public listing is an account preference. This introduces no PostgreSQL table or migration.
 
 The account JSON preferences include optional boolean `hideIdentityFromSpectators` (default false). Rooms capture it before admitting spectators for each game. It withholds that player’s nickname, avatar and session identifier from spectator state and uses an empty name in public listings, rendered as a numbered player label. Participants retain both identities. The spectator roster is transient room state visible only to participants; authenticated names come from single-use account room tickets, and guests contribute only to a count. No PostgreSQL migration is required.
+
+## Deck providers
+
+Migration `037-deck-providers` adds three provider-owned tables:
+
+| Table                     | Purpose                                                                                                       | Retention                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `deck_provider_cache`     | Shared response JSON, expiry, request budget and upstream cooldown; primary key `key`                         | Response freshness 15 minutes; expired entries cleaned on successful requests |
+| `deck_provider_snapshots` | Weekly extracted JSON keyed by provider and request path, with collection timestamp                           | Latest successful snapshot per key; retained across failed refreshes          |
+| `deck_provider_sync_runs` | Weekly execution period, attempt/completion timestamps and collection count; primary key `(provider, period)` | 90 days                                                                       |
+
+The API never persists provider API keys. PostgreSQL advisory locks coordinate cache fills and weekly collection across API processes.

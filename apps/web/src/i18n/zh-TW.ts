@@ -1,6 +1,8 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
   "roadmap.hub.label": "社群區塊",
   "roadmap.hub.decks": "卡組",
   "roadmap.hub.roadmap": "路線圖",

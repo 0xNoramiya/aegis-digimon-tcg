@@ -1,3 +1,4 @@
+import { deckProviders } from "#api/db/migrations/037-deck-providers";
 import type { Migration } from "../migrator.js";
 import { initialSchema } from "./001-initial-schema.js";
 import { tournamentProgramColumns } from "./002-tournament-program-columns.js";
@@ -76,4 +77,5 @@ export const migrations: readonly Migration[] = [
   communityRoadmap,
   playtestGroup,
   publicDeckGuide,
+  deckProviders,
 ];

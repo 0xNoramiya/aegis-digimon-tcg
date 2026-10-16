@@ -1,6 +1,9 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
+  "digilab.cardCounts": "{main} cartes principales · {eggs} Digi-Œufs",
   "roadmap.hub.label": "Sections de la communauté",
   "roadmap.hub.decks": "Decks",
   "roadmap.hub.roadmap": "Feuille de route",
