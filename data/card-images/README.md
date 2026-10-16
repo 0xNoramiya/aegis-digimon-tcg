@@ -38,3 +38,32 @@ same card: the second ST-12 printings of BT3-093, BT3-094, BT4-096, ST1-12,
 ST3-12 and ST6-14, and the ST-24 printings of LM-033 to LM-038.
 
 Copyright belongs to Bandai and the credited Digimon rights holders.
+
+## BT27 and EX14 reveals, 2026-10-16
+
+These scans are encoded as WebP at 430 px wide with quality 90. They retain
+the source SAMPLE watermark and use the existing local-scan fallback.
+The Japanese catalog entries cover all seven BT27/EX14 cards currently in
+`cards.json`, plus the four available Japanese BT27 alternate arts.
+
+| File          | Source                                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------- |
+| BT27-035_P1   | [User-provided English reveal](https://pbs.twimg.com/media/HUQatrhW8AAWhIy?format=jpg&name=large) |
+| BT27-103_P1   | [User-provided English reveal](https://pbs.twimg.com/media/HUQbOv4W4AAmpIc?format=jpg&name=large) |
+| BT27-035-J    | [Wikimon Japanese scan](https://wikimon.net/images/0/03/Dcg-BT27-035.jpg)                         |
+| BT27-100-J    | [Wikimon Japanese scan](https://wikimon.net/images/0/06/Dcg-BT27-100.jpg)                         |
+| EX14-054-J    | [Wikimon Japanese scan](https://wikimon.net/images/1/16/Dcg-EX14-054.jpg)                         |
+| BT27-084-J    | [Wikimon Japanese scan](https://wikimon.net/images/2/2d/Dcg-BT27-084.jpg)                         |
+| BT27-084_P1-J | [Wikimon Japanese scan](https://wikimon.net/images/3/3a/Dcg-BT27-084_2.jpg)                       |
+| BT27-103-J    | [Wikimon Japanese scan](https://wikimon.net/images/3/3e/Dcg-BT27-103.jpg)                         |
+| EX14-012-J    | [Wikimon Japanese scan](https://wikimon.net/images/5/55/Dcg-EX14-012.jpg)                         |
+| BT27-070-J    | [Wikimon Japanese scan](https://wikimon.net/images/6/6c/Dcg-BT27-070.jpg)                         |
+| BT27-070_P1-J | [Wikimon Japanese scan](https://wikimon.net/images/6/6c/Dcg-BT27-070_2.jpg)                       |
+| BT27-035_P1-J | [Wikimon Japanese scan](https://wikimon.net/images/a/a3/Dcg-BT27-035_2.jpg)                       |
+| BT27-103_P1-J | [Wikimon Japanese scan](https://wikimon.net/images/f/f4/Dcg-BT27-103_2.jpg)                       |
+
+The [official Chinese catalog](https://dtcgweb-api.digimoncard.cn/gamecard/gamecardmanager/weblist?page=1&limit=100000)
+returned all 7,628 records and no BT27 or EX14 printings on this date. The
+[official Korean card list](https://digimoncard.co.kr/index.php?mid=cardlist)
+did not list either set; its latest listed booster and extra booster were
+BTK-22 and EXK-09. No Chinese or Korean entries were added.
