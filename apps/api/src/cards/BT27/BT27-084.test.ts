@@ -1,3 +1,4 @@
+import { EffectTiming } from "@aegis/shared/schema/enums";
 import fixture from "#api/engine/scenarios/knightmon-buffs-later-entrants.fixture";
 import { setupScenario } from "#api/engine/testkit/scenario";
 import { describe, expect, it } from "vitest";
@@ -383,6 +384,34 @@ describe("BT27-084 LordKnightmon (X Antibody)", () => {
       expect(view.hasKeyword(laterKnight, "Blocker")).toBe(false);
       expect(laterKnight.immuneToOpponentDigimonEffects).toBe(false);
       expect(laterKnight.currentDP).toBe(7000);
+    });
+  });
+
+  it("prevents an opponent Digimon's deletion after the Option grants immunity", async () => {
+    const preferred: string[] = [];
+    const s = setupScenario(fixture, {
+      autoAcceptOptional: true,
+      autoSelectCards: true,
+      preferInstanceIds: preferred,
+      declinePrompts: ["Arts Digivolve"],
+    });
+    await s.ready();
+    await duringMainPhase(s, 0, 10, async () => {
+      preferred.push(s.perm("knightmon").topCard.instanceId);
+      expect(
+        s.engine.applyIntent(0, {
+          type: "playCard",
+          instanceId: s.inst("option").instanceId,
+          useAs: "option",
+        }),
+      ).toEqual({ ok: true });
+      await settle();
+      const knightmonId = s.perm("knightmon").permanentId;
+      s.putOnBoard(1, { card: "AD1-004", as: "warGreymon" });
+      await advance(s.engine).fire(EffectTiming.OnPlay, s.perm("warGreymon"));
+      await settle();
+      expect(s.state.players[0]!.battleArea.some((permanent) => permanent.permanentId === knightmonId)).toBe(true);
+      expect(s.perm("knightmon").immuneToOpponentDigimonEffects).toBe(true);
     });
   });
 
