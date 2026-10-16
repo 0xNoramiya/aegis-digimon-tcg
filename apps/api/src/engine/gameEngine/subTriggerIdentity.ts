@@ -50,6 +50,9 @@ export function subTriggerIdentity(sub: SubTriggerSubscription, trigger?: Trigge
       trigger.subjectPermanentIds ?? (trigger.suspendedPermanentId ? [trigger.suspendedPermanentId] : []);
     if (subjects.length > 0) return `${identity}|suspend:${[...subjects].sort().join(",")}`;
   }
+  if (trigger?.securityInstanceId !== undefined && sub.event === "whenSecurityRemoved") {
+    return `${identity}|securityRemoved:${trigger.securityInstanceId}`;
+  }
   if (trigger !== undefined && sub.event === "whenHandTrashed") {
     const trashed = trigger.handTrashedInstanceIds ?? [];
     if (trashed.length > 0)
