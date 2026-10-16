@@ -12,6 +12,27 @@ const interfaceMessages = {
   "settings.cardImageLanguageProgress": "Decks werden aktualisiert: {completed}/{total}",
   "settings.cardImageLanguageResult":
     "Aktualisierte Decks: {saved}. Fehlgeschlagen: {failed}. Exemplare ohne diese Sprache: {unavailable}. Erneut anwenden, um fehlgeschlagene Decks nochmals zu versuchen.",
+  "story.tagline": "Wähle deinen Charakter. Erlebe die Kämpfe.",
+  "story.adaptation": "Adaption",
+  "story.adaptationHint": "Fehlende Details der Geschichte werden für diese spielbare Adaption rekonstruiert.",
+  "story.notice":
+    "Offizielle Kapitel bleiben in ihrer Originalsprache. Adaptionen ergänzen Felder, Decks und fiktive Kartenänderungen anhand der gedruckten Regeln des Simulators.",
+
+  "story.title": "Storymodus",
+  "story.all": "Alle Charaktere",
+  "story.character": "Charakter",
+  "story.start": "Kampf starten",
+  "story.replay": "Erneut spielen",
+  "story.locked": "Schließe den vorherigen Kampf ab",
+  "story.pending": "Szenario in Vorbereitung",
+  "story.completed": "Abgeschlossen",
+  "story.ready": "Verfügbar",
+  "story.signin":
+    "Du spielst als Gast. Der Fortschritt bleibt mit diesem Browser verknüpft; nach der Anmeldung gilt dein Kontofortschritt.",
+  "story.progress": "{completed} / {total} Kämpfe abgeschlossen",
+  "story.error": "Dein Fortschritt konnte nicht geladen werden.",
+  "story.retry": "Erneut versuchen",
+  "story.source": "Offizieller Kampfbericht",
 
   "roadmap.hub.label": "Community-Bereiche",
   "roadmap.hub.decks": "Decks",

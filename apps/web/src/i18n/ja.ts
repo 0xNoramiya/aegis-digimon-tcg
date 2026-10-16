@@ -12,6 +12,27 @@ const interfaceMessages = {
   "settings.cardImageLanguageProgress": "デッキを更新中：{completed}/{total}",
   "settings.cardImageLanguageResult":
     "更新したデッキ：{saved}。失敗：{failed}。この言語がないカード枚数：{unavailable}。再度適用すると失敗したデッキを再試行できます。",
+  "story.tagline": "キャラクターを選んで、バトルを追体験。",
+  "story.adaptation": "アレンジ",
+  "story.adaptationHint": "原作に描かれていない部分を補完したプレイ用アレンジです。",
+  "story.notice":
+    "公式の章は原文のままです。アレンジでは不明な盤面やデッキ、物語上のカード変更をシミュレーターのカードルールに合わせて再構成します。",
+
+  "story.title": "ストーリーモード",
+  "story.all": "すべてのキャラクター",
+  "story.character": "キャラクター",
+  "story.start": "バトル開始",
+  "story.replay": "もう一度プレイ",
+  "story.locked": "前のバトルをクリアしてください",
+  "story.pending": "シナリオ準備中",
+  "story.completed": "クリア済み",
+  "story.ready": "プレイ可能",
+  "story.signin":
+    "ゲストとしてプレイ中です。進行状況はこのブラウザーに紐づき、ログインするとアカウントの進行状況を使用します。",
+  "story.progress": "{completed} / {total} バトルクリア",
+  "story.error": "進行状況を読み込めませんでした。",
+  "story.retry": "再試行",
+  "story.source": "公式バトル解説",
 
   "roadmap.hub.label": "コミュニティのセクション",
   "roadmap.hub.decks": "デッキ",

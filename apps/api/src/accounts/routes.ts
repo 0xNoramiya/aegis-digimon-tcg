@@ -1,4 +1,6 @@
 import { isCardImageLanguage } from "@aegis/shared/cards/isCardImageLanguage";
+import { installStoryRoutes } from "#api/story/installStoryRoutes";
+import { StoryProgressStore } from "#api/story/StoryProgressStore";
 import { isDeckFormat, type DeckFormat } from "@aegis/shared";
 import { randomBytes } from "node:crypto";
 import { ReplayLibrary } from "../replays/ReplayLibrary.js";
@@ -107,6 +109,7 @@ export function installAccountRoutes(
 ): void {
   const sessionFromRequest = (req: Request) => store.session(cookie(req, SESSION_COOKIE));
   installReplayRoutes({ app, library: replays, session: sessionFromRequest });
+  installStoryRoutes({ app, store: new StoryProgressStore(store), session: sessionFromRequest });
   // The organizer's override surface, in its own module. See src/tournaments/arbitration.
   installArbitrationRoutes({
     app,

@@ -1,3 +1,8 @@
+import { getStoryGuestHash } from "#api/story/getStoryGuestHash";
+import { storyBattles } from "@aegis/shared/story/storyBattles";
+import { StoryProgressStore } from "#api/story/StoryProgressStore";
+import { getStoryScenario } from "#api/story/getStoryScenario";
+import { getStorySeatDeck } from "#api/story/getStorySeatDeck";
 import type { AccountPreferences } from "#api/accounts/AccountStore";
 import { RollbackHistory } from "#api/rooms/RollbackHistory";
 import { RollbackKind, ROLLBACK_CHANNEL, ROLLBACK_RESET_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
@@ -145,6 +150,7 @@ interface RoomCreateOptions extends Partial<SeriesContinuationOptions> {
   allowFormatSelection?: boolean;
   tournamentRoom?: boolean;
   devScenario?: unknown;
+  storyBattleId?: unknown;
 }
 
 function isRoomCode(value: unknown): value is string {
@@ -214,6 +220,8 @@ function combatWindowEvent(window: CombatWindow): ServerEvent | undefined {
  * brackets keep running until the manager takes them over.
  */
 export interface AegisJoinOptions extends SeatJoinOptions {
+  storyBattleId?: string;
+  storyGuestToken?: string;
   allowRollback?: boolean;
   spectator?: boolean;
   botDeck?: SeatJoinOptions["deck"];
@@ -361,6 +369,9 @@ export class AegisRoom extends Room<{
   private isBotRoom = false;
   private devScenario: LocalScenarioEntry | undefined;
   private scenarioFixture: ScenarioFixture | undefined;
+  private storyBattleId: string | undefined;
+  private storyAccountId: string | undefined;
+  private storyGuestHash: string | undefined;
   private readonly BOT_SEAT = 1 as Seat;
   private isPrivate = false;
   private isRankedRoom = false;
@@ -516,6 +527,22 @@ export class AegisRoom extends Room<{
     // before a rejection would pin a bracket match or a Tournament Game to a room nobody ever
     // enters, and neither can be re-bound afterwards: the match would wedge (onDispose only
     // releases what was committed) and the game's UNIQUE room_id would refuse every later room.
+    if (this.storyBattleId) {
+      const guestHash = getStoryGuestHash(options.storyGuestToken);
+      if ((!account && !guestHash) || options.storyBattleId !== this.storyBattleId) {
+        return false;
+      }
+      const battle = storyBattles.find((entry) => entry.id === this.storyBattleId);
+      const store = new StoryProgressStore(this.accounts());
+      const progress = account ? await store.getProgress(account.id) : await store.getGuestProgress(guestHash!);
+      if (!battle || (battle.prerequisiteId && !progress.completed.includes(battle.prerequisiteId))) {
+        return false;
+      }
+      this.storyAccountId = account?.id;
+      this.storyGuestHash = account ? undefined : guestHash;
+    } else if (options.storyBattleId !== undefined) {
+      return false;
+    }
     if (!(await identity.commit())) return false;
     if (account) this.accountByClient.set(client.sessionId, account.id);
     return true;
@@ -709,6 +736,26 @@ export class AegisRoom extends Room<{
         this.scenarioFixture = getLocalScenario();
       }
     }
+    if (options.storyBattleId !== undefined) {
+      if (
+        !this.isBotRoom ||
+        options.rankedRoom ||
+        options.tournamentRoom ||
+        options.private ||
+        typeof options.storyBattleId !== "string" ||
+        options.devScenario !== undefined
+      ) {
+        throw new ServerError(400, "Invalid story room");
+      }
+      const battle = storyBattles.find((entry) => entry.id === options.storyBattleId);
+      const fixture = battle?.playable ? getStoryScenario(battle.id) : undefined;
+      if (!battle || !fixture) {
+        throw new ServerError(400, "Story battle is not available");
+      }
+      this.storyBattleId = battle.id;
+      this.scenarioFixture = fixture;
+      options.allowRollback = false;
+    }
     this.isRankedRoom = options.rankedRoom === true;
     this.isBetaBattleRoom = options.betaBattleRoom === true;
     this.isUnlimitedRoom =
@@ -801,6 +848,20 @@ export class AegisRoom extends Room<{
         this.refreshRollbackAvailability();
         if (event.kind === "matchStarted" && !this.devScenario && !this.replayRecording) {
           this.replayRecording = new ReplayRecording();
+        }
+        if (
+          event.kind === "gameOver" &&
+          this.storyBattleId &&
+          (this.storyAccountId || this.storyGuestHash) &&
+          event.result.outcome !== "draw" &&
+          event.result.winnerSeat === 0
+        ) {
+          const store = new StoryProgressStore(this.accounts());
+          const completion = { battleId: this.storyBattleId, matchId: this.state.matchLogId };
+          const saved = this.storyAccountId
+            ? store.recordVictory({ ...completion, accountId: this.storyAccountId })
+            : store.recordGuestVictory({ ...completion, guestHash: this.storyGuestHash! });
+          void saved.catch((error) => this.debugError("[AegisRoom] failed to persist story progress", error));
         }
         if (event.kind === "gameOver") {
           // A completed engine cannot accept replacement players. Locking also
@@ -1069,7 +1130,7 @@ export class AegisRoom extends Room<{
   private async recordRecentResults(
     event: Extract<import("@aegis/shared").ServerEvent, { kind: "gameOver" }>,
   ): Promise<void> {
-    if (this.devScenario) return;
+    if (this.devScenario || this.storyBattleId) return;
     const finishedAt = Date.now();
     // Snapshot both identities before I/O: onLeave clears accountByClient synchronously.
     const participants = ([0, 1] as const).flatMap((seat) => {
@@ -1470,6 +1531,19 @@ export class AegisRoom extends Room<{
     if (this.matchStartRequested || this.seatByClient.size + this.occupiedBotSeats().length >= 2) {
       throw new ServerError(403, "Player seats are full");
     }
+    if (this.storyBattleId && this.scenarioFixture) {
+      const battle = storyBattles.find((entry) => entry.id === this.storyBattleId)!;
+      options = {
+        ...options,
+        displayName: battle.character,
+        deck: getStorySeatDeck({ fixture: this.scenarioFixture, seat: 0 }),
+        deckId: undefined,
+        deckName: battle.title,
+        community: undefined,
+        botDeck: undefined,
+      };
+      this.customBotDeck = getStorySeatDeck({ fixture: this.scenarioFixture, seat: 1 });
+    }
     this.debug("player.join", { sessionId: client.sessionId, deck: options.deck });
     // The room type, not the payload, decides whether unreleased cards are legal: a private
     // room accepts them and its clients never send the flag (onAuth already vetted the pair).
@@ -1559,7 +1633,6 @@ export class AegisRoom extends Room<{
     if (this.tournamentGameId && accountId) this.tournamentSeatHolders[seat] = { accountId };
   }
 
-  /** A hand-laid board instead of the pre-game procedure; bot rooms outside production only. */
   private startScenarioNow(): void {
     if (!this.scenarioFixture) throw new Error("No room fixture configured");
     if (this.matchStartRequested) return;
@@ -1794,7 +1867,7 @@ export class AegisRoom extends Room<{
 
     const humanDeck = this.engine.stagedDecks[0];
     const modelOptions =
-      this.devScenario === undefined && humanDeck !== undefined
+      this.scenarioFixture === undefined && humanDeck !== undefined
         ? trainedBotOptions({
             engine: this.engine,
             seat: this.BOT_SEAT,
@@ -1823,11 +1896,15 @@ export class AegisRoom extends Room<{
       botOptions,
     );
 
+    let botDisplayName = modelOptions === undefined ? "Bot" : "BT26 AI";
+    if (this.storyBattleId) {
+      botDisplayName = storyBattles.find((entry) => entry.id === this.storyBattleId)!.opponent;
+    }
     this.debug("bot.seated", { seat: this.BOT_SEAT, deck, clientPacesChains });
     try {
       this.withBatch(() =>
         this.engine.seatPlayer(this.BOT_SEAT, "bot", {
-          displayName: modelOptions === undefined ? "Bot" : "BT26 AI",
+          displayName: botDisplayName,
           deck,
           betaBattleMode: this.isBetaBattleRoom,
           unlimited: this.isUnlimitedRoom,
@@ -1863,7 +1940,7 @@ export class AegisRoom extends Room<{
       this.state.timerActiveSeat = -1;
       this.matchClockInterval?.clear();
     }
-    if (this.devScenario !== undefined) this.startScenarioNow();
+    if (this.scenarioFixture !== undefined) this.startScenarioNow();
     else this.startMatchNow();
     return true;
   }

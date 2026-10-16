@@ -16,6 +16,27 @@ const interfaceMessages = {
   "settings.cardImageLanguageProgress": "Aggiornamento mazzi: {completed}/{total}",
   "settings.cardImageLanguageResult":
     "Mazzi aggiornati: {saved}. Non riusciti: {failed}. Copie senza questa lingua: {unavailable}. Applica di nuovo per riprovare i mazzi non riusciti.",
+  "story.tagline": "Scegli il tuo personaggio. Rivivi le battaglie.",
+  "story.adaptation": "Adattamento",
+  "story.adaptationHint": "I dettagli mancanti della storia sono ricostruiti in questo adattamento giocabile.",
+  "story.notice":
+    "I capitoli ufficiali restano nella lingua originale. Gli adattamenti ricostruiscono campi, mazzi e modifiche fittizie usando le regole stampate del simulatore.",
+
+  "story.title": "Modalità storia",
+  "story.all": "Tutti i personaggi",
+  "story.character": "Personaggio",
+  "story.start": "Inizia battaglia",
+  "story.replay": "Gioca di nuovo",
+  "story.locked": "Completa la battaglia precedente",
+  "story.pending": "Scenario in preparazione",
+  "story.completed": "Completata",
+  "story.ready": "Disponibile",
+  "story.signin":
+    "Giochi come ospite. I progressi restano legati a questo browser; accedendo usi quelli del tuo account.",
+  "story.progress": "{completed} / {total} battaglie completate",
+  "story.error": "Impossibile caricare i progressi.",
+  "story.retry": "Riprova",
+  "story.source": "Resoconto ufficiale della battaglia",
 
   "settings.shareDeckAfterMatch": "Condividi il mio mazzo dopo la partita",
   "settings.shareDeckAfterMatchDesc":

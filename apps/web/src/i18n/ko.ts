@@ -13,6 +13,27 @@ const interfaceMessages = {
   "settings.cardImageLanguageProgress": "덱 업데이트 중: {completed}/{total}",
   "settings.cardImageLanguageResult":
     "업데이트된 덱: {saved}. 실패: {failed}. 해당 언어가 없는 카드 수: {unavailable}. 다시 적용하면 실패한 덱을 재시도합니다.",
+  "story.tagline": "캐릭터를 선택하고 배틀을 다시 경험하세요.",
+  "story.adaptation": "각색",
+  "story.adaptationHint": "원작에 나오지 않은 세부 사항을 재구성한 플레이용 각색입니다.",
+  "story.notice":
+    "공식 챕터는 원문을 유지합니다. 각색은 시뮬레이터의 카드 규칙으로 미공개 필드, 덱 및 허구의 카드 변경을 재구성합니다.",
+
+  "story.title": "스토리 모드",
+  "story.all": "모든 캐릭터",
+  "story.character": "캐릭터",
+  "story.start": "배틀 시작",
+  "story.replay": "다시 플레이",
+  "story.locked": "이전 배틀을 완료하세요",
+  "story.pending": "시나리오 준비 중",
+  "story.completed": "완료",
+  "story.ready": "플레이 가능",
+  "story.signin":
+    "게스트로 플레이 중입니다. 진행 상황은 이 브라우저에 연결되며, 로그인하면 계정의 진행 상황을 사용합니다.",
+  "story.progress": "배틀 {completed} / {total}개 완료",
+  "story.error": "진행 상황을 불러오지 못했습니다.",
+  "story.retry": "다시 시도",
+  "story.source": "공식 배틀 해설",
 
   "roadmap.hub.label": "커뮤니티 섹션",
   "roadmap.hub.decks": "덱",

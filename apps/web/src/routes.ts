@@ -23,6 +23,7 @@ export const SCREEN_PATHS: Record<Screen, string> = {
   home: "/",
   login: "/login",
   lobby: "/play",
+  story: "/play/story",
   watch: "/play/watch",
   deck: "/decks",
   collection: "/collection",
@@ -46,6 +47,7 @@ export function routeFromPathname(pathname: string): AppRoute | undefined {
   if (ownFeedback) return { screen: "myFeedback", feedbackId: Number(ownFeedback) };
   if (normalized === "/") return { screen: "home" };
   if (normalized === "/login") return { screen: "login" };
+  if (normalized === "/play/story") return { screen: "story" };
   if (normalized === "/play") return { screen: "lobby" };
   if (normalized === "/play/game") return { screen: "game" };
   if (normalized === "/play/watch") return { screen: "watch" };

@@ -32,6 +32,27 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.cardImageLanguageProgress": "Atualizando decks: {completed}/{total}",
   "settings.cardImageLanguageResult":
     "Decks atualizados: {saved}. Falhas: {failed}. Cópias sem esse idioma: {unavailable}. Aplique novamente para tentar os decks que falharam.",
+  "story.tagline": "Escolha seu personagem. Reviva as batalhas.",
+  "story.adaptation": "Adaptação",
+  "story.adaptationHint": "Os detalhes não mostrados na história foram reconstruídos para esta adaptação jogável.",
+  "story.notice":
+    "Os capítulos oficiais permanecem no idioma original. As adaptações reconstroem campos, decks e alterações fictícias de cartas usando as regras impressas do simulador.",
+
+  "story.title": "Modo história",
+  "story.all": "Todos os personagens",
+  "story.character": "Personagem",
+  "story.start": "Iniciar batalha",
+  "story.replay": "Jogar novamente",
+  "story.locked": "Conclua a batalha anterior",
+  "story.pending": "Cenário em preparação",
+  "story.completed": "Concluída",
+  "story.ready": "Disponível",
+  "story.signin":
+    "Jogando como visitante. O progresso fica vinculado a este navegador; ao entrar, você usa o progresso da sua conta.",
+  "story.progress": "{completed} / {total} batalhas concluídas",
+  "story.error": "Não foi possível carregar seu progresso.",
+  "story.retry": "Tentar novamente",
+  "story.source": "Cobertura oficial da batalha",
 
   "settings.shareDeckAfterMatch": "Compartilhar meu deck após a partida",
   "settings.shareDeckAfterMatchDesc":
