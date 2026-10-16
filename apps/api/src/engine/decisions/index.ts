@@ -49,6 +49,7 @@ interface OpenDecision {
   /** The pick of an accepted "you may": empty backs out, so a non-empty answer must name an offered card. */
   allowedTargetCombinations: readonly (readonly string[])[] | undefined;
   backsOutOnlyWhenEmpty: boolean;
+  declinableSelection: boolean;
   distinctCardIds: boolean;
   distinctNames: boolean;
   cardIdByInstance: ReadonlyMap<string, string>;
@@ -189,6 +190,7 @@ export class DecisionManager {
         candidateInstanceIds: spec.options?.candidateInstanceIds,
         allowedTargetCombinations: spec.options?.allowedTargetCombinations,
         backsOutOnlyWhenEmpty: spec.options?.purpose === "acceptedOptional",
+        declinableSelection: spec.options?.purpose !== undefined,
         distinctCardIds: spec.options?.distinctCardIds === true,
         distinctNames: spec.options?.distinctNames === true,
         cardIdByInstance: new Map([
@@ -245,6 +247,13 @@ export class DecisionManager {
     }
   }
 
+  expire(): boolean {
+    const open = this.open;
+    if (open === undefined) return false;
+    this.resolveOpen(open.decisionId, expiredAnswer(open));
+    return true;
+  }
+
   private resolveOpen(decisionId: string, response: DecisionResponse): void {
     const open = this.open;
     if (open === undefined || open.decisionId !== decisionId) return;
@@ -253,6 +262,42 @@ export class DecisionManager {
     this.state.pendingDecision = undefined;
     open.resolve(response);
   }
+}
+
+function expiredAnswer(open: OpenDecision): DecisionResponse {
+  const fallback = safeDefault(open.kind, open.declineIndex);
+  if (fallback.kind !== "chooseTargets" && fallback.kind !== "selectCards") return fallback;
+  if (open.declinableSelection) return fallback;
+  const candidates = open.candidateInstanceIds ?? [];
+  const required = Math.min(open.min ?? 0, candidates.length);
+  if (required <= 0) return fallback;
+  const instanceIds = [...(open.allowedTargetCombinations?.[0] ?? firstLegalSelection(open, candidates, required))];
+  const answer: DecisionResponse =
+    fallback.kind === "chooseTargets" ? { kind: "chooseTargets", instanceIds } : { kind: "selectCards", instanceIds };
+  const legal =
+    satisfiesMin(open, answer) &&
+    satisfiesAllowedTargetCombinations(open, answer) &&
+    satisfiesDistinctCardIds(open, answer) &&
+    satisfiesDistinctNames(open, answer);
+  return legal ? answer : fallback;
+}
+
+function firstLegalSelection(open: OpenDecision, candidates: readonly string[], required: number): string[] {
+  const selection: string[] = [];
+  const cardIds = new Set<string>();
+  const names = new Set<string>();
+  for (const instanceId of candidates) {
+    if (selection.length === required) break;
+    const cardId = open.cardIdByInstance.get(instanceId);
+    if (open.distinctCardIds && (cardId === undefined || cardIds.has(cardId))) continue;
+    const definition = cardId === undefined ? undefined : getCardDefinition(cardId);
+    const cardNames = definition === undefined ? [] : effectiveExactNames(definition).map((name) => name.toLowerCase());
+    if (open.distinctNames && (definition === undefined || cardNames.some((name) => names.has(name)))) continue;
+    selection.push(instanceId);
+    if (cardId !== undefined) cardIds.add(cardId);
+    for (const name of cardNames) names.add(name);
+  }
+  return selection;
 }
 
 function satisfiesAllowedTargetCombinations(open: OpenDecision, response: DecisionResponse): boolean {
