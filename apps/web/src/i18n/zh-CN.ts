@@ -50,6 +50,10 @@ const interfaceMessages = {
   "settings.shareDeckAfterMatch": "对局结束后分享我的卡组",
   "settings.shareDeckAfterMatchDesc": "允许对手在对局结束后查看并复制我的初始卡组列表。默认开启。",
   "settings.shareDeckAfterMatchFailed": "无法加载或保存此设置。请重试或重新打开设置。",
+  "overlay.useNegamon": "使用尼格兽",
+  "overlay.negamonPlayDetail":
+    "发动育成区尼格兽的效果，以降低的费用登场数码兽，然后将尼格兽放在其下方。你将在效果的下一步选择卡牌。",
+  "overlay.playNormally": "正常登场",
   "overlay.viewOpponentDeck": "查看对手卡组",
   "overlay.opponentDeck": "对手卡组",
   "rollback.failed": "无法安全恢复到此时点。当前对局状态已保留。",
