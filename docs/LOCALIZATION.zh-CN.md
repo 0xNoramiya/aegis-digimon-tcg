@@ -36,7 +36,15 @@ converted to the notation recognized by the upstream effect renderer. Exact
 complete-text entries take priority. When a complete field has no match, each
 nonempty line is matched independently against complete dictionary entries.
 Unmatched lines remain in English, with their original line breaks and spacing.
-This implementation does not guess clauses or replace partial sentences.
+For resolving clauses, effect displays pass the source card ID. If an exact
+entry is unavailable, the client searches only that card's complete text boxes
+and aligns paragraphs separated by a line break before a bracketed heading.
+The source and translation must have the same paragraph count, the requested
+text must match a whole source paragraph, and all matches must agree on one
+translation. Continuation lines, including Delay bullets, stay attached to their
+paragraph. Missing context, ambiguous matches, mismatched paragraph counts and
+partial sentences retain the existing fallback. No catalog-wide substring
+search or sentence translation is performed.
 
 Run `pnpm translations:audit` to write `.local/card-translation-coverage.json`.
 The report includes card IDs, fields, original text and unmatched effect lines.
@@ -44,7 +52,9 @@ The report includes card IDs, fields, original text and unmatched effect lines.
 empty. The normal web build runs this check before compilation, including the
 Docker web build used by self-hosted deployments. Custom direct Vite builds must
 run the check separately. Coverage measures dictionary availability, not semantic
-translation accuracy.
+translation accuracy. A complete-field match does not prove that every sliced
+notice or decision clause can be translated. Resolving-clause component tests
+cover these display paths separately; the catalog audit does not certify them.
 
 Dictionary maintenance should preserve English keys and named placeholders. After
 changing data or integration code, run the locale tests, card display tests,

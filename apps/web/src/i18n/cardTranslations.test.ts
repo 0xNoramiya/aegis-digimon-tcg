@@ -12,6 +12,67 @@ import { normalizePrintedTextKey } from "@/i18n/normalizePrintedTextKey";
 
 const translations = await loadPrintedCardTranslations();
 
+describe("Chinese resolving clauses from complete card translations", () => {
+  const card = allCards().find((candidate) => candidate.cardId === "LM-034")!;
+  const clause = card.effectText!.split("\n")[1]!;
+
+  it("resolves the complete Main clause without including the separate Delay effect", () => {
+    const result = getTranslatedCardText({ text: clause, translations, cardId: card.cardId });
+    expect(result).toBe(
+      "[主要]翻开我方卡组最上方的3张卡牌。将其中的1张蓝色/红色数码宝贝卡牌加入手牌。剩余的卡牌放回到卡组最下方。此后，将此卡牌置于战斗区。",
+    );
+    expect(result).not.toContain("延迟");
+    expect(result).not.toContain("内存值");
+  });
+
+  it("keeps the Delay bullet attached to its own timing", () => {
+    const text = card.effectText!.split("\n").slice(2).join("\n");
+    expect(getTranslatedCardText({ text, translations, cardId: card.cardId })).toBe("[主要]＜延迟＞\n\n·内存值+2。");
+  });
+
+  it.each([undefined, "ST1-02", "UNKNOWN-CARD"])("does not borrow a clause with card context %s", (cardId) => {
+    expect(getTranslatedCardText({ text: clause, translations, cardId })).toBe(clause);
+  });
+
+  it("preserves English without Chinese data or for an incomplete source clause", () => {
+    expect(getTranslatedCardText({ text: clause, cardId: card.cardId })).toBe(clause);
+    const text = clause.slice(0, -10);
+    expect(getTranslatedCardText({ text, translations, cardId: card.cardId })).toBe(text);
+  });
+
+  it("rejects translations with mismatched paragraph boundaries", () => {
+    const sample = { ...translations, text: { [normalizePrintedTextKey(card.effectText!)]: "【主要】不完整的译文。" } };
+    expect(getTranslatedCardText({ text: clause, translations: sample, cardId: card.cardId })).toBe(clause);
+  });
+
+  it("prefers an explicit clause entry over a translation extracted from a complete card", () => {
+    const sample = {
+      ...translations,
+      text: { ...translations.text, [normalizePrintedTextKey(clause)]: "【主要】独立译文。" },
+    };
+    expect(getTranslatedCardText({ text: clause, translations: sample, cardId: card.cardId })).toBe("[主要]独立译文。");
+  });
+
+  it("rejects conflicting translations of the same clause in different text boxes", () => {
+    const sharedCard = allCards().find((candidate) => candidate.cardId === "BT20-089")!;
+    const inheritedGroups = sharedCard.inheritedEffectText!.split(/(?:\r\n|\r|\n)\s*(?=\[)/);
+    const securityGroups = sharedCard.securityEffectText!.split(/(?:\r\n|\r|\n)\s*(?=\[)/);
+    const text = inheritedGroups.find((group) => group.startsWith("[End of All Turns]"))!;
+    const sample = {
+      ...translations,
+      text: {
+        [normalizePrintedTextKey(sharedCard.inheritedEffectText!)]: inheritedGroups
+          .map(() => "【双方的回合结束时】进化源译文。")
+          .join("\n\n"),
+        [normalizePrintedTextKey(sharedCard.securityEffectText!)]: securityGroups
+          .map(() => "【双方的回合结束时】安防译文。")
+          .join("\n\n"),
+      },
+    };
+    expect(getTranslatedCardText({ text, translations: sample, cardId: sharedCard.cardId })).toBe(text);
+  });
+});
+
 describe("Chinese card translation data against the upstream catalog", () => {
   it("shares a single dictionary load across consumers", async () => {
     const first = loadCardTranslations();

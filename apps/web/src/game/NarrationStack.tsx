@@ -6,6 +6,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { CardMini } from "../design/cards";
+import { EffectText } from "@/game/EffectText";
 import { Icons } from "../design/icons";
 import { useTranslation, type Translate } from "../i18n";
 import { cardDisplayName } from "./cardLinks";
@@ -392,7 +393,11 @@ function PeekLine({
           {summary.name ? <span className="narration-peek__name">{summary.name}</span> : null}
         </span>
         {/* One line of the clause: enough to know whether this is worth opening. */}
-        {summary.clause ? <span className="narration-peek__clause">{summary.clause}</span> : null}
+        {summary.clause ? (
+          <span className="narration-peek__clause">
+            <EffectText text={summary.clause} cardId={summary.cardId} />
+          </span>
+        ) : null}
       </span>
       {/* Keyed on the count so the badge replays its pop when a moment queues behind this
           one without replacing it: the band would otherwise change a digit in silence. */}
