@@ -62,8 +62,6 @@ import {
   formatIsUnlimited,
   isDigimonWorldAvatarId,
   MATCH_TIMER_START_SECONDS,
-  MATCH_TIMER_DECISION_SECONDS,
-  MATCH_TIMER_ACTION_SECONDS,
 } from "@aegis/shared";
 import { getLocalScenario, isLocalScenarioEntry, type LocalScenarioEntry } from "../engine/scenario/local.js";
 import { bindScenarioDecks, type ScenarioFixture } from "../engine/scenario/fixture.js";
@@ -78,7 +76,7 @@ import type { AccountStore, DeckSnapshot } from "../accounts/AccountStore.js";
 import { seriesStore } from "../tournaments/runtime.js";
 import type { SeriesStore } from "../tournaments/series/index.js";
 import { createLocalRoomCodeDirectory, type RoomCodeDirectory } from "../cluster/roomCodes.js";
-import { MatchClock, type ClockMode, type ClockWindow } from "./MatchClock.js";
+import { MatchClock, type ClockMode } from "./MatchClock.js";
 import { CasualSeries, type SeriesContinuationOptions, type SeriesRoomPort } from "./series/CasualSeries.js";
 import type { SeriesRecord } from "./series/SeriesDirectory.js";
 import { RematchOffer } from "#api/rooms/series/RematchOffer";
@@ -846,6 +844,7 @@ export class AegisRoom extends Room<{
         this.bots[seat]?.onActionSettled(intentType);
       },
       emit: (event) => {
+        if (event.kind === "cardPlayed" || event.kind === "digivolved") this.matchClock?.grantCardBonus(event.seat);
         this.engineEvents += 1;
         this.refreshRollbackAvailability();
         if (event.kind === "matchStarted" && !this.devScenario && !this.replayRecording) {
@@ -1058,11 +1057,7 @@ export class AegisRoom extends Room<{
           (devTimer || (!this.isBotRoom && options.matchTimer === true)),
         ...(devTimer ? { timerStartSeconds: MATCH_TIMER_START_SECONDS } : {}),
       },
-      {
-        privateRoom: this.isPrivate || devTimer,
-        bestOf: this.bestOf,
-        carriedSeconds: this.casualSeries?.continuation?.timerRemainingSeconds,
-      },
+      this.isPrivate || devTimer,
       performance.now(),
     );
     if (this.state.matchTimer) {
@@ -2585,14 +2580,11 @@ export class AegisRoom extends Room<{
 
   private syncMatchClock(): void {
     const seat = this.matchStartRequested ? this.engine.inputSeat : undefined;
-    const expired = this.matchClock?.update(performance.now(), seat, this.clockMode(seat), this.clockWindow());
+    const expired = this.matchClock?.update(performance.now(), seat, this.clockMode(seat));
     if (expired !== undefined && !this.state.gameOver) {
       if (expired.clock === "mulligan") {
         this.recordReplayInput({ kind: "expireMulliganWindow", seat: expired.seat });
         this.withBatch(() => this.engine.applyIntent(expired.seat, { type: "mulligan", keep: true }));
-      } else if (expired.clock === "window") {
-        this.recordReplayInput({ kind: "expireActionWindow", seat: expired.seat });
-        this.withBatch(() => this.engine.expireActionWindow(expired.seat));
       } else {
         this.recordReplayInput({ kind: "expireMatchTimer", seat: expired.seat });
         this.withBatch(() => this.engine.expireMatchTimer(expired.seat));
@@ -2605,15 +2597,6 @@ export class AegisRoom extends Room<{
    * A seat never loses time waiting on an opponent who dropped. The dropped seat's own
    * clock keeps running, so leaving costs the leaver, not the player left behind.
    */
-  private clockWindow(): ClockWindow {
-    const decision = this.state.pendingDecision;
-    const answering = decision !== undefined || this.state.combatWindow !== undefined;
-    return {
-      key: `${this.state.turnCount}:${this.state.stateVersion}:${decision?.decisionId ?? ""}`,
-      seconds: answering ? MATCH_TIMER_DECISION_SECONDS : MATCH_TIMER_ACTION_SECONDS,
-    };
-  }
-
   private clockMode(seat: Seat | undefined): ClockMode {
     if (seat === undefined) return "match";
     if (this.state.players[1 - seat]?.connected === false) return "frozen";
@@ -2914,6 +2897,7 @@ export class AegisRoom extends Room<{
   private requestDecision(seat: Seat, req: DecisionRequest): void {
     this.debug("decision.requested", { seat, request: req });
     this.pendingDecisionRequest = req;
+    if (req.kind !== "mulligan") this.matchClock?.grantDecisionBonus(seat);
     const bot = this.bots[seat];
     if (bot !== undefined) {
       this.debug(`[AegisRoom] requestDecision seat=${seat} kind=${req.kind} → bot`);

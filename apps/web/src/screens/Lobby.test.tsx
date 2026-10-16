@@ -664,39 +664,39 @@ describe("optional match timer configuration", () => {
     expect(timerSwitch.getAttribute("aria-checked")).toBe("false");
     expect(onTimerOptionsChange).toHaveBeenLastCalledWith({
       matchTimer: false,
-      timerStartSeconds: 720,
+      timerStartSeconds: 300,
       timerRefillSeconds: 60,
     });
     fireEvent.click(timerSwitch);
     expect(timerSwitch.getAttribute("aria-checked")).toBe("true");
     expect(onTimerOptionsChange).toHaveBeenLastCalledWith({
       matchTimer: true,
-      timerStartSeconds: 720,
+      timerStartSeconds: 300,
       timerRefillSeconds: 60,
     });
-    expect(screen.getByText("12:00")).toBeTruthy();
-    expect(screen.getByText("60s")).toBeTruthy();
-    expect(screen.getByText("30s")).toBeTruthy();
-    expect(screen.getByText("12:00 per player · 3 timeouts lose the game")).toBeTruthy();
+    expect(screen.getByText("300s")).toBeTruthy();
+    expect(screen.getByText("+60s")).toBeTruthy();
+    expect(screen.getByText("+30s")).toBeTruthy();
+    expect(screen.getByText("Maximum 300s · Counts while you decide")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /Private Match/ }));
-    fireEvent.change(screen.getByRole("combobox", { name: "Total time" }), { target: { value: "600" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "Starting time" }), { target: { value: "60" } });
     expect(screen.queryByRole("combobox", { name: "Per-turn refill" })).toBeNull();
     expect(onTimerOptionsChange).toHaveBeenLastCalledWith({
       matchTimer: true,
-      timerStartSeconds: 600,
+      timerStartSeconds: 60,
       timerRefillSeconds: 60,
     });
-    expect(screen.getByText("10:00")).toBeTruthy();
-    expect(screen.getByText("10:00 per player · 3 timeouts lose the game")).toBeTruthy();
+    expect(screen.getByText("60s")).toBeTruthy();
+    expect(screen.getByText("Maximum 60s · Counts while you decide")).toBeTruthy();
     fireEvent.click(screen.getByRole("switch", { name: "Match timer" }));
     expect(onTimerOptionsChange).toHaveBeenLastCalledWith({
       matchTimer: false,
-      timerStartSeconds: 600,
+      timerStartSeconds: 60,
       timerRefillSeconds: 60,
     });
-    expect(screen.queryByRole("combobox", { name: "Total time" })).toBeNull();
+    expect(screen.queryByRole("combobox", { name: "Starting time" })).toBeNull();
     fireEvent.click(screen.getByRole("switch", { name: "Match timer" }));
-    expect(screen.getByText("10:00 per player · 3 timeouts lose the game")).toBeTruthy();
+    expect(screen.getByText("Maximum 60s · Counts while you decide")).toBeTruthy();
     fireEvent.click(screen.getByRole("tab", { name: "Join" }));
     expect(screen.queryByRole("switch", { name: "Match timer" })).toBeNull();
     expect(screen.getByText("The host sets the format and timer for both players.")).toBeTruthy();

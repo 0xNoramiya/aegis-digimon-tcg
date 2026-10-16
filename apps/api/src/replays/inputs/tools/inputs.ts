@@ -53,7 +53,6 @@ export function describeInput(input: ReplayInput, index: number, indexWidth?: nu
     case "reconnect":
     case "clearReady":
     case "expireMatchTimer":
-    case "expireActionWindow":
       parts.push(`seat ${input.seat}`);
       break;
     case "expireMulliganWindow":

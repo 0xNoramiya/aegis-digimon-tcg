@@ -232,14 +232,7 @@ export class CasualSeries {
     series.chooserSeat = -1;
     series.choiceSecondsLeft = 0;
     series.nextFirstSeat = firstSeat;
-    const state = this.port.state;
-    this.record = {
-      ...this.record,
-      results: [...this.results],
-      firstSeat,
-      nonce: randomUUID(),
-      ...(state.matchTimer ? { timerRemainingSeconds: [state.timerRemaining0, state.timerRemaining1] } : {}),
-    };
+    this.record = { ...this.record, results: [...this.results], firstSeat, nonce: randomUUID() };
     void this.openNextRoom(this.record);
   }
 

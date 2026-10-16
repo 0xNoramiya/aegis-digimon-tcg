@@ -1,18 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
   GameState,
+  MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN,
+  MATCH_TIMER_DECISION_BONUS_SECONDS,
   MULLIGAN_TIMER_SECONDS,
-  MATCH_TIMER_SERIES_START_SECONDS,
   MATCH_TIMER_START_SECONDS,
   matchTimerSettings,
 } from "@aegis/shared";
 import { MatchClock, PRESENTATION_BACKLOG_MAX_MS } from "./MatchClock.js";
 
-function clock(bankSeconds = 60) {
+function clock(options = { matchTimer: true, timerStartSeconds: 60, timerRefillSeconds: 15 }) {
   const state = new GameState();
-  const options = { matchTimer: true, timerStartSeconds: 1200 };
-  const setup = { privateRoom: true, bestOf: 1, carriedSeconds: [bankSeconds, bankSeconds] as const };
-  return { state, timer: new MatchClock(state, options, setup, 0) };
+  return { state, timer: new MatchClock(state, options, true, 0) };
 }
 
 describe("optional match clock", () => {
@@ -84,7 +83,7 @@ describe("optional match clock", () => {
   });
 
   it("caps a timeline queued far faster than it plays", () => {
-    const { state, timer } = clock(300);
+    const { state, timer } = clock({ matchTimer: true, timerStartSeconds: 300, timerRefillSeconds: 15 });
     timer.update(0, 0);
     for (let batch = 0; batch < 20; batch += 1) timer.presentBatch(0, [20_000, 20_000]);
     timer.update(PRESENTATION_BACKLOG_MAX_MS + 1000, 0);
@@ -110,18 +109,36 @@ describe("optional match clock", () => {
     expect(state.timerRemaining0).toBe(58);
   });
 
-  it("carries the remaining bank across turns without refilling it", () => {
-    const { state, timer } = clock(300);
-    state.turnCount = 1;
-    timer.update(0, 0);
-    timer.update(100_000, 1);
-    timer.update(150_000, 1);
-    state.turnCount = 2;
-    state.turnSeat = 1;
-    timer.update(150_000, 1);
-    expect(state.timerRemaining0).toBe(200);
-    expect(state.timerRemaining1).toBe(250);
-  });
+  it.each([0, 15, 30, 60])(
+    "adds 60s to the owner and 30s to the opponent once, ignoring legacy refill %i",
+    (refill) => {
+      const { state, timer } = clock({ matchTimer: true, timerStartSeconds: 300, timerRefillSeconds: refill });
+      state.turnCount = 1;
+      timer.update(0, 0);
+      timer.update(100_000, 1);
+      timer.update(150_000, 1);
+      expect(state.timerRemaining0).toBe(200);
+      expect(state.timerRemaining1).toBe(250);
+      state.turnCount = 2;
+      state.turnSeat = 1;
+      timer.update(150_000, 1);
+      expect(state.timerRemaining0).toBe(230);
+      expect(state.timerRemaining1).toBe(300);
+      timer.update(170_000, 0);
+      expect(state.timerRemaining1).toBe(280);
+      timer.update(220_000, 0);
+      expect(state.timerRemaining0).toBe(180);
+      state.turnCount = 3;
+      state.turnSeat = 0;
+      timer.update(220_000, 0);
+      expect(state.timerRemaining0).toBe(240);
+      expect(state.timerRemaining1).toBe(300);
+      timer.update(220_000, 0);
+      expect(state.timerRemaining0).toBe(240);
+      timer.update(230_000, 0);
+      expect(state.timerRemaining0).toBe(230);
+    },
+  );
 
   it("preserves the opening reserve without granting a bonus after mulligan", () => {
     const { state, timer } = clock();
@@ -155,7 +172,7 @@ describe("optional match clock", () => {
   });
 
   it("ignores public overrides and rejects malformed private timing options", () => {
-    expect(matchTimerSettings({ matchTimer: true, timerStartSeconds: 300, timerRefillSeconds: 0 })).toEqual({
+    expect(matchTimerSettings({ matchTimer: true, timerStartSeconds: 60, timerRefillSeconds: 0 })).toEqual({
       enabled: true,
       startSeconds: MATCH_TIMER_START_SECONDS,
       refillSeconds: 60,
@@ -163,21 +180,11 @@ describe("optional match clock", () => {
     expect(matchTimerSettings({ matchTimer: true, timerStartSeconds: -1, timerRefillSeconds: Infinity }, true)).toEqual(
       { enabled: true, startSeconds: MATCH_TIMER_START_SECONDS, refillSeconds: 60 },
     );
-    expect(matchTimerSettings({ matchTimer: true, timerStartSeconds: 600 }, true).startSeconds).toBe(600);
     expect(matchTimerSettings({ matchTimer: "true" } as never, true).enabled).toBe(false);
-  });
-
-  it("gives a best-of-three one bank for the whole series", () => {
-    expect(matchTimerSettings({ matchTimer: true }, false, 3).startSeconds).toBe(MATCH_TIMER_SERIES_START_SECONDS);
-    const state = new GameState();
-    new MatchClock(state, { matchTimer: true }, { privateRoom: false, bestOf: 3, carriedSeconds: [400, 5000] }, 0);
-    expect(state.timerStartSeconds).toBe(MATCH_TIMER_SERIES_START_SECONDS);
-    expect(state.timerRemaining0).toBe(400);
-    expect(state.timerRemaining1).toBe(MATCH_TIMER_SERIES_START_SECONDS);
   });
 });
 
-describe("mulligan window and disconnect freeze", () => {
+describe("mulligan window, disconnect freeze and combo time", () => {
   it("charges the mulligan window, not the match clock, and reports its own expiry", () => {
     const { state, timer } = clock();
     timer.update(0, 0, "mulligan");
@@ -204,54 +211,34 @@ describe("mulligan window and disconnect freeze", () => {
     timer.update(507_000, 0);
     expect(state.timerRemaining0).toBe(53);
   });
+
+  it("adds combo time per decision up to the per-turn ceiling, never past the starting reserve", () => {
+    const { state, timer } = clock();
+    state.turnCount = 1;
+    timer.update(0, 0);
+    timer.update(50_000, 0);
+    for (let index = 0; index < 20; index += 1) timer.grantDecisionBonus(0);
+    expect(state.timerRemaining0).toBe(10 + MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN);
+    state.turnCount = 2;
+    timer.grantDecisionBonus(0);
+    expect(state.timerRemaining0).toBe(
+      10 + MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN + MATCH_TIMER_DECISION_BONUS_SECONDS,
+    );
+    timer.grantDecisionBonus(1);
+    expect(state.timerRemaining1).toBe(60);
+  });
 });
 
-describe("decision and action windows", () => {
-  const action = { key: "main", seconds: 60 };
-
-  it("expires the window before the bank and publishes its countdown", () => {
-    const { state, timer } = clock(600);
-    timer.update(0, 0, "match", action);
-    expect(state.timerWindowSeat).toBe(0);
-    expect(state.timerWindowSeconds).toBe(60);
-    timer.update(45_000, 0, "match", action);
-    expect(state.timerWindowRemaining).toBe(15);
-    expect(timer.update(60_000, 0, "match", action)).toEqual({ seat: 0, clock: "window" });
-    expect(state.timerRemaining0).toBe(540);
-    expect(state.timerWindowSeat).toBe(-1);
-  });
-
-  it("restarts the window after each action and for each new decision", () => {
-    const { state, timer } = clock(600);
-    timer.update(0, 0, "match", action);
-    timer.update(50_000, 0, "match", { key: "after-play", seconds: 60 });
-    expect(state.timerWindowRemaining).toBe(60);
-    timer.update(55_000, 1, "match", { key: "block", seconds: 30 });
-    expect(state.timerWindowSeat).toBe(1);
-    expect(state.timerWindowRemaining).toBe(30);
-  });
-
-  it("does not run the window during animations or while the opponent is away", () => {
-    const { state, timer } = clock(600);
-    timer.update(0, 0, "match", action);
-    timer.presentBatch(0, [20_000, 20_000]);
-    timer.update(20_000, 0, "match", action);
-    expect(state.timerWindowRemaining).toBe(60);
-    timer.update(30_000, 0, "frozen", action);
-    expect(timer.update(500_000, 0, "frozen", action)).toBeUndefined();
-    timer.update(500_000, 0, "match", action);
-    expect(state.timerWindowRemaining).toBe(50);
-  });
-
-  it("lets the bank expire first when it is shorter than the window", () => {
-    const { timer } = clock(20);
-    timer.update(0, 0, "match", action);
-    expect(timer.update(20_000, 0, "match", action)).toEqual({ seat: 0, clock: "match" });
-  });
-
-  it("keeps the mulligan outside the window", () => {
-    const { state, timer } = clock(600);
-    timer.update(0, 0, "mulligan", action);
-    expect(state.timerWindowSeat).toBe(-1);
-  });
+it("#39 shares a bounded combo allowance between confirmed cards and effect decisions", () => {
+  const { state, timer } = clock();
+  state.turnCount = 1;
+  timer.update(0, 0);
+  timer.update(50_000, 0);
+  timer.grantCardBonus(0);
+  expect(state.timerRemaining0).toBe(10 + MATCH_TIMER_DECISION_BONUS_SECONDS);
+  for (let index = 0; index < 20; index++) {
+    timer.grantCardBonus(0);
+    timer.grantDecisionBonus(0);
+  }
+  expect(state.timerRemaining0).toBe(10 + MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN);
 });

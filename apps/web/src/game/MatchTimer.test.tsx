@@ -31,7 +31,7 @@ describe("match timer readouts", () => {
     rerender(view());
     expect(screen.getAllByRole("timer")).toHaveLength(2);
     expect(screen.queryByText("Your action")).toBeNull();
-    expect(screen.getAllByText("12:00")).toHaveLength(2);
+    expect(screen.getAllByText("300")).toHaveLength(2);
   });
   it("keeps both clocks above the viewer's decision sheet only", () => {
     const state = new GameState();
@@ -77,12 +77,12 @@ describe("match timer readouts", () => {
     expect(viewer.textContent).toContain("21");
     expect(viewer.getAttribute("aria-label")).toMatch(/^Your time \(Mulligan\): 00:21\./);
     expect(screen.getByTestId("opponent-match-timer").getAttribute("data-clock")).toBe("match");
-    expect(screen.getByTestId("opponent-match-timer").textContent).toContain("05:00");
+    expect(screen.getByTestId("opponent-match-timer").textContent).toContain("300");
 
     state.pendingDecision = undefined;
     rerender(view());
     expect(screen.getByTestId("viewer-match-timer").getAttribute("data-clock")).toBe("match");
-    expect(screen.getByTestId("viewer-match-timer").textContent).toContain("05:00");
+    expect(screen.getByTestId("viewer-match-timer").textContent).toContain("300");
   });
   it("prints minute boundaries and clamps expired clocks", () => {
     expect([300, 60, 59, 0, -1].map(formatMatchTime)).toEqual(["05:00", "01:00", "00:59", "00:00", "00:00"]);
@@ -106,34 +106,7 @@ describe("match timer readouts", () => {
     expect(screen.getByRole("timer").getAttribute("aria-label")).toContain("00:20");
     expect(screen.getByRole("timer").getAttribute("data-low")).toBe("true");
     expect(screen.getByRole("timer").getAttribute("data-active")).toBe("true");
-    expect(screen.getByText("00:20")).toBeTruthy();
+    expect(screen.getByText("20")).toBeTruthy();
     expect(screen.queryByText("Your action")).toBeNull();
-  });
-  it("shows the action rope in its last seconds and the seat's timeouts", () => {
-    const state = new GameState();
-    state.matchTimer = true;
-    state.timerActiveSeat = 0;
-    state.timerWindowSeat = 0;
-    state.timerWindowSeconds = 60;
-    state.timerWindowRemaining = 16;
-    state.timerStrikes0 = 1;
-    const view = () => (
-      <I18nProvider>
-        <MatchTimer state={state} seat={0} />
-      </I18nProvider>
-    );
-    const { rerender } = render(view());
-    const clock = () => screen.getByRole("timer");
-    expect(clock().getAttribute("data-rope")).toBeNull();
-    expect(clock().textContent).toContain("1/3");
-    expect(clock().getAttribute("aria-label")).toContain("Timeouts: 1 of 3");
-    state.timerWindowRemaining = 15;
-    rerender(view());
-    expect(clock().getAttribute("data-rope")).toBe("true");
-    expect(clock().textContent).toContain("15s");
-    expect(clock().getAttribute("aria-label")).toContain("15s left to act");
-    state.timerActiveSeat = -1;
-    rerender(view());
-    expect(clock().getAttribute("data-rope")).toBeNull();
   });
 });

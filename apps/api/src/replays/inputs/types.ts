@@ -89,7 +89,6 @@ export type ReplayRoomInput =
   | { kind: "expireMatchTimer"; seat: Seat }
   /** The mulligan window ran out: the room keeps the seat's hand (`mulligan` with `keep: true`). */
   | { kind: "expireMulliganWindow"; seat: Seat }
-  | { kind: "expireActionWindow"; seat: Seat }
   | { kind: "expireCombatWindow" };
 
 /**

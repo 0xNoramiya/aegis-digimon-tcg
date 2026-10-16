@@ -23,21 +23,6 @@
 .match-timer[data-low] {
   --clock-color: #ffd16a;
 }
-.match-timer[data-rope] {
-  --clock-color: #ff8a8a;
-  border-color: var(--clock-color);
-}
-.match-timer__rope,
-.match-timer__strikes {
-  font: 700 var(--ds-text-xs) / 1.2 var(--ds-font-mono);
-  font-variant-numeric: tabular-nums;
-}
-.match-timer__rope {
-  color: #ff8a8a;
-}
-.match-timer__strikes {
-  color: #ffd16a;
-}
 .match-timer__icon {
   flex: none;
 }

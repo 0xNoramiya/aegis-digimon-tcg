@@ -7,10 +7,9 @@ import {
   CombatWindow,
   EFFECT_UNIT_MS,
   EVENT_CHANNEL,
-  MATCH_TIMER_ACTION_SECONDS,
-  MATCH_TIMER_DECISION_SECONDS,
+  MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN,
+  MATCH_TIMER_DECISION_BONUS_SECONDS,
   MATCH_TIMER_START_SECONDS,
-  MATCH_TIMER_STRIKE_LIMIT,
   MULLIGAN_TIMER_SECONDS,
   PendingDecision,
   Phase,
@@ -34,7 +33,7 @@ function room(
   options: Parameters<AegisRoom["onCreate"]>[0] = {
     private: true,
     matchTimer: true,
-    timerStartSeconds: 300,
+    timerStartSeconds: 60,
     timerRefillSeconds: 0,
   },
 ) {
@@ -69,14 +68,9 @@ describe("room clock enforcement", () => {
     const now = vi.spyOn(performance, "now").mockReturnValue(0);
     const game = room();
     begin(game, 0);
-    for (let time = 0; time < 300_000; time += 50_000) {
-      now.mockReturnValue(time);
-      game.state.stateVersion += 1;
-      sync(game);
-    }
-    now.mockReturnValue(300_000);
     sync(game);
-    expect(game.state.timerStrikes0).toBe(0);
+    now.mockReturnValue(60_000);
+    sync(game);
     expect(game.state.gameOver).toBe(true);
     expect(game.state.winnerSeat).toBe(1);
     expect(engine(game).mainPhase.isOpen).toBe(false);
@@ -96,7 +90,7 @@ describe("room clock enforcement", () => {
     sync(game);
     await expect(waiting).resolves.toBe(true);
     expect(game.state.gameOver).toBe(false);
-    expect(game.state.timerRemaining0).toBe(300);
+    expect(game.state.timerRemaining0).toBe(60);
     expect(engine(game).mulligan.isOpen).toBe(false);
     expect(game.state.pendingDecision).toBeUndefined();
     expect(engine(game).applyIntent(0, { type: "mulligan", keep: false }).ok).toBe(false);
@@ -122,8 +116,8 @@ describe("room clock enforcement", () => {
     sync(game);
     now.mockReturnValue(10_000);
     sync(game);
-    expect(game.state.timerRemaining0).toBe(300);
-    expect(game.state.timerRemaining1).toBe(290);
+    expect(game.state.timerRemaining0).toBe(60);
+    expect(game.state.timerRemaining1).toBe(50);
     game.state.pendingDecision = undefined;
     const window = new CombatWindow();
     window.seat = 1;
@@ -131,7 +125,7 @@ describe("room clock enforcement", () => {
     now.mockReturnValue(15_000);
     sync(game);
     expect(game.state.timerActiveSeat).toBe(1);
-    expect(game.state.timerRemaining1).toBe(285);
+    expect(game.state.timerRemaining1).toBe(45);
   });
 
   it("pauses while the engine resolves and resumes the existing bank", () => {
@@ -145,75 +139,55 @@ describe("room clock enforcement", () => {
     sync(game);
     now.mockReturnValue(20_000);
     sync(game);
-    expect(game.state.timerRemaining0).toBe(295);
+    expect(game.state.timerRemaining0).toBe(55);
     engine(game).mainVerbContinuationsInFlight = 0;
     sync(game);
     now.mockReturnValue(25_000);
     sync(game);
-    expect(game.state.timerRemaining0).toBe(290);
+    expect(game.state.timerRemaining0).toBe(50);
   });
 
-  it("carries each player's bank across turns without refilling it", () => {
+  it("publishes the 60s/30s turn bonuses once while retaining each player's reserve", () => {
     const now = vi.spyOn(performance, "now").mockReturnValue(0);
-    const game = room();
+    const game = room({ private: true, matchTimer: true, timerStartSeconds: 300, timerRefillSeconds: 0 });
     begin(game, 0);
     sync(game);
-    now.mockReturnValue(40_000);
+    now.mockReturnValue(100_000);
     sync(game);
+    expect(game.state.timerRemaining0).toBe(200);
+    const decision = new PendingDecision();
+    decision.seat = 1;
+    game.state.pendingDecision = decision;
+    sync(game);
+    now.mockReturnValue(150_000);
+    sync(game);
+    expect(game.state.timerRemaining1).toBe(250);
+
     game.state.turnCount = 2;
     game.state.turnSeat = 1;
-    game.state.stateVersion += 1;
     sync(game);
-    expect(game.state.timerRemaining0).toBe(260);
     expect(game.state.timerRemaining1).toBe(300);
+    expect(game.state.timerRemaining0).toBe(230);
+    now.mockReturnValue(170_000);
+    sync(game);
+    expect(game.state.timerRemaining1).toBe(280);
+
+    game.state.pendingDecision = undefined;
+    sync(game);
+    now.mockReturnValue(220_000);
+    sync(game);
+    expect(game.state.timerRemaining0).toBe(180);
+    game.state.turnCount = 3;
+    game.state.turnSeat = 0;
+    sync(game);
+    expect(game.state.timerRemaining0).toBe(240);
+    expect(game.state.timerRemaining1).toBe(300);
+    now.mockReturnValue(230_000);
+    sync(game);
+    expect(game.state.timerRemaining0).toBe(230);
   });
 
-  it("ends an idle Main phase with a strike when the action window runs out", () => {
-    const now = vi.spyOn(performance, "now").mockReturnValue(0);
-    const game = room();
-    begin(game, 0);
-    sync(game);
-    expect(game.state.timerWindowSeat).toBe(0);
-    expect(game.state.timerWindowSeconds).toBe(MATCH_TIMER_ACTION_SECONDS);
-    now.mockReturnValue(MATCH_TIMER_ACTION_SECONDS * 1000);
-    sync(game);
-    expect(game.state.timerStrikes0).toBe(1);
-    expect(game.state.gameOver).toBe(false);
-    expect(engine(game).mainPhase.isOpen).toBe(false);
-    expect(game.state.timerRemaining0).toBe(300 - MATCH_TIMER_ACTION_SECONDS);
-  });
-
-  it("answers an expired effect decision with its safe default", async () => {
-    const now = vi.spyOn(performance, "now").mockReturnValue(0);
-    const game = room();
-    begin(game, 0);
-    const answer = engine(game).decisions.request({ seat: 1, kind: "optional", promptText: "Activate?" });
-    sync(game);
-    expect(game.state.timerWindowSeconds).toBe(MATCH_TIMER_DECISION_SECONDS);
-    now.mockReturnValue(MATCH_TIMER_DECISION_SECONDS * 1000);
-    sync(game);
-    await expect(answer).resolves.toEqual({ kind: "optional", accept: false });
-    expect(game.state.timerStrikes1).toBe(1);
-    expect(game.state.timerRemaining1).toBe(300 - MATCH_TIMER_DECISION_SECONDS);
-  });
-
-  it("loses the match on the last strike", () => {
-    const now = vi.spyOn(performance, "now").mockReturnValue(0);
-    const game = room();
-    begin(game, 0);
-    game.state.timerStrikes0 = MATCH_TIMER_STRIKE_LIMIT - 1;
-    sync(game);
-    now.mockReturnValue(MATCH_TIMER_ACTION_SECONDS * 1000);
-    sync(game);
-    expect(game.state.gameOver).toBe(true);
-    expect(game.state.winnerSeat).toBe(1);
-    expect(game.broadcast).toHaveBeenCalledWith(
-      EVENT_CHANNEL,
-      expect.objectContaining({ kind: "gameOver", reason: "timeout" }),
-    );
-  });
-
-  it("adds no time for confirmed card plays", () => {
+  it("#39 adds combo time only for confirmed card plays and digivolutions", () => {
     const now = vi.spyOn(performance, "now").mockReturnValue(0);
     const game = room();
     begin(game, 0);
@@ -221,7 +195,17 @@ describe("room clock enforcement", () => {
     now.mockReturnValue(50_000);
     sync(game);
     engine(game).hooks.emit({ kind: "cardPlayed", seat: 0, cardId: "BT1-010" });
-    expect(game.state.timerRemaining0).toBe(250);
+    expect(game.state.timerRemaining0).toBe(10 + MATCH_TIMER_DECISION_BONUS_SECONDS);
+    engine(game).hooks.emit({
+      kind: "digivolved",
+      seat: 0,
+      cardId: "BT1-015",
+      permanentId: "test",
+      mechanic: "normal",
+    });
+    expect(game.state.timerRemaining0).toBe(10 + 2 * MATCH_TIMER_DECISION_BONUS_SECONDS);
+    engine(game).hooks.emit({ kind: "memoryChanged", from: 1, to: 0, reason: "play" });
+    expect(game.state.timerRemaining0).toBe(10 + 2 * MATCH_TIMER_DECISION_BONUS_SECONDS);
   });
 
   function presentingRoom() {
@@ -254,11 +238,11 @@ describe("room clock enforcement", () => {
     now.mockReturnValue(2 * slowEffectMs - 100);
     sync(game);
     expect(game.state.timerActiveSeat).toBe(-1);
-    expect(game.state.timerRemaining0).toBe(300);
+    expect(game.state.timerRemaining0).toBe(60);
     now.mockReturnValue(2 * slowEffectMs + 3000);
     sync(game);
     expect(game.state.timerActiveSeat).toBe(0);
-    expect(game.state.timerRemaining0).toBe(297);
+    expect(game.state.timerRemaining0).toBe(57);
   });
 
   it("starts a Fast seat's clock earlier than a Slow seat's for the same batches", () => {
@@ -273,7 +257,7 @@ describe("room clock enforcement", () => {
     now.mockReturnValue(fastEnd + 1000);
     sync(game);
     expect(game.state.timerActiveSeat).toBe(0);
-    expect(game.state.timerRemaining0).toBe(299);
+    expect(game.state.timerRemaining0).toBe(59);
 
     game.state.pendingDecision = new PendingDecision();
     game.state.pendingDecision.seat = 1;
@@ -281,10 +265,10 @@ describe("room clock enforcement", () => {
     now.mockReturnValue(slowEnd - 100);
     sync(game);
     expect(game.state.timerActiveSeat).toBe(-1);
-    expect(game.state.timerRemaining1).toBe(300);
+    expect(game.state.timerRemaining1).toBe(60);
     now.mockReturnValue(slowEnd + 2000);
     sync(game);
-    expect(game.state.timerRemaining1).toBe(298);
+    expect(game.state.timerRemaining1).toBe(58);
   });
 
   it("defaults to Normal and ignores speeds from spectators and malformed reports", () => {
@@ -297,7 +281,7 @@ describe("room clock enforcement", () => {
     now.mockReturnValue(EFFECT_UNIT_MS + 1000);
     sync(game);
     expect(game.state.timerActiveSeat).toBe(0);
-    expect(game.state.timerRemaining0).toBe(299);
+    expect(game.state.timerRemaining0).toBe(59);
   });
 
   it("never runs before both seats are ready", () => {
@@ -306,7 +290,7 @@ describe("room clock enforcement", () => {
     sync(game);
     now.mockReturnValue(300_000);
     sync(game);
-    expect(game.state.timerRemaining0).toBe(300);
+    expect(game.state.timerRemaining0).toBe(60);
     expect(game.state.gameOver).toBe(false);
   });
 
@@ -331,9 +315,9 @@ describe("room clock enforcement", () => {
 
   it("ignores non-host overrides and legacy refill settings", () => {
     const game = room();
-    expect(game.state.timerStartSeconds).toBe(300);
+    expect(game.state.timerStartSeconds).toBe(60);
     expect(game.state.timerRefillSeconds).toBe(60);
-    expect(room({ matchTimer: true, timerStartSeconds: 300, timerRefillSeconds: 0 }).state.timerStartSeconds).toBe(
+    expect(room({ matchTimer: true, timerStartSeconds: 60, timerRefillSeconds: 0 }).state.timerStartSeconds).toBe(
       MATCH_TIMER_START_SECONDS,
     );
   });
@@ -401,10 +385,10 @@ describe("timer improvements from the Discord suggestion", () => {
     advance(10_000);
     expect(game.state.timerActiveSeat).toBe(first);
     expect(mulliganRemaining(game, first)).toBe(MULLIGAN_TIMER_SECONDS - 10);
-    expect(remaining(game, first)).toBe(300);
+    expect(remaining(game, first)).toBe(60);
     advance(MULLIGAN_TIMER_SECONDS * 1000);
     expect(game.state.gameOver).toBe(false);
-    expect(remaining(game, first)).toBe(300);
+    expect(remaining(game, first)).toBe(60);
     expect([...game.state.players[first]!.hand].map((card) => card.instanceId)).toEqual(hand);
     await settleRounds(() => game.state.pendingDecision?.seat === 1 - first);
     const second = (1 - first) as Seat;
@@ -412,7 +396,7 @@ describe("timer improvements from the Discord suggestion", () => {
     finishPresentation();
     advance(5000);
     expect(mulliganRemaining(game, second)).toBe(MULLIGAN_TIMER_SECONDS - 5);
-    expect(remaining(game, second)).toBe(300);
+    expect(remaining(game, second)).toBe(60);
   });
 
   async function inMainPhase() {
@@ -492,5 +476,22 @@ describe("timer improvements from the Discord suggestion", () => {
     const before = remaining(game, turnSeat);
     advance(10_000);
     expect(remaining(game, turnSeat)).toBe(before - 10);
+  });
+
+  it("D: adds 3 s per effect decision, up to 30 s per player per turn, and none for the mulligan", async () => {
+    const { game, internals, advance, turnSeat } = await inMainPhase();
+    const request = (kind: string, id: string) =>
+      internals.requestDecision(turnSeat, { decisionId: id, seat: turnSeat, kind, promptText: "" });
+    advance(50_000);
+    expect(remaining(game, turnSeat)).toBe(10);
+    request("mulligan", "m");
+    expect(remaining(game, turnSeat)).toBe(10);
+    request("orderTriggers", "a");
+    expect(remaining(game, turnSeat)).toBe(10 + MATCH_TIMER_DECISION_BONUS_SECONDS);
+    for (let index = 0; index < 20; index += 1) request("chooseTargets", `t${index}`);
+    expect(remaining(game, turnSeat)).toBe(10 + MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN);
+    game.state.turnCount += 1;
+    request("optional", "next-turn");
+    expect(remaining(game, turnSeat)).toBe(10 + MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN + 3);
   });
 });
