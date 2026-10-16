@@ -751,7 +751,11 @@ export async function runSubTrigger(
             return false;
           }
           if (sourceFilter?.isSelfRef === true) {
-            return milledCardId === subCtx.source.cardId;
+            return (
+              milledCardId === subCtx.source.cardId &&
+              subCtx.trigger.trashedFromDeckInstanceId === subCtx.source.instanceId &&
+              subCtx.source.isInTrash?.() === true
+            );
           }
           return true;
         }

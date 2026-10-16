@@ -842,6 +842,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       await resolveSelfWhenTrashedFromDeck(
         buildEffectContext(engine, cardSourceOf(engine, instance), {
           trashedFromDeckCardId: instance.cardId,
+          trashedFromDeckInstanceId: instanceId,
           ...(byEffectCardId === undefined ? {} : { trashedFromDeckByEffectCardId: byEffectCardId }),
         }),
       );

@@ -697,6 +697,8 @@ function selfTrashedSourceInstanceId(sub: SubTriggerSubscription, payload: Trigg
   const sourceInstanceId = sub.sourceInstanceId;
   if (sourceInstanceId === undefined) return undefined;
   switch (sub.event) {
+    case "whenTrashedFromDeck":
+      return payload.trashedFromDeckInstanceId === sourceInstanceId ? sourceInstanceId : undefined;
     case "whenTrashedFromHand":
       return payload.trashedFromHandInstanceId === sourceInstanceId ? sourceInstanceId : undefined;
     case "onDigivolutionCardDiscarded":
