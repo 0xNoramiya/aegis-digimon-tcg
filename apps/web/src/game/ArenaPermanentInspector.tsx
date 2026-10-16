@@ -33,6 +33,7 @@ export interface ArenaInspectionOptions {
   side: Side;
   container: HTMLElement | null;
   returnFocusTo?: HTMLElement | null;
+  keepsOpen?: (target: Element) => boolean;
 }
 
 /** The shared field-card detail, laid across the half opposite the selected card. */
@@ -91,6 +92,8 @@ export function ArenaPermanentInspector({
     };
   }, [inspection.returnFocusTo]);
 
+  const keepsOpen = useRef(inspection.keepsOpen);
+  keepsOpen.current = inspection.keepsOpen;
   useEffect(() => {
     if (zoomed) return;
     closeRef.current?.focus();
@@ -105,6 +108,7 @@ export function ArenaPermanentInspector({
       const target = event.target;
       if (!(target instanceof Node) || panelRef.current?.contains(target)) return;
       if (target instanceof Element && target.closest(".game-badge-hint")) return;
+      if (target instanceof Element && keepsOpen.current?.(target)) return;
       closeCallback.current();
     };
     document.addEventListener("keydown", onKey);
