@@ -49894,7 +49894,7 @@
   {
     "cardId": "BT27-035",
     "nameEn": "MirageGaogamon: Burst Mode",
-    "colors": ["Blue", "Yellow"],
+    "colors": ["Blue", "Black"],
     "level": 7,
     "playCost": 6,
     "dp": 15000,
@@ -109196,13 +109196,18 @@
   {
     "cardId": "EX14-054",
     "nameEn": "Barbamon",
-    "colors": ["Purple"],
+    "colors": ["Purple", "Red"],
     "level": 6,
     "playCost": 13,
     "dp": 13000,
     "evoCosts": [
       {
         "color": "Purple",
+        "level": 5,
+        "memoryCost": 4
+      },
+      {
+        "color": "Red",
         "level": 5,
         "memoryCost": 4
       }

@@ -137,6 +137,33 @@ describe("Barbamon", () => {
     expect(s.state.players[1]!.battleArea).toHaveLength(1);
   });
 
+  it("digivolves from a red level five for four memory and preserves the stack", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT1-021", as: "base", under: ["BT1-009"] }],
+          hand: [{ card: "EX14-054", as: "evolution" }],
+          deck: ["BT1-009"],
+        },
+        1: { hand: ["BT1-009"] },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    s.state.memory = 4;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("evolution").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[1]!.hand.length === 0);
+    expect(s.state.memory).toBe(0);
+    expect(s.perm("base").topCard.cardId).toBe("EX14-054");
+    expect(s.perm("base").stack.map(({ cardId }) => cardId)).toEqual(["BT1-009", "BT1-021"]);
+  });
+
   it.each(["neutral-fallen", "neutral-greed-five"])(
     "digivolves over %s for three and preserves its evolution stack",
     async (card) => {
@@ -169,7 +196,7 @@ describe("Barbamon", () => {
     },
   );
 
-  it.each(["neutral-wizard", "neutral-expensive"])("rejects alternate evolution from %s", async (card) => {
+  it.each(["neutral-wizard", "BT1-038"])("rejects alternate evolution from %s", async (card) => {
     const s = setupEngine({ 0: { battleArea: [{ card, as: "base" }], hand: [{ card: "EX14-054", as: "evolution" }] } });
     s.state.memory = 3;
     expect(
