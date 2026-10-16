@@ -69,11 +69,11 @@ export function Hand({
   const [hoveredInstanceId, setHoveredInstanceId] = useState<string | null>(null);
   const [coveredHoverKey, setCoveredHoverKey] = useState<string | null>(null);
   useLayoutEffect(() => {
-    if (hoveredInstanceId && !cards.some((entry) => entry.instanceId === hoveredInstanceId)) {
+    if (hoveredInstanceId && (draggingInstanceId || !cards.some((entry) => entry.instanceId === hoveredInstanceId))) {
       setHoveredInstanceId(null);
       setCoveredHoverKey(null);
     }
-  }, [cards, hoveredInstanceId]);
+  }, [cards, hoveredInstanceId, draggingInstanceId]);
   const [rowEl, setRowEl] = useState<HTMLDivElement | null>(null);
   const [coveredSourceKey, setCoveredSourceKey] = useState<number | null>(null);
   const [preparedSourceKey, setPreparedSourceKey] = useState<number | null>(null);
@@ -336,10 +336,7 @@ export function Hand({
                   onReady={() => setCoveredHoverKey(hoverKey)}
                   onPress={(event, origin) => {
                     if (selection) beginPick(entry.instanceId, event);
-                    else {
-                      setHoveredInstanceId(null);
-                      startDrag(i, event, origin);
-                    }
+                    else startDrag(i, event, origin);
                   }}
                 >
                   {face}

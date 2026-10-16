@@ -1,4 +1,22 @@
 {
+  "releases.1.30.1-beta.summary": {
+    "en": "Fixes for story progress and for Assembly and DigiXros materials with different names.",
+    "pt-BR": "Correções no progresso da história e nos materiais de Assembly e DigiXros com nomes diferentes.",
+    "es": "Correcciones en el progreso de la historia y en los materiales de Assembly y DigiXros con nombres diferentes.",
+    "it": "Correzioni al progresso della storia e ai materiali di Assembly e DigiXros con nomi diversi."
+  },
+  "releases.1.30.1-beta.fix.story": {
+    "en": "Fixed story progress failing to load or save.",
+    "pt-BR": "Corrigido o progresso da história que não carregava nem salvava.",
+    "es": "Corregido el progreso de la historia que no se cargaba ni se guardaba.",
+    "it": "Corretto il progresso della storia che non veniva caricato né salvato."
+  },
+  "releases.1.30.1-beta.fix.differentNames": {
+    "en": "Assembly and DigiXros recipes that need different names now accept a card that is also treated as another name, such as BT8-061 Thundermon for EX13-063 PrinceMamemon, when each material can use its own name.",
+    "pt-BR": "Receitas de Assembly e DigiXros que exigem nomes diferentes agora aceitam uma carta que também é tratada como outro nome, como BT8-061 Thundermon para EX13-063 PrinceMamemon, quando cada material pode usar um nome próprio.",
+    "es": "Las recetas de Assembly y DigiXros que exigen nombres diferentes ahora aceptan una carta que también se trata como otro nombre, como BT8-061 Thundermon para EX13-063 PrinceMamemon, cuando cada material puede usar un nombre propio.",
+    "it": "Le ricette di Assembly e DigiXros che richiedono nomi diversi ora accettano una carta considerata anche con un altro nome, come BT8-061 Thundermon per EX13-063 PrinceMamemon, quando ogni materiale può usare un nome proprio."
+  },
   "releases.1.30.0-beta.summary": {
     "en": "Liberator story battles, more deck collections, and fixes for deck loading and digivolution choices.",
     "pt-BR": "Batalhas da história de Liberator, mais coleções de decks e correções no carregamento de decks e nas opções de evolução.",

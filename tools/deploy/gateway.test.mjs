@@ -178,6 +178,11 @@ test("feedback API reaches the API while the admin screen reaches the web app", 
   assert.equal(isApiPath("/admin/feedback", { accept: "text/html" }), false);
 });
 
+test("story progress reaches the API while the story screen reaches the web app", () => {
+  assert.equal(isApiPath("/story/progress", { accept: "*/*" }), true);
+  assert.equal(isApiPath("/play/story", { accept: "text/html" }), false);
+});
+
 test("shared replay API calls reach the API while page navigation gets the web app", () => {
   assert.equal(isApiPath("/replays/replay-1", { accept: "application/json" }), true);
   assert.equal(isApiPath("/replays/replay-1/file", {}), true);

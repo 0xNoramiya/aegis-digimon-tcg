@@ -416,6 +416,10 @@ function GameScreenSession({
   const { drag, dragHover, handleTapRef, handleDropRef, canDragRef, startHandDrag, startPermDrag, cancelDrag } =
     useDragPlumbing();
   canDragRef.current = null;
+  const playDragStarted = drag?.kind === DragKind.Play && drag.started;
+  useEffect(() => {
+    if (playDragStarted && handPreview) clearSel();
+  }, [playDragStarted, handPreview, clearSel]);
 
   const boardRef = useRef<HTMLDivElement | null>(null);
   const fieldRef = useRef<HTMLDivElement | null>(null);

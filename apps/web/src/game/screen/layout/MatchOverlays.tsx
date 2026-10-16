@@ -236,6 +236,11 @@ export function MatchOverlays({
               handDockRef.current?.querySelectorAll<HTMLElement>(".game-hand-card")[
                 shownHandEntries.findIndex((entry) => entry.instanceId === handPreviewEntry.instanceId)
               ],
+            keepsOpen: (target) =>
+              target.closest<HTMLElement>("[data-hand-instance-id]")?.dataset.handInstanceId ===
+                handPreviewEntry.instanceId ||
+              target.closest<HTMLElement>("[data-hand-hover-instance-id]")?.dataset.handHoverInstanceId ===
+                handPreviewEntry.instanceId,
           }}
           cardId={handPreviewEntry.cardId}
           artId={handPreviewEntry.artId}
