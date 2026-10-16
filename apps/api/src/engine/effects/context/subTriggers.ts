@@ -76,6 +76,8 @@ export type SubTriggerEventName =
 /** Args for installing a delayed/triggered sub-effect via the primitives. */
 export interface SubTriggerInstall {
   event: SubTriggerEventName;
+  attackRedirectTargetIds?: (ctx: EffectContext) => string[];
+  attackRedirectRequiresSelfSuspend?: boolean;
   /** See `SubTriggerSubscription.printedClause`. */
   printedClause?: string;
   /** The watcher body reports an accepted processing choice before its first result. */
