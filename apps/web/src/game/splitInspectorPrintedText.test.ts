@@ -9,14 +9,47 @@ it("moves evolution requirements without moving when-digivolving effects", () =>
   expect(splitInspectorPrintedText({ text: `${requirements}\n\n${effects}` })).toEqual({ requirements, effects });
 });
 
-it("keeps ambiguous and requirement-only text visible", () => {
-  for (const text of [
-    "[Digivolve] Lv.3: Cost 2",
-    "[Digivolve] Lv.3: Cost 2\n\n＜Blocker＞\n[On Play] Draw 1.",
-    "[When Digivolving] Draw 1.",
-  ]) {
+it("keeps requirement-only and requirement-free text visible", () => {
+  for (const text of ["[Digivolve] Lv.3: Cost 2", "[When Digivolving] Draw 1."]) {
     expect(splitInspectorPrintedText({ text })).toEqual({ requirements: "", effects: text });
   }
+});
+
+it("moves requirements past printed keywords", () => {
+  expect(splitInspectorPrintedText({ text: "[Digivolve] Lv.3: Cost 2\n\n＜Blocker＞\n[On Play] Draw 1." })).toEqual({
+    requirements: "[Digivolve] Lv.3: Cost 2",
+    effects: "＜Blocker＞\n[On Play] Draw 1.",
+  });
+});
+
+it("moves Assembly and DigiXros lines wherever they are printed", () => {
+  expect(
+    splitInspectorPrintedText({
+      text: "[Digivolve] Lv.5: Cost 4 \n[Assembly -6] 3 [Gokuumon]/[Sagomon] w/different names\n\n＜Rush＞ \n[On Play] Draw 1.",
+    }),
+  ).toEqual({
+    requirements: "[Digivolve] Lv.5: Cost 4\n[Assembly -6] 3 [Gokuumon]/[Sagomon] w/different names",
+    effects: "＜Rush＞ \n[On Play] Draw 1.",
+  });
+  expect(
+    splitInspectorPrintedText({
+      text: "[Digivolve] [Sanzomon]: Cost 6 \n\n[On Play] Draw 1.\n\n[DigiXros -1] 1 card w/[Xros Heart] trait\n[Rule] Name: Also treated as [Shoutmon].",
+    }),
+  ).toEqual({
+    requirements: "[Digivolve] [Sanzomon]: Cost 6\n[DigiXros -1] 1 card w/[Xros Heart] trait",
+    effects: "[On Play] Draw 1.\n\n[Rule] Name: Also treated as [Shoutmon].",
+  });
+});
+
+it("cuts a requirement line at the effect printed on the same line", () => {
+  expect(
+    splitInspectorPrintedText({
+      text: "[Digivolve] Lv.4 w/[Numemon] in name: Cost 3＜Armor Purge＞ [On Play] Draw 1.",
+    }),
+  ).toEqual({
+    requirements: "[Digivolve] Lv.4 w/[Numemon] in name: Cost 3",
+    effects: "＜Armor Purge＞ [On Play] Draw 1.",
+  });
 });
 
 it("separates translated evolution text and classifies translated timings", () => {
