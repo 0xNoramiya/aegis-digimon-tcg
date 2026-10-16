@@ -144,13 +144,15 @@ export function CardDetailDrawer({
       </div>
       <div className="card-detail-effects">
         <I18nContext.Provider value={cardTranslation}>
-          <DetailEffect title={cardTranslation.t("library.mainEffect")} text={def.effectText} />
+          <DetailEffect cardId={cardId} title={cardTranslation.t("library.mainEffect")} text={def.effectText} />
           <DetailEffect
+            cardId={cardId}
             title={cardTranslation.t("library.inheritedEffect")}
             text={def.inheritedEffectText}
             tone="inherited"
           />
           <DetailEffect
+            cardId={cardId}
             title={cardTranslation.t("library.securityEffect")}
             text={def.securityEffectText}
             tone="security"
@@ -173,10 +175,12 @@ function DetailRow({ label, value, mono }: { label: string; value?: string; mono
 }
 
 function DetailEffect({
+  cardId,
   title,
   text,
   tone = "main",
 }: {
+  cardId: string;
   title: string;
   text?: string;
   tone?: "main" | "inherited" | "security";
@@ -186,7 +190,7 @@ function DetailEffect({
     <div className="card-detail-effect" data-tone={tone}>
       <div className="card-detail-effect__title">{title}</div>
       <p>
-        <EffectText text={readableEffectText(text)} />
+        <EffectText cardId={cardId} text={readableEffectText(text)} />
       </p>
     </div>
   );

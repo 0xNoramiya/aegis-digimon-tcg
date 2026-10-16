@@ -1,37 +1,41 @@
-import type { Locale } from "@/i18n/locales";
 import { useContext, useEffect, useState } from "react";
 import { I18nContext } from "@/i18n/I18nContext";
-import { cardTranslationCache } from "@/i18n/cardTranslationCache";
+import { getCardTranslationCache } from "@/i18n/getCardTranslationCache";
 import { loadCardTranslations } from "@/i18n/loadCardTranslations";
 import { loadPrintedCardTranslations } from "@/i18n/loadPrintedCardTranslations";
+import type { Locale } from "@/i18n/locales";
+import type { CardTranslationData } from "@/i18n/cardTranslationTypes";
 
 type Params = { includePrintedText?: boolean; locale?: Locale };
+type Loaded = { locale: Locale; printed: boolean; data: CardTranslationData };
 
 export function useCardTranslations({ includePrintedText = false, locale }: Params = {}) {
   const context = useContext(I18nContext);
-  const enabled = (locale ?? context?.locale) === "zh-CN";
-  const [translations, setTranslations] = useState(() => {
-    if (includePrintedText) {
-      return cardTranslationCache.printedData ?? cardTranslationCache.data;
-    }
-    return cardTranslationCache.data;
-  });
+  const effectiveLocale = locale ?? context?.locale ?? "en";
+  const cache = getCardTranslationCache(effectiveLocale);
+  const [loaded, setLoaded] = useState<Loaded>();
   useEffect(() => {
-    if (!enabled) {
+    if (!cache) {
       return;
     }
     let cancelled = false;
     const load = includePrintedText ? loadPrintedCardTranslations : loadCardTranslations;
-    load()
+    void load(effectiveLocale)
       .then((data) => {
         if (!cancelled) {
-          setTranslations(data);
+          setLoaded({ locale: effectiveLocale, printed: includePrintedText, data });
         }
       })
       .catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [enabled, includePrintedText]);
-  return enabled ? translations : undefined;
+  }, [cache, effectiveLocale, includePrintedText]);
+  if (!cache) {
+    return undefined;
+  }
+  if (loaded?.locale === effectiveLocale && loaded.printed === includePrintedText) {
+    return loaded.data;
+  }
+  return includePrintedText ? (cache.printedData ?? cache.data) : cache.data;
 }
