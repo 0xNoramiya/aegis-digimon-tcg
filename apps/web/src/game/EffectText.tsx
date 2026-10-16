@@ -41,7 +41,7 @@ export function EffectText({ text, asciiBrackets = false }: { text: string; asci
   const translations = useCardTranslations({ includePrintedText: true });
   const lines = inlineInspectorKeywordLines(getTranslatedCardText({ text, translations }));
   return (
-    <span className="card-effect-text">
+    <span key={`${asciiBrackets}:${lines}`} className="card-effect-text">
       {lines.split(/(\[[^\]]+\]|＜[^＞]+＞|<[^<>\r\n]+>)/g).map((part, index) =>
         /^\[/.test(part) ? (
           <mark key={index} data-kind="timing">
