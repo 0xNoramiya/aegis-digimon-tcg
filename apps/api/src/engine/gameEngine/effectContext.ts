@@ -650,13 +650,15 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       try {
         parkDeferredSecurityRemovalTriggers(engine);
         parkDeferredTimingWindowsForAttack(engine);
-        engine.pendingNestedTimingEffects.push(...(await collectRuleProcessPending(engine)));
+        const initialRulePending = await collectRuleProcessPending(engine);
+        engine.pendingNestedTimingEffects.push(...initialRulePending);
         // Settle the already-armed watcher tier before exposing the Option's older
         // printed entry/attack effects. Then settle the interrupted Option's rule
         // check in that same parent pool before Counter Timing/security can proceed.
         await drain();
         engine.optionResolutionDepth = 0;
-        engine.pendingNestedTimingEffects.push(...(await collectRuleProcessPending(engine)));
+        const remainingRulePending = await collectRuleProcessPending(engine);
+        engine.pendingNestedTimingEffects.push(...remainingRulePending);
         await drain();
         // The ordering effect's own drain only sees its window's timing. An Option used inside
         // another effect (Planet Punch through EX12-077) can Arts Digivolve the attacker, and
