@@ -8,4 +8,6 @@ Research covered 42 novel chapters, 32 TIPS articles, and sampled panels across 
 
 The API selects the scenario, decks, opponent, and starting state. Authenticated progress is persisted in `story_battle_completions`; a seat-zero victory unlocks the next encounter for that character. Losses, draws, and surrender do not unlock later battles. The progress endpoint is read-only. Story matches use the existing simulator and bot, disable rollback, and do not update regular match statistics.
 
+Each match shuffles both players' remaining main and Digi-Egg decks using the match seed. Scenario hands, security, trash, and starting fields stay fixed. The shuffled fixture is recorded in the replay so playback preserves the original draw order.
+
 Guests can play without signing in. A random browser token identifies their server-owned progress in `story_guest_completions`; only its SHA-256 hash is stored in the database. The API verifies prerequisites and records wins for guests as it does for accounts. Signing in switches to separate account progress; clearing browser storage loses access to guest progress.

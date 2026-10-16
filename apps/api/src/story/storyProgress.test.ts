@@ -98,6 +98,11 @@ describe("story progression", () => {
     ]);
     expect(room.state.players[0]!.security).toHaveLength(4);
     expect(room.state.players[1]!.security).toHaveLength(3);
+    for (const seat of [0, 1] as const) {
+      expect(room.state.players[seat]!.deck.map((card) => card.cardId)).not.toEqual(
+        getStoryScenario("ice-knight")!.board[seat]!.deck,
+      );
+    }
     expect(room.state.memory).toBe(3);
     const engine = (room as unknown as { engine: GameEngine }).engine;
     engine.applyIntent(0, { type: "surrender" });
