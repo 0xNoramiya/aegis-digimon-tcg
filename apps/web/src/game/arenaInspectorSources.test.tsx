@@ -254,6 +254,37 @@ it("shows server-resolved abilities separately from restrictions", () => {
   expect(document.querySelector('[data-keyword="SecurityAttack"]')?.textContent).toContain("-1");
 });
 
+it.each([true, false])("shows keywords gained from effects in the inspector when wide is %s", (wide) => {
+  vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
+    matches: query === INSPECTOR_SIDE_SOURCES_QUERY && wide,
+    media: query,
+    onchange: null,
+    addEventListener: vi.fn<() => void>(),
+    removeEventListener: vi.fn<() => void>(),
+    addListener: vi.fn<() => void>(),
+    removeListener: vi.fn<() => void>(),
+    dispatchEvent: vi.fn<() => boolean>(() => true),
+  }));
+  render(
+    <I18nProvider>
+      <ArenaPermanentInspector
+        detail={{
+          ...buildPrintedCardDetail("BT21-075"),
+          printedOnly: false,
+          keywords: ["Raid", "Retaliation"],
+          grantedKeywords: ["Raid", "Retaliation"],
+        }}
+        inspection={{ side: Side.Viewer, container: null }}
+        onZoom={vi.fn<(cardId: string, artId?: string) => void>()}
+        onClose={vi.fn<() => void>()}
+      />
+    </I18nProvider>,
+  );
+  const state = document.querySelector(".arena-permanent-inspector__state")!;
+  expect(state.querySelector('[data-keyword="Raid"]')?.textContent).toContain("Raid");
+  expect(state.querySelector('[data-keyword="Retaliation"]')?.textContent).toContain("Retaliation");
+});
+
 it("preserves expanded details while live state updates", () => {
   const { rerender, getPanel } = renderInspector({ wide: true });
   const details = document.querySelector("details")!;
