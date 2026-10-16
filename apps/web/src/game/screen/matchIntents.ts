@@ -87,8 +87,21 @@ export function matchIntents({
     intents.playCard(activeRoom, instanceId, targetSlot, digiXros, assembly, useAs);
   };
 
-  const playCard = (instanceId: string, confirmDrop = false, preferDna = false) => {
+  const playCard = (instanceId: string, confirmDrop = false, preferDna = false, skipNegamon = false) => {
     if (mainActionBlocked) return;
+    const entry = handEntries.find((candidate) => candidate.instanceId === instanceId);
+    const breedingCard = viewer.breeding?.topCard;
+    if (!skipNegamon && !preferDna && entry?.negamonPlayEffectKey && breedingCard) {
+      overlays.setActionConfirm({
+        kind: "negamon",
+        instanceId,
+        cardId: entry.cardId,
+        sourceInstanceId: breedingCard.instanceId,
+        effectKey: entry.negamonPlayEffectKey,
+        confirmDrop,
+      });
+      return;
+    }
     const prompt = prePlayPromptFor({
       entry: handEntries.find((h) => h.instanceId === instanceId),
       viewer,

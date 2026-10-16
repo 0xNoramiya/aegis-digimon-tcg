@@ -51,6 +51,10 @@ const interfaceMessages = {
   "settings.shareDeckAfterMatchDesc":
     "Izinkan lawan melihat dan menyalin daftar deck awal setelah pertandingan. Aktif secara bawaan.",
   "settings.shareDeckAfterMatchFailed": "Gagal memuat atau menyimpan pengaturan. Coba lagi atau buka ulang pengaturan.",
+  "overlay.useNegamon": "Gunakan Negamon",
+  "overlay.negamonPlayDetail":
+    "Aktifkan efek Negamon di area pembiakan untuk memainkan Digimon dengan biaya lebih rendah, lalu letakkan Negamon di bawahnya. Pilih kartu pada langkah efek berikutnya.",
+  "overlay.playNormally": "Mainkan biasa",
   "overlay.viewOpponentDeck": "Lihat deck lawan",
   "overlay.opponentDeck": "Deck lawan",
   "rollback.failed": "Tidak bisa memulihkan titik ini dengan aman. Kondisi pertandingan saat ini dipertahankan.",

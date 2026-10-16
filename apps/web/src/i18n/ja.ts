@@ -51,6 +51,10 @@ const interfaceMessages = {
   "settings.shareDeckAfterMatchDesc":
     "対戦終了後、対戦相手が開始時のデッキリストを閲覧・コピーできるようにします。初期設定で有効です。",
   "settings.shareDeckAfterMatchFailed": "設定を読み込むか保存できませんでした。再試行するか設定を開き直してください。",
+  "overlay.useNegamon": "ネガーモンを使う",
+  "overlay.negamonPlayDetail":
+    "育成エリアのネガーモンの効果で、登場コストを軽減してデジモンを登場させ、その下にネガーモンを置きます。カードは効果の次の手順で選びます。",
+  "overlay.playNormally": "通常通り登場させる",
   "overlay.viewOpponentDeck": "相手のデッキを見る",
   "overlay.opponentDeck": "相手のデッキ",
   "rollback.failed": "この時点を安全に復元できませんでした。現在の対戦状態は維持されています。",
