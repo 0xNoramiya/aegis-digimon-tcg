@@ -1,3 +1,4 @@
+import type { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type {
   AvatarChoice,
@@ -42,6 +43,7 @@ export type Deck = {
   updatedAt: number;
 };
 export type AccountPreferences = {
+  cardImageLanguage?: CardImageLanguage;
   autoHatch?: boolean;
   darkMode?: boolean;
   locale?: string;

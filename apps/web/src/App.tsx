@@ -216,6 +216,7 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
   const dark = useDarkMode();
   const setDark = setDarkMode;
   const [account, setAccount] = useState<RemoteAccount | null>();
+  const [decksReady, setDecksReady] = useState(false);
 
   useEffect(() => {
     saveIdentity(player);
@@ -232,7 +233,10 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
       const remoteAccount = await accountApi.me();
       setAccount(remoteAccount);
       setPlayer((current) => withAccountAvatar(current, remoteAccount));
-      if (!remoteAccount) return;
+      if (!remoteAccount) {
+        setDecksReady(true);
+        return;
+      }
       const remote = await accountApi.decks();
       const remoteIds = new Set(remote.map((deck) => deck.id));
       const localDecks = loadDecks();
@@ -245,6 +249,7 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
         .map((deck) => ({ ...deck, coverCardId: localCovers.get(deck.id) }));
       for (const deck of backfilled) await accountApi.saveDeck(deck);
       setDecks((local) => [...remote, ...backfilled].reduce((all, deck) => upsertDeck(all, deck), local));
+      setDecksReady(true);
     })().catch(() => setAccount(null));
   }, []);
 
@@ -266,6 +271,14 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
       .catch(() => undefined);
     if (setActive) setActiveDeckId(deck.id);
   };
+
+  async function saveDeckLanguage(deck: DeckListing) {
+    const updated = { ...deck, updatedAt: Date.now() };
+    if (account) {
+      await accountApi.saveDeck(updated);
+    }
+    setDecks((current) => upsertDeck(current, updated));
+  }
 
   const deleteDeck = (id: string) => {
     const remaining = removeDeck(decks, id);
@@ -289,6 +302,8 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
     setActiveDeckId,
     saveDeck,
     deleteDeck,
+    decksReady,
+    saveDeckLanguage,
     dark,
     setDark,
   };
@@ -297,6 +312,8 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
 }
 
 interface ClientProps {
+  decksReady?: boolean;
+  saveDeckLanguage?: (deck: DeckListing) => Promise<void>;
   preferencesReady?: boolean;
   player: PlayerIdentity;
   setPlayer: (update: (p: PlayerIdentity) => PlayerIdentity) => void;
@@ -332,6 +349,8 @@ function LoadedAegisClient({
   setActiveDeckId,
   saveDeck,
   deleteDeck,
+  decksReady = false,
+  saveDeckLanguage,
   dark,
   setDark,
   initialScreen,
@@ -759,6 +778,9 @@ function LoadedAegisClient({
             )}
             {screen === "settings" && !route.profile && (
               <Settings
+                decks={decks}
+                decksReady={decksReady}
+                onSaveDeckLanguage={saveDeckLanguage}
                 player={effectivePlayer}
                 account={account}
                 dark={dark}

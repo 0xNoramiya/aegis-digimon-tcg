@@ -19,6 +19,16 @@ import { shellEn } from "./redesign/shell.en";
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  "settings.cardImageLanguage": "Card image language",
+  "settings.cardImageLanguageDesc":
+    "Choose the default language for the collection and new deck copies. The button also replaces artwork, including alternate art, in existing decks. Cards without this language keep their current image.",
+  "settings.cardImageLanguageApply": "Apply to all my decks",
+  "settings.cardImageLanguageLoading": "Waiting for decks to load. If this persists, reload the page.",
+  "settings.cardImageLanguageEmpty": "No personal decks to update.",
+  "settings.cardImageLanguageProgress": "Updating decks: {completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "Decks updated: {saved}. Failed: {failed}. Copies without this language: {unavailable}. You can apply again to retry failed decks.",
+
   "settings.shareDeckAfterMatch": "Share my deck after the match",
   "settings.shareDeckAfterMatchDesc":
     "Allow your opponent to view and copy your starting deck list after the match. Enabled by default.",

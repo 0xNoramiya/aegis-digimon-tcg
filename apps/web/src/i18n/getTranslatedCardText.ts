@@ -6,17 +6,29 @@ import { getCardDefinition } from "@aegis/shared/cards/registry";
 type Params = { text: string; translations?: CardTranslationData; cardId?: string };
 
 export function getTranslatedCardText({ text, translations, cardId }: Params): string {
-  const translated = getDictionaryValue({ dictionary: translations?.text, key: normalizePrintedTextKey(text) });
+  const cardText = cardId ? getDictionaryValue({ dictionary: translations?.byCard, key: cardId }) : undefined;
+  const translated =
+    getDictionaryValue({ dictionary: cardText, key: normalizePrintedTextKey(text) }) ??
+    getDictionaryValue({ dictionary: translations?.text, key: normalizePrintedTextKey(text) });
   const resolved =
     translated ||
     findTranslatedClause({ text, translations, cardId }) ||
     text.replace(/[^\r\n]+/g, (line) => {
-      return getDictionaryValue({ dictionary: translations?.text, key: normalizePrintedTextKey(line) }) || line;
+      return (
+        getDictionaryValue({ dictionary: cardText, key: normalizePrintedTextKey(line) }) ||
+        getDictionaryValue({ dictionary: translations?.text, key: normalizePrintedTextKey(line) }) ||
+        line
+      );
     });
   if (resolved === text) {
     return text;
   }
-  return resolved.replace(/[【［]([^】］]+)[】］]/g, "[$1]").replace(/《([^》]+)》/g, "＜$1＞");
+  return resolved
+    .replace(/[【［]([^】］]+)[】］]/g, "[$1]")
+    .replace(
+      /≪([^≫]+)≫|《([^》]+)》/g,
+      (_, japanese: string | undefined, chinese: string | undefined) => `＜${japanese ?? chinese}＞`,
+    );
 }
 
 function findTranslatedClause({ text, translations, cardId }: Params): string | undefined {
@@ -38,7 +50,10 @@ function findTranslatedClause({ text, translations, cardId }: Params): string | 
     if (!full) {
       continue;
     }
-    const translated = getDictionaryValue({ dictionary: translations.text, key: normalizePrintedTextKey(full) });
+    const cardText = getDictionaryValue({ dictionary: translations.byCard, key: cardId });
+    const translated =
+      getDictionaryValue({ dictionary: cardText, key: normalizePrintedTextKey(full) }) ??
+      getDictionaryValue({ dictionary: translations.text, key: normalizePrintedTextKey(full) });
     if (!translated) {
       continue;
     }

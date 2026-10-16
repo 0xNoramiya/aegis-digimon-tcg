@@ -200,6 +200,16 @@ describe("/account/preferences", () => {
     expect((await putPreferences({ hideIdentityFromSpectators: "true" })).status).toBe(400);
   });
 
+  it("stores card image language and rejects unsupported preferences", async () => {
+    for (const cardImageLanguage of ["en", "ja", "ko", "zh"]) {
+      expect((await putPreferences({ cardImageLanguage })).status).toBe(200);
+      expect(await getPreferences()).toMatchObject({ cardImageLanguage });
+    }
+    for (const cardImageLanguage of ["pt-BR", "constructor", 1, null]) {
+      expect((await putPreferences({ cardImageLanguage })).status).toBe(400);
+    }
+  });
+
   it("stores the deck builder layout", async () => {
     const layout = { deckShare: 0.6, deckView: "list", deckSort: "level" };
     expect((await putPreferences(layout)).status).toBe(200);

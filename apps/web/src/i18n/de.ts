@@ -1,6 +1,16 @@
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "settings.cardImageLanguage": "Sprache der Kartenbilder",
+  "settings.cardImageLanguageDesc":
+    "Wähle die Standardsprache für die Sammlung und neue Kartenexemplare in Decks. Die Schaltfläche ersetzt auch alternative Bilder in bestehenden Decks. Karten ohne diese Sprache behalten ihr aktuelles Bild.",
+  "settings.cardImageLanguageApply": "Auf alle meine Decks anwenden",
+  "settings.cardImageLanguageLoading": "Warten auf die Decks. Falls dies anhält, lade die Seite neu.",
+  "settings.cardImageLanguageEmpty": "Keine eigenen Decks zum Aktualisieren.",
+  "settings.cardImageLanguageProgress": "Decks werden aktualisiert: {completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "Aktualisierte Decks: {saved}. Fehlgeschlagen: {failed}. Exemplare ohne diese Sprache: {unavailable}. Erneut anwenden, um fehlgeschlagene Decks nochmals zu versuchen.",
+
   "roadmap.hub.label": "Community-Bereiche",
   "roadmap.hub.decks": "Decks",
   "roadmap.hub.roadmap": "Roadmap",
