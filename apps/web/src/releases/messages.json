@@ -1,4 +1,16 @@
 {
+  "releases.1.31.1-beta.summary": {
+    "en": "A fix for Biting Crush.",
+    "pt-BR": "Uma correção para Biting Crush.",
+    "es": "Una corrección para Biting Crush.",
+    "it": "Una correzione per Biting Crush."
+  },
+  "releases.1.31.1-beta.fix.bitingCrush": {
+    "en": "Biting Crush stays in the battle area when the trashed card is a Seven Great Demon Lords Option, such as Seventh Lightning.",
+    "pt-BR": "Biting Crush permanece na área de batalha quando a carta descartada é uma Option com o traço Seven Great Demon Lords, como Seventh Lightning.",
+    "es": "Biting Crush permanece en el área de batalla cuando la carta descartada es una Option con el rasgo Seven Great Demon Lords, como Seventh Lightning.",
+    "it": "Biting Crush rimane nell’area di battaglia quando la carta scartata è una Option con il tratto Seven Great Demon Lords, come Seventh Lightning."
+  },
   "releases.1.31.0-beta.summary": {
     "en": "A match clock with a shared time bank, held DP reductions in the card inspector, and fixes for card effects, story decks and the inspector.",
     "pt-BR": "Relógio de partida com reserva de tempo compartilhada, reduções de DP retidas no inspetor de cartas e correções em efeitos de cartas, decks da história e no inspetor.",
