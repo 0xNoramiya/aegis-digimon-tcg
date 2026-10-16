@@ -1082,7 +1082,7 @@ export function OrganizedBattleRow({
         minHeight: keepsDigimonSlot ? laneHeight(lanes.digimon, metrics.digimonPadding) : 0,
         display: "flex",
         gap: laneGap(lanes.digimon, size.preferStacked, DIGIMON_GAP_SHARE),
-        justifyContent: "safe center",
+        justifyContent: "flex-start",
         alignItems: "center",
         ...({
           "--field-lane-top": `${metrics.digimonPadding.top}px`,
@@ -1109,7 +1109,7 @@ export function OrganizedBattleRow({
         flex: "0 1 auto",
         display: "flex",
         gap: laneGap(lanes.support, size.preferStacked, SUPPORT_GAP_SHARE),
-        justifyContent: "safe center",
+        justifyContent: "flex-start",
         alignItems: "center",
         ...({
           "--field-lane-top": `${metrics.supportPadding.top}px`,

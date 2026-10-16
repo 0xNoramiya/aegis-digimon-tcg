@@ -50,7 +50,7 @@ for (const viewport of [
     const refs = await scenario.openFixture(fixture);
     const lane = page.getByRole("group", { name: "Your Digimon", exact: true });
     await expect.poll(() => lane.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeGreaterThan(40);
-    const start = page.locator(`[data-id="${refs.permanentId(viewport.width > 600 ? "attacker-5" : "attacker-3")}"]`);
+    const start = page.locator(`[data-id="${refs.permanentId(viewport.width > 600 ? "attacker-5" : "attacker-2")}"]`);
     await swipeCard({ page, card: start, distance: 160 });
     await expect.poll(() => lane.evaluate((element) => element.scrollLeft)).toBeGreaterThan(40);
     await expect(page.getByRole("button", { name: "Attack", exact: true })).toHaveCount(0);
@@ -83,4 +83,33 @@ for (const viewport of [
     );
     await scenario.healthy();
   });
+}
+
+for (const colorScheme of ["light", "dark"] as const) {
+  for (const width of [390, 1440]) {
+    test(`keeps crowded lane edges reachable with legacy flex alignment at ${width}px in ${colorScheme}`, async ({
+      scenario,
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 844 });
+      await page.emulateMedia({ colorScheme });
+      await page.addInitScript((dark) => localStorage.setItem("aegis:darkMode", String(dark)), colorScheme === "dark");
+      const refs = await scenario.openFixture(fixture);
+      const lane = page.getByRole("group", { name: "Your Digimon", exact: true });
+      await lane.evaluate((element) => {
+        if (getComputedStyle(element).justifyContent === "safe center") {
+          element.style.justifyContent = "center";
+        }
+        element.scrollLeft = 0;
+      });
+      const first = page.locator(`[data-id="${refs.permanentId("attacker-1")}"]`);
+      await expect.poll(() => isCardExposed(first)).toBe(true);
+      await lane.evaluate((element) => {
+        element.scrollLeft = element.scrollWidth;
+      });
+      const last = page.locator(`[data-id="${refs.permanentId("attacker-8")}"]`);
+      await expect.poll(() => isCardExposed(last)).toBe(true);
+      await scenario.healthy();
+    });
+  }
 }
