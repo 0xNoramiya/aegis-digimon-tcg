@@ -62,6 +62,7 @@ import {
   isDeckFormat,
   formatIsUnlimited,
   isDigimonWorldAvatarId,
+  MATCH_TIMER_START_SECONDS,
 } from "@aegis/shared";
 import { getLocalScenario, isLocalScenarioEntry, type LocalScenarioEntry } from "../engine/scenario/local.js";
 import { bindScenarioDecks, type ScenarioFixture } from "../engine/scenario/fixture.js";
@@ -810,7 +811,7 @@ export class AegisRoom extends Room<{
           format: this.state.format as DeckFormat,
           allowRollback: options.allowRollback === true,
           matchTimer: options.matchTimer === true,
-          timerStartSeconds: options.timerStartSeconds ?? 300,
+          timerStartSeconds: options.timerStartSeconds ?? MATCH_TIMER_START_SECONDS,
           ...(this.isPrivate ? { roomCode: this.state.roomCode } : {}),
         });
       else
@@ -1056,7 +1057,7 @@ export class AegisRoom extends Room<{
           !this.isTournamentRoom &&
           !this.isRankedRoom &&
           (devTimer || (!this.isBotRoom && options.matchTimer === true)),
-        ...(devTimer ? { timerStartSeconds: 300 } : {}),
+        ...(devTimer ? { timerStartSeconds: MATCH_TIMER_START_SECONDS } : {}),
       },
       this.isPrivate || devTimer,
       performance.now(),

@@ -3,6 +3,7 @@ import { PlayerState } from "./PlayerState.js";
 import { Phase } from "./enums.js";
 import type { Seat } from "./enums.js";
 import { RematchStatus } from "#shared/protocol/RematchStatus";
+import { MATCH_TIMER_START_SECONDS } from "#shared/matchTimer";
 
 /** View tag for decision details that are private to the responding seat. */
 export const PRIVATE_DECISION_VIEW_TAG = 2;
@@ -117,10 +118,10 @@ export class GameState extends Schema {
 
   /** Public, server-owned clock snapshots; -1 means both clocks are paused. */
   @type("boolean") matchTimer = false;
-  @type("uint16") timerStartSeconds = 300;
+  @type("uint16") timerStartSeconds = MATCH_TIMER_START_SECONDS;
   @type("uint16") timerRefillSeconds = 60;
-  @type("uint16") timerRemaining0 = 300;
-  @type("uint16") timerRemaining1 = 300;
+  @type("uint16") timerRemaining0 = MATCH_TIMER_START_SECONDS;
+  @type("uint16") timerRemaining1 = MATCH_TIMER_START_SECONDS;
   @type("int8") timerActiveSeat = -1;
   /** Each seat's own mulligan window; it is separate from the match clock. */
   @type("uint8") mulliganTimerRemaining0 = 30;
