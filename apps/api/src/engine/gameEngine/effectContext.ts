@@ -289,6 +289,7 @@ export async function engineConsultLeavePrevention(
     playerAction?: boolean;
     isDigiXros?: boolean;
     keywordPreventions?: { interruptsEffect: boolean };
+    holdTriggered?: boolean;
   },
 ): Promise<Set<string>> {
   // Immediate reactions must observe the rebuilt continuous registry, never its
@@ -320,6 +321,7 @@ export async function engineConsultLeavePrevention(
           engine.hooks.emit({ kind: "effectResolved", ...announced });
         }
       },
+      resolvePreventBody: (body) => resolveLeaveReplacementBody(engine, body, { asEffectBody: true }),
       keywordReplacements: (ids) => [
         ...partitionLeaveReplacements(ids, {
           permanentById: (id) => engine.access.permanentById(id),
@@ -570,6 +572,7 @@ export async function engineConsultLeavePrevention(
       isDigiXros: opts?.isDigiXros,
       insteadOnly: opts?.insteadOnly,
       keywordPreventions: opts?.keywordPreventions,
+      holdTriggered: opts?.holdTriggered,
       reentryGuard: engine.preventReentryGuard,
     },
   );
@@ -579,7 +582,8 @@ export async function engineConsultLeavePrevention(
   // the played Digimon's [On Play] window (CR §15-4-3-2, §15-8-3-2).
   const averted =
     opts?.isBounce === true || opts?.insteadOnly === true || permanentIds.every((id) => prevented.has(id));
-  if (averted && opts?.isDigiXros !== true) await runPendingTimingWindow(engine, takeLeaveReplacementPending(engine));
+  if (averted && opts?.isDigiXros !== true && opts?.holdTriggered !== true)
+    await runPendingTimingWindow(engine, takeLeaveReplacementPending(engine));
   return prevented;
 }
 
