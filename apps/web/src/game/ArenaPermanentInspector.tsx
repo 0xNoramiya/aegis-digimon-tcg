@@ -183,7 +183,12 @@ export function ArenaPermanentInspector({
               </span>
             </button>
           </header>
-          <div className="arena-permanent-inspector__state">
+          <div
+            className="arena-permanent-inspector__state"
+            role={detail.keywords.length ? "region" : undefined}
+            aria-label={detail.keywords.length ? t("game.activeKeywords") : undefined}
+            tabIndex={detail.keywords.length ? 0 : undefined}
+          >
             {detail.suspended ? <span>{t("overlay.suspended")}</span> : null}
             <InspectorActiveBadges detail={detail} />
             {detail.dpDelta ? (
