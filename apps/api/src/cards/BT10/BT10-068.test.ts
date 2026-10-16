@@ -35,17 +35,22 @@ describe("BT10-068 Gankoomon (X Antibody)", () => {
     expect(JSON.parse(s.state.players[0]!.fieldEffectsJson)).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          kind: "dp",
+          sourceCardId: "BT10-068",
+          effectText: "All of your Digimon get +2000 DP.",
+        }),
+        expect.objectContaining({
           kind: "restriction",
           value: "dpImmune",
           sourceCardId: "BT10-068",
-          effectText: expect.stringContaining("all of your Digimon"),
+          effectText: "Your opponent's effects can't return any of your Digimon to hands or decks or reduce their DP.",
           byOpponentEffectsOnly: true,
         }),
         expect.objectContaining({
           kind: "restriction",
           value: "beReturned",
           sourceCardId: "BT10-068",
-          effectText: expect.stringContaining("return them to hands or decks"),
+          effectText: "Your opponent's effects can't return any of your Digimon to hands or decks or reduce their DP.",
           byOpponentEffectsOnly: true,
         }),
       ]),

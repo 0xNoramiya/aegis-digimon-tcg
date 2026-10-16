@@ -217,12 +217,13 @@ describe("BT26-047 TyrantKabuterimon", () => {
           sourceCardId: "BT26-047",
           fromSourceKind: ["Option"],
           byOpponentEffectsOnly: true,
-          effectText: expect.stringMatching(/suspended.*Insectoid.*Titan/),
+          effectText:
+            "Your opponent's Option card effects don't affect any of your suspended Digimon with the [Insectoid] or [Titan] trait.",
         }),
         expect.objectContaining({
           kind: "dp",
           sourceCardId: "BT26-047",
-          effectText: expect.not.stringContaining("may battle"),
+          effectText: "All of your suspended Digimon with the [Insectoid] or [Titan] trait get +3000 DP.",
         }),
       ]),
     );

@@ -37,13 +37,13 @@ describe("BT5-103 A Blazing Storm of Metal!", () => {
         expect.objectContaining({
           kind: "dp",
           sourceCardId: "BT5-103",
-          effectText: expect.stringMatching(/\[Main\].*Reboot/),
+          effectText: "All of your Digimon with ＜Reboot＞ get +1000 DP.",
         }),
         expect.objectContaining({
           kind: "keyword",
           value: "Blocker",
           sourceCardId: "BT5-103",
-          effectText: expect.stringMatching(/\[Main\].*Reboot/),
+          effectText: "All of your Digimon with ＜Reboot＞ gain ＜Blocker＞.",
         }),
       ]),
     );

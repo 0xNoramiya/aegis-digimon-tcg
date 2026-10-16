@@ -221,7 +221,7 @@ describe("EX13-036 Kentaurosmon", () => {
         expect.objectContaining({
           kind: "dp",
           sourceCardId: cardId,
-          effectText: expect.stringMatching(/\[On Play\].*6 or fewer.*all of their Digimon/),
+          effectText: "All of your opponent's Digimon get -7000 DP.",
         }),
       ]),
     );
