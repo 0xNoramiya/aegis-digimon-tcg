@@ -1,5 +1,17 @@
 [
   {
+    "version": "1.28.2-beta",
+    "releasedAt": "2026-10-15",
+    "summaryKey": "releases.1.28.2-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.28.2-beta.fix.colors",
+        "issue": 5595
+      }
+    ]
+  },
+  {
     "version": "1.28.1-beta",
     "releasedAt": "2026-10-15",
     "summaryKey": "releases.1.28.1-beta.summary",
