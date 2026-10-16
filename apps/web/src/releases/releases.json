@@ -1,5 +1,41 @@
 [
   {
+    "version": "1.31.0-beta",
+    "releasedAt": "2026-10-16",
+    "summaryKey": "releases.1.31.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.31.0-beta.feature.clock"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.feature.heldDp"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.31.0-beta.fix.securityAttack"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.fix.cards"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.fix.effects"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.fix.inspector"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.fix.story"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.fix.layout"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.fix.bots"
+      }
+    ]
+  },
+  {
     "version": "1.30.1-beta",
     "releasedAt": "2026-10-16",
     "summaryKey": "releases.1.30.1-beta.summary",

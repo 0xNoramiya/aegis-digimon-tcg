@@ -1,4 +1,64 @@
 {
+  "releases.1.31.0-beta.summary": {
+    "en": "A match clock with a shared time bank, held DP reductions in the card inspector, and fixes for card effects, story decks and the inspector.",
+    "pt-BR": "Relógio de partida com reserva de tempo compartilhada, reduções de DP retidas no inspetor de cartas e correções em efeitos de cartas, decks da história e no inspetor.",
+    "es": "Reloj de partida con reserva de tiempo compartida, reducciones de DP retenidas en el inspector de cartas y correcciones en efectos de cartas, mazos de historia y el inspector.",
+    "it": "Timer di partita con riserva di tempo condivisa, riduzioni di DP trattenute nell’ispettore delle carte e correzioni a effetti delle carte, mazzi della storia e ispettore."
+  },
+  "releases.1.31.0-beta.feature.clock": {
+    "en": "Match clocks use a shared time bank with decision windows, and expired decisions receive legal responses.",
+    "pt-BR": "Os relógios usam uma reserva de tempo com janelas de decisão, e decisões expiradas recebem respostas válidas.",
+    "es": "Los relojes usan una reserva de tiempo con ventanas de decisión y las decisiones vencidas reciben respuestas válidas.",
+    "it": "I timer usano una riserva di tempo con finestre decisionali e le decisioni scadute ricevono risposte valide."
+  },
+  "releases.1.31.0-beta.feature.heldDp": {
+    "en": "The card inspector shows DP reductions that wait while a Digimon is protected from opposing effects.",
+    "pt-BR": "O inspetor de cartas mostra reduções de DP que aguardam enquanto um Digimon está protegido de efeitos do oponente.",
+    "es": "El inspector de cartas muestra las reducciones de DP que esperan mientras un Digimon está protegido de efectos rivales.",
+    "it": "L’ispettore delle carte mostra le riduzioni di DP in attesa mentre un Digimon è protetto dagli effetti avversari."
+  },
+  "releases.1.31.0-beta.fix.securityAttack": {
+    "en": "Shakamon no longer turns positive Security Attack into negative, so SeitenGokuumon checks the right number of security cards.",
+    "pt-BR": "Shakamon não transforma mais Security Attack positivo em negativo, e SeitenGokuumon verifica o número certo de cartas de segurança.",
+    "es": "Shakamon ya no convierte el Security Attack positivo en negativo, así que SeitenGokuumon revisa el número correcto de cartas de seguridad.",
+    "it": "Shakamon non trasforma più il Security Attack positivo in negativo, quindi SeitenGokuumon controlla il numero corretto di carte sicurezza."
+  },
+  "releases.1.31.0-beta.fix.cards": {
+    "en": "Fixed Omekamon plays during Engage attacks, Lamiamon’s digivolution, Kazuki & Itsuki’s Link sources, Chuumon’s inherited effect after simultaneous deletion, and Zephagamon’s unsuspend trigger.",
+    "pt-BR": "Corrigidos o uso de Omekamon em ataques com Engage, a digievolução de Lamiamon, as fontes de Link de Kazuki & Itsuki, o efeito herdado de Chuumon após deleção simultânea e o gatilho de Zephagamon ao desvirar.",
+    "es": "Corregidos el uso de Omekamon en ataques con Engage, la digievolución de Lamiamon, las fuentes de Link de Kazuki & Itsuki, el efecto heredado de Chuumon tras una eliminación simultánea y el disparador de Zephagamon al enderezarse.",
+    "it": "Corretti l’uso di Omekamon negli attacchi con Engage, la digievoluzione di Lamiamon, le fonti di Link di Kazuki & Itsuki, l’effetto ereditato di Chuumon dopo un’eliminazione simultanea e l’attivazione di Zephagamon quando si raddrizza."
+  },
+  "releases.1.31.0-beta.fix.effects": {
+    "en": "Fixed deletion follow-up timing, battle-win trigger ordering, Apocalymon material choices, and once-per-turn breeding cost reductions.",
+    "pt-BR": "Corrigida a ordem dos efeitos após deleções e vitórias em batalha, a seleção de materiais de Apocalymon e as reduções de custo uma vez por turno na criação.",
+    "es": "Corregidos el orden de efectos tras eliminaciones y victorias en batalla, la selección de materiales de Apocalymon y las reducciones de coste una vez por turno en crianza.",
+    "it": "Corretti l’ordine degli effetti dopo eliminazioni e vittorie in battaglia, la selezione dei materiali di Apocalymon e le riduzioni di costo una volta per turno nell’area di allevamento."
+  },
+  "releases.1.31.0-beta.fix.inspector": {
+    "en": "The card inspector lists digivolution, Assembly and DigiXros requirements under Card details.",
+    "pt-BR": "O inspetor de cartas mostra os requisitos de digievolução, Assembly e DigiXros em Detalhes da carta.",
+    "es": "El inspector de cartas muestra los requisitos de digievolución, Assembly y DigiXros en Detalles de la carta.",
+    "it": "L’ispettore delle carte mostra i requisiti di digievoluzione, Assembly e DigiXros in Dettagli della carta."
+  },
+  "releases.1.31.0-beta.fix.story": {
+    "en": "Story battle decks are shuffled for each match.",
+    "pt-BR": "Os decks das batalhas da história são embaralhados a cada partida.",
+    "es": "Los mazos de las batallas de historia se barajan en cada partida.",
+    "it": "I mazzi delle battaglie della storia vengono mescolati a ogni partita."
+  },
+  "releases.1.31.0-beta.fix.layout": {
+    "en": "Fixed battlefield layout flickering in zoomed browser windows.",
+    "pt-BR": "Corrigida a oscilação do layout do campo em janelas do navegador com zoom.",
+    "es": "Corregido el parpadeo del campo en ventanas del navegador con zoom.",
+    "it": "Corretto lo sfarfallio del campo nelle finestre del browser con zoom."
+  },
+  "releases.1.31.0-beta.fix.bots": {
+    "en": "Bots evaluate Alliance support consistently and training matches can resolve Assembly and DigiXros material choices.",
+    "pt-BR": "Os bots avaliam o apoio de Alliance de forma consistente, e partidas de treinamento conseguem resolver a seleção de materiais de Assembly e DigiXros.",
+    "es": "Los bots evalúan el apoyo de Alliance de forma coherente y las partidas de entrenamiento pueden resolver la selección de materiales de Assembly y DigiXros.",
+    "it": "I bot valutano il supporto di Alliance in modo coerente e le partite di addestramento possono risolvere la selezione dei materiali di Assembly e DigiXros."
+  },
   "releases.1.30.1-beta.summary": {
     "en": "Fixes for story progress and for Assembly and DigiXros materials with different names.",
     "pt-BR": "Correções no progresso da história e nos materiais de Assembly e DigiXros com nomes diferentes.",
