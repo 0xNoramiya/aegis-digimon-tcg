@@ -37,9 +37,17 @@ function KeywordMark({ keyword }: { keyword: string }) {
  * Printed timing and keyword markers shared by card details and effect notices.
  * `asciiBrackets` prints the card data's full-width ＜Keyword＞ brackets as <Keyword>.
  */
-export function EffectText({ text, asciiBrackets = false }: { text: string; asciiBrackets?: boolean }) {
+export function EffectText({
+  text,
+  asciiBrackets = false,
+  cardId,
+}: {
+  text: string;
+  asciiBrackets?: boolean;
+  cardId?: string;
+}) {
   const translations = useCardTranslations({ includePrintedText: true });
-  const lines = inlineInspectorKeywordLines(getTranslatedCardText({ text, translations }));
+  const lines = inlineInspectorKeywordLines(getTranslatedCardText({ text, translations, cardId }));
   return (
     <span key={`${asciiBrackets}:${lines}`} className="card-effect-text">
       {lines.split(/(\[[^\]]+\]|＜[^＞]+＞|<[^<>\r\n]+>)/g).map((part, index) =>

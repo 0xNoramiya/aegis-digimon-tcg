@@ -15,7 +15,12 @@
     "Sup.": "超",
     "Ult.": "极",
     "Ultimate": "完全体",
-    "Unknown": "不明"
+    "Unknown": "不明",
+    "Option": "选项",
+    "Tamer": "驯兽师",
+    "Digi-Egg": "数码蛋",
+    "Digimon": "数码宝贝",
+    "-": "—"
   },
   "attributes": {
     "Data": "数据种",
@@ -34,7 +39,8 @@
     "Variable": "可变种",
     "Virus": "病毒种",
     "LIBERATOR": "界放者",
-    "Minor": "二流型"
+    "Minor": "二流型",
+    "-": "—"
   },
   "traits": {
     "9000": "9000型",
@@ -333,6 +339,10 @@
     "Principality": "公国型",
     "Unzip": "解压",
     "X-Antibody": "X抗体",
-    "Zip": "压缩"
+    "Zip": "压缩",
+    "-": "—",
+    "Greed": "贪欲",
+    "TERMINAL": "TERMINAL",
+    "TWIN": "TWIN"
   }
 }

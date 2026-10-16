@@ -268,7 +268,11 @@ export function DecisionOverlay({
   const displayedEffectText = sourceEffectText ?? (isOptional ? specificPrompt : undefined);
   const emphasis = request.options?.effectTextEmphasis;
   const renderedEffectText = displayedEffectText ? (
-    <EffectStepText text={displayedEffectText} emphasis={emphasis} />
+    <EffectStepText
+      text={displayedEffectText}
+      emphasis={emphasis}
+      cardId={request.options?.effectTextCardId ?? sourceCardId}
+    />
   ) : undefined;
 
   const boardReturn = isViewingBoard ? (
