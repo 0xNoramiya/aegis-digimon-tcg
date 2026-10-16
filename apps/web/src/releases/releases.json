@@ -1,5 +1,29 @@
 [
   {
+    "version": "1.30.0-beta",
+    "releasedAt": "2026-10-16",
+    "summaryKey": "releases.1.30.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.30.0-beta.feature.story"
+      },
+      {
+        "textKey": "releases.1.30.0-beta.feature.collections"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.30.0-beta.fix.presets"
+      },
+      {
+        "textKey": "releases.1.30.0-beta.fix.digivolve"
+      },
+      {
+        "textKey": "releases.1.30.0-beta.fix.provider"
+      }
+    ]
+  },
+  {
     "version": "1.29.0-beta",
     "releasedAt": "2026-10-16",
     "summaryKey": "releases.1.29.0-beta.summary",
