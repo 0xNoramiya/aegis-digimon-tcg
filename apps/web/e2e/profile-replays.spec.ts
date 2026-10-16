@@ -199,6 +199,61 @@ for (const [width, dark] of [
     });
   });
 
+for (const width of [320, 390, 768, 1024, 1440]) {
+  for (const dark of [false, true]) {
+    test(`match history controls fit without overlap at ${width}px in ${dark ? "dark" : "light"} mode`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 1000 });
+      await setup(page, { count: 3, dark });
+      await page.goto("/profile");
+      await expect(rows(page)).toHaveCount(3);
+      await page.evaluate(
+        async ({ summary, data }) => {
+          const modulePath = "/src/replays/local.ts";
+          const { saveLocalReplay } = await import(modulePath);
+          await saveLocalReplay({
+            summary: { ...summary, id: "match-1" },
+            data,
+            viewerSeat: 0,
+            indexId: "local-index",
+          });
+        },
+        { summary: recording, data: archive.toString("base64") },
+      );
+      await expect(page.getByText("This device", { exact: true })).toBeVisible();
+      const problems = await rows(page).evaluateAll((items) =>
+        items.flatMap((item) => {
+          const row = item.getBoundingClientRect();
+          const children = Array.from(item.children).map((child) => ({
+            name: child.className,
+            rect: child.getBoundingClientRect(),
+          }));
+          return children.flatMap(({ name, rect }, index) => {
+            const errors = [];
+            if (rect.left < row.left || rect.right > row.right) {
+              errors.push(`${name} overflows its row`);
+            }
+            for (const other of children.slice(index + 1)) {
+              if (
+                rect.left < other.rect.right &&
+                rect.right > other.rect.left &&
+                rect.top < other.rect.bottom &&
+                rect.bottom > other.rect.top
+              ) {
+                errors.push(`${name} overlaps ${other.name}`);
+              }
+            }
+            return errors;
+          });
+        }),
+      );
+      expect(problems).toEqual([]);
+      expect(await noHorizontalScroll(page)).toBe(true);
+    });
+  }
+}
+
 for (const width of [390, 1440])
   test(`filters reset to the first page and the pager walks the history at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });

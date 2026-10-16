@@ -265,3 +265,40 @@ test("holding an attack-capable own Digimon outside selection reads it without a
     await server.close();
   }
 });
+
+test("keeps the room mounted when switching translated digivolution source effects", async ({ page }) => {
+  const server = await startBrowserServer();
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  try {
+    const arena = new MobileInspectionArena(page);
+    await arena.open(false);
+    await arena.hold(arena.alphamon());
+    const inspector = page.getByRole("dialog", { name: "Alphamon", exact: true });
+    const sources = inspector.getByRole("group", { name: "4 sources" }).getByRole("button");
+    const selected = inspector.locator(".arena-permanent-inspector__strip-detail");
+    await sources.nth(0).tap();
+    await expect(selected).toContainText(normalizeKeywordBrackets(getCardDefinition("EX13-057")!.inheritedEffectText!));
+    const marker = selected.locator("mark[data-kind=timing]").first();
+    await expect(marker).toBeVisible();
+    await marker.evaluate((element) => {
+      const translated = document.createElement("font");
+      translated.style.verticalAlign = "inherit";
+      element.replaceWith(translated);
+      translated.append(element);
+    });
+
+    await sources.nth(1).tap();
+
+    await expect(inspector).toBeVisible();
+    await expect(sources.nth(1)).toHaveAttribute("aria-pressed", "true");
+    await sources.nth(0).tap();
+    await expect(selected).toContainText(normalizeKeywordBrackets(getCardDefinition("EX13-057")!.inheritedEffectText!));
+    await inspector.getByRole("button", { name: "Close", exact: true }).tap();
+    await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
+    expect(errors).toEqual([]);
+  } finally {
+    await page.close();
+    await server.close();
+  }
+});

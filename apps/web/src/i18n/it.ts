@@ -1006,6 +1006,15 @@ const interfaceMessages = {
   "game.protectionBadge.immuneToOpponentOptionEffects": "Protezione dalle Option",
   "game.restriction.immuneToOpponentTamerEffects": "Protetto dagli effetti dei Tamer avversari",
   "game.protectionBadge.immuneToOpponentTamerEffects": "Protezione dai Tamer",
+  "game.restriction.protectedFromStackTrash": "Carte impilate protette dallo scarto tramite effetti avversari",
+  "game.protectionBadge.protectedFromStackTrash": "Protezione scarto pila",
+  "redesign.arena.restriction.protectedFromStackTrash":
+    "Carte impilate protette dallo scarto tramite effetti avversari",
+  "game.restriction.protectedFromStackReturn":
+    "Carte impilate protette dal ritorno in mano o nel mazzo tramite effetti avversari",
+  "game.protectionBadge.protectedFromStackReturn": "Protezione ritorno pila",
+  "redesign.arena.restriction.protectedFromStackReturn":
+    "Carte impilate protette dal ritorno in mano o nel mazzo tramite effetti avversari",
   "game.restriction.protectedFromDpReduction": "Protetto dalla riduzione di DP tramite effetti avversari",
   "game.protectionBadge.protectedFromDpReduction": "Protezione DP",
   "game.restriction.protectedFromDeDigivolve": "Protetto da De-Digivolve tramite effetti avversari",

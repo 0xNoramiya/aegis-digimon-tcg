@@ -145,4 +145,6 @@ export class Permanent extends Schema {
   // has no ＜Vortex＞.
   @type(["string"]) vortexAttackablePermanentIds = new ArraySchema<string>();
   @type("boolean") canVortexAttackPlayer = false;
+  @type("boolean") protectedFromStackTrash = false;
+  @type("boolean") protectedFromStackReturn = false;
 }

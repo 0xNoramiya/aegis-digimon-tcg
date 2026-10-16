@@ -1125,6 +1125,14 @@ const interfaceMessages = {
   "game.protectionBadge.immuneToOpponentOptionEffects": "Perlindungan Option",
   "game.restriction.immuneToOpponentTamerEffects": "Terlindungi dari efek Tamer lawan",
   "game.protectionBadge.immuneToOpponentTamerEffects": "Perlindungan Tamer",
+  "game.restriction.protectedFromStackTrash": "Kartu bertumpuk terlindungi dari pembuangan oleh efek lawan",
+  "game.protectionBadge.protectedFromStackTrash": "Perlindungan buang tumpukan",
+  "redesign.arena.restriction.protectedFromStackTrash": "Kartu bertumpuk terlindungi dari pembuangan oleh efek lawan",
+  "game.restriction.protectedFromStackReturn":
+    "Kartu bertumpuk terlindungi dari pengembalian ke tangan atau deck oleh efek lawan",
+  "game.protectionBadge.protectedFromStackReturn": "Perlindungan kembali tumpukan",
+  "redesign.arena.restriction.protectedFromStackReturn":
+    "Kartu bertumpuk terlindungi dari pengembalian ke tangan atau deck oleh efek lawan",
   "game.restriction.protectedFromDpReduction": "Terlindungi dari pengurangan DP oleh efek lawan",
   "game.protectionBadge.protectedFromDpReduction": "Perlindungan DP",
   "game.restriction.protectedFromDeDigivolve": "Terlindungi dari De-Digivolve oleh efek lawan",

@@ -145,3 +145,24 @@ it("keeps the strip layout without a separator on narrow screens", () => {
   renderInspector({ wide: false });
   expect(screen.queryByRole("separator")).toBeNull();
 });
+
+it("keeps source selection working after a browser translator reparents an effect timing marker", () => {
+  renderInspector({ wide: false });
+  const buttons = within(screen.getByRole("group", { name: "3 sources" })).getAllByRole("button");
+  fireEvent.click(buttons[1]!);
+  const effect = document.querySelector(".arena-permanent-inspector__strip-detail .card-effect-text")!;
+  const marker = effect.querySelector("mark[data-kind=timing]")!;
+  const translated = document.createElement("font");
+  translated.style.verticalAlign = "inherit";
+  marker.replaceWith(translated);
+  translated.append(marker);
+
+  fireEvent.click(buttons[0]!);
+
+  expect(screen.getByRole("dialog")).toBeTruthy();
+  expect(document.querySelector(".arena-permanent-inspector__strip-detail")?.textContent).toContain(
+    "Security Attack +1",
+  );
+  fireEvent.click(buttons[1]!);
+  expect(document.querySelector(".arena-permanent-inspector__strip-detail")?.textContent).toContain("+1000 DP");
+});

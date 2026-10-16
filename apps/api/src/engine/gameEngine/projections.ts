@@ -264,6 +264,10 @@ export class BoardProjection {
     perm.protectedFromEffectReturn = this.deps.continuous.hasRestriction(perm.permanentId, "beReturned", undefined, {
       byOpponentEffect: true,
     });
+    perm.protectedFromStackTrash = this.deps.continuous.stackTrashLocked(perm.permanentId);
+    perm.protectedFromStackReturn = this.deps.continuous.hasRestriction(perm.permanentId, "stackReturn", undefined, {
+      byOpponentEffect: true,
+    });
     perm.cannotAttack = this.deps.continuous.hasRestriction(perm.permanentId, "attack");
     perm.cannotBlock = this.deps.continuous.hasRestriction(perm.permanentId, "block");
     perm.cannotSuspend = this.deps.continuous.hasRestriction(perm.permanentId, "suspend");

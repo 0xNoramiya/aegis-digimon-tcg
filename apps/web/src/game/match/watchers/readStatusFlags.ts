@@ -21,6 +21,8 @@ export function readStatusFlags(permanent: Permanent): FreezeFlags {
       permanent.immuneToOpponentOptionEffects,
       permanent.immuneToOpponentTamerEffects,
       permanent.protectedFromDpReduction,
+      permanent.protectedFromStackTrash,
+      permanent.protectedFromStackReturn,
       permanent.protectedFromDeDigivolve,
       permanent.protectedFromEffectDeletion,
       permanent.protectedFromEffectReturn,

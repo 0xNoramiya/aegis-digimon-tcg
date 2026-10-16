@@ -109216,5 +109216,21 @@
     "forms": ["Mega"],
     "maxCountInDeck": 4,
     "imageId": "EX14-054"
+  },
+  {
+    "cardId": "BT27-100",
+    "set": "BT27",
+    "nameEn": "Hjaðningar Waltz",
+    "colors": ["Black"],
+    "kinds": ["Option"],
+    "playCost": 3,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["X Antibody", "Royal Knight"],
+    "effectText": "[Main] Give 1 of your opponent's Digimon \"[Start of Your Main Phase] This Digimon attacks.\" until their turn ends. Then, place this card in the battle area.\n[All Turns] When any of your Digimon with [Craniamon] in their names suspend, ＜Delay＞.\n・ ＜De-Digivolve 1＞ all of your opponent's Digimon. Then, delete all of their Digimon with the lowest play cost.",
+    "securityEffectText": "[Security] Delete all of your opponent's Digimon with the lowest play cost. Then, add this card to the hand.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-100"
   }
 ]

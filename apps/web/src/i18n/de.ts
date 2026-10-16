@@ -1151,6 +1151,15 @@ const interfaceMessages = {
   "game.protectionBadge.immuneToOpponentOptionEffects": "Options-Schutz",
   "game.restriction.immuneToOpponentTamerEffects": "Geschützt vor gegnerischen Tamer-Effekten",
   "game.protectionBadge.immuneToOpponentTamerEffects": "Tamer-Schutz",
+  "game.restriction.protectedFromStackTrash": "Gestapelte Karten vor dem Ablegen durch gegnerische Effekte geschützt",
+  "game.protectionBadge.protectedFromStackTrash": "Stapelschutz: Ablegen",
+  "redesign.arena.restriction.protectedFromStackTrash":
+    "Gestapelte Karten vor dem Ablegen durch gegnerische Effekte geschützt",
+  "game.restriction.protectedFromStackReturn":
+    "Gestapelte Karten vor der Rückkehr auf die Hand oder ins Deck durch gegnerische Effekte geschützt",
+  "game.protectionBadge.protectedFromStackReturn": "Stapelschutz: Rückkehr",
+  "redesign.arena.restriction.protectedFromStackReturn":
+    "Gestapelte Karten vor der Rückkehr auf die Hand oder ins Deck durch gegnerische Effekte geschützt",
   "game.restriction.protectedFromDpReduction": "Geschützt vor DP-Reduzierung durch gegnerische Effekte",
   "game.protectionBadge.protectedFromDpReduction": "DP-Schutz",
   "game.restriction.protectedFromDeDigivolve": "Durch gegnerische Effekte vor De-Digivolve geschützt",

@@ -17,6 +17,7 @@ import { Hand } from "./piece";
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 const noop = () => {};
@@ -59,7 +60,9 @@ describe("BoardSelectionRail", () => {
     expect(rail.style.getPropertyValue("--decision-hand-clearance")).toBe(`${window.innerHeight - 570}px`);
   });
 
-  it("hides and restores effect text while keeping target selection available", () => {
+  it("starts expanded on mobile and restores the full effect when resized to desktop", () => {
+    const media = { matches: true, addEventListener: vi.fn<() => void>(), removeEventListener: vi.fn<() => void>() };
+    vi.stubGlobal("matchMedia", () => media);
     const onConfirm = vi.fn<() => void>();
     renderIn(
       <BoardSelectionRail
@@ -74,17 +77,25 @@ describe("BoardSelectionRail", () => {
         onNoSelection={noop}
       />,
     );
-    expect(screen.queryByText("Delete one opposing Digimon.")).toBeNull();
+    expect(screen.getByText("Delete one opposing Digimon.")).toBeTruthy();
     expect(screen.getByText("Choose a Digimon.")).toBeTruthy();
     expect(screen.getByText("1 selected of 0–1")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "View effect" }).getAttribute("aria-expanded")).toBe("false");
-    fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
-    expect(onConfirm).toHaveBeenCalledOnce();
-    fireEvent.click(screen.getByRole("button", { name: "View effect" }));
-    expect(screen.getByText("Delete one opposing Digimon.")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Hide effect" }).getAttribute("aria-expanded")).toBe("true");
     fireEvent.click(screen.getByRole("button", { name: "Hide effect" }));
     expect(screen.queryByText("Delete one opposing Digimon.")).toBeNull();
+    expect(screen.getByRole("button", { name: "Move effect prompt" }).closest(".board-prompt__heading")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
+    expect(onConfirm).toHaveBeenCalledOnce();
+    expect(screen.getByRole("button", { name: "View effect" }).getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(screen.getByRole("button", { name: "View effect" }));
+    expect(screen.getByText("Delete one opposing Digimon.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Hide effect" }));
+    media.matches = false;
+    fireEvent(window, new Event("resize"));
+    expect(screen.getByText("Delete one opposing Digimon.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Hide effect" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "View effect" })).toBeNull();
+    expect(screen.getByTestId("board-prompt").hasAttribute("data-text-hidden")).toBe(false);
   });
 
   it("shows the server's own prompt and the running count", () => {
@@ -250,7 +261,7 @@ describe("board prompt scrim", () => {
 });
 
 describe("BoardSelectionRail board view", () => {
-  it("hides the field effect initially with an option to expand it", () => {
+  it("always shows the full field effect on desktop without a collapse control", () => {
     const { container } = renderIn(
       <BoardSelectionRail
         fieldSelection
@@ -266,8 +277,8 @@ describe("BoardSelectionRail board view", () => {
       />,
     );
 
-    expect(screen.queryByText("Draw 1 card.")).toBeNull();
-    expect(screen.getByRole("button", { name: "View effect" }).getAttribute("aria-expanded")).toBe("false");
+    expect(screen.getByText("Draw 1 card.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "View effect" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Hide effect" })).toBeNull();
     expect(container.querySelector(".board-prompt--target-selection")).toBeTruthy();
   });
@@ -357,8 +368,6 @@ describe("BoardAlliancePrompt", () => {
     expect(screen.getByRole("region", { name: "Alliance window" }).classList.contains("board-prompt--alliance")).toBe(
       true,
     );
-    expect(screen.queryByText(/When this Digimon attacks, by suspending 1 of your other Digimon/)).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "View effect" }));
     expect(screen.getByText(/When this Digimon attacks, by suspending 1 of your other Digimon/)).toBeTruthy();
     expect(screen.getByText("＜Alliance＞").classList.contains("board-prompt__eyebrow")).toBe(true);
     expect(screen.queryByRole("dialog", { name: "Alliance window" })).toBeNull();
@@ -717,7 +726,6 @@ it.each(["selection", "optional", "sourceHost"] as const)("highlights the active
       <BoardSourceHostPrompt {...props} />
     ),
   );
-  if (kind !== "optional") fireEvent.click(screen.getByRole("button", { name: "View effect" }));
   expect(container.querySelector(".board-prompt__clause")?.textContent).toBe(props.clause);
   expect(container.querySelector(".decision-overlay__effect-step")?.textContent).toBe(props.clauseEmphasis);
 });
