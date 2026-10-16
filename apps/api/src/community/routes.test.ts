@@ -119,7 +119,7 @@ describe("publishing", () => {
     });
     await harness.store.saveDeck(author.id, {
       id: "rude",
-      name: "Caralho Rush",
+      name: "Muerte a la Royal Base",
       mainDeck: [...redList!.mainDeck],
       eggDeck: [...redList!.eggDeck],
     });
@@ -555,6 +555,8 @@ describe("deck guides", () => {
   it.each([
     [{ guide: "x".repeat(5001) }, 422, "guide_too_long"],
     [{ guide: "Caralho" }, 422, "guide_not_allowed"],
+    [{ guide: "Muerte a la Royal Base" }, 422, "guide_not_allowed"],
+    [{ guide: "cazzo" }, 422, "guide_not_allowed"],
     [{ guide: 12 }, 400, "invalid_guide"],
     [{}, 400, "invalid_guide"],
     [[], 400, "invalid_guide"],

@@ -396,6 +396,7 @@ export interface TriggerInfo {
    * matching its own source card ID ("when THIS card is trashed from the deck").
    */
   trashedFromDeckCardId?: string;
+  trashedFromDeckInstanceId?: string;
   /** Card ID of the effect source that caused this deck trash, when known. */
   trashedFromDeckByEffectCardId?: string;
   /**

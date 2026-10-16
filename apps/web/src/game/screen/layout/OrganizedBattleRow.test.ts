@@ -77,7 +77,7 @@ describe("fitLanes", () => {
     expect(Math.ceil(lanes.digimon * 1.4) + 22 + fan).toBeLessThanOrEqual(height);
   });
 
-  it("keeps uniform cards in compact stacked and merged rows, including deep support stacks", () => {
+  it("keeps uniform cards in compact stacked and side-by-side rows, including deep support stacks", () => {
     const content = {
       ...crowded,
       supportScale: 1,
@@ -176,9 +176,9 @@ describe("fitLanes", () => {
     expect(fitLanes({ width: 800, height: 900 }, 88, crowded)).toMatchObject({ digimon: 88 });
   });
 
-  it("joins the lanes on a row too short to stack them", () => {
+  it("puts the lanes side by side on a row too short to stack them", () => {
     const lanes = fitLanes({ width: 380, height: 64 }, 58, crowded);
-    expect(lanes.placement).toBe(LanePlacement.Merged);
+    expect(lanes.placement).toBe(LanePlacement.SideBySide);
     expect(lanes.digimon * 1.4).toBeLessThanOrEqual(64);
   });
 
@@ -224,7 +224,7 @@ describe("fitLanes", () => {
   it("keeps deep sources visible without reducing the card to a one-pixel placeholder", () => {
     const height = 77;
     const lanes = fitLanes({ width: 900, height }, 58, { ...crowded, digimonSources: 12, supportSources: 8 });
-    expect(lanes.placement).toBe(LanePlacement.Merged);
+    expect(lanes.placement).toBe(LanePlacement.SideBySide);
     expect(lanes.digimon).toBeGreaterThanOrEqual(22);
     const fan = 6 + 11 * Math.min(4, sourceFanStepLimit(lanes.digimon, 12));
     expect(Math.max(44, lanes.digimon * 1.4 + fan) + 22 + 4).toBeLessThanOrEqual(height);

@@ -114,16 +114,24 @@ describe("organized battle lanes", () => {
     expect(keys).toEqual(["digimon", "tamer"]);
   });
 
-  it.each([false, true])("joins short rows into one lane with equal card sizes (support first: %s)", (supportFirst) => {
+  it.each([false, true])("keeps two separate lanes on short desktop rows (support first: %s)", (supportFirst) => {
     mockViewport({ phone: false });
     vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(180);
     const { container } = render(view([permanent("tamer"), permanent("option")], supportFirst));
-    expect(container.querySelector("[data-field-layout]")!.getAttribute("data-lanes")).toBe("merged");
-    expect(container.querySelectorAll(".game-battle-lane")).toHaveLength(1);
+    expect(container.querySelector("[data-field-layout]")!.getAttribute("data-lanes")).toBe("side-by-side");
+    expect(container.querySelectorAll(".game-battle-lane")).toHaveLength(2);
     const cards = [...container.querySelectorAll<HTMLElement>(".game-battle-lane [data-field-key]")];
-    expect(cards.map((card) => card.getAttribute("data-field-key"))).toEqual(["digimon", "tamer", "option"]);
+    expect(cards.map((card) => card.getAttribute("data-field-key")).sort()).toEqual(["digimon", "option", "tamer"]);
+    expect(container.querySelector('.game-battle-lane--support [data-field-key="tamer"]')).not.toBeNull();
     expect(new Set(cards.map((card) => card.style.width)).size).toBe(1);
     expect(localStorage.getItem("aegis.battle-lanes")).toBe("two");
+
+    act(() => setBattleLanes(BattleLanes.One));
+    expect(container.querySelector("[data-field-layout]")!.getAttribute("data-lanes")).toBe("merged");
+    expect(container.querySelectorAll(".game-battle-lane")).toHaveLength(1);
+    act(() => setBattleLanes(BattleLanes.Two));
+    expect(container.querySelector("[data-field-layout]")!.getAttribute("data-lanes")).toBe("side-by-side");
+    expect(container.querySelectorAll(".game-battle-lane")).toHaveLength(2);
 
     vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(400);
     act(() => window.dispatchEvent(new Event("resize")));
@@ -173,7 +181,7 @@ describe("organized battle lanes", () => {
     const tall = placement(1200, 420);
     expect(tall.lanes).toBe("stacked");
     expect(tall.digimon).toBeGreaterThanOrEqual(84);
-    expect(placement(1200, 260).lanes).toBe("merged");
+    expect(placement(1200, 260).lanes).toBe("side-by-side");
     expect(placement(560, 420).lanes).toBe("stacked");
   });
 

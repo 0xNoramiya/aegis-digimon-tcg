@@ -413,7 +413,7 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
       // runs, so the copy could only ever sit in the order prompt as a choice that never runs
       // (Discord 1555741214014447737: BT26-005 Pinamon listed twice under Ravemon).
       const activeKeys = new Set<string>();
-      const active = collectedThisPass.filter((c) => {
+      const pending = collectedThisPass.filter((c) => {
         const key = declineKey(c);
         if (activeKeys.has(key)) return false;
         const activatable =
@@ -421,11 +421,30 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
           !resolved.has(key) &&
           !inProgress.has(key) &&
           !departed.has(key) &&
-          !loopStopped.has(c.effect.effectKey) &&
-          canActivate(c.effect, env.makeContext(c), env.tracker);
+          !loopStopped.has(c.effect.effectKey);
         if (activatable) activeKeys.add(key);
         return activatable;
       });
+      const newlyPending = pending.filter((c) => !activationTiers.has(declineKey(c)));
+      if (newlyPending.length > 0) {
+        newestTier += 1;
+        for (const c of newlyPending) {
+          activationTiers.set(declineKey(c), newestTier);
+        }
+      }
+      const active = pending.filter((c) => canActivate(c.effect, env.makeContext(c), env.tracker));
+      const highestActiveTier = Math.max(0, ...active.map((c) => activationTiers.get(declineKey(c))!));
+      const highestUnfinishedTier = Math.max(
+        highestActiveTier,
+        ...[...inProgress].map((key) => activationTiers.get(key) ?? 0),
+      );
+      const exhausted = pending.filter((c) => activationTiers.get(declineKey(c))! > highestUnfinishedTier);
+      if (inProgress.size === 0 && options?.retireUnactivatable !== true) {
+        reportWithoutLegalOutcome(exhausted);
+      }
+      for (const c of exhausted) {
+        departed.add(declineKey(c));
+      }
       if (active.length === 0) {
         // At the completed pre-Counter boundary the parent window is exhausted. A cost
         // that becomes payable during security cannot revive this occurrence. Ordinary
@@ -491,11 +510,6 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
         );
       }
 
-      const newlyActive = active.filter((c) => !activationTiers.has(declineKey(c)));
-      if (newlyActive.length > 0) {
-        newestTier += 1;
-        for (const c of newlyActive) activationTiers.set(declineKey(c), newestTier);
-      }
       const activeTier = Math.max(...active.map((c) => activationTiers.get(declineKey(c))!));
       const ordered = orderTurnPlayerFirst(
         active.filter((c) => activationTiers.get(declineKey(c)) === activeTier),

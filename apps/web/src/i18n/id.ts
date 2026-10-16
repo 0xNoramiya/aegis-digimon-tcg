@@ -3,6 +3,16 @@ import { en } from "@/i18n/en";
 
 const interfaceMessages = {
   ...providerEn,
+  "settings.cardImageLanguage": "Bahasa gambar kartu",
+  "settings.cardImageLanguageDesc":
+    "Pilih bahasa default untuk koleksi dan salinan baru yang ditambahkan ke deck. Tombol ini juga mengganti ilustrasi alternatif di deck yang sudah ada. Kartu tanpa bahasa ini tetap memakai gambar saat ini.",
+  "settings.cardImageLanguageApply": "Terapkan ke semua deck saya",
+  "settings.cardImageLanguageLoading": "Menunggu deck dimuat. Jika berlanjut, muat ulang halaman.",
+  "settings.cardImageLanguageEmpty": "Tidak ada deck pribadi untuk diperbarui.",
+  "settings.cardImageLanguageProgress": "Memperbarui deck: {completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "Deck diperbarui: {saved}. Gagal: {failed}. Salinan tanpa bahasa ini: {unavailable}. Terapkan lagi untuk mencoba ulang deck yang gagal.",
+
   "roadmap.hub.label": "Bagian komunitas",
   "roadmap.hub.decks": "Deck",
   "roadmap.hub.roadmap": "Roadmap",
@@ -53,6 +63,10 @@ const interfaceMessages = {
   "settings.shareDeckAfterMatchDesc":
     "Izinkan lawan melihat dan menyalin daftar deck awal setelah pertandingan. Aktif secara bawaan.",
   "settings.shareDeckAfterMatchFailed": "Gagal memuat atau menyimpan pengaturan. Coba lagi atau buka ulang pengaturan.",
+  "overlay.useNegamon": "Gunakan Negamon",
+  "overlay.negamonPlayDetail":
+    "Aktifkan efek Negamon di area pembiakan untuk memainkan Digimon dengan biaya lebih rendah, lalu letakkan Negamon di bawahnya. Pilih kartu pada langkah efek berikutnya.",
+  "overlay.playNormally": "Mainkan biasa",
   "overlay.viewOpponentDeck": "Lihat deck lawan",
   "overlay.opponentDeck": "Deck lawan",
   "rollback.failed": "Tidak bisa memulihkan titik ini dengan aman. Kondisi pertandingan saat ini dipertahankan.",

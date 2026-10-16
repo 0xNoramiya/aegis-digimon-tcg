@@ -725,7 +725,7 @@ export function fitLanes(row: { width: number; height: number }, layoutWidth: nu
   if (content.twoRows !== undefined && !content.preferStacked) {
     return content.twoRows
       ? stackedWidths(row.height, layoutWidth, content)
-      : mergedLanes(row.height, layoutWidth, content);
+      : sideBySideLanes(row.height, layoutWidth, content);
   }
   if (content.supportCount === 0 || content.digimonCount === 0) {
     const placement = LanePlacement.Stacked;
@@ -742,8 +742,13 @@ export function fitLanes(row: { width: number; height: number }, layoutWidth: nu
     return { placement, digimon, support };
   }
   const stacked = stackedLanes(row.height, layoutWidth, content);
-  if (stacked) return stacked;
-  return mergedLanes(row.height, layoutWidth, content);
+  if (stacked) {
+    return stacked;
+  }
+  if (content.preferStacked) {
+    return mergedLanes(row.height, layoutWidth, content);
+  }
+  return sideBySideLanes(row.height, layoutWidth, content);
 }
 
 /**
@@ -1077,7 +1082,7 @@ export function OrganizedBattleRow({
         minHeight: keepsDigimonSlot ? laneHeight(lanes.digimon, metrics.digimonPadding) : 0,
         display: "flex",
         gap: laneGap(lanes.digimon, size.preferStacked, DIGIMON_GAP_SHARE),
-        justifyContent: "safe center",
+        justifyContent: "flex-start",
         alignItems: "center",
         ...({
           "--field-lane-top": `${metrics.digimonPadding.top}px`,
@@ -1104,7 +1109,7 @@ export function OrganizedBattleRow({
         flex: "0 1 auto",
         display: "flex",
         gap: laneGap(lanes.support, size.preferStacked, SUPPORT_GAP_SHARE),
-        justifyContent: "safe center",
+        justifyContent: "flex-start",
         alignItems: "center",
         ...({
           "--field-lane-top": `${metrics.supportPadding.top}px`,

@@ -19,11 +19,25 @@ import { shellEs } from "./redesign/shell.es";
 
 export const es: Record<keyof typeof en, string> = {
   ...providerEs,
+  "settings.cardImageLanguage": "Idioma de las imágenes de cartas",
+  "settings.cardImageLanguageDesc":
+    "Elige el idioma predeterminado de la Colección y de las nuevas copias añadidas a los mazos. El botón también reemplaza las imágenes alternativas de los mazos existentes. Las cartas sin este idioma conservan su imagen actual.",
+  "settings.cardImageLanguageApply": "Aplicar a todos mis mazos",
+  "settings.cardImageLanguageLoading": "Esperando a que carguen los mazos. Si persiste, recarga la página.",
+  "settings.cardImageLanguageEmpty": "No hay mazos personales para actualizar.",
+  "settings.cardImageLanguageProgress": "Actualizando mazos: {completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "Mazos actualizados: {saved}. Fallidos: {failed}. Copias sin este idioma: {unavailable}. Vuelve a aplicar para reintentar los mazos fallidos.",
+
   "settings.shareDeckAfterMatch": "Compartir mi deck al finalizar la partida",
   "settings.shareDeckAfterMatchDesc":
     "Permite que tu rival vea y copie la lista inicial de tu deck al finalizar la partida. Activado por defecto.",
   "settings.shareDeckAfterMatchFailed":
     "No se pudo cargar o guardar esta opción. Inténtalo de nuevo o abre los ajustes otra vez.",
+  "overlay.useNegamon": "Usar Negamon",
+  "overlay.negamonPlayDetail":
+    "Activa el efecto de Negamon en el área de crianza para jugar un Digimon con coste reducido y colocar a Negamon debajo. Elegirás la carta en el siguiente paso del efecto.",
+  "overlay.playNormally": "Jugar normalmente",
   "overlay.viewOpponentDeck": "Ver deck del rival",
   "overlay.opponentDeck": "Deck del rival",
   "rollback.failed": "No se pudo restaurar este punto con seguridad. Se conservó la partida actual.",

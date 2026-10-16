@@ -237833,6 +237833,7 @@
         "actions": [
           {
             "kind": "SubTrigger",
+            "effectTextPart": "by suspending this Tamer",
             "event": "whenOneOfYoursDigivolves",
             "sourceFilter": { "controller": "mine", "kind": ["Digimon"] },
             "condition": {
@@ -237846,6 +237847,7 @@
             "actions": [
               {
                 "kind": "PlayWithoutCost",
+                "effectTextPart": "you may play 1 [Gabumon] if that Digimon has [Greymon] in its name or 1 [Agumon] if it has [Garurumon] in its name from your hand or trash without paying the cost.",
                 "target": {
                   "filter": {
                     "controller": "mine",
@@ -237864,6 +237866,7 @@
               },
               {
                 "kind": "PlayWithoutCost",
+                "effectTextPart": "you may play 1 [Gabumon] if that Digimon has [Greymon] in its name or 1 [Agumon] if it has [Garurumon] in its name from your hand or trash without paying the cost.",
                 "target": {
                   "filter": {
                     "controller": "mine",

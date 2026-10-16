@@ -13895,6 +13895,7 @@ describe("CAP-H-01: whenTrashedFromDeck SubTrigger (BT19-097)", () => {
       definition: def(anchorCardId),
       permanent: () => anchorPerm,
       isOnBattleArea: () => true,
+      isInTrash: () => true,
       isOwnersTurn: () => true,
       hasColor: () => false,
     } as never;
@@ -13939,7 +13940,7 @@ describe("CAP-H-01: whenTrashedFromDeck SubTrigger (BT19-097)", () => {
 
     const subCtx: EffectContext = {
       source: src,
-      trigger: { trashedFromDeckCardId: "BT19-097" },
+      trigger: { trashedFromDeckCardId: "BT19-097", trashedFromDeckInstanceId: "H1_ANCHOR#i" },
       game,
       fx: {} as never,
       ask: {} as never,

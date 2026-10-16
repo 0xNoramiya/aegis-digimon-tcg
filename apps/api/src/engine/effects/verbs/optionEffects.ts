@@ -74,6 +74,7 @@ export function createOptionEffectsVerbs(pc: PrimitivesContext) {
     if (engine.fireSubTrigger) {
       await engine.fireSubTrigger("whenTrashedFromDeck", {
         trashedFromDeckCardId: cardId,
+        ...(instanceId === undefined ? {} : { trashedFromDeckInstanceId: instanceId }),
         ...(byEffectCardId !== undefined ? { trashedFromDeckByEffectCardId: byEffectCardId } : {}),
       });
     }

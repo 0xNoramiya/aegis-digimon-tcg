@@ -23,11 +23,25 @@ import { shellPtBR } from "./redesign/shell.pt-BR";
 
 export const ptBR: Record<keyof typeof en, string> = {
   ...providerPtBR,
+  "settings.cardImageLanguage": "Idioma das imagens das cartas",
+  "settings.cardImageLanguageDesc":
+    "Escolha o idioma padrão da Coleção e das novas cópias adicionadas aos decks. O botão também substitui as imagens, incluindo artes alternativas, dos decks existentes. Cartas sem esse idioma mantêm a imagem atual.",
+  "settings.cardImageLanguageApply": "Aplicar a todos os meus decks",
+  "settings.cardImageLanguageLoading": "Aguardando os decks carregarem. Se persistir, recarregue a página.",
+  "settings.cardImageLanguageEmpty": "Nenhum deck pessoal para atualizar.",
+  "settings.cardImageLanguageProgress": "Atualizando decks: {completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "Decks atualizados: {saved}. Falhas: {failed}. Cópias sem esse idioma: {unavailable}. Aplique novamente para tentar os decks que falharam.",
+
   "settings.shareDeckAfterMatch": "Compartilhar meu deck após a partida",
   "settings.shareDeckAfterMatchDesc":
     "Permitir que o adversário veja e copie a lista inicial do meu deck após a partida. Ativado por padrão.",
   "settings.shareDeckAfterMatchFailed":
     "Não foi possível carregar ou salvar o compartilhamento. Tente novamente ou reabra as configurações.",
+  "overlay.useNegamon": "Usar Negamon",
+  "overlay.negamonPlayDetail":
+    "Ative o efeito do Negamon na área de criação para jogar um Digimon com custo reduzido e colocar Negamon sob ele. Você escolherá a carta na próxima etapa do efeito.",
+  "overlay.playNormally": "Jogar normalmente",
   "overlay.viewOpponentDeck": "Ver deck do adversário",
   "overlay.opponentDeck": "Deck do adversário",
   "rollback.failed": "Não foi possível restaurar este ponto com segurança. A partida atual foi mantida.",

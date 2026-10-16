@@ -166,7 +166,7 @@ export function TrashViewerOverlay({
             <div className="trash-viewer__effect">
               {trashClauses(cardId).map((clause) => (
                 <p key={clause}>
-                  <EffectText text={clause} />
+                  <EffectText text={clause} cardId={cardId} />
                 </p>
               ))}
             </div>

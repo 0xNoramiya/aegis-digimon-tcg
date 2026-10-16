@@ -33,6 +33,10 @@ export default defineConfig({
       },
       {
         extends: true,
+        test: { name: "card-language", include: ["src/screens/cardLanguage/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: { name: "inspector-sources", include: ["src/game/arenaInspectorSources.test.tsx"], environment: "jsdom" },
       },
       {
@@ -46,6 +50,7 @@ export default defineConfig({
           exclude: [
             ...configDefaults.exclude,
             "e2e/**",
+            "src/screens/cardLanguage/**/*.test.tsx",
             "src/design/tokenArt/**/*.test.tsx",
             "src/screens/community/**/*.test.tsx",
             "src/game/arenaInspectorSources.test.tsx",

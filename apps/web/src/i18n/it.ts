@@ -7,11 +7,25 @@ import { en } from "./en";
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
   ...providerEn,
+  "settings.cardImageLanguage": "Lingua delle immagini delle carte",
+  "settings.cardImageLanguageDesc":
+    "Scegli la lingua predefinita della Collezione e delle nuove copie aggiunte ai mazzi. Il pulsante sostituisce anche le immagini alternative nei mazzi esistenti. Le carte senza questa lingua mantengono la loro immagine attuale.",
+  "settings.cardImageLanguageApply": "Applica a tutti i miei mazzi",
+  "settings.cardImageLanguageLoading": "In attesa del caricamento dei mazzi. Se persiste, ricarica la pagina.",
+  "settings.cardImageLanguageEmpty": "Nessun mazzo personale da aggiornare.",
+  "settings.cardImageLanguageProgress": "Aggiornamento mazzi: {completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "Mazzi aggiornati: {saved}. Non riusciti: {failed}. Copie senza questa lingua: {unavailable}. Applica di nuovo per riprovare i mazzi non riusciti.",
+
   "settings.shareDeckAfterMatch": "Condividi il mio mazzo dopo la partita",
   "settings.shareDeckAfterMatchDesc":
     "Consenti all’avversario di vedere e copiare la lista iniziale del tuo mazzo dopo la partita. Attivo per impostazione predefinita.",
   "settings.shareDeckAfterMatchFailed":
     "Impossibile caricare o salvare questa opzione. Riprova o riapri le impostazioni.",
+  "overlay.useNegamon": "Usa Negamon",
+  "overlay.negamonPlayDetail":
+    "Attiva l’effetto di Negamon nell’area di allevamento per giocare un Digimon a costo ridotto e mettere Negamon sotto di esso. Sceglierai la carta nel prossimo passaggio dell’effetto.",
+  "overlay.playNormally": "Gioca normalmente",
   "overlay.viewOpponentDeck": "Visualizza il mazzo avversario",
   "overlay.opponentDeck": "Mazzo avversario",
   "rollback.failed": "Impossibile ripristinare questo punto in sicurezza. La partita attuale è stata mantenuta.",

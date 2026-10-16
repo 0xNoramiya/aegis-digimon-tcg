@@ -38,6 +38,7 @@ export function handEntriesOf({
     cardId: ci.cardId,
     artId: ci.artId,
     activatableEffectsJson: ci.activatableEffectsJson,
+    negamonPlayEffectKey: ci.negamonPlayEffectKey,
     playableFromHand: ci.playableFromHand,
     projectedPlayCost: ci.projectedPlayCost,
     playCostReductionBlocked: ci.playCostReductionBlocked,
