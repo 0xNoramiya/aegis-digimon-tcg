@@ -14,6 +14,8 @@ export interface FieldEffectView {
   ownerSeat: Seat;
   sourceCardId?: string;
   effectText?: string;
+  fromSourceKind?: string[];
+  byOpponentEffectsOnly?: boolean;
   continuous?: boolean;
   skipsCurrentOpponentTurnEnd?: boolean;
 }
