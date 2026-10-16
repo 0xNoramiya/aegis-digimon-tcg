@@ -147,7 +147,7 @@ export function passesPlacementGuard(effect: Effect, ctx: EffectContext): boolea
       discardedProof.sourceInstanceId === ctx.source.instanceId &&
       discardedProof.hostPermanentId === ctx.trigger?.subjectPermanentId &&
       ctx.source.isInTrash?.() === true &&
-      (host?.inBreeding === false || discardedOption);
+      (host?.inBreeding === false || discardedOption || discardedProof.activatesFromDiscardedCard === true);
     if (!proofIsLive) return false;
   }
   const permanent = ctx.source.permanent();
@@ -156,7 +156,9 @@ export function passesPlacementGuard(effect: Effect, ctx: EffectContext): boolea
       effect.isInherited &&
       discardedProof?.sourceInstanceId === ctx.source.instanceId &&
       discardedProof.hostPermanentId === ctx.trigger?.subjectPermanentId &&
-      (ctx.game.permanentById(discardedProof.hostPermanentId) !== undefined || discardedOption)
+      (ctx.game.permanentById(discardedProof.hostPermanentId) !== undefined ||
+        discardedOption ||
+        discardedProof.activatesFromDiscardedCard === true)
     ) {
       return true;
     }

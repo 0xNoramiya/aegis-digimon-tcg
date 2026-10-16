@@ -17,6 +17,7 @@ export type RemovalCause = "byEffect" | "byBattle" | "byRule";
 export interface DiscardedStackSourceProof {
   sourceInstanceId: string;
   hostPermanentId: string;
+  activatesFromDiscardedCard?: boolean;
 }
 
 /**
@@ -332,6 +333,7 @@ export interface TriggerInfo {
    * Carried alongside subjectPermanentId (the host permanent) so a watcher's sourceFilter can
    * gate on "THIS card specifically" (the isSelfRef pattern BT10-006 uses).
    */
+  trashedDigivolutionHost?: Permanent;
   trashedDigivolutionInstanceId?: string;
   /** All sources trashed simultaneously by one Digi-Burst cost payment. */
   trashedDigivolutionInstanceIds?: string[];

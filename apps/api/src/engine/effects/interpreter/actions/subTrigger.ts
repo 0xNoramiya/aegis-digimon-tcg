@@ -224,7 +224,13 @@ export async function runSubTrigger(
     action.hostFilter === undefined
       ? undefined
       : (subCtx: EffectContext): boolean => {
-          const host = anchorPermanentId === undefined ? undefined : subCtx.game.permanentById(anchorPermanentId);
+          const discardedHost =
+            subCtx.discardedStackSourceProof?.activatesFromDiscardedCard === true
+              ? subCtx.trigger.trashedDigivolutionHost
+              : undefined;
+          const host =
+            discardedHost ??
+            (anchorPermanentId === undefined ? undefined : subCtx.game.permanentById(anchorPermanentId));
           return host !== undefined && permanentMatchesFilter(subCtx, host, action.hostFilter!, subCtx.source);
         };
   const hostFilter = (action as Action & { hostFilter?: Filter }).hostFilter;
@@ -814,7 +820,11 @@ export async function runSubTrigger(
     (event === "onDigivolutionCardDiscarded" || event === "onDigivolutionCardsDiscardedBatch")
       ? (subCtx: EffectContext): boolean => {
           const hostId = subCtx.trigger?.subjectPermanentId;
-          const host = hostId === undefined ? undefined : subCtx.game.permanentById(hostId);
+          const discardedHost =
+            subCtx.discardedStackSourceProof?.activatesFromDiscardedCard === true
+              ? subCtx.trigger.trashedDigivolutionHost
+              : undefined;
+          const host = discardedHost ?? (hostId === undefined ? undefined : subCtx.game.permanentById(hostId));
           return host !== undefined && permanentMatchesFilter(subCtx, host, hostFilter, subCtx.source);
         }
       : undefined;
