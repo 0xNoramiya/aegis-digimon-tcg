@@ -1,3 +1,4 @@
+import { FAMOUS_DECK_GROUPS } from "@/game/famousDecks";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { DeckPicker } from "@/screens/DeckPicker";
@@ -9,7 +10,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-it("replaces built-in famous lists with lazy provider lists inside each collection", async () => {
+it("prefers provider lists inside collections covered by DigiLab", async () => {
   vi.spyOn(providerApi, "meta").mockResolvedValue({
     data: [{ id: 1, name: "Examon", slug: "examon", colors: ["Blue"], share: 12, winRate: 54, pilots: 10 }],
     formats: [
@@ -77,3 +78,47 @@ it("replaces built-in famous lists with lazy provider lists inside each collecti
   await waitFor(() => expect(screen.queryByRole("region", { name: "EX13" })).toBeNull());
   expect(screen.getByRole("button", { name: "Examon" })).toBeTruthy();
 });
+
+for (const available of [true, false]) {
+  it(`keeps older presets selectable and inspectable when DigiLab is ${available ? "available" : "unavailable"}`, async () => {
+    const meta = vi.spyOn(providerApi, "meta");
+    if (available) {
+      meta.mockResolvedValue({ data: [], formats: [{ id: "EX13", name: "EX13" }], page: 1, pages: 1 });
+    } else {
+      meta.mockRejectedValue(new Error("Provider unavailable"));
+    }
+    const select = vi.fn<(id: string) => void>();
+    const copy = vi.fn<(deck: unknown) => void>();
+    const group = FAMOUS_DECK_GROUPS.find((entry) => entry.collection === "BT1")!;
+    const deck = group.decks[0]!;
+    render(
+      <I18nProvider>
+        <DeckPicker
+          ownDecks={[]}
+          activeDeckId=""
+          randomSelected={false}
+          randomPoolSize={0}
+          onSelectRandom={() => undefined}
+          onSelectDeck={select}
+          onCopyDeck={copy}
+          onEditDeck={() => undefined}
+          onBuildDeck={() => undefined}
+          onPickCommunityDeck={() => undefined}
+          onOpenCommunityDeck={() => undefined}
+          accountId={undefined}
+        />
+      </I18nProvider>,
+    );
+    await screen.findByRole("option", { name: "BT1" });
+    fireEvent.change(document.querySelector(".deck-picker__collection-filter select")!, { target: { value: "BT1" } });
+    const region = within(await screen.findByRole("region", { name: "BT1" }));
+    fireEvent.click(await region.findByRole("button", { name: deck.name, exact: true }));
+    expect(select).toHaveBeenCalledWith(deck.id);
+    fireEvent.click(region.getAllByRole("button", { name: "Copy to edit" })[0]!);
+    expect(copy).toHaveBeenCalledWith(deck);
+    fireEvent.click(region.getAllByRole("button", { name: "View list" })[0]!);
+    expect(await screen.findByRole("dialog")).toBeTruthy();
+    expect(meta.mock.calls.every(([query]) => query.get("format") !== "BT1")).toBe(true);
+    expect(screen.queryByRole("region", { name: "EX13" })).toBeNull();
+  });
+}
