@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.31.1-beta",
+    "releasedAt": "2026-10-16",
+    "summaryKey": "releases.1.31.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.31.1-beta.fix.bitingCrush"
+      }
+    ]
+  },
+  {
     "version": "1.31.0-beta",
     "releasedAt": "2026-10-16",
     "summaryKey": "releases.1.31.0-beta.summary",
