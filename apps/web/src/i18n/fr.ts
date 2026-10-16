@@ -1142,6 +1142,15 @@ const interfaceMessages = {
   "game.protectionBadge.immuneToOpponentOptionEffects": "Protection Option",
   "game.restriction.immuneToOpponentTamerEffects": "Protégé des effets de Tamer adverses",
   "game.protectionBadge.immuneToOpponentTamerEffects": "Protection Tamer",
+  "game.restriction.protectedFromStackTrash": "Cartes empilées protégées de la défausse par des effets adverses",
+  "game.protectionBadge.protectedFromStackTrash": "Protection défausse de pile",
+  "redesign.arena.restriction.protectedFromStackTrash":
+    "Cartes empilées protégées de la défausse par des effets adverses",
+  "game.restriction.protectedFromStackReturn":
+    "Cartes empilées protégées du retour en main ou dans le deck par des effets adverses",
+  "game.protectionBadge.protectedFromStackReturn": "Protection retour de pile",
+  "redesign.arena.restriction.protectedFromStackReturn":
+    "Cartes empilées protégées du retour en main ou dans le deck par des effets adverses",
   "game.restriction.protectedFromDpReduction": "Protégé des réductions de DP par des effets adverses",
   "game.protectionBadge.protectedFromDpReduction": "Protection DP",
   "game.restriction.protectedFromDeDigivolve": "Protégé de la Dé-digivolution par des effets adverses",

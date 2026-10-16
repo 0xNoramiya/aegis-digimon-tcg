@@ -931,6 +931,14 @@ export const es: Record<keyof typeof en, string> = {
   "game.protectionBadge.immuneToOpponentOptionEffects": "Protección: Option",
   "game.restriction.immuneToOpponentTamerEffects": "Protegido de efectos de Tamers rivales",
   "game.protectionBadge.immuneToOpponentTamerEffects": "Protección: Tamer",
+  "game.restriction.protectedFromStackTrash": "Cartas apiladas protegidas del descarte por efectos rivales",
+  "game.protectionBadge.protectedFromStackTrash": "Protección: descarte de pila",
+  "redesign.arena.restriction.protectedFromStackTrash": "Cartas apiladas protegidas del descarte por efectos rivales",
+  "game.restriction.protectedFromStackReturn":
+    "Cartas apiladas protegidas del retorno a la mano o al mazo por efectos rivales",
+  "game.protectionBadge.protectedFromStackReturn": "Protección: retorno de pila",
+  "redesign.arena.restriction.protectedFromStackReturn":
+    "Cartas apiladas protegidas del retorno a la mano o al mazo por efectos rivales",
   "game.restriction.protectedFromDpReduction": "Protegido de reducción de DP por efectos rivales",
   "game.protectionBadge.protectedFromDpReduction": "Protección: DP",
   "game.restriction.protectedFromDeDigivolve": "Protegido de De-Digivolve por efectos rivales",
