@@ -1,4 +1,40 @@
 {
+  "releases.1.28.1-beta.summary": {
+    "en": "Fixes for card selection, effect indicators, mobile match history, and leaving matches.",
+    "pt-BR": "Correções na seleção de cartas, nos indicadores de efeitos, no histórico de partidas no celular e na saída de partidas.",
+    "es": "Correcciones en la selección de cartas, los indicadores de efectos, el historial de partidas en móvil y la salida de partidas.",
+    "it": "Correzioni alla selezione delle carte, agli indicatori degli effetti, alla cronologia su mobile e all’uscita dalle partite."
+  },
+  "releases.1.28.1-beta.fix.selection": {
+    "en": "Multi-card choices preserve your selected cards when the selection limit is reached, including KingEtemon’s play effect.",
+    "pt-BR": "Escolhas de várias cartas preservam suas seleções ao atingir o limite, incluindo o efeito de jogar cartas do KingEtemon.",
+    "es": "Las elecciones de varias cartas conservan tus selecciones al alcanzar el límite, incluido el efecto de jugar cartas de KingEtemon.",
+    "it": "Le scelte di più carte mantengono le selezioni quando viene raggiunto il limite, incluso l’effetto di KingEtemon che gioca carte."
+  },
+  "releases.1.28.1-beta.fix.indicators": {
+    "en": "UlforceVeedramon EX13 shows its active stack protection badges, and Callismon highlights each effect step.",
+    "pt-BR": "UlforceVeedramon EX13 mostra as pílulas de proteção da stack ativas, e Callismon destaca cada etapa dos seus efeitos.",
+    "es": "UlforceVeedramon EX13 muestra los indicadores de protección de pila activos y Callismon resalta cada paso de sus efectos.",
+    "it": "UlforceVeedramon EX13 mostra gli indicatori di protezione attivi delle carte impilate e Callismon evidenzia ogni fase dei suoi effetti."
+  },
+  "releases.1.28.1-beta.fix.history": {
+    "en": "Profile match history fits narrow screens more reliably.",
+    "pt-BR": "O histórico de partidas no perfil se adapta melhor a telas estreitas.",
+    "es": "El historial de partidas del perfil se adapta mejor a pantallas estrechas.",
+    "it": "La cronologia delle partite nel profilo si adatta meglio agli schermi stretti."
+  },
+  "releases.1.28.1-beta.fix.navigation": {
+    "en": "Confirming departure with the browser Back button now leaves the match correctly.",
+    "pt-BR": "Confirmar a saída pelo botão Voltar do navegador agora encerra sua participação na partida corretamente.",
+    "es": "Confirmar la salida con el botón Atrás del navegador ahora abandona la partida correctamente.",
+    "it": "Confermare l’uscita con il pulsante Indietro del browser ora abbandona correttamente la partita."
+  },
+  "releases.1.28.1-beta.fix.reloads": {
+    "en": "Limit repeated page reloads per client to protect service availability.",
+    "pt-BR": "Limite de recarregamentos repetidos por cliente para proteger a disponibilidade do serviço.",
+    "es": "Límite de recargas repetidas por cliente para proteger la disponibilidad del servicio.",
+    "it": "Limite alle ricariche ripetute per client per proteggere la disponibilità del servizio."
+  },
   "releases.1.27.0-beta.summary": {
     "en": "Searchable match history, community deck guides, clearer field information, and fixes to effect resolution.",
     "pt-BR": "Histórico pesquisável de partidas, guias de decks da comunidade, informações mais claras no campo e correções na resolução de efeitos.",

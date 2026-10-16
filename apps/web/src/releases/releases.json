@@ -1,5 +1,28 @@
 [
   {
+    "version": "1.28.1-beta",
+    "releasedAt": "2026-10-15",
+    "summaryKey": "releases.1.28.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.28.1-beta.fix.selection"
+      },
+      {
+        "textKey": "releases.1.28.1-beta.fix.indicators"
+      },
+      {
+        "textKey": "releases.1.28.1-beta.fix.history"
+      },
+      {
+        "textKey": "releases.1.28.1-beta.fix.navigation"
+      },
+      {
+        "textKey": "releases.1.28.1-beta.fix.reloads"
+      }
+    ]
+  },
+  {
     "version": "1.28.0-beta",
     "releasedAt": "2026-10-15",
     "summaryKey": "releases.1.28.0-beta.summary",
