@@ -1,5 +1,6 @@
 import { getStoryGuestToken } from "@/story/getStoryGuestToken";
 import { LocalScenarioHelp } from "./dev/LocalScenarioHelp";
+import { MATCH_TIMER_START_SECONDS } from "@aegis/shared";
 import { spectatorCodeFromSearch } from "./roomInvite";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { installAudioLifecycle } from "./design/sound";
@@ -449,7 +450,7 @@ function LoadedAegisClient({
   });
   const [timerOptions, setTimerOptions] = useState(() => ({
     matchTimer: true,
-    timerStartSeconds: 300,
+    timerStartSeconds: MATCH_TIMER_START_SECONDS,
     timerRefillSeconds: 60,
   }));
   const [allowRollback, setAllowRollback] = useState(false);

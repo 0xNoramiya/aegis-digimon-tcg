@@ -421,6 +421,37 @@ export class ModifierLedger {
       }));
   }
 
+  heldDpEffectViews(state: GameState, permanent: Permanent): FieldEffectView[] {
+    const held: FieldEffectView[] = [];
+    for (const modifier of this.dpModifiers) {
+      if (modifier.permanentId !== permanent.permanentId || modifier.delta === 0) continue;
+      if (!this.dpModifierIsSuppressed(state, modifier)) continue;
+      held.push({
+        kind: "dp",
+        value: modifier.delta,
+        duration: modifier.duration,
+        ownerSeat: this.durationOwners.get(modifier) ?? permanent.controllerSeat,
+        ...(modifier.continuous ? { continuous: true } : {}),
+        ...(modifier.skipsCurrentOpponentTurnEnd ? { skipsCurrentOpponentTurnEnd: true } : {}),
+      });
+    }
+    for (const modifier of this.playerDpModifiers) {
+      if (modifier.seat !== permanent.controllerSeat || modifier.delta === 0) continue;
+      if (modifier.matches !== undefined && !modifier.matches(permanent.permanentId)) continue;
+      const dpImmune = modifier.delta < 0 && this.continuous?.hasRestriction(permanent.permanentId, "dpImmune");
+      if (!dpImmune && !this.playerDpModifierIsSuppressed(permanent, modifier)) continue;
+      held.push({
+        kind: "dp",
+        value: modifier.delta,
+        duration: modifier.duration,
+        ownerSeat: modifier.ownerSeat ?? modifier.seat,
+        ...(modifier.sourceCardId ? { sourceCardId: modifier.sourceCardId } : {}),
+        ...(modifier.skipsCurrentOpponentTurnEnd ? { skipsCurrentOpponentTurnEnd: true } : {}),
+      });
+    }
+    return held;
+  }
+
   /** Record a player-wide DP delta and immediately refresh all current affected Digimon. */
   addPlayerDpModifier(
     state: GameState,

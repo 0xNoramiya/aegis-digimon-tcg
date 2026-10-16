@@ -315,6 +315,7 @@ describe("Alphamon: Ouryuken interaction coverage", () => {
         target: { kind: "player" },
       }),
     ).toEqual({ ok: true });
+    await settle(() => s.events.some((e) => e.kind === "blockWindowOpened"));
     advance(s.engine).verb.enterEffectResolution(1, ["Option"]);
     await advance(s.engine).verb.deletePermanent([s.perm("source").permanentId], "byEffect");
     advance(s.engine).verb.leaveEffectResolution();

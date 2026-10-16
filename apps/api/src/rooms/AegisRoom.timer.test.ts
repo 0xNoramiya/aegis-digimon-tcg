@@ -9,6 +9,7 @@ import {
   EVENT_CHANNEL,
   MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN,
   MATCH_TIMER_DECISION_BONUS_SECONDS,
+  MATCH_TIMER_START_SECONDS,
   MULLIGAN_TIMER_SECONDS,
   PendingDecision,
   Phase,
@@ -146,7 +147,7 @@ describe("room clock enforcement", () => {
     expect(game.state.timerRemaining0).toBe(50);
   });
 
-  it("#37 publishes fresh thinking windows once at each turn", () => {
+  it("publishes the 60s/30s turn bonuses once while retaining each player's reserve", () => {
     const now = vi.spyOn(performance, "now").mockReturnValue(0);
     const game = room({ private: true, matchTimer: true, timerStartSeconds: 300, timerRefillSeconds: 0 });
     begin(game, 0);
@@ -166,7 +167,7 @@ describe("room clock enforcement", () => {
     game.state.turnSeat = 1;
     sync(game);
     expect(game.state.timerRemaining1).toBe(300);
-    expect(game.state.timerRemaining0).toBe(300);
+    expect(game.state.timerRemaining0).toBe(230);
     now.mockReturnValue(170_000);
     sync(game);
     expect(game.state.timerRemaining1).toBe(280);
@@ -175,15 +176,15 @@ describe("room clock enforcement", () => {
     sync(game);
     now.mockReturnValue(220_000);
     sync(game);
-    expect(game.state.timerRemaining0).toBe(250);
+    expect(game.state.timerRemaining0).toBe(180);
     game.state.turnCount = 3;
     game.state.turnSeat = 0;
     sync(game);
-    expect(game.state.timerRemaining0).toBe(300);
+    expect(game.state.timerRemaining0).toBe(240);
     expect(game.state.timerRemaining1).toBe(300);
     now.mockReturnValue(230_000);
     sync(game);
-    expect(game.state.timerRemaining0).toBe(290);
+    expect(game.state.timerRemaining0).toBe(230);
   });
 
   it("#39 adds combo time only for confirmed card plays and digivolutions", () => {
@@ -299,7 +300,7 @@ describe("room clock enforcement", () => {
       configureLocalScenario(fixture);
       const game = room({ botRoom: true, devScenario: "local-fixture" });
       expect(game.state.matchTimer).toBe(true);
-      expect(game.state.timerStartSeconds).toBe(300);
+      expect(game.state.timerStartSeconds).toBe(MATCH_TIMER_START_SECONDS);
       expect(game.state.timerRefillSeconds).toBe(60);
       configureLocalScenario(fixtureArena);
       expect(room({ botRoom: true, devScenario: "local-fixture", matchTimer: true }).state.matchTimer).toBe(false);
@@ -316,7 +317,9 @@ describe("room clock enforcement", () => {
     const game = room();
     expect(game.state.timerStartSeconds).toBe(60);
     expect(game.state.timerRefillSeconds).toBe(60);
-    expect(room({ matchTimer: true, timerStartSeconds: 60, timerRefillSeconds: 0 }).state.timerStartSeconds).toBe(300);
+    expect(room({ matchTimer: true, timerStartSeconds: 60, timerRefillSeconds: 0 }).state.timerStartSeconds).toBe(
+      MATCH_TIMER_START_SECONDS,
+    );
   });
 });
 

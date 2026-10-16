@@ -6,7 +6,11 @@ import { evaluateCondition } from "../conditions.js";
 import { canPayCost, payCost } from "../costs.js";
 import { runAction } from "../dispatch.js";
 import { scaleFactor } from "../scaling.js";
-import { candidateLooseInstances } from "../targeting/loose.js";
+import {
+  candidateLooseInstances,
+  pickLoose,
+  type LooseCandidate,
+} from "#api/engine/effects/interpreter/targeting/loose";
 import { candidatePermanents, resolvePermanentTargets } from "../targeting/permanents.js";
 import { permanentMatchesFilter } from "../matching/permanent.js";
 import { definitionMatches } from "../matching/definition.js";
@@ -698,7 +702,7 @@ async function resolveWouldBePlayedSelfReducer(
         declaredZones.flatMap((zone) => (zone === "trashOrBattleArea" ? ["trash", "battleArea"] : [zone])),
       );
       const candidateFilter = { ...target.filter, zone: undefined };
-      const candidates: { instanceId: string; cardId: string; permanentId?: string }[] = [];
+      const candidates: (LooseCandidate & { permanentId?: string })[] = [];
       if (sourceZones.has("trash")) {
         candidates.push(
           ...candidateLooseInstances(ctx, { ...target, filter: { ...candidateFilter, zone: "trash" } }, ["trash"]),
@@ -713,6 +717,7 @@ async function resolveWouldBePlayedSelfReducer(
             candidates.push({
               instanceId: permanent.topCard.instanceId,
               cardId: permanent.topCard.cardId,
+              ownerSeat: permanent.topCard.ownerSeat,
               permanentId: permanent.permanentId,
             });
           }
@@ -724,14 +729,14 @@ async function resolveWouldBePlayedSelfReducer(
       }
       if (candidates.length === 0) return;
 
-      const maxPlacements = typeof target.count === "number" ? target.count : candidates.length;
-      const chosenIds = await ctx.ask.selectCards(ctx, {
-        candidates: candidates.map(({ instanceId }) => instanceId),
-        min: target.upTo === true ? 0 : Math.min(maxPlacements, candidates.length),
-        max: maxPlacements,
-        distinctNames: true,
-        visibleCards: candidates.map(({ instanceId, cardId }) => ({ instanceId, cardId })),
-      });
+      const chosenIds = await pickLoose(
+        ctx,
+        target,
+        candidates,
+        undefined,
+        ctx.ask,
+        candidates.map(({ instanceId }) => instanceId),
+      );
       const chosenPlacements: string[] = [];
       const chosenRelocations: { permanentId: string; shedOwnCards?: boolean }[] = [];
       for (const chosenId of chosenIds) {

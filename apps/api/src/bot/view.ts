@@ -35,6 +35,7 @@ export interface BotUnit {
   suspended: boolean;
   inBreeding: boolean;
   cannotDigivolve: boolean;
+  cannotSuspend?: boolean;
   keywords: readonly string[];
   /** Engine-projected: may this Digimon attack the opponent right now? */
   canAttackPlayer: boolean;
@@ -122,6 +123,7 @@ function toUnit(permanent: PermanentLike): BotUnit {
     suspended: permanent.isSuspended === true,
     inBreeding: permanent.inBreeding === true,
     cannotDigivolve: permanent.cannotDigivolve === true,
+    cannotSuspend: permanent.cannotSuspend === true,
     keywords: toArray(permanent.keywords),
     canAttackPlayer: permanent.canAttackPlayer === true,
     attackablePermanentIds: toArray(permanent.attackablePermanentIds),
@@ -225,6 +227,7 @@ interface PermanentLike {
   isSuspended?: boolean;
   inBreeding?: boolean;
   cannotDigivolve?: boolean;
+  cannotSuspend?: boolean;
   keywords?: ArrayLike<string>;
   canAttackPlayer?: boolean;
   attackablePermanentIds?: ArrayLike<string>;

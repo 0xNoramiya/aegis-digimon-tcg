@@ -36,6 +36,7 @@ import {
   replaceDigivolveRoutesIfChanged,
   replaceIfChanged,
 } from "./schemaSync.js";
+import { securityAttackGrantSum } from "./securityAttackGrantSum.js";
 import { securityStrikeCount } from "./securityStrike.js";
 import type { CardInstance, GameState, Permanent, Seat } from "@aegis/shared";
 import type { GameStateAccess } from "../state/access.js";
@@ -165,10 +166,9 @@ export class BoardProjection {
    * projection, so the inspector value cannot drift from the rule.
    */
   securityStrikeFor(permanentId: string): number {
-    // When SA-sign inversion is active on the attacker, each existing ＜Security Attack ±N＞
-    // grant has its amount NEGATED per-instance before summing (two ＜SA -1＞ → two ＜SA +1＞ =
-    // +2 to the strike, NOT ＜SA +2＞ recomputed). The sign is applied per grant inside the
-    // reduce, so the composition is faithful to the per-instance flip with no value math here.
+    // When SA-sign inversion is active on the attacker, each existing ＜Security Attack -N＞
+    // grant becomes ＜Security Attack +N＞ per-instance before summing (two ＜SA -1＞ → two
+    // ＜SA +1＞ = +2 to the strike, NOT ＜SA +2＞ recomputed). Positive grants keep their sign.
     const invert = this.deps.continuous.securityAttackInverted(permanentId);
     const saGrants = this.deps.continuous.grantedKeywords(permanentId).filter((g) => g.keyword === "SecurityAttack");
     return securityStrikeCount(saGrants, invert);
@@ -236,6 +236,9 @@ export class BoardProjection {
     if (forcedAttackGrants.length > 0) perm.attacksAtStartOfMainPhase = true;
     const forcedAttackGrantsJson = forcedAttackGrants.length > 0 ? JSON.stringify(forcedAttackGrants) : "";
     if (perm.forcedAttackGrantsJson !== forcedAttackGrantsJson) perm.forcedAttackGrantsJson = forcedAttackGrantsJson;
+    const heldDpEffects = this.deps.modifiers.heldDpEffectViews(this.deps.state, perm);
+    const heldDpEffectsJson = heldDpEffects.length > 0 ? JSON.stringify(heldDpEffects) : "";
+    if (perm.heldDpEffectsJson !== heldDpEffectsJson) perm.heldDpEffectsJson = heldDpEffectsJson;
     perm.immuneToOpponentDigimonEffects = this.deps.continuous.hasRestriction(
       perm.permanentId,
       "beAffected",
@@ -281,11 +284,10 @@ export class BoardProjection {
       "cannotActivateWhenDigivolving",
     );
     perm.securityAttack = this.securityStrikeFor(perm.permanentId);
-    const invert = this.deps.continuous.securityAttackInverted(perm.permanentId);
-    perm.securityAttackModifier = this.deps.continuous
-      .grantedKeywords(perm.permanentId)
-      .filter((grant) => grant.keyword === "SecurityAttack")
-      .reduce((sum, grant) => sum + (grant.amount ?? 1) * (invert ? -1 : 1), 0);
+    perm.securityAttackModifier = securityAttackGrantSum(
+      this.deps.continuous.grantedKeywords(perm.permanentId).filter((grant) => grant.keyword === "SecurityAttack"),
+      this.deps.continuous.securityAttackInverted(perm.permanentId),
+    );
   }
 
   /**

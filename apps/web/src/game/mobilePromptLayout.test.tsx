@@ -321,6 +321,8 @@ describe.each(PHONE_VIEWPORTS)("long prompts on a phone at $name", (viewport) =>
       </I18nProvider>,
     );
     const rail = screen.getByTestId("board-prompt");
+    expect(within(rail).getByText(clause)).toBeTruthy();
+    fireEvent.click(within(rail).getByRole("button", { name: "Hide effect" }));
     expect(within(rail).queryByText(clause)).toBeNull();
     fireEvent.click(within(rail).getByRole("button", { name: "View effect" }));
     expect(within(rail).getByText(clause)).toBeTruthy();

@@ -206,7 +206,6 @@ it("Discord 1555307552223264829: names the attacker and its only target, and con
     </I18nProvider>,
   );
 
-  fireEvent.click(screen.getByRole("button", { name: "View effect" }));
   expect(screen.getByText("Grademon attacks. The only target is your opponent's security.")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Attack" }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: ["player"] });
@@ -241,7 +240,6 @@ it("shows Taiki and the DigiXros instruction when selecting a material-zone Tame
       />
     </I18nProvider>,
   );
-  fireEvent.click(screen.getByRole("button", { name: "View effect" }));
   expect(screen.getByTestId("board-prompt").textContent).toContain(effectText);
   expect(container.querySelector('img[src*="BT10-087"]')).toBeTruthy();
   expect(container.querySelector('img[src*="P-224"]')).toBeNull();
@@ -396,9 +394,6 @@ it.each(["chooseTargets", "selectCards", "optional"] as const)(
         />
       </I18nProvider>,
     );
-    if (kind !== "optional") {
-      fireEvent.click(screen.getByRole("button", { name: "View effect" }));
-    }
     expect(container.querySelector(".board-prompt__clause")?.textContent).toBe(stagedClause);
     expect(container.querySelector("strong.decision-overlay__effect-step")?.textContent).toBe(activePassage);
   },

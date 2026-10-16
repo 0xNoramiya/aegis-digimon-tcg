@@ -94470,7 +94470,6 @@
               "bindHostAs": "bt24_016_elizamon",
               "raw": "by placing 1 [Dimetromon] from your trash as any of your [Elizamon]'s bottom digivolution card"
             },
-            "optional": true,
             "abortOnDecline": true
           }
         ],
@@ -108856,7 +108855,8 @@
                 "controller": "mine",
                 "kind": ["Digimon"],
                 "nameOrTrait": [{ "tokens": ["Appmon"], "match": "trait" }],
-                "hasLinkRequirement": true
+                "hasLinkRequirement": true,
+                "hostFilter": { "controller": "mine", "kind": ["Digimon"], "zone": "battleArea" }
               },
               "count": 1
             },
@@ -213184,6 +213184,7 @@
           {
             "kind": "SubTrigger",
             "event": "whenUnsuspended",
+            "sourceFilter": { "controller": "any", "kind": ["Digimon"] },
             "actions": [
               {
                 "kind": "Restrict",
