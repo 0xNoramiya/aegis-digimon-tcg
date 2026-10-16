@@ -455,13 +455,14 @@
   top: 0;
   right: 0;
 }
-/* The rail is its own positioning box; its handle sits in the sheet's upper-right corner. */
 .board-prompt[data-prompt-surface] .board-prompt__move-handle {
-  top: var(--ds-space-2);
-  right: var(--ds-space-2);
+  top: 0;
+  right: 0;
   z-index: 1;
 }
 .board-prompt[data-prompt-surface] .board-prompt__heading {
+  position: relative;
+  min-height: 2.75rem;
   padding-right: 3rem;
 }
 

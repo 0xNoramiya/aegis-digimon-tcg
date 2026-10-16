@@ -1,3 +1,4 @@
+import { useMediaQuery } from "@/design/useMediaQuery";
 import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
 /* Simple actions use the left dialog. Hand and field choices use their physical cards;
    other card choices use the central gallery. The pill tells
@@ -109,8 +110,10 @@ export function BoardPromptRail({
 }) {
   const { t } = useTranslation();
   useEscapeToDialog(onOpenDialog);
-  const [isTextVisible, setIsTextVisible] = useState(false);
+  const [isTextExpanded, setIsTextExpanded] = useState(true);
+  const mobile = useMediaQuery("(width < 768px), (height < 520px) and (orientation: landscape)");
   const modal = variant === "prompt";
+  const isTextVisible = modal || !mobile || isTextExpanded;
   const sourceMask = useDecisionSourceMask(modal ? sourcePermanentId : undefined);
   const noticeBand = useNoticeBandPassThrough();
   const focusProps = useEffectPromptFocus(!modal, handSpace);
@@ -166,17 +169,18 @@ export function BoardPromptRail({
           </Button>
         ) : null}
         <div className="board-prompt__heading">
+          <PromptMoveHandle drag={drag} className="board-prompt__move-handle" tabIndex={-1} />
           {eyebrow ? <p className="board-prompt__eyebrow">{eyebrow}</p> : null}
           {/* Announce the action first; the printed clause supplies its context below. */}
           <p className="board-prompt__text" aria-live="polite">
             {prompt}
           </p>
-          {clause && !modal ? (
+          {clause && !modal && mobile ? (
             <button
               type="button"
               className="board-prompt__toggle-text"
               aria-expanded={isTextVisible}
-              onClick={() => setIsTextVisible((visible) => !visible)}
+              onClick={() => setIsTextExpanded((visible) => !visible)}
             >
               {t(isTextVisible ? "overlay.hideEffect" : "overlay.showEffect")}
             </button>
@@ -186,7 +190,7 @@ export function BoardPromptRail({
             the player reads, the picture only says which card is asking. */}
         {clause || art ? (
           <div className="board-prompt__body">
-            {clause && (modal || isTextVisible) ? (
+            {clause && isTextVisible ? (
               <p className="board-prompt__clause" lang={clauseLang}>
                 <EffectStepText text={clause} emphasis={clauseEmphasis} />
               </p>
@@ -201,7 +205,6 @@ export function BoardPromptRail({
           </p>
         ) : null}
         <div className="board-prompt__actions">{children}</div>
-        <PromptMoveHandle drag={drag} className="board-prompt__move-handle" tabIndex={-1} />
       </section>
     </>
   );
