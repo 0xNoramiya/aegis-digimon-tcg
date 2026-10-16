@@ -134,3 +134,82 @@ it("resolves numbered Chinese draw labels to the upstream Draw rule", () => {
   expect(resolved.base).toBe("Draw");
   expect(resolved.label).toBe("＜抽2张卡＞");
 });
+
+it("reuses complete translated lines on new cards while preserving unfamiliar rules", () => {
+  const sample = { ...translations, text: { "[OnPlay]Draw1.": "【登场时】抽1张卡。" } };
+  expect(getTranslatedCardText({ text: "[On Play] Draw 1.\n[Future Timing] New rule.", translations: sample })).toBe(
+    "[登场时]抽1张卡。\n[Future Timing] New rule.",
+  );
+  expect(getTranslatedCardText({ text: "[On Play] Draw 1. Then delete 1 Digimon.", translations: sample })).toBe(
+    "[On Play] Draw 1. Then delete 1 Digimon.",
+  );
+});
+
+it("translates both printed faces of the dual card and non-Digimon types", () => {
+  const card = allCards().find((candidate) => candidate.cardId === "LM-067")!;
+  expect(getTranslatedCardText({ text: card.effectText!, translations })).toContain("每丢弃1张");
+  expect(getTranslatedCardText({ text: card.optionEffect!, translations })).toContain("退化3");
+  expect(getTranslatedCardMeta({ value: "Option", group: "forms", translations })).toBe("选项");
+});
+
+it("keeps every current catalog effect covered when new cards are imported", () => {
+  const missing: string[] = [];
+  for (const card of allCards()) {
+    for (const field of [
+      "effectText",
+      "inheritedEffectText",
+      "securityEffectText",
+      "optionEffect",
+      "linkEffect",
+    ] as const) {
+      const text = card[field];
+      if (text && getTranslatedCardText({ text, translations }) === text) {
+        missing.push(`${card.cardId}:${field}`);
+      }
+    }
+  }
+  expect(missing).toEqual([]);
+});
+
+it("uses the maintained Chinese names for Arts Digivolve and Assembly", () => {
+  expect(getTranslatedKeyword({ keyword: "＜Arts Digivolve＞", translations })).toBe("＜技艺进化＞");
+  expect(getTranslatedKeyword({ keyword: "＜Assembly -5＞", translations })).toBe("＜组装-5＞");
+  expect(getTranslatedKeyword({ keyword: "＜Assembly -6＞", translations })).toBe("＜组装-6＞");
+  const artsCard = allCards().find((card) => card.cardId === "BT27-035")!;
+  const assemblyCard = allCards().find((card) => card.cardId === "EX14-054")!;
+  expect(getTranslatedCardText({ text: artsCard.optionEffect!, translations })).toContain("技艺进化");
+  expect(getTranslatedCardText({ text: assemblyCard.effectText!, translations })).toContain("组装-5");
+  expect(Object.values(translations.text).some((text) => /Arts Digivolve|Assembly|拼装/.test(text))).toBe(false);
+});
+
+it.each([2, 4, 5, 6, 7, 8, 9])("preserves Assembly's -%i cost reduction and English fallback", (reduction) => {
+  const keyword = `＜Assembly -${reduction}＞`;
+  expect(getTranslatedKeyword({ keyword, translations })).toBe(`＜组装-${reduction}＞`);
+  expect(resolveTranslatedKeyword({ keyword, translations }).reminderKeyword).toBe(`Assembly -${reduction}`);
+  expect(getTranslatedKeyword({ keyword })).toBe(keyword);
+});
+
+it("preserves Assembly material conditions", () => {
+  expect(
+    getTranslatedKeyword({ keyword: "<Assembly -5 (3 [Greed] trait cards w/different levels)>", translations }),
+  ).toBe("<组装-5 (3 [Greed] trait cards w/different levels)>");
+});
+
+it.each(["\n", "\r\n", "\r"])("preserves %j line breaks and unfamiliar rules when reusing lines", (newline) => {
+  const sample = { ...translations, text: { "[OnPlay]Draw1.": "【登场时】抽1张卡。" } };
+  const text = `  [On Play] Draw 1.${newline}${newline}  [Future Timing] New rule.  `;
+  expect(getTranslatedCardText({ text, translations: sample })).toBe(
+    `[登场时]抽1张卡。${newline}${newline}  [Future Timing] New rule.  `,
+  );
+  expect(getTranslatedCardText({ text })).toBe(text);
+});
+
+it("prefers a full-field translation over line translations", () => {
+  const sample = {
+    ...translations,
+    text: { "[OnPlay]Draw1.": "单行译文", "[OnPlay]Draw1.<Blocker>": "【登场时】整段译文" },
+  };
+  expect(getTranslatedCardText({ text: "[On Play] Draw 1.\n<Blocker>", translations: sample })).toBe(
+    "[登场时]整段译文",
+  );
+});

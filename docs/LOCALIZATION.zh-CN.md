@@ -33,9 +33,18 @@ hint use available translations. The rule links retain their upstream targets.
 Printed text keys ignore formatting whitespace, normalize full-width keyword
 brackets, and decode common HTML entities. Chinese timing and keyword brackets are
 converted to the notation recognized by the upstream effect renderer. Exact
-complete-text entries are translated; effect fragments without an exact entry
-remain readable in English. This implementation does not guess a clause by its
-position in a different card or replace arbitrary server prose.
+complete-text entries take priority. When a complete field has no match, each
+nonempty line is matched independently against complete dictionary entries.
+Unmatched lines remain in English, with their original line breaks and spacing.
+This implementation does not guess clauses or replace partial sentences.
+
+Run `pnpm translations:audit` to write `.local/card-translation-coverage.json`.
+The report includes card IDs, fields, original text and unmatched effect lines.
+`pnpm translations:check` fails when names, effects or metadata are missing or
+empty. The normal web build runs this check before compilation, including the
+Docker web build used by self-hosted deployments. Custom direct Vite builds must
+run the check separately. Coverage measures dictionary availability, not semantic
+translation accuracy.
 
 Dictionary maintenance should preserve English keys and named placeholders. After
 changing data or integration code, run the locale tests, card display tests,

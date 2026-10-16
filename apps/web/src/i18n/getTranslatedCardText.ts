@@ -6,8 +6,13 @@ type Params = { text: string; translations?: CardTranslationData };
 
 export function getTranslatedCardText({ text, translations }: Params): string {
   const translated = getDictionaryValue({ dictionary: translations?.text, key: normalizePrintedTextKey(text) });
-  if (!translated) {
+  const resolved =
+    translated ||
+    text.replace(/[^\r\n]+/g, (line) => {
+      return getDictionaryValue({ dictionary: translations?.text, key: normalizePrintedTextKey(line) }) || line;
+    });
+  if (resolved === text) {
     return text;
   }
-  return translated.replace(/[【［]([^】］]+)[】］]/g, "[$1]").replace(/《([^》]+)》/g, "＜$1＞");
+  return resolved.replace(/[【［]([^】］]+)[】］]/g, "[$1]").replace(/《([^》]+)》/g, "＜$1＞");
 }
