@@ -766,6 +766,7 @@ export class GameEngine {
       playerAction?: boolean;
       isDigiXros?: boolean;
       keywordPreventions?: { interruptsEffect: boolean };
+      holdTriggered?: boolean;
     },
   ): Promise<Set<string>> {
     return engineConsultLeavePrevention(this, permanentIds, cause, resolvingSeat, opts);

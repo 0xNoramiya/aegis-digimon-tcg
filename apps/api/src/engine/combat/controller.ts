@@ -1806,9 +1806,15 @@ export class CombatController {
       // simultaneous activations. Capture the watcher before the deletion window and
       // let that window order it with printed On Deletion effects. If no permanent was
       // actually deleted (for example, a replacement prevented it), activate it alone.
-      await resolveBattleWon(
-        deleted.length > 0 && this.currentAttack === undefined ? { deferIntoDeletionWindow: true } : undefined,
-      );
+      if (deleted.length > 0) {
+        await resolveBattleWon(this.currentAttack === undefined ? { deferIntoDeletionWindow: true } : undefined);
+      } else if (this.hooks.resolveAvertedBattleReactions !== undefined) {
+        await this.hooks.resolveAvertedBattleReactions(resolveBattleWon);
+      } else {
+        await resolveBattleWon();
+      }
+    } else if (deleted.length === 0) {
+      await this.hooks.resolveAvertedBattleReactions?.();
     }
     // Battle winners and deletion watchers trigger together. Queue both families before
     // opening the deletion window so turn-player priority applies across the two buses.

@@ -215,6 +215,9 @@ export interface CombatHooks {
    * raw state access and would pay a prevention cost without actually saving the Digimon.
    */
   keywordReactionsInLeavePrevention?: boolean;
+  resolveAvertedBattleReactions?: (
+    resolveBattleWon?: (options?: { deferIntoDeletionWindow?: boolean }) => Promise<void>,
+  ) => Promise<void>;
   consultLeavePrevention?: (
     permanentIds: string[],
     opts?: { insteadOnly?: boolean; keywordPreventions?: { interruptsEffect: boolean } },

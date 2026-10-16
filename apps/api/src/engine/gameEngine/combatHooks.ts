@@ -14,6 +14,7 @@ import {
   runTimingWindow,
 } from "./timing.js";
 import {
+  armedAsPendingCollected,
   armedSubTriggers,
   parkArmedForEnclosingWindow,
   prepareFrozenSubTrigger,
@@ -24,7 +25,9 @@ import {
   collectNestedTimingEffects,
   deferNestedTimingEffects,
   shouldDeferNestedTiming,
+  takeLeaveReplacementPending,
 } from "#api/engine/gameEngine/windows";
+import { runPendingTimingWindow } from "#api/engine/gameEngine/timing/fire";
 import { collectPermanentInstances, listCandidateInstances } from "#api/engine/gameEngine/ruleProcess";
 import { cardSourceOf, dropPermanentSubscriptions } from "./effectContext.js";
 import { beginBattleScope, endBattleScope, sweepBattleDurations, sweepCombatDurations } from "./turnFlow.js";
@@ -298,7 +301,22 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
     },
     keywordReactionsInLeavePrevention: true,
     consultLeavePrevention: async (permanentIds, opts) =>
-      engine.consultLeavePrevention(permanentIds, "byBattle", undefined, opts),
+      engine.consultLeavePrevention(permanentIds, "byBattle", undefined, { ...opts, holdTriggered: true }),
+    resolveAvertedBattleReactions: async (resolveBattleWon) => {
+      const triggered = takeLeaveReplacementPending(engine);
+      if (triggered.length === 0) {
+        await resolveBattleWon?.();
+        return;
+      }
+      if (shouldDeferNestedTiming(engine)) {
+        engine.pendingNestedTimingEffects.push(...triggered);
+        await resolveBattleWon?.();
+        return;
+      }
+      await resolveBattleWon?.({ deferIntoDeletionWindow: true });
+      const battleWon = engine.pendingBattleWonSubTriggers.splice(0);
+      await runPendingTimingWindow(engine, [...armedAsPendingCollected(engine, battleWon), ...triggered]);
+    },
     dropPermanentSubscriptions: (permanentId) => dropPermanentSubscriptions(engine, permanentId),
     snapshotCustomEffectGrants: (departingInstanceIds) =>
       engine.continuous.listCustomEffectGrants().map((grant) => {
