@@ -29,7 +29,7 @@ export async function runProviderSync({
   await store.ensureReady();
   const db = await store.pool.connect();
   let locked = false;
-  const period = getWeeklySyncPeriod(now);
+  const period = `${getWeeklySyncPeriod(now)}:all-released-sets`;
   try {
     const lock = await db.query<{ locked: boolean }>("SELECT pg_try_advisory_lock(1869113955) AS locked");
     locked = lock.rows[0]?.locked === true;
@@ -76,7 +76,7 @@ export async function runProviderSync({
       body: await collect(provider.buildMetaPath()),
       kind: "meta",
     }) as ProviderPage<ProviderArchetype>;
-    const formats = seed.formats.slice(0, 1);
+    const formats = seed.formats;
     if (formats.length === 0) {
       throw new ProviderError(502);
     }

@@ -155,6 +155,12 @@ test("cutover retains established sockets, routes reconnect to the old owner, an
   const migratedManifest = await (await fetch(`${origin}/deployment/manifest.json`)).json();
   assert.equal(migratedManifest.active.slot, "red");
   assert.equal(migratedManifest.draining[0].slot, "g-333333333333");
+  const providerPath = "/deck-providers/digilab/meta?format=EX13&perPage=25";
+  const providerResponse = await fetch(`${origin}${providerPath}`);
+  assert.match(providerResponse.headers.get("content-type"), /application\/json/);
+  const providerResult = await providerResponse.json();
+  assert.equal(providerResult.slot, "red");
+  assert.equal(providerResult.path, providerPath);
 });
 
 test("community API calls reach the API while page navigation gets the web app", () => {
