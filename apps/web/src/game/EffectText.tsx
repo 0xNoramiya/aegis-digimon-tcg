@@ -1,3 +1,4 @@
+import { getInspectorMarker } from "@/game/getInspectorMarker";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { getTranslatedCardText } from "@/i18n/getTranslatedCardText";
 import { resolveTranslatedKeyword } from "@/i18n/resolveTranslatedKeyword";
@@ -9,7 +10,9 @@ import { keywordRuleHintLink, normalizeKeywordBrackets } from "./keywordReminder
 import { BadgeHint } from "./piece/BadgeHint";
 
 /** A printed keyword, explained on tap when the Comprehensive Rules define it. */
-function KeywordMark({ keyword }: { keyword: string }) {
+type KeywordParams = { keyword: string; inspector: boolean };
+
+function KeywordMark({ keyword, inspector }: KeywordParams) {
   const translations = useCardTranslations();
   const resolved = resolveTranslatedKeyword({ keyword, translations });
   const label = resolved.label;
@@ -18,6 +21,14 @@ function KeywordMark({ keyword }: { keyword: string }) {
   return (
     <BadgeHint
       className="card-effect-text__keyword"
+      role={inspector ? "button" : undefined}
+      tabIndex={inspector ? 0 : undefined}
+      onKeyDown={(event) => {
+        if (inspector && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          event.currentTarget.click();
+        }
+      }}
       hint={{
         title: normalizeKeywordBrackets(label),
         description: getTranslatedKeywordReminder({
@@ -37,26 +48,28 @@ function KeywordMark({ keyword }: { keyword: string }) {
  * Printed timing and keyword markers shared by card details and effect notices.
  * `asciiBrackets` prints the card data's full-width ＜Keyword＞ brackets as <Keyword>.
  */
-export function EffectText({
-  text,
-  asciiBrackets = false,
-  cardId,
-}: {
-  text: string;
-  asciiBrackets?: boolean;
-  cardId?: string;
-}) {
+type Params = { text: string; asciiBrackets?: boolean; inspector?: boolean; cardId?: string };
+
+export function EffectText({ text, asciiBrackets = false, inspector = false, cardId }: Params) {
   const translations = useCardTranslations({ includePrintedText: true });
   const lines = inlineInspectorKeywordLines(getTranslatedCardText({ text, translations, cardId }));
   return (
-    <span key={`${asciiBrackets}:${lines}`} className="card-effect-text">
-      {lines.split(/(\[[^\]]+\]|＜[^＞]+＞|<[^<>\r\n]+>)/g).map((part, index) =>
-        /^\[/.test(part) ? (
-          <mark key={index} data-kind="timing">
+    <span key={`${asciiBrackets}:${lines}`} className="card-effect-text" data-inspector={inspector || undefined}>
+      {lines.split(/(\[[^\]]+\]|＜[^＞]+＞|<[^<>\r\n]+>|（每回合\d+次）)/g).map((part, index) =>
+        /^\[/.test(part) || (inspector && /^（每回合\d+次）$/.test(part)) ? (
+          <mark
+            key={index}
+            data-kind="timing"
+            data-marker={inspector ? (getInspectorMarker({ text: part }) ?? "reference") : undefined}
+          >
             {part}
           </mark>
         ) : /^[＜<].+[＞>]$/.test(part) ? (
-          <KeywordMark key={index} keyword={asciiBrackets ? normalizeKeywordBrackets(part) : part} />
+          <KeywordMark
+            key={index}
+            inspector={inspector}
+            keyword={asciiBrackets ? normalizeKeywordBrackets(part) : part}
+          />
         ) : (
           <span key={index}>{asciiBrackets ? normalizeKeywordBrackets(part) : part}</span>
         ),

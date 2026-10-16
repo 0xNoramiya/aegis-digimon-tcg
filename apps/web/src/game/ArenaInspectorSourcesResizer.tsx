@@ -19,7 +19,7 @@ export function ArenaInspectorSourcesResizer() {
   };
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
     const start = dragStart.current;
-    if (start) setWidth(start.width + start.pointerX - event.clientX, false);
+    if (start) setWidth(start.width + event.clientX - start.pointerX, false);
   };
   const onPointerUp = (event: PointerEvent<HTMLDivElement>) => {
     if (!dragStart.current) return;
@@ -31,8 +31,8 @@ export function ArenaInspectorSourcesResizer() {
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const next = {
-      ArrowLeft: width + KEYBOARD_STEP,
-      ArrowRight: width - KEYBOARD_STEP,
+      ArrowLeft: width - KEYBOARD_STEP,
+      ArrowRight: width + KEYBOARD_STEP,
       Home: maxWidth,
       End: minWidth,
     }[event.key];

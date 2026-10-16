@@ -1,3 +1,6 @@
+import { getTranslatedCardText } from "@/i18n/getTranslatedCardText";
+import { splitInspectorPrintedText } from "@/game/splitInspectorPrintedText";
+import { InspectorActiveBadges } from "@/game/InspectorActiveBadges";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
 import { getTranslatedCardMeta } from "@/i18n/getTranslatedCardMeta";
@@ -51,7 +54,7 @@ export function ArenaPermanentInspector({
   onClose: () => void;
 }) {
   const { locale, t } = useTranslation();
-  const translations = useCardTranslations();
+  const translations = useCardTranslations({ includePrintedText: true });
   const sideSources = useMediaQuery(INSPECTOR_SIDE_SOURCES_QUERY);
   const sourcesLayout = sideSources ? "column" : "strip";
   const { width: sourcesWidth } = useInspectorSourcesWidth();
@@ -61,6 +64,9 @@ export function ArenaPermanentInspector({
   const closeCallback = useRef(onClose);
   closeCallback.current = onClose;
   const top = getCardDefinition(detail.cardId);
+  const printed = splitInspectorPrintedText({
+    text: getTranslatedCardText({ text: top?.effectText ?? "", translations }),
+  });
   const supporting = inspectorCardsTopToBottom(detail.cards).filter((card) => card.role !== "top");
   const traits = [
     ...(top?.forms ?? []).map((value) => getTranslatedCardMeta({ value, group: "forms", translations })),
@@ -109,6 +115,17 @@ export function ArenaPermanentInspector({
     };
   }, [zoomed]);
 
+  const art = (
+    <button
+      type="button"
+      className="arena-permanent-inspector__art"
+      onClick={() => onZoom(detail.cardId, detail.artId)}
+      aria-label={t("overlay.zoomCard")}
+    >
+      <CardFull cardId={detail.cardId} artId={detail.artId} width={190} zoomOnHover={false} />
+    </button>
+  );
+
   const panel = (
     <section
       ref={panelRef}
@@ -116,43 +133,28 @@ export function ArenaPermanentInspector({
       style={{ ...anchor, "--inspector-sources-width": `${sourcesWidth}px` } as CSSProperties}
       data-half={inspectedArenaHalf(inspection.side)}
       data-card-side={inspection.side}
+      data-compact={!sideSources || undefined}
       data-sources={supporting.length > 0 ? sourcesLayout : undefined}
       role="dialog"
       aria-modal="false"
       aria-labelledby={titleId}
     >
       <div className="arena-permanent-inspector__body">
-        <button
-          type="button"
-          className="arena-permanent-inspector__art"
-          onClick={() => onZoom(detail.cardId, detail.artId)}
-          aria-label={t("overlay.zoomCard")}
-        >
-          <CardFull cardId={detail.cardId} artId={detail.artId} width={190} zoomOnHover={false} />
-        </button>
+        {supporting.length > 0 && sideSources ? (
+          <>
+            <ArenaInspectorSourcesResizer />
+            <ArenaInspectorSourcesColumn cards={supporting} onZoom={onZoom} />
+          </>
+        ) : null}
+        {sideSources ? art : null}
         <div className="arena-permanent-inspector__reading">
           <header className="arena-permanent-inspector__header">
+            {!sideSources ? art : null}
             <div className="arena-permanent-inspector__heading">
-              <p className="arena-permanent-inspector__meta">
-                <span>{detail.cardId}</span>
-                {top?.kinds.length ? <span>{top.kinds.join(" / ")}</span> : null}
-                {top?.rarity ? <span>{top.rarity}</span> : null}
-              </p>
               <div className="arena-permanent-inspector__title">
                 <h2 id={titleId}>{getTranslatedCardName({ name: detail.name, translations })}</h2>
                 {top?.level ? <span>Lv.{top.level}</span> : null}
               </div>
-              {top?.colors.length || traits.length ? (
-                <p className="arena-permanent-inspector__identity">
-                  {top?.colors.map((color) => (
-                    <span key={color} className="arena-permanent-inspector__color">
-                      <i aria-hidden="true" style={{ background: COLORS[colorKey(color)].base }} />
-                      <span>{t(`game.color.${color}`)}</span>
-                    </span>
-                  ))}
-                  {traits.length ? <span>{traits.join(" · ")}</span> : null}
-                </p>
-              ) : null}
             </div>
             {detail.currentDP > 0 ? (
               <strong className="arena-permanent-inspector__dp">
@@ -177,56 +179,9 @@ export function ArenaPermanentInspector({
               </span>
             </button>
           </header>
-          <div className="arena-permanent-inspector__stats">
-            {top && top.playCost >= 0 ? <span>{t("game.costsMemory", { count: top.playCost })}</span> : null}
-            {groupedInspectorEvolutionCosts(top?.evoCosts ?? []).map((cost) => {
-              const colorsByLabel = new Map(cost.colors.map((color) => [t(`game.color.${color}`), color]));
-              return (
-                <span key={`${cost.level}-${cost.memoryCost}`} className="arena-permanent-inspector__evolution">
-                  <span>
-                    {t("overlay.digivolveCost")} {cost.memoryCost} · Lv.
-                    {cost.level}
-                    {" · "}
-                  </span>
-                  <span className="arena-permanent-inspector__colors">
-                    {new Intl.ListFormat(locale, { type: "disjunction" })
-                      .formatToParts([...colorsByLabel.keys()])
-                      .map((part, index) =>
-                        part.type === "element" ? (
-                          <span
-                            key={index}
-                            className="arena-permanent-inspector__color"
-                            data-color={colorsByLabel.get(part.value)}
-                          >
-                            <i
-                              aria-hidden="true"
-                              style={{
-                                background: COLORS[colorKey(colorsByLabel.get(part.value)!)].base,
-                              }}
-                            />
-                            <span>{part.value}</span>
-                          </span>
-                        ) : (
-                          <span key={index}>{part.value}</span>
-                        ),
-                      )}
-                  </span>
-                </span>
-              );
-            })}
-          </div>
           <div className="arena-permanent-inspector__state">
             {detail.suspended ? <span>{t("overlay.suspended")}</span> : null}
-            {detail.restrictions.map((restriction) => (
-              <span
-                key={restriction.kind}
-                data-warning={restriction.protection ? undefined : "true"}
-                data-protection={restriction.protection || undefined}
-              >
-                {restriction.protection ? <Icons.ShieldCheck size={12} /> : null}
-                {t(restriction.labelKey)}
-              </span>
-            ))}
+            <InspectorActiveBadges detail={detail} />
             {detail.dpDelta ? (
               <span>
                 {t("overlay.baseDp")}: {detail.baseDP.toLocaleString()}
@@ -241,20 +196,83 @@ export function ArenaPermanentInspector({
             ) : null}
             {fate ? <span data-warning="true">{t(fate.labelKey)}</span> : null}
           </div>
-          {supporting.length > 0 && !sideSources ? (
-            <ArenaInspectorSourcesStrip key={detail.cardId} cards={supporting} onZoom={onZoom} />
-          ) : null}
           <div
             className="arena-permanent-inspector__effects"
             role="region"
             aria-label={t("overlay.printedEffect")}
             tabIndex={0}
           >
+            <details
+              key={`${detail.cardId}:${detail.printedOnly}`}
+              className="arena-permanent-inspector__details"
+              open={detail.printedOnly || undefined}
+            >
+              <summary>{t("deck.cardDetails")}</summary>
+              <p className="arena-permanent-inspector__meta">
+                <span>{detail.cardId}</span>
+                {top?.kinds.length ? <span>{top.kinds.join(" / ")}</span> : null}
+                {top?.rarity ? <span>{top.rarity}</span> : null}
+              </p>
+              {top?.colors.length || traits.length ? (
+                <p className="arena-permanent-inspector__identity">
+                  {top?.colors.map((color) => (
+                    <span key={color} className="arena-permanent-inspector__color">
+                      <i aria-hidden="true" style={{ background: COLORS[colorKey(color)].base }} />
+                      <span>{t(`game.color.${color}`)}</span>
+                    </span>
+                  ))}
+                  {traits.length ? <span>{traits.join(" · ")}</span> : null}
+                </p>
+              ) : null}{" "}
+              <div className="arena-permanent-inspector__stats">
+                {top && top.playCost >= 0 ? <span>{t("game.costsMemory", { count: top.playCost })}</span> : null}
+                {groupedInspectorEvolutionCosts(top?.evoCosts ?? []).map((cost) => {
+                  const colorsByLabel = new Map(cost.colors.map((color) => [t(`game.color.${color}`), color]));
+                  return (
+                    <span key={`${cost.level}-${cost.memoryCost}`} className="arena-permanent-inspector__evolution">
+                      <span>
+                        {t("overlay.digivolveCost")} {cost.memoryCost} · Lv.
+                        {cost.level}
+                        {" · "}
+                      </span>
+                      <span className="arena-permanent-inspector__colors">
+                        {new Intl.ListFormat(locale, { type: "disjunction" })
+                          .formatToParts([...colorsByLabel.keys()])
+                          .map((part, index) =>
+                            part.type === "element" ? (
+                              <span
+                                key={index}
+                                className="arena-permanent-inspector__color"
+                                data-color={colorsByLabel.get(part.value)}
+                              >
+                                <i
+                                  aria-hidden="true"
+                                  style={{
+                                    background: COLORS[colorKey(colorsByLabel.get(part.value)!)].base,
+                                  }}
+                                />
+                                <span>{part.value}</span>
+                              </span>
+                            ) : (
+                              <span key={index}>{part.value}</span>
+                            ),
+                          )}
+                      </span>
+                    </span>
+                  );
+                })}
+              </div>
+              {printed.requirements ? (
+                <p>
+                  <EffectText inspector asciiBrackets text={printed.requirements} />
+                </p>
+              ) : null}
+            </details>
             {top?.effectText || supporting.length === 0 ? (
               <div className="arena-permanent-inspector__effect" data-role="top">
                 <span className="arena-permanent-inspector__effect-label">{t("overlay.printedEffect")}</span>
                 <p>
-                  <EffectText asciiBrackets text={top?.effectText || t("overlay.noPrintedEffect")} />
+                  <EffectText inspector asciiBrackets text={printed.effects || t("overlay.noPrintedEffect")} />
                 </p>
               </div>
             ) : null}
@@ -266,7 +284,7 @@ export function ArenaPermanentInspector({
               >
                 <span className="arena-permanent-inspector__effect-label">{t("overlay.grantedEffects")}</span>
                 <p>
-                  <EffectText asciiBrackets text={forcedAttackGrantText(grant, t)} />
+                  <EffectText inspector asciiBrackets text={forcedAttackGrantText(grant, t)} />
                 </p>
               </div>
             ))}
@@ -277,7 +295,7 @@ export function ArenaPermanentInspector({
                   {top.dualEffect ? ` · ${top.dualEffect}` : ""}
                 </span>
                 <p>
-                  <EffectText asciiBrackets text={top.optionEffect} />
+                  <EffectText inspector asciiBrackets text={top.optionEffect} />
                 </p>
               </div>
             ) : null}
@@ -304,20 +322,17 @@ export function ArenaPermanentInspector({
                     <div key={effect.role} className="arena-permanent-inspector__effect" data-role={effect.role}>
                       <span className="arena-permanent-inspector__effect-label">{effect.label}</span>
                       <p>
-                        <EffectText asciiBrackets text={effect.text!} />
+                        <EffectText inspector asciiBrackets text={effect.text!} />
                       </p>
                     </div>
                   ))
               : null}
           </div>
+          {supporting.length > 0 && !sideSources ? (
+            <ArenaInspectorSourcesStrip key={detail.cardId} cards={supporting} onZoom={onZoom} />
+          ) : null}
           {actions ? <div className="arena-permanent-inspector__actions">{actions}</div> : null}
         </div>
-        {supporting.length > 0 && sideSources ? (
-          <>
-            <ArenaInspectorSourcesResizer />
-            <ArenaInspectorSourcesColumn cards={supporting} onZoom={onZoom} />
-          </>
-        ) : null}
       </div>
     </section>
   );
