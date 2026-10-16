@@ -2014,6 +2014,9 @@ const interfaceMessages = {
   "redesign.shell.crash.body":
     "Questa schermata ha smesso di funzionare. Abbiamo inviato una segnalazione di errore al team di Aegis. Ricarica la pagina per continuare.",
   "redesign.shell.crash.reload": "Ricarica",
+  "redesign.shell.loadFailed.title": "Impossibile caricare questa schermata",
+  "redesign.shell.loadFailed.body":
+    "Aegis non è riuscito a scaricare parte di questa schermata. Controlla la connessione e ricarica la pagina.",
   "redesign.shell.ranked.eyebrow": "Partita classificata",
   "redesign.home.login.eyebrow": "Account Aegis",
   "redesign.play.deckCounts": "{main} principali · {egg} uova",

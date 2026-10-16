@@ -37,6 +37,10 @@ export default defineConfig({
       },
       {
         extends: true,
+        test: { name: "client-errors-ui", include: ["src/clientErrors/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: { name: "inspector-sources", include: ["src/game/arenaInspectorSources.test.tsx"], environment: "jsdom" },
       },
       {
@@ -51,6 +55,7 @@ export default defineConfig({
             ...configDefaults.exclude,
             "e2e/**",
             "src/screens/cardLanguage/**/*.test.tsx",
+            "src/clientErrors/**/*.test.tsx",
             "src/design/tokenArt/**/*.test.tsx",
             "src/screens/community/**/*.test.tsx",
             "src/game/arenaInspectorSources.test.tsx",

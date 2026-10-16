@@ -2104,6 +2104,9 @@ const interfaceMessages = {
   "redesign.shell.crash.body":
     "この画面が動かなくなりました。Aegisチームにエラーレポートを送信しました。続けるにはページを再読み込みしてください。",
   "redesign.shell.crash.reload": "再読み込み",
+  "redesign.shell.loadFailed.title": "この画面を読み込めませんでした",
+  "redesign.shell.loadFailed.body":
+    "Aegis はこの画面の一部をダウンロードできませんでした。接続を確認して、ページを再読み込みしてください。",
   "redesign.shell.ranked.eyebrow": "ランクマッチ",
   "redesign.home.login.eyebrow": "Aegisアカウント",
   "redesign.play.deckCounts": "メイン{main} · デジタマ{egg}",

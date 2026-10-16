@@ -2028,6 +2028,8 @@ const interfaceMessages = {
   "redesign.shell.crash.title": "出了点问题",
   "redesign.shell.crash.body": "当前页面出现异常。我们已向 Aegis 团队发送错误报告，请重新加载页面以继续。",
   "redesign.shell.crash.reload": "重新加载",
+  "redesign.shell.loadFailed.title": "无法加载此页面",
+  "redesign.shell.loadFailed.body": "Aegis 无法下载此页面的部分内容。请检查网络连接并重新加载页面。",
   "redesign.shell.ranked.eyebrow": "排位赛",
   "redesign.home.login.eyebrow": "Aegis 账号",
   "redesign.play.deckCounts": "{main} 主卡 · {egg} 蛋",

@@ -2163,6 +2163,9 @@ const interfaceMessages = {
   "redesign.shell.crash.body":
     "Dieser Bildschirm funktioniert nicht mehr. Wir haben einen Fehlerbericht an das Aegis-Team gesendet. Laden Sie die Seite neu, um fortzufahren.",
   "redesign.shell.crash.reload": "Neu laden",
+  "redesign.shell.loadFailed.title": "Dieser Bildschirm konnte nicht geladen werden",
+  "redesign.shell.loadFailed.body":
+    "Aegis konnte einen Teil dieses Bildschirms nicht herunterladen. Prüfen Sie Ihre Verbindung und laden Sie die Seite neu.",
   "redesign.shell.ranked.eyebrow": "Gewertetes Match",
   "redesign.home.login.eyebrow": "Aegis-Konto",
   "redesign.play.deckCounts": "{main} Hauptdeck · {egg} Digi-Ei",

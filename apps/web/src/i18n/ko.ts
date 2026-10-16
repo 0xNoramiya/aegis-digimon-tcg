@@ -2081,6 +2081,9 @@ const interfaceMessages = {
   "redesign.shell.crash.body":
     "이 화면이 작동을 멈췄습니다. Aegis 팀에 오류 보고서를 보냈습니다. 계속하려면 페이지를 새로고침하세요.",
   "redesign.shell.crash.reload": "새로고침",
+  "redesign.shell.loadFailed.title": "이 화면을 불러오지 못했습니다",
+  "redesign.shell.loadFailed.body":
+    "Aegis가 이 화면의 일부를 내려받지 못했습니다. 연결을 확인한 뒤 페이지를 새로고침하세요.",
   "redesign.shell.ranked.eyebrow": "랭크전",
   "redesign.home.login.eyebrow": "Aegis 계정",
   "redesign.play.deckCounts": "메인 {main} · 디지타마 {egg}",
