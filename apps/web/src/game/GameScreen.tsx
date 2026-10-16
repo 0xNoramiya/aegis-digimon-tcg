@@ -1358,6 +1358,7 @@ function GameScreenSession({
     available: appFusionActionAvailable(),
   });
   const playAnswers = playChoiceAnswers({
+    playNormally: (instanceId, confirmDrop) => matchSenders.playCard(instanceId, confirmDrop, false, true),
     room,
     viewer: you,
     handEntries,

@@ -50,7 +50,28 @@ export function DecisionCandidateGrid({
   // A prompt that reaches into two zones at once (a hand and a trash, say) is
   // unreadable as one undivided row, so each zone gets its own titled section;
   // a single-zone prompt keeps the plain grid it always had.
-  const zoneGroups = candidateZoneGroups(candidates);
+  const zoneGroups = candidateZoneGroups(candidates).map((group) => ({
+    ...group,
+    items: [...group.items].sort((a, b) => Number(isCandidateSelectable(b)) - Number(isCandidateSelectable(a))),
+  }));
+
+  function isCandidateSelectable(cand: DecisionCandidate) {
+    return (
+      cand.selectable !== false &&
+      playCostBudgetAllowsCandidate({
+        candidateInstanceId: cand.instanceId,
+        picks,
+        candidates,
+        maxTotalPlayCost,
+      }) &&
+      dpBudgetAllowsCandidate({
+        candidateInstanceId: cand.instanceId,
+        picks,
+        maxTotalDP,
+        dpOf: (id) => candidates.find((candidate) => candidate.instanceId === id)?.currentDP,
+      })
+    );
+  }
 
   return (
     <div className="decision-overlay__selection" style={{ marginBottom: 18 }}>
@@ -141,20 +162,7 @@ export function DecisionCandidateGrid({
             <CandidateRow scrolls={items.length > 6}>
               {items.map((cand) => {
                 const on = picks.includes(cand.instanceId);
-                const selectable =
-                  cand.selectable !== false &&
-                  playCostBudgetAllowsCandidate({
-                    candidateInstanceId: cand.instanceId,
-                    picks,
-                    candidates,
-                    maxTotalPlayCost,
-                  }) &&
-                  dpBudgetAllowsCandidate({
-                    candidateInstanceId: cand.instanceId,
-                    picks,
-                    maxTotalDP,
-                    dpOf: (id) => candidates.find((candidate) => candidate.instanceId === id)?.currentDP,
-                  });
+                const selectable = isCandidateSelectable(cand);
                 const abstractLabel = abstractTargetLabel({
                   instanceId: cand.instanceId,
                   t,

@@ -34,18 +34,13 @@ function hasKeyword(unit: BotUnit, keyword: string): boolean {
   return unit.keywords.includes(keyword);
 }
 
-/** Every unsuspended opposing ＜Blocker＞. Each can intercept one attack, then suspends. */
-function unsuspendedBlockers(view: BotView): BotUnit[] {
-  return view.opponentBoard.filter((unit) => !unit.suspended && hasKeyword(unit, "Blocker"));
-}
+type InterceptorParams = { view: BotView; attacker: BotUnit; targetPermanentId?: string };
 
-/** The blocker a defender would pick: the biggest, because it wins the most matchups. */
-function bestOpposingBlocker(view: BotView): BotUnit | undefined {
-  let best: BotUnit | undefined;
-  for (const unit of unsuspendedBlockers(view)) {
-    if (best === undefined || unit.dp > best.dp) best = unit;
-  }
-  return best;
+function getOpposingInterceptors({ view, attacker, targetPermanentId = "player" }: InterceptorParams): BotUnit[] {
+  const redirectTargets = new Set(attacker.attackRedirectTargets?.[targetPermanentId]?.targetIds ?? []);
+  return view.opponentBoard.filter(
+    (unit) => redirectTargets.has(unit.permanentId) || (!unit.suspended && hasKeyword(unit, "Blocker")),
+  );
 }
 
 /**
@@ -103,8 +98,11 @@ interface Interception {
  * takes the block, which is what separates a profile that respects blockers from one that
  * runs at them.
  */
-function interception(view: BotView, attacker: BotUnit, profile: BotProfile): Interception {
-  const blocker = bestOpposingBlocker(view);
+function interception(view: BotView, attacker: BotUnit, profile: BotProfile, targetPermanentId?: string): Interception {
+  const blocker = getOpposingInterceptors({ view, attacker, targetPermanentId }).reduce<BotUnit | undefined>(
+    (best, unit) => (best === undefined || unit.dp > best.dp ? unit : best),
+    undefined,
+  );
   if (blocker === undefined) return { chance: 0, outcome: 0 };
   const holds = blocker.dp >= attacker.dp;
   const likelihood = profile.weights.blockerRisk * (holds ? 1 : CHUMP_BLOCK_LIKELIHOOD);
@@ -158,7 +156,7 @@ function scoreAttackPlayer(view: BotView, attacker: BotUnit, profile: BotProfile
 /** Score an attack against an opponent who has no security left to check. */
 function scoreLethalAttempt(view: BotView, attacker: BotUnit, profile: BotProfile): number {
   const { weights } = profile;
-  const blockers = unsuspendedBlockers(view);
+  const blockers = getOpposingInterceptors({ view, attacker });
 
   // Nothing to step in front: this attack wins. `bodyValue` only orders the equally-winning
   // candidates so the choice is the biggest body rather than whatever the jitter picked.
@@ -171,7 +169,12 @@ function scoreLethalAttempt(view: BotView, attacker: BotUnit, profile: BotProfil
 
   // Enough bodies to exhaust every blocker and still swing: this attack is part of the
   // winning sequence, and `exchange` ranks WHICH body to spend on the clearing attacks.
-  if (view.readyAttackers.length > blockers.length) return weights.lethal * 0.5 + exchange;
+  const redirectCapacity = attacker.attackRedirectTargets?.player?.capacity ?? 0;
+  const blockerCapacity = view.opponentBoard.filter((unit) => !unit.suspended && hasKeyword(unit, "Blocker")).length;
+  const readyPlayerAttackers = view.readyAttackers.filter((unit) => unit.canAttackPlayer).length;
+  if (readyPlayerAttackers > blockerCapacity + redirectCapacity) {
+    return weights.lethal * 0.5 + exchange;
+  }
 
   // Not enough attackers to punch through this turn. The attack is then worth only the
   // exchange itself — positive when it kills a blocker for free, negative when it feeds one.
@@ -191,7 +194,7 @@ function scoreAttackDigimon(view: BotView, attacker: BotUnit, target: BotUnit, p
   }
   // A blocker can intercept an attack aimed at a Digimon too, and the trade we planned
   // is not the trade we get.
-  const { chance, outcome } = interception(view, attacker, profile);
+  const { chance, outcome } = interception(view, attacker, profile, target.permanentId);
   return (
     (1 - chance) * score +
     chance * outcome -

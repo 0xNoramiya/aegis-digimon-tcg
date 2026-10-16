@@ -33,6 +33,10 @@ export const en = {
   "settings.shareDeckAfterMatchDesc":
     "Allow your opponent to view and copy your starting deck list after the match. Enabled by default.",
   "settings.shareDeckAfterMatchFailed": "Could not load or save deck sharing. Try again or reopen settings.",
+  "overlay.useNegamon": "Use Negamon",
+  "overlay.negamonPlayDetail":
+    "Activate Negamon’s breeding effect to play a Digimon with a reduced cost, then place Negamon underneath it. You will choose the card in the effect’s next step.",
+  "overlay.playNormally": "Play normally",
   "overlay.viewOpponentDeck": "View opponent’s deck",
   "overlay.opponentDeck": "Opponent’s deck",
   "rollback.failed": "Could not safely restore this point. The current game was kept.",

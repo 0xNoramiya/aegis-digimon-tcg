@@ -281,7 +281,7 @@ export function DecisionTriggerChooser({
                 {activeClause ? (
                   <span className="trigger-chooser__section">
                     <span className="trigger-chooser__effect-text">
-                      <EffectText text={activeClause} />
+                      <EffectText text={activeClause} cardId={cardId} />
                     </span>
                   </span>
                 ) : null}
@@ -416,7 +416,7 @@ function WaitingTriggerList({ entries, timing }: { entries: readonly WaitingTrig
               </span>
               {clause ? (
                 <span className="trigger-chooser__effect-text">
-                  <EffectText text={clause} />
+                  <EffectText text={clause} cardId={cardId} />
                 </span>
               ) : null}
             </span>
