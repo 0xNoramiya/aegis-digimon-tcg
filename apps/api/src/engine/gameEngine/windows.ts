@@ -88,7 +88,11 @@ export function endResolvingWindow(engine: GameEngine, wasOutermost: boolean): v
  * its deletion reactions and watchers resolve in the rule check's own window, so the body's
  * effects join that window instead of waiting for the enclosing one.
  */
-export async function resolveLeaveReplacementBody<T>(engine: GameEngine, body: () => Promise<T>): Promise<T> {
+export async function resolveLeaveReplacementBody<T>(
+  engine: GameEngine,
+  body: () => Promise<T>,
+  options: { asEffectBody?: boolean } = {},
+): Promise<T> {
   const wasOutermost = beginResolvingWindow(engine);
   if (!wasOutermost && engine.ruleTriggerPool === undefined) return body();
   const nestedBefore = new Set(engine.pendingNestedTimingEffects);
@@ -101,7 +105,18 @@ export async function resolveLeaveReplacementBody<T>(engine: GameEngine, body: (
     }
     let result!: T;
     await withPendingPoolDrain(engine, true, async () => {
-      result = await body();
+      if (options.asEffectBody !== true) {
+        result = await body();
+        return;
+      }
+      engine.effectBodyTokens.push(++engine.windowTokenSeq);
+      engine.effectResolutionDepth += 1;
+      try {
+        result = await body();
+      } finally {
+        engine.effectBodyTokens.pop();
+        engine.effectResolutionDepth = Math.max(0, engine.effectResolutionDepth - 1);
+      }
     });
     triggered = pendingWindowCollected(engine).filter((pending) => !nestedBefore.has(pending));
     return result;

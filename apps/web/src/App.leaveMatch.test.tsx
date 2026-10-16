@@ -48,9 +48,9 @@ function renderClient() {
   );
 }
 
-function pressBrowserBack() {
+function pressBrowserBack(path = "/play") {
   act(() => {
-    window.history.replaceState(null, "", "/play");
+    window.history.replaceState(null, "", path);
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
 }
@@ -77,16 +77,16 @@ it("keeps a live match open and asks before the browser Back button leaves it", 
   expect(screen.getByTestId("match")).toBeTruthy();
 });
 
-it("concedes in place once the player confirms, so the result can offer the replay", async () => {
+it.each(["/play", "/settings"])("concedes and returns to %s once the player confirms", async (path) => {
   await startMatch();
   const back = vi.spyOn(window.history, "back");
 
-  pressBrowserBack();
+  pressBrowserBack(path);
   fireEvent.click(screen.getByRole("button", { name: "Leave match" }));
 
   expect(concede).toHaveBeenCalledOnce();
   expect(back).not.toHaveBeenCalled();
   expect(screen.queryByRole("dialog")).toBeNull();
-  expect(screen.getByTestId("match")).toBeTruthy();
-  expect(window.location.pathname).toBe("/play/game");
+  expect(screen.queryByTestId("match")).toBeNull();
+  expect(window.location.pathname).toBe(path);
 });

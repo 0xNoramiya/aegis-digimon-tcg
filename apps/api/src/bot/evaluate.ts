@@ -1,3 +1,4 @@
+import { selectAllianceAlly } from "#api/bot/selectAllianceAlly";
 import { getCompiledCard, type CardDefinition, type Filter } from "@aegis/shared";
 import type { Candidate } from "./candidates.js";
 import type { BotProfile } from "./profiles.js";
@@ -34,18 +35,26 @@ function hasKeyword(unit: BotUnit, keyword: string): boolean {
   return unit.keywords.includes(keyword);
 }
 
-/** Every unsuspended opposing ＜Blocker＞. Each can intercept one attack, then suspends. */
-function unsuspendedBlockers(view: BotView): BotUnit[] {
-  return view.opponentBoard.filter((unit) => !unit.suspended && hasKeyword(unit, "Blocker"));
+interface AttackProjectionParams {
+  view: BotView;
+  attacker: BotUnit;
 }
 
-/** The blocker a defender would pick: the biggest, because it wins the most matchups. */
-function bestOpposingBlocker(view: BotView): BotUnit | undefined {
-  let best: BotUnit | undefined;
-  for (const unit of unsuspendedBlockers(view)) {
-    if (best === undefined || unit.dp > best.dp) best = unit;
+function projectAllianceAttacker({ view, attacker }: AttackProjectionParams): BotUnit {
+  if (!hasKeyword(attacker, "Alliance")) {
+    return attacker;
   }
-  return best;
+  const ally = selectAllianceAlly({ view, attackerId: attacker.permanentId });
+  return ally === undefined ? attacker : { ...attacker, dp: attacker.dp + ally.dp };
+}
+
+type InterceptorParams = { view: BotView; attacker: BotUnit; targetPermanentId?: string };
+
+function getOpposingInterceptors({ view, attacker, targetPermanentId = "player" }: InterceptorParams): BotUnit[] {
+  const redirectTargets = new Set(attacker.attackRedirectTargets?.[targetPermanentId]?.targetIds ?? []);
+  return view.opponentBoard.filter(
+    (unit) => redirectTargets.has(unit.permanentId) || (!unit.suspended && hasKeyword(unit, "Blocker")),
+  );
 }
 
 /**
@@ -103,14 +112,23 @@ interface Interception {
  * takes the block, which is what separates a profile that respects blockers from one that
  * runs at them.
  */
-function interception(view: BotView, attacker: BotUnit, profile: BotProfile): Interception {
-  const blocker = bestOpposingBlocker(view);
+function interception(
+  view: BotView,
+  attacker: BotUnit,
+  profile: BotProfile,
+  targetPermanentId?: string,
+  originalAttacker = attacker,
+): Interception {
+  const blocker = getOpposingInterceptors({ view, attacker, targetPermanentId }).reduce<BotUnit | undefined>(
+    (best, unit) => (best === undefined || unit.dp > best.dp ? unit : best),
+    undefined,
+  );
   if (blocker === undefined) return { chance: 0, outcome: 0 };
   const holds = blocker.dp >= attacker.dp;
   const likelihood = profile.weights.blockerRisk * (holds ? 1 : CHUMP_BLOCK_LIKELIHOOD);
   return {
     chance: Math.min(1, Math.max(0, likelihood)),
-    outcome: holds ? -profile.weights.loss * bodyValue(attacker) : profile.weights.removal * bodyValue(blocker),
+    outcome: holds ? -profile.weights.loss * bodyValue(originalAttacker) : profile.weights.removal * bodyValue(blocker),
   };
 }
 
@@ -139,69 +157,78 @@ export function memoryPenalty(view: BotView, cost: number, profile: BotProfile):
 /** How many forfeited attacks the cross-zero penalty is willing to count. */
 const MAX_FORFEITED_ATTACKS = 4;
 
-function scoreAttackPlayer(view: BotView, attacker: BotUnit, profile: BotProfile): number {
+function scoreAttackPlayer(view: BotView, originalAttacker: BotUnit, profile: BotProfile): number {
+  const attacker = projectAllianceAttacker({ view, attacker: originalAttacker });
   const { weights } = profile;
 
   // Lookahead: with the opponent's security empty, an attack that RESOLVES ends the game.
   // Any unsuspended blocker — winning or not — denies that, because a blocked attack never
   // checks security. Each blocker can only intercept once before it suspends, so winning
   // through them needs one attacker per blocker plus one that gets through.
-  if (view.opponentSecurityCount <= 0 && (attacker.securityAttack ?? 1) > 0)
-    return scoreLethalAttempt(view, attacker, profile);
+  if (view.opponentSecurityCount <= 0 && (attacker.securityAttack ?? 1) > 0) {
+    return scoreLethalAttempt(view, attacker, profile, originalAttacker);
+  }
 
   // Extra checks cannot finish the game in the same attack after security runs out.
   // Use the public engine projection rather than reconstructing inherited grants.
   const checks = Math.min(attacker.securityAttack ?? 1, view.opponentSecurityCount);
   const risk = securityRiskFactor(view, attacker);
   const unblocked =
-    checks * weights.securityAttack - weights.securityRisk * (1 - Math.pow(1 - risk, checks)) * bodyValue(attacker);
-  const { chance, outcome } = interception(view, attacker, profile);
+    checks * weights.securityAttack -
+    weights.securityRisk * (1 - Math.pow(1 - risk, checks)) * bodyValue(originalAttacker);
+  const { chance, outcome } = interception(view, attacker, profile, undefined, originalAttacker);
 
-  return (1 - chance) * unblocked + chance * outcome - retaliationExposure(view, attacker, profile);
+  return (1 - chance) * unblocked + chance * outcome - retaliationExposure(view, originalAttacker, profile);
 }
 
 /** Score an attack against an opponent who has no security left to check. */
-function scoreLethalAttempt(view: BotView, attacker: BotUnit, profile: BotProfile): number {
+function scoreLethalAttempt(view: BotView, attacker: BotUnit, profile: BotProfile, originalAttacker: BotUnit): number {
   const { weights } = profile;
-  const blockers = unsuspendedBlockers(view);
+  const blockers = getOpposingInterceptors({ view, attacker });
 
   // Nothing to step in front: this attack wins. `bodyValue` only orders the equally-winning
   // candidates so the choice is the biggest body rather than whatever the jitter picked.
-  if (blockers.length === 0) return weights.lethal + bodyValue(attacker);
+  if (blockers.length === 0) return weights.lethal + bodyValue(originalAttacker);
 
   // Clearing a blocker costs us the attacker unless we out-DP the biggest of them.
   const biggest = blockers.reduce((left, right) => (right.dp > left.dp ? right : left));
   const exchange =
-    attacker.dp > biggest.dp ? weights.removal * bodyValue(biggest) : -weights.loss * bodyValue(attacker);
+    attacker.dp > biggest.dp ? weights.removal * bodyValue(biggest) : -weights.loss * bodyValue(originalAttacker);
 
   // Enough bodies to exhaust every blocker and still swing: this attack is part of the
   // winning sequence, and `exchange` ranks WHICH body to spend on the clearing attacks.
-  if (view.readyAttackers.length > blockers.length) return weights.lethal * 0.5 + exchange;
+  const redirectCapacity = attacker.attackRedirectTargets?.player?.capacity ?? 0;
+  const blockerCapacity = view.opponentBoard.filter((unit) => !unit.suspended && hasKeyword(unit, "Blocker")).length;
+  const readyPlayerAttackers = view.readyAttackers.filter((unit) => unit.canAttackPlayer).length;
+  if (readyPlayerAttackers > blockerCapacity + redirectCapacity) {
+    return weights.lethal * 0.5 + exchange;
+  }
 
   // Not enough attackers to punch through this turn. The attack is then worth only the
   // exchange itself — positive when it kills a blocker for free, negative when it feeds one.
   return exchange;
 }
 
-function scoreAttackDigimon(view: BotView, attacker: BotUnit, target: BotUnit, profile: BotProfile): number {
+function scoreAttackDigimon(view: BotView, originalAttacker: BotUnit, target: BotUnit, profile: BotProfile): number {
+  const attacker = projectAllianceAttacker({ view, attacker: originalAttacker });
   const { weights } = profile;
   let score: number;
   if (attacker.dp > target.dp) {
     score = weights.removal * bodyValue(target);
   } else if (attacker.dp === target.dp) {
-    score = weights.removal * bodyValue(target) - weights.loss * bodyValue(attacker);
+    score = weights.removal * bodyValue(target) - weights.loss * bodyValue(originalAttacker);
   } else {
     // Attacking into a bigger Digimon deletes only our own attacker.
-    score = -weights.loss * bodyValue(attacker);
+    score = -weights.loss * bodyValue(originalAttacker);
   }
   // A blocker can intercept an attack aimed at a Digimon too, and the trade we planned
   // is not the trade we get.
-  const { chance, outcome } = interception(view, attacker, profile);
+  const { chance, outcome } = interception(view, attacker, profile, target.permanentId, originalAttacker);
   return (
     (1 - chance) * score +
     chance * outcome -
     // The target is about to die, so it is not also a body that can punish us next turn.
-    retaliationExposure(view, attacker, profile, attacker.dp >= target.dp ? target : undefined)
+    retaliationExposure(view, originalAttacker, profile, attacker.dp >= target.dp ? target : undefined)
   );
 }
 

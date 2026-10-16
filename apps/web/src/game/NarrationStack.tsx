@@ -6,6 +6,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { CardMini } from "../design/cards";
+import { EffectText } from "@/game/EffectText";
 import { Icons } from "../design/icons";
 import { useTranslation, type Translate } from "../i18n";
 import { cardDisplayName } from "./cardLinks";
@@ -392,7 +393,11 @@ function PeekLine({
           {summary.name ? <span className="narration-peek__name">{summary.name}</span> : null}
         </span>
         {/* One line of the clause: enough to know whether this is worth opening. */}
-        {summary.clause ? <span className="narration-peek__clause">{summary.clause}</span> : null}
+        {summary.clause ? (
+          <span className="narration-peek__clause">
+            <EffectText text={summary.clause} cardId={summary.cardId} />
+          </span>
+        ) : null}
       </span>
       {/* Keyed on the count so the badge replays its pop when a moment queues behind this
           one without replacing it: the band would otherwise change a digit in silence. */}
@@ -438,6 +443,7 @@ export function NarrationStack({
   onDismissRejection,
   timeWarning,
   onHold,
+  confirmation,
 }: {
   /** Recent items keyed by occurrence ID. */
   narration: ReadonlyMap<string, NarrationItem>;
@@ -459,6 +465,7 @@ export function NarrationStack({
   timeWarning?: LowTimeWarning;
   /** Stop or restart the reading clocks while the viewer reads a column. */
   onHold?: (held: boolean) => void;
+  confirmation?: ReactNode;
 }) {
   const { t } = useTranslation();
   const now = nowMs ?? Date.now();
@@ -543,6 +550,7 @@ export function NarrationStack({
             onOpen={() => setExpanded(true)}
             onDismiss={() => textItems.forEach((item) => onAdvance(item.id))}
           />
+          {confirmation}
         </Slot>
       ) : textItems.length > 0 || immediateCount > 0 ? (
         <Slot
@@ -566,6 +574,11 @@ export function NarrationStack({
               onDismiss={timeWarning.dismiss}
             />
           ) : null}
+          {confirmation}
+        </Slot>
+      ) : confirmation ? (
+        <Slot slot={textSlot} count={0} securityDockActive={securityDockActive}>
+          {confirmation}
         </Slot>
       ) : null}
     </>

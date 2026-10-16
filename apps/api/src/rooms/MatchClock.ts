@@ -3,6 +3,7 @@ import {
   type Seat,
   matchTimerSettings,
   type MatchTimerOptions,
+  MATCH_TIMER_OPPONENT_REFILL_SECONDS,
   MATCH_TIMER_DECISION_BONUS_SECONDS,
   MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN,
   MULLIGAN_TIMER_SECONDS,
@@ -98,10 +99,12 @@ export class MatchClock {
     }
     this.lastTime = now;
     if (this.state.turnCount > this.lastTurn) {
-      // Feedback #37: each turn has a fresh thinking window for both players,
-      // including the opponent's counters and effect choices. Time cannot be banked.
+      // The opening turn uses the initial reserve; later turns grant both seats their bonuses.
       if (this.lastTurn > 0) {
-        this.remaining = [this.state.timerStartSeconds * 1000, this.state.timerStartSeconds * 1000];
+        const owner = this.state.turnSeat;
+        const opponent = (1 - owner) as Seat;
+        this.addTime(owner, this.state.timerRefillSeconds * 1000);
+        this.addTime(opponent, MATCH_TIMER_OPPONENT_REFILL_SECONDS * 1000);
       }
       this.lastTurn = this.state.turnCount;
     }

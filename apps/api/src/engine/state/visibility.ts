@@ -1,3 +1,4 @@
+import { refreshIdentityVisibility } from "#api/engine/state/refreshIdentityVisibility";
 import { $changes, $refId, ArraySchema, type ChangeTree, type Metadata, StateView } from "@colyseus/schema";
 import { type VisibilityZone, isHiddenZone, isOwnerPrivateZone } from "./access.js";
 import {
@@ -282,6 +283,7 @@ function unlockInto(view: StateView, state: GameState, seat: Seat | undefined, f
   // Nothing below this walks cards on a plain refresh, so the sweep is snapshot-only; each
   // arriving card is repaired individually by `exposeCardInZone` instead.
   if (fullSnapshot) repairDetachedCardSchemas(state);
+  refreshIdentityVisibility({ view, state, seat });
   if (owner !== undefined) {
     // Unlock exactly this seat's private fields. A single PRIVATE_VIEW_TAG is safe:
     // Colyseus scopes the reveal to this specific PlayerState object, so the

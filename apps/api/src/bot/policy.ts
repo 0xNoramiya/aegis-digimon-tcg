@@ -1,3 +1,4 @@
+import { selectAllianceAlly } from "#api/bot/selectAllianceAlly";
 import { CardKind } from "@aegis/shared/schema/enums";
 import { getCardDefinition } from "@aegis/shared/cards/registry";
 import type { DecisionRequest, ServerEvent } from "@aegis/shared/protocol/events";
@@ -163,12 +164,14 @@ export function createEvaluationPolicy(options: EvaluationPolicyOptions = {}): B
     },
 
     chooseAllianceResponse(view: BotView, context: AllianceContext): Intent {
-      // ＜Alliance＞ suspends an ally to add its DP to the attack. Worth it only when
-      // something on the other side could actually survive or block the attack unaided.
-      const contested = view.opponentBoard.some((unit) => !unit.suspended);
-      const ally = context.eligibleAllyIds[0];
-      if (!contested || ally === undefined) return { type: "respondAlliance" };
-      return { type: "respondAlliance", allyPermanentId: ally };
+      const ally = selectAllianceAlly({
+        view,
+        attackerId: context.permanentId,
+        eligibleAllyIds: context.eligibleAllyIds,
+      });
+      return ally === undefined
+        ? { type: "respondAlliance" }
+        : { type: "respondAlliance", allyPermanentId: ally.permanentId };
     },
 
     chooseEvadeResponse(_view: BotView, permanentId: string): Intent {
@@ -336,7 +339,8 @@ function pickInstances(
   const candidates = request.options?.candidateInstanceIds ?? [];
   const min = request.options?.min ?? 0;
   if (candidates.length === 0) return [];
-  if (view === undefined) return candidates.slice(0, min);
+  const allowedCombinations = request.kind === "chooseTargets" ? request.options?.allowedTargetCombinations : undefined;
+  if (view === undefined) return allowedCombinations?.[0] ?? candidates.slice(0, min);
 
   // A board candidate arrives as a permanent id from a targeting clause and as a card
   // instance id from a selection clause, and the request never says which. Indexing units
@@ -362,6 +366,13 @@ function pickInstances(
       return true;
     });
 
+  if (allowedCombinations !== undefined) {
+    return (
+      [...allowedCombinations].sort(
+        (left, right) => right.reduce((sum, id) => sum + rank(id), 0) - left.reduce((sum, id) => sum + rank(id), 0),
+      )[0] ?? []
+    );
+  }
   if (min > 0) return ranked.slice(0, min);
   if (unsuspending) {
     const useful = ranked.filter((instanceId) => ownUnits.get(instanceId)?.suspended);

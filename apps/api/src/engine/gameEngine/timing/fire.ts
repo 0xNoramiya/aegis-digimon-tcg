@@ -1,3 +1,4 @@
+import { createPendingDeletionEffectReader } from "#api/engine/gameEngine/createPendingDeletionEffectReader";
 import { EffectTiming, Permanent, type CardInstance } from "@aegis/shared";
 import { definitionOf } from "../../cards/cardData.js";
 import { runTiming } from "../../effects/index.js";
@@ -62,6 +63,7 @@ export async function fireTiming(
       (engine.activeWindowToken !== undefined && !engine.flushingDeferredTimingWindows)
     ) {
       engine.deferredTimingWindows.push({
+        readPendingEffects: createPendingDeletionEffectReader({ engine, trigger, transientCandidates }),
         timing,
         trigger: { ...trigger },
         transientCandidates: [

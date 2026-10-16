@@ -1,3 +1,4 @@
+import { CardMovePosition } from "#shared/protocol/CardMovePosition";
 import type { Seat } from "../schema/enums.js";
 import type { AttackTarget } from "./intents.js";
 
@@ -302,6 +303,7 @@ export type ServerEvent =
       sourcePermanentId?: string;
       effectKey: string;
       description: string;
+      effectTextPart?: string;
       timing?: string;
       /** Printed clause timing, separate from the watcher event that fired. */
       printedTiming?: string;
@@ -341,6 +343,17 @@ export type ServerEvent =
       timing?: string;
       isInherited?: boolean;
       /** The chosen option's printed bullet, without the leading "・". */
+      clause: string;
+    }
+  | {
+      kind: "effectClauseAdvanced";
+      effectKey?: string;
+      seat: Seat;
+      sourceCardId: string;
+      sourceInstanceId?: string;
+      sourcePermanentId?: string;
+      timing?: string;
+      isInherited?: boolean;
       clause: string;
     }
   | {
@@ -465,6 +478,8 @@ export type ServerEvent =
       optionUsed?: true;
       instanceIds: string[];
       from: string;
+      fromSeat?: Seat;
+      fromHost?: { permanentId: string; hostCardId: string };
       to: string;
       /**
        * Card identities, in `instanceIds` order — present only when the movement
@@ -591,6 +606,7 @@ export const SERVER_EVENT_KINDS = [
   "effectTriggered",
   "resolutionOrderChosen",
   "effectOptionChosen",
+  "effectClauseAdvanced",
   "effectResolved",
   "effectHadNoEffect",
   "dpModifierApplied",
@@ -629,7 +645,7 @@ export interface FinalRevealPlayer {
  * would push a non-array through every one of those switches. `cardsMoved.to` is a free-form
  * display label that no rules code branches on, which is why the position is safe to name here.
  */
-export const DECK_BOTTOM = "deckBottom";
+export const DECK_BOTTOM = CardMovePosition.DECK_BOTTOM.value;
 
 /**
  * The ServerEvent kinds answered by a dedicated intent (declareBlock/
@@ -697,6 +713,7 @@ export interface DecisionRequest {
     min?: number;
     max?: number; // selection count bounds
     maxTotalPlayCost?: number; // summed printed play-cost budget for multi-card selections
+    allowedTargetCombinations?: string[][];
     maxTotalDP?: number; // summed live-DP budget for aggregate permanent selections
     differentColors?: boolean; // prevent selecting cards that share a color with an already-picked card
     distinctCardIds?: boolean; // prevent selecting multiple instances with the same card number

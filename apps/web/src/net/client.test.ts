@@ -193,7 +193,7 @@ describe("room-scoped deployment affinity", () => {
     expect(create).toHaveBeenCalledWith("aegis_bot", { ...OPTIONS, authTicket: "ticket-1" });
   });
 
-  it("creates beta bot matches in a beta-isolated room", async () => {
+  it("creates beta bot matches in the single bot room", async () => {
     const botRoom = room("beta-bot-room");
     const greenCreate = vi.fn(async () => botRoom);
     const client = router({
@@ -203,7 +203,7 @@ describe("room-scoped deployment affinity", () => {
     });
 
     await expect(client.createBot({ ...OPTIONS, betaBattleMode: true })).resolves.toBe(botRoom);
-    expect(greenCreate).toHaveBeenCalledWith("aegis_beta_bot", expect.objectContaining({ betaBattleMode: true }));
+    expect(greenCreate).toHaveBeenCalledWith("aegis_bot", expect.objectContaining({ betaBattleMode: true }));
   });
 
   it("refreshes the manifest when the active slot starts draining while creating a bot room", async () => {
@@ -391,7 +391,7 @@ it("preserves Unlimited and beta bot flags on the production and private paths",
   });
   await client.createBot({ ...OPTIONS, unlimited: true, betaBattleMode: true });
   expect(create).toHaveBeenLastCalledWith(
-    "aegis_beta_bot",
+    "aegis_bot",
     expect.objectContaining({ unlimited: true, betaBattleMode: true }),
   );
   await client.createPrivate({ ...OPTIONS, unlimited: true });
@@ -430,4 +430,71 @@ it("reads the private host rules from a draining slot before joining there", asy
     expect.objectContaining({ unlimited: true, roomCode: "ABC234" }),
   );
   expect(connectionSlot(joined)).toBe("blue");
+});
+
+it("merges each slot's first page of live matches and skips an unreachable slot", async () => {
+  const live = (spectatorCode: string, spectators: number, startedAt: number) => ({
+    spectatorCode,
+    players: ["A", "B"],
+    format: "standard",
+    startedAt,
+    spectators,
+  });
+  const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes("/green/"))
+      return Response.json({ matches: [live("BUSYXX", 9, 1), live("QUIETX", 0, 5)], total: 4 });
+    if (url.includes("/blue/")) return Response.json({ matches: [live("NEWERX", 0, 8)], total: 1 });
+    return new Response("{}", { status: 503 });
+  }) as unknown as typeof fetch;
+  const client = new AegisConnectionRouter({
+    loadManifest: async () => ({
+      version: 1,
+      active: { slot: "green", revision: "new" },
+      draining: [
+        { slot: "blue", revision: "old" },
+        { slot: "red", revision: "older" },
+      ],
+    }),
+    endpointForSlot: (slot) => ({ http: `https://example.test/api/${slot}`, websocket: "" }),
+    createClient: () => clientPort(),
+    fetcher,
+  });
+  const page = await client.liveMatches(2);
+  expect(page.matches.map((match) => match.spectatorCode)).toEqual(["BUSYXX", "NEWERX"]);
+  expect(page.total).toBe(5);
+  expect(fetcher).toHaveBeenCalledWith("https://example.test/api/green/spectate/live?limit=2");
+});
+
+it("attaches an account ticket when a signed-in viewer reserves spectator access", async () => {
+  setRoomTicketAccount(true);
+  onTestFinished(() => setRoomTicketAccount(false));
+  const watched = room("watched-match");
+  const fetcher = vi.fn<typeof fetch>(
+    async (input) =>
+      new Response(
+        JSON.stringify(
+          String(input).endsWith("/auth/room-ticket")
+            ? { ticket: "spectator-account-ticket" }
+            : { sessionId: "observer", roomId: "watched-match" },
+        ),
+      ),
+  );
+  const client = new AegisConnectionRouter({
+    loadManifest: async () => ({ version: 1, active: { slot: "green", revision: "new" }, draining: [] }),
+    endpointForSlot: () => ({ http: "https://example.test/api/green", websocket: "wss://example.test/api/green" }),
+    createClient: () => clientPort({ consumeSeatReservation: async () => watched }),
+    fetcher,
+  });
+  expect(await client.spectate({ roomCode: "ABCDEF" })).toBe(watched);
+  expect(fetcher).toHaveBeenNthCalledWith(
+    1,
+    "https://example.test/api/green/auth/room-ticket",
+    expect.objectContaining({ credentials: "include" }),
+  );
+  expect(fetcher).toHaveBeenNthCalledWith(
+    2,
+    "https://example.test/api/green/spectate/join",
+    expect.objectContaining({ body: JSON.stringify({ roomCode: "ABCDEF", authTicket: "spectator-account-ticket" }) }),
+  );
 });

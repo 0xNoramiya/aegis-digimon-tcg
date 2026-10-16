@@ -1,3 +1,6 @@
+import { isCardImageLanguage } from "@aegis/shared/cards/isCardImageLanguage";
+import { installStoryRoutes } from "#api/story/installStoryRoutes";
+import { StoryProgressStore } from "#api/story/StoryProgressStore";
 import { isDeckFormat, type DeckFormat } from "@aegis/shared";
 import { randomBytes } from "node:crypto";
 import { ReplayLibrary } from "../replays/ReplayLibrary.js";
@@ -106,6 +109,7 @@ export function installAccountRoutes(
 ): void {
   const sessionFromRequest = (req: Request) => store.session(cookie(req, SESSION_COOKIE));
   installReplayRoutes({ app, library: replays, session: sessionFromRequest });
+  installStoryRoutes({ app, store: new StoryProgressStore(store), session: sessionFromRequest });
   // The organizer's override surface, in its own module. See src/tournaments/arbitration.
   installArbitrationRoutes({
     app,
@@ -905,6 +909,7 @@ function positiveInteger(value: unknown, fallback: number): number | undefined {
 function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
   const {
+    cardImageLanguage,
     autoHatch,
     darkMode,
     locale,
@@ -914,11 +919,17 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     deckView,
     deckSort,
     profileStats,
+    shareDeckAfterMatch,
+    listLiveMatches,
+    hideIdentityFromSpectators,
     favoriteDeckIds,
     ...unknownKeys
   } = value as Record<string, unknown>;
   if (Object.keys(unknownKeys).length > 0) return undefined;
   const isShortText = (text: unknown) => typeof text === "string" && text.length <= MAX_PREFERENCE_LENGTH;
+  if (cardImageLanguage !== undefined && !isCardImageLanguage(cardImageLanguage)) {
+    return undefined;
+  }
   if (autoHatch !== undefined && typeof autoHatch !== "boolean") return undefined;
   if (darkMode !== undefined && typeof darkMode !== "boolean") return undefined;
   if (locale !== undefined && !isShortText(locale)) return undefined;
@@ -927,9 +938,17 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (deckShare !== undefined && !(typeof deckShare === "number" && deckShare > 0 && deckShare < 1)) return undefined;
   if (deckView !== undefined && deckView !== "grid" && deckView !== "list") return undefined;
   if (deckSort !== undefined && !isShortText(deckSort)) return undefined;
+  if (shareDeckAfterMatch !== undefined && typeof shareDeckAfterMatch !== "boolean") {
+    return undefined;
+  }
   if (profileStats !== undefined && typeof profileStats !== "boolean") return undefined;
+  if (hideIdentityFromSpectators !== undefined && typeof hideIdentityFromSpectators !== "boolean") {
+    return undefined;
+  }
+  if (listLiveMatches !== undefined && typeof listLiveMatches !== "boolean") return undefined;
   if (favoriteDeckIds !== undefined && !isFavoriteDeckIdList(favoriteDeckIds)) return undefined;
   return {
+    ...(cardImageLanguage !== undefined && { cardImageLanguage }),
     ...(autoHatch !== undefined && { autoHatch }),
     ...(darkMode !== undefined && { darkMode }),
     ...(locale !== undefined && { locale: locale as string }),
@@ -939,6 +958,9 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     ...(deckView !== undefined && { deckView: deckView as "grid" | "list" }),
     ...(deckSort !== undefined && { deckSort: deckSort as string }),
     ...(profileStats !== undefined && { profileStats }),
+    ...(shareDeckAfterMatch !== undefined && { shareDeckAfterMatch }),
+    ...(listLiveMatches !== undefined && { listLiveMatches }),
+    ...(hideIdentityFromSpectators !== undefined && { hideIdentityFromSpectators }),
     ...(favoriteDeckIds !== undefined && { favoriteDeckIds: favoriteDeckIds as string[] }),
   };
 }

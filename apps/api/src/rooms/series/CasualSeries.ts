@@ -59,6 +59,7 @@ export class CasualSeries {
   private readonly arrived = new Set<Seat>();
   /** Who went first in this room's game; the seed decides it in game 1. */
   private firstSeat: Seat | undefined;
+  private continued = false;
 
   private constructor(
     private readonly port: SeriesRoomPort,
@@ -94,9 +95,17 @@ export class CasualSeries {
     return record;
   }
 
+  static rematch(port: SeriesRoomPort, settings: SeriesSettings, chooser: Seat): CasualSeries {
+    const series = new CasualSeries(port, undefined, randomUUID(), settings, []);
+    port.state.series.gameNumber = 0;
+    series.beginChoosing(chooser);
+    return series;
+  }
+
   /** A later game, opened by the previous game's room from a record {@link loadContinuation} accepted. */
   static continueFrom(port: SeriesRoomPort, record: SeriesRecord): CasualSeries {
     const series = new CasualSeries(port, record, record.id, record, [...record.results]);
+    series.continued = true;
     series.firstSeat = record.firstSeat;
     series.armArrivalDeadline();
     return series;
@@ -104,7 +113,7 @@ export class CasualSeries {
 
   /** Set only in a later game: the room seats a joiner by token instead of by arrival order. */
   get continuation(): SeriesRecord | undefined {
-    return this.results.length > 0 ? this.record : undefined;
+    return this.continued ? this.record : undefined;
   }
 
   get fixedFirstSeat(): Seat | undefined {

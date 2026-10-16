@@ -1,3 +1,4 @@
+import { PermanentDpDeltaHint } from "@/game/piece/PermanentDpDeltaHint";
 import { useRef, type CSSProperties } from "react";
 import { getCardDefinition, type Permanent } from "@aegis/shared";
 import { CardMini } from "../../design/cards";
@@ -221,7 +222,7 @@ export function PermanentView({
         ...({ "--permanent-width": `${permanentWidth}px` } as CSSProperties),
         position: "relative",
         cursor: interactive ? "pointer" : "default",
-        touchAction: "none",
+        touchAction: "pan-x",
         opacity: dimmed ? 0.4 : 1,
         // The reference client hides the destination until the centre-screen
         // announcement is over, rather than flying the card across the board.
@@ -293,6 +294,12 @@ export function PermanentView({
           selected={highlight}
           attackable={candidate}
           dp={perm.currentDP}
+          dpDelta={hasDpDelta && !dpBadgeSuppressed ? delta : undefined}
+          renderDpDelta={(node) => (
+            <PermanentDpDeltaHint delta={delta} baseDp={originalDP(perm)}>
+              {node}
+            </PermanentDpDeltaHint>
+          )}
           identity={transformation}
           info
           zoomOnHover={false}
@@ -316,13 +323,8 @@ export function PermanentView({
           cardWidth={permanentWidth}
         />
       ) : null}
-      {restrictions.length > 0 || (hasDpDelta && !dpBadgeSuppressed) ? (
-        <PermanentRestrictionBadges
-          restrictions={restrictions}
-          forcedAttackGrants={forcedAttackGrants(perm)}
-          dpDelta={hasDpDelta && !dpBadgeSuppressed ? delta : undefined}
-          baseDp={originalDP(perm)}
-        />
+      {restrictions.length > 0 ? (
+        <PermanentRestrictionBadges restrictions={restrictions} forcedAttackGrants={forcedAttackGrants(perm)} />
       ) : null}
       {onInspect && showInspect ? (
         <button

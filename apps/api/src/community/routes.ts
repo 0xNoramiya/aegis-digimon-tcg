@@ -1,3 +1,4 @@
+import { reviewDeckGuide } from "#api/community/reviewDeckGuide";
 import { isDeckFormat } from "@aegis/shared/deckFormat";
 import {
   CardColor,
@@ -126,6 +127,35 @@ export function installCommunityDeckRoutes({
         else res.status(result.error === "own_deck" ? 403 : 404).json({ error: result.error });
       }),
     );
+
+  app.put(
+    "/community/decks/:id/guide",
+    route(async (req, res) => {
+      const current = await requireSession(req, res);
+      if (!current) {
+        return;
+      }
+      if (!limitPublish(current.account.id)) {
+        res.status(429).json({ error: "too_many_requests" });
+        return;
+      }
+      const review = reviewDeckGuide({ raw: req.body?.guide });
+      if (!review.allowed) {
+        res.status(review.error === "invalid_guide" ? 400 : 422).json({ error: review.error });
+        return;
+      }
+      const saved = await store.updateGuide({
+        accountId: current.account.id,
+        publicDeckId: req.params.id!,
+        guide: review.guide,
+      });
+      if (!saved) {
+        res.status(404).json({ error: "deck_not_found" });
+        return;
+      }
+      res.json({ guide: review.guide });
+    }),
+  );
 
   app.post(
     "/community/decks/:id/copies",

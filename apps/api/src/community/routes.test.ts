@@ -119,7 +119,7 @@ describe("publishing", () => {
     });
     await harness.store.saveDeck(author.id, {
       id: "rude",
-      name: "Caralho Rush",
+      name: "Muerte a la Royal Base",
       mainDeck: [...redList!.mainDeck],
       eggDeck: [...redList!.eggDeck],
     });
@@ -503,4 +503,79 @@ it("filters random community decks by beta, historical pool, Pauper and Unlimite
   } finally {
     vi.useRealTimers();
   }
+});
+
+describe("deck guides", () => {
+  it("saves normalized guides separately and preserves them across republication", async () => {
+    const author = await signIn("Author");
+    const { id } = await saveAndPublish(author, "guide-deck", "Guide deck");
+    const before = (await (await call(`/community/decks/${id}`)).json()) as CommunityDeck;
+    const saved = await call(`/community/decks/${id}/guide`, "PUT", author, {
+      guide: "## Start  \r\n\r\nPlay BT1-009  ",
+    });
+    expect(saved.status).toBe(200);
+    expect(await saved.json()).toEqual({ guide: "## Start\n\nPlay BT1-009" });
+    const after = (await (await call(`/community/decks/${id}`)).json()) as CommunityDeck;
+    expect(after).toEqual({ ...before, guide: "## Start\n\nPlay BT1-009", hasGuide: true });
+    const summary = (await browse()).decks[0]!;
+    expect(summary.hasGuide).toBe(true);
+    expect(summary).not.toHaveProperty("guide");
+    expect(await (await call("/community/publications", "GET", author)).json()).toEqual([
+      expect.objectContaining({ outdated: false }),
+    ]);
+    await saveAndPublish(author, "guide-deck", "Revised name");
+    expect(await (await call(`/community/decks/${id}`)).json()).toMatchObject({ guide: after.guide });
+  });
+
+  it("requires the owner of a public deck and allows admins to read hidden guides", async () => {
+    const author = await signIn("Author");
+    const other = await signIn("Other");
+    const admin = await signIn("Admin", { admin: true });
+    const { id } = await saveAndPublish(author, "guide-deck", "Guide deck");
+    const path = `/community/decks/${id}/guide`;
+    expect((await call(path, "PUT", undefined, { guide: "Start" })).status).toBe(401);
+    expect((await call(path, "PUT", other, { guide: "Start" })).status).toBe(404);
+    expect((await call("/community/decks/not-a-uuid/guide", "PUT", author, { guide: "Start" })).status).toBe(404);
+    await call(path, "PUT", author, { guide: "Start" });
+    await harness.store.pool.query("UPDATE public_decks SET status='hidden' WHERE id=$1", [id]);
+    expect((await call(path, "PUT", author, { guide: "Edit" })).status).toBe(404);
+    expect(await (await call(`/community/decks/${id}`, "GET", admin)).json()).toMatchObject({ guide: "Start" });
+  });
+
+  it.each([null, "   "])("clears a guide using %j", async (guide) => {
+    const author = await signIn("Author");
+    const { id } = await saveAndPublish(author, "guide-deck", "Guide deck");
+    await call(`/community/decks/${id}/guide`, "PUT", author, { guide: "Start" });
+    expect(await (await call(`/community/decks/${id}/guide`, "PUT", author, { guide })).json()).toEqual({
+      guide: null,
+    });
+    expect((await browse()).decks[0]!.hasGuide).toBe(false);
+  });
+
+  it.each([
+    [{ guide: "x".repeat(5001) }, 422, "guide_too_long"],
+    [{ guide: "Caralho" }, 422, "guide_not_allowed"],
+    [{ guide: "Muerte a la Royal Base" }, 422, "guide_not_allowed"],
+    [{ guide: "cazzo" }, 422, "guide_not_allowed"],
+    [{ guide: 12 }, 400, "invalid_guide"],
+    [{}, 400, "invalid_guide"],
+    [[], 400, "invalid_guide"],
+  ])("rejects malformed or disallowed guides", async (body, status, error) => {
+    const author = await signIn("Author");
+    const { id } = await saveAndPublish(author, "guide-deck", "Guide deck");
+    const response = await call(`/community/decks/${id}/guide`, "PUT", author, body);
+    expect(response.status).toBe(status);
+    expect(await response.json()).toEqual({ error });
+  });
+
+  it("shares the publication rate limit", async () => {
+    const author = await signIn("Author");
+    const { id } = await saveAndPublish(author, "guide-deck", "Guide deck");
+    for (let attempt = 0; attempt < 9; attempt += 1) {
+      expect((await call(`/community/decks/${id}/guide`, "PUT", author, { guide: "Start" })).status).toBe(200);
+    }
+    const limited = await call(`/community/decks/${id}/guide`, "PUT", author, { guide: "Start" });
+    expect(limited.status).toBe(429);
+    expect(await limited.json()).toEqual({ error: "too_many_requests" });
+  });
 });

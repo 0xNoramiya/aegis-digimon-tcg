@@ -1,5 +1,318 @@
 [
   {
+    "version": "1.31.0-beta",
+    "releasedAt": "2026-10-16",
+    "summaryKey": "releases.1.31.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.31.0-beta.feature.clock"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.feature.heldDp"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.31.0-beta.fix.securityAttack"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.fix.cards"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.fix.effects"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.fix.inspector"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.fix.story"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.fix.layout"
+      },
+      {
+        "textKey": "releases.1.31.0-beta.fix.bots"
+      }
+    ]
+  },
+  {
+    "version": "1.30.1-beta",
+    "releasedAt": "2026-10-16",
+    "summaryKey": "releases.1.30.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.30.1-beta.fix.story"
+      },
+      {
+        "textKey": "releases.1.30.1-beta.fix.differentNames"
+      }
+    ]
+  },
+  {
+    "version": "1.30.0-beta",
+    "releasedAt": "2026-10-16",
+    "summaryKey": "releases.1.30.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.30.0-beta.feature.story"
+      },
+      {
+        "textKey": "releases.1.30.0-beta.feature.collections"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.30.0-beta.fix.presets"
+      },
+      {
+        "textKey": "releases.1.30.0-beta.fix.digivolve"
+      },
+      {
+        "textKey": "releases.1.30.0-beta.fix.provider"
+      }
+    ]
+  },
+  {
+    "version": "1.29.0-beta",
+    "releasedAt": "2026-10-16",
+    "summaryKey": "releases.1.29.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.29.0-beta.feature.digilab"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.feature.languages"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.feature.inspector"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.feature.negamon"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.29.0-beta.fix.rules"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.hidden"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.battlefield"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.artwork"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.loading"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.community"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.targets"
+      },
+      {
+        "textKey": "releases.1.29.0-beta.fix.bot"
+      }
+    ]
+  },
+  {
+    "version": "1.28.2-beta",
+    "releasedAt": "2026-10-15",
+    "summaryKey": "releases.1.28.2-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.28.2-beta.fix.colors",
+        "issue": 5595
+      }
+    ]
+  },
+  {
+    "version": "1.28.1-beta",
+    "releasedAt": "2026-10-15",
+    "summaryKey": "releases.1.28.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.28.1-beta.fix.selection"
+      },
+      {
+        "textKey": "releases.1.28.1-beta.fix.indicators"
+      },
+      {
+        "textKey": "releases.1.28.1-beta.fix.history"
+      },
+      {
+        "textKey": "releases.1.28.1-beta.fix.navigation"
+      },
+      {
+        "textKey": "releases.1.28.1-beta.fix.reloads"
+      }
+    ]
+  },
+  {
+    "version": "1.28.0-beta",
+    "releasedAt": "2026-10-15",
+    "summaryKey": "releases.1.28.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.28.0-beta.feature.cards"
+      },
+      {
+        "textKey": "releases.1.28.0-beta.feature.export"
+      },
+      {
+        "textKey": "releases.1.28.0-beta.feature.spectators"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.28.0-beta.fix.effects"
+      },
+      {
+        "textKey": "releases.1.28.0-beta.fix.rules"
+      }
+    ]
+  },
+  {
+    "version": "1.27.0-beta",
+    "releasedAt": "2026-10-15",
+    "summaryKey": "releases.1.27.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.27.0-beta.feature.history"
+      },
+      {
+        "textKey": "releases.1.27.0-beta.feature.guides"
+      },
+      {
+        "textKey": "releases.1.27.0-beta.feature.field"
+      },
+      {
+        "textKey": "releases.1.27.0-beta.feature.effects"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.27.0-beta.fix.rules"
+      },
+      {
+        "textKey": "releases.1.27.0-beta.fix.presentation"
+      }
+    ]
+  },
+  {
+    "version": "1.26.3-beta",
+    "releasedAt": "2026-10-14",
+    "summaryKey": "releases.1.26.3-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.26.3-beta.feature.spectating"
+      },
+      {
+        "textKey": "releases.1.26.3-beta.feature.deckSharing"
+      },
+      {
+        "textKey": "releases.1.26.3-beta.feature.artwork"
+      },
+      {
+        "textKey": "releases.1.26.3-beta.feature.effectReading",
+        "issue": 5465
+      },
+      {
+        "textKey": "releases.1.26.3-beta.feature.profileStats"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.26.3-beta.fix.dualOptions",
+        "issue": 5528
+      },
+      {
+        "textKey": "releases.1.26.3-beta.fix.costReduction",
+        "issue": 5531
+      },
+      {
+        "textKey": "releases.1.26.3-beta.fix.rollback"
+      },
+      {
+        "textKey": "releases.1.26.3-beta.fix.loading"
+      }
+    ]
+  },
+  {
+    "version": "1.26.2-beta",
+    "releasedAt": "2026-10-14",
+    "summaryKey": "releases.1.26.2-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.26.2-beta.feature.rematch"
+      },
+      {
+        "textKey": "releases.1.26.2-beta.feature.betaBadge"
+      },
+      {
+        "textKey": "releases.1.26.2-beta.feature.lordKnightmon"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.26.2-beta.fix.cardRules"
+      },
+      {
+        "textKey": "releases.1.26.2-beta.fix.reprints"
+      },
+      {
+        "textKey": "releases.1.26.2-beta.fix.errata"
+      }
+    ]
+  },
+  {
+    "version": "1.26.1-beta",
+    "releasedAt": "2026-10-14",
+    "summaryKey": "releases.1.26.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.26.1-beta.fix.neptunemon",
+        "issue": 5522
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.inherited",
+        "issue": 5515
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.priority",
+        "issue": 5513
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.cardRules"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.dna"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.inspection"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.mobile",
+        "issue": 5518
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.limited"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.bot"
+      },
+      {
+        "textKey": "releases.1.26.1-beta.fix.profile"
+      }
+    ]
+  },
+  {
     "version": "1.26.0-beta",
     "releasedAt": "2026-10-14",
     "summaryKey": "releases.1.26.0-beta.summary",

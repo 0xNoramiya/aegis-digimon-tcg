@@ -77,6 +77,8 @@ export type RestrictionBadgeKind =
   | "immuneToOpponentDigimonEffects"
   | "immuneToOpponentOptionEffects"
   | "immuneToOpponentTamerEffects"
+  | "protectedFromStackTrash"
+  | "protectedFromStackReturn"
   | "protectedFromDpReduction"
   | "protectedFromDeDigivolve"
   | "protectedFromEffectDeletion"
@@ -115,6 +117,20 @@ export interface RestrictionBadge {
  * cannot do in combat first, then what it cannot do on its own turn.
  */
 const RESTRICTION_BADGES: readonly RestrictionBadge[] = [
+  {
+    kind: "protectedFromStackTrash",
+    labelKey: "game.restriction.protectedFromStackTrash",
+    shortLabelKey: "game.protectionBadge.protectedFromStackTrash",
+    protection: true,
+    icon: "deDigivolveShield",
+  },
+  {
+    kind: "protectedFromStackReturn",
+    labelKey: "game.restriction.protectedFromStackReturn",
+    shortLabelKey: "game.protectionBadge.protectedFromStackReturn",
+    protection: true,
+    icon: "returnShield",
+  },
   {
     kind: "attacksAtStartOfMainPhase",
     labelKey: "game.restriction.attacksAtStartOfMainPhase",

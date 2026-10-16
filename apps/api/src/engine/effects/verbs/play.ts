@@ -1,3 +1,5 @@
+import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { peekCheckedCard, takeCheckedCard } from "../../security/checkedCard.js";
 import {
   CardKind,
@@ -293,6 +295,7 @@ export function createPlayVerbs(pc: PrimitivesContext) {
           // stale breeding material when the same instance id is observed through another view.
           const resolvedHostPermanentId =
             hostOfStackInstance(state, instanceId)?.hostPermanentId ?? opts?.hostPermanentIds?.[instanceId];
+          const origin = locateMoveOrigins({ state, instanceIds: [instanceId] }).get(instanceId);
           const instance = removeLooseInstance(state, instanceId, true, resolvedHostPermanentId);
           if (instance === undefined) {
             await abandonPlay();
@@ -387,7 +390,8 @@ export function createPlayVerbs(pc: PrimitivesContext) {
           engine.emit({
             kind: "cardsMoved",
             instanceIds: [instance.instanceId],
-            from: "various",
+            from: origin?.from ?? CardMovePosition.VARIOUS.value,
+            ...origin,
             to: opts?.breeding ? Zone.Breeding : Zone.BattleArea,
           });
         } finally {
@@ -505,6 +509,7 @@ export function createPlayVerbs(pc: PrimitivesContext) {
     // failsafe ceiling.
     const routesUsedOption = ownerPlayer.resolvingOption?.instanceId === instanceId;
     const fromZone = looseZoneOfInstance(state, instanceId) ?? (routesUsedOption ? "resolvingOption" : undefined);
+    const origin = locateMoveOrigins({ state, instanceIds: [instanceId] }).get(instanceId);
     const instance = removeLooseInstance(state, instanceId);
     if (instance === undefined) return undefined;
     instance.faceUp = true;
@@ -524,7 +529,8 @@ export function createPlayVerbs(pc: PrimitivesContext) {
     engine.emit({
       kind: "cardsMoved",
       instanceIds: [instance.instanceId],
-      from: "various",
+      from: origin?.from ?? CardMovePosition.VARIOUS.value,
+      ...origin,
       to: Zone.BattleArea,
       ...(routesUsedOption ? { optionUsed: true as const } : {}),
     });

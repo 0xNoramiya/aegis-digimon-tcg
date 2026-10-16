@@ -1,3 +1,4 @@
+import type { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
 import type { DeckListing } from "../game/decks";
 import { dominantColor } from "../game/decks";
 import type {
@@ -25,6 +26,7 @@ export type RemoteAccount = {
   discordLinked?: boolean;
 };
 export type AccountPreferences = {
+  cardImageLanguage?: CardImageLanguage;
   autoHatch?: boolean;
   darkMode?: boolean;
   locale?: string;
@@ -34,6 +36,9 @@ export type AccountPreferences = {
   deckView?: "grid" | "list";
   deckSort?: string;
   profileStats?: boolean;
+  shareDeckAfterMatch?: boolean;
+  listLiveMatches?: boolean;
+  hideIdentityFromSpectators?: boolean;
   favoriteDeckIds?: string[];
 };
 export type AccountProfile = {

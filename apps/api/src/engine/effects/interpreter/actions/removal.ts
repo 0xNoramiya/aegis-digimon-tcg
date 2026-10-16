@@ -511,6 +511,26 @@ export async function runRemovalAction(ctx: EffectContext, action: Action, scope
         // (the controller reaching into a hand, e.g. "trash 1 of your opponent's cards in
         // their hand") is unchanged.
         const asker = action.chooser === "opponent" ? requireOpponentAsk(ctx) : ctx.ask;
+        const passage = action.effectTextPart?.trim();
+        const continuationCandidates = candidateLooseInstances(ctx, action.target, ["hand"]);
+        let discardCount = continuationCandidates.length;
+        if (typeof action.target.count === "number") {
+          discardCount = action.target.count;
+        }
+        if (action.target.untilHandSize !== undefined) {
+          discardCount = Math.max(0, continuationCandidates.length - action.target.untilHandSize);
+        }
+        if (
+          action.chooser === "opponent" &&
+          action.optional !== true &&
+          passage !== undefined &&
+          /^Then,\s/i.test(passage) &&
+          (ctx.activeEffectText?.indexOf(passage) ?? -1) > 0 &&
+          continuationCandidates.length > 0 &&
+          discardCount > 0
+        ) {
+          ctx.fx.announceEffectClauseAdvanced?.(ctx, passage);
+        }
         // Only an explicit printed look/search permission exposes an opponent hand.
         // Blind selections take precedence and keep their opaque handles.
         const visible =

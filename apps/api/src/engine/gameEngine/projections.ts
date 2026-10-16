@@ -1,3 +1,5 @@
+import type { AttackRedirection } from "@aegis/shared/schema/AttackRedirection";
+import { getNegamonPlayCandidates } from "#api/engine/gameEngine/getNegamonPlayCandidates";
 import {
   CardKind,
   dnaDigivolutionRequirementsFor,
@@ -10,6 +12,7 @@ import {
   DnaDigivolveRoute,
 } from "@aegis/shared";
 import { hasSummoningSickness } from "../combat/legality.js";
+import { effectiveKinds } from "../effects/continuous.js";
 import { resolveKeywords } from "../combat/keywords.js";
 import { lookupDefinition } from "../cards/cardData.js";
 import { linkEligible } from "../effects/mindLink.js";
@@ -33,6 +36,7 @@ import {
   replaceDigivolveRoutesIfChanged,
   replaceIfChanged,
 } from "./schemaSync.js";
+import { securityAttackGrantSum } from "./securityAttackGrantSum.js";
 import { securityStrikeCount } from "./securityStrike.js";
 import type { CardInstance, GameState, Permanent, Seat } from "@aegis/shared";
 import type { GameStateAccess } from "../state/access.js";
@@ -55,6 +59,7 @@ import type { PendingBlitzAttack } from "./blitz.js";
  * factories rather than duplicated here.
  */
 export interface ProjectionDeps {
+  readonly attackRedirectTargetIds: (attacker: Permanent, targetPermanentId?: string) => AttackRedirection;
   readonly state: GameState;
   readonly access: GameStateAccess;
   readonly continuous: ContinuousEffectLedger;
@@ -89,6 +94,14 @@ export interface ProjectionDeps {
  * validator the matching intent would, so a lit affordance and an accepted intent can
  * never disagree.
  */
+function canDeclareAttacks(permanent: Permanent, continuous: ContinuousEffectLedger): boolean {
+  if (permanent.topCard === undefined) {
+    return false;
+  }
+  const printedKinds = lookupDefinition(permanent.topCard.cardId)?.kinds ?? [];
+  return effectiveKinds(continuous, permanent.permanentId, printedKinds).includes(CardKind.Digimon);
+}
+
 export class BoardProjection {
   private projectedRouteInstances: Set<CardInstance> | undefined;
   private projectedLinkInstances: Set<CardInstance> | undefined;
@@ -153,10 +166,9 @@ export class BoardProjection {
    * projection, so the inspector value cannot drift from the rule.
    */
   securityStrikeFor(permanentId: string): number {
-    // When SA-sign inversion is active on the attacker, each existing ＜Security Attack ±N＞
-    // grant has its amount NEGATED per-instance before summing (two ＜SA -1＞ → two ＜SA +1＞ =
-    // +2 to the strike, NOT ＜SA +2＞ recomputed). The sign is applied per grant inside the
-    // reduce, so the composition is faithful to the per-instance flip with no value math here.
+    // When SA-sign inversion is active on the attacker, each existing ＜Security Attack -N＞
+    // grant becomes ＜Security Attack +N＞ per-instance before summing (two ＜SA -1＞ → two
+    // ＜SA +1＞ = +2 to the strike, NOT ＜SA +2＞ recomputed). Positive grants keep their sign.
     const invert = this.deps.continuous.securityAttackInverted(permanentId);
     const saGrants = this.deps.continuous.grantedKeywords(permanentId).filter((g) => g.keyword === "SecurityAttack");
     return securityStrikeCount(saGrants, invert);
@@ -224,6 +236,9 @@ export class BoardProjection {
     if (forcedAttackGrants.length > 0) perm.attacksAtStartOfMainPhase = true;
     const forcedAttackGrantsJson = forcedAttackGrants.length > 0 ? JSON.stringify(forcedAttackGrants) : "";
     if (perm.forcedAttackGrantsJson !== forcedAttackGrantsJson) perm.forcedAttackGrantsJson = forcedAttackGrantsJson;
+    const heldDpEffects = this.deps.modifiers.heldDpEffectViews(this.deps.state, perm);
+    const heldDpEffectsJson = heldDpEffects.length > 0 ? JSON.stringify(heldDpEffects) : "";
+    if (perm.heldDpEffectsJson !== heldDpEffectsJson) perm.heldDpEffectsJson = heldDpEffectsJson;
     perm.immuneToOpponentDigimonEffects = this.deps.continuous.hasRestriction(
       perm.permanentId,
       "beAffected",
@@ -255,6 +270,10 @@ export class BoardProjection {
     perm.protectedFromEffectReturn = this.deps.continuous.hasRestriction(perm.permanentId, "beReturned", undefined, {
       byOpponentEffect: true,
     });
+    perm.protectedFromStackTrash = this.deps.continuous.stackTrashLocked(perm.permanentId);
+    perm.protectedFromStackReturn = this.deps.continuous.hasRestriction(perm.permanentId, "stackReturn", undefined, {
+      byOpponentEffect: true,
+    });
     perm.cannotAttack = this.deps.continuous.hasRestriction(perm.permanentId, "attack");
     perm.cannotBlock = this.deps.continuous.hasRestriction(perm.permanentId, "block");
     perm.cannotSuspend = this.deps.continuous.hasRestriction(perm.permanentId, "suspend");
@@ -265,11 +284,10 @@ export class BoardProjection {
       "cannotActivateWhenDigivolving",
     );
     perm.securityAttack = this.securityStrikeFor(perm.permanentId);
-    const invert = this.deps.continuous.securityAttackInverted(perm.permanentId);
-    perm.securityAttackModifier = this.deps.continuous
-      .grantedKeywords(perm.permanentId)
-      .filter((grant) => grant.keyword === "SecurityAttack")
-      .reduce((sum, grant) => sum + (grant.amount ?? 1) * (invert ? -1 : 1), 0);
+    perm.securityAttackModifier = securityAttackGrantSum(
+      this.deps.continuous.grantedKeywords(perm.permanentId).filter((grant) => grant.keyword === "SecurityAttack"),
+      this.deps.continuous.securityAttackInverted(perm.permanentId),
+    );
   }
 
   /**
@@ -335,13 +353,17 @@ export class BoardProjection {
    */
   syncActivatableEffects(): void {
     if (this.projectedActivatableInstances === undefined || this.projectedActivatablePermanents === undefined) {
-      for (const instance of this.deps.listCandidateInstances()) instance.activatableEffectsJson = "";
+      for (const instance of this.deps.listCandidateInstances()) {
+        instance.activatableEffectsJson = "";
+      }
       for (const player of this.deps.state.players) {
         for (const permanent of player.battleArea) permanent.activatableEffectsJson = "";
         if (player.breeding) player.breeding.activatableEffectsJson = "";
       }
     } else {
-      for (const instance of this.projectedActivatableInstances) instance.activatableEffectsJson = "";
+      for (const instance of this.projectedActivatableInstances) {
+        instance.activatableEffectsJson = "";
+      }
       for (const permanent of this.projectedActivatablePermanents) permanent.activatableEffectsJson = "";
     }
     const projectedInstances = this.projectedActivatableInstances ?? new Set<CardInstance>();
@@ -431,6 +453,32 @@ export class BoardProjection {
     );
   }
 
+  async syncNegamonPlayEffects(): Promise<void> {
+    for (const instance of this.deps.listCandidateInstances()) {
+      instance.negamonPlayEffectKey = "";
+    }
+    if (this.deps.state.phase !== Phase.Main || this.deps.hasMainPhaseEnded()) {
+      return;
+    }
+    const player = this.deps.state.players[this.deps.state.turnSeat];
+    const breedingCard = player?.breeding?.topCard;
+    if (!player || breedingCard?.cardId !== "EX9-005") {
+      return;
+    }
+    const effect = this.activatableEffectsFor([breedingCard]).find(
+      (candidate) => candidate.effect.irTrigger === "Main",
+    );
+    if (!effect) {
+      return;
+    }
+    const candidates = await getNegamonPlayCandidates(this.activationContext(effect));
+    for (const instance of player.hand) {
+      if (candidates.has(instance.instanceId)) {
+        instance.negamonPlayEffectKey = effect.effect.effectKey;
+      }
+    }
+  }
+
   /** Build a direct-activation context while retaining stack-conferral provenance. */
   activationContext(collected: CollectedEffect): EffectContext {
     return {
@@ -500,7 +548,9 @@ export class BoardProjection {
   syncSummoningSickness(): void {
     for (const player of this.deps.state.players) {
       for (const perm of player.battleArea) {
-        perm.summoningSick = hasSummoningSickness(perm, this.deps.state.turnCount, this.deps.continuous);
+        perm.summoningSick =
+          canDeclareAttacks(perm, this.deps.continuous) &&
+          hasSummoningSickness(perm, this.deps.state.turnCount, this.deps.continuous);
       }
       // A permanent in the raising area cannot attack at all, so summoning sickness has
       // nothing to say about it.
@@ -515,7 +565,10 @@ export class BoardProjection {
    */
   syncAttackTargets(): void {
     for (const player of this.deps.state.players) {
-      for (const perm of player.battleArea) clearAttackProjection(perm);
+      for (const perm of player.battleArea) {
+        clearAttackProjection(perm);
+        perm.attackRedirectTargets = {};
+      }
       if (player.breeding) clearAttackProjection(player.breeding);
     }
 
@@ -538,13 +591,22 @@ export class BoardProjection {
           attackerPermanentId: attacker.permanentId,
           target: { kind: "player" },
         }) === null;
+      if (attacker.canAttackPlayer) {
+        attacker.attackRedirectTargets.player = this.deps.attackRedirectTargetIds(attacker);
+      }
       for (const defender of opponent.battleArea) {
         const legal =
           validateAttack(deps, seat, {
             attackerPermanentId: attacker.permanentId,
             target: { kind: "permanent", permanentId: defender.permanentId },
           }) === null;
-        if (legal) attacker.attackablePermanentIds.push(defender.permanentId);
+        if (legal) {
+          attacker.attackablePermanentIds.push(defender.permanentId);
+          attacker.attackRedirectTargets[defender.permanentId] = this.deps.attackRedirectTargetIds(
+            attacker,
+            defender.permanentId,
+          );
+        }
       }
       // The ＜Vortex＞ declaration is a separate legality question (§16-33 / §16-33-1),
       // so it gets its own pass — but only for a Digimon that actually has the keyword,

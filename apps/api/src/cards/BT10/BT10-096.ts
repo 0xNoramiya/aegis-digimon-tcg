@@ -80,7 +80,7 @@ const compiled: CompiledCard = {
             },
           ],
           rest: "deckBottom",
-          optional: true,
+          optionalAfterReveal: true,
         },
       ],
       isSecurity: true,

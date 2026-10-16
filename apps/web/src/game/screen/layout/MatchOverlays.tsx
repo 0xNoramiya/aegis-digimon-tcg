@@ -29,8 +29,10 @@ import { PileViewers } from "./PileViewers";
 import { Side } from "../../side";
 import type { GameOverOutcome } from "../../gameOverSplash";
 import type { SeriesResultProps } from "../../overlay/match/GameOverOverlay";
+import type { RematchProps } from "@/game/overlay/match/RematchPanel";
 import type { TurnOrder } from "../../overlay";
-import type { LogLine } from "../../matchLog";
+import type { LogTurnGroup } from "@/game/log/LogEntry";
+import type { SeatNames } from "@/game/log/SeatNames";
 import type { PendingFateBadge } from "../../pendingFate";
 import type { HandEntry } from "../../piece";
 import type { AppFusionRoute } from "../../AppFusionChoiceOverlay";
@@ -72,7 +74,9 @@ export function MatchOverlays({
   onCancelAllianceConfirmation,
   scenes,
   collapseNotices,
-  log,
+  logTurns,
+  seatNames,
+  logViewerSeat,
   signedIn,
   opponentDropped,
   gameOver,
@@ -143,13 +147,16 @@ export function MatchOverlays({
     revealShowcase: RevealShowcaseCue | null;
   };
   collapseNotices: boolean;
-  log: LogLine[];
+  logTurns: readonly LogTurnGroup[];
+  seatNames: SeatNames;
+  logViewerSeat?: Seat;
   signedIn: boolean;
   opponentDropped: boolean;
   gameOver:
     | (ReplaySaveProps & {
         spectatorResult?: string;
         onDownloadReplay?: () => void;
+        opponentDeckDialog?: (onClose: () => void) => ReactNode;
         usedDeckDialog?: (onClose: () => void) => ReactNode;
         replayStatus?: "preparing" | "unavailable";
         result: GameOverOutcome;
@@ -157,6 +164,7 @@ export function MatchOverlays({
         /** Every hidden zone, once the server reveals them; absent in a tournament set. */
         revealed?: RevealedZones;
         series?: SeriesResultProps;
+        rematch?: RematchProps;
       })
     | undefined;
   overlays: ReturnType<typeof useOverlayState>;
@@ -228,11 +236,16 @@ export function MatchOverlays({
               handDockRef.current?.querySelectorAll<HTMLElement>(".game-hand-card")[
                 shownHandEntries.findIndex((entry) => entry.instanceId === handPreviewEntry.instanceId)
               ],
+            keepsOpen: (target) =>
+              target.closest<HTMLElement>("[data-hand-instance-id]")?.dataset.handInstanceId ===
+                handPreviewEntry.instanceId ||
+              target.closest<HTMLElement>("[data-hand-hover-instance-id]")?.dataset.handHoverInstanceId ===
+                handPreviewEntry.instanceId,
           }}
           cardId={handPreviewEntry.cardId}
           artId={handPreviewEntry.artId}
           activatableEffects={parseActivatable(handPreviewActions?.activatableEffectsJson ?? "")}
-          canPlay={handPreviewActions?.playableFromHand === true}
+          canPlay={handPreviewActions?.playableFromHand === true || !!handPreviewActions?.negamonPlayEffectKey}
           canDigivolve={
             (handPreviewActions?.digivolveTargetPermanentIds.length ?? 0) > 0 ||
             (handPreviewActions?.dnaDigivolveRoutes?.length ?? 0) > 0 ||
@@ -313,7 +326,9 @@ export function MatchOverlays({
       {!gameOver ? <SecurityScenes {...scenes} compact={collapseNotices} /> : null}
 
       <MatchStatusOverlays
-        log={log}
+        turns={logTurns}
+        playerNames={seatNames}
+        viewerSeat={logViewerSeat}
         historyOpen={overlays.historyOpen}
         zoomCardId={overlays.zoomCardId}
         zoomArtId={overlays.zoomArtId}

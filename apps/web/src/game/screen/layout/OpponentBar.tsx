@@ -41,6 +41,8 @@ export function OpponentBar({
   rollbackControls,
   spectating = false,
   spectatorCode,
+  spectatorNamesJson,
+  anonymousSpectatorCount,
   timer,
   handStripRef,
   opponentName,
@@ -73,6 +75,8 @@ export function OpponentBar({
   rollbackControls?: ReactNode;
   spectating?: boolean;
   spectatorCode?: string;
+  spectatorNamesJson?: string;
+  anonymousSpectatorCount?: number;
   timer?: ReactNode;
   handStripRef: RefObject<HTMLDivElement | null>;
   opponentName: string;
@@ -237,7 +241,14 @@ export function OpponentBar({
           </summary>
           <div className="game-mobile-menu__actions">
             {rollbackControls}
-            {spectatorCode ? <SpectatorInvite code={spectatorCode} variant="menu" /> : null}
+            {spectatorCode ? (
+              <SpectatorInvite
+                spectatorNamesJson={spectatorNamesJson}
+                anonymousSpectatorCount={anonymousSpectatorCount}
+                code={spectatorCode}
+                variant="menu"
+              />
+            ) : null}
             {onResetScenario ? (
               <button type="button" onClick={onResetScenario}>
                 ↻ Reset battle
@@ -270,7 +281,14 @@ export function OpponentBar({
       ) : narrowGameLayout ? (
         <>
           {rollbackControls}
-          {spectatorCode ? <SpectatorInvite code={spectatorCode} variant="mobile" /> : null}
+          {spectatorCode ? (
+            <SpectatorInvite
+              spectatorNamesJson={spectatorNamesJson}
+              anonymousSpectatorCount={anonymousSpectatorCount}
+              code={spectatorCode}
+              variant="mobile"
+            />
+          ) : null}
           <button
             type="button"
             className="game-mobile-log"
@@ -314,7 +332,13 @@ export function OpponentBar({
       ) : (
         <div className="game-topbar-actions">
           {rollbackControls}
-          {spectatorCode ? <SpectatorInvite code={spectatorCode} /> : null}
+          {spectatorCode ? (
+            <SpectatorInvite
+              spectatorNamesJson={spectatorNamesJson}
+              anonymousSpectatorCount={anonymousSpectatorCount}
+              code={spectatorCode}
+            />
+          ) : null}
           {onResetScenario ? (
             <button
               type="button"

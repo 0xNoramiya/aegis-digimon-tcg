@@ -14,6 +14,7 @@ export interface AppRoute {
   /** The report open on the admin triage or the reporter's own feedback screen. */
   feedbackId?: number;
   roadmapItemId?: number;
+  matchSettings?: boolean;
 }
 
 export const SCREEN_PATHS: Record<Screen, string> = {
@@ -22,6 +23,8 @@ export const SCREEN_PATHS: Record<Screen, string> = {
   home: "/",
   login: "/login",
   lobby: "/play",
+  story: "/play/story",
+  watch: "/play/watch",
   deck: "/decks",
   collection: "/collection",
   community: "/community",
@@ -44,8 +47,10 @@ export function routeFromPathname(pathname: string): AppRoute | undefined {
   if (ownFeedback) return { screen: "myFeedback", feedbackId: Number(ownFeedback) };
   if (normalized === "/") return { screen: "home" };
   if (normalized === "/login") return { screen: "login" };
+  if (normalized === "/play/story") return { screen: "story" };
   if (normalized === "/play") return { screen: "lobby" };
   if (normalized === "/play/game") return { screen: "game" };
+  if (normalized === "/play/watch") return { screen: "watch" };
   if (normalized === "/decks") return { screen: "deck" };
   if (normalized === "/collection") return { screen: "collection" };
   if (normalized === "/community") return { screen: "community" };

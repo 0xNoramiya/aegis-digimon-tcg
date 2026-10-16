@@ -1,3 +1,5 @@
+import { useCardImageLanguage } from "@/screens/cardLanguage/useCardImageLanguage";
+import { findCardArtForLanguage } from "@aegis/shared/cards/findCardArtForLanguage";
 /* Collection — the full card gallery over the real @aegis/shared registry: a hero
    with the library totals, a filter row (search, color, type, level, trait, set),
    an infinite-scroll grid, and the shared detail drawer. Filtering runs over the
@@ -21,8 +23,9 @@ const PAGE_SIZE = 48;
 
 export function Collection() {
   const { t } = useTranslation();
+  const language = useCardImageLanguage();
   const all = useMemo<CardDefinition[]>(() => sortCards(activeCollectionCards(), "releaseDate"), []);
-  const filter = useCardFilter(all);
+  const filter = useCardFilter(all, { initialQuery: new URLSearchParams(window.location.search).get("q") ?? "" });
   const [selected, setSelected] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const totalRef = useRef(filter.filtered.length);
@@ -92,6 +95,7 @@ export function Collection() {
                   <div key={c.cardId} className="collection-card-entry">
                     <CardFull
                       cardId={c.cardId}
+                      artId={findCardArtForLanguage({ cardId: c.cardId, language })?.artId}
                       width={150}
                       selected={selected === c.cardId}
                       onClick={() => setSelected((s) => (s === c.cardId ? null : c.cardId))}
@@ -110,7 +114,14 @@ export function Collection() {
         </div>
       </div>
 
-      {selected ? <CardDetailDrawer cardId={selected} onClose={() => setSelected(null)} /> : null}
+      {selected ? (
+        <CardDetailDrawer
+          key={`${selected}:${language}`}
+          cardId={selected}
+          initialArtId={findCardArtForLanguage({ cardId: selected, language })?.artId}
+          onClose={() => setSelected(null)}
+        />
+      ) : null}
     </main>
   );
 }

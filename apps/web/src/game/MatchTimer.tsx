@@ -1,6 +1,7 @@
 import { createPortal } from "react-dom";
 import type { GameState, Seat } from "@aegis/shared";
 import { useTranslation } from "../i18n";
+import { RematchStatus } from "@aegis/shared/protocol/RematchStatus";
 import "./matchTimer.css";
 
 export function formatMatchTime(seconds: number): string {
@@ -63,7 +64,9 @@ export function MatchTimer({ state, seat, opponent = false }: { state: GameState
 export function SeriesBadge({ state, viewerSeat }: { state: GameState; viewerSeat: Seat }) {
   const { t } = useTranslation();
   const series = state.series;
-  if (!series || series.bestOf <= 1) return null;
+  if (!series || series.bestOf <= 1 || series.rematchStatus === RematchStatus.ACCEPTED.value) {
+    return null;
+  }
   const you = viewerSeat === 0 ? series.wins0 : series.wins1;
   const opponent = viewerSeat === 0 ? series.wins1 : series.wins0;
   const values = { game: series.gameNumber, bestOf: series.bestOf, you, opponent };

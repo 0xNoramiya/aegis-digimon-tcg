@@ -4,17 +4,22 @@
 
 import type { ReactNode } from "react";
 import { BugReportDialog } from "../../../bugs/BugReportDialog";
-import { PlayLogSidebar } from "../../PlayLogSidebar";
+import { PlayLogSidebar } from "@/game/log/PlayLogSidebar";
 import { CardZoomOverlay, GameOverOverlay, OpponentDroppedOverlay } from "../../overlay";
 import type { SeriesResultProps } from "../../overlay/match/GameOverOverlay";
-import type { LogLine } from "../../matchLog";
+import type { RematchProps } from "@/game/overlay/match/RematchPanel";
+import type { LogTurnGroup } from "@/game/log/LogEntry";
+import type { SeatNames } from "@/game/log/SeatNames";
+import type { Seat } from "@aegis/shared/schema/enums";
 import type { GameOverOutcome } from "../../gameOverSplash";
 import type { ArenaDeckColors } from "../../../design/arenaPalette";
 import { ArenaLookDialog } from "./ArenaLookDialog";
 import type { ReplaySaveProps } from "../../../replays/ReplaySavePrompt";
 
 export function MatchStatusOverlays({
-  log,
+  turns,
+  playerNames,
+  viewerSeat,
   historyOpen,
   zoomCardId,
   zoomArtId,
@@ -33,7 +38,9 @@ export function MatchStatusOverlays({
   onLeaveDropped,
   returnsToRoom,
 }: {
-  log: readonly LogLine[];
+  turns: readonly LogTurnGroup[];
+  playerNames: SeatNames;
+  viewerSeat?: Seat;
   historyOpen: boolean;
   zoomCardId: string | null;
   zoomArtId: string | undefined;
@@ -50,6 +57,7 @@ export function MatchStatusOverlays({
     | (ReplaySaveProps & {
         spectatorResult?: string;
         onDownloadReplay?: () => void;
+        opponentDeckDialog?: (onClose: () => void) => ReactNode;
         usedDeckDialog?: (onClose: () => void) => ReactNode;
         replayStatus?: "preparing" | "unavailable";
         result: GameOverOutcome;
@@ -57,6 +65,7 @@ export function MatchStatusOverlays({
         stats: { value: number; label: string }[];
         cardsRevealed: boolean;
         series?: SeriesResultProps;
+        rematch?: RematchProps;
       })
     | undefined;
   onCloseHistory: () => void;
@@ -71,7 +80,15 @@ export function MatchStatusOverlays({
 }) {
   return (
     <>
-      {historyOpen ? <PlayLogSidebar log={log} onClose={onCloseHistory} onOpenCard={onOpenCard} /> : null}
+      {historyOpen ? (
+        <PlayLogSidebar
+          turns={turns}
+          playerNames={playerNames}
+          viewerSeat={viewerSeat}
+          onClose={onCloseHistory}
+          onOpenCard={onOpenCard}
+        />
+      ) : null}
 
       {zoomCardId ? <CardZoomOverlay cardId={zoomCardId} artId={zoomArtId} onClose={onCloseZoom} /> : null}
 
@@ -87,6 +104,7 @@ export function MatchStatusOverlays({
         <GameOverOverlay
           spectatorResult={gameOver.spectatorResult}
           usedDeckDialog={gameOver.usedDeckDialog}
+          opponentDeckDialog={gameOver.opponentDeckDialog}
           onDownloadReplay={gameOver.onDownloadReplay}
           replayFile={gameOver.replayFile}
           replayStatus={gameOver.replayStatus}
@@ -99,6 +117,7 @@ export function MatchStatusOverlays({
           onRematch={onRematch}
           returnsToRoom={returnsToRoom}
           series={gameOver.series}
+          rematch={gameOver.rematch}
         />
       ) : null}
     </>

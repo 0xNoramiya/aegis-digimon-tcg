@@ -1,3 +1,4 @@
+import { getFieldEffectText } from "#api/engine/effects/interpreter/getFieldEffectText";
 // The GrantStatic action: name, trait, kind, and borrowed-effect grants.
 
 import type { EffectContext } from "../../EffectContext.js";
@@ -516,6 +517,27 @@ export async function runGrantStaticAction(ctx: EffectContext, action: Action): 
       // than blanket opponent-effect immunity; opponent Option/Tamer effects are still relevant.
       if (action.grant === "immuneToOpponentDigimonEffects") {
         const grantDuration = toDuration(action.duration ?? "untilOpponentTurnEnd");
+        if (action.playerWide === true && ctx.fx.restrictPlayer !== undefined) {
+          const filter = action.target.filter;
+          for (const seat of seatsForController(ctx, filter)) {
+            ctx.fx.restrictPlayer(
+              seat,
+              "beAffected",
+              grantDuration,
+              (permanentId) => {
+                const permanent = ctx.game.permanentById(permanentId);
+                return permanent !== undefined && permanentMatchesFilter(ctx, permanent, filter, ctx.source);
+              },
+              {
+                sourceCardId: ctx.source.definition.cardId,
+                effectText: getFieldEffectText({ action, ctx }),
+                fromSourceKind: ["Digimon"],
+                byOpponentEffectsOnly: true,
+              },
+            );
+          }
+          return false;
+        }
         for (const id of ids)
           ctx.fx.restrict(id, "beAffected", grantDuration, {
             fromSourceKind: ["Digimon"],
@@ -566,8 +588,16 @@ export async function runGrantStaticAction(ctx: EffectContext, action: Action): 
             return permanent !== undefined && permanentMatchesFilter(ctx, permanent, filter, ctx.source);
           };
           for (const seat of seatsForController(ctx, filter)) {
-            ctx.fx.restrictPlayer(seat, "dpImmune", grantDuration, matches, { byOpponentEffectsOnly: true });
-            ctx.fx.restrictPlayer(seat, "beReturned", grantDuration, matches, { byOpponentEffectsOnly: true });
+            ctx.fx.restrictPlayer(seat, "dpImmune", grantDuration, matches, {
+              sourceCardId: ctx.source.definition.cardId,
+              effectText: getFieldEffectText({ action, ctx }),
+              byOpponentEffectsOnly: true,
+            });
+            ctx.fx.restrictPlayer(seat, "beReturned", grantDuration, matches, {
+              sourceCardId: ctx.source.definition.cardId,
+              effectText: getFieldEffectText({ action, ctx }),
+              byOpponentEffectsOnly: true,
+            });
           }
           return false;
         }

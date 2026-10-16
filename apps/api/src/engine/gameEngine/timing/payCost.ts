@@ -126,7 +126,7 @@ export async function fireBeforePayCost(
       if (effect.potentialPlayCostReduction === undefined) return total;
       if (
         effect.maxPerTurn > 0 &&
-        engine.tracker.count(`${residentSource.instanceId}/${effect.effectKey}`, "replacement") > 0
+        engine.tracker.count(`${residentSource.instanceId}/printed/${effect.effectKey}`, "replacement") > 0
       )
         return total;
       if (
@@ -185,6 +185,8 @@ export async function fireBeforePayCost(
       };
       if (!canTrigger(effect, residentCtx, engine.tracker)) continue;
       if (!canActivate(effect, residentCtx, engine.tracker)) continue;
+      residentCtx.isResidentCostSourceActive = () =>
+        canTrigger(effect, residentCtx, engine.tracker) && canActivate(effect, residentCtx, engine.tracker);
       const beforeDelta = residentCtx.playCostDelta ?? 0;
       await effect.resolve(residentCtx);
       ctx.playCostDelta = residentCtx.playCostDelta;
@@ -210,6 +212,8 @@ export async function fireBeforePayCost(
       };
       if (!canTrigger(effect, residentCtx, engine.tracker)) continue;
       if (!canActivate(effect, residentCtx, engine.tracker)) continue;
+      residentCtx.isResidentCostSourceActive = () =>
+        canTrigger(effect, residentCtx, engine.tracker) && canActivate(effect, residentCtx, engine.tracker);
       const beforeDelta = residentCtx.playCostDelta ?? 0;
       await effect.resolve(residentCtx);
       ctx.playCostDelta = residentCtx.playCostDelta;

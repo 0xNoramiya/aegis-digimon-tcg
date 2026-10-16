@@ -1,3 +1,6 @@
+import { deckProviders } from "#api/db/migrations/037-deck-providers";
+import { storyGuestProgress } from "#api/db/migrations/039-story-guest-progress";
+import { storyProgress } from "#api/db/migrations/038-story-progress";
 import type { Migration } from "../migrator.js";
 import { initialSchema } from "./001-initial-schema.js";
 import { tournamentProgramColumns } from "./002-tournament-program-columns.js";
@@ -37,6 +40,8 @@ import { connectionDrops } from "#api/db/migrations/033-connection-drops";
 import { communityRoadmap } from "#api/db/migrations/034-community-roadmap";
 import { playtestGroup } from "#api/db/migrations/035-playtest-group";
 
+import { publicDeckGuide } from "#api/db/migrations/036-public-deck-guide";
+
 export const migrations: readonly Migration[] = [
   initialSchema,
   tournamentProgramColumns,
@@ -73,4 +78,8 @@ export const migrations: readonly Migration[] = [
   connectionDrops,
   communityRoadmap,
   playtestGroup,
+  publicDeckGuide,
+  deckProviders,
+  storyProgress,
+  storyGuestProgress,
 ];

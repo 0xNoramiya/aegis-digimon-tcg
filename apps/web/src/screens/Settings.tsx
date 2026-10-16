@@ -1,3 +1,9 @@
+import { CardLanguageSettings } from "@/screens/cardLanguage/CardLanguageSettings";
+import type { DeckListing } from "@/game/decks";
+import { SpectatorIdentitySetting } from "@/account/SpectatorIdentitySetting";
+import { TokenArtPicker } from "@/design/tokenArt/TokenArtPicker";
+import { ShareDeckAfterMatchSetting } from "@/account/ShareDeckAfterMatchSetting";
+import { LiveMatchListingSetting } from "@/account/LiveMatchListingSetting";
 import { CustomMusicPicker } from "../design/CustomMusicPicker";
 import { MusicCredits } from "../design/MusicCredits";
 import { InterfaceThemeDialog } from "../design/InterfaceThemePicker";
@@ -23,6 +29,7 @@ import {
 } from "../design/sound";
 import { MUSIC_TRACK_LABEL_KEYS, MUSIC_TRACKS } from "../design/musicTracks";
 import { areActionConfirmationsEnabled, setActionConfirmationsEnabled } from "../design/actionConfirmation";
+import { setEffectConfirmationHoldEnabled, useEffectConfirmationHold } from "../game/effectConfirmationHold";
 import { isKeepAwakeEnabled, setKeepAwakeEnabled } from "../design/keepAwake";
 import { isDecisionPingEnabled, setDecisionPingEnabled } from "@/design/decisionPing";
 import { FieldLayout, setFieldLayout, useFieldLayout } from "../design/fieldLayout";
@@ -66,6 +73,7 @@ const SECTIONS: readonly SettingsSection[] = [
   { id: "settings-appearance", label: "settings.sectionAppearance", icon: Icons.Palette },
   { id: "settings-language", label: "redesign.settings.languageText", icon: Icons.FileText },
   { id: "settings-sleeves", label: "settings.cardSleeve", icon: Icons.LayoutGrid },
+  { id: "settings-token-art", label: "settings.tokenArt", icon: Icons.LayoutGrid },
   { id: REPLAYS_SECTION_ID, label: "replay.drive.settingsTitle", icon: Icons.Cloud },
   { id: SOUND_SETTINGS_SECTION_ID, label: "redesign.settings.sound", icon: Icons.Play },
   { id: PROFILE_SECTION_ID, label: "profile.title", icon: Icons.User },
@@ -246,12 +254,18 @@ export function Settings({
   dark,
   onToggleDark,
   initialSectionId,
+  decks = [],
+  decksReady = false,
+  onSaveDeckLanguage,
 }: {
   player: PlayerIdentity;
   account: RemoteAccount | null | undefined;
   dark: boolean;
   onToggleDark: (v: boolean) => void;
   initialSectionId?: string;
+  decks?: readonly DeckListing[];
+  decksReady?: boolean;
+  onSaveDeckLanguage?: (deck: DeckListing) => Promise<void>;
 }) {
   const { t, locale, setLocale } = useTranslation();
   const textScale = useTextScale();
@@ -263,6 +277,7 @@ export function Settings({
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [volume, setVolume] = useState(Math.round(getSoundVolume() * 100));
   const [actionConfirmationsOn, setActionConfirmationsOn] = useState(areActionConfirmationsEnabled());
+  const effectConfirmationHold = useEffectConfirmationHold();
   const [keepAwakeOn, setKeepAwakeOn] = useState(isKeepAwakeEnabled());
   const [decisionPingOn, setDecisionPingOn] = useState(isDecisionPingEnabled());
   const [effectSpeed, setEffectSpeedChoice] = useState<EffectSpeed>(getEffectSpeed);
@@ -353,6 +368,9 @@ export function Settings({
                   onSelect={setLocale}
                 />
               </SettingRow>
+              {onSaveDeckLanguage && (
+                <CardLanguageSettings decks={decks} ready={decksReady} onSave={onSaveDeckLanguage} />
+              )}
               <SettingRow
                 label={t("settings.textSize")}
                 labelId="settings-text-size-label"
@@ -376,6 +394,13 @@ export function Settings({
               <SettingRow stacked label={t("settings.eggSleeve")} description={t("settings.eggSleeveDesc")}>
                 <EggSleevePicker />
               </SettingRow>
+            </SettingsCard>
+
+            <SettingsCard id="settings-token-art" title={t("settings.tokenArt")}>
+              <div className="settings-row settings-row--stack">
+                <p className="settings-row__lede">{t("settings.tokenArtDesc")}</p>
+                <TokenArtPicker />
+              </div>
             </SettingsCard>
 
             <CloudReplaySettings />
@@ -502,6 +527,9 @@ export function Settings({
 
             {signedIn ? (
               <SettingsCard id={PROFILE_SECTION_ID} title={t("profile.title")}>
+                <ShareDeckAfterMatchSetting key={account?.id} />
+                <LiveMatchListingSetting key={`live-${account?.id}`} />
+                <SpectatorIdentitySetting key={`identity-${account?.id}`} />
                 <div className="settings-row">
                   <Switch
                     checked={profileStatsShown}
@@ -523,6 +551,14 @@ export function Settings({
                     setActionConfirmationsEnabled(next);
                     setActionConfirmationsOn(next);
                   }}
+                />
+              </div>
+              <div className="settings-row">
+                <Switch
+                  checked={effectConfirmationHold}
+                  label={t("settings.effectConfirmationHold")}
+                  description={t("settings.effectConfirmationHoldDesc")}
+                  onChange={setEffectConfirmationHoldEnabled}
                 />
               </div>
               <div className="settings-row">

@@ -155,6 +155,12 @@ test("cutover retains established sockets, routes reconnect to the old owner, an
   const migratedManifest = await (await fetch(`${origin}/deployment/manifest.json`)).json();
   assert.equal(migratedManifest.active.slot, "red");
   assert.equal(migratedManifest.draining[0].slot, "g-333333333333");
+  const providerPath = "/deck-providers/digilab/meta?format=EX13&perPage=25";
+  const providerResponse = await fetch(`${origin}${providerPath}`);
+  assert.match(providerResponse.headers.get("content-type"), /application\/json/);
+  const providerResult = await providerResponse.json();
+  assert.equal(providerResult.slot, "red");
+  assert.equal(providerResult.path, providerPath);
 });
 
 test("community API calls reach the API while page navigation gets the web app", () => {
@@ -236,6 +242,11 @@ test("static guides coexist with replay API routing and missing guides do not be
   assert.deepEqual(await (await fetch(`${origin}/strategy-guides/evidence.json`)).json(), { simulations: 256 });
 });
 
+test("story progress reaches the API while the story screen reaches the web app", () => {
+  assert.equal(isApiPath("/story/progress", { accept: "*/*" }), true);
+  assert.equal(isApiPath("/play/story", { accept: "text/html" }), false);
+});
+
 test("shared replay API calls reach the API while page navigation gets the web app", () => {
   assert.equal(isApiPath("/replays/replay-1", { accept: "application/json" }), true);
   assert.equal(isApiPath("/replays/replay-1/file", {}), true);
@@ -310,4 +321,102 @@ test("source maps are never served even when one reaches a served directory", as
   const origin = await listen(gateway);
   const response = await fetch(`${origin}/assets/chunk.js.map`);
   assert.equal(response.status, 404);
+});
+
+test("static files are cached by content version and media revalidates without a body", async (t) => {
+  const state = mkdtempSync(`${tmpdir()}/aegis-gateway-`);
+  const gateway = createGateway({ state, upstreamFor: () => undefined });
+  t.after(async () => {
+    await new Promise((done) => gateway.close(done));
+    rmSync(state, { recursive: true });
+  });
+  for (const directory of ["routing", "assets", "releases/v1/web/sleeves", "releases/v1/web/audio"]) {
+    mkdirSync(`${state}/${directory}`, { recursive: true });
+  }
+  writeFileSync(
+    `${state}/routing/manifest.json`,
+    JSON.stringify({ version: 1, active: { slot: "blue", revision: "v1" }, draining: [] }),
+  );
+  writeFileSync(`${state}/releases/v1/web/index.html`, "web");
+  writeFileSync(`${state}/releases/v1/web/sleeves/standard.webp`, "sleeve");
+  writeFileSync(`${state}/releases/v1/web/audio/bank.flac`, "bank");
+  writeFileSync(`${state}/releases/v1/web/data.json`, "{}");
+  writeFileSync(`${state}/assets/chunk.js`, "chunk");
+  const origin = await listen(gateway);
+
+  const page = await fetch(`${origin}/?v=1`);
+  assert.equal(page.headers.get("cache-control"), "no-store");
+  assert.equal(page.headers.get("etag"), null);
+  assert.equal((await fetch(`${origin}/deck/1`)).headers.get("cache-control"), "no-store");
+
+  const versioned = await fetch(`${origin}/audio/bank.flac?v=abc123`);
+  assert.equal(versioned.headers.get("cache-control"), "public, max-age=31536000, immutable");
+  assert.equal(versioned.headers.get("content-type"), "audio/flac");
+  assert.equal(
+    (await fetch(`${origin}/assets/chunk.js`)).headers.get("cache-control"),
+    "public, max-age=31536000, immutable",
+  );
+  assert.equal((await fetch(`${origin}/data.json`)).headers.get("cache-control"), "no-cache");
+
+  const sleeve = await fetch(`${origin}/sleeves/standard.webp`);
+  const entityTag = sleeve.headers.get("etag");
+  const modified = sleeve.headers.get("last-modified");
+  assert.equal(sleeve.headers.get("cache-control"), "public, max-age=86400");
+  assert.equal(await sleeve.text(), "sleeve");
+  assert.match(entityTag, /^W\/".+"$/);
+
+  const unchanged = await fetch(`${origin}/sleeves/standard.webp`, { headers: { "if-none-match": entityTag } });
+  assert.equal(unchanged.status, 304);
+  assert.equal(unchanged.headers.get("etag"), entityTag);
+  assert.equal(await unchanged.text(), "");
+  const unchangedSince = await fetch(`${origin}/sleeves/standard.webp`, { headers: { "if-modified-since": modified } });
+  assert.equal(unchangedSince.status, 304);
+
+  const stale = await fetch(`${origin}/sleeves/standard.webp`, {
+    headers: { "if-none-match": 'W/"other"', "if-modified-since": modified },
+  });
+  assert.equal(stale.status, 200);
+  assert.equal(await stale.text(), "sleeve");
+});
+
+test("page reload floods from one client are throttled without affecting other clients or assets", async (t) => {
+  const state = mkdtempSync(`${tmpdir()}/aegis-gateway-`);
+  let time = 0;
+  const gateway = createGateway({
+    state,
+    upstreamFor: () => undefined,
+    pageLoadLimit: { requests: 2, windowMs: 10_000 },
+    now: () => time,
+  });
+  t.after(async () => {
+    await new Promise((done) => gateway.close(done));
+    rmSync(state, { recursive: true });
+  });
+  for (const directory of ["routing", "assets", "releases/v1/web"]) {
+    mkdirSync(`${state}/${directory}`, { recursive: true });
+  }
+  writeFileSync(
+    `${state}/routing/manifest.json`,
+    JSON.stringify({ version: 1, active: { slot: "blue", revision: "v1" }, draining: [] }),
+  );
+  writeFileSync(`${state}/releases/v1/web/index.html`, "web");
+  writeFileSync(`${state}/assets/chunk.js`, "chunk");
+  const origin = await listen(gateway);
+  const loadPage = (client) =>
+    fetch(`${origin}/decks`, { headers: { "sec-fetch-dest": "document", "x-forwarded-for": client } });
+
+  assert.equal((await loadPage("203.0.113.7")).status, 200);
+  assert.equal((await loadPage("203.0.113.7")).status, 200);
+  time = 4_000;
+  const throttled = await loadPage("203.0.113.7");
+  assert.equal(throttled.status, 429);
+  assert.equal(throttled.headers.get("retry-after"), "6");
+  assert.equal(throttled.headers.get("cache-control"), "no-store");
+
+  assert.equal((await loadPage("198.51.100.4")).status, 200);
+  const asset = await fetch(`${origin}/assets/chunk.js`, { headers: { "x-forwarded-for": "203.0.113.7" } });
+  assert.equal(asset.status, 200);
+
+  time = 10_000;
+  assert.equal((await loadPage("203.0.113.7")).status, 200);
 });

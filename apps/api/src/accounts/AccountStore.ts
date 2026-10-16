@@ -1,3 +1,4 @@
+import type { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type {
   AvatarChoice,
@@ -42,6 +43,7 @@ export type Deck = {
   updatedAt: number;
 };
 export type AccountPreferences = {
+  cardImageLanguage?: CardImageLanguage;
   autoHatch?: boolean;
   darkMode?: boolean;
   locale?: string;
@@ -51,6 +53,9 @@ export type AccountPreferences = {
   deckView?: "grid" | "list";
   deckSort?: string;
   profileStats?: boolean;
+  shareDeckAfterMatch?: boolean;
+  listLiveMatches?: boolean;
+  hideIdentityFromSpectators?: boolean;
   favoriteDeckIds?: string[];
 };
 export type AuthSession = { id: string; account: Account; expiresAt: number };

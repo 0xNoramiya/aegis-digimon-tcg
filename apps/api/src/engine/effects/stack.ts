@@ -1,3 +1,4 @@
+import { trashArrivalOf } from "#api/engine/state/access";
 import { EffectTiming } from "@aegis/shared";
 import type { Seat } from "@aegis/shared";
 import type { CardSource } from "./CardSource.js";
@@ -59,6 +60,7 @@ export function orderingSeatOf(collected: CollectedEffect): Seat {
  * `gatherTriggeredEffects` + `createEffectContext`), and tests supply fakes.
  */
 export interface ResolutionEnv {
+  registerPendingEffects?: (read: () => readonly CollectedEffect[]) => () => void;
   /** The active player; used for turn-player-first ordering. */
   readonly turnSeat: Seat;
   /** Per-turn use ledger (maxPerTurn accounting). Engine-owned; reset each turn. */
@@ -311,6 +313,33 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
   let passBudget = MAX_RESOLUTION_PASSES;
   let stopAttempts = 0;
 
+  let lastCollected: readonly CollectedEffect[] = [];
+  const sourceArrivals = new Map<string, { source: number | undefined; host: number | undefined }>();
+  const readPendingEffects = (): CollectedEffect[] =>
+    lastCollected.flatMap((collected) => {
+      const key = declineKey(collected);
+      if (
+        declined.has(key) ||
+        resolved.has(key) ||
+        inProgress.has(key) ||
+        departed.has(key) ||
+        loopStopped.has(collected.effect.effectKey)
+      ) {
+        return [];
+      }
+      const ctx = env.makeContext(collected);
+      const proof = sourceArrivals.get(key);
+      const hostId = ctx.trigger?.deletedHostInstanceByInstanceId?.[collected.source.instanceId];
+      if (proof?.source !== undefined && trashArrivalOf(ctx.game.state, collected.source.instanceId) !== proof.source) {
+        return [];
+      }
+      if (hostId !== undefined && proof?.host !== undefined && trashArrivalOf(ctx.game.state, hostId) !== proof.host) {
+        return [];
+      }
+      return canActivate(collected.effect, ctx, env.tracker) ? [{ ...collected, triggerInfo: ctx.trigger }] : [];
+    });
+  const unregisterPending = env.registerPendingEffects?.(readPendingEffects);
+
   // A re-entrant drain runs inside an effect whose derived processing can still enable a
   // pending effect (CR 15-4-3-4, 15-4-5-2/3), so
   // only the outermost drain, with nothing in progress, reports what stayed without one.
@@ -338,6 +367,22 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
 
       // Re-collect every pass: this is the TriggeredSkillProcess re-entry.
       const collectedThisPass = env.collect(timing);
+      lastCollected = collectedThisPass;
+      for (const collected of collectedThisPass) {
+        const key = declineKey(collected);
+        if (!sourceArrivals.has(key)) {
+          const ctx = env.makeContext(collected);
+          const hostId = ctx.trigger?.deletedHostInstanceByInstanceId?.[collected.source.instanceId];
+          sourceArrivals.set(key, {
+            source:
+              ctx.game?.state === undefined ? undefined : trashArrivalOf(ctx.game.state, collected.source.instanceId),
+            host:
+              hostId === undefined || ctx.game?.state === undefined
+                ? undefined
+                : trashArrivalOf(ctx.game.state, hostId),
+          });
+        }
+      }
 
       // Retire anything that was collectable earlier this window and is not any more (§15-4-4-3
       // / §15-4-4-5, see `departed` above). Recorded before the activatable filter so a card
@@ -368,7 +413,7 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
       // runs, so the copy could only ever sit in the order prompt as a choice that never runs
       // (Discord 1555741214014447737: BT26-005 Pinamon listed twice under Ravemon).
       const activeKeys = new Set<string>();
-      const active = collectedThisPass.filter((c) => {
+      const pending = collectedThisPass.filter((c) => {
         const key = declineKey(c);
         if (activeKeys.has(key)) return false;
         const activatable =
@@ -376,11 +421,30 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
           !resolved.has(key) &&
           !inProgress.has(key) &&
           !departed.has(key) &&
-          !loopStopped.has(c.effect.effectKey) &&
-          canActivate(c.effect, env.makeContext(c), env.tracker);
+          !loopStopped.has(c.effect.effectKey);
         if (activatable) activeKeys.add(key);
         return activatable;
       });
+      const newlyPending = pending.filter((c) => !activationTiers.has(declineKey(c)));
+      if (newlyPending.length > 0) {
+        newestTier += 1;
+        for (const c of newlyPending) {
+          activationTiers.set(declineKey(c), newestTier);
+        }
+      }
+      const active = pending.filter((c) => canActivate(c.effect, env.makeContext(c), env.tracker));
+      const highestActiveTier = Math.max(0, ...active.map((c) => activationTiers.get(declineKey(c))!));
+      const highestUnfinishedTier = Math.max(
+        highestActiveTier,
+        ...[...inProgress].map((key) => activationTiers.get(key) ?? 0),
+      );
+      const exhausted = pending.filter((c) => activationTiers.get(declineKey(c))! > highestUnfinishedTier);
+      if (inProgress.size === 0 && options?.retireUnactivatable !== true) {
+        reportWithoutLegalOutcome(exhausted);
+      }
+      for (const c of exhausted) {
+        departed.add(declineKey(c));
+      }
       if (active.length === 0) {
         // At the completed pre-Counter boundary the parent window is exhausted. A cost
         // that becomes payable during security cannot revive this occurrence. Ordinary
@@ -446,11 +510,6 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
         );
       }
 
-      const newlyActive = active.filter((c) => !activationTiers.has(declineKey(c)));
-      if (newlyActive.length > 0) {
-        newestTier += 1;
-        for (const c of newlyActive) activationTiers.set(declineKey(c), newestTier);
-      }
       const activeTier = Math.max(...active.map((c) => activationTiers.get(declineKey(c))!));
       const ordered = orderTurnPlayerFirst(
         active.filter((c) => activationTiers.get(declineKey(c)) === activeTier),
@@ -509,7 +568,11 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
     }
   };
 
-  await drainCurrentTimingWindow();
+  try {
+    await drainCurrentTimingWindow();
+  } finally {
+    unregisterPending?.();
+  }
 }
 
 /**

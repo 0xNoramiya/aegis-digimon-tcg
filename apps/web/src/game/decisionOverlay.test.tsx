@@ -4560,3 +4560,97 @@ it.each(["before", "after"] as const)("shows the full staged Ryutaro effect with
   fireEvent.click(screen.getByRole("button", { name: "No, decline" }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: false });
 });
+
+it.each([
+  {
+    kind: "chooseTargets" as const,
+    effectTextEmphasis: "[When Digivolving] Delete up to 10000 DP total worth of your opponent's Digimon.",
+    candidate: "target",
+  },
+  { kind: "selectCards" as const, effectTextEmphasis: "Then, this Digimon may attack.", candidate: "player" },
+])("keeps Gallantmon's full effect and emphasizes its $kind step", ({ kind, effectTextEmphasis, candidate }) => {
+  const effectText =
+    "[When Digivolving] Delete up to 10000 DP total worth of your opponent's Digimon. Then, this Digimon may attack.";
+  renderDecision({
+    decisionId: "gallantmon-current-step",
+    seat: 0,
+    kind,
+    sourceCardId: "AD1-008",
+    promptText: "Gallantmon",
+    options: {
+      timing: "WhenDigivolving",
+      effectText,
+      effectTextPart: effectTextEmphasis,
+      effectTextEmphasis,
+      candidateInstanceIds: [candidate],
+      min: 1,
+      max: 1,
+    },
+  });
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(effectText);
+  expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(effectTextEmphasis);
+});
+
+it.each([
+  {
+    timing: "WhenDigivolving",
+    passage:
+      "[On Play] [When Digivolving] [When Attacking] [Once Per Turn] You may suspend 1 of your opponent's Digimon or Tamers.",
+  },
+  {
+    timing: "WhenDigivolving",
+    passage: "Then, 1 of their Digimon or Tamers can't unsuspend until their turn ends.",
+  },
+  {
+    timing: "AllTurns",
+    passage:
+      "[All Turns] [Once Per Turn] When effects play or digivolve any Digimon, ＜De-Digivolve 1＞ 1 of your opponent's Digimon.",
+  },
+  {
+    timing: "AllTurns",
+    passage: "Then, this Digimon may battle 1 of your opponent's Digimon.",
+  },
+])("highlights Callismon's current effect passage: $passage", ({ timing, passage }) => {
+  const effectText = cardEffectClauseForTiming("BT25-058", timing)!;
+  renderDecision({
+    decisionId: "callismon-current-step",
+    seat: 0,
+    kind: "chooseTargets",
+    sourceCardId: "BT25-058",
+    promptText: "Callismon",
+    options: {
+      timing,
+      effectText,
+      effectTextPart: passage,
+      effectTextEmphasis: passage,
+      candidateInstanceIds: ["target"],
+      min: 1,
+      max: 1,
+    },
+  });
+  expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(passage);
+});
+
+it.each([
+  "by suspending this Tamer",
+  "you may play 1 [Gabumon] if that Digimon has [Greymon] in its name or 1 [Agumon] if it has [Garurumon] in its name from your hand or trash without paying the cost.",
+])("distinguishes Nokia's optional stages with the current printed passage: %s", (effectTextEmphasis) => {
+  const clause = cardEffectClauseForTiming("EX13-067", "YourTurn")!;
+  const { onRespond } = renderDecision({
+    decisionId: "nokia-optional-stage",
+    seat: 0,
+    kind: "optional",
+    sourceCardId: "EX13-067",
+    promptText: "Use this effect?",
+    options: {
+      timing: "YourTurn",
+      effectText: clause,
+      effectTextPart: effectTextEmphasis,
+      effectTextEmphasis,
+    },
+  });
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(clause);
+  expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(effectTextEmphasis);
+  fireEvent.click(screen.getByRole("button", { name: "Yes, activate" }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: true });
+});

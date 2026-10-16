@@ -7,6 +7,7 @@ import { COLORS } from "../design/theme";
 import { Icons } from "../design/icons";
 import { displayCoverCard, displayCoverArt, type DeckListing } from "../game/decks";
 import { useTranslation } from "../i18n";
+import { deckHasBetaCards } from "@/screens/deckHasBetaCards";
 import "./deckListCard.css";
 
 export function DeckListCard({
@@ -76,6 +77,11 @@ export function DeckListCard({
         </div>
         {deck.format && deck.format !== "standard" ? (
           <Badge className="deck-list-card__format">{deckFormatLabel(deck.format, t)}</Badge>
+        ) : null}
+        {deckHasBetaCards(deck) ? (
+          <Badge tone="primary" className="deck-list-card__format">
+            {t("beta.tag")}
+          </Badge>
         ) : null}
         {formatViolations.length > 0 ? (
           <div className="deck-list-card__violation">

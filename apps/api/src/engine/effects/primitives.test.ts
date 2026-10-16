@@ -642,6 +642,71 @@ describe("primitives: trash / delete / suspend", () => {
     expect(h.state.players[0]!.hand).toHaveLength(0);
   });
 
+  it("publishes hand origins and public identities grouped by seat while preserving other zones", async () => {
+    const h = harness({
+      board: {
+        0: {
+          hand: [{ card: OPTION, as: "ownHand", artId: "alternate-option-art", faceUp: false }],
+          deck: [{ card: DIGIMON, as: "deckCard" }],
+          trash: [{ card: TAMER, as: "alreadyTrashed" }],
+        },
+        1: {
+          hand: [
+            { card: TAMER, as: "opponentFirst", faceUp: false },
+            { card: OPTION, as: "opponentSecond", faceUp: false },
+          ],
+        },
+      },
+    });
+    const names = ["ownHand", "deckCard", "opponentFirst", "opponentSecond", "alreadyTrashed"];
+    const moved = await h.fx.trash([...names.map((name) => h.s.inst(name).instanceId), "missing-card"]);
+    expect(h.events.filter(({ kind }) => kind === "cardsMoved")).toEqual([
+      {
+        kind: "cardsMoved",
+        instanceIds: [h.s.inst("ownHand").instanceId],
+        cardIds: [OPTION],
+        artIds: ["alternate-option-art"],
+        seat: 0,
+        from: "hand",
+        fromSeat: 0,
+        to: "trash",
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [h.s.inst("deckCard").instanceId],
+        cardIds: [DIGIMON],
+        artIds: [DIGIMON],
+        from: "deck",
+        fromSeat: 0,
+        seat: 0,
+        to: "trash",
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [h.s.inst("opponentFirst").instanceId, h.s.inst("opponentSecond").instanceId],
+        cardIds: [TAMER, OPTION],
+        artIds: [TAMER, OPTION],
+        seat: 1,
+        fromSeat: 1,
+        from: "hand",
+        to: "trash",
+      },
+    ]);
+    expect(moved).toHaveLength(4);
+    expect(moved.every((card) => card.faceUp)).toBe(true);
+    expect(h.state.players[0]!.hand).toHaveLength(0);
+    expect(h.state.players[1]!.hand).toHaveLength(0);
+    expect(h.state.players[0]!.trash).toHaveLength(3);
+    expect(h.state.players[1]!.trash).toHaveLength(2);
+    expect(h.subTriggerFires.filter(({ event }) => event === "whenHandTrashed")).toHaveLength(2);
+  });
+
+  it("does not publish hand movement for a card already trashed or a missing instance", async () => {
+    const h = harness({ board: { 0: { trash: [{ card: OPTION, as: "alreadyTrashed" }] } } });
+    expect(await h.fx.trash([h.s.inst("alreadyTrashed").instanceId, "missing-card"])).toEqual([]);
+    expect(h.events.filter(({ kind }) => kind === "cardsMoved")).toEqual([]);
+  });
+
   it("attributes hand-trash triggers to the effect controller", async () => {
     const h = harness({
       board: { 0: { hand: [{ card: OPTION, as: "discarded" }] } },
@@ -926,7 +991,8 @@ describe("primitives: return to hand / deck", () => {
     expect(h.events).toContainEqual({
       kind: "cardsMoved",
       instanceIds: moved.map((card) => card.instanceId),
-      from: "various",
+      from: "battleArea",
+      fromSeat: 0,
       to: "hand",
       seat: 0,
       handAddition: "transfer",
@@ -943,6 +1009,7 @@ describe("primitives: return to hand / deck", () => {
       {
         kind: "cardsMoved",
         from: "deck",
+        fromSeat: 0,
         to: "hand",
         seat: 0,
         handAddition: "transfer",
@@ -967,9 +1034,33 @@ describe("primitives: return to hand / deck", () => {
     const ids = ["first", "second", "third"].map((alias) => h.s.inst(alias).instanceId);
     await h.fx.returnToHand(ids);
     expect(h.events.filter((event) => event.kind === "cardsMoved")).toEqual([
-      { kind: "cardsMoved", from: "deck", to: "hand", seat: 0, handAddition: "transfer", instanceIds: [ids[0]] },
-      { kind: "cardsMoved", from: "various", to: "hand", seat: 1, handAddition: "transfer", instanceIds: [ids[1]] },
-      { kind: "cardsMoved", from: "deck", to: "hand", seat: 0, handAddition: "transfer", instanceIds: [ids[2]] },
+      {
+        kind: "cardsMoved",
+        from: "deck",
+        fromSeat: 0,
+        to: "hand",
+        seat: 0,
+        handAddition: "transfer",
+        instanceIds: [ids[0]],
+      },
+      {
+        kind: "cardsMoved",
+        from: "trash",
+        fromSeat: 1,
+        to: "hand",
+        seat: 1,
+        handAddition: "transfer",
+        instanceIds: [ids[1]],
+      },
+      {
+        kind: "cardsMoved",
+        from: "deck",
+        fromSeat: 0,
+        to: "hand",
+        seat: 0,
+        handAddition: "transfer",
+        instanceIds: [ids[2]],
+      },
     ]);
   });
 
@@ -978,7 +1069,15 @@ describe("primitives: return to hand / deck", () => {
     const id = h.s.inst("staged").instanceId;
     await h.fx.returnToHand([id], { silent: true });
     expect(h.events.filter((event) => event.kind === "cardsMoved")).toEqual([
-      { kind: "cardsMoved", from: "deck", to: "hand", seat: 1, handAddition: "staging", instanceIds: [id] },
+      {
+        kind: "cardsMoved",
+        from: "deck",
+        fromSeat: 1,
+        to: "hand",
+        seat: 1,
+        handAddition: "staging",
+        instanceIds: [id],
+      },
     ]);
     expect(h.subTriggerFires.some((entry) => entry.event === "whenEffectAddsToHand")).toBe(false);
   });
@@ -1038,18 +1137,33 @@ describe("primitives: return to hand / deck", () => {
     await h.fx.returnToDeck(returned, { toTop: false });
 
     expect(h.events.filter((event) => event.kind === "cardsMoved")).toEqual([
-      expect.objectContaining({
-        instanceIds: [h.s.inst("mineOne").instanceId, h.s.inst("mineTwo").instanceId],
+      {
+        kind: "cardsMoved",
+        instanceIds: [returned[0]],
+        from: "trash",
+        fromSeat: 0,
         to: DECK_BOTTOM,
         seat: 0,
-        cardIds: [DIGIMON, TAMER],
-      }),
-      expect.objectContaining({
-        instanceIds: [h.s.inst("theirs").instanceId],
+        cardIds: [DIGIMON],
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [returned[1]],
+        from: "trash",
+        fromSeat: 1,
         to: DECK_BOTTOM,
         seat: 1,
         cardIds: [OPTION],
-      }),
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [returned[2]],
+        from: "trash",
+        fromSeat: 0,
+        to: DECK_BOTTOM,
+        seat: 0,
+        cardIds: [TAMER],
+      },
     ]);
   });
 
@@ -1930,7 +2044,16 @@ describe("primitives: placeUnder / link", () => {
     expect(h.state.players[0]!.trash.map(({ instanceId }) => instanceId)).toEqual(
       expect.arrayContaining(selections.map(({ instanceId }) => instanceId)),
     );
-    expect(h.events.filter(({ kind }) => kind === "cardsMoved")).toHaveLength(1);
+    expect(h.events.filter(({ kind }) => kind === "cardsMoved")).toEqual(
+      selections.map(({ hostPermanentId, instanceId }) => ({
+        kind: "cardsMoved",
+        instanceIds: [instanceId],
+        from: "digivolutionCards",
+        fromSeat: 0,
+        fromHost: { permanentId: hostPermanentId, hostCardId: DIGIMON },
+        to: "trash",
+      })),
+    );
     expect(h.subTriggerFires[0]?.event).toBe("onDigivolutionCardsDiscardedBatch");
   });
 
@@ -2220,13 +2343,26 @@ describe("primitives: placeUnder / link", () => {
       const attachedIds = withAttached ? [h.s.inst("attached").instanceId] : [];
       const expectedAdded = [ids[0]!, ...attachedIds, ids[1]!];
       const existingId = h.s.inst("existing").instanceId;
+      const materialHostId = h.s.perm("tamer").permanentId;
       expect(
         (await h.fx.placeMixedMaterialsUnder?.(h.s.perm("dest").permanentId, ids))?.map((card) => card.instanceId),
       ).toEqual(ids);
       expect(h.s.perm("dest").stack.map((card) => card.instanceId)).toEqual([...expectedAdded, existingId]);
       expect(h.state.players[0]!.battleArea).toHaveLength(1);
       expect(h.state.players[0]!.trash).toHaveLength(0);
-      expect(h.events).toEqual([{ kind: "cardsMoved", instanceIds: expectedAdded, from: "various", to: "battleArea" }]);
+      const placement = { to: "battleArea", placedUnder: { permanentId: h.s.perm("dest").permanentId } };
+      expect(h.events).toEqual([
+        { kind: "cardsMoved", instanceIds: [ids[0]], from: "trash", fromSeat: 0, ...placement },
+        ...attachedIds.map((instanceId) => ({
+          kind: "cardsMoved",
+          instanceIds: [instanceId],
+          from: "digivolutionCards",
+          fromSeat: 0,
+          fromHost: { permanentId: materialHostId, hostCardId: TAMER },
+          ...placement,
+        })),
+        { kind: "cardsMoved", instanceIds: [ids[1]], from: "battleArea", fromSeat: 0, ...placement },
+      ]);
       expect(h.subTriggerFires).toHaveLength(1);
       expect(h.subTriggerFires[0]?.payload).toMatchObject({
         addedDigivolutionCardInstanceIds: expectedAdded,
@@ -3480,6 +3616,7 @@ describe("Primitives completeness guard (no declared-but-unassigned methods)", (
     leaveEffectResolution: true,
     announceEffect: true,
     announceEffectOption: true,
+    announceEffectClauseAdvanced: true,
     link: true,
     linkCostReductionUsed: true,
     materialSave: true,
@@ -3729,5 +3866,75 @@ describe("primitives: resolveCardEffect / useOptionFromHand (BT26 gap fix)", () 
     } finally {
       unregisterCard(FAKE_CARD_ID);
     }
+  });
+});
+
+describe("movement origin narration", () => {
+  it("groups discards by hand owner while preserving the requested order", async () => {
+    const h = harness({
+      board: {
+        0: {
+          hand: [
+            { card: DIGIMON, as: "first" },
+            { card: TAMER, as: "last" },
+          ],
+        },
+        1: { hand: [{ card: OPTION, as: "middle" }] },
+      },
+    });
+    const ids = ["first", "middle", "last"].map((alias) => h.s.inst(alias).instanceId);
+    await h.fx.trash(ids);
+    expect(h.events.filter((event) => event.kind === "cardsMoved")).toEqual([
+      {
+        kind: "cardsMoved",
+        instanceIds: [ids[0]],
+        cardIds: [DIGIMON],
+        artIds: [DIGIMON],
+        seat: 0,
+        from: "hand",
+        fromSeat: 0,
+        to: "trash",
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [ids[1]],
+        cardIds: [OPTION],
+        artIds: [OPTION],
+        seat: 1,
+        from: "hand",
+        fromSeat: 1,
+        to: "trash",
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [ids[2]],
+        cardIds: [TAMER],
+        artIds: [TAMER],
+        seat: 0,
+        from: "hand",
+        fromSeat: 0,
+        to: "trash",
+      },
+    ]);
+    expect(h.state.players[0]!.trash.map((card) => card.instanceId)).toEqual([ids[0], ids[2]]);
+    expect(h.state.players[1]!.trash.map((card) => card.instanceId)).toEqual([ids[1]]);
+  });
+
+  it("returns an ordinary security card without marking a security check or exposing its identity", async () => {
+    const h = harness({ board: { 1: { security: [{ card: DIGIMON, as: "hidden" }] } } });
+    const id = h.s.inst("hidden").instanceId;
+    await h.fx.returnToHand([id]);
+    expect(h.events.filter((event) => event.kind === "cardsMoved")).toEqual([
+      {
+        kind: "cardsMoved",
+        instanceIds: [id],
+        from: "security",
+        fromSeat: 1,
+        to: "hand",
+        seat: 1,
+        handAddition: "transfer",
+      },
+    ]);
+    expect(h.state.players[1]!.hand.map((card) => card.instanceId)).toEqual([id]);
   });
 });

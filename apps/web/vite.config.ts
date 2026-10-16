@@ -40,6 +40,67 @@ export default defineConfig({
     },
   },
   test: {
+    projects: [
+      {
+        extends: true,
+        test: { name: "story-ui", include: ["src/story/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "deck-providers", include: ["src/deckProviders/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "card-language", include: ["src/screens/cardLanguage/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "client-errors-ui", include: ["src/clientErrors/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "inspector-sources", include: ["src/game/arenaInspectorSources.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "dp-hint", include: ["src/game/piece/PermanentDpDeltaHint.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: {
+          name: "default",
+          exclude: [
+            ...configDefaults.exclude,
+            "e2e/**",
+            "src/screens/cardLanguage/**/*.test.tsx",
+            "src/clientErrors/**/*.test.tsx",
+            "src/story/**/*.test.tsx",
+            "src/design/tokenArt/**/*.test.tsx",
+            "src/screens/community/**/*.test.tsx",
+            "src/game/arenaInspectorSources.test.tsx",
+            "src/game/piece/PermanentDpDeltaHint.test.tsx",
+            "src/game/log/**/*.test.tsx",
+            "src/deckProviders/**/*.test.tsx",
+          ],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "token-art",
+          include: ["src/design/tokenArt/**/*.test.tsx"],
+          environment: "jsdom",
+        },
+      },
+      {
+        extends: true,
+        test: { name: "community-ui", include: ["src/screens/community/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "match-log-ui", include: ["src/game/log/**/*.test.tsx"], environment: "jsdom" },
+      },
+    ],
     exclude: [...configDefaults.exclude, "e2e/**"],
     setupFiles: [
       "./test/scenarioHarness/setupJsdomPolyfills.ts",

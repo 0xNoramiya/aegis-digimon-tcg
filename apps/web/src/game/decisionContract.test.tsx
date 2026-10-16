@@ -35,6 +35,7 @@ const OPTION_CONSUMERS: Record<DecisionOptionKey, string | null> = {
   differentColors: "screen/model/decisionView.ts",
   distinctCardIds: "screen/model/decisionView.ts",
   distinctNames: "screen/model/decisionView.ts",
+  allowedTargetCombinations: "screen/model/decisionView.ts",
   selectionContext: "trackingArrow.ts",
   orderDestination: "overlay/choice/DecisionOverlay.tsx",
   choices: "overlay/choice/DecisionOverlay.tsx",

@@ -5,6 +5,8 @@ node_modules
 tools
 !tools/deploy
 !tools/deploy/*.mjs
+!tools/translations
+!tools/translations/*.mjs
 docs
 internal-docs
 .local

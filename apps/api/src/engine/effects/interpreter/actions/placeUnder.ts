@@ -541,7 +541,7 @@ export async function runPlaceUnder(
     scopedCandidates,
     undefined,
     ctx.ask,
-    action.blind === true ? undefined : scopedCandidates.map((candidate) => candidate.instanceId),
+    action.blind === true ? [] : scopedCandidates.map((candidate) => candidate.instanceId),
   );
   rememberPlacedUnder(ctx, chosen);
   // `asDigiXrosMaterial: true` marks placed cards as DigiXros materials for the host Digimon.

@@ -4,7 +4,11 @@
  */
 export const SERIES_CHANNEL = "series" as const;
 
-export type SeriesClientMessage = { action: "chooseTurnOrder"; goFirst: boolean } | { action: "leave" };
+export type SeriesClientMessage =
+  | { action: "chooseTurnOrder"; goFirst: boolean }
+  | { action: "leave" }
+  | { action: "offerRematch" }
+  | { action: "answerRematch"; accept: boolean };
 
 /** Unicast. The token is the seat's only claim on its place in the next game's room. */
 export interface SeriesSeatMessage {

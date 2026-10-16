@@ -9,6 +9,7 @@ import { Switch } from "../../../design/primitives";
 import { SEQUENTIAL_PACING_ENABLED } from "../../../features";
 import { useTranslation, type TranslationKey } from "../../../i18n";
 import { setAutoHatchEnabled, useAutoHatch } from "../../autoHatch";
+import { setEffectConfirmationHoldEnabled, useEffectConfirmationHold } from "../../effectConfirmationHold";
 import { setHandAutoSortEnabled, useHandAutoSort } from "../../handAutoSort";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../../noticeDuration";
 import { EFFECT_SPEEDS, getEffectSpeed, setEffectSpeed, type EffectSpeed } from "../../pacing";
@@ -26,6 +27,7 @@ export function ArenaBoardSettings() {
   const textScale = useTextScale();
   const handAutoSort = useHandAutoSort();
   const autoHatch = useAutoHatch();
+  const effectConfirmationHold = useEffectConfirmationHold();
   const effectPromptPosition = useEffectPromptPosition();
   const noticeDuration = useNoticeDuration();
   const [effectSpeed, setEffectSpeedChoice] = useState<EffectSpeed>(getEffectSpeed);
@@ -118,6 +120,14 @@ export function ArenaBoardSettings() {
             ))}
           </select>
           <small id={`${titleId}-notice-duration-desc`}>{t("settings.noticeDurationDesc")}</small>
+        </div>
+        <div className="game-arena-settings__row">
+          <Switch
+            checked={effectConfirmationHold}
+            label={t("settings.effectConfirmationHold")}
+            description={t("settings.effectConfirmationHoldDesc")}
+            onChange={setEffectConfirmationHoldEnabled}
+          />
         </div>
         <div className="game-arena-settings__row">
           <Switch

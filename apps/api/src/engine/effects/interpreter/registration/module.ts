@@ -28,7 +28,6 @@ import {
   detectAllowDigiXrosMaterialsFromTrash,
   engageActivatedEffect,
   executeActivatedEffect,
-  executeDeleteEffect,
   isIntrinsicDigisorptionMarker,
   overclockActivatedEffect,
   registerBlastDigivolveFromEffects,
@@ -190,7 +189,9 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
   const definition = getCardDefinition(cardId);
   const overclockTrait = synthesizedOverclockTrait(compiled, definition);
   if (declaresUnimplementedEngageKeyword(compiled)) effects.push(engageActivatedEffect());
-  if (declaresExecuteKeyword(compiled)) effects.push(executeActivatedEffect(), executeDeleteEffect());
+  if (declaresExecuteKeyword(compiled)) {
+    effects.push(executeActivatedEffect());
+  }
   // Vortex can be granted dynamically by another permanent (for example BT26-045, P-241,
   // and BT21-095). Install the conditional trigger on every compiled Digimon so a live grant
   // receives the same end-of-turn attack scheduling as a printed keyword. The condition inside

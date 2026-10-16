@@ -343,7 +343,7 @@
 @media (width < 768px) {
   .board-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions > button {
     width: 100%;
-    grid-column: 1 / -1;
+    grid-column: auto;
     max-width: none;
   }
 }
@@ -376,8 +376,8 @@
 }
 
 /* A phone activation prompt stays clear of the permanent whose effect asks
-   (useSourceClearPlacement). Its height is capped to the room beside that card; the
-   question and clause scroll, and the answers stay in view. */
+   (useSourceClearPlacement). It keeps its bottom dock and its height is capped to the
+   room under that card; the question and clause scroll, and the answers stay in view. */
 @media (width < 768px), (height < 520px) and (orientation: landscape) {
   .game-modal__panel.effect-prompt-family[data-effect-activation="true"][data-source-clear][data-prompt-surface]:not(
       [data-prompt-dragged]
@@ -393,12 +393,6 @@
     top: auto !important;
     bottom: max(var(--ds-space-4), env(safe-area-inset-bottom, 0px)) !important;
   }
-  .game-modal__panel.effect-prompt-family[data-effect-activation="true"][data-source-clear="above"][data-prompt-surface]:not(
-      [data-prompt-dragged]
-    ) {
-    top: var(--effect-prompt-source-top) !important;
-    bottom: auto !important;
-  }
   .game-modal__panel.effect-prompt-family[data-effect-activation="true"][data-source-clear][data-prompt-surface]
     .decision-overlay__header {
     flex: 0 1 auto;
@@ -408,16 +402,20 @@
   }
 }
 
-/* Once moved, activation prompts use viewport coordinates while retaining their responsive size. */
-.game-modal__panel.effect-prompt-family[data-effect-activation="true"][data-prompt-dragged="true"][data-prompt-surface] {
+/* Once moved, activation prompts and the board rail use viewport coordinates while
+   retaining their responsive size. */
+.game-modal__panel.effect-prompt-family[data-effect-activation="true"][data-prompt-dragged="true"][data-prompt-surface],
+.board-prompt[data-prompt-surface][data-variant][data-prompt-dragged="true"] {
   top: var(--effect-prompt-drag-top) !important;
   left: var(--effect-prompt-drag-left) !important;
   right: auto !important;
   bottom: auto !important;
+  max-width: calc(100vw - var(--ds-space-8)) !important;
   translate: none !important;
 }
 
-.decision-overlay__move-handle {
+.decision-overlay__move-handle,
+.board-prompt__move-handle {
   display: grid;
   place-items: center;
   flex: none;
@@ -434,11 +432,14 @@
   user-select: none;
 }
 .decision-overlay__move-handle:hover,
-.decision-overlay__move-handle:focus-visible {
+.decision-overlay__move-handle:focus-visible,
+.board-prompt__move-handle:hover,
+.board-prompt__move-handle:focus-visible {
   opacity: 1;
   background: var(--ds-fill);
 }
-.decision-overlay__move-handle:active {
+.decision-overlay__move-handle:active,
+.board-prompt__move-handle:active {
   cursor: grabbing;
 }
 
@@ -448,8 +449,69 @@
   min-height: 2.75rem;
   padding-right: 3rem !important;
 }
-.decision-overlay__move-handle {
+.decision-overlay__move-handle,
+.board-prompt__move-handle {
   position: absolute;
   top: 0;
   right: 0;
+}
+.board-prompt[data-prompt-surface] .board-prompt__move-handle {
+  top: 0;
+  right: 0;
+  z-index: 1;
+}
+.board-prompt[data-prompt-surface] .board-prompt__heading {
+  position: relative;
+  min-height: 2.75rem;
+  padding-right: 3rem;
+}
+
+.board-prompt__toggle-text {
+  min-height: 32px;
+  padding: var(--ds-space-1) 0;
+  border: 0;
+  background: none;
+  color: var(--ds-accent);
+  font: 600 var(--ds-text-xs) / 1.3 var(--ds-font-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+@media (width < 768px), (height < 520px) and (orientation: landscape) {
+  .board-prompt.combat-prompt[data-prompt-surface][data-variant="field-selection"] {
+    padding: var(--ds-space-3) !important;
+  }
+  .board-prompt.combat-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__text {
+    font-size: var(--ds-text-sm);
+    line-height: 1.3;
+  }
+  .board-prompt.combat-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__eyebrow {
+    font-size: var(--ds-text-xs);
+  }
+  .board-prompt.combat-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions > button {
+    min-height: 36px;
+    padding: var(--ds-space-1) var(--ds-space-2);
+    font-size: var(--ds-text-xs);
+    line-height: 1.25;
+    gap: var(--ds-space-1);
+  }
+  .board-prompt.combat-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions > button svg {
+    width: 16px;
+    height: 16px;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"][data-text-hidden] {
+    grid-template-areas:
+      "art heading"
+      "art detail"
+      "actions actions";
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"][data-text-hidden]:has(
+      .board-prompt__budget
+    ) {
+    grid-template-areas:
+      "art heading"
+      "art detail"
+      "budget budget"
+      "actions actions";
+  }
 }

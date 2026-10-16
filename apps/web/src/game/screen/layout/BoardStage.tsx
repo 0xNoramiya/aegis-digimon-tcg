@@ -24,7 +24,7 @@ import { createPortal } from "react-dom";
 import type { GameState, Permanent, PlayerState, Seat } from "@aegis/shared";
 import type { RevealedZones } from "../model/gameOutcome";
 import { canAttackPlayerWith, canAttackWith, otherSeat } from "../../boardModel";
-import { type LogLine } from "../../matchLog";
+import type { LogLine } from "@/game/log/LogEntry";
 import { intents } from "../../../net/intents";
 import { EndTurnDialog } from "./EndTurnDialog";
 import { useEndTurnConfirmation } from "../hooks/useEndTurnConfirmation";
@@ -55,7 +55,8 @@ import type { boardActions } from "../boardActions";
 import type { matchIntents } from "../matchIntents";
 import type { actionGuards } from "../model/actionGuards";
 import { AttackArrowLayer } from "./AttackArrowLayer";
-import { FieldEffectsIndicator, readFieldEffects } from "./FieldEffectsIndicator";
+import { FieldEffectsIndicator } from "./FieldEffectsIndicator";
+import { readFieldEffects } from "@/game/readFieldEffects";
 import { BattleZones } from "./BattleZones";
 import { BoardBurstLayer } from "./BoardBurstLayer";
 import { DragGhost } from "./DragGhost";
@@ -72,6 +73,7 @@ import { Sidebar } from "./Sidebar";
 import { TurnBanner } from "./TurnBanner";
 import { ViewerBattleRow } from "./ViewerBattleRow";
 import { ViewerPiles } from "./ViewerPiles";
+import { EffectConfirmButton } from "../../EffectConfirmButton";
 import { useBreedingTransferOrigins } from "../../breedingTransfer";
 import { useFieldShatterOrigins } from "../../fieldShatter";
 
@@ -258,9 +260,10 @@ export function BoardStage({
   const endTurnDialog = endTurnConfirmation.open ? (
     <EndTurnDialog onConfirm={endTurnConfirmation.confirm} onClose={endTurnConfirmation.cancel} />
   ) : null;
-  const opponentName = opponent.displayName || t("game.opponent");
+  const opponentName =
+    opponent.displayName || (spectating ? t("log.player", { n: opponent.seat + 1 }) : t("game.opponent"));
   // A spectator watches from one player's seat but is not that player.
-  const viewerName = spectating ? viewer.displayName || t("game.you") : t("chat.you");
+  const viewerName = spectating ? viewer.displayName || t("log.player", { n: viewer.seat + 1 }) : t("chat.you");
   const { shownViewer, shownOpponent, breedingViewer, breedingOpponent } = seats;
   const surrenderDialog = overlays.surrenderConfirmOpen ? (
     <SurrenderDialog
@@ -324,6 +327,7 @@ export function BoardStage({
           style={{
             ...({
               "--arena-raising-width": `${layout.arenaRaisingWidth}px`,
+              "--arena-field-pile-width": `${layout.arenaPileWidth}px`,
               "--arena-sideline-basis-width": `${layout.arenaSidelineBasisWidth}px`,
             } as CSSProperties),
             flex: 1,
@@ -335,6 +339,8 @@ export function BoardStage({
           <OpponentBar
             spectating={spectating}
             spectatorCode={!state.gameOver ? state.spectatorCode : undefined}
+            spectatorNamesJson={!spectating ? state.players[viewerSeat]?.spectatorNamesJson : undefined}
+            anonymousSpectatorCount={state.players[viewerSeat]?.anonymousSpectatorCount}
             onResetScenario={onResetScenario}
             timer={
               (state.series?.bestOf ?? 1) > 1 ? (
@@ -347,7 +353,7 @@ export function BoardStage({
               ) : undefined
             }
             handStripRef={anchors.opponentHandStrip}
-            opponentName={opponent.displayName || t("game.opponent")}
+            opponentName={opponentName}
             opponentAvatarId={opponent.avatarId}
             opponentBotPersonaId={opponent.botPersonaId}
             viewerSeat={viewerSeat}
@@ -407,6 +413,9 @@ export function BoardStage({
                 onDismissRejection={cues.dismissRejection}
                 timeWarning={timeWarning}
                 onHold={cues.holdNarration}
+                confirmation={
+                  cues.effectAwaitingConfirmation ? <EffectConfirmButton onConfirm={cues.confirmEffect} /> : undefined
+                }
               />
             ) : null}
           </div>
@@ -482,12 +491,18 @@ export function BoardStage({
             <FieldEffectsIndicator
               json={shownOpponent.fieldEffectsJson}
               ownField={false}
-              playerNames={[shownState.players[0]?.displayName ?? "", shownState.players[1]?.displayName ?? ""]}
+              playerNames={[
+                shownState.players[0]?.displayName || t("log.player", { n: 1 }),
+                shownState.players[1]?.displayName || t("log.player", { n: 2 }),
+              ]}
             />
             <FieldEffectsIndicator
               json={shownViewer.fieldEffectsJson}
               ownField
-              playerNames={[shownState.players[0]?.displayName ?? "", shownState.players[1]?.displayName ?? ""]}
+              playerNames={[
+                shownState.players[0]?.displayName || t("log.player", { n: 1 }),
+                shownState.players[1]?.displayName || t("log.player", { n: 2 }),
+              ]}
             />
             <BattleZones
               opponentFieldEffects={readFieldEffects(shownOpponent.fieldEffectsJson).length > 0}
@@ -611,7 +626,7 @@ export function BoardStage({
             onMoveHandCard={handDock.onMoveHandCard}
             reorderDropBeforeInstanceId={handDock.reorderDropBeforeInstanceId}
             timer={state.matchTimer ? <MatchTimer state={state} seat={viewerSeat} /> : undefined}
-            playerName={viewer.displayName || t("game.you")}
+            playerName={spectating ? viewerName : viewer.displayName || t("game.you")}
             playerAvatarId={viewer.avatarId}
             playerBotPersonaId={viewer.botPersonaId}
             actingLabel={actingPlateKeys.viewer ? t(actingPlateKeys.viewer) : undefined}

@@ -322,6 +322,10 @@ describe.each(PHONE_VIEWPORTS)("long prompts on a phone at $name", (viewport) =>
     );
     const rail = screen.getByTestId("board-prompt");
     expect(within(rail).getByText(clause)).toBeTruthy();
+    fireEvent.click(within(rail).getByRole("button", { name: "Hide effect" }));
+    expect(within(rail).queryByText(clause)).toBeNull();
+    fireEvent.click(within(rail).getByRole("button", { name: "View effect" }));
+    expect(within(rail).getByText(clause)).toBeTruthy();
     const endSelection = within(rail).getByRole("button", { name: /end selection/i });
     expect(endSelection.closest(".board-prompt__actions")).not.toBeNull();
     expectScrolls(rail, "y", viewport);

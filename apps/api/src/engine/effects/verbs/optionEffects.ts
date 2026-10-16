@@ -1,3 +1,4 @@
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import {
   CardKind,
   Permanent,
@@ -73,6 +74,7 @@ export function createOptionEffectsVerbs(pc: PrimitivesContext) {
     if (engine.fireSubTrigger) {
       await engine.fireSubTrigger("whenTrashedFromDeck", {
         trashedFromDeckCardId: cardId,
+        ...(instanceId === undefined ? {} : { trashedFromDeckInstanceId: instanceId }),
         ...(byEffectCardId !== undefined ? { trashedFromDeckByEffectCardId: byEffectCardId } : {}),
       });
     }
@@ -313,7 +315,8 @@ export function createOptionEffectsVerbs(pc: PrimitivesContext) {
       engine.emit({
         kind: "cardsMoved",
         instanceIds: [resolvingCard.instanceId],
-        from: "various",
+        from: CardMovePosition.RESOLVING_OPTION.value,
+        fromSeat: usedOwner.seat,
         to: Zone.Trash,
         optionUsed: true,
       });

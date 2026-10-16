@@ -31,7 +31,7 @@ describe("bot match client projections", () => {
       warning.mockRestore();
     }
   });
-  it.each([262603, 262614])(
+  it.each([262605, 262606])(
     "keeps later draws private after recovery in a BT26 Abbadomon mirror (seed %i)",
     async (seed) => {
       const source = ALL_FAMOUS_DECKS.find((deck) => deck.deckVersion === "bt26-dgo-2026-09-05-2-abbadomon@1");
@@ -54,7 +54,7 @@ describe("bot match client projections", () => {
       const moves = result.events!.filter((event) => event.kind === "cardsMoved");
       expect(
         moves.some((recovery, recoveryIndex) => {
-          if (recovery.from !== "various" || recovery.to !== "hand") return false;
+          if (recovery.from !== "trash" || recovery.to !== "hand") return false;
           const discardIndex = moves.findIndex(
             (move, index) =>
               index > recoveryIndex &&

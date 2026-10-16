@@ -5,6 +5,8 @@
  * must agree on it.
  */
 export interface AegisJoinOptions {
+  storyBattleId?: string;
+  storyGuestToken?: string;
   allowRollback?: boolean;
   spectator?: boolean;
   displayName: string;

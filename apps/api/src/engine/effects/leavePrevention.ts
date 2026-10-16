@@ -41,6 +41,7 @@ export interface LeavePreventionHost {
    * `resolveLeaveReplacementBody`), so each reaction reaches the players as a separate effect.
    */
   resolveInsteadBody?<T>(replacement: ReplacementSubscription, ctx: EffectContext, body: () => Promise<T>): Promise<T>;
+  resolvePreventBody?<T>(body: () => Promise<T>): Promise<T>;
   /** Let the affected player order simultaneous non-preventing and preventing leave reactions. */
   orderReplacements?(replacements: ReplacementSubscription[], seat: Seat): Promise<OrderedReplacements>;
   /**
@@ -100,6 +101,7 @@ export async function consultLeavePrevention(
      */
     insteadOnly?: boolean;
     keywordPreventions?: { interruptsEffect: boolean };
+    holdTriggered?: boolean;
     reentryGuard: { activeReplacementKeys: Set<string> };
   },
 ): Promise<Set<string>> {
@@ -275,13 +277,16 @@ export async function consultLeavePrevention(
       if (repl.mode === "instead") {
         if (repl.oncePerTurnKey !== undefined && host.oncePerTurnFired?.(repl.oncePerTurnKey)) continue;
         opts.reentryGuard.activeReplacementKeys.add(activationKey);
+        let activated: boolean | void;
         try {
-          await (host.resolveInsteadBody?.(repl, ctx, () => repl.apply(ctx)) ?? repl.apply(ctx));
+          activated = await (host.resolveInsteadBody?.(repl, ctx, () => repl.apply(ctx)) ?? repl.apply(ctx));
         } finally {
           opts.reentryGuard.activeReplacementKeys.delete(activationKey);
         }
         const relocated = host.permanentById(leavingId) === undefined;
-        if (repl.oncePerTurnKey !== undefined) host.markOncePerTurnFired?.(repl.oncePerTurnKey);
+        if (activated !== false && repl.oncePerTurnKey !== undefined) {
+          host.markOncePerTurnFired?.(repl.oncePerTurnKey);
+        }
         if (relocated) {
           prevented.add(leavingId);
           break;
@@ -350,16 +355,20 @@ export async function consultLeavePrevention(
         // Keep the public target visible while a nested prevention prompt is open. The
         // original target decision may belong to the opponent and is intentionally
         // private, but the permanent it selected is public game state by this point.
-        did = await repl.preventCheck(
-          {
-            ...ctx,
-            affectedPermanentIds: protectedIds,
-            onActivationChosen: () => {
-              if (repl.oncePerTurnKey !== undefined) host.markOncePerTurnFired?.(repl.oncePerTurnKey);
+        const preventBody = () =>
+          repl.preventCheck(
+            {
+              ...ctx,
+              affectedPermanentIds: protectedIds,
+              onActivationChosen: () => {
+                if (repl.oncePerTurnKey !== undefined) host.markOncePerTurnFired?.(repl.oncePerTurnKey);
+              },
             },
-          },
-          leavingId,
-        );
+            leavingId,
+          );
+        did = await (opts.holdTriggered === true && host.resolvePreventBody !== undefined
+          ? host.resolvePreventBody(preventBody)
+          : preventBody());
       } finally {
         opts.reentryGuard.activeReplacementKeys.delete(activationKey);
       }

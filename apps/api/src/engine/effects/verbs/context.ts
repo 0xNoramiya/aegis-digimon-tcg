@@ -60,6 +60,7 @@ function createContextState(engine: PrimitivesEngine) {
   const effectSeatStack: Seat[] = [];
   const effectSourceKindsStack: string[][] = [];
   const effectSourcePermanentIdStack: (string | undefined)[] = [];
+  const effectTargetsEmittedStack: Set<string>[] = [];
   /**
    * Tell the client that a keyword paid to prevent `saved`'s deletion. These keywords resolve
    * through a plain decision and then a silent board change, so without this the viewer sees
@@ -215,6 +216,7 @@ function createContextState(engine: PrimitivesEngine) {
     effectSeatStack,
     effectSourceKindsStack,
     effectSourcePermanentIdStack,
+    effectTargetsEmittedStack,
     emitDeletionPrevented,
     currentHandAddProvenance,
     digiXrosZoneExpansions,

@@ -166,6 +166,7 @@ export interface ContinuousPrimitives {
   ): void;
   /** Treat a permanent as another level only while matching DNA requirements. */
   grantDnaLevel(permanentId: string, level: number, opts?: { intoNames?: string[]; continuous?: boolean }): void;
+  orderDnaMaterials?(materialPermanentIds: string[], resultInstanceId: string): string[] | undefined;
   /** Pure legality check used before offering an effect-driven DNA result. */
   canDnaDigivolve?(
     materialPermanentIds: string[],

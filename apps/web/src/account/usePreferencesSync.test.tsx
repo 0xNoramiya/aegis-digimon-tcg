@@ -1,3 +1,5 @@
+import { getCardImageLanguage } from "@/screens/cardLanguage/getCardImageLanguage";
+import { setCardImageLanguage } from "@/screens/cardLanguage/setCardImageLanguage";
 // @vitest-environment jsdom
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { useState, type ReactNode } from "react";
@@ -227,4 +229,13 @@ it("backfills this device's favorite decks to an account without any", async () 
   const update = echoUpdates({});
   renderSync("account-1");
   await waitFor(() => expect(update).toHaveBeenCalledWith(expect.objectContaining({ favoriteDeckIds: ["custom-3"] })));
+});
+
+it("loads the account card image language and saves changes", async () => {
+  vi.spyOn(accountApi, "preferences").mockResolvedValue({ cardImageLanguage: "ja" });
+  const save = echoUpdates({ cardImageLanguage: "ja" });
+  renderSync("language-account");
+  await waitFor(() => expect(getCardImageLanguage()).toBe("ja"));
+  act(() => setCardImageLanguage("ko"));
+  await waitFor(() => expect(save).toHaveBeenCalledWith(expect.objectContaining({ cardImageLanguage: "ko" })));
 });

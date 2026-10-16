@@ -1,6 +1,6 @@
 {
   "name": "@aegis/api",
-  "version": "1.26.0-beta",
+  "version": "1.31.0-beta",
   "private": true,
   "description": "Aegis authoritative game server: Node + TypeScript + Colyseus. Owns 100% of game state and rules.",
   "type": "module",
@@ -45,6 +45,7 @@
     "typecheck:tests": "GOMEMLIMIT=1GiB tsc --noEmit -p tsconfig.tests.json --singleThreaded"
   },
   "dependencies": {
+    "@2toad/profanity": "^3.3.0",
     "@aegis/shared": "workspace:*",
     "@colyseus/redis-driver": "^0.18.3",
     "@colyseus/redis-presence": "^0.18.5",
@@ -52,12 +53,14 @@
     "@colyseus/ws-transport": "^0.18.3",
     "colyseus": "^0.18.8",
     "express": "^5.2.1",
+    "naughty-words": "^1.2.0",
     "nodemailer": "^7.0.13",
     "obscenity": "^0.4.6",
     "pg": "^8.23.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/naughty-words": "^1.2.3",
     "@types/node": "^26.6.2",
     "@types/nodemailer": "^7.0.12",
     "@types/pg": "^8.23.1",

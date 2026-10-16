@@ -1,12 +1,16 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { I18nContext } from "@/i18n/I18nContext";
+import { translator } from "@/i18n/translator";
+import { getCardDefinition } from "@aegis/shared/cards/registry";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import {
   BoardAlliancePrompt,
   BoardBlockPrompt,
   BoardOptionalPrompt,
+  BoardPromptRail,
   BoardSelectionRail,
   BoardSourceHostPrompt,
   OpponentSelectingPill,
@@ -14,9 +18,24 @@ import {
 import { CardOpenerProvider } from "./cardLinks";
 import { Hand } from "./piece";
 
+it("translates a board selection's resolving clause with its source card", async () => {
+  const clause = getCardDefinition("LM-034")!.effectText!.split("\n")[1]!;
+  const { container } = render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <BoardPromptRail variant="selection" label="Select a card" prompt="Select a card" clause={clause} art="LM-034">
+        <button type="button">Confirm</button>
+      </BoardPromptRail>
+    </I18nContext.Provider>,
+  );
+  await waitFor(() =>
+    expect(container.querySelector(".board-prompt__clause")?.textContent).toContain("蓝色/红色数码宝贝卡牌"),
+  );
+});
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 const noop = () => {};
@@ -57,6 +76,44 @@ describe("BoardSelectionRail", () => {
     cardTop = 570;
     fireEvent(window, new Event("resize"));
     expect(rail.style.getPropertyValue("--decision-hand-clearance")).toBe(`${window.innerHeight - 570}px`);
+  });
+
+  it("starts expanded on mobile and restores the full effect when resized to desktop", () => {
+    const media = { matches: true, addEventListener: vi.fn<() => void>(), removeEventListener: vi.fn<() => void>() };
+    vi.stubGlobal("matchMedia", () => media);
+    const onConfirm = vi.fn<() => void>();
+    renderIn(
+      <BoardSelectionRail
+        fieldSelection
+        prompt="Choose a Digimon."
+        clause="Delete one opposing Digimon."
+        min={0}
+        max={1}
+        pickCount={1}
+        canConfirm
+        onConfirm={onConfirm}
+        onNoSelection={noop}
+      />,
+    );
+    expect(screen.getByText("Delete one opposing Digimon.")).toBeTruthy();
+    expect(screen.getByText("Choose a Digimon.")).toBeTruthy();
+    expect(screen.getByText("1 selected of 0–1")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Hide effect" }).getAttribute("aria-expanded")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Hide effect" }));
+    expect(screen.queryByText("Delete one opposing Digimon.")).toBeNull();
+    expect(screen.getByRole("button", { name: "Move effect prompt" }).closest(".board-prompt__heading")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
+    expect(onConfirm).toHaveBeenCalledOnce();
+    expect(screen.getByRole("button", { name: "View effect" }).getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(screen.getByRole("button", { name: "View effect" }));
+    expect(screen.getByText("Delete one opposing Digimon.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Hide effect" }));
+    media.matches = false;
+    fireEvent(window, new Event("resize"));
+    expect(screen.getByText("Delete one opposing Digimon.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Hide effect" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "View effect" })).toBeNull();
+    expect(screen.getByTestId("board-prompt").hasAttribute("data-text-hidden")).toBe(false);
   });
 
   it("shows the server's own prompt and the running count", () => {
@@ -222,7 +279,7 @@ describe("board prompt scrim", () => {
 });
 
 describe("BoardSelectionRail board view", () => {
-  it("shows the field effect without an expand or collapse action", () => {
+  it("always shows the full field effect on desktop without a collapse control", () => {
     const { container } = renderIn(
       <BoardSelectionRail
         fieldSelection
@@ -613,4 +670,80 @@ describe("Return to decision position", () => {
     expect(control.style.getPropertyValue("--decision-return-left")).toBe("240px");
     expect(control.style.getPropertyValue("--decision-return-top")).toBe("532px");
   });
+});
+
+describe("board prompt move handle", () => {
+  function pointer(element: Element, type: string, x: number, y: number) {
+    act(() => {
+      element.dispatchEvent(
+        new PointerEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+          pointerId: 1,
+          pointerType: "touch",
+          clientX: x,
+          clientY: y,
+        }),
+      );
+    });
+  }
+
+  it("drags the selection rail to viewport coordinates without confirming", () => {
+    const onConfirm = vi.fn<() => void>();
+    renderIn(
+      <BoardSelectionRail
+        prompt="Select 1 card."
+        min={1}
+        max={1}
+        pickCount={1}
+        canConfirm
+        onConfirm={onConfirm}
+        onNoSelection={noop}
+      />,
+    );
+    const rail = screen.getByTestId("board-prompt");
+    vi.spyOn(rail, "getBoundingClientRect").mockImplementation(() => {
+      const left = Number.parseFloat(rail.style.getPropertyValue("--effect-prompt-drag-left")) || 100;
+      const top = Number.parseFloat(rail.style.getPropertyValue("--effect-prompt-drag-top")) || 200;
+      return new DOMRect(left, top, 320, 200);
+    });
+    const handle = screen.getByRole("button", { name: "Move effect prompt" });
+    expect(rail.dataset.promptDragged).toBeUndefined();
+    pointer(handle, "pointerdown", 120, 220);
+    pointer(handle, "pointermove", 220, 320);
+    pointer(handle, "pointerup", 220, 320);
+    expect(rail.dataset.promptDragged).toBe("true");
+    expect(rail.style.getPropertyValue("--effect-prompt-drag-left")).toBe("200px");
+    expect(rail.style.getPropertyValue("--effect-prompt-drag-top")).toBe("300px");
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+});
+
+it.each(["selection", "optional", "sourceHost"] as const)("highlights the active passage in the %s prompt", (kind) => {
+  const props = {
+    clause: "Delete a Digimon. Then, this Digimon may attack.",
+    clauseEmphasis: "Then, this Digimon may attack.",
+  };
+  const { container } = renderIn(
+    kind === "selection" ? (
+      <BoardSelectionRail
+        {...props}
+        fieldSelection
+        prompt="Select a target"
+        min={0}
+        max={1}
+        pickCount={0}
+        canConfirm={false}
+        onConfirm={noop}
+        onNoSelection={noop}
+      />
+    ) : kind === "optional" ? (
+      <BoardOptionalPrompt {...props} onUse={noop} onDecline={noop} />
+    ) : (
+      <BoardSourceHostPrompt {...props} />
+    ),
+  );
+  expect(container.querySelector(".board-prompt__clause")?.textContent).toBe(props.clause);
+  expect(container.querySelector(".decision-overlay__effect-step")?.textContent).toBe(props.clauseEmphasis);
 });

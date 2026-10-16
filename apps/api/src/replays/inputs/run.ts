@@ -238,6 +238,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
             displayName: `Seat ${input.seat}`,
             deck: structuredClone(input.deck),
             ...input.deckRules,
+            betaBattleMode: true,
           }),
         );
         return undefined;

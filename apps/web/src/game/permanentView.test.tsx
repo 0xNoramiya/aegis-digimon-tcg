@@ -285,6 +285,8 @@ describe("PermanentView DP changes", () => {
     expect(screen.getByRole("button", { name: /Darkdramon, 14,000 DP, DP \+2K/i })).toBeTruthy();
     expect(screen.getByText("14K")).toBeTruthy();
     expect(screen.getByTitle(/DP \+2K/)).toBeTruthy();
+    expect(document.querySelector(".game-dp-delta-badge")).toBeNull();
+    expect(screen.getByTitle(/DP \+2K/).closest('[data-dp-layout="stacked"]')).toBeTruthy();
   });
 
   it("Discord 1555271931203158056: shows a Sukamon-rewritten Machinedramon as Sukamon at 3K DP", () => {

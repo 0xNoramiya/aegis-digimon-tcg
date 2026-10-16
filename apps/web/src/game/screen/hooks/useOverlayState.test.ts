@@ -4,6 +4,8 @@ import { describe, expect, it } from "vitest";
 import { Phase, type DecisionRequest, type GameState } from "@aegis/shared";
 import { Side } from "../../side";
 import { useOverlayState } from "./useOverlayState";
+import { GameState as MutableGameState, PendingDecision, CombatWindow } from "@aegis/shared/schema/GameState";
+import { useBoardSelection } from "@/game/screen/hooks/useBoardSelection";
 
 type Props = { decision: DecisionRequest | undefined; state: GameState };
 
@@ -16,9 +18,13 @@ function decisionFor(decisionId: string): DecisionRequest {
 }
 
 function renderOverlays() {
-  return renderHook((props: Props) => useOverlayState({ ...props, clearSel: () => undefined }), {
-    initialProps: { decision: undefined, state: gameState() } as Props,
-  });
+  return renderHook(
+    (props: Props) =>
+      useOverlayState({ ...props, clearSel: () => undefined, clearDeclarations: () => undefined, viewerSeat: 0 }),
+    {
+      initialProps: { decision: undefined, state: gameState() } as Props,
+    },
+  );
 }
 
 // Issue #55: every opponent phase, decision and turn change closed the card the
@@ -61,5 +67,74 @@ describe("windows that only show cards", () => {
     act(() => result.current.setCardMenu({ permanentId: "mine-1", side: Side.Viewer, x: 0, y: 0 }));
     rerender({ decision: undefined, state: gameState({ phase: Phase.End }) });
     expect(result.current.cardMenu).toBeNull();
+  });
+});
+
+describe("pinned hand inspection during opponent actions", () => {
+  function renderInspection() {
+    const initialProps: Props = {
+      decision: undefined,
+      state: Object.assign(new MutableGameState(), { phase: Phase.Main, turnSeat: 1 }),
+    };
+    return renderHook(
+      (props: Props) => {
+        const selection = useBoardSelection({ state: props.state, viewerSeat: 0 });
+        useOverlayState({
+          ...props,
+          clearSel: selection.clearSel,
+          clearDeclarations: selection.clearDeclarations,
+          viewerSeat: 0,
+        });
+        return selection;
+      },
+      { initialProps },
+    );
+  }
+
+  it.each([
+    { label: "phase change", phase: Phase.End },
+    { label: "turn change", turnSeat: 0 },
+    {
+      label: "opponent decision",
+      pendingDecision: Object.assign(new PendingDecision(), { decisionId: "opponent", seat: 1 }),
+    },
+    { label: "combat window", combatWindow: Object.assign(new CombatWindow(), { kind: "block", seat: 1 }) },
+  ])("preserves inspection and clears declarations through $label", (change) => {
+    const { result, rerender } = renderInspection();
+    act(() => {
+      result.current.setHandPreview("reading-card");
+      result.current.setHandSel("declared-card");
+    });
+    rerender({
+      decision: undefined,
+      state: Object.assign(
+        new MutableGameState(),
+        { phase: Phase.Main, turnSeat: 1 },
+        {
+          phase: change.phase ?? Phase.Main,
+          turnSeat: change.turnSeat ?? 1,
+          pendingDecision: change.pendingDecision,
+          combatWindow: change.combatWindow,
+        },
+      ),
+    });
+    expect(result.current.handPreview).toBe("reading-card");
+    expect(result.current.handSel).toBeNull();
+  });
+
+  it.each(["decision", "gameOver", "combatWindow"])("closes inspection for the viewer's %s", (reason) => {
+    const { result, rerender } = renderInspection();
+    act(() => result.current.setHandPreview("reading-card"));
+    rerender({
+      decision: reason === "decision" ? decisionFor("viewer-decision") : undefined,
+      state: Object.assign(new MutableGameState(), {
+        phase: Phase.Main,
+        turnSeat: 1,
+        gameOver: reason === "gameOver",
+        combatWindow:
+          reason === "combatWindow" ? Object.assign(new CombatWindow(), { kind: "block", seat: 0 }) : undefined,
+      }),
+    });
+    expect(result.current.handPreview).toBeNull();
   });
 });

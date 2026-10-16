@@ -1,4 +1,454 @@
 {
+  "releases.1.31.0-beta.summary": {
+    "en": "A match clock with a shared time bank, held DP reductions in the card inspector, and fixes for card effects, story decks and the inspector.",
+    "pt-BR": "Relógio de partida com reserva de tempo compartilhada, reduções de DP retidas no inspetor de cartas e correções em efeitos de cartas, decks da história e no inspetor.",
+    "es": "Reloj de partida con reserva de tiempo compartida, reducciones de DP retenidas en el inspector de cartas y correcciones en efectos de cartas, mazos de historia y el inspector.",
+    "it": "Timer di partita con riserva di tempo condivisa, riduzioni di DP trattenute nell’ispettore delle carte e correzioni a effetti delle carte, mazzi della storia e ispettore."
+  },
+  "releases.1.31.0-beta.feature.clock": {
+    "en": "Match clocks use a shared time bank with decision windows, and expired decisions receive legal responses.",
+    "pt-BR": "Os relógios usam uma reserva de tempo com janelas de decisão, e decisões expiradas recebem respostas válidas.",
+    "es": "Los relojes usan una reserva de tiempo con ventanas de decisión y las decisiones vencidas reciben respuestas válidas.",
+    "it": "I timer usano una riserva di tempo con finestre decisionali e le decisioni scadute ricevono risposte valide."
+  },
+  "releases.1.31.0-beta.feature.heldDp": {
+    "en": "The card inspector shows DP reductions that wait while a Digimon is protected from opposing effects.",
+    "pt-BR": "O inspetor de cartas mostra reduções de DP que aguardam enquanto um Digimon está protegido de efeitos do oponente.",
+    "es": "El inspector de cartas muestra las reducciones de DP que esperan mientras un Digimon está protegido de efectos rivales.",
+    "it": "L’ispettore delle carte mostra le riduzioni di DP in attesa mentre un Digimon è protetto dagli effetti avversari."
+  },
+  "releases.1.31.0-beta.fix.securityAttack": {
+    "en": "Shakamon no longer turns positive Security Attack into negative, so SeitenGokuumon checks the right number of security cards.",
+    "pt-BR": "Shakamon não transforma mais Security Attack positivo em negativo, e SeitenGokuumon verifica o número certo de cartas de segurança.",
+    "es": "Shakamon ya no convierte el Security Attack positivo en negativo, así que SeitenGokuumon revisa el número correcto de cartas de seguridad.",
+    "it": "Shakamon non trasforma più il Security Attack positivo in negativo, quindi SeitenGokuumon controlla il numero corretto di carte sicurezza."
+  },
+  "releases.1.31.0-beta.fix.cards": {
+    "en": "Fixed Omekamon plays during Engage attacks, Lamiamon’s digivolution, Kazuki & Itsuki’s Link sources, Chuumon’s inherited effect after simultaneous deletion, and Zephagamon’s unsuspend trigger.",
+    "pt-BR": "Corrigidos o uso de Omekamon em ataques com Engage, a digievolução de Lamiamon, as fontes de Link de Kazuki & Itsuki, o efeito herdado de Chuumon após deleção simultânea e o gatilho de Zephagamon ao desvirar.",
+    "es": "Corregidos el uso de Omekamon en ataques con Engage, la digievolución de Lamiamon, las fuentes de Link de Kazuki & Itsuki, el efecto heredado de Chuumon tras una eliminación simultánea y el disparador de Zephagamon al enderezarse.",
+    "it": "Corretti l’uso di Omekamon negli attacchi con Engage, la digievoluzione di Lamiamon, le fonti di Link di Kazuki & Itsuki, l’effetto ereditato di Chuumon dopo un’eliminazione simultanea e l’attivazione di Zephagamon quando si raddrizza."
+  },
+  "releases.1.31.0-beta.fix.effects": {
+    "en": "Fixed deletion follow-up timing, battle-win trigger ordering, Apocalymon material choices, and once-per-turn breeding cost reductions.",
+    "pt-BR": "Corrigida a ordem dos efeitos após deleções e vitórias em batalha, a seleção de materiais de Apocalymon e as reduções de custo uma vez por turno na criação.",
+    "es": "Corregidos el orden de efectos tras eliminaciones y victorias en batalla, la selección de materiales de Apocalymon y las reducciones de coste una vez por turno en crianza.",
+    "it": "Corretti l’ordine degli effetti dopo eliminazioni e vittorie in battaglia, la selezione dei materiali di Apocalymon e le riduzioni di costo una volta per turno nell’area di allevamento."
+  },
+  "releases.1.31.0-beta.fix.inspector": {
+    "en": "The card inspector lists digivolution, Assembly and DigiXros requirements under Card details.",
+    "pt-BR": "O inspetor de cartas mostra os requisitos de digievolução, Assembly e DigiXros em Detalhes da carta.",
+    "es": "El inspector de cartas muestra los requisitos de digievolución, Assembly y DigiXros en Detalles de la carta.",
+    "it": "L’ispettore delle carte mostra i requisiti di digievoluzione, Assembly e DigiXros in Dettagli della carta."
+  },
+  "releases.1.31.0-beta.fix.story": {
+    "en": "Story battle decks are shuffled for each match.",
+    "pt-BR": "Os decks das batalhas da história são embaralhados a cada partida.",
+    "es": "Los mazos de las batallas de historia se barajan en cada partida.",
+    "it": "I mazzi delle battaglie della storia vengono mescolati a ogni partita."
+  },
+  "releases.1.31.0-beta.fix.layout": {
+    "en": "Fixed battlefield layout flickering in zoomed browser windows.",
+    "pt-BR": "Corrigida a oscilação do layout do campo em janelas do navegador com zoom.",
+    "es": "Corregido el parpadeo del campo en ventanas del navegador con zoom.",
+    "it": "Corretto lo sfarfallio del campo nelle finestre del browser con zoom."
+  },
+  "releases.1.31.0-beta.fix.bots": {
+    "en": "Bots evaluate Alliance support consistently and training matches can resolve Assembly and DigiXros material choices.",
+    "pt-BR": "Os bots avaliam o apoio de Alliance de forma consistente, e partidas de treinamento conseguem resolver a seleção de materiais de Assembly e DigiXros.",
+    "es": "Los bots evalúan el apoyo de Alliance de forma coherente y las partidas de entrenamiento pueden resolver la selección de materiales de Assembly y DigiXros.",
+    "it": "I bot valutano il supporto di Alliance in modo coerente e le partite di addestramento possono risolvere la selezione dei materiali di Assembly e DigiXros."
+  },
+  "releases.1.30.1-beta.summary": {
+    "en": "Fixes for story progress and for Assembly and DigiXros materials with different names.",
+    "pt-BR": "Correções no progresso da história e nos materiais de Assembly e DigiXros com nomes diferentes.",
+    "es": "Correcciones en el progreso de la historia y en los materiales de Assembly y DigiXros con nombres diferentes.",
+    "it": "Correzioni al progresso della storia e ai materiali di Assembly e DigiXros con nomi diversi."
+  },
+  "releases.1.30.1-beta.fix.story": {
+    "en": "Fixed story progress failing to load or save.",
+    "pt-BR": "Corrigido o progresso da história que não carregava nem salvava.",
+    "es": "Corregido el progreso de la historia que no se cargaba ni se guardaba.",
+    "it": "Corretto il progresso della storia che non veniva caricato né salvato."
+  },
+  "releases.1.30.1-beta.fix.differentNames": {
+    "en": "Assembly and DigiXros recipes that need different names now accept a card that is also treated as another name, such as BT8-061 Thundermon for EX13-063 PrinceMamemon, when each material can use its own name.",
+    "pt-BR": "Receitas de Assembly e DigiXros que exigem nomes diferentes agora aceitam uma carta que também é tratada como outro nome, como BT8-061 Thundermon para EX13-063 PrinceMamemon, quando cada material pode usar um nome próprio.",
+    "es": "Las recetas de Assembly y DigiXros que exigen nombres diferentes ahora aceptan una carta que también se trata como otro nombre, como BT8-061 Thundermon para EX13-063 PrinceMamemon, cuando cada material puede usar un nombre propio.",
+    "it": "Le ricette di Assembly e DigiXros che richiedono nomi diversi ora accettano una carta considerata anche con un altro nome, come BT8-061 Thundermon per EX13-063 PrinceMamemon, quando ogni materiale può usare un nome proprio."
+  },
+  "releases.1.30.0-beta.summary": {
+    "en": "Liberator story battles, more deck collections, and fixes for deck loading and digivolution choices.",
+    "pt-BR": "Batalhas da história de Liberator, mais coleções de decks e correções no carregamento de decks e nas opções de evolução.",
+    "es": "Batallas de la historia de Liberator, más colecciones de mazos y correcciones en la carga de mazos y las opciones de digievolución.",
+    "it": "Battaglie della storia di Liberator, più collezioni di mazzi e correzioni al caricamento dei mazzi e alle opzioni di digievoluzione."
+  },
+  "releases.1.30.0-beta.feature.story": {
+    "en": "Play 30 Liberator story encounters across 12 characters, with progression for guests and signed-in players.",
+    "pt-BR": "Jogue 30 encontros da história de Liberator com 12 personagens, com progressão para visitantes e jogadores conectados.",
+    "es": "Juega 30 encuentros de la historia de Liberator con 12 personajes y progresión para invitados y jugadores con sesión iniciada.",
+    "it": "Gioca 30 incontri della storia di Liberator con 12 personaggi e progressione per ospiti e giocatori connessi."
+  },
+  "releases.1.30.0-beta.feature.collections": {
+    "en": "DigiLab now synchronizes every released set it provides, with up to 25 archetypes per set and three recent lists per archetype.",
+    "pt-BR": "O DigiLab agora sincroniza todos os sets lançados que disponibiliza, com até 25 arquétipos por set e três listas recentes por arquétipo.",
+    "es": "DigiLab ahora sincroniza todos los sets publicados que ofrece, con hasta 25 arquetipos por set y tres listas recientes por arquetipo.",
+    "it": "DigiLab ora sincronizza tutti i set pubblicati disponibili, con fino a 25 archetipi per set e tre liste recenti per archetipo."
+  },
+  "releases.1.30.0-beta.fix.presets": {
+    "en": "Restored built-in historical decks for collections outside DigiLab coverage, including selection, copying, and card list viewing.",
+    "pt-BR": "Restauradas as listas históricas fixas para coleções sem cobertura do DigiLab, incluindo seleção, cópia e visualização das cartas.",
+    "es": "Restaurados los mazos históricos incluidos para colecciones sin cobertura de DigiLab, con selección, copia y vista de cartas.",
+    "it": "Ripristinati i mazzi storici inclusi per le collezioni non coperte da DigiLab, con selezione, copia e visualizzazione delle carte."
+  },
+  "releases.1.30.0-beta.fix.digivolve": {
+    "en": "Digivolution choices now hide alternate routes whose requirements the base Digimon does not meet.",
+    "pt-BR": "As opções de evolução agora ocultam rotas alternativas cujos requisitos o Digimon base não atende.",
+    "es": "Las opciones de digievolución ahora ocultan rutas alternativas cuyos requisitos no cumple el Digimon base.",
+    "it": "Le opzioni di digievoluzione ora nascondono i percorsi alternativi i cui requisiti non sono soddisfatti dal Digimon base."
+  },
+  "releases.1.30.0-beta.fix.provider": {
+    "en": "Fixed the Play screen reporting DigiLab as unavailable even after deck synchronization completed.",
+    "pt-BR": "Corrigida a tela Jogar que mostrava o DigiLab como indisponível mesmo após a sincronização dos decks.",
+    "es": "Corregida la pantalla Jugar que mostraba DigiLab como no disponible incluso tras completar la sincronización de mazos.",
+    "it": "Corretta la schermata Gioca che mostrava DigiLab come non disponibile anche dopo la sincronizzazione dei mazzi."
+  },
+  "releases.1.29.0-beta.summary": {
+    "en": "DigiLab tournament decks, preferred card languages, clearer card inspection, and more reliable effect resolution.",
+    "pt-BR": "Decks de torneios do DigiLab, idioma preferido das cartas, inspeção mais clara e resolução de efeitos mais confiável.",
+    "es": "Mazos de torneos de DigiLab, idioma preferido de las cartas, inspección más clara y resolución de efectos más fiable.",
+    "it": "Mazzi da torneo DigiLab, lingua preferita delle carte, dettagli più leggibili e risoluzione degli effetti più affidabile."
+  },
+  "releases.1.29.0-beta.feature.digilab": {
+    "en": "Browse tournament archetypes and recent deck lists from DigiLab, refreshed weekly, and select a deck without waiting for another provider request.",
+    "pt-BR": "Explore arquétipos de torneios e listas recentes do DigiLab, atualizados semanalmente, e selecione um deck sem esperar uma nova consulta ao provedor.",
+    "es": "Explora arquetipos de torneos y listas recientes de DigiLab, actualizados semanalmente, y selecciona un mazo sin esperar otra consulta al proveedor.",
+    "it": "Esplora archetipi da torneo e liste recenti di DigiLab, aggiornati ogni settimana, e seleziona un mazzo senza attendere un’altra richiesta al servizio."
+  },
+  "releases.1.29.0-beta.feature.languages": {
+    "en": "Choose a preferred card language, apply it to existing decks, and read official Japanese or Korean card text where available. Missing translations retain English.",
+    "pt-BR": "Escolha o idioma preferido das cartas, aplique-o aos decks existentes e leia textos oficiais em japonês ou coreano quando disponíveis. Traduções ausentes permanecem em inglês.",
+    "es": "Elige el idioma preferido de las cartas, aplícalo a tus mazos y lee textos oficiales en japonés o coreano cuando estén disponibles. Las traducciones ausentes se mantienen en inglés.",
+    "it": "Scegli la lingua preferita delle carte, applicala ai mazzi esistenti e leggi i testi ufficiali giapponesi o coreani quando disponibili. Le traduzioni mancanti restano in inglese."
+  },
+  "releases.1.29.0-beta.feature.inspector": {
+    "en": "Read stacked cards more easily with clearer source cards, active keywords and protections, a compact mobile layout, and field bonuses explained by their relevant effect clause.",
+    "pt-BR": "Leia cartas com fontes de digievolução com mais facilidade: fontes, palavras-chave e proteções mais claras, layout compacto no celular e bônus de campo explicados pela cláusula correspondente.",
+    "es": "Lee cartas con fuentes de digievolución más fácilmente: fuentes, palabras clave y protecciones más claras, diseño compacto en móvil y bonificaciones de campo explicadas por su cláusula correspondiente.",
+    "it": "Leggi più facilmente le carte con fonti di digievoluzione: fonti, parole chiave e protezioni più chiare, layout compatto su mobile e bonus sul terreno spiegati dalla relativa clausola."
+  },
+  "releases.1.29.0-beta.feature.negamon": {
+    "en": "Playing an eligible card from hand now offers the choice to use Negamon’s breeding effect, play normally, or cancel.",
+    "pt-BR": "Ao jogar uma carta elegível da mão, agora você pode escolher usar o efeito do Negamon na criação, jogar normalmente ou cancelar.",
+    "es": "Al jugar una carta válida de la mano, ahora puedes elegir usar el efecto de Negamon en crianza, jugar normalmente o cancelar.",
+    "it": "Quando giochi una carta idonea dalla mano, puoi scegliere di usare l’effetto di Negamon nell’area di allevamento, giocare normalmente o annullare."
+  },
+  "releases.1.29.0-beta.fix.rules": {
+    "en": "Corrected discarded-card and end-of-turn trigger timing, repeated Impmon activations, Takemikazuchi memory resets, Royal Knights of the Purge source order, and LordKnightmon X bonuses for later arrivals.",
+    "pt-BR": "Corrigidos o momento dos efeitos de cartas descartadas e de fim de turno, ativações repetidas do Impmon, o ajuste de memória do Takemikazuchi, a ordem das fontes de Royal Knights of the Purge e os bônus do LordKnightmon X para cartas que entram depois.",
+    "es": "Corregidos el momento de los efectos de cartas descartadas y de fin de turno, las activaciones repetidas de Impmon, el ajuste de memoria de Takemikazuchi, el orden de fuentes de Royal Knights of the Purge y los bonos de LordKnightmon X para cartas que entran después.",
+    "it": "Corretti i tempi degli effetti delle carte scartate e di fine turno, le attivazioni ripetute di Impmon, la memoria di Takemikazuchi, l’ordine delle fonti di Royal Knights of the Purge e i bonus di LordKnightmon X per le carte entrate successivamente."
+  },
+  "releases.1.29.0-beta.fix.hidden": {
+    "en": "Blind selections from an opponent’s hand now keep previously revealed cards hidden, including DarknessBagramon’s placement effect.",
+    "pt-BR": "Escolhas às cegas na mão adversária agora mantêm ocultas as cartas reveladas anteriormente, incluindo o efeito de colocar cartas do DarknessBagramon.",
+    "es": "Las elecciones a ciegas de la mano rival ahora mantienen ocultas las cartas reveladas anteriormente, incluido el efecto de colocación de DarknessBagramon.",
+    "it": "Le scelte alla cieca dalla mano avversaria mantengono nascoste anche le carte rivelate in precedenza, incluso l’effetto di collocamento di DarknessBagramon."
+  },
+  "releases.1.29.0-beta.fix.battlefield": {
+    "en": "Battle rows remain accessible when crowded, preserve the two-lane preference on short desktop screens, and no longer go blank during resizing.",
+    "pt-BR": "As áreas de batalha continuam acessíveis quando cheias, preservam a preferência por duas faixas em telas de computador com pouca altura e não ficam mais em branco ao redimensionar.",
+    "es": "Las áreas de batalla siguen siendo accesibles cuando están llenas, conservan la preferencia de dos filas en pantallas de escritorio de poca altura y ya no quedan en blanco al cambiar de tamaño.",
+    "it": "Le aree di battaglia restano accessibili quando affollate, rispettano la preferenza per due corsie sugli schermi desktop poco alti e non diventano più vuote durante il ridimensionamento."
+  },
+  "releases.1.29.0-beta.fix.artwork": {
+    "en": "Added English alternate art for BT27-035 and BT27-103, plus Japanese BT27/EX14 printings available in the artwork picker.",
+    "pt-BR": "Adicionadas artes alternativas em inglês de BT27-035 e BT27-103, além de versões japonesas de BT27/EX14 disponíveis no seletor de artes.",
+    "es": "Añadidas ilustraciones alternativas en inglés de BT27-035 y BT27-103, además de versiones japonesas de BT27/EX14 disponibles en el selector de ilustraciones.",
+    "it": "Aggiunte illustrazioni alternative inglesi di BT27-035 e BT27-103 e versioni giapponesi di BT27/EX14 disponibili nel selettore delle illustrazioni."
+  },
+  "releases.1.29.0-beta.fix.loading": {
+    "en": "Failed screen downloads now keep the recovery loading state or show a connection message with a reload action instead of a generic crash screen.",
+    "pt-BR": "Falhas ao baixar telas agora mantêm o carregamento de recuperação ou exibem uma mensagem de conexão com opção de recarregar, em vez de uma tela genérica de erro.",
+    "es": "Los fallos al descargar pantallas ahora mantienen la carga de recuperación o muestran un mensaje de conexión con una opción para recargar, en lugar de una pantalla de error genérica.",
+    "it": "Gli errori di download delle schermate mantengono il caricamento di recupero o mostrano un messaggio di connessione con un’opzione per ricaricare, anziché una schermata di errore generica."
+  },
+  "releases.1.29.0-beta.fix.community": {
+    "en": "Published deck names and guides now receive broader multilingual filtering while preserving legitimate official card references.",
+    "pt-BR": "Nomes de decks publicados e guias agora passam por uma filtragem multilíngue mais ampla, preservando referências legítimas a cartas oficiais.",
+    "es": "Los nombres de mazos publicados y las guías ahora tienen un filtrado multilingüe más amplio que conserva las referencias legítimas a cartas oficiales.",
+    "it": "I nomi dei mazzi pubblicati e le guide ora ricevono un filtro multilingue più ampio che preserva i riferimenti legittimi alle carte ufficiali."
+  },
+  "releases.1.29.0-beta.fix.targets": {
+    "en": "Eligible cards appear first in hand/trash choices, including Nokia’s effect, so valid targets remain easy to find on small screens.",
+    "pt-BR": "Cartas elegíveis aparecem primeiro nas escolhas de mão/lixo, incluindo o efeito da Nokia, facilitando encontrar alvos válidos em telas pequenas.",
+    "es": "Las cartas válidas aparecen primero en las elecciones de mano/basura, incluido el efecto de Nokia, para facilitar su selección en pantallas pequeñas.",
+    "it": "Le carte idonee compaiono per prime nelle scelte da mano/scarti, incluso l’effetto di Nokia, rendendo più facile trovare bersagli validi su schermi piccoli."
+  },
+  "releases.1.29.0-beta.fix.bot": {
+    "en": "The bot accounts for effect-based attack redirection when evaluating battles and security attacks.",
+    "pt-BR": "O bot considera o redirecionamento de ataques por efeitos ao avaliar batalhas e ataques à segurança.",
+    "es": "El bot tiene en cuenta la redirección de ataques por efectos al evaluar batallas y ataques a la seguridad.",
+    "it": "Il bot tiene conto degli effetti che reindirizzano gli attacchi quando valuta battaglie e attacchi alla sicurezza."
+  },
+  "releases.1.28.2-beta.summary": {
+    "en": "Corrected colors for BT27 and EX14 beta cards.",
+    "pt-BR": "Cores corrigidas nas cartas beta de BT27 e EX14.",
+    "es": "Colores corregidos en las cartas beta de BT27 y EX14.",
+    "it": "Colori corretti per le carte beta di BT27 ed EX14."
+  },
+  "releases.1.28.2-beta.fix.colors": {
+    "en": "MirageGaogamon: Burst Mode BT27 is blue/black. Barbamon EX14 is purple/red and can digivolve from a red level 5 Digimon for 4 memory.",
+    "pt-BR": "MirageGaogamon: Burst Mode BT27 é azul/preto. Barbamon EX14 é roxo/vermelho e pode evoluir de um Digimon vermelho de nível 5 por 4 de memória.",
+    "es": "MirageGaogamon: Burst Mode BT27 es azul/negro. Barbamon EX14 es morado/rojo y puede digievolucionar de un Digimon rojo de nivel 5 por 4 de memoria.",
+    "it": "MirageGaogamon: Burst Mode BT27 è blu/nero. Barbamon EX14 è viola/rosso e può digievolvere da un Digimon rosso di livello 5 per 4 memoria."
+  },
+  "releases.1.28.1-beta.summary": {
+    "en": "Fixes for card selection, effect indicators, mobile match history, and leaving matches.",
+    "pt-BR": "Correções na seleção de cartas, nos indicadores de efeitos, no histórico de partidas no celular e na saída de partidas.",
+    "es": "Correcciones en la selección de cartas, los indicadores de efectos, el historial de partidas en móvil y la salida de partidas.",
+    "it": "Correzioni alla selezione delle carte, agli indicatori degli effetti, alla cronologia su mobile e all’uscita dalle partite."
+  },
+  "releases.1.28.1-beta.fix.selection": {
+    "en": "Multi-card choices preserve your selected cards when the selection limit is reached, including KingEtemon’s play effect.",
+    "pt-BR": "Escolhas de várias cartas preservam suas seleções ao atingir o limite, incluindo o efeito de jogar cartas do KingEtemon.",
+    "es": "Las elecciones de varias cartas conservan tus selecciones al alcanzar el límite, incluido el efecto de jugar cartas de KingEtemon.",
+    "it": "Le scelte di più carte mantengono le selezioni quando viene raggiunto il limite, incluso l’effetto di KingEtemon che gioca carte."
+  },
+  "releases.1.28.1-beta.fix.indicators": {
+    "en": "UlforceVeedramon EX13 shows its active stack protection badges, and Callismon highlights each effect step.",
+    "pt-BR": "UlforceVeedramon EX13 mostra as pílulas de proteção da stack ativas, e Callismon destaca cada etapa dos seus efeitos.",
+    "es": "UlforceVeedramon EX13 muestra los indicadores de protección de pila activos y Callismon resalta cada paso de sus efectos.",
+    "it": "UlforceVeedramon EX13 mostra gli indicatori di protezione attivi delle carte impilate e Callismon evidenzia ogni fase dei suoi effetti."
+  },
+  "releases.1.28.1-beta.fix.history": {
+    "en": "Profile match history fits narrow screens more reliably.",
+    "pt-BR": "O histórico de partidas no perfil se adapta melhor a telas estreitas.",
+    "es": "El historial de partidas del perfil se adapta mejor a pantallas estrechas.",
+    "it": "La cronologia delle partite nel profilo si adatta meglio agli schermi stretti."
+  },
+  "releases.1.28.1-beta.fix.navigation": {
+    "en": "Confirming departure with the browser Back button now leaves the match correctly.",
+    "pt-BR": "Confirmar a saída pelo botão Voltar do navegador agora encerra sua participação na partida corretamente.",
+    "es": "Confirmar la salida con el botón Atrás del navegador ahora abandona la partida correctamente.",
+    "it": "Confermare l’uscita con il pulsante Indietro del browser ora abbandona correttamente la partita."
+  },
+  "releases.1.28.1-beta.fix.reloads": {
+    "en": "Limit repeated page reloads per client to protect service availability.",
+    "pt-BR": "Limite de recarregamentos repetidos por cliente para proteger a disponibilidade do serviço.",
+    "es": "Límite de recargas repetidas por cliente para proteger la disponibilidad del servicio.",
+    "it": "Limite alle ricariche ripetute per client per proteggere la disponibilità del servizio."
+  },
+  "releases.1.27.0-beta.summary": {
+    "en": "Searchable match history, community deck guides, clearer field information, and fixes to effect resolution.",
+    "pt-BR": "Histórico pesquisável de partidas, guias de decks da comunidade, informações mais claras no campo e correções na resolução de efeitos.",
+    "es": "Historial de partidas con búsqueda, guías de mazos de la comunidad, información más clara en el campo y correcciones en la resolución de efectos.",
+    "it": "Cronologia delle partite con ricerca, guide ai mazzi della community, informazioni più chiare sul campo e correzioni alla risoluzione degli effetti."
+  },
+  "releases.1.27.0-beta.feature.history": {
+    "en": "Search the full match history, grouped by turn, with memory changes and card movements showing their original zones and owners.",
+    "pt-BR": "Pesquise todo o histórico da partida, agrupado por turno, com mudanças de memória e movimentos de cartas mostrando suas zonas e donos de origem.",
+    "es": "Busca en todo el historial de la partida, agrupado por turno, con cambios de memoria y movimientos de cartas que muestran sus zonas y propietarios de origen.",
+    "it": "Cerca nella cronologia completa della partita, raggruppata per turno, con variazioni di memoria e movimenti delle carte che mostrano zone e proprietari di origine."
+  },
+  "releases.1.27.0-beta.feature.guides": {
+    "en": "Write formatted guides for your community decks to explain how to play them.",
+    "pt-BR": "Escreva guias formatados para seus decks da comunidade e explique como jogar com eles.",
+    "es": "Escribe guías con formato para tus mazos de la comunidad y explica cómo jugarlos.",
+    "it": "Scrivi guide formattate per i tuoi mazzi della community e spiega come giocarli."
+  },
+  "releases.1.27.0-beta.feature.field": {
+    "en": "Read larger DP values and clearer field badges, inspect digivolution cards beside card text, and use movable prompts on phones.",
+    "pt-BR": "Leia valores de DP maiores e indicadores mais claros no campo, inspecione cartas de digievolução ao lado do texto e mova as janelas de decisão no celular.",
+    "es": "Lee valores de DP más grandes e indicadores más claros, consulta las cartas de digievolución junto al texto y mueve los paneles de decisión en el móvil.",
+    "it": "Leggi valori DP più grandi e indicatori più chiari, consulta le carte digievoluzione accanto al testo e sposta i pannelli di scelta sul telefono."
+  },
+  "releases.1.27.0-beta.feature.effects": {
+    "en": "Follow effect targets and stat changes with clearer visual feedback and field cards sized for your screen.",
+    "pt-BR": "Acompanhe alvos de efeitos e alterações de atributos com indicações visuais mais claras e cartas no campo dimensionadas para sua tela.",
+    "es": "Sigue los objetivos de efectos y los cambios de atributos con indicaciones visuales más claras y cartas adaptadas a tu pantalla.",
+    "it": "Segui i bersagli degli effetti e le modifiche alle statistiche con indicazioni visive più chiare e carte adattate al tuo schermo."
+  },
+  "releases.1.27.0-beta.fix.rules": {
+    "en": "Correct Execute deletion after digivolution, replacement effect limits after Succession, pending play effects lost through de-digivolution, and Glowing Dawn inherited unsuspend restrictions.",
+    "pt-BR": "Corrige a deleção de Execute após digievolução, limites de efeitos de substituição após Succession, efeitos de entrada pendentes perdidos por de-digievolução e restrições de dessuspensão herdada de Glowing Dawn.",
+    "es": "Corrige la eliminación de Execute tras digievolucionar, los límites de efectos de reemplazo tras Succession, efectos de entrada pendientes perdidos por de-digievolución y las restricciones de reactivación heredada de Glowing Dawn.",
+    "it": "Corregge l’eliminazione di Execute dopo la digievoluzione, i limiti degli effetti sostitutivi dopo Succession, gli effetti di entrata pendenti persi tramite de-digievoluzione e le restrizioni di riattivazione ereditata di Glowing Dawn."
+  },
+  "releases.1.27.0-beta.fix.presentation": {
+    "en": "Keep the hand display synchronized during start-of-turn effects and correct summoning-ring visibility and placement.",
+    "pt-BR": "Mantém a mão sincronizada durante efeitos de início de turno e corrige a visibilidade e a posição do anel de invocação.",
+    "es": "Mantiene la mano sincronizada durante los efectos de inicio de turno y corrige la visibilidad y posición del anillo de invocación.",
+    "it": "Mantiene la mano sincronizzata durante gli effetti di inizio turno e corregge visibilità e posizione dell’anello di evocazione."
+  },
+  "releases.1.26.3-beta.summary": {
+    "en": "Live match browsing, optional deck sharing, more card artwork, and fixes for Option costs and rollback stability.",
+    "pt-BR": "Lista de partidas ao vivo, compartilhamento opcional de decks, mais artes de cartas e correções nos custos de Opções e na estabilidade do rollback.",
+    "es": "Lista de partidas en vivo, intercambio opcional de mazos, más ilustraciones y correcciones en los costes de Opciones y la estabilidad al deshacer jugadas.",
+    "it": "Elenco delle partite in diretta, condivisione facoltativa dei mazzi, nuove illustrazioni e correzioni ai costi delle Opzioni e alla stabilità del ripristino delle mosse."
+  },
+  "releases.1.26.3-beta.feature.spectating": {
+    "en": "Browse live casual matches when both players opt into public listing, or watch a match by code.",
+    "pt-BR": "Veja partidas casuais ao vivo quando ambos os jogadores ativam a listagem pública, ou assista usando um código.",
+    "es": "Explora partidas casuales en vivo cuando ambos jugadores activan la lista pública, o mira una partida mediante un código.",
+    "it": "Sfoglia le partite casuali in diretta quando entrambi i giocatori attivano la visibilità pubblica, oppure guarda una partita tramite codice."
+  },
+  "releases.1.26.3-beta.feature.deckSharing": {
+    "en": "View and copy your opponent’s deck after a match when they allow deck sharing. Account deck sharing is enabled by default and can be disabled in Settings.",
+    "pt-BR": "Veja e copie o deck do oponente após a partida quando ele permite compartilhar. O compartilhamento da conta vem ativado e pode ser desativado nas Configurações.",
+    "es": "Consulta y copia el mazo del rival tras la partida si permite compartirlo. La opción está activada por defecto y se puede desactivar en Ajustes.",
+    "it": "Visualizza e copia il mazzo avversario dopo la partita se il giocatore ne consente la condivisione. La condivisione è attiva per impostazione predefinita e può essere disattivata nelle Impostazioni."
+  },
+  "releases.1.26.3-beta.feature.artwork": {
+    "en": "Choose Korean and Chinese card printings, 65 additional official alternate arts, and custom token artwork stored on your device.",
+    "pt-BR": "Escolha impressões coreanas e chinesas, 65 artes alternativas oficiais adicionais e artes personalizadas para tokens salvas no seu dispositivo.",
+    "es": "Elige impresiones coreanas y chinas, 65 ilustraciones alternativas oficiales adicionales e imágenes personalizadas para fichas guardadas en tu dispositivo.",
+    "it": "Scegli stampe coreane e cinesi, 65 illustrazioni alternative ufficiali aggiuntive e immagini personalizzate per i token salvate sul tuo dispositivo."
+  },
+  "releases.1.26.3-beta.feature.effectReading": {
+    "en": "Enable the Gameplay setting to hold each effect clause in bot matches until you press OK or Enter.",
+    "pt-BR": "Ative a opção de Jogabilidade para manter cada trecho de efeito na tela em partidas contra bots até pressionar OK ou Enter.",
+    "es": "Activa la opción de Juego para mantener cada parte del efecto en pantalla contra bots hasta pulsar OK o Enter.",
+    "it": "Attiva l’opzione di Gioco per mantenere ogni parte dell’effetto sullo schermo nelle partite contro i bot finché non premi OK o Invio."
+  },
+  "releases.1.26.3-beta.feature.profileStats": {
+    "en": "Control match stats visibility directly from your profile. Stats are shown by default unless you turn them off.",
+    "pt-BR": "Controle a visibilidade das estatísticas de partidas diretamente no perfil. Elas são exibidas por padrão até você desativá-las.",
+    "es": "Controla la visibilidad de las estadísticas de partidas desde tu perfil. Se muestran por defecto hasta que las desactives.",
+    "it": "Controlla la visibilità delle statistiche delle partite direttamente dal profilo. Sono visibili per impostazione predefinita finché non le disattivi."
+  },
+  "releases.1.26.3-beta.fix.dualOptions": {
+    "en": "Revealed DUAL cards used as Options now resolve as Options instead of being played as Digimon.",
+    "pt-BR": "Cartas DUAL reveladas usadas como Opções agora resolvem como Opções, em vez de entrarem como Digimon.",
+    "es": "Las cartas DUAL reveladas usadas como Opciones ahora se resuelven como Opciones en lugar de jugarse como Digimon.",
+    "it": "Le carte DUAL rivelate e usate come Opzioni ora si risolvono come Opzioni invece di essere giocate come Digimon."
+  },
+  "releases.1.26.3-beta.fix.costReduction": {
+    "en": "Cost reductions from Armalizamon, Togemon, and Parasaurmon stop applying when their source becomes a digivolution card.",
+    "pt-BR": "Reduções de custo de Armalizamon, Togemon e Parasaurmon deixam de valer quando sua fonte se torna uma carta de digivolução.",
+    "es": "Las reducciones de coste de Armalizamon, Togemon y Parasaurmon dejan de aplicarse cuando su fuente pasa a ser una carta de digievolución.",
+    "it": "Le riduzioni di costo di Armalizamon, Togemon e Parasaurmon cessano quando la fonte diventa una carta di digievoluzione."
+  },
+  "releases.1.26.3-beta.fix.rollback": {
+    "en": "Fixed a server crash after rollback and restored visibility updates for cards added to permanents already on the field.",
+    "pt-BR": "Corrigida uma falha do servidor após rollback e restauradas as atualizações de visibilidade de cartas adicionadas a permanentes já em campo.",
+    "es": "Corregido un fallo del servidor al deshacer jugadas y restauradas las actualizaciones de visibilidad de cartas añadidas a permanentes que ya están en el campo.",
+    "it": "Corretto un arresto del server dopo il ripristino di una mossa e ripristinati gli aggiornamenti di visibilità delle carte aggiunte a permanenti già in campo."
+  },
+  "releases.1.26.3-beta.fix.loading": {
+    "en": "Static media now benefits from browser caching, and supported audio playback uses a smaller lossless sound bank.",
+    "pt-BR": "Arquivos de mídia agora aproveitam o cache do navegador, e a reprodução de áudio compatível usa um banco de sons menor e sem perda de qualidade.",
+    "es": "Los archivos multimedia ahora aprovechan la caché del navegador y la reproducción compatible usa un banco de sonidos más pequeño sin pérdida de calidad.",
+    "it": "I contenuti multimediali ora sfruttano la cache del browser e la riproduzione audio compatibile usa una raccolta di suoni più piccola senza perdita di qualità."
+  },
+  "releases.1.26.2-beta.summary": {
+    "en": "Best-of-three rematches after Bo1, beta badges for unreleased cards, LordKnightmon (X), and card text brought in line with the newest printings and errata.",
+    "pt-BR": "Revanches em melhor de três após partidas Bo1, selos beta para cartas não lançadas, LordKnightmon (X) e textos de cartas alinhados às impressões e erratas mais recentes.",
+    "es": "Revanchas al mejor de tres después de partidas Bo1, insignias beta para cartas no lanzadas, LordKnightmon (X) y textos de cartas alineados con las impresiones y erratas más recientes.",
+    "it": "Rivincite al meglio delle tre dopo le partite Bo1, badge beta per le carte non ancora uscite, LordKnightmon (X) e testi delle carte allineati alle stampe e alle errata più recenti."
+  },
+  "releases.1.26.2-beta.feature.rematch": {
+    "en": "After a casual or private best-of-one match, either player can offer a rematch. If the other player accepts, a best-of-three starts at 0-0 with the same decks, and the loser of the Bo1 picks the turn order.",
+    "pt-BR": "Depois de uma partida casual ou privada em melhor de um, qualquer jogador pode oferecer uma revanche. Se o outro aceitar, começa uma melhor de três em 0-0 com os mesmos decks, e quem perdeu a Bo1 escolhe a ordem dos turnos.",
+    "es": "Después de una partida casual o privada al mejor de uno, cualquier jugador puede ofrecer una revancha. Si el otro acepta, comienza un mejor de tres desde 0-0 con los mismos mazos, y quien perdió la Bo1 elige el orden de turnos.",
+    "it": "Dopo una partita casuale o privata al meglio di una, entrambi i giocatori possono offrire una rivincita. Se l’altro accetta, inizia un meglio delle tre da 0-0 con gli stessi mazzi e chi ha perso la Bo1 sceglie l’ordine dei turni."
+  },
+  "releases.1.26.2-beta.feature.betaBadge": {
+    "en": "Unreleased cards show a Beta badge in the card pool, deck views, and card details, and saved decks that contain them are flagged.",
+    "pt-BR": "Cartas ainda não lançadas exibem um selo Beta no acervo, nas visualizações de deck e nos detalhes da carta, e decks salvos que as contêm são sinalizados.",
+    "es": "Las cartas aún no lanzadas muestran una insignia Beta en la colección, en las vistas de mazo y en los detalles de la carta, y se marcan los mazos guardados que las contienen.",
+    "it": "Le carte non ancora uscite mostrano un badge Beta nella collezione, nelle viste dei mazzi e nei dettagli della carta, e i mazzi salvati che le contengono vengono segnalati."
+  },
+  "releases.1.26.2-beta.feature.lordKnightmon": {
+    "en": "LordKnightmon (X) (BT27-084) returns as a beta card with its base and alternate art.",
+    "pt-BR": "LordKnightmon (X) (BT27-084) volta como carta beta, com a arte original e a alternativa.",
+    "es": "LordKnightmon (X) (BT27-084) vuelve como carta beta, con su arte original y la alternativa.",
+    "it": "LordKnightmon (X) (BT27-084) torna come carta beta, con l’illustrazione originale e quella alternativa."
+  },
+  "releases.1.26.2-beta.fix.cardRules": {
+    "en": "Digital Translator only chooses Digimon named exactly Gallantmon, Sakuyamon or MegaGargomon; Burning Star Crusher always reveals before you choose; Impmon (P-071) battles before its Security effect resolves; Ouryumon and the Dorumon line react only to your own effects; Taiki, Kiriha, & Nene and Hiro Amanokawa draw before gaining memory; and Attack of the Heavy Mobile Digimon! accepts any Cyborg or Machine trait card for its Security cost.",
+    "pt-BR": "Digital Translator só escolhe Digimon chamados exatamente Gallantmon, Sakuyamon ou MegaGargomon; Burning Star Crusher sempre revela antes da escolha; Impmon (P-071) batalha antes de resolver seu efeito de Segurança; Ouryumon e a linha de Dorumon só reagem aos seus próprios efeitos; Taiki, Kiriha, & Nene e Hiro Amanokawa compram antes de ganhar memória; e Attack of the Heavy Mobile Digimon! aceita qualquer carta com traço Cyborg ou Machine como custo de Segurança.",
+    "es": "Digital Translator solo elige Digimon llamados exactamente Gallantmon, Sakuyamon o MegaGargomon; Burning Star Crusher siempre revela antes de elegir; Impmon (P-071) combate antes de resolver su efecto de Seguridad; Ouryumon y la línea de Dorumon solo reaccionan a tus propios efectos; Taiki, Kiriha, & Nene y Hiro Amanokawa roban antes de ganar memoria; y Attack of the Heavy Mobile Digimon! acepta cualquier carta con rasgo Cyborg o Machine como coste de Seguridad.",
+    "it": "Digital Translator sceglie solo Digimon chiamati esattamente Gallantmon, Sakuyamon o MegaGargomon; Burning Star Crusher rivela sempre prima della scelta; Impmon (P-071) combatte prima di risolvere il suo effetto Sicurezza; Ouryumon e la linea di Dorumon reagiscono solo ai tuoi effetti; Taiki, Kiriha, & Nene e Hiro Amanokawa pescano prima di ottenere memoria; e Attack of the Heavy Mobile Digimon! accetta qualsiasi carta con tratto Cyborg o Machine come costo Sicurezza."
+  },
+  "releases.1.26.2-beta.fix.reprints": {
+    "en": "Angewomon, Final Zubagon Punch, Magnamon, and Ice Wall! now show the newest printing’s “until their turn ends” wording, and several cards show newer art that matches their current text.",
+    "pt-BR": "Angewomon, Final Zubagon Punch, Magnamon e Ice Wall! agora exibem o texto “até o fim do turno dele” da impressão mais recente, e várias cartas exibem artes mais novas que correspondem ao texto atual.",
+    "es": "Angewomon, Final Zubagon Punch, Magnamon e Ice Wall! ahora muestran el texto “hasta el final de su turno” de la impresión más reciente, y varias cartas muestran artes más nuevas que coinciden con su texto actual.",
+    "it": "Angewomon, Final Zubagon Punch, Magnamon e Ice Wall! ora mostrano la dicitura “fino alla fine del suo turno” della stampa più recente, e diverse carte mostrano illustrazioni più nuove coerenti con il testo attuale."
+  },
+  "releases.1.26.2-beta.fix.errata": {
+    "en": "Thirteen errata cards now show their corrected text or names, including MarineChimairamon and Lónkhē Adistakto, and six show art that prints the errata.",
+    "pt-BR": "Treze cartas com errata agora exibem o texto ou nome corrigido, incluindo MarineChimairamon e Lónkhē Adistakto, e seis exibem uma arte que já traz a errata.",
+    "es": "Trece cartas con errata ahora muestran su texto o nombre corregido, incluidos MarineChimairamon y Lónkhē Adistakto, y seis muestran un arte que ya incluye la errata.",
+    "it": "Tredici carte con errata ora mostrano il testo o il nome corretto, inclusi MarineChimairamon e Lónkhē Adistakto, e sei mostrano un’illustrazione che riporta l’errata."
+  },
+  "releases.1.26.1-beta.summary": {
+    "en": "Card protection and effect-order fixes, more reliable card inspection, and smoother mobile and bot play.",
+    "pt-BR": "Correções de proteção de cartas e ordem dos efeitos, inspeção de cartas mais confiável e melhorias no celular e nas partidas contra bots.",
+    "es": "Correcciones de protección de cartas y orden de efectos, inspección de cartas más fiable y mejoras en móviles y partidas contra bots.",
+    "it": "Correzioni alla protezione delle carte e all’ordine degli effetti, ispezione delle carte più affidabile e miglioramenti su dispositivi mobili e nelle partite contro i bot."
+  },
+  "releases.1.26.1-beta.fix.neptunemon": {
+    "en": "Neptunemon now requires a new suspension payment for every protection; it no longer creates extra protection without a cost.",
+    "pt-BR": "Neptunemon agora exige um novo pagamento de suspensão a cada proteção; não cria mais proteções extras sem custo.",
+    "es": "Neptunemon ahora exige pagar una nueva suspensión por cada protección; ya no crea protecciones adicionales sin coste.",
+    "it": "Neptunemon ora richiede una nuova sospensione come costo per ogni protezione; non crea più protezioni aggiuntive gratuite."
+  },
+  "releases.1.26.1-beta.fix.inherited": {
+    "en": "Declining a Mother Eater inherited protection no longer spends that copy’s once-per-turn use.",
+    "pt-BR": "Recusar uma proteção herdada de Mother Eater não consome mais o uso por turno daquela cópia.",
+    "es": "Rechazar una protección heredada de Mother Eater ya no consume el uso por turno de esa copia.",
+    "it": "Rifiutare una protezione ereditata di Mother Eater non consuma più l’utilizzo per turno di quella copia."
+  },
+  "releases.1.26.1-beta.fix.priority": {
+    "en": "Effect-directed attacks preserve the priority of pending effects, including Erlangmon interactions.",
+    "pt-BR": "Ataques iniciados por efeitos preservam a prioridade dos efeitos pendentes, incluindo interações com Erlangmon.",
+    "es": "Los ataques iniciados por efectos respetan la prioridad de los efectos pendientes, incluidas las interacciones con Erlangmon.",
+    "it": "Gli attacchi avviati dagli effetti rispettano la priorità degli effetti in attesa, comprese le interazioni con Erlangmon."
+  },
+  "releases.1.26.1-beta.fix.cardRules": {
+    "en": "Corrected ShineGreymon: Ruin Mode’s debuff duration, made Diarbbitmon’s DP-and-battle effect optional, stopped CannonBeemon de-digivolution when no valid target remains, and applied Security Attack reductions to Tamers treated as Digimon.",
+    "pt-BR": "Corrigimos a duração da redução de DP de ShineGreymon: Ruin Mode, tornamos opcional o efeito de DP e batalha de Diarbbitmon, interrompemos a desdigivolução de CannonBeemon quando não há alvo válido e aplicamos reduções de Ataque à Segurança a Tamers tratados como Digimon.",
+    "es": "Corregimos la duración de la reducción de DP de ShineGreymon: Ruin Mode, hicimos opcional el efecto de DP y batalla de Diarbbitmon, detuvimos la desdigievolución de CannonBeemon cuando no quedan objetivos válidos y aplicamos reducciones de Ataque a la Seguridad a Tamers tratados como Digimon.",
+    "it": "Corretta la durata della riduzione dei DP di ShineGreymon: Ruin Mode, reso facoltativo l’effetto di DP e battaglia di Diarbbitmon, interrotta la de-digievoluzione di CannonBeemon quando non restano bersagli validi e applicate le riduzioni di Attacco alla Sicurezza ai Tamer trattati come Digimon."
+  },
+  "releases.1.26.1-beta.fix.dna": {
+    "en": "Manual DNA digivolution is no longer treated as digivolving by an effect.",
+    "pt-BR": "A digivolução DNA manual não é mais tratada como uma digivolução realizada por efeito.",
+    "es": "La digievolución ADN manual ya no se trata como una digievolución realizada por un efecto.",
+    "it": "La digievoluzione DNA manuale non viene più trattata come una digievoluzione effettuata da un effetto."
+  },
+  "releases.1.26.1-beta.fix.inspection": {
+    "en": "Keep hand previews open during opponent actions, inspect inherited effects in breeding, and identify pending deletion effects in trash selections.",
+    "pt-BR": "Mantenha a visualização de cartas da mão durante ações do oponente, inspecione efeitos herdados na criação e identifique efeitos de deleção pendentes nas escolhas do lixo.",
+    "es": "Mantén abiertas las vistas de cartas de la mano durante las acciones del rival, inspecciona efectos heredados en crianza e identifica efectos de eliminación pendientes al elegir cartas de la basura.",
+    "it": "Mantieni aperte le anteprime delle carte in mano durante le azioni avversarie, ispeziona gli effetti ereditati nell’area di allevamento e identifica gli effetti di eliminazione in attesa durante le selezioni dagli scarti."
+  },
+  "releases.1.26.1-beta.fix.mobile": {
+    "en": "Swipe directly over cards to scroll a crowded battlefield on mobile and reach Digimon on the right.",
+    "pt-BR": "Deslize diretamente sobre as cartas para rolar um campo cheio no celular e alcançar os Digimon à direita.",
+    "es": "Desliza el dedo sobre las cartas para desplazar un campo lleno en el móvil y acceder a los Digimon de la derecha.",
+    "it": "Scorri direttamente sulle carte per spostarti su un campo affollato da mobile e raggiungere i Digimon sulla destra."
+  },
+  "releases.1.26.1-beta.fix.limited": {
+    "en": "Released limited-set cards remain eligible in historical decks according to their actual release dates.",
+    "pt-BR": "Cartas já lançadas de coleções limitadas continuam válidas em decks históricos conforme suas datas reais de lançamento.",
+    "es": "Las cartas ya publicadas de colecciones limitadas siguen siendo válidas en mazos históricos según sus fechas reales de lanzamiento.",
+    "it": "Le carte già pubblicate delle espansioni limitate restano valide nei mazzi storici in base alle loro date effettive di uscita."
+  },
+  "releases.1.26.1-beta.fix.bot": {
+    "en": "Bot matches accept preview cards without a separate beta confirmation while keeping the selected deck format.",
+    "pt-BR": "Partidas contra bots aceitam cartas em prévia sem uma confirmação beta separada, mantendo o formato de deck selecionado.",
+    "es": "Las partidas contra bots aceptan cartas en avance sin una confirmación beta adicional y mantienen el formato de mazo seleccionado.",
+    "it": "Le partite contro i bot accettano carte in anteprima senza una conferma beta separata, mantenendo il formato del mazzo selezionato."
+  },
+  "releases.1.26.1-beta.fix.profile": {
+    "en": "Match statistics are visible by default and can be hidden directly from your profile.",
+    "pt-BR": "As estatísticas de partidas ficam visíveis por padrão e podem ser ocultadas diretamente no perfil.",
+    "es": "Las estadísticas de partidas se muestran por defecto y se pueden ocultar directamente desde el perfil.",
+    "it": "Le statistiche delle partite sono visibili per impostazione predefinita e possono essere nascoste direttamente dal profilo."
+  },
   "releases.1.26.0-beta.summary": {
     "en": "Over a dozen card and rules fixes from your reports, a low-clock warning, decision alerts, and a stronger deck builder.",
     "pt-BR": "Mais de uma dúzia de correções de cartas e regras vindas dos seus relatos, aviso de relógio baixo, alertas de decisão e um deck builder mais completo.",
@@ -2326,5 +2776,41 @@
     "pt-BR": "Cartas de segurança viradas para baixo não enviam mais sua identidade para o jogo do oponente.",
     "es": "Las cartas de seguridad boca abajo ya no envían su identidad al juego del oponente.",
     "it": "Le carte di sicurezza a faccia in giù non inviano più la loro identità al gioco dell'avversario."
+  },
+  "releases.1.28.0-beta.summary": {
+    "en": "Five new BT27 and EX14 cards arrive in beta, alongside TCGplayer deck export, spectator privacy controls, and clearer effect decisions.",
+    "pt-BR": "Cinco novas cartas BT27 e EX14 chegam ao beta, junto da exportação de decks para TCGplayer, controles de privacidade de espectadores e decisões de efeitos mais claras.",
+    "es": "Cinco nuevas cartas BT27 y EX14 llegan a la beta, junto con exportación de mazos para TCGplayer, controles de privacidad de espectadores y decisiones de efectos más claras.",
+    "it": "Cinque nuove carte BT27 ed EX14 arrivano in beta, insieme all’esportazione dei mazzi per TCGplayer, ai controlli sulla privacy degli spettatori e a decisioni degli effetti più chiare."
+  },
+  "releases.1.28.0-beta.feature.cards": {
+    "en": "Play MirageGaogamon: Burst Mode (BT27-035), Craniamon (X Antibody) (BT27-070), Alphamon: Ouryuken (BT27-103), VictoryGreymon (EX14-012), and Barbamon (EX14-054). Unreleased EX14 cards now use the beta card pool.",
+    "pt-BR": "Jogue com MirageGaogamon: Burst Mode (BT27-035), Craniamon (X Antibody) (BT27-070), Alphamon: Ouryuken (BT27-103), VictoryGreymon (EX14-012) e Barbamon (EX14-054). As cartas EX14 ainda não lançadas agora usam o cardpool beta.",
+    "es": "Juega con MirageGaogamon: Burst Mode (BT27-035), Craniamon (X Antibody) (BT27-070), Alphamon: Ouryuken (BT27-103), VictoryGreymon (EX14-012) y Barbamon (EX14-054). Las cartas EX14 aún no publicadas ahora usan el conjunto beta.",
+    "it": "Gioca con MirageGaogamon: Burst Mode (BT27-035), Craniamon (X Antibody) (BT27-070), Alphamon: Ouryuken (BT27-103), VictoryGreymon (EX14-012) e Barbamon (EX14-054). Le carte EX14 non ancora uscite ora utilizzano il pool beta."
+  },
+  "releases.1.28.0-beta.feature.export": {
+    "en": "Export deck lists in TCGplayer format for easier deck sharing and shopping.",
+    "pt-BR": "Exporte listas de decks no formato TCGplayer para facilitar o compartilhamento e a compra de cartas.",
+    "es": "Exporta listas de mazos en formato TCGplayer para compartirlos y comprar cartas más fácilmente.",
+    "it": "Esporta le liste dei mazzi nel formato TCGplayer per condividerle e acquistare carte più facilmente."
+  },
+  "releases.1.28.0-beta.feature.spectators": {
+    "en": "Control spectator identity visibility and public match listings, with separate player and spectator chats.",
+    "pt-BR": "Controle a visibilidade da identidade dos espectadores e a listagem pública de partidas, com chats separados para jogadores e espectadores.",
+    "es": "Controla la visibilidad de la identidad de los espectadores y las partidas públicas, con chats separados para jugadores y espectadores.",
+    "it": "Controlla la visibilità dell’identità degli spettatori e delle partite pubbliche, con chat separate per giocatori e spettatori."
+  },
+  "releases.1.28.0-beta.fix.effects": {
+    "en": "Effect prompts preserve the full printed text and highlight the current step. DNA digivolution validates material pairs, and discarded cards animate from their correct origin.",
+    "pt-BR": "Os prompts de efeitos preservam o texto impresso completo e destacam a etapa atual. A digivolução DNA valida os pares de materiais, e as cartas descartadas são animadas a partir da origem correta.",
+    "es": "Los mensajes de efectos conservan el texto impreso completo y resaltan el paso actual. La digievolución DNA valida las parejas de materiales y las cartas descartadas se animan desde su origen correcto.",
+    "it": "I messaggi degli effetti mantengono il testo completo e ne evidenziano il passaggio attuale. La digievoluzione DNA verifica le coppie di materiali e le carte scartate vengono animate dalla loro origine corretta."
+  },
+  "releases.1.28.0-beta.fix.rules": {
+    "en": "Correct Tweetmon and DoGatchmon linking effects and verify Kongou attack restrictions. Improve mobile field selection and remove duplicate keyword badges.",
+    "pt-BR": "Corrige os efeitos de link de Tweetmon e DoGatchmon e verifica as restrições de ataque de Kongou. Melhora a seleção no campo em dispositivos móveis e remove badges de palavras-chave duplicados.",
+    "es": "Corrige los efectos de enlace de Tweetmon y DoGatchmon y verifica las restricciones de ataque de Kongou. Mejora la selección en el campo en móviles y elimina insignias de palabras clave duplicadas.",
+    "it": "Corregge gli effetti di collegamento di Tweetmon e DoGatchmon e verifica le restrizioni di attacco di Kongou. Migliora la selezione sul campo da mobile e rimuove i badge duplicati delle parole chiave."
   }
 }

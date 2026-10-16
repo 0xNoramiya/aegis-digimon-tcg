@@ -647,3 +647,70 @@ describe("personalities", () => {
     }
   });
 });
+
+it.each([false, true])(
+  "only counts an unsuspended Alliance ally against a larger interceptor (suspended=%s)",
+  (suspended) => {
+    const attacker = unit({
+      permanentId: "attacker",
+      dp: 12000,
+      level: 6,
+      keywords: ["Alliance"],
+      canAttackPlayer: true,
+    });
+    const ally = unit({ permanentId: "ally", dp: 2000, level: 3, suspended });
+    const blocker = unit({ permanentId: "blocker", dp: 13000, level: 6, keywords: ["Blocker"] });
+    const state = view({ board: [attacker, ally], opponentBoard: [blocker] });
+    const score = scoreOf(state, "attackPlayer:attacker");
+    expect(score > 0).toBe(!suspended);
+  },
+);
+
+it.each([false, true])("uses the strongest eligible Alliance ally against suspended=%s opponents", (suspended) => {
+  const attacker = unit({
+    permanentId: "attacker",
+    dp: 12000,
+    keywords: ["Alliance"],
+    canAttackPlayer: true,
+    attackablePermanentIds: ["target"],
+  });
+  const weak = unit({ permanentId: "weak", dp: 1000 });
+  const strong = unit({ permanentId: "strong", dp: 4000 });
+  const target = unit({ permanentId: "target", dp: 14000, suspended, keywords: ["Blocker"] });
+  const state = view({ board: [attacker, weak, strong], opponentBoard: [target] });
+  const policy = createEvaluationPolicy({ profile: balanced, seed: 42 });
+  expect(
+    policy.chooseAllianceResponse(state, {
+      kind: "alliancePrompt",
+      permanentId: "attacker",
+      eligibleAllyIds: ["weak", "strong"],
+    }),
+  ).toEqual({ type: "respondAlliance", allyPermanentId: "strong" });
+  expect(scoreOf(state, suspended ? "attackDigimon:attacker:target" : "attackPlayer:attacker")).toBeGreaterThan(0);
+});
+
+it("uses the original Alliance attacker DP for next-turn retaliation", () => {
+  const attacker = unit({ permanentId: "attacker", dp: 12000, keywords: ["Alliance"], canAttackPlayer: true });
+  const ally = unit({ permanentId: "ally", dp: 4000 });
+  const threat = unit({ permanentId: "threat", dp: 14000, suspended: true });
+  const state = view({ board: [attacker, ally], opponentBoard: [threat] });
+  const noRetaliation = { ...balanced, weights: { ...balanced.weights, retaliation: 0 } };
+  const baseline = scoreOf(state, "attackPlayer:attacker", noRetaliation);
+  expect(baseline - scoreOf(state, "attackPlayer:attacker")).toBeCloseTo(
+    balanced.weights.retaliation * (attacker.level + (attacker.dp / 1000) * 0.6) * 0.3,
+  );
+});
+
+it("accepts an eligible transformed Tamer for Alliance", () => {
+  const attacker = unit({ permanentId: "attacker", dp: 12000, keywords: ["Alliance"] });
+  const marcus = unit({ permanentId: "marcus", dp: 3000, definition: getCardDefinition("BT12-092") });
+  const state = view({ board: [attacker, marcus], opponentBoard: [unit({ permanentId: "opponent", dp: 14000 })] });
+  const policy = createEvaluationPolicy({ profile: balanced, seed: 42 });
+  expect(
+    policy.chooseAllianceResponse(state, {
+      kind: "alliancePrompt",
+      permanentId: "attacker",
+      eligibleAllyIds: ["marcus"],
+    }),
+  ).toEqual({ type: "respondAlliance", allyPermanentId: "marcus" });
+});

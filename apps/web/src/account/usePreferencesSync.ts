@@ -1,3 +1,6 @@
+import { useCardImageLanguage } from "@/screens/cardLanguage/useCardImageLanguage";
+import { setCardImageLanguage } from "@/screens/cardLanguage/setCardImageLanguage";
+import { isCardImageLanguage } from "@aegis/shared/cards/isCardImageLanguage";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import {
   CUSTOM_CARD_SLEEVE_ID,
@@ -27,7 +30,6 @@ import { isSameDeckIdList } from "@/screens/favoriteDecks/isSameDeckIdList";
  * Keeps the theme, language, sleeves, auto hatch, profile stats and deck builder layout in step with the signed-in account.
  * localStorage stays the instant source, so guests and the first render never wait on the network.
  * On sign-in the account's stored values win; keys the account lacks are backfilled from this device.
- * Auto hatch and profile stats default to false for accounts without a saved choice.
  */
 export function usePreferencesSync({
   accountId,
@@ -45,6 +47,7 @@ export function usePreferencesSync({
   const eggSleeve = useSyncExternalStore(subscribeCardSleeve, getEggSleeveId, () => DEFAULT_EGG_SLEEVE.id);
   const { deckShare, deckView, deckSort } = useDeckBuilderPreferences();
   const favoriteDeckIds = useFavoriteDeckIds();
+  const cardImageLanguage = useCardImageLanguage();
   const [synced, setSynced] = useState<{ accountId: string; preferences: AccountPreferences }>();
   const stored = synced && synced.accountId === accountId ? synced.preferences : undefined;
 
@@ -56,6 +59,9 @@ export function usePreferencesSync({
       .then((preferences) => {
         if (cancelled) return;
         if (typeof preferences.darkMode === "boolean") setDark(preferences.darkMode);
+        if (isCardImageLanguage(preferences.cardImageLanguage)) {
+          setCardImageLanguage(preferences.cardImageLanguage);
+        }
         if (isLocale(preferences.locale)) setLocale(preferences.locale);
         if (preferences.sleeve && getCardSleeveId() !== CUSTOM_CARD_SLEEVE_ID) setCardSleeveId(preferences.sleeve);
         if (preferences.eggSleeve && getEggSleeveId() !== CUSTOM_CARD_SLEEVE_ID) setEggSleeveId(preferences.eggSleeve);
@@ -76,6 +82,7 @@ export function usePreferencesSync({
   useEffect(() => {
     if (!accountId || !stored) return;
     const current: AccountPreferences = {
+      ...(cardImageLanguage !== undefined && { cardImageLanguage }),
       ...(autoHatch || stored.autoHatch !== undefined ? { autoHatch } : {}),
       ...(!profileStats || stored.profileStats !== undefined ? { profileStats } : {}),
       darkMode: dark,
@@ -114,6 +121,7 @@ export function usePreferencesSync({
     deckView,
     deckSort,
     favoriteDeckIds,
+    cardImageLanguage,
   ]);
   return !accountId || stored !== undefined;
 }

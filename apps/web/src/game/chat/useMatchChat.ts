@@ -109,6 +109,9 @@ type IsEntryShownParams = {
 };
 
 function isEntryShown({ entry, viewer }: IsEntryShownParams): boolean {
+  if ((entry.sender.kind === "spectator") !== viewer.spectating) {
+    return false;
+  }
   if (entry.own) {
     return true;
   }

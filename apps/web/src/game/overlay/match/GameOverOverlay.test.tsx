@@ -8,6 +8,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { I18nProvider } from "../../../i18n";
 import { GameOverOverlay } from "./GameOverOverlay";
 import type { SeriesView } from "../../seriesModel";
+import type { RematchStage } from "@/game/getRematchView";
 
 afterEach(cleanup);
 
@@ -165,6 +166,71 @@ describe("best-of-three result", () => {
   });
 });
 
+describe("rematch after a best-of-one", () => {
+  function renderRematch(stage: RematchStage, series?: SeriesView) {
+    const calls: string[] = [];
+    render(
+      <I18nProvider>
+        <GameOverOverlay
+          result="loss"
+          reason="security"
+          stats={[]}
+          onMenu={() => calls.push("menu")}
+          onRematch={() => calls.push("queue")}
+          rematch={{
+            view: { stage, series },
+            opponentName: "Nova",
+            onOffer: () => calls.push("offer"),
+            onAnswer: (accept) => calls.push(accept ? "accept" : "decline"),
+            onChooseTurnOrder: (goFirst) => calls.push(goFirst ? "first" : "second"),
+          }}
+        />
+      </I18nProvider>,
+    );
+    return calls;
+  }
+
+  it("offers a best-of-three beside the usual actions", () => {
+    const calls = renderRematch("open");
+    fireEvent.click(screen.getByRole("button", { name: "Play Nova again · Best of 3" }));
+    fireEvent.click(screen.getByRole("button", { name: "Find rematch" }));
+    expect(calls).toEqual(["offer", "queue"]);
+  });
+
+  it("lets the invited player accept or decline", () => {
+    const calls = renderRematch("offeredToYou");
+    expect(screen.getByText("Nova wants a rematch")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Decline" }));
+    fireEvent.click(screen.getByRole("button", { name: "Accept" }));
+    expect(calls).toEqual(["decline", "accept"]);
+  });
+
+  it("tells the offering player who they are waiting for", () => {
+    renderRematch("offeredByYou");
+    expect(screen.getByText("Waiting for Nova to answer…")).toBeTruthy();
+  });
+
+  it("runs the turn-order choice for game 1 without the leave actions", () => {
+    const calls = renderRematch("accepted", {
+      bestOf: 3,
+      gameNumber: 0,
+      viewerWins: 0,
+      opponentWins: 0,
+      pips: ["pending", "pending", "pending"],
+      stage: "choosing",
+      viewerChooses: true,
+      choiceSecondsLeft: 20,
+      viewerGoesFirst: undefined,
+      outcome: undefined,
+      endReason: "",
+    });
+    expect(screen.getByText("You choose for game 1")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Find rematch" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Go first" }));
+    expect(calls).toEqual(["first"]);
+  });
+});
+
 it("opens the exact used deck after a duel and saves an independent personal copy with attribution and artwork", () => {
   const original = DECKS[0]!;
   const snapshot: UsedDeck = {
@@ -210,4 +276,32 @@ it("opens the exact used deck after a duel and saves an independent personal cop
   expect(loadDecks()[0]!.mainDeck).toEqual(original.mainDeck);
   expect(loadDecks()[0]!.community!.author.displayName).toBe("Original Author");
   localStorage.removeItem("aegis:decks");
+});
+
+it("opens the shared opponent deck and returns to the result", () => {
+  render(
+    <I18nProvider>
+      <GameOverOverlay
+        result="win"
+        reason="security"
+        stats={[]}
+        onMenu={() => {}}
+        onRematch={() => {}}
+        opponentDeckDialog={(onClose) => (
+          <div role="dialog" aria-label="Opponent deck">
+            <button onClick={onClose}>Close opponent deck</button>
+          </div>
+        )}
+      />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "View opponent’s deck" }));
+  expect(screen.getByRole("dialog", { name: "Opponent deck" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Close opponent deck" }));
+  expect(screen.getByRole("button", { name: "View opponent’s deck" })).toBeTruthy();
+});
+
+it("does not offer an unavailable opponent deck", () => {
+  renderOverlay();
+  expect(screen.queryByRole("button", { name: "View opponent’s deck" })).toBeNull();
 });

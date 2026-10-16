@@ -213,7 +213,7 @@ scenario("digivolve-normal", () => {
     // Scoped to the inspector: Agumon's [On Play] toast, held back while its reveal asked
     // for a Tamer, can still be on screen with its own "Open Agumon" link.
     const inspector = screen.getByRole("dialog", { name: /^greymon$/i });
-    expect(within(inspector).getByRole("button", { name: /^open agumon$/i })).toBeTruthy();
+    expect(within(inspector).getByRole("button", { name: /^agumon$/i })).toBeTruthy();
 
     await opponent.leave();
   }, 60_000);

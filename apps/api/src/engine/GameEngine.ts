@@ -1,3 +1,4 @@
+import { getAttackRedirection } from "#api/engine/gameEngine/getAttackRedirection";
 import { ContinuousEffectScope } from "./effects/ContinuousEffectScope.js";
 import { CardKind, EffectTiming, GameState, type CardInstance, type Seat } from "@aegis/shared";
 import { buildCombatHooks } from "./gameEngine/combatHooks.js";
@@ -280,8 +281,11 @@ export class GameEngine {
     contexts: Map<number, EffectContext>;
   }> = [];
   flushingDeferredSecurityRemovalTriggers = false;
+  readonly pendingEffectReaders = new Set<() => readonly CollectedEffect[]>();
+
   /** Trigger windows created inside a resolving effect and activated only after that effect ends. */
   readonly deferredTimingWindows: Array<{
+    readPendingEffects?: () => readonly CollectedEffect[];
     timing: EffectTiming;
     trigger: TriggerInfo;
     transientCandidates: readonly CardInstance[];
@@ -410,7 +414,12 @@ export class GameEngine {
           const permanent = player.battleArea.find((candidate) => candidate.permanentId === permanentId);
           if (permanent !== undefined) {
             const definition = lookupDefinition(permanent.topCard.cardId);
-            if (definition !== undefined && isDigimon(definition)) return permanent.controllerSeat;
+            if (
+              (definition !== undefined && isDigimon(definition)) ||
+              this.continuous.grantedKinds(permanentId).includes(CardKind.Digimon)
+            ) {
+              return permanent.controllerSeat;
+            }
           }
         }
         return undefined;
@@ -513,6 +522,8 @@ export class GameEngine {
       isNewlyPlayedRushAttacker: (permanentId) => isNewlyPlayedRushAttacker(this, permanentId),
       listCandidateInstances: () => listCandidateInstances(this),
       validateAppFusion: (seat, intent) => validateAppFusion(this, seat, intent),
+      attackRedirectTargetIds: (attacker, targetPermanentId) =>
+        getAttackRedirection({ engine: this, attacker, targetPermanentId }),
       attackDeps: () => attackDeps(this),
       digivolveDeps: () => digivolveDeps(this),
       dnaDigivolveDeps: () => dnaDigivolveDeps(this),
@@ -755,6 +766,7 @@ export class GameEngine {
       playerAction?: boolean;
       isDigiXros?: boolean;
       keywordPreventions?: { interruptsEffect: boolean };
+      holdTriggered?: boolean;
     },
   ): Promise<Set<string>> {
     return engineConsultLeavePrevention(this, permanentIds, cause, resolvingSeat, opts);

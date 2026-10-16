@@ -45,3 +45,13 @@ The final review proposes adding prospective projection for mode-less nested/fix
 ### EX6 closing gate, 2026-09-13
 
 The corrected EX6 collection and included shared controls pass **271 files / 2893 tests** with one worker and a 3 GB test heap. Shared/API/web typecheck and 86-file changed-TypeScript style checks pass. Atomic implementation commits are pushed in [PR #4773](https://github.com/vinicius3333/aegis-digimon-tcg/pull/4773); final delivery supersedes the earlier pending checkpoints. This bounded gate does not certify all other card collections.
+
+## Printed replacement budget identity
+
+Breeding affordability projection must read the same key as `runReplacement`:
+`<source instance>/printed/<effect key>`. Omitting `printed` made an exhausted
+Gate or King Drasil look available again after its subscription was consumed.
+The prospective cold-registration path now checks the real replacement ledger.
+The Gate affordability test and the Cool Boy/King Drasil scenario prove that
+projection offers the first payable play and excludes a second play that would
+require reusing the spent reduction.

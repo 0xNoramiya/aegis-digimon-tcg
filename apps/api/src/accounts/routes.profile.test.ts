@@ -178,6 +178,38 @@ describe("/account/preferences", () => {
     expect((await putPreferences({ profileStats: "true" })).status).toBe(400);
   });
 
+  it("persists the post-match sharing opt-out and rejects non-booleans", async () => {
+    expect((await putPreferences({ shareDeckAfterMatch: false })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ shareDeckAfterMatch: false });
+    expect((await putPreferences({ shareDeckAfterMatch: true })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ shareDeckAfterMatch: true });
+    expect((await putPreferences({ shareDeckAfterMatch: "false" })).status).toBe(400);
+  });
+
+  it("persists the live match listing opt-in and rejects non-booleans", async () => {
+    expect(await getPreferences()).toEqual({});
+    expect((await putPreferences({ listLiveMatches: true })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ listLiveMatches: true });
+    expect((await putPreferences({ listLiveMatches: false })).status).toBe(200);
+    expect(await getPreferences()).toEqual({ listLiveMatches: false });
+    expect((await putPreferences({ listLiveMatches: "true" })).status).toBe(400);
+    expect((await putPreferences({ hideIdentityFromSpectators: true })).status).toBe(200);
+    expect(await getPreferences()).toMatchObject({ hideIdentityFromSpectators: true });
+    expect((await putPreferences({ hideIdentityFromSpectators: false })).status).toBe(200);
+    expect(await getPreferences()).toMatchObject({ hideIdentityFromSpectators: false });
+    expect((await putPreferences({ hideIdentityFromSpectators: "true" })).status).toBe(400);
+  });
+
+  it("stores card image language and rejects unsupported preferences", async () => {
+    for (const cardImageLanguage of ["en", "ja", "ko", "zh"]) {
+      expect((await putPreferences({ cardImageLanguage })).status).toBe(200);
+      expect(await getPreferences()).toMatchObject({ cardImageLanguage });
+    }
+    for (const cardImageLanguage of ["pt-BR", "constructor", 1, null]) {
+      expect((await putPreferences({ cardImageLanguage })).status).toBe(400);
+    }
+  });
+
   it("stores the deck builder layout", async () => {
     const layout = { deckShare: 0.6, deckView: "list", deckSort: "level" };
     expect((await putPreferences(layout)).status).toBe(200);

@@ -6,7 +6,7 @@ import { AttackArrow, BreedingSlot, Hand, MemoryGauge, PermanentView, Pile, Turn
 import { pendingFateBadge } from "../game/pendingFate";
 import { buildPermanentDetail } from "../game/permanentDetail";
 import { CardShatter } from "../game/CardShatterView";
-import { PlayLogSidebar } from "../game/PlayLogSidebar";
+import { PlayLogSidebar } from "@/game/log/PlayLogSidebar";
 import { TARGET_FATES, Phase } from "@aegis/shared";
 import { dragIntentLabelKey } from "../game/dragIntents";
 import {
@@ -39,7 +39,7 @@ import {
   PANEL_CASES,
   PERMANENTS,
   SAME_PERMANENT_TRIGGER_DECISION,
-  SHOWCASE_LOG,
+  SHOWCASE_LOG_TURNS,
   TARGET_DECISION,
   TRIGGER_DECISION,
   ZONE_SHOWCASES,
@@ -839,7 +839,13 @@ export function BoardShowcase() {
         stacked
       >
         <Stage label="play log drawer" height={520}>
-          <PlayLogSidebar log={SHOWCASE_LOG} onClose={noop} onOpenCard={noop} />
+          <PlayLogSidebar
+            turns={SHOWCASE_LOG_TURNS}
+            playerNames={{ 0: "Alice", 1: "Bob" }}
+            viewerSeat={0}
+            onClose={noop}
+            onOpenCard={noop}
+          />
         </Stage>
       </Section>
 

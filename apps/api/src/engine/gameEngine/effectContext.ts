@@ -289,6 +289,7 @@ export async function engineConsultLeavePrevention(
     playerAction?: boolean;
     isDigiXros?: boolean;
     keywordPreventions?: { interruptsEffect: boolean };
+    holdTriggered?: boolean;
   },
 ): Promise<Set<string>> {
   // Immediate reactions must observe the rebuilt continuous registry, never its
@@ -320,6 +321,7 @@ export async function engineConsultLeavePrevention(
           engine.hooks.emit({ kind: "effectResolved", ...announced });
         }
       },
+      resolvePreventBody: (body) => resolveLeaveReplacementBody(engine, body, { asEffectBody: true }),
       keywordReplacements: (ids) => [
         ...partitionLeaveReplacements(ids, {
           permanentById: (id) => engine.access.permanentById(id),
@@ -570,6 +572,7 @@ export async function engineConsultLeavePrevention(
       isDigiXros: opts?.isDigiXros,
       insteadOnly: opts?.insteadOnly,
       keywordPreventions: opts?.keywordPreventions,
+      holdTriggered: opts?.holdTriggered,
       reentryGuard: engine.preventReentryGuard,
     },
   );
@@ -579,7 +582,8 @@ export async function engineConsultLeavePrevention(
   // the played Digimon's [On Play] window (CR §15-4-3-2, §15-8-3-2).
   const averted =
     opts?.isBounce === true || opts?.insteadOnly === true || permanentIds.every((id) => prevented.has(id));
-  if (averted && opts?.isDigiXros !== true) await runPendingTimingWindow(engine, takeLeaveReplacementPending(engine));
+  if (averted && opts?.isDigiXros !== true && opts?.holdTriggered !== true)
+    await runPendingTimingWindow(engine, takeLeaveReplacementPending(engine));
   return prevented;
 }
 
@@ -650,13 +654,15 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       try {
         parkDeferredSecurityRemovalTriggers(engine);
         parkDeferredTimingWindowsForAttack(engine);
-        engine.pendingNestedTimingEffects.push(...(await collectRuleProcessPending(engine)));
+        const initialRulePending = await collectRuleProcessPending(engine);
+        engine.pendingNestedTimingEffects.push(...initialRulePending);
         // Settle the already-armed watcher tier before exposing the Option's older
         // printed entry/attack effects. Then settle the interrupted Option's rule
         // check in that same parent pool before Counter Timing/security can proceed.
         await drain();
         engine.optionResolutionDepth = 0;
-        engine.pendingNestedTimingEffects.push(...(await collectRuleProcessPending(engine)));
+        const remainingRulePending = await collectRuleProcessPending(engine);
+        engine.pendingNestedTimingEffects.push(...remainingRulePending);
         await drain();
         // The ordering effect's own drain only sees its window's timing. An Option used inside
         // another effect (Planet Punch through EX12-077) can Arts Digivolve the attacker, and
@@ -846,6 +852,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       await resolveSelfWhenTrashedFromDeck(
         buildEffectContext(engine, cardSourceOf(engine, instance), {
           trashedFromDeckCardId: instance.cardId,
+          trashedFromDeckInstanceId: instanceId,
           ...(byEffectCardId === undefined ? {} : { trashedFromDeckByEffectCardId: byEffectCardId }),
         }),
       );
@@ -860,8 +867,15 @@ export function buildPrimitives(engine: GameEngine): Primitives {
     reactivateOnPlay: (permanentId, opts) => reactivateOnPlay(engine, permanentId, opts),
     fireEnteredByEffect: (timing, instanceId, ownerSeat, opts) =>
       fireEnteredByEffectTiming(engine, timing, instanceId, ownerSeat, opts),
-    fireWhenDigivolving: (seat, permanent, previousLevel) =>
-      digivolveDeps(engine).fireWhenDigivolving!(engine.state, seat, permanent, previousLevel),
+    fireWhenDigivolving: (seat, permanent, previousLevel, isDnaDigivolve) =>
+      digivolveDeps(engine).fireWhenDigivolving!(
+        engine.state,
+        seat,
+        permanent,
+        previousLevel,
+        undefined,
+        isDnaDigivolve,
+      ),
     prepareAppFusion: async (seat, target, result, into) => {
       const deps = digivolveDeps(engine);
       await deps.prepareDigivolveCost?.(engine.state, seat, target, result, into);
@@ -905,6 +919,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
             timing: provenance?.timing,
             effectText: provenance?.effectText,
             effectTextPart: provenance?.effectTextPart,
+            effectTextEmphasis: provenance?.effectTextEmphasis,
             isInherited: provenance?.isInherited,
             selectionContext: provenance?.selectionContext,
             visibleInstanceIds: provenance?.visibleInstanceIds,

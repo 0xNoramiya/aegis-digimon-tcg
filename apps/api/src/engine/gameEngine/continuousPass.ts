@@ -12,6 +12,7 @@ import { listCandidateInstances } from "./ruleProcess.js";
 import { buildEffectContext, cardSourceOf } from "./effectContext.js";
 import type { GameEngine } from "../GameEngine.js";
 import { runWithPreparedCardLocation } from "#api/engine/effects/runWithPreparedCardLocation";
+import { nestedTriggerSourceStillResident } from "#api/engine/gameEngine/subTriggers";
 
 /**
  * Re-derive every continuous (persistent / `EffectTiming.None`) effect from a clean
@@ -39,11 +40,16 @@ import { runWithPreparedCardLocation } from "#api/engine/effects/runWithPrepared
  * the timing/boundary hooks do not already cover.
  */
 export async function recomputeContinuousEffects(engine: GameEngine, publish = true): Promise<void> {
+  engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter((pending) =>
+    nestedTriggerSourceStillResident(engine, pending),
+  );
   if (engine.recomputeInFlight !== undefined) {
     if (engine.continuousScope.getStore() === true) return;
     engine.recomputeQueued = true;
     await engine.recomputeInFlight;
-    if (publish) publishContinuousState(engine);
+    if (publish) {
+      await publishContinuousState(engine);
+    }
     return;
   }
   // Continuous effects are passive modifiers and never prompt (ARCHITECTURE.md §5);
@@ -87,10 +93,11 @@ export async function recomputeContinuousEffects(engine: GameEngine, publish = t
       if (!converged) {
         throw new Error(`continuous effects did not converge after ${maxFixpointPasses} passes`);
       }
+      engine.modifiers.refreshReducedDp(engine.state);
+      if (publish) {
+        await publishContinuousState(engine);
+      }
     } while (engine.recomputeQueued);
-
-    engine.modifiers.refreshReducedDp(engine.state);
-    if (publish) publishContinuousState(engine);
   });
   engine.recomputeInFlight = task;
   try {
@@ -101,7 +108,7 @@ export async function recomputeContinuousEffects(engine: GameEngine, publish = t
 }
 
 /** Intermediate stack tops derive ledgers but publish memory thresholds/affordances at the final boundary. */
-function publishContinuousState(engine: GameEngine): void {
+async function publishContinuousState(engine: GameEngine): Promise<void> {
   engine.memory.commitTurnEndMinMemoryRecompute();
   engine.projection.syncActivatableEffects();
   engine.projection.syncKeywords();
@@ -111,6 +118,7 @@ function publishContinuousState(engine: GameEngine): void {
   engine.projection.syncAttackTargets();
   engine.projection.syncHandAffordances();
   engine.projection.syncLinkTargets();
+  await engine.projection.syncNegamonPlayEffects();
 }
 
 /**

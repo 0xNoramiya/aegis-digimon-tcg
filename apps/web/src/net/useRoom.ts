@@ -2,6 +2,7 @@ import { resetRoomState } from "@/net/resetRoomState";
 import { ROLLBACK_RESET_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
 import { CONNECTION_REPORT_CHANNEL, type ConnectionReport } from "@aegis/shared/protocol/ConnectionReport";
 
+import { OPPONENT_DECK_CHANNEL } from "@aegis/shared/decks/OPPONENT_DECK_CHANNEL";
 import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import { spectate } from "./client";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -113,6 +114,7 @@ export function reconcileDecisionPatch({
 }
 
 export interface UseRoomResult {
+  rollbackCount: number;
   room: AegisRoom | undefined;
   status: ConnectionStatus;
   state: GameState | undefined;
@@ -136,6 +138,7 @@ export interface UseRoomResult {
   seriesSeat: Omit<SeriesGameTicket, "roomId"> | undefined;
   replayDownload?: ReplayDownloadMessage;
   usedDeck?: UsedDeck;
+  opponentDeck?: UsedDeck;
 }
 
 /** Where the next game of a series is and how this player takes their seat in it. */
@@ -220,11 +223,13 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
   const [snapshots, setSnapshots] = useState<readonly StateSnapshot[]>([]);
   const snapshotsRef = useRef<readonly StateSnapshot[]>([]);
   const [events, setEvents] = useState<SequencedServerEvent[]>([]);
+  const [rollbackCount, setRollbackCount] = useState(0);
   const [inbox, setInbox] = useState<BatchInbox>(emptyBatchInbox);
   const [decision, setDecision] = useState<DecisionRequest>();
   const confirmedDecisionIdRef = useRef<string | undefined>(undefined);
   const answeredDecisionsRef = useRef(new Map<string, DecisionRequest>());
   const [error, setError] = useState<string>();
+  const [opponentDeck, setOpponentDeck] = useState<UsedDeck>();
   const [usedDeck, setUsedDeck] = useState<UsedDeck>();
   const [replayDownload, setReplayDownload] = useState<ReplayDownloadMessage>();
   const [sessionId, setSessionId] = useState<string>();
@@ -242,6 +247,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     answeredDecisionsRef.current.clear();
     setDecision(undefined);
     setUsedDeck(undefined);
+    setOpponentDeck(undefined);
 
     let stopHeartbeat = () => {};
     let stopLiveness = () => {};
@@ -274,6 +280,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       stopLiveness();
       stopLiveness = watchRoomLiveness({ room });
 
+      room.onMessage<UsedDeck>(OPPONENT_DECK_CHANNEL, (message) => setOpponentDeck(structuredClone(message)));
       room.onMessage<UsedDeck>(USED_DECK_CHANNEL, (message) => setUsedDeck(structuredClone(message)));
       if (!options.spectator) room.send(USED_DECK_CHANNEL, {});
       room.onMessage<ReplayDownloadMessage>(REPLAY_CHANNEL, (message) => {
@@ -287,6 +294,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
           if (!options.spectator && !replayRequested) {
             replayRequested = true;
             room.send(REPLAY_CHANNEL, {});
+            room.send(OPPONENT_DECK_CHANNEL, {});
           }
           gameOver = true;
           stopHeartbeat();
@@ -344,6 +352,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         confirmedDecisionIdRef.current = undefined;
         setDecision(undefined);
         setEvents([]);
+        setRollbackCount((count) => count + 1);
         setInbox(emptyBatchInbox);
         snapshotsRef.current = [];
         setSnapshots([]);
@@ -524,6 +533,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     state: stateRef.current,
     events,
     batches: inbox.batches,
+    rollbackCount,
     decision,
     acknowledgeDecision,
     error,
@@ -534,5 +544,6 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     seriesSeat,
     replayDownload,
     usedDeck,
+    opponentDeck,
   };
 }

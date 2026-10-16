@@ -1,3 +1,4 @@
+import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
 import { UsedDeckDialog } from "@/game/UsedDeckDialog";
 import type { DeckListing } from "@/game/decks";
 import { downloadReplay } from "../replays/files";
@@ -93,6 +94,7 @@ import { useTranslation } from "../i18n";
 import { intents } from "../net/intents";
 import { useRoom, type MatchMode, type SeriesGameTicket, type UseRoomResult } from "../net/useRoom";
 import { seriesView } from "./seriesModel";
+import { getRematchView } from "@/game/getRematchView";
 import { singleServerBatch, type ServerBatch } from "../net/serverBatches";
 import { selectPresentedState, type StateSnapshot } from "../net/presentedState";
 import { joinWithBot } from "../net/client";
@@ -130,13 +132,16 @@ import {
 import { openCombatWindow, mirroredCombatWindow } from "./combatWindowModel";
 import { buildInstanceIndex, instancePermanentId } from "./decisionModel";
 import { digivolveBasePermanentIds } from "./digivolveModel";
-import { buildMatchLog, type LogLine } from "./matchLog";
+import { useMatchLogHistory } from "@/game/log/useMatchLogHistory";
+import { getSeatNames } from "@/game/log/getSeatNames";
+import type { ServerEvent } from "@aegis/shared/protocol/events";
 import { useMatchCues } from "./useMatchCues";
 import { useAnimationSpeedReport } from "./useAnimationSpeedReport";
 import type { PresentationPacing, PresentationProbe } from "./presentationProbe";
 import { TIMINGS } from "./timings";
 import { loadReconnectSession } from "../net/reconnectSession";
 import { pendingFateBadges } from "./pendingFate";
+import { useEffectConfirmationHold } from "./effectConfirmationHold";
 
 const SERIES_HOP_DELAY_MS = 1500;
 
@@ -202,6 +207,8 @@ function GameScreenSession({
   autoHatchReady = true,
   demoConnection,
   replayMode = false,
+  historyEvents,
+  replayPlayers,
   devProbe,
   presentationPacing,
   onSeriesNext,
@@ -250,6 +257,8 @@ function GameScreenSession({
   };
   /** Portable file playback uses the read-only board without live result dialogs. */
   replayMode?: boolean;
+  historyEvents?: readonly ServerEvent[];
+  replayPlayers?: readonly string[];
   /** Dev inspector hooks (the effects lab): queue controls, step events, batches, decisions. */
   devProbe?: PresentationProbe;
   presentationPacing?: PresentationPacing;
@@ -320,6 +329,7 @@ function GameScreenSession({
   }, [leaveForfeits, onLeaveForfeitsChange, connectedRoom]);
 
   const vsBot = startMode === "bot";
+  const effectConfirmationHold = useEffectConfirmationHold();
   const isPrivateMatch = startMode === "private_host" || startMode === "private_guest" || !!state?.roomCode;
 
   const botCalledRef = useRef(false);
@@ -349,8 +359,9 @@ function GameScreenSession({
     vortexMode,
     setVortexMode,
     clearSel,
+    clearDeclarations,
   } = selectionState;
-  const overlayState = useOverlayState({ decision, state, clearSel });
+  const overlayState = useOverlayState({ decision, state, clearSel, clearDeclarations, viewerSeat });
   const {
     cardMenu,
     setCardMenu,
@@ -405,6 +416,10 @@ function GameScreenSession({
   const { drag, dragHover, handleTapRef, handleDropRef, canDragRef, startHandDrag, startPermDrag, cancelDrag } =
     useDragPlumbing();
   canDragRef.current = null;
+  const playDragStarted = drag?.kind === DragKind.Play && drag.started;
+  useEffect(() => {
+    if (playDragStarted && handPreview) clearSel();
+  }, [playDragStarted, handPreview, clearSel]);
 
   const boardRef = useRef<HTMLDivElement | null>(null);
   const fieldRef = useRef<HTMLDivElement | null>(null);
@@ -564,6 +579,7 @@ function GameScreenSession({
     },
     devProbe,
     presentationPacing,
+    holdEffectsForConfirmation: vsBot && !spectating && effectConfirmationHold,
   });
   const you = state?.players[viewerSeat];
   const opp = state?.players[otherSeat(viewerSeat)];
@@ -838,6 +854,32 @@ function GameScreenSession({
     setHandOrder((order) => (handAutoSort ? sortedHandInstanceIds(hand, handSortMode) : retainHandOrder(order, hand)));
   }, [presentedHandKey, handAutoSort, handSortMode]);
 
+  const instanceIndex = state ? buildInstanceIndex(state, viewerSeat) : new Map<string, string>();
+  const playerName0 = state?.players[0]?.displayName;
+  const playerName1 = state?.players[1]?.displayName;
+  const seatNames = useMemo(
+    () =>
+      getSeatNames({
+        players: [{ displayName: playerName0 }, { displayName: playerName1 }],
+        viewerSeat: spectating ? undefined : viewerSeat,
+        replayPlayers,
+        t,
+      }),
+    [playerName0, playerName1, spectating, viewerSeat, replayPlayers, t],
+  );
+  const { turns: logTurns, recent: log } = useMatchLogHistory({
+    events: historyEvents ?? events,
+    initialTurn: state
+      ? { turnCount: Math.max(1, state.turnCount), turnSeat: state.turnSeat, phase: state.phase }
+      : undefined,
+    batches: historyEvents ? undefined : batches,
+    resetKey: `${connectedRoom?.roomId ?? "preview"}:${liveConnection.rollbackCount}`,
+    viewerSeat,
+    seatNames,
+    instanceIndex,
+    t,
+  });
+
   if (
     status === "reconnecting" ||
     status === "error" ||
@@ -917,7 +959,6 @@ function GameScreenSession({
     },
     viewerSeat,
   );
-  const instanceIndex = buildInstanceIndex(state, viewerSeat);
 
   const { handEntries, shownHandEntries } = handEntriesOf({
     handOrder,
@@ -1147,7 +1188,6 @@ function GameScreenSession({
   });
 
   // ----- log + game over -----
-  const log: LogLine[] = buildMatchLog(events, viewerSeat, instanceIndex, t);
 
   const gameOverReason = modelGameOverReason({ events });
 
@@ -1159,9 +1199,10 @@ function GameScreenSession({
 
   const viewerTurnOrder = modelViewerTurnOrder({ events, viewerSeat });
 
-  const revealed = state.gameOver ? modelRevealedZones({ events, viewerSeat }) : undefined;
+  const revealed = modelRevealedZones({ events, viewerSeat, resultShown: state.gameOver && !cues.resultPending });
 
-  const series = spectating ? undefined : seriesView(state.series, viewerSeat);
+  const rematch = spectating ? undefined : getRematchView({ series: state.series, viewerSeat });
+  const series = spectating || rematch ? undefined : seriesView(state.series, viewerSeat);
 
   const attackerPerm = selPerm ? you.battleArea.find((p) => p.permanentId === selPerm) : undefined;
   const draggedAttackerPerm =
@@ -1205,6 +1246,7 @@ function GameScreenSession({
     decisionDifferentColors,
     decisionDistinctCardIds,
     decisionDistinctNames,
+    decisionAllowedTargetCombinations,
     decisionMaxTotalPlayCost,
     decisionMaxTotalDP,
     decisionCandidateDP,
@@ -1233,9 +1275,11 @@ function GameScreenSession({
       decisionVisibleCardIds,
       decisionDistinctCardIds,
       decisionDistinctNames,
+      decisionAllowedTargetCombinations,
       decisionMaxTotalPlayCost,
       decisionMaxTotalDP,
       decisionCandidateDP,
+      decisionMax,
     });
 
   const decisionAllowsPermanent = (perm: Permanent) => {
@@ -1318,6 +1362,7 @@ function GameScreenSession({
     available: appFusionActionAvailable(),
   });
   const playAnswers = playChoiceAnswers({
+    playNormally: (instanceId, confirmDrop) => matchSenders.playCard(instanceId, confirmDrop, false, true),
     room,
     viewer: you,
     handEntries,
@@ -1368,6 +1413,13 @@ function GameScreenSession({
       }
       slotDrop={{ "data-drop": "breeding-you", ...dropIntentAttrs("breeding-you") }}
       onHatch={onBreeding}
+      onInspect={() => {
+        if (!breedingYou.breeding) {
+          return;
+        }
+        cancelDrag();
+        actions.showCardMenu(breedingYou.breeding.permanentId, Side.Viewer, { preserveSelection: true });
+      }}
       onOpenEggDeck={
         revealed ? () => overlayState.setRevealedZoneView({ side: Side.Viewer, zone: "eggDeck" }) : undefined
       }
@@ -1436,13 +1488,26 @@ function GameScreenSession({
       }}
       scenes={{ securityBreak, securityClash, securityBranch, optionBranch, zoneShowcase, revealShowcase }}
       collapseNotices={collapseNotices}
-      log={log}
+      logTurns={logTurns}
+      seatNames={seatNames}
+      logViewerSeat={spectating ? undefined : viewerSeat}
       signedIn={signedIn}
       opponentDropped={!spectating && !vsBot && !opp.connected && !state.gameOver}
       gameOver={
         !replayMode && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
+              opponentDeckDialog:
+                !spectating && liveConnection.opponentDeck && onCopyUsedDeck
+                  ? (onClose: () => void) => (
+                      <UsedDeckDialog
+                        snapshot={liveConnection.opponentDeck!}
+                        onCopy={onCopyUsedDeck}
+                        onClose={onClose}
+                        opponent
+                      />
+                    )
+                  : undefined,
               usedDeckDialog:
                 usedDeck && onCopyUsedDeck
                   ? (onClose: () => void) => (
@@ -1476,10 +1541,20 @@ function GameScreenSession({
                 onChooseTurnOrder: (goFirst) => room?.send(SERIES_CHANNEL, { action: "chooseTurnOrder", goFirst }),
                 onLeave: () => room?.send(SERIES_CHANNEL, { action: "leave" }),
               },
+              rematch: rematch && {
+                view: rematch,
+                opponentName: opp.displayName || t("game.opponent"),
+                onOffer: () => room?.send(SERIES_CHANNEL, { action: "offerRematch" }),
+                onAnswer: (accept) => room?.send(SERIES_CHANNEL, { action: "answerRematch", accept }),
+                onChooseTurnOrder: (goFirst) => room?.send(SERIES_CHANNEL, { action: "chooseTurnOrder", goFirst }),
+              },
               spectatorResult: spectating
                 ? state.winnerSeat < 0
                   ? t("spectator.draw")
-                  : t("spectator.winner", { name: state.players[state.winnerSeat]?.displayName ?? "" })
+                  : t("spectator.winner", {
+                      name:
+                        state.players[state.winnerSeat]?.displayName || t("log.player", { n: state.winnerSeat + 1 }),
+                    })
                 : undefined,
             }
           : undefined
@@ -1543,7 +1618,7 @@ function GameScreenSession({
     decisionPickedInstanceIds: dnaChoosing ? new Set(dnaPicks) : fieldDecision ? new Set(picks) : new Set<string>(),
     materialSelectionOrder: dnaChoosing
       ? new Map(dnaChoice.orderedPicks.map((id, index) => [id, index + 1]))
-      : undefined,
+      : getDecisionMaterialSelectionOrder({ allowedTargetCombinations: decisionAllowedTargetCombinations, picks }),
     permanentBursts,
     pendingPermanentIds,
     fateBadges,

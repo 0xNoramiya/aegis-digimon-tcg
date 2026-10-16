@@ -1,3 +1,5 @@
+import { useMediaQuery } from "@/design/useMediaQuery";
+import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
 /* Simple actions use the left dialog. Hand and field choices use their physical cards;
    other card choices use the central gallery. The pill tells
    the viewer when the opponent is choosing. */
@@ -16,6 +18,8 @@ import "./overlay/fieldDecisionRail.css";
 import { usePromptHandSpace, type PromptHandSpace } from "./overlay/choice/usePromptHandSpace";
 import { useDecisionSourceMask } from "./overlay/choice/useDecisionSourceMask";
 import { useNoticeBandPassThrough } from "./overlay/choice/useNoticeBandPassThrough";
+import { PromptMoveHandle } from "./overlay/choice/PromptMoveHandle";
+import { useDraggableWindow } from "./chat/useDraggableWindow";
 
 function useEscapeToDialog(onOpenDialog: (() => void) | undefined) {
   useEffect(() => {
@@ -70,6 +74,7 @@ export function BoardPromptRail({
   eyebrow,
   prompt,
   clause,
+  clauseEmphasis,
   clauseLang,
   detail,
   budgetText,
@@ -89,6 +94,7 @@ export function BoardPromptRail({
   eyebrow?: ReactNode;
   prompt: string;
   clause?: string;
+  clauseEmphasis?: string;
   clauseLang?: string;
   detail?: string;
   budgetText?: string;
@@ -104,11 +110,18 @@ export function BoardPromptRail({
 }) {
   const { t } = useTranslation();
   useEscapeToDialog(onOpenDialog);
+  const [isTextExpanded, setIsTextExpanded] = useState(true);
+  const mobile = useMediaQuery("(width < 768px), (height < 520px) and (orientation: landscape)");
   const modal = variant === "prompt";
+  const isTextVisible = modal || !mobile || isTextExpanded;
   const sourceMask = useDecisionSourceMask(modal ? sourcePermanentId : undefined);
   const noticeBand = useNoticeBandPassThrough();
   const focusProps = useEffectPromptFocus(!modal, handSpace);
   usePromptHandSpace(focusProps.ref, !modal, handSpace);
+  const drag = useDraggableWindow(focusProps.ref, {
+    viewportGutter: 16,
+    resetKey: `${variant}:${label}:${sourcePermanentId ?? ""}`,
+  });
   return (
     <>
       <div
@@ -128,9 +141,17 @@ export function BoardPromptRail({
         data-testid="board-prompt"
         data-variant={variant}
         data-prompt-surface="left"
+        data-text-hidden={!isTextVisible || undefined}
+        data-prompt-dragged={drag.position === undefined ? undefined : true}
         style={
           {
             "--decision-hand-clearance": handClearance === undefined ? undefined : `${handClearance}px`,
+            ...(drag.position
+              ? {
+                  "--effect-prompt-drag-left": `${drag.position.left}px`,
+                  "--effect-prompt-drag-top": `${drag.position.top}px`,
+                }
+              : {}),
           } as CSSProperties
         }
       >
@@ -148,19 +169,30 @@ export function BoardPromptRail({
           </Button>
         ) : null}
         <div className="board-prompt__heading">
+          <PromptMoveHandle drag={drag} className="board-prompt__move-handle" tabIndex={-1} />
           {eyebrow ? <p className="board-prompt__eyebrow">{eyebrow}</p> : null}
           {/* Announce the action first; the printed clause supplies its context below. */}
           <p className="board-prompt__text" aria-live="polite">
             {prompt}
           </p>
+          {clause && !modal && mobile ? (
+            <button
+              type="button"
+              className="board-prompt__toggle-text"
+              aria-expanded={isTextVisible}
+              onClick={() => setIsTextExpanded((visible) => !visible)}
+            >
+              {t(isTextVisible ? "overlay.hideEffect" : "overlay.showEffect")}
+            </button>
+          ) : null}
         </div>
         {/* The clause leads and the art sits beside it, against the top: the text is what
             the player reads, the picture only says which card is asking. */}
         {clause || art ? (
           <div className="board-prompt__body">
-            {clause ? (
+            {clause && isTextVisible ? (
               <p className="board-prompt__clause" lang={clauseLang}>
-                {clause}
+                <EffectStepText text={clause} emphasis={clauseEmphasis} cardId={art} />
               </p>
             ) : null}
             {art ? <BoardPromptArt cardId={art} width={artWidth} /> : null}
@@ -185,6 +217,7 @@ export function BoardSelectionRail({
   sourceCardId,
   prompt,
   clause,
+  clauseEmphasis,
   min,
   max,
   pickCount,
@@ -203,6 +236,7 @@ export function BoardSelectionRail({
   prompt: string;
   /** The printed clause that asked for the selection, so the rail carries the same context the dialog did. */
   clause?: string;
+  clauseEmphasis?: string;
   min: number;
   max: number;
   pickCount: number;
@@ -296,6 +330,7 @@ export function BoardSelectionRail({
       art={sourceCardId}
       prompt={prompt}
       clause={clause}
+      clauseEmphasis={clauseEmphasis}
       detail={detail}
       budgetText={budgetText}
       handClearance={handClearance}
@@ -444,10 +479,12 @@ export function ViewBoardButton({ onClick }: { onClick: () => void }) {
 export function BoardSourceHostPrompt({
   sourceCardId,
   clause,
+  clauseEmphasis,
   onNoSelection,
 }: {
   sourceCardId?: string;
   clause?: string;
+  clauseEmphasis?: string;
   /** Set when the pick may be declined. */
   onNoSelection?: () => void;
 }) {
@@ -463,6 +500,7 @@ export function BoardSourceHostPrompt({
       art={sourceCardId}
       prompt={t("overlay.chooseSourceHostPrompt")}
       clause={clause}
+      clauseEmphasis={clauseEmphasis}
     >
       {onNoSelection ? (
         <Button full variant="secondary" onClick={onNoSelection}>
@@ -480,6 +518,7 @@ export function BoardOptionalPrompt({
   sourcePermanentId,
   contextText,
   clause,
+  clauseEmphasis,
   onUse,
   onDecline,
   onOpenDialog,
@@ -489,6 +528,7 @@ export function BoardOptionalPrompt({
   /** Additional decision context belongs below the standard activation heading. */
   contextText?: string;
   clause?: string;
+  clauseEmphasis?: string;
   onUse: () => void;
   onDecline: () => void;
   onOpenDialog?: () => void;
@@ -507,6 +547,7 @@ export function BoardOptionalPrompt({
       art={sourceCardId}
       prompt={t("overlay.useEffectPrompt")}
       clause={clause ?? contextText}
+      clauseEmphasis={clauseEmphasis}
       detail={clause ? contextText : undefined}
       // The dialog shows nothing the rail does not, so Escape is the only way back to it.
       onOpenDialog={onOpenDialog}

@@ -50,6 +50,9 @@ export function subTriggerIdentity(sub: SubTriggerSubscription, trigger?: Trigge
       trigger.subjectPermanentIds ?? (trigger.suspendedPermanentId ? [trigger.suspendedPermanentId] : []);
     if (subjects.length > 0) return `${identity}|suspend:${[...subjects].sort().join(",")}`;
   }
+  if (trigger?.securityInstanceId !== undefined && sub.event === "whenSecurityRemoved") {
+    return `${identity}|securityRemoved:${trigger.securityInstanceId}`;
+  }
   if (trigger !== undefined && sub.event === "whenHandTrashed") {
     const trashed = trigger.handTrashedInstanceIds ?? [];
     if (trashed.length > 0)
@@ -67,13 +70,12 @@ export function subTriggerIdentity(sub: SubTriggerSubscription, trigger?: Trigge
  * multiple triggered clauses.
  */
 export function uniqueOncePerTurnWatcherOccurrences(items: readonly ArmedSubTrigger[]): ArmedSubTrigger[] {
-  const seen = new Set<string>();
-  return items.filter((item) => {
-    if (item.sub.oncePerTurnKey === undefined) return true;
+  const kept = new Map<string, ArmedSubTrigger>();
+  const identityOf = (item: ArmedSubTrigger): string =>
     // A later Link or digivolution inside the same outer window is a new event.
     // Preserve it while an older occurrence waits; the OPT ledger still prevents
     // both from activating successfully in the same turn.
-    const identity = subTriggerIdentity(
+    subTriggerIdentity(
       item.sub,
       item.sub.event === "whenLinked" ||
         item.sub.event === "whenAnyDigivolves" ||
@@ -82,10 +84,17 @@ export function uniqueOncePerTurnWatcherOccurrences(items: readonly ArmedSubTrig
         ? item.ctx.trigger
         : undefined,
     );
-    if (seen.has(identity)) return false;
-    seen.add(identity);
-    return true;
-  });
+  for (const item of items) {
+    if (item.sub.oncePerTurnKey === undefined) continue;
+    const identity = identityOf(item);
+    const earlier = kept.get(identity);
+    const laterBattleWin =
+      earlier !== undefined &&
+      item.sub.event === "whenBattleWon" &&
+      earlier.occurrence.windowToken !== item.occurrence.windowToken;
+    if (earlier === undefined || laterBattleWin) kept.set(identity, item);
+  }
+  return items.filter((item) => item.sub.oncePerTurnKey === undefined || kept.get(identityOf(item)) === item);
 }
 
 /**

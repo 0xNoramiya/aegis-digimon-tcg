@@ -1,3 +1,4 @@
+import { ProviderCredit } from "@/deckProviders/ProviderCredit";
 /* Home v3: the landing pitch, three shortcuts into the main screens, and —
    while they are still a guest — one quiet nudge to connect an account. The
    page itself has no background: the app's bits backdrop shows through. */
@@ -126,6 +127,7 @@ export function Home({
           ) : null}
         </div>
         <p>{t("home.footer.legal")}</p>
+        <ProviderCredit />
       </footer>
     </main>
   );
