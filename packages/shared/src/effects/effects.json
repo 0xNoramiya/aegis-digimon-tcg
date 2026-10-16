@@ -240976,5 +240976,70 @@
     "assemblyRequirement": [
       { "materials": [{ "traits": ["Greed"], "count": 3, "differentLevels": true }], "reduceCost": 5 }
     ]
+  },
+  "BT27-100": {
+    "effects": [
+      {
+        "trigger": "Main",
+        "actions": [
+          {
+            "kind": "GainTriggeredEffect",
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "gainedTrigger": "StartOfYourMainPhase",
+            "gainedActions": [
+              { "kind": "Attack", "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true } }
+            ],
+            "duration": "untilOpponentTurnEnd",
+            "raw": "[Start of Your Main Phase] This Digimon attacks."
+          },
+          { "kind": "PlaceInBattleAreaSelf" }
+        ]
+      },
+      {
+        "trigger": "AllTurns",
+        "keywords": [{ "keyword": "Delay" }],
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "event": "whenSuspended",
+            "sourceFilter": {
+              "controller": "mine",
+              "kind": ["Digimon"],
+              "nameOrTrait": [{ "tokens": ["Craniamon"], "match": "name" }]
+            },
+            "actions": [
+              {
+                "kind": "DeDigivolve",
+                "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": "all" },
+                "amount": 1
+              },
+              {
+                "kind": "Delete",
+                "target": {
+                  "filter": { "controller": "opponent", "kind": ["Digimon"], "superlative": "lowestPlayCost" },
+                  "count": "all"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "isSecurity": true,
+        "actions": [
+          {
+            "kind": "Delete",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "superlative": "lowestPlayCost" },
+              "count": "all"
+            }
+          },
+          { "kind": "AddToHandSelf" }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
   }
 }
