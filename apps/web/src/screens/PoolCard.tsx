@@ -1,3 +1,5 @@
+import { useCardImageLanguage } from "@/screens/cardLanguage/useCardImageLanguage";
+import { findCardArtForLanguage } from "@aegis/shared/cards/findCardArtForLanguage";
 /* One card in the builder's pool, with the steppers that add or remove copies. */
 
 import { useState } from "react";
@@ -30,6 +32,7 @@ export function PoolCard({
   selected: boolean;
 }) {
   const { t } = useTranslation();
+  const language = useCardImageLanguage();
   const [hover, setHover] = useState(false);
   const banLabel = pairConflict ? t("deck.pairBadge") : formatRestrictionLabel(cardId, format);
   const banned = formatCopyLimit(cardId, format) === 0;
@@ -46,6 +49,7 @@ export function PoolCard({
       <div className="deck-pool-card__art">
         <CardFull
           cardId={cardId}
+          artId={findCardArtForLanguage({ cardId, language })?.artId}
           width={132}
           selected={selected}
           count={hasCopies ? inDeck : undefined}

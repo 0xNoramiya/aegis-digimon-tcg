@@ -1,6 +1,16 @@
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "settings.cardImageLanguage": "Bahasa gambar kartu",
+  "settings.cardImageLanguageDesc":
+    "Pilih bahasa default untuk koleksi dan salinan baru yang ditambahkan ke deck. Tombol ini juga mengganti ilustrasi alternatif di deck yang sudah ada. Kartu tanpa bahasa ini tetap memakai gambar saat ini.",
+  "settings.cardImageLanguageApply": "Terapkan ke semua deck saya",
+  "settings.cardImageLanguageLoading": "Menunggu deck dimuat. Jika berlanjut, muat ulang halaman.",
+  "settings.cardImageLanguageEmpty": "Tidak ada deck pribadi untuk diperbarui.",
+  "settings.cardImageLanguageProgress": "Memperbarui deck: {completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "Deck diperbarui: {saved}. Gagal: {failed}. Salinan tanpa bahasa ini: {unavailable}. Terapkan lagi untuk mencoba ulang deck yang gagal.",
+
   "roadmap.hub.label": "Bagian komunitas",
   "roadmap.hub.decks": "Deck",
   "roadmap.hub.roadmap": "Roadmap",

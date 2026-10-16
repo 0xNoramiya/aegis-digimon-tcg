@@ -1,3 +1,5 @@
+import { I18nContext } from "@/i18n/I18nContext";
+import { useCardFaceTranslation } from "@/screens/cardLanguage/useCardFaceTranslation";
 import { EffectText } from "@/game/EffectText";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
@@ -27,6 +29,7 @@ export function CardDetailDrawer({
   onClose,
   footer,
   artId,
+  initialArtId,
   onArtChange,
   onArtApply,
 }: {
@@ -35,16 +38,18 @@ export function CardDetailDrawer({
   onClose: () => void;
   footer?: ReactNode;
   artId?: string;
+  initialArtId?: string;
   onArtChange?: (artId: string) => void;
   onArtApply?: (artId: string) => void;
 }) {
   const { t } = useTranslation();
-  const translations = useCardTranslations();
   const [browsedArt, setBrowsedArt] = useState<{ cardId: string; artId: string } | null>(null);
   const selectedArt = resolveCardArt(
     cardId,
-    artId ?? (browsedArt?.cardId === cardId ? browsedArt.artId : undefined),
+    artId ?? (browsedArt?.cardId === cardId ? browsedArt.artId : initialArtId),
   ).artId;
+  const cardTranslation = useCardFaceTranslation({ artId: selectedArt });
+  const translations = useCardTranslations({ locale: cardTranslation.locale });
   const arts = getCardArts(cardId);
   const def = getCardDefinition(cardId);
   if (!def) return null;
@@ -111,30 +116,46 @@ export function CardDetailDrawer({
             <span className="card-detail-copy-limit">{t("library.maxPerDeck", { count: copyLimit })}</span>
           </div>
           <div className="card-detail-metadata">
-            <DetailRow label={t("library.rowSet")} value={def.set} mono />
-            <DetailRow label={t("library.rowColor")} value={def.colors.join(" / ")} />
+            <DetailRow label={cardTranslation.t("library.rowSet")} value={def.set} mono />
+            <DetailRow label={cardTranslation.t("library.rowColor")} value={def.colors.join(" / ")} />
             <DetailRow
-              label={t("library.rowType")}
+              label={cardTranslation.t("library.rowType")}
               value={getTranslatedCardMeta({ value: formLabel(def), group: "forms", translations })}
             />
-            <DetailRow label={t("library.rowPlayCost")} value={def.playCost < 0 ? "—" : String(def.playCost)} mono />
-            {isDigi ? <DetailRow label={t("library.rowDp")} value={def.dp.toLocaleString()} mono /> : null}
+            <DetailRow
+              label={cardTranslation.t("library.rowPlayCost")}
+              value={def.playCost < 0 ? "—" : String(def.playCost)}
+              mono
+            />
+            {isDigi ? (
+              <DetailRow label={cardTranslation.t("library.rowDp")} value={def.dp.toLocaleString()} mono />
+            ) : null}
             {def.types && def.types.length ? (
               <DetailRow
-                label={t("library.rowTraits")}
+                label={cardTranslation.t("library.rowTraits")}
                 value={def.types
                   .map((value) => getTranslatedCardMeta({ value, group: "traits", translations }))
                   .join(", ")}
               />
             ) : null}
-            {def.rarity ? <DetailRow label={t("library.rowRarity")} value={def.rarity} mono /> : null}
+            {def.rarity ? <DetailRow label={cardTranslation.t("library.rowRarity")} value={def.rarity} mono /> : null}
           </div>
         </div>
       </div>
       <div className="card-detail-effects">
-        <DetailEffect title={t("library.mainEffect")} text={def.effectText} />
-        <DetailEffect title={t("library.inheritedEffect")} text={def.inheritedEffectText} tone="inherited" />
-        <DetailEffect title={t("library.securityEffect")} text={def.securityEffectText} tone="security" />
+        <I18nContext.Provider value={cardTranslation}>
+          <DetailEffect title={cardTranslation.t("library.mainEffect")} text={def.effectText} />
+          <DetailEffect
+            title={cardTranslation.t("library.inheritedEffect")}
+            text={def.inheritedEffectText}
+            tone="inherited"
+          />
+          <DetailEffect
+            title={cardTranslation.t("library.securityEffect")}
+            text={def.securityEffectText}
+            tone="security"
+          />
+        </I18nContext.Provider>
         {footer}
       </div>
     </aside>

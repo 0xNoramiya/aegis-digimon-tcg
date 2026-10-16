@@ -1,6 +1,16 @@
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "settings.cardImageLanguage": "カード画像の言語",
+  "settings.cardImageLanguageDesc":
+    "コレクションとデッキに新しく追加するカードの既定の言語を選びます。ボタンを押すと既存デッキの別イラストも置き換えます。この言語の画像がないカードは現在の画像を維持します。",
+  "settings.cardImageLanguageApply": "すべての自分のデッキに適用",
+  "settings.cardImageLanguageLoading": "デッキの読み込みを待っています。続く場合はページを再読み込みしてください。",
+  "settings.cardImageLanguageEmpty": "更新する自分のデッキがありません。",
+  "settings.cardImageLanguageProgress": "デッキを更新中：{completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "更新したデッキ：{saved}。失敗：{failed}。この言語がないカード枚数：{unavailable}。再度適用すると失敗したデッキを再試行できます。",
+
   "roadmap.hub.label": "コミュニティのセクション",
   "roadmap.hub.decks": "デッキ",
   "roadmap.hub.roadmap": "ロードマップ",

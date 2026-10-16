@@ -1,3 +1,5 @@
+import { useCardImageLanguage } from "@/screens/cardLanguage/useCardImageLanguage";
+import { findCardArtForLanguage } from "@aegis/shared/cards/findCardArtForLanguage";
 /* The builder itself: a filterable pool on the left, the 50-main + 5-egg list on the
    right, and the legality counters that gate a save. */
 
@@ -83,6 +85,7 @@ export function DeckEditor({
   onNav: (s: Screen) => void;
 }) {
   const { t } = useTranslation();
+  const language = useCardImageLanguage();
   const [format, setFormat] = useState<DeckFormat>(() => deckFormat(deck.format));
   const pool = useMemo<CardDefinition[]>(
     () => activeCollectionCards().filter((card) => !formatCardViolation(card.cardId, format)),
@@ -153,7 +156,10 @@ export function DeckEditor({
     if (!eggCard && mainCount >= MAIN_TARGET) return;
     setArts((previous) => ({
       ...previous,
-      [cardId]: [...(previous[cardId] ?? []), resolveCardArt(cardId, chosenArt[cardId]).artId],
+      [cardId]: [
+        ...(previous[cardId] ?? []),
+        resolveCardArt(cardId, chosenArt[cardId] ?? findCardArtForLanguage({ cardId, language })?.artId).artId,
+      ],
     }));
     (eggCard ? setEgg : setMain)({ ...map, [cardId]: cur + 1 });
   };
@@ -523,7 +529,7 @@ export function DeckEditor({
           key={sel}
           cardId={sel}
           format={format}
-          artId={chosenArt[sel] ?? arts[sel]?.[0]}
+          artId={chosenArt[sel] ?? findCardArtForLanguage({ cardId: sel, language })?.artId ?? arts[sel]?.[0]}
           onArtChange={(artId) => {
             setChosenArt((previous) => ({ ...previous, [sel]: artId }));
           }}

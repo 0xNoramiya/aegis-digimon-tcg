@@ -1,6 +1,16 @@
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "settings.cardImageLanguage": "卡牌图片语言",
+  "settings.cardImageLanguageDesc":
+    "选择收藏和新加入卡组的卡牌的默认语言。按钮也会替换现有卡组中的异画。没有该语言版本的卡牌将保留当前图片。",
+  "settings.cardImageLanguageApply": "应用到我的所有卡组",
+  "settings.cardImageLanguageLoading": "正在等待卡组加载。如果持续出现，请刷新页面。",
+  "settings.cardImageLanguageEmpty": "没有可更新的个人卡组。",
+  "settings.cardImageLanguageProgress": "正在更新卡组：{completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "已更新卡组：{saved}。失败：{failed}。没有该语言的卡牌数量：{unavailable}。再次应用可重试失败的卡组。",
+
   "roadmap.hub.label": "社区栏目",
   "roadmap.hub.decks": "卡组",
   "roadmap.hub.roadmap": "路线图",
