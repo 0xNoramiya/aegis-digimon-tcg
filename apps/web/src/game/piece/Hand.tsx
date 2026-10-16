@@ -142,6 +142,7 @@ export function Hand({
           const playable = selection
             ? pickable
             : entry.playableFromHand ||
+              !!entry.negamonPlayEffectKey ||
               entry.digivolveTargetPermanentIds.length > 0 ||
               (entry.dnaDigivolveRoutes?.length ?? 0) > 0;
           const style = computeHandCardLayout({

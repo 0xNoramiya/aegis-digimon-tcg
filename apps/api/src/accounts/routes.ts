@@ -1,3 +1,4 @@
+import { isCardImageLanguage } from "@aegis/shared/cards/isCardImageLanguage";
 import { installStoryRoutes } from "#api/story/installStoryRoutes";
 import { StoryProgressStore } from "#api/story/StoryProgressStore";
 import { isDeckFormat, type DeckFormat } from "@aegis/shared";
@@ -908,6 +909,7 @@ function positiveInteger(value: unknown, fallback: number): number | undefined {
 function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
   const {
+    cardImageLanguage,
     autoHatch,
     darkMode,
     locale,
@@ -925,6 +927,9 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   } = value as Record<string, unknown>;
   if (Object.keys(unknownKeys).length > 0) return undefined;
   const isShortText = (text: unknown) => typeof text === "string" && text.length <= MAX_PREFERENCE_LENGTH;
+  if (cardImageLanguage !== undefined && !isCardImageLanguage(cardImageLanguage)) {
+    return undefined;
+  }
   if (autoHatch !== undefined && typeof autoHatch !== "boolean") return undefined;
   if (darkMode !== undefined && typeof darkMode !== "boolean") return undefined;
   if (locale !== undefined && !isShortText(locale)) return undefined;
@@ -943,6 +948,7 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (listLiveMatches !== undefined && typeof listLiveMatches !== "boolean") return undefined;
   if (favoriteDeckIds !== undefined && !isFavoriteDeckIdList(favoriteDeckIds)) return undefined;
   return {
+    ...(cardImageLanguage !== undefined && { cardImageLanguage }),
     ...(autoHatch !== undefined && { autoHatch }),
     ...(darkMode !== undefined && { darkMode }),
     ...(locale !== undefined && { locale: locale as string }),

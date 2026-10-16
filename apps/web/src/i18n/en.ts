@@ -1,3 +1,4 @@
+import { providerEn } from "@/i18n/providers.en";
 import { replayVideoEn } from "./replayVideo";
 import { profileReplayEn } from "./profileReplays";
 import { replayEn } from "./replays";
@@ -19,6 +20,16 @@ import { shellEn } from "./redesign/shell.en";
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  ...providerEn,
+  "settings.cardImageLanguage": "Card image language",
+  "settings.cardImageLanguageDesc":
+    "Choose the default language for the collection and new deck copies. The button also replaces artwork, including alternate art, in existing decks. Cards without this language keep their current image.",
+  "settings.cardImageLanguageApply": "Apply to all my decks",
+  "settings.cardImageLanguageLoading": "Waiting for decks to load. If this persists, reload the page.",
+  "settings.cardImageLanguageEmpty": "No personal decks to update.",
+  "settings.cardImageLanguageProgress": "Updating decks: {completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "Decks updated: {saved}. Failed: {failed}. Copies without this language: {unavailable}. You can apply again to retry failed decks.",
   "story.tagline": "Choose your character. Relive the battles.",
   "story.adaptation": "Adaptation",
   "story.adaptationHint": "Missing story details are reconstructed for this playable adaptation.",
@@ -44,6 +55,10 @@ export const en = {
   "settings.shareDeckAfterMatchDesc":
     "Allow your opponent to view and copy your starting deck list after the match. Enabled by default.",
   "settings.shareDeckAfterMatchFailed": "Could not load or save deck sharing. Try again or reopen settings.",
+  "overlay.useNegamon": "Use Negamon",
+  "overlay.negamonPlayDetail":
+    "Activate Negamon’s breeding effect to play a Digimon with a reduced cost, then place Negamon underneath it. You will choose the card in the effect’s next step.",
+  "overlay.playNormally": "Play normally",
   "overlay.viewOpponentDeck": "View opponent’s deck",
   "overlay.opponentDeck": "Opponent’s deck",
   "rollback.failed": "Could not safely restore this point. The current game was kept.",

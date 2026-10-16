@@ -1,3 +1,4 @@
+import { deckProviders } from "#api/db/migrations/037-deck-providers";
 import { storyGuestProgress } from "#api/db/migrations/039-story-guest-progress";
 import { storyProgress } from "#api/db/migrations/038-story-progress";
 import type { Migration } from "../migrator.js";
@@ -78,6 +79,7 @@ export const migrations: readonly Migration[] = [
   communityRoadmap,
   playtestGroup,
   publicDeckGuide,
+  deckProviders,
   storyProgress,
   storyGuestProgress,
 ];

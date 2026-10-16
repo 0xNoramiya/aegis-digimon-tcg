@@ -4630,3 +4630,27 @@ it.each([
   });
   expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(passage);
 });
+
+it.each([
+  "by suspending this Tamer",
+  "you may play 1 [Gabumon] if that Digimon has [Greymon] in its name or 1 [Agumon] if it has [Garurumon] in its name from your hand or trash without paying the cost.",
+])("distinguishes Nokia's optional stages with the current printed passage: %s", (effectTextEmphasis) => {
+  const clause = cardEffectClauseForTiming("EX13-067", "YourTurn")!;
+  const { onRespond } = renderDecision({
+    decisionId: "nokia-optional-stage",
+    seat: 0,
+    kind: "optional",
+    sourceCardId: "EX13-067",
+    promptText: "Use this effect?",
+    options: {
+      timing: "YourTurn",
+      effectText: clause,
+      effectTextPart: effectTextEmphasis,
+      effectTextEmphasis,
+    },
+  });
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(clause);
+  expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(effectTextEmphasis);
+  fireEvent.click(screen.getByRole("button", { name: "Yes, activate" }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: true });
+});

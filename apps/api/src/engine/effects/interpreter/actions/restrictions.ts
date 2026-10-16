@@ -1,3 +1,4 @@
+import { getFieldEffectText } from "#api/engine/effects/interpreter/getFieldEffectText";
 // Continuous prohibitions and immunities.
 
 import type { EffectContext, Restriction } from "../../EffectContext.js";
@@ -138,7 +139,7 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
             },
             {
               sourceCardId: ctx.source.definition.cardId,
-              effectText: action.effectTextPart ?? action.raw ?? ctx.source.definition.effectText,
+              effectText: getFieldEffectText({ action, ctx }),
               ...(locksTamersAsDigimon ? { matchesAsDigimon: matchesAsDigimon(seat, true) } : {}),
               fromSourceKind: action.fromSourceKind as string[] | undefined,
               byOpponentEffectsOnly: action.byOpponentEffectsOnly === true ? true : undefined,
@@ -151,6 +152,11 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
       if (locksTamersAsDigimon && ctx.fx.restrictPlayer !== undefined) {
         for (const seat of seatsForController(ctx, filter)) {
           ctx.fx.restrictPlayer(seat, restriction, duration, () => false, {
+            sourceCardId: ctx.source.definition.cardId,
+            effectText: getFieldEffectText({ action, ctx }),
+            fromSourceKind: action.fromSourceKind as string[] | undefined,
+            byOpponentEffectsOnly: action.byOpponentEffectsOnly === true ? true : undefined,
+            byEffectsOnly: action.byEffectsOnly === true ? true : undefined,
             matchesAsDigimon: matchesAsDigimon(seat, false),
           });
         }
@@ -271,7 +277,7 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
       for (const seat of seats)
         ctx.fx.restrictPlay(seat, ctx.source.ownerSeat, match, action.mode, duration, action.byEffectOnly, {
           sourceCardId: ctx.source.definition.cardId,
-          effectText: action.effectTextPart ?? action.raw ?? ctx.source.definition.effectText,
+          effectText: getFieldEffectText({ action, ctx }),
         });
       return false;
     }

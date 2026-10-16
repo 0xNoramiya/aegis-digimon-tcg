@@ -1,6 +1,17 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
+  "settings.cardImageLanguage": "卡牌图片语言",
+  "settings.cardImageLanguageDesc":
+    "选择收藏和新加入卡组的卡牌的默认语言。按钮也会替换现有卡组中的异画。没有该语言版本的卡牌将保留当前图片。",
+  "settings.cardImageLanguageApply": "应用到我的所有卡组",
+  "settings.cardImageLanguageLoading": "正在等待卡组加载。如果持续出现，请刷新页面。",
+  "settings.cardImageLanguageEmpty": "没有可更新的个人卡组。",
+  "settings.cardImageLanguageProgress": "正在更新卡组：{completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "已更新卡组：{saved}。失败：{failed}。没有该语言的卡牌数量：{unavailable}。再次应用可重试失败的卡组。",
   "story.tagline": "选择角色，重温战斗。",
   "story.adaptation": "改编",
   "story.adaptationHint": "此可玩改编补充了原作未展示的细节。",
@@ -70,6 +81,10 @@ const interfaceMessages = {
   "settings.shareDeckAfterMatch": "对局结束后分享我的卡组",
   "settings.shareDeckAfterMatchDesc": "允许对手在对局结束后查看并复制我的初始卡组列表。默认开启。",
   "settings.shareDeckAfterMatchFailed": "无法加载或保存此设置。请重试或重新打开设置。",
+  "overlay.useNegamon": "使用尼格兽",
+  "overlay.negamonPlayDetail":
+    "发动育成区尼格兽的效果，以降低的费用登场数码兽，然后将尼格兽放在其下方。你将在效果的下一步选择卡牌。",
+  "overlay.playNormally": "正常登场",
   "overlay.viewOpponentDeck": "查看对手卡组",
   "overlay.opponentDeck": "对手卡组",
   "rollback.failed": "无法安全恢复到此时点。当前对局状态已保留。",
@@ -2032,6 +2047,8 @@ const interfaceMessages = {
   "redesign.shell.crash.title": "出了点问题",
   "redesign.shell.crash.body": "当前页面出现异常。我们已向 Aegis 团队发送错误报告，请重新加载页面以继续。",
   "redesign.shell.crash.reload": "重新加载",
+  "redesign.shell.loadFailed.title": "无法加载此页面",
+  "redesign.shell.loadFailed.body": "Aegis 无法下载此页面的部分内容。请检查网络连接并重新加载页面。",
   "redesign.shell.ranked.eyebrow": "排位赛",
   "redesign.home.login.eyebrow": "Aegis 账号",
   "redesign.play.deckCounts": "{main} 主卡 · {egg} 蛋",

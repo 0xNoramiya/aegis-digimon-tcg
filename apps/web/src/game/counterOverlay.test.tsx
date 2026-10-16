@@ -11,6 +11,7 @@ import {
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { useState, type ComponentProps } from "react";
+import type { SequencedServerEvent } from "@aegis/shared/protocol/events";
 import { I18nProvider } from "../i18n";
 import { CounterOverlay } from "./overlay/combat/CounterOverlay";
 import { BlockOverlay } from "./overlay/combat/BlockOverlay";
@@ -110,7 +111,8 @@ function renderCombatGame(kind: "alliance" | "block" | "counter" = "alliance", m
     send: (type: string, payload: unknown) => (type === ANIMATION_SPEED_CHANNEL ? undefined : send(type, payload)),
     onMessage: () => () => {},
   } as unknown as AegisRoom;
-  const view = render(
+  const events: SequencedServerEvent[] = [];
+  const game = () => (
     <I18nProvider>
       <GameScreen
         joinOptions={{ displayName: "You", deck: { mainDeck: [], eggDeck: [] } }}
@@ -120,7 +122,7 @@ function renderCombatGame(kind: "alliance" | "block" | "counter" = "alliance", m
           room,
           status: "connected",
           state,
-          events: [],
+          events: [...events],
           batches: [],
           decision: undefined,
           acknowledgeDecision: () => undefined,
@@ -129,11 +131,13 @@ function renderCombatGame(kind: "alliance" | "block" | "counter" = "alliance", m
           roomCode: "",
         }}
       />
-    </I18nProvider>,
+    </I18nProvider>
   );
+  const view = render(game());
+  const refresh = () => view.rerender(game());
   const permanent = (id: string) =>
     view.container.querySelector<HTMLElement>(`[data-drop="perm-you"][data-id="${id}"]`)!;
-  return { send, permanent };
+  return { send, permanent, state, events, refresh };
 }
 
 it("selects only server-offered Alliance allies on the field", () => {
@@ -435,4 +439,32 @@ it("keeps the lone Counter pass action on the left when no legal route remains",
   fireEvent.click(within(rail).getByRole("button", { name: "Pass Counter" }));
   expect(pass).toHaveBeenCalledOnce();
   expect(activate).not.toHaveBeenCalled();
+});
+
+it.each([0, 1])("allows each Alliance ally with %s opposing security cards", (securityCount) => {
+  const { send, permanent, state, events, refresh } = renderCombatGame();
+  state.players[1]!.securityCount = securityCount;
+  fireEvent.click(permanent("ally"));
+  fireEvent.click(screen.getByRole("button", { name: /Use Alliance/i }));
+  state.players[0]!.battleArea[1]!.isSuspended = true;
+  state.combatWindow!.eligiblePermanentIds.splice(0, 1, "ineligible");
+  events.push(
+    { kind: "allianceResolved", permanentId: "attacker", seq: 1, batch: "attack", stateVersion: 1 },
+    {
+      kind: "alliancePrompt",
+      permanentId: "attacker",
+      eligibleAllyIds: ["ineligible"],
+      seq: 2,
+      batch: "attack",
+      stateVersion: 2,
+    },
+  );
+  state.stateVersion = 3;
+  refresh();
+  fireEvent.click(permanent("ineligible"));
+  fireEvent.click(screen.getByRole("button", { name: /Use Alliance/i }));
+  expect(send.mock.calls.filter(([type]) => type === "respondAlliance")).toEqual([
+    ["respondAlliance", { allyPermanentId: "ally", rollbackRevision: 0 }],
+    ["respondAlliance", { allyPermanentId: "ineligible", rollbackRevision: 0 }],
+  ]);
 });

@@ -1,6 +1,18 @@
+import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...providerEn,
+  "digilab.cardCounts": "{main} cartes principales · {eggs} Digi-Œufs",
+  "settings.cardImageLanguage": "Langue des images des cartes",
+  "settings.cardImageLanguageDesc":
+    "Choisissez la langue par défaut de la collection et des nouveaux exemplaires ajoutés aux decks. Le bouton remplace aussi les illustrations alternatives des decks existants. Les cartes indisponibles dans cette langue conservent leur image actuelle.",
+  "settings.cardImageLanguageApply": "Appliquer à tous mes decks",
+  "settings.cardImageLanguageLoading": "Chargement des decks en attente. Si cela persiste, rechargez la page.",
+  "settings.cardImageLanguageEmpty": "Aucun deck personnel à mettre à jour.",
+  "settings.cardImageLanguageProgress": "Mise à jour des decks : {completed}/{total}",
+  "settings.cardImageLanguageResult":
+    "Decks mis à jour : {saved}. Échecs : {failed}. Exemplaires sans cette langue : {unavailable}. Appliquez à nouveau pour réessayer les decks en échec.",
   "story.tagline": "Choisissez votre personnage. Revivez les combats.",
   "story.adaptation": "Adaptation",
   "story.adaptationHint": "Les détails manquants sont reconstitués pour cette adaptation jouable.",
@@ -74,6 +86,10 @@ const interfaceMessages = {
     "Autoriser votre adversaire à voir et copier votre liste de départ après la partie. Activé par défaut.",
   "settings.shareDeckAfterMatchFailed":
     "Impossible de charger ou enregistrer cette option. Réessayez ou rouvrez les paramètres.",
+  "overlay.useNegamon": "Utiliser Negamon",
+  "overlay.negamonPlayDetail":
+    "Activez l’effet de Negamon dans la zone d’élevage pour jouer un Digimon à coût réduit, puis placer Negamon dessous. Vous choisirez la carte à l’étape suivante de l’effet.",
+  "overlay.playNormally": "Jouer normalement",
   "overlay.viewOpponentDeck": "Voir le deck adverse",
   "overlay.opponentDeck": "Deck adverse",
   "rollback.failed": "Impossible de restaurer ce point en toute sécurité. La partie actuelle a été conservée.",
@@ -2159,6 +2175,9 @@ const interfaceMessages = {
   "redesign.shell.crash.body":
     "Cet écran a cessé de fonctionner. Nous avons envoyé un rapport d'erreur à l'équipe Aegis. Rechargez la page pour continuer.",
   "redesign.shell.crash.reload": "Recharger",
+  "redesign.shell.loadFailed.title": "Impossible de charger cet écran",
+  "redesign.shell.loadFailed.body":
+    "Aegis n’a pas pu télécharger une partie de cet écran. Vérifiez votre connexion et rechargez la page.",
   "redesign.shell.ranked.eyebrow": "Match classé",
   "redesign.home.login.eyebrow": "Compte Aegis",
   "redesign.play.deckCounts": "{main} principal · {egg} Digi-Œuf",

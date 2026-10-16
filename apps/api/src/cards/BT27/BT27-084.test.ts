@@ -1,3 +1,5 @@
+import fixture from "#api/engine/scenarios/knightmon-buffs-later-entrants.fixture";
+import { setupScenario } from "#api/engine/testkit/scenario";
 import { describe, expect, it } from "vitest";
 import { digivolutionRequirementsFor, type Seat } from "@aegis/shared";
 import { advance } from "../../engine/testkit/advance.js";
@@ -316,23 +318,14 @@ describe("BT27-084 LordKnightmon (X Antibody)", () => {
   });
 
   it("protects and boosts [Knightmon] text Digimon until the end of the turn it is used in when it deletes nothing", async () => {
-    const s = setupEngine(
-      {
-        0: {
-          battleArea: [
-            { card: KNIGHTMON_COST_5, as: "knightmon" },
-            { card: PURPLE_LEVEL_5, as: "plain" },
-          ],
-          hand: [{ card: "BT27-084", as: "option" }],
-          deck: [PLAIN_LEVEL_3, PLAIN_LEVEL_3, PLAIN_LEVEL_3],
-        },
-        1: { deck: [PLAIN_LEVEL_3, PLAIN_LEVEL_3, PLAIN_LEVEL_3] },
-      },
-      { autoAcceptOptional: true, autoSelectCards: true, declinePrompts: ["Arts Digivolve"] },
-    );
+    const s = setupScenario(fixture, {
+      autoAcceptOptional: true,
+      autoSelectCards: true,
+      declinePrompts: ["Arts Digivolve"],
+    });
     const view = observe(s.engine);
 
-    await duringMainPhase(s, 0, 5, async () => {
+    await duringMainPhase(s, 0, 10, async () => {
       expect(
         s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId, useAs: "option" }),
       ).toEqual({ ok: true });
@@ -344,12 +337,52 @@ describe("BT27-084 LordKnightmon (X Antibody)", () => {
       expect(view.hasKeyword(s.perm("plain"), "Blocker")).toBe(false);
       expect(s.perm("plain").immuneToOpponentDigimonEffects).toBe(false);
       expect(s.perm("plain").currentDP).toBe(7000);
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("laterKnight").instanceId })).toEqual({
+        ok: true,
+      });
+      await settle(() =>
+        s.state.players[0]!.battleArea.some(
+          (permanent) => permanent.topCard.instanceId === s.inst("laterKnight").instanceId,
+        ),
+      );
+      const laterKnight = s.state.players[0]!.battleArea.find(
+        (permanent) => permanent.topCard.instanceId === s.inst("laterKnight").instanceId,
+      )!;
+      expect(view.hasKeyword(laterKnight, "Blocker")).toBe(true);
+      expect(laterKnight.immuneToOpponentDigimonEffects).toBe(true);
+      expect(laterKnight.currentDP).toBe(10000);
+      expect(JSON.parse(s.state.players[0]!.fieldEffectsJson)).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            kind: "dp",
+            effectText: "All of your Digimon with [Knightmon] in their texts get +3000 DP.",
+          }),
+          expect.objectContaining({
+            kind: "keyword",
+            effectText: "All of your Digimon with [Knightmon] in their texts gain ＜Blocker＞.",
+          }),
+          expect.objectContaining({
+            kind: "restriction",
+            sourceCardId: "BT27-084",
+            fromSourceKind: ["Digimon"],
+            byOpponentEffectsOnly: true,
+            effectText:
+              "Your opponent's Digimon effects don't affect any of your Digimon with [Knightmon] in their texts.",
+          }),
+        ]),
+      );
     });
 
     await duringMainPhase(s, 1, 3, async () => {
       expect(view.hasKeyword(s.perm("knightmon"), "Blocker")).toBe(false);
       expect(s.perm("knightmon").immuneToOpponentDigimonEffects).toBe(false);
       expect(s.perm("knightmon").currentDP).toBe(7000);
+      const laterKnight = s.state.players[0]!.battleArea.find(
+        (permanent) => permanent.topCard.instanceId === s.inst("laterKnight").instanceId,
+      )!;
+      expect(view.hasKeyword(laterKnight, "Blocker")).toBe(false);
+      expect(laterKnight.immuneToOpponentDigimonEffects).toBe(false);
+      expect(laterKnight.currentDP).toBe(7000);
     });
   });
 

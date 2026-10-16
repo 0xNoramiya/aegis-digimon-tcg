@@ -1,3 +1,4 @@
+import { CardKind } from "@aegis/shared/schema/enums";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { EffectDuration, getCardDefinition, type FieldEffectView, type Seat } from "@aegis/shared";
@@ -119,6 +120,19 @@ export function FieldEffectsIndicator({
   function label(effect: FieldEffectView): string {
     if (effect.kind === "dp")
       return `DP ${Number(effect.value) >= 0 ? "+" : "−"}${Math.abs(Number(effect.value)).toLocaleString()}`;
+    if (
+      effect.kind === "restriction" &&
+      effect.value === "beAffected" &&
+      effect.byOpponentEffectsOnly &&
+      effect.fromSourceKind?.length === 1
+    ) {
+      if (effect.fromSourceKind[0] === CardKind.Digimon) {
+        return t("game.restriction.immuneToOpponentDigimonEffects");
+      }
+      if (effect.fromSourceKind[0] === CardKind.Option) {
+        return t("game.restriction.immuneToOpponentOptionEffects");
+      }
+    }
     if (effect.kind === "restriction")
       return t(restrictionLabels[String(effect.value)] ?? "game.fieldEffects.restriction");
     return `${effect.value}${effect.amount === undefined ? "" : ` ${effect.amount >= 0 ? "+" : "−"}${Math.abs(effect.amount)}`}`;

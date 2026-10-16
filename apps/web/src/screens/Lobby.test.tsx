@@ -1,3 +1,5 @@
+import { providerApi } from "@/deckProviders/providerApi";
+import { deckLegality } from "@aegis/shared/decks/legality";
 import type { CommunityRandomResult } from "@aegis/shared/decks/CommunityRandomResult";
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, within, waitFor } from "@testing-library/react";
@@ -37,6 +39,54 @@ function renderConfiguredLobby(...args: Parameters<typeof render>) {
 
 // EX13 is the beta fixture, so the clock stays before its 2026-10-02 release.
 beforeEach(() => {
+  vi.spyOn(providerApi, "meta").mockResolvedValue({
+    data: [{ id: 1, name: "Tournament winner", slug: "winner", colors: ["Blue"], share: 12, winRate: 54, pilots: 10 }],
+    formats: [
+      { id: "BT1", name: "BT1" },
+      { id: "EX2", name: "EX2" },
+    ],
+    page: 1,
+    pages: 1,
+  });
+  vi.spyOn(providerApi, "lists").mockImplementation(async (query) => ({
+    data: [
+      {
+        id: 12,
+        name: "Tournament winner",
+        colors: ["Blue"],
+        format: query.get("format") ?? "BT1",
+        player: "Tamer",
+        date: null,
+        event: null,
+        placement: 1,
+        wins: null,
+        losses: null,
+        ties: null,
+        sourceUrl: "https://digimon.digilab.cards/decklist/12",
+      },
+    ],
+    formats: [],
+    page: 1,
+    pages: 1,
+  }));
+  vi.spyOn(providerApi, "detail").mockResolvedValue({
+    id: 12,
+    name: "Tournament winner",
+    colors: ["Blue"],
+    player: "Tamer",
+    date: null,
+    event: null,
+    placement: 1,
+    wins: null,
+    losses: null,
+    ties: null,
+    sourceUrl: "https://digimon.digilab.cards/decklist/12",
+    format: "BT1",
+    mainDeck: DECKS[0]!.mainDeck,
+    eggDeck: DECKS[0]!.eggDeck,
+    legality: deckLegality(DECKS[0]!),
+    externalUrl: null,
+  });
   randomCommunityDeck.mockResolvedValue({ deck: null, eligibleCount: 0 });
   lookupPrivateRoom.mockResolvedValue({ roomId: "private-room", unlimited: false });
   liveMatches.mockResolvedValue({ matches: [], total: 0 });
@@ -46,6 +96,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   vi.useRealTimers();
   localStorage.removeItem("aegis:locale");
   localStorage.removeItem("aegis:match-timer");
@@ -185,8 +236,9 @@ describe("famous deck selection", () => {
     fireEvent.click(region.getByRole("button", { name: "Edit" }));
     expect(onSelectDeck).toHaveBeenCalledWith(invalid.id);
     expect(onNav).toHaveBeenCalledWith("deck");
+    fireEvent.click(picker.getByRole("button", { name: /^Mine/ }));
     fireEvent.change(picker.getByRole("searchbox"), { target: { value: "missing" } });
-    expect(screen.getAllByText("No decks match your search.").length).toBe(2);
+    expect(screen.getAllByText("No decks match your search.").length).toBe(1);
     expect(picker.getByRole("status").textContent).toBe("0 decks");
   });
   it("keeps ordinary decks in the normal queue without a beta checkbox", () => {
@@ -461,122 +513,38 @@ describe("famous deck selection", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(onStart).toHaveBeenCalledWith("bot");
   });
-  it("separates personal decks and groups available famous decks by collection", () => {
+  it("selects provider decks within collections without copying and preserves owner filters", async () => {
+    const onUseProviderDeck = vi.fn();
+    const onCopyDeck = vi.fn();
     renderConfiguredLobby(
       <I18nProvider>
         <Lobby
           player={{ name: "Tamer", color: "Blue", shards: 0 }}
-          decks={[{ id: "mine", name: "My build", color: "Blue", blurb: "Custom", mainDeck: [], eggDeck: [] }]}
-          activeDeckId="mine"
-          onSelectDeck={() => undefined}
-          onCopyDeck={() => undefined}
-          onNav={() => undefined}
-          onStart={() => undefined}
+          decks={DECKS}
+          activeDeckId={DECKS[0]!.id}
+          onSelectDeck={vi.fn()}
+          onCopyDeck={onCopyDeck}
+          onUseProviderDeck={onUseProviderDeck}
+          onNav={vi.fn()}
+          onStart={vi.fn()}
         />
       </I18nProvider>,
     );
-
-    const personalDeck = within(screen.getByLabelText("Your decks")).getByRole("button", { name: /My build/ });
-    const bt1 = screen.getByRole("region", { name: "BT1" });
-    fireEvent.click(within(bt1).getByText("BT1"));
-    const famousDeck = within(bt1).getByRole("button", { name: /Red Omnimon/ });
-    expect(personalDeck.closest(".deck-list-card")).toBeTruthy();
-    expect(famousDeck.closest(".deck-list-card")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Famous decks" })).toBeTruthy();
-    for (const set of ["BT1", "EX2", "BT10", "BT19", "EX9"]) {
-      expect(screen.getByRole("heading", { name: set })).toBeTruthy();
-    }
-  });
-
-  it("searches famous decks across collapsed collections and filters by owner", () => {
-    const onSelectDeck = vi.fn<(id: string) => void>();
-    renderConfiguredLobby(
-      <I18nProvider>
-        <Lobby
-          player={{ name: "Tamer", color: "Blue", shards: 0 }}
-          decks={[{ id: "mine", name: "My build", color: "Blue", blurb: "Custom", mainDeck: [], eggDeck: [] }]}
-          activeDeckId="mine"
-          onSelectDeck={onSelectDeck}
-          onCopyDeck={() => undefined}
-          onNav={() => undefined}
-          onStart={() => undefined}
-        />
-      </I18nProvider>,
-    );
-
     const picker = within(screen.getByRole("region", { name: "Choose your battle deck" }));
-    fireEvent.change(picker.getByRole("searchbox"), { target: { value: "omnimon" } });
-    expect(picker.queryByRole("button", { name: /My build/ })).toBeNull();
-    expect(picker.queryByRole("heading", { name: "EX2" })).toBeNull();
-    const bt1 = picker.getByRole("region", { name: "BT1" });
-    expect((bt1.querySelector("details") as HTMLDetailsElement).open).toBe(true);
-    const useButtons = within(bt1).getAllByRole("button", { name: "Use deck" });
-    expect(useButtons.length).toBeGreaterThan(0);
-    fireEvent.click(useButtons[0]!);
-    expect(onSelectDeck).toHaveBeenCalledWith("bt1-red-omnimon");
-
-    fireEvent.change(picker.getByRole("searchbox"), { target: { value: "" } });
-    fireEvent.click(picker.getByRole("button", { name: /^Mine/ }));
-    expect(picker.getByRole("button", { name: /My build/ })).toBeTruthy();
-    expect(picker.queryByRole("heading", { name: "Famous decks" })).toBeNull();
-    fireEvent.click(picker.getByRole("button", { name: /^Famous/ }));
-    expect(picker.queryByRole("button", { name: /My build/ })).toBeNull();
-    expect(picker.getByRole("heading", { name: "Famous decks" })).toBeTruthy();
-  });
-
-  it("narrows famous decks to one collection and ignores it for personal decks", () => {
-    renderConfiguredLobby(
-      <I18nProvider>
-        <Lobby
-          player={{ name: "Tamer", color: "Blue", shards: 0 }}
-          decks={[{ id: "mine", name: "My build", color: "Blue", blurb: "Custom", mainDeck: [], eggDeck: [] }]}
-          activeDeckId="mine"
-          onSelectDeck={() => undefined}
-          onCopyDeck={() => undefined}
-          onNav={() => undefined}
-          onStart={() => undefined}
-        />
-      </I18nProvider>,
-    );
-
-    const picker = within(screen.getByRole("region", { name: "Choose your battle deck" }));
+    fireEvent.click(await picker.findByRole("button", { name: "Tournament winner" }));
+    await waitFor(() => expect(onUseProviderDeck).toHaveBeenCalledWith(expect.objectContaining({ id: "provider-12" })));
+    expect(onCopyDeck).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).toBeNull();
     fireEvent.change(picker.getByRole("combobox", { name: "Collection" }), { target: { value: "EX2" } });
-    expect(picker.queryByLabelText("Your decks")).toBeNull();
-    expect(picker.queryByRole("heading", { name: "BT1" })).toBeNull();
-    const ex2 = picker.getByRole("region", { name: "EX2" });
-    expect(within(ex2).getAllByRole("button", { name: "Use deck" }).length).toBeGreaterThan(0);
-
+    expect(picker.queryByRole("region", { name: "BT1" })).toBeNull();
+    await within(picker.getByRole("region", { name: "EX2" })).findByRole("button", { name: "Tournament winner" });
+    fireEvent.change(picker.getByRole("searchbox"), { target: { value: "winner" } });
+    expect(picker.getByRole("heading", { name: "Tournament winner", level: 3 })).toBeTruthy();
     fireEvent.click(picker.getByRole("button", { name: /^Mine/ }));
-    expect(picker.getByRole("button", { name: /My build/ })).toBeTruthy();
+    expect(picker.queryByRole("heading", { name: "Famous decks" })).toBeNull();
     expect((picker.getByRole("combobox", { name: "Collection" }) as HTMLSelectElement).disabled).toBe(true);
-  });
-
-  it("selects a famous preset without adding it to personal decks", () => {
-    const onSelectDeck = vi.fn<(id: string) => void>();
-    renderConfiguredLobby(
-      <I18nProvider>
-        <Lobby
-          player={{ name: "Tamer", color: "Blue", shards: 0 }}
-          decks={[]}
-          activeDeckId=""
-          onSelectDeck={onSelectDeck}
-          onCopyDeck={() => undefined}
-          onNav={() => undefined}
-          onStart={() => undefined}
-        />
-      </I18nProvider>,
-    );
-
-    const ex2 = screen.getByRole("region", { name: "EX2" });
-    expect(within(ex2).queryAllByRole("button", { name: "Use deck" })).toHaveLength(0);
-    fireEvent.click(within(ex2).getByText("EX2"));
-    expect(within(ex2).getAllByRole("button", { name: "Use deck" }).length).toBeGreaterThan(0);
-    const bt1Group = screen.getByRole("region", { name: "BT1" });
-    fireEvent.click(within(bt1Group).getByText("BT1"));
-    fireEvent.click(within(bt1Group).getByRole("button", { name: /Red Omnimon/ }));
-
-    expect(onSelectDeck).toHaveBeenCalledWith("bt1-red-omnimon");
-    expect(screen.queryByRole("button", { name: /My build/ })).toBeNull();
+    fireEvent.click(picker.getByRole("button", { name: /^Famous/ }));
+    expect(picker.getByRole("heading", { name: "Famous decks" })).toBeTruthy();
   });
 });
 
@@ -605,8 +573,7 @@ describe("invite links", () => {
 });
 
 describe("famous deck list", () => {
-  it("shows a famous deck's cards without copying it and can play it from the dialog", () => {
-    const onSelectDeck = vi.fn<(id: string) => void>();
+  it("opens provider information only through the info action and can copy from the dialog", async () => {
     const onCopyDeck = vi.fn();
     renderConfiguredLobby(
       <I18nProvider>
@@ -614,31 +581,22 @@ describe("famous deck list", () => {
           player={{ name: "Tamer", color: "Blue", shards: 0 }}
           decks={[]}
           activeDeckId=""
-          onSelectDeck={onSelectDeck}
+          onSelectDeck={vi.fn()}
           onCopyDeck={onCopyDeck}
-          onNav={() => undefined}
-          onStart={() => undefined}
+          onUseProviderDeck={vi.fn()}
+          onNav={vi.fn()}
+          onStart={vi.fn()}
         />
       </I18nProvider>,
     );
-
-    const bt1Group = screen.getByRole("region", { name: "BT1" });
-    fireEvent.click(within(bt1Group).getByText("BT1"));
-    const omnimonCard = within(bt1Group)
-      .getByRole("button", { name: /Red Omnimon/ })
-      .closest(".deck-list-card")!;
-    fireEvent.click(within(omnimonCard as HTMLElement).getByRole("button", { name: "View list" }));
-
-    const dialog = screen.getByRole("dialog", { name: /Red Omnimon/ });
-    expect(within(dialog).getByText("50 cards + 5 eggs", { exact: false })).toBeTruthy();
-    expect(within(dialog).getByRole("region", { name: "Digi-Egg deck · 5" })).toBeTruthy();
-    expect(within(dialog).getAllByText(/^×\d$/).length).toBeGreaterThan(0);
+    fireEvent.click(await screen.findByRole("button", { name: "Recent versions · Tournament winner" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Deck information" }));
+    await screen.findByText("50 main cards · 5 Digi-Eggs");
+    const dialog = screen.getByRole("dialog", { name: "Tournament winner" });
     expect(onCopyDeck).not.toHaveBeenCalled();
-    expect(onSelectDeck).not.toHaveBeenCalled();
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Use deck" }));
-    expect(onSelectDeck).toHaveBeenCalledWith("bt1-red-omnimon");
-    expect(screen.queryByRole("dialog", { name: /Red Omnimon/ })).toBeNull();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Copy to my decks" }));
+    expect(onCopyDeck).toHaveBeenCalledWith(expect.objectContaining({ id: "provider-12" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 });
 

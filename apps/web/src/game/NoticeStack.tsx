@@ -92,7 +92,7 @@ function EffectNoticeBody({
           prose this client cannot resolve to ids, so it stays unlinked. */}
       {clause ? (
         <p className="match-notice__text">
-          <EffectText text={clause} />
+          <EffectText text={clause} cardId={cardId} />
         </p>
       ) : null}
     </div>

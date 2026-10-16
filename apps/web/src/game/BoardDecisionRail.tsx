@@ -192,7 +192,7 @@ export function BoardPromptRail({
           <div className="board-prompt__body">
             {clause && isTextVisible ? (
               <p className="board-prompt__clause" lang={clauseLang}>
-                <EffectStepText text={clause} emphasis={clauseEmphasis} />
+                <EffectStepText text={clause} emphasis={clauseEmphasis} cardId={art} />
               </p>
             ) : null}
             {art ? <BoardPromptArt cardId={art} width={artWidth} /> : null}

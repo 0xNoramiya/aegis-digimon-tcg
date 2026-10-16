@@ -11,7 +11,7 @@ afterEach(() => {
   localStorage.clear();
 });
 
-function grid(candidates: DecisionCandidate[]) {
+function grid(candidates: DecisionCandidate[], maxTotalDP?: number) {
   const pick = vi.fn<(instanceId: string) => void>();
   render(
     <I18nProvider>
@@ -23,6 +23,7 @@ function grid(candidates: DecisionCandidate[]) {
         selectedPlayCost={0}
         withinPlayCostBudget
         selectedDP={0}
+        maxTotalDP={maxTotalDP}
         wideDialog={false}
         onTogglePick={pick}
       />
@@ -97,4 +98,41 @@ it("highlights a selected opponent hand back and clears the highlight without ex
   expect(candidate.getAttribute("aria-pressed")).toBe("false");
   expect(back!.style.boxShadow).not.toContain("--ds-rim-attention");
   expect(back!.innerHTML).toBe(concealedMarkup);
+});
+
+it("places eligible cards first in each zone without changing their relative order", () => {
+  const candidates: DecisionCandidate[] = [
+    { instanceId: "hand-disabled", cardId: "BT1-010", zone: "hand", selectable: false },
+    { instanceId: "hand-first", cardId: "BT1-010", zone: "hand" },
+    { instanceId: "hand-second", cardId: "BT1-010", zone: "hand", selectable: true },
+    { instanceId: "trash-disabled", cardId: "BT1-010", zone: "trash", selectable: false },
+    { instanceId: "trash-first", cardId: "BT1-010", zone: "trash", selectable: true },
+  ];
+  const originalOrder = candidates.map((candidate) => candidate.instanceId);
+  const pick = grid(candidates);
+  const buttons = screen.getAllByRole("button").filter((button) => button.hasAttribute("data-instance-id"));
+  expect(buttons.map((button) => button.dataset.instanceId)).toEqual([
+    "hand-first",
+    "hand-second",
+    "hand-disabled",
+    "trash-first",
+    "trash-disabled",
+  ]);
+  fireEvent.click(buttons[0]!);
+  expect(pick).toHaveBeenCalledWith("hand-first");
+  expect(candidates.map((candidate) => candidate.instanceId)).toEqual(originalOrder);
+});
+
+it("places cards within the DP budget before cards that cannot be selected", () => {
+  grid(
+    [
+      { instanceId: "over-budget", cardId: "BT1-010", currentDP: 9000 },
+      { instanceId: "within-budget", cardId: "BT1-010", currentDP: 3000 },
+    ],
+    5000,
+  );
+  const buttons = screen.getAllByRole("button").filter((button) => button.hasAttribute("data-instance-id"));
+  expect(buttons.map((button) => button.dataset.instanceId)).toEqual(["within-budget", "over-budget"]);
+  expect((buttons[0] as HTMLButtonElement).disabled).toBe(false);
+  expect((buttons[1] as HTMLButtonElement).disabled).toBe(true);
 });

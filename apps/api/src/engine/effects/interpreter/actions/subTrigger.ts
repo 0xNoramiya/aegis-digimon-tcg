@@ -1,3 +1,5 @@
+import { hasAttackRedirection } from "#api/engine/effects/interpreter/hasAttackRedirection";
+import { getAttackRedirectTargetIds } from "#api/engine/effects/interpreter/getAttackRedirectTargetIds";
 // Arming a watcher that fires on a later game event.
 
 import { effectProvenanceKinds } from "../../effectProvenance.js";
@@ -222,7 +224,13 @@ export async function runSubTrigger(
     action.hostFilter === undefined
       ? undefined
       : (subCtx: EffectContext): boolean => {
-          const host = anchorPermanentId === undefined ? undefined : subCtx.game.permanentById(anchorPermanentId);
+          const discardedHost =
+            subCtx.discardedStackSourceProof?.activatesFromDiscardedCard === true
+              ? subCtx.trigger.trashedDigivolutionHost
+              : undefined;
+          const host =
+            discardedHost ??
+            (anchorPermanentId === undefined ? undefined : subCtx.game.permanentById(anchorPermanentId));
           return host !== undefined && permanentMatchesFilter(subCtx, host, action.hostFilter!, subCtx.source);
         };
   const hostFilter = (action as Action & { hostFilter?: Filter }).hostFilter;
@@ -749,7 +757,11 @@ export async function runSubTrigger(
             return false;
           }
           if (sourceFilter?.isSelfRef === true) {
-            return milledCardId === subCtx.source.cardId;
+            return (
+              milledCardId === subCtx.source.cardId &&
+              subCtx.trigger.trashedFromDeckInstanceId === subCtx.source.instanceId &&
+              subCtx.source.isInTrash?.() === true
+            );
           }
           return true;
         }
@@ -808,7 +820,11 @@ export async function runSubTrigger(
     (event === "onDigivolutionCardDiscarded" || event === "onDigivolutionCardsDiscardedBatch")
       ? (subCtx: EffectContext): boolean => {
           const hostId = subCtx.trigger?.subjectPermanentId;
-          const host = hostId === undefined ? undefined : subCtx.game.permanentById(hostId);
+          const discardedHost =
+            subCtx.discardedStackSourceProof?.activatesFromDiscardedCard === true
+              ? subCtx.trigger.trashedDigivolutionHost
+              : undefined;
+          const host = discardedHost ?? (hostId === undefined ? undefined : subCtx.game.permanentById(hostId));
           return host !== undefined && permanentMatchesFilter(subCtx, host, hostFilter, subCtx.source);
         }
       : undefined;
@@ -1186,6 +1202,13 @@ export async function runSubTrigger(
     (ctx.continuousPass === true && (action.on.isSelf === true || action.on.filter?.isSelfRef === true));
   ctx.fx.subscribeSubTrigger({
     event,
+    ...(event === "whenOpponentAttacks" && hasAttackRedirection(action.actions)
+      ? {
+          attackRedirectRequiresSelfSuspend: requiresSelfSuspend,
+          attackRedirectTargetIds: (subCtx: EffectContext) =>
+            getAttackRedirectTargetIds({ ctx: subCtx, actions: action.actions, activation: action }),
+        }
+      : {}),
     activationDeferred: true,
     ...(ctx.activeEffectKey !== undefined || ctx.activeActionPath !== undefined
       ? { dedupeKey: `${ctx.source.instanceId}/${ctx.activeEffectKey ?? "effect"}/${ctx.activeActionPath ?? "0"}` }
@@ -1581,11 +1604,17 @@ export async function runGainTriggeredEffect(
 const TRIGGER_SUBJECT_REFERENCE = /trigger|attacker|leaving|battleOpponent|sameTarget/i;
 
 function bodyRefersToTriggerSubject(actions: readonly Action[]): boolean {
-  // Effect provenance survives the subject leaving; this condition does not act on it.
-  const subjectReferences = JSON.stringify(actions, (_key, value: unknown) =>
-    value === "triggeredByEffect" ? undefined : value,
-  );
-  return TRIGGER_SUBJECT_REFERENCE.test(subjectReferences);
+  const references: string[] = [];
+  JSON.stringify(actions, (key, value: unknown) => {
+    if (key !== "attacker") {
+      references.push(key);
+    }
+    if (typeof value === "string" && value !== "triggeredByEffect") {
+      references.push(value);
+    }
+    return value;
+  });
+  return references.some((reference) => TRIGGER_SUBJECT_REFERENCE.test(reference));
 }
 
 /**

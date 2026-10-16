@@ -1,7 +1,7 @@
 import { getStoryGuestToken } from "@/story/getStoryGuestToken";
 import { LocalScenarioHelp } from "./dev/LocalScenarioHelp";
 import { spectatorCodeFromSearch } from "./roomInvite";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { installAudioLifecycle } from "./design/sound";
 import { Stage, TopNav, type PlayerIdentity, type Screen } from "./design/primitives";
 import { AegisEmblem } from "./design/AegisLogo";
@@ -46,42 +46,101 @@ import { SEQUENTIAL_PACING_ENABLED } from "./features";
 import { clearReconnectSession, loadReconnectSession } from "./net/reconnectSession";
 import { setRoomTicketAccount } from "./net/roomAccount";
 import { ClientErrorBoundary } from "@/clientErrors/ClientErrorBoundary";
+import { createLazyComponent } from "@/net/createLazyComponent";
 
-const ProfileScreen = lazy(() => import("./account/ProfileScreen").then((m) => ({ default: m.ProfileScreen })));
-const ReplaysScreen = lazy(() => import("./replays/ReplaysScreen").then((m) => ({ default: m.ReplaysScreen })));
-const FeedbackScreen = lazy(() => import("./bugs/FeedbackScreen").then((m) => ({ default: m.FeedbackScreen })));
-const MyFeedbackScreen = lazy(() => import("./bugs/MyFeedbackScreen").then((m) => ({ default: m.MyFeedbackScreen })));
-const PrivacyScreen = lazy(() => import("./legal/PrivacyScreen").then((m) => ({ default: m.PrivacyScreen })));
-const Home = lazy(() => import("./screens/Home").then((m) => ({ default: m.Home })));
-const Settings = lazy(() => import("./screens/Settings").then((m) => ({ default: m.Settings })));
-const InterfaceThemeDialog = lazy(() =>
-  import("./design/InterfaceThemePicker").then((m) => ({ default: m.InterfaceThemeDialog })),
-);
-const BugReportDialog = lazy(() => import("./bugs/BugReportDialog").then((m) => ({ default: m.BugReportDialog })));
-const ReleasesScreen = lazy(() => import("./releases/ReleasesScreen").then((m) => ({ default: m.ReleasesScreen })));
-const Login = lazy(() => import("./screens/Login").then((m) => ({ default: m.Login })));
-const Lobby = lazy(() => import("./screens/Lobby").then((m) => ({ default: m.Lobby })));
-const WatchScreen = lazy(() => import("./screens/WatchScreen").then((m) => ({ default: m.WatchScreen })));
-const Collection = lazy(() => import("./screens/Collection").then((m) => ({ default: m.Collection })));
-const DeckBuilder = lazy(() => import("./screens/DeckBuilder").then((m) => ({ default: m.DeckBuilder })));
-const CommunityScreen = lazy(() =>
-  import("./screens/community/CommunityScreen").then((m) => ({ default: m.CommunityScreen })),
-);
-const RoadmapScreen = lazy(() => import("@/roadmap/RoadmapScreen").then((m) => ({ default: m.RoadmapScreen })));
-const StoryScreen = lazy(() => import("@/story/StoryScreen").then((m) => ({ default: m.StoryScreen })));
-const GameScreen = lazy(() => import("./game/GameScreen").then((m) => ({ default: m.GameScreen })));
-const CardEffectsDemo = lazy(() => import("./dev/CardEffectsDemo").then((m) => ({ default: m.CardEffectsDemo })));
-const BoardShowcase = lazy(() => import("./dev/BoardShowcase").then((m) => ({ default: m.BoardShowcase })));
-const EffectPromptGallery = lazy(() =>
-  import("./dev/EffectPromptGallery").then((m) => ({ default: m.EffectPromptGallery })),
-);
-const MotionReference = lazy(() => import("./dev/MotionReference").then((m) => ({ default: m.MotionReference })));
-const ArenaDemo = lazy(() => import("./dev/ArenaDemo").then((m) => ({ default: m.ArenaDemo })));
-const BadgeLayoutLab = lazy(() => import("./dev/BadgeLayoutLab").then((m) => ({ default: m.BadgeLayoutLab })));
-const UiPreview = lazy(() => import("./prototype/UiPreview").then((m) => ({ default: m.UiPreview })));
-const MobileComponentsLab = lazy(() =>
-  import("./dev/MobileComponentsLab").then((m) => ({ default: m.MobileComponentsLab })),
-);
+const ProfileScreen = createLazyComponent({
+  load: () => import("./account/ProfileScreen"),
+  pick: (module) => module.ProfileScreen,
+});
+const ReplaysScreen = createLazyComponent({
+  load: () => import("./replays/ReplaysScreen"),
+  pick: (module) => module.ReplaysScreen,
+});
+const FeedbackScreen = createLazyComponent({
+  load: () => import("./bugs/FeedbackScreen"),
+  pick: (module) => module.FeedbackScreen,
+});
+const MyFeedbackScreen = createLazyComponent({
+  load: () => import("./bugs/MyFeedbackScreen"),
+  pick: (module) => module.MyFeedbackScreen,
+});
+const PrivacyScreen = createLazyComponent({
+  load: () => import("./legal/PrivacyScreen"),
+  pick: (module) => module.PrivacyScreen,
+});
+const Home = createLazyComponent({ load: () => import("./screens/Home"), pick: (module) => module.Home });
+const Settings = createLazyComponent({ load: () => import("./screens/Settings"), pick: (module) => module.Settings });
+const InterfaceThemeDialog = createLazyComponent({
+  load: () => import("./design/InterfaceThemePicker"),
+  pick: (module) => module.InterfaceThemeDialog,
+});
+const BugReportDialog = createLazyComponent({
+  load: () => import("./bugs/BugReportDialog"),
+  pick: (module) => module.BugReportDialog,
+});
+const ReleasesScreen = createLazyComponent({
+  load: () => import("./releases/ReleasesScreen"),
+  pick: (module) => module.ReleasesScreen,
+});
+const Login = createLazyComponent({ load: () => import("./screens/Login"), pick: (module) => module.Login });
+const Lobby = createLazyComponent({ load: () => import("./screens/Lobby"), pick: (module) => module.Lobby });
+const WatchScreen = createLazyComponent({
+  load: () => import("./screens/WatchScreen"),
+  pick: (module) => module.WatchScreen,
+});
+const Collection = createLazyComponent({
+  load: () => import("./screens/Collection"),
+  pick: (module) => module.Collection,
+});
+const DeckBuilder = createLazyComponent({
+  load: () => import("./screens/DeckBuilder"),
+  pick: (module) => module.DeckBuilder,
+});
+const CommunityScreen = createLazyComponent({
+  load: () => import("./screens/community/CommunityScreen"),
+  pick: (module) => module.CommunityScreen,
+});
+const RoadmapScreen = createLazyComponent({
+  load: () => import("@/roadmap/RoadmapScreen"),
+  pick: (module) => module.RoadmapScreen,
+});
+const GameScreen = createLazyComponent({
+  load: () => import("./game/GameScreen"),
+  pick: (module) => module.GameScreen,
+});
+const CardEffectsDemo = createLazyComponent({
+  load: () => import("./dev/CardEffectsDemo"),
+  pick: (module) => module.CardEffectsDemo,
+});
+const BoardShowcase = createLazyComponent({
+  load: () => import("./dev/BoardShowcase"),
+  pick: (module) => module.BoardShowcase,
+});
+const EffectPromptGallery = createLazyComponent({
+  load: () => import("./dev/EffectPromptGallery"),
+  pick: (module) => module.EffectPromptGallery,
+});
+const MotionReference = createLazyComponent({
+  load: () => import("./dev/MotionReference"),
+  pick: (module) => module.MotionReference,
+});
+const ArenaDemo = createLazyComponent({ load: () => import("./dev/ArenaDemo"), pick: (module) => module.ArenaDemo });
+const BadgeLayoutLab = createLazyComponent({
+  load: () => import("./dev/BadgeLayoutLab"),
+  pick: (module) => module.BadgeLayoutLab,
+});
+const UiPreview = createLazyComponent({
+  load: () => import("./prototype/UiPreview"),
+  pick: (module) => module.UiPreview,
+});
+const MobileComponentsLab = createLazyComponent({
+  load: () => import("./dev/MobileComponentsLab"),
+  pick: (module) => module.MobileComponentsLab,
+});
+const StoryScreen = createLazyComponent({
+  load: () => import("@/story/StoryScreen"),
+  pick: (module) => module.StoryScreen,
+});
 
 export function isBoardShowcasePath(pathname: string): boolean {
   return /^\/dev\/board\/?$/i.test(pathname);
@@ -219,6 +278,7 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
   const dark = useDarkMode();
   const setDark = setDarkMode;
   const [account, setAccount] = useState<RemoteAccount | null>();
+  const [decksReady, setDecksReady] = useState(false);
 
   useEffect(() => {
     saveIdentity(player);
@@ -235,7 +295,10 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
       const remoteAccount = await accountApi.me();
       setAccount(remoteAccount);
       setPlayer((current) => withAccountAvatar(current, remoteAccount));
-      if (!remoteAccount) return;
+      if (!remoteAccount) {
+        setDecksReady(true);
+        return;
+      }
       const remote = await accountApi.decks();
       const remoteIds = new Set(remote.map((deck) => deck.id));
       const localDecks = loadDecks();
@@ -248,6 +311,7 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
         .map((deck) => ({ ...deck, coverCardId: localCovers.get(deck.id) }));
       for (const deck of backfilled) await accountApi.saveDeck(deck);
       setDecks((local) => [...remote, ...backfilled].reduce((all, deck) => upsertDeck(all, deck), local));
+      setDecksReady(true);
     })().catch(() => setAccount(null));
   }, []);
 
@@ -269,6 +333,14 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
       .catch(() => undefined);
     if (setActive) setActiveDeckId(deck.id);
   };
+
+  async function saveDeckLanguage(deck: DeckListing) {
+    const updated = { ...deck, updatedAt: Date.now() };
+    if (account) {
+      await accountApi.saveDeck(updated);
+    }
+    setDecks((current) => upsertDeck(current, updated));
+  }
 
   const deleteDeck = (id: string) => {
     const remaining = removeDeck(decks, id);
@@ -292,6 +364,8 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
     setActiveDeckId,
     saveDeck,
     deleteDeck,
+    decksReady,
+    saveDeckLanguage,
     dark,
     setDark,
   };
@@ -300,6 +374,8 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
 }
 
 interface ClientProps {
+  decksReady?: boolean;
+  saveDeckLanguage?: (deck: DeckListing) => Promise<void>;
   preferencesReady?: boolean;
   player: PlayerIdentity;
   setPlayer: (update: (p: PlayerIdentity) => PlayerIdentity) => void;
@@ -335,6 +411,8 @@ function LoadedAegisClient({
   setActiveDeckId,
   saveDeck,
   deleteDeck,
+  decksReady = false,
+  saveDeckLanguage,
   dark,
   setDark,
   initialScreen,
@@ -642,6 +720,10 @@ function LoadedAegisClient({
                 player={effectivePlayer}
                 decks={decks}
                 borrowedDeck={borrowedDeck}
+                onUseProviderDeck={(deck) => {
+                  setBorrowedDeck(deck);
+                  setActiveDeckId(deck.id);
+                }}
                 onBorrowCommunityDeck={(id) => {
                   void communityApi
                     .deck(id)
@@ -778,6 +860,9 @@ function LoadedAegisClient({
             )}
             {screen === "settings" && !route.profile && (
               <Settings
+                decks={decks}
+                decksReady={decksReady}
+                onSaveDeckLanguage={saveDeckLanguage}
                 player={effectivePlayer}
                 account={account}
                 dark={dark}
@@ -856,14 +941,18 @@ function LoadedAegisClient({
       ) : null}
 
       {themeOpen ? (
-        <Suspense fallback={null}>
-          <InterfaceThemeDialog dark={dark} onToggleDark={setDark} onClose={() => setThemeOpen(false)} />
-        </Suspense>
+        <ClientErrorBoundary fallback={null}>
+          <Suspense fallback={null}>
+            <InterfaceThemeDialog dark={dark} onToggleDark={setDark} onClose={() => setThemeOpen(false)} />
+          </Suspense>
+        </ClientErrorBoundary>
       ) : null}
       {bugReportOpen ? (
-        <Suspense fallback={null}>
-          <BugReportDialog signedIn={!!account} onClose={() => setBugReportOpen(false)} />
-        </Suspense>
+        <ClientErrorBoundary fallback={null}>
+          <Suspense fallback={null}>
+            <BugReportDialog signedIn={!!account} onClose={() => setBugReportOpen(false)} />
+          </Suspense>
+        </ClientErrorBoundary>
       ) : null}
       {leaveMatchPromptOpen ? (
         <LeaveMatchDialog onConfirm={confirmLeaveMatch} onClose={() => setLeaveMatchPromptOpen(false)} />

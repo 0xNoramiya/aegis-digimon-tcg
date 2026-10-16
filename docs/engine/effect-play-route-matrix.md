@@ -233,3 +233,13 @@ Compared with the reviewed catalog at `68d82b6773`, five cards were added (BT27-
 - EX1-068 changes only the Ice Wall memory-loss wording, unrelated to these routes.
 
 The App Fusion search still finds seven explicit providers: six target hand and BT24-087 targets trash. The 22 covered cells, eight absence classifications, scenario proof and rules fingerprint remain unchanged. The catalog fingerprint is renewed only after this review; catalog drift remains an error.
+
+### Catalog review after preview colors and Hjaðningar Waltz (2026-10-15)
+
+The PR verification failure reproduced with `node --test tools/kb/rule-obligations.test.mjs`: the reviewed catalog fingerprint was stale. A field-by-field comparison against the reviewed catalog at `4f5453f89f` finds one added card, two changed cards, and no removals:
+
+- BT27-035 changes its colors from blue/yellow to blue/black. Its printed requirements and every effect field remain unchanged.
+- EX14-054 adds red to its colors and a red level-5 evolution requirement for cost 4. Its Assembly requirement and all effect text remain unchanged.
+- BT27-100 Hjaðningar Waltz grants a forced attack, places itself in the battle area, and uses Delay to De-Digivolve and delete opposing Digimon. Its Security effect deletes Digimon and returns itself to hand. None of these clauses instructs play, DNA, App Fusion, Burst, or alternate digivolution from a new recipient zone.
+
+All other catalog fields are unchanged. These additions and corrections preserve the 22 covered route classifications and eight reviewed provider absences. Scenario evidence, candidate lists and the rules fingerprint remain unchanged. The reviewed catalog fingerprint moves from `3fbdd1ed3350aeee8899f4027ec2ec89b57952377ea794365dd7675bcf1e7687` to `3a6953f662084646e6b7ba47c391819fb669fd03962b81f7b0d904389c41a032`; catalog drift remains an error and automatic refresh still cannot recertify a review.

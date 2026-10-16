@@ -33,6 +33,18 @@ export default defineConfig({
       },
       {
         extends: true,
+        test: { name: "deck-providers", include: ["src/deckProviders/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "card-language", include: ["src/screens/cardLanguage/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "client-errors-ui", include: ["src/clientErrors/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: { name: "inspector-sources", include: ["src/game/arenaInspectorSources.test.tsx"], environment: "jsdom" },
       },
       {
@@ -46,12 +58,15 @@ export default defineConfig({
           exclude: [
             ...configDefaults.exclude,
             "e2e/**",
+            "src/screens/cardLanguage/**/*.test.tsx",
+            "src/clientErrors/**/*.test.tsx",
             "src/story/**/*.test.tsx",
             "src/design/tokenArt/**/*.test.tsx",
             "src/screens/community/**/*.test.tsx",
             "src/game/arenaInspectorSources.test.tsx",
             "src/game/piece/PermanentDpDeltaHint.test.tsx",
             "src/game/log/**/*.test.tsx",
+            "src/deckProviders/**/*.test.tsx",
           ],
         },
       },

@@ -69,7 +69,7 @@ export function DecisionEffectChoice({
                     {timingLabel && <span className="effect-choice__timing">{timingLabel}</span>}
                   </span>
                   <span className="effect-choice__clause">
-                    <EffectText text={clause} />
+                    <EffectText text={clause} cardId={effect.cardId} />
                   </span>
                 </span>
                 <span className="effect-choice__go" aria-hidden="true">

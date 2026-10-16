@@ -138,10 +138,8 @@ export function passesPlacementGuard(effect: Effect, ctx: EffectContext): boolea
     const recipient = ctx.source.permanent();
     return recipient?.permanentId === ctx.source.gainedOnPermanentId && ctx.source.isOnBattleArea();
   }
-  // This proof is captured for one discard event and remains on the deferred context. Once the
-  // source or host moves again, it is stale: do not let the ordinary inherited branch below
-  // reinterpret a reattached source as the original discarded card.
   const discardedProof = ctx.discardedStackSourceProof;
+  const discardedOption = discardedProof !== undefined && ctx.source.definition.kinds.includes(CardKind.Option);
   if (discardedProof !== undefined) {
     const host = ctx.game.permanentById(discardedProof.hostPermanentId);
     const proofIsLive =
@@ -149,19 +147,18 @@ export function passesPlacementGuard(effect: Effect, ctx: EffectContext): boolea
       discardedProof.sourceInstanceId === ctx.source.instanceId &&
       discardedProof.hostPermanentId === ctx.trigger?.subjectPermanentId &&
       ctx.source.isInTrash?.() === true &&
-      host?.inBreeding === false;
+      (host?.inBreeding === false || discardedOption || discardedProof.activatesFromDiscardedCard === true);
     if (!proofIsLive) return false;
   }
   const permanent = ctx.source.permanent();
   if (permanent === undefined) {
-    // A discarded digivolution card is not a deletion, so it must not borrow
-    // deletedWasStackInstanceIds. The engine supplies this explicit proof only
-    // for the exact discard event, source instance, and still-live host.
     if (
       effect.isInherited &&
       discardedProof?.sourceInstanceId === ctx.source.instanceId &&
       discardedProof.hostPermanentId === ctx.trigger?.subjectPermanentId &&
-      ctx.game.permanentById(discardedProof.hostPermanentId) !== undefined
+      (ctx.game.permanentById(discardedProof.hostPermanentId) !== undefined ||
+        discardedOption ||
+        discardedProof.activatesFromDiscardedCard === true)
     ) {
       return true;
     }

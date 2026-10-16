@@ -1,3 +1,5 @@
+import { CardLanguageSettings } from "@/screens/cardLanguage/CardLanguageSettings";
+import type { DeckListing } from "@/game/decks";
 import { SpectatorIdentitySetting } from "@/account/SpectatorIdentitySetting";
 import { TokenArtPicker } from "@/design/tokenArt/TokenArtPicker";
 import { ShareDeckAfterMatchSetting } from "@/account/ShareDeckAfterMatchSetting";
@@ -252,12 +254,18 @@ export function Settings({
   dark,
   onToggleDark,
   initialSectionId,
+  decks = [],
+  decksReady = false,
+  onSaveDeckLanguage,
 }: {
   player: PlayerIdentity;
   account: RemoteAccount | null | undefined;
   dark: boolean;
   onToggleDark: (v: boolean) => void;
   initialSectionId?: string;
+  decks?: readonly DeckListing[];
+  decksReady?: boolean;
+  onSaveDeckLanguage?: (deck: DeckListing) => Promise<void>;
 }) {
   const { t, locale, setLocale } = useTranslation();
   const textScale = useTextScale();
@@ -360,6 +368,9 @@ export function Settings({
                   onSelect={setLocale}
                 />
               </SettingRow>
+              {onSaveDeckLanguage && (
+                <CardLanguageSettings decks={decks} ready={decksReady} onSave={onSaveDeckLanguage} />
+              )}
               <SettingRow
                 label={t("settings.textSize")}
                 labelId="settings-text-size-label"
