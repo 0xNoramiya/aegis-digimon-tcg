@@ -2,21 +2,36 @@ import { getInspectorMarker } from "@/game/getInspectorMarker";
 
 type Params = { text: string };
 
+const requirementStart =
+  /^\s*\[(?:Digivolve|DNA Digivolve|Burst Digivolve|App Fusion|Assembly\s*[-+]?\d+|DigiXros\s*[-+]?\d+|进化|合步进化|爆裂进化)\]/i;
+
 export function splitInspectorPrintedText({ text }: Params) {
-  const normalized = text.replace(/\r\n/g, "\n");
-  const requirementStart = /^\s*\[(?:Digivolve|DNA Digivolve|Burst Digivolve|进化|合步进化|爆裂进化)\]/i;
-  if (!requirementStart.test(normalized)) {
+  const requirements: string[] = [];
+  const effects: string[] = [];
+  for (const line of text.replace(/\r\n/g, "\n").split("\n")) {
+    const requirement = line.match(requirementStart);
+    if (!requirement) {
+      effects.push(line);
+      continue;
+    }
+    const effectStart = findEffectStart(line, requirement[0].length);
+    requirements.push(line.slice(0, effectStart).trim());
+    effects.push(line.slice(effectStart).trim());
+  }
+  const remaining = effects
+    .join("\n")
+    .replace(/\n\s*\n(?:\s*\n)+/g, "\n\n")
+    .trim();
+  if (requirements.length === 0 || !remaining) {
     return { requirements: "", effects: text };
   }
-  const markers = [...normalized.matchAll(/\[[^\]\n]+\]/g)];
-  const effectStart = markers.find((match) => getInspectorMarker({ text: match[0] }));
-  if (!effectStart || effectStart.index === undefined) {
-    return { requirements: "", effects: text };
-  }
-  const prefix = normalized.slice(0, effectStart.index);
-  const clauses = prefix.split(/\n\s*\n/).filter((clause) => clause.trim());
-  if (/[＜<][^＞>]+[＞>]/.test(prefix) || clauses.some((clause) => !requirementStart.test(clause))) {
-    return { requirements: "", effects: text };
-  }
-  return { requirements: prefix.trim(), effects: normalized.slice(effectStart.index).trim() };
+  return { requirements: requirements.join("\n"), effects: remaining };
+}
+
+function findEffectStart(line: string, from: number) {
+  const marker = [...line.matchAll(/\[[^\]\n]+\]/g)].find(
+    (match) => match.index >= from && getInspectorMarker({ text: match[0] }),
+  );
+  const keyword = line.slice(from).search(/[＜<]/);
+  return Math.min(marker?.index ?? line.length, keyword < 0 ? line.length : from + keyword);
 }
