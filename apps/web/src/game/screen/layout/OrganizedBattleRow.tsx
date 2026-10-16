@@ -997,32 +997,25 @@ export function OrganizedBattleRow({
   const twoLanes = singleLane ? fitLanesToWidth(twoLaneHeightFitted, size.width, laneCards, twoLaneContent) : ownLanes;
   const rowKey = useId();
   const reports = size.reserveSupport && size.height > 0;
-  const referenceContent = { ...twoRowReferenceContent(fittedContent), twoRows, fitWidth: true };
-  const referenceLanes = viewportPlaced ? fit(referenceContent) : twoLaneHeightFitted;
-  const referenceFitted = viewportPlaced
-    ? fitLanesToWidth(referenceLanes, size.width, REFERENCE_LANE_CARDS, referenceContent).digimon
-    : twoLaneHeightFitted.digimon;
-  const reportedHeightFitted = reports ? referenceLanes.digimon : undefined;
-  const reportedStandard = reports ? referenceFitted : undefined;
+  const stackedReferenceLanes = viewportPlaced
+    ? fit({ ...twoRowReferenceContent(fittedContent), twoRows: true, fitWidth: true })
+    : twoLaneHeightFitted;
+  const reportedHeightFitted = reports ? stackedReferenceLanes.digimon : undefined;
   const reportedWidth = reports ? ownLanes.digimon : undefined;
   const reportedBeside = reports ? twoLanes.digimon : undefined;
   useEffect(
     () =>
       reportFieldCardWidth(
         rowKey,
-        reportedHeightFitted === undefined ||
-          reportedStandard === undefined ||
-          reportedWidth === undefined ||
-          reportedBeside === undefined
+        reportedHeightFitted === undefined || reportedWidth === undefined || reportedBeside === undefined
           ? undefined
           : {
               heightFitted: reportedHeightFitted,
-              standard: reportedStandard,
               drawn: reportedWidth,
               beside: reportedBeside,
             },
       ),
-    [rowKey, reportedHeightFitted, reportedStandard, reportedWidth, reportedBeside],
+    [rowKey, reportedHeightFitted, reportedWidth, reportedBeside],
   );
   useEffect(() => () => reportFieldCardWidth(rowKey, undefined), [rowKey]);
   // Rows sharing one card size follow the narrowest of them.

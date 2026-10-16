@@ -9,7 +9,6 @@ const viewport = vi.hoisted(() => ({
   queries: new Set<string>(),
   drawn: 65,
   heightFitted: 76,
-  standard: 70,
   beside: 65,
 }));
 vi.mock("../../../design/useMediaQuery", () => ({
@@ -23,7 +22,6 @@ vi.mock("../../../design/fieldLayout", async (importOriginal) => ({
 vi.mock("../layout/fieldCardWidth", () => ({
   useFieldCardWidth: () => ({
     heightFitted: viewport.heightFitted,
-    standard: viewport.standard,
     drawn: viewport.drawn,
     beside: viewport.beside,
   }),
@@ -34,7 +32,6 @@ afterEach(() => {
   viewport.queries.clear();
   viewport.drawn = 65;
   viewport.heightFitted = 76;
-  viewport.standard = 70;
   viewport.beside = 65;
 });
 
@@ -55,20 +52,20 @@ it("preserves shared battlefield and raising sizing on a desktop sideline board"
   const { result } = renderHook(useArenaLayout);
   expect(result.current.arenaPermanentWidth).toBe(100);
   expect(result.current.arenaRaisingWidth).toBe(viewport.heightFitted);
-  expect(result.current.arenaPileWidth).toBe(viewport.standard);
+  expect(result.current.arenaPileWidth).toBe(viewport.heightFitted);
 });
 
 it("keeps a short desktop's picked field width and sizes its piles from the field", () => {
   viewport.queries.add(SHORT_BOARD_QUERY);
   const { result } = renderHook(useArenaLayout);
   expect(result.current.arenaPermanentWidth).toBe(76);
-  expect(result.current.arenaPileWidth).toBe(viewport.standard);
-  expect(result.current.arenaRaisingWidth).toBe(viewport.standard);
+  expect(result.current.arenaPileWidth).toBe(viewport.heightFitted);
+  expect(result.current.arenaRaisingWidth).toBe(viewport.heightFitted);
 });
 
 it("keeps piles touch-sized when the field cards are small", () => {
   viewport.queries.add(SHORT_BOARD_QUERY);
-  viewport.standard = 30;
+  viewport.heightFitted = 30;
   const { result } = renderHook(useArenaLayout);
   expect(result.current.arenaPileWidth).toBe(44);
 });
