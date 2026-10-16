@@ -240,7 +240,7 @@ export function MatchOverlays({
           cardId={handPreviewEntry.cardId}
           artId={handPreviewEntry.artId}
           activatableEffects={parseActivatable(handPreviewActions?.activatableEffectsJson ?? "")}
-          canPlay={handPreviewActions?.playableFromHand === true}
+          canPlay={handPreviewActions?.playableFromHand === true || !!handPreviewActions?.negamonPlayEffectKey}
           canDigivolve={
             (handPreviewActions?.digivolveTargetPermanentIds.length ?? 0) > 0 ||
             (handPreviewActions?.dnaDigivolveRoutes?.length ?? 0) > 0 ||

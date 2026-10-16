@@ -1,6 +1,18 @@
 import "@/game/overlay/effectPromptFamily.css";
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardText } from "@/i18n/getTranslatedCardText";
 
-export function EffectStepText({ text, emphasis }: { text: string; emphasis?: string }) {
+export function EffectStepText({
+  text: sourceText,
+  emphasis,
+  cardId,
+}: {
+  text: string;
+  emphasis?: string;
+  cardId?: string;
+}) {
+  const translations = useCardTranslations({ includePrintedText: true });
+  const text = getTranslatedCardText({ text: sourceText, translations, cardId });
   const start = emphasis ? text.toLowerCase().indexOf(emphasis.toLowerCase()) : -1;
   if (!emphasis || start < 0) return text;
   return (

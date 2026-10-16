@@ -1,3 +1,4 @@
+import type { AttackRedirection } from "#shared/schema/AttackRedirection";
 import { Schema, ArraySchema, type } from "@colyseus/schema";
 import { CardInstance } from "./CardInstance.js";
 import type { Seat } from "./enums.js";
@@ -7,6 +8,7 @@ import type { Seat } from "./enums.js";
  * Mirrors documented behavior.
  */
 export class Permanent extends Schema {
+  attackRedirectTargets: Record<string, AttackRedirection> = {};
   @type("string") permanentId!: string;
   @type("uint8") controllerSeat!: Seat;
   @type(CardInstance) topCard!: CardInstance; // the active Digimon/Tamer

@@ -110,6 +110,31 @@ decoder, queued intents, decisions, snapshots, and animation session. Recorded
 input replays retain the valid active prefix and normalize subsequent batch
 versions; participant replay frames also retain the visible rollback moment.
 
+## Community text moderation
+
+The API checks published deck names on publication and republication, and checks
+guides on each guide update. Rejections use `name_not_allowed` or
+`guide_not_allowed` with HTTP 422. Private saved names and chat keep their existing
+behavior; existing publications are not rescanned automatically.
+
+`hasBlockedCommunityText` uses the `@2toad/profanity` engine with its English
+preset and the multilingual dictionaries from
+[`naughty-words`](https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words)
+(Shutterstock, CC-BY-4.0). The other translated presets from `@2toad/profanity`
+are not enabled because they include benign phrases such as Portuguese “boa sorte”.
+The ambiguous Korean dictionary entry “보지” is excluded because it also appears
+in ordinary auxiliary-verb constructions in strategy explanations.
+The existing `obscenity` filter still detects disguised profanity. Additional
+policy terms reject death-related names such as “Muerte a la Royal Base”.
+
+Normalization handles compatibility characters, invisible formatting characters,
+and Latin accents. Complete official card names that collide with the filter are
+exempted only within their matched spans, so a guide can discuss Death Claw without
+allowing a separate offensive phrase. A small set of explicit abusive
+and death-related phrases in Chinese, Japanese, and Korean also match inside
+unspaced text; broad dictionary terms keep word boundaries to limit false positives. Dictionary coverage is finite:
+it does not guarantee every language, inflection, obfuscation, or contextual insult.
+
 ## Random community decks and used decks
 
 `GET /community/decks/random?format=<DeckFormat>&beta=<true|false>` is public and

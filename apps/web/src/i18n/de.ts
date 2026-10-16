@@ -53,6 +53,10 @@ const interfaceMessages = {
     "Erlauben Sie Ihrem Gegner, Ihre ursprüngliche Deckliste nach dem Spiel anzusehen und zu kopieren. Standardmäßig aktiviert.",
   "settings.shareDeckAfterMatchFailed":
     "Diese Einstellung konnte nicht geladen oder gespeichert werden. Versuche es erneut oder öffne die Einstellungen neu.",
+  "overlay.useNegamon": "Negamon verwenden",
+  "overlay.negamonPlayDetail":
+    "Aktiviere Negamons Effekt im Aufzuchtbereich, um ein Digimon mit reduzierten Kosten zu spielen und Negamon darunterzulegen. Die Karte wählst du im nächsten Schritt des Effekts.",
+  "overlay.playNormally": "Normal spielen",
   "overlay.viewOpponentDeck": "Gegnerisches Deck ansehen",
   "overlay.opponentDeck": "Gegnerisches Deck",
   "rollback.failed":

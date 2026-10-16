@@ -51,6 +51,10 @@ const interfaceMessages = {
   "settings.shareDeckAfterMatchDesc":
     "경기 종료 후 상대가 시작 덱 목록을 보고 복사할 수 있습니다. 기본으로 활성화됩니다.",
   "settings.shareDeckAfterMatchFailed": "설정을 불러오거나 저장하지 못했습니다. 다시 시도하거나 설정을 다시 여세요.",
+  "overlay.useNegamon": "네거몬 사용",
+  "overlay.negamonPlayDetail":
+    "육성 영역의 네거몬 효과로 등장 코스트를 줄여 디지몬을 등장시키고 네거몬을 그 아래에 놓습니다. 카드는 효과의 다음 단계에서 선택합니다.",
+  "overlay.playNormally": "일반 등장",
   "overlay.viewOpponentDeck": "상대 덱 보기",
   "overlay.opponentDeck": "상대 덱",
   "rollback.failed": "이 시점으로 안전하게 복원하지 못했습니다. 현재 대전 상태는 유지됩니다.",

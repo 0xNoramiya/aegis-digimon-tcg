@@ -10,6 +10,10 @@ const interfaceMessages = {
     "Consenti all’avversario di vedere e copiare la lista iniziale del tuo mazzo dopo la partita. Attivo per impostazione predefinita.",
   "settings.shareDeckAfterMatchFailed":
     "Impossibile caricare o salvare questa opzione. Riprova o riapri le impostazioni.",
+  "overlay.useNegamon": "Usa Negamon",
+  "overlay.negamonPlayDetail":
+    "Attiva l’effetto di Negamon nell’area di allevamento per giocare un Digimon a costo ridotto e mettere Negamon sotto di esso. Sceglierai la carta nel prossimo passaggio dell’effetto.",
+  "overlay.playNormally": "Gioca normalmente",
   "overlay.viewOpponentDeck": "Visualizza il mazzo avversario",
   "overlay.opponentDeck": "Mazzo avversario",
   "rollback.failed": "Impossibile ripristinare questo punto in sicurezza. La partita attuale è stata mantenuta.",

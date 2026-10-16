@@ -12,6 +12,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store,sharin
 
 COPY packages/shared ./packages/shared
 COPY apps/web ./apps/web
+COPY tools/translations ./tools/translations
 
 ARG VITE_AEGIS_API_URL=wss://aegis-digi.online
 ARG VITE_AEGIS_REVISION=development
