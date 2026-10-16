@@ -1,7 +1,13 @@
 import { Profanity, profaneWords } from "@2toad/profanity";
 import { allCards } from "@aegis/shared/cards/registry";
 import naughtyWords from "naughty-words";
-import { englishRecommendedTransformers, pattern, RegExpMatcher, skipNonAlphabeticTransformer } from "obscenity";
+import {
+  englishRecommendedBlacklistMatcherTransformers,
+  englishRecommendedTransformers,
+  pattern,
+  RegExpMatcher,
+  skipNonAlphabeticTransformer,
+} from "obscenity";
 import { hasBlockedWord } from "#api/moderation/blockedWords";
 
 function normalizeText(text: string): string {
@@ -56,10 +62,7 @@ const deathPatterns = [
 const deathMatcher = new RegExpMatcher({
   blacklistedTerms: deathPatterns.map((term, id) => ({ id, pattern: term })),
   ...englishRecommendedTransformers,
-  blacklistMatcherTransformers: [
-    ...englishRecommendedTransformers.blacklistMatcherTransformers,
-    skipNonAlphabeticTransformer(),
-  ],
+  blacklistMatcherTransformers: [...englishRecommendedBlacklistMatcherTransformers, skipNonAlphabeticTransformer()],
 });
 
 const cardNames = [
