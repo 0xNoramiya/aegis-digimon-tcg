@@ -31,7 +31,6 @@ A catalog update must not reject a deck the recorded match already accepted;
 this override is confined to replay seating and does not change live-room deck
 validation, deck format, or recorded game state.
 
-
 ## Real-clock replay test isolation
 
 The Vite test project isolates files that use module mocks. Reusing its module
