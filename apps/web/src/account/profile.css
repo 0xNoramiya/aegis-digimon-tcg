@@ -625,6 +625,8 @@
 }
 .profile-matches__replay {
   display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
   align-items: center;
   justify-content: flex-start;
   gap: var(--ds-space-2);
@@ -759,7 +761,8 @@
     grid-template-columns: 80px minmax(0, 1fr) auto;
     grid-template-areas:
       "result mode replay"
-      "result opponent replay";
+      "result opponent replay"
+      "result date replay";
     gap: var(--ds-space-1) var(--ds-space-3);
     padding-block: var(--ds-space-3);
   }
@@ -776,8 +779,8 @@
     grid-area: opponent;
   }
   .profile-matches__date {
-    grid-area: mode;
-    justify-self: end;
+    grid-area: date;
+    justify-self: start;
     font-size: var(--ds-text-xs);
   }
   .profile-matches__replay,
@@ -870,12 +873,19 @@
     margin: 0;
   }
   .profile-matches > li {
-    grid-template-columns: 64px minmax(0, 1fr) auto;
+    grid-template-columns: 72px minmax(0, 1fr);
     grid-template-areas:
-      "result mode replay"
-      "result opponent opponent"
-      "result date date";
+      "result mode"
+      "opponent opponent"
+      "date date"
+      "replay replay";
+    row-gap: var(--ds-space-2);
     padding-inline: var(--ds-space-4);
+  }
+  .profile-matches__replay,
+  .profile-matches__missing {
+    justify-self: start;
+    max-width: 100%;
   }
   .profile-matches__date {
     grid-area: date;
