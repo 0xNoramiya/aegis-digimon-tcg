@@ -108855,7 +108855,8 @@
                 "controller": "mine",
                 "kind": ["Digimon"],
                 "nameOrTrait": [{ "tokens": ["Appmon"], "match": "trait" }],
-                "hasLinkRequirement": true
+                "hasLinkRequirement": true,
+                "hostFilter": { "controller": "mine", "kind": ["Digimon"], "zone": "battleArea" }
               },
               "count": 1
             },
