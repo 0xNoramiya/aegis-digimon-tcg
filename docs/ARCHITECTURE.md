@@ -40,6 +40,13 @@ Two replay records exist and serve different purposes. The player replay
 (`apps/api/src/replays/recording.ts`) stores snapshot frames for playback. The
 input record (`apps/api/src/replays/inputs/`, format `aegis-replay-inputs/1`)
 stores the decklists and every input so the engine can re-execute the match.
+New matches also record a server-generated 256-bit `randomKey` for keyed shuffles
+and opaque initial card identities. This key stays in server hooks, logs, and
+private input records; it never enters synchronized state or player replay frames.
+Records without the key retain the legacy setup algorithm for reproduction.
+Live rooms ignore client seeds outside the test runtime. Feedback input records
+are available only through administrator routes or database tooling, including
+when the report is mirrored to GitHub.
 `pnpm replay run <record> --export <file>.aegis-replay` re-executes an input
 record into a player replay through the same `ReplayRecording`, so the web
 viewer opens it.
