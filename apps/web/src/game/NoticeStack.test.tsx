@@ -58,6 +58,34 @@ describe("NoticeStack", () => {
     expect(shown.querySelector('mark[data-kind="timing"]')?.textContent).toBe("[主要]");
   });
 
+  it.each(["OnPlay", "WhenDigivolving"])(
+    "translates TigerVespamon's security placement clause for %s",
+    async (timing) => {
+      render(
+        <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+          <NoticeStack
+            notice={notice({
+              body: {
+                variant: "effect",
+                cardId: "BT23-045",
+                timing,
+                description:
+                  "By placing 1 [Royal Base] or [Zaxon] trait Digimon card from your hand or trash face up as the bottom security card, return 1 of your opponent's Digimon with as much or less DP as this Digimon to the hand.",
+              },
+            })}
+            remainingMs={NOTICE_LIFETIME_MS}
+            onDismiss={() => undefined}
+          />
+        </I18nContext.Provider>,
+      );
+      const shown = screen.getByTestId("match-notice");
+      const getText = () => shown.querySelector(".match-notice__text")?.textContent;
+      await waitFor(() => expect(getText()).toContain("正面朝上置于安防区最下方"));
+      expect(getText()).toContain("将对方1只DP不高于此数码宝贝DP的数码宝贝放回到其手牌中。");
+      expect(getText()).not.toContain("By placing");
+    },
+  );
+
   it("shows the resolving clause under its printed timing label", () => {
     renderNotice(
       notice({

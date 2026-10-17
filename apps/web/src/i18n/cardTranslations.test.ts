@@ -30,6 +30,23 @@ describe("Chinese resolving clauses from complete card translations", () => {
     expect(getTranslatedCardText({ text, translations, cardId: card.cardId })).toBe("[主要]＜延迟＞\n\n·内存值+2。");
   });
 
+  it.each([
+    [
+      "BT23-045",
+      "[On Play] [When Digivolving] By placing 1 [Royal Base] or [Zaxon] trait Digimon card from your hand or trash face up as the bottom security card, return 1 of your opponent's Digimon with as much or less DP as this Digimon to the hand.",
+      "[登场时][进化时]可从我方的手牌/废弃区中，将1张拥有“皇家基地”/“Zaxon”特征的数码宝贝卡牌正面朝上置于安防区最下方，并将对方1只DP不高于此数码宝贝DP的数码宝贝放回到其手牌中。",
+    ],
+    [
+      "BT16-085",
+      "[Start of Your Main Phase] You may play 1 [Veemon] or [Wormmon] from your hand without paying the cost. At the next end of your opponent’s turn, return it to the hand.",
+      "[我方的主要阶段开始时]可以从我方的手牌中，不支付费用登场1张“V仔兽”/“虫虫兽”。当下个对方的回合结束时，将该数码宝贝放回到手牌中。",
+    ],
+  ])("resolves a timing clause from mismatched translated paragraphs for %s", (cardId, effectClauseText, expected) => {
+    const result = getTranslatedCardText({ text: effectClauseText, translations, cardId });
+    expect(result).toBe(expected);
+    expect(result).not.toMatch(/\b(?:By placing|You may play)\b/);
+  });
+
   it.each([undefined, "ST1-02", "UNKNOWN-CARD"])("does not borrow a clause with card context %s", (cardId) => {
     expect(getTranslatedCardText({ text: clause, translations, cardId })).toBe(clause);
   });
