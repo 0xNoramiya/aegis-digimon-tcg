@@ -4688,3 +4688,21 @@ it.each([
   fireEvent.click(screen.getByRole("button", { name: "Yes, activate" }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: true });
 });
+
+it.each(["Then, by trashing your top security card", "1 of your Digimon may attack"])(
+  "emphasizes Mistymon's current optional step: %s",
+  (effectTextEmphasis) => {
+    const clause =
+      "[On Play] [When Digivolving] You may place 1 [Witchelny] text card from your hand as the bottom security card. Then, by trashing your top security card, 1 of your Digimon may attack.";
+    renderDecision({
+      decisionId: "mistymon-step",
+      seat: 0,
+      kind: "optional",
+      sourceCardId: "EX13-033",
+      promptText: "Use this effect?",
+      options: { timing: "OnPlay", effectText: clause, effectTextPart: clause, effectTextEmphasis },
+    });
+    expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(clause);
+    expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(effectTextEmphasis);
+  },
+);

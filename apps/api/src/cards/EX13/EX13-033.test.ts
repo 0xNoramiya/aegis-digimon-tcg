@@ -250,8 +250,8 @@ describe("EX13-033 Mistymon", () => {
         .map(({ req }) => req.options?.effectTextEmphasis),
     ).toEqual([
       "[On Play] [When Digivolving] You may place 1 [Witchelny] text card from your hand as the bottom security card.",
-      "by trashing your top security card",
-      "Then, by trashing your top security card, 1 of your Digimon may attack.",
+      "Then, by trashing your top security card",
+      "1 of your Digimon may attack",
     ]);
   });
 

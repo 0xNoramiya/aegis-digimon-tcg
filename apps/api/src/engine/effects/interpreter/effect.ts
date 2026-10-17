@@ -615,7 +615,7 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
   if (action.effectTextPart !== undefined) ctx.activeEffectTextPart = action.effectTextPart;
   if (costChoice && paysCostFirst && effectiveCost.raw !== undefined) {
     ctx.activeEffectTextPart = ctx.activeEffectText;
-    ctx.activeEffectTextEmphasis = effectiveCost.raw;
+    ctx.activeEffectTextEmphasis = action.costTextEmphasis ?? effectiveCost.raw;
   }
   let chosen: boolean;
   try {
