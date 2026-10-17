@@ -514,3 +514,35 @@ compare candidates and controls on the same versioned lists and paired seeds,
 and publish strategy guides only after the existing promotion gates pass.
 Running campaigns keep their frozen runtime and deck identities; this snapshot
 applies to newly built campaigns and must not be mixed into an existing gate.
+
+## Rollout hand affordance experiment
+
+`runEvolutionMatch` accepts `mcts.omitRolloutHandAffordances: true` to skip
+client hand affordance projections only inside simulated matches. The live match
+continues to publish those fields. The direct match API defaults to disabled;
+the evaluation CLI enables it for generic heuristic MCTS matches. Legal actions
+continue to be enumerated and validated by the authoritative engine.
+
+The replay acceleration benchmark accepts `compareHandAffordances: true` to
+isolate this option while retaining prefix acceleration in both arms. It checks
+identical results, decisions, traces and search reports, excludes warmup samples,
+and alternates measurement order. A bounded search is a performance probe, not
+evidence of improved playing strength or equivalence across every card.
+
+Structural proposals are screened on the valid training tasks already present in
+the reflection feedback before reserving compute for the independent paired
+gate. A proposal must strictly improve the summed training score to reach that
+gate. Screening does not establish strength: accepted proposals still need fresh
+paired evidence and final held-out validation. The adapter can reuse exact
+screen evaluations when GEPA subsequently evaluates the same training tasks.
+After the final permitted proposal finishes its GEPA iteration, the stage stops
+instead of collecting further reflection batches that cannot produce another
+proposal. Its final candidate still receives the normal validation evaluation.
+
+Training policies exclude a previously selected main effect activation when it
+returns to the same visible main state. A visible state change clears that
+exclusion. This prevents cancelling an optional selection from repeatedly
+reactivating the effect until the decision budget expires. The policy uses only
+its observation, excluding event history, and leaves engine legality unchanged.
+This changes policy behavior and requires a new runtime fingerprint; results from
+the interrupted campaign must not be merged into a new campaign's fitness cache.

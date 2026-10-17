@@ -1,6 +1,7 @@
 """Keep reflection structural and gate each proposal on fresh paired seed blocks."""
 
 import json
+import math
 from pathlib import Path
 
 from gepa.strategies.instruction_proposal import InstructionProposalSignature
@@ -94,6 +95,45 @@ def guarded_proposer(
                 json.dumps({"program": program, "status": "unchanged"}, indent=2) + "\n"
             )
             return candidate
+        screen = None
+        records = dataset.get("heuristic", [])
+        if records:
+            if any(
+                record.get("Feedback", {}).get("valid") is not True
+                or not isinstance(record.get("Inputs", {}).get("match"), dict)
+                or type(record.get("Feedback", {}).get("score")) not in (int, float)
+                or not math.isfinite(record["Feedback"]["score"])
+                for record in records
+            ):
+                raise ValueError("Proposal screening requires valid training feedback and tasks")
+            screen_tasks = [record["Inputs"]["match"] for record in records]
+            screened = adapter.evaluate(screen_tasks, proposal).outputs
+            if len(screened) != len(records) or any(
+                output.get("valid") is not True
+                or type(output.get("score")) not in (int, float)
+                or not math.isfinite(output["score"])
+                for output in screened
+            ):
+                raise ValueError("Incomplete proposal screen cannot reject or promote a policy")
+            old_score = sum(record["Feedback"]["score"] for record in records)
+            new_score = sum(output["score"] for output in screened)
+            screen = {
+                "tasks": screen_tasks,
+                "parentScore": old_score,
+                "candidateScore": new_score,
+            }
+            if new_score <= old_score:
+                reservation.write_text(
+                    json.dumps(
+                        {
+                            "program": program,
+                            "status": "rejected-training-screen",
+                            "screen": screen,
+                        },
+                        indent=2,
+                    ) + "\n"
+                )
+                return candidate
         selected = adapter.evaluate(gate_tasks, proposal).outputs
         control = adapter.evaluate(gate_tasks, candidate).outputs
         evidence = paired_evidence(
@@ -101,10 +141,20 @@ def guarded_proposer(
         )
         (directory / f"proposal-{calls:04d}.json").write_text(
             json.dumps(
-                {"program": program, "pairedEvidence": evidence, "tasks": gate_tasks}, indent=2
+                {
+                    "program": program,
+                    "pairedEvidence": evidence,
+                    "tasks": gate_tasks,
+                    "screen": screen,
+                },
+                indent=2,
             )
             + "\n"
         )
         return proposal if evidence["accepted"] else candidate
 
+    def is_exhausted():
+        return calls >= proposal_limit
+
+    propose.is_exhausted = is_exhausted
     return propose

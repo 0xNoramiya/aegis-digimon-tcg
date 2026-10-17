@@ -240,6 +240,15 @@ def optimize_stage(
             stage_dir / "proposal-gates",
             max(1, metric_calls // (4 * len(splits["validation"]))),
         )
+    def should_stop(state):
+        if deterministic:
+            return proposer.failure is not None or proposer.exhausted(state)
+        if getattr(reflector, "failure", None) is not None:
+            return True
+        if metadata.get("pairedProposalGates"):
+            return adapter.propose_new_texts.is_exhausted()
+        return False
+
     result = gepa.optimize(
         seed_candidate={"heuristic": json.dumps(starting_program)},
         trainset=splits["train"],
@@ -272,9 +281,7 @@ def optimize_stage(
         display_progress_bar=False,
         raise_on_exception=True,
         callbacks=[audit],
-        stop_callbacks=(lambda state: proposer.failure is not None or proposer.exhausted(state))
-        if deterministic
-        else (lambda state: getattr(reflector, "failure", None) is not None),
+        stop_callbacks=should_stop,
     )
     if deterministic and proposer.failure is not None:
         raise RuntimeError(

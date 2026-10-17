@@ -507,6 +507,7 @@ export class GameEngine {
       recomputeContinuousEffects: () => this.recomputeContinuousEffects(),
     });
     this.projection = new BoardProjection({
+      omitHandAffordances: hooks.omitHandAffordances,
       state: this.state,
       access: this.access,
       continuous: this.continuous,

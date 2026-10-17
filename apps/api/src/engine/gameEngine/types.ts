@@ -14,6 +14,7 @@ import type {
  * importing Colyseus transport concerns. Supplied by AegisRoom.onCreate.
  */
 export interface GameEngineHooks {
+  omitHandAffordances?: boolean;
   seed: number;
   beforeTurn?: (turn: number) => Promise<void> | void;
   /** Who goes first, when the room already knows (a later game of a series). Otherwise the seed decides. */

@@ -15,6 +15,7 @@ const { trainingMetadata } = await import("#api/bot/training/metadata");
 async function main(): Promise<void> {
   const input = JSON.parse(readFileSync(0, "utf8")) as {
     simulations: number;
+    compareHandAffordances?: boolean;
     seed?: number;
     learnerSeat?: Seat;
     repetitions?: number;
@@ -60,7 +61,8 @@ async function main(): Promise<void> {
       mcts: {
         simulations,
         seed: 619,
-        reusePrefixActions: enabled,
+        reusePrefixActions: input.compareHandAffordances === true || enabled,
+        omitRolloutHandAffordances: input.compareHandAffordances === true && enabled,
         ...(bounded ? { startAfterDecisions, maxSearches: 1 } : {}),
       },
       turnLimit: 60,
@@ -131,13 +133,17 @@ async function main(): Promise<void> {
       engineSha256,
       nodeVersion: process.version,
       nodeEnvironment: process.env.NODE_ENV,
-      acceleration: [
-        "prefix-main-action-catalog",
-        "guarded-action-index",
-        "rejection-only-rollout-events",
-        "disabled-rollout-latency-sampling",
-        "public-indexed-score-only-rollout-chooser",
-      ],
+      compareHandAffordances: input.compareHandAffordances === true,
+      acceleration:
+        input.compareHandAffordances === true
+          ? ["omit-rollout-hand-affordances"]
+          : [
+              "prefix-main-action-catalog",
+              "guarded-action-index",
+              "rejection-only-rollout-events",
+              "disabled-rollout-latency-sampling",
+              "public-indexed-score-only-rollout-chooser",
+            ],
       simulations: input.simulations,
       mode,
       ...(mode === "single-search-after-prefix" ? { startAfterDecisions, maxSearches: 1 } : {}),

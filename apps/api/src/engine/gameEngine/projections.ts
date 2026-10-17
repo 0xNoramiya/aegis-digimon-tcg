@@ -59,6 +59,7 @@ import type { PendingBlitzAttack } from "./blitz.js";
  * factories rather than duplicated here.
  */
 export interface ProjectionDeps {
+  readonly omitHandAffordances?: boolean;
   readonly attackRedirectTargetIds: (attacker: Permanent, targetPermanentId?: string) => AttackRedirection;
   readonly state: GameState;
   readonly access: GameStateAccess;
@@ -650,6 +651,9 @@ export class BoardProjection {
    * cost reduction is applied from the declaration. Every other rejection still hides it.
    */
   syncHandAffordances(): void {
+    if (this.deps.omitHandAffordances === true) {
+      return;
+    }
     const seat = this.deps.state.turnSeat;
     const turnPlayer =
       this.deps.state.phase === Phase.Main && !this.deps.hasMainPhaseEnded()

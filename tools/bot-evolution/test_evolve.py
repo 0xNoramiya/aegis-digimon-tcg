@@ -218,8 +218,9 @@ def test_pilot_test_split_excludes_mirrors_and_rotates_opponents():
 
 @pytest.mark.parametrize("api_failure", (False, True))
 @pytest.mark.parametrize("reflection_pairs", (None, 4))
+@pytest.mark.parametrize("metric_calls", (192, 384))
 def test_official_gepa_stage_runs_custom_guarded_proposer_without_duplicate_template(
-    tmp_path, monkeypatch, api_failure, reflection_pairs
+    tmp_path, monkeypatch, api_failure, reflection_pairs, metric_calls
 ):
     """Exercise the real GEPA public API with its custom-proposer path, without paid calls."""
     initial = {
@@ -230,6 +231,7 @@ def test_official_gepa_stage_runs_custom_guarded_proposer_without_duplicate_temp
     }
     raw = {**initial, "rules": [{**initial["rules"][0], "when": {"minimum": {"turn": 1}}}]}
     prompts = []
+    reflection_batches = []
 
     class Adapter:
         propose_new_texts = None
@@ -240,6 +242,8 @@ def test_official_gepa_stage_runs_custom_guarded_proposer_without_duplicate_temp
             self.calls = 0
 
         def evaluate(self, tasks, candidate, capture_traces=False):
+            if capture_traces:
+                reflection_batches.append(tasks)
             if capture_traces and reflection_pairs is not None:
                 assert len(tasks) == 2 * reflection_pairs
                 assert all(
@@ -270,10 +274,11 @@ def test_official_gepa_stage_runs_custom_guarded_proposer_without_duplicate_temp
             return {
                 component: [
                     {
-                        "Inputs": "synthetic game",
+                        "Inputs": {"match": output["task"]},
                         "Generated Outputs": candidate,
-                        "Feedback": "condition distinguishes useful development",
+                        "Feedback": {"valid": output["valid"], "score": output["score"]},
                     }
+                    for output in evaluated.outputs
                 ]
                 for component in components
             }
@@ -306,7 +311,7 @@ def test_official_gepa_stage_runs_custom_guarded_proposer_without_duplicate_temp
             run_dir=tmp_path,
             node="unused",
             simulations=1,
-            metric_calls=384,
+            metric_calls=metric_calls,
             reflection_model="session",
             metadata={
                 "worker": "unused",
@@ -326,6 +331,7 @@ def test_official_gepa_stage_runs_custom_guarded_proposer_without_duplicate_temp
         assert not (tmp_path / "generic/selected.json").exists()
         return
     assert selected["program"] == raw and selected["validationScore"] == 1
+    assert len(reflection_batches) == metric_calls // 192
     assert selected["candidates"] >= 2 and selected["validEvaluatedProposals"] >= 1
     gates = [
         json.loads(path.read_text())

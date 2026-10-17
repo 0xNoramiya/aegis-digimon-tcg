@@ -96,6 +96,8 @@ function buildTrainingPolicy<Result extends Intent | Promise<Intent>>(
   mainActionSource?: () => TrainingAction[] | undefined,
 ): TrainingPolicy<Result> {
   const history = createObservationHistory();
+  let activationObservation = "";
+  const attemptedActivations = new Set<string>();
   // The engine may accept a play whose pay-time reduction later proves unavailable. After that
   // rejection the card stays in hand, so offering it again at the same memory would loop.
   let chosenPlay: { instanceId: string; turn: number; declaration: string } | undefined;
@@ -121,9 +123,20 @@ function buildTrainingPolicy<Result extends Intent | Promise<Intent>>(
     combat?: TrainingWindow["combat"],
     demonstration?: Intent,
   ): TrainingSteps {
+    const observation = observe();
+    if (kind === "main") {
+      const key = JSON.stringify({ ...observation, history: undefined });
+      if (key !== activationObservation) {
+        activationObservation = key;
+        attemptedActivations.clear();
+      }
+      actions = actions.filter(
+        (action) => action.intent.type !== "activateEffect" || !attemptedActivations.has(JSON.stringify(action.intent)),
+      );
+    }
     const index = yield withTeacher(
       {
-        observation: observe(),
+        observation,
         kind,
         selected: [],
         actions,
@@ -134,6 +147,9 @@ function buildTrainingPolicy<Result extends Intent | Promise<Intent>>(
     if (!Number.isInteger(index) || index < 0 || index >= actions.length)
       throw new Error(`Invalid training action index ${index}`);
     const action = actions[index]!;
+    if (kind === "main" && action.intent.type === "activateEffect") {
+      attemptedActivations.add(JSON.stringify(action.intent));
+    }
     if (kind === "main")
       chosenPlay =
         action.intent.type === "playCard" && action.assembly === undefined

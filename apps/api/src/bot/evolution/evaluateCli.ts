@@ -132,6 +132,7 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
         ? {
             mcts: {
               simulations: input.simulations ?? 256,
+              omitRolloutHandAffordances: true,
               seed: input.searchSeed ?? 0x5ea2c4,
               maxSearches: input.mctsMaxSearches,
               startAfterDecisions: input.mctsStartAfterDecisions,
@@ -277,6 +278,7 @@ if (process.argv.includes("--describe-combo-pilots")) {
         defaultSimulations: 256,
         reconstruction: "exact-engine-replay",
         belief: "uniform-open-decklist",
+        genericRolloutHandAffordances: false,
       },
     })}\n`,
   );

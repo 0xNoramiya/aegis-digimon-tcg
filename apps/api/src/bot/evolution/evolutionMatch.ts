@@ -35,6 +35,7 @@ export interface EvolutionMatchOptions {
     simulations: number;
     seed: number;
     reusePrefixActions?: boolean;
+    omitRolloutHandAffordances?: boolean;
     startAfterDecisions?: number;
     maxSearches?: number;
   };
@@ -158,6 +159,7 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
         ),
     }));
     const result = await runBotMatch({
+      omitHandAffordances: options.mcts?.omitRolloutHandAffordances === true,
       seed: options.seed,
       seats: [seats[0]!, seats[1]!],
       turnLimit: root.observation.turn + (options.turnLimit ?? 60),
