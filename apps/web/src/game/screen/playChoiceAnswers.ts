@@ -144,13 +144,17 @@ export function playChoiceAnswers({
       (entry) => entry.instanceId === actionConfirm?.instanceId && entry.playableFromHand,
     ),
     onPlayNormally: () => {
-      if (actionConfirm?.kind !== "negamon" || mainActionBlocked || !room) {
+      if (!actionConfirm || !["dna", "negamon"].includes(actionConfirm.kind) || mainActionBlocked || !room) {
         return;
       }
       const entry = handEntries.find((candidate) => candidate.instanceId === actionConfirm.instanceId);
-      overlays.setActionConfirm(null);
+      close(() => overlays.setActionConfirm(null));
       if (entry?.playableFromHand) {
-        playNormally?.(entry.instanceId, actionConfirm.confirmDrop);
+        if (actionConfirm.kind === "dna") {
+          dispatchPlayCard(room, entry.instanceId);
+        } else if (actionConfirm.kind === "negamon") {
+          playNormally?.(entry.instanceId, actionConfirm.confirmDrop);
+        }
       }
     },
     onConfirmCancel: () => close(() => overlays.setActionConfirm(null)),

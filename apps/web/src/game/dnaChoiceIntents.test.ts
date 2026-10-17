@@ -118,3 +118,43 @@ it.each(["valid", "gone", "illegal", "unspecified"])(
     );
   },
 );
+
+it.each(["playable", "unplayable", "blocked", "missing"])(
+  "normal play from a DNA prompt rechecks the live hand (%s)",
+  (state) => {
+    const { viewer, entry, room, overlays, selection } = fixture();
+    entry.playableFromHand = state !== "unplayable";
+    const dispatchPlayCard = vi.fn<() => void>();
+    const answers = playChoiceAnswers({
+      room,
+      viewer,
+      handEntries: state === "missing" ? [] : [entry],
+      mainActionBlocked: state === "blocked",
+      appFusionAvailable: () => false,
+      dualPlay: null,
+      actionConfirm: {
+        kind: "dna",
+        instanceId: entry.instanceId,
+        cardId: entry.cardId,
+        materialPermanentIds: ["yellow", "purple-one"],
+      },
+      appFusionChoice: null,
+      appFusionRoutes: undefined,
+      evoCostChoice: null,
+      assemblyPick: null,
+      digiXrosPick: null,
+      overlays,
+      setAppFusionChoice: vi.fn<() => void>(),
+      clearSel: selection.clearSel,
+      playGameCue: vi.fn<() => void>(),
+      lastPlayAttemptRef: { current: undefined },
+      dispatchPlayCard,
+      digivolveWithChoice: vi.fn<() => void>(),
+      findPermanent: () => undefined,
+    });
+    answers.onPlayNormally();
+    expect(dispatchPlayCard.mock.calls).toEqual(state === "playable" ? [[room, entry.instanceId]] : []);
+    expect(intents.dnaDigivolve).not.toHaveBeenCalled();
+    expect(selection.clearSel).toHaveBeenCalledTimes(state === "blocked" ? 0 : 1);
+  },
+);

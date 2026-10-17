@@ -138,6 +138,7 @@ export function PlayChoicePrompts({
           disabled={actionBlocked}
           onConfirm={onConfirmAction}
           onNormalEvolution={onDigivolveNormally}
+          onNormalPlay={canPlayNormally ? onPlayNormally : undefined}
           onCancel={onConfirmCancel}
         />
       ) : actionConfirm ? (
