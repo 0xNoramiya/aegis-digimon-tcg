@@ -49960,6 +49960,31 @@
     "imageId": "BT27-025"
   },
   {
+    "cardId": "BT27-028",
+    "set": "BT27",
+    "nameEn": "Shaujinmon",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Virus"],
+    "types": ["Wizard", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.4 w/[DATA SQUAD] trait: Cost 3 \n\n＜Decode (Lv.4 or lower w/[Aquatic]/[DATA SQUAD] trait)＞\n[On Play] [When Digivolving] 1 of your opponent's Digimon or Tamers can't suspend until their turn ends.\n[Rule] Trait: Has [Aquatic] Type.",
+    "inheritedEffectText": "＜Decode (Lv.4 or lower w/[Aquatic]/[DATA SQUAD] trait)＞ (When this Digimon would leave the battle area other than in battle, you may play 1 specified Digimon card from its digivolution cards without paying the cost.)",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-028"
+  },
+  {
     "cardId": "BT27-035",
     "nameEn": "MirageGaogamon: Burst Mode",
     "colors": ["Blue", "Black"],
