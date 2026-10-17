@@ -167,4 +167,55 @@ describe("BT27-095 Homer Yushima", () => {
 
     expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId)).toEqual([cardId]);
   });
+
+  it("highlights the face-down placement while it is paid and the digivolve clause while it resolves", async () => {
+    const start = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: cardId, as: "homer" }],
+          hand: ["BT2-024", "BT1-024"],
+          deck: ["BT1-009"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await start.ready();
+    await advance(start.engine).fireForPermanent(EffectTiming.OnStartMainPhase, start.perm("homer"));
+    await settle();
+    expect(start.decisions.find(({ req }) => req.kind === "selectCards")?.req.options?.effectTextEmphasis).toBe(
+      "By placing 1 [Cyborg] or [Aquatic] trait card from your hand face down under this Tamer",
+    );
+
+    const main = setupEngine(
+      {
+        0: {
+          battleArea: [
+            {
+              card: cardId,
+              as: "homer",
+              under: [
+                { card: "BT1-010", faceUp: false },
+                { card: "BT1-011", faceUp: false },
+              ],
+            },
+            { card: "BT1-019", as: "redHost" },
+            { card: "ST24-03", as: "blueHost" },
+          ],
+          hand: ["BT1-024", "BT25-027"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await main.ready();
+    main.state.memory = 5;
+    expect(activateMain(main)).toEqual({ ok: true });
+    await settle(() => main.perm("homer").stack.length === 0);
+    await settle();
+    expect(
+      main.decisions.find(({ req }) => req.kind === "chooseTargets" && req.sourceCardId === cardId)?.req.options
+        ?.effectTextEmphasis,
+    ).toBe(
+      "1 of your Digimon may digivolve into a [Cyborg] or [Aquatic] trait Digimon card in the hand with the cost reduced by 2.",
+    );
+  });
 });

@@ -275,4 +275,41 @@ describe("BT27-031 JumboGamemon", () => {
     expect(stackCardIds(s, "jumbo")).toEqual(["BT1-019"]);
     expect(s.state.players[1]!.deck.at(-1)?.cardId).toBe("BT1-013");
   });
+
+  it("highlights the placement cost, then the return clause, but not the activation question", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: cardId, as: "jumbo", under: ["BT1-019"] },
+            { card: "BT1-086", as: "tamer" },
+            { card: "BT1-019", as: "ally" },
+          ],
+        },
+        1: {
+          battleArea: [
+            { card: "BT1-009", as: "first" },
+            { card: "BT1-009", as: "second" },
+          ],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+
+    await advance(s.engine).fire(EffectTiming.OnPlay, s.perm("jumbo"));
+    await settle(() => s.state.players[1]!.battleArea.length === 1);
+
+    const prompts = s.decisions
+      .map(({ req }) => req)
+      .filter((req) => req.sourceCardId === cardId && req.options?.effectText?.startsWith("[On Play]"));
+    expect(prompts.map((req) => [req.kind, req.options?.effectTextEmphasis])).toEqual([
+      ["optional", undefined],
+      ["chooseTargets", "By placing 1 of your other Digimon or Tamers as this Digimon's bottom digivolution card"],
+      [
+        "chooseTargets",
+        "return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
+      ],
+    ]);
+  });
 });

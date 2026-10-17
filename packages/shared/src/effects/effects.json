@@ -241400,12 +241400,7 @@
         "description": "[On Play] [When Digivolving] [Counter] [Once Per Turn] By placing 1 of your other Digimon or Tamers as this Digimon's bottom digivolution card, return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
         "actions": [
           {
-            "kind": "Return",
-            "target": {
-              "filter": { "controller": "opponent", "kind": ["Digimon"], "digivolutionCardsCompareToSource": "lte" },
-              "count": 1
-            },
-            "to": "deckBottom",
+            "kind": "CostGatedBlock",
             "cost": {
               "kind": "place",
               "targetIsPermanent": true,
@@ -241419,7 +241414,22 @@
               "host": "self"
             },
             "optional": true,
-            "abortOnDecline": true
+            "abortOnDecline": true,
+            "actions": [
+              {
+                "effectTextPart": "return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
+                "kind": "Return",
+                "target": {
+                  "filter": {
+                    "controller": "opponent",
+                    "kind": ["Digimon"],
+                    "digivolutionCardsCompareToSource": "lte"
+                  },
+                  "count": 1
+                },
+                "to": "deckBottom"
+              }
+            ]
           }
         ]
       },
@@ -241430,12 +241440,7 @@
         "description": "[On Play] [When Digivolving] [Counter] [Once Per Turn] By placing 1 of your other Digimon or Tamers as this Digimon's bottom digivolution card, return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
         "actions": [
           {
-            "kind": "Return",
-            "target": {
-              "filter": { "controller": "opponent", "kind": ["Digimon"], "digivolutionCardsCompareToSource": "lte" },
-              "count": 1
-            },
-            "to": "deckBottom",
+            "kind": "CostGatedBlock",
             "cost": {
               "kind": "place",
               "targetIsPermanent": true,
@@ -241449,7 +241454,22 @@
               "host": "self"
             },
             "optional": true,
-            "abortOnDecline": true
+            "abortOnDecline": true,
+            "actions": [
+              {
+                "effectTextPart": "return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
+                "kind": "Return",
+                "target": {
+                  "filter": {
+                    "controller": "opponent",
+                    "kind": ["Digimon"],
+                    "digivolutionCardsCompareToSource": "lte"
+                  },
+                  "count": 1
+                },
+                "to": "deckBottom"
+              }
+            ]
           }
         ]
       },
@@ -241460,12 +241480,7 @@
         "description": "[On Play] [When Digivolving] [Counter] [Once Per Turn] By placing 1 of your other Digimon or Tamers as this Digimon's bottom digivolution card, return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
         "actions": [
           {
-            "kind": "Return",
-            "target": {
-              "filter": { "controller": "opponent", "kind": ["Digimon"], "digivolutionCardsCompareToSource": "lte" },
-              "count": 1
-            },
-            "to": "deckBottom",
+            "kind": "CostGatedBlock",
             "cost": {
               "kind": "place",
               "targetIsPermanent": true,
@@ -241479,7 +241494,22 @@
               "host": "self"
             },
             "optional": true,
-            "abortOnDecline": true
+            "abortOnDecline": true,
+            "actions": [
+              {
+                "effectTextPart": "return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
+                "kind": "Return",
+                "target": {
+                  "filter": {
+                    "controller": "opponent",
+                    "kind": ["Digimon"],
+                    "digivolutionCardsCompareToSource": "lte"
+                  },
+                  "count": 1
+                },
+                "to": "deckBottom"
+              }
+            ]
           }
         ]
       },
@@ -241550,7 +241580,8 @@
               "host": "self",
               "destination": "digivolutionStack",
               "position": "bottom",
-              "faceDown": true
+              "faceDown": true,
+              "raw": "By placing 1 [Cyborg] or [Aquatic] trait card from your hand face down under this Tamer"
             },
             "optional": true,
             "abortOnDecline": true,
@@ -241568,6 +241599,7 @@
             "kind": "CostGatedBlock",
             "cost": {
               "kind": "compound",
+              "raw": "By suspending this Tamer and trashing 2 bottom face-down cards from under any of your Tamers",
               "costs": [
                 { "kind": "suspend", "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true } },
                 {
@@ -241582,6 +241614,7 @@
             "abortOnDecline": true,
             "actions": [
               {
+                "effectTextPart": "1 of your Digimon may digivolve into a [Cyborg] or [Aquatic] trait Digimon card in the hand with the cost reduced by 2.",
                 "kind": "Digivolve",
                 "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
                 "into": {

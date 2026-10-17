@@ -14,10 +14,12 @@ const placeFaceDown = {
   destination: "digivolutionStack",
   position: "bottom",
   faceDown: true,
+  raw: "By placing 1 [Cyborg] or [Aquatic] trait card from your hand face down under this Tamer",
 } satisfies Action["cost"];
 
 const suspendAndTrashFaceDown = {
   kind: "compound",
+  raw: "By suspending this Tamer and trashing 2 bottom face-down cards from under any of your Tamers",
   costs: [
     { kind: "suspend", target: self },
     {
@@ -56,6 +58,8 @@ export const compiled: CompiledCard = {
           abortOnDecline: true,
           actions: [
             {
+              effectTextPart:
+                "1 of your Digimon may digivolve into a [Cyborg] or [Aquatic] trait Digimon card in the hand with the cost reduced by 2.",
               kind: "Digivolve",
               target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
               into: { controllerDefault: "mine", zone: "hand", kind: ["Digimon"], ...cyborgOrAquatic },

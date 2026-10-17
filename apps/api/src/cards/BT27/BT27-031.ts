@@ -2,12 +2,7 @@ import type { Action, CardEffect, CompiledCard } from "@aegis/shared";
 import { registerIrCard } from "../../engine/effects/interpreter.js";
 
 const placeThenReturn: Action = {
-  kind: "Return",
-  target: {
-    filter: { controller: "opponent", kind: ["Digimon"], digivolutionCardsCompareToSource: "lte" },
-    count: 1,
-  },
-  to: "deckBottom",
+  kind: "CostGatedBlock",
   cost: {
     kind: "place",
     targetIsPermanent: true,
@@ -19,6 +14,18 @@ const placeThenReturn: Action = {
   },
   optional: true,
   abortOnDecline: true,
+  actions: [
+    {
+      effectTextPart:
+        "return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
+      kind: "Return",
+      target: {
+        filter: { controller: "opponent", kind: ["Digimon"], digivolutionCardsCompareToSource: "lte" },
+        count: 1,
+      },
+      to: "deckBottom",
+    },
+  ],
 };
 
 const placeBody = (trigger: CardEffect["trigger"]): CardEffect => ({
