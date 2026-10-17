@@ -2,15 +2,21 @@ import { createHash } from "node:crypto";
 import { ALL_FAMOUS_DECKS, getCardDefinition } from "@aegis/shared";
 import { validateDecklist } from "../../engine/deckValidation.js";
 import { getEffectModule } from "../../engine/effects/registry.js";
+import digilabDecks from "#api/bot/evolution/digilab-decks.json" with { type: "json" };
 
-// Both archetypes appear in the current tracked meta (DCG Nexus, 27 Sep–4 Oct 2026).
 export const EVOLUTION_DECK_VERSIONS = [
-  "bt26-dgo-2026-09-05-1-glowing-dawn@1",
-  "bt26-dgo-2026-08-28-1-toho-braves@1",
+  "digilab-ex13-122980@1",
+  "digilab-ex13-121547@1",
+  "digilab-ex13-122110@1",
+  "digilab-ex13-122675@1",
+  "digilab-ex13-120207@1",
+  "digilab-ex13-119771@1",
 ] as const;
 
 export function evolutionDeck(version: string) {
-  const source = ALL_FAMOUS_DECKS.find((deck) => deck.deckVersion === version || deck.deckId === version);
+  const source =
+    ALL_FAMOUS_DECKS.find((deck) => deck.deckVersion === version || deck.deckId === version) ??
+    digilabDecks.decks.find((deck) => deck.deckVersion === version);
   if (source === undefined) throw new Error(`Unknown evolution deck ${version}`);
   const deck = { mainDeck: [...source.decklist.mainDeck], eggDeck: [...source.decklist.eggDeck] };
   const legality = validateDecklist(deck);

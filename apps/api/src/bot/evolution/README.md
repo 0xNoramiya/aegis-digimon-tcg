@@ -482,3 +482,35 @@ failure occurred after the benchmarks; their zero-OOM observations do not apply
 to the subsequent validation run. The memory limit was not raised. A focused type check of the new regression
 file and its dependencies passes with the shared-project reference preserved;
 it does not replace the incomplete repository test type check.
+
+## DigiLab deck snapshot
+
+`digilab-decks.json` freezes 22 tournament lists fetched on 16 October 2026
+from the authenticated DigiLab API, with source URLs, event dates, placements,
+format labels and a raw-response fingerprint. Credentials stay on the Oracle
+host; the committed snapshot contains no API key or player names. Metadata
+queries use EX13 and BT26 filters, ordered by entries. List queries select up
+to two results per archetype ordered by placement, so this is a selection of
+successful tournament lists, not a representative sample of all games. Aggregate
+statistics retain the provider's reported scope and are not independent bot
+evaluation results.
+
+The executable pilot catalog admits 20 lists after normal deck legality and
+effect-registration checks. Two incomplete source lists (47-card Chronomon and
+37-card Glowing Dawn) remain in the snapshot for provenance and are rejected,
+without inventing replacements. Registration checks do not establish complete
+card-rules fidelity.
+
+New campaigns retain random decks for the generic phase, then specialize on
+versioned EX13 Examon, Jupitermon, UlforceVeedramon, TS Mervamon, Toho Braves and
+Glowing Dawn lists. The full admitted BT26/EX13 catalog is available through
+`--describe-pilots`; individual versions work with the evaluation worker's
+`decks` input. Historical famous-deck IDs remain resolvable. More pilots increase
+total campaign work, not worker concurrency or the 4 GiB memory ceiling.
+
+Tournament placement and human win percentages inform curriculum selection,
+never GEPA fitness. Keep training, validation and held-out seed splits separate,
+compare candidates and controls on the same versioned lists and paired seeds,
+and publish strategy guides only after the existing promotion gates pass.
+Running campaigns keep their frozen runtime and deck identities; this snapshot
+applies to newly built campaigns and must not be mixed into an existing gate.

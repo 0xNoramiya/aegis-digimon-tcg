@@ -6,6 +6,11 @@
   "type": "module",
   "main": "./dist/index.js",
   "imports": {
+    "#api/bot/evolution/digilab-decks.json": {
+      "types": "./src/bot/evolution/digilab-decks.json",
+      "development": "./src/bot/evolution/digilab-decks.json",
+      "default": "./dist/bot/evolution/digilab-decks.json"
+    },
     "#api/bot/evolution/programs/certified-pilots.json": {
       "types": "./src/bot/evolution/programs/certified-pilots.json",
       "development": "./src/bot/evolution/programs/certified-pilots.json",
