@@ -50009,6 +50009,22 @@
     "imageId": "BT27-031"
   },
   {
+    "cardId": "BT27-095",
+    "set": "BT27",
+    "nameEn": "Homer Yushima",
+    "colors": ["Black", "Blue"],
+    "kinds": ["Tamer"],
+    "playCost": 4,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["DATA SQUAD"],
+    "effectText": "[Start of Your Main Phase] By placing 1 [Cyborg] or [Aquatic] trait card from your hand face down under this Tamer, ＜Draw 1＞ and gain 1 memory.\n[Main] By suspending this Tamer and trashing 2 bottom face-down cards from under any of your Tamers, 1 of your Digimon may digivolve into a [Cyborg] or [Aquatic] trait Digimon card in the hand with the cost reduced by 2.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-095"
+  },
+  {
     "cardId": "BT27-035",
     "nameEn": "MirageGaogamon: Burst Mode",
     "colors": ["Blue", "Black"],

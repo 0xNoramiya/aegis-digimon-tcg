@@ -241528,5 +241528,91 @@
     "coverage": "full",
     "residual": [],
     "digivolutionRequirement": [{ "level": 5, "traits": ["DATA SQUAD"], "cost": 4, "isAlternate": true }]
+  },
+  "BT27-095": {
+    "effects": [
+      {
+        "trigger": "StartOfYourMainPhase",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "cost": {
+              "kind": "place",
+              "target": {
+                "filter": {
+                  "controller": "mine",
+                  "zone": "hand",
+                  "nameOrTrait": [{ "tokens": ["Cyborg", "Aquatic"], "match": "trait" }]
+                },
+                "count": 1
+              },
+              "underFilter": { "isSelfRef": true },
+              "host": "self",
+              "destination": "digivolutionStack",
+              "position": "bottom",
+              "faceDown": true
+            },
+            "optional": true,
+            "abortOnDecline": true,
+            "actions": [
+              { "kind": "Draw", "controller": "mine", "amount": 1 },
+              { "kind": "GainMemory", "amount": 1 }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Main",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "cost": {
+              "kind": "compound",
+              "costs": [
+                { "kind": "suspend", "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true } },
+                {
+                  "kind": "trashBottomFaceDownUnderTamer",
+                  "controller": "mine",
+                  "count": 2,
+                  "raw": "trashing 2 bottom face-down cards from under any of your Tamers"
+                }
+              ]
+            },
+            "optional": true,
+            "abortOnDecline": true,
+            "actions": [
+              {
+                "kind": "Digivolve",
+                "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+                "into": {
+                  "controllerDefault": "mine",
+                  "zone": "hand",
+                  "kind": ["Digimon"],
+                  "nameOrTrait": [{ "tokens": ["Cyborg", "Aquatic"], "match": "trait" }]
+                },
+                "from": ["hand"],
+                "reduceCost": 2,
+                "payCost": true,
+                "optional": true,
+                "abortOnDecline": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "isSecurity": true,
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "payCost": false
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
   }
 }
