@@ -38,13 +38,18 @@ nonempty line is matched independently against complete dictionary entries.
 Unmatched lines remain in English, with their original line breaks and spacing.
 For resolving clauses, effect displays pass the source card ID. If an exact
 entry is unavailable, the client searches only that card's complete text boxes
-and aligns paragraphs separated by a line break before a bracketed heading.
-The source and translation must have the same paragraph count, the requested
-text must match a whole source paragraph, and all matches must agree on one
-translation. Continuation lines, including Delay bullets, stay attached to their
-paragraph. Missing context, ambiguous matches, mismatched paragraph counts and
-partial sentences retain the existing fallback. No catalog-wide substring
-search or sentence translation is performed.
+and matches complete clauses using recognized Chinese timing headers, usage
+limits and the leading Delay keyword. The sets of recognized clause signatures
+must agree across the complete source and translated text boxes. A signature
+must occur exactly once in each box, and the requested text must match a complete
+source paragraph. Paragraph position and total paragraph count do not establish
+alignment: Assembly conditions and standalone keywords can move between printings.
+Continuation lines, including Delay bullets, remain attached to their clause.
+Exact full-field and clause entries still take priority. Missing context, unknown
+headers, repeated signatures, incompatible structures, conflicting text-box
+matches and partial sentences retain the existing fallback. Regional dictionaries
+continue to use their exact entries; no catalog-wide substring search or sentence
+translation is performed.
 
 Run `pnpm translations:audit` to write `.local/card-translation-coverage.json`.
 The report includes card IDs, fields, original text and unmatched effect lines.

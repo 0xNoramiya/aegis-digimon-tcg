@@ -36,6 +36,25 @@ function renderNotice(
 }
 
 describe("NoticeStack", () => {
+  it.each([
+    ["AD1-009", "退化3"],
+    ["AD1-012", "Lv.数值最低"],
+    ["AD1-025", "卡组最下方"],
+  ])("shows the resolving Assembly card effect rather than an adjacent paragraph for %s", async (cardId, expected) => {
+    render(
+      <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+        <NoticeStack
+          notice={notice({ body: { variant: "effect", cardId, timing: "OnPlay" } })}
+          remainingMs={NOTICE_LIFETIME_MS}
+          onDismiss={() => undefined}
+        />
+      </I18nContext.Provider>,
+    );
+    const getText = () => screen.getByTestId("match-notice").querySelector(".match-notice__text")?.textContent;
+    await waitFor(() => expect(getText()).toContain(expected));
+    expect(getText()).not.toContain("[组装");
+  });
+
   it("translates the resolving Main clause from a complete Chinese option-card entry", async () => {
     render(
       <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>

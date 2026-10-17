@@ -16,6 +16,91 @@ describe("Chinese resolving clauses from complete card translations", () => {
   const card = allCards().find((candidate) => candidate.cardId === "LM-034")!;
   const clause = card.effectText!.split("\n")[1]!;
 
+  it.each(["AD1-009", "AD1-012", "AD1-025"])("aligns reordered Assembly card effects for %s", (cardId) => {
+    const card = allCards().find((candidate) => candidate.cardId === cardId)!;
+    const clause = card
+      .effectText!.split(/(?:\r\n|\r|\n)\s*(?=\[)/)
+      .find((part) => part.startsWith("[On Play]"))!
+      .trim();
+    const result = getTranslatedCardText({ text: clause, translations, cardId });
+    expect(result).toContain("[登场时][进化时]");
+    expect(result).not.toContain("[组装");
+    if (cardId === "AD1-009") {
+      expect(result).toContain("退化3");
+    } else if (cardId === "AD1-012") {
+      expect(result).toContain("Lv.数值最低");
+    } else {
+      expect(result).toContain("卡组最下方");
+    }
+  });
+
+  it("rejects equally sized paragraphs with incompatible timing headers", () => {
+    const sample = {
+      ...translations,
+      text: {
+        [normalizePrintedTextKey(card.effectText!)]: "颜色条件。\n【安防】错误时点。\n【主要】《延迟》\n·内存值+2。",
+      },
+    };
+    expect(getTranslatedCardText({ text: clause, translations: sample, cardId: card.cardId })).toBe(clause);
+  });
+
+  it("rejects duplicate candidates even when their translated text agrees", () => {
+    const sample = {
+      ...translations,
+      text: {
+        [normalizePrintedTextKey(card.effectText!)]:
+          "颜色条件。\n【主要】重复译文。\n【主要】重复译文。\n【主要】《延迟》\n·内存值+2。",
+      },
+    };
+    expect(getTranslatedCardText({ text: clause, translations: sample, cardId: card.cardId })).toBe(clause);
+  });
+
+  it("keeps unknown timing headers and changed usage limits in the source language", () => {
+    for (const header of ["未知时点", "主要】【每回合1次"]) {
+      const sample = {
+        ...translations,
+        text: {
+          [normalizePrintedTextKey(card.effectText!)]:
+            `颜色条件。\n【${header}】不能确认的译文。\n【主要】《延迟》\n·内存值+2。`,
+        },
+      };
+      expect(getTranslatedCardText({ text: clause, translations: sample, cardId: card.cardId })).toBe(clause);
+    }
+  });
+
+  it("does not guess between different effects sharing the same timing and usage limit", () => {
+    const shared = allCards().find((candidate) => candidate.cardId === "BT17-036")!;
+    const text = shared
+      .effectText!.split(/(?:\r\n|\r|\n)\s*(?=\[)/)
+      .find((part) => part.startsWith("[All Turns]"))!
+      .trim();
+    expect(getTranslatedCardText({ text, translations, cardId: shared.cardId })).toBe(text);
+  });
+
+  it.each(["P-235", "P-236"])("distinguishes Delay with alternative keyword brackets for %s", (cardId) => {
+    const shared = allCards().find((candidate) => candidate.cardId === cardId)!;
+    const text = shared
+      .effectText!.split(/(?:\r\n|\r|\n)\s*(?=\[)/)
+      .find((part) => part.startsWith("[Main]") && !part.includes("Delay"))!
+      .trim();
+    const result = getTranslatedCardText({ text, translations, cardId });
+    expect(result).toContain("翻开我方卡组最上方的3张卡牌");
+    expect(result).not.toContain("延迟");
+  });
+
+  it("matches a breeding clause without losing its trailing standalone keywords", () => {
+    const shared = allCards().find((candidate) => candidate.cardId === "EX9-057")!;
+    const text = shared
+      .effectText!.split(/(?:\r\n|\r|\n)\s*(?=\[)/)
+      .find((part) => part.startsWith("[Breeding]"))!
+      .trim();
+    const result = getTranslatedCardText({ text, translations, cardId: shared.cardId });
+    expect(result).toContain("[养成][对方的回合]");
+    expect(result).toContain("负面兽");
+    expect(result).toContain("冲突");
+    expect(result).not.toContain("When one of your opponent");
+  });
+
   it("resolves the complete Main clause without including the separate Delay effect", () => {
     const result = getTranslatedCardText({ text: clause, translations, cardId: card.cardId });
     expect(result).toBe(
