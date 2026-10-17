@@ -30,6 +30,36 @@ GUIDES = {
         "Toho Braves",
         "Practice the choices behind this BT26 Toho Braves deck.",
     ),
+    "digilab-ex13-122980@1": (
+        "ex13-examon",
+        "Examon",
+        "Practice the choices behind this EX13-era Examon deck.",
+    ),
+    "digilab-ex13-121547@1": (
+        "ex13-jupitermon",
+        "Jupitermon",
+        "Practice the choices behind this EX13-era Jupitermon deck.",
+    ),
+    "digilab-ex13-122110@1": (
+        "ex13-ulforceveedramon",
+        "UlforceVeedramon",
+        "Practice the choices behind this EX13-era UlforceVeedramon deck.",
+    ),
+    "digilab-ex13-122675@1": (
+        "ex13-ts-mervamon",
+        "TS Mervamon",
+        "Practice the choices behind this EX13-era TS Mervamon deck.",
+    ),
+    "digilab-ex13-120207@1": (
+        "ex13-toho-braves",
+        "Toho Braves",
+        "Practice the choices behind this EX13-era Toho Braves deck.",
+    ),
+    "digilab-ex13-119771@1": (
+        "ex13-glowing-dawn",
+        "Glowing Dawn",
+        "Practice the choices behind this EX13-era Glowing Dawn deck.",
+    ),
 }
 
 

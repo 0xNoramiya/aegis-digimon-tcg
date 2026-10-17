@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -135,6 +136,53 @@ def test_strict_guides_reject_deterministic_origin_even_when_strength_can_be_cer
     path.write_text(json.dumps(manifest))
     with pytest.raises(ValueError, match="API reflection"):
         verified_run(run)
+
+
+@pytest.mark.parametrize(
+    "version,slug,title",
+    [
+        ("digilab-ex13-122980@1", "ex13-examon", "Examon"),
+        ("digilab-ex13-121547@1", "ex13-jupitermon", "Jupitermon"),
+        ("digilab-ex13-122110@1", "ex13-ulforceveedramon", "UlforceVeedramon"),
+        ("digilab-ex13-122675@1", "ex13-ts-mervamon", "TS Mervamon"),
+        ("digilab-ex13-120207@1", "ex13-toho-braves", "Toho Braves"),
+        ("digilab-ex13-119771@1", "ex13-glowing-dawn", "Glowing Dawn"),
+    ],
+)
+def test_digilab_guides_require_valid_searches_before_rendering(tmp_path, version, slug, title):
+    from evidence import program_hash
+
+    run = artifact_run(tmp_path / "run")
+    manifest = json.loads((run / "manifest.json").read_text())
+    manifest["metadata"]["evolutionDecks"] = [
+        {"id": version, "deck": {"mainDeck": [], "eggDeck": []}}
+    ]
+    (run / "manifest.json").write_text(json.dumps(manifest))
+    pilots = json.loads((run / "pilots.json").read_text())
+    pilot = deepcopy(pilots["generic"])
+    pilot["program"]["rules"][0]["weight"] = -2
+    pilots[version] = pilot
+    (run / "pilots.json").write_text(json.dumps(pilots))
+    report = json.loads((run / "held-out.json").read_text())
+    evidence = deepcopy(report["results"]["generic"])
+    for game in evidence["selected"]:
+        game["candidateSha256"] = program_hash(pilot["program"])
+    evidence["selected"][0]["searches"][0]["invalid"] = 1
+    report["results"][version] = evidence
+    (run / "held-out.json").write_text(json.dumps(report))
+    output = tmp_path / "public"
+    with pytest.raises(ValueError, match="invalid simulations"):
+        publish(run, output, "https://example.com", tmp_path / "catalog.json")
+    assert not output.exists()
+    evidence["selected"][0]["searches"][0]["invalid"] = 0
+    (run / "held-out.json").write_text(json.dumps(report))
+    publish(run, output, "https://example.com", tmp_path / "catalog.json")
+    html = (output / slug / "index.html").read_text()
+    assert f"<h1>{title}</h1>" in html
+    assert f'https://example.com/strategy-guides/{slug}/' in html
+    assert "The tested deck" in html
+    assert "48 wins, 0 draws / 48 games" in html
+    assert slug in (output / "index.html").read_text()
 
 
 def test_publication_escapes_exact_advice_and_links_to_practice(tmp_path: Path) -> None:

@@ -424,6 +424,11 @@ starting-policy control, and links to Aegis practice. Generated pages live in
 `apps/web/public/strategy-guides/`; deploying those pages is a separate delivery
 step. No raw game traces or hidden observations are published.
 
+The EX13-era DigiLab campaign has separate guide routes for Examon, Jupitermon,
+UlforceVeedramon, TS Mervamon, Toho Braves, and Glowing Dawn. These routes support
+the exact deck versions in the campaign; adding a route does not publish a guide
+or relax the held-out evidence requirements.
+
 If an external reflection provider is unavailable, `--reflection-model session`
 uses the active coding session as the proposer. GEPA writes each exact prompt
 under the stage's `reflections/` directory and waits for a matching response
