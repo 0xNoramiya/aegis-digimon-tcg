@@ -203,91 +203,97 @@ export function createPlayVerbs(pc: PrimitivesContext) {
     const securityOriginSeats = new Set<Seat>();
     const placedMaterialCountByInstance = new Map<string, number>();
     const heldTriggeredByInstance = new Map<string, readonly CollectedEffect[]>();
+    const placements: (() => Promise<void>)[] = [];
     try {
       for (const instanceId of instanceIds) {
-        try {
-          const owner = ownerSeatOfLoose(state, instanceId);
-          if (owner === undefined) continue;
-          const ownerPlayer = player(owner);
-          const peek = peekLooseInstance(state, instanceId);
-          if (peek === undefined) continue;
-          const definition = requireCardDefinition(peek.cardId);
+        const owner = ownerSeatOfLoose(state, instanceId);
+        if (owner === undefined) continue;
+        const ownerPlayer = player(owner);
+        const peek = peekLooseInstance(state, instanceId);
+        if (peek === undefined) continue;
+        const definition = requireCardDefinition(peek.cardId);
 
-          // Breeding play: gate to Digimon/DigiEgg only (§6-4), require empty breeding slot
-          if (opts?.breeding) {
-            if (!(definition.kinds.includes(CardKind.Digimon) || definition.kinds.includes(CardKind.DigiEgg))) continue;
-            if (ownerPlayer.breeding !== undefined) continue; // single-occupancy — no-op
-          }
+        // Breeding play: gate to Digimon/DigiEgg only (§6-4), require empty breeding slot
+        if (opts?.breeding) {
+          if (!(definition.kinds.includes(CardKind.Digimon) || definition.kinds.includes(CardKind.DigiEgg))) continue;
+          if (ownerPlayer.breeding !== undefined) continue; // single-occupancy — no-op
+        }
 
-          // DUAL cards have no play cost and cannot be played, even for free (CR 7-1-1).
-          // Keep DigiEgg breeding plays and token placement on their existing dedicated paths.
-          if (!isPermanentKind(definition) || isOption(definition)) continue;
-          const effectSeat = effectSeatStack.at(-1) ?? ownerPlayer.seat;
-          if (continuous.isPlayBlocked(effectSeat, definition, "play", true, originByInstance.get(instanceId)))
+        // DUAL cards have no play cost and cannot be played, even for free (CR 7-1-1).
+        // Keep DigiEgg breeding plays and token placement on their existing dedicated paths.
+        if (!isPermanentKind(definition) || isOption(definition)) continue;
+        const effectSeat = effectSeatStack.at(-1) ?? ownerPlayer.seat;
+        if (continuous.isPlayBlocked(effectSeat, definition, "play", true, originByInstance.get(instanceId))) continue;
+        const declaredMaterials =
+          opts?.digiXrosMaterialInstanceIdsByPlay?.[instanceId] ?? opts?.digiXrosMaterialInstanceIds;
+        // The battle-area materials' "would leave" interrupts resolve before payment and placement,
+        // while the played card is only revealed. A prevented material is not placed and does not
+        // reduce the cost; what the interrupts triggered waits for this card's [On Play].
+        const battleAreaMaterials = (declaredMaterials ?? []).flatMap((materialInstanceId) => {
+          const fieldMaterial = Array.from(state.players)
+            .flatMap((candidatePlayer) => Array.from(candidatePlayer.battleArea))
+            .find((candidate) => candidate.topCard?.instanceId === materialInstanceId);
+          return fieldMaterial === undefined ? [] : [{ materialInstanceId, permanentId: fieldMaterial.permanentId }];
+        });
+        const materialInterrupt =
+          battleAreaMaterials.length === 0
+            ? undefined
+            : await engine.interruptDigiXrosMaterialLeave?.(
+                battleAreaMaterials.map(({ permanentId }) => permanentId),
+                effectSeat,
+              );
+        const preventedMaterialInstanceIds = new Set(
+          battleAreaMaterials
+            .filter(({ permanentId }) => materialInterrupt?.prevented.has(permanentId) === true)
+            .map(({ materialInstanceId }) => materialInstanceId),
+        );
+        const playMaterials = declaredMaterials?.filter(
+          (materialInstanceId) => !preventedMaterialInstanceIds.has(materialInstanceId),
+        );
+        const abandonPlay = async () => {
+          if ((materialInterrupt?.triggered.length ?? 0) > 0)
+            await engine.resolveHeldTriggeredEffects?.(materialInterrupt!.triggered);
+        };
+        if (opts?.payCost) {
+          const requirement = digiXrosRequirementFor(definition.cardId)?.[0];
+          const materialCount = playMaterials?.length ?? 0;
+          const perMaterialReduction =
+            requirement?.count === "∞" ? (requirement.costReduction ?? 1) : (requirement?.count ?? 0);
+          const digiXrosReduction = materialCount * perMaterialReduction;
+          const cost = await effectDrivenPlayCost(
+            instanceId,
+            definition,
+            ownerPlayer.seat,
+            (opts.costDeltaByPlay?.[instanceId] ?? opts.costDelta ?? 0) + digiXrosReduction,
+            false,
+            opts.costOverride,
+            originByInstance.get(instanceId),
+            false,
+            instanceIds.length,
+            instanceIds,
+          );
+          if (engine.memory.maxCostFor(ownerPlayer.seat) < cost) {
+            await abandonPlay();
             continue;
-          const declaredMaterials =
-            opts?.digiXrosMaterialInstanceIdsByPlay?.[instanceId] ?? opts?.digiXrosMaterialInstanceIds;
-          // The battle-area materials' "would leave" interrupts resolve before payment and placement,
-          // while the played card is only revealed. A prevented material is not placed and does not
-          // reduce the cost; what the interrupts triggered waits for this card's [On Play].
-          const battleAreaMaterials = (declaredMaterials ?? []).flatMap((materialInstanceId) => {
-            const fieldMaterial = Array.from(state.players)
-              .flatMap((candidatePlayer) => Array.from(candidatePlayer.battleArea))
-              .find((candidate) => candidate.topCard?.instanceId === materialInstanceId);
-            return fieldMaterial === undefined ? [] : [{ materialInstanceId, permanentId: fieldMaterial.permanentId }];
-          });
-          const materialInterrupt =
-            battleAreaMaterials.length === 0
-              ? undefined
-              : await engine.interruptDigiXrosMaterialLeave?.(
-                  battleAreaMaterials.map(({ permanentId }) => permanentId),
-                  effectSeat,
-                );
-          const preventedMaterialInstanceIds = new Set(
-            battleAreaMaterials
-              .filter(({ permanentId }) => materialInterrupt?.prevented.has(permanentId) === true)
-              .map(({ materialInstanceId }) => materialInstanceId),
+          }
+          if (cost > 0) engine.memory.pay(ownerPlayer.seat, cost, "playCard");
+        } else {
+          // A free play still opens the would-be-played window (EX9-030 Q4784).
+          // Optional processing costs may be paid, but its result cannot charge memory.
+          await engine.finalizeEffectPlayCost?.(
+            instanceId,
+            0,
+            false,
+            originByInstance.get(instanceId),
+            false,
+            instanceIds.length,
+            instanceIds,
           );
-          const playMaterials = declaredMaterials?.filter(
-            (materialInstanceId) => !preventedMaterialInstanceIds.has(materialInstanceId),
-          );
-          const abandonPlay = async () => {
-            if ((materialInterrupt?.triggered.length ?? 0) > 0)
-              await engine.resolveHeldTriggeredEffects?.(materialInterrupt!.triggered);
-          };
-          if (opts?.payCost) {
-            const requirement = digiXrosRequirementFor(definition.cardId)?.[0];
-            const materialCount = playMaterials?.length ?? 0;
-            const perMaterialReduction =
-              requirement?.count === "∞" ? (requirement.costReduction ?? 1) : (requirement?.count ?? 0);
-            const digiXrosReduction = materialCount * perMaterialReduction;
-            const cost = await effectDrivenPlayCost(
-              instanceId,
-              definition,
-              ownerPlayer.seat,
-              (opts.costDeltaByPlay?.[instanceId] ?? opts.costDelta ?? 0) + digiXrosReduction,
-              false,
-              opts.costOverride,
-              originByInstance.get(instanceId),
-              false,
-              instanceIds.length,
-            );
-            if (engine.memory.maxCostFor(ownerPlayer.seat) < cost) {
-              await abandonPlay();
-              continue;
-            }
-            if (cost > 0) engine.memory.pay(ownerPlayer.seat, cost, "playCard");
-          } else {
-            // A free play still opens the would-be-played window (EX9-030 Q4784).
-            // Optional processing costs may be paid, but its result cannot charge memory.
-            await engine.finalizeEffectPlayCost?.(
-              instanceId,
-              0,
-              false,
-              originByInstance.get(instanceId),
-              false,
-              instanceIds.length,
-            );
+        }
+        placements.push(async function placePreparedCard() {
+          if (opts?.breeding && ownerPlayer.breeding !== undefined) {
+            await abandonPlay();
+            return;
           }
           // Preserve the resolved host when moving stack material.  A material selected from
           // the breeding stack must be detached from that exact permanent before the new
@@ -299,7 +305,7 @@ export function createPlayVerbs(pc: PrimitivesContext) {
           const instance = removeLooseInstance(state, instanceId, true, resolvedHostPermanentId);
           if (instance === undefined) {
             await abandonPlay();
-            continue;
+            return;
           }
           instance.faceUp = true;
           // A source played onto a new permanent is a new card (CR 7-1-1, 3-4-4),
@@ -394,9 +400,10 @@ export function createPlayVerbs(pc: PrimitivesContext) {
             ...origin,
             to: opts?.breeding ? Zone.Breeding : Zone.BattleArea,
           });
-        } finally {
-          engine.clearPreparedDigiXrosPlay?.(instanceId);
-        }
+        });
+      }
+      for (const place of placements) {
+        await place();
       }
     } finally {
       for (const instanceId of instanceIds) engine.clearPreparedDigiXrosPlay?.(instanceId);
