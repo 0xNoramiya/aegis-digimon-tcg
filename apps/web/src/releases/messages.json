@@ -2866,5 +2866,11 @@
     "pt-BR": "Corrige os efeitos de link de Tweetmon e DoGatchmon e verifica as restrições de ataque de Kongou. Melhora a seleção no campo em dispositivos móveis e remove badges de palavras-chave duplicados.",
     "es": "Corrige los efectos de enlace de Tweetmon y DoGatchmon y verifica las restricciones de ataque de Kongou. Mejora la selección en el campo en móviles y elimina insignias de palabras clave duplicadas.",
     "it": "Corregge gli effetti di collegamento di Tweetmon e DoGatchmon e verifica le restrizioni di attacco di Kongou. Migliora la selezione sul campo da mobile e rimuove i badge duplicati delle parole chiave."
+  },
+  "releases.1.31.2-beta.fix.opponentChoice": {
+    "en": "Seventh Divine Cruz and similar effects now ask the opponent before trashing their security, independently of the controller’s saved answer.",
+    "pt-BR": "Seventh Divine Cruz e efeitos semelhantes agora perguntam ao oponente antes de descartar sua segurança, independentemente da resposta salva pelo controlador.",
+    "es": "Seventh Divine Cruz y efectos similares ahora preguntan al oponente antes de descartar su seguridad, independientemente de la respuesta guardada por el controlador.",
+    "it": "Seventh Divine Cruz ed effetti simili ora chiedono all’avversario prima di scartare la sua sicurezza, indipendentemente dalla risposta salvata dal controllore."
   }
 }
