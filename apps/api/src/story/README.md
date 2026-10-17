@@ -10,4 +10,6 @@ The API selects the scenario, decks, opponent, and starting state. Authenticated
 
 Each match shuffles both players' remaining main and Digi-Egg decks using the match seed. Scenario hands, security, trash, and starting fields stay fixed. The shuffled fixture is recorded in the replay so playback preserves the original draw order.
 
+Every playable encounter must supply two legal 50-card main decks across all starting zones. The Arisa rematch reconstruction includes two BT22-042 copies, one on the starting field and one in the draw pile. Deck admission tests validate all encounters, and a room regression verifies that this opponent can be seated.
+
 Guests can play without signing in. A random browser token identifies their server-owned progress in `story_guest_completions`; only its SHA-256 hash is stored in the database. The API verifies prerequisites and records wins for guests as it does for accounts. Signing in switches to separate account progress; clearing browser storage loses access to guest progress.
