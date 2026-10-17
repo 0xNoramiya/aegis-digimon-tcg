@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.31.3-beta",
+    "releasedAt": "2026-10-17",
+    "summaryKey": "releases.1.31.3-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.31.3-beta.fix.storyDecks"
+      }
+    ]
+  },
+  {
     "version": "1.31.2-beta",
     "releasedAt": "2026-10-17",
     "summaryKey": "releases.1.31.2-beta.summary",
