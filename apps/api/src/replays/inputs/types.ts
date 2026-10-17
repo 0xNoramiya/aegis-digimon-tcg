@@ -19,6 +19,7 @@ export interface ReplayRecord {
   serverRevision?: string;
   /** The engine seed (`GameEngineHooks.seed`): shuffles, first player and every seeded choice. */
   seed: number;
+  randomKey?: string;
   /** The first player the room imposed (a later game of a casual series). Otherwise the seed decides. */
   firstSeat?: Seat;
   /** Room-level rules mirrored into the state, and the dev scenario a non-production bot room laid. */
@@ -140,6 +141,7 @@ export interface ReplayDivergence {
 export interface ReplayHeaderLine {
   replaySeq: number;
   seed: number;
+  randomKey?: string;
   firstSeat?: Seat;
   serverRevision?: string;
   deckFormat: DeckFormat;
