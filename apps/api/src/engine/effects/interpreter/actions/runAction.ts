@@ -1202,7 +1202,11 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
         (ctx.predecidedOptionalCosts?.get(action) ??
           (await ctx.ask.optional(
             paysCostFirst && payableActionCost.raw !== undefined
-              ? { ...ctx, activeEffectTextPart: ctx.activeEffectText, activeEffectTextEmphasis: payableActionCost.raw }
+              ? {
+                  ...ctx,
+                  activeEffectTextPart: ctx.activeEffectText,
+                  activeEffectTextEmphasis: action.costTextEmphasis ?? payableActionCost.raw,
+                }
               : ctx,
             `Pay cost: ${describeCost(payableActionCost)}?`,
           )));
@@ -1306,7 +1310,11 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
     const yes =
       ctx.predecidedOptionalActions?.get(action) ??
       (await ctx.ask.optional(
-        { ...ctx, activeEffectTextPart: ctx.activeEffectText, activeEffectTextEmphasis: action.effectTextPart },
+        {
+          ...ctx,
+          activeEffectTextPart: ctx.activeEffectText,
+          activeEffectTextEmphasis: action.optionalTextEmphasis ?? action.effectTextPart,
+        },
         describeAction(action),
       ));
     if (!yes) {

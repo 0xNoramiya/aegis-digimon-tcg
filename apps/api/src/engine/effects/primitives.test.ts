@@ -2828,7 +2828,12 @@ describe("primitives: changeEvoCost / grantPierce record into the ledger", () =>
 describe("primitives: redirectAttack (chooser / optional)", () => {
   // A harness with a combat-port fake recording redirectTarget calls and a scripted prompt.
   // The board comes from the Test Seam; the combat port is the fake under observation.
-  function combatHarness(opts: { isAttacking: boolean; attackerId?: string; board?: BoardSpec }) {
+  function combatHarness(opts: {
+    isAttacking: boolean;
+    attackerId?: string;
+    board?: BoardSpec;
+    rejectRedirect?: boolean;
+  }) {
     const s = setupEngine(opts.board);
     const state = s.state;
     state.turnSeat = 0;
@@ -2853,6 +2858,7 @@ describe("primitives: redirectAttack (chooser / optional)", () => {
         resolvedAttacks.push(attacker.permanentId);
       },
       redirectTarget: (t: { kind: string; permanentId?: string }) => {
+        if (opts.rejectRedirect) return false;
         if (t.kind === "permanent" && t.permanentId) redirects.push({ permanentId: t.permanentId });
         if (t.kind === "player") redirectedToPlayer = true;
         return true;
@@ -2965,6 +2971,18 @@ describe("primitives: redirectAttack (chooser / optional)", () => {
         payload: { subjectPermanentId: "ATK1", attackerPermanentId: "ATK1" },
       },
     ]);
+  });
+
+  it("does not announce a target switch when combat rejects the redirect", async () => {
+    const h = combatHarness({
+      isAttacking: true,
+      attackerId: "ATK1",
+      rejectRedirect: true,
+      board: { 1: { battleArea: [battleDigimon("DEF1", 5000)] } },
+    });
+    await h.fx.redirectAttack([h.s.perm("DEF1").permanentId], { chooserSeat: 1 as Seat });
+    expect(h.redirects).toEqual([]);
+    expect(h.fires).toEqual([]);
   });
 
   it("does NOT fire whenAttackTargetSwitched when the (optional) redirect is declined", async () => {

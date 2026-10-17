@@ -8,7 +8,8 @@ import { runDigivolve, runDigivolveViaPlacement } from "./digivolve.js";
 import { runAppFuse, runDnaDigivolve } from "./dna.js";
 import { runLink, runMindLink } from "./link.js";
 import { runPlaceUnder, runTrashDigivolution } from "./placeUnder.js";
-import { CardKind, type Action, type Target } from "@aegis/shared";
+import { digiXrosZoneExpanderFor } from "@aegis/shared/cards/zoneExpanders";
+import { CardKind, type Action, type Target, type ZoneRef } from "@aegis/shared";
 
 function hasDeDigivolvableCandidate(ctx: EffectContext, target: Target, stopAtLevel: number | undefined): boolean {
   const levelFloor = stopAtLevel ?? 3;
@@ -175,8 +176,12 @@ export async function runDigivolutionAction(ctx: EffectContext, action: Action, 
         ctx.fx.expandDigiXrosZones?.(ctx.source.ownerSeat, action.zones, duration);
       } else {
         if (ctx.fx.expandDigiXrosZonesForPlay !== undefined) {
+          const expander = digiXrosZoneExpanderFor(ctx.source.cardId);
+          const materialLimits: Partial<Record<ZoneRef, number>> | undefined = expander
+            ? { underTamers: expander.underTamerMax, trash: expander.trashMax }
+            : undefined;
           for (const pendingId of ctx.trigger.wouldBePlayedInstanceIds ?? [ctx.trigger.wouldBePlayedInstanceId]) {
-            ctx.fx.expandDigiXrosZonesForPlay(ctx.source.ownerSeat, action.zones, duration, pendingId);
+            ctx.fx.expandDigiXrosZonesForPlay(ctx.source.ownerSeat, action.zones, duration, pendingId, materialLimits);
           }
         } else {
           ctx.fx.expandDigiXrosZones?.(ctx.source.ownerSeat, action.zones, duration);

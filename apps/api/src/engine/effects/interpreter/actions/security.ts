@@ -104,7 +104,9 @@ export async function runSecurityManipulation(
   if (action.optionalFor !== undefined) {
     const optionalSeat = action.optionalFor === "opponent" ? opp : mine;
     const decisionCtx =
-      optionalSeat === ctx.source.ownerSeat ? ctx : { ...ctx, source: { ...ctx.source, ownerSeat: optionalSeat } };
+      optionalSeat === ctx.source.ownerSeat
+        ? ctx
+        : { ...ctx, source: { ...ctx.source, ownerSeat: optionalSeat }, presetOptionalAnswer: undefined };
     const accepted = await ctx.ask.optional(decisionCtx, describeAction(action));
     ctx.lastOpponentDeclined = !accepted;
     if (!accepted) {
