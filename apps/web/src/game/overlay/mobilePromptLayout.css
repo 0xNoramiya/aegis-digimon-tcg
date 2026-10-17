@@ -462,6 +462,8 @@
 }
 .board-prompt[data-prompt-surface] .board-prompt__heading {
   position: relative;
+  box-sizing: border-box;
+  width: 100%;
   min-height: 2.75rem;
   padding-right: 3rem;
 }
