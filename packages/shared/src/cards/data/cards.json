@@ -49892,6 +49892,139 @@
     "nameJp": "コンロン"
   },
   {
+    "cardId": "BT27-002",
+    "set": "BT27",
+    "nameEn": "Chapmon",
+    "colors": ["Blue"],
+    "kinds": ["DigiEgg"],
+    "level": 2,
+    "playCost": -1,
+    "dp": 0,
+    "evoCosts": [],
+    "forms": ["In-Training"],
+    "attributes": ["-"],
+    "types": ["Lesser", "DATA SQUAD"],
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] You may play 1 level 4 or lower [Aquatic] or [DATA SQUAD] trait Digimon card from this Digimon's digivolution cards with the cost reduced by 1.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-002"
+  },
+  {
+    "cardId": "BT27-020",
+    "set": "BT27",
+    "nameEn": "Kamemon",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 2000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Data"],
+    "types": ["Cyborg", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.2 w/[DATA SQUAD] trait: Cost 0 \n\n[On Play] By placing 1 level 4 or lower [Aquatic] or [DATA SQUAD] trait Digimon card from your hand as any of your Digimon's bottom digivolution card, or face down under any of your [DATA SQUAD] trait Tamers, ＜Draw 1＞.\n[Rule] Trait: Has [Aquatic] Type.",
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] Trash the top or bottom digivolution card of 1 of your opponent's Digimon.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-020"
+  },
+  {
+    "cardId": "BT27-025",
+    "set": "BT27",
+    "nameEn": "Gawappamon",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 4,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Data"],
+    "types": ["Cyborg", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.3 w/[DATA SQUAD] trait: Cost 2 \n\n[On Play] [When Digivolving] 1 of your Digimon can't be deleted in battle until your opponent's turn ends. If played by effects, it also gains ＜Blocker＞.\n[Rule] Trait: Has [Aquatic] Type.",
+    "inheritedEffectText": "＜Evade＞",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-025"
+  },
+  {
+    "cardId": "BT27-028",
+    "set": "BT27",
+    "nameEn": "Shaujinmon",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Virus"],
+    "types": ["Wizard", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.4 w/[DATA SQUAD] trait: Cost 3 \n\n＜Decode (Lv.4 or lower w/[Aquatic]/[DATA SQUAD] trait)＞\n[On Play] [When Digivolving] 1 of your opponent's Digimon or Tamers can't suspend until their turn ends.\n[Rule] Trait: Has [Aquatic] Type.",
+    "inheritedEffectText": "＜Decode (Lv.4 or lower w/[Aquatic]/[DATA SQUAD] trait)＞ (When this Digimon would leave the battle area other than in battle, you may play 1 specified Digimon card from its digivolution cards without paying the cost.)",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-028"
+  },
+  {
+    "cardId": "BT27-031",
+    "set": "BT27",
+    "nameEn": "JumboGamemon",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 6,
+    "playCost": 12,
+    "dp": 13000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 5,
+        "memoryCost": 4
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Data"],
+    "types": ["Cyborg", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.5 w/[DATA SQUAD] trait: Cost 4 \n\n＜Decode (Lv.5 w/[Aquatic]/[DATA SQUAD] trait)＞\n[On Play] [When Digivolving] [Counter] [Once Per Turn] By placing 1 of your other Digimon or Tamers as this Digimon's bottom digivolution card, return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.\n[All Turns] [Once Per Turn] When effects add to this Digimon's digivolution cards, you may play 1 play cost 5 or lower blue card from its digivolution cards without paying the cost.\n[Rule] Trait: Has [Aquatic] Type.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-031"
+  },
+  {
+    "cardId": "BT27-095",
+    "set": "BT27",
+    "nameEn": "Homer Yushima",
+    "colors": ["Black", "Blue"],
+    "kinds": ["Tamer"],
+    "playCost": 4,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["DATA SQUAD"],
+    "effectText": "[Start of Your Main Phase] By placing 1 [Cyborg] or [Aquatic] trait card from your hand face down under this Tamer, ＜Draw 1＞ and gain 1 memory.\n[Main] By suspending this Tamer and trashing 2 bottom face-down cards from under any of your Tamers, 1 of your Digimon may digivolve into a [Cyborg] or [Aquatic] trait Digimon card in the hand with the cost reduced by 2.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-095"
+  },
+  {
     "cardId": "BT27-035",
     "nameEn": "MirageGaogamon: Burst Mode",
     "colors": ["Blue", "Black"],

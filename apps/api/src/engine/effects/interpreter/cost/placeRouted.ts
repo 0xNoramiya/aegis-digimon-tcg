@@ -350,7 +350,9 @@ export async function payRoutedPlaceCost(
     ctx,
     srcCandidates.filter(({ instanceId }) => picked.includes(instanceId)),
   );
-  const faceUp = cost.faceDown !== true;
+  const host = ctx.game.permanentById(hostPermId);
+  const hostIsTamer = host !== undefined && ctx.game.definitionOf(host.topCard).kinds.includes(CardKind.Tamer);
+  const faceUp = cost.faceDown !== true && !(cost.faceDownUnderTamer === true && hostIsTamer);
   const placedCards =
     cost.position === "choice"
       ? await placeAtChosenStackEnd(ctx, hostPermId, picked, visibleCards, faceUp)
