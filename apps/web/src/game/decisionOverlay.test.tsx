@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { buildTriggerKey, getCardDefinition, type DecisionRequest, type DecisionResponse } from "@aegis/shared";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { I18nContext } from "@/i18n/I18nContext";
 import { I18nProvider, translator } from "../i18n";
 import {
   BlockOverlay,
@@ -20,6 +21,39 @@ import { choiceLabel } from "./overlay/choice/decisionChoiceLabels";
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+});
+
+it("translates Davis and Ken's delayed play effect in the activation dialog", async () => {
+  const effectTextPart =
+    "[Start of Your Main Phase] You may play 1 [Veemon] or [Wormmon] from your hand without paying the cost. At the next end of your opponent’s turn, return it to the hand.";
+  render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <DecisionOverlay
+        request={{
+          decisionId: "davis-ken-activation",
+          seat: 0,
+          kind: "optional",
+          promptText: "Use this effect?",
+          sourceCardId: "BT16-085",
+          options: {
+            timing: "StartOfYourMainPhase",
+            effectText: getCardDefinition("BT16-085")!.effectText,
+            effectTextPart,
+          },
+        }}
+        sourceCardId="BT16-085"
+        candidates={[]}
+        picks={[]}
+        onTogglePick={vi.fn<() => void>()}
+        onRespond={vi.fn<() => void>()}
+      />
+    </I18nContext.Provider>,
+  );
+  const getText = () => document.querySelector(".decision-overlay__effect-text")?.textContent;
+  await waitFor(() => expect(getText()).toContain("“V仔兽”/“虫虫兽”"));
+  expect(getText()).toContain("当下个对方的回合结束时，将该数码宝贝放回到手牌中。");
+  expect(getText()).not.toContain("You may play");
+  expect(screen.getByRole("heading", { name: "使用这个效果？" })).toBeTruthy();
 });
 
 it("feedback #51: copied donor text is shown while Jesmon GX remains the effect source", () => {
