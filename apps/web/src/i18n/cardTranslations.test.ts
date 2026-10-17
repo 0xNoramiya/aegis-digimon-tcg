@@ -101,6 +101,17 @@ describe("Chinese resolving clauses from complete card translations", () => {
     expect(result).not.toContain("When one of your opponent");
   });
 
+  it("preserves an exact Assembly clause together with its standalone keywords", () => {
+    const shared = allCards().find((candidate) => candidate.cardId === "EX13-020")!;
+    const text = shared.effectText!.split(/(?:\r\n|\r|\n)\s*(?=\[)/)[1]!.trim();
+    const result = getTranslatedCardText({ text, translations, cardId: shared.cardId });
+    expect(result).toContain("组装-2");
+    expect(result).toContain("V仔兽");
+    expect(result).toContain("阻挡者");
+    expect(result).toContain("装甲解除");
+    expect(result).not.toContain("我方的回合结束时");
+  });
+
   it("resolves the complete Main clause without including the separate Delay effect", () => {
     const result = getTranslatedCardText({ text: clause, translations, cardId: card.cardId });
     expect(result).toBe(

@@ -1,4 +1,5 @@
 {
+  "[Assembly-2][Veemon]<Blocker><ArmorPurge>": "【组装-2：“V仔兽”】\n\n《阻挡者》《装甲解除》",
   "[OnPlay][WhenDigivolving]Byplacing1[RoyalBase]or[Zaxon]traitDigimoncardfromyourhandortrashfaceupasthebottomsecuritycard,return1ofyouropponent'sDigimonwithasmuchorlessDPasthisDigimontothehand.": "【登场时】【进化时】可从我方的手牌/废弃区中，将1张拥有“皇家基地”/“Zaxon”特征的数码宝贝卡牌正面朝上置于安防区最下方，并将对方1只DP不高于此数码宝贝DP的数码宝贝放回到其手牌中。",
   "[StartofYourMainPhase]Youmayplay1[Veemon]or[Wormmon]fromyourhandwithoutpayingthecost.Atthenextendofyouropponent’sturn,returnittothehand.": "【我方的主要阶段开始时】可以从我方的手牌中，不支付费用登场1张“V仔兽”/“虫虫兽”。当下个对方的回合结束时，将该数码宝贝放回到手牌中。",
   "[Digivolve]Lv.3w/[Omnimon]intextorw/[ADVENTURE]trait:Cost2[OnPlay][WhenDigivolving]Youmayreturn1cardwith[Greymon],[Garurumon]or[Omnimon]initsnamefromyourtrashtothehand.[AllTurns]WhenyourDigimonorTamersareplayedordigivolve,ifanyofthemhave[Garurumon]or[TaiKamiya]intheirnames,thisDigimonmaydigivolveintoaDigimoncardwith[Greymon]initsnameinthehandwithoutpayingthecost.": "【进化】记述有“奥米加兽”的Lv.3/拥有“大冒险”特征的Lv.3：费用2\n\n【登场时】【进化时】可以从我方的废弃区中，将1张名称中包含“暴龙兽”/“加鲁鲁兽”/“奥米加兽”的卡牌放回到手牌中。\n\n【双方的回合】当我方的数码宝贝/驯兽师登场/进化时，若该数码宝贝/驯兽师的名称中包含“加鲁鲁兽”/“八神太一”，则可以不支付费用将此数码宝贝进化成手牌中的名称中包含“暴龙兽”的数码宝贝卡牌。",
