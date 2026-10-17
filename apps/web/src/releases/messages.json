@@ -1,4 +1,16 @@
 {
+  "releases.1.31.3-beta.summary": {
+    "en": "Story battle deck correction.",
+    "pt-BR": "Correção de deck nas batalhas da história.",
+    "es": "Corrección de mazo en las batallas de la historia.",
+    "it": "Correzione del mazzo nelle battaglie della storia."
+  },
+  "releases.1.31.3-beta.fix.storyDecks": {
+    "en": "Fixed the Arisa rematch failing to start because the opponent deck contained only 49 cards.",
+    "pt-BR": "Corrigida a revanche contra Arisa que não iniciava porque o deck adversário tinha apenas 49 cartas.",
+    "es": "Corregida la revancha contra Arisa que no comenzaba porque el mazo rival solo tenía 49 cartas.",
+    "it": "Corretta la rivincita contro Arisa che non iniziava perché il mazzo avversario conteneva solo 49 carte."
+  },
   "releases.1.31.2-beta.summary": {
     "en": "Card, battle and story fixes, plus the latest BT27 cards.",
     "pt-BR": "Correções em cartas, batalhas e história, além das novas cartas BT27.",
