@@ -200,11 +200,13 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     }
     const pick = chosen[0];
     if (pick === undefined) return; // declined (or no pick): attack proceeds unchanged
-    combat.redirectTarget(pick === playerPromptId ? { kind: "player" } : { kind: "permanent", permanentId: pick });
+    const redirected = combat.redirectTarget(
+      pick === playerPromptId ? { kind: "player" } : { kind: "permanent", permanentId: pick },
+    );
     // The attack target was just switched — notify reactive watchers ("when this Digimon's
     // attack target is switched", BT11-008). The attacker is the event subject; a watcher's
     // sourceFilter isSelfRef gates it to its own attack.
-    if (attackerId !== undefined) {
+    if (redirected && attackerId !== undefined) {
       await engine.fireSubTrigger?.("whenAttackTargetSwitched", {
         subjectPermanentId: attackerId,
         attackerPermanentId: attackerId,
