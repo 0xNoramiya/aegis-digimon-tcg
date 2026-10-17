@@ -111,9 +111,6 @@ const fixture: ScenarioFixture = {
         {
           card: "BT22-042",
         },
-        {
-          card: "EX11-023",
-        },
         "ST19-02",
         "ST19-03",
         "ST19-04",

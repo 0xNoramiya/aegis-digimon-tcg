@@ -776,6 +776,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       originZone,
       projectOnly,
       simultaneousPlayCount,
+      reservedInstanceIds,
     ) => {
       // A selected security card can still be face down in its origin zone.
       // Locate only engine instance; do not expose hidden security to timing scans.
@@ -787,7 +788,16 @@ export function buildPrimitives(engine: GameEngine): Primitives {
           : findLooseInstance(engine, instanceId);
       return instance === undefined
         ? baseCost
-        : fireBeforePayCost(engine, instance, baseCost, useAsOption, originZone, projectOnly, simultaneousPlayCount);
+        : fireBeforePayCost(
+            engine,
+            instance,
+            baseCost,
+            useAsOption,
+            originZone,
+            projectOnly,
+            simultaneousPlayCount,
+            reservedInstanceIds,
+          );
     },
     clearPreparedDigiXrosPlay: (instanceId) => clearPreparedDigiXrosPlay(engine, instanceId),
     placePendingPlayCosts: (instanceId, permanentId) =>

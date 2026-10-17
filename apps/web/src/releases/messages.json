@@ -1,4 +1,46 @@
 {
+  "releases.1.31.2-beta.summary": {
+    "en": "Card, battle and story fixes, plus the latest BT27 cards.",
+    "pt-BR": "Correções em cartas, batalhas e história, além das novas cartas BT27.",
+    "es": "Correcciones de cartas, batallas e historia, además de las nuevas cartas BT27.",
+    "it": "Correzioni a carte, battaglie e storia, oltre alle nuove carte BT27."
+  },
+  "releases.1.31.2-beta.feature.bt27": {
+    "en": "Added the BT27 Chapmon, Kamemon, Gawappamon, Shaujinmon, JumboGamemon and Homer Yushima cards.",
+    "pt-BR": "Adicionadas as cartas BT27 Chapmon, Kamemon, Gawappamon, Shaujinmon, JumboGamemon e Homer Yushima.",
+    "es": "Añadidas las cartas BT27 Chapmon, Kamemon, Gawappamon, Shaujinmon, JumboGamemon y Homer Yushima.",
+    "it": "Aggiunte le carte BT27 Chapmon, Kamemon, Gawappamon, Shaujinmon, JumboGamemon e Homer Yushima."
+  },
+  "releases.1.31.2-beta.fix.dna": {
+    "en": "Cards can be played normally even when DNA digivolution materials are available.",
+    "pt-BR": "Cartas podem ser jogadas normalmente mesmo quando há materiais disponíveis para digievolução DNA.",
+    "es": "Las cartas pueden jugarse normalmente aunque haya materiales disponibles para la digievolución ADN.",
+    "it": "Le carte possono essere giocate normalmente anche quando sono disponibili materiali per la digievoluzione DNA."
+  },
+  "releases.1.31.2-beta.fix.redirect": {
+    "en": "Deleted attackers no longer trigger attack redirection or target-switch effects.",
+    "pt-BR": "Atacantes deletados não acionam mais redirecionamentos de ataque ou efeitos de troca de alvo.",
+    "es": "Los atacantes eliminados ya no activan redirecciones de ataque ni efectos de cambio de objetivo.",
+    "it": "Gli attaccanti eliminati non attivano più reindirizzamenti degli attacchi o effetti di cambio bersaglio."
+  },
+  "releases.1.31.2-beta.fix.digiXros": {
+    "en": "Taiki preserves all allowed selected DigiXros materials when a card is played by an effect.",
+    "pt-BR": "Taiki preserva todos os materiais DigiXros selecionados permitidos quando uma carta é jogada por efeito.",
+    "es": "Taiki conserva todos los materiales DigiXros seleccionados permitidos al jugar una carta mediante un efecto.",
+    "it": "Taiki conserva tutti i materiali DigiXros selezionati consentiti quando una carta viene giocata tramite un effetto."
+  },
+  "releases.1.31.2-beta.fix.story": {
+    "en": "Adjusted the opening board of the chapter 13 Arisa rematch so the opening Digimon survives the first turn.",
+    "pt-BR": "Ajustado o campo inicial da revanche contra Arisa no capítulo 13 para que o Digimon inicial sobreviva ao primeiro turno.",
+    "es": "Ajustado el campo inicial de la revancha contra Arisa del capítulo 13 para que el Digimon inicial sobreviva al primer turno.",
+    "it": "Modificato il campo iniziale della rivincita contro Arisa nel capitolo 13 affinché il Digimon iniziale sopravviva al primo turno."
+  },
+  "releases.1.31.2-beta.fix.cardText": {
+    "en": "Improved translated card and effect text, and corrected effects that require a card to be played by an effect triggering on digivolution.",
+    "pt-BR": "Melhorados os textos traduzidos de cartas e efeitos e corrigidos efeitos que exigem jogar uma carta por efeito sendo ativados ao digievoluir.",
+    "es": "Mejorados los textos traducidos de cartas y efectos y corregida la activación al digievolucionar de efectos que requieren jugar una carta mediante un efecto.",
+    "it": "Migliorati i testi tradotti di carte ed effetti e corretta l’attivazione durante la digievoluzione di effetti che richiedono di giocare una carta tramite un effetto."
+  },
   "releases.1.31.1-beta.summary": {
     "en": "A fix for Biting Crush.",
     "pt-BR": "Uma correção para Biting Crush.",
@@ -2824,5 +2866,11 @@
     "pt-BR": "Corrige os efeitos de link de Tweetmon e DoGatchmon e verifica as restrições de ataque de Kongou. Melhora a seleção no campo em dispositivos móveis e remove badges de palavras-chave duplicados.",
     "es": "Corrige los efectos de enlace de Tweetmon y DoGatchmon y verifica las restricciones de ataque de Kongou. Mejora la selección en el campo en móviles y elimina insignias de palabras clave duplicadas.",
     "it": "Corregge gli effetti di collegamento di Tweetmon e DoGatchmon e verifica le restrizioni di attacco di Kongou. Migliora la selezione sul campo da mobile e rimuove i badge duplicati delle parole chiave."
+  },
+  "releases.1.31.2-beta.fix.opponentChoice": {
+    "en": "Seventh Divine Cruz and similar effects now ask the opponent before trashing their security, independently of the controller’s saved answer.",
+    "pt-BR": "Seventh Divine Cruz e efeitos semelhantes agora perguntam ao oponente antes de descartar sua segurança, independentemente da resposta salva pelo controlador.",
+    "es": "Seventh Divine Cruz y efectos similares ahora preguntan al oponente antes de descartar su seguridad, independientemente de la respuesta guardada por el controlador.",
+    "it": "Seventh Divine Cruz ed effetti simili ora chiedono all’avversario prima di scartare la sua sicurezza, indipendentemente dalla risposta salvata dal controllore."
   }
 }
