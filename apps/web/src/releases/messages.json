@@ -1,4 +1,22 @@
 {
+  "releases.1.31.4-beta.summary": {
+    "en": "Improved recovery from client connection and asset-loading errors.",
+    "pt-BR": "Melhorias na recuperação de erros de conexão e carregamento no cliente.",
+    "es": "Mejoras en la recuperación de errores de conexión y carga en el cliente.",
+    "it": "Miglioramenti al recupero dagli errori di connessione e caricamento nel client."
+  },
+  "releases.1.31.4-beta.fix.messages": {
+    "en": "The game now attempts to resume the same session after a MessagePack decoding failure instead of remaining marked as connected.",
+    "pt-BR": "O jogo agora tenta retomar a mesma sessão após uma falha de decodificação MessagePack, em vez de permanecer marcado como conectado.",
+    "es": "El juego ahora intenta reanudar la misma sesión tras un error de decodificación MessagePack, en lugar de seguir marcado como conectado.",
+    "it": "Il gioco ora tenta di riprendere la stessa sessione dopo un errore di decodifica MessagePack, invece di risultare ancora connesso."
+  },
+  "releases.1.31.4-beta.fix.assets": {
+    "en": "Failed asset loads wait for connectivity before reloading. Module execution errors no longer trigger an automatic asset-recovery reload.",
+    "pt-BR": "Falhas ao carregar arquivos aguardam a conexão antes de recarregar. Erros de execução de módulos não provocam mais recarga automática de recuperação.",
+    "es": "Los errores al cargar archivos esperan a recuperar la conexión antes de recargar. Los errores de ejecución de módulos ya no provocan una recarga automática de recuperación.",
+    "it": "Gli errori di caricamento dei file attendono la connessione prima di ricaricare. Gli errori di esecuzione dei moduli non provocano più un ricaricamento automatico di recupero."
+  },
   "releases.1.31.3-beta.summary": {
     "en": "Story battle deck correction.",
     "pt-BR": "Correção de deck nas batalhas da história.",
