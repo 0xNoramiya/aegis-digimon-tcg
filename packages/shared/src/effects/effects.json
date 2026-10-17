@@ -241181,5 +241181,62 @@
     "coverage": "full",
     "residual": [],
     "digivolutionRequirement": [{ "level": 2, "traits": ["DATA SQUAD"], "cost": 0, "isAlternate": true }]
+  },
+  "BT27-025": {
+    "effects": [
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "effectTextPart": "[On Play] [When Digivolving] 1 of your Digimon can't be deleted in battle until your opponent's turn ends.",
+            "kind": "Restrict",
+            "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+            "restriction": "beDeletedInBattle",
+            "duration": "untilOpponentTurnEnd"
+          },
+          {
+            "effectTextPart": "If played by effects, it also gains ＜Blocker＞.",
+            "kind": "GainKeyword",
+            "target": { "filter": {}, "count": 1, "sameTarget": true },
+            "keyword": { "keyword": "Blocker", "raw": "＜Blocker＞" },
+            "duration": "untilOpponentTurnEnd",
+            "condition": { "kind": "triggerEnteredByEffect", "raw": "played by effects" }
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "effectTextPart": "[On Play] [When Digivolving] 1 of your Digimon can't be deleted in battle until your opponent's turn ends.",
+            "kind": "Restrict",
+            "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+            "restriction": "beDeletedInBattle",
+            "duration": "untilOpponentTurnEnd"
+          }
+        ]
+      },
+      {
+        "trigger": "Rule",
+        "actions": [
+          {
+            "kind": "GrantStatic",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "grant": "trait",
+            "tokens": ["Aquatic"],
+            "duration": "permanent"
+          }
+        ]
+      },
+      {
+        "trigger": "Static",
+        "isInherited": true,
+        "actions": [],
+        "keywords": [{ "keyword": "Evade", "raw": "＜Evade＞" }]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "level": 3, "traits": ["DATA SQUAD"], "cost": 2, "isAlternate": true }]
   }
 }
