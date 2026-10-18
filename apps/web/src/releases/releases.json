@@ -1,5 +1,22 @@
 [
   {
+    "version": "1.31.5-beta",
+    "releasedAt": "2026-10-18",
+    "summaryKey": "releases.1.31.5-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.31.5-beta.fix.hiddenInformation"
+      },
+      {
+        "textKey": "releases.1.31.5-beta.fix.onDeletionTiming"
+      },
+      {
+        "textKey": "releases.1.31.5-beta.fix.replayControls"
+      }
+    ]
+  },
+  {
     "version": "1.31.4-beta",
     "releasedAt": "2026-10-17",
     "summaryKey": "releases.1.31.4-beta.summary",
