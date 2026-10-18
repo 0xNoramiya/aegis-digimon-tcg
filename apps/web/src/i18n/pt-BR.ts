@@ -1236,6 +1236,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.endSelection": "Confirmar",
   "overlay.noSelection": "Nenhum",
   "overlay.use": "Usar",
+  "overlay.activationProgress": "Ativação {index} de {total}",
   "overlay.notUse": "Não usar",
   "overlay.moveToBattleArea": "Mover para a área de batalha",
   "overlay.endPhase": "Encerrar fase",

@@ -1456,6 +1456,7 @@ const interfaceMessages = {
   "overlay.endSelection": "Auswahl beenden",
   "overlay.noSelection": "Keine Auswahl",
   "overlay.use": "Verwenden",
+  "overlay.activationProgress": "Aktivierung {index} von {total}",
   "overlay.notUse": "Nicht verwenden",
   "overlay.moveToBattleArea": "In den Kampfbereich",
   "overlay.endPhase": "Endphase",

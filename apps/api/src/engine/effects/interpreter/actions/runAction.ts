@@ -1197,8 +1197,10 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       // makes the player answer the same thing twice, which is not how the printed card
       // reads ("By trashing 1 card …, Draw 1" is one decision, not two).
       const costAsksItself = costIsAskedAsSelection(payableActionCost);
+      const declinesAtSelection = ctx.costDeclinedAtSelection?.has(action) === true;
       const willPay =
         costAsksItself ||
+        declinesAtSelection ||
         (ctx.predecidedOptionalCosts?.get(action) ??
           (await ctx.ask.optional(
             paysCostFirst && payableActionCost.raw !== undefined
@@ -1211,14 +1213,17 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
             `Pay cost: ${describeCost(payableActionCost)}?`,
           )));
       if (willPay) {
-        if (!costAsksItself) markActivationChosen(ctx);
+        if (!costAsksItself && !declinesAtSelection) markActivationChosen(ctx);
         const outerCostIsTheQuestion = ctx.costIsTheQuestion;
+        const outerPayingDeclinableCost = ctx.payingDeclinableCost;
         ctx.costIsTheQuestion = costAsksItself;
+        ctx.payingDeclinableCost = declinesAtSelection;
         const paid = await payCost(ctx, payableActionCost, costPayment);
         ctx.costIsTheQuestion = outerCostIsTheQuestion;
+        ctx.payingDeclinableCost = outerPayingDeclinableCost;
         if (paid) markActivationChosen(ctx);
         if (!paid) {
-          if (costAsksItself) {
+          if (costAsksItself || declinesAtSelection) {
             markActivationDeclined(ctx);
           }
           return action.abortOnDecline === true;

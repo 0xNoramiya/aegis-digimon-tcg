@@ -188,7 +188,7 @@ export class DecisionManager {
         min: spec.options?.min,
         candidateInstanceIds: spec.options?.candidateInstanceIds,
         allowedTargetCombinations: spec.options?.allowedTargetCombinations,
-        backsOutOnlyWhenEmpty: spec.options?.purpose === "acceptedOptional",
+        backsOutOnlyWhenEmpty: spec.options?.purpose === "acceptedOptional" || spec.options?.declinesCost === true,
         distinctCardIds: spec.options?.distinctCardIds === true,
         distinctNames: spec.options?.distinctNames === true,
         cardIdByInstance: new Map([
@@ -401,6 +401,7 @@ function satisfiesMin(open: OpenDecision, response: DecisionResponse): boolean {
   const ids = response.kind === "chooseTargets" || response.kind === "selectCards" ? response.instanceIds : undefined;
   if (ids === undefined) return true;
 
+  if (ids.length === 0 && open.backsOutOnlyWhenEmpty) return true;
   const candidates = open.candidateInstanceIds ?? [];
   const requiredMin = Math.min(open.min, candidates.length);
   if (requiredMin <= 0) return true;

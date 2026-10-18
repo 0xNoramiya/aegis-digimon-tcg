@@ -1363,6 +1363,7 @@ const interfaceMessages = {
   "overlay.endSelection": "結束選擇",
   "overlay.noSelection": "不選擇",
   "overlay.use": "使用",
+  "overlay.activationProgress": "發動 {index}/{total}",
   "overlay.notUse": "不使用",
   "overlay.moveToBattleArea": "移至戰鬥區",
   "overlay.endPhase": "結束階段",

@@ -1224,6 +1224,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.endSelection": "Terminar selección",
   "overlay.noSelection": "Sin selección",
   "overlay.use": "Usar",
+  "overlay.activationProgress": "Activación {index} de {total}",
   "overlay.notUse": "No usar",
   "overlay.moveToBattleArea": "Mover al área de batalla",
   "overlay.endPhase": "Terminar fase",

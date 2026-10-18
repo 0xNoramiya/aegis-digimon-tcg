@@ -1812,7 +1812,9 @@ export class CombatController {
       // let that window order it with printed On Deletion effects. If no permanent was
       // actually deleted (for example, a replacement prevented it), activate it alone.
       if (deleted.length > 0) {
-        await resolveBattleWon(this.currentAttack === undefined ? { deferIntoDeletionWindow: true } : undefined);
+        await resolveBattleWon(
+          this.currentAttack === undefined || isAttackBattle ? { deferIntoDeletionWindow: true } : undefined,
+        );
       } else if (this.hooks.resolveAvertedBattleReactions !== undefined) {
         await this.hooks.resolveAvertedBattleReactions(resolveBattleWon);
       } else {

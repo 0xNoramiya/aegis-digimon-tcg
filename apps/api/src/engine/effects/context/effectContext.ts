@@ -65,6 +65,8 @@ export interface EffectContext {
   predecidedOptionalActions?: Map<Action, boolean>;
   /** Optional cost choices made before the first action; payment still occurs in order. */
   predecidedOptionalCosts?: Map<Action, boolean>;
+  costDeclinedAtSelection?: Set<Action>;
+  payingDeclinableCost?: boolean;
   /**
    * The option an optional Modal's combined "which option, or don't use?" prompt already chose
    * (see `declinableModalChoices`). `runModal` consumes it instead of asking again.

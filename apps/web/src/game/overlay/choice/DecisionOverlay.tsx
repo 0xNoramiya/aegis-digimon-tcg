@@ -437,6 +437,7 @@ export function DecisionOverlay({
               choices={choices}
               choiceClauses={choiceClauses}
               declineIndex={declineIndex}
+              activation={request.options?.activation}
               onRespond={onRespond}
               onOpenBoard={() => setIsViewingBoard(true)}
             />
@@ -473,6 +474,15 @@ export function DecisionOverlay({
               min={min}
               onNone={() =>
                 onRespond({ kind: request.kind === "selectCards" ? "selectCards" : "chooseTargets", instanceIds: [] })
+              }
+              onDeclineCost={
+                request.options?.declinesCost === true
+                  ? () =>
+                      onRespond({
+                        kind: request.kind === "selectCards" ? "selectCards" : "chooseTargets",
+                        instanceIds: [],
+                      })
+                  : undefined
               }
               onOpenBoard={() => setIsViewingBoard(true)}
             />
