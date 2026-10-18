@@ -71645,7 +71645,7 @@
             "target": {
               "filter": {
                 "controller": "mine",
-                "kind": ["Digimon"],
+                "kind": ["Digimon", "Tamer"],
                 "playCostLte": 5,
                 "nameOrTrait": [{ "tokens": ["Chronicle"], "match": "trait" }]
               },
@@ -162293,6 +162293,10 @@
                 { "tokens": ["Machine Dragon"], "match": "trait" },
                 { "tokens": ["Sky Dragon"], "match": "trait" }
               ]
+            },
+            "activationCondition": {
+              "kind": "triggerSubjectMatchesFilter",
+              "filter": { "controller": "mine", "kind": ["Digimon"] }
             },
             "actions": [
               {

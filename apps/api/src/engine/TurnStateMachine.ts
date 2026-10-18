@@ -216,8 +216,13 @@ export class TurnStateMachine {
     let ending = await continuePhases();
     if (this.hooks.isGameOver()) return;
     for (let postponements = 0; postponements < MAX_END_TURN_POSTPONEMENTS; postponements++) {
-      if (!(await this.endTurnWindow(ending))) break;
-      if (this.hooks.isGameOver()) return;
+      const postponed = await this.endTurnWindow(ending);
+      if (this.hooks.isGameOver()) {
+        return;
+      }
+      if (!postponed) {
+        break;
+      }
       ending = await continuePhases();
       if (this.hooks.isGameOver()) return;
     }
@@ -336,6 +341,10 @@ export class TurnStateMachine {
     await this.hooks.clearDurations("eachTurnEnd");
     await this.hooks.clearDurations("ownerTurnEnd");
     await this.hooks.clearDurations("opponentTurnEnd");
+
+    if (this.hooks.isGameOver()) {
+      return;
+    }
 
     this.emit({
       kind: "turnEnded",

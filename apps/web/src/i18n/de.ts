@@ -1003,7 +1003,16 @@ const interfaceMessages = {
   "game.reconnectingDetail": "Die Verbindung wurde unterbrochen. Ihr Match wird fortgesetzt, sobald möglich.",
   "game.connectionLost": "Verbindung verloren",
   "game.connectionLostDetail":
-    "Der Server ist nicht erreichbar. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "Die Verbindung zu Ihrer Partie wurde unterbrochen. Versuchen Sie, sich erneut zu verbinden.",
+  "game.messageTooLarge": "Ihre Auswahl war zum Senden zu groß. Versuchen Sie, weniger Effekte auf einmal aufzulösen.",
+  "game.messageTooLargeReconnecting":
+    "Ihre Auswahl war zum Senden zu groß. Die Verbindung wird wiederhergestellt, um die ausstehende Auswahl fortzusetzen.",
+  "game.reconnectFailed":
+    "Die Partie konnte nicht fortgesetzt werden. Kehren Sie zur Lobby zurück und versuchen Sie es erneut.",
+  "game.sessionExpired": "Diese Partie kann nicht mehr fortgesetzt werden. Kehren Sie zur Lobby zurück.",
+  "game.tooManyMessages":
+    "Es wurden zu viele Aktionen gleichzeitig gesendet. Warten Sie kurz und kehren Sie dann zur Lobby zurück.",
+  "game.serverUnavailable": "Der Spielserver ist vorübergehend nicht verfügbar. Versuchen Sie es in Kürze erneut.",
   "game.opponentDisconnected": "Gegner getrennt",
   "game.opponentDisconnectedDetail":
     "Warten, bis sich Ihr Gegner erneut verbindet. Das Match wird automatisch fortgesetzt.",

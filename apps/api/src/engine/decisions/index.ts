@@ -1,3 +1,4 @@
+import { decodeTriggerResolutionPlan } from "@aegis/shared/protocol/decodeTriggerResolutionPlan";
 import {
   type DecisionRequest,
   type DecisionResponse,
@@ -56,6 +57,7 @@ interface OpenDecision {
   triggerKeys: readonly string[] | undefined;
   /** Whether the `orderTriggers` decision takes a full resolution plan instead of one key. */
   acceptsResolutionPlan: boolean;
+  acceptsIndexedResolutionPlan: boolean;
   /** The `chooseOption` entry that declines an optional effect — the safe default when present. */
   declineIndex: number | undefined;
   resolve: (response: DecisionResponse) => void;
@@ -138,18 +140,22 @@ export class DecisionManager {
       delete options.pendingEffectInstanceIds;
     }
     const pendingEffects = this.options.pendingEffectCandidates?.(spec) ?? [];
-    const offered = new Set(options?.candidateInstanceIds ?? []);
-    const visible = new Set(options?.visibleInstanceIds ?? options?.candidateInstanceIds ?? []);
-    const readable = new Set(
-      options?.visibleCards?.filter((card) => card.cardId.trim().length > 0).map((card) => card.instanceId) ?? [],
-    );
-    const trash = new Set(
-      Array.from(this.state.players).flatMap((player) => player.trash.map((card) => card.instanceId)),
-    );
-    const pendingEffectInstanceIds = [...new Set(pendingEffects)].filter(
-      (id) => offered.has(id) && visible.has(id) && readable.has(id) && trash.has(id),
-    );
-    if (pendingEffectInstanceIds.length) options = { ...options, pendingEffectInstanceIds };
+    if (pendingEffects.length > 0 && (options?.candidateInstanceIds?.length ?? 0) > 0) {
+      const offered = new Set(options?.candidateInstanceIds ?? []);
+      const visible = new Set(options?.visibleInstanceIds ?? options?.candidateInstanceIds ?? []);
+      const readable = new Set(
+        options?.visibleCards?.filter((card) => card.cardId.trim().length > 0).map((card) => card.instanceId) ?? [],
+      );
+      const trash = new Set(
+        Array.from(this.state.players).flatMap((player) => player.trash.map((card) => card.instanceId)),
+      );
+      const pendingEffectInstanceIds = [...new Set(pendingEffects)].filter(
+        (id) => offered.has(id) && visible.has(id) && readable.has(id) && trash.has(id),
+      );
+      if (pendingEffectInstanceIds.length) {
+        options = { ...options, pendingEffectInstanceIds };
+      }
+    }
     const req: DecisionRequest = {
       decisionId,
       seat: spec.seat,
@@ -202,6 +208,7 @@ export class DecisionManager {
         ]),
         triggerKeys: spec.options?.triggerKeys,
         acceptsResolutionPlan: spec.options?.acceptsResolutionPlan === true,
+        acceptsIndexedResolutionPlan: spec.options?.acceptsIndexedResolutionPlan === true,
         declineIndex: spec.options?.declineIndex,
         resolve,
         timer,
@@ -223,15 +230,26 @@ export class DecisionManager {
     if (open.seat !== seat) return false;
     if (open.decisionId !== decisionId) return false;
     if (!responseMatchesKind(open.kind, response)) return false;
-    if (!satisfiesMin(open, response)) return false;
-    if (!namesAnOfferedCardUnlessEmpty(open, response)) return false;
-    if (!satisfiesAllowedTargetCombinations(open, response)) return false;
-    if (!satisfiesDistinctCardIds(open, response)) return false;
-    if (!satisfiesDistinctNames(open, response)) return false;
-    if (!choosesOfferedTriggers(open, response)) return false;
-    if (!ordersEveryCard(open, response)) return false;
+    const normalized =
+      response.kind === "orderTriggers"
+        ? decodeTriggerResolutionPlan({
+            response,
+            triggerKeys: open.triggerKeys ?? [],
+            supportsIndexes: open.acceptsResolutionPlan && open.acceptsIndexedResolutionPlan,
+          })
+        : response;
+    if (normalized === undefined) {
+      return false;
+    }
+    if (!satisfiesMin(open, normalized)) return false;
+    if (!namesAnOfferedCardUnlessEmpty(open, normalized)) return false;
+    if (!satisfiesAllowedTargetCombinations(open, normalized)) return false;
+    if (!satisfiesDistinctCardIds(open, normalized)) return false;
+    if (!satisfiesDistinctNames(open, normalized)) return false;
+    if (!choosesOfferedTriggers(open, normalized)) return false;
+    if (!ordersEveryCard(open, normalized)) return false;
 
-    this.resolveOpen(decisionId, response);
+    this.resolveOpen(decisionId, normalized);
     return true;
   }
 

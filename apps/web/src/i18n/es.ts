@@ -778,7 +778,14 @@ export const es: Record<keyof typeof en, string> = {
   "game.reconnecting": "Reconectando…",
   "game.reconnectingDetail": "Se perdió la conexión. Intentando retomar tu partida.",
   "game.connectionLost": "Conexión perdida",
-  "game.connectionLostDetail": "No se puede acceder al servidor. Revisa tu conexión e inténtalo de nuevo.",
+  "game.connectionLostDetail": "Se interrumpió la conexión con tu partida. Intenta reconectarte.",
+  "game.messageTooLarge": "Tu selección era demasiado grande para enviarla. Intenta resolver menos efectos a la vez.",
+  "game.messageTooLargeReconnecting":
+    "Tu selección era demasiado grande para enviarla. Reconectando para restaurar la elección pendiente.",
+  "game.reconnectFailed": "No pudimos reanudar esta partida. Vuelve al lobby e inténtalo de nuevo.",
+  "game.sessionExpired": "Esta partida ya no se puede reanudar. Vuelve al lobby.",
+  "game.tooManyMessages": "Se enviaron demasiadas acciones a la vez. Espera un momento y vuelve al lobby.",
+  "game.serverUnavailable": "El servidor del juego no está disponible temporalmente. Inténtalo de nuevo en breve.",
   "game.opponentDisconnected": "Oponente desconectado",
   "game.opponentDisconnectedDetail":
     "Esperando a que tu oponente se reconecte. La partida se reanudará automáticamente.",

@@ -790,6 +790,7 @@ export interface DecisionRequest {
      * prompts that only read the first key (simultaneous would-leave replacements).
      */
     acceptsResolutionPlan?: boolean;
+    acceptsIndexedResolutionPlan?: boolean;
     timing?: string; // printed timing label of the resolving effect (e.g. "On Play"), for the overlay to show only that clause
     /** Exact clause that raised this decision, preserving main/inherited provenance without client-side guessing. */
     effectText?: string;

@@ -55,6 +55,7 @@ const OPTION_CONSUMERS: Record<DecisionOptionKey, string | null> = {
   waitingTriggerCardIds: "overlay/choice/DecisionOverlay.tsx",
   waitingTriggerDescriptions: "overlay/choice/DecisionOverlay.tsx",
   waitingTriggerIsInherited: "overlay/choice/DecisionOverlay.tsx",
+  acceptsIndexedResolutionPlan: "overlay/choice/DecisionOverlay.tsx",
   acceptsResolutionPlan: "overlay/choice/DecisionOverlay.tsx",
   timing: "screen/model/triggerDetails.ts",
   effectText: "notices.ts",

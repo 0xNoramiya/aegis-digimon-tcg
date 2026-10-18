@@ -995,7 +995,15 @@ const interfaceMessages = {
   "game.reconnecting": "Reconnexion…",
   "game.reconnectingDetail": "La connexion a été interrompue. Tentative de reprise de votre match.",
   "game.connectionLost": "Connexion perdue",
-  "game.connectionLostDetail": "Le serveur est inaccessible. Vérifiez votre connexion et réessayez.",
+  "game.connectionLostDetail": "La connexion à votre partie a été interrompue. Essayez de vous reconnecter.",
+  "game.messageTooLarge": "Votre sélection était trop volumineuse. Essayez de résoudre moins d’effets à la fois.",
+  "game.messageTooLargeReconnecting":
+    "Votre sélection était trop volumineuse. Reconnexion pour rétablir le choix en attente.",
+  "game.reconnectFailed": "Impossible de reprendre cette partie. Retournez au lobby et réessayez.",
+  "game.sessionExpired": "Cette partie ne peut plus être reprise. Retournez au lobby.",
+  "game.tooManyMessages":
+    "Trop d’actions ont été envoyées simultanément. Patientez un instant, puis retournez au lobby.",
+  "game.serverUnavailable": "Le serveur de jeu est temporairement indisponible. Réessayez dans quelques instants.",
   "game.opponentDisconnected": "Adversaire déconnecté",
   "game.opponentDisconnectedDetail":
     "En attente de la reconnexion de votre adversaire. Le match reprendra automatiquement.",

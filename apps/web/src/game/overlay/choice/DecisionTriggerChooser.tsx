@@ -1,3 +1,4 @@
+import { encodeTriggerResolutionPlan } from "@aegis/shared/protocol/encodeTriggerResolutionPlan";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useState } from "react";
 import { DecisionReorderHandle } from "./DecisionReorderHandle";
@@ -45,6 +46,7 @@ export function DecisionTriggerChooser({
   triggerIsOptional,
   waitingTriggers,
   acceptsResolutionPlan,
+  acceptsIndexedResolutionPlan = false,
   onRespond,
   onOpenBoard,
 }: {
@@ -63,6 +65,7 @@ export function DecisionTriggerChooser({
   /** Older pending effects that resolve after every offered entry. Shown, never chosen. */
   waitingTriggers: readonly WaitingTrigger[];
   acceptsResolutionPlan: boolean;
+  acceptsIndexedResolutionPlan?: boolean;
   onRespond: (response: DecisionResponse) => void;
   onOpenBoard: () => void;
 }) {
@@ -148,9 +151,14 @@ export function DecisionTriggerChooser({
   const respond = () => {
     const optionalAnswers = Object.fromEntries(Object.entries(presets).map(([key, preset]) => [key, preset === "yes"]));
     onRespond(
-      acceptsResolutionPlan && Object.keys(optionalAnswers).length > 0
-        ? { kind: "orderTriggers", order: [...submittedOrder], optionalAnswers }
-        : { kind: "orderTriggers", order: [...submittedOrder] },
+      encodeTriggerResolutionPlan({
+        supportsIndexes: acceptsIndexedResolutionPlan,
+        triggerKeys,
+        response:
+          acceptsResolutionPlan && Object.keys(optionalAnswers).length > 0
+            ? { kind: "orderTriggers", order: [...submittedOrder], optionalAnswers }
+            : { kind: "orderTriggers", order: [...submittedOrder] },
+      }),
     );
   };
   const resolveLabel =

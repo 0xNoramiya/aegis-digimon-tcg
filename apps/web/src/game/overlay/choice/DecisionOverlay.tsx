@@ -514,6 +514,7 @@ export function DecisionOverlay({
               triggerIsOptional={request.options?.triggerIsOptional}
               waitingTriggers={waitingTriggersOf(request)}
               acceptsResolutionPlan={isResolutionPlan}
+              acceptsIndexedResolutionPlan={request.options?.acceptsIndexedResolutionPlan === true}
               onRespond={onRespond}
               onOpenBoard={() => setIsViewingBoard(true)}
             />
