@@ -184,6 +184,7 @@ export async function fireEnteredByEffectTiming(
   const watcherTrigger = {
     subjectPermanentId,
     digivolvedInstanceId: instanceId,
+    ...(subjectPermanent === undefined ? {} : { digivolvedSubject: subjectPermanent.clone() }),
     enteredByEffect: ownerSeat,
     ...(opts?.previousDigivolutionLevel === undefined
       ? {}

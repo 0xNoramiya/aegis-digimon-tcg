@@ -295,6 +295,7 @@ export async function engineConsultLeavePrevention(
   // Immediate reactions must observe the rebuilt continuous registry, never its
   // clear-before-refill interval during an overlapping effect-resolution flow.
   await engine.recomputeContinuousEffects();
+  const pendingBefore = new Set(engine.pendingNestedTimingEffects);
   const prevented = await consultLeavePrevention(
     {
       subTriggers: engine.subTriggers,
@@ -573,6 +574,7 @@ export async function engineConsultLeavePrevention(
       insteadOnly: opts?.insteadOnly,
       keywordPreventions: opts?.keywordPreventions,
       holdTriggered: opts?.holdTriggered,
+      holdCardTriggered: cause === "byBattle",
       reentryGuard: engine.preventReentryGuard,
     },
   );
@@ -580,6 +582,16 @@ export async function engineConsultLeavePrevention(
   // triggered activates now instead of waiting for one. A DigiXros material interrupt is the
   // exception: it happens inside the play procedure, so its caller hands what it triggered to
   // the played Digimon's [On Play] window (CR §15-4-3-2, §15-8-3-2).
+  if (cause === "byBattle") {
+    const triggered = engine.pendingNestedTimingEffects.filter(
+      (pending) => !pendingBefore.has(pending) && pending.timing === EffectTiming.WhenDigivolving,
+    );
+    const transferred = new Set(triggered);
+    engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter(
+      (pending) => !transferred.has(pending),
+    );
+    engine.pendingLeaveReplacementEffects.push(...triggered);
+  }
   const averted =
     opts?.isBounce === true || opts?.insteadOnly === true || permanentIds.every((id) => prevented.has(id));
   if (averted && opts?.isDigiXros !== true && opts?.holdTriggered !== true)

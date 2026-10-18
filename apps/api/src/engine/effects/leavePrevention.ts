@@ -1,7 +1,10 @@
 import type { Permanent, PreventionKeyword, Seat, ZoneRef } from "@aegis/shared";
 import type { EffectContext, RemovalCause } from "./EffectContext.js";
 import type { ReplacementId, ReplacementSubscription, SubTriggerRegistry } from "./subtriggers.js";
+import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
 import { isKeywordReactionPrecedingCardReactions } from "#api/engine/effects/isKeywordReactionPrecedingCardReactions";
+const keywordReactionIdentities = new Set<string>(Object.values(KeywordReaction).map((reaction) => reaction.value));
+
 function replacementActivationKey(replacement: ReplacementSubscription): string {
   const source = replacement.sourceInstanceId ?? replacement.sourcePermanentId ?? "unanchored";
   const action = replacement.activationIdentity ?? `subscription-${replacement.id}`;
@@ -102,6 +105,7 @@ export async function consultLeavePrevention(
     insteadOnly?: boolean;
     keywordPreventions?: { interruptsEffect: boolean };
     holdTriggered?: boolean;
+    holdCardTriggered?: boolean;
     reentryGuard: { activeReplacementKeys: Set<string> };
   },
 ): Promise<Set<string>> {
@@ -366,7 +370,11 @@ export async function consultLeavePrevention(
             },
             leavingId,
           );
-        did = await (opts.holdTriggered === true && host.resolvePreventBody !== undefined
+        did = await ((opts.holdTriggered === true ||
+          (opts.holdCardTriggered === true &&
+            repl.preventionKeyword === undefined &&
+            (repl.activationIdentity === undefined || !keywordReactionIdentities.has(repl.activationIdentity)))) &&
+        host.resolvePreventBody !== undefined
           ? host.resolvePreventBody(preventBody)
           : preventBody());
       } finally {

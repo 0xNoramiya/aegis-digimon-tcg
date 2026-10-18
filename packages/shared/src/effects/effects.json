@@ -162294,6 +162294,10 @@
                 { "tokens": ["Sky Dragon"], "match": "trait" }
               ]
             },
+            "activationCondition": {
+              "kind": "triggerSubjectMatchesFilter",
+              "filter": { "controller": "mine", "kind": ["Digimon"] }
+            },
             "actions": [
               {
                 "kind": "ActivateEffect",
