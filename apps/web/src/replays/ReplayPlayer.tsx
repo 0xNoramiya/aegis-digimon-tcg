@@ -10,6 +10,7 @@ import { createPlaybackClock, frameDelay, playbackState, presentationEnd, turnPo
 import { SEQUENTIAL_PACING_ENABLED } from "../features";
 import { createAnimationPlayback } from "../game/animationPlayback";
 import { ReplayRecording } from "./ReplayRecording";
+import { ReplayControls } from "@/replays/ReplayControls";
 
 const emptyDeck = { mainDeck: [], eggDeck: [] };
 const acknowledgeDecision = () => undefined;
@@ -173,26 +174,6 @@ export function ReplayPlayer({
     window.addEventListener("keydown", escape);
     return () => window.removeEventListener("keydown", escape);
   }, [historyOpen]);
-  useEffect(() => {
-    const element = surface.current;
-    if (!element) return;
-    const position = () => {
-      const hand = element.querySelector('[data-testid="hand"]')?.getBoundingClientRect();
-      element.style.setProperty(
-        "--replay-hand-clearance",
-        `${hand ? Math.max(12, window.innerHeight - hand.top + 12) : 12}px`,
-      );
-    };
-    const mutations = new MutationObserver(position);
-    mutations.observe(element.querySelector(".replay-player__board")!, { childList: true, subtree: true });
-    const resize = new ResizeObserver(position);
-    resize.observe(element);
-    position();
-    return () => {
-      mutations.disconnect();
-      resize.disconnect();
-    };
-  }, [cursor.epoch, viewerSeat, showHand]);
 
   function seek(index: number) {
     setPlaying(false);
@@ -341,13 +322,7 @@ export function ReplayPlayer({
           <Icons.PlayCircle size={20} />
         </button>
       </div>
-      <div
-        id="replay-controls"
-        className="replay-controls"
-        role="group"
-        aria-label={t("replay.title")}
-        hidden={!controlsVisible}
-      >
+      <ReplayControls visible={controlsVisible}>
         <div className="replay-controls__timeline">
           <label htmlFor="replay-position">
             {t("replay.action", { current: cursor.index + 1, total: replay.frames.length })}
@@ -361,7 +336,9 @@ export function ReplayPlayer({
             aria-label={t("replay.position")}
             onChange={(event) => seek(Number(event.target.value))}
           />
-          <span role="status">{atEnd && settled ? t("replay.finished") : labels[cursor.index]}</span>
+          <span role="status" title={atEnd && settled ? t("replay.finished") : labels[cursor.index]}>
+            {atEnd && settled ? t("replay.finished") : labels[cursor.index]}
+          </span>
         </div>
         <div className="replay-controls__buttons">
           <div className="replay-controls__transport">
@@ -474,7 +451,7 @@ export function ReplayPlayer({
             </div>
           </details>
         </div>
-      </div>
+      </ReplayControls>
     </section>
   );
 }
