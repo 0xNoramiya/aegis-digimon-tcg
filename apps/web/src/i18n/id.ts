@@ -228,6 +228,9 @@ const interfaceMessages = {
   "replay.start": "Ke awal",
   "replay.end": "Ke akhir",
   "replay.speed": "Kecepatan pemutaran",
+  "replay.move": "Pindahkan kontrol pemutaran",
+  "replay.moveHint":
+    "Seret untuk memindahkan. Gunakan tombol panah, Shift untuk langkah lebih besar, dan Home untuk mengatur ulang.",
   "replay.position": "Posisi replay",
   "replay.turn": "Giliran",
   "replay.action": "Aksi {current} dari {total}",
