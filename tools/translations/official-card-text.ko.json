@@ -1,7 +1,7 @@
 {
   "fetchedAt": "2026-10-16T13:45:11.694Z",
   "language": "ko",
-  "catalogCards": 4487,
+  "catalogCards": 4497,
   "sourceCards": 3814,
   "translatedCards": 3594,
   "translatedFields": 5485,
@@ -6658,6 +6658,96 @@
     },
     {
       "cardId": "BT27-100",
+      "field": "securityEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-073",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-073",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-077",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-077",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-080",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-080",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-082",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-082",
+      "field": "optionEffect",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-002",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-020",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-020",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-025",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-025",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-028",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-028",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-031",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-095",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-095",
       "field": "securityEffectText",
       "reason": "unavailable-source-field"
     }

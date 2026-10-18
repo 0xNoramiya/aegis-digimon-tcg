@@ -241631,5 +241631,356 @@
     ],
     "coverage": "full",
     "residual": []
+  },
+  "BT27-073": {
+    "effects": [
+      {
+        "trigger": "YourTurn",
+        "actions": [
+          {
+            "kind": "Replacement",
+            "event": "wouldDigivolve",
+            "sourceFilter": { "isSelfRef": true },
+            "into": {
+              "kind": ["Digimon"],
+              "colors": ["Purple"],
+              "nameOrTrait": [{ "tokens": ["BEATBREAK"], "match": "trait" }]
+            },
+            "actions": [{ "kind": "Replacement", "event": "wouldDigivolve", "mode": "reduceCost", "amount": 1 }]
+          }
+        ]
+      },
+      {
+        "trigger": "WhenAttacking",
+        "isInherited": true,
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "Draw",
+            "effectTextPart": "[When Attacking] [Once Per Turn] ＜Draw 1＞",
+            "controller": "mine",
+            "amount": 1
+          },
+          {
+            "kind": "Trash",
+            "effectTextPart": "and trash 1 card in your hand.",
+            "target": { "filter": { "controller": "mine", "zone": "hand" }, "count": 1 }
+          }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [{ "level": 2, "traits": ["Glowing Dawn"], "cost": 0, "isAlternate": true }],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-077": {
+    "effects": [
+      {
+        "trigger": "WhenDigivolving",
+        "condition": { "kind": "youHave", "filter": { "kind": ["Tamer"], "countMax": 1 } },
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Tamer"],
+                "nameOrTrait": [{ "tokens": ["Makoto Kuonji"], "match": "name" }]
+              },
+              "count": 1
+            },
+            "from": ["hand"],
+            "payCost": false,
+            "optional": true
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "isSecurity": true,
+        "condition": { "kind": "youHave", "filter": { "kind": ["Tamer"], "countMax": 1 } },
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Tamer"],
+                "nameOrTrait": [{ "tokens": ["Makoto Kuonji"], "match": "name" }]
+              },
+              "count": 1
+            },
+            "from": ["hand"],
+            "payCost": false,
+            "optional": true
+          }
+        ]
+      },
+      { "trigger": "Static", "isInherited": true, "actions": [], "keywords": [{ "keyword": "Retaliation" }] }
+    ],
+    "digivolutionRequirement": [{ "level": 3, "traits": ["Glowing Dawn"], "cost": 2, "isAlternate": true }],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-080": {
+    "effects": [
+      {
+        "trigger": "Main",
+        "isFromHand": true,
+        "condition": {
+          "kind": "youHave",
+          "filter": { "kind": ["Tamer"], "nameOrTrait": [{ "tokens": ["Makoto Kuonji"], "match": "name" }] }
+        },
+        "actions": [
+          {
+            "kind": "DigivolveViaPlacement",
+            "effectTextPart": "[Hand] [Main] If you have a Tamer with [Makoto Kuonji] in its name, by placing 1 [NightChiropmon] from your trash as any of your [Chiropmon]’s bottom digivolution card, that Digimon digivolves into this card, ignoring level.",
+            "placeCost": {
+              "kind": "placeFromTrash",
+              "target": {
+                "filter": {
+                  "controller": "mine",
+                  "nameOrTrait": [{ "tokens": ["NightChiropmon"], "match": "nameExact" }]
+                },
+                "count": 1
+              },
+              "destination": "digivolutionStack",
+              "position": "bottom",
+              "hostFilter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["Chiropmon"], "match": "nameExact" }]
+              }
+            },
+            "into": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "cost": 3,
+            "ignoreLevelRequirement": true
+          }
+        ]
+      },
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "Delete",
+            "effectTextPart": "[On Play] [When Digivolving] Delete 1 of your opponent’s level 4 or lower Digimon.",
+            "target": {
+              "filter": {
+                "controller": "opponent",
+                "kind": ["Digimon"],
+                "levelComparison": { "op": "lte", "value": 4 }
+              },
+              "count": 1
+            }
+          },
+          {
+            "kind": "CostGatedBlock",
+            "effectTextPart": "Then, by trashing the bottom face-down card from under any of your Tamers, this Digimon gains ＜Rush＞ and ＜Piercing＞ for the turn.",
+            "optional": true,
+            "cost": { "kind": "trashBottomFaceDownUnderTamer", "controller": "mine", "count": 1 },
+            "actions": [
+              {
+                "kind": "GainKeyword",
+                "effectTextPart": "Then, by trashing the bottom face-down card from under any of your Tamers, this Digimon gains ＜Rush＞ and ＜Piercing＞ for the turn.",
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                "keyword": { "keyword": "Rush" },
+                "duration": "forTheTurn"
+              },
+              {
+                "kind": "GainKeyword",
+                "effectTextPart": "Then, by trashing the bottom face-down card from under any of your Tamers, this Digimon gains ＜Rush＞ and ＜Piercing＞ for the turn.",
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                "keyword": { "keyword": "Piercing" },
+                "duration": "forTheTurn"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "Delete",
+            "effectTextPart": "[On Play] [When Digivolving] Delete 1 of your opponent’s level 4 or lower Digimon.",
+            "target": {
+              "filter": {
+                "controller": "opponent",
+                "kind": ["Digimon"],
+                "levelComparison": { "op": "lte", "value": 4 }
+              },
+              "count": 1
+            }
+          },
+          {
+            "kind": "CostGatedBlock",
+            "effectTextPart": "Then, by trashing the bottom face-down card from under any of your Tamers, this Digimon gains ＜Rush＞ and ＜Piercing＞ for the turn.",
+            "optional": true,
+            "cost": { "kind": "trashBottomFaceDownUnderTamer", "controller": "mine", "count": 1 },
+            "actions": [
+              {
+                "kind": "GainKeyword",
+                "effectTextPart": "Then, by trashing the bottom face-down card from under any of your Tamers, this Digimon gains ＜Rush＞ and ＜Piercing＞ for the turn.",
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                "keyword": { "keyword": "Rush" },
+                "duration": "forTheTurn"
+              },
+              {
+                "kind": "GainKeyword",
+                "effectTextPart": "Then, by trashing the bottom face-down card from under any of your Tamers, this Digimon gains ＜Rush＞ and ＜Piercing＞ for the turn.",
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                "keyword": { "keyword": "Piercing" },
+                "duration": "forTheTurn"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "OnDeletion",
+        "isInherited": true,
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "playCostLte": 5,
+                "nameOrTrait": [{ "tokens": ["Glowing Dawn"], "match": "trait" }]
+              },
+              "count": 1
+            },
+            "from": ["trash"],
+            "payCost": false,
+            "optional": true
+          }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [{ "level": 4, "traits": ["Glowing Dawn"], "cost": 3, "isAlternate": true }],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-082": {
+    "effects": [
+      { "trigger": "Static", "actions": [], "keywords": [{ "keyword": "Execute" }, { "keyword": "Ascension" }] },
+      {
+        "trigger": "Static",
+        "actions": [
+          {
+            "kind": "WaiveColorRequirement",
+            "condition": {
+              "kind": "youHave",
+              "filter": {
+                "controller": "mine",
+                "zone": ["battleArea", "breeding"],
+                "nameOrTrait": [{ "tokens": ["Glowing Dawn"], "match": "trait" }]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "isSecurity": true,
+        "actions": [
+          {
+            "kind": "Delete",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "superlative": "lowestLevel" },
+              "count": 1
+            }
+          },
+          {
+            "kind": "SecurityManipulation",
+            "op": "trashTop",
+            "controller": "opponent",
+            "amount": 1,
+            "condition": { "kind": "ifThisEffectDidNotDelete" }
+          }
+        ]
+      },
+      {
+        "trigger": "OnDeletion",
+        "actions": [
+          {
+            "kind": "Delete",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "superlative": "lowestLevel" },
+              "count": 1
+            }
+          },
+          {
+            "kind": "SecurityManipulation",
+            "op": "trashTop",
+            "controller": "opponent",
+            "amount": 1,
+            "condition": { "kind": "ifThisEffectDidNotDelete" }
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "frequency": "OncePerTurn",
+        "sharedUseKey": "activate-option",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "cost": { "kind": "trashBottomFaceDownUnderTamer", "controller": "mine", "count": 2 },
+            "actions": [{ "kind": "ActivateMain" }]
+          }
+        ]
+      },
+      {
+        "trigger": "WhenAttacking",
+        "frequency": "OncePerTurn",
+        "sharedUseKey": "activate-option",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "cost": { "kind": "trashBottomFaceDownUnderTamer", "controller": "mine", "count": 2 },
+            "actions": [{ "kind": "ActivateMain" }]
+          }
+        ]
+      },
+      {
+        "trigger": "Main",
+        "actions": [
+          {
+            "kind": "Delete",
+            "effectTextPart": "[Main] Delete 1 of your opponent's level 6 or higher Digimon.",
+            "target": {
+              "filter": {
+                "controller": "opponent",
+                "kind": ["Digimon"],
+                "levelComparison": { "op": "gte", "value": 6 }
+              },
+              "count": 1
+            }
+          },
+          {
+            "kind": "PlayWithoutCost",
+            "effectTextPart": "Then, you may play 1 play cost 4 or lower [BEATBREAK] trait card from your trash without paying the cost.",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon", "Tamer"],
+                "playCostLte": 4,
+                "nameOrTrait": [{ "tokens": ["BEATBREAK"], "match": "trait" }]
+              },
+              "count": 1
+            },
+            "from": ["trash"],
+            "payCost": false,
+            "optional": true
+          }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [{ "level": 5, "traits": ["Glowing Dawn"], "cost": 3, "isAlternate": true }],
+    "coverage": "full",
+    "residual": []
   }
 }
