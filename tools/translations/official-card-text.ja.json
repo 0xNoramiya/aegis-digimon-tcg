@@ -1,10 +1,10 @@
 {
   "fetchedAt": "2026-10-16T13:45:11.694Z",
   "language": "ja",
-  "catalogCards": 4490,
+  "catalogCards": 4497,
   "sourceCards": 4477,
-  "translatedCards": 4291,
-  "translatedFields": 6768,
+  "translatedCards": 4292,
+  "translatedFields": 6770,
   "missing": [
     {
       "cardId": "BT12-002",
@@ -273,6 +273,56 @@
     },
     {
       "cardId": "BT27-100",
+      "field": "securityEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-002",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-020",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-020",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-025",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-025",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-028",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-028",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-031",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-095",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-095",
       "field": "securityEffectText",
       "reason": "unavailable-source-field"
     }
@@ -15641,6 +15691,10 @@
     "BT27-080": {
       "effectText": "https://x.com/digimon_tcg/status/2111615804068483363",
       "inheritedEffectText": "https://x.com/digimon_tcg/status/2111615804068483363"
+    },
+    "BT27-082": {
+      "effectText": "https://x.com/digimon_tcg/status/2111698837064786432",
+      "optionEffect": "https://x.com/digimon_tcg/status/2111698837064786432"
     }
   }
 }

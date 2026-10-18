@@ -15344,5 +15344,9 @@
   "BT27-080": {
     "[Digivolve]Lv.4w/[GlowingDawn]trait:Cost3[Hand][Main]IfyouhaveaTamerwith[MakotoKuonji]initsname,byplacing1[NightChiropmon]fromyourtrashasanyofyour[Chiropmon]’sbottomdigivolutioncard,thatDigimondigivolvesintothiscard,ignoringlevel.[OnPlay][WhenDigivolving]Delete1ofyouropponent’slevel4orlowerDigimon.Then,bytrashingthebottomface-downcardfromunderanyofyourTamers,thisDigimongains<Rush>and<Piercing>fortheturn.": "〔進化〕特徴「グローイングドーン」を持つLv.4:コスト3\n\n{手札}【メイン】名称に「久遠寺マコト」を含む自分のテイマーがいるなら、自分のトラッシュから、「ナイトキロプモン」1枚を自分の「キロプモン」の進化元の下に置くことで、そのデジモンをこのカードにLv.を無視して進化させる。\n【登場時】【進化時】Lv.4以下の相手のデジモン1体を消滅させる。その後、自分のテイマーの下にある裏向きのカードを下から1枚破棄することで、ターン終了まで、このデジモンは≪速攻≫と≪貫通≫を得る。",
     "[OnDeletion]Youmayplay1playcost5orlower[GlowingDawn]traitcardfromyourtrashwithoutpayingthecost.": "【消滅時】自分のトラッシュから、特徴「グローイングドーン」を持つ登場コスト5以下のカード1枚をコストを支払わずに登場できる。"
+  },
+  "BT27-082": {
+    "[Digivolve]Lv.5w/[GlowingDawn]trait:Cost3<Execute><Ascension>[Security][OnDeletion]Delete1ofyouropponent'sDigimonwiththelowestlevel.Ifthiseffectdidn'tdelete,trashtheirtopsecuritycard.[WhenDigivolving][WhenAttacking][OncePerTurn]Bytrashing2bottomface-downcardsfromunderanyofyourTamers,activate1[Main]effectonthiscard'sOptionside.": "【進化】特徴「グローイングドーン」を持つLv.5:コスト3\n≪エグゼキュート≫ ≪天昇≫（このデジモンが消滅したとき、このカードをセキュリティの上に置ける）\n【セキュリティ】【消滅時】最もLv.の低い相手のデジモン1体を消滅させる。この効果で消滅しなかったなら、相手のセキュリティを上から1枚破棄する。\n【進化時】【アタック時】【ターンに1回】自分のテイマーの下にある裏向きのカードを下から2枚破棄することで、このカードのオプション側の【メイン】効果1つを発揮する。",
+    "<UseReq.([GlowingDawn]trait)>[Main]Delete1ofyouropponent'slevel6orhigherDigimon.Then,youmayplay1playcost4orlower[BEATBREAK]traitcardfromyourtrashwithoutpayingthecost.<ArtsDigivolve>": "≪使用条件《特徴「グローイングドーン」》≫（指定の条件で色条件を満たせる）\n【メイン】Lv.6以上の相手のデジモン1体を消滅させる。その後、自分のトラッシュから、特徴「ビートブレイク」を持つ登場コスト4以下のカード1枚をコストを支払わずに登場できる。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わずに進化する）"
   }
 }
