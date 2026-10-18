@@ -141,6 +141,10 @@
     display: none !important;
   }
 
+  .game-board .game-opponent-bar:has(.game-mobile-menu[open]) {
+    z-index: 97;
+  }
+
   .game-mobile-menu {
     position: relative;
     align-self: center;

@@ -69,6 +69,7 @@ export function OpponentBar({
   chatOpen = false,
   chatUnread = 0,
   onSurrender,
+  gameOver = false,
   onSkipPresentation,
   onResetScenario,
 }: {
@@ -106,6 +107,7 @@ export function OpponentBar({
   /** Messages from others since the chat window was last open. */
   chatUnread?: number;
   onSurrender: () => void;
+  gameOver?: boolean;
   onSkipPresentation: () => void;
   onResetScenario?: () => void;
 }) {
@@ -118,7 +120,13 @@ export function OpponentBar({
   const openCard = useCardOpener();
   const skipShown = useHeldFlag(skippable, SKIP_BUTTON_HOLD_MS);
   const tooltip = useTopbarTooltip();
-  const leaveLabel = t(spectating ? "spectator.leave" : "game.surrender");
+  let leaveLabel = t("game.surrender");
+  if (gameOver) {
+    leaveLabel = t("game.leaveMatch");
+  }
+  if (spectating) {
+    leaveLabel = t("spectator.leave");
+  }
   const tooltipText: Record<TopbarTooltipId, string | undefined> = {
     log: t("game.matchLog"),
     feedback: t("bugReport.button"),
@@ -273,7 +281,7 @@ export function OpponentBar({
               <Icons.Settings size={18} /> {t("redesign.arena.look.open")}
             </button>
             <button type="button" onClick={onSurrender}>
-              <Icons.LogOut size={18} /> {t(spectating ? "spectator.leave" : "game.surrender")}
+              <Icons.LogOut size={18} /> {leaveLabel}
             </button>
           </div>
         </details>
@@ -323,7 +331,7 @@ export function OpponentBar({
           <button
             className="game-mobile-surrender"
             onClick={onResetScenario ?? onSurrender}
-            aria-label={onResetScenario ? "Reset battle" : t(spectating ? "spectator.leave" : "game.surrender")}
+            aria-label={onResetScenario ? "Reset battle" : leaveLabel}
           >
             {onResetScenario ? "↻" : <Icons.LogOut size={16} />}
           </button>
