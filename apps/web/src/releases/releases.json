@@ -1,5 +1,32 @@
 [
   {
+    "version": "1.32.0-beta",
+    "releasedAt": "2026-10-18",
+    "summaryKey": "releases.1.32.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.32.0-beta.feature.bt27"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.32.0-beta.fix.inheritedSources"
+      },
+      {
+        "textKey": "releases.1.32.0-beta.fix.immunity"
+      },
+      {
+        "textKey": "releases.1.32.0-beta.fix.timing"
+      },
+      {
+        "textKey": "releases.1.32.0-beta.fix.presentation"
+      },
+      {
+        "textKey": "releases.1.32.0-beta.fix.localization"
+      }
+    ]
+  },
+  {
     "version": "1.31.5-beta",
     "releasedAt": "2026-10-18",
     "summaryKey": "releases.1.31.5-beta.summary",
