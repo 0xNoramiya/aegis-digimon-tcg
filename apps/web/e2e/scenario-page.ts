@@ -228,6 +228,25 @@ export class ScenarioPage {
                   .getByRole("button", { name: decision.options.choices![index]!, exact: true });
           await this.decisionReady(choice, decision, selection.decisionBudgetMs);
           await choice.click();
+        } else if (decision.kind === "selectCards" && decision.options.assemblyCardId) {
+          const panel = this.page.getByRole("dialog", { name: /^＜Assembly＞/ });
+          await this.decisionReady(panel, decision, selection.decisionBudgetMs);
+          if (selection.accept === false) {
+            await panel.getByRole("button", { name: "Play without Assembly", exact: true }).click();
+          } else {
+            const ids = selection.instanceIds ?? decision.options.candidateInstanceIds ?? [];
+            for (const id of ids) {
+              const card = decision.options.visibleCards?.find((entry) => entry.instanceId === id);
+              expect(card, `visible Assembly material ${id}`).toBeDefined();
+              const name = getCardDefinition(card!.cardId)!.nameEn;
+              await panel
+                .getByRole("button", { name: `${name} (trash)`, exact: true })
+                .and(panel.locator('[aria-pressed="false"]'))
+                .first()
+                .click();
+            }
+            await panel.getByRole("button", { name: /^Assembly \(\d+ cards\)$/ }).click();
+          }
         } else if (decision.kind === "selectCards" && decision.options.digiXrosCardId) {
           const noXros = this.page.getByRole("button", { name: "Play without DigiXros", exact: true });
           await this.decisionReady(noXros, decision, selection.decisionBudgetMs);
