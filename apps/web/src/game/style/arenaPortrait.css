@@ -141,8 +141,8 @@
     display: none !important;
   }
 
-  .game-board .game-opponent-bar:has(.game-mobile-menu[open]) {
-    z-index: 97;
+  :root:has(.game-mobile-menu[open]) .game-result-bar {
+    visibility: hidden;
   }
 
   .game-mobile-menu {
