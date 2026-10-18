@@ -1,3 +1,4 @@
+import { EffectText } from "@/game/EffectText";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { isAllowedTargetSelection } from "@/game/screen/model/isAllowedTargetSelection";
 import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
@@ -98,7 +99,7 @@ export function DecisionOverlay({
   onChangeSourceHost?: () => void;
 }) {
   const getCardName = useTranslatedCardName();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const effectPromptPosition = useEffectPromptPosition();
   const openCard = useCardOpener();
   const wideDialog = useMediaQuery(WIDE_DIALOG_QUERY);
@@ -374,7 +375,16 @@ export function DecisionOverlay({
               </div>
               <div className="decision-overlay__clauses">
                 {!isOrderTriggers && displayedEffectText && onChangeSourceHost === undefined ? (
-                  <p className="decision-overlay__effect-text">{renderedEffectText}</p>
+                  <p className="decision-overlay__effect-text">
+                    {locale === "zh-CN" ? (
+                      <EffectText
+                        text={displayedEffectText}
+                        cardId={request.options?.effectTextCardId ?? sourceCardId}
+                      />
+                    ) : (
+                      renderedEffectText
+                    )}
+                  </p>
                 ) : null}
                 {isOptional && request.options?.promptKey === "attackAlreadyResolving" && sourceEffectText ? (
                   <p className="decision-overlay__effect-text">{specificPrompt}</p>
@@ -436,6 +446,7 @@ export function DecisionOverlay({
             <DecisionClauseChoice
               choices={choices}
               choiceClauses={choiceClauses}
+              cardId={request.options?.effectTextCardId ?? sourceCardId}
               declineIndex={declineIndex}
               activation={request.options?.activation}
               onRespond={onRespond}

@@ -1,4 +1,5 @@
 import { getCardDefinition } from "@aegis/shared/cards/registry";
+import { printedModalBullets } from "@aegis/shared/effects/printedClauses";
 import type { CardTranslationData } from "@/i18n/cardTranslationTypes";
 import { getDictionaryValue } from "@/i18n/getDictionaryValue";
 import { normalizePrintedTextKey } from "@/i18n/normalizePrintedTextKey";
@@ -79,13 +80,34 @@ export function findTranslatedCardClause({ text, translations, cardId }: Params)
     ) {
       continue;
     }
-    const requested = source.find((clause) => normalizePrintedTextKey(clause.text) === normalizePrintedTextKey(text));
-    if (!requested || source.filter((clause) => clause.signature === requested.signature).length !== 1) {
+    const requestedKey = normalizePrintedTextKey(text);
+    const requestedClauses = source.filter(
+      (clause) =>
+        normalizePrintedTextKey(clause.text) === requestedKey ||
+        printedModalBullets(clause.text).some((bullet) => normalizePrintedTextKey(bullet) === requestedKey),
+    );
+    const requested = requestedClauses[0];
+    if (
+      requestedClauses.length !== 1 ||
+      !requested ||
+      source.filter((clause) => clause.signature === requested.signature).length !== 1
+    ) {
       continue;
     }
     const candidates = target.filter((clause) => clause.signature === requested.signature);
     if (candidates.length === 1) {
-      matches.add(candidates[0]!.text);
+      if (normalizePrintedTextKey(requested.text) === requestedKey) {
+        matches.add(candidates[0]!.text);
+        continue;
+      }
+      const sourceBullets = printedModalBullets(requested.text);
+      const targetBullets = printedModalBullets(candidates[0]!.text.replace(/(^|[\r\n])[ \t]*[·•]/g, "$1・"));
+      const indexes = sourceBullets.flatMap((bullet, index) =>
+        normalizePrintedTextKey(bullet) === requestedKey ? [index] : [],
+      );
+      if (indexes.length === 1 && sourceBullets.length === targetBullets.length) {
+        matches.add(targetBullets[indexes[0]!]!);
+      }
     }
   }
   return matches.size === 1 ? [...matches][0] : undefined;

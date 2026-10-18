@@ -19,6 +19,30 @@ import { AllianceOverlay } from "./overlay/combat/AllianceOverlay";
 import { EvoCostChoiceOverlay } from "./overlay/choice/EvoCostChoiceOverlay";
 import { GameScreen } from "./GameScreen";
 import type { AegisRoom } from "../net/client";
+import { I18nContext } from "@/i18n/I18nContext";
+import { translator } from "@/i18n/translator";
+
+it.each([
+  { effectKey: "blast-digivolve:host", label: "突风进化" },
+  { effectKey: `blast-dna-digivolve:${JSON.stringify(["host", "ace", "partner"])}`, label: "突风合步" },
+])("localizes the counter route $label and activates its unchanged server key", ({ effectKey, label }) => {
+  const onActivate = vi.fn<(instanceId: string, key: string) => void>();
+  render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <CounterOverlay
+        eligibleCounters={[{ instanceId: "ace", effectKey, description: "Blast Digivolve" }]}
+        getCardId={(id) => (id === "ace" ? "EX10-023" : "ST1-07")}
+        selectedInstanceId="ace"
+        onSelectInstance={vi.fn<(instanceId?: string) => void>()}
+        handInstanceIds={["ace", "partner"]}
+        onActivate={onActivate}
+        onPass={vi.fn<() => void>()}
+      />
+    </I18nContext.Provider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: new RegExp(label) }));
+  expect(onActivate).toHaveBeenCalledWith("ace", effectKey);
+});
 
 function CounterHarness(
   props: Omit<ComponentProps<typeof CounterOverlay>, "selectedInstanceId" | "onSelectInstance" | "handInstanceIds"> & {

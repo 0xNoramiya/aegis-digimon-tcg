@@ -1,7 +1,13 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "消滅此數碼寶貝",
+  "overlay.trashTopSecurityCard": "丟棄我方最上方的1張安防卡牌",
+  "overlay.trashTamerBottomCard": "丟棄我方1隻馴獸師下方最下方的1張背面表示卡牌",
+  "overlay.trashTwoTamerBottomCards": "丟棄我方馴獸師下方最下方的2張背面表示卡牌",
   ...providerEn,
   "settings.cardImageLanguage": "卡牌圖片語言",
   "settings.cardImageLanguageDesc":

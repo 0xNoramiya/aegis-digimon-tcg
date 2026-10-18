@@ -1,4 +1,5 @@
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { getCardDefinition } from "@aegis/shared";
@@ -50,6 +51,7 @@ export function TrashViewerOverlay({
 }) {
   const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
+  const translateCardText = useTranslatedCardText();
   const [sort, setSort] = useState<"recent" | "name">("recent");
   const countText = countLabel ?? t("overlay.trashCount", { count: cardIds.length });
   const emptyText = emptyLabel ?? t("overlay.trashEmpty");
@@ -134,7 +136,7 @@ export function TrashViewerOverlay({
             key={`${effect.instanceId}:${effect.effectKey}`}
             size="md"
             full
-            title={effect.description}
+            title={translateCardText({ text: effect.description, cardId })}
             aria-label={`${t("game.activateMainEffect")}: ${name}`}
             onClick={() => {
               setMenuKey(null);

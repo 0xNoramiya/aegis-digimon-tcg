@@ -1,3 +1,4 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { replayVideoIt } from "./replayVideo";
 import { profileReplayIt } from "./profileReplays";
@@ -6,6 +7,11 @@ import { en } from "./en";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
+  "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
   "settings.cardImageLanguage": "Lingua delle immagini delle carte",
   "settings.cardImageLanguageDesc":
