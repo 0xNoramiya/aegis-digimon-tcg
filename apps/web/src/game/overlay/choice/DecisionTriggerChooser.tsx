@@ -1,7 +1,8 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useState } from "react";
 import { DecisionReorderHandle } from "./DecisionReorderHandle";
 import { reorderDecisionItems, useDecisionReorder } from "./useDecisionReorder";
-import { getCardDefinition, parseTriggerKey, type DecisionResponse } from "@aegis/shared";
+import { parseTriggerKey, type DecisionResponse } from "@aegis/shared";
 import { EffectText } from "../../EffectText";
 import { CardFull } from "../../../design/cards";
 import { Button } from "../../../design/primitives";
@@ -66,9 +67,10 @@ export function DecisionTriggerChooser({
   onOpenBoard: () => void;
 }) {
   const { t } = useTranslation();
+  const getCardName = useTranslatedCardName();
   const [order, setOrder] = useState<string[]>([]);
   const [presets, setPresets] = useState<Readonly<Record<string, Preset>>>({});
-  const triggerKeyLabels = triggerLabels(triggerKeys, t, triggerCardIds);
+  const triggerKeyLabels = triggerLabels(triggerKeys, t, triggerCardIds, getCardName);
   // Two effects of ONE permanent reach the chooser with the same name and art; the
   // window each fired in is the only honest thing that separates them.
   const triggerTimingLabels = triggerKeys.map((_key, index) =>
@@ -399,6 +401,7 @@ function onceActivatableIndexes(triggerKeys: readonly string[], clauses: readonl
  * crowds out the effects the player can actually choose.
  */
 function WaitingTriggerList({ entries, timing }: { entries: readonly WaitingTrigger[]; timing: string | undefined }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const groups = groupWaitingTriggers(entries, timing);
   return (
@@ -411,7 +414,7 @@ function WaitingTriggerList({ entries, timing }: { entries: readonly WaitingTrig
             <CardFull cardId={cardId} width={40} zoomOnHover={false} />
             <span className="trigger-chooser__meta">
               <span className="trigger-chooser__name">
-                {getCardDefinition(cardId)?.nameEn ?? cardId}
+                {getCardName(cardId)}
                 {count > 1 ? <span className="trigger-chooser__waiting-count">×{count}</span> : null}
               </span>
               {clause ? (

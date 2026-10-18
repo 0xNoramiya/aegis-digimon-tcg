@@ -10,6 +10,7 @@ import { EffectText } from "@/game/EffectText";
 import { Icons } from "../design/icons";
 import { useTranslation, type Translate } from "../i18n";
 import { cardDisplayName } from "./cardLinks";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { TIMING_LABELS, noticeEffectClause } from "./overlay";
 import { NoticeStack } from "./NoticeStack";
 import { useSwipeToDismiss } from "./useSwipeToDismiss";
@@ -365,7 +366,11 @@ function PeekLine({
   const swipe = useSwipeToDismiss(onDismiss);
   const newest = items.at(-1);
   const summary = newest ? peekSummary(newest, t) : undefined;
+  const getCardName = useTranslatedCardName();
   if (!summary) return null;
+  const summaryName = summary.cardId
+    ? summary.name.replace(cardDisplayName(summary.cardId, t), () => getCardName(summary.cardId!))
+    : summary.name;
   // The band already names one of them, so the badge counts the rest.
   const queued = toastCount(items) - 1;
   return (
@@ -389,8 +394,10 @@ function PeekLine({
       ) : null}
       <span className="narration-peek__copy">
         <span className="narration-peek__head">
-          <span className="narration-peek__label">{summary.label}</span>
-          {summary.name ? <span className="narration-peek__name">{summary.name}</span> : null}
+          <span className="narration-peek__label">
+            <EffectText text={summary.label} />
+          </span>
+          {summary.name ? <span className="narration-peek__name">{summaryName}</span> : null}
         </span>
         {/* One line of the clause: enough to know whether this is worth opening. */}
         {summary.clause ? (

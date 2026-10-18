@@ -1,3 +1,5 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+
 import { communityApi } from "@/community/client";
 import { communityDeckListing } from "@/community/communityDeckListing";
 /* Lobby / matchmaking. Pick a deck and enter the queue. "Quick Match" waits for a
@@ -18,7 +20,6 @@ import {
   deckFormat,
   formatIsUnlimited,
   type DeckFormat,
-  getCardDefinition,
   isBetaOnlyCard,
   sharedCardNumberGroups,
   deckLegality,
@@ -231,6 +232,7 @@ export function Lobby({
   privateRoom?: PrivateRoom;
   onLeavePrivateRoom?: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const MODES = modesFor(t);
   const [timer, setTimer] = useState<Required<MatchTimerOptions>>(() => ({
@@ -856,8 +858,8 @@ export function Lobby({
                   {pairViolations.map(([a, b]) => (
                     <div key={`${a}-${b}`}>
                       {t("lobby.pairRow", {
-                        a: getCardDefinition(a)?.nameEn ?? a,
-                        b: getCardDefinition(b)?.nameEn ?? b,
+                        a: getCardName(a),
+                        b: getCardName(b),
                       })}
                     </div>
                   ))}

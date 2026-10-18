@@ -151,13 +151,15 @@ export function CardLinkedText({
   const translations = useCardTranslations();
   const contextOpener = useCardOpener();
   const openCard = onOpenCard ?? contextOpener;
+  const segments = logSegments(text, namedCards(cardIds));
   if (!openCard) {
-    return <HighlightedText text={text} highlight={highlight} />;
+    const translated = segments.map((segment) => getTranslatedCardName({ name: segment.text, translations })).join("");
+    return <HighlightedText text={translated} highlight={highlight} />;
   }
   return (
     <>
-      {logSegments(text, namedCards(cardIds)).map((segment, index) =>
-        segment.cardId ? (
+      {segments.map((segment, index) =>
+        segment.cardId && openCard ? (
           <CardLinkButton
             key={index}
             cardId={segment.cardId}

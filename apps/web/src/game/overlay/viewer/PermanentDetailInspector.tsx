@@ -1,3 +1,6 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
 import { createPortal } from "react-dom";
 import { getCardDefinition } from "@aegis/shared";
 import { Badge } from "../../../design/primitives";
@@ -40,6 +43,8 @@ export function PermanentDetailInspector({
   onInteractStart?: () => void;
   onInteractEnd?: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
+  const translations = useCardTranslations();
   const { t } = useTranslation();
   const topDef = getCardDefinition(detail.cardId);
   const supporting = detail.cards.filter((card) => card.role !== "top");
@@ -72,7 +77,7 @@ export function PermanentDetailInspector({
     >
       <header>
         <div>
-          <strong>{detail.name}</strong>
+          <strong>{getTranslatedCardName({ name: detail.name, translations })}</strong>
           {/* The live figure is what the position actually has; the printed one sits
               beside it only when something has moved it. */}
           <span>
@@ -142,7 +147,7 @@ export function PermanentDetailInspector({
               <div key={`${card.cardId}-${index}`}>
                 <CardArt cardId={card.cardId} artId={card.artId} width={38} />
                 <div>
-                  <strong>{def?.nameEn ?? card.cardId}</strong>
+                  <strong>{getCardName(card.cardId)}</strong>
                   <span>{t(ROLE_LABEL_KEYS[card.role])}</span>
                   <p>{effect || t("overlay.noPrintedEffect")}</p>
                 </div>

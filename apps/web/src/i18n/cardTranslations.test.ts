@@ -74,7 +74,9 @@ describe("Chinese resolving clauses from complete card translations", () => {
       .effectText!.split(/(?:\r\n|\r|\n)\s*(?=\[)/)
       .find((part) => part.startsWith("[All Turns]"))!
       .trim();
-    expect(getTranslatedCardText({ text, translations, cardId: shared.cardId })).toBe(text);
+    const fullKey = normalizePrintedTextKey(shared.effectText!);
+    const sample = { ...translations, text: { [fullKey]: translations.text[fullKey]! } };
+    expect(getTranslatedCardText({ text, translations: sample, cardId: shared.cardId })).toBe(text);
   });
 
   it.each(["P-235", "P-236"])("distinguishes Delay with alternative keyword brackets for %s", (cardId) => {
