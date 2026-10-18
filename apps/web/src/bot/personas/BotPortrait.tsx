@@ -1,10 +1,9 @@
 import { useState } from "react";
 import type { BotPersona } from "@aegis/shared/bot/personas/BotPersona";
-import { cardImageUrls } from "@aegis/shared/cards/images";
 import "@/bot/personas/botPersonas.css";
 
 export function BotPortrait({ persona, size = 48 }: { persona: BotPersona; size?: 18 | 48 }) {
-  const sources = cardImageUrls(persona.portraitCardId, persona.portraitArtId);
+  const sources = persona.id === "aegis" ? [] : [`/bot-portraits/${persona.id}.webp`];
   const sourceKey = sources.join("\n");
   const [failed, setFailed] = useState({ sourceKey, count: 0 });
   const index = failed.sourceKey === sourceKey ? failed.count : 0;

@@ -47,20 +47,18 @@ describe("bot character presentation", () => {
     expect(screen.getByText("Rina · Bot 2")).toBeTruthy();
     expect(screen.getByText("Bot")).toBeTruthy();
     const portrait = view.container.querySelector("img")!;
-    expect(portrait.getAttribute("src")).toContain("BT11-112");
+    expect(portrait.getAttribute("src")).toBe("/bot-portraits/rina-shinomiya.webp");
     expect(portrait.getAttribute("alt")).toBe("");
     expect(view.container.querySelector(".bot-portrait")?.getAttribute("data-size")).toBe("18");
   });
 
-  it("falls back through card sources to initials when every image fails", () => {
+  it("falls back to initials when the character portrait fails", () => {
     const view = render(
       <I18nProvider>
         <PlayerLine name="Rina Shinomiya" botPersonaId="rina-shinomiya" side="opponent" />
       </I18nProvider>,
     );
-    for (let attempt = 0; attempt < 10 && view.container.querySelector("img"); attempt++) {
-      fireEvent.error(view.container.querySelector("img")!);
-    }
+    fireEvent.error(view.container.querySelector("img")!);
     expect(view.container.querySelector("img")).toBeNull();
     expect(view.container.querySelector(".bot-portrait")?.textContent).toBe("RS");
   });
