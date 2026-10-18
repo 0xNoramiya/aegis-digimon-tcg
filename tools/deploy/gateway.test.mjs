@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createGateway, isApiPath } from "./gateway.mjs";
+import gameMessageLimits from "../../packages/shared/src/protocol/gameMessageLimits.json" with { type: "json" };
 
 const { WebSocketServer, WebSocket } = createRequire(new URL("../../apps/web/package.json", import.meta.url))("ws");
 
@@ -44,6 +45,14 @@ test("cutover retains established sockets, routes reconnect to the old owner, an
       const server = createServer((request, response) => {
         response.setHeader("content-type", "application/json");
         if (request.url === "/ready") return response.end(JSON.stringify({ status: "ready" }));
+        if (request.url === "/matchmake/reconnect/message-limit") {
+          let bytes = 0;
+          request.on("data", (chunk) => {
+            bytes += chunk.length;
+          });
+          request.on("end", () => response.end(JSON.stringify({ bytes })));
+          return;
+        }
         if (request.url === "/matchmake/reconnect/old-room" && slot === "green") {
           response.statusCode = 400;
           return response.end(JSON.stringify({ code: 4212 }));
@@ -93,6 +102,16 @@ test("cutover retains established sockets, routes reconnect to the old owner, an
   assert.equal(created.slot, "green");
   const legacy = await (await fetch(`${origin}/matchmake/reconnect/old-room`, { method: "POST", body: "{}" })).json();
   assert.equal(legacy.slot, "blue");
+  const largeBody = JSON.stringify({ text: "x".repeat(gameMessageLimits.maxMessageBytes - 11) });
+  const acceptedLarge = await fetch(`${origin}/matchmake/reconnect/message-limit`, { method: "POST", body: largeBody });
+  assert.equal(acceptedLarge.status, 200);
+  assert.equal((await acceptedLarge.json()).bytes, gameMessageLimits.maxMessageBytes);
+  const rejectedLarge = await fetch(`${origin}/matchmake/reconnect/message-limit`, {
+    method: "POST",
+    body: `${largeBody} `,
+  });
+  assert.equal(rejectedLarge.status, 413);
+  assert.equal((await rejectedLarge.json()).maxMessageBytes, gameMessageLimits.maxMessageBytes);
   const failedActive = servers[3];
   await new Promise((done) => failedActive.close(done));
   const legacyDuringRestart = await (

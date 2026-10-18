@@ -180,3 +180,18 @@ describe("the desktop toolbar's trailing group", () => {
     expect(screen.queryByRole("tooltip")).toBeNull();
   });
 });
+
+it.each([false, true])(
+  "offers leaving instead of surrendering after game over in portrait mode %s",
+  (portraitArena) => {
+    const leave = vi.fn<() => void>();
+    render(
+      <I18nProvider>
+        <OpponentBar {...props({ gameOver: true, portraitArena, onSurrender: leave })} />
+      </I18nProvider>,
+    );
+    expect(screen.queryByRole("button", { name: "Surrender", hidden: true })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Leave match", hidden: true }));
+    expect(leave).toHaveBeenCalledOnce();
+  },
+);

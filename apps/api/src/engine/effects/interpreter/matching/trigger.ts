@@ -62,7 +62,7 @@ export function matchingSubjectPermanentIds(subCtx: EffectContext, filter: Filte
         t.unsuspendedPermanentId,
     ].filter((id): id is string => id !== undefined);
   if (subjectIds.length === 0) return [];
-  const subjectSnapshot = t.linkTrashedSubject;
+  const subjectSnapshot = t.linkTrashedSubject ?? t.digivolvedSubject;
   // A POSITIVE self-gate: `isSelfRef: true` means the event subject must BE this watcher's own
   // card.PermanentOfThisCard()`). permanentMatchesFilter only enforces the NEGATIVE excludeSelf /
   // isSelfRef===false direction, so the positive restriction lives here at the subject seam.

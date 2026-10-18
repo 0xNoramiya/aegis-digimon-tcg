@@ -78,7 +78,9 @@ test("accounts for every catalog effect with official provenance or an explicit 
         if (value) {
           assert.match(
             report.provenance[card.cardId][field],
-            language === "ja" ? /^https:\/\/digimoncard\.com\// : /^https:\/\/digimoncard\.co\.kr\//,
+            language === "ja"
+              ? /^(?:https:\/\/digimoncard\.com\/|https:\/\/x\.com\/digimon_tcg\/status\/\d+$)/
+              : /^https:\/\/digimoncard\.co\.kr\//,
           );
           translated++;
         } else {
@@ -87,5 +89,20 @@ test("accounts for every catalog effect with official provenance or an explicit 
       }
     }
     assert.equal(translated, report.translatedFields);
+  }
+});
+
+test("keeps Chiropmon reveal transcriptions linked to the official Japanese announcement", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const catalog = JSON.parse(await readFile("packages/shared/src/cards/data/cards.json", "utf8"));
+  const report = JSON.parse(await readFile("tools/translations/official-card-text.ja.json", "utf8"));
+  const dictionary = JSON.parse(await readFile("apps/web/src/i18n/cardTextByCard.ja.json", "utf8"));
+  const { normalizePrintedTextKey } = await import("../../apps/web/src/i18n/normalizePrintedTextKey.ts");
+  for (const cardId of ["BT27-073", "BT27-077", "BT27-080"]) {
+    const card = catalog.find((entry) => entry.cardId === cardId);
+    for (const field of ["effectText", "inheritedEffectText"]) {
+      assert.ok(dictionary[cardId][normalizePrintedTextKey(card[field])]);
+      assert.equal(report.provenance[cardId][field], "https://x.com/digimon_tcg/status/2111615804068483363");
+    }
   }
 });

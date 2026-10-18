@@ -704,6 +704,9 @@ export async function runDigivolveViaPlacement(
   const result = await ctx.fx.digivolveFromInstance(hosts[0]!, ctx.source.instanceId, {
     payCost: true,
     costOverride: action.cost,
+    ignoreLevel:
+      action.ignoreLevelRequirement === true &&
+      ctx.fx.isDigivolutionRequirementIgnoreBlocked?.(ctx.source.ownerSeat) !== true,
     ignoreRequirements: action.ignoreDigivolutionRequirements === true,
   });
   if (result !== undefined) ctx.lastDigivolveResult = true;

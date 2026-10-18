@@ -1,7 +1,13 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
+  "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
   "digilab.cardCounts": "{main} cartes principales · {eggs} Digi-Œufs",
   "settings.cardImageLanguage": "Langue des images des cartes",
@@ -989,7 +995,15 @@ const interfaceMessages = {
   "game.reconnecting": "Reconnexion…",
   "game.reconnectingDetail": "La connexion a été interrompue. Tentative de reprise de votre match.",
   "game.connectionLost": "Connexion perdue",
-  "game.connectionLostDetail": "Le serveur est inaccessible. Vérifiez votre connexion et réessayez.",
+  "game.connectionLostDetail": "La connexion à votre partie a été interrompue. Essayez de vous reconnecter.",
+  "game.messageTooLarge": "Votre sélection était trop volumineuse. Essayez de résoudre moins d’effets à la fois.",
+  "game.messageTooLargeReconnecting":
+    "Votre sélection était trop volumineuse. Reconnexion pour rétablir le choix en attente.",
+  "game.reconnectFailed": "Impossible de reprendre cette partie. Retournez au lobby et réessayez.",
+  "game.sessionExpired": "Cette partie ne peut plus être reprise. Retournez au lobby.",
+  "game.tooManyMessages":
+    "Trop d’actions ont été envoyées simultanément. Patientez un instant, puis retournez au lobby.",
+  "game.serverUnavailable": "Le serveur de jeu est temporairement indisponible. Réessayez dans quelques instants.",
   "game.opponentDisconnected": "Adversaire déconnecté",
   "game.opponentDisconnectedDetail":
     "En attente de la reconnexion de votre adversaire. Le match reprendra automatiquement.",
@@ -1447,6 +1461,7 @@ const interfaceMessages = {
   "overlay.endSelection": "Fin de la sélection",
   "overlay.noSelection": "Aucune sélection",
   "overlay.use": "Utiliser",
+  "overlay.activationProgress": "Activation {index} sur {total}",
   "overlay.notUse": "Ne pas utiliser",
   "overlay.moveToBattleArea": "Déplacer vers la zone de combat",
   "overlay.endPhase": "Fin de phase",

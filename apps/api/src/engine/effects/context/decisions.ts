@@ -16,6 +16,7 @@ export type ChooseOptionExtras = {
   visibleCards?: { instanceId: string; cardId: string; artId?: string }[];
   /** Index into `choices` of the entry that declines an optional effect (see `DecisionRequest.options.declineIndex`). */
   declineIndex?: number;
+  activation?: { index: number; total: number };
   /** See `DecisionRequest.options.topBottomZone`. */
   topBottomZone?: "digivolutionCards" | "security" | "deck";
   /** See `DecisionRequest.options.digivolveCostChoice`. */

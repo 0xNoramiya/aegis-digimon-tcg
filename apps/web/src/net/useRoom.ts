@@ -1,4 +1,6 @@
 import { ClientErrorKind } from "@aegis/shared/clientErrors/ClientErrorKind";
+import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
+import { getConnectionErrorCode } from "@aegis/shared/protocol/getConnectionErrorCode";
 import { watchRoomMessageErrors } from "@/net/watchRoomMessageErrors";
 import { resetRoomState } from "@/net/resetRoomState";
 import { ROLLBACK_RESET_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
@@ -44,7 +46,7 @@ import {
   saveReconnectSession,
   type ReconnectSession,
 } from "./reconnectSession";
-import { ResumeCancelledError, resumeSeat } from "./resumeSeat";
+import { ResumeCancelledError, SeatLostError, resumeSeat } from "./resumeSeat";
 import { watchRoomLiveness } from "@/net/watchRoomLiveness";
 import type { AegisJoinOptions } from "./types";
 import { keepLocalReplay } from "../replays/local";
@@ -256,6 +258,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     let stopMessageRecovery = () => {};
 
     const bindRoom = (room: AegisRoom) => {
+      setError(undefined);
       // attemptReconnect owns recovery; the SDK's own reconnection would race it for the seat.
       room.reconnection.enabled = false;
       answeredDecisionsRef.current.clear();
@@ -390,14 +393,19 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
           stateRef.current?.pendingDecision?.decisionId === req.decisionId ? req.decisionId : undefined;
         setDecision(req);
       });
-      room.onError((code, message) => {
+      room.onError((code) => {
         setStatus("error");
-        setError(`${code}: ${message ?? "room error"}`);
+        setError(getConnectionErrorCode({ code }) ?? ConnectionErrorCode.SERVER_UNAVAILABLE.value);
       });
       room.onLeave((code) => {
         stopHeartbeat();
         stopLiveness();
         if (cancelled) return;
+        const connectionError = getConnectionErrorCode({ code });
+        if (connectionError === ConnectionErrorCode.MESSAGE_TOO_LARGE.value) {
+          clearPendingIntents();
+        }
+        setError(connectionError ?? ConnectionErrorCode.CONNECTION_LOST.value);
         if (FINAL_CLOSE_CODES.has(code)) {
           clearReconnectSession();
           setStatus("closed");
@@ -444,7 +452,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         clearPendingIntents();
         clearReconnectSession();
         setStatus("closed");
-        setError(error instanceof Error ? error.message : String(error));
+        setError(ConnectionErrorCode.RECONNECT_FAILED.value);
         return;
       }
       if (cancelled) {
@@ -501,7 +509,12 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       .catch((err: unknown) => {
         if (cancelled) return;
         setStatus("error");
-        setError(err instanceof Error ? err.message : String(err));
+        const code = typeof err === "object" && err !== null && "code" in err ? err.code : undefined;
+        if (err instanceof SeatLostError) {
+          setError(ConnectionErrorCode.RECONNECT_FAILED.value);
+        } else {
+          setError(getConnectionErrorCode({ code }) ?? (err instanceof Error ? err.message : String(err)));
+        }
       });
 
     return () => {

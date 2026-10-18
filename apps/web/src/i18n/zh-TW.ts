@@ -1,7 +1,13 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "消滅此數碼寶貝",
+  "overlay.trashTopSecurityCard": "丟棄我方最上方的1張安防卡牌",
+  "overlay.trashTamerBottomCard": "丟棄我方1隻馴獸師下方最下方的1張背面表示卡牌",
+  "overlay.trashTwoTamerBottomCards": "丟棄我方馴獸師下方最下方的2張背面表示卡牌",
   ...providerEn,
   "settings.cardImageLanguage": "卡牌圖片語言",
   "settings.cardImageLanguageDesc":
@@ -925,7 +931,13 @@ const interfaceMessages = {
   "game.reconnecting": "正在重新連線…",
   "game.reconnectingDetail": "連線已中斷。正在嘗試恢復對局。",
   "game.connectionLost": "連線中斷",
-  "game.connectionLostDetail": "無法連線伺服器。請檢查你的網路連線後重試。",
+  "game.connectionLostDetail": "與對戰的連線已中斷。請嘗試重新連線。",
+  "game.messageTooLarge": "選擇內容過大，無法傳送。請嘗試一次結算較少的效果。",
+  "game.messageTooLargeReconnecting": "選擇內容過大，無法傳送。正在重新連線以恢復待處理的選擇。",
+  "game.reconnectFailed": "無法恢復這場對戰。請返回大廳後重試。",
+  "game.sessionExpired": "這場對戰已無法恢復。請返回大廳。",
+  "game.tooManyMessages": "同時傳送的操作過多。請稍候再返回大廳。",
+  "game.serverUnavailable": "遊戲伺服器暫時無法使用。請稍後重試。",
   "game.opponentDisconnected": "對手斷線",
   "game.opponentDisconnectedDetail": "正在等待對手重新連線。對局將自動恢復。",
   "game.opponentDisconnectedCountdown": "如果對手未在 {time} 內返回，你將贏得對局。",
@@ -1363,6 +1375,7 @@ const interfaceMessages = {
   "overlay.endSelection": "結束選擇",
   "overlay.noSelection": "不選擇",
   "overlay.use": "使用",
+  "overlay.activationProgress": "發動 {index}/{total}",
   "overlay.notUse": "不使用",
   "overlay.moveToBattleArea": "移至戰鬥區",
   "overlay.endPhase": "結束階段",

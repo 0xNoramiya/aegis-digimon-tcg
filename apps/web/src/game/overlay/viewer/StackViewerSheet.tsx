@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { createPortal } from "react-dom";
 import { getCardDefinition } from "@aegis/shared";
 import { Button } from "../../../design/primitives";
@@ -45,6 +46,7 @@ export function StackViewerSheet({
   onVortex?: () => void;
   onClose: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const active = cards.find((c) => c.role === "top") ?? cards[0];
   const def = getCardDefinition(active?.cardId ?? "");
@@ -54,7 +56,7 @@ export function StackViewerSheet({
   const keywords = detail?.keywords ?? [];
   const header = (
     <>
-      <strong>{def?.nameEn ?? title}</strong>
+      <strong>{def ? getCardName(def.cardId) : title}</strong>
       <div className="card-action-sheet__stats">
         {def?.level ? <span>Lv.{def.level}</span> : null}
         {def?.colors?.length ? <span>{def.colors.join(" / ")}</span> : null}

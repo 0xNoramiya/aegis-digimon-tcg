@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useEffect, useId, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { Bold, Heading, List, CornerDownLeft } from "lucide-react";
@@ -12,6 +13,7 @@ type Props = { initialGuide: string | null; disabled: boolean; onChange: (guide:
 type Suggestions = ReturnType<typeof findGuideCardSuggestions>;
 
 export function GuideRichText({ initialGuide, disabled, onChange }: Props) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const listId = useId();
   const [suggestions, setSuggestions] = useState<Suggestions>(null);
@@ -167,7 +169,7 @@ export function GuideRichText({ initialGuide, disabled, onChange }: Props) {
                 }
               >
                 <span className="community-guide__suggestion-code">{card.cardId}</span>
-                <span className="community-guide__suggestion-name">{card.nameEn}</span>
+                <span className="community-guide__suggestion-name">{getCardName(card.cardId)}</span>
                 <CornerDownLeft className="community-guide__suggestion-enter" size={14} aria-hidden="true" />
               </button>
             </li>

@@ -300,8 +300,12 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
       return permanent === undefined ? [] : effectiveColorsOf(engine, permanent);
     },
     keywordReactionsInLeavePrevention: true,
-    consultLeavePrevention: async (permanentIds, opts) =>
-      engine.consultLeavePrevention(permanentIds, "byBattle", undefined, { ...opts, holdTriggered: true }),
+    consultLeavePrevention: async (permanentIds, opts) => {
+      return engine.consultLeavePrevention(permanentIds, "byBattle", undefined, {
+        ...opts,
+        holdTriggered: true,
+      });
+    },
     resolveAvertedBattleReactions: async (resolveBattleWon) => {
       const triggered = takeLeaveReplacementPending(engine);
       if (triggered.length === 0) {

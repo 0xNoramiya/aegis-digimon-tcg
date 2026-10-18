@@ -1,4 +1,46 @@
 {
+  "releases.1.32.0-beta.summary": {
+    "en": "New BT27 cards and corrections to card effects, battle timing and localized game text.",
+    "pt-BR": "Novas cartas BT27 e correções em efeitos de cartas, resolução de batalhas e textos traduzidos do jogo.",
+    "es": "Nuevas cartas BT27 y correcciones en efectos de cartas, resolución de batallas y textos traducidos del juego.",
+    "it": "Nuove carte BT27 e correzioni agli effetti delle carte, alla risoluzione delle battaglie e ai testi tradotti del gioco."
+  },
+  "releases.1.32.0-beta.feature.bt27": {
+    "en": "Added the BT27 Chiropmon evolution line and Nosferamon, including regional artwork.",
+    "pt-BR": "Adicionadas a linha evolutiva de Chiropmon e Nosferamon de BT27, com artes regionais.",
+    "es": "Añadidos la línea evolutiva de Chiropmon y Nosferamon de BT27, con ilustraciones regionales.",
+    "it": "Aggiunti la linea evolutiva di Chiropmon e Nosferamon di BT27, con illustrazioni regionali."
+  },
+  "releases.1.32.0-beta.fix.inheritedSources": {
+    "en": "Inherited play effects now use cards from their own Digimon, and Taiki must be able to suspend before providing DigiXros materials.",
+    "pt-BR": "Efeitos herdados de jogar cartas agora usam as cartas do próprio Digimon, e Taiki precisa poder suspender para fornecer materiais de DigiXros.",
+    "es": "Los efectos heredados para jugar cartas ahora usan las cartas de su propio Digimon, y Taiki debe poder suspenderse antes de aportar materiales de DigiXros.",
+    "it": "Gli effetti ereditati che giocano carte ora usano quelle del proprio Digimon, e Taiki deve potersi sospendere prima di fornire materiali DigiXros."
+  },
+  "releases.1.32.0-beta.fix.immunity": {
+    "en": "Lasting unsuspend restrictions and original-DP changes take effect when temporary immunity ends.",
+    "pt-BR": "Restrições duradouras de desvirar e alterações no DP original passam a valer quando a imunidade temporária termina.",
+    "es": "Las restricciones duraderas para enderezarse y los cambios de DP original se aplican cuando termina la inmunidad temporal.",
+    "it": "Le restrizioni persistenti al ripristino e le modifiche ai DP originali si applicano quando termina l’immunità temporanea."
+  },
+  "releases.1.32.0-beta.fix.timing": {
+    "en": "Corrected battle-win and replacement digivolution priority, link-card selection order and optional cost refusal.",
+    "pt-BR": "Corrigidas a prioridade de efeitos de vitória em batalha e de digievolução por substituição, a ordem de seleção de cartas de link e a recusa de custos opcionais.",
+    "es": "Corregidas la prioridad de efectos al ganar batallas y de digievolución por reemplazo, el orden de selección de cartas de enlace y el rechazo de costes opcionales.",
+    "it": "Corrette la priorità degli effetti di vittoria in battaglia e di digievoluzione sostitutiva, l’ordine di scelta delle carte Link e la rinuncia ai costi facoltativi."
+  },
+  "releases.1.32.0-beta.fix.presentation": {
+    "en": "Security-check animations now finish before an effect destroys the next security card.",
+    "pt-BR": "As animações de checagem de segurança agora terminam antes que um efeito destrua a próxima carta de segurança.",
+    "es": "Las animaciones de comprobación de seguridad ahora terminan antes de que un efecto destruya la siguiente carta de seguridad.",
+    "it": "Le animazioni del controllo della sicurezza ora terminano prima che un effetto distrugga la carta sicurezza successiva."
+  },
+  "releases.1.32.0-beta.fix.localization": {
+    "en": "Corrected translated card names, traits and effect choices. Opponent trash uses your card language, and DUAL options display only their Main effect.",
+    "pt-BR": "Corrigidos nomes, características e escolhas de efeitos traduzidos. O trash adversário usa seu idioma de cartas, e opções DUAL exibem apenas seu efeito Main.",
+    "es": "Corregidos los nombres, rasgos y opciones de efectos traducidos. La basura rival usa tu idioma de cartas y las opciones DUAL muestran solo su efecto Main.",
+    "it": "Corretti i nomi, i tratti e le scelte degli effetti tradotti. Gli scarti avversari usano la tua lingua delle carte e le opzioni DUAL mostrano solo il loro effetto Main."
+  },
   "releases.1.31.5-beta.summary": {
     "en": "Protected hidden match information and fixed effect timing and replay controls.",
     "pt-BR": "Proteção de informações ocultas da partida e correções no tempo de efeitos e nos controles de replay.",

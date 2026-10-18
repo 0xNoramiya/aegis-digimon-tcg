@@ -743,6 +743,7 @@ export interface DecisionRequest {
      * every choice is a real option.
      */
     declineIndex?: number;
+    activation?: { index: number; total: number };
     /** Aligned to `choices` when each choice is a printed effect of a card: the client shows the card and its clause. */
     choiceEffects?: { cardId: string; timing?: string; isInherited?: boolean }[];
     /**
@@ -789,6 +790,7 @@ export interface DecisionRequest {
      * prompts that only read the first key (simultaneous would-leave replacements).
      */
     acceptsResolutionPlan?: boolean;
+    acceptsIndexedResolutionPlan?: boolean;
     timing?: string; // printed timing label of the resolving effect (e.g. "On Play"), for the overlay to show only that clause
     /** Exact clause that raised this decision, preserving main/inherited provenance without client-side guessing. */
     effectText?: string;
@@ -822,6 +824,7 @@ export interface DecisionRequest {
      * `"optionalTarget"` asks the activation choice itself through a zero-to-one target pick.
      */
     purpose?: "cost" | "acceptedOptional" | "optionalTarget";
+    declinesCost?: boolean;
     /** Effect-driven play awaiting the existing Assembly material picker for this card. */
     assemblyCardId?: string;
     /** Authoritative prohibition applied to this effect-driven material declaration. */

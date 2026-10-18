@@ -34,7 +34,7 @@ vi.mock("./client", () => ({
 }));
 
 const { useRoom } = await import("./useRoom");
-const { sendIntent, flushIntents } = await import("./client");
+const { sendIntent, flushIntents, clearPendingIntents } = await import("./client");
 const { saveReconnectSession, loadReconnectSession } = await import("./reconnectSession");
 
 const STORAGE_KEY = "aegis:matchSession";
@@ -117,6 +117,53 @@ describe("useRoom reconnection token persistence", () => {
 
   afterEach(() => {
     cleanup();
+  });
+
+  it("explains an oversized message and clears its queued intent before recovering the seat", async () => {
+    const joined = fakeRoom("large-message");
+    const resumed = fakeRoom("large-message");
+    let resume!: (room: AegisRoom) => void;
+    const recovery = new Promise<AegisRoom>((resolve) => {
+      resume = resolve;
+    });
+    joinOrCreate.mockResolvedValue(joined.room);
+    reconnect.mockReturnValue(recovery);
+    const { result } = renderHook(() => useRoom(OPTIONS));
+    await waitFor(() => expect(result.current.status).toBe("connected"));
+    vi.mocked(clearPendingIntents).mockClear();
+
+    joined.emitLeave(1009);
+    expect(result.current.status).toBe("reconnecting");
+    expect(result.current.error).toBe("AEGIS_MESSAGE_TOO_LARGE");
+    expect(clearPendingIntents).toHaveBeenCalledOnce();
+
+    await act(async () => resume(resumed.room));
+    await waitFor(() => expect(result.current.status).toBe("connected"));
+    expect(result.current.error).toBeUndefined();
+    expect(result.current.room).toBe(resumed.room);
+    const decision: DecisionRequest = {
+      decisionId: "pending-effects",
+      seat: 0,
+      kind: "orderTriggers",
+      promptText: "Choose the next effect",
+      options: { triggerKeys: ["source/effect"] },
+    };
+    resumed.emitDecision(decision);
+    expect(result.current.decision).toEqual(decision);
+  });
+
+  it.each([
+    [4408, "AEGIS_SESSION_EXPIRED"],
+    [4429, "AEGIS_TOO_MANY_MESSAGES"],
+  ])("explains terminal close %i instead of leaving a frozen board", async (code, error) => {
+    const joined = fakeRoom("closed-match");
+    joinOrCreate.mockResolvedValue(joined.room);
+    const { result } = renderHook(() => useRoom(OPTIONS));
+    await waitFor(() => expect(result.current.status).toBe("connected"));
+    joined.emitLeave(code);
+    expect(result.current.status).toBe("closed");
+    expect(result.current.error).toBe(error);
+    expect(reconnect).not.toHaveBeenCalled();
   });
 
   it("keeps a snapshot of every revision even when several patches land before a render", async () => {

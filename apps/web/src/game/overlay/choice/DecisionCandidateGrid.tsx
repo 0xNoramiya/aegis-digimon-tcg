@@ -1,9 +1,10 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import type { ReactNode } from "react";
 import { CardBack, CardFull } from "../../../design/cards";
 import { NARROW_DIALOG_QUERY, useMediaQuery } from "../../../design/useMediaQuery";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
-import { printedCardName } from "../printedCardName";
+
 import type { PendingFateBadge } from "../../pendingFate";
 import type { CandidateZone } from "../../decisionModel";
 import { abstractTargetLabel, cardCopyLabelsByInstance } from "./decisionCandidateLabels";
@@ -40,6 +41,7 @@ export function DecisionCandidateGrid({
   fateBadge?: PendingFateBadge;
   onTogglePick: (instanceId: string) => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const narrowDialog = useMediaQuery(NARROW_DIALOG_QUERY);
   // Three tiles plus their gaps and the row's own badge gutter have to clear the
@@ -181,19 +183,19 @@ export function DecisionCandidateGrid({
                 const liveLabels = [
                   pendingLabel,
                   cand.trashOriginCardId
-                    ? t("overlay.trashedFromSources", { name: printedCardName(cand.trashOriginCardId) })
+                    ? t("overlay.trashedFromSources", { name: getCardName(cand.trashOriginCardId) })
                     : undefined,
                   cand.currentDP === undefined ? undefined : `${cand.currentDP.toLocaleString()} DP`,
                   cand.isSuspended === true ? t("overlay.suspended") : undefined,
                   sourceLabel,
-                  cand.hostCardId ? printedCardName(cand.hostCardId) : undefined,
+                  cand.hostCardId ? getCardName(cand.hostCardId) : undefined,
                 ].filter((label): label is string => label !== undefined);
                 return (
                   <button
                     className={`decision-overlay__candidate${abstractLabel ? " decision-overlay__candidate--security" : ""}`}
                     data-instance-id={cand.instanceId}
                     type="button"
-                    aria-label={`${abstractLabel ?? (cand.cardId ? printedCardName(cand.cardId) : t("overlay.card"))}${liveLabels.length ? `, ${liveLabels.join(", ")}` : ""}${copyLabel ? `, ${copyLabel}` : ""}${on ? t("overlay.selected") : ""}`}
+                    aria-label={`${abstractLabel ?? (cand.cardId ? getCardName(cand.cardId) : t("overlay.card"))}${liveLabels.length ? `, ${liveLabels.join(", ")}` : ""}${copyLabel ? `, ${copyLabel}` : ""}${on ? t("overlay.selected") : ""}`}
                     aria-pressed={on}
                     disabled={!selectable}
                     key={cand.instanceId}
@@ -221,7 +223,7 @@ export function DecisionCandidateGrid({
                     )}
                     {cand.hostCardId ? (
                       <span className="decision-overlay__source-host" data-host-permanent-id={cand.hostPermanentId}>
-                        {printedCardName(cand.hostCardId)}
+                        {getCardName(cand.hostCardId)}
                       </span>
                     ) : null}
                     {copyLabel || pendingLabel || cand.trashOriginCardId ? (
@@ -229,9 +231,7 @@ export function DecisionCandidateGrid({
                         {copyLabel ? <span>{copyLabel}</span> : null}
                         {pendingLabel ? <span className="decision-overlay__pending-effect">{pendingLabel}</span> : null}
                         {cand.trashOriginCardId ? (
-                          <span>
-                            {t("overlay.trashedFromSources", { name: printedCardName(cand.trashOriginCardId) })}
-                          </span>
+                          <span>{t("overlay.trashedFromSources", { name: getCardName(cand.trashOriginCardId) })}</span>
                         ) : null}
                       </span>
                     ) : null}

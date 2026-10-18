@@ -1,16 +1,11 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { deckFormatLabel } from "./DeckFormatSelector";
 /* The deck picker: a hero with the create and import actions, then every saved deck
    as a table row (a card on narrow screens) with its edit, export, activate and
    delete actions. */
 
 import { useState } from "react";
-import {
-  deckLegality,
-  getCardDefinition,
-  formatRestrictionLabel,
-  deckFormat,
-  type CommunityPublication,
-} from "@aegis/shared";
+import { deckLegality, formatRestrictionLabel, deckFormat, type CommunityPublication } from "@aegis/shared";
 import { useCommunityPublications } from "../community/useCommunityPublications";
 import { Badge, Button, ColorDot, Eyebrow, Field } from "../design/primitives";
 import { Panel, SectionHeading, StatStrip } from "../design/surfaces";
@@ -250,6 +245,7 @@ function DeckListRow({
   publication: CommunityPublication | undefined;
   onPublishAction: (mode: PublishMode) => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const { legal, banViolations, pairViolations } = deckLegality(deck, { format: deck.format });
   const colors = deckColors(deck);
@@ -319,7 +315,7 @@ function DeckListRow({
             <p className="deck-list-row__violation">
               {banViolations.map(([id]) => (
                 <span key={id}>
-                  {getCardDefinition(id)?.nameEn ?? id} ({formatRestrictionLabel(id, deckFormat(deck.format))}){" "}
+                  {getCardName(id)} ({formatRestrictionLabel(id, deckFormat(deck.format))}){" "}
                 </span>
               ))}
             </p>
@@ -330,8 +326,8 @@ function DeckListRow({
               {pairViolations.map(([a, b]) => (
                 <div key={`${a}-${b}`}>
                   {t("deck.pairRow", {
-                    a: getCardDefinition(a)?.nameEn ?? a,
-                    b: getCardDefinition(b)?.nameEn ?? b,
+                    a: getCardName(a),
+                    b: getCardName(b),
                   })}
                 </div>
               ))}

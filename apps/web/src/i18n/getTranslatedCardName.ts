@@ -4,5 +4,9 @@ import type { CardTranslationData } from "@/i18n/cardTranslationTypes";
 type Params = { name: string; translations?: CardTranslationData };
 
 export function getTranslatedCardName({ name, translations }: Params): string {
-  return getDictionaryValue({ dictionary: translations?.names, key: name }) || name;
+  const translated = getDictionaryValue({ dictionary: translations?.names, key: name }) || name;
+  if (!/(?:ACE|ＡＣＥ)\s*$/iu.test(name)) {
+    return translated.replace(/\s*(?:ACE|ＡＣＥ)\s*$/iu, "");
+  }
+  return translated;
 }

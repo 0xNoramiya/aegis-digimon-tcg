@@ -1597,11 +1597,16 @@ export function useMatchCues({
         ),
       );
       const added = current.hand.filter((card) => !known.has(card.instanceId) && !staged.has(card.instanceId));
-      for (const card of deckDraws > 0 ? added.slice(-deckDraws) : []) {
+      let incoming = added.slice(-deckDraws);
+      if (deckDraws === 0) {
+        incoming = state!.stateVersion === closedVersion ? added : [];
+      }
+      for (const card of incoming) {
         if (pending.has(card.instanceId)) continue;
         incomingHandArrivals.set(incomingKey--, {
           seat: viewerSeat,
           instanceId: card.instanceId,
+          fromDeck: deckDraws > 0,
           stateVersion: state!.stateVersion,
           handCountAfter: current.handCount,
           deckCountAfter: current.deckCount,

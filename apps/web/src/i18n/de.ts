@@ -1,7 +1,13 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
+  "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
   "settings.cardImageLanguage": "Sprache der Kartenbilder",
   "settings.cardImageLanguageDesc":
@@ -997,7 +1003,16 @@ const interfaceMessages = {
   "game.reconnectingDetail": "Die Verbindung wurde unterbrochen. Ihr Match wird fortgesetzt, sobald möglich.",
   "game.connectionLost": "Verbindung verloren",
   "game.connectionLostDetail":
-    "Der Server ist nicht erreichbar. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "Die Verbindung zu Ihrer Partie wurde unterbrochen. Versuchen Sie, sich erneut zu verbinden.",
+  "game.messageTooLarge": "Ihre Auswahl war zum Senden zu groß. Versuchen Sie, weniger Effekte auf einmal aufzulösen.",
+  "game.messageTooLargeReconnecting":
+    "Ihre Auswahl war zum Senden zu groß. Die Verbindung wird wiederhergestellt, um die ausstehende Auswahl fortzusetzen.",
+  "game.reconnectFailed":
+    "Die Partie konnte nicht fortgesetzt werden. Kehren Sie zur Lobby zurück und versuchen Sie es erneut.",
+  "game.sessionExpired": "Diese Partie kann nicht mehr fortgesetzt werden. Kehren Sie zur Lobby zurück.",
+  "game.tooManyMessages":
+    "Es wurden zu viele Aktionen gleichzeitig gesendet. Warten Sie kurz und kehren Sie dann zur Lobby zurück.",
+  "game.serverUnavailable": "Der Spielserver ist vorübergehend nicht verfügbar. Versuchen Sie es in Kürze erneut.",
   "game.opponentDisconnected": "Gegner getrennt",
   "game.opponentDisconnectedDetail":
     "Warten, bis sich Ihr Gegner erneut verbindet. Das Match wird automatisch fortgesetzt.",
@@ -1456,6 +1471,7 @@ const interfaceMessages = {
   "overlay.endSelection": "Auswahl beenden",
   "overlay.noSelection": "Keine Auswahl",
   "overlay.use": "Verwenden",
+  "overlay.activationProgress": "Aktivierung {index} von {total}",
   "overlay.notUse": "Nicht verwenden",
   "overlay.moveToBattleArea": "In den Kampfbereich",
   "overlay.endPhase": "Endphase",

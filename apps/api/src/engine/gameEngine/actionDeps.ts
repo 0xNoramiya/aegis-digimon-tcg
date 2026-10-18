@@ -549,7 +549,7 @@ export function digivolveDeps(engine: GameEngine): DigivolveDeps {
       await withPendingSubTriggers(
         engine,
         ["whenOneOfYoursDigivolves", "whenAnyDigivolves"],
-        digivolveTrigger,
+        { ...digivolveTrigger, digivolvedSubject: permanent.clone() },
         async () => {
           // Scope [When Digivolving] to the permanent that just digivolved (its top card
           // plus inherited stack effects). A global fire would also collect and resolve

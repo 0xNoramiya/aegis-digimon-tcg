@@ -51,3 +51,10 @@ it("shows only VictoryGreymon's Option effect in its use confirmation", () => {
   const detail = renderDualChoice("EX14-012");
   expect(detail.textContent).toBe("[Main] Delete up to 15000 DP total worth of your opponent's Digimon.");
 });
+
+it("shows only Jupitermon's Main effect in its use confirmation", () => {
+  const detail = renderDualChoice("BT26-033");
+  expect(detail.textContent).toBe(
+    "[Main] Delete all of your opponent's Digimon with the lowest DP. Then, ＜Recovery +1＞",
+  );
+});

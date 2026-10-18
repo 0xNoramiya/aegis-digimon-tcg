@@ -1,3 +1,5 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { getCardDefinition } from "@aegis/shared";
@@ -38,7 +40,9 @@ export function HandCardPreview({
   onLink?: () => void;
   onCancel: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
+  const translateCardText = useTranslatedCardText();
   const card = getCardDefinition(cardId);
   const [zoomed, setZoomed] = useState(false);
   if (arenaInspection) {
@@ -53,8 +57,8 @@ export function HandCardPreview({
               icon={Icons.Sparkles}
               className="arena-permanent-inspector__activate"
               onClick={() => onActivateEffect(effect)}
-              aria-label={`${t("game.activateEffect")}: ${effect.description}`}
-              title={effect.description}
+              aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.description, cardId })}`}
+              title={translateCardText({ text: effect.description, cardId })}
             >
               {t("game.activateHandEffect")}
               {activatableEffects.length > 1 ? ` ${index + 1}` : ""}
@@ -98,7 +102,7 @@ export function HandCardPreview({
       className="card-action-sheet"
       role="dialog"
       aria-modal="true"
-      aria-label={card?.nameEn ?? cardId}
+      aria-label={getCardName(cardId)}
       onClick={onCancel}
     >
       <div className="card-action-sheet__panel" onClick={(event) => event.stopPropagation()}>
@@ -113,7 +117,7 @@ export function HandCardPreview({
             <CardFull cardId={cardId} artId={artId} width={190} />
           </button>
           <div className="card-action-sheet__info">
-            <strong>{card?.nameEn ?? cardId}</strong>
+            <strong>{getCardName(cardId)}</strong>
             <div className="card-action-sheet__stats">
               {card?.level ? <span>Lv.{card.level}</span> : null}
               <span>
@@ -131,8 +135,9 @@ export function HandCardPreview({
               full
               variant="secondary"
               onClick={() => onActivateEffect(effect)}
-              aria-label={`${t("game.activateEffect")}: ${effect.description}`}
+              aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.description, cardId })}`}
               autoFocus={index === 0}
+              title={translateCardText({ text: effect.description, cardId })}
             >
               {t("game.activateHandEffect")}
               {activatableEffects.length > 1 ? ` ${index + 1}` : ""}

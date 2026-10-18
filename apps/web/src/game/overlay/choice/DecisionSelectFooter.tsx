@@ -9,6 +9,7 @@ export function DecisionSelectFooter({
   onConfirm,
   min,
   onNone,
+  onDeclineCost,
   onOpenBoard,
 }: {
   canConfirm: boolean;
@@ -16,12 +17,17 @@ export function DecisionSelectFooter({
   onConfirm: () => void;
   min: number;
   onNone: () => void;
+  onDeclineCost?: () => void;
   onOpenBoard: () => void;
 }) {
   const { t } = useTranslation();
   return (
     <div className="game-actions-row decision-overlay__footer decision-overlay__footer--selection">
-      {min === 0 ? (
+      {onDeclineCost ? (
+        <Button full size="lg" variant="ghost" onClick={onDeclineCost}>
+          {t("overlay.notUse")}
+        </Button>
+      ) : min === 0 ? (
         <Button full size="lg" variant="ghost" onClick={onNone}>
           {t("common.none")}
         </Button>
