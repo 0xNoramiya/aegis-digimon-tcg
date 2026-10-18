@@ -2,6 +2,8 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "@/i18n/I18nProvider";
 import { StoryScreen } from "@/story/StoryScreen";
+import { storyBattles } from "@aegis/shared/story/storyBattles";
+import { useTranslation } from "@/i18n/useTranslation";
 
 const request = vi.hoisted(() => vi.fn<() => Promise<{ completed: string[] }>>());
 vi.mock("@/account/client", () => ({ request }));
@@ -12,17 +14,52 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
+function StoryLanguageSwitch() {
+  const { setLocale } = useTranslation();
+  return (
+    <button type="button" onClick={() => setLocale("en")}>
+      English
+    </button>
+  );
+}
+
 function renderStory(signedIn = true) {
   const start = vi.fn<(battleId: string) => void>();
   render(
     <I18nProvider>
       <StoryScreen signedIn={signedIn} onSignIn={vi.fn<() => void>()} onStart={start} />
+      <StoryLanguageSwitch />
     </I18nProvider>,
   );
   return start;
 }
 
 describe("story campaign", () => {
+  it("translates story content while keeping chapter destinations, progress and battle ids", async () => {
+    localStorage.setItem("aegis:locale", "zh-CN");
+    request.mockResolvedValue({ completed: ["ice-knight"] });
+    const start = renderStory(false);
+    expect(await screen.findByRole("heading", { name: "数码宝贝界放者", level: 1 })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "风真照人", level: 2 })).toBeTruthy();
+    expect(screen.getByText("风真照人 × 冰之骑士（野怪 NPC）")).toBeTruthy();
+    const chapter = screen.getByRole("link", { name: "第2话・前篇" });
+    expect(chapter.getAttribute("href")).toBe(storyBattles[0]!.chapters[0]!.url);
+    const first = screen.getByRole("heading", { name: "对战收录 [1] VS. 冰之骑士" }).closest("li")!;
+    fireEvent.click(within(first).getByRole("button", { name: "再来一局" }));
+    expect(start).toHaveBeenCalledWith("ice-knight");
+    const next = screen.getByRole("heading", { name: "对战收录 [3] VS. 水晶海宫" }).closest("li")!;
+    expect((within(next).getByRole("button", { name: "开始对战" }) as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(screen.getByRole("button", { name: /^优希/ }));
+    expect(screen.getByRole("heading", { name: "优希", level: 2 })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "调试 1-1 优希" })).toBeTruthy();
+    expect(screen.getAllByRole("link", { name: "调试 1-1 优希" }).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: "English" }));
+    expect(await screen.findByRole("heading", { name: "Yuuki", level: 2 })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "DEBUG.1-1 Yuuki" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /^All characters/ }));
+    expect(screen.getByRole("heading", { name: "All characters", level: 2 })).toBeTruthy();
+  });
+
   it("keeps original chapter links and lets guests launch their first battle", async () => {
     request.mockResolvedValue({ completed: [] });
     const start = renderStory(false);

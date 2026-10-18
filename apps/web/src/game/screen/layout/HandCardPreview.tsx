@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { getCardDefinition } from "@aegis/shared";
@@ -38,6 +39,7 @@ export function HandCardPreview({
   onLink?: () => void;
   onCancel: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const card = getCardDefinition(cardId);
   const [zoomed, setZoomed] = useState(false);
@@ -98,7 +100,7 @@ export function HandCardPreview({
       className="card-action-sheet"
       role="dialog"
       aria-modal="true"
-      aria-label={card?.nameEn ?? cardId}
+      aria-label={getCardName(cardId)}
       onClick={onCancel}
     >
       <div className="card-action-sheet__panel" onClick={(event) => event.stopPropagation()}>
@@ -113,7 +115,7 @@ export function HandCardPreview({
             <CardFull cardId={cardId} artId={artId} width={190} />
           </button>
           <div className="card-action-sheet__info">
-            <strong>{card?.nameEn ?? cardId}</strong>
+            <strong>{getCardName(cardId)}</strong>
             <div className="card-action-sheet__stats">
               {card?.level ? <span>Lv.{card.level}</span> : null}
               <span>

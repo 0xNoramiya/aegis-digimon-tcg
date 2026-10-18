@@ -1,9 +1,10 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { Button } from "../../../design/primitives";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
 import { en } from "../../../i18n/en";
 import { CardArt } from "../CardArt";
-import { printedCardName } from "../printedCardName";
+
 import { CardPromptFrame } from "./CardPromptFrame";
 
 export function BlockOverlay({
@@ -20,6 +21,7 @@ export function BlockOverlay({
   onBlock: (permanentId: string) => void;
   onDecline: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const forced = mustBlock && blockers.length > 0;
   return (
@@ -58,11 +60,11 @@ export function BlockOverlay({
                 key={blocker.permanentId}
                 type="button"
                 className="counter-overlay__card"
-                aria-label={`${printedCardName(blocker.cardId)}, ${blocker.currentDP.toLocaleString()} DP, ${sourceLabel}, ${t("overlay.cardCopy", { index: index + 1, total: blockers.length })}`}
+                aria-label={`${getCardName(blocker.cardId)}, ${blocker.currentDP.toLocaleString()} DP, ${sourceLabel}, ${t("overlay.cardCopy", { index: index + 1, total: blockers.length })}`}
                 onClick={() => onBlock(blocker.permanentId)}
               >
                 <CardArt cardId={blocker.cardId} width={112} />
-                <strong>{printedCardName(blocker.cardId)}</strong>
+                <strong>{getCardName(blocker.cardId)}</strong>
                 <span className="counter-overlay__card-id">{blocker.cardId}</span>
                 <span className="block-overlay__dp">{blocker.currentDP.toLocaleString()} DP</span>
                 <span>{sourceLabel}</span>

@@ -13,6 +13,37 @@ import { TIMINGS } from "./timings";
 
 afterEach(cleanup);
 
+it("translates the folded card name without nesting a card-opening button", async () => {
+  const shown: NarrationItem = {
+    ...item("translated-name"),
+    notice: {
+      id: "translated-name",
+      side: Side.Viewer,
+      fromSecurity: false,
+      createdAt: 0,
+      body: { variant: "effect", cardId: "ST18-05", timing: "OnPlay", count: 2 },
+    },
+  };
+  const onOpenCard = vi.fn<(cardId: string) => void>();
+  const { container } = render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <CardOpenerProvider onOpenCard={onOpenCard}>
+        <NarrationStack
+          narration={new Map([[shown.id, shown]])}
+          compact
+          nowMs={0}
+          rejection={null}
+          onAdvance={() => undefined}
+          onDismissRejection={() => undefined}
+        />
+      </CardOpenerProvider>
+    </I18nContext.Provider>,
+  );
+  await waitFor(() => expect(container.querySelector(".narration-peek__name")?.textContent).toBe("五彩兽 ×2"));
+  expect(container.querySelector(".narration-peek button")).toBeNull();
+  expect(onOpenCard).not.toHaveBeenCalled();
+});
+
 it("translates the folded resolving clause using the notice card", async () => {
   const shown: NarrationItem = {
     ...item("translated-effect"),

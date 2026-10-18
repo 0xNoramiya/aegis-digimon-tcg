@@ -2,6 +2,7 @@ import type { StoryBattle } from "@aegis/shared/story/StoryBattle";
 import { Button } from "@/design/primitives";
 import { Icons } from "@/design/icons";
 import { useTranslation } from "@/i18n/useTranslation";
+import { getTranslatedStoryText } from "@/i18n/getTranslatedStoryText";
 
 type Params = {
   battle: StoryBattle;
@@ -13,7 +14,7 @@ type Params = {
 };
 
 export function StoryBattleRow({ battle, number, completed, locked, canStart, onStart }: Params) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   let status = t("story.ready");
   let Icon = Icons.CircleCheck;
   if (locked) {
@@ -38,7 +39,9 @@ export function StoryBattleRow({ battle, number, completed, locked, canStart, on
       </div>
       <div className="story-battle__body">
         <div className="story-battle__title">
-          <h3 id={`story-${battle.id}`}>{battle.title.replace(/^Battle Coverage\s*[[(]\d+[\])\]]\s*/, "")}</h3>
+          <h3 id={`story-${battle.id}`}>
+            {getTranslatedStoryText({ text: battle.title, locale }).replace(/^Battle Coverage\s*[[(]\d+[\])\]]\s*/, "")}
+          </h3>
           {battle.adapted && (
             <span className="story-adaptation" title={t("story.adaptationHint")}>
               {t("story.adaptation")}
@@ -46,12 +49,13 @@ export function StoryBattleRow({ battle, number, completed, locked, canStart, on
           )}
         </div>
         <p className="story-battle__cast">
-          {battle.character} × {battle.opponent}
+          {getTranslatedStoryText({ text: battle.character, locale })} ×{" "}
+          {getTranslatedStoryText({ text: battle.opponent, locale })}
         </p>
         <div className="story-battle__links">
           {battle.chapters.map((chapter) => (
             <a key={chapter.url} href={chapter.url} target="_blank" rel="noopener noreferrer">
-              {chapter.title}
+              {getTranslatedStoryText({ text: chapter.title, locale })}
               <Icons.ExternalLink size={13} />
             </a>
           ))}

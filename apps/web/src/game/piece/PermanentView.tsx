@@ -1,5 +1,7 @@
 import { PermanentDpDeltaHint } from "@/game/piece/PermanentDpDeltaHint";
 import { useRef, type CSSProperties } from "react";
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
 import { getCardDefinition, type Permanent } from "@aegis/shared";
 import { CardMini } from "../../design/cards";
 import { Icons } from "../../design/icons";
@@ -130,6 +132,7 @@ export function PermanentView({
   const isVisuallySuspended = heldSuspended || perm.isSuspended;
   const suspendedInlineMargin = Math.ceil(permanentWidth * 0.2);
   const { t } = useTranslation();
+  const translations = useCardTranslations();
   const beginInspection = usePermanentInspection(onInspect);
   const movedEntrance = useRef<string | undefined>(undefined);
   const fieldIdentity = entranceKey ?? perm.permanentId;
@@ -166,7 +169,7 @@ export function PermanentView({
   // this position currently COUNTS AS after an effect rewrote its original card information.
   const transformation = permanentTransformation(perm);
 
-  const cardName = transformation?.name || def?.nameEn || topId;
+  const cardName = getTranslatedCardName({ name: transformation?.name || def?.nameEn || topId, translations });
   const activate = onKeyboardActivate ?? onClick;
   const interactive = !!activate || !!onPointerDown;
   return (

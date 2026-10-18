@@ -1,4 +1,58 @@
 {
+  "releases.1.31.5-beta.summary": {
+    "en": "Protected hidden match information and fixed effect timing and replay controls.",
+    "pt-BR": "Proteção de informações ocultas da partida e correções no tempo de efeitos e nos controles de replay.",
+    "es": "Protección de la información oculta de la partida y correcciones en el momento de los efectos y en los controles de repetición.",
+    "it": "Protezione delle informazioni nascoste della partita e correzioni alla tempistica degli effetti e ai controlli dei replay."
+  },
+  "releases.1.31.5-beta.fix.hiddenInformation": {
+    "en": "Players can no longer infer their hidden security cards or influence match randomness, and saved report replays are visible only to administrators.",
+    "pt-BR": "Os jogadores não conseguem mais deduzir suas cartas de segurança ocultas nem influenciar a aleatoriedade da partida, e os replays salvos em relatórios ficam visíveis apenas para administradores.",
+    "es": "Los jugadores ya no pueden deducir sus cartas de seguridad ocultas ni influir en el azar de la partida, y las repeticiones guardadas en reportes solo son visibles para administradores.",
+    "it": "I giocatori non possono più dedurre le proprie carte sicurezza nascoste né influenzare la casualità della partita, e i replay salvati nelle segnalazioni sono visibili solo agli amministratori."
+  },
+  "releases.1.31.5-beta.fix.onDeletionTiming": {
+    "en": "An [On Deletion] effect that could not activate before an effect-ordered attack no longer activates later during the security check (EX11 Omekamon).",
+    "pt-BR": "Um efeito [On Deletion] que não podia ser ativado antes de um ataque causado por efeito não é mais ativado depois, durante a checagem de segurança (EX11 Omekamon).",
+    "es": "Un efecto [On Deletion] que no podía activarse antes de un ataque causado por un efecto ya no se activa más tarde durante la comprobación de seguridad (EX11 Omekamon).",
+    "it": "Un effetto [On Deletion] che non poteva attivarsi prima di un attacco causato da un effetto non si attiva più in seguito durante il controllo della sicurezza (EX11 Omekamon)."
+  },
+  "releases.1.31.5-beta.fix.replayControls": {
+    "en": "Replay controls stay in place when the hand changes, and you can drag them or move them with the arrow keys.",
+    "pt-BR": "Os controles de replay ficam no lugar quando a mão muda, e você pode arrastá-los ou movê-los com as setas do teclado.",
+    "es": "Los controles de repetición permanecen en su lugar cuando cambia la mano, y puedes arrastrarlos o moverlos con las flechas del teclado.",
+    "it": "I controlli dei replay restano al loro posto quando la mano cambia, e puoi trascinarli o spostarli con i tasti freccia."
+  },
+  "releases.1.31.4-beta.summary": {
+    "en": "Improved recovery from client connection and asset-loading errors.",
+    "pt-BR": "Melhorias na recuperação de erros de conexão e carregamento no cliente.",
+    "es": "Mejoras en la recuperación de errores de conexión y carga en el cliente.",
+    "it": "Miglioramenti al recupero dagli errori di connessione e caricamento nel client."
+  },
+  "releases.1.31.4-beta.fix.messages": {
+    "en": "The game now attempts to resume the same session after a MessagePack decoding failure instead of remaining marked as connected.",
+    "pt-BR": "O jogo agora tenta retomar a mesma sessão após uma falha de decodificação MessagePack, em vez de permanecer marcado como conectado.",
+    "es": "El juego ahora intenta reanudar la misma sesión tras un error de decodificación MessagePack, en lugar de seguir marcado como conectado.",
+    "it": "Il gioco ora tenta di riprendere la stessa sessione dopo un errore di decodifica MessagePack, invece di risultare ancora connesso."
+  },
+  "releases.1.31.4-beta.fix.assets": {
+    "en": "Failed asset loads wait for connectivity before reloading. Module execution errors no longer trigger an automatic asset-recovery reload.",
+    "pt-BR": "Falhas ao carregar arquivos aguardam a conexão antes de recarregar. Erros de execução de módulos não provocam mais recarga automática de recuperação.",
+    "es": "Los errores al cargar archivos esperan a recuperar la conexión antes de recargar. Los errores de ejecución de módulos ya no provocan una recarga automática de recuperación.",
+    "it": "Gli errori di caricamento dei file attendono la connessione prima di ricaricare. Gli errori di esecuzione dei moduli non provocano più un ricaricamento automatico di recupero."
+  },
+  "releases.1.31.3-beta.summary": {
+    "en": "Story battle deck correction.",
+    "pt-BR": "Correção de deck nas batalhas da história.",
+    "es": "Corrección de mazo en las batallas de la historia.",
+    "it": "Correzione del mazzo nelle battaglie della storia."
+  },
+  "releases.1.31.3-beta.fix.storyDecks": {
+    "en": "Fixed the Arisa rematch failing to start because the opponent deck contained only 49 cards.",
+    "pt-BR": "Corrigida a revanche contra Arisa que não iniciava porque o deck adversário tinha apenas 49 cartas.",
+    "es": "Corregida la revancha contra Arisa que no comenzaba porque el mazo rival solo tenía 49 cartas.",
+    "it": "Corretta la rivincita contro Arisa che non iniziava perché il mazzo avversario conteneva solo 49 carte."
+  },
   "releases.1.31.2-beta.summary": {
     "en": "Card, battle and story fixes, plus the latest BT27 cards.",
     "pt-BR": "Correções em cartas, batalhas e história, além das novas cartas BT27.",
