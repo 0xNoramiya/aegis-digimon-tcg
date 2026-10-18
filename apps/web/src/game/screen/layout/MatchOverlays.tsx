@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import type { ReplaySaveProps } from "../../../replays/ReplaySavePrompt";
 /* Everything the board can put over itself, in the order it stacks.
 
@@ -15,7 +16,7 @@ import { canMoveFromBreeding, canUseBreedingAction, displayMemory, parseActivata
 import type { GameState, DecisionRequest, Permanent, PlayerState, Seat } from "@aegis/shared";
 import type { RevealedZones } from "../model/gameOutcome";
 import { useTranslation } from "../../../i18n";
-import { ActionConfirmationOverlay, MulliganOverlay, printedCardName } from "../../overlay";
+import { ActionConfirmationOverlay, MulliganOverlay } from "../../overlay";
 import { HandCardPreview } from "./HandCardPreview";
 import { DecisionPrompts, type SourceHostStep } from "./DecisionPrompts";
 import { CombatWindowPrompts } from "./CombatWindowPrompts";
@@ -205,6 +206,7 @@ export function MatchOverlays({
   /** Each side's main card color, for the board look settings' deck-color palette. */
   arenaDeckColors: ArenaDeckColors;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const { cardMenu } = overlays;
   const presentedCardMenuPermanent = cardMenuPermanent
@@ -313,7 +315,7 @@ export function MatchOverlays({
           cardId={allianceConfirmationPermanent.topCard.cardId}
           title={t("overlay.confirmAllianceTitle")}
           detail={t("overlay.confirmAllianceDetail", {
-            name: printedCardName(allianceConfirmationPermanent.topCard.cardId),
+            name: getCardName(allianceConfirmationPermanent.topCard.cardId),
             dp: allianceConfirmationPermanent.currentDP.toLocaleString(),
           })}
           showSummary={false}

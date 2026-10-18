@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { SpectatorInvite } from "./SpectatorInvite";
 /* The bar across the top of the board: the opponent's counters, the fan of card
    backs that stands for their hand, and the match-level controls.
@@ -13,7 +14,7 @@ import { useTranslation } from "../../../i18n";
 import { Icons } from "../../../design/icons";
 import { CardBack } from "../../../design/cards";
 import { CardArt } from "../../overlay/CardArt";
-import { printedCardName } from "../../overlay/printedCardName";
+
 import { useCardOpener } from "../../cardLinks";
 import { ArenaCounters } from "../../ArenaCounters";
 import { useEnterAnimation } from "../../animations";
@@ -108,6 +109,7 @@ export function OpponentBar({
   onSkipPresentation: () => void;
   onResetScenario?: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const fullscreen = useFullscreen();
   const fullscreenLabel = fullscreen.active ? t("game.fullscreen.exit") : t("game.fullscreen.enter");
@@ -184,7 +186,7 @@ export function OpponentBar({
               <button
                 type="button"
                 className="game-opponent-hand__reveal"
-                aria-label={printedCardName(revealedHand[i].cardId)}
+                aria-label={getCardName(revealedHand[i].cardId)}
                 onClick={() => openCard?.(revealedHand[i]!.cardId, revealedHand[i]!.artId)}
               >
                 <CardArt cardId={revealedHand[i].cardId} artId={revealedHand[i].artId} width={30} />

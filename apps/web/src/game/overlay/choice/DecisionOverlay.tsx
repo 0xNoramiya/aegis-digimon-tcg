@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { isAllowedTargetSelection } from "@/game/screen/model/isAllowedTargetSelection";
 import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
@@ -13,7 +14,6 @@ import { useEffectPromptPosition } from "../../effectPromptPosition";
 import { effectDecisionSurface, isEffectActivationDecision, decisionSelectionMin } from "../../decisionPresentation";
 import { pendingFateBadge } from "../../pendingFate";
 import { playerFacingEffectClause, playerFacingPromptText } from "../effectText";
-import { printedCardName } from "../printedCardName";
 import type { TriggerDetail } from "../types";
 import { DecisionBoardReturn } from "./DecisionBoardReturn";
 import { abstractTargetLabel } from "./decisionCandidateLabels";
@@ -97,6 +97,7 @@ export function DecisionOverlay({
    */
   onChangeSourceHost?: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const effectPromptPosition = useEffectPromptPosition();
   const openCard = useCardOpener();
@@ -223,9 +224,7 @@ export function DecisionOverlay({
   /* The dialog is named by a plain string rather than by its visible title: that title
      now carries the source card as a link, and an aria-labelledby would read the link's
      own label ("Open …") in place of the card's name. */
-  const dialogLabel = sourceCardId
-    ? t("overlay.cardEffect", { name: printedCardName(sourceCardId) })
-    : t("overlay.effect");
+  const dialogLabel = sourceCardId ? t("overlay.cardEffect", { name: getCardName(sourceCardId) }) : t("overlay.effect");
 
   // A choice with a decline entry is an optional effect asking which way to use it.
   const genericPrompt = t(
@@ -259,7 +258,7 @@ export function DecisionOverlay({
             ? t("overlay.activateBlitzPrompt")
             : request.options?.promptKey === "digivolveHost"
               ? t("overlay.digivolveHostPrompt")
-              : !specificPrompt || (sourceCardId && specificPrompt === printedCardName(sourceCardId))
+              : !specificPrompt || (sourceCardId && specificPrompt === getCardName(sourceCardId))
                 ? genericPrompt
                 : specificPrompt;
 
@@ -352,7 +351,7 @@ export function DecisionOverlay({
                 <button
                   type="button"
                   className="decision-overlay__source-art"
-                  aria-label={t("feed.openCard", { card: printedCardName(sourceCardId) })}
+                  aria-label={t("feed.openCard", { card: getCardName(sourceCardId) })}
                   onClick={() => openCard(sourceCardId)}
                 >
                   <span className="mobile-prompt-art">

@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useCardImageLanguage } from "@/screens/cardLanguage/useCardImageLanguage";
 import { findCardArtForLanguage } from "@aegis/shared/cards/findCardArtForLanguage";
 /* The builder itself: a filterable pool on the left, the 50-main + 5-egg list on the
@@ -84,6 +85,7 @@ export function DeckEditor({
   onClose: () => void;
   onNav: (s: Screen) => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const language = useCardImageLanguage();
   const [format, setFormat] = useState<DeckFormat>(() => deckFormat(deck.format));
@@ -390,7 +392,7 @@ export function DeckEditor({
                 />
                 <div className="deck-current__cover-name" data-auto={!coverCardId}>
                   <span className="aegis-hero-panel__eyebrow">{t("deck.cover")}</span>{" "}
-                  {coverCardId ? (getCardDefinition(coverCardId)?.nameEn ?? coverCardId) : t("deck.coverAuto")}
+                  {coverCardId ? getCardName(coverCardId) : t("deck.coverAuto")}
                 </div>
               </div>
               <div className="deck-current__counts">
@@ -454,10 +456,9 @@ export function DeckEditor({
               <div className="deck-current__violations">
                 <strong>{t("deck.banlistTitle")}</strong>
                 {banlistViolations.map((v) => {
-                  const def = getCardDefinition(v.cardId);
                   return (
                     <div key={v.cardId}>
-                      {t("deck.banlistRow", { name: def?.nameEn ?? v.cardId, count: v.count, cap: v.cap })}
+                      {t("deck.banlistRow", { name: getCardName(v.cardId), count: v.count, cap: v.cap })}
                     </div>
                   );
                 })}
@@ -543,7 +544,7 @@ export function DeckEditor({
                 <div className="deck-drawer-count">
                   <span>{t("deck.inDeck")}</span>
                   <DeckStepper
-                    name={getCardDefinition(sel)?.nameEn ?? sel}
+                    name={getCardName(sel)}
                     count={selectedCount}
                     addDisabled={selectedAtMax}
                     onAdd={() => add(sel)}
@@ -560,7 +561,7 @@ export function DeckEditor({
                   full
                   variant="secondary"
                   icon={Icons.Palette}
-                  aria-label={`${getCardDefinition(sel)?.nameEn ?? sel} · ${t("deck.editArtwork")}`}
+                  aria-label={`${getCardName(sel)} · ${t("deck.editArtwork")}`}
                   onClick={() => setArtPickerCard(sel)}
                 >
                   {t("deck.editArtwork")}

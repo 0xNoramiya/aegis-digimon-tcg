@@ -1,6 +1,6 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useState, useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { getCardDefinition } from "@aegis/shared";
 import { CardFull } from "../../../design/cards";
 import { useTranslation } from "../../../i18n";
 import { PrintedCardInfo } from "./PrintedCardInfo";
@@ -21,6 +21,7 @@ export function CardZoomOverlay({
   /** Info shown under the card. Defaults to the printed name, level, cost and DP. */
   details?: ReactNode;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const width = useCardZoomWidth();
   useEffect(() => {
@@ -31,13 +32,7 @@ export function CardZoomOverlay({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
   const panel = (
-    <div
-      className="card-zoom"
-      role="dialog"
-      aria-modal="true"
-      aria-label={getCardDefinition(cardId)?.nameEn ?? cardId}
-      onClick={onClose}
-    >
+    <div className="card-zoom" role="dialog" aria-modal="true" aria-label={getCardName(cardId)} onClick={onClose}>
       <CardFull cardId={cardId} artId={artId} width={width} />
       <div className="card-zoom__details card-action-sheet__info" onClick={(e) => e.stopPropagation()}>
         {details ?? <PrintedCardInfo cardId={cardId} />}

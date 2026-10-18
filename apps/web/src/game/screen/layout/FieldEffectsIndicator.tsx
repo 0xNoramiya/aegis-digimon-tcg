@@ -1,7 +1,8 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { CardKind } from "@aegis/shared/schema/enums";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { getCardDefinition, type FieldEffectView } from "@aegis/shared";
+import { type FieldEffectView } from "@aegis/shared";
 import { Layers, Clock } from "lucide-react";
 import { fieldEffectExpiry } from "@/game/fieldEffectExpiry";
 import { readFieldEffects } from "@/game/readFieldEffects";
@@ -33,6 +34,7 @@ export function FieldEffectsIndicator({
   ownField: boolean;
   playerNames: readonly [string, string];
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const effects = readFieldEffects(json);
   const anchor = useRef<HTMLSpanElement>(null);
@@ -171,7 +173,7 @@ export function FieldEffectsIndicator({
             <strong>{label(effect)}</strong>
             {effect.sourceCardId ? (
               <span className="game-field-effects__source">
-                {getCardDefinition(effect.sourceCardId)?.nameEn ?? effect.sourceCardId} · {effect.sourceCardId}
+                {getCardName(effect.sourceCardId)} · {effect.sourceCardId}
               </span>
             ) : null}
             {effect.effectText ? <p>{effect.effectText}</p> : null}

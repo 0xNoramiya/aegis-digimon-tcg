@@ -1,8 +1,6 @@
+import { getPrintedClauseGroups } from "@/game/getPrintedClauseGroups";
 import {
-  canonicalTimingLabel,
   getCardDefinition,
-  isInsidePrintedQuote,
-  isPrintedTimingReference,
   printedTimingLabelPattern,
   printedModalBullets,
   printedModalPreamble,
@@ -95,7 +93,7 @@ const GENERIC_TIMING_VARIANTS: Record<string, string[]> = {
 export function effectClauseForTiming(effectText: string | undefined, timing: string | undefined): string | undefined {
   const label = timing ? TIMING_LABELS[timing] : undefined;
   if (!effectText) return effectText;
-  const { marks, groups } = printedClauseGroups(effectText);
+  const { marks, groups } = getPrintedClauseGroups(effectText);
   // Intrinsic pay-time reducers are represented as Static IR but their printed sentence has
   // no [Static] label. When it precedes a bracketed sibling clause (EX3-054), the prefix is
   // the exact player-facing clause; do not show the unrelated watcher beside the payment UI.
@@ -138,7 +136,7 @@ export function effectClauseForTiming(effectText: string | undefined, timing: st
 export function effectClausesForTiming(effectText: string | undefined, timing: string | undefined): string[] {
   const label = timing ? TIMING_LABELS[timing] : undefined;
   if (!effectText || !label) return [];
-  const { groups } = printedClauseGroups(effectText);
+  const { groups } = getPrintedClauseGroups(effectText);
   return groups.flatMap((group, index) => {
     if (!group.labels.has(label)) return [];
     const end = groups[index + 1]?.start ?? effectText.length;
@@ -159,30 +157,6 @@ function unbracketedLeadingClause(effectText: string, firstBracketIndex: number 
  * The timing brackets that open clauses in a printed box, and those brackets grouped into
  * shared clause headers (a run of brackets separated only by whitespace is one header).
  */
-function printedClauseGroups(effectText: string): {
-  marks: { label: string; index: number; end: number }[];
-  groups: { labels: Set<string>; start: number }[];
-} {
-  const boundary = new RegExp(`\\[(${Object.values(TIMING_LABELS).map(printedTimingLabelPattern).join("|")})\\]`, "g");
-  const marks: { label: string; index: number; end: number }[] = [];
-  for (let m = boundary.exec(effectText); m !== null; m = boundary.exec(effectText)) {
-    if (isInsidePrintedQuote(effectText, m.index)) continue;
-    // A timing label can be mentioned inside a sentence rather than opening a new clause
-    // (EX3-026: "activate 1 of this Digimon's [When Digivolving] effects"). Do not split
-    // before the noun "effect(s)"; only bracket labels that introduce effect text are bounds.
-    if (isPrintedTimingReference(effectText, m.index + m[0].length)) continue;
-    marks.push({ label: canonicalTimingLabel(m[1] ?? ""), index: m.index, end: m.index + m[0].length });
-  }
-  const groups: { labels: Set<string>; start: number }[] = [];
-  for (let i = 0; i < marks.length; i++) {
-    const mark = marks[i]!;
-    const prev = groups[groups.length - 1];
-    const gap = i > 0 ? effectText.slice(marks[i - 1]!.end, mark.index) : "|";
-    if (prev !== undefined && gap.trim() === "") prev.labels.add(mark.label);
-    else groups.push({ labels: new Set([mark.label]), start: mark.index });
-  }
-  return { marks, groups };
-}
 
 /**
  * The printed text boxes to search for a timing, ordered by how likely each box is to hold

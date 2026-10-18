@@ -6,7 +6,7 @@ import { AccountPanel } from "../account/AccountPanel";
 import { Alert, Badge, Button, Panel } from "../design/primitives";
 import type { DeckListing } from "../game/decks";
 import { useTranslation } from "../i18n";
-import { banlistCardName } from "./banlistPreview";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { tournamentApi, type ApiError } from "./client";
 import { entryActions, ownParticipant } from "./entry";
 import { usePolledRequest } from "./hooks";
@@ -43,6 +43,7 @@ export function TournamentDetail({
   onBack: () => void;
 }) {
   const { t } = useTranslation();
+  const getCardName = useTranslatedCardName();
   const [detail, setDetail] = useState<TournamentDetailPayload>();
   const [loadError, setLoadError] = useState<ApiError>();
   const [actionError, setActionError] = useState<ApiError>();
@@ -204,7 +205,7 @@ export function TournamentDetail({
             {actionError.violations?.length ? (
               <ul>
                 {actionError.violations.map((violation, index) => {
-                  const message = violationMessage(violation);
+                  const message = violationMessage(violation, getCardName);
                   return <li key={index}>{t(message.key, message.params)}</li>;
                 })}
               </ul>
@@ -255,7 +256,7 @@ export function TournamentDetail({
           <ul className="tournaments-banlist">
             {detail.banlistCards.map((card) => (
               <li key={card.cardId}>
-                <span className="tournaments-banlist__name">{banlistCardName(card.cardId)}</span>
+                <span className="tournaments-banlist__name">{getCardName(card.cardId)}</span>
                 <span className="tournaments-banlist__id">{card.cardId}</span>
                 <Badge tone={card.status === "banned" ? "danger" : "warning"}>{t(restrictionKey(card.status))}</Badge>
                 <span className="tournaments-banlist__copies">
@@ -263,7 +264,7 @@ export function TournamentDetail({
                 </span>
                 {card.pairPartnerIds?.length ? (
                   <span className="tournaments-banlist__pair">
-                    {t("tournaments.detail.pairWith", { cards: card.pairPartnerIds.map(banlistCardName).join(", ") })}
+                    {t("tournaments.detail.pairWith", { cards: card.pairPartnerIds.map(getCardName).join(", ") })}
                   </span>
                 ) : null}
               </li>
