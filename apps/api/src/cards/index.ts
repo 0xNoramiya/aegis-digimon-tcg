@@ -67,3 +67,7 @@ import "./ST6/index.js";
 import "./ST7/index.js";
 import "./ST8/index.js";
 import "./ST9/index.js";
+
+import "#api/cards/BT27/BT27-073";
+import "#api/cards/BT27/BT27-077";
+import "#api/cards/BT27/BT27-080";

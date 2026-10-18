@@ -15332,5 +15332,17 @@
   "ST9-15": {
     "[Main]1ofyourDigimongets+2000DPfortheturn.Then,IfyouhaveablueDigimoninplay,1ofyourDigimongains<Piercing>fortheturn.(WhenthisDigimonattacksanddeletesanopponent'sDigimonandsurvivesthebattle,itperformsanysecuritychecksitnormallywould.)": "【メイン】このターンの間、自分のデジモン1体のDPを+2000する。その後、青の自分のデジモンがいるとき、このターンの間、自分のデジモン1体は≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンだけを消滅させたとき、このデジモンはセキュリティをチェックする）を得る。",
     "[Security]Addthiscardtoitsowner'shand.": "【セキュリティ】このカードを手札に加える。"
+  },
+  "BT27-073": {
+    "[Digivolve]Lv.2w/[GlowingDawn]trait:Cost0[YourTurn]WhenthisDigimonwoulddigivolveintoapurpleDigimoncardwiththe[BEATBREAK]trait,reducethecostby1.": "〔進化〕特徴「グローイングドーン」を持つLv.2:コスト0\n\n【自分のターン】このデジモンが特徴「ビートブレイク」を持つ紫のデジモンカードに進化するとき、支払うコスト-1。",
+    "[WhenAttacking][OncePerTurn]<Draw1>andtrash1cardinyourhand.": "【アタック時】［ターンに1回］≪1ドロー≫し、自分の手札1枚を破棄する。"
+  },
+  "BT27-077": {
+    "[Digivolve]Lv.3w/[GlowingDawn]trait:Cost2[Security][WhenDigivolving]Ifyouhave1orfewerTamers,youmayplay1Tamercardwith[MakotoKuonji]initsnamefromyourhandwithoutpayingthecost.": "〔進化〕特徴「グローイングドーン」を持つLv.3:コスト2\n\n【セキュリティ】【進化時】自分のテイマーが1体以下なら、自分の手札から、名称に「久遠寺マコト」を含むテイマーカード1枚をコストを支払わずに登場できる。",
+    "<Retaliation>": "≪道連れ≫（このデジモンだけがバトルで消滅したとき、バトルした相手のデジモンを消滅させる）"
+  },
+  "BT27-080": {
+    "[Digivolve]Lv.4w/[GlowingDawn]trait:Cost3[Hand][Main]IfyouhaveaTamerwith[MakotoKuonji]initsname,byplacing1[NightChiropmon]fromyourtrashasanyofyour[Chiropmon]’sbottomdigivolutioncard,thatDigimondigivolvesintothiscard,ignoringlevel.[OnPlay][WhenDigivolving]Delete1ofyouropponent’slevel4orlowerDigimon.Then,bytrashingthebottomface-downcardfromunderanyofyourTamers,thisDigimongains<Rush>and<Piercing>fortheturn.": "〔進化〕特徴「グローイングドーン」を持つLv.4:コスト3\n\n{手札}【メイン】名称に「久遠寺マコト」を含む自分のテイマーがいるなら、自分のトラッシュから、「ナイトキロプモン」1枚を自分の「キロプモン」の進化元の下に置くことで、そのデジモンをこのカードにLv.を無視して進化させる。\n【登場時】【進化時】Lv.4以下の相手のデジモン1体を消滅させる。その後、自分のテイマーの下にある裏向きのカードを下から1枚破棄することで、ターン終了まで、このデジモンは≪速攻≫と≪貫通≫を得る。",
+    "[OnDeletion]Youmayplay1playcost5orlower[GlowingDawn]traitcardfromyourtrashwithoutpayingthecost.": "【消滅時】自分のトラッシュから、特徴「グローイングドーン」を持つ登場コスト5以下のカード1枚をコストを支払わずに登場できる。"
   }
 }
