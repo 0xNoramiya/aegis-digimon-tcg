@@ -545,6 +545,7 @@ export async function engineConsultLeavePrevention(
             triggerDescriptions: keyed.map(({ replacement }) => replacement.description),
             triggerIsInherited: keyed.map(({ isInherited }) => isInherited),
             acceptsResolutionPlan: true,
+            acceptsIndexedResolutionPlan: true,
             triggerIsOptional: keyed.map(({ replacement }) => effectTextMayAskYesNo(replacement.description)),
           },
         });

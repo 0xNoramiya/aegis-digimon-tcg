@@ -118,6 +118,8 @@ export interface OrderTriggersResponse {
   kind: "orderTriggers";
   order: string[];
   optionalAnswers?: Record<string, boolean>;
+  orderIndexes?: number[];
+  optionalAnswersByIndex?: (boolean | null)[];
 }
 
 export type DecisionResponse =
