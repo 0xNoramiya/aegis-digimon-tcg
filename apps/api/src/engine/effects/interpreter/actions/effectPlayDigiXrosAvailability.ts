@@ -21,6 +21,9 @@ export function availableEffectPlayDigiXrosReduction(
   const playedDefinition = ctx.game.definitionOf({ cardId: playedCard.cardId });
   const expanders = Array.from(player.battleArea).flatMap((permanent) => {
     if (permanent.isSuspended || permanent.topCard === undefined) return [];
+    if (ctx.fx.canSuspend?.(permanent.permanentId, seat) === false) {
+      return [];
+    }
     const expander = digiXrosZoneExpanderFor(permanent.topCard.cardId);
     if (expander === undefined || !digiXrosZoneExpanderActiveOnTurn(expander, seat, ctx.game.state.turnSeat)) return [];
     return expander.appliesTo(playedDefinition) ? [expander] : [];

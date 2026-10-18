@@ -300,8 +300,22 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
       return permanent === undefined ? [] : effectiveColorsOf(engine, permanent);
     },
     keywordReactionsInLeavePrevention: true,
-    consultLeavePrevention: async (permanentIds, opts) =>
-      engine.consultLeavePrevention(permanentIds, "byBattle", undefined, { ...opts, holdTriggered: true }),
+    consultLeavePrevention: async (permanentIds, opts) => {
+      const pendingBefore = new Set(engine.pendingNestedTimingEffects);
+      const prevented = await engine.consultLeavePrevention(permanentIds, "byBattle", undefined, {
+        ...opts,
+        holdTriggered: true,
+      });
+      const triggered = engine.pendingNestedTimingEffects.filter(
+        (pending) => !pendingBefore.has(pending) && pending.timing === EffectTiming.WhenDigivolving,
+      );
+      const transferred = new Set(triggered);
+      engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter(
+        (pending) => !transferred.has(pending),
+      );
+      engine.pendingLeaveReplacementEffects.push(...triggered);
+      return prevented;
+    },
     resolveAvertedBattleReactions: async (resolveBattleWon) => {
       const triggered = takeLeaveReplacementPending(engine);
       if (triggered.length === 0) {
