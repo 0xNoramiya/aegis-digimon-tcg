@@ -18,6 +18,20 @@ describe("indexed trigger resolution plans", () => {
     expect(decodeTriggerResolutionPlan({ response: compact, triggerKeys, supportsIndexes: true })).toEqual(response);
     expect(JSON.stringify(compact).length).toBeLessThan(JSON.stringify(response).length / 10);
   });
+  it("omits trailing unanswered presets while preserving explicit declines and omitted questions", () => {
+    const offered = Array.from({ length: 256 }, (_, index) => `trigger-${index}`);
+    const named: OrderTriggersResponse = {
+      kind: "orderTriggers",
+      order: [offered[0]!],
+      optionalAnswers: { [offered[0]!]: false },
+    };
+    const compact = encodeTriggerResolutionPlan({ response: named, triggerKeys: offered, supportsIndexes: true });
+    expect(compact.optionalAnswersByIndex).toEqual([false]);
+    expect(decodeTriggerResolutionPlan({ response: compact, triggerKeys: offered, supportsIndexes: true })).toEqual(
+      named,
+    );
+  });
+
   it("preserves the legacy format when the server lacks the capability", () => {
     expect(encodeTriggerResolutionPlan({ response, triggerKeys, supportsIndexes: false })).toBe(response);
     expect(decodeTriggerResolutionPlan({ response, triggerKeys, supportsIndexes: false })).toBe(response);

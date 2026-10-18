@@ -18,12 +18,17 @@ export function encodeTriggerResolutionPlan({ response, triggerKeys, supportsInd
   ) {
     return response;
   }
+  const optionalAnswersByIndex =
+    response.optionalAnswers === undefined
+      ? undefined
+      : triggerKeys.map((key) => response.optionalAnswers?.[key] ?? null);
+  while (optionalAnswersByIndex?.at(-1) === null) {
+    optionalAnswersByIndex.pop();
+  }
   return {
     kind: "orderTriggers",
     order: [],
     orderIndexes: orderIndexes as number[],
-    ...(response.optionalAnswers === undefined
-      ? {}
-      : { optionalAnswersByIndex: triggerKeys.map((key) => response.optionalAnswers?.[key] ?? null) }),
+    ...(optionalAnswersByIndex === undefined ? {} : { optionalAnswersByIndex }),
   };
 }

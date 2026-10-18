@@ -140,18 +140,22 @@ export class DecisionManager {
       delete options.pendingEffectInstanceIds;
     }
     const pendingEffects = this.options.pendingEffectCandidates?.(spec) ?? [];
-    const offered = new Set(options?.candidateInstanceIds ?? []);
-    const visible = new Set(options?.visibleInstanceIds ?? options?.candidateInstanceIds ?? []);
-    const readable = new Set(
-      options?.visibleCards?.filter((card) => card.cardId.trim().length > 0).map((card) => card.instanceId) ?? [],
-    );
-    const trash = new Set(
-      Array.from(this.state.players).flatMap((player) => player.trash.map((card) => card.instanceId)),
-    );
-    const pendingEffectInstanceIds = [...new Set(pendingEffects)].filter(
-      (id) => offered.has(id) && visible.has(id) && readable.has(id) && trash.has(id),
-    );
-    if (pendingEffectInstanceIds.length) options = { ...options, pendingEffectInstanceIds };
+    if (pendingEffects.length > 0 && (options?.candidateInstanceIds?.length ?? 0) > 0) {
+      const offered = new Set(options?.candidateInstanceIds ?? []);
+      const visible = new Set(options?.visibleInstanceIds ?? options?.candidateInstanceIds ?? []);
+      const readable = new Set(
+        options?.visibleCards?.filter((card) => card.cardId.trim().length > 0).map((card) => card.instanceId) ?? [],
+      );
+      const trash = new Set(
+        Array.from(this.state.players).flatMap((player) => player.trash.map((card) => card.instanceId)),
+      );
+      const pendingEffectInstanceIds = [...new Set(pendingEffects)].filter(
+        (id) => offered.has(id) && visible.has(id) && readable.has(id) && trash.has(id),
+      );
+      if (pendingEffectInstanceIds.length) {
+        options = { ...options, pendingEffectInstanceIds };
+      }
+    }
     const req: DecisionRequest = {
       decisionId,
       seat: spec.seat,
