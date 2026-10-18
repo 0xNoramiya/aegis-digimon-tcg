@@ -664,12 +664,18 @@ export function buildPrimitives(engine: GameEngine): Primitives {
         // another effect (Planet Punch through EX12-077) can Arts Digivolve the attacker, and
         // that [When Digivolving] is parked in the nested pool; it still resolves before
         // Counter Timing and security.
+        const offeredBeforeCounter = new Set(engine.pendingNestedTimingEffects);
         await drainPendingAttackTriggers(engine);
         // No declaration effect may become legal later during a block or battle.
         retirePendingAttackWatchers(engine);
         // Retire the exhausted parent remainder only after rule processing and every
         // declaration pool have finished; intermediate drains may enable its costs.
-        if (options?.retireUnactivatable) await drain(options);
+        if (options?.retireUnactivatable) {
+          await drain(options);
+          engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter(
+            (pending) => !offeredBeforeCounter.has(pending),
+          );
+        }
       } finally {
         engine.effectResolutionDepth = pausedDepth;
         engine.optionResolutionDepth = pausedOptionDepth;

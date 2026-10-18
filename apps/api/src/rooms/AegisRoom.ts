@@ -18,6 +18,7 @@ import { log, logError, withMatchLog } from "../logger.js";
 import { CloseCode, Room, Client, ServerError, matchMaker, type Delayed } from "colyseus";
 import { canCreateRoom } from "../deployment/admission.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
+import { getRoomRandomness } from "#api/rooms/getRoomRandomness";
 import { randomBytes, randomUUID } from "node:crypto";
 import { ReplayRecording } from "../replays/recording.js";
 import { replayDownload } from "../replays/download.js";
@@ -718,7 +719,7 @@ export class AegisRoom extends Room<{
     if (!canCreateRoom() && !continuation)
       throw new ServerError(503, "This game server is draining; retry on the active slot.");
     this.state.matchLogId = randomUUID();
-    const seed = options.seed ?? Date.now() >>> 0;
+    const { seed, randomKey } = getRoomRandomness({ seed: options.seed });
     this.debug("room.created", {
       seed,
       private: options.private,
@@ -824,6 +825,7 @@ export class AegisRoom extends Room<{
     if (this.state.allowRollback)
       this.rollbackHistory = new RollbackHistory({
         seed,
+        randomKey,
         firstSeat: this.casualSeries?.fixedFirstSeat,
         matchId: this.state.matchLogId,
         rules: {
@@ -838,6 +840,7 @@ export class AegisRoom extends Room<{
         this.refreshRollbackAvailability();
       },
       seed,
+      randomKey,
       ...(this.casualSeries?.fixedFirstSeat !== undefined ? { firstSeat: this.casualSeries.fixedFirstSeat } : {}),
       requestDecision: (seat, req) => this.requestDecision(seat, req),
       onBothReady: () => this.atReplaySite("bothReady", () => this.startMatchNow()),
@@ -957,6 +960,7 @@ export class AegisRoom extends Room<{
     this.debug("replay.header", {
       replaySeq: this.nextReplaySeq(),
       seed,
+      randomKey,
       ...(firstSeat !== undefined ? { firstSeat } : {}),
       ...(serverRevision ? { serverRevision } : {}),
       deckFormat: this.state.format as DeckFormat,

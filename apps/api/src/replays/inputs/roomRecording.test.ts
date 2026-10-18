@@ -107,6 +107,7 @@ describe("AegisRoom replay recording", () => {
       {
         replaySeq: 1,
         seed: 99,
+        randomKey: expect.stringMatching(/^[a-f0-9]{64}$/),
         serverRevision: "abc1234",
         deckFormat: "standard",
         unlimited: false,
