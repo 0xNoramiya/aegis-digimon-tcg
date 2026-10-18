@@ -1423,6 +1423,7 @@ const interfaceMessages = {
   "overlay.endSelection": "Selesai Memilih",
   "overlay.noSelection": "Tidak Memilih",
   "overlay.use": "Gunakan",
+  "overlay.activationProgress": "Aktivasi {index} dari {total}",
   "overlay.notUse": "Jangan gunakan",
   "overlay.moveToBattleArea": "Pindah ke battle area",
   "overlay.endPhase": "End phase",

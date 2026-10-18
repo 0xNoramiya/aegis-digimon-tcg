@@ -61968,7 +61968,6 @@
                   "kind": "Attack",
                   "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
                   "attackTargetScope": "player",
-                  "mandatory": true,
                   "cost": {
                     "kind": "unsuspendNamed",
                     "targets": [
@@ -61991,6 +61990,7 @@
                         "count": 1
                       }
                     ],
+                    "optional": true,
                     "raw": "by unsuspending 1 [Shoutmon EX6] and 1 [ShootingStarmon]"
                   }
                 }
@@ -238015,6 +238015,7 @@
                     "kind": "return",
                     "target": { "filter": { "controller": "opponent", "zone": "trash" }, "count": 5 },
                     "to": "deckBottom",
+                    "optional": true,
                     "raw": "By returning 5 cards from your opponent's trash to the bottom of the deck"
                   }
                 }
@@ -238060,6 +238061,7 @@
                     "kind": "return",
                     "target": { "filter": { "controller": "opponent", "zone": "trash" }, "count": 5 },
                     "to": "deckBottom",
+                    "optional": true,
                     "raw": "By returning 5 cards from your opponent's trash to the bottom of the deck"
                   }
                 }

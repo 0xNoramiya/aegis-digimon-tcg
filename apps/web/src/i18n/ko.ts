@@ -1397,6 +1397,7 @@ const interfaceMessages = {
   "overlay.endSelection": "선택 종료",
   "overlay.noSelection": "선택 없음",
   "overlay.use": "사용",
+  "overlay.activationProgress": "발동 {index}/{total}",
   "overlay.notUse": "사용 안 함",
   "overlay.moveToBattleArea": "배틀 에어리어로 이동",
   "overlay.endPhase": "페이즈 종료",
