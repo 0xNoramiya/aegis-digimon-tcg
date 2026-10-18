@@ -17,11 +17,90 @@ import {
 import type { EvoCostOption } from "./digivolveModel";
 import { CardOpenerProvider } from "./cardLinks";
 import { choiceLabel } from "./overlay/choice/decisionChoiceLabels";
+import { printedModalBullets } from "@aegis/shared/effects/printedClauses";
 
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
+
+it("uses source card translations for printed modal option buttons and submits the original index", async () => {
+  const cardId = "BT22-013";
+  const clause = cardEffectClauseForTiming(cardId, "WhenDigivolving")!;
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <DecisionOverlay
+        request={{
+          decisionId: "translated-modal-bullets",
+          seat: 0,
+          kind: "chooseOption",
+          promptText: "WarGreymon",
+          options: {
+            choices: ["Digivolve", "Delete 1 target(s)"],
+            choiceClauses: printedModalBullets(clause),
+            timing: "WhenDigivolving",
+          },
+        }}
+        sourceCardId={cardId}
+        candidates={[]}
+        picks={[]}
+        onTogglePick={vi.fn<() => void>()}
+        onRespond={onRespond}
+      />
+    </I18nContext.Provider>,
+  );
+  const deletion = await screen.findByRole("button", { name: /消灭.*DP最低/ });
+  expect(screen.getByRole("button", { name: /加布兽.*钢铁加鲁鲁兽/ })).toBeTruthy();
+  fireEvent.click(deletion);
+  expect(onRespond).toHaveBeenCalledWith({ kind: "chooseOption", optionIndex: 1 });
+});
+
+it.each([
+  {
+    cardId: "EX13-032",
+    choices: ["Trash your top security card", "Trash the bottom face-down card from under 1 of your Tamers"],
+    labels: ["丢弃我方最上方的1张安防卡牌", "丢弃我方1只驯兽师下方最下方的1张背面表示卡牌"],
+  },
+  {
+    cardId: "BT26-026",
+    choices: ["Trash the bottom face-down card from under 1 of your Tamers", "Trash your top security card"],
+    labels: ["丢弃我方1只驯兽师下方最下方的1张背面表示卡牌", "丢弃我方最上方的1张安防卡牌"],
+  },
+])(
+  "localizes alternative payment buttons without changing their response order for $cardId",
+  ({ cardId, choices, labels }) => {
+    const onRespond = vi.fn<(response: DecisionResponse) => void>();
+    render(
+      <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+        <DecisionOverlay
+          request={{
+            decisionId: "alternative-payment",
+            seat: 0,
+            kind: "chooseOption",
+            promptText: "Choose a cost to pay",
+            sourceCardId: cardId,
+            options: { choices: [...choices, "Don't use"], declineIndex: 2, timing: "WhenDigivolving" },
+          }}
+          sourceCardId={cardId}
+          candidates={[]}
+          picks={[]}
+          onTogglePick={vi.fn<() => void>()}
+          onRespond={onRespond}
+        />
+      </I18nContext.Provider>,
+    );
+    const buttons = document.querySelectorAll(".decision-overlay__choices button");
+    expect(buttons[0]?.textContent).toBe(labels[0]);
+    expect(buttons[1]?.textContent).toBe(labels[1]);
+    fireEvent.click(screen.getByRole("button", { name: labels[0] }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "chooseOption", optionIndex: 0 });
+    fireEvent.click(screen.getByRole("button", { name: labels[1] }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "chooseOption", optionIndex: 1 });
+    fireEvent.click(screen.getByRole("button", { name: "不使用" }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "chooseOption", optionIndex: 2 });
+  },
+);
 
 it("translates Davis and Ken's delayed play effect in the activation dialog", async () => {
   const effectTextPart =

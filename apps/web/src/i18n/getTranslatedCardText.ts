@@ -20,13 +20,23 @@ export function getTranslatedCardText({ text, translations, cardId }: Params): s
         line
       );
     });
-  if (resolved === text) {
+  const printed = removeUnprintedNameNotes({ source: text, translated: resolved });
+  if (printed === text) {
     return text;
   }
-  return resolved
+  return printed
     .replace(/[【［]([^】］]+)[】］]/g, "[$1]")
     .replace(
       /≪([^≫]+)≫|《([^》]+)》/g,
       (_, japanese: string | undefined, chinese: string | undefined) => `＜${japanese ?? chinese}＞`,
     );
+}
+
+type NameNotesParams = { source: string; translated: string };
+
+function removeUnprintedNameNotes({ source, translated }: NameNotesParams): string {
+  if (/[[【［]\s*(?:Rule|规则)\s*[\]】］]/i.test(source)) {
+    return translated;
+  }
+  return translated.replace(/(?:[\r\n]+|^)[ \t]*※[ \t]*此卡(?:牌)?不?属于名称中包含[^\r\n]*/g, "");
 }

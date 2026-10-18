@@ -2,7 +2,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { CardColor, CardKind, allCards, type CardDefinition } from "@aegis/shared";
-import { sortSearchResults, useCardFilter } from "./cardFilters";
+import { matchesTraitOrAttributeFilter, sortSearchResults, useCardFilter } from "./cardFilters";
 
 function searchIds(cards: readonly CardDefinition[], query: string): string[] {
   const { result } = renderHook(() => useCardFilter(cards));
@@ -24,6 +24,18 @@ function testCard(cardId: string, nameEn: string, text: Partial<CardDefinition> 
     ...text,
   };
 }
+
+it.each([
+  ["ST23-13", "BEATBREAK"],
+  ["BT18-102", "Hybrid"],
+  ["BT16-102", "Free"],
+  ["BT16-102", "Royal Knight"],
+])("matches a later form, attribute or type on %s with %s", (cardId, query) => {
+  const card = allCards().find((candidate) => candidate.cardId === cardId)!;
+
+  expect(matchesTraitOrAttributeFilter(card, query)).toBe(true);
+  expect(matchesTraitOrAttributeFilter(card, "missing-trait")).toBe(false);
+});
 
 describe("card search box", () => {
   it("finds cards by their effect text, ignoring trait brackets (Discord 1557071980103213056)", () => {

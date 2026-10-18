@@ -1,4 +1,5 @@
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { createPortal } from "react-dom";
 import { getCardDefinition } from "@aegis/shared";
 import { Button } from "../../../design/primitives";
@@ -59,6 +60,7 @@ export function CardActionSheetPanel({
 }) {
   const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
+  const translateCardText = useTranslatedCardText();
   const def = getCardDefinition(cardId ?? "");
   const dpDelta = dp != null && baseDP != null ? dp - baseDP : 0;
   const beneath = (stackCards ?? []).filter((c) => c.role !== "top");
@@ -138,8 +140,8 @@ export function CardActionSheetPanel({
                   full
                   variant="secondary"
                   onClick={effect.onActivate}
-                  aria-label={`${t("game.activateEffect")}: ${effect.label}`}
-                  title={effect.label}
+                  aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId })}`}
+                  title={translateCardText({ text: effect.label, cardId })}
                 >
                   <span aria-hidden="true">⚡</span>
                   <span>{t("game.activateMainEffect")}</span>

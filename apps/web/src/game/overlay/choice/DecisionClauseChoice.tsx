@@ -14,6 +14,7 @@ import { DecisionViewBoardButton } from "./DecisionViewBoardButton";
 export function DecisionClauseChoice({
   choices,
   choiceClauses,
+  cardId,
   declineIndex,
   activation,
   onRespond,
@@ -22,6 +23,7 @@ export function DecisionClauseChoice({
   choices: readonly string[];
   /** Aligned to `choices`; an empty entry has no printed bullet and falls back to its label. */
   choiceClauses: readonly string[];
+  cardId?: string;
   declineIndex?: number;
   activation?: { index: number; total: number };
   onRespond: (response: DecisionResponse) => void;
@@ -51,7 +53,7 @@ export function DecisionClauseChoice({
                   {index + 1}
                 </span>
                 <span className="effect-choice__clause">
-                  {clause ? <EffectText text={clause} /> : choiceLabel({ choice: label, t })}
+                  {clause ? <EffectText text={clause} cardId={cardId} /> : choiceLabel({ choice: label, t })}
                 </span>
                 <span className="effect-choice__go" aria-hidden="true">
                   <Icons.ChevronRight />

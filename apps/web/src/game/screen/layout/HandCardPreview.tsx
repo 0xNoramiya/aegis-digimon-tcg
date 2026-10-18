@@ -1,4 +1,5 @@
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { getCardDefinition } from "@aegis/shared";
@@ -41,6 +42,7 @@ export function HandCardPreview({
 }) {
   const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
+  const translateCardText = useTranslatedCardText();
   const card = getCardDefinition(cardId);
   const [zoomed, setZoomed] = useState(false);
   if (arenaInspection) {
@@ -55,8 +57,8 @@ export function HandCardPreview({
               icon={Icons.Sparkles}
               className="arena-permanent-inspector__activate"
               onClick={() => onActivateEffect(effect)}
-              aria-label={`${t("game.activateEffect")}: ${effect.description}`}
-              title={effect.description}
+              aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.description, cardId })}`}
+              title={translateCardText({ text: effect.description, cardId })}
             >
               {t("game.activateHandEffect")}
               {activatableEffects.length > 1 ? ` ${index + 1}` : ""}
@@ -133,8 +135,9 @@ export function HandCardPreview({
               full
               variant="secondary"
               onClick={() => onActivateEffect(effect)}
-              aria-label={`${t("game.activateEffect")}: ${effect.description}`}
+              aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.description, cardId })}`}
               autoFocus={index === 0}
+              title={translateCardText({ text: effect.description, cardId })}
             >
               {t("game.activateHandEffect")}
               {activatableEffects.length > 1 ? ` ${index + 1}` : ""}

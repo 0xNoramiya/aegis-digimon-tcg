@@ -293,10 +293,10 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
   const cost = def.playCost;
   const dpValue = dp ?? def.dp;
   const traits = [
-    getTranslatedCardMeta({ value: def.forms?.[0] ?? "", group: "forms", translations }),
-    getTranslatedCardMeta({ value: def.attributes?.[0] ?? "", group: "attributes", translations }),
-    getTranslatedCardMeta({ value: def.types?.[0] ?? "", group: "traits", translations }),
-  ].filter((value) => value && value !== "-");
+    ...(def.forms ?? []).map((value) => getTranslatedCardMeta({ value, group: "forms", translations })),
+    ...(def.attributes ?? []).map((value) => getTranslatedCardMeta({ value, group: "attributes", translations })),
+    ...(def.types ?? []).map((value) => getTranslatedCardMeta({ value, group: "traits", translations })),
+  ].filter((value) => value && value !== "-" && value !== "—");
   const showTraits = width >= 84 && traits.length > 0;
   const showLevel = def.level != null && width >= 66;
 
@@ -423,9 +423,9 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
               fontWeight: 600,
               letterSpacing: "0.04em",
               textTransform: "uppercase",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
+              whiteSpace: "normal",
+              overflowWrap: "anywhere",
+              lineHeight: 1.25,
               marginBottom: px(1),
             }}
           >

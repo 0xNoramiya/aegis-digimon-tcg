@@ -28,6 +28,24 @@ import { violationMessage } from "@/tournaments/labels";
 
 type Probe = { name: string; render: () => ReactElement; target: RegExp };
 
+it.each(["ACE", " ACE", "ＡＣＥ", "ace "])("removes an imported %s suffix from shared names", async (suffix) => {
+  const translations = {
+    ...(await loadCardTranslations("zh-CN")),
+    names: { Susanoomon: `须佐之男兽${suffix}`, "Susanoomon ACE": "须佐之男兽 ACE" },
+  };
+  expect(getTranslatedCardName({ name: "Susanoomon", translations })).toBe("须佐之男兽");
+  expect(getTranslatedCardName({ name: "Unknown", translations })).toBe("Unknown");
+  expect(getTranslatedCardName({ name: "Susanoomon ACE", translations })).toBe("须佐之男兽 ACE");
+});
+
+it.each(["zh-CN", "ja", "ko"] as const)("keeps ACE classification out of shared %s card names", async (locale) => {
+  const translations = await loadCardTranslations(locale);
+  const unexpected = Object.entries(translations.names).filter(
+    ([name, translated]) => !/(?:ACE|ＡＣＥ)\s*$/iu.test(name) && /(?:ACE|ＡＣＥ)\s*$/iu.test(translated),
+  );
+  expect(unexpected).toEqual([]);
+});
+
 const probes: Probe[] = [
   {
     name: "trigger order",

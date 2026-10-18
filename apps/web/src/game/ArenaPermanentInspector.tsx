@@ -75,7 +75,7 @@ export function ArenaPermanentInspector({
     ...(top?.forms ?? []).map((value) => getTranslatedCardMeta({ value, group: "forms", translations })),
     ...(top?.attributes ?? []).map((value) => getTranslatedCardMeta({ value, group: "attributes", translations })),
     ...(top?.types ?? []).map((value) => getTranslatedCardMeta({ value, group: "traits", translations })),
-  ].filter((trait) => trait && trait !== "-");
+  ].filter((trait) => trait && trait !== "-" && trait !== "—");
   const anchor = useArenaHalfAnchor({
     container: inspection.container,
     half: inspectedArenaHalf(inspection.side),

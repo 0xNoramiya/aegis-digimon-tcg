@@ -1,3 +1,4 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerPtBR } from "@/i18n/providers.pt-BR";
 import { replayVideoPtBR } from "./replayVideo";
 import { profileReplayPtBR } from "./profileReplays";
@@ -22,6 +23,11 @@ import { settingsPtBR } from "./redesign/settings.pt-BR";
 import { shellPtBR } from "./redesign/shell.pt-BR";
 
 export const ptBR: Record<keyof typeof en, string> = {
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Excluir este Digimon",
+  "overlay.trashTopSecurityCard": "Descartar a carta do topo da sua segurança",
+  "overlay.trashTamerBottomCard": "Descartar a carta virada para baixo do fundo de baixo de 1 dos seus Tamers",
+  "overlay.trashTwoTamerBottomCards": "Descartar 2 cartas viradas para baixo do fundo de baixo dos seus Tamers",
   ...providerPtBR,
   "settings.cardImageLanguage": "Idioma das imagens das cartas",
   "settings.cardImageLanguageDesc":

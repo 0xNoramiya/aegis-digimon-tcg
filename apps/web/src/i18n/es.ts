@@ -1,3 +1,4 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEs } from "@/i18n/providers.es";
 import { replayVideoEs } from "./replayVideo";
 import { profileReplayEs } from "./profileReplays";
@@ -18,6 +19,11 @@ import { settingsEs } from "./redesign/settings.es";
 import { shellEs } from "./redesign/shell.es";
 
 export const es: Record<keyof typeof en, string> = {
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Eliminar este Digimon",
+  "overlay.trashTopSecurityCard": "Descartar la carta superior de tu seguridad",
+  "overlay.trashTamerBottomCard": "Descartar la carta boca abajo del fondo de debajo de 1 de tus Tamers",
+  "overlay.trashTwoTamerBottomCards": "Descartar 2 cartas boca abajo del fondo de debajo de tus Tamers",
   ...providerEs,
   "settings.cardImageLanguage": "Idioma de las imágenes de cartas",
   "settings.cardImageLanguageDesc":

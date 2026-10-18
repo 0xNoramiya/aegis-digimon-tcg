@@ -1,3 +1,4 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { replayVideoEn } from "./replayVideo";
 import { profileReplayEn } from "./profileReplays";
@@ -20,6 +21,11 @@ import { shellEn } from "./redesign/shell.en";
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": "Trash your top security card",
+  "overlay.trashTamerBottomCard": "Trash the bottom face-down card from under 1 of your Tamers",
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
   "settings.cardImageLanguage": "Card image language",
   "settings.cardImageLanguageDesc":
