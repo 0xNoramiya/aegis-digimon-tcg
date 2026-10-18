@@ -243,24 +243,3 @@ The PR verification failure reproduced with `node --test tools/kb/rule-obligatio
 - BT27-100 Hjaðningar Waltz grants a forced attack, places itself in the battle area, and uses Delay to De-Digivolve and delete opposing Digimon. Its Security effect deletes Digimon and returns itself to hand. None of these clauses instructs play, DNA, App Fusion, Burst, or alternate digivolution from a new recipient zone.
 
 All other catalog fields are unchanged. These additions and corrections preserve the 22 covered route classifications and eight reviewed provider absences. Scenario evidence, candidate lists and the rules fingerprint remain unchanged. The reviewed catalog fingerprint moves from `3fbdd1ed3350aeee8899f4027ec2ec89b57952377ea794365dd7675bcf1e7687` to `3a6953f662084646e6b7ba47c391819fb669fd03962b81f7b0d904389c41a032`; catalog drift remains an error and automatic refresh still cannot recertify a review.
-
-## Chiropmon line catalog review — 2026-10-18
-
-Compared the current catalog against the previously reviewed catalog at
-`c68712c83c`. The only changed records are the additions BT27-073, BT27-077,
-BT27-080 and BT27-082. Reviewed all their printed effect fields against the
-30 route cells and the eight catalog exclusions. None introduces Assembly,
-DigiXros, DNA, App Fusion or Burst requirements or effect instructions.
-
-BT27-073 discounts standard evolution and supplies inherited draw/trash.
-BT27-077 plays a Tamer from hand. BT27-080's hand effect performs standard
-level-skipping evolution into itself after placing a trash card under an
-existing Digimon; the trash card is a source, not the evolution result.
-Its inherited effect plays Glowing Dawn cards from trash. BT27-082 activates
-an Option Main effect, plays BEATBREAK cards from trash and permits standard
-Arts Digivolve from the resolving Option. Its Security/On Deletion clauses
-remove opposing cards; they do not evolve into a result from security.
-These effects do not add providers to the eight excluded routes. Existing
-providers and route classifications remain valid, so the manifest catalog
-fingerprint now pins this reviewed catalog. Rule-index fingerprints, scenario
-proof and exclusions are unchanged.
