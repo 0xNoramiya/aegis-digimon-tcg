@@ -321,15 +321,17 @@ random-deck cost.
 These options define a new experiment. They are off by default, and a run that uses
 them is not equivalent to a full 128-simulation campaign:
 
-| Option                    | Effect                                                                                 |
-| ------------------------- | -------------------------------------------------------------------------------------- |
-| `--screen-simulations`    | GEPA training, selection and reflection screening use this MCTS budget.                |
-| `--screen-rollout-turns`  | Screening rollouts stop at that turn and score `evaluateSearchPosition`.               |
-| `--selection-pairs`       | GEPA's selection set uses only the first N validation seed blocks.                     |
-| `--sequential-looks`      | The proposal gate plays at `--simulations` without rollout bounds, one look at a time. |
-| `--teacher-simulations`   | Traced training games add advisory searches from the learner's seat.                   |
-| `--final-control generic` | Held-out pilot results use the accepted generic policy as control.                     |
-| `--heuristic-batch-size`  | Heuristic-opponent games share one worker process; search games stay isolated.         |
+| Option                    | Effect                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------ |
+| `--screen-simulations`    | GEPA training, selection and reflection screening use this MCTS budget.        |
+| `--screen-rollout-turns`  | Screening rollouts stop at that turn and score `evaluateSearchPosition`.       |
+| `--selection-pairs`       | GEPA's selection set uses only the first N validation seed blocks.             |
+| `--gate-simulations`      | Proposal gates use this MCTS budget instead of `--simulations`.                |
+| `--gate-rollout-turns`    | Proposal gate rollouts stop at that turn and score `evaluateSearchPosition`.   |
+| `--sequential-looks`      | Gates and stage confirmation play one look of seed blocks at a time.           |
+| `--teacher-simulations`   | Traced training games add advisory searches from the learner's seat.           |
+| `--final-control generic` | Held-out pilot results use the accepted generic policy as control.             |
+| `--heuristic-batch-size`  | Heuristic-opponent games share one worker process; search games stay isolated. |
 
 A heuristic-opponent pilot game costs about 6.6 s alone, and about 2 s of that is the
 engine fingerprint plus module loading. Three batched games took 9.1 s instead of about
@@ -346,6 +348,18 @@ Those stops are non-binding and only lower acceptance. Gates for the same parent
 reuse one set of fresh gate blocks, so the parent's control games come from the cache.
 Bonferroni over proposals holds under that dependence. More proposals make each gate
 stricter, so a stage that wants several proposals may need more `--pairs`.
+
+With `--gate-simulations`, a campaign has three tiers. GEPA screens at the screening
+budget, proposal gates run at the gate budget, and the stage winner must then beat its
+starting policy at `--simulations` without rollout bounds. Confirmation uses fresh seed
+blocks, the same looks and its own 0.05 error budget. If confirmation fails, the stage
+keeps its starting policy; `selected.json` records the gate winner and the evidence.
+Held-out final evaluation always runs at `--simulations` without rollout bounds.
+
+Measured on Examon against Toho Braves, a full game at 128 simulations with full
+rollouts took 37–46 minutes and about 125 s per search. A screening game at 16
+simulations with two-turn rollouts took 33–38 s and about 3.7 s per search, including
+worker startup. The games diverged, so these are cost figures, not paired outcomes.
 
 Teacher searches run after the learner has chosen its action and never change the
 played game; a test checks that results, decisions and opponent searches match.

@@ -478,7 +478,10 @@ def test_held_out_candidates_and_controls_keep_the_campaign_turn_limit(
     assert calls[4] == calls[5]
 
 
-def test_multi_fidelity_stage_screens_cheaply_and_gates_at_full_fidelity(tmp_path, monkeypatch):
+@pytest.mark.parametrize("confirmed", (True, False))
+def test_multi_fidelity_stage_screens_gates_and_confirms_at_separate_budgets(
+    tmp_path, monkeypatch, confirmed
+):
     initial = {
         "schemaVersion": 1,
         "basePolicy": "projected-balanced",
@@ -498,7 +501,8 @@ def test_multi_fidelity_stage_screens_cheaply_and_gates_at_full_fidelity(tmp_pat
         def evaluate(self, tasks, candidate, capture_traces=False):
             calls.append((self.config.simulations, self.config.rollout_turns, tasks))
             program = json.loads(candidate["heuristic"])
-            score = int("when" in program["rules"][0])
+            improved = "when" in program["rules"][0]
+            score = int(improved and (confirmed or self.config.simulations != 128))
             outputs = [
                 {"task": task, "valid": True, "score": score, "policySha256": policy_hash(program)}
                 for task in tasks
@@ -557,20 +561,23 @@ def test_multi_fidelity_stage_screens_cheaply_and_gates_at_full_fidelity(tmp_pat
                 "screenSimulations": 16,
                 "screenRolloutTurns": 2,
                 "selectionPairs": 4,
+                "gateSimulations": 32,
+                "gateRolloutTurns": 4,
                 "sequentialLooks": [12, 24],
             },
         },
     )
-    assert selected["program"] == raw
-    assert calls[0][:2] == (16, 2) and len(calls[0][2]) == 8
-    gate = [tasks for simulations, rollout, tasks in calls if simulations == 128]
-    assert gate and all(rollout is None for simulations, rollout, _ in calls if simulations == 128)
-    assert all(task["seed"] >= 1_000_000_000 for tasks in gate for task in tasks)
-    assert all(
-        task["seed"] < 1_000_000_000
-        for simulations, _, tasks in calls
-        if simulations == 16
-        for task in tasks
-    )
-    record = json.loads((tmp_path / "generic/proposal-gates/proposal-0001.json").read_text())
-    assert record["pairedEvidence"]["stopReason"] == "efficacy"
+    tiers = {}
+    for simulations, rollout, tasks in calls:
+        tiers.setdefault((simulations, rollout), []).extend(task["seed"] for task in tasks)
+    assert set(tiers) == {(16, 2), (32, 4), (128, None)}
+    assert max(tiers[(16, 2)]) < 1_000_000_000
+    assert all(1_000_000_000 <= seed < 2_000_000_000 for seed in tiers[(32, 4)])
+    assert all(seed >= 2_000_000_000 for seed in tiers[(128, None)])
+    gate = json.loads((tmp_path / "generic/proposal-gates/proposal-0001.json").read_text())
+    assert gate["pairedEvidence"]["stopReason"] == "efficacy"
+    assert selected["gateSelectedProgram"] == raw
+    assert selected["confirmation"]["simulations"] == 128
+    assert selected["confirmation"]["accepted"] is confirmed
+    assert selected["program"] == (raw if confirmed else initial)
+    assert selected["retainedStageInitial"] is not confirmed

@@ -22,6 +22,7 @@ from ladder import choose_training_rung, ladder_tasks
 from proposals import guarded_proposer
 from session_reflection import SessionReflection
 from SeedBlockBatchSampler import SeedBlockBatchSampler
+from sequential_sign_gate import sequential_sign_gate
 from tune import tune
 
 
@@ -173,7 +174,18 @@ def optimize_stage(
         ),
         metadata,
     )
-    gate_adapter = HeuristicAdapter(gate_config, metadata) if fidelity else adapter
+    gate_adapter = (
+        HeuristicAdapter(
+            replace(
+                gate_config,
+                simulations=fidelity.get("gateSimulations", simulations),
+                rollout_turns=fidelity.get("gateRolloutTurns"),
+            ),
+            metadata,
+        )
+        if fidelity
+        else adapter
+    )
     if fidelity and metadata.get("adaptiveLadder"):
         raise ValueError(
             "Multi-fidelity screening replaces the adaptive ladder; use --fixed-opponent"
@@ -314,6 +326,36 @@ def optimize_stage(
     (stage_dir / "gepa-result.json").write_text(
         json.dumps(result.to_dict(), indent=2) + "\n", encoding="utf-8"
     )
+    gate_selected = json.loads(result.best_candidate["heuristic"])
+    chosen, confirmation = gate_selected, None
+    if fidelity.get("gateSimulations") is not None and policy_hash(gate_selected) != policy_hash(
+        initial
+    ):
+        # Gates ran below full strength, so the stage winner must also beat its starting
+        # policy at the full budget on fresh blocks before it replaces that policy.
+        confirmation_adapter = HeuristicAdapter(gate_config, metadata)
+        confirmation_tasks = [
+            {**task, "seed": task["seed"] + 2_000_000_000} for task in splits["validation"]
+        ]
+        confirmation = sequential_sign_gate(
+            lambda look: (
+                confirmation_adapter.evaluate(
+                    look, {"heuristic": json.dumps(gate_selected)}
+                ).outputs,
+                confirmation_adapter.evaluate(look, {"heuristic": json.dumps(initial)}).outputs,
+            ),
+            confirmation_tasks,
+            fidelity.get(
+                "sequentialLooks",
+                [len({task["seed"] for task in confirmation_tasks})],
+            ),
+            0.05,
+        )
+        confirmation = {
+            key: value for key, value in confirmation.items() if key not in ("selected", "control")
+        } | {"simulations": simulations, "tasks": confirmation_tasks}
+        if not confirmation["accepted"]:
+            chosen = initial
     evaluated = [
         json.loads(path.read_text(encoding="utf-8"))
         for path in (stage_dir / "games").glob("*.json")
@@ -336,12 +378,15 @@ def optimize_stage(
         "trainingSimulations": simulations,
         "proposals": len(proposals),
         "validEvaluatedProposals": len(proposals & valid_evaluated),
-        "retainedStageInitial": policy_hash(json.loads(result.best_candidate["heuristic"]))
-        == policy_hash(initial),
-        "retainedOriginalSeed": json.loads(result.best_candidate["heuristic"])
-        == metadata.get("seedProgram", initial),
+        "retainedStageInitial": policy_hash(chosen) == policy_hash(initial),
+        "retainedOriginalSeed": chosen == metadata.get("seedProgram", initial),
         "stageSha256": stage_fingerprint,
-        "program": json.loads(result.best_candidate["heuristic"]),
+        "program": chosen,
+        **(
+            {}
+            if confirmation is None
+            else {"gateSelectedProgram": gate_selected, "confirmation": confirmation}
+        ),
         "validationScore": result.val_aggregate_scores[result.best_idx],
         "candidates": result.num_candidates,
         "selectedIndex": result.best_idx,
@@ -474,7 +519,7 @@ def final_evaluation(
 @click.option(
     "--sequential-looks",
     default=None,
-    help="Comma-separated cumulative seed-block counts for the full-fidelity gate.",
+    help="Comma-separated cumulative seed-block counts for proposal gates and confirmation.",
 )
 @click.option(
     "--final-control", type=click.Choice(["seed", "generic"]), default="seed", show_default=True
@@ -484,6 +529,8 @@ def final_evaluation(
 @click.option("--teacher-every", default=4, type=click.IntRange(1, 100), show_default=True)
 @click.option("--teacher-rollout-turns", default=None, type=click.IntRange(1, 200))
 @click.option("--heuristic-batch-size", default=None, type=click.IntRange(1, 32))
+@click.option("--gate-simulations", default=None, type=click.IntRange(1, 10000))
+@click.option("--gate-rollout-turns", default=None, type=click.IntRange(1, 200))
 def main(
     run_dir: Path,
     node: str,
@@ -516,6 +563,8 @@ def main(
     teacher_every: int,
     teacher_rollout_turns: int | None,
     heuristic_batch_size: int | None,
+    gate_simulations: int | None,
+    gate_rollout_turns: int | None,
 ) -> None:
     final_pairs = pairs if final_pairs is None else final_pairs
     fidelity = {
@@ -524,6 +573,8 @@ def main(
             "screenSimulations": screen_simulations,
             "screenRolloutTurns": screen_rollout_turns,
             "selectionPairs": selection_pairs,
+            "gateSimulations": gate_simulations,
+            "gateRolloutTurns": gate_rollout_turns,
             "sequentialLooks": None
             if sequential_looks is None
             else [int(look) for look in sequential_looks.split(",")],
@@ -543,6 +594,8 @@ def main(
     if fidelity is not None:
         if adaptive_ladder:
             raise click.ClickException("Multi-fidelity screening requires --fixed-opponent")
+        if gate_rollout_turns is not None and gate_simulations is None:
+            raise click.ClickException("--gate-rollout-turns requires --gate-simulations")
         if selection_pairs is not None and selection_pairs > pairs:
             raise click.ClickException("--selection-pairs cannot exceed --pairs")
         looks = fidelity.get("sequentialLooks")
