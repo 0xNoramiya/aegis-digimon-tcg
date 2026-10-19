@@ -602,3 +602,20 @@ it("requests opponent decks only after completion and recovers them on reconnect
   resumed.emitOpponentDeck(deck);
   expect(result.current.opponentDeck?.mainDeck).toEqual(["BT1-010"]);
 });
+
+it("resumes the seat after a reload whose saved heartbeat froze in the background", async () => {
+  sessionStorage.clear();
+  saveReconnectSession({
+    reconnectionToken: "backgrounded:token",
+    roomId: "backgrounded",
+    slot: "legacy",
+    savedAt: Date.now() - 5 * 60_000,
+  });
+  const resumed = fakeRoom("backgrounded");
+  reconnect.mockReset();
+  reconnect.mockRejectedValueOnce(new Error("network unreachable")).mockResolvedValue(resumed.room);
+  const { result } = renderHook(() => useRoom(OPTIONS));
+  await waitFor(() => expect(result.current.room).toBe(resumed.room), { timeout: 5000 });
+  expect(reconnect).toHaveBeenCalledTimes(2);
+  expect(result.current.status).toBe("connected");
+});

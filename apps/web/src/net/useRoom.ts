@@ -483,7 +483,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         try {
           return await resumeSeat({
             resume: () => resumeReconnectSession(saved),
-            deadline: saved.savedAt + RECONNECT_GRACE_MS,
+            deadline: Date.now() + RECONNECT_GRACE_MS,
             isCancelled: () => cancelled,
             waitUntilVisible,
           });
