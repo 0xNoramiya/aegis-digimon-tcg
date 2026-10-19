@@ -78,7 +78,11 @@ function canonicalDeclaration(intent: Intent): Intent {
     const { vortex: _vortex, ...attack } = intent;
     return attack;
   }
-  if (intent.type === "digivolve" && intent.alternateRequirementIndex !== undefined && intent.useAlternateCost === true) {
+  if (
+    intent.type === "digivolve" &&
+    intent.alternateRequirementIndex !== undefined &&
+    intent.useAlternateCost === true
+  ) {
     const { useAlternateCost: _useAlternateCost, ...digivolve } = intent;
     return digivolve;
   }

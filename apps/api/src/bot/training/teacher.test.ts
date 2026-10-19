@@ -43,7 +43,10 @@ describe("demonstration labels", () => {
       selected: [],
       actions: [
         { label: "End main phase", intent: { type: "endPhase" } },
-        { label: "Attack player", intent: { type: "attack", attackerPermanentId: "perm-3", target: { kind: "player" } } },
+        {
+          label: "Attack player",
+          intent: { type: "attack", attackerPermanentId: "perm-3", target: { kind: "player" } },
+        },
         {
           label: "Alternate digivolution 2",
           intent: { type: "digivolve", instanceId: "s0-a", permanentId: "perm-3", alternateRequirementIndex: 2 },
