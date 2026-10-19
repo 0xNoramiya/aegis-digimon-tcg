@@ -24,6 +24,7 @@ import { canAttemptDigivolve, canAttemptDigivolveBeforeCost } from "./digivolve.
 import { runGrantStaticAction } from "./grantStatic.js";
 import { canReactivateOwnEffect, runMetaAction } from "./meta.js";
 import { DECLINE_MODAL_CHOICE_LABEL, declinableModalChoices, modalHasAvailableOption } from "./modal.js";
+import { canAttemptLink } from "./link.js";
 import { canAttemptPlaceUnder } from "./placeUnder.js";
 import { allowsOptionalProcessingCostWithoutTarget } from "../processingCondition.js";
 import { paysProcessingCostBeforeOptional } from "../paysProcessingCostBeforeOptional.js";
@@ -907,6 +908,16 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       action.additionalCost === undefined &&
       !action.additionalCosts?.length &&
       !canAttemptAttack(ctx, action)
+    ) {
+      return unavailableAction(ctx, action, action.abortOnDecline === true);
+    }
+    if (
+      action.kind === "Link" &&
+      ctx.isActivationPending?.() !== true &&
+      payableActionCost === undefined &&
+      action.additionalCost === undefined &&
+      !action.additionalCosts?.length &&
+      !canAttemptLink(ctx, action)
     ) {
       return unavailableAction(ctx, action, action.abortOnDecline === true);
     }
