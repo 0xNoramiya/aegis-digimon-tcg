@@ -22,6 +22,7 @@ async function main(): Promise<void> {
     mode?: "single-search-after-prefix" | "full-game";
     startAfterDecisions?: number;
     decks?: [string | number, string | number];
+    rolloutTurns?: number;
   };
   const deckKeys = input.decks ?? [1, 2];
   if (!Array.isArray(deckKeys) || deckKeys.length !== 2)
@@ -63,6 +64,7 @@ async function main(): Promise<void> {
         seed: 619,
         reusePrefixActions: input.compareHandAffordances === true || enabled,
         omitRolloutHandAffordances: input.compareHandAffordances === true && enabled,
+        ...(input.rolloutTurns === undefined ? {} : { rolloutTurns: input.rolloutTurns }),
         ...(bounded ? { startAfterDecisions, maxSearches: 1 } : {}),
       },
       turnLimit: 60,

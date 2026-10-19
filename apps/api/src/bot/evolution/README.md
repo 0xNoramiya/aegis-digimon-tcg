@@ -70,7 +70,8 @@ Use reserved seeds for confirmation after selecting settings. Concurrent work
 confounds timing; speed comparisons require an isolated measurement window.
 These controls do not enable production search or train a learned policy.
 
-`mctsRolloutTurns` optionally cuts residual simulations at a later turn's first
+`mctsRolloutTurns` optionally cuts residual and generic MCTS opponent simulations
+at a later turn's first
 main-phase choice without pending decisions or combat. It must be an integer from
 1 to 200. The actual evaluated match still runs to completion. Terminal outcomes
 use the exact game result; healthy cutoffs use `evaluateSearchPosition`. External

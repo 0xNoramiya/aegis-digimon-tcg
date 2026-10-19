@@ -36,6 +36,7 @@ type EvaluationInput = {
   searchSeed?: number;
   turnLimit?: number;
   captureTraces?: boolean;
+  teacher?: { simulations: number; maxSearches: number; every: number; rolloutTurns?: number };
   engineSha256?: string;
 };
 
@@ -66,7 +67,14 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
       [input.mctsMaxSearches, input.mctsStartAfterDecisions].some(
         (limit) => limit !== undefined && (!Number.isSafeInteger(limit) || limit < 0),
       ) ||
-      (input.searchSeed !== undefined && !Number.isSafeInteger(input.searchSeed))
+      (input.searchSeed !== undefined && !Number.isSafeInteger(input.searchSeed)) ||
+      (input.teacher !== undefined &&
+        [
+          input.teacher.simulations,
+          input.teacher.maxSearches,
+          input.teacher.every,
+          input.teacher.rolloutTurns ?? 1,
+        ].some((bound) => !Number.isSafeInteger(bound) || bound < 1 || bound > 10000))
     )
       throw new Error("Invalid evaluation configuration");
     if (input.engineSha256 !== undefined && input.engineSha256 !== engineSha256)
@@ -93,13 +101,16 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
       !residualSearch &&
       (input.mctsExploration !== undefined ||
         input.mctsMaxSearchTimeMs !== undefined ||
-        input.mctsRolloutTurns !== undefined ||
         moveOrderingProgram !== undefined)
     ) {
       throw new Error("Search tuning requires residual MCTS");
     }
+    if (input.mctsRolloutTurns !== undefined && !residualSearch && input.opponent !== "mcts")
+      throw new Error("Rollout bounds require an MCTS search seat");
+    if (input.teacher !== undefined && (program.basePolicy || input.captureTraces !== true))
+      throw new Error("Teacher searches advise traced heuristic games only");
     const runner = residualSearch ? runMctsResidualMatch : program.basePolicy ? runResidualMatch : runEvolutionMatch;
-    const { result, valid, decisions, traces, searches } = await runner({
+    const evaluation = await runner({
       seed: input.seed,
       decks: [decks[0]!.deck, decks[1]!.deck],
       learnerSeat: input.learnerSeat,
@@ -136,11 +147,15 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
               seed: input.searchSeed ?? 0x5ea2c4,
               maxSearches: input.mctsMaxSearches,
               startAfterDecisions: input.mctsStartAfterDecisions,
+              rolloutTurns: input.mctsRolloutTurns,
             },
           }
         : {}),
       turnLimit: input.turnLimit,
       captureTraces: input.captureTraces,
+      ...(input.teacher === undefined
+        ? {}
+        : { teacher: { ...input.teacher, seed: ((input.searchSeed ?? 0x5ea2c4) ^ 0x7eac4e) >>> 0 } }),
       onSearch: (report: SearchReport) =>
         process.stderr.write(
           `${JSON.stringify({
@@ -155,6 +170,7 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
           })}\n`,
         ),
     });
+    const { result, valid, decisions, traces, searches } = evaluation;
     const asynchronousRejections = result.events!.filter((event) => event.kind === "actionRejected");
     const score = valid
       ? result.winnerSeat === undefined
@@ -180,6 +196,7 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
       decisions,
       traces,
       searches,
+      ...("teacher" in evaluation && evaluation.teacher !== undefined ? { teacher: evaluation.teacher } : {}),
     };
   } catch (error) {
     return {
