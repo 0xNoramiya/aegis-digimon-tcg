@@ -457,6 +457,10 @@ export class AegisRoom extends Room<{
   // a server restart (deploy) — the room state lives only in memory.
   private readonly RECONNECT_GRACE_SECONDS = RECONNECT_GRACE_SECONDS;
 
+  private readonly RECONNECT_CLAIM_SECONDS = 15;
+
+  private readonly reconnectDeadlines = new Map<string, { expiresAt: number; timer: Delayed; expire: () => void }>();
+
   // How long both seats can sit joined-but-not-ready (e.g. a client stuck loading
   // assets, or one that crashed before it could send `ready`) before the room gives
   // up waiting and starts anyway, so the match never hangs indefinitely.
@@ -1756,7 +1760,7 @@ export class AegisRoom extends Room<{
     this.reportableDropBySeat.delete(seat);
     const drop = this.recordConnectionDrop({ seat, accountId, closeCode: code });
     try {
-      const reconnectedClient = await this.allowReconnection(client, this.RECONNECT_GRACE_SECONDS);
+      const reconnectedClient = await this.holdSeatForReconnect(client);
       this.resolveConnectionDrop(drop, ConnectionDropOutcome.RECONNECTED.value);
       this.reportableDropBySeat.set(seat, drop);
       this.debug(`[AegisRoom] reconnected sessionId=${client.sessionId} seat=${seat}`);
@@ -1794,6 +1798,39 @@ export class AegisRoom extends Room<{
       this.chainPacingClients.delete(client.sessionId);
       if (!this.matchStartRequested) await this.unlock();
     }
+  }
+
+  private async holdSeatForReconnect(client: Client): Promise<Client> {
+    const token = client.reconnectionToken;
+    const reconnection = this.allowReconnection(client, "manual");
+    const expire = () => {
+      this.reconnectDeadlines.delete(token);
+      reconnection.reject(new Error("reconnect grace elapsed"));
+    };
+    const graceMs = this.RECONNECT_GRACE_SECONDS * 1000;
+    this.reconnectDeadlines.set(token, {
+      expiresAt: this.clock.currentTime + graceMs,
+      timer: this.clock.setTimeout(expire, graceMs),
+      expire,
+    });
+    try {
+      return await reconnection;
+    } finally {
+      this.reconnectDeadlines.get(token)?.timer.clear();
+      this.reconnectDeadlines.delete(token);
+    }
+  }
+
+  override checkReconnectionToken(reconnectionToken: string): string {
+    const sessionId = super.checkReconnectionToken(reconnectionToken);
+    const deadline = this.reconnectDeadlines.get(reconnectionToken);
+    const claimMs = this.RECONNECT_CLAIM_SECONDS * 1000;
+    if (sessionId && deadline && deadline.expiresAt - this.clock.currentTime < claimMs) {
+      deadline.timer.clear();
+      deadline.expiresAt = this.clock.currentTime + claimMs;
+      deadline.timer = this.clock.setTimeout(deadline.expire, claimMs);
+    }
+    return sessionId;
   }
 
   /**
