@@ -2,6 +2,14 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "game.input.controls": "Tastatur und Controller",
+  "game.input.navigate": "Navigieren",
+  "game.input.select": "Auswählen",
+  "game.input.inspect": "Ansehen",
+  "game.input.region": "Bereich",
+  "game.input.scroll": "Scrollen",
+  "game.input.reorder": "Enter/A: bewegen; Pfeile: sortieren; Enter/A: fertig; Esc/B: rückgängig",
+
   ...providerEn,
   "settings.cardImageLanguage": "Sprache der Kartenbilder",
   "settings.cardImageLanguageDesc":

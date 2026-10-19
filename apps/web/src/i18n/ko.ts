@@ -2,6 +2,14 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "game.input.controls": "키보드 및 컨트롤러",
+  "game.input.navigate": "이동",
+  "game.input.select": "선택",
+  "game.input.inspect": "살펴보기",
+  "game.input.region": "영역",
+  "game.input.scroll": "스크롤",
+  "game.input.reorder": "Enter/A: 이동 시작; 방향키: 순서 변경; Enter/A: 완료; Esc/B: 되돌리기",
+
   ...providerEn,
   "digilab.cardCounts": "메인 카드 {main}장 · 디지타마 {eggs}장",
   "settings.cardImageLanguage": "카드 이미지 언어",

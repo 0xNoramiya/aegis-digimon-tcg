@@ -39,7 +39,7 @@ export function useBoardSelection({ state, viewerSeat }: { state: GameState | un
   useEffect(() => {
     if ((!handSel || handPreview) && !selPerm) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") clearSel();
+      if (!event.defaultPrevented && event.key === "Escape") clearSel();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);

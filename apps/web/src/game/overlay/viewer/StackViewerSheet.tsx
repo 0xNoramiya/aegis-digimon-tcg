@@ -150,7 +150,14 @@ export function StackViewerSheet({
               {t("overlay.vortexAttack")}
             </Button>
           ) : null}
-          <Button size="sm" full variant="ghost" onClick={onClose} autoFocus={!canAttack && !canVortex}>
+          <Button
+            size="sm"
+            full
+            variant="ghost"
+            data-arena-cancel
+            onClick={onClose}
+            autoFocus={!canAttack && !canVortex}
+          >
             {t("common.close")}
           </Button>
         </div>

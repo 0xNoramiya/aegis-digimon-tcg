@@ -2,6 +2,14 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "game.input.controls": "Keyboard dan pengontrol",
+  "game.input.navigate": "Navigasi",
+  "game.input.select": "Pilih",
+  "game.input.inspect": "Periksa",
+  "game.input.region": "Area",
+  "game.input.scroll": "Gulir",
+  "game.input.reorder": "Enter/A: pindahkan; panah: urutkan; Enter/A: selesai; Esc/B: batalkan",
+
   ...providerEn,
   "settings.cardImageLanguage": "Bahasa gambar kartu",
   "settings.cardImageLanguageDesc":

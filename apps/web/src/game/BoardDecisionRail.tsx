@@ -1,3 +1,4 @@
+import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
 import { useMediaQuery } from "@/design/useMediaQuery";
 import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
 /* Simple actions use the left dialog. Hand and field choices use their physical cards;
@@ -118,6 +119,7 @@ export function BoardPromptRail({
   const noticeBand = useNoticeBandPassThrough();
   const focusProps = useEffectPromptFocus(!modal, handSpace);
   usePromptHandSpace(focusProps.ref, !modal, handSpace);
+  useArenaInputCancel({ ref: focusProps.ref, onCancel: onOpenDialog });
   const drag = useDraggableWindow(focusProps.ref, {
     viewportGutter: 16,
     resetKey: `${variant}:${label}:${sourcePermanentId ?? ""}`,

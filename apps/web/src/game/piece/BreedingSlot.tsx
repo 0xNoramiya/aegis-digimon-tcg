@@ -57,6 +57,16 @@ export function BreedingSlot({
       style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: compact ? 2 : 5 }}
     >
       <div
+        data-inspectable={!!onInspect || undefined}
+        onContextMenu={
+          onInspect
+            ? (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onInspect();
+              }
+            : undefined
+        }
         onClick={onClick}
         onKeyDown={
           onClick

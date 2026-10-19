@@ -1,3 +1,4 @@
+import { ArenaInput } from "@/game/input/ArenaInput";
 import type { LowTimeWarning } from "@/game/useLowTimeWarning";
 import { RollbackControls } from "@/game/RollbackControls";
 /* The arena itself: the opponent's bar, the narration and the ticker, the field's three
@@ -319,6 +320,7 @@ export function BoardStage({
           ...look.style,
         }}
       >
+        <ArenaInput root={anchors.board} onCancel={selection.clearSel} />
         <div
           className="game-board aegis-arena-surface"
           ref={anchors.board}

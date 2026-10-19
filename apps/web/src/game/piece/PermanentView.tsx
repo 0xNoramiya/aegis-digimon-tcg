@@ -172,7 +172,13 @@ export function PermanentView({
   return (
     <div
       ref={faceRef}
-      onClick={onClick}
+      onClick={(event) => {
+        if (event.detail === 0 && activate) {
+          activate();
+        } else {
+          onClick?.();
+        }
+      }}
       onPointerDown={onPointerDown}
       onPointerDownCapture={beginInspection}
       onContextMenu={
@@ -330,6 +336,7 @@ export function PermanentView({
         <button
           type="button"
           className="game-permanent__inspect"
+          data-arena-inspect
           aria-label={t("game.inspectCard", { card: cardName })}
           onPointerDown={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}

@@ -1,3 +1,4 @@
+import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { CardArt } from "../CardArt";
 import { useCardOpener } from "../../cardLinks";
@@ -40,6 +41,7 @@ export function CardPromptFrame({
   const { isViewingBoard, openBoard, boardReturn } = useBoardPreview();
   const panel = useRef<HTMLDivElement>(null);
   usePromptHandSpace(panel, !isViewingBoard);
+  useArenaInputCancel({ ref: panel, onCancel: onBack });
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     const previous = document.activeElement;

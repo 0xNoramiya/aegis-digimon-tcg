@@ -32,7 +32,7 @@ export function ActionBar({
           <Icons.Link2 size={14} />
           {t("game.clickToLink")}
         </span>
-        <Button size="sm" variant="ghost" onClick={onCancel}>
+        <Button size="sm" variant="ghost" data-arena-cancel onClick={onCancel}>
           {t("common.cancel")}
         </Button>
       </div>

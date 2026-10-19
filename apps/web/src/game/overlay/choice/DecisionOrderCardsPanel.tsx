@@ -61,6 +61,12 @@ export function DecisionOrderCardsPanel({
                 position={index + 1}
                 onMove={(delta) => onMove(index, delta)}
                 onCancel={drag.cancel}
+                onRestore={(position) => {
+                  const target = cardOrder[position - 1];
+                  if (target) {
+                    onReorder(instanceId, target);
+                  }
+                }}
                 {...drag.handleProps(instanceId)}
               />
               <div className="decision-overlay__order-card">

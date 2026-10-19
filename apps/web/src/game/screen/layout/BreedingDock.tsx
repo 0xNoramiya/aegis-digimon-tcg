@@ -1,3 +1,4 @@
+import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 /* The raising area: the egg deck, the slot the hatched Digimon stands in, and the one
    line of hint that replaced the breeding dialog.
 
@@ -59,6 +60,7 @@ export function BreedingDock({
   return (
     <div
       className="game-breeding-dock"
+      data-arena-region={ArenaInputRegion.BREEDING.value}
       style={{
         width: 228,
         flexShrink: 0,

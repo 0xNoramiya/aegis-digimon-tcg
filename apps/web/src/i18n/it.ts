@@ -6,6 +6,14 @@ import { en } from "./en";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  "game.input.controls": "Tastiera e controller",
+  "game.input.navigate": "Naviga",
+  "game.input.select": "Seleziona",
+  "game.input.inspect": "Esamina",
+  "game.input.region": "Zona",
+  "game.input.scroll": "Scorri",
+  "game.input.reorder": "Invio/A: sposta; frecce: riordina; Invio/A: termina; Esc/B: annulla",
+
   ...providerEn,
   "settings.cardImageLanguage": "Lingua delle immagini delle carte",
   "settings.cardImageLanguageDesc":

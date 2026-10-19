@@ -1,0 +1,54 @@
+[data-arena-focused="true"] {
+  outline: 3px solid var(--ds-accent, #70a8ff) !important;
+  outline-offset: 3px;
+  scroll-margin: 12px;
+}
+
+.game-hand-card[data-arena-focused="true"] {
+  z-index: 30 !important;
+}
+
+[data-arena-reordering="true"] {
+  background: var(--ds-accent-soft);
+  box-shadow: inset 0 0 0 2px var(--ds-accent);
+}
+
+.arena-input-hints {
+  position: fixed;
+  bottom: max(4px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10001;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+  width: max-content;
+  max-width: calc(100vw - 16px);
+  padding: 4px 10px;
+  border: 1px solid var(--ds-line-strong);
+  border-radius: 8px;
+  background: var(--ds-sheet);
+  color: var(--ds-text);
+  font-size: 11px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.arena-input-hints span {
+  white-space: nowrap;
+}
+
+.arena-input-hints kbd {
+  font: inherit;
+  font-weight: 700;
+  color: var(--ds-accent);
+}
+
+@media (max-height: 520px), (max-width: 640px) {
+  .arena-input-hints {
+    gap: 2px 7px;
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+}

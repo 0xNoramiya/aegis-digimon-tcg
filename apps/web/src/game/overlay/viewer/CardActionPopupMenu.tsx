@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
 import { Icons } from "../../../design/icons";
@@ -44,11 +46,14 @@ export function CardActionPopupMenu({
   effects?: CardActionEffect[];
 }) {
   const { t } = useTranslation();
+  const menuRef = useRef<HTMLDivElement>(null);
+  useArenaInputCancel({ ref: menuRef, onCancel: onClose });
   return createPortal(
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 9000 }} />
       <div
         className="card-inspector-dialog"
+        ref={menuRef}
         role="dialog"
         aria-modal="true"
         aria-label={t("game.actions")}

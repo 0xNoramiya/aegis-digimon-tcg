@@ -2,6 +2,14 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "game.input.controls": "键盘与手柄",
+  "game.input.navigate": "移动",
+  "game.input.select": "选择",
+  "game.input.inspect": "查看",
+  "game.input.region": "区域",
+  "game.input.scroll": "滚动",
+  "game.input.reorder": "Enter/A：移动；方向键：排序；Enter/A：完成；Esc/B：撤销",
+
   ...providerEn,
   "settings.cardImageLanguage": "卡牌图片语言",
   "settings.cardImageLanguageDesc":

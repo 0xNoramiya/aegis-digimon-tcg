@@ -155,7 +155,14 @@ export function CardActionSheetPanel({
                   {promote.label}
                 </Button>
               ) : null}
-              <Button size="sm" full variant="ghost" onClick={onClose} autoFocus={!canAttack && !canVortex && !promote}>
+              <Button
+                size="sm"
+                full
+                variant="ghost"
+                data-arena-cancel
+                onClick={onClose}
+                autoFocus={!canAttack && !canVortex && !promote}
+              >
                 {t("common.cancel")}
               </Button>
             </div>

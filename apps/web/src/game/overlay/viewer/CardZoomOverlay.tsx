@@ -42,7 +42,7 @@ export function CardZoomOverlay({
       <div className="card-zoom__details card-action-sheet__info" onClick={(e) => e.stopPropagation()}>
         {details ?? <PrintedCardInfo cardId={cardId} />}
       </div>
-      <button type="button" onClick={onClose} autoFocus>
+      <button type="button" data-arena-cancel onClick={onClose} autoFocus>
         {t("common.close")}
       </button>
     </div>

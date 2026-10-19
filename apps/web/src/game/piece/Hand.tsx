@@ -234,6 +234,7 @@ export function Hand({
                 <button
                   type="button"
                   className="game-hand-card__inspect"
+                  data-arena-inspect
                   aria-label={t("game.inspectCard", {
                     card: getCardDefinition(entry.cardId)?.nameEn ?? entry.cardId,
                   })}

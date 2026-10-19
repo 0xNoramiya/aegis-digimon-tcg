@@ -163,6 +163,7 @@ export function HandCardPreview({
             size="sm"
             full
             variant="ghost"
+            data-arena-cancel
             onClick={onCancel}
             autoFocus={activatableEffects.length === 0 && !canPlay && !canDigivolve && !canLink}
           >

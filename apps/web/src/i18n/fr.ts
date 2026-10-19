@@ -2,6 +2,14 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "game.input.controls": "Clavier et manette",
+  "game.input.navigate": "Naviguer",
+  "game.input.select": "Sélectionner",
+  "game.input.inspect": "Inspecter",
+  "game.input.region": "Zone",
+  "game.input.scroll": "Défiler",
+  "game.input.reorder": "Entrée/A : déplacer ; flèches : réordonner ; Entrée/A : terminer ; Échap/B : annuler",
+
   ...providerEn,
   "digilab.cardCounts": "{main} cartes principales · {eggs} Digi-Œufs",
   "settings.cardImageLanguage": "Langue des images des cartes",

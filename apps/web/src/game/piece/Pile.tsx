@@ -32,6 +32,7 @@ export function Pile({
   landing,
   refEl,
   onClick,
+  onInspect,
   drop,
   useSelectedSleeve = true,
   egg = false,
@@ -68,6 +69,7 @@ export function Pile({
   landing?: number;
   refEl?: (el: HTMLDivElement | null) => void;
   onClick?: () => void;
+  onInspect?: () => void;
   drop?: DropAttrs;
   useSelectedSleeve?: boolean;
   egg?: boolean;
@@ -97,6 +99,7 @@ export function Pile({
         landing={landing}
         refEl={refEl}
         onClick={onClick}
+        onInspect={onInspect}
         drop={drop}
       />
     );
@@ -107,6 +110,16 @@ export function Pile({
       className={className}
       ref={refEl}
       onClick={onClick}
+      data-inspectable={!!onInspect || undefined}
+      onContextMenu={
+        onInspect
+          ? (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onInspect();
+            }
+          : undefined
+      }
       onKeyDown={
         onClick
           ? (event) => {
