@@ -12,7 +12,7 @@ describe("distinct digivolution effects interrupted by an On Deletion play", () 
   it("resolves each Gallantmon deletion once and does not reuse its shared limit when attacking", async () => {
     const events: SequencedServerEvent[] = [];
     const run = await runReplay(record, {
-      untilInput: 217,
+      untilInput: 216,
       onBatch(_state, batch) {
         events.push(...batch);
       },
@@ -25,7 +25,7 @@ describe("distinct digivolution effects interrupted by an On Deletion play", () 
           "[When Digivolving] Delete up to 10000 DP total worth of your opponent's Digimon. Then, this Digimon may attack.",
         effectTextEmphasis: "Then, this Digimon may attack.",
       });
-      for (const input of record.inputs.slice(217)) {
+      for (const input of record.inputs.slice(216)) {
         if (input.kind !== "intent") {
           throw new Error(`Expected a recorded intent, received ${input.kind}`);
         }
