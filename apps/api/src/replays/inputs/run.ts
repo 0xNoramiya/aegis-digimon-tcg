@@ -19,6 +19,8 @@ export interface RunReplayOptions {
    * `ReplayRecording` frame. Every batch here is a broadcast batch (see `runReplay`).
    */
   onBatch?: (state: GameState, events: SequencedServerEvent[]) => void;
+  /** Called with the idle engine just before each input that is applied once idle. */
+  beforeInput?: (input: ReplayInput, index: number, engine: GameEngine) => void;
 }
 
 export interface ReplayRun {
@@ -300,6 +302,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
         actual: "idle",
         message: `input #${cursor} (${describe(input)}): recorded at ${input.site}, never reached there; applied once idle`,
       });
+    options.beforeInput?.(input, cursor, engine);
     applyNext();
   }
   await waitForIdle(() => progress);
