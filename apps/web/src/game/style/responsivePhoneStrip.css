@@ -530,7 +530,8 @@
     padding: max(var(--ds-space-4), env(safe-area-inset-top)) var(--ds-space-4)
       max(var(--ds-space-4), env(safe-area-inset-bottom));
     gap: var(--ds-space-3);
-    grid-template-rows: minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto auto;
+    align-content: start;
     place-items: center;
     background: rgb(4 14 31 / 88%);
     backdrop-filter: blur(8px);
