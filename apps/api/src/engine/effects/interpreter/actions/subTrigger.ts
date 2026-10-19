@@ -582,13 +582,12 @@ export async function runSubTrigger(
           return hatchedSeat === wantSeat;
         }
       : undefined;
-  // `whenFaceUpCardsAddedToOpponentSecurity` ("[Your Turn] when face-up cards are added to
-  // your opponent's security stack", EX11-004; KB Q5789/Q5790 binding: fires both when an
-  // effect adds a face-up card AND when a security CHECK flips an existing face-down card
-  // face up — "added" means "became visibly present face up", not just "newly placed").
+  // `whenFaceUpCardsAddedToOpponentSecurity` ("[Your Turn] when your opponent's face-up
+  // security cards increase", EX11-004; KB Q5789/Q5790 binding: fires when an effect adds a
+  // face-up card AND when an effect flips a face-down security card face up). A security check
+  // never fires it: the checked card leaves the stack (CR 13-1-6, KB Q2036).
   // Shares the whenAddSecurity payload shape (addedToSecuritySeat/addedToSecurityInstanceIds)
-  // fired from the same primitives.ts seams, plus a dedicated fire at the security-check flip
-  // point (securityCheck.ts) for the check-reveal half. The "ToOpponentSecurity" direction is
+  // fired from the same primitives.ts seams. The "ToOpponentSecurity" direction is
   // baked into the name itself (unlike whenAddSecurity, which defaults to "mine"), so the gate
   // hardcodes the opponent-seat check; `triggerAddedSecurityMatches` supplies the "at least one
   // added/flipped card is actually face-up" half (shared with whenAddSecurity's own gate).

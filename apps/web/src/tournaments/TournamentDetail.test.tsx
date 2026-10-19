@@ -5,6 +5,9 @@ import { I18nProvider } from "../i18n";
 import { resetServerClock } from "./serverClock";
 import { TournamentDetail } from "./TournamentDetail";
 import type { TournamentDetail as TournamentDetailPayload } from "./types";
+import { loadDictionary } from "@/i18n/loadDictionary";
+import { loadCardTranslations } from "@/i18n/loadCardTranslations";
+import { translator } from "@/i18n/translator";
 
 const DETAIL: TournamentDetailPayload = {
   id: "t-1",
@@ -251,6 +254,41 @@ describe("tournament detail", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Sign up" }));
     await waitFor(() => expect(screen.getByText("Your main deck has 48 cards. It needs exactly 50.")).toBeTruthy());
     expect(screen.getByText("Argomon: you have 3 copies, but only 1 are allowed.")).toBeTruthy();
+  });
+
+  it("uses Chinese names in the banlist, banned pairs and deck violation messages", async () => {
+    await loadDictionary("zh-CN");
+    await loadCardTranslations("zh-CN");
+    const t = translator("zh-CN");
+    localStorage.setItem("aegis:locale", "zh-CN");
+    try {
+      mockDetail(
+        {
+          status: "registration",
+          participants: [],
+          banlistCards: [{ cardId: "ST18-05", status: "banned_pair", allowedCopies: 4, pairPartnerIds: ["ST15-16"] }],
+        },
+        {
+          "POST /tournaments/t-1/participants": {
+            status: 409,
+            body: {
+              error: "deck_illegal",
+              violations: [{ kind: "over_copy_limit", cardId: "ST18-05", copies: 5, allowed: 4 }],
+            },
+          },
+        },
+      );
+      renderDetail("acc-player", "Tamer One");
+      expect(await screen.findByText("五彩兽", { selector: ".tournaments-banlist__name" })).toBeTruthy();
+      expect(screen.getByText(t("tournaments.detail.pairWith", { cards: "劲力三叉爪" }))).toBeTruthy();
+      fireEvent.click(screen.getByRole("button", { name: t("tournaments.detail.register") }));
+      expect(
+        await screen.findByText(t("tournaments.violation.overCopyLimit", { card: "五彩兽", copies: 5, allowed: 4 })),
+      ).toBeTruthy();
+      expect(screen.queryByText(/Muchomon|Trident Arm/)).toBeNull();
+    } finally {
+      localStorage.setItem("aegis:locale", "en");
+    }
   });
 
   it("renders the my-match skeleton without inventing series data", async () => {

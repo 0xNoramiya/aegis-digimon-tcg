@@ -298,7 +298,8 @@
                     "controller": "mine",
                     "nameOrTrait": [{ "tokens": ["Takato Matsuki"], "match": "nameExact" }]
                   },
-                  "count": 1
+                  "count": 1,
+                  "source": "thisDigimon"
                 },
                 "from": ["digivolutionCards"],
                 "payCost": false,
@@ -309,7 +310,8 @@
                 "kind": "PlayWithoutCost",
                 "target": {
                   "filter": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Guilmon"], "match": "nameExact" }] },
-                  "count": 1
+                  "count": 1,
+                  "source": "thisDigimon"
                 },
                 "from": ["digivolutionCards"],
                 "payCost": false
@@ -10867,6 +10869,7 @@
           {
             "kind": "SubTrigger",
             "event": "whenAttacking",
+            "sourceFilter": { "isSelfRef": true },
             "actions": [
               {
                 "kind": "ActivateEffect",
@@ -49258,7 +49261,8 @@
                 "controller": "mine",
                 "nameOrTrait": [{ "tokens": ["Eiji Nagasumi"], "match": "nameExact" }]
               },
-              "count": 1
+              "count": 1,
+              "source": "thisDigimon"
             },
             "from": ["digivolutionCards"],
             "payCost": false,
@@ -52862,7 +52866,8 @@
                 "kind": "PlayWithoutCost",
                 "target": {
                   "filter": { "hasInheritedEffects": true, "controller": "mine", "kind": ["Tamer"] },
-                  "count": 1
+                  "count": 1,
+                  "source": "thisDigimon"
                 },
                 "from": ["digivolutionCards"],
                 "payCost": false,
@@ -61968,7 +61973,6 @@
                   "kind": "Attack",
                   "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
                   "attackTargetScope": "player",
-                  "mandatory": true,
                   "cost": {
                     "kind": "unsuspendNamed",
                     "targets": [
@@ -61991,6 +61995,7 @@
                         "count": 1
                       }
                     ],
+                    "optional": true,
                     "raw": "by unsuspending 1 [Shoutmon EX6] and 1 [ShootingStarmon]"
                   }
                 }
@@ -71641,7 +71646,7 @@
             "target": {
               "filter": {
                 "controller": "mine",
-                "kind": ["Digimon"],
+                "kind": ["Digimon", "Tamer"],
                 "playCostLte": 5,
                 "nameOrTrait": [{ "tokens": ["Chronicle"], "match": "trait" }]
               },
@@ -94978,13 +94983,6 @@
               "count": 1
             },
             "to": "deckBottom"
-          },
-          {
-            "kind": "Restrict",
-            "target": { "filter": { "controller": "opponent", "kind": ["Digimon", "Tamer"] }, "count": 1 },
-            "restriction": "suspend",
-            "duration": "untilOpponentTurnEnd",
-            "condition": { "kind": "triggerEnteredByEffect", "raw": "played by effects" }
           }
         ]
       },
@@ -97287,17 +97285,6 @@
             "effectTextPart": "[On Play] [When Digivolving] You may suspend 1 of your opponent's Digimon.",
             "kind": "Suspend",
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
-            "optional": true
-          },
-          {
-            "effectTextPart": "Then, if played by effects, you may return 1 of their suspended Digimon with the lowest DP to the hand.",
-            "kind": "Return",
-            "target": {
-              "filter": { "controller": "opponent", "suspended": true, "kind": ["Digimon"], "superlative": "lowestDP" },
-              "count": 1
-            },
-            "to": "hand",
-            "condition": { "kind": "triggerEnteredByEffect", "raw": "played by effects" },
             "optional": true
           }
         ]
@@ -162308,6 +162295,10 @@
                 { "tokens": ["Sky Dragon"], "match": "trait" }
               ]
             },
+            "activationCondition": {
+              "kind": "triggerSubjectMatchesFilter",
+              "filter": { "controller": "mine", "kind": ["Digimon"] }
+            },
             "actions": [
               {
                 "kind": "ActivateEffect",
@@ -170337,8 +170328,7 @@
               { "kind": "Draw", "controller": "mine", "amount": 1, "condition": { "kind": "ifThisEffectDidNotDelete" } }
             ]
           }
-        ],
-        "frequency": "OncePerTurn"
+        ]
       }
     ],
     "coverage": "full",
@@ -170761,10 +170751,7 @@
             "condition": {
               "kind": "bindingContains",
               "ref": "trashedCard",
-              "filter": {
-                "kind": ["Digimon"],
-                "nameOrTrait": [{ "tokens": ["Seven Great Demon Lords"], "match": "trait" }]
-              },
+              "filter": { "nameOrTrait": [{ "tokens": ["Seven Great Demon Lords"], "match": "trait" }] },
               "raw": "the card trashed from your hand has the [Seven Great Demon Lords] trait"
             }
           }
@@ -238036,6 +238023,7 @@
                     "kind": "return",
                     "target": { "filter": { "controller": "opponent", "zone": "trash" }, "count": 5 },
                     "to": "deckBottom",
+                    "optional": true,
                     "raw": "By returning 5 cards from your opponent's trash to the bottom of the deck"
                   }
                 }
@@ -238081,6 +238069,7 @@
                     "kind": "return",
                     "target": { "filter": { "controller": "opponent", "zone": "trash" }, "count": 5 },
                     "to": "deckBottom",
+                    "optional": true,
                     "raw": "By returning 5 cards from your opponent's trash to the bottom of the deck"
                   }
                 }
@@ -238414,6 +238403,8 @@
             "raw": "You may place 1 [Witchelny] text card from your hand as the bottom security card"
           },
           {
+            "costTextEmphasis": "Then, by trashing your top security card",
+            "optionalTextEmphasis": "1 of your Digimon may attack",
             "effectTextPart": "Then, by trashing your top security card, 1 of your Digimon may attack.",
             "kind": "Attack",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
@@ -238449,6 +238440,8 @@
             "raw": "You may place 1 [Witchelny] text card from your hand as the bottom security card"
           },
           {
+            "costTextEmphasis": "Then, by trashing your top security card",
+            "optionalTextEmphasis": "1 of your Digimon may attack",
             "effectTextPart": "Then, by trashing your top security card, 1 of your Digimon may attack.",
             "kind": "Attack",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
@@ -241058,6 +241051,1392 @@
             }
           },
           { "kind": "AddToHandSelf" }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-002": {
+    "effects": [
+      {
+        "trigger": "WhenAttacking",
+        "isInherited": true,
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "hostFilter": { "isSelfRef": true },
+                "levelComparison": { "op": "lte", "value": 4 },
+                "nameOrTrait": [{ "tokens": ["Aquatic", "DATA SQUAD"], "match": "trait" }]
+              },
+              "count": 1
+            },
+            "from": ["digivolutionCards"],
+            "payCost": true,
+            "reduceCostBy": 1,
+            "optional": true
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-020": {
+    "effects": [
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "Draw",
+            "controller": "mine",
+            "amount": 1,
+            "cost": {
+              "kind": "place",
+              "target": {
+                "filter": {
+                  "controller": "mine",
+                  "kind": ["Digimon"],
+                  "levelComparison": { "op": "lte", "value": 4 },
+                  "nameOrTrait": [{ "tokens": ["Aquatic", "DATA SQUAD"], "match": "trait" }]
+                },
+                "count": 1,
+                "from": ["hand"]
+              },
+              "destination": "digivolutionStack",
+              "position": "bottom",
+              "host": {
+                "filter": { "controller": "mine", "kind": ["Digimon"] },
+                "orFilters": [
+                  {
+                    "controller": "mine",
+                    "kind": ["Tamer"],
+                    "nameOrTrait": [{ "tokens": ["DATA SQUAD"], "match": "trait" }]
+                  }
+                ],
+                "count": 1
+              },
+              "faceDownUnderTamer": true,
+              "raw": "By placing 1 level 4 or lower [Aquatic] or [DATA SQUAD] trait Digimon card from your hand as any of your Digimon's bottom digivolution card, or face down under any of your [DATA SQUAD] trait Tamers"
+            },
+            "optional": true,
+            "abortOnDecline": true
+          }
+        ]
+      },
+      {
+        "trigger": "Rule",
+        "actions": [
+          {
+            "kind": "GrantStatic",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "grant": "trait",
+            "tokens": ["Aquatic"],
+            "duration": "permanent"
+          }
+        ]
+      },
+      {
+        "trigger": "WhenAttacking",
+        "isInherited": true,
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "Modal",
+            "choose": 1,
+            "labels": ["Trash the top digivolution card", "Trash the bottom digivolution card"],
+            "options": [
+              [
+                {
+                  "kind": "TrashDigivolution",
+                  "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+                  "amount": 1,
+                  "fromTop": true
+                }
+              ],
+              [
+                {
+                  "kind": "TrashDigivolution",
+                  "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+                  "amount": 1,
+                  "fromTop": false
+                }
+              ]
+            ]
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "level": 2, "traits": ["DATA SQUAD"], "cost": 0, "isAlternate": true }]
+  },
+  "BT27-025": {
+    "effects": [
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "effectTextPart": "[On Play] [When Digivolving] 1 of your Digimon can't be deleted in battle until your opponent's turn ends.",
+            "kind": "Restrict",
+            "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+            "restriction": "beDeletedInBattle",
+            "duration": "untilOpponentTurnEnd"
+          },
+          {
+            "effectTextPart": "If played by effects, it also gains ＜Blocker＞.",
+            "kind": "GainKeyword",
+            "target": { "filter": {}, "count": 1, "sameTarget": true },
+            "keyword": { "keyword": "Blocker", "raw": "＜Blocker＞" },
+            "duration": "untilOpponentTurnEnd",
+            "condition": { "kind": "triggerEnteredByEffect", "raw": "played by effects" }
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "effectTextPart": "[On Play] [When Digivolving] 1 of your Digimon can't be deleted in battle until your opponent's turn ends.",
+            "kind": "Restrict",
+            "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+            "restriction": "beDeletedInBattle",
+            "duration": "untilOpponentTurnEnd"
+          }
+        ]
+      },
+      {
+        "trigger": "Rule",
+        "actions": [
+          {
+            "kind": "GrantStatic",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "grant": "trait",
+            "tokens": ["Aquatic"],
+            "duration": "permanent"
+          }
+        ]
+      },
+      {
+        "trigger": "Static",
+        "isInherited": true,
+        "actions": [],
+        "keywords": [{ "keyword": "Evade", "raw": "＜Evade＞" }]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "level": 3, "traits": ["DATA SQUAD"], "cost": 2, "isAlternate": true }]
+  },
+  "BT27-028": {
+    "effects": [
+      {
+        "trigger": "Static",
+        "isInherited": false,
+        "actions": [],
+        "keywords": [{ "keyword": "Decode", "raw": "＜Decode (Lv.4 or lower w/[Aquatic]/[DATA SQUAD] trait)＞" }]
+      },
+      {
+        "trigger": "AllTurns",
+        "isInherited": false,
+        "actions": [
+          {
+            "kind": "Replacement",
+            "event": "wouldLeavePlay",
+            "leaveCause": "otherThanBattle",
+            "sourceFilter": { "isSelfRef": true },
+            "actions": [
+              {
+                "kind": "PlayWithoutCost",
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "kind": ["Digimon"],
+                    "hostFilter": { "isSelfRef": true },
+                    "levelComparison": { "op": "lte", "value": 4 },
+                    "nameOrTrait": [{ "tokens": ["Aquatic", "DATA SQUAD"], "match": "trait" }]
+                  },
+                  "count": 1
+                },
+                "from": ["digivolutionCards"],
+                "payCost": false,
+                "playedByDecode": true,
+                "optional": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "Restrict",
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon", "Tamer"] }, "count": 1 },
+            "restriction": "suspend",
+            "duration": "untilOpponentTurnEnd",
+            "blocksCombatSuspend": true
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "Restrict",
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon", "Tamer"] }, "count": 1 },
+            "restriction": "suspend",
+            "duration": "untilOpponentTurnEnd",
+            "blocksCombatSuspend": true
+          }
+        ]
+      },
+      {
+        "trigger": "Rule",
+        "actions": [
+          {
+            "kind": "GrantStatic",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "grant": "trait",
+            "tokens": ["Aquatic"],
+            "duration": "permanent"
+          }
+        ]
+      },
+      {
+        "trigger": "Static",
+        "isInherited": true,
+        "actions": [],
+        "keywords": [{ "keyword": "Decode", "raw": "＜Decode (Lv.4 or lower w/[Aquatic]/[DATA SQUAD] trait)＞" }]
+      },
+      {
+        "trigger": "AllTurns",
+        "isInherited": true,
+        "actions": [
+          {
+            "kind": "Replacement",
+            "event": "wouldLeavePlay",
+            "leaveCause": "otherThanBattle",
+            "sourceFilter": { "isSelfRef": true },
+            "actions": [
+              {
+                "kind": "PlayWithoutCost",
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "kind": ["Digimon"],
+                    "hostFilter": { "isSelfRef": true },
+                    "levelComparison": { "op": "lte", "value": 4 },
+                    "nameOrTrait": [{ "tokens": ["Aquatic", "DATA SQUAD"], "match": "trait" }]
+                  },
+                  "count": 1
+                },
+                "from": ["digivolutionCards"],
+                "payCost": false,
+                "playedByDecode": true,
+                "optional": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "level": 4, "traits": ["DATA SQUAD"], "cost": 3, "isAlternate": true }]
+  },
+  "BT27-031": {
+    "effects": [
+      {
+        "trigger": "Static",
+        "actions": [],
+        "keywords": [{ "keyword": "Decode", "raw": "＜Decode (Lv.5 w/[Aquatic]/[DATA SQUAD] trait)＞" }]
+      },
+      {
+        "trigger": "AllTurns",
+        "actions": [
+          {
+            "kind": "Replacement",
+            "event": "wouldLeavePlay",
+            "leaveCause": "otherThanBattle",
+            "sourceFilter": { "isSelfRef": true },
+            "actions": [
+              {
+                "kind": "PlayWithoutCost",
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "kind": ["Digimon"],
+                    "hostFilter": { "isSelfRef": true },
+                    "levelComparison": { "op": "eq", "value": 5 },
+                    "nameOrTrait": [{ "tokens": ["Aquatic", "DATA SQUAD"], "match": "trait" }]
+                  },
+                  "count": 1
+                },
+                "from": ["digivolutionCards"],
+                "payCost": false,
+                "playedByDecode": true,
+                "optional": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "OnPlay",
+        "frequency": "OncePerTurn",
+        "sharedUseKey": "BT27-031/place-once-per-turn",
+        "description": "[On Play] [When Digivolving] [Counter] [Once Per Turn] By placing 1 of your other Digimon or Tamers as this Digimon's bottom digivolution card, return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "cost": {
+              "kind": "place",
+              "targetIsPermanent": true,
+              "target": {
+                "filter": { "controller": "mine", "excludeSelf": true, "kind": ["Digimon", "Tamer"] },
+                "count": 1
+              },
+              "raw": "By placing 1 of your other Digimon or Tamers as this Digimon's bottom digivolution card",
+              "destination": "digivolutionStack",
+              "position": "bottom",
+              "host": "self"
+            },
+            "optional": true,
+            "abortOnDecline": true,
+            "actions": [
+              {
+                "effectTextPart": "return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
+                "kind": "Return",
+                "target": {
+                  "filter": {
+                    "controller": "opponent",
+                    "kind": ["Digimon"],
+                    "digivolutionCardsCompareToSource": "lte"
+                  },
+                  "count": 1
+                },
+                "to": "deckBottom"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "frequency": "OncePerTurn",
+        "sharedUseKey": "BT27-031/place-once-per-turn",
+        "description": "[On Play] [When Digivolving] [Counter] [Once Per Turn] By placing 1 of your other Digimon or Tamers as this Digimon's bottom digivolution card, return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "cost": {
+              "kind": "place",
+              "targetIsPermanent": true,
+              "target": {
+                "filter": { "controller": "mine", "excludeSelf": true, "kind": ["Digimon", "Tamer"] },
+                "count": 1
+              },
+              "raw": "By placing 1 of your other Digimon or Tamers as this Digimon's bottom digivolution card",
+              "destination": "digivolutionStack",
+              "position": "bottom",
+              "host": "self"
+            },
+            "optional": true,
+            "abortOnDecline": true,
+            "actions": [
+              {
+                "effectTextPart": "return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
+                "kind": "Return",
+                "target": {
+                  "filter": {
+                    "controller": "opponent",
+                    "kind": ["Digimon"],
+                    "digivolutionCardsCompareToSource": "lte"
+                  },
+                  "count": 1
+                },
+                "to": "deckBottom"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Counter",
+        "frequency": "OncePerTurn",
+        "sharedUseKey": "BT27-031/place-once-per-turn",
+        "description": "[On Play] [When Digivolving] [Counter] [Once Per Turn] By placing 1 of your other Digimon or Tamers as this Digimon's bottom digivolution card, return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "cost": {
+              "kind": "place",
+              "targetIsPermanent": true,
+              "target": {
+                "filter": { "controller": "mine", "excludeSelf": true, "kind": ["Digimon", "Tamer"] },
+                "count": 1
+              },
+              "raw": "By placing 1 of your other Digimon or Tamers as this Digimon's bottom digivolution card",
+              "destination": "digivolutionStack",
+              "position": "bottom",
+              "host": "self"
+            },
+            "optional": true,
+            "abortOnDecline": true,
+            "actions": [
+              {
+                "effectTextPart": "return 1 of your opponent's Digimon with as many digivolution cards as this Digimon or fewer to the bottom of the deck.",
+                "kind": "Return",
+                "target": {
+                  "filter": {
+                    "controller": "opponent",
+                    "kind": ["Digimon"],
+                    "digivolutionCardsCompareToSource": "lte"
+                  },
+                  "count": 1
+                },
+                "to": "deckBottom"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "AllTurns",
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "event": "onAddDigivolutionCards",
+            "sourceFilter": { "isSelfRef": true, "byEffect": true },
+            "actions": [
+              {
+                "kind": "PlayWithoutCost",
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "kind": ["Digimon", "Tamer"],
+                    "colors": ["Blue"],
+                    "playCostLte": 5,
+                    "hostFilter": { "isSelfRef": true }
+                  },
+                  "count": 1
+                },
+                "from": ["digivolutionCards"],
+                "payCost": false,
+                "optional": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Rule",
+        "actions": [
+          {
+            "kind": "GrantStatic",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "grant": "trait",
+            "tokens": ["Aquatic"],
+            "duration": "permanent"
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "level": 5, "traits": ["DATA SQUAD"], "cost": 4, "isAlternate": true }]
+  },
+  "BT27-095": {
+    "effects": [
+      {
+        "trigger": "StartOfYourMainPhase",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "cost": {
+              "kind": "place",
+              "target": {
+                "filter": {
+                  "controller": "mine",
+                  "zone": "hand",
+                  "nameOrTrait": [{ "tokens": ["Cyborg", "Aquatic"], "match": "trait" }]
+                },
+                "count": 1
+              },
+              "underFilter": { "isSelfRef": true },
+              "host": "self",
+              "destination": "digivolutionStack",
+              "position": "bottom",
+              "faceDown": true,
+              "raw": "By placing 1 [Cyborg] or [Aquatic] trait card from your hand face down under this Tamer"
+            },
+            "optional": true,
+            "abortOnDecline": true,
+            "actions": [
+              { "kind": "Draw", "controller": "mine", "amount": 1 },
+              { "kind": "GainMemory", "amount": 1 }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Main",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "cost": {
+              "kind": "compound",
+              "raw": "By suspending this Tamer and trashing 2 bottom face-down cards from under any of your Tamers",
+              "costs": [
+                { "kind": "suspend", "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true } },
+                {
+                  "kind": "trashBottomFaceDownUnderTamer",
+                  "controller": "mine",
+                  "count": 2,
+                  "raw": "trashing 2 bottom face-down cards from under any of your Tamers"
+                }
+              ]
+            },
+            "optional": true,
+            "abortOnDecline": true,
+            "actions": [
+              {
+                "effectTextPart": "1 of your Digimon may digivolve into a [Cyborg] or [Aquatic] trait Digimon card in the hand with the cost reduced by 2.",
+                "kind": "Digivolve",
+                "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+                "into": {
+                  "controllerDefault": "mine",
+                  "zone": "hand",
+                  "kind": ["Digimon"],
+                  "nameOrTrait": [{ "tokens": ["Cyborg", "Aquatic"], "match": "trait" }]
+                },
+                "from": ["hand"],
+                "reduceCost": 2,
+                "payCost": true,
+                "optional": true,
+                "abortOnDecline": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "isSecurity": true,
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "payCost": false
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-073": {
+    "effects": [
+      {
+        "trigger": "YourTurn",
+        "actions": [
+          {
+            "kind": "Replacement",
+            "event": "wouldDigivolve",
+            "sourceFilter": { "isSelfRef": true },
+            "into": {
+              "kind": ["Digimon"],
+              "colors": ["Purple"],
+              "nameOrTrait": [{ "tokens": ["BEATBREAK"], "match": "trait" }]
+            },
+            "actions": [{ "kind": "Replacement", "event": "wouldDigivolve", "mode": "reduceCost", "amount": 1 }]
+          }
+        ]
+      },
+      {
+        "trigger": "WhenAttacking",
+        "isInherited": true,
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "Draw",
+            "effectTextPart": "[When Attacking] [Once Per Turn] ＜Draw 1＞",
+            "controller": "mine",
+            "amount": 1
+          },
+          {
+            "kind": "Trash",
+            "effectTextPart": "and trash 1 card in your hand.",
+            "target": { "filter": { "controller": "mine", "zone": "hand" }, "count": 1 }
+          }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [{ "level": 2, "traits": ["Glowing Dawn"], "cost": 0, "isAlternate": true }],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-077": {
+    "effects": [
+      {
+        "trigger": "WhenDigivolving",
+        "condition": { "kind": "youHave", "filter": { "kind": ["Tamer"], "countMax": 1 } },
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Tamer"],
+                "nameOrTrait": [{ "tokens": ["Makoto Kuonji"], "match": "name" }]
+              },
+              "count": 1
+            },
+            "from": ["hand"],
+            "payCost": false,
+            "optional": true
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "isSecurity": true,
+        "condition": { "kind": "youHave", "filter": { "kind": ["Tamer"], "countMax": 1 } },
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Tamer"],
+                "nameOrTrait": [{ "tokens": ["Makoto Kuonji"], "match": "name" }]
+              },
+              "count": 1
+            },
+            "from": ["hand"],
+            "payCost": false,
+            "optional": true
+          }
+        ]
+      },
+      { "trigger": "Static", "isInherited": true, "actions": [], "keywords": [{ "keyword": "Retaliation" }] }
+    ],
+    "digivolutionRequirement": [{ "level": 3, "traits": ["Glowing Dawn"], "cost": 2, "isAlternate": true }],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-080": {
+    "effects": [
+      {
+        "trigger": "Main",
+        "isFromHand": true,
+        "condition": {
+          "kind": "youHave",
+          "filter": { "kind": ["Tamer"], "nameOrTrait": [{ "tokens": ["Makoto Kuonji"], "match": "name" }] }
+        },
+        "actions": [
+          {
+            "kind": "DigivolveViaPlacement",
+            "effectTextPart": "[Hand] [Main] If you have a Tamer with [Makoto Kuonji] in its name, by placing 1 [NightChiropmon] from your trash as any of your [Chiropmon]’s bottom digivolution card, that Digimon digivolves into this card, ignoring level.",
+            "placeCost": {
+              "kind": "placeFromTrash",
+              "target": {
+                "filter": {
+                  "controller": "mine",
+                  "nameOrTrait": [{ "tokens": ["NightChiropmon"], "match": "nameExact" }]
+                },
+                "count": 1
+              },
+              "destination": "digivolutionStack",
+              "position": "bottom",
+              "hostFilter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["Chiropmon"], "match": "nameExact" }]
+              }
+            },
+            "into": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "cost": 3,
+            "ignoreLevelRequirement": true
+          }
+        ]
+      },
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "Delete",
+            "effectTextPart": "[On Play] [When Digivolving] Delete 1 of your opponent’s level 4 or lower Digimon.",
+            "target": {
+              "filter": {
+                "controller": "opponent",
+                "kind": ["Digimon"],
+                "levelComparison": { "op": "lte", "value": 4 }
+              },
+              "count": 1
+            }
+          },
+          {
+            "kind": "CostGatedBlock",
+            "effectTextPart": "Then, by trashing the bottom face-down card from under any of your Tamers, this Digimon gains ＜Rush＞ and ＜Piercing＞ for the turn.",
+            "optional": true,
+            "cost": { "kind": "trashBottomFaceDownUnderTamer", "controller": "mine", "count": 1 },
+            "actions": [
+              {
+                "kind": "GainKeyword",
+                "effectTextPart": "Then, by trashing the bottom face-down card from under any of your Tamers, this Digimon gains ＜Rush＞ and ＜Piercing＞ for the turn.",
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                "keyword": { "keyword": "Rush" },
+                "duration": "forTheTurn"
+              },
+              {
+                "kind": "GainKeyword",
+                "effectTextPart": "Then, by trashing the bottom face-down card from under any of your Tamers, this Digimon gains ＜Rush＞ and ＜Piercing＞ for the turn.",
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                "keyword": { "keyword": "Piercing" },
+                "duration": "forTheTurn"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "Delete",
+            "effectTextPart": "[On Play] [When Digivolving] Delete 1 of your opponent’s level 4 or lower Digimon.",
+            "target": {
+              "filter": {
+                "controller": "opponent",
+                "kind": ["Digimon"],
+                "levelComparison": { "op": "lte", "value": 4 }
+              },
+              "count": 1
+            }
+          },
+          {
+            "kind": "CostGatedBlock",
+            "effectTextPart": "Then, by trashing the bottom face-down card from under any of your Tamers, this Digimon gains ＜Rush＞ and ＜Piercing＞ for the turn.",
+            "optional": true,
+            "cost": { "kind": "trashBottomFaceDownUnderTamer", "controller": "mine", "count": 1 },
+            "actions": [
+              {
+                "kind": "GainKeyword",
+                "effectTextPart": "Then, by trashing the bottom face-down card from under any of your Tamers, this Digimon gains ＜Rush＞ and ＜Piercing＞ for the turn.",
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                "keyword": { "keyword": "Rush" },
+                "duration": "forTheTurn"
+              },
+              {
+                "kind": "GainKeyword",
+                "effectTextPart": "Then, by trashing the bottom face-down card from under any of your Tamers, this Digimon gains ＜Rush＞ and ＜Piercing＞ for the turn.",
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                "keyword": { "keyword": "Piercing" },
+                "duration": "forTheTurn"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "OnDeletion",
+        "isInherited": true,
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "playCostLte": 5,
+                "nameOrTrait": [{ "tokens": ["Glowing Dawn"], "match": "trait" }]
+              },
+              "count": 1
+            },
+            "from": ["trash"],
+            "payCost": false,
+            "optional": true
+          }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [{ "level": 4, "traits": ["Glowing Dawn"], "cost": 3, "isAlternate": true }],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-082": {
+    "effects": [
+      { "trigger": "Static", "actions": [], "keywords": [{ "keyword": "Execute" }, { "keyword": "Ascension" }] },
+      {
+        "trigger": "Static",
+        "actions": [
+          {
+            "kind": "WaiveColorRequirement",
+            "condition": {
+              "kind": "youHave",
+              "filter": {
+                "controller": "mine",
+                "zone": ["battleArea", "breeding"],
+                "nameOrTrait": [{ "tokens": ["Glowing Dawn"], "match": "trait" }]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "isSecurity": true,
+        "actions": [
+          {
+            "kind": "Delete",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "superlative": "lowestLevel" },
+              "count": 1
+            }
+          },
+          {
+            "kind": "SecurityManipulation",
+            "op": "trashTop",
+            "controller": "opponent",
+            "amount": 1,
+            "condition": { "kind": "ifThisEffectDidNotDelete" }
+          }
+        ]
+      },
+      {
+        "trigger": "OnDeletion",
+        "actions": [
+          {
+            "kind": "Delete",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "superlative": "lowestLevel" },
+              "count": 1
+            }
+          },
+          {
+            "kind": "SecurityManipulation",
+            "op": "trashTop",
+            "controller": "opponent",
+            "amount": 1,
+            "condition": { "kind": "ifThisEffectDidNotDelete" }
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "frequency": "OncePerTurn",
+        "sharedUseKey": "activate-option",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "cost": { "kind": "trashBottomFaceDownUnderTamer", "controller": "mine", "count": 2 },
+            "actions": [{ "kind": "ActivateMain" }]
+          }
+        ]
+      },
+      {
+        "trigger": "WhenAttacking",
+        "frequency": "OncePerTurn",
+        "sharedUseKey": "activate-option",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "cost": { "kind": "trashBottomFaceDownUnderTamer", "controller": "mine", "count": 2 },
+            "actions": [{ "kind": "ActivateMain" }]
+          }
+        ]
+      },
+      {
+        "trigger": "Main",
+        "actions": [
+          {
+            "kind": "Delete",
+            "effectTextPart": "[Main] Delete 1 of your opponent's level 6 or higher Digimon.",
+            "target": {
+              "filter": {
+                "controller": "opponent",
+                "kind": ["Digimon"],
+                "levelComparison": { "op": "gte", "value": 6 }
+              },
+              "count": 1
+            }
+          },
+          {
+            "kind": "PlayWithoutCost",
+            "effectTextPart": "Then, you may play 1 play cost 4 or lower [BEATBREAK] trait card from your trash without paying the cost.",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon", "Tamer"],
+                "playCostLte": 4,
+                "nameOrTrait": [{ "tokens": ["BEATBREAK"], "match": "trait" }]
+              },
+              "count": 1
+            },
+            "from": ["trash"],
+            "payCost": false,
+            "optional": true
+          }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [{ "level": 5, "traits": ["Glowing Dawn"], "cost": 3, "isAlternate": true }],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-003": {
+    "effects": [
+      {
+        "trigger": "WhenAttacking",
+        "isInherited": true,
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "Digivolve",
+            "effectTextPart": "[When Attacking] [Once Per Turn] This Digimon may digivolve into a Digimon card with [Leomon] in its name or the [ACCEL] trait in the hand.",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "into": {
+              "controllerDefault": "mine",
+              "kind": ["Digimon"],
+              "nameOrTrait": [
+                { "tokens": ["Leomon"], "match": "name" },
+                { "tokens": ["ACCEL"], "match": "trait" }
+              ]
+            },
+            "from": ["hand"],
+            "payCost": true,
+            "optional": true
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-045": {
+    "effects": [
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "RevealAdd",
+            "effectTextPart": "[On Play] Reveal the top 3 cards of your deck. Add 1 card with [Leomon] in its name and 1 [Unique], [Boss] or [ACCEL] trait card among them to the hand. Return the rest to the bottom of the deck.",
+            "revealCount": 3,
+            "add": [
+              {
+                "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Leomon"], "match": "name" }] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "filter": {
+                  "controllerDefault": "mine",
+                  "nameOrTrait": [{ "tokens": ["Unique", "Boss", "ACCEL"], "match": "trait" }]
+                },
+                "count": 1,
+                "to": "hand"
+              }
+            ],
+            "rest": "deckBottom"
+          }
+        ]
+      },
+      {
+        "trigger": "YourTurn",
+        "isInherited": true,
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "event": "whenBattleWon",
+            "sourceFilter": { "isSelfRef": true },
+            "actions": [
+              {
+                "kind": "GainMemory",
+                "effectTextPart": "[Your Turn] [Once Per Turn] When this Digimon wins a battle, gain 1 memory.",
+                "amount": 1
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [
+      { "namesExact": ["Frimon", "Kyaromon"], "cost": 0, "isAlternate": true },
+      { "level": 2, "traits": ["ACCEL"], "cost": 0, "isAlternate": true }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-049": {
+    "effects": [
+      {
+        "trigger": "WhenAttacking",
+        "actions": [
+          {
+            "kind": "Digivolve",
+            "effectTextPart": "[When Attacking] This Digimon may digivolve into a Digimon card with [Leomon] in its name or the [ACCEL] trait in the hand. For each of your opponent's Digimon and Tamers, reduce this effect's paid cost by 1.",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "into": {
+              "controllerDefault": "mine",
+              "kind": ["Digimon"],
+              "nameOrTrait": [
+                { "tokens": ["Leomon"], "match": "name" },
+                { "tokens": ["ACCEL"], "match": "trait" }
+              ]
+            },
+            "from": ["hand"],
+            "payCost": true,
+            "reduceCostScaling": {
+              "per": 1,
+              "unit": "cards",
+              "filter": { "controller": "opponent", "kind": ["Digimon", "Tamer"] }
+            },
+            "optional": true
+          }
+        ]
+      },
+      {
+        "trigger": "Static",
+        "isInherited": true,
+        "actions": [],
+        "keywords": [{ "keyword": "Barrier", "raw": "＜Barrier＞" }]
+      }
+    ],
+    "digivolutionRequirement": [
+      { "namesExact": ["Elecmon"], "cost": 2, "isAlternate": true },
+      { "level": 3, "traits": ["Holy Beast", "ACCEL"], "cost": 2, "isAlternate": true }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-051": {
+    "effects": [
+      { "trigger": "Static", "actions": [], "keywords": [{ "keyword": "Fortitude", "raw": "＜Fortitude＞" }] },
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "Battle",
+            "effectTextPart": "[On Play] [When Digivolving] This Digimon may battle 1 of your opponent's Digimon.",
+            "attacker": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "optional": true
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "Battle",
+            "effectTextPart": "[On Play] [When Digivolving] This Digimon may battle 1 of your opponent's Digimon.",
+            "attacker": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "optional": true
+          }
+        ]
+      },
+      {
+        "trigger": "OnDeletion",
+        "actions": [
+          {
+            "kind": "SecurityManipulation",
+            "effectTextPart": "[On Deletion] ＜Recovery +1＞",
+            "op": "addTop",
+            "controller": "mine",
+            "source": "deck",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "trigger": "OnDeletion",
+        "isInherited": true,
+        "actions": [
+          {
+            "kind": "SecurityManipulation",
+            "effectTextPart": "[On Deletion] ＜Recovery +1＞",
+            "op": "addTop",
+            "controller": "mine",
+            "source": "deck",
+            "amount": 1
+          }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [
+      { "level": 4, "names": ["Leomon"], "cost": 3, "isAlternate": true },
+      { "level": 4, "traits": ["Holy Beast", "ACCEL"], "cost": 3, "isAlternate": true }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-075": {
+    "effects": [
+      {
+        "trigger": "Static",
+        "actions": [
+          {
+            "kind": "Replacement",
+            "event": "wouldBePlayed",
+            "sourceFilter": { "isSelfRef": true },
+            "actions": [
+              {
+                "kind": "Replacement",
+                "event": "wouldBePlayed",
+                "mode": "reduceCost",
+                "amount": 2,
+                "raw": "reduce the cost by 2",
+                "cost": {
+                  "kind": "deleteOwn",
+                  "target": {
+                    "filter": {
+                      "controller": "mine",
+                      "kind": ["Digimon", "DigiEgg"],
+                      "zone": "breeding",
+                      "levels": [2]
+                    },
+                    "count": 1
+                  },
+                  "raw": "by deleting 1 of your level 2 Digimon in the breeding area"
+                },
+                "optional": true,
+                "abortOnDecline": true
+              }
+            ]
+          }
+        ]
+      },
+      { "trigger": "Static", "actions": [], "keywords": [{ "keyword": "Blocker", "raw": "＜Blocker＞" }] },
+      {
+        "trigger": "AllTurns",
+        "actions": [
+          {
+            "kind": "Restrict",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "restriction": "digivolve",
+            "duration": "permanent"
+          }
+        ]
+      },
+      {
+        "trigger": "OnDeletion",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "abortOnDecline": true,
+            "cost": {
+              "kind": "return",
+              "target": {
+                "filter": {
+                  "zone": "trash",
+                  "controller": "mine",
+                  "nameOrTrait": [{ "tokens": ["Gizmon"], "match": "name" }]
+                },
+                "count": 2
+              },
+              "to": "deckBottom",
+              "orderReturnedCards": true,
+              "raw": "By returning 2 cards with [Gizmon] in their names from your trash to the bottom of the deck"
+            },
+            "actions": [
+              {
+                "kind": "PlayWithoutCost",
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "nameOrTrait": [{ "tokens": ["Gizmon: AT"], "match": "nameExact" }]
+                  },
+                  "count": 1
+                },
+                "from": ["trash"],
+                "payCost": false,
+                "optional": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-076": {
+    "effects": [
+      {
+        "trigger": "Static",
+        "actions": [
+          {
+            "kind": "Replacement",
+            "event": "wouldBePlayed",
+            "sourceFilter": { "isSelfRef": true },
+            "actions": [
+              {
+                "kind": "Replacement",
+                "event": "wouldBePlayed",
+                "mode": "reduceCost",
+                "amount": 4,
+                "raw": "reduce the cost by 4",
+                "cost": {
+                  "kind": "deleteOwn",
+                  "target": { "filter": { "controller": "mine", "kind": ["Digimon"], "levels": [3] }, "count": 1 },
+                  "raw": "by deleting 1 of your level 3 Digimon"
+                },
+                "optional": true,
+                "abortOnDecline": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "nameOrTrait": [{ "tokens": ["Akihiro Kurata"], "match": "nameExact" }]
+              },
+              "count": 1
+            },
+            "from": ["hand"],
+            "payCost": false,
+            "optional": true
+          }
+        ]
+      },
+      {
+        "trigger": "AllTurns",
+        "actions": [
+          {
+            "kind": "Restrict",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "restriction": "digivolve",
+            "duration": "permanent"
+          }
+        ]
+      },
+      {
+        "trigger": "OnDeletion",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "abortOnDecline": true,
+            "cost": {
+              "kind": "return",
+              "target": {
+                "filter": {
+                  "zone": "trash",
+                  "controller": "mine",
+                  "nameOrTrait": [{ "tokens": ["Gizmon"], "match": "name" }]
+                },
+                "count": 2
+              },
+              "to": "deckBottom",
+              "orderReturnedCards": true,
+              "raw": "By returning 2 cards with [Gizmon] in their names from your trash to the bottom of the deck"
+            },
+            "actions": [
+              {
+                "kind": "PlayWithoutCost",
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "nameOrTrait": [{ "tokens": ["Gizmon: XT"], "match": "nameExact" }]
+                  },
+                  "count": 1
+                },
+                "from": ["trash"],
+                "payCost": false,
+                "optional": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-079": {
+    "effects": [
+      {
+        "trigger": "Static",
+        "actions": [
+          {
+            "kind": "Replacement",
+            "event": "wouldBePlayed",
+            "sourceFilter": { "isSelfRef": true },
+            "actions": [
+              {
+                "kind": "Replacement",
+                "event": "wouldBePlayed",
+                "mode": "reduceCost",
+                "amount": 6,
+                "raw": "reduce the cost by 6",
+                "cost": {
+                  "kind": "deleteOwn",
+                  "target": { "filter": { "controller": "mine", "kind": ["Digimon"], "levels": [4] }, "count": 1 },
+                  "raw": "by deleting 1 of your level 4 Digimon"
+                },
+                "optional": true,
+                "abortOnDecline": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Static",
+        "actions": [],
+        "keywords": [
+          { "keyword": "Blocker", "raw": "＜Blocker＞" },
+          { "keyword": "Retaliation", "raw": "＜Retaliation＞" }
+        ]
+      },
+      {
+        "trigger": "AllTurns",
+        "actions": [
+          {
+            "kind": "Restrict",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "restriction": "digivolve",
+            "duration": "permanent"
+          }
+        ]
+      },
+      {
+        "trigger": "OnDeletion",
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon", "Tamer"],
+                "playCostLte": 5,
+                "nameOrTrait": [{ "tokens": ["Kurata's Army"], "match": "trait" }]
+              },
+              "count": 1
+            },
+            "from": ["hand", "trash"],
+            "payCost": false,
+            "optional": true
+          }
         ]
       }
     ],

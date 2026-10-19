@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useRef, useState } from "react";
 import { tokenDefinitions } from "@aegis/shared/cards/tokens";
 import { cardImageUrls } from "@aegis/shared/cards/images";
@@ -81,10 +82,11 @@ function TokenArtOption({ cardId, name }: TokenArtOptionParams) {
 }
 
 export function TokenArtPicker() {
+  const getCardName = useTranslatedCardName();
   return (
     <div className="settings-sleeve-grid settings-token-grid">
       {customizableTokens.map((token) => (
-        <TokenArtOption key={token.cardId} cardId={token.cardId} name={token.nameEn} />
+        <TokenArtOption key={token.cardId} cardId={token.cardId} name={getCardName(token.cardId)} />
       ))}
     </div>
   );

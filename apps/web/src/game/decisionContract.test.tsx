@@ -44,6 +44,7 @@ const OPTION_CONSUMERS: Record<DecisionOptionKey, string | null> = {
   choiceEffects: "overlay/choice/DecisionOverlay.tsx",
   choiceClauses: "overlay/choice/DecisionOverlay.tsx",
   declineIndex: "overlay/choice/DecisionOverlay.tsx",
+  activation: "overlay/choice/DecisionOverlay.tsx",
   triggerKeys: "screen/model/triggerDetails.ts",
   triggerCardIds: "screen/model/triggerDetails.ts",
   triggerTimings: "screen/model/triggerDetails.ts",
@@ -54,6 +55,7 @@ const OPTION_CONSUMERS: Record<DecisionOptionKey, string | null> = {
   waitingTriggerCardIds: "overlay/choice/DecisionOverlay.tsx",
   waitingTriggerDescriptions: "overlay/choice/DecisionOverlay.tsx",
   waitingTriggerIsInherited: "overlay/choice/DecisionOverlay.tsx",
+  acceptsIndexedResolutionPlan: "overlay/choice/DecisionOverlay.tsx",
   acceptsResolutionPlan: "overlay/choice/DecisionOverlay.tsx",
   timing: "screen/model/triggerDetails.ts",
   effectText: "notices.ts",
@@ -71,6 +73,7 @@ const OPTION_CONSUMERS: Record<DecisionOptionKey, string | null> = {
   // Tells an automated seat that an empty selection forfeits the clause; the human UI
   // already offers the same No Selection answer for every min-0 prompt.
   purpose: "decisionPresentation.ts",
+  declinesCost: "overlay/choice/DecisionOverlay.tsx",
   assemblyCardId: "screen/layout/DecisionPrompts.tsx",
   playCostReductionBlocked: "screen/layout/DecisionPrompts.tsx",
   digiXrosCardId: "screen/layout/DecisionPrompts.tsx",

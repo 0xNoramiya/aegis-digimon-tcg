@@ -1,7 +1,7 @@
 import { getDictionaryValue } from "@/i18n/getDictionaryValue";
 import type { CardTranslationData } from "@/i18n/cardTranslationTypes";
 import { normalizePrintedTextKey } from "@/i18n/normalizePrintedTextKey";
-import { getCardDefinition } from "@aegis/shared/cards/registry";
+import { findTranslatedCardClause } from "@/i18n/findTranslatedCardClause";
 
 type Params = { text: string; translations?: CardTranslationData; cardId?: string };
 
@@ -12,7 +12,7 @@ export function getTranslatedCardText({ text, translations, cardId }: Params): s
     getDictionaryValue({ dictionary: translations?.text, key: normalizePrintedTextKey(text) });
   const resolved =
     translated ||
-    findTranslatedClause({ text, translations, cardId }) ||
+    findTranslatedCardClause({ text, translations, cardId }) ||
     text.replace(/[^\r\n]+/g, (line) => {
       return (
         getDictionaryValue({ dictionary: cardText, key: normalizePrintedTextKey(line) }) ||
@@ -20,10 +20,11 @@ export function getTranslatedCardText({ text, translations, cardId }: Params): s
         line
       );
     });
-  if (resolved === text) {
+  const printed = removeUnprintedNameNotes({ source: text, translated: resolved });
+  if (printed === text) {
     return text;
   }
-  return resolved
+  return printed
     .replace(/[【［]([^】］]+)[】］]/g, "[$1]")
     .replace(
       /≪([^≫]+)≫|《([^》]+)》/g,
@@ -31,42 +32,11 @@ export function getTranslatedCardText({ text, translations, cardId }: Params): s
     );
 }
 
-function findTranslatedClause({ text, translations, cardId }: Params): string | undefined {
-  if (!cardId || !translations) {
-    return undefined;
+type NameNotesParams = { source: string; translated: string };
+
+function removeUnprintedNameNotes({ source, translated }: NameNotesParams): string {
+  if (/[[【［]\s*(?:Rule|规则)\s*[\]】］]/i.test(source)) {
+    return translated;
   }
-  const card = getCardDefinition(cardId);
-  if (!card) {
-    return undefined;
-  }
-  const matches = new Set<string>();
-  for (const full of [
-    card.effectText,
-    card.inheritedEffectText,
-    card.securityEffectText,
-    card.optionEffect,
-    card.linkEffect,
-  ]) {
-    if (!full) {
-      continue;
-    }
-    const cardText = getDictionaryValue({ dictionary: translations.byCard, key: cardId });
-    const translated =
-      getDictionaryValue({ dictionary: cardText, key: normalizePrintedTextKey(full) }) ??
-      getDictionaryValue({ dictionary: translations.text, key: normalizePrintedTextKey(full) });
-    if (!translated) {
-      continue;
-    }
-    const sourceGroups = full.split(/(?:\r\n|\r|\n)\s*(?=\[)/).map((group) => group.trim());
-    const targetGroups = translated.split(/(?:\r\n|\r|\n)\s*(?=【|［|\[)/).map((group) => group.trim());
-    if (sourceGroups.length !== targetGroups.length) {
-      continue;
-    }
-    for (const [index, group] of sourceGroups.entries()) {
-      if (normalizePrintedTextKey(group) === normalizePrintedTextKey(text)) {
-        matches.add(targetGroups[index]!);
-      }
-    }
-  }
-  return matches.size === 1 ? [...matches][0] : undefined;
+  return translated.replace(/(?:[\r\n]+|^)[ \t]*※[ \t]*此卡(?:牌)?不?属于名称中包含[^\r\n]*/g, "");
 }

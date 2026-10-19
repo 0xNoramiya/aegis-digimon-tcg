@@ -69,6 +69,7 @@ const fixture: ScenarioFixture = {
       hand: ["ST19-04", "ST19-06", "ST19-11", "ST19-14", "ST19-13"],
       security: ["ST19-10", "ST19-04"],
       deck: [
+        "BT22-042",
         "ST19-04",
         "ST19-13",
         "ST19-07",
@@ -110,9 +111,6 @@ const fixture: ScenarioFixture = {
       battleArea: [
         {
           card: "BT22-042",
-        },
-        {
-          card: "EX11-023",
         },
         "ST19-02",
         "ST19-03",

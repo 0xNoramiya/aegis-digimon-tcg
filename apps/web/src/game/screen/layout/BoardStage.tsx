@@ -265,15 +265,16 @@ export function BoardStage({
   // A spectator watches from one player's seat but is not that player.
   const viewerName = spectating ? viewer.displayName || t("log.player", { n: viewer.seat + 1 }) : t("chat.you");
   const { shownViewer, shownOpponent, breedingViewer, breedingOpponent } = seats;
-  const surrenderDialog = overlays.surrenderConfirmOpen ? (
-    <SurrenderDialog
-      onConfirm={() => {
-        overlays.setSurrenderConfirmOpen(false);
-        if (room) intents.surrender(room);
-      }}
-      onClose={() => overlays.setSurrenderConfirmOpen(false)}
-    />
-  ) : null;
+  const surrenderDialog =
+    !state.gameOver && !spectating && overlays.surrenderConfirmOpen ? (
+      <SurrenderDialog
+        onConfirm={() => {
+          overlays.setSurrenderConfirmOpen(false);
+          if (room && !state.gameOver) intents.surrender(room);
+        }}
+        onClose={() => overlays.setSurrenderConfirmOpen(false)}
+      />
+    ) : null;
   const viewerPiles = (
     <ViewerPiles
       viewer={shownViewer}
@@ -290,6 +291,7 @@ export function BoardStage({
       }
     />
   );
+  const opponentBreeding = opponent.breeding;
   const resultShown = state.gameOver && !cues.resultPending;
   const opponentStatus = opponentStatusKey(state, viewerSeat);
   // An open turn reads as thinking only once the board has caught up; while the
@@ -390,7 +392,10 @@ export function BoardStage({
             onToggleChat={chat ? () => setChatOpen((open) => !open) : undefined}
             chatOpen={chatOpen}
             chatUnread={chatUnread}
-            onSurrender={spectating ? () => onLeaveSpectator?.() : () => overlays.setSurrenderConfirmOpen(true)}
+            gameOver={state.gameOver}
+            onSurrender={
+              spectating || state.gameOver ? () => onLeaveSpectator?.() : () => overlays.setSurrenderConfirmOpen(true)
+            }
             onSkipPresentation={() => cues.skipAnimations()}
           />
 
@@ -596,9 +601,7 @@ export function BoardStage({
               }
               selected={targeting.securityDecision?.selected}
               onOpenOpponentBreeding={
-                opponent.breeding
-                  ? () => actions.showCardMenu(opponent.breeding!.permanentId, Side.Opponent)
-                  : undefined
+                opponentBreeding ? () => actions.showCardMenu(opponentBreeding.permanentId, Side.Opponent) : undefined
               }
               onAttackSecurity={
                 targeting.securityDecision
@@ -691,7 +694,9 @@ export function BoardStage({
             narrow
             log={readouts.log}
             onHatchOrMove={actions.onBreeding}
-            onSurrender={spectating ? () => onLeaveSpectator?.() : () => overlays.setSurrenderConfirmOpen(true)}
+            onSurrender={
+              spectating || state.gameOver ? () => onLeaveSpectator?.() : () => overlays.setSurrenderConfirmOpen(true)
+            }
             onReportBug={() => overlays.setBugReportOpen(true)}
           />
         ) : null}

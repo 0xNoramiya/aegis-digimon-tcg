@@ -100,6 +100,7 @@ function createContextState(engine: PrimitivesEngine) {
       activationTurnSeat: Seat;
       perPlay?: boolean;
       pendingPlayInstanceId?: string;
+      materialLimits?: Partial<Record<ZoneRef, number>>;
     }>
   >();
   const digiXrosExpansionIsActive = (
@@ -146,10 +147,12 @@ function createContextState(engine: PrimitivesEngine) {
     duration: EffectDuration,
     perPlay = false,
     pendingPlayInstanceId?: string,
+    materialLimits?: Partial<Record<ZoneRef, number>>,
   ): void => {
     const entries = digiXrosZoneExpansions.get(seat) ?? [];
     entries.push({
       zones: [...new Set(zones)],
+      ...(materialLimits === undefined ? {} : { materialLimits: { ...materialLimits } }),
       duration,
       activationTurnCount: state.turnCount,
       activationTurnSeat: state.turnSeat,

@@ -10,9 +10,9 @@ import { DEFAULT_LOCALE, type Locale } from "@/i18n/locales";
 type Params = { artId: string };
 
 export function useCardFaceTranslation({ artId }: Params) {
-  const { setLocale } = useTranslation();
+  const { locale: interfaceLocale, setLocale } = useTranslation();
   const region = artRegionOf(artId);
-  let locale: Locale = DEFAULT_LOCALE;
+  let locale: Locale = interfaceLocale;
   if (region?.value === ArtRegion.CHINESE.value) {
     locale = "zh-CN";
   } else if (region) {

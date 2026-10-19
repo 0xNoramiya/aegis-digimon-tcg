@@ -97,7 +97,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
         scale !== undefined && typeof action.target.count === "number"
           ? { ...action.target, count: action.target.count * scale }
           : action.target;
-      const ids = await resolvePermanentTargets(ctx, target);
+      const ids = await resolvePermanentTargets(ctx, target, { preserveUnaffectableSelection: true });
       const suspendResult =
         ids.length > 0
           ? await ctx.fx.suspend(ids, { byEffectSeat: ctx.source.ownerSeat, byEffectCardId: ctx.source.cardId })
@@ -358,7 +358,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
       return false;
     }
     case "SetBaseDP": {
-      const ids = await resolvePermanentTargets(ctx, action.target);
+      const ids = await resolvePermanentTargets(ctx, action.target, { preserveUnaffectableSelection: true });
       const duration = toDuration(action.duration);
       for (const id of ids) ctx.fx.setBaseDP(id, action.value, duration);
       return false;

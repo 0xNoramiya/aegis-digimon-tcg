@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { buildTriggerKey, getCardDefinition, type DecisionRequest, type DecisionResponse } from "@aegis/shared";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { I18nContext } from "@/i18n/I18nContext";
 import { I18nProvider, translator } from "../i18n";
 import {
   BlockOverlay,
@@ -16,10 +17,122 @@ import {
 import type { EvoCostOption } from "./digivolveModel";
 import { CardOpenerProvider } from "./cardLinks";
 import { choiceLabel } from "./overlay/choice/decisionChoiceLabels";
+import { printedModalBullets } from "@aegis/shared/effects/printedClauses";
 
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+});
+
+it("uses source card translations for printed modal option buttons and submits the original index", async () => {
+  const cardId = "BT22-013";
+  const clause = cardEffectClauseForTiming(cardId, "WhenDigivolving")!;
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <DecisionOverlay
+        request={{
+          decisionId: "translated-modal-bullets",
+          seat: 0,
+          kind: "chooseOption",
+          promptText: "WarGreymon",
+          options: {
+            choices: ["Digivolve", "Delete 1 target(s)"],
+            choiceClauses: printedModalBullets(clause),
+            timing: "WhenDigivolving",
+          },
+        }}
+        sourceCardId={cardId}
+        candidates={[]}
+        picks={[]}
+        onTogglePick={vi.fn<() => void>()}
+        onRespond={onRespond}
+      />
+    </I18nContext.Provider>,
+  );
+  const deletion = await screen.findByRole("button", { name: /消灭.*DP最低/ });
+  expect(screen.getByRole("button", { name: /加布兽.*钢铁加鲁鲁兽/ })).toBeTruthy();
+  fireEvent.click(deletion);
+  expect(onRespond).toHaveBeenCalledWith({ kind: "chooseOption", optionIndex: 1 });
+});
+
+it.each([
+  {
+    cardId: "EX13-032",
+    choices: ["Trash your top security card", "Trash the bottom face-down card from under 1 of your Tamers"],
+    labels: ["丢弃我方最上方的1张安防卡牌", "丢弃我方1只驯兽师下方最下方的1张背面表示卡牌"],
+  },
+  {
+    cardId: "BT26-026",
+    choices: ["Trash the bottom face-down card from under 1 of your Tamers", "Trash your top security card"],
+    labels: ["丢弃我方1只驯兽师下方最下方的1张背面表示卡牌", "丢弃我方最上方的1张安防卡牌"],
+  },
+])(
+  "localizes alternative payment buttons without changing their response order for $cardId",
+  ({ cardId, choices, labels }) => {
+    const onRespond = vi.fn<(response: DecisionResponse) => void>();
+    render(
+      <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+        <DecisionOverlay
+          request={{
+            decisionId: "alternative-payment",
+            seat: 0,
+            kind: "chooseOption",
+            promptText: "Choose a cost to pay",
+            sourceCardId: cardId,
+            options: { choices: [...choices, "Don't use"], declineIndex: 2, timing: "WhenDigivolving" },
+          }}
+          sourceCardId={cardId}
+          candidates={[]}
+          picks={[]}
+          onTogglePick={vi.fn<() => void>()}
+          onRespond={onRespond}
+        />
+      </I18nContext.Provider>,
+    );
+    const buttons = document.querySelectorAll(".decision-overlay__choices button");
+    expect(buttons[0]?.textContent).toBe(labels[0]);
+    expect(buttons[1]?.textContent).toBe(labels[1]);
+    fireEvent.click(screen.getByRole("button", { name: labels[0] }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "chooseOption", optionIndex: 0 });
+    fireEvent.click(screen.getByRole("button", { name: labels[1] }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "chooseOption", optionIndex: 1 });
+    fireEvent.click(screen.getByRole("button", { name: "不使用" }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "chooseOption", optionIndex: 2 });
+  },
+);
+
+it("translates Davis and Ken's delayed play effect in the activation dialog", async () => {
+  const effectTextPart =
+    "[Start of Your Main Phase] You may play 1 [Veemon] or [Wormmon] from your hand without paying the cost. At the next end of your opponent’s turn, return it to the hand.";
+  render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <DecisionOverlay
+        request={{
+          decisionId: "davis-ken-activation",
+          seat: 0,
+          kind: "optional",
+          promptText: "Use this effect?",
+          sourceCardId: "BT16-085",
+          options: {
+            timing: "StartOfYourMainPhase",
+            effectText: getCardDefinition("BT16-085")!.effectText,
+            effectTextPart,
+          },
+        }}
+        sourceCardId="BT16-085"
+        candidates={[]}
+        picks={[]}
+        onTogglePick={vi.fn<() => void>()}
+        onRespond={vi.fn<() => void>()}
+      />
+    </I18nContext.Provider>,
+  );
+  const getText = () => document.querySelector(".decision-overlay__effect-text")?.textContent;
+  await waitFor(() => expect(getText()).toContain("“V仔兽”/“虫虫兽”"));
+  expect(getText()).toContain("当下个对方的回合结束时，将该数码宝贝放回到手牌中。");
+  expect(getText()).not.toContain("You may play");
+  expect(screen.getByRole("heading", { name: "使用这个效果？" })).toBeTruthy();
 });
 
 it("feedback #51: copied donor text is shown while Jesmon GX remains the effect source", () => {
@@ -4436,6 +4549,105 @@ it("keeps the decline entry apart from the printed bullets", () => {
   expect(onRespond).toHaveBeenCalledWith({ kind: "chooseOption", optionIndex: 2 });
 });
 
+describe("a color-scaled choice whose bullet has an optional By cost", () => {
+  const colorClause = "Then, for every 2 of your Digimon and Tamers' colors, activate 1 effect below:";
+  const battleBullet = "This Digimon may battle 1 of your opponent's Digimon.";
+  const recoveryBullet = "By returning 5 cards from your opponent's trash to the bottom of the deck, ＜Recovery +1＞";
+  const effectText = `[On Play] [When Digivolving] 1 of your Digimon may attack without suspending. ${colorClause}\n・${battleBullet}\n・${recoveryBullet}`;
+  const renderMerciful = () =>
+    renderDecision({
+      decisionId: "merciful-color-activation",
+      seat: 0,
+      kind: "chooseOption",
+      promptText: "Omnimon: Merciful Mode",
+      sourceCardId: "EX13-077",
+      options: {
+        choices: ["Battle", "Recovery +1"],
+        choiceClauses: [battleBullet, recoveryBullet],
+        timing: "OnPlay",
+        effectText,
+        effectTextPart: effectText,
+        effectTextEmphasis: colorClause,
+      },
+    });
+  const trashCards = ["t1", "t2", "t3", "t4", "t5"];
+  const renderRecoveryCost = (declinesCost: boolean) => {
+    const onRespond = vi.fn<(response: unknown) => void>();
+    render(
+      <I18nProvider>
+        <DecisionOverlay
+          request={{
+            decisionId: "merciful-recovery-cost",
+            seat: 0,
+            kind: "selectCards",
+            promptText: "Omnimon: Merciful Mode",
+            sourceCardId: "EX13-077",
+            options: {
+              candidateInstanceIds: trashCards,
+              min: 5,
+              max: 5,
+              purpose: "cost",
+              ...(declinesCost ? { declinesCost } : {}),
+              timing: "OnPlay",
+              effectText,
+            },
+          }}
+          sourceCardId="EX13-077"
+          candidates={trashCards.map((instanceId) => ({ instanceId, cardId: "BT1-009", sourceCount: 0 }))}
+          picks={[]}
+          onTogglePick={vi.fn<(instanceId: string) => void>()}
+          onRespond={onRespond}
+        />
+      </I18nProvider>,
+    );
+    return { onRespond };
+  };
+
+  it("emphasizes the color clause and offers no Don't use on the option chooser", () => {
+    renderMerciful();
+    expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(colorClause);
+    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.queryByRole("button", { name: /^Don't use/ })).toBeNull();
+  });
+
+  it("declines the Recovery cost from its selection footer while the pick stays exact", () => {
+    const { onRespond } = renderRecoveryCost(true);
+    expect(screen.queryByRole("button", { name: "None" })).toBeNull();
+    expect((screen.getByRole("button", { name: "Confirm targets" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Don't use" }));
+    expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: [] });
+  });
+
+  it("offers no Don't use on a mandatory cost selection", () => {
+    renderRecoveryCost(false);
+    expect(screen.queryByRole("button", { name: "Don't use" })).toBeNull();
+  });
+
+  it("shows which scaled activation is being chosen", () => {
+    renderDecision({
+      decisionId: "merciful-second-activation",
+      seat: 0,
+      kind: "chooseOption",
+      promptText: "Omnimon: Merciful Mode",
+      sourceCardId: "EX13-077",
+      options: {
+        choices: ["Recovery +1"],
+        choiceClauses: [recoveryBullet],
+        activation: { index: 2, total: 2 },
+        effectText,
+        effectTextPart: effectText,
+        effectTextEmphasis: colorClause,
+      },
+    });
+    expect(screen.getByText("Activation 2 of 2")).toBeTruthy();
+  });
+
+  it("omits the activation counter without a scaled activation", () => {
+    renderMerciful();
+    expect(screen.queryByText(/^Activation \d+ of \d+$/)).toBeNull();
+  });
+});
+
 it.each(["Add 1 yellow card with the [Data] trait", "1 card with the [Witchelny] trait among them to the hand."])(
   "Discord 1556041043550408755: identifies the Candlemon selection category: %s",
   (effectTextPart) => {
@@ -4654,3 +4866,21 @@ it.each([
   fireEvent.click(screen.getByRole("button", { name: "Yes, activate" }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: true });
 });
+
+it.each(["Then, by trashing your top security card", "1 of your Digimon may attack"])(
+  "emphasizes Mistymon's current optional step: %s",
+  (effectTextEmphasis) => {
+    const clause =
+      "[On Play] [When Digivolving] You may place 1 [Witchelny] text card from your hand as the bottom security card. Then, by trashing your top security card, 1 of your Digimon may attack.";
+    renderDecision({
+      decisionId: "mistymon-step",
+      seat: 0,
+      kind: "optional",
+      sourceCardId: "EX13-033",
+      promptText: "Use this effect?",
+      options: { timing: "OnPlay", effectText: clause, effectTextPart: clause, effectTextEmphasis },
+    });
+    expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(clause);
+    expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(effectTextEmphasis);
+  },
+);

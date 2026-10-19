@@ -1,3 +1,4 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { replayVideoIt } from "./replayVideo";
 import { profileReplayIt } from "./profileReplays";
@@ -8,6 +9,11 @@ import { en } from "./en";
 const interfaceMessages = {
   "bot.identity.label": "Bot",
   "home.strategyGuides": "Impara a giocare un mazzo con le nostre guide strategiche",
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
+  "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
   "settings.cardImageLanguage": "Lingua delle immagini delle carte",
   "settings.cardImageLanguageDesc":
@@ -856,7 +862,14 @@ const interfaceMessages = {
   "game.reconnecting": "Riconnessione…",
   "game.reconnectingDetail": "La connessione si è interrotta. Tentativo di riprendere la partita.",
   "game.connectionLost": "Connessione persa",
-  "game.connectionLostDetail": "Il server non è raggiungibile. Controlla la connessione e riprova.",
+  "game.connectionLostDetail": "La connessione alla partita è stata interrotta. Prova a riconnetterti.",
+  "game.messageTooLarge": "La selezione era troppo grande da inviare. Prova a risolvere meno effetti alla volta.",
+  "game.messageTooLargeReconnecting":
+    "La selezione era troppo grande da inviare. Riconnessione per ripristinare la scelta in sospeso.",
+  "game.reconnectFailed": "Non è stato possibile riprendere la partita. Torna alla lobby e riprova.",
+  "game.sessionExpired": "Questa partita non può più essere ripresa. Torna alla lobby.",
+  "game.tooManyMessages": "Sono state inviate troppe azioni insieme. Attendi un momento, poi torna alla lobby.",
+  "game.serverUnavailable": "Il server di gioco non è al momento disponibile. Riprova tra poco.",
   "game.opponentDisconnected": "Avversario disconnesso",
   "game.opponentDisconnectedDetail": "In attesa che l'avversario si riconnetta. La partita riprenderà automaticamente.",
   "game.opponentDisconnectedCountdown": "Se non torna entro {time}, vinci la partita.",
@@ -1306,6 +1319,7 @@ const interfaceMessages = {
   "overlay.endSelection": "Termina la selezione",
   "overlay.noSelection": "Nessuna selezione",
   "overlay.use": "Usa",
+  "overlay.activationProgress": "Attivazione {index} di {total}",
   "overlay.notUse": "Non usare",
   "overlay.moveToBattleArea": "Sposta nell'area di battaglia",
   "overlay.endPhase": "Termina la fase",

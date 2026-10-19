@@ -54,8 +54,27 @@ export async function fireBeforePayCost(
   originZone?: ZoneRef,
   projectOnly = false,
   simultaneousPlayCount = 1,
+  reservedInstanceIds: readonly string[] = [],
 ): Promise<number> {
   const source = cardSourceOf(engine, instance);
+  const reservedCostInstanceIds = new Set(reservedInstanceIds);
+  for (const [playedId, materialIds] of engine.pendingPlayReducerPlacements) {
+    if (playedId !== instance.instanceId) {
+      for (const materialId of materialIds) {
+        reservedCostInstanceIds.add(materialId);
+      }
+    }
+  }
+  for (const [playedId, relocations] of engine.pendingSelfReducerRelocations) {
+    if (playedId !== instance.instanceId) {
+      for (const { permanentId } of relocations) {
+        const material = engine.access.permanentById(permanentId)?.topCard;
+        if (material !== undefined) {
+          reservedCostInstanceIds.add(material.instanceId);
+        }
+      }
+    }
+  }
   const reductionBlocked = !useAsOption && engine.continuous.blocksCostReduction(source.ownerSeat, "play");
   // A prohibition prevents the reducer from activating, including its optional
   // processing cost (ST12-03 Q755). Projection stays read-only; an unaffordable
@@ -99,6 +118,7 @@ export async function fireBeforePayCost(
       wouldBePlayedAsOption: useAsOption,
     }),
     selections: new Map(),
+    reservedCostInstanceIds,
     playCostDelta: prepared?.delta ?? 0,
   };
   const playTarget = pendingPlayTarget(instance, source);
@@ -146,6 +166,7 @@ export async function fireBeforePayCost(
           wouldBePlayedAsOption: useAsOption,
         }),
         selections: new Map(),
+        reservedCostInstanceIds,
       };
       if (!canTrigger(effect, residentCtx, engine.tracker) || !canActivate(effect, residentCtx, engine.tracker))
         return total;
@@ -180,6 +201,7 @@ export async function fireBeforePayCost(
           wouldBePlayedAsOption: useAsOption,
         }),
         selections: new Map(),
+        reservedCostInstanceIds,
         playCostDelta: ctx.playCostDelta,
         residentCostRegistration: true,
       };
@@ -207,6 +229,7 @@ export async function fireBeforePayCost(
           wouldBePlayedAsOption: useAsOption,
         }),
         selections: new Map(),
+        reservedCostInstanceIds,
         playCostDelta: ctx.playCostDelta,
         residentCostRegistration: true,
       };
@@ -240,15 +263,18 @@ export async function fireBeforePayCost(
                 : undefined);
             return resident?.topCard === undefined
               ? undefined
-              : buildEffectContext(
-                  engine,
-                  cardSourceOf(engine, findInstance(engine, sourceInstanceId ?? "")?.instance ?? resident.topCard),
-                  {
-                    wouldBePlayedInstanceId: instance.instanceId,
-                    wouldBePlayedCardId: instance.cardId,
-                    wouldBePlayedAsOption: useAsOption,
-                  },
-                );
+              : {
+                  ...buildEffectContext(
+                    engine,
+                    cardSourceOf(engine, findInstance(engine, sourceInstanceId ?? "")?.instance ?? resident.topCard),
+                    {
+                      wouldBePlayedInstanceId: instance.instanceId,
+                      wouldBePlayedCardId: instance.cardId,
+                      wouldBePlayedAsOption: useAsOption,
+                    },
+                  ),
+                  reservedCostInstanceIds,
+                };
           },
           {
             hasFired: (key) => engine.tracker.count(key, "replacement") > 0,

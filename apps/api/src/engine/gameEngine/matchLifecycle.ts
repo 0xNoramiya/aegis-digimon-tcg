@@ -120,6 +120,7 @@ export async function runMatch(engine: GameEngine): Promise<void> {
     ],
     firstSeat,
     seed: engine.hooks.seed,
+    randomKey: engine.hooks.randomKey,
     onShuffled: (seat, deck) => engine.hooks.emit({ kind: "deckShuffled", seat, deck }),
   });
   engine.rngForSeat = setup.rngForSeat;
@@ -142,7 +143,10 @@ export async function runMatch(engine: GameEngine): Promise<void> {
 export function startScenarioFixture(engine: GameEngine, fixture: ScenarioFixture): void {
   const decks = collectStagedDecks(engine);
   if (decks === undefined) return;
-  const random = [makeRng(seatSeed(engine.hooks.seed, 0)), makeRng(seatSeed(engine.hooks.seed, 1))];
+  const random = [
+    makeRng(seatSeed(engine.hooks.seed, 0), engine.hooks.randomKey),
+    makeRng(seatSeed(engine.hooks.seed, 1), engine.hooks.randomKey),
+  ];
   engine.rngForSeat = (seat) => random[seat]!;
   const references = layScenarioFixture(engine.state, fixture, decks);
   engine.matchSetupStarted = true;

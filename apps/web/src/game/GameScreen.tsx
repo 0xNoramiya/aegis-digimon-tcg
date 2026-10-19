@@ -883,6 +883,7 @@ function GameScreenSession({
   if (
     status === "reconnecting" ||
     status === "error" ||
+    (status === "closed" && !state?.gameOver) ||
     botError ||
     !state ||
     !you ||

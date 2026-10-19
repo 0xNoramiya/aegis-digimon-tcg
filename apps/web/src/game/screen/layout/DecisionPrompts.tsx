@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { isAllowedTargetSelection } from "@/game/screen/model/isAllowedTargetSelection";
 /* The viewer's open decision, in whichever surface answers it.
 
@@ -13,7 +14,7 @@ import {
 } from "@aegis/shared";
 import { useTranslation } from "../../../i18n";
 import { BoardOptionalPrompt, BoardSelectionRail, BoardSourceHostPrompt } from "../../BoardDecisionRail";
-import { cardDisplayName } from "../../cardLinks";
+
 import { decisionPermanentDetails, decisionSourceCounts, type CandidateZone } from "../../decisionModel";
 import { attackTargetPrompt } from "../model/attackTargetPrompt";
 import {
@@ -85,6 +86,7 @@ export function DecisionPrompts({
   /** A source pick that first asks which Digimon to look under. */
   sourceHost?: SourceHostStep;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const clause = sourceCardId
     ? playerFacingEffectClause({
@@ -100,7 +102,7 @@ export function DecisionPrompts({
   const attack = attackTargetPrompt(decision, permanents);
   const attackClause = (() => {
     if (attack?.attackerCardId === undefined) return undefined;
-    const card = cardDisplayName(attack.attackerCardId, t);
+    const card = getCardName(attack.attackerCardId);
     const only = attack.onlyTarget;
     if (only === undefined) return t("overlay.attackChooseTarget", { card });
     const target =
@@ -108,7 +110,7 @@ export function DecisionPrompts({
         ? t(opponentSecurityCount > 0 ? "overlay.attackTargetSecurity" : "overlay.attackTargetPlayer")
         : only.cardId === undefined
           ? undefined
-          : cardDisplayName(only.cardId, t);
+          : getCardName(only.cardId);
     return target === undefined
       ? t("overlay.attackChooseTarget", { card })
       : t("overlay.attackOnlyTarget", { card, target });

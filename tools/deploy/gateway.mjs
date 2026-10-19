@@ -3,6 +3,7 @@ import { createReadStream, statSync } from "node:fs";
 import { resolve, extname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { readManifest } from "./shared.mjs";
+import gameMessageLimits from "../../packages/shared/src/protocol/gameMessageLimits.json" with { type: "json" };
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -259,7 +260,9 @@ export function createGateway({
     let size = 0;
     for await (const chunk of request) {
       size += chunk.length;
-      if (size > 65_536) return json(response, 413, { error: "Request too large" });
+      if (size > gameMessageLimits.maxMessageBytes) {
+        return json(response, 413, { error: "Request too large", maxMessageBytes: gameMessageLimits.maxMessageBytes });
+      }
       chunks.push(chunk);
     }
     const body = Buffer.concat(chunks);

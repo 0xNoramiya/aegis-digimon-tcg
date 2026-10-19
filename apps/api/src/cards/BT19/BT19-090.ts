@@ -31,7 +31,6 @@ const compiled: CompiledCard = {
                 kind: "Attack",
                 target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
                 attackTargetScope: "player",
-                mandatory: true,
                 cost: {
                   kind: "unsuspendNamed",
                   targets: [
@@ -54,6 +53,7 @@ const compiled: CompiledCard = {
                       count: 1,
                     },
                   ],
+                  optional: true,
                   raw: "by unsuspending 1 [Shoutmon EX6] and 1 [ShootingStarmon]",
                 },
               },

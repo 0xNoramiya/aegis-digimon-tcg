@@ -16,6 +16,7 @@ import {
   type ServerEvent,
   type ZoneRef,
 } from "@aegis/shared";
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { canAttackerDeclare } from "../combat/legality.js";
 import { resolveKeywords } from "../combat/keywords.js";
 import { effectiveKinds, effectiveNames, effectiveTraits } from "../effects/continuous.js";
@@ -240,7 +241,11 @@ export function effectEnvironment(engine: GameEngine, trigger: TriggerInfo): Eff
 export function forgetUsesOfCardsLeavingField(engine: GameEngine, event: ServerEvent): void {
   if (event.kind !== "cardsMoved") return;
   const onField = (zone: string): boolean => zone === Zone.BattleArea || zone === Zone.Breeding;
-  if (!onField(event.from) || onField(event.to)) return;
+  const fromField =
+    onField(event.from) ||
+    event.from === CardMovePosition.DIGIVOLUTION_CARDS.value ||
+    event.from === CardMovePosition.LINKED_CARDS.value;
+  if (!fromField || onField(event.to)) return;
   for (const instanceId of event.instanceIds) engine.tracker.forgetInstance(instanceId);
 }
 
@@ -295,6 +300,7 @@ export async function engineConsultLeavePrevention(
   // Immediate reactions must observe the rebuilt continuous registry, never its
   // clear-before-refill interval during an overlapping effect-resolution flow.
   await engine.recomputeContinuousEffects();
+  const pendingBefore = new Set(engine.pendingNestedTimingEffects);
   const prevented = await consultLeavePrevention(
     {
       subTriggers: engine.subTriggers,
@@ -544,6 +550,7 @@ export async function engineConsultLeavePrevention(
             triggerDescriptions: keyed.map(({ replacement }) => replacement.description),
             triggerIsInherited: keyed.map(({ isInherited }) => isInherited),
             acceptsResolutionPlan: true,
+            acceptsIndexedResolutionPlan: true,
             triggerIsOptional: keyed.map(({ replacement }) => effectTextMayAskYesNo(replacement.description)),
           },
         });
@@ -573,6 +580,7 @@ export async function engineConsultLeavePrevention(
       insteadOnly: opts?.insteadOnly,
       keywordPreventions: opts?.keywordPreventions,
       holdTriggered: opts?.holdTriggered,
+      holdCardTriggered: cause === "byBattle",
       reentryGuard: engine.preventReentryGuard,
     },
   );
@@ -580,6 +588,16 @@ export async function engineConsultLeavePrevention(
   // triggered activates now instead of waiting for one. A DigiXros material interrupt is the
   // exception: it happens inside the play procedure, so its caller hands what it triggered to
   // the played Digimon's [On Play] window (CR §15-4-3-2, §15-8-3-2).
+  if (cause === "byBattle") {
+    const triggered = engine.pendingNestedTimingEffects.filter(
+      (pending) => !pendingBefore.has(pending) && pending.timing === EffectTiming.WhenDigivolving,
+    );
+    const transferred = new Set(triggered);
+    engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter(
+      (pending) => !transferred.has(pending),
+    );
+    engine.pendingLeaveReplacementEffects.push(...triggered);
+  }
   const averted =
     opts?.isBounce === true || opts?.insteadOnly === true || permanentIds.every((id) => prevented.has(id));
   if (averted && opts?.isDigiXros !== true && opts?.holdTriggered !== true)
@@ -668,12 +686,18 @@ export function buildPrimitives(engine: GameEngine): Primitives {
         // another effect (Planet Punch through EX12-077) can Arts Digivolve the attacker, and
         // that [When Digivolving] is parked in the nested pool; it still resolves before
         // Counter Timing and security.
+        const offeredBeforeCounter = new Set(engine.pendingNestedTimingEffects);
         await drainPendingAttackTriggers(engine);
         // No declaration effect may become legal later during a block or battle.
         retirePendingAttackWatchers(engine);
         // Retire the exhausted parent remainder only after rule processing and every
         // declaration pool have finished; intermediate drains may enable its costs.
-        if (options?.retireUnactivatable) await drain(options);
+        if (options?.retireUnactivatable) {
+          await drain(options);
+          engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter(
+            (pending) => !offeredBeforeCounter.has(pending),
+          );
+        }
       } finally {
         engine.effectResolutionDepth = pausedDepth;
         engine.optionResolutionDepth = pausedOptionDepth;
@@ -742,7 +766,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
         trigger,
         candidates,
         (deletionTrigger, simultaneousPending = []) =>
-          simultaneousPending.length > 0
+          simultaneousPending.length > 0 || candidates.length > 0
             ? runTimingWindow(
                 engine,
                 EffectTiming.OnDestroyedAnyone,
@@ -766,7 +790,6 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       if (engine.ruleProcessing || engine.ruleTriggerPool !== undefined) {
         // A trash replacement is entered from the active rule pass. Run only the DP
         // movement processes: the outer pass owns the pooled reactions and its latch.
-        await engine.ruleChecks.trashNoDpPermanents();
         await engine.ruleChecks.deleteZeroDpDigimon();
       } else {
         const pool = await collectRuleProcessMovements(engine);
@@ -780,6 +803,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       originZone,
       projectOnly,
       simultaneousPlayCount,
+      reservedInstanceIds,
     ) => {
       // A selected security card can still be face down in its origin zone.
       // Locate only engine instance; do not expose hidden security to timing scans.
@@ -791,7 +815,16 @@ export function buildPrimitives(engine: GameEngine): Primitives {
           : findLooseInstance(engine, instanceId);
       return instance === undefined
         ? baseCost
-        : fireBeforePayCost(engine, instance, baseCost, useAsOption, originZone, projectOnly, simultaneousPlayCount);
+        : fireBeforePayCost(
+            engine,
+            instance,
+            baseCost,
+            useAsOption,
+            originZone,
+            projectOnly,
+            simultaneousPlayCount,
+            reservedInstanceIds,
+          );
     },
     clearPreparedDigiXrosPlay: (instanceId) => clearPreparedDigiXrosPlay(engine, instanceId),
     placePendingPlayCosts: (instanceId, permanentId) =>

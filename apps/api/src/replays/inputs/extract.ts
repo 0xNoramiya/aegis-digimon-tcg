@@ -264,6 +264,7 @@ function buildRecord(entries: Entry[], matchId: string): ReplayRecord {
       ? { serverRevision: header.serverRevision }
       : {}),
     seed: header.seed,
+    ...(typeof header.randomKey === "string" ? { randomKey: header.randomKey } : {}),
     ...(firstSeat !== undefined ? { firstSeat } : {}),
     rules: {
       deckFormat: (typeof header.deckFormat === "string" ? header.deckFormat : "standard") as DeckFormat,

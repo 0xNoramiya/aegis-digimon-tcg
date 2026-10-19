@@ -22,6 +22,20 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+it("renders the Chinese resolving clause with card context after printed translations load", async () => {
+  const card = getCardDefinition("LM-034")!;
+  const clause = card.effectText!.split("\n")[1]!;
+  const { container } = render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <EffectText text={clause} cardId={card.cardId} />
+    </I18nContext.Provider>,
+  );
+  await waitFor(() => expect(container.textContent).toContain("将其中的1张蓝色/红色数码宝贝卡牌加入手牌"));
+  expect(container.textContent).not.toContain("Reveal");
+  expect(container.textContent).not.toContain("内存值");
+  expect(container.querySelector('mark[data-kind="timing"]')?.textContent).toBe("[主要]");
+});
+
 describe("CardMini orientation", () => {
   it("turns a suspended permanent sideways so the state is unambiguous", () => {
     render(<CardMini cardId="ST1-02" suspended zoomOnHover={false} />);
@@ -44,6 +58,29 @@ describe("CardMini board DP", () => {
     render(<CardMini cardId="ST1-02" width={92} dp={3000} info zoomOnHover={false} />);
 
     expect(screen.getByText("3K").style.fontSize).toBe("calc(13px * calc(1 + (var(--ds-text-scale, 1) - 1) * 2))");
+  });
+});
+
+describe("CardMini printed traits", () => {
+  it.each([
+    ["ST23-13", "Glowing Dawn · BEATBREAK"],
+    ["ST23-02", "Rookie · Vaccine · Holy Beast · Glowing Dawn · BEATBREAK"],
+    ["BT18-102", "Mega · Hybrid · Vaccine · Shaman"],
+    ["BT16-102", "Mega · Vaccine · Free · Holy Warrior · X Antibody · Royal Knight"],
+  ])("shows every printed form, attribute and type for %s", (cardId, traits) => {
+    render(<CardMini cardId={cardId} width={84} info zoomOnHover={false} />);
+
+    expect(screen.getByText(traits)).toBeTruthy();
+  });
+
+  it("shows both Chinese traits on the paired BEATBREAK Tamer", async () => {
+    render(
+      <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+        <CardMini cardId="ST23-13" width={116} info zoomOnHover={false} />
+      </I18nContext.Provider>,
+    );
+
+    expect(await screen.findByText("光辉黎明 · 觉醒节拍")).toBeTruthy();
   });
 });
 

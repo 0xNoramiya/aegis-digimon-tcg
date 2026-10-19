@@ -281,7 +281,12 @@ export class CombatController {
    * second declaration.
    */
   redirectTarget(target: AttackTarget): boolean {
-    if (this.currentAttack === undefined) return false;
+    if (
+      this.currentAttack === undefined ||
+      this.access.permanentById(this.currentAttack.attackerPermanentId) === undefined
+    ) {
+      return false;
+    }
     // "This Digimon's attack target can't change" (§15-1-3, LM-039/EX7-022/BT13-029). The
     // restriction sits on the ATTACKER, and every printed instance is unscoped — it blocks the
     // switch whoever is attempting it. Returning false lets the caller see the redirect failed.
@@ -1807,7 +1812,9 @@ export class CombatController {
       // let that window order it with printed On Deletion effects. If no permanent was
       // actually deleted (for example, a replacement prevented it), activate it alone.
       if (deleted.length > 0) {
-        await resolveBattleWon(this.currentAttack === undefined ? { deferIntoDeletionWindow: true } : undefined);
+        await resolveBattleWon(
+          this.currentAttack === undefined || isAttackBattle ? { deferIntoDeletionWindow: true } : undefined,
+        );
       } else if (this.hooks.resolveAvertedBattleReactions !== undefined) {
         await this.hooks.resolveAvertedBattleReactions(resolveBattleWon);
       } else {

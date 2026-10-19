@@ -282,6 +282,41 @@ describe("DecisionManager resolution plan validation", () => {
     ).toBe(true);
   });
 
+  it("accepts indexed plans only when the pending decision advertises support", async () => {
+    const response: DecisionResponse = {
+      kind: "orderTriggers",
+      order: [],
+      orderIndexes: [2, 0],
+      optionalAnswersByIndex: [false, null, true],
+    };
+    expect(await respondTo(plannable, response)).toBe(false);
+    expect(await respondTo({ ...plannable, acceptsIndexedResolutionPlan: true }, response)).toBe(true);
+    expect(await respondTo({ ...offered, acceptsIndexedResolutionPlan: true }, response)).toBe(false);
+  });
+
+  it("keeps an invalid indexed answer pending and resolves a valid answer to named keys", async () => {
+    const state = gameWithSeats();
+    const manager = new DecisionManager(state, { requestDecision: () => {} });
+    const pending = manager.request({
+      seat: 0,
+      kind: "orderTriggers",
+      promptText: "order",
+      options: { ...plannable, acceptsIndexedResolutionPlan: true },
+    });
+    const decisionId = state.pendingDecision!.decisionId;
+    expect(manager.respond(0, decisionId, { kind: "orderTriggers", order: [], orderIndexes: [3] })).toBe(false);
+    expect(state.pendingDecision?.decisionId).toBe(decisionId);
+    expect(
+      manager.respond(0, decisionId, {
+        kind: "orderTriggers",
+        order: [],
+        orderIndexes: [2, 0],
+        optionalAnswersByIndex: [false, null, true],
+      }),
+    ).toBe(true);
+    expect(await pending).toEqual({ kind: "orderTriggers", order: ["c", "a"], optionalAnswers: { a: false, c: true } });
+  });
+
   it("rejects repeated, unknown, or malformed plan entries", async () => {
     expect(await respondTo(plannable, { kind: "orderTriggers", order: ["a", "a"] })).toBe(false);
     expect(await respondTo(plannable, { kind: "orderTriggers", order: ["a", "z"] })).toBe(false);

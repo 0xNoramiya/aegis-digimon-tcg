@@ -106,7 +106,13 @@ export function createResolverDecisions(
           triggerDescriptions: active.map((c) => c.effect.description ?? ""),
           ...(triggerReasons.some((reason) => reason !== "") ? { triggerReasons } : {}),
           triggerIsInherited: active.map((c) => c.effect.isInherited),
-          ...(plan !== undefined ? { acceptsResolutionPlan: true, triggerIsOptional: active.map(mayAskYesNo) } : {}),
+          ...(plan !== undefined
+            ? {
+                acceptsResolutionPlan: true,
+                acceptsIndexedResolutionPlan: true,
+                triggerIsOptional: active.map(mayAskYesNo),
+              }
+            : {}),
           ...(triggerTimings.some((entry) => entry !== "") ? { triggerTimings } : {}),
           ...(decisionTiming !== undefined ? { timing: decisionTiming } : {}),
           ...(waiting.length > 0

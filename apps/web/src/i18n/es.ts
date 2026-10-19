@@ -1,3 +1,4 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEs } from "@/i18n/providers.es";
 import { replayVideoEs } from "./replayVideo";
 import { profileReplayEs } from "./profileReplays";
@@ -18,6 +19,11 @@ import { settingsEs } from "./redesign/settings.es";
 import { shellEs } from "./redesign/shell.es";
 
 export const es: Record<keyof typeof en, string> = {
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Eliminar este Digimon",
+  "overlay.trashTopSecurityCard": "Descartar la carta superior de tu seguridad",
+  "overlay.trashTamerBottomCard": "Descartar la carta boca abajo del fondo de debajo de 1 de tus Tamers",
+  "overlay.trashTwoTamerBottomCards": "Descartar 2 cartas boca abajo del fondo de debajo de tus Tamers",
   ...providerEs,
   "settings.cardImageLanguage": "Idioma de las imágenes de cartas",
   "settings.cardImageLanguageDesc":
@@ -773,7 +779,14 @@ export const es: Record<keyof typeof en, string> = {
   "game.reconnecting": "Reconectando…",
   "game.reconnectingDetail": "Se perdió la conexión. Intentando retomar tu partida.",
   "game.connectionLost": "Conexión perdida",
-  "game.connectionLostDetail": "No se puede acceder al servidor. Revisa tu conexión e inténtalo de nuevo.",
+  "game.connectionLostDetail": "Se interrumpió la conexión con tu partida. Intenta reconectarte.",
+  "game.messageTooLarge": "Tu selección era demasiado grande para enviarla. Intenta resolver menos efectos a la vez.",
+  "game.messageTooLargeReconnecting":
+    "Tu selección era demasiado grande para enviarla. Reconectando para restaurar la elección pendiente.",
+  "game.reconnectFailed": "No pudimos reanudar esta partida. Vuelve al lobby e inténtalo de nuevo.",
+  "game.sessionExpired": "Esta partida ya no se puede reanudar. Vuelve al lobby.",
+  "game.tooManyMessages": "Se enviaron demasiadas acciones a la vez. Espera un momento y vuelve al lobby.",
+  "game.serverUnavailable": "El servidor del juego no está disponible temporalmente. Inténtalo de nuevo en breve.",
   "game.opponentDisconnected": "Oponente desconectado",
   "game.opponentDisconnectedDetail":
     "Esperando a que tu oponente se reconecte. La partida se reanudará automáticamente.",
@@ -1225,6 +1238,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.endSelection": "Terminar selección",
   "overlay.noSelection": "Sin selección",
   "overlay.use": "Usar",
+  "overlay.activationProgress": "Activación {index} de {total}",
   "overlay.notUse": "No usar",
   "overlay.moveToBattleArea": "Mover al área de batalla",
   "overlay.endPhase": "Terminar fase",

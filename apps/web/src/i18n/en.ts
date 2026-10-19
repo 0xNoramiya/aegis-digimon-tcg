@@ -1,3 +1,4 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { replayVideoEn } from "./replayVideo";
 import { profileReplayEn } from "./profileReplays";
@@ -20,6 +21,11 @@ import { shellEn } from "./redesign/shell.en";
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": "Trash your top security card",
+  "overlay.trashTamerBottomCard": "Trash the bottom face-down card from under 1 of your Tamers",
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
   "settings.cardImageLanguage": "Card image language",
   "settings.cardImageLanguageDesc":
@@ -784,7 +790,14 @@ export const en = {
   "game.reconnecting": "Reconnecting…",
   "game.reconnectingDetail": "The connection dropped. Trying to resume your match.",
   "game.connectionLost": "Connection lost",
-  "game.connectionLostDetail": "The server is unreachable. Check your connection and try again.",
+  "game.connectionLostDetail": "The connection to your match was interrupted. Please try reconnecting.",
+  "game.messageTooLarge": "Your selection was too large to send. Try resolving fewer effects at a time.",
+  "game.messageTooLargeReconnecting":
+    "Your selection was too large to send. Reconnecting to restore the pending choice.",
+  "game.reconnectFailed": "We could not resume this match. Return to the lobby and try again.",
+  "game.sessionExpired": "This match can no longer be resumed. Return to the lobby.",
+  "game.tooManyMessages": "Too many actions were sent at once. Wait a moment, then return to the lobby.",
+  "game.serverUnavailable": "The game server is temporarily unavailable. Please try again shortly.",
   "game.opponentDisconnected": "Opponent disconnected",
   "game.opponentDisconnectedDetail": "Waiting for your opponent to reconnect. The match will resume automatically.",
   "game.opponentDisconnectedCountdown": "If they do not return within {time}, you win the match.",
@@ -1231,6 +1244,7 @@ export const en = {
   "overlay.endSelection": "End Selection",
   "overlay.noSelection": "No Selection",
   "overlay.use": "Use",
+  "overlay.activationProgress": "Activation {index} of {total}",
   "overlay.notUse": "Don't use",
   "overlay.moveToBattleArea": "Move to battle area",
   "overlay.endPhase": "End phase",

@@ -197,6 +197,7 @@ function buildSeatScopedApi(
           ...(ctx.activeTargetFate !== undefined ? { targetFate: ctx.activeTargetFate } : {}),
           ...provenance(ctx),
           ...backOutPurpose(min, opts.min),
+          ...(asksController && ctx.payingDeclinableCost === true ? { declinesCost: true } : {}),
         },
       });
       const selected = clampSelection(
@@ -256,6 +257,7 @@ function buildSeatScopedApi(
           digiXrosRuleTrashInstanceIds: opts.digiXrosRuleTrashInstanceIds,
           ...provenance(ctx),
           ...backOutPurpose(min, opts.min),
+          ...(asksController && ctx.payingDeclinableCost === true ? { declinesCost: true } : {}),
         },
       });
       const selected = clampSelection(
@@ -287,6 +289,7 @@ function buildSeatScopedApi(
           ...(opts.maxTotalPlayCost !== undefined ? { maxTotalPlayCost: opts.maxTotalPlayCost } : {}),
           ...provenance(ctx),
           ...backOutPurpose(min, opts.min),
+          ...(asksController && ctx.payingDeclinableCost === true ? { declinesCost: true } : {}),
         },
       });
       const selected = clampSelection(

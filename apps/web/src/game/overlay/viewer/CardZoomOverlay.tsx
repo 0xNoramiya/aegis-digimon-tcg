@@ -1,6 +1,8 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { EffectText } from "@/game/EffectText";
+import { getCardDefinition } from "@aegis/shared/cards/registry";
 import { useState, useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { getCardDefinition } from "@aegis/shared";
 import { CardFull } from "../../../design/cards";
 import { useTranslation } from "../../../i18n";
 import { PrintedCardInfo } from "./PrintedCardInfo";
@@ -21,7 +23,9 @@ export function CardZoomOverlay({
   /** Info shown under the card. Defaults to the printed name, level, cost and DP. */
   details?: ReactNode;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
+  const card = getCardDefinition(cardId);
   const width = useCardZoomWidth();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -31,16 +35,28 @@ export function CardZoomOverlay({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
   const panel = (
-    <div
-      className="card-zoom"
-      role="dialog"
-      aria-modal="true"
-      aria-label={getCardDefinition(cardId)?.nameEn ?? cardId}
-      onClick={onClose}
-    >
+    <div className="card-zoom" role="dialog" aria-modal="true" aria-label={getCardName(cardId)} onClick={onClose}>
       <CardFull cardId={cardId} artId={artId} width={width} />
       <div className="card-zoom__details card-action-sheet__info" onClick={(e) => e.stopPropagation()}>
         {details ?? <PrintedCardInfo cardId={cardId} />}
+        {card?.effectText ? (
+          <section className="card-zoom__printed">
+            <strong>{t("overlay.printedEffect")}</strong>
+            <EffectText text={card.effectText} cardId={cardId} />
+          </section>
+        ) : null}
+        {card?.inheritedEffectText ? (
+          <section className="card-zoom__printed">
+            <strong>{t("library.inheritedEffect")}</strong>
+            <EffectText text={card.inheritedEffectText} cardId={cardId} />
+          </section>
+        ) : null}
+        {card?.securityEffectText ? (
+          <section className="card-zoom__printed">
+            <strong>{t("library.securityEffect")}</strong>
+            <EffectText text={card.securityEffectText} cardId={cardId} />
+          </section>
+        ) : null}
       </div>
       <button type="button" onClick={onClose} autoFocus>
         {t("common.close")}
@@ -55,9 +71,9 @@ export function CardZoomOverlay({
  * details and the close button below it. Cards are drawn at a 1:1.4 ratio, so the
  * height budget is what usually binds on a laptop and the width on a phone.
  */
-const CARD_ZOOM_CHROME_HEIGHT = 220;
+const CARD_ZOOM_CHROME_HEIGHT = 470;
 const CARD_ZOOM_MAX_WIDTH = 560;
-const CARD_ZOOM_MIN_WIDTH = 260;
+const CARD_ZOOM_MIN_WIDTH = 180;
 
 function useCardZoomWidth() {
   const measure = () =>

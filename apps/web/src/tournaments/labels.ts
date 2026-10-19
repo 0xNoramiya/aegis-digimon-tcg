@@ -118,7 +118,10 @@ export function reasonKey(code: string): TranslationKey | undefined {
 }
 
 /** The key and interpolation params for one deck-legality violation. */
-export function violationMessage(violation: DeckViolation): { key: TranslationKey; params: TranslationParams } {
+export function violationMessage(
+  violation: DeckViolation,
+  getCardName: (cardId: string) => string = cardName,
+): { key: TranslationKey; params: TranslationParams } {
   const key = `tournaments.violation.${camelCase(violation.kind)}` as TranslationKey;
   switch (violation.kind) {
     case "main_deck_size":
@@ -128,14 +131,14 @@ export function violationMessage(violation: DeckViolation): { key: TranslationKe
     case "over_copy_limit":
       return {
         key,
-        params: { card: cardName(violation.cardId), copies: violation.copies, allowed: violation.allowed },
+        params: { card: getCardName(violation.cardId), copies: violation.copies, allowed: violation.allowed },
       };
     case "banned_pair":
-      return { key, params: { card: cardName(violation.cardId), other: cardName(violation.conflictsWith) } };
+      return { key, params: { card: getCardName(violation.cardId), other: getCardName(violation.conflictsWith) } };
     case "wrong_deck":
-      return { key, params: { card: cardName(violation.cardId), deck: violation.belongsIn } };
+      return { key, params: { card: getCardName(violation.cardId), deck: violation.belongsIn } };
     default:
-      return { key, params: { card: cardName(violation.cardId) } };
+      return { key, params: { card: getCardName(violation.cardId) } };
   }
 }
 

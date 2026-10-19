@@ -1,9 +1,15 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
   "bot.identity.label": "Bot",
   "home.strategyGuides": "Pelajari cara memainkan deck dengan panduan strategi kami",
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
+  "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
   "settings.cardImageLanguage": "Bahasa gambar kartu",
   "settings.cardImageLanguageDesc":
@@ -230,6 +236,9 @@ const interfaceMessages = {
   "replay.start": "Ke awal",
   "replay.end": "Ke akhir",
   "replay.speed": "Kecepatan pemutaran",
+  "replay.move": "Pindahkan kontrol pemutaran",
+  "replay.moveHint":
+    "Seret untuk memindahkan. Gunakan tombol panah, Shift untuk langkah lebih besar, dan Home untuk mengatur ulang.",
   "replay.position": "Posisi replay",
   "replay.turn": "Giliran",
   "replay.action": "Aksi {current} dari {total}",
@@ -971,7 +980,14 @@ const interfaceMessages = {
   "game.reconnecting": "Menghubungkan kembali…",
   "game.reconnectingDetail": "Koneksi terputus. Mencoba melanjutkan pertandingan Anda.",
   "game.connectionLost": "Koneksi terputus",
-  "game.connectionLostDetail": "Server tidak bisa dihubungi. Cek koneksimu lalu coba lagi.",
+  "game.connectionLostDetail": "Koneksi ke pertandingan terputus. Coba hubungkan kembali.",
+  "game.messageTooLarge": "Pilihanmu terlalu besar untuk dikirim. Coba selesaikan lebih sedikit efek sekaligus.",
+  "game.messageTooLargeReconnecting":
+    "Pilihanmu terlalu besar untuk dikirim. Menghubungkan ulang untuk memulihkan pilihan yang tertunda.",
+  "game.reconnectFailed": "Pertandingan ini tidak dapat dilanjutkan. Kembali ke lobi dan coba lagi.",
+  "game.sessionExpired": "Pertandingan ini tidak bisa dilanjutkan lagi. Kembali ke lobi.",
+  "game.tooManyMessages": "Terlalu banyak aksi dikirim sekaligus. Tunggu sebentar, lalu kembali ke lobi.",
+  "game.serverUnavailable": "Server game sedang tidak tersedia. Coba lagi sebentar lagi.",
   "game.opponentDisconnected": "Lawan terputus",
   "game.opponentDisconnectedDetail": "Menunggu lawan terhubung kembali. Pertandingan akan dilanjutkan secara otomatis.",
   "game.opponentDisconnectedCountdown": "Jika mereka tidak kembali dalam waktu {time}, Anda memenangkan pertandingan.",
@@ -1422,6 +1438,7 @@ const interfaceMessages = {
   "overlay.endSelection": "Selesai Memilih",
   "overlay.noSelection": "Tidak Memilih",
   "overlay.use": "Gunakan",
+  "overlay.activationProgress": "Aktivasi {index} dari {total}",
   "overlay.notUse": "Jangan gunakan",
   "overlay.moveToBattleArea": "Pindah ke battle area",
   "overlay.endPhase": "End phase",

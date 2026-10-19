@@ -1,5 +1,168 @@
 [
   {
+    "version": "1.33.1-beta",
+    "releasedAt": "2026-10-19",
+    "summaryKey": "releases.1.33.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.33.1-beta.fix.link"
+      },
+      {
+        "textKey": "releases.1.33.1-beta.fix.faceUpSecurity"
+      },
+      {
+        "textKey": "releases.1.33.1-beta.fix.artsDigivolve"
+      }
+    ]
+  },
+  {
+    "version": "1.33.0-beta",
+    "releasedAt": "2026-10-19",
+    "summaryKey": "releases.1.33.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.33.0-beta.feature.bt27"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.33.0-beta.fix.story"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.inspection"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.larva"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.triggers"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.stackPrompts"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.linkedDp"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.effectClauses"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.searchLayout"
+      }
+    ]
+  },
+  {
+    "version": "1.32.0-beta",
+    "releasedAt": "2026-10-18",
+    "summaryKey": "releases.1.32.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.32.0-beta.feature.bt27"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.32.0-beta.fix.inheritedSources"
+      },
+      {
+        "textKey": "releases.1.32.0-beta.fix.immunity"
+      },
+      {
+        "textKey": "releases.1.32.0-beta.fix.timing"
+      },
+      {
+        "textKey": "releases.1.32.0-beta.fix.presentation"
+      },
+      {
+        "textKey": "releases.1.32.0-beta.fix.localization"
+      }
+    ]
+  },
+  {
+    "version": "1.31.5-beta",
+    "releasedAt": "2026-10-18",
+    "summaryKey": "releases.1.31.5-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.31.5-beta.fix.hiddenInformation"
+      },
+      {
+        "textKey": "releases.1.31.5-beta.fix.onDeletionTiming"
+      },
+      {
+        "textKey": "releases.1.31.5-beta.fix.replayControls"
+      }
+    ]
+  },
+  {
+    "version": "1.31.4-beta",
+    "releasedAt": "2026-10-17",
+    "summaryKey": "releases.1.31.4-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.31.4-beta.fix.messages"
+      },
+      {
+        "textKey": "releases.1.31.4-beta.fix.assets"
+      }
+    ]
+  },
+  {
+    "version": "1.31.3-beta",
+    "releasedAt": "2026-10-17",
+    "summaryKey": "releases.1.31.3-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.31.3-beta.fix.storyDecks"
+      }
+    ]
+  },
+  {
+    "version": "1.31.2-beta",
+    "releasedAt": "2026-10-17",
+    "summaryKey": "releases.1.31.2-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.31.2-beta.feature.bt27"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.31.2-beta.fix.dna"
+      },
+      {
+        "textKey": "releases.1.31.2-beta.fix.redirect"
+      },
+      {
+        "textKey": "releases.1.31.2-beta.fix.digiXros"
+      },
+      {
+        "textKey": "releases.1.31.2-beta.fix.story"
+      },
+      {
+        "textKey": "releases.1.31.2-beta.fix.cardText"
+      },
+      {
+        "textKey": "releases.1.31.2-beta.fix.opponentChoice"
+      }
+    ]
+  },
+  {
+    "version": "1.31.1-beta",
+    "releasedAt": "2026-10-16",
+    "summaryKey": "releases.1.31.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.31.1-beta.fix.bitingCrush"
+      }
+    ]
+  },
+  {
     "version": "1.31.0-beta",
     "releasedAt": "2026-10-16",
     "summaryKey": "releases.1.31.0-beta.summary",

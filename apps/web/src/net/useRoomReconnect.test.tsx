@@ -1,3 +1,4 @@
+import { Room, CloseCode, Protocol } from "@colyseus/sdk";
 import { OPPONENT_DECK_CHANNEL } from "@aegis/shared/decks/OPPONENT_DECK_CHANNEL";
 import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 // @vitest-environment jsdom
@@ -33,7 +34,7 @@ vi.mock("./client", () => ({
 }));
 
 const { useRoom } = await import("./useRoom");
-const { sendIntent, flushIntents } = await import("./client");
+const { sendIntent, flushIntents, clearPendingIntents } = await import("./client");
 const { saveReconnectSession, loadReconnectSession } = await import("./reconnectSession");
 
 const STORAGE_KEY = "aegis:matchSession";
@@ -51,15 +52,27 @@ interface FakeRoom {
   emitOpponentDeck: (deck: UsedDeck) => void;
 }
 
+class DecodingRoom extends Room {
+  receive(event: MessageEvent) {
+    this.onMessageCallback(event);
+  }
+}
+
 function fakeRoom(roomId: string, { answersPings = true }: { answersPings?: boolean } = {}): FakeRoom {
   let onState: ((state: GameState) => void) | undefined;
   let onLeave: ((code: number) => void) | undefined;
   const messages = new Map<string, (message: DecisionRequest | SequencedServerEvent | UsedDeck) => void>();
+  const decoder = new DecodingRoom("decoder");
+  decoder.onMessage("x", () => {});
   const room = {
     roomId,
     sessionId: `${roomId}-session`,
     reconnectionToken: `${roomId}:token`,
-    connection: { isOpen: true, close: vi.fn<(code: number) => void>((code) => onLeave?.(code)) },
+    connection: {
+      isOpen: true,
+      events: { onmessage: (event: MessageEvent) => decoder.receive(event) },
+      close: vi.fn<(code: number) => void>((code) => onLeave?.(code)),
+    },
     reconnection: { enabled: true },
     ping: (answer: (ms: number) => void) => {
       if (answersPings) answer(20);
@@ -106,6 +119,53 @@ describe("useRoom reconnection token persistence", () => {
     cleanup();
   });
 
+  it("explains an oversized message and clears its queued intent before recovering the seat", async () => {
+    const joined = fakeRoom("large-message");
+    const resumed = fakeRoom("large-message");
+    let resume!: (room: AegisRoom) => void;
+    const recovery = new Promise<AegisRoom>((resolve) => {
+      resume = resolve;
+    });
+    joinOrCreate.mockResolvedValue(joined.room);
+    reconnect.mockReturnValue(recovery);
+    const { result } = renderHook(() => useRoom(OPTIONS));
+    await waitFor(() => expect(result.current.status).toBe("connected"));
+    vi.mocked(clearPendingIntents).mockClear();
+
+    joined.emitLeave(1009);
+    expect(result.current.status).toBe("reconnecting");
+    expect(result.current.error).toBe("AEGIS_MESSAGE_TOO_LARGE");
+    expect(clearPendingIntents).toHaveBeenCalledOnce();
+
+    await act(async () => resume(resumed.room));
+    await waitFor(() => expect(result.current.status).toBe("connected"));
+    expect(result.current.error).toBeUndefined();
+    expect(result.current.room).toBe(resumed.room);
+    const decision: DecisionRequest = {
+      decisionId: "pending-effects",
+      seat: 0,
+      kind: "orderTriggers",
+      promptText: "Choose the next effect",
+      options: { triggerKeys: ["source/effect"] },
+    };
+    resumed.emitDecision(decision);
+    expect(result.current.decision).toEqual(decision);
+  });
+
+  it.each([
+    [4408, "AEGIS_SESSION_EXPIRED"],
+    [4429, "AEGIS_TOO_MANY_MESSAGES"],
+  ])("explains terminal close %i instead of leaving a frozen board", async (code, error) => {
+    const joined = fakeRoom("closed-match");
+    joinOrCreate.mockResolvedValue(joined.room);
+    const { result } = renderHook(() => useRoom(OPTIONS));
+    await waitFor(() => expect(result.current.status).toBe("connected"));
+    joined.emitLeave(code);
+    expect(result.current.status).toBe("closed");
+    expect(result.current.error).toBe(error);
+    expect(reconnect).not.toHaveBeenCalled();
+  });
+
   it("keeps a snapshot of every revision even when several patches land before a render", async () => {
     const joined = fakeRoom("room-1");
     joinOrCreate.mockResolvedValue(joined.room);
@@ -130,6 +190,24 @@ describe("useRoom reconnection token persistence", () => {
       [2, 3],
       [3, 6],
     ]);
+  });
+
+  it("resumes the same seat when a received MessagePack frame cannot be decoded", async () => {
+    const joined = fakeRoom("damaged-frame");
+    const resumed = fakeRoom("damaged-frame");
+    joinOrCreate.mockResolvedValue(joined.room);
+    reconnect.mockResolvedValue(resumed.room);
+    const { result } = renderHook(() => useRoom(OPTIONS));
+    await waitFor(() => expect(result.current.status).toBe("connected"));
+    const frame = new MessageEvent("message", {
+      data: new Uint8Array([Protocol.ROOM_DATA, 161, 120, 129, 161]).buffer,
+    });
+    expect(() => act(() => joined.room.connection.events.onmessage?.(frame))).not.toThrow();
+    await waitFor(() => expect(result.current.room).toBe(resumed.room));
+    expect(joined.room.connection.close).toHaveBeenCalledExactlyOnceWith(CloseCode.MAY_TRY_RECONNECT);
+    expect(reconnect).toHaveBeenCalledExactlyOnceWith("damaged-frame:token", "legacy");
+    expect(joinOrCreate).toHaveBeenCalledTimes(1);
+    expect(result.current.status).toBe("connected");
   });
 
   it("persists the reconnection token once a fresh join binds", async () => {

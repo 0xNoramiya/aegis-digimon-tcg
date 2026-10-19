@@ -1,4 +1,5 @@
 import { getTranslatedCardText } from "@/i18n/getTranslatedCardText";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { splitInspectorPrintedText } from "@/game/splitInspectorPrintedText";
 import { InspectorActiveBadges } from "@/game/InspectorActiveBadges";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
@@ -55,6 +56,7 @@ export function ArenaPermanentInspector({
   onClose: () => void;
 }) {
   const { locale, t } = useTranslation();
+  const getCardName = useTranslatedCardName();
   const translations = useCardTranslations({ includePrintedText: true });
   const sideSources = useMediaQuery(INSPECTOR_SIDE_SOURCES_QUERY);
   const sourcesLayout = sideSources ? "column" : "strip";
@@ -73,7 +75,7 @@ export function ArenaPermanentInspector({
     ...(top?.forms ?? []).map((value) => getTranslatedCardMeta({ value, group: "forms", translations })),
     ...(top?.attributes ?? []).map((value) => getTranslatedCardMeta({ value, group: "attributes", translations })),
     ...(top?.types ?? []).map((value) => getTranslatedCardMeta({ value, group: "traits", translations })),
-  ].filter((trait) => trait && trait !== "-");
+  ].filter((trait) => trait && trait !== "-" && trait !== "—");
   const anchor = useArenaHalfAnchor({
     container: inspection.container,
     half: inspectedArenaHalf(inspection.side),
@@ -293,7 +295,15 @@ export function ArenaPermanentInspector({
               >
                 <span className="arena-permanent-inspector__effect-label">{t("overlay.grantedEffects")}</span>
                 <p>
-                  <EffectText inspector asciiBrackets text={forcedAttackGrantText(grant, t)} />
+                  <EffectText inspector asciiBrackets text={forcedAttackGrantText(grant, t, getCardName)} />
+                </p>
+              </div>
+            ))}
+            {detail.grantedEffectTexts.map((effect, index) => (
+              <div key={`${effect}-${index}`} className="arena-permanent-inspector__effect" data-role="granted">
+                <span className="arena-permanent-inspector__effect-label">{t("overlay.grantedEffects")}</span>
+                <p>
+                  <EffectText inspector asciiBrackets text={effect} />
                 </p>
               </div>
             ))}

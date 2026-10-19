@@ -305,3 +305,35 @@ it("does not offer an unavailable opponent deck", () => {
   renderOverlay();
   expect(screen.queryByRole("button", { name: "View opponent’s deck" })).toBeNull();
 });
+
+it("keeps the board-review result bar clear of the portrait match menu", () => {
+  const header = document.createElement("header");
+  header.className = "game-opponent-bar";
+  const hand = document.createElement("div");
+  hand.className = "game-opponent-hand";
+  const menu = document.createElement("details");
+  menu.className = "game-mobile-menu";
+  header.append(hand, menu);
+  document.body.append(header);
+  vi.spyOn(document.body, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 390, 844));
+  vi.spyOn(header, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 390, 44));
+  vi.spyOn(hand, "getBoundingClientRect").mockReturnValue(new DOMRect(100, 0, 80, 44));
+  vi.spyOn(menu, "getBoundingClientRect").mockReturnValue(new DOMRect(338, 4, 36, 36));
+  vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (this: HTMLElement) {
+    if (this.classList.contains("game-result-bar--compact")) {
+      return 40;
+    }
+    return this.classList.contains("game-result-bar--brief") ? 180 : 300;
+  });
+  try {
+    renderOverlay();
+    fireEvent.click(screen.getByRole("button", { name: "View board" }));
+    const bar = screen.getByRole("status");
+    expect(bar.classList.contains("game-result-bar--compact")).toBe(true);
+    expect(bar.style.right).toBe("64px");
+    expect(bar.style.translate).toBe("none");
+  } finally {
+    header.remove();
+    vi.restoreAllMocks();
+  }
+});

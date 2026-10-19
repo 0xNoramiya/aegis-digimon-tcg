@@ -1,4 +1,5 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { createPortal } from "react-dom";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
@@ -44,6 +45,7 @@ export function CardActionPopupMenu({
   effects?: CardActionEffect[];
 }) {
   const { t } = useTranslation();
+  const translateCardText = useTranslatedCardText();
   return createPortal(
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 9000 }} />
@@ -101,8 +103,8 @@ export function CardActionPopupMenu({
             key={effect.label}
             style={item}
             onClick={effect.onActivate}
-            title={effect.label}
-            aria-label={`${t("game.activateEffect")}: ${effect.label}`}
+            title={translateCardText({ text: effect.label })}
+            aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label })}`}
             {...hoverBackground("var(--ds-fill)")}
           >
             <span aria-hidden="true">⚡</span> {t("game.activateMainEffect")}

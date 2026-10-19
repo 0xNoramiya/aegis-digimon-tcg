@@ -615,7 +615,7 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
   if (action.effectTextPart !== undefined) ctx.activeEffectTextPart = action.effectTextPart;
   if (costChoice && paysCostFirst && effectiveCost.raw !== undefined) {
     ctx.activeEffectTextPart = ctx.activeEffectText;
-    ctx.activeEffectTextEmphasis = effectiveCost.raw;
+    ctx.activeEffectTextEmphasis = action.costTextEmphasis ?? effectiveCost.raw;
   }
   let chosen: boolean;
   try {
@@ -1074,7 +1074,7 @@ export function canActivateEffect(
     bindAs !== undefined &&
     leadingBind.target.upTo !== true &&
     ctx.selections?.get(bindAs) === undefined &&
-    dependsOnSelection(relevantActions.slice(1), bindAs) &&
+    relevantActions.slice(1).every((action) => dependsOnSelection([action], bindAs)) &&
     candidatePermanents(ctx, leadingBind.target).length === 0
   ) {
     return false;
