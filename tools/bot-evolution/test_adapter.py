@@ -3,6 +3,7 @@
 import json
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -233,3 +234,131 @@ def test_balanced_batch_refuses_mislabeled_control_and_wrong_game(tmp_path, monk
         )
     with pytest.raises(ValueError, match="restricted"):
         adapter.evaluate([{"opponent": "mcts"}], {"heuristic": "{}"})
+
+
+def test_screening_rollout_bound_reaches_only_mcts_payloads_and_cache_keys(
+    tmp_path: Path, monkeypatch
+) -> None:
+    payloads = []
+
+    def complete(command, **kwargs):
+        payload = json.loads(kwargs["input"])
+        payloads.append(payload)
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=json.dumps(
+                {"valid": True, "score": 1, "engineSha256": "engine", "traces": [{}]}
+            ),
+        )
+
+    monkeypatch.setattr("adapter.subprocess.run", complete)
+
+    def adapter(rollout_turns):
+        return HeuristicAdapter(
+            EvaluationConfig(
+                node="node",
+                worker=Path(__file__),
+                run_dir=tmp_path / f"games-{rollout_turns}",
+                engine_sha256="engine",
+                simulations=32,
+                cache_dir=tmp_path / "cache",
+                rollout_turns=rollout_turns,
+            ),
+            {},
+        )
+
+    candidate = {"heuristic": '{"schemaVersion":1}'}
+    tasks = [{"seed": 1, "opponent": "mcts"}, {"seed": 1, "opponent": "heuristic"}]
+    adapter(2).evaluate(tasks, candidate)
+    assert [payload.get("mctsRolloutTurns") for payload in payloads] == [2, None]
+    adapter(None).evaluate(tasks, candidate)
+    assert len(payloads) == 3
+    assert "mctsRolloutTurns" not in payloads[2]
+
+
+def test_teacher_advice_rides_only_traced_payloads_and_reuses_the_game_cache(
+    tmp_path: Path, monkeypatch
+) -> None:
+    payloads = []
+
+    def complete(command, **kwargs):
+        payload = json.loads(kwargs["input"])
+        payloads.append(payload)
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=json.dumps(
+                {
+                    "valid": True,
+                    "score": 1,
+                    "engineSha256": "engine",
+                    "traces": [{}],
+                    **({"teacher": {"searches": 1, "failures": 0}} if "teacher" in payload else {}),
+                }
+            ),
+        )
+
+    monkeypatch.setattr("adapter.subprocess.run", complete)
+    teacher = {"simulations": 8, "maxSearches": 2, "every": 3}
+    adapter = HeuristicAdapter(
+        EvaluationConfig(
+            node="node",
+            worker=Path(__file__),
+            run_dir=tmp_path / "games",
+            engine_sha256="engine",
+            simulations=32,
+            cache_dir=tmp_path / "cache",
+            teacher=teacher,
+        ),
+        {},
+    )
+    candidate = {"heuristic": '{"schemaVersion":1}'}
+    task = {"seed": 1, "opponent": "mcts"}
+    adapter.evaluate([task], candidate)
+    assert "teacher" not in payloads[0]
+    adapter.evaluate([task], candidate, capture_traces=True)
+    assert payloads[1]["teacher"] == teacher
+    adapter.evaluate([task], candidate)
+    adapter.evaluate([task], candidate, capture_traces=True)
+    assert len(payloads) == 2
+
+
+def test_reflection_dataset_lists_clear_teacher_disagreements_only() -> None:
+    adapter = HeuristicAdapter.__new__(HeuristicAdapter)
+    adapter.metadata = {"features": ["cost"]}
+
+    def trace(chosen, preferred):
+        return {
+            "turn": 3,
+            "sourceCardId": "BT1-010",
+            "features": {"cost": 3, "pass": 0},
+            "teacher": {
+                "simulations": 16,
+                "chosenVisits": chosen,
+                "root": [
+                    {"visits": preferred, "meanReward": 0.7, "sourceCardId": "BT1-020"},
+                ],
+            },
+        }
+
+    output = {
+        "task": {"seed": 1},
+        "valid": True,
+        "score": 0,
+        "traces": [trace(2, 12), trace(6, 8), {"turn": 4}],
+    }
+    dataset = adapter.make_reflective_dataset(
+        {"heuristic": "{}"},
+        SimpleNamespace(outputs=[output]),
+        ["heuristic"],
+    )
+    disagreements = dataset["heuristic"][0]["Generated Outputs"]["teacherDisagreements"]
+    assert len(disagreements) == 1
+    assert disagreements[0]["preferred"] == {
+        "sourceCardId": "BT1-020",
+        "visitShare": 0.75,
+        "meanReward": 0.7,
+        "features": {},
+    }
+    assert disagreements[0]["chosen"]["features"] == {"cost": 3}

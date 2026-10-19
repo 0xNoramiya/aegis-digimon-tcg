@@ -273,3 +273,49 @@ def test_unrecorded_accepted_gate_refuses_a_changed_request(tmp_path, monkeypatc
     with pytest.raises(ValueError, match="awaits GEPA acceptance"):
         resumed(candidate, {"heuristic": [{"different": True}]}, ["heuristic"])
 
+
+def test_sequential_gates_share_parent_blocks_and_use_the_full_fidelity_adapter(
+    tmp_path, monkeypatch
+):
+    program = {"rules": [{"feature": "cost", "weight": -1, "advice": "Spend carefully."}]}
+    proposals = iter(
+        [
+            {"rules": [{**program["rules"][0], "when": {"kind": "main"}}]},
+            {"rules": [{**program["rules"][0], "when": {"kind": "block"}}]},
+        ]
+    )
+    monkeypatch.setattr(
+        "proposals.InstructionProposalSignature.run",
+        lambda **kwargs: {"new_instruction": json.dumps(next(proposals))},
+    )
+    tasks = [{"seed": 100 + index // 2, "learnerSeat": index % 2} for index in range(48)]
+    candidate = {"heuristic": json.dumps(program)}
+    gate_calls = []
+
+    def lose(tasks, candidate):
+        gate_calls.append((tasks, json.loads(candidate["heuristic"])))
+        conditional = "when" in json.loads(candidate["heuristic"])["rules"][0]
+        return SimpleNamespace(
+            outputs=[
+                {"task": task, "valid": True, "score": int(not conditional and task["seed"] % 2)}
+                for task in tasks
+            ]
+        )
+
+    propose = guarded_proposer(
+        None,
+        None,
+        program,
+        tasks,
+        tmp_path,
+        2,
+        gate_adapter=SimpleNamespace(evaluate=lose),
+        sequential_looks=[8, 16, 24],
+    )
+    assert propose(candidate, {"heuristic": []}, ["heuristic"]) == candidate
+    assert propose(candidate, {"heuristic": []}, ["heuristic"]) == candidate
+    control_blocks = [tasks for tasks, policy in gate_calls if "when" not in policy["rules"][0]]
+    assert control_blocks[0] == control_blocks[-1]
+    assert not {task["seed"] for task in tasks} & {task["seed"] for task in control_blocks[0]}
+    records = [json.loads(path.read_text()) for path in sorted(tmp_path.glob("proposal-*.json"))]
+    assert [record["pairedEvidence"]["stopReason"] for record in records] == ["futility"] * 2

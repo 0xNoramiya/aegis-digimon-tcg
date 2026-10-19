@@ -10,6 +10,7 @@ from gepa.strategies.instruction_proposal import InstructionProposalSignature
 from adapter import REFLECTION_TEMPLATE
 from evidence import paired_evidence, policy_hash
 from residual_weights import RESIDUAL_WEIGHTS
+from sequential_sign_gate import sequential_sign_gate
 
 
 def guarded_proposer(
@@ -19,7 +20,11 @@ def guarded_proposer(
     tasks: list[dict],
     directory: Path,
     proposal_limit: int,
+    *,
+    gate_adapter=None,
+    sequential_looks: list[int] | None = None,
 ):
+    gate_adapter = gate_adapter or adapter
     if len(tasks) < 48:
         raise ValueError("Proposal gates require at least 48 paired games")
     weights = {}
@@ -66,6 +71,7 @@ def guarded_proposer(
                     "calibrated": calibrated,
                     "tasks": tasks,
                     "proposalLimit": proposal_limit,
+                    "sequentialLooks": sequential_looks,
                 },
                 sort_keys=True,
                 allow_nan=False,
@@ -135,10 +141,20 @@ def guarded_proposer(
                 )
                 return candidate
             rule["weight"] = calibrated_weight
-        # Gate seeds are disjoint from train/validation/test; each hypothesis gets
-        # new blocks even when its parent was selected using previous outcomes.
+        # Gate seeds are disjoint from train/validation/test. One-shot gates give each
+        # hypothesis new blocks. Sequential gates share blocks per parent so its control
+        # games are cached; Bonferroni over proposals holds under that dependence.
+        gate_block = (
+            calls
+            if sequential_looks is None
+            else 1
+            + sum(
+                _accepted(json.loads((directory / f"proposal-{number:04d}.json").read_text()))
+                for number in range(1, calls)
+            )
+        )
         gate_tasks = [
-            {**task, "seed": task["seed"] + 1_000_000_000 + calls * 10000} for task in tasks
+            {**task, "seed": task["seed"] + 1_000_000_000 + gate_block * 10000} for task in tasks
         ]
         proposal = {"heuristic": json.dumps(program)}
         if policy_hash(program) == policy_hash(json.loads(candidate["heuristic"])):
@@ -180,11 +196,25 @@ def guarded_proposer(
                     }
                 )
                 return candidate
-        selected = adapter.evaluate(gate_tasks, proposal).outputs
-        control = adapter.evaluate(gate_tasks, candidate).outputs
-        evidence = paired_evidence(
-            selected, control, alpha=0.05 / proposal_limit, method="wilson-wins"
-        )
+        if sequential_looks is None:
+            selected = gate_adapter.evaluate(gate_tasks, proposal).outputs
+            control = gate_adapter.evaluate(gate_tasks, candidate).outputs
+            evidence = paired_evidence(
+                selected, control, alpha=0.05 / proposal_limit, method="wilson-wins"
+            )
+        else:
+            gate = sequential_sign_gate(
+                lambda look: (
+                    gate_adapter.evaluate(look, proposal).outputs,
+                    gate_adapter.evaluate(look, candidate).outputs,
+                ),
+                gate_tasks,
+                sequential_looks,
+                0.05 / proposal_limit,
+            )
+            evidence = {
+                key: value for key, value in gate.items() if key not in ("selected", "control")
+            }
         finish(
             {
                 "program": program,

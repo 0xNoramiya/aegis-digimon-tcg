@@ -306,6 +306,51 @@ rollout heuristic. Full engine replay is expensive. Logs report actual completed
 and rejected simulations, and the run directory pins the compiled engine hash.
 A low-budget smoke run is development evidence, not a validated strategy guide.
 
+## Multi-fidelity campaigns
+
+The engine cannot snapshot a live match: it holds in-flight promises, closure
+subscriptions and weak maps. Every simulation therefore replays the prefix from the
+seed. In local measurements on the current engine, prefix replay was 40–75% of
+rollout time at mid-game roots, and full rollouts played to the end of the game.
+Glowing Dawn matches cost about 7–10 ms per engine decision, about five times the
+random-deck cost.
+
+These options define a new experiment. They are off by default, and a run that uses
+them is not equivalent to a full 128-simulation campaign:
+
+| Option                    | Effect                                                                                 |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| `--screen-simulations`    | GEPA training, selection and reflection screening use this MCTS budget.                |
+| `--screen-rollout-turns`  | Screening rollouts stop at that turn and score `evaluateSearchPosition`.               |
+| `--selection-pairs`       | GEPA's selection set uses only the first N validation seed blocks.                     |
+| `--sequential-looks`      | The proposal gate plays at `--simulations` without rollout bounds, one look at a time. |
+| `--teacher-simulations`   | Traced training games add advisory searches from the learner's seat.                   |
+| `--final-control generic` | Held-out pilot results use the accepted generic policy as control.                     |
+
+Multi-fidelity screening requires `--fixed-opponent`. The proposal count follows
+the selection set size, so a smaller set yields more proposals per stage.
+
+The sequential gate uses an exact one-sided sign test on one task-hash
+representative per seed block. Each look spends `0.05 / proposals / looks`, so the
+familywise error stays bounded for any stopping time. A gate stops for futility when
+the control leads or when even all remaining blocks could not reach the threshold.
+Those stops are non-binding and only lower acceptance. Gates for the same parent
+reuse one set of fresh gate blocks, so the parent's control games come from the cache.
+Bonferroni over proposals holds under that dependence. More proposals make each gate
+stricter, so a stage that wants several proposals may need more `--pairs`.
+
+Teacher searches run after the learner has chosen its action and never change the
+played game; a test checks that results, decisions and opponent searches match.
+Reflection receives up to six `teacherDisagreements` per game where the search's top
+action had more than twice the visits of the played action. Those are noisy hints from
+short searches against a heuristic opponent, not ground truth. Validation and held-out
+games never capture traces, so teacher data stays in the training split.
+
+In one-sample measurements at 16 simulations, two-turn rollouts cut rollout time 2–11×
+early in the game. Late roots gain less because prefix replay dominates. Examon
+against Toho Braves fell from 7.0 s to 1.2 s per search after 16 decisions; Glowing
+Dawn against Examon fell from 10.4 s to 8.1 s after 40 decisions.
+
 ## Desktop execution
 
 The user's Windows desktop is SSH host `desktop`, reached through Tailscale.

@@ -27,6 +27,31 @@ class EvaluationConfig:
     workers: int = 4
     cache_dir: Path | None = None
     desktop_wsl_args: tuple[str, ...] = ()
+    rollout_turns: int | None = None
+    teacher: dict[str, int] | None = None
+
+
+def _nonzero(features: dict[str, float]) -> dict[str, float]:
+    return {key: value for key, value in features.items() if value != 0}
+
+
+def _disagreement(trace: dict[str, Any]) -> dict[str, Any]:
+    teacher = trace["teacher"]
+    preferred = teacher["root"][0]
+    return {
+        "turn": trace.get("turn"),
+        "chosen": {
+            "sourceCardId": trace.get("sourceCardId"),
+            "visitShare": teacher["chosenVisits"] / teacher["simulations"],
+            "features": _nonzero(trace.get("features", {})),
+        },
+        "preferred": {
+            "sourceCardId": preferred.get("sourceCardId"),
+            "visitShare": preferred["visits"] / teacher["simulations"],
+            "meanReward": preferred["meanReward"],
+            "features": _nonzero(preferred.get("features", {})),
+        },
+    }
 
 
 class HeuristicAdapter:
@@ -44,6 +69,8 @@ class HeuristicAdapter:
         self.metadata = metadata
         if not 1 <= config.workers <= 4:
             raise ValueError("Use 1–4 bounded desktop evaluation workers")
+        if config.rollout_turns is not None and not 1 <= config.rollout_turns <= 200:
+            raise ValueError("Rollout bounds must be from 1 to 200 turns")
         self.call_lock = Lock()
         if config.cache_dir is not None:
             config.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -126,9 +153,19 @@ class HeuristicAdapter:
                 "captureTraces": capture_traces,
                 "engineSha256": self.config.engine_sha256,
             }
+            if self.config.rollout_turns is not None and task.get("opponent") == "mcts":
+                payload["mctsRolloutTurns"] = self.config.rollout_turns
+            advised = capture_traces and self.config.teacher is not None
+            if advised:
+                payload["teacher"] = self.config.teacher
+            # Advisory searches never change the played game, so they share its cache entry.
             fingerprint = hashlib.sha256(
                 json.dumps(
-                    {key: value for key, value in payload.items() if key != "captureTraces"},
+                    {
+                        key: value
+                        for key, value in payload.items()
+                        if key not in ("captureTraces", "teacher")
+                    },
                     sort_keys=True,
                 ).encode("utf-8")
             ).hexdigest()
@@ -153,6 +190,7 @@ class HeuristicAdapter:
                     and output.get("valid") is True
                     and output.get("engineSha256") == self.config.engine_sha256
                     and (not capture_traces or bool(output.get("traces")))
+                    and (not advised or output.get("teacher") is not None)
                 ):
                     output["cacheHit"] = True
                     outputs[index] = self._save_game(output, request, program)
@@ -267,7 +305,9 @@ class HeuristicAdapter:
                 "engineSha256": self.config.engine_sha256,
             }
         )
-        request["artifact"].write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
+        artifact = request["artifact"].with_suffix(f".{uuid4().hex}.tmp")
+        artifact.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
+        artifact.replace(request["artifact"])
         cache = request["cache"]
         if cache is not None and output.get("valid") is True and not output.get("cacheHit"):
             temporary = cache.with_suffix(f".{uuid4().hex}.tmp")
@@ -327,6 +367,12 @@ class HeuristicAdapter:
                 }
                 for trace in thin_traces
             ]
+            disagreements = [
+                _disagreement(trace)
+                for trace in traces
+                if trace.get("teacher", {}).get("simulations")
+                and trace["teacher"]["root"][0]["visits"] > 2 * trace["teacher"]["chosenVisits"]
+            ][:6]
             records.append(
                 {
                     "Inputs": {
@@ -340,6 +386,7 @@ class HeuristicAdapter:
                         "blockedIntents": json.loads(candidate["heuristic"]).get(
                             "blockedIntents", []
                         ),
+                        **({"teacherDisagreements": disagreements} if disagreements else {}),
                     },
                     "Feedback": {
                         "score": output.get("score", 0),
@@ -388,6 +435,8 @@ use thousands of DP. Cost/handover are memory units. Lethal means an opportunity
 attack zero security, not guaranteed victory. Opposing blockers/counters still resolve.
 Use conditional rules to improve context and card-specific pilots; a constant feature
 without a condition cannot distinguish actions. Never invent printed card effects.
+teacherDisagreements, when present, list decisions where a short search from your seat
+preferred another action; treat them as noisy hints about a pattern, never as ground truth.
 Use game evidence to diagnose poor passing, wasted costs, bad attacks, poor development,
 or optional selections. Advice must match the actual weight and conditions. Do not
 mention GEPA, code, JSON, or weights in advice intended for players.

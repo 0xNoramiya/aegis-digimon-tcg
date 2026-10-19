@@ -476,3 +476,101 @@ def test_held_out_candidates_and_controls_keep_the_campaign_turn_limit(
     assert calls[0] == calls[1]
     assert calls[2] == calls[3]
     assert calls[4] == calls[5]
+
+
+def test_multi_fidelity_stage_screens_cheaply_and_gates_at_full_fidelity(tmp_path, monkeypatch):
+    initial = {
+        "schemaVersion": 1,
+        "basePolicy": "projected-balanced",
+        "title": "Synthetic fidelity",
+        "rules": [{"feature": "bias", "weight": 1, "advice": "Develop when useful."}],
+    }
+    raw = {**initial, "rules": [{**initial["rules"][0], "when": {"minimum": {"turn": 1}}}]}
+    calls = []
+
+    class Adapter:
+        propose_new_texts = None
+
+        def __init__(self, config, metadata):
+            self.config = config
+            config.run_dir.mkdir(parents=True, exist_ok=True)
+
+        def evaluate(self, tasks, candidate, capture_traces=False):
+            calls.append((self.config.simulations, self.config.rollout_turns, tasks))
+            program = json.loads(candidate["heuristic"])
+            score = int("when" in program["rules"][0])
+            outputs = [
+                {"task": task, "valid": True, "score": score, "policySha256": policy_hash(program)}
+                for task in tasks
+            ]
+            return EvaluationBatch(
+                outputs=outputs,
+                scores=[score] * len(tasks),
+                trajectories=outputs if capture_traces else None,
+            )
+
+        def make_reflective_dataset(self, candidate, evaluated, components):
+            return {
+                component: [
+                    {
+                        "Inputs": {"match": output["task"]},
+                        "Generated Outputs": candidate,
+                        "Feedback": {"valid": output["valid"], "score": output["score"]},
+                    }
+                    for output in evaluated.outputs
+                ]
+                for component in components
+            }
+
+    monkeypatch.setattr("evolve.HeuristicAdapter", Adapter)
+    monkeypatch.setattr(
+        "evolve.SessionReflection", lambda directory: lambda prompt: json.dumps(raw)
+    )
+    splits = {
+        name: [
+            {"seed": base + n, "learnerSeat": seat, "opponent": "mcts"}
+            for n in range(24)
+            for seat in (0, 1)
+        ]
+        for name, base in (("train", 0), ("validation", 100))
+    }
+    selected = optimize_stage(
+        stage="generic",
+        initial=initial,
+        splits=splits,
+        run_dir=tmp_path,
+        node="unused",
+        simulations=128,
+        metric_calls=256,
+        reflection_model="session",
+        metadata={
+            "worker": "unused",
+            "engineSha256": "engine",
+            "runnerSha256": "runner",
+            "evaluationTimeout": 60,
+            "evaluationWorkers": 4,
+            "evaluationCache": str(tmp_path / "cache"),
+            "seedProgram": initial,
+            "pairedProposalGates": True,
+            "reflectionPairs": 4,
+            "fidelity": {
+                "screenSimulations": 16,
+                "screenRolloutTurns": 2,
+                "selectionPairs": 4,
+                "sequentialLooks": [12, 24],
+            },
+        },
+    )
+    assert selected["program"] == raw
+    assert calls[0][:2] == (16, 2) and len(calls[0][2]) == 8
+    gate = [tasks for simulations, rollout, tasks in calls if simulations == 128]
+    assert gate and all(rollout is None for simulations, rollout, _ in calls if simulations == 128)
+    assert all(task["seed"] >= 1_000_000_000 for tasks in gate for task in tasks)
+    assert all(
+        task["seed"] < 1_000_000_000
+        for simulations, _, tasks in calls
+        if simulations == 16
+        for task in tasks
+    )
+    record = json.loads((tmp_path / "generic/proposal-gates/proposal-0001.json").read_text())
+    assert record["pairedEvidence"]["stopReason"] == "efficacy"

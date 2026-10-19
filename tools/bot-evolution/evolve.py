@@ -142,6 +142,7 @@ def optimize_stage(
                 "reflectionPairs": metadata.get("reflectionPairs"),
                 "deterministicPlan": metadata.get("deterministicPlan"),
                 "proposalGateTasks": metadata.get("proposalGateTasks"),
+                "fidelity": metadata.get("fidelity"),
             },
             sort_keys=True,
         ).encode("utf-8")
@@ -151,20 +152,32 @@ def optimize_stage(
         if selected.get("stageSha256") != stage_fingerprint:
             raise ValueError("Resumed stage inputs or runner changed; use a new run directory")
         return selected
+    fidelity = metadata.get("fidelity") or {}
+    gate_config = EvaluationConfig(
+        node=node,
+        worker=Path(metadata["worker"]),
+        run_dir=stage_dir / "games",
+        engine_sha256=metadata["engineSha256"],
+        simulations=simulations,
+        desktop_host=metadata.get("desktopHost"),
+        timeout=metadata["evaluationTimeout"],
+        workers=metadata["evaluationWorkers"],
+        cache_dir=Path(metadata["evaluationCache"]),
+    )
     adapter = HeuristicAdapter(
-        EvaluationConfig(
-            node=node,
-            worker=Path(metadata["worker"]),
-            run_dir=stage_dir / "games",
-            engine_sha256=metadata["engineSha256"],
-            simulations=simulations,
-            desktop_host=metadata.get("desktopHost"),
-            timeout=metadata["evaluationTimeout"],
-            workers=metadata["evaluationWorkers"],
-            cache_dir=Path(metadata["evaluationCache"]),
+        replace(
+            gate_config,
+            simulations=fidelity.get("screenSimulations", simulations),
+            rollout_turns=fidelity.get("screenRolloutTurns"),
+            teacher=fidelity.get("teacher"),
         ),
         metadata,
     )
+    gate_adapter = HeuristicAdapter(gate_config, metadata) if fidelity else adapter
+    if fidelity and metadata.get("adaptiveLadder"):
+        raise ValueError(
+            "Multi-fidelity screening replaces the adaptive ladder; use --fixed-opponent"
+        )
     stage_dir.mkdir(parents=True, exist_ok=True)
     (stage_dir / "splits.json").write_text(json.dumps(splits, indent=2) + "\n", encoding="utf-8")
     if metadata.get("trainingControl") == "current projected-balanced" and all(
@@ -206,6 +219,11 @@ def optimize_stage(
         else None
     )
     starting_program = initial if numeric is None else numeric["program"]
+    selection = splits["validation"]
+    if fidelity.get("selectionPairs") is not None:
+        seeds = list(dict.fromkeys(task["seed"] for task in selection))
+        kept = set(seeds[: fidelity["selectionPairs"]])
+        selection = [task for task in selection if task["seed"] in kept]
     deterministic = reflection_model == "deterministic"
     if deterministic:
         plan = metadata["deterministicPlan"]
@@ -238,7 +256,9 @@ def optimize_stage(
             starting_program,
             splits["validation"],
             stage_dir / "proposal-gates",
-            max(1, metric_calls // (4 * len(splits["validation"]))),
+            max(1, metric_calls // (4 * len(selection))),
+            gate_adapter=gate_adapter,
+            sequential_looks=fidelity.get("sequentialLooks"),
         )
     def should_stop(state):
         if deterministic:
@@ -252,7 +272,7 @@ def optimize_stage(
     result = gepa.optimize(
         seed_candidate={"heuristic": json.dumps(starting_program)},
         trainset=splits["train"],
-        valset=splits["validation"],
+        valset=selection,
         adapter=adapter,
         reflection_lm=reflector,
         reflection_prompt_template=None
@@ -392,12 +412,18 @@ def final_evaluation(
         tasks = splits["test"]
         # The initial policy is a paired control on the identical held-out games.
         chosen = adapter.evaluate(tasks, {"heuristic": json.dumps(selected["program"])}, True)
-        control = adapter.evaluate(tasks, {"heuristic": json.dumps(metadata["seedProgram"])}, False)
+        control_program = (
+            stages["generic"]["program"]
+            if metadata.get("finalControl") == "generic" and version != "generic"
+            else metadata["seedProgram"]
+        )
+        control = adapter.evaluate(tasks, {"heuristic": json.dumps(control_program)}, False)
         results[version] = {
             "selected": chosen.outputs,
             "control": control.outputs,
             "selectedScore": sum(chosen.scores) / len(chosen.scores),
             "controlScore": sum(control.scores) / len(control.scores),
+            "controlPolicySha256": policy_hash(control_program),
             "pairedEvidence": paired_evidence(chosen.outputs, control.outputs),
             "played": len(chosen.scores),
             "allValid": all(
@@ -442,6 +468,21 @@ def final_evaluation(
 @click.option("--dollar-cap", default=None, type=click.FloatRange(min=0, min_open=True))
 @click.option("--input-usd-per-million", default=None, type=click.FloatRange(min=0, min_open=True))
 @click.option("--output-usd-per-million", default=None, type=click.FloatRange(min=0, min_open=True))
+@click.option("--screen-simulations", default=None, type=click.IntRange(1, 10000))
+@click.option("--screen-rollout-turns", default=None, type=click.IntRange(1, 200))
+@click.option("--selection-pairs", default=None, type=click.IntRange(1, 100))
+@click.option(
+    "--sequential-looks",
+    default=None,
+    help="Comma-separated cumulative seed-block counts for the full-fidelity gate.",
+)
+@click.option(
+    "--final-control", type=click.Choice(["seed", "generic"]), default="seed", show_default=True
+)
+@click.option("--teacher-simulations", default=None, type=click.IntRange(1, 10000))
+@click.option("--teacher-searches", default=4, type=click.IntRange(1, 100), show_default=True)
+@click.option("--teacher-every", default=4, type=click.IntRange(1, 100), show_default=True)
+@click.option("--teacher-rollout-turns", default=None, type=click.IntRange(1, 200))
 def main(
     run_dir: Path,
     node: str,
@@ -464,8 +505,49 @@ def main(
     dollar_cap: float | None,
     input_usd_per_million: float | None,
     output_usd_per_million: float | None,
+    screen_simulations: int | None,
+    screen_rollout_turns: int | None,
+    selection_pairs: int | None,
+    sequential_looks: str | None,
+    final_control: str,
+    teacher_simulations: int | None,
+    teacher_searches: int,
+    teacher_every: int,
+    teacher_rollout_turns: int | None,
 ) -> None:
     final_pairs = pairs if final_pairs is None else final_pairs
+    fidelity = {
+        key: value
+        for key, value in {
+            "screenSimulations": screen_simulations,
+            "screenRolloutTurns": screen_rollout_turns,
+            "selectionPairs": selection_pairs,
+            "sequentialLooks": None
+            if sequential_looks is None
+            else [int(look) for look in sequential_looks.split(",")],
+            "teacher": None
+            if teacher_simulations is None
+            else {
+                "simulations": teacher_simulations,
+                "maxSearches": teacher_searches,
+                "every": teacher_every,
+                **(
+                    {} if teacher_rollout_turns is None else {"rolloutTurns": teacher_rollout_turns}
+                ),
+            },
+        }.items()
+        if value is not None
+    } or None
+    if fidelity is not None:
+        if adaptive_ladder:
+            raise click.ClickException("Multi-fidelity screening requires --fixed-opponent")
+        if selection_pairs is not None and selection_pairs > pairs:
+            raise click.ClickException("--selection-pairs cannot exceed --pairs")
+        looks = fidelity.get("sequentialLooks")
+        if looks is not None and (
+            looks != sorted(set(looks)) or looks[0] < 1 or looks[-1] != pairs
+        ):
+            raise click.ClickException("--sequential-looks must increase and end at --pairs")
     reflection_budget = None
     if reflection_model != "session":
         if any(
@@ -506,6 +588,8 @@ def main(
         "evaluationTimeout": evaluation_timeout,
         "evaluationWorkers": evaluation_workers,
         "reflectionPairs": reflection_pairs,
+        "fidelity": fidelity,
+        "finalControl": final_control,
         "evaluationCache": str(run_dir.parent / "game-cache"),
         "runnerSha256": hashlib.sha256(
             b"".join(
@@ -522,6 +606,7 @@ def main(
                     "residual_weights.py",
                     "evolve.py",
                     "SeedBlockBatchSampler.py",
+                    "sequential_sign_gate.py",
                     "session_reflection.py",
                     "audit_session_reflections.py",
                     "pyproject.toml",
@@ -548,6 +633,8 @@ def main(
         "reflectionBudget": reflection_budget,
         "adaptiveLadder": adaptive_ladder,
         "deckVersions": metadata["deckVersions"],
+        **({} if fidelity is None else {"fidelity": fidelity}),
+        **({} if final_control == "seed" else {"finalControl": final_control}),
     }
     config_sha256 = hashlib.sha256(json.dumps(config, sort_keys=True).encode("utf-8")).hexdigest()
     run_dir.mkdir(parents=True, exist_ok=True)
