@@ -333,6 +333,14 @@ the seat, then the socket. When the room accepts the request with less than 15 s
 the socket still finds its seat. If the socket never arrives, the seat expires at the
 extended deadline. An early request never shortens the deadline.
 
+Each successful reconnect issues a new token in `JOIN_ROOM`. If the socket drops again
+before the client acknowledges `JOIN_ROOM`, the client may never have received that
+token. Colyseus refuses to hold a seat that never acknowledged its join, so the room
+clears that flag and holds the seat anyway, for both the new token and the token the
+client held before that reconnect. This relies on two Colyseus internals
+(`_enqueuedMessages` and `_reconnections`); `apps/web/test/reconnectHandshakeDrop.connection.test.ts`
+exercises it against a real server, so an upgrade that changes them fails that test.
+
 ## Events and errors
 
 State synchronization carries durable game state. Ephemeral presentation events

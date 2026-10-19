@@ -461,6 +461,8 @@ export class AegisRoom extends Room<{
 
   private readonly reconnectDeadlines = new Map<string, { expiresAt: number; timer: Delayed; expire: () => void }>();
 
+  private readonly tokenBeforeLastReconnect = new Map<string, string>();
+
   // How long both seats can sit joined-but-not-ready (e.g. a client stuck loading
   // assets, or one that crashed before it could send `ready`) before the room gives
   // up waiting and starts anyway, so the match never hangs indefinitely.
@@ -1802,22 +1804,33 @@ export class AegisRoom extends Room<{
 
   private async holdSeatForReconnect(client: Client): Promise<Client> {
     const token = client.reconnectionToken;
+    const unacknowledged = client as Client & { _enqueuedMessages?: unknown[] };
+    const tokenBeforeLastReconnect =
+      unacknowledged._enqueuedMessages === undefined ? undefined : this.tokenBeforeLastReconnect.get(client.sessionId);
+    delete unacknowledged._enqueuedMessages;
     const reconnection = this.allowReconnection(client, "manual");
+    const tokens = tokenBeforeLastReconnect ? [token, tokenBeforeLastReconnect] : [token];
+    const pending = (this as unknown as { _reconnections: Record<string, unknown> })._reconnections;
+    if (tokenBeforeLastReconnect) pending[tokenBeforeLastReconnect] = pending[token];
     const expire = () => {
-      this.reconnectDeadlines.delete(token);
+      for (const held of tokens) this.reconnectDeadlines.delete(held);
       reconnection.reject(new Error("reconnect grace elapsed"));
     };
     const graceMs = this.RECONNECT_GRACE_SECONDS * 1000;
-    this.reconnectDeadlines.set(token, {
+    const deadline = {
       expiresAt: this.clock.currentTime + graceMs,
       timer: this.clock.setTimeout(expire, graceMs),
       expire,
-    });
+    };
+    for (const held of tokens) this.reconnectDeadlines.set(held, deadline);
     try {
-      return await reconnection;
+      const reconnected = await reconnection;
+      this.tokenBeforeLastReconnect.set(client.sessionId, token);
+      return reconnected;
     } finally {
-      this.reconnectDeadlines.get(token)?.timer.clear();
-      this.reconnectDeadlines.delete(token);
+      deadline.timer.clear();
+      for (const held of tokens) this.reconnectDeadlines.delete(held);
+      if (tokenBeforeLastReconnect) delete pending[tokenBeforeLastReconnect];
     }
   }
 
