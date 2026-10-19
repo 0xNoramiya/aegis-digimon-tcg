@@ -13,7 +13,7 @@ describe("Free Tamer play before automatic pass", () => {
   it.each([true, false])("charges no memory when accepting the free play is %s", async (accept) => {
     const events: SequencedServerEvent[] = [];
     const replay = await runReplay(record, {
-      untilInput: 51,
+      untilInput: 50,
       onBatch(_state, batch) {
         events.push(...batch);
       },
