@@ -173,6 +173,7 @@ it("jumps to the turn control and labels each actionable button", () => {
   expect(controller.getPrompts()).toEqual([
     { element: turn, command: "turn" },
     { element: hand[1], command: "confirm" },
+    { element: hand[1], command: "inspect" },
   ]);
   controller.handle("turn");
   expect(document.activeElement).toBe(turn);

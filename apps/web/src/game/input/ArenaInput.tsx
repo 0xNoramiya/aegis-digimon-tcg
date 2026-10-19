@@ -65,40 +65,44 @@ export function ArenaInput({ root, cancelable, onCancel }: Props) {
           [ArenaInputCommand.CONFIRM.value]: labels.confirm,
           [ArenaInputCommand.CANCEL.value]: labels.cancel,
           [ArenaInputCommand.TURN.value]: labels.turn,
+          [ArenaInputCommand.INSPECT.value]: labels.inspect,
         }}
       />
-      <aside
-        className="arena-input-hints"
-        aria-label={t("game.input.controls")}
-        data-arena-input-device={device}
-        data-arena-input-layout={gamepad?.value}
-      >
-        {reordering ? <span className="arena-input-hint">{t("game.input.reorder")}</span> : null}
-        <Hint glyph={labels.confirm} shape={face} button="confirm">
-          {t("game.input.select")}
-        </Hint>
-        {canCancel || (cancelable && !inSurface) ? (
-          <Hint glyph={labels.cancel} shape={face} button="cancel">
-            {t("common.cancel")}
+      {reordering ? (
+        <aside className="arena-input-hints" aria-label={t("game.input.controls")} data-arena-input-device={device}>
+          <span className="arena-input-hint">{t("game.input.reorder")}</span>
+        </aside>
+      ) : inSurface ? null : (
+        <aside
+          className="arena-input-hints"
+          aria-label={t("game.input.controls")}
+          data-arena-input-device={device}
+          data-arena-input-layout={gamepad?.value}
+        >
+          <Hint glyph={labels.confirm} shape={face} button="confirm">
+            {t("game.input.select")}
           </Hint>
-        ) : null}
-        {canInspect ? (
-          <Hint glyph={labels.inspect} shape={face} button="inspect">
-            {t("game.input.inspect")}
-          </Hint>
-        ) : null}
-        {!inSurface && !reordering ? (
+          {canCancel || cancelable ? (
+            <Hint glyph={labels.cancel} shape={face} button="cancel">
+              {t("common.cancel")}
+            </Hint>
+          ) : null}
+          {canInspect ? (
+            <Hint glyph={labels.inspect} shape={face} button="inspect">
+              {t("game.input.inspect")}
+            </Hint>
+          ) : null}
           <Hint glyph={labels.regions} secondary>
             {t("game.input.region")}
           </Hint>
-        ) : null}
-        <Hint glyph={labels.scroll} shape={gamepad ? "pad" : undefined} secondary>
-          {t("game.input.scroll")}
-        </Hint>
-        <Hint glyph={labels.navigate} shape={gamepad ? "pad" : undefined} secondary>
-          {t("game.input.navigate")}
-        </Hint>
-      </aside>
+          <Hint glyph={labels.scroll} shape={gamepad ? "pad" : undefined} secondary>
+            {t("game.input.scroll")}
+          </Hint>
+          <Hint glyph={labels.navigate} shape={gamepad ? "pad" : undefined} secondary>
+            {t("game.input.navigate")}
+          </Hint>
+        </aside>
+      )}
     </>
   );
 }

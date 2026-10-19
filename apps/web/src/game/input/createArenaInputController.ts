@@ -348,6 +348,9 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
     }
     if (focused?.isConnected && targets.includes(focused) && !prompts.some((prompt) => prompt.element === focused)) {
       prompts.push({ element: focused, command: ArenaInputCommand.CONFIRM.value });
+      if (getHints().canInspect) {
+        prompts.push({ element: focused, command: ArenaInputCommand.INSPECT.value });
+      }
     }
     return prompts;
   }

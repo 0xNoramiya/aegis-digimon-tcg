@@ -33,9 +33,12 @@ export function ArenaInputPrompts({ getPrompts, glyphs, face, layout }: Props) {
     let nextId = 0;
     let frame = 0;
     function place() {
+      const stacked = new Map<HTMLElement, number>();
       const next = getPrompts()
         .filter(({ element }) => element.getClientRects().length > 0)
         .map(({ element, command }) => {
+          const slot = stacked.get(element) ?? 0;
+          stacked.set(element, slot + 1);
           let id = ids.get(element);
           if (id === undefined) {
             id = nextId++;
@@ -49,7 +52,7 @@ export function ArenaInputPrompts({ getPrompts, glyphs, face, layout }: Props) {
             .filter((rect) => rect.width > 0 && rect.height > 0);
           const right = Math.max(...rects.map((rect) => rect.right));
           const top = Math.min(...rects.map((rect) => rect.top));
-          return { id, command, left: Math.round(right - 14), top: Math.round(top - 8) };
+          return { id, command, left: Math.round(right - 14 - slot * 24), top: Math.round(top - 8) };
         });
       setPlaced((current) => (isSamePlacement(current, next) ? current : next));
       frame = requestAnimationFrame(place);
