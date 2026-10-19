@@ -1,5 +1,32 @@
 [
   {
+    "version": "1.34.0-beta",
+    "releasedAt": "2026-10-19",
+    "summaryKey": "releases.1.34.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.34.0-beta.feature.reconnectGrace"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.34.0-beta.fix.reconnectHandshake"
+      },
+      {
+        "textKey": "releases.1.34.0-beta.fix.backgroundReload"
+      },
+      {
+        "textKey": "releases.1.34.0-beta.fix.partialTriggerOrder"
+      },
+      {
+        "textKey": "releases.1.34.0-beta.fix.astamonQuartzmon"
+      },
+      {
+        "textKey": "releases.1.34.0-beta.fix.dualCardLevels"
+      }
+    ]
+  },
+  {
     "version": "1.33.2-beta",
     "releasedAt": "2026-10-19",
     "summaryKey": "releases.1.33.2-beta.summary",
