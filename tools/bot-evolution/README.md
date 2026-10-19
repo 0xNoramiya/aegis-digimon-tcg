@@ -329,6 +329,11 @@ them is not equivalent to a full 128-simulation campaign:
 | `--sequential-looks`      | The proposal gate plays at `--simulations` without rollout bounds, one look at a time. |
 | `--teacher-simulations`   | Traced training games add advisory searches from the learner's seat.                   |
 | `--final-control generic` | Held-out pilot results use the accepted generic policy as control.                     |
+| `--heuristic-batch-size`  | Heuristic-opponent games share one worker process; search games stay isolated.         |
+
+A heuristic-opponent pilot game costs about 6.6 s alone, and about 2 s of that is the
+engine fingerprint plus module loading. Three batched games took 9.1 s instead of about
+20 s, with outputs identical to separate runs apart from latency samples.
 
 Multi-fidelity screening requires `--fixed-opponent`. The proposal count follows
 the selection set size, so a smaller set yields more proposals per stage.
