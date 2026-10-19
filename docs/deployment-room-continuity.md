@@ -76,6 +76,23 @@ browsers that reload a page in a loop, such as one seen on October 15, 2026 at a
 per 10 seconds. Cloudflare's single Free plan rate limiting rule protects `/matchmake/` and
 `/auth/` and cannot also count page loads without lowering that limit.
 
+## Gateway health
+
+Every game WebSocket passes through the gateway's single event loop. If that loop stalls for
+6–10 seconds, both the API ping and the client liveness probe fail, and players drop with
+close code 1006 or 4010. The gateway therefore does no blocking disk reads while it serves
+traffic, and every 10 seconds it writes one JSON line to stdout:
+
+| Field                             | Meaning                                                            |
+| --------------------------------- | ------------------------------------------------------------------ |
+| `loopMaxMs`, `loopP99Ms`          | Worst and 99th-percentile event loop delay in the last 10 seconds. |
+| `webSockets`                      | Game sockets open through this gateway.                            |
+| `throttledPeriods`, `throttledMs` | CPU throttling of the gateway container in the last 10 seconds.    |
+
+Read it with `docker logs <gateway> | grep gateway.health`. A `loopMaxMs` above a few
+seconds at the time of a drop burst points at the gateway; a quiet gateway with healthy API
+logs points at Cloudflare or the players' networks.
+
 ## Card images
 
 The gateway serves card images from `/opt/aegis-rollout/assets/card-images`, at `/assets/card-images/<id>.webp`. The upstream card app (TakaOtaku/Digimon-Card-App) is the source. It keeps its images in a public bucket at `web-garage.takaotaku.de`. Commit `9f666f1` of the upstream repository is a second source.

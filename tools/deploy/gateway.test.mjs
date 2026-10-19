@@ -375,3 +375,55 @@ test("page reload floods from one client are throttled without affecting other c
   time = 10_000;
   assert.equal((await loadPage("203.0.113.7")).status, 200);
 });
+
+async function waitForLine(lines, matches, description) {
+  const deadline = Date.now() + 2000;
+  while (!lines.some(matches)) {
+    assert.ok(Date.now() < deadline, `${description}: ${JSON.stringify(lines.slice(-3))}`);
+    await new Promise((done) => setTimeout(done, 20));
+  }
+  return lines.find(matches);
+}
+
+test("health report logs event loop lag, open game sockets, and CPU throttling", async (t) => {
+  const state = mkdtempSync(`${tmpdir()}/aegis-gateway-`);
+  mkdirSync(`${state}/routing`, { recursive: true });
+  writeFileSync(
+    `${state}/routing/manifest.json`,
+    JSON.stringify({ version: 1, active: { slot: "blue", revision: "v1" }, draining: [] }),
+  );
+  const cpuStatPath = `${state}/cpu.stat`;
+  writeFileSync(cpuStatPath, "usage_usec 10\nnr_periods 5\nnr_throttled 2\nthrottled_usec 3000\n");
+  const upstream = createServer((request, response) => response.end("{}"));
+  const wss = new WebSocketServer({ server: upstream });
+  const upstreamOrigin = await listen(upstream);
+  const lines = [];
+  const gateway = createGateway({
+    state,
+    upstreamFor: () => upstreamOrigin,
+    healthReport: { intervalMs: 50, cpuStatPath, log: (line) => lines.push(JSON.parse(line)) },
+  });
+  const origin = await listen(gateway);
+  const socket = new WebSocket(origin.replace("http:", "ws:") + "/api/blue/p1/room?sessionId=one");
+  t.after(async () => {
+    socket.terminate();
+    for (const client of wss.clients) client.terminate();
+    await Promise.all([gateway, upstream].map((server) => new Promise((done) => server.close(done))));
+    rmSync(state, { recursive: true });
+  });
+  await once(socket, "open");
+
+  const connected = await waitForLine(lines, (line) => line.webSockets === 1, "open socket not counted");
+  assert.equal(connected.event, "gateway.health");
+  assert.ok(Number.isInteger(connected.loopMaxMs) && connected.loopMaxMs >= 0);
+  assert.ok(Number.isInteger(connected.loopP99Ms) && Number.isInteger(connected.loopMeanMs));
+
+  writeFileSync(cpuStatPath, "usage_usec 20\nnr_periods 9\nnr_throttled 6\nthrottled_usec 9500\n");
+  const throttled = await waitForLine(lines, (line) => line.throttledPeriods === 4, "throttling delta missing");
+  assert.equal(throttled.throttledMs, 7);
+
+  socket.close();
+  await once(socket, "close");
+  const closedAt = lines.length;
+  await waitForLine(lines, (line, index) => index >= closedAt && line.webSockets === 0, "closed socket counted");
+});
