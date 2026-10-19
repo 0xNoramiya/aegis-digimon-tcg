@@ -18840,39 +18840,47 @@
         "trigger": "WhenDigivolving",
         "actions": [
           {
-            "kind": "PlayWithoutCost",
-            "target": {
-              "filter": {
-                "controller": "mine",
-                "kind": ["Digimon"],
-                "levelComparison": { "op": "lte", "value": 4 },
-                "keywords": ["Save"]
-              },
-              "count": 1
-            },
-            "payCost": false,
+            "kind": "Modal",
+            "choose": 1,
             "optional": true,
-            "from": ["digivolutionCardsUnderTamers"]
-          },
-          {
-            "kind": "Digivolve",
-            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "into": {
-              "controllerDefault": "mine",
-              "kind": ["Digimon"],
-              "nameOrTrait": [{ "tokens": ["Quartzmon"], "match": "name" }]
-            },
-            "from": ["hand", "digivolutionCardsUnderTamers"],
-            "payCost": true,
-            "costDelta": -3,
-            "optional": true,
-            "condition": {
-              "kind": "allOf",
-              "conditions": [
-                { "kind": "selfDigivolutionCountAtLeast", "value": 4 },
-                { "kind": "ifThisEffectDidNotAct" }
+            "labels": [
+              "Play 1 level 4 or lower Digimon card with ＜Save＞ from under one of your Tamers",
+              "Digivolve into [Quartzmon] in your hand or under one of your Tamers with the cost reduced by 3"
+            ],
+            "options": [
+              [
+                {
+                  "kind": "PlayWithoutCost",
+                  "target": {
+                    "filter": {
+                      "controller": "mine",
+                      "kind": ["Digimon"],
+                      "levelComparison": { "op": "lte", "value": 4 },
+                      "keywords": ["Save"]
+                    },
+                    "count": 1
+                  },
+                  "payCost": false,
+                  "optional": false,
+                  "from": ["digivolutionCardsUnderTamers"]
+                }
+              ],
+              [
+                {
+                  "kind": "Digivolve",
+                  "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                  "into": {
+                    "controllerDefault": "mine",
+                    "kind": ["Digimon"],
+                    "nameOrTrait": [{ "tokens": ["Quartzmon"], "match": "name" }]
+                  },
+                  "from": ["hand", "digivolutionCardsUnderTamers"],
+                  "payCost": true,
+                  "costDelta": -3
+                }
               ]
-            }
+            ],
+            "optionConditions": [null, { "kind": "selfDigivolutionCountAtLeast", "value": 4 }]
           }
         ]
       },

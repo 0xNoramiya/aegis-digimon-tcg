@@ -3064,5 +3064,47 @@
     "pt-BR": "Tsunomon e efeitos semelhantes de \"quando você descartar uma carta da mão\" agora ativam novamente em um descarte posterior, então você pode resolvê-los antes de efeitos pendentes mais antigos.",
     "es": "Tsunomon y efectos similares de \"cuando descartas una carta de tu mano\" ahora se activan de nuevo en un descarte posterior, así que puedes resolverlos antes que efectos pendientes más antiguos.",
     "it": "Tsunomon ed effetti simili \"quando scarti una carta dalla mano\" ora si attivano di nuovo con uno scarto successivo, quindi puoi risolverli prima degli effetti in attesa più vecchi."
+  },
+  "releases.1.34.0-beta.summary": {
+    "en": "Matches survive short disconnects much better, plus fixes for pending effects, Astamon, and deck lists.",
+    "pt-BR": "As partidas resistem muito melhor a quedas curtas de conexão, além de correções para efeitos pendentes, Astamon e listas de deck.",
+    "es": "Las partidas resisten mucho mejor las desconexiones cortas, además de correcciones para efectos pendientes, Astamon y listas de mazo.",
+    "it": "Le partite resistono molto meglio alle brevi disconnessioni, più correzioni per effetti in attesa, Astamon ed elenchi dei mazzi."
+  },
+  "releases.1.34.0-beta.feature.reconnectGrace": {
+    "en": "If you lose connection, you now have 60 seconds to come back to your match instead of 30. Your opponent sees a 1:00 countdown.",
+    "pt-BR": "Se você perder a conexão, agora tem 60 segundos para voltar à partida, em vez de 30. Seu oponente vê uma contagem de 1:00.",
+    "es": "Si pierdes la conexión, ahora tienes 60 segundos para volver a tu partida en lugar de 30. Tu oponente ve una cuenta atrás de 1:00.",
+    "it": "Se perdi la connessione, ora hai 60 secondi per tornare alla partita invece di 30. Il tuo avversario vede un conto alla rovescia di 1:00."
+  },
+  "releases.1.34.0-beta.fix.reconnectHandshake": {
+    "en": "A connection that drops again while you are reconnecting no longer loses the match at once.",
+    "pt-BR": "Uma conexão que cai de novo enquanto você está reconectando não faz mais você perder a partida na hora.",
+    "es": "Una conexión que se cae de nuevo mientras te reconectas ya no te hace perder la partida al instante.",
+    "it": "Una connessione che cade di nuovo mentre ti stai riconnettendo non ti fa più perdere subito la partita."
+  },
+  "releases.1.34.0-beta.fix.backgroundReload": {
+    "en": "On phones, coming back to the game after switching apps now resumes your match instead of opening the lobby.",
+    "pt-BR": "No celular, voltar ao jogo depois de trocar de app agora retoma a partida, em vez de abrir o lobby.",
+    "es": "En el móvil, volver al juego después de cambiar de app ahora reanuda tu partida en lugar de abrir el lobby.",
+    "it": "Sul telefono, tornare al gioco dopo aver cambiato app ora riprende la partita invece di aprire la lobby."
+  },
+  "releases.1.34.0-beta.fix.partialTriggerOrder": {
+    "en": "When you order only some of your pending effects, all of them now resolve in your order before you are asked about the rest.",
+    "pt-BR": "Quando você ordena só alguns dos efeitos pendentes, todos eles agora resolvem na sua ordem antes de você ser perguntado sobre o resto.",
+    "es": "Cuando ordenas solo algunos de tus efectos pendientes, ahora todos se resuelven en tu orden antes de que se te pregunte por el resto.",
+    "it": "Quando ordini solo alcuni dei tuoi effetti in attesa, ora si risolvono tutti nel tuo ordine prima che ti venga chiesto del resto."
+  },
+  "releases.1.34.0-beta.fix.astamonQuartzmon": {
+    "en": "Astamon (BT12-081) now offers the Quartzmon digivolution as a choice next to playing a card from under your Tamers.",
+    "pt-BR": "Astamon (BT12-081) agora oferece a digievolução em Quartzmon como opção, ao lado de jogar uma carta de baixo dos seus Tamers.",
+    "es": "Astamon (BT12-081) ahora ofrece la digievolución a Quartzmon como opción, junto a jugar una carta de debajo de tus Tamers.",
+    "it": "Astamon (BT12-081) ora offre la digievoluzione in Quartzmon come scelta, accanto al giocare una carta da sotto i tuoi Tamers."
+  },
+  "releases.1.34.0-beta.fix.dualCardLevels": {
+    "en": "Deck previews and image exports now list Digimon/Option DUAL cards under their Digimon level instead of under Options.",
+    "pt-BR": "As prévias de deck e as exportações em imagem agora listam cartas DUAL Digimon/Opção no nível do Digimon, e não em Opções.",
+    "es": "Las vistas previas de mazo y las exportaciones en imagen ahora muestran las cartas DUAL Digimon/Opción en su nivel de Digimon y no en Opciones.",
+    "it": "Le anteprime dei mazzi e le esportazioni in immagine ora mostrano le carte DUAL Digimon/Opzione al loro livello Digimon invece che tra le Opzioni."
   }
 }

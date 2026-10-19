@@ -201,7 +201,7 @@ export function CommunityBrowse({
                         {deck.hasGuide ? (
                           <span className="community-tile__guide" title={t("community.guide.badge")}>
                             <Icons.BookOpen size={14} />
-                            <span className="sr-only">{t("community.guide.badge")}</span>
+                            <span className="aegis-sr-only">{t("community.guide.badge")}</span>
                           </span>
                         ) : null}
                         <LikeButton

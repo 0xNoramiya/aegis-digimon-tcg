@@ -3195,11 +3195,16 @@
         "type": "respondDecision",
         "response": {
           "kind": "orderTriggers",
-          "order": ["s1-44::BT17-080/ir-1-0", "s1-9::EX13-068/ir-1-0"],
+          "order": [
+            "s1-44::BT17-080/ir-1-0",
+            "s1-10::EX13-068/ir-1-0",
+            "s1-8::EX13-068/ir-1-0",
+            "s1-9::EX13-068/ir-1-0"
+          ],
           "optionalAnswers": {
             "s1-8::EX13-068/ir-1-0": false,
-            "s1-9::EX13-068/ir-1-0": true,
-            "s1-10::EX13-068/ir-1-0": false
+            "s1-9::EX13-068/ir-1-0": false,
+            "s1-10::EX13-068/ir-1-0": true
           }
         },
         "decisionId": "dec-101"
@@ -3214,33 +3219,13 @@
       "intent": {
         "type": "respondDecision",
         "response": {
-          "kind": "orderTriggers",
-          "order": ["s1-10::EX13-068/ir-1-0", "s1-8::EX13-068/ir-1-0", "s1-9::EX13-068/ir-1-0"],
-          "optionalAnswers": {
-            "s1-8::EX13-068/ir-1-0": false,
-            "s1-9::EX13-068/ir-1-0": false,
-            "s1-10::EX13-068/ir-1-0": true
-          }
-        },
-        "decisionId": "dec-102"
-      },
-      "engineEvents": 523,
-      "stateVersion": 394
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 1,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
           "kind": "selectCards",
           "instanceIds": ["s1-45"]
         },
-        "decisionId": "dec-103"
+        "decisionId": "dec-102"
       },
-      "engineEvents": 526,
-      "stateVersion": 397
+      "engineEvents": 525,
+      "stateVersion": 396
     },
     {
       "ok": true,
@@ -3251,8 +3236,8 @@
         "instanceId": "s1-16",
         "permanentId": "perm-24"
       },
-      "engineEvents": 529,
-      "stateVersion": 399
+      "engineEvents": 528,
+      "stateVersion": 398
     },
     {
       "ok": true,
@@ -3264,10 +3249,10 @@
           "kind": "selectCards",
           "instanceIds": ["s1-33"]
         },
-        "decisionId": "dec-104"
+        "decisionId": "dec-103"
       },
-      "engineEvents": 536,
-      "stateVersion": 402
+      "engineEvents": 535,
+      "stateVersion": 401
     },
     {
       "ok": true,
@@ -3279,10 +3264,10 @@
           "kind": "orderCards",
           "order": ["s1-12", "s1-2"]
         },
-        "decisionId": "dec-105"
+        "decisionId": "dec-104"
       },
-      "engineEvents": 537,
-      "stateVersion": 403
+      "engineEvents": 536,
+      "stateVersion": 402
     },
     {
       "ok": true,
@@ -3293,8 +3278,8 @@
         "instanceId": "s1-4",
         "permanentId": "perm-24"
       },
-      "engineEvents": 539,
-      "stateVersion": 405
+      "engineEvents": 538,
+      "stateVersion": 404
     },
     {
       "ok": true,
@@ -3306,10 +3291,10 @@
           "kind": "orderTriggers",
           "order": ["s1-4::EX13-010/ir-7-0"]
         },
-        "decisionId": "dec-106"
+        "decisionId": "dec-105"
       },
-      "engineEvents": 545,
-      "stateVersion": 408
+      "engineEvents": 544,
+      "stateVersion": 407
     },
     {
       "ok": true,
@@ -3320,8 +3305,8 @@
         "instanceId": "s1-7",
         "permanentId": "perm-24"
       },
-      "engineEvents": 550,
-      "stateVersion": 413
+      "engineEvents": 549,
+      "stateVersion": 412
     },
     {
       "ok": true,
@@ -3333,10 +3318,10 @@
           "kind": "orderTriggers",
           "order": ["s1-7::EX13-013/ir-7-0"]
         },
-        "decisionId": "dec-107"
+        "decisionId": "dec-106"
       },
-      "engineEvents": 556,
-      "stateVersion": 416
+      "engineEvents": 555,
+      "stateVersion": 415
     },
     {
       "ok": true,
@@ -3351,10 +3336,10 @@
             "s1-7::subtrigger/whenOneOfYoursDigivolves~perm-24~~~2/[When Digivolving] ＜Blitz＞/occurrence/whenOneOfYoursDigivolves%7Cperm-24%7C%7C%5BWhen%20Digivolving%5D%20%EF%BC%9CBlitz%EF%BC%9E%7C%7C%7Cdigivolve%3Aperm-24%3As1-7"
           ]
         },
-        "decisionId": "dec-108"
+        "decisionId": "dec-107"
       },
-      "engineEvents": 559,
-      "stateVersion": 419
+      "engineEvents": 558,
+      "stateVersion": 418
     },
     {
       "ok": true,
@@ -3367,8 +3352,8 @@
         "useAlternateCost": true,
         "alternateRequirementIndex": 0
       },
-      "engineEvents": 562,
-      "stateVersion": 422
+      "engineEvents": 561,
+      "stateVersion": 421
     },
     {
       "ok": true,
@@ -3389,10 +3374,10 @@
             "s1-33::AD1-008/ir-7-0": true
           }
         },
-        "decisionId": "dec-109"
+        "decisionId": "dec-108"
       },
-      "engineEvents": 568,
-      "stateVersion": 425
+      "engineEvents": 567,
+      "stateVersion": 424
     },
     {
       "ok": true,
@@ -3411,10 +3396,10 @@
             "s1-48::subtrigger/onDeletionOf~perm-19~s1-48~s1-48%2FEX2-056%2Fir-35-0%2F0/onDeletionOf/occurrence/onDeletionOf%7Cperm-19%7Cs1-48%7ConDeletionOf%7C%7Cs1-48%2FEX2-056%2Fir-35-0%2F0%7Cleave%3Aperm-20": true
           }
         },
-        "decisionId": "dec-110"
+        "decisionId": "dec-109"
       },
-      "engineEvents": 573,
-      "stateVersion": 430
+      "engineEvents": 572,
+      "stateVersion": 429
     },
     {
       "ok": true,
@@ -3426,10 +3411,10 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-111"
+        "decisionId": "dec-110"
       },
-      "engineEvents": 580,
-      "stateVersion": 435
+      "engineEvents": 579,
+      "stateVersion": 434
     },
     {
       "ok": true,
@@ -3441,10 +3426,10 @@
           "kind": "selectCards",
           "instanceIds": ["s0-15"]
         },
-        "decisionId": "dec-112"
+        "decisionId": "dec-111"
       },
-      "engineEvents": 581,
-      "stateVersion": 436
+      "engineEvents": 580,
+      "stateVersion": 435
     },
     {
       "ok": true,
@@ -3456,10 +3441,10 @@
           "kind": "chooseTargets",
           "instanceIds": ["perm-28"]
         },
-        "decisionId": "dec-113"
+        "decisionId": "dec-112"
       },
-      "engineEvents": 590,
-      "stateVersion": 444
+      "engineEvents": 589,
+      "stateVersion": 443
     },
     {
       "ok": true,
@@ -3471,10 +3456,10 @@
           "kind": "selectCards",
           "instanceIds": ["player"]
         },
-        "decisionId": "dec-114"
+        "decisionId": "dec-113"
       },
-      "engineEvents": 592,
-      "stateVersion": 446
+      "engineEvents": 591,
+      "stateVersion": 445
     },
     {
       "ok": true,
@@ -3492,10 +3477,10 @@
             "s1-48::subtrigger/onDeletionOf~perm-19~s1-48~s1-48%2FEX2-056%2Fir-35-0%2F0/onDeletionOf/occurrence/onDeletionOf%7Cperm-19%7Cs1-48%7ConDeletionOf%7C%7Cs1-48%2FEX2-056%2Fir-35-0%2F0%7Cleave%3Aperm-28": true
           }
         },
-        "decisionId": "dec-115"
+        "decisionId": "dec-114"
       },
-      "engineEvents": 593,
-      "stateVersion": 447
+      "engineEvents": 592,
+      "stateVersion": 446
     },
     {
       "ok": true,
@@ -3510,10 +3495,10 @@
             "s1-33::s1-33/keyword/Raid": false
           }
         },
-        "decisionId": "dec-116"
+        "decisionId": "dec-115"
       },
-      "engineEvents": 594,
-      "stateVersion": 448
+      "engineEvents": 593,
+      "stateVersion": 447
     },
     {
       "ok": true,
@@ -3523,8 +3508,8 @@
         "type": "declareBlock",
         "blockerPermanentId": "perm-22"
       },
-      "engineEvents": 600,
-      "stateVersion": 454
+      "engineEvents": 599,
+      "stateVersion": 453
     }
   ],
   "matchId": "6cbaeb36-7b57-4d4c-8f6a-7862b829c3c0",

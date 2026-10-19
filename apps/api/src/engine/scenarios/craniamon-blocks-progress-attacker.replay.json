@@ -1081,28 +1081,13 @@
       "intent": {
         "type": "respondDecision",
         "response": {
-          "kind": "orderTriggers",
-          "order": ["s1-35::BT17-080/ir-1-0"]
-        },
-        "decisionId": "dec-21"
-      },
-      "engineEvents": 241,
-      "stateVersion": 171
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 1,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-22"
+        "decisionId": "dec-21"
       },
-      "engineEvents": 245,
-      "stateVersion": 174
+      "engineEvents": 244,
+      "stateVersion": 173
     },
     {
       "ok": true,
@@ -1116,8 +1101,8 @@
         "vortex": false,
         "attackerPermanentId": "perm-12"
       },
-      "engineEvents": 248,
-      "stateVersion": 177
+      "engineEvents": 247,
+      "stateVersion": 176
     },
     {
       "ok": true,
@@ -1129,10 +1114,10 @@
           "kind": "orderTriggers",
           "order": ["s1-22::EX13-015/ir-shared-0"]
         },
-        "decisionId": "dec-23"
+        "decisionId": "dec-22"
       },
-      "engineEvents": 249,
-      "stateVersion": 178
+      "engineEvents": 248,
+      "stateVersion": 177
     },
     {
       "ok": true,
@@ -1144,10 +1129,10 @@
           "kind": "selectCards",
           "instanceIds": []
         },
-        "decisionId": "dec-24"
+        "decisionId": "dec-23"
       },
-      "engineEvents": 255,
-      "stateVersion": 184
+      "engineEvents": 254,
+      "stateVersion": 183
     },
     {
       "ok": true,
@@ -1157,8 +1142,8 @@
         "type": "declareBlock",
         "blockerPermanentId": "perm-15"
       },
-      "engineEvents": 257,
-      "stateVersion": 186
+      "engineEvents": 256,
+      "stateVersion": 185
     }
   ],
   "matchId": "7e3a664b-4d86-4098-aaa4-f4de5d0a4722",
