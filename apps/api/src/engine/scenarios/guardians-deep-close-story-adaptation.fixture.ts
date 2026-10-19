@@ -15,9 +15,7 @@ const fixture: ScenarioFixture = {
       security: ["EX8-067", "EX8-048"],
       deck: [
         "EX8-047",
-        "EX8-047",
         "EX8-050",
-        "EX8-048",
         "EX8-046",
         "EX8-046",
         "EX8-048",
@@ -37,7 +35,7 @@ const fixture: ScenarioFixture = {
         "P-144",
         "P-107",
         "EX8-049",
-        "EX8-051",
+        "P-107",
         "EX8-047",
         "EX8-053",
         "EX7-038",
@@ -65,8 +63,8 @@ const fixture: ScenarioFixture = {
         },
       ],
       breeding: {
-        card: "EX10-032",
-        under: ["EX8-005"],
+        card: "EX8-051",
+        under: ["EX8-005", "EX8-047", "EX8-048"],
       },
     },
     "1": {
@@ -75,9 +73,7 @@ const fixture: ScenarioFixture = {
       deck: [
         "BT15-068",
         "P-036",
-        "EX8-017",
         "BT4-102",
-        "EX8-017",
         "BT4-102",
         "EX8-056",
         "EX8-056",
@@ -86,7 +82,6 @@ const fixture: ScenarioFixture = {
         "BT4-102",
         "EX8-018",
         "EX8-058",
-        "BT24-030",
         "EX8-026",
         "EX8-018",
         "EX8-061",
@@ -104,7 +99,6 @@ const fixture: ScenarioFixture = {
         "EX8-058",
         "EX8-018",
         "EX8-026",
-        "EX8-020",
         "P-036",
         "BT15-068",
         "EX8-027",
@@ -116,11 +110,12 @@ const fixture: ScenarioFixture = {
       battleArea: [
         {
           card: "EX8-020",
+          under: ["EX8-017"],
         },
       ],
       breeding: {
         card: "EX8-027",
-        under: ["EX8-002"],
+        under: ["EX8-002", "EX8-017", "EX8-020", "EX8-024"],
       },
     },
   },
