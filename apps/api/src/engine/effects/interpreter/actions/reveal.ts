@@ -13,6 +13,7 @@ import type { Action, Filter, Target } from "@aegis/shared";
 import { playEffectInstances, prepareEffectPlayAssembly } from "./effectPlayAssembly.js";
 import { prepareEffectPlayDigiXros } from "./effectPlayDigiXros.js";
 import { playableCandidates } from "./play.js";
+import { liveDigivolutionBase } from "./liveDigivolutionBase.js";
 
 /** Cards whose rule text changes a static fact only while they are revealed from deck. */
 export function revealedDefinition(
@@ -260,8 +261,8 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
       const into = ctx.game.definitionOf(card);
       if (!definitionMatches(option.into, into)) return false;
       return hosts.some((host) => {
-        if (host.topCard === undefined) return false;
-        const base = ctx.game.definitionOf(host.topCard);
+        const base = liveDigivolutionBase(ctx, host);
+        if (base === undefined) return false;
         return (
           matchingEvoCost(into, base) !== undefined ||
           matchingAlternateDigivolutionRequirement(into, base, {
@@ -377,8 +378,8 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
       matches = matches.filter((card) => {
         const into = ctx.game.definitionOf(card);
         return hosts.some((host) => {
-          if (host.topCard === undefined) return false;
-          const base = ctx.game.definitionOf(host.topCard);
+          const base = liveDigivolutionBase(ctx, host);
+          if (base === undefined) return false;
           return (
             matchingEvoCost(into, base) !== undefined ||
             matchingAlternateDigivolutionRequirement(into, base, {
@@ -870,8 +871,9 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
     const targets = await resolvePermanentTargets(ctx, target, {
       eligible: (permanentId) => {
         const permanent = ctx.game.permanentById(permanentId);
-        if (permanent?.topCard === undefined) return false;
-        const base = ctx.game.definitionOf(permanent.topCard);
+        if (permanent === undefined) return false;
+        const base = liveDigivolutionBase(ctx, permanent);
+        if (base === undefined) return false;
         return (
           matchingEvoCost(into, base) !== undefined ||
           matchingAlternateDigivolutionRequirement(into, base, {
