@@ -122,6 +122,25 @@ describe("shared keyboard routing", () => {
     window.removeEventListener("keydown", globalShortcut);
   });
 
+  it("wakes keyboard input after the window lost focus without a focus event", () => {
+    const onConfirm = vi.fn<() => void>();
+    render(
+      <I18nProvider>
+        <TestBoard onConfirm={onConfirm} onCancel={vi.fn<() => void>()} />
+      </I18nProvider>,
+    );
+    act(() => {
+      window.dispatchEvent(new Event("blur"));
+    });
+    const button = screen.getByRole("button", { name: "Confirm" });
+    button.focus();
+    act(() => {
+      fireEvent.keyDown(button, { key: "Enter" });
+    });
+    expect(screen.getByRole("status").textContent).toBe("keyboard");
+    expect(onConfirm).toHaveBeenCalledOnce();
+  });
+
   it("leaves typing and modified keys to the focused control", () => {
     const onConfirm = vi.fn<() => void>();
     const onCancel = vi.fn<() => void>();

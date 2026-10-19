@@ -44,9 +44,10 @@ export function useArenaInput({ root, onCancel }: Params) {
       },
     });
     function onKeyDown(event: KeyboardEvent) {
-      if (controller.isForwarded(event) || suspended || event.defaultPrevented || isArenaTypingTarget(event.target)) {
+      if (controller.isForwarded(event) || event.defaultPrevented || isArenaTypingTarget(event.target)) {
         return;
       }
+      suspended = document.hidden;
       const command = getArenaKeyboardCommand(event);
       if (!command || !controller.hasTargets()) {
         return;
@@ -74,6 +75,7 @@ export function useArenaInput({ root, onCancel }: Params) {
       }
     }
     function onPointerDown() {
+      suspended = document.hidden;
       controller.deactivate();
       setDevice(undefined);
     }
