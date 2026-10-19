@@ -105,6 +105,9 @@ function searchIndexFor(card: CardDefinition): CardSearchIndex {
   const cached = searchIndexByCard.get(card);
   if (cached) return cached;
   const textFields = [
+    ...(card.forms ?? []),
+    ...(card.types ?? []),
+    ...(card.attributes ?? []),
     card.effectText,
     card.inheritedEffectText,
     card.securityEffectText,

@@ -1,5 +1,41 @@
 [
   {
+    "version": "1.33.0-beta",
+    "releasedAt": "2026-10-19",
+    "summaryKey": "releases.1.33.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.33.0-beta.feature.bt27"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.33.0-beta.fix.story"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.inspection"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.larva"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.triggers"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.stackPrompts"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.linkedDp"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.effectClauses"
+      },
+      {
+        "textKey": "releases.1.33.0-beta.fix.searchLayout"
+      }
+    ]
+  },
+  {
     "version": "1.32.0-beta",
     "releasedAt": "2026-10-18",
     "summaryKey": "releases.1.32.0-beta.summary",

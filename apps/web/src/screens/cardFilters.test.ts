@@ -38,6 +38,14 @@ it.each([
 });
 
 describe("card search box", () => {
+  it("finds Makoto and other Glowing Dawn cards by traits absent from their effects", () => {
+    const cards = allCards().filter(({ cardId }) => ["BT26-095", "ST23-14", "BT1-009"].includes(cardId));
+    expect(searchIds(cards, "Glowing Dawn").sort()).toEqual(["BT26-095", "ST23-14"]);
+    const { result } = renderHook(() => useCardFilter(cards));
+    act(() => result.current.setTraitQuery("Glowing Dawn"));
+    expect(result.current.filtered.map(({ cardId }) => cardId).sort()).toEqual(["BT26-095", "ST23-14"]);
+  });
+
   it("finds cards by their effect text, ignoring trait brackets (Discord 1557071980103213056)", () => {
     const gotsumon = allCards().find((candidate) => candidate.cardId === "EX13-047");
     expect(gotsumon?.effectText).toContain("[Royal Knight]");

@@ -762,7 +762,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
         trigger,
         candidates,
         (deletionTrigger, simultaneousPending = []) =>
-          simultaneousPending.length > 0
+          simultaneousPending.length > 0 || candidates.length > 0
             ? runTimingWindow(
                 engine,
                 EffectTiming.OnDestroyedAnyone,

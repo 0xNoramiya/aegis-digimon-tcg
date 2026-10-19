@@ -3,7 +3,7 @@ import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin
 import { CardKind, Zone, requireCardDefinition, CardInstance, type Seat } from "@aegis/shared";
 import { pushOnStack, takeTop, unshiftOnStack } from "../../state/access.js";
 import { digiXrosMatches, materialSaveCountOf } from "../../combat/keywords.js";
-import { peekLooseInstance, removeLooseInstance } from "../verbs/looseInstances.js";
+import { hostOfLinkedInstance, peekLooseInstance, removeLooseInstance } from "../verbs/looseInstances.js";
 
 import type { PrimitivesContext } from "./context.js";
 
@@ -12,7 +12,7 @@ import type { PrimitivesContext } from "./context.js";
  */
 
 export function createPlaceUnderVerbs(pc: PrimitivesContext) {
-  const { engine, access, continuous, effectSeatStack, player, state } = pc;
+  const { engine, access, continuous, effectSeatStack, player, state, ledger } = pc;
 
   const moveLooseCardsUnder = async (
     targetPermanentId: string,
@@ -38,8 +38,12 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
       for (const owner of state.players) {
         if (owner.security.some((card) => card.instanceId === instanceId)) securitySources.add(owner.seat);
       }
+      const linkedHostId = hostOfLinkedInstance(state, instanceId);
       const instance = removeLooseInstance(state, instanceId);
       if (instance === undefined) continue;
+      if (linkedHostId !== undefined) {
+        ledger.recomputeDP(state, linkedHostId);
+      }
       instance.faceUp = opts?.faceUp ?? true;
       if (opts?.belowTop) pushOnStack(permanent, instance);
       else unshiftOnStack(permanent, instance);
