@@ -262,11 +262,13 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       }
       await engine.fireDiscardedFromSecurity?.(discardedFromSecurity);
     }
-    // Fire once per seat whose hand actually lost a card (the move may have skipped some ids).
-    for (const seat of handTrashedSeats) {
-      const handTrashedInstanceIds = fromHand
+    const handTrashedInstanceIdsOf = (seat: Seat): string[] =>
+      fromHand
         .filter((entry) => entry.seat === seat && movedIds.has(entry.instanceId))
         .map((entry) => entry.instanceId);
+    // Fire once per seat whose hand actually lost a card (the move may have skipped some ids).
+    for (const seat of handTrashedSeats) {
+      const handTrashedInstanceIds = handTrashedInstanceIdsOf(seat);
       if (handTrashedInstanceIds.length > 0) {
         await engine.fireSubTrigger?.("whenHandTrashed", {
           handTrashedSeat: seat,
@@ -279,6 +281,7 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       if (!movedIds.has(entry.instanceId)) continue;
       await engine.fireSubTrigger?.("whenTrashedFromHand", {
         handTrashedSeat: entry.seat,
+        handTrashedInstanceIds: handTrashedInstanceIdsOf(entry.seat),
         trashedFromHandCardId: entry.cardId,
         trashedFromHandInstanceId: entry.instanceId,
         ...(opts?.byEffectSeat !== undefined ? { byEffectSeat: opts.byEffectSeat } : {}),

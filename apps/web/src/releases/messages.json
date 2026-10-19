@@ -3052,5 +3052,17 @@
     "pt-BR": "Arts Digivolve e efeitos de revelar para digievoluir agora consideram cores ganhas pelo Digimon, então Kimeramon pode digievoluir em Nosferamon.",
     "es": "Arts Digivolve y los efectos de revelar para digievolucionar ahora cuentan los colores que gana un Digimon, así que Kimeramon puede digievolucionar en Nosferamon.",
     "it": "Arts Digivolve e gli effetti che rivelano per digievolvere ora considerano i colori ottenuti da un Digimon, quindi Kimeramon può digievolvere in Nosferamon."
+  },
+  "releases.1.33.2-beta.summary": {
+    "en": "Fix for effects that trigger again when you trash from your hand.",
+    "pt-BR": "Correção para efeitos que ativam novamente quando você descarta da mão.",
+    "es": "Corrección para efectos que se activan de nuevo cuando descartas de tu mano.",
+    "it": "Correzione per gli effetti che si attivano di nuovo quando scarti dalla mano."
+  },
+  "releases.1.33.2-beta.fix.handTrashRetrigger": {
+    "en": "Tsunomon and similar \"when you trash a card in your hand\" effects now trigger again on a later discard, so you can resolve them before older pending effects.",
+    "pt-BR": "Tsunomon e efeitos semelhantes de \"quando você descartar uma carta da mão\" agora ativam novamente em um descarte posterior, então você pode resolvê-los antes de efeitos pendentes mais antigos.",
+    "es": "Tsunomon y efectos similares de \"cuando descartas una carta de tu mano\" ahora se activan de nuevo en un descarte posterior, así que puedes resolverlos antes que efectos pendientes más antiguos.",
+    "it": "Tsunomon ed effetti simili \"quando scarti una carta dalla mano\" ora si attivano di nuovo con uno scarto successivo, quindi puoi risolverli prima degli effetti in attesa più vecchi."
   }
 }

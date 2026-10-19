@@ -724,6 +724,7 @@ describe("primitives: trash / delete / suspend", () => {
       event: "whenTrashedFromHand",
       payload: {
         handTrashedSeat: 0,
+        handTrashedInstanceIds: [h.s.inst("discarded").instanceId],
         trashedFromHandCardId: OPTION,
         trashedFromHandInstanceId: h.s.inst("discarded").instanceId,
         byEffectSeat: 1,
