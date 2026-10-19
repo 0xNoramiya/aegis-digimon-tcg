@@ -300,6 +300,9 @@ deck match, verifies root information hashes and offered action counts, and runs
 one real determinized rollout. That rollout previously stopped at turn 61 and
 now reaches a security win at turn 62, with both prefix replay modes. Its forced
 search choices are regression data, not strength or publication evidence.
+Engine rule fixes later changed the turn-59 block window at rollout choice 13. The
+fixture keeps the first 13 recorded choices, forces the first block option there, and
+lets the rollout heuristic continue; that path still wins by security at turn 62.
 
 Search is currently applied to settled Main windows; other windows use the
 rollout heuristic. Full engine replay is expensive. Logs report actual completed
