@@ -1,6 +1,6 @@
 import { ArenaInputDevice } from "@/game/input/ArenaInputDevice";
 import { isArenaTypingTarget } from "@/game/input/isArenaTypingTarget";
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { ArenaInputCommand } from "@/game/input/ArenaInputCommand";
 import { createArenaInputController } from "@/game/input/createArenaInputController";
 import { createArenaGamepadInput } from "@/game/input/createArenaGamepadInput";
@@ -18,8 +18,11 @@ export function useArenaInput({ root, onCancel }: Params) {
   const [hints, setHints] = useState({ inSurface: false, canCancel: false, canInspect: false, reordering: false });
   const cancel = useRef(onCancel);
   cancel.current = onCancel;
+  const controllerRef = useRef<ReturnType<typeof createArenaInputController>>(undefined);
+  const getPrompts = useCallback(() => controllerRef.current?.getPrompts() ?? [], []);
   useEffect(() => {
     const controller = createArenaInputController({ getRoot: () => root.current, onCancel: () => cancel.current() });
+    controllerRef.current = controller;
     function updateHints() {
       const next = controller.getHints();
       setHints((current) =>
@@ -125,6 +128,7 @@ export function useArenaInput({ root, onCancel }: Params) {
     window.addEventListener("gamepaddisconnected", onDisconnect);
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
+      controllerRef.current = undefined;
       controller.deactivate();
       observer.disconnect();
       cancelAnimationFrame(frame);
@@ -137,5 +141,5 @@ export function useArenaInput({ root, onCancel }: Params) {
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [root]);
-  return { device, layout, ...hints };
+  return { device, layout, getPrompts, ...hints };
 }

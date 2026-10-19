@@ -4,6 +4,8 @@ import { ArenaInputCommand } from "@/game/input/ArenaInputCommand";
 import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 
 const targetSelector = 'button, [role="button"], [href], input, select, textarea, summary, [tabindex="0"]';
+const turnSelector = "[data-arena-turn]";
+const boardCancelSelector = ".decision-board-return [data-arena-cancel], .board-prompt [data-arena-cancel]";
 const surfaceSelector = '[role="dialog"], [role="alertdialog"], [role="menu"], [data-arena-surface]';
 
 type Params = {
@@ -211,9 +213,7 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
       if (cancel && isVisible(cancel) && !cancel.matches(":disabled")) {
         cancel.click();
       } else if (!scope) {
-        const back = document.querySelector<HTMLElement>(
-          ".decision-board-return [data-arena-cancel], .board-prompt [data-arena-cancel]",
-        );
+        const back = document.querySelector<HTMLElement>(boardCancelSelector);
         if (back && isVisible(back)) {
           back.click();
         } else {
@@ -236,6 +236,13 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
         current.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
       } else if (current?.dataset.handInstanceId) {
         current.click();
+      }
+      return;
+    }
+    if (command === ArenaInputCommand.TURN.value) {
+      const turn = scope ? undefined : targets.find((target) => target.matches(turnSelector));
+      if (turn) {
+        focusTarget(turn, targets);
       }
       return;
     }
@@ -312,9 +319,7 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
       canCancel: scope
         ? scope.hasAttribute("data-arena-cancelable") || !!scope.querySelector("[data-arena-cancel]")
         : Array.from(
-            document.querySelectorAll<HTMLElement>(
-              ".decision-board-return [data-arena-cancel], .board-prompt [data-arena-cancel], .board-prompt[data-arena-cancelable]",
-            ),
+            document.querySelectorAll<HTMLElement>(`${boardCancelSelector}, .board-prompt[data-arena-cancelable]`),
           ).some(isVisible),
       canInspect:
         current instanceof HTMLElement &&
@@ -325,5 +330,27 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
     };
   }
 
-  return { handle, refresh, deactivate, isForwarded, getHints };
+  function getPrompts() {
+    if (!active) {
+      return [];
+    }
+    const { scope, targets } = getAvailable();
+    const cancels = scope
+      ? Array.from(scope.querySelectorAll<HTMLElement>("[data-arena-cancel]"))
+      : Array.from(document.querySelectorAll<HTMLElement>(boardCancelSelector));
+    const prompts: { element: HTMLElement; command: ArenaInputCommand }[] = cancels
+      .filter((element) => isVisible(element) && !element.matches(":disabled"))
+      .slice(0, 1)
+      .map((element) => ({ element, command: ArenaInputCommand.CANCEL.value }));
+    const turn = scope ? undefined : targets.find((target) => target.matches(turnSelector));
+    if (turn && turn !== focused) {
+      prompts.push({ element: turn, command: ArenaInputCommand.TURN.value });
+    }
+    if (focused?.isConnected && targets.includes(focused) && !prompts.some((prompt) => prompt.element === focused)) {
+      prompts.push({ element: focused, command: ArenaInputCommand.CONFIRM.value });
+    }
+    return prompts;
+  }
+
+  return { handle, refresh, deactivate, isForwarded, getHints, getPrompts };
 }

@@ -14,6 +14,7 @@ function getButtonCommands(layout: Layout) {
     [layout.confirmButton, ArenaInputCommand.CONFIRM.value],
     [layout.cancelButton, ArenaInputCommand.CANCEL.value],
     [2, ArenaInputCommand.INSPECT.value],
+    [3, ArenaInputCommand.TURN.value],
     [4, ArenaInputCommand.PREVIOUS_REGION.value],
     [5, ArenaInputCommand.NEXT_REGION.value],
   ] as const;

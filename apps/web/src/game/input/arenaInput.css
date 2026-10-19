@@ -1,11 +1,34 @@
-[data-arena-focused="true"] {
-  outline: 3px solid var(--ds-accent, #70a8ff) !important;
+[data-arena-focused="true"],
+.game-hand-card--cursor {
+  outline: 3px solid #fff !important;
   outline-offset: 3px;
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--ds-accent, #70a8ff) 70%, transparent),
+    0 0 18px 6px color-mix(in srgb, var(--ds-accent, #70a8ff) 45%, transparent);
   scroll-margin: 12px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-arena-focused="true"],
+  .game-hand-card--cursor {
+    animation: arena-input-cursor 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes arena-input-cursor {
+  50% {
+    outline-color: color-mix(in srgb, #fff 55%, var(--ds-accent, #70a8ff));
+  }
 }
 
 .game-hand-card[data-arena-focused="true"] {
   z-index: 30 !important;
+}
+
+.game-hand-card[data-arena-focused="true"][data-hand-hover-covered="true"] {
+  outline: none !important;
+  box-shadow: none;
+  animation: none;
 }
 
 [data-arena-reordering="true"] {
@@ -17,7 +40,7 @@
   position: fixed;
   right: max(16px, env(safe-area-inset-right));
   bottom: max(6px, env(safe-area-inset-bottom));
-  z-index: 10001;
+  z-index: var(--ds-z-input-prompt);
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -132,4 +155,35 @@
   .arena-input-glyph[data-shape="face"] {
     width: 16px;
   }
+}
+
+.arena-input-prompts {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ds-z-input-prompt);
+  pointer-events: none;
+}
+
+.arena-input-prompt {
+  position: fixed;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 45%);
+  background: #0b1218;
+  border-color: rgb(255 255 255 / 70%);
+}
+
+.arena-input-prompt[data-shape="face"] {
+  background: #f3f6f8;
+}
+
+[data-arena-input-layout="xbox"] .arena-input-glyph[data-button="turn"] {
+  background: #f0b400;
+  color: #1b1300;
+}
+
+[data-arena-input-layout="playstation"] .arena-input-glyph[data-button="turn"] {
+  color: #5fd3a4;
+}
+
+[data-arena-input-layout="playstation"] .arena-input-prompt[data-shape="face"] {
+  background: #1d2630;
 }

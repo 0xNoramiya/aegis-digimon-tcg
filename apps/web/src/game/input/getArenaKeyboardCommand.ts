@@ -9,6 +9,7 @@ const commands: Readonly<Record<string, ArenaInputCommand>> = {
   " ": ArenaInputCommand.CONFIRM.value,
   Escape: ArenaInputCommand.CANCEL.value,
   i: ArenaInputCommand.INSPECT.value,
+  t: ArenaInputCommand.TURN.value,
   q: ArenaInputCommand.PREVIOUS_REGION.value,
   e: ArenaInputCommand.NEXT_REGION.value,
   PageUp: ArenaInputCommand.SCROLL_UP.value,

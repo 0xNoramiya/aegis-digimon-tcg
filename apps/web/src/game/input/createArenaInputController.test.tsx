@@ -9,7 +9,7 @@ function mountBoard() {
   document.body.innerHTML = `<main class="game-layout"><div class="game-board">
     <div data-arena-region="hand"><button data-hand-instance-id="one">First card</button><button data-hand-instance-id="two">Second card</button><button data-hand-instance-id="three">Third card</button></div>
     <div data-arena-region="viewerField"><button data-permanent-id="attacker" data-inspectable="true">Attacker</button></div>
-    <button>End turn</button>
+    <button data-arena-turn>End turn</button>
     </div></main>`;
   const root = document.querySelector<HTMLElement>(".game-board")!;
   const hand = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-hand-instance-id]"));
@@ -163,4 +163,18 @@ it("offers cancel on the board only when a back action is visible", () => {
   prompt.innerHTML = "<button data-arena-cancel>Back</button>";
   document.body.append(prompt);
   expect(controller.getHints().canCancel).toBe(true);
+});
+
+it("jumps to the turn control and labels each actionable button", () => {
+  const { controller, hand } = mountBoard();
+  expect(controller.getPrompts()).toEqual([]);
+  controller.handle("right");
+  const turn = document.querySelector<HTMLElement>("[data-arena-turn]")!;
+  expect(controller.getPrompts()).toEqual([
+    { element: turn, command: "turn" },
+    { element: hand[1], command: "confirm" },
+  ]);
+  controller.handle("turn");
+  expect(document.activeElement).toBe(turn);
+  expect(controller.getPrompts()).toEqual([{ element: turn, command: "confirm" }]);
 });

@@ -6,6 +6,7 @@ export const ArenaInputCommand = {
   CONFIRM: { name: "CONFIRM", value: "confirm" },
   CANCEL: { name: "CANCEL", value: "cancel" },
   INSPECT: { name: "INSPECT", value: "inspect" },
+  TURN: { name: "TURN", value: "turn" },
   PREVIOUS_REGION: { name: "PREVIOUS_REGION", value: "previousRegion" },
   NEXT_REGION: { name: "NEXT_REGION", value: "nextRegion" },
   SCROLL_UP: { name: "SCROLL_UP", value: "scrollUp" },
