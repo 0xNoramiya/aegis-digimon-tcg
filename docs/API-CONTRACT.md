@@ -326,6 +326,13 @@ back online. If no answer arrives within 10 s, the client closes the socket and
 resumes its seat with the reconnect token. Production deployments route new rooms to
 the active blue, red, or green slot and retain older slots until their rooms drain.
 
+A dropped seat stays reserved for `RECONNECT_GRACE_SECONDS` (60 s). The room owns that
+deadline itself, not Colyseus. A reconnect takes two steps: an HTTP request that reserves
+the seat, then the socket. When the room accepts the request with less than 15 s left
+(Colyseus's seat reservation time), it extends the deadline to 15 s from that moment, so
+the socket still finds its seat. If the socket never arrives, the seat expires at the
+extended deadline. An early request never shortens the deadline.
+
 ## Events and errors
 
 State synchronization carries durable game state. Ephemeral presentation events
