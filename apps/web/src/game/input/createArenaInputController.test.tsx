@@ -154,3 +154,13 @@ it("lets a controller leave text entry without cancelling the board selection", 
   expect(chat.isConnected).toBe(false);
   expect(onCancel).not.toHaveBeenCalled();
 });
+
+it("offers cancel on the board only when a back action is visible", () => {
+  const { controller } = mountBoard();
+  expect(controller.getHints().canCancel).toBe(false);
+  const prompt = document.createElement("section");
+  prompt.className = "board-prompt";
+  prompt.innerHTML = "<button data-arena-cancel>Back</button>";
+  document.body.append(prompt);
+  expect(controller.getHints().canCancel).toBe(true);
+});

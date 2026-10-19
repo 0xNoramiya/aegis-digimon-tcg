@@ -15,7 +15,7 @@ type Params = {
 export function useArenaInput({ root, onCancel }: Params) {
   const [device, setDevice] = useState<ArenaInputDevice>();
   const [layout, setLayout] = useState<ReturnType<typeof getArenaGamepadLayout>>();
-  const [hints, setHints] = useState({ inSurface: false, canCancel: true, canInspect: false, reordering: false });
+  const [hints, setHints] = useState({ inSurface: false, canCancel: false, canInspect: false, reordering: false });
   const cancel = useRef(onCancel);
   cancel.current = onCancel;
   useEffect(() => {

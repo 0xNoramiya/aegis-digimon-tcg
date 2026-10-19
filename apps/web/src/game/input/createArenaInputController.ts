@@ -309,7 +309,13 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
     const current = document.activeElement;
     return {
       inSurface: !!scope,
-      canCancel: !scope || scope.hasAttribute("data-arena-cancelable") || !!scope.querySelector("[data-arena-cancel]"),
+      canCancel: scope
+        ? scope.hasAttribute("data-arena-cancelable") || !!scope.querySelector("[data-arena-cancel]")
+        : Array.from(
+            document.querySelectorAll<HTMLElement>(
+              ".decision-board-return [data-arena-cancel], .board-prompt [data-arena-cancel], .board-prompt[data-arena-cancelable]",
+            ),
+          ).some(isVisible),
       canInspect:
         current instanceof HTMLElement &&
         (!!current.dataset.inspectable ||

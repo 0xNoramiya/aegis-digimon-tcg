@@ -6,6 +6,7 @@ import "@/game/input/arenaInput.css";
 
 type Props = {
   root: RefObject<HTMLElement | null>;
+  cancelable: boolean;
   onCancel: () => void;
 };
 
@@ -39,7 +40,7 @@ function Hint({ glyph, shape, button, secondary, children }: HintProps) {
   );
 }
 
-export function ArenaInput({ root, onCancel }: Props) {
+export function ArenaInput({ root, cancelable, onCancel }: Props) {
   const { t } = useTranslation();
   const { device, layout, inSurface, canCancel, canInspect, reordering } = useArenaInput({ root, onCancel });
   if (!device) {
@@ -59,7 +60,7 @@ export function ArenaInput({ root, onCancel }: Props) {
       <Hint glyph={labels.confirm} shape={face} button="confirm">
         {t("game.input.select")}
       </Hint>
-      {canCancel ? (
+      {canCancel || (cancelable && !inSurface) ? (
         <Hint glyph={labels.cancel} shape={face} button="cancel">
           {t("common.cancel")}
         </Hint>

@@ -322,7 +322,11 @@ export function BoardStage({
           ...look.style,
         }}
       >
-        <ArenaInput root={anchors.board} onCancel={selection.clearSel} />
+        <ArenaInput
+          root={anchors.board}
+          cancelable={!!(selection.handSel || selection.handPreview || selection.selPerm || selection.linkSel)}
+          onCancel={selection.clearSel}
+        />
         <div
           className="game-board aegis-arena-surface"
           ref={anchors.board}
