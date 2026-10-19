@@ -162,6 +162,9 @@ export function resolutionDeps(
     listCandidateInstances: listCandidate,
     ruleProcess: async () => {
       if (engine.optionMainDepth > 0 || engine.effectResolutionDepth > 0) return;
+      if (engine.ruleChecks.anyZeroDpDigimon()) {
+        await engine.recomputeContinuousEffects();
+      }
       derivedPending.push(...(await collectRuleProcessPending(engine)));
     },
     isGameOver: () => engine.state.gameOver,

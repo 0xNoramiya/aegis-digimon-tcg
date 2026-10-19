@@ -786,7 +786,6 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       if (engine.ruleProcessing || engine.ruleTriggerPool !== undefined) {
         // A trash replacement is entered from the active rule pass. Run only the DP
         // movement processes: the outer pass owns the pooled reactions and its latch.
-        await engine.ruleChecks.trashNoDpPermanents();
         await engine.ruleChecks.deleteZeroDpDigimon();
       } else {
         const pool = await collectRuleProcessMovements(engine);

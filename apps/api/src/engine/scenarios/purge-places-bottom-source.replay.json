@@ -1278,10 +1278,10 @@
         "type": "respondDecision",
         "response": {
           "kind": "orderTriggers",
-          "order": ["s0-30::replacement/1500/BT20-091", "s0-28::replacement/1504/BT20-091"],
+          "order": ["s0-30::replacement/1518/BT20-091", "s0-28::replacement/1522/BT20-091"],
           "optionalAnswers": {
-            "s0-28::replacement/1504/BT20-091": true,
-            "s0-30::replacement/1500/BT20-091": true
+            "s0-28::replacement/1522/BT20-091": true,
+            "s0-30::replacement/1518/BT20-091": true
           }
         },
         "decisionId": "dec-25"
