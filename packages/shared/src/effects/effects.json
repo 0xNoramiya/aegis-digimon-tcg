@@ -170328,8 +170328,7 @@
               { "kind": "Draw", "controller": "mine", "amount": 1, "condition": { "kind": "ifThisEffectDidNotDelete" } }
             ]
           }
-        ],
-        "frequency": "OncePerTurn"
+        ]
       }
     ],
     "coverage": "full",

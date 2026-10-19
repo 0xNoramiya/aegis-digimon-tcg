@@ -28,6 +28,20 @@ describe("BT16-044", () => {
     }
   });
 
+  it("gains memory at three security even without an opposing Digimon to suspend", async () => {
+    const s = setupEngine(
+      { 0: { hand: [{ card: "BT16-044", as: "pistmon" }], security: 3 } },
+      { autoSelectCards: true },
+    );
+    s.state.memory = 6;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("pistmon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle();
+    expect(s.state.memory).toBe(2);
+    expect(s.state.players[0]!.battleArea.some(({ topCard }) => topCard.cardId === "BT16-044")).toBe(true);
+  });
+
   it("has the inherited Pulsemon security-cost unsuspend", () => {
     expect(compiled.effects?.[2]).toMatchObject({
       trigger: "EndOfAttack",

@@ -283,7 +283,7 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
         trigger,
         candidates,
         (deletionTrigger, simultaneousPending = []) =>
-          simultaneousPending.length > 0
+          simultaneousPending.length > 0 || candidates.length > 0
             ? runTimingWindow(
                 engine,
                 EffectTiming.OnDestroyedAnyone,
