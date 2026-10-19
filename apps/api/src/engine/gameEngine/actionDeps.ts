@@ -41,7 +41,7 @@ import {
   type RespondCounterDeps,
 } from "../actions/index.js";
 import { linkHostOf, linkRequirementSatisfied } from "./boardQueries.js";
-import { type ArmedSubTrigger, digivolvedFromTamerBase } from "./subTriggerIdentity.js";
+import { digivolvedFromTamerBase } from "./subTriggerIdentity.js";
 import type { GameEngine } from "../GameEngine.js";
 import { applyIntent, checkTurnEndAfterVerb, findInstance, findLooseInstance } from "./intents.js";
 import {
@@ -77,6 +77,7 @@ import { buildEffectContext, cardSourceOf } from "./effectContext.js";
 import { drawCards, runBreedingPhase, sweepDurations } from "./turnFlow.js";
 import { effectiveColorsOf } from "./matchLifecycle.js";
 import { minimumDeferredPlayCost } from "./timing/playAffordability.js";
+import { holdCostTriggers } from "#api/engine/gameEngine/holdCostTriggers";
 import { looseZoneOfInstance } from "../effects/verbs/looseInstances.js";
 
 /**
@@ -293,28 +294,7 @@ export function digivolveDeps(engine: GameEngine): DigivolveDeps {
       return false;
     },
     prepareDigivolveCost: (_state, _seat, target, evolving) => fireBeforeDigivolveCost(engine, evolving, target),
-    holdCostTriggers: () => {
-      const enclosing = engine.digivolveCostSubTriggers;
-      const held: ArmedSubTrigger[] = [];
-      engine.digivolveCostSubTriggers = held;
-      let holding = true;
-      let activated = false;
-      return {
-        stopHolding: () => {
-          if (!holding) return;
-          holding = false;
-          engine.digivolveCostSubTriggers = enclosing;
-        },
-        activate: async (window) => {
-          if (activated) return window?.();
-          activated = true;
-          await withPendingSubTriggers(engine, [], undefined, window ?? (async () => {}), {
-            onlyInitiallyArmed: true,
-            alsoArmed: held,
-          });
-        },
-      };
-    },
+    holdCostTriggers: () => holdCostTriggers(engine),
     potentialInteractiveDigivolveReduction: (state, seat, target, into, baseAsDigimon) => {
       if (engine.continuous.blocksCostReduction(seat, "digivolve")) return 0;
       const liveReduction = engine.subTriggers.potentialInteractiveReductionFor(
@@ -641,6 +621,7 @@ export function playCardDeps(engine: GameEngine): PlayCardDeps {
       fireBeforePayCost(engine, instance, baseCost, mode === "option", "hand"),
     // Synchronous fast-path gate: only cards with a BeforePayCost effect take the async
     // finalization path. Every other card keeps same-microtask placement (no timing change).
+    holdCostTriggers: () => holdCostTriggers(engine),
     hasBeforePayCost: (instance) =>
       effectsOf(EffectTiming.BeforePayCost, cardSourceOf(engine, instance)).some(
         (effect) => effect.costWindow !== "digivolve",
