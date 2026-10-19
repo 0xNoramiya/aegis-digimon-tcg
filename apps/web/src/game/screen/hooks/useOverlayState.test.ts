@@ -33,6 +33,7 @@ describe("windows that only show cards", () => {
   function openReadOnlyWindows(result: ReturnType<typeof renderOverlays>["result"]) {
     act(() => {
       result.current.setCardMenu({ permanentId: "opp-1", side: Side.Opponent, x: 10, y: 10 });
+      result.current.setStackView("opp-1");
       result.current.setTrashView(Side.Opponent);
       result.current.setSecurityView(Side.Viewer);
     });
@@ -49,6 +50,7 @@ describe("windows that only show cards", () => {
     ])
       rerender({ decision: undefined, state });
     expect(result.current.cardMenu?.permanentId).toBe("opp-1");
+    expect(result.current.stackView).toBe("opp-1");
     expect(result.current.trashView).toBe(Side.Opponent);
     expect(result.current.securityView).toBe(Side.Viewer);
   });
@@ -56,8 +58,10 @@ describe("windows that only show cards", () => {
   it("close when the viewer gets a decision of their own, so the prompt is never covered", () => {
     const { result, rerender } = renderOverlays();
     openReadOnlyWindows(result);
+    act(() => result.current.setStackView("mine-1"));
     rerender({ decision: decisionFor("mine-1"), state: gameState() });
     expect(result.current.cardMenu).toBeNull();
+    expect(result.current.stackView).toBeNull();
     expect(result.current.trashView).toBeNull();
     expect(result.current.securityView).toBeNull();
   });

@@ -1,10 +1,10 @@
 {
   "fetchedAt": "2026-10-16T13:45:11.694Z",
   "language": "ja",
-  "catalogCards": 4497,
+  "catalogCards": 4504,
   "sourceCards": 4477,
-  "translatedCards": 4292,
-  "translatedFields": 6770,
+  "translatedCards": 4299,
+  "translatedFields": 6780,
   "missing": [
     {
       "cardId": "BT12-002",
@@ -15695,6 +15695,30 @@
     "BT27-082": {
       "effectText": "https://x.com/digimon_tcg/status/2111698837064786432",
       "optionEffect": "https://x.com/digimon_tcg/status/2111698837064786432"
+    },
+    "BT27-003": {
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2111978199316091354"
+    },
+    "BT27-045": {
+      "effectText": "https://x.com/digimon_tcg/status/2111978199316091354",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2111978199316091354"
+    },
+    "BT27-049": {
+      "effectText": "https://x.com/digimon_tcg/status/2112061222099333418",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2112061222099333418"
+    },
+    "BT27-051": {
+      "effectText": "https://x.com/digimon_tcg/status/2112061222099333418",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2112061222099333418"
+    },
+    "BT27-075": {
+      "effectText": "https://x.com/digimon_tcg/status/2112159358553624837"
+    },
+    "BT27-076": {
+      "effectText": "https://x.com/digimon_tcg/status/2112159358553624837"
+    },
+    "BT27-079": {
+      "effectText": "https://x.com/digimon_tcg/status/2112159358553624837"
     }
   }
 }

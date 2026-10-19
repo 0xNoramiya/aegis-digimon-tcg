@@ -16,6 +16,7 @@ import {
   type ServerEvent,
   type ZoneRef,
 } from "@aegis/shared";
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { canAttackerDeclare } from "../combat/legality.js";
 import { resolveKeywords } from "../combat/keywords.js";
 import { effectiveKinds, effectiveNames, effectiveTraits } from "../effects/continuous.js";
@@ -240,7 +241,11 @@ export function effectEnvironment(engine: GameEngine, trigger: TriggerInfo): Eff
 export function forgetUsesOfCardsLeavingField(engine: GameEngine, event: ServerEvent): void {
   if (event.kind !== "cardsMoved") return;
   const onField = (zone: string): boolean => zone === Zone.BattleArea || zone === Zone.Breeding;
-  if (!onField(event.from) || onField(event.to)) return;
+  const fromField =
+    onField(event.from) ||
+    event.from === CardMovePosition.DIGIVOLUTION_CARDS.value ||
+    event.from === CardMovePosition.LINKED_CARDS.value;
+  if (!fromField || onField(event.to)) return;
   for (const instanceId of event.instanceIds) engine.tracker.forgetInstance(instanceId);
 }
 
@@ -757,7 +762,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
         trigger,
         candidates,
         (deletionTrigger, simultaneousPending = []) =>
-          simultaneousPending.length > 0
+          simultaneousPending.length > 0 || candidates.length > 0
             ? runTimingWindow(
                 engine,
                 EffectTiming.OnDestroyedAnyone,
@@ -781,7 +786,6 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       if (engine.ruleProcessing || engine.ruleTriggerPool !== undefined) {
         // A trash replacement is entered from the active rule pass. Run only the DP
         // movement processes: the outer pass owns the pooled reactions and its latch.
-        await engine.ruleChecks.trashNoDpPermanents();
         await engine.ruleChecks.deleteZeroDpDigimon();
       } else {
         const pool = await collectRuleProcessMovements(engine);
