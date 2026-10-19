@@ -102,6 +102,7 @@ export function useOverlayState({
     }
     clearSel();
     setCardMenu(null);
+    setStackView(null);
     setTrashView(null);
     setSecurityView(null);
   }, [ownDecisionId, gameOver, ownCombatWindowKey, clearSel]);
