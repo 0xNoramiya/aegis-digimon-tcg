@@ -483,6 +483,7 @@ def final_evaluation(
 @click.option("--teacher-searches", default=4, type=click.IntRange(1, 100), show_default=True)
 @click.option("--teacher-every", default=4, type=click.IntRange(1, 100), show_default=True)
 @click.option("--teacher-rollout-turns", default=None, type=click.IntRange(1, 200))
+@click.option("--heuristic-batch-size", default=None, type=click.IntRange(1, 32))
 def main(
     run_dir: Path,
     node: str,
@@ -514,6 +515,7 @@ def main(
     teacher_searches: int,
     teacher_every: int,
     teacher_rollout_turns: int | None,
+    heuristic_batch_size: int | None,
 ) -> None:
     final_pairs = pairs if final_pairs is None else final_pairs
     fidelity = {
@@ -590,6 +592,7 @@ def main(
         "reflectionPairs": reflection_pairs,
         "fidelity": fidelity,
         "finalControl": final_control,
+        **({} if heuristic_batch_size is None else {"heuristicBatchSize": heuristic_batch_size}),
         "evaluationCache": str(run_dir.parent / "game-cache"),
         "runnerSha256": hashlib.sha256(
             b"".join(
@@ -635,6 +638,7 @@ def main(
         "deckVersions": metadata["deckVersions"],
         **({} if fidelity is None else {"fidelity": fidelity}),
         **({} if final_control == "seed" else {"finalControl": final_control}),
+        **({} if heuristic_batch_size is None else {"heuristicBatchSize": heuristic_batch_size}),
     }
     config_sha256 = hashlib.sha256(json.dumps(config, sort_keys=True).encode("utf-8")).hexdigest()
     run_dir.mkdir(parents=True, exist_ok=True)

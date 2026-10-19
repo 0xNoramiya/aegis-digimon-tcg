@@ -101,17 +101,45 @@ class HeuristicAdapter:
             for task in batch
         ):
             raise ValueError("Transport batching is restricted to balanced-control games")
-        groups = [batch[index : index + batch_size] for index in range(0, len(batch), batch_size)]
+        heuristic_batch_size = self.metadata.get("heuristicBatchSize")
+        if heuristic_batch_size is not None and (
+            batch_size > 1
+            or not isinstance(heuristic_batch_size, int)
+            or not 1 <= heuristic_batch_size <= 32
+        ):
+            raise ValueError("Use 1–32 heuristic games per batch without balanced batching")
+        if heuristic_batch_size is None:
+            groups = [
+                list(range(index, min(index + batch_size, len(batch))))
+                for index in range(0, len(batch), batch_size)
+            ]
+        else:
+            # Search games stay one per process; heuristic games share a process.
+            heuristic = [
+                index for index, task in enumerate(batch) if task.get("opponent") == "heuristic"
+            ]
+            groups = [
+                [index] for index, task in enumerate(batch) if task.get("opponent") != "heuristic"
+            ] + [
+                heuristic[index : index + heuristic_batch_size]
+                for index in range(0, len(heuristic), heuristic_batch_size)
+            ]
         with ThreadPoolExecutor(max_workers=self.config.workers) as pool:
             grouped_outputs = list(
                 pool.map(
-                    lambda tasks: self._evaluate_games(
-                        tasks, candidate, capture_traces, batch_size > 1
+                    lambda indices: self._evaluate_games(
+                        [batch[index] for index in indices],
+                        candidate,
+                        capture_traces,
+                        batch_size > 1 or len(indices) > 1,
                     ),
                     groups,
                 )
             )
-        outputs = [output for group in grouped_outputs for output in group]
+        outputs = [None] * len(batch)
+        for indices, group in zip(groups, grouped_outputs, strict=True):
+            for index, output in zip(indices, group, strict=True):
+                outputs[index] = output
         if not all(output.get("valid") is True for output in outputs):
             raise RuntimeError(
                 "Incomplete evaluation batch; invalid games are not fitness losses. Inspect game artifacts and resume after diagnosis."

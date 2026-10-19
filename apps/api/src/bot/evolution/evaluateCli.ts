@@ -311,15 +311,11 @@ if (process.argv.includes("--describe-combo-pilots")) {
         input.length > 32 ||
         input.some(
           (item) =>
-            item.opponent !== "balanced" &&
-            !(
-              item.opponent === "heuristic" &&
-              item.program?.basePolicy === "projected-balanced" &&
-              item.opponentProgram?.basePolicy === "projected-balanced"
-            ),
+            (item.opponent !== "balanced" && item.opponent !== "heuristic") ||
+            item.learnerMctsSimulations !== undefined,
         ))
     )
-      throw new Error("Batch evaluations require 1–32 residual-control games");
+      throw new Error("Batch evaluations require 1–32 games without search");
     const engineSha256 = trainingMetadata().engineSha256;
     const outputs = [];
     for (const task of batch ? input : [input]) outputs.push(await evaluate(task, engineSha256));

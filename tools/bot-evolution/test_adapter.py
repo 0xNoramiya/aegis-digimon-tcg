@@ -362,3 +362,51 @@ def test_reflection_dataset_lists_clear_teacher_disagreements_only() -> None:
         "features": {},
     }
     assert disagreements[0]["chosen"]["features"] == {"cost": 3}
+
+
+def test_heuristic_games_share_processes_while_search_games_stay_isolated(
+    tmp_path: Path, monkeypatch
+) -> None:
+    commands = []
+
+    def complete(command, **kwargs):
+        payload = json.loads(kwargs["input"])
+        commands.append((command[-1] == "--batch", payload))
+        games = payload if isinstance(payload, list) else [payload]
+        outputs = [
+            {
+                "valid": True,
+                "score": game["seed"] % 2,
+                "seed": game["seed"],
+                "learnerSeat": game["learnerSeat"],
+                "decks": game["decks"],
+                "opponent": "coevolved-heuristic",
+            }
+            for game in games
+        ]
+        return subprocess.CompletedProcess(
+            command, 0, stdout=json.dumps(outputs if isinstance(payload, list) else outputs[0])
+        )
+
+    monkeypatch.setattr("adapter.subprocess.run", complete)
+    adapter = HeuristicAdapter(
+        EvaluationConfig(
+            node="node",
+            worker=Path(__file__),
+            run_dir=tmp_path,
+            engine_sha256="engine",
+            simulations=32,
+            workers=1,
+        ),
+        {"heuristicBatchSize": 2},
+    )
+    tasks = [
+        {"seed": seed, "learnerSeat": 0, "decks": ["a", "b"], "opponent": opponent}
+        for seed, opponent in enumerate(["mcts", "heuristic", "heuristic", "mcts", "heuristic"])
+    ]
+    batch = adapter.evaluate(tasks, {"heuristic": "{}"})
+    assert [output["task"]["seed"] for output in batch.outputs] == [0, 1, 2, 3, 4]
+    assert batch.scores == [0, 1, 0, 1, 0]
+    batched = [[game["seed"] for game in payload] for is_batch, payload in commands if is_batch]
+    assert batched == [[1, 2]]
+    assert sorted(payload["seed"] for is_batch, payload in commands if not is_batch) == [0, 3, 4]
