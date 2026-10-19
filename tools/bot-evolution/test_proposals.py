@@ -152,3 +152,124 @@ def test_incomplete_training_screen_never_becomes_a_fitness_loss(tmp_path, monke
         propose({"heuristic": json.dumps(program)}, feedback, ["heuristic"])
     assert calls == [[training]]
     assert json.loads((tmp_path / "proposal-0001.json").read_text())["status"] == "reserved"
+
+
+def test_interrupted_gate_resumes_same_proposal_and_seed_blocks(tmp_path, monkeypatch):
+    program = {"rules": [{"feature": "cost", "weight": -1, "advice": "Spend carefully."}]}
+    proposal = {"rules": [{**program["rules"][0], "when": {"kind": "main"}}]}
+    reflections = []
+
+    def reflect(**kwargs):
+        reflections.append(kwargs)
+        return {"new_instruction": json.dumps(proposal)}
+
+    monkeypatch.setattr("proposals.InstructionProposalSignature.run", reflect)
+    tasks = [{"seed": 100 + index // 2, "learnerSeat": index % 2} for index in range(48)]
+    candidate = {"heuristic": json.dumps(program)}
+    seen = []
+
+    def interrupted(tasks, candidate):
+        seen.append(tasks)
+        raise RuntimeError("Interrupted gate")
+
+    propose = guarded_proposer(SimpleNamespace(evaluate=interrupted), None, program, tasks, tmp_path, 1)
+    with pytest.raises(RuntimeError, match="Interrupted gate"):
+        propose(candidate, {"heuristic": []}, ["heuristic"])
+
+    def evaluate(tasks, candidate):
+        seen.append(tasks)
+        conditional = "when" in json.loads(candidate["heuristic"])["rules"][0]
+        return SimpleNamespace(
+            outputs=[{"task": task, "valid": True, "score": int(conditional)} for task in tasks]
+        )
+
+    resumed = guarded_proposer(SimpleNamespace(evaluate=evaluate), None, program, tasks, tmp_path, 1)
+    assert not resumed.is_exhausted()
+    chosen = resumed(candidate, {"heuristic": []}, ["heuristic"])
+    assert "when" in json.loads(chosen["heuristic"])["rules"][0]
+    assert seen[0] == seen[1] == seen[2]
+    assert len(reflections) == 1
+    assert len(list(tmp_path.glob("proposal-*.json"))) == 1
+    assert resumed.is_exhausted()
+
+
+def test_interrupted_proposal_refuses_changed_feedback(tmp_path, monkeypatch):
+    program = {"rules": [{"feature": "cost", "weight": -1, "advice": "Spend carefully."}]}
+    tasks = [{"seed": 100 + index // 2, "learnerSeat": index % 2} for index in range(48)]
+    candidate = {"heuristic": json.dumps(program)}
+
+    def interrupted(**kwargs):
+        raise RuntimeError("Interrupted reflection")
+
+    monkeypatch.setattr("proposals.InstructionProposalSignature.run", interrupted)
+    propose = guarded_proposer(None, None, program, tasks, tmp_path, 1)
+    with pytest.raises(RuntimeError, match="Interrupted reflection"):
+        propose(candidate, {"heuristic": []}, ["heuristic"])
+    resumed = guarded_proposer(None, None, program, tasks, tmp_path, 1)
+    with pytest.raises(ValueError, match="Interrupted proposal request changed"):
+        resumed(candidate, {"heuristic": [{"different": True}]}, ["heuristic"])
+
+
+def test_accepted_gate_survives_interruption_before_gepa_checkpoint(tmp_path, monkeypatch):
+    program = {"rules": [{"feature": "cost", "weight": -1, "advice": "Spend carefully."}]}
+    proposal = {"rules": [{**program["rules"][0], "when": {"kind": "main"}}]}
+    reflections = []
+
+    def reflect(**kwargs):
+        reflections.append(kwargs)
+        return {"new_instruction": json.dumps(proposal)}
+
+    monkeypatch.setattr("proposals.InstructionProposalSignature.run", reflect)
+    tasks = [{"seed": 100 + index // 2, "learnerSeat": index % 2} for index in range(48)]
+    candidate = {"heuristic": json.dumps(program)}
+    evaluated = []
+
+    def evaluate(tasks, candidate):
+        evaluated.append(tasks)
+        conditional = "when" in json.loads(candidate["heuristic"])["rules"][0]
+        return SimpleNamespace(
+            outputs=[{"task": task, "valid": True, "score": int(conditional)} for task in tasks]
+        )
+
+    adapter = SimpleNamespace(evaluate=evaluate)
+    first = guarded_proposer(adapter, None, program, tasks, tmp_path, 1)
+    initial_state = SimpleNamespace(program_candidates=[candidate])
+    assert not first.is_exhausted(initial_state)
+    accepted = first(candidate, {"heuristic": []}, ["heuristic"])
+    assert "when" in json.loads(accepted["heuristic"])["rules"][0]
+    games = len(evaluated)
+
+    resumed = guarded_proposer(adapter, None, program, tasks, tmp_path, 1)
+    assert not resumed.is_exhausted(initial_state)
+    replayed = resumed(candidate, {"heuristic": []}, ["heuristic"])
+    assert replayed == accepted
+    assert len(evaluated) == games
+    assert len(reflections) == 1
+    assert resumed.is_exhausted(SimpleNamespace(program_candidates=[candidate, replayed]))
+
+
+def test_unrecorded_accepted_gate_refuses_a_changed_request(tmp_path, monkeypatch):
+    program = {"rules": [{"feature": "cost", "weight": -1, "advice": "Spend carefully."}]}
+    proposal = {"rules": [{**program["rules"][0], "when": {"kind": "main"}}]}
+    monkeypatch.setattr(
+        "proposals.InstructionProposalSignature.run",
+        lambda **kwargs: {"new_instruction": json.dumps(proposal)},
+    )
+    tasks = [{"seed": 100 + index // 2, "learnerSeat": index % 2} for index in range(48)]
+    candidate = {"heuristic": json.dumps(program)}
+
+    def evaluate(tasks, candidate):
+        conditional = "when" in json.loads(candidate["heuristic"])["rules"][0]
+        return SimpleNamespace(
+            outputs=[{"task": task, "valid": True, "score": int(conditional)} for task in tasks]
+        )
+
+    adapter = SimpleNamespace(evaluate=evaluate)
+    guarded_proposer(adapter, None, program, tasks, tmp_path, 2)(
+        candidate, {"heuristic": []}, ["heuristic"]
+    )
+    resumed = guarded_proposer(adapter, None, program, tasks, tmp_path, 2)
+    assert not resumed.is_exhausted(SimpleNamespace(program_candidates=[candidate]))
+    with pytest.raises(ValueError, match="awaits GEPA acceptance"):
+        resumed(candidate, {"heuristic": [{"different": True}]}, ["heuristic"])
+

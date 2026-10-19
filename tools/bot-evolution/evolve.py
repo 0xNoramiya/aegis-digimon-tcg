@@ -246,7 +246,7 @@ def optimize_stage(
         if getattr(reflector, "failure", None) is not None:
             return True
         if metadata.get("pairedProposalGates"):
-            return adapter.propose_new_texts.is_exhausted()
+            return adapter.propose_new_texts.is_exhausted(state)
         return False
 
     result = gepa.optimize(

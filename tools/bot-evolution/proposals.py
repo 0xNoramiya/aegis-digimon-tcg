@@ -1,5 +1,6 @@
 """Keep reflection structural and gate each proposal on fresh paired seed blocks."""
 
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -12,7 +13,12 @@ from residual_weights import RESIDUAL_WEIGHTS
 
 
 def guarded_proposer(
-    adapter, reflector, calibrated: dict, tasks: list[dict], directory: Path, proposal_limit: int
+    adapter,
+    reflector,
+    calibrated: dict,
+    tasks: list[dict],
+    directory: Path,
+    proposal_limit: int,
 ):
     if len(tasks) < 48:
         raise ValueError("Proposal gates require at least 48 paired games")
@@ -29,32 +35,81 @@ def guarded_proposer(
     calls = max(
         (int(path.stem.split("-")[1]) for path in directory.glob("proposal-*.json")), default=0
     )
+    awaiting_acceptance = False
+
+    def _latest():
+        path = directory / f"proposal-{calls:04d}.json"
+        if not path.is_file():
+            return None
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def _pending():
+        record = _latest()
+        return record if record is not None and record.get("status") == "reserved" else None
+
+    def _save(path, record):
+        temporary = path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+        temporary.replace(path)
+
+    def _accepted(record):
+        return record.get("pairedEvidence", {}).get("accepted") is True
 
     def propose(candidate, dataset, components):
         nonlocal calls
-        if calls >= proposal_limit:
-            return candidate
-        calls += 1
-        reservation = directory / f"proposal-{calls:04d}.json"
-        reservation.write_text(
+        request_hash = hashlib.sha256(
             json.dumps(
-                {"status": "reserved", "proposalNumber": calls, "parent": candidate}, indent=2
-            )
-            + "\n"
-        )
-        text = InstructionProposalSignature.run(
-            lm=reflector,
-            input_dict={
-                "current_instruction_doc": candidate["heuristic"],
-                "dataset_with_feedback": dataset["heuristic"],
-                "prompt_template": REFLECTION_TEMPLATE,
-            },
-        )["new_instruction"]
+                {
+                    "candidate": candidate,
+                    "dataset": dataset,
+                    "components": components,
+                    "calibrated": calibrated,
+                    "tasks": tasks,
+                    "proposalLimit": proposal_limit,
+                },
+                sort_keys=True,
+                allow_nan=False,
+            ).encode("utf-8")
+        ).hexdigest()
+        record = _pending()
+        latest = _latest()
+        if record is not None:
+            if record.get("requestSha256") != request_hash:
+                raise ValueError("Interrupted proposal request changed or lacks resume provenance")
+        elif awaiting_acceptance:
+            if latest.get("requestSha256") != request_hash:
+                raise ValueError("Accepted proposal awaits GEPA acceptance but its request changed")
+            return {"heuristic": json.dumps(latest["program"])}
+        else:
+            if calls >= proposal_limit:
+                return candidate
+            calls += 1
+            record = {
+                "status": "reserved",
+                "proposalNumber": calls,
+                "parent": candidate,
+                "requestSha256": request_hash,
+            }
+            _save(directory / f"proposal-{calls:04d}.json", record)
+        reservation = directory / f"proposal-{calls:04d}.json"
+        if "instruction" not in record:
+            record["instruction"] = InstructionProposalSignature.run(
+                lm=reflector,
+                input_dict={
+                    "current_instruction_doc": candidate["heuristic"],
+                    "dataset_with_feedback": dataset["heuristic"],
+                    "prompt_template": REFLECTION_TEMPLATE,
+                },
+            )["new_instruction"]
+            _save(reservation, record)
+        text = record["instruction"]
+
+        def finish(outcome):
+            _save(reservation, {**outcome, "requestSha256": request_hash})
+
         program = json.loads(text)
         if program.get("basePolicy") != calibrated.get("basePolicy"):
-            reservation.write_text(
-                json.dumps({"program": program, "status": "rejected-base-change"}, indent=2) + "\n"
-            )
+            finish({"program": program, "status": "rejected-base-change"})
             return candidate
         for rule in program["rules"]:
             calibrated_weight = exact_weights.get(
@@ -72,15 +127,11 @@ def guarded_proposer(
                 and calibrated_weight != 0
                 and rule["weight"] * calibrated_weight < 0
             ):
-                (directory / f"proposal-{calls:04d}.json").write_text(
-                    json.dumps(
-                        {
-                            "program": program,
-                            "rejected": "Reflection changed calibrated weight sign; advice needs reauthoring",
-                        },
-                        indent=2,
-                    )
-                    + "\n"
+                finish(
+                    {
+                        "program": program,
+                        "rejected": "Reflection changed calibrated weight sign; advice needs reauthoring",
+                    }
                 )
                 return candidate
             rule["weight"] = calibrated_weight
@@ -91,9 +142,7 @@ def guarded_proposer(
         ]
         proposal = {"heuristic": json.dumps(program)}
         if policy_hash(program) == policy_hash(json.loads(candidate["heuristic"])):
-            reservation.write_text(
-                json.dumps({"program": program, "status": "unchanged"}, indent=2) + "\n"
-            )
+            finish({"program": program, "status": "unchanged"})
             return candidate
         screen = None
         records = dataset.get("heuristic", [])
@@ -123,15 +172,12 @@ def guarded_proposer(
                 "candidateScore": new_score,
             }
             if new_score <= old_score:
-                reservation.write_text(
-                    json.dumps(
-                        {
-                            "program": program,
-                            "status": "rejected-training-screen",
-                            "screen": screen,
-                        },
-                        indent=2,
-                    ) + "\n"
+                finish(
+                    {
+                        "program": program,
+                        "status": "rejected-training-screen",
+                        "screen": screen,
+                    }
                 )
                 return candidate
         selected = adapter.evaluate(gate_tasks, proposal).outputs
@@ -139,22 +185,30 @@ def guarded_proposer(
         evidence = paired_evidence(
             selected, control, alpha=0.05 / proposal_limit, method="wilson-wins"
         )
-        (directory / f"proposal-{calls:04d}.json").write_text(
-            json.dumps(
-                {
-                    "program": program,
-                    "pairedEvidence": evidence,
-                    "tasks": gate_tasks,
-                    "screen": screen,
-                },
-                indent=2,
-            )
-            + "\n"
+        finish(
+            {
+                "program": program,
+                "pairedEvidence": evidence,
+                "tasks": gate_tasks,
+                "screen": screen,
+            }
         )
         return proposal if evidence["accepted"] else candidate
 
-    def is_exhausted():
-        return calls >= proposal_limit
+    def is_exhausted(state=None):
+        nonlocal awaiting_acceptance
+        latest = _latest()
+        awaiting_acceptance = (
+            state is not None
+            and latest is not None
+            and _accepted(latest)
+            and policy_hash(latest["program"])
+            not in {
+                policy_hash(json.loads(program["heuristic"]))
+                for program in state.program_candidates
+            }
+        )
+        return calls >= proposal_limit and _pending() is None and not awaiting_acceptance
 
     propose.is_exhausted = is_exhausted
     return propose
