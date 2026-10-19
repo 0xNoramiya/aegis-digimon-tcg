@@ -67,6 +67,20 @@ export function teacherActionIndex(
       return index < 0 ? undefined : index;
     }
   }
-  const index = window.actions.findIndex((action) => isDeepStrictEqual(action.intent, intent));
+  const declared = canonicalDeclaration(intent);
+  const index = window.actions.findIndex((action) => isDeepStrictEqual(canonicalDeclaration(action.intent), declared));
   return index < 0 ? undefined : index;
+}
+
+/** Clients spell some declarations with defaults the engine treats as absent. */
+function canonicalDeclaration(intent: Intent): Intent {
+  if (intent.type === "attack" && intent.vortex === false) {
+    const { vortex: _vortex, ...attack } = intent;
+    return attack;
+  }
+  if (intent.type === "digivolve" && intent.alternateRequirementIndex !== undefined && intent.useAlternateCost === true) {
+    const { useAlternateCost: _useAlternateCost, ...digivolve } = intent;
+    return digivolve;
+  }
+  return intent;
 }
