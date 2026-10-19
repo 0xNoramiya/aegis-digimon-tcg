@@ -110,6 +110,7 @@ export function Pile({
       className={className}
       ref={refEl}
       onClick={onClick}
+      data-arena-suggested={(glow && !!onClick) || undefined}
       data-inspectable={!!onInspect || undefined}
       onContextMenu={
         onInspect

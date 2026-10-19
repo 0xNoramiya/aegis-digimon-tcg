@@ -5,6 +5,7 @@ import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 
 const targetSelector = 'button, [role="button"], [href], input, select, textarea, summary, [tabindex="0"]';
 const turnSelector = "[data-arena-turn]";
+const suggestedSelector = "[data-arena-suggested]";
 const boardCancelSelector = ".decision-board-return [data-arena-cancel], .board-prompt [data-arena-cancel]";
 const surfaceSelector = '[role="dialog"], [role="alertdialog"], [role="menu"], [data-arena-surface]';
 
@@ -75,6 +76,8 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
   let focused: HTMLElement | undefined;
   let lastRegion: string = ArenaInputRegion.HAND.value;
   let active = false;
+  let activating = false;
+  let suggestions = new Set<HTMLElement>();
   const forwardedEvents = new WeakSet<Event>();
 
   function getScope() {
@@ -165,7 +168,15 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
       }
     }
     const current = document.activeElement;
-    if (current instanceof HTMLElement && targets.includes(current)) {
+    const currentIsTarget = current instanceof HTMLElement && targets.includes(current);
+    const suggested = scope ? [] : targets.filter((target) => target.matches(suggestedSelector));
+    const fresh = suggested.find((target) => !suggestions.has(target));
+    suggestions = new Set(suggested);
+    if (fresh && fresh !== focused && !(activating && currentIsTarget)) {
+      focusTarget(fresh, targets);
+      return true;
+    }
+    if (current instanceof HTMLElement && currentIsTarget) {
       if (focused !== current) {
         focusTarget(current, targets);
       }
@@ -184,8 +195,13 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
   }
 
   function handle(command: ArenaInputCommand) {
+    activating = !active;
     active = true;
-    refresh();
+    const jumped = refresh();
+    activating = false;
+    if (jumped) {
+      return;
+    }
     const { scope, targets } = getAvailable();
     const current = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
     if (current?.dataset.arenaReordering) {
@@ -304,6 +320,7 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
 
   function deactivate() {
     active = false;
+    suggestions.clear();
     focused?.removeAttribute("data-arena-focused");
   }
 

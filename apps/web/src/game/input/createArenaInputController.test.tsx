@@ -186,3 +186,25 @@ it("reports no targets when nothing on the board is laid out", () => {
   vi.spyOn(HTMLElement.prototype, "getClientRects").mockImplementation(() => [] as unknown as DOMRectList);
   expect(controller.hasTargets()).toBe(false);
 });
+
+it("moves the cursor to a newly suggested action and stops the first press there", () => {
+  const { controller, hand } = mountBoard();
+  const egg = document.createElement("div");
+  egg.setAttribute("role", "button");
+  egg.tabIndex = 0;
+  egg.dataset.arenaSuggested = "true";
+  const breeding = document.createElement("div");
+  breeding.dataset.arenaRegion = "breeding";
+  breeding.append(egg);
+  document.querySelector(".game-board")!.append(breeding);
+  controller.handle("right");
+  expect(document.activeElement).toBe(egg);
+  controller.handle("previousRegion");
+  expect(document.activeElement).toBe(hand[0]);
+  egg.remove();
+  controller.refresh();
+  const raising = egg.cloneNode() as HTMLElement;
+  breeding.append(raising);
+  controller.refresh();
+  expect(document.activeElement).toBe(raising);
+});

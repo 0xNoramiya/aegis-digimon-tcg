@@ -112,6 +112,7 @@ export function BreedingDock({
             drop={slotDrop}
             onClick={onSlotClick}
             onInspect={onInspect}
+            suggested={actionsOpen && canMoveOut && !canHatchEgg}
           />
         </div>
       </div>
