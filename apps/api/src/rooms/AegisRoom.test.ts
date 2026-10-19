@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
-import { CloseCode, type Client } from "colyseus";
+import { CloseCode, Room, type Client } from "colyseus";
 import { ArraySchema, Encoder } from "@colyseus/schema";
 import {
   ALL_FAMOUS_DECKS,
@@ -759,29 +759,93 @@ describe("AegisRoom combat windows", () => {
     expect(b.send).not.toHaveBeenCalled();
   });
 
-  it("#5257 grants 30 seconds to reconnect and awards the connected opponent the win on expiry", async () => {
-    vi.useFakeTimers();
-    const room = makeRoom();
-    const [, dropped] = joinBothSeats(room);
-    room.state.phase = Phase.Main;
-    (room as unknown as { matchStartRequested: boolean }).matchStartRequested = true;
-    room.broadcastPatch = vi.fn<AegisRoom["broadcastPatch"]>(() => false);
-    room.allowReconnection = vi.fn<(_client: Client, seconds?: number) => Promise<Client>>(
-      (_client: Client, seconds?: number) =>
-        new Promise<Client>((_resolve, reject) =>
-          setTimeout(() => reject(new Error("grace expired")), seconds! * 1000),
-        ),
-    ) as unknown as AegisRoom["allowReconnection"];
-    const departure = room.onLeave(dropped, CloseCode.ABNORMAL_CLOSURE);
-    await Promise.resolve();
-    expect(room.allowReconnection).toHaveBeenCalledWith(dropped, 30);
-    expect(room.state.players[1]!.connected).toBe(false);
-    await vi.advanceTimersByTimeAsync(29_999);
-    expect(room.state.gameOver).toBe(false);
-    await vi.advanceTimersByTimeAsync(1);
-    await departure;
-    expect(room.state.gameOver).toBe(true);
-    expect(room.state.winnerSeat).toBe(0);
+  describe("reconnect grace", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.useRealTimers();
+    });
+
+    function droppedMatch() {
+      vi.useFakeTimers();
+      const room = makeRoom();
+      const [, dropped] = joinBothSeats(room);
+      (dropped as unknown as { reconnectionToken: string }).reconnectionToken = "token-b";
+      room.state.phase = Phase.Main;
+      (room as unknown as { matchStartRequested: boolean }).matchStartRequested = true;
+      room.broadcastPatch = vi.fn<AegisRoom["broadcastPatch"]>(() => false);
+      let resolve!: (client: Client) => void;
+      let reject!: (reason: unknown) => void;
+      const reconnection = Object.assign(
+        new Promise<Client>((done, fail) => {
+          resolve = done;
+          reject = fail;
+        }),
+        { resolve, reject },
+      );
+      room.allowReconnection = vi.fn(() => reconnection) as unknown as AegisRoom["allowReconnection"];
+      vi.spyOn(Room.prototype, "checkReconnectionToken").mockReturnValue(dropped.sessionId);
+      const elapse = async (ms: number) => {
+        await vi.advanceTimersByTimeAsync(ms);
+        room.clock.tick();
+        await vi.advanceTimersByTimeAsync(0);
+      };
+      const departure = room.onLeave(dropped, CloseCode.ABNORMAL_CLOSURE);
+      return { room, dropped, departure, elapse, reconnect: (client: Client) => resolve(client) };
+    }
+
+    it("#5257 grants 60 seconds to reconnect and awards the connected opponent the win on expiry", async () => {
+      const { room, dropped, departure, elapse } = droppedMatch();
+      await elapse(0);
+      expect(room.allowReconnection).toHaveBeenCalledWith(dropped, "manual");
+      expect(room.state.players[1]!.connected).toBe(false);
+
+      await elapse(59_999);
+      expect(room.state.gameOver).toBe(false);
+      await elapse(1);
+      await departure;
+      expect(room.state.gameOver).toBe(true);
+      expect(room.state.winnerSeat).toBe(0);
+    });
+
+    it("keeps the seat for a reconnect accepted moments before the grace runs out", async () => {
+      const { room, dropped, departure, elapse, reconnect } = droppedMatch();
+      await elapse(59_700);
+      expect(room.checkReconnectionToken("token-b")).toBe(dropped.sessionId);
+
+      await elapse(1_400);
+      expect(room.state.gameOver).toBe(false);
+      const back = fakeClient(dropped.sessionId);
+      room.clients.push(back);
+      reconnect(back);
+      await departure;
+      expect(room.state.gameOver).toBe(false);
+      expect(room.state.players[1]!.connected).toBe(true);
+    });
+
+    it("releases a seat whose accepted reconnect never opens its socket", async () => {
+      const { room, departure, elapse } = droppedMatch();
+      await elapse(59_700);
+      room.checkReconnectionToken("token-b");
+
+      await elapse(14_999);
+      expect(room.state.gameOver).toBe(false);
+      await elapse(1);
+      await departure;
+      expect(room.state.gameOver).toBe(true);
+      expect(room.state.winnerSeat).toBe(0);
+    });
+
+    it("does not shorten the grace when a reconnect is accepted early", async () => {
+      const { room, departure, elapse } = droppedMatch();
+      await elapse(5_000);
+      room.checkReconnectionToken("token-b");
+
+      await elapse(54_999);
+      expect(room.state.gameOver).toBe(false);
+      await elapse(1);
+      await departure;
+      expect(room.state.gameOver).toBe(true);
+    });
   });
 
   it("re-sends the pending decision to the reconnected client (Discord 1555741214014447737)", async () => {

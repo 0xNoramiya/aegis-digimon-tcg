@@ -995,14 +995,14 @@ it("lets the viewer leave while the opponent is disconnected", () => {
   expect(onLeave).toHaveBeenCalledOnce();
 });
 
-it("Discord suggestion 1557418616729768076: counts down from a 30 second grace", () => {
+it("Discord suggestion 1557418616729768076: counts down from the 60 second grace", () => {
   render(
     <I18nProvider>
       <OpponentDroppedOverlay onLeave={vi.fn<() => void>()} />
     </I18nProvider>,
   );
 
-  expect(screen.getByText(/0:30/)).toBeTruthy();
+  expect(screen.getByText(/1:00/)).toBeTruthy();
 });
 
 describe("generic engine selection prompts", () => {
