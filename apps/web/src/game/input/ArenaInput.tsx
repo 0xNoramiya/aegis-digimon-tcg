@@ -1,5 +1,5 @@
 import { ArenaInputDevice } from "@/game/input/ArenaInputDevice";
-import type { RefObject } from "react";
+import type { ReactNode, RefObject } from "react";
 import { useTranslation } from "@/i18n/useTranslation";
 import { useArenaInput } from "@/game/input/useArenaInput";
 import "@/game/input/arenaInput.css";
@@ -9,40 +9,77 @@ type Props = {
   onCancel: () => void;
 };
 
+type GlyphShape = "face" | "pad";
+
+const keyboardLabels = {
+  confirm: "Enter",
+  cancel: "Esc",
+  inspect: "I",
+  regions: "Q E",
+  navigate: "↑↓←→",
+  scroll: "PgUp PgDn",
+};
+
+type HintProps = {
+  glyph: string;
+  shape?: GlyphShape;
+  button?: string;
+  secondary?: boolean;
+  children: ReactNode;
+};
+
+function Hint({ glyph, shape, button, secondary, children }: HintProps) {
+  return (
+    <span className="arena-input-hint" data-secondary={secondary || undefined}>
+      <kbd className="arena-input-glyph" data-shape={shape} data-button={button}>
+        {glyph}
+      </kbd>
+      {children}
+    </span>
+  );
+}
+
 export function ArenaInput({ root, onCancel }: Props) {
   const { t } = useTranslation();
-  const { device, inSurface, canCancel, canInspect, reordering } = useArenaInput({ root, onCancel });
+  const { device, layout, inSurface, canCancel, canInspect, reordering } = useArenaInput({ root, onCancel });
   if (!device) {
     return null;
   }
-  const gamepad = device === ArenaInputDevice.GAMEPAD.value;
+  const gamepad = device === ArenaInputDevice.GAMEPAD.value ? layout : undefined;
+  const face = gamepad ? "face" : undefined;
+  const labels = gamepad ? { ...gamepad.labels, navigate: "✥", scroll: "RS" } : keyboardLabels;
   return (
-    <aside className="arena-input-hints" aria-label={t("game.input.controls")} data-arena-input-device={device}>
-      <span>
-        <kbd>{gamepad ? "D-pad" : "↑↓←→"}</kbd> {t("game.input.navigate")}
-      </span>
-      {reordering ? <span>{t("game.input.reorder")}</span> : null}
-      <span>
-        <kbd>{gamepad ? "A" : "Enter"}</kbd> {t("game.input.select")}
-      </span>
+    <aside
+      className="arena-input-hints"
+      aria-label={t("game.input.controls")}
+      data-arena-input-device={device}
+      data-arena-input-layout={gamepad?.value}
+    >
+      {reordering ? <span className="arena-input-hint">{t("game.input.reorder")}</span> : null}
+      <Hint glyph={labels.confirm} shape={face} button="confirm">
+        {t("game.input.select")}
+      </Hint>
       {canCancel ? (
-        <span>
-          <kbd>{gamepad ? "B" : "Esc"}</kbd> {t("common.cancel")}
-        </span>
+        <Hint glyph={labels.cancel} shape={face} button="cancel">
+          {t("common.cancel")}
+        </Hint>
       ) : null}
       {canInspect ? (
-        <span>
-          <kbd>{gamepad ? "X" : "I"}</kbd> {t("game.input.inspect")}
-        </span>
+        <Hint glyph={labels.inspect} shape={face} button="inspect">
+          {t("game.input.inspect")}
+        </Hint>
       ) : null}
       {!inSurface && !reordering ? (
-        <span>
-          <kbd>{gamepad ? "LB/RB" : "Q/E"}</kbd> {t("game.input.region")}
-        </span>
+        <Hint glyph={labels.regions} secondary>
+          {t("game.input.region")}
+        </Hint>
       ) : null}
-      <span>
-        <kbd>{gamepad ? "R-stick" : "PgUp/PgDn"}</kbd> {t("game.input.scroll")}
-      </span>
+      <Hint glyph={labels.scroll} shape={gamepad ? "pad" : undefined} secondary>
+        {t("game.input.scroll")}
+      </Hint>
+      <Hint glyph={labels.navigate} shape={gamepad ? "pad" : undefined} secondary>
+        {t("game.input.navigate")}
+      </Hint>
     </aside>
   );
 }

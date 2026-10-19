@@ -5,6 +5,7 @@ import { ArenaInputCommand } from "@/game/input/ArenaInputCommand";
 import { createArenaInputController } from "@/game/input/createArenaInputController";
 import { createArenaGamepadInput } from "@/game/input/createArenaGamepadInput";
 import { getArenaKeyboardCommand } from "@/game/input/getArenaKeyboardCommand";
+import type { getArenaGamepadLayout } from "@/game/input/getArenaGamepadLayout";
 
 type Params = {
   root: RefObject<HTMLElement | null>;
@@ -13,6 +14,7 @@ type Params = {
 
 export function useArenaInput({ root, onCancel }: Params) {
   const [device, setDevice] = useState<ArenaInputDevice>();
+  const [layout, setLayout] = useState<ReturnType<typeof getArenaGamepadLayout>>();
   const [hints, setHints] = useState({ inSurface: false, canCancel: true, canInspect: false, reordering: false });
   const cancel = useRef(onCancel);
   cancel.current = onCancel;
@@ -31,8 +33,9 @@ export function useArenaInput({ root, onCancel }: Params) {
     }
     let suspended = document.hidden;
     const gamepad = createArenaGamepadInput({
-      onCommand: (command) => {
+      onCommand: (command, padLayout) => {
         setDevice(ArenaInputDevice.GAMEPAD.value);
+        setLayout(padLayout);
         controller.handle(command);
         updateHints();
       },
@@ -134,5 +137,5 @@ export function useArenaInput({ root, onCancel }: Params) {
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [root]);
-  return { device, ...hints };
+  return { device, layout, ...hints };
 }

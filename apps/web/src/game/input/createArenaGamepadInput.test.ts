@@ -3,18 +3,25 @@ import type { ArenaInputCommand } from "@/game/input/ArenaInputCommand";
 import { createArenaGamepadInput } from "@/game/input/createArenaGamepadInput";
 
 type PadParams = {
+  id?: string;
   buttons?: number[];
   axes?: number[];
   index?: number;
   mapping?: GamepadMappingType;
 };
 
-function buildPad({ buttons = [], axes = [0, 0, 0, 0], index = 0, mapping = "standard" }: PadParams = {}): Gamepad {
+function buildPad({
+  id = "Test controller",
+  buttons = [],
+  axes = [0, 0, 0, 0],
+  index = 0,
+  mapping = "standard",
+}: PadParams = {}): Gamepad {
   return {
     index,
     mapping,
     connected: true,
-    id: "Test controller",
+    id,
     timestamp: 0,
     axes,
     buttons: Array.from({ length: 17 }, (_, i) => ({
@@ -35,7 +42,7 @@ describe("controller navigation", () => {
     input.poll({ gamepads: [buildPad()], now: 10 });
     input.poll({ gamepads: [buildPad({ buttons: [0] })], now: 20 });
     input.poll({ gamepads: [buildPad({ buttons: [0] })], now: 1000 });
-    expect(onCommand.mock.calls).toEqual([["confirm"]]);
+    expect(onCommand.mock.calls.map(([command]) => command)).toEqual(["confirm"]);
     input.poll({ gamepads: [buildPad()], now: 1010 });
     input.poll({ gamepads: [buildPad({ buttons: [0] })], now: 1020 });
     expect(onCommand).toHaveBeenCalledTimes(2);
@@ -51,7 +58,7 @@ describe("controller navigation", () => {
     for (const now of [20, 319, 320, 419, 420]) {
       input.poll({ gamepads: [pad], now });
     }
-    expect(onCommand.mock.calls).toEqual([["right"], ["right"], ["right"]]);
+    expect(onCommand.mock.calls.map(([command]) => command)).toEqual(["right", "right", "right"]);
   });
 
   it("rearms after blur, disconnect, and replacement by another controller", () => {
@@ -65,7 +72,7 @@ describe("controller navigation", () => {
     expect(onCommand).not.toHaveBeenCalled();
     input.poll({ gamepads: [buildPad({ index: 1 })], now: 40 });
     input.poll({ gamepads: [buildPad({ buttons: [2], index: 1 })], now: 50 });
-    expect(onCommand.mock.calls).toEqual([["inspect"]]);
+    expect(onCommand.mock.calls.map(([command]) => command)).toEqual(["inspect"]);
   });
 
   it("dispatches only one action from a simultaneous confirm and cancel", () => {
@@ -75,7 +82,7 @@ describe("controller navigation", () => {
     for (const now of [10, 20, 400]) {
       input.poll({ gamepads: [buildPad({ buttons: [0, 1] })], now });
     }
-    expect(onCommand.mock.calls).toEqual([["confirm"]]);
+    expect(onCommand.mock.calls.map(([command]) => command)).toEqual(["confirm"]);
   });
 
   it("supports shoulder regions and right-stick scrolling and ignores nonstandard mappings", () => {
@@ -87,6 +94,28 @@ describe("controller navigation", () => {
     input.poll({ gamepads: [buildPad()], now: 20 });
     input.poll({ gamepads: [buildPad({ buttons: [5] })], now: 30 });
     input.poll({ gamepads: [buildPad({ axes: [0, 0, 0, -0.8] })], now: 40 });
-    expect(onCommand.mock.calls).toEqual([["nextRegion"], ["scrollUp"]]);
+    expect(onCommand.mock.calls.map(([command]) => command)).toEqual(["nextRegion", "scrollUp"]);
+  });
+
+  it("confirms with the right face button on Nintendo controllers", () => {
+    const onCommand = vi.fn<(command: ArenaInputCommand) => void>();
+    const input = createArenaGamepadInput({ onCommand });
+    const id = "Nintendo Switch Pro Controller (Vendor: 057e Product: 2009)";
+    input.poll({ gamepads: [buildPad({ id })], now: 0 });
+    input.poll({ gamepads: [buildPad({ id, buttons: [1] })], now: 10 });
+    input.poll({ gamepads: [buildPad({ id })], now: 20 });
+    input.poll({ gamepads: [buildPad({ id, buttons: [0] })], now: 30 });
+    expect(onCommand.mock.calls.map(([command]) => command)).toEqual(["confirm", "cancel"]);
+  });
+
+  it("reports the controller family with each command", () => {
+    const onCommand = vi.fn<(command: ArenaInputCommand, layout: { value: string }) => void>();
+    const input = createArenaGamepadInput({ onCommand });
+    const id = "DualSense Wireless Controller (Vendor: 054c Product: 0ce6)";
+    input.poll({ gamepads: [buildPad({ id })], now: 0 });
+    input.poll({ gamepads: [buildPad({ id, buttons: [0] })], now: 10 });
+    expect(onCommand.mock.calls.map(([command, layout]) => [command, layout.value])).toEqual([
+      ["confirm", "playstation"],
+    ]);
   });
 });

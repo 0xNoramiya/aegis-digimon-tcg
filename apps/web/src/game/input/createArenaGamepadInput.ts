@@ -1,18 +1,23 @@
 import { ArenaInputCommand } from "@/game/input/ArenaInputCommand";
+import { getArenaGamepadLayout } from "@/game/input/getArenaGamepadLayout";
+
+type Layout = ReturnType<typeof getArenaGamepadLayout>;
 
 type Params = {
-  onCommand: (command: ArenaInputCommand) => void;
+  onCommand: (command: ArenaInputCommand, layout: Layout) => void;
 };
 
 type PollParams = { gamepads: readonly (Gamepad | null)[]; now: number };
 
-const buttonCommands = [
-  [0, ArenaInputCommand.CONFIRM.value],
-  [1, ArenaInputCommand.CANCEL.value],
-  [2, ArenaInputCommand.INSPECT.value],
-  [4, ArenaInputCommand.PREVIOUS_REGION.value],
-  [5, ArenaInputCommand.NEXT_REGION.value],
-] as const;
+function getButtonCommands(layout: Layout) {
+  return [
+    [layout.confirmButton, ArenaInputCommand.CONFIRM.value],
+    [layout.cancelButton, ArenaInputCommand.CANCEL.value],
+    [2, ArenaInputCommand.INSPECT.value],
+    [4, ArenaInputCommand.PREVIOUS_REGION.value],
+    [5, ArenaInputCommand.NEXT_REGION.value],
+  ] as const;
+}
 
 export function createArenaGamepadInput({ onCommand }: Params) {
   let activeIndex: number | undefined;
@@ -38,6 +43,8 @@ export function createArenaGamepadInput({ onCommand }: Params) {
       reset();
       activeIndex = pad.index;
     }
+    const layout = getArenaGamepadLayout(pad.id);
+    const buttonCommands = getButtonCommands(layout);
     const held = new Set<ArenaInputCommand>();
     for (const [index, command] of buttonCommands) {
       if (pad.buttons[index]?.pressed) {
@@ -80,7 +87,7 @@ export function createArenaGamepadInput({ onCommand }: Params) {
       for (const command of held) {
         repeats.set(command, now + 300);
       }
-      onCommand(freshAction);
+      onCommand(freshAction, layout);
       return;
     }
     for (const command of held) {
@@ -90,7 +97,7 @@ export function createArenaGamepadInput({ onCommand }: Params) {
       const next = repeats.get(command);
       if (next === undefined || now >= next) {
         repeats.set(command, now + (next === undefined ? 300 : 100));
-        onCommand(command);
+        onCommand(command, layout);
         break;
       }
     }
