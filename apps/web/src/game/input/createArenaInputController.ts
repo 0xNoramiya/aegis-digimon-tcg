@@ -330,6 +330,10 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
     };
   }
 
+  function hasTargets() {
+    return getAvailable().targets.length > 0;
+  }
+
   function getPrompts() {
     if (!active) {
       return [];
@@ -355,5 +359,5 @@ export function createArenaInputController({ getRoot, onCancel }: Params) {
     return prompts;
   }
 
-  return { handle, refresh, deactivate, isForwarded, getHints, getPrompts };
+  return { handle, refresh, deactivate, isForwarded, hasTargets, getHints, getPrompts };
 }

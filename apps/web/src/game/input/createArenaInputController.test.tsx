@@ -179,3 +179,10 @@ it("jumps to the turn control and labels each actionable button", () => {
   expect(document.activeElement).toBe(turn);
   expect(controller.getPrompts()).toEqual([{ element: turn, command: "confirm" }]);
 });
+
+it("reports no targets when nothing on the board is laid out", () => {
+  const { controller } = mountBoard();
+  expect(controller.hasTargets()).toBe(true);
+  vi.spyOn(HTMLElement.prototype, "getClientRects").mockImplementation(() => [] as unknown as DOMRectList);
+  expect(controller.hasTargets()).toBe(false);
+});

@@ -48,7 +48,7 @@ export function useArenaInput({ root, onCancel }: Params) {
         return;
       }
       const command = getArenaKeyboardCommand(event);
-      if (!command) {
+      if (!command || !controller.hasTargets()) {
         return;
       }
       event.preventDefault();
