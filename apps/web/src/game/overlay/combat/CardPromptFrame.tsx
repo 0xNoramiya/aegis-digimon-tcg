@@ -1,8 +1,9 @@
 import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { CardArt } from "../CardArt";
 import { useCardOpener } from "../../cardLinks";
-import { printedCardName } from "../printedCardName";
+
 import { useTranslation } from "../../../i18n";
 import { useBoardPreview } from "../choice/useBoardPreview";
 import { DecisionViewBoardButton } from "../choice/DecisionViewBoardButton";
@@ -35,6 +36,7 @@ export function CardPromptFrame({
   onBack?: () => void;
   children: ReactNode;
 }) {
+  const getCardName = useTranslatedCardName();
   const titleId = useId();
   const { t } = useTranslation();
   const openCard = useCardOpener();
@@ -80,7 +82,7 @@ export function CardPromptFrame({
             openCard ? (
               <button
                 className="counter-overlay__art-link"
-                aria-label={t("feed.openCard", { card: printedCardName(cardId) })}
+                aria-label={t("feed.openCard", { card: getCardName(cardId) })}
                 onClick={() => openCard(cardId)}
               >
                 <span className="mobile-prompt-art">

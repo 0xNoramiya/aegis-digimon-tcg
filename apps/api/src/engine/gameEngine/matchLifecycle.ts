@@ -120,6 +120,7 @@ export async function runMatch(engine: GameEngine): Promise<void> {
     ],
     firstSeat,
     seed: engine.hooks.seed,
+    randomKey: engine.hooks.randomKey,
     onShuffled: (seat, deck) => engine.hooks.emit({ kind: "deckShuffled", seat, deck }),
   });
   engine.rngForSeat = setup.rngForSeat;
@@ -143,7 +144,7 @@ export function startScenarioFixture(engine: GameEngine, fixture: ScenarioFixtur
   const decks = collectStagedDecks(engine);
   if (decks === undefined) return;
   const references = layScenarioFixture(engine.state, fixture, decks);
-  const rngs = ([0, 1] as const).map((seat) => makeRng(seatSeed(engine.hooks.seed, seat)));
+  const rngs = ([0, 1] as const).map((seat) => makeRng(seatSeed(engine.hooks.seed, seat), engine.hooks.randomKey));
   engine.rngForSeat = (seat) => rngs[seat]!;
   engine.matchSetupStarted = true;
   applyScenarioEffects(engine, fixture, references);

@@ -308,6 +308,7 @@ export interface TriggerInfo {
   digivolvedFromZone?: ZoneRef;
   /** Physical card entering through this evolution, fixed before nested evolutions. */
   digivolvedInstanceId?: string;
+  digivolvedSubject?: Permanent;
   /**
    * True when the card the WhenDigivolving window's subject digivolved FROM is a Tamer
    * (BT23-101's "digivolve from a Tamer" requirement), read from the printed card kind so an

@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, createHmac } from "node:crypto";
 import { CardInstance, PlayerState, Zone, type GameState, type Seat } from "@aegis/shared";
 import { resolveCardArt } from "@aegis/shared";
 import { clearBattleArea, clearZone, fillZone, insertCard, setBreeding, takeTop } from "./state/access.js";
@@ -34,14 +34,14 @@ export const SECURITY_STACK_SIZE = 5;
 /** A deterministic PRNG returning floats in [0, 1). */
 export type Rng = () => number;
 
-/**
- * Build a deterministic PRNG from a 32-bit seed (mulberry32). Chosen for being tiny,
- * dependency-free, and reproducible across platforms — sufficient for a fair,
- * server-only shuffle (it is not, and need not be, cryptographically secure; the seed
- * never leaves the server). The same seed always yields the same sequence, which is
- * what makes a dealt match reproducible in tests.
- */
-export function makeRng(seed: number): Rng {
+export function makeRng(seed: number, randomKey?: string): Rng {
+  if (randomKey !== undefined) {
+    let counter = 0;
+    return () => {
+      const digest = createHmac("sha256", randomKey).update(`shuffle:${seed}:${counter++}`).digest();
+      return digest.readUInt32BE(0) / 0x100000000;
+    };
+  }
   let state = seed >>> 0;
   return () => {
     state = (state + 0x6d2b79f5) | 0;
@@ -75,21 +75,20 @@ export function shuffleInPlace<T>(items: T[], rng: Rng): T[] {
   return items;
 }
 
-/**
- * Materialize a flat list of card ids into fresh, face-down CardInstances owned by
- * `seat`, with deterministic, match-unique instance ids (`s{seat}-{ordinal}`).
- * Cards in hidden zones start face-down (the visibility layer redacts them from the
- * opponent regardless; faceUp flips when a card enters a public zone).
- */
 function makeInstances(
   seat: Seat,
   cardIds: readonly string[],
   startOrdinal: number,
   artIds?: readonly string[],
+  randomKey?: string,
 ): CardInstance[] {
   return cardIds.map((cardId, offset) => {
     const card = new CardInstance();
-    card.instanceId = `s${seat}-${startOrdinal + offset}`;
+    const ordinal = startOrdinal + offset;
+    card.instanceId =
+      randomKey === undefined
+        ? `s${seat}-${ordinal}`
+        : `s${seat}-${createHmac("sha256", randomKey).update(`identity:${seat}:${ordinal}`).digest("hex")}`;
     card.cardId = cardId;
     card.artId = resolveCardArt(cardId, artIds?.[offset]).artId;
     card.ownerSeat = seat;
@@ -123,11 +122,11 @@ export interface Decklist {
  * swapping them for new objects silently breaks visibility (the client never sees cards
  * dealt into the new arrays). All zone resets therefore clear-and-repopulate in place.
  */
-export function loadDeckInto(player: PlayerState, seat: Seat, deck: Decklist): PlayerState {
+export function loadDeckInto(player: PlayerState, seat: Seat, deck: Decklist, randomKey?: string): PlayerState {
   player.seat = seat;
 
-  const mainInstances = makeInstances(seat, deck.mainDeck, 0, deck.mainDeckArts);
-  const eggInstances = makeInstances(seat, deck.eggDeck, deck.mainDeck.length, deck.eggDeckArts);
+  const mainInstances = makeInstances(seat, deck.mainDeck, 0, deck.mainDeckArts, randomKey);
+  const eggInstances = makeInstances(seat, deck.eggDeck, deck.mainDeck.length, deck.eggDeckArts, randomKey);
 
   fillZone(player, Zone.Deck, mainInstances);
   fillZone(player, Zone.EggDeck, eggInstances);
@@ -272,6 +271,7 @@ export interface SetupInput {
   firstSeat: Seat;
   /** Master match seed (server-only); per-seat sub-seeds are derived from it. */
   seed: number;
+  randomKey?: string;
   /** Narration hook for each pile randomized during setup (see {@link shuffleDecks}). */
   onShuffled?: (seat: Seat, deck: ShuffledDeck) => void;
 }
@@ -302,10 +302,10 @@ export function runSetup(state: GameState, input: SetupInput): SetupResult {
     const player = existing ?? new PlayerState();
     player.sessionId = cfg.sessionId;
     player.displayName = cfg.displayName;
-    loadDeckInto(player, seat, cfg.deck);
+    loadDeckInto(player, seat, cfg.deck, input.randomKey);
     if (existing === undefined) state.players[seat] = player;
 
-    const rng = makeRng(seatSeed(input.seed, seat));
+    const rng = makeRng(seatSeed(input.seed, seat), input.randomKey);
     rngs[seat] = rng;
     shuffleDecks(player, rng, (deck) => input.onShuffled?.(seat, deck));
     dealOpeningHand(player);

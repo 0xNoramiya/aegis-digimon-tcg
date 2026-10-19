@@ -74,22 +74,17 @@ export async function engineRunSecurityCheck(
         removedFromSecuritySeat: info.removedFromSecuritySeat,
         subjectPermanentId: info.subjectPermanentId,
       }),
-    fireFaceUpSecurityAdded: async (info) =>
-      engine.fireSubTrigger("whenFaceUpCardsAddedToOpponentSecurity", {
-        addedToSecuritySeat: info.seat,
-        addedToSecurityInstanceIds: [info.instanceId],
-      }),
     prepareCheckTriggers: (info) => {
-      const event = info.wasAlreadyFaceUp ? "whenCheckedFaceUpSecurity" : "whenFaceUpCardsAddedToOpponentSecurity";
       const payload: TriggerInfo = {
         attackerPermanentId: info.attackerPermanentId,
         securityInstanceId: info.securityInstanceId,
         removedFromSecuritySeat: info.defenderSeat,
-        addedToSecuritySeat: info.defenderSeat,
-        addedToSecurityInstanceIds: [info.securityInstanceId],
       };
-      const armed = [event, "whenSecurityRemoved"].flatMap((name) =>
-        armedSubTriggers(engine, [...engine.subTriggers.subscriptionsFor(name as SubTriggerEventName)], payload),
+      const events: SubTriggerEventName[] = info.wasAlreadyFaceUp
+        ? ["whenCheckedFaceUpSecurity", "whenSecurityRemoved"]
+        : ["whenSecurityRemoved"];
+      const armed = events.flatMap((name) =>
+        armedSubTriggers(engine, [...engine.subTriggers.subscriptionsFor(name)], payload),
       );
       const framework = effectEnvironment(engine, payload);
       const initialEnv = buildResolutionEnv(framework, resolutionDeps(engine));

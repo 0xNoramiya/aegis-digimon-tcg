@@ -60,7 +60,7 @@ interface BarPlacement {
 function placeBar(bar: HTMLElement): BarPlacement | undefined {
   const container = (bar.offsetParent ?? document.body).getBoundingClientRect();
   const hand = document.querySelector(".game-opponent-hand")?.getBoundingClientRect();
-  const actions = document.querySelector(".game-topbar-actions")?.getBoundingClientRect();
+  const actions = document.querySelector(".game-topbar-actions, .game-mobile-menu")?.getBoundingClientRect();
   const header = document.querySelector(".game-opponent-bar")?.getBoundingClientRect();
   if (!hand || !actions || !header || actions.width === 0) return undefined;
   const room = actions.left - hand.right - 2 * HEADER_GAP_PX;

@@ -15,6 +15,40 @@ function ChangeLanguage() {
   return <button onClick={() => setLocale("en")}>Switch to English</button>;
 }
 
+it.each([
+  ["BT18-102", "Mega / Hybrid", "Vaccine, Shaman"],
+  ["BT16-102", "Mega", "Vaccine, Free, Holy Warrior, X Antibody, Royal Knight"],
+  ["BT23-077", "Champion", "Data, Virus, Puppet, CS"],
+  ["ST23-13", "Tamer", "Glowing Dawn, BEATBREAK"],
+])("shows all printed forms, attributes and types in the detail drawer for %s", async (cardId, forms, traits) => {
+  localStorage.setItem("aegis:locale", "en");
+  render(
+    <I18nProvider>
+      <CardDetailDrawer cardId={cardId} onClose={() => undefined} />
+    </I18nProvider>,
+  );
+
+  expect(await screen.findByText(forms, { selector: ".card-detail-row > span:last-child" })).toBeTruthy();
+  expect(screen.getByText(traits)).toBeTruthy();
+});
+
+it("translates every form and attribute in the Chinese detail drawer", async () => {
+  localStorage.setItem("aegis:locale", "zh-CN");
+  const { rerender } = render(
+    <I18nProvider>
+      <CardDetailDrawer cardId="BT18-102" onClose={() => undefined} />
+    </I18nProvider>,
+  );
+
+  expect(await screen.findByText("究极体 / 混合体")).toBeTruthy();
+  rerender(
+    <I18nProvider>
+      <CardDetailDrawer cardId="BT16-102" onClose={() => undefined} />
+    </I18nProvider>,
+  );
+  expect(await screen.findByText("疫苗种, 自由, 圣骑士型, X抗体, 皇家骑士")).toBeTruthy();
+});
+
 it("translates the default face's headings, name and main effect in Chinese", async () => {
   localStorage.setItem("aegis:locale", "zh-CN");
   render(

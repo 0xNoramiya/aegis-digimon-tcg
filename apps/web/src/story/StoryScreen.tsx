@@ -6,6 +6,7 @@ import { Button, Eyebrow } from "@/design/primitives";
 import { Icons } from "@/design/icons";
 import { request } from "@/account/client";
 import { useTranslation } from "@/i18n/useTranslation";
+import { getTranslatedStoryText } from "@/i18n/getTranslatedStoryText";
 import { StoryBattleRow } from "@/story/StoryBattleRow";
 import { storyCharacters } from "@/story/storyCharacters";
 import "@/story/story.css";
@@ -13,7 +14,7 @@ import "@/story/story.css";
 type Params = { signedIn: boolean; onSignIn: () => void; onStart: (battleId: string) => void };
 
 export function StoryScreen({ signedIn, onSignIn, onStart }: Params) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [character, setCharacter] = useState("Shoto Kazama");
   const [progress, setProgress] = useState<StoryProgress>();
   const [failed, setFailed] = useState(false);
@@ -49,7 +50,7 @@ export function StoryScreen({ signedIn, onSignIn, onStart }: Params) {
           </div>
           <div className="story-header__copy">
             <Eyebrow>{t("story.title")}</Eyebrow>
-            <h1>Digimon Liberator</h1>
+            <h1>{getTranslatedStoryText({ text: "Digimon Liberator", locale })}</h1>
             <p>{t("story.tagline")}</p>
           </div>
         </header>
@@ -90,14 +91,20 @@ export function StoryScreen({ signedIn, onSignIn, onStart }: Params) {
                 onClick={() => setCharacter(person.name)}
               >
                 <img src={person.portraitUrl} alt="" loading="lazy" />
-                <span>{person.name.split(" ")[0]}</span>
+                <span>
+                  {locale === "zh-CN"
+                    ? getTranslatedStoryText({ text: person.name, locale })
+                    : person.name.split(" ")[0]}
+                </span>
                 <small>{storyBattles.filter((battle) => battle.character === person.name).length}</small>
               </button>
             ))}
           </nav>
           <section className="story-campaign" aria-labelledby="story-campaign-heading">
             <div className="story-campaign__heading">
-              <h2 id="story-campaign-heading">{character || t("story.all")}</h2>
+              <h2 id="story-campaign-heading">
+                {character ? getTranslatedStoryText({ text: character, locale }) : t("story.all")}
+              </h2>
               <span>{t("story.progress", { completed, total: battles.length })}</span>
             </div>
             {failed && (

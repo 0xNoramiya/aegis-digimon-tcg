@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { SpectatorInvite } from "./SpectatorInvite";
 /* The bar across the top of the board: the opponent's counters, the fan of card
    backs that stands for their hand, and the match-level controls.
@@ -13,7 +14,7 @@ import { useTranslation } from "../../../i18n";
 import { Icons } from "../../../design/icons";
 import { CardBack } from "../../../design/cards";
 import { CardArt } from "../../overlay/CardArt";
-import { printedCardName } from "../../overlay/printedCardName";
+
 import { useCardOpener } from "../../cardLinks";
 import { ArenaCounters } from "../../ArenaCounters";
 import { useEnterAnimation } from "../../animations";
@@ -68,6 +69,7 @@ export function OpponentBar({
   chatOpen = false,
   chatUnread = 0,
   onSurrender,
+  gameOver = false,
   onSkipPresentation,
   onResetScenario,
 }: {
@@ -105,9 +107,11 @@ export function OpponentBar({
   /** Messages from others since the chat window was last open. */
   chatUnread?: number;
   onSurrender: () => void;
+  gameOver?: boolean;
   onSkipPresentation: () => void;
   onResetScenario?: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const fullscreen = useFullscreen();
   const fullscreenLabel = fullscreen.active ? t("game.fullscreen.exit") : t("game.fullscreen.enter");
@@ -116,7 +120,13 @@ export function OpponentBar({
   const openCard = useCardOpener();
   const skipShown = useHeldFlag(skippable, SKIP_BUTTON_HOLD_MS);
   const tooltip = useTopbarTooltip();
-  const leaveLabel = t(spectating ? "spectator.leave" : "game.surrender");
+  let leaveLabel = t("game.surrender");
+  if (gameOver) {
+    leaveLabel = t("game.leaveMatch");
+  }
+  if (spectating) {
+    leaveLabel = t("spectator.leave");
+  }
   const tooltipText: Record<TopbarTooltipId, string | undefined> = {
     log: t("game.matchLog"),
     feedback: t("bugReport.button"),
@@ -184,7 +194,7 @@ export function OpponentBar({
               <button
                 type="button"
                 className="game-opponent-hand__reveal"
-                aria-label={printedCardName(revealedHand[i].cardId)}
+                aria-label={getCardName(revealedHand[i].cardId)}
                 onClick={() => openCard?.(revealedHand[i]!.cardId, revealedHand[i]!.artId)}
               >
                 <CardArt cardId={revealedHand[i].cardId} artId={revealedHand[i].artId} width={30} />
@@ -271,7 +281,7 @@ export function OpponentBar({
               <Icons.Settings size={18} /> {t("redesign.arena.look.open")}
             </button>
             <button type="button" onClick={onSurrender}>
-              <Icons.LogOut size={18} /> {t(spectating ? "spectator.leave" : "game.surrender")}
+              <Icons.LogOut size={18} /> {leaveLabel}
             </button>
           </div>
         </details>
@@ -321,7 +331,7 @@ export function OpponentBar({
           <button
             className="game-mobile-surrender"
             onClick={onResetScenario ?? onSurrender}
-            aria-label={onResetScenario ? "Reset battle" : t(spectating ? "spectator.leave" : "game.surrender")}
+            aria-label={onResetScenario ? "Reset battle" : leaveLabel}
           >
             {onResetScenario ? "↻" : <Icons.LogOut size={16} />}
           </button>

@@ -1,5 +1,5 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { Fragment, useLayoutEffect, useState, type HTMLAttributes } from "react";
-import { getCardDefinition } from "@aegis/shared";
 import { CardFull } from "../../design/cards";
 import { Icons } from "../../design/icons";
 import { TOUCH_LAYOUT_QUERY, useMediaQuery } from "../../design/useMediaQuery";
@@ -61,6 +61,7 @@ export function Hand({
   /** How much of a buried card stays tappable. */
   minExposure?: number;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const n = cards.length;
   // Large effect selections need whole hit targets: a tightly fanned neighbor
@@ -236,7 +237,7 @@ export function Hand({
                   className="game-hand-card__inspect"
                   data-arena-inspect
                   aria-label={t("game.inspectCard", {
-                    card: getCardDefinition(entry.cardId)?.nameEn ?? entry.cardId,
+                    card: getCardName(entry.cardId),
                   })}
                   tabIndex={-1}
                   onPointerDown={(event) => event.stopPropagation()}
@@ -275,7 +276,7 @@ export function Hand({
                 tabIndex={0}
                 aria-label={
                   t(selection ? "game.pickCard" : "game.selectCard", {
-                    card: getCardDefinition(entry.cardId)?.nameEn ?? entry.cardId,
+                    card: getCardName(entry.cardId),
                   }) +
                   (copyLabels.has(entry.instanceId) ? `, ${copyLabels.get(entry.instanceId)}` : "") +
                   (picked ? `${t("overlay.selected")}, ${t("game.pickPosition", { position: pickPosition + 1 })}` : "")

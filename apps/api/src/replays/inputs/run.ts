@@ -123,6 +123,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
 
   const engine: GameEngine = new GameEngine(state, {
     seed: record.seed,
+    randomKey: record.randomKey,
     ...(record.firstSeat !== undefined ? { firstSeat: record.firstSeat } : {}),
     beforeTurn: (turn) => {
       if (liveHooks) return liveHooks.beforeTurn?.(turn);

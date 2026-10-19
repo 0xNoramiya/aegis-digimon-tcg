@@ -17,11 +17,90 @@ import {
 import type { EvoCostOption } from "./digivolveModel";
 import { CardOpenerProvider } from "./cardLinks";
 import { choiceLabel } from "./overlay/choice/decisionChoiceLabels";
+import { printedModalBullets } from "@aegis/shared/effects/printedClauses";
 
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
+
+it("uses source card translations for printed modal option buttons and submits the original index", async () => {
+  const cardId = "BT22-013";
+  const clause = cardEffectClauseForTiming(cardId, "WhenDigivolving")!;
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <DecisionOverlay
+        request={{
+          decisionId: "translated-modal-bullets",
+          seat: 0,
+          kind: "chooseOption",
+          promptText: "WarGreymon",
+          options: {
+            choices: ["Digivolve", "Delete 1 target(s)"],
+            choiceClauses: printedModalBullets(clause),
+            timing: "WhenDigivolving",
+          },
+        }}
+        sourceCardId={cardId}
+        candidates={[]}
+        picks={[]}
+        onTogglePick={vi.fn<() => void>()}
+        onRespond={onRespond}
+      />
+    </I18nContext.Provider>,
+  );
+  const deletion = await screen.findByRole("button", { name: /消灭.*DP最低/ });
+  expect(screen.getByRole("button", { name: /加布兽.*钢铁加鲁鲁兽/ })).toBeTruthy();
+  fireEvent.click(deletion);
+  expect(onRespond).toHaveBeenCalledWith({ kind: "chooseOption", optionIndex: 1 });
+});
+
+it.each([
+  {
+    cardId: "EX13-032",
+    choices: ["Trash your top security card", "Trash the bottom face-down card from under 1 of your Tamers"],
+    labels: ["丢弃我方最上方的1张安防卡牌", "丢弃我方1只驯兽师下方最下方的1张背面表示卡牌"],
+  },
+  {
+    cardId: "BT26-026",
+    choices: ["Trash the bottom face-down card from under 1 of your Tamers", "Trash your top security card"],
+    labels: ["丢弃我方1只驯兽师下方最下方的1张背面表示卡牌", "丢弃我方最上方的1张安防卡牌"],
+  },
+])(
+  "localizes alternative payment buttons without changing their response order for $cardId",
+  ({ cardId, choices, labels }) => {
+    const onRespond = vi.fn<(response: DecisionResponse) => void>();
+    render(
+      <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+        <DecisionOverlay
+          request={{
+            decisionId: "alternative-payment",
+            seat: 0,
+            kind: "chooseOption",
+            promptText: "Choose a cost to pay",
+            sourceCardId: cardId,
+            options: { choices: [...choices, "Don't use"], declineIndex: 2, timing: "WhenDigivolving" },
+          }}
+          sourceCardId={cardId}
+          candidates={[]}
+          picks={[]}
+          onTogglePick={vi.fn<() => void>()}
+          onRespond={onRespond}
+        />
+      </I18nContext.Provider>,
+    );
+    const buttons = document.querySelectorAll(".decision-overlay__choices button");
+    expect(buttons[0]?.textContent).toBe(labels[0]);
+    expect(buttons[1]?.textContent).toBe(labels[1]);
+    fireEvent.click(screen.getByRole("button", { name: labels[0] }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "chooseOption", optionIndex: 0 });
+    fireEvent.click(screen.getByRole("button", { name: labels[1] }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "chooseOption", optionIndex: 1 });
+    fireEvent.click(screen.getByRole("button", { name: "不使用" }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "chooseOption", optionIndex: 2 });
+  },
+);
 
 it("translates Davis and Ken's delayed play effect in the activation dialog", async () => {
   const effectTextPart =
@@ -916,14 +995,14 @@ it("lets the viewer leave while the opponent is disconnected", () => {
   expect(onLeave).toHaveBeenCalledOnce();
 });
 
-it("Discord suggestion 1557418616729768076: counts down from a 30 second grace", () => {
+it("Discord suggestion 1557418616729768076: counts down from the 60 second grace", () => {
   render(
     <I18nProvider>
       <OpponentDroppedOverlay onLeave={vi.fn<() => void>()} />
     </I18nProvider>,
   );
 
-  expect(screen.getByText(/0:30/)).toBeTruthy();
+  expect(screen.getByText(/1:00/)).toBeTruthy();
 });
 
 describe("generic engine selection prompts", () => {
@@ -4468,6 +4547,105 @@ it("keeps the decline entry apart from the printed bullets", () => {
   expect(screen.getAllByRole("listitem")).toHaveLength(2);
   fireEvent.click(screen.getByRole("button", { name: "Don't use" }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "chooseOption", optionIndex: 2 });
+});
+
+describe("a color-scaled choice whose bullet has an optional By cost", () => {
+  const colorClause = "Then, for every 2 of your Digimon and Tamers' colors, activate 1 effect below:";
+  const battleBullet = "This Digimon may battle 1 of your opponent's Digimon.";
+  const recoveryBullet = "By returning 5 cards from your opponent's trash to the bottom of the deck, ＜Recovery +1＞";
+  const effectText = `[On Play] [When Digivolving] 1 of your Digimon may attack without suspending. ${colorClause}\n・${battleBullet}\n・${recoveryBullet}`;
+  const renderMerciful = () =>
+    renderDecision({
+      decisionId: "merciful-color-activation",
+      seat: 0,
+      kind: "chooseOption",
+      promptText: "Omnimon: Merciful Mode",
+      sourceCardId: "EX13-077",
+      options: {
+        choices: ["Battle", "Recovery +1"],
+        choiceClauses: [battleBullet, recoveryBullet],
+        timing: "OnPlay",
+        effectText,
+        effectTextPart: effectText,
+        effectTextEmphasis: colorClause,
+      },
+    });
+  const trashCards = ["t1", "t2", "t3", "t4", "t5"];
+  const renderRecoveryCost = (declinesCost: boolean) => {
+    const onRespond = vi.fn<(response: unknown) => void>();
+    render(
+      <I18nProvider>
+        <DecisionOverlay
+          request={{
+            decisionId: "merciful-recovery-cost",
+            seat: 0,
+            kind: "selectCards",
+            promptText: "Omnimon: Merciful Mode",
+            sourceCardId: "EX13-077",
+            options: {
+              candidateInstanceIds: trashCards,
+              min: 5,
+              max: 5,
+              purpose: "cost",
+              ...(declinesCost ? { declinesCost } : {}),
+              timing: "OnPlay",
+              effectText,
+            },
+          }}
+          sourceCardId="EX13-077"
+          candidates={trashCards.map((instanceId) => ({ instanceId, cardId: "BT1-009", sourceCount: 0 }))}
+          picks={[]}
+          onTogglePick={vi.fn<(instanceId: string) => void>()}
+          onRespond={onRespond}
+        />
+      </I18nProvider>,
+    );
+    return { onRespond };
+  };
+
+  it("emphasizes the color clause and offers no Don't use on the option chooser", () => {
+    renderMerciful();
+    expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(colorClause);
+    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.queryByRole("button", { name: /^Don't use/ })).toBeNull();
+  });
+
+  it("declines the Recovery cost from its selection footer while the pick stays exact", () => {
+    const { onRespond } = renderRecoveryCost(true);
+    expect(screen.queryByRole("button", { name: "None" })).toBeNull();
+    expect((screen.getByRole("button", { name: "Confirm targets" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Don't use" }));
+    expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: [] });
+  });
+
+  it("offers no Don't use on a mandatory cost selection", () => {
+    renderRecoveryCost(false);
+    expect(screen.queryByRole("button", { name: "Don't use" })).toBeNull();
+  });
+
+  it("shows which scaled activation is being chosen", () => {
+    renderDecision({
+      decisionId: "merciful-second-activation",
+      seat: 0,
+      kind: "chooseOption",
+      promptText: "Omnimon: Merciful Mode",
+      sourceCardId: "EX13-077",
+      options: {
+        choices: ["Recovery +1"],
+        choiceClauses: [recoveryBullet],
+        activation: { index: 2, total: 2 },
+        effectText,
+        effectTextPart: effectText,
+        effectTextEmphasis: colorClause,
+      },
+    });
+    expect(screen.getByText("Activation 2 of 2")).toBeTruthy();
+  });
+
+  it("omits the activation counter without a scaled activation", () => {
+    renderMerciful();
+    expect(screen.queryByText(/^Activation \d+ of \d+$/)).toBeNull();
+  });
 });
 
 it.each(["Add 1 yellow card with the [Data] trait", "1 card with the [Witchelny] trait among them to the hand."])(

@@ -16,13 +16,15 @@ import {
 import type { DecisionManager } from "../decisions/index.js";
 import type { GameStateAccess } from "../state/access.js";
 import {
-  canDigivolveOntoWithAlternates,
   cardHasTrait,
   definitionOf,
   isDigimon,
   isTamer,
   lookupDefinition,
+  matchingAlternateDigivolutionRequirement,
+  matchingEvoCost,
 } from "../cards/cardData.js";
+import { effectiveDigivolutionBase } from "../effects/continuous/effective.js";
 import { matchNameOrTrait } from "../effects/interpreter.js";
 import { digisorptionAmountFor, isDigisorptionRedirector } from "../cards/digisorptionDigivolve.js";
 import type { ContinuousEffectLedger } from "../effects/continuous.js";
@@ -364,6 +366,21 @@ export class DigivolveSupport {
     return result;
   }
 
+  private meetsArtsDigivolutionRequirement(
+    definition: CardDefinition,
+    base: Permanent,
+    sourceZone: ZoneRef | undefined,
+  ): boolean {
+    const baseDefinition = effectiveDigivolutionBase(this.deps.continuous, base, definitionOf(base.topCard.cardId));
+    return (
+      matchingEvoCost(definition, baseDefinition) !== undefined ||
+      matchingAlternateDigivolutionRequirement(definition, baseDefinition, {
+        grantedBaseExactNames: this.deps.continuous.grantedExactNames(base.permanentId),
+        ...(sourceZone === undefined ? {} : { sourceZone }),
+      }) !== undefined
+    );
+  }
+
   async performArtsDigivolve(seat: Seat, instance: CardInstance, definition: CardDefinition): Promise<boolean> {
     const sourceZone = looseZoneOfInstance(this.deps.state, instance.instanceId);
     // CR §4-20-1 offers "one of your cards on the field", and the field includes the
@@ -377,7 +394,7 @@ export class DigivolveSupport {
     const eligible = fieldPermanents.filter(
       (p) =>
         p.topCard !== undefined &&
-        (canDigivolveOntoWithAlternates(definition, definitionOf(p.topCard.cardId)) ||
+        (this.meetsArtsDigivolutionRequirement(definition, p, sourceZone) ||
           (!p.inBreeding && this.matchBaseGrantedDigivolve(seat, p, definition, sourceZone) !== undefined)),
     );
     if (eligible.length === 0) return false;

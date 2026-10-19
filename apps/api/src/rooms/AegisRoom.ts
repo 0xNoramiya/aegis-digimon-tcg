@@ -18,6 +18,7 @@ import { log, logError, withMatchLog } from "../logger.js";
 import { CloseCode, Room, Client, ServerError, matchMaker, type Delayed } from "colyseus";
 import { canCreateRoom } from "../deployment/admission.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
+import { getRoomRandomness } from "#api/rooms/getRoomRandomness";
 import { randomBytes, randomUUID } from "node:crypto";
 import { ReplayRecording } from "../replays/recording.js";
 import { replayDownload } from "../replays/download.js";
@@ -456,6 +457,10 @@ export class AegisRoom extends Room<{
   // a server restart (deploy) — the room state lives only in memory.
   private readonly RECONNECT_GRACE_SECONDS = RECONNECT_GRACE_SECONDS;
 
+  private readonly RECONNECT_CLAIM_SECONDS = 15;
+
+  private readonly reconnectDeadlines = new Map<string, { expiresAt: number; timer: Delayed; expire: () => void }>();
+
   // How long both seats can sit joined-but-not-ready (e.g. a client stuck loading
   // assets, or one that crashed before it could send `ready`) before the room gives
   // up waiting and starts anyway, so the match never hangs indefinitely.
@@ -718,7 +723,7 @@ export class AegisRoom extends Room<{
     if (!canCreateRoom() && !continuation)
       throw new ServerError(503, "This game server is draining; retry on the active slot.");
     this.state.matchLogId = randomUUID();
-    const seed = options.seed ?? Date.now() >>> 0;
+    const { seed, randomKey } = getRoomRandomness({ seed: options.seed });
     this.debug("room.created", {
       seed,
       private: options.private,
@@ -824,6 +829,7 @@ export class AegisRoom extends Room<{
     if (this.state.allowRollback)
       this.rollbackHistory = new RollbackHistory({
         seed,
+        randomKey,
         firstSeat: this.casualSeries?.fixedFirstSeat,
         matchId: this.state.matchLogId,
         rules: {
@@ -838,6 +844,7 @@ export class AegisRoom extends Room<{
         this.refreshRollbackAvailability();
       },
       seed,
+      randomKey,
       ...(this.casualSeries?.fixedFirstSeat !== undefined ? { firstSeat: this.casualSeries.fixedFirstSeat } : {}),
       requestDecision: (seat, req) => this.requestDecision(seat, req),
       onBothReady: () => this.atReplaySite("bothReady", () => this.startMatchNow()),
@@ -957,6 +964,7 @@ export class AegisRoom extends Room<{
     this.debug("replay.header", {
       replaySeq: this.nextReplaySeq(),
       seed,
+      randomKey,
       ...(firstSeat !== undefined ? { firstSeat } : {}),
       ...(serverRevision ? { serverRevision } : {}),
       deckFormat: this.state.format as DeckFormat,
@@ -1752,7 +1760,7 @@ export class AegisRoom extends Room<{
     this.reportableDropBySeat.delete(seat);
     const drop = this.recordConnectionDrop({ seat, accountId, closeCode: code });
     try {
-      const reconnectedClient = await this.allowReconnection(client, this.RECONNECT_GRACE_SECONDS);
+      const reconnectedClient = await this.holdSeatForReconnect(client);
       this.resolveConnectionDrop(drop, ConnectionDropOutcome.RECONNECTED.value);
       this.reportableDropBySeat.set(seat, drop);
       this.debug(`[AegisRoom] reconnected sessionId=${client.sessionId} seat=${seat}`);
@@ -1790,6 +1798,39 @@ export class AegisRoom extends Room<{
       this.chainPacingClients.delete(client.sessionId);
       if (!this.matchStartRequested) await this.unlock();
     }
+  }
+
+  private async holdSeatForReconnect(client: Client): Promise<Client> {
+    const token = client.reconnectionToken;
+    const reconnection = this.allowReconnection(client, "manual");
+    const expire = () => {
+      this.reconnectDeadlines.delete(token);
+      reconnection.reject(new Error("reconnect grace elapsed"));
+    };
+    const graceMs = this.RECONNECT_GRACE_SECONDS * 1000;
+    this.reconnectDeadlines.set(token, {
+      expiresAt: this.clock.currentTime + graceMs,
+      timer: this.clock.setTimeout(expire, graceMs),
+      expire,
+    });
+    try {
+      return await reconnection;
+    } finally {
+      this.reconnectDeadlines.get(token)?.timer.clear();
+      this.reconnectDeadlines.delete(token);
+    }
+  }
+
+  override checkReconnectionToken(reconnectionToken: string): string {
+    const sessionId = super.checkReconnectionToken(reconnectionToken);
+    const deadline = this.reconnectDeadlines.get(reconnectionToken);
+    const claimMs = this.RECONNECT_CLAIM_SECONDS * 1000;
+    if (sessionId && deadline && deadline.expiresAt - this.clock.currentTime < claimMs) {
+      deadline.timer.clear();
+      deadline.expiresAt = this.clock.currentTime + claimMs;
+      deadline.timer = this.clock.setTimeout(deadline.expire, claimMs);
+    }
+    return sessionId;
   }
 
   /**

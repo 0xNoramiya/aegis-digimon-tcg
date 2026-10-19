@@ -1,3 +1,5 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { createPortal } from "react-dom";
 import { getCardDefinition } from "@aegis/shared";
 import { Button } from "../../../design/primitives";
@@ -56,13 +58,15 @@ export function CardActionSheetPanel({
   onZoom: (id: string | null, artId?: string) => void;
   onZoomClose: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
+  const translateCardText = useTranslatedCardText();
   const def = getCardDefinition(cardId ?? "");
   const dpDelta = dp != null && baseDP != null ? dp - baseDP : 0;
   const beneath = (stackCards ?? []).filter((c) => c.role !== "top");
   const liveInfo = (
     <>
-      <strong>{def?.nameEn ?? cardId}</strong>
+      <strong>{cardId ? getCardName(cardId) : null}</strong>
       <div className="card-action-sheet__stats">
         {def?.level ? <span>Lv.{def.level}</span> : null}
         {dp != null ? (
@@ -92,7 +96,7 @@ export function CardActionSheetPanel({
       className="card-action-sheet"
       role="dialog"
       aria-modal="true"
-      aria-label={def?.nameEn ?? t("game.actions")}
+      aria-label={def ? getCardName(def.cardId) : t("game.actions")}
       onClick={onClose}
     >
       <div className="card-action-sheet__panel" onClick={(e) => e.stopPropagation()}>
@@ -136,8 +140,8 @@ export function CardActionSheetPanel({
                   full
                   variant="secondary"
                   onClick={effect.onActivate}
-                  aria-label={`${t("game.activateEffect")}: ${effect.label}`}
-                  title={effect.label}
+                  aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId })}`}
+                  title={translateCardText({ text: effect.label, cardId })}
                 >
                   <span aria-hidden="true">⚡</span>
                   <span>{t("game.activateMainEffect")}</span>

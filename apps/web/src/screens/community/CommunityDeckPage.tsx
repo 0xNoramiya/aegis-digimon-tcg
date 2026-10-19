@@ -1,7 +1,8 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { DeckGuide } from "@/screens/community/DeckGuide";
 import { DeckGuideEditor } from "@/screens/community/DeckGuideEditor";
 import { useEffect, useState } from "react";
-import { getCardDefinition, type CommunityDeck } from "@aegis/shared";
+import { type CommunityDeck } from "@aegis/shared";
 import { communityApi } from "../../community/client";
 import { communityDeckListing } from "../../community/communityDeckListing";
 import { CardFull, CoverThumb } from "../../design/cards";
@@ -37,6 +38,7 @@ export function CommunityDeckPage({
   onCopy: (deck: CommunityDeck) => void;
   onNotice: (message: string) => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t, locale } = useTranslation();
   const [load, setLoad] = useState<Load>({ status: "loading" });
   const [editingGuide, setEditingGuide] = useState(false);
@@ -237,7 +239,7 @@ export function CommunityDeckPage({
                     <li key={cardId} className="community-decklist__card">
                       <CardFull cardId={cardId} width={88} zoomOnHover />
                       <span className="community-decklist__count">×{count}</span>
-                      <span className="community-decklist__name">{getCardDefinition(cardId)?.nameEn ?? cardId}</span>
+                      <span className="community-decklist__name">{getCardName(cardId)}</span>
                     </li>
                   ))}
                 </ul>

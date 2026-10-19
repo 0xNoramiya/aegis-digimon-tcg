@@ -1,3 +1,4 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
@@ -10,6 +11,12 @@ const interfaceMessages = {
   "game.input.scroll": "스크롤",
   "game.input.reorder": "Enter/A: 이동 시작; 방향키: 순서 변경; Enter/A: 완료; Esc/B: 되돌리기",
 
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
+  "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
+  "decision.choice.declareEgg": "카드 종류 선언: 디지타마",
   ...providerEn,
   "digilab.cardCounts": "메인 카드 {main}장 · 디지타마 {eggs}장",
   "settings.cardImageLanguage": "카드 이미지 언어",
@@ -235,6 +242,8 @@ const interfaceMessages = {
   "replay.start": "시작으로 이동",
   "replay.end": "끝으로 이동",
   "replay.speed": "재생 속도",
+  "replay.move": "재생 컨트롤 이동",
+  "replay.moveHint": "드래그하여 이동하세요. 방향키로 이동하고 Shift로 더 크게 이동하며 Home으로 위치를 초기화합니다.",
   "replay.position": "리플레이 위치",
   "replay.turn": "턴",
   "replay.action": "행동 {current}/{total}",
@@ -962,7 +971,14 @@ const interfaceMessages = {
   "game.reconnecting": "다시 연결하는 중…",
   "game.reconnectingDetail": "연결이 끊어졌습니다. 대전을 다시 이어 가는 중입니다.",
   "game.connectionLost": "연결 끊김",
-  "game.connectionLostDetail": "서버에 연결할 수 없습니다. 연결을 확인하고 다시 시도하세요.",
+  "game.connectionLostDetail": "대전 연결이 끊어졌습니다. 다시 연결해 주세요.",
+  "game.messageTooLarge": "선택한 내용이 너무 커서 전송하지 못했습니다. 한 번에 해결하는 효과를 줄여 주세요.",
+  "game.messageTooLargeReconnecting":
+    "선택한 내용이 너무 커서 전송하지 못했습니다. 대기 중인 선택을 복원하기 위해 다시 연결하고 있습니다.",
+  "game.reconnectFailed": "대전을 재개하지 못했습니다. 로비로 돌아가 다시 시도해 주세요.",
+  "game.sessionExpired": "이 대전은 더 이상 재개할 수 없습니다. 로비로 돌아가 주세요.",
+  "game.tooManyMessages": "한 번에 너무 많은 동작을 전송했습니다. 잠시 기다린 후 로비로 돌아가 주세요.",
+  "game.serverUnavailable": "게임 서버를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.",
   "game.opponentDisconnected": "상대 연결 끊김",
   "game.opponentDisconnectedDetail": "상대가 다시 연결되기를 기다리는 중입니다. 대전은 자동으로 재개됩니다.",
   "game.opponentDisconnectedCountdown": "{time} 안에 상대가 돌아오지 않으면 내가 승리합니다.",
@@ -1403,6 +1419,7 @@ const interfaceMessages = {
   "overlay.endSelection": "선택 종료",
   "overlay.noSelection": "선택 없음",
   "overlay.use": "사용",
+  "overlay.activationProgress": "발동 {index}/{total}",
   "overlay.notUse": "사용 안 함",
   "overlay.moveToBattleArea": "배틀 에어리어로 이동",
   "overlay.endPhase": "페이즈 종료",
@@ -2480,4 +2497,4 @@ const interfaceMessages = {
   "releases.reported": "신고해 주신 문제를 수정했습니다 · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const ko: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const ko: Record<keyof typeof en, string> = { ...en, ...interfaceMessages, "digilab.eggs": "디지타마" };

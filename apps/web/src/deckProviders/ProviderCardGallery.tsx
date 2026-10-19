@@ -1,4 +1,5 @@
-import { getCardDefinition } from "@aegis/shared/cards/registry";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+
 import { CardFull } from "@/design/cards";
 
 type Props = {
@@ -7,6 +8,7 @@ type Props = {
 };
 
 export function ProviderCardGallery({ title, cards }: Props) {
+  const getCardName = useTranslatedCardName();
   const counts = new Map<string, number>();
   for (const card of cards) {
     counts.set(card, (counts.get(card) ?? 0) + 1);
@@ -23,7 +25,7 @@ export function ProviderCardGallery({ title, cards }: Props) {
         {[...counts].map(([card, count]) => (
           <li key={card}>
             <CardFull cardId={card} width={120} count={count} />
-            <strong>{getCardDefinition(card)?.nameEn ?? card}</strong>
+            <strong>{getCardName(card)}</strong>
             <span>
               {card} · {count} ×
             </span>

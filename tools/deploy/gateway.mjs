@@ -1,8 +1,11 @@
 import { createServer, request as httpRequest } from "node:http";
-import { createReadStream, statSync } from "node:fs";
+import { createReadStream } from "node:fs";
+import { readFile, stat } from "node:fs/promises";
 import { resolve, extname } from "node:path";
+import { monitorEventLoopDelay } from "node:perf_hooks";
 import { pathToFileURL } from "node:url";
-import { readManifest } from "./shared.mjs";
+import { validateManifest } from "./shared.mjs";
+import gameMessageLimits from "../../packages/shared/src/protocol/gameMessageLimits.json" with { type: "json" };
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -42,14 +45,14 @@ function getAcceptedEncodings(header) {
   return accepted;
 }
 
-function findPrecompressedFile(file, acceptEncoding) {
+async function findPrecompressedFile(file, acceptEncoding) {
   const accepted = getAcceptedEncodings(acceptEncoding);
   for (const [encoding, extension] of PRECOMPRESSED_EXTENSIONS) {
     if (!accepted.has(encoding)) {
       continue;
     }
     try {
-      const info = statSync(`${file}${extension}`);
+      const info = await stat(`${file}${extension}`);
       if (info.isFile()) {
         return { encoding, file: `${file}${extension}`, info };
       }
@@ -152,14 +155,70 @@ export function isApiPath(path, headers) {
   );
 }
 
+async function loadManifest(state) {
+  return validateManifest(JSON.parse(await readFile(`${state}/routing/manifest.json`, "utf8")));
+}
+
+const CPU_STAT_PATH = "/sys/fs/cgroup/cpu.stat";
+
+async function readCpuThrottling(path) {
+  try {
+    const fields = Object.fromEntries(
+      (await readFile(path, "utf8"))
+        .trim()
+        .split("\n")
+        .map((line) => line.split(" ")),
+    );
+    return { periods: Number(fields.nr_throttled), microseconds: Number(fields.throttled_usec) };
+  } catch {
+    return undefined;
+  }
+}
+
+function startHealthReport({ intervalMs, log, cpuStatPath, openWebSockets }) {
+  const loopDelay = monitorEventLoopDelay({ resolution: 20 });
+  loopDelay.enable();
+  let previousThrottling;
+  const report = async () => {
+    const throttling = await readCpuThrottling(cpuStatPath);
+    const nanosecondsToMs = (value) => Math.round(value / 1e6);
+    log(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        event: "gateway.health",
+        loopMaxMs: nanosecondsToMs(loopDelay.max),
+        loopP99Ms: nanosecondsToMs(loopDelay.percentile(99)),
+        loopMeanMs: nanosecondsToMs(loopDelay.mean),
+        webSockets: openWebSockets(),
+        ...(throttling && previousThrottling
+          ? {
+              throttledPeriods: throttling.periods - previousThrottling.periods,
+              throttledMs: Math.round((throttling.microseconds - previousThrottling.microseconds) / 1000),
+            }
+          : {}),
+      }),
+    );
+    previousThrottling = throttling;
+    loopDelay.reset();
+  };
+  const interval = setInterval(() => void report(), intervalMs);
+  interval.unref();
+  return () => {
+    clearInterval(interval);
+    loopDelay.disable();
+  };
+}
+
 /** Config stays loaded while only the on-disk routing decision changes. */
 export function createGateway({
   state,
   upstreamFor = (slot, index) => `http://aegis-${slot}-api${index}:2567`,
   pageLoadLimit = PAGE_LOAD_LIMIT,
   now = Date.now,
+  healthReport,
 }) {
   const getPageLoadRetrySeconds = createPageLoadLimiter({ ...pageLoadLimit, now });
+  let webSockets = 0;
   let roundRobin = 0;
   const healthy = new Map();
   const healthRevisions = new Map();
@@ -175,7 +234,7 @@ export function createGateway({
   async function refreshHealth() {
     let manifest;
     try {
-      manifest = readManifest(state);
+      manifest = await loadManifest(state);
     } catch {
       return;
     }
@@ -257,7 +316,9 @@ export function createGateway({
     let size = 0;
     for await (const chunk of request) {
       size += chunk.length;
-      if (size > 65_536) return json(response, 413, { error: "Request too large" });
+      if (size > gameMessageLimits.maxMessageBytes) {
+        return json(response, 413, { error: "Request too large", maxMessageBytes: gameMessageLimits.maxMessageBytes });
+      }
       chunks.push(chunk);
     }
     const body = Buffer.concat(chunks);
@@ -301,7 +362,7 @@ export function createGateway({
     json(response, 503, { error: "No room owner could be reached" });
   }
 
-  function staticFile(request, response, manifest) {
+  async function staticFile(request, response, manifest) {
     const pathname = decodeURIComponent(new URL(request.url, "http://gateway").pathname);
     if (pathname === "/reset-web-cache") {
       response.writeHead(303, { location: "/", "clear-site-data": '"cache"', "cache-control": "no-store" });
@@ -314,14 +375,14 @@ export function createGateway({
     if (!file.startsWith(root + "/") && file !== root) return json(response, 404, { error: "Not found" });
     let info;
     try {
-      info = statSync(file);
+      info = await stat(file);
       if (!info.isFile()) throw new Error("Not a file");
     } catch {
       if (assets || extname(pathname)) return json(response, 404, { error: "Not found" });
       file = resolve(root, "index.html");
-      info = statSync(file);
+      info = await stat(file);
     }
-    const precompressed = findPrecompressedFile(file, request.headers["accept-encoding"]);
+    const precompressed = await findPrecompressedFile(file, request.headers["accept-encoding"]);
     const served = precompressed?.info ?? info;
     const cacheControl = getCacheControl(new URL(request.url, "http://gateway"), file, assets);
     const validators =
@@ -350,7 +411,7 @@ export function createGateway({
 
   const server = createServer(async (request, response) => {
     try {
-      const manifest = readManifest(state);
+      const manifest = await loadManifest(state);
       const url = new URL(request.url, "http://gateway");
       if (url.pathname === "/deployment/manifest.json") {
         const bundleRevision = request.headers["x-aegis-web-revision"];
@@ -386,7 +447,7 @@ export function createGateway({
         if (retrySeconds) {
           return rejectPageLoad(response, retrySeconds);
         }
-        return staticFile(request, response, manifest);
+        return await staticFile(request, response, manifest);
       }
       proxyHttp(request, response, destination);
     } catch {
@@ -395,9 +456,11 @@ export function createGateway({
     }
   });
 
-  server.on("upgrade", (request, socket, head) => {
+  server.on("upgrade", async (request, socket, head) => {
+    socket.on("error", () => socket.destroy());
     try {
-      const destination = target(request, readManifest(state));
+      const destination = target(request, await loadManifest(state));
+      if (socket.destroyed) return;
       if (!destination?.origin || !destination.explicit) {
         socket.end("HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n");
         return;
@@ -415,6 +478,8 @@ export function createGateway({
         if (head.length) upstreamSocket.write(head);
         if (upstreamHead.length) socket.write(upstreamHead);
         socket.pipe(upstreamSocket).pipe(socket);
+        webSockets += 1;
+        socket.once("close", () => (webSockets -= 1));
         socket.on("error", () => upstreamSocket.destroy());
         upstreamSocket.on("error", () => socket.destroy());
         socket.on("close", () => upstreamSocket.destroy());
@@ -434,12 +499,23 @@ export function createGateway({
   });
   const interval = setInterval(() => void refreshHealth(), 2000);
   interval.unref();
-  server.on("close", () => clearInterval(interval));
+  const stopHealthReport = healthReport
+    ? startHealthReport({
+        intervalMs: healthReport.intervalMs ?? 10_000,
+        log: healthReport.log ?? console.log,
+        cpuStatPath: healthReport.cpuStatPath ?? CPU_STAT_PATH,
+        openWebSockets: () => webSockets,
+      })
+    : () => {};
+  server.on("close", () => {
+    clearInterval(interval);
+    stopHealthReport();
+  });
   return server;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  createGateway({ state: process.env.AEGIS_ROLLOUT_STATE ?? "/state" }).listen(
+  createGateway({ state: process.env.AEGIS_ROLLOUT_STATE ?? "/state", healthReport: {} }).listen(
     Number(process.env.PORT ?? 80),
     "0.0.0.0",
   );

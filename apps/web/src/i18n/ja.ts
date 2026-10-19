@@ -1,3 +1,4 @@
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
@@ -10,6 +11,11 @@ const interfaceMessages = {
   "game.input.scroll": "スクロール",
   "game.input.reorder": "Enter/A: 移動開始、矢印: 並べ替え、Enter/A: 完了、Esc/B: 元に戻す",
 
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
+  "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
   "settings.cardImageLanguage": "カード画像の言語",
   "settings.cardImageLanguageDesc":
@@ -236,6 +242,8 @@ const interfaceMessages = {
   "replay.start": "最初へ",
   "replay.end": "最後へ",
   "replay.speed": "再生速度",
+  "replay.move": "再生コントロールを移動",
+  "replay.moveHint": "ドラッグして移動。矢印キーで移動、Shiftで移動幅を拡大、Homeで位置をリセットします。",
   "replay.position": "再生位置",
   "replay.turn": "ターン",
   "replay.action": "アクション {current}/{total}",
@@ -973,7 +981,14 @@ const interfaceMessages = {
   "game.reconnecting": "再接続中…",
   "game.reconnectingDetail": "接続が切れました。対戦に復帰しようとしています。",
   "game.connectionLost": "接続が切れました",
-  "game.connectionLostDetail": "サーバーに接続できません。接続を確認して、もう一度お試しください。",
+  "game.connectionLostDetail": "対戦との接続が切れました。再接続をお試しください。",
+  "game.messageTooLarge": "選択内容が大きすぎて送信できませんでした。一度に解決する効果を減らしてください。",
+  "game.messageTooLargeReconnecting":
+    "選択内容が大きすぎて送信できませんでした。保留中の選択を復元するため再接続しています。",
+  "game.reconnectFailed": "対戦を再開できませんでした。ロビーに戻って再試行してください。",
+  "game.sessionExpired": "この対戦は再開できません。ロビーに戻ってください。",
+  "game.tooManyMessages": "一度に送信された操作が多すぎます。少し待ってからロビーに戻ってください。",
+  "game.serverUnavailable": "ゲームサーバーを一時的に利用できません。しばらくしてから再試行してください。",
   "game.opponentDisconnected": "対戦相手の接続が切れました",
   "game.opponentDisconnectedDetail": "対戦相手の再接続を待っています。対戦は自動的に再開されます。",
   "game.opponentDisconnectedCountdown": "対戦相手が{time}以内に戻らない場合、あなたの勝利になります。",
@@ -1418,6 +1433,7 @@ const interfaceMessages = {
   "overlay.endSelection": "選択を終了",
   "overlay.noSelection": "選択なし",
   "overlay.use": "使用する",
+  "overlay.activationProgress": "発動 {index}/{total}",
   "overlay.notUse": "使用しない",
   "overlay.moveToBattleArea": "バトルエリアへ移動",
   "overlay.endPhase": "エンドフェイズ",
