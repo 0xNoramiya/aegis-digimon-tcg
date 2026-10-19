@@ -8,6 +8,7 @@ import type { TrainingWindow } from "#api/bot/training/policy";
 import type { GameEngine } from "#api/engine/GameEngine";
 
 export type ReplayAdvisor = (engine: GameEngine, seat: Seat, window: TrainingWindow) => Intent | number;
+export type ReplayScorer = (engine: GameEngine, seat: Seat, window: TrainingWindow) => (number | null)[];
 
 export interface ReplayPosition {
   inputIndex: number;
@@ -17,6 +18,7 @@ export interface ReplayPosition {
   chosen: number | null;
   intent: Intent;
   advice: Record<string, number | null>;
+  scores: Record<string, (number | null)[]>;
   window: TrainingWindow;
 }
 
@@ -35,6 +37,7 @@ const NON_MAIN_INTENTS = new Set(["ready", "mulligan", "respondDecision", "surre
 export async function replayPositions(
   record: ReplayRecord,
   advisors: Record<string, ReplayAdvisor> = {},
+  scorers: Record<string, ReplayScorer> = {},
 ): Promise<ReplayPositions> {
   const positions: ReplayPosition[] = [];
   const run = await runReplay(record, {
@@ -69,6 +72,9 @@ export async function replayPositions(
             const choice = advise(engine, input.seat, window);
             return [name, typeof choice === "number" ? choice : (teacherActionIndex(window, choice) ?? null)];
           }),
+        ),
+        scores: Object.fromEntries(
+          Object.entries(scorers).map(([name, score]) => [name, score(engine, input.seat, window)]),
         ),
         window,
       });
