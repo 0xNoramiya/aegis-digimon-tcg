@@ -299,6 +299,14 @@ export function ArenaPermanentInspector({
                 </p>
               </div>
             ))}
+            {detail.grantedEffectTexts.map((effect, index) => (
+              <div key={`${effect}-${index}`} className="arena-permanent-inspector__effect" data-role="granted">
+                <span className="arena-permanent-inspector__effect-label">{t("overlay.grantedEffects")}</span>
+                <p>
+                  <EffectText inspector asciiBrackets text={effect} />
+                </p>
+              </div>
+            ))}
             {top?.optionEffect ? (
               <div className="arena-permanent-inspector__effect" data-role="printed-option">
                 <span className="arena-permanent-inspector__effect-label">
