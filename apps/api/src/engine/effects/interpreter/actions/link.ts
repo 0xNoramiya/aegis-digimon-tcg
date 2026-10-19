@@ -39,10 +39,7 @@ export function canAttemptLink(ctx: EffectContext, action: Extract<Action, { kin
     .map((candidate) => ctx.game.definitionOf({ cardId: candidate.cardId } as never))
     .filter(linkEligible);
   const selfDefinition = ctx.game.definitionOf({ cardId: ctx.source.cardId } as never);
-  const selfMaterial =
-    linkTargetIncludesSelf(action) && ctx.source.permanent() !== undefined && linkEligible(selfDefinition)
-      ? [selfDefinition]
-      : [];
+  const selfMaterial = linkTargetIncludesSelf(action) && linkEligible(selfDefinition) ? [selfDefinition] : [];
   const materials = [...looseMaterial, ...selfMaterial];
   if (materials.length === 0) return false;
   const admitsSomeMaterial = (permanent: Permanent): boolean => {

@@ -3028,5 +3028,29 @@
     "pt-BR": "Buscas de cartas incluem características impressas, e preferências de fileiras de batalha são aplicadas corretamente com layouts antigos salvos.",
     "es": "Las búsquedas incluyen los rasgos impresos y las preferencias de filas de batalla se aplican correctamente con diseños guardados antiguos.",
     "it": "Le ricerche includono i tratti stampati e le preferenze delle file di battaglia si applicano correttamente ai vecchi layout salvati."
+  },
+  "releases.1.33.1-beta.summary": {
+    "en": "Fixes for optional link prompts, face-up security draws and Arts Digivolve targets.",
+    "pt-BR": "Correções em perguntas opcionais de link, compras por segurança virada para cima e alvos de Arts Digivolve.",
+    "es": "Correcciones en preguntas opcionales de enlace, robos por seguridad boca arriba y objetivos de Arts Digivolve.",
+    "it": "Correzioni a richieste facoltative di Link, pescate da sicurezza scoperta e bersagli di Arts Digivolve."
+  },
+  "releases.1.33.1-beta.fix.link": {
+    "en": "Ignition Flare and similar Options no longer ask to link when you have no Digimon to link to.",
+    "pt-BR": "Ignition Flare e Options semelhantes não perguntam mais se você quer fazer link quando não há Digimon para receber o link.",
+    "es": "Ignition Flare y Options similares ya no preguntan si quieres enlazar cuando no tienes Digimon que puedan recibir el enlace.",
+    "it": "Ignition Flare e Option simili non chiedono più di fare Link quando non hai Digimon a cui collegarle."
+  },
+  "releases.1.33.1-beta.fix.faceUpSecurity": {
+    "en": "Kapurimon no longer draws when a face-down security card is checked; effects that flip security face up still trigger it.",
+    "pt-BR": "Kapurimon não compra mais quando uma carta de segurança virada para baixo é checada; efeitos que viram a segurança para cima continuam ativando-o.",
+    "es": "Kapurimon ya no roba cuando se comprueba una carta de seguridad boca abajo; los efectos que ponen la seguridad boca arriba siguen activándolo.",
+    "it": "Kapurimon non pesca più quando viene controllata una carta sicurezza coperta; gli effetti che scoprono la sicurezza continuano ad attivarlo."
+  },
+  "releases.1.33.1-beta.fix.artsDigivolve": {
+    "en": "Arts Digivolve and reveal-to-digivolve effects now count colors a Digimon gains, so Kimeramon can digivolve into Nosferamon.",
+    "pt-BR": "Arts Digivolve e efeitos de revelar para digievoluir agora consideram cores ganhas pelo Digimon, então Kimeramon pode digievoluir em Nosferamon.",
+    "es": "Arts Digivolve y los efectos de revelar para digievolucionar ahora cuentan los colores que gana un Digimon, así que Kimeramon puede digievolucionar en Nosferamon.",
+    "it": "Arts Digivolve e gli effetti che rivelano per digievolvere ora considerano i colori ottenuti da un Digimon, quindi Kimeramon può digievolvere in Nosferamon."
   }
 }
