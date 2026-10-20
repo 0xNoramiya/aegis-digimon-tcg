@@ -1,4 +1,70 @@
 {
+  "releases.1.35.3-beta.summary": {
+    "en": "Gameplay, card rules, Material Save prompts, and story fixes.",
+    "pt-BR": "Correções de jogabilidade, regras de cartas, decisões de Material Save e história.",
+    "es": "Correcciones de jugabilidad, reglas de cartas, decisiones de Material Save e historia.",
+    "it": "Correzioni a gioco, regole delle carte, richieste Material Save e storia."
+  },
+  "releases.1.35.3-beta.fix.materialSave": {
+    "en": "Material Save now clearly identifies its source, previews eligible materials, and offers explicit activation or refusal.",
+    "pt-BR": "Material Save agora identifica sua origem, mostra os materiais elegíveis e oferece opções explícitas para ativar ou recusar.",
+    "es": "Material Save ahora identifica su origen, muestra los materiales válidos y ofrece opciones explícitas para activar o rechazar.",
+    "it": "Material Save ora identifica la fonte, mostra i materiali idonei e offre opzioni esplicite per attivare o rifiutare."
+  },
+  "releases.1.35.3-beta.fix.retaliation": {
+    "en": "Deleted tokens now resolve Retaliation correctly after battle.",
+    "pt-BR": "Tokens deletados agora resolvem Retaliation corretamente após a batalha.",
+    "es": "Las fichas eliminadas ahora resuelven Retaliation correctamente tras la batalla.",
+    "it": "Le pedine eliminate ora risolvono correttamente Retaliation dopo la battaglia."
+  },
+  "releases.1.35.3-beta.fix.turnEndDeletion": {
+    "en": "Delayed deletion created during end-of-turn effects now resolves at the next eligible turn-end window.",
+    "pt-BR": "A deleção adiada criada durante efeitos de fim de turno agora ocorre na próxima janela de fim de turno válida.",
+    "es": "La eliminación aplazada creada durante efectos de fin de turno ahora se resuelve en la siguiente ventana válida de fin de turno.",
+    "it": "L’eliminazione differita creata durante gli effetti di fine turno ora si risolve alla successiva finestra valida di fine turno."
+  },
+  "releases.1.35.3-beta.fix.sora": {
+    "en": "Sora now reacts to Yokomon returning a card to hand before older effects during Phoenixmon X’s Blitz attack.",
+    "pt-BR": "Sora agora reage ao retorno de uma carta para a mão por Yokomon antes dos efeitos mais antigos durante o ataque com Blitz de Phoenixmon X.",
+    "es": "Sora ahora reacciona al retorno de una carta a la mano por Yokomon antes de los efectos anteriores durante el ataque con Blitz de Phoenixmon X.",
+    "it": "Sora ora reagisce quando Yokomon riporta una carta in mano prima degli effetti precedenti durante l’attacco Blitz di Phoenixmon X."
+  },
+  "releases.1.35.3-beta.fix.wormmon": {
+    "en": "Wormmon EX3-055 now follows the errata: its search can select Imperialdramon of any color for the hand or trash.",
+    "pt-BR": "Wormmon EX3-055 agora segue a errata: sua busca pode selecionar Imperialdramon de qualquer cor para a mão ou o lixo.",
+    "es": "Wormmon EX3-055 ahora sigue la errata: su búsqueda permite seleccionar Imperialdramon de cualquier color para la mano o la basura.",
+    "it": "Wormmon EX3-055 ora segue l’errata: la ricerca può selezionare Imperialdramon di qualsiasi colore per la mano o gli scarti."
+  },
+  "releases.1.35.3-beta.fix.astamon": {
+    "en": "Astamon BT12-081 can digivolve from Psychemon again, including through Purple Scramble.",
+    "pt-BR": "Astamon BT12-081 pode voltar a digivolver de Psychemon, inclusive por meio de Purple Scramble.",
+    "es": "Astamon BT12-081 vuelve a poder digievolucionar de Psychemon, incluso mediante Purple Scramble.",
+    "it": "Astamon BT12-081 può nuovamente digievolvere da Psychemon, anche tramite Purple Scramble."
+  },
+  "releases.1.35.3-beta.fix.aceBadges": {
+    "en": "ACE badges now appear consistently on cards and Digimon in play.",
+    "pt-BR": "Os indicadores ACE agora aparecem de forma consistente nas cartas e nos Digimon em jogo.",
+    "es": "Los indicadores ACE ahora aparecen de forma coherente en las cartas y los Digimon en juego.",
+    "it": "Gli indicatori ACE ora appaiono in modo coerente sulle carte e sui Digimon in gioco."
+  },
+  "releases.1.35.3-beta.fix.chineseEffects": {
+    "en": "Chinese effect text now uses verified card context for more accurate translations.",
+    "pt-BR": "Os textos de efeitos em chinês agora usam o contexto verificado da carta para traduções mais precisas.",
+    "es": "Los textos de efectos en chino ahora usan el contexto verificado de la carta para traducciones más precisas.",
+    "it": "I testi degli effetti in cinese ora usano il contesto verificato della carta per traduzioni più accurate."
+  },
+  "releases.1.35.3-beta.fix.arisaRematch": {
+    "en": "Arisa’s story rematch now follows the intended comeback, and story decks no longer include tokens.",
+    "pt-BR": "A revanche de Arisa no modo história agora segue a virada prevista, e os decks de história não incluem mais tokens.",
+    "es": "La revancha de Arisa en el modo historia ahora sigue la remontada prevista, y los mazos de historia ya no incluyen fichas.",
+    "it": "La rivincita di Arisa nella storia ora segue la rimonta prevista e i mazzi della storia non includono più pedine."
+  },
+  "releases.1.35.3-beta.fix.rejectedReplayInputs": {
+    "en": "Match replays now handle repeated rejected actions without reporting false position divergences.",
+    "pt-BR": "Os replays de partidas agora lidam com ações rejeitadas repetidas sem indicar falsas divergências de posição.",
+    "es": "Las repeticiones de partidas ahora gestionan acciones rechazadas repetidas sin indicar falsas divergencias de posición.",
+    "it": "I replay delle partite ora gestiscono le azioni rifiutate ripetute senza segnalare false divergenze di posizione."
+  },
   "releases.1.32.0-beta.summary": {
     "en": "New BT27 cards and corrections to card effects, battle timing and localized game text.",
     "pt-BR": "Novas cartas BT27 e correções em efeitos de cartas, resolução de batalhas e textos traduzidos do jogo.",
