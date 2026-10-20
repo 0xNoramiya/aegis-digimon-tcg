@@ -14,6 +14,7 @@ from typing import Any
 
 WORKER = Path(__file__).resolve().parent / "panel_worker.mjs"
 RESTART_AFTER = 400
+REPLAY_TEACHER_TIMEOUT_SECONDS = 190
 
 
 class PanelWorker:
@@ -58,7 +59,12 @@ class PanelWorker:
             raise RuntimeError("Panel worker pipes are unavailable")
         request = memoryview((json.dumps(payload) + "\n").encode("utf-8"))
         response = bytearray()
-        deadline = time.monotonic() + self.timeout_seconds
+        timeout_seconds = (
+            REPLAY_TEACHER_TIMEOUT_SECONDS
+            if payload.get("replayTeacher") is not None
+            else self.timeout_seconds
+        )
+        deadline = time.monotonic() + timeout_seconds
         with selectors.DefaultSelector() as selector:
             selector.register(process.stdin, selectors.EVENT_WRITE)
             while True:
@@ -66,7 +72,7 @@ class PanelWorker:
                     raise CancelledError("Panel evaluation was cancelled")
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
-                    raise TimeoutError(f"Panel worker exceeded {self.timeout_seconds:g}s")
+                    raise TimeoutError(f"Panel worker exceeded {timeout_seconds:g}s")
                 if not selector.select(min(remaining, 0.25)):
                     continue
                 if request:

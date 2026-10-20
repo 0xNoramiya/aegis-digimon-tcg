@@ -11,6 +11,12 @@ console.log = console.info = console.debug = console.warn = () => {};
 
 const apiDist = resolve(dirname(fileURLToPath(import.meta.url)), "../../apps/api/dist");
 const moduleAt = (name) => import(pathToFileURL(resolve(apiDist, name)).href);
+const { auditReplayTeacherAlignment } = await moduleAt("bot/evolution/auditReplayTeacherAlignment.js");
+const { createHeuristicExposureChooser } = await moduleAt("bot/evolution/createHeuristicExposureChooser.js");
+const { runReplayContinuation } = await moduleAt("bot/evolution/runReplayContinuation.js");
+const { runReplayTeacher } = await moduleAt("bot/evolution/runReplayTeacher.js");
+const { inspectReplayTeacherInput } = await moduleAt("bot/evolution/inspectReplayTeacherInput.js");
+const { extractReplay } = await moduleAt("replays/inputs/extract.js");
 const { runBotMatch } = await moduleAt("bot/matchHarness.js");
 const { mainActionReady } = await moduleAt("bot/training/actions.js");
 const { createTrainingPolicy } = await moduleAt("bot/training/policy.js");
@@ -136,10 +142,10 @@ function describeWindow(program, window, chosen) {
   };
 }
 
-function candidateChooser(program, seed, planner, traces, activationMemoryCosts, decisionContext) {
+function candidateChooser(program, seed, planner, traces, activationMemoryCosts, decisionContext, exposure) {
   const choose = planner
     ? createTurnPlannerChooser({ program, seed, parameters: planner === true ? undefined : planner })
-    : (window) => chooseHeuristic(program, window, seed);
+    : (exposure?.choose ?? ((window) => chooseHeuristic(program, window, seed)));
   if (traces === undefined && activationMemoryCosts && decisionContext) return choose;
   return (window) => {
     const scoring = getPanelScoringWindow({ window, activationMemoryCosts, decisionContext });
@@ -151,13 +157,21 @@ function candidateChooser(program, seed, planner, traces, activationMemoryCosts,
   };
 }
 
-function candidateSeat(program, seed, planner, traces, activationMemoryCosts, decisionContext) {
+function candidateSeat(program, seed, planner, traces, activationMemoryCosts, decisionContext, exposure) {
   return {
     policyFactory: (engine, seat) =>
       createTrainingPolicy(
         engine,
         seat,
-        candidateChooser(program, seed + seat * 7919, planner, traces, activationMemoryCosts, decisionContext),
+        candidateChooser(
+          program,
+          seed + seat * 7919,
+          planner,
+          traces,
+          activationMemoryCosts,
+          decisionContext,
+          exposure,
+        ),
       ),
     canChooseMainAction: mainActionReady,
     maxMainPhaseActions: Number.POSITIVE_INFINITY,
@@ -215,6 +229,14 @@ async function play(job) {
   decks[job.seat] = job.decks[0];
   decks[1 - job.seat] = job.decks[1];
   const traces = job.trace === true ? [] : undefined;
+  const exposure =
+    job.diagnosticBaseline === undefined
+      ? undefined
+      : createHeuristicExposureChooser({
+          program,
+          baseline: parsedProgram(job.diagnosticBaseline),
+          seed: job.seed + job.seat * 7919,
+        });
   const seats = [0, 1].map((seat) => ({
     deck: decks[seat],
     ...(seat === job.seat
@@ -225,6 +247,7 @@ async function play(job) {
           traces,
           job.activationMemoryCosts !== false,
           job.decisionContext !== false,
+          exposure,
         )
       : opponentSeat(job, decks[seat])),
   }));
@@ -239,6 +262,7 @@ async function play(job) {
   const valid = validEvolutionGame(result);
   return {
     id: job.id,
+    ...(exposure === undefined ? {} : { exposure: exposure.report }),
     valid,
     ...(valid ? {} : { problem: problemOf(result) }),
     win: result.winnerSeat === undefined ? null : result.winnerSeat === job.seat,
@@ -268,7 +292,51 @@ function validate(request) {
 
 async function handle(request) {
   try {
+    if (request.teacherAlignment !== undefined) {
+      return {
+        id: request.id,
+        ...auditReplayTeacherAlignment({
+          ...request.teacherAlignment,
+          program: parsedProgram(request.program),
+          baseline: parsedProgram(request.teacherAlignment.baseline),
+        }),
+      };
+    }
     if (request.validate !== undefined) return validate(request);
+    if (request.inspectReplay !== undefined) {
+      const { lines, matchId, expected } = request.inspectReplay;
+      const record = extractReplay(lines, matchId);
+      const inspection = await inspectReplayTeacherInput({
+        record,
+        expected,
+        program: parsedProgram(request.program),
+        capturePositions: request.capturePositions === true,
+      });
+      return { id: request.id, valid: true, record, ...inspection };
+    }
+    if (request.replayContinuation !== undefined) {
+      let first = true;
+      const program = parsedProgram(request.program);
+      const result = await runReplayContinuation({
+        ...request.replayContinuation,
+        program,
+        choose: (window) => {
+          if (first) {
+            first = false;
+            return request.replayContinuation.action;
+          }
+          return chooseHeuristic(program, window, request.replayContinuation.sampleSeed);
+        },
+      });
+      return { id: request.id, ...result };
+    }
+    if (request.replayTeacher !== undefined) {
+      const result = await runReplayTeacher({
+        ...request.replayTeacher,
+        program: parsedProgram(request.program),
+      });
+      return { id: request.id, valid: true, ...result };
+    }
     return await play(request);
   } catch (error) {
     if (request.validate !== undefined) return { id: request.id, error: String(error).slice(0, 300) };
