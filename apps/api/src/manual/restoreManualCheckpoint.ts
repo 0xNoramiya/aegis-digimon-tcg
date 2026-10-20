@@ -37,6 +37,12 @@ export function restoreManualCheckpoint({ state, checkpoint }: Params): void {
     }
     for (const saved of [...entry.battle, ...(entry.breeding ? [entry.breeding] : [])]) {
       const permanent = saved.permanent;
+      permanent.inBreeding = saved.inBreeding;
+      if (saved.inBreeding) {
+        setBreeding(entry.player, permanent);
+      } else {
+        placePermanent(entry.player, permanent);
+      }
       setTopCard(permanent, saved.top);
       replaceStack(permanent, saved.sources);
       for (const card of Array.from(permanent.linked)) {
@@ -55,11 +61,6 @@ export function restoreManualCheckpoint({ state, checkpoint }: Params): void {
       permanent.keywords = new ArraySchema(...saved.keywords);
       permanent.grantedKeywords = new ArraySchema(...saved.grantedKeywords);
       permanent.originalColorsOverride = new ArraySchema(...saved.colors);
-      if (saved.inBreeding) {
-        setBreeding(entry.player, permanent);
-      } else {
-        placePermanent(entry.player, permanent);
-      }
     }
     entry.player.manualInspectionJson = "[]";
   }

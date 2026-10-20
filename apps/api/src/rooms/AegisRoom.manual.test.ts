@@ -119,6 +119,10 @@ describe("manual room boundaries and replay", () => {
         keywords: ["Rush"],
         colors: [CardColor.Red],
       });
+      manual(0, { action: "requestUndo" });
+      manual(1, { action: "answerUndo", accept: true });
+      expect(room.state.players[0]!.battleArea[0]!.securityAttackModifier).toBe(0);
+      expect(room.state.players[0]!.battleArea[0]!.keywords).toHaveLength(0);
       manual(0, { action: "reveal", from: { zone: Zone.Deck }, count: 3 });
       manual(1, { action: "reveal", from: { zone: Zone.Hand }, count: 2 });
       manual(0, { action: "clearReveals" });
