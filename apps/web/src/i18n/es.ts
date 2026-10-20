@@ -881,8 +881,6 @@ export const es: Record<keyof typeof en, string> = {
   "game.noCost": "sin costo",
   "game.costsMemory": "cuesta {count} de memoria",
   "game.useCostsMemory": "cuesta {count} de memoria para usar",
-  "game.useCostBadge": "Uso",
-  "game.useCostLabel": "Costo de uso {count}",
   "game.digivolve": "Digievolucionar",
   "game.clickToDigivolve": "haz clic en un Digimon resaltado para digievolucionar",
   "game.clickToLink": "haz clic en un Digimon resaltado para vincular",

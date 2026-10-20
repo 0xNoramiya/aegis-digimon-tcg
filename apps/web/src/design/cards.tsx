@@ -7,14 +7,10 @@ import { Sigil } from "@/design/Sigil";
 import { formatDp } from "@/design/formatDp";
 import { useCardImageUrls } from "@/design/tokenArt/useCardImageUrls";
 import { getCardDefinition, type CardColor, type CardDefinition } from "@aegis/shared";
-import { I18nContext } from "@/i18n/I18nContext";
-import { translator } from "@/i18n/translator";
-import { useContext, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { DEFAULT_CARD_SLEEVE, DEFAULT_EGG_SLEEVE, useCardSleeve, useEggSleeve } from "./sleeve";
 import { COLORS, colorKey, paletteFor, palettePairFor } from "./theme";
 import { CARD_SUSPEND_MOTION } from "./cardMotion";
-
-const english = translator("en");
 
 /** Level pips — filled dots up to level, hollow remainder (max 6). */
 export function LevelPips({ level, color }: { level?: number; color: string }) {
@@ -290,7 +286,6 @@ type TokenInfoParams = {
 
 function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) {
   const translations = useCardTranslations();
-  const t = useContext(I18nContext)?.t ?? english;
   const scale = width / 92;
   const px = (n: number) => Math.round(n * scale);
   const c = paletteFor(def.colors);
@@ -365,37 +360,29 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
     ) : null;
   return (
     <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-      {cost >= 0 && def.isDualCard ? (
+      {def.isDualCard ? (
         <span
-          data-cost="use"
-          aria-label={t("game.useCostLabel", { count: cost })}
+          data-card-kind="dual"
           style={{
             position: "absolute",
             top: px(4),
             left: px(4),
-            height: px(20),
-            padding: `0 ${px(4)}px`,
+            height: px(16),
+            padding: `0 ${px(5)}px`,
             borderRadius: px(4),
-            background: "rgba(11,13,20,0.82)",
+            background: "rgba(11,13,20,0.9)",
             color: "#fff",
-            border: `1.5px dashed ${c.base}`,
+            border: "1px solid rgba(255,255,255,0.4)",
             boxShadow: "0 1px 3px rgba(0,0,0,0.45)",
-            fontFamily: "var(--ds-font-mono)",
+            fontSize: px(8.5),
+            fontWeight: 800,
+            letterSpacing: "0.1em",
             lineHeight: 1,
-            display: "flex",
-            alignItems: "center",
-            gap: px(2),
+            display: "grid",
+            placeItems: "center",
           }}
         >
-          <span
-            aria-hidden="true"
-            style={{ fontSize: px(6.5), fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}
-          >
-            {t("game.useCostBadge")}
-          </span>
-          <span aria-hidden="true" style={{ fontSize: px(11), fontWeight: 700 }}>
-            {cost}
-          </span>
+          DUAL
         </span>
       ) : cost >= 0 ? (
         <span

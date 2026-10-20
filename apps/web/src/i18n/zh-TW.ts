@@ -1040,8 +1040,6 @@ const interfaceMessages = {
   "game.noCost": "無費用",
   "game.costsMemory": "消耗 {count} 記憶體",
   "game.useCostsMemory": "使用需消耗 {count} 記憶體",
-  "game.useCostBadge": "使用",
-  "game.useCostLabel": "使用費用 {count}",
   "game.digivolve": "進化",
   "game.clickToDigivolve": "點擊發光的數碼寶貝進行進化",
   "game.clickToLink": "點擊發光的數碼寶貝進行連結",

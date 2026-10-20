@@ -890,8 +890,6 @@ export const en = {
   "game.noCost": "no cost",
   "game.costsMemory": "costs {count} memory",
   "game.useCostsMemory": "costs {count} memory to use",
-  "game.useCostBadge": "Use",
-  "game.useCostLabel": "Use cost {count}",
   "game.digivolve": "Digivolve",
   "game.clickToDigivolve": "click a glowing Digimon to digivolve",
   "game.clickToLink": "click a glowing Digimon to link",

@@ -1091,8 +1091,6 @@ const interfaceMessages = {
   "game.noCost": "tanpa cost",
   "game.costsMemory": "membutuhkan {count} memory",
   "game.useCostsMemory": "membutuhkan {count} memory untuk dipakai",
-  "game.useCostBadge": "Pakai",
-  "game.useCostLabel": "Use cost {count}",
   "game.digivolve": "Digivolve",
   "game.clickToDigivolve": "klik Digimon yang bersinar untuk melakukan digivolve",
   "game.clickToLink": "klik Digimon yang bersinar untuk Link",

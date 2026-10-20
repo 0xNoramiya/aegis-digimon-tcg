@@ -1089,8 +1089,6 @@ const interfaceMessages = {
   "game.noCost": "コストなし",
   "game.costsMemory": "メモリー{count}が必要",
   "game.useCostsMemory": "使用にメモリー{count}が必要",
-  "game.useCostBadge": "使用",
-  "game.useCostLabel": "使用コスト{count}",
   "game.digivolve": "進化",
   "game.clickToDigivolve": "光っているデジモンをクリックして進化",
   "game.clickToLink": "光っているデジモンをクリックしてリンク",

@@ -1078,8 +1078,6 @@ const interfaceMessages = {
   "game.noCost": "코스트 없음",
   "game.costsMemory": "메모리 {count} 소비",
   "game.useCostsMemory": "사용 시 메모리 {count} 소비",
-  "game.useCostBadge": "사용",
-  "game.useCostLabel": "사용 코스트 {count}",
   "game.digivolve": "진화",
   "game.clickToDigivolve": "빛나는 디지몬을 클릭해 진화",
   "game.clickToLink": "빛나는 디지몬을 클릭해 링크",

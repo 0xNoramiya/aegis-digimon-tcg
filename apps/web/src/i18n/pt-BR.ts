@@ -893,8 +893,6 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.noCost": "sem custo",
   "game.costsMemory": "custa {count} de memória",
   "game.useCostsMemory": "custa {count} de memória para usar",
-  "game.useCostBadge": "Uso",
-  "game.useCostLabel": "Custo de uso {count}",
   "game.digivolve": "Digievoluir",
   "game.clickToDigivolve": "clique em um Digimon destacado para digievoluir",
   "game.clickToLink": "clique em um Digimon destacado para vincular",

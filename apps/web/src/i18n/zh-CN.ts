@@ -1033,8 +1033,6 @@ const interfaceMessages = {
   "game.noCost": "无费用",
   "game.costsMemory": "消耗 {count} 点内存值",
   "game.useCostsMemory": "使用需消耗 {count} 点内存值",
-  "game.useCostBadge": "使用",
-  "game.useCostLabel": "使用费用 {count}",
   "game.digivolve": "进化",
   "game.clickToDigivolve": "点击发光的数码宝贝进行进化",
   "game.clickToLink": "点击发光的数码宝贝进行 Link",

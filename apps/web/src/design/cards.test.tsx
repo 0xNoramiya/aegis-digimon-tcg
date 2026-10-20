@@ -62,17 +62,15 @@ describe("CardMini board DP", () => {
 });
 
 describe("CardMini cost badge", () => {
-  it("labels a DUAL card's printed cost as a use cost, not a play cost", () => {
+  it("marks a DUAL card as DUAL instead of showing its use cost as a play cost", () => {
     const { container } = render(<CardMini cardId="BT27-070" width={92} info zoomOnHover={false} />);
     expect(container.querySelector('[data-cost="play"]')).toBeNull();
-    const badge = container.querySelector('[data-cost="use"]');
-    expect(badge?.getAttribute("aria-label")).toBe("Use cost 5");
-    expect(badge?.textContent).toBe("Use5");
+    expect(container.querySelector('[data-card-kind="dual"]')?.textContent).toBe("DUAL");
   });
 
   it("keeps the play cost badge on a Digimon card", () => {
     const { container } = render(<CardMini cardId="ST1-02" width={92} info zoomOnHover={false} />);
-    expect(container.querySelector('[data-cost="use"]')).toBeNull();
+    expect(container.querySelector('[data-card-kind="dual"]')).toBeNull();
     expect(container.querySelector('[data-cost="play"]')?.textContent).toBe(
       String(getCardDefinition("ST1-02")!.playCost),
     );
