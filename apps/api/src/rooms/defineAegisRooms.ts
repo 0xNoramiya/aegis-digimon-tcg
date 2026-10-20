@@ -1,3 +1,4 @@
+import { ROOM_TYPE_MANUAL, ROOM_TYPE_MANUAL_PRIVATE } from "@aegis/shared/protocol/messages";
 import type { Server } from "colyseus";
 import {
   ROOM_TYPE,
@@ -19,10 +20,28 @@ const publicMode = {
   botRoom: false,
   rankedRoom: false,
   tournamentRoom: false,
+  manualRoom: false,
 };
 
 /** Register the same immutable mode boundaries in production and websocket tests. */
 export function defineAegisRooms(gameServer: Pick<Server, "define">): void {
+  gameServer
+    .define(ROOM_TYPE_MANUAL, AegisRoom, {
+      ...publicMode,
+      manualRoom: true,
+      allowFormatSelection: true,
+      allowUnlimitedSelection: true,
+      betaBattleRoom: true,
+    })
+    .filterBy(["format", "unlimited"]);
+  gameServer.define(ROOM_TYPE_MANUAL_PRIVATE, AegisRoom, {
+    ...publicMode,
+    manualRoom: true,
+    private: true,
+    allowFormatSelection: true,
+    allowUnlimitedSelection: true,
+    betaBattleRoom: true,
+  });
   // Explicit false values are security boundaries: Colyseus merges handler options
   // over client-supplied create options, so clients cannot promote another room type
   // into bot mode by sending `{ botRoom: true }` themselves.

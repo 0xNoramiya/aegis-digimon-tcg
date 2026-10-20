@@ -145,4 +145,5 @@ export class PlayerState extends Schema {
   @type("boolean") hideIdentityFromSpectators = false;
   @view(PRIVATE_VIEW_TAG) @type("string") spectatorNamesJson = "[]";
   @view(PRIVATE_VIEW_TAG) @type("uint16") anonymousSpectatorCount = 0;
+  @view(PRIVATE_VIEW_TAG) @type("string") manualInspectionJson = "[]";
 }

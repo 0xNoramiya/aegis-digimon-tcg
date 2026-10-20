@@ -1,3 +1,4 @@
+import type { GameMode } from "@aegis/shared/manual/GameMode";
 import type { DeckFormat, Intent, Seat } from "@aegis/shared";
 import type { ScenarioFixture } from "../../engine/scenario/types.js";
 
@@ -31,6 +32,7 @@ export interface ReplayRecord {
 }
 
 export interface ReplayRules {
+  gameMode?: GameMode;
   deckFormat: DeckFormat;
   unlimited: boolean;
   betaBattle: boolean;
@@ -139,6 +141,7 @@ export interface ReplayDivergence {
 
 /** `replay.header`, written once when the room builds its engine. */
 export interface ReplayHeaderLine {
+  gameMode?: GameMode;
   replaySeq: number;
   seed: number;
   randomKey?: string;

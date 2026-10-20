@@ -104,7 +104,7 @@ export async function runMatch(engine: GameEngine): Promise<void> {
   const decks = collectStagedDecks(engine);
   if (decks === undefined) return; // a seat joined without a deck; cannot start
 
-  const firstSeat = chooseFirstPlayer(engine);
+  let firstSeat = chooseFirstPlayer(engine);
   const setup = runSetup(engine.state, {
     seats: [
       {
@@ -127,11 +127,31 @@ export async function runMatch(engine: GameEngine): Promise<void> {
 
   engine.hooks.emit({ kind: "matchStarted", firstSeat });
 
+  if (engine.manual) {
+    const chooser = firstSeat;
+    const response = await engine.decisions.request({
+      seat: chooser,
+      kind: "chooseOption",
+      promptText: "Choose who goes first",
+      options: {
+        choices: [engine.state.players[chooser]!.displayName, engine.state.players[1 - chooser]!.displayName],
+      },
+    });
+    if (engine.state.gameOver) {
+      return;
+    }
+    firstSeat = response.kind === "chooseOption" && response.optionIndex === 1 ? ((1 - chooser) as Seat) : chooser;
+    engine.state.turnSeat = firstSeat;
+  }
   await runMulliganWindow(engine, firstSeat);
   if (engine.state.gameOver) return; // a seat left during setup
 
   finalizeSecurity(engine.state);
 
+  if (engine.manual) {
+    engine.manual.begin();
+    return;
+  }
   void startTurnLoop(engine);
 }
 

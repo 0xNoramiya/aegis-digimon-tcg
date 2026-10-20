@@ -25,6 +25,7 @@ export function recordingState(state: GameState): GameState {
   copy.series.nextRoomId = "";
   for (const player of copy.players) {
     player.sessionId = `replay-seat-${player.seat}`;
+    player.manualInspectionJson = "[]";
     player.deck = [] as never;
     player.eggDeck = [] as never;
     player.security = [] as never;

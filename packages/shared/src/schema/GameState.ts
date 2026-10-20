@@ -1,3 +1,5 @@
+import { ManualCombatStage } from "#shared/manual/ManualCombatStage";
+import { GameMode } from "#shared/manual/GameMode";
 import { Schema, ArraySchema, type, view } from "@colyseus/schema";
 import { PlayerState } from "./PlayerState.js";
 import { Phase } from "./enums.js";
@@ -91,6 +93,22 @@ export class SeriesState extends Schema {
  * cursor, both players, and the current pending decision (if any). Mirrors
  * documented behavior.
  */
+class ManualTable extends Schema {
+  @type("uint32") revision = 0;
+  @type(["string"]) history = new ArraySchema<string>();
+  @type("int8") undoRequester = -1;
+  @type("boolean") canUndo = false;
+  @type("int8") resultRequester = -1;
+  @type("int8") proposedWinner = -1;
+  @type("string") revealedJson = "[]";
+  @type("string") turnPhase: Phase = Phase.Main;
+  @type("string") combatStage: ManualCombatStage = ManualCombatStage.NONE.value;
+  @type("int8") attackerSeat = -1;
+  @type("string") attackerPermanentId = "";
+  @type("string") attackTargetPermanentId = "";
+  @type("string") blockerPermanentId = "";
+}
+
 export class GameState extends Schema {
   @type("string") matchLogId = "";
   @type("string") matchId = "";
@@ -146,4 +164,6 @@ export class GameState extends Schema {
   @type("boolean") canRollbackTurn = false;
   @type("int8") undoActionSeat = -1;
   @type("int8") rollbackTurnSeat = -1;
+  @type("string") gameMode: GameMode = GameMode.AUTOMATIC.value;
+  @type(ManualTable) manual = new ManualTable();
 }

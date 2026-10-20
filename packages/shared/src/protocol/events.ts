@@ -91,6 +91,7 @@ export interface EffectBattleParticipants {
 }
 
 export type ServerEvent =
+  | { kind: "manualAction"; seat: Seat; action: string }
   | { kind: "matchStarted"; firstSeat: Seat }
   | { kind: "phaseChanged"; phase: string; turnSeat: Seat; turnCount: number }
   | {
@@ -573,6 +574,7 @@ export type SequencedServerEvent = ServerEvent & {
  * kind could ship narrating nothing and no test would notice.
  */
 export const SERVER_EVENT_KINDS = [
+  "manualAction",
   "matchStarted",
   "phaseChanged",
   "cardPlayed",

@@ -1,3 +1,4 @@
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getStoryGuestHash } from "#api/story/getStoryGuestHash";
 import { shuffleStoryDecks } from "#api/story/shuffleStoryDecks";
 import { storyBattles } from "@aegis/shared/story/storyBattles";
@@ -144,6 +145,7 @@ interface RoomCreateOptions extends Partial<SeriesContinuationOptions> {
   roomCode?: unknown;
   botRoom?: boolean;
   rankedRoom?: boolean;
+  manualRoom?: boolean;
   betaBattleRoom?: boolean;
   unlimitedRoom?: boolean;
   /** Only the registered bot/private handlers grant this capability. */
@@ -223,6 +225,7 @@ function combatWindowEvent(window: CombatWindow): ServerEvent | undefined {
  * brackets keep running until the manager takes them over.
  */
 export interface AegisJoinOptions extends SeatJoinOptions {
+  gameMode?: GameMode;
   storyBattleId?: string;
   storyGuestToken?: string;
   allowRollback?: boolean;
@@ -309,7 +312,7 @@ type ConnectionDropParams = {
  */
 export class AegisRoom extends Room<{
   state: GameState;
-  metadata: { unlimited: boolean; format: DeckFormat; live?: LiveMatch };
+  metadata: { unlimited: boolean; format: DeckFormat; gameMode?: GameMode; live?: LiveMatch };
 }> {
   override maxClients = 2;
   private engine!: GameEngine;
@@ -507,9 +510,18 @@ export class AegisRoom extends Room<{
       return false;
     if ((options.ranked === true) !== this.isRankedRoom || ((this.isRankedRoom || this.isTournamentRoom) && !account))
       return false;
+    if (!this.isPrivate && this.state.gameMode !== (options.gameMode ?? GameMode.AUTOMATIC.value)) {
+      return false;
+    }
     // Private and bot rooms allow beta cards without the client asking for them, so only the
     // public queues have to agree with the joiner's beta flag.
-    if (!this.isPrivate && !this.isBotRoom && (options.betaBattleMode === true) !== this.isBetaBattleRoom) return false;
+    if (
+      this.state.gameMode !== GameMode.MANUAL.value &&
+      !this.isPrivate &&
+      !this.isBotRoom &&
+      (options.betaBattleMode === true) !== this.isBetaBattleRoom
+    )
+      return false;
     if ((options.unlimited === true) !== this.isUnlimitedRoom) return false;
     if (options.format !== undefined && !isDeckFormat(options.format)) return false;
     if (!this.isPrivate && deckFormat(options.format, options.unlimited) !== this.state.format) return false;
@@ -720,6 +732,15 @@ export class AegisRoom extends Room<{
   private initialize(options: RoomCreateOptions, reopenedCode?: string, continuation?: SeriesRecord): void {
     this.setState(new GameState());
     this.guardFullStateSync();
+    this.state.gameMode = options.manualRoom === true ? GameMode.MANUAL.value : GameMode.AUTOMATIC.value;
+    if (options.manualRoom) {
+      options.matchTimer = false;
+      options.bestOf = 1;
+      options.allowRollback = false;
+      options.botRoom = false;
+      options.rankedRoom = false;
+      options.tournamentRoom = false;
+    }
     // A draining slot still finishes the series it is running: refusing the next game would end
     // every series in progress at each release.
     if (!canCreateRoom() && !continuation)
@@ -773,7 +794,7 @@ export class AegisRoom extends Room<{
       !options.tournamentRoom &&
       (options.unlimitedRoom === true ||
         (options.allowUnlimitedSelection === true &&
-          (options.botRoom === true || options.private === true) &&
+          (options.botRoom === true || options.private === true || options.manualRoom === true) &&
           options.unlimited === true));
     if (options.format !== undefined && !isDeckFormat(options.format))
       throw new ServerError(400, "Unknown deck format");
@@ -781,7 +802,7 @@ export class AegisRoom extends Room<{
     if (
       (options.rankedRoom ||
         options.tournamentRoom ||
-        (options.betaBattleRoom && !options.private && !options.botRoom)) &&
+        (options.betaBattleRoom && !options.private && !options.botRoom && !options.manualRoom)) &&
       format !== "standard"
     )
       throw new ServerError(400, "This room requires Standard format");
@@ -835,6 +856,7 @@ export class AegisRoom extends Room<{
         firstSeat: this.casualSeries?.fixedFirstSeat,
         matchId: this.state.matchLogId,
         rules: {
+          gameMode: this.state.gameMode,
           deckFormat: this.state.format as DeckFormat,
           unlimited: this.state.unlimited,
           betaBattle: this.isBetaBattleRoom,
@@ -930,7 +952,12 @@ export class AegisRoom extends Room<{
         // (hand/eggDeck). @colyseus/schema snapshots node visibility when the view is
         // built, so a card redacted while private stays redacted after it goes public
         // unless the view is rebuilt — otherwise the opponent reads topCard=undefined.
-        if (event.kind === "cardPlayed" || event.kind === "cardsMoved" || event.kind === "digivolved") {
+        if (
+          event.kind === "cardPlayed" ||
+          event.kind === "cardsMoved" ||
+          event.kind === "digivolved" ||
+          event.kind === "manualAction"
+        ) {
           this.rebuildClientViews();
         }
         // After dealing opening hands, force a state patch so clients receive
@@ -964,6 +991,7 @@ export class AegisRoom extends Room<{
     const firstSeat = this.casualSeries?.fixedFirstSeat;
     const serverRevision = process.env.AEGIS_REVISION;
     this.debug("replay.header", {
+      gameMode: this.state.gameMode,
       replaySeq: this.nextReplaySeq(),
       seed,
       randomKey,
@@ -1054,7 +1082,7 @@ export class AegisRoom extends Room<{
         (payload as { rollbackRevision?: unknown })?.rollbackRevision !== this.state.rollbackRevision
       )
         return;
-      this.handleIntent(client, { type, ...(payload as object) } as Intent);
+      this.handleIntent(client, { ...(payload as object), type } as Intent);
     });
 
     // Optional clocks belong to casual/private rooms. Ignore crafted ranked/tournament options.
@@ -1081,11 +1109,17 @@ export class AegisRoom extends Room<{
 
   /** Bot, ranked, tournament and hand-laid rooms always play a single game. */
   private offersSeries(): boolean {
-    return !this.isBotRoom && !this.isRankedRoom && !this.isTournamentRoom && this.devScenario === undefined;
+    return (
+      this.state.gameMode !== GameMode.MANUAL.value &&
+      !this.isBotRoom &&
+      !this.isRankedRoom &&
+      !this.isTournamentRoom &&
+      this.devScenario === undefined
+    );
   }
 
   private startRematchSeries(chooser: Seat): boolean {
-    if (this.casualSeries || !this.state.gameOver) {
+    if (!this.offersSeries() || this.casualSeries || !this.state.gameOver) {
       return false;
     }
     this.casualSeries = CasualSeries.rematch(
@@ -1143,7 +1177,7 @@ export class AegisRoom extends Room<{
   private async recordRecentResults(
     event: Extract<import("@aegis/shared").ServerEvent, { kind: "gameOver" }>,
   ): Promise<void> {
-    if (this.devScenario || this.storyBattleId) return;
+    if (this.devScenario || this.storyBattleId || this.state.gameMode === GameMode.MANUAL.value) return;
     const finishedAt = Date.now();
     // Snapshot both identities before I/O: onLeave clears accountByClient synchronously.
     const participants = ([0, 1] as const).flatMap((seat) => {
@@ -1187,6 +1221,9 @@ export class AegisRoom extends Room<{
   private async recordAuthoritativeResult(
     event: Extract<import("@aegis/shared").ServerEvent, { kind: "gameOver" }>,
   ): Promise<void> {
+    if (this.state.gameMode === GameMode.MANUAL.value) {
+      return;
+    }
     // The Tournament Game path comes first and does not require two Accounts: a seat driven by a
     // bot has no client, so `accountByClient` holds nothing for it and the two-account guard below
     // would silently discard a perfectly good result.
@@ -1438,6 +1475,7 @@ export class AegisRoom extends Room<{
         ...this.metadata,
         unlimited: this.isUnlimitedRoom,
         format: this.state.format as DeckFormat,
+        gameMode: this.state.gameMode,
         live: this.liveMatch(),
       },
     });
@@ -1449,6 +1487,7 @@ export class AegisRoom extends Room<{
       spectatorCode: this.state.spectatorCode,
       players: this.state.players.map((player) => (player.hideIdentityFromSpectators ? "" : player.displayName)),
       format: this.state.format as DeckFormat,
+      gameMode: this.state.gameMode,
       startedAt: this.liveListingStartedAt,
       spectators: this.spectatorClients.size,
     };
@@ -1501,8 +1540,12 @@ export class AegisRoom extends Room<{
   }
 
   /** Fixed host rules, read by the private-code lookup across processes. */
-  privateRoomInfo(): { unlimited: boolean; format: DeckFormat } {
-    return { unlimited: this.isUnlimitedRoom, format: this.state.format as DeckFormat };
+  privateRoomInfo(): { unlimited: boolean; format: DeckFormat; gameMode?: GameMode } {
+    return {
+      unlimited: this.isUnlimitedRoom,
+      format: this.state.format as DeckFormat,
+      ...(this.state.gameMode === GameMode.MANUAL.value ? { gameMode: this.state.gameMode } : {}),
+    };
   }
 
   /** Public information only; the HTTP gateway calls this through cluster RPC. */
@@ -1905,7 +1948,14 @@ export class AegisRoom extends Room<{
     // Tournament rooms stay refused here, and that refusal is what `POST /bot/join` inherits. A
     // tournament bot is seated only through seatTournamentBot(), against an authorization no HTTP
     // caller can obtain.
-    if (this.isRankedRoom || this.isTournamentRoom || this.isPrivate || this.clients.length !== 1) return false;
+    if (
+      this.state.gameMode === GameMode.MANUAL.value ||
+      this.isRankedRoom ||
+      this.isTournamentRoom ||
+      this.isPrivate ||
+      this.clients.length !== 1
+    )
+      return false;
 
     // Reloads and reconnections can repeat /bot/join for the same match.
     // Acknowledge the existing bot without replacing it or restarting the engine.
@@ -2212,6 +2262,9 @@ export class AegisRoom extends Room<{
   }
 
   private replayMode(): ReplaySummary["mode"] {
+    if (this.state.gameMode === GameMode.MANUAL.value) {
+      return GameMode.MANUAL.value;
+    }
     if (this.isTournamentRoom) return "tournament";
     if (this.isRankedRoom) return "ranked";
     if (this.isBotRoom) return "bot";

@@ -197,3 +197,35 @@ flows through a real room. [AGENTS.md](../AGENTS.md) has the full test rules.
 Reusable regression boards use behavior-named fixtures shared by the testkit and
 browser harness. Manual reproductions load those fixtures on demand rather than
 requiring arena registrations; see [regression fixtures](TESTING.md).
+
+## Manual tables
+
+Rooms `aegis_manual` and `aegis_manual_private` select the immutable manual mode.
+They share the card catalog, deck validation, setup, Colyseus state views and arena
+with automatic games. Public matchmaking separates mode, format and banlist;
+private invitations resolve the host's mode before joining. Older records without
+`gameMode` continue to use automatic execution.
+
+`GameEngine` remains the room-facing lifecycle facade. In manual mode it delegates
+board commands to `ManualController` instead of the automatic intent router.
+Setup chooses a player to decide the first seat, deals hands, offers mulligans and
+sets security. Afterwards no card effects, continuous rules, automatic draws,
+unsuspension, memory-based turn passing or victory checks execute. Each player
+operates their own side at either player's turn. Passing changes the active seat
+and reverses the relative memory sign, preserving the gauge's physical position.
+
+Manual commands are validated and applied by the API. Each command carries a
+request identifier and a manual revision, preventing duplicates and stale edits.
+Inspection projections are owner-private; the actual deck and security identities
+remain hidden in ordinary state views. Explicit revelations are public. Moving a
+card back to a hidden zone restores its hidden facing. Player replay recordings
+remove inspection projections, while administrator input records retain the
+commands and server randomness needed for deterministic reproduction.
+
+Undo restores one server-owned checkpoint only after the other player accepts.
+The operation history remains visible, including consultations and revelations;
+undo cannot remove information a player has seen. Result proposals also require
+the other player to accept. Concession follows the existing room lifecycle.
+Manual games use single-game casual rooms, have no competitive clock or bots,
+and do not write competitive results or recent-match history. Their downloadable
+player replays are identified as manual.

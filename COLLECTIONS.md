@@ -153,3 +153,7 @@ Account-scoped solo story victories. Primary key `(account_id, battle_id)`; `acc
 ### story_guest_completions
 
 Anonymous story victories keyed by a SHA-256 hash of a random browser token and battle ID. Stores match ID and completion time. Only authoritative match wins write this table. Guest progress is separate from account progress; clearing browser storage loses access to it.
+
+Manual replay summaries may use mode `manual`. Input-record rules include optional `gameMode`; missing values retain automatic execution. Manual games do not write `match_records` or `account_recent_matches`. Private inspection projections are stripped from player replay frames and never enter shared replay metadata. No SQL migration is required for these JSON fields.
+
+Manual replay JSON may also contain visual turn/combat stages, batch revelation identities, token instances and structured permanent modifiers (Security Attack, keywords and colors). These fields use schema defaults when loading older replays. Undo restores these projections; private consultation data remains excluded. No SQL migration is required.
