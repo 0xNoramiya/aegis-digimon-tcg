@@ -3,6 +3,17 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "settings.arenaInput": "Tastatur und Controller",
+  "settings.arenaInputDesc":
+    "Bewegen Sie einen Cursor mit den Pfeiltasten oder einem Controller und sehen Sie die Taste für jede Aktion.",
+  "game.input.controls": "Tastatur und Controller",
+  "game.input.navigate": "Navigieren",
+  "game.input.select": "Auswählen",
+  "game.input.inspect": "Ansehen",
+  "game.input.region": "Bereich",
+  "game.input.scroll": "Scrollen",
+  "game.input.reorder": "Enter/A: bewegen; Pfeile: sortieren; Enter/A: fertig; Esc/B: rückgängig",
+
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],

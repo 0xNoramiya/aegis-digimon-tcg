@@ -1,3 +1,4 @@
+import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 /* The opponent's half of the battle area.
 
    A permanent marks itself a candidate when the chosen attacker may hit it. A drag is
@@ -126,6 +127,7 @@ export function OpponentBattleRow({
         renderCard={renderCard}
         isSuspended={isSuspended}
         rowProps={{
+          "data-arena-region": ArenaInputRegion.OPPONENT_FIELD.value,
           className: "game-battle-row game-battle-row--opp",
           role: "group",
           "aria-label": t("game.oppBattleArea"),
@@ -137,6 +139,7 @@ export function OpponentBattleRow({
 
   return (
     <BattleRow
+      data-arena-region={ArenaInputRegion.OPPONENT_FIELD.value}
       className="game-battle-row game-battle-row--opp"
       role="group"
       aria-label={t("game.oppBattleArea")}

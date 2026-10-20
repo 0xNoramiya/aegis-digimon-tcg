@@ -1,3 +1,4 @@
+import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 /* The viewer's half of the battle area.
 
    The whole row is a drop area: a card released anywhere in it is played. A permanent
@@ -155,6 +156,7 @@ export function ViewerBattleRow({
         renderCard={renderCard}
         isSuspended={isSuspended}
         rowProps={{
+          "data-arena-region": ArenaInputRegion.VIEWER_FIELD.value,
           "data-drop": "battle-you",
           ...dropIntentAttrs("battle-you"),
           className: "game-battle-row game-battle-row--you",
@@ -168,6 +170,7 @@ export function ViewerBattleRow({
 
   return (
     <BattleRow
+      data-arena-region={ArenaInputRegion.VIEWER_FIELD.value}
       data-drop="battle-you"
       {...dropIntentAttrs("battle-you")}
       className="game-battle-row game-battle-row--you"

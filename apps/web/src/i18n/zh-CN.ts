@@ -3,6 +3,16 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "settings.arenaInput": "键盘与手柄",
+  "settings.arenaInputDesc": "使用方向键或手柄移动光标，并显示每个操作的按键。",
+  "game.input.controls": "键盘与手柄",
+  "game.input.navigate": "移动",
+  "game.input.select": "选择",
+  "game.input.inspect": "查看",
+  "game.input.region": "区域",
+  "game.input.scroll": "滚动",
+  "game.input.reorder": "Enter/A：移动；方向键：排序；Enter/A：完成；Esc/B：撤销",
+
   ...decisionChoicesZhCN,
   "overlay.deleteThisDigimon": "消灭此数码宝贝",
   "overlay.trashTopSecurityCard": "丢弃我方最上方的1张安防卡牌",

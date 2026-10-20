@@ -7,6 +7,16 @@ import { en } from "./en";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  "settings.arenaInput": "Tastiera e controller",
+  "settings.arenaInputDesc": "Muovi un cursore con le frecce o un controller e mostra il tasto di ogni azione.",
+  "game.input.controls": "Tastiera e controller",
+  "game.input.navigate": "Naviga",
+  "game.input.select": "Seleziona",
+  "game.input.inspect": "Esamina",
+  "game.input.region": "Zona",
+  "game.input.scroll": "Scorri",
+  "game.input.reorder": "Invio/A: sposta; frecce: riordina; Invio/A: termina; Esc/B: annulla",
+
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],

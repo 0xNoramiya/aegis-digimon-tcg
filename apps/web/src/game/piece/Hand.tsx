@@ -68,6 +68,7 @@ export function Hand({
   // otherwise covers the card the player is trying to pick (GitHub #5058).
   const spreadSelection = selection !== undefined && n > 6;
   const [hoveredInstanceId, setHoveredInstanceId] = useState<string | null>(null);
+  const [cursorInstanceId, setCursorInstanceId] = useState<string | null>(null);
   const [coveredHoverKey, setCoveredHoverKey] = useState<string | null>(null);
   useLayoutEffect(() => {
     if (hoveredInstanceId && (draggingInstanceId || !cards.some((entry) => entry.instanceId === hoveredInstanceId))) {
@@ -201,6 +202,22 @@ export function Hand({
               }
               if (event.detail === 0) selectCard?.(i);
             },
+            onFocus: (event) => {
+              if (event.target !== event.currentTarget || !event.currentTarget.dataset.arenaFocused) return;
+              setCursorInstanceId(entry.instanceId);
+              if (!sourcePreparing) {
+                setCoveredHoverKey(null);
+                setHoveredInstanceId(entry.instanceId);
+              }
+              onHoverChange?.(entry.instanceId);
+            },
+            onBlur: (event) => {
+              if (event.target !== event.currentTarget) return;
+              setCursorInstanceId((current) => (current === entry.instanceId ? null : current));
+              if (event.currentTarget.matches(":hover")) return;
+              if (!sourcePreparing) setHoveredInstanceId((current) => (current === entry.instanceId ? null : current));
+              onHoverChange?.(undefined);
+            },
             onPointerEnter: (event) => {
               if (event.pointerType === "touch" || touchLayout) return;
               if (!sourcePreparing && hoveredInstanceId !== entry.instanceId) {
@@ -235,6 +252,7 @@ export function Hand({
                 <button
                   type="button"
                   className="game-hand-card__inspect"
+                  data-arena-inspect
                   aria-label={t("game.inspectCard", {
                     card: getCardName(entry.cardId),
                   })}
@@ -330,6 +348,7 @@ export function Hand({
                     selection && !pickable && !picked ? "game-hand-card--unpickable" : "",
                     selection && pickable && !picked ? "game-hand-card--pickable" : "",
                     picked ? "game-hand-card--picked" : "",
+                    cursorInstanceId === entry.instanceId ? "game-hand-card--cursor" : "",
                   ]
                     .filter(Boolean)
                     .join(" ")}

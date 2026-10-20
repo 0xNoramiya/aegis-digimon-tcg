@@ -1,3 +1,4 @@
+import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
 import { useEffect, useRef } from "react";
 import { Switch } from "../../design/primitives";
 import { useTranslation } from "../../i18n";
@@ -19,6 +20,13 @@ export function ChatSettingsMenu({
 }) {
   const { t } = useTranslation();
   const menuRef = useRef<HTMLDivElement>(null);
+  useArenaInputCancel({
+    ref: menuRef,
+    onCancel: () => {
+      onClose();
+      anchor?.focus();
+    },
+  });
   const chatSoundEnabled = useChatSoundEnabled();
   useDismissOnOutsidePress(menuRef, anchor, onClose);
 
@@ -29,6 +37,7 @@ export function ChatSettingsMenu({
   return (
     <div
       ref={menuRef}
+      data-arena-surface
       className="match-chat-settings"
       role="group"
       aria-label={t("chat.settings")}

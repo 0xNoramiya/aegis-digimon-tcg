@@ -44,7 +44,7 @@ export function WaitingOverlay({
       </div>
       {aside ? <div className="waiting-dialog__aside">{aside}</div> : null}
       {cancelLabel && onCancel ? (
-        <button type="button" className="waiting-dialog__cancel" onClick={onCancel}>
+        <button type="button" className="waiting-dialog__cancel" data-arena-cancel onClick={onCancel}>
           {cancelLabel}
         </button>
       ) : null}
