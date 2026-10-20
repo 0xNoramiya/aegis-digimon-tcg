@@ -31,6 +31,7 @@ import type {
   PlayerRestrictionEntry,
   RestrictionEntry,
   SecurityAddRestriction,
+  SeatStackTrashLock,
   SecurityAttackInversion,
   StackCardTrashLock,
   StackEffectConferral,
@@ -122,6 +123,7 @@ export class ContinuousEffectLedger {
   private securityAddRestrictions: SecurityAddRestriction[] = [];
   private colorGrants: ColorGrant[] = [];
   private stackTrashLocks: StackTrashLock[] = [];
+  private seatStackTrashLocks: SeatStackTrashLock[] = [];
   private stackCardTrashLocks: StackCardTrashLock[] = [];
   private securityAttackInversions: SecurityAttackInversion[] = [];
   private stackEffectConferrals: StackEffectConferral[] = [];
@@ -181,6 +183,7 @@ export class ContinuousEffectLedger {
       ...this.securityAddRestrictions,
       ...this.colorGrants,
       ...this.stackTrashLocks,
+      ...this.seatStackTrashLocks,
       ...this.stackCardTrashLocks,
       ...this.securityAttackInversions,
       ...this.stackEffectConferrals,
@@ -1315,9 +1318,16 @@ export class ContinuousEffectLedger {
     this.stackTrashLocks.push(this.anchorDuration({ permanentId, duration, continuous: opts?.continuous }));
   }
 
+  addSeatStackTrashLock(ownerSeat: Seat, duration: EffectDuration, opts?: { continuous?: boolean }): void {
+    this.seatStackTrashLocks.push(this.anchorDuration({ ownerSeat, duration, continuous: opts?.continuous }));
+  }
+
   /** Whether a permanent's stacked cards are currently locked against trashing (by any active lock). */
   stackTrashLocked(permanentId: string): boolean {
-    return this.stackTrashLocks.some((l) => l.permanentId === permanentId);
+    if (this.stackTrashLocks.some((l) => l.permanentId === permanentId)) return true;
+    if (this.seatStackTrashLocks.length === 0) return false;
+    const controllerSeat = this.controllerSeatOf?.(permanentId);
+    return this.seatStackTrashLocks.some((l) => l.ownerSeat === controllerSeat);
   }
 
   addStackCardTrashLock(
@@ -1589,6 +1599,9 @@ export class ContinuousEffectLedger {
     this.stackTrashLocks = this.stackTrashLocks.filter(
       (l) => !this.expiresAt(l, l.duration, boundary, ownerOf(l.permanentId), sweepSeat, battleScopeId),
     );
+    this.seatStackTrashLocks = this.seatStackTrashLocks.filter(
+      (lock) => !this.expiresAt(lock, lock.duration, boundary, lock.ownerSeat, sweepSeat, battleScopeId),
+    );
     this.stackCardTrashLocks = this.stackCardTrashLocks.filter(
       (lock) => !this.expiresAt(lock, lock.duration, boundary, lock.ownerSeat, sweepSeat, battleScopeId),
     );
@@ -1664,6 +1677,7 @@ export class ContinuousEffectLedger {
     this.cannotIgnoreDigivolutionFlags = this.cannotIgnoreDigivolutionFlags.filter((f) => !f.continuous);
     this.colorGrants = this.colorGrants.filter((g) => !g.continuous);
     this.stackTrashLocks = this.stackTrashLocks.filter((l) => !l.continuous);
+    this.seatStackTrashLocks = this.seatStackTrashLocks.filter((lock) => !lock.continuous);
     this.stackCardTrashLocks = this.stackCardTrashLocks.filter((lock) => !lock.continuous);
     this.securityAttackInversions = this.securityAttackInversions.filter((i) => !i.continuous);
     this.stackEffectConferrals = this.stackEffectConferrals.filter((c) => !c.continuous);
@@ -1700,6 +1714,7 @@ export class ContinuousEffectLedger {
     this.cannotIgnoreDigivolutionFlags = [];
     this.colorGrants = [];
     this.stackTrashLocks = [];
+    this.seatStackTrashLocks = [];
     this.stackCardTrashLocks = [];
     this.securityAttackInversions = [];
     this.stackEffectConferrals = [];
