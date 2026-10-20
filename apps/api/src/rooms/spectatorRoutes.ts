@@ -1,3 +1,4 @@
+import { ROOM_TYPE_MANUAL, ROOM_TYPE_MANUAL_PRIVATE } from "@aegis/shared/protocol/messages";
 import type { Express } from "express";
 import { matchMaker } from "colyseus";
 import { ROOM_TYPE, ROOM_TYPE_UNLIMITED, ROOM_TYPE_BETA, ROOM_TYPE_PRIVATE } from "@aegis/shared";
@@ -11,7 +12,7 @@ import {
 import { sortLiveMatches } from "@aegis/shared/protocol/sortLiveMatches";
 import { roomCodeDirectory, type AegisRoom } from "./AegisRoom.js";
 
-const LIVE_MATCH_ROOM_TYPES = new Set<string>([ROOM_TYPE, ROOM_TYPE_UNLIMITED, ROOM_TYPE_BETA]);
+const LIVE_MATCH_ROOM_TYPES = new Set<string>([ROOM_TYPE, ROOM_TYPE_UNLIMITED, ROOM_TYPE_BETA, ROOM_TYPE_MANUAL]);
 const LIVE_MATCH_CACHE_MILLISECONDS = 5_000;
 const LIVE_MATCH_MAX_OFFSET = 10_000;
 
@@ -77,7 +78,14 @@ export function installSpectatorRoutes(app: Express, { now = Date.now }: { now?:
     const [listing] = roomId ? await matchMaker.query({ roomId }) : [];
     if (
       !listing ||
-      !new Set<string>([ROOM_TYPE, ROOM_TYPE_UNLIMITED, ROOM_TYPE_BETA, ROOM_TYPE_PRIVATE]).has(listing.name)
+      !new Set<string>([
+        ROOM_TYPE,
+        ROOM_TYPE_UNLIMITED,
+        ROOM_TYPE_BETA,
+        ROOM_TYPE_PRIVATE,
+        ROOM_TYPE_MANUAL,
+        ROOM_TYPE_MANUAL_PRIVATE,
+      ]).has(listing.name)
     ) {
       res.status(404).json({ error: "Match is not available to spectators" });
       return;

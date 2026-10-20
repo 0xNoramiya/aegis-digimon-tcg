@@ -109,6 +109,7 @@ export interface ContinuousPrimitives {
    * effect's seat; the controller's OWN effects still trash.
    */
   stackTrashLock?(permanentId: string, duration: EffectDuration): void;
+  seatStackTrashLock?(ownerSeat: Seat, duration: EffectDuration): void;
   /**
    * Protect one specific digivolution-card instance from being trashed by effects, including
    * its controller's effects (BT9-109 X Antibody). Rule-driven moves do not consult this lock.

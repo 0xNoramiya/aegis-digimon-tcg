@@ -1,8 +1,10 @@
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "鍵盤與控制器",
   "settings.arenaInputDesc": "使用方向鍵或控制器移動游標，並顯示每個操作的按鍵。",
   "game.input.controls": "鍵盤與控制器",
@@ -785,6 +787,7 @@ const interfaceMessages = {
   "library.rowColor": "顏色",
   "library.rowType": "類型",
   "library.rowPlayCost": "登場費用",
+  "library.rowUseCost": "使用費用",
   "library.rowDp": "DP",
   "library.rowTraits": "特徵",
   "library.rowRarity": "稀有度",
@@ -1038,6 +1041,7 @@ const interfaceMessages = {
   "game.digiEgg": " · 數碼蛋",
   "game.noCost": "無費用",
   "game.costsMemory": "消耗 {count} 記憶體",
+  "game.useCostsMemory": "使用需消耗 {count} 記憶體",
   "game.digivolve": "進化",
   "game.clickToDigivolve": "點擊發光的數碼寶貝進行進化",
   "game.clickToLink": "點擊發光的數碼寶貝進行連結",
@@ -2384,9 +2388,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "第 {game} 局 · {name} 先攻",
   "overlay.series.joining": "正在開始下一局…",
   "overlay.series.leave": "離開系列賽",
-  "overlay.rematch.offer": "再次對戰 {name} · 三戰兩勝",
+  "overlay.rematch.title": "再次對戰 {name}？",
+  "overlay.rematch.finish": "完成本場三戰兩勝",
+  "overlay.rematch.finishHint": "本局計為第 1 局。",
+  "overlay.rematch.new": "開始新的三戰兩勝",
+  "overlay.rematch.newHint": "雙方從 0–0 開始。",
+  "overlay.rematch.incomingFinish": "{name} 想完成本場三戰兩勝",
+  "overlay.rematch.incomingNew": "{name} 想開始新的三戰兩勝",
   "overlay.rematch.hint": "使用相同卡組。本局敗者選擇先後攻。",
-  "overlay.rematch.incoming": "{name} 想要再戰",
   "overlay.rematch.accept": "接受",
   "overlay.rematch.decline": "拒絕",
   "overlay.rematch.waiting": "正在等待 {name} 回應…",
@@ -2439,4 +2448,8 @@ const interfaceMessages = {
   "releases.reported": "你回報的問題，我們已修正 · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const zhTW: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const zhTW: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+};

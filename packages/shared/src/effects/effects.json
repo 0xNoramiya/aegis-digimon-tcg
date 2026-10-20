@@ -52373,7 +52373,11 @@
             "event": "whenSecurityRemoved",
             "sourceFilter": { "controller": "mine" },
             "actions": [
-              { "kind": "Unsuspend", "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true } }
+              {
+                "kind": "Unsuspend",
+                "optional": true,
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true }
+              }
             ]
           }
         ],

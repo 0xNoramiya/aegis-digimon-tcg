@@ -360,8 +360,33 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
     ) : null;
   return (
     <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-      {cost >= 0 ? (
+      {def.isDualCard ? (
         <span
+          data-card-kind="dual"
+          style={{
+            position: "absolute",
+            top: px(4),
+            left: px(4),
+            height: px(16),
+            padding: `0 ${px(5)}px`,
+            borderRadius: px(4),
+            background: "rgba(11,13,20,0.9)",
+            color: "#fff",
+            border: "1px solid rgba(255,255,255,0.4)",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.45)",
+            fontSize: px(8.5),
+            fontWeight: 800,
+            letterSpacing: "0.1em",
+            lineHeight: 1,
+            display: "grid",
+            placeItems: "center",
+          }}
+        >
+          DUAL
+        </span>
+      ) : cost >= 0 ? (
+        <span
+          data-cost="play"
           style={{
             position: "absolute",
             top: px(4),

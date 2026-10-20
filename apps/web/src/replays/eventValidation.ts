@@ -16,6 +16,7 @@ const result = (value: unknown) =>
 
 type Check = (value: unknown) => boolean;
 const shapes = {
+  manualAction: { seat, action: string },
   matchStarted: { firstSeat: seat },
   phaseChanged: { phase: string, turnSeat: seat, turnCount: number },
   cardPlayed: { seat, cardId: string },

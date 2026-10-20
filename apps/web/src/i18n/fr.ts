@@ -1,8 +1,10 @@
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "Clavier et manette",
   "settings.arenaInputDesc":
     "Déplacez un curseur avec les flèches ou une manette et affichez la touche de chaque action.",
@@ -838,6 +840,7 @@ const interfaceMessages = {
   "library.rowColor": "Couleur",
   "library.rowType": "Type",
   "library.rowPlayCost": "Coût de jeu",
+  "library.rowUseCost": "Coût d'utilisation",
   "library.rowDp": "DP",
   "library.rowTraits": "Traits",
   "library.rowRarity": "Rareté",
@@ -1109,6 +1112,7 @@ const interfaceMessages = {
   "game.digiEgg": " · Digi-Œuf",
   "game.noCost": "sans coût",
   "game.costsMemory": "coûte {count} mémoire",
+  "game.useCostsMemory": "coûte {count} mémoire à l'utilisation",
   "game.digivolve": "Digivolver",
   "game.clickToDigivolve": "cliquez sur un Digimon lumineux pour digivolver",
   "game.clickToLink": "cliquez sur un Digimon lumineux pour le lier",
@@ -2535,9 +2539,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "Partie {game} · {name} commence",
   "overlay.series.joining": "Lancement de la partie suivante…",
   "overlay.series.leave": "Quitter la série",
-  "overlay.rematch.offer": "Rejouer contre {name} · Au meilleur des 3",
+  "overlay.rematch.title": "Rejouer contre {name} ?",
+  "overlay.rematch.finish": "Terminer ce meilleur des 3",
+  "overlay.rematch.finishHint": "Cette partie compte comme la partie 1.",
+  "overlay.rematch.new": "Nouveau meilleur des 3",
+  "overlay.rematch.newHint": "Les deux joueurs repartent à 0–0.",
+  "overlay.rematch.incomingFinish": "{name} veut terminer ce meilleur des 3",
+  "overlay.rematch.incomingNew": "{name} veut lancer un nouveau meilleur des 3",
   "overlay.rematch.hint": "Mêmes decks. Le perdant de cette partie choisit qui commence.",
-  "overlay.rematch.incoming": "{name} veut une revanche",
   "overlay.rematch.accept": "Accepter",
   "overlay.rematch.decline": "Refuser",
   "overlay.rematch.waiting": "En attente de la réponse de {name}…",
@@ -2592,4 +2601,8 @@ const interfaceMessages = {
   "releases.reported": "Vous l'avez signalé, nous l'avons corrigé · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const fr: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const fr: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+};

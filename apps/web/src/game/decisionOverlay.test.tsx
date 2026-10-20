@@ -400,6 +400,26 @@ function renderDecision(request: DecisionRequest = optionalDecision) {
   return { ...result, onRespond };
 }
 
+it.each([true, false])("offers Ascension on the left without card selection and accepts: %s", (accept) => {
+  const { onRespond } = renderDecision({
+    decisionId: "ascension-activation",
+    seat: 0,
+    kind: "optional",
+    sourceCardId: "BT25-040",
+    promptText: "Activate ＜Ascension＞?",
+    options: {
+      timing: "Ascension",
+      effectText: "＜Ascension＞: When this card is deleted, you may place it at the top of your security stack.",
+    },
+  });
+  expect(screen.getByRole("dialog").getAttribute("data-prompt-surface")).toBe("left");
+  expect(screen.queryByRole("checkbox")).toBeNull();
+  expect(screen.getByRole("button", { name: "Yes, activate" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "No, decline" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: accept ? "Yes, activate" : "No, decline" }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept });
+});
+
 it("shows Genshi's activating effect instead of its Use Requirement", () => {
   renderDecision({
     decisionId: "genshi-main",

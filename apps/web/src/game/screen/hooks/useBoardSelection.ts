@@ -6,6 +6,7 @@
    attacker the server has taken the attack away from is dropped, because the board would
    otherwise keep a highlight on a card that can no longer declare. */
 
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { useCallback, useEffect, useState } from "react";
 import type { GameState, Seat } from "@aegis/shared";
 import { canAttackWith, canVortexAttackWith } from "../../boardModel";
@@ -51,12 +52,18 @@ export function useBoardSelection({ state, viewerSeat }: { state: GameState | un
   );
   const selectedAttackAvailable =
     !!selectedAttacker && (vortexMode ? canVortexAttackWith(selectedAttacker) : canAttackWith(selectedAttacker));
+  const manual = state?.gameMode === GameMode.MANUAL.value;
+  const manualSelectionExists =
+    !!state?.players[viewerSeat] &&
+    (state.players[viewerSeat].battleArea.some((permanent) => permanent.permanentId === selPerm) ||
+      state.players[viewerSeat].breeding?.permanentId === selPerm);
   useEffect(() => {
+    if (manual && manualSelectionExists) return;
     if (selPerm && !selectedAttackAvailable) {
       setSelPerm(null);
       setVortexMode(false);
     }
-  }, [selPerm, selectedAttackAvailable]);
+  }, [selPerm, selectedAttackAvailable, manual, manualSelectionExists]);
 
   return {
     handSel,

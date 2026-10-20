@@ -1,3 +1,4 @@
+import { manualPtBR } from "@/i18n/manual.pt-BR";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerPtBR } from "@/i18n/providers.pt-BR";
 import { replayVideoPtBR } from "./replayVideo";
@@ -23,6 +24,7 @@ import { settingsPtBR } from "./redesign/settings.pt-BR";
 import { shellPtBR } from "./redesign/shell.pt-BR";
 
 export const ptBR: Record<keyof typeof en, string> = {
+  ...manualPtBR,
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Excluir este Digimon",
   "overlay.trashTopSecurityCard": "Descartar a carta do topo da sua segurança",
@@ -630,6 +632,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "library.rowColor": "Cor",
   "library.rowType": "Tipo",
   "library.rowPlayCost": "Custo de jogo",
+  "library.rowUseCost": "Custo de uso",
   "library.rowDp": "DP",
   "library.rowTraits": "Traços",
   "library.rowRarity": "Raridade",
@@ -891,6 +894,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.digiEgg": " · Digi-Egg",
   "game.noCost": "sem custo",
   "game.costsMemory": "custa {count} de memória",
+  "game.useCostsMemory": "custa {count} de memória para usar",
   "game.digivolve": "Digievoluir",
   "game.clickToDigivolve": "clique em um Digimon destacado para digievoluir",
   "game.clickToLink": "clique em um Digimon destacado para vincular",

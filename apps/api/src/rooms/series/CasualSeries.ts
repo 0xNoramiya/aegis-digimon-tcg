@@ -95,9 +95,9 @@ export class CasualSeries {
     return record;
   }
 
-  static rematch(port: SeriesRoomPort, settings: SeriesSettings, chooser: Seat): CasualSeries {
-    const series = new CasualSeries(port, undefined, randomUUID(), settings, []);
-    port.state.series.gameNumber = 0;
+  static rematch(port: SeriesRoomPort, settings: SeriesSettings, chooser: Seat, results: GameResult[]): CasualSeries {
+    const series = new CasualSeries(port, undefined, randomUUID(), settings, results);
+    port.state.series.gameNumber = results.length;
     series.beginChoosing(chooser);
     return series;
   }

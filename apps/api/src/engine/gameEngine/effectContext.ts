@@ -600,7 +600,7 @@ export async function engineConsultLeavePrevention(
   }
   const averted =
     opts?.isBounce === true || opts?.insteadOnly === true || permanentIds.every((id) => prevented.has(id));
-  if (averted && opts?.isDigiXros !== true && opts?.holdTriggered !== true)
+  if (averted && opts?.isDigiXros !== true && opts?.holdTriggered !== true && !engine.ruleProcessing)
     await runPendingTimingWindow(engine, takeLeaveReplacementPending(engine));
   return prevented;
 }

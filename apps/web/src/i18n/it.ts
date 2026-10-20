@@ -1,3 +1,4 @@
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { replayVideoIt } from "./replayVideo";
@@ -7,6 +8,7 @@ import { en } from "./en";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "Tastiera e controller",
   "settings.arenaInputDesc": "Muovi un cursore con le frecce o un controller e mostra il tasto di ogni azione.",
   "game.input.controls": "Tastiera e controller",
@@ -705,6 +707,7 @@ const interfaceMessages = {
   "library.rowColor": "Colore",
   "library.rowType": "Tipo",
   "library.rowPlayCost": "Costo di gioco",
+  "library.rowUseCost": "Costo d'uso",
   "library.rowDp": "DP",
   "library.rowTraits": "Tratti",
   "library.rowRarity": "Rarità",
@@ -970,6 +973,7 @@ const interfaceMessages = {
   "game.digiEgg": " · Digi-Egg",
   "game.noCost": "nessun costo",
   "game.costsMemory": "costa {count} memoria",
+  "game.useCostsMemory": "costa {count} memoria per l'uso",
   "game.digivolve": "Digievolvi",
   "game.clickToDigivolve": "clicca su un Digimon illuminato per digievolvere",
   "game.clickToLink": "clicca su un Digimon illuminato per collegare",
@@ -2295,9 +2299,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "Partita {game} · Comincia {name}",
   "overlay.series.joining": "Avvio della prossima partita…",
   "overlay.series.leave": "Lascia la serie",
-  "overlay.rematch.offer": "Gioca ancora contro {name} · Al meglio di 3",
+  "overlay.rematch.title": "Giocare ancora contro {name}?",
+  "overlay.rematch.finish": "Concludi questo al meglio di 3",
+  "overlay.rematch.finishHint": "Questa partita conta come partita 1.",
+  "overlay.rematch.new": "Nuovo al meglio di 3",
+  "overlay.rematch.newHint": "Entrambi i giocatori partono da 0–0.",
+  "overlay.rematch.incomingFinish": "{name} vuole concludere questo al meglio di 3",
+  "overlay.rematch.incomingNew": "{name} vuole iniziare un nuovo al meglio di 3",
   "overlay.rematch.hint": "Stessi mazzi. Chi ha perso questa partita sceglie chi inizia.",
-  "overlay.rematch.incoming": "{name} vuole la rivincita",
   "overlay.rematch.accept": "Accetta",
   "overlay.rematch.decline": "Rifiuta",
   "overlay.rematch.waiting": "In attesa della risposta di {name}…",
@@ -2314,6 +2323,7 @@ const interfaceMessages = {
 } satisfies Record<Exclude<keyof typeof en, `releases.${string}`>, string>;
 
 export const it: Record<keyof typeof en, string> = {
+  ...manualEn,
   ...en,
   ...interfaceMessages,
 };

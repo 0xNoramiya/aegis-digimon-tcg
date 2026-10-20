@@ -12,6 +12,7 @@ import { armedAsPendingCollected, runSubTriggersInChosenOrder, subTriggerStillAc
 import type { GameEngine } from "../GameEngine.js";
 import { collectNestedTimingEffects, takeLeaveReplacementPending, withTriggeredMutations } from "./windows.js";
 import { cardSourceOf } from "./effectContext.js";
+import { runPendingTimingWindow } from "./timing/fire.js";
 
 /**
  * Defensive pass cap for the rule fixpoint, mirroring the resolver's
@@ -204,13 +205,17 @@ export function collectDeletionPending(engine: GameEngine, pool: readonly Pooled
             }
             const response = await engine.decisions.request({
               seat,
-              kind: "selectCards",
-              promptText: "＜Ascension＞: place this card at the top of your security stack?",
+              kind: "optional",
+              promptText: "Activate ＜Ascension＞?",
               sourceCardId: card.cardId,
               sourceInstanceId: instanceId,
-              options: { candidateInstanceIds: [instanceId], min: 0, max: 1 },
+              options: {
+                timing: "Ascension",
+                effectText:
+                  "＜Ascension＞: When this card is deleted, you may place it at the top of your security stack.",
+              },
             });
-            if (response.kind === "selectCards" && response.instanceIds.includes(instanceId)) {
+            if (response.kind === "optional" && response.accept) {
               await engine.primitives.ascendToSecurity(instanceId);
             }
           },
@@ -311,7 +316,8 @@ export async function runRuleProcessFixpoint(engine: GameEngine): Promise<void> 
  */
 export async function flushRuleTriggerPool(engine: GameEngine, pool: readonly PooledRuleDeletion[]): Promise<void> {
   const watcherEvents = engine.deferredRuleSubTriggers.splice(0);
-  if (pool.length === 0 && watcherEvents.length === 0) return;
+  const replacementPending = takeLeaveReplacementPending(engine);
+  if (pool.length === 0 && watcherEvents.length === 0 && replacementPending.length === 0) return;
   const armed = watcherEvents.flatMap(({ armed: eventArmed }) => eventArmed);
   const enclosing = engine.pendingWindowSubTriggers;
   engine.pendingWindowSubTriggers = [...enclosing, ...armed];
@@ -319,10 +325,21 @@ export async function flushRuleTriggerPool(engine: GameEngine, pool: readonly Po
   // and the trailing bus fire does not run it twice.
   engine.subTriggerWindowDepth += 1;
   try {
-    if (pool.length === 0) {
+    if (pool.length === 0 && replacementPending.length === 0) {
       // No deletion window to fold them into, but they are still one simultaneous group and
       // must be ordered turn-player-first rather than drained in arrival order (§15-4-3-5).
       await withTriggeredMutations(engine, () => runSubTriggersInChosenOrder(engine, armed));
+    } else if (pool.length === 0) {
+      await runPendingTimingWindow(engine, [
+        ...ruleWatchersAsPending(engine, uniqueOncePerTurnWatcherOccurrences(armed)),
+        ...replacementPending,
+      ]);
+      await withTriggeredMutations(engine, () =>
+        runSubTriggersInChosenOrder(
+          engine,
+          armed.filter((item) => !engine.consumedSubTriggerKeys.has(subTriggerIdentity(item.sub, item.ctx.trigger))),
+        ),
+      );
     } else {
       const merged = mergeRuleDeletions(pool);
       const nestedWindowWatchers =
@@ -337,6 +354,7 @@ export async function flushRuleTriggerPool(engine: GameEngine, pool: readonly Po
           runTimingWindow(engine, EffectTiming.OnDestroyedAnyone, deletionTrigger, merged.transientCandidates, [
             ...simultaneousPending,
             ...nestedWindowWatchers,
+            ...replacementPending,
           ]),
         merged.transientCandidates,
         false,

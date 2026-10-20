@@ -25081,7 +25081,7 @@
     "attributes": ["Virus"],
     "types": ["Magic Warrior", "Witchelny"],
     "effectText": "＜Barrier＞ \n[On Play] [When Digivolving] By trashing the top card of your security stack, change the original DP of 1 Digimon to 6000 until the end of your opponent's turn.",
-    "inheritedEffectText": "[All Turns] [Once Per Turn] When a card is removed from your security stack, unsuspend this Digimon.",
+    "inheritedEffectText": "[All Turns] [Once Per Turn] When a card is removed from your security stack, you may unsuspend this Digimon.",
     "rarity": "U",
     "maxCountInDeck": 4,
     "imageId": "BT18-039"

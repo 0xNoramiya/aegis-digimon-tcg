@@ -1,3 +1,4 @@
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { replayVideoEn } from "./replayVideo";
@@ -21,6 +22,7 @@ import { shellEn } from "./redesign/shell.en";
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  ...manualEn,
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": "Trash your top security card",
@@ -626,6 +628,7 @@ export const en = {
   "library.rowColor": "Color",
   "library.rowType": "Type",
   "library.rowPlayCost": "Play cost",
+  "library.rowUseCost": "Use cost",
   "library.rowDp": "DP",
   "library.rowTraits": "Traits",
   "library.rowRarity": "Rarity",
@@ -888,6 +891,7 @@ export const en = {
   "game.digiEgg": " · Digi-Egg",
   "game.noCost": "no cost",
   "game.costsMemory": "costs {count} memory",
+  "game.useCostsMemory": "costs {count} memory to use",
   "game.digivolve": "Digivolve",
   "game.clickToDigivolve": "click a glowing Digimon to digivolve",
   "game.clickToLink": "click a glowing Digimon to link",

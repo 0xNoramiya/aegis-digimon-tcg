@@ -1,8 +1,10 @@
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "키보드 및 컨트롤러",
   "settings.arenaInputDesc": "방향키나 컨트롤러로 커서를 움직이고 각 동작의 버튼을 표시합니다.",
   "game.input.controls": "키보드 및 컨트롤러",
@@ -817,6 +819,7 @@ const interfaceMessages = {
   "library.rowColor": "색상",
   "library.rowType": "종류",
   "library.rowPlayCost": "등장 코스트",
+  "library.rowUseCost": "사용 코스트",
   "library.rowDp": "DP",
   "library.rowTraits": "특징",
   "library.rowRarity": "레어리티",
@@ -1076,6 +1079,7 @@ const interfaceMessages = {
   "game.digiEgg": " · 디지타마",
   "game.noCost": "코스트 없음",
   "game.costsMemory": "메모리 {count} 소비",
+  "game.useCostsMemory": "사용 시 메모리 {count} 소비",
   "game.digivolve": "진화",
   "game.clickToDigivolve": "빛나는 디지몬을 클릭해 진화",
   "game.clickToLink": "빛나는 디지몬을 클릭해 링크",
@@ -2447,9 +2451,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "{game}게임 · {name} 선공",
   "overlay.series.joining": "다음 게임 시작 중…",
   "overlay.series.leave": "시리즈 나가기",
-  "overlay.rematch.offer": "{name}와 다시 대전 · 3판 2선승",
+  "overlay.rematch.title": "{name}와 다시 대전할까요?",
+  "overlay.rematch.finish": "이 3판 2선승 이어가기",
+  "overlay.rematch.finishHint": "이번 게임을 1게임으로 계산합니다.",
+  "overlay.rematch.new": "새 3판 2선승 시작",
+  "overlay.rematch.newHint": "두 플레이어 모두 0–0에서 시작합니다.",
+  "overlay.rematch.incomingFinish": "{name}님이 이 3판 2선승을 이어가길 원합니다",
+  "overlay.rematch.incomingNew": "{name}님이 새 3판 2선승을 원합니다",
   "overlay.rematch.hint": "같은 덱을 사용합니다. 이번 게임의 패자가 선공을 정합니다.",
-  "overlay.rematch.incoming": "{name}님이 재대결을 원합니다",
   "overlay.rematch.accept": "수락",
   "overlay.rematch.decline": "거절",
   "overlay.rematch.waiting": "{name}님의 응답을 기다리는 중…",
@@ -2503,4 +2512,9 @@ const interfaceMessages = {
   "releases.reported": "신고해 주신 문제를 수정했습니다 · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const ko: Record<keyof typeof en, string> = { ...en, ...interfaceMessages, "digilab.eggs": "디지타마" };
+export const ko: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+  "digilab.eggs": "디지타마",
+};

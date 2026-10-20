@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { RematchMode } from "@aegis/shared/protocol/RematchMode";
 import { RematchStatus } from "@aegis/shared/protocol/RematchStatus";
 import { SeriesState } from "@aegis/shared/schema/GameState";
 import { getRematchView } from "@/game/getRematchView";
@@ -10,6 +11,16 @@ function buildSeries(fields: Partial<SeriesState>): SeriesState {
 describe("getRematchView", () => {
   it("shows nothing where a rematch is not offered", () => {
     expect(getRematchView({ series: buildSeries({}), viewerSeat: 0 })).toBeUndefined();
+  });
+
+  it("reports which series the offer starts", () => {
+    const finish = buildSeries({
+      rematchStatus: RematchStatus.OFFERED.value,
+      rematchMode: RematchMode.FINISH_SERIES.value,
+    });
+    expect(getRematchView({ series: finish, viewerSeat: 0 })?.mode).toBe(RematchMode.FINISH_SERIES.value);
+    const unset = buildSeries({ rematchStatus: RematchStatus.OPEN.value });
+    expect(getRematchView({ series: unset, viewerSeat: 0 })?.mode).toBe(RematchMode.NEW_SERIES.value);
   });
 
   it("tells the offering seat from the answering seat", () => {
@@ -39,6 +50,10 @@ describe("getRematchView", () => {
       phase: "over",
       endReason: "forfeit",
     });
-    expect(getRematchView({ series, viewerSeat: 0 })).toEqual({ stage: "closed", series: undefined });
+    expect(getRematchView({ series, viewerSeat: 0 })).toEqual({
+      stage: "closed",
+      mode: RematchMode.NEW_SERIES.value,
+      series: undefined,
+    });
   });
 });

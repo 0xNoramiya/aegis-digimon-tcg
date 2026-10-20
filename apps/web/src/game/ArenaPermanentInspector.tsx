@@ -44,6 +44,7 @@ export function ArenaPermanentInspector({
   inspection,
   fate,
   actions,
+  children,
   zoomed = false,
   onZoom,
   onClose,
@@ -52,6 +53,7 @@ export function ArenaPermanentInspector({
   inspection: ArenaInspectionOptions;
   fate?: PendingFateBadge;
   actions?: ReactNode;
+  children?: ReactNode;
   zoomed?: boolean;
   onZoom: (cardId: string, artId?: string) => void;
   onClose: () => void;
@@ -216,6 +218,7 @@ export function ArenaPermanentInspector({
             aria-label={t("overlay.printedEffect")}
             tabIndex={0}
           >
+            {children}
             <details
               key={`${detail.cardId}:${detail.printedOnly}`}
               className="arena-permanent-inspector__details"
@@ -241,7 +244,9 @@ export function ArenaPermanentInspector({
                 </p>
               ) : null}{" "}
               <div className="arena-permanent-inspector__stats">
-                {top && top.playCost >= 0 ? <span>{t("game.costsMemory", { count: top.playCost })}</span> : null}
+                {top && top.playCost >= 0 ? (
+                  <span>{t(top.isDualCard ? "game.useCostsMemory" : "game.costsMemory", { count: top.playCost })}</span>
+                ) : null}
                 {groupedInspectorEvolutionCosts(top?.evoCosts ?? []).map((cost) => {
                   const colorsByLabel = new Map(cost.colors.map((color) => [t(`game.color.${color}`), color]));
                   return (

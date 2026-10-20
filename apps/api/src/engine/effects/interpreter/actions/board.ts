@@ -458,6 +458,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
           event: "onEnterFieldAnyone",
           activationContext: ctx,
           once: false,
+          appliesOnEntry: true,
           ...(expiresOnTurnEndOf === undefined ? {} : { expiresOnTurnEndOf }),
           description: `GainKeyword later entrant from ${ctx.source.cardId}`,
           printedClause: laterEntrantGrantClause(ctx.activeEffectText, ctx.source.definition),

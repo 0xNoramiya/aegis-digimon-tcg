@@ -221,7 +221,7 @@ function collectDeferredSecurityRemovalPending(engine: GameEngine): CollectedEff
 
 /** Stage one completed body's deferred reactions alongside its other derived effects. */
 export function collectDeferredTimingPending(engine: GameEngine): CollectedEffect[] {
-  if (engine.effectResolutionDepth > 0 || engine.optionResolutionDepth > 0) return [];
+  if (engine.effectResolutionDepth > 0 || engine.optionMainDepth > 0) return [];
   const deferred = engine.deferredTimingWindows.splice(0);
   const deletions = deferred.filter((entry) => entry.timing === EffectTiming.OnDestroyedAnyone);
   const pending = collectDeletionPending(
