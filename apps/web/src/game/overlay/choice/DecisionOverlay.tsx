@@ -127,11 +127,16 @@ export function DecisionOverlay({
     isSelect &&
     candidates.length === 1 &&
     abstractTargetLabel({ instanceId: candidates[0]!.instanceId, t }) !== undefined;
-  const partitionCandidate = request.options?.candidateInstanceIds?.[0];
+  const activationCandidate = request.options?.candidateInstanceIds?.[0];
   const isPartitionActivation =
     request.kind === "selectCards" &&
     request.options?.selectionContext === "partitionActivation" &&
-    partitionCandidate !== undefined;
+    activationCandidate !== undefined;
+  const isMaterialSaveActivation =
+    request.kind === "selectCards" &&
+    request.options?.selectionContext === "materialSaveActivation" &&
+    activationCandidate !== undefined;
+  const isKeywordActivation = isPartitionActivation || isMaterialSaveActivation;
   const isOrderCards = request.kind === "orderCards";
   const isOrderTriggers = request.kind === "orderTriggers";
   const isResolutionPlan = isOrderTriggers && request.options?.acceptsResolutionPlan === true;
@@ -249,7 +254,7 @@ export function DecisionOverlay({
           request.options?.effectTextPart ? sourceEffectText : undefined,
         );
   const promptText =
-    isOptional || (isChoose && declineIndex !== undefined)
+    isOptional || isMaterialSaveActivation || (isChoose && declineIndex !== undefined)
       ? t("overlay.useEffectPrompt")
       : request.options?.selectionContext === "attackTarget"
         ? t("overlay.declareAttack")
@@ -399,7 +404,7 @@ export function DecisionOverlay({
             {draggableActivation ? <PromptMoveHandle drag={drag} className="decision-overlay__move-handle" /> : null}
           </div>
 
-          {isPartitionActivation ? (
+          {isKeywordActivation ? (
             <DecisionChoiceCards candidates={candidates} wideDialog={wideDialog} />
           ) : isSelect ? (
             <DecisionCandidateGrid
@@ -466,11 +471,11 @@ export function DecisionOverlay({
             <DecisionOptionalFooter onRespond={onRespond} onOpenBoard={() => setIsViewingBoard(true)} />
           ) : null}
 
-          {isPartitionActivation ? (
+          {isKeywordActivation ? (
             <DecisionOptionalFooter
               onRespond={(response) => {
                 if (response.kind !== "optional") return;
-                onRespond({ kind: "selectCards", instanceIds: response.accept ? [partitionCandidate] : [] });
+                onRespond({ kind: "selectCards", instanceIds: response.accept ? [activationCandidate] : [] });
               }}
               onOpenBoard={() => setIsViewingBoard(true)}
             />

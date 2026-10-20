@@ -158,12 +158,24 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
       .battleAreaPermanents(perm.controllerSeat)
       .filter((p) => p.topCard !== undefined && requireCardDefinition(p.topCard.cardId).kinds.includes(CardKind.Tamer));
     if (tamers.length === 0) return false;
+    const source = {
+      sourceCardId: perm.topCard.cardId,
+      sourceInstanceId: perm.topCard.instanceId,
+      sourcePermanentId: permanentId,
+      timing: "MaterialSave",
+      effectText: `＜Material Save ${n}＞: When this Digimon would be deleted, you may place up to ${n} of its specified digivolution cards under one of your Tamers.`,
+    };
     const accept = await engine.ask.selectInstances(
       perm.controllerSeat,
       [eligible[0]!.instanceId],
       0,
       1,
       `＜Material Save ${n}＞: place up to ${n} of this Digimon's specified digivolution cards under 1 of your Tamers?`,
+      {
+        ...source,
+        selectionContext: "materialSaveActivation",
+        visibleInstanceIds: eligible.map((card) => card.instanceId),
+      },
     );
     if (accept.length === 0) return false;
     let tamerId = tamers[0]!.permanentId;
@@ -174,6 +186,7 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
         1,
         1,
         "＜Material Save＞: place the cards under which Tamer?",
+        source,
       );
       const found = tamers.find((t) => t.topCard?.instanceId === chosenTamer[0]);
       if (found !== undefined) tamerId = found.permanentId;
@@ -190,6 +203,7 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
       requiredCount,
       requiredCount,
       `＜Material Save ${n}＞: choose ${requiredCount} specified digivolution card${requiredCount === 1 ? "" : "s"} to place under the Tamer, in order.`,
+      source,
     );
     const eligibleIds = new Set(eligible.map((card) => card.instanceId));
     if (
