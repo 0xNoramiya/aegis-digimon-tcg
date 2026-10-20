@@ -121,7 +121,9 @@ export function HandCardPreview({
             <div className="card-action-sheet__stats">
               {card?.level ? <span>Lv.{card.level}</span> : null}
               <span>
-                {card && card.playCost >= 0 ? t("game.costsMemory", { count: card.playCost }) : t("game.noCost")}
+                {card && card.playCost >= 0
+                  ? t(card.isDualCard ? "game.useCostsMemory" : "game.costsMemory", { count: card.playCost })
+                  : t("game.noCost")}
               </span>
               {card?.dp ? <span>{card.dp.toLocaleString()} DP</span> : null}
             </div>
