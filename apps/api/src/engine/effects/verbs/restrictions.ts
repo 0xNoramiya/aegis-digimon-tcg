@@ -176,6 +176,10 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
     continuous.addStackTrashLock(permanentId, durationForTarget(permanentId, duration), continuousOpt());
   };
 
+  const seatStackTrashLock = (ownerSeat: Seat, duration: EffectDuration): void => {
+    continuous.addSeatStackTrashLock(ownerSeat, duration, continuousOpt());
+  };
+
   const stackCardTrashLock = (instanceId: string, ownerSeat: Seat, duration: EffectDuration): void => {
     continuous.addStackCardTrashLock(instanceId, ownerSeat, duration, continuousOpt());
   };
@@ -298,6 +302,7 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
     restrictDigivolveInto,
     minDpFloor,
     stackTrashLock,
+    seatStackTrashLock,
     stackCardTrashLock,
     securityAttackInvert,
     delayedDeletePlayed,

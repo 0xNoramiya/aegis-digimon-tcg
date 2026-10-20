@@ -83,6 +83,15 @@ export function createFixtureBotPolicy(script: ScenarioOpponent | undefined): Bo
           if (request.options?.candidateInstanceIds?.includes(target))
             return { type: "respondDecision", decisionId, response: { kind: "chooseTargets", instanceIds: [target] } };
         }
+        if (rule.kind === "selectCards" && rule.target) {
+          const instanceId = fixtureInstanceId(rule.target);
+          if (request.options?.candidateInstanceIds?.includes(instanceId))
+            return {
+              type: "respondDecision",
+              decisionId,
+              response: { kind: "selectCards", instanceIds: [instanceId] },
+            };
+        }
         if (rule.kind === "chooseOption") {
           const optionIndex = (request.options?.choices ?? []).findIndex((choice) =>
             rule.choice

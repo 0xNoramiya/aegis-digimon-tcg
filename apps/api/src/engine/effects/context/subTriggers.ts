@@ -89,6 +89,7 @@ export interface SubTriggerInstall {
    * (KB Q5564/Q5566/Q5568). See `SubTriggerSubscription.orderedByTurnPlayer`.
    */
   orderedByTurnPlayer?: boolean;
+  appliesOnEntry?: boolean;
   /** Stable action identity used to avoid duplicate installs while preserving distinct clauses. */
   dedupeKey?: string;
   /** Printed placement class retained so a pending watcher passes the same kernel guard. */

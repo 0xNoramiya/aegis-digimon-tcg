@@ -220,9 +220,11 @@ export async function fireEnteredByEffectTiming(
 export function materializePlayerCustomEffects(engine: GameEngine, permanent: Permanent | undefined): void {
   const top = permanent?.topCard;
   if (permanent === undefined || top === undefined) return;
-  for (const grant of engine.continuous.playerCustomEffectsFor(permanent.permanentId, permanent.controllerSeat)) {
+  const permanentId = permanent.permanentId;
+  for (const grant of engine.continuous.playerCustomEffectsOf(permanent.controllerSeat)) {
     engine.continuous.addCustomEffectGrant(top.instanceId, top.ownerSeat, grant.token, grant.duration, {
       activationIdentity: grant.activationIdentity,
+      isActive: () => grant.matches(permanentId),
     });
   }
 }
