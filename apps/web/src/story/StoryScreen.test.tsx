@@ -33,6 +33,10 @@ it("starts with an illustrated campaign library and hides campaigns with a singl
   expect(screen.queryByText(/DigiLab/)).toBeNull();
   expect(screen.queryByText("Adaptation")).toBeNull();
   expect(screen.queryByText("In preparation")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Explore campaign · Digimon V-Tamer 01 (manga)" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Filmes e especiais" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Explore campaign · Our War Game" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Explore campaign · Digimon Adventure tri." })).toBeNull();
   expect(screen.queryByRole("button", { name: "Explore campaign · Digimon Next (manga)" })).toBeNull();
 });
 
