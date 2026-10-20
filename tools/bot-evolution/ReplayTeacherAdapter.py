@@ -2,6 +2,7 @@ import hashlib
 import json
 from typing import Any
 
+from has_replicated_preference import has_replicated_preference
 from panel_adapter import PanelAdapter, PanelConfig
 from panel_program import assemble_program, program_settings, split_program
 
@@ -58,7 +59,10 @@ class ReplayTeacherAdapter(PanelAdapter):
                         {
                             "id": "alignment",
                             "program": program,
-                            "teacherAlignment": {"baseline": self.baseline, "cases": self.cases},
+                            "teacherAlignment": {
+                                "baseline": self.baseline,
+                                "cases": self._alignment_cases(),
+                            },
                         }
                     ]
                 )[0]
@@ -71,7 +75,7 @@ class ReplayTeacherAdapter(PanelAdapter):
                 batch,
                 {
                     "main_rules": "invalid",
-                    "other_rules": "No preferred alternative became the unique best strategic choice",
+                    "other_rules": "No replicated preference became the unique best strategic choice",
                 },
                 capture_traces,
             )
@@ -115,6 +119,15 @@ class ReplayTeacherAdapter(PanelAdapter):
         temporary.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
         temporary.replace(destination)
         return evaluated
+
+    def _alignment_cases(self) -> list[dict[str, Any]]:
+        return [
+            {
+                **case,
+                "result": {**case["result"], "preferred": has_replicated_preference(case)},
+            }
+            for case in self.cases
+        ]
 
     def _job(self, program: dict[str, Any], game: dict[str, Any]) -> dict[str, Any]:
         job = super()._job(program, game)
@@ -199,6 +212,8 @@ class ReplayTeacherAdapter(PanelAdapter):
                             "alternative",
                             "preferred",
                             "preference",
+                            "replicated",
+                            "replication",
                             "difference",
                             "approximate95",
                             "policyMeans",
@@ -216,7 +231,8 @@ class ReplayTeacherAdapter(PanelAdapter):
                     " Preserve all baseline rules. Return only a JSON object with rules containing at most eight NEW main-phase rules. "
                     "All teacher cases appear once in the first record, including negative, inconclusive and invalid comparisons. "
                     "Use every legal competing action, not just the teacher pair. "
-                    "A proposal must make at least one preferred alternative the unique best strategic choice before games run; identical hand Tamer copies are equivalent, other action ties fail. "
+                    "A proposal must make at least one replicated preference the unique best strategic choice before games run; identical hand Tamer copies are equivalent, other action ties fail. "
+                    "Only cases with replicated true carry a preference; preferred alone is an unreplicated 32-sample screen and is usually noise. "
                     "Teacher cases are exploratory advice, not human ground truth or fitness. "
                     "Do not infer hidden card identities or claim certified improvements from them."
                 )

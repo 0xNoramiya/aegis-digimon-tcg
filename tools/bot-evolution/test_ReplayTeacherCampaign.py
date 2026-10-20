@@ -6,7 +6,7 @@ import pytest
 
 from PanelCheckpoint import PanelCheckpoint
 from prepare_replay_teacher_splits import _composition
-from ReplayTeacherCampaign import ReplayTeacherCampaign
+from ReplayTeacherCampaign import REPLICATION_PAIRS, ReplayTeacherCampaign
 from test_panel_adapter import START
 
 
@@ -33,7 +33,7 @@ def test_resumes_confirmation_without_reopening_expired_completed_stages(tmp_pat
         identity={}, fingerprint="frozen", pool=SimpleNamespace(cancel=lambda: None)
     )
     campaign._finish_stage("inspection", [])
-    campaign._finish_stage("teacher", [{"result": {"preference": 1}}])
+    campaign._finish_stage("teacher", [{"result": {"preference": 1, "replicated": True}}])
     campaign._finish_stage("selection", {"candidate": START})
     pair = {"matchId": "new", "decks": [{"mainDeck": [], "eggDeck": []}] * 2, "composition": "pair"}
     monkeypatch.setattr(
@@ -228,3 +228,103 @@ def test_refinement_rejects_changed_boundaries_with_identical_flattened_rows(ref
     with pytest.raises(ValueError, match="split sizes changed"):
         campaign.run_refinement(parent)
     assert calls == []
+
+
+def _teacher_campaign(tmp_path, alternative_rewards, seconds=100000):
+    campaign = object.__new__(ReplayTeacherCampaign)
+    campaign.directory = tmp_path
+    campaign.baseline = START
+    campaign.alternate = {**START, "title": "alternate"}
+    campaign.budget = SimpleNamespace(get_deadline=lambda *_args: time.time() + seconds)
+    runs = []
+
+    def run(jobs, directory):
+        runs.append((jobs, directory))
+        if "replayTeacher" in jobs[0]:
+            return [{"valid": True, "search": {"completed": 32}, "baseline": 0, "alternative": 1}]
+        reward = alternative_rewards[directory.name]
+        return [
+            {
+                "id": job["id"],
+                "valid": True,
+                "reward": reward(job) if "alternative" in job["id"] else 0,
+            }
+            for job in jobs
+        ]
+
+    campaign.batch = SimpleNamespace(run=run)
+    position = {
+        "priority": 0,
+        "margin": 0,
+        "hash": "h",
+        "inputIndex": 3,
+        "seat": 0,
+        "information": {},
+    }
+    fitness = [{"matchId": "m", "record": {}, "positions": [position]}]
+    return campaign, fitness, runs
+
+
+def _alternating(job):
+    return float(int(job["id"].split("|")[0]) % 2 == 0) * 2 - 1
+
+
+def test_screen_preference_becomes_a_preference_only_after_replication(tmp_path):
+    campaign, fitness, runs = _teacher_campaign(
+        tmp_path, {"comparison": lambda _job: 1.0, "replication": lambda _job: 1.0}
+    )
+    result = campaign._collect_cases(fitness)[0]["result"]
+    assert result["preferred"] is True
+    assert result["replicated"] is True
+    assert result["replication"]["validPairs"] == REPLICATION_PAIRS
+    assert result["preference"] == 1
+    replication, directory = runs[-1]
+    assert directory == tmp_path / "teacher/0/replication"
+    assert len(replication) == 2 * REPLICATION_PAIRS
+    screen_seeds = {job["replayContinuation"]["sampleSeed"] for job in runs[1][0]}
+    replication_seeds = {job["replayContinuation"]["sampleSeed"] for job in replication}
+    assert not screen_seeds & replication_seeds
+    programs = [job["program"]["title"] for job in replication if job["id"].endswith("|baseline")]
+    assert programs.count("alternate") == REPLICATION_PAIRS // 2
+
+
+def test_failed_replication_keeps_the_screen_but_no_preference(tmp_path):
+    campaign, fitness, _runs = _teacher_campaign(
+        tmp_path, {"comparison": lambda _job: 1.0, "replication": _alternating}
+    )
+    result = campaign._collect_cases(fitness)[0]["result"]
+    assert result["preferred"] is True
+    assert result["replicated"] is False
+    assert result["preference"] is None
+    assert "Lower 95% bound" in result["replication"]["reason"]
+
+
+def test_unpreferred_screen_skips_replication(tmp_path):
+    campaign, fitness, runs = _teacher_campaign(tmp_path, {"comparison": lambda _job: 0.0})
+    result = campaign._collect_cases(fitness)[0]["result"]
+    assert result["preferred"] is False
+    assert result["replication"] is None
+    assert result["preference"] is None
+    assert len(runs) == 2
+
+
+def test_replication_is_skipped_without_enough_teacher_budget(tmp_path):
+    campaign, fitness, runs = _teacher_campaign(
+        tmp_path, {"comparison": lambda _job: 1.0}, seconds=2000
+    )
+    result = campaign._collect_cases(fitness)[0]["result"]
+    assert result["preferred"] is True
+    assert result["replicated"] is False
+    assert result["preference"] is None
+    assert "budget" in result["replication"]["reason"]
+    assert len(runs) == 2
+
+
+def test_unreplicated_screen_preferences_do_not_start_development(tmp_path):
+    campaign = object.__new__(ReplayTeacherCampaign)
+    campaign.directory = tmp_path
+    campaign.batch = SimpleNamespace(fingerprint="frozen")
+    cases = [{"result": {"preferred": True, "preference": 1}}]
+    report = campaign._run_development({}, cases)
+    assert report["status"] == "inconclusive"
+    assert report["reason"] == "No replicated teacher preference"

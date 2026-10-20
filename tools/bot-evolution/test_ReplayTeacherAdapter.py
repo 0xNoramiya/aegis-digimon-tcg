@@ -137,3 +137,30 @@ def test_reflection_contains_all_teacher_cases_and_competing_actions_once(tmp_pa
     assert cases[11]["difference"] < 0
     assert cases[12]["valid"] is False
     assert "replayTeacherCases" not in records[1]["Inputs"]
+
+
+def test_alignment_counts_only_replicated_preferences(tmp_path):
+    adapter = _adapter(tmp_path)
+    adapter.cases = [
+        {"position": {"hash": "screen"}, "result": {"preferred": True, "preference": 1}},
+        {
+            "position": {"hash": "replicated"},
+            "result": {"preferred": True, "replicated": True, "preference": 1},
+        },
+        {
+            "position": {"hash": "failed"},
+            "result": {"preferred": True, "replicated": False, "preference": None},
+        },
+    ]
+    requests = []
+
+    def run(jobs):
+        requests.extend(jobs)
+        return [{"id": "alignment", "eligible": False, "supported": 0, "positions": []}]
+
+    adapter.pool.run = run
+    rule = {"feature": "pass", "weight": -1, "advice": "Develop.", "when": {"kind": "main"}}
+    adapter.evaluate([block("legacy")], {"main_rules": json.dumps({"rules": [rule]})})
+    sent = requests[0]["teacherAlignment"]["cases"]
+    assert [case["result"]["preferred"] for case in sent] == [False, True, False]
+    assert adapter.cases[0]["result"]["preferred"] is True

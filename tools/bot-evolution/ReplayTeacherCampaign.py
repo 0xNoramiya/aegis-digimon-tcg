@@ -9,6 +9,7 @@ from typing import Any
 
 import gepa
 
+from has_replicated_preference import has_replicated_preference
 from panel_adapter import PanelConfig
 from panel_confirm import _analyze
 from panel_reflection_template import PANEL_REFLECTION_TEMPLATE
@@ -19,7 +20,14 @@ from prepare_replay_teacher_splits import _composition, prepare_replay_teacher_s
 from ReplayTeacherAdapter import ReplayTeacherAdapter
 from ReplayTeacherBudget import ReplayTeacherBudget
 from session_reflection import SessionReflection
+from summarize_replay_replication import MAX_INVALID_FRACTION, summarize_replay_replication
 from summarize_replay_teacher import summarize_replay_teacher
+
+SCREEN_PAIRS = 32
+REPLICATION_PAIRS = 208
+SCREEN_SEED_OFFSET = 10000
+REPLICATION_SEED_OFFSET = 50000
+CONTINUATION_RESERVE_SECONDS = 15
 
 
 class ReplayTeacherCampaign:
@@ -115,6 +123,12 @@ class ReplayTeacherCampaign:
                     "reflectionFitnessBlocks": 32,
                     "alignment": "One preferred alternative uniquely best; identical hand Tamer copies equivalent",
                     "maxMerges": 2,
+                    "teacherReplication": {
+                        "pairs": REPLICATION_PAIRS,
+                        "seedOffset": REPLICATION_SEED_OFFSET,
+                        "maxInvalidFraction": MAX_INVALID_FRACTION,
+                        "acceptance": "Screen preferred and replication lower95 above zero over valid pairs",
+                    },
                     "seed": 24000000,
                 },
             },
@@ -202,6 +216,27 @@ class ReplayTeacherCampaign:
         )
         return _analyze(self.batch.run(jobs, directory), frozen_opponent="v3")
 
+    def _continuations(
+        self, row: dict[str, Any], result: dict[str, Any], seed: int, pairs: int
+    ) -> list[dict[str, Any]]:
+        position = row["position"]
+        return [
+            {
+                "id": f"{sample}|{arm}",
+                "program": self.baseline if sample < pairs // 2 else self.alternate,
+                "replayContinuation": {
+                    "record": row["pair"]["record"],
+                    "inputIndex": position["inputIndex"],
+                    "seat": position["seat"],
+                    "expectedInformation": position["information"],
+                    "sampleSeed": seed + sample,
+                    "action": result[arm],
+                },
+            }
+            for sample in range(pairs)
+            for arm in ("baseline", "alternative")
+        ]
+
     def _collect_cases(self, fitness: list[dict[str, Any]]) -> list[dict[str, Any]]:
         positions = []
         for pair in fitness:
@@ -247,33 +282,41 @@ class ReplayTeacherCampaign:
                 result.get("valid")
                 and result.get("search", {}).get("completed") == 32
                 and result.get("alternative") is not None
-                and time.time() + 960 < deadline
+                and time.time() + CONTINUATION_RESERVE_SECONDS * 2 * SCREEN_PAIRS < deadline
             ):
-                comparisons = []
-                for sample in range(32):
-                    for arm in ("baseline", "alternative"):
-                        comparisons.append(
-                            {
-                                "id": f"{sample}|{arm}",
-                                "program": self.baseline if sample < 16 else self.alternate,
-                                "replayContinuation": {
-                                    "record": row["pair"]["record"],
-                                    "inputIndex": position["inputIndex"],
-                                    "seat": position["seat"],
-                                    "expectedInformation": position["information"],
-                                    "sampleSeed": job["replayTeacher"]["seed"] + 10000 + sample,
-                                    "action": result[arm],
-                                },
-                            }
-                        )
+                root = self.directory / "teacher" / str(index)
+                seed = job["replayTeacher"]["seed"]
                 continued = self.batch.run(
-                    comparisons, self.directory / "teacher" / str(index) / "comparison"
+                    self._continuations(row, result, seed + SCREEN_SEED_OFFSET, SCREEN_PAIRS),
+                    root / "comparison",
                 )
                 summary = summarize_replay_teacher(continued)
+                replication = None
+                if summary["preferred"]:
+                    replication = {
+                        "replicated": False,
+                        "reason": "Insufficient teacher budget for replication",
+                    }
+                    if (
+                        time.time() + CONTINUATION_RESERVE_SECONDS * 2 * REPLICATION_PAIRS
+                        < deadline
+                    ):
+                        replication = summarize_replay_replication(
+                            self.batch.run(
+                                self._continuations(
+                                    row, result, seed + REPLICATION_SEED_OFFSET, REPLICATION_PAIRS
+                                ),
+                                root / "replication",
+                            ),
+                            REPLICATION_PAIRS,
+                        )
+                replicated = replication is not None and replication["replicated"]
                 result = {
                     **result,
                     **summary,
-                    "preference": result["alternative"] if summary["preferred"] else None,
+                    "replication": replication,
+                    "replicated": replicated,
+                    "preference": result["alternative"] if replicated else None,
                 }
             cases.append(
                 {"matchId": row["pair"]["matchId"], "position": position, "result": result}
@@ -398,9 +441,9 @@ class ReplayTeacherCampaign:
     def _run_development(
         self, splits: dict[str, Any], cases: list[dict[str, Any]]
     ) -> dict[str, Any]:
-        if not any(case["result"].get("preference") is not None for case in cases):
+        if not any(has_replicated_preference(case) for case in cases):
             return self._report(
-                "inconclusive", reason="No supported teacher preference", positions=len(cases)
+                "inconclusive", reason="No replicated teacher preference", positions=len(cases)
             )
         selection = self._get_stage("selection")
         if selection is None:
