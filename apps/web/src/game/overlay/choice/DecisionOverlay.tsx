@@ -1,3 +1,5 @@
+import { getCardTextField } from "@/i18n/getCardTextField";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { EffectText } from "@/game/EffectText";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { isAllowedTargetSelection } from "@/game/screen/model/isAllowedTargetSelection";
@@ -100,6 +102,7 @@ export function DecisionOverlay({
 }) {
   const getCardName = useTranslatedCardName();
   const { t, locale } = useTranslation();
+  const translateCardText = useTranslatedCardText();
   const effectPromptPosition = useEffectPromptPosition();
   const openCard = useCardOpener();
   const wideDialog = useMediaQuery(WIDE_DIALOG_QUERY);
@@ -269,8 +272,15 @@ export function DecisionOverlay({
   const emphasis = request.options?.effectTextEmphasis;
   const renderedEffectText = displayedEffectText ? (
     <EffectStepText
+      timing={request.options?.timing}
       text={displayedEffectText}
       emphasis={emphasis}
+      field={getCardTextField({
+        cardId: request.options?.effectTextCardId ?? sourceCardId,
+        timing: request.options?.timing,
+        isInherited: request.options?.isInherited,
+        text: displayedEffectText,
+      })}
       cardId={request.options?.effectTextCardId ?? sourceCardId}
     />
   ) : undefined;
@@ -370,7 +380,12 @@ export function DecisionOverlay({
             <div className="decision-overlay__question">
               <div className="decision-overlay__heading">
                 <h2 className="decision-overlay__title">
-                  {isResolutionPlan ? t("overlay.orderPendingEffects") : promptText}
+                  {isResolutionPlan
+                    ? t("overlay.orderPendingEffects")
+                    : translateCardText({
+                        text: promptText,
+                        cardId: request.options?.effectTextCardId ?? sourceCardId,
+                      })}
                 </h2>
               </div>
               <div className="decision-overlay__clauses">
@@ -379,6 +394,15 @@ export function DecisionOverlay({
                     {locale === "zh-CN" ? (
                       <EffectText
                         text={displayedEffectText}
+                        field={getCardTextField({
+                          cardId: request.options?.effectTextCardId ?? sourceCardId,
+                          timing: request.options?.timing,
+                          isInherited: request.options?.isInherited,
+                          text: displayedEffectText,
+                        })}
+                        surface="decision"
+                        timing={request.options?.timing}
+                        allowContext
                         cardId={request.options?.effectTextCardId ?? sourceCardId}
                       />
                     ) : (

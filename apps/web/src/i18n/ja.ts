@@ -14,6 +14,10 @@ const interfaceMessages = {
   "game.input.reorder": "Enter/A: 移動開始、矢印: 並べ替え、Enter/A: 完了、Esc/B: 元に戻す",
 
   ...decisionChoicesEn,
+  "decision.choice.playSavedLevelFour": decisionChoicesEn["decision.choice.playSavedLevelFour"].replace(
+    "＜Save＞",
+    "≪Save≫",
+  ),
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],

@@ -1,3 +1,4 @@
+import { getCardTextField } from "@/i18n/getCardTextField";
 import { EffectText } from "./EffectText";
 /* The framed notice of the reference client: a blue corner-bracketed panel
    carrying the clause that just resolved next to the art of the card that
@@ -92,7 +93,14 @@ function EffectNoticeBody({
           prose this client cannot resolve to ids, so it stays unlinked. */}
       {clause ? (
         <p className="match-notice__text">
-          <EffectText text={clause} cardId={cardId} />
+          <EffectText
+            text={clause}
+            cardId={cardId}
+            field={getCardTextField({ cardId, timing, isInherited, text: clause })}
+            surface="notice"
+            timing={timing}
+            allowContext
+          />
         </p>
       ) : null}
     </div>
