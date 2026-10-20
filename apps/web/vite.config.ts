@@ -29,6 +29,10 @@ export default defineConfig({
     projects: [
       {
         extends: true,
+        test: { name: "card-text-ui", include: ["src/i18n/useCardTranslationState.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: { name: "arena-input", include: ["src/game/input/**/*.test.tsx"], environment: "jsdom" },
       },
       {
@@ -60,6 +64,7 @@ export default defineConfig({
         test: {
           name: "default",
           exclude: [
+            "src/i18n/useCardTranslationState.test.tsx",
             ...configDefaults.exclude,
             "e2e/**",
             "src/game/input/**/*.test.tsx",

@@ -24,6 +24,35 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+it("shows a complete authored Chinese step while preserving the optional response", async () => {
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <DecisionOverlay
+        request={{
+          decisionId: "authored-short-step",
+          seat: 0,
+          kind: "optional",
+          promptText: "Use this effect?",
+          sourceCardId: "BT10-008",
+          options: { timing: "OnPlay", effectTextPart: "Add 1 Digimon card" },
+        }}
+        sourceCardId="BT10-008"
+        candidates={[]}
+        picks={[]}
+        onTogglePick={vi.fn<() => void>()}
+        onRespond={onRespond}
+      />
+    </I18nContext.Provider>,
+  );
+  const text = () => document.querySelector(".decision-overlay__effect-text")?.textContent;
+  await waitFor(() => expect(text()).toContain("3张卡牌"));
+  expect(text()).toContain("驯兽师");
+  expect(text()).not.toContain("Add 1 Digimon card");
+  fireEvent.click(screen.getByRole("button", { name: translator("zh-CN")("overlay.activate") }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: true });
+});
+
 it("uses source card translations for printed modal option buttons and submits the original index", async () => {
   const cardId = "BT22-013";
   const clause = cardEffectClauseForTiming(cardId, "WhenDigivolving")!;
