@@ -75,6 +75,11 @@ import { defaultBotOptions } from "#api/bot/defaultBotOptions";
 import { botPersonaForDeck } from "@aegis/shared/bot/personas/botPersonaForDeck";
 import { trainedBotOptions } from "../bot/inferenceRuntime.js";
 import { evolvedBotOptions } from "../bot/evolution/livePolicy.js";
+import { getActiveBotExperiment } from "#api/bot/experiment/activeBotExperiment";
+import { assignBotArm } from "#api/bot/experiment/assignBotArm";
+import type { BotExperimentRecord } from "#api/bot/experiment/BotExperimentRecord";
+import { createBotArmOptions } from "#api/bot/experiment/createBotArmOptions";
+import type { DefaultBotDeck } from "#api/bot/defaultBotProgram";
 import { playableBotDeck } from "../engine/botDeck.js";
 import { accountStore } from "../accounts/runtime.js";
 import type { AccountStore, DeckSnapshot } from "../accounts/AccountStore.js";
@@ -363,6 +368,7 @@ export class AegisRoom extends Room<{
    * two bots has to run with nobody connected at all, so both seats can be driven at once.
    */
   private bots: (BotPlayer | undefined)[] = [undefined, undefined];
+  private botExperimentRecord: BotExperimentRecord | undefined;
   /**
    * Which participant each tournament seat belongs to, recorded when the seat's authorization is
    * redeemed. A bot seat has no client and therefore no `accountByClient` entry, so this is the
@@ -1137,11 +1143,30 @@ export class AegisRoom extends Room<{
     };
   }
 
+  private getBotResult(event: Extract<import("@aegis/shared").ServerEvent, { kind: "gameOver" }>) {
+    if (event.result.outcome === "draw") {
+      return "draw";
+    }
+    if (event.result.winnerSeat === this.BOT_SEAT) {
+      return "win";
+    }
+    return "loss";
+  }
+
   private async recordRecentResults(
     event: Extract<import("@aegis/shared").ServerEvent, { kind: "gameOver" }>,
   ): Promise<void> {
     if (this.devScenario || this.storyBattleId) return;
     const finishedAt = Date.now();
+    const experimentRecord = this.botExperimentRecord;
+    if (experimentRecord) {
+      this.debug("bot.experiment.result", {
+        ...experimentRecord,
+        botResult: this.getBotResult(event),
+        reason: event.reason,
+        inferenceFallbacks: this.bots[this.BOT_SEAT]?.inferenceFallbacks,
+      });
+    }
     // Snapshot both identities before I/O: onLeave clears accountByClient synchronously.
     const participants = ([0, 1] as const).flatMap((seat) => {
       const player = this.state.players[seat];
@@ -1165,6 +1190,7 @@ export class AegisRoom extends Room<{
                   : ("loss" as const),
             reason: event.reason,
             finishedAt,
+            ...(experimentRecord && this.bots[seat === 0 ? 1 : 0] ? experimentRecord : {}),
           },
         },
       ];
@@ -1852,6 +1878,37 @@ export class AegisRoom extends Room<{
     return this.addBot(botDeckId) ? 200 : 409;
   }
 
+  private assignBotExperimentArm(): BotExperimentRecord | undefined {
+    const experiment = getActiveBotExperiment();
+    if (experiment === undefined || this.devScenario || this.storyBattleId) {
+      return undefined;
+    }
+    return { botExperiment: experiment.id, botArm: assignBotArm({ experiment, matchId: this.state.matchLogId }) };
+  }
+
+  private createPracticeBotOptions(
+    deck: DefaultBotDeck,
+    experimentRecord: BotExperimentRecord | undefined,
+  ): BotOptions | undefined {
+    if (experimentRecord === undefined) {
+      return defaultBotOptions({ engine: this.engine, seat: this.BOT_SEAT, deck });
+    }
+    return createBotArmOptions({
+      arm: experimentRecord.botArm,
+      engine: this.engine,
+      seat: this.BOT_SEAT,
+      deck,
+      onFallback: () => {
+        experimentRecord.botArmFallback = true;
+        this.debug("bot.experiment.fallback", {
+          botExperiment: experimentRecord.botExperiment,
+          botArm: experimentRecord.botArm,
+          turn: this.state.turnCount,
+        });
+      },
+    });
+  }
+
   addBot(botDeckId?: string): boolean {
     // Ordinary casual rooms remain accepted during the expand/contract rollout so
     // a tab with the previous web bundle can still start its bot match. New clients
@@ -1893,9 +1950,11 @@ export class AegisRoom extends Room<{
           }))
         : undefined;
     const scenarioPolicy = createFixtureBotPolicy(this.scenarioFixture?.presentation?.opponent);
+    const experimentRecord =
+      scenarioPolicy === undefined && modelOptions === undefined ? this.assignBotExperimentArm() : undefined;
     const baseBotOptions: BotOptions | undefined =
       scenarioPolicy === undefined
-        ? (modelOptions ?? defaultBotOptions({ engine: this.engine, seat: this.BOT_SEAT, deck }))
+        ? (modelOptions ?? this.createPracticeBotOptions(deck, experimentRecord))
         : { policy: scenarioPolicy };
     const clientPacesChains = this.clients.some((client) => this.chainPacingClients.has(client.sessionId));
     const botOptions: BotOptions | undefined = clientPacesChains
@@ -1920,7 +1979,12 @@ export class AegisRoom extends Room<{
     if (this.storyBattleId) {
       botDisplayName = storyBattles.find((entry) => entry.id === this.storyBattleId)!.opponent;
     }
-    this.debug("bot.seated", { seat: this.BOT_SEAT, deck, clientPacesChains });
+    this.debug("bot.seated", {
+      seat: this.BOT_SEAT,
+      deck,
+      clientPacesChains,
+      ...(experimentRecord ? { botExperiment: experimentRecord.botExperiment, botArm: experimentRecord.botArm } : {}),
+    });
     try {
       this.withBatch(() => {
         this.engine.seatPlayer(this.BOT_SEAT, "bot", {
@@ -1951,6 +2015,7 @@ export class AegisRoom extends Room<{
       logError("[AegisRoom] addBot failed to seat the bot", error);
       return false;
     }
+    this.botExperimentRecord = experimentRecord;
 
     // The bot never sends its own `ready` intent (it isn't a Colyseus client, so it
     // has no seatByClient entry for applyIntent to route through) — starting the

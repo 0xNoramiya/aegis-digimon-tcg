@@ -468,6 +468,10 @@ for that match and use the standard bot fallback. Live games retain the normal
 bot action cap and presentation pacing; the benchmark uses a pinned evaluation
 engine and removes think delays. The live app is not an identical benchmark run.
 
+To compare bot policies against real players instead, use the opt-in
+[bot A/B experiment](../../internal-docs/ai/bot-ab-experiment.md). It stays
+off while either explicit policy above is configured.
+
 ## Guide publication
 
 After the high-budget run completes, publish its selected policies and paired
