@@ -204,13 +204,17 @@ export function collectDeletionPending(engine: GameEngine, pool: readonly Pooled
             }
             const response = await engine.decisions.request({
               seat,
-              kind: "selectCards",
-              promptText: "＜Ascension＞: place this card at the top of your security stack?",
+              kind: "optional",
+              promptText: "Activate ＜Ascension＞?",
               sourceCardId: card.cardId,
               sourceInstanceId: instanceId,
-              options: { candidateInstanceIds: [instanceId], min: 0, max: 1 },
+              options: {
+                timing: "Ascension",
+                effectText:
+                  "＜Ascension＞: When this card is deleted, you may place it at the top of your security stack.",
+              },
             });
-            if (response.kind === "selectCards" && response.instanceIds.includes(instanceId)) {
+            if (response.kind === "optional" && response.accept) {
               await engine.primitives.ascendToSecurity(instanceId);
             }
           },
