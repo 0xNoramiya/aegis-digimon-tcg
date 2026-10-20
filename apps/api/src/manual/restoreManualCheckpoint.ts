@@ -56,6 +56,7 @@ export function restoreManualCheckpoint({ state, checkpoint }: Params): void {
       permanent.isSuspended = saved.suspended;
       permanent.inBreeding = saved.inBreeding;
       permanent.manualMarker = saved.marker;
+      permanent.manualStatuses = new ArraySchema(...saved.statuses);
       permanent.securityAttack = saved.securityAttack;
       permanent.securityAttackModifier = saved.securityAttackModifier;
       permanent.keywords = new ArraySchema(...saved.keywords);

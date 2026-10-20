@@ -1,3 +1,4 @@
+import type { ManualStatus } from "#shared/manual/ManualStatus";
 import { ManualAction } from "#shared/manual/ManualAction";
 import type { ManualCombatStage } from "#shared/manual/ManualCombatStage";
 import type { Seat, Zone, CardColor, Phase } from "#shared/schema/enums";
@@ -18,6 +19,13 @@ export type ManualDestination = {
 };
 
 export type ManualCommand =
+  | { action: typeof ManualAction.STATUSES.value; permanentId: string; statuses: ManualStatus[] }
+  | { action: typeof ManualAction.RESET_MODIFIERS.value; permanentId: string }
+  | { action: typeof ManualAction.TRAINING.value; permanentId: string }
+  | { action: typeof ManualAction.SIGNAL.value; from: ManualLocation; targetPermanentId?: string; targetSeat?: Seat }
+  | { action: typeof ManualAction.CLEAR_SIGNAL.value }
+  | { action: typeof ManualAction.PROPOSE_RESTART.value; firstSeat: Seat }
+  | { action: typeof ManualAction.ANSWER_RESTART.value; accept: boolean }
   | {
       action: typeof ManualAction.MODIFIERS.value;
       permanentId: string;

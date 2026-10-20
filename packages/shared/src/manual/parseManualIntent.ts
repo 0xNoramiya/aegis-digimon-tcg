@@ -1,3 +1,4 @@
+import { ManualStatus } from "#shared/manual/ManualStatus";
 import { ManualAction } from "#shared/manual/ManualAction";
 import type { ManualCommand, ManualDestination, ManualIntent, ManualLocation } from "#shared/manual/ManualCommand";
 import { ManualCombatStage } from "#shared/manual/ManualCombatStage";
@@ -46,6 +47,28 @@ function isCommand(value: unknown): value is ManualCommand {
     return false;
   }
   switch (value.action) {
+    case ManualAction.STATUSES.value:
+      return (
+        isText(value.permanentId) &&
+        Array.isArray(value.statuses) &&
+        value.statuses.length <= Object.keys(ManualStatus).length &&
+        value.statuses.every((status) => Object.values(ManualStatus).some((entry) => entry.value === status)) &&
+        new Set(value.statuses).size === value.statuses.length
+      );
+    case ManualAction.RESET_MODIFIERS.value:
+    case ManualAction.TRAINING.value:
+      return isText(value.permanentId);
+    case ManualAction.SIGNAL.value:
+      return (
+        isLocation(value.from) &&
+        (value.targetPermanentId === undefined || isText(value.targetPermanentId)) &&
+        (value.targetSeat === undefined || value.targetSeat === 0 || value.targetSeat === 1) &&
+        !(value.targetPermanentId !== undefined && value.targetSeat !== undefined)
+      );
+    case ManualAction.PROPOSE_RESTART.value:
+      return value.firstSeat === 0 || value.firstSeat === 1;
+    case ManualAction.ANSWER_RESTART.value:
+      return typeof value.accept === "boolean";
     case ManualAction.MODIFIERS.value:
       return (
         isText(value.permanentId) &&
@@ -89,6 +112,7 @@ function isCommand(value: unknown): value is ManualCommand {
       );
     case ManualAction.CLOSE_INSPECTION.value:
     case ManualAction.UNSUSPEND_ALL.value:
+    case ManualAction.CLEAR_SIGNAL.value:
     case ManualAction.CLEAR_REVEALS.value:
     case ManualAction.PASS.value:
     case ManualAction.REQUEST_UNDO.value:

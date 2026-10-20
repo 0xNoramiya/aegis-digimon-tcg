@@ -151,4 +151,5 @@ export class Permanent extends Schema {
   @type("boolean") protectedFromStackReturn = false;
   @type("string") heldDpEffectsJson = "";
   @type("string") manualMarker = "";
+  @type(["string"]) manualStatuses = new ArraySchema<string>();
 }

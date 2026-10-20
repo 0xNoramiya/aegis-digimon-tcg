@@ -107,6 +107,17 @@ class ManualTable extends Schema {
   @type("string") attackerPermanentId = "";
   @type("string") attackTargetPermanentId = "";
   @type("string") blockerPermanentId = "";
+  @type("int8") signalSeat = -1;
+  @type("string") signalPermanentId = "";
+  @type("string") signalInstanceId = "";
+  @type("string") signalCardId = "";
+  @type("string") signalArtId = "";
+  @type("string") signalTargetPermanentId = "";
+  @type("int8") signalTargetSeat = -1;
+  @type("uint32") signalRevision = 0;
+  @type("int8") restartRequester = -1;
+  @type("int8") restartFirstSeat = -1;
+  @type("uint32") restartCount = 0;
 }
 
 export class GameState extends Schema {

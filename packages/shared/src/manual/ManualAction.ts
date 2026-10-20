@@ -1,4 +1,11 @@
 export const ManualAction = {
+  STATUSES: { name: "STATUSES", value: "statuses" },
+  RESET_MODIFIERS: { name: "RESET_MODIFIERS", value: "resetModifiers" },
+  TRAINING: { name: "TRAINING", value: "training" },
+  SIGNAL: { name: "SIGNAL", value: "signal" },
+  CLEAR_SIGNAL: { name: "CLEAR_SIGNAL", value: "clearSignal" },
+  PROPOSE_RESTART: { name: "PROPOSE_RESTART", value: "proposeRestart" },
+  ANSWER_RESTART: { name: "ANSWER_RESTART", value: "answerRestart" },
   MODIFIERS: { name: "MODIFIERS", value: "modifiers" },
   CREATE_TOKEN: { name: "CREATE_TOKEN", value: "createToken" },
   REMOVE_TOKEN: { name: "REMOVE_TOKEN", value: "removeToken" },

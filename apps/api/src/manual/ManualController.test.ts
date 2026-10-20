@@ -507,3 +507,172 @@ describe("manual structured table tools", () => {
     expect(state.manual.turnPhase).toBe(Phase.Active);
   });
 });
+
+describe("manual statuses, training and public signals", () => {
+  it("keeps simultaneous statuses and resets all modifiers without changing suspension", () => {
+    const { play, send } = createTable();
+    const permanent = play();
+    expect(send(1, { action: "statuses", permanentId: permanent.permanentId, statuses: ["sick"] }).ok).toBe(false);
+    expect(
+      send(0, { action: "statuses", permanentId: permanent.permanentId, statuses: ["sick", "taunt", "immune"] }).ok,
+    ).toBe(true);
+    expect(Array.from(permanent.manualStatuses)).toEqual(["sick", "taunt", "immune"]);
+    send(0, { action: "dp", permanentId: permanent.permanentId, value: 24000 });
+    send(0, {
+      action: "modifiers",
+      permanentId: permanent.permanentId,
+      securityAttackModifier: 4,
+      keywords: ["Rush"],
+      colors: [CardColor.White],
+    });
+    send(0, { action: "marker", permanentId: permanent.permanentId, text: "custom" });
+    send(0, { action: "suspend", permanentId: permanent.permanentId, suspended: true });
+    expect(send(0, { action: "resetModifiers", permanentId: permanent.permanentId }).ok).toBe(true);
+    expect(permanent.currentDP).toBe(permanent.baseDP);
+    expect(permanent.securityAttack).toBe(1);
+    expect(permanent.securityAttackModifier).toBe(0);
+    expect(permanent.keywords).toHaveLength(0);
+    expect(permanent.originalColorsOverride).toHaveLength(0);
+    expect(permanent.manualMarker).toBe("");
+    expect(permanent.manualStatuses).toHaveLength(0);
+    expect(permanent.isSuspended).toBe(true);
+    send(0, { action: "requestUndo" });
+    expect(send(1, { action: "answerUndo", accept: true }).ok).toBe(true);
+    expect(Array.from(permanent.manualStatuses)).toEqual(["sick", "taunt", "immune"]);
+    expect(permanent.currentDP).toBe(24000);
+  });
+
+  it("trains with exactly the top deck card under an owned battle permanent and supports undo", () => {
+    const { state, play, send } = createTable();
+    const permanent = play();
+    const card = state.players[0]!.deck[0]!;
+    const deckCount = state.players[0]!.deck.length;
+    const handCount = state.players[0]!.hand.length;
+    expect(send(1, { action: "training", permanentId: permanent.permanentId }).ok).toBe(false);
+    expect(send(0, { action: "training", permanentId: permanent.permanentId }).ok).toBe(true);
+    expect(permanent.stack.at(-1)).toBe(card);
+    expect(card.faceUp).toBe(true);
+    expect(state.players[0]!.deck).toHaveLength(deckCount - 1);
+    expect(state.players[0]!.hand).toHaveLength(handCount);
+    expect(state.memory).toBe(0);
+    send(0, { action: "requestUndo" });
+    send(1, { action: "answerUndo", accept: true });
+    expect(state.players[0]!.deck[0]).toBe(card);
+    expect(card.faceUp).toBe(false);
+    expect(permanent.stack).toHaveLength(0);
+  });
+
+  it("exposes only explicitly signaled hand information and clears signals when their source moves", () => {
+    const { state, send, play } = createTable();
+    const target = play(1);
+    const hand = state.players[0]!.hand;
+    const card = hand[0]!;
+    expect(send(0, { action: "signal", from: { zone: Zone.Deck }, targetSeat: 1 }).ok).toBe(false);
+    expect(
+      send(0, {
+        action: "signal",
+        from: { zone: Zone.Hand, instanceId: card.instanceId },
+        targetPermanentId: target.permanentId,
+      }).ok,
+    ).toBe(true);
+    const opponent = decodeView(state, 1);
+    expect(opponent.manual.signalCardId).toBe(card.cardId);
+    expect(opponent.manual.signalTargetPermanentId).toBe(target.permanentId);
+    expect(opponent.players[0]!.hand).toHaveLength(0);
+    expect(send(1, { action: "clearSignal" }).ok).toBe(false);
+    expect(
+      send(0, {
+        action: "move",
+        from: { zone: Zone.Hand, instanceId: card.instanceId },
+        to: { zone: Zone.Trash },
+        wholePile: false,
+      }).ok,
+    ).toBe(true);
+    expect(state.manual.signalSeat).toBe(-1);
+    send(0, { action: "requestUndo" });
+    send(1, { action: "answerUndo", accept: true });
+    expect(state.manual.signalCardId).toBe(card.cardId);
+    expect(send(0, { action: "clearSignal" }).ok).toBe(true);
+    expect(state.manual.signalCardId).toBe("");
+  });
+
+  it("allows revealed hidden cards to move without inspection and removes stale gallery entries", () => {
+    const { state, send } = createTable();
+    const first = state.players[0]!.deck[0]!;
+    const second = state.players[0]!.deck[1]!;
+    send(0, { action: "reveal", from: { zone: Zone.Deck }, count: 2 });
+    const gallery = JSON.parse(state.manual.revealedJson);
+    expect(gallery[0].zone).toBe(Zone.Deck);
+    expect(
+      send(1, {
+        action: "move",
+        from: { zone: Zone.Deck, instanceId: first.instanceId },
+        to: { zone: Zone.Hand },
+        wholePile: false,
+      }).ok,
+    ).toBe(false);
+    expect(
+      send(0, {
+        action: "move",
+        from: { zone: Zone.Deck, instanceId: second.instanceId },
+        to: { zone: Zone.Hand },
+        wholePile: false,
+      }).ok,
+    ).toBe(true);
+    expect(JSON.parse(state.manual.revealedJson)).toHaveLength(1);
+    expect(state.players[0]!.hand.at(-1)).toBe(second);
+    send(0, { action: "requestUndo" });
+    send(1, { action: "answerUndo", accept: true });
+    expect(JSON.parse(state.manual.revealedJson)).toHaveLength(2);
+    expect(
+      send(0, {
+        action: "move",
+        from: { zone: Zone.Deck, instanceId: second.instanceId },
+        to: { zone: Zone.Hand },
+        wholePile: false,
+      }).ok,
+    ).toBe(true);
+    expect(send(0, { action: "shuffle", zone: Zone.Deck }).ok).toBe(true);
+    expect(JSON.parse(state.manual.revealedJson)).toHaveLength(0);
+    expect(
+      send(0, {
+        action: "move",
+        from: { zone: Zone.Deck, instanceId: first.instanceId },
+        to: { zone: Zone.Hand },
+        wholePile: false,
+      }).ok,
+    ).toBe(false);
+  });
+});
+
+it("clears public signals when a source or target is turned face down", () => {
+  const { state, play, send } = createTable();
+  const source = play();
+  const target = play(1);
+  expect(
+    send(0, {
+      action: "signal",
+      from: { zone: Zone.BattleArea, permanentId: source.permanentId },
+      targetPermanentId: target.permanentId,
+    }).ok,
+  ).toBe(true);
+  expect(
+    send(1, { action: "flip", from: { zone: Zone.BattleArea, permanentId: target.permanentId }, faceUp: false }).ok,
+  ).toBe(true);
+  expect(state.manual.signalSeat).toBe(-1);
+  expect(
+    send(0, {
+      action: "signal",
+      from: { zone: Zone.BattleArea, permanentId: source.permanentId },
+      targetPermanentId: target.permanentId,
+    }).ok,
+  ).toBe(false);
+  expect(
+    send(0, { action: "signal", from: { zone: Zone.BattleArea, permanentId: source.permanentId }, targetSeat: 1 }).ok,
+  ).toBe(true);
+  expect(
+    send(0, { action: "flip", from: { zone: Zone.BattleArea, permanentId: source.permanentId }, faceUp: false }).ok,
+  ).toBe(true);
+  expect(state.manual.signalCardId).toBe("");
+  expect(send(0, { action: "attack", permanentId: source.permanentId }).ok).toBe(false);
+});

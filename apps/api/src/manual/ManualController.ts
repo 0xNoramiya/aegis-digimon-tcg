@@ -1,3 +1,4 @@
+import { resetManualPermanentModifiers } from "#api/manual/resetManualPermanentModifiers";
 import { ManualCombatStage } from "@aegis/shared/manual/ManualCombatStage";
 import { ArraySchema } from "@colyseus/schema";
 import { tokenDefinitions } from "@aegis/shared/cards/tokens";
@@ -35,7 +36,13 @@ import { makeRng, seatSeed, shuffleInPlace } from "#api/engine/setup";
 import { captureManualCheckpoint, type ManualCheckpoint } from "#api/manual/captureManualCheckpoint";
 import { restoreManualCheckpoint } from "#api/manual/restoreManualCheckpoint";
 
-type Params = { state: GameState; seed: number; randomKey?: string; emit: (event: ServerEvent) => void };
+type Params = {
+  state: GameState;
+  seed: number;
+  randomKey?: string;
+  emit: (event: ServerEvent) => void;
+  restart?: (firstSeat: Seat) => void;
+};
 type Source = { card: CardInstance; permanent?: Permanent; index: number; zone: Zone; part?: ManualLocation["part"] };
 type Inspection = { zone: Zone; cards: CardInstance[] };
 
@@ -67,7 +74,12 @@ export class ManualController {
     if (previous) {
       return previous;
     }
-    if (intent.revision !== state.manual.revision || state.gameOver || state.phase !== Phase.Main) {
+    if (
+      intent.revision !== state.manual.revision ||
+      state.gameOver ||
+      state.phase !== Phase.Main ||
+      state.turnCount === 0
+    ) {
       return { ok: false, reason: "wrong-phase" };
     }
     try {
@@ -78,7 +90,9 @@ export class ManualController {
         intent.command.action !== ManualAction.REQUEST_UNDO.value &&
         intent.command.action !== ManualAction.ANSWER_UNDO.value &&
         intent.command.action !== ManualAction.PROPOSE_RESULT.value &&
-        intent.command.action !== ManualAction.ANSWER_RESULT.value
+        intent.command.action !== ManualAction.ANSWER_RESULT.value &&
+        intent.command.action !== ManualAction.PROPOSE_RESTART.value &&
+        intent.command.action !== ManualAction.ANSWER_RESTART.value
       ) {
         this.checkpoint = checkpoint;
         state.manual.canUndo = true;
@@ -88,6 +102,7 @@ export class ManualController {
       if (state.manual.history.length > 200) {
         state.manual.history.shift();
       }
+      this.refreshPublicReferences();
       this.refreshInspections();
       this.params.emit({ kind: "manualAction", seat, action: description });
       const result = { ok: true } as const;
@@ -160,7 +175,12 @@ export class ManualController {
       (location.zone === Zone.Deck || location.zone === Zone.EggDeck || location.zone === Zone.Security)
     ) {
       this.require(
-        this.inspections.get(player.seat)?.cards.includes(card) || (location.zone === Zone.Security && card.faceUp),
+        this.inspections.get(player.seat)?.cards.includes(card) ||
+          (location.zone === Zone.Security && card.faceUp) ||
+          this.getReveals().some(
+            (entry) =>
+              entry.seat === player.seat && entry.instanceId === card.instanceId && entry.zone === location.zone,
+          ),
       );
     }
     return { card, index, zone: location.zone };
@@ -317,7 +337,92 @@ export class ManualController {
     if (table.resultRequester !== -1) {
       this.require(command.action === ManualAction.ANSWER_RESULT.value);
     }
+    if (table.restartRequester !== -1) {
+      this.require(command.action === ManualAction.ANSWER_RESTART.value);
+    }
     switch (command.action) {
+      case ManualAction.STATUSES.value: {
+        const permanent = this.getPermanent(player, command.permanentId);
+        return () => {
+          permanent.manualStatuses = new ArraySchema(...command.statuses);
+          return "set statuses";
+        };
+      }
+      case ManualAction.RESET_MODIFIERS.value: {
+        const permanent = this.getPermanent(player, command.permanentId);
+        return () => {
+          resetManualPermanentModifiers({ permanent });
+          return "reset modifiers";
+        };
+      }
+      case ManualAction.TRAINING.value: {
+        const permanent = this.getPermanent(player, command.permanentId);
+        this.require(!permanent.inBreeding && player.deck.length > 0);
+        return () => {
+          const card = extractCardAt(player, Zone.Deck, 0)!;
+          card.faceUp = true;
+          pushOnStack(permanent, card);
+          return "training";
+        };
+      }
+      case ManualAction.SIGNAL.value: {
+        this.require([Zone.Hand, Zone.BattleArea, Zone.Breeding].includes(command.from.zone));
+        const source = this.getSource(player, command.from);
+        const target = command.targetPermanentId
+          ? Array.from(state.players)
+              .flatMap((entry) => [...entry.battleArea, ...(entry.breeding ? [entry.breeding] : [])])
+              .find((entry) => entry.permanentId === command.targetPermanentId)
+          : undefined;
+        this.require(!command.targetPermanentId || target?.topCard.faceUp);
+        this.require(!source.permanent || source.card.faceUp);
+        return () => {
+          table.signalSeat = seat;
+          table.signalPermanentId = source.permanent?.permanentId ?? "";
+          table.signalInstanceId = source.card.instanceId;
+          table.signalCardId = source.card.cardId;
+          table.signalArtId = source.card.artId;
+          table.signalTargetPermanentId = target?.permanentId ?? "";
+          table.signalTargetSeat = command.targetSeat ?? -1;
+          table.signalRevision = table.revision + 1;
+          return "signal effect or target";
+        };
+      }
+      case ManualAction.CLEAR_SIGNAL.value:
+        this.require(table.signalSeat === seat);
+        return () => {
+          this.clearSignal();
+          return "clear signal";
+        };
+      case ManualAction.PROPOSE_RESTART.value:
+        this.require(this.params.restart && table.combatStage === ManualCombatStage.NONE.value);
+        return () => {
+          table.restartRequester = seat;
+          table.restartFirstSeat = command.firstSeat;
+          return `propose restart ${command.firstSeat}`;
+        };
+      case ManualAction.ANSWER_RESTART.value: {
+        this.require(
+          table.restartRequester !== -1 && (!command.accept || table.restartRequester !== seat) && this.params.restart,
+        );
+        const firstSeat = table.restartFirstSeat as Seat;
+        return () => {
+          table.restartRequester = -1;
+          table.restartFirstSeat = -1;
+          if (command.accept) {
+            table.restartCount += 1;
+            table.revealedJson = "[]";
+            table.turnPhase = Phase.Main;
+            table.canUndo = false;
+            this.clearCombat();
+            this.clearSignal();
+            this.inspections.clear();
+            this.checkpoint = undefined;
+            this.params.restart!(firstSeat);
+          }
+          return command.accept ? "accept restart" : "decline restart";
+        };
+      }
+
       case ManualAction.MOVE.value:
         return this.prepareMove(player, command);
       case ManualAction.DRAW.value: {
@@ -367,18 +472,19 @@ export class ManualController {
         this.require(source.index + count <= cards.length);
         const revealed = Array.from(cards).slice(source.index, source.index + count);
         return () => {
-          const gallery = JSON.parse(table.revealedJson) as {
-            cardId: string;
-            artId: string;
-            seat: Seat;
-            instanceId?: string;
-          }[];
+          const gallery = this.getReveals();
           for (const card of revealed) {
             if (source.zone === Zone.Security || source.zone === Zone.Delay) {
               card.faceUp = true;
             }
             if (!gallery.some((entry) => entry.seat === seat && entry.instanceId === card.instanceId)) {
-              gallery.push({ cardId: card.cardId, artId: card.artId, seat, instanceId: card.instanceId });
+              gallery.push({
+                cardId: card.cardId,
+                artId: card.artId,
+                seat,
+                instanceId: card.instanceId,
+                zone: source.zone,
+              });
             }
           }
           table.revealedJson = JSON.stringify(gallery.slice(-220));
@@ -548,7 +654,9 @@ export class ManualController {
       case ManualAction.ATTACK.value: {
         const permanent = this.getPermanent(player, command.permanentId);
         const opponent = state.players[1 - seat]!;
-        this.require(!permanent.inBreeding && table.combatStage === ManualCombatStage.NONE.value);
+        this.require(
+          !permanent.inBreeding && permanent.topCard.faceUp && table.combatStage === ManualCombatStage.NONE.value,
+        );
         this.require(
           !command.targetPermanentId ||
             opponent.battleArea.some((candidate) => candidate.permanentId === command.targetPermanentId),
@@ -617,6 +725,56 @@ export class ManualController {
           }
           return command.accept ? "accept result" : "decline result";
         };
+      }
+    }
+  }
+
+  private getReveals(): { cardId: string; artId: string; seat: Seat; instanceId?: string; zone?: Zone }[] {
+    return JSON.parse(this.params.state.manual.revealedJson);
+  }
+
+  private clearSignal(): void {
+    const table = this.params.state.manual;
+    table.signalSeat = -1;
+    table.signalPermanentId = "";
+    table.signalInstanceId = "";
+    table.signalCardId = "";
+    table.signalArtId = "";
+    table.signalTargetPermanentId = "";
+    table.signalTargetSeat = -1;
+    table.signalRevision = table.revision + 1;
+  }
+
+  private refreshPublicReferences(): void {
+    const { state } = this.params;
+    const table = state.manual;
+    const gallery = this.getReveals().filter((entry) => {
+      if (!entry.zone || !entry.instanceId) {
+        return true;
+      }
+      const player = state.players[entry.seat]!;
+      if (entry.zone === Zone.BattleArea || entry.zone === Zone.Breeding) {
+        return [...player.battleArea, ...(player.breeding ? [player.breeding] : [])].some((permanent) =>
+          [permanent.topCard, ...permanent.stack, ...permanent.linked].some(
+            (card) => card.instanceId === entry.instanceId,
+          ),
+        );
+      }
+      return this.getZone(player, entry.zone).some((card) => card.instanceId === entry.instanceId);
+    });
+    table.revealedJson = JSON.stringify(gallery);
+    if (table.signalSeat !== -1) {
+      const player = state.players[table.signalSeat]!;
+      const permanent = table.signalPermanentId ? findPermanentInPlayer(player, table.signalPermanentId) : undefined;
+      const sources = permanent ? [permanent.topCard, ...permanent.stack, ...permanent.linked] : player.hand;
+      const sourceExists = sources.some(
+        (card) => card.instanceId === table.signalInstanceId && (!permanent || card.faceUp),
+      );
+      const targetExists =
+        !table.signalTargetPermanentId ||
+        state.players.some((entry) => findPermanentInPlayer(entry, table.signalTargetPermanentId)?.topCard.faceUp);
+      if (!sourceExists || !targetExists) {
+        this.clearSignal();
       }
     }
   }

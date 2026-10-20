@@ -135,6 +135,38 @@ describe("manual room boundaries and replay", () => {
       manual(0, { action: "combat", stage: ManualCombatStage.SECURITY.value });
       manual(0, { action: "combat", stage: ManualCombatStage.NONE.value });
       manual(0, { action: "removeToken", permanentId: token.permanentId });
+      manual(0, { action: "createToken", cardId: tokenDefinitions[0]!.cardId });
+      const trained = room.state.players[0]!.battleArea[0]!;
+      manual(0, { action: "statuses", permanentId: trained.permanentId, statuses: ["sick", "taunt", "immune"] });
+      manual(0, { action: "training", permanentId: trained.permanentId });
+      manual(0, {
+        action: "signal",
+        from: { zone: Zone.Hand, instanceId: room.state.players[0]!.hand[0]!.instanceId },
+        targetSeat: 1,
+      });
+      manual(0, { action: "resetModifiers", permanentId: trained.permanentId });
+      const oldFirstCardId = room.state.players[0]!.hand[0]!.instanceId;
+      const oldRevision = room.state.manual.revision;
+      manual(0, { action: "proposeRestart", firstSeat: 1 });
+      manual(0, { action: "answerRestart", accept: true });
+      expect(room.state.manual.restartRequester).toBe(0);
+      manual(1, { action: "answerRestart", accept: true });
+      expect(room.state.manual.restartCount).toBe(1);
+      expect(room.state.manual.revision).toBe(oldRevision + 2);
+      expect(room.state.turnCount).toBe(0);
+      expect(room.state.players[0]!.battleArea).toHaveLength(0);
+      expect(room.state.manual.signalCardId).toBe("");
+      expect(room.state.manual.revealedJson).toBe("[]");
+      expect(room.state.pendingDecision?.seat).toBe(1);
+      send(1, { type: "mulligan", keep: true });
+      await vi.waitFor(() => expect(room.state.pendingDecision?.seat).toBe(0));
+      send(0, { type: "mulligan", keep: false });
+      await vi.waitFor(() => expect(room.state.turnCount).toBe(1));
+      expect(room.state.turnSeat).toBe(1);
+      expect(room.state.players[0]!.hand[0]!.instanceId).not.toBe(oldFirstCardId);
+      expect(room.state.players[0]!.security).toHaveLength(5);
+      expect(room.state.players[1]!.security).toHaveLength(5);
+      expect(room.state.manual.canUndo).toBe(false);
       manual(1, { action: "proposeResult", winnerSeat: -1 });
       manual(0, { action: "answerResult", accept: true });
       expect(room.state.gameOver).toBe(true);

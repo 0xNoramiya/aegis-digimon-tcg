@@ -24,6 +24,14 @@ export function captureManualCheckpoint({ state }: Params) {
       attackerPermanentId: state.manual.attackerPermanentId,
       attackTargetPermanentId: state.manual.attackTargetPermanentId,
       blockerPermanentId: state.manual.blockerPermanentId,
+      signalSeat: state.manual.signalSeat,
+      signalPermanentId: state.manual.signalPermanentId,
+      signalInstanceId: state.manual.signalInstanceId,
+      signalCardId: state.manual.signalCardId,
+      signalArtId: state.manual.signalArtId,
+      signalTargetPermanentId: state.manual.signalTargetPermanentId,
+      signalTargetSeat: state.manual.signalTargetSeat,
+      signalRevision: state.manual.signalRevision,
     },
     players: state.players.map((player) => {
       const zones: SavedZone[] = [
@@ -44,6 +52,7 @@ export function captureManualCheckpoint({ state }: Params) {
         suspended: permanent.isSuspended,
         inBreeding: permanent.inBreeding,
         marker: permanent.manualMarker,
+        statuses: Array.from(permanent.manualStatuses),
         securityAttack: permanent.securityAttack,
         securityAttackModifier: permanent.securityAttackModifier,
         keywords: Array.from(permanent.keywords),

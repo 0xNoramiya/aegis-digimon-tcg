@@ -1,3 +1,5 @@
+import { restartManualMatch } from "#api/manual/restartManualMatch";
+import { logError } from "#api/logger";
 import { ManualController } from "#api/manual/ManualController";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getAttackRedirection } from "#api/engine/gameEngine/getAttackRedirection";
@@ -398,7 +400,17 @@ export class GameEngine {
     readonly hooks: GameEngineHooks,
   ) {
     if (state.gameMode === GameMode.MANUAL.value) {
-      this.manual = new ManualController({ state, seed: hooks.seed, randomKey: hooks.randomKey, emit: hooks.emit });
+      this.manual = new ManualController({
+        state,
+        seed: hooks.seed,
+        randomKey: hooks.randomKey,
+        emit: hooks.emit,
+        restart: (firstSeat) => {
+          void restartManualMatch({ engine: this, firstSeat }).catch((error: unknown) =>
+            logError("manual.restart", error),
+          );
+        },
+      });
     }
     // Every zone move is narrated through `hooks.emit`: the one place that sees a card leave
     // the field. Wrapped before the collaborators below capture `this.hooks.emit` by value.
