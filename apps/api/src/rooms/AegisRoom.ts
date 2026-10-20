@@ -2230,10 +2230,10 @@ export class AegisRoom extends Room<{
     )
       return;
     if (!this.replayDownloads.has(seat)) {
-      const replay = this.replayRecording?.complete(this.replayMode());
+      const file = this.replayRecording?.participantFile(this.replayMode(), seat);
       this.replayDownloads.set(
         seat,
-        replay ? replayDownload(replay, seat) : Promise.resolve({ kind: "unavailable", reason: "recording_limit" }),
+        file ? replayDownload(file, seat) : Promise.resolve({ kind: "unavailable", reason: "recording_limit" }),
       );
     }
     // Snapshot the account before I/O: onLeave clears accountByClient synchronously.

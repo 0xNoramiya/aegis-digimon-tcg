@@ -64,45 +64,49 @@ export function recordingEvents(events: readonly SequencedServerEvent[]): Sequen
     .map((event) => structuredClone(event.kind === "counterWindowOpened" ? { ...event, eligibleCounters: [] } : event));
 }
 
+export interface ParticipantReplayFile {
+  summary: ReplaySummary;
+  json: string;
+}
+
 export class ReplayRecording {
   readonly id = randomUUID();
-  private frames: ReplayFrame[] = [];
+  private serializedFrames: string[] = [];
+  private joinedFrames?: string;
+  private lastAtMs = 0;
   private bytes = 0;
   private overflow = false;
-  private finished = false;
+  private ending?: { players: [string, string]; winnerSeat: number };
 
   constructor(readonly startedAt = Date.now()) {}
 
   /** Captures at the closed rules batch, after mutations, with no dependency on patch ticks. */
   capture(state: GameState, events: readonly SequencedServerEvent[], now = Date.now()): void {
-    if (this.overflow || this.finished) return;
-    const frame = {
-      atMs: Math.max(this.frames.at(-1)?.atMs ?? 0, now - this.startedAt),
-      state: recordingState(state),
-      events: recordingEvents(events),
-    };
-    this.bytes += Buffer.byteLength(JSON.stringify(frame));
-    if (this.bytes > MAX_RECORDING_BYTES || this.frames.length >= MAX_FRAMES) {
-      this.frames = [];
+    if (this.overflow || this.ending) return;
+    const atMs = Math.max(this.lastAtMs, now - this.startedAt);
+    const recorded = recordingState(state);
+    const serialized = JSON.stringify({ atMs, state: recorded, events: recordingEvents(events) });
+    this.bytes += Buffer.byteLength(serialized);
+    if (this.bytes > MAX_RECORDING_BYTES || this.serializedFrames.length >= MAX_FRAMES) {
+      this.serializedFrames = [];
       this.overflow = true;
       return;
     }
-    this.frames.push(frame);
-    this.finished = state.gameOver;
+    this.serializedFrames.push(serialized);
+    this.lastAtMs = atMs;
+    if (state.gameOver)
+      this.ending = {
+        players: [recorded.players[0]!.displayName, recorded.players[1]!.displayName],
+        winnerSeat: recorded.winnerSeat,
+      };
   }
 
   complete(mode: ReplaySummary["mode"], finishedAt = Date.now()): MatchReplay | undefined {
-    const last = this.frames.at(-1);
-    if (!this.finished || !last) return undefined;
+    const summary = this.summary(mode, finishedAt);
+    if (!summary) return undefined;
     return {
+      ...summary,
       version: REPLAY_FORMAT_VERSION,
-      id: this.id,
-      players: [last.state.players[0]!.displayName, last.state.players[1]!.displayName],
-      mode,
-      startedAt: this.startedAt,
-      finishedAt: Math.max(this.startedAt, finishedAt),
-      winnerSeat: last.state.winnerSeat,
-      frameCount: this.frames.length,
       frames: this.frames,
       viewerSeat: 0,
       visibleHandSeats: [],
@@ -110,8 +114,39 @@ export class ReplayRecording {
     };
   }
 
+  participantFile(mode: ReplaySummary["mode"], seat: Seat, finishedAt = Date.now()): ParticipantReplayFile | undefined {
+    const summary = this.summary(mode, finishedAt);
+    if (!summary) return undefined;
+    this.joinedFrames ??= this.serializedFrames.join(",");
+    const envelope = JSON.stringify({
+      ...summary,
+      version: REPLAY_FORMAT_VERSION,
+      viewerSeat: seat,
+      visibleHandSeats: [0, 1],
+      format: "aegis-replay",
+    });
+    return { summary, json: `{"frames":[${this.joinedFrames}],${envelope.slice(1)}` };
+  }
+
   get exceededLimit(): boolean {
     return this.overflow;
+  }
+
+  private get frames(): ReplayFrame[] {
+    return this.serializedFrames.map((frame) => JSON.parse(frame) as ReplayFrame);
+  }
+
+  private summary(mode: ReplaySummary["mode"], finishedAt: number): ReplaySummary | undefined {
+    if (!this.ending) return undefined;
+    return {
+      id: this.id,
+      players: this.ending.players,
+      mode,
+      startedAt: this.startedAt,
+      finishedAt: Math.max(this.startedAt, finishedAt),
+      winnerSeat: this.ending.winnerSeat,
+      frameCount: this.serializedFrames.length,
+    };
   }
 }
 
