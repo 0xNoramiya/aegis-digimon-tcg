@@ -90,6 +90,7 @@ export function createDigivolveVerbs(pc: PrimitivesContext) {
     sourceInstanceId: string,
     opts?: {
       payCost?: boolean;
+      byEffect?: boolean;
       draw?: boolean;
       costDelta?: number;
       deferredCostReduction?: () => number;
@@ -332,6 +333,7 @@ export function createDigivolveVerbs(pc: PrimitivesContext) {
     // with `enteredByEffect` set to its controller (the producer for the BT25-084 by-effect gate).
     if (opts?.suppressWhenDigivolving !== true) {
       await engine.fireEnteredByEffect?.(EffectTiming.WhenDigivolving, instance.instanceId, seat, {
+        byEffect: opts?.byEffect,
         baseWasDigimon,
         previousDigivolutionLevel,
         ...(sourceZone !== undefined ? { digivolvedFromZone: sourceZone } : {}),
