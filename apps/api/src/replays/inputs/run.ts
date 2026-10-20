@@ -1,10 +1,12 @@
 import { GameState, type Intent, type IntentResult, type Seat, type SequencedServerEvent } from "@aegis/shared";
+import type { DecisionRequest } from "@aegis/shared/protocol/events";
 import { GameEngine } from "../../engine/GameEngine.js";
 import type { ReplayDivergence, ReplayInput, ReplayRecord, ReplaySite } from "./types.js";
 import { translateLegacySubTriggerKeys } from "#api/replays/inputs/translateLegacySubTriggerKeys";
 import "../../cards/index.js";
 
 export interface RunReplayOptions {
+  onDecision?: (request: DecisionRequest) => void;
   stopBeforeTurn?: number;
   /**
    * Stop before applying `inputs[untilInput]`, once the engine has gone idle, so the state can be
@@ -138,6 +140,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     },
     requestDecision: (seat, request) => {
       if (liveHooks) return liveHooks.requestDecision(seat, request);
+      options.onDecision?.(request);
       pendingRequest = request;
       progress += 1;
       applyDueAt("decisionRequest");
