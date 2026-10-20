@@ -19,6 +19,8 @@ export function captureManualCheckpoint({ state }: Params) {
     table: {
       revealedJson: state.manual.revealedJson,
       turnPhase: state.manual.turnPhase,
+      canHatch: state.manual.canHatch,
+      canMoveFromBreeding: state.manual.canMoveFromBreeding,
       combatStage: state.manual.combatStage,
       attackerSeat: state.manual.attackerSeat,
       attackerPermanentId: state.manual.attackerPermanentId,

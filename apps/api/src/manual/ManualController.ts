@@ -1,3 +1,6 @@
+import { getManualBreedingOptions } from "#api/manual/getManualBreedingOptions";
+import { prepareManualTurn } from "#api/manual/prepareManualTurn";
+import { ManualBreedingChoice } from "@aegis/shared/manual/ManualBreedingChoice";
 import { resetManualPermanentModifiers } from "#api/manual/resetManualPermanentModifiers";
 import { ManualCombatStage } from "@aegis/shared/manual/ManualCombatStage";
 import { ArraySchema } from "@colyseus/schema";
@@ -42,6 +45,7 @@ type Params = {
   randomKey?: string;
   emit: (event: ServerEvent) => void;
   restart?: (firstSeat: Seat) => void;
+  declareDeckOutLoss?: (seat: Seat) => void;
 };
 type Source = { card: CardInstance; permanent?: Permanent; index: number; zone: Zone; part?: ManualLocation["part"] };
 type Inspection = { zone: Zone; cards: CardInstance[] };
@@ -57,10 +61,10 @@ export class ManualController {
   constructor(private readonly params: Params) {}
 
   begin(): void {
-    const { state, emit } = this.params;
+    const { state } = this.params;
     state.phase = Phase.Main;
     state.turnCount = 1;
-    emit({ kind: "phaseChanged", phase: state.phase, turnSeat: state.turnSeat, turnCount: state.turnCount });
+    prepareManualTurn(this.params);
   }
 
   apply(seat: Seat, value: unknown): IntentResult {
@@ -97,11 +101,16 @@ export class ManualController {
         this.checkpoint = checkpoint;
         state.manual.canUndo = true;
       }
+      if (state.gameOver) {
+        this.checkpoint = undefined;
+        state.manual.canUndo = false;
+      }
       state.manual.revision += 1;
       state.manual.history.push(`${state.manual.revision}|${seat}|${description}`);
       if (state.manual.history.length > 200) {
         state.manual.history.shift();
       }
+      this.refreshBreedingOptions();
       this.refreshPublicReferences();
       this.refreshInspections();
       this.params.emit({ kind: "manualAction", seat, action: description });
@@ -341,6 +350,9 @@ export class ManualController {
       this.require(command.action === ManualAction.ANSWER_RESTART.value);
     }
     switch (command.action) {
+      case ManualAction.BREEDING.value:
+        return this.prepareBreeding(player, command.choice);
+
       case ManualAction.STATUSES.value: {
         const permanent = this.getPermanent(player, command.permanentId);
         return () => {
@@ -541,11 +553,8 @@ export class ManualController {
         };
       }
       case ManualAction.PHASE.value:
-        this.require(state.turnSeat === seat && table.combatStage === ManualCombatStage.NONE.value);
-        return () => {
-          table.turnPhase = command.phase;
-          return `phase ${command.phase}`;
-        };
+        this.require(command.phase === Phase.Main);
+        return this.prepareBreeding(player, ManualBreedingChoice.SKIP.value);
       case ManualAction.COMBAT.value: {
         this.require(table.combatStage !== ManualCombatStage.NONE.value);
         const stages = Object.values(ManualCombatStage).map((entry) => entry.value);
@@ -635,19 +644,24 @@ export class ManualController {
           return `memory ${command.value}`;
         };
       case ManualAction.PASS.value: {
-        this.require(state.turnSeat === seat && table.combatStage === ManualCombatStage.NONE.value);
+        this.require(
+          state.turnSeat === seat &&
+            table.turnPhase === Phase.Main &&
+            table.combatStage === ManualCombatStage.NONE.value,
+        );
         return () => {
           state.turnSeat = (1 - seat) as Seat;
           state.turnCount += 1;
           state.memory = -state.memory;
           state.isFirstPlayersFirstTurn = false;
-          table.turnPhase = Phase.Active;
+          this.clearSignal();
           this.params.emit({
-            kind: "phaseChanged",
-            phase: Phase.Main,
-            turnSeat: state.turnSeat,
-            turnCount: state.turnCount,
+            kind: "turnEnded",
+            endingSeat: seat,
+            nextSeat: state.turnSeat,
+            turnCount: state.turnCount - 1,
           });
+          prepareManualTurn(this.params);
           return "pass turn";
         };
       }
@@ -655,7 +669,11 @@ export class ManualController {
         const permanent = this.getPermanent(player, command.permanentId);
         const opponent = state.players[1 - seat]!;
         this.require(
-          !permanent.inBreeding && permanent.topCard.faceUp && table.combatStage === ManualCombatStage.NONE.value,
+          state.turnSeat === seat &&
+            !permanent.inBreeding &&
+            permanent.topCard.faceUp &&
+            table.turnPhase === Phase.Main &&
+            table.combatStage === ManualCombatStage.NONE.value,
         );
         this.require(
           !command.targetPermanentId ||
@@ -726,6 +744,81 @@ export class ManualController {
           return command.accept ? "accept result" : "decline result";
         };
       }
+    }
+  }
+
+  private prepareBreeding(player: PlayerState, choice: ManualBreedingChoice): () => string {
+    const { state } = this.params;
+    const table = state.manual;
+    this.require(
+      player.seat === state.turnSeat &&
+        table.turnPhase === Phase.Breeding &&
+        table.combatStage === ManualCombatStage.NONE.value,
+    );
+    const options = getManualBreedingOptions({ player });
+    this.require(choice !== ManualBreedingChoice.HATCH.value || options.canHatch);
+    this.require(choice !== ManualBreedingChoice.MOVE.value || options.canMoveFromBreeding);
+    return () => {
+      if (choice === ManualBreedingChoice.HATCH.value) {
+        const card = extractCardAt(player, Zone.EggDeck, 0)!;
+        this.addCard(player, card, { zone: Zone.Breeding });
+        this.params.emit({
+          kind: "hatched",
+          seat: player.seat,
+          cardId: card.cardId,
+          permanentId: player.breeding!.permanentId,
+        });
+        this.params.emit({ kind: "cardsMoved", instanceIds: [card.instanceId], from: Zone.EggDeck, to: Zone.Breeding });
+      } else if (choice === ManualBreedingChoice.MOVE.value) {
+        const permanent = player.breeding!;
+        setBreeding(player, undefined);
+        permanent.inBreeding = false;
+        placePermanent(player, permanent);
+        this.params.emit({
+          kind: "movedFromBreeding",
+          seat: player.seat,
+          cardId: permanent.topCard.cardId,
+          permanentId: permanent.permanentId,
+        });
+        this.params.emit({
+          kind: "cardsMoved",
+          instanceIds: [permanent.permanentId],
+          from: Zone.Breeding,
+          to: Zone.BattleArea,
+        });
+      }
+      table.turnPhase = Phase.Main;
+      table.canHatch = false;
+      table.canMoveFromBreeding = false;
+      this.params.emit({
+        kind: "phaseChanged",
+        phase: Phase.Main,
+        turnSeat: state.turnSeat,
+        turnCount: state.turnCount,
+      });
+      return `breeding ${choice}`;
+    };
+  }
+
+  private refreshBreedingOptions(): void {
+    const { state } = this.params;
+    const table = state.manual;
+    if (table.turnPhase !== Phase.Breeding || state.gameOver || state.turnCount === 0) {
+      table.canHatch = false;
+      table.canMoveFromBreeding = false;
+      return;
+    }
+    const options = getManualBreedingOptions({ player: state.players[state.turnSeat]! });
+    table.canHatch = options.canHatch;
+    table.canMoveFromBreeding = options.canMoveFromBreeding;
+    if (!options.canHatch && !options.canMoveFromBreeding) {
+      table.turnPhase = Phase.Main;
+      this.params.emit({
+        kind: "phaseChanged",
+        phase: Phase.Main,
+        turnSeat: state.turnSeat,
+        turnCount: state.turnCount,
+      });
     }
   }
 

@@ -37,6 +37,7 @@ describe("manual command validation", () => {
     { ...envelope, command: { action: "signal", from: { zone: "hand" }, targetPermanentId: "a", targetSeat: 1 } },
     { ...envelope, command: { action: "signal", from: { zone: "hand" }, targetSeat: -1 } },
     { ...envelope, command: { action: "proposeRestart", firstSeat: 2 } },
+    { ...envelope, command: { action: "breeding", choice: "constructor" } },
     null,
     [],
     {},

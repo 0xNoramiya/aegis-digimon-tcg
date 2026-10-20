@@ -405,6 +405,7 @@ export class GameEngine {
         seed: hooks.seed,
         randomKey: hooks.randomKey,
         emit: hooks.emit,
+        declareDeckOutLoss: (seat) => this.win.declareLoss(seat, "deckOut"),
         restart: (firstSeat) => {
           void restartManualMatch({ engine: this, firstSeat }).catch((error: unknown) =>
             logError("manual.restart", error),

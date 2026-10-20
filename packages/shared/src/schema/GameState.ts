@@ -118,6 +118,8 @@ class ManualTable extends Schema {
   @type("int8") restartRequester = -1;
   @type("int8") restartFirstSeat = -1;
   @type("uint32") restartCount = 0;
+  @type("boolean") canHatch = false;
+  @type("boolean") canMoveFromBreeding = false;
 }
 
 export class GameState extends Schema {

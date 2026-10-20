@@ -1,3 +1,4 @@
+import { ManualBreedingChoice } from "#shared/manual/ManualBreedingChoice";
 import { ManualStatus } from "#shared/manual/ManualStatus";
 import { ManualAction } from "#shared/manual/ManualAction";
 import type { ManualCommand, ManualDestination, ManualIntent, ManualLocation } from "#shared/manual/ManualCommand";
@@ -47,6 +48,8 @@ function isCommand(value: unknown): value is ManualCommand {
     return false;
   }
   switch (value.action) {
+    case ManualAction.BREEDING.value:
+      return Object.values(ManualBreedingChoice).some((entry) => entry.value === value.choice);
     case ManualAction.STATUSES.value:
       return (
         isText(value.permanentId) &&

@@ -1,3 +1,4 @@
+import type { ManualBreedingChoice } from "#shared/manual/ManualBreedingChoice";
 import type { ManualStatus } from "#shared/manual/ManualStatus";
 import { ManualAction } from "#shared/manual/ManualAction";
 import type { ManualCombatStage } from "#shared/manual/ManualCombatStage";
@@ -19,6 +20,7 @@ export type ManualDestination = {
 };
 
 export type ManualCommand =
+  | { action: typeof ManualAction.BREEDING.value; choice: ManualBreedingChoice }
   | { action: typeof ManualAction.STATUSES.value; permanentId: string; statuses: ManualStatus[] }
   | { action: typeof ManualAction.RESET_MODIFIERS.value; permanentId: string }
   | { action: typeof ManualAction.TRAINING.value; permanentId: string }

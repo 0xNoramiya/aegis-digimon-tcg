@@ -1,4 +1,5 @@
 export const ManualAction = {
+  BREEDING: { name: "BREEDING", value: "breeding" },
   STATUSES: { name: "STATUSES", value: "statuses" },
   RESET_MODIFIERS: { name: "RESET_MODIFIERS", value: "resetModifiers" },
   TRAINING: { name: "TRAINING", value: "training" },

@@ -105,6 +105,9 @@ describe("manual room boundaries and replay", () => {
           revision: room.state.manual.revision,
           command,
         });
+      expect(room.state.manual.turnPhase).toBe(Phase.Breeding);
+      expect(room.state.players[room.state.turnSeat]!.hand).toHaveLength(5);
+      manual(room.state.turnSeat, { action: "breeding", choice: "skip" });
       manual(0, { action: "draw", count: 2 });
       manual(1, { action: "inspect", zone: Zone.Security, count: 5 });
       manual(0, { action: "shuffle", zone: Zone.Deck });
@@ -127,7 +130,7 @@ describe("manual room boundaries and replay", () => {
       manual(1, { action: "reveal", from: { zone: Zone.Hand }, count: 2 });
       manual(0, { action: "clearReveals" });
       manual(0, { action: "flip", from: { zone: Zone.Security }, faceUp: true });
-      manual(room.state.turnSeat, { action: "phase", phase: Phase.Breeding });
+
       manual(0, { action: "attack", permanentId: token.permanentId });
       manual(0, { action: "combat", stage: ManualCombatStage.COUNTER.value });
       manual(1, { action: "combat", stage: ManualCombatStage.BLOCK.value });
@@ -163,10 +166,27 @@ describe("manual room boundaries and replay", () => {
       send(0, { type: "mulligan", keep: false });
       await vi.waitFor(() => expect(room.state.turnCount).toBe(1));
       expect(room.state.turnSeat).toBe(1);
+      expect(room.state.manual.turnPhase).toBe(Phase.Breeding);
+      expect(room.state.players[1]!.hand).toHaveLength(5);
+      manual(1, { action: "breeding", choice: "skip" });
+      const nextHand = room.state.players[0]!.hand.length;
+      manual(1, { action: "pass" });
+      expect(room.state.players[0]!.hand).toHaveLength(nextHand + 1);
+      expect(room.state.manual.turnPhase).toBe(Phase.Breeding);
+      manual(1, { action: "requestUndo" });
+      manual(0, { action: "answerUndo", accept: true });
+      expect(room.state.turnSeat).toBe(1);
+      expect(room.state.players[0]!.hand).toHaveLength(nextHand);
+      expect(room.state.manual.turnPhase).toBe(Phase.Main);
+      manual(1, { action: "pass" });
+      expect(room.state.players[0]!.hand).toHaveLength(nextHand + 1);
+      manual(0, { action: "breeding", choice: "hatch" });
+      expect(room.state.players[0]!.breeding).toBeDefined();
+      expect(room.state.manual.turnPhase).toBe(Phase.Main);
       expect(room.state.players[0]!.hand[0]!.instanceId).not.toBe(oldFirstCardId);
       expect(room.state.players[0]!.security).toHaveLength(5);
       expect(room.state.players[1]!.security).toHaveLength(5);
-      expect(room.state.manual.canUndo).toBe(false);
+
       manual(1, { action: "proposeResult", winnerSeat: -1 });
       manual(0, { action: "answerResult", accept: true });
       expect(room.state.gameOver).toBe(true);
@@ -184,4 +204,51 @@ describe("manual room boundaries and replay", () => {
       stopCapture();
     }
   });
+});
+
+it("finishes and deterministically replays a scheduled draw loss through the real manual room", async () => {
+  const lines: string[] = [];
+  const stopCapture = addLogSink((line) => lines.push(line));
+  try {
+    const { room, join, send } = createRoom(true);
+    join();
+    send(0, { type: "ready" });
+    send(1, { type: "ready" });
+    const choice = room.state.pendingDecision!;
+    send(choice.seat, {
+      type: "respondDecision",
+      decisionId: choice.decisionId,
+      response: { kind: "chooseOption", optionIndex: 0 },
+    });
+    await vi.waitFor(() => expect(room.state.pendingDecision?.kind).toBe("mulligan"));
+    send(room.state.pendingDecision!.seat, { type: "mulligan", keep: true });
+    await vi.waitFor(() => expect(room.state.pendingDecision?.kind).toBe("mulligan"));
+    send(room.state.pendingDecision!.seat, { type: "mulligan", keep: true });
+    await vi.waitFor(() => expect(room.state.turnCount).toBe(1));
+    let sequence = 0;
+    const manual = (seat: number, command: Extract<Intent, { type: "manual" }>["command"]) =>
+      send(seat, {
+        type: "manual",
+        requestId: `scheduled-${++sequence}`,
+        revision: room.state.manual.revision,
+        command,
+      });
+    const first = room.state.turnSeat;
+    const second = (1 - first) as 0 | 1;
+    manual(first, { action: "breeding", choice: "skip" });
+    manual(second, { action: "draw", count: room.state.players[second]!.deck.length });
+    expect(room.state.gameOver).toBe(false);
+    manual(first, { action: "pass" });
+    expect(room.state.gameOver).toBe(true);
+    expect(room.state.players[second]!.lost).toBe(true);
+    expect(room.state.winnerSeat).toBe(first);
+    expect(room.state.manual.canUndo).toBe(false);
+    const record = extractReplay(lines, room.state.matchLogId);
+    const replay = await runReplay(record);
+    expect(replay.divergences).toEqual([]);
+    expect(replay.state.winnerSeat).toBe(first);
+    expect(replay.state.manual.toJSON()).toEqual(room.state.manual.toJSON());
+  } finally {
+    stopCapture();
+  }
 });

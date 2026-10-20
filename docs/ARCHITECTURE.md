@@ -209,10 +209,15 @@ private invitations resolve the host's mode before joining. Older records withou
 `GameEngine` remains the room-facing lifecycle facade. In manual mode it delegates
 board commands to `ManualController` instead of the automatic intent router.
 Setup chooses a player to decide the first seat, deals hands, offers mulligans and
-sets security. Afterwards no card effects, continuous rules, automatic draws,
-unsuspension, memory-based turn passing or victory checks execute. Each player
-operates their own side at either player's turn. Passing changes the active seat
-and reverses the relative memory sign, preserving the gauge's physical position.
+sets security. Each turn then unsuspends the active player's cards, draws one card
+except on the first turn of the game, and offers the legal breeding choice before
+Main. Hatching, moving out and skipping are mutually exclusive choices owned by
+the active player. If neither hatch nor move is available, the turn enters Main
+automatically. A mandatory start-of-turn draw from an empty deck ends the game.
+Card effects, continuous rules, memory-based turn passing and other victory checks
+remain manual. Each player can make explicit corrections to their own side.
+Passing changes the active seat and reverses the relative memory sign, preserving
+the gauge's physical position, then prepares the next turn.
 
 Manual commands are validated and applied by the API. Each command carries a
 request identifier and a manual revision, preventing duplicates and stale edits.
@@ -240,8 +245,9 @@ interaction targets and cannot declare attacks or effect signals.
 
 Effect signals explicitly publish an owned hand or face-up field card and an
 optional card or player target. Signals provide shared visual context and do not
-execute effects. Manual phase and combat tracking likewise never resolves battles
-or security checks. Pending undo, result and restart agreements block table edits.
+execute effects. Guided phase preparation does not execute printed effects such
+as Reboot or draw bonuses. Manual combat tracking never resolves battles or
+security checks. Pending undo, result and restart agreements block table edits.
 A restart requires the other player's approval, preserves the original decks and
 player seats, uses fresh deterministic randomness, and repeats mulligans and
 security setup with the agreed first player. Restart invalidates the previous undo
