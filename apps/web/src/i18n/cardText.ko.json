@@ -5,6 +5,7 @@
   "[AllTurns][OncePerTurn]Whenacardisremovedfromyoursecuritystack,1ofyouropponent'sDigimongets-2000DPfortheturn.": "【서로의 턴】[턴에 1회]자신의 시큐리티가 줄어들었을 때, 턴 종료까지 상대의 디지몬 1마리를 DP -2000.",
   "[AllTurns][OncePerTurn]Whenacardisremovedfromyoursecuritystack,ifthisDigimonhas[Fenriloogamon]initsname,1ofyouropponent'sDigimongets-8000DPfortheturn.": "【서로의 턴】[턴에 1회]자신의 시큐리티가 줄어들었을 때, 이 디지몬이 명칭에 「펜리루가몬」을 포함한다면, 턴 종료까지 상대의 디지몬 1마리를 DP -8000.",
   "[AllTurns][OncePerTurn]Whenacardisremovedfromyoursecuritystack,unsuspendthisDigimon.": "【서로의 턴】[턴에 1회]자신의 시큐리티가 줄어들었을 때, 이 디지몬을 액티브로 할 수 있다.",
+  "[AllTurns][OncePerTurn]Whenacardisremovedfromyoursecuritystack,youmayunsuspendthisDigimon.": "【서로의 턴】[턴에 1회]자신의 시큐리티가 줄어들었을 때, 이 디지몬을 액티브로 할 수 있다.",
   "[AllTurns][OncePerTurn]Whenacardwith[Jellymon]&#160;initstextistrashedfromyourhand,youmayunsuspendthisDigimon.": "【서로의 턴】[턴에 1회]자신의 패에서 「젤리몬」이 기술되어 있는 카드가 파기되었을 때, 이 디지몬을 액티브로 할 수 있다.",
   "[AllTurns][OncePerTurn]Whenadigivolutioncardofanopponent'sDigimonistrashed,return1ofyouropponent'slevel3Digimontoitsowner'shand.": "【서로의 턴】〔턴에 1회〕상대 디지몬의 진화원이 파기되었을 때, Lv.3인 상대의 디지몬 1마리를 패로 되돌린다.",
   "[AllTurns][OncePerTurn]Whenanattacktargetischanged,youmayplay1Tamercardwithinheritedeffectsfromyourhandwithoutpayingthecost.": "【서로의 턴】[턴에 1회]어택의 대상이 변경되었을 때, 자신의 패에서 진화원 효과를 가진 테이머 카드 1장을 코스트를 지불하지 않고 등장시킬 수 있다.",
