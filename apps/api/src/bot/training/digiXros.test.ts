@@ -98,6 +98,21 @@ describe("DigiXros candidate declarations", () => {
     expect(routes.flatMap((route) => route.materialIds ?? [])).not.toContain(s.state.players[0]!.trash[0]!.instanceId);
   });
 
+  it("bounds material combinations by default so a crowded hand cannot stall the bot", async () => {
+    const materials = Array.from({ length: 30 }, (_, index) => (index % 2 === 0 ? "EX10-026" : "EX10-027"));
+    const s = setupEngine({ 0: { hand: [{ card: "BT19-063", as: "result" }, ...materials] } });
+    s.state.memory = 10;
+    await s.ready();
+    const digiXros = (budget?: number) =>
+      mainActions(s.engine, 0, budget === undefined ? {} : { digiXrosValidationBudget: budget }).filter(
+        ({ intent }) => intent.type === "playCard" && intent.digiXros !== undefined,
+      );
+    const bounded = digiXros();
+    expect(bounded.length).toBeGreaterThan(0);
+    expect(bounded.length).toBeLessThanOrEqual(256);
+    expect(digiXros(Number.POSITIVE_INFINITY).length).toBeGreaterThan(bounded.length);
+  });
+
   it("effect selections exclude duplicate slots and respect authorized material-group quotas", () => {
     const cards = new Map([
       ["skull", { cardId: "EX10-026" }],

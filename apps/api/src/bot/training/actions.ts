@@ -40,6 +40,8 @@ export function breedingActions(engine: GameEngine, seat: Seat): TrainingAction[
   return actions;
 }
 
+const DEFAULT_DIGIXROS_VALIDATION_BUDGET = 256;
+
 /** Match the real main-verb handlers, including alternate costs and breeding effects. */
 export function mainActions(
   engine: GameEngine,
@@ -52,7 +54,9 @@ export function mainActions(
   const actions: TrainingAction[] = [
     { intent: { type: "endPhase" }, label: "End main phase" },
     ...(options.includeSpecialActions === false ? [] : specialMainActions(engine, seat)),
-    ...digiXrosMainActions(engine, seat, { validationBudget: options.digiXrosValidationBudget }),
+    ...digiXrosMainActions(engine, seat, {
+      validationBudget: options.digiXrosValidationBudget ?? DEFAULT_DIGIXROS_VALIDATION_BUDGET,
+    }),
   ];
   const bases = [...player.battleArea, ...(player.breeding === undefined ? [] : [player.breeding])];
   const playDeps = playCardDeps(engine);

@@ -23,6 +23,7 @@ interface PlanNode {
 }
 
 const ROLLOUT_LIMIT = 40;
+const BRANCHING_LIMIT = 16;
 
 export function planMainTurn(input: {
   program: HeuristicProgram;
@@ -88,7 +89,11 @@ export function planMainTurn(input: {
     const children = new Map<string, { node: PlanNode; estimate: number }>();
     for (const node of beam) {
       const scored = advantages(node.state);
-      for (let index = 0; index < scored.length; index++) {
+      const expanded = scored
+        .map((advantage, index) => ({ advantage, index }))
+        .sort((left, right) => right.advantage - left.advantage || left.index - right.index)
+        .slice(0, BRANCHING_LIMIT);
+      for (const { index } of expanded) {
         const child = step(node, index, scored[index]!);
         if (child.state.ended) {
           finish(child);
