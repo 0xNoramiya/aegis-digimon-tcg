@@ -1017,9 +1017,8 @@ export class ContinuousEffectLedger {
     );
   }
 
-  /** Return active player-scoped named grants that match a newly entered permanent. */
-  playerCustomEffectsFor(permanentId: string, seat: Seat): readonly PlayerCustomEffectGrant[] {
-    return this.playerCustomEffectGrants.filter((grant) => grant.seat === seat && grant.matches(permanentId));
+  playerCustomEffectsOf(seat: Seat): readonly PlayerCustomEffectGrant[] {
+    return this.playerCustomEffectGrants.filter((grant) => grant.seat === seat);
   }
 
   /** Keywords currently granted to a permanent (with optional amounts). */
