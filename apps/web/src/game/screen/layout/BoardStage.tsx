@@ -1,3 +1,5 @@
+import { ArenaInput } from "@/game/input/ArenaInput";
+import { useArenaInputEnabled } from "@/game/input/useArenaInputEnabled";
 import type { LowTimeWarning } from "@/game/useLowTimeWarning";
 import { RollbackControls } from "@/game/RollbackControls";
 /* The arena itself: the opponent's bar, the narration and the ticker, the field's three
@@ -244,6 +246,7 @@ export function BoardStage({
   timeWarning: LowTimeWarning;
 }) {
   const { t } = useTranslation();
+  const arenaInputEnabled = useArenaInputEnabled();
   useBreedingTransferOrigins(anchors.board);
   useFieldShatterOrigins(anchors.board);
   const other = otherSeat(viewerSeat);
@@ -321,6 +324,13 @@ export function BoardStage({
           ...look.style,
         }}
       >
+        {arenaInputEnabled ? (
+          <ArenaInput
+            root={anchors.board}
+            cancelable={!!(selection.handSel || selection.handPreview || selection.selPerm || selection.linkSel)}
+            onCancel={selection.clearSel}
+          />
+        ) : null}
         <div
           className="game-board aegis-arena-surface"
           ref={anchors.board}

@@ -149,10 +149,13 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
       // wasting the effect on a card whose orientation cannot change (BT15-063).
       // A chained sibling ("...; it gains <Blocker>", BT1-095) makes the choice matter
       // beyond the orientation, so the printed pool stands there (KB Q963).
+      const mandatoryReachesOpponent =
+        action.optional !== true &&
+        seatsForController(ctx, action.target.filter).includes(ctx.game.opponentOf(ctx.source.ownerSeat));
       const ids = await resolvePermanentTargets(
         ctx,
         action.target,
-        ctx.nextActionChainsSameTarget === true
+        ctx.nextActionChainsSameTarget === true || mandatoryReachesOpponent
           ? {}
           : { eligible: (permanentId) => ctx.game.permanentById(permanentId)?.isSuspended === true },
       );

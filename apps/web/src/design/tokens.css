@@ -123,6 +123,7 @@
   /* A keyword or badge explanation explains whatever surface it was tapped on,
      so it sits above all of them. */
   --ds-z-hint: 12100;
+  --ds-z-input-prompt: 12200;
 }
 
 .dark {

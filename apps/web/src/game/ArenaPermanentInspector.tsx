@@ -177,6 +177,7 @@ export function ArenaPermanentInspector({
               ref={closeRef}
               type="button"
               className="arena-permanent-inspector__close"
+              data-arena-cancel
               onClick={onClose}
               aria-label={t("common.close")}
             >

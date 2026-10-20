@@ -1,3 +1,4 @@
+import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 /* The strip along the bottom: the raising area on a wide screen, then the action bar
    and the hand, then the viewer's own counters. A portrait phone moves the raising
    area up into the field, so the dock takes it as a slot rather than rendering it. A
@@ -111,7 +112,12 @@ export function PlayerDock({
       {playerName ? (
         <PlayerLine name={playerName} avatarId={playerAvatarId} side="player" timer={timer} actingLabel={actingLabel} />
       ) : null}
-      <div className="game-hand-dock" ref={handDockRef} style={{ flex: 1, minWidth: 0, padding: "8px 20px 12px" }}>
+      <div
+        className="game-hand-dock"
+        data-arena-region={ArenaInputRegion.HAND.value}
+        ref={handDockRef}
+        style={{ flex: 1, minWidth: 0, padding: "8px 20px 12px" }}
+      >
         {actionBar ? (
           <ActionBar
             selCardId={actionBar.selCardId}

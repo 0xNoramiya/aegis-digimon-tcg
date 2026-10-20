@@ -243,6 +243,12 @@ export function DecisionTriggerChooser({
                 <DecisionReorderHandle
                   position={displayIndex + 1}
                   onCancel={drag.cancel}
+                  onRestore={(originalPosition) => {
+                    const target = displayedKeys[originalPosition - 1];
+                    if (target) {
+                      reorder(key, target);
+                    }
+                  }}
                   {...drag.handleProps(key)}
                   onMove={(delta) => {
                     const target = displayedKeys[displayIndex + delta];

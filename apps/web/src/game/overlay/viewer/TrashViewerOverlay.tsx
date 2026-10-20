@@ -248,7 +248,7 @@ export function TrashViewerOverlay({
             )}
             {menuIndex !== null ? confirmDialog(menuIndex) : null}
             <div className="card-action-sheet__actions">
-              <Button size="sm" full variant="ghost" onClick={onClose} autoFocus>
+              <Button size="sm" full variant="ghost" data-arena-cancel onClick={onClose} autoFocus>
                 {t("common.close")}
               </Button>
             </div>
@@ -415,7 +415,7 @@ export function TrashViewerOverlay({
                   </p>
                 ))
               : null}
-            <Button size="md" variant="ghost" full onClick={onClose}>
+            <Button size="md" variant="ghost" full data-arena-cancel onClick={onClose}>
               {t("common.close")}
             </Button>
           </div>

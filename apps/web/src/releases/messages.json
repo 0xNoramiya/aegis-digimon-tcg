@@ -3106,5 +3106,71 @@
     "pt-BR": "As prévias de deck e as exportações em imagem agora listam cartas DUAL Digimon/Opção no nível do Digimon, e não em Opções.",
     "es": "Las vistas previas de mazo y las exportaciones en imagen ahora muestran las cartas DUAL Digimon/Opción en su nivel de Digimon y no en Opciones.",
     "it": "Le anteprime dei mazzi e le esportazioni in immagine ora mostrano le carte DUAL Digimon/Opzione al loro livello Digimon invece che tra le Opzioni."
+  },
+  "releases.1.35.0-beta.summary": {
+    "en": "Play with a keyboard or controller, a new BT27 Tamer, faster Option replays, and several card fixes.",
+    "pt-BR": "Jogue com teclado ou controle, um novo Tamer de BT27, replays de Opções mais rápidos e várias correções de cartas.",
+    "es": "Juega con teclado o mando, un nuevo Tamer de BT27, repeticiones de Opciones más rápidas y varias correcciones de cartas.",
+    "it": "Gioca con tastiera o controller, un nuovo Tamer di BT27, replay delle Opzioni più veloci e diverse correzioni di carte."
+  },
+  "releases.1.35.0-beta.feature.arenaInput": {
+    "en": "You can now play matches with a keyboard or a game controller. Turn it on in the match settings under \"Keyboard and controller\".",
+    "pt-BR": "Agora você pode jogar partidas com teclado ou controle. Ative em \"Teclado e controle\" nas configurações da partida.",
+    "es": "Ahora puedes jugar partidas con teclado o mando. Actívalo en \"Teclado y mando\" en los ajustes de la partida.",
+    "it": "Ora puoi giocare le partite con tastiera o controller. Attivalo in \"Tastiera e controller\" nelle impostazioni della partita."
+  },
+  "releases.1.35.0-beta.feature.akihiroKurata": {
+    "en": "Akihiro Kurata (BT27-098) is now playable.",
+    "pt-BR": "Akihiro Kurata (BT27-098) agora pode ser jogado.",
+    "es": "Akihiro Kurata (BT27-098) ya se puede jugar.",
+    "it": "Akihiro Kurata (BT27-098) ora è giocabile."
+  },
+  "releases.1.35.0-beta.fix.replayOptions": {
+    "en": "Replays no longer pause for about 45 seconds when an Option, including a DUAL card, is used.",
+    "pt-BR": "Os replays não pausam mais por cerca de 45 segundos quando uma Opção, incluindo cartas DUAL, é usada.",
+    "es": "Las repeticiones ya no se detienen unos 45 segundos cuando se usa una Opción, incluidas las cartas DUAL.",
+    "it": "I replay non si fermano più per circa 45 secondi quando si usa un'Opzione, comprese le carte DUAL."
+  },
+  "releases.1.35.0-beta.fix.zephagamonUnsuspend": {
+    "en": "Zephagamon (ST18-12), Anemoi Embrace (ST18-15), and Imperialdramon: Dragon Mode (P-109) now let you choose the Digimon to unsuspend, so the Digimon you just suspended can stay suspended.",
+    "pt-BR": "Zephagamon (ST18-12), Anemoi Embrace (ST18-15) e Imperialdramon: Dragon Mode (P-109) agora deixam você escolher o Digimon a ser ativado, então o Digimon que você acabou de suspender pode continuar suspenso.",
+    "es": "Zephagamon (ST18-12), Anemoi Embrace (ST18-15) e Imperialdramon: Dragon Mode (P-109) ahora te dejan elegir el Digimon que se activa, así el Digimon que acabas de suspender puede seguir suspendido.",
+    "it": "Zephagamon (ST18-12), Anemoi Embrace (ST18-15) e Imperialdramon: Dragon Mode (P-109) ora ti fanno scegliere il Digimon da riattivare, così il Digimon che hai appena sospeso può restare sospeso."
+  },
+  "releases.1.35.0-beta.fix.forbiddenTrident": {
+    "en": "Forbidden Trident (BT6-096) no longer returns your opponent's attackers to hand on later turns. Atomic Inferno (BT4-098) now gains memory only when the chosen Digimon is blocked.",
+    "pt-BR": "Forbidden Trident (BT6-096) não devolve mais à mão os atacantes do oponente em turnos seguintes. Atomic Inferno (BT4-098) agora só ganha memória quando o Digimon escolhido é bloqueado.",
+    "es": "Forbidden Trident (BT6-096) ya no devuelve a la mano a los atacantes de tu oponente en turnos posteriores. Atomic Inferno (BT4-098) ahora solo gana memoria cuando el Digimon elegido es bloqueado.",
+    "it": "Forbidden Trident (BT6-096) non rimanda più in mano gli attaccanti dell'avversario nei turni successivi. Atomic Inferno (BT4-098) ora guadagna memoria solo quando il Digimon scelto viene bloccato."
+  },
+  "releases.1.35.0-beta.fix.regulusmon": {
+    "en": "Regulusmon (BT21-077) and Queen of Thorns (BT26-098) now offer only the Digimon their text allows.",
+    "pt-BR": "Regulusmon (BT21-077) e Queen of Thorns (BT26-098) agora oferecem apenas os Digimon permitidos pelo texto.",
+    "es": "Regulusmon (BT21-077) y Queen of Thorns (BT26-098) ahora solo ofrecen los Digimon que permite su texto.",
+    "it": "Regulusmon (BT21-077) e Queen of Thorns (BT26-098) ora offrono solo i Digimon consentiti dal loro testo."
+  },
+  "releases.1.35.0-beta.fix.dokugumon": {
+    "en": "Dokugumon (P-163) now suspends an opponent's Digimon when it is deleted, as printed.",
+    "pt-BR": "Dokugumon (P-163) agora suspende um Digimon do oponente quando é deletado, como está impresso.",
+    "es": "Dokugumon (P-163) ahora suspende un Digimon de tu oponente cuando es eliminado, como está impreso.",
+    "it": "Dokugumon (P-163) ora sospende un Digimon dell'avversario quando viene eliminato, come stampato."
+  },
+  "releases.1.35.0-beta.fix.soloogarmon": {
+    "en": "Soloogarmon (BT16-076) no longer unsuspends your attacker when your opponent has 0 memory.",
+    "pt-BR": "Soloogarmon (BT16-076) não ativa mais o seu atacante quando o oponente tem 0 de memória.",
+    "es": "Soloogarmon (BT16-076) ya no activa a tu atacante cuando tu oponente tiene 0 de memoria.",
+    "it": "Soloogarmon (BT16-076) non riattiva più il tuo attaccante quando l'avversario ha 0 memoria."
+  },
+  "releases.1.35.0-beta.fix.autoHatch": {
+    "en": "Auto-hatch no longer tries to hatch an egg right after you raise a Digimon.",
+    "pt-BR": "A eclosão automática não tenta mais chocar um ovo logo depois de você subir um Digimon.",
+    "es": "La eclosión automática ya no intenta abrir un huevo justo después de que subas un Digimon.",
+    "it": "La schiusa automatica non prova più a schiudere un uovo subito dopo che hai spostato un Digimon in campo."
+  },
+  "releases.1.35.0-beta.fix.bt27Art": {
+    "en": "BT27 card art no longer shows white margins.",
+    "pt-BR": "A arte das cartas de BT27 não mostra mais margens brancas.",
+    "es": "El arte de las cartas de BT27 ya no muestra márgenes blancos.",
+    "it": "Le illustrazioni delle carte BT27 non mostrano più margini bianchi."
   }
 }

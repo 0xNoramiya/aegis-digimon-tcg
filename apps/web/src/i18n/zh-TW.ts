@@ -3,6 +3,16 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "settings.arenaInput": "鍵盤與控制器",
+  "settings.arenaInputDesc": "使用方向鍵或控制器移動游標，並顯示每個操作的按鍵。",
+  "game.input.controls": "鍵盤與控制器",
+  "game.input.navigate": "移動",
+  "game.input.select": "選擇",
+  "game.input.inspect": "查看",
+  "game.input.region": "區域",
+  "game.input.scroll": "捲動",
+  "game.input.reorder": "Enter/A：移動；方向鍵：排序；Enter/A：完成；Esc/B：復原",
+
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "消滅此數碼寶貝",
   "overlay.trashTopSecurityCard": "丟棄我方最上方的1張安防卡牌",

@@ -1,3 +1,4 @@
+import { InputSurfaceEvent } from "@/design/InputSurfaceEvent";
 /* Aegis shared chrome: the letterboxed 16:9 Stage, UI primitives, and the top nav.
    maintained as part of the Aegis design system. Presentational only. */
 
@@ -316,6 +317,23 @@ export function Dialog({
     dialogRef.current?.focus();
     return () => previousFocus?.focus();
   }, []);
+
+  useEffect(() => {
+    const surface = dialogRef.current;
+    if (!onClose || !closeOnEscape) {
+      return;
+    }
+    function cancelInput(event: Event) {
+      event.preventDefault();
+      onClose?.();
+    }
+    surface?.setAttribute("data-arena-cancelable", "");
+    surface?.addEventListener(InputSurfaceEvent.CANCEL.value, cancelInput);
+    return () => {
+      surface?.removeAttribute("data-arena-cancelable");
+      surface?.removeEventListener(InputSurfaceEvent.CANCEL.value, cancelInput);
+    };
+  }, [onClose, closeOnEscape]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === "Escape" && onClose) {
