@@ -243,3 +243,9 @@ The PR verification failure reproduced with `node --test tools/kb/rule-obligatio
 - BT27-100 Hjaðningar Waltz grants a forced attack, places itself in the battle area, and uses Delay to De-Digivolve and delete opposing Digimon. Its Security effect deletes Digimon and returns itself to hand. None of these clauses instructs play, DNA, App Fusion, Burst, or alternate digivolution from a new recipient zone.
 
 All other catalog fields are unchanged. These additions and corrections preserve the 22 covered route classifications and eight reviewed provider absences. Scenario evidence, candidate lists and the rules fingerprint remain unchanged. The reviewed catalog fingerprint moves from `3fbdd1ed3350aeee8899f4027ec2ec89b57952377ea794365dd7675bcf1e7687` to `3a6953f662084646e6b7ba47c391819fb669fd03962b81f7b0d904389c41a032`; catalog drift remains an error and automatic refresh still cannot recertify a review.
+
+### Catalog review after Mistymon inherited consent correction (2026-10-20)
+
+PR #5882 changes exactly one catalog field relative to `d7dadc1939`: BT18-039's `inheritedEffectText` adds the printed optional consent to unsuspend. No card is added or removed, and every other catalog field is unchanged. Mistymon has no Assembly, DigiXros, DNA, App Fusion, Burst or alternate digivolution provider in this changed clause. The correction changes no recipient zone or route requirement.
+
+The 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rule-source fingerprint remain unchanged. After reviewing this bounded delta, the matrix catalog fingerprint changes from `febc2e47c2a358bab84433796571387fbdaaccc9fa7acc61810e3d1c8ce9d766` to `d206dee6d3cea97d6b96598a55b2adbd6179e752b92b1a27078473a392a653dc`. Catalog drift continues to fail validation, and automatic refresh cannot recertify the review.
