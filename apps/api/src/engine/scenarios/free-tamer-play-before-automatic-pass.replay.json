@@ -1001,7 +1001,7 @@
         "type": "respondDecision",
         "response": {
           "kind": "orderTriggers",
-          "order": ["s1-39::BT21-088/ir-1-0", "s1-42::BT21-088/ir-1-0"]
+          "order": ["s1-39::BT21-088/ir-1-0", "s1-42::BT21-088/ir-1-0", "s1-22::BT12-091/ir-1-0"]
         },
         "decisionId": "dec-17"
       },
@@ -1045,8 +1045,8 @@
       "intent": {
         "type": "respondDecision",
         "response": {
-          "kind": "orderTriggers",
-          "order": ["s1-42::BT21-088/ir-1-0", "s1-22::BT12-091/ir-1-0"]
+          "kind": "optional",
+          "accept": true
         },
         "decisionId": "dec-20"
       },
@@ -1060,8 +1060,8 @@
       "intent": {
         "type": "respondDecision",
         "response": {
-          "kind": "optional",
-          "accept": true
+          "kind": "selectCards",
+          "instanceIds": ["s1-7"]
         },
         "decisionId": "dec-21"
       },
@@ -1075,28 +1075,13 @@
       "intent": {
         "type": "respondDecision",
         "response": {
-          "kind": "selectCards",
-          "instanceIds": ["s1-7"]
-        },
-        "decisionId": "dec-22"
-      },
-      "engineEvents": 165,
-      "stateVersion": 120
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 1,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
           "kind": "optional",
           "accept": false
         },
-        "decisionId": "dec-23"
+        "decisionId": "dec-22"
       },
-      "engineEvents": 169,
-      "stateVersion": 124
+      "engineEvents": 168,
+      "stateVersion": 123
     },
     {
       "ok": true,
@@ -1110,8 +1095,8 @@
         },
         "instanceId": "s1-33"
       },
-      "engineEvents": 169,
-      "stateVersion": 124
+      "engineEvents": 168,
+      "stateVersion": 123
     },
     {
       "ok": true,
@@ -1123,10 +1108,10 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-24"
+        "decisionId": "dec-23"
       },
-      "engineEvents": 173,
-      "stateVersion": 126
+      "engineEvents": 172,
+      "stateVersion": 125
     }
   ],
   "matchId": "90911092-8dfa-4682-9620-5f380f084dad",

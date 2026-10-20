@@ -1060,54 +1060,13 @@
         "type": "respondDecision",
         "decisionId": "dec-22",
         "response": {
-          "kind": "orderTriggers",
-          "order": [
-            "s0-15::BT25-052/ir-37-0",
-            "s0-31::subtrigger/whenLinked~perm-6~s0-31~s0-31%2FP-217%2Flinked-trigger%2F0/whenLinked/occurrence/whenLinked%7Cperm-6%7Cs0-31%7CwhenLinked%7C%7Cs0-31%2FP-217%2Flinked-trigger%2F0%7Clink%3Aperm-2%3As0-15"
-          ],
-          "optionalAnswers": {
-            "s0-31::subtrigger/whenLinked~perm-6~s0-31~s0-31%2FP-217%2Flinked-trigger%2F0/whenLinked/occurrence/whenLinked%7Cperm-6%7Cs0-31%7CwhenLinked%7C%7Cs0-31%2FP-217%2Flinked-trigger%2F0%7Clink%3Aperm-2%3As0-15": true
-          }
-        }
-      },
-      "ok": true,
-      "stateVersion": 145,
-      "engineEvents": 205
-    },
-    {
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "decisionId": "dec-23",
-        "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-10"]
         }
       },
       "ok": true,
-      "stateVersion": 147,
-      "engineEvents": 207
-    },
-    {
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "decisionId": "dec-24",
-        "response": {
-          "kind": "orderTriggers",
-          "order": [
-            "s0-31::subtrigger/whenLinked~perm-6~s0-31~s0-31%2FP-217%2Flinked-trigger%2F0/whenLinked/occurrence/whenLinked%7Cperm-6%7Cs0-31%7CwhenLinked%7C%7Cs0-31%2FP-217%2Flinked-trigger%2F0%7Clink%3Aperm-2%3As0-15"
-          ],
-          "optionalAnswers": {
-            "s0-31::subtrigger/whenLinked~perm-6~s0-31~s0-31%2FP-217%2Flinked-trigger%2F0/whenLinked/occurrence/whenLinked%7Cperm-6%7Cs0-31%7CwhenLinked%7C%7Cs0-31%2FP-217%2Flinked-trigger%2F0%7Clink%3Aperm-2%3As0-15": true
-          }
-        }
-      },
-      "ok": true,
-      "stateVersion": 149,
-      "engineEvents": 210
+      "stateVersion": 146,
+      "engineEvents": 206
     },
     {
       "kind": "intent",
@@ -1122,6 +1081,36 @@
         "vortex": false
       },
       "ok": true,
+      "stateVersion": 155,
+      "engineEvents": 216
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-23",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        }
+      },
+      "ok": true,
+      "stateVersion": 156,
+      "engineEvents": 217
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-24",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["hidden-s0-9acd780c0bf746535b9a51fd"]
+        }
+      },
+      "ok": true,
       "stateVersion": 157,
       "engineEvents": 218
     },
@@ -1132,8 +1121,8 @@
         "type": "respondDecision",
         "decisionId": "dec-25",
         "response": {
-          "kind": "optional",
-          "accept": true
+          "kind": "chooseTargets",
+          "instanceIds": ["perm-2"]
         }
       },
       "ok": true,
@@ -1148,42 +1137,12 @@
         "decisionId": "dec-26",
         "response": {
           "kind": "selectCards",
-          "instanceIds": ["hidden-s0-9acd780c0bf746535b9a51fd"]
-        }
-      },
-      "ok": true,
-      "stateVersion": 159,
-      "engineEvents": 220
-    },
-    {
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "decisionId": "dec-27",
-        "response": {
-          "kind": "chooseTargets",
-          "instanceIds": ["perm-2"]
+          "instanceIds": ["s0-15"]
         }
       },
       "ok": true,
       "stateVersion": 160,
       "engineEvents": 221
-    },
-    {
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "decisionId": "dec-28",
-        "response": {
-          "kind": "selectCards",
-          "instanceIds": ["s0-15"]
-        }
-      },
-      "ok": true,
-      "stateVersion": 162,
-      "engineEvents": 223
     },
     {
       "kind": "intent",
@@ -1198,8 +1157,8 @@
         "vortex": false
       },
       "ok": true,
-      "stateVersion": 165,
-      "engineEvents": 227
+      "stateVersion": 163,
+      "engineEvents": 225
     }
   ]
 }

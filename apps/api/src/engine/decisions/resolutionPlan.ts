@@ -6,14 +6,16 @@ import { triggerKeyOf } from "./triggerKeyOf.js";
  * resolve in and preset answers to the yes/no questions each effect asks.
  *
  * The resolver re-collects after every resolution, so it still asks "which effect next?"
- * once per effect. The plan answers those repeat prompts for the controller while every
- * offered effect is one they already ordered. A newly triggered effect, or one they left
- * unordered, reopens the prompt. One plan lives exactly as long as its timing window, so an
+ * once per effect. The plan answers those repeat prompts for the controller while an effect
+ * they ordered is still offered and every offered effect was already in front of them. A
+ * newly triggered effect reopens the prompt, and so does a remainder they left unordered
+ * once the ordered effects have resolved. One plan lives exactly as long as its timing window, so an
  * answer never leaks into a later window where the same card triggers again.
  */
 export class ResolutionPlan {
   private order: string[] = [];
   private readonly presets = new Map<string, boolean>();
+  private readonly seen = new Set<string>();
   private readonly activationKeys = new WeakMap<object, Map<string, string>>();
   private readonly usedKeys = new Set<string>();
   private readonly grantSourceInstances = new Map<number, string>();
@@ -50,15 +52,20 @@ export class ResolutionPlan {
     return key;
   }
 
-  /** Record a controller's answer. Keys it orders move to the front; earlier plans keep the rest. */
-  adopt(order: readonly string[], optionalAnswers: Readonly<Record<string, boolean>> = {}): void {
+  /** Record a controller's answer to `offered`. Keys it orders move to the front; earlier plans keep the rest. */
+  adopt(
+    order: readonly string[],
+    optionalAnswers: Readonly<Record<string, boolean>> = {},
+    offered: readonly string[] = order,
+  ): void {
     this.order = [...order, ...this.order.filter((key) => !order.includes(key))];
+    for (const key of [...offered, ...order]) this.seen.add(key);
     for (const [key, accept] of Object.entries(optionalAnswers)) this.presets.set(key, accept);
   }
 
-  /** The planned key to resolve next, or undefined when some offered key has no planned position. */
+  /** The planned key to resolve next, or undefined when no ordered key is offered or an offered key is new. */
   nextOf(offered: readonly string[]): string | undefined {
-    if (offered.length === 0 || !offered.every((key) => this.order.includes(key))) return undefined;
+    if (!offered.every((key) => this.seen.has(key))) return undefined;
     return this.order.find((key) => offered.includes(key));
   }
 
