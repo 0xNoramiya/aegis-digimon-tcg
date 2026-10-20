@@ -1,4 +1,4 @@
-import { CardInstance, GameState, Permanent, PlayerState, Phase } from "@aegis/shared";
+import { CardInstance, GameState, Permanent, PlayerState, Phase, Zone } from "@aegis/shared";
 import type { AegisRoom } from "@/net/client";
 import { translator } from "@/i18n";
 import { boardActions } from "@/game/screen/boardActions";
@@ -115,4 +115,35 @@ describe("manual breeding board actions", () => {
       }),
     );
   });
+});
+
+it("stacks a hand card on the existing breeding permanent when dropped onto raising", () => {
+  send.mockClear();
+  hit.target = "breeding-you";
+  const state = new GameState();
+  state.gameMode = "manual";
+  state.manual.turnPhase = Phase.Main;
+  const viewer = new PlayerState();
+  const breeding = new Permanent();
+  breeding.permanentId = "raising-egg";
+  breeding.topCard = Object.assign(new CardInstance(), { cardId: "BT1-001" });
+  breeding.inBreeding = true;
+  viewer.breeding = breeding;
+  state.players.push(viewer);
+  createActions({ state, viewer, breedingActionsOpen: false }).handleDrop(
+    { kind: DragKind.Play, index: 0, cardId: "BT1-010", instanceId: "agumon", started: true, ox: 0, oy: 0, x: 0, y: 0 },
+    0,
+    0,
+  );
+  expect(send).toHaveBeenCalledWith(
+    expect.objectContaining({
+      command: {
+        action: ManualAction.MOVE.value,
+        wholePile: false,
+        from: { zone: Zone.Hand, instanceId: "agumon" },
+        to: { zone: Zone.Breeding, permanentId: "raising-egg", part: "top" },
+      },
+    }),
+  );
+  hit.target = "opp-security";
 });

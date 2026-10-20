@@ -236,6 +236,7 @@ export function boardActions({
     if (state.gameMode === GameMode.MANUAL.value && room) {
       if (mainActionBlocked) return;
       if (d.kind === DragKind.Play) {
+        const targetPermanentId = target === "breeding-you" ? viewer.breeding?.permanentId : id;
         if (target === "battle-you" || target === "breeding-you" || target === "perm-you") {
           sendManualCommand({
             room,
@@ -245,7 +246,9 @@ export function boardActions({
               from: { zone: Zone.Hand, instanceId: d.instanceId },
               to: {
                 zone: target === "breeding-you" ? Zone.Breeding : Zone.BattleArea,
-                ...(target === "perm-you" && id ? { permanentId: id, part: "top" as const } : {}),
+                ...((target === "perm-you" || target === "breeding-you") && targetPermanentId
+                  ? { permanentId: targetPermanentId, part: "top" as const }
+                  : {}),
               },
             },
           });

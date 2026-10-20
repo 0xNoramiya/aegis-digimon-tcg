@@ -586,6 +586,52 @@ test.describe("manual table", () => {
     expect(errors).toEqual([]);
   });
 
+  test("dragging Agumon onto an occupied breeding stack preserves its egg without drawing", async ({
+    page,
+    context,
+  }) => {
+    const second = await context.newPage();
+    await openPlayer(page, "First");
+    await openPlayer(second, "Second");
+    await prepare(page, second, "Hatch egg");
+    let agumon = await page.evaluate(() =>
+      window.browserTestSnapshot().players[0].hand.find((card) => card.cardId === "BT1-010"),
+    );
+    while (!agumon) {
+      const beforeDraw = await page.evaluate(() => window.browserTestSnapshot().players[0].handCount);
+      await page.getByRole("button", { name: "Draw", exact: true }).click();
+      await expect
+        .poll(() => page.evaluate(() => window.browserTestSnapshot().players[0].handCount))
+        .toBe(beforeDraw + 1);
+      agumon = await page.evaluate(() =>
+        window.browserTestSnapshot().players[0].hand.find((card) => card.cardId === "BT1-010"),
+      );
+    }
+    const before = await page.evaluate(() => window.browserTestSnapshot().players[0]);
+    const egg = before.breeding!;
+    await page.locator(".manual-table__toggle").click();
+    const handCard = page.locator(`[data-testid="hand"] [data-hand-instance-id="${agumon.instanceId}"]`);
+    const target = page.locator(".game-utility-slot--you-raising .game-breeding-slot__box");
+    const origin = (await handCard.boundingBox())!;
+    const destination = (await target.boundingBox())!;
+    await page.mouse.move(origin.x + origin.width / 2, origin.y + origin.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(origin.x + origin.width / 2, origin.y - 30, { steps: 5 });
+    await page.mouse.move(destination.x + destination.width / 2, destination.y + destination.height / 2, { steps: 12 });
+    await page.mouse.up();
+    await expect
+      .poll(() => page.evaluate(() => window.browserTestSnapshot().players[0].breeding?.topCard.cardId))
+      .toBe("BT1-010");
+    const after = await page.evaluate(() => window.browserTestSnapshot().players[0]);
+    expect(after.breeding!.permanentId).toBe(egg.permanentId);
+    expect(after.breeding!.stack.map((card) => card.instanceId)).toEqual([egg.topCard.instanceId]);
+    expect(after.handCount).toBe(before.handCount - 1);
+    expect(after.deckCount).toBe(before.deckCount);
+    await expect
+      .poll(() => second.evaluate(() => window.browserTestSnapshot().players[0].breeding?.topCard.cardId))
+      .toBe("BT1-010");
+  });
+
   test("guides turns with one automatic draw and unsuspend, then one breeding choice", async ({ page, context }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
