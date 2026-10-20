@@ -2,8 +2,13 @@
 
 import hashlib
 import json
+import os
+import selectors
 import subprocess
 import threading
+import time
+from collections.abc import Callable
+from concurrent.futures import CancelledError, ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
@@ -12,14 +17,25 @@ RESTART_AFTER = 400
 
 
 class PanelWorker:
-    def __init__(self, node: str, heap_megabytes: int) -> None:
+    def __init__(
+        self,
+        node: str,
+        heap_megabytes: int,
+        timeout_seconds: float = 120,
+        *,
+        stop_event: threading.Event | None = None,
+    ) -> None:
+        if timeout_seconds <= 0:
+            raise ValueError("The worker timeout must be positive")
         self.node = node
         self.heap_megabytes = heap_megabytes
+        self.timeout_seconds = timeout_seconds
+        self.stop_event = stop_event or threading.Event()
         self.games = 0
-        self.process: subprocess.Popen[str] | None = None
+        self.process: subprocess.Popen[bytes] | None = None
 
-    def _ensure(self) -> subprocess.Popen[str]:
-        if self.process is not None and self.games < RESTART_AFTER:
+    def _ensure(self) -> subprocess.Popen[bytes]:
+        if self.process is not None and self.process.poll() is None and self.games < RESTART_AFTER:
             return self.process
         self.close()
         self.process = subprocess.Popen(
@@ -27,50 +43,101 @@ class PanelWorker:
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
-            text=True,
-            bufsize=1,
+            bufsize=0,
         )
+        if self.process.stdin is None or self.process.stdout is None:
+            raise RuntimeError("Panel worker pipes are unavailable")
+        os.set_blocking(self.process.stdin.fileno(), False)
+        os.set_blocking(self.process.stdout.fileno(), False)
         self.games = 0
         return self.process
 
+    def _exchange(self, payload: dict[str, Any]) -> dict[str, Any] | None:
+        process = self._ensure()
+        if process.stdin is None or process.stdout is None:
+            raise RuntimeError("Panel worker pipes are unavailable")
+        request = memoryview((json.dumps(payload) + "\n").encode("utf-8"))
+        response = bytearray()
+        deadline = time.monotonic() + self.timeout_seconds
+        with selectors.DefaultSelector() as selector:
+            selector.register(process.stdin, selectors.EVENT_WRITE)
+            while True:
+                if self.stop_event.is_set():
+                    raise CancelledError("Panel evaluation was cancelled")
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError(f"Panel worker exceeded {self.timeout_seconds:g}s")
+                if not selector.select(min(remaining, 0.25)):
+                    continue
+                if request:
+                    request = request[os.write(process.stdin.fileno(), request) :]
+                    if not request:
+                        selector.unregister(process.stdin)
+                        selector.register(process.stdout, selectors.EVENT_READ)
+                    continue
+                chunk = os.read(process.stdout.fileno(), 65_536)
+                if not chunk:
+                    return None
+                response.extend(chunk)
+                if b"\n" in response:
+                    answer = json.loads(response)
+                    if not isinstance(answer, dict) or answer.get("id") != payload["id"]:
+                        raise ValueError("Panel worker returned a mismatched response")
+                    return answer
+
     def request(self, payload: dict[str, Any]) -> dict[str, Any] | None:
         for _ in range(2):
-            process = self._ensure()
-            if process.stdin is None or process.stdout is None:
-                raise RuntimeError("Panel worker pipes are unavailable")
             try:
-                process.stdin.write(json.dumps(payload) + "\n")
-                process.stdin.flush()
-                line = process.stdout.readline()
-            except (BrokenPipeError, OSError):
-                line = ""
-            if line:
+                answer = self._exchange(payload)
+            except (CancelledError, TimeoutError):
+                self.close()
+                raise
+            except (OSError, ValueError):
+                answer = None
+            if answer is not None:
                 self.games += 1
-                return json.loads(line)
+                return answer
             self.close()
         return None
 
     def close(self) -> None:
         if self.process is None:
             return
-        if self.process.stdin is not None:
-            self.process.stdin.close()
+        if self.process.poll() is None:
+            self.process.terminate()
         try:
-            self.process.wait(timeout=5)
+            self.process.wait(timeout=1)
         except subprocess.TimeoutExpired:
             self.process.kill()
             self.process.wait()
+        if self.process.stdin is not None:
+            self.process.stdin.close()
+        if self.process.stdout is not None:
+            self.process.stdout.close()
         self.process = None
 
 
 class PanelPool:
-    def __init__(self, node: str, size: int = 8, heap_megabytes: int = 768) -> None:
+    def __init__(
+        self,
+        node: str,
+        size: int = 4,
+        heap_megabytes: int = 768,
+        *,
+        timeout_seconds: float = 120,
+    ) -> None:
         if not 1 <= size <= 8:
             raise ValueError("Use 1–8 panel workers")
         if not WORKER.is_file():
             raise ValueError(f"Missing panel worker: {WORKER}")
-        self.workers = [PanelWorker(node, heap_megabytes) for _ in range(size)]
-        self.validator = PanelWorker(node, heap_megabytes)
+        self.stop_event = threading.Event()
+        self.workers = [
+            PanelWorker(node, heap_megabytes, timeout_seconds, stop_event=self.stop_event)
+            for _ in range(size)
+        ]
+        self.validator = PanelWorker(
+            node, heap_megabytes, timeout_seconds, stop_event=self.stop_event
+        )
         self.validator_lock = threading.Lock()
 
     def validate(self, program: dict[str, Any]) -> str | None:
@@ -80,33 +147,59 @@ class PanelPool:
             return "The program validator crashed"
         return answer["error"]
 
-    def run(self, jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def run(
+        self,
+        jobs: list[dict[str, Any]],
+        *,
+        on_result: Callable[[dict[str, Any]], None] | None = None,
+    ) -> list[dict[str, Any]]:
         remaining = iter(range(len(jobs)))
         lock = threading.Lock()
         results: list[dict[str, Any] | None] = [None] * len(jobs)
+        stopped = self.stop_event
 
         def drain(worker: PanelWorker) -> None:
-            while True:
+            while not stopped.is_set():
                 with lock:
                     index = next(remaining, None)
                 if index is None:
                     return
                 job = jobs[index]
-                answer = worker.request(job)
-                results[index] = (
-                    answer
-                    if answer is not None
-                    else {"id": job["id"], "valid": False, "win": None, "error": "worker crashed"}
-                )
+                try:
+                    try:
+                        answer = worker.request(job)
+                        error = "worker crashed or returned invalid output"
+                    except TimeoutError as exception:
+                        answer = None
+                        error = str(exception)
+                    result = answer or {
+                        "id": job["id"],
+                        "valid": False,
+                        "win": None,
+                        "error": error,
+                    }
+                    with lock:
+                        if on_result is not None:
+                            on_result(result)
+                        results[index] = result
+                except BaseException:
+                    stopped.set()
+                    raise
 
-        threads = [
-            threading.Thread(target=drain, args=(worker,), daemon=True) for worker in self.workers
-        ]
-        for thread in threads:
-            thread.start()
-        for thread in threads:
-            thread.join()
+        with ThreadPoolExecutor(max_workers=len(self.workers)) as executor:
+            futures = [executor.submit(drain, worker) for worker in self.workers]
+        failures = [future.exception() for future in futures if future.exception() is not None]
+        if failures:
+            raise next(
+                (failure for failure in failures if not isinstance(failure, CancelledError)),
+                failures[0],
+            )
+        if stopped.is_set():
+            raise CancelledError("Panel evaluation was cancelled")
         return [result for result in results if result is not None]
+
+    def cancel(self) -> None:
+        self.stop_event.set()
 
     def close(self) -> None:
         for worker in [*self.workers, self.validator]:
@@ -116,6 +209,7 @@ class PanelPool:
 def runtime_fingerprint(repository: Path) -> str:
     """Cheap identity of the compiled engine: path, size, and modification time of each file."""
     digest = hashlib.sha256(WORKER.read_bytes())
+    digest.update((Path(__file__).parent / "getPanelScoringWindow.mjs").read_bytes())
     for root in (repository / "apps/api/dist", repository / "packages/shared/dist"):
         for path in sorted(root.rglob("*")):
             if path.suffix in (".js", ".json") and path.is_file():

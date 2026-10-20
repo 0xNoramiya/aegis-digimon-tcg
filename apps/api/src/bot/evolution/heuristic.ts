@@ -1,3 +1,5 @@
+import { getOptionalCostFeatures } from "#api/bot/evolution/getOptionalCostFeatures";
+import { getDecisionFeatures } from "#api/bot/evolution/getDecisionFeatures";
 import { CardKind, getCardDefinition } from "@aegis/shared";
 import { createBotRandom } from "../rng.js";
 import type { createHeuristicFeatureContext } from "#api/bot/evolution/createHeuristicFeatureContext";
@@ -55,6 +57,29 @@ export const FEATURES = [
   "appFusion",
   "link",
   "materials",
+  "costUncertain",
+  "freeActivation",
+  "selectionGain",
+  "selectionLoss",
+  "selectionRookie",
+  "selectionDuplicate",
+  "selectionNoop",
+  "decisionMemory",
+  "decisionDraw",
+  "decisionRecovery",
+  "decisionRemoval",
+  "decisionPlay",
+  "decisionEvolution",
+  "decisionUnsuspend",
+  "decisionCost",
+  "decisionUncertain",
+  "paymentDraw",
+  "paymentMemory",
+  "paymentRecovery",
+  "paymentCard",
+  "paymentValue",
+  "paymentStarter",
+  "paymentDuplicate",
 ] as const;
 export type Feature = (typeof FEATURES)[number];
 export interface HeuristicRule {
@@ -230,7 +255,17 @@ export function actionFeatures(
   features.turn = window.observation.turn;
   features.ownTrashCount = own.trash.length;
   features.opponentTrashCount = enemy.trash.length;
-  features.cost = action.projectedCost ?? 0;
+  features.cost =
+    action.projectedCost ?? action.activationMemoryCost?.maximum ?? action.activationMemoryCost?.minimum ?? 0;
+  features.costUncertain = Number(
+    action.intent.type === "activateEffect" &&
+      (action.activationMemoryCost === undefined ||
+        action.activationMemoryCost.maximum === null ||
+        action.activationMemoryCost.maximum !== action.activationMemoryCost.minimum),
+  );
+  features.freeActivation = Number(
+    action.intent.type === "activateEffect" && action.activationMemoryCost?.maximum === 0,
+  );
   features.handover = Math.max(0, features.cost - window.observation.memory);
   features.sourceLevel = source?.top.level ?? card?.level ?? 0;
   features.sourceDp = (source?.dp ?? card?.dp ?? 0) / 1000;
@@ -302,6 +337,11 @@ export function actionFeatures(
     features.accept = Number(intent.response.accept);
   if (intent.type === "mulligan")
     features.openingRookie = Number(intent.keep) * (own.hand.some((entry) => entry.level === 3) ? 1 : -1);
+  Object.assign(
+    features,
+    getDecisionFeatures({ window, index, card, unit: source, sourceValue: features.sourceValue, own, enemy }),
+  );
+  Object.assign(features, getOptionalCostFeatures({ window, index, sourceValue: features.sourceValue, own }));
   return features;
 }
 

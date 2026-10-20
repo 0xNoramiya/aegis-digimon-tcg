@@ -1,3 +1,4 @@
+import { getDecisionEffectSummary } from "#api/engine/effects/interpreter/getDecisionEffectSummary";
 // Choosing between the options of a modal action.
 
 import type { EffectContext } from "../../EffectContext.js";
@@ -286,6 +287,7 @@ async function askModalOption(
 ): Promise<number> {
   const labels = indices.map((idx) => optionLabel(action, idx));
   const pick = await ctx.ask.chooseOption(askCtx, labels, {
+    choiceSummaries: indices.map((index) => getDecisionEffectSummary({ actions: action.options[index]! })),
     ...choiceClauses(clauses, indices),
     ...(activation === undefined ? {} : { activation }),
   });

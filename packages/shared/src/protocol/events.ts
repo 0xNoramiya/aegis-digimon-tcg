@@ -1,4 +1,7 @@
+import type { SingleHandCostBenefit } from "#shared/protocol/SingleHandCostBenefit";
 import { CardMovePosition } from "#shared/protocol/CardMovePosition";
+import type { DecisionEffectSummary } from "#shared/protocol/DecisionEffectSummary";
+import type { DecisionSelectionGoal } from "#shared/protocol/DecisionSelectionGoal";
 import type { Seat } from "../schema/enums.js";
 import type { AttackTarget } from "./intents.js";
 
@@ -704,6 +707,13 @@ export interface DecisionRequest {
   sourcePermanentId?: string;
   // kind-specific options the UI needs to render the prompt and constrain input:
   options?: {
+    selectionGoal?: DecisionSelectionGoal;
+    effectControllerSeat?: Seat;
+    singleHandCostBenefit?: SingleHandCostBenefit;
+    effectSummary?: DecisionEffectSummary;
+    choiceSummaries?: (DecisionEffectSummary | null)[];
+    triggerSummaries?: (DecisionEffectSummary | null)[];
+    triggerControllerSeats?: Seat[];
     candidateInstanceIds?: string[]; // selectable cards/permanents
     visibleInstanceIds?: string[]; // full display set (e.g. all revealed cards); ids absent from candidateInstanceIds render disabled
     /** Authoritative identities for temporarily revealed cards that may not yet exist in the client's zone index. */

@@ -3,6 +3,7 @@ import type { DecisionApi, EffectContext, SeatScopedDecisionApi } from "../effec
 import type { ChooseOptionExtras } from "../effects/context/decisions.js";
 import type { DecisionManager } from "./index.js";
 import { getEffectDecisionText } from "#api/engine/decisions/getEffectDecisionText";
+import type { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 
 /**
  * Concrete {@link DecisionApi} (`ctx.ask.*`) backed by the {@link DecisionManager}
@@ -101,6 +102,13 @@ function buildSeatScopedApi(
 ): SeatScopedDecisionApi {
   const provenance = (ctx: EffectContext) => {
     return {
+      ...((ctx.payingCostDepth ?? 0) > 0 && ctx.activeSingleHandCostBenefit !== undefined
+        ? { singleHandCostBenefit: ctx.activeSingleHandCostBenefit }
+        : {}),
+      ...(ctx.activeDecisionSummary === undefined
+        ? {}
+        : { effectSummary: ctx.activeDecisionSummary, effectControllerSeat: ctx.source.ownerSeat }),
+      ...(ctx.activeDecisionSelectionGoal === undefined ? {} : { selectionGoal: ctx.activeDecisionSelectionGoal }),
       timing: ctx.activeTiming,
       ...(ctx.activeEffectIsInherited === true ? { isInherited: true } : {}),
       ...getEffectDecisionText(ctx),
@@ -212,6 +220,7 @@ function buildSeatScopedApi(
     async selectCards(
       ctx: EffectContext,
       opts: {
+        selectionGoal?: DecisionSelectionGoal;
         candidates: string[];
         min: number;
         max: number;
@@ -256,6 +265,7 @@ function buildSeatScopedApi(
           digiXrosMaterialLimits: opts.digiXrosMaterialLimits,
           digiXrosRuleTrashInstanceIds: opts.digiXrosRuleTrashInstanceIds,
           ...provenance(ctx),
+          ...(opts.selectionGoal === undefined ? {} : { selectionGoal: opts.selectionGoal }),
           ...backOutPurpose(min, opts.min),
           ...(asksController && ctx.payingDeclinableCost === true ? { declinesCost: true } : {}),
         },

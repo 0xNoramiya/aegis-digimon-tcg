@@ -1049,6 +1049,7 @@ export function subTriggerAsCollected(engine: GameEngine, { sub, ctx, occurrence
     ...triggerReasonOf(sub),
     effect: {
       effectKey: buildSubTriggerEffectKey(sub),
+      decisionSummary: sub.decisionSummary,
       activationDeferred: sub.activationDeferred,
       ...(sub.activationContext !== undefined &&
       sub.sourcePermanentId === undefined &&
@@ -1224,6 +1225,9 @@ export function buildSubTriggerContext(
 ): EffectContext | undefined {
   const context = buildSubTriggerSourceContext(engine, sub, payload);
   if (context === undefined) return undefined;
+  context.activeSingleHandCostBenefit = undefined;
+  context.activeDecisionSummary = sub.decisionSummary;
+  context.activeDecisionSelectionGoal = undefined;
   return breedingHidesSubjectFrom(engine, sub.event, payload, context.source) ? undefined : context;
 }
 

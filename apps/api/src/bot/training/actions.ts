@@ -14,6 +14,7 @@ import {
 import { assemblyMaterialCandidates, firstAssemblyRecipe, type AssemblyMaterialCandidate } from "./assembly.js";
 import { specialMainActions } from "./specialActions.js";
 import { digiXrosMainActions } from "./digiXros.js";
+import type { ActivationMemoryCost } from "#api/engine/effects/ActivationMemoryCost";
 
 export interface TrainingAction {
   intent: Intent;
@@ -21,6 +22,7 @@ export interface TrainingAction {
   sourceId?: string;
   targetId?: string;
   projectedCost?: number;
+  activationMemoryCost?: ActivationMemoryCost;
   /** Physical material identities for compound declarations; encoded only through visible card state. */
   materialIds?: readonly string[];
   /** Materials are chosen in follow-up windows; `intent` holds one valid recipe for legality only. */
@@ -154,10 +156,15 @@ export function mainActions(
     if (seen.has(key) || !validateActivateEffect(state, seat, intent, effectDeps).ok) continue;
     seen.add(key);
     const host = source.permanent();
+    const activationMemoryCost = effect.activationMemoryCost ?? { minimum: 0, maximum: null };
     actions.push({
       intent,
       label: effect.description,
       sourceId: source.instanceId,
+      activationMemoryCost,
+      ...(activationMemoryCost.maximum !== null && activationMemoryCost.maximum === activationMemoryCost.minimum
+        ? { projectedCost: activationMemoryCost.maximum }
+        : {}),
       ...(host === undefined ? {} : { targetId: host.permanentId }),
     });
   }

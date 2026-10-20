@@ -705,7 +705,7 @@ uv run --offline python panel_evolve.py \
   --pairs ../../.local/bot-lab/pairs.json \
   --run-dir ../../.local/bot-lab/gepa-panel-v1 \
   --node ~/.nvm/versions/node/v26.12.0/bin/node \
-  --workers 8 --deadline-minutes 75
+  --workers 4 --deadline-minutes 75
 ```
 
 The run uses session reflection: it writes `reflections/NNNN-<sha>.prompt.json`
@@ -718,3 +718,313 @@ reports win rates with 95% intervals and the paired difference.
 
 `--planner` turns on the main-phase turn planner. It is off by default because it
 makes games slower.
+
+Panel workers have a 120-second request timeout, including incomplete responses.
+A timeout terminates the worker and records an invalid game; later games start a
+fresh process. Crashes and malformed responses receive one retry. `PanelPool.run`
+accepts an `on_result` callback, serialized across workers, for saving each result
+before dispatch continues. Persistence failures stop dispatch and propagate to the
+caller.
+`PanelPool.cancel` also stops active requests promptly, allowing an independent
+resource monitor to enforce memory limits without waiting for game completion.
+
+`PanelCheckpoint` stores an input/runtime manifest and appends each result to
+`results.jsonl`, flushing it to disk before acknowledging it. Reopening the same
+directory loads completed game IDs so the caller can skip them. Changed manifests,
+duplicate IDs, corrupted complete records, and simultaneous writers are rejected.
+An interrupted final JSON line is discarded so only that game needs rerunning.
+The caller owns the manifest, missing-job selection, and resource limits. Do not
+rebuild the API or shared package while evaluating a frozen runtime.
+
+## Diagnosis and numeric tuning on human deck pairs
+
+`panel_diagnose.py` reproduces a deterministic sample of distinct certified-bot
+losses from a completed paired validation. It verifies the original outcome,
+termination reason and turn before analyzing traces. Its counts describe the
+selected losses and the recorded top-three alternatives; they do not establish
+that an alternative would have won.
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/panel_diagnose.py \
+  --validation-run .local/bot-lab/fresh/validation-final-v1-v2 \
+  --run-dir .local/bot-lab/v3-diagnosis \
+  --node ~/.nvm/versions/node/v26.12.0/bin/node
+```
+
+`panel_tune.py` preserves the starting program's conditional rules, card scopes,
+rule order and interpreter settings. It changes only 29 generic main-phase
+weights. The initial six-hypothesis screen also tests a bounded additional
+condition discouraging excessive hand activations, finishing pressure and
+favorable board attacks. A diagonal CMA-ES pass then tunes the selected anchor.
+All proposal generation is local and deterministic, without model API calls or
+MCTS.
+
+Run from the repository root with Node 26 and a built, frozen API/shared runtime:
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/panel_tune.py \
+  --start-program apps/api/src/bot/evolution/programs/human-panel-v2.json \
+  --pairs .local/bot-lab/pairs.json \
+  --run-dir .local/bot-lab/v3-tuning \
+  --node ~/.nvm/versions/node/v26.12.0/bin/node
+```
+
+The screen uses 32 original fitness matchups, followed by four generations of
+eight candidates on 16 new fitness matchups each. Each matchup contributes both
+deck orientations and both learner seats. Training allocates 50% of matchups to
+`certified`, 25% to `legacy`, and 25% to the frozen starting program. Candidate
+selection reuses 96 separate original validation matchups with equal opponent
+counts and the same 50/25/25 objective weights. Selection requires an improvement
+over the starting program, no opponent regression above two percentage points,
+and no increase in invalid games. Invalid games score zero. These are development
+scores, not independent strength evidence.
+
+`PanelBatch` limits execution to four workers, 512 MiB Node heaps, 60-second
+requests and a 2,560 MiB aggregate worker RSS ceiling. A monitor checks memory
+independently of game completion and cancels active requests on a violation.
+Compiled-runtime changes stop execution. Source, runtime, inputs, settings and
+full job payloads are hashed into locked manifests; completed results and
+generation state support an exact resume using the same command. A different
+protocol requires a new directory.
+
+Freeze one selected candidate before using independently reserved matchups:
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/panel_confirm.py \
+  --candidate .local/bot-lab/v3-tuning/selected-program.json \
+  --baseline .local/bot-lab/v3-tuning/start-program.json \
+  --pairs .local/bot-lab/v3-confirmation-reserve/pairs.json \
+  --run-dir .local/bot-lab/v3-confirmation \
+  --node ~/.nvm/versions/node/v26.12.0/bin/node
+```
+
+Confirmation assigns reserved matchups 50/25/25 across the same opponents. Both
+arms use identical seeds, deck orientations and seats. The primary metric is the
+paired matchup point difference, with invalid games scoring zero. Its approximate
+95% normal interval clusters four games by matchup and combines opponent strata
+with the frozen weights. Acceptance requires at least 20 matchups per opponent,
+a positive weighted lower bound, a positive certified point estimate, no opponent
+drop above two points, and no increase in invalid games. Complete valid blocks and
+valid-only arm rates are secondary diagnostics. This comparison describes bot
+opponents on the reserved deck distribution; it does not measure wins against
+humans or meet the separate strict MCTS guide-publication gate.
+
+A locked `confirmation-attempt` manifest beside the reserved pair file prevents
+testing another candidate on that reserve, including from another output
+directory. Keep reserved pairs out of training and selection, and retain rejected
+confirmation evidence. Neither command changes the application default or deploys
+a program.
+
+The standalone [human-panel-v3 catalog](../../apps/api/src/bot/evolution/programs/human-panel-v3.json)
+contains the candidate selected by this procedure. It preserves all 42 v2 rules,
+changes the generic finishing-attack and favorable-battle weights, and appends
+one hand-activation condition. Four generations of numeric proposals did not
+displace that initial combined hypothesis under the selection guards.
+
+Independent confirmation used 240 new human deck pairs and 1,920 games. The
+weighted paired gain over v2 was 2.1875 percentage points, with an approximate
+95% interval of 0.5112 to 3.8638 points. The valid-game win rates were 44.6764%
+to 46.5553% against `certified`, 55.4167% to 59.5833% against `legacy`, and
+51.6667% to 52.5000% against frozen v2. Each arm had one invalid game on the same
+certified pairing. The certified-only and frozen-v2 intervals include zero;
+the aggregate and legacy intervals exclude zero.
+
+[The aggregate evidence](evidence/human-panel-v3/summary.json) pins the program,
+protocol, baseline, runtime and results. Production-derived raw decks and games
+remain in ignored local evidence. The catalog retains v2 planner parameters for
+compatibility, but this confirmation used the heuristic alone. The existing
+experiment loader still selects v2; v3 is available for review without activating
+an experiment or changing the default bot.
+
+## Activation memory costs
+
+Registered IR effects expose a conservative range of declared immediate memory
+spending. A maximum of `null` means unknown, while a maximum of zero establishes
+that the effect has no declared immediate memory payment. Fixed payments, optional
+payments and supported nested costs contribute to the range. Paid plays,
+evolutions, borrowed effects and unsupported operations remain uncertain.
+
+This projection describes gross spending. Memory refunds, triggered responses and
+future end-of-turn payments are outside its scope. The `handover` feature therefore
+estimates payment risk rather than predicting the final memory gauge. The
+`costUncertain` feature identifies unresolved ranges; `freeActivation` applies
+only when the upper bound is zero. A paid activation that fits the current memory
+budget does not qualify for the free-effect bonus.
+
+`panel_activation_costs.py` compares historical v3, projection alone, a corrected
+free-effect bonus, and two bounded uncertainty penalties. Only the three programs
+with the corrected bonus are eligible for selection. Its 64 FITNESS matchups and
+96 VALIDATION matchups produce 2,048 development games; original TEST matchups and
+independent confirmation pairs stay unused during selection.
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/panel_activation_costs.py \
+  --baseline apps/api/src/bot/evolution/programs/human-panel-v3.json \
+  --pairs .local/bot-lab/pairs.json \
+  --run-dir .local/bot-lab/v4-development \
+  --node ~/.nvm/versions/node/v26.12.0/bin/node
+```
+
+For a historical v3 control, confirmation accepts `--frozen-opponent v3
+--no-baseline-activation-costs --seed-base 31000000`. The scoring adapter removes
+only the new activation cost fields from the historical learner and frozen v3
+opponent. Candidate scoring keeps them. Certified opponents use the current
+default scorer in both arms, so absolute rates from older runtimes are not an
+equivalent comparison. The helper source participates in the runtime fingerprint.
+
+The corrected-bonus candidate gained 0.78125 percentage points on development
+selection, but independent confirmation on 320 unseen matchups and 2,560 games
+did not establish a strength gain. Its weighted paired difference from historical
+v3 was -0.46875 points, approximate 95% interval [-1.44010, +0.50260]. Each arm
+had eight invalid games on the same tasks. The candidate failed the frozen
+acceptance criteria and is retained as rejected evidence, without a v4 catalog
+promotion. The declared-cost information remains a separate correctness change.
+
+[The activation-cost evidence](evidence/activation-memory-costs/summary.json)
+preserves the candidate, frozen protocol, comparison, diagnostic counts and
+artifact hashes. Raw production-derived inputs stay in ignored local storage.
+
+## Losses by archetype
+
+`panel_archetypes.py` groups a completed paired confirmation by learner and
+opponent archetype, using deck orientation independently of player seat.
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/panel_archetypes.py \
+  --comparison .local/bot-lab/v4-confirmation \
+  --pairs .local/bot-lab/v4-confirmation-reserve/pairs.json \
+  --references .local/bot-lab/archetype-references.json \
+  --output .local/bot-lab/v4-archetypes
+```
+
+References are frozen famous-deck recipes with `deckId`, `archetype`, `mainDeck` and
+`eggDeck` fields. Classification compares main-deck multisets, discounts cards
+common across archetypes, and requires sufficient overlap and separation from
+the next family. Ambiguous lists remain `Unclassified`. Reports pin the reference
+snapshot, input pairs, raw results and analysis sources by SHA-256.
+
+Priority tables require at least 20 valid candidate games, eight matchups and
+three distinct lists. Rates are descriptive and unadjusted for opponent mix;
+the paired changes and opponent breakdowns guide replay inspection. They do not
+establish per-archetype strength or a rules defect. Reproduce the exact outcome
+before drawing mechanical conclusions from any selected loss.
+
+In the activation-cost confirmation, 53.4375% of learner exposures could be
+classified. Plutomon won 8/34 valid games and Omnimon 15/38 with the candidate.
+These rates combine the three opponent strata and are exploratory. Sixteen
+selected losses across four weak learner groups reproduced exactly and yielded
+558 decisions. Scores rounded to three decimals in traces tied in 64/122 card selections, all nine effect
+option choices and all 46 trigger-order choices. Some choices, such as evolving
+versus deleting a target, had identical feature vectors. This identifies useful
+places to add decision context; it does not prove that another choice would win.
+
+### Structured decision context
+
+The interpreter now provides optional, bounded summaries of declared immediate
+resources, actions and spending for effect options and trigger ordering. Summaries
+follow offered option indices and generated trigger keys, including explicit null
+entries for decline and unsupported effects. Deferred watcher bodies are summarized
+when they trigger; installing them does not advertise their future rewards.
+Selection goals distinguish gaining, discarding, playing, evolving and materials.
+Ambiguous recipients remain unknown. These fields describe declarations rather
+than guaranteed outcomes and never evaluate conditions against hidden state.
+
+`selectionGoal`, `effectControllerSeat`, `effectSummary`, `choiceSummaries`,
+`triggerSummaries` and `triggerControllerSeats` are automated-seat metadata. They
+introduce no human pick constraint or presentation requirement; the web contract
+therefore registers them with null consumers. Existing candidates, ownership
+checks and private decision delivery still govern every response.
+
+`panel_decision_context.py` keeps all 43 v3 rules and compares fixed selection,
+effect-choice, trigger-order and combined additions. Its control strips only the
+new decision metadata before scoring and tie-breaking. Both arms retain the
+current activation-cost projection. The certified and legacy opponents run the
+same current runtime in both arms; the frozen v3 opponent separately disables
+new decision context. This comparison is against v3 scoring on the current
+runtime, not a claim of reproducing the original v3 binary or human win rate.
+
+Development uses 64 FITNESS matchups for screening and 96 disjoint VALIDATION
+matchups for selection, with all five programs evaluated at each stage. Candidate
+selection requires a positive weighted change, no additional invalid games and no
+opponent decline above two percentage points. A selected program still requires
+one independent, frozen confirmation using `panel_confirm.py` with
+`--frozen-opponent v3 --no-baseline-decision-context`; development scores alone
+are insufficient for promotion.
+
+The decision-context experiment completed 3,200 development games. The selected
+ordering policy preserves all 43 v3 rules and adds nine trigger-order rules. It
+was the only variant that passed development guards; the combined variant's
+larger screening gain did not hold on validation.
+
+The frozen independent comparison used 128 new unordered deck pairs and 1,024
+games. The primary rate, counting invalids as zero, was 50.9765625% for the control
+and 52.5390625% for the candidate: +1.5625 percentage points, approximate clustered
+95% interval [-2.08793, +5.21293]. It did not meet the positive lower-bound guard,
+so no catalog was promoted. Against certified the change was +1.953125 points;
+against legacy +3.90625; against frozen v3 -1.5625. Baseline had two invalid games
+and candidate one. This reserve was consumed once and must not select another
+candidate.
+
+Development is separated by match ID. The selected FITNESS64 and VALIDATION96
+subsets also have zero exact deck-pair overlap; FITNESS has 63 distinct
+compositions and VALIDATION 96. Original TEST IDs and outcomes were unused, but
+four exact deck pairs from each development subset also occur in the original
+TEST partition. Only the newly excluded reserve supports the independent
+matchup-composition claim.
+
+Sixteen selected candidate losses reproduced validity, winner, reason and turn,
+recording 596 decisions. Recorded top alternatives tied after rounding in 15/40
+trigger-order decisions, 12/12 effect-option decisions and 64/113 card selections.
+The selected policy adds weights only for trigger ordering. These tasks differ
+from earlier loss samples, so the tie counts are descriptive. Plutomon scored
+7/22 versus 5/22 and Omnimon 7/16 versus 7/16 in exploratory grouping; those small,
+mixed-opponent samples do not establish archetype strength.
+
+The next hypothesis is to value the benefit of paying an optional cost against
+declining it, while distinguishing which cards to spend within an accepted
+payment. No weights were adjusted after independent confirmation. Aggregate
+results, program, limits and hashes are in
+`evidence/decision-context/summary.json`; private raw evidence stays under
+`.local/bot-lab/decision-context/`. The existing v2 catalog remains selected and
+nothing was deployed. Deploying newly added request metadata can still alter
+deterministic tie-breaking with an old catalog.
+
+### Optional single-card payments
+
+`panel_optional_costs.py` compares fixed balanced and conservative additions with
+the unchanged 43-rule v3 control on the current runtime. All arms and the frozen
+v3 opponent retain current decision metadata and activation-cost projection.
+The seven new features value resource gains, the discarded card, the only level 3
+starting line, and duplicates. They apply only to the initial choice of exactly
+one own-hand card; completing or declining the payment gains no new score.
+
+The automated-only `singleHandCostBenefit` request field certifies a narrow static
+IR shape: one own-hand discard and unconditional immediate draw, memory or recovery,
+with no memory payment, additional costs or unresolved modifiers. The closed
+whitelist rejects unknown shapes, conditional or scaled benefits, and optional
+follow-up actions. It describes declared resources, not guaranteed outcomes after
+replacement effects. Public deck size and memory headroom limit the valuation;
+mixed draw/recovery is ignored when the deck cannot cover both. Human clients
+consume this field with a null contract handler.
+
+Development evaluates three programs on 32 FITNESS matchups and 64 VALIDATION
+matchups, with four paired games per matchup: 1,152 games. IDs are disjoint, but
+one exact deck-pair composition occurs in both subsets. Original training and
+validation data are reused; previously consumed independent reserves are excluded
+by ID and composition. A positive development result still requires new data for
+independent confirmation. No default catalog is changed by this experiment.
+
+The optional-payment experiment selected the conservative policy. On the 64
+validation matchups, invalids counted as zero, control scored 120/256 (46.875%)
+and the candidate 122/256 (47.65625%): +0.78125 percentage points. Certified was
+unchanged, legacy improved by 4.6875 points, and frozen v3 declined by 1.5625.
+Each program shared the same one invalid game at each stage. The small result
+passes development guards but has no fresh independent confirmation.
+
+Eight paired development matchups reproduced all 16 outcomes and turn counts.
+Among captured valued payment opportunities, control declined 15/15; the
+conservative policy paid 11/14 and declined three. The runs reached different
+states, so these diagnostic counts do not measure global payment coverage or
+causal win-rate improvement. No trace reached its recording limit. Aggregate
+results and provenance are in `evidence/optional-costs/summary.json`. No catalog
+was promoted or deployed; the configured default remains v2.

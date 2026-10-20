@@ -1,3 +1,4 @@
+import type { DecisionEffectSummary } from "@aegis/shared/protocol/DecisionEffectSummary";
 import {
   type CardDefinition,
   type Condition,
@@ -43,6 +44,7 @@ export type SubTriggerRootZone = "trash" | "hand" | "security";
 
 /** A delayed/triggered sub-effect installed during resolution. */
 export interface SubTriggerSubscription {
+  decisionSummary?: DecisionEffectSummary;
   id: number;
   identicalInstallOrdinal?: number;
   event: SubTriggerEventName;

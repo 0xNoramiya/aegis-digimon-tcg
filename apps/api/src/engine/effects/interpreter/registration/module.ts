@@ -53,6 +53,8 @@ import { permanentMatchesFilter } from "../matching/permanent.js";
 import { scaleFactor } from "../scaling.js";
 import { candidatePermanents } from "../targeting/permanents.js";
 import { isDigiXrosPickerReplacement } from "#api/engine/effects/interpreter/actions/isDigiXrosPickerReplacement";
+import { getActivationMemoryCost } from "#api/engine/effects/interpreter/getActivationMemoryCost";
+import { getDecisionEffectSummary } from "#api/engine/effects/interpreter/getDecisionEffectSummary";
 
 function containsPlayCostReduction(actions: Action[]): boolean {
   return actions.some((action) => {
@@ -243,6 +245,8 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
     const timings = timingsForTrigger(effect, isOptionPlayBody);
     if (timings.length === 0) continue;
     const build = builderForTrigger(effect);
+    const activationMemoryCost = getActivationMemoryCost({ effect });
+    const decisionSummary = getDecisionEffectSummary({ actions: effect.actions, cost: effect.cost });
     const markedBuild = (options: BuilderOptions): Effect => {
       const built = build(options);
       const onlyAction = effect.actions.length === 1 ? effect.actions[0] : undefined;
@@ -254,6 +258,8 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
           : undefined;
       return {
         ...built,
+        activationMemoryCost,
+        decisionSummary,
         ...(effect.cost === undefined &&
         onlyAction !== undefined &&
         isDigiXrosPickerReplacement({ cardId, action: onlyAction })

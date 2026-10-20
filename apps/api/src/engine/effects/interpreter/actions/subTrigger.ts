@@ -1,3 +1,5 @@
+import { getDecisionEffectSummary } from "#api/engine/effects/interpreter/getDecisionEffectSummary";
+import { getSubTriggerDecisionSummary } from "#api/engine/effects/interpreter/getSubTriggerDecisionSummary";
 import { hasAttackRedirection } from "#api/engine/effects/interpreter/hasAttackRedirection";
 import { getAttackRedirectTargetIds } from "#api/engine/effects/interpreter/getAttackRedirectTargetIds";
 // Arming a watcher that fires on a later game event.
@@ -1201,6 +1203,7 @@ export async function runSubTrigger(
     (ctx.continuousPass === true && (action.on.isSelf === true || action.on.filter?.isSelfRef === true));
   ctx.fx.subscribeSubTrigger({
     event,
+    decisionSummary: getSubTriggerDecisionSummary({ action }),
     ...(event === "whenOpponentAttacks" && hasAttackRedirection(action.actions)
       ? {
           attackRedirectRequiresSelfSuspend: requiresSelfSuspend,
@@ -1539,6 +1542,7 @@ export async function runGainTriggeredEffect(
       quotedGrantedClause(ctx.source.definition.inheritedEffectText);
     ctx.fx.subscribeSubTrigger({
       event,
+      decisionSummary: getDecisionEffectSummary({ actions: gainedActions }),
       activationDeferred: true,
       sourcePermanentId: targetPermanentId,
       once: action.once === true,

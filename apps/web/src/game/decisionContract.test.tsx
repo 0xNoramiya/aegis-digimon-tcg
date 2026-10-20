@@ -24,6 +24,13 @@ type DecisionOptionKey = keyof NonNullable<DecisionRequest["options"]>;
  * `null` marks an option no UI reads, with the reason beside it.
  */
 const OPTION_CONSUMERS: Record<DecisionOptionKey, string | null> = {
+  singleHandCostBenefit: null,
+  selectionGoal: null,
+  effectControllerSeat: null,
+  effectSummary: null,
+  choiceSummaries: null,
+  triggerSummaries: null,
+  triggerControllerSeats: null,
   candidateInstanceIds: "screen/model/decisionView.ts",
   visibleInstanceIds: "decisionModel.ts",
   visibleCards: "decisionModel.ts",

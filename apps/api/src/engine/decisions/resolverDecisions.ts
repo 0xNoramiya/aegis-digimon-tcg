@@ -103,6 +103,8 @@ export function createResolverDecisions(
         options: {
           triggerKeys,
           triggerCardIds,
+          triggerSummaries: active.map((entry) => entry.effect.decisionSummary ?? null),
+          triggerControllerSeats: active.map((entry) => entry.source.ownerSeat),
           triggerDescriptions: active.map((c) => c.effect.description ?? ""),
           ...(triggerReasons.some((reason) => reason !== "") ? { triggerReasons } : {}),
           triggerIsInherited: active.map((c) => c.effect.isInherited),
@@ -159,6 +161,9 @@ export function createResolverDecisions(
         sourcePermanentId: collected.conferredToPermanentId ?? collected.source.permanent()?.permanentId,
         options: {
           effectText: collected.effect.description,
+          ...(collected.effect.decisionSummary === undefined
+            ? {}
+            : { effectSummary: collected.effect.decisionSummary, effectControllerSeat: collected.source.ownerSeat }),
           effectKey: collected.effect.effectKey,
           activationConfirmation: true,
           ...(collected.effect.timingOverride !== undefined

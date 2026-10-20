@@ -2,6 +2,7 @@ import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { getPanelScoringWindow } from "./getPanelScoringWindow.mjs";
 
 process.env.NODE_ENV = "test";
 process.env.AEGIS_STRICT_EFFECTS = "0";
@@ -109,6 +110,24 @@ function describeWindow(program, window, chosen) {
     ownBoard: own.board.map(describeUnit),
     opponentBoard: enemy.board.map(describeUnit),
     legalActions: window.actions.length,
+    ...(window.request === undefined
+      ? {}
+      : {
+          decision: {
+            sourceCardId: window.request.sourceCardId,
+            effectKey: window.request.options?.effectKey,
+            purpose: window.request.options?.purpose,
+            selectionGoal: window.request.options?.selectionGoal,
+            targetFate: window.request.options?.targetFate,
+            selectedCount: window.selected.length,
+            minimum: window.request.options?.min,
+            maximum: window.request.options?.max,
+            declinesCost: window.request.options?.declinesCost,
+            effectControllerSeat: window.request.options?.effectControllerSeat,
+            effectSummary: window.request.options?.effectSummary,
+            singleHandCostBenefit: window.request.options?.singleHandCostBenefit,
+          },
+        }),
     chosen: describeAction(window, choice),
     alternatives: ranked
       .filter((entry) => entry.index !== chosen)
@@ -117,22 +136,29 @@ function describeWindow(program, window, chosen) {
   };
 }
 
-function candidateChooser(program, seed, planner, traces) {
+function candidateChooser(program, seed, planner, traces, activationMemoryCosts, decisionContext) {
   const choose = planner
     ? createTurnPlannerChooser({ program, seed, parameters: planner === true ? undefined : planner })
     : (window) => chooseHeuristic(program, window, seed);
-  if (traces === undefined) return choose;
+  if (traces === undefined && activationMemoryCosts && decisionContext) return choose;
   return (window) => {
-    const index = choose(window);
-    if (window.actions.length > 1 && traces.length < MAX_TRACES) traces.push(describeWindow(program, window, index));
+    const scoring = getPanelScoringWindow({ window, activationMemoryCosts, decisionContext });
+    const index = choose(scoring);
+    if (traces !== undefined && window.actions.length > 1 && traces.length < MAX_TRACES) {
+      traces.push(describeWindow(program, scoring, index));
+    }
     return index;
   };
 }
 
-function candidateSeat(program, seed, planner, traces) {
+function candidateSeat(program, seed, planner, traces, activationMemoryCosts, decisionContext) {
   return {
     policyFactory: (engine, seat) =>
-      createTrainingPolicy(engine, seat, candidateChooser(program, seed + seat * 7919, planner, traces)),
+      createTrainingPolicy(
+        engine,
+        seat,
+        candidateChooser(program, seed + seat * 7919, planner, traces, activationMemoryCosts, decisionContext),
+      ),
     canChooseMainAction: mainActionReady,
     maxMainPhaseActions: Number.POSITIVE_INFINITY,
   };
@@ -149,7 +175,18 @@ function opponentSeat(job, deck) {
     const program = parseHeuristic(job.opponentProgram);
     return {
       policyFactory: (engine, seat) =>
-        createTrainingPolicy(engine, seat, (window) => chooseHeuristic(program, window, job.seed + seat * 7919)),
+        createTrainingPolicy(
+          engine,
+          seat,
+          candidateChooser(
+            program,
+            job.seed + seat * 7919,
+            undefined,
+            undefined,
+            job.opponentActivationMemoryCosts !== false,
+            job.opponentDecisionContext !== false,
+          ),
+        ),
       canChooseMainAction: mainActionReady,
       maxMainPhaseActions: Number.POSITIVE_INFINITY,
     };
@@ -181,7 +218,14 @@ async function play(job) {
   const seats = [0, 1].map((seat) => ({
     deck: decks[seat],
     ...(seat === job.seat
-      ? candidateSeat(program, job.seed, job.planner ?? undefined, traces)
+      ? candidateSeat(
+          program,
+          job.seed,
+          job.planner ?? undefined,
+          traces,
+          job.activationMemoryCosts !== false,
+          job.decisionContext !== false,
+        )
       : opponentSeat(job, decks[seat])),
   }));
   const started = performance.now();

@@ -1,4 +1,5 @@
 import type { Seat } from "@aegis/shared";
+import type { DecisionEffectSummary } from "@aegis/shared/protocol/DecisionEffectSummary";
 import type { EffectContext } from "./effectContext.js";
 
 /**
@@ -75,6 +76,7 @@ export type SubTriggerEventName =
 
 /** Args for installing a delayed/triggered sub-effect via the primitives. */
 export interface SubTriggerInstall {
+  decisionSummary?: DecisionEffectSummary;
   event: SubTriggerEventName;
   attackRedirectTargetIds?: (ctx: EffectContext) => string[];
   attackRedirectRequiresSelfSuspend?: boolean;

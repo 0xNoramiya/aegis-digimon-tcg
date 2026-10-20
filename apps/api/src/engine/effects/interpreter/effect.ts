@@ -1,3 +1,7 @@
+import { getSingleHandActionCostBenefit } from "#api/engine/effects/interpreter/getSingleHandActionCostBenefit";
+import { getSingleHandCostBenefit } from "#api/engine/effects/interpreter/getSingleHandCostBenefit";
+import { getDecisionActionSummary } from "#api/engine/effects/interpreter/getDecisionActionSummary";
+import { getDecisionEffectSummary } from "#api/engine/effects/interpreter/getDecisionEffectSummary";
 // Running one CardEffect, and deciding which timing window it belongs to.
 
 import type { Effect } from "../Effect.js";
@@ -608,6 +612,10 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
     paysCostFirst ||
     action.kind === "CostGatedBlock" ||
     action.kind === "CostModifier";
+  const outerSingleHandCostBenefit = ctx.activeSingleHandCostBenefit;
+  ctx.activeSingleHandCostBenefit = getSingleHandActionCostBenefit({ action });
+  const outerDecisionSummary = ctx.activeDecisionSummary;
+  ctx.activeDecisionSummary = getDecisionActionSummary({ action });
   const outerEffectTextPart = ctx.activeEffectTextPart;
   const outerEffectTextEmphasis = ctx.activeEffectTextEmphasis;
   const outerPayingCostDepth = ctx.payingCostDepth;
@@ -648,6 +656,8 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
         ));
     }
   } finally {
+    ctx.activeSingleHandCostBenefit = outerSingleHandCostBenefit;
+    ctx.activeDecisionSummary = outerDecisionSummary;
     ctx.activeEffectTextPart = outerEffectTextPart;
     ctx.activeEffectTextEmphasis = outerEffectTextEmphasis;
     ctx.payingCostDepth = outerPayingCostDepth;
@@ -704,29 +714,41 @@ export async function runEffect(ctx: EffectContext, effect: CardEffect): Promise
   // preflight it before anything resolves and pay it once. An action inside the clause that
   // aborts — an opponent declining an optional — does not refund it.
   if (effect.cost !== undefined) {
-    // The selection this cost asks for is the clause's own question wherever the resolver
-    // skipped the separate optional prompt (see `costIsAskedAsSelection`).
-    ctxWithSelections.costIsTheQuestion = effect.optional === true && costIsAskedAsSelection(effect.cost);
-    if (
-      effect.cost.optional === true &&
-      canPayCost(ctxWithSelections, effect.cost) &&
-      !(await ctxWithSelections.ask.optional(ctxWithSelections, effect.cost.raw ?? "Pay processing condition?"))
-    ) {
-      if (ctx.oncePerTurnActivationChosen !== true) ctx.oncePerTurnActivationDeclined = true;
-      ctxWithSelections.effectRestrictions = outerRestrictions;
-      return;
+    const outerSingleHandCostBenefit = ctxWithSelections.activeSingleHandCostBenefit;
+    ctxWithSelections.activeSingleHandCostBenefit = getSingleHandCostBenefit({
+      actions: effect.actions,
+      cost: effect.cost,
+    });
+    const outerDecisionSummary = ctxWithSelections.activeDecisionSummary;
+    ctxWithSelections.activeDecisionSummary = getDecisionEffectSummary({ actions: effect.actions, cost: effect.cost });
+    try {
+      // The selection this cost asks for is the clause's own question wherever the resolver
+      // skipped the separate optional prompt (see `costIsAskedAsSelection`).
+      ctxWithSelections.costIsTheQuestion = effect.optional === true && costIsAskedAsSelection(effect.cost);
+      if (
+        effect.cost.optional === true &&
+        canPayCost(ctxWithSelections, effect.cost) &&
+        !(await ctxWithSelections.ask.optional(ctxWithSelections, effect.cost.raw ?? "Pay processing condition?"))
+      ) {
+        if (ctx.oncePerTurnActivationChosen !== true) ctx.oncePerTurnActivationDeclined = true;
+        ctxWithSelections.effectRestrictions = outerRestrictions;
+        return;
+      }
+      const canPay = canPayCost(ctxWithSelections, effect.cost);
+      if (canPay && !costIsAskedAsSelection(effect.cost)) ctxWithSelections.onActivationChosen?.();
+      const paid = canPay && (await payCost(ctxWithSelections, effect.cost));
+      ctxWithSelections.costIsTheQuestion = undefined;
+      if (!paid) {
+        ctxWithSelections.effectRestrictions = outerRestrictions;
+        return;
+      }
+      ctxWithSelections.onActivationChosen?.();
+      ctxWithSelections.oncePerTurnActivationChosen = true;
+      ctxWithSelections.oncePerTurnActivationDeclined = false;
+    } finally {
+      ctxWithSelections.activeSingleHandCostBenefit = outerSingleHandCostBenefit;
+      ctxWithSelections.activeDecisionSummary = outerDecisionSummary;
     }
-    const canPay = canPayCost(ctxWithSelections, effect.cost);
-    if (canPay && !costIsAskedAsSelection(effect.cost)) ctxWithSelections.onActivationChosen?.();
-    const paid = canPay && (await payCost(ctxWithSelections, effect.cost));
-    ctxWithSelections.costIsTheQuestion = undefined;
-    if (!paid) {
-      ctxWithSelections.effectRestrictions = outerRestrictions;
-      return;
-    }
-    ctxWithSelections.onActivationChosen?.();
-    ctxWithSelections.oncePerTurnActivationChosen = true;
-    ctxWithSelections.oncePerTurnActivationDeclined = false;
   }
   const actions = effect.actions ?? [];
   // Each "by" processing condition is asked when its own clause is reached, in printed order:
