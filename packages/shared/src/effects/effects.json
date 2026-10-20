@@ -201109,7 +201109,7 @@
         ]
       },
       {
-        "trigger": "WhenDigivolving",
+        "trigger": "OnDeletion",
         "actions": [
           { "kind": "Suspend", "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 } }
         ]

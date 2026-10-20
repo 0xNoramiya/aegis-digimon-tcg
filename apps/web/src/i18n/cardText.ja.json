@@ -867,7 +867,7 @@
   "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][OnDeletion]Delete1ofyouropponent'sDigimonwith4000DPorless.": "〔進化〕特徴に「NSo」を持つLv.3:コスト2\n\n【登場時】【消滅時】DP4000以下の相手のデジモン1体を消滅させる。",
   "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][WhenDigivolving]Bydeleting1ofyourDigimon,delete1ofyouropponent'slevel4orlowerDigimon.": "〔進化〕特徴「NSo」を持つLv.3:コスト2\n\n【登場時】【進化時】自分のデジモン1体を消滅させることで、Lv.4以下の相手のデジモン1体を消滅させる。",
   "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][WhenDigivolving]Bytrashing1cardinyourhand,give1ofyouropponent'sDigimon\"[OnDeletion]Trash1cardinyourhand.\"untiltheendoftheirturn.": "〔進化〕特徴に「NSo」を持つLv.3:コスト2\n\n【登場時】【進化時】自分の手札1枚を破棄することで、相手のターン終了まで、相手のデジモン1体に「【消滅時】自分の手札1枚を破棄する。」の効果を与える。",
-  "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][WhenDigivolving]Suspend1ofyouropponent'sDigimon.": "〔進化〕特徴に「NSo」を持つLv.3:コスト2\n\n【登場時】【消滅時】相手のデジモン1体をレストさせる。",
+  "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][OnDeletion]Suspend1ofyouropponent'sDigimon.": "〔進化〕特徴に「NSo」を持つLv.3:コスト2\n\n【登場時】【消滅時】相手のデジモン1体をレストさせる。",
   "[Digivolve]Lv.3w/[NSp]trait:Cost1[Rule]Trait:Hasthe[Dinosaur]type.": "〔進化〕特徴に「NSp」を持つLv.3:コスト1\n\n〈ルール〉特徴:タイプ「恐竜型」を持つ。",
   "[Digivolve]Lv.3w/[NSp]trait:Cost2[OnPlay][WhenDigivolving]<Draw1>.": "〔進化〕特徴に「NSp」を持つLv.3:コスト2\n\n【登場時】【進化時】≪1ドロー≫（自分のデッキからカードを1枚引く）",
   "[Digivolve]Lv.3w/[NSp]trait:Cost2[OnPlay][WhenDigivolving]1ofyouropponent'sDigimongets-3000DPfortheturn.": "〔進化〕特徴に「NSp」を持つLv.3:コスト2\n\n【登場時】【進化時】ターン終了まで、相手のデジモン1体をDP-3000。",
