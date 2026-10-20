@@ -688,6 +688,13 @@ How it works:
   four games (both deck orientations, both seats, fixed seeds). The score is the
   block mean. The objective score is `opponent:<name>`, so GEPA keeps a Pareto
   front per opponent (`frontier_type="objective"`).
+- Blocks balance who moves first. In each deck orientation the candidate moves
+  first in one game and second in the other. `block_games` sets an explicit
+  `firstSeat`, which `panel_worker.mjs` passes to `runBotMatch`. Before this, the
+  engine derived the first seat from seed parity, which always equalled the
+  candidate seat, so earlier panel runs measured the candidate only when moving
+  first. Their results are not comparable with later runs for (orientation 0,
+  seat 1) and (orientation 1, seat 0).
 - Game results are cached on disk by the full job payload and a fingerprint of
   the compiled engine, so validation and held-out games are never replayed.
 - The reflective dataset shows each block's outcomes. For lost games it shows a
@@ -1091,6 +1098,15 @@ checkpointed independently and limited to 60 seconds. Incomplete searches and an
 invalid comparison produce no label. A preference requires at least ten percentage
 points of aggregate gain and positive means under both continuation policies. The
 reported intervals are exploratory, not individual action certificates.
+
+A root that passes this screen is replicated with 208 fresh-seed pairs, half v3
+and half v2, in `teacher/<index>/replication`. It becomes a `preference` only when
+the lower 95% bound of the mean paired difference is above zero over valid pairs,
+and at most 5% of pairs are invalid. Cases keep `preferred` for the screen and add
+`replication` and `replicated`. Only replicated preferences reach development, the
+alignment audit and the reflection prompt. A diagnostic replication found that only
+3 of 11 screen preferences kept a positive lower bound; the mean gain fell from
+0.179 to 0.040. Parent runs without `replicated` end inconclusive when refined.
 
 GEPA sees every teacher case once per reflection, including negative, inconclusive
 and invalid comparisons. All legal competing actions and a shared card glossary
