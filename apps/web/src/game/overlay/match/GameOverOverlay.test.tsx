@@ -9,6 +9,7 @@ import { I18nProvider } from "../../../i18n";
 import { GameOverOverlay } from "./GameOverOverlay";
 import type { SeriesView } from "../../seriesModel";
 import type { RematchStage } from "@/game/getRematchView";
+import { RematchMode } from "@aegis/shared/protocol/RematchMode";
 
 afterEach(cleanup);
 
@@ -167,7 +168,7 @@ describe("best-of-three result", () => {
 });
 
 describe("rematch after a best-of-one", () => {
-  function renderRematch(stage: RematchStage, series?: SeriesView) {
+  function renderRematch(stage: RematchStage, series?: SeriesView, mode: RematchMode = RematchMode.NEW_SERIES.value) {
     const calls: string[] = [];
     render(
       <I18nProvider>
@@ -178,9 +179,9 @@ describe("rematch after a best-of-one", () => {
           onMenu={() => calls.push("menu")}
           onRematch={() => calls.push("queue")}
           rematch={{
-            view: { stage, series },
+            view: { stage, mode, series },
             opponentName: "Nova",
-            onOffer: () => calls.push("offer"),
+            onOffer: (offered) => calls.push(`offer:${offered}`),
             onAnswer: (accept) => calls.push(accept ? "accept" : "decline"),
             onChooseTurnOrder: (goFirst) => calls.push(goFirst ? "first" : "second"),
           }}
@@ -190,16 +191,24 @@ describe("rematch after a best-of-one", () => {
     return calls;
   }
 
-  it("offers a best-of-three beside the usual actions", () => {
+  it("offers to finish or restart a best-of-three beside the usual actions", () => {
     const calls = renderRematch("open");
-    fireEvent.click(screen.getByRole("button", { name: "Play Nova again · Best of 3" }));
+    expect(screen.getByText("Play Nova again?")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Finish this Best of 3" }));
+    fireEvent.click(screen.getByRole("button", { name: "Start new Best of 3" }));
     fireEvent.click(screen.getByRole("button", { name: "Find rematch" }));
-    expect(calls).toEqual(["offer", "queue"]);
+    expect(calls).toEqual(["offer:finish", "offer:new", "queue"]);
+  });
+
+  it("tells the invited player that the finished game counts toward the offered series", () => {
+    renderRematch("offeredToYou", undefined, RematchMode.FINISH_SERIES.value);
+    expect(screen.getByText("Nova wants to finish this Best of 3")).toBeTruthy();
+    expect(screen.getByText(/This game counts as game 1\./)).toBeTruthy();
   });
 
   it("lets the invited player accept or decline", () => {
     const calls = renderRematch("offeredToYou");
-    expect(screen.getByText("Nova wants a rematch")).toBeTruthy();
+    expect(screen.getByText("Nova wants to start a new Best of 3")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Decline" }));
     fireEvent.click(screen.getByRole("button", { name: "Accept" }));
     expect(calls).toEqual(["decline", "accept"]);

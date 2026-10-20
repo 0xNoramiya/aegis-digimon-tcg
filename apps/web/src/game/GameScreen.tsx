@@ -1545,7 +1545,7 @@ function GameScreenSession({
               rematch: rematch && {
                 view: rematch,
                 opponentName: opp.displayName || t("game.opponent"),
-                onOffer: () => room?.send(SERIES_CHANNEL, { action: "offerRematch" }),
+                onOffer: (mode) => room?.send(SERIES_CHANNEL, { action: "offerRematch", mode }),
                 onAnswer: (accept) => room?.send(SERIES_CHANNEL, { action: "answerRematch", accept }),
                 onChooseTurnOrder: (goFirst) => room?.send(SERIES_CHANNEL, { action: "chooseTurnOrder", goFirst }),
               },
