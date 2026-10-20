@@ -1,3 +1,4 @@
+import { CardAceBadge } from "@/design/CardAceBadge";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { getCardDefinition } from "@aegis/shared";
 import { useTranslation } from "../../../i18n";
@@ -10,6 +11,7 @@ export function PrintedCardInfo({ cardId }: { cardId: string }) {
   return (
     <>
       <strong>{getCardName(cardId)}</strong>
+      <CardAceBadge cardId={cardId} />
       <div className="card-action-sheet__stats">
         {def?.level ? <span>Lv.{def.level}</span> : null}
         <span>{def && def.playCost >= 0 ? t("game.costsMemory", { count: def.playCost }) : t("game.noCost")}</span>

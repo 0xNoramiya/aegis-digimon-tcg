@@ -1,3 +1,4 @@
+import { CardAceBadge } from "@/design/CardAceBadge";
 import { getTranslatedCardText } from "@/i18n/getTranslatedCardText";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { splitInspectorPrintedText } from "@/game/splitInspectorPrintedText";
@@ -159,6 +160,7 @@ export function ArenaPermanentInspector({
             <div className="arena-permanent-inspector__heading">
               <div className="arena-permanent-inspector__title">
                 <h2 id={titleId}>{getTranslatedCardName({ name: detail.name, translations })}</h2>
+                <CardAceBadge cardId={detail.cardId} />
                 {top?.level ? <span>Lv.{top.level}</span> : null}
               </div>
             </div>
