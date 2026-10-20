@@ -164,9 +164,6 @@ export const manualEn = {
     "Both players must agree. Return all cards to the original decks, shuffle and prepare new hands and security.",
   "manual.restart.accept": "Accept restart",
   "manual.restart.cancel": "Cancel restart",
-  "manual.turn.breedingPrompt":
-    "Choose one breeding action, or skip to Main. Turn-start unsuspending and drawing are handled automatically; card effects stay manual.",
-  "manual.turn.skipBreeding": "Skip breeding",
   "manual.turn.currentPhase": "{player} · {phase}",
   "manual.turn.automatic":
     "Turn starts unsuspend and draw automatically. The first player skips the opening draw. Card effects stay manual.",

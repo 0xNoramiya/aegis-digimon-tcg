@@ -164,9 +164,6 @@ export const manualEs = {
     "Ambos jugadores deben aceptar. Todas las cartas vuelven a los mazos originales, se barajan y se preparan nuevas manos y seguridad.",
   "manual.restart.accept": "Aceptar reinicio",
   "manual.restart.cancel": "Cancelar reinicio",
-  "manual.turn.breedingPrompt":
-    "Elige una acción de crianza o pasa a la fase principal. Enderezar y robar al inicio del turno son automáticos; los efectos de las cartas siguen siendo manuales.",
-  "manual.turn.skipBreeding": "Omitir crianza",
   "manual.turn.currentPhase": "{player} · {phase}",
   "manual.turn.automatic":
     "Al iniciar el turno, las cartas se enderezan y el robo es automático. El primer jugador omite el primer robo. Los efectos siguen siendo manuales.",

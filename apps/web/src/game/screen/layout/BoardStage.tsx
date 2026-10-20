@@ -1,4 +1,3 @@
-import { ManualBreedingPrompt } from "@/game/manual/ManualBreedingPrompt";
 import { getGamePhase } from "@/game/screen/model/getGamePhase";
 import { ManualBreedingChoice } from "@aegis/shared/manual/ManualBreedingChoice";
 import { snapshotGameState } from "@/net/presentedState";
@@ -372,20 +371,6 @@ export function BoardStage({
           ...look.style,
         }}
       >
-        <ManualBreedingPrompt
-          key={`${manualState.turnSeat}:${manualState.turnCount}`}
-          state={manualState}
-          seat={viewerSeat}
-          spectating={spectating}
-          presenting={cues.presenting || cues.decisionAnimationsPending}
-          disabled={!room}
-          onOpen={selection.clearSel}
-          send={(command) => {
-            if (room) {
-              sendManualCommand({ room, command });
-            }
-          }}
-        />
         {manualPermanent && manualPlayer && manualState.players[1 - viewerSeat] ? (
           <ManualPermanentDialog
             combatActive={manualState.manual.combatStage !== ManualCombatStage.NONE.value}
@@ -672,7 +657,11 @@ export function BoardStage({
                 phaseBanner={cues.phaseBanner}
                 memory={readouts.memory}
                 compact={layout.compactPiles}
-                displayedPhase={cues.displayedPhase ?? getGamePhase({ state: shownState })}
+                displayedPhase={
+                  state.gameMode === GameMode.MANUAL.value
+                    ? displayPhase
+                    : (cues.displayedPhase ?? getGamePhase({ state: shownState }))
+                }
                 phaseSweeping={cues.unsuspendSweep !== null}
                 memoryPrediction={readouts.memoryPrediction}
                 turnControlState={turnControlState({ phase: displayPhase, turnSeat: state.turnSeat, viewerSeat })}
