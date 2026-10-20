@@ -1,5 +1,7 @@
 import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
 import { UsedDeckDialog } from "@/game/UsedDeckDialog";
+import { collectViewerCardArtIds } from "@/screens/cardLanguage/collectViewerCardArtIds";
+import { ViewerCardArtIdsContext } from "@/screens/cardLanguage/ViewerCardArtIdsContext";
 import type { DeckListing } from "@/game/decks";
 import { downloadReplay } from "../replays/files";
 /* The in-game board — the design's letterboxed board layout, driven entirely by
@@ -583,6 +585,11 @@ function GameScreenSession({
   });
   const you = state?.players[viewerSeat];
   const opp = state?.players[otherSeat(viewerSeat)];
+  const viewerCardArtKey =
+    spectating || !state
+      ? ""
+      : collectViewerCardArtIds({ deck: joinOptions.deck, players: [...state.players], viewerSeat }).join("\n");
+  const viewerCardArtIds = useMemo(() => new Set(viewerCardArtKey.split("\n").filter(Boolean)), [viewerCardArtKey]);
   /**
    * The two boards this screen reads (docs/presentation-queue-plan.md 3.2).
    *
@@ -1875,5 +1882,5 @@ function GameScreenSession({
       }}
     />
   );
-  return board;
+  return <ViewerCardArtIdsContext.Provider value={viewerCardArtIds}>{board}</ViewerCardArtIdsContext.Provider>;
 }
