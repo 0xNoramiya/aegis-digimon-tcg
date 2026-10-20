@@ -8,7 +8,7 @@ import { ManualPanel } from "@/game/manual/ManualPanel";
 import { ManualAction } from "@aegis/shared/manual/ManualAction";
 import { useState } from "react";
 import type { GameState } from "@aegis/shared/schema/GameState";
-import { Zone, type Seat } from "@aegis/shared/schema/enums";
+import { Phase, Zone, type Seat } from "@aegis/shared/schema/enums";
 import type { ManualCommand } from "@aegis/shared/manual/ManualCommand";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import type { AegisRoom } from "@/net/client";
@@ -24,9 +24,10 @@ type Props = {
   selectedHand?: string | null;
   selectedPermanent?: string | null;
   spectating?: boolean;
+  presenting?: boolean;
 };
 
-export function ManualControls({ state, room, seat, selectedHand, selectedPermanent, spectating }: Props) {
+export function ManualControls({ state, room, seat, selectedHand, selectedPermanent, spectating, presenting }: Props) {
   const { t } = useTranslation();
   const drag = useManualPanelDrag({ enabled: state.gameMode === GameMode.MANUAL.value });
   const [open, setOpen] = useState(false);
@@ -274,6 +275,7 @@ export function ManualControls({ state, room, seat, selectedHand, selectedPerman
                     opponent={opponent}
                     send={send}
                     combatActive={combatActive}
+                    canDeclareAttack={!presenting && state.turnSeat === seat && table.turnPhase === Phase.Main}
                     selectedHand={selectedHand}
                     selectedPermanent={selectedPermanent}
                   />
@@ -302,7 +304,7 @@ export function ManualControls({ state, room, seat, selectedHand, selectedPerman
                   </button>
                   <button
                     type="button"
-                    disabled={state.turnSeat !== seat || combatActive}
+                    disabled={presenting || state.turnSeat !== seat || combatActive || table.turnPhase !== Phase.Main}
                     onClick={() => send({ action: ManualAction.PASS.value })}
                   >
                     {t("manual.pass")}

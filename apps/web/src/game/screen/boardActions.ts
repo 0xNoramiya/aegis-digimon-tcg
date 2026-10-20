@@ -1,7 +1,9 @@
+import { ManualBreedingChoice } from "@aegis/shared/manual/ManualBreedingChoice";
+import { ManualCombatStage } from "@aegis/shared/manual/ManualCombatStage";
 import { ManualAction } from "@aegis/shared/manual/ManualAction";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { sendManualCommand } from "@/game/manual/sendManualCommand";
-import { Zone } from "@aegis/shared/schema/enums";
+import { Zone, Phase } from "@aegis/shared/schema/enums";
 /* What a tap or a drop on the board does.
 
    The board is answered by pointing at it, so one gesture means different things
@@ -232,6 +234,7 @@ export function boardActions({
     if (!zone) return;
     const { target, id } = zone;
     if (state.gameMode === GameMode.MANUAL.value && room) {
+      if (mainActionBlocked) return;
       if (d.kind === DragKind.Play) {
         if (target === "battle-you" || target === "breeding-you" || target === "perm-you") {
           sendManualCommand({
@@ -250,6 +253,15 @@ export function boardActions({
       } else if (target === "battle-you" || target === "breeding-you" || target === "perm-you") {
         const permanent = findPermanent(d.permanentId);
         if (permanent) {
+          if (permanent.inBreeding && target === "battle-you" && breedingActionsOpen) {
+            if (state.manual.canMoveFromBreeding) {
+              sendManualCommand({
+                room,
+                command: { action: ManualAction.BREEDING.value, choice: ManualBreedingChoice.MOVE.value },
+              });
+            }
+            return;
+          }
           sendManualCommand({
             room,
             command: {
@@ -268,6 +280,17 @@ export function boardActions({
           });
         }
       } else if (target === "opp-security" || (target === "perm-opp" && id)) {
+        const attacker = findPermanent(d.permanentId);
+        if (
+          !isMyTurn ||
+          state.manual.turnPhase !== Phase.Main ||
+          state.manual.combatStage !== ManualCombatStage.NONE.value ||
+          !attacker ||
+          attacker.inBreeding ||
+          attacker.topCard.faceUp === false
+        ) {
+          return;
+        }
         sendManualCommand({
           room,
           command: {
@@ -428,6 +451,26 @@ export function boardActions({
   };
 
   const onBreeding = () => {
+    if (state.gameMode === GameMode.MANUAL.value) {
+      if (breedingActionsOpen && room) {
+        if (viewer.breeding && !state.manual.canMoveFromBreeding) {
+          return;
+        }
+        if (!viewer.breeding && !state.manual.canHatch) {
+          return;
+        }
+        sendManualCommand({
+          room,
+          command: {
+            action: ManualAction.BREEDING.value,
+            choice: viewer.breeding ? ManualBreedingChoice.MOVE.value : ManualBreedingChoice.HATCH.value,
+          },
+        });
+      } else if (viewer.breeding) {
+        setSelPerm(viewer.breeding.permanentId);
+      }
+      return;
+    }
     if (selCardId && viewer.breeding && eligibleBase(viewer.breeding)) {
       if (!mainActionBlocked)
         return digivolveWithChoice(viewer.breeding.permanentId, handSel!, selCardId!, viewer.breeding);

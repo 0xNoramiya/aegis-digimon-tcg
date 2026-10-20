@@ -137,3 +137,19 @@ it("does not offer declaring an attack from the breeding area", () => {
   );
   expect(markup).toMatch(/disabled=""[^>]*>manual.attack<\/button>/);
 });
+
+it("keeps attack declarations disabled until the manual breeding choice is complete", () => {
+  const permanent = new Permanent();
+  permanent.permanentId = "waiting-for-breeding";
+  permanent.topCard = Object.assign(new CardInstance(), { cardId: "BT1-010" });
+  const markup = renderToStaticMarkup(
+    <ManualPermanentControls
+      canDeclareAttack={false}
+      permanent={permanent}
+      opponent={new PlayerState()}
+      send={vi.fn<(command: ManualCommand) => void>()}
+    />,
+  );
+  expect(markup).toMatch(/disabled=""[^>]*>manual.attack<\/button>/);
+  expect(markup).toMatch(/<button type="button">manual.suspend<\/button>/);
+});

@@ -22,6 +22,7 @@ type Props = {
   room?: AegisRoom;
   disabled: boolean;
   combatActive?: boolean;
+  canDeclareAttack?: boolean;
   deckCount?: number;
   onClose: () => void;
 };
@@ -35,6 +36,7 @@ export function ManualPermanentDialog({
   room,
   disabled,
   combatActive,
+  canDeclareAttack,
   deckCount,
   onClose,
 }: Props) {
@@ -57,6 +59,7 @@ export function ManualPermanentDialog({
                 <ManualPermanentControls
                   key={`${permanent.permanentId}:${permanent.currentDP}:${permanent.manualMarker}`}
                   deckCount={deckCount}
+                  canDeclareAttack={canDeclareAttack}
                   combatActive={combatActive}
                   permanent={permanent}
                   opponent={opponent}

@@ -164,4 +164,11 @@ export const manualPtBR = {
     "Os dois jogadores precisam concordar. Todas as cartas voltam aos decks originais, com embaralhamento, novas mãos e segurança.",
   "manual.restart.accept": "Aceitar reinício",
   "manual.restart.cancel": "Cancelar reinício",
+  "manual.turn.breedingPrompt":
+    "Escolha uma ação de criação ou pule para a fase principal. Desvirar e comprar no início do turno são automáticos; os efeitos das cartas continuam manuais.",
+  "manual.turn.skipBreeding": "Pular criação",
+  "manual.turn.currentPhase": "{player} · {phase}",
+  "manual.turn.automatic":
+    "No início do turno, as cartas são desviradas e a compra é automática. O primeiro jogador pula a primeira compra. Os efeitos continuam manuais.",
+  "manual.turn.waitingBreeding": "O jogador do turno está escolhendo uma ação de criação.",
 } as const;

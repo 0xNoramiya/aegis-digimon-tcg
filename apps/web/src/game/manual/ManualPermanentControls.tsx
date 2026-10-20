@@ -14,10 +14,18 @@ type Props = {
   opponent: PlayerState;
   send: (command: ManualCommand) => void;
   combatActive?: boolean;
+  canDeclareAttack?: boolean;
   deckCount?: number;
 };
 
-export function ManualPermanentControls({ permanent, opponent, send, combatActive, deckCount }: Props) {
+export function ManualPermanentControls({
+  permanent,
+  opponent,
+  send,
+  combatActive,
+  deckCount,
+  canDeclareAttack = true,
+}: Props) {
   const { t } = useTranslation();
   const markerListId = useId();
   const [dp, setDp] = useState(String(permanent.currentDP));
@@ -160,7 +168,7 @@ export function ManualPermanentControls({ permanent, opponent, send, combatActiv
       </label>
       <button
         type="button"
-        disabled={combatActive || permanent.inBreeding || permanent.topCard.faceUp === false}
+        disabled={!canDeclareAttack || combatActive || permanent.inBreeding || permanent.topCard.faceUp === false}
         onClick={() =>
           send({
             action: ManualAction.ATTACK.value,

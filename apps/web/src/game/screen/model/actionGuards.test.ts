@@ -88,3 +88,42 @@ it("blocks manual board mutations during every pending table agreement", () => {
     expect(guards.endPhaseBlocked).toBe(true);
   }
 });
+
+it.each([0, 1] as const)("keeps manual breeding choices separate from passing for viewer seat %s", (viewerSeat) => {
+  const state = {
+    gameOver: false,
+    turnSeat: 0,
+    phase: Phase.Main,
+    gameMode: "manual",
+    manual: {
+      turnPhase: Phase.Breeding,
+      combatStage: "none",
+      undoRequester: -1,
+      resultRequester: -1,
+      restartRequester: -1,
+    },
+  } as unknown as GameState;
+  const guards = actionGuards({
+    state,
+    viewer: viewerWith(false),
+    viewerSeat,
+    decisionOpen: false,
+    presenting: false,
+    phasePresentationPending: false,
+  });
+  expect(guards.endPhaseBlocked).toBe(viewerSeat !== 0);
+  expect(guards.breedingActionsOpen).toBe(viewerSeat === 0);
+  expect(guards.turnActionBlocked).toBe(false);
+  expect(guards.mainActionBlocked).toBe(false);
+  state.manual.turnPhase = Phase.Main;
+  expect(
+    actionGuards({
+      state,
+      viewer: viewerWith(false),
+      viewerSeat,
+      decisionOpen: false,
+      presenting: false,
+      phasePresentationPending: false,
+    }).endPhaseBlocked,
+  ).toBe(viewerSeat !== 0);
+});

@@ -16,11 +16,20 @@ type Props = {
   opponent: PlayerState;
   send: (command: ManualCommand) => void;
   combatActive?: boolean;
+  canDeclareAttack?: boolean;
   selectedHand?: string | null;
   selectedPermanent?: string | null;
 };
 
-export function ManualCardControls({ player, opponent, send, selectedHand, selectedPermanent, combatActive }: Props) {
+export function ManualCardControls({
+  player,
+  opponent,
+  send,
+  selectedHand,
+  selectedPermanent,
+  combatActive,
+  canDeclareAttack,
+}: Props) {
   const { t } = useTranslation();
   const sources = getManualSources({ player, t });
   let chosen = selectedHand ?? undefined;
@@ -77,6 +86,7 @@ export function ManualCardControls({ player, opponent, send, selectedHand, selec
             <ManualPermanentControls
               key={`${source.permanent.permanentId}:${source.permanent.currentDP}:${source.permanent.manualMarker}`}
               deckCount={player.deckCount}
+              canDeclareAttack={canDeclareAttack}
               combatActive={combatActive}
               permanent={source.permanent}
               opponent={opponent}

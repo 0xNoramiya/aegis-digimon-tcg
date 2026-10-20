@@ -1,4 +1,8 @@
+import { ManualBreedingPrompt } from "@/game/manual/ManualBreedingPrompt";
+import { getGamePhase } from "@/game/screen/model/getGamePhase";
+import { ManualBreedingChoice } from "@aegis/shared/manual/ManualBreedingChoice";
 import { snapshotGameState } from "@/net/presentedState";
+import { Phase } from "@aegis/shared/schema/enums";
 import { ManualAction } from "@aegis/shared/manual/ManualAction";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { ManualCombatControls } from "@/game/manual/ManualCombatControls";
@@ -261,6 +265,7 @@ export function BoardStage({
     () => (state.gameMode === GameMode.MANUAL.value ? snapshotGameState(state) : state),
     [state, state.stateVersion, manualRevision],
   );
+  const displayPhase = getGamePhase({ state: manualState });
   const manualPlayer = manualState.players[viewerSeat];
   const manualPermanent =
     manualState.gameMode === GameMode.MANUAL.value && !spectating
@@ -275,13 +280,20 @@ export function BoardStage({
   const [chatOpen, setChatOpen] = useState(false);
   const chatUnread = useUnreadChatCount(chat?.entries, chatOpen);
   const endTurnConfirmation = useEndTurnConfirmation({
-    phase: state.phase,
+    phase: displayPhase,
     turnCount: state.turnCount,
     blocked: guards.endPhaseBlocked || !room,
     onEndPhase: () => {
       if (room) {
         if (state.gameMode === GameMode.MANUAL.value) {
-          sendManualCommand({ room, command: { action: ManualAction.PASS.value } });
+          if (manualState.manual.turnPhase === Phase.Breeding) {
+            sendManualCommand({
+              room,
+              command: { action: ManualAction.BREEDING.value, choice: ManualBreedingChoice.SKIP.value },
+            });
+          } else {
+            sendManualCommand({ room, command: { action: ManualAction.PASS.value } });
+          }
         } else {
           intents.endPhase(room);
         }
@@ -324,7 +336,15 @@ export function BoardStage({
   );
   const opponentBreeding = opponent.breeding;
   const resultShown = state.gameOver && !cues.resultPending;
-  const opponentStatus = opponentStatusKey(state, viewerSeat);
+  let opponentStatus = opponentStatusKey(state, viewerSeat);
+  if (
+    manualState.gameMode === GameMode.MANUAL.value &&
+    manualState.manual.turnPhase === Phase.Breeding &&
+    (spectating || manualState.turnSeat !== viewerSeat) &&
+    !manualState.gameOver
+  ) {
+    opponentStatus = "manual.turn.waitingBreeding";
+  }
   // An open turn reads as thinking only once the board has caught up; while the
   // opponent's last action still plays, the board itself is the feedback.
   const actingPlateKeys = getActingPlateKeys({
@@ -352,9 +372,29 @@ export function BoardStage({
           ...look.style,
         }}
       >
+        <ManualBreedingPrompt
+          key={`${manualState.turnSeat}:${manualState.turnCount}`}
+          state={manualState}
+          seat={viewerSeat}
+          spectating={spectating}
+          presenting={cues.presenting || cues.decisionAnimationsPending}
+          disabled={!room}
+          onOpen={selection.clearSel}
+          send={(command) => {
+            if (room) {
+              sendManualCommand({ room, command });
+            }
+          }}
+        />
         {manualPermanent && manualPlayer && manualState.players[1 - viewerSeat] ? (
           <ManualPermanentDialog
             combatActive={manualState.manual.combatStage !== ManualCombatStage.NONE.value}
+            canDeclareAttack={
+              !cues.presenting &&
+              !cues.decisionAnimationsPending &&
+              manualState.turnSeat === viewerSeat &&
+              manualState.manual.turnPhase === Phase.Main
+            }
             permanent={manualPermanent}
             deckCount={manualPlayer.deckCount}
             viewerSeat={viewerSeat}
@@ -409,6 +449,7 @@ export function BoardStage({
           </aside>
         ) : null}
         <ManualControls
+          presenting={cues.presenting || cues.decisionAnimationsPending}
           state={manualState}
           room={room}
           seat={viewerSeat}
@@ -462,7 +503,7 @@ export function BoardStage({
             displayedTurnSeat={readouts.displayedTurnSeat}
             displayedTurnCount={readouts.displayedTurnCount}
             actingLabel={actingPlateKeys.opponent ? t(actingPlateKeys.opponent) : undefined}
-            phase={shownState.phase}
+            phase={getGamePhase({ state: shownState })}
             memory={readouts.memory}
             eggDeckCount={breedingOpponent.eggDeckCount}
             handCount={seats.shownOpponentHandCount}
@@ -631,10 +672,10 @@ export function BoardStage({
                 phaseBanner={cues.phaseBanner}
                 memory={readouts.memory}
                 compact={layout.compactPiles}
-                displayedPhase={cues.displayedPhase ?? shownState.phase}
+                displayedPhase={cues.displayedPhase ?? getGamePhase({ state: shownState })}
                 phaseSweeping={cues.unsuspendSweep !== null}
                 memoryPrediction={readouts.memoryPrediction}
-                turnControlState={turnControlState({ phase: state.phase, turnSeat: state.turnSeat, viewerSeat })}
+                turnControlState={turnControlState({ phase: displayPhase, turnSeat: state.turnSeat, viewerSeat })}
                 endPhaseBlocked={guards.endPhaseBlocked}
                 onEndPhase={endTurnConfirmation.request}
               />
@@ -783,7 +824,7 @@ export function BoardStage({
             The narrow layout keeps it: there it collapses into the touch strip. */}
         {layout.narrowGameLayout && !spectating ? (
           <Sidebar
-            phase={state.phase}
+            phase={displayPhase}
             turnCount={state.turnCount}
             memory={readouts.memory}
             isMyTurn={guards.isMyTurn}

@@ -24,6 +24,7 @@ export function ManualCombatControls({ state, seat, send, spectating, compact }:
   const getCardName = useTranslatedCardName();
   const [blockerId, setBlockerId] = useState("");
   const table = state.manual;
+  const turnPhase = table.turnPhase === Phase.None ? Phase.Main : table.turnPhase;
   const stage = table.combatStage;
   const active = stage !== ManualCombatStage.NONE.value;
   const attacker = state.players.find((player) => player.seat === table.attackerSeat);
@@ -61,24 +62,27 @@ export function ManualCombatControls({ state, seat, send, spectating, compact }:
   return (
     <section className="manual-combat" aria-label={t("manual.combat.title")}>
       {!compact ? (
-        <fieldset
-          className="manual-combat__phases"
-          disabled={disabled || spectating || seat !== state.turnSeat || active}
-        >
-          <legend>{t("manual.combat.phase")}</legend>
-          <div className="manual-combat__phase-options">
-            {phases.map((phase) => (
-              <button
+        <section className="manual-combat__phases" aria-label={t("manual.combat.phase")}>
+          <p className="manual-combat__hint" role="status">
+            {t("manual.turn.currentPhase", {
+              phase: t(`manual.combat.phase.${turnPhase}`),
+              player: state.players[state.turnSeat]?.displayName ?? "",
+            })}
+          </p>
+          <ol className="manual-combat__progress" aria-label={t("manual.combat.phase")}>
+            {phases.map((phase, index) => (
+              <li
                 key={phase}
-                type="button"
-                aria-pressed={table.turnPhase === phase}
-                onClick={() => send({ action: ManualAction.PHASE.value, phase })}
+                aria-current={table.turnPhase === phase ? "step" : undefined}
+                data-complete={index < phases.indexOf(turnPhase)}
               >
+                <span aria-hidden="true">{index + 1}</span>
                 {t(`manual.combat.phase.${phase}`)}
-              </button>
+              </li>
             ))}
-          </div>
-        </fieldset>
+          </ol>
+          <p className="manual-combat__hint">{t("manual.turn.automatic")}</p>
+        </section>
       ) : null}
       {active ? (
         <>

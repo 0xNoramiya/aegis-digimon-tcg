@@ -45,7 +45,11 @@ export function actionGuards({
     presenting ||
     phasePresentationPending ||
     (!manual && !isMyTurn);
-  const breedingWindow = isBreedingWindow({ phase: state.phase, turnSeat: state.turnSeat, viewerSeat });
+  const breedingWindow = isBreedingWindow({
+    phase: manual ? state.manual.turnPhase : state.phase,
+    turnSeat: state.turnSeat,
+    viewerSeat,
+  });
   // An activated ＜Blitz＞ attacks inside the effect that processed it, which can resolve
   // outside Main (an [End of Your Turn] digivolution). The server projects an attack
   // outside Main only for that pending declaration.
@@ -55,16 +59,19 @@ export function actionGuards({
     turnActionBlocked,
     mainActionBlocked: turnActionBlocked || (state.phase !== Phase.Main && !blitzAttackPending),
     endPhaseBlocked:
-      (manual && (!isMyTurn || state.manual.combatStage !== ManualCombatStage.NONE.value)) ||
+      (manual &&
+        (!isMyTurn ||
+          (state.manual.turnPhase !== Phase.Main && state.manual.turnPhase !== Phase.Breeding) ||
+          state.manual.combatStage !== ManualCombatStage.NONE.value)) ||
       turnActionBlocked ||
       (state.phase !== Phase.Main && state.phase !== Phase.Breeding),
     breedingWindow,
     // The breeding step is answered on the board rather than in a dialog: the egg
     // deck hatches, the raising slot moves out and the turn control ends the step.
     // These drive the highlights and the hint that stand in for the old modal.
-    canHatchEgg: viewer.eggDeckCount > 0 && !viewer.breeding,
-    canMoveOutOfBreeding: canMoveFromBreeding(viewer.breeding),
+    canHatchEgg: manual ? state.manual.canHatch : viewer.eggDeckCount > 0 && !viewer.breeding,
+    canMoveOutOfBreeding: manual ? state.manual.canMoveFromBreeding : canMoveFromBreeding(viewer.breeding),
     /** Breeding actions open only after the phase presentation has finished. */
-    breedingActionsOpen: !manual && breedingWindow && !turnActionBlocked,
+    breedingActionsOpen: breedingWindow && !turnActionBlocked,
   };
 }
