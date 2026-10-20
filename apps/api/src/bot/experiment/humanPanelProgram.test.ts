@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import catalog from "#api/bot/evolution/programs/human-panel-v1.json" with { type: "json" };
+import catalog from "#api/bot/evolution/programs/human-panel-v2.json" with { type: "json" };
 import { parseHeuristic } from "#api/bot/evolution/heuristic";
 import { humanPanelProgram } from "#api/bot/experiment/humanPanelProgram";
 

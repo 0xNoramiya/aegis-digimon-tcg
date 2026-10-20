@@ -10,7 +10,7 @@ which policy each match used. The experiment is off unless you set
 | ------------------- | ------------------------------------------------------------------------------------------------- |
 | `certified`         | The certified residual policy (`defaultBotOptions`). It has not played people yet.                |
 | `legacy`            | The evaluation bot (`createEvaluationPolicy`) production runs today. Also the default when off.   |
-| `humanPanel`        | The `human-panel-v1` scoring program (`apps/api/src/bot/evolution/programs/human-panel-v1.json`). |
+| `humanPanel`        | The `human-panel-v2` scoring program (`apps/api/src/bot/evolution/programs/human-panel-v2.json`). |
 | `humanPanelPlanner` | The same program, with the main-phase turn planner and the planner settings from that file.       |
 
 ## Enable it

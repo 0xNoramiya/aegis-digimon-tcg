@@ -1,4 +1,4 @@
-import catalog from "#api/bot/evolution/programs/human-panel-v1.json" with { type: "json" };
+import catalog from "#api/bot/evolution/programs/human-panel-v2.json" with { type: "json" };
 import {
   defaultTurnPlannerParameters,
   type TurnPlannerParameters,

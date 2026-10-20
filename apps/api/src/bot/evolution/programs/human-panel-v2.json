@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "title": "Human panel v1",
+  "title": "Human panel v2: weights tuned for wins against real player decks, plus GEPA rules for targets, blocks and counters",
   "program": {
     "schemaVersion": 1,
-    "title": "Human panel v1: main-phase weights tuned for wins against real player decks",
+    "title": "Human panel v2: tuned main-phase weights with evolved targeting, blocking and counter rules",
     "rules": [
       {
         "feature": "cost",
@@ -238,6 +238,17 @@
         }
       },
       {
+        "feature": "activate",
+        "weight": 3,
+        "advice": "In the main phase, use activated effects that cost no memory before other plays, because they never end the turn and often make the next play cheaper.",
+        "when": {
+          "kind": "main",
+          "maximum": {
+            "handover": 0
+          }
+        }
+      },
+      {
         "feature": "hatch",
         "weight": 10,
         "advice": "Hatch when the breeding area is empty."
@@ -266,6 +277,67 @@
         "feature": "openingRookie",
         "weight": 5,
         "advice": "Keep an opening hand with a rookie that can start your line."
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.2,
+        "advice": "When choosing targets for your own effect among opposing cards, favor the most valuable opposing Digimon (higher DP and level).",
+        "when": {
+          "kind": "chooseTargets",
+          "minimum": {
+            "sourceOpponent": 1
+          }
+        }
+      },
+      {
+        "feature": "block",
+        "weight": -0.5,
+        "advice": "When you still have 3 or more security cards, decline ordinary blocks and keep your Digimon; take the security check instead.",
+        "when": {
+          "kind": "block",
+          "minimum": {
+            "ownSecurity": 3
+          }
+        }
+      },
+      {
+        "feature": "sourceInHand",
+        "weight": 1,
+        "advice": "In a counter window, favor using a counter card from hand, such as Blast Digivolve, over declining.",
+        "when": {
+          "kind": "counter"
+        }
+      },
+      {
+        "feature": "accept",
+        "weight": -2,
+        "advice": "Decline a Barrier response when you have 1 or fewer security cards; keeping the last security card matters more than saving the Digimon.",
+        "when": {
+          "kind": "respondBarrier",
+          "maximum": {
+            "ownSecurity": 1
+          }
+        }
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.2,
+        "advice": "When a card selection picks among opposing cards on the battle area, favor the most valuable opposing Digimon (higher DP and level).",
+        "when": {
+          "kind": "selectCards",
+          "minimum": {
+            "sourceOpponent": 1,
+            "sourceOnBoard": 1
+          }
+        }
+      },
+      {
+        "feature": "finish",
+        "weight": -0.2,
+        "advice": "When choosing targets for your own effect, prefer picking a legal target over finishing the selection early.",
+        "when": {
+          "kind": "chooseTargets"
+        }
       }
     ]
   },

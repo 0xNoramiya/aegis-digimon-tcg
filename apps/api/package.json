@@ -16,10 +16,10 @@
       "development": "./src/bot/evolution/programs/certified-pilots.json",
       "default": "./dist/bot/evolution/programs/certified-pilots.json"
     },
-    "#api/bot/evolution/programs/human-panel-v1.json": {
-      "types": "./src/bot/evolution/programs/human-panel-v1.json",
-      "development": "./src/bot/evolution/programs/human-panel-v1.json",
-      "default": "./dist/bot/evolution/programs/human-panel-v1.json"
+    "#api/bot/evolution/programs/human-panel-v2.json": {
+      "types": "./src/bot/evolution/programs/human-panel-v2.json",
+      "development": "./src/bot/evolution/programs/human-panel-v2.json",
+      "default": "./dist/bot/evolution/programs/human-panel-v2.json"
     },
     "#api/bot/evolution/programs/certified-balanced.json": {
       "types": "./src/bot/evolution/programs/certified-balanced.json",
