@@ -3,6 +3,8 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "settings.arenaInput": "キーボードとコントローラー",
+  "settings.arenaInputDesc": "矢印キーやコントローラーでカーソルを動かし、各操作のボタンを表示します。",
   "game.input.controls": "キーボードとコントローラー",
   "game.input.navigate": "移動",
   "game.input.select": "選択",

@@ -3,6 +3,9 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "settings.arenaInput": "Clavier et manette",
+  "settings.arenaInputDesc":
+    "Déplacez un curseur avec les flèches ou une manette et affichez la touche de chaque action.",
   "game.input.controls": "Clavier et manette",
   "game.input.navigate": "Naviguer",
   "game.input.select": "Sélectionner",

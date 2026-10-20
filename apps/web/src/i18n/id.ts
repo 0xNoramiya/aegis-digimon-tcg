@@ -3,6 +3,9 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "settings.arenaInput": "Keyboard dan pengontrol",
+  "settings.arenaInputDesc":
+    "Gerakkan kursor dengan tombol panah atau pengontrol, dan tampilkan tombol untuk setiap aksi.",
   "game.input.controls": "Keyboard dan pengontrol",
   "game.input.navigate": "Navigasi",
   "game.input.select": "Pilih",

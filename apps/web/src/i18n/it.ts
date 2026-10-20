@@ -7,6 +7,8 @@ import { en } from "./en";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  "settings.arenaInput": "Tastiera e controller",
+  "settings.arenaInputDesc": "Muovi un cursore con le frecce o un controller e mostra il tasto di ogni azione.",
   "game.input.controls": "Tastiera e controller",
   "game.input.navigate": "Naviga",
   "game.input.select": "Seleziona",

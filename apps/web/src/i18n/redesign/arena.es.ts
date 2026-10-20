@@ -1,6 +1,8 @@
 import type { arenaEn } from "./arena.en";
 
 export const arenaEs: Record<keyof typeof arenaEn, string> = {
+  "settings.arenaInput": "Teclado y mando",
+  "settings.arenaInputDesc": "Mueve un cursor con las flechas o un mando y muestra el botón de cada acción.",
   "game.input.controls": "Teclado y mando",
   "game.input.navigate": "Navegar",
   "game.input.select": "Seleccionar",

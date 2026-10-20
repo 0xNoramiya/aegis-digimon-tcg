@@ -3,6 +3,8 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "settings.arenaInput": "키보드 및 컨트롤러",
+  "settings.arenaInputDesc": "방향키나 컨트롤러로 커서를 움직이고 각 동작의 버튼을 표시합니다.",
   "game.input.controls": "키보드 및 컨트롤러",
   "game.input.navigate": "이동",
   "game.input.select": "선택",

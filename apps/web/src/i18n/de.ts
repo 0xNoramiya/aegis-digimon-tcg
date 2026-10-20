@@ -3,6 +3,9 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "settings.arenaInput": "Tastatur und Controller",
+  "settings.arenaInputDesc":
+    "Bewegen Sie einen Cursor mit den Pfeiltasten oder einem Controller und sehen Sie die Taste für jede Aktion.",
   "game.input.controls": "Tastatur und Controller",
   "game.input.navigate": "Navigieren",
   "game.input.select": "Auswählen",

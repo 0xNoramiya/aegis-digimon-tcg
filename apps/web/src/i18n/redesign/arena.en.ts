@@ -1,4 +1,6 @@
 export const arenaEn = {
+  "settings.arenaInput": "Keyboard and controller",
+  "settings.arenaInputDesc": "Move a cursor with the arrow keys or a controller, and show the button for each action.",
   "game.input.controls": "Keyboard and controller",
   "game.input.navigate": "Navigate",
   "game.input.select": "Select",

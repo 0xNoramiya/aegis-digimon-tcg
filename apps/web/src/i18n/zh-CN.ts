@@ -3,6 +3,8 @@ import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  "settings.arenaInput": "键盘与手柄",
+  "settings.arenaInputDesc": "使用方向键或手柄移动光标，并显示每个操作的按键。",
   "game.input.controls": "键盘与手柄",
   "game.input.navigate": "移动",
   "game.input.select": "选择",

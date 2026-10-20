@@ -1,6 +1,8 @@
 import type { arenaEn } from "./arena.en";
 
 export const arenaPtBR: Record<keyof typeof arenaEn, string> = {
+  "settings.arenaInput": "Teclado e controle",
+  "settings.arenaInputDesc": "Mova um cursor com as setas ou um controle e veja o botão de cada ação.",
   "game.input.controls": "Teclado e controle",
   "game.input.navigate": "Navegar",
   "game.input.select": "Selecionar",
