@@ -178,15 +178,16 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     const before = divergences.length;
     const diverge = (divergence: Omit<ReplayDivergence, "index" | "inputKind" | "seat" | "intentType">) =>
       divergences.push({ index, inputKind: input.kind, ...seatAndType(input), ...divergence });
+    const positionDivergences: Omit<ReplayDivergence, "index" | "inputKind" | "seat" | "intentType">[] = [];
     if (state.stateVersion !== input.stateVersion)
-      diverge({
+      positionDivergences.push({
         kind: "state-version",
         expected: input.stateVersion,
         actual: state.stateVersion,
         message: `input #${index} (${describe(input)}): stateVersion ${state.stateVersion}, recorded ${input.stateVersion}`,
       });
     if (input.engineEvents !== undefined && emitted !== input.engineEvents)
-      diverge({
+      positionDivergences.push({
         kind: "event-count",
         expected: input.engineEvents,
         actual: emitted,
@@ -194,6 +195,8 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
       });
     try {
       const outcome = apply(input);
+      const rejectedAgain = input.kind === "intent" && input.ok === false && outcome?.ok === false;
+      if (!rejectedAgain) positionDivergences.forEach(diverge);
       if (input.kind === "intent" && outcome !== undefined) {
         if (input.threw)
           diverge({
@@ -216,6 +219,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
         }
       }
     } catch (error) {
+      positionDivergences.forEach(diverge);
       const reason = error instanceof Error ? error.message : String(error);
       if (!(input.kind === "intent" && input.threw))
         diverge({
