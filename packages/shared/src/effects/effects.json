@@ -139673,6 +139673,7 @@
         "actions": [
           {
             "kind": "CostModifier",
+            "optional": true,
             "mode": "reduce",
             "costType": "play",
             "amount": 2,
@@ -139703,6 +139704,7 @@
         "actions": [
           {
             "kind": "CostModifier",
+            "optional": true,
             "mode": "reduce",
             "costType": "play",
             "amount": 2,
@@ -218462,6 +218464,7 @@
             "actions": [
               {
                 "kind": "Return",
+                "optional": true,
                 "target": {
                   "filter": {
                     "zone": "trash",
