@@ -3,6 +3,34 @@ import { getCardDefinition } from "@aegis/shared/cards/registry";
 import { getTranslatedCardText } from "@/i18n/getTranslatedCardText";
 import { loadPrintedCardTranslations } from "@/i18n/loadPrintedCardTranslations";
 import { noticeEffectClause } from "@/game/overlay/effectText";
+import { normalizePrintedTextKey } from "@/i18n/normalizePrintedTextKey";
+
+it("translates a color-scaled modal preamble without adding its choices", async () => {
+  const text =
+    "[On Play] [When Digivolving] 1 of your Digimon may attack without suspending. Then, for every 2 of your Digimon and Tamers' colors, activate 1 effect below:";
+  expect(noticeEffectClause({ cardId: "EX13-077", timing: "OnPlay", description: undefined })).toBe(text);
+  const translations = await loadPrintedCardTranslations();
+  const result = getTranslatedCardText({ text, cardId: "EX13-077", translations });
+  expect(result).toContain("[登场时]");
+  expect(result).toContain("[进化时]");
+  expect(result).not.toMatch(/[A-Za-z・·•]/);
+  expect(result).not.toContain("安防");
+  const changed = text.replace("every 2", "every 3");
+  expect(getTranslatedCardText({ text: changed, cardId: "EX13-077", translations })).toBe(changed);
+  expect(getTranslatedCardText({ text, cardId: "ST1-02", translations })).toBe(text);
+  const card = getCardDefinition("EX13-077")!;
+  const key = normalizePrintedTextKey(card.effectText!);
+  const mismatched = {
+    ...translations,
+    text: { [key]: "[登场时][进化时]发动以下效果：[双方的回合]获得颜色。" },
+  };
+  expect(getTranslatedCardText({ text, cardId: card.cardId, translations: mismatched })).toBe(text);
+  const missingChoice = {
+    ...translations,
+    text: { [key]: "[登场时][进化时]发动以下效果：\n・一个选项。\n[双方的回合]获得颜色。" },
+  };
+  expect(getTranslatedCardText({ text, cardId: card.cardId, translations: missingChoice })).toBe(text);
+});
 
 it("translates Sangomon's resolving search without its inline Rule metadata", async () => {
   const card = getCardDefinition("BT19-017")!;

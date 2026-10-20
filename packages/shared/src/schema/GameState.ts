@@ -5,6 +5,7 @@ import { PlayerState } from "./PlayerState.js";
 import { Phase } from "./enums.js";
 import type { Seat } from "./enums.js";
 import { RematchStatus } from "#shared/protocol/RematchStatus";
+import type { RematchMode } from "#shared/protocol/RematchMode";
 import { MATCH_TIMER_START_SECONDS } from "#shared/matchTimer";
 
 /** View tag for decision details that are private to the responding seat. */
@@ -86,6 +87,7 @@ export class SeriesState extends Schema {
   @type("string") endReason: SeriesEndReason = "";
   @type("string") rematchStatus: RematchStatus = RematchStatus.NONE.value;
   @type("int8") rematchOfferSeat = -1;
+  @type("string") rematchMode: RematchMode | "" = "";
 }
 
 /**

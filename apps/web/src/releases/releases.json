@@ -1,5 +1,48 @@
 [
   {
+    "version": "1.35.3-beta",
+    "releasedAt": "2026-10-20",
+    "summaryKey": "releases.1.35.3-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.35.3-beta.fix.materialSave",
+        "issue": 5857
+      },
+      {
+        "textKey": "releases.1.35.3-beta.fix.retaliation",
+        "issue": 5860
+      },
+      {
+        "textKey": "releases.1.35.3-beta.fix.turnEndDeletion",
+        "issue": 5863
+      },
+      {
+        "textKey": "releases.1.35.3-beta.fix.sora",
+        "issue": 5867
+      },
+      {
+        "textKey": "releases.1.35.3-beta.fix.wormmon",
+        "issue": 5869
+      },
+      {
+        "textKey": "releases.1.35.3-beta.fix.astamon"
+      },
+      {
+        "textKey": "releases.1.35.3-beta.fix.aceBadges"
+      },
+      {
+        "textKey": "releases.1.35.3-beta.fix.chineseEffects"
+      },
+      {
+        "textKey": "releases.1.35.3-beta.fix.arisaRematch"
+      },
+      {
+        "textKey": "releases.1.35.3-beta.fix.rejectedReplayInputs"
+      }
+    ]
+  },
+  {
     "version": "1.35.2-beta",
     "releasedAt": "2026-10-20",
     "summaryKey": "releases.1.35.2-beta.summary",

@@ -83,6 +83,7 @@ import { MatchClock, type ClockMode } from "./MatchClock.js";
 import { CasualSeries, type SeriesContinuationOptions, type SeriesRoomPort } from "./series/CasualSeries.js";
 import type { SeriesRecord } from "./series/SeriesDirectory.js";
 import { RematchOffer } from "#api/rooms/series/RematchOffer";
+import type { GameResult } from "#api/rooms/series/seriesRules";
 import { REMATCH_BEST_OF } from "@aegis/shared/protocol/RematchStatus";
 import { parsePresentationReport } from "./presentationReport.js";
 import { CONNECTION_REPORT_CHANNEL } from "@aegis/shared/protocol/ConnectionReport";
@@ -845,7 +846,7 @@ export class AegisRoom extends Room<{
       else
         this.rematchOffer = new RematchOffer({
           readState: () => this.state,
-          startSeries: (chooser) => this.startRematchSeries(chooser),
+          startSeries: (chooser, results) => this.startRematchSeries(chooser, results),
         });
     }
     this.state.allowRollback = options.allowRollback === true && !this.isRankedRoom && !this.isTournamentRoom;
@@ -1118,7 +1119,7 @@ export class AegisRoom extends Room<{
     );
   }
 
-  private startRematchSeries(chooser: Seat): boolean {
+  private startRematchSeries(chooser: Seat, results: GameResult[]): boolean {
     if (!this.offersSeries() || this.casualSeries || !this.state.gameOver) {
       return false;
     }
@@ -1134,6 +1135,7 @@ export class AegisRoom extends Room<{
         ...(this.isPrivate ? { roomCode: this.state.roomCode } : {}),
       },
       chooser,
+      results,
     );
     return true;
   }

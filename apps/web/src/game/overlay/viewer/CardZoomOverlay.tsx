@@ -1,4 +1,5 @@
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { CardTextField } from "@/i18n/CardTextField";
 import { EffectText } from "@/game/EffectText";
 import { getCardDefinition } from "@aegis/shared/cards/registry";
 import { useState, useEffect, type ReactNode } from "react";
@@ -42,19 +43,34 @@ export function CardZoomOverlay({
         {card?.effectText ? (
           <section className="card-zoom__printed">
             <strong>{t("overlay.printedEffect")}</strong>
-            <EffectText text={card.effectText} cardId={cardId} />
+            <EffectText
+              text={card.effectText}
+              cardId={cardId}
+              field={CardTextField.EFFECT.value}
+              surface="card-detail"
+            />
           </section>
         ) : null}
         {card?.inheritedEffectText ? (
           <section className="card-zoom__printed">
             <strong>{t("library.inheritedEffect")}</strong>
-            <EffectText text={card.inheritedEffectText} cardId={cardId} />
+            <EffectText
+              text={card.inheritedEffectText}
+              cardId={cardId}
+              field={CardTextField.INHERITED.value}
+              surface="card-detail"
+            />
           </section>
         ) : null}
         {card?.securityEffectText ? (
           <section className="card-zoom__printed">
             <strong>{t("library.securityEffect")}</strong>
-            <EffectText text={card.securityEffectText} cardId={cardId} />
+            <EffectText
+              text={card.securityEffectText}
+              cardId={cardId}
+              field={CardTextField.SECURITY.value}
+              surface="card-detail"
+            />
           </section>
         ) : null}
       </div>

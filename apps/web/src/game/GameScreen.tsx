@@ -1,6 +1,8 @@
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
 import { UsedDeckDialog } from "@/game/UsedDeckDialog";
+import { collectViewerCardArtIds } from "@/screens/cardLanguage/collectViewerCardArtIds";
+import { ViewerCardArtIdsContext } from "@/screens/cardLanguage/ViewerCardArtIdsContext";
 import type { DeckListing } from "@/game/decks";
 import { downloadReplay } from "../replays/files";
 /* The in-game board — the design's letterboxed board layout, driven entirely by
@@ -585,6 +587,11 @@ function GameScreenSession({
   });
   const you = state?.players[viewerSeat];
   const opp = state?.players[otherSeat(viewerSeat)];
+  const viewerCardArtKey =
+    spectating || !state
+      ? ""
+      : collectViewerCardArtIds({ deck: joinOptions.deck, players: [...state.players], viewerSeat }).join("\n");
+  const viewerCardArtIds = useMemo(() => new Set(viewerCardArtKey.split("\n").filter(Boolean)), [viewerCardArtKey]);
   /**
    * The two boards this screen reads (docs/presentation-queue-plan.md 3.2).
    *
@@ -1556,7 +1563,7 @@ function GameScreenSession({
               rematch: rematch && {
                 view: rematch,
                 opponentName: opp.displayName || t("game.opponent"),
-                onOffer: () => room?.send(SERIES_CHANNEL, { action: "offerRematch" }),
+                onOffer: (mode) => room?.send(SERIES_CHANNEL, { action: "offerRematch", mode }),
                 onAnswer: (accept) => room?.send(SERIES_CHANNEL, { action: "answerRematch", accept }),
                 onChooseTurnOrder: (goFirst) => room?.send(SERIES_CHANNEL, { action: "chooseTurnOrder", goFirst }),
               },
@@ -1892,5 +1899,5 @@ function GameScreenSession({
       }}
     />
   );
-  return board;
+  return <ViewerCardArtIdsContext.Provider value={viewerCardArtIds}>{board}</ViewerCardArtIdsContext.Provider>;
 }
