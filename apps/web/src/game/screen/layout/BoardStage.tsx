@@ -1,3 +1,12 @@
+import { snapshotGameState } from "@/net/presentedState";
+import { ManualAction } from "@aegis/shared/manual/ManualAction";
+import { GameMode } from "@aegis/shared/manual/GameMode";
+import { ManualCombatControls } from "@/game/manual/ManualCombatControls";
+import { ManualRevealGallery } from "@/game/manual/ManualRevealGallery";
+import { ManualCombatStage } from "@aegis/shared/manual/ManualCombatStage";
+import { ManualPermanentDialog } from "@/game/manual/ManualPermanentDialog";
+import { ManualControls } from "@/game/manual/ManualControls";
+import { sendManualCommand } from "@/game/manual/sendManualCommand";
 import { ArenaInput } from "@/game/input/ArenaInput";
 import { useArenaInputEnabled } from "@/game/input/useArenaInputEnabled";
 import type { LowTimeWarning } from "@/game/useLowTimeWarning";
@@ -10,6 +19,7 @@ import { RollbackControls } from "@/game/RollbackControls";
    to the document body for the same reason. */
 
 import {
+  useMemo,
   useState,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
@@ -246,6 +256,18 @@ export function BoardStage({
   timeWarning: LowTimeWarning;
 }) {
   const { t } = useTranslation();
+  const manualRevision = state.manual?.revision ?? 0;
+  const manualState = useMemo(
+    () => (state.gameMode === GameMode.MANUAL.value ? snapshotGameState(state) : state),
+    [state, state.stateVersion, manualRevision],
+  );
+  const manualPlayer = manualState.players[viewerSeat];
+  const manualPermanent =
+    manualState.gameMode === GameMode.MANUAL.value && !spectating
+      ? [...(manualPlayer?.battleArea ?? []), ...(manualPlayer?.breeding ? [manualPlayer.breeding] : [])].find(
+          (permanent) => permanent.permanentId === selection.selPerm,
+        )
+      : undefined;
   const arenaInputEnabled = useArenaInputEnabled();
   useBreedingTransferOrigins(anchors.board);
   useFieldShatterOrigins(anchors.board);
@@ -257,7 +279,13 @@ export function BoardStage({
     turnCount: state.turnCount,
     blocked: guards.endPhaseBlocked || !room,
     onEndPhase: () => {
-      if (room) intents.endPhase(room);
+      if (room) {
+        if (state.gameMode === GameMode.MANUAL.value) {
+          sendManualCommand({ room, command: { action: ManualAction.PASS.value } });
+        } else {
+          intents.endPhase(room);
+        }
+      }
     },
   });
   const endTurnDialog = endTurnConfirmation.open ? (
@@ -324,6 +352,50 @@ export function BoardStage({
           ...look.style,
         }}
       >
+        {manualPermanent && manualPlayer && manualState.players[1 - viewerSeat] ? (
+          <ManualPermanentDialog
+            combatActive={manualState.manual.combatStage !== ManualCombatStage.NONE.value}
+            permanent={manualPermanent}
+            viewerSeat={viewerSeat}
+            container={anchors.board.current}
+            returnFocusTo={anchors.permanents.current[manualPermanent.permanentId]}
+            opponent={manualState.players[1 - viewerSeat]!}
+            room={room}
+            disabled={
+              !room ||
+              manualState.gameOver ||
+              manualState.turnCount === 0 ||
+              manualState.manual.undoRequester !== -1 ||
+              manualState.manual.resultRequester !== -1
+            }
+            onClose={() => selection.setSelPerm(null)}
+          />
+        ) : null}
+        {manualState.gameMode === GameMode.MANUAL.value &&
+        (manualState.manual.revealedJson !== "[]" ||
+          manualState.manual.combatStage !== ManualCombatStage.NONE.value) ? (
+          <aside className="manual-public-status">
+            <ManualCombatControls
+              state={manualState}
+              seat={viewerSeat}
+              spectating={spectating}
+              compact
+              send={(command) => {
+                if (room) {
+                  sendManualCommand({ room, command });
+                }
+              }}
+            />
+            <ManualRevealGallery state={manualState} />
+          </aside>
+        ) : null}
+        <ManualControls
+          state={manualState}
+          room={room}
+          seat={viewerSeat}
+          spectating={spectating}
+          selectedHand={selection.handSel}
+        />
         {arenaInputEnabled ? (
           <ArenaInput
             root={anchors.board}
@@ -653,7 +725,7 @@ export function BoardStage({
             selection={handDock.selection}
             draggingInstanceId={drag.isPlay && drag.state?.kind === DragKind.Play ? drag.state.instanceId : undefined}
             shakeInstanceId={handDock.shakeInstanceId}
-            actionBar={handDock.actionBar}
+            actionBar={state.gameMode === GameMode.MANUAL.value ? undefined : handDock.actionBar}
             reserveActionBarSpace={handDock.reserveActionBarSpace}
             eggDeckCount={breedingViewer.eggDeckCount}
             handCount={spectating ? shownViewer.handCount : seats.shownHandCount}

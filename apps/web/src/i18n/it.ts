@@ -1,3 +1,4 @@
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { replayVideoIt } from "./replayVideo";
@@ -7,6 +8,7 @@ import { en } from "./en";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "Tastiera e controller",
   "settings.arenaInputDesc": "Muovi un cursore con le frecce o un controller e mostra il tasto di ogni azione.",
   "game.input.controls": "Tastiera e controller",
@@ -2314,6 +2316,7 @@ const interfaceMessages = {
 } satisfies Record<Exclude<keyof typeof en, `releases.${string}`>, string>;
 
 export const it: Record<keyof typeof en, string> = {
+  ...manualEn,
   ...en,
   ...interfaceMessages,
 };

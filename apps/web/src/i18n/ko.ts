@@ -1,8 +1,10 @@
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "키보드 및 컨트롤러",
   "settings.arenaInputDesc": "방향키나 컨트롤러로 커서를 움직이고 각 동작의 버튼을 표시합니다.",
   "game.input.controls": "키보드 및 컨트롤러",
@@ -2499,4 +2501,9 @@ const interfaceMessages = {
   "releases.reported": "신고해 주신 문제를 수정했습니다 · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const ko: Record<keyof typeof en, string> = { ...en, ...interfaceMessages, "digilab.eggs": "디지타마" };
+export const ko: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+  "digilab.eggs": "디지타마",
+};

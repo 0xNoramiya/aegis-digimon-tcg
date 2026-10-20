@@ -1,3 +1,4 @@
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { replayVideoEn } from "./replayVideo";
@@ -21,6 +22,7 @@ import { shellEn } from "./redesign/shell.en";
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  ...manualEn,
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": "Trash your top security card",

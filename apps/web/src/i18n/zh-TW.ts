@@ -1,8 +1,10 @@
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "鍵盤與控制器",
   "settings.arenaInputDesc": "使用方向鍵或控制器移動游標，並顯示每個操作的按鍵。",
   "game.input.controls": "鍵盤與控制器",
@@ -2439,4 +2441,8 @@ const interfaceMessages = {
   "releases.reported": "你回報的問題，我們已修正 · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const zhTW: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const zhTW: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+};

@@ -44,3 +44,25 @@ it("blocks every ordinary game action for an observer on the displayed player's 
   expect(guards.endPhaseBlocked).toBe(true);
   expect(guards.breedingActionsOpen).toBe(false);
 });
+
+it("blocks passing during manual combat without blocking other manual board edits", () => {
+  const viewer = viewerWith(false);
+  const state = {
+    gameOver: false,
+    turnSeat: 0,
+    phase: Phase.Main,
+    gameMode: "manual",
+    manual: { combatStage: "counter" },
+  } as unknown as GameState;
+  const guards = actionGuards({
+    state,
+    viewer,
+    viewerSeat: 0,
+    decisionOpen: false,
+    presenting: false,
+    phasePresentationPending: false,
+  });
+  expect(guards.endPhaseBlocked).toBe(true);
+  expect(guards.turnActionBlocked).toBe(false);
+  expect(guards.mainActionBlocked).toBe(false);
+});

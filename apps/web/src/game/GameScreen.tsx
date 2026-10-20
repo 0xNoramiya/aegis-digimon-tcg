@@ -1,3 +1,4 @@
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
 import { UsedDeckDialog } from "@/game/UsedDeckDialog";
 import type { DeckListing } from "@/game/decks";
@@ -237,6 +238,7 @@ function GameScreenSession({
     unlimited?: boolean,
     privateHost?: boolean,
     format?: import("@aegis/shared").DeckFormat,
+    gameMode?: GameMode,
   ) => void;
   /** Only shapes what the report dialog says about follow-up questions; reporting needs no account. */
   signedIn?: boolean;
@@ -414,7 +416,7 @@ function GameScreenSession({
   const allianceConfirmationSubmittedRef = useRef(false);
 
   const { drag, dragHover, handleTapRef, handleDropRef, canDragRef, startHandDrag, startPermDrag, cancelDrag } =
-    useDragPlumbing();
+    useDragPlumbing({ manual: state?.gameMode === GameMode.MANUAL.value });
   canDragRef.current = null;
   const playDragStarted = drag?.kind === DragKind.Play && drag.started;
   useEffect(() => {
@@ -1106,7 +1108,7 @@ function GameScreenSession({
     !dnaChoosing &&
     !mainActionBlocked &&
     (candidate.kind !== DragKind.Attack || (!handSel && !linkSel)) &&
-    canDragCard({ drag: candidate, you, handEntries });
+    (state.gameMode === GameMode.MANUAL.value || canDragCard({ drag: candidate, you, handEntries }));
   const dragIntentAt = (hit: DropZoneHit | null) => {
     if (drag?.started && hit?.target === "hand-you" && drag.kind === DragKind.Play && canReorderHand(drag.instanceId))
       return "reorder" as const;
@@ -1595,6 +1597,7 @@ function GameScreenSession({
                   state?.unlimited,
                   isPrivateMatch ? viewerSeat === 0 : undefined,
                   state?.format as import("@aegis/shared").DeckFormat | undefined,
+                  state?.gameMode,
                 )
             : () => onExit("lobby")
       }
@@ -1862,6 +1865,11 @@ function GameScreenSession({
       onInspectPermanent={{
         viewer: (perm) => {
           cancelDrag();
+          if (state.gameMode === GameMode.MANUAL.value && !spectating) {
+            setHandSel(null);
+            setSelPerm(perm.permanentId);
+            return;
+          }
           actions.showCardMenu(perm.permanentId, Side.Viewer, { preserveSelection: true });
         },
         opponent: (perm) => {

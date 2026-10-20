@@ -1,8 +1,10 @@
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "Keyboard dan pengontrol",
   "settings.arenaInputDesc":
     "Gerakkan kursor dengan tombol panah atau pengontrol, dan tampilkan tombol untuk setiap aksi.",
@@ -2546,4 +2548,8 @@ const interfaceMessages = {
   "releases.reported": "Anda melaporkannya, kami memperbaikinya · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const id: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const id: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+};

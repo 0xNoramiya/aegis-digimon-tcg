@@ -6,6 +6,8 @@ import {
   REPLAY_FORMAT_VERSION,
   type MatchReplay,
 } from "@aegis/shared";
+import { ManualCombatStage } from "@aegis/shared/manual/ManualCombatStage";
+import { Phase } from "@aegis/shared/schema/enums";
 import { validReplayEvent } from "./eventValidation";
 
 const stateDefaults = new GameState().toJSON();
@@ -48,6 +50,14 @@ function safeTree(value: unknown, depth = 0): boolean {
 }
 
 function card(value: unknown): boolean {
+  if (record(value) && value.faceUp === false) {
+    if (value.cardId === undefined) {
+      value.cardId = "";
+    }
+    if (value.artId === undefined) {
+      value.artId = "";
+    }
+  }
   return (
     record(value) &&
     defaultFields(value, cardDefaults) &&
@@ -82,6 +92,38 @@ function permanent(value: unknown): boolean {
       "vortexAttackablePermanentIds",
     ].every((key) => array(value[key], string))
   );
+}
+
+function manualTable(value: unknown): boolean {
+  if (
+    !record(value) ||
+    !defaultFields(value, stateDefaults.manual) ||
+    !Number.isInteger(value.revision) ||
+    (value.revision as number) < 0 ||
+    !array(value.history, string) ||
+    (value.history as unknown[]).length > 200 ||
+    ![-1, 0, 1].includes(value.undoRequester as number) ||
+    ![-1, 0, 1].includes(value.resultRequester as number) ||
+    ![-1, 0, 1].includes(value.proposedWinner as number) ||
+    !string(value.revealedJson) ||
+    !Object.values(ManualCombatStage).some((entry) => entry.value === value.combatStage) ||
+    !Object.values(Phase).some((phase) => phase !== Phase.None && phase === value.turnPhase) ||
+    ![-1, 0, 1].includes(value.attackerSeat as number)
+  )
+    return false;
+  try {
+    return array(
+      JSON.parse(value.revealedJson),
+      (item) =>
+        record(item) &&
+        string(item.cardId) &&
+        (item.artId === undefined || string(item.artId)) &&
+        (item.instanceId === undefined || string(item.instanceId)) &&
+        seat(item.seat),
+    );
+  } catch {
+    return false;
+  }
 }
 
 function player(value: unknown, index: number): boolean {
@@ -155,6 +197,7 @@ export function validateReplay(value: unknown): value is MatchReplay {
     const state = frame.state;
     if (
       !defaultFields(state, stateDefaults) ||
+      !manualTable(state.manual) ||
       !number(state.stateVersion) ||
       state.stateVersion <= previousVersion ||
       !number(state.turnCount) ||
@@ -188,7 +231,8 @@ export function validateReplay(value: unknown): value is MatchReplay {
         (p: RecordValue) =>
           (p.deck as unknown[]).length > 0 ||
           (p.eggDeck as unknown[]).length > 0 ||
-          (p.security as unknown[]).length > 0,
+          (p.security as unknown[]).length > 0 ||
+          p.manualInspectionJson !== "[]",
       )
     )
       return false;

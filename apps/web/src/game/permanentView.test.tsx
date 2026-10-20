@@ -538,3 +538,24 @@ describe("PermanentView forced attack", () => {
     expect(tooltip.textContent).toContain("Trident Arm");
   });
 });
+
+it.each(["BT1-043", undefined])(
+  "keeps a face-down field card interactive without showing its identity (%s)",
+  (cardId) => {
+    const permanent = opponentWithDpDown();
+    permanent.topCard.faceUp = false;
+    permanent.topCard.cardId = cardId as string;
+    const onClick = vi.fn<() => void>();
+    const { container } = render(
+      <I18nProvider>
+        <PermanentView perm={permanent} onClick={onClick} drop={{ "data-drop": "hidden-target" }} />
+      </I18nProvider>,
+    );
+    const target = screen.getByRole("button", { name: /Face down/ });
+    expect(target.getAttribute("data-drop")).toBe("hidden-target");
+    expect(container.querySelector('[title="MetalGarurumon"]')).toBeNull();
+    expect(container.textContent).not.toContain("BT1-043");
+    fireEvent.click(target);
+    expect(onClick).toHaveBeenCalledOnce();
+  },
+);

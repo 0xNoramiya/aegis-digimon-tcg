@@ -1,3 +1,5 @@
+import { ManualCombatStage } from "@aegis/shared/manual/ManualCombatStage";
+import { GameMode } from "@aegis/shared/manual/GameMode";
 /* What the board will let the viewer do right now.
 
    Ordinary actions wait for the presented board to catch up, then follow the live match,
@@ -31,13 +33,14 @@ export function actionGuards({
   phasePresentationPending: boolean;
 }) {
   const isMyTurn = !spectating && state.turnSeat === viewerSeat;
+  const manual = state.gameMode === GameMode.MANUAL.value;
   const turnActionBlocked =
     state.gameOver ||
     decisionOpen ||
     Boolean(state.combatWindow) ||
     presenting ||
     phasePresentationPending ||
-    !isMyTurn;
+    (!manual && !isMyTurn);
   const breedingWindow = isBreedingWindow({ phase: state.phase, turnSeat: state.turnSeat, viewerSeat });
   // An activated ＜Blitz＞ attacks inside the effect that processed it, which can resolve
   // outside Main (an [End of Your Turn] digivolution). The server projects an attack
@@ -47,7 +50,10 @@ export function actionGuards({
     isMyTurn,
     turnActionBlocked,
     mainActionBlocked: turnActionBlocked || (state.phase !== Phase.Main && !blitzAttackPending),
-    endPhaseBlocked: turnActionBlocked || (state.phase !== Phase.Main && state.phase !== Phase.Breeding),
+    endPhaseBlocked:
+      (manual && (!isMyTurn || state.manual.combatStage !== ManualCombatStage.NONE.value)) ||
+      turnActionBlocked ||
+      (state.phase !== Phase.Main && state.phase !== Phase.Breeding),
     breedingWindow,
     // The breeding step is answered on the board rather than in a dialog: the egg
     // deck hatches, the raising slot moves out and the turn control ends the step.
@@ -55,6 +61,6 @@ export function actionGuards({
     canHatchEgg: viewer.eggDeckCount > 0 && !viewer.breeding,
     canMoveOutOfBreeding: canMoveFromBreeding(viewer.breeding),
     /** Breeding actions open only after the phase presentation has finished. */
-    breedingActionsOpen: breedingWindow && !turnActionBlocked,
+    breedingActionsOpen: !manual && breedingWindow && !turnActionBlocked,
   };
 }

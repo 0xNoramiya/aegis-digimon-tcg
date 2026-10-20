@@ -43,6 +43,7 @@ export function ArenaPermanentInspector({
   inspection,
   fate,
   actions,
+  children,
   zoomed = false,
   onZoom,
   onClose,
@@ -51,6 +52,7 @@ export function ArenaPermanentInspector({
   inspection: ArenaInspectionOptions;
   fate?: PendingFateBadge;
   actions?: ReactNode;
+  children?: ReactNode;
   zoomed?: boolean;
   onZoom: (cardId: string, artId?: string) => void;
   onClose: () => void;
@@ -214,6 +216,7 @@ export function ArenaPermanentInspector({
             aria-label={t("overlay.printedEffect")}
             tabIndex={0}
           >
+            {children}
             <details
               key={`${detail.cardId}:${detail.printedOnly}`}
               className="arena-permanent-inspector__details"

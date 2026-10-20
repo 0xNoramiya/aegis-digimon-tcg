@@ -1,8 +1,10 @@
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "Tastatur und Controller",
   "settings.arenaInputDesc":
     "Bewegen Sie einen Cursor mit den Pfeiltasten oder einem Controller und sehen Sie die Taste für jede Aktion.",
@@ -2605,4 +2607,8 @@ const interfaceMessages = {
   "releases.reported": "Sie haben es gemeldet, wir haben es behoben · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const de: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const de: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+};
