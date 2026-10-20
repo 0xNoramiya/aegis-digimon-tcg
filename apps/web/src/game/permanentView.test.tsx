@@ -8,6 +8,25 @@ import { PermanentView } from "./piece";
 
 afterEach(() => cleanup());
 
+it.each([false, true])("shows ACE from the field's top card while suspended=%s", (isSuspended) => {
+  const perm = opponentWithDpDown();
+  perm.topCard = Object.assign(new CardInstance(), { cardId: "BT17-018", instanceId: "ace-top" });
+  perm.currentDP = 15000;
+  perm.isSuspended = isSuspended;
+  const view = () => (
+    <I18nProvider>
+      <PermanentView perm={perm} onClick={() => undefined} />
+    </I18nProvider>
+  );
+  const { container, rerender } = render(view());
+  expect(container.querySelector(".game-permanent > .card-ace-badge")?.textContent).toBe("ACE");
+  expect(container.querySelector(".game-permanent > .card-ace-badge")?.getAttribute("data-overflow")).toBe("5");
+  perm.stack.push(perm.topCard);
+  perm.topCard = Object.assign(new CardInstance(), { cardId: "EX2-073", instanceId: "ordinary-top" });
+  rerender(view());
+  expect(container.querySelector(".game-permanent > .card-ace-badge")).toBeNull();
+});
+
 it("keeps the host entrance when sources or its stripped top change, and remounts for an accepted evolution", () => {
   const perm = opponentWithDpDown();
   perm.stack.push(Object.assign(new CardInstance(), { cardId: "BT1-010", instanceId: "source" }));
