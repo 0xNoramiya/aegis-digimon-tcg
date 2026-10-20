@@ -356,6 +356,7 @@ export function BoardStage({
           <ManualPermanentDialog
             combatActive={manualState.manual.combatStage !== ManualCombatStage.NONE.value}
             permanent={manualPermanent}
+            deckCount={manualPlayer.deckCount}
             viewerSeat={viewerSeat}
             container={anchors.board.current}
             returnFocusTo={anchors.permanents.current[manualPermanent.permanentId]}
@@ -366,7 +367,8 @@ export function BoardStage({
               manualState.gameOver ||
               manualState.turnCount === 0 ||
               manualState.manual.undoRequester !== -1 ||
-              manualState.manual.resultRequester !== -1
+              manualState.manual.resultRequester !== -1 ||
+              manualState.manual.restartRequester !== -1
             }
             onClose={() => selection.setSelPerm(null)}
           />
@@ -386,7 +388,24 @@ export function BoardStage({
                 }
               }}
             />
-            <ManualRevealGallery state={manualState} />
+            <ManualRevealGallery
+              state={manualState}
+              seat={viewerSeat}
+              disabled={
+                spectating ||
+                !room ||
+                manualState.gameOver ||
+                manualState.turnCount === 0 ||
+                manualState.manual.undoRequester !== -1 ||
+                manualState.manual.resultRequester !== -1 ||
+                manualState.manual.restartRequester !== -1
+              }
+              send={(command) => {
+                if (room) {
+                  sendManualCommand({ room, command });
+                }
+              }}
+            />
           </aside>
         ) : null}
         <ManualControls

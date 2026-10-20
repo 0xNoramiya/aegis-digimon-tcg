@@ -1,3 +1,5 @@
+import { ManualStatus } from "@aegis/shared/manual/ManualStatus";
+import "@/game/manual/manualFeatures.css";
 import { PermanentDpDeltaHint } from "@/game/piece/PermanentDpDeltaHint";
 import { useRef, type CSSProperties } from "react";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
@@ -173,6 +175,12 @@ export function PermanentView({
   const cardName = faceDown
     ? t("game.faceDownSource")
     : getTranslatedCardName({ name: transformation?.name || def?.nameEn || topId || "", translations });
+  const statuses = Object.values(ManualStatus).filter((entry) => perm.manualStatuses?.includes(entry.value));
+  const statusLabels = statuses.map((entry) => t(`manual.features.status.${entry.value}`));
+  const annotations = [...statusLabels, perm.manualMarker ?? ""].filter(Boolean).map((label) => ({
+    label,
+    description: t("manual.features.statusHint"),
+  }));
   const activate = onKeyboardActivate ?? onClick;
   const interactive = !!activate || !!onPointerDown;
   return (
@@ -211,7 +219,17 @@ export function PermanentView({
       tabIndex={interactive ? 0 : undefined}
       aria-label={
         interactive
-          ? permanentAriaLabel({ perm, heldSuspended, restrictions, fate, cardName, copies, delta, hasDpDelta, t })
+          ? permanentAriaLabel({
+              perm,
+              heldSuspended,
+              restrictions,
+              fate,
+              cardName: [cardName, ...statusLabels, perm.manualMarker].filter(Boolean).join(", "),
+              copies,
+              delta,
+              hasDpDelta,
+              t,
+            })
           : undefined
       }
       className={permanentClassName({
@@ -330,14 +348,14 @@ export function PermanentView({
         {claw ? <ClawSlash key={`claw-${perm.permanentId}`} fixedFieldAnchor /> : null}
         {dpPulse ? <DpPulseParticles key={dpPulse.key} pulse={dpPulse} /> : null}
       </div>
-      {perm.manualMarker ? <span className="game-permanent-manual-marker">{perm.manualMarker}</span> : null}
       {sources ? <PermanentSourceBadge sources={sources} /> : null}
       {copies > 1 ? <PermanentCopiesBadge copies={copies} /> : null}
       {blocker ? <PermanentBlockerBadge /> : null}
       {fate ? <PermanentFateBadge fate={fate} /> : null}
-      {activeKeywords.length > 0 ? (
+      {activeKeywords.length > 0 || annotations.length > 0 ? (
         <PermanentKeywordBadges
           keywords={activeKeywords}
+          annotations={annotations}
           securityAttackModifier={perm.securityAttackModifier}
           cardWidth={permanentWidth}
         />

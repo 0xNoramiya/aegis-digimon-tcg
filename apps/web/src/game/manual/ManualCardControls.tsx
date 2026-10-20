@@ -1,3 +1,4 @@
+import { ManualQuickActions } from "@/game/manual/ManualQuickActions";
 import "@/game/manual/manualFeatures.css";
 import { ManualAction } from "@aegis/shared/manual/ManualAction";
 import { CardMini } from "@/design/cards";
@@ -75,6 +76,7 @@ export function ManualCardControls({ player, opponent, send, selectedHand, selec
           {source.permanent ? (
             <ManualPermanentControls
               key={`${source.permanent.permanentId}:${source.permanent.currentDP}:${source.permanent.manualMarker}`}
+              deckCount={player.deckCount}
               combatActive={combatActive}
               permanent={source.permanent}
               opponent={opponent}
@@ -98,6 +100,7 @@ export function ManualCardControls({ player, opponent, send, selectedHand, selec
                 return card ? <CardMini cardId={card.cardId} artId={card.artId} width={64} /> : null;
               })()
             : null}
+          <ManualQuickActions source={source} send={send} />
           <label>
             {t("manual.destination")}
             <select
@@ -162,9 +165,6 @@ export function ManualCardControls({ player, opponent, send, selectedHand, selec
               </button>
             </div>
           ) : null}
-          <button type="button" onClick={() => send({ action: ManualAction.REVEAL.value, from: source.from })}>
-            {t("manual.reveal")}
-          </button>
         </>
       ) : null}
     </section>

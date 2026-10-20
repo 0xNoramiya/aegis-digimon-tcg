@@ -1,3 +1,5 @@
+import { ManualQuickActions } from "@/game/manual/ManualQuickActions";
+import { Zone } from "@aegis/shared/schema/enums";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ArraySchema } from "@colyseus/schema";
@@ -72,4 +74,66 @@ it("disables another attack during combat while leaving manual suspension availa
   );
   expect(markup).toMatch(/<button[^>]*disabled=""[^>]*>manual.attack<\/button>/);
   expect(markup).toMatch(/<button type="button">manual.suspend<\/button>/);
+});
+
+it("keeps multiple visual statuses selected and disables training when the deck is empty", () => {
+  const permanent = new Permanent();
+  permanent.permanentId = "marked";
+  permanent.topCard = Object.assign(new CardInstance(), { cardId: "BT1-010" });
+  permanent.manualStatuses.push("sick", "immune");
+  const markup = renderToStaticMarkup(
+    <ManualPermanentControls
+      deckCount={0}
+      permanent={permanent}
+      opponent={new PlayerState()}
+      send={vi.fn<(command: ManualCommand) => void>()}
+    />,
+  );
+  expect(markup).toMatch(/aria-pressed="true"[^>]*>manual.features.status.sick<\/button>/);
+  expect(markup).toMatch(/aria-pressed="true"[^>]*>manual.features.status.immune<\/button>/);
+  expect(markup).toMatch(/aria-pressed="false"[^>]*>manual.features.status.taunt<\/button>/);
+  expect(markup).toMatch(/disabled=""[^>]*>manual.features.training<\/button>/);
+  expect(markup).toContain("manual.features.resetModifiers");
+});
+
+it("offers contextual card moves without an unnecessary move back to the same hand", () => {
+  const markup = renderToStaticMarkup(
+    <ManualQuickActions
+      source={{ key: "hand-card", label: "Hand card", from: { zone: Zone.Hand, instanceId: "hand-card" } }}
+      send={vi.fn<(command: ManualCommand) => void>()}
+    />,
+  );
+  expect(markup).toContain("manual.features.play");
+  expect(markup).toContain("manual.features.toTrash");
+  expect(markup).toContain("manual.features.deckTop");
+  expect(markup).not.toContain("manual.features.toHand");
+});
+
+it("requires turning a face-down attacker up before declaring an attack", () => {
+  const permanent = new Permanent();
+  permanent.permanentId = "face-down-attacker";
+  permanent.topCard = Object.assign(new CardInstance(), { cardId: "BT1-010", faceUp: false });
+  const markup = renderToStaticMarkup(
+    <ManualPermanentControls
+      permanent={permanent}
+      opponent={new PlayerState()}
+      send={vi.fn<(command: ManualCommand) => void>()}
+    />,
+  );
+  expect(markup).toMatch(/disabled=""[^>]*>manual.attack<\/button>/);
+});
+
+it("does not offer declaring an attack from the breeding area", () => {
+  const permanent = new Permanent();
+  permanent.permanentId = "breeding";
+  permanent.inBreeding = true;
+  permanent.topCard = Object.assign(new CardInstance(), { cardId: "BT1-010" });
+  const markup = renderToStaticMarkup(
+    <ManualPermanentControls
+      permanent={permanent}
+      opponent={new PlayerState()}
+      send={vi.fn<(command: ManualCommand) => void>()}
+    />,
+  );
+  expect(markup).toMatch(/disabled=""[^>]*>manual.attack<\/button>/);
 });

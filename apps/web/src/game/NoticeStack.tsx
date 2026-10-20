@@ -61,6 +61,7 @@ function EffectNoticeBody({
   timing,
   description,
   effectTextPart,
+  manualSignalText,
   isInherited,
   count,
 }: {
@@ -68,17 +69,20 @@ function EffectNoticeBody({
   timing?: string;
   description?: string;
   effectTextPart?: string;
+  manualSignalText?: string;
   isInherited?: boolean;
   count?: number;
 }) {
   const { t } = useTranslation();
-  const clause = noticeEffectClause({ cardId, timing, description, effectTextPart, isInherited });
-  const label = (timing ? TIMING_LABELS[timing] : undefined) ?? t("overlay.effect");
+  const clause = manualSignalText ?? noticeEffectClause({ cardId, timing, description, effectTextPart, isInherited });
+  const label = manualSignalText
+    ? t("manual.signal.title")
+    : ((timing ? TIMING_LABELS[timing] : undefined) ?? t("overlay.effect"));
   /* The clause prints its own timing in brackets and the art says which card raised it, so
      with a clause on screen the label and the name only repeat what is already there. They
      stay in the DOM — the name is how a keyboard and a screen reader open the card — and a
      notice with no clause still shows both, because then they are all it has. */
-  const restated = Boolean(clause);
+  const restated = Boolean(clause) && !manualSignalText;
   return (
     <div className="match-notice__copy">
       <span className="match-notice__label" data-quiet={restated || undefined}>
@@ -263,6 +267,7 @@ export function NoticeStack({
               timing={body.timing}
               description={body.description}
               effectTextPart={body.effectTextPart}
+              manualSignalText={body.manualSignalText}
               isInherited={body.isInherited}
               {...(body.count !== undefined ? { count: body.count } : {})}
             />

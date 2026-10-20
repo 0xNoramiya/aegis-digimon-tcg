@@ -1,3 +1,6 @@
+import { GameState as ManualGameState } from "@aegis/shared/schema/GameState";
+import { PlayerState } from "@aegis/shared/schema/PlayerState";
+import { GameMode } from "@aegis/shared/manual/GameMode";
 // @vitest-environment jsdom
 
 import { act, cleanup, renderHook } from "@testing-library/react";
@@ -6530,3 +6533,72 @@ it.each([false, true])(
     expect(drawFinished).toBe(true);
   },
 );
+
+describe("manual effect signal narration", () => {
+  function createManualSignalState(signalSeat: 0 | 1) {
+    const state = new ManualGameState();
+    state.gameMode = GameMode.MANUAL.value;
+    state.matchId = "manual-effect-notice";
+    state.phase = Phase.Main;
+    state.turnCount = 1;
+    state.players.push(
+      Object.assign(new PlayerState(), { seat: 0, displayName: "First" }),
+      Object.assign(new PlayerState(), { seat: 1, displayName: "Second" }),
+    );
+    state.manual.signalSeat = signalSeat;
+    state.manual.signalRevision = 1;
+    state.manual.signalCardId = "BT1-010";
+    state.manual.signalTargetSeat = 1 - signalSeat;
+    return state;
+  }
+
+  for (const signalSeat of [0, 1] as const) {
+    it(`shows the current signal as a native ${signalSeat === 0 ? "own" : "opponent"} effect notice for a late reader`, () => {
+      const state = createManualSignalState(signalSeat);
+      const { result } = renderHook(() =>
+        useMatchCues({ batches: [], state, viewerSeat: 0, mulliganOpen: false, anchors, onActionRejected() {} }),
+      );
+      const item = [...result.current.narration.values()][0]!;
+      expect(item.side).toBe(signalSeat === 0 ? "you" : "opp");
+      expect(item.notice?.body).toMatchObject({
+        variant: "effect",
+        cardId: "BT1-010",
+        manualSignalText: expect.stringContaining("Effect target"),
+      });
+      expect(item.notice?.body).toMatchObject({
+        manualSignalText: expect.stringContaining(signalSeat === 0 ? "First signals" : "Second signals"),
+      });
+    });
+  }
+
+  it("keeps local dismissal independent of the server signal and raises a new repeated signal only once", () => {
+    const state = createManualSignalState(0);
+    const { result, rerender } = renderHook(() =>
+      useMatchCues({ batches: [], state, viewerSeat: 0, mulliganOpen: false, anchors, onActionRejected() {} }),
+    );
+    const id = [...result.current.narration.keys()][0]!;
+    act(() => result.current.advanceNarration(id));
+    expect(result.current.narration.size).toBe(0);
+    expect(state.manual.signalSeat).toBe(0);
+    state.manual.revision += 1;
+    rerender();
+    expect(result.current.narration.size).toBe(0);
+    state.manual.signalRevision += 1;
+    rerender();
+    expect(result.current.narration.size).toBe(1);
+    expect([...result.current.narration.keys()][0]).not.toBe(id);
+    rerender();
+    expect(result.current.narration.size).toBe(1);
+  });
+
+  it("expires a manual signal using the normal narration reading lifetime", async () => {
+    const state = createManualSignalState(0);
+    const { result } = renderHook(() =>
+      useMatchCues({ batches: [], state, viewerSeat: 0, mulliganOpen: false, anchors, onActionRejected() {} }),
+    );
+    expect(result.current.narration.size).toBe(1);
+    await advance(NOTICE_ITEM_MS);
+    expect(result.current.narration.size).toBe(0);
+    expect(state.manual.signalSeat).toBe(0);
+  });
+});

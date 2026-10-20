@@ -81,20 +81,6 @@
   padding-inline-start: 1.25rem;
 }
 
-.game-permanent-manual-marker {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: 0;
-  z-index: 4;
-  padding: 0.25rem;
-  border: 1px solid var(--ds-line);
-  background: var(--ds-paper);
-  color: var(--ds-text);
-  font-size: 0.75rem;
-  overflow-wrap: anywhere;
-  pointer-events: none;
-}
-
 .manual-table .manual-table__toggle {
   min-block-size: 2.75rem;
   padding: 0.625rem 0.875rem 0.625rem 0.375rem;

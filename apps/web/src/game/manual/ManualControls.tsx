@@ -1,3 +1,5 @@
+import { ManualRestartControls } from "@/game/manual/ManualRestartControls";
+import { ManualSignalControls } from "@/game/manual/ManualSignalControls";
 import { ManualCombatStage } from "@aegis/shared/manual/ManualCombatStage";
 import { ManualTableTools } from "@/game/manual/ManualTableTools";
 import { ManualCombatControls } from "@/game/manual/ManualCombatControls";
@@ -60,8 +62,9 @@ export function ManualControls({ state, room, seat, selectedHand, selectedPerman
     state.gameOver ||
     state.turnCount === 0 ||
     table.undoRequester !== -1 ||
-    table.resultRequester !== -1;
-  const pending = table.undoRequester !== -1 || table.resultRequester !== -1;
+    table.resultRequester !== -1 ||
+    table.restartRequester !== -1;
+  const pending = table.undoRequester !== -1 || table.resultRequester !== -1 || table.restartRequester !== -1;
   const expanded = open || pending;
   return (
     <aside ref={drag.ref} style={drag.style} className="manual-table" data-testid="manual-table">
@@ -105,6 +108,14 @@ export function ManualControls({ state, room, seat, selectedHand, selectedPerman
             ))}
           </nav>
           <div className="manual-table__content">
+            <ManualRestartControls
+              state={state}
+              seat={seat}
+              send={send}
+              spectating={spectating}
+              disabled={!room}
+              pendingOnly
+            />
             {table.undoRequester !== -1 ? (
               <section className="manual-table__notice" role="status">
                 <p>{t("manual.undoPending")}</p>
@@ -297,6 +308,13 @@ export function ManualControls({ state, room, seat, selectedHand, selectedPerman
                     {t("manual.pass")}
                   </button>
                   <ManualCombatControls state={state} seat={seat} send={send} spectating={spectating} />
+                  <ManualSignalControls
+                    state={state}
+                    seat={seat}
+                    send={send}
+                    spectating={spectating}
+                    disabled={blocked}
+                  />
                 </section>
                 <section className="manual-table__footer">
                   <button
@@ -308,6 +326,14 @@ export function ManualControls({ state, room, seat, selectedHand, selectedPerman
                   </button>
                 </section>
                 <section hidden={panel !== ManualPanel.MATCH.value} className="manual-table__group">
+                  <ManualRestartControls
+                    state={state}
+                    seat={seat}
+                    send={send}
+                    spectating={spectating}
+                    disabled={blocked}
+                    requestOnly
+                  />
                   <label>
                     {t("manual.winner")}
                     <select

@@ -770,6 +770,15 @@ function GameScreenSession({
     ),
   );
 
+  if (state?.gameMode === GameMode.MANUAL.value && state.manual.signalSeat !== -1) {
+    if (state.manual.signalPermanentId) {
+      effectLinkedPermanentIds.add(state.manual.signalPermanentId);
+    }
+    if (state.manual.signalTargetPermanentId) {
+      effectLinkedPermanentIds.add(state.manual.signalTargetPermanentId);
+    }
+  }
+
   const arenaLook = useArenaBoardLook({ viewer: you, opponent: opp, matchKey: connectedRoom?.roomId });
 
   // A play written into a dropping socket can be lost without the server ever refusing it, so a

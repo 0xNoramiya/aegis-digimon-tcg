@@ -107,3 +107,22 @@ it("opens face-down public cards without identities and rejects missing face-up 
   permanent.topCard.faceUp = true;
   await expect(readReplay(new Blob([JSON.stringify(replay)]))).rejects.toMatchObject({ code: "invalid" });
 });
+
+it("rejects malformed manual signals, restart agreements, reveal locations and statuses", async () => {
+  for (const fields of [
+    { signalSeat: 8 },
+    { signalTargetSeat: 3 },
+    { signalRevision: -1 },
+    { restartRequester: 4 },
+    { restartFirstSeat: 2 },
+    { restartCount: 0.5 },
+    { revealedJson: JSON.stringify([{ cardId: "ST1-03", seat: 0, zone: "invalid" }]) },
+  ]) {
+    const replay = replayFixture();
+    Object.assign(replay.frames[0]!.state.manual, fields);
+    await expect(readReplay(new Blob([JSON.stringify(replay)]))).rejects.toMatchObject({ code: "invalid" });
+  }
+  const replay = replayFixture();
+  replay.frames[1]!.state.players[0]!.battleArea[0]!.manualStatuses = ["invalid"];
+  await expect(readReplay(new Blob([JSON.stringify(replay)]))).rejects.toMatchObject({ code: "invalid" });
+});

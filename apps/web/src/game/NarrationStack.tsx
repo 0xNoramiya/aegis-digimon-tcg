@@ -269,15 +269,19 @@ function peekSummary(
 ): { label: string; name: string; tone: PeekTone; cardId?: string; artId?: string; clause?: string } {
   const body = item.notice?.body;
   if (body?.variant === "effect") {
-    const clause = noticeEffectClause({
-      cardId: body.cardId,
-      timing: body.timing,
-      description: body.description,
-      effectTextPart: body.effectTextPart,
-      ...(body.isInherited ? { isInherited: body.isInherited } : {}),
-    });
+    const clause =
+      body.manualSignalText ??
+      noticeEffectClause({
+        cardId: body.cardId,
+        timing: body.timing,
+        description: body.description,
+        effectTextPart: body.effectTextPart,
+        ...(body.isInherited ? { isInherited: body.isInherited } : {}),
+      });
     return {
-      label: (body.timing ? TIMING_LABELS[body.timing] : undefined) ?? t("overlay.effect"),
+      label: body.manualSignalText
+        ? t("manual.signal.title")
+        : ((body.timing ? TIMING_LABELS[body.timing] : undefined) ?? t("overlay.effect")),
       name: `${cardDisplayName(body.cardId, t)}${body.count !== undefined && body.count > 1 ? ` ×${body.count}` : ""}`,
       tone: "effect",
       cardId: body.cardId,

@@ -1,3 +1,4 @@
+import { ManualStatusControls } from "@/game/manual/ManualStatusControls";
 import { ManualModifierControls } from "@/game/manual/ManualModifierControls";
 import { ManualAction } from "@aegis/shared/manual/ManualAction";
 import { ManualMarkerPreset } from "@/game/manual/ManualMarkerPreset";
@@ -13,9 +14,10 @@ type Props = {
   opponent: PlayerState;
   send: (command: ManualCommand) => void;
   combatActive?: boolean;
+  deckCount?: number;
 };
 
-export function ManualPermanentControls({ permanent, opponent, send, combatActive }: Props) {
+export function ManualPermanentControls({ permanent, opponent, send, combatActive, deckCount }: Props) {
   const { t } = useTranslation();
   const markerListId = useId();
   const [dp, setDp] = useState(String(permanent.currentDP));
@@ -116,7 +118,23 @@ export function ManualPermanentControls({ permanent, opponent, send, combatActiv
         {t("manual.setMarker")}
       </button>
       {permanent.manualMarker ? <p>{permanent.manualMarker}</p> : null}
+      <ManualStatusControls permanent={permanent} send={send} />
       <ManualModifierControls key={modifiersKey} permanent={permanent} send={send} />
+      <button
+        type="button"
+        onClick={() => send({ action: ManualAction.RESET_MODIFIERS.value, permanentId: permanent.permanentId })}
+      >
+        {t("manual.features.resetModifiers")}
+      </button>
+      {!permanent.inBreeding ? (
+        <button
+          type="button"
+          disabled={!deckCount}
+          onClick={() => send({ action: ManualAction.TRAINING.value, permanentId: permanent.permanentId })}
+        >
+          {t("manual.features.training")}
+        </button>
+      ) : null}
       {definition?.isToken ? (
         <button
           type="button"
@@ -142,7 +160,7 @@ export function ManualPermanentControls({ permanent, opponent, send, combatActiv
       </label>
       <button
         type="button"
-        disabled={combatActive}
+        disabled={combatActive || permanent.inBreeding || permanent.topCard.faceUp === false}
         onClick={() =>
           send({
             action: ManualAction.ATTACK.value,

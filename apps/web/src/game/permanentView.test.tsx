@@ -559,3 +559,38 @@ it.each(["BT1-043", undefined])(
     expect(onClick).toHaveBeenCalledOnce();
   },
 );
+
+it("shows all manually selected visual statuses together on the field", () => {
+  const permanent = opponentWithDpDown();
+  permanent.manualStatuses.push("sick", "taunt", "immune");
+  const { container } = render(
+    <I18nProvider>
+      <PermanentView perm={permanent} onClick={vi.fn<() => void>()} />
+    </I18nProvider>,
+  );
+  expect(container.querySelectorAll(".game-keyword-badges")).toHaveLength(1);
+  expect(container.querySelector(".game-keyword-badges")?.getAttribute("aria-label")).toContain("Sick, Taunt, Immune");
+  expect(screen.getByRole("button").getAttribute("aria-label")).toContain("Sick");
+  expect(screen.getByRole("button").getAttribute("aria-label")).toContain("Immune");
+});
+
+it("shares keyword overflow and hints with manual statuses and free-text markers", () => {
+  const permanent = opponentWithDpDown();
+  permanent.manualStatuses.push("sick", "immune");
+  permanent.manualMarker = "Custom reminder";
+  permanent.grantedKeywords.push("Rush");
+  permanent.stack.push(Object.assign(new CardInstance(), { cardId: "BT1-010", instanceId: "source" }));
+  const { container } = render(
+    <I18nProvider>
+      <PermanentView perm={permanent} width={400} />
+    </I18nProvider>,
+  );
+  const row = container.querySelector(".game-keyword-badges")!;
+  expect(row.getAttribute("aria-label")).toBe("Active keywords: Rush, Sick, Immune, Custom reminder");
+  expect(row.querySelectorAll(".game-keyword-badge")).toHaveLength(4);
+  expect(row.textContent).toContain("+1");
+  expect(container.querySelector(".game-source-badge")).toBeTruthy();
+  expect(container.querySelector(".manual-permanent-statuses, .game-permanent-manual-marker")).toBeNull();
+  fireEvent.click(row.querySelector(".game-keyword-badge--more")!);
+  expect(screen.getByRole("tooltip").textContent).toContain("Custom reminder");
+});

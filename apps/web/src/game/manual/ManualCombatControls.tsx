@@ -36,7 +36,11 @@ export function ManualCombatControls({ state, seat, send, spectating, compact }:
   const actor = defendingStage ? defender : attacker;
   const canAct = !spectating && actor?.seat === seat;
   const disabled =
-    state.gameOver || state.turnCount === 0 || table.undoRequester !== -1 || table.resultRequester !== -1;
+    state.gameOver ||
+    state.turnCount === 0 ||
+    table.undoRequester !== -1 ||
+    table.resultRequester !== -1 ||
+    table.restartRequester !== -1;
   let targetName = t("manual.combat.player");
   if (table.attackTargetPermanentId) {
     targetName = targetCard ? getCardName(targetCard.topCard.cardId) : t("manual.combat.missingCard");

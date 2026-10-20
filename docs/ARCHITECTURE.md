@@ -229,3 +229,20 @@ the other player to accept. Concession follows the existing room lifecycle.
 Manual games use single-game casual rooms, have no competitive clock or bots,
 and do not write competitive results or recent-match history. Their downloadable
 player replays are identified as manual.
+
+Manual card controls support independent visual statuses, DP, Security Attack,
+keyword and color overrides, free-text markers, source and link ordering, tokens,
+and atomic Training placement. Resetting modifiers preserves suspension. Public
+reveals retain their owning seat and original zone so their owner can move a
+revealed card without opening a private inspection. Moving or shuffling cards
+invalidates stale public references. Face-down field cards retain their card-back
+interaction targets and cannot declare attacks or effect signals.
+
+Effect signals explicitly publish an owned hand or face-up field card and an
+optional card or player target. Signals provide shared visual context and do not
+execute effects. Manual phase and combat tracking likewise never resolves battles
+or security checks. Pending undo, result and restart agreements block table edits.
+A restart requires the other player's approval, preserves the original decks and
+player seats, uses fresh deterministic randomness, and repeats mulligans and
+security setup with the agreed first player. Restart invalidates the previous undo
+checkpoint, inspections, reveals, signals and combat tracking.

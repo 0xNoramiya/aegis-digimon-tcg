@@ -88,3 +88,16 @@
 .manual-features__gallery small {
   color: var(--ds-text-3);
 }
+
+.manual-features__quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.manual-table .manual-features__quick-actions button {
+  min-block-size: 2.75rem;
+  padding: 0.625rem;
+  overflow-wrap: anywhere;
+  font-size: 0.75rem;
+}

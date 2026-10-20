@@ -52,7 +52,7 @@ it("blocks passing during manual combat without blocking other manual board edit
     turnSeat: 0,
     phase: Phase.Main,
     gameMode: "manual",
-    manual: { combatStage: "counter" },
+    manual: { combatStage: "counter", undoRequester: -1, resultRequester: -1, restartRequester: -1 },
   } as unknown as GameState;
   const guards = actionGuards({
     state,
@@ -65,4 +65,26 @@ it("blocks passing during manual combat without blocking other manual board edit
   expect(guards.endPhaseBlocked).toBe(true);
   expect(guards.turnActionBlocked).toBe(false);
   expect(guards.mainActionBlocked).toBe(false);
+});
+
+it("blocks manual board mutations during every pending table agreement", () => {
+  for (const key of ["undoRequester", "resultRequester", "restartRequester"]) {
+    const state = {
+      gameOver: false,
+      turnSeat: 0,
+      phase: Phase.Main,
+      gameMode: "manual",
+      manual: { combatStage: "none", undoRequester: -1, resultRequester: -1, restartRequester: -1, [key]: 1 },
+    } as unknown as GameState;
+    const guards = actionGuards({
+      state,
+      viewer: viewerWith(false),
+      viewerSeat: 0,
+      decisionOpen: false,
+      presenting: false,
+      phasePresentationPending: false,
+    });
+    expect(guards.turnActionBlocked).toBe(true);
+    expect(guards.endPhaseBlocked).toBe(true);
+  }
 });

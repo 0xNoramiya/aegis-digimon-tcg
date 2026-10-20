@@ -36,6 +36,10 @@ export function actionGuards({
   const manual = state.gameMode === GameMode.MANUAL.value;
   const turnActionBlocked =
     state.gameOver ||
+    (manual &&
+      (state.manual.undoRequester !== -1 ||
+        state.manual.resultRequester !== -1 ||
+        state.manual.restartRequester !== -1)) ||
     decisionOpen ||
     Boolean(state.combatWindow) ||
     presenting ||

@@ -6,8 +6,9 @@ import {
   REPLAY_FORMAT_VERSION,
   type MatchReplay,
 } from "@aegis/shared";
+import { ManualStatus } from "@aegis/shared/manual/ManualStatus";
 import { ManualCombatStage } from "@aegis/shared/manual/ManualCombatStage";
-import { Phase } from "@aegis/shared/schema/enums";
+import { Phase, Zone } from "@aegis/shared/schema/enums";
 import { validReplayEvent } from "./eventValidation";
 
 const stateDefaults = new GameState().toJSON();
@@ -82,6 +83,7 @@ function permanent(value: unknown): boolean {
     array(value.linked, card) &&
     number(value.currentDP) &&
     typeof value.isSuspended === "boolean" &&
+    array(value.manualStatuses, (status) => Object.values(ManualStatus).some((entry) => entry.value === status)) &&
     [
       "keywords",
       "grantedKeywords",
@@ -108,7 +110,15 @@ function manualTable(value: unknown): boolean {
     !string(value.revealedJson) ||
     !Object.values(ManualCombatStage).some((entry) => entry.value === value.combatStage) ||
     !Object.values(Phase).some((phase) => phase !== Phase.None && phase === value.turnPhase) ||
-    ![-1, 0, 1].includes(value.attackerSeat as number)
+    ![-1, 0, 1].includes(value.attackerSeat as number) ||
+    ![-1, 0, 1].includes(value.signalSeat as number) ||
+    ![-1, 0, 1].includes(value.signalTargetSeat as number) ||
+    ![-1, 0, 1].includes(value.restartRequester as number) ||
+    ![-1, 0, 1].includes(value.restartFirstSeat as number) ||
+    !Number.isInteger(value.signalRevision) ||
+    (value.signalRevision as number) < 0 ||
+    !Number.isInteger(value.restartCount) ||
+    (value.restartCount as number) < 0
   )
     return false;
   try {
@@ -119,6 +129,7 @@ function manualTable(value: unknown): boolean {
         string(item.cardId) &&
         (item.artId === undefined || string(item.artId)) &&
         (item.instanceId === undefined || string(item.instanceId)) &&
+        (item.zone === undefined || Object.values(Zone).includes(item.zone as Zone)) &&
         seat(item.seat),
     );
   } catch {

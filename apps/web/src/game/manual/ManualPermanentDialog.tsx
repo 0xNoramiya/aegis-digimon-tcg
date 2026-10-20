@@ -1,3 +1,5 @@
+import { ManualQuickActions } from "@/game/manual/ManualQuickActions";
+import { Zone } from "@aegis/shared/schema/enums";
 import { useState } from "react";
 import type { Permanent } from "@aegis/shared/schema/Permanent";
 import type { PlayerState } from "@aegis/shared/schema/PlayerState";
@@ -20,6 +22,7 @@ type Props = {
   room?: AegisRoom;
   disabled: boolean;
   combatActive?: boolean;
+  deckCount?: number;
   onClose: () => void;
 };
 
@@ -32,6 +35,7 @@ export function ManualPermanentDialog({
   room,
   disabled,
   combatActive,
+  deckCount,
   onClose,
 }: Props) {
   const { t } = useTranslation();
@@ -52,9 +56,26 @@ export function ManualPermanentDialog({
               <fieldset disabled={disabled}>
                 <ManualPermanentControls
                   key={`${permanent.permanentId}:${permanent.currentDP}:${permanent.manualMarker}`}
+                  deckCount={deckCount}
                   combatActive={combatActive}
                   permanent={permanent}
                   opponent={opponent}
+                  send={(command) => {
+                    if (room && !disabled) sendManualCommand({ room, command });
+                  }}
+                />
+                <ManualQuickActions
+                  source={{
+                    key: permanent.topCard.instanceId,
+                    label: permanent.topCard.cardId,
+                    from: {
+                      zone: permanent.inBreeding ? Zone.Breeding : Zone.BattleArea,
+                      permanentId: permanent.permanentId,
+                      part: "top",
+                      instanceId: permanent.topCard.instanceId,
+                    },
+                    permanent,
+                  }}
                   send={(command) => {
                     if (room && !disabled) sendManualCommand({ room, command });
                   }}
