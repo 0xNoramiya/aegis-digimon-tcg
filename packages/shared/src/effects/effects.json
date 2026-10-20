@@ -115013,6 +115013,7 @@
             "kind": "SubTrigger",
             "event": "whenBlocked",
             "on": { "filter": {}, "count": 1, "fromSelectionRef": "atomicInfernoTarget" },
+            "sourceFilter": { "isSelfRef": true },
             "actions": [{ "kind": "GainMemory", "amount": 3 }],
             "condition": { "kind": "isYourTurn" },
             "duration": "untilYourTurnEnd"
@@ -121620,13 +121621,13 @@
             "kind": "ModifyDP",
             "target": { "filter": {}, "count": 1, "fromSelectionRef": "boostedDigimon" },
             "amount": 2000,
-            "duration": "untilYourTurnEnd"
+            "duration": "forTheTurn"
           },
           {
-            "kind": "SubTrigger",
-            "event": "whenAttacking",
-            "on": { "filter": {}, "count": 1, "fromSelectionRef": "boostedDigimon" },
-            "actions": [
+            "kind": "GainTriggeredEffect",
+            "target": { "filter": {}, "count": 1, "fromSelectionRef": "boostedDigimon" },
+            "gainedTrigger": "whenAttacking",
+            "gainedActions": [
               {
                 "kind": "SelectBind",
                 "target": {
