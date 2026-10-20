@@ -76999,7 +76999,7 @@
               "filter": {
                 "controller": "mine",
                 "kind": ["Digimon"],
-                "orFilters": [
+                "or": [
                   { "nameOrTrait": [{ "tokens": ["Canoweissmon"], "match": "nameExact" }] },
                   {
                     "levelComparison": { "op": "lte", "value": 4 },
@@ -230789,7 +230789,7 @@
                 "controller": "mine",
                 "zone": ["hand", "trash"],
                 "kind": ["Digimon", "Tamer"],
-                "orFilters": [
+                "or": [
                   { "nameOrTrait": [{ "tokens": ["Lalamon"], "match": "nameExact" }] },
                   { "nameOrTrait": [{ "tokens": ["Yoshino Fujieda"], "match": "nameExact" }] }
                 ]
