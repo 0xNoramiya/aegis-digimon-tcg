@@ -41,10 +41,11 @@ def game_points(result: dict[str, Any]) -> float:
 
 
 def block_score(results: list[dict[str, Any]]) -> float:
-    valid = [result for result in results if result.get("valid") is True]
-    if not valid:
-        return 0.5
-    return sum(game_points(result) for result in valid) / len(valid)
+    if not results:
+        return 0.0
+    return sum(
+        game_points(result) if result.get("valid") is True else 0.0 for result in results
+    ) / len(results)
 
 
 def _margin(trace: dict[str, Any]) -> float:

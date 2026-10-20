@@ -141,8 +141,8 @@ def test_block_score_and_objectives_follow_opponent(tmp_path: Path) -> None:
     assert result.scores == [0.5, 0.5]
     assert result.objective_scores == [{"opponent:legacy": 0.5}, {"opponent:certified": 0.5}]
     assert sorted(job["seed"] for job in pool.jobs[:4]) == [100, 101, 102, 103]
-    assert block_score([{"valid": True, "win": None}, {"valid": False, "win": None}]) == 0.5
-    assert block_score([]) == 0.5
+    assert block_score([{"valid": True, "win": None}, {"valid": False, "win": None}]) == 0.25
+    assert block_score([]) == 0.0
 
 
 def test_cache_reuses_full_payload_and_upgrades_for_traces(tmp_path: Path) -> None:
