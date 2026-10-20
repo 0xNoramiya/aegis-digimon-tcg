@@ -205,6 +205,17 @@ def test_blocks_cover_both_orientations_and_seats() -> None:
     assert games[2]["decks"] == [DECK_B, DECK_A]
 
 
+def test_blocks_balance_who_moves_first_per_orientation() -> None:
+    games = block_games(block("legacy"))
+    candidate_first = {
+        (game["orientation"], game["seat"]): game["firstSeat"] == game["seat"] for game in games
+    }
+    assert candidate_first == {(0, 0): True, (0, 1): False, (1, 0): False, (1, 1): True}
+    assert all(
+        game["firstSeat"] == game["seed"] % 2 for game in games if game["firstSeat"] == game["seat"]
+    )
+
+
 def test_splits_keep_test_matchups_out_of_tuning() -> None:
     pairs = [
         {"matchId": str(index), "split": "test" if index % 5 == 0 else "train", "decks": []}

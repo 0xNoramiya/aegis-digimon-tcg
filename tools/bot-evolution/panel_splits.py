@@ -57,7 +57,10 @@ def alternating_blocks(
 
 
 def block_games(block: dict[str, Any]) -> list[dict[str, Any]]:
-    """Both deck orientations and both seats, seeded like the bot-lab panel."""
+    """Both deck orientations and both seats, seeded like the bot-lab panel.
+
+    Each orientation has one game with the candidate first and one with it second.
+    """
     return [
         {
             "matchId": block["matchId"],
@@ -65,6 +68,7 @@ def block_games(block: dict[str, Any]) -> list[dict[str, Any]]:
             "orientation": orientation,
             "seat": seat,
             "seed": block["seedBase"] + orientation * 2 + seat,
+            "firstSeat": seat if orientation == seat else 1 - seat,
             "decks": [block["decks"][orientation], block["decks"][1 - orientation]],
         }
         for orientation in (0, 1)

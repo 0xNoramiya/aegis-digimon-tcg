@@ -32,6 +32,7 @@ export interface SeatConfig {
 export interface MatchOptions {
   omitHandAffordances?: boolean;
   seed: number;
+  firstSeat?: Seat;
   /** External experiment cancellation, e.g. an explicit model-decision budget. */
   signal?: AbortSignal;
   seats: readonly [SeatConfig, SeatConfig];
@@ -148,6 +149,7 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
   const engine = new GameEngine(state, {
     omitHandAffordances: options.omitHandAffordances,
     seed: options.seed,
+    firstSeat: options.firstSeat,
     requestDecision: (seat, request) => {
       bots[seat]?.onDecisionRequested(request);
     },

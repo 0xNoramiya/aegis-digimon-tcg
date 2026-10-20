@@ -254,6 +254,7 @@ async function play(job) {
   const started = performance.now();
   const result = await runBotMatch({
     seed: job.seed,
+    ...(job.firstSeat === undefined ? {} : { firstSeat: job.firstSeat }),
     seats,
     turnLimit: 60,
     captureEvents: true,
