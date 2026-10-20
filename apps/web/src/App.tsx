@@ -708,6 +708,7 @@ function LoadedAegisClient({
             {screen === "story" && (
               <StoryScreen
                 key={account?.id ?? "guest"}
+                initialBattleId={storyBattleId}
                 signedIn={!!account}
                 onSignIn={() => navigateScreen("login")}
                 onStart={(battleId) => {

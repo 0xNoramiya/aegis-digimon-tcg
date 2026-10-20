@@ -34,6 +34,10 @@ const interfaceMessages = {
   "story.notice": "官方章節保留原文。改編使用模擬器的卡牌規則重建未知場面、牌組和故事中的虛構卡牌變化。",
 
   "story.title": "故事模式",
+  "story.optionalChallenge": "可選挑戰",
+  "story.explanationTitle": "什麼是故事模式？",
+  "story.explanationBody":
+    "一種更有趣的機器人對戰方式。使用為各篇故事的角色和對決精心挑選的牌組，重溫靈感源自數碼寶貝遊戲、動畫和漫畫的戰鬥。",
   "story.all": "所有角色",
   "story.character": "角色",
   "story.start": "開始戰鬥",

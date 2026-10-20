@@ -35,6 +35,10 @@ const interfaceMessages = {
     "公式の章は原文のままです。アレンジでは不明な盤面やデッキ、物語上のカード変更をシミュレーターのカードルールに合わせて再構成します。",
 
   "story.title": "ストーリーモード",
+  "story.optionalChallenge": "任意チャレンジ",
+  "story.explanationTitle": "ストーリーモードとは？",
+  "story.explanationBody":
+    "ボットとの対戦をもっと楽しくするモードです。デジモンのゲーム・アニメ・漫画をもとにしたバトルを、それぞれの物語のキャラクターや対決を表現するデッキで追体験できます。",
   "story.all": "すべてのキャラクター",
   "story.character": "キャラクター",
   "story.start": "バトル開始",

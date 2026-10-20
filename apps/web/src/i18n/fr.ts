@@ -37,6 +37,10 @@ const interfaceMessages = {
     "Les chapitres officiels restent dans leur langue originale. Les adaptations reconstituent les terrains, les decks et les changements fictifs selon les règles imprimées du simulateur.",
 
   "story.title": "Mode histoire",
+  "story.optionalChallenge": "Défi facultatif",
+  "story.explanationTitle": "Qu’est-ce que le mode histoire ?",
+  "story.explanationBody":
+    "Une façon plus amusante de jouer contre des bots. Revivez des combats inspirés des jeux, des animés et des mangas Digimon, avec des decks choisis pour représenter les personnages et les affrontements de chaque histoire.",
   "story.all": "Tous les personnages",
   "story.character": "Personnage",
   "story.start": "Lancer le combat",

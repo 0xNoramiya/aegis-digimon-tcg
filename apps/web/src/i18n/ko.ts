@@ -37,6 +37,10 @@ const interfaceMessages = {
     "공식 챕터는 원문을 유지합니다. 각색은 시뮬레이터의 카드 규칙으로 미공개 필드, 덱 및 허구의 카드 변경을 재구성합니다.",
 
   "story.title": "스토리 모드",
+  "story.optionalChallenge": "선택 도전",
+  "story.explanationTitle": "스토리 모드란?",
+  "story.explanationBody":
+    "봇과 더욱 재미있게 대전하는 모드입니다. 디지몬 게임, 애니메이션, 만화에서 영감을 받은 배틀을 각 이야기의 캐릭터와 대결을 표현하도록 구성한 덱으로 다시 경험해 보세요.",
   "story.all": "모든 캐릭터",
   "story.character": "캐릭터",
   "story.start": "배틀 시작",

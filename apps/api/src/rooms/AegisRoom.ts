@@ -1,3 +1,4 @@
+import { canStartStoryBattle } from "@aegis/shared/story/canStartStoryBattle";
 import { getStoryGuestHash } from "#api/story/getStoryGuestHash";
 import { shuffleStoryDecks } from "#api/story/shuffleStoryDecks";
 import { storyBattles } from "@aegis/shared/story/storyBattles";
@@ -544,7 +545,7 @@ export class AegisRoom extends Room<{
       const battle = storyBattles.find((entry) => entry.id === this.storyBattleId);
       const store = new StoryProgressStore(this.accounts());
       const progress = account ? await store.getProgress(account.id) : await store.getGuestProgress(guestHash!);
-      if (!battle || (battle.prerequisiteId && !progress.completed.includes(battle.prerequisiteId))) {
+      if (!battle || !canStartStoryBattle({ battle, completed: progress.completed })) {
         return false;
       }
       this.storyAccountId = account?.id;

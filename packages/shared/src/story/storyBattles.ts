@@ -1,3 +1,4 @@
+import { catalogStoryBattles } from "#shared/story/catalogStoryBattles";
 import type { StoryBattle } from "#shared/story/StoryBattle";
 import { StoryBattleKind } from "#shared/story/StoryBattleKind";
 
@@ -631,4 +632,5 @@ export const storyBattles: readonly StoryBattle[] = [
     coverImageUrl: "https://digimoncard.com/digimon_liberator/en/images/comic/chapter/24_1.jpg?v02",
     prerequisiteId: "shoto-arisa-practice",
   },
+  ...catalogStoryBattles,
 ];

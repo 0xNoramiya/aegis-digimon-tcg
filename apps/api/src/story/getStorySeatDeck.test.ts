@@ -11,7 +11,7 @@ describe("story deck admission", () => {
       const fixture = getStoryScenario(battleId)!;
       for (const seat of [0, 1] as const) {
         const deck = getStorySeatDeck({ fixture, seat });
-        expect(validateDecklist(deck, { betaBattleMode: true }), `seat ${seat}`).toEqual({ ok: true });
+        expect(validateDecklist(deck, { betaBattleMode: false }), `seat ${seat}`).toEqual({ ok: true });
       }
     },
   );

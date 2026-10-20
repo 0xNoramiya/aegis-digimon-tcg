@@ -34,6 +34,10 @@ const interfaceMessages = {
   "story.notice": "官方章节保留原文语言；改编篇章则依照本模拟器实装的规则，重建缺失的盘面、卡组与虚构的卡牌改动。",
 
   "story.title": "故事模式",
+  "story.optionalChallenge": "可选挑战",
+  "story.explanationTitle": "什么是故事模式？",
+  "story.explanationBody":
+    "一种更有趣的机器人对战方式。使用为各篇故事的角色和对决精心挑选的卡组，重温灵感源自数码宝贝游戏、动画和漫画的战斗。",
   "story.all": "全部角色",
   "story.character": "角色",
   "story.start": "开始对战",

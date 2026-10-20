@@ -47,6 +47,19 @@ afterEach(async () => {
 });
 
 describe("story progression", () => {
+  it("reads historic manifestation victories as one battle and writes canonical victories", async () => {
+    const account = await accounts.accountForIdentity("discord", "historic-world-player", "Player");
+    await accounts.ensureReady();
+    await accounts.pool.query(
+      "INSERT INTO story_battle_completions (account_id, battle_id, match_id, completed_at) VALUES ($1, $2, $3, $4)",
+      [account.id, "dw1-039", "historic-encounter", Date.now()],
+    );
+    const store = new StoryProgressStore(accounts);
+    expect(await store.getProgress(account.id)).toEqual({ completed: ["dw1-038"] });
+    await store.recordVictory({ accountId: account.id, battleId: "dw1-040", matchId: "replay-encounter" });
+    expect(await store.getProgress(account.id)).toEqual({ completed: ["dw1-038"] });
+  });
+
   it("persists victories per account without duplicating retries", async () => {
     const a = await accounts.accountForIdentity("discord", "a", "Alice");
     const b = await accounts.accountForIdentity("discord", "b", "Bob");
@@ -72,6 +85,24 @@ describe("story progression", () => {
     });
     const unlockedTicket = await accounts.createRoomTicket(account.id);
     expect(await room.onAuth(client, { ...options, authTicket: unlockedTicket })).toBe(true);
+  });
+
+  it("authorizes Ogremon only after every recruit victory is persisted", async () => {
+    const room = createRoom("dw1-009");
+    const account = await accounts.accountForIdentity("discord", "world-player", "Player");
+    const store = new StoryProgressStore(accounts);
+    const client = { sessionId: "world-player", send: vi.fn<() => void>() } as unknown as Client;
+    const options = { displayName: "Player", deck: RED_DECK, storyBattleId: "dw1-009" };
+    for (const battleId of ["dw1-001", "dw1-002"]) {
+      await store.recordVictory({ accountId: account.id, battleId, matchId: battleId });
+    }
+    expect(await room.onAuth(client, { ...options, authTicket: await accounts.createRoomTicket(account.id) })).toBe(
+      false,
+    );
+    await store.recordVictory({ accountId: account.id, battleId: "dw1-003", matchId: "third-recruit" });
+    expect(await room.onAuth(client, { ...options, authTicket: await accounts.createRoomTicket(account.id) })).toBe(
+      true,
+    );
   });
 
   it("uses the server scenario instead of a supplied deck and does not unlock on defeat", async () => {
@@ -128,6 +159,33 @@ describe("story progression", () => {
     engine.applyIntent(1, { type: "surrender" });
     await vi.waitFor(async () => {
       expect(await new StoryProgressStore(accounts).getProgress(account.id)).toEqual({ completed: ["ice-knight"] });
+    });
+  });
+
+  it("starts the World scenario with dealt hands and persists only an authoritative victory", async () => {
+    const room = createRoom("dw1-001");
+    const account = await accounts.accountForIdentity("discord", "world-winner", "Player");
+    const client = { sessionId: "world-winner", send: vi.fn<() => void>(), view: undefined } as unknown as Client;
+    const options = {
+      displayName: "Player",
+      deck: RED_DECK,
+      storyBattleId: "dw1-001",
+      authTicket: await accounts.createRoomTicket(account.id),
+    };
+    expect(await room.onAuth(client, options)).toBe(true);
+    room.clients.push(client);
+    room.onJoin(client, options);
+    expect(room.addBot()).toBe(true);
+    for (const seat of [0, 1] as const) {
+      expect(room.state.players[seat]!.hand).toHaveLength(5);
+      expect(room.state.players[seat]!.security).toHaveLength(5);
+      expect(room.state.players[seat]!.battleArea).toHaveLength(0);
+    }
+    expect(await new StoryProgressStore(accounts).getProgress(account.id)).toEqual({ completed: [] });
+    const engine = (room as unknown as { engine: GameEngine }).engine;
+    engine.applyIntent(1, { type: "surrender" });
+    await vi.waitFor(async () => {
+      expect(await new StoryProgressStore(accounts).getProgress(account.id)).toEqual({ completed: ["dw1-001"] });
     });
   });
 

@@ -43,6 +43,10 @@ export const en = {
     "Official chapters stay in their original language. Adaptations reconstruct missing boards, decks and fictional card changes using the simulator’s printed rules.",
 
   "story.title": "Story mode",
+  "story.optionalChallenge": "Optional challenge",
+  "story.explanationTitle": "What is story mode?",
+  "story.explanationBody":
+    "A more fun way to play against bots. Relive battles inspired by Digimon games, anime and manga, with decks chosen to represent the characters and encounters in each story.",
   "story.all": "All characters",
   "story.character": "Character",
   "story.start": "Start battle",

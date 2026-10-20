@@ -41,6 +41,10 @@ export const es: Record<keyof typeof en, string> = {
     "Los capítulos oficiales conservan su idioma original. Las adaptaciones reconstruyen campos, mazos y cambios ficticios con las reglas impresas del simulador.",
 
   "story.title": "Modo historia",
+  "story.optionalChallenge": "Desafío opcional",
+  "story.explanationTitle": "¿Qué es el modo historia?",
+  "story.explanationBody":
+    "Una forma más divertida de jugar contra bots. Revive batallas inspiradas en los videojuegos, animes y mangas de Digimon, con mazos elegidos para representar a los personajes y enfrentamientos de cada historia.",
   "story.all": "Todos los personajes",
   "story.character": "Personaje",
   "story.start": "Iniciar batalla",

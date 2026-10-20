@@ -36,6 +36,10 @@ const interfaceMessages = {
     "Offizielle Kapitel bleiben in ihrer Originalsprache. Adaptionen ergänzen Felder, Decks und fiktive Kartenänderungen anhand der gedruckten Regeln des Simulators.",
 
   "story.title": "Storymodus",
+  "story.optionalChallenge": "Optionale Herausforderung",
+  "story.explanationTitle": "Was ist der Story-Modus?",
+  "story.explanationBody":
+    "Eine unterhaltsamere Art, gegen Bots zu spielen. Erlebe Kämpfe aus Digimon-Spielen, -Animes und -Mangas mit Decks, die die Charaktere und Begegnungen der jeweiligen Geschichte widerspiegeln.",
   "story.all": "Alle Charaktere",
   "story.character": "Charakter",
   "story.start": "Kampf starten",

@@ -39,6 +39,10 @@ const interfaceMessages = {
     "I capitoli ufficiali restano nella lingua originale. Gli adattamenti ricostruiscono campi, mazzi e modifiche fittizie usando le regole stampate del simulatore.",
 
   "story.title": "Modalità storia",
+  "story.optionalChallenge": "Sfida facoltativa",
+  "story.explanationTitle": "Che cos’è la modalità storia?",
+  "story.explanationBody":
+    "Un modo più divertente di giocare contro i bot. Rivivi battaglie ispirate ai giochi, agli anime e ai manga di Digimon, con mazzi scelti per rappresentare i personaggi e gli scontri di ogni storia.",
   "story.all": "Tutti i personaggi",
   "story.character": "Personaggio",
   "story.start": "Inizia battaglia",

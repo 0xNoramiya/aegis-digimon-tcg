@@ -45,6 +45,10 @@ export const ptBR: Record<keyof typeof en, string> = {
     "Os capítulos oficiais permanecem no idioma original. As adaptações reconstroem campos, decks e alterações fictícias de cartas usando as regras impressas do simulador.",
 
   "story.title": "Modo história",
+  "story.optionalChallenge": "Desafio opcional",
+  "story.explanationTitle": "O que é o modo história?",
+  "story.explanationBody":
+    "Uma forma mais divertida de jogar contra bots. Reviva batalhas inspiradas nos jogos, animes e mangás de Digimon, com decks escolhidos para representar os personagens e confrontos de cada história.",
   "story.all": "Todos os personagens",
   "story.character": "Personagem",
   "story.start": "Iniciar batalha",

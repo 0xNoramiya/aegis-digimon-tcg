@@ -36,6 +36,10 @@ const interfaceMessages = {
     "Bab resmi tetap dalam bahasa aslinya. Adaptasi merekonstruksi arena, dek dan perubahan fiktif menggunakan aturan kartu dalam simulator.",
 
   "story.title": "Mode cerita",
+  "story.optionalChallenge": "Tantangan opsional",
+  "story.explanationTitle": "Apa itu mode cerita?",
+  "story.explanationBody":
+    "Cara yang lebih seru untuk bermain melawan bot. Rasakan kembali pertarungan yang terinspirasi dari game, anime, dan manga Digimon, dengan deck yang dipilih untuk mewakili karakter dan pertarungan dalam setiap cerita.",
   "story.all": "Semua karakter",
   "story.character": "Karakter",
   "story.start": "Mulai pertarungan",
