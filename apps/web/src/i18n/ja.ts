@@ -1,8 +1,10 @@
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
 
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "キーボードとコントローラー",
   "settings.arenaInputDesc": "矢印キーやコントローラーでカーソルを動かし、各操作のボタンを表示します。",
   "game.input.controls": "キーボードとコントローラー",
@@ -2536,4 +2538,8 @@ const interfaceMessages = {
   "releases.reported": "報告いただいた問題を修正しました · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const ja: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const ja: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+};

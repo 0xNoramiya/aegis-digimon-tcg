@@ -1,3 +1,4 @@
+import type { ManualIntent } from "#shared/manual/ManualCommand";
 /**
  * Client -> server intents: a single discriminated union. The client sends
  * `room.send(intent.type, payloadWithoutType)`; the room reassembles
@@ -5,6 +6,7 @@
  * produce an `actionRejected` event and no state change (API-CONTRACT section 4).
  */
 export type Intent =
+  | ManualIntent
   // --- Setup ---
   | { type: "ready" } // signal ready in lobby
   | { type: "mulligan"; keep: boolean } // answer opening-hand mulligan

@@ -39,7 +39,14 @@ export function PermanentLinkedCards({ linked, width }: { linked: readonly CardI
                 transform: "rotate(-90deg) translateX(-100%)",
               }}
             >
-              <CardMini cardId={ci.cardId} artId={ci.artId} width={slot.height} info zoomOnHover={false} />
+              <CardMini
+                cardId={ci.cardId}
+                artId={ci.artId}
+                width={slot.height}
+                faceDown={ci.faceUp === false}
+                info
+                zoomOnHover={false}
+              />
             </div>
           </div>
         );

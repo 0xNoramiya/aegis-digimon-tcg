@@ -1,3 +1,4 @@
+import { manualPtBR } from "@/i18n/manual.pt-BR";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerPtBR } from "@/i18n/providers.pt-BR";
 import { replayVideoPtBR } from "./replayVideo";
@@ -23,6 +24,7 @@ import { settingsPtBR } from "./redesign/settings.pt-BR";
 import { shellPtBR } from "./redesign/shell.pt-BR";
 
 export const ptBR: Record<keyof typeof en, string> = {
+  ...manualPtBR,
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Excluir este Digimon",
   "overlay.trashTopSecurityCard": "Descartar a carta do topo da sua segurança",

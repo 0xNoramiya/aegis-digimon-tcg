@@ -1,3 +1,4 @@
+import { manualEs } from "@/i18n/manual.es";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEs } from "@/i18n/providers.es";
 import { replayVideoEs } from "./replayVideo";
@@ -19,6 +20,7 @@ import { settingsEs } from "./redesign/settings.es";
 import { shellEs } from "./redesign/shell.es";
 
 export const es: Record<keyof typeof en, string> = {
+  ...manualEs,
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Eliminar este Digimon",
   "overlay.trashTopSecurityCard": "Descartar la carta superior de tu seguridad",

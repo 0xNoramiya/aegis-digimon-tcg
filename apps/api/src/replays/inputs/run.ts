@@ -1,3 +1,4 @@
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { GameState, type Intent, type IntentResult, type Seat, type SequencedServerEvent } from "@aegis/shared";
 import { GameEngine } from "../../engine/GameEngine.js";
 import type { ReplayDivergence, ReplayInput, ReplayRecord, ReplaySite } from "./types.js";
@@ -64,6 +65,7 @@ const MAX_IDLE_TURNS = 1_000;
  */
 export async function runReplay(record: ReplayRecord, options: RunReplayOptions = {}): Promise<ReplayRun> {
   const state = new GameState();
+  state.gameMode = record.rules.gameMode ?? GameMode.AUTOMATIC.value;
   state.format = record.rules.deckFormat;
   state.unlimited = record.rules.unlimited;
   // The room keeps it in its own recording, so an exported frame carries it as a player's file does.

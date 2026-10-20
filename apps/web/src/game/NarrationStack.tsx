@@ -280,15 +280,21 @@ function peekSummary(
 } {
   const body = item.notice?.body;
   if (body?.variant === "effect") {
-    const clause = noticeEffectClause({
-      cardId: body.cardId,
-      timing: body.timing,
-      description: body.description,
-      effectTextPart: body.effectTextPart,
-      ...(body.isInherited ? { isInherited: body.isInherited } : {}),
-    });
+    const clause =
+      body.manualSignalText ??
+      noticeEffectClause({
+        cardId: body.cardId,
+        timing: body.timing,
+        description: body.description,
+        effectTextPart: body.effectTextPart,
+        ...(body.isInherited ? { isInherited: body.isInherited } : {}),
+      });
+    let label = (body.timing ? TIMING_LABELS[body.timing] : undefined) ?? t("overlay.effect");
+    if (body.manualSignalText) {
+      label = t("manual.signal.title");
+    }
     return {
-      label: (body.timing ? TIMING_LABELS[body.timing] : undefined) ?? t("overlay.effect"),
+      label,
       name: `${cardDisplayName(body.cardId, t)}${body.count !== undefined && body.count > 1 ? ` ×${body.count}` : ""}`,
       tone: "effect",
       cardId: body.cardId,

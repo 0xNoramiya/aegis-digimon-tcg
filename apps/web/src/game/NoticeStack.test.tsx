@@ -427,3 +427,22 @@ it.each([
   renderNotice(notice({ body: { variant: "effect", cardId: "AD1-008", timing: "WhenDigivolving", description } }));
   expect(document.querySelector(".match-notice__text")?.textContent).toBe(description);
 });
+
+it("renders a manual signal through the standard effect toast and opens the source card", () => {
+  const onOpenCard = vi.fn<(cardId: string, artId?: string) => void>();
+  const shown = notice({
+    body: { variant: "effect", cardId: "BT1-010", manualSignalText: "First signals an effect · Effect target: Second" },
+  });
+  render(
+    <I18nProvider>
+      <CardOpenerProvider onOpenCard={onOpenCard}>
+        <NoticeStack notice={shown} remainingMs={NOTICE_LIFETIME_MS} onDismiss={() => undefined} />
+      </CardOpenerProvider>
+    </I18nProvider>,
+  );
+  expect(screen.getByTestId("match-notice").getAttribute("data-variant")).toBe("effect");
+  expect(screen.getByText("First signals an effect · Effect target: Second")).toBeTruthy();
+  expect(screen.getByText("Effect signal")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Open Agumon" }));
+  expect(onOpenCard).toHaveBeenCalledWith("BT1-010", undefined);
+});

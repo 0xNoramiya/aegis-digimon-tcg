@@ -1,3 +1,4 @@
+import { useManualSignalNarration } from "@/game/manual/useManualSignalNarration";
 import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { createDiscardedSourceResolution } from "./match/present/announcements";
 import { createDiscardedSourcePanels } from "./match/narration/presentableNarration";
@@ -418,6 +419,7 @@ export function useMatchCues({
   publishPresentedRef.current = () => setPresentedStateVersion(progress.current());
 
   const [narration, setNarration] = useState<ReadonlyMap<string, NarrationItem>>(new Map());
+  useManualSignalNarration({ state, viewerSeat, collapseNarration, narrationLimit, setNarration });
   const [rejection, setRejection] = useState<MatchNotice | null>(null);
   const narrationRef = useRef(narration);
   narrationRef.current = narration;
