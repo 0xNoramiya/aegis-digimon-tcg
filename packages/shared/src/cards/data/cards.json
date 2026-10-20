@@ -50086,6 +50086,35 @@
     "isDualCard": true
   },
   {
+    "cardId": "BT27-043",
+    "set": "BT27",
+    "nameEn": "Kentaurosmon (X Antibody)",
+    "nameJp": "スレイプモンX抗体/究極戦弩弓エインヘリアル",
+    "colors": ["Yellow"],
+    "kinds": ["Digimon", "Option"],
+    "level": 6,
+    "playCost": 5,
+    "dp": 13000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 5,
+        "memoryCost": 4
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Vaccine"],
+    "types": ["Holy Warrior", "X Antibody", "Royal Knight"],
+    "effectText": "[Digivolve] [Kentaurosmon]: Cost 2\n＜Blocker＞ ＜Barrier＞ ＜Ascension＞\n[When Digivolving] [When Attacking] [Once Per Turn] By trashing your top security card, this Digimon unsuspends.\n[All Turns] [Once Per Turn] When your security stack is removed from, by placing 1 [Kentaurosmon] or [X Antibody] from this Digimon's digivolution cards as the bottom security card, activate 1 [Main] effect on this card's Option side.",
+    "rarity": "SR",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-043",
+    "dualEffect": "Ultimate Crossbow Einherjar",
+    "optionEffect": "[Main] 1 of your opponent's Digimon gets -20000 DP until their turn ends. For each card in both players' security stacks, add 1000 to this effect's DP reduction.\n＜Arts Digivolve＞",
+    "optionColorRequirements": ["Yellow"],
+    "isDualCard": true
+  },
+  {
     "cardId": "BT3-001",
     "set": "BT3",
     "nameEn": "Poromon",

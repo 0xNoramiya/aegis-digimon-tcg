@@ -1,7 +1,7 @@
 {
   "fetchedAt": "2026-10-16T13:45:11.694Z",
   "language": "ko",
-  "catalogCards": 4505,
+  "catalogCards": 4506,
   "sourceCards": 3814,
   "translatedCards": 3594,
   "translatedFields": 5485,
@@ -6809,6 +6809,16 @@
     {
       "cardId": "BT27-098",
       "field": "securityEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-043",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-043",
+      "field": "optionEffect",
       "reason": "unavailable-source-card"
     }
   ],
