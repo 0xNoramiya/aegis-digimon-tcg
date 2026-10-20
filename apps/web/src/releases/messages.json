@@ -1,4 +1,52 @@
 {
+  "releases.1.35.4-beta.summary": {
+    "en": "Effect order, effects for all of a player's Digimon, card rules, and deckbuilder sorting fixes.",
+    "pt-BR": "Correções na ordem de efeitos, em efeitos para todos os Digimon de um jogador, em regras de cartas e na ordenação do deckbuilder.",
+    "es": "Correcciones en el orden de efectos, en efectos para todos los Digimon de un jugador, en reglas de cartas y en la ordenación del constructor de mazos.",
+    "it": "Correzioni all’ordine degli effetti, agli effetti per tutti i Digimon di un giocatore, alle regole delle carte e all’ordinamento del deckbuilder."
+  },
+  "releases.1.35.4-beta.fix.ruleCheckTriggerOrder": {
+    "en": "When a “would leave” effect saves a Digimon during a rule check, the effects it triggers now wait for the turn player’s pending effects, so the turn player resolves first.",
+    "pt-BR": "Quando um efeito de “sairia” salva um Digimon durante uma verificação de regras, os efeitos que ele ativa agora esperam os efeitos pendentes do jogador do turno, e o jogador do turno resolve primeiro.",
+    "es": "Cuando un efecto de “saldría” salva a un Digimon durante una comprobación de reglas, los efectos que activa ahora esperan a los efectos pendientes del jugador del turno, que resuelve primero.",
+    "it": "Quando un effetto “lascerebbe” salva un Digimon durante un controllo delle regole, gli effetti che attiva ora attendono gli effetti in sospeso del giocatore di turno, che risolve per primo."
+  },
+  "releases.1.35.4-beta.fix.laterEntrantGrants": {
+    "en": "Effects for all of a player’s Digimon, such as Machinedramon’s stacked-card protection, now apply at once to Digimon that enter later and no longer appear as extra effects to order.",
+    "pt-BR": "Efeitos para todos os Digimon de um jogador, como a proteção de cartas empilhadas de Machinedramon, agora se aplicam na hora aos Digimon que entram depois e não aparecem mais como efeitos extras para ordenar.",
+    "es": "Los efectos para todos los Digimon de un jugador, como la protección de cartas apiladas de Machinedramon, ahora se aplican al instante a los Digimon que entran después y ya no aparecen como efectos adicionales que ordenar.",
+    "it": "Gli effetti per tutti i Digimon di un giocatore, come la protezione delle carte impilate di Machinedramon, ora si applicano subito ai Digimon che entrano dopo e non compaiono più come effetti extra da ordinare."
+  },
+  "releases.1.35.4-beta.fix.conditionalGrants": {
+    "en": "Attack of the Heavy Mobile Digimon! now gives its On Play only to Digimon that currently are level 6 with [Machine] in their traits.",
+    "pt-BR": "Attack of the Heavy Mobile Digimon! agora concede seu On Play apenas aos Digimon que, no momento, são de nível 6 com [Machine] nos traços.",
+    "es": "Attack of the Heavy Mobile Digimon! ahora otorga su On Play solo a los Digimon que en ese momento son de nivel 6 con [Machine] en sus rasgos.",
+    "it": "Attack of the Heavy Mobile Digimon! ora concede il suo On Play solo ai Digimon che in quel momento sono di livello 6 con [Machine] nei tratti."
+  },
+  "releases.1.35.4-beta.fix.artsSecurityReactions": {
+    "en": "Security-removal reactions from an Arts digivolution’s When Digivolving effect now resolve before the opponent’s older pending effects.",
+    "pt-BR": "Reações à remoção de cartas de segurança causadas pelo When Digivolving de uma digievolução Arts agora resolvem antes dos efeitos pendentes mais antigos do oponente.",
+    "es": "Las reacciones a la retirada de cartas de seguridad causadas por el When Digivolving de una digievolución Arts ahora se resuelven antes que los efectos pendientes más antiguos del rival.",
+    "it": "Le reazioni alla rimozione di carte di sicurezza causate dal When Digivolving di una digievoluzione Arts ora si risolvono prima degli effetti in sospeso più vecchi dell’avversario."
+  },
+  "releases.1.35.4-beta.fix.mistymon": {
+    "en": "Mistymon BT18-039’s inherited unsuspend is now optional, as printed on the card.",
+    "pt-BR": "O efeito herdado de desvirar de Mistymon BT18-039 agora é opcional, como impresso na carta.",
+    "es": "El efecto heredado de enderezar de Mistymon BT18-039 ahora es opcional, como aparece en la carta.",
+    "it": "L’effetto ereditato di raddrizzamento di Mistymon BT18-039 ora è facoltativo, come stampato sulla carta."
+  },
+  "releases.1.35.4-beta.fix.ascensionPrompt": {
+    "en": "Ascension after a rule-check deletion now asks to activate or decline, without selecting its card.",
+    "pt-BR": "Ascension após uma deleção por verificação de regras agora pergunta se você quer ativar ou recusar, sem pedir para selecionar a carta.",
+    "es": "Ascension tras una eliminación por comprobación de reglas ahora pregunta si activar o rechazar, sin seleccionar su carta.",
+    "it": "Ascension dopo un’eliminazione per controllo delle regole ora chiede se attivare o rifiutare, senza selezionare la carta."
+  },
+  "releases.1.35.4-beta.fix.deckbuilderSorting": {
+    "en": "Deckbuilder sorting now applies to every search match, not only to name matches.",
+    "pt-BR": "A ordenação do deckbuilder agora se aplica a todos os resultados da busca, não só aos que correspondem ao nome.",
+    "es": "La ordenación del constructor de mazos ahora se aplica a todos los resultados de búsqueda, no solo a los que coinciden con el nombre.",
+    "it": "L’ordinamento del deckbuilder ora si applica a tutti i risultati della ricerca, non solo a quelli che corrispondono al nome."
+  },
   "releases.1.35.3-beta.summary": {
     "en": "Gameplay, card rules, Material Save prompts, and story fixes.",
     "pt-BR": "Correções de jogabilidade, regras de cartas, decisões de Material Save e história.",

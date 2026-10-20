@@ -1,5 +1,37 @@
 [
   {
+    "version": "1.35.4-beta",
+    "releasedAt": "2026-10-20",
+    "summaryKey": "releases.1.35.4-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.35.4-beta.fix.ruleCheckTriggerOrder"
+      },
+      {
+        "textKey": "releases.1.35.4-beta.fix.laterEntrantGrants"
+      },
+      {
+        "textKey": "releases.1.35.4-beta.fix.conditionalGrants"
+      },
+      {
+        "textKey": "releases.1.35.4-beta.fix.artsSecurityReactions",
+        "issue": 5878
+      },
+      {
+        "textKey": "releases.1.35.4-beta.fix.mistymon",
+        "issue": 5879
+      },
+      {
+        "textKey": "releases.1.35.4-beta.fix.ascensionPrompt"
+      },
+      {
+        "textKey": "releases.1.35.4-beta.fix.deckbuilderSorting",
+        "issue": 5876
+      }
+    ]
+  },
+  {
     "version": "1.35.3-beta",
     "releasedAt": "2026-10-20",
     "summaryKey": "releases.1.35.3-beta.summary",
