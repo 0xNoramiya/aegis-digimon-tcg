@@ -218,6 +218,24 @@ describe("AegisRoom ready-gated match start", () => {
     expect(await standard.onAuth(fakeClient("crafted"), options)).toBe(false);
     expect(() => standard.onJoin(fakeClient("bypass"), options)).toThrow(/illegal deck/);
   });
+
+  it("frees the seat of a join rejected for an illegal deck so the next player takes it", () => {
+    const room = makeRoom();
+    const rejected = fakeClient("rejected");
+    const illegalDeck = { mainDeck: [...RED_DECK.mainDeck], eggDeck: [...RED_DECK.eggDeck] };
+    illegalDeck.mainDeck.splice(0, 4, ...Array<string>(4).fill("BT5-109"));
+    room.clients.push(rejected);
+    expect(() => room.onJoin(rejected, { displayName: "Rejected", deck: illegalDeck })).toThrow(/illegal deck/);
+    room.clients.splice(room.clients.indexOf(rejected), 1);
+    void room.onLeave(rejected);
+
+    const next = fakeClient("next");
+    room.clients.push(next);
+    room.onJoin(next, { displayName: "Next", deck: RED_DECK });
+
+    expect(room.state.players[0]?.displayName).toBe("Next");
+    expect(() => room.broadcastPatch()).not.toThrow();
+  });
   it("requires explicit opt-in from both seats of a beta battle room", async () => {
     const room = makeRoom({ betaBattleRoom: true });
     const first = fakeClient("beta-first");

@@ -1,5 +1,6 @@
 import {
   conditionalDigiXrosTrashAllowed,
+  hasOtherDigiXrosPlayCosts,
   pendingDigiXrosSelfReduction,
   preparedDigiXrosMaterials,
 } from "./timing/payCost.js";
@@ -856,6 +857,8 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
       preparedDigiXrosMaterials(engine, instance.instanceId).reservedInstanceIds,
     conditionalTrashAllowed: (instance) => conditionalDigiXrosTrashAllowed(engine, instance),
     pendingSelfReduction: (instance) => pendingDigiXrosSelfReduction(engine, instance),
+    hasBeforePayCost: (instance) => hasOtherDigiXrosPlayCosts(engine, instance),
+    minimumDeferredPlayCost: (instance, baseCost) => minimumDeferredPlayCost(engine, instance, baseCost),
     ruleTrashMaterialCandidates: (playedInstance) => wouldBePlayedRuleTrashMaterials(engine, playedInstance),
     digiXrosExpandedZones: (seat, playedInstanceId) =>
       engine.primitives.digiXrosExpandedZones?.(seat, playedInstanceId) ?? [],

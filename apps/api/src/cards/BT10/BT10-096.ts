@@ -52,6 +52,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "You may add 1 Digimon card with [Xros Heart] in its traits among them to your hand",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -66,6 +67,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "play 1 [Taiki Kudo] among them without paying its memory cost.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

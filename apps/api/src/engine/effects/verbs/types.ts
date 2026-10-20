@@ -238,6 +238,7 @@ export interface PrimitivesEngine {
     instanceId: string,
     ownerSeat: Seat,
     opts?: {
+      byEffect?: boolean;
       isDnaDigivolve?: boolean;
       digivolvedFromZone?: import("@aegis/shared").ZoneRef;
       baseWasDigimon?: boolean;

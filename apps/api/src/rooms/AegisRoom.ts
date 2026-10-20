@@ -1632,8 +1632,8 @@ export class AegisRoom extends Room<{
         `[AegisRoom] onJoin sessionId=${client.sessionId} seat=${seat} → replacing departed player ${existing.sessionId}`,
       );
     }
-    this.seatByClient.set(client.sessionId, seat);
     this.withBatch(() => this.engine.seatPlayer(seat, client.sessionId, options));
+    this.seatByClient.set(client.sessionId, seat);
     this.recordReplaySeat(seat, options.deck, {
       betaBattleMode: options.betaBattleMode,
       unlimited: options.unlimited,

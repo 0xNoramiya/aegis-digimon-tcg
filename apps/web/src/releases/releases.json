@@ -1,5 +1,28 @@
 [
   {
+    "version": "1.35.1-beta",
+    "releasedAt": "2026-10-20",
+    "summaryKey": "releases.1.35.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.35.1-beta.fix.revealPrompts"
+      },
+      {
+        "textKey": "releases.1.35.1-beta.fix.artsDigivolve"
+      },
+      {
+        "textKey": "releases.1.35.1-beta.fix.digiXrosReduction"
+      },
+      {
+        "textKey": "releases.1.35.1-beta.fix.scourgeChiropmon"
+      },
+      {
+        "textKey": "releases.1.35.1-beta.fix.rejectedJoin"
+      }
+    ]
+  },
+  {
     "version": "1.35.0-beta",
     "releasedAt": "2026-10-19",
     "summaryKey": "releases.1.35.0-beta.summary",
