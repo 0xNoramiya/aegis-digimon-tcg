@@ -599,7 +599,7 @@
   "[Digivolve]Lv.3w/[NSo]trait:Cost2": "〔진화〕특징으로 「NSo」를 가진 Lv.3 : 코스트 2",
   "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][OnDeletion]Delete1ofyouropponent'sDigimonwith4000DPorless.": "〔진화〕특징으로 「NSo」를 가진 Lv.3 : 코스트 2【등장 시】【소멸 시】DP 4000 이하의 상대의 디지몬 1마리를 소멸시킨다.",
   "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][WhenDigivolving]Bytrashing1cardinyourhand,give1ofyouropponent'sDigimon\"[OnDeletion]Trash1cardinyourhand.\"untiltheendoftheirturn.": "〔진화〕특징으로 「NSo」를 가진 Lv.3 : 코스트 2【등장 시】【진화 시】자신의 패 1장을 파기하는 것으로, 상대의 턴 종료까지 상대의 디지몬 1마리에게 「【소멸 시】자신의 패 1장을 파기한다.」의 효과를 준다.",
-  "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][WhenDigivolving]Suspend1ofyouropponent'sDigimon.": "〔진화〕특징 「NSo」를 가진 Lv.3 : 코스트 2【등장 시】【소멸 시】상대의 디지몬 1마리를 레스트시킨다.",
+  "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][OnDeletion]Suspend1ofyouropponent'sDigimon.": "〔진화〕특징 「NSo」를 가진 Lv.3 : 코스트 2【등장 시】【소멸 시】상대의 디지몬 1마리를 레스트시킨다.",
   "[Digivolve]Lv.3w/[NSp]trait:Cost1[Rule]Trait:Hasthe[Dinosaur]type.": "〔진화〕특징으로 「NSp」를 가진 Lv.3 : 코스트 1〈룰〉특징: 유형 「공룡형」을 가진다.",
   "[Digivolve]Lv.3w/[NSp]trait:Cost2[OnPlay][WhenDigivolving]<Draw1>.": "〔진화〕특징으로 「NSp」를 가진 Lv.3 : 코스트 2【등장 시】【진화 시】《1 드로우》(자신의 덱에서 카드를 1장 뽑는다)",
   "[Digivolve]Lv.3w/[NSp]trait:Cost2[OnPlay][WhenDigivolving]1ofyouropponent'sDigimongets-3000DPfortheturn.": "〔진화〕특징으로 「NSp」를 가진 Lv.3 : 코스트 2【등장 시】【진화 시】턴 종료까지 상대의 디지몬 1마리를 DP -3000.",

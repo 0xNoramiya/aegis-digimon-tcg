@@ -41172,9 +41172,9 @@
             "kind": "Unsuspend",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "condition": {
-              "kind": "opponentHas",
-              "filter": { "controllerDefault": "opponent" },
-              "count": 1,
+              "kind": "memoryAtLeast",
+              "controller": "opponent",
+              "value": 1,
               "raw": "your opponent has 1 or more memory"
             }
           }
@@ -76999,7 +76999,7 @@
               "filter": {
                 "controller": "mine",
                 "kind": ["Digimon"],
-                "orFilters": [
+                "or": [
                   { "nameOrTrait": [{ "tokens": ["Canoweissmon"], "match": "nameExact" }] },
                   {
                     "levelComparison": { "op": "lte", "value": 4 },
@@ -115013,6 +115013,7 @@
             "kind": "SubTrigger",
             "event": "whenBlocked",
             "on": { "filter": {}, "count": 1, "fromSelectionRef": "atomicInfernoTarget" },
+            "sourceFilter": { "isSelfRef": true },
             "actions": [{ "kind": "GainMemory", "amount": 3 }],
             "condition": { "kind": "isYourTurn" },
             "duration": "untilYourTurnEnd"
@@ -121620,13 +121621,13 @@
             "kind": "ModifyDP",
             "target": { "filter": {}, "count": 1, "fromSelectionRef": "boostedDigimon" },
             "amount": 2000,
-            "duration": "untilYourTurnEnd"
+            "duration": "forTheTurn"
           },
           {
-            "kind": "SubTrigger",
-            "event": "whenAttacking",
-            "on": { "filter": {}, "count": 1, "fromSelectionRef": "boostedDigimon" },
-            "actions": [
+            "kind": "GainTriggeredEffect",
+            "target": { "filter": {}, "count": 1, "fromSelectionRef": "boostedDigimon" },
+            "gainedTrigger": "whenAttacking",
+            "gainedActions": [
               {
                 "kind": "SelectBind",
                 "target": {
@@ -201109,7 +201110,7 @@
         ]
       },
       {
-        "trigger": "WhenDigivolving",
+        "trigger": "OnDeletion",
         "actions": [
           { "kind": "Suspend", "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 } }
         ]
@@ -230788,7 +230789,7 @@
                 "controller": "mine",
                 "zone": ["hand", "trash"],
                 "kind": ["Digimon", "Tamer"],
-                "orFilters": [
+                "or": [
                   { "nameOrTrait": [{ "tokens": ["Lalamon"], "match": "nameExact" }] },
                   { "nameOrTrait": [{ "tokens": ["Yoshino Fujieda"], "match": "nameExact" }] }
                 ]
