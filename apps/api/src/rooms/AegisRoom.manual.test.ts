@@ -5,6 +5,7 @@ import { GameMode } from "@aegis/shared/manual/GameMode";
 import { tokenDefinitions } from "@aegis/shared/cards/tokens";
 import { ManualCombatStage } from "@aegis/shared/manual/ManualCombatStage";
 import { Zone, Phase, CardColor } from "@aegis/shared/schema/enums";
+import type { ServerEvent } from "@aegis/shared/protocol/events";
 import type { Intent } from "@aegis/shared/protocol/intents";
 import { RED_DECK, BLUE_DECK } from "#api/engine/testDecks";
 import { addLogSink } from "#api/logger";
@@ -247,6 +248,59 @@ it("finishes and deterministically replays a scheduled draw loss through the rea
     const replay = await runReplay(record);
     expect(replay.divergences).toEqual([]);
     expect(replay.state.winnerSeat).toBe(first);
+    expect(replay.state.manual.toJSON()).toEqual(room.state.manual.toJSON());
+  } finally {
+    stopCapture();
+  }
+});
+
+it("announces only the selected first player after the chooser selects the other seat", async () => {
+  const lines: string[] = [];
+  const stopCapture = addLogSink((line) => lines.push(line));
+  try {
+    const { room, join, send } = createRoom(true);
+    const getStarts = () =>
+      vi
+        .mocked(room.broadcast)
+        .mock.calls.map((call) => call[1] as ServerEvent)
+        .filter((event) => event.kind === "matchStarted");
+    join();
+    send(0, { type: "ready" });
+    send(1, { type: "ready" });
+    const choice = room.state.pendingDecision!;
+    expect(choice.kind).toBe("chooseOption");
+    expect(getStarts()).toEqual([]);
+    const firstSeat = (1 - choice.seat) as 0 | 1;
+    send(choice.seat, {
+      type: "respondDecision",
+      decisionId: choice.decisionId,
+      response: { kind: "chooseOption", optionIndex: 1 },
+    });
+    await vi.waitFor(() => expect(room.state.pendingDecision?.kind).toBe("mulligan"));
+    expect(room.state.pendingDecision!.seat).toBe(firstSeat);
+    expect(room.state.turnSeat).toBe(firstSeat);
+    expect(getStarts()).toHaveLength(1);
+    expect(getStarts()[0]).toMatchObject({ kind: "matchStarted", firstSeat });
+    send(firstSeat, { type: "mulligan", keep: true });
+    await vi.waitFor(() => expect(room.state.pendingDecision?.seat).toBe(1 - firstSeat));
+    send((1 - firstSeat) as 0 | 1, { type: "mulligan", keep: true });
+    await vi.waitFor(() => expect(room.state.turnCount).toBe(1));
+    send(0, {
+      type: "manual",
+      requestId: "first-seat-result",
+      revision: room.state.manual.revision,
+      command: { action: "proposeResult", winnerSeat: -1 },
+    });
+    send(1, {
+      type: "manual",
+      requestId: "first-seat-accept",
+      revision: room.state.manual.revision,
+      command: { action: "answerResult", accept: true },
+    });
+    const record = extractReplay(lines, room.state.matchLogId);
+    const replay = await runReplay(record);
+    expect(replay.divergences).toEqual([]);
+    expect(replay.state.turnSeat).toBe(firstSeat);
     expect(replay.state.manual.toJSON()).toEqual(room.state.manual.toJSON());
   } finally {
     stopCapture();

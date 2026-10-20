@@ -125,8 +125,6 @@ export async function runMatch(engine: GameEngine): Promise<void> {
   });
   engine.rngForSeat = setup.rngForSeat;
 
-  engine.hooks.emit({ kind: "matchStarted", firstSeat });
-
   if (engine.manual) {
     const chooser = firstSeat;
     const response = await engine.decisions.request({
@@ -143,6 +141,7 @@ export async function runMatch(engine: GameEngine): Promise<void> {
     firstSeat = response.kind === "chooseOption" && response.optionIndex === 1 ? ((1 - chooser) as Seat) : chooser;
     engine.state.turnSeat = firstSeat;
   }
+  engine.hooks.emit({ kind: "matchStarted", firstSeat });
   await runMulliganWindow(engine, firstSeat);
   if (engine.state.gameOver) return; // a seat left during setup
 
