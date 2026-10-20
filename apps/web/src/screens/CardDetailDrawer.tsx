@@ -132,7 +132,7 @@ export function CardDetailDrawer({
               value={forms.map((value) => getTranslatedCardMeta({ value, group: "forms", translations })).join(" / ")}
             />
             <DetailRow
-              label={cardTranslation.t("library.rowPlayCost")}
+              label={cardTranslation.t(def.isDualCard ? "library.rowUseCost" : "library.rowPlayCost")}
               value={def.playCost < 0 ? "—" : String(def.playCost)}
               mono
             />

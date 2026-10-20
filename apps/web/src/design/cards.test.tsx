@@ -61,6 +61,22 @@ describe("CardMini board DP", () => {
   });
 });
 
+describe("CardMini cost badge", () => {
+  it("marks a DUAL card as DUAL instead of showing its use cost as a play cost", () => {
+    const { container } = render(<CardMini cardId="BT27-070" width={92} info zoomOnHover={false} />);
+    expect(container.querySelector('[data-cost="play"]')).toBeNull();
+    expect(container.querySelector('[data-card-kind="dual"]')?.textContent).toBe("DUAL");
+  });
+
+  it("keeps the play cost badge on a Digimon card", () => {
+    const { container } = render(<CardMini cardId="ST1-02" width={92} info zoomOnHover={false} />);
+    expect(container.querySelector('[data-card-kind="dual"]')).toBeNull();
+    expect(container.querySelector('[data-cost="play"]')?.textContent).toBe(
+      String(getCardDefinition("ST1-02")!.playCost),
+    );
+  });
+});
+
 describe("CardMini printed traits", () => {
   it.each([
     ["ST23-13", "Glowing Dawn · BEATBREAK"],
