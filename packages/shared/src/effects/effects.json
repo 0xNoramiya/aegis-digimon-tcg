@@ -242451,5 +242451,93 @@
     ],
     "coverage": "full",
     "residual": []
+  },
+  "BT27-098": {
+    "effects": [
+      {
+        "trigger": "AllTurns",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "event": "onDeletionOf",
+            "sourceFilter": { "kind": ["Digimon"] },
+            "optional": true,
+            "cost": {
+              "kind": "suspend",
+              "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+              "raw": "by suspending this Tamer"
+            },
+            "actions": [
+              {
+                "kind": "PlaceUnder",
+                "target": { "filter": {}, "count": 1 },
+                "fromDeckTop": true,
+                "position": "bottom"
+              },
+              {
+                "kind": "PlaceUnder",
+                "target": { "filter": {}, "count": 1 },
+                "fromDeckTop": true,
+                "position": "bottom"
+              }
+            ],
+            "raw": "When any Digimon are deleted, by suspending this Tamer, you may place the top 2 cards of your deck face down under this Tamer."
+          }
+        ]
+      },
+      {
+        "trigger": "EndOfAllTurns",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "abortOnDecline": true,
+            "cost": {
+              "kind": "trashBottomFaceDownUnderTamer",
+              "controller": "mine",
+              "count": 5,
+              "raw": "By trashing 5 bottom face-down cards from under any of your Tamers"
+            },
+            "actions": [
+              {
+                "effectTextPart": "you may play 1 Digimon card with [Gizmon] or [Belphemon] in its name from your hand or trash without paying the cost.",
+                "kind": "PlayWithoutCost",
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "kind": ["Digimon"],
+                    "nameOrTrait": [{ "tokens": ["Gizmon", "Belphemon"], "match": "name" }]
+                  },
+                  "count": 1
+                },
+                "from": ["hand", "trash"],
+                "payCost": false,
+                "bindResultAs": "playedKurataDigimon"
+              },
+              {
+                "effectTextPart": "After, place this Tamer as its bottom digivolution card.",
+                "kind": "PlaceUnder",
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                "underFilter": { "controller": "mine", "boundRef": "playedKurataDigimon", "lastPlayed": true },
+                "position": "bottom"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "isSecurity": true,
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "payCost": false
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
   }
 }

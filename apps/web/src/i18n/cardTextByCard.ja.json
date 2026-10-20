@@ -15372,5 +15372,9 @@
   },
   "BT27-079": {
     "Whenthiscardwouldbeplayed,bydeleting1ofyourlevel4Digimon,reducethecostby6.<Blocker><Retaliation>[AllTurns]ThisDigimoncan'tdigivolve.[OnDeletion]Youmayplay1playcost5orlower[Kurata'sArmy]traitcardfromyourhandortrashwithoutpayingthecost.": "このカードが登場するとき、Lv.4の自分のデジモン1体を消滅させることで、支払うコスト-6。\n≪ブロッカー≫≪道連れ≫\n【お互いのターン】このデジモンは進化できない。\n【消滅時】自分の手札/トラッシュから、特徴「倉田軍団」を持つ登場コスト5以下のカード1枚をコストを支払わず登場できる。"
+  },
+  "BT27-098": {
+    "[AllTurns]WhenanyDigimonaredeleted,bysuspendingthisTamer,youmayplacethetop2cardsofyourdeckfacedownunderthisTamer.[EndofAllTurns]Bytrashing5bottomface-downcardsfromunderanyofyourTamers,youmayplay1Digimoncardwith[Gizmon]or[Belphemon]initsnamefromyourhandortrashwithoutpayingthecost.After,placethisTamerasitsbottomdigivolutioncard.": "【お互いのターン】デジモンが消滅したとき、このテイマーをレストさせることで、自分のデッキの上から2枚をこのテイマーの下に裏向きで置ける。\n【お互いのターン終了時】自分のテイマーの下にある裏向きのカードを下から5枚破棄することで、自分の手札/トラッシュから、名称に「ギズモン」/「ベルフェモン」を含むデジモンカード1枚をコストを支払わず登場できる。さらに、このテイマーをそのデジモンの進化元の下に置く。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
   }
 }

@@ -109646,5 +109646,22 @@
     "rarity": "U",
     "maxCountInDeck": 4,
     "imageId": "BT27-079"
+  },
+  {
+    "cardId": "BT27-098",
+    "set": "BT27",
+    "nameEn": "Akihiro Kurata",
+    "nameJp": "倉田明宏",
+    "colors": ["Purple"],
+    "kinds": ["Tamer"],
+    "playCost": 4,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["Kurata's Army"],
+    "effectText": "[All Turns] When any Digimon are deleted, by suspending this Tamer, you may place the top 2 cards of your deck face down under this Tamer.\n[End of All Turns] By trashing 5 bottom face-down cards from under any of your Tamers, you may play 1 Digimon card with [Gizmon] or [Belphemon] in its name from your hand or trash without paying the cost. After, place this Tamer as its bottom digivolution card.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-098"
   }
 ]
