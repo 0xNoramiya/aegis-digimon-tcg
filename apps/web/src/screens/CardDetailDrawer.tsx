@@ -1,3 +1,4 @@
+import { CardAceBadge } from "@/design/CardAceBadge";
 import { I18nContext } from "@/i18n/I18nContext";
 import { useCardFaceTranslation } from "@/screens/cardLanguage/useCardFaceTranslation";
 import { EffectText } from "@/game/EffectText";
@@ -110,7 +111,10 @@ export function CardDetailDrawer({
           </div>
         ) : null}
         <div className="card-detail-summary">
-          <h2>{getTranslatedCardName({ name: def.nameEn, translations })}</h2>
+          <h2>
+            {getTranslatedCardName({ name: def.nameEn, translations })}
+            <CardAceBadge cardId={cardId} />
+          </h2>
           <div className="card-detail-limit">
             {banLabel ? <span className="card-detail-restriction">{banLabel}</span> : null}
             {isBetaCard(cardId) ? (

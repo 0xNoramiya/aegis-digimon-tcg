@@ -198,25 +198,17 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
     // their owner's turn end; BT23-048 explicitly schedules the opponent's turn end (Q5567/Q5568).
     const ownerSeat = access.permanentById(playedPermanentId)?.controllerSeat;
     const currentTurnSeat = state.turnSeat;
-    const expiresOnTurnEndOf =
-      timing === "endOfCurrentTurn"
-        ? currentTurnSeat
-        : ownerSeat === undefined
-          ? undefined
-          : timing === "endOfOpponentTurn"
-            ? access.opponentOf(ownerSeat)
-            : ownerSeat;
-    // "Delete this Digimon" does nothing once the permanent is no longer a Digimon, e.g. a
-    // De-Digivolve left a Tamer on top (KB Q2729/Q2760).
+    const turnEndWindowSeat = engine.turnEndWindowSeat?.();
+    let expiresOnTurnEndOf = ownerSeat;
+    if (timing === "endOfCurrentTurn") {
+      expiresOnTurnEndOf = turnEndWindowSeat === currentTurnSeat ? access.opponentOf(currentTurnSeat) : currentTurnSeat;
+    } else if (timing === "endOfOpponentTurn" && ownerSeat !== undefined) {
+      expiresOnTurnEndOf = access.opponentOf(ownerSeat);
+    }
     const isStillDigimon = (): boolean =>
       access.isBattleAreaDigimon(access.permanentById(playedPermanentId), continuous);
-    // Scheduled while that very turn end is resolving (an effect attack at the end of the
-    // opponent's turn, say): that timing has passed, so the deletion waits for the opponent's
-    // NEXT turn end, two turns later, instead of expiring unfired (KB P-165 Q4275).
     const deferredToTurnCount =
-      timing === "endOfOpponentTurn" &&
-      expiresOnTurnEndOf !== undefined &&
-      engine.turnEndWindowSeat?.() === expiresOnTurnEndOf
+      timing === "endOfOpponentTurn" && expiresOnTurnEndOf !== undefined && turnEndWindowSeat === expiresOnTurnEndOf
         ? state.turnCount + 2
         : undefined;
     subTriggers.subscribe({
@@ -230,11 +222,7 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
       ...(expiresOnTurnEndOf !== undefined && deferredToTurnCount === undefined ? { expiresOnTurnEndOf } : {}),
       matches: (subCtx) =>
         (deferredToTurnCount === undefined || state.turnCount === deferredToTurnCount) &&
-        (timing === "endOfCurrentTurn"
-          ? state.turnSeat === currentTurnSeat
-          : timing === "endOfOpponentTurn"
-            ? !subCtx.source.isOwnersTurn()
-            : subCtx.source.isOwnersTurn()) &&
+        (timing === "endOfCurrentTurn" || expiresOnTurnEndOf === undefined || state.turnSeat === expiresOnTurnEndOf) &&
         subCtx.source.isOnBattleArea() &&
         isStillDigimon(),
       description:

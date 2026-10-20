@@ -1,4 +1,5 @@
 import { PermanentDpDeltaHint } from "@/game/piece/PermanentDpDeltaHint";
+import { CardAceBadge } from "@/design/CardAceBadge";
 import { useRef, type CSSProperties } from "react";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
@@ -321,6 +322,7 @@ export function PermanentView({
         {claw ? <ClawSlash key={`claw-${perm.permanentId}`} fixedFieldAnchor /> : null}
         {dpPulse ? <DpPulseParticles key={dpPulse.key} pulse={dpPulse} /> : null}
       </div>
+      <CardAceBadge cardId={topId} />
       {sources ? <PermanentSourceBadge sources={sources} /> : null}
       {copies > 1 ? <PermanentCopiesBadge copies={copies} /> : null}
       {blocker ? <PermanentBlockerBadge /> : null}

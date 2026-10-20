@@ -1,5 +1,6 @@
 import type { CardSpec, PermanentSpec, ScenarioFixture } from "#api/engine/scenario/types";
 import { getCardDefinition } from "@aegis/shared/cards/registry";
+import { isTokenDefinition } from "@aegis/shared/cards/tokens";
 
 type Params = { fixture: ScenarioFixture; seat: 0 | 1 };
 
@@ -28,7 +29,11 @@ export function getStorySeatDeck({ fixture, seat }: Params): { mainDeck: string[
   const eggDeck = (board.eggDeck ?? []).map(getCardId);
   const mainDeck: string[] = [];
   for (const card of cards) {
-    if (getCardDefinition(card)?.level === 2) {
+    const definition = getCardDefinition(card);
+    if (definition && isTokenDefinition(definition)) {
+      continue;
+    }
+    if (definition?.level === 2) {
       eggDeck.push(card);
     } else {
       mainDeck.push(card);

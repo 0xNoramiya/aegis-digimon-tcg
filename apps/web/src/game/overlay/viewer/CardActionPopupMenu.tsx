@@ -34,6 +34,7 @@ export function CardActionPopupMenu({
   onVortex,
   link,
   effects,
+  cardId,
 }: {
   x: number;
   y: number;
@@ -45,6 +46,7 @@ export function CardActionPopupMenu({
   onVortex?: () => void;
   link?: CardActionLink;
   effects?: CardActionEffect[];
+  cardId?: string;
 }) {
   const { t } = useTranslation();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -108,8 +110,8 @@ export function CardActionPopupMenu({
             key={effect.label}
             style={item}
             onClick={effect.onActivate}
-            title={translateCardText({ text: effect.label })}
-            aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label })}`}
+            title={translateCardText({ text: effect.label, cardId })}
+            aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId })}`}
             {...hoverBackground("var(--ds-fill)")}
           >
             <span aria-hidden="true">⚡</span> {t("game.activateMainEffect")}

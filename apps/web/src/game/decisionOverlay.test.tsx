@@ -24,6 +24,35 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+it("shows a complete authored Chinese step while preserving the optional response", async () => {
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <DecisionOverlay
+        request={{
+          decisionId: "authored-short-step",
+          seat: 0,
+          kind: "optional",
+          promptText: "Use this effect?",
+          sourceCardId: "BT10-008",
+          options: { timing: "OnPlay", effectTextPart: "Add 1 Digimon card" },
+        }}
+        sourceCardId="BT10-008"
+        candidates={[]}
+        picks={[]}
+        onTogglePick={vi.fn<() => void>()}
+        onRespond={onRespond}
+      />
+    </I18nContext.Provider>,
+  );
+  const text = () => document.querySelector(".decision-overlay__effect-text")?.textContent;
+  await waitFor(() => expect(text()).toContain("3张卡牌"));
+  expect(text()).toContain("驯兽师");
+  expect(text()).not.toContain("Add 1 Digimon card");
+  fireEvent.click(screen.getByRole("button", { name: translator("zh-CN")("overlay.activate") }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: true });
+});
+
 it("uses source card translations for printed modal option buttons and submits the original index", async () => {
   const cardId = "BT22-013";
   const clause = cardEffectClauseForTiming(cardId, "WhenDigivolving")!;
@@ -4882,5 +4911,52 @@ it.each(["Then, by trashing your top security card", "1 of your Digimon may atta
     });
     expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(clause);
     expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(effectTextEmphasis);
+  },
+);
+
+it.each([true, false])(
+  "Material Save explicitly activates or declines without a target selection, accepted=%s",
+  (accepted) => {
+    const onRespond = vi.fn<(response: DecisionResponse) => void>();
+    render(
+      <I18nProvider>
+        <DecisionOverlay
+          request={{
+            decisionId: "material-save-activation",
+            seat: 0,
+            kind: "selectCards",
+            promptText: "＜Material Save 4＞: place the specified digivolution cards under one of your Tamers?",
+            sourceCardId: "BT11-019",
+            options: {
+              candidateInstanceIds: ["starmons"],
+              visibleInstanceIds: ["starmons", "ballistamon", "zeiggreymon", "omnishoutmon"],
+              min: 0,
+              max: 1,
+              selectionContext: "materialSaveActivation",
+            },
+          }}
+          sourceCardId="BT11-019"
+          candidates={[
+            { instanceId: "starmons", cardId: "BT10-029", selectable: true },
+            { instanceId: "ballistamon", cardId: "BT19-047", selectable: false },
+            { instanceId: "zeiggreymon", cardId: "AD1-013", selectable: false },
+            { instanceId: "omnishoutmon", cardId: "BT11-015", selectable: false },
+          ]}
+          picks={[]}
+          onTogglePick={vi.fn<(instanceId: string) => void>()}
+          onRespond={onRespond}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.queryByRole("button", { name: "Confirm targets" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "None" })).toBeNull();
+    expect(screen.getByRole("img", { name: "Ballistamon" })).toBeTruthy();
+    expect(screen.getByRole("img", { name: "ZeigGreymon" })).toBeTruthy();
+    expect(onRespond).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: accepted ? "Yes, activate" : "No, decline" }));
+    expect(onRespond).toHaveBeenCalledExactlyOnceWith({
+      kind: "selectCards",
+      instanceIds: accepted ? ["starmons"] : [],
+    });
   },
 );
