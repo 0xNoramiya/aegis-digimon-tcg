@@ -8,9 +8,16 @@ import {
 } from "#api/bot/evolution/heuristic";
 import type { TrainingWindow } from "#api/bot/training/policy";
 
-type Params = { program: HeuristicProgram; baseline: HeuristicProgram; seed: number };
+export type ExposureDecision = { window: TrainingWindow; candidate: number; baseline: number };
 
-export function createHeuristicExposureChooser({ program, baseline, seed }: Params) {
+type Params = {
+  program: HeuristicProgram;
+  baseline: HeuristicProgram;
+  seed: number;
+  onDecision?: (decision: ExposureDecision) => void;
+};
+
+export function createHeuristicExposureChooser({ program, baseline, seed, onDecision }: Params) {
   const remaining = [...baseline.rules];
   const additions = program.rules.filter((rule) => {
     const index = remaining.findIndex((existing) => isDeepStrictEqual(existing, rule));
@@ -38,6 +45,7 @@ export function createHeuristicExposureChooser({ program, baseline, seed }: Para
     report.main += Number(window.kind === "main");
     report.triggered += Number(triggered);
     report.changed += Number(index !== original);
+    onDecision?.({ window, candidate: index, baseline: original });
     return index;
   }
   return { choose, report };

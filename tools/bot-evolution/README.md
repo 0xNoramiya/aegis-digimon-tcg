@@ -695,6 +695,14 @@ How it works:
   candidate seat, so earlier panel runs measured the candidate only when moving
   first. Their results are not comparable with later runs for (orientation 0,
   seat 1) and (orientation 1, seat 0).
+- A panel job with `recordReplay: true` returns a `replay` record
+  (`aegis-replay-inputs/1`) that `runReplay` reproduces exactly. With
+  `diagnosticBaseline` as well, the result lists `changedPositions`: each main
+  window where the candidate and baseline choices differ, with `inputIndex`,
+  `seat`, `information`, `turn`, `candidateAction` and `baselineAction` numbered
+  in the restored search window. Pass an entry to `replayContinuation` to compare
+  both branches. Activation choices cannot be mapped to that window and are
+  counted in `changedPositionSkips`.
 - Game results are cached on disk by the full job payload and a fingerprint of
   the compiled engine, so validation and held-out games are never replayed.
 - The reflective dataset shows each block's outcomes. For lost games it shows a

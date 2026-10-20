@@ -13,6 +13,7 @@ const apiDist = resolve(dirname(fileURLToPath(import.meta.url)), "../../apps/api
 const moduleAt = (name) => import(pathToFileURL(resolve(apiDist, name)).href);
 const { auditReplayTeacherAlignment } = await moduleAt("bot/evolution/auditReplayTeacherAlignment.js");
 const { createHeuristicExposureChooser } = await moduleAt("bot/evolution/createHeuristicExposureChooser.js");
+const { createChangedPositionTracker } = await moduleAt("bot/evolution/createChangedPositionTracker.js");
 const { runReplayContinuation } = await moduleAt("bot/evolution/runReplayContinuation.js");
 const { runReplayTeacher } = await moduleAt("bot/evolution/runReplayTeacher.js");
 const { inspectReplayTeacherInput } = await moduleAt("bot/evolution/inspectReplayTeacherInput.js");
@@ -229,6 +230,8 @@ async function play(job) {
   decks[job.seat] = job.decks[0];
   decks[1 - job.seat] = job.decks[1];
   const traces = job.trace === true ? [] : undefined;
+  const recordReplay = job.recordReplay === true;
+  let changes;
   const exposure =
     job.diagnosticBaseline === undefined
       ? undefined
@@ -236,6 +239,7 @@ async function play(job) {
           program,
           baseline: parsedProgram(job.diagnosticBaseline),
           seed: job.seed + job.seat * 7919,
+          onDecision: (decision) => changes?.observe(decision),
         });
   const seats = [0, 1].map((seat) => ({
     deck: decks[seat],
@@ -251,6 +255,16 @@ async function play(job) {
         )
       : opponentSeat(job, decks[seat])),
   }));
+  if (recordReplay && exposure !== undefined) {
+    const candidate = seats[job.seat];
+    seats[job.seat] = {
+      ...candidate,
+      policyFactory: (engine, seat, replay) => {
+        changes = createChangedPositionTracker({ engine, seat, replay });
+        return candidate.policyFactory(engine, seat);
+      },
+    };
+  }
   const started = performance.now();
   const result = await runBotMatch({
     seed: job.seed,
@@ -259,8 +273,10 @@ async function play(job) {
     turnLimit: 60,
     captureEvents: true,
     measureDecisionLatencies: false,
+    ...(recordReplay ? { recordReplay } : {}),
   });
   const valid = validEvolutionGame(result);
+  const changedPositions = changes?.getPositions(result.replay);
   return {
     id: job.id,
     ...(exposure === undefined ? {} : { exposure: exposure.report }),
@@ -271,6 +287,8 @@ async function play(job) {
     reason: result.reason,
     ms: Math.round(performance.now() - started),
     ...(traces === undefined ? {} : { traces, cards: cardGlossary(traces) }),
+    ...(recordReplay ? { replay: result.replay } : {}),
+    ...(changedPositions === undefined ? {} : { changedPositions, changedPositionSkips: changes.skipped }),
   };
 }
 
