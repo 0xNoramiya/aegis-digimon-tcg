@@ -669,3 +669,52 @@ invalid-game rejection, and strict publication criteria remain applicable.
 The [TCG bot comparison](../../docs/tcg-bot-training-comparison.md) records the
 sources and limits motivating shorter reflection cycles and future opponent
 diversity. Four pairs is an engineering starting point, not a proven optimum.
+
+## Structural rules from panel games
+
+`panel_evolve.py` lets GEPA change the structure of a tuned heuristic program. It
+plays cheap panel games (about 0.2–3 seconds each) instead of MCTS searches.
+
+How it works:
+
+- The candidate has two components, `main_rules` and `other_rules`. Each one is a
+  JSON object `{"scope": "...", "rules": [...]}`. Main rules all carry
+  `when.kind = "main"`; other rules never do. Two components let GEPA merge
+  improvements from separate lines.
+- The adapter assembles the full program (schema version 1, at most 100 rules)
+  and validates it in Python and in the real engine parser before any game. An
+  invalid program scores 0 on every block, and the feedback names the error.
+- One data item is a block: one human deck matchup against one opponent bot, in
+  four games (both deck orientations, both seats, fixed seeds). The score is the
+  block mean. The objective score is `opponent:<name>`, so GEPA keeps a Pareto
+  front per opponent (`frontier_type="objective"`).
+- Game results are cached on disk by the full job payload and a fingerprint of
+  the compiled engine, so validation and held-out games are never replayed.
+- The reflective dataset shows each block's outcomes. For lost games it shows a
+  few close decisions: the chosen action, its score, the top alternatives with
+  their action features, and the printed text of the cards involved.
+- Splits reuse the bot-lab split of `pairs.json`. Training uses the fitness
+  matchups, validation uses 24 blocks per opponent, and the test matchups stay
+  untouched until the final comparison.
+
+Run it from this directory with the compiled API in `apps/api/dist`:
+
+```sh
+uv run --offline python panel_evolve.py \
+  --start-program ../../.local/bot-lab/best-program.json \
+  --pairs ../../.local/bot-lab/pairs.json \
+  --run-dir ../../.local/bot-lab/gepa-panel-v1 \
+  --node ~/.nvm/versions/node/v26.12.0/bin/node \
+  --workers 8 --deadline-minutes 75
+```
+
+The run uses session reflection: it writes `reflections/NNNN-<sha>.prompt.json`
+and waits for a matching `.response.json`. Re-running the same command resumes
+from `gepa/`. At the end it writes `selected-program.json`, `summary.json`
+(proposals, accepted candidates, merges, scores), and `held-out.json`. The
+held-out comparison plays the start and selected programs on the same test games
+(150 matchups against `legacy`, 75 against `certified`, 600 and 300 games) and
+reports win rates with 95% intervals and the paired difference.
+
+`--planner` turns on the main-phase turn planner. It is off by default because it
+makes games slower.
