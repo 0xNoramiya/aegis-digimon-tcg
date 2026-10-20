@@ -33,14 +33,28 @@ test.describe("manual table", () => {
   }
 
   type BreedingStepParams = { player: Page; choice?: string };
-  async function finishBreeding({ player, choice = "Skip breeding" }: BreedingStepParams) {
+  async function finishBreeding({ player, choice = "End breeding" }: BreedingStepParams) {
     if ((await player.evaluate(() => window.browserTestSnapshot().manual.turnPhase)) === "Breeding") {
-      await player.getByRole("button", { name: choice, exact: true }).click();
+      const panel = player.locator(".manual-table__toggle");
+      const reopenPanel = (await panel.getAttribute("aria-expanded")) === "true";
+      if (reopenPanel) {
+        await panel.click();
+      }
+      if (choice === "Hatch egg") {
+        await player.locator(".game-utility-slot--you-eggs.game-egg-deck--hatchable").click();
+      } else if (choice === "Move to battle") {
+        await player.locator(".game-utility-slot--you-raising .game-breeding-slot__box[data-arena-suggested]").click();
+      } else {
+        await player.getByRole("button", { name: "End breeding", exact: true }).click();
+      }
+      if (reopenPanel) {
+        await panel.click();
+      }
     }
     await expect.poll(() => player.evaluate(() => window.browserTestSnapshot().manual.turnPhase)).toBe("Main");
   }
 
-  async function prepare(first: Page, second: Page, initialBreedingChoice = "Skip breeding") {
+  async function prepare(first: Page, second: Page, initialBreedingChoice = "End breeding") {
     await expect
       .poll(async () => {
         const firstReady = await first.getByRole("button", { name: "First", exact: true }).isVisible();
@@ -619,7 +633,8 @@ test.describe("manual table", () => {
         })),
       )
       .toEqual({ seat: 1, count: 2 });
-    await expect(second.getByRole("dialog", { name: "Breeding Phase", exact: true })).toBeVisible();
+    await expect(second.locator(".game-utility-slot--you-eggs.game-egg-deck--hatchable")).toBeVisible();
+    await expect(second.getByRole("dialog")).toHaveCount(0);
     expect(await second.evaluate(() => window.browserTestSnapshot().players[1].handCount)).toBe(5);
     expect(
       await second.evaluate(() =>
@@ -628,7 +643,7 @@ test.describe("manual table", () => {
     ).toEqual([true, false]);
     await expect(second.getByRole("button", { name: "Move to battle", exact: true })).toHaveCount(0);
     await page.getByRole("button", { name: "Request undo", exact: true }).click();
-    await expect(second.getByRole("dialog", { name: "Breeding Phase", exact: true })).toHaveCount(0);
+    await expect(second.getByRole("dialog")).toHaveCount(0);
     await second.getByRole("button", { name: "Accept", exact: true }).click();
     await expect
       .poll(() =>
@@ -647,7 +662,8 @@ test.describe("manual table", () => {
     ).toEqual([true, true]);
     await page.getByRole("button", { name: "Pass turn", exact: true }).click();
     await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().turnCount)).toBe(2);
-    await expect(second.getByRole("dialog", { name: "Breeding Phase", exact: true })).toBeVisible();
+    await expect(second.locator(".game-utility-slot--you-eggs.game-egg-deck--hatchable")).toBeVisible();
+    await expect(second.getByRole("dialog")).toHaveCount(0);
     expect(await second.evaluate(() => window.browserTestSnapshot().players[1].handCount)).toBe(5);
     for (const width of [390, 1440]) {
       await second.setViewportSize({ width, height: 1000 });
@@ -665,6 +681,7 @@ test.describe("manual table", () => {
     );
     await page.locator('[data-drop="perm-you"]').click();
     await expect(page.getByRole("dialog")).toHaveClass(/arena-permanent-inspector/);
+    await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
     await second.getByRole("button", { name: "Turn", exact: true }).click();
     await second.getByRole("button", { name: "Pass turn", exact: true }).click();
     await expect
@@ -675,10 +692,10 @@ test.describe("manual table", () => {
         })),
       )
       .toEqual({ seat: 0, count: 3 });
-    await expect(page.getByRole("dialog")).toHaveCount(1);
-    await expect(page.getByRole("dialog", { name: "Breeding Phase", exact: true })).toBeVisible();
-    await expect(page.getByRole("dialog")).toHaveCount(1);
-    await expect(page.getByRole("dialog", { name: "Breeding Phase", exact: true })).toBeFocused();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(
+      page.locator(".game-utility-slot--you-raising .game-breeding-slot__box[data-arena-suggested]"),
+    ).toBeVisible();
     await expect(page.getByRole("button", { name: "Hatch egg", exact: true })).toHaveCount(0);
     expect(await page.evaluate(() => window.browserTestSnapshot().players[0].handCount)).toBe(4);
     expect(await page.evaluate(() => window.browserTestSnapshot().players[0].battleArea[0].isSuspended)).toBe(false);
@@ -691,7 +708,7 @@ test.describe("manual table", () => {
       afterMove.players[0].battleArea.find((permanent) => permanent.permanentId === breedingId)?.stack.length,
     ).toBe(1);
     expect(afterMove.manual.canMoveFromBreeding).toBe(false);
-    await expect(page.getByRole("dialog", { name: "Breeding Phase", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
     await page.getByRole("button", { name: "Pass turn", exact: true }).click();
     await expect
       .poll(() =>
@@ -707,7 +724,7 @@ test.describe("manual table", () => {
       BLUE_DECK.eggDeck.length - 1,
     );
     expect(await second.evaluate(() => window.browserTestSnapshot().players[1].breeding!.stack.length)).toBe(0);
-    await expect(second.getByRole("dialog", { name: "Breeding Phase", exact: true })).toHaveCount(0);
+    await expect(second.getByRole("dialog")).toHaveCount(0);
     expect(
       await page.evaluate(() =>
         window.browserTestPresentation().events.filter((event) => event.kind === "effectTriggered"),
@@ -716,7 +733,7 @@ test.describe("manual table", () => {
     expect(errors).toEqual([]);
   });
 
-  test("reopens breeding after viewing the board and ending breeding from its native control", async ({
+  test("uses native breeding controls on consecutive turns without opening an extra dialog", async ({
     page,
     context,
   }) => {
@@ -730,20 +747,17 @@ test.describe("manual table", () => {
     await page.getByRole("button", { name: "Turn", exact: true }).click();
     await page.getByRole("button", { name: "Pass turn", exact: true }).click();
     await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().turnSeat)).toBe(1);
-    await second
-      .getByRole("dialog", { name: "Breeding Phase", exact: true })
-      .getByRole("button", { name: "View board", exact: true })
-      .click();
-    await expect(second.getByRole("dialog", { name: "Breeding Phase", exact: true })).toHaveCount(0);
-    await second.getByRole("button", { name: "End breeding", exact: true }).click();
-    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().manual.turnPhase)).toBe("Main");
+    await expect(second.locator(".game-utility-slot--you-eggs.game-egg-deck--hatchable")).toBeVisible();
+    await expect(second.getByRole("dialog")).toHaveCount(0);
+    await finishBreeding({ player: second });
     await second.getByRole("button", { name: "Turn", exact: true }).click();
     await second.getByRole("button", { name: "Pass turn", exact: true }).click();
     await expect.poll(() => page.evaluate(() => window.browserTestSnapshot().turnCount)).toBe(3);
     await finishBreeding({ player: page });
     await page.getByRole("button", { name: "Pass turn", exact: true }).click();
     await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().turnCount)).toBe(4);
-    await expect(second.getByRole("dialog", { name: "Breeding Phase", exact: true })).toBeVisible();
+    await expect(second.locator(".game-utility-slot--you-eggs.game-egg-deck--hatchable")).toBeVisible();
+    await expect(second.getByRole("dialog")).toHaveCount(0);
     await finishBreeding({ player: second, choice: "Hatch egg" });
     expect(await second.evaluate(() => window.browserTestSnapshot().players[1].eggDeckCount)).toBe(
       BLUE_DECK.eggDeck.length - 1,
