@@ -5,6 +5,7 @@
   "[AllTurns][OncePerTurn]Whenacardisremovedfromyoursecuritystack,1ofyouropponent'sDigimongets-2000DPfortheturn.": "【お互いのターン】［ターンに1回］自分のセキュリティが減ったとき、ターン終了まで、相手のデジモン1体をDP-2000。",
   "[AllTurns][OncePerTurn]Whenacardisremovedfromyoursecuritystack,ifthisDigimonhas[Fenriloogamon]initsname,1ofyouropponent'sDigimongets-8000DPfortheturn.": "【お互いのターン】[ターンに1回]自分のセキュリティが減ったとき、このデジモンが名称に「フェンリルガモン」を含むなら、ターン終了まで、相手のデジモン1体をDP-8000。",
   "[AllTurns][OncePerTurn]Whenacardisremovedfromyoursecuritystack,unsuspendthisDigimon.": "【お互いのターン】[ターンに1回]自分のセキュリティが減ったとき、このデジモンをアクティブにできる。",
+  "[AllTurns][OncePerTurn]Whenacardisremovedfromyoursecuritystack,youmayunsuspendthisDigimon.": "【お互いのターン】[ターンに1回]自分のセキュリティが減ったとき、このデジモンをアクティブにできる。",
   "[AllTurns][OncePerTurn]Whenacardwith[Jellymon]&#160;initstextistrashedfromyourhand,youmayunsuspendthisDigimon.": "【お互いのターン】［ターンに1回］自分の手札から、「ジェリーモン」の記述があるカードが破棄されたとき、このデジモンをアクティブにできる。",
   "[AllTurns][OncePerTurn]WhenaDigimonattacks,bytrashing1cardinyourhand,trashthebottom2digivolutioncardsof1ofyouropponent'sDigimon.": "【お互いのターン】[ターン1回]デジモンがアタックしたとき、自分の手札1枚を破棄することで、相手のデジモン1体の進化元を下から2枚破棄する。",
   "[AllTurns][OncePerTurn]Whenadigivolutioncardofanopponent'sDigimonistrashed,return1ofyouropponent'slevel3Digimontoitsowner'shand.": "【お互いのターン】[ターンに1回]相手のデジモンの進化元が破棄されたとき、Lv.3の相手のデジモン1体を手札に戻す。",
