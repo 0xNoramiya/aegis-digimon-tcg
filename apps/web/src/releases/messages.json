@@ -3172,5 +3172,41 @@
     "pt-BR": "A arte das cartas de BT27 não mostra mais margens brancas.",
     "es": "El arte de las cartas de BT27 ya no muestra márgenes blancos.",
     "it": "Le illustrazioni delle carte BT27 non mostrano più margini bianchi."
+  },
+  "releases.1.35.1-beta.summary": {
+    "en": "Clearer prompts for reveal effects, plus card and room fixes.",
+    "pt-BR": "Prompts mais claros para efeitos de revelar, além de correções de cartas e de salas.",
+    "es": "Indicaciones más claras para los efectos de revelar, además de correcciones de cartas y de salas.",
+    "it": "Richieste più chiare per gli effetti che rivelano carte, oltre a correzioni di carte e stanze."
+  },
+  "releases.1.35.1-beta.fix.revealPrompts": {
+    "en": "Reveal effects that add several kinds of cards, such as Gatomon (ST10-04), now show which kind each choice is for.",
+    "pt-BR": "Efeitos de revelar que adicionam vários tipos de carta, como Gatomon (ST10-04), agora mostram para qual tipo é cada escolha.",
+    "es": "Los efectos de revelar que añaden varios tipos de cartas, como Gatomon (ST10-04), ahora muestran para qué tipo es cada elección.",
+    "it": "Gli effetti che rivelano carte e ne aggiungono di più tipi, come Gatomon (ST10-04), ora mostrano a quale tipo si riferisce ogni scelta."
+  },
+  "releases.1.35.1-beta.fix.artsDigivolve": {
+    "en": "A Digimon that Arts Digivolves into Imperialdramon: Fighter Mode (AD1-024) no longer returns to the bottom of the deck.",
+    "pt-BR": "Um Digimon que faz Arts Digivolve em Imperialdramon: Fighter Mode (AD1-024) não volta mais para o fundo do deck.",
+    "es": "Un Digimon que hace Arts Digivolve en Imperialdramon: Fighter Mode (AD1-024) ya no vuelve al fondo del mazo.",
+    "it": "Un Digimon che fa Arts Digivolve in Imperialdramon: Fighter Mode (AD1-024) non torna più in fondo al mazzo."
+  },
+  "releases.1.35.1-beta.fix.digiXrosReduction": {
+    "en": "DigiXros plays such as DarknessBagramon (EX10-059) now count Yuu Amano's (BT10-093) cost reduction before checking memory.",
+    "pt-BR": "Jogadas com DigiXros, como DarknessBagramon (EX10-059), agora contam a redução de custo de Yuu Amano (BT10-093) antes de verificar a memória.",
+    "es": "Las jugadas con DigiXros, como DarknessBagramon (EX10-059), ahora cuentan la reducción de coste de Yuu Amano (BT10-093) antes de comprobar la memoria.",
+    "it": "Le giocate con DigiXros, come DarknessBagramon (EX10-059), ora contano la riduzione di costo di Yuu Amano (BT10-093) prima di controllare la memoria."
+  },
+  "releases.1.35.1-beta.fix.scourgeChiropmon": {
+    "en": "ScourgeChiropmon (BT27-080) and similar cards now offer their [Hand] effect only when it can be done.",
+    "pt-BR": "ScourgeChiropmon (BT27-080) e cartas parecidas agora só oferecem o efeito de [Mão] quando ele pode ser realizado.",
+    "es": "ScourgeChiropmon (BT27-080) y cartas parecidas ahora solo ofrecen su efecto de [Mano] cuando se puede realizar.",
+    "it": "ScourgeChiropmon (BT27-080) e carte simili ora offrono il loro effetto [Mano] solo quando è possibile eseguirlo."
+  },
+  "releases.1.35.1-beta.fix.rejectedJoin": {
+    "en": "A room no longer breaks when a player tries to join with a deck that isn't legal in that format.",
+    "pt-BR": "Uma sala não quebra mais quando um jogador tenta entrar com um deck que não é válido naquele formato.",
+    "es": "Una sala ya no falla cuando un jugador intenta entrar con un mazo que no es legal en ese formato.",
+    "it": "Una stanza non si blocca più quando un giocatore prova a entrare con un mazzo non valido in quel formato."
   }
 }
