@@ -5,6 +5,8 @@ import { BLUE_DECK, RED_DECK, type Decklist } from "../engine/testDecks.js";
 import { BotPlayer } from "./BotPlayer.js";
 import { createEvaluationPolicy, type BotPolicy } from "./policy.js";
 import { resolveBotProfile, type BotProfile, type BotProfileName } from "./profiles.js";
+import { createMatchReplayRecorder, type MatchReplayCursor } from "#api/bot/createMatchReplayRecorder";
+import type { ReplayRecord } from "#api/replays/inputs/types";
 import "../cards/index.js";
 
 /**
@@ -22,7 +24,11 @@ export interface SeatConfig {
   policy?: BotPolicy<Intent | Promise<Intent>>;
   policyTimeoutMs?: number;
   /** Server-side adapter construction; only its explicit observation crosses the policy bridge. */
-  policyFactory?: (engine: GameEngine, seat: Seat) => BotPolicy<Intent | Promise<Intent>>;
+  policyFactory?: (
+    engine: GameEngine,
+    seat: Seat,
+    replay: MatchReplayCursor | undefined,
+  ) => BotPolicy<Intent | Promise<Intent>>;
   canChooseMainAction?: (engine: GameEngine) => boolean;
   maxMainPhaseActions?: number;
   deck?: Decklist;
@@ -44,6 +50,7 @@ export interface MatchOptions {
   measureDecisionLatencies?: boolean;
   /** Decode both client projections after each action and check hidden zones. */
   verifyProjections?: boolean;
+  recordReplay?: boolean;
 }
 
 export interface SeatStats {
@@ -79,6 +86,7 @@ export interface MatchResult {
   seats: [SeatStats, SeatStats];
   /** Present only when `captureEvents` was requested; avoids retaining large traces in benchmarks. */
   events?: ServerEvent[];
+  replay?: ReplayRecord;
 }
 
 const DEFAULT_TURN_LIMIT = 60;
@@ -145,6 +153,9 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
   let checkProjections: (() => void) | undefined;
   let projectionChecks = 0;
   let acceptedActions = 0;
+  const recorder = options.recordReplay
+    ? createMatchReplayRecorder({ seed: options.seed, firstSeat: options.firstSeat, state })
+    : undefined;
 
   const engine = new GameEngine(state, {
     omitHandAffordances: options.omitHandAffordances,
@@ -157,6 +168,7 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
       bots[seat]?.onActionSettled(intentType);
     },
     emit: (event: ServerEvent) => {
+      recorder?.noteEvent();
       if (closed) return;
       if (events !== undefined && (options.captureEventFilter?.(event) ?? true)) events.push(structuredClone(event));
       recordEvent(event, state, stats);
@@ -188,7 +200,9 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
             )?.topCard?.cardId
           : undefined;
       try {
-        const result = engine.applyIntent(seat, intent);
+        const result = recorder
+          ? recorder.applyIntent(seat, intent, () => engine.applyIntent(seat, intent))
+          : engine.applyIntent(seat, intent);
         if (result.ok) acceptedActions++;
         checkProjections?.();
         if (!result.ok)
@@ -210,7 +224,7 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
     };
     const seed = options.seed + seat * 7919;
     const policy =
-      config.policyFactory?.(engine, seat) ??
+      config.policyFactory?.(engine, seat, recorder?.cursor) ??
       config.policy ??
       createEvaluationPolicy({ profile: resolveBotProfile(config.profile), seed });
     bots[seat] = new BotPlayer(seat, state, send, {
@@ -228,14 +242,15 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
     });
   }
 
-  engine.seatPlayer(0, "bot-0", {
-    displayName: stats[0].label,
-    deck: options.seats[0].deck ?? RED_DECK,
-  });
-  engine.seatPlayer(1, "bot-1", {
-    displayName: stats[1].label,
-    deck: options.seats[1].deck ?? BLUE_DECK,
-  });
+  for (const seat of [0, 1] as const) {
+    const deck = options.seats[seat].deck ?? (seat === 0 ? RED_DECK : BLUE_DECK);
+    const seatPlayer = () => engine.seatPlayer(seat, `bot-${seat}`, { displayName: stats[seat].label, deck });
+    if (recorder) {
+      recorder.seatPlayer(seat, deck, seatPlayer);
+    } else {
+      seatPlayer();
+    }
+  }
   if (options.verifyProjections) {
     const encoder = new Encoder(state);
     const targets = ([0, 1] as const).map((seat) => ({
@@ -292,7 +307,11 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
       }
     };
   }
-  engine.startMatch();
+  if (recorder) {
+    recorder.startMatch(() => engine.startMatch());
+  } else {
+    engine.startMatch();
+  }
   checkProjections?.();
 
   // Drive the cooperative loop: every bot action is scheduled on the macrotask queue, so
@@ -351,6 +370,7 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
     ...(options.verifyProjections ? { projectionChecks } : {}),
     seats: stats,
     ...(events ? { events } : {}),
+    ...(recorder ? { replay: recorder.buildRecord() } : {}),
   };
 }
 
