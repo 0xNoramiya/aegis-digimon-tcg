@@ -278,10 +278,12 @@ function peekSummary(
         effectTextPart: body.effectTextPart,
         ...(body.isInherited ? { isInherited: body.isInherited } : {}),
       });
+    let label = (body.timing ? TIMING_LABELS[body.timing] : undefined) ?? t("overlay.effect");
+    if (body.manualSignalText) {
+      label = t("manual.signal.title");
+    }
     return {
-      label: body.manualSignalText
-        ? t("manual.signal.title")
-        : ((body.timing ? TIMING_LABELS[body.timing] : undefined) ?? t("overlay.effect")),
+      label,
       name: `${cardDisplayName(body.cardId, t)}${body.count !== undefined && body.count > 1 ? ` ×${body.count}` : ""}`,
       tone: "effect",
       cardId: body.cardId,

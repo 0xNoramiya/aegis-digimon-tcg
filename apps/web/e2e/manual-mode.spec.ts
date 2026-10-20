@@ -161,8 +161,8 @@ test.describe("manual table", () => {
     await expect(markerInput).toHaveValue("Custom reminder");
     await markerInput.fill("Security +1");
     await cardDialog.getByRole("button", { name: "Set marker", exact: true }).click();
-    await expect(page.locator(".game-permanent-manual-marker")).toHaveText("Security +1");
-    await expect(second.locator(".game-permanent-manual-marker")).toHaveText("Security +1");
+    await expect(page.locator(".game-keyword-badges")).toHaveAttribute("aria-label", /Security \+1/);
+    await expect(second.locator(".game-keyword-badges")).toHaveAttribute("aria-label", /Security \+1/);
     await cardDialog.getByRole("button", { name: "Suspend", exact: true }).click();
     await expect(cardDialog.getByRole("button", { name: "Unsuspend", exact: true })).toBeVisible();
     await cardDialog.getByRole("button", { name: "Close", exact: true }).click();
@@ -209,16 +209,25 @@ test.describe("manual table", () => {
           await expect(cardDialog.locator('[data-role="top"]')).toBeVisible();
           await cardDialog.getByText("DP and markers", { exact: true }).click();
           await expect(cardDialog.getByLabel("Marker", { exact: true })).toHaveValue("Security +1");
-          await page.screenshot({ path: test.info().outputPath(`manual-card-dialog-${dark ? "dark" : "light"}.png`) });
+          await page.screenshot({
+            animations: "disabled",
+            path: test.info().outputPath(`manual-card-dialog-${dark ? "dark" : "light"}.png`),
+          });
           await cardDialog.getByRole("button", { name: "Close", exact: true }).click();
           const tableToggle = page.getByRole("button", { name: "Manual table", exact: true });
           if ((await tableToggle.getAttribute("aria-expanded")) === "false") await tableToggle.click();
           await page.getByRole("button", { name: "Piles", exact: true }).click();
           await expect(page.getByRole("button", { name: "Recover from deck", exact: true })).toBeVisible();
-          await page.screenshot({ path: test.info().outputPath(`manual-piles-${dark ? "dark" : "light"}.png`) });
+          await page.screenshot({
+            animations: "disabled",
+            path: test.info().outputPath(`manual-piles-${dark ? "dark" : "light"}.png`),
+          });
           await page.getByRole("button", { name: "Cards", exact: true }).click();
         }
-        await page.screenshot({ path: test.info().outputPath(`manual-${width}-${dark ? "dark" : "light"}.png`) });
+        await page.screenshot({
+          animations: "disabled",
+          path: test.info().outputPath(`manual-${width}-${dark ? "dark" : "light"}.png`),
+        });
       }
     }
   });
@@ -265,7 +274,7 @@ test.describe("manual table", () => {
         }),
       )
       .toEqual({ security: 2, keywords: ["Blocker", "Rush"], colors: ["Red"] });
-    await page.screenshot({ path: test.info().outputPath("manual-structured-modifiers.png") });
+    await page.screenshot({ animations: "disabled", path: test.info().outputPath("manual-structured-modifiers.png") });
     await editor.getByRole("button", { name: "Close", exact: true }).click();
     await page.getByRole("button", { name: "Request undo", exact: true }).click();
     await second.getByRole("button", { name: "Accept", exact: true }).click();
@@ -338,10 +347,12 @@ test.describe("manual table", () => {
     await expect(page.getByRole("button", { name: "Continue", exact: true })).toHaveCount(0);
     for (const width of [390, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
+      await page.getByRole("button", { name: "End attack", exact: true }).scrollIntoViewIfNeeded();
       for (const dark of [false, true]) {
         await page.evaluate((enabled) => document.documentElement.classList.toggle("dark", enabled), dark);
         expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
         await page.screenshot({
+          animations: "disabled",
           path: test.info().outputPath(`manual-combat-${width}-${dark ? "dark" : "light"}.png`),
         });
       }
@@ -368,6 +379,186 @@ test.describe("manual table", () => {
     await secondEditor.getByText("DP and markers", { exact: true }).click();
     await secondEditor.getByRole("button", { name: "Remove token", exact: true }).click();
     await expect.poll(() => page.evaluate(() => window.browserTestSnapshot().players[1].battleArea.length)).toBe(0);
+    expect(errors).toEqual([]);
+  });
+
+  test("signals effects, resets visual changes and restarts only by agreement", async ({ page, context }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    const second = await context.newPage();
+    second.on("pageerror", (error) => errors.push(error.message));
+    await openPlayer(page, "First");
+    await openPlayer(second, "Second");
+    await prepare(page, second);
+    const firstHand = await page.evaluate(() => window.browserTestSnapshot().players[0].hand[0].instanceId);
+    await page.getByLabel("Card or pile", { exact: true }).selectOption(firstHand);
+    await page.getByRole("button", { name: "Place on field", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().players[0].battleArea.length)).toBe(1);
+    await page.locator('[data-drop="perm-you"]').click();
+    const editor = page.getByRole("dialog");
+    await editor.getByText("DP and markers", { exact: true }).click();
+    const inspectorQuickActions = editor.getByRole("region", { name: "Quick actions", exact: true });
+    await expect(inspectorQuickActions).toBeVisible();
+    await expect(inspectorQuickActions.getByRole("button", { name: "Move to trash", exact: true })).toHaveCount(1);
+    await editor.getByRole("button", { name: "Sick", exact: true }).click();
+    await editor.getByRole("button", { name: "Immune", exact: true }).click();
+    await editor.getByRole("button", { name: "Suspend", exact: true }).click();
+    await editor.getByRole("button", { name: "Increase DP by 1000", exact: true }).click();
+    await expect
+      .poll(() => second.evaluate(() => window.browserTestSnapshot().players[0].battleArea[0].manualStatuses))
+      .toEqual(["sick", "immune"]);
+    await editor.getByRole("button", { name: "Reset modifiers", exact: true }).click();
+    await expect
+      .poll(() =>
+        second.evaluate(() => {
+          const permanent = window.browserTestSnapshot().players[0].battleArea[0];
+          return {
+            statuses: permanent.manualStatuses,
+            suspended: permanent.isSuspended,
+            dp: permanent.currentDP,
+            base: permanent.baseDP,
+          };
+        }),
+      )
+      .toMatchObject({ statuses: [], suspended: true });
+    expect(
+      await page.evaluate(() => {
+        const permanent = window.browserTestSnapshot().players[0].battleArea[0];
+        return permanent.currentDP === permanent.baseDP;
+      }),
+    ).toBe(true);
+    await editor.getByRole("button", { name: "Training: add deck top as source", exact: true }).click();
+    await expect
+      .poll(() => second.evaluate(() => window.browserTestSnapshot().players[0].battleArea[0].stack.length))
+      .toBe(1);
+    expect(await page.evaluate(() => window.browserTestSnapshot().players[0].deckCount)).toBe(39);
+    await editor.getByRole("button", { name: "Close", exact: true }).click();
+    const trainingSourceId = await page.evaluate(
+      () => window.browserTestSnapshot().players[0].battleArea[0].stack[0].instanceId,
+    );
+    await page.getByLabel("Card or pile", { exact: true }).selectOption(trainingSourceId);
+    await page.getByRole("button", { name: "Move to trash", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().players[0].trash.length)).toBe(1);
+    await page.getByRole("button", { name: "Piles", exact: true }).click();
+    await page.getByLabel("Number of cards to reveal", { exact: true }).fill("1");
+    await page.getByRole("button", { name: "Reveal cards", exact: true }).click();
+    const gallery = page.getByRole("region", { name: "Revealed cards", exact: true });
+    await expect(gallery.getByRole("button", { name: "Move revealed card", exact: true })).toHaveCount(1);
+    await expect(second.getByRole("button", { name: "Move revealed card", exact: true })).toHaveCount(0);
+    await gallery.getByLabel("Reveal destination", { exact: true }).selectOption("hand");
+    await gallery.getByRole("button", { name: "Move revealed card", exact: true }).click();
+    await expect.poll(() => page.evaluate(() => window.browserTestSnapshot().players[0].handCount)).toBe(5);
+    await page.getByRole("button", { name: "Turn", exact: true }).click();
+    const signalSource = await page.evaluate(() => window.browserTestSnapshot().players[0].hand[0]);
+    await page.getByLabel("Effect source", { exact: true }).selectOption(signalSource.instanceId);
+    await page.getByLabel("Effect target", { exact: true }).selectOption("seat:1");
+    await page.getByRole("button", { name: "Signal effect", exact: true }).click();
+    await expect
+      .poll(() =>
+        second.evaluate(() => ({
+          card: window.browserTestSnapshot().manual.signalCardId,
+          target: window.browserTestSnapshot().manual.signalTargetSeat,
+        })),
+      )
+      .toEqual({ card: signalSource.cardId, target: 1 });
+    expect(await second.evaluate(() => window.browserTestSnapshot().players[0].hand?.length ?? 0)).toBe(0);
+    const ownEffectToast = page.getByTestId("match-notice").filter({ hasText: "First signals an effect" });
+    const opponentEffectToast = second.getByTestId("match-notice").filter({ hasText: "First signals an effect" });
+    await expect(ownEffectToast).toHaveAttribute("data-side", "you");
+    await expect(opponentEffectToast).toHaveAttribute("data-side", "opp");
+    await expect(opponentEffectToast).toContainText("Effect target: Second");
+    await ownEffectToast.locator(".match-notice__thumb > [data-state]").click();
+    const signalCardDialog = page.getByRole("dialog");
+    await expect(signalCardDialog).toBeVisible();
+    await signalCardDialog.getByRole("button", { name: "Close", exact: true }).click();
+
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const dark of [false, true]) {
+        await page.evaluate((enabled) => document.documentElement.classList.toggle("dark", enabled), dark);
+        await page.screenshot({
+          animations: "disabled",
+          path: test.info().outputPath(`manual-signal-${width}-${dark ? "dark" : "light"}.png`),
+        });
+      }
+    }
+    await second.getByRole("button", { name: "Turn", exact: true }).click();
+    await expect(second.getByRole("button", { name: "Clear my effect signal", exact: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Clear my effect signal", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().manual.signalSeat)).toBe(-1);
+    const fieldId = await page.evaluate(() => window.browserTestSnapshot().players[0].battleArea[0].permanentId);
+    await page.getByLabel("Effect source", { exact: true }).selectOption(fieldId);
+    await page.getByLabel("Effect target", { exact: true }).selectOption(fieldId);
+    await page.getByRole("button", { name: "Signal effect", exact: true }).click();
+    await expect
+      .poll(() =>
+        second.evaluate(() => ({
+          source: window.browserTestSnapshot().manual.signalPermanentId,
+          target: window.browserTestSnapshot().manual.signalTargetPermanentId,
+        })),
+      )
+      .toEqual({ source: fieldId, target: fieldId });
+    await page.getByRole("button", { name: "Cards", exact: true }).click();
+    await page.getByLabel("Card or pile", { exact: true }).selectOption(firstHand);
+    await page.getByRole("button", { name: "Move to trash", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().manual.signalSeat)).toBe(-1);
+    await page.getByRole("button", { name: "Match", exact: true }).click();
+    await page.getByLabel("First player after restart", { exact: true }).selectOption("1");
+    await page.getByRole("button", { name: "Propose restart", exact: true }).click();
+    await expect(second.getByRole("button", { name: "Accept restart", exact: true })).toBeVisible();
+    await expect(second.getByRole("button", { name: "Draw", exact: true }).first()).toBeDisabled();
+    for (const width of [390, 1440]) {
+      await second.setViewportSize({ width, height: 1000 });
+      for (const dark of [false, true]) {
+        await second.evaluate((enabled) => document.documentElement.classList.toggle("dark", enabled), dark);
+        await second.screenshot({
+          animations: "disabled",
+          path: test.info().outputPath(`manual-restart-${width}-${dark ? "dark" : "light"}.png`),
+        });
+      }
+    }
+    await second.getByRole("button", { name: "Decline", exact: true }).click();
+    await expect.poll(() => page.evaluate(() => window.browserTestSnapshot().manual.restartRequester)).toBe(-1);
+    await page.getByRole("button", { name: "Propose restart", exact: true }).click();
+    await page.getByRole("button", { name: "Cancel restart", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().manual.restartRequester)).toBe(-1);
+    await page.getByRole("button", { name: "Propose restart", exact: true }).click();
+    await second.getByRole("button", { name: "Accept restart", exact: true }).click();
+    for (const player of [second, page]) {
+      await player.getByRole("button", { name: "Keep hand", exact: true }).click();
+    }
+    await expect
+      .poll(() =>
+        page.evaluate(() => ({
+          turn: window.browserTestSnapshot().turnSeat,
+          count: window.browserTestSnapshot().manual.restartCount,
+          phase: window.browserTestSnapshot().manual.turnPhase,
+        })),
+      )
+      .toEqual({ turn: 1, count: 1, phase: "Main" });
+    await expect
+      .poll(() =>
+        page.evaluate(() => ({
+          turnCount: window.browserTestSnapshot().turnCount,
+          security: window.browserTestSnapshot().players.map((player) => player.securityCount),
+        })),
+      )
+      .toEqual({ turnCount: 1, security: [5, 5] });
+    const restarted = await page.evaluate(() => window.browserTestSnapshot());
+    expect(
+      restarted.players.map((player) => ({
+        hand: player.handCount,
+        security: player.securityCount,
+        deck: player.deckCount,
+        field: player.battleArea.length,
+        trash: player.trash.length,
+      })),
+    ).toEqual([
+      { hand: 5, security: 5, deck: 40, field: 0, trash: 0 },
+      { hand: 5, security: 5, deck: 40, field: 0, trash: 0 },
+    ]);
+    expect(restarted.manual.signalSeat).toBe(-1);
+    expect(restarted.manual.revealedJson).toBe("[]");
     expect(errors).toEqual([]);
   });
 });

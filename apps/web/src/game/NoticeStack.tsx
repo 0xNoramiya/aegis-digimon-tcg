@@ -75,9 +75,10 @@ function EffectNoticeBody({
 }) {
   const { t } = useTranslation();
   const clause = manualSignalText ?? noticeEffectClause({ cardId, timing, description, effectTextPart, isInherited });
-  const label = manualSignalText
-    ? t("manual.signal.title")
-    : ((timing ? TIMING_LABELS[timing] : undefined) ?? t("overlay.effect"));
+  let label = (timing ? TIMING_LABELS[timing] : undefined) ?? t("overlay.effect");
+  if (manualSignalText) {
+    label = t("manual.signal.title");
+  }
   /* The clause prints its own timing in brackets and the art says which card raised it, so
      with a clause on screen the label and the name only repeat what is already there. They
      stay in the DOM — the name is how a keyboard and a screen reader open the card — and a

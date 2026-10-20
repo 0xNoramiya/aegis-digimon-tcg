@@ -73,6 +73,6 @@
 
 @media (max-width: 600px) {
   .manual-public-status:has(.manual-features__gallery) {
-    max-block-size: 34dvh;
+    max-block-size: 44dvh;
   }
 }
