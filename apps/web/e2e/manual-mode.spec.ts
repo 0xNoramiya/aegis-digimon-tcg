@@ -1,0 +1,373 @@
+import { expect, test, type Page } from "@playwright/test";
+import { RED_DECK, BLUE_DECK } from "../../api/dist/engine/testDecks.js";
+import { startManualBrowserServer } from "./startManualBrowserServer";
+import type {} from "./harness";
+
+test.describe("manual table", () => {
+  let server: Awaited<ReturnType<typeof startManualBrowserServer>>;
+  test.beforeAll(async () => {
+    server = await startManualBrowserServer();
+  });
+  test.afterAll(async () => {
+    await server.close();
+  });
+
+  async function openPlayer(page: Page, name: string, privateCode?: string) {
+    await page.addInitScript(
+      ({ playerName, deck, code }) => {
+        localStorage.setItem("aegis:locale", "en");
+        window.browserTestOptions = {
+          displayName: playerName,
+          deck,
+          seed: 0,
+          gameMode: "manual",
+          betaBattleMode: true,
+          matchTimer: false,
+        };
+        window.browserTestMode = code === "create" ? "private_host" : code ? "private_guest" : "casual";
+        window.browserTestRoomCode = code === "create" ? undefined : code;
+      },
+      { playerName: name, deck: name === "First" ? RED_DECK : BLUE_DECK, code: privateCode },
+    );
+    await page.goto("/e2e/harness.html");
+  }
+
+  async function prepare(first: Page, second: Page) {
+    await expect
+      .poll(async () => {
+        const firstReady = await first.getByRole("button", { name: "First", exact: true }).isVisible();
+        const secondReady = await second.getByRole("button", { name: "First", exact: true }).isVisible();
+        return firstReady || secondReady;
+      })
+      .toBe(true);
+    const chooser = (await first.getByRole("button", { name: "First", exact: true }).isVisible()) ? first : second;
+    await chooser.getByRole("button", { name: "First", exact: true }).click();
+    await first.getByRole("button", { name: "Keep hand", exact: true }).click();
+    await second.getByRole("button", { name: "Keep hand", exact: true }).click();
+    for (const page of [first, second]) {
+      await expect.poll(() => page.evaluate(() => window.browserTestSnapshot().turnCount)).toBe(1);
+      await page.getByRole("button", { name: "Manual table", exact: false }).click();
+      await expect(page.getByRole("button", { name: "Draw", exact: true })).toBeEnabled();
+    }
+  }
+
+  test("plays out of turn, protects searches, reconnects and agrees to undo", async ({ page, context }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    const second = await context.newPage();
+    second.on("pageerror", (error) => errors.push(error.message));
+    await openPlayer(page, "First");
+    await openPlayer(second, "Second");
+    await prepare(page, second);
+    await second.getByRole("button", { name: "Draw", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().players[1].handCount)).toBe(6);
+    await expect.poll(() => page.evaluate(() => window.browserTestSnapshot().players[1].handCount)).toBe(6);
+    await second.getByRole("button", { name: "Piles", exact: true }).click();
+    await second.getByRole("button", { name: "Search pile", exact: true }).click();
+    await second.getByRole("button", { name: "Cards", exact: true }).click();
+    await expect(second.getByLabel("Card or pile")).toContainText("Look at top cards");
+    expect(await page.evaluate(() => window.browserTestSnapshot().players[1].manualInspectionJson ?? "[]")).toBe("[]");
+    await second.reload();
+    await second.getByRole("button", { name: "Manual table", exact: false }).click();
+    await expect(second.getByLabel("Card or pile")).toContainText("Look at top cards");
+    await second.getByRole("button", { name: "Piles", exact: true }).click();
+    await second.getByRole("button", { name: "Close inspection", exact: true }).click();
+    await second.getByRole("button", { name: "Cards", exact: true }).click();
+    const cards = await second
+      .getByLabel("Card or pile")
+      .locator("option")
+      .evaluateAll((options) =>
+        options.map((option) => ({ value: (option as HTMLOptionElement).value, text: option.textContent ?? "" })),
+      );
+    const hand = cards.find((option) => option.text.startsWith("Hand ·"))!;
+    await second.getByLabel("Card or pile").selectOption(hand.value);
+    await second.getByLabel("Destination", { exact: true }).selectOption("battleArea");
+    await second.getByRole("button", { name: "Move", exact: true }).click();
+    await expect.poll(() => page.evaluate(() => window.browserTestSnapshot().players[1].battleArea.length)).toBe(1);
+    const permanentId = await second.evaluate(() => window.browserTestSnapshot().players[1].battleArea[0].permanentId);
+    await expect(second.locator(`[data-drop="perm-you"][data-id="${permanentId}"]`)).toBeVisible();
+    await expect(page.locator(`[data-drop="perm-opp"][data-id="${permanentId}"]`)).toBeVisible();
+    await second.getByRole("button", { name: "Request undo", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Accept", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Accept", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().players[1].battleArea.length)).toBe(0);
+    await page.getByRole("button", { name: "Turn", exact: true }).click();
+    await page.getByLabel("Memory for the active player").fill("-5");
+    await page.getByRole("button", { name: "Set memory", exact: true }).click();
+    await expect.poll(() => page.evaluate(() => window.browserTestSnapshot().memory)).toBe(-5);
+    await page.getByRole("button", { name: "Pass turn", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().turnSeat)).toBe(1);
+    expect(await second.evaluate(() => window.browserTestSnapshot().memory)).toBe(5);
+    await second.getByRole("button", { name: "Match", exact: true }).click();
+    await second.getByRole("button", { name: "Propose result", exact: true }).click();
+    await page.getByRole("button", { name: "Accept", exact: true }).click();
+    await expect.poll(() => page.evaluate(() => window.browserTestSnapshot().gameOver)).toBe(true);
+    expect(errors).toEqual([]);
+  });
+
+  test("joins a private manual room through the production lookup route", async ({ page, context }) => {
+    await openPlayer(page, "First", "create");
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          typeof window.browserTestSnapshot === "function" ? window.browserTestSnapshot().roomCode : "",
+        ),
+      )
+      .toMatch(/^[A-Z0-9]{6}$/);
+    const code = await page.evaluate(() => window.browserTestSnapshot().roomCode);
+    const second = await context.newPage();
+    await openPlayer(second, "Second", code);
+    await prepare(page, second);
+    expect(await second.evaluate(() => window.browserTestSnapshot().gameMode)).toBe("manual");
+    await page.getByRole("button", { name: "Piles", exact: true }).click();
+    await page.getByRole("button", { name: "Recover from deck", exact: true }).click();
+    await expect.poll(() => page.evaluate(() => window.browserTestSnapshot().players[0].securityCount)).toBe(6);
+    await page.getByRole("button", { name: "Trash deck top", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().players[0].trash.length)).toBe(1);
+    await page.getByRole("button", { name: "Reveal security top", exact: true }).click();
+    await expect
+      .poll(() => second.evaluate(() => JSON.parse(window.browserTestSnapshot().manual.revealedJson).length))
+      .toBe(1);
+    await page.getByRole("button", { name: "Cards", exact: true }).click();
+    const handOption = await page
+      .getByLabel("Card or pile")
+      .locator("option")
+      .evaluateAll((options) =>
+        options.find((option) => option.textContent?.startsWith("Hand ·"))?.getAttribute("value"),
+      );
+    await page.getByLabel("Card or pile").selectOption(handOption!);
+    await page.getByRole("button", { name: "Move", exact: true }).click();
+    await page.locator('[data-drop="perm-you"]').click();
+    const cardDialog = page.getByRole("dialog");
+    await expect(cardDialog).toHaveClass(/arena-permanent-inspector/);
+    await expect(cardDialog.locator('[data-role="top"]')).toBeVisible();
+    await cardDialog.getByText("DP and markers", { exact: true }).click();
+    await expect(cardDialog.getByRole("button", { name: "Increase DP by 1000", exact: true })).toBeVisible();
+    const originalDp = await page.evaluate(() => window.browserTestSnapshot().players[0].battleArea[0].currentDP);
+    await cardDialog.getByRole("button", { name: "Increase DP by 1000", exact: true }).click();
+    await expect
+      .poll(() => second.evaluate(() => window.browserTestSnapshot().players[0].battleArea[0].currentDP))
+      .toBe(originalDp + 1000);
+    const markerInput = cardDialog.getByLabel("Marker", { exact: true });
+    const suggestionsId = await markerInput.getAttribute("list");
+    expect(suggestionsId).toBeTruthy();
+    const suggestions = await markerInput.evaluate((input) =>
+      Array.from((document.getElementById(input.getAttribute("list")!) as HTMLDataListElement).options).map(
+        (option) => option.value,
+      ),
+    );
+    expect(suggestions).toEqual(expect.arrayContaining(["Blocker", "Security +1"]));
+    await markerInput.fill("Custom reminder");
+    await expect(markerInput).toHaveValue("Custom reminder");
+    await markerInput.fill("Security +1");
+    await cardDialog.getByRole("button", { name: "Set marker", exact: true }).click();
+    await expect(page.locator(".game-permanent-manual-marker")).toHaveText("Security +1");
+    await expect(second.locator(".game-permanent-manual-marker")).toHaveText("Security +1");
+    await cardDialog.getByRole("button", { name: "Suspend", exact: true }).click();
+    await expect(cardDialog.getByRole("button", { name: "Unsuspend", exact: true })).toBeVisible();
+    await cardDialog.getByRole("button", { name: "Close", exact: true }).click();
+    await page.locator('[data-drop="perm-you"]').click();
+    await cardDialog.getByText("DP and markers", { exact: true }).click();
+    await expect(cardDialog.getByLabel("Marker", { exact: true })).toHaveValue("Security +1");
+    await cardDialog.getByRole("button", { name: "Close", exact: true }).click();
+    const panel = page.getByTestId("manual-table");
+    const handle = page.getByRole("button", { name: "Move control panel", exact: true });
+    const beforeDrag = (await panel.boundingBox())!;
+    const grip = (await handle.boundingBox())!;
+    await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(grip.x + grip.width / 2 - 90, grip.y + grip.height / 2 + 40, { steps: 6 });
+    await page.mouse.up();
+    await expect.poll(async () => (await panel.boundingBox())!.x).toBeCloseTo(beforeDrag.x - 90, 0);
+    await handle.press("Home");
+    await expect.poll(async () => (await panel.boundingBox())!.x).toBeCloseTo(beforeDrag.x, 0);
+    await handle.press("ArrowLeft");
+    await expect.poll(async () => (await panel.boundingBox())!.x).toBeCloseTo(beforeDrag.x - 16, 0);
+    await handle.press("Home");
+    await page.setViewportSize({ width: 1000, height: 350 });
+    await handle.press("Home");
+    await expect
+      .poll(async () => {
+        const bounds = (await panel.boundingBox())!;
+        return bounds.y + bounds.height;
+      })
+      .toBeLessThanOrEqual(342);
+    for (const width of [320, 768, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const dark of [false, true]) {
+        await page.evaluate((enabled) => document.documentElement.classList.toggle("dark", enabled), dark);
+        await expect(page.getByRole("button", { name: "Draw", exact: true })).toBeVisible();
+        const bounds = await page.getByTestId("manual-table").boundingBox();
+        expect(bounds).not.toBeNull();
+        expect(bounds!.x).toBeGreaterThanOrEqual(0);
+        expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
+        if (width === 320) {
+          expect(bounds!.height).toBeLessThan(650);
+          await page.getByRole("button", { name: "Manual table", exact: true }).click();
+          await page.locator('[data-drop="perm-you"]').click();
+          await expect(cardDialog).toHaveClass(/arena-permanent-inspector/);
+          await expect(cardDialog.locator('[data-role="top"]')).toBeVisible();
+          await cardDialog.getByText("DP and markers", { exact: true }).click();
+          await expect(cardDialog.getByLabel("Marker", { exact: true })).toHaveValue("Security +1");
+          await page.screenshot({ path: test.info().outputPath(`manual-card-dialog-${dark ? "dark" : "light"}.png`) });
+          await cardDialog.getByRole("button", { name: "Close", exact: true }).click();
+          const tableToggle = page.getByRole("button", { name: "Manual table", exact: true });
+          if ((await tableToggle.getAttribute("aria-expanded")) === "false") await tableToggle.click();
+          await page.getByRole("button", { name: "Piles", exact: true }).click();
+          await expect(page.getByRole("button", { name: "Recover from deck", exact: true })).toBeVisible();
+          await page.screenshot({ path: test.info().outputPath(`manual-piles-${dark ? "dark" : "light"}.png`) });
+          await page.getByRole("button", { name: "Cards", exact: true }).click();
+        }
+        await page.screenshot({ path: test.info().outputPath(`manual-${width}-${dark ? "dark" : "light"}.png`) });
+      }
+    }
+  });
+  test("synchronizes modifiers, tokens, reveals, faces and manual combat steps", async ({ page, context }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    const second = await context.newPage();
+    second.on("pageerror", (error) => errors.push(error.message));
+    await openPlayer(page, "First");
+    await openPlayer(second, "Second");
+    await prepare(page, second);
+    for (const player of [page, second]) {
+      await player.getByRole("button", { name: "Piles", exact: true }).click();
+      await player.getByLabel("Token", { exact: true }).selectOption("TOKEN-Diaboromon-Token");
+      await player.getByRole("button", { name: "Create token", exact: true }).click();
+    }
+    await expect
+      .poll(() => page.evaluate(() => window.browserTestSnapshot().players.map((player) => player.battleArea.length)))
+      .toEqual([1, 1]);
+    const blockerId = await second.evaluate(() => window.browserTestSnapshot().players[1].battleArea[0].permanentId);
+    await page.locator('[data-drop="perm-you"]').click();
+    const editor = page.getByRole("dialog");
+    await editor.getByText("DP and markers", { exact: true }).click();
+    await editor.getByRole("button", { name: "Increase Security Attack", exact: true }).click();
+    await editor.getByRole("button", { name: "Increase Security Attack", exact: true }).click();
+    await editor.getByText(/^Keywords ·/).click();
+    const keywords = editor.getByRole("group", { name: "Keywords", exact: true });
+    await keywords.getByRole("button", { name: "Blocker", exact: true }).click();
+    await keywords.getByRole("button", { name: "Rush", exact: true }).click();
+    await editor
+      .getByRole("group", { name: "Colors", exact: true })
+      .getByRole("button", { name: "Red", exact: true })
+      .click();
+    await editor.getByRole("button", { name: "Apply modifiers", exact: true }).click();
+    await expect
+      .poll(() =>
+        second.evaluate(() => {
+          const permanent = window.browserTestSnapshot().players[0].battleArea[0];
+          return {
+            security: permanent.securityAttackModifier,
+            keywords: permanent.keywords,
+            colors: permanent.originalColorsOverride,
+          };
+        }),
+      )
+      .toEqual({ security: 2, keywords: ["Blocker", "Rush"], colors: ["Red"] });
+    await page.screenshot({ path: test.info().outputPath("manual-structured-modifiers.png") });
+    await editor.getByRole("button", { name: "Close", exact: true }).click();
+    await page.getByRole("button", { name: "Request undo", exact: true }).click();
+    await second.getByRole("button", { name: "Accept", exact: true }).click();
+    await expect
+      .poll(() => page.evaluate(() => window.browserTestSnapshot().players[0].battleArea[0].securityAttackModifier))
+      .toBe(0);
+    await page.getByLabel("Number of cards to reveal", { exact: true }).fill("3");
+    await page.getByRole("button", { name: "Reveal cards", exact: true }).click();
+    await expect(second.getByRole("region", { name: "Revealed cards", exact: true }).locator("figure")).toHaveCount(3);
+    await second.getByLabel("Pile to reveal", { exact: true }).selectOption("security");
+    await second.getByRole("button", { name: "Reveal cards", exact: true }).click();
+    await expect(page.getByRole("region", { name: "Revealed cards", exact: true }).locator("figure")).toHaveCount(4);
+    await page.getByRole("button", { name: "Clear my revealed cards", exact: true }).click();
+    await expect(second.getByRole("region", { name: "Revealed cards", exact: true }).locator("figure")).toHaveCount(1);
+    expect(await page.evaluate(() => window.browserTestSnapshot().players[0].deckCount)).toBe(40);
+    await page.getByRole("button", { name: "Cards", exact: true }).click();
+    await page.getByLabel("Card or pile", { exact: true }).selectOption("security:top");
+    await page.getByRole("button", { name: "Turn face up", exact: true }).click();
+    await expect
+      .poll(() => second.evaluate(() => window.browserTestSnapshot().players[0].securityView[0].faceUp))
+      .toBe(true);
+    await page.getByRole("button", { name: "Turn face down", exact: true }).click();
+    await expect
+      .poll(() => second.evaluate(() => window.browserTestSnapshot().players[0].securityView[0].faceUp))
+      .toBe(false);
+    const tokenInstanceId = await page.evaluate(
+      () => window.browserTestSnapshot().players[0].battleArea[0].topCard.instanceId,
+    );
+    await page.getByLabel("Card or pile", { exact: true }).selectOption(tokenInstanceId);
+    await page.getByRole("button", { name: "Turn face down", exact: true }).click();
+    await expect
+      .poll(() => second.evaluate(() => window.browserTestSnapshot().players[0].battleArea[0].topCard.faceUp))
+      .toBe(false);
+    const faceDownOpponent = second.locator('[data-drop="perm-opp"]');
+    await expect(faceDownOpponent).toHaveAttribute("aria-label", /Face down/);
+    await expect(faceDownOpponent).not.toHaveAttribute("aria-label", /Diaboromon/);
+    await expect(faceDownOpponent.locator('img[alt="Diaboromon Token"]')).toHaveCount(0);
+    expect(await page.evaluate(() => window.browserTestSnapshot().players[0].battleArea[0].topCard.cardId)).toBe(
+      "TOKEN-Diaboromon-Token",
+    );
+    await page.getByRole("button", { name: "Turn face up", exact: true }).click();
+    await expect
+      .poll(() => second.evaluate(() => window.browserTestSnapshot().players[0].battleArea[0].topCard.cardId))
+      .toBe("TOKEN-Diaboromon-Token");
+    for (const player of [page, second]) await player.getByRole("button", { name: "Turn", exact: true }).click();
+    await expect(
+      second.locator(".manual-combat__phases").getByRole("button", { name: "Draw", exact: true }),
+    ).toBeDisabled();
+    await page.locator(".manual-combat__phases").getByRole("button", { name: "Draw", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().manual.turnPhase)).toBe("Draw");
+    expect(await page.evaluate(() => window.browserTestSnapshot().players[0].handCount)).toBe(5);
+    await page.locator(".manual-combat__phases").getByRole("button", { name: "Main", exact: true }).click();
+    async function declareAttack() {
+      await page.locator('[data-drop="perm-you"]').click();
+      await editor.getByText("DP and markers", { exact: true }).click();
+      await editor.getByRole("button", { name: "Declare attack", exact: true }).click();
+      await expect.poll(() => page.evaluate(() => window.browserTestSnapshot().manual.combatStage)).toBe("attack");
+      await editor.getByRole("button", { name: "Close", exact: true }).click();
+    }
+    await declareAttack();
+    await page.getByRole("button", { name: "Continue", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().manual.combatStage)).toBe("counter");
+    await expect(page.getByRole("button", { name: "Continue", exact: true })).toHaveCount(0);
+    await second.getByRole("button", { name: "Continue", exact: true }).click();
+    await second.getByLabel("Blocker", { exact: true }).selectOption(blockerId);
+    await second.getByRole("button", { name: "Declare block", exact: true }).click();
+    await expect
+      .poll(() => page.evaluate(() => window.browserTestSnapshot().manual.blockerPermanentId))
+      .toBe(blockerId);
+    await expect(page.getByRole("button", { name: "Continue", exact: true })).toHaveCount(0);
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const dark of [false, true]) {
+        await page.evaluate((enabled) => document.documentElement.classList.toggle("dark", enabled), dark);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+        await page.screenshot({
+          path: test.info().outputPath(`manual-combat-${width}-${dark ? "dark" : "light"}.png`),
+        });
+      }
+    }
+    await page.getByRole("button", { name: "End attack", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().manual.combatStage)).toBe("none");
+    expect(
+      await page.evaluate(() =>
+        window.browserTestSnapshot().players.every((player) => !player.battleArea[0].isSuspended),
+      ),
+    ).toBe(true);
+    await declareAttack();
+    await page.getByRole("button", { name: "Continue", exact: true }).click();
+    await second.getByRole("button", { name: "Continue", exact: true }).click();
+    await second.getByRole("button", { name: "Do not block", exact: true }).click();
+    await page.getByRole("button", { name: "Continue", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().manual.combatStage)).toBe("security");
+    expect(
+      await page.evaluate(() => window.browserTestSnapshot().players.map((player) => player.securityCount)),
+    ).toEqual([5, 5]);
+    await page.getByRole("button", { name: "End attack", exact: true }).click();
+    await second.locator('[data-drop="perm-you"]').click();
+    const secondEditor = second.getByRole("dialog");
+    await secondEditor.getByText("DP and markers", { exact: true }).click();
+    await secondEditor.getByRole("button", { name: "Remove token", exact: true }).click();
+    await expect.poll(() => page.evaluate(() => window.browserTestSnapshot().players[1].battleArea.length)).toBe(0);
+    expect(errors).toEqual([]);
+  });
+});
