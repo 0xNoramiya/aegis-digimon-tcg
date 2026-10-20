@@ -632,6 +632,41 @@ test.describe("manual table", () => {
       .toBe("BT1-010");
   });
 
+  test("presents exactly one flight for each automatic turn draw", async ({ page, context }) => {
+    const second = await context.newPage();
+    await openPlayer(page, "First");
+    await openPlayer(second, "Second");
+    await prepare(page, second);
+    for (const player of [page, second]) {
+      await expect.poll(() => player.evaluate(() => window.browserTestPresentation().idle)).toBe(true);
+    }
+    const before = await Promise.all(
+      [page, second].map((player) =>
+        player.evaluate(
+          () =>
+            window
+              .browserTestPresentation()
+              .steps.filter((step) => step.phase === "started" && step.id.startsWith("draw-flight-")).length,
+        ),
+      ),
+    );
+    await page.getByRole("button", { name: "Turn", exact: true }).click();
+    await page.getByRole("button", { name: "Pass turn", exact: true }).click();
+    await expect.poll(() => second.evaluate(() => window.browserTestSnapshot().turnCount)).toBe(2);
+    await finishBreeding({ player: second });
+    for (const [index, player] of [page, second].entries()) {
+      await expect.poll(() => player.evaluate(() => window.browserTestPresentation().idle)).toBe(true);
+      const flights = await player.evaluate(
+        () =>
+          window
+            .browserTestPresentation()
+            .steps.filter((step) => step.phase === "started" && step.id.startsWith("draw-flight-")).length,
+      );
+      expect(await player.evaluate(() => window.browserTestSnapshot().players[1].handCount)).toBe(6);
+      expect(flights - before[index]!).toBe(1);
+    }
+  });
+
   test("guides turns with one automatic draw and unsuspend, then one breeding choice", async ({ page, context }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));

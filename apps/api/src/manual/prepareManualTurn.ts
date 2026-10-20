@@ -43,14 +43,6 @@ export function prepareManualTurn({ state, emit, declareDeckOutLoss }: Params): 
     }
     card.faceUp = false;
     insertCard(player, Zone.Hand, card);
-    emit({
-      kind: "cardsMoved",
-      seat: player.seat,
-      instanceIds: [card.instanceId],
-      from: Zone.Deck,
-      to: Zone.Hand,
-      handAddition: "draw",
-    });
   }
   const options = getManualBreedingOptions({ player });
   table.canHatch = options.canHatch;

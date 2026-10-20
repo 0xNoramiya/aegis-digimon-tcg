@@ -747,15 +747,10 @@ describe("manual guided turn preparation", () => {
     expect(state.manual.turnPhase).toBe(Phase.Breeding);
     expect(send(1, { action: "pass" }).ok).toBe(false);
     expect(
-      emit.mock.calls.some(
-        ([event]) =>
-          event.kind === "cardsMoved" &&
-          event.from === Zone.Deck &&
-          event.to === Zone.Hand &&
-          event.handAddition === "draw" &&
-          !event.cardIds,
+      emit.mock.calls.filter(
+        ([event]) => event.kind === "cardsMoved" && event.from === Zone.Deck && event.to === Zone.Hand,
       ),
-    ).toBe(true);
+    ).toEqual([]);
     send(1, { action: "requestUndo" });
     send(0, { action: "answerUndo", accept: true });
     expect(state.turnSeat).toBe(0);
