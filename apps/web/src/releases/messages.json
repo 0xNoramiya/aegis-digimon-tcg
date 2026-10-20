@@ -1,47 +1,71 @@
 {
-  "releases.1.35.4-beta.summary": {
-    "en": "Effect order, effects for all of a player's Digimon, card rules, and deckbuilder sorting fixes.",
-    "pt-BR": "Correções na ordem de efeitos, em efeitos para todos os Digimon de um jogador, em regras de cartas e na ordenação do deckbuilder.",
-    "es": "Correcciones en el orden de efectos, en efectos para todos los Digimon de un jugador, en reglas de cartas y en la ordenación del constructor de mazos.",
-    "it": "Correzioni all’ordine degli effetti, agli effetti per tutti i Digimon di un giocatore, alle regole delle carte e all’ordinamento del deckbuilder."
+  "releases.1.36.0-beta.summary": {
+    "en": "Manual tables, a rematch that can finish a best-of-three, and fixes for effect order, card rules, card language, DUAL cards, and deckbuilder sorting.",
+    "pt-BR": "Mesas manuais, uma revanche que pode concluir uma melhor de três e correções na ordem de efeitos, em regras de cartas, no idioma das cartas, em cartas DUAL e na ordenação do deckbuilder.",
+    "es": "Mesas manuales, una revancha que puede completar un mejor de tres y correcciones en el orden de efectos, en reglas de cartas, en el idioma de las cartas, en cartas DUAL y en la ordenación del constructor de mazos.",
+    "it": "Tavoli manuali, una rivincita che può completare un meglio di tre e correzioni all’ordine degli effetti, alle regole delle carte, alla lingua delle carte, alle carte DUAL e all’ordinamento del deckbuilder."
   },
-  "releases.1.35.4-beta.fix.ruleCheckTriggerOrder": {
+  "releases.1.36.0-beta.feature.manualTables": {
+    "en": "Manual tables: choose Manual in the lobby to play a casual game where you move cards and resolve effects yourself. Each turn still unsuspends and draws automatically.",
+    "pt-BR": "Mesas manuais: escolha Manual no lobby para jogar uma partida casual em que você move as cartas e resolve os efeitos. Cada turno ainda desvira e compra automaticamente.",
+    "es": "Mesas manuales: elige Manual en el lobby para jugar una partida casual en la que mueves las cartas y resuelves los efectos tú mismo. Cada turno sigue enderezando y robando automáticamente.",
+    "it": "Tavoli manuali: scegli Manual nella lobby per giocare una partita casual in cui sposti le carte e risolvi gli effetti da solo. Ogni turno raddrizza e pesca ancora automaticamente."
+  },
+  "releases.1.36.0-beta.feature.rematchFinishSeries": {
+    "en": "After a single game, a rematch can now finish a best-of-three that counts the finished game as game 1, or start a new best-of-three.",
+    "pt-BR": "Depois de uma partida única, a revanche agora pode concluir uma melhor de três que conta a partida encerrada como jogo 1, ou começar uma nova melhor de três.",
+    "es": "Tras una partida única, la revancha ahora puede completar un mejor de tres que cuenta la partida terminada como juego 1, o empezar un nuevo mejor de tres.",
+    "it": "Dopo una partita singola, la rivincita ora può completare un meglio di tre che conta la partita conclusa come gara 1, oppure iniziare un nuovo meglio di tre."
+  },
+  "releases.1.36.0-beta.fix.opponentCardLanguage": {
+    "en": "Opponent cards now show in your chosen card language everywhere in a match, not only in their trash.",
+    "pt-BR": "As cartas do oponente agora aparecem no idioma de carta que você escolheu em toda a partida, não só no descarte dele.",
+    "es": "Las cartas del rival ahora se muestran en el idioma de cartas que elegiste en toda la partida, no solo en su descarte.",
+    "it": "Le carte dell’avversario ora appaiono nella lingua delle carte che hai scelto in tutta la partita, non solo nel suo cimitero."
+  },
+  "releases.1.36.0-beta.fix.dualCardCost": {
+    "en": "DUAL cards on the board now show a DUAL mark instead of their use cost, so the number is no longer mistaken for a play cost.",
+    "pt-BR": "Cartas DUAL no campo agora mostram uma marca DUAL em vez do custo de uso, para que o número não seja mais confundido com custo de jogo.",
+    "es": "Las cartas DUAL en el tablero ahora muestran una marca DUAL en lugar de su coste de uso, para que el número ya no se confunda con un coste de juego.",
+    "it": "Le carte DUAL sul campo ora mostrano un segno DUAL invece del costo di utilizzo, così il numero non viene più scambiato per un costo di gioco."
+  },
+  "releases.1.36.0-beta.fix.ruleCheckTriggerOrder": {
     "en": "When a “would leave” effect saves a Digimon during a rule check, the effects it triggers now wait for the turn player’s pending effects, so the turn player resolves first.",
     "pt-BR": "Quando um efeito de “sairia” salva um Digimon durante uma verificação de regras, os efeitos que ele ativa agora esperam os efeitos pendentes do jogador do turno, e o jogador do turno resolve primeiro.",
     "es": "Cuando un efecto de “saldría” salva a un Digimon durante una comprobación de reglas, los efectos que activa ahora esperan a los efectos pendientes del jugador del turno, que resuelve primero.",
     "it": "Quando un effetto “lascerebbe” salva un Digimon durante un controllo delle regole, gli effetti che attiva ora attendono gli effetti in sospeso del giocatore di turno, che risolve per primo."
   },
-  "releases.1.35.4-beta.fix.laterEntrantGrants": {
+  "releases.1.36.0-beta.fix.laterEntrantGrants": {
     "en": "Effects for all of a player’s Digimon, such as Machinedramon’s stacked-card protection, now apply at once to Digimon that enter later and no longer appear as extra effects to order.",
     "pt-BR": "Efeitos para todos os Digimon de um jogador, como a proteção de cartas empilhadas de Machinedramon, agora se aplicam na hora aos Digimon que entram depois e não aparecem mais como efeitos extras para ordenar.",
     "es": "Los efectos para todos los Digimon de un jugador, como la protección de cartas apiladas de Machinedramon, ahora se aplican al instante a los Digimon que entran después y ya no aparecen como efectos adicionales que ordenar.",
     "it": "Gli effetti per tutti i Digimon di un giocatore, come la protezione delle carte impilate di Machinedramon, ora si applicano subito ai Digimon che entrano dopo e non compaiono più come effetti extra da ordinare."
   },
-  "releases.1.35.4-beta.fix.conditionalGrants": {
+  "releases.1.36.0-beta.fix.conditionalGrants": {
     "en": "Attack of the Heavy Mobile Digimon! now gives its On Play only to Digimon that currently are level 6 with [Machine] in their traits.",
     "pt-BR": "Attack of the Heavy Mobile Digimon! agora concede seu On Play apenas aos Digimon que, no momento, são de nível 6 com [Machine] nos traços.",
     "es": "Attack of the Heavy Mobile Digimon! ahora otorga su On Play solo a los Digimon que en ese momento son de nivel 6 con [Machine] en sus rasgos.",
     "it": "Attack of the Heavy Mobile Digimon! ora concede il suo On Play solo ai Digimon che in quel momento sono di livello 6 con [Machine] nei tratti."
   },
-  "releases.1.35.4-beta.fix.artsSecurityReactions": {
+  "releases.1.36.0-beta.fix.artsSecurityReactions": {
     "en": "Security-removal reactions from an Arts digivolution’s When Digivolving effect now resolve before the opponent’s older pending effects.",
     "pt-BR": "Reações à remoção de cartas de segurança causadas pelo When Digivolving de uma digievolução Arts agora resolvem antes dos efeitos pendentes mais antigos do oponente.",
     "es": "Las reacciones a la retirada de cartas de seguridad causadas por el When Digivolving de una digievolución Arts ahora se resuelven antes que los efectos pendientes más antiguos del rival.",
     "it": "Le reazioni alla rimozione di carte di sicurezza causate dal When Digivolving di una digievoluzione Arts ora si risolvono prima degli effetti in sospeso più vecchi dell’avversario."
   },
-  "releases.1.35.4-beta.fix.mistymon": {
+  "releases.1.36.0-beta.fix.mistymon": {
     "en": "Mistymon BT18-039’s inherited unsuspend is now optional, as printed on the card.",
     "pt-BR": "O efeito herdado de desvirar de Mistymon BT18-039 agora é opcional, como impresso na carta.",
     "es": "El efecto heredado de enderezar de Mistymon BT18-039 ahora es opcional, como aparece en la carta.",
     "it": "L’effetto ereditato di raddrizzamento di Mistymon BT18-039 ora è facoltativo, come stampato sulla carta."
   },
-  "releases.1.35.4-beta.fix.ascensionPrompt": {
+  "releases.1.36.0-beta.fix.ascensionPrompt": {
     "en": "Ascension after a rule-check deletion now asks to activate or decline, without selecting its card.",
     "pt-BR": "Ascension após uma deleção por verificação de regras agora pergunta se você quer ativar ou recusar, sem pedir para selecionar a carta.",
     "es": "Ascension tras una eliminación por comprobación de reglas ahora pregunta si activar o rechazar, sin seleccionar su carta.",
     "it": "Ascension dopo un’eliminazione per controllo delle regole ora chiede se attivare o rifiutare, senza selezionare la carta."
   },
-  "releases.1.35.4-beta.fix.deckbuilderSorting": {
+  "releases.1.36.0-beta.fix.deckbuilderSorting": {
     "en": "Deckbuilder sorting now applies to every search match, not only to name matches.",
     "pt-BR": "A ordenação do deckbuilder agora se aplica a todos os resultados da busca, não só aos que correspondem ao nome.",
     "es": "La ordenación del constructor de mazos ahora se aplica a todos los resultados de búsqueda, no solo a los que coinciden con el nombre.",
