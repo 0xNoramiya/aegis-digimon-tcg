@@ -1,0 +1,38 @@
+.learn-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-3) var(--ds-space-4);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid color-mix(in srgb, var(--ds-accent) 40%, transparent);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-sheet);
+}
+
+.learn-banner__icon {
+  display: grid;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  color: var(--ds-on-accent);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-accent);
+}
+
+.learn-banner p {
+  flex: 1 1 18rem;
+  min-width: 0;
+  margin: 0;
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-body);
+}
+
+.learn-banner strong {
+  color: var(--ds-text);
+}
+
+.learn-banner .aegis-button {
+  flex: none;
+}

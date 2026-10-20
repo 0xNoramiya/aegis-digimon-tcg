@@ -1,6 +1,12 @@
+import { advancedBattlesKo } from "@/i18n/learn/advancedBattles.ko";
+import { rulesLayoutKo } from "@/i18n/learn/rulesLayout.ko";
+import { lessonCatalogKo } from "@/i18n/learn/lessonCatalog.ko";
+import { battleLessonsKo } from "@/i18n/learn/battleLessons.ko";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnKo } from "@/i18n/learn/learn.ko";
+import { learnDrillsKo } from "@/i18n/learn/drills.ko";
 
 const interfaceMessages = {
   "settings.arenaInput": "키보드 및 컨트롤러",
@@ -20,6 +26,12 @@ const interfaceMessages = {
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   "decision.choice.declareEgg": "카드 종류 선언: 디지타마",
   ...providerEn,
+  ...learnKo,
+  ...learnDrillsKo,
+  ...battleLessonsKo,
+  ...lessonCatalogKo,
+  ...rulesLayoutKo,
+  ...advancedBattlesKo,
   "digilab.cardCounts": "메인 카드 {main}장 · 디지타마 {eggs}장",
   "settings.cardImageLanguage": "카드 이미지 언어",
   "settings.cardImageLanguageDesc":
@@ -2499,4 +2511,8 @@ const interfaceMessages = {
   "releases.reported": "신고해 주신 문제를 수정했습니다 · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const ko: Record<keyof typeof en, string> = { ...en, ...interfaceMessages, "digilab.eggs": "디지타마" };
+export const ko: Record<keyof typeof en, string> = {
+  ...en,
+  ...interfaceMessages,
+  "digilab.eggs": "디지타마",
+};

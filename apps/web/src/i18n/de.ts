@@ -1,6 +1,12 @@
+import { advancedBattlesDe } from "@/i18n/learn/advancedBattles.de";
+import { rulesLayoutDe } from "@/i18n/learn/rulesLayout.de";
+import { lessonCatalogDe } from "@/i18n/learn/lessonCatalog.de";
+import { battleLessonsDe } from "@/i18n/learn/battleLessons.de";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnDe } from "@/i18n/learn/learn.de";
+import { learnDrillsDe } from "@/i18n/learn/drills.de";
 
 const interfaceMessages = {
   "settings.arenaInput": "Tastatur und Controller",
@@ -20,6 +26,12 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnDe,
+  ...learnDrillsDe,
+  ...battleLessonsDe,
+  ...lessonCatalogDe,
+  ...rulesLayoutDe,
+  ...advancedBattlesDe,
   "settings.cardImageLanguage": "Sprache der Kartenbilder",
   "settings.cardImageLanguageDesc":
     "Wähle die Standardsprache für die Sammlung und neue Kartenexemplare in Decks. Die Schaltfläche ersetzt auch alternative Bilder in bestehenden Decks. Karten ohne diese Sprache behalten ihr aktuelles Bild.",
@@ -2605,4 +2617,7 @@ const interfaceMessages = {
   "releases.reported": "Sie haben es gemeldet, wir haben es behoben · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const de: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const de: Record<keyof typeof en, string> = {
+  ...en,
+  ...interfaceMessages,
+};

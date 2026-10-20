@@ -148,8 +148,8 @@ The API never persists provider API keys. PostgreSQL advisory locks coordinate c
 
 ### story_battle_completions
 
-Account-scoped solo story victories. Primary key `(account_id, battle_id)`; `account_id` references `accounts(id)` with cascade deletion. Stores the authoritative `match_id` and `completed_at` timestamp. Only the game room records a victory; HTTP exposes read-only progress. No chapter text or hidden combat state is stored here.
+Account-scoped solo story victories. Primary key `(account_id, battle_id)`; `account_id` references `accounts(id)` with cascade deletion. Stores the authoritative `match_id` and `completed_at` timestamp. Only the game room records a victory; HTTP exposes read-only progress. No chapter text or hidden combat state is stored here. `battle_id` also holds tutorial lesson IDs, which start with `tutorial-`.
 
 ### story_guest_completions
 
-Anonymous story victories keyed by a SHA-256 hash of a random browser token and battle ID. Stores match ID and completion time. Only authoritative match wins write this table. Guest progress is separate from account progress; clearing browser storage loses access to it.
+Anonymous story victories keyed by a SHA-256 hash of a random browser token and battle ID. Stores match ID and completion time. Only authoritative match wins write this table. Guest progress is separate from account progress; clearing browser storage loses access to it. `battle_id` also holds tutorial lesson IDs, which start with `tutorial-`.

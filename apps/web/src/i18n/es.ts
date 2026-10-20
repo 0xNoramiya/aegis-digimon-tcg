@@ -1,3 +1,7 @@
+import { advancedBattlesEs } from "@/i18n/learn/advancedBattles.es";
+import { rulesLayoutEs } from "@/i18n/learn/rulesLayout.es";
+import { lessonCatalogEs } from "@/i18n/learn/lessonCatalog.es";
+import { battleLessonsEs } from "@/i18n/learn/battleLessons.es";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEs } from "@/i18n/providers.es";
 import { replayVideoEs } from "./replayVideo";
@@ -17,8 +21,13 @@ import { homeEs } from "./redesign/home.es";
 import { playEs } from "./redesign/play.es";
 import { settingsEs } from "./redesign/settings.es";
 import { shellEs } from "./redesign/shell.es";
+import { learnEs } from "@/i18n/learn/learn.es";
+import { learnDrillsEs } from "@/i18n/learn/drills.es";
 
 export const es: Record<keyof typeof en, string> = {
+  ...lessonCatalogEs,
+  ...rulesLayoutEs,
+  ...advancedBattlesEs,
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Eliminar este Digimon",
   "overlay.trashTopSecurityCard": "Descartar la carta superior de tu seguridad",
@@ -2111,4 +2120,7 @@ export const es: Record<keyof typeof en, string> = {
   ...collectionEs,
   ...settingsEs,
   ...arenaEs,
+  ...learnEs,
+  ...learnDrillsEs,
+  ...battleLessonsEs,
 };

@@ -1,6 +1,12 @@
+import { advancedBattlesFr } from "@/i18n/learn/advancedBattles.fr";
+import { rulesLayoutFr } from "@/i18n/learn/rulesLayout.fr";
+import { lessonCatalogFr } from "@/i18n/learn/lessonCatalog.fr";
+import { battleLessonsFr } from "@/i18n/learn/battleLessons.fr";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnFr } from "@/i18n/learn/learn.fr";
+import { learnDrillsFr } from "@/i18n/learn/drills.fr";
 
 const interfaceMessages = {
   "settings.arenaInput": "Clavier et manette",
@@ -20,6 +26,12 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnFr,
+  ...learnDrillsFr,
+  ...battleLessonsFr,
+  ...lessonCatalogFr,
+  ...rulesLayoutFr,
+  ...advancedBattlesFr,
   "digilab.cardCounts": "{main} cartes principales · {eggs} Digi-Œufs",
   "settings.cardImageLanguage": "Langue des images des cartes",
   "settings.cardImageLanguageDesc":
@@ -2592,4 +2604,7 @@ const interfaceMessages = {
   "releases.reported": "Vous l'avez signalé, nous l'avons corrigé · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const fr: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const fr: Record<keyof typeof en, string> = {
+  ...en,
+  ...interfaceMessages,
+};

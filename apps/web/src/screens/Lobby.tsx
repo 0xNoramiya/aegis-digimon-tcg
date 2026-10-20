@@ -744,6 +744,9 @@ export function Lobby({
           <div className="aegis-section-heading">
             <h1 className="aegis-section-heading__title">{t("lobby.title")}</h1>
             <span className="aegis-section-heading__rule" aria-hidden="true" />
+            <Button variant="secondary" icon={Icons.GraduationCap} onClick={() => onNav("learn")}>
+              {t("learn.lobbyButton")}
+            </Button>
             <Button variant="secondary" onClick={() => onNav("story")}>
               {t("story.title")}
             </Button>

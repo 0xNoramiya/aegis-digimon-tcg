@@ -1,3 +1,7 @@
+import { advancedBattlesPtBR } from "@/i18n/learn/advancedBattles.pt-BR";
+import { rulesLayoutPtBR } from "@/i18n/learn/rulesLayout.pt-BR";
+import { lessonCatalogPtBR } from "@/i18n/learn/lessonCatalog.pt-BR";
+import { newDrillsPtBR } from "@/i18n/learn/newDrills.pt-BR";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerPtBR } from "@/i18n/providers.pt-BR";
 import { replayVideoPtBR } from "./replayVideo";
@@ -21,8 +25,13 @@ import { seriesPtBR } from "./redesign/series.pt-BR";
 import { rematchPtBR } from "@/i18n/redesign/rematch.pt-BR";
 import { settingsPtBR } from "./redesign/settings.pt-BR";
 import { shellPtBR } from "./redesign/shell.pt-BR";
+import { learnPtBR } from "@/i18n/learn/learn.pt-BR";
+import { learnDrillsPtBR } from "@/i18n/learn/drills.pt-BR";
 
 export const ptBR: Record<keyof typeof en, string> = {
+  ...lessonCatalogPtBR,
+  ...rulesLayoutPtBR,
+  ...advancedBattlesPtBR,
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Excluir este Digimon",
   "overlay.trashTopSecurityCard": "Descartar a carta do topo da sua segurança",
@@ -1953,4 +1962,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   ...chatPtBR,
   ...seriesPtBR,
   ...rematchPtBR,
+  ...learnPtBR,
+  ...learnDrillsPtBR,
+  ...newDrillsPtBR,
 };

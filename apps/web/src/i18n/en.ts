@@ -1,3 +1,7 @@
+import { advancedBattlesEn } from "@/i18n/learn/advancedBattles.en";
+import { rulesLayoutEn } from "@/i18n/learn/rulesLayout.en";
+import { lessonCatalogEn } from "@/i18n/learn/lessonCatalog.en";
+import { newDrillsEn } from "@/i18n/learn/newDrills.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { replayVideoEn } from "./replayVideo";
@@ -15,12 +19,18 @@ import { seriesEn } from "./redesign/series.en";
 import { rematchEn } from "@/i18n/redesign/rematch.en";
 import { settingsEn } from "./redesign/settings.en";
 import { shellEn } from "./redesign/shell.en";
+import { learnEn } from "@/i18n/learn/learn.en";
+import { learnLessonsEn } from "@/i18n/learn/lessons.en";
+import { learnDrillsEn } from "@/i18n/learn/drills.en";
 
 /* English source strings. This object is the key contract: every other locale is
    typed as Record<TranslationKey, string>, so a missing translation is a compile
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  ...lessonCatalogEn,
+  ...rulesLayoutEn,
+  ...advancedBattlesEn,
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": "Trash your top security card",
@@ -1940,4 +1950,8 @@ export const en = {
   ...chatEn,
   ...seriesEn,
   ...rematchEn,
+  ...learnEn,
+  ...learnLessonsEn,
+  ...learnDrillsEn,
+  ...newDrillsEn,
 } as const;

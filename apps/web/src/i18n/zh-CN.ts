@@ -1,6 +1,12 @@
+import { advancedBattlesZhCN } from "@/i18n/learn/advancedBattles.zh-CN";
+import { rulesLayoutZhCN } from "@/i18n/learn/rulesLayout.zh-CN";
+import { lessonCatalogZhCN } from "@/i18n/learn/lessonCatalog.zh-CN";
+import { battleLessonsZhCN } from "@/i18n/learn/battleLessons.zh-CN";
 import { decisionChoicesZhCN } from "@/i18n/decisionChoices.zh-CN";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnZhCN } from "@/i18n/learn/learn.zh-CN";
+import { learnDrillsZhCN } from "@/i18n/learn/drills.zh-CN";
 
 const interfaceMessages = {
   "settings.arenaInput": "键盘与手柄",
@@ -19,6 +25,12 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": "丢弃我方1只驯兽师下方最下方的1张背面表示卡牌",
   "overlay.trashTwoTamerBottomCards": "丢弃我方驯兽师下方最下方的2张背面表示卡牌",
   ...providerEn,
+  ...learnZhCN,
+  ...learnDrillsZhCN,
+  ...battleLessonsZhCN,
+  ...lessonCatalogZhCN,
+  ...rulesLayoutZhCN,
+  ...advancedBattlesZhCN,
   "settings.cardImageLanguage": "卡牌图片语言",
   "settings.cardImageLanguageDesc":
     "选择收藏和新加入卡组的卡牌的默认语言。按钮也会替换现有卡组中的异画。没有该语言版本的卡牌将保留当前图片。",
@@ -2432,4 +2444,7 @@ const interfaceMessages = {
   "releases.reported": "你报告的问题，我们已修复 · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const zhCN: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const zhCN: Record<keyof typeof en, string> = {
+  ...en,
+  ...interfaceMessages,
+};
