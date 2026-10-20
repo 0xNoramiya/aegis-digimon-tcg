@@ -1028,3 +1028,119 @@ states, so these diagnostic counts do not measure global payment coverage or
 causal win-rate improvement. No trace reached its recording limit. Aggregate
 results and provenance are in `evidence/optional-costs/summary.json`. No catalog
 was promoted or deployed; the configured default remains v2.
+
+## Replay teacher campaign on the local PC
+
+`replay_teacher.py` runs the offline replay/search/GEPA experiment without changing
+application defaults or experiment arms. It starts from the standalone v3 program,
+preserves its rule order, and permits up to eight appended main-phase rules. Other
+windows retain v3 behavior. Reflection uses the active coding session through the
+existing prompt/response files; no paid model endpoint is required.
+
+Collect inputs with `collect_replay_teacher.py`. Each invocation reads at most a
+ten-minute replay modification window, 128 files, 1 MiB per replay and 32 MiB of
+replay contents. Supply up to three explicit API log basenames covering those
+matches. The collector runs sequentially through `aegis-safe`, streams the selected
+API logs, and transfers only replay inputs and matching terminal evidence. It reads
+the host instructions first and never changes production files or containers.
+Missing terminal evidence excludes a replay. Collection paths must remain ignored.
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/collect_replay_teacher.py \
+  --after 2026-10-20T18:50:00+00:00 --before 2026-10-20T19:00:00+00:00 \
+  --api-log api-2026-10-20-SEGMENT.jsonl \
+  --output .local/bot-lab/replay-teacher/collection/batch-01.json
+
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/replay_teacher.py \
+  --inputs .local/bot-lab/replay-teacher/collection/inputs.json \
+  --run-dir .local/bot-lab/replay-teacher/campaign-01 \
+  --node /Users/viniciusluiz/.nvm/versions/node/v26.12.0/bin/node
+```
+
+`inputs.json` is a JSON array of collected rows, deduplicated by `matchId` when
+combining batches. Each row contains `matchId`, `observedAt`, `lines`, and `expected`
+with `winnerSeat` (null for a draw), `reason`, and `turn`. An optional `roomId`
+records provenance only. All raw rows stay local. Additional historical inventories
+can be supplied with repeated `--exclude` arguments. The required original, fresh,
+v3, activation-cost and decision-context inventories are automatically included;
+missing inventories stop execution rather than silently weakening exclusions.
+
+The campaign first reproduces every complete result and checks deck legality.
+Only then does it deduplicate unordered main/egg deck compositions, exclude prior
+IDs/compositions, and freeze 32 FITNESS, 64 VALIDATION and 320 CONFIRMATION matchups.
+The newest eligible matches form confirmation; development ordering is hashed.
+It extracts decision examples only from FITNESS after this split is frozen. A
+repository-local registry reserves all three splits across output directories.
+Fewer than 416 eligible compositions produces an `insufficient-data` report, with
+no tuning or reuse of historical confirmation data. Player identities are not
+collected, so player-level independence is not established.
+
+The professor selects up to four positions per FITNESS match and 100 total,
+prioritizing human/v3 disagreement, attack-versus-development alternatives and
+small heuristic margins. It excludes root activations and conservatively excludes
+prefixes with public reveals, private visible-card decisions, or moves that can
+preserve hidden identities/order. This first version therefore covers early and
+simple states; it does not model all remembered information. Search assumes open
+decklists, keeps the observer's hand fixed and samples unknown zones without using
+the replay's future. All effect decisions use the ordinary training policies.
+
+Each position receives up to 32 completed ISMCTS rollouts, with a three-minute
+search deadline and a 190-second worker envelope. Its separate comparison runs 32
+fresh paired samples, half with v3 continuations and half with v2, each continuation
+checkpointed independently and limited to 60 seconds. Incomplete searches and any
+invalid comparison produce no label. A preference requires at least ten percentage
+points of aggregate gain and positive means under both continuation policies. The
+reported intervals are exploratory, not individual action certificates.
+
+GEPA sees every teacher case once per reflection, including negative, inconclusive
+and invalid comparisons. All legal competing actions and a shared card glossary
+are included; this avoids repeating a fixed subset or duplicating the full dataset
+in every fitness record. A deterministic alignment gate rejects a proposal before
+play unless a valid preferred alternative becomes uniquely top-scoring under the
+production scorer. Identical hand Tamer copies with the same card ID and complete
+feature vector count as the same strategic choice. Other tied alternatives do not
+establish alignment.
+
+Each GEPA screen covers all 32 FITNESS matchups (128 games), with the same seats,
+orientations and seeds for every proposal. Controlled-seat counters record decision
+windows, nonzero added contributions and changed action indices against v3 in the
+same state. A zero-change proposal is marked `unexercised`, not certified ineffective.
+`candidate-diagnostics/` preserves alignment scores, exposure, missing counters and
+full-game scores. Before VALIDATION, every returned candidate must again show a
+strict full-FITNESS gain, actual changed choices and no increase in invalid games.
+The unchanged baseline is never selected as a candidate.
+
+Fitness remains full-game points.
+Invalid games count as zero. It allows eight reflections and two merges, selects
+only on VALIDATION, and sends one candidate to the frozen confirmation. Both arms
+use the same runtime, metadata, seeds and seats. Confirmation contains 2,560 games
+and uses the existing paired approximate normal 95% interval: weighted lower bound
+above zero, positive certified mean, no opponent mean drop over two points, and no
+increase in invalid games. Weights are certified 50%, legacy 25%, frozen v3 25%.
+These are bot-opponent results, not evidence of a live-human win-rate improvement.
+
+Run required builds and checks before the campaign, then stop owned watchers.
+A source/runtime archive, input hashes, checkpoints and English report remain in
+the run directory. No rebuilds or executable edits are allowed while it is running.
+Limits are four workers, 512 MiB heap each and 2,560 MiB aggregate RSS. Persisted
+wall-clock deadlines cap inspection at two hours, teacher work at eight, evolution
+and selection at six, confirmation at eight, and the whole campaign at 24 hours.
+Downtime also consumes those deadlines, conservatively preventing hard restarts
+from replenishing budgets. Resume only with identical inputs, tools and runtime.
+
+A rejected development campaign whose confirmation was never opened can be refined
+in a new directory using `--refine-from`. This reuses its frozen development data
+and exploratory teacher results; it does not provide a fresh independent test.
+The runner checks original inputs, hashed completed stages, exact split counts,
+ID/composition disjointness, deck fingerprints and the global reservation before
+proceeding. New provenance, tools and runtime are frozen separately. Confirmation
+is claimed globally for one run and candidate across all refinements of that
+parent, so it cannot be reused after inspecting an outcome.
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/replay_teacher.py \
+  --inputs .local/bot-lab/replay-teacher/collection/inputs-expanded.json \
+  --refine-from .local/bot-lab/replay-teacher/campaign-02 \
+  --run-dir .local/bot-lab/replay-teacher/refinement-01 \
+  --node /Users/viniciusluiz/.nvm/versions/node/v26.12.0/bin/node
+```
