@@ -4913,3 +4913,50 @@ it.each(["Then, by trashing your top security card", "1 of your Digimon may atta
     expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(effectTextEmphasis);
   },
 );
+
+it.each([true, false])(
+  "Material Save explicitly activates or declines without a target selection, accepted=%s",
+  (accepted) => {
+    const onRespond = vi.fn<(response: DecisionResponse) => void>();
+    render(
+      <I18nProvider>
+        <DecisionOverlay
+          request={{
+            decisionId: "material-save-activation",
+            seat: 0,
+            kind: "selectCards",
+            promptText: "＜Material Save 4＞: place the specified digivolution cards under one of your Tamers?",
+            sourceCardId: "BT11-019",
+            options: {
+              candidateInstanceIds: ["starmons"],
+              visibleInstanceIds: ["starmons", "ballistamon", "zeiggreymon", "omnishoutmon"],
+              min: 0,
+              max: 1,
+              selectionContext: "materialSaveActivation",
+            },
+          }}
+          sourceCardId="BT11-019"
+          candidates={[
+            { instanceId: "starmons", cardId: "BT10-029", selectable: true },
+            { instanceId: "ballistamon", cardId: "BT19-047", selectable: false },
+            { instanceId: "zeiggreymon", cardId: "AD1-013", selectable: false },
+            { instanceId: "omnishoutmon", cardId: "BT11-015", selectable: false },
+          ]}
+          picks={[]}
+          onTogglePick={vi.fn<(instanceId: string) => void>()}
+          onRespond={onRespond}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.queryByRole("button", { name: "Confirm targets" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "None" })).toBeNull();
+    expect(screen.getByRole("img", { name: "Ballistamon" })).toBeTruthy();
+    expect(screen.getByRole("img", { name: "ZeigGreymon" })).toBeTruthy();
+    expect(onRespond).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: accepted ? "Yes, activate" : "No, decline" }));
+    expect(onRespond).toHaveBeenCalledExactlyOnceWith({
+      kind: "selectCards",
+      instanceIds: accepted ? ["starmons"] : [],
+    });
+  },
+);

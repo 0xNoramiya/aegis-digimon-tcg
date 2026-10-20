@@ -754,12 +754,16 @@ export function pendingWindowCollected(engine: GameEngine): CollectedEffect[] {
 }
 
 /** The enclosing window's own armed watchers, without the parked or printed pending halves. */
-export function pendingWindowWatchersCollected(engine: GameEngine): CollectedEffect[] {
+export function pendingWindowWatchersCollected(
+  engine: GameEngine,
+  excluded: ReadonlySet<ArmedSubTrigger> = new Set(),
+): CollectedEffect[] {
   return armedAsPendingCollected(
     engine,
     uniqueOncePerTurnWatcherOccurrences(
       engine.pendingWindowSubTriggers.filter(
         (item) =>
+          !excluded.has(item) &&
           !engine.consumedSubTriggerKeys.has(subTriggerIdentity(item.sub, item.ctx.trigger)) &&
           subTriggerStillPending(engine, item),
       ),
