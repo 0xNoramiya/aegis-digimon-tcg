@@ -11,6 +11,8 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart:
+                "Add 1 purple or red card with the [Free] trait or 1 card with [Imperialdramon] in its name among them to your hand",
               filter: {
                 controllerDefault: "mine",
                 colors: ["Red", "Purple"],
@@ -29,6 +31,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "trash 1 such card among them.",
               filter: {
                 controllerDefault: "mine",
                 colors: ["Red", "Purple"],
