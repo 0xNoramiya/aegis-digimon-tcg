@@ -67,9 +67,9 @@ async function seatBot(environment: NodeJS.ProcessEnv = {}) {
 }
 
 describe("bot A/B experiment in practice rooms", () => {
-  it("seats the standard bot and records no arm when the experiment is off", async () => {
+  it("seats the production legacy bot and records no arm when the experiment is off", async () => {
     const { bot, surrender } = await seatBot();
-    expect(bot.policyName).toMatch(/^(certified|validated-pilot):/);
+    expect(bot.policyName).toMatch(/^evaluation:/);
     const record = await surrender();
     expect(record).toMatchObject({ mode: "bot", opponentKind: "bot", result: "loss", reason: "surrender" });
     expect(record).not.toHaveProperty("botArm");
@@ -118,13 +118,13 @@ describe("bot A/B experiment in practice rooms", () => {
     expect(await surrender()).toMatchObject({ botArm: "legacy" });
   });
 
-  it("keeps the standard bot unchanged for the standard arm", async () => {
-    const { bot, surrender } = await seatBot(experimentEnvironment({ standard: 100 }));
+  it("seats the certified residual bot for the certified arm", async () => {
+    const { bot, surrender } = await seatBot(experimentEnvironment({ certified: 100 }));
     expect(bot.policyName).toMatch(/^(certified|validated-pilot):/);
-    expect(await surrender()).toMatchObject({ botArm: "standard" });
+    expect(await surrender()).toMatchObject({ botArm: "certified" });
   });
 
-  it("records that the candidate fell back to the standard bot after a rejected action", async () => {
+  it("records that the candidate fell back to the legacy bot after a rejected action", async () => {
     const { bot, surrender } = await seatBot(experimentEnvironment({ humanPanel: 100 }));
     const options = Reflect.get(bot, "options") as BotOptions;
     options.policy!.noteRejected({ type: "endPhase" });

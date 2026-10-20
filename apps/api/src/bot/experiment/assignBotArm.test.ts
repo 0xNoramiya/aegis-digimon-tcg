@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { assignBotArm } from "#api/bot/experiment/assignBotArm";
 import { parseBotExperiment } from "#api/bot/experiment/parseBotExperiment";
 
-const experiment = parseBotExperiment({ id: "bot-ab-2026-10", arms: { standard: 80, humanPanelPlanner: 20 } });
+const experiment = parseBotExperiment({ id: "bot-ab-2026-10", arms: { certified: 80, humanPanelPlanner: 20 } });
 
 function countArms(matchIds: readonly string[], assigned = experiment) {
   const counts = new Map<string, number>();
@@ -24,9 +24,9 @@ describe("bot experiment assignment", () => {
   it("splits many matches close to the configured weights", () => {
     const total = 20_000;
     const counts = countArms(Array.from({ length: total }, (_, index) => crypto.randomUUID() + index));
-    expect([...counts.keys()].sort()).toEqual(["humanPanelPlanner", "standard"]);
+    expect([...counts.keys()].sort()).toEqual(["certified", "humanPanelPlanner"]);
     expect(Math.abs(counts.get("humanPanelPlanner")! / total - 0.2)).toBeLessThan(0.015);
-    expect(Math.abs(counts.get("standard")! / total - 0.8)).toBeLessThan(0.015);
+    expect(Math.abs(counts.get("certified")! / total - 0.8)).toBeLessThan(0.015);
   });
 
   it("reassigns matches independently when the experiment id changes", () => {

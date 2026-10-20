@@ -71,7 +71,6 @@ import { createFixtureBotPolicy } from "../engine/scenario/botPolicy.js";
 import { GameEngine, type SeatJoinOptions } from "../engine/GameEngine.js";
 import { finalRevealOf, type VisibilityPort } from "../engine/state/index.js";
 import { BotPlayer, type BotOptions } from "../bot/BotPlayer.js";
-import { defaultBotOptions } from "#api/bot/defaultBotOptions";
 import { botPersonaForDeck } from "@aegis/shared/bot/personas/botPersonaForDeck";
 import { trainedBotOptions } from "../bot/inferenceRuntime.js";
 import { evolvedBotOptions } from "../bot/evolution/livePolicy.js";
@@ -1375,7 +1374,7 @@ export class AegisRoom extends Room<{
         this.rebuildClientViews();
         return result;
       },
-      defaultBotOptions({ engine: this.engine, seat, deck, options: input.botOptions }),
+      input.botOptions,
     );
     this.withBatch(() => {
       this.engine.seatPlayer(seat, `bot:${participantId}`, {
@@ -1891,7 +1890,7 @@ export class AegisRoom extends Room<{
     experimentRecord: BotExperimentRecord | undefined,
   ): BotOptions | undefined {
     if (experimentRecord === undefined) {
-      return defaultBotOptions({ engine: this.engine, seat: this.BOT_SEAT, deck });
+      return undefined;
     }
     return createBotArmOptions({
       arm: experimentRecord.botArm,

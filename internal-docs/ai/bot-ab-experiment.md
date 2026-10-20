@@ -8,8 +8,8 @@ which policy each match used. The experiment is off unless you set
 
 | Arm                 | Bot policy                                                                                        |
 | ------------------- | ------------------------------------------------------------------------------------------------- |
-| `standard`          | The current default bot (`defaultBotOptions`, the certified residual policy). No change.          |
-| `legacy`            | The older evaluation bot (`createEvaluationPolicy`) that production ran before the residual bot.  |
+| `certified`         | The certified residual policy (`defaultBotOptions`). It has not played people yet.                |
+| `legacy`            | The evaluation bot (`createEvaluationPolicy`) production runs today. Also the default when off.   |
 | `humanPanel`        | The `human-panel-v1` scoring program (`apps/api/src/bot/evolution/programs/human-panel-v1.json`). |
 | `humanPanelPlanner` | The same program, with the main-phase turn planner and the planner settings from that file.       |
 
@@ -19,7 +19,7 @@ Set `AEGIS_BOT_EXPERIMENT` to inline JSON or to the path of a JSON file, then
 restart the API:
 
 ```sh
-AEGIS_BOT_EXPERIMENT='{"id":"bot-ab-2026-10","arms":{"standard":85,"humanPanelPlanner":15}}'
+AEGIS_BOT_EXPERIMENT='{"id":"bot-ab-2026-10","arms":{"legacy":50,"certified":25,"humanPanelPlanner":25}}'
 ```
 
 Rules, checked at startup:
@@ -43,7 +43,7 @@ buckets and walks the arm weights in order. The same match always gets the same
 arm, so a reload or a repeated bot join keeps it.
 
 If a candidate arm throws, fails an answer or has an action rejected by the
-engine, the bot switches to the `standard` policy for the rest of that match.
+engine, the bot switches to the `legacy` policy for the rest of that match.
 The record then has `botArmFallback: true`. A single slow answer (over one
 second) uses the older evaluation bot for that one decision only; the match-end
 log line counts these as `inferenceFallbacks`.
@@ -63,7 +63,7 @@ fairness. Export results regularly during a long experiment.
 
 ## Recommended first rollout
 
-1. Run `standard` 85, `humanPanelPlanner` 15 (10 to 20 percent candidate).
+1. Run `legacy` 50, `certified` 25, `humanPanelPlanner` 25. `legacy` is the bot production runs today.
 2. After a day, check the fallback rate and error logs. Expect almost no
    fallbacks.
 3. If the candidate is healthy, keep the split until the sample size below is
@@ -96,10 +96,10 @@ ORDER BY 1;
 Set the rule before you look at results:
 
 - **Primary metric:** bot win rate in decided games (`bot_wins_decided / decided`).
-  Compare the candidate arm with `standard` using a two-proportion test.
+  Compare each arm with `legacy` using a two-proportion test.
 - **Sample size:** to detect a 5-point change near 50 percent (two-sided 5
   percent significance, 80 percent power) you need about 1,570 decided games per
-  arm at a 50/50 split, or about 870 candidate and 7,840 standard games at 10/90.
+  arm at a 50/50 split, or about 870 candidate and 7,840 control games at 10/90.
   Stop at that size, or use a sequential test (for example, an O'Brien-Fleming
   boundary) if you want to check early. Do not stop the first time a plain test
   looks significant.
@@ -112,5 +112,5 @@ Set the rule before you look at results:
 
 ## Roll back
 
-Unset `AEGIS_BOT_EXPERIMENT` and restart the API. New matches use the standard
+Unset `AEGIS_BOT_EXPERIMENT` and restart the API. New matches use the legacy
 bot again. Recorded fields stay in old records and do no harm.

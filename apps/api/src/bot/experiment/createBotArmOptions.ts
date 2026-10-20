@@ -2,6 +2,8 @@ import type { Seat } from "@aegis/shared/schema/enums";
 import type { BotOptions } from "#api/bot/BotPlayer";
 import type { DefaultBotDeck } from "#api/bot/defaultBotProgram";
 import { defaultBotOptions } from "#api/bot/defaultBotOptions";
+import { createEvaluationPolicy } from "#api/bot/policy";
+import { resolveBotProfile } from "#api/bot/profiles";
 import { createTurnPlannerChooser } from "#api/bot/evolution/createTurnPlannerChooser";
 import { chooseHeuristic } from "#api/bot/evolution/heuristic";
 import { BotArm } from "#api/bot/experiment/BotArm";
@@ -47,16 +49,12 @@ export function createBotArmOptions({
   if (arm === BotArm.LEGACY.value) {
     return undefined;
   }
-  const standardOptions = defaultBotOptions({ engine, seat, deck });
   const entry = findArmEntry(arm);
   if (!entry.usesCandidate) {
-    return standardOptions;
-  }
-  const standard = standardOptions.policy;
-  if (standard === undefined) {
-    throw new Error("The standard bot has no policy to fall back to");
+    return defaultBotOptions({ engine, seat, deck });
   }
   const seed = engine.hooks.seed + seat * 7919;
+  const standard = createEvaluationPolicy({ profile: resolveBotProfile(undefined), seed });
   const choose = createCandidateChooser(entry.usesPlanner, seed);
   const candidate = createAsyncTrainingPolicy(engine, seat, async (window) => choose(window));
   return {

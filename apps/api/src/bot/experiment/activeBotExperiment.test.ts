@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { startBotInference, stopBotInference } from "#api/bot/inferenceRuntime";
 import { getActiveBotExperiment, startBotExperiment, stopBotExperiment } from "#api/bot/experiment/activeBotExperiment";
 
-const CONFIGURATION = '{"id":"bot-ab-2026-10","arms":{"standard":50,"humanPanelPlanner":50}}';
+const CONFIGURATION = '{"id":"bot-ab-2026-10","arms":{"certified":50,"humanPanelPlanner":50}}';
 let directory: string | undefined;
 
 afterEach(async () => {
@@ -37,7 +37,7 @@ describe("bot experiment startup", () => {
     await writeFile(path, CONFIGURATION);
     await startBotExperiment({ AEGIS_BOT_EXPERIMENT: path });
     expect(getActiveBotExperiment()?.arms).toEqual([
-      { arm: "standard", weight: 50 },
+      { arm: "certified", weight: 50 },
       { arm: "humanPanelPlanner", weight: 50 },
     ]);
   });
@@ -45,7 +45,7 @@ describe("bot experiment startup", () => {
   it.each([
     ["malformed JSON", "{not json", "not valid JSON"],
     ["a missing file", "/nonexistent/aegis-bot-experiment.json", "Cannot read the bot experiment file"],
-    ["bad weights", '{"id":"bot-ab","arms":{"standard":40}}', "sum to 100"],
+    ["bad weights", '{"id":"bot-ab","arms":{"certified":40}}', "sum to 100"],
   ])("fails server startup on %s", async (_case, setting, message) => {
     await expect(startBotInference({ AEGIS_BOT_EXPERIMENT: setting })).rejects.toThrow(message);
     expect(getActiveBotExperiment()).toBeUndefined();
