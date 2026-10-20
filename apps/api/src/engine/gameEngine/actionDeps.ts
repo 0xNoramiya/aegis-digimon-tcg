@@ -99,6 +99,7 @@ export function resolutionDeps(
   } = {},
 ): ResolutionDeps {
   const excludeNestedPending = opts.excludeNestedPending;
+  const excludedWindowWatchers = new Set(engine.pendingWindowSubTriggers);
   const derivedPending = opts.reactionPending ?? [];
   // A single OPT watcher can be published through both the event bus and deletion pool.
   // Preserve distinct non-OPT occurrences; only duplicate OPT identities are collapsed.
@@ -149,6 +150,9 @@ export function resolutionDeps(
                       (pending) =>
                         !excludeNestedPending.has(pending) && nestedTriggerSourceStillResident(engine, pending),
                     )),
+              ...(excludeNestedPending !== undefined && engine.optionResolutionDepth === 0
+                ? pendingWindowWatchersCollected(engine, excludedWindowWatchers)
+                : []),
               ...(engine.optionResolutionDepth > 0 ? [] : parkedEntryCollected(engine)),
               ...(opts.extraPending ?? []),
               ...derivedPending,
