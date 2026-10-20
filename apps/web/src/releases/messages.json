@@ -3208,5 +3208,41 @@
     "pt-BR": "Uma sala não quebra mais quando um jogador tenta entrar com um deck que não é válido naquele formato.",
     "es": "Una sala ya no falla cuando un jugador intenta entrar con un mazo que no es legal en ese formato.",
     "it": "Una stanza non si blocca più quando un giocatore prova a entrare con un mazzo non valido in quel formato."
+  },
+  "releases.1.35.2-beta.summary": {
+    "en": "Kentaurosmon (X Antibody), smoother match endings, and corrections to card effects.",
+    "pt-BR": "Kentaurosmon (X Antibody), menos pausas ao encerrar partidas e correções em efeitos de cartas.",
+    "es": "Kentaurosmon (X Antibody), menos pausas al terminar partidas y correcciones en efectos de cartas.",
+    "it": "Kentaurosmon (X Antibody), meno pause alla fine delle partite e correzioni agli effetti delle carte."
+  },
+  "releases.1.35.2-beta.feature.kentaurosmonX": {
+    "en": "Added Kentaurosmon (X Antibody) / Ultimate Crossbow Einherjar (BT27-043), with English and Japanese artwork and alternate art.",
+    "pt-BR": "Adicionado Kentaurosmon (X Antibody) / Ultimate Crossbow Einherjar (BT27-043), com artes em inglês e japonês, incluindo a arte alternativa.",
+    "es": "Añadido Kentaurosmon (X Antibody) / Ultimate Crossbow Einherjar (BT27-043), con ilustraciones en inglés y japonés, incluida la ilustración alternativa.",
+    "it": "Aggiunto Kentaurosmon (X Antibody) / Ultimate Crossbow Einherjar (BT27-043), con illustrazioni in inglese e giapponese, inclusa quella alternativa."
+  },
+  "releases.1.35.2-beta.fix.replayStalls": {
+    "en": "Reduced pauses in other matches while a finished match prepares its replay download.",
+    "pt-BR": "Reduzidas as pausas em outras partidas durante a preparação do download de replay de uma partida encerrada.",
+    "es": "Reducidas las pausas en otras partidas durante la preparación de la descarga de la repetición de una partida terminada.",
+    "it": "Ridotte le pause nelle altre partite durante la preparazione del download del replay di una partita conclusa."
+  },
+  "releases.1.35.2-beta.fix.pyramidimon": {
+    "en": "Pyramidimon (EX10-033) now lets you choose whether to trash digivolution cards for its effect, even when the opponent has no Digimon in the battle area.",
+    "pt-BR": "Pyramidimon (EX10-033) agora permite escolher se você quer descartar cartas de digievolução para seu efeito, mesmo sem Digimon adversário na área de batalha.",
+    "es": "Pyramidimon (EX10-033) ahora permite elegir si descartar cartas de digievolución para su efecto, incluso cuando el oponente no tiene Digimon en el área de batalla.",
+    "it": "Pyramidimon (EX10-033) ora permette di scegliere se scartare carte digievoluzione per il suo effetto, anche quando l’avversario non ha Digimon nell’area di battaglia."
+  },
+  "releases.1.35.2-beta.fix.chiropmon": {
+    "en": "After paying its Tamer-card cost, Chiropmon (ST23-12) now lets you decline returning a Digimon from the trash to your hand.",
+    "pt-BR": "Após pagar o custo de descartar uma carta sob um Tamer, Chiropmon (ST23-12) agora permite recusar o retorno de um Digimon do trash para a mão.",
+    "es": "Después de pagar el coste de descartar una carta bajo un Tamer, Chiropmon (ST23-12) ahora permite rechazar devolver un Digimon de la basura a la mano.",
+    "it": "Dopo aver pagato il costo di scartare una carta sotto un Tamer, Chiropmon (ST23-12) ora permette di rinunciare a riprendere in mano un Digimon dagli scarti."
+  },
+  "releases.1.35.2-beta.fix.gallantmonCrimsonMode": {
+    "en": "Gallantmon: Crimson Mode (EX2-073) now trashes one of the opponent's security cards when attacking, even if their trash contains fewer than 10 cards.",
+    "pt-BR": "Gallantmon: Crimson Mode (EX2-073) agora descarta uma carta de segurança do oponente ao atacar, mesmo que o trash dele tenha menos de 10 cartas.",
+    "es": "Gallantmon: Crimson Mode (EX2-073) ahora descarta una carta de seguridad del oponente al atacar, incluso si su basura contiene menos de 10 cartas.",
+    "it": "Gallantmon: Crimson Mode (EX2-073) ora scarta una carta sicurezza dell’avversario quando attacca, anche se i suoi scarti contengono meno di 10 carte."
   }
 }

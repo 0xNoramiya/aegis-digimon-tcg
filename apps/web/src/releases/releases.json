@@ -1,5 +1,31 @@
 [
   {
+    "version": "1.35.2-beta",
+    "releasedAt": "2026-10-20",
+    "summaryKey": "releases.1.35.2-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.35.2-beta.feature.kentaurosmonX"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.35.2-beta.fix.replayStalls"
+      },
+      {
+        "textKey": "releases.1.35.2-beta.fix.pyramidimon",
+        "issue": 5847
+      },
+      {
+        "textKey": "releases.1.35.2-beta.fix.chiropmon",
+        "issue": 5848
+      },
+      {
+        "textKey": "releases.1.35.2-beta.fix.gallantmonCrimsonMode"
+      }
+    ]
+  },
+  {
     "version": "1.35.1-beta",
     "releasedAt": "2026-10-20",
     "summaryKey": "releases.1.35.1-beta.summary",
