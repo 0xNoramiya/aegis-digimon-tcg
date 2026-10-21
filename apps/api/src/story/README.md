@@ -27,6 +27,22 @@ Guests can play without signing in. A random browser token identifies their serv
 
 Opening corrections preserve playable printed-card lines. Owen uses a red Digi-Egg and compatible Greymon/Dragonkin evolutions in both Deep Savers and Dragonkin Aggro. The latter starts on Owen’s turn with Lamiamon in reserve, following [Battle Coverage 7](https://digimoncard.com/digimon_liberator/en/column/tips23/), rather than granting Shoto three immediate attacks against two Security. [Battle Coverage 4](https://digimoncard.com/digimon_liberator/en/column/tips15/) supplies Close’s EX8 Proganomon with Tumblemon, Sunarizamon and Landramon underneath; the opposing Plesiomon also has a complete evolution stack. Violet uses Ghost Reanimation with the Ghostmon–Soulmon–Phantomon–Necromon line, Violet Inboots and Apparition Legion against Sam, as described in [Battle Coverage 5](https://digimoncard.com/digimon_liberator/en/column/tips20/). Unshown deck slots remain adaptations, and card counts include all starting zones.
 
+## Galacticmon rematch deck source
+
+Owen's rematch uses the [Medusamon deck recorded by DigiLab](https://digimon.digilab.cards/decklist/120372) for Fan Favorite's first-place, 3–0 finish at the October 11, 2026 Meta Madness Gaming Evolution Cup (nine players, EX13 format). DigiLab links the submitted list to [Bandai TCG+](https://www.bandai-tcg-plus.com/deck_code_recipe/OITUTMWh2xKX9QdJ). Retrieved October 21, 2026 through DigiLab's authenticated API. DigiLab is an independent tournament-data service; this is a recorded tournament list, not a Bandai endorsement of this scenario.
+
+The source has 50 main-deck cards and four BT21-001 Gigimon. Its Elizamon–Dimetromon–Lamiamon–Medusamon line, Styracomon, three Owen printings and two Red Memory Boosts fit Owen's story. The starting hand and two boosts are allocated from those counts, not added on top. Both boosts start in the battle area so their Delay effects are available.
+
+Three one-for-one substitutions preserve the story's existing WarGreymon board and its printed inherited effects:
+
+| Remove from tournament list | Add for story board   |
+| --------------------------- | --------------------- |
+| 1 BT24-008 Elizamon         | 1 BT21-007 Agumon     |
+| 1 P-189 Dimetromon          | 1 BT21-015 Cyclonemon |
+| 1 EX11-012 Medusamon        | 1 BT21-026 WarGreymon |
+
+The tournament list already supplies BT21-024 Cyberdramon. Together with Gigimon and the added lower stages, WarGreymon starts at 19,000 DP. All other card counts match the source. This remains a 50-card story adaptation of the tournament list, rather than an unchanged competitive deck. The opponent's historical Galacticmon board and deck are unchanged.
+
 ## Tutorial lessons
 
 The Learn page reuses this path. The client sends a tutorial lesson ID (prefix `tutorial-`) as `storyBattleId`. `findSoloBattle` resolves either a story battle or a lesson from `@aegis/shared/tutorial/tutorialLessons`, and `getTutorialScenario` supplies the lesson fixture from `engine/scenarios/tutorial-*.fixture.ts`. Lessons get the same room checks, guest and account progress, prerequisite gate, and disabled rollback as story battles. They differ in three ways: the player keeps their own name, the deck is named `Lesson <n>`, and the opponent is `Training Bot`. Lesson decks are not shuffled, so draws follow the fixture `deck` order from the front. Wins are stored in the story completion tables with the lesson ID as `battle_id`.

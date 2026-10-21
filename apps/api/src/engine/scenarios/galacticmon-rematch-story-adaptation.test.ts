@@ -93,7 +93,14 @@ describe("Galacticmon rematch story adaptation", () => {
     expect(main).toContain("BT24-016");
     expect(main).toContain("BT24-017");
     expect(main).toContain("BT24-018");
-    expect(main).toContain("EX8-074");
+    expect(main).toContain("EX11-012");
+    expect(main).toContain("BT24-082");
+    expect(main).toContain("EX11-054");
+    expect(main.filter((card) => card === "BT21-008")).toHaveLength(4);
+    expect(main.filter((card) => card === "BT24-016")).toHaveLength(4);
+    expect(main.filter((card) => card === "EX11-012")).toHaveLength(3);
+    expect(main.filter((card) => card === "P-035")).toHaveLength(2);
+    expect(main.filter((card) => card === "BT21-026")).toHaveLength(1);
     expect(main).not.toContain("BT21-057");
     expect(main).not.toContain("BT21-061");
   });
