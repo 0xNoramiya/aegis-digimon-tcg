@@ -109692,5 +109692,22 @@
     "rarity": "U",
     "maxCountInDeck": 4,
     "imageId": "BT27-098"
+  },
+  {
+    "cardId": "BT27-099",
+    "set": "BT27",
+    "nameEn": "Surtr Brander",
+    "nameJp": "スルトブランダー",
+    "colors": ["Blue"],
+    "kinds": ["Option"],
+    "playCost": 3,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["X Antibody", "Royal Knight"],
+    "effectText": "When effects trash this card from the security stack, activate its [Security] effects.\n[Main] 1 of your opponent's Digimon gets -6000 DP for the turn. Then, add your top security card to the hand and place this card as the top security card.",
+    "securityEffectText": "[Security] Place 1 of your opponent's Digimon with the lowest DP as their top security card.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-099"
   }
 ]
