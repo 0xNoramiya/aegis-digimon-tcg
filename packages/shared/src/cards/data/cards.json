@@ -50081,7 +50081,7 @@
     "maxCountInDeck": 4,
     "imageId": "BT27-084",
     "dualEffect": "Ultimate Thrusting Sword Gran Rozerio",
-    "optionEffect": "[Main] Delete 1 of your opponent's lowest level Digimon. If this effect didn't delete, until your turn ends, all of your Digimon with [Knightmon] in their texts gain ＜Blocker＞, your opponent's Digimon effects don't affect them and they get +3000 DP.",
+    "optionEffect": "[Main] Delete 1 of your opponent's lowest level Digimon. If this effect didn't delete, until your turn ends, all of your Digimon with [Knightmon] in their texts gain ＜Blocker＞, your opponent's Digimon effects don't affect them and they get +3000 DP.\n＜Arts Digivolve＞",
     "optionColorRequirements": ["Purple", "Black"],
     "isDualCard": true
   },

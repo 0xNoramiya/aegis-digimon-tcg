@@ -3,8 +3,8 @@
   "language": "ja",
   "catalogCards": 4508,
   "sourceCards": 4477,
-  "translatedCards": 4302,
-  "translatedFields": 6786,
+  "translatedCards": 4314,
+  "translatedFields": 6808,
   "missing": [
     {
       "cardId": "BT12-002",
@@ -54,26 +54,6 @@
     {
       "cardId": "BT23-084",
       "field": "securityEffectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-035",
-      "field": "effectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-035",
-      "field": "optionEffect",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-084",
-      "field": "effectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-084",
-      "field": "optionEffect",
       "reason": "unavailable-source-field"
     },
     {
@@ -227,26 +207,6 @@
       "reason": "unavailable-source-field"
     },
     {
-      "cardId": "BT27-070",
-      "field": "effectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-070",
-      "field": "optionEffect",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-103",
-      "field": "effectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-103",
-      "field": "optionEffect",
-      "reason": "unavailable-source-field"
-    },
-    {
       "cardId": "EX14-012",
       "field": "effectText",
       "reason": "unavailable-source-field"
@@ -264,76 +224,6 @@
     {
       "cardId": "EX14-054",
       "field": "effectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-100",
-      "field": "effectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-100",
-      "field": "securityEffectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-002",
-      "field": "inheritedEffectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-020",
-      "field": "effectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-020",
-      "field": "inheritedEffectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-025",
-      "field": "effectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-025",
-      "field": "inheritedEffectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-028",
-      "field": "effectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-028",
-      "field": "inheritedEffectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-031",
-      "field": "effectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-095",
-      "field": "effectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-095",
-      "field": "securityEffectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-040",
-      "field": "effectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-040",
-      "field": "inheritedEffectText",
       "reason": "unavailable-source-field"
     }
   ],
@@ -15741,6 +15631,52 @@
     "BT27-099": {
       "effectText": "https://x.com/digimon_tcg/status/2112702944512741703",
       "securityEffectText": "https://x.com/digimon_tcg/status/2112702944512741703"
+    },
+    "BT27-040": {
+      "effectText": "https://x.com/digimon_tcg/status/2112884119587971181",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2112884119587971181"
+    },
+    "BT27-028": {
+      "effectText": "data/card-images/BT27-028-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-028-J.webp"
+    },
+    "BT27-031": {
+      "effectText": "data/card-images/BT27-031-J.webp"
+    },
+    "BT27-035": {
+      "effectText": "data/card-images/BT27-035-J.webp",
+      "optionEffect": "data/card-images/BT27-035-J.webp"
+    },
+    "BT27-070": {
+      "effectText": "data/card-images/BT27-070-J.webp",
+      "optionEffect": "data/card-images/BT27-070-J.webp"
+    },
+    "BT27-084": {
+      "effectText": "data/card-images/BT27-084-J.webp",
+      "optionEffect": "data/card-images/BT27-084-J.webp"
+    },
+    "BT27-100": {
+      "effectText": "data/card-images/BT27-100-J.webp",
+      "securityEffectText": "data/card-images/BT27-100-J.webp"
+    },
+    "BT27-103": {
+      "effectText": "data/card-images/BT27-103-J.webp",
+      "optionEffect": "data/card-images/BT27-103-J.webp"
+    },
+    "BT27-002": {
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2111253419407426019"
+    },
+    "BT27-020": {
+      "effectText": "https://x.com/digimon_tcg/status/2111253419407426019",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2111253419407426019"
+    },
+    "BT27-025": {
+      "effectText": "https://x.com/digimon_tcg/status/2111253419407426019",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2111253419407426019"
+    },
+    "BT27-095": {
+      "effectText": "https://x.com/digimon_tcg/status/2111434578644836788",
+      "securityEffectText": "https://x.com/digimon_tcg/status/2111434578644836788"
     }
   }
 }
