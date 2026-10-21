@@ -4,7 +4,7 @@ import { isTournamentDiscordRole } from "#api/tournaments/discord/isTournamentDi
 const SNOWFLAKE = /^\d{17,20}$/;
 
 export function getTournamentDiscordConfig(env: NodeJS.ProcessEnv = process.env): TournamentDiscordConfig | undefined {
-  const token = env.AEGIS_DISCORD_BOT_TOKEN || env.DISCORD_BOT_TOKEN;
+  const token = env.AEGIS_TOURNAMENT_DISCORD_BOT_TOKEN || env.AEGIS_DISCORD_BOT_TOKEN || env.DISCORD_BOT_TOKEN;
   const channelId = env.AEGIS_TOURNAMENT_DISCORD_CHANNEL_ID;
   if (!token || !channelId) {
     return undefined;

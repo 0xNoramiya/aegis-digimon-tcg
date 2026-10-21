@@ -1,6 +1,6 @@
 # Tournament Discord announcements
 
-The API posts selected tournaments to the community Discord server and keeps tournament roles in sync. It calls the Discord REST API with the bot token. It does not run a gateway bot or slash commands.
+The API posts selected tournaments to the community Discord server and keeps tournament roles in sync. A dedicated bot, **Aegis Tournaments**, does the posting through the Discord REST API. It does not run a gateway bot or slash commands.
 
 ## What the bot does
 
@@ -32,13 +32,13 @@ Placement roles are permanent. A player keeps only their best placement role acr
 
 The sync runs in the tournament deadline worker, about every 15 seconds. It stays off until the token and channel are set.
 
-| Variable                              | Required    | Value                                                                                    |
-| ------------------------------------- | ----------- | ---------------------------------------------------------------------------------------- |
-| `DISCORD_BOT_TOKEN`                   | Yes         | Bot token. `AEGIS_DISCORD_BOT_TOKEN` takes priority when set.                            |
-| `AEGIS_TOURNAMENT_DISCORD_CHANNEL_ID` | Yes         | Text channel for announcements.                                                          |
-| `AEGIS_TOURNAMENT_DISCORD_GUILD_ID`   | For roles   | Server ID.                                                                               |
-| `AEGIS_TOURNAMENT_DISCORD_ROLES`      | For roles   | JSON object. Keys: `participant`, `champion`, `top_four`, `top_eight`. Any subset works. |
-| `AEGIS_WEB_URL`                       | Yes in prod | Base URL for tournament links.                                                           |
+| Variable                              | Required    | Value                                                                                                     |
+| ------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------- |
+| `AEGIS_TOURNAMENT_DISCORD_BOT_TOKEN`  | Recommended | Token of the dedicated tournament bot. Falls back to `AEGIS_DISCORD_BOT_TOKEN`, then `DISCORD_BOT_TOKEN`. |
+| `AEGIS_TOURNAMENT_DISCORD_CHANNEL_ID` | Yes         | Text channel for announcements.                                                                           |
+| `AEGIS_TOURNAMENT_DISCORD_GUILD_ID`   | For roles   | Server ID.                                                                                                |
+| `AEGIS_TOURNAMENT_DISCORD_ROLES`      | For roles   | JSON object. Keys: `participant`, `champion`, `top_four`, `top_eight`. Any subset works.                  |
+| `AEGIS_WEB_URL`                       | Yes in prod | Base URL for tournament links.                                                                            |
 
 Example:
 

@@ -29,6 +29,19 @@ describe("tournament Discord configuration", () => {
     });
   });
 
+  it("prefers the dedicated tournament bot token over the shared bot token", () => {
+    expect(
+      getTournamentDiscordConfig({
+        ...BASE,
+        DISCORD_BOT_TOKEN: "shared",
+        AEGIS_TOURNAMENT_DISCORD_BOT_TOKEN: "tournament",
+      })?.token,
+    ).toBe("tournament");
+    expect(
+      getTournamentDiscordConfig({ ...BASE, AEGIS_DISCORD_BOT_TOKEN: undefined, DISCORD_BOT_TOKEN: "shared" })?.token,
+    ).toBe("shared");
+  });
+
   it("refuses roles without a guild, unknown role names and malformed IDs", () => {
     const roles = JSON.stringify({ participant: "200000000000000001" });
     expect(() => getTournamentDiscordConfig({ ...BASE, AEGIS_TOURNAMENT_DISCORD_ROLES: roles })).toThrow(
