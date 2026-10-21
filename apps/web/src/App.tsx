@@ -700,7 +700,6 @@ function LoadedAegisClient({
                 onSignIn={() => navigateScreen("login")}
                 onReportBug={() => setBugReportOpen(true)}
                 onOpenReleases={() => navigateScreen("releases")}
-                onLearn={() => navigateScreen("learn")}
               />
             )}
 

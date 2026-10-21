@@ -2,17 +2,13 @@ import type { learnEn } from "@/i18n/learn/learn.en";
 import type { learnLessonsEn } from "@/i18n/learn/lessons.en";
 
 export const learnKo = {
-  "nav.learn": "배우기",
-
   "learn.eyebrow": "배우기",
   "learn.title": "디지몬 카드 게임이 처음인가요?",
   "learn.lede": "가이드 봇과 짧은 레슨을 플레이하거나, 원하는 속도로 규칙을 읽어 보세요.",
   "learn.startLesson": "레슨 {number} 시작",
   "learn.replayLessons": "레슨 다시 플레이",
   "learn.readRules": "플레이 방법 읽기",
-  "learn.progress": "레슨 {total}개 중 {completed}개 완료",
-  "learn.progressError": "지금은 레슨 진행 상황을 불러올 수 없습니다. 모든 레슨은 계속 플레이할 수 있습니다.",
-  "learn.retry": "다시 시도",
+  "learn.progress": "기본: 레슨 {total}개 중 {completed}개 완료",
   "learn.guestNote":
     "게스트로 플레이 중입니다. 진행 상황은 이 브라우저에 저장됩니다. 로그인하면 모든 기기에서 유지됩니다.",
   "learn.lessonsHeading": "레슨",
@@ -59,14 +55,7 @@ export const learnKo = {
   "learn.complete.failedBody": "괜찮습니다. 레슨을 다시 해 보세요. 필드는 매번 초기화됩니다.",
   "learn.complete.tryAgain": "다시 하기",
 
-  "learn.banner.title": "디지몬 카드 게임이 처음인가요?",
-  "learn.banner.copy": "짧은 가이드 레슨으로 약 20분 만에 기본을 배워 보세요.",
-  "learn.banner.start": "배우기 시작",
-  "learn.banner.dismiss": "닫기",
-
   "learn.lobbyButton": "플레이 방법 배우기",
-  "learn.shortcut.title": "플레이 방법 배우기",
-  "learn.shortcut.copy": "짧은 레슨 {count}개와 규칙",
 
   "learn.rules.back": "배우기",
   "learn.rules.contents": "목차",

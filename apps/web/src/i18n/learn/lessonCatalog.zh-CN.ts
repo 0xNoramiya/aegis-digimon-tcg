@@ -5,7 +5,7 @@ export const lessonCatalogZhCN = {
   "learn.catalog.navigation": "课程主题",
   "learn.catalog.officialRules": "官方规则",
   "learn.catalog.readChapter": "阅读指南讲解",
-  "learn.catalog.battleCount": "{count}场对战",
+  "learn.catalog.groupProgress": "已完成 {completed} / {count}",
   "learn.catalog.firstSteps": "入门基础",
   "learn.catalog.firstStepsBody": "学习胜利条件、安防检查、孵化数码蛋，以及将数码宝贝移至战斗区。",
   "learn.catalog.buildField": "内存与进化",

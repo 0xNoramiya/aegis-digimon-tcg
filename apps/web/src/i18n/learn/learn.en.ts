@@ -1,15 +1,11 @@
 export const learnEn = {
-  "nav.learn": "Learn",
-
   "learn.eyebrow": "Learn",
   "learn.title": "New to Digimon TCG?",
   "learn.lede": "Play short lessons against a guided bot, or read the rules at your own pace.",
   "learn.startLesson": "Start lesson {number}",
   "learn.replayLessons": "Play the lessons again",
   "learn.readRules": "Read How to Play",
-  "learn.progress": "{completed} of {total} lessons done",
-  "learn.progressError": "Your lesson progress is unavailable right now. You can still play every lesson.",
-  "learn.retry": "Retry",
+  "learn.progress": "Basics: {completed} of {total} lessons done",
   "learn.guestNote": "Playing as a guest. Your progress stays in this browser. Sign in to keep it on every device.",
   "learn.lessonsHeading": "Lessons",
   "learn.lessonNumber": "Lesson {number}",
@@ -55,14 +51,7 @@ export const learnEn = {
   "learn.complete.failedBody": "No problem. Try the lesson again. The board resets every time.",
   "learn.complete.tryAgain": "Try again",
 
-  "learn.banner.title": "New to Digimon TCG?",
-  "learn.banner.copy": "Learn the basics in about 20 minutes with short guided lessons.",
-  "learn.banner.start": "Start learning",
-  "learn.banner.dismiss": "Dismiss",
-
   "learn.lobbyButton": "Learn to play",
-  "learn.shortcut.title": "Learn to play",
-  "learn.shortcut.copy": "{count} short lessons and the rules",
 
   "learn.rules.back": "Learn",
   "learn.rules.contents": "Contents",

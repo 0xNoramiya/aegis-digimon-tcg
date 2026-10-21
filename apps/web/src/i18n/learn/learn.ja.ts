@@ -2,17 +2,13 @@ import type { learnEn } from "@/i18n/learn/learn.en";
 import type { learnLessonsEn } from "@/i18n/learn/lessons.en";
 
 export const learnJa = {
-  "nav.learn": "学ぶ",
-
   "learn.eyebrow": "学ぶ",
   "learn.title": "デジモンカードゲームは初めてですか？",
   "learn.lede": "ガイド付きのボットと短いレッスンで対戦するか、自分のペースでルールを読みましょう。",
   "learn.startLesson": "レッスン{number}を始める",
   "learn.replayLessons": "レッスンをもう一度プレイ",
   "learn.readRules": "遊び方を読む",
-  "learn.progress": "{total}レッスン中{completed}レッスン完了",
-  "learn.progressError": "現在、レッスンの進行状況を読み込めません。すべてのレッスンはプレイできます。",
-  "learn.retry": "再試行",
+  "learn.progress": "基本：{total}レッスン中{completed}レッスン完了",
   "learn.guestNote":
     "ゲストとしてプレイ中です。進行状況はこのブラウザに保存されます。サインインすると、どのデバイスでも引き継げます。",
   "learn.lessonsHeading": "レッスン",
@@ -59,14 +55,7 @@ export const learnJa = {
   "learn.complete.failedBody": "大丈夫です。もう一度挑戦しましょう。盤面は毎回リセットされます。",
   "learn.complete.tryAgain": "もう一度挑戦",
 
-  "learn.banner.title": "デジモンカードゲームは初めてですか？",
-  "learn.banner.copy": "短いガイド付きレッスンで、約20分で基本を学べます。",
-  "learn.banner.start": "学び始める",
-  "learn.banner.dismiss": "閉じる",
-
   "learn.lobbyButton": "遊び方を学ぶ",
-  "learn.shortcut.title": "遊び方を学ぶ",
-  "learn.shortcut.copy": "{count}つの短いレッスンとルール",
 
   "learn.rules.back": "学ぶ",
   "learn.rules.contents": "目次",

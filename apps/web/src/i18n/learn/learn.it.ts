@@ -2,17 +2,13 @@ import type { learnEn } from "@/i18n/learn/learn.en";
 import type { learnLessonsEn } from "@/i18n/learn/lessons.en";
 
 export const learnIt = {
-  "nav.learn": "Impara",
-
   "learn.eyebrow": "Impara",
   "learn.title": "Nuovo al Digimon TCG?",
   "learn.lede": "Gioca brevi lezioni contro un bot guidato, oppure leggi le regole con calma.",
   "learn.startLesson": "Inizia la lezione {number}",
   "learn.replayLessons": "Rigioca le lezioni",
   "learn.readRules": "Leggi Come si gioca",
-  "learn.progress": "{completed} lezioni completate su {total}",
-  "learn.progressError": "I progressi delle lezioni non sono disponibili ora. Puoi comunque giocare ogni lezione.",
-  "learn.retry": "Riprova",
+  "learn.progress": "Base: {completed} lezioni completate su {total}",
   "learn.guestNote":
     "Stai giocando come ospite. I progressi restano in questo browser. Accedi per averli su ogni dispositivo.",
   "learn.lessonsHeading": "Lezioni",
@@ -59,14 +55,7 @@ export const learnIt = {
   "learn.complete.failedBody": "Nessun problema. Riprova la lezione. Il campo si azzera ogni volta.",
   "learn.complete.tryAgain": "Riprova",
 
-  "learn.banner.title": "Nuovo al Digimon TCG?",
-  "learn.banner.copy": "Impara le basi in circa 20 minuti con brevi lezioni guidate.",
-  "learn.banner.start": "Inizia a imparare",
-  "learn.banner.dismiss": "Chiudi",
-
   "learn.lobbyButton": "Impara a giocare",
-  "learn.shortcut.title": "Impara a giocare",
-  "learn.shortcut.copy": "{count} brevi lezioni e le regole",
 
   "learn.rules.back": "Impara",
   "learn.rules.contents": "Indice",

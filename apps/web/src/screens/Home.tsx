@@ -10,8 +10,6 @@ import { BetaBanner } from "../design/BetaBanner";
 import { DISCORD_INVITE_URL, GITHUB_REPO_URL } from "../community";
 import { useTranslation } from "../i18n";
 import { currentRelease, displayVersion } from "../releases/catalog";
-import { tutorialLessons } from "@aegis/shared/tutorial/tutorialLessons";
-import { LearnBanner } from "@/learn/LearnBanner";
 import "./home.css";
 
 export function Home({
@@ -23,7 +21,6 @@ export function Home({
   onSignIn,
   onReportBug,
   onOpenReleases,
-  onLearn,
 }: {
   collectionSize: number;
   signedIn: boolean;
@@ -33,7 +30,6 @@ export function Home({
   onSignIn: () => void;
   onReportBug?: () => void;
   onOpenReleases?: () => void;
-  onLearn: () => void;
 }) {
   const { t } = useTranslation();
   const cardCount = collectionSize.toLocaleString();
@@ -58,8 +54,6 @@ export function Home({
           </div>
         </section>
 
-        <LearnBanner signedIn={signedIn} onStart={onLearn} />
-
         <nav className="home-shortcuts" aria-label={t("home.shortcuts.aria")}>
           <Shortcut
             icon={<Icons.Swords size={20} />}
@@ -78,12 +72,6 @@ export function Home({
             title={t("home.shortcuts.collection.title", { count: cardCount })}
             copy={t("home.shortcuts.collection.copy")}
             onClick={onOpenCollection}
-          />
-          <Shortcut
-            icon={<Icons.GraduationCap size={20} />}
-            title={t("learn.shortcut.title")}
-            copy={t("learn.shortcut.copy", { count: tutorialLessons.length })}
-            onClick={onLearn}
           />
         </nav>
 

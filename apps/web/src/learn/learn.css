@@ -41,6 +41,10 @@
   margin-top: var(--ds-space-2);
 }
 
+.learn-hero__actions a.aegis-button {
+  text-decoration: none;
+}
+
 .learn-progress {
   display: flex;
   flex-wrap: wrap;
@@ -93,15 +97,6 @@
   margin: 0;
   font-size: var(--ds-text-sm);
   line-height: var(--ds-leading-body);
-}
-
-.learn-notice--warning {
-  border-color: color-mix(in srgb, var(--ds-warning) 40%, transparent);
-  background: var(--ds-warning-soft);
-}
-
-.learn-notice--warning > svg {
-  color: var(--ds-warning);
 }
 
 .learn-section {
@@ -295,61 +290,6 @@
   white-space: nowrap;
 }
 
-.learn-chapters {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
-  gap: var(--ds-space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.learn-chapter {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-  min-height: var(--ds-touch-target);
-  padding: var(--ds-space-3);
-  color: var(--ds-text);
-  font: 700 var(--ds-text-sm) / 1.2 var(--ds-font-display);
-  text-decoration: none;
-  text-transform: uppercase;
-  border: 1px solid var(--ds-line);
-  border-radius: var(--ds-radius-md);
-  background: var(--ds-sheet);
-  transition: border-color var(--ds-motion-fast);
-}
-
-.learn-chapter:hover {
-  border-color: var(--ds-accent);
-}
-
-.learn-chapter > span:last-child {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.learn-chapter:focus-visible {
-  outline: none;
-  box-shadow: var(--ds-focus-ring);
-}
-
-.learn-chapter__icon {
-  display: grid;
-  flex: none;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  color: var(--ds-accent);
-  border-radius: var(--ds-radius-sm);
-  background: var(--ds-accent-soft);
-}
-
-.learn-chapter__number {
-  color: var(--ds-text-3);
-  font: 600 var(--ds-text-xs) / 1 var(--ds-font-mono);
-}
-
 .learn-briefing {
   display: grid;
   gap: var(--ds-space-3);
@@ -444,9 +384,5 @@
 
   .learn-lesson__action .aegis-button {
     width: 100%;
-  }
-
-  .learn-chapters {
-    grid-template-columns: minmax(0, 1fr);
   }
 }

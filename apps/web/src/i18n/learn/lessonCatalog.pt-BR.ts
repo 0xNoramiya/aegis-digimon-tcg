@@ -6,7 +6,7 @@ export const lessonCatalogPtBR = {
   "learn.catalog.navigation": "Temas das lições",
   "learn.catalog.officialRules": "Regras oficiais",
   "learn.catalog.readChapter": "Ler a explicação no guia",
-  "learn.catalog.battleCount": "{count} batalhas",
+  "learn.catalog.groupProgress": "{completed} de {count} concluídas",
   "learn.catalog.firstSteps": "Primeiros passos",
   "learn.catalog.firstStepsBody":
     "Aprenda a vencer, checar segurança, chocar um Digi-Egg e mover um Digimon para a batalha.",

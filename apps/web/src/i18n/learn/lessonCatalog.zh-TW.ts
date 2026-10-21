@@ -5,7 +5,7 @@ export const lessonCatalogZhTW = {
   "learn.catalog.navigation": "課程主題",
   "learn.catalog.officialRules": "官方規則",
   "learn.catalog.readChapter": "閱讀指南講解",
-  "learn.catalog.battleCount": "{count}場對戰",
+  "learn.catalog.groupProgress": "已完成 {completed} / {count}",
   "learn.catalog.firstSteps": "入門基礎",
   "learn.catalog.firstStepsBody": "學習勝利條件、安防檢查、孵化數碼蛋，以及將數碼寶貝移至戰鬥區。",
   "learn.catalog.buildField": "記憶體與進化",

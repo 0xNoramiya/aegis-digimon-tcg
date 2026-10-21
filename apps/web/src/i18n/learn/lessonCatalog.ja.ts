@@ -6,7 +6,7 @@ export const lessonCatalogJa = {
   "learn.catalog.navigation": "レッスンのテーマ",
   "learn.catalog.officialRules": "公式ルール",
   "learn.catalog.readChapter": "ガイドの解説を読む",
-  "learn.catalog.battleCount": "バトル{count}件",
+  "learn.catalog.groupProgress": "{count}件中{completed}件完了",
   "learn.catalog.firstSteps": "はじめの一歩",
   "learn.catalog.firstStepsBody":
     "勝利条件、セキュリティチェック、デジタマの孵化、デジモンをバトルエリアに移す手順を学びます。",

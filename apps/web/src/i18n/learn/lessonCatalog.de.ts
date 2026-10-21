@@ -6,7 +6,7 @@ export const lessonCatalogDe = {
   "learn.catalog.navigation": "Lektionsthemen",
   "learn.catalog.officialRules": "Offizielle Regeln",
   "learn.catalog.readChapter": "Erklärung im Leitfaden lesen",
-  "learn.catalog.battleCount": "{count} Kämpfe",
+  "learn.catalog.groupProgress": "{completed} von {count} erledigt",
   "learn.catalog.firstSteps": "Erste Schritte",
   "learn.catalog.firstStepsBody":
     "Lernen Sie zu gewinnen, Security-Checks durchzuführen, ein Digi-Egg auszubrüten und einen Digimon in den Kampf zu bewegen.",

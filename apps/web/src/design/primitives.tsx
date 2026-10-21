@@ -593,8 +593,7 @@ export function TopNav({
   const navActive = (key: Screen) =>
     screen === key ||
     (screen === "roadmap" && key === "community") ||
-    ((screen === "watch" || screen === "story") && key === "lobby") ||
-    (screen === "rules" && key === "learn");
+    ((screen === "watch" || screen === "story" || screen === "learn" || screen === "rules") && key === "lobby");
   const navTo = (s: Screen) => {
     playSound("nav");
     onNav(s);
@@ -603,7 +602,6 @@ export function TopNav({
     { key: "home", label: t("nav.home"), icon: Icons.LayoutDashboard },
     { key: "lobby", label: t("nav.play"), icon: Icons.Swords },
     { key: "deck", label: t("nav.decks"), icon: Icons.LayoutDashboard },
-    { key: "learn", label: t("nav.learn"), icon: Icons.GraduationCap },
     { key: "community", label: t("nav.community"), icon: Icons.Users },
     { key: "collection", label: t("nav.collection"), icon: Icons.BookOpen },
   ];

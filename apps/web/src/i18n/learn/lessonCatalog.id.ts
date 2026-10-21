@@ -6,7 +6,7 @@ export const lessonCatalogId = {
   "learn.catalog.navigation": "Topik pelajaran",
   "learn.catalog.officialRules": "Aturan resmi",
   "learn.catalog.readChapter": "Baca penjelasan panduan",
-  "learn.catalog.battleCount": "{count} battle",
+  "learn.catalog.groupProgress": "{completed} dari {count} selesai",
   "learn.catalog.firstSteps": "Langkah awal",
   "learn.catalog.firstStepsBody":
     "Pelajari cara menang, melakukan security check, menetaskan Digi-Egg, dan memindahkan Digimon ke battle area.",

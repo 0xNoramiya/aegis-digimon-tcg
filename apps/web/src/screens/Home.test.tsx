@@ -13,7 +13,6 @@ function renderHome(overrides: Partial<Parameters<typeof Home>[0]> = {}) {
     onOpenCollection: vi.fn<() => void>(),
     onSignIn: vi.fn<() => void>(),
     onReportBug: vi.fn<() => void>(),
-    onLearn: vi.fn<() => void>(),
     ...overrides,
   };
   render(
@@ -36,14 +35,6 @@ describe("the home screen", () => {
 
     expect(props.onPlay).toHaveBeenCalled();
     expect(props.onBuildDeck).toHaveBeenCalled();
-  });
-
-  it("opens the lessons from the learn shortcut", () => {
-    const props = renderHome();
-
-    fireEvent.click(screen.getByRole("button", { name: /Learn to play/ }));
-
-    expect(props.onLearn).toHaveBeenCalled();
   });
 
   it("names the collection size the pitch is promising", () => {

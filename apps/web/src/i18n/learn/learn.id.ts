@@ -2,17 +2,13 @@ import type { learnEn } from "@/i18n/learn/learn.en";
 import type { learnLessonsEn } from "@/i18n/learn/lessons.en";
 
 export const learnId = {
-  "nav.learn": "Belajar",
-
   "learn.eyebrow": "Belajar",
   "learn.title": "Baru mengenal Digimon TCG?",
   "learn.lede": "Mainkan pelajaran singkat melawan bot pemandu, atau baca aturannya sesuai kecepatan Anda.",
   "learn.startLesson": "Mulai pelajaran {number}",
   "learn.replayLessons": "Mainkan pelajaran lagi",
   "learn.readRules": "Baca Cara Bermain",
-  "learn.progress": "{completed} dari {total} pelajaran selesai",
-  "learn.progressError": "Progres pelajaran Anda sedang tidak tersedia. Anda tetap dapat memainkan semua pelajaran.",
-  "learn.retry": "Coba lagi",
+  "learn.progress": "Dasar: {completed} dari {total} pelajaran selesai",
   "learn.guestNote":
     "Anda bermain sebagai tamu. Progres Anda tersimpan di browser ini. Masuk untuk menyimpannya di semua perangkat.",
   "learn.lessonsHeading": "Pelajaran",
@@ -59,14 +55,7 @@ export const learnId = {
   "learn.complete.failedBody": "Tidak masalah. Coba pelajaran ini lagi. Papan diatur ulang setiap kali.",
   "learn.complete.tryAgain": "Coba lagi",
 
-  "learn.banner.title": "Baru mengenal Digimon TCG?",
-  "learn.banner.copy": "Pelajari dasar-dasarnya dalam sekitar 20 menit dengan pelajaran singkat yang dipandu.",
-  "learn.banner.start": "Mulai belajar",
-  "learn.banner.dismiss": "Tutup",
-
   "learn.lobbyButton": "Belajar bermain",
-  "learn.shortcut.title": "Belajar bermain",
-  "learn.shortcut.copy": "{count} pelajaran singkat dan aturannya",
 
   "learn.rules.back": "Belajar",
   "learn.rules.contents": "Daftar isi",

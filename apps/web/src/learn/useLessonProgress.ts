@@ -5,15 +5,12 @@ import { getStoryGuestToken } from "@/story/getStoryGuestToken";
 
 type Params = { signedIn: boolean };
 
-export type LessonProgress = { completed: readonly string[] | undefined; failed: boolean; retry: () => void };
+export type LessonProgress = { completed: readonly string[] | undefined };
 
 export function useLessonProgress({ signedIn }: Params): LessonProgress {
   const [completed, setCompleted] = useState<readonly string[]>();
-  const [failed, setFailed] = useState(false);
-  const [revision, setRevision] = useState(0);
   useEffect(() => {
     let active = true;
-    setFailed(false);
     void request<StoryProgress>("/story/progress", { headers: { Authorization: `StoryGuest ${getStoryGuestToken()}` } })
       .then((value) => {
         if (active) {
@@ -22,12 +19,12 @@ export function useLessonProgress({ signedIn }: Params): LessonProgress {
       })
       .catch(() => {
         if (active) {
-          setFailed(true);
+          setCompleted([]);
         }
       });
     return () => {
       active = false;
     };
-  }, [signedIn, revision]);
-  return { completed, failed, retry: () => setRevision((value) => value + 1) };
+  }, [signedIn]);
+  return { completed };
 }

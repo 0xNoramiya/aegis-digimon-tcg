@@ -6,7 +6,7 @@ export const lessonCatalogKo = {
   "learn.catalog.navigation": "레슨 주제",
   "learn.catalog.officialRules": "공식 규칙",
   "learn.catalog.readChapter": "가이드 해설 읽기",
-  "learn.catalog.battleCount": "배틀 {count}개",
+  "learn.catalog.groupProgress": "{count}개 중 {completed}개 완료",
   "learn.catalog.firstSteps": "첫걸음",
   "learn.catalog.firstStepsBody":
     "승리 조건, 시큐리티 체크, 디지타마 부화, 디지몬을 배틀 에어리어로 이동하는 방법을 배웁니다.",

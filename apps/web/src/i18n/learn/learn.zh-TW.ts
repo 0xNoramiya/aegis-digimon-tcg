@@ -2,17 +2,13 @@ import type { learnEn } from "@/i18n/learn/learn.en";
 import type { learnLessonsEn } from "@/i18n/learn/lessons.en";
 
 export const learnZhTW = {
-  "nav.learn": "學習",
-
   "learn.eyebrow": "學習",
   "learn.title": "剛接觸數碼寶貝卡牌遊戲？",
   "learn.lede": "跟著引導機器人玩簡短的課程，或按自己的節奏閱讀規則。",
   "learn.startLesson": "開始第 {number} 課",
   "learn.replayLessons": "重新遊玩課程",
   "learn.readRules": "閱讀玩法說明",
-  "learn.progress": "已完成 {completed} / {total} 課",
-  "learn.progressError": "目前無法讀取你的課程進度。你仍然可以遊玩每一課。",
-  "learn.retry": "重試",
+  "learn.progress": "基礎：已完成 {completed} / {total} 課",
   "learn.guestNote": "你正以訪客身份遊玩。進度只會保存在此瀏覽器中。登入後可在所有裝置上保留進度。",
   "learn.lessonsHeading": "課程",
   "learn.lessonNumber": "第 {number} 課",
@@ -58,14 +54,7 @@ export const learnZhTW = {
   "learn.complete.failedBody": "沒關係。再試一次吧。每次場面都會重設。",
   "learn.complete.tryAgain": "再試一次",
 
-  "learn.banner.title": "剛接觸數碼寶貝卡牌遊戲？",
-  "learn.banner.copy": "透過簡短的引導課程，約 20 分鐘學會基礎。",
-  "learn.banner.start": "開始學習",
-  "learn.banner.dismiss": "關閉",
-
   "learn.lobbyButton": "學習玩法",
-  "learn.shortcut.title": "學習玩法",
-  "learn.shortcut.copy": "{count} 堂簡短課程和規則說明",
 
   "learn.rules.back": "學習",
   "learn.rules.contents": "目錄",

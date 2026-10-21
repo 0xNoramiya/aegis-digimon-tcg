@@ -12,9 +12,7 @@ import { LessonBriefing } from "@/learn/LessonBriefing";
 import { LessonRow, type LessonRowStatus } from "@/learn/LessonRow";
 import { lessonGroups } from "@/learn/lessonGroups";
 import { useLessonProgress } from "@/learn/useLessonProgress";
-import { getRulesGuideChapters } from "@/learn/rules/getRulesGuideChapters";
-import { getRulesGuideLabels } from "@/learn/rules/getRulesGuideLabels";
-import { type RulesChapterId, rulesChapters } from "@/learn/rules/rulesChapters";
+import type { RulesChapterId } from "@/learn/rules/rulesChapters";
 import "@/learn/learn.css";
 
 type Params = {
@@ -39,9 +37,14 @@ function getLessonStatus({ lesson, completed, nextId }: LessonStatusParams): Les
   return "ready";
 }
 
+type PracticeStatusParams = { lesson: TutorialLesson; completed: readonly string[] };
+
+function getPracticeStatus({ lesson, completed }: PracticeStatusParams): LessonRowStatus {
+  return completed.includes(lesson.id) ? "done" : "ready";
+}
+
 export function LearnScreen({ signedIn, onSignIn, onStartLesson, onOpenRules }: Params) {
-  const { t, locale } = useTranslation();
-  const guideChapters = getRulesGuideChapters(locale);
+  const { t } = useTranslation();
   const progress = useLessonProgress({ signedIn });
   const [briefingLesson, setBriefingLesson] = useState<TutorialLesson>();
   const completed = progress.completed ?? [];
@@ -66,9 +69,17 @@ export function LearnScreen({ signedIn, onSignIn, onStartLesson, onOpenRules }: 
                   : t("learn.replayLessons")}
               </Button>
             ) : null}
-            <Button size="lg" variant="secondary" icon={Icons.BookOpen} onClick={() => onOpenRules()}>
+            <a
+              className="aegis-button aegis-button--secondary aegis-button--lg"
+              href="/learn/rules#chapter-goal"
+              onClick={(event) => {
+                event.preventDefault();
+                onOpenRules("goal");
+              }}
+            >
+              <Icons.BookOpen size={18} />
               {t("learn.readRules")}
-            </Button>
+            </a>
           </div>
           <div className="learn-progress" role="group" aria-label={progressLabel}>
             <div className="learn-progress__segments" aria-hidden="true">
@@ -100,15 +111,6 @@ export function LearnScreen({ signedIn, onSignIn, onStartLesson, onOpenRules }: 
               </a>
             ))}
           </nav>
-          {progress.failed ? (
-            <div className="learn-notice learn-notice--warning" role="status">
-              <Icons.CircleAlert size={18} />
-              <p>{t("learn.progressError")}</p>
-              <Button size="sm" variant="secondary" onClick={progress.retry}>
-                {t("learn.retry")}
-              </Button>
-            </div>
-          ) : null}
           {lessonGroups.map((group) => (
             <section
               key={group.id}
@@ -118,16 +120,25 @@ export function LearnScreen({ signedIn, onSignIn, onStartLesson, onOpenRules }: 
             >
               <header className="learn-module__header">
                 <h3 id={`lessons-${group.id}-heading`}>{t(group.titleKey)}</h3>
-                <span>{t("learn.catalog.battleCount", { count: group.lessons.length })}</span>
+                <span>
+                  {t("learn.catalog.groupProgress", {
+                    completed: group.lessons.filter((lesson) => completed.includes(lesson.id)).length,
+                    count: group.lessons.length,
+                  })}
+                </span>
                 <p>{t(group.descriptionKey)}</p>
               </header>
-              <ol className="learn-lessons" aria-busy={group.numbered && !progress.completed && !progress.failed}>
+              <ol className="learn-lessons" aria-busy={!progress.completed}>
                 {group.lessons.map((lesson) => (
                   <LessonRow
                     key={lesson.id}
                     lesson={lesson}
                     number={group.numbered ? getTutorialLessonNumber(lesson.id) : undefined}
-                    status={group.numbered ? getLessonStatus({ lesson, completed, nextId: nextLesson?.id }) : "ready"}
+                    status={
+                      group.numbered
+                        ? getLessonStatus({ lesson, completed, nextId: nextLesson?.id })
+                        : getPracticeStatus({ lesson, completed })
+                    }
                     onStart={openBriefing}
                     onOpenRules={onOpenRules}
                   />
@@ -135,41 +146,6 @@ export function LearnScreen({ signedIn, onSignIn, onStartLesson, onOpenRules }: 
               </ol>
             </section>
           ))}
-        </section>
-
-        <section className="learn-section" aria-labelledby="learn-rules-heading">
-          <h2 id="learn-rules-heading">{t("learn.rulesHeading")}</h2>
-          <p className="learn-section__lede">{t("learn.rulesLede")}</p>
-          {locale !== "en" && locale !== "pt-BR" ? (
-            <p className="learn-section__lede" lang="en">
-              {getRulesGuideLabels(locale).fallback}
-            </p>
-          ) : null}
-          <ol className="learn-chapters">
-            {rulesChapters.map((chapter, index) => {
-              const ChapterIcon = chapter.icon;
-              return (
-                <li key={chapter.id}>
-                  <a
-                    className="learn-chapter"
-                    href={`/learn/rules#chapter-${chapter.id}`}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      onOpenRules(chapter.id);
-                    }}
-                  >
-                    <span className="learn-chapter__icon" aria-hidden="true">
-                      <ChapterIcon size={18} />
-                    </span>
-                    <span className="learn-chapter__number" aria-hidden="true">
-                      {index + 1}
-                    </span>
-                    <span lang={locale === "pt-BR" ? "pt-BR" : "en"}>{guideChapters[index]!.title}</span>
-                  </a>
-                </li>
-              );
-            })}
-          </ol>
         </section>
       </div>
       {briefingLesson ? (

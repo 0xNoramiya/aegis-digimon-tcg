@@ -2,17 +2,13 @@ import type { learnEn } from "@/i18n/learn/learn.en";
 import type { learnLessonsEn } from "@/i18n/learn/lessons.en";
 
 export const learnZhCN = {
-  "nav.learn": "学习",
-
   "learn.eyebrow": "学习",
   "learn.title": "刚接触数码宝贝卡牌游戏？",
   "learn.lede": "跟着引导电脑玩简短的课程，或按自己的节奏阅读规则。",
   "learn.startLesson": "开始第 {number} 课",
   "learn.replayLessons": "重新游玩课程",
   "learn.readRules": "阅读玩法说明",
-  "learn.progress": "已完成 {completed} / {total} 课",
-  "learn.progressError": "目前无法读取你的课程进度。你仍然可以游玩每一课。",
-  "learn.retry": "重试",
+  "learn.progress": "基础：已完成 {completed} / {total} 课",
   "learn.guestNote": "你正以游客身份游玩。进度只保存在此浏览器中。登录后可在所有设备上保留进度。",
   "learn.lessonsHeading": "课程",
   "learn.lessonNumber": "第 {number} 课",
@@ -58,14 +54,7 @@ export const learnZhCN = {
   "learn.complete.failedBody": "没关系。再试一次吧。每次场面都会重置。",
   "learn.complete.tryAgain": "再试一次",
 
-  "learn.banner.title": "刚接触数码宝贝卡牌游戏？",
-  "learn.banner.copy": "通过简短的引导课程，约 20 分钟学会基础。",
-  "learn.banner.start": "开始学习",
-  "learn.banner.dismiss": "关闭",
-
   "learn.lobbyButton": "学习玩法",
-  "learn.shortcut.title": "学习玩法",
-  "learn.shortcut.copy": "{count} 节简短课程和规则说明",
 
   "learn.rules.back": "学习",
   "learn.rules.contents": "目录",

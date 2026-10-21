@@ -6,7 +6,7 @@ export const lessonCatalogFr = {
   "learn.catalog.navigation": "Thèmes des leçons",
   "learn.catalog.officialRules": "Règles officielles",
   "learn.catalog.readChapter": "Lire l’explication du guide",
-  "learn.catalog.battleCount": "{count} batailles",
+  "learn.catalog.groupProgress": "{completed} sur {count} terminées",
   "learn.catalog.firstSteps": "Premiers pas",
   "learn.catalog.firstStepsBody":
     "Apprenez à gagner, vérifier la sécurité, faire éclore un Digi-Œuf et déplacer un Digimon au combat.",
