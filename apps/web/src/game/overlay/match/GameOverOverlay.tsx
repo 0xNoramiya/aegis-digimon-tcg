@@ -243,26 +243,50 @@ export function GameOverOverlay({
             </Button>
           </div>
         )}
-        {opponentDeckDialog ? (
+        <div className="game-result__links">
+          {opponentDeckDialog ? (
+            <Button
+              className="game-result__link"
+              variant="ghost"
+              size="sm"
+              icon={Icons.FileText}
+              onClick={() => setOpponentDeckOpen(true)}
+            >
+              {t("overlay.opponentDeck")}
+            </Button>
+          ) : null}
+          {usedDeckDialog ? (
+            <Button
+              className="game-result__link"
+              variant="ghost"
+              size="sm"
+              icon={Icons.FileText}
+              onClick={() => setView("usedDeck")}
+            >
+              {t("overlay.viewUsedDeck")}
+            </Button>
+          ) : null}
           <Button
-            className="game-result__used-deck"
-            variant="secondary"
-            icon={Icons.FileText}
-            onClick={() => setOpponentDeckOpen(true)}
+            className="game-result__link"
+            variant="ghost"
+            size="sm"
+            icon={Icons.Eye}
+            onClick={() => setView("board")}
           >
-            {t("overlay.viewOpponentDeck")}
+            {t("overlay.viewBoard")}
           </Button>
-        ) : null}
-        {usedDeckDialog ? (
-          <Button
-            className="game-result__used-deck"
-            variant="secondary"
-            icon={Icons.FileText}
-            onClick={() => setView("usedDeck")}
-          >
-            {t("overlay.viewUsedDeck")}
-          </Button>
-        ) : null}
+          {seriesRunning && series.view.stage === "choosing" ? (
+            <Button
+              className="game-result__link series-leave"
+              variant="ghost"
+              size="sm"
+              icon={Icons.LogOut}
+              onClick={series.onLeave}
+            >
+              {t("overlay.series.leave")}
+            </Button>
+          ) : null}
+        </div>
         <ReplaySavePrompt
           onDownloadReplay={onDownloadReplay}
           replayFile={replayFile}
@@ -270,26 +294,6 @@ export function GameOverOverlay({
           signedIn={signedIn}
           keepsMatchOpen={keepsMatchOpen}
         />
-        <Button
-          className="game-result__view-board"
-          variant="ghost"
-          size="sm"
-          icon={Icons.Eye}
-          onClick={() => setView("board")}
-        >
-          {t("overlay.viewBoard")}
-        </Button>
-        {seriesRunning && series.view.stage === "choosing" ? (
-          <Button
-            className="game-result__view-board series-leave"
-            variant="ghost"
-            size="sm"
-            icon={Icons.LogOut}
-            onClick={series.onLeave}
-          >
-            {t("overlay.series.leave")}
-          </Button>
-        ) : null}
       </div>
     </div>
   );

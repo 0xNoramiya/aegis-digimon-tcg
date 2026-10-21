@@ -67,16 +67,12 @@ export function RematchPanel({
               aria-describedby={`${hintId}-${option.mode}`}
               onClick={() => onOffer(option.mode)}
             >
-              <span className="rematch-option__icon" aria-hidden="true">
-                <option.icon size={18} />
+              <span className="rematch-option__label" id={`${hintId}-${option.mode}-label`}>
+                <option.icon size={16} />
+                {t(option.labelKey)}
               </span>
-              <span className="rematch-option__text">
-                <span className="rematch-option__label" id={`${hintId}-${option.mode}-label`}>
-                  {t(option.labelKey)}
-                </span>
-                <span className="rematch-option__hint" id={`${hintId}-${option.mode}`}>
-                  {t(option.hintKey)}
-                </span>
+              <span className="rematch-option__hint" id={`${hintId}-${option.mode}`}>
+                {t(option.hintKey)}
               </span>
             </button>
           ))}

@@ -64,7 +64,7 @@ describe("viewing the used deck from the result", () => {
       </I18nProvider>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "View used deck" }));
+    fireEvent.click(screen.getByRole("button", { name: "Your deck" }));
     expect(screen.getAllByRole("dialog").map((dialog) => dialog.getAttribute("aria-label"))).toEqual(["Used deck"]);
     expect(screen.queryByRole("status")).toBeNull();
 
@@ -342,7 +342,7 @@ it("opens the exact used deck after a duel and saves an independent personal cop
       />
     </I18nProvider>,
   );
-  fireEvent.click(screen.getByRole("button", { name: "View used deck" }));
+  fireEvent.click(screen.getByRole("button", { name: "Your deck" }));
   expect(screen.getByRole("heading", { name: /Deck at match start/ })).toBeTruthy();
   expect(screen.getByText("Original Author")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Use deck" })).toBeNull();
@@ -381,15 +381,15 @@ it("opens the shared opponent deck and returns to the result", () => {
       />
     </I18nProvider>,
   );
-  fireEvent.click(screen.getByRole("button", { name: "View opponent’s deck" }));
+  fireEvent.click(screen.getByRole("button", { name: "Opponent’s deck" }));
   expect(screen.getByRole("dialog", { name: "Opponent deck" })).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Close opponent deck" }));
-  expect(screen.getByRole("button", { name: "View opponent’s deck" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Opponent’s deck" })).toBeTruthy();
 });
 
 it("does not offer an unavailable opponent deck", () => {
   renderOverlay();
-  expect(screen.queryByRole("button", { name: "View opponent’s deck" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Opponent’s deck" })).toBeNull();
 });
 
 it("keeps the board-review result bar clear of the portrait match menu", () => {

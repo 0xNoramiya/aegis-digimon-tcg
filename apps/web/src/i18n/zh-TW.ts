@@ -696,7 +696,7 @@ const interfaceMessages = {
   "lobby.randomCommunityPool": "個人、著名及社群公開卡組",
   "lobby.randomFailed": "無法抽選卡組。請重試。",
   "lobby.randomDrawing": "正在抽選卡組…",
-  "overlay.viewUsedDeck": "查看使用的卡組",
+  "overlay.viewUsedDeck": "我的卡組",
   "overlay.usedDeck": "本次對局使用的卡組",
   "lobby.randomPool": "卡池中有 {count} 副合法卡組",
   "lobby.randomPoolOne": "卡池中有 1 副合法卡組",

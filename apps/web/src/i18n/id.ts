@@ -733,7 +733,7 @@ const interfaceMessages = {
   "lobby.randomCommunityPool": "Deck pribadi, terkenal, dan publik dari komunitas",
   "lobby.randomFailed": "Tidak dapat memilih deck. Coba lagi.",
   "lobby.randomDrawing": "Memilih deck…",
-  "overlay.viewUsedDeck": "Lihat deck yang digunakan",
+  "overlay.viewUsedDeck": "Deck Anda",
   "overlay.usedDeck": "Deck yang digunakan dalam pertandingan ini",
   "lobby.randomPool": "{count} deck legal di pool",
   "lobby.randomPoolOne": "1 deck legal di pool",

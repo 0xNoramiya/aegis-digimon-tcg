@@ -127,11 +127,11 @@
     rgb(255 255 255 / 14%);
 }
 
-.game-result .series-leave {
+.game-result .game-result__link.series-leave {
   color: rgb(255 168 168);
 }
 
-.game-result .series-leave:is(:hover, :active, :focus-visible) {
+.game-result .game-result__link.series-leave:is(:hover, :active, :focus-visible) {
   color: #fff;
   background: rgb(255 255 255 / 10%);
 }
@@ -149,12 +149,12 @@
 
 .rematch-option {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.8rem 0.9rem;
+  align-content: center;
+  justify-items: center;
+  gap: 0.3rem;
+  padding: 0.75rem 0.9rem;
   font: inherit;
-  text-align: left;
+  text-align: center;
   color: #fff;
   border: 1px solid rgb(255 255 255 / 16%);
   border-radius: var(--ds-radius-lg);
@@ -176,32 +176,25 @@
   box-shadow: var(--ds-focus-ring);
 }
 
-.rematch-option__icon {
-  display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
-  place-items: center;
-  color: var(--ds-on-accent);
-  border-radius: var(--ds-radius-md);
-  background: var(--ds-accent);
-}
-
-.rematch-option__text {
-  display: grid;
-  gap: 0.2rem;
-  min-width: 0;
-}
-
 .rematch-option__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-family: var(--ds-font-display);
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1.2;
 }
 
+.rematch-option__label svg {
+  flex: none;
+  color: var(--ds-accent);
+}
+
 .rematch-option__hint {
   font-size: 0.78rem;
   line-height: 1.35;
+  text-wrap: balance;
   color: rgb(226 232 240 / 72%);
 }
 

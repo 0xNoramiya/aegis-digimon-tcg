@@ -727,7 +727,7 @@ const interfaceMessages = {
   "lobby.randomCommunityPool": "내 덱, 유명 덱, 커뮤니티 공개 덱",
   "lobby.randomFailed": "덱을 뽑지 못했습니다. 다시 시도하세요.",
   "lobby.randomDrawing": "덱 뽑는 중…",
-  "overlay.viewUsedDeck": "사용한 덱 보기",
+  "overlay.viewUsedDeck": "내 덱",
   "overlay.usedDeck": "이 대전에서 사용한 덱",
   "lobby.randomPool": "후보 풀에 사용 가능한 덱 {count}개",
   "lobby.randomPoolOne": "후보 풀에 사용 가능한 덱 1개",

@@ -737,7 +737,7 @@ const interfaceMessages = {
   "lobby.randomCommunityPool": "自分のデッキ、有名なデッキ、コミュニティの公開デッキ",
   "lobby.randomFailed": "デッキを選べませんでした。もう一度お試しください。",
   "lobby.randomDrawing": "デッキを抽選中…",
-  "overlay.viewUsedDeck": "使用したデッキを見る",
+  "overlay.viewUsedDeck": "自分のデッキ",
   "overlay.usedDeck": "この対戦で使用したデッキ",
   "lobby.randomPool": "プール内の使用可能なデッキ: {count}個",
   "lobby.randomPoolOne": "プール内の使用可能なデッキ: 1個",

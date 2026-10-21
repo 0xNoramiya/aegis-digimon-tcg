@@ -528,7 +528,7 @@ export const es: Record<keyof typeof en, string> = {
   "lobby.randomCommunityPool": "Decks personales, famosos y públicos de la comunidad",
   "lobby.randomFailed": "No se pudo sortear un deck. Inténtalo de nuevo.",
   "lobby.randomDrawing": "Sorteando un deck…",
-  "overlay.viewUsedDeck": "Ver deck utilizado",
+  "overlay.viewUsedDeck": "Tu deck",
   "overlay.usedDeck": "Deck utilizado en este duelo",
   "lobby.randomPool": "{count} decks válidos en el sorteo",
   "lobby.randomPoolOne": "1 deck válido en el sorteo",

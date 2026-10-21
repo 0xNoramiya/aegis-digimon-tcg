@@ -753,7 +753,7 @@ const interfaceMessages = {
   "lobby.randomCommunityPool": "Eigene, berühmte und öffentliche Community-Decks",
   "lobby.randomFailed": "Es konnte kein Deck ausgelost werden. Versuchen Sie es erneut.",
   "lobby.randomDrawing": "Deck wird ausgelost…",
-  "overlay.viewUsedDeck": "Gespieltes Deck ansehen",
+  "overlay.viewUsedDeck": "Ihr Deck",
   "overlay.usedDeck": "In diesem Match gespieltes Deck",
   "lobby.randomPool": "{count} legale Decks im Pool",
   "lobby.randomPoolOne": "1 legales Deck im Pool",
