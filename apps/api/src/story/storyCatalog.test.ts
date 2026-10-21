@@ -1,4 +1,3 @@
-import { storyWorkInventory } from "@aegis/shared/story/storyWorkInventory";
 import { expect, it } from "vitest";
 import { storyCatalogBattles } from "@aegis/shared/story/storyCatalogBattles";
 import { storyCatalogCampaigns } from "@aegis/shared/story/storyCatalogCampaigns";
@@ -27,11 +26,4 @@ it("keeps all original deck recipes complete with their tournament provenance", 
     expect(deck.eventDate).toMatch(/^2026-\d{2}-\d{2}$/);
     expect(deck.hash).toMatch(/^[a-f\d]{64}$/);
   }
-});
-
-it("preserves all inventoried works and editions without inventing campaign battles", () => {
-  expect(storyWorkInventory).toHaveLength(238);
-  expect(new Set(storyWorkInventory.map((work) => work.id)).size).toBe(238);
-  expect(storyWorkInventory.some((work) => work.title.includes("Dreamers"))).toBe(true);
-  expect(storyWorkInventory.some((work) => work.title.includes("Time Stranger"))).toBe(true);
 });

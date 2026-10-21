@@ -146,14 +146,6 @@ Artes promocionais, pôsteres e capas oficiais das respectivas obras; nenhuma im
 - Atribuição: © Bandai / Akiyoshi Hongo. Capa norte-americana de PlayStation.
 - Nota: Espelho Wikimedia da capa oficial; resolução original disponível 317×313.
 
-## digimon-next-manga
-
-- Arquivo: `digimon-next-manga.jpg`
-- Página: https://www.mangazenkan.com/items/4823/
-- Imagem: https://dip6t338iqjb9.cloudfront.net/upload/save_image/823/TE-97.jpg?4
-- Atribuição: © Akiyoshi Hongo / Tatsuya Hamazaki / Takeshi Okano / Shueisha. Capa original do volume 4.
-- Nota: Imagem de capa original do volume 4 reproduzida pelo varejista japonês MangaZenkan; 156×250. A página da editora para o volume 1 está indisponível; não apresentar esta capa como volume 1.
-
 ## Liberator
 
 Arte oficial hospedada em https://digimoncard.com/digimon_liberator/images/top/popup/pc/img_climax.jpg?v=260323 . © Akiyoshi Hongo / Shueisha / Toei Animation / Bandai e titulares identificados no projeto oficial.
