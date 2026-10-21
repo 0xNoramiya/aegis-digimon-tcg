@@ -1,14 +1,15 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useState } from "react";
-import { getCardDefinition } from "@aegis/shared/cards/registry";
+
 import { CardZoomPreview } from "@/design/CardZoomPreview";
 import { useHoverZoomEnabled } from "@/design/useHoverZoomEnabled";
 
 type Props = { cardId: string };
 
 export function DeckGuideCardChip({ cardId }: Props) {
+  const getCardName = useTranslatedCardName();
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const zoomEnabled = useHoverZoomEnabled();
-  const card = getCardDefinition(cardId);
   return (
     <>
       <a
@@ -22,7 +23,7 @@ export function DeckGuideCardChip({ cardId }: Props) {
         }}
         onBlur={() => setPosition(null)}
       >
-        <span>{cardId}</span> {card?.nameEn}
+        <span>{cardId}</span> {getCardName(cardId)}
       </a>
       {zoomEnabled && position ? (
         <CardZoomPreview cardId={cardId} x={position.x} y={position.y} fallbackIndex={0} />

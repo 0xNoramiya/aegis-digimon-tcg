@@ -15,6 +15,7 @@ import { Icons } from "../design/icons";
 import { useTranslation } from "../i18n";
 import { isBetaCard } from "@/screens/isBetaCard";
 import { sortCardIds } from "./cardSorting";
+import { deckSectionLevel } from "@/screens/deckSectionLevel";
 import { countDeckCardTypes } from "@/screens/countDeckCardTypes";
 import { DeckCurveChart } from "@/screens/DeckCurveChart";
 import { setDeckBuilderPreferences, useDeckBuilderPreferences, type DeckView } from "./deckBuilderPreferences";
@@ -111,13 +112,14 @@ export function DeckPreviewSections({
       continue;
     }
     const kind = kindOf(definition);
-    if (kind === "Tamer") tamers.push(cardId);
-    else if (kind === "Option") options.push(cardId);
-    else if (kind === "Digimon" && definition.level != null) {
-      const cards = byLevel.get(definition.level) ?? [];
+    const level = deckSectionLevel(definition);
+    if (level != null) {
+      const cards = byLevel.get(level) ?? [];
       cards.push(cardId);
-      byLevel.set(definition.level, cards);
-    } else other.push(cardId);
+      byLevel.set(level, cards);
+    } else if (kind === "Tamer") tamers.push(cardId);
+    else if (kind === "Option") options.push(cardId);
+    else other.push(cardId);
   }
 
   const sections: DeckSection[] = [

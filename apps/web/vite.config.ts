@@ -33,6 +33,18 @@ export default defineConfig({
       },
       {
         extends: true,
+        test: { name: "tutorial-ui", include: ["src/game/tutorial/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "card-text-ui", include: ["src/i18n/useCardTranslationState.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "arena-input", include: ["src/game/input/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: { name: "story-ui", include: ["src/story/**/*.test.tsx"], environment: "jsdom" },
       },
       {
@@ -60,9 +72,11 @@ export default defineConfig({
         test: {
           name: "default",
           exclude: [
+            "src/i18n/useCardTranslationState.test.tsx",
             ...configDefaults.exclude,
             "e2e/**",
             "src/game/cardConfirmation/**/*.test.ts",
+            "src/game/input/**/*.test.tsx",
             "src/screens/cardLanguage/**/*.test.tsx",
             "src/clientErrors/**/*.test.tsx",
             "src/story/**/*.test.tsx",
@@ -72,6 +86,8 @@ export default defineConfig({
             "src/game/piece/PermanentDpDeltaHint.test.tsx",
             "src/game/log/**/*.test.tsx",
             "src/deckProviders/**/*.test.tsx",
+            "src/learn/**/*.test.tsx",
+            "src/game/tutorial/**/*.test.tsx",
           ],
         },
       },

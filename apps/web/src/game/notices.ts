@@ -45,6 +45,7 @@ export type NoticeBody =
       description?: string;
       /** The chosen bullet of an "activate 1 of the effects below" clause; shown in place of the clause. */
       effectTextPart?: string;
+      manualSignalText?: string;
       isInherited?: boolean;
       sourceInstanceId?: string;
       sourcePermanentId?: string;

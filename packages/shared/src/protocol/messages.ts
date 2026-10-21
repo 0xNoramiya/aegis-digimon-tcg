@@ -24,7 +24,7 @@ export const ROOM_TYPE_RANKED = "aegis_ranked" as const;
  * How long a seat whose socket dropped stays reserved before the drop resolves as a
  * concession. The server owns the clock; the client only uses this to show a countdown.
  */
-export const RECONNECT_GRACE_SECONDS = 30;
+export const RECONNECT_GRACE_SECONDS = 60;
 
 /**
  * Public matchmaking queue that allows cards from an announced-but-unreleased product
@@ -45,3 +45,6 @@ export const ROOM_TYPE_PRIVATE = "aegis_private" as const;
 
 /** Separate unranked queue with printed copy limits and no banlist. */
 export const ROOM_TYPE_UNLIMITED = "aegis_unlimited" as const;
+
+export const ROOM_TYPE_MANUAL = "aegis_manual" as const;
+export const ROOM_TYPE_MANUAL_PRIVATE = "aegis_manual_private" as const;

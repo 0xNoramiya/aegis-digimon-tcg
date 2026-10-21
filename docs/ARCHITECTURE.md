@@ -40,6 +40,13 @@ Two replay records exist and serve different purposes. The player replay
 (`apps/api/src/replays/recording.ts`) stores snapshot frames for playback. The
 input record (`apps/api/src/replays/inputs/`, format `aegis-replay-inputs/1`)
 stores the decklists and every input so the engine can re-execute the match.
+New matches also record a server-generated 256-bit `randomKey` for keyed shuffles
+and opaque initial card identities. This key stays in server hooks, logs, and
+private input records; it never enters synchronized state or player replay frames.
+Records without the key retain the legacy setup algorithm for reproduction.
+Live rooms ignore client seeds outside the test runtime. Feedback input records
+are available only through administrator routes or database tooling, including
+when the report is mirrored to GitHub.
 `pnpm replay run <record> --export <file>.aegis-replay` re-executes an input
 record into a player replay through the same `ReplayRecording`, so the web
 viewer opens it.
@@ -190,3 +197,58 @@ flows through a real room. [AGENTS.md](../AGENTS.md) has the full test rules.
 Reusable regression boards use behavior-named fixtures shared by the testkit and
 browser harness. Manual reproductions load those fixtures on demand rather than
 requiring arena registrations; see [regression fixtures](TESTING.md).
+
+## Manual tables
+
+Rooms `aegis_manual` and `aegis_manual_private` select the immutable manual mode.
+They share the card catalog, deck validation, setup, Colyseus state views and arena
+with automatic games. Public matchmaking separates mode, format and banlist;
+private invitations resolve the host's mode before joining. Older records without
+`gameMode` continue to use automatic execution.
+
+`GameEngine` remains the room-facing lifecycle facade. In manual mode it delegates
+board commands to `ManualController` instead of the automatic intent router.
+Setup chooses a player to decide the first seat, deals hands, offers mulligans and
+sets security. Each turn then unsuspends the active player's cards, draws one card
+except on the first turn of the game, and offers the legal breeding choice before
+Main. Hatching, moving out and skipping are mutually exclusive choices owned by
+the active player. If neither hatch nor move is available, the turn enters Main
+automatically. A mandatory start-of-turn draw from an empty deck ends the game.
+Card effects, continuous rules, memory-based turn passing and other victory checks
+remain manual. Each player can make explicit corrections to their own side.
+Passing changes the active seat and reverses the relative memory sign, preserving
+the gauge's physical position, then prepares the next turn.
+
+Manual commands are validated and applied by the API. Each command carries a
+request identifier and a manual revision, preventing duplicates and stale edits.
+Inspection projections are owner-private; the actual deck and security identities
+remain hidden in ordinary state views. Explicit revelations are public. Moving a
+card back to a hidden zone restores its hidden facing. Player replay recordings
+remove inspection projections, while administrator input records retain the
+commands and server randomness needed for deterministic reproduction.
+
+Undo restores one server-owned checkpoint only after the other player accepts.
+The operation history remains visible, including consultations and revelations;
+undo cannot remove information a player has seen. Result proposals also require
+the other player to accept. Concession follows the existing room lifecycle.
+Manual games use single-game casual rooms, have no competitive clock or bots,
+and do not write competitive results or recent-match history. Their downloadable
+player replays are identified as manual.
+
+Manual card controls support independent visual statuses, DP, Security Attack,
+keyword and color overrides, free-text markers, source and link ordering, tokens,
+and atomic Training placement. Resetting modifiers preserves suspension. Public
+reveals retain their owning seat and original zone so their owner can move a
+revealed card without opening a private inspection. Moving or shuffling cards
+invalidates stale public references. Face-down field cards retain their card-back
+interaction targets and cannot declare attacks or effect signals.
+
+Effect signals explicitly publish an owned hand or face-up field card and an
+optional card or player target. Signals provide shared visual context and do not
+execute effects. Guided phase preparation does not execute printed effects such
+as Reboot or draw bonuses. Manual combat tracking never resolves battles or
+security checks. Pending undo, result and restart agreements block table edits.
+A restart requires the other player's approval, preserves the original decks and
+player seats, uses fresh deterministic randomness, and repeats mulligans and
+security setup with the agreed first player. Restart invalidates the previous undo
+checkpoint, inspections, reveals, signals and combat tracking.

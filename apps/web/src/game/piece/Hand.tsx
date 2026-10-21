@@ -1,5 +1,5 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { Fragment, useLayoutEffect, useState, type HTMLAttributes } from "react";
-import { getCardDefinition } from "@aegis/shared";
 import { CardFull } from "../../design/cards";
 import { Icons } from "../../design/icons";
 import { TOUCH_LAYOUT_QUERY, useMediaQuery } from "../../design/useMediaQuery";
@@ -61,12 +61,14 @@ export function Hand({
   /** How much of a buried card stays tappable. */
   minExposure?: number;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const n = cards.length;
   // Large effect selections need whole hit targets: a tightly fanned neighbor
   // otherwise covers the card the player is trying to pick (GitHub #5058).
   const spreadSelection = selection !== undefined && n > 6;
   const [hoveredInstanceId, setHoveredInstanceId] = useState<string | null>(null);
+  const [cursorInstanceId, setCursorInstanceId] = useState<string | null>(null);
   const [coveredHoverKey, setCoveredHoverKey] = useState<string | null>(null);
   useLayoutEffect(() => {
     if (hoveredInstanceId && (draggingInstanceId || !cards.some((entry) => entry.instanceId === hoveredInstanceId))) {
@@ -200,6 +202,22 @@ export function Hand({
               }
               if (event.detail === 0) selectCard?.(i);
             },
+            onFocus: (event) => {
+              if (event.target !== event.currentTarget || !event.currentTarget.dataset.arenaFocused) return;
+              setCursorInstanceId(entry.instanceId);
+              if (!sourcePreparing) {
+                setCoveredHoverKey(null);
+                setHoveredInstanceId(entry.instanceId);
+              }
+              onHoverChange?.(entry.instanceId);
+            },
+            onBlur: (event) => {
+              if (event.target !== event.currentTarget) return;
+              setCursorInstanceId((current) => (current === entry.instanceId ? null : current));
+              if (event.currentTarget.matches(":hover")) return;
+              if (!sourcePreparing) setHoveredInstanceId((current) => (current === entry.instanceId ? null : current));
+              onHoverChange?.(undefined);
+            },
             onPointerEnter: (event) => {
               if (event.pointerType === "touch" || touchLayout) return;
               if (!sourcePreparing && hoveredInstanceId !== entry.instanceId) {
@@ -234,8 +252,9 @@ export function Hand({
                 <button
                   type="button"
                   className="game-hand-card__inspect"
+                  data-arena-inspect
                   aria-label={t("game.inspectCard", {
-                    card: getCardDefinition(entry.cardId)?.nameEn ?? entry.cardId,
+                    card: getCardName(entry.cardId),
                   })}
                   tabIndex={-1}
                   onPointerDown={(event) => event.stopPropagation()}
@@ -274,7 +293,7 @@ export function Hand({
                 tabIndex={0}
                 aria-label={
                   t(selection ? "game.pickCard" : "game.selectCard", {
-                    card: getCardDefinition(entry.cardId)?.nameEn ?? entry.cardId,
+                    card: getCardName(entry.cardId),
                   }) +
                   (copyLabels.has(entry.instanceId) ? `, ${copyLabels.get(entry.instanceId)}` : "") +
                   (picked ? `${t("overlay.selected")}, ${t("game.pickPosition", { position: pickPosition + 1 })}` : "")
@@ -329,6 +348,7 @@ export function Hand({
                     selection && !pickable && !picked ? "game-hand-card--unpickable" : "",
                     selection && pickable && !picked ? "game-hand-card--pickable" : "",
                     picked ? "game-hand-card--picked" : "",
+                    cursorInstanceId === entry.instanceId ? "game-hand-card--cursor" : "",
                   ]
                     .filter(Boolean)
                     .join(" ")}

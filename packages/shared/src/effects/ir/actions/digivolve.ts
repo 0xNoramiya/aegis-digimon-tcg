@@ -115,6 +115,7 @@ export interface DigivolveViaPlacementAction extends Omit<ActionBase, "cost"> {
   };
   into: Target;
   cost: number;
+  ignoreLevelRequirement?: boolean;
   ignoreDigivolutionRequirements?: boolean;
 }
 

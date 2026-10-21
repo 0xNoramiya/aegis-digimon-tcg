@@ -8,7 +8,7 @@ export function EffectConfirmButton({ onConfirm }: { onConfirm: () => void }) {
   const { t } = useTranslation();
   useEffect(() => {
     const confirmOnEnter = (event: KeyboardEvent) => {
-      if (event.key !== "Enter" || event.repeat) return;
+      if (event.defaultPrevented || event.key !== "Enter" || event.repeat) return;
       const target = event.target as HTMLElement | null;
       if (target && (TYPING_TARGETS.has(target.tagName) || target.isContentEditable)) return;
       event.preventDefault();

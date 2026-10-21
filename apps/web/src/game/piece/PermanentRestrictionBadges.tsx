@@ -2,6 +2,7 @@ import { Icons } from "../../design/icons";
 import { forcedAttackGrantText, type ForcedAttackGrant, type RestrictionBadge } from "../fieldBadges";
 import { useTranslation } from "../../i18n";
 import { BadgeHint } from "./BadgeHint";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 
 function BadgeIcon({ restriction }: { restriction: RestrictionBadge }) {
   if (restriction.action) return <Icons.Swords size={12} />;
@@ -31,12 +32,13 @@ export function PermanentRestrictionBadges({
   forcedAttackGrants?: readonly ForcedAttackGrant[];
 }) {
   const { t } = useTranslation();
+  const getCardName = useTranslatedCardName();
   const maxVisibleBadges = 3;
   const visibleRestrictions = restrictions.slice(0, maxVisibleBadges);
   const hiddenRestrictions = restrictions.slice(visibleRestrictions.length);
   const describe = (restriction: RestrictionBadge) =>
     restriction.kind === "attacksAtStartOfMainPhase" && forcedAttackGrants.length > 0
-      ? forcedAttackGrants.map((grant) => forcedAttackGrantText(grant, t)).join(" ")
+      ? forcedAttackGrants.map((grant) => forcedAttackGrantText(grant, t, getCardName)).join(" ")
       : t(`redesign.arena.restriction.${restriction.kind}`);
   return (
     <div className="game-restriction-badges" aria-hidden="true">

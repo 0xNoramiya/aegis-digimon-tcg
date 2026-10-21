@@ -1,3 +1,4 @@
+import type { GameMode } from "@aegis/shared/manual/GameMode";
 import type { DeckFormat, Intent, Seat } from "@aegis/shared";
 import type { ScenarioFixture } from "../../engine/scenario/types.js";
 
@@ -19,6 +20,7 @@ export interface ReplayRecord {
   serverRevision?: string;
   /** The engine seed (`GameEngineHooks.seed`): shuffles, first player and every seeded choice. */
   seed: number;
+  randomKey?: string;
   /** The first player the room imposed (a later game of a casual series). Otherwise the seed decides. */
   firstSeat?: Seat;
   /** Room-level rules mirrored into the state, and the dev scenario a non-production bot room laid. */
@@ -30,6 +32,7 @@ export interface ReplayRecord {
 }
 
 export interface ReplayRules {
+  gameMode?: GameMode;
   deckFormat: DeckFormat;
   unlimited: boolean;
   betaBattle: boolean;
@@ -138,8 +141,10 @@ export interface ReplayDivergence {
 
 /** `replay.header`, written once when the room builds its engine. */
 export interface ReplayHeaderLine {
+  gameMode?: GameMode;
   replaySeq: number;
   seed: number;
+  randomKey?: string;
   firstSeat?: Seat;
   serverRevision?: string;
   deckFormat: DeckFormat;

@@ -1,10 +1,13 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardText } from "@/i18n/getTranslatedCardText";
 import { Button } from "../../../design/primitives";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
 import { BoardPromptRail, type BoardPromptVariant } from "../../BoardDecisionRail";
 import { CardArt } from "../CardArt";
 import { CardPromptFrame } from "./CardPromptFrame";
-import { cardDisplayName } from "../../cardLinks";
+
 import { useBoardPreview } from "../choice/useBoardPreview";
 import { DecisionViewBoardButton } from "../choice/DecisionViewBoardButton";
 
@@ -78,6 +81,8 @@ export function CounterOverlay({
   onActivate: (instanceId: string, effectKey: string) => void;
   onPass: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
+  const translations = useCardTranslations({ includePrintedText: true });
   const { t } = useTranslation();
   const { isViewingBoard, openBoard, boardReturn } = useBoardPreview();
   if (isViewingBoard) return boardReturn;
@@ -109,8 +114,8 @@ export function CounterOverlay({
     if (!uniqueChoices.has(key)) uniqueChoices.set(key, choice);
   }
   const blastLabel = choices.some((choice) => choice.effectKey.startsWith("blast-dna-digivolve:"))
-    ? "Blast DNA Digivolve"
-    : "Blast Digivolve";
+    ? t("decision.choice.counterBlastDnaTitle")
+    : t("decision.choice.counterBlastTitle");
   const loneChoice = !selectedBlast && inlineChoices.length === 1 ? inlineChoices[0] : undefined;
   const sourceCardId = selectedInstanceId
     ? getCardId(selectedInstanceId)
@@ -130,7 +135,7 @@ export function CounterOverlay({
   const prompt = selectedBlast
     ? t("overlay.counterChooseField")
     : loneCardId
-      ? t("overlay.counterActivatePrompt", { card: cardDisplayName(loneCardId, t) })
+      ? t("overlay.counterActivatePrompt", { card: getCardName(loneCardId) })
       : pickingInHand && pickingOnField
         ? t("overlay.counterChooseSource")
         : pickingInHand
@@ -139,9 +144,15 @@ export function CounterOverlay({
             ? t("overlay.counterChooseFieldSource")
             : t("overlay.counterPrompt");
   const choiceLabel = (choice: CounterChoice) => {
-    if (choice.effectKey.startsWith("blast-dna-digivolve:")) return "Blast DNA";
-    if (choice.effectKey.startsWith("blast-digivolve:")) return "Blast Digivolve";
-    return `${cardDisplayName(getCardId(choice.instanceId) ?? "", t)} · ${choice.description}`;
+    if (choice.effectKey.startsWith("blast-dna-digivolve:")) {
+      return t("decision.choice.counterBlastDnaShort");
+    }
+    if (choice.effectKey.startsWith("blast-digivolve:")) {
+      return t("decision.choice.counterBlastTitle");
+    }
+    const cardId = getCardId(choice.instanceId);
+    const description = getTranslatedCardText({ text: choice.description, translations, cardId });
+    return `${getCardName(cardId ?? "")} · ${description}`;
   };
   if (selectedBlast) {
     const offered = [...uniqueChoices.values()];
@@ -167,9 +178,9 @@ export function CounterOverlay({
                 onClick={() => onActivate(choice.instanceId, choice.effectKey)}
               >
                 {cardId ? <CardArt cardId={cardId} width={112} /> : null}
-                <strong>{cardDisplayName(cardId ?? "", t)}</strong>
+                <strong>{getCardName(cardId ?? "")}</strong>
                 <span>{choiceLabel(choice)}</span>
-                {partnerCardId ? <span>+ {cardDisplayName(partnerCardId, t)}</span> : null}
+                {partnerCardId ? <span>+ {getCardName(partnerCardId)}</span> : null}
                 <span className="counter-overlay__card-id">
                   {index + 1} / {offered.length}
                 </span>
@@ -194,7 +205,7 @@ export function CounterOverlay({
       className="board-prompt--counter"
       handSpace="keepVisible"
       label={t("overlay.counterTiming")}
-      eyebrow={selectedBlast ? blastLabel : "[Counter]"}
+      eyebrow={selectedBlast ? blastLabel : t("decision.choice.counterMarker")}
       art={sourceCardId}
       artWidth={COUNTER_ART_WIDTH}
       prompt={prompt}

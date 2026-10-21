@@ -1,8 +1,38 @@
+import { advancedBattlesZhTW } from "@/i18n/learn/advancedBattles.zh-TW";
+import { rulesLayoutZhTW } from "@/i18n/learn/rulesLayout.zh-TW";
+import { lessonCatalogZhTW } from "@/i18n/learn/lessonCatalog.zh-TW";
+import { battleLessonsZhTW } from "@/i18n/learn/battleLessons.zh-TW";
+import { manualEn } from "@/i18n/manual.en";
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnZhTW } from "@/i18n/learn/learn.zh-TW";
+import { learnDrillsZhTW } from "@/i18n/learn/drills.zh-TW";
 
 const interfaceMessages = {
+  ...manualEn,
+  "settings.arenaInput": "鍵盤與控制器",
+  "settings.arenaInputDesc": "使用方向鍵或控制器移動游標，並顯示每個操作的按鍵。",
+  "game.input.controls": "鍵盤與控制器",
+  "game.input.navigate": "移動",
+  "game.input.select": "選擇",
+  "game.input.inspect": "查看",
+  "game.input.region": "區域",
+  "game.input.scroll": "捲動",
+  "game.input.reorder": "Enter/A：移動；方向鍵：排序；Enter/A：完成；Esc/B：復原",
+
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "消滅此數碼寶貝",
+  "overlay.trashTopSecurityCard": "丟棄我方最上方的1張安防卡牌",
+  "overlay.trashTamerBottomCard": "丟棄我方1隻馴獸師下方最下方的1張背面表示卡牌",
+  "overlay.trashTwoTamerBottomCards": "丟棄我方馴獸師下方最下方的2張背面表示卡牌",
   ...providerEn,
+  ...learnZhTW,
+  ...learnDrillsZhTW,
+  ...battleLessonsZhTW,
+  ...lessonCatalogZhTW,
+  ...rulesLayoutZhTW,
+  ...advancedBattlesZhTW,
   "settings.cardImageLanguage": "卡牌圖片語言",
   "settings.cardImageLanguageDesc":
     "選擇收藏和新加入卡組的卡牌的預設語言。按鈕也會替換現有卡組中的異畫。沒有該語言版本的卡牌將保留目前圖片。",
@@ -217,6 +247,8 @@ const interfaceMessages = {
   "replay.start": "跳到開頭",
   "replay.end": "跳到結尾",
   "replay.speed": "播放速度",
+  "replay.move": "移動播放控制項",
+  "replay.moveHint": "拖曳以移動。使用方向鍵移動，按住 Shift 加大移動幅度，按 Home 重設位置。",
   "replay.position": "重播位置",
   "replay.turn": "回合",
   "replay.action": "第 {current} 個操作（共 {total} 個）",
@@ -767,6 +799,7 @@ const interfaceMessages = {
   "library.rowColor": "顏色",
   "library.rowType": "類型",
   "library.rowPlayCost": "登場費用",
+  "library.rowUseCost": "使用費用",
   "library.rowDp": "DP",
   "library.rowTraits": "特徵",
   "library.rowRarity": "稀有度",
@@ -927,7 +960,13 @@ const interfaceMessages = {
   "game.reconnecting": "正在重新連線…",
   "game.reconnectingDetail": "連線已中斷。正在嘗試恢復對局。",
   "game.connectionLost": "連線中斷",
-  "game.connectionLostDetail": "無法連線伺服器。請檢查你的網路連線後重試。",
+  "game.connectionLostDetail": "與對戰的連線已中斷。請嘗試重新連線。",
+  "game.messageTooLarge": "選擇內容過大，無法傳送。請嘗試一次結算較少的效果。",
+  "game.messageTooLargeReconnecting": "選擇內容過大，無法傳送。正在重新連線以恢復待處理的選擇。",
+  "game.reconnectFailed": "無法恢復這場對戰。請返回大廳後重試。",
+  "game.sessionExpired": "這場對戰已無法恢復。請返回大廳。",
+  "game.tooManyMessages": "同時傳送的操作過多。請稍候再返回大廳。",
+  "game.serverUnavailable": "遊戲伺服器暫時無法使用。請稍後重試。",
   "game.opponentDisconnected": "對手斷線",
   "game.opponentDisconnectedDetail": "正在等待對手重新連線。對局將自動恢復。",
   "game.opponentDisconnectedCountdown": "如果對手未在 {time} 內返回，你將贏得對局。",
@@ -1018,6 +1057,7 @@ const interfaceMessages = {
   "game.digiEgg": " · 數碼蛋",
   "game.noCost": "無費用",
   "game.costsMemory": "消耗 {count} 記憶體",
+  "game.useCostsMemory": "使用需消耗 {count} 記憶體",
   "game.digivolve": "進化",
   "game.clickToDigivolve": "點擊發光的數碼寶貝進行進化",
   "game.clickToLink": "點擊發光的數碼寶貝進行連結",
@@ -1365,6 +1405,7 @@ const interfaceMessages = {
   "overlay.endSelection": "結束選擇",
   "overlay.noSelection": "不選擇",
   "overlay.use": "使用",
+  "overlay.activationProgress": "發動 {index}/{total}",
   "overlay.notUse": "不使用",
   "overlay.moveToBattleArea": "移至戰鬥區",
   "overlay.endPhase": "結束階段",
@@ -2226,7 +2267,7 @@ const interfaceMessages = {
   "community.publish.signIn": "登入後即可發布你的卡組。",
   "community.publish.errorNotLegal": "該卡組不合法，因此無法公開。",
   "community.publish.errorName": "請先重新命名此卡組。它的名稱包含不允許的詞語。",
-  "community.publish.errorHidden": "版主在收到檢舉後隱藏了此卡組，因此無法公開。",
+  "community.publish.errorHidden": "版主隱藏了此卡組。請先修改，然後申請審核。",
   "community.report.open": "檢舉卡組",
   "community.report.title": "檢舉{name}",
   "community.report.body": "告訴我們出了什麼問題。版主會審核每一份檢舉，作者永遠不會看到是誰檢舉的。",
@@ -2257,6 +2298,24 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "隱藏",
   "community.moderation.hiddenOwnerBadge": "已被版主隱藏",
   "community.moderation.hiddenOwnerNote": "已被玩家檢舉。其他人無法看到它。",
+  "community.moderation.hideTitle": "隱藏 {name}？",
+  "community.moderation.hideBody": "玩家將不再看到此卡組。擁有者會看到原因和你的備註，並可以修改卡組後申請審核。",
+  "community.moderation.noteLabel": "給擁有者的備註（選填）",
+  "community.moderation.hiddenReason": "隱藏原因：{reason}。",
+  "community.moderation.ownerNote": "版主備註：{note}",
+  "community.moderation.ownerFixHint": "請修改卡組，然後申請審核。",
+  "community.moderation.reviewPendingNote": "版主會審核你的修改。",
+  "community.moderation.reviewRequestedBadge": "已申請審核",
+  "community.moderation.reviewTitle": "管理",
+  "community.moderation.approve": "核准並公開",
+  "community.moderation.decline": "保持隱藏",
+  "community.moderation.declined": "已拒絕審核。卡組仍保持隱藏。",
+  "community.review.action": "申請審核",
+  "community.review.title": "申請審核 {name}？",
+  "community.review.body": "請先修改卡組。我們會按目前儲存的版本提交。在版主核准前，它會保持隱藏。",
+  "community.review.noteLabel": "給版主的備註（選填）",
+  "community.review.errorPending": "你已申請過審核。請等待版主回覆。",
+  "community.review.errorNotHidden": "此卡組已不再隱藏。",
   "community.publish.errorGeneric": "無法發布。請重試。",
   "redesign.collection.lede": "瀏覽 Aegis 支援的每張卡片，以及其效果和卡組投入限制。",
   "redesign.collection.statCards": "卡片",
@@ -2363,9 +2422,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "第 {game} 局 · {name} 先攻",
   "overlay.series.joining": "正在開始下一局…",
   "overlay.series.leave": "離開系列賽",
-  "overlay.rematch.offer": "再次對戰 {name} · 三戰兩勝",
+  "overlay.rematch.title": "再次對戰 {name}？",
+  "overlay.rematch.finish": "完成本場三戰兩勝",
+  "overlay.rematch.finishHint": "本局計為第 1 局。",
+  "overlay.rematch.new": "開始新的三戰兩勝",
+  "overlay.rematch.newHint": "雙方從 0–0 開始。",
+  "overlay.rematch.incomingFinish": "{name} 想完成本場三戰兩勝",
+  "overlay.rematch.incomingNew": "{name} 想開始新的三戰兩勝",
   "overlay.rematch.hint": "使用相同卡組。本局敗者選擇先後攻。",
-  "overlay.rematch.incoming": "{name} 想要再戰",
   "overlay.rematch.accept": "接受",
   "overlay.rematch.decline": "拒絕",
   "overlay.rematch.waiting": "正在等待 {name} 回應…",
@@ -2418,4 +2482,8 @@ const interfaceMessages = {
   "releases.reported": "你回報的問題，我們已修正 · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const zhTW: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const zhTW: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+};

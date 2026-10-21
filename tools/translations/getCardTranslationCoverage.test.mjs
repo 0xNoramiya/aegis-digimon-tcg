@@ -86,6 +86,20 @@ test("does not treat inherited dictionary properties as translations", () => {
   assert.equal(getCardTranslationCoverage(input).missingCount, 2);
 });
 
+test("rejects ACE suffixes in shared names for both ordinary and ACE cards", () => {
+  for (const isAce of [false, true]) {
+    for (const suffix of ["ACE", " ACE", "ＡＣＥ", "ace "]) {
+      const input = createInput();
+      input.cards[0].isAce = isAce;
+      input.names.Greymon += suffix;
+      const report = getCardTranslationCoverage(input);
+      assert.equal(report.missingCount, 1);
+      assert.equal(report.missing[0].field, "nameEn");
+      assert.equal(report.missing[0].translation, input.names.Greymon);
+    }
+  }
+});
+
 test("writes the report before failing strict checks, while audit mode remains usable", (context) => {
   const root = mkdtempSync(join(tmpdir(), "aegis-translations-"));
   context.after(() => rmSync(root, { recursive: true, force: true }));

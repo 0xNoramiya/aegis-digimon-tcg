@@ -1,3 +1,7 @@
+import { restartManualMatch } from "#api/manual/restartManualMatch";
+import { logError } from "#api/logger";
+import { ManualController } from "#api/manual/ManualController";
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getAttackRedirection } from "#api/engine/gameEngine/getAttackRedirection";
 import { ContinuousEffectScope } from "./effects/ContinuousEffectScope.js";
 import { CardKind, EffectTiming, GameState, type CardInstance, type Seat } from "@aegis/shared";
@@ -120,6 +124,7 @@ export type { GameEngineHooks, SeatJoinOptions };
  */
 
 export class GameEngine {
+  readonly manual?: ManualController;
   readonly memory: MemoryGauge;
   readonly turnMachine: TurnStateMachine;
   readonly access: GameStateAccess;
@@ -394,6 +399,20 @@ export class GameEngine {
     readonly state: GameState,
     readonly hooks: GameEngineHooks,
   ) {
+    if (state.gameMode === GameMode.MANUAL.value) {
+      this.manual = new ManualController({
+        state,
+        seed: hooks.seed,
+        randomKey: hooks.randomKey,
+        emit: hooks.emit,
+        declareDeckOutLoss: (seat) => this.win.declareLoss(seat, "deckOut"),
+        restart: (firstSeat) => {
+          void restartManualMatch({ engine: this, firstSeat }).catch((error: unknown) =>
+            logError("manual.restart", error),
+          );
+        },
+      });
+    }
     // Every zone move is narrated through `hooks.emit`: the one place that sees a card leave
     // the field. Wrapped before the collaborators below capture `this.hooks.emit` by value.
     this.hooks = {
@@ -730,6 +749,19 @@ export class GameEngine {
   }
 
   applyIntent(seat: Seat, intent: Intent): IntentResult {
+    if (this.manual) {
+      if (intent.type === "manual") {
+        return this.manual.apply(seat, intent);
+      }
+      if (
+        intent.type !== "ready" &&
+        intent.type !== "mulligan" &&
+        intent.type !== "surrender" &&
+        !(intent.type === "respondDecision" && this.state.turnCount === 0)
+      ) {
+        return { ok: false, reason: "unknown-intent" };
+      }
+    }
     return applyIntent(this, seat, intent);
   }
 

@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { type CardColor, type CardDefinition } from "@aegis/shared";
 import { isCardInQueriedFieldGroup } from "@aegis/shared/cards/isCardInQueriedFieldGroup";
 import { colorKey, kindOf, type ColorName } from "../design/theme";
-import { collectionOrder, sortCards } from "./cardSorting";
+import { collectionOrder } from "./cardSorting";
 import { matchesCostBucket } from "@/screens/matchesCostBucket";
 import { matchesDigivolutionCostFilter, type DigivolutionCostFilter } from "@/screens/matchesDigivolutionCostFilter";
 
@@ -105,6 +105,9 @@ function searchIndexFor(card: CardDefinition): CardSearchIndex {
   const cached = searchIndexByCard.get(card);
   if (cached) return cached;
   const textFields = [
+    ...(card.forms ?? []),
+    ...(card.types ?? []),
+    ...(card.attributes ?? []),
     card.effectText,
     card.inheritedEffectText,
     card.securityEffectText,
@@ -129,21 +132,6 @@ export function cardSearchMatch(card: CardDefinition, query: string): CardSearch
   if (isCardInQueriedFieldGroup({ card, query })) return "name";
   if (index.text.includes(normalizedQuery)) return "text";
   return "none";
-}
-
-/** Sorts each match group on its own so cards found by name stay ahead of cards found only by their text. */
-export function sortSearchResults({
-  cards,
-  sort,
-  query,
-}: {
-  cards: readonly CardDefinition[];
-  sort: CardSort;
-  query: string;
-}): CardDefinition[] {
-  const nameMatches = cards.filter((card) => cardSearchMatch(card, query) === "name");
-  const textMatches = cards.filter((card) => cardSearchMatch(card, query) === "text");
-  return [...sortCards(nameMatches, sort), ...sortCards(textMatches, sort)];
 }
 
 export interface CardFilter {

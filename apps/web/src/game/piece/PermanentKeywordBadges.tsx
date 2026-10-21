@@ -3,7 +3,9 @@ import { getTranslatedKeyword } from "@/i18n/getTranslatedKeyword";
 import { getTranslatedKeywordReminder } from "@/i18n/getTranslatedKeywordReminder";
 import { useTranslation } from "../../i18n";
 import { keywordReminder, keywordRuleHintLink } from "../keywordReminders";
-import { BadgeHint } from "./BadgeHint";
+import { BadgeHint, type BadgeHintText } from "./BadgeHint";
+
+type Annotation = { label: string; description: string };
 import type { PermanentKeywordEntry } from "./permanentKeywords";
 
 /** Never more pills than this, however wide the card is. */
@@ -47,43 +49,56 @@ export function PermanentKeywordBadges({
   keywords,
   securityAttackModifier,
   cardWidth,
+  annotations = [],
 }: {
   keywords: readonly PermanentKeywordEntry[];
   securityAttackModifier: number;
   cardWidth: number;
+  annotations?: readonly Annotation[];
 }) {
   const { t } = useTranslation();
   const translations = useCardTranslations();
-  const displayedKeywords = keywords.map((entry) => ({
-    ...entry,
-    label: getTranslatedKeyword({ keyword: entry.label, translations }),
-  }));
+  const displayedKeywords: { key: string; label: string; hint: BadgeHintText }[] = keywords.map((entry) => {
+    const label = getTranslatedKeyword({ keyword: entry.label, translations });
+    return {
+      key: entry.keyword,
+      label,
+      hint: {
+        title: `<${label}>`,
+        description: getTranslatedKeywordReminder({
+          keyword: entry.keyword,
+          fallback: keywordReminder(entry.keyword, t, securityAttackModifier),
+          translations,
+          modifier: securityAttackModifier,
+        }),
+        link: keywordRuleHintLink(entry.keyword),
+      },
+    };
+  });
+  for (const annotation of annotations) {
+    const label = annotation.label.trim();
+    if (!label || displayedKeywords.some((entry) => entry.label.toLocaleLowerCase() === label.toLocaleLowerCase())) {
+      continue;
+    }
+    displayedKeywords.push({
+      key: `annotation:${label}`,
+      label,
+      hint: { title: label, description: annotation.description },
+    });
+  }
   const shownCount = visibleKeywordCount(
     displayedKeywords.map((entry) => entry.label),
     cardWidth,
   );
   const visibleKeywords = displayedKeywords.slice(0, shownCount);
-  const hiddenKeywordCount = keywords.length - visibleKeywords.length;
+  const hiddenKeywordCount = displayedKeywords.length - visibleKeywords.length;
   return (
     <div
       className="game-keyword-badges"
       aria-label={`Active keywords: ${displayedKeywords.map((entry) => entry.label).join(", ")}`}
     >
-      {visibleKeywords.map(({ keyword, label }) => (
-        <BadgeHint
-          key={keyword}
-          className="game-keyword-badge"
-          hint={{
-            title: `<${label}>`,
-            description: getTranslatedKeywordReminder({
-              keyword,
-              fallback: keywordReminder(keyword, t, securityAttackModifier),
-              translations,
-              modifier: securityAttackModifier,
-            }),
-            link: keywordRuleHintLink(keyword),
-          }}
-        >
+      {visibleKeywords.map(({ key, label, hint }) => (
+        <BadgeHint key={key} className="game-keyword-badge" hint={hint}>
           {label}
         </BadgeHint>
       ))}

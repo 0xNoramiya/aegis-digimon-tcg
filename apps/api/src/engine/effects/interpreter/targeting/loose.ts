@@ -3,9 +3,10 @@
 import type { EffectContext, SeatScopedDecisionApi } from "../../EffectContext.js";
 import { peekCheckedCard } from "../../../security/checkedCard.js";
 import { definitionMatches, hasExactName, matchNameOrTrait } from "../matching/definition.js";
-import { controllersFieldDigimonColors, permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
+import { controllersFieldDigimonColors, seatsForController } from "../matching/permanent.js";
 import { scaleFactor } from "../scaling.js";
 import { effectiveTargetCount } from "./permanents.js";
+import { stackHostMatches } from "./stackHostMatches.js";
 import { filterToDistinctColors } from "@aegis/shared";
 import { nameIncludesToken } from "@aegis/shared";
 import type { CardDefinition, Filter, Seat, Target, ZoneRef } from "@aegis/shared";
@@ -343,29 +344,9 @@ function candidateLooseInstancesIncludingReserved(
           if (selfPermanentId === undefined || cand.hostPermanentId !== selfPermanentId) continue;
         }
         const def = ctx.game.definitionOf({ cardId: cand.cardId } as never);
-        const hostMatches = (filter: Filter): boolean => {
-          const hostFilter = filter.hostFilter;
-          if (
-            (zone !== "digivolutionCards" && zone !== "linked") ||
-            hostFilter === undefined ||
-            cand.hostPermanentId === undefined
-          )
-            return true;
-          if (hostFilter.sourceRef === "triggerSubject") {
-            const triggerSubjectId =
-              ctx.trigger.subjectPermanentId ?? ctx.trigger.attackerPermanentId ?? ctx.trigger.deletedPermanentId;
-            return cand.hostPermanentId === triggerSubjectId;
-          }
-          if (hostFilter.isSelfRef === true) {
-            return ctx.source.permanent()?.permanentId === cand.hostPermanentId;
-          }
-          const boundRef = (hostFilter as { boundRef?: string }).boundRef;
-          if (boundRef !== undefined) {
-            return ctx.selections?.get(boundRef) === cand.hostPermanentId;
-          }
-          const host = ctx.game.permanentById(cand.hostPermanentId);
-          return host === undefined || permanentMatchesFilter(ctx, host, hostFilter, ctx.source);
-        };
+        const hostMatches = (filter: Filter): boolean =>
+          (zone !== "digivolutionCards" && zone !== "linked") ||
+          stackHostMatches(ctx, filter.hostFilter, cand.hostPermanentId);
         const branchMatches = (filter: Filter): boolean => {
           const branchZones =
             filter.zone === undefined ? undefined : Array.isArray(filter.zone) ? filter.zone : [filter.zone];

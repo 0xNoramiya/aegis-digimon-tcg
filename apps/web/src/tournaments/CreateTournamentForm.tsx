@@ -12,7 +12,8 @@ import {
 } from "@aegis/shared";
 import { Alert, Badge, Button, Field, Panel, Switch } from "../design/primitives";
 import { useTranslation } from "../i18n";
-import { banlistCardName, banlistSetOptions, previewBanlist } from "./banlistPreview";
+import { banlistSetOptions, previewBanlist } from "./banlistPreview";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { tournamentApi, type ApiError } from "./client";
 import { reasonKey, restrictionKey, structureKey } from "./labels";
 import { useServerClock } from "./hooks";
@@ -353,6 +354,7 @@ export function CreateTournamentForm({
 }
 
 function BanlistPreviewSection({ preview }: { preview: ReturnType<typeof previewBanlist> }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   return (
     <section className="tournaments-preview" aria-label={t("tournaments.create.preview")}>
@@ -365,7 +367,7 @@ function BanlistPreviewSection({ preview }: { preview: ReturnType<typeof preview
           <ul className="tournaments-banlist">
             {preview.cards.map((card) => (
               <li key={card.cardId}>
-                <span className="tournaments-banlist__name">{banlistCardName(card.cardId)}</span>
+                <span className="tournaments-banlist__name">{getCardName(card.cardId)}</span>
                 <span className="tournaments-banlist__id">{card.cardId}</span>
                 <Badge tone={card.status === "banned" ? "danger" : "warning"}>{t(restrictionKey(card.status))}</Badge>
                 <span className="tournaments-banlist__copies">

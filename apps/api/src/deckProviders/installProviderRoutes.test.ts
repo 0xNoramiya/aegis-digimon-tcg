@@ -100,3 +100,34 @@ it("includes a playable saved list and its cover when loading an archetype", asy
     ],
   });
 });
+
+it.each(["incomplete", "restricted"])("excludes %s provider decks from playable archetypes", async (violation) => {
+  const deck = BT1_DECKS[0]!.decklist;
+  const mainDeck =
+    violation === "incomplete" ? deck.mainDeck.slice(1) : ["BT2-047", "BT2-047", ...deck.mainDeck.slice(2)];
+  const url = await start(async (path) => {
+    if (path.startsWith("meta")) {
+      return { data: [{ archetype_id: 1 }], pagination: { page: 1, total_pages: 1 } };
+    }
+    if (path.startsWith("decklists")) {
+      return { data: [{ result_id: 1 }], pagination: { page: 1, total_pages: 1 } };
+    }
+    return {
+      result_id: 1,
+      decklist: {
+        digimon: mainDeck.map((card_id) => ({ card_id, count: 1 })),
+        eggs: deck.eggDeck.map((card_id) => ({ card_id, count: 1 })),
+        tamers: [],
+        options: [],
+      },
+    };
+  });
+  const response = await fetch(`${url}/digilab/meta?format=BT26&playFormat=standard`);
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({ data: [{ playableDeck: null }] });
+  const detail = await fetch(`${url}/digilab/1?playFormat=standard`);
+  expect(await detail.json()).toMatchObject({ mainDeck, legality: { legal: false } });
+  const unlimited = await fetch(`${url}/digilab/meta?format=BT26&playFormat=unlimited`);
+  const playableDeck = violation === "restricted" ? { mainDeck, legality: { legal: true } } : null;
+  expect(await unlimited.json()).toMatchObject({ data: [{ playableDeck }] });
+});

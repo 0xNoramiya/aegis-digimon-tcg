@@ -140,3 +140,15 @@
 .game-result .game-result__title--series {
   font-size: clamp(1.5rem, 11cqi, 4rem);
 }
+
+.series-next__options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.75rem;
+}
+
+.series-next__option {
+  display: grid;
+  gap: 0.4rem;
+  align-content: start;
+}

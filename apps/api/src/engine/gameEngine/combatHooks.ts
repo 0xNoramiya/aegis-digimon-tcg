@@ -283,7 +283,7 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
         trigger,
         candidates,
         (deletionTrigger, simultaneousPending = []) =>
-          simultaneousPending.length > 0
+          simultaneousPending.length > 0 || candidates.length > 0
             ? runTimingWindow(
                 engine,
                 EffectTiming.OnDestroyedAnyone,
@@ -300,8 +300,12 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
       return permanent === undefined ? [] : effectiveColorsOf(engine, permanent);
     },
     keywordReactionsInLeavePrevention: true,
-    consultLeavePrevention: async (permanentIds, opts) =>
-      engine.consultLeavePrevention(permanentIds, "byBattle", undefined, { ...opts, holdTriggered: true }),
+    consultLeavePrevention: async (permanentIds, opts) => {
+      return engine.consultLeavePrevention(permanentIds, "byBattle", undefined, {
+        ...opts,
+        holdTriggered: true,
+      });
+    },
     resolveAvertedBattleReactions: async (resolveBattleWon) => {
       const triggered = takeLeaveReplacementPending(engine);
       if (triggered.length === 0) {

@@ -9,6 +9,7 @@ import { I18nProvider } from "../../../i18n";
 import { GameOverOverlay } from "./GameOverOverlay";
 import type { SeriesView } from "../../seriesModel";
 import type { RematchStage } from "@/game/getRematchView";
+import { RematchMode } from "@aegis/shared/protocol/RematchMode";
 
 afterEach(cleanup);
 
@@ -167,7 +168,7 @@ describe("best-of-three result", () => {
 });
 
 describe("rematch after a best-of-one", () => {
-  function renderRematch(stage: RematchStage, series?: SeriesView) {
+  function renderRematch(stage: RematchStage, series?: SeriesView, mode: RematchMode = RematchMode.NEW_SERIES.value) {
     const calls: string[] = [];
     render(
       <I18nProvider>
@@ -178,9 +179,9 @@ describe("rematch after a best-of-one", () => {
           onMenu={() => calls.push("menu")}
           onRematch={() => calls.push("queue")}
           rematch={{
-            view: { stage, series },
+            view: { stage, mode, series },
             opponentName: "Nova",
-            onOffer: () => calls.push("offer"),
+            onOffer: (offered) => calls.push(`offer:${offered}`),
             onAnswer: (accept) => calls.push(accept ? "accept" : "decline"),
             onChooseTurnOrder: (goFirst) => calls.push(goFirst ? "first" : "second"),
           }}
@@ -190,16 +191,24 @@ describe("rematch after a best-of-one", () => {
     return calls;
   }
 
-  it("offers a best-of-three beside the usual actions", () => {
+  it("offers to finish or restart a best-of-three beside the usual actions", () => {
     const calls = renderRematch("open");
-    fireEvent.click(screen.getByRole("button", { name: "Play Nova again · Best of 3" }));
+    expect(screen.getByText("Play Nova again?")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Finish this Best of 3" }));
+    fireEvent.click(screen.getByRole("button", { name: "Start new Best of 3" }));
     fireEvent.click(screen.getByRole("button", { name: "Find rematch" }));
-    expect(calls).toEqual(["offer", "queue"]);
+    expect(calls).toEqual(["offer:finish", "offer:new", "queue"]);
+  });
+
+  it("tells the invited player that the finished game counts toward the offered series", () => {
+    renderRematch("offeredToYou", undefined, RematchMode.FINISH_SERIES.value);
+    expect(screen.getByText("Nova wants to finish this Best of 3")).toBeTruthy();
+    expect(screen.getByText(/This game counts as game 1\./)).toBeTruthy();
   });
 
   it("lets the invited player accept or decline", () => {
     const calls = renderRematch("offeredToYou");
-    expect(screen.getByText("Nova wants a rematch")).toBeTruthy();
+    expect(screen.getByText("Nova wants to start a new Best of 3")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Decline" }));
     fireEvent.click(screen.getByRole("button", { name: "Accept" }));
     expect(calls).toEqual(["decline", "accept"]);
@@ -304,4 +313,36 @@ it("opens the shared opponent deck and returns to the result", () => {
 it("does not offer an unavailable opponent deck", () => {
   renderOverlay();
   expect(screen.queryByRole("button", { name: "View opponent’s deck" })).toBeNull();
+});
+
+it("keeps the board-review result bar clear of the portrait match menu", () => {
+  const header = document.createElement("header");
+  header.className = "game-opponent-bar";
+  const hand = document.createElement("div");
+  hand.className = "game-opponent-hand";
+  const menu = document.createElement("details");
+  menu.className = "game-mobile-menu";
+  header.append(hand, menu);
+  document.body.append(header);
+  vi.spyOn(document.body, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 390, 844));
+  vi.spyOn(header, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 390, 44));
+  vi.spyOn(hand, "getBoundingClientRect").mockReturnValue(new DOMRect(100, 0, 80, 44));
+  vi.spyOn(menu, "getBoundingClientRect").mockReturnValue(new DOMRect(338, 4, 36, 36));
+  vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (this: HTMLElement) {
+    if (this.classList.contains("game-result-bar--compact")) {
+      return 40;
+    }
+    return this.classList.contains("game-result-bar--brief") ? 180 : 300;
+  });
+  try {
+    renderOverlay();
+    fireEvent.click(screen.getByRole("button", { name: "View board" }));
+    const bar = screen.getByRole("status");
+    expect(bar.classList.contains("game-result-bar--compact")).toBe(true);
+    expect(bar.style.right).toBe("64px");
+    expect(bar.style.translate).toBe("none");
+  } finally {
+    header.remove();
+    vi.restoreAllMocks();
+  }
 });

@@ -1,16 +1,11 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { deckFormatLabel } from "./DeckFormatSelector";
 /* The deck picker: a hero with the create and import actions, then every saved deck
    as a table row (a card on narrow screens) with its edit, export, activate and
    delete actions. */
 
 import { useState } from "react";
-import {
-  deckLegality,
-  getCardDefinition,
-  formatRestrictionLabel,
-  deckFormat,
-  type CommunityPublication,
-} from "@aegis/shared";
+import { deckLegality, formatRestrictionLabel, deckFormat, type CommunityPublication } from "@aegis/shared";
 import { useCommunityPublications } from "../community/useCommunityPublications";
 import { Badge, Button, ColorDot, Eyebrow, Field } from "../design/primitives";
 import { Panel, SectionHeading, StatStrip } from "../design/surfaces";
@@ -78,7 +73,7 @@ export function DeckList({
   const favoriteDeckIds = useFavoriteDeckIds();
   const shownDecks = placeFavoriteDecksFirst({ decks: orderDecks(decks, sort, query), favoriteDeckIds });
   const [publishing, setPublishing] = useState<{ deck: DeckListing; mode: PublishMode } | null>(null);
-  const { publications, publish, unpublish } = useCommunityPublications(signedIn);
+  const { publications, publish, requestReview, unpublish } = useCommunityPublications(signedIn);
 
   const handleImport = (text: string) => {
     const result = parseDeckList(text);
@@ -145,6 +140,7 @@ export function DeckList({
             deck={publishing.deck}
             mode={publishing.mode}
             onPublish={publish}
+            onRequestReview={requestReview}
             onUnpublish={unpublish}
             onClose={() => setPublishing(null)}
           />
@@ -250,10 +246,13 @@ function DeckListRow({
   publication: CommunityPublication | undefined;
   onPublishAction: (mode: PublishMode) => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const { legal, banViolations, pairViolations } = deckLegality(deck, { format: deck.format });
   const colors = deckColors(deck);
   const blurb = deckBlurbLabel(t, deck.blurb);
+  const moderation = publication?.status === "hidden" ? publication.moderation : undefined;
+  const reviewPending = moderation?.reviewRequestedAt != null;
 
   return (
     <div className={`deck-list-table__row deck-list-row${active ? " is-active" : ""}`} role="row">
@@ -293,7 +292,12 @@ function DeckListRow({
             <Badge tone={legal ? "success" : "neutral"}>
               {legal ? t("redesign.decks.list.legal") : t("redesign.decks.list.draft")}
             </Badge>
-            {publication?.status === "hidden" ? (
+            {reviewPending ? (
+              <Badge tone="warning" className="deck-list-row__visibility">
+                <Icons.Clock size={12} />
+                {t("community.moderation.reviewRequestedBadge")}
+              </Badge>
+            ) : publication?.status === "hidden" ? (
               <Badge tone="danger" className="deck-list-row__visibility">
                 <Icons.Flag size={12} />
                 {t("community.moderation.hiddenOwnerBadge")}
@@ -310,16 +314,24 @@ function DeckListRow({
             ) : null}
           </div>
           {publication?.status === "hidden" ? (
-            <p className="deck-list-row__blurb">{t("community.moderation.hiddenOwnerNote")}</p>
+            <p className="deck-list-row__blurb">
+              {moderation?.reason
+                ? t("community.moderation.hiddenReason", { reason: t(`community.report.reason.${moderation.reason}`) })
+                : t("community.moderation.hiddenOwnerNote")}{" "}
+              {t(reviewPending ? "community.moderation.reviewPendingNote" : "community.moderation.ownerFixHint")}
+            </p>
           ) : publication?.outdated ? (
             <p className="deck-list-row__blurb">{t("community.publish.outdated")}</p>
+          ) : null}
+          {moderation?.note ? (
+            <p className="deck-list-row__blurb">{t("community.moderation.ownerNote", { note: moderation.note })}</p>
           ) : null}
           {blurb ? <p className="deck-list-row__blurb">{blurb}</p> : null}
           {banViolations.length > 0 ? (
             <p className="deck-list-row__violation">
               {banViolations.map(([id]) => (
                 <span key={id}>
-                  {getCardDefinition(id)?.nameEn ?? id} ({formatRestrictionLabel(id, deckFormat(deck.format))}){" "}
+                  {getCardName(id)} ({formatRestrictionLabel(id, deckFormat(deck.format))}){" "}
                 </span>
               ))}
             </p>
@@ -330,8 +342,8 @@ function DeckListRow({
               {pairViolations.map(([a, b]) => (
                 <div key={`${a}-${b}`}>
                   {t("deck.pairRow", {
-                    a: getCardDefinition(a)?.nameEn ?? a,
-                    b: getCardDefinition(b)?.nameEn ?? b,
+                    a: getCardName(a),
+                    b: getCardName(b),
                   })}
                 </div>
               ))}
@@ -376,7 +388,13 @@ function DeckListRow({
         )}
         {!signedIn ? null : (
           <div className="deck-list-row__publish">
-            {publication?.status === "hidden" ? null : publication ? (
+            {publication?.status === "hidden" ? (
+              reviewPending || !deckLegality(deck).legal ? null : (
+                <Button size="sm" variant="secondary" icon={Icons.Send} onClick={() => onPublishAction("review")}>
+                  {t("community.review.action")}
+                </Button>
+              )
+            ) : publication ? (
               <>
                 {publication.outdated && deckLegality(deck).legal ? (
                   <Button size="sm" variant="secondary" icon={Icons.Users} onClick={() => onPublishAction("update")}>

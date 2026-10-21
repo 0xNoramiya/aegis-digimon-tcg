@@ -1,8 +1,43 @@
+import { advancedBattlesKo } from "@/i18n/learn/advancedBattles.ko";
+import { rulesLayoutKo } from "@/i18n/learn/rulesLayout.ko";
+import { lessonCatalogKo } from "@/i18n/learn/lessonCatalog.ko";
+import { battleLessonsKo } from "@/i18n/learn/battleLessons.ko";
+import { manualEn } from "@/i18n/manual.en";
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnKo } from "@/i18n/learn/learn.ko";
+import { learnDrillsKo } from "@/i18n/learn/drills.ko";
 
 const interfaceMessages = {
+  ...manualEn,
+  "settings.arenaInput": "키보드 및 컨트롤러",
+  "settings.arenaInputDesc": "방향키나 컨트롤러로 커서를 움직이고 각 동작의 버튼을 표시합니다.",
+  "game.input.controls": "키보드 및 컨트롤러",
+  "game.input.navigate": "이동",
+  "game.input.select": "선택",
+  "game.input.inspect": "살펴보기",
+  "game.input.region": "영역",
+  "game.input.scroll": "스크롤",
+  "game.input.reorder": "Enter/A: 이동 시작; 방향키: 순서 변경; Enter/A: 완료; Esc/B: 되돌리기",
+
+  ...decisionChoicesEn,
+  "decision.choice.playSavedLevelFour": decisionChoicesEn["decision.choice.playSavedLevelFour"].replace(
+    "＜Save＞",
+    "≪Save≫",
+  ),
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
+  "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
+  "decision.choice.declareEgg": "카드 종류 선언: 디지타마",
   ...providerEn,
+  ...learnKo,
+  ...learnDrillsKo,
+  ...battleLessonsKo,
+  ...lessonCatalogKo,
+  ...rulesLayoutKo,
+  ...advancedBattlesKo,
   "digilab.cardCounts": "메인 카드 {main}장 · 디지타마 {eggs}장",
   "settings.cardImageLanguage": "카드 이미지 언어",
   "settings.cardImageLanguageDesc":
@@ -227,6 +262,8 @@ const interfaceMessages = {
   "replay.start": "시작으로 이동",
   "replay.end": "끝으로 이동",
   "replay.speed": "재생 속도",
+  "replay.move": "재생 컨트롤 이동",
+  "replay.moveHint": "드래그하여 이동하세요. 방향키로 이동하고 Shift로 더 크게 이동하며 Home으로 위치를 초기화합니다.",
   "replay.position": "리플레이 위치",
   "replay.turn": "턴",
   "replay.action": "행동 {current}/{total}",
@@ -794,6 +831,7 @@ const interfaceMessages = {
   "library.rowColor": "색상",
   "library.rowType": "종류",
   "library.rowPlayCost": "등장 코스트",
+  "library.rowUseCost": "사용 코스트",
   "library.rowDp": "DP",
   "library.rowTraits": "특징",
   "library.rowRarity": "레어리티",
@@ -958,7 +996,14 @@ const interfaceMessages = {
   "game.reconnecting": "다시 연결하는 중…",
   "game.reconnectingDetail": "연결이 끊어졌습니다. 대전을 다시 이어 가는 중입니다.",
   "game.connectionLost": "연결 끊김",
-  "game.connectionLostDetail": "서버에 연결할 수 없습니다. 연결을 확인하고 다시 시도하세요.",
+  "game.connectionLostDetail": "대전 연결이 끊어졌습니다. 다시 연결해 주세요.",
+  "game.messageTooLarge": "선택한 내용이 너무 커서 전송하지 못했습니다. 한 번에 해결하는 효과를 줄여 주세요.",
+  "game.messageTooLargeReconnecting":
+    "선택한 내용이 너무 커서 전송하지 못했습니다. 대기 중인 선택을 복원하기 위해 다시 연결하고 있습니다.",
+  "game.reconnectFailed": "대전을 재개하지 못했습니다. 로비로 돌아가 다시 시도해 주세요.",
+  "game.sessionExpired": "이 대전은 더 이상 재개할 수 없습니다. 로비로 돌아가 주세요.",
+  "game.tooManyMessages": "한 번에 너무 많은 동작을 전송했습니다. 잠시 기다린 후 로비로 돌아가 주세요.",
+  "game.serverUnavailable": "게임 서버를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.",
   "game.opponentDisconnected": "상대 연결 끊김",
   "game.opponentDisconnectedDetail": "상대가 다시 연결되기를 기다리는 중입니다. 대전은 자동으로 재개됩니다.",
   "game.opponentDisconnectedCountdown": "{time} 안에 상대가 돌아오지 않으면 내가 승리합니다.",
@@ -1050,6 +1095,7 @@ const interfaceMessages = {
   "game.digiEgg": " · 디지타마",
   "game.noCost": "코스트 없음",
   "game.costsMemory": "메모리 {count} 소비",
+  "game.useCostsMemory": "사용 시 메모리 {count} 소비",
   "game.digivolve": "진화",
   "game.clickToDigivolve": "빛나는 디지몬을 클릭해 진화",
   "game.clickToLink": "빛나는 디지몬을 클릭해 링크",
@@ -1399,6 +1445,7 @@ const interfaceMessages = {
   "overlay.endSelection": "선택 종료",
   "overlay.noSelection": "선택 없음",
   "overlay.use": "사용",
+  "overlay.activationProgress": "발동 {index}/{total}",
   "overlay.notUse": "사용 안 함",
   "overlay.moveToBattleArea": "배틀 에어리어로 이동",
   "overlay.endPhase": "페이즈 종료",
@@ -2278,7 +2325,7 @@ const interfaceMessages = {
   "community.publish.signIn": "덱을 공개하려면 로그인하세요.",
   "community.publish.errorNotLegal": "사용할 수 없는 덱이라 공개할 수 없습니다.",
   "community.publish.errorName": "먼저 이 덱의 이름을 바꾸세요. 이름에 허용되지 않는 단어가 있습니다.",
-  "community.publish.errorHidden": "신고를 받아 관리자가 이 덱을 숨겼기 때문에 공개할 수 없습니다.",
+  "community.publish.errorHidden": "관리자가 이 덱을 숨겼습니다. 덱을 수정한 뒤 검토를 요청하세요.",
   "community.report.open": "덱 신고",
   "community.report.title": "{name} 신고",
   "community.report.body":
@@ -2310,6 +2357,26 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "숨김",
   "community.moderation.hiddenOwnerBadge": "관리자가 숨김",
   "community.moderation.hiddenOwnerNote": "플레이어 신고로 숨겨졌습니다. 다른 사람에게는 보이지 않습니다.",
+  "community.moderation.hideTitle": "{name}을(를) 숨길까요?",
+  "community.moderation.hideBody":
+    "플레이어에게 이 덱이 더 이상 보이지 않습니다. 덱 주인은 사유와 메모를 보고, 덱을 수정한 뒤 검토를 요청할 수 있습니다.",
+  "community.moderation.noteLabel": "덱 주인에게 남길 메모 (선택)",
+  "community.moderation.hiddenReason": "숨김 사유: {reason}.",
+  "community.moderation.ownerNote": "관리자 메모: {note}",
+  "community.moderation.ownerFixHint": "덱을 수정한 뒤 검토를 요청하세요.",
+  "community.moderation.reviewPendingNote": "관리자가 변경 사항을 검토합니다.",
+  "community.moderation.reviewRequestedBadge": "검토 요청됨",
+  "community.moderation.reviewTitle": "관리",
+  "community.moderation.approve": "승인하고 공개",
+  "community.moderation.decline": "숨김 유지",
+  "community.moderation.declined": "검토를 거절했습니다. 덱은 계속 숨겨집니다.",
+  "community.review.action": "검토 요청",
+  "community.review.title": "{name} 검토를 요청할까요?",
+  "community.review.body":
+    "먼저 덱을 수정하세요. 지금 저장된 덱 그대로 보냅니다. 관리자가 승인할 때까지 계속 숨겨집니다.",
+  "community.review.noteLabel": "관리자에게 남길 메모 (선택)",
+  "community.review.errorPending": "이미 검토를 요청했습니다. 관리자의 답변을 기다려 주세요.",
+  "community.review.errorNotHidden": "이 덱은 더 이상 숨겨져 있지 않습니다.",
   "community.publish.errorGeneric": "공개하지 못했습니다. 다시 시도하세요.",
   "redesign.collection.lede": "Aegis에서 사용할 수 있는 모든 카드의 효과와 덱 제한을 살펴보세요.",
   "redesign.collection.statCards": "카드",
@@ -2420,9 +2487,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "{game}게임 · {name} 선공",
   "overlay.series.joining": "다음 게임 시작 중…",
   "overlay.series.leave": "시리즈 나가기",
-  "overlay.rematch.offer": "{name}와 다시 대전 · 3판 2선승",
+  "overlay.rematch.title": "{name}와 다시 대전할까요?",
+  "overlay.rematch.finish": "이 3판 2선승 이어가기",
+  "overlay.rematch.finishHint": "이번 게임을 1게임으로 계산합니다.",
+  "overlay.rematch.new": "새 3판 2선승 시작",
+  "overlay.rematch.newHint": "두 플레이어 모두 0–0에서 시작합니다.",
+  "overlay.rematch.incomingFinish": "{name}님이 이 3판 2선승을 이어가길 원합니다",
+  "overlay.rematch.incomingNew": "{name}님이 새 3판 2선승을 원합니다",
   "overlay.rematch.hint": "같은 덱을 사용합니다. 이번 게임의 패자가 선공을 정합니다.",
-  "overlay.rematch.incoming": "{name}님이 재대결을 원합니다",
   "overlay.rematch.accept": "수락",
   "overlay.rematch.decline": "거절",
   "overlay.rematch.waiting": "{name}님의 응답을 기다리는 중…",
@@ -2476,4 +2548,9 @@ const interfaceMessages = {
   "releases.reported": "신고해 주신 문제를 수정했습니다 · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const ko: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const ko: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+  "digilab.eggs": "디지타마",
+};
