@@ -1,3 +1,4 @@
+import type { UsedDeck } from "#shared/decks/UsedDeck";
 import type { RematchMode } from "#shared/protocol/RematchMode";
 
 /**
@@ -10,7 +11,10 @@ export type SeriesClientMessage =
   | { action: "chooseTurnOrder"; goFirst: boolean }
   | { action: "leave" }
   | { action: "offerRematch"; mode: RematchMode }
-  | { action: "answerRematch"; accept: boolean };
+  | { action: "answerRematch"; accept: boolean }
+  | { action: "chooseSeriesDeck"; deck?: SeriesDeckChoice };
+
+export type SeriesDeckChoice = Omit<UsedDeck, "deckId" | "format"> & { deckId?: string };
 
 /** Unicast. The token is the seat's only claim on its place in the next game's room. */
 export interface SeriesSeatMessage {

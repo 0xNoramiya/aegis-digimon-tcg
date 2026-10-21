@@ -545,7 +545,7 @@ export const en = {
   "lobby.randomCommunityPool": "Personal, famous and public community decks",
   "lobby.randomFailed": "Could not draw a deck. Try again.",
   "lobby.randomDrawing": "Drawing a deck…",
-  "overlay.viewUsedDeck": "View used deck",
+  "overlay.viewUsedDeck": "Your deck",
   "overlay.usedDeck": "Deck used in this duel",
   "lobby.randomPool": "{count} legal decks in pool",
   "lobby.randomPoolOne": "1 legal deck in pool",

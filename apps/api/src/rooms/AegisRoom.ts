@@ -80,10 +80,16 @@ import { seriesStore } from "../tournaments/runtime.js";
 import type { SeriesStore } from "../tournaments/series/index.js";
 import { createLocalRoomCodeDirectory, type RoomCodeDirectory } from "../cluster/roomCodes.js";
 import { MatchClock, type ClockMode } from "./MatchClock.js";
-import { CasualSeries, type SeriesContinuationOptions, type SeriesRoomPort } from "./series/CasualSeries.js";
+import {
+  CasualSeries,
+  type RematchOpening,
+  type SeriesContinuationOptions,
+  type SeriesRoomPort,
+  type SeriesSeatDeck,
+} from "./series/CasualSeries.js";
+import type { SeriesDeckChoice } from "@aegis/shared/protocol/series";
 import type { SeriesRecord } from "./series/SeriesDirectory.js";
 import { RematchOffer } from "#api/rooms/series/RematchOffer";
-import type { GameResult } from "#api/rooms/series/seriesRules";
 import { REMATCH_BEST_OF } from "@aegis/shared/protocol/RematchStatus";
 import { parsePresentationReport } from "./presentationReport.js";
 import { CONNECTION_REPORT_CHANNEL } from "@aegis/shared/protocol/ConnectionReport";
@@ -527,7 +533,7 @@ export class AegisRoom extends Room<{
     if ((options.unlimited === true) !== this.isUnlimitedRoom) return false;
     if (options.format !== undefined && !isDeckFormat(options.format)) return false;
     if (!this.isPrivate && deckFormat(options.format, options.unlimited) !== this.state.format) return false;
-    if (options.botDeck && (!this.isBotRoom || !this.validCustomBotDeck(options.botDeck))) return false;
+    if (options.botDeck && (!this.isBotRoom || !this.isLegalRoomDeck(options.botDeck))) return false;
     // A guest of a private room plays whatever the host set; a public joiner must have asked for it.
     if (
       !this.isPrivate &&
@@ -846,11 +852,11 @@ export class AegisRoom extends Room<{
           timerStartSeconds: options.timerStartSeconds ?? MATCH_TIMER_START_SECONDS,
           ...(this.isPrivate ? { roomCode: this.state.roomCode } : {}),
         });
-      else
-        this.rematchOffer = new RematchOffer({
-          readState: () => this.state,
-          startSeries: (chooser, results) => this.startRematchSeries(chooser, results),
-        });
+      this.rematchOffer = new RematchOffer({
+        readState: () => this.state,
+        startSeries: (opening) => this.startRematchSeries(opening),
+        afterSeries: this.casualSeries !== undefined,
+      });
     }
     this.state.allowRollback = options.allowRollback === true && !this.isRankedRoom && !this.isTournamentRoom;
     if (this.state.allowRollback)
@@ -924,10 +930,12 @@ export class AegisRoom extends Room<{
             event.result.outcome === "draw" ? -1 : event.result.winnerSeat,
             this.departingSeat,
           );
-          this.rematchOffer?.open({
-            result: event.result.outcome === "draw" ? -1 : event.result.winnerSeat,
-            departed: this.departingSeat !== undefined,
-          });
+          if (!this.casualSeries || this.casualSeries.over) {
+            this.rematchOffer?.open({
+              result: event.result.outcome === "draw" ? -1 : event.result.winnerSeat,
+              departed: this.departingSeat !== undefined,
+            });
+          }
         }
         if (event.kind === "matchStarted") {
           this.casualSeries?.noteFirstSeat(event.firstSeat);
@@ -1072,7 +1080,7 @@ export class AegisRoom extends Room<{
         if (seat === undefined) {
           return;
         }
-        if (this.casualSeries) {
+        if (this.casualSeries && !this.casualSeries.over) {
           this.casualSeries.handleMessage(seat, payload, this.matchStartRequested);
         } else {
           this.rematchOffer?.handleMessage(seat, payload);
@@ -1122,10 +1130,11 @@ export class AegisRoom extends Room<{
     );
   }
 
-  private startRematchSeries(chooser: Seat, results: GameResult[]): boolean {
-    if (!this.offersSeries() || this.casualSeries || !this.state.gameOver) {
+  private startRematchSeries(opening: RematchOpening): boolean {
+    if (!this.offersSeries() || (this.casualSeries && !this.casualSeries.over) || !this.state.gameOver) {
       return false;
     }
+    this.casualSeries?.dispose();
     this.casualSeries = CasualSeries.rematch(
       this.seriesPort(),
       {
@@ -1137,8 +1146,7 @@ export class AegisRoom extends Room<{
         timerStartSeconds: this.state.timerStartSeconds,
         ...(this.isPrivate ? { roomCode: this.state.roomCode } : {}),
       },
-      chooser,
-      results,
+      opening,
     );
     return true;
   }
@@ -1172,6 +1180,7 @@ export class AegisRoom extends Room<{
           presentationPacing: this.chainPacingClients.has(player.sessionId) ? "sequential" : "current",
         };
       },
+      resolveDeckChoice: (choice) => this.resolveSeriesDeckChoice(choice),
       sendToSeat: (seat, message) =>
         this.clients.find((client) => this.seatByClient.get(client.sessionId) === seat)?.send(SERIES_CHANNEL, message),
       createNextRoom: async (options) => (await matchMaker.createRoom(this.roomName, options)).roomId,
@@ -1615,7 +1624,7 @@ export class AegisRoom extends Room<{
       format: this.state.format as DeckFormat,
     };
     if (options.botDeck) {
-      if (!this.isBotRoom || !this.validCustomBotDeck(options.botDeck))
+      if (!this.isBotRoom || !this.isLegalRoomDeck(options.botDeck))
         throw new ServerError(400, "Illegal custom bot deck");
       this.customBotDeck = {
         mainDeck: [...options.botDeck.mainDeck],
@@ -1919,7 +1928,37 @@ export class AegisRoom extends Room<{
    * Seat a bot as seat 1 and start the match. The room must have exactly one
    * human player already seated. Idempotent: a second call is a no-op.
    */
-  private validCustomBotDeck(deck: SeatJoinOptions["deck"]): boolean {
+  private resolveSeriesDeckChoice(choice: unknown): SeriesSeatDeck | undefined {
+    if (typeof choice !== "object" || choice === null) {
+      return undefined;
+    }
+    const { mainDeck, eggDeck, mainDeckArts, eggDeckArts, deckId, deckName, community } =
+      choice as Partial<SeriesDeckChoice>;
+    const deck = { mainDeck, eggDeck, mainDeckArts, eggDeckArts } as SeatJoinOptions["deck"];
+    if (
+      !this.isLegalRoomDeck(deck) ||
+      !isOptionalCardList(mainDeckArts) ||
+      !isOptionalCardList(eggDeckArts) ||
+      (deckId !== undefined && (typeof deckId !== "string" || deckId.length > 128)) ||
+      typeof deckName !== "string" ||
+      deckName.length > 200
+    ) {
+      return undefined;
+    }
+    return {
+      deck: {
+        mainDeck: [...deck.mainDeck],
+        eggDeck: [...deck.eggDeck],
+        mainDeckArts: mainDeckArts?.slice(),
+        eggDeckArts: eggDeckArts?.slice(),
+      },
+      deckId,
+      deckName,
+      community: validCommunityAttribution(community),
+    };
+  }
+
+  private isLegalRoomDeck(deck: SeatJoinOptions["deck"]): boolean {
     return (
       Array.isArray(deck.mainDeck) &&
       Array.isArray(deck.eggDeck) &&
@@ -3037,6 +3076,12 @@ export class AegisRoom extends Room<{
     // The engine awaits the matching "respondDecision" intent (correlated by decisionId).
     client?.send(DECISION_CHANNEL, { ...req, stateVersion: this.decisionStateVersion() });
   }
+}
+
+function isOptionalCardList(value: unknown): value is string[] | undefined {
+  return (
+    value === undefined || (Array.isArray(value) && value.length <= 60 && value.every((id) => typeof id === "string"))
+  );
 }
 
 function validCommunityAttribution(value: AegisJoinOptions["community"]): AegisJoinOptions["community"] {

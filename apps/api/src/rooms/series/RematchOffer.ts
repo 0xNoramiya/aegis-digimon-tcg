@@ -1,14 +1,18 @@
+import { getOfferedRematchModes } from "@aegis/shared/protocol/getOfferedRematchModes";
 import { getRematchMode } from "@aegis/shared/protocol/getRematchMode";
-import { RematchMode } from "@aegis/shared/protocol/RematchMode";
+import { getRematchModeEntry } from "@aegis/shared/protocol/getRematchModeEntry";
+import type { RematchMode } from "@aegis/shared/protocol/RematchMode";
 import { RematchStatus } from "@aegis/shared/protocol/RematchStatus";
 import type { SeriesClientMessage } from "@aegis/shared/protocol/series";
 import type { GameState } from "@aegis/shared/schema/GameState";
 import type { Seat } from "@aegis/shared/schema/enums";
 import { turnOrderChooser, type GameResult } from "#api/rooms/series/seriesRules";
+import type { RematchOpening } from "#api/rooms/series/CasualSeries";
 
 type RematchOfferParams = {
   readState: () => GameState;
-  startSeries: (chooser: Seat, results: GameResult[]) => boolean;
+  startSeries: (opening: RematchOpening) => boolean;
+  afterSeries: boolean;
 };
 
 type OpenParams = {
@@ -28,7 +32,9 @@ export class RematchOffer {
 
   open({ result, departed }: OpenParams): void {
     this.result = result;
-    this.setStatus(departed ? RematchStatus.CLOSED.value : RematchStatus.OPEN.value);
+    const endReason = this.readSeries().endReason;
+    const forfeited = endReason === "forfeit" || endReason === "aborted";
+    this.setStatus(departed || forfeited ? RematchStatus.CLOSED.value : RematchStatus.OPEN.value);
   }
 
   close(): void {
@@ -50,6 +56,9 @@ export class RematchOffer {
   }
 
   private offer(seat: Seat, mode: RematchMode): void {
+    if (!getOfferedRematchModes({ afterSeries: this.params.afterSeries }).includes(mode)) {
+      return;
+    }
     const series = this.readSeries();
     const answersOpponent = series.rematchStatus === RematchStatus.OFFERED.value && series.rematchOfferSeat !== seat;
     if (answersOpponent && series.rematchMode === mode) {
@@ -81,15 +90,15 @@ export class RematchOffer {
       return;
     }
     this.setStatus(RematchStatus.ACCEPTED.value);
-    const results = this.countsFinishedGame() ? [this.result] : [];
-    if (!this.params.startSeries(turnOrderChooser(this.result, this.firstSeat), results)) {
+    const mode = getRematchModeEntry({ mode: this.readSeries().rematchMode });
+    const opened = this.params.startSeries({
+      chooser: turnOrderChooser(this.result, this.firstSeat),
+      results: mode.countsFinishedGame ? [this.result] : [],
+      mode: mode.value,
+    });
+    if (!opened) {
       this.setStatus(RematchStatus.CLOSED.value);
     }
-  }
-
-  private countsFinishedGame(): boolean {
-    const mode = this.readSeries().rematchMode;
-    return Object.values(RematchMode).some((entry) => entry.value === mode && entry.countsFinishedGame);
   }
 
   private setStatus(status: RematchStatus): void {
