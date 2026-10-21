@@ -984,6 +984,8 @@ const interfaceMessages = {
     "Trie les Digimon par niveau et regroupe les Tamers et Options identiques sur une rangée à part",
   "settings.pileCounts": "Afficher le nombre de cartes des piles",
   "settings.pileCountsDesc": "Affiche les compteurs Œufs, Main, Deck et Défausse sur le plateau",
+  "settings.hoverZoom": "Agrandir les cartes au survol",
+  "settings.hoverZoomDesc": "Affiche un grand aperçu de la carte à côté du pointeur pendant le survol",
   "settings.sound": "Effets sonores",
   "settings.soundDesc": "Clics, sélections et signaux de combat",
   "settings.decisionPing": "Alerte de décision",

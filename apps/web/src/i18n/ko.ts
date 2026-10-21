@@ -957,6 +957,8 @@ const interfaceMessages = {
   "settings.organizedFieldDesc": "디지몬을 레벨순으로 정렬하고, 같은 테이머와 옵션은 별도의 줄에 묶어 표시합니다",
   "settings.pileCounts": "카드 매수 표시",
   "settings.pileCountsDesc": "보드에 디지타마, 패, 덱, 트래시 매수를 표시합니다",
+  "settings.hoverZoom": "마우스를 올리면 카드 확대",
+  "settings.hoverZoomDesc": "카드 위에 포인터를 올리면 포인터 옆에 큰 카드 미리보기를 표시합니다",
   "settings.sound": "음향 효과",
   "settings.soundDesc": "클릭, 선택, 배틀 효과음",
   "settings.decisionPing": "결정 알림음",

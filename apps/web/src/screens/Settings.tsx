@@ -34,6 +34,8 @@ import { isKeepAwakeEnabled, setKeepAwakeEnabled } from "../design/keepAwake";
 import { isDecisionPingEnabled, setDecisionPingEnabled } from "@/design/decisionPing";
 import { FieldLayout, setFieldLayout, useFieldLayout } from "../design/fieldLayout";
 import { setPileCountsShown, usePileCountsShown } from "../design/pileCounts";
+import { hoverZoomPreference } from "@/design/hoverZoomPreference";
+import { useHoverZoomPreference } from "@/design/useHoverZoomPreference";
 import { setChatSoundEnabled, useChatSoundEnabled } from "../game/chat/chatSound";
 import { CardSleevePicker, EggSleevePicker } from "../design/sleevePicker";
 import { TEXT_SCALES, setTextScale, useTextScale, type TextScale } from "../design/textScale";
@@ -288,6 +290,7 @@ export function Settings({
   };
   const fieldLayout = useFieldLayout();
   const pileCountsShown = usePileCountsShown();
+  const hoverZoom = useHoverZoomPreference();
   const chatSoundEnabled = useChatSoundEnabled();
   const handAutoSort = useHandAutoSort();
   const effectPromptPosition = useEffectPromptPosition();
@@ -640,6 +643,14 @@ export function Settings({
                   label={t("settings.pileCounts")}
                   description={t("settings.pileCountsDesc")}
                   onChange={setPileCountsShown}
+                />
+              </div>
+              <div className="settings-row">
+                <Switch
+                  checked={hoverZoom}
+                  label={t("settings.hoverZoom")}
+                  description={t("settings.hoverZoomDesc")}
+                  onChange={hoverZoomPreference.setEnabled}
                 />
               </div>
             </SettingsCard>

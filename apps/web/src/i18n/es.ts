@@ -764,6 +764,8 @@ export const es: Record<keyof typeof en, string> = {
   "settings.organizedFieldDesc": "Ordena los Digimon por nivel y agrupa los Tamers y Options iguales en su propia fila",
   "settings.pileCounts": "Mostrar contadores de las pilas",
   "settings.pileCountsDesc": "Muestra los contadores de Huevos, Mano, Deck y Descarte en el tablero",
+  "settings.hoverZoom": "Ampliar cartas al pasar el ratón",
+  "settings.hoverZoomDesc": "Muestra una vista previa grande de la carta junto al puntero mientras está sobre ella",
   "settings.sound": "Efectos de sonido",
   "settings.soundDesc": "Clics, selecciones y señales de combate",
   "settings.decisionPing": "Aviso de decisión",

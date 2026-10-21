@@ -771,6 +771,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.organizedFieldDesc": "Ordena os Digimon por nível e agrupa Tamers e Options iguais numa fileira própria",
   "settings.pileCounts": "Mostrar contadores das pilhas",
   "settings.pileCountsDesc": "Mostra os contadores de Ovos, Mão, Deck e Lixo no tabuleiro",
+  "settings.hoverZoom": "Ampliar cartas ao passar o mouse",
+  "settings.hoverZoomDesc": "Mostra uma prévia grande da carta ao lado do ponteiro enquanto ele está sobre a carta",
   "settings.sound": "Efeitos sonoros",
   "settings.soundDesc": "Cliques, seleções e sinais de combate",
   "settings.decisionPing": "Aviso de decisão",

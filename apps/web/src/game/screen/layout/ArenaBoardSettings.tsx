@@ -13,6 +13,8 @@ import { setEffectConfirmationHoldEnabled, useEffectConfirmationHold } from "../
 import { setHandAutoSortEnabled, useHandAutoSort } from "../../handAutoSort";
 import { arenaInputPreference } from "@/game/input/arenaInputPreference";
 import { useArenaInputEnabled } from "@/game/input/useArenaInputEnabled";
+import { hoverZoomPreference } from "@/design/hoverZoomPreference";
+import { useHoverZoomPreference } from "@/design/useHoverZoomPreference";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../../noticeDuration";
 import { EFFECT_SPEEDS, getEffectSpeed, setEffectSpeed, type EffectSpeed } from "../../pacing";
 
@@ -26,6 +28,7 @@ export function ArenaBoardSettings() {
   const { t } = useTranslation();
   const titleId = useId();
   const pileCountsShown = usePileCountsShown();
+  const hoverZoom = useHoverZoomPreference();
   const textScale = useTextScale();
   const handAutoSort = useHandAutoSort();
   const arenaInputEnabled = useArenaInputEnabled();
@@ -162,6 +165,14 @@ export function ArenaBoardSettings() {
             label={t("settings.pileCounts")}
             description={t("settings.pileCountsDesc")}
             onChange={setPileCountsShown}
+          />
+        </div>
+        <div className="game-arena-settings__row">
+          <Switch
+            checked={hoverZoom}
+            label={t("settings.hoverZoom")}
+            description={t("settings.hoverZoomDesc")}
+            onChange={hoverZoomPreference.setEnabled}
           />
         </div>
       </div>

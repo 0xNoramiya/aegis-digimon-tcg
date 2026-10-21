@@ -768,6 +768,8 @@ export const en = {
   "settings.organizedFieldDesc": "Sort Digimon by level and group identical Tamers and Options in a row of their own",
   "settings.pileCounts": "Show pile counts",
   "settings.pileCountsDesc": "Show the Eggs, Hand, Deck and Trash counters on the board",
+  "settings.hoverZoom": "Zoom cards on hover",
+  "settings.hoverZoomDesc": "Show a large card preview next to the pointer while hovering a card",
   "settings.sound": "Sound effects",
   "settings.soundDesc": "Clicks, selections and combat cues",
   "settings.decisionPing": "Decision ping",

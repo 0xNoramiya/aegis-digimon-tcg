@@ -992,6 +992,8 @@ const interfaceMessages = {
     "Digimon nach Level sortieren und identische Tamer und Optionen in einer eigenen Reihe gruppieren",
   "settings.pileCounts": "Stapelanzahl anzeigen",
   "settings.pileCountsDesc": "Zeigt die Zähler für Digi-Eier, Hand, Deck und Ablage auf dem Spielfeld",
+  "settings.hoverZoom": "Karten beim Überfahren vergrößern",
+  "settings.hoverZoomDesc": "Zeigt eine große Kartenvorschau neben dem Mauszeiger, solange er über einer Karte liegt",
   "settings.sound": "Soundeffekte",
   "settings.soundDesc": "Klicks, Auswahl und Kampfsignale",
   "settings.decisionPing": "Entscheidungs-Ping",
