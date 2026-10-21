@@ -2345,8 +2345,7 @@ const interfaceMessages = {
   "community.publish.errorNotLegal": "Deck ini tidak legal, jadi tidak bisa dipublikasikan.",
   "community.publish.errorName":
     "Ganti nama deck ini terlebih dahulu. Namanya mengandung kata yang tidak diperbolehkan.",
-  "community.publish.errorHidden":
-    "Seorang moderator menyembunyikan deck ini setelah ada laporan, sehingga tidak dapat dipublikasikan.",
+  "community.publish.errorHidden": "Moderator menyembunyikan deck ini. Perbaiki, lalu minta peninjauan.",
   "community.report.open": "Laporkan deck",
   "community.report.title": "Laporkan {name}",
   "community.report.body":
@@ -2379,6 +2378,26 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "Tersembunyi",
   "community.moderation.hiddenOwnerBadge": "Disembunyikan oleh moderator",
   "community.moderation.hiddenOwnerNote": "Dilaporkan oleh pemain. Orang lain tidak bisa melihatnya.",
+  "community.moderation.hideTitle": "Sembunyikan {name}?",
+  "community.moderation.hideBody":
+    "Pemain tidak lagi melihat deck ini. Pemiliknya melihat alasan dan catatan Anda, dan bisa memperbaiki deck lalu meminta peninjauan.",
+  "community.moderation.noteLabel": "Catatan untuk pemilik (opsional)",
+  "community.moderation.hiddenReason": "Disembunyikan karena: {reason}.",
+  "community.moderation.ownerNote": "Catatan moderator: {note}",
+  "community.moderation.ownerFixHint": "Perbaiki deck, lalu minta peninjauan.",
+  "community.moderation.reviewPendingNote": "Moderator akan meninjau perubahan Anda.",
+  "community.moderation.reviewRequestedBadge": "Peninjauan diminta",
+  "community.moderation.reviewTitle": "Moderasi",
+  "community.moderation.approve": "Setujui dan jadikan publik",
+  "community.moderation.decline": "Tetap sembunyikan",
+  "community.moderation.declined": "Peninjauan ditolak. Deck tetap disembunyikan.",
+  "community.review.action": "Minta peninjauan",
+  "community.review.title": "Minta peninjauan {name}?",
+  "community.review.body":
+    "Perbaiki deck Anda dulu. Kami mengirim deck tersimpan apa adanya sekarang. Deck tetap disembunyikan sampai moderator menyetujuinya.",
+  "community.review.noteLabel": "Catatan untuk moderator (opsional)",
+  "community.review.errorPending": "Anda sudah meminta peninjauan. Tunggu jawaban moderator.",
+  "community.review.errorNotHidden": "Deck ini sudah tidak disembunyikan.",
   "community.publish.errorGeneric": "Tidak bisa dipublikasikan. Coba lagi.",
   "redesign.collection.lede":
     "Jelajahi setiap kartu yang dapat dimainkan di Aegis, beserta efek dan batasnya dalam deck.",
