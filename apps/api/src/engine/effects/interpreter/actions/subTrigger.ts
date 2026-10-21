@@ -14,7 +14,7 @@ import { DefinitionFacts, definitionMatches, matchNameOrTrait } from "../matchin
 import { matchingSubjectPermanentIds, subjectMatchesFilter, triggerAddedSecurityMatches } from "../matching/trigger.js";
 import { isPermanentUnaffectable, permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
 import { candidatePermanents, resolvePermanentTargets } from "../targeting/permanents.js";
-import { getCardDefinition } from "@aegis/shared";
+import { Phase, getCardDefinition } from "@aegis/shared";
 import type { Action, Cost, Filter } from "@aegis/shared";
 import { findLooseCandidateByInstance } from "../targeting/loose.js";
 import { mayDeclareAttack } from "./meta.js";
@@ -1472,12 +1472,18 @@ export async function runGainTriggeredEffect(
     if (action.duration === "untilOpponentTurnEnd") {
       expiresOnTurnEndOf = ctx.game.opponentOf(ctx.source.ownerSeat);
     }
+    const grantedAfterOwnersMainPhaseStarted =
+      ctx.game.state.turnSeat === grantedPerm.controllerSeat && ctx.game.state.phase === Phase.Main;
+    const grantedTurnCount = ctx.game.state.turnCount;
     // `startOfYourMainPhase` requires the watcher to fire only during the GRANTED permanent's
     // owner's main phase; the ownerMainPhaseGate in runSubTrigger handles this via isOwnersTurn()
     // on the watcher's context, which is anchored on the GRANTED permanent. Gate is always added
     const ownerMainPhaseGate =
       event === "startOfYourMainPhase"
-        ? (subCtx: EffectContext): boolean => subCtx.source.isOwnersTurn() && subCtx.source.isOnBattleArea()
+        ? (subCtx: EffectContext): boolean =>
+            !(grantedAfterOwnersMainPhaseStarted && subCtx.game.state.turnCount === grantedTurnCount) &&
+            subCtx.source.isOwnersTurn() &&
+            subCtx.source.isOnBattleArea()
         : undefined;
     const ownerTurnEndGate =
       event === "endOfTurn"
