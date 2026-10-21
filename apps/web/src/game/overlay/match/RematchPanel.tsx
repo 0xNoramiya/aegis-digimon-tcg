@@ -43,7 +43,14 @@ export function RematchPanel({
     );
   }
   if (view.stage === "accepted" && view.series) {
-    return <SeriesNextGame series={view.series} opponentName={opponentName} onChooseTurnOrder={onChooseTurnOrder} />;
+    return (
+      <>
+        <SeriesNextGame series={view.series} opponentName={opponentName} onChooseTurnOrder={onChooseTurnOrder} />
+        {view.series.stage === "starting" && view.series.opponentDeckChanged ? (
+          <p className="series-next__detail">{t("overlay.rematch.opponentChanged", { name: opponentName })}</p>
+        ) : null}
+      </>
+    );
   }
   if (view.stage === "open") {
     return (

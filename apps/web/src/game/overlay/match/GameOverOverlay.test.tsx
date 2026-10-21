@@ -306,6 +306,12 @@ describe("rematch after a best-of-one", () => {
   it("announces a randomly drawn first player for a new best-of-three", () => {
     renderRematch("accepted", deckSelection({ stage: "starting" }));
     expect(screen.getByText("Game 1 · First player drawn at random")).toBeTruthy();
+    expect(screen.queryByText("Nova switched decks.")).toBeNull();
+  });
+
+  it("still tells a player who locked in first that the opponent switched decks", () => {
+    renderRematch("accepted", deckSelection({ stage: "starting", opponentDeckReady: true, opponentDeckChanged: true }));
+    expect(screen.getByText("Nova switched decks.")).toBeTruthy();
   });
 });
 
