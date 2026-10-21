@@ -12,6 +12,47 @@ import { Side } from "./side";
 
 afterEach(cleanup);
 
+it.each([
+  {
+    cardId: "BT10-008",
+    timing: "OnPlay",
+    expected: "3张卡牌",
+    description: undefined,
+    effectTextPart: "Add 1 Digimon card",
+  },
+  { cardId: "BT3-093", timing: "OnPlay", expected: "1张蓝色", description: undefined, effectTextPart: "Add 1 blue" },
+  { cardId: "EX6-025", timing: "OnPlay", expected: "沙悟兽", description: undefined, effectTextPart: "[Sagomon]" },
+  { cardId: "EX13-077", timing: "OnPlay", expected: "每有2种颜色", description: undefined, effectTextPart: undefined },
+  {
+    cardId: "AD1-008",
+    timing: "WhenDigivolving",
+    expected: "[进化时] ＜进击＞",
+    description: "[When Digivolving] ＜Blitz＞",
+    effectTextPart: undefined,
+  },
+  {
+    cardId: "AD1-003",
+    timing: "OnPlay",
+    expected: "6000",
+    description: undefined,
+    effectTextPart: "Then, you may delete 1 of your opponent's Digimon with 6000 DP or less.",
+  },
+])("renders translated notice context for $cardId", async ({ expected, ...body }) => {
+  render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <NoticeStack
+        notice={notice({ body: { variant: "effect", ...body } })}
+        remainingMs={NOTICE_LIFETIME_MS}
+        onDismiss={() => undefined}
+      />
+    </I18nContext.Provider>,
+  );
+  const getClause = () => document.querySelector(".match-notice__text");
+  await waitFor(() => expect(getClause()?.textContent).toContain(expected));
+  expect(getClause()?.textContent).not.toMatch(/When Digivolving|On Play|Then,|for every/);
+  expect(getClause()?.querySelector(".card-effect-text")?.getAttribute("data-translation-status")).toBe("complete");
+});
+
 function notice(overrides: Partial<MatchNotice> = {}): MatchNotice {
   return {
     id: "n1",
@@ -385,4 +426,23 @@ it.each([
 ])("keeps Gallantmon's separate pending effects distinct: %s", (description) => {
   renderNotice(notice({ body: { variant: "effect", cardId: "AD1-008", timing: "WhenDigivolving", description } }));
   expect(document.querySelector(".match-notice__text")?.textContent).toBe(description);
+});
+
+it("renders a manual signal through the standard effect toast and opens the source card", () => {
+  const onOpenCard = vi.fn<(cardId: string, artId?: string) => void>();
+  const shown = notice({
+    body: { variant: "effect", cardId: "BT1-010", manualSignalText: "First signals an effect · Effect target: Second" },
+  });
+  render(
+    <I18nProvider>
+      <CardOpenerProvider onOpenCard={onOpenCard}>
+        <NoticeStack notice={shown} remainingMs={NOTICE_LIFETIME_MS} onDismiss={() => undefined} />
+      </CardOpenerProvider>
+    </I18nProvider>,
+  );
+  expect(screen.getByTestId("match-notice").getAttribute("data-variant")).toBe("effect");
+  expect(screen.getByText("First signals an effect · Effect target: Second")).toBeTruthy();
+  expect(screen.getByText("Effect signal")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Open Agumon" }));
+  expect(onOpenCard).toHaveBeenCalledWith("BT1-010", undefined);
 });

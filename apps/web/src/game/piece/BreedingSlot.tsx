@@ -20,6 +20,7 @@ export function BreedingSlot({
   width,
   onClick,
   onInspect,
+  suggested,
   drop,
 }: {
   perm?: Permanent;
@@ -43,6 +44,7 @@ export function BreedingSlot({
   width?: number;
   onClick?: () => void;
   onInspect?: () => void;
+  suggested?: boolean;
   drop?: DropAttrs;
 }) {
   const { t } = useTranslation();
@@ -57,6 +59,17 @@ export function BreedingSlot({
       style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: compact ? 2 : 5 }}
     >
       <div
+        data-arena-suggested={(suggested && !!onClick) || undefined}
+        data-inspectable={!!onInspect || undefined}
+        onContextMenu={
+          onInspect
+            ? (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onInspect();
+              }
+            : undefined
+        }
         onClick={onClick}
         onKeyDown={
           onClick

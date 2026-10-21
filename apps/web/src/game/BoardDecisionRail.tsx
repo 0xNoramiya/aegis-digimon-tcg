@@ -1,3 +1,5 @@
+import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useMediaQuery } from "@/design/useMediaQuery";
 import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
 /* Simple actions use the left dialog. Hand and field choices use their physical cards;
@@ -10,7 +12,7 @@ import { CardMini } from "../design/cards";
 import { Icons } from "../design/icons";
 import { useTranslation, type TranslationKey } from "../i18n";
 import { en } from "../i18n/en";
-import { cardDisplayName, useCardOpener } from "./cardLinks";
+import { useCardOpener } from "./cardLinks";
 import { DecisionBoardReturn } from "./overlay/choice/DecisionBoardReturn";
 import { recordViewBoardOrigin } from "@/game/overlay/choice/recordViewBoardOrigin";
 import { useEffectPromptFocus } from "./overlay/choice/useEffectPromptFocus";
@@ -45,6 +47,7 @@ const BOARD_PROMPT_ART_WIDTH = 64;
  * route to the card, so it carries the link's role and label rather than being decorative.
  */
 function BoardPromptArt({ cardId, width }: { cardId: string; width: number }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const openCard = useCardOpener();
   const art = (
@@ -57,7 +60,7 @@ function BoardPromptArt({ cardId, width }: { cardId: string; width: number }) {
     <button
       type="button"
       className="board-prompt__art"
-      aria-label={t("feed.openCard", { card: cardDisplayName(cardId, t) })}
+      aria-label={t("feed.openCard", { card: getCardName(cardId) })}
       onClick={() => openCard(cardId)}
     >
       {art}
@@ -118,6 +121,7 @@ export function BoardPromptRail({
   const noticeBand = useNoticeBandPassThrough();
   const focusProps = useEffectPromptFocus(!modal, handSpace);
   usePromptHandSpace(focusProps.ref, !modal, handSpace);
+  useArenaInputCancel({ ref: focusProps.ref, onCancel: onOpenDialog });
   const drag = useDraggableWindow(focusProps.ref, {
     viewportGutter: 16,
     resetKey: `${variant}:${label}:${sourcePermanentId ?? ""}`,
@@ -533,9 +537,10 @@ export function BoardOptionalPrompt({
   onDecline: () => void;
   onOpenDialog?: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const { boardReturn, viewBoard } = useBoardView();
-  const sourceName = sourceCardId ? cardDisplayName(sourceCardId, t) : undefined;
+  const sourceName = sourceCardId ? getCardName(sourceCardId) : undefined;
   if (boardReturn) return boardReturn;
   return (
     <BoardPromptRail

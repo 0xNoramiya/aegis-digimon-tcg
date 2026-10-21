@@ -552,7 +552,7 @@ export function gatherTriggeredEffects(
         source,
         effectKey: "keyword/retaliation",
         description: "＜Retaliation＞: delete the Digimon this Digimon battled.",
-        when: (ctx) => ctx.source.isInTrash?.() === true,
+        when: (ctx) => ctx.source.definition.isToken === true || ctx.source.isInTrash?.() === true,
         resolve: async (ctx) => {
           await ctx.fx.deletePermanent([target], "byEffect");
         },

@@ -1,3 +1,4 @@
+import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
 /* A split button: the main part re-applies the last sort order, and the caret opens a
    menu that picks another order and applies it at once. The menu is portaled and fixed to
    the caret because the hand tray clips overflow and stacks its cards above the control. */
@@ -32,6 +33,13 @@ export function HandSortControl({
   const caretRef = useRef<HTMLButtonElement>(null);
   const close = useCallback(() => setMenuPosition(undefined), []);
   useDismissOnOutsidePress(menuRef, caretRef.current, close);
+  useArenaInputCancel({
+    ref: menuRef,
+    onCancel: () => {
+      close();
+      caretRef.current?.focus();
+    },
+  });
 
   useEffect(() => {
     if (disabled) close();

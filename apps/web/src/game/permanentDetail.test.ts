@@ -158,3 +158,17 @@ describe("inspectorPlacement", () => {
     expect(placement.top).toBeLessThanOrEqual(800 - 480 - 12);
   });
 });
+
+it("hides stale face-down top and link identities from opponents while allowing their owner to inspect", () => {
+  const position = permanent();
+  position.topCard.faceUp = false;
+  position.linked[0]!.faceUp = false;
+  const opponent = buildPermanentDetail(position, { viewerSeat: 1 });
+  expect(opponent.cardId).toBe("");
+  expect(opponent.artId).toBeUndefined();
+  expect(opponent.name).toBe("");
+  expect(opponent.cards.find((card) => card.role === "linked")?.cardId).toBe("");
+  const owner = buildPermanentDetail(position, { viewerSeat: 0 });
+  expect(owner.cardId).toBe("ST1-11");
+  expect(owner.cards.find((card) => card.role === "linked")?.cardId).toBe("ST1-07");
+});

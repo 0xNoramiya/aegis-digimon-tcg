@@ -29,7 +29,7 @@ const securityPlayable: Filter = {
   controller: "mine",
   zone: ["hand", "trash"],
   kind: ["Digimon", "Tamer"],
-  orFilters: [
+  or: [
     { nameOrTrait: [{ tokens: ["Lalamon"], match: "nameExact" }] },
     { nameOrTrait: [{ tokens: ["Yoshino Fujieda"], match: "nameExact" }] },
   ],

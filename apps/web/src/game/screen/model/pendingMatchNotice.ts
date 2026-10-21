@@ -8,6 +8,8 @@ import { getRankedConnectionError } from "@/ranked/getRankedConnectionError";
 
 import type { StartMode } from "../../../screens/Lobby";
 import type { Translate } from "../../../i18n";
+import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
+import { getConnectionErrorMessage } from "@/net/getConnectionErrorMessage";
 
 export interface PendingMatchNotice {
   title: string;
@@ -39,16 +41,27 @@ export function pendingMatchNotice({
   joinOptions: { displayName: string; tournamentGameId?: string };
   t: Translate;
 }): PendingMatchNotice {
-  if (status === "reconnecting")
-    return { title: t("game.reconnecting"), detail: t("game.reconnectingDetail"), spinner: true };
-  if (status === "error" || botError)
+  if (status === "reconnecting") {
+    return {
+      title: t("game.reconnecting"),
+      detail:
+        error === ConnectionErrorCode.MESSAGE_TOO_LARGE.value
+          ? t("game.messageTooLargeReconnecting")
+          : t("game.reconnectingDetail"),
+      spinner: true,
+    };
+  }
+  if (status === "error" || status === "closed" || botError) {
     return {
       title: botError ? t("game.botConnectionFailed") : t("game.connectionLost"),
-      detail: botError ?? getRankedConnectionError({ error, t }) ?? error ?? t("game.connectionLostDetail"),
+      detail:
+        (!botError && getRankedConnectionError({ error, t })) ||
+        getConnectionErrorMessage({ error: botError ?? error, t }),
       spinner: false,
       actionLabel: t("game.returnToLobby"),
       exitTo: "lobby",
     };
+  }
   if (startMode === "ranked") {
     return {
       title: t("ranked.season.searching"),

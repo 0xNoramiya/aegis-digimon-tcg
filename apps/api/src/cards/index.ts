@@ -67,3 +67,19 @@ import "./ST6/index.js";
 import "./ST7/index.js";
 import "./ST8/index.js";
 import "./ST9/index.js";
+
+import "#api/cards/BT27/BT27-073";
+import "#api/cards/BT27/BT27-077";
+import "#api/cards/BT27/BT27-080";
+
+import "#api/cards/BT27/BT27-082";
+
+import "#api/cards/BT27/BT27-003";
+import "#api/cards/BT27/BT27-045";
+import "#api/cards/BT27/BT27-049";
+import "#api/cards/BT27/BT27-051";
+import "#api/cards/BT27/BT27-075";
+import "#api/cards/BT27/BT27-076";
+import "#api/cards/BT27/BT27-079";
+import "#api/cards/BT27/BT27-098";
+import "#api/cards/BT27/BT27-043";

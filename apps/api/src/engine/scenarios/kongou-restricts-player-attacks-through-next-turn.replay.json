@@ -2056,6 +2056,21 @@
       "stateVersion": 351
     },
     {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-63",
+        "response": {
+          "kind": "optional",
+          "accept": false
+        }
+      },
+      "ok": true,
+      "engineEvents": 488,
+      "stateVersion": 357
+    },
+    {
       "ok": true,
       "kind": "intent",
       "seat": 1,
@@ -2066,8 +2081,8 @@
         },
         "instanceId": "s1-12"
       },
-      "engineEvents": 487,
-      "stateVersion": 355
+      "engineEvents": 490,
+      "stateVersion": 358
     },
     {
       "ok": true,
@@ -2109,38 +2124,23 @@
       "kind": "intent",
       "seat": 0,
       "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "chooseTargets",
-          "instanceIds": ["perm-20"]
-        },
-        "decisionId": "dec-63"
-      },
-      "engineEvents": 517,
-      "stateVersion": 377
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "chooseTargets",
-          "instanceIds": ["perm-20"]
-        },
-        "decisionId": "dec-64"
-      },
-      "engineEvents": 518,
-      "stateVersion": 378
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
         "type": "playCard",
         "instanceId": "s0-48"
+      },
+      "engineEvents": 519,
+      "stateVersion": 379
+    },
+    {
+      "ok": true,
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        },
+        "decisionId": "dec-64"
       },
       "engineEvents": 520,
       "stateVersion": 380
@@ -2152,8 +2152,8 @@
       "intent": {
         "type": "respondDecision",
         "response": {
-          "kind": "optional",
-          "accept": true
+          "kind": "selectCards",
+          "instanceIds": ["s0-43"]
         },
         "decisionId": "dec-65"
       },
@@ -2167,43 +2167,13 @@
       "intent": {
         "type": "respondDecision",
         "response": {
-          "kind": "selectCards",
-          "instanceIds": ["s0-43"]
-        },
-        "decisionId": "dec-66"
-      },
-      "engineEvents": 522,
-      "stateVersion": 382
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "chooseTargets",
-          "instanceIds": ["perm-22"]
-        },
-        "decisionId": "dec-67"
-      },
-      "engineEvents": 529,
-      "stateVersion": 386
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-68"
+        "decisionId": "dec-66"
       },
-      "engineEvents": 529,
-      "stateVersion": 386
+      "engineEvents": 528,
+      "stateVersion": 385
     },
     {
       "ok": true,
@@ -2216,8 +2186,8 @@
         "useAlternateCost": true,
         "alternateRequirementIndex": 0
       },
-      "engineEvents": 531,
-      "stateVersion": 388
+      "engineEvents": 530,
+      "stateVersion": 387
     },
     {
       "ok": true,
@@ -2229,10 +2199,10 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-69"
+        "decisionId": "dec-67"
       },
-      "engineEvents": 537,
-      "stateVersion": 391
+      "engineEvents": 536,
+      "stateVersion": 390
     },
     {
       "ok": true,
@@ -2244,25 +2214,10 @@
           "kind": "selectCards",
           "instanceIds": ["s0-9"]
         },
-        "decisionId": "dec-70"
+        "decisionId": "dec-68"
       },
-      "engineEvents": 537,
-      "stateVersion": 391
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "chooseTargets",
-          "instanceIds": ["perm-20"]
-        },
-        "decisionId": "dec-71"
-      },
-      "engineEvents": 541,
-      "stateVersion": 394
+      "engineEvents": 536,
+      "stateVersion": 390
     },
     {
       "ok": true,
@@ -2272,8 +2227,8 @@
         "type": "playCard",
         "instanceId": "s1-34"
       },
-      "engineEvents": 549,
-      "stateVersion": 402
+      "engineEvents": 547,
+      "stateVersion": 400
     },
     {
       "ok": true,
@@ -2287,8 +2242,8 @@
         "vortex": false,
         "attackerPermanentId": "perm-22"
       },
-      "engineEvents": 555,
-      "stateVersion": 406
+      "engineEvents": 553,
+      "stateVersion": 404
     },
     {
       "ok": true,
@@ -2300,10 +2255,10 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-72"
+        "decisionId": "dec-69"
       },
-      "engineEvents": 556,
-      "stateVersion": 407
+      "engineEvents": 554,
+      "stateVersion": 405
     },
     {
       "ok": true,
@@ -2313,8 +2268,8 @@
         "type": "declareBlock",
         "blockerPermanentId": "perm-23"
       },
-      "engineEvents": 564,
-      "stateVersion": 414
+      "engineEvents": 562,
+      "stateVersion": 412
     },
     {
       "ok": true,
@@ -2328,10 +2283,55 @@
             "s0-42::subtrigger/opt/s0-42/printed/EX7-058/ir-35-0/s0-42/EX7-058/ir-35-0/0/occurrence/onDeletionOf%7Cperm-17%7Cs0-42%7ConDeletionOf%7Cs0-42%2Fprinted%2FEX7-058%2Fir-35-0%7Cs0-42%2FEX7-058%2Fir-35-0%2F0%7Cleave%3Aperm-22"
           ]
         },
-        "decisionId": "dec-73"
+        "decisionId": "dec-70"
+      },
+      "engineEvents": 568,
+      "stateVersion": 418
+    },
+    {
+      "ok": true,
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        },
+        "decisionId": "dec-71"
+      },
+      "engineEvents": 569,
+      "stateVersion": 419
+    },
+    {
+      "ok": true,
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-38"]
+        },
+        "decisionId": "dec-72"
       },
       "engineEvents": 570,
       "stateVersion": 420
+    },
+    {
+      "ok": true,
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "respondDecision",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s1-11"]
+        },
+        "decisionId": "dec-73"
+      },
+      "engineEvents": 574,
+      "stateVersion": 423
     },
     {
       "ok": true,
@@ -2345,53 +2345,8 @@
         },
         "decisionId": "dec-74"
       },
-      "engineEvents": 571,
-      "stateVersion": 421
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "selectCards",
-          "instanceIds": ["s0-38"]
-        },
-        "decisionId": "dec-75"
-      },
-      "engineEvents": 572,
-      "stateVersion": 422
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 1,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "selectCards",
-          "instanceIds": ["s1-11"]
-        },
-        "decisionId": "dec-76"
-      },
       "engineEvents": 576,
       "stateVersion": 425
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "optional",
-          "accept": true
-        },
-        "decisionId": "dec-77"
-      },
-      "engineEvents": 578,
-      "stateVersion": 427
     },
     {
       "ok": true,
@@ -2403,10 +2358,10 @@
           "kind": "selectCards",
           "instanceIds": ["s0-39"]
         },
-        "decisionId": "dec-78"
+        "decisionId": "dec-75"
       },
-      "engineEvents": 579,
-      "stateVersion": 428
+      "engineEvents": 577,
+      "stateVersion": 426
     },
     {
       "ok": true,
@@ -2418,10 +2373,10 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-79"
+        "decisionId": "dec-76"
       },
-      "engineEvents": 585,
-      "stateVersion": 433
+      "engineEvents": 583,
+      "stateVersion": 431
     },
     {
       "ok": true,
@@ -2433,10 +2388,10 @@
           "kind": "selectCards",
           "instanceIds": ["s0-22"]
         },
-        "decisionId": "dec-80"
+        "decisionId": "dec-77"
       },
-      "engineEvents": 586,
-      "stateVersion": 434
+      "engineEvents": 584,
+      "stateVersion": 432
     },
     {
       "ok": true,
@@ -2445,8 +2400,8 @@
       "intent": {
         "type": "hatchEgg"
       },
-      "engineEvents": 595,
-      "stateVersion": 441
+      "engineEvents": 593,
+      "stateVersion": 439
     },
     {
       "ok": true,
@@ -2457,8 +2412,8 @@
         "instanceId": "s0-35",
         "permanentId": "perm-25"
       },
-      "engineEvents": 598,
-      "stateVersion": 443
+      "engineEvents": 596,
+      "stateVersion": 441
     },
     {
       "ok": true,
@@ -2467,6 +2422,36 @@
       "intent": {
         "type": "playCard",
         "instanceId": "s0-47"
+      },
+      "engineEvents": 601,
+      "stateVersion": 445
+    },
+    {
+      "ok": true,
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        },
+        "decisionId": "dec-78"
+      },
+      "engineEvents": 602,
+      "stateVersion": 446
+    },
+    {
+      "ok": true,
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "response": {
+          "kind": "chooseTargets",
+          "instanceIds": ["perm-26"]
+        },
+        "decisionId": "dec-79"
       },
       "engineEvents": 603,
       "stateVersion": 447
@@ -2481,37 +2466,22 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-81"
+        "decisionId": "dec-80"
       },
-      "engineEvents": 604,
-      "stateVersion": 448
+      "engineEvents": 609,
+      "stateVersion": 451
     },
     {
       "ok": true,
       "kind": "intent",
       "seat": 0,
       "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "chooseTargets",
-          "instanceIds": ["perm-26"]
+        "type": "attack",
+        "target": {
+          "kind": "player"
         },
-        "decisionId": "dec-82"
-      },
-      "engineEvents": 605,
-      "stateVersion": 449
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "optional",
-          "accept": true
-        },
-        "decisionId": "dec-83"
+        "vortex": false,
+        "attackerPermanentId": "perm-17"
       },
       "engineEvents": 611,
       "stateVersion": 453
@@ -2526,25 +2496,10 @@
           "kind": "player"
         },
         "vortex": false,
-        "attackerPermanentId": "perm-17"
-      },
-      "engineEvents": 613,
-      "stateVersion": 455
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "attack",
-        "target": {
-          "kind": "player"
-        },
-        "vortex": false,
         "attackerPermanentId": "perm-21"
       },
-      "engineEvents": 617,
-      "stateVersion": 459
+      "engineEvents": 615,
+      "stateVersion": 457
     },
     {
       "ok": true,
@@ -2556,10 +2511,10 @@
           "kind": "orderTriggers",
           "order": ["s0-33::BT16-069/ir-12-0"]
         },
-        "decisionId": "dec-84"
+        "decisionId": "dec-81"
       },
-      "engineEvents": 618,
-      "stateVersion": 460
+      "engineEvents": 616,
+      "stateVersion": 458
     },
     {
       "ok": true,
@@ -2571,10 +2526,10 @@
           "kind": "selectCards",
           "instanceIds": ["s0-23"]
         },
-        "decisionId": "dec-85"
+        "decisionId": "dec-82"
       },
-      "engineEvents": 620,
-      "stateVersion": 462
+      "engineEvents": 618,
+      "stateVersion": 460
     },
     {
       "ok": true,
@@ -2586,10 +2541,10 @@
           "kind": "orderTriggers",
           "order": ["s0-41::EX8-058/ir-12-0"]
         },
-        "decisionId": "dec-86"
+        "decisionId": "dec-83"
       },
-      "engineEvents": 624,
-      "stateVersion": 466
+      "engineEvents": 622,
+      "stateVersion": 464
     },
     {
       "ok": true,
@@ -2601,10 +2556,10 @@
           "kind": "orderTriggers",
           "order": ["s0-24::BT16-066/ir-12-0"]
         },
-        "decisionId": "dec-87"
+        "decisionId": "dec-84"
       },
-      "engineEvents": 627,
-      "stateVersion": 469
+      "engineEvents": 625,
+      "stateVersion": 467
     },
     {
       "ok": true,
@@ -2616,10 +2571,10 @@
           "kind": "selectCards",
           "instanceIds": ["s0-21"]
         },
-        "decisionId": "dec-88"
+        "decisionId": "dec-85"
       },
-      "engineEvents": 629,
-      "stateVersion": 471
+      "engineEvents": 627,
+      "stateVersion": 469
     },
     {
       "ok": true,
@@ -2633,8 +2588,8 @@
         "vortex": false,
         "attackerPermanentId": "perm-26"
       },
-      "engineEvents": 636,
-      "stateVersion": 478
+      "engineEvents": 634,
+      "stateVersion": 476
     }
   ],
   "matchId": "34835abc-0754-4bea-9a5c-7a04a392f1ff",

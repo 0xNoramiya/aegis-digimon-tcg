@@ -1,13 +1,43 @@
 import { rankedEn } from "@/i18n/ranked.en";
+import { advancedBattlesIt } from "@/i18n/learn/advancedBattles.it";
+import { rulesLayoutIt } from "@/i18n/learn/rulesLayout.it";
+import { lessonCatalogIt } from "@/i18n/learn/lessonCatalog.it";
+import { battleLessonsIt } from "@/i18n/learn/battleLessons.it";
+import { manualEn } from "@/i18n/manual.en";
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { replayVideoIt } from "./replayVideo";
 import { profileReplayIt } from "./profileReplays";
 import { replayIt } from "./replays";
 import { en } from "./en";
+import { learnIt } from "@/i18n/learn/learn.it";
+import { learnDrillsIt } from "@/i18n/learn/drills.it";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
+  ...manualEn,
+  "settings.arenaInput": "Tastiera e controller",
+  "settings.arenaInputDesc": "Muovi un cursore con le frecce o un controller e mostra il tasto di ogni azione.",
+  "game.input.controls": "Tastiera e controller",
+  "game.input.navigate": "Naviga",
+  "game.input.select": "Seleziona",
+  "game.input.inspect": "Esamina",
+  "game.input.region": "Zona",
+  "game.input.scroll": "Scorri",
+  "game.input.reorder": "Invio/A: sposta; frecce: riordina; Invio/A: termina; Esc/B: annulla",
+
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
+  "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnIt,
+  ...learnDrillsIt,
+  ...battleLessonsIt,
+  ...lessonCatalogIt,
+  ...rulesLayoutIt,
+  ...advancedBattlesIt,
   "settings.cardImageLanguage": "Lingua delle immagini delle carte",
   "settings.cardImageLanguageDesc":
     "Scegli la lingua predefinita della Collezione e delle nuove copie aggiunte ai mazzi. Il pulsante sostituisce anche le immagini alternative nei mazzi esistenti. Le carte senza questa lingua mantengono la loro immagine attuale.",
@@ -340,8 +370,7 @@ const interfaceMessages = {
   "community.guide.heading": "Titolo",
   "community.guide.bullets": "Elenco puntato",
   "community.guide.cards": "Suggerimenti di carte",
-  "community.publish.errorHidden":
-    "Un moderatore ha nascosto questo deck dopo una segnalazione, quindi non può essere pubblico.",
+  "community.publish.errorHidden": "Un moderatore ha nascosto questo deck. Correggilo e chiedi una revisione.",
   "community.report.open": "Segnala deck",
   "community.report.title": "Segnala {name}",
   "community.report.body":
@@ -373,6 +402,26 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "Nascosto",
   "community.moderation.hiddenOwnerBadge": "Nascosto da un moderatore",
   "community.moderation.hiddenOwnerNote": "Segnalato dai giocatori. Gli altri non possono vederlo.",
+  "community.moderation.hideTitle": "Nascondere {name}?",
+  "community.moderation.hideBody":
+    "I giocatori non vedono più questo deck. Il proprietario vede il motivo e la tua nota, e può correggere il deck e chiedere una revisione.",
+  "community.moderation.noteLabel": "Nota per il proprietario (facoltativa)",
+  "community.moderation.hiddenReason": "Nascosto per: {reason}.",
+  "community.moderation.ownerNote": "Nota del moderatore: {note}",
+  "community.moderation.ownerFixHint": "Correggi il deck, poi chiedi una revisione.",
+  "community.moderation.reviewPendingNote": "Un moderatore esaminerà le tue modifiche.",
+  "community.moderation.reviewRequestedBadge": "Revisione richiesta",
+  "community.moderation.reviewTitle": "Moderazione",
+  "community.moderation.approve": "Approva e rendi pubblico",
+  "community.moderation.decline": "Mantieni nascosto",
+  "community.moderation.declined": "Revisione rifiutata. Il deck resta nascosto.",
+  "community.review.action": "Chiedi revisione",
+  "community.review.title": "Chiedere una revisione di {name}?",
+  "community.review.body":
+    "Correggi prima il deck. Inviamo il deck salvato così com'è ora. Resta nascosto finché un moderatore non lo approva.",
+  "community.review.noteLabel": "Nota per il moderatore (facoltativa)",
+  "community.review.errorPending": "Hai già chiesto una revisione. Attendi la risposta di un moderatore.",
+  "community.review.errorNotHidden": "Questo deck non è più nascosto.",
   "privacy.title": "Informativa sulla privacy",
   "game.dragIntent.reorder": "RIORDINA LA MANO",
   "game.handSort.type": "Per tipo",
@@ -690,6 +739,7 @@ const interfaceMessages = {
   "library.rowColor": "Colore",
   "library.rowType": "Tipo",
   "library.rowPlayCost": "Costo di gioco",
+  "library.rowUseCost": "Costo d'uso",
   "library.rowDp": "DP",
   "library.rowTraits": "Tratti",
   "library.rowRarity": "Rarità",
@@ -855,7 +905,14 @@ const interfaceMessages = {
   "game.reconnecting": "Riconnessione…",
   "game.reconnectingDetail": "La connessione si è interrotta. Tentativo di riprendere la partita.",
   "game.connectionLost": "Connessione persa",
-  "game.connectionLostDetail": "Il server non è raggiungibile. Controlla la connessione e riprova.",
+  "game.connectionLostDetail": "La connessione alla partita è stata interrotta. Prova a riconnetterti.",
+  "game.messageTooLarge": "La selezione era troppo grande da inviare. Prova a risolvere meno effetti alla volta.",
+  "game.messageTooLargeReconnecting":
+    "La selezione era troppo grande da inviare. Riconnessione per ripristinare la scelta in sospeso.",
+  "game.reconnectFailed": "Non è stato possibile riprendere la partita. Torna alla lobby e riprova.",
+  "game.sessionExpired": "Questa partita non può più essere ripresa. Torna alla lobby.",
+  "game.tooManyMessages": "Sono state inviate troppe azioni insieme. Attendi un momento, poi torna alla lobby.",
+  "game.serverUnavailable": "Il server di gioco non è al momento disponibile. Riprova tra poco.",
   "game.opponentDisconnected": "Avversario disconnesso",
   "game.opponentDisconnectedDetail": "In attesa che l'avversario si riconnetta. La partita riprenderà automaticamente.",
   "game.opponentDisconnectedCountdown": "Se non torna entro {time}, vinci la partita.",
@@ -948,6 +1005,7 @@ const interfaceMessages = {
   "game.digiEgg": " · Digi-Egg",
   "game.noCost": "nessun costo",
   "game.costsMemory": "costa {count} memoria",
+  "game.useCostsMemory": "costa {count} memoria per l'uso",
   "game.digivolve": "Digievolvi",
   "game.clickToDigivolve": "clicca su un Digimon illuminato per digievolvere",
   "game.clickToLink": "clicca su un Digimon illuminato per collegare",
@@ -1305,6 +1363,7 @@ const interfaceMessages = {
   "overlay.endSelection": "Termina la selezione",
   "overlay.noSelection": "Nessuna selezione",
   "overlay.use": "Usa",
+  "overlay.activationProgress": "Attivazione {index} di {total}",
   "overlay.notUse": "Non usare",
   "overlay.moveToBattleArea": "Sposta nell'area di battaglia",
   "overlay.endPhase": "Termina la fase",
@@ -2326,9 +2385,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "Partita {game} · Comincia {name}",
   "overlay.series.joining": "Avvio della prossima partita…",
   "overlay.series.leave": "Lascia la serie",
-  "overlay.rematch.offer": "Gioca ancora contro {name} · Al meglio di 3",
+  "overlay.rematch.title": "Giocare ancora contro {name}?",
+  "overlay.rematch.finish": "Concludi questo al meglio di 3",
+  "overlay.rematch.finishHint": "Questa partita conta come partita 1.",
+  "overlay.rematch.new": "Nuovo al meglio di 3",
+  "overlay.rematch.newHint": "Entrambi i giocatori partono da 0–0.",
+  "overlay.rematch.incomingFinish": "{name} vuole concludere questo al meglio di 3",
+  "overlay.rematch.incomingNew": "{name} vuole iniziare un nuovo al meglio di 3",
   "overlay.rematch.hint": "Stessi mazzi. Chi ha perso questa partita sceglie chi inizia.",
-  "overlay.rematch.incoming": "{name} vuole la rivincita",
   "overlay.rematch.accept": "Accetta",
   "overlay.rematch.decline": "Rifiuta",
   "overlay.rematch.waiting": "In attesa della risposta di {name}…",
@@ -2346,6 +2410,7 @@ const interfaceMessages = {
 } satisfies Record<Exclude<keyof typeof en, `releases.${string}`>, string>;
 
 export const it: Record<keyof typeof en, string> = {
+  ...manualEn,
   ...en,
   ...interfaceMessages,
   ...rankedEn,

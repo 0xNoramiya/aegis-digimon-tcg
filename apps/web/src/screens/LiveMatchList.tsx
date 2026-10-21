@@ -1,3 +1,4 @@
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import type { LiveMatch } from "@aegis/shared/protocol/LiveMatch";
 import { Badge, Button } from "@/design/primitives";
 import { Icons } from "@/design/icons";
@@ -46,6 +47,7 @@ export function LiveMatchList({
               </p>
               <div className="live-match__meta">
                 <Badge>{deckFormatLabel(match.format, t)}</Badge>
+                {match.gameMode === GameMode.MANUAL.value ? <Badge>{t("manual.title")}</Badge> : null}
                 <span className="live-match__stat">
                   <Icons.Clock size={14} aria-hidden="true" />
                   {t("spectator.liveMinutes", { minutes })}

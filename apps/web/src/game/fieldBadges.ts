@@ -227,10 +227,14 @@ export function forcedAttackGrants(permanent: Pick<Permanent, "forcedAttackGrant
 }
 
 /** "Trident Arm granted: [Start of Your Main Phase] This Digimon attacks." */
-export function forcedAttackGrantText({ clause, sourceCardId }: ForcedAttackGrant, t: Translate): string {
+export function forcedAttackGrantText(
+  { clause, sourceCardId }: ForcedAttackGrant,
+  t: Translate,
+  getCardName?: (cardId: string) => string,
+): string {
   return sourceCardId
     ? t("redesign.arena.restriction.attacksAtStartOfMainPhaseGranted", {
-        card: cardDisplayName(sourceCardId, t),
+        card: getCardName?.(sourceCardId) ?? cardDisplayName(sourceCardId, t),
         clause,
       })
     : clause;

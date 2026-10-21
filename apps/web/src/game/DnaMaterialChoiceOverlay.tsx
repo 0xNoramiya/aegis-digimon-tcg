@@ -62,7 +62,7 @@ export function DnaMaterialChoiceOverlay({
         </Button>
       ) : null}
       <div className="dna-material-choice__actions">
-        <Button variant="secondary" onClick={onCancel}>
+        <Button variant="secondary" data-arena-cancel onClick={onCancel}>
           {t("common.cancel")}
         </Button>
         <Button

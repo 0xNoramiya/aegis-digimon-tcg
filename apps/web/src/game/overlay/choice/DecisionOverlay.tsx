@@ -1,3 +1,7 @@
+import { getCardTextField } from "@/i18n/getCardTextField";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
+import { EffectText } from "@/game/EffectText";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { isAllowedTargetSelection } from "@/game/screen/model/isAllowedTargetSelection";
 import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
@@ -13,7 +17,6 @@ import { useEffectPromptPosition } from "../../effectPromptPosition";
 import { effectDecisionSurface, isEffectActivationDecision, decisionSelectionMin } from "../../decisionPresentation";
 import { pendingFateBadge } from "../../pendingFate";
 import { playerFacingEffectClause, playerFacingPromptText } from "../effectText";
-import { printedCardName } from "../printedCardName";
 import type { TriggerDetail } from "../types";
 import { DecisionBoardReturn } from "./DecisionBoardReturn";
 import { abstractTargetLabel } from "./decisionCandidateLabels";
@@ -97,7 +100,9 @@ export function DecisionOverlay({
    */
   onChangeSourceHost?: () => void;
 }) {
-  const { t } = useTranslation();
+  const getCardName = useTranslatedCardName();
+  const { t, locale } = useTranslation();
+  const translateCardText = useTranslatedCardText();
   const effectPromptPosition = useEffectPromptPosition();
   const openCard = useCardOpener();
   const wideDialog = useMediaQuery(WIDE_DIALOG_QUERY);
@@ -125,11 +130,16 @@ export function DecisionOverlay({
     isSelect &&
     candidates.length === 1 &&
     abstractTargetLabel({ instanceId: candidates[0]!.instanceId, t }) !== undefined;
-  const partitionCandidate = request.options?.candidateInstanceIds?.[0];
+  const activationCandidate = request.options?.candidateInstanceIds?.[0];
   const isPartitionActivation =
     request.kind === "selectCards" &&
     request.options?.selectionContext === "partitionActivation" &&
-    partitionCandidate !== undefined;
+    activationCandidate !== undefined;
+  const isMaterialSaveActivation =
+    request.kind === "selectCards" &&
+    request.options?.selectionContext === "materialSaveActivation" &&
+    activationCandidate !== undefined;
+  const isKeywordActivation = isPartitionActivation || isMaterialSaveActivation;
   const isOrderCards = request.kind === "orderCards";
   const isOrderTriggers = request.kind === "orderTriggers";
   const isResolutionPlan = isOrderTriggers && request.options?.acceptsResolutionPlan === true;
@@ -223,9 +233,7 @@ export function DecisionOverlay({
   /* The dialog is named by a plain string rather than by its visible title: that title
      now carries the source card as a link, and an aria-labelledby would read the link's
      own label ("Open …") in place of the card's name. */
-  const dialogLabel = sourceCardId
-    ? t("overlay.cardEffect", { name: printedCardName(sourceCardId) })
-    : t("overlay.effect");
+  const dialogLabel = sourceCardId ? t("overlay.cardEffect", { name: getCardName(sourceCardId) }) : t("overlay.effect");
 
   // A choice with a decline entry is an optional effect asking which way to use it.
   const genericPrompt = t(
@@ -249,7 +257,7 @@ export function DecisionOverlay({
           request.options?.effectTextPart ? sourceEffectText : undefined,
         );
   const promptText =
-    isOptional || (isChoose && declineIndex !== undefined)
+    isOptional || isMaterialSaveActivation || (isChoose && declineIndex !== undefined)
       ? t("overlay.useEffectPrompt")
       : request.options?.selectionContext === "attackTarget"
         ? t("overlay.declareAttack")
@@ -259,7 +267,7 @@ export function DecisionOverlay({
             ? t("overlay.activateBlitzPrompt")
             : request.options?.promptKey === "digivolveHost"
               ? t("overlay.digivolveHostPrompt")
-              : !specificPrompt || (sourceCardId && specificPrompt === printedCardName(sourceCardId))
+              : !specificPrompt || (sourceCardId && specificPrompt === getCardName(sourceCardId))
                 ? genericPrompt
                 : specificPrompt;
 
@@ -269,8 +277,15 @@ export function DecisionOverlay({
   const emphasis = request.options?.effectTextEmphasis;
   const renderedEffectText = displayedEffectText ? (
     <EffectStepText
+      timing={request.options?.timing}
       text={displayedEffectText}
       emphasis={emphasis}
+      field={getCardTextField({
+        cardId: request.options?.effectTextCardId ?? sourceCardId,
+        timing: request.options?.timing,
+        isInherited: request.options?.isInherited,
+        text: displayedEffectText,
+      })}
       cardId={request.options?.effectTextCardId ?? sourceCardId}
     />
   ) : undefined;
@@ -352,7 +367,7 @@ export function DecisionOverlay({
                 <button
                   type="button"
                   className="decision-overlay__source-art"
-                  aria-label={t("feed.openCard", { card: printedCardName(sourceCardId) })}
+                  aria-label={t("feed.openCard", { card: getCardName(sourceCardId) })}
                   onClick={() => openCard(sourceCardId)}
                 >
                   <span className="mobile-prompt-art">
@@ -370,12 +385,35 @@ export function DecisionOverlay({
             <div className="decision-overlay__question">
               <div className="decision-overlay__heading">
                 <h2 className="decision-overlay__title">
-                  {isResolutionPlan ? t("overlay.orderPendingEffects") : promptText}
+                  {isResolutionPlan
+                    ? t("overlay.orderPendingEffects")
+                    : translateCardText({
+                        text: promptText,
+                        cardId: request.options?.effectTextCardId ?? sourceCardId,
+                      })}
                 </h2>
               </div>
               <div className="decision-overlay__clauses">
                 {!isOrderTriggers && displayedEffectText && onChangeSourceHost === undefined ? (
-                  <p className="decision-overlay__effect-text">{renderedEffectText}</p>
+                  <p className="decision-overlay__effect-text">
+                    {locale === "zh-CN" ? (
+                      <EffectText
+                        text={displayedEffectText}
+                        field={getCardTextField({
+                          cardId: request.options?.effectTextCardId ?? sourceCardId,
+                          timing: request.options?.timing,
+                          isInherited: request.options?.isInherited,
+                          text: displayedEffectText,
+                        })}
+                        surface="decision"
+                        timing={request.options?.timing}
+                        allowContext
+                        cardId={request.options?.effectTextCardId ?? sourceCardId}
+                      />
+                    ) : (
+                      renderedEffectText
+                    )}
+                  </p>
                 ) : null}
                 {isOptional && request.options?.promptKey === "attackAlreadyResolving" && sourceEffectText ? (
                   <p className="decision-overlay__effect-text">{specificPrompt}</p>
@@ -390,7 +428,7 @@ export function DecisionOverlay({
             {draggableActivation ? <PromptMoveHandle drag={drag} className="decision-overlay__move-handle" /> : null}
           </div>
 
-          {isPartitionActivation ? (
+          {isKeywordActivation ? (
             <DecisionChoiceCards candidates={candidates} wideDialog={wideDialog} />
           ) : isSelect ? (
             <DecisionCandidateGrid
@@ -437,7 +475,9 @@ export function DecisionOverlay({
             <DecisionClauseChoice
               choices={choices}
               choiceClauses={choiceClauses}
+              cardId={request.options?.effectTextCardId ?? sourceCardId}
               declineIndex={declineIndex}
+              activation={request.options?.activation}
               onRespond={onRespond}
               onOpenBoard={() => setIsViewingBoard(true)}
             />
@@ -455,11 +495,11 @@ export function DecisionOverlay({
             <DecisionOptionalFooter onRespond={onRespond} onOpenBoard={() => setIsViewingBoard(true)} />
           ) : null}
 
-          {isPartitionActivation ? (
+          {isKeywordActivation ? (
             <DecisionOptionalFooter
               onRespond={(response) => {
                 if (response.kind !== "optional") return;
-                onRespond({ kind: "selectCards", instanceIds: response.accept ? [partitionCandidate] : [] });
+                onRespond({ kind: "selectCards", instanceIds: response.accept ? [activationCandidate] : [] });
               }}
               onOpenBoard={() => setIsViewingBoard(true)}
             />
@@ -474,6 +514,15 @@ export function DecisionOverlay({
               min={min}
               onNone={() =>
                 onRespond({ kind: request.kind === "selectCards" ? "selectCards" : "chooseTargets", instanceIds: [] })
+              }
+              onDeclineCost={
+                request.options?.declinesCost === true
+                  ? () =>
+                      onRespond({
+                        kind: request.kind === "selectCards" ? "selectCards" : "chooseTargets",
+                        instanceIds: [],
+                      })
+                  : undefined
               }
               onOpenBoard={() => setIsViewingBoard(true)}
             />
@@ -494,6 +543,7 @@ export function DecisionOverlay({
               triggerIsOptional={request.options?.triggerIsOptional}
               waitingTriggers={waitingTriggersOf(request)}
               acceptsResolutionPlan={isResolutionPlan}
+              acceptsIndexedResolutionPlan={request.options?.acceptsIndexedResolutionPlan === true}
               onRespond={onRespond}
               onOpenBoard={() => setIsViewingBoard(true)}
             />

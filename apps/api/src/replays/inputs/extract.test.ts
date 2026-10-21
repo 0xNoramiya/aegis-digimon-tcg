@@ -47,6 +47,7 @@ describe("extractReplay", () => {
       format: REPLAY_FORMAT,
       matchId: first.matchId,
       seed: 20260914,
+      randomKey: expect.stringMatching(/^[a-f0-9]{64}$/),
       rules: { deckFormat: "standard", unlimited: false, betaBattle: false },
     });
     expect(record.seats[0].bot).toBeUndefined();

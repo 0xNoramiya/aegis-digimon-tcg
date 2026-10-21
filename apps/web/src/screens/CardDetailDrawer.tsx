@@ -1,3 +1,4 @@
+import { CardAceBadge } from "@/design/CardAceBadge";
 import { I18nContext } from "@/i18n/I18nContext";
 import { useCardFaceTranslation } from "@/screens/cardLanguage/useCardFaceTranslation";
 import { EffectText } from "@/game/EffectText";
@@ -54,6 +55,11 @@ export function CardDetailDrawer({
   const def = getCardDefinition(cardId);
   if (!def) return null;
   const isDigi = kindOf(def) === "Digimon";
+  const forms = isDigi && def.forms?.length ? def.forms : [formLabel(def)];
+  const traits = [
+    ...(def.attributes ?? []).map((value) => getTranslatedCardMeta({ value, group: "attributes", translations })),
+    ...(def.types ?? []).map((value) => getTranslatedCardMeta({ value, group: "traits", translations })),
+  ].filter((value) => value && value !== "-" && value !== "—");
   const copyLimit = formatCopyLimit(cardId, format);
   const banLabel = formatRestrictionLabel(cardId, format);
   return (
@@ -105,7 +111,10 @@ export function CardDetailDrawer({
           </div>
         ) : null}
         <div className="card-detail-summary">
-          <h2>{getTranslatedCardName({ name: def.nameEn, translations })}</h2>
+          <h2>
+            {getTranslatedCardName({ name: def.nameEn, translations })}
+            <CardAceBadge cardId={cardId} />
+          </h2>
           <div className="card-detail-limit">
             {banLabel ? <span className="card-detail-restriction">{banLabel}</span> : null}
             {isBetaCard(cardId) ? (
@@ -120,23 +129,18 @@ export function CardDetailDrawer({
             <DetailRow label={cardTranslation.t("library.rowColor")} value={def.colors.join(" / ")} />
             <DetailRow
               label={cardTranslation.t("library.rowType")}
-              value={getTranslatedCardMeta({ value: formLabel(def), group: "forms", translations })}
+              value={forms.map((value) => getTranslatedCardMeta({ value, group: "forms", translations })).join(" / ")}
             />
             <DetailRow
-              label={cardTranslation.t("library.rowPlayCost")}
+              label={cardTranslation.t(def.isDualCard ? "library.rowUseCost" : "library.rowPlayCost")}
               value={def.playCost < 0 ? "—" : String(def.playCost)}
               mono
             />
             {isDigi ? (
               <DetailRow label={cardTranslation.t("library.rowDp")} value={def.dp.toLocaleString()} mono />
             ) : null}
-            {def.types && def.types.length ? (
-              <DetailRow
-                label={cardTranslation.t("library.rowTraits")}
-                value={def.types
-                  .map((value) => getTranslatedCardMeta({ value, group: "traits", translations }))
-                  .join(", ")}
-              />
+            {traits.length ? (
+              <DetailRow label={cardTranslation.t("library.rowTraits")} value={traits.join(", ")} />
             ) : null}
             {def.rarity ? <DetailRow label={cardTranslation.t("library.rowRarity")} value={def.rarity} mono /> : null}
           </div>

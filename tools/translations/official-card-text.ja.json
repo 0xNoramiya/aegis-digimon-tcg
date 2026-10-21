@@ -1,10 +1,10 @@
 {
   "fetchedAt": "2026-10-16T13:45:11.694Z",
   "language": "ja",
-  "catalogCards": 4487,
-  "sourceCards": 4474,
-  "translatedCards": 4288,
-  "translatedFields": 6762,
+  "catalogCards": 4506,
+  "sourceCards": 4477,
+  "translatedCards": 4301,
+  "translatedFields": 6784,
   "missing": [
     {
       "cardId": "BT12-002",
@@ -273,6 +273,56 @@
     },
     {
       "cardId": "BT27-100",
+      "field": "securityEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-002",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-020",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-020",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-025",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-025",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-028",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-028",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-031",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-095",
+      "field": "effectText",
+      "reason": "unavailable-source-field"
+    },
+    {
+      "cardId": "BT27-095",
       "field": "securityEffectText",
       "reason": "unavailable-source-field"
     }
@@ -15629,6 +15679,54 @@
     "ST9-15": {
       "effectText": "https://digimoncard.com/cards/?search=true&category=503109",
       "securityEffectText": "https://digimoncard.com/cards/?search=true&category=503109"
+    },
+    "BT27-073": {
+      "effectText": "https://x.com/digimon_tcg/status/2111615804068483363",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2111615804068483363"
+    },
+    "BT27-077": {
+      "effectText": "https://x.com/digimon_tcg/status/2111615804068483363",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2111615804068483363"
+    },
+    "BT27-080": {
+      "effectText": "https://x.com/digimon_tcg/status/2111615804068483363",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2111615804068483363"
+    },
+    "BT27-082": {
+      "effectText": "https://x.com/digimon_tcg/status/2111698837064786432",
+      "optionEffect": "https://x.com/digimon_tcg/status/2111698837064786432"
+    },
+    "BT27-003": {
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2111978199316091354"
+    },
+    "BT27-045": {
+      "effectText": "https://x.com/digimon_tcg/status/2111978199316091354",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2111978199316091354"
+    },
+    "BT27-049": {
+      "effectText": "https://x.com/digimon_tcg/status/2112061222099333418",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2112061222099333418"
+    },
+    "BT27-051": {
+      "effectText": "https://x.com/digimon_tcg/status/2112061222099333418",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2112061222099333418"
+    },
+    "BT27-075": {
+      "effectText": "https://x.com/digimon_tcg/status/2112159358553624837"
+    },
+    "BT27-076": {
+      "effectText": "https://x.com/digimon_tcg/status/2112159358553624837"
+    },
+    "BT27-079": {
+      "effectText": "https://x.com/digimon_tcg/status/2112159358553624837"
+    },
+    "BT27-098": {
+      "effectText": "https://x.com/digimon_tcg/status/2112340579963261126",
+      "securityEffectText": "https://x.com/digimon_tcg/status/2112340579963261126"
+    },
+    "BT27-043": {
+      "effectText": "https://x.com/digimon_tcg/status/2112423630697333015",
+      "optionEffect": "https://x.com/digimon_tcg/status/2112423630697333015"
     }
   }
 }

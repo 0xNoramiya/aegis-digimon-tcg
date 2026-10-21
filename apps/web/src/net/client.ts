@@ -1,5 +1,6 @@
 import { connectRankedMatch } from "@/ranked/connectRankedMatch";
-import { ROOM_TYPE_TOURNAMENT } from "@aegis/shared/protocol/messages";
+import { GameMode } from "@aegis/shared/manual/GameMode";
+import { ROOM_TYPE_MANUAL, ROOM_TYPE_MANUAL_PRIVATE, ROOM_TYPE_TOURNAMENT } from "@aegis/shared/protocol/messages";
 import { Client, type Room } from "@colyseus/sdk";
 import {
   GameState,
@@ -57,6 +58,9 @@ function withDeckRules(options: AegisJoinOptions): AegisJoinOptions {
 function publicRoomType(options: AegisJoinOptions): string {
   if (options.tournamentGameId && options.tournamentGameToken) {
     return ROOM_TYPE_TOURNAMENT;
+  }
+  if (options.gameMode === GameMode.MANUAL.value) {
+    return ROOM_TYPE_MANUAL;
   }
   const unlimited = formatIsUnlimited(deckFormat(options.format, options.unlimited));
   if (unlimited && (options.ranked || options.betaBattleMode))
@@ -146,10 +150,13 @@ export class AegisConnectionRouter {
 
   async createPrivate(options: AegisJoinOptions): Promise<AegisRoom> {
     const manifest = await this.dependencies.loadManifest();
-    const created = await this.client(manifest.active.slot).create(ROOM_TYPE_PRIVATE, {
-      ...(await this.withRoomTicket(withDeckRules(options), manifest.active.slot)),
-      private: true,
-    });
+    const created = await this.client(manifest.active.slot).create(
+      options.gameMode === GameMode.MANUAL.value ? ROOM_TYPE_MANUAL_PRIVATE : ROOM_TYPE_PRIVATE,
+      {
+        ...(await this.withRoomTicket(withDeckRules(options), manifest.active.slot)),
+        private: true,
+      },
+    );
     return this.remember(created, manifest.active.slot);
   }
 
@@ -184,6 +191,7 @@ export class AegisConnectionRouter {
         roomCode: code.toUpperCase(),
         unlimited: rules.unlimited,
         format: rules.format,
+        ...(rules.gameMode === GameMode.MANUAL.value ? { gameMode: rules.gameMode } : {}),
       });
       return this.remember(joined, slot);
     }
@@ -445,22 +453,32 @@ export async function createBot(options: AegisJoinOptions): Promise<AegisRoom> {
 /** Create a private room on the active deployment. */
 export async function createPrivate(options: AegisJoinOptions): Promise<AegisRoom> {
   if (useProductionRouter()) return getProductionRouter().createPrivate(options);
-  const created = await getLegacyClient().create<GameState>(ROOM_TYPE_PRIVATE, {
-    ...(await withLegacyRoomTicket(withDeckRules(options))),
-    private: true,
-  });
+  const created = await getLegacyClient().create<GameState>(
+    options.gameMode === GameMode.MANUAL.value ? ROOM_TYPE_MANUAL_PRIVATE : ROOM_TYPE_PRIVATE,
+    {
+      ...(await withLegacyRoomTicket(withDeckRules(options))),
+      private: true,
+    },
+  );
   return rememberLegacy(created);
 }
 
 export interface PrivateRoomRules {
+  gameMode?: GameMode;
   roomId: string;
   unlimited: boolean;
   format: DeckFormat;
 }
 
-function privateRoomRules(value: { roomId: string; unlimited?: boolean; format?: DeckFormat }): PrivateRoomRules {
+function privateRoomRules(value: {
+  roomId: string;
+  unlimited?: boolean;
+  format?: DeckFormat;
+  gameMode?: GameMode;
+}): PrivateRoomRules {
   return {
     roomId: value.roomId,
+    ...(value.gameMode === GameMode.MANUAL.value ? { gameMode: GameMode.MANUAL.value } : {}),
     unlimited: value.unlimited === true,
     format: deckFormat(value.format, value.unlimited),
   };
@@ -498,6 +516,7 @@ export async function joinPrivateByCode(code: string, options: AegisJoinOptions)
     roomCode: code.toUpperCase(),
     unlimited: rules.unlimited,
     format: rules.format,
+    ...(rules.gameMode === GameMode.MANUAL.value ? { gameMode: rules.gameMode } : {}),
   });
   return rememberLegacy(joined);
 }

@@ -20,6 +20,7 @@ import type { CollectedEffect } from "../collect.js";
 import { isPermanentKind, placePermanent } from "../verbs/cardPlacement.js";
 import {
   hostOfStackInstance,
+  hostOfLinkedInstance,
   locateInHand,
   locateInSecurity,
   looseZoneOfInstance,
@@ -35,7 +36,7 @@ import type { PrimitivesContext } from "./context.js";
  */
 
 export function createPlayVerbs(pc: PrimitivesContext) {
-  const { engine, continuous, effectSeatStack, player, state } = pc;
+  const { engine, continuous, effectSeatStack, player, state, ledger } = pc;
   // Reached through the context because these are built in sibling modules: the
   // whole set exists before any of it runs, so forwarding at call time is safe.
   const effectDrivenPlayCost: PrimitivesContext["helpers"]["effectDrivenPlayCost"] = (...args) =>
@@ -302,10 +303,14 @@ export function createPlayVerbs(pc: PrimitivesContext) {
           const resolvedHostPermanentId =
             hostOfStackInstance(state, instanceId)?.hostPermanentId ?? opts?.hostPermanentIds?.[instanceId];
           const origin = locateMoveOrigins({ state, instanceIds: [instanceId] }).get(instanceId);
+          const linkedHostId = hostOfLinkedInstance(state, instanceId);
           const instance = removeLooseInstance(state, instanceId, true, resolvedHostPermanentId);
           if (instance === undefined) {
             await abandonPlay();
             return;
+          }
+          if (linkedHostId !== undefined) {
+            ledger.recomputeDP(state, linkedHostId);
           }
           instance.faceUp = true;
           // A source played onto a new permanent is a new card (CR 7-1-1, 3-4-4),

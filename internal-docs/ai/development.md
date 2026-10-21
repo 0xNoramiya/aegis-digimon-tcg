@@ -18,6 +18,21 @@ The API build and default typecheck exclude test files and test-only support dir
 
 Run `pnpm check:fix` to apply lint/format fixes; review the diff, then run `pnpm check`.
 
+### Game message limits
+
+`packages/shared/src/protocol/gameMessageLimits.json` owns the 1 MiB incoming message
+limit. The API WebSocket transport, JSON/text/form parsers and the gateway's buffered
+legacy requests consume it. The pinned Colyseus matchmaking reader also accepts 1 MiB.
+Keep browser harnesses on `createGameTransport` so they exercise the production limit.
+Individual field validation and replay/artifact storage limits remain domain contracts.
+
+WebSocket code `1009` means a message was too large. Code `1006` only records an abnormal
+closure; correlate the client report in `connection_drops` before assigning a cause.
+The client discards queued intents after `1009`, reconnects to restore the pending
+decision and shows a localized explanation rather than resending the rejected payload.
+
+Trigger-order decisions advertise `acceptsIndexedResolutionPlan` when indexed responses are supported. The client then sends `orderIndexes` and optional `optionalAnswersByIndex`, aligned to the offered trigger keys, instead of repeating long effect identifiers. The API validates and expands these indexes before applying existing decision guards. Legacy named responses remain accepted; clients use them when the capability is absent. Replays retain the submitted representation and resolve through the same decision manager.
+
 The development server proxies card art to the deployed Oracle VPS mirror at
 `https://aegis-digi.online/assets/card-images`. Set `AEGIS_CARD_IMAGE_ORIGIN` to another
 mirror with the same filenames to override it. The same environment variable applies

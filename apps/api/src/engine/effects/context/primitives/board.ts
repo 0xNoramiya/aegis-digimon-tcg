@@ -85,6 +85,7 @@ export interface BoardPrimitives {
     sourceInstanceId: string,
     opts?: {
       payCost?: boolean;
+      byEffect?: boolean;
       draw?: boolean;
       costDelta?: number;
       /**

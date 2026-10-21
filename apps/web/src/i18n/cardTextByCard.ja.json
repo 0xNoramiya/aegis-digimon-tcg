@@ -13798,7 +13798,7 @@
     "<Blocker>.": "≪ブロッカー≫（このデジモンはブロックタイミングでブロックできる）"
   },
   "P-163": {
-    "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][WhenDigivolving]Suspend1ofyouropponent'sDigimon.": "〔進化〕特徴に「NSo」を持つLv.3:コスト2\n\n【登場時】【消滅時】相手のデジモン1体をレストさせる。"
+    "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][OnDeletion]Suspend1ofyouropponent'sDigimon.": "〔進化〕特徴に「NSo」を持つLv.3:コスト2\n\n【登場時】【消滅時】相手のデジモン1体をレストさせる。"
   },
   "P-164": {
     "[OnPlay][WhenDigivolving]Byplacing1Level5orlowerDigimoncardwith[Aqua]/[SeaAnimal]inanyofitstraitsfromyourhandas1ofyourDigimon'sbottomdigivolutioncard,<Draw1>[Rule]Trait:Has[Aquatic]type.": "【登場時】【進化時】自分の手札から、特徴に「水棲」を含むLv.5以下のデジモンカード1枚をこのデジモンの進化元の下に置くことで、≪1ドロー≫。\n〈ルール〉特徴:タイプ「水棲型」を持つ。",
@@ -15332,5 +15332,53 @@
   "ST9-15": {
     "[Main]1ofyourDigimongets+2000DPfortheturn.Then,IfyouhaveablueDigimoninplay,1ofyourDigimongains<Piercing>fortheturn.(WhenthisDigimonattacksanddeletesanopponent'sDigimonandsurvivesthebattle,itperformsanysecuritychecksitnormallywould.)": "【メイン】このターンの間、自分のデジモン1体のDPを+2000する。その後、青の自分のデジモンがいるとき、このターンの間、自分のデジモン1体は≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンだけを消滅させたとき、このデジモンはセキュリティをチェックする）を得る。",
     "[Security]Addthiscardtoitsowner'shand.": "【セキュリティ】このカードを手札に加える。"
+  },
+  "BT27-073": {
+    "[Digivolve]Lv.2w/[GlowingDawn]trait:Cost0[YourTurn]WhenthisDigimonwoulddigivolveintoapurpleDigimoncardwiththe[BEATBREAK]trait,reducethecostby1.": "〔進化〕特徴「グローイングドーン」を持つLv.2:コスト0\n\n【自分のターン】このデジモンが特徴「ビートブレイク」を持つ紫のデジモンカードに進化するとき、支払うコスト-1。",
+    "[WhenAttacking][OncePerTurn]<Draw1>andtrash1cardinyourhand.": "【アタック時】［ターンに1回］≪1ドロー≫し、自分の手札1枚を破棄する。"
+  },
+  "BT27-077": {
+    "[Digivolve]Lv.3w/[GlowingDawn]trait:Cost2[Security][WhenDigivolving]Ifyouhave1orfewerTamers,youmayplay1Tamercardwith[MakotoKuonji]initsnamefromyourhandwithoutpayingthecost.": "〔進化〕特徴「グローイングドーン」を持つLv.3:コスト2\n\n【セキュリティ】【進化時】自分のテイマーが1体以下なら、自分の手札から、名称に「久遠寺マコト」を含むテイマーカード1枚をコストを支払わずに登場できる。",
+    "<Retaliation>": "≪道連れ≫（このデジモンだけがバトルで消滅したとき、バトルした相手のデジモンを消滅させる）"
+  },
+  "BT27-080": {
+    "[Digivolve]Lv.4w/[GlowingDawn]trait:Cost3[Hand][Main]IfyouhaveaTamerwith[MakotoKuonji]initsname,byplacing1[NightChiropmon]fromyourtrashasanyofyour[Chiropmon]’sbottomdigivolutioncard,thatDigimondigivolvesintothiscard,ignoringlevel.[OnPlay][WhenDigivolving]Delete1ofyouropponent’slevel4orlowerDigimon.Then,bytrashingthebottomface-downcardfromunderanyofyourTamers,thisDigimongains<Rush>and<Piercing>fortheturn.": "〔進化〕特徴「グローイングドーン」を持つLv.4:コスト3\n\n{手札}【メイン】名称に「久遠寺マコト」を含む自分のテイマーがいるなら、自分のトラッシュから、「ナイトキロプモン」1枚を自分の「キロプモン」の進化元の下に置くことで、そのデジモンをこのカードにLv.を無視して進化させる。\n【登場時】【進化時】Lv.4以下の相手のデジモン1体を消滅させる。その後、自分のテイマーの下にある裏向きのカードを下から1枚破棄することで、ターン終了まで、このデジモンは≪速攻≫と≪貫通≫を得る。",
+    "[OnDeletion]Youmayplay1playcost5orlower[GlowingDawn]traitcardfromyourtrashwithoutpayingthecost.": "【消滅時】自分のトラッシュから、特徴「グローイングドーン」を持つ登場コスト5以下のカード1枚をコストを支払わずに登場できる。"
+  },
+  "BT27-082": {
+    "[Digivolve]Lv.5w/[GlowingDawn]trait:Cost3<Execute><Ascension>[Security][OnDeletion]Delete1ofyouropponent'sDigimonwiththelowestlevel.Ifthiseffectdidn'tdelete,trashtheirtopsecuritycard.[WhenDigivolving][WhenAttacking][OncePerTurn]Bytrashing2bottomface-downcardsfromunderanyofyourTamers,activate1[Main]effectonthiscard'sOptionside.": "【進化】特徴「グローイングドーン」を持つLv.5:コスト3\n≪エグゼキュート≫ ≪天昇≫（このデジモンが消滅したとき、このカードをセキュリティの上に置ける）\n【セキュリティ】【消滅時】最もLv.の低い相手のデジモン1体を消滅させる。この効果で消滅しなかったなら、相手のセキュリティを上から1枚破棄する。\n【進化時】【アタック時】【ターンに1回】自分のテイマーの下にある裏向きのカードを下から2枚破棄することで、このカードのオプション側の【メイン】効果1つを発揮する。",
+    "<UseReq.([GlowingDawn]trait)>[Main]Delete1ofyouropponent'slevel6orhigherDigimon.Then,youmayplay1playcost4orlower[BEATBREAK]traitcardfromyourtrashwithoutpayingthecost.<ArtsDigivolve>": "≪使用条件《特徴「グローイングドーン」》≫（指定の条件で色条件を満たせる）\n【メイン】Lv.6以上の相手のデジモン1体を消滅させる。その後、自分のトラッシュから、特徴「ビートブレイク」を持つ登場コスト4以下のカード1枚をコストを支払わずに登場できる。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わずに進化する）"
+  },
+  "BT27-003": {
+    "[WhenAttacking][OncePerTurn]ThisDigimonmaydigivolveintoaDigimoncardwith[Leomon]initsnameorthe[ACCEL]traitinthehand.": "【アタック時】[ターンに1回]このデジモンを手札の名称に「レオモン」を含むか特徴「アクセル」を持つデジモンカードに進化できる。"
+  },
+  "BT27-045": {
+    "[Digivolve][Frimon]/[Kyaromon]/Lv.2w/[ACCEL]trait:Cost0[OnPlay]Revealthetop3cardsofyourdeck.Add1cardwith[Leomon]initsnameand1[Unique],[Boss]or[ACCEL]traitcardamongthemtothehand.Returntheresttothebottomofthedeck.[Rule]Name:Treatedasincluding[Leomon].": "〔進化〕「フリモン」/「キャロモン」/特徴「アクセル」を持つLv.2:コスト0\n\n【登場時】自分のデッキの上から3枚オープンする。その中の名称に「レオモン」を含むカード1枚と特徴「特異型」/「バンチョー」/「アクセル」を持つカード1枚を手札に加える。残りはデッキの下に戻す。\n〈ルール〉名称:「レオモン」を含むものとしても扱う。",
+    "[YourTurn][OncePerTurn]WhenthisDigimonwinsabattle,gain1memory.": "【自分のターン】[ターンに1回]このデジモンがバトルに勝ったとき、メモリー+1。"
+  },
+  "BT27-049": {
+    "[Digivolve][Elecmon]/Lv.3w/[HolyBeast]/[ACCEL]trait:Cost2[WhenAttacking]ThisDigimonmaydigivolveintoaDigimoncardwith[Leomon]initsnameorthe[ACCEL]traitinthehand.Foreachofyouropponent'sDigimonandTamers,reducethiseffect'spaidcostby1.[Rule]Name:Treatedasincluding[Leomon].": "〔進化〕「エレキモン」/特徴「聖獣型」/「アクセル」を持つLv.3:コスト2\n\n【アタック時】このデジモンを手札の名称に「レオモン」を含むか特徴「アクセル」を持つデジモンカードに進化できる。相手のデジモンとテイマー1体ごとに、この効果で支払うコスト-1。\n〈ルール〉名称:「レオモン」を含むものとしても扱う。",
+    "<Barrier>": "≪防壁≫（このデジモンがバトルで消滅するとき、自分のセキュリティを上から1枚破棄することで、消滅しない）"
+  },
+  "BT27-051": {
+    "[Digivolve]Lv.4w/[Leomon]innameorw/[HolyBeast]/[ACCEL]trait:Cost3<Fortitude>[OnPlay][WhenDigivolving]ThisDigimonmaybattle1ofyouropponent'sDigimon.[OnDeletion]<Recovery+1>[Rule]Trait:Has[HolyBeast]Type.": "〔進化〕名称に「レオモン」を含むLv.4/特徴「聖獣型」/「アクセル」を持つLv.4:コスト3\n\n≪不屈≫\n【登場時】【進化時】このデジモンと相手のデジモン1体でバトルできる。\n【消滅時】≪リカバリー+1≫\n〈ルール〉特徴:タイプ「聖獣型」を持つ。",
+    "[OnDeletion]<Recovery+1>": "【消滅時】≪リカバリー+1≫"
+  },
+  "BT27-075": {
+    "Whenthiscardwouldbeplayed,bydeleting1ofyourlevel2Digimoninthebreedingarea,reducethecostby2.<Blocker>[AllTurns]ThisDigimoncan'tdigivolve.[OnDeletion]Byreturning2cardswith[Gizmon]intheirnamesfromyourtrashtothebottomofthedeck,youmayplay1[Gizmon:AT]fromyourtrashwithoutpayingthecost.": "このカードが登場するとき、育成エリアのLv.2の自分のデジモン1体を消滅させることで、支払うコスト-2。\n≪ブロッカー≫\n【お互いのターン】このデジモンは進化できない。\n【消滅時】自分のトラッシュから、名称に「ギズモン」を含むカード2枚をデッキの下に戻すことで、自分のトラッシュから、「ギズモン:AT」1枚をコストを支払わず登場できる。"
+  },
+  "BT27-076": {
+    "Whenthiscardwouldbeplayed,bydeleting1ofyourlevel3Digimon,reducethecostby4.[OnPlay]Youmayplay1[AkihiroKurata]fromyourhandwithoutpayingthecost.[AllTurns]ThisDigimoncan'tdigivolve.[OnDeletion]Byreturning2cardswith[Gizmon]intheirnamesfromyourtrashtothebottomofthedeck,youmayplay1[Gizmon:XT]fromyourtrashwithoutpayingthecost.": "このカードが登場するとき、Lv.3の自分のデジモン1体を消滅させることで、支払うコスト-4。\n【登場時】自分の手札から、「倉田明宏」1枚をコストを支払わず登場できる。\n【お互いのターン】このデジモンは進化できない。\n【消滅時】自分のトラッシュから、名称に「ギズモン」を含むカード2枚をデッキの下に戻すことで、自分のトラッシュから、「ギズモン:XT」1枚をコストを支払わず登場できる。"
+  },
+  "BT27-079": {
+    "Whenthiscardwouldbeplayed,bydeleting1ofyourlevel4Digimon,reducethecostby6.<Blocker><Retaliation>[AllTurns]ThisDigimoncan'tdigivolve.[OnDeletion]Youmayplay1playcost5orlower[Kurata'sArmy]traitcardfromyourhandortrashwithoutpayingthecost.": "このカードが登場するとき、Lv.4の自分のデジモン1体を消滅させることで、支払うコスト-6。\n≪ブロッカー≫≪道連れ≫\n【お互いのターン】このデジモンは進化できない。\n【消滅時】自分の手札/トラッシュから、特徴「倉田軍団」を持つ登場コスト5以下のカード1枚をコストを支払わず登場できる。"
+  },
+  "BT27-098": {
+    "[AllTurns]WhenanyDigimonaredeleted,bysuspendingthisTamer,youmayplacethetop2cardsofyourdeckfacedownunderthisTamer.[EndofAllTurns]Bytrashing5bottomface-downcardsfromunderanyofyourTamers,youmayplay1Digimoncardwith[Gizmon]or[Belphemon]initsnamefromyourhandortrashwithoutpayingthecost.After,placethisTamerasitsbottomdigivolutioncard.": "【お互いのターン】デジモンが消滅したとき、このテイマーをレストさせることで、自分のデッキの上から2枚をこのテイマーの下に裏向きで置ける。\n【お互いのターン終了時】自分のテイマーの下にある裏向きのカードを下から5枚破棄することで、自分の手札/トラッシュから、名称に「ギズモン」/「ベルフェモン」を含むデジモンカード1枚をコストを支払わず登場できる。さらに、このテイマーをそのデジモンの進化元の下に置く。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "BT27-043": {
+    "[Digivolve][Kentaurosmon]:Cost2<Blocker><Barrier><Ascension>[WhenDigivolving][WhenAttacking][OncePerTurn]Bytrashingyourtopsecuritycard,thisDigimonunsuspends.[AllTurns][OncePerTurn]Whenyoursecuritystackisremovedfrom,byplacing1[Kentaurosmon]or[XAntibody]fromthisDigimon'sdigivolutioncardsasthebottomsecuritycard,activate1[Main]effectonthiscard'sOptionside.": "【進化】「スレイプモン」:コスト2\n≪ブロッカー≫ ≪防壁≫ ≪天昇≫（このデジモンが消滅したとき、このカードをセキュリティの上に置ける）\n【進化時】【アタック時】【ターンに1回】自分のセキュリティを上から1枚破棄することで、このデジモンをアクティブにする。\n【お互いのターン】【ターンに1回】自分のセキュリティが減ったとき、このデジモンの進化元から、「スレイプモン」/「X抗体」1枚をセキュリティの下に置くことで、このカードのオプション側の【メイン】効果1つを発揮する。",
+    "[Main]1ofyouropponent'sDigimongets-20000DPuntiltheirturnends.Foreachcardinbothplayers'securitystacks,add1000tothiseffect'sDPreduction.<ArtsDigivolve>": "【メイン】相手のターン終了まで、相手のデジモン1体をDP-20000。お互いのセキュリティ1枚ごとに、このDPマイナス効果の数値+1000。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わず進化できる）"
   }
 }

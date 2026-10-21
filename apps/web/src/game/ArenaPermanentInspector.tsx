@@ -1,4 +1,6 @@
+import { CardAceBadge } from "@/design/CardAceBadge";
 import { getTranslatedCardText } from "@/i18n/getTranslatedCardText";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { splitInspectorPrintedText } from "@/game/splitInspectorPrintedText";
 import { InspectorActiveBadges } from "@/game/InspectorActiveBadges";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
@@ -42,6 +44,7 @@ export function ArenaPermanentInspector({
   inspection,
   fate,
   actions,
+  children,
   zoomed = false,
   onZoom,
   onClose,
@@ -50,11 +53,13 @@ export function ArenaPermanentInspector({
   inspection: ArenaInspectionOptions;
   fate?: PendingFateBadge;
   actions?: ReactNode;
+  children?: ReactNode;
   zoomed?: boolean;
   onZoom: (cardId: string, artId?: string) => void;
   onClose: () => void;
 }) {
   const { locale, t } = useTranslation();
+  const getCardName = useTranslatedCardName();
   const translations = useCardTranslations({ includePrintedText: true });
   const sideSources = useMediaQuery(INSPECTOR_SIDE_SOURCES_QUERY);
   const sourcesLayout = sideSources ? "column" : "strip";
@@ -66,14 +71,14 @@ export function ArenaPermanentInspector({
   closeCallback.current = onClose;
   const top = getCardDefinition(detail.cardId);
   const printed = splitInspectorPrintedText({
-    text: getTranslatedCardText({ text: top?.effectText ?? "", translations }),
+    text: getTranslatedCardText({ text: top?.effectText ?? "", translations, cardId: detail.cardId }),
   });
   const supporting = inspectorCardsTopToBottom(detail.cards).filter((card) => card.role !== "top");
   const traits = [
     ...(top?.forms ?? []).map((value) => getTranslatedCardMeta({ value, group: "forms", translations })),
     ...(top?.attributes ?? []).map((value) => getTranslatedCardMeta({ value, group: "attributes", translations })),
     ...(top?.types ?? []).map((value) => getTranslatedCardMeta({ value, group: "traits", translations })),
-  ].filter((trait) => trait && trait !== "-");
+  ].filter((trait) => trait && trait !== "-" && trait !== "—");
   const anchor = useArenaHalfAnchor({
     container: inspection.container,
     half: inspectedArenaHalf(inspection.side),
@@ -157,6 +162,7 @@ export function ArenaPermanentInspector({
             <div className="arena-permanent-inspector__heading">
               <div className="arena-permanent-inspector__title">
                 <h2 id={titleId}>{getTranslatedCardName({ name: detail.name, translations })}</h2>
+                <CardAceBadge cardId={detail.cardId} />
                 {top?.level ? <span>Lv.{top.level}</span> : null}
               </div>
             </div>
@@ -175,6 +181,7 @@ export function ArenaPermanentInspector({
               ref={closeRef}
               type="button"
               className="arena-permanent-inspector__close"
+              data-arena-cancel
               onClick={onClose}
               aria-label={t("common.close")}
             >
@@ -211,6 +218,7 @@ export function ArenaPermanentInspector({
             aria-label={t("overlay.printedEffect")}
             tabIndex={0}
           >
+            {children}
             <details
               key={`${detail.cardId}:${detail.printedOnly}`}
               className="arena-permanent-inspector__details"
@@ -219,7 +227,9 @@ export function ArenaPermanentInspector({
               <summary>{t("deck.cardDetails")}</summary>
               <p className="arena-permanent-inspector__meta">
                 <span>{detail.cardId}</span>
-                {top?.kinds.length ? <span>{top.kinds.join(" / ")}</span> : null}
+                {top?.kinds.length ? (
+                  <span>{top.kinds.map((kind) => t(`library.kind.${kind}`)).join(" / ")}</span>
+                ) : null}
                 {top?.rarity ? <span>{top.rarity}</span> : null}
               </p>
               {top?.colors.length || traits.length ? (
@@ -234,7 +244,9 @@ export function ArenaPermanentInspector({
                 </p>
               ) : null}{" "}
               <div className="arena-permanent-inspector__stats">
-                {top && top.playCost >= 0 ? <span>{t("game.costsMemory", { count: top.playCost })}</span> : null}
+                {top && top.playCost >= 0 ? (
+                  <span>{t(top.isDualCard ? "game.useCostsMemory" : "game.costsMemory", { count: top.playCost })}</span>
+                ) : null}
                 {groupedInspectorEvolutionCosts(top?.evoCosts ?? []).map((cost) => {
                   const colorsByLabel = new Map(cost.colors.map((color) => [t(`game.color.${color}`), color]));
                   return (
@@ -293,7 +305,15 @@ export function ArenaPermanentInspector({
               >
                 <span className="arena-permanent-inspector__effect-label">{t("overlay.grantedEffects")}</span>
                 <p>
-                  <EffectText inspector asciiBrackets text={forcedAttackGrantText(grant, t)} />
+                  <EffectText inspector asciiBrackets text={forcedAttackGrantText(grant, t, getCardName)} />
+                </p>
+              </div>
+            ))}
+            {detail.grantedEffectTexts.map((effect, index) => (
+              <div key={`${effect}-${index}`} className="arena-permanent-inspector__effect" data-role="granted">
+                <span className="arena-permanent-inspector__effect-label">{t("overlay.grantedEffects")}</span>
+                <p>
+                  <EffectText inspector asciiBrackets text={effect} cardId={detail.cardId} />
                 </p>
               </div>
             ))}
@@ -304,7 +324,7 @@ export function ArenaPermanentInspector({
                   {top.dualEffect ? ` · ${top.dualEffect}` : ""}
                 </span>
                 <p>
-                  <EffectText inspector asciiBrackets text={top.optionEffect} />
+                  <EffectText inspector asciiBrackets text={top.optionEffect} cardId={detail.cardId} />
                 </p>
               </div>
             ) : null}
@@ -331,7 +351,7 @@ export function ArenaPermanentInspector({
                     <div key={effect.role} className="arena-permanent-inspector__effect" data-role={effect.role}>
                       <span className="arena-permanent-inspector__effect-label">{effect.label}</span>
                       <p>
-                        <EffectText inspector asciiBrackets text={effect.text!} />
+                        <EffectText inspector asciiBrackets text={effect.text!} cardId={detail.cardId} />
                       </p>
                     </div>
                   ))

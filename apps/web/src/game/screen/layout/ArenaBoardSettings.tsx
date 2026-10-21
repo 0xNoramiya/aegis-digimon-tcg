@@ -11,6 +11,8 @@ import { useTranslation, type TranslationKey } from "../../../i18n";
 import { setAutoHatchEnabled, useAutoHatch } from "../../autoHatch";
 import { setEffectConfirmationHoldEnabled, useEffectConfirmationHold } from "../../effectConfirmationHold";
 import { setHandAutoSortEnabled, useHandAutoSort } from "../../handAutoSort";
+import { arenaInputPreference } from "@/game/input/arenaInputPreference";
+import { useArenaInputEnabled } from "@/game/input/useArenaInputEnabled";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../../noticeDuration";
 import { EFFECT_SPEEDS, getEffectSpeed, setEffectSpeed, type EffectSpeed } from "../../pacing";
 
@@ -26,6 +28,7 @@ export function ArenaBoardSettings() {
   const pileCountsShown = usePileCountsShown();
   const textScale = useTextScale();
   const handAutoSort = useHandAutoSort();
+  const arenaInputEnabled = useArenaInputEnabled();
   const autoHatch = useAutoHatch();
   const effectConfirmationHold = useEffectConfirmationHold();
   const effectPromptPosition = useEffectPromptPosition();
@@ -135,6 +138,14 @@ export function ArenaBoardSettings() {
             label={t("settings.autoHatch")}
             description={t("settings.autoHatchDesc")}
             onChange={setAutoHatchEnabled}
+          />
+        </div>
+        <div className="game-arena-settings__row">
+          <Switch
+            checked={arenaInputEnabled}
+            label={t("settings.arenaInput")}
+            description={t("settings.arenaInputDesc")}
+            onChange={arenaInputPreference.setEnabled}
           />
         </div>
         <div className="game-arena-settings__row">

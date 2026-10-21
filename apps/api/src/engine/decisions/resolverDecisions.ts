@@ -51,7 +51,7 @@ export function createResolverDecisions(
       // the source's `instanceId` to make each entry independently addressable. The
       // controller answers with the key to resolve next, and the resolver re-collects
       // before it offers the remainder. With a plan, the answer may also order the
-      // remainder, and later prompts the plan fully covers are skipped. An empty order can only
+      // remainder, and later prompts are skipped while an ordered effect is still offered and no new one has triggered. An empty order can only
       // come from timeout/cancellation; it is honored as a decline only when every
       // remaining effect is optional (source
       // `_CanNoSelect: () => active.All(s => s.CardEffect.IsSkippable(...))`).
@@ -106,7 +106,13 @@ export function createResolverDecisions(
           triggerDescriptions: active.map((c) => c.effect.description ?? ""),
           ...(triggerReasons.some((reason) => reason !== "") ? { triggerReasons } : {}),
           triggerIsInherited: active.map((c) => c.effect.isInherited),
-          ...(plan !== undefined ? { acceptsResolutionPlan: true, triggerIsOptional: active.map(mayAskYesNo) } : {}),
+          ...(plan !== undefined
+            ? {
+                acceptsResolutionPlan: true,
+                acceptsIndexedResolutionPlan: true,
+                triggerIsOptional: active.map(mayAskYesNo),
+              }
+            : {}),
           ...(triggerTimings.some((entry) => entry !== "") ? { triggerTimings } : {}),
           ...(decisionTiming !== undefined ? { timing: decisionTiming } : {}),
           ...(waiting.length > 0
@@ -119,7 +125,7 @@ export function createResolverDecisions(
         },
       });
       if (response.kind !== "orderTriggers") return null;
-      if (response.order.length > 0) plan?.adopt(response.order, response.optionalAnswers);
+      if (response.order.length > 0) plan?.adopt(response.order, response.optionalAnswers, triggerKeys);
 
       const first = response.order[0];
       if (first === undefined) return null; // declined / empty

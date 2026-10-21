@@ -1,5 +1,8 @@
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
 import { UsedDeckDialog } from "@/game/UsedDeckDialog";
+import { collectViewerCardArtIds } from "@/screens/cardLanguage/collectViewerCardArtIds";
+import { ViewerCardArtIdsContext } from "@/screens/cardLanguage/ViewerCardArtIdsContext";
 import type { DeckListing } from "@/game/decks";
 import { downloadReplay } from "../replays/files";
 /* The in-game board — the design's letterboxed board layout, driven entirely by
@@ -133,6 +136,8 @@ import { openCombatWindow, mirroredCombatWindow } from "./combatWindowModel";
 import { buildInstanceIndex, instancePermanentId } from "./decisionModel";
 import { digivolveBasePermanentIds } from "./digivolveModel";
 import { useMatchLogHistory } from "@/game/log/useMatchLogHistory";
+import { TutorialCoach } from "@/game/tutorial/TutorialCoach";
+import { findTutorialLesson } from "@aegis/shared/tutorial/findTutorialLesson";
 import { getSeatNames } from "@/game/log/getSeatNames";
 import type { ServerEvent } from "@aegis/shared/protocol/events";
 import { useMatchCues } from "./useMatchCues";
@@ -200,6 +205,7 @@ function GameScreenSession({
   startMode = "casual",
   botDeckId,
   onExit,
+  onStartLesson,
   onRematch,
   onCopyUsedDeck,
   onResetScenario,
@@ -228,6 +234,7 @@ function GameScreenSession({
   betaBattleMode?: boolean;
   unlimited?: boolean;
   onExit: (screen: Screen) => void;
+  onStartLesson?: (lessonId: string) => void;
   onCopyUsedDeck?: (deck: DeckListing) => void;
   /** Restart a server-backed development scenario from the match controls. */
   onResetScenario?: () => void;
@@ -237,6 +244,7 @@ function GameScreenSession({
     unlimited?: boolean,
     privateHost?: boolean,
     format?: import("@aegis/shared").DeckFormat,
+    gameMode?: GameMode,
   ) => void;
   /** Only shapes what the report dialog says about follow-up questions; reporting needs no account. */
   signedIn?: boolean;
@@ -414,7 +422,7 @@ function GameScreenSession({
   const allianceConfirmationSubmittedRef = useRef(false);
 
   const { drag, dragHover, handleTapRef, handleDropRef, canDragRef, startHandDrag, startPermDrag, cancelDrag } =
-    useDragPlumbing();
+    useDragPlumbing({ manual: state?.gameMode === GameMode.MANUAL.value });
   canDragRef.current = null;
   const playDragStarted = drag?.kind === DragKind.Play && drag.started;
   useEffect(() => {
@@ -583,6 +591,11 @@ function GameScreenSession({
   });
   const you = state?.players[viewerSeat];
   const opp = state?.players[otherSeat(viewerSeat)];
+  const viewerCardArtKey =
+    spectating || !state
+      ? ""
+      : collectViewerCardArtIds({ deck: joinOptions.deck, players: [...state.players], viewerSeat }).join("\n");
+  const viewerCardArtIds = useMemo(() => new Set(viewerCardArtKey.split("\n").filter(Boolean)), [viewerCardArtKey]);
   /**
    * The two boards this screen reads (docs/presentation-queue-plan.md 3.2).
    *
@@ -768,6 +781,15 @@ function GameScreenSession({
     ),
   );
 
+  if (state?.gameMode === GameMode.MANUAL.value && state.manual.signalSeat !== -1) {
+    if (state.manual.signalPermanentId) {
+      effectLinkedPermanentIds.add(state.manual.signalPermanentId);
+    }
+    if (state.manual.signalTargetPermanentId) {
+      effectLinkedPermanentIds.add(state.manual.signalTargetPermanentId);
+    }
+  }
+
   const arenaLook = useArenaBoardLook({ viewer: you, opponent: opp, matchKey: connectedRoom?.roomId });
 
   // A play written into a dropping socket can be lost without the server ever refusing it, so a
@@ -883,6 +905,7 @@ function GameScreenSession({
   if (
     status === "reconnecting" ||
     status === "error" ||
+    (status === "closed" && !state?.gameOver) ||
     botError ||
     !state ||
     !you ||
@@ -1105,7 +1128,7 @@ function GameScreenSession({
     !dnaChoosing &&
     !mainActionBlocked &&
     (candidate.kind !== DragKind.Attack || (!handSel && !linkSel)) &&
-    canDragCard({ drag: candidate, you, handEntries });
+    (state.gameMode === GameMode.MANUAL.value || canDragCard({ drag: candidate, you, handEntries }));
   const dragIntentAt = (hit: DropZoneHit | null) => {
     if (drag?.started && hit?.target === "hand-you" && drag.kind === DragKind.Play && canReorderHand(drag.instanceId))
       return "reorder" as const;
@@ -1441,7 +1464,8 @@ function GameScreenSession({
       }
     />
   );
-  const overlays = (
+  const tutorialLesson = spectating || replayMode ? undefined : findTutorialLesson(joinOptions.storyBattleId);
+  const matchOverlays = (
     <MatchOverlays
       state={state}
       viewer={you}
@@ -1494,7 +1518,7 @@ function GameScreenSession({
       signedIn={signedIn}
       opponentDropped={!spectating && !vsBot && !opp.connected && !state.gameOver}
       gameOver={
-        !replayMode && (state.gameOver || series?.stage === "over") && !cues.resultPending
+        !replayMode && !tutorialLesson && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
               opponentDeckDialog:
@@ -1544,7 +1568,7 @@ function GameScreenSession({
               rematch: rematch && {
                 view: rematch,
                 opponentName: opp.displayName || t("game.opponent"),
-                onOffer: () => room?.send(SERIES_CHANNEL, { action: "offerRematch" }),
+                onOffer: (mode) => room?.send(SERIES_CHANNEL, { action: "offerRematch", mode }),
                 onAnswer: (accept) => room?.send(SERIES_CHANNEL, { action: "answerRematch", accept }),
                 onChooseTurnOrder: (goFirst) => room?.send(SERIES_CHANNEL, { action: "chooseTurnOrder", goFirst }),
               },
@@ -1594,10 +1618,25 @@ function GameScreenSession({
                   state?.unlimited,
                   isPrivateMatch ? viewerSeat === 0 : undefined,
                   state?.format as import("@aegis/shared").DeckFormat | undefined,
+                  state?.gameMode,
                 )
             : () => onExit("lobby")
       }
     />
+  );
+  const overlays = (
+    <>
+      {matchOverlays}
+      {tutorialLesson && onStartLesson && (!state.gameOver || !cues.resultPending) ? (
+        <TutorialCoach
+          lesson={tutorialLesson}
+          state={state}
+          viewerSeat={viewerSeat}
+          onStartLesson={onStartLesson}
+          onLeave={() => onExit("home")}
+        />
+      ) : null}
+    </>
   );
 
   /** What both battle rows put on a permanent; only the sweep's stagger differs. */
@@ -1861,6 +1900,11 @@ function GameScreenSession({
       onInspectPermanent={{
         viewer: (perm) => {
           cancelDrag();
+          if (state.gameMode === GameMode.MANUAL.value && !spectating) {
+            setHandSel(null);
+            setSelPerm(perm.permanentId);
+            return;
+          }
           actions.showCardMenu(perm.permanentId, Side.Viewer, { preserveSelection: true });
         },
         opponent: (perm) => {
@@ -1874,5 +1918,5 @@ function GameScreenSession({
       }}
     />
   );
-  return board;
+  return <ViewerCardArtIdsContext.Provider value={viewerCardArtIds}>{board}</ViewerCardArtIdsContext.Provider>;
 }

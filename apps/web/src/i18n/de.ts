@@ -1,9 +1,40 @@
 import { rankedEn } from "@/i18n/ranked.en";
+import { advancedBattlesDe } from "@/i18n/learn/advancedBattles.de";
+import { rulesLayoutDe } from "@/i18n/learn/rulesLayout.de";
+import { lessonCatalogDe } from "@/i18n/learn/lessonCatalog.de";
+import { battleLessonsDe } from "@/i18n/learn/battleLessons.de";
+import { manualEn } from "@/i18n/manual.en";
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnDe } from "@/i18n/learn/learn.de";
+import { learnDrillsDe } from "@/i18n/learn/drills.de";
 
 const interfaceMessages = {
+  ...manualEn,
+  "settings.arenaInput": "Tastatur und Controller",
+  "settings.arenaInputDesc":
+    "Bewegen Sie einen Cursor mit den Pfeiltasten oder einem Controller und sehen Sie die Taste für jede Aktion.",
+  "game.input.controls": "Tastatur und Controller",
+  "game.input.navigate": "Navigieren",
+  "game.input.select": "Auswählen",
+  "game.input.inspect": "Ansehen",
+  "game.input.region": "Bereich",
+  "game.input.scroll": "Scrollen",
+  "game.input.reorder": "Enter/A: bewegen; Pfeile: sortieren; Enter/A: fertig; Esc/B: rückgängig",
+
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
+  "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnDe,
+  ...learnDrillsDe,
+  ...battleLessonsDe,
+  ...lessonCatalogDe,
+  ...rulesLayoutDe,
+  ...advancedBattlesDe,
   "settings.cardImageLanguage": "Sprache der Kartenbilder",
   "settings.cardImageLanguageDesc":
     "Wähle die Standardsprache für die Sammlung und neue Kartenexemplare in Decks. Die Schaltfläche ersetzt auch alternative Bilder in bestehenden Decks. Karten ohne diese Sprache behalten ihr aktuelles Bild.",
@@ -234,6 +265,9 @@ const interfaceMessages = {
   "replay.start": "Zum Anfang",
   "replay.end": "Zum Ende",
   "replay.speed": "Wiedergabegeschwindigkeit",
+  "replay.move": "Wiedergabesteuerung verschieben",
+  "replay.moveHint":
+    "Zum Verschieben ziehen. Mit den Pfeiltasten bewegen, mit Umschalt in größeren Schritten und mit Pos1 zurücksetzen.",
   "replay.position": "Replay-Position",
   "replay.turn": "Zug",
   "replay.action": "Aktion {current} von {total}",
@@ -827,6 +861,7 @@ const interfaceMessages = {
   "library.rowColor": "Farbe",
   "library.rowType": "Typ",
   "library.rowPlayCost": "Spielkosten",
+  "library.rowUseCost": "Einsatzkosten",
   "library.rowDp": "DP",
   "library.rowTraits": "Merkmale",
   "library.rowRarity": "Seltenheit",
@@ -995,7 +1030,16 @@ const interfaceMessages = {
   "game.reconnectingDetail": "Die Verbindung wurde unterbrochen. Ihr Match wird fortgesetzt, sobald möglich.",
   "game.connectionLost": "Verbindung verloren",
   "game.connectionLostDetail":
-    "Der Server ist nicht erreichbar. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "Die Verbindung zu Ihrer Partie wurde unterbrochen. Versuchen Sie, sich erneut zu verbinden.",
+  "game.messageTooLarge": "Ihre Auswahl war zum Senden zu groß. Versuchen Sie, weniger Effekte auf einmal aufzulösen.",
+  "game.messageTooLargeReconnecting":
+    "Ihre Auswahl war zum Senden zu groß. Die Verbindung wird wiederhergestellt, um die ausstehende Auswahl fortzusetzen.",
+  "game.reconnectFailed":
+    "Die Partie konnte nicht fortgesetzt werden. Kehren Sie zur Lobby zurück und versuchen Sie es erneut.",
+  "game.sessionExpired": "Diese Partie kann nicht mehr fortgesetzt werden. Kehren Sie zur Lobby zurück.",
+  "game.tooManyMessages":
+    "Es wurden zu viele Aktionen gleichzeitig gesendet. Warten Sie kurz und kehren Sie dann zur Lobby zurück.",
+  "game.serverUnavailable": "Der Spielserver ist vorübergehend nicht verfügbar. Versuchen Sie es in Kürze erneut.",
   "game.opponentDisconnected": "Gegner getrennt",
   "game.opponentDisconnectedDetail":
     "Warten, bis sich Ihr Gegner erneut verbindet. Das Match wird automatisch fortgesetzt.",
@@ -1090,6 +1134,7 @@ const interfaceMessages = {
   "game.digiEgg": " · Digi-Ei",
   "game.noCost": "keine Kosten",
   "game.costsMemory": "kostet {count} Memory",
+  "game.useCostsMemory": "kostet {count} Memory zum Einsetzen",
   "game.digivolve": "Digitieren",
   "game.clickToDigivolve": "auf ein leuchtendes Digimon klicken, um zu digitieren",
   "game.clickToLink": "auf ein leuchtendes Digimon klicken, um zu linken",
@@ -1454,6 +1499,7 @@ const interfaceMessages = {
   "overlay.endSelection": "Auswahl beenden",
   "overlay.noSelection": "Keine Auswahl",
   "overlay.use": "Verwenden",
+  "overlay.activationProgress": "Aktivierung {index} von {total}",
   "overlay.notUse": "Nicht verwenden",
   "overlay.moveToBattleArea": "In den Kampfbereich",
   "overlay.endPhase": "Endphase",
@@ -2419,7 +2465,7 @@ const interfaceMessages = {
   "community.publish.errorName":
     "Benennen Sie dieses Deck zuerst um. Sein Name enthält ein Wort, das nicht erlaubt ist.",
   "community.publish.errorHidden":
-    "Ein Moderator hat dieses Deck nach einer Meldung ausgeblendet, daher kann es nicht öffentlich sein.",
+    "Ein Moderator hat dieses Deck ausgeblendet. Korrigieren Sie es und beantragen Sie dann eine Prüfung.",
   "community.report.open": "Deck melden",
   "community.report.title": "{name} melden",
   "community.report.body":
@@ -2453,6 +2499,27 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "Ausgeblendet",
   "community.moderation.hiddenOwnerBadge": "Von einem Moderator ausgeblendet",
   "community.moderation.hiddenOwnerNote": "Von Spielern gemeldet. Andere können es nicht sehen.",
+  "community.moderation.hideTitle": "{name} ausblenden?",
+  "community.moderation.hideBody":
+    "Spieler sehen dieses Deck nicht mehr. Der Besitzer sieht den Grund und Ihre Notiz und kann das Deck korrigieren und eine Prüfung beantragen.",
+  "community.moderation.noteLabel": "Notiz an den Besitzer (optional)",
+  "community.moderation.hiddenReason": "Ausgeblendet wegen: {reason}.",
+  "community.moderation.ownerNote": "Notiz des Moderators: {note}",
+  "community.moderation.ownerFixHint": "Korrigieren Sie das Deck und beantragen Sie dann eine Prüfung.",
+  "community.moderation.reviewPendingNote": "Ein Moderator prüft Ihre Änderungen.",
+  "community.moderation.reviewRequestedBadge": "Prüfung beantragt",
+  "community.moderation.reviewTitle": "Moderation",
+  "community.moderation.approve": "Freigeben und veröffentlichen",
+  "community.moderation.decline": "Ausgeblendet lassen",
+  "community.moderation.declined": "Prüfung abgelehnt. Das Deck bleibt ausgeblendet.",
+  "community.review.action": "Prüfung beantragen",
+  "community.review.title": "Prüfung von {name} beantragen?",
+  "community.review.body":
+    "Korrigieren Sie zuerst Ihr Deck. Wir senden Ihr gespeichertes Deck so, wie es jetzt ist. Es bleibt ausgeblendet, bis ein Moderator es freigibt.",
+  "community.review.noteLabel": "Notiz an den Moderator (optional)",
+  "community.review.errorPending":
+    "Sie haben bereits eine Prüfung beantragt. Warten Sie auf die Antwort eines Moderators.",
+  "community.review.errorNotHidden": "Dieses Deck ist nicht mehr ausgeblendet.",
   "community.publish.errorGeneric": "Veröffentlichen fehlgeschlagen. Versuchen Sie es erneut.",
   "redesign.collection.lede": "Durchsuchen Sie alle Karten, die Aegis unterstützt, mit ihren Effekten und Decklimits.",
   "redesign.collection.statCards": "Karten",
@@ -2572,9 +2639,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "Spiel {game} · {name} beginnt",
   "overlay.series.joining": "Das nächste Spiel beginnt…",
   "overlay.series.leave": "Serie verlassen",
-  "overlay.rematch.offer": "Erneut gegen {name} · Best of 3",
+  "overlay.rematch.title": "Erneut gegen {name}?",
+  "overlay.rematch.finish": "Dieses Best of 3 beenden",
+  "overlay.rematch.finishHint": "Dieses Spiel zählt als Spiel 1.",
+  "overlay.rematch.new": "Neues Best of 3 starten",
+  "overlay.rematch.newHint": "Beide starten bei 0–0.",
+  "overlay.rematch.incomingFinish": "{name} möchte dieses Best of 3 beenden",
+  "overlay.rematch.incomingNew": "{name} möchte ein neues Best of 3 starten",
   "overlay.rematch.hint": "Gleiche Decks. Wer dieses Spiel verloren hat, wählt, wer beginnt.",
-  "overlay.rematch.incoming": "{name} möchte eine Revanche",
   "overlay.rematch.accept": "Annehmen",
   "overlay.rematch.decline": "Ablehnen",
   "overlay.rematch.waiting": "Warte auf die Antwort von {name}…",
@@ -2631,4 +2703,8 @@ const interfaceMessages = {
   ...rankedEn,
 } satisfies Record<keyof typeof en, string>;
 
-export const de: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const de: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+};

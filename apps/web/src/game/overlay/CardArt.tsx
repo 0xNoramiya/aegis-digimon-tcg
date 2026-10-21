@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useCardImageUrls } from "@/design/tokenArt/useCardImageUrls";
 import { useState, useEffect } from "react";
 import { getCardDefinition } from "@aegis/shared";
@@ -7,6 +8,7 @@ import { COLORS, colorKey } from "../../design/theme";
 
 /** Self-contained card art with image fallback to the color Sigil (no hover zoom). */
 export function CardArt({ cardId, artId, width }: { cardId: string; artId?: string; width: number }) {
+  const getCardName = useTranslatedCardName();
   const def = getCardDefinition(cardId);
   const urls = useCardImageUrls({ cardId, artId });
   const [idx, setIdx] = useState(0);
@@ -33,7 +35,7 @@ export function CardArt({ cardId, artId, width }: { cardId: string; artId?: stri
   return (
     <img
       src={urls[idx]}
-      alt={def.nameEn}
+      alt={getCardName(def.cardId)}
       onError={() => setIdx((i) => i + 1)}
       style={{ width, height: h, borderRadius: 10, objectFit: "cover", objectPosition: "top", flexShrink: 0 }}
     />

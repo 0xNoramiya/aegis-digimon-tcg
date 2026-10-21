@@ -143,6 +143,7 @@ export async function resolveDeletionReactions(
           printed.slice(printed.indexOf("[On Deletion]")),
         ],
         acceptsResolutionPlan: true,
+        acceptsIndexedResolutionPlan: true,
         // Native On Deletion bodies keep their individual optional choices.
         triggerIsOptional: [true],
       },

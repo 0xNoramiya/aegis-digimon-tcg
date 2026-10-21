@@ -1,3 +1,4 @@
+import { useManualSignalNarration } from "@/game/manual/useManualSignalNarration";
 import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { createDiscardedSourceResolution } from "./match/present/announcements";
 import { createDiscardedSourcePanels } from "./match/narration/presentableNarration";
@@ -418,6 +419,7 @@ export function useMatchCues({
   publishPresentedRef.current = () => setPresentedStateVersion(progress.current());
 
   const [narration, setNarration] = useState<ReadonlyMap<string, NarrationItem>>(new Map());
+  useManualSignalNarration({ state, viewerSeat, collapseNarration, narrationLimit, setNarration });
   const [rejection, setRejection] = useState<MatchNotice | null>(null);
   const narrationRef = useRef(narration);
   narrationRef.current = narration;
@@ -1597,11 +1599,16 @@ export function useMatchCues({
         ),
       );
       const added = current.hand.filter((card) => !known.has(card.instanceId) && !staged.has(card.instanceId));
-      for (const card of deckDraws > 0 ? added.slice(-deckDraws) : []) {
+      let incoming = added.slice(-deckDraws);
+      if (deckDraws === 0) {
+        incoming = state!.stateVersion === closedVersion ? added : [];
+      }
+      for (const card of incoming) {
         if (pending.has(card.instanceId)) continue;
         incomingHandArrivals.set(incomingKey--, {
           seat: viewerSeat,
           instanceId: card.instanceId,
+          fromDeck: deckDraws > 0,
           stateVersion: state!.stateVersion,
           handCountAfter: current.handCount,
           deckCountAfter: current.deckCount,

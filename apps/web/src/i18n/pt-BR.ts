@@ -1,4 +1,10 @@
 import { rankedPt } from "@/i18n/ranked.pt-BR";
+import { advancedBattlesPtBR } from "@/i18n/learn/advancedBattles.pt-BR";
+import { rulesLayoutPtBR } from "@/i18n/learn/rulesLayout.pt-BR";
+import { lessonCatalogPtBR } from "@/i18n/learn/lessonCatalog.pt-BR";
+import { newDrillsPtBR } from "@/i18n/learn/newDrills.pt-BR";
+import { manualPtBR } from "@/i18n/manual.pt-BR";
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerPtBR } from "@/i18n/providers.pt-BR";
 import { replayVideoPtBR } from "./replayVideo";
 import { profileReplayPtBR } from "./profileReplays";
@@ -21,8 +27,19 @@ import { seriesPtBR } from "./redesign/series.pt-BR";
 import { rematchPtBR } from "@/i18n/redesign/rematch.pt-BR";
 import { settingsPtBR } from "./redesign/settings.pt-BR";
 import { shellPtBR } from "./redesign/shell.pt-BR";
+import { learnPtBR } from "@/i18n/learn/learn.pt-BR";
+import { learnDrillsPtBR } from "@/i18n/learn/drills.pt-BR";
 
 export const ptBR: Record<keyof typeof en, string> = {
+  ...lessonCatalogPtBR,
+  ...rulesLayoutPtBR,
+  ...advancedBattlesPtBR,
+  ...manualPtBR,
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Excluir este Digimon",
+  "overlay.trashTopSecurityCard": "Descartar a carta do topo da sua segurança",
+  "overlay.trashTamerBottomCard": "Descartar a carta virada para baixo do fundo de baixo de 1 dos seus Tamers",
+  "overlay.trashTwoTamerBottomCards": "Descartar 2 cartas viradas para baixo do fundo de baixo dos seus Tamers",
   ...providerPtBR,
   "settings.cardImageLanguage": "Idioma das imagens das cartas",
   "settings.cardImageLanguageDesc":
@@ -625,6 +642,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "library.rowColor": "Cor",
   "library.rowType": "Tipo",
   "library.rowPlayCost": "Custo de jogo",
+  "library.rowUseCost": "Custo de uso",
   "library.rowDp": "DP",
   "library.rowTraits": "Traços",
   "library.rowRarity": "Raridade",
@@ -787,7 +805,14 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.reconnecting": "Reconectando…",
   "game.reconnectingDetail": "A conexão caiu. Tentando retomar sua partida.",
   "game.connectionLost": "Conexão perdida",
-  "game.connectionLostDetail": "O servidor está inacessível. Verifique sua conexão e tente de novo.",
+  "game.connectionLostDetail": "A conexão com sua partida foi interrompida. Tente reconectar.",
+  "game.messageTooLarge": "Sua seleção era grande demais para enviar. Tente resolver menos efeitos por vez.",
+  "game.messageTooLargeReconnecting":
+    "Sua seleção era grande demais para enviar. Reconectando para restaurar a escolha pendente.",
+  "game.reconnectFailed": "Não foi possível retomar esta partida. Volte ao lobby e tente novamente.",
+  "game.sessionExpired": "Esta partida não pode mais ser retomada. Volte ao lobby.",
+  "game.tooManyMessages": "Muitas ações foram enviadas ao mesmo tempo. Aguarde um pouco e volte ao lobby.",
+  "game.serverUnavailable": "O servidor do jogo está temporariamente indisponível. Tente novamente em instantes.",
   "game.opponentDisconnected": "Oponente desconectado",
   "game.opponentDisconnectedDetail": "Aguardando o oponente reconectar. A partida continuará automaticamente.",
   "game.opponentDisconnectedCountdown": "Se o oponente não voltar em {time}, você vence a partida.",
@@ -879,6 +904,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.digiEgg": " · Digi-Egg",
   "game.noCost": "sem custo",
   "game.costsMemory": "custa {count} de memória",
+  "game.useCostsMemory": "custa {count} de memória para usar",
   "game.digivolve": "Digievoluir",
   "game.clickToDigivolve": "clique em um Digimon destacado para digievoluir",
   "game.clickToLink": "clique em um Digimon destacado para vincular",
@@ -1237,6 +1263,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.endSelection": "Confirmar",
   "overlay.noSelection": "Nenhum",
   "overlay.use": "Usar",
+  "overlay.activationProgress": "Ativação {index} de {total}",
   "overlay.notUse": "Não usar",
   "overlay.moveToBattleArea": "Mover para a área de batalha",
   "overlay.endPhase": "Encerrar fase",
@@ -1996,4 +2023,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   ...seriesPtBR,
   ...rematchPtBR,
   ...rankedPt,
+  ...learnPtBR,
+  ...learnDrillsPtBR,
+  ...newDrillsPtBR,
 };

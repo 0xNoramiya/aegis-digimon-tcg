@@ -5,11 +5,12 @@ import type {
   CommunityDeckPage,
   CommunityDeckReport,
   CommunityLikeResult,
-  CommunityModerationAction,
+  CommunityModerationInput,
   CommunityPeriod,
   CommunityPublication,
   CommunityPublicationStatus,
   CommunityReportInput,
+  CommunityReviewInput,
   CommunitySort,
   ReportedCommunityDeck,
 } from "@aegis/shared";
@@ -66,10 +67,15 @@ export const communityApi = {
   unpublish: (deckId: string) => send(`/community/publications/${encodeURIComponent(deckId)}`, "DELETE"),
   report: (id: string, input: CommunityReportInput) =>
     send(`/community/decks/${encodeURIComponent(id)}/reports`, "POST", input),
-  moderate: (id: string, action: CommunityModerationAction) =>
+  requestReview: (deckId: string, input: CommunityReviewInput) =>
+    request<CommunityPublication>(`/community/publications/${encodeURIComponent(deckId)}/review`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  moderate: (id: string, input: CommunityModerationInput) =>
     request<{ status: CommunityPublicationStatus | "unpublished" }>(
       `/account/admin/community/decks/${encodeURIComponent(id)}/moderation`,
-      { method: "POST", body: JSON.stringify({ action }) },
+      { method: "POST", body: JSON.stringify(input) },
     ),
   reportedDecks: async () =>
     (await request<{ decks: ReportedCommunityDeck[] }>("/account/admin/community/reports")).decks,

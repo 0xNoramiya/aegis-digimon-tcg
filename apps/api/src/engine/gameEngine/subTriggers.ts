@@ -33,6 +33,7 @@ import { shouldDeferNestedTiming, withTriggeredMutations } from "./windows.js";
 import { buildEffectContext, cardSourceOf } from "./effectContext.js";
 import { drainPendingAttackTriggers, runPendingTimingWindow } from "#api/engine/gameEngine/timing/fire";
 import { ResolutionPlan } from "../decisions/resolutionPlan.js";
+import { applyEntryGrants } from "#api/engine/gameEngine/applyEntryGrants";
 
 /**
  * @param sourceScope Restricts the fire to the event subject's own "when this Digimon is
@@ -52,6 +53,9 @@ export async function fireSubTrigger(
     const isSelfSource = sub.watchesSelf === true && sub.sourcePermanentId === payload.deletedPermanentId;
     return sourceScope === "selfSourceOnly" ? !isSelfSource : isSelfSource;
   };
+  if (event === "onEnterFieldAnyone" && payload.subjectPermanentId !== undefined) {
+    await applyEntryGrants(engine, [payload.subjectPermanentId]);
+  }
   const subscriptionsFor = (): SubTriggerSubscription[] =>
     engine.subTriggers.subscriptionsFor(event).filter((sub) => !scopedOut(sub));
   const deletedPermanent =
@@ -754,12 +758,16 @@ export function pendingWindowCollected(engine: GameEngine): CollectedEffect[] {
 }
 
 /** The enclosing window's own armed watchers, without the parked or printed pending halves. */
-export function pendingWindowWatchersCollected(engine: GameEngine): CollectedEffect[] {
+export function pendingWindowWatchersCollected(
+  engine: GameEngine,
+  excluded: ReadonlySet<ArmedSubTrigger> = new Set(),
+): CollectedEffect[] {
   return armedAsPendingCollected(
     engine,
     uniqueOncePerTurnWatcherOccurrences(
       engine.pendingWindowSubTriggers.filter(
         (item) =>
+          !excluded.has(item) &&
           !engine.consumedSubTriggerKeys.has(subTriggerIdentity(item.sub, item.ctx.trigger)) &&
           subTriggerStillPending(engine, item),
       ),

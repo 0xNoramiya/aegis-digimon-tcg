@@ -1,6 +1,7 @@
 import { deckFormatLabel } from "@/screens/deckFormatLabel";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import type { CSSProperties, ReactNode } from "react";
-import { deckLegality, getCardDefinition, formatRestrictionLabel, deckFormat, type DeckFormat } from "@aegis/shared";
+import { deckLegality, formatRestrictionLabel, deckFormat, type DeckFormat } from "@aegis/shared";
 import { Badge } from "../design/primitives";
 import { CoverThumb } from "../design/cards";
 import { COLORS } from "../design/theme";
@@ -27,6 +28,7 @@ export function DeckListCard({
   subtitle?: ReactNode;
   actions?: ReactNode;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const color = COLORS[deck.color];
   const format = deckFormat(selectedFormat ?? deck.format);
@@ -92,7 +94,7 @@ export function DeckListCard({
           <div className="deck-list-card__violation">
             {banViolations.map(([id]) => (
               <span key={id}>
-                {getCardDefinition(id)?.nameEn ?? id} ({formatRestrictionLabel(id, format)}){" "}
+                {getCardName(id)} ({formatRestrictionLabel(id, format)}){" "}
               </span>
             ))}
           </div>
@@ -101,9 +103,7 @@ export function DeckListCard({
           <div className="deck-list-card__pair-violation">
             <strong>{t("deck.pairTitle")}</strong>
             {pairViolations.map(([a, b]) => (
-              <div key={`${a}-${b}`}>
-                {t("deck.pairRow", { a: getCardDefinition(a)?.nameEn ?? a, b: getCardDefinition(b)?.nameEn ?? b })}
-              </div>
+              <div key={`${a}-${b}`}>{t("deck.pairRow", { a: getCardName(a), b: getCardName(b) })}</div>
             ))}
           </div>
         ) : null}

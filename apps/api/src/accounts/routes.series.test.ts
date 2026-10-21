@@ -216,6 +216,8 @@ describe("GET /tournaments/:id", () => {
         matchId,
         seriesId: null,
         status: "scheduled",
+        participantIds: [null, null],
+        winnerSeat: null,
         participant0Id: accounts.alice,
         participant1Id: accounts.bob,
         wins0: 0,

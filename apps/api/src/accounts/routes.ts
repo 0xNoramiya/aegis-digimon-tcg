@@ -2,6 +2,7 @@ import { installRankedRoutes } from "#api/ranked/installRankedRoutes";
 import { getTournamentCatalogMemberships } from "#api/tournaments/catalog/getTournamentCatalogMemberships";
 import { hashTournamentPassword } from "#api/tournaments/access/hashTournamentPassword";
 import { isCardImageLanguage } from "@aegis/shared/cards/isCardImageLanguage";
+import { GAME_MESSAGE_LIMITS } from "@aegis/shared/protocol/gameMessageLimits";
 import { installStoryRoutes } from "#api/story/installStoryRoutes";
 import { StoryProgressStore } from "#api/story/StoryProgressStore";
 import { isDeckFormat, type DeckFormat } from "@aegis/shared";
@@ -227,7 +228,7 @@ export function installAccountRoutes(
   });
   app.post(
     "/auth/magic-link/consume",
-    express.urlencoded({ extended: false, limit: "4kb" }),
+    express.urlencoded({ extended: false, limit: GAME_MESSAGE_LIMITS.maxMessageBytes }),
     asyncRoute(async (req, res) => {
       const token = typeof req.body?.token === "string" ? req.body.token : "";
       const account = await store.consumeMagicLink(token);

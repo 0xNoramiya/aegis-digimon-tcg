@@ -326,6 +326,29 @@ back online. If no answer arrives within 10 s, the client closes the socket and
 resumes its seat with the reconnect token. Production deployments route new rooms to
 the active blue, red, or green slot and retain older slots until their rooms drain.
 
+A dropped seat stays reserved for `RECONNECT_GRACE_SECONDS` (60 s). The room owns that
+deadline itself, not Colyseus. A reconnect takes two steps: an HTTP request that reserves
+the seat, then the socket. When the room accepts the request with less than 15 s left
+(Colyseus's seat reservation time), it extends the deadline to 15 s from that moment, so
+the socket still finds its seat. If the socket never arrives, the seat expires at the
+extended deadline. An early request never shortens the deadline.
+
+Each successful reconnect issues a new token in `JOIN_ROOM`. If the socket drops again
+before the client acknowledges `JOIN_ROOM`, the client may never have received that
+token. Colyseus refuses to hold a seat that never acknowledged its join, so the room
+clears that flag and holds the seat anyway, for both the new token and the token the
+client held before that reconnect. This relies on two Colyseus internals
+(`_enqueuedMessages` and `_reconnections`); `apps/web/test/reconnectHandshakeDrop.connection.test.ts`
+exercises it against a real server, so an upgrade that changes them fails that test.
+
+The client saves its reconnect token per tab and stamps it every 5 s while connected.
+Mobile browsers freeze those timers in the background while the socket itself stays alive,
+so the stamp can be minutes old when the server finally detects the drop and starts the
+grace. After a reload of the game page, the client therefore tries any saved token up to
+`RECONNECT_SESSION_MAX_AGE_MS` (2 h) old and lets the server decide: a seat that no longer
+exists answers at once (`410`, `522`, or `524`). Retries after a reload run for the grace
+period from the page load, not from the stale stamp.
+
 ## Events and errors
 
 State synchronization carries durable game state. Ephemeral presentation events

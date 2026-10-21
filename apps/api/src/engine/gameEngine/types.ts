@@ -16,6 +16,7 @@ import type {
  */
 export interface GameEngineHooks {
   seed: number;
+  randomKey?: string;
   beforeTurn?: (turn: number) => Promise<void> | void;
   /** Who goes first, when the room already knows (a later game of a series). Otherwise the seed decides. */
   firstSeat?: Seat;

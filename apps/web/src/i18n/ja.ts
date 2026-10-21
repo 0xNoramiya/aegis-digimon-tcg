@@ -1,9 +1,43 @@
 import { rankedEn } from "@/i18n/ranked.en";
+import { advancedBattlesJa } from "@/i18n/learn/advancedBattles.ja";
+import { rulesLayoutJa } from "@/i18n/learn/rulesLayout.ja";
+import { lessonCatalogJa } from "@/i18n/learn/lessonCatalog.ja";
+import { battleLessonsJa } from "@/i18n/learn/battleLessons.ja";
+import { manualEn } from "@/i18n/manual.en";
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnJa } from "@/i18n/learn/learn.ja";
+import { learnDrillsJa } from "@/i18n/learn/drills.ja";
 
 const interfaceMessages = {
+  ...manualEn,
+  "settings.arenaInput": "キーボードとコントローラー",
+  "settings.arenaInputDesc": "矢印キーやコントローラーでカーソルを動かし、各操作のボタンを表示します。",
+  "game.input.controls": "キーボードとコントローラー",
+  "game.input.navigate": "移動",
+  "game.input.select": "選択",
+  "game.input.inspect": "詳細",
+  "game.input.region": "エリア",
+  "game.input.scroll": "スクロール",
+  "game.input.reorder": "Enter/A: 移動開始、矢印: 並べ替え、Enter/A: 完了、Esc/B: 元に戻す",
+
+  ...decisionChoicesEn,
+  "decision.choice.playSavedLevelFour": decisionChoicesEn["decision.choice.playSavedLevelFour"].replace(
+    "＜Save＞",
+    "≪Save≫",
+  ),
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
+  "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnJa,
+  ...learnDrillsJa,
+  ...battleLessonsJa,
+  ...lessonCatalogJa,
+  ...rulesLayoutJa,
+  ...advancedBattlesJa,
   "settings.cardImageLanguage": "カード画像の言語",
   "settings.cardImageLanguageDesc":
     "コレクションとデッキに新しく追加するカードの既定の言語を選びます。ボタンを押すと既存デッキの別イラストも置き換えます。この言語の画像がないカードは現在の画像を維持します。",
@@ -229,6 +263,8 @@ const interfaceMessages = {
   "replay.start": "最初へ",
   "replay.end": "最後へ",
   "replay.speed": "再生速度",
+  "replay.move": "再生コントロールを移動",
+  "replay.moveHint": "ドラッグして移動。矢印キーで移動、Shiftで移動幅を拡大、Homeで位置をリセットします。",
   "replay.position": "再生位置",
   "replay.turn": "ターン",
   "replay.action": "アクション {current}/{total}",
@@ -807,6 +843,7 @@ const interfaceMessages = {
   "library.rowColor": "色",
   "library.rowType": "種類",
   "library.rowPlayCost": "登場コスト",
+  "library.rowUseCost": "使用コスト",
   "library.rowDp": "DP",
   "library.rowTraits": "特徴",
   "library.rowRarity": "レアリティ",
@@ -966,7 +1003,14 @@ const interfaceMessages = {
   "game.reconnecting": "再接続中…",
   "game.reconnectingDetail": "接続が切れました。対戦に復帰しようとしています。",
   "game.connectionLost": "接続が切れました",
-  "game.connectionLostDetail": "サーバーに接続できません。接続を確認して、もう一度お試しください。",
+  "game.connectionLostDetail": "対戦との接続が切れました。再接続をお試しください。",
+  "game.messageTooLarge": "選択内容が大きすぎて送信できませんでした。一度に解決する効果を減らしてください。",
+  "game.messageTooLargeReconnecting":
+    "選択内容が大きすぎて送信できませんでした。保留中の選択を復元するため再接続しています。",
+  "game.reconnectFailed": "対戦を再開できませんでした。ロビーに戻って再試行してください。",
+  "game.sessionExpired": "この対戦は再開できません。ロビーに戻ってください。",
+  "game.tooManyMessages": "一度に送信された操作が多すぎます。少し待ってからロビーに戻ってください。",
+  "game.serverUnavailable": "ゲームサーバーを一時的に利用できません。しばらくしてから再試行してください。",
   "game.opponentDisconnected": "対戦相手の接続が切れました",
   "game.opponentDisconnectedDetail": "対戦相手の再接続を待っています。対戦は自動的に再開されます。",
   "game.opponentDisconnectedCountdown": "対戦相手が{time}以内に戻らない場合、あなたの勝利になります。",
@@ -1059,6 +1103,7 @@ const interfaceMessages = {
   "game.digiEgg": " · デジタマ",
   "game.noCost": "コストなし",
   "game.costsMemory": "メモリー{count}が必要",
+  "game.useCostsMemory": "使用にメモリー{count}が必要",
   "game.digivolve": "進化",
   "game.clickToDigivolve": "光っているデジモンをクリックして進化",
   "game.clickToLink": "光っているデジモンをクリックしてリンク",
@@ -1411,6 +1456,7 @@ const interfaceMessages = {
   "overlay.endSelection": "選択を終了",
   "overlay.noSelection": "選択なし",
   "overlay.use": "使用する",
+  "overlay.activationProgress": "発動 {index}/{total}",
   "overlay.notUse": "使用しない",
   "overlay.moveToBattleArea": "バトルエリアへ移動",
   "overlay.endPhase": "エンドフェイズ",
@@ -2353,7 +2399,7 @@ const interfaceMessages = {
   "community.publish.signIn": "デッキを公開するにはサインインしてください。",
   "community.publish.errorNotLegal": "このデッキは使用できないため、公開できません。",
   "community.publish.errorName": "先にデッキ名を変更してください。使用できない言葉が含まれています。",
-  "community.publish.errorHidden": "通報を受けてモデレーターがこのデッキを非表示にしたため、公開できません。",
+  "community.publish.errorHidden": "モデレーターがこのデッキを非表示にしました。修正してから審査を依頼してください。",
   "community.report.open": "デッキを通報",
   "community.report.title": "{name}を通報",
   "community.report.body":
@@ -2385,6 +2431,26 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "非表示",
   "community.moderation.hiddenOwnerBadge": "モデレーターにより非表示",
   "community.moderation.hiddenOwnerNote": "プレイヤーから通報されました。他の人には表示されません。",
+  "community.moderation.hideTitle": "{name}を非表示にしますか？",
+  "community.moderation.hideBody":
+    "プレイヤーにはこのデッキが表示されなくなります。所有者には理由とメモが表示され、デッキを修正して審査を依頼できます。",
+  "community.moderation.noteLabel": "所有者へのメモ（任意）",
+  "community.moderation.hiddenReason": "非表示の理由: {reason}。",
+  "community.moderation.ownerNote": "モデレーターのメモ: {note}",
+  "community.moderation.ownerFixHint": "デッキを修正してから審査を依頼してください。",
+  "community.moderation.reviewPendingNote": "モデレーターが変更内容を審査します。",
+  "community.moderation.reviewRequestedBadge": "審査依頼中",
+  "community.moderation.reviewTitle": "モデレーション",
+  "community.moderation.approve": "承認して公開",
+  "community.moderation.decline": "非表示のままにする",
+  "community.moderation.declined": "審査を却下しました。デッキは非表示のままです。",
+  "community.review.action": "審査を依頼",
+  "community.review.title": "{name}の審査を依頼しますか？",
+  "community.review.body":
+    "先にデッキを修正してください。現在保存されているデッキをそのまま送ります。モデレーターが承認するまで非表示のままです。",
+  "community.review.noteLabel": "モデレーターへのメモ（任意）",
+  "community.review.errorPending": "すでに審査を依頼しています。モデレーターの返答をお待ちください。",
+  "community.review.errorNotHidden": "このデッキはもう非表示ではありません。",
   "community.publish.errorGeneric": "公開できませんでした。もう一度お試しください。",
   "redesign.collection.lede": "Aegisで使えるすべてのカードを、効果やデッキの枚数制限とともに閲覧できます。",
   "redesign.collection.statCards": "カード",
@@ -2497,9 +2563,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "第{game}ゲーム · {name}が先攻",
   "overlay.series.joining": "次のゲームを開始します…",
   "overlay.series.leave": "シリーズを離れる",
-  "overlay.rematch.offer": "{name}ともう一度 · 3本勝負",
+  "overlay.rematch.title": "{name}ともう一度対戦しますか？",
+  "overlay.rematch.finish": "この3本勝負を続ける",
+  "overlay.rematch.finishHint": "このゲームを1戦目として数えます。",
+  "overlay.rematch.new": "新しい3本勝負を始める",
+  "overlay.rematch.newHint": "両者0勝0敗から始めます。",
+  "overlay.rematch.incomingFinish": "{name}がこの3本勝負の続きを希望しています",
+  "overlay.rematch.incomingNew": "{name}が新しい3本勝負を希望しています",
   "overlay.rematch.hint": "同じデッキを使用します。このゲームの敗者が先攻・後攻を選びます。",
-  "overlay.rematch.incoming": "{name}が再戦を希望しています",
   "overlay.rematch.accept": "受ける",
   "overlay.rematch.decline": "断る",
   "overlay.rematch.waiting": "{name}の返答を待っています…",
@@ -2555,4 +2626,8 @@ const interfaceMessages = {
   ...rankedEn,
 } satisfies Record<keyof typeof en, string>;
 
-export const ja: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const ja: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+};

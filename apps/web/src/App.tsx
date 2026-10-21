@@ -1,5 +1,6 @@
 import { RankedScreen } from "@/ranked/RankedScreen";
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getStoryGuestToken } from "@/story/getStoryGuestToken";
 import { LocalScenarioHelp } from "./dev/LocalScenarioHelp";
 import { MATCH_TIMER_START_SECONDS } from "@aegis/shared";
@@ -42,7 +43,8 @@ import { MusicMenu } from "@/design/MusicMenu";
 import { SOUND_SETTINGS_SECTION_ID } from "@/screens/soundSettingsSectionId";
 import { NotificationBell } from "./notifications/NotificationBell";
 import { useNotificationInbox } from "./notifications/useNotificationInbox";
-import { pathForRoute, routeFromPathname, type AppRoute } from "./routes";
+import { pathForRoute, routeFromPathname, SCREEN_PATHS, type AppRoute } from "./routes";
+import { getRulesChapterAnchor } from "@/learn/rules/getRulesChapterAnchor";
 import { roomCodeFromSearch } from "./roomInvite";
 import { isUiPreviewPath } from "./prototype/routes";
 import { SEQUENTIAL_PACING_ENABLED } from "./features";
@@ -145,6 +147,14 @@ const MobileComponentsLab = createLazyComponent({
   load: () => import("./dev/MobileComponentsLab"),
   pick: (module) => module.MobileComponentsLab,
 });
+const LearnScreen = createLazyComponent({
+  load: () => import("@/learn/LearnScreen"),
+  pick: (module) => module.LearnScreen,
+});
+const RulesScreen = createLazyComponent({
+  load: () => import("@/learn/rules/RulesScreen"),
+  pick: (module) => module.RulesScreen,
+});
 const StoryScreen = createLazyComponent({
   load: () => import("@/story/StoryScreen"),
   pick: (module) => module.StoryScreen,
@@ -189,6 +199,8 @@ const NAV_SCREENS: Screen[] = [
   "home",
   "lobby",
   "story",
+  "learn",
+  "rules",
   "watch",
   "deck",
   "community",
@@ -462,6 +474,7 @@ function LoadedAegisClient({
     timerStartSeconds: MATCH_TIMER_START_SECONDS,
     timerRefillSeconds: 60,
   }));
+  const [gameMode, setGameMode] = useState<GameMode>(GameMode.AUTOMATIC.value);
   const [allowRollback, setAllowRollback] = useState(false);
   const [bestOf, setBestOf] = useState(loadMatchFormatPreference);
   /** Set between the games of a best-of-three: the next GameScreen takes this seat. */
@@ -565,6 +578,7 @@ function LoadedAegisClient({
     requestedDeckId?: string | DeckListing,
     requestedUnlimited?: boolean,
     requestedFormat?: import("@aegis/shared").DeckFormat,
+    requestedGameMode?: GameMode,
   ) => {
     // A lobby start explicitly requests a new match, even if a page
     // reload left a resumable seat from the previous match in storage.
@@ -574,6 +588,9 @@ function LoadedAegisClient({
     if (mode !== "private_host" && mode !== "private_guest") setPrivateRoom(undefined);
     setStoryBattleId(undefined);
     setStartMode(mode);
+    if (requestedGameMode) {
+      setGameMode(requestedGameMode);
+    }
     setRoomCode(code);
     setBotDeckId(requestedBotDeckId);
     setBetaBattleMode(requestedBetaBattleMode === true);
@@ -584,6 +601,12 @@ function LoadedAegisClient({
       setMatchDeckId(requestedDeckId.id);
     } else setMatchDeckId(requestedDeckId);
     navigateScreen("game");
+  };
+
+  const startLesson = (lessonId: string) => {
+    startMatch("bot");
+    setStoryBattleId(lessonId);
+    setMatchNumber((current) => current + 1);
   };
 
   const availableDecks = useMemo(() => {
@@ -602,15 +625,19 @@ function LoadedAegisClient({
     startMode === "bot" && botDeckId?.startsWith("mine:")
       ? decks.find((deck) => deck.id === botDeckId.slice(5))
       : undefined;
+  const effectiveGameMode =
+    startMode === "bot" || startMode === "ranked" || tournamentGame ? GameMode.AUTOMATIC.value : gameMode;
   const joinOptions = useMemo<AegisJoinOptions>(
     () => ({
       ...timerOptions,
       tournamentGameId: tournamentGame?.gameId,
       tournamentGameToken: tournamentGame?.token,
+      ...(effectiveGameMode === GameMode.MANUAL.value ? { matchTimer: false } : {}),
       storyBattleId,
       storyGuestToken: storyBattleId ? getStoryGuestToken() : undefined,
-      allowRollback,
-      bestOf,
+      gameMode: effectiveGameMode,
+      allowRollback: effectiveGameMode !== GameMode.MANUAL.value && allowRollback,
+      bestOf: effectiveGameMode === GameMode.MANUAL.value ? 1 : bestOf,
       format: deckFormat,
       displayName: effectivePlayer.name,
       avatarId: effectivePlayer.avatarId ?? undefined,
@@ -643,6 +670,7 @@ function LoadedAegisClient({
       customBotDeck,
       deckFormat,
       allowRollback,
+      effectiveGameMode,
     ],
   );
 
@@ -720,6 +748,28 @@ function LoadedAegisClient({
             )}
             {screen === "login" && <Login onBack={() => navigateScreen("home")} />}
 
+            {screen === "learn" && (
+              <LearnScreen
+                key={account?.id ?? "guest"}
+                signedIn={!!account}
+                onSignIn={() => navigateScreen("login")}
+                onStartLesson={startLesson}
+                onOpenRules={(chapterId) => {
+                  navigateScreen("rules");
+                  if (chapterId) {
+                    window.history.replaceState(null, "", `${SCREEN_PATHS.rules}#${getRulesChapterAnchor(chapterId)}`);
+                  }
+                }}
+              />
+            )}
+            {screen === "rules" && (
+              <RulesScreen
+                key={account?.id ?? "guest"}
+                signedIn={!!account}
+                onBack={() => navigateScreen("learn")}
+                onStartLesson={startLesson}
+              />
+            )}
             {screen === "story" && (
               <StoryScreen
                 key={account?.id ?? "guest"}
@@ -767,6 +817,8 @@ function LoadedAegisClient({
                 onNav={navigateScreen}
                 timerOptions={timerOptions}
                 onTimerOptionsChange={setTimerOptions}
+                gameMode={gameMode}
+                onGameModeChange={setGameMode}
                 allowRollback={allowRollback}
                 onAllowRollbackChange={setAllowRollback}
                 bestOf={bestOf}
@@ -941,6 +993,7 @@ function LoadedAegisClient({
                 presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}
                 signedIn={!!account}
                 onLeaveForfeitsChange={setLeaveForfeitsMatch}
+                onStartLesson={startLesson}
                 onExit={(next) => {
                   setSeriesGame(undefined);
                   if (tournamentGame) {
@@ -951,9 +1004,11 @@ function LoadedAegisClient({
                     });
                     return;
                   }
-                  navigateScreen(storyBattleId ? "story" : next);
+                  void import("@/learn/getMatchExitScreen")
+                    .then(({ getMatchExitScreen }) => navigateScreen(getMatchExitScreen({ storyBattleId, next })))
+                    .catch(() => navigateScreen(next));
                 }}
-                onRematch={(privateRoomCode, roomUnlimited, roomHost, roomFormat) => {
+                onRematch={(privateRoomCode, roomUnlimited, roomHost, roomFormat, roomGameMode) => {
                   if (tournamentGame) {
                     clearReconnectSession();
                     setTournamentGame(undefined);
@@ -965,12 +1020,14 @@ function LoadedAegisClient({
                   }
                   clearReconnectSession();
                   setSeriesGame(undefined);
+                  setGameMode(roomGameMode ?? GameMode.AUTOMATIC.value);
                   if (privateRoomCode) {
                     setPrivateRoom({
                       code: privateRoomCode,
                       host: roomHost ?? startMode === "private_host",
                       unlimited: roomUnlimited,
                       format: roomFormat,
+                      gameMode: roomGameMode,
                     });
                     navigateScreen("lobby");
                     return;

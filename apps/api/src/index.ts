@@ -9,7 +9,9 @@ import { installPrivateRoomRoutes } from "./rooms/privateRoomRoutes.js";
 import { installSpectatorRoutes } from "./rooms/spectatorRoutes.js";
 import { createServer } from "node:http";
 import { defineAegisRooms } from "./rooms/defineAegisRooms.js";
-import { WebSocketTransport } from "@colyseus/ws-transport";
+import { createGameTransport } from "#api/connections/createGameTransport";
+import { installGameRequestBody } from "#api/http/installGameRequestBody";
+import { handleGameRequestError } from "#api/http/handleGameRequestError";
 import express from "express";
 import { ROOM_TYPE, ROOM_TYPE_PRIVATE } from "@aegis/shared";
 import { roomRegistry } from "./rooms/AegisRoom.js";
@@ -63,7 +65,7 @@ app.use((req, res, next) => {
   next();
 });
 app.options("/{*path}", (_req, res) => res.sendStatus(204));
-app.use(express.json());
+installGameRequestBody({ app });
 // Two proxies sit in front of this container in production (the host's edge Caddy, then the web
 // container's Caddy), so the client address is the third entry from the right. Bug reports meter
 // anonymous callers by address, which is the proxy's address without this. A deployment with a
@@ -166,10 +168,11 @@ installBotRoutes(app);
 installPrivateRoomRoutes(app);
 
 installSpectatorRoutes(app);
+app.use(handleGameRequestError);
 
 const httpServer = createServer(app);
 const gameServer = new DeploymentServer(deploymentRuntime, {
-  transport: new WebSocketTransport({ server: httpServer }),
+  transport: createGameTransport({ server: httpServer }),
   // Aegis owns SIGTERM/SIGINT below so it can refuse a stop while rooms exist.
   gracefullyShutdown: false,
   trustedProxyHops,

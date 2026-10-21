@@ -18,8 +18,11 @@ async function loadPrintedBundle(locale: Locale) {
     ]);
     return { text: text.default, byCard: byCard.default };
   }
-  const text = await import("@/i18n/cardText.zh.json");
-  return { text: text.default };
+  const [text, runtime] = await Promise.all([
+    import("@/i18n/cardText.zh.json"),
+    import("@/i18n/cardText.runtime.zh.json"),
+  ]);
+  return { text: { ...runtime.default, ...text.default } };
 }
 
 export function loadPrintedCardTranslations(locale: Locale = "zh-CN"): Promise<CardTranslationData> {

@@ -26,7 +26,13 @@ export function ArenaLookDialog({ deckColors, onClose }: { deckColors: ArenaDeck
           <h2 id={titleId}>{t("redesign.arena.look.title")}</h2>
           <p>{t("redesign.arena.look.description")}</p>
         </div>
-        <button type="button" className="aegis-dialog__close" onClick={onClose} aria-label={t("common.close")}>
+        <button
+          type="button"
+          className="aegis-dialog__close"
+          data-arena-cancel
+          onClick={onClose}
+          aria-label={t("common.close")}
+        >
           <Icons.X size={18} />
         </button>
       </header>

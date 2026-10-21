@@ -10,6 +10,14 @@ export function getCardTranslationCoverage({ cards, names, texts, meta }) {
   for (const card of cards) {
     if (!hasTranslation(names, card.nameEn)) {
       missing.push({ cardId: card.cardId, field: "nameEn", text: card.nameEn });
+    } else if (!/(?:ACE|ＡＣＥ)\s*$/iu.test(card.nameEn) && /(?:ACE|ＡＣＥ)\s*$/iu.test(names[card.nameEn])) {
+      missing.push({
+        cardId: card.cardId,
+        field: "nameEn",
+        text: card.nameEn,
+        translation: names[card.nameEn],
+        reason: "ACE classification must not be part of a shared card name",
+      });
     }
     for (const field of ["effectText", "inheritedEffectText", "securityEffectText", "optionEffect", "linkEffect"]) {
       const text = card[field];

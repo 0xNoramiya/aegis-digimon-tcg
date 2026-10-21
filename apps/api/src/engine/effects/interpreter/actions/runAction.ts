@@ -24,6 +24,7 @@ import { canAttemptDigivolve, canAttemptDigivolveBeforeCost } from "./digivolve.
 import { runGrantStaticAction } from "./grantStatic.js";
 import { canReactivateOwnEffect, runMetaAction } from "./meta.js";
 import { DECLINE_MODAL_CHOICE_LABEL, declinableModalChoices, modalHasAvailableOption } from "./modal.js";
+import { canAttemptLink } from "./link.js";
 import { canAttemptPlaceUnder } from "./placeUnder.js";
 import { allowsOptionalProcessingCostWithoutTarget } from "../processingCondition.js";
 import { paysProcessingCostBeforeOptional } from "../paysProcessingCostBeforeOptional.js";
@@ -726,6 +727,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   if (
     action.kind === "CostModifier" &&
     action.existingPermanent === true &&
+    !allowsOptionalProcessingCostWithoutTarget(action) &&
     (action.target === undefined || candidatePermanents(ctx, action.target).length === 0)
   ) {
     return unavailableAction(ctx, action, action.abortOnDecline === true);
@@ -907,6 +909,16 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       action.additionalCost === undefined &&
       !action.additionalCosts?.length &&
       !canAttemptAttack(ctx, action)
+    ) {
+      return unavailableAction(ctx, action, action.abortOnDecline === true);
+    }
+    if (
+      action.kind === "Link" &&
+      ctx.isActivationPending?.() !== true &&
+      payableActionCost === undefined &&
+      action.additionalCost === undefined &&
+      !action.additionalCosts?.length &&
+      !canAttemptLink(ctx, action)
     ) {
       return unavailableAction(ctx, action, action.abortOnDecline === true);
     }
@@ -1197,8 +1209,10 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       // makes the player answer the same thing twice, which is not how the printed card
       // reads ("By trashing 1 card …, Draw 1" is one decision, not two).
       const costAsksItself = costIsAskedAsSelection(payableActionCost);
+      const declinesAtSelection = ctx.costDeclinedAtSelection?.has(action) === true;
       const willPay =
         costAsksItself ||
+        declinesAtSelection ||
         (ctx.predecidedOptionalCosts?.get(action) ??
           (await ctx.ask.optional(
             paysCostFirst && payableActionCost.raw !== undefined
@@ -1211,14 +1225,17 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
             `Pay cost: ${describeCost(payableActionCost)}?`,
           )));
       if (willPay) {
-        if (!costAsksItself) markActivationChosen(ctx);
+        if (!costAsksItself && !declinesAtSelection) markActivationChosen(ctx);
         const outerCostIsTheQuestion = ctx.costIsTheQuestion;
+        const outerPayingDeclinableCost = ctx.payingDeclinableCost;
         ctx.costIsTheQuestion = costAsksItself;
+        ctx.payingDeclinableCost = declinesAtSelection;
         const paid = await payCost(ctx, payableActionCost, costPayment);
         ctx.costIsTheQuestion = outerCostIsTheQuestion;
+        ctx.payingDeclinableCost = outerPayingDeclinableCost;
         if (paid) markActivationChosen(ctx);
         if (!paid) {
-          if (costAsksItself) {
+          if (costAsksItself || declinesAtSelection) {
             markActivationDeclined(ctx);
           }
           return action.abortOnDecline === true;
@@ -1376,6 +1393,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   // BT17-051) raises a BASE budget the action carries on its own. Zero units means no bonus,
   // never "the action does nothing" — the base budget still deletes.
   const isBudgetScaling = action.kind !== "RawUnparsed" && action.scaling?.budgetAdd !== undefined;
+  const isBonusScaling = action.kind !== "RawUnparsed" && action.scaling?.bonus !== undefined;
   // targetColors is resolved after the action's permanent target is selected; it intentionally
   // has no board-wide scaleFactor. Do not let the generic zero guard abort it before dispatch.
   const isPerTargetScaling =
@@ -1386,7 +1404,8 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
     !isPerTargetScaling &&
     !isSetCostModifier &&
     !isLevelCeilingScaling &&
-    !isBudgetScaling
+    !isBudgetScaling &&
+    !isBonusScaling
   ) {
     return false;
   }

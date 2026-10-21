@@ -1,9 +1,40 @@
 import { rankedEn } from "@/i18n/ranked.en";
+import { advancedBattlesId } from "@/i18n/learn/advancedBattles.id";
+import { rulesLayoutId } from "@/i18n/learn/rulesLayout.id";
+import { lessonCatalogId } from "@/i18n/learn/lessonCatalog.id";
+import { battleLessonsId } from "@/i18n/learn/battleLessons.id";
+import { manualEn } from "@/i18n/manual.en";
+import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnId } from "@/i18n/learn/learn.id";
+import { learnDrillsId } from "@/i18n/learn/drills.id";
 
 const interfaceMessages = {
+  ...manualEn,
+  "settings.arenaInput": "Keyboard dan pengontrol",
+  "settings.arenaInputDesc":
+    "Gerakkan kursor dengan tombol panah atau pengontrol, dan tampilkan tombol untuk setiap aksi.",
+  "game.input.controls": "Keyboard dan pengontrol",
+  "game.input.navigate": "Navigasi",
+  "game.input.select": "Pilih",
+  "game.input.inspect": "Periksa",
+  "game.input.region": "Area",
+  "game.input.scroll": "Gulir",
+  "game.input.reorder": "Enter/A: pindahkan; panah: urutkan; Enter/A: selesai; Esc/B: batalkan",
+
+  ...decisionChoicesEn,
+  "overlay.deleteThisDigimon": "Delete this Digimon",
+  "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
+  "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
+  "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnId,
+  ...learnDrillsId,
+  ...battleLessonsId,
+  ...lessonCatalogId,
+  ...rulesLayoutId,
+  ...advancedBattlesId,
   "settings.cardImageLanguage": "Bahasa gambar kartu",
   "settings.cardImageLanguageDesc":
     "Pilih bahasa default untuk koleksi dan salinan baru yang ditambahkan ke deck. Tombol ini juga mengganti ilustrasi alternatif di deck yang sudah ada. Kartu tanpa bahasa ini tetap memakai gambar saat ini.",
@@ -229,6 +260,9 @@ const interfaceMessages = {
   "replay.start": "Ke awal",
   "replay.end": "Ke akhir",
   "replay.speed": "Kecepatan pemutaran",
+  "replay.move": "Pindahkan kontrol pemutaran",
+  "replay.moveHint":
+    "Seret untuk memindahkan. Gunakan tombol panah, Shift untuk langkah lebih besar, dan Home untuk mengatur ulang.",
   "replay.position": "Posisi replay",
   "replay.turn": "Giliran",
   "replay.action": "Aksi {current} dari {total}",
@@ -806,6 +840,7 @@ const interfaceMessages = {
   "library.rowColor": "Warna",
   "library.rowType": "Jenis",
   "library.rowPlayCost": "Play cost",
+  "library.rowUseCost": "Use cost",
   "library.rowDp": "DP",
   "library.rowTraits": "Trait",
   "library.rowRarity": "Kelangkaan",
@@ -970,7 +1005,14 @@ const interfaceMessages = {
   "game.reconnecting": "Menghubungkan kembali…",
   "game.reconnectingDetail": "Koneksi terputus. Mencoba melanjutkan pertandingan Anda.",
   "game.connectionLost": "Koneksi terputus",
-  "game.connectionLostDetail": "Server tidak bisa dihubungi. Cek koneksimu lalu coba lagi.",
+  "game.connectionLostDetail": "Koneksi ke pertandingan terputus. Coba hubungkan kembali.",
+  "game.messageTooLarge": "Pilihanmu terlalu besar untuk dikirim. Coba selesaikan lebih sedikit efek sekaligus.",
+  "game.messageTooLargeReconnecting":
+    "Pilihanmu terlalu besar untuk dikirim. Menghubungkan ulang untuk memulihkan pilihan yang tertunda.",
+  "game.reconnectFailed": "Pertandingan ini tidak dapat dilanjutkan. Kembali ke lobi dan coba lagi.",
+  "game.sessionExpired": "Pertandingan ini tidak bisa dilanjutkan lagi. Kembali ke lobi.",
+  "game.tooManyMessages": "Terlalu banyak aksi dikirim sekaligus. Tunggu sebentar, lalu kembali ke lobi.",
+  "game.serverUnavailable": "Server game sedang tidak tersedia. Coba lagi sebentar lagi.",
   "game.opponentDisconnected": "Lawan terputus",
   "game.opponentDisconnectedDetail": "Menunggu lawan terhubung kembali. Pertandingan akan dilanjutkan secara otomatis.",
   "game.opponentDisconnectedCountdown": "Jika mereka tidak kembali dalam waktu {time}, Anda memenangkan pertandingan.",
@@ -1063,6 +1105,7 @@ const interfaceMessages = {
   "game.digiEgg": " · Digi-Egg",
   "game.noCost": "tanpa cost",
   "game.costsMemory": "membutuhkan {count} memory",
+  "game.useCostsMemory": "membutuhkan {count} memory untuk dipakai",
   "game.digivolve": "Digivolve",
   "game.clickToDigivolve": "klik Digimon yang bersinar untuk melakukan digivolve",
   "game.clickToLink": "klik Digimon yang bersinar untuk Link",
@@ -1421,6 +1464,7 @@ const interfaceMessages = {
   "overlay.endSelection": "Selesai Memilih",
   "overlay.noSelection": "Tidak Memilih",
   "overlay.use": "Gunakan",
+  "overlay.activationProgress": "Aktivasi {index} dari {total}",
   "overlay.notUse": "Jangan gunakan",
   "overlay.moveToBattleArea": "Pindah ke battle area",
   "overlay.endPhase": "End phase",
@@ -2368,8 +2412,7 @@ const interfaceMessages = {
   "community.publish.errorNotLegal": "Deck ini tidak legal, jadi tidak bisa dipublikasikan.",
   "community.publish.errorName":
     "Ganti nama deck ini terlebih dahulu. Namanya mengandung kata yang tidak diperbolehkan.",
-  "community.publish.errorHidden":
-    "Seorang moderator menyembunyikan deck ini setelah ada laporan, sehingga tidak dapat dipublikasikan.",
+  "community.publish.errorHidden": "Moderator menyembunyikan deck ini. Perbaiki, lalu minta peninjauan.",
   "community.report.open": "Laporkan deck",
   "community.report.title": "Laporkan {name}",
   "community.report.body":
@@ -2402,6 +2445,26 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "Tersembunyi",
   "community.moderation.hiddenOwnerBadge": "Disembunyikan oleh moderator",
   "community.moderation.hiddenOwnerNote": "Dilaporkan oleh pemain. Orang lain tidak bisa melihatnya.",
+  "community.moderation.hideTitle": "Sembunyikan {name}?",
+  "community.moderation.hideBody":
+    "Pemain tidak lagi melihat deck ini. Pemiliknya melihat alasan dan catatan Anda, dan bisa memperbaiki deck lalu meminta peninjauan.",
+  "community.moderation.noteLabel": "Catatan untuk pemilik (opsional)",
+  "community.moderation.hiddenReason": "Disembunyikan karena: {reason}.",
+  "community.moderation.ownerNote": "Catatan moderator: {note}",
+  "community.moderation.ownerFixHint": "Perbaiki deck, lalu minta peninjauan.",
+  "community.moderation.reviewPendingNote": "Moderator akan meninjau perubahan Anda.",
+  "community.moderation.reviewRequestedBadge": "Peninjauan diminta",
+  "community.moderation.reviewTitle": "Moderasi",
+  "community.moderation.approve": "Setujui dan jadikan publik",
+  "community.moderation.decline": "Tetap sembunyikan",
+  "community.moderation.declined": "Peninjauan ditolak. Deck tetap disembunyikan.",
+  "community.review.action": "Minta peninjauan",
+  "community.review.title": "Minta peninjauan {name}?",
+  "community.review.body":
+    "Perbaiki deck Anda dulu. Kami mengirim deck tersimpan apa adanya sekarang. Deck tetap disembunyikan sampai moderator menyetujuinya.",
+  "community.review.noteLabel": "Catatan untuk moderator (opsional)",
+  "community.review.errorPending": "Anda sudah meminta peninjauan. Tunggu jawaban moderator.",
+  "community.review.errorNotHidden": "Deck ini sudah tidak disembunyikan.",
   "community.publish.errorGeneric": "Tidak bisa dipublikasikan. Coba lagi.",
   "redesign.collection.lede":
     "Jelajahi setiap kartu yang dapat dimainkan di Aegis, beserta efek dan batasnya dalam deck.",
@@ -2516,9 +2579,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "Game {game} · {name} jalan pertama",
   "overlay.series.joining": "Memulai game berikutnya…",
   "overlay.series.leave": "Tinggalkan series",
-  "overlay.rematch.offer": "Main lagi melawan {name} · Best of 3",
+  "overlay.rematch.title": "Main lagi melawan {name}?",
+  "overlay.rematch.finish": "Selesaikan Best of 3 ini",
+  "overlay.rematch.finishHint": "Game ini dihitung sebagai game 1.",
+  "overlay.rematch.new": "Mulai Best of 3 baru",
+  "overlay.rematch.newHint": "Kedua pemain mulai dari 0–0.",
+  "overlay.rematch.incomingFinish": "{name} ingin menyelesaikan Best of 3 ini",
+  "overlay.rematch.incomingNew": "{name} ingin memulai Best of 3 baru",
   "overlay.rematch.hint": "Deck yang sama. Yang kalah di game ini memilih siapa yang jalan duluan.",
-  "overlay.rematch.incoming": "{name} ingin rematch",
   "overlay.rematch.accept": "Terima",
   "overlay.rematch.decline": "Tolak",
   "overlay.rematch.waiting": "Menunggu jawaban {name}…",
@@ -2574,4 +2642,8 @@ const interfaceMessages = {
   ...rankedEn,
 } satisfies Record<keyof typeof en, string>;
 
-export const id: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const id: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+};

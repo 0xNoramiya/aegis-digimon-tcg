@@ -148,7 +148,6 @@
 .replay-import [role="status"] {
   margin: 0;
 }
-/* Playback occupies the viewport; all replay chrome floats above the board. */
 .replay-player {
   position: fixed;
   inset: 0;
@@ -166,6 +165,9 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+}
+.replay-player__board {
+  isolation: isolate;
 }
 .replay-player__board .game-layout {
   height: 100% !important;
@@ -234,7 +236,7 @@
   z-index: 3;
   top: max(68px, calc(env(safe-area-inset-top) + 56px));
   right: max(12px, env(safe-area-inset-right));
-  bottom: max(120px, calc(env(safe-area-inset-bottom) + 108px));
+  bottom: max(156px, calc(env(safe-area-inset-bottom) + 144px));
   width: min(340px, calc(100% - 24px));
   border: 1px solid var(--ds-line);
   border-radius: 14px;
@@ -309,10 +311,10 @@
 }
 .replay-controls {
   position: absolute;
-  z-index: 2;
+  z-index: 5;
   bottom: max(12px, env(safe-area-inset-bottom));
   left: max(12px, env(safe-area-inset-left));
-  width: min(420px, calc(100% - 24px));
+  width: min(520px, calc(100% - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)));
   box-sizing: border-box;
   border: 1px solid var(--ds-line);
   border-radius: 16px;
@@ -327,13 +329,15 @@
   display: none;
 }
 .replay-controls__timeline {
-  display: flex;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px 10px;
   align-items: center;
   font-size: 11px;
+  margin-right: 88px;
 }
 .replay-controls__timeline label {
-  flex: none;
+  font-variant-numeric: tabular-nums;
 }
 .replay-controls__timeline input {
   flex: 1;
@@ -343,7 +347,10 @@
   margin: 0;
 }
 .replay-controls__timeline > span {
-  max-width: 30%;
+  grid-column: 1 / -1;
+  min-width: 0;
+  height: 16px;
+  line-height: 16px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -383,6 +390,9 @@
   right: auto;
 }
 .replay-controls__options > summary {
+  position: absolute;
+  right: 52px;
+  top: 6px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -419,7 +429,7 @@
   border: 1px solid var(--ds-line);
   background: var(--ds-sheet);
   box-shadow: 0 8px 30px rgb(0 0 0 / 16%);
-  max-height: calc(100dvh - 180px);
+  max-height: var(--replay-options-height, calc(100dvh - 180px));
   overflow-y: auto;
 }
 .replay-controls__settings label {
@@ -558,17 +568,9 @@
   .replay-controls {
     padding: 6px 8px;
     border-radius: 12px;
-    bottom: max(var(--replay-hand-clearance, 140px), env(safe-area-inset-bottom));
   }
   .replay-controls__timeline {
     gap: 8px;
-  }
-  .replay-controls__timeline > span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
   }
   .replay-controls__buttons {
     gap: 4px;
@@ -638,4 +640,32 @@
 }
 .replay-library > .aegis-button {
   margin-top: 16px;
+}
+
+.replay-controls__move {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  color: var(--ds-text-3);
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+}
+.replay-controls__move:active {
+  cursor: grabbing;
+}
+.replay-controls__move:hover {
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+}
+.replay-controls[data-options-below] .replay-controls__settings {
+  top: calc(100% + 8px);
+  bottom: auto;
 }

@@ -1,6 +1,7 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { getCardArts, getCardDefinition, resolveCardArt } from "@aegis/shared";
+import { getCardArts, resolveCardArt } from "@aegis/shared";
 import { ArtRegion } from "@aegis/shared/cards/ArtRegion";
 import { artRegionOf } from "@aegis/shared/cards/artRegionOf";
 import { CardFull } from "../design/cards";
@@ -28,6 +29,7 @@ export function DeckArtworkPicker({
   onChoose: (artId: string, copy: number | "all") => void;
   onClose: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const [copy, setCopy] = useState(0);
   const panel = useRef<HTMLDivElement>(null);
@@ -35,7 +37,6 @@ export function DeckArtworkPicker({
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   const selected = resolveCardArt(cardId, arts[copy]).artId;
-  const definition = getCardDefinition(cardId);
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     close.current?.focus();
@@ -77,7 +78,7 @@ export function DeckArtworkPicker({
           <div>
             <h2 id="deck-art-picker-title">{t("deck.editArtwork")}</h2>
             <p>
-              {definition?.nameEn} · {cardId}
+              {getCardName(cardId)} · {cardId}
             </p>
           </div>
           <button
