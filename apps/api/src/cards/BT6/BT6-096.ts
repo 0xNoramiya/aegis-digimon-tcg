@@ -22,17 +22,17 @@ const compiled: CompiledCard = {
             fromSelectionRef: "boostedDigimon",
           },
           amount: 2000,
-          duration: "untilYourTurnEnd",
+          duration: "forTheTurn",
         },
         {
-          kind: "SubTrigger",
-          event: "whenAttacking",
-          on: {
+          kind: "GainTriggeredEffect",
+          target: {
             filter: {},
             count: 1,
             fromSelectionRef: "boostedDigimon",
           },
-          actions: [
+          gainedTrigger: "whenAttacking",
+          gainedActions: [
             {
               kind: "SelectBind",
               target: {

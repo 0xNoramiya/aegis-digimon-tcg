@@ -13,6 +13,7 @@ const compiled: CompiledCard = {
           revealCount: 2,
           add: [
             {
+              effectTextPart: "Place 1 of them on top of your security stack face down.",
               filter: {
                 controllerDefault: "mine",
               },
@@ -22,6 +23,7 @@ const compiled: CompiledCard = {
               faceDown: true,
             },
             {
+              effectTextPart: "Add the remaining card to your hand.",
               filter: {
                 controllerDefault: "mine",
               },

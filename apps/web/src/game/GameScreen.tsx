@@ -1,5 +1,8 @@
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
 import { UsedDeckDialog } from "@/game/UsedDeckDialog";
+import { collectViewerCardArtIds } from "@/screens/cardLanguage/collectViewerCardArtIds";
+import { ViewerCardArtIdsContext } from "@/screens/cardLanguage/ViewerCardArtIdsContext";
 import type { DeckListing } from "@/game/decks";
 import { downloadReplay } from "../replays/files";
 /* The in-game board — the design's letterboxed board layout, driven entirely by
@@ -241,6 +244,7 @@ function GameScreenSession({
     unlimited?: boolean,
     privateHost?: boolean,
     format?: import("@aegis/shared").DeckFormat,
+    gameMode?: GameMode,
   ) => void;
   /** Only shapes what the report dialog says about follow-up questions; reporting needs no account. */
   signedIn?: boolean;
@@ -418,7 +422,7 @@ function GameScreenSession({
   const allianceConfirmationSubmittedRef = useRef(false);
 
   const { drag, dragHover, handleTapRef, handleDropRef, canDragRef, startHandDrag, startPermDrag, cancelDrag } =
-    useDragPlumbing();
+    useDragPlumbing({ manual: state?.gameMode === GameMode.MANUAL.value });
   canDragRef.current = null;
   const playDragStarted = drag?.kind === DragKind.Play && drag.started;
   useEffect(() => {
@@ -587,6 +591,11 @@ function GameScreenSession({
   });
   const you = state?.players[viewerSeat];
   const opp = state?.players[otherSeat(viewerSeat)];
+  const viewerCardArtKey =
+    spectating || !state
+      ? ""
+      : collectViewerCardArtIds({ deck: joinOptions.deck, players: [...state.players], viewerSeat }).join("\n");
+  const viewerCardArtIds = useMemo(() => new Set(viewerCardArtKey.split("\n").filter(Boolean)), [viewerCardArtKey]);
   /**
    * The two boards this screen reads (docs/presentation-queue-plan.md 3.2).
    *
@@ -771,6 +780,15 @@ function GameScreenSession({
       activation.linked === true && activation.site.zone === "field" ? [activation.site.permanentId] : [],
     ),
   );
+
+  if (state?.gameMode === GameMode.MANUAL.value && state.manual.signalSeat !== -1) {
+    if (state.manual.signalPermanentId) {
+      effectLinkedPermanentIds.add(state.manual.signalPermanentId);
+    }
+    if (state.manual.signalTargetPermanentId) {
+      effectLinkedPermanentIds.add(state.manual.signalTargetPermanentId);
+    }
+  }
 
   const arenaLook = useArenaBoardLook({ viewer: you, opponent: opp, matchKey: connectedRoom?.roomId });
 
@@ -1110,7 +1128,7 @@ function GameScreenSession({
     !dnaChoosing &&
     !mainActionBlocked &&
     (candidate.kind !== DragKind.Attack || (!handSel && !linkSel)) &&
-    canDragCard({ drag: candidate, you, handEntries });
+    (state.gameMode === GameMode.MANUAL.value || canDragCard({ drag: candidate, you, handEntries }));
   const dragIntentAt = (hit: DropZoneHit | null) => {
     if (drag?.started && hit?.target === "hand-you" && drag.kind === DragKind.Play && canReorderHand(drag.instanceId))
       return "reorder" as const;
@@ -1550,7 +1568,7 @@ function GameScreenSession({
               rematch: rematch && {
                 view: rematch,
                 opponentName: opp.displayName || t("game.opponent"),
-                onOffer: () => room?.send(SERIES_CHANNEL, { action: "offerRematch" }),
+                onOffer: (mode) => room?.send(SERIES_CHANNEL, { action: "offerRematch", mode }),
                 onAnswer: (accept) => room?.send(SERIES_CHANNEL, { action: "answerRematch", accept }),
                 onChooseTurnOrder: (goFirst) => room?.send(SERIES_CHANNEL, { action: "chooseTurnOrder", goFirst }),
               },
@@ -1600,6 +1618,7 @@ function GameScreenSession({
                   state?.unlimited,
                   isPrivateMatch ? viewerSeat === 0 : undefined,
                   state?.format as import("@aegis/shared").DeckFormat | undefined,
+                  state?.gameMode,
                 )
             : () => onExit("lobby")
       }
@@ -1881,6 +1900,11 @@ function GameScreenSession({
       onInspectPermanent={{
         viewer: (perm) => {
           cancelDrag();
+          if (state.gameMode === GameMode.MANUAL.value && !spectating) {
+            setHandSel(null);
+            setSelPerm(perm.permanentId);
+            return;
+          }
           actions.showCardMenu(perm.permanentId, Side.Viewer, { preserveSelection: true });
         },
         opponent: (perm) => {
@@ -1894,5 +1918,5 @@ function GameScreenSession({
       }}
     />
   );
-  return board;
+  return <ViewerCardArtIdsContext.Provider value={viewerCardArtIds}>{board}</ViewerCardArtIdsContext.Provider>;
 }

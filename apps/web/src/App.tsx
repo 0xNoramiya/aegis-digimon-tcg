@@ -1,3 +1,4 @@
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getStoryGuestToken } from "@/story/getStoryGuestToken";
 import { LocalScenarioHelp } from "./dev/LocalScenarioHelp";
 import { MATCH_TIMER_START_SECONDS } from "@aegis/shared";
@@ -465,6 +466,7 @@ function LoadedAegisClient({
     timerStartSeconds: MATCH_TIMER_START_SECONDS,
     timerRefillSeconds: 60,
   }));
+  const [gameMode, setGameMode] = useState<GameMode>(GameMode.AUTOMATIC.value);
   const [allowRollback, setAllowRollback] = useState(false);
   const [bestOf, setBestOf] = useState(loadMatchFormatPreference);
   /** Set between the games of a best-of-three: the next GameScreen takes this seat. */
@@ -566,6 +568,7 @@ function LoadedAegisClient({
     requestedDeckId?: string | DeckListing,
     requestedUnlimited?: boolean,
     requestedFormat?: import("@aegis/shared").DeckFormat,
+    requestedGameMode?: GameMode,
   ) => {
     // A lobby start explicitly requests a new match, even if a page
     // reload left a resumable seat from the previous match in storage.
@@ -574,6 +577,9 @@ function LoadedAegisClient({
     if (mode !== "private_host" && mode !== "private_guest") setPrivateRoom(undefined);
     setStoryBattleId(undefined);
     setStartMode(mode);
+    if (requestedGameMode) {
+      setGameMode(requestedGameMode);
+    }
     setRoomCode(code);
     setBotDeckId(requestedBotDeckId);
     setBetaBattleMode(requestedBetaBattleMode === true);
@@ -611,10 +617,12 @@ function LoadedAegisClient({
   const joinOptions = useMemo<AegisJoinOptions>(
     () => ({
       ...timerOptions,
+      ...(gameMode === GameMode.MANUAL.value ? { matchTimer: false } : {}),
       storyBattleId,
       storyGuestToken: storyBattleId ? getStoryGuestToken() : undefined,
-      allowRollback,
-      bestOf,
+      gameMode: startMode === "bot" || startMode === "ranked" ? GameMode.AUTOMATIC.value : gameMode,
+      allowRollback: gameMode !== GameMode.MANUAL.value && allowRollback,
+      bestOf: gameMode === GameMode.MANUAL.value ? 1 : bestOf,
       format: deckFormat,
       displayName: effectivePlayer.name,
       avatarId: effectivePlayer.avatarId ?? undefined,
@@ -646,6 +654,7 @@ function LoadedAegisClient({
       customBotDeck,
       deckFormat,
       allowRollback,
+      gameMode,
     ],
   );
 
@@ -791,6 +800,8 @@ function LoadedAegisClient({
                 onNav={navigateScreen}
                 timerOptions={timerOptions}
                 onTimerOptionsChange={setTimerOptions}
+                gameMode={gameMode}
+                onGameModeChange={setGameMode}
                 allowRollback={allowRollback}
                 onAllowRollbackChange={setAllowRollback}
                 bestOf={bestOf}
@@ -941,15 +952,17 @@ function LoadedAegisClient({
                   setSeriesGame(undefined);
                   navigateScreen(getMatchExitScreen({ storyBattleId, next }));
                 }}
-                onRematch={(privateRoomCode, roomUnlimited, roomHost, roomFormat) => {
+                onRematch={(privateRoomCode, roomUnlimited, roomHost, roomFormat, roomGameMode) => {
                   clearReconnectSession();
                   setSeriesGame(undefined);
+                  setGameMode(roomGameMode ?? GameMode.AUTOMATIC.value);
                   if (privateRoomCode) {
                     setPrivateRoom({
                       code: privateRoomCode,
                       host: roomHost ?? startMode === "private_host",
                       unlimited: roomUnlimited,
                       format: roomFormat,
+                      gameMode: roomGameMode,
                     });
                     navigateScreen("lobby");
                     return;

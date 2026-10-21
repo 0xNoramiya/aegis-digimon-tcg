@@ -2,6 +2,7 @@ import { advancedBattlesEs } from "@/i18n/learn/advancedBattles.es";
 import { rulesLayoutEs } from "@/i18n/learn/rulesLayout.es";
 import { lessonCatalogEs } from "@/i18n/learn/lessonCatalog.es";
 import { battleLessonsEs } from "@/i18n/learn/battleLessons.es";
+import { manualEs } from "@/i18n/manual.es";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEs } from "@/i18n/providers.es";
 import { replayVideoEs } from "./replayVideo";
@@ -28,6 +29,7 @@ export const es: Record<keyof typeof en, string> = {
   ...lessonCatalogEs,
   ...rulesLayoutEs,
   ...advancedBattlesEs,
+  ...manualEs,
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Eliminar este Digimon",
   "overlay.trashTopSecurityCard": "Descartar la carta superior de tu seguridad",
@@ -629,6 +631,7 @@ export const es: Record<keyof typeof en, string> = {
   "library.rowColor": "Color",
   "library.rowType": "Tipo",
   "library.rowPlayCost": "Costo de juego",
+  "library.rowUseCost": "Costo de uso",
   "library.rowDp": "DP",
   "library.rowTraits": "Rasgos",
   "library.rowRarity": "Rareza",
@@ -888,6 +891,7 @@ export const es: Record<keyof typeof en, string> = {
   "game.digiEgg": " · Digi-Egg",
   "game.noCost": "sin costo",
   "game.costsMemory": "cuesta {count} de memoria",
+  "game.useCostsMemory": "cuesta {count} de memoria para usar",
   "game.digivolve": "Digievolucionar",
   "game.clickToDigivolve": "haz clic en un Digimon resaltado para digievolucionar",
   "game.clickToLink": "haz clic en un Digimon resaltado para vincular",
@@ -2096,9 +2100,14 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.series.startingOpponent": "Juego {game} · Empieza {name}",
   "overlay.series.joining": "Iniciando el siguiente juego…",
   "overlay.series.leave": "Salir de la serie",
-  "overlay.rematch.offer": "Jugar de nuevo con {name} · Al mejor de 3",
+  "overlay.rematch.title": "¿Jugar de nuevo con {name}?",
+  "overlay.rematch.finish": "Terminar este al mejor de 3",
+  "overlay.rematch.finishHint": "Esta partida cuenta como la partida 1.",
+  "overlay.rematch.new": "Empezar un nuevo al mejor de 3",
+  "overlay.rematch.newHint": "Ambos jugadores empiezan 0–0.",
+  "overlay.rematch.incomingFinish": "{name} quiere terminar este al mejor de 3",
+  "overlay.rematch.incomingNew": "{name} quiere empezar un nuevo al mejor de 3",
   "overlay.rematch.hint": "Mismos mazos. Quien perdió esta partida elige quién empieza.",
-  "overlay.rematch.incoming": "{name} quiere una revancha",
   "overlay.rematch.accept": "Aceptar",
   "overlay.rematch.decline": "Rechazar",
   "overlay.rematch.waiting": "Esperando la respuesta de {name}…",

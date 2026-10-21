@@ -1,4 +1,142 @@
 {
+  "releases.1.36.0-beta.summary": {
+    "en": "Manual tables, a rematch that can finish a best-of-three, and fixes for effect order, card rules, card language, DUAL cards, and deckbuilder sorting.",
+    "pt-BR": "Mesas manuais, uma revanche que pode concluir uma melhor de três e correções na ordem de efeitos, em regras de cartas, no idioma das cartas, em cartas DUAL e na ordenação do deckbuilder.",
+    "es": "Mesas manuales, una revancha que puede completar un mejor de tres y correcciones en el orden de efectos, en reglas de cartas, en el idioma de las cartas, en cartas DUAL y en la ordenación del constructor de mazos.",
+    "it": "Tavoli manuali, una rivincita che può completare un meglio di tre e correzioni all’ordine degli effetti, alle regole delle carte, alla lingua delle carte, alle carte DUAL e all’ordinamento del deckbuilder."
+  },
+  "releases.1.36.0-beta.feature.manualTables": {
+    "en": "Manual tables: choose Manual in the lobby to play a casual game where you move cards and resolve effects yourself. Each turn still unsuspends and draws automatically.",
+    "pt-BR": "Mesas manuais: escolha Manual no lobby para jogar uma partida casual em que você move as cartas e resolve os efeitos. Cada turno ainda desvira e compra automaticamente.",
+    "es": "Mesas manuales: elige Manual en el lobby para jugar una partida casual en la que mueves las cartas y resuelves los efectos tú mismo. Cada turno sigue enderezando y robando automáticamente.",
+    "it": "Tavoli manuali: scegli Manual nella lobby per giocare una partita casual in cui sposti le carte e risolvi gli effetti da solo. Ogni turno raddrizza e pesca ancora automaticamente."
+  },
+  "releases.1.36.0-beta.feature.rematchFinishSeries": {
+    "en": "After a single game, a rematch can now finish a best-of-three that counts the finished game as game 1, or start a new best-of-three.",
+    "pt-BR": "Depois de uma partida única, a revanche agora pode concluir uma melhor de três que conta a partida encerrada como jogo 1, ou começar uma nova melhor de três.",
+    "es": "Tras una partida única, la revancha ahora puede completar un mejor de tres que cuenta la partida terminada como juego 1, o empezar un nuevo mejor de tres.",
+    "it": "Dopo una partita singola, la rivincita ora può completare un meglio di tre che conta la partita conclusa come gara 1, oppure iniziare un nuovo meglio di tre."
+  },
+  "releases.1.36.0-beta.fix.opponentCardLanguage": {
+    "en": "Opponent cards now show in your chosen card language everywhere in a match, not only in their trash.",
+    "pt-BR": "As cartas do oponente agora aparecem no idioma de carta que você escolheu em toda a partida, não só no descarte dele.",
+    "es": "Las cartas del rival ahora se muestran en el idioma de cartas que elegiste en toda la partida, no solo en su descarte.",
+    "it": "Le carte dell’avversario ora appaiono nella lingua delle carte che hai scelto in tutta la partita, non solo nel suo cimitero."
+  },
+  "releases.1.36.0-beta.fix.dualCardCost": {
+    "en": "DUAL cards on the board now show a DUAL mark instead of their use cost, so the number is no longer mistaken for a play cost.",
+    "pt-BR": "Cartas DUAL no campo agora mostram uma marca DUAL em vez do custo de uso, para que o número não seja mais confundido com custo de jogo.",
+    "es": "Las cartas DUAL en el tablero ahora muestran una marca DUAL en lugar de su coste de uso, para que el número ya no se confunda con un coste de juego.",
+    "it": "Le carte DUAL sul campo ora mostrano un segno DUAL invece del costo di utilizzo, così il numero non viene più scambiato per un costo di gioco."
+  },
+  "releases.1.36.0-beta.fix.ruleCheckTriggerOrder": {
+    "en": "When a “would leave” effect saves a Digimon during a rule check, the effects it triggers now wait for the turn player’s pending effects, so the turn player resolves first.",
+    "pt-BR": "Quando um efeito de “sairia” salva um Digimon durante uma verificação de regras, os efeitos que ele ativa agora esperam os efeitos pendentes do jogador do turno, e o jogador do turno resolve primeiro.",
+    "es": "Cuando un efecto de “saldría” salva a un Digimon durante una comprobación de reglas, los efectos que activa ahora esperan a los efectos pendientes del jugador del turno, que resuelve primero.",
+    "it": "Quando un effetto “lascerebbe” salva un Digimon durante un controllo delle regole, gli effetti che attiva ora attendono gli effetti in sospeso del giocatore di turno, che risolve per primo."
+  },
+  "releases.1.36.0-beta.fix.laterEntrantGrants": {
+    "en": "Effects for all of a player’s Digimon, such as Machinedramon’s stacked-card protection, now apply at once to Digimon that enter later and no longer appear as extra effects to order.",
+    "pt-BR": "Efeitos para todos os Digimon de um jogador, como a proteção de cartas empilhadas de Machinedramon, agora se aplicam na hora aos Digimon que entram depois e não aparecem mais como efeitos extras para ordenar.",
+    "es": "Los efectos para todos los Digimon de un jugador, como la protección de cartas apiladas de Machinedramon, ahora se aplican al instante a los Digimon que entran después y ya no aparecen como efectos adicionales que ordenar.",
+    "it": "Gli effetti per tutti i Digimon di un giocatore, come la protezione delle carte impilate di Machinedramon, ora si applicano subito ai Digimon che entrano dopo e non compaiono più come effetti extra da ordinare."
+  },
+  "releases.1.36.0-beta.fix.conditionalGrants": {
+    "en": "Attack of the Heavy Mobile Digimon! now gives its On Play only to Digimon that currently are level 6 with [Machine] in their traits.",
+    "pt-BR": "Attack of the Heavy Mobile Digimon! agora concede seu On Play apenas aos Digimon que, no momento, são de nível 6 com [Machine] nos traços.",
+    "es": "Attack of the Heavy Mobile Digimon! ahora otorga su On Play solo a los Digimon que en ese momento son de nivel 6 con [Machine] en sus rasgos.",
+    "it": "Attack of the Heavy Mobile Digimon! ora concede il suo On Play solo ai Digimon che in quel momento sono di livello 6 con [Machine] nei tratti."
+  },
+  "releases.1.36.0-beta.fix.artsSecurityReactions": {
+    "en": "Security-removal reactions from an Arts digivolution’s When Digivolving effect now resolve before the opponent’s older pending effects.",
+    "pt-BR": "Reações à remoção de cartas de segurança causadas pelo When Digivolving de uma digievolução Arts agora resolvem antes dos efeitos pendentes mais antigos do oponente.",
+    "es": "Las reacciones a la retirada de cartas de seguridad causadas por el When Digivolving de una digievolución Arts ahora se resuelven antes que los efectos pendientes más antiguos del rival.",
+    "it": "Le reazioni alla rimozione di carte di sicurezza causate dal When Digivolving di una digievoluzione Arts ora si risolvono prima degli effetti in sospeso più vecchi dell’avversario."
+  },
+  "releases.1.36.0-beta.fix.mistymon": {
+    "en": "Mistymon BT18-039’s inherited unsuspend is now optional, as printed on the card.",
+    "pt-BR": "O efeito herdado de desvirar de Mistymon BT18-039 agora é opcional, como impresso na carta.",
+    "es": "El efecto heredado de enderezar de Mistymon BT18-039 ahora es opcional, como aparece en la carta.",
+    "it": "L’effetto ereditato di raddrizzamento di Mistymon BT18-039 ora è facoltativo, come stampato sulla carta."
+  },
+  "releases.1.36.0-beta.fix.ascensionPrompt": {
+    "en": "Ascension after a rule-check deletion now asks to activate or decline, without selecting its card.",
+    "pt-BR": "Ascension após uma deleção por verificação de regras agora pergunta se você quer ativar ou recusar, sem pedir para selecionar a carta.",
+    "es": "Ascension tras una eliminación por comprobación de reglas ahora pregunta si activar o rechazar, sin seleccionar su carta.",
+    "it": "Ascension dopo un’eliminazione per controllo delle regole ora chiede se attivare o rifiutare, senza selezionare la carta."
+  },
+  "releases.1.36.0-beta.fix.deckbuilderSorting": {
+    "en": "Deckbuilder sorting now applies to every search match, not only to name matches.",
+    "pt-BR": "A ordenação do deckbuilder agora se aplica a todos os resultados da busca, não só aos que correspondem ao nome.",
+    "es": "La ordenación del constructor de mazos ahora se aplica a todos los resultados de búsqueda, no solo a los que coinciden con el nombre.",
+    "it": "L’ordinamento del deckbuilder ora si applica a tutti i risultati della ricerca, non solo a quelli che corrispondono al nome."
+  },
+  "releases.1.35.3-beta.summary": {
+    "en": "Gameplay, card rules, Material Save prompts, and story fixes.",
+    "pt-BR": "Correções de jogabilidade, regras de cartas, decisões de Material Save e história.",
+    "es": "Correcciones de jugabilidad, reglas de cartas, decisiones de Material Save e historia.",
+    "it": "Correzioni a gioco, regole delle carte, richieste Material Save e storia."
+  },
+  "releases.1.35.3-beta.fix.materialSave": {
+    "en": "Material Save now clearly identifies its source, previews eligible materials, and offers explicit activation or refusal.",
+    "pt-BR": "Material Save agora identifica sua origem, mostra os materiais elegíveis e oferece opções explícitas para ativar ou recusar.",
+    "es": "Material Save ahora identifica su origen, muestra los materiales válidos y ofrece opciones explícitas para activar o rechazar.",
+    "it": "Material Save ora identifica la fonte, mostra i materiali idonei e offre opzioni esplicite per attivare o rifiutare."
+  },
+  "releases.1.35.3-beta.fix.retaliation": {
+    "en": "Deleted tokens now resolve Retaliation correctly after battle.",
+    "pt-BR": "Tokens deletados agora resolvem Retaliation corretamente após a batalha.",
+    "es": "Las fichas eliminadas ahora resuelven Retaliation correctamente tras la batalla.",
+    "it": "Le pedine eliminate ora risolvono correttamente Retaliation dopo la battaglia."
+  },
+  "releases.1.35.3-beta.fix.turnEndDeletion": {
+    "en": "Delayed deletion created during end-of-turn effects now resolves at the next eligible turn-end window.",
+    "pt-BR": "A deleção adiada criada durante efeitos de fim de turno agora ocorre na próxima janela de fim de turno válida.",
+    "es": "La eliminación aplazada creada durante efectos de fin de turno ahora se resuelve en la siguiente ventana válida de fin de turno.",
+    "it": "L’eliminazione differita creata durante gli effetti di fine turno ora si risolve alla successiva finestra valida di fine turno."
+  },
+  "releases.1.35.3-beta.fix.sora": {
+    "en": "Sora now reacts to Yokomon returning a card to hand before older effects during Phoenixmon X’s Blitz attack.",
+    "pt-BR": "Sora agora reage ao retorno de uma carta para a mão por Yokomon antes dos efeitos mais antigos durante o ataque com Blitz de Phoenixmon X.",
+    "es": "Sora ahora reacciona al retorno de una carta a la mano por Yokomon antes de los efectos anteriores durante el ataque con Blitz de Phoenixmon X.",
+    "it": "Sora ora reagisce quando Yokomon riporta una carta in mano prima degli effetti precedenti durante l’attacco Blitz di Phoenixmon X."
+  },
+  "releases.1.35.3-beta.fix.wormmon": {
+    "en": "Wormmon EX3-055 now follows the errata: its search can select Imperialdramon of any color for the hand or trash.",
+    "pt-BR": "Wormmon EX3-055 agora segue a errata: sua busca pode selecionar Imperialdramon de qualquer cor para a mão ou o lixo.",
+    "es": "Wormmon EX3-055 ahora sigue la errata: su búsqueda permite seleccionar Imperialdramon de cualquier color para la mano o la basura.",
+    "it": "Wormmon EX3-055 ora segue l’errata: la ricerca può selezionare Imperialdramon di qualsiasi colore per la mano o gli scarti."
+  },
+  "releases.1.35.3-beta.fix.astamon": {
+    "en": "Astamon BT12-081 can digivolve from Psychemon again, including through Purple Scramble.",
+    "pt-BR": "Astamon BT12-081 pode voltar a digivolver de Psychemon, inclusive por meio de Purple Scramble.",
+    "es": "Astamon BT12-081 vuelve a poder digievolucionar de Psychemon, incluso mediante Purple Scramble.",
+    "it": "Astamon BT12-081 può nuovamente digievolvere da Psychemon, anche tramite Purple Scramble."
+  },
+  "releases.1.35.3-beta.fix.aceBadges": {
+    "en": "ACE badges now appear consistently on cards and Digimon in play.",
+    "pt-BR": "Os indicadores ACE agora aparecem de forma consistente nas cartas e nos Digimon em jogo.",
+    "es": "Los indicadores ACE ahora aparecen de forma coherente en las cartas y los Digimon en juego.",
+    "it": "Gli indicatori ACE ora appaiono in modo coerente sulle carte e sui Digimon in gioco."
+  },
+  "releases.1.35.3-beta.fix.chineseEffects": {
+    "en": "Chinese effect text now uses verified card context for more accurate translations.",
+    "pt-BR": "Os textos de efeitos em chinês agora usam o contexto verificado da carta para traduções mais precisas.",
+    "es": "Los textos de efectos en chino ahora usan el contexto verificado de la carta para traducciones más precisas.",
+    "it": "I testi degli effetti in cinese ora usano il contesto verificato della carta per traduzioni più accurate."
+  },
+  "releases.1.35.3-beta.fix.arisaRematch": {
+    "en": "Arisa’s story rematch now follows the intended comeback, and story decks no longer include tokens.",
+    "pt-BR": "A revanche de Arisa no modo história agora segue a virada prevista, e os decks de história não incluem mais tokens.",
+    "es": "La revancha de Arisa en el modo historia ahora sigue la remontada prevista, y los mazos de historia ya no incluyen fichas.",
+    "it": "La rivincita di Arisa nella storia ora segue la rimonta prevista e i mazzi della storia non includono più pedine."
+  },
+  "releases.1.35.3-beta.fix.rejectedReplayInputs": {
+    "en": "Match replays now handle repeated rejected actions without reporting false position divergences.",
+    "pt-BR": "Os replays de partidas agora lidam com ações rejeitadas repetidas sem indicar falsas divergências de posição.",
+    "es": "Las repeticiones de partidas ahora gestionan acciones rechazadas repetidas sin indicar falsas divergencias de posición.",
+    "it": "I replay delle partite ora gestiscono le azioni rifiutate ripetute senza segnalare false divergenze di posizione."
+  },
   "releases.1.32.0-beta.summary": {
     "en": "New BT27 cards and corrections to card effects, battle timing and localized game text.",
     "pt-BR": "Novas cartas BT27 e correções em efeitos de cartas, resolução de batalhas e textos traduzidos do jogo.",
@@ -3106,5 +3244,143 @@
     "pt-BR": "As prévias de deck e as exportações em imagem agora listam cartas DUAL Digimon/Opção no nível do Digimon, e não em Opções.",
     "es": "Las vistas previas de mazo y las exportaciones en imagen ahora muestran las cartas DUAL Digimon/Opción en su nivel de Digimon y no en Opciones.",
     "it": "Le anteprime dei mazzi e le esportazioni in immagine ora mostrano le carte DUAL Digimon/Opzione al loro livello Digimon invece che tra le Opzioni."
+  },
+  "releases.1.35.0-beta.summary": {
+    "en": "Play with a keyboard or controller, a new BT27 Tamer, faster Option replays, and several card fixes.",
+    "pt-BR": "Jogue com teclado ou controle, um novo Tamer de BT27, replays de Opções mais rápidos e várias correções de cartas.",
+    "es": "Juega con teclado o mando, un nuevo Tamer de BT27, repeticiones de Opciones más rápidas y varias correcciones de cartas.",
+    "it": "Gioca con tastiera o controller, un nuovo Tamer di BT27, replay delle Opzioni più veloci e diverse correzioni di carte."
+  },
+  "releases.1.35.0-beta.feature.arenaInput": {
+    "en": "You can now play matches with a keyboard or a game controller. Turn it on in the match settings under \"Keyboard and controller\".",
+    "pt-BR": "Agora você pode jogar partidas com teclado ou controle. Ative em \"Teclado e controle\" nas configurações da partida.",
+    "es": "Ahora puedes jugar partidas con teclado o mando. Actívalo en \"Teclado y mando\" en los ajustes de la partida.",
+    "it": "Ora puoi giocare le partite con tastiera o controller. Attivalo in \"Tastiera e controller\" nelle impostazioni della partita."
+  },
+  "releases.1.35.0-beta.feature.akihiroKurata": {
+    "en": "Akihiro Kurata (BT27-098) is now playable.",
+    "pt-BR": "Akihiro Kurata (BT27-098) agora pode ser jogado.",
+    "es": "Akihiro Kurata (BT27-098) ya se puede jugar.",
+    "it": "Akihiro Kurata (BT27-098) ora è giocabile."
+  },
+  "releases.1.35.0-beta.fix.replayOptions": {
+    "en": "Replays no longer pause for about 45 seconds when an Option, including a DUAL card, is used.",
+    "pt-BR": "Os replays não pausam mais por cerca de 45 segundos quando uma Opção, incluindo cartas DUAL, é usada.",
+    "es": "Las repeticiones ya no se detienen unos 45 segundos cuando se usa una Opción, incluidas las cartas DUAL.",
+    "it": "I replay non si fermano più per circa 45 secondi quando si usa un'Opzione, comprese le carte DUAL."
+  },
+  "releases.1.35.0-beta.fix.zephagamonUnsuspend": {
+    "en": "Zephagamon (ST18-12), Anemoi Embrace (ST18-15), and Imperialdramon: Dragon Mode (P-109) now let you choose the Digimon to unsuspend, so the Digimon you just suspended can stay suspended.",
+    "pt-BR": "Zephagamon (ST18-12), Anemoi Embrace (ST18-15) e Imperialdramon: Dragon Mode (P-109) agora deixam você escolher o Digimon a ser ativado, então o Digimon que você acabou de suspender pode continuar suspenso.",
+    "es": "Zephagamon (ST18-12), Anemoi Embrace (ST18-15) e Imperialdramon: Dragon Mode (P-109) ahora te dejan elegir el Digimon que se activa, así el Digimon que acabas de suspender puede seguir suspendido.",
+    "it": "Zephagamon (ST18-12), Anemoi Embrace (ST18-15) e Imperialdramon: Dragon Mode (P-109) ora ti fanno scegliere il Digimon da riattivare, così il Digimon che hai appena sospeso può restare sospeso."
+  },
+  "releases.1.35.0-beta.fix.forbiddenTrident": {
+    "en": "Forbidden Trident (BT6-096) no longer returns your opponent's attackers to hand on later turns. Atomic Inferno (BT4-098) now gains memory only when the chosen Digimon is blocked.",
+    "pt-BR": "Forbidden Trident (BT6-096) não devolve mais à mão os atacantes do oponente em turnos seguintes. Atomic Inferno (BT4-098) agora só ganha memória quando o Digimon escolhido é bloqueado.",
+    "es": "Forbidden Trident (BT6-096) ya no devuelve a la mano a los atacantes de tu oponente en turnos posteriores. Atomic Inferno (BT4-098) ahora solo gana memoria cuando el Digimon elegido es bloqueado.",
+    "it": "Forbidden Trident (BT6-096) non rimanda più in mano gli attaccanti dell'avversario nei turni successivi. Atomic Inferno (BT4-098) ora guadagna memoria solo quando il Digimon scelto viene bloccato."
+  },
+  "releases.1.35.0-beta.fix.regulusmon": {
+    "en": "Regulusmon (BT21-077) and Queen of Thorns (BT26-098) now offer only the Digimon their text allows.",
+    "pt-BR": "Regulusmon (BT21-077) e Queen of Thorns (BT26-098) agora oferecem apenas os Digimon permitidos pelo texto.",
+    "es": "Regulusmon (BT21-077) y Queen of Thorns (BT26-098) ahora solo ofrecen los Digimon que permite su texto.",
+    "it": "Regulusmon (BT21-077) e Queen of Thorns (BT26-098) ora offrono solo i Digimon consentiti dal loro testo."
+  },
+  "releases.1.35.0-beta.fix.dokugumon": {
+    "en": "Dokugumon (P-163) now suspends an opponent's Digimon when it is deleted, as printed.",
+    "pt-BR": "Dokugumon (P-163) agora suspende um Digimon do oponente quando é deletado, como está impresso.",
+    "es": "Dokugumon (P-163) ahora suspende un Digimon de tu oponente cuando es eliminado, como está impreso.",
+    "it": "Dokugumon (P-163) ora sospende un Digimon dell'avversario quando viene eliminato, come stampato."
+  },
+  "releases.1.35.0-beta.fix.soloogarmon": {
+    "en": "Soloogarmon (BT16-076) no longer unsuspends your attacker when your opponent has 0 memory.",
+    "pt-BR": "Soloogarmon (BT16-076) não ativa mais o seu atacante quando o oponente tem 0 de memória.",
+    "es": "Soloogarmon (BT16-076) ya no activa a tu atacante cuando tu oponente tiene 0 de memoria.",
+    "it": "Soloogarmon (BT16-076) non riattiva più il tuo attaccante quando l'avversario ha 0 memoria."
+  },
+  "releases.1.35.0-beta.fix.autoHatch": {
+    "en": "Auto-hatch no longer tries to hatch an egg right after you raise a Digimon.",
+    "pt-BR": "A eclosão automática não tenta mais chocar um ovo logo depois de você subir um Digimon.",
+    "es": "La eclosión automática ya no intenta abrir un huevo justo después de que subas un Digimon.",
+    "it": "La schiusa automatica non prova più a schiudere un uovo subito dopo che hai spostato un Digimon in campo."
+  },
+  "releases.1.35.0-beta.fix.bt27Art": {
+    "en": "BT27 card art no longer shows white margins.",
+    "pt-BR": "A arte das cartas de BT27 não mostra mais margens brancas.",
+    "es": "El arte de las cartas de BT27 ya no muestra márgenes blancos.",
+    "it": "Le illustrazioni delle carte BT27 non mostrano più margini bianchi."
+  },
+  "releases.1.35.1-beta.summary": {
+    "en": "Clearer prompts for reveal effects, plus card and room fixes.",
+    "pt-BR": "Prompts mais claros para efeitos de revelar, além de correções de cartas e de salas.",
+    "es": "Indicaciones más claras para los efectos de revelar, además de correcciones de cartas y de salas.",
+    "it": "Richieste più chiare per gli effetti che rivelano carte, oltre a correzioni di carte e stanze."
+  },
+  "releases.1.35.1-beta.fix.revealPrompts": {
+    "en": "Reveal effects that add several kinds of cards, such as Gatomon (ST10-04), now show which kind each choice is for.",
+    "pt-BR": "Efeitos de revelar que adicionam vários tipos de carta, como Gatomon (ST10-04), agora mostram para qual tipo é cada escolha.",
+    "es": "Los efectos de revelar que añaden varios tipos de cartas, como Gatomon (ST10-04), ahora muestran para qué tipo es cada elección.",
+    "it": "Gli effetti che rivelano carte e ne aggiungono di più tipi, come Gatomon (ST10-04), ora mostrano a quale tipo si riferisce ogni scelta."
+  },
+  "releases.1.35.1-beta.fix.artsDigivolve": {
+    "en": "A Digimon that Arts Digivolves into Imperialdramon: Fighter Mode (AD1-024) no longer returns to the bottom of the deck.",
+    "pt-BR": "Um Digimon que faz Arts Digivolve em Imperialdramon: Fighter Mode (AD1-024) não volta mais para o fundo do deck.",
+    "es": "Un Digimon que hace Arts Digivolve en Imperialdramon: Fighter Mode (AD1-024) ya no vuelve al fondo del mazo.",
+    "it": "Un Digimon che fa Arts Digivolve in Imperialdramon: Fighter Mode (AD1-024) non torna più in fondo al mazzo."
+  },
+  "releases.1.35.1-beta.fix.digiXrosReduction": {
+    "en": "DigiXros plays such as DarknessBagramon (EX10-059) now count Yuu Amano's (BT10-093) cost reduction before checking memory.",
+    "pt-BR": "Jogadas com DigiXros, como DarknessBagramon (EX10-059), agora contam a redução de custo de Yuu Amano (BT10-093) antes de verificar a memória.",
+    "es": "Las jugadas con DigiXros, como DarknessBagramon (EX10-059), ahora cuentan la reducción de coste de Yuu Amano (BT10-093) antes de comprobar la memoria.",
+    "it": "Le giocate con DigiXros, come DarknessBagramon (EX10-059), ora contano la riduzione di costo di Yuu Amano (BT10-093) prima di controllare la memoria."
+  },
+  "releases.1.35.1-beta.fix.scourgeChiropmon": {
+    "en": "ScourgeChiropmon (BT27-080) and similar cards now offer their [Hand] effect only when it can be done.",
+    "pt-BR": "ScourgeChiropmon (BT27-080) e cartas parecidas agora só oferecem o efeito de [Mão] quando ele pode ser realizado.",
+    "es": "ScourgeChiropmon (BT27-080) y cartas parecidas ahora solo ofrecen su efecto de [Mano] cuando se puede realizar.",
+    "it": "ScourgeChiropmon (BT27-080) e carte simili ora offrono il loro effetto [Mano] solo quando è possibile eseguirlo."
+  },
+  "releases.1.35.1-beta.fix.rejectedJoin": {
+    "en": "A room no longer breaks when a player tries to join with a deck that isn't legal in that format.",
+    "pt-BR": "Uma sala não quebra mais quando um jogador tenta entrar com um deck que não é válido naquele formato.",
+    "es": "Una sala ya no falla cuando un jugador intenta entrar con un mazo que no es legal en ese formato.",
+    "it": "Una stanza non si blocca più quando un giocatore prova a entrare con un mazzo non valido in quel formato."
+  },
+  "releases.1.35.2-beta.summary": {
+    "en": "Kentaurosmon (X Antibody), smoother match endings, and corrections to card effects.",
+    "pt-BR": "Kentaurosmon (X Antibody), menos pausas ao encerrar partidas e correções em efeitos de cartas.",
+    "es": "Kentaurosmon (X Antibody), menos pausas al terminar partidas y correcciones en efectos de cartas.",
+    "it": "Kentaurosmon (X Antibody), meno pause alla fine delle partite e correzioni agli effetti delle carte."
+  },
+  "releases.1.35.2-beta.feature.kentaurosmonX": {
+    "en": "Added Kentaurosmon (X Antibody) / Ultimate Crossbow Einherjar (BT27-043), with English and Japanese artwork and alternate art.",
+    "pt-BR": "Adicionado Kentaurosmon (X Antibody) / Ultimate Crossbow Einherjar (BT27-043), com artes em inglês e japonês, incluindo a arte alternativa.",
+    "es": "Añadido Kentaurosmon (X Antibody) / Ultimate Crossbow Einherjar (BT27-043), con ilustraciones en inglés y japonés, incluida la ilustración alternativa.",
+    "it": "Aggiunto Kentaurosmon (X Antibody) / Ultimate Crossbow Einherjar (BT27-043), con illustrazioni in inglese e giapponese, inclusa quella alternativa."
+  },
+  "releases.1.35.2-beta.fix.replayStalls": {
+    "en": "Reduced pauses in other matches while a finished match prepares its replay download.",
+    "pt-BR": "Reduzidas as pausas em outras partidas durante a preparação do download de replay de uma partida encerrada.",
+    "es": "Reducidas las pausas en otras partidas durante la preparación de la descarga de la repetición de una partida terminada.",
+    "it": "Ridotte le pause nelle altre partite durante la preparazione del download del replay di una partita conclusa."
+  },
+  "releases.1.35.2-beta.fix.pyramidimon": {
+    "en": "Pyramidimon (EX10-033) now lets you choose whether to trash digivolution cards for its effect, even when the opponent has no Digimon in the battle area.",
+    "pt-BR": "Pyramidimon (EX10-033) agora permite escolher se você quer descartar cartas de digievolução para seu efeito, mesmo sem Digimon adversário na área de batalha.",
+    "es": "Pyramidimon (EX10-033) ahora permite elegir si descartar cartas de digievolución para su efecto, incluso cuando el oponente no tiene Digimon en el área de batalla.",
+    "it": "Pyramidimon (EX10-033) ora permette di scegliere se scartare carte digievoluzione per il suo effetto, anche quando l’avversario non ha Digimon nell’area di battaglia."
+  },
+  "releases.1.35.2-beta.fix.chiropmon": {
+    "en": "After paying its Tamer-card cost, Chiropmon (ST23-12) now lets you decline returning a Digimon from the trash to your hand.",
+    "pt-BR": "Após pagar o custo de descartar uma carta sob um Tamer, Chiropmon (ST23-12) agora permite recusar o retorno de um Digimon do trash para a mão.",
+    "es": "Después de pagar el coste de descartar una carta bajo un Tamer, Chiropmon (ST23-12) ahora permite rechazar devolver un Digimon de la basura a la mano.",
+    "it": "Dopo aver pagato il costo di scartare una carta sotto un Tamer, Chiropmon (ST23-12) ora permette di rinunciare a riprendere in mano un Digimon dagli scarti."
+  },
+  "releases.1.35.2-beta.fix.gallantmonCrimsonMode": {
+    "en": "Gallantmon: Crimson Mode (EX2-073) now trashes one of the opponent's security cards when attacking, even if their trash contains fewer than 10 cards.",
+    "pt-BR": "Gallantmon: Crimson Mode (EX2-073) agora descarta uma carta de segurança do oponente ao atacar, mesmo que o trash dele tenha menos de 10 cartas.",
+    "es": "Gallantmon: Crimson Mode (EX2-073) ahora descarta una carta de seguridad del oponente al atacar, incluso si su basura contiene menos de 10 cartas.",
+    "it": "Gallantmon: Crimson Mode (EX2-073) ora scarta una carta sicurezza dell’avversario quando attacca, anche se i suoi scarti contengono meno di 10 carte."
   }
 }

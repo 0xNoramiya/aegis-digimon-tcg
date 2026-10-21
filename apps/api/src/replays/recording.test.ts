@@ -11,7 +11,7 @@ import {
   type SequencedServerEvent,
 } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
-import { ReplayRecording } from "./recording.js";
+import { projectReplay, ReplayRecording } from "./recording.js";
 import { replayDownload } from "./download.js";
 
 function card(id: string, ownerSeat: 0 | 1, faceUp = true): CardInstance {
@@ -86,8 +86,10 @@ describe("portable participant replay", () => {
     expect(replay.frames[1]!.state).toMatchObject({ memory: 7, gameOver: true, winnerSeat: 0 });
   });
   it("exports independent gzip files with both recorded hands and no private piles or prompts", async () => {
-    const recording = finishedRecording().complete("casual", 200)!;
-    const files = await Promise.all(([0, 1] as const).map((seat) => replayDownload(recording, seat)));
+    const recording = finishedRecording();
+    const files = await Promise.all(
+      ([0, 1] as const).map((seat) => replayDownload(recording.participantFile("casual", seat, 200)!, seat)),
+    );
     const read = (index: number): MatchReplay => {
       const file = files[index]!;
       if (file.kind !== "ready") throw new Error("Replay should be ready");
@@ -106,7 +108,29 @@ describe("portable participant replay", () => {
         /deck-\d|egg-\d|security-\d|SECRET|private-session|secret-decision|secret-counter/,
       );
     }
-    expect(recording.frames[0]!.state.players[1]!.hand).toHaveLength(1);
+    expect(recording.complete("casual", 200)!.frames[0]!.state.players[1]!.hand).toHaveLength(1);
+  });
+  it("assembles each participant file as the projected completed replay", () => {
+    const recording = finishedRecording();
+    for (const seat of [0, 1] as const) {
+      const file = recording.participantFile("ranked", seat, 200)!;
+      const expected = projectReplay(recording.complete("ranked", 200)!, seat);
+      expect(JSON.parse(file.json)).toEqual(expected);
+      const {
+        frames: _frames,
+        visibleHandSeats: _hands,
+        viewerSeat: _seat,
+        format: _format,
+        version: _version,
+        ...summary
+      } = expected;
+      expect(file.summary).toEqual(summary);
+    }
+  });
+  it("has no participant file before the game is over", () => {
+    const recording = new ReplayRecording();
+    recording.capture(state(), [event("matchStarted", 1)]);
+    expect(recording.participantFile("casual", 0)).toBeUndefined();
   });
   it("removes final reveal and eligible counter contents, while retaining revealed gameplay events", () => {
     const game = state();
@@ -157,5 +181,6 @@ describe("portable participant replay", () => {
     recording.capture(game, []);
     expect(recording.exceededLimit).toBe(true);
     expect(recording.complete("casual")).toBeUndefined();
+    expect(recording.participantFile("casual", 0)).toBeUndefined();
   });
 });

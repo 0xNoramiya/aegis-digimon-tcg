@@ -178,7 +178,10 @@ export class ScenarioPage {
       } as Decision;
       const selection = await policy(decision);
       await base.step(`${decision.kind}: ${decision.promptText}`, async () => {
-        if (decision.kind === "optional") {
+        if (
+          decision.kind === "optional" ||
+          (decision.kind === "selectCards" && decision.options.selectionContext === "materialSaveActivation")
+        ) {
           const answer = this.page.getByRole("button", {
             name: selection.accept === false ? DECLINE : ACTIVATE,
             exact: true,

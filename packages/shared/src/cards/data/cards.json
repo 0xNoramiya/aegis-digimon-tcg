@@ -25081,7 +25081,7 @@
     "attributes": ["Virus"],
     "types": ["Magic Warrior", "Witchelny"],
     "effectText": "＜Barrier＞ \n[On Play] [When Digivolving] By trashing the top card of your security stack, change the original DP of 1 Digimon to 6000 until the end of your opponent's turn.",
-    "inheritedEffectText": "[All Turns] [Once Per Turn] When a card is removed from your security stack, unsuspend this Digimon.",
+    "inheritedEffectText": "[All Turns] [Once Per Turn] When a card is removed from your security stack, you may unsuspend this Digimon.",
     "rarity": "U",
     "maxCountInDeck": 4,
     "imageId": "BT18-039"
@@ -50083,6 +50083,35 @@
     "dualEffect": "Ultimate Thrusting Sword Gran Rozerio",
     "optionEffect": "[Main] Delete 1 of your opponent's lowest level Digimon. If this effect didn't delete, until your turn ends, all of your Digimon with [Knightmon] in their texts gain ＜Blocker＞, your opponent's Digimon effects don't affect them and they get +3000 DP.",
     "optionColorRequirements": ["Purple", "Black"],
+    "isDualCard": true
+  },
+  {
+    "cardId": "BT27-043",
+    "set": "BT27",
+    "nameEn": "Kentaurosmon (X Antibody)",
+    "nameJp": "スレイプモンX抗体/究極戦弩弓エインヘリアル",
+    "colors": ["Yellow"],
+    "kinds": ["Digimon", "Option"],
+    "level": 6,
+    "playCost": 5,
+    "dp": 13000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 5,
+        "memoryCost": 4
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Vaccine"],
+    "types": ["Holy Warrior", "X Antibody", "Royal Knight"],
+    "effectText": "[Digivolve] [Kentaurosmon]: Cost 2\n＜Blocker＞ ＜Barrier＞ ＜Ascension＞\n[When Digivolving] [When Attacking] [Once Per Turn] By trashing your top security card, this Digimon unsuspends.\n[All Turns] [Once Per Turn] When your security stack is removed from, by placing 1 [Kentaurosmon] or [X Antibody] from this Digimon's digivolution cards as the bottom security card, activate 1 [Main] effect on this card's Option side.",
+    "rarity": "SR",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-043",
+    "dualEffect": "Ultimate Crossbow Einherjar",
+    "optionEffect": "[Main] 1 of your opponent's Digimon gets -20000 DP until their turn ends. For each card in both players' security stacks, add 1000 to this effect's DP reduction.\n＜Arts Digivolve＞",
+    "optionColorRequirements": ["Yellow"],
     "isDualCard": true
   },
   {
@@ -98271,7 +98300,7 @@
     "forms": ["Champion"],
     "attributes": ["Virus"],
     "types": ["Insectoid", "NSo"],
-    "effectText": "[Digivolve]Lv.3 w/[NSo] trait: Cost 2 \n\n[On Play] [When Digivolving] Suspend 1 of your opponent's Digimon.",
+    "effectText": "[Digivolve]Lv.3 w/[NSo] trait: Cost 2 \n\n[On Play] [On Deletion] Suspend 1 of your opponent's Digimon.",
     "rarity": "P",
     "maxCountInDeck": 4,
     "imageId": "P-163"
@@ -109646,5 +109675,22 @@
     "rarity": "U",
     "maxCountInDeck": 4,
     "imageId": "BT27-079"
+  },
+  {
+    "cardId": "BT27-098",
+    "set": "BT27",
+    "nameEn": "Akihiro Kurata",
+    "nameJp": "倉田明宏",
+    "colors": ["Purple"],
+    "kinds": ["Tamer"],
+    "playCost": 4,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["Kurata's Army"],
+    "effectText": "[All Turns] When any Digimon are deleted, by suspending this Tamer, you may place the top 2 cards of your deck face down under this Tamer.\n[End of All Turns] By trashing 5 bottom face-down cards from under any of your Tamers, you may play 1 Digimon card with [Gizmon] or [Belphemon] in its name from your hand or trash without paying the cost. After, place this Tamer as its bottom digivolution card.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-098"
   }
 ]

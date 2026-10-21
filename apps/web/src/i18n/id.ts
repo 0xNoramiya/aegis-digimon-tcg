@@ -2,6 +2,7 @@ import { advancedBattlesId } from "@/i18n/learn/advancedBattles.id";
 import { rulesLayoutId } from "@/i18n/learn/rulesLayout.id";
 import { lessonCatalogId } from "@/i18n/learn/lessonCatalog.id";
 import { battleLessonsId } from "@/i18n/learn/battleLessons.id";
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
@@ -9,6 +10,7 @@ import { learnId } from "@/i18n/learn/learn.id";
 import { learnDrillsId } from "@/i18n/learn/drills.id";
 
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "Keyboard dan pengontrol",
   "settings.arenaInputDesc":
     "Gerakkan kursor dengan tombol panah atau pengontrol, dan tampilkan tombol untuk setiap aksi.",
@@ -837,6 +839,7 @@ const interfaceMessages = {
   "library.rowColor": "Warna",
   "library.rowType": "Jenis",
   "library.rowPlayCost": "Play cost",
+  "library.rowUseCost": "Use cost",
   "library.rowDp": "DP",
   "library.rowTraits": "Trait",
   "library.rowRarity": "Kelangkaan",
@@ -1101,6 +1104,7 @@ const interfaceMessages = {
   "game.digiEgg": " · Digi-Egg",
   "game.noCost": "tanpa cost",
   "game.costsMemory": "membutuhkan {count} memory",
+  "game.useCostsMemory": "membutuhkan {count} memory untuk dipakai",
   "game.digivolve": "Digivolve",
   "game.clickToDigivolve": "klik Digimon yang bersinar untuk melakukan digivolve",
   "game.clickToLink": "klik Digimon yang bersinar untuk Link",
@@ -2501,9 +2505,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "Game {game} · {name} jalan pertama",
   "overlay.series.joining": "Memulai game berikutnya…",
   "overlay.series.leave": "Tinggalkan series",
-  "overlay.rematch.offer": "Main lagi melawan {name} · Best of 3",
+  "overlay.rematch.title": "Main lagi melawan {name}?",
+  "overlay.rematch.finish": "Selesaikan Best of 3 ini",
+  "overlay.rematch.finishHint": "Game ini dihitung sebagai game 1.",
+  "overlay.rematch.new": "Mulai Best of 3 baru",
+  "overlay.rematch.newHint": "Kedua pemain mulai dari 0–0.",
+  "overlay.rematch.incomingFinish": "{name} ingin menyelesaikan Best of 3 ini",
+  "overlay.rematch.incomingNew": "{name} ingin memulai Best of 3 baru",
   "overlay.rematch.hint": "Deck yang sama. Yang kalah di game ini memilih siapa yang jalan duluan.",
-  "overlay.rematch.incoming": "{name} ingin rematch",
   "overlay.rematch.accept": "Terima",
   "overlay.rematch.decline": "Tolak",
   "overlay.rematch.waiting": "Menunggu jawaban {name}…",
@@ -2559,6 +2568,7 @@ const interfaceMessages = {
 } satisfies Record<keyof typeof en, string>;
 
 export const id: Record<keyof typeof en, string> = {
+  ...manualEn,
   ...en,
   ...interfaceMessages,
 };

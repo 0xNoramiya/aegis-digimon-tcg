@@ -32,6 +32,7 @@ import { isBlitzGrant } from "./actions/combat.js";
 import { canAttemptDnaDigivolve } from "./actions/dna.js";
 import { borrowedProcessingCost } from "./borrowedProcessingCost.js";
 import { canAttemptDigivolveBeforeCost } from "./actions/digivolve.js";
+import { canAttemptDigivolveViaPlacement } from "./actions/canAttemptDigivolveViaPlacement.js";
 import { isSecuritySearchDigivolvePair, runSecuritySearchDigivolve } from "./actions/securitySearchDigivolve.js";
 import { canAttemptPlaceUnder } from "./actions/placeUnder.js";
 import { canAttemptLink, canAttemptMindLink } from "./actions/link.js";
@@ -957,6 +958,7 @@ export function canActivateEffect(
   );
   const isGated = (action: ParsedAction) =>
     action.kind === "Digivolve" ||
+    action.kind === "DigivolveViaPlacement" ||
     action.kind === "DnaDigivolve" ||
     action.kind === "PlaceUnder" ||
     action.kind === "MindLink" ||
@@ -997,6 +999,7 @@ export function canActivateEffect(
     }
     if (action.kind === "PlaceUnder")
       return allowsOptionalProcessingCostWithoutTarget(action) || canAttemptPlaceUnder(ctx, action);
+    if (action.kind === "DigivolveViaPlacement") return canAttemptDigivolveViaPlacement(ctx, action);
     if (action.kind === "MindLink") return canAttemptMindLink(ctx, action);
     if (isDetachTopAction(action)) return canDetachPermanentTop(ctx, action);
     return action.kind === "DnaDigivolve"

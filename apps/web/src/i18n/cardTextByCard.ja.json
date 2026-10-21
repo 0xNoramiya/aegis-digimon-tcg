@@ -13798,7 +13798,7 @@
     "<Blocker>.": "≪ブロッカー≫（このデジモンはブロックタイミングでブロックできる）"
   },
   "P-163": {
-    "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][WhenDigivolving]Suspend1ofyouropponent'sDigimon.": "〔進化〕特徴に「NSo」を持つLv.3:コスト2\n\n【登場時】【消滅時】相手のデジモン1体をレストさせる。"
+    "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][OnDeletion]Suspend1ofyouropponent'sDigimon.": "〔進化〕特徴に「NSo」を持つLv.3:コスト2\n\n【登場時】【消滅時】相手のデジモン1体をレストさせる。"
   },
   "P-164": {
     "[OnPlay][WhenDigivolving]Byplacing1Level5orlowerDigimoncardwith[Aqua]/[SeaAnimal]inanyofitstraitsfromyourhandas1ofyourDigimon'sbottomdigivolutioncard,<Draw1>[Rule]Trait:Has[Aquatic]type.": "【登場時】【進化時】自分の手札から、特徴に「水棲」を含むLv.5以下のデジモンカード1枚をこのデジモンの進化元の下に置くことで、≪1ドロー≫。\n〈ルール〉特徴:タイプ「水棲型」を持つ。",
@@ -15372,5 +15372,13 @@
   },
   "BT27-079": {
     "Whenthiscardwouldbeplayed,bydeleting1ofyourlevel4Digimon,reducethecostby6.<Blocker><Retaliation>[AllTurns]ThisDigimoncan'tdigivolve.[OnDeletion]Youmayplay1playcost5orlower[Kurata'sArmy]traitcardfromyourhandortrashwithoutpayingthecost.": "このカードが登場するとき、Lv.4の自分のデジモン1体を消滅させることで、支払うコスト-6。\n≪ブロッカー≫≪道連れ≫\n【お互いのターン】このデジモンは進化できない。\n【消滅時】自分の手札/トラッシュから、特徴「倉田軍団」を持つ登場コスト5以下のカード1枚をコストを支払わず登場できる。"
+  },
+  "BT27-098": {
+    "[AllTurns]WhenanyDigimonaredeleted,bysuspendingthisTamer,youmayplacethetop2cardsofyourdeckfacedownunderthisTamer.[EndofAllTurns]Bytrashing5bottomface-downcardsfromunderanyofyourTamers,youmayplay1Digimoncardwith[Gizmon]or[Belphemon]initsnamefromyourhandortrashwithoutpayingthecost.After,placethisTamerasitsbottomdigivolutioncard.": "【お互いのターン】デジモンが消滅したとき、このテイマーをレストさせることで、自分のデッキの上から2枚をこのテイマーの下に裏向きで置ける。\n【お互いのターン終了時】自分のテイマーの下にある裏向きのカードを下から5枚破棄することで、自分の手札/トラッシュから、名称に「ギズモン」/「ベルフェモン」を含むデジモンカード1枚をコストを支払わず登場できる。さらに、このテイマーをそのデジモンの進化元の下に置く。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "BT27-043": {
+    "[Digivolve][Kentaurosmon]:Cost2<Blocker><Barrier><Ascension>[WhenDigivolving][WhenAttacking][OncePerTurn]Bytrashingyourtopsecuritycard,thisDigimonunsuspends.[AllTurns][OncePerTurn]Whenyoursecuritystackisremovedfrom,byplacing1[Kentaurosmon]or[XAntibody]fromthisDigimon'sdigivolutioncardsasthebottomsecuritycard,activate1[Main]effectonthiscard'sOptionside.": "【進化】「スレイプモン」:コスト2\n≪ブロッカー≫ ≪防壁≫ ≪天昇≫（このデジモンが消滅したとき、このカードをセキュリティの上に置ける）\n【進化時】【アタック時】【ターンに1回】自分のセキュリティを上から1枚破棄することで、このデジモンをアクティブにする。\n【お互いのターン】【ターンに1回】自分のセキュリティが減ったとき、このデジモンの進化元から、「スレイプモン」/「X抗体」1枚をセキュリティの下に置くことで、このカードのオプション側の【メイン】効果1つを発揮する。",
+    "[Main]1ofyouropponent'sDigimongets-20000DPuntiltheirturnends.Foreachcardinbothplayers'securitystacks,add1000tothiseffect'sDPreduction.<ArtsDigivolve>": "【メイン】相手のターン終了まで、相手のデジモン1体をDP-20000。お互いのセキュリティ1枚ごとに、このDPマイナス効果の数値+1000。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わず進化できる）"
   }
 }

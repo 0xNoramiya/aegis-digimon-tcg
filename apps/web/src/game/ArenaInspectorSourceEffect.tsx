@@ -6,6 +6,7 @@ import { useTranslation } from "@/i18n/useTranslation";
 import { EffectText } from "@/game/EffectText";
 import type { StackCard } from "@/game/overlay/types";
 import { stackCardCaption } from "@/game/overlay/viewer/stackCardCaption";
+import { CardTextField } from "@/i18n/CardTextField";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 
 type Params = {
@@ -54,7 +55,18 @@ export function ArenaInspectorSourceEffect({ card, onZoom, showThumbnail }: Para
         </span>
         {card.cardId && !card.faceDown ? (
           <p>
-            <EffectText inspector asciiBrackets text={effect || t("overlay.noPrintedEffect")} />
+            {effect ? (
+              <EffectText
+                inspector
+                asciiBrackets
+                text={effect}
+                cardId={card.cardId}
+                field={card.role === "linked" ? CardTextField.LINK.value : CardTextField.INHERITED.value}
+                surface="inspector-source"
+              />
+            ) : (
+              t("overlay.noPrintedEffect")
+            )}
           </p>
         ) : null}
       </div>

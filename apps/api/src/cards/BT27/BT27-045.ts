@@ -13,11 +13,13 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with [Leomon] in its name",
               filter: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Leomon"], match: "name" }] },
               count: 1,
               to: "hand",
             },
             {
+              effectTextPart: "1 [Unique], [Boss] or [ACCEL] trait card among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [{ tokens: ["Unique", "Boss", "ACCEL"], match: "trait" }],

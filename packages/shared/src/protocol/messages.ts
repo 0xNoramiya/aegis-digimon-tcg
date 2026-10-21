@@ -45,3 +45,6 @@ export const ROOM_TYPE_PRIVATE = "aegis_private" as const;
 
 /** Separate unranked queue with printed copy limits and no banlist. */
 export const ROOM_TYPE_UNLIMITED = "aegis_unlimited" as const;
+
+export const ROOM_TYPE_MANUAL = "aegis_manual" as const;
+export const ROOM_TYPE_MANUAL_PRIVATE = "aegis_manual_private" as const;

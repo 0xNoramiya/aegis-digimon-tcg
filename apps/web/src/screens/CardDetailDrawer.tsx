@@ -1,3 +1,4 @@
+import { CardAceBadge } from "@/design/CardAceBadge";
 import { I18nContext } from "@/i18n/I18nContext";
 import { useCardFaceTranslation } from "@/screens/cardLanguage/useCardFaceTranslation";
 import { EffectText } from "@/game/EffectText";
@@ -110,7 +111,10 @@ export function CardDetailDrawer({
           </div>
         ) : null}
         <div className="card-detail-summary">
-          <h2>{getTranslatedCardName({ name: def.nameEn, translations })}</h2>
+          <h2>
+            {getTranslatedCardName({ name: def.nameEn, translations })}
+            <CardAceBadge cardId={cardId} />
+          </h2>
           <div className="card-detail-limit">
             {banLabel ? <span className="card-detail-restriction">{banLabel}</span> : null}
             {isBetaCard(cardId) ? (
@@ -128,7 +132,7 @@ export function CardDetailDrawer({
               value={forms.map((value) => getTranslatedCardMeta({ value, group: "forms", translations })).join(" / ")}
             />
             <DetailRow
-              label={cardTranslation.t("library.rowPlayCost")}
+              label={cardTranslation.t(def.isDualCard ? "library.rowUseCost" : "library.rowPlayCost")}
               value={def.playCost < 0 ? "—" : String(def.playCost)}
               mono
             />

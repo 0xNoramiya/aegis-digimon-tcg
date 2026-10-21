@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { sortSearchResults } from "@/screens/sortSearchResults";
 import { CardColor, CardKind, allCards, type CardDefinition } from "@aegis/shared";
-import { matchesTraitOrAttributeFilter, sortSearchResults, useCardFilter } from "./cardFilters";
+import { matchesTraitOrAttributeFilter, useCardFilter } from "./cardFilters";
 
 function searchIds(cards: readonly CardDefinition[], query: string): string[] {
   const { result } = renderHook(() => useCardFilter(cards));
@@ -80,6 +81,15 @@ describe("card search box", () => {
     expect(
       sortSearchResults({ cards: [cards[0]!, cards[1]!], sort: "name", query: "agumon" }).map((c) => c.nameEn),
     ).toEqual(["Agumon", "Greymon"]);
+  });
+
+  it("keeps level ordering across name and trait search matches", () => {
+    const cards = [
+      testCard("BT1-001", "Dragon Lord", { level: 6 }),
+      testCard("BT1-002", "Small Beast", { level: 3, types: ["Dragon"] }),
+      testCard("BT1-003", "Dragon Champion", { level: 4 }),
+    ];
+    expect(sortSearchResults({ cards, sort: "level", query: "dragon" }).map((card) => card.level)).toEqual([3, 4, 6]);
   });
 
   it("lists a field group's members by its name or abbreviation alongside normal matches (issue 5330)", () => {

@@ -29,11 +29,11 @@ export default defineConfig({
     projects: [
       {
         extends: true,
-        test: { name: "learn-ui", include: ["src/learn/**/*.test.tsx"], environment: "jsdom" },
+        test: { name: "tutorial-ui", include: ["src/game/tutorial/**/*.test.tsx"], environment: "jsdom" },
       },
       {
         extends: true,
-        test: { name: "tutorial-ui", include: ["src/game/tutorial/**/*.test.tsx"], environment: "jsdom" },
+        test: { name: "card-text-ui", include: ["src/i18n/useCardTranslationState.test.tsx"], environment: "jsdom" },
       },
       {
         extends: true,
@@ -68,6 +68,7 @@ export default defineConfig({
         test: {
           name: "default",
           exclude: [
+            "src/i18n/useCardTranslationState.test.tsx",
             ...configDefaults.exclude,
             "e2e/**",
             "src/game/input/**/*.test.tsx",

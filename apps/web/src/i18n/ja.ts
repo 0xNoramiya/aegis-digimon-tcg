@@ -2,6 +2,7 @@ import { advancedBattlesJa } from "@/i18n/learn/advancedBattles.ja";
 import { rulesLayoutJa } from "@/i18n/learn/rulesLayout.ja";
 import { lessonCatalogJa } from "@/i18n/learn/lessonCatalog.ja";
 import { battleLessonsJa } from "@/i18n/learn/battleLessons.ja";
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
@@ -9,6 +10,7 @@ import { learnJa } from "@/i18n/learn/learn.ja";
 import { learnDrillsJa } from "@/i18n/learn/drills.ja";
 
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "キーボードとコントローラー",
   "settings.arenaInputDesc": "矢印キーやコントローラーでカーソルを動かし、各操作のボタンを表示します。",
   "game.input.controls": "キーボードとコントローラー",
@@ -20,6 +22,10 @@ const interfaceMessages = {
   "game.input.reorder": "Enter/A: 移動開始、矢印: 並べ替え、Enter/A: 完了、Esc/B: 元に戻す",
 
   ...decisionChoicesEn,
+  "decision.choice.playSavedLevelFour": decisionChoicesEn["decision.choice.playSavedLevelFour"].replace(
+    "＜Save＞",
+    "≪Save≫",
+  ),
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
@@ -836,6 +842,7 @@ const interfaceMessages = {
   "library.rowColor": "色",
   "library.rowType": "種類",
   "library.rowPlayCost": "登場コスト",
+  "library.rowUseCost": "使用コスト",
   "library.rowDp": "DP",
   "library.rowTraits": "特徴",
   "library.rowRarity": "レアリティ",
@@ -1095,6 +1102,7 @@ const interfaceMessages = {
   "game.digiEgg": " · デジタマ",
   "game.noCost": "コストなし",
   "game.costsMemory": "メモリー{count}が必要",
+  "game.useCostsMemory": "使用にメモリー{count}が必要",
   "game.digivolve": "進化",
   "game.clickToDigivolve": "光っているデジモンをクリックして進化",
   "game.clickToLink": "光っているデジモンをクリックしてリンク",
@@ -2480,9 +2488,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "第{game}ゲーム · {name}が先攻",
   "overlay.series.joining": "次のゲームを開始します…",
   "overlay.series.leave": "シリーズを離れる",
-  "overlay.rematch.offer": "{name}ともう一度 · 3本勝負",
+  "overlay.rematch.title": "{name}ともう一度対戦しますか？",
+  "overlay.rematch.finish": "この3本勝負を続ける",
+  "overlay.rematch.finishHint": "このゲームを1戦目として数えます。",
+  "overlay.rematch.new": "新しい3本勝負を始める",
+  "overlay.rematch.newHint": "両者0勝0敗から始めます。",
+  "overlay.rematch.incomingFinish": "{name}がこの3本勝負の続きを希望しています",
+  "overlay.rematch.incomingNew": "{name}が新しい3本勝負を希望しています",
   "overlay.rematch.hint": "同じデッキを使用します。このゲームの敗者が先攻・後攻を選びます。",
-  "overlay.rematch.incoming": "{name}が再戦を希望しています",
   "overlay.rematch.accept": "受ける",
   "overlay.rematch.decline": "断る",
   "overlay.rematch.waiting": "{name}の返答を待っています…",
@@ -2538,6 +2551,7 @@ const interfaceMessages = {
 } satisfies Record<keyof typeof en, string>;
 
 export const ja: Record<keyof typeof en, string> = {
+  ...manualEn,
   ...en,
   ...interfaceMessages,
 };

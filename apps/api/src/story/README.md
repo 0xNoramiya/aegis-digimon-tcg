@@ -10,7 +10,18 @@ The API selects the scenario, decks, opponent, and starting state. Authenticated
 
 Each match shuffles both players' remaining main and Digi-Egg decks using the match seed. Scenario hands, security, trash, and starting fields stay fixed. The shuffled fixture is recorded in the replay so playback preserves the original draw order.
 
-Every playable encounter must supply two legal 50-card main decks across all starting zones. The Arisa rematch reconstruction includes two BT22-042 copies, one on the starting field and one in the draw pile. Deck admission tests validate all encounters, and a room regression verifies that this opponent can be seated.
+Every playable encounter must supply two legal 50-card main decks across all starting zones. Tokens on the starting field do not count toward either deck. Deck admission tests validate all encounters, and a room regression verifies that this opponent can be seated.
+
+The Arisa rematch starts on Violet's final turn from [Battle Coverage 11](https://digimoncard.com/digimon_liberator/en/column/tips28/), using the article's board images:
+
+| Side   | Starting state                                                                                                                                                                                                  |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Violet | 6 memory, 0 security. Purple Memory Boost!, two BT23-087 and one BT20-088 Violet Inboots. MetalPhantomon in breeding over DemiMeramon, Ghostmon, Bakemon and Phantomon.                                         |
+| Arisa  | 2 security (Kaguyamon, Cendrillmon). Two Shoemon, Pandamon, Nyabootmon over a Puppet line ending in Cendrillmon, Kaguyamon EX9-033 over Karakurumon EX9-032, two Familiar Tokens and two Arisa Kinosaki Tamers. |
+
+The article does not show hands, trash or deck lists, so these are adaptations. Violet's hand holds the cards the article plays: Necromon BT20-079 and BT23-069, ShineGreymon: Ruin Mode, Candlemon, Jack Raid, Phantomon BT23-065, Dullahamon and Kimeramon BT8-084. Her trash holds the Soulmon and other Ghost cards the combo revives, and enough cards for Jack Raid to gain 2 memory. Unique Emblem: Soul Banquet starts in her battle area because its ＜Delay＞ needs it there before the turn, although the board image does not show it. Arisa's Tamers, Nyabootmon's lower stack and the Cendrillmon printing are inferred from card costs and the article's text.
+
+A regression test plays the article's full line to a win: Necromon into Ruin Mode, the Execute attack by Dullahamon, and the DNA Kimeramon finisher. The test makes Arisa's choices as the article describes. In a live match the bot can choose differently, so the player may need to adapt the line.
 
 Guests can play without signing in. A random browser token identifies their server-owned progress in `story_guest_completions`; only its SHA-256 hash is stored in the database. The API verifies prerequisites and records wins for guests as it does for accounts. Signing in switches to separate account progress; clearing browser storage loses access to guest progress.
 

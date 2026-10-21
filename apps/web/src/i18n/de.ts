@@ -2,6 +2,7 @@ import { advancedBattlesDe } from "@/i18n/learn/advancedBattles.de";
 import { rulesLayoutDe } from "@/i18n/learn/rulesLayout.de";
 import { lessonCatalogDe } from "@/i18n/learn/lessonCatalog.de";
 import { battleLessonsDe } from "@/i18n/learn/battleLessons.de";
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
@@ -9,6 +10,7 @@ import { learnDe } from "@/i18n/learn/learn.de";
 import { learnDrillsDe } from "@/i18n/learn/drills.de";
 
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "Tastatur und Controller",
   "settings.arenaInputDesc":
     "Bewegen Sie einen Cursor mit den Pfeiltasten oder einem Controller und sehen Sie die Taste für jede Aktion.",
@@ -858,6 +860,7 @@ const interfaceMessages = {
   "library.rowColor": "Farbe",
   "library.rowType": "Typ",
   "library.rowPlayCost": "Spielkosten",
+  "library.rowUseCost": "Einsatzkosten",
   "library.rowDp": "DP",
   "library.rowTraits": "Merkmale",
   "library.rowRarity": "Seltenheit",
@@ -1130,6 +1133,7 @@ const interfaceMessages = {
   "game.digiEgg": " · Digi-Ei",
   "game.noCost": "keine Kosten",
   "game.costsMemory": "kostet {count} Memory",
+  "game.useCostsMemory": "kostet {count} Memory zum Einsetzen",
   "game.digivolve": "Digitieren",
   "game.clickToDigivolve": "auf ein leuchtendes Digimon klicken, um zu digitieren",
   "game.clickToLink": "auf ein leuchtendes Digimon klicken, um zu linken",
@@ -2559,9 +2563,14 @@ const interfaceMessages = {
   "overlay.series.startingOpponent": "Spiel {game} · {name} beginnt",
   "overlay.series.joining": "Das nächste Spiel beginnt…",
   "overlay.series.leave": "Serie verlassen",
-  "overlay.rematch.offer": "Erneut gegen {name} · Best of 3",
+  "overlay.rematch.title": "Erneut gegen {name}?",
+  "overlay.rematch.finish": "Dieses Best of 3 beenden",
+  "overlay.rematch.finishHint": "Dieses Spiel zählt als Spiel 1.",
+  "overlay.rematch.new": "Neues Best of 3 starten",
+  "overlay.rematch.newHint": "Beide starten bei 0–0.",
+  "overlay.rematch.incomingFinish": "{name} möchte dieses Best of 3 beenden",
+  "overlay.rematch.incomingNew": "{name} möchte ein neues Best of 3 starten",
   "overlay.rematch.hint": "Gleiche Decks. Wer dieses Spiel verloren hat, wählt, wer beginnt.",
-  "overlay.rematch.incoming": "{name} möchte eine Revanche",
   "overlay.rematch.accept": "Annehmen",
   "overlay.rematch.decline": "Ablehnen",
   "overlay.rematch.waiting": "Warte auf die Antwort von {name}…",
@@ -2618,6 +2627,7 @@ const interfaceMessages = {
 } satisfies Record<keyof typeof en, string>;
 
 export const de: Record<keyof typeof en, string> = {
+  ...manualEn,
   ...en,
   ...interfaceMessages,
 };

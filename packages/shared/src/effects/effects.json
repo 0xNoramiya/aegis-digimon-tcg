@@ -4880,6 +4880,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -4889,6 +4890,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Tamer card―both with [Xros Heart] in their traits―among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer"],
@@ -6123,6 +6125,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 Option card with [Plug-In] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Option"],
@@ -6132,6 +6135,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 yellow Tamer card among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Yellow"] },
                 "count": 1,
                 "to": "hand"
@@ -6569,6 +6573,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Vegetation] in its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [
@@ -6579,6 +6584,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with [Fairy] in its traits among them to your hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Fairy"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -6991,6 +6997,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "with [Twilight] in their traits among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Twilight"], "match": "trait" }]
@@ -6999,6 +7006,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "Add 2 cards that are either black with [Knightmon] or [DeadlyAxemon] in their names",
                 "filter": {
                   "controllerDefault": "mine",
                   "colors": ["Black"],
@@ -7604,6 +7612,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Bagra Army] in its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -7613,6 +7622,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Yuu Amano] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Yuu Amano"], "match": "name" }]
@@ -8324,6 +8334,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Xros Heart] in its traits among them to your hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Xros Heart"], "match": "trait" }]
@@ -8332,6 +8343,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 Digimon card with [Xros Heart] in its traits among them under this Tamer.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -8905,6 +8917,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "You may add 1 Digimon card with [Xros Heart] in its traits among them to your hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -8914,6 +8927,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "play 1 [Taiki Kudo] among them without paying its memory cost.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Taiki Kudo"], "match": "name" }]
@@ -8944,6 +8958,7 @@
             "reserveForLaterSlots": true,
             "add": [
               {
+                "effectTextPart": "You may add 2 cards with [Blue Flare] in their traits among them to your hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Blue Flare"], "match": "trait" }]
@@ -8952,6 +8967,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "play 1 [Kiriha Aonuma] among them without paying its memory cost.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Kiriha Aonuma", "KirihaAonuma"], "match": "name" }]
@@ -10004,6 +10020,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 red Digimon card with [Vaccine] in its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -10014,6 +10031,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 red Tamer card among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Red"] },
                 "count": 1,
                 "to": "hand"
@@ -10540,6 +10558,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Gaogamon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -10549,6 +10568,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 blue Tamer card among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Blue"] },
                 "count": 1,
                 "to": "hand"
@@ -10638,6 +10658,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Veedramon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -10647,6 +10668,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 blue Tamer card among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Blue"] },
                 "count": 1,
                 "to": "hand"
@@ -12312,6 +12334,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add up to 1 [Snatchmon], [Destromon], [Galacticmon], or [Fusionize] among them to your hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [
@@ -12324,6 +12347,7 @@
                 "upTo": true
               },
               {
+                "effectTextPart": "place 1 [Vemmon] among them under this Digimon as its bottom digivolution card.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Vemmon"], "match": "nameExact" }]
@@ -12373,6 +12397,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Greymon] or [X Antibody] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Greymon", "X Antibody"], "match": "name" }]
@@ -12381,6 +12406,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 black Tamer card among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Black"] },
                 "count": 1,
                 "to": "hand"
@@ -12398,6 +12424,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Greymon] or [X Antibody] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Greymon", "X Antibody"], "match": "name" }]
@@ -12406,6 +12433,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 black Tamer card among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Black"] },
                 "count": 1,
                 "to": "hand"
@@ -12945,6 +12973,7 @@
             "revealCount": 5,
             "add": [
               {
+                "effectTextPart": "Add 1 [Analogman] among them to your hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Analogman"], "match": "nameExact" }]
@@ -12953,6 +12982,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "add 1 card with [Cyborg] or [Machine] in its traits to your hand or place it under this Digimon as its bottom digivolution card.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Cyborg", "Machine"], "match": "trait" }]
@@ -12974,6 +13004,7 @@
             "revealCount": 5,
             "add": [
               {
+                "effectTextPart": "Add 1 [Analogman] among them to your hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Analogman"], "match": "nameExact" }]
@@ -12982,6 +13013,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "add 1 card with [Cyborg] or [Machine] in its traits to your hand or place it under this Digimon as its bottom digivolution card.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Cyborg", "Machine"], "match": "trait" }]
@@ -16306,6 +16338,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Imperialdramon] in its name or a [Free] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [
@@ -16317,6 +16350,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with [Davis Motomiya] in its name among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Davis Motomiya"], "match": "name" }]
@@ -16910,6 +16944,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Greymon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -16919,6 +16954,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Marcus Damon] card among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Marcus Damon"], "match": "name" }]
@@ -17477,6 +17513,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Imperialdramon] in its name or a [Free] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -17489,6 +17526,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Tamer card with [Ken Ichijoji] in its name among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer"],
@@ -17928,6 +17966,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Greymon] or [Omnimon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -17937,6 +17976,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Tamer card with [Tai Kamiya] in its name among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer"],
@@ -20177,11 +20217,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with ＜Save＞ in its text",
                 "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "keywords": ["Save"] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with a [Hunter] trait among them to your hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Hunter"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -22520,6 +22562,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 yellow Digimon card with the [Vaccine] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -22530,6 +22573,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 yellow Tamer card among them to the hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Yellow"] },
                 "count": 1,
                 "to": "hand"
@@ -23119,6 +23163,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Beast], [Animal], or [Sovereign], other than [Sea Animal], in one of its traits",
                 "filter": {
                   "excludeNameOrTrait": [{ "tokens": ["Sea Animal"], "match": "traitContains" }],
                   "controllerDefault": "mine",
@@ -23132,6 +23177,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Digimon card with the [Royal Knight] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -23198,6 +23244,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Vegetation], [Plant], or [Fairy] in one of its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -23210,6 +23257,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Yoshino Fujieda] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Yoshino Fujieda"], "match": "nameExact" }]
@@ -29113,6 +29161,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 card with [Monzaemon] in its name to your hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Monzaemon"], "match": "name" }]
@@ -29121,6 +29170,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "play 1 Digimon card with [Numemon] in its name without paying the cost.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -30480,11 +30530,13 @@
             "revealCount": 5,
             "add": [
               {
+                "effectTextPart": "Add 1 level 3 Digimon card",
                 "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "levels": [3] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 non-white Tamer card among them to the hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "excludeColors": ["White"] },
                 "count": 1,
                 "to": "hand"
@@ -31580,6 +31632,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with the [SoC] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -31589,6 +31642,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 such Tamer card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer"],
@@ -33868,6 +33922,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Machine]/[Cyborg] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Machine", "Cyborg"], "match": "trait" }]
@@ -33876,6 +33931,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 black Tamer card among them to the hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Black"] },
                 "count": 1,
                 "to": "hand"
@@ -34421,6 +34477,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "place 1 [Machine]/[Cyborg]/[SoC] trait card as this Digimon's bottom digivolution card",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Machine", "Cyborg", "SoC"], "match": "trait" }]
@@ -34430,6 +34487,7 @@
                 "underFilter": { "isSelfRef": true }
               },
               {
+                "effectTextPart": "add 1 such card to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Machine", "Cyborg", "SoC"], "match": "trait" }]
@@ -34450,6 +34508,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "place 1 [Machine]/[Cyborg]/[SoC] trait card as this Digimon's bottom digivolution card",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Machine", "Cyborg", "SoC"], "match": "trait" }]
@@ -34459,6 +34518,7 @@
                 "underFilter": { "isSelfRef": true }
               },
               {
+                "effectTextPart": "add 1 such card to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Machine", "Cyborg", "SoC"], "match": "trait" }]
@@ -36346,6 +36406,7 @@
             "revealCount": 5,
             "add": [
               {
+                "effectTextPart": "add 1 card with the [Machine]/[Cyborg] trait to the hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Machine", "Cyborg"], "match": "trait" }]
@@ -36354,6 +36415,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "trash 1 such card.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Machine", "Cyborg"], "match": "trait" }]
@@ -36399,6 +36461,7 @@
             "revealCount": 5,
             "add": [
               {
+                "effectTextPart": "add 1 card with the [Machine]/[Cyborg] trait to the hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Machine", "Cyborg"], "match": "trait" }]
@@ -36407,6 +36470,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "trash 1 such card.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Machine", "Cyborg"], "match": "trait" }]
@@ -38363,6 +38427,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Light Fang] trait card",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Light Fang"], "match": "trait" }]
@@ -38371,6 +38436,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Night Claw] trait or 1 2-color card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Night Claw"], "match": "trait" }]
@@ -38847,11 +38913,13 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Pulsemon] in its text",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Pulsemon"], "match": "text" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Abadin Electronics] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Abadin Electronics"], "match": "trait" }]
@@ -41172,9 +41240,9 @@
             "kind": "Unsuspend",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "condition": {
-              "kind": "opponentHas",
-              "filter": { "controllerDefault": "opponent" },
-              "count": 1,
+              "kind": "memoryAtLeast",
+              "controller": "opponent",
+              "value": 1,
               "raw": "your opponent has 1 or more memory"
             }
           }
@@ -43293,6 +43361,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Hybrid]/[Ten Warriors] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Hybrid", "Ten Warriors"], "match": "trait" }]
@@ -43301,6 +43370,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Tamer card with an inherited effect among them to the hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "hasInheritedEffects": true },
                 "count": 1,
                 "to": "hand"
@@ -44049,6 +44119,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Hybrid]/[Ten Warriors] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Hybrid", "Ten Warriors"], "match": "trait" }]
@@ -44057,6 +44128,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Tamer card with an inherited effect among them to the hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "hasInheritedEffects": true },
                 "count": 1,
                 "to": "hand"
@@ -44887,6 +44959,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Kyubimon]/[Taomon]/[Sakuyamon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -44896,6 +44969,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Rika Nonaka] or 1 Option card with a cost of 2 or more among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer"],
@@ -45587,6 +45661,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Argomon]",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Argomon"], "match": "nameExact" }]
@@ -45595,6 +45670,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Rhythm] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Rhythm"], "match": "nameExact" }]
@@ -50360,6 +50436,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Millenniummon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Millenniummon"], "match": "name" }]
@@ -50368,6 +50445,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Composite]/[Wicked God] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Composite", "Wicked God"], "match": "trait" }]
@@ -50431,6 +50509,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Hybrid]/[Ten Warriors] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Hybrid", "Ten Warriors"], "match": "trait" }]
@@ -50439,6 +50518,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 red Tamer card with inherited effects among them to the hand.",
                 "filter": {
                   "hasInheritedEffects": true,
                   "controllerDefault": "mine",
@@ -51790,6 +51870,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Hybrid]/[Ten Warriors] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Hybrid", "Ten Warriors"], "match": "trait" }]
@@ -51798,6 +51879,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 yellow Tamer card with inherited effects among them to the hand.",
                 "filter": {
                   "hasInheritedEffects": true,
                   "controllerDefault": "mine",
@@ -52291,7 +52373,11 @@
             "event": "whenSecurityRemoved",
             "sourceFilter": { "controller": "mine" },
             "actions": [
-              { "kind": "Unsuspend", "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true } }
+              {
+                "kind": "Unsuspend",
+                "optional": true,
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true }
+              }
             ]
           }
         ],
@@ -53523,11 +53609,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Vemmon] in its text among them to the hand",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Vemmon"], "match": "text" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 [Vemmon] among them as the bottom digivolution card of 1 of your Digimon.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Vemmon"], "match": "name" }] },
                 "count": 1,
                 "to": "placeUnder",
@@ -57224,6 +57312,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Aqua]/[Sea Animal] in any of its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Aqua", "Sea Animal"], "match": "traitContains" }]
@@ -57232,6 +57321,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [LIBERATOR] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["LIBERATOR"], "match": "trait" }]
@@ -59692,6 +59782,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 card with [Knightmon] in its text or the [Twilight] trait to the hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [
@@ -59703,6 +59794,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 such card under your Tamers.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [
@@ -59739,6 +59831,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Dragonkin]/[Cyborg] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Dragonkin", "Cyborg"], "match": "trait" }]
@@ -59747,6 +59840,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Ryo Akiyama] or 1 [Device] trait Option card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Ryo Akiyama"], "match": "nameExact" }]
@@ -61514,6 +61608,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Renamon]/[Kyubimon]/[Taomon]/[Sakuyamon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -61523,6 +61618,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Option card with [Plug-In] in its name among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Option"],
@@ -63870,6 +63966,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 level 5 or lower Digimon card",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -63879,6 +63976,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 green Tamer card among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Green"] },
                 "count": 1,
                 "to": "hand"
@@ -67241,6 +67339,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Chaosmon] in its name or the [ACCEL] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -67253,6 +67352,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Option card with the [ACCEL] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Option"],
@@ -68334,6 +68434,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [X Antibody] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["X Antibody"], "match": "trait" }]
@@ -68342,6 +68443,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Tamer card or Option card with the [Chronicle] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer", "Option"],
@@ -69183,6 +69285,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Evil]/[Dark Dragon]/[Evil Dragon] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Evil", "Dark Dragon", "Evil Dragon"], "match": "trait" }]
@@ -69191,6 +69294,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Yuuki] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Yuuki"], "match": "nameExact" }]
@@ -69261,11 +69365,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Ghost] trait",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Ghost"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [LIBERATOR] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["LIBERATOR"], "match": "trait" }]
@@ -69293,6 +69399,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [SoC]/[SEEKERS] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["SoC", "SEEKERS"], "match": "trait" }]
@@ -69301,6 +69408,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Eiji Nagasumi] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Eiji Nagasumi"], "match": "nameExact" }]
@@ -72019,6 +72127,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Cool Boy]",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Cool Boy"], "match": "nameExact" }]
@@ -72027,6 +72136,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Royal Knight]/[X Antibody] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Royal Knight", "X Antibody"], "match": "trait" }]
@@ -72526,6 +72636,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Reptile]/[Dragonkin] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Reptile", "Dragonkin"], "match": "trait" }]
@@ -72534,6 +72645,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [LIBERATOR] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["LIBERATOR"], "match": "trait" }]
@@ -74118,6 +74230,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Avian]/[Bird] in any of its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Avian", "Bird"], "match": "traitContains" }]
@@ -74126,6 +74239,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [WG] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["WG"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -74884,11 +74998,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Appmon] trait",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Appmon"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [App Driver] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["App Driver"], "match": "trait" }]
@@ -76999,7 +77115,7 @@
               "filter": {
                 "controller": "mine",
                 "kind": ["Digimon"],
-                "orFilters": [
+                "or": [
                   { "nameOrTrait": [{ "tokens": ["Canoweissmon"], "match": "nameExact" }] },
                   {
                     "levelComparison": { "op": "lte", "value": 4 },
@@ -78366,6 +78482,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Davis Motomiya] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Davis Motomiya"], "match": "name" }]
@@ -78374,6 +78491,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Free] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Free"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -79824,11 +79942,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Appmon] trait",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Appmon"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Entertainment] or [Awakening] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Entertainment", "Awakening"], "match": "trait" }]
@@ -79872,11 +79992,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Omnimon] in its text",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Omnimon"], "match": "text" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [CS] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["CS"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -82635,6 +82757,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Arata Sanada]",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Arata Sanada"], "match": "name" }]
@@ -82643,6 +82766,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Unidentified] or [CS] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Unidentified", "CS"], "match": "trait" }]
@@ -83741,6 +83865,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Night Claw] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Night Claw"], "match": "trait" }]
@@ -83749,6 +83874,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Light Fang] or [Galaxy] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Light Fang", "Galaxy"], "match": "trait" }]
@@ -86406,6 +86532,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Huckmon] or [Sistermon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Huckmon", "Sistermon"], "match": "name" }]
@@ -86414,6 +86541,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Royal Knight] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Royal Knight"], "match": "trait" }]
@@ -88744,6 +88872,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Royal Base] in its text",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Royal Base"], "match": "text" }]
@@ -88752,6 +88881,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [CS] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["CS"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -88788,11 +88918,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Appmon] trait",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Appmon"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Game] or [Invincible (App Name)] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Game", "Invincible (App Name)", "Invincible"], "match": "trait" }]
@@ -89575,11 +89707,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Hudie] trait",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Hudie"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Tamer card or Option card with the [CS] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer", "Option"],
@@ -94749,6 +94883,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with the [Sea Beast] or [Shaman] trait or [Aqua] or [Sea Animal] in any of its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -94761,6 +94896,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [TS] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["TS"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -94805,6 +94941,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with the [Demon] or [Shaman] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -94814,6 +94951,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Titan] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Titan"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -95788,11 +95926,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Iliad] trait",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Iliad"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [TS] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["TS"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -95861,11 +96001,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Appmon] trait",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Appmon"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [System] or [Transmutation (App Name)] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["System", "Transmutation"], "match": "trait" }]
@@ -96811,6 +96953,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with the [Shaman] trait or with [Beast], [Animal] or [Sovereign], other than [Sea Animal], in any of its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -96826,6 +96969,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [TS] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["TS"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -96870,6 +97014,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Shoto Kazama]",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Shoto Kazama"], "match": "nameExact" }]
@@ -96878,6 +97023,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with [Avian] or [Bird] in any of its traits or the [Vortex Warriors] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "or": [
@@ -98430,6 +98576,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 [Evil], [Dark Dragon], [Evil Dragon] or [Dark Knight] trait card or purple Tamer card to the hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -98445,6 +98592,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "trash 1 such card.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -98544,6 +98692,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Evil] or [Fallen Angel] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Evil", "Fallen Angel"], "match": "trait" }]
@@ -98552,6 +98701,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Seven Great Demon Lords] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Seven Great Demon Lords"], "match": "trait" }]
@@ -101699,11 +101849,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Appmon] trait card",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Appmon"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Social], [Tool], [Reboot] or [Creation] trait card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Social", "Tool", "Reboot", "Creation"], "match": "trait" }]
@@ -102762,6 +102914,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Thomas H. Norstein] or card with the [DATA SQUAD] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [
@@ -102773,6 +102926,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with [Gaogamon] in its name among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Gaogamon"], "match": "name" }] },
                 "count": 1,
                 "to": "hand"
@@ -102809,11 +102963,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Iliad] trait card",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Iliad"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [TS] trait card among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["TS"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -103672,6 +103828,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Angel], [Archangel], [Three Great Angels] or [Four Great Dragons] trait card",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [
@@ -103682,6 +103839,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [TS] trait card among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["TS"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -103712,6 +103870,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Glowing Dawn] trait card",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Glowing Dawn"], "match": "trait" }]
@@ -103720,6 +103879,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 yellow [BEATBREAK] trait card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "colors": ["Yellow"],
@@ -105006,6 +105166,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Glowing Dawn] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Glowing Dawn"], "match": "trait" }]
@@ -105014,6 +105175,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 green card with the [BEATBREAK] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "colors": ["Green"],
@@ -105048,6 +105210,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Vegetation] or [Shaman] trait card",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Vegetation", "Shaman"], "match": "trait" }]
@@ -105056,6 +105219,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [TS] trait card among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["TS"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -106541,8 +106705,14 @@
             "kind": "RevealAdd",
             "revealCount": 3,
             "add": [
-              { "filter": { "controllerDefault": "mine", "kind": ["Option"] }, "count": 1, "to": "hand" },
               {
+                "effectTextPart": "Add 1 Option card",
+                "filter": { "controllerDefault": "mine", "kind": ["Option"] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "effectTextPart": "1 [TS] trait card among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["TS"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -110574,6 +110744,7 @@
             "revealCount": 5,
             "add": [
               {
+                "effectTextPart": "1 Digimon card with [Legend-Arms] in its type among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -110583,6 +110754,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "Add 1 [RagnaLoardmon] Digimon card",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -111411,11 +111583,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 level 5",
                 "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "levels": [5] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 level 6 Digimon card among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "levels": [6] },
                 "count": 1,
                 "to": "hand"
@@ -111630,6 +111804,7 @@
             "revealCount": 5,
             "add": [
               {
+                "effectTextPart": "Add 1 [RagnaLoardmon] Digimon card",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -111639,6 +111814,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Digimon card with [Legend-Arms] in its type among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -112229,11 +112405,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 blue",
                 "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "colors": ["Blue"] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 green Digimon card among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "colors": ["Green"] },
                 "count": 1,
                 "to": "hand"
@@ -113063,6 +113241,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Hybrid] in its form",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -113072,6 +113251,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 red Tamer card among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Red"] },
                 "count": 1,
                 "to": "hand"
@@ -113360,6 +113540,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Hybrid] in its form",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -113369,6 +113550,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 blue Tamer card among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Blue"] },
                 "count": 1,
                 "to": "hand"
@@ -115013,6 +115195,7 @@
             "kind": "SubTrigger",
             "event": "whenBlocked",
             "on": { "filter": {}, "count": 1, "fromSelectionRef": "atomicInfernoTarget" },
+            "sourceFilter": { "isSelfRef": true },
             "actions": [{ "kind": "GainMemory", "amount": 3 }],
             "condition": { "kind": "isYourTurn" },
             "duration": "untilYourTurnEnd"
@@ -115758,6 +115941,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Greymon] in its name (other than [DoruGreymon], [BurningGreymon], or [DexDoruGreymon])",
                 "filter": {
                   "excludeNameOrTrait": [
                     { "tokens": ["DoruGreymon"], "match": "nameExact" },
@@ -115772,6 +115956,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Digimon card with [Omnimon] in its name among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -115829,6 +116014,7 @@
             "revealCount": 5,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Shoutmon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -115838,6 +116024,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Digimon card with ＜Blitz＞ among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "keywords": ["Blitz"] },
                 "count": 1,
                 "to": "hand"
@@ -116131,6 +116318,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Garurumon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -116140,6 +116328,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Digimon card with [Omnimon] in its name among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -116971,6 +117160,7 @@
             "revealCount": 5,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Unidentified] in its type",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -116980,6 +117170,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Arata Sanada] card among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Arata Sanada"], "match": "nameExact" }]
@@ -119986,6 +120177,7 @@
             "revealCount": 5,
             "add": [
               {
+                "effectTextPart": "Add 1 [Menoa Bellucci]",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Menoa Bellucci"], "match": "nameExact" }]
@@ -119994,6 +120186,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Digimon card with [Eosmon] in its name among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -120253,6 +120446,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Three Musketeers] in its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -120262,6 +120456,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Option card with a memory cost of 7 among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Option"], "playCostOneOf": [7] },
                 "count": 1,
                 "to": "hand"
@@ -121620,13 +121815,13 @@
             "kind": "ModifyDP",
             "target": { "filter": {}, "count": 1, "fromSelectionRef": "boostedDigimon" },
             "amount": 2000,
-            "duration": "untilYourTurnEnd"
+            "duration": "forTheTurn"
           },
           {
-            "kind": "SubTrigger",
-            "event": "whenAttacking",
-            "on": { "filter": {}, "count": 1, "fromSelectionRef": "boostedDigimon" },
-            "actions": [
+            "kind": "GainTriggeredEffect",
+            "target": { "filter": {}, "count": 1, "fromSelectionRef": "boostedDigimon" },
+            "gainedTrigger": "whenAttacking",
+            "gainedActions": [
               {
                 "kind": "SelectBind",
                 "target": {
@@ -121787,13 +121982,19 @@
             "revealCount": 2,
             "add": [
               {
+                "effectTextPart": "Place 1 of them on top of your security stack face down.",
                 "filter": { "controllerDefault": "mine" },
                 "count": 1,
                 "to": "security",
                 "toTop": true,
                 "faceDown": true
               },
-              { "filter": { "controllerDefault": "mine" }, "count": 1, "to": "hand" }
+              {
+                "effectTextPart": "Add the remaining card to your hand.",
+                "filter": { "controllerDefault": "mine" },
+                "count": 1,
+                "to": "hand"
+              }
             ],
             "rest": "deckBottom"
           },
@@ -123759,11 +123960,13 @@
             "revealCount": 5,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Hybrid] in its traits",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Hybrid"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [J.P. Shibayama] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["J.P. Shibayama"], "match": "nameExact" }]
@@ -124047,6 +124250,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [X-Antibody] in its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["X-Antibody"], "match": "trait" }]
@@ -124055,6 +124259,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Kota Domoto] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Kota Domoto"], "match": "nameExact" }]
@@ -125000,6 +125205,7 @@
             "revealCount": 5,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Hybrid] or [Ten Warriors] in its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Hybrid", "Ten Warriors"], "match": "traitContains" }]
@@ -125007,7 +125213,12 @@
                 "count": 1,
                 "to": "hand"
               },
-              { "filter": { "controllerDefault": "mine", "kind": ["Tamer"] }, "count": 1, "to": "hand" }
+              {
+                "effectTextPart": "1 Tamer card among them to your hand.",
+                "filter": { "controllerDefault": "mine", "kind": ["Tamer"] },
+                "count": 1,
+                "to": "hand"
+              }
             ],
             "rest": "deckBottom"
           }
@@ -125020,9 +125231,9 @@
           {
             "kind": "SubTrigger",
             "event": "whenOneOfYoursDigivolves",
+            "requireDigivolvedFromTamer": true,
             "sourceFilter": { "controller": "mine", "kind": ["Digimon"], "digivolutionStackKind": ["Tamer"] },
-            "actions": [{ "kind": "GainMemory", "amount": 2 }],
-            "requireDigivolvedFromTamer": true
+            "actions": [{ "kind": "GainMemory", "amount": 2 }]
           }
         ]
       }
@@ -127891,11 +128102,13 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Greymon] in its name",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Greymon"], "match": "name" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with [Dragonkin] in its traits among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Dragonkin"], "match": "trait" }]
@@ -127932,6 +128145,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [X-Antibody] in its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["X-Antibody"], "match": "trait" }]
@@ -127940,6 +128154,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Yuji Musya] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Yuji Musya"], "match": "name" }]
@@ -128409,8 +128624,14 @@
             "kind": "RevealAdd",
             "revealCount": 3,
             "add": [
-              { "filter": { "controllerDefault": "mine", "kind": ["Tamer"] }, "count": 1, "to": "hand" },
               {
+                "effectTextPart": "Add 1 Tamer card among them to your hand,",
+                "filter": { "controllerDefault": "mine", "kind": ["Tamer"] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "effectTextPart": "trash 1 purple Digimon card among them.",
                 "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "colors": ["Purple"] },
                 "count": 1,
                 "to": "trash"
@@ -130462,6 +130683,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Greymon] or [Omnimon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Greymon", "Omnimon"], "match": "name" }]
@@ -130470,6 +130692,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [X Antibody] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["X Antibody"], "match": "nameExact" }]
@@ -130490,6 +130713,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Greymon] or [Omnimon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Greymon", "Omnimon"], "match": "name" }]
@@ -130498,6 +130722,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [X Antibody] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["X Antibody"], "match": "nameExact" }]
@@ -130845,6 +131070,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Garurumon] or [Omnimon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Garurumon", "Omnimon"], "match": "name" }]
@@ -130853,6 +131079,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [X Antibody] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["X Antibody"], "match": "nameExact" }]
@@ -130873,6 +131100,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Garurumon] or [Omnimon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Garurumon", "Omnimon"], "match": "name" }]
@@ -130881,6 +131109,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [X Antibody] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["X Antibody"], "match": "nameExact" }]
@@ -131606,6 +131835,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Insectoid] or [Machine] in its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Insectoid", "Machine"], "match": "trait" }]
@@ -131614,6 +131844,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [X Antibody] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["X Antibody"], "match": "nameExact" }]
@@ -131634,6 +131865,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Insectoid] or [Machine] in its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Insectoid", "Machine"], "match": "trait" }]
@@ -131642,6 +131874,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [X Antibody] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["X Antibody"], "match": "nameExact" }]
@@ -132095,11 +132328,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Alphamon] in its name among them to your hand,",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Alphamon"], "match": "name" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 card with [X Antibody] in its traits among them under this Digimon as its bottom digivolution card.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["X Antibody"], "match": "trait" }]
@@ -132426,6 +132661,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Undead] or [Dark Animal] in its traits among them to your hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Undead", "Dark Animal"], "match": "trait" }]
@@ -132434,6 +132670,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "trash 1 card with [Undead] or [Dark Animal] in its traits among them.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Undead", "Dark Animal"], "match": "trait" }]
@@ -133511,11 +133748,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Tapirmon]",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Tapirmon"], "match": "name" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 2-color black card among them to your hand.",
                 "filter": { "controllerDefault": "mine", "multicolor": true, "colorCount": 2, "colors": ["Black"] },
                 "count": 1,
                 "to": "hand"
@@ -133644,6 +133883,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [X Antibody] in its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -133653,6 +133893,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Option card with [X Antibody] in its traits among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Option"],
@@ -139436,6 +139677,7 @@
         "actions": [
           {
             "kind": "CostModifier",
+            "optional": true,
             "mode": "reduce",
             "costType": "play",
             "amount": 2,
@@ -139466,6 +139708,7 @@
         "actions": [
           {
             "kind": "CostModifier",
+            "optional": true,
             "mode": "reduce",
             "costType": "play",
             "amount": 2,
@@ -139855,11 +140098,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Appmon] trait",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Appmon"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Leviathan] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Leviathan"], "match": "trait" }]
@@ -143605,6 +143850,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Suzune Kazuki]",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Suzune Kazuki"], "match": "nameExact" }]
@@ -143613,6 +143859,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Ice-Snow] trait Digimon card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -144601,6 +144848,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Maquinamon]",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Maquinamon"], "match": "nameExact" }]
@@ -144609,6 +144857,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with [Maquinamon] in its text among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Maquinamon"], "match": "text" }]
@@ -148613,6 +148862,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Omekamon] or [Omnimon (X Antibody)]",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Omekamon", "Omnimon (X Antibody)"], "match": "nameExact" }]
@@ -148621,6 +148871,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Royal Knight] or [LIBERATOR] trait card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Royal Knight", "LIBERATOR"], "match": "trait" }]
@@ -149146,11 +149397,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Gammamon] in its text",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Gammamon"], "match": "text" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [VB] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["VB"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -149228,6 +149481,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Shambala] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Shambala"], "match": "trait" }]
@@ -149236,6 +149490,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [TB] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["TB"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -150457,6 +150712,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Shambala] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Shambala"], "match": "trait" }]
@@ -150465,6 +150721,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [SW] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["SW"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -150502,11 +150759,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Jellymon] in its text",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Jellymon"], "match": "text" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [DS] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["DS"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -153109,6 +153368,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Angoramon] in its text",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Angoramon"], "match": "text" }]
@@ -153117,6 +153377,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [NSp] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["NSp"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -153433,6 +153694,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Machine], [Cyborg] or [Mutant] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Machine", "Cyborg", "Mutant"], "match": "trait" }]
@@ -153441,6 +153703,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [ME] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["ME"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -156085,6 +156348,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Growlmon] or [Gallantmon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Growlmon", "Gallantmon"], "match": "name" }]
@@ -156093,6 +156357,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Takato Matsuki] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Takato Matsuki"], "match": "name" }]
@@ -156465,6 +156730,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Kyubimon], [Taomon], or [Sakuyamon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [
@@ -156476,6 +156742,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Rika Nonaka] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Rika Nonaka"], "match": "name" }]
@@ -157276,6 +157543,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Beelzemon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -157285,6 +157553,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Ai & Mako] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Ai & Mako"], "match": "name" }]
@@ -157660,6 +157929,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [D-Reaper] in its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["D-Reaper"], "match": "trait" }]
@@ -157668,6 +157938,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [ADR-02 Searcher] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["ADR-02 Searcher"], "match": "name" }]
@@ -159293,6 +159564,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Rock Dragon], [Earth Dragon], [Bird Dragon], [Machine Dragon], or [Sky Dragon] in its traits",
                 "filter": {
                   "kind": ["Digimon"],
                   "nameOrTrait": [
@@ -159306,6 +159578,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Hina Kurihara] among them to your hand.",
                 "filter": { "nameOrTrait": [{ "tokens": ["Hina Kurihara"], "match": "nameExact" }] },
                 "count": 1,
                 "to": "hand"
@@ -160338,6 +160611,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 yellow card with [Angel], [Cherub], [Throne], [Authority], [Seraph] or [Virtue], other than [Three Great Angels], in one of its traits",
                 "filter": {
                   "excludeNameOrTrait": [{ "tokens": ["Three Great Angels"], "match": "trait" }],
                   "controllerDefault": "mine",
@@ -160353,6 +160627,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Four Great Dragons] trait among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Four Great Dragons"], "match": "trait" }]
@@ -160410,6 +160685,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 yellow card with [Angel], [Cherub], [Throne], [Authority], [Seraph] or [Virtue], other than [Three Great Angels], in one of its traits",
                 "filter": {
                   "excludeNameOrTrait": [{ "tokens": ["Three Great Angels"], "match": "trait" }],
                   "controllerDefault": "mine",
@@ -160425,6 +160701,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Four Great Dragons] trait among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Four Great Dragons"], "match": "trait" }]
@@ -160479,6 +160756,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 yellow card with [Dramon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "colors": ["Yellow"],
@@ -160488,6 +160766,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with [Four Great Dragons] in its traits among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Four Great Dragons"], "match": "trait" }]
@@ -160941,6 +161220,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 green or blue card with [Dramon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "colors": ["Blue", "Green"],
@@ -160950,6 +161230,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with [Examon] in its name among them to your hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Examon"], "match": "name" }] },
                 "count": 1,
                 "to": "hand"
@@ -161448,6 +161729,7 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Rock Dragon], [Earth Dragon], [Bird Dragon], [Machine Dragon], or [Sky Dragon] in its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -161460,6 +161742,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Hina Kurihara] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Hina Kurihara"], "match": "name" }]
@@ -161785,24 +162068,24 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 purple or red card with the [Free] trait or 1 card with [Imperialdramon] in its name among them to your hand",
                 "filter": {
                   "controllerDefault": "mine",
-                  "colors": ["Red", "Purple"],
-                  "nameOrTrait": [
-                    { "tokens": ["Free"], "match": "trait" },
-                    { "tokens": ["Imperialdramon"], "match": "name" }
+                  "or": [
+                    { "colors": ["Red", "Purple"], "nameOrTrait": [{ "tokens": ["Free"], "match": "trait" }] },
+                    { "nameOrTrait": [{ "tokens": ["Imperialdramon"], "match": "name" }] }
                   ]
                 },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "trash 1 such card among them.",
                 "filter": {
                   "controllerDefault": "mine",
-                  "colors": ["Red", "Purple"],
-                  "nameOrTrait": [
-                    { "tokens": ["Free"], "match": "trait" },
-                    { "tokens": ["Imperialdramon"], "match": "name" }
+                  "or": [
+                    { "colors": ["Red", "Purple"], "nameOrTrait": [{ "tokens": ["Free"], "match": "trait" }] },
+                    { "nameOrTrait": [{ "tokens": ["Imperialdramon"], "match": "name" }] }
                   ]
                 },
                 "count": 1,
@@ -163367,6 +163650,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Kiriha Aonuma]",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Kiriha Aonuma"], "match": "name" }]
@@ -163375,6 +163659,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 blue or black card with DigiXros requirements among them to your hand.",
                 "filter": { "controllerDefault": "mine", "colors": ["Blue", "Black"], "hasDigiXrosRequirements": true },
                 "count": 1,
                 "to": "hand"
@@ -164175,11 +164460,13 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 2-color green card",
                 "filter": { "controllerDefault": "mine", "multicolor": true, "colorCount": 2, "colors": ["Green"] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Tamer card with [Henry Wong] in its name among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer"],
@@ -164300,11 +164587,13 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 2-color green card",
                 "filter": { "controllerDefault": "mine", "multicolor": true, "colorCount": 2, "colors": ["Green"] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Tamer card with [Shu-Chong Wong] in its name among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer"],
@@ -164494,6 +164783,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Greymon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -164503,6 +164793,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Digimon card with [Gabumon], [Garurumon], or [Omnimon] in its name among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -164543,6 +164834,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Garurumon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -164552,6 +164844,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Digimon card with [Agumon], [Greymon], or [Omnimon] in its name among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -165274,6 +165567,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 purple Digimon card with [Ravemon] in its name or [Bird] or [Avian] in one of its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -165287,6 +165581,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Keenan Crier] among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Keenan Crier"], "match": "nameExact" }]
@@ -166815,6 +167110,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Light Fang] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Light Fang"], "match": "trait" }]
@@ -166823,6 +167119,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Night Claw]/[Galaxy] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Night Claw", "Galaxy"], "match": "trait" }]
@@ -166843,6 +167140,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Light Fang] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Light Fang"], "match": "trait" }]
@@ -166851,6 +167149,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Night Claw]/[Galaxy] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Night Claw", "Galaxy"], "match": "trait" }]
@@ -167441,6 +167740,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Night Claw] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Night Claw"], "match": "trait" }]
@@ -167449,6 +167749,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Light Fang]/[Galaxy] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Light Fang", "Galaxy"], "match": "trait" }]
@@ -167469,6 +167770,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Night Claw] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Night Claw"], "match": "trait" }]
@@ -167477,6 +167779,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Light Fang]/[Galaxy] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Light Fang", "Galaxy"], "match": "trait" }]
@@ -169013,6 +169316,7 @@
             "revealCount": 1,
             "add": [
               {
+                "effectTextPart": "a level 5 or lower Digimon card with ＜Fortitude＞, play it without paying the cost.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -169022,7 +169326,7 @@
                 "count": 1,
                 "to": "play"
               },
-              { "filter": {}, "count": 1, "to": "hand" }
+              { "effectTextPart": "Add the rest to your hand.", "filter": {}, "count": 1, "to": "hand" }
             ],
             "rest": "deckBottom"
           }
@@ -169036,6 +169340,7 @@
             "revealCount": 1,
             "add": [
               {
+                "effectTextPart": "a level 5 or lower Digimon card with ＜Fortitude＞, play it without paying the cost.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -169045,7 +169350,7 @@
                 "count": 1,
                 "to": "play"
               },
-              { "filter": {}, "count": 1, "to": "hand" }
+              { "effectTextPart": "Add the rest to your hand.", "filter": {}, "count": 1, "to": "hand" }
             ],
             "rest": "deckBottom"
           }
@@ -172157,6 +172462,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with the [Angel]/[Archangel] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -172166,6 +172472,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Three Great Angels] trait among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Three Great Angels"], "match": "trait" }]
@@ -172352,6 +172659,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Angel]/[Archangel]/[Fallen Angel] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Angel", "Archangel", "Fallen Angel"], "match": "trait" }]
@@ -172360,6 +172668,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Mirei Mikagura] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Mirei Mikagura"], "match": "nameExact" }]
@@ -172380,6 +172689,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Angel]/[Archangel]/[Fallen Angel] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Angel", "Archangel", "Fallen Angel"], "match": "trait" }]
@@ -172388,6 +172698,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Mirei Mikagura] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Mirei Mikagura"], "match": "nameExact" }]
@@ -172846,21 +173157,25 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 of each [Gokuumon]",
                 "filter": { "nameOrTrait": [{ "tokens": ["Gokuumon"], "match": "nameExact" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "[Sagomon]",
                 "filter": { "nameOrTrait": [{ "tokens": ["Sagomon"], "match": "nameExact" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "[Cho-Hakkaimon]",
                 "filter": { "nameOrTrait": [{ "tokens": ["Cho-Hakkaimon"], "match": "nameExact" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "[Shakamon] among them to the hand.",
                 "filter": { "nameOrTrait": [{ "tokens": ["Shakamon"], "match": "nameExact" }] },
                 "count": 1,
                 "to": "hand"
@@ -172889,21 +173204,25 @@
             "revealCount": 4,
             "add": [
               {
+                "effectTextPart": "Add 1 of each [Gokuumon]",
                 "filter": { "nameOrTrait": [{ "tokens": ["Gokuumon"], "match": "nameExact" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "[Sagomon]",
                 "filter": { "nameOrTrait": [{ "tokens": ["Sagomon"], "match": "nameExact" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "[Cho-Hakkaimon]",
                 "filter": { "nameOrTrait": [{ "tokens": ["Cho-Hakkaimon"], "match": "nameExact" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "[Shakamon] among them to the hand.",
                 "filter": { "nameOrTrait": [{ "tokens": ["Shakamon"], "match": "nameExact" }] },
                 "count": 1,
                 "to": "hand"
@@ -173745,6 +174064,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Tamer or Option card with [Diaboromon] in its text",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer", "Option"],
@@ -173754,6 +174074,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Unidentified] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Unidentified"], "match": "trait" }]
@@ -174576,6 +174897,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Fallen Angel]/[Demon Lord] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Fallen Angel", "Demon Lord"], "match": "trait" }]
@@ -174584,6 +174906,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 purple Option card among them to the hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Option"], "colors": ["Purple"] },
                 "count": 1,
                 "to": "hand"
@@ -176885,6 +177208,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Rock Dragon]/[Earth Dragon]/[Machine Dragon]/[Sky Dragon] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [
@@ -176895,6 +177219,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Hina Kurihara] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Hina Kurihara"], "match": "nameExact" }]
@@ -176933,6 +177258,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Three Musketeers] in its text",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Three Musketeers"], "match": "text" }]
@@ -176941,6 +177267,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Option card with a cost of 6 among them to the hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Option"], "playCostOneOf": [6] },
                 "count": 1,
                 "to": "hand"
@@ -177382,6 +177709,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Paledramon]/[Hexeblaumon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Paledramon", "Hexeblaumon"], "match": "name" }]
@@ -177390,6 +177718,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Ice-Snow] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Ice-Snow"], "match": "trait" }]
@@ -179269,6 +179598,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 card with [Lilithmon] in its text to the hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Lilithmon"], "match": "text" }]
@@ -179276,7 +179606,12 @@
                 "count": 1,
                 "to": "hand"
               },
-              { "filter": { "controllerDefault": "mine", "colors": ["Purple"] }, "count": 1, "to": "trash" }
+              {
+                "effectTextPart": "trash 1 purple card.",
+                "filter": { "controllerDefault": "mine", "colors": ["Purple"] },
+                "count": 1,
+                "to": "trash"
+              }
             ],
             "rest": "deckBottom"
           }
@@ -180895,6 +181230,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Tyrannomon] in its name or the [Reptile]/[Dinosaur] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [
@@ -180906,6 +181242,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Ryutaro Williams] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Ryutaro Williams"], "match": "name" }]
@@ -180965,6 +181302,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Growlmon]/[Gallantmon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Growlmon", "Gallantmon"], "match": "name" }]
@@ -180973,6 +181311,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [X Antibody] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["X Antibody"], "match": "nameExact" }]
@@ -180993,6 +181332,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Growlmon]/[Gallantmon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Growlmon", "Gallantmon"], "match": "name" }]
@@ -181001,6 +181341,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [X Antibody] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["X Antibody"], "match": "nameExact" }]
@@ -182620,6 +182961,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Insectoid] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Insectoid"], "match": "trait" }]
@@ -182628,6 +182970,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [NSp] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["NSp"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -183073,6 +183416,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Mineral]/[Rock] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Mineral", "Rock"], "match": "trait" }]
@@ -183081,6 +183425,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [LIBERATOR] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["LIBERATOR"], "match": "trait" }]
@@ -183602,11 +183947,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [NSo] trait",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["NSo"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Fallen Angel] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Fallen Angel"], "match": "trait" }]
@@ -185271,11 +185618,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 card with the [DM] trait to the hand",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["DM"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 card with the [Ver.1] trait face down as the bottom digivolution card",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Ver.1"], "match": "trait" }] },
                 "count": 1,
                 "to": "placeUnder",
@@ -185731,11 +186080,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 card with the [DM] trait to the hand",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["DM"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 card with the [Ver.2] trait face down as the bottom digivolution card",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Ver.2"], "match": "trait" }] },
                 "count": 1,
                 "to": "placeUnder",
@@ -186309,11 +186660,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 card with the [DM] trait to the hand",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["DM"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 card with the [Ver.3] trait face down as the bottom digivolution card",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Ver.3"], "match": "trait" }] },
                 "count": 1,
                 "to": "placeUnder",
@@ -187167,11 +187520,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 card with the [DM] trait to the hand",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["DM"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 card with the [Ver.4] trait face down as the bottom digivolution card",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Ver.4"], "match": "trait" }] },
                 "count": 1,
                 "to": "placeUnder",
@@ -188029,11 +188384,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Negamon] in its text",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Negamon"], "match": "text" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Digimon card with [Abbadomon] in its name among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -188910,11 +189267,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 card with the [DM] trait to the hand",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["DM"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 card with the [Ver.5] trait face down as the bottom digivolution card",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Ver.5"], "match": "trait" }] },
                 "count": 1,
                 "to": "placeUnder",
@@ -196495,6 +196854,7 @@
                 "revealCount": 1,
                 "add": [
                   {
+                    "effectTextPart": "a black Digimon card with a play cost of 4 or less, you may play it without paying its memory cost.",
                     "filter": {
                       "controllerDefault": "mine",
                       "kind": ["Digimon"],
@@ -196505,7 +196865,12 @@
                     "to": "play",
                     "optional": true
                   },
-                  { "filter": { "controllerDefault": "mine" }, "count": "all", "to": "hand" }
+                  {
+                    "effectTextPart": "Add the remaining cards to your hand.",
+                    "filter": { "controllerDefault": "mine" },
+                    "count": "all",
+                    "to": "hand"
+                  }
                 ],
                 "rest": "deckBottom"
               },
@@ -198364,6 +198729,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Eosmon]",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Eosmon"], "match": "nameExact" }]
@@ -198372,6 +198738,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Menoa Bellucci] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Menoa Bellucci"], "match": "nameExact" }]
@@ -198726,11 +199093,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 green or blue card with 2 or more colors",
                 "filter": { "controllerDefault": "mine", "multicolor": true, "colors": ["Blue", "Green"] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Tamer card with [Ken Ichijoji] in its name among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer"],
@@ -198771,11 +199140,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 red or yellow card with 2 or more colors",
                 "filter": { "controllerDefault": "mine", "multicolor": true, "colors": ["Red", "Yellow"] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Tamer card with [Yolei Inoue] in its name among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer"],
@@ -198828,11 +199199,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 black or yellow card with 2 or more colors",
                 "filter": { "controllerDefault": "mine", "multicolor": true, "colors": ["Yellow", "Black"] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Tamer card with [Cody Hida] in its name among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer"],
@@ -199733,6 +200106,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Veedramon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -199742,6 +200116,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 blue Tamer card among them to the hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Blue"] },
                 "count": 1,
                 "to": "hand"
@@ -199759,6 +200134,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Veedramon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -199768,6 +200144,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 blue Tamer card among them to the hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Blue"] },
                 "count": 1,
                 "to": "hand"
@@ -201109,7 +201486,7 @@
         ]
       },
       {
-        "trigger": "WhenDigivolving",
+        "trigger": "OnDeletion",
         "actions": [
           { "kind": "Suspend", "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 } }
         ]
@@ -203716,8 +204093,18 @@
             "kind": "RevealAdd",
             "revealCount": 3,
             "add": [
-              { "filter": { "controllerDefault": "mine", "kind": ["Digimon"] }, "count": 1, "to": "hand" },
-              { "filter": { "controllerDefault": "mine", "kind": ["Tamer"] }, "count": 1, "to": "hand" }
+              {
+                "effectTextPart": "Add 1 Digimon card",
+                "filter": { "controllerDefault": "mine", "kind": ["Digimon"] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "effectTextPart": "1 Tamer card among them to the hand.",
+                "filter": { "controllerDefault": "mine", "kind": ["Tamer"] },
+                "count": 1,
+                "to": "hand"
+              }
             ],
             "rest": "deckBottom"
           },
@@ -204723,8 +205110,14 @@
             "kind": "RevealAdd",
             "revealCount": 3,
             "add": [
-              { "filter": { "nameOrTrait": [{ "tokens": ["Social"], "match": "trait" }] }, "count": 1, "to": "hand" },
               {
+                "effectTextPart": "Add 1 [Social] trait card",
+                "filter": { "nameOrTrait": [{ "tokens": ["Social"], "match": "trait" }] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "effectTextPart": "1 [Creation], [Navi] or [Tool] trait card among them to the hand.",
                 "filter": { "nameOrTrait": [{ "tokens": ["Creation", "Navi", "Tool"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -204788,11 +205181,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Entertainment] trait card",
                 "filter": { "nameOrTrait": [{ "tokens": ["Entertainment"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Awakening], [Tool] or [Navi] trait card among them to the hand.",
                 "filter": { "nameOrTrait": [{ "tokens": ["Awakening", "Tool", "Navi"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -205420,6 +205815,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Tyrannomon] in its name or the [Reptile] or [Dinosaur] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -205433,6 +205829,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [LIBERATOR] trait card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["LIBERATOR"], "match": "trait" }]
@@ -205493,6 +205890,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Ice-Snow] trait Digimon card",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -205502,6 +205900,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [LIBERATOR] trait card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["LIBERATOR"], "match": "trait" }]
@@ -205562,6 +205961,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Puppet] trait Digimon card",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -205571,6 +205971,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [LIBERATOR] trait card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["LIBERATOR"], "match": "trait" }]
@@ -205631,6 +206032,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Royal Base] in its text",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Royal Base"], "match": "text" }]
@@ -205639,6 +206041,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [LIBERATOR] trait card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["LIBERATOR"], "match": "trait" }]
@@ -205699,6 +206102,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Cyborg] or [Machine] trait Digimon card",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -205708,6 +206112,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [LIBERATOR] trait card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["LIBERATOR"], "match": "trait" }]
@@ -205768,6 +206173,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Evil], [Dark Dragon] or [Evil Dragon] trait Digimon card",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -205777,6 +206183,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [LIBERATOR] trait card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["LIBERATOR"], "match": "trait" }]
@@ -205836,8 +206243,14 @@
             "kind": "RevealAdd",
             "revealCount": 3,
             "add": [
-              { "filter": { "nameOrTrait": [{ "tokens": ["Game"], "match": "trait" }] }, "count": 1, "to": "hand" },
               {
+                "effectTextPart": "Add 1 [Game] trait card",
+                "filter": { "nameOrTrait": [{ "tokens": ["Game"], "match": "trait" }] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "effectTextPart": "1 [Invincible], [Life] or [Entertainment] trait card among them to the hand.",
                 "filter": { "nameOrTrait": [{ "tokens": ["Invincible", "Life", "Entertainment"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -206867,11 +207280,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Gammamon] in its text",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Gammamon"], "match": "text" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Hiro Amanokawa] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Hiro Amanokawa"], "match": "nameExact" }]
@@ -207041,11 +207456,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Jellymon] in its text",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Jellymon"], "match": "text" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Kiyoshiro Higashimitarai] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Kiyoshiro Higashimitarai"], "match": "nameExact" }]
@@ -207401,6 +207818,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Monzaemon] in its name",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Monzaemon"], "match": "name" }]
@@ -207409,6 +207827,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with [Numemon] in its name among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Numemon"], "match": "name" }] },
                 "count": 1,
                 "to": "hand"
@@ -207644,6 +208063,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Angoramon] in its text",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Angoramon"], "match": "text" }]
@@ -207652,6 +208072,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Ruli Tsukiyono] among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Ruli Tsukiyono"], "match": "nameExact" }]
@@ -209021,11 +209442,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 yellow Digimon card",
                 "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "colors": ["Yellow"] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 purple Digimon card among them to your hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "colors": ["Purple"] },
                 "count": 1,
                 "to": "hand"
@@ -209329,6 +209752,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 yellow",
                 "filter": {
                   "controllerDefault": "mine",
                   "colors": ["Yellow"],
@@ -209341,6 +209765,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 purple card with [Angel], [Archangel], or [Fallen Angel] in their traits among them to your hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "colors": ["Purple"],
@@ -210051,6 +210476,7 @@
             "revealCount": 1,
             "add": [
               {
+                "effectTextPart": "you may play it without paying its memory cost.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -210061,7 +210487,12 @@
                 "to": "play",
                 "optional": true
               },
-              { "filter": { "controllerDefault": "mine" }, "count": "all", "to": "hand" }
+              {
+                "effectTextPart": "Add the rest to your hand.",
+                "filter": { "controllerDefault": "mine" },
+                "count": "all",
+                "to": "hand"
+              }
             ],
             "rest": "deckBottom",
             "cost": {
@@ -210369,6 +210800,7 @@
             "revealCount": 1,
             "add": [
               {
+                "effectTextPart": "You may play 1 Digimon card with [Legend-Arms] in its traits and a play cost of 7 or less among them without paying its memory cost.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -210379,7 +210811,12 @@
                 "to": "play",
                 "optional": true
               },
-              { "filter": { "controllerDefault": "mine" }, "count": "all", "to": "hand" }
+              {
+                "effectTextPart": "Add the rest to your hand.",
+                "filter": { "controllerDefault": "mine" },
+                "count": "all",
+                "to": "hand"
+              }
             ],
             "rest": "deckBottom",
             "cost": {
@@ -212654,11 +213091,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 green Digimon card",
                 "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "colors": ["Green"] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 such Tamer card among them to the hand.",
                 "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Green"] },
                 "count": 1,
                 "to": "hand"
@@ -212852,6 +213291,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Bird]/[Avian] in one of its traits",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Bird", "Avian"], "match": "traitContains" }]
@@ -212860,6 +213300,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Vortex Warriors]/[LIBERATOR] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Vortex Warriors", "LIBERATOR"], "match": "trait" }]
@@ -213406,11 +213847,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Puppet] trait",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Puppet"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [LIBERATOR] trait among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["LIBERATOR"], "match": "trait" }]
@@ -214183,6 +214626,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with the [ADVENTURE] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -214192,6 +214636,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 such Tamer card or Option card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer", "Option"],
@@ -217552,6 +217997,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 [Glowing Dawn] trait card to the hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Glowing Dawn"], "match": "trait" }]
@@ -217560,6 +218006,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 such card face down under any of your [Glowing Dawn] trait Tamers.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Glowing Dawn"], "match": "trait" }]
@@ -217586,6 +218033,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 [Glowing Dawn] trait card to the hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Glowing Dawn"], "match": "trait" }]
@@ -217594,6 +218042,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 such card face down under any of your [Glowing Dawn] trait Tamers.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Glowing Dawn"], "match": "trait" }]
@@ -218017,6 +218466,7 @@
             "actions": [
               {
                 "kind": "Return",
+                "optional": true,
                 "target": {
                   "filter": {
                     "zone": "trash",
@@ -218478,6 +218928,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 [DATA SQUAD] trait card to the hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["DATA SQUAD"], "match": "trait" }]
@@ -218486,6 +218937,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 such card face down under any of your [DATA SQUAD] trait Tamers.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["DATA SQUAD"], "match": "trait" }]
@@ -218512,6 +218964,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 [DATA SQUAD] trait card to the hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["DATA SQUAD"], "match": "trait" }]
@@ -218520,6 +218973,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 such card face down under any of your [DATA SQUAD] trait Tamers.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["DATA SQUAD"], "match": "trait" }]
@@ -226369,11 +226823,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Glowing Dawn] trait",
                 "filter": { "nameOrTrait": [{ "tokens": ["Glowing Dawn"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 black card with the [BEATBREAK] trait among them to the hand.",
                 "filter": { "colors": ["Black"], "nameOrTrait": [{ "tokens": ["BEATBREAK"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -227171,11 +227627,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Glowing Dawn] trait card",
                 "filter": { "nameOrTrait": [{ "tokens": ["Glowing Dawn"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 purple [BEATBREAK] trait card among them to the hand.",
                 "filter": { "colors": ["Purple"], "nameOrTrait": [{ "tokens": ["BEATBREAK"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -227315,13 +227773,19 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Fallen Angel], [Undead], [Wizard] or [Demon Lord] trait",
                 "filter": {
                   "nameOrTrait": [{ "tokens": ["Fallen Angel", "Undead", "Wizard", "Demon Lord"], "match": "trait" }]
                 },
                 "count": 1,
                 "to": "hand"
               },
-              { "filter": { "nameOrTrait": [{ "tokens": ["TS"], "match": "trait" }] }, "count": 1, "to": "hand" }
+              {
+                "effectTextPart": "1 card with the [TS] trait among them to the hand.",
+                "filter": { "nameOrTrait": [{ "tokens": ["TS"], "match": "trait" }] },
+                "count": 1,
+                "to": "hand"
+              }
             ],
             "rest": "deckBottom"
           }
@@ -227355,6 +227819,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 [Keenan Crier] or card with the [DATA SQUAD] trait",
                 "filter": {
                   "nameOrTrait": [
                     { "tokens": ["Keenan Crier"], "match": "nameExact" },
@@ -227365,6 +227830,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 purple card with [Ravemon] in its name or [Avian] or [Bird] in any of its traits among them to the hand.",
                 "filter": {
                   "colors": ["Purple"],
                   "nameOrTrait": [
@@ -230788,7 +231254,7 @@
                 "controller": "mine",
                 "zone": ["hand", "trash"],
                 "kind": ["Digimon", "Tamer"],
-                "orFilters": [
+                "or": [
                   { "nameOrTrait": [{ "tokens": ["Lalamon"], "match": "nameExact" }] },
                   { "nameOrTrait": [{ "tokens": ["Yoshino Fujieda"], "match": "nameExact" }] }
                 ]
@@ -232090,6 +232556,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 Digimon card with [Huckmon] or [Sistermon] in its text",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -232099,6 +232566,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 such Tamer card or Option card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Tamer", "Option"],
@@ -233719,6 +234187,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 [Holy Beast], [Royal Knight] or [DATA SQUAD] trait card to the hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Holy Beast", "Royal Knight", "DATA SQUAD"], "match": "trait" }]
@@ -233727,6 +234196,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 such card face down under any of your [DATA SQUAD] trait Tamers.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Holy Beast", "Royal Knight", "DATA SQUAD"], "match": "trait" }]
@@ -233754,6 +234224,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 [Holy Beast], [Royal Knight] or [DATA SQUAD] trait card to the hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Holy Beast", "Royal Knight", "DATA SQUAD"], "match": "trait" }]
@@ -233762,6 +234233,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "place 1 such card face down under any of your [DATA SQUAD] trait Tamers.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Holy Beast", "Royal Knight", "DATA SQUAD"], "match": "trait" }]
@@ -233809,6 +234281,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 card with [Sukamon] or [Etemon] in its name to the hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Sukamon", "Etemon"], "match": "name" }]
@@ -233817,6 +234290,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "trash 1 such card.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Sukamon", "Etemon"], "match": "name" }]
@@ -233838,6 +234312,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "add 1 card with [Sukamon] or [Etemon] in its name to the hand",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Sukamon", "Etemon"], "match": "name" }]
@@ -233846,6 +234321,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "trash 1 such card.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Sukamon", "Etemon"], "match": "name" }]
@@ -234745,6 +235221,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Leopardmon] in its text",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Leopardmon"], "match": "text" }]
@@ -234753,6 +235230,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 Digimon card with [Beast], [Animal] or [Sovereign], other than [Sea Animal], in any of its traits among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
@@ -235522,11 +236000,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Mamemon] in its text",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Mamemon"], "match": "text" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with the [Mutant] trait among them to the hand.",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Mutant"], "match": "trait" }] },
                 "count": 1,
                 "to": "hand"
@@ -235563,6 +236043,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with the [Royal Knight] trait",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Royal Knight"], "match": "trait" }]
@@ -235570,7 +236051,12 @@
                 "count": 1,
                 "to": "hand"
               },
-              { "filter": { "controllerDefault": "mine", "keywords": ["Blocker"] }, "count": 1, "to": "hand" }
+              {
+                "effectTextPart": "1 card with ＜Blocker＞ among them to the hand.",
+                "filter": { "controllerDefault": "mine", "keywords": ["Blocker"] },
+                "count": 1,
+                "to": "hand"
+              }
             ],
             "rest": "deckBottom",
             "raw": "Reveal the top 3 cards of your deck. Add 1 card with the [Royal Knight] trait and 1 card with ＜Blocker＞ among them to the hand. Return the rest to the bottom of the deck"
@@ -235605,6 +236091,7 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Knightmon] in its text",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Knightmon"], "match": "text" }]
@@ -235613,6 +236100,7 @@
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 card with [Knightmon] in its name among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Knightmon"], "match": "name" }]
@@ -242041,11 +242529,13 @@
             "revealCount": 3,
             "add": [
               {
+                "effectTextPart": "Add 1 card with [Leomon] in its name",
                 "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Leomon"], "match": "name" }] },
                 "count": 1,
                 "to": "hand"
               },
               {
+                "effectTextPart": "1 [Unique], [Boss] or [ACCEL] trait card among them to the hand.",
                 "filter": {
                   "controllerDefault": "mine",
                   "nameOrTrait": [{ "tokens": ["Unique", "Boss", "ACCEL"], "match": "trait" }]
@@ -242450,5 +242940,194 @@
     ],
     "coverage": "full",
     "residual": []
+  },
+  "BT27-098": {
+    "effects": [
+      {
+        "trigger": "AllTurns",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "event": "onDeletionOf",
+            "sourceFilter": { "kind": ["Digimon"] },
+            "optional": true,
+            "cost": {
+              "kind": "suspend",
+              "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+              "raw": "by suspending this Tamer"
+            },
+            "actions": [
+              {
+                "kind": "PlaceUnder",
+                "target": { "filter": {}, "count": 1 },
+                "fromDeckTop": true,
+                "position": "bottom"
+              },
+              {
+                "kind": "PlaceUnder",
+                "target": { "filter": {}, "count": 1 },
+                "fromDeckTop": true,
+                "position": "bottom"
+              }
+            ],
+            "raw": "When any Digimon are deleted, by suspending this Tamer, you may place the top 2 cards of your deck face down under this Tamer."
+          }
+        ]
+      },
+      {
+        "trigger": "EndOfAllTurns",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "abortOnDecline": true,
+            "cost": {
+              "kind": "trashBottomFaceDownUnderTamer",
+              "controller": "mine",
+              "count": 5,
+              "raw": "By trashing 5 bottom face-down cards from under any of your Tamers"
+            },
+            "actions": [
+              {
+                "effectTextPart": "you may play 1 Digimon card with [Gizmon] or [Belphemon] in its name from your hand or trash without paying the cost.",
+                "kind": "PlayWithoutCost",
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "kind": ["Digimon"],
+                    "nameOrTrait": [{ "tokens": ["Gizmon", "Belphemon"], "match": "name" }]
+                  },
+                  "count": 1
+                },
+                "from": ["hand", "trash"],
+                "payCost": false,
+                "bindResultAs": "playedKurataDigimon"
+              },
+              {
+                "effectTextPart": "After, place this Tamer as its bottom digivolution card.",
+                "kind": "PlaceUnder",
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                "underFilter": { "controller": "mine", "boundRef": "playedKurataDigimon", "lastPlayed": true },
+                "position": "bottom"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "isSecurity": true,
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "payCost": false
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-043": {
+    "effects": [
+      {
+        "trigger": "Static",
+        "actions": [],
+        "keywords": [{ "keyword": "Blocker" }, { "keyword": "Barrier" }, { "keyword": "Ascension" }]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "frequency": "OncePerTurn",
+        "sharedUseKey": "unsuspend",
+        "actions": [
+          {
+            "kind": "Unsuspend",
+            "effectTextPart": "By trashing your top security card, this Digimon unsuspends.",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "cost": {
+              "kind": "trash",
+              "target": { "filter": { "controller": "mine", "zone": "security", "position": "top" }, "count": 1 },
+              "raw": "By trashing your top security card"
+            },
+            "optional": true,
+            "abortOnDecline": true
+          }
+        ]
+      },
+      {
+        "trigger": "WhenAttacking",
+        "frequency": "OncePerTurn",
+        "sharedUseKey": "unsuspend",
+        "actions": [
+          {
+            "kind": "Unsuspend",
+            "effectTextPart": "By trashing your top security card, this Digimon unsuspends.",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "cost": {
+              "kind": "trash",
+              "target": { "filter": { "controller": "mine", "zone": "security", "position": "top" }, "count": 1 },
+              "raw": "By trashing your top security card"
+            },
+            "optional": true,
+            "abortOnDecline": true
+          }
+        ]
+      },
+      {
+        "trigger": "AllTurns",
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "event": "whenSecurityRemoved",
+            "sourceFilter": { "controller": "mine" },
+            "raw": "When your security stack is removed from",
+            "actions": [
+              {
+                "kind": "CostGatedBlock",
+                "cost": {
+                  "kind": "place",
+                  "target": {
+                    "filter": {
+                      "controller": "mine",
+                      "hostFilter": { "isSelfRef": true },
+                      "nameOrTrait": [
+                        { "tokens": ["Kentaurosmon"], "match": "nameExact" },
+                        { "tokens": ["X Antibody"], "match": "nameExact" }
+                      ]
+                    },
+                    "count": 1,
+                    "from": ["digivolutionCards"]
+                  },
+                  "destination": "security",
+                  "position": "bottom",
+                  "raw": "by placing 1 [Kentaurosmon] or [X Antibody] from this Digimon's digivolution cards as the bottom security card"
+                },
+                "optional": true,
+                "abortOnDecline": true,
+                "actions": [{ "kind": "ActivateMain" }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Main",
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "effectTextPart": "1 of your opponent's Digimon gets -20000 DP until their turn ends. For each card in both players' security stacks, add 1000 to this effect's DP reduction.",
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "amount": -20000,
+            "duration": "untilOpponentTurnEnd",
+            "scaling": { "per": 1, "bonus": 1000, "unit": "security", "filter": { "controller": "any" } }
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "namesExact": ["Kentaurosmon"], "cost": 2, "isAlternate": true }]
   }
 }
