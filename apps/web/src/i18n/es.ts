@@ -1,3 +1,7 @@
+import { advancedBattlesEs } from "@/i18n/learn/advancedBattles.es";
+import { rulesLayoutEs } from "@/i18n/learn/rulesLayout.es";
+import { lessonCatalogEs } from "@/i18n/learn/lessonCatalog.es";
+import { battleLessonsEs } from "@/i18n/learn/battleLessons.es";
 import { manualEs } from "@/i18n/manual.es";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEs } from "@/i18n/providers.es";
@@ -18,8 +22,13 @@ import { homeEs } from "./redesign/home.es";
 import { playEs } from "./redesign/play.es";
 import { settingsEs } from "./redesign/settings.es";
 import { shellEs } from "./redesign/shell.es";
+import { learnEs } from "@/i18n/learn/learn.es";
+import { learnDrillsEs } from "@/i18n/learn/drills.es";
 
 export const es: Record<keyof typeof en, string> = {
+  ...lessonCatalogEs,
+  ...rulesLayoutEs,
+  ...advancedBattlesEs,
   ...manualEs,
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Eliminar este Digimon",
@@ -2001,7 +2010,7 @@ export const es: Record<keyof typeof en, string> = {
   "community.publish.signIn": "Inicia sesión para publicar tus decks.",
   "community.publish.errorNotLegal": "Este deck no es válido, así que no puede ser público.",
   "community.publish.errorName": "Cambia primero el nombre de este deck. Tiene una palabra que no está permitida.",
-  "community.publish.errorHidden": "Un moderador ocultó este deck tras una denuncia, así que no puede ser público.",
+  "community.publish.errorHidden": "Un moderador ocultó este deck. Corrígelo y solicita una revisión.",
   "community.report.open": "Denunciar deck",
   "community.report.title": "Denunciar {name}",
   "community.report.body":
@@ -2033,6 +2042,26 @@ export const es: Record<keyof typeof en, string> = {
   "community.moderation.hiddenBadge": "Oculto",
   "community.moderation.hiddenOwnerBadge": "Ocultado por un moderador",
   "community.moderation.hiddenOwnerNote": "Denunciado por jugadores. Nadie más lo ve.",
+  "community.moderation.hideTitle": "¿Ocultar {name}?",
+  "community.moderation.hideBody":
+    "Los jugadores dejan de ver este deck. Su dueño ve el motivo y tu nota, y puede corregir el deck y pedir una revisión.",
+  "community.moderation.noteLabel": "Nota para el dueño (opcional)",
+  "community.moderation.hiddenReason": "Oculto por: {reason}.",
+  "community.moderation.ownerNote": "Nota del moderador: {note}",
+  "community.moderation.ownerFixHint": "Corrige el deck y solicita una revisión.",
+  "community.moderation.reviewPendingNote": "Un moderador revisará tus cambios.",
+  "community.moderation.reviewRequestedBadge": "Revisión solicitada",
+  "community.moderation.reviewTitle": "Moderación",
+  "community.moderation.approve": "Aprobar y hacer público",
+  "community.moderation.decline": "Mantener oculto",
+  "community.moderation.declined": "Revisión rechazada. El deck sigue oculto.",
+  "community.review.action": "Solicitar revisión",
+  "community.review.title": "¿Solicitar una revisión de {name}?",
+  "community.review.body":
+    "Corrige tu deck primero. Enviamos tu deck guardado tal como está ahora. Sigue oculto hasta que un moderador lo apruebe.",
+  "community.review.noteLabel": "Nota para el moderador (opcional)",
+  "community.review.errorPending": "Ya solicitaste una revisión. Espera la respuesta de un moderador.",
+  "community.review.errorNotHidden": "Este deck ya no está oculto.",
   "community.publish.errorGeneric": "No se pudo publicar. Inténtalo de nuevo.",
   "chat.open": "Chat",
   "chat.openUnread": "Chat, {count} sin leer",
@@ -2130,4 +2159,7 @@ export const es: Record<keyof typeof en, string> = {
   ...collectionEs,
   ...settingsEs,
   ...arenaEs,
+  ...learnEs,
+  ...learnDrillsEs,
+  ...battleLessonsEs,
 };

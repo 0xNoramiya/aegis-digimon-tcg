@@ -1,7 +1,13 @@
+import { advancedBattlesFr } from "@/i18n/learn/advancedBattles.fr";
+import { rulesLayoutFr } from "@/i18n/learn/rulesLayout.fr";
+import { lessonCatalogFr } from "@/i18n/learn/lessonCatalog.fr";
+import { battleLessonsFr } from "@/i18n/learn/battleLessons.fr";
 import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnFr } from "@/i18n/learn/learn.fr";
+import { learnDrillsFr } from "@/i18n/learn/drills.fr";
 
 const interfaceMessages = {
   ...manualEn,
@@ -22,6 +28,12 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnFr,
+  ...learnDrillsFr,
+  ...battleLessonsFr,
+  ...lessonCatalogFr,
+  ...rulesLayoutFr,
+  ...advancedBattlesFr,
   "digilab.cardCounts": "{main} cartes principales · {eggs} Digi-Œufs",
   "settings.cardImageLanguage": "Langue des images des cartes",
   "settings.cardImageLanguageDesc":
@@ -2385,8 +2397,7 @@ const interfaceMessages = {
   "community.publish.signIn": "Connectez-vous pour publier vos decks.",
   "community.publish.errorNotLegal": "Ce deck n'est pas légal, il ne peut donc pas être public.",
   "community.publish.errorName": "Renommez d'abord ce deck. Son nom comporte un mot interdit.",
-  "community.publish.errorHidden":
-    "Un modérateur a masqué ce deck après un signalement, il ne peut donc pas être public.",
+  "community.publish.errorHidden": "Un modérateur a masqué ce deck. Corrigez-le, puis demandez une révision.",
   "community.report.open": "Signaler le deck",
   "community.report.title": "Signaler {name}",
   "community.report.body":
@@ -2419,6 +2430,26 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "Masqué",
   "community.moderation.hiddenOwnerBadge": "Masqué par un modérateur",
   "community.moderation.hiddenOwnerNote": "Signalé par les joueurs. Les autres ne peuvent pas le voir.",
+  "community.moderation.hideTitle": "Masquer {name} ?",
+  "community.moderation.hideBody":
+    "Les joueurs ne voient plus ce deck. Son propriétaire voit le motif et votre note, et peut corriger le deck puis demander une révision.",
+  "community.moderation.noteLabel": "Note pour le propriétaire (facultatif)",
+  "community.moderation.hiddenReason": "Masqué pour : {reason}.",
+  "community.moderation.ownerNote": "Note du modérateur : {note}",
+  "community.moderation.ownerFixHint": "Corrigez le deck, puis demandez une révision.",
+  "community.moderation.reviewPendingNote": "Un modérateur va examiner vos modifications.",
+  "community.moderation.reviewRequestedBadge": "Révision demandée",
+  "community.moderation.reviewTitle": "Modération",
+  "community.moderation.approve": "Approuver et rendre public",
+  "community.moderation.decline": "Garder masqué",
+  "community.moderation.declined": "Révision refusée. Le deck reste masqué.",
+  "community.review.action": "Demander une révision",
+  "community.review.title": "Demander une révision de {name} ?",
+  "community.review.body":
+    "Corrigez d'abord votre deck. Nous envoyons votre deck enregistré tel qu'il est maintenant. Il reste masqué jusqu'à ce qu'un modérateur l'approuve.",
+  "community.review.noteLabel": "Note pour le modérateur (facultatif)",
+  "community.review.errorPending": "Vous avez déjà demandé une révision. Attendez la réponse d'un modérateur.",
+  "community.review.errorNotHidden": "Ce deck n'est plus masqué.",
   "community.publish.errorGeneric": "Impossible de publier. Réessayez.",
   "redesign.collection.lede":
     "Parcourez toutes les cartes jouables sur Aegis, avec leurs effets et leurs limites par deck.",

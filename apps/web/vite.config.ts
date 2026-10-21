@@ -29,6 +29,10 @@ export default defineConfig({
     projects: [
       {
         extends: true,
+        test: { name: "tutorial-ui", include: ["src/game/tutorial/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: { name: "card-text-ui", include: ["src/i18n/useCardTranslationState.test.tsx"], environment: "jsdom" },
       },
       {
@@ -77,6 +81,8 @@ export default defineConfig({
             "src/game/piece/PermanentDpDeltaHint.test.tsx",
             "src/game/log/**/*.test.tsx",
             "src/deckProviders/**/*.test.tsx",
+            "src/learn/**/*.test.tsx",
+            "src/game/tutorial/**/*.test.tsx",
           ],
         },
       },

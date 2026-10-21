@@ -1,7 +1,13 @@
+import { advancedBattlesDe } from "@/i18n/learn/advancedBattles.de";
+import { rulesLayoutDe } from "@/i18n/learn/rulesLayout.de";
+import { lessonCatalogDe } from "@/i18n/learn/lessonCatalog.de";
+import { battleLessonsDe } from "@/i18n/learn/battleLessons.de";
 import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnDe } from "@/i18n/learn/learn.de";
+import { learnDrillsDe } from "@/i18n/learn/drills.de";
 
 const interfaceMessages = {
   ...manualEn,
@@ -22,6 +28,12 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnDe,
+  ...learnDrillsDe,
+  ...battleLessonsDe,
+  ...lessonCatalogDe,
+  ...rulesLayoutDe,
+  ...advancedBattlesDe,
   "settings.cardImageLanguage": "Sprache der Kartenbilder",
   "settings.cardImageLanguageDesc":
     "Wähle die Standardsprache für die Sammlung und neue Kartenexemplare in Decks. Die Schaltfläche ersetzt auch alternative Bilder in bestehenden Decks. Karten ohne diese Sprache behalten ihr aktuelles Bild.",
@@ -2398,7 +2410,7 @@ const interfaceMessages = {
   "community.publish.errorName":
     "Benennen Sie dieses Deck zuerst um. Sein Name enthält ein Wort, das nicht erlaubt ist.",
   "community.publish.errorHidden":
-    "Ein Moderator hat dieses Deck nach einer Meldung ausgeblendet, daher kann es nicht öffentlich sein.",
+    "Ein Moderator hat dieses Deck ausgeblendet. Korrigieren Sie es und beantragen Sie dann eine Prüfung.",
   "community.report.open": "Deck melden",
   "community.report.title": "{name} melden",
   "community.report.body":
@@ -2432,6 +2444,27 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "Ausgeblendet",
   "community.moderation.hiddenOwnerBadge": "Von einem Moderator ausgeblendet",
   "community.moderation.hiddenOwnerNote": "Von Spielern gemeldet. Andere können es nicht sehen.",
+  "community.moderation.hideTitle": "{name} ausblenden?",
+  "community.moderation.hideBody":
+    "Spieler sehen dieses Deck nicht mehr. Der Besitzer sieht den Grund und Ihre Notiz und kann das Deck korrigieren und eine Prüfung beantragen.",
+  "community.moderation.noteLabel": "Notiz an den Besitzer (optional)",
+  "community.moderation.hiddenReason": "Ausgeblendet wegen: {reason}.",
+  "community.moderation.ownerNote": "Notiz des Moderators: {note}",
+  "community.moderation.ownerFixHint": "Korrigieren Sie das Deck und beantragen Sie dann eine Prüfung.",
+  "community.moderation.reviewPendingNote": "Ein Moderator prüft Ihre Änderungen.",
+  "community.moderation.reviewRequestedBadge": "Prüfung beantragt",
+  "community.moderation.reviewTitle": "Moderation",
+  "community.moderation.approve": "Freigeben und veröffentlichen",
+  "community.moderation.decline": "Ausgeblendet lassen",
+  "community.moderation.declined": "Prüfung abgelehnt. Das Deck bleibt ausgeblendet.",
+  "community.review.action": "Prüfung beantragen",
+  "community.review.title": "Prüfung von {name} beantragen?",
+  "community.review.body":
+    "Korrigieren Sie zuerst Ihr Deck. Wir senden Ihr gespeichertes Deck so, wie es jetzt ist. Es bleibt ausgeblendet, bis ein Moderator es freigibt.",
+  "community.review.noteLabel": "Notiz an den Moderator (optional)",
+  "community.review.errorPending":
+    "Sie haben bereits eine Prüfung beantragt. Warten Sie auf die Antwort eines Moderators.",
+  "community.review.errorNotHidden": "Dieses Deck ist nicht mehr ausgeblendet.",
   "community.publish.errorGeneric": "Veröffentlichen fehlgeschlagen. Versuchen Sie es erneut.",
   "redesign.collection.lede": "Durchsuchen Sie alle Karten, die Aegis unterstützt, mit ihren Effekten und Decklimits.",
   "redesign.collection.statCards": "Karten",

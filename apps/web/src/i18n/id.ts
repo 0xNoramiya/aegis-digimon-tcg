@@ -1,7 +1,13 @@
+import { advancedBattlesId } from "@/i18n/learn/advancedBattles.id";
+import { rulesLayoutId } from "@/i18n/learn/rulesLayout.id";
+import { lessonCatalogId } from "@/i18n/learn/lessonCatalog.id";
+import { battleLessonsId } from "@/i18n/learn/battleLessons.id";
 import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnId } from "@/i18n/learn/learn.id";
+import { learnDrillsId } from "@/i18n/learn/drills.id";
 
 const interfaceMessages = {
   ...manualEn,
@@ -22,6 +28,12 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnId,
+  ...learnDrillsId,
+  ...battleLessonsId,
+  ...lessonCatalogId,
+  ...rulesLayoutId,
+  ...advancedBattlesId,
   "settings.cardImageLanguage": "Bahasa gambar kartu",
   "settings.cardImageLanguageDesc":
     "Pilih bahasa default untuk koleksi dan salinan baru yang ditambahkan ke deck. Tombol ini juga mengganti ilustrasi alternatif di deck yang sudah ada. Kartu tanpa bahasa ini tetap memakai gambar saat ini.",
@@ -2345,8 +2357,7 @@ const interfaceMessages = {
   "community.publish.errorNotLegal": "Deck ini tidak legal, jadi tidak bisa dipublikasikan.",
   "community.publish.errorName":
     "Ganti nama deck ini terlebih dahulu. Namanya mengandung kata yang tidak diperbolehkan.",
-  "community.publish.errorHidden":
-    "Seorang moderator menyembunyikan deck ini setelah ada laporan, sehingga tidak dapat dipublikasikan.",
+  "community.publish.errorHidden": "Moderator menyembunyikan deck ini. Perbaiki, lalu minta peninjauan.",
   "community.report.open": "Laporkan deck",
   "community.report.title": "Laporkan {name}",
   "community.report.body":
@@ -2379,6 +2390,26 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "Tersembunyi",
   "community.moderation.hiddenOwnerBadge": "Disembunyikan oleh moderator",
   "community.moderation.hiddenOwnerNote": "Dilaporkan oleh pemain. Orang lain tidak bisa melihatnya.",
+  "community.moderation.hideTitle": "Sembunyikan {name}?",
+  "community.moderation.hideBody":
+    "Pemain tidak lagi melihat deck ini. Pemiliknya melihat alasan dan catatan Anda, dan bisa memperbaiki deck lalu meminta peninjauan.",
+  "community.moderation.noteLabel": "Catatan untuk pemilik (opsional)",
+  "community.moderation.hiddenReason": "Disembunyikan karena: {reason}.",
+  "community.moderation.ownerNote": "Catatan moderator: {note}",
+  "community.moderation.ownerFixHint": "Perbaiki deck, lalu minta peninjauan.",
+  "community.moderation.reviewPendingNote": "Moderator akan meninjau perubahan Anda.",
+  "community.moderation.reviewRequestedBadge": "Peninjauan diminta",
+  "community.moderation.reviewTitle": "Moderasi",
+  "community.moderation.approve": "Setujui dan jadikan publik",
+  "community.moderation.decline": "Tetap sembunyikan",
+  "community.moderation.declined": "Peninjauan ditolak. Deck tetap disembunyikan.",
+  "community.review.action": "Minta peninjauan",
+  "community.review.title": "Minta peninjauan {name}?",
+  "community.review.body":
+    "Perbaiki deck Anda dulu. Kami mengirim deck tersimpan apa adanya sekarang. Deck tetap disembunyikan sampai moderator menyetujuinya.",
+  "community.review.noteLabel": "Catatan untuk moderator (opsional)",
+  "community.review.errorPending": "Anda sudah meminta peninjauan. Tunggu jawaban moderator.",
+  "community.review.errorNotHidden": "Deck ini sudah tidak disembunyikan.",
   "community.publish.errorGeneric": "Tidak bisa dipublikasikan. Coba lagi.",
   "redesign.collection.lede":
     "Jelajahi setiap kartu yang dapat dimainkan di Aegis, beserta efek dan batasnya dalam deck.",

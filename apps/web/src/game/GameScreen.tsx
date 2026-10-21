@@ -138,6 +138,8 @@ import { openCombatWindow, mirroredCombatWindow } from "./combatWindowModel";
 import { buildInstanceIndex, instancePermanentId } from "./decisionModel";
 import { digivolveBasePermanentIds } from "./digivolveModel";
 import { useMatchLogHistory } from "@/game/log/useMatchLogHistory";
+import { TutorialCoach } from "@/game/tutorial/TutorialCoach";
+import { findTutorialLesson } from "@aegis/shared/tutorial/findTutorialLesson";
 import { getSeatNames } from "@/game/log/getSeatNames";
 import type { ServerEvent } from "@aegis/shared/protocol/events";
 import { useMatchCues } from "./useMatchCues";
@@ -210,6 +212,7 @@ function GameScreenSession({
   startMode = "casual",
   botDeckId,
   onExit,
+  onStartLesson,
   onRematch,
   onCopyUsedDeck,
   onResetScenario,
@@ -239,6 +242,7 @@ function GameScreenSession({
   betaBattleMode?: boolean;
   unlimited?: boolean;
   onExit: (screen: Screen) => void;
+  onStartLesson?: (lessonId: string) => void;
   onCopyUsedDeck?: (deck: DeckListing) => void;
   /** Restart a server-backed development scenario from the match controls. */
   onResetScenario?: () => void;
@@ -1469,7 +1473,8 @@ function GameScreenSession({
       }
     />
   );
-  const overlays = (
+  const tutorialLesson = spectating || replayMode ? undefined : findTutorialLesson(joinOptions.storyBattleId);
+  const matchOverlays = (
     <MatchOverlays
       state={state}
       viewer={you}
@@ -1522,7 +1527,7 @@ function GameScreenSession({
       signedIn={signedIn}
       opponentDropped={!spectating && !vsBot && !opp.connected && !state.gameOver}
       gameOver={
-        !replayMode && (state.gameOver || series?.stage === "over") && !cues.resultPending
+        !replayMode && !tutorialLesson && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
               opponentDeckDialog:
@@ -1650,6 +1655,20 @@ function GameScreenSession({
             : () => onExit("lobby")
       }
     />
+  );
+  const overlays = (
+    <>
+      {matchOverlays}
+      {tutorialLesson && onStartLesson && (!state.gameOver || !cues.resultPending) ? (
+        <TutorialCoach
+          lesson={tutorialLesson}
+          state={state}
+          viewerSeat={viewerSeat}
+          onStartLesson={onStartLesson}
+          onLeave={() => onExit("home")}
+        />
+      ) : null}
+    </>
   );
 
   /** What both battle rows put on a permanent; only the sweep's stagger differs. */

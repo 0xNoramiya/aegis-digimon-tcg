@@ -1,7 +1,13 @@
+import { advancedBattlesZhCN } from "@/i18n/learn/advancedBattles.zh-CN";
+import { rulesLayoutZhCN } from "@/i18n/learn/rulesLayout.zh-CN";
+import { lessonCatalogZhCN } from "@/i18n/learn/lessonCatalog.zh-CN";
+import { battleLessonsZhCN } from "@/i18n/learn/battleLessons.zh-CN";
 import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesZhCN } from "@/i18n/decisionChoices.zh-CN";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnZhCN } from "@/i18n/learn/learn.zh-CN";
+import { learnDrillsZhCN } from "@/i18n/learn/drills.zh-CN";
 
 const interfaceMessages = {
   ...manualEn,
@@ -21,6 +27,12 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": "丢弃我方1只驯兽师下方最下方的1张背面表示卡牌",
   "overlay.trashTwoTamerBottomCards": "丢弃我方驯兽师下方最下方的2张背面表示卡牌",
   ...providerEn,
+  ...learnZhCN,
+  ...learnDrillsZhCN,
+  ...battleLessonsZhCN,
+  ...lessonCatalogZhCN,
+  ...rulesLayoutZhCN,
+  ...advancedBattlesZhCN,
   "settings.cardImageLanguage": "卡牌图片语言",
   "settings.cardImageLanguageDesc":
     "选择收藏和新加入卡组的卡牌的默认语言。按钮也会替换现有卡组中的异画。没有该语言版本的卡牌将保留当前图片。",
@@ -2244,7 +2256,7 @@ const interfaceMessages = {
   "community.publish.signIn": "登录后可发布你的卡组。",
   "community.publish.errorNotLegal": "该卡组不合法，无法公开。",
   "community.publish.errorName": "请先重命名这套卡组，名称中含有不允许的词语。",
-  "community.publish.errorHidden": "该卡组被管理员因举报隐藏，无法公开。",
+  "community.publish.errorHidden": "管理员隐藏了此卡组。请先修改，然后申请审核。",
   "community.report.open": "举报卡组",
   "community.report.title": "举报 {name}",
   "community.report.body": "请说明问题。管理员会审核每一条举报，作者不会知道举报人是谁。",
@@ -2275,6 +2287,24 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "已隐藏",
   "community.moderation.hiddenOwnerBadge": "已被管理员隐藏",
   "community.moderation.hiddenOwnerNote": "被玩家举报，其他玩家不可见。",
+  "community.moderation.hideTitle": "隐藏 {name}？",
+  "community.moderation.hideBody": "玩家将不再看到此卡组。所有者会看到原因和你的备注，并可以修改卡组后申请审核。",
+  "community.moderation.noteLabel": "给所有者的备注（可选）",
+  "community.moderation.hiddenReason": "隐藏原因：{reason}。",
+  "community.moderation.ownerNote": "管理员备注：{note}",
+  "community.moderation.ownerFixHint": "请修改卡组，然后申请审核。",
+  "community.moderation.reviewPendingNote": "管理员会审核你的修改。",
+  "community.moderation.reviewRequestedBadge": "已申请审核",
+  "community.moderation.reviewTitle": "管理",
+  "community.moderation.approve": "批准并公开",
+  "community.moderation.decline": "保持隐藏",
+  "community.moderation.declined": "已拒绝审核。卡组仍保持隐藏。",
+  "community.review.action": "申请审核",
+  "community.review.title": "申请审核 {name}？",
+  "community.review.body": "请先修改卡组。我们会按当前保存的版本提交。在管理员批准前，它会保持隐藏。",
+  "community.review.noteLabel": "给管理员的备注（可选）",
+  "community.review.errorPending": "你已申请过审核。请等待管理员回复。",
+  "community.review.errorNotHidden": "此卡组已不再隐藏。",
   "community.publish.errorGeneric": "发布失败，请重试。",
   "redesign.collection.lede": "浏览 Aegis 可用的全部卡牌，附效果与卡组限制。",
   "redesign.collection.statCards": "卡牌",

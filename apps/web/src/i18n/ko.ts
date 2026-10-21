@@ -1,7 +1,13 @@
+import { advancedBattlesKo } from "@/i18n/learn/advancedBattles.ko";
+import { rulesLayoutKo } from "@/i18n/learn/rulesLayout.ko";
+import { lessonCatalogKo } from "@/i18n/learn/lessonCatalog.ko";
+import { battleLessonsKo } from "@/i18n/learn/battleLessons.ko";
 import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnKo } from "@/i18n/learn/learn.ko";
+import { learnDrillsKo } from "@/i18n/learn/drills.ko";
 
 const interfaceMessages = {
   ...manualEn,
@@ -26,6 +32,12 @@ const interfaceMessages = {
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   "decision.choice.declareEgg": "카드 종류 선언: 디지타마",
   ...providerEn,
+  ...learnKo,
+  ...learnDrillsKo,
+  ...battleLessonsKo,
+  ...lessonCatalogKo,
+  ...rulesLayoutKo,
+  ...advancedBattlesKo,
   "digilab.cardCounts": "메인 카드 {main}장 · 디지타마 {eggs}장",
   "settings.cardImageLanguage": "카드 이미지 언어",
   "settings.cardImageLanguageDesc":
@@ -2309,7 +2321,7 @@ const interfaceMessages = {
   "community.publish.signIn": "덱을 공개하려면 로그인하세요.",
   "community.publish.errorNotLegal": "사용할 수 없는 덱이라 공개할 수 없습니다.",
   "community.publish.errorName": "먼저 이 덱의 이름을 바꾸세요. 이름에 허용되지 않는 단어가 있습니다.",
-  "community.publish.errorHidden": "신고를 받아 관리자가 이 덱을 숨겼기 때문에 공개할 수 없습니다.",
+  "community.publish.errorHidden": "관리자가 이 덱을 숨겼습니다. 덱을 수정한 뒤 검토를 요청하세요.",
   "community.report.open": "덱 신고",
   "community.report.title": "{name} 신고",
   "community.report.body":
@@ -2341,6 +2353,26 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "숨김",
   "community.moderation.hiddenOwnerBadge": "관리자가 숨김",
   "community.moderation.hiddenOwnerNote": "플레이어 신고로 숨겨졌습니다. 다른 사람에게는 보이지 않습니다.",
+  "community.moderation.hideTitle": "{name}을(를) 숨길까요?",
+  "community.moderation.hideBody":
+    "플레이어에게 이 덱이 더 이상 보이지 않습니다. 덱 주인은 사유와 메모를 보고, 덱을 수정한 뒤 검토를 요청할 수 있습니다.",
+  "community.moderation.noteLabel": "덱 주인에게 남길 메모 (선택)",
+  "community.moderation.hiddenReason": "숨김 사유: {reason}.",
+  "community.moderation.ownerNote": "관리자 메모: {note}",
+  "community.moderation.ownerFixHint": "덱을 수정한 뒤 검토를 요청하세요.",
+  "community.moderation.reviewPendingNote": "관리자가 변경 사항을 검토합니다.",
+  "community.moderation.reviewRequestedBadge": "검토 요청됨",
+  "community.moderation.reviewTitle": "관리",
+  "community.moderation.approve": "승인하고 공개",
+  "community.moderation.decline": "숨김 유지",
+  "community.moderation.declined": "검토를 거절했습니다. 덱은 계속 숨겨집니다.",
+  "community.review.action": "검토 요청",
+  "community.review.title": "{name} 검토를 요청할까요?",
+  "community.review.body":
+    "먼저 덱을 수정하세요. 지금 저장된 덱 그대로 보냅니다. 관리자가 승인할 때까지 계속 숨겨집니다.",
+  "community.review.noteLabel": "관리자에게 남길 메모 (선택)",
+  "community.review.errorPending": "이미 검토를 요청했습니다. 관리자의 답변을 기다려 주세요.",
+  "community.review.errorNotHidden": "이 덱은 더 이상 숨겨져 있지 않습니다.",
   "community.publish.errorGeneric": "공개하지 못했습니다. 다시 시도하세요.",
   "redesign.collection.lede": "Aegis에서 사용할 수 있는 모든 카드의 효과와 덱 제한을 살펴보세요.",
   "redesign.collection.statCards": "카드",

@@ -1,3 +1,7 @@
+import { advancedBattlesIt } from "@/i18n/learn/advancedBattles.it";
+import { rulesLayoutIt } from "@/i18n/learn/rulesLayout.it";
+import { lessonCatalogIt } from "@/i18n/learn/lessonCatalog.it";
+import { battleLessonsIt } from "@/i18n/learn/battleLessons.it";
 import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
@@ -5,6 +9,8 @@ import { replayVideoIt } from "./replayVideo";
 import { profileReplayIt } from "./profileReplays";
 import { replayIt } from "./replays";
 import { en } from "./en";
+import { learnIt } from "@/i18n/learn/learn.it";
+import { learnDrillsIt } from "@/i18n/learn/drills.it";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
@@ -25,6 +31,12 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnIt,
+  ...learnDrillsIt,
+  ...battleLessonsIt,
+  ...lessonCatalogIt,
+  ...rulesLayoutIt,
+  ...advancedBattlesIt,
   "settings.cardImageLanguage": "Lingua delle immagini delle carte",
   "settings.cardImageLanguageDesc":
     "Scegli la lingua predefinita della Collezione e delle nuove copie aggiunte ai mazzi. Il pulsante sostituisce anche le immagini alternative nei mazzi esistenti. Le carte senza questa lingua mantengono la loro immagine attuale.",
@@ -357,8 +369,7 @@ const interfaceMessages = {
   "community.guide.heading": "Titolo",
   "community.guide.bullets": "Elenco puntato",
   "community.guide.cards": "Suggerimenti di carte",
-  "community.publish.errorHidden":
-    "Un moderatore ha nascosto questo deck dopo una segnalazione, quindi non può essere pubblico.",
+  "community.publish.errorHidden": "Un moderatore ha nascosto questo deck. Correggilo e chiedi una revisione.",
   "community.report.open": "Segnala deck",
   "community.report.title": "Segnala {name}",
   "community.report.body":
@@ -390,6 +401,26 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "Nascosto",
   "community.moderation.hiddenOwnerBadge": "Nascosto da un moderatore",
   "community.moderation.hiddenOwnerNote": "Segnalato dai giocatori. Gli altri non possono vederlo.",
+  "community.moderation.hideTitle": "Nascondere {name}?",
+  "community.moderation.hideBody":
+    "I giocatori non vedono più questo deck. Il proprietario vede il motivo e la tua nota, e può correggere il deck e chiedere una revisione.",
+  "community.moderation.noteLabel": "Nota per il proprietario (facoltativa)",
+  "community.moderation.hiddenReason": "Nascosto per: {reason}.",
+  "community.moderation.ownerNote": "Nota del moderatore: {note}",
+  "community.moderation.ownerFixHint": "Correggi il deck, poi chiedi una revisione.",
+  "community.moderation.reviewPendingNote": "Un moderatore esaminerà le tue modifiche.",
+  "community.moderation.reviewRequestedBadge": "Revisione richiesta",
+  "community.moderation.reviewTitle": "Moderazione",
+  "community.moderation.approve": "Approva e rendi pubblico",
+  "community.moderation.decline": "Mantieni nascosto",
+  "community.moderation.declined": "Revisione rifiutata. Il deck resta nascosto.",
+  "community.review.action": "Chiedi revisione",
+  "community.review.title": "Chiedere una revisione di {name}?",
+  "community.review.body":
+    "Correggi prima il deck. Inviamo il deck salvato così com'è ora. Resta nascosto finché un moderatore non lo approva.",
+  "community.review.noteLabel": "Nota per il moderatore (facoltativa)",
+  "community.review.errorPending": "Hai già chiesto una revisione. Attendi la risposta di un moderatore.",
+  "community.review.errorNotHidden": "Questo deck non è più nascosto.",
   "privacy.title": "Informativa sulla privacy",
   "game.dragIntent.reorder": "RIORDINA LA MANO",
   "game.handSort.type": "Per tipo",

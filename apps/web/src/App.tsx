@@ -42,7 +42,8 @@ import { MusicMenu } from "@/design/MusicMenu";
 import { SOUND_SETTINGS_SECTION_ID } from "@/screens/soundSettingsSectionId";
 import { NotificationBell } from "./notifications/NotificationBell";
 import { useNotificationInbox } from "./notifications/useNotificationInbox";
-import { pathForRoute, routeFromPathname, type AppRoute } from "./routes";
+import { pathForRoute, routeFromPathname, SCREEN_PATHS, type AppRoute } from "./routes";
+import { getRulesChapterAnchor } from "@/learn/rules/getRulesChapterAnchor";
 import { roomCodeFromSearch } from "./roomInvite";
 import { isUiPreviewPath } from "./prototype/routes";
 import { SEQUENTIAL_PACING_ENABLED } from "./features";
@@ -140,6 +141,14 @@ const MobileComponentsLab = createLazyComponent({
   load: () => import("./dev/MobileComponentsLab"),
   pick: (module) => module.MobileComponentsLab,
 });
+const LearnScreen = createLazyComponent({
+  load: () => import("@/learn/LearnScreen"),
+  pick: (module) => module.LearnScreen,
+});
+const RulesScreen = createLazyComponent({
+  load: () => import("@/learn/rules/RulesScreen"),
+  pick: (module) => module.RulesScreen,
+});
 const StoryScreen = createLazyComponent({
   load: () => import("@/story/StoryScreen"),
   pick: (module) => module.StoryScreen,
@@ -184,6 +193,8 @@ const NAV_SCREENS: Screen[] = [
   "home",
   "lobby",
   "story",
+  "learn",
+  "rules",
   "watch",
   "deck",
   "community",
@@ -581,6 +592,12 @@ function LoadedAegisClient({
     navigateScreen("game");
   };
 
+  const startLesson = (lessonId: string) => {
+    startMatch("bot");
+    setStoryBattleId(lessonId);
+    setMatchNumber((current) => current + 1);
+  };
+
   const availableDecks = useMemo(() => {
     const selectable = selectableDecks({ personalDecks: decks, famousDecks });
     return borrowedDeck ? [borrowedDeck, ...selectable] : selectable;
@@ -715,6 +732,28 @@ function LoadedAegisClient({
             )}
             {screen === "login" && <Login onBack={() => navigateScreen("home")} />}
 
+            {screen === "learn" && (
+              <LearnScreen
+                key={account?.id ?? "guest"}
+                signedIn={!!account}
+                onSignIn={() => navigateScreen("login")}
+                onStartLesson={startLesson}
+                onOpenRules={(chapterId) => {
+                  navigateScreen("rules");
+                  if (chapterId) {
+                    window.history.replaceState(null, "", `${SCREEN_PATHS.rules}#${getRulesChapterAnchor(chapterId)}`);
+                  }
+                }}
+              />
+            )}
+            {screen === "rules" && (
+              <RulesScreen
+                key={account?.id ?? "guest"}
+                signedIn={!!account}
+                onBack={() => navigateScreen("learn")}
+                onStartLesson={startLesson}
+              />
+            )}
             {screen === "story" && (
               <StoryScreen
                 key={account?.id ?? "guest"}
@@ -924,9 +963,12 @@ function LoadedAegisClient({
                 presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}
                 signedIn={!!account}
                 onLeaveForfeitsChange={setLeaveForfeitsMatch}
+                onStartLesson={startLesson}
                 onExit={(next) => {
                   setSeriesGame(undefined);
-                  navigateScreen(storyBattleId ? "story" : next);
+                  void import("@/learn/getMatchExitScreen")
+                    .then(({ getMatchExitScreen }) => navigateScreen(getMatchExitScreen({ storyBattleId, next })))
+                    .catch(() => navigateScreen(next));
                 }}
                 onRematch={(privateRoomCode, roomUnlimited, roomHost, roomFormat, roomGameMode) => {
                   clearReconnectSession();

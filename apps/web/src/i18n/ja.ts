@@ -1,7 +1,13 @@
+import { advancedBattlesJa } from "@/i18n/learn/advancedBattles.ja";
+import { rulesLayoutJa } from "@/i18n/learn/rulesLayout.ja";
+import { lessonCatalogJa } from "@/i18n/learn/lessonCatalog.ja";
+import { battleLessonsJa } from "@/i18n/learn/battleLessons.ja";
 import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnJa } from "@/i18n/learn/learn.ja";
+import { learnDrillsJa } from "@/i18n/learn/drills.ja";
 
 const interfaceMessages = {
   ...manualEn,
@@ -25,6 +31,12 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnJa,
+  ...learnDrillsJa,
+  ...battleLessonsJa,
+  ...lessonCatalogJa,
+  ...rulesLayoutJa,
+  ...advancedBattlesJa,
   "settings.cardImageLanguage": "カード画像の言語",
   "settings.cardImageLanguageDesc":
     "コレクションとデッキに新しく追加するカードの既定の言語を選びます。ボタンを押すと既存デッキの別イラストも置き換えます。この言語の画像がないカードは現在の画像を維持します。",
@@ -2332,7 +2344,7 @@ const interfaceMessages = {
   "community.publish.signIn": "デッキを公開するにはサインインしてください。",
   "community.publish.errorNotLegal": "このデッキは使用できないため、公開できません。",
   "community.publish.errorName": "先にデッキ名を変更してください。使用できない言葉が含まれています。",
-  "community.publish.errorHidden": "通報を受けてモデレーターがこのデッキを非表示にしたため、公開できません。",
+  "community.publish.errorHidden": "モデレーターがこのデッキを非表示にしました。修正してから審査を依頼してください。",
   "community.report.open": "デッキを通報",
   "community.report.title": "{name}を通報",
   "community.report.body":
@@ -2364,6 +2376,26 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "非表示",
   "community.moderation.hiddenOwnerBadge": "モデレーターにより非表示",
   "community.moderation.hiddenOwnerNote": "プレイヤーから通報されました。他の人には表示されません。",
+  "community.moderation.hideTitle": "{name}を非表示にしますか？",
+  "community.moderation.hideBody":
+    "プレイヤーにはこのデッキが表示されなくなります。所有者には理由とメモが表示され、デッキを修正して審査を依頼できます。",
+  "community.moderation.noteLabel": "所有者へのメモ（任意）",
+  "community.moderation.hiddenReason": "非表示の理由: {reason}。",
+  "community.moderation.ownerNote": "モデレーターのメモ: {note}",
+  "community.moderation.ownerFixHint": "デッキを修正してから審査を依頼してください。",
+  "community.moderation.reviewPendingNote": "モデレーターが変更内容を審査します。",
+  "community.moderation.reviewRequestedBadge": "審査依頼中",
+  "community.moderation.reviewTitle": "モデレーション",
+  "community.moderation.approve": "承認して公開",
+  "community.moderation.decline": "非表示のままにする",
+  "community.moderation.declined": "審査を却下しました。デッキは非表示のままです。",
+  "community.review.action": "審査を依頼",
+  "community.review.title": "{name}の審査を依頼しますか？",
+  "community.review.body":
+    "先にデッキを修正してください。現在保存されているデッキをそのまま送ります。モデレーターが承認するまで非表示のままです。",
+  "community.review.noteLabel": "モデレーターへのメモ（任意）",
+  "community.review.errorPending": "すでに審査を依頼しています。モデレーターの返答をお待ちください。",
+  "community.review.errorNotHidden": "このデッキはもう非表示ではありません。",
   "community.publish.errorGeneric": "公開できませんでした。もう一度お試しください。",
   "redesign.collection.lede": "Aegisで使えるすべてのカードを、効果やデッキの枚数制限とともに閲覧できます。",
   "redesign.collection.statCards": "カード",
