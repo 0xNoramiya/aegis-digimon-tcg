@@ -40,6 +40,8 @@ export type Screen =
   | "login"
   | "lobby"
   | "story"
+  | "learn"
+  | "rules"
   | "watch"
   | "deck"
   | "collection"
@@ -591,7 +593,7 @@ export function TopNav({
   const navActive = (key: Screen) =>
     screen === key ||
     (screen === "roadmap" && key === "community") ||
-    ((screen === "watch" || screen === "story") && key === "lobby");
+    ((screen === "watch" || screen === "story" || screen === "learn" || screen === "rules") && key === "lobby");
   const navTo = (s: Screen) => {
     playSound("nav");
     onNav(s);

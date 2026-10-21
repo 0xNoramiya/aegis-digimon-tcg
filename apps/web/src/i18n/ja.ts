@@ -1,7 +1,13 @@
+import { advancedBattlesJa } from "@/i18n/learn/advancedBattles.ja";
+import { rulesLayoutJa } from "@/i18n/learn/rulesLayout.ja";
+import { lessonCatalogJa } from "@/i18n/learn/lessonCatalog.ja";
+import { battleLessonsJa } from "@/i18n/learn/battleLessons.ja";
 import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnJa } from "@/i18n/learn/learn.ja";
+import { learnDrillsJa } from "@/i18n/learn/drills.ja";
 
 const interfaceMessages = {
   ...manualEn,
@@ -25,6 +31,12 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnJa,
+  ...learnDrillsJa,
+  ...battleLessonsJa,
+  ...lessonCatalogJa,
+  ...rulesLayoutJa,
+  ...advancedBattlesJa,
   "settings.cardImageLanguage": "カード画像の言語",
   "settings.cardImageLanguageDesc":
     "コレクションとデッキに新しく追加するカードの既定の言語を選びます。ボタンを押すと既存デッキの別イラストも置き換えます。この言語の画像がないカードは現在の画像を維持します。",

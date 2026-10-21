@@ -1,7 +1,13 @@
+import { advancedBattlesId } from "@/i18n/learn/advancedBattles.id";
+import { rulesLayoutId } from "@/i18n/learn/rulesLayout.id";
+import { lessonCatalogId } from "@/i18n/learn/lessonCatalog.id";
+import { battleLessonsId } from "@/i18n/learn/battleLessons.id";
 import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnId } from "@/i18n/learn/learn.id";
+import { learnDrillsId } from "@/i18n/learn/drills.id";
 
 const interfaceMessages = {
   ...manualEn,
@@ -22,6 +28,12 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnId,
+  ...learnDrillsId,
+  ...battleLessonsId,
+  ...lessonCatalogId,
+  ...rulesLayoutId,
+  ...advancedBattlesId,
   "settings.cardImageLanguage": "Bahasa gambar kartu",
   "settings.cardImageLanguageDesc":
     "Pilih bahasa default untuk koleksi dan salinan baru yang ditambahkan ke deck. Tombol ini juga mengganti ilustrasi alternatif di deck yang sudah ada. Kartu tanpa bahasa ini tetap memakai gambar saat ini.",

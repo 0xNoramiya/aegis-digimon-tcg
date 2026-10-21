@@ -148,11 +148,11 @@ The API never persists provider API keys. PostgreSQL advisory locks coordinate c
 
 ### story_battle_completions
 
-Account-scoped solo story victories. Primary key `(account_id, battle_id)`; `account_id` references `accounts(id)` with cascade deletion. Stores the authoritative `match_id` and `completed_at` timestamp. Only the game room records a victory; HTTP exposes read-only progress. No chapter text or hidden combat state is stored here.
+Account-scoped solo story victories. Primary key `(account_id, battle_id)`; `account_id` references `accounts(id)` with cascade deletion. Stores the authoritative `match_id` and `completed_at` timestamp. Only the game room records a victory; HTTP exposes read-only progress. No chapter text or hidden combat state is stored here. `battle_id` also holds tutorial lesson IDs, which start with `tutorial-`.
 
 ### story_guest_completions
 
-Anonymous story victories keyed by a SHA-256 hash of a random browser token and battle ID. Stores match ID and completion time. Only authoritative match wins write this table. Guest progress is separate from account progress; clearing browser storage loses access to it.
+Anonymous story victories keyed by a SHA-256 hash of a random browser token and battle ID. Stores match ID and completion time. Only authoritative match wins write this table. Guest progress is separate from account progress; clearing browser storage loses access to it. `battle_id` also holds tutorial lesson IDs, which start with `tutorial-`.
 
 Manual turn scaffolding automatically unsuspends the incoming player, draws once after the initial first-player skip, and projects `manual.canHatch` / `manual.canMoveFromBreeding` during the exclusive hatch/move/skip window. `manual.turnPhase` tracks this guided flow while the engine command router remains in Main; scheduled empty-deck draws end the game through the normal result lifecycle. Card effects remain manual. Manual synchronized state additionally records simultaneous permanent `manualStatuses`, public effect and target signals, restart proposal seats and restart count. Consensual restarts retain staged decks and seats, derive fresh deterministic setup identities, and reoffer mulligans; private inspection data is cleared. Manual reveal gallery entries may include their public source zone and instance ID for owner-authorized movement. Manual replay summaries may use mode `manual`. Input-record rules include optional `gameMode`; missing values retain automatic execution. Manual games do not write `match_records` or `account_recent_matches`. Private inspection projections are stripped from player replay frames and never enter shared replay metadata. No SQL migration is required for these JSON fields.
 

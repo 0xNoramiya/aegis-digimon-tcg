@@ -1,9 +1,9 @@
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getStoryGuestHash } from "#api/story/getStoryGuestHash";
 import { shuffleStoryDecks } from "#api/story/shuffleStoryDecks";
-import { storyBattles } from "@aegis/shared/story/storyBattles";
+import { findSoloBattle } from "#api/story/findSoloBattle";
+import type { SoloBattle } from "#api/story/SoloBattle";
 import { StoryProgressStore } from "#api/story/StoryProgressStore";
-import { getStoryScenario } from "#api/story/getStoryScenario";
 import { getStorySeatDeck } from "#api/story/getStorySeatDeck";
 import type { AccountPreferences } from "#api/accounts/AccountStore";
 import { RollbackHistory } from "#api/rooms/RollbackHistory";
@@ -377,6 +377,7 @@ export class AegisRoom extends Room<{
   private devScenario: LocalScenarioEntry | undefined;
   private scenarioFixture: ScenarioFixture | undefined;
   private storyBattleId: string | undefined;
+  private soloBattle: SoloBattle | undefined;
   private storyAccountId: string | undefined;
   private storyGuestHash: string | undefined;
   private readonly BOT_SEAT = 1 as Seat;
@@ -554,7 +555,7 @@ export class AegisRoom extends Room<{
       if ((!account && !guestHash) || options.storyBattleId !== this.storyBattleId) {
         return false;
       }
-      const battle = storyBattles.find((entry) => entry.id === this.storyBattleId);
+      const battle = this.soloBattle;
       const store = new StoryProgressStore(this.accounts());
       const progress = account ? await store.getProgress(account.id) : await store.getGuestProgress(guestHash!);
       if (!battle || (battle.prerequisiteId && !progress.completed.includes(battle.prerequisiteId))) {
@@ -778,14 +779,16 @@ export class AegisRoom extends Room<{
       ) {
         throw new ServerError(400, "Invalid story room");
       }
-      const battle = storyBattles.find((entry) => entry.id === options.storyBattleId);
-      const fixture = battle?.playable ? getStoryScenario(battle.id) : undefined;
-      if (!battle || !fixture) {
+      const battle = findSoloBattle(options.storyBattleId);
+      if (!battle) {
         throw new ServerError(400, "Story battle is not available");
       }
       this.storyBattleId = battle.id;
-      shuffleStoryDecks({ fixture, seed });
-      this.scenarioFixture = fixture;
+      this.soloBattle = battle;
+      if (battle.shuffleDecks) {
+        shuffleStoryDecks({ fixture: battle.fixture, seed });
+      }
+      this.scenarioFixture = battle.fixture;
       options.allowRollback = false;
     }
     this.isRankedRoom = options.rankedRoom === true;
@@ -1589,14 +1592,14 @@ export class AegisRoom extends Room<{
     if (this.matchStartRequested || this.seatByClient.size + this.occupiedBotSeats().length >= 2) {
       throw new ServerError(403, "Player seats are full");
     }
-    if (this.storyBattleId && this.scenarioFixture) {
-      const battle = storyBattles.find((entry) => entry.id === this.storyBattleId)!;
+    if (this.soloBattle && this.scenarioFixture) {
+      const battle = this.soloBattle;
       options = {
         ...options,
-        displayName: battle.character,
+        displayName: battle.playerName ?? options.displayName,
         deck: getStorySeatDeck({ fixture: this.scenarioFixture, seat: 0 }),
         deckId: undefined,
-        deckName: battle.title,
+        deckName: battle.deckName,
         community: undefined,
         botDeck: undefined,
       };
@@ -2006,8 +2009,8 @@ export class AegisRoom extends Room<{
     );
 
     let botDisplayName = modelOptions === undefined ? "Bot" : "BT26 AI";
-    if (this.storyBattleId) {
-      botDisplayName = storyBattles.find((entry) => entry.id === this.storyBattleId)!.opponent;
+    if (this.soloBattle) {
+      botDisplayName = this.soloBattle.opponentName;
     }
     this.debug("bot.seated", { seat: this.BOT_SEAT, deck, clientPacesChains });
     try {
