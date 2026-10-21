@@ -1,3 +1,7 @@
+import { advancedBattlesEn } from "@/i18n/learn/advancedBattles.en";
+import { rulesLayoutEn } from "@/i18n/learn/rulesLayout.en";
+import { lessonCatalogEn } from "@/i18n/learn/lessonCatalog.en";
+import { newDrillsEn } from "@/i18n/learn/newDrills.en";
 import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
@@ -16,12 +20,18 @@ import { seriesEn } from "./redesign/series.en";
 import { rematchEn } from "@/i18n/redesign/rematch.en";
 import { settingsEn } from "./redesign/settings.en";
 import { shellEn } from "./redesign/shell.en";
+import { learnEn } from "@/i18n/learn/learn.en";
+import { learnLessonsEn } from "@/i18n/learn/lessons.en";
+import { learnDrillsEn } from "@/i18n/learn/drills.en";
 
 /* English source strings. This object is the key contract: every other locale is
    typed as Record<TranslationKey, string>, so a missing translation is a compile
    error. Placeholders use {name} and are filled by `t(key, params)`. */
 
 export const en = {
+  ...lessonCatalogEn,
+  ...rulesLayoutEn,
+  ...advancedBattlesEn,
   ...manualEn,
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Delete this Digimon",
@@ -535,7 +545,7 @@ export const en = {
   "lobby.randomCommunityPool": "Personal, famous and public community decks",
   "lobby.randomFailed": "Could not draw a deck. Try again.",
   "lobby.randomDrawing": "Drawing a deck…",
-  "overlay.viewUsedDeck": "View used deck",
+  "overlay.viewUsedDeck": "Your deck",
   "overlay.usedDeck": "Deck used in this duel",
   "lobby.randomPool": "{count} legal decks in pool",
   "lobby.randomPoolOne": "1 legal deck in pool",
@@ -744,8 +754,12 @@ export const en = {
   "settings.keepAwake": "Keep the screen awake",
   "settings.keepAwakeDesc":
     "Hold the screen on while a match is open, instead of letting the device sleep between turns",
-  "settings.actionConfirmations": "Confirm actions",
-  "settings.actionConfirmationsDesc": "Ask before playing, digivolving, or using an optional DNA digivolution",
+  "settings.cardConfirmation": "Card confirmations",
+  "settings.cardConfirmationDesc":
+    "Ask before you play, use, or digivolve a card. “Skip play-only cards” plays at once when the card has no other legal action. Target, material, cost, and mode choices still appear.",
+  "settings.cardConfirmationAlways": "Always ask",
+  "settings.cardConfirmationSkipPlayOnly": "Skip play-only cards",
+  "settings.cardConfirmationNever": "Never ask",
   "overlay.moveEffectPrompt": "Move effect prompt",
   "overlay.moveEffectPromptHelp": "Drag to move, or use the arrow keys. Press Home to reset the position.",
   "settings.effectPromptPosition": "Effect prompt position",
@@ -768,6 +782,8 @@ export const en = {
   "settings.organizedFieldDesc": "Sort Digimon by level and group identical Tamers and Options in a row of their own",
   "settings.pileCounts": "Show pile counts",
   "settings.pileCountsDesc": "Show the Eggs, Hand, Deck and Trash counters on the board",
+  "settings.hoverZoom": "Zoom cards on hover",
+  "settings.hoverZoomDesc": "Show a large card preview next to the pointer while hovering a card",
   "settings.sound": "Sound effects",
   "settings.soundDesc": "Clicks, selections and combat cues",
   "settings.decisionPing": "Decision ping",
@@ -1078,6 +1094,9 @@ export const en = {
   "overlay.suspendAlly": "Suspend {name} for +{dp} DP",
   "overlay.noAllies": "No eligible allies to suspend.",
   "overlay.passAlliance": "Pass",
+  "overlay.confirmBlockTitle": "Confirm block",
+  "overlay.confirmBlockDetail": "Suspend {name} to block this attack.",
+  "overlay.confirmBlock": "Block",
   "overlay.confirmAllianceTitle": "Confirm Alliance",
   "overlay.confirmAllianceDetail": "Suspend {name} to add {dp} DP.",
   "overlay.confirmAlliance": "Use Alliance",
@@ -1137,6 +1156,8 @@ export const en = {
   "overlay.securityAttackValue": "Security Attack {value}",
   "overlay.transformedBadge": "Counts as {name}",
   "overlay.printedEffect": "Printed effect",
+  "overlay.showCardText": "Show card text",
+  "overlay.hideCardText": "Hide card text",
   "overlay.grantedEffects": "Granted effects",
   "library.optionEffect": "Option effect",
   "overlay.noPrintedEffect": "No printed effect",
@@ -1944,4 +1965,8 @@ export const en = {
   ...chatEn,
   ...seriesEn,
   ...rematchEn,
+  ...learnEn,
+  ...learnLessonsEn,
+  ...learnDrillsEn,
+  ...newDrillsEn,
 } as const;

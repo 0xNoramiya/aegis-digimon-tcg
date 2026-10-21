@@ -1030,7 +1030,11 @@ export function playerFacingWatcherClause(sub: SubTriggerSubscription, ctx: Effe
     const clause = soleLinkingClause(box);
     if (clause !== undefined) return clause;
   }
-  return soleWatcherLine(box) ?? `${triggerLabel(sub.event)}: ${definition.nameEn}`;
+  const optionSideLine =
+    sub.isLinkedSource === true || sub.isInheritedSource === true
+      ? undefined
+      : soleWatcherLine(definition.optionEffect);
+  return soleWatcherLine(box) ?? optionSideLine ?? `${triggerLabel(sub.event)}: ${definition.nameEn}`;
 }
 
 /** Present a watcher to the ordering prompt as an ordinary collected effect. */

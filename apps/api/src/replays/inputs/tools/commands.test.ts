@@ -211,7 +211,7 @@ describe("scaffold", () => {
       until,
       testPath,
       replayDir: join(dir, "src", "replays", "inputs"),
-      issue: 321,
+      issue: "321",
     });
 
     expect(scaffold.fixturePath).toBe(join(dir, "src", "engine", "scenarios", "bugReplay.replay.json"));

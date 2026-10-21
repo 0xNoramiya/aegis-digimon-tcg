@@ -607,6 +607,13 @@ const Lightbulb = (p: IconProps) => (
     <path d="M10 22h4" />
   </Svg>
 );
+const GraduationCap = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M22 10 12 5 2 10l10 5 10-5z" />
+    <path d="M6 12v5c3 2 9 2 12 0v-5" />
+    <path d="M22 10v6" />
+  </Svg>
+);
 const MessageSquare = (p: IconProps) => (
   <Svg {...p}>
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -733,6 +740,7 @@ export const Icons = {
   Trash,
   Devices,
   Lightbulb,
+  GraduationCap,
   MessageSquare,
   Megaphone,
   Flag,

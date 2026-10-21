@@ -16,7 +16,6 @@ const fixture: ScenarioFixture = {
       deck: [
         "EX7-017",
         "EX8-022",
-        "EX7-020",
         "BT11-021",
         "EX7-017",
         "BT11-021",
@@ -26,7 +25,6 @@ const fixture: ScenarioFixture = {
         "EX1-068",
         "BT11-021",
         "BT11-021",
-        "EX7-016",
         "EX7-023",
         "EX8-028",
         "EX8-066",
@@ -59,7 +57,7 @@ const fixture: ScenarioFixture = {
       battleArea: [],
       breeding: {
         card: "EX7-021",
-        under: ["EX7-002"],
+        under: ["EX7-002", "EX7-016", "EX7-020"],
       },
     },
     "1": {

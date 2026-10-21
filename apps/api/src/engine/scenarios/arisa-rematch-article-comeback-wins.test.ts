@@ -82,7 +82,7 @@ it("lets Violet win the Arisa rematch with the Battle Coverage 11 Ruin Mode come
   const s = setupScenario(fixture, { autoOrderTriggers: false, autoOrderCards: false });
   const violet = s.state.players[0]!;
   const arisa = s.state.players[1]!;
-  const progress = { rushes: 0, rushLimit: 1, soulBanquetReady: false, phantomonRevives: 0, necromonRevives: 0 };
+  const progress = { rushes: 0, rushLimit: 1, soulBanquetReady: false, necromonRevives: 0 };
   const accept = (): DecisionResponse => ({ kind: "optional", accept: true });
   const answer: Answer = (seat, request) => {
     const source = request.sourceCardId;
@@ -109,8 +109,7 @@ it("lets Violet win the Arisa rematch with the Battle Coverage 11 Ruin Mode come
         return select(progress.necromonRevives === 1 ? "BT20-072" : "BT20-067");
       case "BT20-072":
         if (request.kind === "optional") return accept();
-        progress.phantomonRevives += 1;
-        return select(progress.phantomonRevives === 1 ? "BT20-068" : "BT21-065");
+        return select("BT21-065");
       case "BT20-073":
         return select("BT22-042");
       case "BT20-088":

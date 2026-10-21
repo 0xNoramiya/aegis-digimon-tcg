@@ -357,6 +357,9 @@ export function boardActions({
           });
           return;
         }
+        const droppedEntry = handEntries.find((entry) => entry.instanceId === d.instanceId);
+        if (droppedEntry && parseActivatable(droppedEntry.activatableEffectsJson).length > 0)
+          return selectHandCard(droppedEntry);
         if (!def?.kinds.includes(CardKind.Option)) return playCard(d.instanceId, true);
         ping(t("game.hint.dropOption"));
         return;

@@ -1,3 +1,7 @@
+import { advancedBattlesIt } from "@/i18n/learn/advancedBattles.it";
+import { rulesLayoutIt } from "@/i18n/learn/rulesLayout.it";
+import { lessonCatalogIt } from "@/i18n/learn/lessonCatalog.it";
+import { battleLessonsIt } from "@/i18n/learn/battleLessons.it";
 import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
@@ -5,6 +9,8 @@ import { replayVideoIt } from "./replayVideo";
 import { profileReplayIt } from "./profileReplays";
 import { replayIt } from "./replays";
 import { en } from "./en";
+import { learnIt } from "@/i18n/learn/learn.it";
+import { learnDrillsIt } from "@/i18n/learn/drills.it";
 
 // All interface messages are translated; printed card names and effects remain in English.
 const interfaceMessages = {
@@ -25,6 +31,12 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnIt,
+  ...learnDrillsIt,
+  ...battleLessonsIt,
+  ...lessonCatalogIt,
+  ...rulesLayoutIt,
+  ...advancedBattlesIt,
   "settings.cardImageLanguage": "Lingua delle immagini delle carte",
   "settings.cardImageLanguageDesc":
     "Scegli la lingua predefinita della Collezione e delle nuove copie aggiunte ai mazzi. Il pulsante sostituisce anche le immagini alternative nei mazzi esistenti. Le carte senza questa lingua mantengono la loro immagine attuale.",
@@ -357,8 +369,7 @@ const interfaceMessages = {
   "community.guide.heading": "Titolo",
   "community.guide.bullets": "Elenco puntato",
   "community.guide.cards": "Suggerimenti di carte",
-  "community.publish.errorHidden":
-    "Un moderatore ha nascosto questo deck dopo una segnalazione, quindi non può essere pubblico.",
+  "community.publish.errorHidden": "Un moderatore ha nascosto questo deck. Correggilo e chiedi una revisione.",
   "community.report.open": "Segnala deck",
   "community.report.title": "Segnala {name}",
   "community.report.body":
@@ -390,6 +401,26 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "Nascosto",
   "community.moderation.hiddenOwnerBadge": "Nascosto da un moderatore",
   "community.moderation.hiddenOwnerNote": "Segnalato dai giocatori. Gli altri non possono vederlo.",
+  "community.moderation.hideTitle": "Nascondere {name}?",
+  "community.moderation.hideBody":
+    "I giocatori non vedono più questo deck. Il proprietario vede il motivo e la tua nota, e può correggere il deck e chiedere una revisione.",
+  "community.moderation.noteLabel": "Nota per il proprietario (facoltativa)",
+  "community.moderation.hiddenReason": "Nascosto per: {reason}.",
+  "community.moderation.ownerNote": "Nota del moderatore: {note}",
+  "community.moderation.ownerFixHint": "Correggi il deck, poi chiedi una revisione.",
+  "community.moderation.reviewPendingNote": "Un moderatore esaminerà le tue modifiche.",
+  "community.moderation.reviewRequestedBadge": "Revisione richiesta",
+  "community.moderation.reviewTitle": "Moderazione",
+  "community.moderation.approve": "Approva e rendi pubblico",
+  "community.moderation.decline": "Mantieni nascosto",
+  "community.moderation.declined": "Revisione rifiutata. Il deck resta nascosto.",
+  "community.review.action": "Chiedi revisione",
+  "community.review.title": "Chiedere una revisione di {name}?",
+  "community.review.body":
+    "Correggi prima il deck. Inviamo il deck salvato così com'è ora. Resta nascosto finché un moderatore non lo approva.",
+  "community.review.noteLabel": "Nota per il moderatore (facoltativa)",
+  "community.review.errorPending": "Hai già chiesto una revisione. Attendi la risposta di un moderatore.",
+  "community.review.errorNotHidden": "Questo deck non è più nascosto.",
   "privacy.title": "Informativa sulla privacy",
   "game.dragIntent.reorder": "RIORDINA LA MANO",
   "game.handSort.type": "Per tipo",
@@ -614,7 +645,7 @@ const interfaceMessages = {
   "lobby.randomCommunityPool": "Mazzi personali, famosi e pubblici della community",
   "lobby.randomFailed": "Impossibile estrarre un mazzo. Riprova.",
   "lobby.randomDrawing": "Estrazione del mazzo…",
-  "overlay.viewUsedDeck": "Visualizza il mazzo usato",
+  "overlay.viewUsedDeck": "Il tuo mazzo",
   "overlay.usedDeck": "Mazzo usato in questo duello",
   "lobby.randomPool": "{count} mazzi validi disponibili",
   "lobby.randomPoolOne": "1 mazzo valido disponibile",
@@ -822,9 +853,12 @@ const interfaceMessages = {
   "settings.keepAwake": "Mantieni lo schermo acceso",
   "settings.keepAwakeDesc":
     "Tenere acceso lo schermo mentre una partita è aperta, invece di lasciare che il dispositivo si addormenti tra i turni",
-  "settings.actionConfirmations": "Conferma le azioni",
-  "settings.actionConfirmationsDesc":
-    "Chiedi conferma prima di giocare, digievolvere o usare una digievoluzione DNA facoltativa",
+  "settings.cardConfirmation": "Conferme delle carte",
+  "settings.cardConfirmationDesc":
+    "Chiedi prima di giocare, usare o digievolvere una carta. «Salta le carte solo giocabili» gioca subito quando la carta non ha altre azioni legali. Le scelte di bersaglio, materiali, costo e modalità restano.",
+  "settings.cardConfirmationAlways": "Chiedi sempre",
+  "settings.cardConfirmationSkipPlayOnly": "Salta le carte solo giocabili",
+  "settings.cardConfirmationNever": "Non chiedere mai",
   "overlay.moveEffectPrompt": "Sposta il pannello dell’effetto",
   "overlay.moveEffectPromptHelp": "Trascina per spostare o usa le frecce. Premi Home per ripristinare la posizione.",
   "settings.effectPromptPosition": "Posizione degli effetti",
@@ -849,6 +883,8 @@ const interfaceMessages = {
     "Ordina i Digimon per livello e raggruppa Tamer e Option identici in una fila separata",
   "settings.pileCounts": "Mostra i contatori delle pile",
   "settings.pileCountsDesc": "Mostra sul campo i contatori di uova, mano, mazzo e trash",
+  "settings.hoverZoom": "Ingrandisci le carte al passaggio del mouse",
+  "settings.hoverZoomDesc": "Mostra un'anteprima grande della carta accanto al puntatore mentre è sopra la carta",
   "settings.sound": "Effetti sonori",
   "settings.soundDesc": "Clic, selezioni e suoni di combattimento",
   "settings.decisionPing": "Avviso di decisione",
@@ -1158,6 +1194,9 @@ const interfaceMessages = {
   "overlay.suspendAlly": "Sospendi {name} per +{dp} DP",
   "overlay.noAllies": "Nessun alleato idoneo da sospendere.",
   "overlay.passAlliance": "Passa",
+  "overlay.confirmBlockTitle": "Conferma blocco",
+  "overlay.confirmBlockDetail": "Sospendi {name} per bloccare questo attacco.",
+  "overlay.confirmBlock": "Blocca",
   "overlay.confirmAllianceTitle": "Conferma Alliance",
   "overlay.confirmAllianceDetail": "Sospendi {name} per aggiungere {dp} DP.",
   "overlay.confirmAlliance": "Usa Alliance",
@@ -1219,6 +1258,8 @@ const interfaceMessages = {
   "overlay.securityAttackValue": "Security Attack {value}",
   "overlay.transformedBadge": "Conta come {name}",
   "overlay.printedEffect": "Effetto stampato",
+  "overlay.showCardText": "Mostra il testo della carta",
+  "overlay.hideCardText": "Nascondi il testo della carta",
   "overlay.grantedEffects": "Effetti ottenuti",
   "library.optionEffect": "Effetto Option",
   "overlay.noPrintedEffect": "Nessun effetto stampato",
@@ -2297,21 +2338,31 @@ const interfaceMessages = {
   "overlay.series.opponentChoosing": "{name} sta scegliendo chi inizia",
   "overlay.series.startingYou": "Partita {game} · Cominci tu",
   "overlay.series.startingOpponent": "Partita {game} · Comincia {name}",
+  "overlay.series.startingDrawn": "Partita {game} · Chi comincia viene sorteggiato",
   "overlay.series.joining": "Avvio della prossima partita…",
   "overlay.series.leave": "Lascia la serie",
   "overlay.rematch.title": "Giocare ancora contro {name}?",
   "overlay.rematch.finish": "Concludi questo al meglio di 3",
-  "overlay.rematch.finishHint": "Questa partita conta come partita 1.",
+  "overlay.rematch.finishHint": "Vale come partita 1 · stessi mazzi",
   "overlay.rematch.new": "Nuovo al meglio di 3",
-  "overlay.rematch.newHint": "Entrambi i giocatori partono da 0–0.",
+  "overlay.rematch.newHint": "0–0 · cambio mazzo · chi inizia è sorteggiato",
   "overlay.rematch.incomingFinish": "{name} vuole concludere questo al meglio di 3",
   "overlay.rematch.incomingNew": "{name} vuole iniziare un nuovo al meglio di 3",
-  "overlay.rematch.hint": "Stessi mazzi. Chi ha perso questa partita sceglie chi inizia.",
   "overlay.rematch.accept": "Accetta",
   "overlay.rematch.decline": "Rifiuta",
   "overlay.rematch.waiting": "In attesa della risposta di {name}…",
   "overlay.rematch.declined": "La rivincita è stata rifiutata.",
   "overlay.rematch.closed": "La rivincita non è più disponibile.",
+  "overlay.rematch.deckTitle": "Scegli il mazzo per la partita 1",
+  "overlay.rematch.keepDeck": "Tieni il mazzo attuale",
+  "overlay.rematch.changeDeck": "Cambia mazzo",
+  "overlay.rematch.deckReady": "Il tuo mazzo è confermato.",
+  "overlay.rematch.opponentPicking": "{name} sta scegliendo un mazzo…",
+  "overlay.rematch.opponentReady": "{name} è pronto.",
+  "overlay.rematch.opponentChanged": "{name} ha cambiato mazzo.",
+  "overlay.rematch.deckAutoKeep": "Mazzo attuale mantenuto tra {time}",
+  "overlay.rematch.pickDeckTitle": "Scegli un mazzo per il nuovo Best of 3",
+  "overlay.rematch.illegalDeck": "Quel mazzo non si può usare in questa stanza.",
   "overlay.series.won": "Serie vinta",
   "overlay.series.lost": "Serie persa",
   "overlay.series.drawn": "Serie pareggiata",

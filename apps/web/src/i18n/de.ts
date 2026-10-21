@@ -1,7 +1,13 @@
+import { advancedBattlesDe } from "@/i18n/learn/advancedBattles.de";
+import { rulesLayoutDe } from "@/i18n/learn/rulesLayout.de";
+import { lessonCatalogDe } from "@/i18n/learn/lessonCatalog.de";
+import { battleLessonsDe } from "@/i18n/learn/battleLessons.de";
 import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnDe } from "@/i18n/learn/learn.de";
+import { learnDrillsDe } from "@/i18n/learn/drills.de";
 
 const interfaceMessages = {
   ...manualEn,
@@ -22,6 +28,12 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnDe,
+  ...learnDrillsDe,
+  ...battleLessonsDe,
+  ...lessonCatalogDe,
+  ...rulesLayoutDe,
+  ...advancedBattlesDe,
   "settings.cardImageLanguage": "Sprache der Kartenbilder",
   "settings.cardImageLanguageDesc":
     "Wähle die Standardsprache für die Sammlung und neue Kartenexemplare in Decks. Die Schaltfläche ersetzt auch alternative Bilder in bestehenden Decks. Karten ohne diese Sprache behalten ihr aktuelles Bild.",
@@ -753,7 +765,7 @@ const interfaceMessages = {
   "lobby.randomCommunityPool": "Eigene, berühmte und öffentliche Community-Decks",
   "lobby.randomFailed": "Es konnte kein Deck ausgelost werden. Versuchen Sie es erneut.",
   "lobby.randomDrawing": "Deck wird ausgelost…",
-  "overlay.viewUsedDeck": "Gespieltes Deck ansehen",
+  "overlay.viewUsedDeck": "Ihr Deck",
   "overlay.usedDeck": "In diesem Match gespieltes Deck",
   "lobby.randomPool": "{count} legale Decks im Pool",
   "lobby.randomPoolOne": "1 legales Deck im Pool",
@@ -965,8 +977,12 @@ const interfaceMessages = {
   "settings.keepAwake": "Bildschirm wach halten",
   "settings.keepAwakeDesc":
     "Den Bildschirm eingeschaltet lassen, solange ein Match läuft, statt das Gerät zwischen den Zügen in den Ruhezustand gehen zu lassen",
-  "settings.actionConfirmations": "Aktionen bestätigen",
-  "settings.actionConfirmationsDesc": "Vor dem Ausspielen, Digitieren oder einer optionalen DNA-Digitation nachfragen",
+  "settings.cardConfirmation": "Kartenbestätigungen",
+  "settings.cardConfirmationDesc":
+    "Vor dem Ausspielen, Nutzen oder Digitieren einer Karte fragen. „Nur ausspielbare überspringen“ spielt sofort aus, wenn die Karte keine andere legale Aktion hat. Ziel-, Material-, Kosten- und Modusauswahl bleiben.",
+  "settings.cardConfirmationAlways": "Immer fragen",
+  "settings.cardConfirmationSkipPlayOnly": "Nur ausspielbare überspringen",
+  "settings.cardConfirmationNever": "Nie fragen",
   "overlay.moveEffectPrompt": "Effektabfrage verschieben",
   "overlay.moveEffectPromptHelp":
     "Zum Verschieben ziehen oder die Pfeiltasten verwenden. Pos1 setzt die Position zurück.",
@@ -992,6 +1008,8 @@ const interfaceMessages = {
     "Digimon nach Level sortieren und identische Tamer und Optionen in einer eigenen Reihe gruppieren",
   "settings.pileCounts": "Stapelanzahl anzeigen",
   "settings.pileCountsDesc": "Zeigt die Zähler für Digi-Eier, Hand, Deck und Ablage auf dem Spielfeld",
+  "settings.hoverZoom": "Karten beim Überfahren vergrößern",
+  "settings.hoverZoomDesc": "Zeigt eine große Kartenvorschau neben dem Mauszeiger, solange er über einer Karte liegt",
   "settings.sound": "Soundeffekte",
   "settings.soundDesc": "Klicks, Auswahl und Kampfsignale",
   "settings.decisionPing": "Entscheidungs-Ping",
@@ -1311,6 +1329,9 @@ const interfaceMessages = {
   "overlay.suspendAlly": "{name} für +{dp} DP suspendieren",
   "overlay.noAllies": "Keine Digimon, die suspendiert werden können.",
   "overlay.passAlliance": "Passen",
+  "overlay.confirmBlockTitle": "Blocken bestätigen",
+  "overlay.confirmBlockDetail": "Suspendiere {name}, um diesen Angriff zu blocken.",
+  "overlay.confirmBlock": "Blocken",
   "overlay.confirmAllianceTitle": "＜Alliance＞ bestätigen",
   "overlay.confirmAllianceDetail": "{name} suspendieren, um {dp} DP hinzuzufügen.",
   "overlay.confirmAlliance": "＜Alliance＞ verwenden",
@@ -1373,6 +1394,8 @@ const interfaceMessages = {
   "overlay.securityAttackValue": "Security Attack {value}",
   "overlay.transformedBadge": "Zählt als {name}",
   "overlay.printedEffect": "Aufgedruckter Effekt",
+  "overlay.showCardText": "Kartentext anzeigen",
+  "overlay.hideCardText": "Kartentext ausblenden",
   "overlay.grantedEffects": "Gewährte Effekte",
   "library.optionEffect": "Options-Effekt",
   "overlay.noPrintedEffect": "Kein aufgedruckter Effekt",
@@ -2398,7 +2421,7 @@ const interfaceMessages = {
   "community.publish.errorName":
     "Benennen Sie dieses Deck zuerst um. Sein Name enthält ein Wort, das nicht erlaubt ist.",
   "community.publish.errorHidden":
-    "Ein Moderator hat dieses Deck nach einer Meldung ausgeblendet, daher kann es nicht öffentlich sein.",
+    "Ein Moderator hat dieses Deck ausgeblendet. Korrigieren Sie es und beantragen Sie dann eine Prüfung.",
   "community.report.open": "Deck melden",
   "community.report.title": "{name} melden",
   "community.report.body":
@@ -2432,6 +2455,27 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "Ausgeblendet",
   "community.moderation.hiddenOwnerBadge": "Von einem Moderator ausgeblendet",
   "community.moderation.hiddenOwnerNote": "Von Spielern gemeldet. Andere können es nicht sehen.",
+  "community.moderation.hideTitle": "{name} ausblenden?",
+  "community.moderation.hideBody":
+    "Spieler sehen dieses Deck nicht mehr. Der Besitzer sieht den Grund und Ihre Notiz und kann das Deck korrigieren und eine Prüfung beantragen.",
+  "community.moderation.noteLabel": "Notiz an den Besitzer (optional)",
+  "community.moderation.hiddenReason": "Ausgeblendet wegen: {reason}.",
+  "community.moderation.ownerNote": "Notiz des Moderators: {note}",
+  "community.moderation.ownerFixHint": "Korrigieren Sie das Deck und beantragen Sie dann eine Prüfung.",
+  "community.moderation.reviewPendingNote": "Ein Moderator prüft Ihre Änderungen.",
+  "community.moderation.reviewRequestedBadge": "Prüfung beantragt",
+  "community.moderation.reviewTitle": "Moderation",
+  "community.moderation.approve": "Freigeben und veröffentlichen",
+  "community.moderation.decline": "Ausgeblendet lassen",
+  "community.moderation.declined": "Prüfung abgelehnt. Das Deck bleibt ausgeblendet.",
+  "community.review.action": "Prüfung beantragen",
+  "community.review.title": "Prüfung von {name} beantragen?",
+  "community.review.body":
+    "Korrigieren Sie zuerst Ihr Deck. Wir senden Ihr gespeichertes Deck so, wie es jetzt ist. Es bleibt ausgeblendet, bis ein Moderator es freigibt.",
+  "community.review.noteLabel": "Notiz an den Moderator (optional)",
+  "community.review.errorPending":
+    "Sie haben bereits eine Prüfung beantragt. Warten Sie auf die Antwort eines Moderators.",
+  "community.review.errorNotHidden": "Dieses Deck ist nicht mehr ausgeblendet.",
   "community.publish.errorGeneric": "Veröffentlichen fehlgeschlagen. Versuchen Sie es erneut.",
   "redesign.collection.lede": "Durchsuchen Sie alle Karten, die Aegis unterstützt, mit ihren Effekten und Decklimits.",
   "redesign.collection.statCards": "Karten",
@@ -2549,21 +2593,31 @@ const interfaceMessages = {
   "overlay.series.opponentChoosing": "{name} wählt, wer beginnt",
   "overlay.series.startingYou": "Spiel {game} · Sie beginnen",
   "overlay.series.startingOpponent": "Spiel {game} · {name} beginnt",
+  "overlay.series.startingDrawn": "Spiel {game} · Wer beginnt, wird ausgelost",
   "overlay.series.joining": "Das nächste Spiel beginnt…",
   "overlay.series.leave": "Serie verlassen",
   "overlay.rematch.title": "Erneut gegen {name}?",
   "overlay.rematch.finish": "Dieses Best of 3 beenden",
-  "overlay.rematch.finishHint": "Dieses Spiel zählt als Spiel 1.",
+  "overlay.rematch.finishHint": "Zählt als Spiel 1 · gleiche Decks",
   "overlay.rematch.new": "Neues Best of 3 starten",
-  "overlay.rematch.newHint": "Beide starten bei 0–0.",
+  "overlay.rematch.newHint": "0–0 · Deckwechsel · Beginn ausgelost",
   "overlay.rematch.incomingFinish": "{name} möchte dieses Best of 3 beenden",
   "overlay.rematch.incomingNew": "{name} möchte ein neues Best of 3 starten",
-  "overlay.rematch.hint": "Gleiche Decks. Wer dieses Spiel verloren hat, wählt, wer beginnt.",
   "overlay.rematch.accept": "Annehmen",
   "overlay.rematch.decline": "Ablehnen",
   "overlay.rematch.waiting": "Warte auf die Antwort von {name}…",
   "overlay.rematch.declined": "Die Revanche wurde abgelehnt.",
   "overlay.rematch.closed": "Die Revanche ist nicht mehr verfügbar.",
+  "overlay.rematch.deckTitle": "Wählen Sie Ihr Deck für Spiel 1",
+  "overlay.rematch.keepDeck": "Aktuelles Deck behalten",
+  "overlay.rematch.changeDeck": "Deck wechseln",
+  "overlay.rematch.deckReady": "Ihr Deck ist bestätigt.",
+  "overlay.rematch.opponentPicking": "{name} wählt ein Deck…",
+  "overlay.rematch.opponentReady": "{name} ist bereit.",
+  "overlay.rematch.opponentChanged": "{name} hat das Deck gewechselt.",
+  "overlay.rematch.deckAutoKeep": "Aktuelles Deck bleibt in {time}",
+  "overlay.rematch.pickDeckTitle": "Wählen Sie ein Deck für das neue Best of 3",
+  "overlay.rematch.illegalDeck": "Dieses Deck ist in diesem Raum nicht erlaubt.",
   "overlay.series.won": "Serie gewonnen",
   "overlay.series.lost": "Serie verloren",
   "overlay.series.drawn": "Serie unentschieden",

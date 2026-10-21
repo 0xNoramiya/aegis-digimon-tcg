@@ -107,11 +107,13 @@ const fixture: ScenarioFixture = {
       ],
       eggDeck: ["BT13-007", "BT13-007", "BT13-007", "BT13-007"],
       battleArea: [
+        { card: "BT13-110" },
+        { card: "BT20-100" },
+
         {
           card: "AD1-008",
         },
       ],
-      delayZone: ["BT13-110", "BT20-100"],
     },
   },
 };

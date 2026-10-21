@@ -1,4 +1,124 @@
 {
+  "releases.1.37.0-beta.summary": {
+    "en": "A new Learn area, deck switching for a new best-of-three, card confirmation modes, deck review requests, two new BT27 cards, and fixes for card rules, security checks, story decks, target prompts, and card zoom.",
+    "pt-BR": "Uma nova área Aprender, troca de deck em uma nova melhor de três, modos de confirmação de cartas, pedidos de revisão de deck, duas novas cartas BT27 e correções em regras de cartas, checagens de segurança, decks do modo história, seleção de alvos e zoom de cartas.",
+    "es": "Una nueva área Aprender, cambio de mazo en un nuevo mejor de tres, modos de confirmación de cartas, solicitudes de revisión de mazos, dos nuevas cartas BT27 y correcciones en reglas de cartas, comprobaciones de seguridad, mazos del modo historia, selección de objetivos y zoom de cartas.",
+    "it": "Una nuova area Impara, cambio di mazzo in un nuovo meglio di tre, modalità di conferma delle carte, richieste di revisione dei mazzi, due nuove carte BT27 e correzioni a regole delle carte, controlli della sicurezza, mazzi della modalità storia, selezione dei bersagli e zoom delle carte."
+  },
+  "releases.1.37.0-beta.feature.learn": {
+    "en": "Learn to play: open Learn from the Play screen for guided lessons, keyword drills, rules battles, and a How to Play rules guide.",
+    "pt-BR": "Aprenda a jogar: abra Aprender na tela Jogar para lições guiadas, treinos de palavras-chave, batalhas de regras e um guia de regras Como Jogar.",
+    "es": "Aprende a jugar: abre Aprender desde la pantalla Jugar para lecciones guiadas, prácticas de palabras clave, batallas de reglas y una guía de reglas Cómo Jugar.",
+    "it": "Impara a giocare: apri Impara dalla schermata Gioca per lezioni guidate, esercizi sulle parole chiave, battaglie sulle regole e una guida alle regole Come si gioca."
+  },
+  "releases.1.37.0-beta.feature.newSeriesDecks": {
+    "en": "A new best-of-three now lets each player keep their deck or pick another legal deck. The opponent only sees that a deck changed, and the first player is drawn at random.",
+    "pt-BR": "Uma nova melhor de três agora permite que cada jogador mantenha o deck ou escolha outro deck válido. O oponente só vê que o deck mudou, e o primeiro jogador é sorteado.",
+    "es": "Un nuevo mejor de tres ahora permite que cada jugador mantenga su mazo o elija otro mazo válido. El rival solo ve que el mazo cambió, y el primer jugador se sortea.",
+    "it": "Un nuovo meglio di tre ora permette a ogni giocatore di tenere il proprio mazzo o sceglierne un altro valido. L’avversario vede solo che il mazzo è cambiato, e il primo giocatore viene estratto a sorte."
+  },
+  "releases.1.37.0-beta.feature.cardConfirmations": {
+    "en": "Card confirmations: in Settings, choose Always ask, Skip play-only cards, or Never ask before playing, using, or digivolving a card.",
+    "pt-BR": "Confirmações de cartas: em Configurações, escolha Sempre perguntar, Pular cartas que só podem ser jogadas ou Nunca perguntar antes de jogar, usar ou digievoluir uma carta.",
+    "es": "Confirmaciones de cartas: en Ajustes, elige Preguntar siempre, Omitir cartas que solo se pueden jugar o No preguntar nunca antes de jugar, usar o digievolucionar una carta.",
+    "it": "Conferme delle carte: in Impostazioni, scegli Chiedi sempre, Salta le carte che si possono solo giocare o Non chiedere mai prima di giocare, usare o digievolvere una carta."
+  },
+  "releases.1.37.0-beta.feature.deckReview": {
+    "en": "Hidden community decks now show the moderator’s reason. The owner can fix the deck and ask for a review.",
+    "pt-BR": "Decks da comunidade ocultos agora mostram o motivo do moderador. O dono pode corrigir o deck e pedir uma revisão.",
+    "es": "Los mazos de la comunidad ocultos ahora muestran el motivo del moderador. El dueño puede corregir el mazo y pedir una revisión.",
+    "it": "I mazzi della community nascosti ora mostrano il motivo del moderatore. Il proprietario può correggere il mazzo e chiedere una revisione."
+  },
+  "releases.1.37.0-beta.feature.bt27": {
+    "en": "BT27: added BT27-099 Surtr Brander and BT27-040 Etemon, and Japanese text for every BT27 card.",
+    "pt-BR": "BT27: adicionadas BT27-099 Surtr Brander e BT27-040 Etemon, e texto em japonês para todas as cartas BT27.",
+    "es": "BT27: se añadieron BT27-099 Surtr Brander y BT27-040 Etemon, y texto en japonés para todas las cartas BT27.",
+    "it": "BT27: aggiunte BT27-099 Surtr Brander e BT27-040 Etemon, e il testo giapponese per tutte le carte BT27."
+  },
+  "releases.1.37.0-beta.fix.ariemon": {
+    "en": "Ariemon BT22-028 can no longer digivolve onto the Yao Qinglan Tamer. It digivolves from MarineBullmon while you have Yao Qinglan.",
+    "pt-BR": "Ariemon BT22-028 não pode mais digievoluir sobre a Tamer Yao Qinglan. Ele digievolui de MarineBullmon enquanto você tiver Yao Qinglan.",
+    "es": "Ariemon BT22-028 ya no puede digievolucionar sobre la Tamer Yao Qinglan. Digievoluciona desde MarineBullmon mientras tengas a Yao Qinglan.",
+    "it": "Ariemon BT22-028 non può più digievolvere sulla Tamer Yao Qinglan. Digievolve da MarineBullmon finché hai Yao Qinglan."
+  },
+  "releases.1.37.0-beta.fix.recomon": {
+    "en": "Linking Recomon BT22-055 now costs 1, as printed.",
+    "pt-BR": "Vincular Recomon BT22-055 agora custa 1, como impresso.",
+    "es": "Vincular a Recomon BT22-055 ahora cuesta 1, como aparece impreso.",
+    "it": "Collegare Recomon BT22-055 ora costa 1, come stampato."
+  },
+  "releases.1.37.0-beta.fix.cardRules": {
+    "en": "Loudmon EX11 and Offensive Plug-In V ST22-08 let you choose which Digimon sets the DP limit. Declining an optional once-per-turn leave replacement, as on Erlangmon, no longer uses it up.",
+    "pt-BR": "Loudmon EX11 e Offensive Plug-In V ST22-08 deixam você escolher qual Digimon define o limite de DP. Recusar uma substituição opcional de uma vez por turno ao sair, como em Erlangmon, não a gasta mais.",
+    "es": "Loudmon EX11 y Offensive Plug-In V ST22-08 te dejan elegir qué Digimon fija el límite de DP. Rechazar un reemplazo opcional de una vez por turno al salir, como el de Erlangmon, ya no lo gasta.",
+    "it": "Loudmon EX11 e Offensive Plug-In V ST22-08 ti lasciano scegliere quale Digimon fissa il limite di DP. Rifiutare una sostituzione facoltativa una volta per turno all’uscita, come su Erlangmon, non la consuma più."
+  },
+  "releases.1.37.0-beta.fix.lateMainPhaseAttack": {
+    "en": "An attack granted for [Start of Your Main Phase] after that timing has passed no longer fires that turn.",
+    "pt-BR": "Um ataque concedido para [Start of Your Main Phase] depois que esse momento passou não acontece mais naquele turno.",
+    "es": "Un ataque otorgado para [Start of Your Main Phase] después de que ese momento pasó ya no se activa ese turno.",
+    "it": "Un attacco concesso per [Start of Your Main Phase] dopo che quel momento è passato non si attiva più in quel turno."
+  },
+  "releases.1.37.0-beta.fix.securityChecks": {
+    "en": "Each security check now resolves its [On Deletion] effects before the next security card is revealed.",
+    "pt-BR": "Cada checagem de segurança agora resolve seus efeitos [On Deletion] antes de revelar a próxima carta de segurança.",
+    "es": "Cada comprobación de seguridad ahora resuelve sus efectos [On Deletion] antes de revelar la siguiente carta de seguridad.",
+    "it": "Ogni controllo della sicurezza ora risolve i suoi effetti [On Deletion] prima di rivelare la carta di sicurezza successiva."
+  },
+  "releases.1.37.0-beta.fix.galacticmonStory": {
+    "en": "The Galacticmon story rematch now gives you a coherent red deck with usable Memory Boosts.",
+    "pt-BR": "A revanche contra Galacticmon no modo história agora dá a você um deck vermelho coerente com Memory Boosts utilizáveis.",
+    "es": "La revancha contra Galacticmon del modo historia ahora te da un mazo rojo coherente con Memory Boosts utilizables.",
+    "it": "La rivincita contro Galacticmon nella modalità storia ora ti dà un mazzo rosso coerente con Memory Boost utilizzabili."
+  },
+  "releases.1.37.0-beta.fix.blockerConfirm": {
+    "en": "Choosing a blocker now asks for confirmation, so a stray click no longer blocks.",
+    "pt-BR": "Escolher um bloqueador agora pede confirmação, então um clique acidental não bloqueia mais.",
+    "es": "Elegir un bloqueador ahora pide confirmación, así que un clic accidental ya no bloquea.",
+    "it": "Scegliere un bloccante ora chiede conferma, quindi un clic accidentale non blocca più."
+  },
+  "releases.1.37.0-beta.fix.targetPrompts": {
+    "en": "Confirm targets stays disabled until you pick a card, and single-pick prompts show which card is chosen.",
+    "pt-BR": "Confirmar alvos fica desativado até você escolher uma carta, e seleções de uma carta mostram qual está escolhida.",
+    "es": "Confirmar objetivos sigue desactivado hasta que elijas una carta, y las selecciones de una sola carta muestran cuál está elegida.",
+    "it": "Conferma bersagli resta disattivato finché non scegli una carta, e le selezioni di una sola carta mostrano quale è scelta."
+  },
+  "releases.1.37.0-beta.fix.handEffectDrop": {
+    "en": "Dropping a hand card with a [Hand] effect onto your Digimon now offers that effect instead of playing the card.",
+    "pt-BR": "Soltar uma carta da mão com efeito [Hand] sobre seu Digimon agora oferece esse efeito em vez de jogar a carta.",
+    "es": "Soltar una carta de la mano con un efecto [Hand] sobre tu Digimon ahora ofrece ese efecto en lugar de jugar la carta.",
+    "it": "Rilasciare una carta della mano con un effetto [Hand] sul tuo Digimon ora offre quell’effetto invece di giocare la carta."
+  },
+  "releases.1.37.0-beta.fix.optionalLabels": {
+    "en": "Optional effects on HeavyMetaldramon LM-068, Craniamon (X Antibody), Neptunemon, and Rosemon (X Antibody) no longer show as mandatory.",
+    "pt-BR": "Efeitos opcionais de HeavyMetaldramon LM-068, Craniamon (X Antibody), Neptunemon e Rosemon (X Antibody) não aparecem mais como obrigatórios.",
+    "es": "Los efectos opcionales de HeavyMetaldramon LM-068, Craniamon (X Antibody), Neptunemon y Rosemon (X Antibody) ya no aparecen como obligatorios.",
+    "it": "Gli effetti facoltativi di HeavyMetaldramon LM-068, Craniamon (X Antibody), Neptunemon e Rosemon (X Antibody) non appaiono più come obbligatori."
+  },
+  "releases.1.37.0-beta.fix.cardZoom": {
+    "en": "Card zoom on hover is now a setting, off by default. In card zoom, the card text is hidden until you choose Show card text.",
+    "pt-BR": "O zoom de cartas ao passar o mouse agora é uma configuração, desativada por padrão. No zoom da carta, o texto fica oculto até você escolher Mostrar texto da carta.",
+    "es": "El zoom de cartas al pasar el cursor ahora es un ajuste, desactivado por defecto. En el zoom de la carta, el texto queda oculto hasta que eliges Mostrar texto de la carta.",
+    "it": "Lo zoom delle carte al passaggio del mouse ora è un’impostazione, disattivata per impostazione predefinita. Nello zoom della carta, il testo resta nascosto finché non scegli Mostra testo della carta."
+  },
+  "releases.1.37.0-beta.fix.cardLanguage": {
+    "en": "Applying a card language to all decks keeps copies that are already in that language.",
+    "pt-BR": "Aplicar um idioma de cartas a todos os decks mantém as cópias que já estão nesse idioma.",
+    "es": "Aplicar un idioma de cartas a todos los mazos conserva las copias que ya están en ese idioma.",
+    "it": "Applicare una lingua delle carte a tutti i mazzi mantiene le copie che sono già in quella lingua."
+  },
+  "releases.1.37.0-beta.fix.browserTranslation": {
+    "en": "Automatic browser page translation is turned off to prevent crashes. Use the Aegis language selector instead.",
+    "pt-BR": "A tradução automática de páginas do navegador foi desativada para evitar travamentos. Use o seletor de idioma do Aegis.",
+    "es": "La traducción automática de páginas del navegador está desactivada para evitar fallos. Usa el selector de idioma de Aegis.",
+    "it": "La traduzione automatica delle pagine del browser è disattivata per evitare arresti anomali. Usa il selettore di lingua di Aegis."
+  },
+  "releases.1.37.0-beta.fix.sleeveNames": {
+    "en": "Official Card Sleeves 03 designs now show their correct series names.",
+    "pt-BR": "Os designs de Official Card Sleeves 03 agora mostram os nomes corretos das séries.",
+    "es": "Los diseños de Official Card Sleeves 03 ahora muestran los nombres correctos de sus series.",
+    "it": "I design di Official Card Sleeves 03 ora mostrano i nomi corretti delle serie."
+  },
   "releases.1.36.0-beta.summary": {
     "en": "Manual tables, a rematch that can finish a best-of-three, and fixes for effect order, card rules, card language, DUAL cards, and deckbuilder sorting.",
     "pt-BR": "Mesas manuais, uma revanche que pode concluir uma melhor de três e correções na ordem de efeitos, em regras de cartas, no idioma das cartas, em cartas DUAL e na ordenação do deckbuilder.",
@@ -3337,9 +3457,9 @@
   },
   "releases.1.35.1-beta.fix.scourgeChiropmon": {
     "en": "ScourgeChiropmon (BT27-080) and similar cards now offer their [Hand] effect only when it can be done.",
-    "pt-BR": "ScourgeChiropmon (BT27-080) e cartas parecidas agora só oferecem o efeito de [Mão] quando ele pode ser realizado.",
-    "es": "ScourgeChiropmon (BT27-080) y cartas parecidas ahora solo ofrecen su efecto de [Mano] cuando se puede realizar.",
-    "it": "ScourgeChiropmon (BT27-080) e carte simili ora offrono il loro effetto [Mano] solo quando è possibile eseguirlo."
+    "pt-BR": "ScourgeChiropmon (BT27-080) e cartas parecidas agora só oferecem o efeito de [Hand] quando ele pode ser realizado.",
+    "es": "ScourgeChiropmon (BT27-080) y cartas parecidas ahora solo ofrecen su efecto de [Hand] cuando se puede realizar.",
+    "it": "ScourgeChiropmon (BT27-080) e carte simili ora offrono il loro effetto [Hand] solo quando è possibile eseguirlo."
   },
   "releases.1.35.1-beta.fix.rejectedJoin": {
     "en": "A room no longer breaks when a player tries to join with a deck that isn't legal in that format.",

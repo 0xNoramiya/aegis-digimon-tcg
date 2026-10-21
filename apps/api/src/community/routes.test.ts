@@ -5,6 +5,7 @@ import {
   type CommunityDeck,
   type CommunityDeckPage,
   type CommunityDeckReport,
+  type CommunityPublication,
   type ReportedCommunityDeck,
 } from "@aegis/shared";
 import express from "express";
@@ -322,7 +323,7 @@ describe("the moderation queue of reported decks", () => {
     await call(`/community/decks/${hidden.id}/reports`, "POST", reporter, { reason: "spam" });
     await call(`/community/decks/${fine.id}/reports`, "POST", reporter, { reason: "spam" });
 
-    await call(`/admin/community/decks/${hidden.id}/moderation`, "POST", admin, { action: "hide" });
+    await call(`/admin/community/decks/${hidden.id}/moderation`, "POST", admin, { action: "hide", reason: "spam" });
     expect((await queue(admin)).map((deck) => deck.id)).toEqual([fine.id]);
 
     const dismissed = await call(`/admin/community/decks/${fine.id}/reports/dismiss`, "POST", admin);
@@ -372,8 +373,19 @@ describe("the moderation queue of reported decks", () => {
 });
 
 describe("moderation", () => {
-  const moderate = (id: string, player: Player | undefined, action: string) =>
-    call(`/admin/community/decks/${id}/moderation`, "POST", player, { action });
+  const moderate = (id: string, player: Player | undefined, action: string, extra: Record<string, unknown> = {}) =>
+    call(`/admin/community/decks/${id}/moderation`, "POST", player, {
+      action,
+      ...(action === "hide" ? { reason: "offensive_name" } : {}),
+      ...extra,
+    });
+  const requestReview = (player: Player, deckId: string, note?: string) =>
+    call(`/community/publications/${deckId}/review`, "POST", player, note === undefined ? {} : { note });
+  const publications = async (player: Player) =>
+    (await (await call("/community/publications", "GET", player)).json()) as CommunityPublication[];
+  const queue = async (player: Player) =>
+    ((await (await call("/admin/community/reports", "GET", player)).json()) as { decks: ReportedCommunityDeck[] })
+      .decks;
 
   it("is for admins only", async () => {
     const author = await signIn("Author");
@@ -382,6 +394,8 @@ describe("moderation", () => {
     expect((await moderate(id, author, "hide")).status).toBe(403);
     const admin = await signIn("Admin", { admin: true });
     expect((await moderate(id, admin, "delete")).status).toBe(400);
+    expect((await moderate(id, admin, "hide", { reason: "boring" })).status).toBe(400);
+    expect((await moderate(id, admin, "hide", { note: "x".repeat(501) })).status).toBe(400);
     expect((await moderate("00000000-0000-0000-0000-000000000000", admin, "hide")).status).toBe(404);
   });
 
@@ -420,6 +434,118 @@ describe("moderation", () => {
     const { id } = await saveAndPublish(author, "custom-1", "Deck");
     await call("/community/publications/custom-1", "DELETE", author);
     expect(await (await moderate(id, admin, "restore")).json()).toEqual({ status: "unpublished" });
+  });
+
+  it("shows the owner the reason and note the moderator gave when hiding", async () => {
+    const author = await signIn("Author");
+    const admin = await signIn("Admin", { admin: true });
+    const { id } = await saveAndPublish(author, "custom-1", "Rude deck");
+    await moderate(id, admin, "hide", { note: "  Please rename it.  " });
+    expect(await publications(author)).toEqual([
+      expect.objectContaining({
+        id,
+        status: "hidden",
+        moderation: expect.objectContaining({
+          reason: "offensive_name",
+          note: "Please rename it.",
+          reviewRequestedAt: null,
+        }),
+      }),
+    ]);
+    expect(await (await call(`/community/decks/${id}`, "GET", admin)).json()).toMatchObject({
+      moderation: { reason: "offensive_name", note: "Please rename it." },
+    });
+  });
+
+  it("sends the edited deck for review and keeps it hidden until approved", async () => {
+    const author = await signIn("Author");
+    const admin = await signIn("Admin", { admin: true });
+    const { id } = await saveAndPublish(author, "custom-1", "Rude deck");
+    await moderate(id, admin, "hide");
+    await harness.store.saveDeck(author.id, {
+      id: "custom-1",
+      name: "Polite deck",
+      mainDeck: [...redList!.mainDeck],
+      eggDeck: [...redList!.eggDeck],
+    });
+
+    const requested = await requestReview(author, "custom-1", "Renamed it");
+    expect(requested.status).toBe(200);
+    expect(await requested.json()).toMatchObject({
+      id,
+      name: "Polite deck",
+      status: "hidden",
+      moderation: { reason: "offensive_name", reviewNote: "Renamed it", reviewRequestedAt: expect.any(Number) },
+    });
+    expect((await browse()).decks).toEqual([]);
+    expect(await queue(admin)).toEqual([
+      expect.objectContaining({
+        id,
+        name: "Polite deck",
+        status: "hidden",
+        openReports: 0,
+        lastReportedAt: null,
+        reviewNote: "Renamed it",
+        reviewRequestedAt: expect.any(Number),
+      }),
+    ]);
+
+    expect(await (await moderate(id, admin, "restore")).json()).toEqual({ status: "public" });
+    expect((await browse()).decks.map((deck) => [deck.id, deck.name])).toEqual([[id, "Polite deck"]]);
+    expect(await queue(admin)).toEqual([]);
+    expect((await publications(author))[0]).not.toHaveProperty("moderation");
+  });
+
+  it("refuses a second review request while one is pending", async () => {
+    const author = await signIn("Author");
+    const admin = await signIn("Admin", { admin: true });
+    const { id } = await saveAndPublish(author, "custom-1", "Deck");
+    await moderate(id, admin, "hide");
+    expect((await requestReview(author, "custom-1")).status).toBe(200);
+    const again = await requestReview(author, "custom-1");
+    expect(again.status).toBe(409);
+    expect(await again.json()).toEqual({ error: "review_pending" });
+  });
+
+  it("refuses a review request for a deck that is not hidden or still has a blocked name", async () => {
+    const author = await signIn("Author");
+    const admin = await signIn("Admin", { admin: true });
+    const { id } = await saveAndPublish(author, "custom-1", "Deck");
+    expect(await (await requestReview(author, "custom-1")).json()).toEqual({ error: "deck_not_hidden" });
+    expect((await requestReview(author, "custom-missing")).status).toBe(404);
+    expect((await requestReview(author, "custom-1", "x".repeat(501))).status).toBe(400);
+
+    await moderate(id, admin, "hide");
+    await harness.store.saveDeck(author.id, {
+      id: "custom-1",
+      name: "Muerte a la Royal Base",
+      mainDeck: [...redList!.mainDeck],
+      eggDeck: [...redList!.eggDeck],
+    });
+    const blocked = await requestReview(author, "custom-1");
+    expect(blocked.status).toBe(422);
+    expect(await blocked.json()).toEqual({ error: "name_not_allowed" });
+    expect(await queue(admin)).toEqual([]);
+  });
+
+  it("keeps a declined deck hidden with the moderator's note and lets the owner ask again", async () => {
+    const author = await signIn("Author");
+    const admin = await signIn("Admin", { admin: true });
+    const { id } = await saveAndPublish(author, "custom-1", "Deck");
+    await moderate(id, admin, "hide");
+    await requestReview(author, "custom-1", "Fixed");
+
+    expect(await (await moderate(id, admin, "decline_review", { note: "Still offensive." })).json()).toEqual({
+      status: "hidden",
+    });
+    expect(await queue(admin)).toEqual([]);
+    expect((await publications(author))[0]?.moderation).toMatchObject({
+      reason: "offensive_name",
+      note: "Still offensive.",
+      reviewRequestedAt: null,
+      reviewNote: null,
+    });
+    expect((await requestReview(author, "custom-1")).status).toBe(200);
   });
 });
 

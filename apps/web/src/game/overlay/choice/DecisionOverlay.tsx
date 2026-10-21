@@ -163,17 +163,18 @@ export function DecisionOverlay({
     dpOf: (id) => candidates.find((candidate) => candidate.instanceId === id)?.currentDP,
   });
   const withinDPBudget = maxTotalDP === undefined || selectedDP <= maxTotalDP;
+  const hasCandidates = (request.options?.candidateInstanceIds?.length ?? 0) > 0;
   const canConfirm =
+    (picks.length > 0 || !hasCandidates) &&
     picks.length >= min &&
     picks.length <= max &&
     withinPlayCostBudget &&
     withinDPBudget &&
-    ((picks.length === 0 && min === 0) ||
-      isAllowedTargetSelection({
-        allowedTargetCombinations: request.options?.allowedTargetCombinations,
-        picks,
-        complete: true,
-      }));
+    isAllowedTargetSelection({
+      allowedTargetCombinations: request.options?.allowedTargetCombinations,
+      picks,
+      complete: true,
+    });
   // The fate every picked target meets, or nothing when the engine did not
   // project one for the action that raised this prompt.
   const fateBadge = request.options?.targetFate ? pendingFateBadge(request.options.targetFate) : undefined;

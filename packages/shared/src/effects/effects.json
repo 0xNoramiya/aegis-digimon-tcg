@@ -80997,7 +80997,14 @@
     ],
     "coverage": "full",
     "residual": [],
-    "digivolutionRequirement": [{ "names": ["Yao Qinglan", "MarineBullmon"], "cost": 6, "isAlternate": true }]
+    "digivolutionRequirement": [
+      {
+        "namesExact": ["MarineBullmon"],
+        "cost": 6,
+        "controllerControls": { "kind": ["Tamer"], "namesExact": ["Yao Qinglan"], "min": 1 },
+        "isAlternate": true
+      }
+    ]
   },
   "BT22-029": {
     "effects": [
@@ -82927,7 +82934,7 @@
       { "level": 2, "colors": ["Black"], "cost": 0, "isAlternate": false },
       { "level": 2, "traits": ["Appmon"], "cost": 0, "isAlternate": true }
     ],
-    "linkRequirement": [{ "traits": ["Appmon"], "cost": 2 }]
+    "linkRequirement": [{ "traits": ["Appmon"], "cost": 1 }]
   },
   "BT22-056": {
     "effects": [
@@ -146811,20 +146818,26 @@
             "target": { "filter": { "controller": "mine", "zone": "hand" }, "count": 2 }
           },
           {
-            "effectTextPart": "Then, delete 1 of your opponent’s Digimon with as much or less DP as 1 of your [Dark Dragon] or [Evil Dragon] trait Digimon.",
+            "effectTextPart": "Then, delete 1 of your opponent’s Digimon with as much or less DP as 1 of your [Dark Dragon] or [Evil Dragon] trait Digimon.",
+            "kind": "SelectBind",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["Dark Dragon", "Evil Dragon"], "match": "trait" }]
+              },
+              "count": 1,
+              "bindAs": "dragonDpReference"
+            }
+          },
+          {
+            "effectTextPart": "Then, delete 1 of your opponent’s Digimon with as much or less DP as 1 of your [Dark Dragon] or [Evil Dragon] trait Digimon.",
             "kind": "Delete",
             "target": {
               "filter": {
                 "controller": "opponent",
                 "kind": ["Digimon"],
-                "dp": {
-                  "op": "lte",
-                  "relativeToFilter": {
-                    "controller": "mine",
-                    "kind": ["Digimon"],
-                    "nameOrTrait": [{ "tokens": ["Dark Dragon", "Evil Dragon"], "match": "trait" }]
-                  }
-                }
+                "relativeTo": { "attr": "dp", "op": "lte", "selectionRef": "dragonDpReference" }
               },
               "count": 1
             }
@@ -146840,20 +146853,26 @@
             "target": { "filter": { "controller": "mine", "zone": "hand" }, "count": 2 }
           },
           {
-            "effectTextPart": "Then, delete 1 of your opponent’s Digimon with as much or less DP as 1 of your [Dark Dragon] or [Evil Dragon] trait Digimon.",
+            "effectTextPart": "Then, delete 1 of your opponent’s Digimon with as much or less DP as 1 of your [Dark Dragon] or [Evil Dragon] trait Digimon.",
+            "kind": "SelectBind",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["Dark Dragon", "Evil Dragon"], "match": "trait" }]
+              },
+              "count": 1,
+              "bindAs": "dragonDpReference"
+            }
+          },
+          {
+            "effectTextPart": "Then, delete 1 of your opponent’s Digimon with as much or less DP as 1 of your [Dark Dragon] or [Evil Dragon] trait Digimon.",
             "kind": "Delete",
             "target": {
               "filter": {
                 "controller": "opponent",
                 "kind": ["Digimon"],
-                "dp": {
-                  "op": "lte",
-                  "relativeToFilter": {
-                    "controller": "mine",
-                    "kind": ["Digimon"],
-                    "nameOrTrait": [{ "tokens": ["Dark Dragon", "Evil Dragon"], "match": "trait" }]
-                  }
-                }
+                "relativeTo": { "attr": "dp", "op": "lte", "selectionRef": "dragonDpReference" }
               },
               "count": 1
             }
@@ -217160,12 +217179,21 @@
           },
           {
             "effectTextPart": "Then, delete 1 of your opponent's Digimon with as much or less DP as 1 of your Digimon.",
+            "kind": "SelectBind",
+            "target": {
+              "filter": { "controller": "mine", "kind": ["Digimon"] },
+              "count": 1,
+              "bindAs": "digimonDpReference"
+            }
+          },
+          {
+            "effectTextPart": "Then, delete 1 of your opponent's Digimon with as much or less DP as 1 of your Digimon.",
             "kind": "Delete",
             "target": {
               "filter": {
                 "controller": "opponent",
                 "kind": ["Digimon"],
-                "dp": { "op": "lte", "relativeToFilter": { "controller": "mine", "kind": ["Digimon"] } }
+                "relativeTo": { "attr": "dp", "op": "lte", "selectionRef": "digimonDpReference" }
               },
               "count": 1
             }
@@ -243129,5 +243157,216 @@
     "coverage": "full",
     "residual": [],
     "digivolutionRequirement": [{ "namesExact": ["Kentaurosmon"], "cost": 2, "isAlternate": true }]
+  },
+  "BT27-099": {
+    "effects": [
+      {
+        "trigger": "OnDiscardSecurity",
+        "description": "When effects trash this card from the security stack, activate its [Security] effects.",
+        "actions": [
+          {
+            "effectTextPart": "Place 1 of your opponent's Digimon with the lowest DP as their top security card.",
+            "kind": "SecurityManipulation",
+            "op": "placeAsSecurity",
+            "controller": "opponent",
+            "toTop": true,
+            "source": {
+              "filter": {
+                "controller": "opponent",
+                "kind": ["Digimon"],
+                "zone": "battleArea",
+                "superlative": "lowestDP"
+              },
+              "count": 1
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "Main",
+        "actions": [
+          {
+            "effectTextPart": "[Main] 1 of your opponent's Digimon gets -6000 DP for the turn.",
+            "kind": "ModifyDP",
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "amount": -6000,
+            "duration": "forTheTurn"
+          },
+          {
+            "effectTextPart": "Then, add your top security card to the hand",
+            "kind": "SecurityManipulation",
+            "op": "toHand",
+            "controller": "mine",
+            "amount": 1,
+            "toTop": true
+          },
+          {
+            "effectTextPart": "and place this card as the top security card.",
+            "kind": "SecurityManipulation",
+            "op": "placeAsSecurity",
+            "controller": "mine",
+            "toTop": true
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "isSecurity": true,
+        "actions": [
+          {
+            "effectTextPart": "Place 1 of your opponent's Digimon with the lowest DP as their top security card.",
+            "kind": "SecurityManipulation",
+            "op": "placeAsSecurity",
+            "controller": "opponent",
+            "toTop": true,
+            "source": {
+              "filter": {
+                "controller": "opponent",
+                "kind": ["Digimon"],
+                "zone": "battleArea",
+                "superlative": "lowestDP"
+              },
+              "count": 1
+            }
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-040": {
+    "effects": [
+      {
+        "trigger": "Static",
+        "actions": [],
+        "keywords": [{ "keyword": "Overclock", "raw": "＜Overclock ([Chuumon]/[Sukamon] in name)＞" }]
+      },
+      {
+        "trigger": "EndOfYourTurn",
+        "keywords": [{ "keyword": "Overclock", "raw": "＜Overclock ([Chuumon]/[Sukamon] in name)＞" }],
+        "actions": [
+          {
+            "kind": "Attack",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "attackTargetScope": "player",
+            "withoutSuspending": true,
+            "optional": true,
+            "abortOnDecline": true,
+            "cost": {
+              "kind": "deleteOwn",
+              "mechanic": "Overclock",
+              "target": {
+                "filter": {
+                  "controller": "mine",
+                  "excludeSelf": true,
+                  "kind": ["Digimon"],
+                  "nameOrTrait": [{ "tokens": ["Chuumon", "Sukamon"], "match": "name" }],
+                  "allowTokens": true
+                },
+                "count": 1
+              },
+              "raw": "by deleting 1 of your Tokens or other Digimon with [Chuumon] or [Sukamon] in their names"
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "isSecurity": true,
+        "actions": [
+          {
+            "effectTextPart": "To 1 of your opponent's Digimon, give -3000 DP for the turn for each of your Digimon with [Chuumon], [Sukamon] or [Etemon] in their names.",
+            "kind": "ModifyDP",
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "amount": -3000,
+            "duration": "forTheTurn",
+            "scaling": {
+              "per": 1,
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["Chuumon", "Sukamon", "Etemon"], "match": "name" }]
+              },
+              "unit": "cards"
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "effectTextPart": "To 1 of your opponent's Digimon, give -3000 DP for the turn for each of your Digimon with [Chuumon], [Sukamon] or [Etemon] in their names.",
+            "kind": "ModifyDP",
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "amount": -3000,
+            "duration": "forTheTurn",
+            "scaling": {
+              "per": 1,
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["Chuumon", "Sukamon", "Etemon"], "match": "name" }]
+              },
+              "unit": "cards"
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "effectTextPart": "To 1 of your opponent's Digimon, give -3000 DP for the turn for each of your Digimon with [Chuumon], [Sukamon] or [Etemon] in their names.",
+            "kind": "ModifyDP",
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "amount": -3000,
+            "duration": "forTheTurn",
+            "scaling": {
+              "per": 1,
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["Chuumon", "Sukamon", "Etemon"], "match": "name" }]
+              },
+              "unit": "cards"
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "AllTurns",
+        "isInherited": true,
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "event": "whenPlayed",
+            "sourceFilter": {
+              "controllerDefault": "mine",
+              "excludeSelf": true,
+              "kind": ["Digimon"],
+              "nameOrTrait": [{ "tokens": ["Chuumon", "Sukamon", "Etemon"], "match": "name" }]
+            },
+            "actions": [
+              {
+                "effectTextPart": "＜De-Digivolve 1＞ 1 of your opponent's Digimon.",
+                "kind": "DeDigivolve",
+                "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+                "amount": 1
+              }
+            ],
+            "raw": "When any of your other Digimon with [Chuumon], [Sukamon] or [Etemon] in their names are played, ＜De-Digivolve 1＞ 1 of your opponent's Digimon."
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "level": 4, "names": ["Sukamon"], "cost": 3, "isAlternate": true }],
+    "assemblyRequirement": [
+      { "reduceCost": 3, "materials": [{ "count": 1, "kinds": ["Digimon"], "names": ["Sukamon"], "level": 4 }] }
+    ]
   }
 }

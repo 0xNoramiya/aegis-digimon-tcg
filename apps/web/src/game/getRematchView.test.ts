@@ -53,7 +53,35 @@ describe("getRematchView", () => {
     expect(getRematchView({ series, viewerSeat: 0 })).toEqual({
       stage: "closed",
       mode: RematchMode.NEW_SERIES.value,
+      modes: [RematchMode.NEW_SERIES.value],
       series: undefined,
+    });
+  });
+
+  it("offers both series after a single game and only a new one after a best-of-three", () => {
+    const single = buildSeries({ rematchStatus: RematchStatus.OPEN.value });
+    expect(getRematchView({ series: single, viewerSeat: 0 })?.modes).toEqual([
+      RematchMode.FINISH_SERIES.value,
+      RematchMode.NEW_SERIES.value,
+    ]);
+    const finished = buildSeries({ rematchStatus: RematchStatus.OPEN.value, bestOf: 3, phase: "over" });
+    expect(getRematchView({ series: finished, viewerSeat: 0 })?.modes).toEqual([RematchMode.NEW_SERIES.value]);
+  });
+
+  it("shows each seat its own deck readiness and only whether the opponent switched", () => {
+    const series = buildSeries({
+      rematchStatus: RematchStatus.ACCEPTED.value,
+      bestOf: 3,
+      gameNumber: 0,
+      phase: "deckSelection",
+      deckReady0: true,
+      deckChanged0: true,
+    });
+    expect(getRematchView({ series, viewerSeat: 1 })?.series).toMatchObject({
+      stage: "deckSelection",
+      viewerDeckReady: false,
+      opponentDeckReady: true,
+      opponentDeckChanged: true,
     });
   });
 });
