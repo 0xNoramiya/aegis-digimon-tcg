@@ -883,6 +883,8 @@ const interfaceMessages = {
     "Ordina i Digimon per livello e raggruppa Tamer e Option identici in una fila separata",
   "settings.pileCounts": "Mostra i contatori delle pile",
   "settings.pileCountsDesc": "Mostra sul campo i contatori di uova, mano, mazzo e trash",
+  "settings.hoverZoom": "Ingrandisci le carte al passaggio del mouse",
+  "settings.hoverZoomDesc": "Mostra un'anteprima grande della carta accanto al puntatore mentre è sopra la carta",
   "settings.sound": "Effetti sonori",
   "settings.soundDesc": "Clic, selezioni e suoni di combattimento",
   "settings.decisionPing": "Avviso di decisione",

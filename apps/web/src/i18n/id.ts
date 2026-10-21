@@ -984,6 +984,8 @@ const interfaceMessages = {
     "Urutkan Digimon berdasarkan level dan kelompokkan Tamer serta Option yang identik dalam barisnya sendiri",
   "settings.pileCounts": "Tampilkan jumlah kartu di tiap pile",
   "settings.pileCountsDesc": "Tampilkan penghitung Digi-Egg, Tangan, Deck, dan Trash di papan",
+  "settings.hoverZoom": "Perbesar kartu saat kursor di atasnya",
+  "settings.hoverZoomDesc": "Tampilkan pratinjau kartu besar di samping kursor saat berada di atas kartu",
   "settings.sound": "Efek suara",
   "settings.soundDesc": "Klik, pilihan, dan efek suara pertarungan",
   "settings.decisionPing": "Ping keputusan",

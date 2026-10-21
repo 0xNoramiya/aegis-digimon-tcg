@@ -983,6 +983,8 @@ const interfaceMessages = {
   "settings.organizedFieldDesc": "デジモンをレベル順に並べ、同じテイマーとオプションをそれぞれ1列にまとめます",
   "settings.pileCounts": "枚数を表示",
   "settings.pileCountsDesc": "盤面にデジタマ、手札、デッキ、トラッシュの枚数を表示します",
+  "settings.hoverZoom": "ホバーでカードを拡大",
+  "settings.hoverZoomDesc": "カードにポインターを重ねている間、ポインターの横に大きなカードプレビューを表示します",
   "settings.sound": "効果音",
   "settings.soundDesc": "クリック、選択、バトルの効果音",
   "settings.decisionPing": "判断の通知音",

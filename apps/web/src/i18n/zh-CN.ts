@@ -930,6 +930,8 @@ const interfaceMessages = {
   "settings.organizedFieldDesc": "按等级排列数码宝贝，并把相同的驯兽师和选项卡归为一排",
   "settings.pileCounts": "显示区域数量",
   "settings.pileCountsDesc": "在场地上显示蛋、手牌、卡组和废弃区的计数",
+  "settings.hoverZoom": "悬停时放大卡牌",
+  "settings.hoverZoomDesc": "指针悬停在卡牌上时，在指针旁显示大图预览",
   "settings.sound": "音效",
   "settings.soundDesc": "点击、选择与战斗提示音",
   "settings.decisionPing": "决策提示音",

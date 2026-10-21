@@ -937,6 +937,8 @@ const interfaceMessages = {
   "settings.organizedFieldDesc": "按等級排列數碼寶貝，並將相同的馴獸師和選項各自歸為一行",
   "settings.pileCounts": "顯示牌堆數量",
   "settings.pileCountsDesc": "在場地上顯示數碼蛋、手牌、卡組和廢棄區的數量",
+  "settings.hoverZoom": "懸停時放大卡牌",
+  "settings.hoverZoomDesc": "指標懸停在卡牌上時，在指標旁顯示大圖預覽",
   "settings.sound": "音效",
   "settings.soundDesc": "點擊、選擇和戰鬥提示",
   "settings.decisionPing": "決策提示音",
