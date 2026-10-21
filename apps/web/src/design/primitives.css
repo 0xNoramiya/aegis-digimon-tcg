@@ -14,7 +14,7 @@
   position: fixed;
   inset: 0;
   min-width: 320px;
-  overflow: hidden;
+  overflow: clip;
   color: var(--ds-text);
   background: var(--ds-paper);
 }
