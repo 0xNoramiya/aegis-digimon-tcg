@@ -100,6 +100,40 @@ it("highlights a selected opponent hand back and clears the highlight without ex
   expect(back!.innerHTML).toBe(concealedMarkup);
 });
 
+function SingleCardSelection() {
+  const [picks, setPicks] = useState<string[]>([]);
+  return (
+    <DecisionCandidateGrid
+      candidates={[{ instanceId: "trash-lucemon", cardId: "BT1-010", zone: "trash" }]}
+      picks={picks}
+      min={0}
+      max={1}
+      selectedPlayCost={0}
+      withinPlayCostBudget
+      selectedDP={0}
+      wideDialog={false}
+      onTogglePick={(instanceId) => setPicks((current) => (current.includes(instanceId) ? [] : [instanceId]))}
+    />
+  );
+}
+
+it("marks a single-pick card as unchosen until it is clicked, then shows a check", () => {
+  render(
+    <I18nProvider>
+      <SingleCardSelection />
+    </I18nProvider>,
+  );
+  const candidate = screen.getByRole("button", { name: /Agumon/ });
+  const mark = () => candidate.querySelector(".decision-overlay__pick-mark");
+  expect(mark()?.getAttribute("data-picked")).toBe("false");
+  expect(mark()?.querySelector("svg")).toBeNull();
+  fireEvent.click(candidate);
+  expect(mark()?.getAttribute("data-picked")).toBe("true");
+  expect(mark()?.querySelector("svg")).not.toBeNull();
+  fireEvent.click(candidate);
+  expect(mark()?.getAttribute("data-picked")).toBe("false");
+});
+
 it("places eligible cards first in each zone without changing their relative order", () => {
   const candidates: DecisionCandidate[] = [
     { instanceId: "hand-disabled", cardId: "BT1-010", zone: "hand", selectable: false },
