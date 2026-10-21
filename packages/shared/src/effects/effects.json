@@ -80997,7 +80997,14 @@
     ],
     "coverage": "full",
     "residual": [],
-    "digivolutionRequirement": [{ "names": ["Yao Qinglan", "MarineBullmon"], "cost": 6, "isAlternate": true }]
+    "digivolutionRequirement": [
+      {
+        "namesExact": ["MarineBullmon"],
+        "cost": 6,
+        "controllerControls": { "kind": ["Tamer"], "namesExact": ["Yao Qinglan"], "min": 1 },
+        "isAlternate": true
+      }
+    ]
   },
   "BT22-029": {
     "effects": [
