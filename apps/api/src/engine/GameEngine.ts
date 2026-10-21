@@ -155,6 +155,7 @@ export class GameEngine {
    * (KB Q2814 / BT2-053). A timing window can resolve several separate bodies.
    */
   windowTokenSeq = 0;
+  securityRemovalEventSeq = 0;
   /** One identity per resolving body, preserving its parent's identity across nested effects. */
   readonly effectBodyTokens: number[] = [];
   /**

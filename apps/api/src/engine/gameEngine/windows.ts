@@ -207,9 +207,11 @@ export async function settleBetweenEffects(engine: GameEngine): Promise<void> {
 
 /** Security removal is another reaction of the same completed effect body. */
 function collectDeferredSecurityRemovalPending(engine: GameEngine): CollectedEffect[] {
-  const armed = engine.deferredSecurityRemovalTriggers
-    .splice(0)
-    .flatMap((entry) => armedSubTriggers(engine, entry.subscriptions, entry.payload, entry.contexts));
+  const armed = uniqueOncePerTurnWatcherOccurrences(
+    engine.deferredSecurityRemovalTriggers
+      .splice(0)
+      .flatMap((entry) => armedSubTriggers(engine, entry.subscriptions, entry.payload, entry.contexts)),
+  );
   return armedAsPendingCollected(engine, armed).map((entry, index) => ({
     ...entry,
     effect: {
