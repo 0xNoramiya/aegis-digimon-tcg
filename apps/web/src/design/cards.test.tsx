@@ -77,27 +77,16 @@ describe("CardMini cost badge", () => {
   });
 });
 
-describe("CardMini printed traits", () => {
-  it.each([
-    ["ST23-13", "Glowing Dawn · BEATBREAK"],
-    ["ST23-02", "Rookie · Vaccine · Holy Beast · Glowing Dawn · BEATBREAK"],
-    ["BT18-102", "Mega · Hybrid · Vaccine · Shaman"],
-    ["BT16-102", "Mega · Vaccine · Free · Holy Warrior · X Antibody · Royal Knight"],
-  ])("shows every printed form, attribute and type for %s", (cardId, traits) => {
-    render(<CardMini cardId={cardId} width={84} info zoomOnHover={false} />);
+describe("CardMini board info", () => {
+  it.each(["ST23-13", "ST23-02", "BT18-102", "BT16-102"])(
+    "shows the name without printed forms, attributes or types for %s",
+    (cardId) => {
+      const { container } = render(<CardMini cardId={cardId} width={116} info zoomOnHover={false} />);
 
-    expect(screen.getByText(traits)).toBeTruthy();
-  });
-
-  it("shows both Chinese traits on the paired BEATBREAK Tamer", async () => {
-    render(
-      <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
-        <CardMini cardId="ST23-13" width={116} info zoomOnHover={false} />
-      </I18nContext.Provider>,
-    );
-
-    expect(await screen.findByText("光辉黎明 · 觉醒节拍")).toBeTruthy();
-  });
+      expect(screen.getByText(getCardDefinition(cardId)!.nameEn)).toBeTruthy();
+      expect(container.textContent).not.toContain(" · ");
+    },
+  );
 });
 
 it("loads Chinese card data on locale selection and restores the upstream locale on switching", async () => {
