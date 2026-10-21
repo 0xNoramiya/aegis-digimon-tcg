@@ -1,6 +1,5 @@
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
-import { getTranslatedCardMeta } from "@/i18n/getTranslatedCardMeta";
 import { CardZoomPreview } from "@/design/CardZoomPreview";
 import { useHoverZoomEnabled } from "@/design/useHoverZoomEnabled";
 import { Sigil } from "@/design/Sigil";
@@ -272,7 +271,7 @@ export function CoverThumb({
   );
 }
 
-/** Metadata scrim for a board token: play cost, level, name, traits, DP.
+/** Metadata scrim for a board token: play cost, level, name, DP.
  *  Rendered over the art; scales with the token width and drops the least
  *  essential fields first as space shrinks. `dp` overrides the printed value
  *  so buffs/de-buffs show the live figure. */
@@ -292,12 +291,6 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
   const dpChip = palettePairFor(def.colors);
   const cost = def.playCost;
   const dpValue = dp ?? def.dp;
-  const traits = [
-    ...(def.forms ?? []).map((value) => getTranslatedCardMeta({ value, group: "forms", translations })),
-    ...(def.attributes ?? []).map((value) => getTranslatedCardMeta({ value, group: "attributes", translations })),
-    ...(def.types ?? []).map((value) => getTranslatedCardMeta({ value, group: "traits", translations })),
-  ].filter((value) => value && value !== "-" && value !== "—");
-  const showTraits = width >= 84 && traits.length > 0;
   const showLevel = def.level != null && width >= 66;
 
   const hasDelta = typeof dpDelta === "number" && dpDelta !== 0;
@@ -440,23 +433,6 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
           background: "linear-gradient(to top, rgba(8,10,16,0.92) 28%, rgba(8,10,16,0.55) 64%, transparent)",
         }}
       >
-        {showTraits ? (
-          <div
-            style={{
-              color: "rgba(226,232,240,0.82)",
-              fontSize: px(7),
-              fontWeight: 600,
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-              whiteSpace: "normal",
-              overflowWrap: "anywhere",
-              lineHeight: 1.25,
-              marginBottom: px(1),
-            }}
-          >
-            {traits.join(" · ")}
-          </div>
-        ) : null}
         {stacked ? <div style={{ display: "flex", justifyContent: "flex-end" }}>{dpReadout}</div> : null}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: px(3) }}>
           <span
@@ -481,7 +457,7 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
 }
 
 /** Compact board card (top of a permanent, or a hand card on the board).
- *  Pass `info` to overlay the token's name, play cost, level, traits and DP. */
+ *  Pass `info` to overlay the token's name, play cost, level and DP. */
 export function CardMini({
   cardId,
   artId,
