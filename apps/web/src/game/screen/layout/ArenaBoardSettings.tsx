@@ -1,6 +1,11 @@
 /* Board display choices for the match dialog. They share their stores with the
    Settings screen, so a change here shows on the board behind the dialog at once. */
 
+import { cardConfirmationModeLabelKey } from "@/game/cardConfirmation/cardConfirmationModeLabelKey";
+import { cardConfirmationModeValues } from "@/game/cardConfirmation/cardConfirmationModeValues";
+import { cardConfirmationPreference } from "@/game/cardConfirmation/cardConfirmationPreference";
+import { isCardConfirmationMode } from "@/game/cardConfirmation/isCardConfirmationMode";
+
 import { EFFECT_PROMPT_POSITIONS, setEffectPromptPosition, useEffectPromptPosition } from "../../effectPromptPosition";
 import { TEXT_SCALES, setTextScale, useTextScale } from "../../../design/textScale";
 import { useId, useState } from "react";
@@ -33,6 +38,7 @@ export function ArenaBoardSettings() {
   const effectConfirmationHold = useEffectConfirmationHold();
   const effectPromptPosition = useEffectPromptPosition();
   const noticeDuration = useNoticeDuration();
+  const cardConfirmationMode = cardConfirmationPreference.useMode();
   const [effectSpeed, setEffectSpeedChoice] = useState<EffectSpeed>(getEffectSpeed);
   return (
     <section className="game-arena-board-settings" aria-labelledby={titleId}>
@@ -123,6 +129,25 @@ export function ArenaBoardSettings() {
             ))}
           </select>
           <small id={`${titleId}-notice-duration-desc`}>{t("settings.noticeDurationDesc")}</small>
+        </div>
+        <div className="game-arena-settings__row game-arena-board-settings__size">
+          <label htmlFor={`${titleId}-card-confirmation`}>{t("settings.cardConfirmation")}</label>
+          <select
+            id={`${titleId}-card-confirmation`}
+            value={cardConfirmationMode}
+            aria-describedby={`${titleId}-card-confirmation-desc`}
+            onChange={(event) => {
+              const mode = event.target.value;
+              if (isCardConfirmationMode(mode)) cardConfirmationPreference.setMode(mode);
+            }}
+          >
+            {cardConfirmationModeValues.map((mode) => (
+              <option key={mode} value={mode}>
+                {t(cardConfirmationModeLabelKey(mode))}
+              </option>
+            ))}
+          </select>
+          <small id={`${titleId}-card-confirmation-desc`}>{t("settings.cardConfirmationDesc")}</small>
         </div>
         <div className="game-arena-settings__row">
           <Switch

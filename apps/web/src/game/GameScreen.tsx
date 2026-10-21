@@ -80,7 +80,9 @@ import { combatAnswers } from "./screen/combatAnswers";
 import { playChoiceAnswers } from "./screen/playChoiceAnswers";
 import type { DropZoneHit, PermanentChrome } from "./screen/types";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import type { SeriesDeckDialogProps } from "@/game/overlay/match/SeriesDeckDialog";
+import type { DeckFormat } from "@aegis/shared/deckFormat";
 import {
   CardKind,
   PRESENTATION_CHANNEL,
@@ -114,7 +116,7 @@ import { isDecisionPingEnabled } from "@/design/decisionPing";
 import { useLowTimeWarning } from "@/game/useLowTimeWarning";
 import { usePresentationAudio, useReadoutAudio } from "./usePresentationAudio";
 import { audioBoardFromPresentedSeats } from "./match/present/presentationAudio";
-import { areActionConfirmationsEnabled } from "../design/actionConfirmation";
+import { cardConfirmationPreference } from "@/game/cardConfirmation/cardConfirmationPreference";
 import { isKeepAwakeEnabled } from "../design/keepAwake";
 import { useScreenWakeLock } from "../design/useScreenWakeLock";
 import { useArenaBoardLook } from "./arenaLook";
@@ -147,6 +149,11 @@ import { TIMINGS } from "./timings";
 import { loadReconnectSession } from "../net/reconnectSession";
 import { pendingFateBadges } from "./pendingFate";
 import { useEffectConfirmationHold } from "./effectConfirmationHold";
+
+export type SeriesDeckPickerParams = Pick<
+  SeriesDeckDialogProps,
+  "format" | "unlimited" | "betaAllowed" | "onChoose" | "onClose"
+>;
 
 const SERIES_HOP_DELAY_MS = 1500;
 
@@ -219,6 +226,7 @@ function GameScreenSession({
   presentationPacing,
   onSeriesNext,
   onLeaveForfeitsChange,
+  renderSeriesDeckPicker,
 }: {
   liveConnection: UseRoomResult;
   joinOptions: AegisJoinOptions;
@@ -280,6 +288,7 @@ function GameScreenSession({
    * Must be a stable callback.
    */
   onLeaveForfeitsChange?: (concede: (() => void) | undefined) => void;
+  renderSeriesDeckPicker?: (params: SeriesDeckPickerParams) => ReactNode;
 }) {
   const { t } = useTranslation();
   const [handOrder, setHandOrder] = useState<readonly string[]>([]);
@@ -287,7 +296,7 @@ function GameScreenSession({
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
   );
   const usedDeck = spectating ? undefined : liveConnection.usedDeck;
-  const actionConfirmationsEnabled = areActionConfirmationsEnabled();
+  const cardConfirmationMode = cardConfirmationPreference.useMode();
   const arenaLayout = useArenaLayout();
   const { narrowGameLayout, compactPiles, shortBoard, collapseNotices } = arenaLayout;
   const {
@@ -1036,7 +1045,7 @@ function GameScreenSession({
     handEntries,
     digivolveRoutesOf,
     mainActionBlocked,
-    actionConfirmationsEnabled,
+    cardConfirmationMode,
     playGameCue,
     lastPlayAttemptRef,
     playAttemptEventSeqRef,
@@ -1225,7 +1234,7 @@ function GameScreenSession({
   const revealed = modelRevealedZones({ events, viewerSeat, resultShown: state.gameOver && !cues.resultPending });
 
   const rematch = spectating ? undefined : getRematchView({ series: state.series, viewerSeat });
-  const series = spectating || rematch ? undefined : seriesView(state.series, viewerSeat);
+  const series = spectating || rematch?.stage === "accepted" ? undefined : seriesView(state.series, viewerSeat);
 
   const attackerPerm = selPerm ? you.battleArea.find((p) => p.permanentId === selPerm) : undefined;
   const draggedAttackerPerm =
@@ -1571,6 +1580,29 @@ function GameScreenSession({
                 onOffer: (mode) => room?.send(SERIES_CHANNEL, { action: "offerRematch", mode }),
                 onAnswer: (accept) => room?.send(SERIES_CHANNEL, { action: "answerRematch", accept }),
                 onChooseTurnOrder: (goFirst) => room?.send(SERIES_CHANNEL, { action: "chooseTurnOrder", goFirst }),
+                onKeepDeck: () => room?.send(SERIES_CHANNEL, { action: "chooseSeriesDeck" }),
+                deckPicker: renderSeriesDeckPicker
+                  ? (onClose) =>
+                      renderSeriesDeckPicker({
+                        format: state.format as DeckFormat,
+                        unlimited: state.unlimited,
+                        betaAllowed: startMode === "beta" || isPrivateMatch,
+                        onChoose: (deck) =>
+                          room?.send(SERIES_CHANNEL, {
+                            action: "chooseSeriesDeck",
+                            deck: {
+                              deckId: deck.id,
+                              deckName: deck.name,
+                              mainDeck: deck.mainDeck,
+                              eggDeck: deck.eggDeck,
+                              mainDeckArts: deck.mainDeckArts,
+                              eggDeckArts: deck.eggDeckArts,
+                              community: deck.community,
+                            },
+                          }),
+                        onClose,
+                      })
+                  : undefined,
               },
               spectatorResult: spectating
                 ? state.winnerSeat < 0

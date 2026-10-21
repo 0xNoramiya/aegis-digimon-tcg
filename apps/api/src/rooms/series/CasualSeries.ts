@@ -1,6 +1,11 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import type { Delayed } from "colyseus";
+import { getRematchModeEntry } from "@aegis/shared/protocol/getRematchModeEntry";
+import type { RematchMode } from "@aegis/shared/protocol/RematchMode";
+import type { SeriesDeckChoice } from "@aegis/shared/protocol/series";
+import type { SeriesState } from "@aegis/shared/schema/GameState";
 import {
+  SERIES_DECK_SELECTION_SECONDS,
   SERIES_NEXT_GAME_JOIN_SECONDS,
   SERIES_TURN_ORDER_SECONDS,
   type GameState,
@@ -27,6 +32,7 @@ export interface SeriesRoomPort {
   setInterval(run: () => void, ms: number): Delayed;
   /** What seat `seat` played this game with, minus the token the series mints for it. */
   seatSnapshot(seat: Seat): Omit<SeriesSeat, "token"> | undefined;
+  resolveDeckChoice(choice: unknown): SeriesSeatDeck | undefined;
   sendToSeat(seat: Seat, message: SeriesSeatMessage): void;
   createNextRoom(options: SeriesContinuationOptions): Promise<string>;
   logError(...data: unknown[]): void;
@@ -40,6 +46,14 @@ export interface SeriesSettings {
   unlimited?: boolean;
   format?: import("@aegis/shared").DeckFormat;
   roomCode?: string;
+}
+
+export type SeriesSeatDeck = Pick<SeriesSeat, "deck" | "deckId" | "deckName" | "community">;
+
+export interface RematchOpening {
+  chooser: Seat;
+  results: GameResult[];
+  mode: RematchMode;
 }
 
 const OTHER = (seat: Seat) => (1 - seat) as Seat;
@@ -95,10 +109,15 @@ export class CasualSeries {
     return record;
   }
 
-  static rematch(port: SeriesRoomPort, settings: SeriesSettings, chooser: Seat, results: GameResult[]): CasualSeries {
-    const series = new CasualSeries(port, undefined, randomUUID(), settings, results);
-    port.state.series.gameNumber = results.length;
-    series.beginChoosing(chooser);
+  static rematch(port: SeriesRoomPort, settings: SeriesSettings, opening: RematchOpening): CasualSeries {
+    resetSeriesState(port.state.series);
+    const series = new CasualSeries(port, undefined, randomUUID(), settings, opening.results);
+    port.state.series.gameNumber = opening.results.length;
+    if (getRematchModeEntry({ mode: opening.mode }).allowsDeckChange) {
+      series.beginDeckSelection();
+    } else {
+      series.beginChoosing(opening.chooser);
+    }
     return series;
   }
 
@@ -184,6 +203,10 @@ export class CasualSeries {
       if (typeof message.goFirst === "boolean") this.chooseTurnOrder(seat, message.goFirst);
       return;
     }
+    if (message?.action === "chooseSeriesDeck") {
+      this.chooseDeck(seat, message.deck);
+      return;
+    }
     if (message?.action === "leave") this.departed(seat, gameStarted);
   }
 
@@ -194,7 +217,8 @@ export class CasualSeries {
    */
   departed(seat: Seat, gameStarted: boolean): void {
     if (this.over) return;
-    const betweenGames = this.port.state.series.phase === "choosing";
+    const betweenGames =
+      this.port.state.series.phase === "choosing" || this.port.state.series.phase === "deckSelection";
     const beforeLaterGame = this.continuation !== undefined && !gameStarted;
     if (betweenGames || beforeLaterGame) this.finish({ kind: "won", winnerSeat: OTHER(seat) }, "forfeit");
   }
@@ -202,6 +226,38 @@ export class CasualSeries {
   dispose(): void {
     this.clearChoice();
     this.arrivalTimeout?.clear();
+  }
+
+  private beginDeckSelection(): void {
+    if (!this.ensureRecord()) {
+      this.finish({ kind: "draw" }, "aborted");
+      return;
+    }
+    const series = this.port.state.series;
+    series.phase = "deckSelection";
+    this.startCountdown(SERIES_DECK_SELECTION_SECONDS, () => this.startNextGame(undefined));
+  }
+
+  private chooseDeck(seat: Seat, choice: SeriesDeckChoice | undefined): void {
+    const series = this.port.state.series;
+    if (series.phase !== "deckSelection" || !this.record || isDeckReady(series, seat)) {
+      return;
+    }
+    if (choice !== undefined) {
+      const deck = this.port.resolveDeckChoice(choice);
+      if (!deck) {
+        return;
+      }
+      const current = this.record.seats[seat];
+      const seats: [SeriesSeat, SeriesSeat] = [...this.record.seats];
+      seats[seat] = { ...current, ...deck };
+      this.record = { ...this.record, seats };
+      markDeckChanged(series, seat, !isSameDeck(current.deck, deck.deck));
+    }
+    markDeckReady(series, seat);
+    if (isDeckReady(series, 0) && isDeckReady(series, 1)) {
+      this.startNextGame(undefined);
+    }
   }
 
   private beginChoosing(chooser: Seat): void {
@@ -212,26 +268,37 @@ export class CasualSeries {
     const series = this.port.state.series;
     series.phase = "choosing";
     series.chooserSeat = chooser;
-    series.choiceSecondsLeft = SERIES_TURN_ORDER_SECONDS;
+    this.startCountdown(SERIES_TURN_ORDER_SECONDS, () => this.chooseTurnOrder(chooser, true));
+  }
+
+  private startCountdown(seconds: number, expire: () => void): void {
+    const series = this.port.state.series;
+    series.choiceSecondsLeft = seconds;
     this.choiceTicker = this.port.setInterval(() => {
       if (series.choiceSecondsLeft > 0) series.choiceSecondsLeft -= 1;
     }, 1000);
-    this.choiceTimeout = this.port.setTimeout(
-      () => this.chooseTurnOrder(chooser, true),
-      SERIES_TURN_ORDER_SECONDS * 1000,
-    );
+    this.choiceTimeout = this.port.setTimeout(expire, seconds * 1000);
     for (const seat of [0, 1] as Seat[]) this.resendSeat(seat);
   }
 
   private chooseTurnOrder(seat: Seat, goFirst: boolean): void {
     const series = this.port.state.series;
-    if (series.phase !== "choosing" || series.chooserSeat !== seat || !this.record) return;
+    if (series.phase !== "choosing" || series.chooserSeat !== seat) {
+      return;
+    }
+    this.startNextGame(goFirst ? seat : OTHER(seat));
+  }
+
+  private startNextGame(firstSeat: Seat | undefined): void {
+    if (!this.record) {
+      return;
+    }
     this.clearChoice();
-    const firstSeat = goFirst ? seat : OTHER(seat);
+    const series = this.port.state.series;
     series.phase = "starting";
     series.chooserSeat = -1;
     series.choiceSecondsLeft = 0;
-    series.nextFirstSeat = firstSeat;
+    series.nextFirstSeat = firstSeat ?? -1;
     this.record = { ...this.record, results: [...this.results], firstSeat, nonce: randomUUID() };
     void this.openNextRoom(this.record);
   }
@@ -278,7 +345,6 @@ export class CasualSeries {
         { ...seats[0], token: token() },
         { ...seats[1], token: token() },
       ],
-      firstSeat: 0,
     };
     return this.record;
   }
@@ -305,4 +371,45 @@ export class CasualSeries {
     this.choiceTimeout = undefined;
     this.choiceTicker = undefined;
   }
+}
+
+function resetSeriesState(series: SeriesState): void {
+  series.results.clear();
+  series.wins0 = 0;
+  series.wins1 = 0;
+  series.chooserSeat = -1;
+  series.choiceSecondsLeft = 0;
+  series.nextFirstSeat = -1;
+  series.nextRoomId = "";
+  series.winnerSeat = -1;
+  series.endReason = "";
+  series.deckReady0 = false;
+  series.deckReady1 = false;
+  series.deckChanged0 = false;
+  series.deckChanged1 = false;
+}
+
+function isDeckReady(series: SeriesState, seat: Seat): boolean {
+  return seat === 0 ? series.deckReady0 : series.deckReady1;
+}
+
+function markDeckReady(series: SeriesState, seat: Seat): void {
+  if (seat === 0) {
+    series.deckReady0 = true;
+  } else {
+    series.deckReady1 = true;
+  }
+}
+
+function markDeckChanged(series: SeriesState, seat: Seat, changed: boolean): void {
+  if (seat === 0) {
+    series.deckChanged0 = changed;
+  } else {
+    series.deckChanged1 = changed;
+  }
+}
+
+function isSameDeck(current: SeriesSeat["deck"], next: SeriesSeat["deck"]): boolean {
+  const sorted = (cards: string[]) => [...cards].sort().join(",");
+  return sorted(current.mainDeck) === sorted(next.mainDeck) && sorted(current.eggDeck) === sorted(next.eggDeck);
 }
