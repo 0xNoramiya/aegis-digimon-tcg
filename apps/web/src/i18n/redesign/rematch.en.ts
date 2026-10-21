@@ -1,9 +1,9 @@
 export const rematchEn = {
   "overlay.rematch.title": "Play {name} again?",
   "overlay.rematch.finish": "Finish this Best of 3",
-  "overlay.rematch.finishHint": "This game counts as game 1. Same decks; the loser of this game picks who goes first.",
+  "overlay.rematch.finishHint": "Counts as game 1 · same decks",
   "overlay.rematch.new": "Start new Best of 3",
-  "overlay.rematch.newHint": "Both players start at 0–0 and can switch decks. The first player is drawn at random.",
+  "overlay.rematch.newHint": "0–0 · switch decks · random first player",
   "overlay.rematch.incomingFinish": "{name} wants to finish this Best of 3",
   "overlay.rematch.incomingNew": "{name} wants to start a new Best of 3",
   "overlay.rematch.accept": "Accept",

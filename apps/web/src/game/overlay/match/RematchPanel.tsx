@@ -4,7 +4,7 @@ import { useTranslation } from "@/i18n/useTranslation";
 import type { RematchView } from "@/game/getRematchView";
 import { SeriesNextGame } from "@/game/overlay/match/SeriesStatus";
 import { SeriesDeckSelection } from "@/game/overlay/match/SeriesDeckSelection";
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { RematchMode } from "@aegis/shared/protocol/RematchMode";
 import "@/game/overlay/match/seriesStatus.css";
 
@@ -32,6 +32,7 @@ export function RematchPanel({
   onChangeDeck,
 }: RematchPanelProps) {
   const { t } = useTranslation();
+  const hintId = useId();
   if (view.stage === "accepted" && view.series?.stage === "deckSelection") {
     return (
       <SeriesDeckSelection
@@ -56,14 +57,28 @@ export function RematchPanel({
     return (
       <div className="series-next">
         <p className="series-next__title">{t("overlay.rematch.title", { name: opponentName })}</p>
-        <div className="series-next__options">
+        <div className="rematch-options">
           {MODE_OPTIONS.filter((option) => view.modes.includes(option.mode)).map((option) => (
-            <div key={option.mode} className="series-next__option">
-              <Button full variant="secondary" icon={option.icon} onClick={() => onOffer(option.mode)}>
-                {t(option.labelKey)}
-              </Button>
-              <p className="series-next__detail">{t(option.hintKey)}</p>
-            </div>
+            <button
+              type="button"
+              key={option.mode}
+              className="rematch-option"
+              aria-labelledby={`${hintId}-${option.mode}-label`}
+              aria-describedby={`${hintId}-${option.mode}`}
+              onClick={() => onOffer(option.mode)}
+            >
+              <span className="rematch-option__icon" aria-hidden="true">
+                <option.icon size={18} />
+              </span>
+              <span className="rematch-option__text">
+                <span className="rematch-option__label" id={`${hintId}-${option.mode}-label`}>
+                  {t(option.labelKey)}
+                </span>
+                <span className="rematch-option__hint" id={`${hintId}-${option.mode}`}>
+                  {t(option.hintKey)}
+                </span>
+              </span>
+            </button>
           ))}
         </div>
       </div>

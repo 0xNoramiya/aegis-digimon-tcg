@@ -2094,10 +2094,9 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.series.leave": "Salir de la serie",
   "overlay.rematch.title": "¿Jugar de nuevo con {name}?",
   "overlay.rematch.finish": "Terminar este al mejor de 3",
-  "overlay.rematch.finishHint":
-    "Esta partida cuenta como la partida 1. Mismos mazos; quien perdió elige quién empieza.",
+  "overlay.rematch.finishHint": "Cuenta como partida 1 · mismos mazos",
   "overlay.rematch.new": "Empezar un nuevo al mejor de 3",
-  "overlay.rematch.newHint": "Ambos empiezan 0–0 y pueden cambiar de mazo. Quien empieza se sortea.",
+  "overlay.rematch.newHint": "0–0 · cambio de mazo · inicio sorteado",
   "overlay.rematch.incomingFinish": "{name} quiere terminar este al mejor de 3",
   "overlay.rematch.incomingNew": "{name} quiere empezar un nuevo al mejor de 3",
   "overlay.rematch.accept": "Aceptar",

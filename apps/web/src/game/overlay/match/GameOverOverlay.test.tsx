@@ -214,12 +214,14 @@ describe("rematch after a best-of-one", () => {
     fireEvent.click(screen.getByRole("button", { name: "Start new Best of 3" }));
     fireEvent.click(screen.getByRole("button", { name: "Find rematch" }));
     expect(calls).toEqual(["offer:finish", "offer:new", "queue"]);
+    expect(screen.getByRole("button", { name: "Start new Best of 3" }).getAttribute("aria-describedby")).toBeTruthy();
+    expect(screen.getByText("0–0 · switch decks · random first player")).toBeTruthy();
   });
 
   it("tells the invited player that the finished game counts toward the offered series", () => {
     renderRematch("offeredToYou", undefined, RematchMode.FINISH_SERIES.value);
     expect(screen.getByText("Nova wants to finish this Best of 3")).toBeTruthy();
-    expect(screen.getByText(/This game counts as game 1\./)).toBeTruthy();
+    expect(screen.getByText("Counts as game 1 · same decks")).toBeTruthy();
   });
 
   it("lets the invited player accept or decline", () => {

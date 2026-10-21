@@ -2542,10 +2542,9 @@ const interfaceMessages = {
   "overlay.series.leave": "Quitter la série",
   "overlay.rematch.title": "Rejouer contre {name} ?",
   "overlay.rematch.finish": "Terminer ce meilleur des 3",
-  "overlay.rematch.finishHint": "Cette partie compte comme la partie 1. Mêmes decks ; le perdant choisit qui commence.",
+  "overlay.rematch.finishHint": "Compte comme partie 1 · mêmes decks",
   "overlay.rematch.new": "Nouveau meilleur des 3",
-  "overlay.rematch.newHint":
-    "Les deux joueurs repartent de 0–0 et peuvent changer de deck. Le premier joueur est tiré au sort.",
+  "overlay.rematch.newHint": "0–0 · changement de deck · premier joueur tiré au sort",
   "overlay.rematch.incomingFinish": "{name} veut terminer ce meilleur des 3",
   "overlay.rematch.incomingNew": "{name} veut lancer un nouveau meilleur des 3",
   "overlay.rematch.accept": "Accepter",
