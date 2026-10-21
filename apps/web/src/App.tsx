@@ -32,6 +32,7 @@ import { applyTextScale } from "./design/textScale";
 import { I18nProvider, useTranslation } from "./i18n";
 import { accountApi, type RemoteAccount } from "./account/client";
 import { communityApi } from "./community/client";
+import { SeriesDeckDialog } from "@/game/overlay/match/SeriesDeckDialog";
 import { communityDeckListing } from "./community/communityDeckListing";
 import { usePreferencesSync } from "./account/usePreferencesSync";
 import { setDeckFavorite } from "@/screens/favoriteDecks/setDeckFavorite";
@@ -886,6 +887,22 @@ function LoadedAegisClient({
             {screen === "game" && (
               <GameScreen
                 onCopyUsedDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
+                renderSeriesDeckPicker={(params) => (
+                  <SeriesDeckDialog
+                    {...params}
+                    decks={decks}
+                    activeDeckId={matchDeck?.id ?? ""}
+                    accountId={account?.id}
+                    onCopyDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
+                    onChoose={(deck) => {
+                      params.onChoose(deck);
+                      if (!availableDecks.some((entry) => entry.id === deck.id)) {
+                        setBorrowedDeck(structuredClone(deck));
+                      }
+                      setMatchDeckId(deck.id);
+                    }}
+                  />
+                )}
                 autoHatchReady={preferencesReady}
                 key={matchNumber}
                 joinOptions={joinOptions}

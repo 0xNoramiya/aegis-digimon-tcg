@@ -3,6 +3,8 @@ import { Icons } from "@/design/icons";
 import { useTranslation } from "@/i18n/useTranslation";
 import type { RematchView } from "@/game/getRematchView";
 import { SeriesNextGame } from "@/game/overlay/match/SeriesStatus";
+import { SeriesDeckSelection } from "@/game/overlay/match/SeriesDeckSelection";
+import type { ReactNode } from "react";
 import { RematchMode } from "@aegis/shared/protocol/RematchMode";
 import "@/game/overlay/match/seriesStatus.css";
 
@@ -12,10 +14,34 @@ export interface RematchProps {
   onOffer: (mode: RematchMode) => void;
   onAnswer: (accept: boolean) => void;
   onChooseTurnOrder: (goFirst: boolean) => void;
+  onKeepDeck: () => void;
+  deckPicker?: (onClose: () => void) => ReactNode;
 }
 
-export function RematchPanel({ view, opponentName, onOffer, onAnswer, onChooseTurnOrder }: RematchProps) {
+type RematchPanelProps = Omit<RematchProps, "deckPicker"> & {
+  onChangeDeck?: () => void;
+};
+
+export function RematchPanel({
+  view,
+  opponentName,
+  onOffer,
+  onAnswer,
+  onChooseTurnOrder,
+  onKeepDeck,
+  onChangeDeck,
+}: RematchPanelProps) {
   const { t } = useTranslation();
+  if (view.stage === "accepted" && view.series?.stage === "deckSelection") {
+    return (
+      <SeriesDeckSelection
+        series={view.series}
+        opponentName={opponentName}
+        onKeepDeck={onKeepDeck}
+        onChangeDeck={onChangeDeck}
+      />
+    );
+  }
   if (view.stage === "accepted" && view.series) {
     return <SeriesNextGame series={view.series} opponentName={opponentName} onChooseTurnOrder={onChooseTurnOrder} />;
   }
@@ -24,7 +50,7 @@ export function RematchPanel({ view, opponentName, onOffer, onAnswer, onChooseTu
       <div className="series-next">
         <p className="series-next__title">{t("overlay.rematch.title", { name: opponentName })}</p>
         <div className="series-next__options">
-          {MODE_OPTIONS.map((option) => (
+          {MODE_OPTIONS.filter((option) => view.modes.includes(option.mode)).map((option) => (
             <div key={option.mode} className="series-next__option">
               <Button full variant="secondary" icon={option.icon} onClick={() => onOffer(option.mode)}>
                 {t(option.labelKey)}
@@ -33,7 +59,6 @@ export function RematchPanel({ view, opponentName, onOffer, onAnswer, onChooseTu
             </div>
           ))}
         </div>
-        <p className="series-next__detail">{t("overlay.rematch.hint")}</p>
       </div>
     );
   }
@@ -42,9 +67,7 @@ export function RematchPanel({ view, opponentName, onOffer, onAnswer, onChooseTu
     return (
       <div className="series-next" role="status">
         <p className="series-next__title">{t(option.incomingKey, { name: opponentName })}</p>
-        <p className="series-next__detail">
-          {t(option.hintKey)} {t("overlay.rematch.hint")}
-        </p>
+        <p className="series-next__detail">{t(option.hintKey)}</p>
         <div className="game-actions-row">
           <Button full icon={Icons.Check} onClick={() => onAnswer(true)}>
             {t("overlay.rematch.accept")}

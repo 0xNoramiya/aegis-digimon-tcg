@@ -127,6 +127,7 @@ export function GameOverOverlay({
   const { t } = useTranslation();
   const splash = gameOverSplash(result, reason);
   const [opponentDeckOpen, setOpponentDeckOpen] = useState(false);
+  const [deckPickerOpen, setDeckPickerOpen] = useState(false);
   const [view, setView] = useState<ResultView>("splash");
   const reviewingBoard = view === "board";
   const barRef = useRef<HTMLDivElement>(null);
@@ -156,6 +157,11 @@ export function GameOverOverlay({
       ? t("overlay.series.complete")
       : t("overlay.series.gameComplete", { game: series.view.gameNumber, bestOf: series.view.bestOf });
   const reasonText = spectatorResult ?? (series && seriesOutcome ? seriesReason(t, series) : t(splash.reasonKey));
+
+  const choosingDeck = rematch?.view.series?.stage === "deckSelection" && !rematch.view.series.viewerDeckReady;
+  if (deckPickerOpen && choosingDeck && rematch?.deckPicker) {
+    return rematch.deckPicker(() => setDeckPickerOpen(false));
+  }
 
   if (opponentDeckOpen && opponentDeckDialog) {
     return opponentDeckDialog(() => setOpponentDeckOpen(false));
@@ -224,7 +230,9 @@ export function GameOverOverlay({
             onChooseTurnOrder={series.onChooseTurnOrder}
           />
         ) : null}
-        {rematch && !spectatorResult ? <RematchPanel {...rematch} /> : null}
+        {rematch && !spectatorResult ? (
+          <RematchPanel {...rematch} onChangeDeck={rematch.deckPicker ? () => setDeckPickerOpen(true) : undefined} />
+        ) : null}
         {keepsMatchOpen ? null : (
           <div className="game-actions-row">
             <Button full autoFocus icon={returnsToRoom ? Icons.Link2 : Icons.Swords} onClick={onRematch}>

@@ -96,6 +96,9 @@ describe("best-of-three result", () => {
     viewerChooses: true,
     choiceSecondsLeft: 18,
     viewerGoesFirst: undefined,
+    viewerDeckReady: false,
+    opponentDeckReady: false,
+    opponentDeckChanged: false,
     outcome: undefined,
     endReason: "",
     ...fields,
@@ -168,7 +171,12 @@ describe("best-of-three result", () => {
 });
 
 describe("rematch after a best-of-one", () => {
-  function renderRematch(stage: RematchStage, series?: SeriesView, mode: RematchMode = RematchMode.NEW_SERIES.value) {
+  function renderRematch(
+    stage: RematchStage,
+    series?: SeriesView,
+    mode: RematchMode = RematchMode.NEW_SERIES.value,
+    modes: RematchMode[] = [RematchMode.FINISH_SERIES.value, RematchMode.NEW_SERIES.value],
+  ) {
     const calls: string[] = [];
     render(
       <I18nProvider>
@@ -179,11 +187,19 @@ describe("rematch after a best-of-one", () => {
           onMenu={() => calls.push("menu")}
           onRematch={() => calls.push("queue")}
           rematch={{
-            view: { stage, mode, series },
+            view: { stage, mode, modes, series },
             opponentName: "Nova",
             onOffer: (offered) => calls.push(`offer:${offered}`),
             onAnswer: (accept) => calls.push(accept ? "accept" : "decline"),
             onChooseTurnOrder: (goFirst) => calls.push(goFirst ? "first" : "second"),
+            onKeepDeck: () => calls.push("keep"),
+            deckPicker: (onClose) => (
+              <div role="dialog" aria-label="Deck picker">
+                <button type="button" onClick={onClose}>
+                  Close picker
+                </button>
+              </div>
+            ),
           }}
         />
       </I18nProvider>,
@@ -230,6 +246,9 @@ describe("rematch after a best-of-one", () => {
       viewerChooses: true,
       choiceSecondsLeft: 20,
       viewerGoesFirst: undefined,
+      viewerDeckReady: false,
+      opponentDeckReady: false,
+      opponentDeckChanged: false,
       outcome: undefined,
       endReason: "",
     });
@@ -237,6 +256,56 @@ describe("rematch after a best-of-one", () => {
     expect(screen.queryByRole("button", { name: "Find rematch" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Go first" }));
     expect(calls).toEqual(["first"]);
+  });
+
+  const deckSelection = (fields: Partial<SeriesView>): SeriesView => ({
+    bestOf: 3,
+    gameNumber: 0,
+    viewerWins: 0,
+    opponentWins: 0,
+    pips: ["pending", "pending", "pending"],
+    stage: "deckSelection",
+    viewerChooses: false,
+    choiceSecondsLeft: 90,
+    viewerGoesFirst: undefined,
+    viewerDeckReady: false,
+    opponentDeckReady: false,
+    opponentDeckChanged: false,
+    outcome: undefined,
+    endReason: "",
+    ...fields,
+  });
+
+  it("offers only a new best-of-three once a best-of-three is over", () => {
+    renderRematch("open", undefined, RematchMode.NEW_SERIES.value, [RematchMode.NEW_SERIES.value]);
+    expect(screen.getByRole("button", { name: "Start new Best of 3" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Finish this Best of 3" })).toBeNull();
+  });
+
+  it("lets each player keep or change their deck before a new best-of-three", () => {
+    const calls = renderRematch("accepted", deckSelection({}));
+    expect(screen.getByText("Choose your deck for game 1")).toBeTruthy();
+    expect(screen.getByText("Nova is choosing a deck…")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Change deck" }));
+    expect(screen.getByRole("dialog", { name: "Deck picker" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Close picker" }));
+    fireEvent.click(screen.getByRole("button", { name: "Keep current deck" }));
+    expect(calls).toEqual(["keep"]);
+  });
+
+  it("tells a ready player that the opponent switched decks without naming the deck", () => {
+    renderRematch(
+      "accepted",
+      deckSelection({ viewerDeckReady: true, opponentDeckReady: true, opponentDeckChanged: true }),
+    );
+    expect(screen.getByText("Your deck is locked in.")).toBeTruthy();
+    expect(screen.getByText("Nova switched decks.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Keep current deck" })).toBeNull();
+  });
+
+  it("announces a randomly drawn first player for a new best-of-three", () => {
+    renderRematch("accepted", deckSelection({ stage: "starting" }));
+    expect(screen.getByText("Game 1 · First player drawn at random")).toBeTruthy();
   });
 });
 
