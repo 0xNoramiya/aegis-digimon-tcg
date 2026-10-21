@@ -38313,7 +38313,7 @@
     "maxCountInDeck": 4,
     "imageId": "BT22-055",
     "linkDp": 2000,
-    "linkRequirement": "[Link] [Appmon] trait: Cost 2",
+    "linkRequirement": "[Link] [Appmon] trait: Cost 1",
     "linkEffect": "＜Blocker＞"
   },
   {
