@@ -3,8 +3,9 @@ import { buildStoryDrawPile } from "#api/story/buildStoryDrawPile";
 
 const violetHand = ["BT20-079", "BT23-069", "EX4-074", "BT20-062", "BT4-111", "BT23-065", "BT23-071", "BT8-084"];
 const violetBattleArea = ["P-040", "BT23-087", "BT23-087", "BT20-088", "BT23-098"];
-const violetBreedingStack = ["BT21-065", "BT20-068", "BT20-072", "BT20-073"];
+const violetBreedingStack = ["BT21-065", "BT20-068", "BT20-073"];
 const violetTrash = [
+  "BT20-072",
   "BT20-067",
   "BT20-067",
   "BT20-063",
@@ -73,7 +74,7 @@ const fixture: ScenarioFixture = {
       battleArea: violetBattleArea,
       breeding: {
         card: "BT20-073",
-        under: ["BT20-006", "BT21-065", "BT20-068", "BT20-072"],
+        under: ["BT20-006", "BT21-065", "BT20-068"],
       },
     },
     "1": {

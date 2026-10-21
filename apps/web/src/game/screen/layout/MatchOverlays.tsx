@@ -70,6 +70,9 @@ export function MatchOverlays({
   sourceHost,
   counterSelection,
   combatWindowAnswers,
+  blockConfirmationPermanentId,
+  onConfirmBlock,
+  onCancelBlockConfirmation,
   allianceConfirmationPermanentId,
   onConfirmAlliance,
   onCancelAllianceConfirmation,
@@ -136,6 +139,9 @@ export function MatchOverlays({
     handInstanceIds: readonly string[];
   };
   combatWindowAnswers: ReturnType<typeof combatAnswers>;
+  blockConfirmationPermanentId?: string;
+  onConfirmBlock: () => void;
+  onCancelBlockConfirmation: () => void;
   allianceConfirmationPermanentId?: string;
   onConfirmAlliance: () => void;
   onCancelAllianceConfirmation: () => void;
@@ -214,6 +220,9 @@ export function MatchOverlays({
     : undefined;
   const presentedStackPermanent = stackViewPermanent
     ? (actions.findPresentedPermanent(stackViewPermanent.permanentId) ?? stackViewPermanent)
+    : undefined;
+  const blockConfirmationPermanent = blockConfirmationPermanentId
+    ? allPermanents.find((permanent) => permanent.permanentId === blockConfirmationPermanentId)
     : undefined;
   const allianceConfirmationPermanent = allianceConfirmationPermanentId
     ? allPermanents.find((permanent) => permanent.permanentId === allianceConfirmationPermanentId)
@@ -300,7 +309,7 @@ export function MatchOverlays({
       {combatPromptsHeld ? null : (
         <CombatWindowPrompts
           state={state}
-          blockWindow={combatWindows.blockWindow}
+          blockWindow={blockConfirmationPermanent ? null : combatWindows.blockWindow}
           counterWindow={combatWindows.counterWindow}
           counterSelection={counterSelection}
           allianceWindow={allianceConfirmationPermanent ? null : combatWindows.allianceWindow}
@@ -309,6 +318,17 @@ export function MatchOverlays({
           {...combatWindowAnswers}
         />
       )}
+
+      {blockConfirmationPermanent ? (
+        <ActionConfirmationOverlay
+          cardId={blockConfirmationPermanent.topCard.cardId}
+          title={t("overlay.confirmBlockTitle")}
+          detail={t("overlay.confirmBlockDetail", { name: getCardName(blockConfirmationPermanent.topCard.cardId) })}
+          confirmLabel={t("overlay.confirmBlock")}
+          onConfirm={onConfirmBlock}
+          onCancel={onCancelBlockConfirmation}
+        />
+      ) : null}
 
       {allianceConfirmationPermanent ? (
         <ActionConfirmationOverlay

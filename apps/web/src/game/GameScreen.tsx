@@ -429,6 +429,11 @@ function GameScreenSession({
     permanentId: string;
   }>();
   const allianceConfirmationSubmittedRef = useRef(false);
+  const [blockConfirmation, setBlockConfirmation] = useState<{
+    windowKey: string;
+    permanentId: string;
+  }>();
+  const blockConfirmationSubmittedRef = useRef(false);
 
   const { drag, dragHover, handleTapRef, handleDropRef, canDragRef, startHandDrag, startPermDrag, cancelDrag } =
     useDragPlumbing({ manual: state?.gameMode === GameMode.MANUAL.value });
@@ -1075,6 +1080,15 @@ function GameScreenSession({
     combatWindows.allianceWindow?.eligibleAllyIds.includes(allianceConfirmation.permanentId)
       ? allianceConfirmation.permanentId
       : undefined;
+  const blockWindowKey = combatWindows.blockWindow
+    ? `block:${combatWindows.blockWindow.attackerPermanentId}:${openCombatWindowForBarrier?.stateVersion ?? state.stateVersion}`
+    : undefined;
+  const activeBlockConfirmationPermanentId =
+    blockConfirmation &&
+    blockConfirmation.windowKey === blockWindowKey &&
+    combatWindows.blockWindow?.eligibleBlockerIds.includes(blockConfirmation.permanentId)
+      ? blockConfirmation.permanentId
+      : undefined;
   const { markCombatWindowAnswered } = combatWindows;
   const counterWindowKey = `${openCombatWindowForBarrier?.key ?? ""}:${openCombatWindowForBarrier?.stateVersion ?? ""}`;
   const counterSourceInstanceId =
@@ -1508,6 +1522,19 @@ function GameScreenSession({
         handInstanceIds: counterHandInstanceIds,
       }}
       combatWindowAnswers={combatWindowAnswers}
+      blockConfirmationPermanentId={activeBlockConfirmationPermanentId}
+      onConfirmBlock={() => {
+        if (!activeBlockConfirmationPermanentId || blockConfirmationSubmittedRef.current) {
+          return;
+        }
+        blockConfirmationSubmittedRef.current = true;
+        combatWindowAnswers.onBlock(activeBlockConfirmationPermanentId);
+        setBlockConfirmation(undefined);
+      }}
+      onCancelBlockConfirmation={() => {
+        blockConfirmationSubmittedRef.current = false;
+        setBlockConfirmation(undefined);
+      }}
       allianceConfirmationPermanentId={activeAllianceConfirmationPermanentId}
       onConfirmAlliance={() => {
         if (!activeAllianceConfirmationPermanentId || allianceConfirmationSubmittedRef.current) return;
@@ -1874,9 +1901,12 @@ function GameScreenSession({
               ? {
                   ...actions,
                   onYourPerm: (perm) => () => {
-                    if (combatWindows.blockWindow?.eligibleBlockerIds.includes(perm.permanentId))
-                      combatWindowAnswers.onBlock(perm.permanentId);
-                    else setZoomCardId(perm.topCard.cardId);
+                    if (combatWindows.blockWindow?.eligibleBlockerIds.includes(perm.permanentId) && blockWindowKey) {
+                      blockConfirmationSubmittedRef.current = false;
+                      setBlockConfirmation({ windowKey: blockWindowKey, permanentId: perm.permanentId });
+                    } else {
+                      setZoomCardId(perm.topCard.cardId);
+                    }
                   },
                 }
               : combatWindows.allianceWindow
