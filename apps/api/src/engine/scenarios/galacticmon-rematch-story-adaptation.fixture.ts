@@ -1,3 +1,4 @@
+import { medusamonTournamentDeck } from "#api/story/decks/medusamonTournamentDeck";
 import { buildStoryDrawPile } from "#api/story/buildStoryDrawPile";
 import type { ScenarioFixture } from "#api/engine/scenario/types";
 
@@ -15,33 +16,11 @@ const fixture: ScenarioFixture = {
       hand: ["BT21-008", "BT21-017", "BT24-016", "BT21-081", "BT24-017"],
       security: [],
       deck: buildStoryDrawPile({
-        counts: [
-          ["BT21-008", 4],
-          ["BT24-008", 2],
-          ["EX11-008", 3],
-          ["BT24-011", 2],
-          ["BT21-017", 3],
-          ["P-189", 1],
-          ["BT24-012", 2],
-          ["BT21-024", 2],
-          ["BT24-016", 4],
-          ["BT24-017", 1],
-          ["EX11-012", 3],
-          ["BT24-018", 3],
-          ["BT21-081", 3],
-          ["BT24-082", 3],
-          ["EX11-054", 1],
-          ["LM-059", 1],
-          ["LM-061", 1],
-          ["LM-027", 1],
-          ["LM-055", 1],
-          ["LM-057", 1],
-          ["P-035", 2],
-          ["BT8-097", 2],
-          ["BT21-093", 1],
-          ["BT21-007", 1],
-          ["BT21-015", 1],
-          ["BT21-026", 1],
+        counts: medusamonTournamentDeck.mainDeck,
+        substitutions: [
+          ["BT24-008", "BT21-007", 1],
+          ["P-189", "BT21-015", 1],
+          ["EX11-012", "BT21-026", 1],
         ],
         placed: [
           "BT21-008",
@@ -49,10 +28,10 @@ const fixture: ScenarioFixture = {
           "BT24-016",
           "BT21-081",
           "BT24-017",
+          "BT21-026",
           "BT21-007",
           "BT21-015",
           "BT21-024",
-          "BT21-026",
           "P-035",
           "P-035",
         ],
@@ -64,8 +43,14 @@ const fixture: ScenarioFixture = {
           as: "warGreymon",
           under: ["BT21-001", "BT21-007", "BT21-015", "BT21-024"],
         },
-        { card: "P-035", as: "firstBoost" },
-        { card: "P-035", as: "secondBoost" },
+        {
+          card: "P-035",
+          as: "firstBoost",
+        },
+        {
+          card: "P-035",
+          as: "secondBoost",
+        },
       ],
     },
     "1": {
@@ -73,7 +58,6 @@ const fixture: ScenarioFixture = {
       security: ["BT18-060", "P-094", "BT11-061", "BT18-092", "BT11-111"],
       deck: [
         "BT4-109",
-        "BT11-061",
         "BT11-105",
         "BT11-061",
         "BT11-061",
@@ -114,7 +98,7 @@ const fixture: ScenarioFixture = {
       ],
       breeding: {
         card: "BT11-065",
-        under: ["BT7-005"],
+        under: ["BT7-005", "BT11-061"],
       },
     },
   },

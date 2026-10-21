@@ -17,9 +17,7 @@ const fixture: ScenarioFixture = {
         "ST19-09",
         "ST19-11",
         "ST19-09",
-        "ST19-08",
         "ST19-09",
-        "ST19-03",
         "ST19-04",
         "ST19-13",
         "ST19-12",
@@ -65,7 +63,7 @@ const fixture: ScenarioFixture = {
       ],
       breeding: {
         card: "ST19-11",
-        under: ["ST19-01"],
+        under: ["ST19-01", "ST19-03", "ST19-08"],
       },
     },
     "1": {
