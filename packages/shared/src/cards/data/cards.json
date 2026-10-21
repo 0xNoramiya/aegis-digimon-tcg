@@ -50081,7 +50081,7 @@
     "maxCountInDeck": 4,
     "imageId": "BT27-084",
     "dualEffect": "Ultimate Thrusting Sword Gran Rozerio",
-    "optionEffect": "[Main] Delete 1 of your opponent's lowest level Digimon. If this effect didn't delete, until your turn ends, all of your Digimon with [Knightmon] in their texts gain ＜Blocker＞, your opponent's Digimon effects don't affect them and they get +3000 DP.",
+    "optionEffect": "[Main] Delete 1 of your opponent's lowest level Digimon. If this effect didn't delete, until your turn ends, all of your Digimon with [Knightmon] in their texts gain ＜Blocker＞, your opponent's Digimon effects don't affect them and they get +3000 DP.\n＜Arts Digivolve＞",
     "optionColorRequirements": ["Purple", "Black"],
     "isDualCard": true
   },
@@ -109692,5 +109692,48 @@
     "rarity": "U",
     "maxCountInDeck": 4,
     "imageId": "BT27-098"
+  },
+  {
+    "cardId": "BT27-099",
+    "set": "BT27",
+    "nameEn": "Surtr Brander",
+    "nameJp": "スルトブランダー",
+    "colors": ["Blue"],
+    "kinds": ["Option"],
+    "playCost": 3,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["X Antibody", "Royal Knight"],
+    "effectText": "When effects trash this card from the security stack, activate its [Security] effects.\n[Main] 1 of your opponent's Digimon gets -6000 DP for the turn. Then, add your top security card to the hand and place this card as the top security card.",
+    "securityEffectText": "[Security] Place 1 of your opponent's Digimon with the lowest DP as their top security card.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-099"
+  },
+  {
+    "cardId": "BT27-040",
+    "set": "BT27",
+    "nameEn": "Etemon",
+    "nameJp": "エテモン",
+    "colors": ["Yellow"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 8,
+    "dp": 8000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 4,
+        "memoryCost": 4
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Virus"],
+    "types": ["Puppet"],
+    "effectText": "[Digivolve] Lv.4 w/[Sukamon] in name: Cost 3\n[Assembly -3] Lv.4 Digimon card w/[Sukamon] in name\n\n＜Overclock ([Chuumon]/[Sukamon] in name)＞\n[Security] [On Play] [When Digivolving] To 1 of your opponent's Digimon, give -3000 DP for the turn for each of your Digimon with [Chuumon], [Sukamon] or [Etemon] in their names.",
+    "inheritedEffectText": "[All Turns] [Once Per Turn] When any of your other Digimon with [Chuumon], [Sukamon] or [Etemon] in their names are played, ＜De-Digivolve 1＞ 1 of your opponent's Digimon.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-040"
   }
 ]
