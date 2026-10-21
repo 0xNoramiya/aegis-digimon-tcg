@@ -748,8 +748,12 @@ export const es: Record<keyof typeof en, string> = {
   "settings.keepAwake": "Mantener la pantalla encendida",
   "settings.keepAwakeDesc":
     "Mantener la pantalla encendida mientras hay un combate abierto, en lugar de dejar que el dispositivo se duerma entre turnos",
-  "settings.actionConfirmations": "Confirmar acciones",
-  "settings.actionConfirmationsDesc": "Preguntar antes de jugar, digievolucionar o usar una digievolución DNA opcional",
+  "settings.cardConfirmation": "Confirmaciones de cartas",
+  "settings.cardConfirmationDesc":
+    "Preguntar antes de jugar, usar o digievolucionar una carta. «Omitir cartas solo jugables» juega al instante cuando la carta no tiene otra acción legal. Las elecciones de objetivo, materiales, coste y modo se mantienen.",
+  "settings.cardConfirmationAlways": "Preguntar siempre",
+  "settings.cardConfirmationSkipPlayOnly": "Omitir cartas solo jugables",
+  "settings.cardConfirmationNever": "No preguntar nunca",
   "overlay.moveEffectPrompt": "Mover panel de efecto",
   "overlay.moveEffectPromptHelp": "Arrastra para mover o usa las flechas. Pulsa Inicio para restaurar la posición.",
   "settings.effectPromptPosition": "Posición de los efectos",

@@ -5,6 +5,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { intents } from "@/net/intents";
 import type { AegisRoom } from "@/net/client";
 import { matchIntents } from "@/game/screen/matchIntents";
+import { CardConfirmationMode } from "@/game/cardConfirmation/CardConfirmationMode";
 import { playChoiceAnswers } from "@/game/screen/playChoiceAnswers";
 import type { HandEntry } from "@/game/piece/types";
 import type { PendingActionConfirmation } from "@/game/screen/types";
@@ -59,7 +60,7 @@ function buildFixture() {
     events: [],
     digivolveRoutesOf: () => [],
     mainActionBlocked: false,
-    actionConfirmationsEnabled: false,
+    cardConfirmationMode: CardConfirmationMode.NEVER.value,
     playGameCue: vi.fn<() => void>(),
     lastPlayAttemptRef: { current: undefined },
     playAttemptEventSeqRef: { current: -1 },

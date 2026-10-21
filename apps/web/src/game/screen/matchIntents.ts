@@ -10,6 +10,9 @@
    dispatched, and the sequence it was dispatched at is what a later rejection is measured
    against. */
 
+import { shouldConfirmCardPlay } from "@/game/cardConfirmation/shouldConfirmCardPlay";
+import { CardConfirmationMode } from "@/game/cardConfirmation/CardConfirmationMode";
+
 import type { MutableRefObject } from "react";
 import {
   type AssemblyPlan,
@@ -42,7 +45,7 @@ export function matchIntents({
   handEntries,
   digivolveRoutesOf,
   mainActionBlocked,
-  actionConfirmationsEnabled,
+  cardConfirmationMode,
   lastPlayAttemptRef,
   playAttemptEventSeqRef,
   setOptimisticPlayedInstanceId,
@@ -61,7 +64,7 @@ export function matchIntents({
   handEntries: HandEntry[];
   digivolveRoutesOf: (instanceId: string) => readonly ProjectedDigivolveRoute[] | undefined;
   mainActionBlocked: boolean;
-  actionConfirmationsEnabled: boolean;
+  cardConfirmationMode: CardConfirmationMode;
   playGameCue: (kind: SoundKind) => void;
   lastPlayAttemptRef: MutableRefObject<string | undefined>;
   playAttemptEventSeqRef: MutableRefObject<number>;
@@ -107,7 +110,7 @@ export function matchIntents({
       viewer,
       confirmDrop,
       preferDna,
-      actionConfirmationsEnabled,
+      actionConfirmationsEnabled: shouldConfirmCardPlay({ entry, mode: cardConfirmationMode }),
     });
     if (prompt?.kind === "dual") {
       overlays.setDualPlay({ instanceId, cardId: prompt.cardId });
@@ -233,7 +236,7 @@ export function matchIntents({
       });
       return;
     }
-    if (confirmDrop && actionConfirmationsEnabled) {
+    if (confirmDrop && cardConfirmationMode !== CardConfirmationMode.NEVER.value) {
       overlays.setActionConfirm({
         kind: "digivolve",
         instanceId,

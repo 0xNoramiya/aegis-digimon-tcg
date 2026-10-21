@@ -3,6 +3,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { intents } from "../net/intents";
 import type { AegisRoom } from "../net/client";
 import { matchIntents } from "./screen/matchIntents";
+import { CardConfirmationMode } from "@/game/cardConfirmation/CardConfirmationMode";
 import { playChoiceAnswers } from "./screen/playChoiceAnswers";
 import type { HandEntry } from "./piece";
 
@@ -67,7 +68,7 @@ it("#5166: disabling action confirmations still opens material choice before sen
     events: [],
     digivolveRoutesOf: () => [],
     mainActionBlocked: false,
-    actionConfirmationsEnabled: false,
+    cardConfirmationMode: CardConfirmationMode.NEVER.value,
     playGameCue: vi.fn<() => void>(),
     lastPlayAttemptRef: { current: undefined },
     playAttemptEventSeqRef: { current: -1 },

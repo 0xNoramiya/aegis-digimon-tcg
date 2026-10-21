@@ -1,3 +1,6 @@
+import { cardConfirmationModeLabelKey } from "@/game/cardConfirmation/cardConfirmationModeLabelKey";
+import { cardConfirmationModeValues } from "@/game/cardConfirmation/cardConfirmationModeValues";
+import { cardConfirmationPreference } from "@/game/cardConfirmation/cardConfirmationPreference";
 import { CardLanguageSettings } from "@/screens/cardLanguage/CardLanguageSettings";
 import type { DeckListing } from "@/game/decks";
 import { SpectatorIdentitySetting } from "@/account/SpectatorIdentitySetting";
@@ -28,7 +31,6 @@ import {
   useMusicTrack,
 } from "../design/sound";
 import { MUSIC_TRACK_LABEL_KEYS, MUSIC_TRACKS } from "../design/musicTracks";
-import { areActionConfirmationsEnabled, setActionConfirmationsEnabled } from "../design/actionConfirmation";
 import { setEffectConfirmationHoldEnabled, useEffectConfirmationHold } from "../game/effectConfirmationHold";
 import { isKeepAwakeEnabled, setKeepAwakeEnabled } from "../design/keepAwake";
 import { isDecisionPingEnabled, setDecisionPingEnabled } from "@/design/decisionPing";
@@ -276,7 +278,7 @@ export function Settings({
   const musicTrack = useMusicTrack();
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [volume, setVolume] = useState(Math.round(getSoundVolume() * 100));
-  const [actionConfirmationsOn, setActionConfirmationsOn] = useState(areActionConfirmationsEnabled());
+  const cardConfirmationMode = cardConfirmationPreference.useMode();
   const effectConfirmationHold = useEffectConfirmationHold();
   const [keepAwakeOn, setKeepAwakeOn] = useState(isKeepAwakeEnabled());
   const [decisionPingOn, setDecisionPingOn] = useState(isDecisionPingEnabled());
@@ -542,17 +544,19 @@ export function Settings({
             ) : null}
 
             <SettingsCard id="settings-gameplay" title={t("settings.sectionGameplay")}>
-              <div className="settings-row">
-                <Switch
-                  checked={actionConfirmationsOn}
-                  label={t("settings.actionConfirmations")}
-                  description={t("settings.actionConfirmationsDesc")}
-                  onChange={(next) => {
-                    setActionConfirmationsEnabled(next);
-                    setActionConfirmationsOn(next);
-                  }}
+              <SettingRow
+                label={t("settings.cardConfirmation")}
+                labelId="settings-card-confirmation-label"
+                description={t("settings.cardConfirmationDesc")}
+              >
+                <OptionList
+                  options={cardConfirmationModeValues}
+                  selected={cardConfirmationMode}
+                  labelledBy="settings-card-confirmation-label"
+                  label={(mode) => t(cardConfirmationModeLabelKey(mode))}
+                  onSelect={cardConfirmationPreference.setMode}
                 />
-              </div>
+              </SettingRow>
               <div className="settings-row">
                 <Switch
                   checked={effectConfirmationHold}

@@ -754,8 +754,12 @@ export const en = {
   "settings.keepAwake": "Keep the screen awake",
   "settings.keepAwakeDesc":
     "Hold the screen on while a match is open, instead of letting the device sleep between turns",
-  "settings.actionConfirmations": "Confirm actions",
-  "settings.actionConfirmationsDesc": "Ask before playing, digivolving, or using an optional DNA digivolution",
+  "settings.cardConfirmation": "Card confirmations",
+  "settings.cardConfirmationDesc":
+    "Ask before you play, use, or digivolve a card. “Skip play-only cards” plays at once when the card has no other legal action. Target, material, cost, and mode choices still appear.",
+  "settings.cardConfirmationAlways": "Always ask",
+  "settings.cardConfirmationSkipPlayOnly": "Skip play-only cards",
+  "settings.cardConfirmationNever": "Never ask",
   "overlay.moveEffectPrompt": "Move effect prompt",
   "overlay.moveEffectPromptHelp": "Drag to move, or use the arrow keys. Press Home to reset the position.",
   "settings.effectPromptPosition": "Effect prompt position",
