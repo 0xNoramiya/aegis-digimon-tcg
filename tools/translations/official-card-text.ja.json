@@ -3,8 +3,8 @@
   "language": "ja",
   "catalogCards": 4508,
   "sourceCards": 4477,
-  "translatedCards": 4302,
-  "translatedFields": 6786,
+  "translatedCards": 4303,
+  "translatedFields": 6788,
   "missing": [
     {
       "cardId": "BT12-002",
@@ -324,16 +324,6 @@
     {
       "cardId": "BT27-095",
       "field": "securityEffectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-040",
-      "field": "effectText",
-      "reason": "unavailable-source-field"
-    },
-    {
-      "cardId": "BT27-040",
-      "field": "inheritedEffectText",
       "reason": "unavailable-source-field"
     }
   ],
@@ -15741,6 +15731,10 @@
     "BT27-099": {
       "effectText": "https://x.com/digimon_tcg/status/2112702944512741703",
       "securityEffectText": "https://x.com/digimon_tcg/status/2112702944512741703"
+    },
+    "BT27-040": {
+      "effectText": "https://x.com/digimon_tcg/status/2112884119587971181",
+      "inheritedEffectText": "https://x.com/digimon_tcg/status/2112884119587971181"
     }
   }
 }
