@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { EffectTiming } from "@aegis/shared/schema/enums";
 import { getCardArts } from "@aegis/shared/cards/arts";
+import { getCardDefinition } from "@aegis/shared/cards/registry";
 import { setupEngine, settle } from "#api/engine/testkit/harness";
 import { advance } from "#api/engine/testkit/advance";
 import "#api/cards/index";
@@ -8,6 +9,10 @@ import "#api/cards/index";
 const SURTR = "BT27-099";
 
 describe("Surtr Brander", () => {
+  it("is a yellow option", () => {
+    expect(getCardDefinition(SURTR)?.colors).toEqual(["Yellow"]);
+  });
+
   it("offers the Japanese art under the canonical card", () => {
     expect(getCardArts(SURTR).map((art) => art.artId)).toEqual(["BT27-099", "BT27-099-J"]);
   });
@@ -16,7 +21,7 @@ describe("Surtr Brander", () => {
     const s = setupEngine(
       {
         0: {
-          battleArea: [{ card: "BT1-027" }],
+          battleArea: [{ card: "BT1-050" }],
           hand: [{ card: SURTR, as: "option" }],
           security: [
             { card: "BT1-009", as: "top" },
@@ -48,7 +53,7 @@ describe("Surtr Brander", () => {
 
   it("still becomes the top security card with no security card to add and no opposing Digimon", async () => {
     const s = setupEngine(
-      { 0: { battleArea: [{ card: "BT1-027" }], hand: [{ card: SURTR, as: "option" }] } },
+      { 0: { battleArea: [{ card: "BT1-050" }], hand: [{ card: SURTR, as: "option" }] } },
       { autoAcceptOptional: true, autoSelectCards: true },
     );
     await s.ready();
