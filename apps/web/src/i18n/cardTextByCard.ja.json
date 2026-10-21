@@ -15415,5 +15415,20 @@
   "BT27-103": {
     "[DNADigivolve][Alphamon]+[Ouryumon]:Cost0<Piercing><SecurityAttack+1><Blocker><Partition([Alphamon]&[Ouryumon])>[WhenDigivolving][WhenAttacking][OncePerTurn]Youmaydelete1ofyouropponent'sDigimon.Then,ifDNAdigivolving,<Recovery+2>.[AllTurns]Duringattacks,youropponent'seffectsdon'taffectthisDigimon.": "〔ジョグレス〕「アルファモン」+「オウリュウモン」:コスト0\n≪貫通≫≪Sアタック+1≫≪ブロッカー≫\n≪パーティション《「アルファモン」＆「オウリュウモン」》≫\n【進化時】【アタック時】[ターンに1回]相手のデジモン1体を消滅できる。その後、ジョグレス進化していたなら、≪リカバリー+2≫。\n【お互いのターン】アタック中、このデジモンは相手の効果を受けない。",
     "[Main]Delete1ofyouropponent'sDigimon.Then,2ofyourDigimonmayDNAdigivolveintothiscard.<ArtsDigivolve>": "【メイン】相手のデジモン1体を消滅させる。その後、自分のデジモン2体でこのカードにジョグレス進化できる。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わず進化できる）"
+  },
+  "BT27-002": {
+    "[WhenAttacking][OncePerTurn]Youmayplay1level4orlower[Aquatic]or[DATASQUAD]traitDigimoncardfromthisDigimon'sdigivolutioncardswiththecostreducedby1.": "【アタック時】[ターンに1回]このデジモンの進化元から、特徴「水棲型」/「セイバーズ」を持つLv.4以下のデジモンカード1枚を支払うコスト-1で登場できる。"
+  },
+  "BT27-020": {
+    "[Digivolve]Lv.2w/[DATASQUAD]trait:Cost0[OnPlay]Byplacing1level4orlower[Aquatic]or[DATASQUAD]traitDigimoncardfromyourhandasanyofyourDigimon'sbottomdigivolutioncard,orfacedownunderanyofyour[DATASQUAD]traitTamers,<Draw1>.[Rule]Trait:Has[Aquatic]Type.": "〔進化〕特徴「セイバーズ」を持つLv.2:コスト0\n\n【登場時】自分の手札から、特徴「水棲型」/「セイバーズ」を持つLv.4以下のデジモンカード1枚を自分のデジモンの進化元の下に置くか、特徴「セイバーズ」を持つ自分のテイマーの下に裏向きで置くことで、≪1ドロー≫。\n〈ルール〉特徴:タイプ「水棲型」を持つ。",
+    "[WhenAttacking][OncePerTurn]Trashthetoporbottomdigivolutioncardof1ofyouropponent'sDigimon.": "【アタック時】[ターンに1回]相手のデジモン1体の進化元を上か下から1枚破棄する。"
+  },
+  "BT27-025": {
+    "[Digivolve]Lv.3w/[DATASQUAD]trait:Cost2[OnPlay][WhenDigivolving]1ofyourDigimoncan'tbedeletedinbattleuntilyouropponent'sturnends.Ifplayedbyeffects,italsogains<Blocker>.[Rule]Trait:Has[Aquatic]Type.": "〔進化〕特徴「セイバーズ」を持つLv.3:コスト2\n\n【登場時】【進化時】相手のターン終了まで、自分のデジモン1体はバトルで消滅しない。効果で登場していたなら、加えて≪ブロッカー≫を得る。\n〈ルール〉特徴:タイプ「水棲型」を持つ。",
+    "<Evade>": "≪回避≫（このデジモンが消滅するとき、このデジモンをレストさせることで、消滅しない）"
+  },
+  "BT27-095": {
+    "[StartofYourMainPhase]Byplacing1[Cyborg]or[Aquatic]traitcardfromyourhandfacedownunderthisTamer,<Draw1>andgain1memory.[Main]BysuspendingthisTamerandtrashing2bottomface-downcardsfromunderanyofyourTamers,1ofyourDigimonmaydigivolveintoa[Cyborg]or[Aquatic]traitDigimoncardinthehandwiththecostreducedby2.": "【自分のメインフェイズ開始時】自分の手札から、特徴「サイボーグ型」/「水棲型」を持つカード1枚をこのテイマーの下に裏向きで置くことで、≪1ドロー≫、メモリー+1。\n【メイン】このテイマーをレストさせ、自分のテイマーの下にある裏向きのカードを下から2枚破棄することで、自分のデジモン1体を手札の特徴「サイボーグ型」/「水棲型」を持つデジモンカードに支払うコスト-2で進化できる。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
   }
 }
