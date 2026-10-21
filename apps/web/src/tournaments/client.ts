@@ -118,5 +118,10 @@ export const tournamentApi = {
     }),
   closeCheckIn: (id: string) =>
     send<unknown>(`/tournaments/${encodeURIComponent(id)}/close-check-in`, { method: "POST", body: "{}" }),
+  setDiscordAnnounce: (id: string, announce: boolean) =>
+    send<{ discordAnnounce: boolean }>(`/tournaments/${encodeURIComponent(id)}/discord`, {
+      method: "POST",
+      body: JSON.stringify({ announce }),
+    }),
   remove: (id: string) => send<unknown>(`/tournaments/${encodeURIComponent(id)}`, { method: "DELETE" }),
 };

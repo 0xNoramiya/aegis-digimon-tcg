@@ -678,6 +678,24 @@ export function installAccountRoutes(
       error: program.ok ? undefined : program.reason,
     });
   };
+  post("/tournaments/:id/discord", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) return;
+    if (!session.account.isAdmin) {
+      res.sendStatus(403);
+      return;
+    }
+    const announce: unknown = req.body?.announce;
+    if (typeof announce !== "boolean") {
+      res.status(400).json({ error: "invalid_discord_announce" });
+      return;
+    }
+    if (!(await store.setTournamentDiscordAnnounce(req.params.id!, announce))) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json({ discordAnnounce: announce });
+  });
   post("/tournaments/:id/close-check-in", closeTournamentCheckIn);
   post("/tournaments/:id/start", closeTournamentCheckIn);
   // The organizer's undo for an event that has not started. Deliberately unavailable from the
@@ -795,6 +813,7 @@ function toTournamentSummary(
     format: tournament.format,
     description: tournament.description,
     passwordProtected: tournament.passwordProtected,
+    discordAnnounce: tournament.discordAnnounce,
     status: tournament.status === "in_progress" ? "running" : tournament.status,
     structure: tournament.structure,
     topCutEnabled: tournament.topCutEnabled,

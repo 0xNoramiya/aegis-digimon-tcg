@@ -1,3 +1,4 @@
+import { createTournamentDiscordSweep } from "#api/tournaments/discord/createTournamentDiscordSweep";
 import { startRankedMaintenance } from "#api/ranked/startRankedMaintenance";
 import { startProviderSync } from "#api/deckProviders/startProviderSync";
 import { digilabProvider } from "#api/deckProviders/providers/digilab";
@@ -220,6 +221,10 @@ const schedulerEnabled =
  * The Swiss pass runs before the Top Cut pass on purpose: closing the last round is what parks a
  * phase in `frozen`, and running them in this order cuts within the same tick instead of the next.
  */
+const syncTournamentDiscord = createTournamentDiscordSweep({
+  accounts: accountStore,
+  standings: (tournamentId) => swissProgram.standings(tournamentId),
+});
 async function runSweeps(now: number): Promise<number> {
   let total = 0;
   for (const [name, sweep] of [
@@ -227,6 +232,7 @@ async function runSweeps(now: number): Promise<number> {
     ["swiss", () => swissProgram.sweepOpenTournaments(now)],
     ["top_cut", () => topCutProgram.sweepFrozenSwissPhases(now)],
     ["bots", () => driveBotMatches(now)],
+    ["discord", () => syncTournamentDiscord(now)],
   ] as const) {
     try {
       total += await sweep();

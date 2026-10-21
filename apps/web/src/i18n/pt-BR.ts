@@ -1805,6 +1805,9 @@ export const ptBR: Record<keyof typeof en, string> = {
   "tournaments.detail.points": "{points} pontos",
   "tournaments.detail.organizer": "Controles do organizador",
   "tournaments.detail.adminControls": "Controles de administrador",
+  "tournaments.detail.discordAnnounce": "Anunciar no Discord",
+  "tournaments.detail.discordAnnounceHelp":
+    "Publica este torneio no servidor da comunidade no Discord, envia os pareamentos de cada rodada em um tópico e dá aos jogadores os cargos do torneio.",
   "tournaments.detail.window.registrationClosesAt": "Inscrições fecham",
   "tournaments.detail.window.checkInOpensAt": "Check-in abre",
   "tournaments.detail.window.checkInClosesAt": "Check-in fecha",

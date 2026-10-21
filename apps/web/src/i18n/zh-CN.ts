@@ -1917,6 +1917,9 @@ const interfaceMessages = {
   "tournaments.detail.points": "{points} 分",
   "tournaments.detail.organizer": "主办方操作",
   "tournaments.detail.adminControls": "管理员操作",
+  "tournaments.detail.discordAnnounce": "在 Discord 公告",
+  "tournaments.detail.discordAnnounceHelp":
+    "在社区 Discord 服务器公告此锦标赛，在帖子中发布每轮对阵，并为玩家授予锦标赛身份组。",
   "tournaments.detail.window.registrationClosesAt": "报名截止",
   "tournaments.detail.window.checkInOpensAt": "签到开始",
   "tournaments.detail.window.checkInClosesAt": "签到结束",

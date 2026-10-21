@@ -1767,6 +1767,9 @@ export const es: Record<keyof typeof en, string> = {
   "tournaments.detail.points": "{points} puntos",
   "tournaments.detail.organizer": "Controles del organizador",
   "tournaments.detail.adminControls": "Controles de administrador",
+  "tournaments.detail.discordAnnounce": "Anunciar en Discord",
+  "tournaments.detail.discordAnnounceHelp":
+    "Publica este torneo en el servidor de Discord de la comunidad, comparte los emparejamientos de cada ronda en un hilo y da a los jugadores sus roles del torneo.",
   "tournaments.detail.window.registrationClosesAt": "Cierre de inscripciones",
   "tournaments.detail.window.checkInOpensAt": "Apertura del check-in",
   "tournaments.detail.window.checkInClosesAt": "Cierre del check-in",

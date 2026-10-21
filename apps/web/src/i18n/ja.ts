@@ -1987,6 +1987,9 @@ const interfaceMessages = {
   "tournaments.detail.points": "{points}ポイント",
   "tournaments.detail.organizer": "主催者用の操作",
   "tournaments.detail.adminControls": "管理者用の操作",
+  "tournaments.detail.discordAnnounce": "Discordで告知",
+  "tournaments.detail.discordAnnounceHelp":
+    "この大会をコミュニティのDiscordサーバーで告知し、各ラウンドの対戦表をスレッドに投稿し、プレイヤーに大会ロールを付与します。",
   "tournaments.detail.window.registrationClosesAt": "参加受付の締め切り",
   "tournaments.detail.window.checkInOpensAt": "チェックイン開始",
   "tournaments.detail.window.checkInClosesAt": "チェックイン終了",

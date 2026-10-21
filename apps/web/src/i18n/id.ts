@@ -1995,6 +1995,9 @@ const interfaceMessages = {
   "tournaments.detail.points": "{points} poin",
   "tournaments.detail.organizer": "Kontrol penyelenggara",
   "tournaments.detail.adminControls": "Kontrol admin",
+  "tournaments.detail.discordAnnounce": "Umumkan di Discord",
+  "tournaments.detail.discordAnnounceHelp":
+    "Mengumumkan turnamen ini di server Discord komunitas, membagikan pasangan setiap ronde di thread, dan memberi pemain peran turnamen mereka.",
   "tournaments.detail.window.registrationClosesAt": "Pendaftaran ditutup",
   "tournaments.detail.window.checkInOpensAt": "Check-in dibuka",
   "tournaments.detail.window.checkInClosesAt": "Check-in ditutup",

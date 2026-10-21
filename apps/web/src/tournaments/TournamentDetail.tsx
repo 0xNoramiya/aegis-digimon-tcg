@@ -5,6 +5,7 @@ import { deckFormatLabel } from "@/screens/deckFormatLabel";
 
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
 import { TournamentPairingControls } from "@/tournaments/TournamentPairingControls";
+import { TournamentDiscordSwitch } from "@/tournaments/TournamentDiscordSwitch";
 import { useCallback, useEffect, useState } from "react";
 import { AccountPanel } from "../account/AccountPanel";
 import { Alert, Badge, Button, Field, Panel } from "../design/primitives";
@@ -244,6 +245,8 @@ export function TournamentDetail({
           id={detail.id}
           status={detail.status}
           canManage={isOrganizer}
+          isAdmin={accountIsAdmin}
+          discordAnnounce={detail.discordAnnounce === true}
           onChanged={refresh}
           onDeleted={onBack}
         />
@@ -330,12 +333,16 @@ function OrganizerControls({
   id,
   status,
   canManage,
+  isAdmin,
+  discordAnnounce,
   onChanged,
   onDeleted,
 }: {
   id: string;
   status: TournamentDetailPayload["status"];
   canManage: boolean;
+  isAdmin: boolean;
+  discordAnnounce: boolean;
   onChanged: () => void;
   onDeleted: () => void;
 }) {
@@ -403,6 +410,7 @@ function OrganizerControls({
           {saved ? <p role="status">{t("tournaments.detail.windowsSaved")}</p> : null}
         </>
       ) : null}
+      {isAdmin ? <TournamentDiscordSwitch id={id} announce={discordAnnounce} onChanged={onChanged} /> : null}
       {error ? (
         <Alert tone="danger" title={t("tournaments.error.action")}>
           {describe(error, t)}

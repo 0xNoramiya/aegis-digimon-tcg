@@ -1797,6 +1797,9 @@ export const en = {
   "tournaments.detail.points": "{points} points",
   "tournaments.detail.organizer": "Organizer controls",
   "tournaments.detail.adminControls": "Admin controls",
+  "tournaments.detail.discordAnnounce": "Announce on Discord",
+  "tournaments.detail.discordAnnounceHelp":
+    "Posts this tournament in the community Discord server, shares each round's pairings in a thread, and gives players their tournament roles.",
   "tournaments.detail.window.registrationClosesAt": "Sign-ups close",
   "tournaments.detail.window.checkInOpensAt": "Check-in opens",
   "tournaments.detail.window.checkInClosesAt": "Check-in closes",

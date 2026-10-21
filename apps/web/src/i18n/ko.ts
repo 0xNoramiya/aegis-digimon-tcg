@@ -1968,6 +1968,9 @@ const interfaceMessages = {
   "tournaments.detail.points": "{points}점",
   "tournaments.detail.organizer": "주최자 관리",
   "tournaments.detail.adminControls": "관리자 관리",
+  "tournaments.detail.discordAnnounce": "Discord에 공지",
+  "tournaments.detail.discordAnnounceHelp":
+    "커뮤니티 Discord 서버에 이 토너먼트를 공지하고, 각 라운드의 대진을 스레드에 올리며, 플레이어에게 토너먼트 역할을 부여합니다.",
   "tournaments.detail.window.registrationClosesAt": "신청 마감",
   "tournaments.detail.window.checkInOpensAt": "체크인 시작",
   "tournaments.detail.window.checkInClosesAt": "체크인 마감",

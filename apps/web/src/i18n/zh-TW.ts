@@ -1924,6 +1924,9 @@ const interfaceMessages = {
   "tournaments.detail.points": "{points} 分",
   "tournaments.detail.organizer": "主辦者控制",
   "tournaments.detail.adminControls": "管理控制",
+  "tournaments.detail.discordAnnounce": "在 Discord 公告",
+  "tournaments.detail.discordAnnounceHelp":
+    "在社群 Discord 伺服器公告此錦標賽，在討論串中發布每輪對戰，並為玩家授予錦標賽身分組。",
   "tournaments.detail.window.registrationClosesAt": "報名截止",
   "tournaments.detail.window.checkInOpensAt": "報到開始",
   "tournaments.detail.window.checkInClosesAt": "報到截止",

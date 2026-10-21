@@ -461,3 +461,52 @@ describe("DELETE /tournaments/:id", () => {
     expect(await harness.store.tournament(tournament.id)).toBeUndefined();
   });
 });
+
+describe("POST /tournaments/:id/discord", () => {
+  async function otherTournament(): Promise<string> {
+    const organizer = await harness.store.accountForIdentity("discord", "discord-organizer", "Discord Organizer");
+    const tournament = await harness.store.createTournament(organizer.id, {
+      name: "Discord Cup",
+      block: "BT10",
+      startsAt: futureStart(),
+      maxPlayers: 8,
+    });
+    return tournament.id;
+  }
+
+  it("lets an admin flag a tournament for Discord and shows the flag on the detail view", async () => {
+    const id = await otherTournament();
+    expect((await get(`/tournaments/${id}`)).body.discordAnnounce).toBe(false);
+
+    const response = await post(`/tournaments/${id}/discord`, { announce: true });
+
+    expect(response).toEqual({ status: 200, body: { discordAnnounce: true } });
+    expect((await get(`/tournaments/${id}`)).body.discordAnnounce).toBe(true);
+  });
+
+  it("refuses an organizer who is not an admin", async () => {
+    const organizer = await harness.store.accountForIdentity("discord", "plain-organizer", "Plain Organizer");
+    const session = await harness.store.issueSession(organizer);
+    const id = await otherTournament();
+
+    const response = await fetch(`${harness.url}/tournaments/${id}/discord`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `aegis_session=${session.id}` },
+      body: JSON.stringify({ announce: true }),
+    });
+
+    expect(response.status).toBe(403);
+    expect((await get(`/tournaments/${id}`)).body.discordAnnounce).toBe(false);
+  });
+
+  it("rejects a non-boolean flag and an unknown tournament", async () => {
+    const id = await otherTournament();
+    expect((await post(`/tournaments/${id}/discord`, { announce: "yes" })).status).toBe(400);
+    const unknown = await fetch(`${harness.url}/tournaments/00000000-0000-4000-8000-000000000000/discord`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: harness.cookie },
+      body: JSON.stringify({ announce: true }),
+    });
+    expect(unknown.status).toBe(404);
+  });
+});

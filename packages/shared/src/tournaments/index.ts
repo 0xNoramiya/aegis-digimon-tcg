@@ -162,6 +162,7 @@ export type TournamentSummary = {
   };
   format?: DeckFormat;
   passwordProtected?: boolean;
+  discordAnnounce?: boolean;
   id: string;
   name: string;
   description?: string;

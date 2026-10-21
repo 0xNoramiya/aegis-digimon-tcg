@@ -97,6 +97,7 @@ export type MatchRecord = MatchHistoryRecord;
 export type Tournament = {
   format: DeckFormat;
   passwordProtected: boolean;
+  discordAnnounce: boolean;
   id: string;
   name: string;
   description: string;
@@ -1104,6 +1105,11 @@ export class AccountStore {
   // Hard delete, allowed only to the creator and only before the event starts: once it is running
   // or finished the tournament is a record other players appear in, not a draft. Children go first,
   // deepest FK first, so a stray row in any child table cannot leave the transaction half-applied.
+  async setTournamentDiscordAnnounce(id: string, announce: boolean): Promise<boolean> {
+    await this.ensureReady();
+    const result = await this.pool.query("UPDATE tournaments SET discord_announce=$2 WHERE id=$1", [id, announce]);
+    return result.rowCount === 1;
+  }
   async deleteTournament(
     id: string,
     organizerId: string,
@@ -1144,6 +1150,9 @@ export class AccountStore {
       await client.query("DELETE FROM tournament_event_sequences WHERE tournament_id=$1", [id]);
       await client.query("DELETE FROM tournament_participants WHERE tournament_id=$1", [id]);
       await client.query("DELETE FROM tournament_registrations WHERE tournament_id=$1", [id]);
+      await client.query("DELETE FROM tournament_discord_rounds WHERE tournament_id=$1", [id]);
+      await client.query("DELETE FROM tournament_discord_placements WHERE tournament_id=$1", [id]);
+      await client.query("DELETE FROM tournament_discord_posts WHERE tournament_id=$1", [id]);
       await client.query("DELETE FROM tournaments WHERE id=$1", [id]);
       return "deleted";
     });
@@ -1388,6 +1397,7 @@ function toTournament(row: TournamentRow): Tournament {
     name: String(row.name),
     description: String(row.description ?? ""),
     passwordProtected: Boolean(row.password_hash),
+    discordAnnounce: row.discord_announce === true,
     format: (row.format ?? "standard") as DeckFormat,
     block: String(row.block),
     status: String(row.status) as Tournament["status"],

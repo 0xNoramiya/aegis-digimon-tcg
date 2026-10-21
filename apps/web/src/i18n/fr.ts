@@ -2024,6 +2024,9 @@ const interfaceMessages = {
   "tournaments.detail.points": "{points} points",
   "tournaments.detail.organizer": "Outils de l'organisateur",
   "tournaments.detail.adminControls": "Outils d'administration",
+  "tournaments.detail.discordAnnounce": "Annoncer sur Discord",
+  "tournaments.detail.discordAnnounceHelp":
+    "Publie ce tournoi sur le serveur Discord de la communauté, partage les appariements de chaque ronde dans un fil et attribue aux joueurs leurs rôles de tournoi.",
   "tournaments.detail.window.registrationClosesAt": "Clôture des inscriptions",
   "tournaments.detail.window.checkInOpensAt": "Ouverture du check-in",
   "tournaments.detail.window.checkInClosesAt": "Clôture du check-in",
