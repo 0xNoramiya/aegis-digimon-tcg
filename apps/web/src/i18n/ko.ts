@@ -1335,6 +1335,8 @@ const interfaceMessages = {
   "overlay.securityAttackValue": "시큐리티 어택 {value}",
   "overlay.transformedBadge": "{name}(으)로 취급",
   "overlay.printedEffect": "카드에 적힌 효과",
+  "overlay.showCardText": "카드 텍스트 보기",
+  "overlay.hideCardText": "카드 텍스트 숨기기",
   "overlay.grantedEffects": "부여된 효과",
   "library.optionEffect": "옵션 효과",
   "overlay.noPrintedEffect": "카드에 적힌 효과 없음",

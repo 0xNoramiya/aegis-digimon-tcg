@@ -1377,6 +1377,8 @@ const interfaceMessages = {
   "overlay.securityAttackValue": "Attaque de sécurité {value}",
   "overlay.transformedBadge": "Compte pour {name}",
   "overlay.printedEffect": "Effet imprimé",
+  "overlay.showCardText": "Afficher le texte de la carte",
+  "overlay.hideCardText": "Masquer le texte de la carte",
   "overlay.grantedEffects": "Effets conférés",
   "library.optionEffect": "Effet d'Option",
   "overlay.noPrintedEffect": "Aucun effet imprimé",

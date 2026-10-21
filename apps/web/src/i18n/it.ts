@@ -1253,6 +1253,8 @@ const interfaceMessages = {
   "overlay.securityAttackValue": "Security Attack {value}",
   "overlay.transformedBadge": "Conta come {name}",
   "overlay.printedEffect": "Effetto stampato",
+  "overlay.showCardText": "Mostra il testo della carta",
+  "overlay.hideCardText": "Nascondi il testo della carta",
   "overlay.grantedEffects": "Effetti ottenuti",
   "library.optionEffect": "Effetto Option",
   "overlay.noPrintedEffect": "Nessun effetto stampato",

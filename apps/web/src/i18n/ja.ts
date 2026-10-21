@@ -1349,6 +1349,8 @@ const interfaceMessages = {
   "overlay.securityAttackValue": "セキュリティアタック {value}",
   "overlay.transformedBadge": "{name}として扱う",
   "overlay.printedEffect": "カードに記載の効果",
+  "overlay.showCardText": "カードのテキストを表示",
+  "overlay.hideCardText": "カードのテキストを隠す",
   "overlay.grantedEffects": "付与される効果",
   "library.optionEffect": "オプション効果",
   "overlay.noPrintedEffect": "カードに記載の効果なし",

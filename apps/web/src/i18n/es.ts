@@ -1140,6 +1140,8 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.securityAttackValue": "Security Attack {value}",
   "overlay.transformedBadge": "Cuenta como {name}",
   "overlay.printedEffect": "Efecto impreso",
+  "overlay.showCardText": "Mostrar texto de la carta",
+  "overlay.hideCardText": "Ocultar texto de la carta",
   "overlay.grantedEffects": "Efectos otorgados",
   "library.optionEffect": "Efecto de Option",
   "overlay.noPrintedEffect": "Sin efecto impreso",

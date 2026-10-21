@@ -23,14 +23,18 @@ describe("bulk deck card language", () => {
     "standardizes all copies in $value without changing composition",
     ({ value }) => {
       const result = convertDeckCardLanguage({ deck, language: value });
-      for (const [cards, arts] of [
-        [result.deck.mainDeck, result.deck.mainDeckArts],
-        [result.deck.eggDeck, result.deck.eggDeckArts],
+      for (const [cards, arts, previousArts] of [
+        [result.deck.mainDeck, result.deck.mainDeckArts, deck.mainDeckArts],
+        [result.deck.eggDeck, result.deck.eggDeckArts, deck.eggDeckArts],
       ] as const) {
         cards.forEach((card, index) => {
-          const expected = getCardArts(card).find((art) => (artRegionOf(art.artId)?.value ?? "en") === value);
+          const previous = previousArts?.[index] ?? card;
+          const expected =
+            (artRegionOf(previous)?.value ?? "en") === value
+              ? previous
+              : getCardArts(card).find((art) => (artRegionOf(art.artId)?.value ?? "en") === value)?.artId;
           expect(expected).toBeDefined();
-          expect(arts?.[index]).toBe(expected?.artId);
+          expect(arts?.[index] ?? card).toBe(expected);
         });
       }
       expect(result.deck.mainDeck).toEqual(deck.mainDeck);
@@ -41,6 +45,31 @@ describe("bulk deck card language", () => {
       expect(convertDeckCardLanguage({ deck: result.deck, language: value }).changed).toBe(false);
     },
   );
+
+  it.each([
+    [CardImageLanguage.KOREAN.value, ["BT1-010_P2-K", "BT1-010-K", "BT1-010-K"]],
+    [CardImageLanguage.ENGLISH.value, ["BT1-010", "BT1-010_P1", "BT1-010"]],
+  ])("keeps parallel prints already in %s and converts the other copies", (language, expected) => {
+    const parallels = {
+      ...deck,
+      mainDeck: ["BT1-010", "BT1-010", "BT1-010"],
+      mainDeckArts: ["BT1-010_P2-K", "BT1-010_P1", "BT1-010-J"],
+      eggDeck: [],
+      eggDeckArts: [],
+    };
+    const result = convertDeckCardLanguage({ deck: parallels, language });
+    expect(result.deck.mainDeckArts).toEqual(expected);
+    expect(result.changed).toBe(true);
+  });
+
+  it("does not resave a deck whose prints already use the requested language", () => {
+    const korean = { ...deck, mainDeckArts: ["BT1-010_P2-K", "BT1-010_P1-K"], eggDeckArts: ["BT1-001-K"] };
+    expect(convertDeckCardLanguage({ deck: korean, language: CardImageLanguage.KOREAN.value })).toEqual({
+      deck: korean,
+      unavailable: 0,
+      changed: false,
+    });
+  });
 
   it("keeps images without a matching language and counts each copy", () => {
     const missing = {
