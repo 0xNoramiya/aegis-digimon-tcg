@@ -1134,7 +1134,21 @@ full-game scores. Before VALIDATION, every returned candidate must again show a
 strict full-FITNESS gain, actual changed choices and no increase in invalid games.
 The unchanged baseline is never selected as a candidate.
 
-Fitness remains full-game points.
+Development screens use a local paired estimate instead of full-game points. Each
+GEPA screen plays its blocks with replay recording, then runs 826 paired
+continuations from the positions where the proposal's choice differs from v3. Both
+arms share a sample seed, continue with v3 through the panel scoring window, and
+face the block's own opponent. Pairs are spread evenly over at most 64 usable
+positions, with at least 8 pairs each. In all-bot replays the recorded hidden state
+is kept and only each library is reshuffled; a root is refused only when a
+library's top card is known. With fewer than 8 usable positions, up to three extra
+plays with fresh seeds supply positions but never scores. A block scores 0.5 plus
+the estimated per-game change in game points, clipped to [0, 1]; invalid pairs count
+as −1. A candidate reaches VALIDATION only if the lower 95% bound of its local
+difference is above zero over at least 8 positions, with no extra invalid games.
+The protocol is recorded in the manifest, and older run directories are rejected.
+
+Selection and confirmation remain full-game points.
 Invalid games count as zero. It allows eight reflections and two merges, selects
 only on VALIDATION, and sends one candidate to the frozen confirmation. Both arms
 use the same runtime, metadata, seeds and seats. Confirmation contains 2,560 games

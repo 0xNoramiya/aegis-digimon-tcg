@@ -10,6 +10,8 @@ from typing import Any
 import gepa
 
 from has_replicated_preference import has_replicated_preference
+from judge_local_screen import judge_local_screen
+from local_screen_protocol import LOCAL_SCREEN_PROTOCOL
 from panel_adapter import PanelConfig
 from panel_confirm import _analyze
 from panel_reflection_template import PANEL_REFLECTION_TEMPLATE
@@ -27,6 +29,8 @@ SCREEN_PAIRS = 32
 REPLICATION_PAIRS = 208
 SCREEN_SEED_OFFSET = 10000
 REPLICATION_SEED_OFFSET = 50000
+TEACHER_SEED_BASE = 25000000
+TEACHER_SEED_STRIDE = 100000
 CONTINUATION_RESERVE_SECONDS = 15
 
 
@@ -61,6 +65,7 @@ class ReplayTeacherCampaign:
         )["program"]
         self.confirmation_owner = str(directory.resolve())
         directory.mkdir(parents=True, exist_ok=True)
+        self._check_protocol()
         archive = directory / "runtime.tgz"
         if not archive.is_file():
             temporary = archive.with_suffix(".tmp")
@@ -128,7 +133,9 @@ class ReplayTeacherCampaign:
                         "seedOffset": REPLICATION_SEED_OFFSET,
                         "maxInvalidFraction": MAX_INVALID_FRACTION,
                         "acceptance": "Screen preferred and replication lower95 above zero over valid pairs",
+                        "refinementBackfill": "Inherited screen-preferred cases without replication are replicated in the refinement directory",
                     },
+                    "developmentScreen": LOCAL_SCREEN_PROTOCOL,
                     "seed": 24000000,
                 },
             },
@@ -141,6 +148,17 @@ class ReplayTeacherCampaign:
         self.timer = threading.Timer(max(0, self.deadline - time.time()), self.batch.pool.cancel)
         self.timer.daemon = True
         self.timer.start()
+
+    def _check_protocol(self) -> None:
+        path = self.directory / "campaign/manifest.json"
+        if not path.is_file():
+            return
+        recorded = self._load(path).get("protocol", {}).get("developmentScreen")
+        if recorded != LOCAL_SCREEN_PROTOCOL:
+            raise ValueError(
+                "Run directory was started under a different development screen protocol; "
+                "use a new run directory"
+            )
 
     def _load(self, path: Path) -> Any:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -274,7 +292,7 @@ class ReplayTeacherCampaign:
                     "inputIndex": position["inputIndex"],
                     "seat": position["seat"],
                     "expectedInformation": position["information"],
-                    "seed": 25000000 + index * 100000,
+                    "seed": TEACHER_SEED_BASE + index * TEACHER_SEED_STRIDE,
                 },
             }
             result = self.batch.run([job], self.directory / "teacher" / str(index) / "search")[0]
@@ -392,23 +410,42 @@ class ReplayTeacherCampaign:
             if control is None:
                 control = adapter.evaluate(fitness, {"main_rules": json.dumps({"rules": []})})
             screened = adapter.evaluate(fitness, component)
-            control_games = [game for output in control.outputs for game in output["games"]]
-            screened_games = [game for output in screened.outputs for game in output["games"]]
-            changed = sum(game.get("exposure", {}).get("changed", 0) for game in screened_games)
-            invalid_control = sum(game.get("valid") is not True for game in control_games)
-            invalid_candidate = sum(game.get("valid") is not True for game in screened_games)
-            if (
-                not fitness
-                or sum(screened.scores) <= sum(control.scores)
-                or changed == 0
-                or invalid_candidate > invalid_control
-            ):
+            screen = adapter.get_screen(program, fitness)
+            if not fitness or screen is None:
                 rejected.append(
                     {
                         "candidate": component,
-                        "reason": "Full FITNESS improvement, exposure or invalid-game guard failed",
+                        "status": "rejected-alignment",
+                        "reason": "No local FITNESS screen; the alignment audit or validation failed",
                     }
                 )
+                continue
+            control_games = [game for output in control.outputs for game in output["games"]]
+            screened_games = [game for output in screened.outputs for game in output["games"]]
+            verdict = judge_local_screen(
+                screen,
+                candidate_invalid=sum(game.get("valid") is not True for game in screened_games),
+                baseline_invalid=sum(game.get("valid") is not True for game in control_games),
+            )
+            evidence = {
+                **verdict,
+                "localScreen": {
+                    name: screen[name]
+                    for name in (
+                        "changedPositions",
+                        "usablePositions",
+                        "pairs",
+                        "invalidPairs",
+                        "refusedPairs",
+                        "difference",
+                        "approximate95",
+                    )
+                },
+                "fullGameScore": sum(output["fullGameScore"] for output in screened.outputs),
+                "baselineFullGameScore": sum(output["fullGameScore"] for output in control.outputs),
+            }
+            if not verdict["passed"]:
+                rejected.append({"candidate": component, **evidence})
                 continue
             report = self._compare(
                 splits["validation"], program, self.directory / "selection" / fingerprint, 28000000
@@ -422,7 +459,13 @@ class ReplayTeacherCampaign:
                 and report["candidateInvalid"] <= report["baselineInvalid"]
             )
             evaluated.append(
-                {"program": program, "sha256": fingerprint, "report": report, "eligible": eligible}
+                {
+                    "program": program,
+                    "sha256": fingerprint,
+                    "screen": evidence,
+                    "report": report,
+                    "eligible": eligible,
+                }
             )
         self._write("proposal-rejections.json", rejected)
         self._write("selection.json", evaluated)
@@ -681,9 +724,73 @@ class ReplayTeacherCampaign:
                 )
             if time.time() >= self.deadline:
                 return self._report("inconclusive", reason="Campaign compute budget exhausted")
+            cases = self._backfill_replication(parent, splits, cases)
+            self._write("teacher-cases.json", cases)
             return self._run_development(splits, cases)
         except (TimeoutError, CancelledError) as error:
             return self._report("inconclusive", reason=str(error))
+
+    def _backfill_replication(
+        self, parent: Path, splits: dict[str, Any], cases: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        completed = self._get_stage("teacher-replication")
+        if completed is not None:
+            return completed
+        missing = [
+            index
+            for index, case in enumerate(cases)
+            if case["result"].get("preferred") is True and "replicated" not in case["result"]
+        ]
+        if not missing:
+            return cases
+        positions = self._load(parent / "teacher-positions.json")
+        indices = {
+            (row["matchId"], row["inputIndex"]): index for index, row in enumerate(positions)
+        }
+        pairs = {pair["matchId"]: pair for pair in splits["fitness"]}
+        deadline = self.budget.get_deadline("teacher", 8)
+        timer = threading.Timer(max(0, deadline - time.time()), self.batch.pool.cancel)
+        timer.start()
+        updated = list(cases)
+        try:
+            for case_index in missing:
+                case = cases[case_index]
+                position = case["position"]
+                index = indices.get((case["matchId"], position["inputIndex"]))
+                if index is None or positions[index] != {"matchId": case["matchId"], **position}:
+                    raise ValueError("Parent teacher positions do not match the teacher cases")
+                replication = {
+                    "replicated": False,
+                    "reason": "Insufficient teacher budget for replication",
+                }
+                if time.time() + CONTINUATION_RESERVE_SECONDS * 2 * REPLICATION_PAIRS < deadline:
+                    seed = TEACHER_SEED_BASE + index * TEACHER_SEED_STRIDE + REPLICATION_SEED_OFFSET
+                    replication = summarize_replay_replication(
+                        self.batch.run(
+                            self._continuations(
+                                {"pair": pairs[case["matchId"]], "position": position},
+                                case["result"],
+                                seed,
+                                REPLICATION_PAIRS,
+                            ),
+                            self.directory / "teacher" / str(index) / "replication",
+                        ),
+                        REPLICATION_PAIRS,
+                    )
+                replicated = replication["replicated"]
+                updated[case_index] = {
+                    **case,
+                    "result": {
+                        **case["result"],
+                        "replication": replication,
+                        "replicated": replicated,
+                        "preference": case["result"]["alternative"] if replicated else None,
+                    },
+                }
+        finally:
+            timer.cancel()
+        self._finish_stage("teacher-replication", updated)
+        return updated
 
     def close(self) -> None:
         self.timer.cancel()
