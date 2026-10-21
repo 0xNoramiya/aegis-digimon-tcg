@@ -42,7 +42,6 @@ import { SOUND_SETTINGS_SECTION_ID } from "@/screens/soundSettingsSectionId";
 import { NotificationBell } from "./notifications/NotificationBell";
 import { useNotificationInbox } from "./notifications/useNotificationInbox";
 import { pathForRoute, routeFromPathname, SCREEN_PATHS, type AppRoute } from "./routes";
-import { getMatchExitScreen } from "@/learn/getMatchExitScreen";
 import { getRulesChapterAnchor } from "@/learn/rules/getRulesChapterAnchor";
 import { roomCodeFromSearch } from "./roomInvite";
 import { isUiPreviewPath } from "./prototype/routes";
@@ -950,7 +949,9 @@ function LoadedAegisClient({
                 onStartLesson={startLesson}
                 onExit={(next) => {
                   setSeriesGame(undefined);
-                  navigateScreen(getMatchExitScreen({ storyBattleId, next }));
+                  void import("@/learn/getMatchExitScreen")
+                    .then(({ getMatchExitScreen }) => navigateScreen(getMatchExitScreen({ storyBattleId, next })))
+                    .catch(() => navigateScreen(next));
                 }}
                 onRematch={(privateRoomCode, roomUnlimited, roomHost, roomFormat, roomGameMode) => {
                   clearReconnectSession();
