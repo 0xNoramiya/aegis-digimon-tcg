@@ -1,5 +1,77 @@
 [
   {
+    "version": "1.37.0-beta",
+    "releasedAt": "2026-10-21",
+    "summaryKey": "releases.1.37.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.37.0-beta.feature.learn"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.feature.newSeriesDecks"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.feature.cardConfirmations"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.feature.deckReview"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.feature.bt27"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.37.0-beta.fix.ariemon",
+        "issue": 5919
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.recomon",
+        "issue": 5898
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.cardRules"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.lateMainPhaseAttack"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.securityChecks",
+        "issue": 5912
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.galacticmonStory",
+        "issue": 5913
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.blockerConfirm",
+        "issue": 5909
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.targetPrompts",
+        "issue": 5902
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.handEffectDrop"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.optionalLabels"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.cardZoom"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.cardLanguage"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.browserTranslation"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.sleeveNames"
+      }
+    ]
+  },
+  {
     "version": "1.36.0-beta",
     "releasedAt": "2026-10-20",
     "summaryKey": "releases.1.36.0-beta.summary",
