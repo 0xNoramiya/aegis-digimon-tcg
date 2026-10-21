@@ -15388,5 +15388,32 @@
   "BT27-040": {
     "[Digivolve]Lv.4w/[Sukamon]inname:Cost3[Assembly-3]Lv.4Digimoncardw/[Sukamon]inname<Overclock([Chuumon]/[Sukamon]inname)>[Security][OnPlay][WhenDigivolving]To1ofyouropponent'sDigimon,give-3000DPfortheturnforeachofyourDigimonwith[Chuumon],[Sukamon]or[Etemon]intheirnames.": "〔進化〕名称に「スカモン」を含むLv.4:コスト3\n\nアセンブリ-3:名称に「スカモン」を含むLv.4のデジモンカード\n\n≪オーバークロック《名称に「チューモン」/「スカモン」を含む》≫\n【セキュリティ】【登場時】【進化時】ターン終了まで、相手のデジモン1体を名称に「チューモン」/「スカモン」/「エテモン」を含む自分のデジモン1体ごとに、DP-3000。",
     "[AllTurns][OncePerTurn]WhenanyofyourotherDigimonwith[Chuumon],[Sukamon]or[Etemon]intheirnamesareplayed,<De-Digivolve1>1ofyouropponent'sDigimon.": "【お互いのターン】[ターンに1回]名称に「チューモン」/「スカモン」/「エテモン」を含む他の自分のデジモンが登場したとき、相手のデジモン1体を≪退化1≫。"
+  },
+  "BT27-028": {
+    "[Digivolve]Lv.4w/[DATASQUAD]trait:Cost3<Decode(Lv.4orlowerw/[Aquatic]/[DATASQUAD]trait)>[OnPlay][WhenDigivolving]1ofyouropponent'sDigimonorTamerscan'tsuspenduntiltheirturnends.[Rule]Trait:Has[Aquatic]Type.": "〔進化〕特徴「セイバーズ」を持つLv.4:コスト3\n\n≪デコード《特徴「水棲型」/「セイバーズ」を持つLv.4以下》≫\n【登場時】【進化時】相手のターン終了まで、相手のデジモン/テイマー1体はレストできない。\n〈ルール〉特徴:タイプ「水棲型」を持つ。",
+    "<Decode(Lv.4orlowerw/[Aquatic]/[DATASQUAD]trait)>(WhenthisDigimonwouldleavethebattleareaotherthaninbattle,youmayplay1specifiedDigimoncardfromitsdigivolutioncardswithoutpayingthecost.)": "≪デコード《特徴「水棲型」/「セイバーズ」を持つLv.4以下》≫（このデジモンがバトル以外でバトルエリアを離れるとき、このデジモンの進化元から、指定のデジモンカード1枚をコストを支払わず登場できる）"
+  },
+  "BT27-031": {
+    "[Digivolve]Lv.5w/[DATASQUAD]trait:Cost4<Decode(Lv.5w/[Aquatic]/[DATASQUAD]trait)>[OnPlay][WhenDigivolving][Counter][OncePerTurn]Byplacing1ofyourotherDigimonorTamersasthisDigimon'sbottomdigivolutioncard,return1ofyouropponent'sDigimonwithasmanydigivolutioncardsasthisDigimonorfewertothebottomofthedeck.[AllTurns][OncePerTurn]WheneffectsaddtothisDigimon'sdigivolutioncards,youmayplay1playcost5orlowerbluecardfromitsdigivolutioncardswithoutpayingthecost.[Rule]Trait:Has[Aquatic]Type.": "〔進化〕特徴「セイバーズ」を持つLv.5:コスト4\n\n≪デコード《特徴「水棲型」/「セイバーズ」を持つLv.5》≫\n【登場時】【進化時】【カウンター】[ターンに1回]他の自分のデジモン/テイマー1体をこのデジモンの進化元の下に置くことで、このデジモンの進化元枚数以下の相手のデジモン1体をデッキの下に戻す。\n【お互いのターン】[ターンに1回]このデジモンの進化元が効果で増えたとき、このデジモンの進化元から、登場コスト5以下の青のカード1枚をコストを支払わず登場できる。\n〈ルール〉特徴:タイプ「水棲型」を持つ。"
+  },
+  "BT27-035": {
+    "[Digivolve]Lv.6w/[DATASQUAD]trait:Cost5[BurstDigivolve][MirageGaogamon]:Cost0byreturning1[ThomasH.Norstein]tothehand.<Reboot><Blocker><Evade>[WhenDigivolving][WhenAttacking][OncePerTurn]Youmayactivate1[Main]effectonthiscard'sOptionside.[WhenDigivolving][WhenAttacking]Ifyouropponent'shandhas8ormorecards,byreturningcardswithoutlookingtothebottomofthedecksothatithas7left,returntheirtopsecuritycardtothebottomofthedeck.": "〔進化〕特徴「セイバーズ」を持つLv.6:コスト5\n〔バースト進化〕「ミラージュガオガモン」:「トーマ・H・ノルシュタイン」1体を手札に戻すことで、コスト0\n≪再起動≫≪ブロッカー≫≪回避≫\n【進化時】【アタック時】[ターンに1回]このカードのオプション側の【メイン】効果1つを発揮できる。\n【進化時】【アタック時】相手の手札が8枚以上なら、相手の手札が7枚になるように見ないでデッキの下に戻すことで、相手のセキュリティを上から1枚デッキの下に戻す。",
+    "UseReq.<[DATASQUAD]trait>[Main]Return1ofyouropponent'sDigimontothehand.Then,iftheirhandhas8ormorecards,1ofyourDigimonmayunsuspend.<ArtsDigivolve>": "≪使用条件《特徴「セイバーズ」》≫（指定の条件で色条件を満たせる）\n【メイン】相手のデジモン1体を手札に戻す。その後、相手の手札が8枚以上なら、自分のデジモン1体をアクティブにできる。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わず進化できる）"
+  },
+  "BT27-070": {
+    "[Digivolve][Craniamon]:Cost2<Reboot><Blocker>[AllTurns]WhenanyofyourDigimonwouldleavethebattlearea,bysuspendingthisDigimon,theydon'tleave.[AllTurns][OncePerTurn]WhenthisDigimonsuspends,youmaydeleteallofyouropponent'slowestDPDigimon.Then,bytrashing1[Craniamon]or[XAntibody]fromthisDigimon'sdigivolutioncards,activate1[Main]effectonthiscard'sOptionside.": "〔進化〕「クレニアムモン」:コスト2\n≪再起動≫≪ブロッカー≫\n【お互いのターン】自分のデジモンがバトルエリアを離れるとき、このデジモンをレストさせることで、離れない。\n【お互いのターン】[ターンに1回]このデジモンがレストしたとき、最もDPの低い相手のデジモン全てを消滅できる。その後、このデジモンの進化元から、「クレニアムモン」/「X抗体」1枚を破棄することで、このカードのオプション側の【メイン】効果1つを発揮する。",
+    "[Main]Untilyouropponent'sturnends,1ofyourDigimonwith<Blocker>isn'taffectedbytheirDigimoneffectsandgets+5000DP.Then,1ofyourDigimonmayunsuspend.<ArtsDigivolve>": "【メイン】相手のターン終了まで、≪ブロッカー≫を持つ自分のデジモン1体は相手のデジモンの効果を受けず、DP+5000。その後、自分のデジモン1体をアクティブにできる。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わず進化できる）"
+  },
+  "BT27-084": {
+    "[Digivolve][LordKnightmon]:Cost2<Alliance><Collision><Piercing><Blocker>[WhenDigivolving]Youmayplayupto8playcost'stotalworthofcardswith[Knightmon]intheirtextsfromyourhandwithoutpayingthecost.[AllTurns][OncePerTurn]WhenanyofyourotherDigimonareplayedordeleted,bytrashing1[LordKnightmon]or[XAntibody]fromthisDigimon'sdigivolutioncards,activate1[Main]effectonthiscard'sOptionside.": "〔進化〕「ロードナイトモン」:コスト2\n\n≪連携≫≪衝突≫≪貫通≫≪ブロッカー≫\n【進化時】自分の手札から、「ナイトモン」の記述があるカードを登場コスト合計8まで、コストを支払わず登場できる。\n【お互いのターン】[ターンに1回]他の自分のデジモンが登場/消滅したとき、このデジモンの進化元から、「ロードナイトモン」/「X抗体」1枚を破棄することで、このカードのオプション側の【メイン】効果1つを発揮する。",
+    "[Main]Delete1ofyouropponent'slowestlevelDigimon.Ifthiseffectdidn'tdelete,untilyourturnends,allofyourDigimonwith[Knightmon]intheirtextsgain<Blocker>,youropponent'sDigimoneffectsdon'taffectthemandtheyget+3000DP.": "【メイン】最もLv.の低い相手のデジモン1体を消滅させる。この効果で消滅しなかったなら、自分のターン終了まで、「ナイトモン」の記述がある自分のデジモン全ては≪ブロッカー≫を得て、相手のデジモンの効果を受けず、DP+3000。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わず進化できる）"
+  },
+  "BT27-100": {
+    "[Main]Give1ofyouropponent'sDigimon\"[StartofYourMainPhase]ThisDigimonattacks.\"untiltheirturnends.Then,placethiscardinthebattlearea.[AllTurns]WhenanyofyourDigimonwith[Craniamon]intheirnamessuspend,<Delay>.・<De-Digivolve1>allofyouropponent'sDigimon.Then,deletealloftheirDigimonwiththelowestplaycost.": "【メイン】相手のターン終了まで、相手のデジモン1体に「【自分のメインフェイズ開始時】このデジモンでアタックする。」の効果を与える。その後、このカードをバトルエリアに置く。\n【お互いのターン】名称に「クレニアムモン」を含む自分のデジモンがレストしたとき、≪ディレイ≫。\n・相手のデジモン全てを≪退化1≫。その後、最も登場コストの低い相手のデジモン全てを消滅させる。",
+    "[Security]Deleteallofyouropponent'sDigimonwiththelowestplaycost.Then,addthiscardtothehand.": "【セキュリティ】最も登場コストの低い相手のデジモン全てを消滅させる。その後、このカードを手札に加える。"
+  },
+  "BT27-103": {
+    "[DNADigivolve][Alphamon]+[Ouryumon]:Cost0<Piercing><SecurityAttack+1><Blocker><Partition([Alphamon]&[Ouryumon])>[WhenDigivolving][WhenAttacking][OncePerTurn]Youmaydelete1ofyouropponent'sDigimon.Then,ifDNAdigivolving,<Recovery+2>.[AllTurns]Duringattacks,youropponent'seffectsdon'taffectthisDigimon.": "〔ジョグレス〕「アルファモン」+「オウリュウモン」:コスト0\n≪貫通≫≪Sアタック+1≫≪ブロッカー≫\n≪パーティション《「アルファモン」＆「オウリュウモン」》≫\n【進化時】【アタック時】[ターンに1回]相手のデジモン1体を消滅できる。その後、ジョグレス進化していたなら、≪リカバリー+2≫。\n【お互いのターン】アタック中、このデジモンは相手の効果を受けない。",
+    "[Main]Delete1ofyouropponent'sDigimon.Then,2ofyourDigimonmayDNAdigivolveintothiscard.<ArtsDigivolve>": "【メイン】相手のデジモン1体を消滅させる。その後、自分のデジモン2体でこのカードにジョグレス進化できる。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わず進化できる）"
   }
 }
