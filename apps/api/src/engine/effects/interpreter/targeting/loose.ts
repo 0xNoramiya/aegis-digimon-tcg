@@ -31,7 +31,7 @@ export interface LooseCandidate {
   ownerSeat: Seat;
   /** The host permanent ID when this card sits in a permanent's stack/linked list; undefined for hand/trash/deck/security cards. */
   hostPermanentId?: string;
-  /** Whether this loose card is currently face-up (digivolutionCards zone only; undefined elsewhere). */
+  /** Whether this loose card is currently face-up (stacked zones only; undefined elsewhere). */
   faceUp?: boolean;
 }
 
@@ -115,6 +115,7 @@ export function looseCardsInZone(ctx: EffectContext, seat: Seat, zone: ZoneRef):
             ...(c.artId ? { artId: c.artId } : {}),
             ownerSeat: c.ownerSeat,
             hostPermanentId: permanent.permanentId,
+            faceUp: c.faceUp,
           });
         }
       }
@@ -132,6 +133,7 @@ export function looseCardsInZone(ctx: EffectContext, seat: Seat, zone: ZoneRef):
             ...(c.artId ? { artId: c.artId } : {}),
             ownerSeat: c.ownerSeat,
             hostPermanentId: sourcePermanent.permanentId,
+            faceUp: c.faceUp,
           });
         }
       }
@@ -152,6 +154,7 @@ export function looseCardsInZone(ctx: EffectContext, seat: Seat, zone: ZoneRef):
             ...(c.artId ? { artId: c.artId } : {}),
             ownerSeat: c.ownerSeat,
             hostPermanentId: permanent.permanentId,
+            faceUp: c.faceUp,
           });
         }
       }

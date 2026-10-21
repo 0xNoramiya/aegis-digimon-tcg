@@ -115,7 +115,7 @@ function perm(
       instanceId: `${permanentId}#s${i}`,
       cardId: c,
       ownerSeat: seat,
-      faceUp: false,
+      faceUp: true,
     })) as never,
     linked: linkedCardIds.map((c, i) => ({
       instanceId: `${permanentId}#l${i}`,
@@ -8413,7 +8413,7 @@ describe("digivolutionCardsUnderTamers from-zone (BT19-025)", () => {
     const played: string[] = [];
 
     // Tamer permanent with one digivolution card (the Blue Flare Digimon).
-    const digiXrosMat = { instanceId: "MAT#0", cardId: "XROS_DIGI", ownerSeat: 0 as Seat, faceUp: false };
+    const digiXrosMat = { instanceId: "MAT#0", cardId: "XROS_DIGI", ownerSeat: 0 as Seat, faceUp: true };
     const tamerPerm = {
       permanentId: "TAMER",
       controllerSeat: 0 as Seat,
@@ -8427,7 +8427,7 @@ describe("digivolutionCardsUnderTamers from-zone (BT19-025)", () => {
     } as unknown as Permanent;
 
     // Non-tamer permanent with a digivolution card that should NOT be sourced.
-    const notUnderTamer = { instanceId: "NOT#0", cardId: "RED", ownerSeat: 0 as Seat, faceUp: false };
+    const notUnderTamer = { instanceId: "NOT#0", cardId: "RED", ownerSeat: 0 as Seat, faceUp: true };
     const digimonPerm = {
       permanentId: "DIGIMON",
       controllerSeat: 0 as Seat,
@@ -9049,7 +9049,7 @@ describe("CAP-E4: zone underTamers for PlayWithoutCost (BT19-026)", () => {
   it("sources candidates from cards under Tamer permanents using zone alias underTamers", async () => {
     const played: string[] = [];
 
-    const matCard = { instanceId: "MAT#e4", cardId: "RED", ownerSeat: 0 as Seat, faceUp: false };
+    const matCard = { instanceId: "MAT#e4", cardId: "RED", ownerSeat: 0 as Seat, faceUp: true };
     const tamerPerm = {
       permanentId: "TAMER_E4",
       controllerSeat: 0 as Seat,
@@ -9063,7 +9063,7 @@ describe("CAP-E4: zone underTamers for PlayWithoutCost (BT19-026)", () => {
     } as unknown as Permanent;
 
     // A Digimon permanent whose stack card must NOT be sourced.
-    const notUnderTamer = { instanceId: "NOT#e4", cardId: "RED", ownerSeat: 0 as Seat, faceUp: false };
+    const notUnderTamer = { instanceId: "NOT#e4", cardId: "RED", ownerSeat: 0 as Seat, faceUp: true };
     const digiPerm = {
       permanentId: "DIGI_E4",
       controllerSeat: 0 as Seat,

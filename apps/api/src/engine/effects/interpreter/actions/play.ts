@@ -112,16 +112,14 @@ export function isEffectPlayProhibited(ctx: EffectContext, card: { cardId: strin
   );
 }
 
-export function playableCandidates<T extends { instanceId: string; cardId: string }>(
-  ctx: EffectContext,
-  target: Target | undefined,
-  candidates: readonly T[],
-  chooseDualMode?: true,
-): T[] {
+export function playableCandidates<
+  T extends { instanceId: string; cardId: string; hostPermanentId?: string; faceUp?: boolean },
+>(ctx: EffectContext, target: Target | undefined, candidates: readonly T[], chooseDualMode?: true): T[] {
   const requestedKinds = requestedPlayKinds(target);
   const namesOption = requestedKinds.includes("Option");
   const optionOnly = namesOption && !requestedKinds.includes("Digimon") && !requestedKinds.includes("Tamer");
   return candidates.filter((candidate) => {
+    if (candidate.hostPermanentId !== undefined && candidate.faceUp === false) return false;
     const definition = ctx.game.definitionOf({ cardId: candidate.cardId } as never);
     const kinds = definition.kinds;
     if (!kinds.includes(CardKind.Option)) return true;
@@ -148,6 +146,7 @@ export function ownStackPlayCandidates(ctx: EffectContext, target: Target) {
     (ctx.source.permanent()?.stack ?? []).filter((card) => {
       const definition = ctx.game.definitionOf(card);
       return (
+        card.faceUp !== false &&
         filters.some((filter) => definitionMatches(filter, definition)) &&
         !ctx.fx.isPlayProhibited?.(ctx.source.ownerSeat, card.cardId, "play")
       );
