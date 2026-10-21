@@ -26,6 +26,8 @@ const { actionCardId, actionFeatures, chooseHeuristic, parseHeuristic, rankHeuri
 const { validEvolutionGame } = await moduleAt("bot/evolution/evolutionMatch.js");
 const { defaultBotOptions } = await moduleAt("bot/defaultBotOptions.js");
 const { createTurnPlannerChooser } = await moduleAt("bot/evolution/createTurnPlannerChooser.js");
+const { createEvaluationPolicy } = await moduleAt("bot/policy.js");
+const { resolveBotProfile } = await moduleAt("bot/profiles.js");
 const sharedEntry = createRequire(resolve(apiDist, "index.js")).resolve("@aegis/shared");
 const { getCardDefinition } = await import(pathToFileURL(sharedEntry).href);
 
@@ -183,7 +185,8 @@ function opponentSeat(job, deck) {
   if (job.opponent === "legacy") return {};
   if (job.opponent === "certified")
     return {
-      policyFactory: (engine, seat) => defaultBotOptions({ engine, seat, deck }).policy,
+      policyFactory: (engine, seat) =>
+        defaultBotOptions({ engine, seat, deck, options: { seed: job.seed + seat * 7919 } }).policy,
       canChooseMainAction: mainActionReady,
     };
   if (job.opponentProgram !== undefined) {
@@ -207,6 +210,39 @@ function opponentSeat(job, deck) {
     };
   }
   throw new Error(`Unknown opponent ${job.opponent}`);
+}
+
+function continuationOpponent(game, seed) {
+  const job = { ...game, seed };
+  const config = opponentSeat(job, game.deck);
+  return {
+    policyFactory:
+      config.policyFactory ??
+      ((engine, seat) => createEvaluationPolicy({ profile: resolveBotProfile(undefined), seed: seed + seat * 7919 })),
+    canChooseMainAction: config.canChooseMainAction,
+    maxMainPhaseActions: config.maxMainPhaseActions,
+  };
+}
+
+async function continuePanelGame(request) {
+  const continuation = request.replayContinuation;
+  const game = continuation.panelGame;
+  const program = parsedProgram(request.program);
+  return runReplayContinuation({
+    ...continuation,
+    program,
+    choose: () => continuation.action,
+    chooseAfterRoot: candidateChooser(
+      program,
+      continuation.sampleSeed + continuation.seat * 7919,
+      undefined,
+      undefined,
+      game.activationMemoryCosts !== false,
+      game.decisionContext !== false,
+    ),
+    opponent: continuationOpponent(game, continuation.sampleSeed),
+    maxMainPhaseActions: Number.POSITIVE_INFINITY,
+  });
 }
 
 function problemOf(result) {
@@ -332,6 +368,9 @@ async function handle(request) {
         capturePositions: request.capturePositions === true,
       });
       return { id: request.id, valid: true, record, ...inspection };
+    }
+    if (request.replayContinuation?.panelGame !== undefined) {
+      return { id: request.id, ...(await continuePanelGame(request)) };
     }
     if (request.replayContinuation !== undefined) {
       let first = true;

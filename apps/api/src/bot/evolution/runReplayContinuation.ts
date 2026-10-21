@@ -1,4 +1,8 @@
 import { hasUnsupportedReplayKnowledge } from "#api/bot/evolution/hasUnsupportedReplayKnowledge";
+import { createLibraryKnowledgeTracker } from "#api/bot/evolution/createLibraryKnowledgeTracker";
+import { determinizeBotRoot } from "#api/bot/evolution/determinizeBotRoot";
+import type { GameEngine } from "#api/engine/GameEngine";
+import type { BotPolicy } from "#api/bot/policy";
 import { performance } from "node:perf_hooks";
 import type { Intent } from "@aegis/shared/protocol/intents";
 import type { Seat } from "@aegis/shared/schema/enums";
@@ -12,6 +16,12 @@ import { chooseHeuristic, type HeuristicProgram } from "#api/bot/evolution/heuri
 import { mainActionReady } from "#api/bot/training/actions";
 import { createAsyncTrainingPolicy, type TrainingWindow } from "#api/bot/training/policy";
 
+type ContinuationOpponent = {
+  policyFactory: (engine: GameEngine, seat: Seat) => BotPolicy<Intent | Promise<Intent>>;
+  canChooseMainAction?: (engine: GameEngine) => boolean;
+  maxMainPhaseActions?: number;
+};
+
 type Params = {
   record: ReplayRecord;
   inputIndex: number;
@@ -20,10 +30,20 @@ type Params = {
   sampleSeed: number;
   program: HeuristicProgram;
   choose: (window: TrainingWindow) => number;
+  chooseAfterRoot?: (window: TrainingWindow) => number;
+  opponent?: ContinuationOpponent;
+  maxMainPhaseActions?: number;
   signal?: AbortSignal;
   maxDurationMs?: number;
   turnLimit?: number;
 };
+
+function optionalSeatLimits(canChooseMainAction: (() => boolean) | undefined, maxMainPhaseActions: number | undefined) {
+  return {
+    ...(canChooseMainAction === undefined ? {} : { canChooseMainAction }),
+    ...(maxMainPhaseActions === undefined ? {} : { maxMainPhaseActions }),
+  };
+}
 
 export async function runReplayContinuation(input: Params) {
   if (
@@ -34,12 +54,18 @@ export async function runReplayContinuation(input: Params) {
     throw new Error("Invalid replay root index");
   }
   const started = performance.now();
+  const botRoot = input.record.seats.every((seat) => seat.bot === true);
+  const library = createLibraryKnowledgeTracker();
   let unsupportedKnowledge = false;
   let knowledgeReason = "";
   const run = await runReplay(input.record, {
     untilInput: input.inputIndex,
     stopOnDivergence: true,
-    onBatch: (_state, events) => {
+    onBatch: (state, events) => {
+      if (botRoot) {
+        library.observeBatch(state, events);
+        return;
+      }
       if (events.some((event) => event.kind === "matchStarted")) {
         unsupportedKnowledge = false;
       }
@@ -49,6 +75,10 @@ export async function runReplayContinuation(input: Params) {
       }
     },
     onDecision: (request) => {
+      if (botRoot) {
+        library.observeDecision(request);
+        return;
+      }
       if (request.seat === input.seat && (request.options?.visibleCards?.length ?? 0) > 0) {
         unsupportedKnowledge = true;
         knowledgeReason = "private visible cards";
@@ -61,11 +91,19 @@ export async function runReplayContinuation(input: Params) {
   if (unsupportedKnowledge) {
     throw new Error(`Replay prefix has unsupported revealed or ordered hidden knowledge: ${knowledgeReason}`);
   }
+  const libraryKnowledge = library.getKnowledge(run.state);
+  if (libraryKnowledge !== undefined) {
+    throw new Error(`Replay prefix has publicly known library order: ${libraryKnowledge}`);
+  }
   const root = getReplaySearchWindow({ engine: run.engine, seat: input.seat });
   if (informationKey(root) !== input.expectedInformation) {
     throw new Error("Replay root observation or offered actions changed");
   }
-  await determinize(run.engine, input.seat, input.sampleSeed);
+  if (botRoot) {
+    await determinizeBotRoot(run.engine, input.sampleSeed);
+  } else {
+    await determinize(run.engine, input.seat, input.sampleSeed);
+  }
   if (informationKey(getReplaySearchWindow({ engine: run.engine, seat: input.seat })) !== input.expectedInformation) {
     throw new Error("Hidden sampling changed the visible root");
   }
@@ -82,25 +120,51 @@ export async function runReplayContinuation(input: Params) {
     }
     return [...root.actions];
   }
-  const policies = ([0, 1] as const).map((seat) =>
-    createAsyncTrainingPolicy(
+  function chooseControlled(window: TrainingWindow): number {
+    if (window.kind === "main" && !rootChosen) {
+      rootChosen = true;
+      return input.choose(root);
+    }
+    if (input.chooseAfterRoot !== undefined) {
+      return input.chooseAfterRoot(window);
+    }
+    if (window.kind === "main") {
+      return input.choose(window);
+    }
+    return chooseHeuristic(input.program, window, input.sampleSeed + input.seat * 7919);
+  }
+  function createPolicy(seat: Seat): BotPolicy<Intent | Promise<Intent>> {
+    if (seat !== input.seat && input.opponent !== undefined) {
+      return input.opponent.policyFactory(run.engine, seat);
+    }
+    return createAsyncTrainingPolicy(
       run.engine,
       seat,
       async (window) => {
         input.signal?.throwIfAborted();
-        if (seat === input.seat && window.kind === "main") {
-          if (!rootChosen) {
-            rootChosen = true;
-            return input.choose(root);
-          }
-          return input.choose(window);
+        if (seat === input.seat) {
+          return chooseControlled(window);
         }
         return chooseHeuristic(input.program, window, input.sampleSeed + seat * 7919);
       },
       undefined,
       seat === input.seat ? getRootActions : undefined,
-    ),
-  );
+    );
+  }
+  function getMainActionGate(seat: Seat): (() => boolean) | undefined {
+    if (seat === input.seat || input.opponent === undefined) {
+      return () => mainActionReady(run.engine);
+    }
+    const gate = input.opponent.canChooseMainAction;
+    return gate === undefined ? undefined : () => gate(run.engine);
+  }
+  function getMainPhaseActionLimit(seat: Seat): number | undefined {
+    if (seat === input.seat) {
+      return input.maxMainPhaseActions;
+    }
+    return input.opponent?.maxMainPhaseActions;
+  }
+  const policies = ([0, 1] as const).map(createPolicy);
   for (const seat of [0, 1] as const) {
     bots.push(
       new BotPlayer(
@@ -127,7 +191,7 @@ export async function runReplayContinuation(input: Params) {
           seed: input.sampleSeed + seat * 7919,
           policyTimeoutMs: 60000,
           thinkDelay: () => new Promise<void>((resolve) => setImmediate(resolve)),
-          canChooseMainAction: () => mainActionReady(run.engine),
+          ...optionalSeatLimits(getMainActionGate(seat), getMainPhaseActionLimit(seat)),
         },
       ),
     );
