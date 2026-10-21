@@ -1156,6 +1156,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.securityAttackValue": "Ataque à segurança {value}",
   "overlay.transformedBadge": "Conta como {name}",
   "overlay.printedEffect": "Efeito impresso",
+  "overlay.showCardText": "Mostrar texto da carta",
+  "overlay.hideCardText": "Ocultar texto da carta",
   "overlay.grantedEffects": "Efeitos concedidos",
   "library.optionEffect": "Efeito Option",
   "overlay.noPrintedEffect": "Sem efeito impresso",

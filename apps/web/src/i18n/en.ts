@@ -1151,6 +1151,8 @@ export const en = {
   "overlay.securityAttackValue": "Security Attack {value}",
   "overlay.transformedBadge": "Counts as {name}",
   "overlay.printedEffect": "Printed effect",
+  "overlay.showCardText": "Show card text",
+  "overlay.hideCardText": "Hide card text",
   "overlay.grantedEffects": "Granted effects",
   "library.optionEffect": "Option effect",
   "overlay.noPrintedEffect": "No printed effect",

@@ -1355,6 +1355,8 @@ const interfaceMessages = {
   "overlay.securityAttackValue": "Security Attack {value}",
   "overlay.transformedBadge": "Dihitung sebagai {name}",
   "overlay.printedEffect": "Efek tercetak",
+  "overlay.showCardText": "Tampilkan teks kartu",
+  "overlay.hideCardText": "Sembunyikan teks kartu",
   "overlay.grantedEffects": "Efek yang diberikan",
   "library.optionEffect": "Efek Option",
   "overlay.noPrintedEffect": "Tidak ada efek tercetak",

@@ -1295,6 +1295,8 @@ const interfaceMessages = {
   "overlay.securityAttackValue": "安防攻擊 {value}",
   "overlay.transformedBadge": "計為 {name}",
   "overlay.printedEffect": "印刷效果",
+  "overlay.showCardText": "顯示卡牌文字",
+  "overlay.hideCardText": "隱藏卡牌文字",
   "overlay.grantedEffects": "獲得的效果",
   "library.optionEffect": "選項效果",
   "overlay.noPrintedEffect": "無印刷效果",
