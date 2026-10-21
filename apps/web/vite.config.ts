@@ -29,6 +29,10 @@ export default defineConfig({
     projects: [
       {
         extends: true,
+        test: { name: "card-confirmation", include: ["src/game/cardConfirmation/**/*.test.ts"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: { name: "story-ui", include: ["src/story/**/*.test.tsx"], environment: "jsdom" },
       },
       {
@@ -58,6 +62,7 @@ export default defineConfig({
           exclude: [
             ...configDefaults.exclude,
             "e2e/**",
+            "src/game/cardConfirmation/**/*.test.ts",
             "src/screens/cardLanguage/**/*.test.tsx",
             "src/clientErrors/**/*.test.tsx",
             "src/story/**/*.test.tsx",

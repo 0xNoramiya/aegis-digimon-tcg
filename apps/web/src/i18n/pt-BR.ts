@@ -738,8 +738,12 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.keepAwake": "Manter a tela ligada",
   "settings.keepAwakeDesc":
     "Manter a tela ligada enquanto uma partida está aberta, em vez de deixar o aparelho dormir entre os turnos",
-  "settings.actionConfirmations": "Confirmar ações",
-  "settings.actionConfirmationsDesc": "Perguntar antes de jogar, digievoluir ou fazer uma digievolução DNA opcional",
+  "settings.cardConfirmation": "Confirmações de cartas",
+  "settings.cardConfirmationDesc":
+    "Perguntar antes de jogar, usar ou digievoluir uma carta. “Pular cartas que só podem ser jogadas” joga na hora quando a carta não tem outra ação legal. As escolhas de alvo, materiais, custo e modo continuam.",
+  "settings.cardConfirmationAlways": "Sempre perguntar",
+  "settings.cardConfirmationSkipPlayOnly": "Pular cartas que só podem ser jogadas",
+  "settings.cardConfirmationNever": "Nunca perguntar",
   "overlay.moveEffectPrompt": "Mover painel de efeito",
   "overlay.moveEffectPromptHelp": "Arraste para mover ou use as setas. Pressione Home para restaurar a posição.",
   "settings.effectPromptPosition": "Posição dos efeitos",

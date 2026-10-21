@@ -942,8 +942,12 @@ const interfaceMessages = {
   "settings.keepAwake": "Bildschirm wach halten",
   "settings.keepAwakeDesc":
     "Den Bildschirm eingeschaltet lassen, solange ein Match läuft, statt das Gerät zwischen den Zügen in den Ruhezustand gehen zu lassen",
-  "settings.actionConfirmations": "Aktionen bestätigen",
-  "settings.actionConfirmationsDesc": "Vor dem Ausspielen, Digitieren oder einer optionalen DNA-Digitation nachfragen",
+  "settings.cardConfirmation": "Kartenbestätigungen",
+  "settings.cardConfirmationDesc":
+    "Vor dem Ausspielen, Nutzen oder Digitieren einer Karte fragen. „Nur ausspielbare überspringen“ spielt sofort aus, wenn die Karte keine andere legale Aktion hat. Ziel-, Material-, Kosten- und Modusauswahl bleiben.",
+  "settings.cardConfirmationAlways": "Immer fragen",
+  "settings.cardConfirmationSkipPlayOnly": "Nur ausspielbare überspringen",
+  "settings.cardConfirmationNever": "Nie fragen",
   "overlay.moveEffectPrompt": "Effektabfrage verschieben",
   "overlay.moveEffectPromptHelp":
     "Zum Verschieben ziehen oder die Pfeiltasten verwenden. Pos1 setzt die Position zurück.",

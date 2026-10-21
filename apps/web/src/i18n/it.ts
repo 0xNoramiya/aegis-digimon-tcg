@@ -803,9 +803,12 @@ const interfaceMessages = {
   "settings.keepAwake": "Mantieni lo schermo acceso",
   "settings.keepAwakeDesc":
     "Tenere acceso lo schermo mentre una partita è aperta, invece di lasciare che il dispositivo si addormenti tra i turni",
-  "settings.actionConfirmations": "Conferma le azioni",
-  "settings.actionConfirmationsDesc":
-    "Chiedi conferma prima di giocare, digievolvere o usare una digievoluzione DNA facoltativa",
+  "settings.cardConfirmation": "Conferme delle carte",
+  "settings.cardConfirmationDesc":
+    "Chiedi prima di giocare, usare o digievolvere una carta. «Salta le carte solo giocabili» gioca subito quando la carta non ha altre azioni legali. Le scelte di bersaglio, materiali, costo e modalità restano.",
+  "settings.cardConfirmationAlways": "Chiedi sempre",
+  "settings.cardConfirmationSkipPlayOnly": "Salta le carte solo giocabili",
+  "settings.cardConfirmationNever": "Non chiedere mai",
   "overlay.moveEffectPrompt": "Sposta il pannello dell’effetto",
   "overlay.moveEffectPromptHelp": "Trascina per spostare o usa le frecce. Premi Home per ripristinare la posizione.",
   "settings.effectPromptPosition": "Posizione degli effetti",

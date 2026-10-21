@@ -919,9 +919,12 @@ const interfaceMessages = {
   "settings.keepAwake": "Biarkan layar tetap menyala",
   "settings.keepAwakeDesc":
     "Jaga layar tetap menyala selama pertandingan terbuka, agar perangkat tidak tidur di antara giliran",
-  "settings.actionConfirmations": "Konfirmasi aksi",
-  "settings.actionConfirmationsDesc":
-    "Tanyakan sebelum memainkan kartu, digivolve, atau menggunakan DNA digivolve opsional",
+  "settings.cardConfirmation": "Konfirmasi kartu",
+  "settings.cardConfirmationDesc":
+    "Tanya sebelum memainkan, memakai, atau melakukan digivolve kartu. “Lewati kartu yang hanya bisa dimainkan” langsung memainkan kartu jika tidak ada aksi legal lain. Pilihan target, material, biaya, dan mode tetap muncul.",
+  "settings.cardConfirmationAlways": "Selalu tanya",
+  "settings.cardConfirmationSkipPlayOnly": "Lewati kartu yang hanya bisa dimainkan",
+  "settings.cardConfirmationNever": "Jangan pernah tanya",
   "overlay.moveEffectPrompt": "Pindahkan prompt efek",
   "overlay.moveEffectPromptHelp":
     "Seret untuk memindahkan, atau gunakan tombol panah. Tekan Home untuk mereset posisi.",

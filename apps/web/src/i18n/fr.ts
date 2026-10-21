@@ -933,9 +933,12 @@ const interfaceMessages = {
   "settings.keepAwake": "Garder l'écran allumé",
   "settings.keepAwakeDesc":
     "Garder l'écran allumé tant qu'un match est ouvert, au lieu de laisser l'appareil se mettre en veille entre les tours",
-  "settings.actionConfirmations": "Confirmer les actions",
-  "settings.actionConfirmationsDesc":
-    "Demander confirmation avant de jouer, de digivolver ou d'utiliser une digivolution ADN facultative",
+  "settings.cardConfirmation": "Confirmations de cartes",
+  "settings.cardConfirmationDesc":
+    "Demander avant de jouer, d'utiliser ou de digivolver une carte. « Ignorer les cartes seulement jouables » joue immédiatement quand la carte n'a aucune autre action légale. Les choix de cible, de matériaux, de coût et de mode restent disponibles.",
+  "settings.cardConfirmationAlways": "Toujours demander",
+  "settings.cardConfirmationSkipPlayOnly": "Ignorer les cartes seulement jouables",
+  "settings.cardConfirmationNever": "Ne jamais demander",
   "overlay.moveEffectPrompt": "Déplacer la fenêtre d'effet",
   "overlay.moveEffectPromptHelp":
     "Faites glisser pour la déplacer ou utilisez les touches fléchées. Appuyez sur Origine pour réinitialiser la position.",
