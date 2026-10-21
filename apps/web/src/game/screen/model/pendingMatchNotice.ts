@@ -1,3 +1,4 @@
+import { getRankedConnectionError } from "@/ranked/getRankedConnectionError";
 /* What the board says while there is no match to show: reconnecting, a connection that
    failed, and the wait for a second player.
 
@@ -35,7 +36,7 @@ export function pendingMatchNotice({
   vsBot: boolean;
   startMode: StartMode;
   hostRoomCode: string | undefined;
-  joinOptions: { displayName: string };
+  joinOptions: { displayName: string; tournamentGameId?: string };
   t: Translate;
 }): PendingMatchNotice {
   if (status === "reconnecting")
@@ -43,11 +44,23 @@ export function pendingMatchNotice({
   if (status === "error" || botError)
     return {
       title: botError ? t("game.botConnectionFailed") : t("game.connectionLost"),
-      detail: botError ?? error ?? t("game.connectionLostDetail"),
+      detail: botError ?? getRankedConnectionError({ error, t }) ?? error ?? t("game.connectionLostDetail"),
       spinner: false,
       actionLabel: t("game.returnToLobby"),
       exitTo: "lobby",
     };
+  if (startMode === "ranked") {
+    return {
+      title: t("ranked.season.searching"),
+      detail: t("ranked.season.searchHelp"),
+      spinner: true,
+      actionLabel: t("ranked.season.cancel"),
+      exitTo: "lobby",
+    };
+  }
+  if (joinOptions.tournamentGameId) {
+    return { title: t("game.waitingOpponent"), detail: t("tournaments.play.waitingGame"), spinner: true };
+  }
   return {
     title: vsBot
       ? t("game.waitingBot")

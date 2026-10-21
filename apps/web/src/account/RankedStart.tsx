@@ -1,27 +1,59 @@
+import type { DeckFormat } from "@aegis/shared/deckFormat";
+import { RankedRegion } from "@aegis/shared/ranked/RankedRegion";
+import { getRankedRegion } from "@/ranked/getRankedRegion";
 import { useEffect, useState } from "react";
 import { Button } from "../design/primitives";
 import { Icons } from "../design/icons";
 import { useTranslation } from "../i18n";
-import { accountApi } from "./client";
+import { accountApi, request } from "./client";
 import "./RankedStart.css";
+import "@/ranked/ranked.css";
 
 const CONFIRMATION_KEY = "aegis-ranked-confirmed";
 
 export function RankedStart({
   disabled,
+  format = "standard",
+  rankedDisabled = false,
+  initialRanked = false,
   buttonLabel,
   actionClassName,
   onOpenSettings,
   onStart,
 }: {
   disabled: boolean;
+  format?: DeckFormat;
+  rankedDisabled?: boolean;
+  initialRanked?: boolean;
   buttonLabel: string;
   actionClassName?: string;
   onOpenSettings: () => void;
   onStart: (ranked: boolean) => void;
 }) {
   const { t } = useTranslation();
-  const [ranked, setRanked] = useState(false);
+  const [ranked, setRanked] = useState(initialRanked);
+  const [available, setAvailable] = useState(false);
+  const [formats, setFormats] = useState<string[]>([]);
+  const canRanked = available && formats.includes(format) && !rankedDisabled;
+  useEffect(() => {
+    let active = true;
+    void request<{ enabled: boolean; formats: string[] }>("/ranked/config")
+      .then((config) => {
+        if (active) {
+          setAvailable(config.enabled);
+          setFormats(config.formats);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setAvailable(false);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+  const [region, setRegion] = useState(getRankedRegion);
   const [confirming, setConfirming] = useState(false);
   const [skipNextTime, setSkipNextTime] = useState(false);
   const [error, setError] = useState(false);
@@ -63,7 +95,7 @@ export function RankedStart({
         <label className="ranked-start__option" data-disabled={!authenticated || undefined}>
           <input
             type="checkbox"
-            disabled={!authenticated}
+            disabled={!authenticated || (!canRanked && !ranked)}
             checked={ranked}
             onChange={(event) => setRanked(event.target.checked)}
           />
@@ -78,9 +110,49 @@ export function RankedStart({
             {t("ranked.signInToEnable")}
           </button>
         ) : null}
+        {authenticated && !available ? (
+          <span className="ranked-start__description">{t("ranked.season.unavailable")}</span>
+        ) : null}
+        {authenticated && available && !canRanked ? (
+          <span className="ranked-start__description">
+            {t(rankedDisabled ? "ranked.season.savedDeck" : "ranked.season.unsupportedFormat")}
+          </span>
+        ) : null}
+        <a href="/ranked">{t("ranked.season.title")}</a>
+        {ranked ? (
+          <>
+            <label>
+              {t("ranked.season.region")}
+              <select
+                className="ranked-region-select"
+                value={region}
+                onChange={(event) => {
+                  const value = event.target.value as RankedRegion;
+                  setRegion(value);
+                  try {
+                    localStorage.setItem("aegis:ranked-region", value);
+                  } catch {}
+                }}
+              >
+                {Object.values(RankedRegion).map((entry) => (
+                  <option key={entry.value} value={entry.value}>
+                    {t(`ranked.region.${entry.value}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span className="ranked-start__description">{t("ranked.season.clock")}</span>
+          </>
+        ) : null}
       </div>
       <div className={actionClassName}>
-        <Button size="lg" full icon={Icons.Swords} disabled={disabled} onClick={() => void begin()}>
+        <Button
+          size="lg"
+          full
+          icon={Icons.Swords}
+          disabled={disabled || (ranked && !canRanked)}
+          onClick={() => void begin()}
+        >
           {buttonLabel}
         </Button>
       </div>

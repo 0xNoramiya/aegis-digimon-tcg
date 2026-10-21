@@ -5,6 +5,11 @@
  * must agree on it.
  */
 export interface AegisJoinOptions {
+  rankedPairId?: string;
+  rankedToken?: string;
+  rankedRegion?: import("@aegis/shared/ranked/RankedRegion").RankedRegion;
+  tournamentGameId?: string;
+  tournamentGameToken?: string;
   storyBattleId?: string;
   storyGuestToken?: string;
   allowRollback?: boolean;

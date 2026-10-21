@@ -4,6 +4,7 @@
    message the UI must render), and every call accepts an `AbortSignal` so a screen can invalidate
    its in-flight requests on unmount. */
 
+import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
 import { accountApi } from "../account/client";
 import { observeResponseDate, observeServerTime } from "./serverClock";
 import type {
@@ -72,15 +73,40 @@ async function readJson(response: Response): Promise<unknown> {
 }
 
 export const tournamentApi = {
+  swapPairings: (
+    id: string,
+    input: {
+      firstMatchId: string;
+      firstSeat: 0 | 1;
+      secondMatchId: string;
+      secondSeat: 0 | 1;
+      reason: string;
+      commandId: string;
+    },
+  ) =>
+    send<unknown>(`/tournaments/${encodeURIComponent(id)}/arbitration/pairings/swap`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  markPresent: (tournamentId: string, matchId: string) =>
+    send<unknown>(`/tournaments/${encodeURIComponent(tournamentId)}/matches/${encodeURIComponent(matchId)}/present`, {
+      method: "POST",
+      body: "{}",
+    }),
+  authorizeGame: (seriesId: string) =>
+    send<TournamentGameTicket>(`/series/${encodeURIComponent(seriesId)}/authorize-game`, {
+      method: "POST",
+      body: "{}",
+    }),
   list: (signal?: AbortSignal) => send<TournamentListing[]>("/tournaments", { signal }),
   detail: (id: string, signal?: AbortSignal) =>
     send<TournamentDetail>(`/tournaments/${encodeURIComponent(id)}`, { signal }),
   create: (input: CreateTournamentInput & { block?: string }) =>
     send<TournamentDetail>("/tournaments", { method: "POST", body: JSON.stringify(input) }),
-  register: (id: string, savedDeckId: string) =>
+  register: (id: string, savedDeckId: string, password?: string) =>
     send<unknown>(`/tournaments/${encodeURIComponent(id)}/participants`, {
       method: "POST",
-      body: JSON.stringify({ savedDeckId }),
+      body: JSON.stringify({ savedDeckId, password }),
     }),
   checkIn: (id: string) =>
     send<unknown>(`/tournaments/${encodeURIComponent(id)}/check-in`, { method: "POST", body: "{}" }),

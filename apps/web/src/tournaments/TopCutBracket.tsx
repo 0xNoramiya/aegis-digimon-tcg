@@ -43,7 +43,10 @@ export function TopCutBracket({ detail }: { detail: TournamentDetail }) {
   if (!phase) return null;
 
   const nameOf = (participantId: string | null): string =>
-    (participantId && detail.participants.find((participant) => participant.id === participantId)?.displayName) ??
+    (participantId &&
+      detail.participants.find(
+        (participant) => participant.id === participantId || participant.accountId === participantId,
+      )?.displayName) ??
     (participantId ? participantId : t("tournaments.topCut.emptySeat"));
 
   return (
@@ -57,11 +60,15 @@ export function TopCutBracket({ detail }: { detail: TournamentDetail }) {
             <ul>
               {round.matches.map((match) => (
                 <li key={match.matchId} className="tournaments-bracket__match">
-                  <span className={seatClass(match, 0)}>{nameOf(match.participant0Id)}</span>
+                  <span className={seatClass(match, 0)}>
+                    {nameOf(match.participantIds?.[0] ?? match.participant0Id)}
+                  </span>
                   <span className="tournaments-bracket__score">
                     {match.wins0} - {match.wins1}
                   </span>
-                  <span className={seatClass(match, 1)}>{nameOf(match.participant1Id)}</span>
+                  <span className={seatClass(match, 1)}>
+                    {nameOf(match.participantIds?.[1] ?? match.participant1Id)}
+                  </span>
                   <Badge tone={match.status === "resolved" ? "success" : "neutral"}>
                     {t(matchStateKey(match.status))}
                   </Badge>
@@ -96,6 +103,9 @@ function bracketSize(phase: PhaseView): number {
 
 function seatClass(match: SeriesScoreView, seat: 0 | 1): string {
   const participantId = seat === 0 ? match.participant0Id : match.participant1Id;
-  const won = match.winnerParticipantId !== null && match.winnerParticipantId === participantId;
+  const won =
+    match.winnerSeat !== undefined && match.winnerSeat !== null
+      ? match.winnerSeat === seat
+      : match.winnerParticipantId !== null && match.winnerParticipantId === participantId;
   return won ? "tournaments-bracket__seat tournaments-bracket__seat--winner" : "tournaments-bracket__seat";
 }

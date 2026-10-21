@@ -1,3 +1,5 @@
+import { connectRankedMatch } from "@/ranked/connectRankedMatch";
+import { ROOM_TYPE_TOURNAMENT } from "@aegis/shared/protocol/messages";
 import { Client, type Room } from "@colyseus/sdk";
 import {
   GameState,
@@ -53,6 +55,9 @@ function withDeckRules(options: AegisJoinOptions): AegisJoinOptions {
 }
 
 function publicRoomType(options: AegisJoinOptions): string {
+  if (options.tournamentGameId && options.tournamentGameToken) {
+    return ROOM_TYPE_TOURNAMENT;
+  }
   const unlimited = formatIsUnlimited(deckFormat(options.format, options.unlimited));
   if (unlimited && (options.ranked || options.betaBattleMode))
     throw new Error("Unlimited battles cannot be ranked or beta battles");
@@ -85,7 +90,27 @@ export class AegisConnectionRouter {
 
   constructor(private readonly dependencies: RouterDependencies) {}
 
-  async joinOrCreate(options: AegisJoinOptions): Promise<AegisRoom> {
+  async joinOrCreate(options: AegisJoinOptions, signal?: AbortSignal): Promise<AegisRoom> {
+    if (options.ranked) {
+      publicRoomType(options);
+      const manifest = await this.dependencies.loadManifest();
+      const slot = manifest.active.slot;
+      const { http } = this.dependencies.endpointForSlot(slot);
+      return connectRankedMatch({
+        http,
+        options,
+        signal,
+        fetcher: this.dependencies.fetcher,
+        joinRoom: async (reservation) => {
+          const joined = await this.client(slot).joinById(reservation.roomId!, {
+            ...(await this.withRoomTicket(options, slot)),
+            rankedPairId: reservation.pairId,
+            rankedToken: reservation.token,
+          });
+          return this.remember(joined, slot);
+        },
+      });
+    }
     return this.joinOrCreateWithFreshManifest(withQueueFilters(options), false);
   }
 
@@ -253,6 +278,9 @@ export class AegisConnectionRouter {
 
   /** Every seat a signed-in player takes carries their account, so the match joins their history. */
   private async withRoomTicket(options: AegisJoinOptions, slot: DeploymentSlot): Promise<AegisJoinOptions> {
+    if (options.tournamentGameId && options.tournamentGameToken) {
+      return { ...options, authTicket: undefined };
+    }
     if (!options.ranked && !hasRoomTicketAccount()) return options;
     try {
       const { http } = this.dependencies.endpointForSlot(slot);
@@ -347,8 +375,25 @@ function rememberLegacy(room: AegisRoom): AegisRoom {
 }
 
 /** Join an existing public/ranked match or create one on the active deployment. */
-export async function joinOrCreate(options: AegisJoinOptions): Promise<AegisRoom> {
-  if (useProductionRouter()) return getProductionRouter().joinOrCreate(options);
+export async function joinOrCreate(options: AegisJoinOptions, signal?: AbortSignal): Promise<AegisRoom> {
+  if (useProductionRouter()) return getProductionRouter().joinOrCreate(options, signal);
+  if (options.ranked) {
+    publicRoomType(options);
+    const http = legacyEndpoint().replace(/^ws/, "http");
+    return connectRankedMatch({
+      http,
+      options,
+      signal,
+      joinRoom: async (reservation) => {
+        const joined = await getLegacyClient().joinById<GameState>(reservation.roomId!, {
+          ...(await withLegacyRoomTicket(options)),
+          rankedPairId: reservation.pairId,
+          rankedToken: reservation.token,
+        });
+        return rememberLegacy(joined);
+      },
+    });
+  }
   const authenticatedOptions = await withLegacyRoomTicket(withQueueFilters(options));
   const joined = await getLegacyClient().joinOrCreate<GameState>(publicRoomType(options), authenticatedOptions);
   return rememberLegacy(joined);
@@ -458,6 +503,9 @@ export async function joinPrivateByCode(code: string, options: AegisJoinOptions)
 }
 
 async function withLegacyRoomTicket(options: AegisJoinOptions): Promise<AegisJoinOptions> {
+  if (options.tournamentGameId && options.tournamentGameToken) {
+    return { ...options, authTicket: undefined };
+  }
   if (!options.ranked && !hasRoomTicketAccount()) return options;
   try {
     const response = await fetch(`${legacyEndpoint().replace(/^ws/, "http")}/auth/room-ticket`, {

@@ -45,7 +45,8 @@ import { RankedStart } from "../account/RankedStart";
 import { RANKED_ENABLED } from "../features";
 import { DeckColorDots, DeckPicker } from "./DeckPicker";
 import { FamousDeckListDialog } from "./FamousDeckListDialog";
-import { DeckFormatSelector, deckFormatLabel } from "./DeckFormatSelector";
+import { DeckFormatSelector } from "@/screens/DeckFormatSelector";
+import { deckFormatLabel } from "@/screens/deckFormatLabel";
 import { MatchFormatSettings } from "./MatchFormatSettings";
 import { RollbackSettings } from "@/screens/RollbackSettings";
 import { MatchTimerSettings } from "./MatchTimerSettings";
@@ -195,8 +196,10 @@ export function Lobby({
   allowRollback = false,
   onAllowRollbackChange,
   openMatchSettings = false,
+  initialRanked = false,
 }: {
   openMatchSettings?: boolean;
+  initialRanked?: boolean;
   allowRollback?: boolean;
   onAllowRollbackChange?: (allow: boolean) => void;
   timerOptions?: MatchTimerOptions;
@@ -303,7 +306,7 @@ export function Lobby({
   const onStart = useCallback(
     (...args: Parameters<typeof onStartRequested>) => {
       if (args[0] === "ranked") {
-        onStartRequested("ranked", args[1], args[2], args[3], args[4], false, "standard");
+        onStartRequested("ranked", args[1], args[2], args[3], args[4], false, format);
         return;
       }
       if (args[0] === "spectator") {
@@ -475,7 +478,7 @@ export function Lobby({
         try {
           if (randomPoolScope === "all") {
             const result = await communityApi.randomDeck({
-              format: startMode === "ranked" ? "standard" : format,
+              format,
               betaAllowed: startMode !== "ranked" && betaAllowed,
             });
             if (result.deck && Math.random() * (pool.length + result.eligibleCount) < result.eligibleCount)
@@ -890,6 +893,10 @@ export function Lobby({
                 />
               ) : !vsBot && format === "standard" && !betaEnabled && !betaOptedIn && RANKED_ENABLED ? (
                 <RankedStart
+                  key={initialRanked ? "ranked" : "casual"}
+                  initialRanked={initialRanked}
+                  format={format}
+                  rankedDisabled={randomSelected || Boolean(borrowedDeck)}
                   disabled={!selectionLegal}
                   actionClassName="lobby-setup__launch"
                   buttonLabel={t("lobby.enterQueue")}

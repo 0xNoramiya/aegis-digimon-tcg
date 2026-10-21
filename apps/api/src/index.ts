@@ -1,3 +1,4 @@
+import { startRankedMaintenance } from "#api/ranked/startRankedMaintenance";
 import { startProviderSync } from "#api/deckProviders/startProviderSync";
 import { digilabProvider } from "#api/deckProviders/providers/digilab";
 import { ProviderSnapshotReader } from "#api/deckProviders/ProviderSnapshotReader";
@@ -111,6 +112,7 @@ const stopProviderSync = startProviderSync({
     (process.env.AEGIS_PROVIDER_SYNC_ENABLED === "true" ||
       (process.env.NODE_ENV === "production" && process.env.AEGIS_PROVIDER_SYNC_ENABLED !== "false")),
 });
+const stopRankedMaintenance = startRankedMaintenance({ accounts: accountStore });
 if (discordAvatarBackfill) void backfillDiscordAvatars(accountStore, discordAvatarBackfill).catch(() => undefined);
 function scheduleReplayCleanup() {
   let cleaning = false;
@@ -251,6 +253,7 @@ const shutdown = (signal: string) => {
   }
   shuttingDown = true;
   stopProviderSync();
+  stopRankedMaintenance();
   log(`[aegis/api] ${signal} received — shutting down gracefully`);
   // Close the HTTP server immediately so the port is freed before node --watch
   // spawns the next instance, avoiding EADDRINUSE on fast restarts.

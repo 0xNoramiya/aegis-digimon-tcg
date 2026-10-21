@@ -1,3 +1,6 @@
+import { installRankedRoutes } from "#api/ranked/installRankedRoutes";
+import { getTournamentCatalogMemberships } from "#api/tournaments/catalog/getTournamentCatalogMemberships";
+import { hashTournamentPassword } from "#api/tournaments/access/hashTournamentPassword";
 import { isCardImageLanguage } from "@aegis/shared/cards/isCardImageLanguage";
 import { installStoryRoutes } from "#api/story/installStoryRoutes";
 import { StoryProgressStore } from "#api/story/StoryProgressStore";
@@ -108,6 +111,7 @@ export function installAccountRoutes(
   humanVerifier?: HumanVerifier,
 ): void {
   const sessionFromRequest = (req: Request) => store.session(cookie(req, SESSION_COOKIE));
+  installRankedRoutes({ app, accounts: store, session: sessionFromRequest });
   installReplayRoutes({ app, library: replays, session: sessionFromRequest });
   installStoryRoutes({ app, store: new StoryProgressStore(store), session: sessionFromRequest });
   // The organizer's override surface, in its own module. See src/tournaments/arbitration.
@@ -457,7 +461,20 @@ export function installAccountRoutes(
     }
   });
 
-  get("/tournaments", async (_req, res) => res.json((await store.tournaments()).map(toTournamentSummary)));
+  get("/tournaments", async (req, res) => {
+    res.setHeader("Cache-Control", "private, no-store");
+    const session = await sessionFromRequest(req);
+    const tournaments = await store.tournaments();
+    const memberships = session
+      ? await getTournamentCatalogMemberships({ accounts: store, accountId: session.account.id })
+      : undefined;
+    res.json(
+      tournaments.map((tournament) => {
+        const myEntry = memberships?.get(tournament.id);
+        return { ...toTournamentSummary(tournament), ...(myEntry ? { myEntry } : {}) };
+      }),
+    );
+  });
   // Registered before `/tournaments/:id`, or the parameterised route would answer it with a 404 for
   // a tournament named "presets".
   get("/tournaments/presets", async (_req, res) => res.json(TOURNAMENT_RULES_PRESETS.map(toPresetView)));
@@ -493,10 +510,6 @@ export function installAccountRoutes(
   post("/tournaments", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
-    if (!session.account.isAdmin) {
-      res.status(403).json({ error: "admin_required" });
-      return;
-    }
     const parsed = parseCreateTournament(req.body as Record<string, unknown>);
     if (!parsed) {
       res.status(400).json({ error: "invalid tournament" });
@@ -510,6 +523,9 @@ export function installAccountRoutes(
     const { input, preset, rules, banlistCards } = validated.value;
     const tournament = await store.createTournament(session.account.id, {
       name: input.name,
+      format: input.format,
+      description: input.description,
+      passwordHash: await hashTournamentPassword(input.password ?? ""),
       block: parsed.block,
       startsAt: input.startsAt,
       maxPlayers: input.maxPlayers,
@@ -526,19 +542,10 @@ export function installAccountRoutes(
       .status(201)
       .json({ ...toTournamentSummary(tournament), rules: tournament.rules, banlistCards: tournament.banlistCards });
   });
-  // Legacy casual registration. Kept as-is rather than redirected: it writes the
-  // `tournament_registrations` row the single-elimination bracket still seeds from, and it asks
-  // for no deck. Competitive entry is POST /tournaments/:id/participants; the two coexist until
-  // the bracket moves onto participants in a later slice.
-  post("/tournaments/:id/register", async (req, res) => {
-    const session = await requireSession(req, res, store);
-    if (session) res.sendStatus((await store.registerTournament(req.params.id!, session.account.id)) ? 204 : 409);
-  });
-
-  post("/tournaments/:id/participants", async (req, res) => {
+  const registerTournamentParticipant: AsyncHandler = async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
-    const { savedDeckId } = req.body as { savedDeckId?: unknown };
+    const { savedDeckId, password } = req.body as { savedDeckId?: unknown; password?: unknown };
     if (typeof savedDeckId !== "string" || !savedDeckId) {
       res.status(400).json({ error: "savedDeckId is required" });
       return;
@@ -547,13 +554,16 @@ export function installAccountRoutes(
       tournamentId: req.params.id!,
       accountId: session.account.id,
       savedDeckId,
+      password,
     });
     if (!result.ok) {
       sendParticipantFailure(res, result.reason, result.violations);
       return;
     }
     res.status(201).json(result.value);
-  });
+  };
+  post("/tournaments/:id/participants", registerTournamentParticipant);
+  post("/tournaments/:id/register", registerTournamentParticipant);
   post("/tournaments/:id/check-in", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
@@ -567,7 +577,7 @@ export function installAccountRoutes(
   post("/tournaments/:id/drop", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
-    const result = await participants.drop({ tournamentId: req.params.id!, accountId: session.account.id });
+    const result = await arbitration.dropParticipant({ tournamentId: req.params.id!, accountId: session.account.id });
     if (!result.ok) {
       sendParticipantFailure(res, result.reason);
       return;
@@ -608,7 +618,7 @@ export function installAccountRoutes(
       throw error;
     }
   });
-  post("/tournaments/:id/close-check-in", async (req, res) => {
+  const closeTournamentCheckIn: AsyncHandler = async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
     if (!(await participants.isOrganizer(req.params.id!, session.account.id))) {
@@ -666,7 +676,9 @@ export function installAccountRoutes(
       phase: program.ok ? program.value : null,
       error: program.ok ? undefined : program.reason,
     });
-  });
+  };
+  post("/tournaments/:id/close-check-in", closeTournamentCheckIn);
+  post("/tournaments/:id/start", closeTournamentCheckIn);
   // The organizer's undo for an event that has not started. Deliberately unavailable from the
   // moment it starts: from then on the tournament is a record other players appear in.
   del("/tournaments/:id", async (req, res) => {
@@ -704,10 +716,6 @@ export function installAccountRoutes(
     res.json({ advanced: advanced + (await topCut.sweepFrozenSwissPhases()) });
   });
 
-  post("/tournaments/:id/start", async (req, res) => {
-    const session = await requireSession(req, res, store);
-    if (session) res.sendStatus((await store.startTournament(req.params.id!, session.account.id)) ? 204 : 409);
-  });
   // The BO3 confrontation. Presence starts the shared clock; the authorization is what lets a
   // client create or enter the room for the next game. Neither endpoint advances anything — the
   // series module owns the score and the deadline, and the room only plays one game.
@@ -783,6 +791,9 @@ function toTournamentSummary(
   return {
     id: tournament.id,
     name: tournament.name,
+    format: tournament.format,
+    description: tournament.description,
+    passwordProtected: tournament.passwordProtected,
     status: tournament.status === "in_progress" ? "running" : tournament.status,
     structure: tournament.structure,
     topCutEnabled: tournament.topCutEnabled,
@@ -840,12 +851,19 @@ function parseCreateTournament(
   if (typeof name !== "string" || !Number.isFinite(startsAt) || !Number.isInteger(maxPlayers)) return undefined;
   if (structure !== undefined && structure !== "swiss" && structure !== "single_elimination") return undefined;
   if (bestOf !== undefined && bestOf !== 1 && bestOf !== 3) return undefined;
+  if (body.description !== undefined && typeof body.description !== "string") {
+    return undefined;
+  }
   const preset = typeof rulesetPreset === "string" ? rulesetPreset : LEGACY_DEFAULT_PRESET_ID;
   const policy = banlist === undefined ? defaultBanlistPolicy(preset) : parseBanlistPolicy(banlist);
   if (!policy) return undefined;
   return {
     input: {
       name,
+      description: body.description as string | undefined,
+      clocks: body.clocks as CreateTournamentInput["clocks"],
+      password: body.password as string | undefined,
+      format: body.format as CreateTournamentInput["format"],
       structure: structure ?? "single_elimination",
       topCut: topCut === true,
       bestOf: bestOf ?? 1,

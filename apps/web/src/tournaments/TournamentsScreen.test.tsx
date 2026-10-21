@@ -74,6 +74,71 @@ afterEach(() => {
 });
 
 describe("tournament catalog", () => {
+  it("filters the agenda by search text and format", async () => {
+    mockApi({
+      "GET /tournaments": {
+        body: [
+          { ...LIGHTNING, description: "Casual community event" },
+          { ...REGIONAL, format: "BT10" },
+        ],
+      },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false } },
+    });
+    renderScreen();
+    await screen.findByRole("heading", { name: "Friday lightning" });
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search tournaments" }), { target: { value: "community" } });
+    expect(screen.queryByRole("heading", { name: "Regional qualifier" })).toBeNull();
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "missing tournament" } });
+    expect(screen.getByText("No matching events")).toBeTruthy();
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "" } });
+    fireEvent.change(screen.getByLabelText("Filter by format"), { target: { value: "BT10" } });
+    expect(screen.queryByRole("heading", { name: "Friday lightning" })).toBeNull();
+    expect(screen.getByRole("heading", { name: "Regional qualifier" })).toBeTruthy();
+  });
+
+  it("separates upcoming events, personal events and history", async () => {
+    mockApi({
+      "GET /tournaments": {
+        body: [
+          LIGHTNING,
+          { ...REGIONAL, createdBy: "other" },
+          { ...LIGHTNING, id: "past", name: "Past cup", status: "finished" },
+        ],
+      },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false } },
+    });
+    renderScreen();
+    await screen.findByRole("heading", { name: "Friday lightning" });
+    expect(screen.queryByRole("heading", { name: "Past cup" })).toBeNull();
+    fireEvent.click(await screen.findByRole("button", { name: "My tournaments" }));
+    expect(screen.getByRole("heading", { name: "Friday lightning" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Regional qualifier" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Past events" }));
+    expect(screen.getByRole("heading", { name: "Past cup" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Friday lightning" })).toBeNull();
+  });
+
+  it("performs the advertised check-in and refreshes the next step", async () => {
+    const entry = { ...LIGHTNING, myEntry: { status: "registered", checkInOpensAt: null, checkInClosesAt: null } };
+    const routes: Record<string, Route> = {
+      "GET /tournaments": { body: [entry] },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false } },
+      "POST /tournaments/t-lightning/check-in": { body: { status: "checked_in" } },
+    };
+    const fetchMock = mockApi(routes);
+    renderScreen();
+    const button = await screen.findByRole("button", { name: "Check in" });
+    routes["GET /tournaments"] = { body: [{ ...entry, myEntry: { ...entry.myEntry, status: "checked_in" } }] };
+    fireEvent.click(button);
+    await screen.findByText("Check-in confirmed · Waiting for the start");
+    expect(
+      fetchMock.mock.calls.some(
+        ([input, init]) => String(input).includes("/t-lightning/check-in") && (init as RequestInit)?.method === "POST",
+      ),
+    ).toBe(true);
+    expect(screen.queryByRole("button", { name: "Check in" })).toBeNull();
+  });
+
   beforeEach(() => {
     mockApi({
       "GET /tournaments": { body: [LIGHTNING, REGIONAL] },
@@ -112,15 +177,15 @@ describe("tournament catalog", () => {
     expect(screen.queryByText("99 of 8 players")).toBeNull();
   });
 
-  it("does not offer tournament creation to a non-admin", async () => {
+  it("offers tournament creation to an authenticated community organizer", async () => {
     cleanup();
     mockApi({
       "GET /tournaments": { body: [] },
       "GET /auth/me": { body: { id: "acc-2", displayName: "Player", avatarUrl: null, isAdmin: false } },
     });
     renderScreen();
-    await screen.findByText("New tournaments are announced here. Check back soon.");
-    expect(screen.queryByRole("button", { name: "Create tournament" })).toBeNull();
+    await screen.findByText("No events here yet. Be the first to create one.");
+    expect((await screen.findAllByRole("button", { name: "Create tournament" })).length).toBeGreaterThan(0);
   });
 });
 
@@ -188,6 +253,11 @@ describe("tournament creation form", () => {
     await openForm();
     fireEvent.change(screen.getByLabelText("Banned cards"), { target: { value: "as_of_set" } });
     fireEvent.change(screen.getByLabelText("Set"), { target: { value: "BT10" } });
+    fireEvent.change(screen.getByLabelText("Description (optional)"), { target: { value: "Weekly community event" } });
+    fireEvent.click(screen.getByRole("switch", { name: /Customize timers/ }));
+    fireEvent.change(screen.getByLabelText("Swiss round (minutes)"), { target: { value: "30" } });
+    fireEvent.change(screen.getByLabelText("Overtime (minutes)"), { target: { value: "10" } });
+
     fireEvent.click(screen.getByRole("button", { name: "Create tournament" }));
 
     const postedBody = async () => {
@@ -198,6 +268,13 @@ describe("tournament creation form", () => {
     };
     await waitFor(async () => expect(await postedBody()).toBeDefined());
     expect((await postedBody()).banlist).toEqual({ mode: "as_of_set", setId: "BT10" });
+    expect((await postedBody()).description).toBe("Weekly community event");
+    expect((await postedBody()).clocks).toEqual({
+      roundMinutes: 30,
+      eliminationMinutes: 55,
+      finalMinutes: null,
+      overtimeMinutes: 10,
+    });
   });
 
   it("shows Swiss round and cut estimates, labelled as pending check-in close", async () => {
@@ -253,7 +330,7 @@ describe("tournament creation form", () => {
 });
 
 describe("app navigation", () => {
-  it("keeps the tournaments area hidden in the client shell", async () => {
+  it("opens the tournaments area from the client shell", async () => {
     mockApi({
       "GET /tournaments": { body: [] },
       "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true } },
@@ -277,7 +354,7 @@ describe("app navigation", () => {
       </I18nProvider>,
     );
     await waitFor(() => expect(document.getElementById("aegis-main")).toBeTruthy());
-    expect(screen.queryByRole("heading", { name: "Tournaments", level: 1 })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Create tournament" })).toBeNull();
+    expect(await screen.findByRole("heading", { name: "Tournaments", level: 1 })).toBeTruthy();
+    expect((await screen.findAllByRole("button", { name: "Create tournament" })).length).toBeGreaterThan(0);
   }, 20_000);
 });

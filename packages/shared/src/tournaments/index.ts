@@ -2,6 +2,9 @@
 // Frozen before wave-1 fan-out; extend additively — parallel worktrees depend
 // on these shapes not changing underneath them.
 
+import type { DeckFormat } from "#shared/deckFormat";
+import type { TournamentClockSettings } from "#shared/tournaments/TournamentClockSettings";
+
 export type TournamentStructure = "swiss" | "single_elimination";
 export type RulesetOrigin = "bandai_general" | "bandai_event" | "aegis_custom";
 
@@ -34,7 +37,11 @@ export type TournamentBanlistCard = {
 };
 
 export type CreateTournamentInput = {
+  format?: DeckFormat;
+  password?: string;
+  clocks?: TournamentClockSettings;
   name: string;
+  description?: string;
   structure: TournamentStructure;
   topCut: boolean;
   bestOf: 1 | 3;
@@ -148,8 +155,16 @@ export type ParticipantView = {
 };
 
 export type TournamentSummary = {
+  myEntry?: {
+    status: RegistrationStatus;
+    checkInOpensAt: number | null;
+    checkInClosesAt: number | null;
+  };
+  format?: DeckFormat;
+  passwordProtected?: boolean;
   id: string;
   name: string;
+  description?: string;
   status: TournamentStatus;
   structure: TournamentStructure;
   topCutEnabled: boolean;
@@ -165,6 +180,8 @@ export type TournamentSummary = {
 };
 
 export type SeriesScoreView = {
+  participantIds?: readonly [string | null, string | null];
+  winnerSeat?: 0 | 1 | null;
   matchId: string;
   seriesId: string | null;
   status: MatchStatus;

@@ -1,3 +1,5 @@
+import { RankedScreen } from "@/ranked/RankedScreen";
+import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
 import { getStoryGuestToken } from "@/story/getStoryGuestToken";
 import { LocalScenarioHelp } from "./dev/LocalScenarioHelp";
 import { MATCH_TIMER_START_SECONDS } from "@aegis/shared";
@@ -48,6 +50,11 @@ import { clearReconnectSession, loadReconnectSession } from "./net/reconnectSess
 import { setRoomTicketAccount } from "./net/roomAccount";
 import { ClientErrorBoundary } from "@/clientErrors/ClientErrorBoundary";
 import { createLazyComponent } from "@/net/createLazyComponent";
+
+const TournamentsScreen = createLazyComponent({
+  load: () => import("@/tournaments/TournamentsScreen"),
+  pick: (module) => module.TournamentsScreen,
+});
 
 const ProfileScreen = createLazyComponent({
   load: () => import("./account/ProfileScreen"),
@@ -185,6 +192,8 @@ const NAV_SCREENS: Screen[] = [
   "watch",
   "deck",
   "community",
+  "tournaments",
+  "ranked",
   "roadmap",
   "collection",
   "settings",
@@ -457,6 +466,7 @@ function LoadedAegisClient({
   const [bestOf, setBestOf] = useState(loadMatchFormatPreference);
   /** Set between the games of a best-of-three: the next GameScreen takes this seat. */
   const [seriesGame, setSeriesGame] = useState<SeriesGameTicket>();
+  const [tournamentGame, setTournamentGame] = useState<TournamentGameTicket>();
   const [storyBattleId, setStoryBattleId] = useState<string>();
   const [startMode, setStartMode] = useState<StartMode>("casual");
   const [editingDeck, setEditingDeck] = useState<DeckListing | null>(null);
@@ -531,6 +541,7 @@ function LoadedAegisClient({
     const nextRoute = leaveMatchRouteRef.current ?? { screen: "lobby" };
     leaveMatchRouteRef.current = undefined;
     setSeriesGame(undefined);
+    setTournamentGame(undefined);
     clearReconnectSession();
     window.history.replaceState(null, "", pathForRoute(nextRoute));
     setRoute(nextRoute);
@@ -559,6 +570,7 @@ function LoadedAegisClient({
     // reload left a resumable seat from the previous match in storage.
     clearReconnectSession();
     setSeriesGame(undefined);
+    setTournamentGame(undefined);
     if (mode !== "private_host" && mode !== "private_guest") setPrivateRoom(undefined);
     setStoryBattleId(undefined);
     setStartMode(mode);
@@ -593,6 +605,8 @@ function LoadedAegisClient({
   const joinOptions = useMemo<AegisJoinOptions>(
     () => ({
       ...timerOptions,
+      tournamentGameId: tournamentGame?.gameId,
+      tournamentGameToken: tournamentGame?.token,
       storyBattleId,
       storyGuestToken: storyBattleId ? getStoryGuestToken() : undefined,
       allowRollback,
@@ -619,6 +633,7 @@ function LoadedAegisClient({
       },
     }),
     [
+      tournamentGame,
       storyBattleId,
       effectivePlayer.name,
       effectivePlayer.avatarId,
@@ -676,7 +691,7 @@ function LoadedAegisClient({
               <Home
                 collectionSize={collectionSize}
                 signedIn={!!account}
-                onPlay={() => navigateScreen("lobby")}
+                onPlay={() => navigate({ screen: "lobby", rankedQueue: true, matchSettings: true })}
                 onBuildDeck={() => navigateScreen("deck")}
                 onOpenCollection={() => navigateScreen("collection")}
                 onSignIn={() => navigateScreen("login")}
@@ -718,6 +733,7 @@ function LoadedAegisClient({
             )}
             {screen === "lobby" && (
               <Lobby
+                initialRanked={route.rankedQueue === true}
                 player={effectivePlayer}
                 decks={decks}
                 borrowedDeck={borrowedDeck}
@@ -816,6 +832,35 @@ function LoadedAegisClient({
               />
             )}
 
+            {screen === "ranked" && (
+              <RankedScreen
+                signedIn={Boolean(account)}
+                onPlay={() => navigate({ screen: "lobby", rankedQueue: true, matchSettings: true })}
+              />
+            )}
+
+            {screen === "tournaments" && (
+              <TournamentsScreen
+                decks={decks}
+                view={route.tournament ?? { kind: "catalog" }}
+                onViewChange={(tournament) => navigate({ screen: "tournaments", tournament })}
+                onJoinGame={(ticket) => {
+                  clearReconnectSession();
+                  setSeriesGame(undefined);
+                  setTournamentGame(ticket);
+                  setStoryBattleId(undefined);
+                  setStartMode("casual");
+                  setRoomCode(undefined);
+                  setBotDeckId(undefined);
+                  setBetaBattleMode(false);
+                  setUnlimited(false);
+                  setDeckFormat("standard");
+                  setMatchNumber((current) => current + 1);
+                  navigateScreen("game");
+                }}
+              />
+            )}
+
             {screen === "roadmap" && (
               <RoadmapScreen
                 itemId={route.roadmapItemId}
@@ -898,9 +943,26 @@ function LoadedAegisClient({
                 onLeaveForfeitsChange={setLeaveForfeitsMatch}
                 onExit={(next) => {
                   setSeriesGame(undefined);
+                  if (tournamentGame) {
+                    setTournamentGame(undefined);
+                    navigate({
+                      screen: "tournaments",
+                      tournament: { kind: "detail", id: tournamentGame.tournamentId },
+                    });
+                    return;
+                  }
                   navigateScreen(storyBattleId ? "story" : next);
                 }}
                 onRematch={(privateRoomCode, roomUnlimited, roomHost, roomFormat) => {
+                  if (tournamentGame) {
+                    clearReconnectSession();
+                    setTournamentGame(undefined);
+                    navigate({
+                      screen: "tournaments",
+                      tournament: { kind: "detail", id: tournamentGame.tournamentId },
+                    });
+                    return;
+                  }
                   clearReconnectSession();
                   setSeriesGame(undefined);
                   if (privateRoomCode) {

@@ -1,3 +1,4 @@
+import type { DeckFormat } from "@aegis/shared/deckFormat";
 import { randomUUID } from "node:crypto";
 import type { TournamentBanlistCard } from "@aegis/shared";
 import type { PoolClient } from "pg";
@@ -54,12 +55,13 @@ export class BotSeatingStore {
         await client.query<{
           id: string;
           block: string;
+          format: DeckFormat;
           max_players: string | number;
           allow_bots: boolean;
           ruleset_preset: string | null;
           banlist_cards: TournamentBanlistCard[] | string | null;
         }>(
-          "SELECT id, block, max_players, allow_bots, ruleset_preset, banlist_cards FROM tournaments WHERE id=$1 FOR UPDATE",
+          "SELECT id, block, format, max_players, allow_bots, ruleset_preset, banlist_cards FROM tournaments WHERE id=$1 FOR UPDATE",
           [input.tournamentId],
         )
       ).rows[0];
@@ -86,7 +88,11 @@ export class BotSeatingStore {
       // picks the next legal deck for the block. If none of the block's decks survive, `planBotFill`
       // reports `no_legal_bot_deck` and the field stays short — which is the documented fallback,
       // and better than a machine playing a banned card.
-      const decks = legalUnder(this.decksForBlock(tournament.block), parseBanlist(tournament.banlist_cards));
+      const decks = legalUnder(
+        this.decksForBlock(tournament.block),
+        parseBanlist(tournament.banlist_cards),
+        tournament.format,
+      );
       const plan = planBotFill({
         allowBots: tournament.allow_bots === true,
         presetSupportsBots: findPreset(tournament.ruleset_preset ?? "")?.supportsBots === true,
@@ -236,9 +242,12 @@ function defaultDecksForBlock(block: string): readonly MetaDeck[] {
 }
 
 /** The shipped decks this tournament's frozen banlist actually permits, in their shipped order. */
-function legalUnder(decks: readonly MetaDeck[], banlistCards: readonly TournamentBanlistCard[]): readonly MetaDeck[] {
-  if (banlistCards.length === 0) return decks;
-  return decks.filter((deck) => validateCompetitiveDeck(deck.decklist, banlistCards).legal);
+function legalUnder(
+  decks: readonly MetaDeck[],
+  banlistCards: readonly TournamentBanlistCard[],
+  format: DeckFormat,
+): readonly MetaDeck[] {
+  return decks.filter((deck) => validateCompetitiveDeck(deck.decklist, banlistCards, format).legal);
 }
 
 function parseBanlist(value: TournamentBanlistCard[] | string | null): readonly TournamentBanlistCard[] {

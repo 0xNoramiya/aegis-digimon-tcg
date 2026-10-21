@@ -1,3 +1,4 @@
+import { RankedRoundTimer } from "@/ranked/RankedRoundTimer";
 import { createPortal } from "react-dom";
 import type { GameState, Seat } from "@aegis/shared";
 import { useTranslation } from "../i18n";
@@ -56,6 +57,7 @@ export function MatchTimer({ state, seat, opponent = false }: { state: GameState
         </span>
       ) : null}
       <strong className="match-timer__time">{remaining}</strong>
+      {!opponent ? <RankedRoundTimer state={state} /> : null}
     </div>
   );
 }

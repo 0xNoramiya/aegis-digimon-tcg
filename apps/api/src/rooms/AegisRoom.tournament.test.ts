@@ -177,6 +177,39 @@ beforeEach(async () => {
 });
 
 describe("entering a Tournament Game room", () => {
+  it("loads the event format from the authorized game instead of client preferences", async () => {
+    await accounts.pool.query("UPDATE tournaments SET format='BT10:unlimited' WHERE id=$1", [tournamentId]);
+    const series = await startSeries();
+    const authorization = await authorize(series.id, alice);
+    const room = new TournamentTestRoom();
+    room.broadcast = vi.fn<() => boolean>(() => true) as AegisRoom["broadcast"];
+    (room as unknown as { roomId: string }).roomId = "historical-room";
+    await room.onCreate({ seed: 1, tournamentRoom: true, tournamentGameId: authorization.gameId, format: "pauper" });
+    expect(room.state.format).toBe("BT10:unlimited");
+    expect(room.state.unlimited).toBe(true);
+    const options = { ...joinOptions(authorization.gameId, authorization.token), format: "pauper" as const };
+    const client = fakeClient("historical-player");
+    expect(await room.onAuth(client, options)).toBe(true);
+    room.onJoin(client, options);
+    expect(room.state.players[0]?.displayName).toBe("Registered Alice");
+    room.onDispose();
+  });
+
+  it("ignores a forged banlist when seating a tournament participant", async () => {
+    const series = await startSeries();
+    const authorization = await authorize(series.id, alice);
+    const room = makeRoom("frozen-banlist-room");
+    const options = {
+      ...joinOptions(authorization.gameId, authorization.token),
+      banlistCards: [{ cardId: RED_DECK.mainDeck[0]!, status: "banned" as const, allowedCopies: 0 }],
+    };
+    const client = fakeClient("frozen-player");
+    expect(await room.onAuth(client, options)).toBe(true);
+    room.onJoin(client, options);
+    expect(room.state.players[0]?.displayName).toBe("Registered Alice");
+    room.onDispose();
+  });
+
   it("admits both participants on their own authorizations and preserves their registered names", async () => {
     const series = await startSeries();
     const room = makeRoom("room-1");

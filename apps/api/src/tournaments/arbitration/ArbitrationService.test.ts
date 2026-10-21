@@ -22,6 +22,7 @@ const REASON = "ruling recorded on the match slip";
  */
 const ORGANIZER_COMMANDS = new Set([
   "decide_series",
+  "swap_pairings",
   "concede_match",
   "disqualify",
   "cancel_tournament",
@@ -286,6 +287,40 @@ describe("ArbitrationService", () => {
     });
   });
 
+  describe("participant withdrawal", () => {
+    it("settles the pending match and allows safe retries", async () => {
+      const { matchId, seats } = await openMatch();
+      const input = { tournamentId, accountId: seats[0], now: NOW + 1 };
+      expect(await arbitration.dropParticipant(input)).toMatchObject({ ok: true, value: { status: "dropped" } });
+      expect((await series.seriesForMatch(matchId))?.officialResult).toBe("participant1");
+      const events = await arbitrationTrail();
+      expect(events.filter((entry) => entry.command === "concede_match")).toHaveLength(1);
+      expect(await arbitration.dropParticipant(input)).toMatchObject({ ok: true });
+      expect(await arbitrationTrail()).toEqual(events);
+    });
+
+    it("finishes an active series when its participant withdraws", async () => {
+      const { matchId, seats } = await openMatch();
+      for (const accountId of seats) {
+        await series.markPresent({
+          tournamentId,
+          matchId,
+          accountId,
+          winsRequired: 2,
+          seriesDurationMs: 100000,
+          now: NOW,
+        });
+      }
+      const active = await series.seriesForMatch(matchId);
+      expect(active).toBeDefined();
+      await arbitration.dropParticipant({ tournamentId, accountId: seats[1], now: NOW + 1 });
+      expect((await series.seriesForMatch(matchId))?.officialResult).toBe("participant0");
+      expect(await series.authorizeNextGame({ seriesId: active!.id, accountId: seats[1], now: NOW + 2 })).toMatchObject(
+        { ok: false },
+      );
+    });
+  });
+
   describe("concedeMatch", () => {
     it("lets a player concede their own confrontation, as a match loss", async () => {
       const { matchId, seats } = await openMatch();
@@ -397,6 +432,94 @@ describe("ArbitrationService", () => {
       expect(reissued.ok && reissued.alreadyApplied).toBe(true);
       expect(reissued.ok && reissued.event).toBeUndefined();
       expect(await arbitrationTrail()).toHaveLength(afterFirst.length);
+    });
+  });
+
+  describe("swapPairings", () => {
+    it("rejects malformed match identifiers before querying UUID columns", async () => {
+      expect(
+        await arbitration.swapPairings({
+          tournamentId,
+          actorAccountId: organizerId,
+          firstMatchId: "not-a-uuid",
+          secondMatchId: randomUUID(),
+          firstSeat: 0,
+          secondSeat: 1,
+          reason: REASON,
+        }),
+      ).toEqual({ ok: false, reason: "pairings_not_editable" });
+    });
+
+    it("swaps two unstarted seats atomically and audits a retried command once", async () => {
+      const [first, second] = await accounts.tournamentMatches(tournamentId);
+      const input = {
+        tournamentId,
+        actorAccountId: organizerId,
+        reason: "Correct the first round seating",
+        commandId: randomUUID(),
+        firstMatchId: first!.id,
+        firstSeat: 0 as const,
+        secondMatchId: second!.id,
+        secondSeat: 1 as const,
+      };
+      expect((await arbitration.swapPairings(input)).ok).toBe(true);
+      const updated = await accounts.tournamentMatches(tournamentId);
+      expect(updated.find((match) => match.id === first!.id)?.player0AccountId).toBe(second!.player1AccountId);
+      expect(updated.find((match) => match.id === second!.id)?.player1AccountId).toBe(first!.player0AccountId);
+      const replay = await arbitration.swapPairings(input);
+      expect(replay.ok && replay.replayed).toBe(true);
+      expect(await accounts.tournamentMatches(tournamentId)).toEqual(updated);
+      expect((await arbitrationTrail()).filter((event) => event.command === "swap_pairings")).toHaveLength(1);
+    });
+
+    it("rejects swaps between rounds, dropped players and missing reasons", async () => {
+      const [first, second] = await accounts.tournamentMatches(tournamentId);
+      const input = {
+        tournamentId,
+        actorAccountId: organizerId,
+        reason: REASON,
+        firstMatchId: first!.id,
+        firstSeat: 0 as const,
+        secondMatchId: second!.id,
+        secondSeat: 0 as const,
+      };
+      expect(await arbitration.swapPairings({ ...input, reason: " " })).toEqual({
+        ok: false,
+        reason: "reason_required",
+      });
+      await accounts.pool.query("UPDATE tournament_matches SET round=2 WHERE id=$1", [second!.id]);
+      expect(await arbitration.swapPairings(input)).toEqual({ ok: false, reason: "pairings_not_editable" });
+      await accounts.pool.query("UPDATE tournament_matches SET round=1 WHERE id=$1", [second!.id]);
+      await participants.drop({ tournamentId, accountId: first!.player0AccountId!, now: NOW });
+      expect(await arbitration.swapPairings(input)).toEqual({ ok: false, reason: "pairings_not_editable" });
+      expect((await arbitrationTrail()).filter((event) => event.command === "swap_pairings")).toHaveLength(0);
+    });
+
+    it("rejects other organizers and any pairing with confirmed presence", async () => {
+      const [first, second] = await accounts.tournamentMatches(tournamentId);
+      const input = {
+        tournamentId,
+        actorAccountId: players[0]!.id,
+        reason: REASON,
+        firstMatchId: first!.id,
+        firstSeat: 0 as const,
+        secondMatchId: second!.id,
+        secondSeat: 0 as const,
+      };
+      expect(await arbitration.swapPairings(input)).toEqual({ ok: false, reason: "not_organizer" });
+      await series.markPresent({
+        tournamentId,
+        matchId: first!.id,
+        accountId: first!.player0AccountId!,
+        winsRequired: 2,
+        seriesDurationMs: null,
+        now: NOW,
+      });
+      expect(await arbitration.swapPairings({ ...input, actorAccountId: organizerId })).toEqual({
+        ok: false,
+        reason: "pairings_not_editable",
+      });
+      expect((await arbitrationTrail()).filter((event) => event.command === "swap_pairings")).toHaveLength(0);
     });
   });
 

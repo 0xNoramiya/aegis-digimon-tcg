@@ -45,6 +45,7 @@ export type Screen =
   | "community"
   | "roadmap"
   | "tournaments"
+  | "ranked"
   | "settings"
   | "replays"
   | "releases"
@@ -572,6 +573,7 @@ export function TopNav({
   const { t } = useTranslation();
   const navActive = (key: Screen) =>
     screen === key ||
+    (screen === "ranked" && key === "lobby") ||
     (screen === "roadmap" && key === "community") ||
     ((screen === "watch" || screen === "story") && key === "lobby");
   const navTo = (s: Screen) => {
@@ -583,6 +585,7 @@ export function TopNav({
     { key: "lobby", label: t("nav.play"), icon: Icons.Swords },
     { key: "deck", label: t("nav.decks"), icon: Icons.LayoutDashboard },
     { key: "community", label: t("nav.community"), icon: Icons.Users },
+    { key: "tournaments", label: t("nav.tournaments"), icon: Icons.Swords },
     { key: "collection", label: t("nav.collection"), icon: Icons.BookOpen },
   ];
   const signIn = signedIn ? null : (

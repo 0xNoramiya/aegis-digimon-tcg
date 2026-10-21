@@ -1,4 +1,4 @@
-import { deckFormatLabel } from "./DeckFormatSelector";
+import { deckFormatLabel } from "@/screens/deckFormatLabel";
 import type { CSSProperties, ReactNode } from "react";
 import { deckLegality, getCardDefinition, formatRestrictionLabel, deckFormat, type DeckFormat } from "@aegis/shared";
 import { Badge } from "../design/primitives";

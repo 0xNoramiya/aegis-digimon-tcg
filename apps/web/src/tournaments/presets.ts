@@ -13,7 +13,10 @@ export type BestOf = 1 | 3;
 
 export type PresetOption = {
   id: string;
-  labelKey: "tournaments.preset.bandaiGeneral" | "tournaments.preset.aegisLightning";
+  labelKey:
+    | "tournaments.preset.bandaiGeneral"
+    | "tournaments.preset.aegisLightning"
+    | "tournaments.preset.aegisCommunity";
   origin: RulesetOrigin;
   structures: readonly TournamentStructure[];
   bestOfOptions: readonly BestOf[];
@@ -23,6 +26,16 @@ export type PresetOption = {
 };
 
 export const TOURNAMENT_PRESETS: readonly PresetOption[] = [
+  {
+    id: "aegis_community",
+    labelKey: "tournaments.preset.aegisCommunity",
+    origin: "aegis_custom",
+    structures: ["swiss", "single_elimination"],
+    bestOfOptions: [1, 3],
+    supportsTopCut: true,
+    supportsBots: false,
+    supportsUnrestrictedBanlist: true,
+  },
   {
     id: "bandai_general",
     labelKey: "tournaments.preset.bandaiGeneral",

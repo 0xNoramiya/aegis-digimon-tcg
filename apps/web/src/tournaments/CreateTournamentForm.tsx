@@ -1,7 +1,11 @@
+import type { DeckFormat } from "@aegis/shared/deckFormat";
+import { DeckFormatSelector } from "@/screens/DeckFormatSelector";
 /* Tournament creation. The form disables what the selected preset forbids and previews what the
    server will freeze, but it never decides anything: every field is re-validated server-side and
    the reason codes that come back are rendered inline, against the field they blame. */
 
+import type { TournamentClockSettings } from "@aegis/shared/tournaments/TournamentClockSettings";
+import { TournamentClockFields } from "@/tournaments/TournamentClockFields";
 import { useId, useMemo, useState, type FormEvent } from "react";
 import {
   swissRoundCount,
@@ -53,6 +57,10 @@ export function CreateTournamentForm({
   const { t } = useTranslation();
   const formId = useId();
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [format, setFormat] = useState<DeckFormat>("standard");
+  const [password, setPassword] = useState("");
+  const [clocks, setClocks] = useState<TournamentClockSettings>();
   const [startsAt, setStartsAt] = useState(defaultStartsAt);
   const [maxPlayers, setMaxPlayers] = useState(16);
   const [presetId, setPresetId] = useState(DEFAULT_PRESET_ID);
@@ -104,6 +112,10 @@ export function CreateTournamentForm({
     setFailure(undefined);
     const input: CreateTournamentInput = {
       name: name.trim(),
+      description: description.trim(),
+      password,
+      format,
+      clocks,
       structure,
       topCut,
       bestOf,
@@ -133,6 +145,19 @@ export function CreateTournamentForm({
           onChange={(event) => setName(event.target.value)}
           error={messageFor(errorFor("name"), t)}
         />
+        <div className="aegis-field">
+          <label className="aegis-field__label" htmlFor={`${formId}-description`}>
+            {t("tournaments.create.description")}
+          </label>
+          <textarea
+            id={`${formId}-description`}
+            className="aegis-field__control"
+            value={description}
+            maxLength={1000}
+            rows={3}
+            onChange={(event) => setDescription(event.target.value)}
+          />
+        </div>
         <Field
           label={t("tournaments.create.startsAt")}
           type="datetime-local"
@@ -323,6 +348,18 @@ export function CreateTournamentForm({
           )}
           <p className="tournaments-note">{t("tournaments.create.estimateNote")}</p>
         </section>
+
+        <Field
+          label={t("tournaments.create.password")}
+          type="password"
+          autoComplete="new-password"
+          maxLength={128}
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          error={messageFor(errorFor("password"), t)}
+        />
+        <DeckFormatSelector value={format} onChange={setFormat} showBanlist={false} />
+        <TournamentClockFields value={clocks} onChange={setClocks} />
 
         <BanlistPreviewSection preview={preview} />
 

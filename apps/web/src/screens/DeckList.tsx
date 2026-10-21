@@ -1,4 +1,4 @@
-import { deckFormatLabel } from "./DeckFormatSelector";
+import { deckFormatLabel } from "@/screens/deckFormatLabel";
 /* The deck picker: a hero with the create and import actions, then every saved deck
    as a table row (a card on narrow screens) with its edit, export, activate and
    delete actions. */

@@ -187,6 +187,7 @@ function connectRoom(
   options: AegisJoinOptions,
   match: MatchConfig | undefined,
   isCancelled: () => boolean,
+  signal?: AbortSignal,
 ): Promise<AegisRoom> {
   switch (match?.mode) {
     case "spectator":
@@ -207,7 +208,7 @@ function connectRoom(
       if (match.waitForHost) return joinWhenHostReopens(match.roomCode, options, isCancelled);
       return joinPrivateByCode(match.roomCode, options);
     default:
-      return joinOrCreate(options);
+      return joinOrCreate(options, signal);
   }
 }
 
@@ -249,6 +250,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     setUsedDeck(undefined);
     setOpponentDeck(undefined);
 
+    const queueAbort = new AbortController();
     let stopHeartbeat = () => {};
     let stopLiveness = () => {};
 
@@ -478,7 +480,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       }
       if (cancelled) throw new Error("cancelled");
       setStatus("connecting");
-      return connectRoom(options, match, () => cancelled);
+      return connectRoom(options, match, () => cancelled, queueAbort.signal);
     };
 
     resumeOrConnect()
@@ -498,6 +500,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
 
     return () => {
       cancelled = true;
+      queueAbort.abort();
       stopHeartbeat();
       stopLiveness();
       clientErrorReporter.setMatchContext(undefined);

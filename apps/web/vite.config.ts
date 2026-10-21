@@ -27,6 +27,7 @@ export default defineConfig({
   },
   test: {
     projects: [
+      { extends: true, test: { name: "ranked-ui", include: ["src/ranked/**/*.test.tsx"], environment: "jsdom" } },
       {
         extends: true,
         test: { name: "story-ui", include: ["src/story/**/*.test.tsx"], environment: "jsdom" },
@@ -58,6 +59,7 @@ export default defineConfig({
           exclude: [
             ...configDefaults.exclude,
             "e2e/**",
+            "src/ranked/**/*.test.tsx",
             "src/screens/cardLanguage/**/*.test.tsx",
             "src/clientErrors/**/*.test.tsx",
             "src/story/**/*.test.tsx",

@@ -1,40 +1,38 @@
-/* "My match" — the skeleton the match-series slice fills in.
-
-   It renders strictly what `GET /tournaments/:id` carries today: the legacy bracket row (round,
-   opponent account id, resolved/unresolved) and the frozen rules. Presence, the BO3 game score and
-   the join deadline are series state that no endpoint publishes yet, so each is rendered as an
-   explicit "pending" state rather than invented. The extension points are marked below: once
-   `SeriesScoreView` reaches the detail payload, pass it in as `series` and the placeholders resolve
-   into real values without moving this component. */
-
+import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
+import { TournamentMatchActions } from "@/tournaments/TournamentMatchActions";
 import { Alert, Badge, Panel } from "../design/primitives";
 import { useTranslation } from "../i18n";
 import { useCountdown } from "./hooks";
-import { countdownLevelKey, pairingReasonKey } from "./labels";
+import { countdownLevelKey, pairingReasonKey, matchStateKey } from "./labels";
 import type { SeriesScoreView } from "@aegis/shared";
 import type { LegacyTournamentMatch, TournamentDetail } from "./types";
 
 /** The player's open bracket row, or undefined when they have none in this event. */
-export function findMyMatch(
+function findMyMatch(
   matches: readonly LegacyTournamentMatch[],
   accountId: string | undefined,
 ): LegacyTournamentMatch | undefined {
   if (!accountId) return undefined;
   const mine = matches.filter((match) => match.player0AccountId === accountId || match.player1AccountId === accountId);
-  return mine.find((match) => match.status !== "finished") ?? mine[mine.length - 1];
+  return mine.find((match) => match.status !== "finished" && match.status !== "bye") ?? mine[mine.length - 1];
 }
 
 export function MyMatchPanel({
   detail,
   accountId,
-  series,
+  series: providedSeries,
+  onJoinGame,
+  onChanged,
 }: {
   detail: TournamentDetail;
   accountId: string | undefined;
   series?: SeriesScoreView;
+  onJoinGame?: (ticket: TournamentGameTicket) => void;
+  onChanged?: () => void;
 }) {
   const { t } = useTranslation();
   const match = findMyMatch(detail.matches, accountId);
+  const series = providedSeries ?? detail.series?.find((row) => row.matchId === match?.id);
   const joinDeadlineAt = series?.joinDeadlineAt ?? null;
   const countdown = useCountdown(joinDeadlineAt);
   const winsRequired = detail.rules?.match.winsRequired ?? (detail.bestOf === 3 ? 2 : 1);
@@ -49,6 +47,13 @@ export function MyMatchPanel({
   }
 
   const opponentAccountId = match.player0AccountId === accountId ? match.player1AccountId : match.player0AccountId;
+  const opponentSeat = match.player0AccountId === accountId ? 1 : 0;
+  const opponentParticipantId = series?.participantIds?.[opponentSeat];
+  const opponent = detail.participants.find(
+    (participant) =>
+      participant.id === opponentParticipantId ||
+      (participant.accountId === opponentAccountId && opponentAccountId !== null),
+  );
 
   return (
     <Panel className="tournaments-my-match">
@@ -61,11 +66,8 @@ export function MyMatchPanel({
         <dd>
           {match.status === "bye" ? (
             t("tournaments.myMatch.bye")
-          ) : opponentAccountId ? (
-            // Extension point: the detail payload exposes no account id on ParticipantView, so a
-            // bracket opponent cannot be resolved to a display name yet. Slice 3 replaces this
-            // with the series' participant ids, which DO join with `detail.participants`.
-            <code>{opponentAccountId}</code>
+          ) : opponent || opponentAccountId ? (
+            <span>{opponent?.displayName ?? opponentAccountId}</span>
           ) : (
             t("tournaments.myMatch.opponentUnknown")
           )}
@@ -84,7 +86,7 @@ export function MyMatchPanel({
         ) : null}
 
         <dt>{t("tournaments.myMatch.presence")}</dt>
-        <dd>{t("tournaments.myMatch.presencePending")}</dd>
+        <dd>{series ? t(matchStateKey(series.status)) : t("tournaments.myMatch.presencePending")}</dd>
 
         <dt>{t("tournaments.myMatch.score")}</dt>
         <dd>
@@ -109,9 +111,21 @@ export function MyMatchPanel({
           </span>
         </dd>
       </dl>
-      <Alert tone="info" title={t("tournaments.myMatch.pendingTitle")}>
-        {t("tournaments.myMatch.pendingBody")}
-      </Alert>
+      {onJoinGame && match.status === "pending" && series?.status !== "resolved" ? (
+        <TournamentMatchActions
+          key={match.id}
+          tournamentId={detail.id}
+          matchId={match.id}
+          seriesId={series?.seriesId ?? null}
+          onJoinGame={onJoinGame}
+          onChanged={onChanged}
+        />
+      ) : null}
+      {!detail.series ? (
+        <Alert tone="info" title={t("tournaments.myMatch.pendingTitle")}>
+          {t("tournaments.myMatch.pendingBody")}
+        </Alert>
+      ) : null}
     </Panel>
   );
 }

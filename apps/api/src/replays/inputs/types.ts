@@ -1,3 +1,4 @@
+import type { TournamentBanlistCard } from "@aegis/shared/tournaments/index";
 import type { DeckFormat, Intent, Seat } from "@aegis/shared";
 import type { ScenarioFixture } from "../../engine/scenario/types.js";
 
@@ -45,6 +46,7 @@ export interface ReplayDeck {
 
 /** The deck-legality options the room passed to `seatPlayer` with the deck. */
 export interface ReplayDeckRules {
+  banlistCards?: readonly TournamentBanlistCard[];
   betaBattleMode?: boolean;
   unlimited?: boolean;
   format?: DeckFormat;
@@ -86,6 +88,7 @@ export type ReplayRoomInput =
   | { kind: "disconnect"; seat: Seat; final: boolean }
   | { kind: "reconnect"; seat: Seat }
   | { kind: "clearReady"; seat: Seat }
+  | { kind: "expireRankedRound" }
   | { kind: "expireMatchTimer"; seat: Seat }
   /** The mulligan window ran out: the room keeps the seat's hand (`mulligan` with `keep: true`). */
   | { kind: "expireMulliganWindow"; seat: Seat }
@@ -104,7 +107,7 @@ export type ReplayRoomInput =
  *
  * Inputs without a site arrived while the engine was idle (a message, a timer between ticks).
  */
-export type ReplaySite = "bothReady" | "batchClose" | "decisionRequest" | "matchStarted" | "afterIntent";
+export type ReplaySite = "beforeTurn" | "bothReady" | "batchClose" | "decisionRequest" | "matchStarted" | "afterIntent";
 
 interface Placed {
   stateVersion: number;

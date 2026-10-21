@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
+import { TournamentMatchHistory } from "@/tournaments/TournamentMatchHistory";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { TournamentPairingControls } from "@/tournaments/TournamentPairingControls";
+import { TournamentMatchActions } from "@/tournaments/TournamentMatchActions";
 import { I18nProvider } from "../i18n";
 import { resetServerClock } from "./serverClock";
 import { TournamentDetail } from "./TournamentDetail";
@@ -32,7 +35,7 @@ const DETAIL: TournamentDetailPayload = {
   ],
   matches: [],
   participants: [
-    { id: "p-1", kind: "human", displayName: "Tamer One", status: "checked_in", seed: 1 },
+    { id: "p-1", accountId: "acc-player", kind: "human", displayName: "Tamer One", status: "checked_in", seed: 1 },
     { id: "p-2", kind: "bot", displayName: "Bot Two", status: "registered", seed: null },
   ],
 };
@@ -183,6 +186,19 @@ describe("tournament detail", () => {
     expect(screen.queryByRole("button", { name: "Save schedule" })).toBeNull();
   });
 
+  it("sends the event password with registration and explains a refusal", async () => {
+    mockDetail(
+      { status: "registration", participants: [], passwordProtected: true },
+      { "POST /tournaments/t-1/participants": { status: 409, body: { error: "incorrect_password" } } },
+    );
+    renderDetail("acc-player");
+    fireEvent.change(await screen.findByLabelText("Event password"), { target: { value: "community-secret" } });
+    fireEvent.click(screen.getByRole("button", { name: "Sign up" }));
+    expect(await screen.findByText("The event password is incorrect.")).toBeTruthy();
+    const request = vi.mocked(fetch).mock.calls.find(([, init]) => init?.method === "POST");
+    expect(JSON.parse(String(request?.[1]?.body))).toMatchObject({ password: "community-secret" });
+  });
+
   it("renders a participant failure code when registration is refused", async () => {
     mockDetail(
       { status: "registration", participants: [] },
@@ -197,7 +213,9 @@ describe("tournament detail", () => {
     // check_in with the player already checked in: nothing to register, nothing to check into.
     mockDetail({
       status: "check_in",
-      participants: [{ id: "p-1", kind: "human", displayName: "Tamer One", status: "checked_in", seed: 1 }],
+      participants: [
+        { id: "p-1", accountId: "acc-player", kind: "human", displayName: "Tamer One", status: "checked_in", seed: 1 },
+      ],
     });
     const checkedIn = renderDetail("acc-player", "Tamer One");
     await screen.findByRole("heading", { name: "Your entry" });
@@ -283,4 +301,159 @@ describe("tournament detail", () => {
     expect(within(panel).getByText("No deadline")).toBeTruthy();
     expect(within(panel).getByText("No deadline set")).toBeTruthy();
   });
+});
+
+describe("tournament match entry", () => {
+  it("confirms presence before entering the authorized next game", async () => {
+    const ticket = {
+      tournamentId: "t-1",
+      matchId: "m-1",
+      seriesId: "s-1",
+      gameId: "g-1",
+      token: "seat-token",
+      expiresAt: Date.now() + 60_000,
+    };
+    mockDetail(
+      {},
+      {
+        "POST /tournaments/t-1/matches/m-1/present": { body: {} },
+        "POST /series/s-1/authorize-game": { body: ticket },
+      },
+    );
+    const onJoinGame = vi.fn();
+    const onChanged = vi.fn();
+    const view = render(
+      <I18nProvider>
+        <TournamentMatchActions
+          tournamentId="t-1"
+          matchId="m-1"
+          seriesId={null}
+          onJoinGame={onJoinGame}
+          onChanged={onChanged}
+        />
+      </I18nProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "I am ready" }));
+    expect(await screen.findByText("Waiting for the opponent to confirm presence.")).toBeTruthy();
+    expect(onChanged).toHaveBeenCalledOnce();
+    expect(onJoinGame).not.toHaveBeenCalled();
+    view.rerender(
+      <I18nProvider>
+        <TournamentMatchActions
+          tournamentId="t-1"
+          matchId="m-1"
+          seriesId="s-1"
+          onJoinGame={onJoinGame}
+          onChanged={onChanged}
+        />
+      </I18nProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Enter game" }));
+    await waitFor(() => expect(onJoinGame).toHaveBeenCalledWith(ticket));
+  });
+});
+
+describe("organizer pairing controls", () => {
+  it("sends selected seats and retains the command id when retrying a failed request", async () => {
+    mockDetail(
+      {},
+      { "POST /tournaments/t-1/arbitration/pairings/swap": { status: 500, body: { error: "temporary_failure" } } },
+    );
+    const matches: TournamentDetailPayload["matches"] = [
+      {
+        id: "m-1",
+        round: 1,
+        position: 0,
+        player0AccountId: "a",
+        player1AccountId: "b",
+        winnerAccountId: null,
+        status: "pending",
+      },
+      {
+        id: "m-2",
+        round: 1,
+        position: 1,
+        player0AccountId: "c",
+        player1AccountId: "d",
+        winnerAccountId: null,
+        status: "pending",
+      },
+    ];
+    const onChanged = vi.fn<() => void>();
+    render(
+      <I18nProvider>
+        <TournamentPairingControls detail={{ ...DETAIL, matches }} onChanged={onChanged} />
+      </I18nProvider>,
+    );
+    fireEvent.change(screen.getByLabelText("First player"), { target: { value: "m-1:0" } });
+    fireEvent.change(screen.getByLabelText("Second player"), { target: { value: "m-2:1" } });
+    fireEvent.change(screen.getByLabelText("Reason for the change"), { target: { value: "Correct seating" } });
+    fireEvent.click(screen.getByRole("button", { name: "Swap players" }));
+    await screen.findByText(/temporary_failure/);
+    fireEvent.click(screen.getByRole("button", { name: "Swap players" }));
+    await waitFor(() =>
+      expect(vi.mocked(fetch).mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(2),
+    );
+    const bodies = vi
+      .mocked(fetch)
+      .mock.calls.filter(([, init]) => init?.method === "POST")
+      .map(([, init]) => JSON.parse(String(init?.body)));
+    expect(bodies[0]).toMatchObject({
+      firstMatchId: "m-1",
+      firstSeat: 0,
+      secondMatchId: "m-2",
+      secondSeat: 1,
+      reason: "Correct seating",
+    });
+    expect(bodies[0].commandId).toBeTruthy();
+    expect(bodies[1]).toEqual(bodies[0]);
+    expect(onChanged).not.toHaveBeenCalled();
+  });
+});
+
+it("shows the players, final score and authoritative winner, including bot seats", () => {
+  render(
+    <I18nProvider>
+      <TournamentMatchHistory
+        detail={{
+          participants: [
+            { id: "human", accountId: "account", displayName: "Alice", kind: "human", status: "active", seed: null },
+            { id: "bot", accountId: null, displayName: "Community Bot", kind: "bot", status: "active", seed: null },
+          ],
+          matches: [
+            {
+              id: "match",
+              round: 2,
+              position: 0,
+              player0AccountId: "account",
+              player1AccountId: null,
+              winnerAccountId: null,
+              status: "finished",
+            },
+          ],
+          series: [
+            {
+              matchId: "match",
+              seriesId: "series",
+              status: "resolved",
+              participantIds: ["human", "bot"],
+              winnerSeat: 1,
+              participant0Id: "account",
+              participant1Id: null,
+              wins0: 1,
+              wins1: 2,
+              currentGameIndex: null,
+              joinDeadlineAt: null,
+              seriesDeadlineAt: null,
+              winnerParticipantId: null,
+            },
+          ],
+        }}
+      />
+    </I18nProvider>,
+  );
+  expect(screen.getByText("Alice · Community Bot")).toBeTruthy();
+  expect(screen.getByText("1 - 2")).toBeTruthy();
+  expect(screen.getByText("Winner: Community Bot")).toBeTruthy();
+  expect(screen.getByText("Round 2, table 1")).toBeTruthy();
 });

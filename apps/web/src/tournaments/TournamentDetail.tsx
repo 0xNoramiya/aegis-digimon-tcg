@@ -1,18 +1,22 @@
+import { TournamentMatchHistory } from "@/tournaments/TournamentMatchHistory";
+import { deckFormatLabel } from "@/screens/deckFormatLabel";
 /* One tournament: schedule, participants, the frozen banlist, matches, standings, the player's
    own actions and — for the creator — the schedule controls. Polls every 5 s while visible. */
 
+import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
+import { TournamentPairingControls } from "@/tournaments/TournamentPairingControls";
 import { useCallback, useEffect, useState } from "react";
 import { AccountPanel } from "../account/AccountPanel";
-import { Alert, Badge, Button, Panel } from "../design/primitives";
+import { Alert, Badge, Button, Field, Panel } from "../design/primitives";
 import type { DeckListing } from "../game/decks";
 import { useTranslation } from "../i18n";
 import { banlistCardName } from "./banlistPreview";
 import { tournamentApi, type ApiError } from "./client";
-import { entryActions, ownParticipant } from "./entry";
+import { entryActions } from "./entry";
+import { ownParticipant } from "@/tournaments/ownParticipant";
 import { usePolledRequest } from "./hooks";
 import {
   banlistModeKey,
-  matchStatusKey,
   participantStatusKey,
   reasonKey,
   restrictionKey,
@@ -30,10 +34,10 @@ const DETAIL_POLL_MS = 5_000;
 export function TournamentDetail({
   id,
   accountId,
-  accountDisplayName,
   accountIsAdmin = false,
   decks,
   onBack,
+  onJoinGame,
 }: {
   id: string;
   accountId: string | undefined;
@@ -41,6 +45,7 @@ export function TournamentDetail({
   accountIsAdmin?: boolean;
   decks: readonly DeckListing[];
   onBack: () => void;
+  onJoinGame?: (ticket: TournamentGameTicket) => void;
 }) {
   const { t } = useTranslation();
   const [detail, setDetail] = useState<TournamentDetailPayload>();
@@ -48,6 +53,7 @@ export function TournamentDetail({
   const [actionError, setActionError] = useState<ApiError>();
   const [savedDeckId, setSavedDeckId] = useState(() => decks[0]?.id ?? "");
   const [busy, setBusy] = useState(false);
+  const [password, setPassword] = useState("");
 
   const load = useCallback((signal: AbortSignal) => tournamentApi.detail(id, signal), [id]);
   const apply = useCallback((result: Awaited<ReturnType<typeof tournamentApi.detail>>) => {
@@ -62,12 +68,19 @@ export function TournamentDetail({
     if (!savedDeckId && decks[0]) setSavedDeckId(decks[0].id);
   }, [decks, savedDeckId]);
 
+  useEffect(() => {
+    setPassword("");
+  }, [id]);
+
   const run = async (action: () => Promise<{ ok: boolean; error?: ApiError }>) => {
     setBusy(true);
     setActionError(undefined);
     const result = await action();
     setBusy(false);
     if (!result.ok && result.error) setActionError(result.error);
+    if (result.ok) {
+      setPassword("");
+    }
     void refresh();
   };
 
@@ -93,7 +106,7 @@ export function TournamentDetail({
   const isOrganizer = accountId !== undefined && detail.createdBy === accountId;
   // What the published state can support. The server re-decides every call; this only stops the
   // UI offering an action its own payload already rules out.
-  const own = ownParticipant(detail.participants, accountDisplayName);
+  const own = ownParticipant({ participants: detail.participants, accountId });
   const actions = entryActions(detail, own);
   const banlistLabel =
     detail.banlistPolicy.mode === "as_of_set"
@@ -107,9 +120,11 @@ export function TournamentDetail({
           {t("tournaments.back")}
         </Button>
         <h2>{detail.name}</h2>
+        {detail.description ? <p className="tournaments-description">{detail.description}</p> : null}
         <div className="tournaments-badges">
           <Badge tone="primary">{t(statusKey(detail.status))}</Badge>
           <Badge>{t(structureKey(detail.structure))}</Badge>
+          <Badge>{deckFormatLabel(detail.format ?? "standard", t)}</Badge>
           <Badge>{t("tournaments.bestOf", { count: detail.bestOf })}</Badge>
           {detail.topCutEnabled ? <Badge tone="success">{t("tournaments.badge.topCut")}</Badge> : null}
           {detail.allowBots ? <Badge tone="warning">{t("tournaments.badge.bots")}</Badge> : null}
@@ -164,11 +179,21 @@ export function TournamentDetail({
                 </span>
               ) : null}
             </div>
+            {actions.register && detail.passwordProtected ? (
+              <Field
+                label={t("tournaments.detail.password")}
+                type="password"
+                autoComplete="off"
+                maxLength={128}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            ) : null}
             <div className="tournaments-detail__actions">
               {actions.register ? (
                 <Button
                   disabled={busy || !savedDeckId}
-                  onClick={() => void run(() => tournamentApi.register(detail.id, savedDeckId))}
+                  onClick={() => void run(() => tournamentApi.register(detail.id, savedDeckId, password))}
                 >
                   {t("tournaments.detail.register")}
                 </Button>
@@ -223,7 +248,11 @@ export function TournamentDetail({
         />
       ) : null}
 
-      <MyMatchPanel detail={detail} accountId={accountId} />
+      {isOrganizer && detail.status === "running" ? (
+        <TournamentPairingControls detail={detail} onChanged={refresh} />
+      ) : null}
+
+      <MyMatchPanel detail={detail} accountId={accountId} onJoinGame={onJoinGame} onChanged={refresh} />
 
       <TopCutBracket detail={detail} />
 
@@ -272,23 +301,7 @@ export function TournamentDetail({
         )}
       </Panel>
 
-      <Panel>
-        <h3>{t("tournaments.detail.matches")}</h3>
-        {detail.matches.length === 0 ? (
-          <p>{t("tournaments.detail.noMatches")}</p>
-        ) : (
-          <ul className="tournaments-matches">
-            {detail.matches.map((match) => (
-              <li key={match.id}>
-                <span>
-                  {t("tournaments.myMatch.round")} {match.round}
-                </span>
-                <Badge>{t(matchStatusKey(match.status))}</Badge>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Panel>
+      <TournamentMatchHistory detail={detail} />
 
       <Panel>
         <h3>{t("tournaments.detail.standings")}</h3>

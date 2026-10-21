@@ -183,9 +183,20 @@ export const AEGIS_LIGHTNING_PRESET: TournamentRulesPreset = {
   standings: MANUAL_STANDINGS,
 };
 
+export const AEGIS_COMMUNITY_PRESET: TournamentRulesPreset = {
+  ...BANDAI_GENERAL_PRESET,
+  id: "aegis_community",
+  label: "Community tournament",
+  version: "aegis_community/1.0.0",
+  origin: "aegis_custom",
+  bestOfOptions: [1, 3],
+  supportsUnrestrictedBanlist: true,
+};
+
 export const TOURNAMENT_RULES_PRESETS: readonly TournamentRulesPreset[] = [
   BANDAI_GENERAL_PRESET,
   AEGIS_LIGHTNING_PRESET,
+  AEGIS_COMMUNITY_PRESET,
 ];
 
 /**

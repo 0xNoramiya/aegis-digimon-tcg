@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ParticipantView, RegistrationStatus, TournamentStatus } from "@aegis/shared";
-import { entryActions, ownParticipant } from "./entry";
+import { entryActions } from "./entry";
 import type { TournamentDetail } from "./types";
 
 function detail(
@@ -37,24 +37,6 @@ function detail(
 function human(displayName: string, status: RegistrationStatus): ParticipantView {
   return { id: `p-${displayName}-${status}`, kind: "human", displayName, status, seed: null };
 }
-
-describe("ownParticipant", () => {
-  it("finds the signed-in player's row by display name", () => {
-    const participants = [human("Tamer One", "registered"), human("Tamer Two", "checked_in")];
-    expect(ownParticipant(participants, "Tamer Two")?.status).toBe("checked_in");
-  });
-
-  it("refuses to guess when the name is missing, absent or shared", () => {
-    const shared = [human("Twin", "registered"), human("Twin", "dropped")];
-    expect(ownParticipant(shared, "Twin")).toBeUndefined();
-    expect(ownParticipant(shared, undefined)).toBeUndefined();
-    expect(ownParticipant(shared, "Nobody")).toBeUndefined();
-    // A bot with the same display name is never the signed-in human.
-    expect(
-      ownParticipant([{ id: "b", kind: "bot", displayName: "Tamer", status: "active", seed: null }], "Tamer"),
-    ).toBeUndefined();
-  });
-});
 
 describe("entryActions", () => {
   it("offers registration only while registration is open and the field has room", () => {

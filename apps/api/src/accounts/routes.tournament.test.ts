@@ -1,3 +1,4 @@
+import { RED_DECK } from "#api/engine/testDecks";
 import type { AddressInfo } from "node:net";
 import express from "express";
 import { newDb } from "pg-mem";
@@ -71,6 +72,204 @@ afterEach(async () => {
 });
 
 describe("POST /tournaments", () => {
+  it("personalizes catalog membership only for the authenticated account", async () => {
+    const me = await get("/auth/me");
+    const created = await post("/tournaments", { name: "Personal agenda", startsAt: futureStart(), maxPlayers: 8 });
+    const deck = await harness.store.saveDeck(me.body.id, {
+      name: "Red",
+      mainDeck: [...RED_DECK.mainDeck],
+      eggDeck: [...RED_DECK.eggDeck],
+    });
+    expect((await post(`/tournaments/${created.body.id}/participants`, { savedDeckId: deck.id })).status).toBe(201);
+    const listing = await get("/tournaments");
+    expect(listing.body.find((event: { id: string }) => event.id === created.body.id).myEntry).toEqual({
+      status: "registered",
+      checkInOpensAt: null,
+      checkInClosesAt: null,
+    });
+    const anonymous = await fetch(`${harness.url}/tournaments`);
+    expect(anonymous.headers.get("cache-control")).toBe("private, no-store");
+    expect((await anonymous.json())[0]).not.toHaveProperty("myEntry");
+    const outsider = await harness.store.accountForIdentity("discord", "outsider", "Outsider");
+    const session = await harness.store.issueSession(outsider);
+    const other = await fetch(`${harness.url}/tournaments?accountId=${me.body.id}`, {
+      headers: { Cookie: `aegis_session=${session.id}` },
+    });
+    expect((await other.json())[0]).not.toHaveProperty("myEntry");
+    await post(`/tournaments/${created.body.id}/check-in`, {});
+    const checked = await get("/tournaments");
+    expect(checked.body[0].myEntry.status).toBe("checked_in");
+  });
+
+  it("lists the nearest upcoming events before completed history", async () => {
+    const later = await post("/tournaments", { name: "Later", startsAt: futureStart() + 86400000, maxPlayers: 8 });
+    const sooner = await post("/tournaments", { name: "Sooner", startsAt: futureStart(), maxPlayers: 8 });
+    const past = await post("/tournaments", { name: "Past", startsAt: futureStart(), maxPlayers: 8 });
+    await harness.store.pool.query("UPDATE tournaments SET status='finished',starts_at=$1 WHERE id=$2", [
+      Date.now() - 86400000,
+      past.body.id,
+    ]);
+    const listing = await get("/tournaments");
+    expect(listing.body.map((event: { id: string }) => event.id)).toEqual([
+      sooner.body.id,
+      later.body.id,
+      past.body.id,
+    ]);
+  });
+
+  it("requires a saved deck on the legacy registration URL", async () => {
+    const created = await post("/tournaments", { name: "Deck required", startsAt: futureStart(), maxPlayers: 8 });
+    const response = await post(`/tournaments/${created.body.id}/register`, {});
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("savedDeckId is required");
+  });
+
+  it("does not seed unchecked legacy registrations through the start URL", async () => {
+    const created = await post("/tournaments", { name: "Check-in required", startsAt: futureStart(), maxPlayers: 8 });
+    for (const name of ["legacy-one", "legacy-two"]) {
+      const account = await harness.store.accountForIdentity("discord", name, name);
+      await harness.store.registerTournament(created.body.id, account.id);
+    }
+    const response = await post(`/tournaments/${created.body.id}/start`, {});
+    expect(response.status).toBe(409);
+    const detail = await get(`/tournaments/${created.body.id}`);
+    expect(detail.body.matches).toEqual([]);
+    expect(detail.body.status).not.toBe("running");
+  });
+
+  it("persists a community format with Swiss and best-of-one", async () => {
+    const created = await post("/tournaments", {
+      name: "Historical community cup",
+      startsAt: futureStart(),
+      maxPlayers: 8,
+      rulesetPreset: "aegis_community",
+      structure: "swiss",
+      bestOf: 1,
+      topCut: true,
+      format: "BT10:pauper",
+    });
+    expect(created.status).toBe(201);
+    expect(created.body.format).toBe("BT10:pauper");
+    const detail = await get(`/tournaments/${created.body.id}`);
+    expect(detail.body.format).toBe("BT10:pauper");
+  });
+
+  it("rejects an unknown deck format", async () => {
+    const response = await post("/tournaments", {
+      name: "Invalid format",
+      startsAt: futureStart(),
+      maxPlayers: 8,
+      format: "made-up",
+    });
+    expect(response.status).toBe(400);
+    expect(response.body.reasons).toContainEqual({ code: "format_invalid", field: "format" });
+  });
+
+  it("publishes password protection without exposing the secret or its hash", async () => {
+    const created = await post("/tournaments", {
+      name: "Private Cup",
+      startsAt: futureStart(),
+      maxPlayers: 8,
+      password: "community-secret",
+    });
+    expect(created.status).toBe(201);
+    expect(created.body.passwordProtected).toBe(true);
+    for (const body of [
+      created.body,
+      (await get(`/tournaments/${created.body.id}`)).body,
+      (await get("/tournaments")).body[0],
+    ]) {
+      expect(body).not.toHaveProperty("password");
+      expect(body).not.toHaveProperty("passwordHash");
+      expect(body).not.toHaveProperty("password_hash");
+      expect(JSON.stringify(body)).not.toContain("community-secret");
+    }
+    const registration = await post(`/tournaments/${created.body.id}/participants`, { savedDeckId: "unknown" });
+    expect(registration.body.error).toBe("incorrect_password");
+    const acceptedPassword = await post(`/tournaments/${created.body.id}/participants`, {
+      savedDeckId: "unknown",
+      password: "community-secret",
+    });
+    expect(acceptedPassword.body.error).toBe("deck_not_found");
+  });
+
+  it.each([null, 42, {}, "x".repeat(129)])("rejects invalid event passwords %j", async (password) => {
+    const response = await post("/tournaments", {
+      name: "Private Cup",
+      startsAt: futureStart(),
+      maxPlayers: 8,
+      password,
+    });
+    expect(response.status).toBe(400);
+    expect(response.body.reasons).toContainEqual({ code: "password_invalid", field: "password" });
+  });
+
+  it("freezes organizer clocks and identifies customized official rules", async () => {
+    const created = await post("/tournaments", {
+      name: "Community Cup",
+      startsAt: futureStart(),
+      maxPlayers: 8,
+      rulesetPreset: "bandai_general",
+      bestOf: 3,
+      clocks: { roundMinutes: 30, eliminationMinutes: 40, finalMinutes: 60, overtimeMinutes: 7 },
+    });
+    expect(created.status).toBe(201);
+    expect(created.body.rules.origin).toBe("aegis_custom");
+    expect(created.body.rules.match).toEqual({
+      winsRequired: 2,
+      swissDurationMs: 1_800_000,
+      topCutDurationMs: 2_400_000,
+      finalDurationMs: 3_600_000,
+      overtimeMs: 420_000,
+    });
+    expect((await get(`/tournaments/${created.body.id}`)).body.rules).toEqual(created.body.rules);
+  });
+
+  it.each([
+    null,
+    {},
+    [],
+    "30",
+    { roundMinutes: -1 },
+    {
+      roundMinutes: 30,
+      eliminationMinutes: 40,
+      finalMinutes: null,
+      overtimeMinutes: 61,
+    },
+  ])("rejects malformed clock settings %j", async (clocks) => {
+    const response = await post("/tournaments", {
+      name: "Community Cup",
+      startsAt: futureStart(),
+      maxPlayers: 8,
+      clocks,
+    });
+    expect(response.status).toBe(400);
+    expect(response.body.reasons).toContainEqual({ code: "clock_settings_invalid", field: "clocks" });
+  });
+
+  it("persists the normalized public description in the catalog and detail", async () => {
+    const created = await post("/tournaments", {
+      name: "Community Cup",
+      description: "  Weekly community event\nAll players welcome.  ",
+      startsAt: futureStart(),
+      maxPlayers: 8,
+    });
+    expect(created.status).toBe(201);
+    const description = "Weekly community event\nAll players welcome.";
+    expect(created.body.description).toBe(description);
+    expect((await get(`/tournaments/${created.body.id}`)).body.description).toBe(description);
+    expect((await get("/tournaments")).body[0].description).toBe(description);
+  });
+
+  it("rejects oversized or non-text descriptions", async () => {
+    const input = { name: "Community Cup", startsAt: futureStart(), maxPlayers: 8 };
+    const oversized = await post("/tournaments", { ...input, description: "x".repeat(1001) });
+    expect(oversized.status).toBe(400);
+    expect(oversized.body.reasons).toContainEqual({ code: "description_too_long", field: "description" });
+    expect((await post("/tournaments", { ...input, description: 42 })).status).toBe(400);
+  });
+
   it("still accepts the pre-program payload and creates a legacy lightning bracket", async () => {
     const created = await post("/tournaments", {
       name: "Legacy Cup",
@@ -184,7 +383,7 @@ describe("POST /tournaments", () => {
     expect(response.status).toBe(401);
   });
 
-  it("rejects an authenticated non-admin", async () => {
+  it("allows an authenticated community organizer", async () => {
     const account = await harness.store.accountForIdentity("discord", "player", "Player");
     const session = await harness.store.issueSession(account);
     const response = await fetch(`${harness.url}/tournaments`, {
@@ -192,8 +391,8 @@ describe("POST /tournaments", () => {
       headers: { "Content-Type": "application/json", Cookie: `aegis_session=${session.id}` },
       body: JSON.stringify({ name: "Player Cup", startsAt: futureStart(), maxPlayers: 8 }),
     });
-    expect(response.status).toBe(403);
-    expect(await response.json()).toEqual({ error: "admin_required" });
+    expect(response.status).toBe(201);
+    expect(await response.json()).toMatchObject({ name: "Player Cup", createdBy: account.id });
   });
 });
 

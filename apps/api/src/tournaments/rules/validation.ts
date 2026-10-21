@@ -1,3 +1,5 @@
+import { isDeckFormat } from "@aegis/shared/deckFormat";
+import { isTournamentClockSettings } from "@aegis/shared/tournaments/isTournamentClockSettings";
 import type { BanlistPolicy, CreateTournamentInput, TournamentBanlistCard, TournamentRules } from "@aegis/shared";
 import { banlistDateForSet, normalizeBanlistPolicy, resolveBanlistPolicy } from "./banlistPolicy.js";
 import { findPreset, rulesSnapshot, type BestOf, type TournamentRulesPreset } from "./presets.js";
@@ -10,6 +12,10 @@ import { findPreset, rulesSnapshot, type BestOf, type TournamentRulesPreset } fr
 export type TournamentValidationCode =
   | "name_too_short"
   | "name_too_long"
+  | "description_too_long"
+  | "clock_settings_invalid"
+  | "password_invalid"
+  | "format_invalid"
   | "unknown_preset"
   | "structure_not_allowed_by_preset"
   | "best_of_not_allowed_by_preset"
@@ -58,7 +64,20 @@ export const STARTS_AT_PAST_TOLERANCE_MS = 5 * 60_000;
  */
 export function validateCreateTournament(input: CreateTournamentInput, createdAt: number): ValidationResult {
   const errors: TournamentValidationError[] = [];
+  if (input.format !== undefined && !isDeckFormat(input.format)) {
+    errors.push({ code: "format_invalid", field: "format" });
+  }
+  if (input.password !== undefined && (typeof input.password !== "string" || input.password.length > 128)) {
+    errors.push({ code: "password_invalid", field: "password" });
+  }
+  if (input.clocks !== undefined && !isTournamentClockSettings(input.clocks)) {
+    errors.push({ code: "clock_settings_invalid", field: "clocks" });
+  }
   const name = input.name.trim();
+  const description = input.description?.trim() ?? "";
+  if (description.length > 1000) {
+    errors.push({ code: "description_too_long", field: "description" });
+  }
   if (name.length < MIN_TOURNAMENT_NAME_LENGTH) errors.push({ code: "name_too_short", field: "name" });
   if (name.length > MAX_TOURNAMENT_NAME_LENGTH) errors.push({ code: "name_too_long", field: "name" });
 
@@ -103,12 +122,21 @@ export function validateCreateTournament(input: CreateTournamentInput, createdAt
 
   if (errors.length > 0) return { ok: false, errors };
   const banlist = normalizeBanlistPolicy(input.banlist);
+  const rules = rulesSnapshot(preset, input.bestOf as BestOf);
+  if (input.clocks) {
+    rules.origin = "aegis_custom";
+    rules.version = `${rules.version}/custom-clocks/1`;
+    rules.match.swissDurationMs = input.clocks.roundMinutes * 60_000;
+    rules.match.topCutDurationMs = input.clocks.eliminationMinutes * 60_000;
+    rules.match.finalDurationMs = input.clocks.finalMinutes === null ? null : input.clocks.finalMinutes * 60_000;
+    rules.match.overtimeMs = input.clocks.overtimeMinutes * 60_000;
+  }
   return {
     ok: true,
     value: {
-      input: { ...input, name, banlist },
+      input: { ...input, name, description, banlist },
       preset,
-      rules: rulesSnapshot(preset, input.bestOf as BestOf),
+      rules,
       banlistCards: resolveBanlistPolicy(banlist, createdAt),
     },
   };

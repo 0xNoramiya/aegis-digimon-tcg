@@ -52,9 +52,12 @@ describe("application routes", () => {
     expect(pathForRoute({ screen: "myFeedback" })).toBe("/feedback");
   });
 
-  it("rejects unknown paths, tournaments included while the feature is hidden", () => {
+  it("rejects unknown paths", () => {
     expect(routeFromPathname("/unknown")).toBeUndefined();
     expect(routeFromPathname("/feedback/abc")).toBeUndefined();
-    expect(routeFromPathname("/tournaments")).toBeUndefined();
+    expect(routeFromPathname("/tournaments")).toEqual({ screen: "tournaments", tournament: { kind: "catalog" } });
+    expect(routeFromPathname("/tournaments/new")).toEqual({ screen: "tournaments", tournament: { kind: "create" } });
+    const route = { screen: "tournaments", tournament: { kind: "detail", id: "community-cup" } } as const;
+    expect(routeFromPathname(pathForRoute(route))).toEqual(route);
   });
 });

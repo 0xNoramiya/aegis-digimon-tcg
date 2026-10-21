@@ -1,3 +1,5 @@
+import type { DeckFormat } from "@aegis/shared/deckFormat";
+import { verifyTournamentPassword } from "#api/tournaments/access/verifyTournamentPassword";
 import { createHash, randomUUID } from "node:crypto";
 import type { ParticipantKind, ParticipantView, RegistrationStatus, TournamentBanlistCard } from "@aegis/shared";
 import type { PoolClient } from "pg";
@@ -49,7 +51,8 @@ export type ParticipantFailure =
   | "check_in_not_open"
   | "check_in_closed"
   | "already_checked_in"
-  | "already_dropped";
+  | "already_dropped"
+  | "incorrect_password";
 
 export type ParticipantResult<T> =
   | { ok: true; value: T }
@@ -232,13 +235,14 @@ export class ParticipantStore {
     tournamentId: string;
     accountId: string;
     savedDeckId: string;
+    password?: unknown;
     now?: number;
   }): Promise<ParticipantResult<ParticipantRecord>> {
     const now = input.now ?? Date.now();
     return this.mutate(input.tournamentId, async (client) => {
       const tournament = (
         await client.query<TournamentRow>(
-          "SELECT id, status, max_players, registration_closes_at FROM tournaments WHERE id=$1 FOR UPDATE",
+          "SELECT id, status, max_players, registration_closes_at, password_hash, format FROM tournaments WHERE id=$1 FOR UPDATE",
           [input.tournamentId],
         )
       ).rows[0];
@@ -250,6 +254,9 @@ export class ParticipantStore {
       if (tournament.registration_closes_at !== null && now > Number(tournament.registration_closes_at))
         return { ok: false, reason: "registration_closed" } as const;
 
+      if (!(await verifyTournamentPassword({ password: input.password, passwordHash: tournament.password_hash }))) {
+        return { ok: false, reason: "incorrect_password" } as const;
+      }
       const existing = await this.lockParticipant(client, input.tournamentId, input.accountId);
       // A disqualification is a ruling, not a withdrawal: re-entering under the same account would
       // undo it, so it is refused even while registration is open.
@@ -258,7 +265,11 @@ export class ParticipantStore {
 
       const deck = await this.savedDeck(client, input.accountId, input.savedDeckId);
       if (!deck) return { ok: false, reason: "deck_not_found" } as const;
-      const legality = validateCompetitiveDeck(deck, await this.readBanlist(client, input.tournamentId));
+      const legality = validateCompetitiveDeck(
+        deck,
+        await this.readBanlist(client, input.tournamentId),
+        tournament.format,
+      );
       if (!legality.legal) return { ok: false, reason: "deck_illegal", violations: legality.violations } as const;
 
       if ((await this.occupiedSlots(client, input.tournamentId)) >= Number(tournament.max_players))
@@ -358,7 +369,7 @@ export class ParticipantStore {
     return this.mutate(input.tournamentId, async (client) => {
       const tournament = (
         await client.query<TournamentRow>(
-          "SELECT id, status, check_in_opens_at, check_in_closes_at FROM tournaments WHERE id=$1 FOR UPDATE",
+          "SELECT id, status, check_in_opens_at, check_in_closes_at, format FROM tournaments WHERE id=$1 FOR UPDATE",
           [input.tournamentId],
         )
       ).rows[0];
@@ -382,7 +393,7 @@ export class ParticipantStore {
         const updated =
           participant.status === "registered"
             ? await this.dropNoShow(client, participant, now)
-            : await this.freezeDeck(client, participant, banlist, now);
+            : await this.freezeDeck(client, participant, banlist, now, tournament.format);
         if (updated) frozen.push(updated);
       }
       return { ok: true, value: frozen } as const;
@@ -406,6 +417,7 @@ export class ParticipantStore {
     participant: ParticipantRecord,
     banlist: readonly TournamentBanlistCard[],
     now: number,
+    format: DeckFormat,
   ): Promise<ParticipantRecord | undefined> {
     const deck = participant.accountId
       ? await this.savedDeck(client, participant.accountId, participant.savedDeckId)
@@ -426,7 +438,7 @@ export class ParticipantStore {
       eggDeckArts: deck.eggDeckArts?.slice(),
       revision: deck.revision,
     };
-    const legal = validateCompetitiveDeck(snapshot, banlist).legal;
+    const legal = validateCompetitiveDeck(snapshot, banlist, format).legal;
     const updated = await client.query(
       `UPDATE tournament_participants
          SET status=$1, deck_snapshot=$2, deck_version=$3, dropped_at=$4
@@ -693,6 +705,8 @@ type ParticipantRow = {
 };
 
 type TournamentRow = {
+  format: DeckFormat;
+  password_hash: string | null;
   id: string;
   status: string;
   max_players: string | number;

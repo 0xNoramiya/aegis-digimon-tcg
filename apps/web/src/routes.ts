@@ -15,6 +15,7 @@ export interface AppRoute {
   feedbackId?: number;
   roadmapItemId?: number;
   matchSettings?: boolean;
+  rankedQueue?: boolean;
 }
 
 export const SCREEN_PATHS: Record<Screen, string> = {
@@ -30,6 +31,7 @@ export const SCREEN_PATHS: Record<Screen, string> = {
   community: "/community",
   roadmap: "/roadmap",
   tournaments: "/tournaments",
+  ranked: "/ranked",
   settings: "/settings",
   releases: "/whats-new",
   replays: "/replays",
@@ -48,12 +50,24 @@ export function routeFromPathname(pathname: string): AppRoute | undefined {
   if (normalized === "/") return { screen: "home" };
   if (normalized === "/login") return { screen: "login" };
   if (normalized === "/play/story") return { screen: "story" };
+  if (normalized === "/ranked") return { screen: "ranked" };
+  if (normalized === "/play/ranked") return { screen: "lobby", rankedQueue: true, matchSettings: true };
   if (normalized === "/play") return { screen: "lobby" };
   if (normalized === "/play/game") return { screen: "game" };
   if (normalized === "/play/watch") return { screen: "watch" };
   if (normalized === "/decks") return { screen: "deck" };
   if (normalized === "/collection") return { screen: "collection" };
   if (normalized === "/community") return { screen: "community" };
+  if (normalized === "/tournaments") {
+    return { screen: "tournaments", tournament: { kind: "catalog" } };
+  }
+  if (normalized === "/tournaments/new") {
+    return { screen: "tournaments", tournament: { kind: "create" } };
+  }
+  const tournamentId = /^\/tournaments\/([^/]+)$/.exec(normalized)?.[1];
+  if (tournamentId) {
+    return { screen: "tournaments", tournament: { kind: "detail", id: safeDecode(tournamentId) } };
+  }
   if (normalized === "/roadmap") return { screen: "roadmap" };
   const roadmapItem = /^\/roadmap\/(\d{1,9})$/.exec(normalized)?.[1];
   if (roadmapItem) return { screen: "roadmap", roadmapItemId: Number(roadmapItem) };
@@ -71,6 +85,7 @@ export function routeFromPathname(pathname: string): AppRoute | undefined {
 }
 
 export function pathForRoute(route: AppRoute): string {
+  if (route.screen === "lobby" && route.rankedQueue) return "/play/ranked";
   if (route.screen === "settings" && route.profile) return "/profile";
   if (route.screen === "replays") return route.replayId ? `/replays/${encodeURIComponent(route.replayId)}` : "/profile";
   if (route.screen === "community" && route.communityDeckId)

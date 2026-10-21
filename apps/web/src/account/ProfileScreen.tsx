@@ -1,3 +1,4 @@
+import { RankedProfileFrame } from "@/ranked/RankedProfileFrame";
 import { useCallback, useEffect, useState } from "react";
 import type { MatchHistorySummary, MatchWinRate } from "@aegis/shared";
 import type { PlayerIdentity } from "../design/primitives";
@@ -67,16 +68,19 @@ export function ProfileScreen({
         <span>AEGIS / {t("profile.title")}</span>
         <h1>{t("profile.title")}</h1>
       </header>
-      <ProfileIdentity
-        key={account?.id ?? "guest"}
-        account={account}
-        player={player}
-        summary={summary}
-        rate={rate?.accountId === account?.id ? rate?.counts : undefined}
-        onAccountChange={onAccountChange}
-        onGuestChange={onGuestChange}
-        onRefreshDiscordAvatar={onRefreshDiscordAvatar}
-      />
+      <RankedProfileFrame key={account?.id ?? "guest"} accountId={account?.id}>
+        <ProfileIdentity
+          key={account?.id ?? "guest"}
+          account={account}
+          player={player}
+          summary={summary}
+          rate={rate?.accountId === account?.id ? rate?.counts : undefined}
+          onAccountChange={onAccountChange}
+          onGuestChange={onGuestChange}
+          onRefreshDiscordAvatar={onRefreshDiscordAvatar}
+        />
+      </RankedProfileFrame>
+      <a href="/ranked">{t("ranked.season.title")}</a>
       {account === undefined ? (
         <p role="status">{t("account.loading")}</p>
       ) : account ? (
