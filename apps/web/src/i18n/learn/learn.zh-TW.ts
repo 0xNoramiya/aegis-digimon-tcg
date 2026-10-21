@@ -8,7 +8,7 @@ export const learnZhTW = {
   "learn.startLesson": "開始第 {number} 課",
   "learn.replayLessons": "重新遊玩課程",
   "learn.readRules": "閱讀玩法說明",
-  "learn.progress": "基礎：已完成 {completed} / {total} 課",
+  "learn.progress": "已完成 {completed} / {total} 課",
   "learn.guestNote": "你正以訪客身份遊玩。進度只會保存在此瀏覽器中。登入後可在所有裝置上保留進度。",
   "learn.lessonsHeading": "課程",
   "learn.lessonNumber": "第 {number} 課",

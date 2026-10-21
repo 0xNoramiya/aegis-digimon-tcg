@@ -15,6 +15,8 @@ import { useLessonProgress } from "@/learn/useLessonProgress";
 import type { RulesChapterId } from "@/learn/rules/rulesChapters";
 import "@/learn/learn.css";
 
+const catalogLessonIds = [...new Set(lessonGroups.flatMap((group) => group.lessons.map((lesson) => lesson.id)))];
+
 type Params = {
   signedIn: boolean;
   onSignIn: () => void;
@@ -48,11 +50,11 @@ export function LearnScreen({ signedIn, onSignIn, onStartLesson, onOpenRules }: 
   const progress = useLessonProgress({ signedIn });
   const [briefingLesson, setBriefingLesson] = useState<TutorialLesson>();
   const completed = progress.completed ?? [];
-  const completedCount = tutorialLessons.filter((lesson) => completed.includes(lesson.id)).length;
+  const completedCount = catalogLessonIds.filter((lessonId) => completed.includes(lessonId)).length;
   const nextLesson = getNextTutorialLesson({ completed });
   const heroLesson = nextLesson ?? tutorialLessons[0];
   const openBriefing = (lessonId: string) => setBriefingLesson(findTutorialLesson(lessonId));
-  const progressLabel = t("learn.progress", { completed: completedCount, total: tutorialLessons.length });
+  const progressLabel = t("learn.progress", { completed: completedCount, total: catalogLessonIds.length });
 
   return (
     <main className="learn-page">
@@ -82,10 +84,8 @@ export function LearnScreen({ signedIn, onSignIn, onStartLesson, onOpenRules }: 
             </a>
           </div>
           <div className="learn-progress" role="group" aria-label={progressLabel}>
-            <div className="learn-progress__segments" aria-hidden="true">
-              {tutorialLessons.map((lesson) => (
-                <span key={lesson.id} data-done={completed.includes(lesson.id) || undefined} />
-              ))}
+            <div className="learn-progress__bar" aria-hidden="true">
+              <span style={{ width: `${(completedCount / catalogLessonIds.length) * 100}%` }} />
             </div>
             <span>{progressLabel}</span>
           </div>

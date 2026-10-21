@@ -8,7 +8,7 @@ export const learnJa = {
   "learn.startLesson": "レッスン{number}を始める",
   "learn.replayLessons": "レッスンをもう一度プレイ",
   "learn.readRules": "遊び方を読む",
-  "learn.progress": "基本：{total}レッスン中{completed}レッスン完了",
+  "learn.progress": "{total}レッスン中{completed}レッスン完了",
   "learn.guestNote":
     "ゲストとしてプレイ中です。進行状況はこのブラウザに保存されます。サインインすると、どのデバイスでも引き継げます。",
   "learn.lessonsHeading": "レッスン",

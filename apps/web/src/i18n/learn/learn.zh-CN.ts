@@ -8,7 +8,7 @@ export const learnZhCN = {
   "learn.startLesson": "开始第 {number} 课",
   "learn.replayLessons": "重新游玩课程",
   "learn.readRules": "阅读玩法说明",
-  "learn.progress": "基础：已完成 {completed} / {total} 课",
+  "learn.progress": "已完成 {completed} / {total} 课",
   "learn.guestNote": "你正以游客身份游玩。进度只保存在此浏览器中。登录后可在所有设备上保留进度。",
   "learn.lessonsHeading": "课程",
   "learn.lessonNumber": "第 {number} 课",

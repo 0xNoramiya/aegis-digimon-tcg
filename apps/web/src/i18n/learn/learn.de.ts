@@ -8,7 +8,7 @@ export const learnDe = {
   "learn.startLesson": "Lektion {number} starten",
   "learn.replayLessons": "Lektionen erneut spielen",
   "learn.readRules": "Spielanleitung lesen",
-  "learn.progress": "Grundlagen: {completed} von {total} Lektionen abgeschlossen",
+  "learn.progress": "{completed} von {total} Lektionen abgeschlossen",
   "learn.guestNote":
     "Sie spielen als Gast. Ihr Fortschritt bleibt in diesem Browser. Melden Sie sich an, um ihn auf jedem Gerät zu behalten.",
   "learn.lessonsHeading": "Lektionen",

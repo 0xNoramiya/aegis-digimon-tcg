@@ -8,7 +8,7 @@ export const learnPtBR = {
   "learn.startLesson": "Começar a lição {number}",
   "learn.replayLessons": "Jogar as lições de novo",
   "learn.readRules": "Ler Como jogar",
-  "learn.progress": "Básico: {completed} de {total} lições concluídas",
+  "learn.progress": "{completed} de {total} lições concluídas",
   "learn.guestNote":
     "Você está jogando como convidado. Seu progresso fica neste navegador. Entre para mantê-lo em todos os aparelhos.",
   "learn.lessonsHeading": "Lições",

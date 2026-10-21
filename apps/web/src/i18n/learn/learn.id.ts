@@ -8,7 +8,7 @@ export const learnId = {
   "learn.startLesson": "Mulai pelajaran {number}",
   "learn.replayLessons": "Mainkan pelajaran lagi",
   "learn.readRules": "Baca Cara Bermain",
-  "learn.progress": "Dasar: {completed} dari {total} pelajaran selesai",
+  "learn.progress": "{completed} dari {total} pelajaran selesai",
   "learn.guestNote":
     "Anda bermain sebagai tamu. Progres Anda tersimpan di browser ini. Masuk untuk menyimpannya di semua perangkat.",
   "learn.lessonsHeading": "Pelajaran",

@@ -5,7 +5,7 @@ export const learnEn = {
   "learn.startLesson": "Start lesson {number}",
   "learn.replayLessons": "Play the lessons again",
   "learn.readRules": "Read How to Play",
-  "learn.progress": "Basics: {completed} of {total} lessons done",
+  "learn.progress": "{completed} of {total} lessons done",
   "learn.guestNote": "Playing as a guest. Your progress stays in this browser. Sign in to keep it on every device.",
   "learn.lessonsHeading": "Lessons",
   "learn.lessonNumber": "Lesson {number}",

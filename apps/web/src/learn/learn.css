@@ -56,22 +56,20 @@
   font-variant-numeric: tabular-nums;
 }
 
-.learn-progress__segments {
-  display: flex;
-  gap: var(--ds-space-1);
-}
-
-.learn-progress__segments span {
-  width: 28px;
+.learn-progress__bar {
+  flex: 0 1 14rem;
   height: 8px;
-  border-radius: var(--ds-radius-sm);
+  overflow: hidden;
+  border-radius: var(--ds-radius-pill);
   background: var(--ds-fill);
   box-shadow: inset 0 0 0 1px var(--ds-line);
 }
 
-.learn-progress__segments span[data-done] {
+.learn-progress__bar span {
+  display: block;
+  height: 100%;
   background: var(--ds-accent);
-  box-shadow: none;
+  transition: width var(--ds-motion-fast);
 }
 
 .learn-notice {

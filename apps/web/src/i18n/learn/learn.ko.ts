@@ -8,7 +8,7 @@ export const learnKo = {
   "learn.startLesson": "레슨 {number} 시작",
   "learn.replayLessons": "레슨 다시 플레이",
   "learn.readRules": "플레이 방법 읽기",
-  "learn.progress": "기본: 레슨 {total}개 중 {completed}개 완료",
+  "learn.progress": "레슨 {total}개 중 {completed}개 완료",
   "learn.guestNote":
     "게스트로 플레이 중입니다. 진행 상황은 이 브라우저에 저장됩니다. 로그인하면 모든 기기에서 유지됩니다.",
   "learn.lessonsHeading": "레슨",
