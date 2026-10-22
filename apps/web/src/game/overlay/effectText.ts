@@ -407,6 +407,13 @@ export function playerFacingEffectClause({
       )
     : [];
   const conditionPrintedClause = conditionMatches.length === 1 ? conditionMatches[0] : undefined;
+  const fragmentMatches =
+    supplied && !/^(?:\[|＜)/.test(supplied)
+      ? boxes
+          .flatMap((text) => effectClausesForTiming(text, effectiveTiming))
+          .filter((candidate) => normalize(candidate).includes(normalize(supplied)))
+      : [];
+  const fragmentPrintedClause = fragmentMatches.length === 1 ? fragmentMatches[0] : undefined;
   // A full card text can start with a keyword preamble (e.g. Use Req.).
   // Keyword activations are standalone or followed by explanatory prose.
   const keywordPrefix = supplied?.match(/^＜[^＞]+＞/)?.[0];
@@ -441,6 +448,7 @@ export function playerFacingEffectClause({
       keywordActivation ||
       matchingKeyword ||
       delayClause ||
+      fragmentPrintedClause ||
       ((exactPrintedClause || containedPrintedClause || conditionPrintedClause) &&
         effectClauseForTiming(
           exactPrintedClause || containedPrintedClause || conditionPrintedClause,
