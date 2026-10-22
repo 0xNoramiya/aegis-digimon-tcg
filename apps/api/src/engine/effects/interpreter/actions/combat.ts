@@ -136,7 +136,7 @@ export async function runCombatAction(ctx: EffectContext, action: Action, scope:
           byEffectCardId: ctx.source.cardId,
         });
       };
-      if (action.drainTimingWindowDuringAttack && ctx.fx.isAttackResolving?.()) {
+      if (ctx.fx.isAttackResolving?.() === true) {
         await fireDeferredSuspensionTriggers();
         return false;
       }

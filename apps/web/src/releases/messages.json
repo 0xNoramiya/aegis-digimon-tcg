@@ -1,4 +1,52 @@
 {
+  "releases.1.37.1-beta.summary": {
+    "en": "Card timing and targeting fixes, face-down card protections, corrected card colors and scans, and clearer board cards.",
+    "pt-BR": "Correções de timing e seleção de cartas, proteção de cartas viradas para baixo, cores e imagens corrigidas e cartas mais claras na mesa.",
+    "es": "Correcciones de timing y selección de cartas, protección de cartas boca abajo, colores e imágenes corregidos y cartas más claras en el campo.",
+    "it": "Correzioni a tempi e selezione delle carte, protezione delle carte coperte, colori e immagini corretti e carte più chiare sul campo."
+  },
+  "releases.1.37.1-beta.feature.boardCards": {
+    "en": "Board cards show less text over the artwork. Form, attribute and type remain available in the card inspector.",
+    "pt-BR": "As cartas na mesa mostram menos texto sobre a arte. Forma, atributo e tipo continuam disponíveis nos detalhes da carta.",
+    "es": "Las cartas en el campo muestran menos texto sobre la ilustración. La forma, el atributo y el tipo siguen disponibles en los detalles de la carta.",
+    "it": "Le carte sul campo mostrano meno testo sulle illustrazioni. Forma, attributo e tipo restano disponibili nei dettagli della carta."
+  },
+  "releases.1.37.1-beta.fix.dynasmon": {
+    "en": "Dynasmon EX13-037 now resolves its security-removal reaction in the correct order, allowing its -12000 DP effect before opposing reactions remove its effect.",
+    "pt-BR": "Dynasmon EX13-037 agora resolve sua reação à remoção de segurança na ordem correta, permitindo aplicar -12000 DP antes que reações adversárias removam seu efeito.",
+    "es": "Dynasmon EX13-037 ahora resuelve su reacción a la retirada de seguridad en el orden correcto, permitiendo aplicar -12000 DP antes de que las reacciones rivales eliminen su efecto.",
+    "it": "Dynasmon EX13-037 ora risolve la reazione alla rimozione della sicurezza nell’ordine corretto, consentendo di applicare -12000 DP prima che le reazioni avversarie rimuovano il suo effetto."
+  },
+  "releases.1.37.1-beta.fix.costReactions": {
+    "en": "Security-removal reactions during Apocalymon play costs now share the correct timing window with On Play effects, including Ouryumon reactions.",
+    "pt-BR": "Reações à remoção de segurança durante custos de entrada de Apocalymon agora compartilham a janela correta com efeitos de entrada, incluindo as reações de Ouryumon.",
+    "es": "Las reacciones a la retirada de seguridad durante los costes de entrada de Apocalymon ahora comparten la ventana correcta con los efectos de entrada, incluidas las reacciones de Ouryumon.",
+    "it": "Le reazioni alla rimozione della sicurezza durante i costi di entrata di Apocalymon ora condividono la finestra corretta con gli effetti di entrata, comprese le reazioni di Ouryumon."
+  },
+  "releases.1.37.1-beta.fix.faceDown": {
+    "en": "Face-down cards under Digimon or Tamers can no longer be played by effects that require card information.",
+    "pt-BR": "Cartas viradas para baixo sob Digimon ou Tamers não podem mais ser jogadas por efeitos que exigem informações da carta.",
+    "es": "Las cartas boca abajo bajo Digimon o Tamers ya no pueden jugarse mediante efectos que requieren información de la carta.",
+    "it": "Le carte coperte sotto Digimon o Tamer non possono più essere giocate da effetti che richiedono informazioni sulla carta."
+  },
+  "releases.1.37.1-beta.fix.nestedAttack": {
+    "en": "Optional attack effects no longer ask for an attacker while another attack is already resolving. Following effect clauses still resolve.",
+    "pt-BR": "Efeitos de ataque opcionais não pedem mais um atacante enquanto outro ataque está sendo resolvido. As cláusulas seguintes do efeito continuam resolvendo.",
+    "es": "Los efectos de ataque opcionales ya no piden un atacante mientras se resuelve otro ataque. Las cláusulas siguientes del efecto siguen resolviéndose.",
+    "it": "Gli effetti di attacco opzionali non chiedono più un attaccante mentre è già in corso un altro attacco. Le clausole successive dell’effetto continuano a risolversi."
+  },
+  "releases.1.37.1-beta.fix.surtr": {
+    "en": "Surtr Brander BT27-099 now correctly counts as a yellow Option card.",
+    "pt-BR": "Surtr Brander BT27-099 agora é corretamente considerada uma Option amarela.",
+    "es": "Surtr Brander BT27-099 ahora se considera correctamente una Option amarilla.",
+    "it": "Surtr Brander BT27-099 ora è correttamente considerata una carta Opzione gialla."
+  },
+  "releases.1.37.1-beta.fix.scans": {
+    "en": "Removed white margins from four card scans and fixed sample-image refreshes when local scans change.",
+    "pt-BR": "Removidas margens brancas de quatro imagens de cartas e corrigida a atualização de imagens de amostra quando as imagens locais mudam.",
+    "es": "Se eliminaron los márgenes blancos de cuatro imágenes de cartas y se corrigió la actualización de imágenes de muestra cuando cambian las imágenes locales.",
+    "it": "Rimossi i margini bianchi da quattro immagini di carte e corretto l’aggiornamento delle immagini di anteprima quando cambiano le immagini locali."
+  },
   "releases.1.37.0-beta.summary": {
     "en": "A new Learn area, deck switching for a new best-of-three, card confirmation modes, deck review requests, two new BT27 cards, and fixes for card rules, security checks, story decks, target prompts, and card zoom.",
     "pt-BR": "Uma nova área Aprender, troca de deck em uma nova melhor de três, modos de confirmação de cartas, pedidos de revisão de deck, duas novas cartas BT27 e correções em regras de cartas, checagens de segurança, decks do modo história, seleção de alvos e zoom de cartas.",
