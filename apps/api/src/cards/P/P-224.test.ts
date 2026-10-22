@@ -147,6 +147,27 @@ describe("P-224 engine behavior", () => {
     },
   );
 
+  it.each([0, 1] as const)("plays Shoutmon EX6 from its own stack with one memory for seat %s", async (seat) => {
+    const s = setupEngine(
+      { [seat]: { battleArea: [{ card: "P-224", as: "kotone", under: [{ card: "BT19-014", as: "ex6" }] }] } },
+      { autoAcceptOptional: true, autoSelectCards: true, declineDigiXros: true },
+    );
+    s.state.turnSeat = seat;
+    s.state.memory = 1;
+    await s.ready();
+    const effect = observe(s.engine).activatableEffects(s.perm("kotone"))[0]!;
+    expect(
+      s.engine.applyIntent(seat, {
+        type: "activateEffect",
+        sourceInstanceId: s.inst("kotone").instanceId,
+        effectKey: effect.effectKey,
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.state.players[seat]!.battleArea.some((p) => p.topCard.instanceId === s.inst("ex6").instanceId)).toBe(true);
+    expect(s.state.memory).toBe(-9);
+  });
+
   it("plays itself from Security through its Security effect", async () => {
     const s = setupEngine({
       0: { security: [{ card: "P-224", as: "kotone" }] },
