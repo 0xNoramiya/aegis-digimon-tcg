@@ -355,6 +355,7 @@ export async function consultLeavePrevention(
         : [leavingId];
       opts.reentryGuard.activeReplacementKeys.add(activationKey);
       let did: boolean;
+      let markedAtActivation = false;
       try {
         // Keep the public target visible while a nested prevention prompt is open. The
         // original target decision may belong to the opponent and is intentionally
@@ -365,7 +366,10 @@ export async function consultLeavePrevention(
               ...ctx,
               affectedPermanentIds: protectedIds,
               onActivationChosen: () => {
-                if (repl.oncePerTurnKey !== undefined) host.markOncePerTurnFired?.(repl.oncePerTurnKey);
+                if (!markedAtActivation && repl.oncePerTurnKey !== undefined) {
+                  host.markOncePerTurnFired?.(repl.oncePerTurnKey);
+                  markedAtActivation = true;
+                }
               },
             },
             leavingId,
@@ -393,7 +397,9 @@ export async function consultLeavePrevention(
           prevented.add(simultaneousId);
         }
       }
-      if (repl.oncePerTurnKey !== undefined) host.markOncePerTurnFired?.(repl.oncePerTurnKey);
+      if (!markedAtActivation && repl.oncePerTurnKey !== undefined) {
+        host.markOncePerTurnFired?.(repl.oncePerTurnKey);
+      }
     }
   }
   return prevented;

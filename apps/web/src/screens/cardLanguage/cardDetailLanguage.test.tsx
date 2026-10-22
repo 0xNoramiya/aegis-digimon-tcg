@@ -66,6 +66,25 @@ it("translates the default face's headings, name and main effect in Chinese", as
 });
 
 it.each([
+  ["en", "Option effect", "Trash 1 card in your hand", "De-Digivolve 3"],
+  ["zh-CN", "选项卡效果", "丢弃我方的1张手牌", "退化3"],
+])("shows the DUAL Option effect in the %s detail drawer", async (locale, title, cost, effect) => {
+  localStorage.setItem("aegis:locale", locale);
+  render(
+    <I18nProvider>
+      <CardDetailDrawer cardId="BT26-056" onClose={() => undefined} />
+    </I18nProvider>,
+  );
+
+  const heading = await screen.findByText(title, { selector: ".card-detail-effect__title" });
+  await waitFor(() => {
+    expect(heading.parentElement?.textContent).toContain(cost);
+    expect(heading.parentElement?.textContent).toContain(effect);
+  });
+  expect(screen.getByRole("dialog").querySelectorAll(".card-detail-effect").length).toBeGreaterThan(1);
+});
+
+it.each([
   ["BT1-010-J", "ja"],
   ["BT1-010-K", "ko"],
   ["BT1-010-C", "zh-CN"],
