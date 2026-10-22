@@ -1,4 +1,28 @@
 {
+  "releases.1.38.1-beta.summary": {
+    "en": "Fixes for Biomon link effects and opponent card sleeves, plus faster game-state lookups.",
+    "pt-BR": "Correções nos efeitos de link de Biomon e nos sleeves das cartas do oponente, além de consultas mais rápidas ao estado do jogo.",
+    "es": "Correcciones en los efectos de enlace de Biomon y las fundas de las cartas del rival, además de consultas más rápidas al estado del juego.",
+    "it": "Correzioni agli effetti di collegamento di Biomon e alle bustine delle carte avversarie, oltre a ricerche più rapide nello stato di gioco."
+  },
+  "releases.1.38.1-beta.fix.biomon": {
+    "en": "Biomon BT24-038 only applies its -7000 DP effect when it receives a link, rather than when another Digimon receives one.",
+    "pt-BR": "Biomon BT24-038 só aplica seu efeito de -7000 DP quando ele recebe um link, em vez de quando outro Digimon recebe um.",
+    "es": "Biomon BT24-038 solo aplica su efecto de -7000 DP cuando recibe un enlace, en lugar de cuando lo recibe otro Digimon.",
+    "it": "Biomon BT24-038 applica il suo effetto di -7000 DP solo quando riceve un collegamento, anziché quando lo riceve un altro Digimon."
+  },
+  "releases.1.38.1-beta.fix.opponentSleeves": {
+    "en": "Opponent face-down cards no longer display your own sleeve across the field, card details and source cards.",
+    "pt-BR": "As cartas viradas para baixo do oponente não exibem mais o seu sleeve no campo, nos detalhes e nas cartas de evolução.",
+    "es": "Las cartas boca abajo del rival ya no muestran tu propia funda en el campo, los detalles de cartas y las cartas de digievolución.",
+    "it": "Le carte coperte dell’avversario non mostrano più la tua bustina sul campo, nei dettagli e nelle carte di digievoluzione."
+  },
+  "releases.1.38.1-beta.fix.engineLookups": {
+    "en": "The game engine finds cards and Digimon on the field more efficiently during effect resolution.",
+    "pt-BR": "O motor do jogo encontra cartas e Digimon no campo com mais eficiência durante a resolução de efeitos.",
+    "es": "El motor del juego encuentra cartas y Digimon en el campo de forma más eficiente durante la resolución de efectos.",
+    "it": "Il motore di gioco trova carte e Digimon sul campo in modo più efficiente durante la risoluzione degli effetti."
+  },
   "releases.1.38.0-beta.summary": {
     "en": "New BT27 Artiomon cards, steadier game servers, and fixes to card selections, effect timing and translations.",
     "pt-BR": "Novas cartas BT27 de Artiomon, servidores de jogo mais estáveis e correções em seleção de cartas, timing de efeitos e traduções.",

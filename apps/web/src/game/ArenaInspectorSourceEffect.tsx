@@ -44,7 +44,7 @@ export function ArenaInspectorSourceEffect({ card, onZoom, showThumbnail }: Para
             <CardFull cardId={card.cardId} artId={card.artId} width={34} zoomOnHover={false} />
           </button>
         ) : (
-          <CardBack width={34} />
+          <CardBack width={34} useSelectedSleeve={false} />
         ))}
       <div>
         <span className="arena-permanent-inspector__effect-label">

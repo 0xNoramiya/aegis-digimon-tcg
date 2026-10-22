@@ -1,5 +1,23 @@
 [
   {
+    "version": "1.38.1-beta",
+    "releasedAt": "2026-10-22",
+    "summaryKey": "releases.1.38.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.38.1-beta.fix.biomon",
+        "issue": 5995
+      },
+      {
+        "textKey": "releases.1.38.1-beta.fix.opponentSleeves"
+      },
+      {
+        "textKey": "releases.1.38.1-beta.fix.engineLookups"
+      }
+    ]
+  },
+  {
     "version": "1.38.0-beta",
     "releasedAt": "2026-10-22",
     "summaryKey": "releases.1.38.0-beta.summary",
