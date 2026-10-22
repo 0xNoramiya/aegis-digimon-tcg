@@ -101561,6 +101561,7 @@
         "actions": [
           {
             "kind": "Replacement",
+            "raw": "[All Turns] [Once Per Turn] When any of your [TS] trait Digimon or Tamers would leave the battle area, by trashing your top security card, they don't leave.",
             "event": "wouldLeavePlay",
             "affectsAll": true,
             "sourceFilter": {
@@ -143616,21 +143617,21 @@
             "optional": true
           },
           {
+            "effectTextPart": "Then, choose 1 of each player's Digimon with the highest play cost and delete all other Digimon.",
             "kind": "SelectBind",
             "target": {
               "filter": { "controller": "mine", "kind": ["Digimon"], "superlative": "highestPlayCost" },
               "count": 1,
-              "bindAs": "sparedMine",
-              "upTo": true
+              "bindAs": "sparedMine"
             }
           },
           {
+            "effectTextPart": "Then, choose 1 of each player's Digimon with the highest play cost and delete all other Digimon.",
             "kind": "SelectBind",
             "target": {
               "filter": { "controller": "opponent", "kind": ["Digimon"], "superlative": "highestPlayCost" },
               "count": 1,
-              "bindAs": "sparedOpponent",
-              "upTo": true
+              "bindAs": "sparedOpponent"
             }
           },
           {
@@ -143653,21 +143654,21 @@
             "optional": true
           },
           {
+            "effectTextPart": "Then, choose 1 of each player's Digimon with the highest play cost and delete all other Digimon.",
             "kind": "SelectBind",
             "target": {
               "filter": { "controller": "mine", "kind": ["Digimon"], "superlative": "highestPlayCost" },
               "count": 1,
-              "bindAs": "sparedMine",
-              "upTo": true
+              "bindAs": "sparedMine"
             }
           },
           {
+            "effectTextPart": "Then, choose 1 of each player's Digimon with the highest play cost and delete all other Digimon.",
             "kind": "SelectBind",
             "target": {
               "filter": { "controller": "opponent", "kind": ["Digimon"], "superlative": "highestPlayCost" },
               "count": 1,
-              "bindAs": "sparedOpponent",
-              "upTo": true
+              "bindAs": "sparedOpponent"
             }
           },
           {
