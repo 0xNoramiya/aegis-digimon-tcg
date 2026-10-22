@@ -1,4 +1,58 @@
 {
+  "releases.1.38.0-beta.summary": {
+    "en": "New BT27 Artiomon cards, steadier game servers, and fixes to card selections, effect timing and translations.",
+    "pt-BR": "Novas cartas BT27 de Artiomon, servidores de jogo mais estáveis e correções em seleção de cartas, timing de efeitos e traduções.",
+    "es": "Nuevas cartas BT27 de Artiomon, servidores de juego más estables y correcciones en la selección de cartas, el timing de efectos y las traducciones.",
+    "it": "Nuove carte BT27 di Artiomon, server di gioco più stabili e correzioni a selezione delle carte, tempi degli effetti e traduzioni."
+  },
+  "releases.1.38.0-beta.feature.artiomon": {
+    "en": "BT27 adds Pristimon, Wolvermon, Bearcatmon, Artiomon and the Doom Buster Option.",
+    "pt-BR": "BT27 adiciona Pristimon, Wolvermon, Bearcatmon, Artiomon e a Option Doom Buster.",
+    "es": "BT27 añade Pristimon, Wolvermon, Bearcatmon, Artiomon y la Option Doom Buster.",
+    "it": "BT27 aggiunge Pristimon, Wolvermon, Bearcatmon, Artiomon e l'Option Doom Buster."
+  },
+  "releases.1.38.0-beta.fix.serverStability": {
+    "en": "Game servers use much less memory and CPU, so matches freeze and disconnect less often.",
+    "pt-BR": "Os servidores de jogo usam bem menos memória e CPU, então as partidas travam e desconectam com menos frequência.",
+    "es": "Los servidores de juego usan mucha menos memoria y CPU, así que las partidas se congelan y desconectan con menos frecuencia.",
+    "it": "I server di gioco usano molta meno memoria e CPU, quindi le partite si bloccano e si disconnettono meno spesso."
+  },
+  "releases.1.38.0-beta.fix.zanmetsumon": {
+    "en": "Zanmetsumon BT16-062 can delete a Digimon with a play cost of 3 or less from either player, as printed.",
+    "pt-BR": "Zanmetsumon BT16-062 pode deletar um Digimon com custo de jogo 3 ou menos de qualquer jogador, como impresso.",
+    "es": "Zanmetsumon BT16-062 puede eliminar un Digimon con coste de juego 3 o menos de cualquier jugador, como está impreso.",
+    "it": "Zanmetsumon BT16-062 può eliminare un Digimon con costo di gioco 3 o inferiore di qualsiasi giocatore, come stampato."
+  },
+  "releases.1.38.0-beta.fix.selections": {
+    "en": "Pyramidimon offers its full three-card selection at once, Agunimon BT18-011 can recover Ten Warriors Options, and ZombiePlutomon no longer limits its deletions.",
+    "pt-BR": "Pyramidimon oferece a seleção completa de três cartas de uma vez, Agunimon BT18-011 pode recuperar Options Ten Warriors e ZombiePlutomon não limita mais suas deleções.",
+    "es": "Pyramidimon ofrece su selección completa de tres cartas de una vez, Agunimon BT18-011 puede recuperar Options Ten Warriors y ZombiePlutomon ya no limita sus eliminaciones.",
+    "it": "Pyramidimon offre la selezione completa di tre carte in una volta, Agunimon BT18-011 può recuperare Option Ten Warriors e ZombiePlutomon non limita più le sue eliminazioni."
+  },
+  "releases.1.38.0-beta.fix.timing": {
+    "en": "Dinomon requires survivors, Jupitermon's protection prompts are clearer, and effects that block an activation timing are checked when the effect activates.",
+    "pt-BR": "Dinomon exige sobreviventes, os avisos de proteção de Jupitermon estão mais claros e efeitos que bloqueiam um timing de ativação são verificados quando o efeito é ativado.",
+    "es": "Dinomon requiere supervivientes, los avisos de protección de Jupitermon son más claros y los efectos que bloquean un timing de activación se comprueban cuando el efecto se activa.",
+    "it": "Dinomon richiede sopravvissuti, i messaggi di protezione di Jupitermon sono più chiari e gli effetti che bloccano un tempo di attivazione vengono controllati quando l'effetto si attiva."
+  },
+  "releases.1.38.0-beta.fix.prompts": {
+    "en": "Cometmon's prevention resets after relinking, DUAL Option text appears in card details, and cost-only prompts show the matching clause.",
+    "pt-BR": "A prevenção de Cometmon é reiniciada após nova ligação, o texto de Options DUAL aparece nos detalhes da carta e avisos só de custo mostram a cláusula correspondente.",
+    "es": "La prevención de Cometmon se reinicia tras volver a enlazarse, el texto de las Options DUAL aparece en los detalles de la carta y los avisos solo de coste muestran la cláusula correspondiente.",
+    "it": "La prevenzione di Cometmon si azzera dopo un nuovo collegamento, il testo delle Option DUAL appare nei dettagli della carta e i messaggi di solo costo mostrano la clausola corrispondente."
+  },
+  "releases.1.38.0-beta.fix.presentation": {
+    "en": "The mulligan shows every replaced card, turn notices no longer cancel queued changes, and the timed player footer is more compact.",
+    "pt-BR": "O mulligan mostra todas as cartas trocadas, os avisos de turno não cancelam mais mudanças na fila e o rodapé com tempo do jogador está mais compacto.",
+    "es": "El mulligan muestra todas las cartas cambiadas, los avisos de turno ya no cancelan cambios en cola y el pie con tiempo del jugador es más compacto.",
+    "it": "Il mulligan mostra tutte le carte sostituite, gli avvisi di turno non annullano più le modifiche in coda e il piè di pagina a tempo del giocatore è più compatto."
+  },
+  "releases.1.38.0-beta.fix.chinese": {
+    "en": "Chinese text now covers trigger reasons, security discard prompts and learning terms.",
+    "pt-BR": "O texto em chinês agora cobre motivos de ativação, avisos de descarte da segurança e termos de aprendizado.",
+    "es": "El texto en chino ahora cubre los motivos de activación, los avisos de descarte de seguridad y los términos de aprendizaje.",
+    "it": "Il testo in cinese ora copre i motivi di attivazione, i messaggi di scarto della sicurezza e i termini di apprendimento."
+  },
   "releases.1.37.1-beta.summary": {
     "en": "Card timing and targeting fixes, face-down card protections, corrected card colors and scans, and clearer board cards.",
     "pt-BR": "Correções de timing e seleção de cartas, proteção de cartas viradas para baixo, cores e imagens corrigidas e cartas mais claras na mesa.",
