@@ -63,17 +63,20 @@ decks, unsnapshottable Main decisions fell from 402 of 1,066 (38%) to 23 (2.2%),
 with no restore failures. The current coverage is in
 [Snapshot coverage and combat search](#snapshot-coverage-and-combat-search).
 
-On the Oracle production host (one CPU, idle priority, host load 6–8), 12 games per
-level against legacy-balanced with the final build measured:
+On the Oracle production host (one CPU, idle priority, host load below 8), 12 games
+per level against legacy-balanced with the final shipped build measured:
 
 | Level  | Decisions | p50      | p95      | p99      | Maximum  | Search fallbacks     |
 | ------ | --------- | -------- | -------- | -------- | -------- | -------------------- |
-| Expert | 161       | 950 ms   | 1,055 ms | 1,464 ms | 1,528 ms | deadline 3, error 8  |
-| Master | 171       | 1,471 ms | 1,583 ms | 1,621 ms | 1,638 ms | deadline 7, error 15 |
+| Expert | 166       | 933 ms   | 1,406 ms | 1,506 ms | 1,510 ms | deadline 2, error 5  |
+| Master | 166       | 1,477 ms | 1,600 ms | 1,644 ms | 1,657 ms | deadline 12, error 0 |
 
-Both are within the 2 s p95 target. With the earlier PUCT search the same check had
-Expert p95 1.13 s with 20 `error` fallbacks, and Master p95 1.58 s with 13. The
-snapshot fixes reduced Expert's `error` fallbacks but not Master's.
+Both are within the 2 s p95 target. Before round 2 and the block and Counter search,
+the same check had Expert p95 1,055 ms (deadline 3, error 8) and Master p95 1,583 ms
+(deadline 7, error 15). Master's `error` fallbacks are gone. Expert's 5 remaining
+`error` fallbacks fell back to the Standard answer, and their cause is not isolated.
+Expert p95 rose, possibly because block and Counter decisions now search too; this
+is not confirmed.
 
 Each simulation samples hidden opponent cards from public archetype catalogs using
 publicly seen cards as evidence. It does not read the opponent's actual decklist.
@@ -429,16 +432,28 @@ Results against the targets:
 - **Adjacent steps:** met for Aggressive and Balanced at every step. Balanced Expert >
   Standard sits on the lower edge (0.60). Missed for Defensive: Casual > Beginner by
   4 points, Expert > Standard by 11 and Master > Expert by 5.
-- **Style cost:** Aggressive is within 5 points of Balanced at every level, and above
-  it at Expert and Master. Defensive costs more than 5 points at Expert (−15) and
-  Master (−6). It is within 5 points at Beginner, Casual and Standard.
+- **Style cost** (style minus Balanced, both against legacy):
+
+  | Level    | Aggressive | Defensive |
+  | -------- | ---------- | --------- |
+  | Beginner | −9.0       | −7.4      |
+  | Casual   | −4.7       | −2.7      |
+  | Standard | −5.9       | −1.6      |
+  | Expert   | +3.5       | −15.2     |
+  | Master   | +1.6       | −5.9      |
+
+  Within 5 points: Casual, Expert and Master Aggressive, and Casual and Standard
+  Defensive. Beginner in both styles, Standard Aggressive, and Expert and Master
+  Defensive cost more. With intervals of about ±0.06 per row, costs between 5 and
+  7 points are not resolved.
+
 - **Security attacks per turn:** ordered Aggressive > Balanced > Defensive at every
   level (Standard 0.61, 0.50, 0.43; Expert 0.62, 0.52, 0.44; Master 0.63, 0.55, 0.50).
 - **Master Balanced against legacy:** 0.66 with a lower bound of 0.603. That passes
   the 0.65 point target only narrowly, and the lower bound clears 0.60 by less than
   one point.
-- **Production safety:** the deadlines are unchanged and Expert runs fewer rollouts,
-  so its latency can only fall. Production latency was not re-measured.
+- **Production safety:** the deadlines are unchanged. Production latency was
+  measured again on the final build (see [Holdout evaluation](#holdout-evaluation)).
 
 What the screens showed (32 to 64 blocks per row; raw evidence in the ignored
 `.local/bot-calibration-round2.json`):
@@ -468,13 +483,19 @@ row, so treat any single-pool step within ±0.05 of a target edge as unresolved.
 
 ### Holdout evaluation
 
-The final evaluation ran once, after all tuning, on the frozen holdout pool
-(`tools/bot-evolution/holdout-pool.json`, holdout usage, seed block offset 0) with 32
-paired four-game blocks per comparison. All 3,456 games were valid. The first
-attempt was stopped before any result was read, because the frozen runtime lacked
-`node_modules` and then three workers exceeded the memory limit. It restarted on
-the same seeds with two workers. Rates are points rates with 95% block-mean
-intervals. The evidence and the shipped configuration are in
+The final holdout check ran once, after all tuning, on the shipped build with live
+decision deadlines. It used the frozen holdout pool
+(`tools/bot-evolution/holdout-pool.json`, holdout usage) at seed block offset 2784,
+so no seed overlaps the earlier holdout run (blocks 0 to 2783). Only 1,312 unused
+blocks remained, which allows 15 paired four-game blocks per comparison. All 1,620
+games were valid. The holdout decks were seen in the earlier run, so this check is
+not fully independent. The machine was shared with other workloads (load average 12
+to 28), which can shorten time-limited Expert and Master search.
+
+This check is underpowered: each row has an interval of about ±12 points, so it
+cannot confirm a 60–70% step or a 5-point style cost. It is a sanity check. The
+primary evidence for spacing and style cost is the 64-block development confirmation
+in [Round 2 calibration](#round-2-calibration). Both are recorded in
 `apps/api/src/bot/levels/level-calibration.json`, and `levelCalibration.test.ts`
 fails when the shipped levels, style temperature scales or style weights drift from
 it.
@@ -483,36 +504,37 @@ Against legacy-balanced:
 
 | Level    | Aggressive       | Balanced         | Defensive        |
 | -------- | ---------------- | ---------------- | ---------------- |
-| Beginner | 0.24 (0.17–0.31) | 0.30 (0.23–0.36) | 0.17 (0.10–0.24) |
-| Casual   | 0.40 (0.32–0.48) | 0.43 (0.34–0.52) | 0.41 (0.33–0.50) |
-| Standard | 0.48 (0.39–0.58) | 0.44 (0.38–0.50) | 0.64 (0.57–0.71) |
-| Expert   | 0.64 (0.58–0.71) | 0.70 (0.61–0.79) | 0.59 (0.52–0.67) |
-| Master   | 0.73 (0.66–0.81) | 0.75 (0.67–0.83) | 0.70 (0.61–0.78) |
+| Beginner | 0.35 (0.26–0.44) | 0.40 (0.28–0.52) | 0.30 (0.19–0.41) |
+| Casual   | 0.50 (0.42–0.58) | 0.45 (0.32–0.58) | 0.53 (0.38–0.69) |
+| Standard | 0.40 (0.26–0.54) | 0.43 (0.33–0.53) | 0.47 (0.33–0.60) |
+| Expert   | 0.58 (0.42–0.75) | 0.43 (0.29–0.58) | 0.52 (0.40–0.64) |
+| Master   | 0.70 (0.58–0.82) | 0.67 (0.56–0.77) | 0.75 (0.61–0.89) |
 
-Adjacent levels, same style on both sides (target 0.60–0.70):
+Adjacent levels, same style on both sides:
 
 | Step              | Aggressive       | Balanced         | Defensive        |
 | ----------------- | ---------------- | ---------------- | ---------------- |
-| Casual > Beginner | 0.52 (0.46–0.59) | 0.60 (0.52–0.68) | 0.72 (0.66–0.78) |
-| Standard > Casual | 0.53 (0.45–0.61) | 0.58 (0.48–0.68) | 0.57 (0.47–0.67) |
-| Expert > Standard | 0.73 (0.66–0.81) | 0.61 (0.52–0.69) | 0.56 (0.47–0.65) |
-| Master > Expert   | 0.52 (0.44–0.61) | 0.48 (0.41–0.56) | 0.59 (0.49–0.68) |
+| Casual > Beginner | 0.55 (0.41–0.69) | 0.62 (0.51–0.72) | 0.53 (0.44–0.63) |
+| Standard > Casual | 0.48 (0.34–0.62) | 0.53 (0.38–0.69) | 0.57 (0.48–0.66) |
+| Expert > Standard | 0.68 (0.57–0.80) | 0.60 (0.47–0.73) | 0.55 (0.42–0.68) |
+| Master > Expert   | 0.53 (0.39–0.68) | 0.62 (0.52–0.71) | 0.55 (0.41–0.69) |
 
-Results against the acceptance criteria:
+What the holdout check shows:
 
-- **Master against legacy:** met. Balanced scores 0.75 with a lower bound of 0.67.
-- **Adjacent steps of 60–70%:** met only by Casual > Beginner and Expert > Standard
-  in Balanced. Master > Expert and Standard > Casual are below 0.60 in every style.
-- **Style cost of at most 5 points:** met for Casual, Standard and Master Aggressive.
-  Beginner Defensive (−13), Expert Defensive (−11), Expert Aggressive (−6), Beginner
-  Aggressive (−5.5) and Master Defensive (−5.5) cost more. Standard Defensive scores
-  20 points above Standard Balanced here, while the development pool measured them
-  equal. With intervals of about ±0.08, 32 blocks cannot resolve a 5-point cost.
-- **Production p95 of at most 2 s:** met.
+- **Master Balanced** scores 0.67 against legacy, above the 0.65 target, but its lower
+  bound is 0.56. It agrees with the development result (0.66, lower bound 0.603) and
+  does not confirm the lower bound on its own.
+- **Expert Balanced against legacy** is 0.43, against 0.59 on the development pool and
+  no higher than Standard. The direct Expert > Standard Balanced step is still 0.60.
+  The cause may be noise, the deck mix, or live deadlines under load. It is an open
+  risk.
+- **Adjacent steps:** only Casual > Beginner Balanced, Expert > Standard Aggressive
+  and Master > Expert Balanced have intervals above 0.50. The holdout does not
+  contradict the development spacing, and it cannot confirm it.
 
-The holdout pool is easier against legacy for the search levels than the development
-pool: Master Balanced scored 0.60 there and 0.75 here. Both pools are small (eight
-decks each), so deck mix moves these rates by more than the step targets allow.
+The earlier 32-block holdout run (offset 0) measured the configuration before round 2
+and is superseded. It had Master Balanced at 0.75 (0.67–0.83) against legacy, and
+only Casual > Beginner and Expert > Standard Balanced inside 0.60–0.70.
 
 ## Seating and experiments
 

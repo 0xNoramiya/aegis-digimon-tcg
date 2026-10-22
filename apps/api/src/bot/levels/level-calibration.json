@@ -169,297 +169,429 @@
   "holdoutEvaluation": {
     "pool": "tools/bot-evolution/holdout-pool.json",
     "holdoutPoolSha256": "05ac9a01727d13eb52a52cfcdd69ce7858ce4ff7dcee5b88c16e4f95ef748bc9",
-    "runtimeSha256": "46bded2deb9784d7051136352a6ef265822da7ee999fb988da2296b75c01bd20",
+    "runtimeSha256": "60d9d2b280b82d9a7581fee986fd2c5a7a43d9dee366328a5c3b181cafb7a5c0",
     "node": "v26.12.0",
     "usage": "holdout-evaluation",
-    "seedBlockOffset": 0,
-    "blocksPerComparison": 32,
+    "seedBlockOffset": 2784,
+    "blocksPerComparison": 15,
     "gamesPerBlock": 4,
-    "design": "Paired four-game blocks over both seats and both deck orientations; 95% interval is 1.96 standard errors of block means",
-    "runs": "One run each, after all tuning; the first attempt was aborted before any result was read (missing node_modules, then a worker memory limit) and restarted on the same seeds",
-    "games": 3456,
-    "validGames": 3456,
+    "design": "Paired four-game blocks over both seats and both deck orientations; 95% interval is 1.96 standard errors of block means; live decision deadlines",
+    "role": "Sanity check on seeds no earlier run used; underpowered (about plus or minus 12 points per row); the holdout decks were seen in an earlier holdout run",
+    "conditions": "Local machine shared with other workloads (load average 12 to 28), so time-limited Expert and Master search may be understated",
+    "games": 1620,
+    "validGames": 1620,
     "againstLegacyBalanced": {
-      "beginner:aggressive/legacy-balanced": {
-        "pointsRate": 0.2422,
-        "interval95": [0.1709, 0.3134],
-        "blocks": 32
-      },
       "beginner:balanced/legacy-balanced": {
-        "pointsRate": 0.2969,
-        "interval95": [0.2293, 0.3645],
-        "blocks": 32
+        "pointsRate": 0.4,
+        "interval95": [0.2753, 0.5247],
+        "blocks": 15
+      },
+      "beginner:aggressive/legacy-balanced": {
+        "pointsRate": 0.35,
+        "interval95": [0.2568, 0.4432],
+        "blocks": 15
       },
       "beginner:defensive/legacy-balanced": {
-        "pointsRate": 0.1719,
-        "interval95": [0.1043, 0.2395],
-        "blocks": 32
-      },
-      "casual:aggressive/legacy-balanced": {
-        "pointsRate": 0.3984,
-        "interval95": [0.3195, 0.4773],
-        "blocks": 32
+        "pointsRate": 0.3,
+        "interval95": [0.191, 0.409],
+        "blocks": 15
       },
       "casual:balanced/legacy-balanced": {
-        "pointsRate": 0.4297,
-        "interval95": [0.3438, 0.5156],
-        "blocks": 32
+        "pointsRate": 0.45,
+        "interval95": [0.3217, 0.5783],
+        "blocks": 15
+      },
+      "casual:aggressive/legacy-balanced": {
+        "pointsRate": 0.5,
+        "interval95": [0.4172, 0.5828],
+        "blocks": 15
       },
       "casual:defensive/legacy-balanced": {
-        "pointsRate": 0.4141,
-        "interval95": [0.3329, 0.4952],
-        "blocks": 32
-      },
-      "expert:aggressive/legacy-balanced": {
-        "pointsRate": 0.6406,
-        "interval95": [0.5748, 0.7064],
-        "blocks": 32
-      },
-      "expert:balanced/legacy-balanced": {
-        "pointsRate": 0.7031,
-        "interval95": [0.6139, 0.7923],
-        "blocks": 32
-      },
-      "expert:defensive/legacy-balanced": {
-        "pointsRate": 0.5938,
-        "interval95": [0.5152, 0.6723],
-        "blocks": 32
-      },
-      "master:aggressive/legacy-balanced": {
-        "pointsRate": 0.7344,
-        "interval95": [0.6552, 0.8135],
-        "blocks": 32
-      },
-      "master:balanced/legacy-balanced": {
-        "pointsRate": 0.75,
-        "interval95": [0.6677, 0.8323],
-        "blocks": 32
-      },
-      "master:defensive/legacy-balanced": {
-        "pointsRate": 0.6953,
-        "interval95": [0.6138, 0.7769],
-        "blocks": 32
-      },
-      "standard:aggressive/legacy-balanced": {
-        "pointsRate": 0.4844,
-        "interval95": [0.3938, 0.5749],
-        "blocks": 32
+        "pointsRate": 0.5333,
+        "interval95": [0.3757, 0.691],
+        "blocks": 15
       },
       "standard:balanced/legacy-balanced": {
-        "pointsRate": 0.4375,
-        "interval95": [0.3753, 0.4997],
-        "blocks": 32
+        "pointsRate": 0.4333,
+        "interval95": [0.3323, 0.5344],
+        "blocks": 15
+      },
+      "standard:aggressive/legacy-balanced": {
+        "pointsRate": 0.4,
+        "interval95": [0.2581, 0.5419],
+        "blocks": 15
       },
       "standard:defensive/legacy-balanced": {
-        "pointsRate": 0.6406,
-        "interval95": [0.5713, 0.71],
-        "blocks": 32
+        "pointsRate": 0.4667,
+        "interval95": [0.3325, 0.6008],
+        "blocks": 15
+      },
+      "expert:balanced/legacy-balanced": {
+        "pointsRate": 0.4333,
+        "interval95": [0.2862, 0.5805],
+        "blocks": 15
+      },
+      "expert:aggressive/legacy-balanced": {
+        "pointsRate": 0.5833,
+        "interval95": [0.42, 0.7467],
+        "blocks": 15
+      },
+      "expert:defensive/legacy-balanced": {
+        "pointsRate": 0.5167,
+        "interval95": [0.3951, 0.6383],
+        "blocks": 15
+      },
+      "master:balanced/legacy-balanced": {
+        "pointsRate": 0.6667,
+        "interval95": [0.5634, 0.77],
+        "blocks": 15
+      },
+      "master:aggressive/legacy-balanced": {
+        "pointsRate": 0.7,
+        "interval95": [0.5809, 0.8191],
+        "blocks": 15
+      },
+      "master:defensive/legacy-balanced": {
+        "pointsRate": 0.75,
+        "interval95": [0.6065, 0.8935],
+        "blocks": 15
       }
     },
     "adjacentLevels": {
-      "casual:aggressive/beginner:aggressive": {
-        "pointsRate": 0.5234,
-        "interval95": [0.4561, 0.5907],
-        "blocks": 32
-      },
       "casual:balanced/beginner:balanced": {
-        "pointsRate": 0.6016,
-        "interval95": [0.5227, 0.6805],
-        "blocks": 32
+        "pointsRate": 0.6167,
+        "interval95": [0.5112, 0.7222],
+        "blocks": 15
+      },
+      "casual:aggressive/beginner:aggressive": {
+        "pointsRate": 0.55,
+        "interval95": [0.405, 0.695],
+        "blocks": 15
       },
       "casual:defensive/beginner:defensive": {
-        "pointsRate": 0.7188,
-        "interval95": [0.6575, 0.78],
-        "blocks": 32
-      },
-      "expert:aggressive/standard:aggressive": {
-        "pointsRate": 0.7344,
-        "interval95": [0.6552, 0.8135],
-        "blocks": 32
-      },
-      "expert:balanced/standard:balanced": {
-        "pointsRate": 0.6094,
-        "interval95": [0.5243, 0.6944],
-        "blocks": 32
-      },
-      "expert:defensive/standard:defensive": {
-        "pointsRate": 0.5547,
-        "interval95": [0.4647, 0.6447],
-        "blocks": 32
-      },
-      "master:aggressive/expert:aggressive": {
-        "pointsRate": 0.5234,
-        "interval95": [0.4372, 0.6097],
-        "blocks": 32
-      },
-      "master:balanced/expert:balanced": {
-        "pointsRate": 0.4844,
-        "interval95": [0.4116, 0.5571],
-        "blocks": 32
-      },
-      "master:defensive/expert:defensive": {
-        "pointsRate": 0.5859,
-        "interval95": [0.4936, 0.6783],
-        "blocks": 32
-      },
-      "standard:aggressive/casual:aggressive": {
-        "pointsRate": 0.5312,
-        "interval95": [0.4497, 0.6128],
-        "blocks": 32
+        "pointsRate": 0.5333,
+        "interval95": [0.4393, 0.6274],
+        "blocks": 15
       },
       "standard:balanced/casual:balanced": {
-        "pointsRate": 0.5781,
-        "interval95": [0.4787, 0.6776],
-        "blocks": 32
+        "pointsRate": 0.5333,
+        "interval95": [0.3757, 0.691],
+        "blocks": 15
+      },
+      "standard:aggressive/casual:aggressive": {
+        "pointsRate": 0.4833,
+        "interval95": [0.3442, 0.6225],
+        "blocks": 15
       },
       "standard:defensive/casual:defensive": {
-        "pointsRate": 0.5703,
-        "interval95": [0.4738, 0.6668],
-        "blocks": 32
-      }
-    },
-    "styleMetrics": {
-      "beginner:aggressive": {
-        "securityAttacksPerTurn": 0.2463,
-        "meanGameLengthTurns": 21.578
+        "pointsRate": 0.5667,
+        "interval95": [0.4776, 0.6557],
+        "blocks": 15
       },
-      "beginner:balanced": {
-        "securityAttacksPerTurn": 0.2058,
-        "meanGameLengthTurns": 23.219
+      "expert:balanced/standard:balanced": {
+        "pointsRate": 0.6,
+        "interval95": [0.4664, 0.7336],
+        "blocks": 15
       },
-      "beginner:defensive": {
-        "securityAttacksPerTurn": 0.1328,
-        "meanGameLengthTurns": 24.125
+      "expert:aggressive/standard:aggressive": {
+        "pointsRate": 0.6833,
+        "interval95": [0.5715, 0.7951],
+        "blocks": 15
       },
-      "casual:aggressive": {
-        "securityAttacksPerTurn": 0.3663,
-        "meanGameLengthTurns": 20.438
+      "expert:defensive/standard:defensive": {
+        "pointsRate": 0.55,
+        "interval95": [0.4217, 0.6783],
+        "blocks": 15
       },
-      "casual:balanced": {
-        "securityAttacksPerTurn": 0.3605,
-        "meanGameLengthTurns": 20.625
+      "master:balanced/expert:balanced": {
+        "pointsRate": 0.6167,
+        "interval95": [0.5226, 0.7107],
+        "blocks": 15
       },
-      "casual:defensive": {
-        "securityAttacksPerTurn": 0.316,
-        "meanGameLengthTurns": 21.484
+      "master:aggressive/expert:aggressive": {
+        "pointsRate": 0.5333,
+        "interval95": [0.3909, 0.6757],
+        "blocks": 15
       },
-      "expert:aggressive": {
-        "securityAttacksPerTurn": 0.486,
-        "meanGameLengthTurns": 18.688
-      },
-      "expert:balanced": {
-        "securityAttacksPerTurn": 0.4417,
-        "meanGameLengthTurns": 20.234
-      },
-      "expert:defensive": {
-        "securityAttacksPerTurn": 0.4119,
-        "meanGameLengthTurns": 19.797
-      },
-      "master:aggressive": {
-        "securityAttacksPerTurn": 0.5287,
-        "meanGameLengthTurns": 18.047
-      },
-      "master:balanced": {
-        "securityAttacksPerTurn": 0.4645,
-        "meanGameLengthTurns": 19.266
-      },
-      "master:defensive": {
-        "securityAttacksPerTurn": 0.4169,
-        "meanGameLengthTurns": 19.891
-      },
-      "standard:aggressive": {
-        "securityAttacksPerTurn": 0.505,
-        "meanGameLengthTurns": 18.812
-      },
-      "standard:balanced": {
-        "securityAttacksPerTurn": 0.3865,
-        "meanGameLengthTurns": 20.484
-      },
-      "standard:defensive": {
-        "securityAttacksPerTurn": 0.423,
-        "meanGameLengthTurns": 22.047
+      "master:defensive/expert:defensive": {
+        "pointsRate": 0.55,
+        "interval95": [0.405, 0.695],
+        "blocks": 15
       }
     }
   },
   "productionLatency": {
     "host": "Oracle VPS production host under aegis-safe (one core, idle CPU and IO priority)",
     "date": "2026-10-22",
+    "build": "Final shipped source, same dist as the holdout runtime",
     "opponent": "legacy-balanced",
     "style": "balanced",
     "pool": "tools/bot-evolution/holdout-pool.json",
     "expert": {
       "games": 12,
       "validGames": 12,
-      "decisions": 161,
-      "p50Ms": 950,
-      "p95Ms": 1055,
-      "p99Ms": 1464,
-      "maxMs": 1528,
+      "decisions": 166,
+      "p50Ms": 933,
+      "p95Ms": 1406,
+      "p99Ms": 1506,
+      "maxMs": 1510,
       "searchFallbacks": {
-        "deadline": 3,
+        "deadline": 2,
         "capacity": 0,
-        "error": 8
+        "error": 5
       }
     },
     "master": {
       "games": 12,
       "validGames": 12,
-      "decisions": 171,
-      "p50Ms": 1471,
-      "p95Ms": 1583,
-      "p99Ms": 1621,
-      "maxMs": 1638,
+      "decisions": 166,
+      "p50Ms": 1477,
+      "p95Ms": 1600,
+      "p99Ms": 1644,
+      "maxMs": 1657,
       "searchFallbacks": {
-        "deadline": 7,
+        "deadline": 12,
         "capacity": 0,
-        "error": 15
+        "error": 0
       }
     }
   },
-  "developmentEvidence": [".local/bot-tuning-lower-levels.json", ".local/bot-search-tuning.json"],
+  "developmentEvidence": [
+    ".local/bot-calibration-round2.json",
+    ".local/bot-tuning-lower-levels.json",
+    ".local/bot-search-tuning.json"
+  ],
   "acceptance": {
+    "source": "developmentConfirmation, except productionP95AtMost2000Ms",
     "masterAgainstLegacyAtLeast65WithLowerBoundAbove60": true,
     "adjacentLevelsWithin60To70": {
-      "casual:aggressive": false,
+      "casual:aggressive": true,
       "casual:balanced": true,
       "casual:defensive": false,
-      "standard:aggressive": false,
-      "standard:balanced": false,
-      "standard:defensive": false,
-      "expert:aggressive": false,
+      "standard:aggressive": true,
+      "standard:balanced": true,
+      "standard:defensive": true,
+      "expert:aggressive": true,
       "expert:balanced": true,
       "expert:defensive": false,
-      "master:aggressive": false,
-      "master:balanced": false,
+      "master:aggressive": true,
+      "master:balanced": true,
       "master:defensive": false
     },
     "styleCostAgainstBalanced": {
-      "beginner:aggressive": -0.0547,
-      "beginner:defensive": -0.125,
-      "casual:aggressive": -0.0313,
-      "casual:defensive": -0.0156,
-      "standard:aggressive": 0.0469,
-      "standard:defensive": 0.2031,
-      "expert:aggressive": -0.0625,
-      "expert:defensive": -0.1093,
-      "master:aggressive": -0.0156,
-      "master:defensive": -0.0547
+      "beginner:aggressive": -0.0899,
+      "beginner:defensive": -0.0743,
+      "casual:aggressive": -0.0469,
+      "casual:defensive": -0.0274,
+      "standard:aggressive": -0.0586,
+      "standard:defensive": -0.0156,
+      "expert:aggressive": 0.0351,
+      "expert:defensive": -0.1524,
+      "master:aggressive": 0.0156,
+      "master:defensive": -0.0586
     },
     "styleCostAtMost5Points": {
       "beginner:aggressive": false,
       "beginner:defensive": false,
       "casual:aggressive": true,
       "casual:defensive": true,
-      "standard:aggressive": true,
+      "standard:aggressive": false,
       "standard:defensive": true,
-      "expert:aggressive": false,
+      "expert:aggressive": true,
       "expert:defensive": false,
       "master:aggressive": true,
       "master:defensive": false
     },
+    "aggressionOrderedAggressiveBalancedDefensive": {
+      "beginner": true,
+      "casual": true,
+      "standard": true,
+      "expert": true,
+      "master": true
+    },
     "productionP95AtMost2000Ms": {
       "expert": true,
       "master": true
+    },
+    "holdoutMasterAgainstLegacy": {
+      "pointsRate": 0.6667,
+      "interval95": [0.5634, 0.77],
+      "blocks": 15
+    }
+  },
+  "developmentConfirmation": {
+    "pool": ".local/bot-level-development-pool.json",
+    "usage": "training",
+    "seedBlocks": "7000-7063",
+    "blocksPerComparison": 64,
+    "gamesPerBlock": 4,
+    "method": "Simulation-bound: frozen dist copies with the live decision deadline raised to 60 s, the policy ceiling to 120 s and search budgets to 60 s, so CPU load cannot change results. Four-game blocks (both seats x both deck orientations), deck pair = block mod 28 over the 28 unordered pairs of the 8 pool decks. Rate = points rate; interval = block-mean normal 95%.",
+    "role": "Primary evidence for level spacing and style cost; tuned on this pool, so it is not independent",
+    "againstLegacyBalanced": {
+      "beginner:aggressive/legacy-balanced": {
+        "pointsRate": 0.1953,
+        "interval95": [0.141, 0.249],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.358
+      },
+      "beginner:balanced/legacy-balanced": {
+        "pointsRate": 0.2852,
+        "interval95": [0.23, 0.341],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.354
+      },
+      "beginner:defensive/legacy-balanced": {
+        "pointsRate": 0.2109,
+        "interval95": [0.155, 0.267],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.246
+      },
+      "casual:aggressive/legacy-balanced": {
+        "pointsRate": 0.3164,
+        "interval95": [0.258, 0.374],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.455
+      },
+      "casual:balanced/legacy-balanced": {
+        "pointsRate": 0.3633,
+        "interval95": [0.306, 0.421],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.435
+      },
+      "casual:defensive/legacy-balanced": {
+        "pointsRate": 0.3359,
+        "interval95": [0.281, 0.391],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.345
+      },
+      "standard:aggressive/legacy-balanced": {
+        "pointsRate": 0.4414,
+        "interval95": [0.374, 0.508],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.609
+      },
+      "standard:balanced/legacy-balanced": {
+        "pointsRate": 0.5,
+        "interval95": [0.43, 0.57],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.501
+      },
+      "standard:defensive/legacy-balanced": {
+        "pointsRate": 0.4844,
+        "interval95": [0.424, 0.545],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.431
+      },
+      "expert:aggressive/legacy-balanced": {
+        "pointsRate": 0.6289,
+        "interval95": [0.569, 0.689],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.618
+      },
+      "expert:balanced/legacy-balanced": {
+        "pointsRate": 0.5938,
+        "interval95": [0.534, 0.653],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.519
+      },
+      "expert:defensive/legacy-balanced": {
+        "pointsRate": 0.4414,
+        "interval95": [0.386, 0.497],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.438
+      },
+      "master:aggressive/legacy-balanced": {
+        "pointsRate": 0.6797,
+        "interval95": [0.615, 0.745],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.63
+      },
+      "master:balanced/legacy-balanced": {
+        "pointsRate": 0.6641,
+        "interval95": [0.603, 0.725],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.546
+      },
+      "master:defensive/legacy-balanced": {
+        "pointsRate": 0.6055,
+        "interval95": [0.545, 0.666],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.497
+      }
+    },
+    "adjacentLevels": {
+      "casual:aggressive/beginner:aggressive": {
+        "pointsRate": 0.6523,
+        "interval95": [0.587, 0.717],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.573
+      },
+      "casual:balanced/beginner:balanced": {
+        "pointsRate": 0.6133,
+        "interval95": [0.558, 0.669],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.498
+      },
+      "casual:defensive/beginner:defensive": {
+        "pointsRate": 0.5625,
+        "interval95": [0.5, 0.625],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.365
+      },
+      "standard:aggressive/casual:aggressive": {
+        "pointsRate": 0.6602,
+        "interval95": [0.598, 0.722],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.693
+      },
+      "standard:balanced/casual:balanced": {
+        "pointsRate": 0.6094,
+        "interval95": [0.553, 0.666],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.53
+      },
+      "standard:defensive/casual:defensive": {
+        "pointsRate": 0.6133,
+        "interval95": [0.549, 0.678],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.434
+      },
+      "expert:aggressive/standard:aggressive": {
+        "pointsRate": 0.6602,
+        "interval95": [0.603, 0.717],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.723
+      },
+      "expert:balanced/standard:balanced": {
+        "pointsRate": 0.6016,
+        "interval95": [0.541, 0.662],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.537
+      },
+      "expert:defensive/standard:defensive": {
+        "pointsRate": 0.4883,
+        "interval95": [0.432, 0.544],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.419
+      },
+      "master:aggressive/expert:aggressive": {
+        "pointsRate": 0.668,
+        "interval95": [0.614, 0.721],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.696
+      },
+      "master:balanced/expert:balanced": {
+        "pointsRate": 0.6328,
+        "interval95": [0.576, 0.689],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.537
+      },
+      "master:defensive/expert:defensive": {
+        "pointsRate": 0.5547,
+        "interval95": [0.494, 0.615],
+        "blocks": 64,
+        "securityAttacksPerTurn": 0.454
+      }
     }
   }
 }
