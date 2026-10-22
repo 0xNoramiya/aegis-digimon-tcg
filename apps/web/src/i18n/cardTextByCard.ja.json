@@ -15430,5 +15430,21 @@
   "BT27-095": {
     "[StartofYourMainPhase]Byplacing1[Cyborg]or[Aquatic]traitcardfromyourhandfacedownunderthisTamer,<Draw1>andgain1memory.[Main]BysuspendingthisTamerandtrashing2bottomface-downcardsfromunderanyofyourTamers,1ofyourDigimonmaydigivolveintoa[Cyborg]or[Aquatic]traitDigimoncardinthehandwiththecostreducedby2.": "【自分のメインフェイズ開始時】自分の手札から、特徴「サイボーグ型」/「水棲型」を持つカード1枚をこのテイマーの下に裏向きで置くことで、≪1ドロー≫、メモリー+1。\n【メイン】このテイマーをレストさせ、自分のテイマーの下にある裏向きのカードを下から2枚破棄することで、自分のデジモン1体を手札の特徴「サイボーグ型」/「水棲型」を持つデジモンカードに支払うコスト-2で進化できる。",
     "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "BT27-056": {
+    "[Digivolve]Lv.2w/[GlowingDawn]trait:Cost0[YourTurn]WhenthisDigimonwoulddigivolveintoablackDigimoncardwiththe[BEATBREAK]trait,reducethecostby1.": "〔進化〕特徴「グローイングドーン」を持つLv.2:コスト0\n\n【自分のターン】このデジモンが特徴「ビートブレイク」を持つ黒のデジモンカードに進化するとき、支払うコスト-1。",
+    "<Reboot>": "≪再起動≫（このデジモンは相手のアクティブフェイズでもアクティブになる）"
+  },
+  "BT27-058": {
+    "[Digivolve]Lv.3w/[GlowingDawn]trait:Cost2[Security][WhenDigivolving]Ifyouhave1orfewerTamers,youmayplay1Tamercardwith[ReinaSakuya]initsnamefromyourhandwithoutpayingthecost.": "〔進化〕特徴「グローイングドーン」を持つLv.3:コスト2\n\n【セキュリティ】【進化時】自分のテイマーが1体以下なら、自分の手札から、名称に「咲夜レーナ」を含むテイマーカード1枚をコストを支払わずに登場できる。",
+    "<Blocker>": "≪ブロッカー≫（このデジモンはブロックタイミングでブロックできる）"
+  },
+  "BT27-064": {
+    "[Digivolve]Lv.4w/[GlowingDawn]trait:Cost3[Hand][Main]IfyouhaveaTamerwith[ReinaSakuya]initsname,byplacing1[Wolvermon]fromyourtrashasanyofyour[Pristimon]'sbottomdigivolutioncard,thatDigimondigivolvesintothiscard,ignoringlevel.[OnPlay][WhenDigivolving]<De-Digivolve1>1ofyouropponent'sDigimon.Then,bytrashingthebottomface-downcardfromunderanyofyourTamers,give1oftheirDigimon\"[StartofYourMainPhase]ThisDigimonattacks.\"untiltheirturnends.": "〔進化〕特徴「グローイングドーン」を持つLv.4:コスト3\n\n{手札}【メイン】名称に「咲夜レーナ」を含む自分のテイマーがいるなら、自分のトラッシュから、「ウルヴァモン」1枚を自分の「プリスティモン」の進化元の下に置くことで、そのデジモンをこのカードにLv.を無視して進化させる。\n【登場時】【進化時】相手のデジモン1体を≪退化1≫。その後、自分のテイマーの下にある裏向きのカードを下から1枚破棄することで、相手のターン終了まで、相手のデジモン1体に「【自分のメインフェイズ開始時】このデジモンでアタックする。」の効果を与える。",
+    "[AllTurns][OncePerTurn]Whenattacktargetschange,ifthisDigimonhasthe[GlowingDawn]trait,bytrashingthebottomface-downcardfromunderanyofyourTamers,trashyouropponent'stopsecuritycard.": "【お互いのターン】［ターン1回］アタックの対象が変更されたとき、このデジモンが特徴「グローイングドーン」を持つなら、自分のテイマーの下にある裏向きのカードを下から1枚破棄することで、相手のセキュリティを上から1枚破棄する。"
+  },
+  "BT27-067": {
+    "[Digivolve]Lv.5w/[GlowingDawn]trait:Cost3<Raid><Piercing><Engage>[AllTurns][OncePerTurn]WhenthisDigimonwouldleavethebattlearea,bytrashing2bottomface-downcardsfromunderanyofyourTamers,itdoesn'tleave.[AllTurns][OncePerTurn]WhenattacktargetschangeoreffectstrashcardsfromunderyourTamers,youmayactivate1[Main]effectonthiscard'sOptionside.": "〔進化〕特徴「グローイングドーン」を持つLv.5:コスト3\n≪突進≫ ≪貫通≫ ≪急襲≫（自分のターン終了時、このデジモンでアタックできる）\n【お互いのターン】［ターン1回］このデジモンがバトルエリアを離れるとき、自分のテイマーの下にある裏向きのカードを下から2枚破棄することで、離れない。\n【お互いのターン】［ターン1回］アタックの対象が変更されたときか、自分のテイマーの下のカードが効果で破棄されたとき、このカードのオプション側の【メイン】効果1つを発揮できる。",
+    "<UseReq.([GlowingDawn]trait)>[Main]<De-Digivolve2>1ofyouropponent'sDigimon.Then,1ofyourDigimonunsuspendsandgets+5000DPuntilyourturnends.<ArtsDigivolve>": "≪使用条件《特徴「グローイングドーン」》≫（指定の条件で色条件を満たせる）\n【メイン】相手のデジモン1体を≪退化2≫。その後、自分のデジモン1体をアクティブにし、自分のターン終了まで、DP+5000。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わず進化できる）"
   }
 }
