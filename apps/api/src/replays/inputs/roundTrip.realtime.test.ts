@@ -126,6 +126,8 @@ describe("match replay round trip through a real room on real timers", () => {
       // Through JSON, as a saved record would arrive.
       const replay = await runReplay(JSON.parse(JSON.stringify(record)));
       replay.engine.syncCounts();
+      replay.engine.projection.syncHandAffordances();
+      replay.engine.flushHandAffordances();
       expect(replay.divergences).toEqual([]);
       expect(replay.applied).toBe(record.inputs.length);
       expect(comparableState(replay.state)).toEqual(recorded.finalState);

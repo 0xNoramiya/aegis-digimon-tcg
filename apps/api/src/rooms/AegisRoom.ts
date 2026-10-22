@@ -2154,6 +2154,7 @@ export class AegisRoom extends Room<{
     if (!this.engine) return;
     // Not a replay input: the counts are derived from the zone arrays, and the replay recomputes them.
     this.engine.syncCounts();
+    this.engine.flushHandAffordances();
     // Refresh every view before the patch is encoded, not only after the three events that
     // happen to name a move. A StateView must still recognise a card as visible at the moment
     // its removal is encoded, or the encoder drops the delete and the client's copy of the
@@ -2276,6 +2277,7 @@ export class AegisRoom extends Room<{
       return;
     }
     if (this.replayRecording && !this.replayFinished) {
+      this.engine.flushHandAffordances();
       this.replayRecording.capture(this.state, batch.events);
       if (this.state.gameOver) {
         this.replayFinished = true;
@@ -2814,6 +2816,7 @@ export class AegisRoom extends Room<{
     const current = () => generation === this.engineGeneration;
     return {
       ...this.engineHooks,
+      deferHandAffordances: true,
       emit: (event) => {
         if (current()) this.engineHooks.emit(event);
       },
