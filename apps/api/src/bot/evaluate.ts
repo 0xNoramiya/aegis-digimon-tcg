@@ -344,6 +344,26 @@ export function scoreCandidate(view: BotView, candidate: Candidate, profile: Bot
         : scoreAttackDigimon(view, candidate.attacker, candidate.target, profile);
     case "digivolve":
       return scoreDigivolve(view, candidate, profile);
+    case "dnaDigivolve": {
+      const definition = candidate.definition;
+      if (definition === undefined || (candidate.materials?.length ?? 0) < 2) {
+        return Number.NEGATIVE_INFINITY;
+      }
+      const readyMaterials = candidate.materials!.filter((unit) => unit.canAttackPlayer).length;
+      return (
+        scorePlayDigimon(view, candidate, profile) +
+        profile.weights.digivolveDraw +
+        Math.max(0, 1 - readyMaterials) * profile.weights.securityAttack
+      );
+    }
+    case "linkCard": {
+      if (candidate.definition === undefined || candidate.base === undefined) {
+        return Number.NEGATIVE_INFINITY;
+      }
+      const bonus = Math.max(0, candidate.definition.linkDp ?? 0) / 1000;
+      const effect = candidate.definition.linkEffect?.trim() ? profile.weights.activate : 0;
+      return profile.weights.dpGain * bonus + effect - memoryPenalty(view, candidate.cost, profile);
+    }
     case "playDigimon":
       return scorePlayDigimon(view, candidate, profile);
     case "playTamer":

@@ -1,3 +1,4 @@
+import { getHeuristicTieBreaker } from "#api/bot/evolution/getHeuristicTieBreaker";
 import { getOptionalCostFeatures } from "#api/bot/evolution/getOptionalCostFeatures";
 import { getDecisionFeatures } from "#api/bot/evolution/getDecisionFeatures";
 import { CardKind, getCardDefinition } from "@aegis/shared";
@@ -393,17 +394,18 @@ export function scoreHeuristicRules(
 
 export function rankHeuristic(program: HeuristicProgram, window: TrainingWindow) {
   return window.actions
-    .map((_, index) => ({
-      index,
-      ...scoreHeuristicRules(
-        program,
-        actionFeatures(window, index),
-        window.kind,
-        actionCardId(window, index),
-        window.observation,
-      ),
-    }))
-    .sort((left, right) => right.score - left.score || left.index - right.index);
+    .map((_, index) => {
+      const features = actionFeatures(window, index);
+      return {
+        index,
+        secondaryScore: getHeuristicTieBreaker({ window, features }),
+        ...scoreHeuristicRules(program, features, window.kind, actionCardId(window, index), window.observation),
+      };
+    })
+    .sort(
+      (left, right) =>
+        right.score - left.score || right.secondaryScore - left.secondaryScore || left.index - right.index,
+    );
 }
 
 /** Derive randomness from public information so prefix replay needs no private RNG snapshot. */
@@ -411,7 +413,7 @@ export function chooseHeuristic(program: HeuristicProgram, window: TrainingWindo
   const ranked = rankHeuristic(program, window);
   const best = ranked[0];
   if (best === undefined) throw new Error("No legal heuristic action");
-  const tied = ranked.filter((entry) => entry.score === best.score);
+  const tied = ranked.filter((entry) => entry.score === best.score && entry.secondaryScore === best.secondaryScore);
   if (tied.length === 1) return best.index;
   let publicSeed = seed >>> 0;
   for (const character of JSON.stringify(window))

@@ -1,7 +1,12 @@
-import { hasUnsupportedReplayKnowledge } from "#api/bot/evolution/hasUnsupportedReplayKnowledge";
+import { hasUnsupportedReplayDeterminization } from "#api/bot/evolution/hasUnsupportedReplayDeterminization";
+import { Phase } from "@aegis/shared/schema/enums";
 import { createLibraryKnowledgeTracker } from "#api/bot/evolution/createLibraryKnowledgeTracker";
+import { createSeenOpponentCardsTracker } from "#api/bot/evolution/createSeenOpponentCardsTracker";
 import { determinizeBotRoot } from "#api/bot/evolution/determinizeBotRoot";
+import { determinizeFromArchetypes } from "#api/bot/evolution/determinizeFromArchetypes";
 import type { GameEngine } from "#api/engine/GameEngine";
+import type { GameEngineSnapshot } from "#api/engine/snapshot/GameEngineSnapshot";
+import { restoreGameEngine } from "#api/engine/snapshot/restoreGameEngine";
 import type { BotPolicy } from "#api/bot/policy";
 import { performance } from "node:perf_hooks";
 import type { Intent } from "@aegis/shared/protocol/intents";
@@ -15,6 +20,10 @@ import { informationKey } from "#api/bot/evolution/mcts";
 import { chooseHeuristic, type HeuristicProgram } from "#api/bot/evolution/heuristic";
 import { mainActionReady } from "#api/bot/training/actions";
 import { createAsyncTrainingPolicy, type TrainingWindow } from "#api/bot/training/policy";
+import { evaluateSearchPosition } from "#api/bot/evolution/evaluateSearchPosition";
+import { trainingObservation } from "#api/bot/training/observation";
+import type { SeenOpponentCards } from "#api/bot/evolution/SeenOpponentCards";
+import type { BotProfile } from "#api/bot/profiles";
 
 type ContinuationOpponent = {
   policyFactory: (engine: GameEngine, seat: Seat) => BotPolicy<Intent | Promise<Intent>>;
@@ -23,12 +32,18 @@ type ContinuationOpponent = {
 };
 
 type Params = {
-  record: ReplayRecord;
-  inputIndex: number;
+  record?: ReplayRecord;
+  inputIndex?: number;
+  engineSnapshot?: GameEngineSnapshot;
+  forceArchetypeDeterminization?: boolean;
+  randomKey?: string;
   seat: Seat;
   expectedInformation: string;
   sampleSeed: number;
   program: HeuristicProgram;
+  opponentProgram?: HeuristicProgram;
+  rootWindow?: TrainingWindow;
+  rolloutPolicy?: BotPolicy;
   choose: (window: TrainingWindow) => number;
   chooseAfterRoot?: (window: TrainingWindow) => number;
   opponent?: ContinuationOpponent;
@@ -36,6 +51,10 @@ type Params = {
   signal?: AbortSignal;
   maxDurationMs?: number;
   turnLimit?: number;
+  rolloutTurns?: number;
+  maxRolloutDecisions?: number;
+  seenOpponentCards?: SeenOpponentCards;
+  profile?: BotProfile;
 };
 
 function optionalSeatLimits(canChooseMainAction: (() => boolean) | undefined, maxMainPhaseActions: number | undefined) {
@@ -45,118 +64,227 @@ function optionalSeatLimits(canChooseMainAction: (() => boolean) | undefined, ma
   };
 }
 
+function mergeSeenOpponentCards({
+  provided,
+  observed,
+}: {
+  provided: SeenOpponentCards | undefined;
+  observed: SeenOpponentCards;
+}): SeenOpponentCards {
+  return {
+    main: [...new Set([...(provided?.main ?? []), ...observed.main])],
+    eggs: [...new Set([...(provided?.eggs ?? []), ...observed.eggs])],
+  };
+}
+
+function matchesRootWindow(window: TrainingWindow, root: TrainingWindow): boolean {
+  const { history: _windowHistory, ...windowObservation } = window.observation;
+  const { history: _rootHistory, ...rootObservation } = root.observation;
+  return (
+    window.kind === root.kind &&
+    JSON.stringify(windowObservation) === JSON.stringify(rootObservation) &&
+    JSON.stringify(window.selected) === JSON.stringify(root.selected) &&
+    JSON.stringify(window.request === undefined ? undefined : { ...window.request, decisionId: undefined }) ===
+      JSON.stringify(root.request === undefined ? undefined : { ...root.request, decisionId: undefined }) &&
+    JSON.stringify(window.combat) === JSON.stringify(root.combat)
+  );
+}
+
 export async function runReplayContinuation(input: Params) {
   if (
-    !Number.isSafeInteger(input.inputIndex) ||
-    input.inputIndex < 0 ||
-    input.inputIndex >= input.record.inputs.length
+    input.engineSnapshot === undefined &&
+    (input.record === undefined ||
+      !Number.isSafeInteger(input.inputIndex) ||
+      input.inputIndex! < 0 ||
+      input.inputIndex! >= input.record.inputs.length)
   ) {
     throw new Error("Invalid replay root index");
   }
+  if (
+    input.rolloutTurns !== undefined &&
+    (!Number.isSafeInteger(input.rolloutTurns) || input.rolloutTurns < 1 || input.rolloutTurns > 200)
+  ) {
+    throw new Error("Invalid snapshot rollout turn count");
+  }
+  if (
+    input.maxRolloutDecisions !== undefined &&
+    (!Number.isSafeInteger(input.maxRolloutDecisions) ||
+      input.maxRolloutDecisions < 1 ||
+      input.maxRolloutDecisions > 10000)
+  ) {
+    throw new Error("Invalid snapshot rollout decision count");
+  }
   const started = performance.now();
-  const botRoot = input.record.seats.every((seat) => seat.bot === true);
+  const botRoot = input.record?.seats.every((seat) => seat.bot === true) ?? false;
   const library = createLibraryKnowledgeTracker();
+  const seenOpponentCards = createSeenOpponentCardsTracker({ observer: input.seat });
   let unsupportedKnowledge = false;
   let knowledgeReason = "";
-  const run = await runReplay(input.record, {
-    untilInput: input.inputIndex,
-    stopOnDivergence: true,
-    onBatch: (state, events) => {
-      if (botRoot) {
-        library.observeBatch(state, events);
-        return;
-      }
-      if (events.some((event) => event.kind === "matchStarted")) {
-        unsupportedKnowledge = false;
-      }
-      if (events.some((event) => hasUnsupportedReplayKnowledge(event))) {
-        unsupportedKnowledge = true;
-        knowledgeReason = JSON.stringify(events.filter(hasUnsupportedReplayKnowledge));
-      }
-    },
-    onDecision: (request) => {
-      if (botRoot) {
-        library.observeDecision(request);
-        return;
-      }
-      if (request.seat === input.seat && (request.options?.visibleCards?.length ?? 0) > 0) {
-        unsupportedKnowledge = true;
-        knowledgeReason = "private visible cards";
-      }
-    },
-  });
-  if (run.divergences.length || run.applied !== input.inputIndex) {
-    throw new Error("Replay prefix diverged");
-  }
-  if (unsupportedKnowledge) {
-    throw new Error(`Replay prefix has unsupported revealed or ordered hidden knowledge: ${knowledgeReason}`);
-  }
-  const libraryKnowledge = library.getKnowledge(run.state);
-  if (libraryKnowledge !== undefined) {
-    throw new Error(`Replay prefix has publicly known library order: ${libraryKnowledge}`);
-  }
-  const root = getReplaySearchWindow({ engine: run.engine, seat: input.seat });
-  if (informationKey(root) !== input.expectedInformation) {
-    throw new Error("Replay root observation or offered actions changed");
-  }
-  if (botRoot) {
-    await determinizeBotRoot(run.engine, input.sampleSeed);
-  } else {
-    await determinize(run.engine, input.seat, input.sampleSeed);
-  }
-  if (informationKey(getReplaySearchWindow({ engine: run.engine, seat: input.seat })) !== input.expectedInformation) {
-    throw new Error("Hidden sampling changed the visible root");
-  }
   const bots: BotPlayer[] = [];
   const failures: string[] = [];
-  let rootChosen = false;
-  let closed = false;
   let progress = 0;
   let terminalReward: number | undefined;
   let reason = "unfinished";
+  let closed = false;
+  let engine: GameEngine;
+  let state: GameEngine["state"];
+  let redeliverOpenPrompts = () => {};
+  const hooks = {
+    seed: input.sampleSeed,
+    ...(input.engineSnapshot === undefined ? {} : { omitHandAffordances: true }),
+    ...(input.randomKey === undefined ? {} : { randomKey: input.randomKey }),
+    requestDecision: (seat: Seat, request: import("@aegis/shared").DecisionRequest) =>
+      bots[seat]?.onDecisionRequested(request),
+    onActionSettled: (seat: Seat, type: Intent["type"]) => bots[seat]?.onActionSettled(type),
+    emit: (event: import("@aegis/shared").ServerEvent) => {
+      progress++;
+      if (event.kind === "gameOver") {
+        reason = event.reason;
+        terminalReward = event.result.outcome === "draw" ? 0.5 : Number(event.result.winnerSeat === input.seat);
+      }
+      if (event.kind === "actionRejected") failures.push("actionRejected");
+      for (const bot of bots) bot.onEvent(event);
+    },
+  };
+  const run =
+    input.engineSnapshot === undefined
+      ? await runReplay(input.record!, {
+          untilInput: input.inputIndex,
+          stopOnDivergence: true,
+          onBatch: (batchState, events) => {
+            for (const event of events) seenOpponentCards.observeEvent(event);
+            if (botRoot) {
+              library.observeBatch(batchState, events);
+              return;
+            }
+            if (events.some((event) => event.kind === "matchStarted")) unsupportedKnowledge = false;
+            if (events.some((event) => hasUnsupportedReplayDeterminization(event))) {
+              unsupportedKnowledge = true;
+              knowledgeReason = JSON.stringify(events.filter(hasUnsupportedReplayDeterminization));
+            }
+          },
+          onDecision: (request) => {
+            if (botRoot) {
+              library.observeDecision(request);
+              return;
+            }
+            if (request.seat === input.seat && (request.options?.visibleCards?.length ?? 0) > 0) {
+              unsupportedKnowledge = true;
+              knowledgeReason = "private visible cards";
+            }
+          },
+        })
+      : undefined;
+  if (run !== undefined && (run.divergences.length || run.applied !== input.inputIndex)) {
+    throw new Error("Replay prefix diverged");
+  }
+  if (run !== undefined) {
+    engine = run.engine;
+    state = run.state;
+  } else {
+    const restored = restoreGameEngine({ snapshot: input.engineSnapshot!, hooks });
+    restored.engine.runtimeObjects.disableSnapshots();
+    engine = restored.engine;
+    state = restored.engine.state;
+    void restored.completion.catch((error) => failures.push(error instanceof Error ? error.message : String(error)));
+    await restored.ready;
+    redeliverOpenPrompts = restored.redeliverOpenPrompts;
+  }
+  const restoredAt = performance.now();
+  if (unsupportedKnowledge) {
+    throw new Error(`Replay prefix has unsupported revealed or ordered hidden knowledge: ${knowledgeReason}`);
+  }
+  if (run !== undefined) {
+    const libraryKnowledge = library.getKnowledge(state);
+    if (libraryKnowledge !== undefined) {
+      throw new Error(`Replay prefix has publicly known library order: ${libraryKnowledge}`);
+    }
+  }
+  const root = input.rootWindow ?? getReplaySearchWindow({ engine, seat: input.seat });
+  if (
+    informationKey(root) !== input.expectedInformation ||
+    (input.rootWindow !== undefined &&
+      JSON.stringify(trainingObservation(state, input.seat)) !== JSON.stringify(root.observation))
+  ) {
+    throw new Error("Replay root observation or offered actions changed");
+  }
+  if (input.engineSnapshot !== undefined || input.forceArchetypeDeterminization === true) {
+    await determinizeFromArchetypes({
+      engine,
+      observer: input.seat,
+      seed: input.sampleSeed,
+      seenCards: mergeSeenOpponentCards({ provided: input.seenOpponentCards, observed: seenOpponentCards.snapshot() }),
+    });
+  } else if (botRoot) {
+    await determinizeBotRoot(engine, input.sampleSeed);
+  } else {
+    await determinize(engine, input.seat, input.sampleSeed);
+  }
+  const visibleRootMatches =
+    input.rootWindow === undefined
+      ? informationKey(getReplaySearchWindow({ engine, seat: input.seat })) === input.expectedInformation
+      : JSON.stringify(trainingObservation(state, input.seat)) === JSON.stringify(root.observation);
+  if (!visibleRootMatches) {
+    throw new Error("Hidden sampling changed the visible root");
+  }
+  const determinizedAt = performance.now();
+  let rootChosen = false;
+  let rolloutDecisions = 0;
+  let leafMs = 0;
   function getRootActions() {
-    if (rootChosen) {
+    if (rootChosen || root.kind !== "main") {
       return undefined;
     }
     return [...root.actions];
   }
   function chooseControlled(window: TrainingWindow): number {
-    if (window.kind === "main" && !rootChosen) {
+    if (!rootChosen && matchesRootWindow(window, root)) {
       rootChosen = true;
       return input.choose(root);
     }
     if (input.chooseAfterRoot !== undefined) {
+      rolloutDecisions++;
       return input.chooseAfterRoot(window);
     }
+    if (input.rolloutPolicy !== undefined) {
+      if (window.teacher?.action === undefined || window.teacher.action === null) {
+        throw new Error("Standard rollout policy selected an action outside the legal rollout window");
+      }
+      rolloutDecisions++;
+      return window.teacher.action;
+    }
     if (window.kind === "main") {
+      rolloutDecisions++;
       return input.choose(window);
     }
+    rolloutDecisions++;
     return chooseHeuristic(input.program, window, input.sampleSeed + input.seat * 7919);
   }
   function createPolicy(seat: Seat): BotPolicy<Intent | Promise<Intent>> {
     if (seat !== input.seat && input.opponent !== undefined) {
-      return input.opponent.policyFactory(run.engine, seat);
+      return input.opponent.policyFactory(engine, seat);
     }
     return createAsyncTrainingPolicy(
-      run.engine,
+      engine,
       seat,
       async (window) => {
         input.signal?.throwIfAborted();
         if (seat === input.seat) {
           return chooseControlled(window);
         }
-        return chooseHeuristic(input.program, window, input.sampleSeed + seat * 7919);
+        if (rootChosen) rolloutDecisions++;
+        return chooseHeuristic(input.opponentProgram ?? input.program, window, input.sampleSeed + seat * 7919);
       },
-      undefined,
+      seat === input.seat ? input.rolloutPolicy : undefined,
       seat === input.seat ? getRootActions : undefined,
     );
   }
   function getMainActionGate(seat: Seat): (() => boolean) | undefined {
     if (seat === input.seat || input.opponent === undefined) {
-      return () => mainActionReady(run.engine);
+      return () => mainActionReady(engine);
     }
     const gate = input.opponent.canChooseMainAction;
-    return gate === undefined ? undefined : () => gate(run.engine);
+    return gate === undefined ? undefined : () => gate(engine);
   }
   function getMainPhaseActionLimit(seat: Seat): number | undefined {
     if (seat === input.seat) {
@@ -169,13 +297,13 @@ export async function runReplayContinuation(input: Params) {
     bots.push(
       new BotPlayer(
         seat,
-        run.state,
+        state,
         (intent: Intent) => {
           if (closed || input.signal?.aborted) {
             return;
           }
           try {
-            const result = run.engine.applyIntent(seat, intent);
+            const result = engine.applyIntent(seat, intent);
             progress++;
             if (!result.ok) {
               failures.push(result.reason);
@@ -196,36 +324,55 @@ export async function runReplayContinuation(input: Params) {
       ),
     );
   }
-  run.activate({
-    seed: input.sampleSeed,
-    requestDecision: (seat, request) => bots[seat]!.onDecisionRequested(request),
-    onActionSettled: (seat, type) => bots[seat]!.onActionSettled(type),
-    emit: (event) => {
-      progress++;
-      if (event.kind === "gameOver") {
-        reason = event.reason;
-        terminalReward = event.result.outcome === "draw" ? 0.5 : Number(event.result.winnerSeat === input.seat);
-      }
-      if (event.kind === "actionRejected") {
-        failures.push("actionRejected");
-      }
-      for (const bot of bots) {
-        bot.onEvent(event);
-      }
-    },
-  });
-  const rootTurn = run.state.turnCount;
+  if (run !== undefined) run.activate(hooks);
+  const rootTurn = state.turnCount;
   let idle = 0;
   let previous = progress;
   try {
     bots[input.seat]!.resumeAfterRollback();
-    while (!run.state.gameOver && failures.length === 0) {
+    redeliverOpenPrompts();
+    while (!state.gameOver && failures.length === 0) {
       input.signal?.throwIfAborted();
       if (
         performance.now() - started > (input.maxDurationMs ?? 60000) ||
-        run.state.turnCount > rootTurn + (input.turnLimit ?? 60)
+        state.turnCount > rootTurn + (input.turnLimit ?? 60)
       ) {
         reason = "continuationLimit";
+        break;
+      }
+      if (
+        input.rolloutTurns !== undefined &&
+        state.turnCount >= rootTurn + input.rolloutTurns * 2 &&
+        state.turnSeat === input.seat &&
+        state.phase === Phase.Main &&
+        state.pendingDecision === undefined &&
+        state.combatWindow === undefined &&
+        engine.mainPhase.isOpen
+      ) {
+        const leafStartedAt = performance.now();
+        terminalReward = evaluateSearchPosition(trainingObservation(state, input.seat), input.profile);
+        leafMs = performance.now() - leafStartedAt;
+        reason = "rolloutCutoff";
+        state.gameOver = true;
+        engine.mainPhase.abort();
+        break;
+      }
+      if (
+        input.maxRolloutDecisions !== undefined &&
+        rolloutDecisions >= input.maxRolloutDecisions &&
+        state.turnSeat === input.seat &&
+        state.turnCount > rootTurn &&
+        state.phase === Phase.Main &&
+        state.pendingDecision === undefined &&
+        state.combatWindow === undefined &&
+        engine.mainPhase.isOpen
+      ) {
+        const leafStartedAt = performance.now();
+        terminalReward = evaluateSearchPosition(trainingObservation(state, input.seat), input.profile);
+        leafMs = performance.now() - leafStartedAt;
+        reason = "rolloutCutoff";
+        state.gameOver = true;
+        engine.mainPhase.abort();
         break;
       }
       await new Promise<void>((resolve) => setImmediate(resolve));
@@ -247,12 +394,20 @@ export async function runReplayContinuation(input: Params) {
     terminalReward !== undefined &&
     failures.length === 0 &&
     bots.every((bot) => bot.inferenceFallbacks.error === 0 && bot.inferenceFallbacks.timeout === 0);
+  const finishedAt = performance.now();
   return {
     valid,
     reward: terminalReward ?? 0,
     reason,
-    turn: run.state.turnCount,
+    turn: state.turnCount,
     failures,
-    ms: performance.now() - started,
+    ms: finishedAt - started,
+    state,
+    phasesMs: {
+      restore: restoredAt - started,
+      determinize: determinizedAt - restoredAt,
+      continuation: finishedAt - determinizedAt - leafMs,
+      leaf: leafMs,
+    },
   };
 }

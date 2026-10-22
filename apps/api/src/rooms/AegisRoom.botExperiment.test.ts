@@ -69,7 +69,7 @@ async function seatBot(environment: NodeJS.ProcessEnv = {}) {
 describe("bot A/B experiment in practice rooms", () => {
   it("seats the production legacy bot and records no arm when the experiment is off", async () => {
     const { bot, surrender } = await seatBot();
-    expect(bot.policyName).toMatch(/^evaluation:/);
+    expect(bot.policyName).toMatch(/^level:standard:[a-z]+:evaluation:/);
     const record = await surrender();
     expect(record).toMatchObject({ mode: "bot", opponentKind: "bot", result: "loss", reason: "surrender" });
     expect(record).not.toHaveProperty("botArm");
@@ -114,7 +114,7 @@ describe("bot A/B experiment in practice rooms", () => {
 
   it("seats the legacy evaluation bot for the legacy arm", async () => {
     const { bot, surrender } = await seatBot(experimentEnvironment({ legacy: 100 }));
-    expect(bot.policyName).toMatch(/^evaluation:/);
+    expect(bot.policyName).toMatch(/^level:standard:[a-z]+:evaluation:/);
     expect(await surrender()).toMatchObject({ botArm: "legacy" });
   });
 

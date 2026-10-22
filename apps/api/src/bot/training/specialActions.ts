@@ -81,6 +81,7 @@ export function specialMainActions(engine: GameEngine, seat: Seat): TrainingActi
         actions.push({
           intent,
           label: "Link card",
+          ...(check.sourcePermanent === undefined ? {} : { materialIds: [check.sourcePermanent.permanentId] }),
           sourceId: source.instanceId,
           targetId: target.permanentId,
           projectedCost: check.cost,

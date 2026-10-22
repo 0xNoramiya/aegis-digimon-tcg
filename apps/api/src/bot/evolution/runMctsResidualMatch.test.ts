@@ -62,6 +62,7 @@ describe("residual policy with real-engine MCTS", () => {
     expect(game.result.rejections).toEqual([]);
     expect(game.searches).toHaveLength(2);
     expect(game.searches.every((search) => search.completed === 4 && search.invalid === 0)).toBe(true);
+    expect(game.snapshotRestorations).toBe(8);
   });
 
   it.each([0, 1] as const)(
@@ -196,7 +197,7 @@ describe("residual policy with real-engine MCTS", () => {
       invalid: 0,
     });
     expect(game.searches[0]!.elapsedMs).toBeGreaterThan(0);
-    expect(game.replayedChoices).toBeGreaterThan(0);
+    expect(game.snapshotRestorations).toBeGreaterThan(0);
     expect(game.result.projectionChecks).toBeGreaterThan(0);
     expect(game.result.seats.map((seat) => seat.inferenceFallbacks)).toEqual([
       { error: 0, timeout: 0 },

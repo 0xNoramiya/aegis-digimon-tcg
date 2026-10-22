@@ -3,8 +3,8 @@
   "learnerSeat": 1,
   "decks": [420010003, 420010004],
   "searchSeed": 420010778,
-  "target": 32,
-  "simulationIndex": 13,
+  "target": 37,
+  "simulationIndex": 2,
   "roots": [
     {
       "information": "01148ed9d048ec4893745e248b1e4be44f6f06392a84e43d84c189a8f68ac529",
@@ -14,275 +14,219 @@
     {
       "information": "bee3a7e43d60a9add62d13da89dc469a44418bda8515faf5ffebafa2f98cec0b",
       "actionCount": 11,
-      "action": 3
-    },
-    {
-      "information": "fe2a632b89af08f3ea20463ac69e33070c1e6c0a550d6e961a0631f0d8afc5ac",
-      "actionCount": 12,
-      "action": 1
-    },
-    {
-      "information": "3a412a50ba54b910afea297ff57680f58e15c4ecdb4cc23af332d895215656d4",
-      "actionCount": 16,
-      "action": 2
-    },
-    {
-      "information": "69e1797bfa0d620e3bccd58c17457ab346318cd4bc15783af8adbae67b5bfd22",
-      "actionCount": 19,
       "action": 0
     },
     {
-      "information": "b9c2224076dd32bb37146e3d73971a8d7d5664b9c3576cc2589cb53143ae0a79",
+      "information": "2894219c0b69be0f00806340d2e530f1ee52d75e0d73b434c56e4490ba648acd",
+      "actionCount": 13,
+      "action": 0
+    },
+    {
+      "information": "b67d20a132dad4dbd338198e2271ebafcc428b4e585fc957b94f3f2aecf4adcf",
+      "actionCount": 14,
+      "action": 0
+    },
+    {
+      "information": "c4b7a743ee0304c425c4b6d150db1ffb0480d2c019263e8ce02048b158e62145",
+      "actionCount": 15,
+      "action": 0
+    },
+    {
+      "information": "928c40d7ac70bebe19247f2fcb3fd44e42cc0481d6f8d03256cb67fa99682e22",
+      "actionCount": 17,
+      "action": 0
+    },
+    {
+      "information": "7753bcc15daade2d62b407245a982d494e36c007ed3f1949c553289bf7c5f3d4",
+      "actionCount": 18,
+      "action": 0
+    },
+    {
+      "information": "910e5db5ad78963ce12a8959ede4ea207c18f02a331b4d6a2937f6b6a9f84bad",
       "actionCount": 21,
       "action": 0
     },
     {
-      "information": "cee61d0aa8bc9f3667fc07220dffb3fec58866a36f05f6c2a765f2f715821b78",
+      "information": "4f88c8933c95308b153db7c6c7d37c7d95a350b22943c50d7b45b5e89b2c853a",
       "actionCount": 23,
       "action": 0
     },
     {
-      "information": "920dcd5381f3e98963d2a55293eff1cee57740ada0e96cd72525087674acd718",
+      "information": "3c88c3afcfb16f75975c4abb5c84c885e8faf2b6641d7351c63ebe7dd31bffe3",
+      "actionCount": 24,
+      "action": 0
+    },
+    {
+      "information": "f84bf64a2e71f30d7358dfee6726aaf4bc76a24bc17128595d05c5dd13e8b95d",
       "actionCount": 26,
+      "action": 0
+    },
+    {
+      "information": "f583d87ddb79b43f8bfbadd3364285b9fb34f7baa2f1400cae91f3852e72fdc8",
+      "actionCount": 26,
+      "action": 0
+    },
+    {
+      "information": "458df4d00ce125d1467ffe36127940467970d576263731117755c2ad818405b1",
+      "actionCount": 27,
       "action": 1
     },
     {
-      "information": "9c5a6cb072efa0b1f7de6b05119db160c994385e67e955a2cb3d1f3d463c3435",
-      "actionCount": 23,
-      "action": 0
+      "information": "7e01dd36fb11da8baff622ec35d0d4087386f3c1f6f17b33094d5f0727711417",
+      "actionCount": 26,
+      "action": 2
     },
     {
-      "information": "fc212fa36e78771f558b46e3d69ad0aac61ef4ce7d50ad04de7df7893e9e67f7",
+      "information": "120a71aed6f4d0a3eb33383481153c6fc75a4cb535768f09fe02d134703f096a",
+      "actionCount": 28,
+      "action": 2
+    },
+    {
+      "information": "6037a3b9c79495e48b30db3e4a78aaf24b9b64b914a1f7c8007fe786e8a172d2",
       "actionCount": 26,
       "action": 0
     },
     {
-      "information": "191d7b9d2e3f21af5377434646d8b9309bcdfb349d452b161a4853688155f742",
+      "information": "40ef4dbf3ac8fb717691fef8d206f4be50ebec7a7c4c272c31e5f6ced16ac347",
       "actionCount": 28,
       "action": 1
     },
     {
-      "information": "ee6d5f7062d50e2ab33c2a25f42731b47cc659dd5d82f0cb642bc946187a5f36",
-      "actionCount": 26,
-      "action": 0
-    },
-    {
-      "information": "2dbf45ddb5c6e9a5e1cca32b82f4d67334edb949b11dea01c956cbf97c0be922",
-      "actionCount": 31,
+      "information": "4c0e770d828969860ab1f353e260f205cafcc7fee1491d0997963b5fc493a451",
+      "actionCount": 32,
       "action": 1
     },
     {
-      "information": "0415656ba6f361ae1ca45c27ab55af6d61f620550907a6960a5dfeb63abb01ce",
-      "actionCount": 31,
-      "action": 0
-    },
-    {
-      "information": "4b1da164c84e2772ee40a3833bf497b582b5ab2d3525285539237b74c5875dfe",
-      "actionCount": 35,
-      "action": 0
-    },
-    {
-      "information": "8939b900c473b72d1a01d11cb30c40d925fe2130c0d9a1d8737cf3098fe6e322",
-      "actionCount": 41,
-      "action": 2
-    },
-    {
-      "information": "2ea42f47ac8958ef27953a0c1dc1433ec48a7b5da341c1547c346d2682074c17",
-      "actionCount": 39,
-      "action": 0
-    },
-    {
-      "information": "3d9f0540417399dee44828441556b8309658f3ba713dd7438bff47c6e16ac054",
+      "information": "b794dfaa6749c8bff75109fbabbcae5258e84e3ace9dbc79d5db91ca524ecef1",
       "actionCount": 43,
       "action": 0
     },
     {
-      "information": "0cc88e93ad5792c98f70ed01fcdf5251e578df8c57447bdb913c30218a06a3f4",
-      "actionCount": 47,
-      "action": 0
-    },
-    {
-      "information": "7e4b485820e45ebc2d2e7b8fb5c0d9acde5e87534eec7a818ce7eaae023e1c67",
-      "actionCount": 48,
-      "action": 0
-    },
-    {
-      "information": "bf072c23df03e5dd94ced8d03f5712e7f12c531bfff5b6dfb919cd0603aa1f81",
-      "actionCount": 52,
+      "information": "c31fcf3ce166609fabc576d5b2a60ba66baab42f057f90509c5c74eae665f464",
+      "actionCount": 49,
       "action": 1
     },
     {
-      "information": "215f91b1fa9c2cc627a4a9498af5a35529906479dfeed9d3a46ea3faa8c5b4cd",
-      "actionCount": 51,
+      "information": "9b30fad9383952d237f29dae8540c35f06ef91abcb974bd9235585e8e9f55814",
+      "actionCount": 50,
       "action": 0
     },
     {
-      "information": "1bee91c3be82431339814ff9621f0bca5683a2eade1a1c82275031b51fbd7efd",
-      "actionCount": 52,
+      "information": "02be9968a4a2751b65d401a7c47f178840e4ef4d860d74e0783ed5c9af14ca5b",
+      "actionCount": 53,
       "action": 0
     },
     {
-      "information": "7d46c7df0ab6a2e7de9bd6094af9f01251282f44758f74cc31da46d2b3161344",
+      "information": "1f889d23dfa989d3bceb46c7862d6ba0fe7dfafaa84eacce7a80a6c714693e07",
+      "actionCount": 53,
+      "action": 0
+    },
+    {
+      "information": "cec12f22d13289328080c0a20751b31aa1fe8ab33e99af627c0d3707866211bb",
       "actionCount": 55,
       "action": 0
     },
     {
-      "information": "6e758e9c3edcaa6087fecda3399809616a4365b2e05712e3bf2cf0b5be8d491d",
-      "actionCount": 56,
-      "action": 0
-    },
-    {
-      "information": "38d3f19e8247cb2233fa47ae3be50de18ee1a541249fbb0bae3fb9774f1faf3a",
+      "information": "549323b87b89497d45dd091c027dae751dbb2840259461151fa37a6602fd9e0e",
       "actionCount": 58,
       "action": 0
     },
     {
-      "information": "6d2784d3d416ae67c37cf900a21b2780a9dddd1b64d98c3e718e594610da0ae8",
-      "actionCount": 62,
+      "information": "7936a14d21d9b4ce20883da681adae2b680ad5fb85b1409ca04faabd56a197e2",
+      "actionCount": 61,
       "action": 0
     },
     {
-      "information": "facf3e05bad5ac8d8c4f0f7ca5abf87ab78cb1ce8e393b83b1caf7b200490a89",
-      "actionCount": 67,
+      "information": "2b19b0c32cfa0fe99c1947469ea5ee96b1d7230ea7175f469d584cdd94657b1d",
+      "actionCount": 61,
       "action": 0
     },
     {
-      "information": "20a05dddba938a77b661ecc9732b79bfb5f3a0d87f8b0ec33d9f52086a97679c",
-      "actionCount": 67,
+      "information": "b1a1294898f3676f0e5f529b4bfe4b7c6adc9da73827f0892205b778c37408d2",
+      "actionCount": 64,
       "action": 0
     },
     {
-      "information": "4120b47f7cc46bf8d3c9494d27ce3f7e8b91e98a766cf2f52b28a2bd162aa68d",
-      "actionCount": 70,
+      "information": "d464ed16cac3130261d1343f53238471d71b1d4314102d18231cb8c0878a363a",
+      "actionCount": 66,
       "action": 0
     },
     {
-      "information": "b4e0aef637cec1428ca29633b6b8439f9226bee39b4d297a9885df1e659d52c8",
+      "information": "856ddde4a455b789b2dec174ca98ebdc058ab55df0124ed7a0b02795ba9e2615",
+      "actionCount": 69,
+      "action": 0
+    },
+    {
+      "information": "d57740ef4223166dba178cd82a151e74967cf24a3fb0a2b28458dba30fdae316",
+      "actionCount": 69,
+      "action": 0
+    },
+    {
+      "information": "0d79bc3f1c6af358a23f924f4514206ff0ed02e5728167cc56682cd4b3dbe3bb",
+      "actionCount": 71,
+      "action": 18
+    },
+    {
+      "information": "61cc1f62c2458e84f1df3d472d9b2ee5165b07a2f19e7fc416b18176484e9efe",
       "actionCount": 72,
-      "action": 0
+      "action": 66
     },
     {
-      "information": "e2ea8aaa7611a703bba2da73be1c2026668f82922e77c37b59233d69ecc7606a",
-      "actionCount": 76,
-      "action": 0
+      "information": "ad48dde03281d9c3d179db6fb3e5049efd73a5b8a9c4ba950e832f27c09d0b9b",
+      "actionCount": 69,
+      "action": 63
     },
     {
-      "information": "a77bf62cad963e4c646499a5b64de4b5fb28728adcbd36a3a19710781e64f07f",
-      "actionCount": 76,
-      "action": 2
+      "information": "2032685e212c29813ed16539f672c402ee79b10f9e6c634ca0c1c55905784e2e",
+      "actionCount": 68,
+      "action": 63
     },
     {
-      "information": "7096d3e0217314cb4cf07776087273614295033b82d79df1163b48273962d94e",
-      "actionCount": 74,
-      "action": 1
+      "information": "ba4f6876a63af04051cd4732066186d3391e555ca3e1afca29fcfd30eedb5749",
+      "actionCount": 58,
+      "action": 56
     },
     {
-      "information": "bd3bb4d2a333c31cb94c20beac47777c9577eb75e97f8c712867730e0e01d220",
-      "actionCount": 86,
-      "action": 2
+      "information": "4db15530bb60c9ecc70af83a76e03839b2928161a39c65bf829b49e375ad5ada",
+      "actionCount": 49,
+      "action": 47
     },
     {
-      "information": "56423460c7006a384ce6d45fcda3648e89d4f41fb9cfe560df3f2b8b786caf42",
-      "actionCount": 78,
-      "action": 28
+      "information": "eb228b3bb9e4deaf5b307356f98b2497adad360dd5644fc4054077ec171f6086",
+      "actionCount": 44,
+      "action": 43
     },
     {
-      "information": "aa8a6945db50ad106ad2147ca8b02decdd9eaf22bb9ddbda70861026a2392e04",
-      "actionCount": 78,
-      "action": 11
+      "information": "01af0163855dfb6e4e993ab6a244b2cbadb6345267ebea5f110a84b213e8082a",
+      "actionCount": 51,
+      "action": 48
     },
     {
-      "information": "29eb19b77571ccea3fa92a3437570c1f5420c869e492d5170bb81af5d44527d3",
-      "actionCount": 80,
-      "action": 1
-    },
-    {
-      "information": "bcf1bfb490675b8eb715c1e3c0c8cca2d40c146312428a5ecfdb3318ddc91d92",
-      "actionCount": 93,
-      "action": 20
-    },
-    {
-      "information": "057416a1a9ee5f2036968ea5693220c44c02a2ad5918db12bdd2b787b392b744",
-      "actionCount": 96,
-      "action": 28
-    },
-    {
-      "information": "62564bb4eb00802da1c26d8ce05391b45b18eb6e71bf8f7b55f00ce5c93f1b8b",
-      "actionCount": 89,
-      "action": 80
-    },
-    {
-      "information": "905d3411b96a58ee4184f18b9de034147bd3bf6a6504a73eca0cf74b6737522e",
-      "actionCount": 81,
-      "action": 74
-    },
-    {
-      "information": "7a4d69beed35834d95b74e7ebd1822941e62cf7003451d401dc49a1492f536dc",
-      "actionCount": 80,
-      "action": 74
-    },
-    {
-      "information": "94f1edca914301dee385a3fbe0f6b0b247190c43f161947169bb3fee9fc0cbe2",
-      "actionCount": 79,
-      "action": 74
+      "information": "acffcbd6937bc69c70581849d0d117b02ae2376fd54794522a2741e7f617bef4",
+      "actionCount": 50,
+      "action": 48
     }
   ],
   "rolloutChoices": [
     {
-      "information": "a77bf62cad963e4c646499a5b64de4b5fb28728adcbd36a3a19710781e64f07f",
-      "action": 13
+      "information": "eb228b3bb9e4deaf5b307356f98b2497adad360dd5644fc4054077ec171f6086",
+      "action": 43
     },
     {
-      "information": "90e8e91ad7f8207fa21b5f77cec53c55ee6ea92d37b657cd3058ae6259744788",
-      "action": 12
-    },
-    {
-      "information": "14683131dc20563ff69a54582f05b4a73daea31e527a548dea267e50e24b4fe0",
-      "action": 63
-    },
-    {
-      "information": "c0b4ab2996c8ec202e809fca7fbb234b36bf7906a723f2f86fceb48cb6ad691d",
+      "information": "d2a2ae5af8c88b7ed5175acc7cd5a23b8d505b0c38da79c5ccdbf33f1a1042c0",
       "action": 1
     },
     {
-      "information": "f37fe2908a2d411bb1c7b4304b4d173eccd6c56d9f7ce3ae80f3b38f1dfc5f37",
-      "action": 60
+      "information": "e9337a46cad0786293e3544e788d15b25b82f17278d64ac52b8d60dcbede0ed4",
+      "action": 45
     },
     {
-      "information": "ddbd17958b9aeb65ece92b6943b524c5f59b1d563dabe3de545eab7cf4519010",
-      "action": 63
-    },
-    {
-      "information": "bf42ee32b33f93d37cf9de4a8965ff8b43fa3e6d29bcd20055fc53b5533424c1",
-      "action": 61
-    },
-    {
-      "information": "f0bafe3c0eacfbea32edf12ed8c833922b745d32fc7feaa183b6d8fb00f1a9d8",
-      "action": 4
-    },
-    {
-      "information": "1604629fbe451fc69f924960852af496131ddc4bae51ee19c4f2e1a4607e888f",
-      "action": 3
-    },
-    {
-      "information": "f8821dcb7a4356f73144855135f7efcc055d16e6e675a3dc90980d44138b808b",
-      "action": 2
-    },
-    {
-      "information": "a7d26725acf629621ab0ce33dc3e8ca75f5feba3db96d803a37c909b67e3a7b4",
+      "information": "f48a03d3e22477a89e596a5ac4195a2c4309fe26e57cb90937db474decaf4ec0",
       "action": 1
     },
     {
-      "information": "32f1f563e9e6ea463d958808458fdeb3ebacad9d72cfaff783deb28d7120b375",
-      "action": 0
-    },
-    {
-      "information": "264474104db0d31e10b0be46cf3e30a73d50a429d93d78f8e3476395bd6198b5",
+      "information": "b70e06d2ba1583ff1bfe938705072caf27ab4d1d77902947efe5c5d2dbc8dd20",
       "action": 59
-    },
-    {
-      "information": "216b6275cd7ffea8dfc0b0f3f8cc0492d8ff7277012390e0529d0617f7a8e347",
-      "action": 0
     }
   ]
 }

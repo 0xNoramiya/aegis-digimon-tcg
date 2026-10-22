@@ -21,6 +21,8 @@ import { isDigimonCard, isDigiEggCard, isOptionCard, isTamerCard, type BotUnit, 
 export type CandidateKind =
   | "attackPlayer"
   | "attackDigimon"
+  | "dnaDigivolve"
+  | "linkCard"
   | "digivolve"
   | "playDigimon"
   | "playTamer"
@@ -39,6 +41,7 @@ export interface Candidate {
   target?: BotUnit;
   base?: BotUnit;
   definition?: CardDefinition;
+  materials?: readonly BotUnit[];
 }
 
 /** Every action the bot may take in its own Main phase, including passing. */

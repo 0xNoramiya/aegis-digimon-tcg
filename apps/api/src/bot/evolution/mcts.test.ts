@@ -4,7 +4,7 @@ import { setupEngine } from "../../engine/testkit/harness.js";
 import { trainingObservation } from "../training/observation.js";
 import type { TrainingWindow } from "../training/policy.js";
 import { searchMcts } from "./mcts.js";
-import { determinize } from "./determinize.js";
+import { determinizeFromArchetypes } from "#api/bot/evolution/determinizeFromArchetypes";
 
 describe("information-set MCTS", () => {
   it.each([false, true])(
@@ -169,6 +169,32 @@ describe("information-set MCTS", () => {
     expect(result.report.root[0]!.visits).toBeGreaterThan(100);
   });
 
+  it("uses the Standard policy prior when the live search budget is smaller than the root branching factor", async () => {
+    const setup = setupEngine({});
+    await setup.ready();
+    const root: TrainingWindow = {
+      observation: trainingObservation(setup.state, 0),
+      kind: "main",
+      selected: [],
+      actions: [
+        { intent: { type: "endPhase" }, label: "Fallback" },
+        { intent: { type: "hatchEgg" }, label: "Prior" },
+      ],
+    };
+    const result = await searchMcts({
+      root,
+      seat: 0,
+      simulations: 1,
+      rootPriors: [0.05, 0.95],
+      rolloutChoose: () => 0,
+      simulate: async (choose) => {
+        expect(choose(root)).toBe(1);
+        return { reward: 0.5, valid: true };
+      },
+    });
+    expect(result.action).toBe(1);
+  });
+
   it("does not count rejected rollouts as completed search", async () => {
     const setup = setupEngine({});
     await setup.ready();
@@ -192,12 +218,15 @@ describe("information-set MCTS", () => {
     ).rejects.toThrow("No valid MCTS rollouts");
   });
 
-  it("samples independent of true hidden locations while preserving the observer's hand and face-up security", async () => {
+  it("keeps archetype sampling independent of true hidden locations and preserves the observer's hand", async () => {
     const make = async () => {
-      const setup = setupEngine({
-        0: { hand: ["BT1-010"], deck: ["BT1-011", "BT1-012"], security: ["BT1-013"] },
-        1: { hand: ["BT1-027"], deck: ["BT1-028", "BT1-029"], security: ["BT1-030"] },
-      });
+      const setup = setupEngine(
+        {
+          0: { hand: ["BT1-010"], deck: ["BT1-011", "BT1-012"], security: ["BT1-013"] },
+          1: { hand: ["BT1-027"], deck: ["BT1-028", "BT1-029"], security: ["BT1-030"] },
+        },
+        { fixtureIds: true },
+      );
       await setup.ready();
       return setup;
     };
@@ -223,15 +252,18 @@ describe("information-set MCTS", () => {
     hidden.hand.push(hidden.deck.shift()!);
     hidden.deck.push(card);
     const ownHand = first.state.players[0]!.hand[0]!.instanceId;
-    await determinize(first.engine, 0, 917);
-    await determinize(second.engine, 0, 917);
-    const signature = (setup: typeof first) =>
-      Array.from(setup.state.players, (player) => ({
-        hand: Array.from(player.hand, (entry) => entry.instanceId),
-        deck: Array.from(player.deck, (entry) => entry.instanceId),
-        security: Array.from(player.security, (entry) => entry.instanceId),
-      }));
-    expect(signature(first)).toEqual(signature(second));
+    expect(
+      [...first.state.players[1]!.hand, ...first.state.players[1]!.deck, ...first.state.players[1]!.security]
+        .map((entry) => entry.instanceId)
+        .sort(),
+    ).toEqual(
+      [...second.state.players[1]!.hand, ...second.state.players[1]!.deck, ...second.state.players[1]!.security]
+        .map((entry) => entry.instanceId)
+        .sort(),
+    );
+    await determinizeFromArchetypes({ engine: first.engine, observer: 0, seed: 917 });
+    await determinizeFromArchetypes({ engine: second.engine, observer: 0, seed: 917 });
+    expect(trainingObservation(first.state, 0)).toEqual(trainingObservation(second.state, 0));
     expect(first.state.players[0]!.hand[0]!.instanceId).toBe(ownHand);
     expect(first.state.players[0]!.security[0]!.faceUp).toBe(true);
     expect(first.state.players[1]!.hand).toHaveLength(1);

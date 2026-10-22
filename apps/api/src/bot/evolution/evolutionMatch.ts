@@ -356,6 +356,10 @@ export async function runEvolutionMatch(options: EvolutionMatchOptions) {
             sourceCardId: actionCardId(window, action),
             features: actionFeatures(window, action),
             score: choice.score,
+            secondaryScore: choice.secondaryScore,
+            resolvedScoreTies: ranked.filter(
+              (entry) => entry.score === choice.score && entry.secondaryScore === choice.secondaryScore,
+            ).length,
             legalActions: ranked.length,
             topScoreTies: ranked.filter((entry) => entry.score === ranked[0]!.score).length,
             scoreTies: ranked.filter((entry) => entry.score === choice.score).length,

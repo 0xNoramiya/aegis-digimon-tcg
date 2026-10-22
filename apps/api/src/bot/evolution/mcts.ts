@@ -55,6 +55,7 @@ export async function searchMcts(options: {
   maxDurationMs?: number;
   signal?: AbortSignal;
   rolloutChoose: (window: TrainingWindow) => number;
+  rootPriors?: readonly number[];
   simulate: (
     choose: (window: TrainingWindow) => number,
     simulation: number,
@@ -71,6 +72,7 @@ export async function searchMcts(options: {
   const timeExhausted = () =>
     options.maxDurationMs !== undefined && performance.now() - started >= options.maxDurationMs;
   const nodes = new Map<string, SearchNode>();
+  const rootKey = informationKey(options.root);
   let completed = 0;
   let invalid = 0;
   let attempted = 0;
@@ -98,6 +100,7 @@ export async function searchMcts(options: {
       }
       let bestIndex = -1;
       let bestScore = -Infinity;
+      const rootPrior = key === rootKey ? options.rootPriors : undefined;
       for (let index = 0; index < window.actions.length; index++) {
         const action = actionKey(window, index);
         let edge = node.edges.get(action);
@@ -107,9 +110,14 @@ export async function searchMcts(options: {
         }
         edge.available++;
         const score =
-          edge.attempts === 0
-            ? Infinity
-            : edge.reward / edge.attempts + exploration * Math.sqrt(Math.log(edge.available) / edge.attempts);
+          rootPrior === undefined
+            ? edge.attempts === 0
+              ? Infinity
+              : edge.reward / edge.attempts + exploration * Math.sqrt(Math.log(edge.available) / edge.attempts)
+            : edge.attempts === 0
+              ? exploration * (rootPrior[index] ?? 0) * Math.sqrt(node.visits + 1)
+              : edge.reward / edge.attempts +
+                (exploration * (rootPrior[index] ?? 0) * Math.sqrt(node.visits + 1)) / (1 + edge.attempts);
         if (bestIndex < 0 || score > bestScore) {
           bestIndex = index;
           bestScore = score;
@@ -135,7 +143,7 @@ export async function searchMcts(options: {
     }
   }
   options.signal?.throwIfAborted();
-  const rootNode = nodes.get(informationKey(options.root));
+  const rootNode = nodes.get(rootKey);
   const root = options.root.actions
     .map((_, action) => {
       const edge = rootNode?.edges.get(actionKey(options.root, action));

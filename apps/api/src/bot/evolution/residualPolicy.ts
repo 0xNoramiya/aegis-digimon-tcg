@@ -1,3 +1,4 @@
+import { createStyledHeuristicProgram } from "#api/bot/levels/createStyledHeuristicProgram";
 import type { Seat } from "@aegis/shared";
 import type { GameEngine } from "../../engine/GameEngine.js";
 import type { Candidate } from "../candidates.js";
@@ -6,7 +7,12 @@ import type { BotView } from "../view.js";
 import { trainingObservation } from "../training/observation.js";
 import type { TrainingAction } from "../training/actions.js";
 import { actionCardId, actionFeatures, scoreHeuristicRules, type HeuristicProgram } from "./heuristic.js";
-import { DEFAULT_BOT_PROFILE } from "#api/bot/profiles";
+import { DEFAULT_BOT_PROFILE, type BotProfile } from "#api/bot/profiles";
+import { planMainTurn } from "#api/bot/evolution/planMainTurn";
+import type { TurnPlannerParameters } from "#api/bot/evolution/defaultTurnPlannerParameters";
+import { humanPanelProgram } from "#api/bot/experiment/humanPanelProgram";
+import { mainActions } from "#api/bot/training/actions";
+import type { DecisionAnswerObservation } from "#api/bot/decisions/DecisionAnswerObservation";
 
 /** Start with exactly the certified balanced policy; evolve bounded score adjustments. */
 export const SEED_RESIDUAL: HeuristicProgram = {
@@ -45,8 +51,13 @@ export function createResidualPolicy(input: {
   seed: number;
   program: HeuristicProgram;
   onDecision?: (trace: unknown) => void;
+  onDecisionAnswer?: (observation: DecisionAnswerObservation) => void;
+  profile?: BotProfile;
+  planner?: TurnPlannerParameters;
 }) {
   if (input.program.basePolicy !== "projected-balanced") throw new Error("Residual policy needs the balanced base");
+  const profile = input.profile ?? DEFAULT_BOT_PROFILE;
+  let plannedIntent: string | undefined;
   let lastView: BotView | undefined;
   let observation: ReturnType<typeof trainingObservation>;
   let entries: {
@@ -61,14 +72,16 @@ export function createResidualPolicy(input: {
     engine: input.engine,
     seat: input.seat,
     seed: input.seed,
+    profile,
     preferBeneficialSelections: input.program.preferBeneficialSelections,
     preferFreeOptionSelections: input.program.preferFreeOptionSelections,
-    ...(input.program.breedingDeployLevel === undefined
+    onDecisionAnswer: input.onDecisionAnswer,
+    ...(input.profile !== undefined || input.program.breedingDeployLevel === undefined
       ? {}
       : {
           profile: {
-            ...DEFAULT_BOT_PROFILE,
-            weights: { ...DEFAULT_BOT_PROFILE.weights, deployLevel: input.program.breedingDeployLevel },
+            ...profile,
+            weights: { ...profile.weights, deployLevel: input.program.breedingDeployLevel },
           },
         }),
     adjustMainScore({ view, candidate, action, score }) {
@@ -76,6 +89,21 @@ export function createResidualPolicy(input: {
         lastView = view;
         observation = trainingObservation(input.engine.state, input.seat);
         entries = [];
+        plannedIntent = undefined;
+        if (input.planner !== undefined) {
+          const actions = mainActions(input.engine, input.seat, {
+            includeSpecialActions: false,
+            digiXrosValidationBudget: 256,
+          });
+          if (actions.length > 0) {
+            const plan = planMainTurn({
+              program: createStyledHeuristicProgram({ program: humanPanelProgram.program, profile }),
+              window: { observation, kind: "main", selected: [], actions },
+              parameters: input.planner,
+            });
+            plannedIntent = JSON.stringify(actions[plan.index]?.intent);
+          }
+        }
       }
       const window = { observation, kind: "main", selected: [], actions: [action] };
       const features = actionFeatures(window, 0);
@@ -94,7 +122,7 @@ export function createResidualPolicy(input: {
           sourceCardId,
           contributions: adjustment.contributions,
         });
-      return adjustment.score;
+      return adjustment.score + (plannedIntent === JSON.stringify(action.intent) ? 2 : 0);
     },
     onMainChoice(candidate: Candidate | undefined) {
       if (!input.onDecision) return;

@@ -1,5 +1,6 @@
 import { GameState, Phase, type Intent, type Seat, type ServerEvent } from "@aegis/shared";
 import { Decoder, Encoder } from "@colyseus/schema";
+import type { LiveSearchFallbackCounts } from "#api/bot/search/LiveSearchFallback";
 import { GameEngine } from "../engine/GameEngine.js";
 import { BLUE_DECK, RED_DECK, type Decklist } from "../engine/testDecks.js";
 import { BotPlayer } from "./BotPlayer.js";
@@ -56,6 +57,7 @@ export interface MatchOptions {
 export interface SeatStats {
   label: string;
   attacksDeclared: number;
+  securityAttacksDeclared: number;
   securityCardsTaken: number;
   digimonPlayed: number;
   digivolutions: number;
@@ -63,6 +65,7 @@ export interface SeatStats {
   /** Main-phase policy latency (ms), including asynchronous completion; excludes fallback work. */
   decisionLatenciesMs: number[];
   inferenceFallbacks: { timeout: number; error: number };
+  searchFallbacks?: LiveSearchFallbackCounts;
 }
 
 export interface MatchResult {
@@ -95,6 +98,7 @@ function emptyStats(label: string): SeatStats {
   return {
     label,
     attacksDeclared: 0,
+    securityAttacksDeclared: 0,
     securityCardsTaken: 0,
     digimonPlayed: 0,
     digivolutions: 0,
@@ -357,7 +361,11 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
 
   closed = true;
   for (const bot of bots) bot?.dispose();
-  for (const seat of [0, 1] as const) stats[seat].inferenceFallbacks = { ...bots[seat]!.inferenceFallbacks };
+  for (const seat of [0, 1] as const) {
+    stats[seat].inferenceFallbacks = { ...bots[seat]!.inferenceFallbacks };
+    const searchFallbacks = bots[seat]!.searchFallbacks;
+    if (searchFallbacks !== undefined) stats[seat].searchFallbacks = { ...searchFallbacks };
+  }
 
   return {
     seed: options.seed,
@@ -402,6 +410,7 @@ function recordEvent(event: ServerEvent, state: GameState, stats: [SeatStats, Se
   switch (event.kind) {
     case "attackDeclared":
       stats[event.seat].attacksDeclared += 1;
+      if (!event.redirected && event.target.kind === "player") stats[event.seat].securityAttacksDeclared += 1;
       break;
     case "securityChecked":
       // `seat` is the seat whose security was checked, so the attacker took the card.
@@ -454,6 +463,7 @@ export interface SeriesResult {
 export interface AggregateStats {
   label: string;
   attacksPerTurn: number;
+  securityAttacksPerTurn: number;
   securityTakenPerGame: number;
   digimonPlayedPerGame: number;
   digivolutionsPerGame: number;
@@ -535,6 +545,7 @@ function aggregate(label: string, samples: readonly SeatStats[]): AggregateStats
   return {
     label,
     attacksPerTurn: samples.reduce((sum, sample) => sum + sample.attacksDeclared, 0) / totalTurns,
+    securityAttacksPerTurn: samples.reduce((sum, sample) => sum + sample.securityAttacksDeclared, 0) / totalTurns,
     securityTakenPerGame: samples.reduce((sum, sample) => sum + sample.securityCardsTaken, 0) / games,
     digimonPlayedPerGame: samples.reduce((sum, sample) => sum + sample.digimonPlayed, 0) / games,
     digivolutionsPerGame: samples.reduce((sum, sample) => sum + sample.digivolutions, 0) / games,

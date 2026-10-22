@@ -1,4 +1,6 @@
-import { CardKind, type Seat } from "@aegis/shared";
+import { projectMainActionCandidate } from "#api/bot/projectMainActionCandidate";
+import { selectScoredCandidate } from "#api/bot/levels/selectScoredCandidate";
+import type { Seat } from "@aegis/shared/schema/enums";
 import type { GameEngine } from "../engine/GameEngine.js";
 import type { Candidate } from "./candidates.js";
 import { bodyValue, scoreCandidate } from "./evaluate.js";
@@ -54,13 +56,12 @@ export function createProjectedEvaluationPolicy(
       activated.clear();
     },
     chooseMainAction(view) {
-      let best: Candidate | undefined;
-      let bestScore = Number.NEGATIVE_INFINITY;
+      const scored: { candidate: Candidate; score: number; lethal: boolean }[] = [];
       for (const action of mainActions(input.engine, input.seat, {
-        includeSpecialActions: false,
+        includeSpecialActions: true,
         digiXrosValidationBudget: 256,
       })) {
-        const candidate = projectedCandidate(view, action);
+        const candidate = projectMainActionCandidate({ view, action });
         if (!candidate || candidate.cost > view.maxAffordable || rejected.has(candidate.key)) continue;
         if (candidate.kind === "activateEffect" && activated.has(candidate.key)) continue;
         const materials =
@@ -75,12 +76,20 @@ export function createProjectedEvaluationPolicy(
         const adjustment = input.adjustMainScore?.({ view, candidate, action, score: baselineScore }) ?? 0;
         if (!Number.isFinite(adjustment)) throw new Error("Non-finite projected policy adjustment");
         const score = baselineScore + adjustment + random.next() * 0.01;
-        if (score > bestScore) {
-          best = candidate;
-          bestScore = score;
-        }
+        scored.push({
+          candidate,
+          score,
+          lethal: candidate.kind === "attackPlayer" && baselineScore >= profile.weights.lethal,
+        });
       }
-      if (!best || bestScore <= profile.weights.actionThreshold) {
+      const best = selectScoredCandidate({
+        candidates: scored,
+        temperature: input.temperature ?? 0,
+        topK: input.topK ?? 1,
+        random: () => random.next(),
+        passThreshold: profile.weights.actionThreshold,
+      });
+      if (best === undefined) {
         input.onMainChoice?.(undefined);
         return { type: "endPhase" };
       }
@@ -93,46 +102,4 @@ export function createProjectedEvaluationPolicy(
       base.noteRejected(intent);
     },
   };
-}
-
-function projectedCandidate(view: BotView, action: TrainingAction): Candidate | undefined {
-  const intent = action.intent;
-  const common = { intent, key: JSON.stringify(intent), cost: action.projectedCost ?? 0 };
-  if (intent.type === "endPhase") return { ...common, kind: "endPhase" };
-  if (intent.type === "activateEffect") return { ...common, kind: "activateEffect" };
-  if (intent.type === "attack") {
-    const attacker = view.board.find((unit) => unit.permanentId === intent.attackerPermanentId);
-    if (intent.target.kind === "player") return { ...common, kind: "attackPlayer", attacker };
-    const targetId = intent.target.permanentId;
-    return {
-      ...common,
-      kind: "attackDigimon",
-      attacker,
-      target: view.opponentBoard.find((unit) => unit.permanentId === targetId),
-    };
-  }
-  if (intent.type === "digivolve") {
-    const base = [...view.board, ...(view.breeding ? [view.breeding] : [])].find(
-      (unit) => unit.permanentId === intent.permanentId,
-    );
-    return {
-      ...common,
-      kind: "digivolve",
-      base,
-      definition: view.hand.find((card) => card.instanceId === intent.instanceId)?.definition,
-    };
-  }
-  if (intent.type === "playCard") {
-    const definition = view.hand.find((card) => card.instanceId === intent.instanceId)?.definition;
-    if (!definition) return undefined;
-    const kind = definition.kinds.includes(CardKind.Option)
-      ? "playOption"
-      : definition.kinds.includes(CardKind.Digimon)
-        ? "playDigimon"
-        : definition.kinds.includes(CardKind.Tamer)
-          ? "playTamer"
-          : undefined;
-    return kind ? { ...common, kind, definition } : undefined;
-  }
-  return undefined;
 }

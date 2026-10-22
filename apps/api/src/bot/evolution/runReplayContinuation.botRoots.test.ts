@@ -9,6 +9,7 @@ import { createHeuristicExposureChooser } from "#api/bot/evolution/createHeurist
 import { createChangedPositionTracker, type ChangedPosition } from "#api/bot/evolution/createChangedPositionTracker";
 import { randomDeck } from "#api/bot/evolution/randomDecks";
 import { runReplayContinuation } from "#api/bot/evolution/runReplayContinuation";
+import { createEvaluationPolicy } from "#api/bot/policy";
 import { runReplay } from "#api/replays/inputs/run";
 import type { ReplayRecord } from "#api/replays/inputs/types";
 
@@ -133,5 +134,16 @@ describe("bot replay continuation roots", () => {
     expect(roots).toBe(1);
     expect(continued).toBeGreaterThan(0);
     expect(opponentDecisions).toBeGreaterThan(0);
+  }, 120_000);
+
+  it("uses the Standard evaluation policy throughout a live search rollout", async () => {
+    const result = await continueFrom(record, {
+      rolloutPolicy: createEvaluationPolicy({ seed: 11 }),
+      rolloutTurns: 1,
+      maxDurationMs: 120_000,
+    });
+    expect(result.reason).toBe("rolloutCutoff");
+    expect(result.valid).toBe(true);
+    expect(result.failures).toEqual([]);
   }, 120_000);
 });

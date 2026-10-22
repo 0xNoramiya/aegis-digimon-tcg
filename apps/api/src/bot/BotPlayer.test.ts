@@ -1,3 +1,4 @@
+import type { BotThinkRange } from "#api/bot/BotThinkRange";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   Phase,
@@ -490,7 +491,7 @@ describe("BotPlayer action pacing and player attacks", () => {
     bot.onDecisionRequested(request);
     await advance(100);
     expect(intents).toEqual([
-      { type: "respondDecision", decisionId: "order", response: { kind: "orderCards", order: ["B", "A"] } },
+      { type: "respondDecision", decisionId: "order", response: { kind: "orderCards", order: ["A", "B"] } },
     ]);
     deferred.reject(new Error("late failure"));
     await advance(1);
@@ -861,7 +862,7 @@ describe("BotPlayer action pacing and player attacks", () => {
       {
         type: "respondDecision",
         decisionId: "dec-order",
-        response: { kind: "orderCards", order: ["card-c", "card-a", "card-b"] },
+        response: { kind: "orderCards", order: ["card-a", "card-b", "card-c"] },
       },
     ]);
   });
@@ -904,6 +905,12 @@ describe("BotPlayer action pacing and player attacks", () => {
     expect(intents).toContainEqual({ type: "respondEvade", permanentId: "large", accept: true });
     // Barrier trashes a security card; a 5000 DP Lv.3 body is not worth one.
     expect(intents).toContainEqual({ type: "respondBarrier", permanentId: "small", accept: false });
+    expect(bot.policyDecisionLatencySummary).toMatchObject({
+      decisions: 3,
+      p50Ms: expect.any(Number),
+      p95Ms: expect.any(Number),
+      maxMs: expect.any(Number),
+    });
   });
 
   it("answers the alliance prompt, taking an ally only against a contested board", async () => {
@@ -1337,4 +1344,38 @@ describe("BotPlayer — a decision inside a security check", () => {
     await advance(SECURITY_CHECK_NARRATION_MS + DEFAULT_MAX_ACTION_DELAY_MS);
     expect(intents).toContainEqual(expect.objectContaining({ type: "respondDecision", decisionId: "after-check" }));
   });
+});
+
+it("paces a forced move faster than a branching turn through the injected delay", async () => {
+  async function collectRange(count: number): Promise<BotThinkRange> {
+    const { state } = botState();
+    let observed: BotThinkRange | undefined;
+    const bot = new BotPlayer(
+      1,
+      state,
+      () => {
+        state.gameOver = true;
+      },
+      {
+        minThinkMs: 2000,
+        maxThinkMs: 2800,
+        getLegalCandidateCount: () => count,
+        thinkDelay: async (range) => {
+          observed = range;
+        },
+        policy: { ...createEvaluationPolicy(), chooseMainAction: () => ({ type: "endPhase" }) },
+      },
+    );
+    bot.onEvent({ kind: "phaseChanged", phase: Phase.Main, turnSeat: 1, turnCount: 1 });
+    await vi.waitFor(() => expect(observed).toBeDefined());
+    bot.dispose();
+    return observed!;
+  }
+  const forced = await collectRange(1);
+  const branching = await collectRange(2);
+  const complex = await collectRange(10);
+  expect(forced.maxMs).toBeLessThan(branching.minMs);
+  expect(branching.minMs).toBe(2000);
+  expect(branching.maxMs).toBeLessThan(complex.maxMs);
+  expect(complex).toEqual({ minMs: 2000, maxMs: 2800 });
 });

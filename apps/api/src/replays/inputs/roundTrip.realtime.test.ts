@@ -92,7 +92,7 @@ const MATCHES: Match[] = [
   uninterrupted(7),
   dropAndReconnect(13, 3),
   dropAndReconnect(424242, 5),
-  combatWindowExpiry(13),
+  combatWindowExpiry(6),
   { ...uninterrupted(99), ...BLOCKER_DECKS, name: "a match whose effects shuffle security" },
   {
     ...combatWindowExpiry(6),

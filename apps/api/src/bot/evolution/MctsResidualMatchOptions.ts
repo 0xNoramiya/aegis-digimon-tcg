@@ -2,6 +2,7 @@ import type { Seat } from "@aegis/shared/schema/enums";
 import type { Decklist } from "#api/engine/setup";
 import type { HeuristicProgram } from "#api/bot/evolution/heuristic";
 import type { SearchReport } from "#api/bot/evolution/mcts";
+import type { SeenOpponentCards } from "#api/bot/evolution/SeenOpponentCards";
 
 export type MctsResidualMatchOptions = {
   seed: number;
@@ -17,6 +18,7 @@ export type MctsResidualMatchOptions = {
   maxRolloutDecisions?: number;
   moveOrderingProgram?: HeuristicProgram;
   searchSeed: number;
+  seenOpponentCards?: SeenOpponentCards;
   maxSearches?: number;
   startAfterDecisions?: number;
   turnLimit?: number;

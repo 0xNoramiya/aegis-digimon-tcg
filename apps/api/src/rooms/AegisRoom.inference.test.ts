@@ -66,7 +66,7 @@ describe("opt-in trained policies in Aegis rooms", () => {
     expect(room.state.players[1]!.botPersonaId).toBe(botPersonaForDeck({ deckId: requestedDeck(1) }).id);
     expect(InferenceClient.start).not.toHaveBeenCalled();
     const bot = (room as unknown as { bots: BotPlayer[] }).bots[1]!;
-    expect(bot.policyName).toMatch(/^evaluation:/);
+    expect(bot.policyName).toMatch(/^level:standard:[a-z]+:evaluation:/);
   });
 
   it.each([0, 1] as const)("uses the real async adapter for supported bot deck %i", async (deckIndex) => {

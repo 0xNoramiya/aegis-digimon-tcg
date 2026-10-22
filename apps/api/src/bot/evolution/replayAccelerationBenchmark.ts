@@ -19,11 +19,51 @@ async function main(): Promise<void> {
     seed?: number;
     learnerSeat?: Seat;
     repetitions?: number;
-    mode?: "single-search-after-prefix" | "full-game";
+    mode?: "single-search-after-prefix" | "full-game" | "snapshot-restoration" | "captured-search-roots";
+    taskDirectory?: string;
+    candidateLimit?: number;
+    referenceFile?: string;
+    replayFile?: string;
+    rootLimit?: number;
     startAfterDecisions?: number;
     decks?: [string | number, string | number];
     rolloutTurns?: number;
   };
+  if (input.mode === "snapshot-restoration") {
+    if (typeof input.replayFile !== "string") {
+      throw new Error("Snapshot benchmark requires a replayFile");
+    }
+    const { runSnapshotReplayBenchmark } = await import("#api/bot/evolution/runSnapshotReplayBenchmark");
+    const record = JSON.parse(readFileSync(input.replayFile, "utf8"));
+    const report = await runSnapshotReplayBenchmark({
+      record,
+      repetitions: input.repetitions ?? 4,
+      rootLimit: input.rootLimit ?? 8,
+    });
+    writeReport(JSON.stringify(report) + "\n");
+    return;
+  }
+  if (input.mode === "captured-search-roots") {
+    if (typeof input.taskDirectory !== "string") {
+      throw new Error("Captured search benchmark requires a taskDirectory");
+    }
+    console.log = console.info = console.debug = console.warn = () => {};
+    const { runCapturedSearchRootsBenchmark } = await import("#api/bot/search/runCapturedSearchRootsBenchmark");
+    const report = await runCapturedSearchRootsBenchmark({
+      taskDirectory: input.taskDirectory,
+      simulations: input.simulations,
+      candidateLimit: input.candidateLimit ?? 8,
+      repetitions: input.repetitions ?? 10,
+      ...(input.referenceFile === undefined
+        ? {}
+        : { referenceDigests: JSON.parse(readFileSync(input.referenceFile, "utf8")).digests }),
+    });
+    writeReport(JSON.stringify(report) + "\n");
+    if (report.equivalentToReference === false) {
+      process.exitCode = 1;
+    }
+    return;
+  }
   const deckKeys = input.decks ?? [1, 2];
   if (!Array.isArray(deckKeys) || deckKeys.length !== 2)
     throw new Error("Benchmark requires exactly two deck identities");

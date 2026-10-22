@@ -82,6 +82,7 @@ export interface BotView {
   deckCount: number;
   eggDeckCount: number;
   trashCount: number;
+  opponentTrashCardIds?: readonly string[];
   /** Own Digimon that could still declare an attack this turn. */
   readyAttackers: readonly BotUnit[];
   /** Opposing colors present on the board — used for Option color requirements. */
@@ -221,6 +222,7 @@ export function buildBotView(state: GameState, seat: Seat): BotView | undefined 
     deckCount: zoneSize(me.deck, me.deckCount),
     eggDeckCount: zoneSize(me.eggDeck, me.eggDeckCount),
     trashCount: toArray(me.trash).length,
+    opponentTrashCardIds: toArray(opponent?.trash).map((card) => card.cardId),
     readyAttackers: board.filter(
       (unit) => !unit.suspended && (unit.canAttackPlayer || unit.attackablePermanentIds.length > 0),
     ),
@@ -273,7 +275,7 @@ interface PlayerLike {
   deck?: ArrayLike<unknown>;
   eggDeck?: ArrayLike<unknown>;
   security?: ArrayLike<unknown>;
-  trash?: ArrayLike<unknown>;
+  trash?: ArrayLike<{ cardId: string }>;
   battleArea?: ArrayLike<PermanentLike>;
   breeding?: PermanentLike;
   eggDeckCount?: number;

@@ -1,7 +1,8 @@
-import { createHash } from "node:crypto";
 import { performance } from "node:perf_hooks";
 import type { Intent } from "@aegis/shared/protocol/intents";
 import type { Seat } from "@aegis/shared/schema/enums";
+import type { GameEngineSnapshot } from "#api/engine/snapshot/GameEngineSnapshot";
+import { snapshotGameEngine } from "#api/engine/snapshot/snapshotGameEngine";
 import { shuffleInPlace, makeRng } from "#api/engine/setup";
 import { runBotMatch } from "#api/bot/matchHarness";
 import { buildBotView } from "#api/bot/view";
@@ -9,35 +10,14 @@ import { mainActionReady, mainActions } from "#api/bot/training/actions";
 import { trainingObservation } from "#api/bot/training/observation";
 import type { TrainingWindow } from "#api/bot/training/policy";
 import { createRecordedResidualPolicy } from "#api/bot/evolution/createRecordedResidualPolicy";
-import { determinize } from "#api/bot/evolution/determinize";
 import { validEvolutionGame } from "#api/bot/evolution/evolutionMatch";
 import { informationKey, searchMcts, type SearchReport } from "#api/bot/evolution/mcts";
 import type { MctsResidualMatchOptions } from "#api/bot/evolution/MctsResidualMatchOptions";
 import type { RecordedResidualChoice } from "#api/bot/evolution/RecordedResidualChoice";
 import { SEED_RESIDUAL } from "#api/bot/evolution/residualPolicy";
-import { evaluateSearchPosition } from "#api/bot/evolution/evaluateSearchPosition";
 import { orderMctsActions } from "#api/bot/evolution/orderMctsActions";
 import type { HeuristicProgram } from "#api/bot/evolution/heuristic";
-
-type RecordedIntent = {
-  seat: Seat;
-  method: RecordedResidualChoice["method"];
-  information: string;
-  intent: Intent;
-};
-
-function observedChoice(choice: RecordedResidualChoice): string {
-  return createHash("sha256")
-    .update(
-      JSON.stringify({
-        observation: trainingObservation(choice.engine.state, choice.seat),
-        method: choice.method,
-        context: choice.context,
-        request: choice.request === undefined ? undefined : { ...choice.request, decisionId: undefined },
-      }),
-    )
-    .digest("hex");
-}
+import { runReplayContinuation } from "#api/bot/evolution/runReplayContinuation";
 
 function searchWindow(choice: RecordedResidualChoice, seed: number, program?: HeuristicProgram): TrainingWindow {
   const view = buildBotView(choice.engine.state, choice.seat);
@@ -96,10 +76,12 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
   const programs = [SEED_RESIDUAL, SEED_RESIDUAL];
   programs[options.learnerSeat] = options.program;
   programs[options.learnerSeat === 0 ? 1 : 0] = options.opponentProgram ?? SEED_RESIDUAL;
-  const transcript: RecordedIntent[] = [];
+  const transcript: Intent[] = [];
   const searches: (SearchReport & { seat: Seat; elapsedMs: number })[] = [];
   const traces: unknown[] = [];
-  let replayedChoices = 0;
+  const searchFailures: string[] = [];
+  const simulationFailures: { reason: string; failures: string[]; turn: number }[] = [];
+  let snapshotRestorations = 0;
   const seatsFor = (choose: (choice: RecordedResidualChoice) => Promise<Intent>, live: boolean) =>
     options.decks.map((deck) => ({
       deck,
@@ -111,7 +93,14 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
           seat,
           seed: options.seed + seat * 7919,
           program: programs[seat]!,
-          choose,
+          choose: async (choice) => {
+            try {
+              return await choose(choice);
+            } catch (error) {
+              searchFailures.push(error instanceof Error ? (error.stack ?? error.message) : String(error));
+              throw error;
+            }
+          },
           onDecision:
             live && options.captureTraces && seat === options.learnerSeat
               ? (trace) => {
@@ -122,109 +111,48 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
         }),
     }));
   const simulate = async (
-    prefix: readonly RecordedIntent[],
+    engineSnapshot: GameEngineSnapshot,
     root: TrainingWindow,
     choose: (window: TrainingWindow) => number,
     sampleSeed: number,
     signal: AbortSignal,
   ) => {
-    let cursor = 0;
-    let reachedRoot = false;
-    let mismatch = false;
-    let leafValue: number | undefined;
-    const control = new AbortController();
-    const seats = seatsFor(async (choice) => {
-      const entry = prefix[cursor++];
-      if (entry !== undefined) {
-        if (
-          entry.seat !== choice.seat ||
-          entry.method !== choice.method ||
-          entry.information !== observedChoice(choice)
-        ) {
-          mismatch = true;
-          control.abort();
-          return choice.baseline;
-        }
-        replayedChoices++;
-        const intent = structuredClone(entry.intent);
-        return intent.type === "respondDecision" && choice.request !== undefined
-          ? { ...intent, decisionId: choice.request.decisionId }
-          : intent;
-      }
-      if (!reachedRoot) {
-        if (choice.seat !== searchSeat || !searchable(choice)) {
-          mismatch = true;
-          control.abort();
-          return choice.baseline;
-        }
-        const restored = searchWindow(choice, options.searchSeed + prefix.length, options.moveOrderingProgram);
-        if (
-          informationKey(restored) !== informationKey(root) ||
-          JSON.stringify(restored.actions.map((action) => action.intent)) !==
-            JSON.stringify(root.actions.map((action) => action.intent))
-        ) {
-          mismatch = true;
-          control.abort();
-          return choice.baseline;
-        }
-        reachedRoot = true;
-        await determinize(choice.engine, searchSeat, sampleSeed);
-        return structuredClone(root.actions[choose(root)]!.intent);
-      }
-      if (
-        ((options.rolloutTurns !== undefined &&
-          choice.engine.state.turnCount >= root.observation.turn + options.rolloutTurns) ||
-          (maxRolloutDecisions !== undefined && cursor - prefix.length >= maxRolloutDecisions)) &&
-        choice.method === "chooseMainAction" &&
-        choice.engine.state.pendingDecision === undefined &&
-        choice.engine.state.combatWindow === undefined
-      ) {
-        leafValue = evaluateSearchPosition(trainingObservation(choice.engine.state, searchSeat));
-        control.abort();
-        return choice.baseline;
-      }
-      if (choice.seat !== searchSeat || !searchable(choice)) return choice.baseline;
-      const window = searchWindow(choice, sampleSeed + cursor, options.moveOrderingProgram);
-      return structuredClone(window.actions[choose(window)]!.intent);
-    }, false);
-    const result = await runBotMatch({
-      seed: options.seed,
-      seats: [seats[0]!, seats[1]!],
-      turnLimit: options.turnLimit ?? 60,
-      captureEvents: true,
-      captureEventFilter: (event) => event.kind === "actionRejected",
-      measureDecisionLatencies: false,
-      signal: AbortSignal.any([control.signal, signal]),
-    });
-    const healthyCutoff =
-      leafValue !== undefined &&
-      result.reason === "cancelled" &&
-      !signal.aborted &&
-      !result.timedOut &&
-      result.errors.length === 0 &&
-      result.rejections.length === 0 &&
-      !result.events?.some((event) => event.kind === "actionRejected") &&
-      result.seats.every((seat) => seat.inferenceFallbacks.error === 0 && seat.inferenceFallbacks.timeout === 0);
-    function getReward(): number {
-      if (healthyCutoff) {
-        return leafValue!;
-      }
-      if (result.winnerSeat === searchSeat) {
-        return 1;
-      }
-      if (result.winnerSeat === undefined) {
-        return 0.5;
-      }
-      return 0;
+    snapshotRestorations++;
+    let result;
+    try {
+      result = await runReplayContinuation({
+        engineSnapshot: structuredClone(engineSnapshot),
+        seat: searchSeat,
+        expectedInformation: informationKey(root),
+        sampleSeed,
+        seenOpponentCards: options.seenOpponentCards,
+        program: programs[searchSeat]!,
+        opponentProgram: programs[searchSeat === 0 ? 1 : 0]!,
+        rootWindow: root,
+        choose,
+        rolloutTurns: options.rolloutTurns,
+        maxRolloutDecisions,
+        turnLimit: options.turnLimit,
+        signal,
+      });
+    } catch (error) {
+      simulationFailures.push({
+        reason: error instanceof Error ? (error.stack ?? error.message) : String(error),
+        failures: [],
+        turn: root.observation.turn,
+      });
+      return { valid: false, reward: 0, evaluatedLeaf: false };
+    }
+    if (!result.valid) {
+      simulationFailures.push({ reason: result.reason, failures: result.failures, turn: result.turn });
     }
     return {
-      valid: reachedRoot && !mismatch && (validEvolutionGame(result) || healthyCutoff),
-      reward: getReward(),
-      evaluatedLeaf: healthyCutoff,
+      valid: result.valid,
+      reward: result.reward,
+      evaluatedLeaf: result.reason === "rolloutCutoff",
     };
   };
   const seats = seatsFor(async (choice) => {
-    const information = observedChoice(choice);
     let intent = choice.baseline;
     if (
       options.simulations > 0 &&
@@ -235,7 +163,13 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
     ) {
       const root = searchWindow(choice, options.searchSeed + transcript.length, options.moveOrderingProgram);
       if (root.actions.length > 1) {
-        const prefix = [...transcript];
+        let engineSnapshot: GameEngineSnapshot;
+        try {
+          engineSnapshot = snapshotGameEngine({ engine: choice.engine });
+        } catch (error) {
+          searchFailures.push(error instanceof Error ? (error.stack ?? error.message) : String(error));
+          throw error;
+        }
         const start = performance.now();
         const signal = choice.signal ?? new AbortController().signal;
         let leafEvaluations = 0;
@@ -249,10 +183,10 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
           rolloutChoose: () => 0,
           simulate: async (choose, simulation) => {
             const result = await simulate(
-              prefix,
+              engineSnapshot,
               root,
               choose,
-              (options.searchSeed + prefix.length * 7919 + simulation * 104729) >>> 0,
+              (options.searchSeed + transcript.length * 7919 + simulation * 104729) >>> 0,
               signal,
             );
             if (result.valid && result.evaluatedLeaf) {
@@ -272,12 +206,7 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
         options.onSearch?.(report);
       }
     }
-    transcript.push({
-      seat: choice.seat,
-      method: choice.method,
-      information,
-      intent: structuredClone(intent),
-    });
+    transcript.push(structuredClone(intent));
     if (transcript.length > 10000) throw new Error("Residual MCTS match exceeded its decision budget");
     return intent;
   }, true);
@@ -301,6 +230,8 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
     decisions: transcript.length,
     traces,
     searches,
-    replayedChoices,
+    snapshotRestorations,
+    simulationFailures,
+    searchFailures,
   };
 }
