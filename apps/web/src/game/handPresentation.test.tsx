@@ -201,3 +201,62 @@ it("sorts from the hand tray without opening settings and appends later draws", 
   expect(screen.getByRole("button", { name: "Sort hand: By cost" })).toBeTruthy();
   expect(localStorage.getItem("aegis.hand.sort-mode")).toBe("cost");
 });
+
+it.each([0, 1])("shows all redealt physical cards when a mulligan retains %s original identities", (retained) => {
+  vi.useFakeTimers();
+  const state = new GameState();
+  state.phase = Phase.None;
+  state.stateVersion = 1;
+  for (const seat of [0, 1] as const) {
+    const player = new PlayerState();
+    player.seat = seat;
+    player.sessionId = `redeal-seat-${seat}`;
+    player.handCount = 5;
+    player.deckCount = 45;
+    state.players.push(player);
+  }
+  for (let index = 0; index < 5; index++) {
+    state.players[0]!.hand.push(
+      Object.assign(new CardInstance(), { instanceId: `opening-${index}`, cardId: "ST1-03" }),
+    );
+  }
+  const before = snapshotGameState(state);
+  const view = () => (
+    <I18nProvider>
+      <GameScreen
+        joinOptions={{ displayName: "You", deck: { mainDeck: [], eggDeck: [] } }}
+        identityColor="Blue"
+        onExit={() => undefined}
+        demoConnection={{
+          room: undefined,
+          status: "connected",
+          error: undefined,
+          decision: undefined,
+          state,
+          events: [],
+          batches: [],
+          snapshots: [{ stateVersion: 1, state: before }],
+          acknowledgeDecision: () => undefined,
+          sessionId: "redeal-seat-0",
+          roomCode: "",
+        }}
+      />
+    </I18nProvider>
+  );
+  const rendered = render(view());
+  const ids = () =>
+    [...document.querySelectorAll<HTMLElement>('[data-testid="hand"] [data-hand-instance-id]')].map(
+      (card) => card.dataset.handInstanceId,
+    );
+  expect(ids()).toHaveLength(5);
+  for (let index = retained; index < 5; index++) {
+    state.players[0]!.hand[index] = Object.assign(new CardInstance(), {
+      instanceId: `redealt-${index}`,
+      cardId: "ST1-03",
+    });
+  }
+  rendered.rerender(view());
+  expect(ids()).toEqual(
+    Array.from({ length: 5 }, (_, index) => (index < retained ? `opening-${index}` : `redealt-${index}`)),
+  );
+});

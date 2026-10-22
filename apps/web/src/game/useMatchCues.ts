@@ -1,4 +1,5 @@
 import { useManualSignalNarration } from "@/game/manual/useManualSignalNarration";
+import { Phase } from "@aegis/shared/schema/enums";
 import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { createDiscardedSourceResolution } from "./match/present/announcements";
 import { createDiscardedSourcePanels } from "./match/narration/presentableNarration";
@@ -1289,23 +1290,22 @@ export function useMatchCues({
     [queue],
   );
 
+  function getPresentationRevisionContext(stateVersion: number) {
+    const batch = batches.find((candidate) => candidate.stateVersion === stateVersion);
+    return {
+      gate:
+        stateVersion > effectSequence.observedVersion()
+          ? effectSequence.causeOfLiveChange(stateVersion)
+          : (effectSequence.causeOfObservedChange(stateVersion - 1, stateVersion) ?? null),
+      ...(batch ? { origin: { batchId: batch.id, stateVersion, phaseOrder: phaseOrderFor(batch.events) } } : {}),
+    };
+  }
+
   useDpPulses({
     state,
     preserveChanges: presentationPacing === "sequential",
     snapshots,
-    contextOfRevision(stateVersion) {
-      const batch = batches.find((candidate) => candidate.stateVersion === stateVersion);
-      return {
-        gate:
-          stateVersion > effectSequence.observedVersion()
-            ? effectSequence.causeOfLiveChange(stateVersion)
-            : // A retained snapshot names an exact revision, not the whole coalesced
-              // patch. Turn-end DP expiry has no effect owner and must not wait on a
-              // later Active clause whose ribbon is itself waiting for that pulse.
-              (effectSequence.causeOfObservedChange(stateVersion - 1, stateVersion) ?? null),
-        ...(batch ? { origin: { batchId: batch.id, stateVersion, phaseOrder: phaseOrderFor(batch.events) } } : {}),
-      };
-    },
+    contextOfRevision: getPresentationRevisionContext,
     queue: liveStateQueue,
     dpByPermanentRef,
     dpPulseKeyRef,
@@ -1317,6 +1317,8 @@ export function useMatchCues({
 
   useRestrictionPulses({
     state,
+    snapshots: presentationPacing === "sequential" ? snapshots : undefined,
+    contextOfRevision: presentationPacing === "sequential" ? getPresentationRevisionContext : undefined,
     queue: liveStateQueue,
     restrictionsByPermanentRef,
     freezePulseKeyRef,
@@ -1516,7 +1518,7 @@ export function useMatchCues({
   // A patch can arrive before batchClosed. Reserve incoming draws immediately:
   // the batch's measured flight takes over this hold before the next paint.
   const incomingHandArrivals = new Map(heldHandArrivals);
-  if (cueBaselineRef.current && liveMode() === "live") {
+  if (cueBaselineRef.current && liveMode() === "live" && state?.phase !== Phase.None && !mulliganOpen) {
     const closed = new Set(batches.map((batch) => batch.id));
     const opaqueClaims = new Map<Seat, number>();
     for (const hold of heldHandArrivals.values()) {

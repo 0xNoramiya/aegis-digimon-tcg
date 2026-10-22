@@ -125,7 +125,7 @@
     column-gap: 4px;
   }
 }
-@media (max-height: 759px) and (orientation: landscape) {
+@media (max-width: 1023px) and (orientation: landscape), (max-height: 759px) and (orientation: landscape) {
   .aegis-arena .game-board .game-player-dock > .game-player-line[data-timed] {
     position: absolute;
     right: 1rem;
