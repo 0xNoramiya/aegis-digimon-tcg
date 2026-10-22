@@ -77,6 +77,7 @@ export async function engineRunSecurityCheck(
       }),
     prepareCheckTriggers: (info) => {
       const payload: TriggerInfo = {
+        securityRemovalEventId: ++engine.securityRemovalEventSeq,
         attackerPermanentId: info.attackerPermanentId,
         securityInstanceId: info.securityInstanceId,
         removedFromSecuritySeat: info.defenderSeat,

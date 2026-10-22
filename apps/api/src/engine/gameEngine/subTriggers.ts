@@ -46,6 +46,9 @@ export async function fireSubTrigger(
   payload: TriggerInfo = {},
   sourceScope?: SubTriggerSourceScope,
 ): Promise<void> {
+  if (event === "whenSecurityRemoved" && payload.securityRemovalEventId === undefined) {
+    payload = { ...payload, securityRemovalEventId: ++engine.securityRemovalEventSeq };
+  }
   const scopedOut = (sub: SubTriggerSubscription): boolean => {
     if (sourceScope === undefined) return false;
     // A class watcher that merely includes its own host ("one of your [Chessmon]") is not a
@@ -116,6 +119,33 @@ export async function fireSubTrigger(
     engine.pendingDeletionSubTriggers.push(...armedSubTriggers(engine, subscriptions, payload, contexts));
     return;
   }
+  // The event subject can leave the board before a pending watcher activates. Bind each
+  // context now, at trigger time, so the pending activation keeps the subject snapshot
+  // required by CR §15-4-4 instead of re-running its filter against an already-moved card.
+  const armWithTriggerTimeContexts = (): ArmedSubTrigger[] => {
+    const subscriptions = subscriptionsFor();
+    const contexts = new Map<number, EffectContext>();
+    for (const sub of subscriptions) {
+      const ctx = buildSubTriggerContext(engine, sub, payload);
+      if (ctx !== undefined) contexts.set(sub.id, ctx);
+    }
+    return armedSubTriggers(engine, subscriptions, payload, contexts);
+  };
+  if (engine.digivolveCostSubTriggers !== undefined && event !== "wouldBeReturned" && event !== "onDeletionOf") {
+    engine.digivolveCostSubTriggers.push(...armWithTriggerTimeContexts());
+    return;
+  }
+  if (
+    event === "whenSecurityRemoved" &&
+    engine.mainVerbContinuationsInFlight > 0 &&
+    engine.activeWindowToken === undefined &&
+    engine.effectResolutionDepth === 0 &&
+    !engine.resolvingBarrierSecurityCost &&
+    !engine.flushingDeferredSecurityRemovalTriggers
+  ) {
+    engine.pendingWindowSubTriggers.push(...armWithTriggerTimeContexts());
+    return;
+  }
   // A security card removed while another effect is resolving creates a pending trigger;
   // it does not interrupt that effect. Dynasmon BT6-044 must finish revealing its 6 cards
   // before its Recovery reaction can consume the next deck card (KB Q1430/Q1432).
@@ -139,22 +169,6 @@ export async function fireSubTrigger(
       subscriptions: pending,
       contexts,
     });
-    return;
-  }
-  // The event subject can leave the board before a pending watcher activates. Bind each
-  // context now, at trigger time, so the pending activation keeps the subject snapshot
-  // required by CR §15-4-4 instead of re-running its filter against an already-moved card.
-  const armWithTriggerTimeContexts = (): ArmedSubTrigger[] => {
-    const subscriptions = subscriptionsFor();
-    const contexts = new Map<number, EffectContext>();
-    for (const sub of subscriptions) {
-      const ctx = buildSubTriggerContext(engine, sub, payload);
-      if (ctx !== undefined) contexts.set(sub.id, ctx);
-    }
-    return armedSubTriggers(engine, subscriptions, payload, contexts);
-  };
-  if (engine.digivolveCostSubTriggers !== undefined && event !== "wouldBeReturned" && event !== "onDeletionOf") {
-    engine.digivolveCostSubTriggers.push(...armWithTriggerTimeContexts());
     return;
   }
   // A would-be-returned reaction interrupts the causing effect before its target moves

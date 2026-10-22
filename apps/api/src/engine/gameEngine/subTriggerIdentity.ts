@@ -50,6 +50,9 @@ export function subTriggerIdentity(sub: SubTriggerSubscription, trigger?: Trigge
       trigger.subjectPermanentIds ?? (trigger.suspendedPermanentId ? [trigger.suspendedPermanentId] : []);
     if (subjects.length > 0) return `${identity}|suspend:${[...subjects].sort().join(",")}`;
   }
+  if (trigger?.securityRemovalEventId !== undefined && sub.event === "whenSecurityRemoved") {
+    return `${identity}|securityRemovalEvent:${trigger.securityRemovalEventId}`;
+  }
   if (trigger?.securityInstanceId !== undefined && sub.event === "whenSecurityRemoved") {
     return `${identity}|securityRemoved:${trigger.securityInstanceId}`;
   }
