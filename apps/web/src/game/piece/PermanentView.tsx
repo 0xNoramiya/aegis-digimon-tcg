@@ -70,6 +70,7 @@ export function PermanentView({
   onKeyboardActivate,
   onInspect,
   showInspect = false,
+  useSelectedSleeve = true,
 }: {
   perm: Permanent;
   /** Identical permanents drawn as this one card, itself included. */
@@ -128,6 +129,7 @@ export function PermanentView({
   onInspect?: () => void;
   /** Show the magnifier while the board is being used to choose a card or effect. */
   showInspect?: boolean;
+  useSelectedSleeve?: boolean;
 }) {
   const stationaryDeparture =
     heldDeletion || fate?.fate === "delete" || fate?.fate === "trash" || fate?.fate === "effectTarget";
@@ -290,7 +292,7 @@ export function PermanentView({
         </span>
       ) : null}
       <PermanentCardStack stack={perm.stack} width={permanentWidth} />
-      <PermanentLinkedCards linked={perm.linked} width={permanentWidth} />
+      <PermanentLinkedCards linked={perm.linked} width={permanentWidth} useSelectedSleeve={useSelectedSleeve} />
       {/* Re-keying on an accepted arrival remounts the wrapper, which is what
           restarts the CSS entrance: the card sparkles when it reaches the board
           and again on every digivolution. `pending` is part of the signature
@@ -324,6 +326,7 @@ export function PermanentView({
         <CardMini
           cardId={topId}
           faceDown={faceDown}
+          useSelectedSleeve={useSelectedSleeve}
           artId={perm.topCard?.artId}
           width={permanentWidth}
           suspended={isVisuallySuspended}
