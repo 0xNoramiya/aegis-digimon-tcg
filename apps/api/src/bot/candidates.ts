@@ -92,10 +92,13 @@ function digivolveCandidates(view: BotView): Candidate[] {
     if (!isDigimonCard(card.definition)) continue;
     for (const base of bases) {
       if (base.cardId === undefined || base.cannotDigivolve) continue;
-      const cost = digivolveCost(card.cardId, base.cardId, {
-        inBreeding: base === view.breeding,
-        controlledUnits: view.board,
-      });
+      const cost =
+        card.digivolveCosts === undefined
+          ? digivolveCost(card.cardId, base.cardId, {
+              inBreeding: base === view.breeding,
+              controlledUnits: view.board,
+            })
+          : card.digivolveCosts[base.permanentId];
       if (cost === undefined || cost > view.maxAffordable) continue;
       candidates.push({
         kind: "digivolve",

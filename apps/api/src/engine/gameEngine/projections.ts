@@ -1,5 +1,6 @@
 import type { AttackRedirection } from "@aegis/shared/schema/AttackRedirection";
 import { getNegamonPlayCandidates } from "#api/engine/gameEngine/getNegamonPlayCandidates";
+import { digivolveValidatorByState } from "#api/engine/gameEngine/digivolveValidatorByState";
 import {
   CardKind,
   dnaDigivolutionRequirementsFor,
@@ -109,7 +110,11 @@ export class BoardProjection {
   private projectedActivatableInstances: Set<CardInstance> | undefined;
   private projectedActivatablePermanents: Set<Permanent> | undefined;
 
-  constructor(private readonly deps: ProjectionDeps) {}
+  constructor(private readonly deps: ProjectionDeps) {
+    digivolveValidatorByState.set(deps.state, (seat, intent) =>
+      validateDigivolve(deps.state, seat, intent, deps.digivolveDeps()),
+    );
+  }
 
   /**
    * A Digimon that just lost "isn't affected by effects" is affected again by an effect it was

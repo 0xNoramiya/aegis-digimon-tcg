@@ -1,5 +1,6 @@
 import type { AttackRedirection } from "@aegis/shared/schema/AttackRedirection";
 import { CardKind, Phase, getCardDefinition, type CardDefinition, type GameState, type Seat } from "@aegis/shared";
+import { digivolveValidatorByState } from "#api/engine/gameEngine/digivolveValidatorByState";
 
 /**
  * A flat, allocation-cheap snapshot of everything the bot's policy is allowed to see,
@@ -57,6 +58,7 @@ export interface BotHandCard {
   cardId: string;
   definition?: CardDefinition;
   activatableEffects: readonly ActivatableEffect[];
+  digivolveCosts?: Readonly<Record<string, number>>;
 }
 
 export interface BotView {
@@ -109,6 +111,20 @@ function parseActivatable(json: string | undefined): ActivatableEffect[] {
   } catch {
     return [];
   }
+}
+
+function legalDigivolveCosts(
+  validator: NonNullable<ReturnType<typeof digivolveValidatorByState.get>>,
+  seat: Seat,
+  instanceId: string,
+  bases: readonly BotUnit[],
+): Record<string, number> {
+  const costs: Record<string, number> = {};
+  for (const base of bases) {
+    const check = validator(seat, { type: "digivolve", instanceId, permanentId: base.permanentId });
+    if (check.ok) costs[base.permanentId] = check.cost;
+  }
+  return costs;
 }
 
 function toUnit(permanent: PermanentLike): BotUnit {
@@ -168,12 +184,20 @@ export function buildBotView(state: GameState, seat: Seat): BotView | undefined 
     for (const color of unit.definition?.colors ?? []) ownFieldColors.add(color);
   }
 
-  const hand = toArray(me.hand).map((card) => ({
-    instanceId: card.instanceId,
-    cardId: card.cardId,
-    definition: getCardDefinition(card.cardId),
-    activatableEffects: parseActivatable(card.activatableEffectsJson),
-  }));
+  const validator = isMyTurn && state.phase === Phase.Main ? digivolveValidatorByState.get(state) : undefined;
+  const bases = breeding === undefined ? board : [...board, breeding];
+  const hand = toArray(me.hand).map((card) => {
+    const definition = getCardDefinition(card.cardId);
+    return {
+      instanceId: card.instanceId,
+      cardId: card.cardId,
+      definition,
+      activatableEffects: parseActivatable(card.activatableEffectsJson),
+      ...(validator === undefined || !isDigimonCard(definition)
+        ? {}
+        : { digivolveCosts: legalDigivolveCosts(validator, seat, card.instanceId, bases) }),
+    };
+  });
 
   return {
     seat,
