@@ -1,5 +1,38 @@
 [
   {
+    "version": "1.38.0-beta",
+    "releasedAt": "2026-10-22",
+    "summaryKey": "releases.1.38.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.38.0-beta.feature.artiomon"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.38.0-beta.fix.serverStability"
+      },
+      {
+        "textKey": "releases.1.38.0-beta.fix.zanmetsumon"
+      },
+      {
+        "textKey": "releases.1.38.0-beta.fix.selections"
+      },
+      {
+        "textKey": "releases.1.38.0-beta.fix.timing"
+      },
+      {
+        "textKey": "releases.1.38.0-beta.fix.prompts"
+      },
+      {
+        "textKey": "releases.1.38.0-beta.fix.presentation"
+      },
+      {
+        "textKey": "releases.1.38.0-beta.fix.chinese"
+      }
+    ]
+  },
+  {
     "version": "1.37.1-beta",
     "releasedAt": "2026-10-21",
     "summaryKey": "releases.1.37.1-beta.summary",
