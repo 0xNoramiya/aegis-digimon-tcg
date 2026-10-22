@@ -125,12 +125,11 @@ export async function runTimingWindow(
     // Digimon may digivolve into [Galacticmon]" put a fresh Galacticmon on top of the
     // stack that fired the very same clause again, chaining through hand and trash in
     // one window.
-    // Keep every other timing window live because derived triggers and mid-window
-    // digivolutions intentionally join those resolution fixpoints.
     const phaseBoundarySourceLocations =
       timing === EffectTiming.OnStartTurn ||
       timing === EffectTiming.OnStartMainPhase ||
-      timing === EffectTiming.OnEndTurn
+      timing === EffectTiming.OnEndTurn ||
+      timing === EffectTiming.OnEndAttack
         ? new Map(
             listCandidateInstances(engine).map((instance) => [
               instance.instanceId,
