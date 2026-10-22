@@ -1,6 +1,7 @@
 import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
 import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin";
 import { CardKind, Zone, requireCardDefinition, CardInstance, type Seat } from "@aegis/shared";
+import { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 import { pushOnStack, takeTop, unshiftOnStack } from "../../state/access.js";
 import { digiXrosMatches, materialSaveCountOf } from "../../combat/keywords.js";
 import { hostOfLinkedInstance, peekLooseInstance, removeLooseInstance } from "../verbs/looseInstances.js";
@@ -164,6 +165,7 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
       0,
       1,
       `＜Material Save ${n}＞: place up to ${n} of this Digimon's specified digivolution cards under 1 of your Tamers?`,
+      { selectionGoal: DecisionSelectionGoal.PROTECT.value },
     );
     if (accept.length === 0) return false;
     let tamerId = tamers[0]!.permanentId;

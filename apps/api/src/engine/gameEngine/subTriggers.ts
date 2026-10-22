@@ -1,3 +1,4 @@
+import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRuntimeObjectKind";
 import { resolveDerivedDuringAttackStep } from "#api/engine/gameEngine/resolveDerivedDuringAttackStep";
 import { buildSubTriggerEffectKey } from "#api/engine/gameEngine/buildSubTriggerEffectKey";
 import { observeEffectActivation } from "../effects/activationPresentation.js";
@@ -618,7 +619,7 @@ export function nestedTriggerSourceStillResident(engine: GameEngine, pending: Co
     rootZoneOfLooseInstance(engine.state, pending.source.instanceId) === "trash" &&
     rootZoneOfLooseInstance(engine.state, deletedHostId) === "trash";
   if (inheritedDeletedSource) return true;
-  const identityAtDefer = engine.nestedTriggerSourceIdentity.get(pending);
+  const identityAtDefer = pending.sourceIdentityAtDefer;
   if (identityAtDefer === undefined || identityAtDefer === null) return true;
   return permanentIdentityOf(pending.source) === identityAtDefer;
 }
@@ -1319,11 +1320,13 @@ export function buildSubTriggerSourceContext(
     return context;
   }
   if (sub.activationContext !== undefined) {
-    return {
+    const context = {
       ...sub.activationContext,
       trigger: payload,
       selections: new Map(),
     };
+    engine.runtimeObjects.track({ value: context, key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value });
+    return context;
   }
   return undefined;
 }

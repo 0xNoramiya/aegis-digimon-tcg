@@ -1,3 +1,5 @@
+import { snapshotEngineRandom } from "#api/engine/random/snapshotEngineRandom";
+import { restoreEngineRandom } from "#api/engine/random/restoreEngineRandom";
 import { describe, expect, it, vi } from "vitest";
 import { GameState } from "@aegis/shared/schema/GameState";
 import { GameEngine } from "#api/engine/GameEngine";
@@ -44,6 +46,11 @@ describe("scenario fixture random streams", () => {
       for (const seat of [0, 1] as const) {
         expect(engine.rngForSeat!(seat)()).toBe(expectedRandom[seat]!());
       }
+      const snapshots = snapshotEngineRandom({ engine });
+      const expected = [engine.rngForSeat!(0)(), engine.rngForSeat!(1)()];
+      restoreEngineRandom({ engine, snapshots });
+      expect([engine.rngForSeat!(0)(), engine.rngForSeat!(1)()]).toEqual(expected);
+      expect(snapshotEngineRandom({ engine })).not.toEqual(snapshots);
     },
   );
 });

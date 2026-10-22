@@ -232,7 +232,7 @@ describe("structured metadata on resolving decisions", () => {
           singleHandCostBenefit: { cardsDrawn: 2, memoryGain: 0, cardsRecovered: 0 },
           effectSummary: { cardsDrawn: 2 },
         });
-        expect(retrieval.options?.effectSummary?.cardsDrawn).toBe(0);
+        expect(retrieval.options?.effectSummary?.cardsDrawn).toBe(1);
         expect(retrieval.options?.singleHandCostBenefit).toBeUndefined();
         expect(retrieval.options?.purpose).toBeUndefined();
         expect(setup.state.players[0]!.hand).toHaveLength(5);

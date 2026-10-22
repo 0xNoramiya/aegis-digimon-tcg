@@ -1,3 +1,4 @@
+import { createTrackedPermanentFilterMatch } from "#api/engine/effects/interpreter/matching/createTrackedPermanentFilterMatch";
 import { getFieldEffectText } from "#api/engine/effects/interpreter/getFieldEffectText";
 // Continuous prohibitions and immunities.
 
@@ -129,14 +130,7 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
             seat,
             restriction,
             duration,
-            (permanentId) => {
-              const permanent = ctx.game.permanentById(permanentId);
-              return (
-                permanent !== undefined &&
-                permanentMatchesFilter(ctx, permanent, filter, ctx.source) &&
-                !isPermanentUnaffectable(ctx, ctx.source, permanent, sourceKinds)
-              );
-            },
+            createTrackedPermanentFilterMatch({ ctx, filter, sourceKinds }),
             {
               sourceCardId: ctx.source.definition.cardId,
               effectText: getFieldEffectText({ action, ctx }),

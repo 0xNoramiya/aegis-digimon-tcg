@@ -1,3 +1,7 @@
+import type { ReplayEngineSnapshot } from "#api/replays/inputs/ReplayEngineSnapshot";
+import type { GameEngineHooks } from "#api/engine/gameEngine/types";
+import { snapshotGameEngine } from "#api/engine/snapshot/snapshotGameEngine";
+import { restoreGameEngine } from "#api/engine/snapshot/restoreGameEngine";
 import { GameState, type Intent, type IntentResult, type Seat, type SequencedServerEvent } from "@aegis/shared";
 import type { DecisionRequest } from "@aegis/shared/protocol/events";
 import { GameEngine } from "../../engine/GameEngine.js";
@@ -6,6 +10,7 @@ import { translateLegacySubTriggerKeys } from "#api/replays/inputs/translateLega
 import "../../cards/index.js";
 
 export interface RunReplayOptions {
+  snapshot?: ReplayEngineSnapshot;
   onDecision?: (request: DecisionRequest) => void;
   stopBeforeTurn?: number;
   /**
@@ -26,6 +31,7 @@ export interface RunReplayOptions {
 }
 
 export interface ReplayRun {
+  getSnapshot(): ReplayEngineSnapshot;
   activate(hooks: import("#api/engine/gameEngine/types").GameEngineHooks): void;
   engineEvents: number;
   pendingRequest?: import("@aegis/shared").DecisionRequest;
@@ -67,7 +73,7 @@ const MAX_IDLE_TURNS = 1_000;
  * so every engine event lands in a broadcast batch and there is nothing here to exclude.
  */
 export async function runReplay(record: ReplayRecord, options: RunReplayOptions = {}): Promise<ReplayRun> {
-  const state = new GameState();
+  let state = new GameState();
   state.format = record.rules.deckFormat;
   state.unlimited = record.rules.unlimited;
   // The room keeps it in its own recording, so an exported frame carries it as a player's file does.
@@ -81,15 +87,19 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
   let resumeTurn: (() => void) | undefined;
   let reachedTurn: number | undefined;
   let resumeBatchOffset = 0;
-  let emitted = 0;
+  let emitted = options.snapshot?.engineEvents ?? 0;
   let progress = 0;
-  let cursor = 0;
+  let cursor = options.snapshot?.inputIndex ?? 0;
   let stopped = false;
+  let advancedBeyondRecord = false;
   let batch: OpenBatch | undefined;
-  let batchSeq = 0;
-  let eventSeq = 0;
+  let batchSeq = options.snapshot?.batchSequence ?? 0;
+  let eventSeq = options.snapshot?.eventSequence ?? 0;
   let batchDepth = 0;
-  let started = false;
+  let started = options.snapshot?.started ?? false;
+  if (!Number.isSafeInteger(cursor) || cursor < 0 || cursor > limit) {
+    throw new Error("Replay snapshot input index exceeds the requested replay range");
+  }
 
   const withBatch = <T>(run: () => T): T => {
     const opened = batch ?? (batch = openBatch());
@@ -125,7 +135,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     withBatch(start);
   };
 
-  const engine: GameEngine = new GameEngine(state, {
+  const replayHooks: GameEngineHooks = {
     seed: record.seed,
     randomKey: record.randomKey,
     ...(record.firstSeat !== undefined ? { firstSeat: record.firstSeat } : {}),
@@ -164,7 +174,15 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
       batch.events.push({ ...event, seq: ++eventSeq, batch: batch.id, stateVersion: state.stateVersion });
       if (event.kind === "matchStarted") applyDueAt("matchStarted");
     },
-  });
+  };
+  let engine: GameEngine;
+  if (options.snapshot === undefined) {
+    engine = new GameEngine(state, replayHooks);
+  } else {
+    const restored = restoreGameEngine({ snapshot: options.snapshot.engine, hooks: replayHooks });
+    engine = restored.engine;
+    state = engine.state;
+  }
 
   /** Apply the next inputs while they were recorded at this site and at exactly this point. */
   function applyDueAt(site: ReplaySite): void {
@@ -310,6 +328,26 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
   }
   await waitForIdle(() => progress);
   return {
+    getSnapshot() {
+      if (
+        liveHooks !== undefined ||
+        advancedBeyondRecord ||
+        divergences.length > 0 ||
+        batch !== undefined ||
+        batchDepth !== 0 ||
+        (pendingRequest !== undefined && state.pendingDecision)
+      ) {
+        throw new Error("Replay snapshot requires a settled input boundary");
+      }
+      return {
+        engine: snapshotGameEngine({ engine }),
+        inputIndex: cursor,
+        engineEvents: emitted,
+        batchSequence: batchSeq,
+        eventSequence: eventSeq,
+        started,
+      };
+    },
     activate(hooks) {
       liveHooks = hooks;
       resumeTurn?.();
@@ -323,6 +361,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     applied: cursor,
     divergences,
     applyIntent: async (seat, intent) => {
+      advancedBeyondRecord = true;
       const result = withBatch(() => engine.applyIntent(seat, intent));
       await waitForIdle(() => progress);
       return result;

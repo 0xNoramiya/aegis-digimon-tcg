@@ -1,3 +1,6 @@
+import type { RuntimeObjectRegistry } from "#api/engine/snapshot/RuntimeObjectRegistry";
+import type { RuntimeCallbackRegistry } from "#api/engine/snapshot/RuntimeCallbackRegistry";
+import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRuntimeObjectKind";
 import { isTimingActivationDisabled } from "./timingActivation.js";
 import { preparedCardLocation } from "#api/engine/effects/preparedCardLocation";
 import {
@@ -266,7 +269,7 @@ export function createEffectContext(parts: {
   conferralGranterInstanceId?: string;
   discardedStackSourceProof?: import("./EffectContext.js").DiscardedStackSourceProof;
 }): EffectContext {
-  return {
+  const context: EffectContext = {
     source: parts.source,
     sourcePermanentIdAtCreation: parts.source.permanent?.()?.permanentId,
     trigger: parts.trigger,
@@ -281,6 +284,8 @@ export function createEffectContext(parts: {
     conferralGranterInstanceId: parts.conferralGranterInstanceId,
     discardedStackSourceProof: parts.discardedStackSourceProof,
   };
+  parts.game.runtimeObjects?.track({ value: context, key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value });
+  return context;
 }
 
 const refuse = (subsystem: string, verb: string): never => {
@@ -414,6 +419,8 @@ export function unimplementedDecisions(): DecisionApi {
  * the effect-primitives and effect-stack-resolution subsystems).
  */
 export interface EffectEnvironment {
+  runtimeObjects?: RuntimeObjectRegistry;
+  runtimeCallbacks?: RuntimeCallbackRegistry;
   state: GameState;
   fx: Primitives;
   /** Resolve effect verbs from the collected source's controller/owner context. */
@@ -523,7 +530,10 @@ export function gatherTriggeredEffects(
     (permanent, printedName) => effectiveNames(env.continuous, permanent, printedName),
     env.battleOpponentOf,
   );
+  game.runtimeObjects = env.runtimeObjects;
+  game.runtimeCallbacks = env.runtimeCallbacks;
   const lookup = createCardStateLookup(env.state);
+  lookup.runtimeObjects = env.runtimeObjects;
 
   const sources: CardSource[] = printedCandidates.map((instance) => createCardSource(instance, lookup));
 

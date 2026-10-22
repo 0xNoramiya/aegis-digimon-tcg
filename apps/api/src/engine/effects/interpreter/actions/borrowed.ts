@@ -17,6 +17,7 @@ import { candidateLooseInstances, looseCardsInZone } from "../targeting/loose.js
 import { resolvePermanentTargets } from "../targeting/permanents.js";
 import { CardKind, EffectTiming } from "@aegis/shared";
 import { MemoryGauge } from "../../../MemoryGauge.js";
+import { createLenderCardSource } from "#api/engine/effects/interpreter/actions/createLenderCardSource";
 import type { Action, CardDefinition, CardEffect, EffectTrigger, Filter, Seat, ZoneRef } from "@aegis/shared";
 
 /** A foreign card eligible to lend a borrowed effect (its instance + the borrowable effects). */
@@ -308,22 +309,19 @@ export async function runActivateForeignEffect(
         (action.asEffectOf === undefined && lenderPermanentId !== ctx.source.permanent()?.permanentId));
     let runCtx = ctx;
     if (lenderIsEffectiveSource) {
-      const permanentId = lenderPermanentId;
-      const definition = ctx.game.definitionOf({ cardId: chosen.cardId } as never);
       runCtx = {
         ...ctx,
-        sourcePermanentIdAtCreation: permanentId,
+        sourcePermanentIdAtCreation: lenderPermanentId,
         activeTiming: borrowed.effect.trigger,
-        source: {
-          instanceId: chosen.instanceId,
-          cardId: chosen.cardId,
-          ownerSeat: ctx.source.ownerSeat,
-          definition,
-          permanent: () => ctx.game.permanentById(permanentId),
-          isOnBattleArea: () => ctx.game.permanentById(permanentId) !== undefined,
-          isOwnersTurn: () => ctx.game.state.turnSeat === ctx.source.ownerSeat,
-          hasColor: (color) => definition.colors.includes(color),
-        },
+        source: createLenderCardSource({
+          game: ctx.game,
+          payload: {
+            instanceId: chosen.instanceId,
+            cardId: chosen.cardId,
+            ownerSeat: ctx.source.ownerSeat,
+            permanentId: lenderPermanentId,
+          },
+        }),
       };
       runCtx.effectSourceKinds = effectProvenanceKinds(runCtx);
     }

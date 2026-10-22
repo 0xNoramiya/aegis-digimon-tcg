@@ -1,3 +1,4 @@
+import type { MemoryGaugeSnapshot } from "#api/engine/memory/MemoryGaugeSnapshot";
 import type { GameState, ServerEvent, Seat } from "@aegis/shared";
 
 /** Hard bounds of the shared gauge (API-CONTRACT GameState.memory is int8, clamped [-10, 10]). */
@@ -51,6 +52,29 @@ export class MemoryGauge {
     private readonly emit: (event: ServerEvent) => void = () => {},
     private readonly memoryGainPolicy: MemoryGainPolicyCheck = () => true,
   ) {}
+
+  snapshot(): MemoryGaugeSnapshot {
+    if (this.turnEndMinMemoryStaging !== undefined) {
+      throw new Error("Cannot snapshot a staged memory threshold tier");
+    }
+    const snapshot: MemoryGaugeSnapshot = {
+      version: 1,
+      turnEndMinMemoryOverrides: Array.from(this.turnEndMinMemoryOverrides),
+    };
+    readThresholds(snapshot);
+    return snapshot;
+  }
+
+  restore(snapshot: MemoryGaugeSnapshot): void {
+    if (this.turnEndMinMemoryStaging !== undefined) {
+      throw new Error("Cannot restore a staged memory threshold tier");
+    }
+    const thresholds = readThresholds(snapshot);
+    this.turnEndMinMemoryOverrides.clear();
+    for (const [seat, minimum] of thresholds) {
+      this.turnEndMinMemoryOverrides.set(seat, minimum);
+    }
+  }
 
   /** Current gauge value, turn-relative (positive favours the turn player). */
   get value(): number {
@@ -232,4 +256,35 @@ export class MemoryGauge {
   // effects/interpreter.ts; CanAddMemory vetoes (ICannotAddMemoryEffect) are checked
   // via the injected memoryGainPolicy, backed by
   // ContinuousEffectLedger.canGainMemoryFromEffect.
+}
+
+function readThresholds(value: unknown): Map<Seat, number> {
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    !("version" in value) ||
+    value.version !== 1 ||
+    !("turnEndMinMemoryOverrides" in value) ||
+    !Array.isArray(value.turnEndMinMemoryOverrides)
+  ) {
+    throw new Error("Invalid memory threshold snapshot");
+  }
+  const thresholds = new Map<Seat, number>();
+  for (const entry of value.turnEndMinMemoryOverrides) {
+    if (!Array.isArray(entry) || entry.length !== 2) {
+      throw new Error("Invalid memory threshold entry");
+    }
+    const [seat, minimum] = entry;
+    if (
+      (seat !== 0 && seat !== 1) ||
+      typeof minimum !== "number" ||
+      !Number.isFinite(minimum) ||
+      minimum < DEFAULT_TURN_END_MIN_MEMORY ||
+      thresholds.has(seat)
+    ) {
+      throw new Error("Invalid or duplicate memory threshold entry");
+    }
+    thresholds.set(seat, minimum);
+  }
+  return thresholds;
 }

@@ -32,6 +32,23 @@ function getControllerSign(controller: string | undefined): number {
   return controller === "both" ? 0 : 1;
 }
 
+const OWN_SECURITY_PLACEMENTS: ReadonlySet<string> = new Set([
+  "placeAsSecurity",
+  "addTop",
+  "addBottom",
+  "addTopOrBottom",
+]);
+
+function isOwnSecurityPlacement(action: Extract<Action, { kind: "SecurityManipulation" }>): boolean {
+  return (
+    OWN_SECURITY_PLACEMENTS.has(action.op) &&
+    action.controller === "mine" &&
+    action.ownerSecurity !== true &&
+    action.bothPlayers !== true &&
+    typeof action.source === "object"
+  );
+}
+
 function getCounts(actions: readonly Action[], depth: number, budget: { remaining: number }): SummaryCounts {
   const result = getEmptyCounts();
   const add = (values: SummaryCounts): void => {
@@ -81,6 +98,9 @@ function getCounts(actions: readonly Action[], depth: number, budget: { remainin
           action.kind === "Return" && action.from !== undefined && !action.from.includes("battleArea");
         if (controller === "opponent" && isBoard && !isLooseReturn) {
           result.removal += typeof action.target.count === "number" ? action.target.count : 1;
+        } else if (action.kind === "Return" && controller === "mine" && zone === "trash" && action.to === "hand") {
+          result.cardsDrawn += typeof action.target.count === "number" ? action.target.count : 1;
+          result.uncertain = true;
         } else {
           result.uncertain = true;
         }
@@ -112,6 +132,32 @@ function getCounts(actions: readonly Action[], depth: number, budget: { remainin
         }
         break;
       }
+      case "RevealAdd":
+        result.uncertain = true;
+        if (action.controller !== undefined && action.controller !== "mine") {
+          break;
+        }
+        for (const slot of action.add) {
+          const count = typeof slot.count === "number" ? slot.count : 1;
+          if (slot.to === undefined || slot.to === "hand") {
+            result.cardsDrawn += count;
+          } else if (slot.to === "play") {
+            result.plays += count;
+          }
+        }
+        break;
+      case "SearchSecurity":
+        result.plays += 1;
+        result.cardsRecovered -= 1;
+        break;
+      case "SecurityManipulation":
+        if (isOwnSecurityPlacement(action)) {
+          result.cardsRecovered +=
+            typeof action.source === "object" && typeof action.source.count === "number" ? action.source.count : 1;
+        } else {
+          result.uncertain = true;
+        }
+        break;
       case "CostGatedBlock":
         add(getCounts(action.actions, depth + 1, budget));
         break;

@@ -1,3 +1,10 @@
+import type { RuntimeReferenceRegistry } from "#api/engine/snapshot/RuntimeReferenceRegistry";
+import type { RuntimeObjectRegistry } from "#api/engine/snapshot/RuntimeObjectRegistry";
+import type { ContinuousLedgerState } from "#api/engine/effects/ContinuousLedgerState";
+import type { RuntimeCallbackRegistry } from "#api/engine/snapshot/RuntimeCallbackRegistry";
+import type { RuntimeGraphSnapshot } from "#api/engine/snapshot/RuntimeGraphSnapshot";
+import { encodeRuntimeGraph } from "#api/engine/snapshot/encodeRuntimeGraph";
+import { decodeRuntimeGraph } from "#api/engine/snapshot/decodeRuntimeGraph";
 import {
   CardKind,
   EffectDuration,
@@ -96,10 +103,22 @@ export { effectiveColors, effectiveKinds, effectiveNames, effectiveTraits } from
  * ModifierLedger.DpModifier.continuous for the numeric sibling.
  */
 
+type SnapshotParams = {
+  callbacks?: RuntimeCallbackRegistry;
+  objects?: RuntimeObjectRegistry;
+  references?: RuntimeReferenceRegistry;
+};
+type RestoreParams = {
+  snapshot: RuntimeGraphSnapshot;
+  callbacks?: RuntimeCallbackRegistry;
+  objects?: RuntimeObjectRegistry;
+  references?: RuntimeReferenceRegistry;
+};
+
 export class ContinuousEffectLedger {
   private restrictions: RestrictionEntry[] = [];
   /** Permanents whose `beAffected` immunity expired in the last sweep (drained by the sweep site). */
-  private readonly expiredAffectationRecipients = new Set<string>();
+  private expiredAffectationRecipients = new Set<string>();
   private playerRestrictions: PlayerRestrictionEntry[] = [];
   private attackTargetRestrictions: AttackTargetRestriction[] = [];
   private canAttackUnsuspendedGrants: CanAttackUnsuspendedGrant[] = [];
@@ -127,7 +146,7 @@ export class ContinuousEffectLedger {
   private stackEffectConferrals: StackEffectConferral[] = [];
   private onDeletionAtEndOfAttackProjections: OnDeletionAtEndOfAttackProjection[] = [];
   private customEffectGrants: CustomEffectGrant[] = [];
-  private readonly grantsOfCardsThatLeftField = new WeakSet<CustomEffectGrant>();
+  private grantsOfCardsThatLeftField = new WeakSet<CustomEffectGrant>();
   private nextCustomEffectGrantId = 1;
   private memoryGainPolicies: MemoryGainPolicy[] = [];
   private costReductionBlocks: CostReductionBlock[] = [];
@@ -136,10 +155,133 @@ export class ContinuousEffectLedger {
   private effectTimingDisables: EffectTimingDisable[] = [];
   private playerEffectTimingDisables: PlayerEffectTimingDisable[] = [];
   private dnaLevelOverrides: DnaLevelOverride[] = [];
-  private readonly battleScopes = new Map<number, { parent?: number; entries: Set<object> }>();
-  private readonly durationOwners = new WeakMap<object, Seat>();
-  // Durations are translated relative to the recipient at installation. A later
-  // controller change must not translate that already-installed endpoint again.
+  private battleScopes = new Map<number, { parent?: number; entries: Set<object> }>();
+  private durationOwners = new WeakMap<object, Seat>();
+  getRuntimeState(): ContinuousLedgerState {
+    this.assertSnapshotBoundary();
+    return {
+      restrictions: this.restrictions,
+      playerRestrictions: this.playerRestrictions,
+      attackTargetRestrictions: this.attackTargetRestrictions,
+      canAttackUnsuspendedGrants: this.canAttackUnsuspendedGrants,
+      vortexCanAttackPlayersGrants: this.vortexCanAttackPlayersGrants,
+      suspendRestrictionSources: this.suspendRestrictionSources,
+      unsuspendedDigivolveProhibitions: this.unsuspendedDigivolveProhibitions,
+      digivolveIntoConstraints: this.digivolveIntoConstraints,
+      nameTraitGrants: this.nameTraitGrants,
+      originalCardInfoOverrides: this.originalCardInfoOverrides,
+      colorWaivers: this.colorWaivers,
+      keywordGrants: this.keywordGrants,
+      playerKeywordGrants: this.playerKeywordGrants,
+      playerCustomEffectGrants: this.playerCustomEffectGrants,
+      linkMaxGrants: this.linkMaxGrants,
+      linkCostReductionGrants: this.linkCostReductionGrants,
+      kindGrants: this.kindGrants,
+      cannotIgnoreDigivolutionFlags: this.cannotIgnoreDigivolutionFlags,
+      securityAddRestrictions: this.securityAddRestrictions,
+      colorGrants: this.colorGrants,
+      stackTrashLocks: this.stackTrashLocks,
+      stackCardTrashLocks: this.stackCardTrashLocks,
+      securityAttackInversions: this.securityAttackInversions,
+      stackEffectConferrals: this.stackEffectConferrals,
+      onDeletionAtEndOfAttackProjections: this.onDeletionAtEndOfAttackProjections,
+      customEffectGrants: this.customEffectGrants,
+      memoryGainPolicies: this.memoryGainPolicies,
+      costReductionBlocks: this.costReductionBlocks,
+      playProhibitions: this.playProhibitions,
+      securityEffectDisables: this.securityEffectDisables,
+      effectTimingDisables: this.effectTimingDisables,
+      playerEffectTimingDisables: this.playerEffectTimingDisables,
+      dnaLevelOverrides: this.dnaLevelOverrides,
+      durationOwners: this.allEntries().flatMap((entry): [object, Seat][] => {
+        const owner = this.durationOwners.get(entry);
+        return owner === undefined ? [] : [[entry, owner]];
+      }),
+      battleScopes: this.battleScopes,
+      expiredAffectationRecipients: this.expiredAffectationRecipients,
+      grantsOfCardsThatLeftField: new Set(
+        this.customEffectGrants.filter((entry) => this.grantsOfCardsThatLeftField.has(entry)),
+      ),
+      nextCustomEffectGrantId: this.nextCustomEffectGrantId,
+    };
+  }
+
+  snapshot({ callbacks, objects, references }: SnapshotParams = {}): RuntimeGraphSnapshot {
+    return encodeRuntimeGraph({
+      value: this.getRuntimeState(),
+      describeCallback: callbacks?.describe.bind(callbacks),
+      describeObject: objects?.describe.bind(objects),
+      references,
+    });
+  }
+
+  restore({ snapshot, callbacks, objects, references }: RestoreParams): void {
+    this.assertSnapshotBoundary();
+    this.restoreRuntimeState(
+      decodeRuntimeGraph({
+        snapshot,
+        createCallback: callbacks?.create.bind(callbacks),
+        objects,
+        references,
+      }),
+    );
+  }
+
+  restoreRuntimeState(state: unknown): void {
+    this.assertSnapshotBoundary();
+    if (!isContinuousLedgerState(state)) {
+      throw new Error("Invalid continuous ledger snapshot");
+    }
+    this.restrictions = state.restrictions;
+    this.playerRestrictions = state.playerRestrictions;
+    this.attackTargetRestrictions = state.attackTargetRestrictions;
+    this.canAttackUnsuspendedGrants = state.canAttackUnsuspendedGrants;
+    this.vortexCanAttackPlayersGrants = state.vortexCanAttackPlayersGrants;
+    this.suspendRestrictionSources = state.suspendRestrictionSources;
+    this.unsuspendedDigivolveProhibitions = state.unsuspendedDigivolveProhibitions;
+    this.digivolveIntoConstraints = state.digivolveIntoConstraints;
+    this.nameTraitGrants = state.nameTraitGrants;
+    this.originalCardInfoOverrides = state.originalCardInfoOverrides;
+    this.colorWaivers = state.colorWaivers;
+    this.keywordGrants = state.keywordGrants;
+    this.playerKeywordGrants = state.playerKeywordGrants;
+    this.playerCustomEffectGrants = state.playerCustomEffectGrants;
+    this.linkMaxGrants = state.linkMaxGrants;
+    this.linkCostReductionGrants = state.linkCostReductionGrants;
+    this.kindGrants = state.kindGrants;
+    this.cannotIgnoreDigivolutionFlags = state.cannotIgnoreDigivolutionFlags;
+    this.securityAddRestrictions = state.securityAddRestrictions;
+    this.colorGrants = state.colorGrants;
+    this.stackTrashLocks = state.stackTrashLocks;
+    this.stackCardTrashLocks = state.stackCardTrashLocks;
+    this.securityAttackInversions = state.securityAttackInversions;
+    this.stackEffectConferrals = state.stackEffectConferrals;
+    this.onDeletionAtEndOfAttackProjections = state.onDeletionAtEndOfAttackProjections;
+    this.customEffectGrants = state.customEffectGrants;
+    this.memoryGainPolicies = state.memoryGainPolicies;
+    this.costReductionBlocks = state.costReductionBlocks;
+    this.playProhibitions = state.playProhibitions;
+    this.securityEffectDisables = state.securityEffectDisables;
+    this.effectTimingDisables = state.effectTimingDisables;
+    this.playerEffectTimingDisables = state.playerEffectTimingDisables;
+    this.dnaLevelOverrides = state.dnaLevelOverrides;
+    this.durationOwners = new WeakMap(state.durationOwners);
+    this.battleScopes = state.battleScopes;
+    this.expiredAffectationRecipients = state.expiredAffectationRecipients;
+    this.grantsOfCardsThatLeftField = new WeakSet(state.grantsOfCardsThatLeftField);
+    this.nextCustomEffectGrantId = state.nextCustomEffectGrantId;
+  }
+
+  private assertSnapshotBoundary(): void {
+    if (
+      this.evaluatingKeywordGrants.size > 0 ||
+      this.evaluatingPlayerRestrictions.size > 0 ||
+      this.evaluatingPlayerKeywordGrants.size > 0
+    ) {
+      throw new Error("Cannot snapshot or restore while continuous predicates are being evaluated");
+    }
+  }
+
   private anchorDuration<T extends object>(entry: T): T {
     const target = entry as { permanentId?: string; attackerPermanentId?: string; ownerSeat?: Seat };
     if (target.ownerSeat !== undefined) return entry;
@@ -1713,4 +1855,80 @@ export class ContinuousEffectLedger {
     this.playerEffectTimingDisables = [];
     this.dnaLevelOverrides = [];
   }
+}
+
+function isContinuousLedgerState(value: unknown): value is ContinuousLedgerState {
+  if (value === null || typeof value !== "object") {
+    return false;
+  }
+  const state = value as ContinuousLedgerState;
+  const arrays = [
+    state.restrictions,
+    state.playerRestrictions,
+    state.attackTargetRestrictions,
+    state.canAttackUnsuspendedGrants,
+    state.vortexCanAttackPlayersGrants,
+    state.suspendRestrictionSources,
+    state.unsuspendedDigivolveProhibitions,
+    state.digivolveIntoConstraints,
+    state.nameTraitGrants,
+    state.originalCardInfoOverrides,
+    state.colorWaivers,
+    state.keywordGrants,
+    state.playerKeywordGrants,
+    state.playerCustomEffectGrants,
+    state.linkMaxGrants,
+    state.linkCostReductionGrants,
+    state.kindGrants,
+    state.cannotIgnoreDigivolutionFlags,
+    state.securityAddRestrictions,
+    state.colorGrants,
+    state.stackTrashLocks,
+    state.stackCardTrashLocks,
+    state.securityAttackInversions,
+    state.stackEffectConferrals,
+    state.onDeletionAtEndOfAttackProjections,
+    state.customEffectGrants,
+    state.memoryGainPolicies,
+    state.costReductionBlocks,
+    state.playProhibitions,
+    state.securityEffectDisables,
+    state.effectTimingDisables,
+    state.playerEffectTimingDisables,
+    state.dnaLevelOverrides,
+  ];
+  if (
+    !arrays.every(
+      (entries) => Array.isArray(entries) && entries.every((entry) => entry !== null && typeof entry === "object"),
+    )
+  ) {
+    return false;
+  }
+  if (!Number.isSafeInteger(state.nextCustomEffectGrantId) || state.nextCustomEffectGrantId < 1) {
+    return false;
+  }
+  if (
+    !(state.battleScopes instanceof Map) ||
+    !(state.expiredAffectationRecipients instanceof Set) ||
+    !(state.grantsOfCardsThatLeftField instanceof Set) ||
+    !Array.isArray(state.durationOwners)
+  ) {
+    return false;
+  }
+  if (
+    !state.durationOwners.every(
+      (entry) =>
+        Array.isArray(entry) &&
+        entry.length === 2 &&
+        entry[0] !== null &&
+        typeof entry[0] === "object" &&
+        (entry[1] === 0 || entry[1] === 1),
+    )
+  ) {
+    return false;
+  }
+  return (
+    [...state.expiredAffectationRecipients].every((id) => typeof id === "string") &&
+    [...state.grantsOfCardsThatLeftField].every((entry) => state.customEffectGrants.includes(entry))
+  );
 }

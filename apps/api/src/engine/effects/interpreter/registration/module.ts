@@ -1,3 +1,9 @@
+import { registeredCompiledCardFingerprints } from "#api/engine/effects/interpreter/registration/RegisteredCompiledCardFingerprints";
+import { freezeCompiledCard } from "#api/engine/effects/interpreter/registration/freezeCompiledCard";
+import { trackRuntimeEffect } from "#api/engine/effects/interpreter/snapshot/trackRuntimeEffect";
+import { runtimeCompiledNodeRegistry } from "#api/engine/effects/interpreter/snapshot/runtimeCompiledNodeRegistry";
+import { CompiledRootKind } from "#api/engine/effects/interpreter/snapshot/CompiledRootKind";
+import type { CompiledNodeRegistry } from "#api/engine/effects/interpreter/snapshot/CompiledNodeRegistry";
 // Building the EffectModule a compiled card registers.
 
 import type { CardSource } from "../../CardSource.js";
@@ -126,7 +132,11 @@ function runtimeEffectKey(ctx: Parameters<Effect["resolve"]>[0], effectKey: stri
   return collectedKey?.startsWith(`${effectKey}/conferral/`) === true ? collectedKey : effectKey;
 }
 
-export function irCardModule(cardId: string, compiled: CompiledCard): EffectModule {
+export function irCardModule(
+  cardId: string,
+  compiled: CompiledCard,
+  snapshotNodes?: CompiledNodeRegistry,
+): EffectModule {
   // A few legacy generated records encoded a shared clause as `trigger: [A, B]` even though the
   // public IR type is intentionally a single trigger. Normalize that shape into one effect per
   // timing so neither branch is silently routed to EffectTiming.None.
@@ -210,6 +220,7 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
   registerBlastDigivolveFromEffects(cardId, compiled.effects);
   detectAllowDigiXrosMaterialsFromTrash(cardId, compiled.effects);
   if (overclockTrait !== undefined) effects.push(overclockActivatedEffect(overclockTrait));
+  snapshotNodes?.registerRoot({ cardId, rootKey: CompiledRootKind.MODULE.value, root: effects });
   const cardIsOption = definition !== undefined && isOption(definition);
   const effectCondition = (effect: CardEffect, ctx: Parameters<NonNullable<BuilderOptions["when"]>>[0]): boolean => {
     const result = effect.condition === undefined || evaluateCondition(ctx, effect.condition);
@@ -299,6 +310,7 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
     const cacheKey = `${timing}/${i}`;
     const cached = staticsByEntry.get(cacheKey);
     if (cached !== undefined) return cached;
+    snapshotNodes?.registerRoot({ cardId, rootKey: CompiledRootKind.MODULE.value, root: effects, index: true });
     const effectKey =
       (effect as CardEffect & { effectKey?: string }).effectKey ??
       (effect.sharedUseKey !== undefined ? `${cardId}/${effect.sharedUseKey}` : `${cardId}/ir-${timing}-${i}`);
@@ -330,9 +342,33 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
       continuousPriority: providesEffectImmunity(effect) ? -1 : readsSelfKeyword(effect) ? 1 : 0,
     };
     staticsByEntry.set(cacheKey, statics);
+    snapshotNodes?.registerRoot({
+      cardId,
+      rootKey: getResolvedRootKey({ timing, index: i }),
+      root: resolvedEffect,
+      index: true,
+    });
     return statics;
   }
 
+  snapshotNodes?.setMaterializer({
+    cardId,
+    materialize: (rootKey) => {
+      const parts = rootKey.split("/");
+      if (parts.length !== 3 || parts[0] !== CompiledRootKind.RESOLVED.value) {
+        return;
+      }
+      const timing = Number(parts[1]);
+      const entryIndex = Number(parts[2]);
+      if (!Number.isSafeInteger(timing) || !Number.isSafeInteger(entryIndex) || entryIndex < 0) {
+        return;
+      }
+      const entry = byTiming.get(timing)?.[entryIndex];
+      if (entry !== undefined) {
+        staticsFor(timing, entryIndex, entry.effect);
+      }
+    },
+  });
   return {
     cardId,
     hasTiming(timing: EffectTiming): boolean {
@@ -341,7 +377,7 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
     effectsForTiming(timing: EffectTiming, source: CardSource): Effect[] {
       const entries = byTiming.get(timing);
       if (entries === undefined) return [];
-      return entries.map(({ effect, build }, i) => {
+      const materialized = entries.map(({ effect, build }, i) => {
         const {
           effectKey,
           isDelay,
@@ -533,6 +569,19 @@ export function irCardModule(cardId: string, compiled: CompiledCard): EffectModu
           },
         });
       });
+      if (snapshotNodes !== undefined) {
+        materialized.forEach((effect, entryIndex) => {
+          trackRuntimeEffect({
+            effect,
+            cardId,
+            timing,
+            index: entryIndex,
+            source,
+            definition: staticsFor(timing, entryIndex, entries[entryIndex]!.effect).resolvedEffect,
+          });
+        });
+      }
+      return materialized;
     },
   };
 }
@@ -559,12 +608,15 @@ interface EntryStatics {
  * for a hand-written double-port that does not go through this bulk path.
  */
 export function registerIrCard(cardId: string, compiled: CompiledCard): EffectModule {
-  const normalized = normalizeCompiledCard(compiled);
+  const normalized = freezeCompiledCard({ compiled: normalizeCompiledCard(compiled) });
+  registeredCompiledCardFingerprints.markImmutable({ compiled: normalized });
   // The direct card module is the executable IR authority. Keep the shared structural
   // requirement readers (DigiXros/digivolution/fusion and client projections) on that same
   // normalized record instead of the older generated effects.json snapshot.
   compiledEffects[cardId] = normalized;
   registeredCompiledCards.set(cardId, normalized);
+  runtimeCompiledNodeRegistry.resetCard(cardId);
+  runtimeCompiledNodeRegistry.registerRoot({ cardId, rootKey: CompiledRootKind.CATALOG.value, root: normalized });
   const existing = getEffectModule(cardId);
   const previousIrModule = registeredIrModules.get(cardId);
   // Registry precedence belongs to the concrete module, not merely to the fact that IR for
@@ -575,8 +627,14 @@ export function registerIrCard(cardId: string, compiled: CompiledCard): EffectMo
   if (existing !== undefined) unregisterCard(cardId);
   // The catalog keeps the authored record; only the runtime module carries the printed
   // clauses matched to each effect and watcher.
-  const module = irCardModule(cardId, withPrintedClauses(cardId, normalized));
+  const module = irCardModule(cardId, withPrintedClauses(cardId, normalized), runtimeCompiledNodeRegistry);
   registerCard(module);
   registeredIrModules.set(cardId, module);
   return module;
+}
+
+type ResolvedRootKeyParams = { timing: EffectTiming; index: number };
+
+function getResolvedRootKey({ timing, index }: ResolvedRootKeyParams): string {
+  return `${CompiledRootKind.RESOLVED.value}/${timing}/${index}`;
 }

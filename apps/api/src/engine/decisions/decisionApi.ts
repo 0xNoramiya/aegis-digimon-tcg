@@ -3,7 +3,7 @@ import type { DecisionApi, EffectContext, SeatScopedDecisionApi } from "../effec
 import type { ChooseOptionExtras } from "../effects/context/decisions.js";
 import type { DecisionManager } from "./index.js";
 import { getEffectDecisionText } from "#api/engine/decisions/getEffectDecisionText";
-import type { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
+import { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 
 /**
  * Concrete {@link DecisionApi} (`ctx.ask.*`) backed by the {@link DecisionManager}
@@ -239,6 +239,10 @@ function buildSeatScopedApi(
     ): Promise<string[]> {
       const min = pickMinimum(ctx, opts.min, opts.max);
       if (declinedByPreset(ctx, min)) return [];
+      let selectionGoal = opts.selectionGoal;
+      if (opts.assemblyCardId !== undefined || opts.digiXrosCardId !== undefined) {
+        selectionGoal = DecisionSelectionGoal.MATERIAL.value;
+      }
       const response = await manager.request({
         seat: resolveSeat(ctx),
         kind: "selectCards",
@@ -265,7 +269,7 @@ function buildSeatScopedApi(
           digiXrosMaterialLimits: opts.digiXrosMaterialLimits,
           digiXrosRuleTrashInstanceIds: opts.digiXrosRuleTrashInstanceIds,
           ...provenance(ctx),
-          ...(opts.selectionGoal === undefined ? {} : { selectionGoal: opts.selectionGoal }),
+          ...(selectionGoal === undefined ? {} : { selectionGoal }),
           ...backOutPurpose(min, opts.min),
           ...(asksController && ctx.payingDeclinableCost === true ? { declinesCost: true } : {}),
         },

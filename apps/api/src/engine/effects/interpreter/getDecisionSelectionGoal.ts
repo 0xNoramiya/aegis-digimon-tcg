@@ -16,6 +16,7 @@ export function getDecisionSelectionGoal({
     case "PlayMultiple":
     case "PlayPerLevel":
     case "PlayFromZone":
+    case "SearchSecurity":
       return DecisionSelectionGoal.PLAY.value;
     case "Digivolve":
     case "DnaDigivolve":

@@ -1,3 +1,10 @@
+import type { RuntimeReferenceRegistry } from "#api/engine/snapshot/RuntimeReferenceRegistry";
+import type { ResolutionPlanState } from "#api/engine/decisions/ResolutionPlanState";
+import type { RuntimeCallbackRegistry } from "#api/engine/snapshot/RuntimeCallbackRegistry";
+import type { RuntimeObjectRegistry } from "#api/engine/snapshot/RuntimeObjectRegistry";
+import type { RuntimeGraphSnapshot } from "#api/engine/snapshot/RuntimeGraphSnapshot";
+import { encodeRuntimeGraph } from "#api/engine/snapshot/encodeRuntimeGraph";
+import { decodeRuntimeGraph } from "#api/engine/snapshot/decodeRuntimeGraph";
 import type { CollectedEffect } from "../effects/collect.js";
 import { triggerKeyOf } from "./triggerKeyOf.js";
 
@@ -11,12 +18,60 @@ import { triggerKeyOf } from "./triggerKeyOf.js";
  * unordered, reopens the prompt. One plan lives exactly as long as its timing window, so an
  * answer never leaks into a later window where the same card triggers again.
  */
+type SnapshotParams = {
+  callbacks?: RuntimeCallbackRegistry;
+  objects?: RuntimeObjectRegistry;
+  references?: RuntimeReferenceRegistry;
+};
+type RestoreParams = {
+  snapshot: RuntimeGraphSnapshot;
+  callbacks?: RuntimeCallbackRegistry;
+  objects?: RuntimeObjectRegistry;
+  references?: RuntimeReferenceRegistry;
+};
+
 export class ResolutionPlan {
   private order: string[] = [];
-  private readonly presets = new Map<string, boolean>();
-  private readonly activationKeys = new WeakMap<object, Map<string, string>>();
-  private readonly usedKeys = new Set<string>();
-  private readonly grantSourceInstances = new Map<number, string>();
+  private presets = new Map<string, boolean>();
+  private activationKeys = new Map<object, Map<string, string>>();
+  private usedKeys = new Set<string>();
+  private grantSourceInstances = new Map<number, string>();
+
+  getRuntimeState(): ResolutionPlanState {
+    return {
+      order: this.order,
+      presets: this.presets,
+      activationKeys: this.activationKeys,
+      usedKeys: this.usedKeys,
+      grantSourceInstances: this.grantSourceInstances,
+    };
+  }
+
+  restoreRuntimeState(state: unknown): void {
+    if (!isResolutionPlanState(state)) {
+      throw new Error("Invalid resolution plan state");
+    }
+    this.order = state.order;
+    this.presets = state.presets;
+    this.activationKeys = state.activationKeys;
+    this.usedKeys = state.usedKeys;
+    this.grantSourceInstances = state.grantSourceInstances;
+  }
+
+  snapshot({ callbacks, objects, references }: SnapshotParams = {}): RuntimeGraphSnapshot {
+    return encodeRuntimeGraph({
+      value: this.getRuntimeState(),
+      describeCallback: callbacks?.describe.bind(callbacks),
+      describeObject: objects?.describe.bind(objects),
+      references,
+    });
+  }
+
+  restore({ snapshot, callbacks, objects, references }: RestoreParams): void {
+    this.restoreRuntimeState(
+      decodeRuntimeGraph({ snapshot, createCallback: callbacks?.create.bind(callbacks), objects, references }),
+    );
+  }
 
   /** Keep each event's key stable as earlier activations leave this window's pending list. */
   keyFor(collected: CollectedEffect): string {
@@ -66,4 +121,35 @@ export class ResolutionPlan {
   presetFor(key: string): boolean | undefined {
     return this.presets.get(key);
   }
+}
+
+function isResolutionPlanState(value: unknown): value is ResolutionPlanState {
+  if (value === null || typeof value !== "object") {
+    return false;
+  }
+  const state = value as ResolutionPlanState;
+  if (
+    !Array.isArray(state.order) ||
+    !state.order.every((key) => typeof key === "string") ||
+    !(state.presets instanceof Map) ||
+    !(state.activationKeys instanceof Map) ||
+    !(state.usedKeys instanceof Set) ||
+    !(state.grantSourceInstances instanceof Map)
+  ) {
+    return false;
+  }
+  return (
+    [...state.presets].every(([key, answer]) => typeof key === "string" && typeof answer === "boolean") &&
+    [...state.activationKeys].every(
+      ([identity, keys]) =>
+        identity !== null &&
+        (typeof identity === "object" || typeof identity === "function") &&
+        keys instanceof Map &&
+        [...keys].every(([base, key]) => typeof base === "string" && typeof key === "string"),
+    ) &&
+    [...state.usedKeys].every((key) => typeof key === "string") &&
+    [...state.grantSourceInstances].every(
+      ([id, source]) => Number.isSafeInteger(id) && id >= 0 && typeof source === "string",
+    )
+  );
 }

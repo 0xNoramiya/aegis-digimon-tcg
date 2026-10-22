@@ -1,3 +1,4 @@
+import { createTrackedPermanentFilterMatch } from "#api/engine/effects/interpreter/matching/createTrackedPermanentFilterMatch";
 import { getFieldEffectText } from "#api/engine/effects/interpreter/getFieldEffectText";
 // Suspend state, DP, keywords, and moving a permanent.
 
@@ -8,7 +9,7 @@ import { type ActionScope, runAction } from "../dispatch.js";
 import { laterEntrantGrantClause } from "../describe.js";
 import { toDuration } from "../duration.js";
 import { ACTION_TYPE_KEYWORDS, unsupported } from "../errors.js";
-import { isPermanentUnaffectable, permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
+import { permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
 import { countMatching, scaleFactor } from "../scaling.js";
 import { candidateLooseInstances, looseCardsInZone, pickLoose } from "../targeting/loose.js";
 import { resolvePermanentTargets } from "../targeting/permanents.js";
@@ -31,10 +32,7 @@ function playerWideMatcher(
   filter: Target["filter"],
 ): ((permanentId: string) => boolean) | undefined {
   if (Object.keys(filter).every((key) => PLAYER_WIDE_SCOPE_KEYS.has(key))) return undefined;
-  return (permanentId) => {
-    const permanent = ctx.game.permanentById(permanentId);
-    return permanent !== undefined && permanentMatchesFilter(ctx, permanent, filter, ctx.source);
-  };
+  return createTrackedPermanentFilterMatch({ ctx, filter, sourceKinds: undefined });
 }
 
 /**
@@ -42,16 +40,9 @@ function playerWideMatcher(
  * a Digimon that can't be affected by this effect (BT13-108 Waltz's End, Q2361).
  */
 function playerWideKeywordMatcher(ctx: EffectContext, filter: Target["filter"]): (permanentId: string) => boolean {
-  const narrowed = playerWideMatcher(ctx, filter);
+  const narrowedFilter = Object.keys(filter).every((key) => PLAYER_WIDE_SCOPE_KEYS.has(key)) ? undefined : filter;
   const sourceKinds = [...(ctx.effectSourceKinds ?? ctx.source.definition.kinds)];
-  return (permanentId) => {
-    const permanent = ctx.game.permanentById(permanentId);
-    return (
-      permanent !== undefined &&
-      (narrowed === undefined || narrowed(permanentId)) &&
-      !isPermanentUnaffectable(ctx, ctx.source, permanent, sourceKinds)
-    );
-  };
+  return createTrackedPermanentFilterMatch({ ctx, filter: narrowedFilter, sourceKinds });
 }
 
 export async function runBoardAction(ctx: EffectContext, action: Action, scope: ActionScope): Promise<boolean> {

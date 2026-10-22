@@ -131,6 +131,7 @@ export interface SubTriggerInstall {
    * Absent => the watcher always competes for ordering.
    */
   canFire?: (ctx: EffectContext) => boolean;
+  hasLegalOutcome?: (ctx: EffectContext) => boolean;
   /**
    * A GRANTED watcher's expiry: the seat whose turn-END drops this subscription
    *. Absent => the watcher lives until its

@@ -1,3 +1,7 @@
+import { resumeMainPhaseInput } from "#api/engine/gameEngine/resumeMainPhaseInput";
+import { createResolutionCandidateReader } from "#api/engine/effects/resolution/createResolutionCandidateReader";
+import { trackResolutionDependencies } from "#api/engine/effects/resolution/trackResolutionDependencies";
+import type { ResolutionDependencySnapshot } from "#api/engine/effects/resolution/ResolutionDependencySnapshot";
 import {
   conditionalDigiXrosTrashAllowed,
   pendingDigiXrosSelfReduction,
@@ -65,7 +69,7 @@ import {
   pendingWindowWatchersCollected,
   withPendingSubTriggers,
 } from "./subTriggers.js";
-import { collectRuleProcessPending, listCandidateInstances, nextPermanentId, ruleProcess } from "./ruleProcess.js";
+import { collectRuleProcessPending, nextPermanentId, ruleProcess } from "./ruleProcess.js";
 import {
   beginResolvingWindow,
   collectDeferredTimingPending,
@@ -88,17 +92,27 @@ import { looseZoneOfInstance } from "../effects/verbs/looseInstances.js";
  */
 export function resolutionDeps(
   engine: GameEngine,
-  listCandidate: () => readonly CardInstance[] = () => listCandidateInstances(engine),
+  listCandidate: () => readonly CardInstance[] = createResolutionCandidateReader({ engine }),
   opts: {
     outermost?: boolean;
     extraPending?: readonly CollectedEffect[];
     excludeNestedPending?: ReadonlySet<CollectedEffect>;
     /** Shared with specialized checkpoints that replace the ordinary collector. */
     reactionPending?: CollectedEffect[];
+    runtimeState?: ResolutionDependencySnapshot;
   } = {},
 ): ResolutionDeps {
-  const excludeNestedPending = opts.excludeNestedPending;
-  const derivedPending = opts.reactionPending ?? [];
+  const runtimeState: ResolutionDependencySnapshot = opts.runtimeState ?? {
+    turnSeat: engine.state.turnSeat,
+    listCandidate,
+    outermost: opts.outermost,
+    extraPending: opts.extraPending,
+    excludeNestedPending: opts.excludeNestedPending,
+    derivedPending: opts.reactionPending ?? [],
+    announced: new Set(),
+  };
+  const excludeNestedPending = runtimeState.excludeNestedPending;
+  const derivedPending = runtimeState.derivedPending;
   // A single OPT watcher can be published through both the event bus and deletion pool.
   // Preserve distinct non-OPT occurrences; only duplicate OPT identities are collapsed.
   const uniquePending = (items: readonly CollectedEffect[]): CollectedEffect[] => {
@@ -116,8 +130,8 @@ export function resolutionDeps(
   // turn player resolves first; without Arts they drain when the Option finishes.
   const pendingWhileOptionResolves = (): CollectedEffect[] =>
     engine.optionMainDepth > 0 ? [] : pendingWindowWatchersCollected(engine);
-  const announced = new Set<CollectedEffect>();
-  return {
+  const announced = runtimeState.announced;
+  const dependencies: ResolutionDeps = {
     registerPendingEffects: (read) => {
       engine.pendingEffectReaders.add(read);
       return () => {
@@ -128,12 +142,12 @@ export function resolutionDeps(
     // cannot reach into the enclosing pool while its card body is still running; a settlement
     // window that starts at effect depth zero may opt into only entries added after its opening
     // snapshot, leaving the parent's older pending group to the outermost resolver.
-    ...(opts.outermost === true
+    ...(runtimeState.outermost === true
       ? {
           collectPending: () =>
             uniquePending([
               ...(engine.optionResolutionDepth > 0 ? pendingWhileOptionResolves() : pendingWindowCollected(engine)),
-              ...(opts.extraPending ?? []),
+              ...(runtimeState.extraPending ?? []),
               ...derivedPending,
             ]),
         }
@@ -149,7 +163,7 @@ export function resolutionDeps(
                         !excludeNestedPending.has(pending) && nestedTriggerSourceStillResident(engine, pending),
                     )),
               ...(engine.optionResolutionDepth > 0 ? [] : parkedEntryCollected(engine)),
-              ...(opts.extraPending ?? []),
+              ...(runtimeState.extraPending ?? []),
               ...derivedPending,
             ]),
         }),
@@ -159,8 +173,8 @@ export function resolutionDeps(
       // changed (memory for BT17-016's immunity, Q2746) must be current for the next one.
       await engine.recomputeContinuousEffects();
     },
-    turnSeat: engine.state.turnSeat,
-    listCandidateInstances: listCandidate,
+    turnSeat: runtimeState.turnSeat,
+    listCandidateInstances: runtimeState.listCandidate,
     ruleProcess: async () => {
       if (engine.optionMainDepth > 0 || engine.effectResolutionDepth > 0) return;
       if (engine.ruleChecks.anyZeroDpDigimon()) {
@@ -232,6 +246,8 @@ export function resolutionDeps(
       });
     },
   };
+  trackResolutionDependencies({ engine, dependencies, state: runtimeState });
+  return dependencies;
 }
 
 /** Dependencies the breeding verbs need (subsystem: deck-and-setup / breeding). */
@@ -1089,6 +1105,9 @@ export function buildTurnFlowHooks(engine: GameEngine): TurnFlowHooks {
         engine.projection.syncMainPhaseAffordances();
       }
     },
+    resumeMainPhase: (seat) => resumeMainPhaseInput({ engine, seat }),
+    isMainPhaseOpen: () =>
+      engine.mainPhase.isOpen && engine.mainPhase.seat === engine.state.turnSeat && !engine.mainEntryPending,
     finalizeMainPhaseEntry: () => {
       engine.mainEntryPending = false;
       const passed = engine.deferredEndPhaseSeat;

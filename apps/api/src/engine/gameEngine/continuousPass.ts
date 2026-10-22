@@ -1,3 +1,4 @@
+import { createNoPromptDecisionApi } from "#api/engine/decisions/createNoPromptDecisionApi";
 import { EffectTiming } from "@aegis/shared";
 import { effectProvenanceKinds } from "../effects/effectProvenance.js";
 import { canActivate, canTrigger } from "../effects/kernel.js";
@@ -56,13 +57,7 @@ export async function recomputeContinuousEffects(engine: GameEngine, publish = t
   // a Static effect whose action has `optional:true` must be auto-declined here so
   // we don't open a nested DecisionManager request that collides with an already-open
   // dec-1 (#residual-gaps/nested-decision-crash).
-  const noPromptAsk: DecisionApi = {
-    optional: async () => false,
-    chooseTargets: async () => [],
-    selectCards: async () => [],
-    selectPermanents: async () => [],
-    chooseOption: async () => 0,
-  };
+  const noPromptAsk = createNoPromptDecisionApi();
   // Defer the driver by one microtask so `recomputeInFlight` is installed before the
   // first pass can recursively reach engine method through a static effect primitive.
   const task = Promise.resolve().then(async () => {
