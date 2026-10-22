@@ -6,12 +6,12 @@ which policy each match used. The experiment is off unless you set
 
 ## Arms
 
-| Arm                 | Bot policy                                                                                        |
-| ------------------- | ------------------------------------------------------------------------------------------------- |
-| `certified`         | The certified residual policy (`defaultBotOptions`). It has not played people yet.                |
-| `legacy`            | The evaluation bot (`createEvaluationPolicy`) production runs today. Also the default when off.   |
-| `humanPanel`        | The `human-panel-v2` scoring program (`apps/api/src/bot/evolution/programs/human-panel-v2.json`). |
-| `humanPanelPlanner` | The same program, with the main-phase turn planner and the planner settings from that file.       |
+| Arm                 | Bot policy                                                                                           |
+| ------------------- | ---------------------------------------------------------------------------------------------------- |
+| `certified`         | The certified residual policy with the selected style, without search. It has not played people yet. |
+| `legacy`            | The evaluation bot (`createEvaluationPolicy`) production runs today. Also the default when off.      |
+| `humanPanel`        | The `human-panel-v2` scoring program (`apps/api/src/bot/evolution/programs/human-panel-v2.json`).    |
+| `humanPanelPlanner` | The same program, with the main-phase turn planner and the planner settings from that file.          |
 
 ## Enable it
 
@@ -30,7 +30,8 @@ Rules, checked at startup:
 - Any other field, an unknown arm, bad weights, unreadable files or malformed
   JSON stop the API from starting.
 
-The experiment applies only to human-vs-bot practice rooms. It does not apply to
+The experiment applies only to Standard difficulty in human-vs-bot practice rooms.
+The selected style applies to every arm; other difficulty levels bypass assignment. It does not apply to
 tournament bots, ranked or private rooms, story battles, developer scenarios or
 scenario fixtures. If `AEGIS_BOT_HEURISTIC` or `AEGIS_BOT_CHECKPOINT` is set,
 that policy wins, the API logs that the experiment stays off, and no match gets
