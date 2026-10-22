@@ -139,12 +139,19 @@ describe("room-scoped deployment affinity", () => {
     await expect(client.joinWithBot("unjoined-room")).rejects.toThrow("connected room");
     expect(fetcher).not.toHaveBeenCalled();
     created.reconnectionToken = "bot-room:rotated-token";
-    await expect(client.joinWithBot(created.roomId)).resolves.toBeUndefined();
+    await expect(
+      client.joinWithBot(created.roomId, undefined, { botDifficulty: "beginner", botStyle: "defensive" }),
+    ).resolves.toBeUndefined();
     expect(fetcher).toHaveBeenCalledWith(
       "https://example.test/api/green/bot/join",
       expect.objectContaining({
         method: "POST",
-        body: JSON.stringify({ roomId: "bot-room", reconnectionToken: "bot-room:rotated-token" }),
+        body: JSON.stringify({
+          roomId: "bot-room",
+          botDifficulty: "beginner",
+          botStyle: "defensive",
+          reconnectionToken: "bot-room:rotated-token",
+        }),
       }),
     );
   });
