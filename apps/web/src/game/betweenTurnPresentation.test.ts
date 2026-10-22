@@ -1,4 +1,8 @@
 // @vitest-environment jsdom
+import { useState } from "react";
+import { createAnimationQueue } from "@/game/animationQueue";
+import { useRestrictionPulses } from "@/game/match/watchers/useRestrictionPulses";
+import type { FreezeFlags, FreezePulse } from "@/game/freezePulse";
 
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -9,7 +13,7 @@ import { singleServerBatch, type ServerBatch } from "../net/serverBatches";
 import { snapshotGameState } from "../net/presentedState";
 import { useMatchCues, type MatchCueAnchors } from "./useMatchCues";
 import type { PresentationControls, PresentationPacing } from "./presentationProbe";
-import { observeGateExpiry } from "./match/presentationGate";
+import { createPresentationGate, observeGateExpiry } from "./match/presentationGate";
 import { TIMINGS } from "./timings";
 
 vi.mock("../design/sound", () => ({ playSound: vi.fn<(kind: string) => void>() }));
@@ -526,3 +530,135 @@ it.each([
     expect(result.current.heldDrawState).toBeUndefined();
   },
 );
+
+it("finishes a newly projected on-play keyword before the next breeding ribbon without expiring gates", async () => {
+  const before = snapshotGameState(createArenaDemoState());
+  before.stateVersion = 20;
+  before.phase = Phase.Main;
+  before.turnSeat = 1;
+  const played = snapshotGameState(before);
+  played.stateVersion = 21;
+  const host = played.players[1]!.battleArea[0]!;
+  host.topCard.cardId = "BT24-046";
+  host.grantedKeywords = [] as never;
+  const triggered = snapshotGameState(played);
+  triggered.stateVersion = 22;
+  triggered.players[1]!.battleArea[0]!.grantedKeywords = ["Jamming"] as never;
+  const after = snapshotGameState(triggered);
+  after.stateVersion = 27;
+  after.phase = Phase.Breeding;
+  after.turnSeat = 0;
+  after.turnCount += 1;
+  const trigger = {
+    seat: 1,
+    sourceCardId: "BT24-046",
+    sourceInstanceId: host.topCard.instanceId,
+    sourcePermanentId: host.permanentId,
+    effectKey: "BT24-046/ir-6-0",
+    timing: "OnPlay",
+    description: "[On Play] [When Digivolving] Suspend 1 of your opponent's Digimon.",
+  } as const;
+  const script: ServerEvent[][] = [
+    [{ kind: "effectTriggered", ...trigger }],
+    [{ kind: "effectResolved", ...trigger }],
+    [{ kind: "turnEnded", endingSeat: 1, nextSeat: 0, turnCount: before.turnCount }],
+    [{ kind: "phaseChanged", phase: Phase.Active, turnSeat: 0, turnCount: before.turnCount }],
+    [{ kind: "phaseChanged", phase: Phase.Draw, turnSeat: 0, turnCount: after.turnCount }],
+    [{ kind: "phaseChanged", phase: Phase.Breeding, turnSeat: 0, turnCount: after.turnCount }],
+  ];
+  const batches = script.map((events, index) => singleServerBatch(events, index + 21));
+  const expired: string[] = [];
+  const stop = observeGateExpiry(({ label }) => expired.push(label));
+  let controls: PresentationControls | undefined;
+  const view = renderHook(
+    ({ fed, state }: { fed: readonly ServerBatch[]; state: GameState }) =>
+      useMatchCues({
+        batches: fed,
+        state,
+        snapshots: [
+          { stateVersion: 21, state: played },
+          { stateVersion: 22, state: triggered },
+          { stateVersion: 27, state: after },
+        ],
+        viewerSeat: 0,
+        mulliganOpen: false,
+        anchors: {
+          board: { current: null },
+          permanentCenter: () => ({ x: 120, y: 80 }),
+          yourDeck: { current: null },
+          oppDeck: { current: null },
+          yourHandDock: { current: null },
+          oppHandStrip: { current: null },
+          yourSecurity: { current: null },
+          oppSecurity: { current: null },
+        },
+        presentationPacing: "sequential",
+        onActionRejected: vi.fn<(reason: string) => void>(),
+        devProbe: {
+          onQueue: (next) => {
+            controls = next;
+          },
+        },
+      }),
+    { initialProps: { fed: [] as readonly ServerBatch[], state: played } },
+  );
+  try {
+    view.rerender({ fed: batches, state: after });
+    await advance(8000);
+    expect(expired).toEqual([]);
+    expect(controls?.queue.isIdle()).toBe(true);
+    expect(view.result.current.phaseTransitionPending).toBe(false);
+  } finally {
+    view.unmount();
+    stop();
+  }
+});
+
+it("presents both retained keyword gains on the same permanent before settling", async () => {
+  const before = snapshotGameState(createArenaDemoState());
+  before.stateVersion = 1;
+  before.players[0]!.battleArea[0]!.grantedKeywords = [] as never;
+  const first = snapshotGameState(before);
+  first.stateVersion = 2;
+  first.players[0]!.battleArea[0]!.grantedKeywords = ["Jamming"] as never;
+  const second = snapshotGameState(first);
+  second.stateVersion = 3;
+  second.players[0]!.battleArea[0]!.grantedKeywords = ["Jamming", "Blocker"] as never;
+  const queue = createAnimationQueue();
+  const gate = createPresentationGate();
+  const restrictionsByPermanentRef = { current: null as Map<string, FreezeFlags> | null };
+  const freezePulseKeyRef = { current: 0 };
+  const view = renderHook(
+    ({ state }: { state: GameState }) => {
+      const [pulses, setFreezePulses] = useState<ReadonlyMap<string, FreezePulse>>(new Map());
+      useRestrictionPulses({
+        state,
+        queue,
+        restrictionsByPermanentRef,
+        freezePulseKeyRef,
+        causingEffectGateRef: { current: gate },
+        setFreezePulses,
+        snapshots: [
+          { stateVersion: 2, state: first },
+          { stateVersion: 3, state: second },
+        ],
+        contextOfRevision: (stateVersion) => ({ gate, origin: { batchId: `gain-${stateVersion}`, stateVersion } }),
+      });
+      return pulses;
+    },
+    { initialProps: { state: before } },
+  );
+  try {
+    view.rerender({ state: second });
+    act(() => gate.release());
+    await advance(32);
+    expect(view.result.current.get(before.players[0]!.battleArea[0]!.permanentId)?.key).toBe(1);
+    await advance(TIMINGS.statusPulse);
+    expect(view.result.current.get(before.players[0]!.battleArea[0]!.permanentId)?.key).toBe(2);
+    await advance(TIMINGS.statusPulse);
+    expect(queue.isIdle()).toBe(true);
+  } finally {
+    view.unmount();
+    queue.clear();
+  }
+});

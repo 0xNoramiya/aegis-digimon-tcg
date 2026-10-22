@@ -2,7 +2,7 @@ import { normalizePrintedTextKey } from "@/i18n/normalizePrintedTextKey";
 import { getCardTextField } from "@/i18n/getCardTextField";
 import type { CardTextField } from "@/i18n/CardTextField";
 import { expect, it } from "vitest";
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { allCards } from "@aegis/shared/cards/registry";
 import { printedModalBullets, printedModalPreamble } from "@aegis/shared/effects/printedClauses";
 import { getPrintedClauseGroupTexts } from "@/game/getPrintedClauseGroupTexts";
@@ -81,6 +81,15 @@ it("covers every supported Chinese display fragment and reports raw engine hints
     { effects: { trigger: string; isInherited?: boolean }[] },
   ][]) {
     for (const effect of compiled.effects) {
+      if (effect.trigger === "OnDiscardSecurity") {
+        const text = noticeEffectClause({
+          cardId,
+          timing: effect.trigger,
+          isInherited: effect.isInherited,
+          description: undefined,
+        });
+        if (text) inspect("unbracketedNotice", cardId, text);
+      }
       function visit(value: unknown) {
         if (Array.isArray(value)) {
           value.forEach(visit);
@@ -88,6 +97,10 @@ it("covers every supported Chinese display fragment and reports raw engine hints
         }
         if (!value || typeof value !== "object") return;
         for (const [name, part] of Object.entries(value)) {
+          if (name === "raw" && "kind" in value && value.kind === "SubTrigger" && typeof part === "string") {
+            const reason = /^\s*(when\b[^,]*)/i.exec(part)?.[1]?.trim();
+            if (reason) inspect("triggerReason", cardId, reason);
+          }
           if ((name === "effectTextPart" || name === "effectTextEmphasis") && typeof part === "string") {
             inspect(name, cardId, part);
             const text = playerFacingEffectClause({
@@ -130,6 +143,7 @@ it("covers every supported Chinese display fragment and reports raw engine hints
   }
   const report = { counts, baselineMissing, statuses, normalizationConflicts, missing, resolutions };
   expect(normalizationConflicts).toEqual([]);
+  mkdirSync("../../.local", { recursive: true });
   writeFileSync("../../.local/card-fragment-translation-coverage.json", JSON.stringify(report, null, 2));
   expect(missing.filter((entry) => entry.kind !== "effectTextPart" && entry.kind !== "effectTextEmphasis")).toEqual([]);
   expect(counts.full).toBeGreaterThan(6000);

@@ -613,3 +613,21 @@ it("shares keyword overflow and hints with manual statuses and free-text markers
   fireEvent.click(row.querySelector(".game-keyword-badge--more")!);
   expect(screen.getByRole("tooltip").textContent).toContain("Custom reminder");
 });
+
+it("shows the projected Security Attack bonus for five Tamers sharing four distinct colors", () => {
+  const permanent = new Permanent();
+  permanent.permanentId = "four-color-tamer-bonus";
+  permanent.topCard = Object.assign(new CardInstance(), { cardId: "AD1-004" });
+  permanent.currentDP = 16_000;
+  permanent.securityAttack = 2;
+  permanent.securityAttackModifier = 1;
+  permanent.keywords.push("Rush", "Blocker", "Raid", "SecurityAttack", "Reboot");
+  permanent.grantedKeywords.push("Rush", "Blocker", "Raid", "SecurityAttack", "Reboot");
+  render(
+    <I18nProvider>
+      <PermanentView perm={permanent} />
+    </I18nProvider>,
+  );
+  expect(screen.getByLabelText(/Active keywords:.*Security Attack \+1/)).toBeTruthy();
+  expect(screen.queryByLabelText(/Active keywords:.*Security Attack \+2/)).toBeNull();
+});

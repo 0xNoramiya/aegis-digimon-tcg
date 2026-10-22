@@ -683,23 +683,26 @@ const TIMING_DISABLE_MASK: Partial<Record<EffectTiming, DisableTiming>> = {
   [EffectTiming.OnPlay]: "onPlay",
 };
 
-/**
- * Timing-effect disable consume site (the timing half of the source rule implementation
- * split). When the firing `timing` maps to a maskable window ([When Digivolving] /
- * [When Attacking] / [On Play]), drop any collected effect whose SOURCE permanent is
- * timing-disabled for that window — unless the source permanent carries the `beAffected`
- * O(active-disables): the disable lookup short-circuits once the timing is non-maskable.
- */
 function applyTimingEffectDisable(
   env: EffectEnvironment,
   timing: EffectTiming,
   collected: CollectedEffect[],
 ): CollectedEffect[] {
   const mask = TIMING_DISABLE_MASK[timing];
-  if (mask === undefined) return collected;
-  return collected.filter((c) => {
-    const permanent = c.source.permanent();
-    if (permanent === undefined) return true;
-    return !isTimingActivationDisabled(env.continuous, permanent.permanentId, mask);
-  });
+  if (mask === undefined) {
+    return collected;
+  }
+  return collected.map((collectedEffect) => ({
+    ...collectedEffect,
+    effect: {
+      ...collectedEffect.effect,
+      canActivate: (ctx: EffectContext) => {
+        const permanent = collectedEffect.source.permanent();
+        if (permanent !== undefined && isTimingActivationDisabled(env.continuous, permanent.permanentId, mask)) {
+          return false;
+        }
+        return collectedEffect.effect.canActivate(ctx);
+      },
+    },
+  }));
 }

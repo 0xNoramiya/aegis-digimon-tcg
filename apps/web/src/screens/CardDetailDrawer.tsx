@@ -149,6 +149,7 @@ export function CardDetailDrawer({
       <div className="card-detail-effects">
         <I18nContext.Provider value={cardTranslation}>
           <DetailEffect cardId={cardId} title={cardTranslation.t("library.mainEffect")} text={def.effectText} />
+          <DetailEffect cardId={cardId} title={cardTranslation.t("library.optionEffect")} text={def.optionEffect} />
           <DetailEffect
             cardId={cardId}
             title={cardTranslation.t("library.inheritedEffect")}

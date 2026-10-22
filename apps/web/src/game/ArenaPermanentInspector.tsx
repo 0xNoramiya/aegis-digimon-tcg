@@ -285,7 +285,7 @@ export function ArenaPermanentInspector({
               </div>
               {printed.requirements ? (
                 <p>
-                  <EffectText inspector asciiBrackets text={printed.requirements} />
+                  <EffectText inspector asciiBrackets text={printed.requirements} cardId={detail.cardId} allowContext />
                 </p>
               ) : null}
             </details>
@@ -293,7 +293,13 @@ export function ArenaPermanentInspector({
               <div className="arena-permanent-inspector__effect" data-role="top">
                 <span className="arena-permanent-inspector__effect-label">{t("overlay.printedEffect")}</span>
                 <p>
-                  <EffectText inspector asciiBrackets text={printed.effects || t("overlay.noPrintedEffect")} />
+                  <EffectText
+                    inspector
+                    asciiBrackets
+                    text={printed.effects || t("overlay.noPrintedEffect")}
+                    cardId={detail.cardId}
+                    allowContext
+                  />
                 </p>
               </div>
             ) : null}

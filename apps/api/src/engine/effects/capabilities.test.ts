@@ -3127,11 +3127,11 @@ describe("CAP-A4: cannotActivateWhenDigivolving restriction (BT19-038)", () => {
     };
   }
 
-  it("blocks a permanent's WhenDigivolving effect from being collected when restricted", () => {
+  it("blocks a permanent's WhenDigivolving effect from activating when restricted", () => {
     const { env, candidateInstance } = makeCapA4Env({ permanentId: "PERM_RESTRICTED", restricted: true });
     const collected = gatherTriggeredEffects(env, EffectTiming.WhenDigivolving, [candidateInstance as never]);
-    // The restriction is set on PERM_RESTRICTED — the WhenDigivolving effect must be filtered out.
-    expect(collected).toHaveLength(0);
+    expect(collected).toHaveLength(1);
+    expect(collected[0]!.effect.canActivate({} as EffectContext)).toBe(false);
   });
 
   it("allows a permanent's WhenDigivolving effect when the restriction is absent", () => {
