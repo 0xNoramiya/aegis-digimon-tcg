@@ -62,3 +62,27 @@ it("keeps Barbamon's emphasized deletion passage without appending its Assembly 
   expect(playerFacingEffectClause(input)).toBe(effectTextPart);
   expect(noticeEffectClause(input)).toBe(effectTextPart);
 });
+
+it("shows a linked card's protection clause, not its main [All Turns] clause, when the prompt sends only the cost (EX10-030)", () => {
+  expect(
+    playerFacingEffectClause({
+      cardId: "EX10-030",
+      timing: "AllTurns",
+      description: "by trashing 1 of its link cards",
+    }),
+  ).toBe(
+    "[All Turns] [Once Per Turn] When this Digimon would leave the battle area, by trashing 1 of its link cards, it doesn't leave.",
+  );
+});
+
+it("shows the protection clause, not the first [All Turns] clause, when the prompt sends only the cost (BT24-101)", () => {
+  expect(
+    playerFacingEffectClause({
+      cardId: "BT24-101",
+      timing: "AllTurns",
+      description: "by trashing your top security card",
+    }),
+  ).toBe(
+    "[All Turns] [Once Per Turn] When any of your [TS] trait Digimon or Tamers would leave the battle area, by trashing your top security card, they don't leave.",
+  );
+});
