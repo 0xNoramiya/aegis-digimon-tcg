@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { constants, zstdCompressSync, zstdDecompressSync } from "node:zlib";
+import { copyWithoutSharedBacking } from "#api/replays/copyWithoutSharedBacking";
 import {
   REPLAY_FORMAT_VERSION,
   MAX_REPLAY_BYTES,
@@ -74,7 +75,7 @@ export interface ParticipantReplayFile {
 
 export class ReplayRecording {
   readonly id = randomUUID();
-  private compressedFrames: Buffer[] = [];
+  private compressedFrames: Uint8Array[] = [];
   private previousFrame?: Buffer;
   private lastAtMs = 0;
   private bytes = 0;
@@ -97,9 +98,11 @@ export class ReplayRecording {
       return;
     }
     this.compressedFrames.push(
-      zstdCompressSync(
-        frame,
-        this.previousFrame ? { ...FRAME_COMPRESSION, dictionary: this.previousFrame } : FRAME_COMPRESSION,
+      copyWithoutSharedBacking(
+        zstdCompressSync(
+          frame,
+          this.previousFrame ? { ...FRAME_COMPRESSION, dictionary: this.previousFrame } : FRAME_COMPRESSION,
+        ),
       ),
     );
     this.previousFrame = frame;
