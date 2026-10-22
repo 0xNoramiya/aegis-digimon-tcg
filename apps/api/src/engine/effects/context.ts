@@ -28,27 +28,10 @@ import { UseTracker, canTrigger } from "./kernel.js";
 import { onDeletion } from "./builders.js";
 import { linkMax } from "./mindLink.js";
 import { findPermanentInState } from "../state/access.js";
+import { fieldRevision } from "#api/engine/state/fieldRevision";
 import { effectiveKinds, effectiveNames, effectiveTraits, type ContinuousEffectLedger } from "./continuous.js";
 import type { DecisionApi, EffectContext, GameAccess, Primitives, TriggerInfo } from "./EffectContext.js";
 import { playEffectInstances } from "./interpreter/actions/effectPlayAssembly.js";
-
-/**
- * Does this permanent carry `instanceId` anywhere — as its top card, in its
- * digivolution stack, or among its linked cards? Mirrors what the source
- * `CardSource.PermanentOfThisCard()` resolves over (top + stack + linked).
- */
-function permanentHolds(permanent: Permanent, instanceId: string): boolean {
-  if (permanent.topCard !== undefined && permanent.topCard.instanceId === instanceId) {
-    return true;
-  }
-  for (const card of permanent.stack) {
-    if (card.instanceId === instanceId) return true;
-  }
-  for (const card of permanent.linked) {
-    if (card.instanceId === instanceId) return true;
-  }
-  return false;
-}
 
 /**
  * The live-state lookup a CardSource needs (engine/cards/CardSource.ts), bound to
@@ -59,26 +42,49 @@ function permanentHolds(permanent: Permanent, instanceId: string): boolean {
  * into GameState directly (card-module contract): the framework owns it.
  */
 export function createCardStateLookup(state: GameState): CardStateLookup {
+  const holders = new Map<string, { permanent: Permanent; breedingSlot: boolean }>();
+  const indexedContainers: unknown[] = [];
+  let indexedRevision = -1;
+  const containersUnchanged = (): boolean => {
+    let position = 0;
+    for (const p of state.players) {
+      if (indexedContainers[position++] !== p) return false;
+      if (indexedContainers[position++] !== p.battleArea) return false;
+      if (indexedContainers[position++] !== p.breeding) return false;
+    }
+    return position === indexedContainers.length;
+  };
+  const holdersByInstance = (): Map<string, { permanent: Permanent; breedingSlot: boolean }> => {
+    if (indexedRevision === fieldRevision.value && containersUnchanged()) return holders;
+    holders.clear();
+    indexedContainers.length = 0;
+    const hold = (permanent: Permanent, breedingSlot: boolean): void => {
+      const entry = { permanent, breedingSlot };
+      const claim = (instanceId: string): void => {
+        if (!holders.has(instanceId)) holders.set(instanceId, entry);
+      };
+      if (permanent.topCard !== undefined) claim(permanent.topCard.instanceId);
+      for (const card of permanent.stack) claim(card.instanceId);
+      for (const card of permanent.linked) claim(card.instanceId);
+    };
+    for (const p of state.players) {
+      indexedContainers.push(p, p.battleArea, p.breeding);
+      for (const permanent of p.battleArea) hold(permanent, false);
+      if (p.breeding !== undefined) hold(p.breeding, true);
+    }
+    indexedRevision = fieldRevision.value;
+    return holders;
+  };
   const findPermanent = (
     instanceId: string,
   ): { permanent: Permanent; inBattleArea: boolean; inBreedingArea: boolean } | undefined => {
-    for (const p of state.players) {
-      for (const permanent of p.battleArea) {
-        if (permanentHolds(permanent, instanceId)) {
-          // A permanent can be flagged inBreeding while listed in battleArea (a moved-back
-          // permanent); treat it as breeding-area, not battle-area, to match source.
-          return {
-            permanent,
-            inBattleArea: !permanent.inBreeding,
-            inBreedingArea: permanent.inBreeding,
-          };
-        }
-      }
-      if (p.breeding !== undefined && permanentHolds(p.breeding, instanceId)) {
-        return { permanent: p.breeding, inBattleArea: false, inBreedingArea: true };
-      }
-    }
-    return undefined;
+    const holder = holdersByInstance().get(instanceId);
+    if (holder === undefined) return undefined;
+    const { permanent, breedingSlot } = holder;
+    if (breedingSlot) return { permanent, inBattleArea: false, inBreedingArea: true };
+    // A permanent can be flagged inBreeding while listed in battleArea (a moved-back
+    // permanent); treat it as breeding-area, not battle-area, to match source.
+    return { permanent, inBattleArea: !permanent.inBreeding, inBreedingArea: permanent.inBreeding };
   };
 
   const isInTrash = (instanceId: string): boolean =>
