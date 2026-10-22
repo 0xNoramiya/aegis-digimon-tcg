@@ -2,12 +2,11 @@ import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { getPanelScoringWindow } from "./getPanelScoringWindow.mjs";
-
 process.env.NODE_ENV = "test";
 process.env.AEGIS_STRICT_EFFECTS = "0";
 const write = process.stdout.write.bind(process.stdout);
 console.log = console.info = console.debug = console.warn = () => {};
+const { getPanelScoringWindow } = await import("./getPanelScoringWindow.mjs");
 
 const apiDist = resolve(dirname(fileURLToPath(import.meta.url)), "../../apps/api/dist");
 const moduleAt = (name) => import(pathToFileURL(resolve(apiDist, name)).href);
@@ -19,6 +18,9 @@ const { runReplayTeacher } = await moduleAt("bot/evolution/runReplayTeacher.js")
 const { inspectReplayTeacherInput } = await moduleAt("bot/evolution/inspectReplayTeacherInput.js");
 const { extractReplay } = await moduleAt("replays/inputs/extract.js");
 const { runBotMatch } = await moduleAt("bot/matchHarness.js");
+const { runLevelPanelGame } = await moduleAt("bot/levels/runLevelPanelGame.js");
+const { measureStyleEvents } = await moduleAt("bot/style/measureStyleEvents.js");
+const { measureStyle } = await moduleAt("bot/style/measureStyle.js");
 const { mainActionReady } = await moduleAt("bot/training/actions.js");
 const { createTrainingPolicy } = await moduleAt("bot/training/policy.js");
 const { actionCardId, actionFeatures, chooseHeuristic, parseHeuristic, rankHeuristic } =
@@ -96,6 +98,7 @@ function describeAction(window, entry) {
     label: window.actions[entry.index].label,
     ...(cardId === undefined ? {} : { card: cardId, name: cardName(cardId) }),
     score: Math.round(entry.score * 1000) / 1000,
+    secondaryScore: Math.round((entry.secondaryScore ?? 0) * 1000) / 1000,
     features: actionSpecific(actionFeatures(window, entry.index)),
   };
 }
@@ -320,6 +323,7 @@ async function play(job) {
     ...(valid ? {} : { problem: problemOf(result) }),
     win: result.winnerSeat === undefined ? null : result.winnerSeat === job.seat,
     turn: result.turnCount,
+    style: measureStyleEvents({ events: result.events }),
     reason: result.reason,
     ms: Math.round(performance.now() - started),
     ...(traces === undefined ? {} : { traces, cards: cardGlossary(traces) }),
@@ -347,6 +351,12 @@ function validate(request) {
 
 async function handle(request) {
   try {
+    if (request.levelPanel !== undefined) {
+      return { id: request.id, ...(await runLevelPanelGame(request.levelPanel)) };
+    }
+    if (request.measureStyle !== undefined) {
+      return { id: request.id, valid: true, style: await measureStyle({ replay: request.measureStyle }) };
+    }
     if (request.teacherAlignment !== undefined) {
       return {
         id: request.id,

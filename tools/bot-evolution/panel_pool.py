@@ -10,7 +10,9 @@ import time
 from collections.abc import Callable
 from concurrent.futures import CancelledError, ThreadPoolExecutor
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
+
+from validate_holdout_usage import validate_holdout_usage
 
 WORKER = Path(__file__).resolve().parent / "panel_worker.mjs"
 RESTART_AFTER = 400
@@ -34,6 +36,8 @@ class PanelWorker:
         self.stop_event = stop_event or threading.Event()
         self.games = 0
         self.process: subprocess.Popen[bytes] | None = None
+        self.stderr_tail = bytearray()
+        self.last_failure = ""
 
     def _ensure(self) -> subprocess.Popen[bytes]:
         if self.process is not None and self.process.poll() is None and self.games < RESTART_AFTER:
@@ -43,19 +47,35 @@ class PanelWorker:
             [self.node, f"--max-old-space-size={self.heap_megabytes}", str(WORKER)],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
             bufsize=0,
         )
-        if self.process.stdin is None or self.process.stdout is None:
+        if self.process.stdin is None or self.process.stdout is None or self.process.stderr is None:
             raise RuntimeError("Panel worker pipes are unavailable")
         os.set_blocking(self.process.stdin.fileno(), False)
         os.set_blocking(self.process.stdout.fileno(), False)
+        os.set_blocking(self.process.stderr.fileno(), False)
+        self.stderr_tail.clear()
         self.games = 0
         return self.process
 
+    def _capture_stderr(self, process: subprocess.Popen[bytes]) -> None:
+        if process.stderr is None:
+            return
+        while True:
+            try:
+                chunk = os.read(process.stderr.fileno(), 65_536)
+            except BlockingIOError:
+                return
+            if not chunk:
+                return
+            self.stderr_tail.extend(chunk)
+            if len(self.stderr_tail) > 8192:
+                del self.stderr_tail[:-8192]
+
     def _exchange(self, payload: dict[str, Any]) -> dict[str, Any] | None:
         process = self._ensure()
-        if process.stdin is None or process.stdout is None:
+        if process.stdin is None or process.stdout is None or process.stderr is None:
             raise RuntimeError("Panel worker pipes are unavailable")
         request = memoryview((json.dumps(payload) + "\n").encode("utf-8"))
         response = bytearray()
@@ -73,36 +93,51 @@ class PanelWorker:
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
                     raise TimeoutError(f"Panel worker exceeded {timeout_seconds:g}s")
-                if not selector.select(min(remaining, 0.25)):
+                events = selector.select(min(remaining, 0.25))
+                if not events:
                     continue
                 if request:
                     request = request[os.write(process.stdin.fileno(), request) :]
                     if not request:
                         selector.unregister(process.stdin)
                         selector.register(process.stdout, selectors.EVENT_READ)
+                        selector.register(process.stderr, selectors.EVENT_READ)
                     continue
-                chunk = os.read(process.stdout.fileno(), 65_536)
-                if not chunk:
-                    return None
-                response.extend(chunk)
-                if b"\n" in response:
-                    answer = json.loads(response)
-                    if not isinstance(answer, dict) or answer.get("id") != payload["id"]:
-                        raise ValueError("Panel worker returned a mismatched response")
-                    return answer
+                for key, _ in events:
+                    if key.fileobj is process.stderr:
+                        self._capture_stderr(process)
+                        continue
+                    chunk = os.read(process.stdout.fileno(), 65_536)
+                    if not chunk:
+                        self._capture_stderr(process)
+                        return None
+                    response.extend(chunk)
+                    if b"\n" in response:
+                        answer = json.loads(response)
+                        if not isinstance(answer, dict) or answer.get("id") != payload["id"]:
+                            raise ValueError("Panel worker returned a mismatched response")
+                        return answer
 
     def request(self, payload: dict[str, Any]) -> dict[str, Any] | None:
+        self.last_failure = ""
         for _ in range(2):
             try:
                 answer = self._exchange(payload)
             except (CancelledError, TimeoutError):
                 self.close()
                 raise
-            except (OSError, ValueError):
+            except (OSError, ValueError) as error:
+                self.last_failure = str(error)
+                if self.process is not None:
+                    self._capture_stderr(self.process)
                 answer = None
             if answer is not None:
                 self.games += 1
                 return answer
+            if self.stderr_tail:
+                self.last_failure = self.stderr_tail.decode("utf-8", errors="replace").strip()[
+                    -1000:
+                ]
             self.close()
         return None
 
@@ -120,6 +155,8 @@ class PanelWorker:
             self.process.stdin.close()
         if self.process.stdout is not None:
             self.process.stdout.close()
+        if self.process.stderr is not None:
+            self.process.stderr.close()
         self.process = None
 
 
@@ -158,7 +195,9 @@ class PanelPool:
         jobs: list[dict[str, Any]],
         *,
         on_result: Callable[[dict[str, Any]], None] | None = None,
+        usage: Literal["training", "holdout-evaluation"] = "training",
     ) -> list[dict[str, Any]]:
+        validate_holdout_usage(jobs, usage=usage)
         remaining = iter(range(len(jobs)))
         lock = threading.Lock()
         results: list[dict[str, Any] | None] = [None] * len(jobs)
@@ -174,7 +213,7 @@ class PanelPool:
                 try:
                     try:
                         answer = worker.request(job)
-                        error = "worker crashed or returned invalid output"
+                        error = worker.last_failure or "worker crashed or returned invalid output"
                     except TimeoutError as exception:
                         answer = None
                         error = str(exception)

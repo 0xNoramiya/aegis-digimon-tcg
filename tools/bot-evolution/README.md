@@ -1,5 +1,91 @@
 # GEPA heuristic evolution
 
+## Difficulty and style measurement
+
+`level_panel.py` runs all 15 difficulty/style combinations against random-legal,
+legacy Balanced, certified residual, human-panel-v2 and the turn planner. It also
+runs each adjacent difficulty pair in every style. Each comparison uses independent
+four-game blocks with both seats and both deck orientations. The committed
+`holdout-pool.json` freezes eight test-only deck compositions and a reserved seed
+range. Four blocks per comparison rotate through all eight lists.
+
+```sh
+pnpm --filter @aegis/shared build
+pnpm --filter @aegis/api build
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/level_panel.py \
+  --run-dir .local/level-panel --node /path/to/node26 --blocks 4 --workers 2 \
+  --timeout-seconds 120
+```
+
+Level-panel requests default to a 120-second worker timeout because searched games
+can exceed the 60-second default used by other panel tools. Values from 60 to 600
+seconds are accepted and recorded in the run manifest.
+
+`--seed-block-offset` reserves fresh four-game seed blocks when a prior campaign was
+interrupted or invalidated. A four-block screen allocates 348 independent blocks, so
+the next non-overlapping run starts at offset 348. Never resume a campaign after its
+compiled runtime or worker protocol changes; use a fresh offset and run directory.
+For parameter calibration, pass a separate development-pool JSON with `--pool-file`
+and `--usage training`. Its deck compositions and seeds must remain outside the
+reserved holdout pool. Keep those development results out of final holdout claims.
+Use `--adjacent-only` to focus a longer development run on all level-to-level
+separations, or `--transition expert` to isolate one adjacent level pair without
+spending jobs against the five reference bots. Use `--reference legacy-balanced`
+to run every difficulty and style against one fixed reference, for top-level
+strength and style-cost checks. Filtered runs keep the seed offsets of the full
+panel, so they never reuse the seeds of another comparison.
+
+Each comparison in the summary reports its complete blocks, points rate and a
+95% interval over block means (normal approximation). The interval is
+screening evidence; promotion decisions still use the sequential tests.
+
+Do not rebuild the compiled runtime during a panel. `PanelBatch` records the
+runtime identity, job digest, usage and holdout pool hash, checkpoints results and
+rejects incompatible resumes. `PanelPool` and `PanelBatch` reject reserved seeds
+or deck compositions for training/tuning. Only explicit `usage="holdout-evaluation"`
+allows evaluation on this pool. Held-out outcomes must not be fed back into GEPA
+or parameter selection; parameter calibration needs a separate development pool.
+The composition test checks the full current pilot pool and DigiLab training lists;
+this does not retroactively prove independence from every historical experiment.
+
+The summary includes complete-block win rates, style metrics, local Main policy
+latencies and a reference-anchored ladder. Invalid games exclude their entire block
+from ratings and remain listed as failures. The report always has `certified: false`:
+a small screen is not a promotion, level-separation proof or production latency
+measurement. Read the invalid block list before interpreting a ranking.
+
+`rating_ladder.py` accepts an array of `{ first, second, scores }` records, each with
+four scores in `{0, 0.5, 1}`. It fits a regularized Bradley-Terry model, fixes the
+reference at 1500, and reports approximate 95% curvature intervals. It conservatively
+uses one bounded mean-score observation per block instead of four independent game
+observations. Disconnected comparison graphs are rejected. Ridge regularization is
+reported explicitly; perfect records are finite estimates with uncertainty.
+See [Turner and Firth's model reference](https://www.jstatsoft.org/article/view/v048i09).
+
+`pentanomial_sprt.py` accepts an array of four-game score arrays and `--elo0` /
+`--elo1`. It returns `accept`, `reject` or `continue` using a constrained multinomial
+profile likelihood and approximate Wald boundaries. Four games with draws require
+nine score bins, extending the five-bin paired-game method described in
+[the primary pentanomial reference](https://github.com/vdbergh/pentanomial).
+No pseudo-games are added to empty bins. Blocks must be independent and complete;
+invalid games cannot be converted to losses. The boundary approximation has not been
+calibrated for discrete overshoot, so retain `certify_balanced.py` as the final gate.
+
+```sh
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/rating_ladder.py \
+  .local/rating-blocks.json --reference legacy-balanced
+tools/bot-evolution/.venv/bin/python tools/bot-evolution/pentanomial_sprt.py \
+  .local/score-blocks.json --elo0 0 --elo1 10
+```
+
+Panel worker game responses include `style` for both seats: security attacks per
+turn, completed-turn memory handovers per turn, blocks declared, seat turns and game
+length. Attack redirects do not count as fresh declarations. The final partial turn
+counts in the turn denominator; only a completed turn contributes handed-over memory.
+An input `{ id, measureStyle: replayRecord }` also reconstructs a recorder replay and
+returns the same metrics, refusing any replay divergence. The standalone
+`measureStyleEvents` function uses public events and never needs hidden card identities.
+
 ## Conditional deck pilots
 
 `learn_pilots.py` uses the official GEPA custom-proposer interface without a model
@@ -140,13 +226,12 @@ projected balanced control. There were no invalid games, timeouts, rejections,
 engine errors or inference fallbacks. The first 1,200-block look did not pass;
 attempt 1 remains consumed and invalid due to its repaired projection defect.
 
-The ordinary balanced app bot now uses `defaultBotOptions` and this certified
-generic policy without requiring an environment option. Explicit policies and
-custom profile weight sets keep their own choices; aggressive and defensive bots
-continue using their corresponding projected profiles. Match and seat seed the
-default policy, while the readiness guard, configured pacing and action limits
-are preserved. No production deployment has occurred. An explicit catalog can
-still override startup, with validation before room admission:
+The ordinary production app bot uses the legacy evaluation policy. The certified
+generic policy is available through `defaultBotOptions` and the opt-in practice
+experiment; certification against the projected control does not establish a win
+rate against production legacy. Explicit policies and custom profile weight sets
+keep their own choices. An explicit catalog can still override startup, with
+validation before room admission:
 
 ```sh
 AEGIS_BOT_HEURISTIC="$PWD/apps/api/src/bot/evolution/programs/certified-balanced.json" pnpm dev
@@ -242,17 +327,55 @@ should freeze their scheduling policy, compare matched seeds and seats against
 the same control, and keep invalid games and timeouts unscored. The local
 experiment uses one Docker container with a shared 4 GiB RAM ceiling and zero
 additional swap; this covers the coordinator and evaluation workers together.
-This interface does not establish a new strength certificate or activate MCTS
-for ordinary application matches.
+This interface does not establish a new strength certificate. Expert and Master
+practice bots now use the worker-backed snapshot search described below; benchmark
+results from this experiment do not certify that live configuration.
 
 ## Guarded MCTS prefix acceleration
 
-The engine still reconstructs simulation state through real prefix replay. It can
-reuse recorded main-action catalogs while replaying the exact, unsampled prefix.
-The replay checks the expected seat, public information key and selected action
-key; a mismatch invalidates that rollout. At the sampled root and beyond the
-prefix, the authoritative engine enumerates actions. This reduces enumeration work
-without changing hidden-information access or claiming a clone of runtime state.
+Replay-based MCTS can reuse recorded Main-action catalogs while reconstructing the
+exact, unsampled prefix. It checks the expected seat, public information key and
+selected action key; a mismatch invalidates that rollout. At the sampled root and
+beyond the prefix, the authoritative engine enumerates actions. This reduces action
+enumeration work without changing hidden-information access or cloning runtime state.
+
+## Snapshot-based MCTS continuation
+
+Each searched Main position captures the settled engine once. Expert and Master
+practice bots use this snapshot path through a bounded worker pool. Expert runs 6
+simulations with a 900 ms search budget; Master runs 20 simulations with a
+1,450 ms budget. The Standard evaluator supplies root priors, rollout decisions for
+both seats and timeout fallback. Style weights affect root scoring and leaf
+evaluation. Worker execution has passed a local compiled-runtime smoke check, but
+production p95 latency and calibrated strength have not been established. A
+10-repetition Node 26.12
+snapshot-restoration benchmark over eight roots measured 10.95× aggregate speedup.
+This covers restoration, not complete search simulation or production decision
+latency.
+
+The extended benchmark pairs identical two-turn rollouts from replay prefixes and
+restored snapshots. On the default-deck replay (46 recorded inputs), eight roots and
+five repetitions measured 10.4× restoration speed but 2.0× simulation speed. On an
+independent 65-input replay, it measured 11.1× restoration and 1.9× simulation speed.
+All compared rollout outcomes matched; the 10× per-simulation target remains unmet.
+These are short local replay samples, not production latency evidence.
+
+Each searched Main position captures the settled engine once. Every simulation
+restores that runtime snapshot, samples hidden zones, applies the selected root
+action and continues both seats through the authoritative engine. Rollouts stop
+after the requested opponent-turn horizon or decision budget and evaluate the
+resulting public position. This avoids replaying the match prefix for every
+simulation. The snapshot graph preserves engine callbacks and aliases; a missing
+runtime descriptor or an unclassified schema symbol rejects the simulation.
+Opponent hidden identities are sampled from complete famous and DigiLab decklists,
+weighted by currently public cards and archetype meta share. The sampler receives
+only public card identities and hidden-zone sizes, so changing the true hidden
+card identities does not change the selected belief sample.
+
+Replay-prefix search remains available for historical replay studies. That path
+reconstructs the exact unsampled prefix, verifies the expected public information
+key, and invalidates a rollout on a prefix mismatch. It does not participate in the
+snapshot-based evolution runner.
 
 The compiled `replayAccelerationBenchmark.js` accepts JSON on stdin. Benchmark
 budgets 8, 32, 128 and 256 in `mode: "single-search-after-prefix"` with
@@ -300,9 +423,11 @@ deck match, verifies root information hashes and offered action counts, and runs
 one real determinized rollout. That rollout previously stopped at turn 61 and
 now reaches a security win at turn 62, with both prefix replay modes. Its forced
 search choices are regression data, not strength or publication evidence.
-Engine rule fixes later changed the turn-59 block window at rollout choice 13. The
-fixture keeps the first 13 recorded choices, forces the first block option there, and
-lets the rollout heuristic continue; that path still wins by security at turn 62.
+Bot decision-policy changes later moved the match path, so the fixture was
+re-recorded with the same seed and decks. The first 31 roots use 16-simulation
+MCTS choices; later roots use the rollout heuristic, and the outer game ends by
+security at turn 60. Root 37 (turn 58) with simulation 2 gives the regression
+rollout: five recorded heuristic choices that end in a security win at turn 62.
 
 Search is currently applied to settled Main windows; other windows use the
 rollout heuristic. Full engine replay is expensive. Logs report actual completed
@@ -311,11 +436,12 @@ A low-budget smoke run is development evidence, not a validated strategy guide.
 
 ## Multi-fidelity campaigns
 
-The engine cannot snapshot a live match: it holds in-flight promises, closure
-subscriptions and weak maps. Every simulation therefore replays the prefix from the
-seed. In local measurements on the current engine, prefix replay was 40–75% of
-rollout time at mid-game roots, and full rollouts played to the end of the game.
-Glowing Dawn matches cost about 7–10 ms per engine decision, about five times the
+Replay-based campaign runners reconstruct every simulation from the seed because
+they need the complete historical prefix. Local snapshot continuation is available
+for settled engine states, but cannot replace that replay path for arbitrary replay
+roots. Earlier replay-based measurements found prefix replay at 40–75% of rollout
+time at mid-game roots, with full rollouts played to the end of the game. Glowing
+Dawn matches cost about 7–10 ms per engine decision, about five times the
 random-deck cost.
 
 These options define a new experiment. They are off by default, and a run that uses
@@ -614,11 +740,15 @@ required for strict publication; the same high-budget MCTS and held-out improvem
 gates apply regardless of reflection origin. Existing session runs without frozen
 reflection records remain ineligible; do not retroactively certify their provenance.
 
-A cheap engine snapshot is not currently safe. GameState omits runtime effect and
-modifier ledgers, once-per-turn usage tracking, reducers and RNG closures. The complete
-engine additionally owns promises, WeakMaps and callbacks bound to its original state.
-An engine-owned settled snapshot API would need full runtime export/import, explicit
-quiescence checks, serializable RNG and rebuilt callbacks before replacing prefix replay.
+Settled engine snapshots are implemented for bot search, including runtime ledgers,
+usage tracking, RNG state, and rebuilt callbacks. They reject unsupported runtime
+state and preserve the existing replay path for arbitrary historical roots. Current
+evidence includes snapshot round-trip tests and a compiled worker smoke check.
+Fuzzer-seeded Main-position continuation now matches every suffix event and final
+state across 1,000 randomized cases. Mid-resolution, combat-window and full
+random-action-trace conformance remain unverified. The restoration benchmark clears
+its 10× target, but complete search-simulation speed is still unverified. Snapshot
+support does not by itself certify live-search strength or production latency.
 
 Training selects a search rung adaptively by default (`--fixed-opponent` disables it).
 The seed first faces a seeded random legal-action control, then progressively larger

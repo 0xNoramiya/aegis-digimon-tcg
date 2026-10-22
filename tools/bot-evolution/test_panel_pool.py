@@ -20,7 +20,7 @@ def worker_script(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> str:
         "const lines = createInterface({ input: process.stdin });\n"
         "for await (const line of lines) {\n"
         "  const job = JSON.parse(line);\n"
-        '  if (job.mode === "crash") process.exit(1);\n'
+        '  if (job.mode === "crash") { console.error("synthetic worker crash"); process.exit(1); }\n'
         '  if (job.mode === "partial") process.stdout.write("{");\n'
         '  if (job.mode === "hang" || job.mode === "partial") {\n'
         "    await new Promise(() => setInterval(() => {}, 1000));\n"
@@ -78,6 +78,8 @@ def test_worker_failures_remain_invalid_and_later_games_continue(
         results = pool.run([{"id": "broken", "mode": mode}, {"id": "healthy"}])
         assert results[0]["id"] == "broken"
         assert results[0]["valid"] is False
+        if mode == "crash":
+            assert "synthetic worker crash" in results[0]["error"]
         assert results[1]["valid"] is True
     finally:
         pool.close()
@@ -124,4 +126,20 @@ def test_cancellation_stops_active_hung_workers_without_waiting_for_the_timeout(
         assert all(worker.process is None for worker in pool.workers)
     finally:
         timer.cancel()
+        pool.close()
+
+
+def test_holdout_guard_runs_before_worker_dispatch(worker_script: str) -> None:
+    pool = PanelPool(worker_script, 1, 64)
+    try:
+        with pytest.raises(ValueError, match="Reserved holdout seed"):
+            pool.run([{"id": "held-out", "seed": 1800000000}])
+        assert pool.workers[0].process is None
+        assert (
+            pool.run([{"id": "held-out", "seed": 1800000000}], usage="holdout-evaluation")[0][
+                "valid"
+            ]
+            is True
+        )
+    finally:
         pool.close()

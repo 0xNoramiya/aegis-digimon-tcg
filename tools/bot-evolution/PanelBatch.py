@@ -6,7 +6,9 @@ import threading
 import time
 from concurrent.futures import CancelledError
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
+
+from validate_holdout_usage import validate_holdout_usage
 
 import click
 
@@ -101,13 +103,22 @@ class PanelBatch:
         if runtime_fingerprint(self.repository) != self.fingerprint:
             raise RuntimeError("Compiled runtime changed during panel evaluation")
 
-    def run(self, jobs: list[dict[str, Any]], directory: Path) -> list[dict[str, Any]]:
+    def run(
+        self,
+        jobs: list[dict[str, Any]],
+        directory: Path,
+        *,
+        usage: Literal["training", "holdout-evaluation"] = "training",
+    ) -> list[dict[str, Any]]:
+        holdout_hash = validate_holdout_usage(jobs, usage=usage)
         self._check_runtime()
         identifiers = {job["id"] for job in jobs}
         if len(identifiers) != len(jobs):
             raise ValueError("Panel jobs must have unique IDs")
         manifest = {
             **self.identity,
+            "usage": usage,
+            "holdoutPoolSha256": holdout_hash,
             "jobs": len(jobs),
             "jobsSha256": hashlib.sha256(
                 json.dumps(jobs, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -148,7 +159,7 @@ class PanelBatch:
 
         try:
             if missing:
-                self.pool.run(missing, on_result=save)
+                self.pool.run(missing, on_result=save, usage=usage)
             self._check_runtime()
             if self.failures:
                 raise self.failures[0]
