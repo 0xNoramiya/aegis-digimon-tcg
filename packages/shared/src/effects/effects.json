@@ -50566,7 +50566,7 @@
                 "zone": "trash",
                 "controller": "mine",
                 "or": [
-                  { "kind": ["Digimon"], "nameOrTrait": [{ "tokens": ["Hybrid", "Ten Warriors"], "match": "trait" }] },
+                  { "nameOrTrait": [{ "tokens": ["Hybrid", "Ten Warriors"], "match": "trait" }] },
                   { "kind": ["Tamer"], "hasInheritedEffects": true }
                 ]
               },
@@ -183894,22 +183894,9 @@
                 "controller": "mine",
                 "nameOrTrait": [{ "tokens": ["Mineral", "Rock"], "match": "trait" }]
               },
-              "count": 1,
-              "from": ["trash"]
-            },
-            "underFilter": { "isSelfRef": true },
-            "position": "bottom"
-          },
-          {
-            "kind": "PlaceUnder",
-            "target": {
-              "filter": {
-                "zone": "trash",
-                "controller": "mine",
-                "nameOrTrait": [{ "tokens": ["Mineral", "Rock"], "match": "trait" }]
-              },
-              "count": 2,
+              "count": 3,
               "upTo": true,
+              "minimum": 1,
               "from": ["trash"]
             },
             "underFilter": { "isSelfRef": true },
@@ -229295,8 +229282,6 @@
       },
       {
         "trigger": "OnPlay",
-        "frequency": "OncePerTurn",
-        "sharedUseKey": "bt26-079-trash-cost-delete",
         "actions": [
           {
             "kind": "CostGatedBlock",
@@ -229321,8 +229306,6 @@
       },
       {
         "trigger": "WhenDigivolving",
-        "frequency": "OncePerTurn",
-        "sharedUseKey": "bt26-079-trash-cost-delete",
         "actions": [
           {
             "kind": "CostGatedBlock",
@@ -229347,8 +229330,6 @@
       },
       {
         "trigger": "WhenAttacking",
-        "frequency": "OncePerTurn",
-        "sharedUseKey": "bt26-079-trash-cost-delete",
         "actions": [
           {
             "kind": "CostGatedBlock",
