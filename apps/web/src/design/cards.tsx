@@ -474,6 +474,7 @@ export function CardMini({
   renderDpDelta,
   identity,
   zoomOnHover = true,
+  useSelectedSleeve = true,
 }: {
   cardId?: string;
   artId?: string;
@@ -493,6 +494,7 @@ export function CardMini({
   identity?: { name: string; colors: readonly CardColor[] };
   /** Show the floating full-card preview on hover. */
   zoomOnHover?: boolean;
+  useSelectedSleeve?: boolean;
 }) {
   const translations = useCardTranslations();
   const printed = cardId ? getCardDefinition(cardId) : undefined;
@@ -509,7 +511,7 @@ export function CardMini({
   useEffect(() => setUrlIndex(0), [artId, cardId, urls]);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const zoomEnabled = useHoverZoomEnabled();
-  if (faceDown || !def) return <CardBack width={width} selected={selected} />;
+  if (faceDown || !def) return <CardBack width={width} selected={selected} useSelectedSleeve={useSelectedSleeve} />;
   const c = paletteFor(def.colors);
   const key = colorKey(def.colors[0]);
   const h = Math.round(width * 1.4);
