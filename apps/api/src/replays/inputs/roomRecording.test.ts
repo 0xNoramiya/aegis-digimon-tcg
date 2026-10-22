@@ -105,6 +105,7 @@ describe("AegisRoom replay recording", () => {
 
     expect(replayLines(room, "replay.header")).toEqual([
       {
+        gameMode: "automatic",
         replaySeq: 1,
         seed: 99,
         randomKey: expect.stringMatching(/^[a-f0-9]{64}$/),
