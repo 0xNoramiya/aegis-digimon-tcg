@@ -28,7 +28,7 @@ const compiled: CompiledCard = {
           kind: "Delete",
           target: {
             filter: {
-              controllerDefault: "opponent",
+              controller: "any",
               kind: ["Digimon"],
               playCostLte: 3,
             },
@@ -62,7 +62,7 @@ const compiled: CompiledCard = {
           kind: "Delete",
           target: {
             filter: {
-              controllerDefault: "opponent",
+              controller: "any",
               kind: ["Digimon"],
               playCostLte: 3,
             },
