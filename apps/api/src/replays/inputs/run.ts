@@ -111,6 +111,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     // refresh them here so a captured frame has current counts. They are derived from the zone
     // arrays and nothing the engine or the divergence checks reads.
     engine.syncCounts();
+    engine.flushHandAffordances();
     options.onBatch?.(state, closing.events);
     // The room's `stampClose` gives the batch's `batchClosed` its own seq, kept out of the frame.
     eventSeq += 1;
@@ -124,6 +125,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
   };
 
   const engine: GameEngine = new GameEngine(state, {
+    deferHandAffordances: true,
     seed: record.seed,
     randomKey: record.randomKey,
     ...(record.firstSeat !== undefined ? { firstSeat: record.firstSeat } : {}),

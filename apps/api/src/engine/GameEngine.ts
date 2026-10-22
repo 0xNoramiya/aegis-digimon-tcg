@@ -537,6 +537,7 @@ export class GameEngine {
       continuousDpSeedState: this.continuousDpSeedState,
       pendingBlitzAttack: () => this.pendingBlitzAttack,
       hasMainPhaseEnded: () => this.mainPhase.hasEnded,
+      deferHandAffordances: this.hooks.deferHandAffordances === true,
       effectEnvironment: (trigger) => effectEnvironment(this, trigger),
       buildEffectContext: (source, trigger) => buildEffectContext(this, source, trigger),
       isNewlyPlayedRushAttacker: (permanentId) => isNewlyPlayedRushAttacker(this, permanentId),
@@ -912,6 +913,10 @@ export class GameEngine {
 
   syncCounts(): void {
     return syncCounts(this);
+  }
+
+  flushHandAffordances(): void {
+    this.projection.flushHandAffordances();
   }
 
   handleReconnect(seat: Seat): void {
