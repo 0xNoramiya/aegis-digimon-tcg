@@ -10,6 +10,46 @@ import contextOverrides from "@/i18n/cardTextContextOverrides.json";
 
 const translations = await loadPrintedCardTranslations();
 
+it("translates an unbracketed security discard clause without its sibling watcher", () => {
+  const card = getCardDefinition("BT15-037")!;
+  const text = card.effectText!.split("[All Turns]")[0]!.trim();
+  const result = resolveCardText({ text, cardId: card.cardId, translations });
+  expect(result.status).toBe("complete");
+  expect(result.text).toContain("不支付费用登场");
+  expect(result.text).toContain("屏障");
+  expect(result.text).not.toContain("内存值");
+  expect(result.text).not.toContain("When an effect");
+  expect(
+    resolveCardText({
+      text: text.replace("without paying the cost", "by paying the cost"),
+      cardId: card.cardId,
+      translations,
+    }).status,
+  ).toBe("missing");
+});
+
+it("translates a security removal trigger reason independently of its payoff", () => {
+  const result = resolveCardText({
+    text: "When your security stack is removed from",
+    cardId: "BT27-043",
+    translations,
+  });
+  expect(result).toMatchObject({ text: "当我方的安防卡牌减少时", status: "complete" });
+});
+
+it("rejects an unbracketed translation with mismatched sibling timing structure", () => {
+  const card = getCardDefinition("BT15-037")!;
+  const text = card.effectText!.split("[All Turns]")[0]!.trim();
+  const sample = {
+    ...translations,
+    text: { [normalizePrintedTextKey(card.effectText!)]: "此卡牌被丢弃时，不支付费用登场。[登场时]抽1张卡。" },
+  };
+  expect(resolveCardText({ text, cardId: card.cardId, translations: sample }).status).toBe("missing");
+  expect(
+    resolveCardText({ text, cardId: card.cardId, field: CardTextField.INHERITED.value, translations }).status,
+  ).toBe("missing");
+});
+
 it.each(Object.values(contextOverrides))("validates the reviewed context version for $cardId", (entry) => {
   const card = getCardDefinition(entry.cardId)!;
   const field = entry.field as CardTextField;

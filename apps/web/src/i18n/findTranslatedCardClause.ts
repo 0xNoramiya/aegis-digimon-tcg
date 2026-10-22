@@ -49,6 +49,17 @@ export function findTranslatedCardClause({ text, translations, cardId, field }: 
       continue;
     }
     const requestedKey = normalizePrintedTextKey(text);
+    const sourceParts = getPrintedClauseGroupTexts(full);
+    const normalizedTranslated = translated.replace(/[【［]/g, "[").replace(/[】］]/g, "]");
+    const targetParts = getTranslatedParts(normalizedTranslated);
+    const sourcePrefix = sourceParts[0] ? full.slice(0, full.indexOf(sourceParts[0])).trim() : "";
+    const targetPrefix = targetParts[0]
+      ? normalizedTranslated.slice(0, normalizedTranslated.indexOf(targetParts[0])).trim()
+      : "";
+    if (/^[A-Za-z]/.test(sourcePrefix) && targetPrefix && normalizePrintedTextKey(sourcePrefix) === requestedKey) {
+      matches.add(targetPrefix);
+      continue;
+    }
     const requestedClauses = source.filter(
       (clause) =>
         normalizePrintedTextKey(clause.text) === requestedKey ||

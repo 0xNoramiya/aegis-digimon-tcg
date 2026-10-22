@@ -1,3 +1,4 @@
+import { getChineseLearnDictionary } from "@/i18n/learn/getChineseLearnDictionary";
 import { advancedBattlesZhCN } from "@/i18n/learn/advancedBattles.zh-CN";
 import { rulesLayoutZhCN } from "@/i18n/learn/rulesLayout.zh-CN";
 import { lessonCatalogZhCN } from "@/i18n/learn/lessonCatalog.zh-CN";
@@ -2492,8 +2493,10 @@ const interfaceMessages = {
   "releases.reported": "你报告的问题，我们已修复 · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const zhCN: Record<keyof typeof en, string> = {
-  ...manualEn,
-  ...en,
-  ...interfaceMessages,
-};
+export const zhCN: Record<keyof typeof en, string> = getChineseLearnDictionary({
+  dictionary: {
+    ...manualEn,
+    ...en,
+    ...interfaceMessages,
+  },
+});

@@ -53,7 +53,11 @@ export function DecisionClauseChoice({
                   {index + 1}
                 </span>
                 <span className="effect-choice__clause">
-                  {clause ? <EffectText text={clause} cardId={cardId} /> : choiceLabel({ choice: label, t })}
+                  {clause ? (
+                    <EffectText text={clause} cardId={cardId} surface="clause-choice" allowContext />
+                  ) : (
+                    choiceLabel({ choice: label, t })
+                  )}
                 </span>
                 <span className="effect-choice__go" aria-hidden="true">
                   <Icons.ChevronRight />
