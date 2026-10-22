@@ -1,4 +1,4 @@
-import type { DecisionRequest, Intent, Seat, ServerEvent } from "@aegis/shared";
+import type { DecisionRequest, Intent, Seat } from "@aegis/shared";
 import type { GameEngine } from "../../engine/GameEngine.js";
 import type { BotPolicy } from "../policy.js";
 import { createObservationHistory } from "./history.js";
@@ -20,21 +20,6 @@ export interface TrainingWindow {
 }
 
 export type ChooseTrainingAction = (window: TrainingWindow) => number;
-
-type RejectionEvent = Extract<ServerEvent, { kind: "actionRejected" }>;
-
-/** Asynchronous rejections left after removing the policy's recovered deferred-play rejections. */
-export function unexplainedRejections(events: readonly ServerEvent[], recovered: number): RejectionEvent[] {
-  let remaining = recovered;
-  return events.filter((event): event is RejectionEvent => {
-    if (event.kind !== "actionRejected") return false;
-    if (remaining > 0 && event.intent === "playCard" && event.reason === "insufficient-memory") {
-      remaining--;
-      return false;
-    }
-    return true;
-  });
-}
 
 export type TrainingPolicy<Result extends Intent | Promise<Intent>> = BotPolicy<Result> & {
   /** Deferred plays the engine rejected for memory after the policy chose them; each is excluded until memory changes. */
