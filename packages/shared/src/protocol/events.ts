@@ -1,3 +1,4 @@
+import type { CounterChoice } from "#shared/protocol/CounterChoice";
 import type { SingleHandCostBenefit } from "#shared/protocol/SingleHandCostBenefit";
 import { CardMovePosition } from "#shared/protocol/CardMovePosition";
 import type { DecisionEffectSummary } from "#shared/protocol/DecisionEffectSummary";
@@ -174,7 +175,7 @@ export type ServerEvent =
       kind: "counterWindowOpened";
       attackerPermanentId: string;
       defendingSeat: Seat;
-      eligibleCounters: { instanceId: string; effectKey: string; description: string }[];
+      eligibleCounters: CounterChoice[];
     }
   | { kind: "counterResolved"; attackerPermanentId: string; activated: boolean }
   // ＜Alliance＞ (Comprehensive Rules §16-24) is attack-only; there is no block-time variant.

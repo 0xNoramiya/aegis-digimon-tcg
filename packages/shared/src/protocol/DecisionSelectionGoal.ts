@@ -4,6 +4,7 @@ export const DecisionSelectionGoal = {
   PLAY: { name: "PLAY", value: "play" },
   EVOLVE: { name: "EVOLVE", value: "evolve" },
   MATERIAL: { name: "MATERIAL", value: "material" },
+  PROTECT: { name: "PROTECT", value: "protect" },
 } as const;
 
 export type DecisionSelectionGoal = (typeof DecisionSelectionGoal)[keyof typeof DecisionSelectionGoal]["value"];
