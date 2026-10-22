@@ -1,5 +1,38 @@
 [
   {
+    "version": "1.37.1-beta",
+    "releasedAt": "2026-10-21",
+    "summaryKey": "releases.1.37.1-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.37.1-beta.feature.boardCards"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.37.1-beta.fix.dynasmon",
+        "issue": 5930
+      },
+      {
+        "textKey": "releases.1.37.1-beta.fix.costReactions",
+        "issue": 5933
+      },
+      {
+        "textKey": "releases.1.37.1-beta.fix.faceDown"
+      },
+      {
+        "textKey": "releases.1.37.1-beta.fix.nestedAttack"
+      },
+      {
+        "textKey": "releases.1.37.1-beta.fix.surtr",
+        "issue": 5931
+      },
+      {
+        "textKey": "releases.1.37.1-beta.fix.scans"
+      }
+    ]
+  },
+  {
     "version": "1.37.0-beta",
     "releasedAt": "2026-10-21",
     "summaryKey": "releases.1.37.0-beta.summary",
