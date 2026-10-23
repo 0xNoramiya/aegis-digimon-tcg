@@ -16,7 +16,7 @@ export function getStoryCampaignBattles({ campaignId }: Params): readonly StoryB
     )
     .map((battle) => {
       if (battle.id === "dw1-038") {
-        return { ...battle, title: "Parceiro vs. Machinedramon", chapterId: "Back Dimension" };
+        return { ...battle, title: "Partner vs. Machinedramon", chapterId: "Back Dimension" };
       }
       return battle;
     });

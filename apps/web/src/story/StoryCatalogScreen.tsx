@@ -73,7 +73,6 @@ export function StoryCatalogScreen({ campaignId, signedIn, onStart }: Params) {
                   {battle.isOptional && <> · {t("story.optionalChallenge")}</>}
                 </p>
                 <h3>{getTranslatedStoryText({ text: battle.title, locale })}</h3>
-                {battle.canonicalOutcome && <p>{getTranslatedStoryText({ text: battle.canonicalOutcome, locale })}</p>}
               </div>
               <div className="story-catalog-list__action">
                 <span>{unlocked ? t(won ? "story.completed" : "story.ready") : t("story.locked")}</span>

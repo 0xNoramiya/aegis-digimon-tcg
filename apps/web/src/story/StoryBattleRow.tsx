@@ -47,7 +47,6 @@ export function StoryBattleRow({ battle, number, completed, locked, canStart, on
           {getTranslatedStoryText({ text: battle.character, locale })} ×{" "}
           {getTranslatedStoryText({ text: battle.opponent, locale })}
         </p>
-        {battle.canonicalOutcome && <p>{getTranslatedStoryText({ text: battle.canonicalOutcome, locale })}</p>}
       </div>
       <div className="story-battle__action">
         <span className="story-battle__status" data-available={canStart || undefined}>

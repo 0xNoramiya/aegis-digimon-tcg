@@ -9,9 +9,7 @@ export type StoryCatalogBattle = {
   opponents?: readonly string[];
   playerDeckRefs: readonly (keyof typeof storyCatalogDecks)[];
   opponentDeckRef: keyof typeof storyCatalogDecks;
-  notes: string;
   sourceUrl: string;
   isOptional?: boolean;
   completionGroup?: string;
-  canonicalOutcome: string;
 };

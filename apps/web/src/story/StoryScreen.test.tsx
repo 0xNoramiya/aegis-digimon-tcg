@@ -34,7 +34,7 @@ it("starts with an illustrated campaign library and hides campaigns with a singl
   expect(screen.queryByText("Adaptation")).toBeNull();
   expect(screen.queryByText("In preparation")).toBeNull();
   expect(screen.queryByRole("button", { name: "Explore campaign · Digimon V-Tamer 01 (manga)" })).toBeNull();
-  expect(screen.queryByRole("button", { name: "Filmes e especiais" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Films and specials" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Explore campaign · Our War Game" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Explore campaign · Digimon Adventure tri." })).toBeNull();
   expect(screen.queryByRole("button", { name: "Explore campaign · Digimon Next (manga)" })).toBeNull();
@@ -106,7 +106,7 @@ it("preserves Liberator progress, localization and identities without source lin
 
 it("uses official media artwork and presents Back Dimension only once", async () => {
   renderStory("dw1-038");
-  expect(screen.getAllByRole("heading", { name: "Parceiro vs. Machinedramon" })).toHaveLength(1);
+  expect(screen.getAllByRole("heading", { name: "Partner vs. Machinedramon" })).toHaveLength(1);
   expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(38);
   const images = [...document.querySelectorAll<HTMLImageElement>(".story-catalog-list img")];
   expect(images).toHaveLength(38);
@@ -130,7 +130,7 @@ it("opens the Seekers webnovel with eight playable confrontations and official a
   expect(campaign.querySelector("img")?.getAttribute("src")).toBe("/story/media/digimon-seekers.jpg");
   fireEvent.click(campaign);
   expect(await screen.findAllByRole("button", { name: "Start battle" })).toHaveLength(8);
-  expect(screen.getByRole("heading", { name: /A batalha dos Seekers/ })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: /The battle of the Seekers/ })).toBeTruthy();
 });
 
 it.each([
@@ -149,4 +149,13 @@ it.each([
   expect(buttons).toHaveLength(count);
   await vi.waitFor(() => expect(buttons.every((button) => !(button as HTMLButtonElement).disabled)).toBe(true));
   expect(screen.queryByText(/WMD\d|DigiLab|2026-\d/)).toBeNull();
+});
+
+it("renders catalog battle titles and chapters in English", async () => {
+  renderStory();
+  fireEvent.click(screen.getByRole("button", { name: "Explore campaign · Digimon Seekers" }));
+  await screen.findAllByRole("button", { name: "Start battle" });
+  expect(screen.getByRole("heading", { name: /^The battle of the Seekers — / })).toBeTruthy();
+  expect(screen.getAllByText(/ · Chapter 4/).length).toBeGreaterThan(0);
+  expect(screen.queryByText(/Capítulo|A batalha/)).toBeNull();
 });

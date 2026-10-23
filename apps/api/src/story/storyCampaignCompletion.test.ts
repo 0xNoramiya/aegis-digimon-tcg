@@ -39,9 +39,9 @@ it("awards Cyber Sleuth completion without requiring optional cases or postgame"
 
 it("awards narrative chapters without optional cases and keeps optional collections separate", () => {
   const battles = getStoryCampaignBattles({ campaignId: "digimon-cyber-sleuth" });
-  const chapter = battles.filter((battle) => battle.chapterId === "Capítulo 4");
+  const chapter = battles.filter((battle) => battle.chapterId === "Chapter 4");
   expect(chapter.some((battle) => battle.isOptional)).toBe(true);
   const completed = chapter.filter((battle) => !battle.isOptional).map((battle) => battle.id);
-  expect(getStoryMilestones({ completed })).toContain("chapter:digimon-cyber-sleuth:Capítulo 4");
-  expect(getStoryMilestones({ completed: [] })).not.toContain("chapter:digimon-cyber-sleuth:Capítulo 4");
+  expect(getStoryMilestones({ completed })).toContain("chapter:digimon-cyber-sleuth:Chapter 4");
+  expect(getStoryMilestones({ completed: [] })).not.toContain("chapter:digimon-cyber-sleuth:Chapter 4");
 });

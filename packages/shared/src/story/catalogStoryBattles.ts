@@ -23,7 +23,6 @@ export const catalogStoryBattles: readonly StoryBattle[] = storyCatalogBattles.m
       (battle.campaignId === "digimon-dawn-dusk"
         ? battle.chapter.split(" · ").slice(0, 2).join(" · ")
         : battle.chapter.split(" · ")[0]?.trim()) || battle.campaignId,
-    canonicalOutcome: battle.canonicalOutcome,
     isOptional: battle.isOptional,
     completionGroup: battle.completionGroup,
     playerDeckRef: battle.playerDeckRefs[0],

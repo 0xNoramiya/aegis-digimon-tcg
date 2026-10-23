@@ -18,7 +18,6 @@ export type StoryBattle = {
   chapterId?: string;
   isOptional?: boolean;
   completionGroup?: string;
-  canonicalOutcome?: string;
   playerDeckRef?: keyof typeof storyCatalogDecks;
   opponentDeckRef?: keyof typeof storyCatalogDecks;
 };

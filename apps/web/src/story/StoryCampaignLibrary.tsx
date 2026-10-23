@@ -11,7 +11,7 @@ import { Button } from "@/design/primitives";
 type Params = { completed?: readonly string[]; onSelect: (campaign: string) => void };
 
 const campaigns = [
-  { id: StoryCampaignId.LIBERATOR.value, title: "Digimon Liberator", medium: "Mangás", isHidden: false },
+  { id: StoryCampaignId.LIBERATOR.value, title: "Digimon Liberator", medium: "Manga", isHidden: false },
   ...storyCatalogCampaigns,
 ].filter((campaign) => !campaign.isHidden && getStoryCampaignBattles({ campaignId: campaign.id }).length > 1);
 

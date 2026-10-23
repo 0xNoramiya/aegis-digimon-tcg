@@ -20,15 +20,12 @@ it.each([
   expect(battles.every((battle) => battle.playable)).toBe(true);
 });
 
-it("records official episode evidence and distinguishes unknown narrative outcomes", () => {
+it("records official episode evidence", () => {
   const selected = animeStoryBattles.filter((battle) => battle.id !== "XW05");
   expect(selected.every((battle) => /^https:\/\/(?:www\.|lineup\.)toei-anim\.co\.jp\//.test(battle.sourceUrl))).toBe(
     true,
   );
-  expect(selected.every((battle) => battle.canonicalOutcome.length > 0)).toBe(true);
-  expect(selected.find((battle) => battle.id === "BB13")?.canonicalOutcome).toMatch(/não descreve/);
-  expect(selected.find((battle) => battle.id === "SA02")?.protagonist).toBe("Sleipmon e DATS");
-  expect(selected.find((battle) => battle.id === "GG01")?.canonicalOutcome).toMatch(/se rende/);
+  expect(selected.find((battle) => battle.id === "SA02")?.protagonist).toBe("Sleipmon and DATS");
 });
 
 it.each(["sa06", "cs42"])(
