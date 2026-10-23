@@ -609,6 +609,36 @@ export async function canAttemptUseOptionWithoutCost(
   return affordability.some(Boolean);
 }
 
+const PRINTED_OPTION_USE =
+  /\b(?:you\s+may\s+)?(?:play\s+or\s+)?use\s+(?:up\s+to\s+)?(?:\d+|one|an?|this\s+card)\b[^.]*/i;
+
+function findPrintedOptionUse(effectText: string | undefined): string | undefined {
+  if (effectText === undefined) {
+    return undefined;
+  }
+  return PRINTED_OPTION_USE.exec(effectText)?.[0];
+}
+
+async function selectOptionToUse(
+  ctx: EffectContext,
+  action: Extract<Action, { kind: "UseOptionWithoutCost" }>,
+  candidates: string[],
+): Promise<string[]> {
+  const outerEffectTextPart = ctx.activeEffectTextPart;
+  const outerEffectTextEmphasis = ctx.activeEffectTextEmphasis;
+  const printedUse = action.effectTextPart === undefined ? findPrintedOptionUse(ctx.activeEffectText) : undefined;
+  if (printedUse !== undefined) {
+    ctx.activeEffectTextPart = ctx.activeEffectText;
+    ctx.activeEffectTextEmphasis = printedUse;
+  }
+  try {
+    return await ctx.ask.selectCards(ctx, { candidates, min: action.selectionRequired === true ? 1 : 0, max: 1 });
+  } finally {
+    ctx.activeEffectTextPart = outerEffectTextPart;
+    ctx.activeEffectTextEmphasis = outerEffectTextEmphasis;
+  }
+}
+
 export async function runUseOptionWithoutCost(
   ctx: EffectContext,
   action: Extract<Action, { kind: "UseOptionWithoutCost" }>,
@@ -623,7 +653,7 @@ export async function runUseOptionWithoutCost(
 
   // The controller picks WHICH eligible Option (the use is optional: min 0). The client can only
   // name an engine-offered candidate; it never injects an effect.
-  const picked = await ctx.ask.selectCards(ctx, { candidates, min: action.selectionRequired === true ? 1 : 0, max: 1 });
+  const picked = await selectOptionToUse(ctx, action, candidates);
   const chosenId = picked[0];
   if (chosenId === undefined || !candidates.includes(chosenId)) return;
 
