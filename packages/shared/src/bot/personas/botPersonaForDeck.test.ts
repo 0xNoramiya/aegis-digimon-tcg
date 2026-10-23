@@ -95,6 +95,13 @@ describe("bot identities", () => {
     player.botPersonaId = "rina-shinomiya";
     expect(player.toJSON()).toMatchObject({ avatarId: "greymon", botPersonaId: "rina-shinomiya" });
     expect(Object.keys(player.toJSON()).slice(0, 4)).toEqual(["seat", "displayName", "avatarId", "sessionId"]);
-    expect(Object.keys(player.toJSON()).at(-1)).toBe("botPersonaId");
+    const keys = Object.keys(player.toJSON());
+    expect(keys.slice(keys.indexOf("botPersonaId"))).toEqual([
+      "botPersonaId",
+      "hideIdentityFromSpectators",
+      "spectatorNamesJson",
+      "anonymousSpectatorCount",
+      "manualInspectionJson",
+    ]);
   });
 });
