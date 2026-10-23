@@ -8,7 +8,7 @@ The Learn area helps new players. It has three parts:
 | How to Play guide | `/learn/rules`                           | `rules/RulesScreen.tsx`, chapters in `rules/rulesChapters.ts`              |
 | Keyword drills    | "Try it" in the guide's Keywords chapter | `rules/KeywordList.tsx`, catalog in `@aegis/shared/tutorial/keywordDrills` |
 
-Lessons and drills are solo bot matches. The client sends the lesson or drill ID as `storyBattleId`. The server resolves it like a story battle; see [story rooms](../../../api/src/story/README.md). Completion is stored only when the player wins, so every lesson and drill must end in a win.
+Lessons and drills are solo bot matches. The client sends the lesson or drill ID as `storyBattleId`. The server resolves it like a story battle through `findSoloBattle`. Completion is stored only when the player wins, so every lesson and drill must end in a win.
 
 The Lessons catalog has eight topic subsections: first steps, memory and digivolution, defense and support, rules in practice, combat keywords, protection and materials, digivolution and resources, and advanced effect interactions. It exposes six introductory lessons, six additional rule battles, and all forty-four keyword drills without duplicating the introductory practice variants. `lessonGroups` owns presentation grouping; the shared catalogs and API retain authority over the available matches and prerequisites. Each entry and its briefing link numbered references to the official manual through `getLessonRuleReferences`. Entries also link the corresponding guide chapter. The six introductory lessons retain their progress sequence; the other battles can be started directly.
 
