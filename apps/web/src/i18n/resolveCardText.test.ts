@@ -10,6 +10,25 @@ import contextOverrides from "@/i18n/cardTextContextOverrides.json";
 
 const translations = await loadPrintedCardTranslations();
 
+it.each(["AD1-011", "BT16-025", "BT16-012", "BT16-063", "BT16-077"])(
+  "translates inherited Partition activation independently of the printed field for %s",
+  (cardId) => {
+    const result = resolveCardText({
+      text: "＜Partition＞: you may play the specified digivolution cards without paying their costs.",
+      cardId,
+      field: CardTextField.INHERITED.value,
+      translations,
+      allowContext: true,
+    });
+    expect(result).toMatchObject({
+      text: "＜分裂＞：可以不支付费用登场指定的进化源卡牌。",
+      status: "complete",
+      source: "dictionary",
+      unresolvedSegments: [],
+    });
+  },
+);
+
 it("translates an unbracketed security discard clause without its sibling watcher", () => {
   const card = getCardDefinition("BT15-037")!;
   const text = card.effectText!.split("[All Turns]")[0]!.trim();
