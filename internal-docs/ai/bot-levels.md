@@ -310,6 +310,39 @@ covers six seeded matches. A 150-match run over the development pool (seeds from
 positions with no mismatch. Three positions (2 Main, 1 decision) could not be
 captured, which happens when no anchor exists within the 64-input limit.
 
+**Counter conformance.** Natural play reaches few Counter windows: 30 Standard
+matches between eight Counter-rich DigiLab decks opened 7. A second test in the same
+file therefore starts each match from
+`engine/scenarios/counter-window-snapshot.fixture.ts` through
+`startScenarioFixture`. The fixture gives the defender a Counter card and what it
+needs (a valid base, both DNA materials, or the Counter Digimon on the field), and
+gives the attacker three 12,000 DP Digimon. Each card is played twice for four
+turns: once with the Standard answer and once declining every window. Every
+Counter window is snapshotted, restored and replayed to the end. The window is
+classified by its eligible choices: Blast Digivolve, Blast DNA Digivolve, a hand
+Counter effect (BT15-076) or a battle-area Counter effect.
+
+| Run                                       | Cards | Positions | Blast | Blast DNA | Hand | Field | Activated | Declined |
+| ----------------------------------------- | ----- | --------- | ----- | --------- | ---- | ----- | --------- | -------- |
+| Default (every third card, ~30 s)         | 32    | 210       | 165   | 13        | 10   | 22    | 53        | 157      |
+| `COUNTER_CONFORMANCE_CARD_STEP=1` (~90 s) | 93    | 596       | 486   | 38        | 10   | 62    | 164       | 432      |
+
+The kind columns count positions where that kind was eligible; one window can offer
+several kinds. The full run covers 75 Blast Digivolve, 7 Blast DNA Digivolve and 11
+Counter-effect cards; every one opened at least one window. All 596 positions were
+continuation snapshots, and none mismatched or failed to capture. BT26-103 is left out:
+its ＜Reboot＞ Blocker stops the attacker from attacking. Run the full set with:
+
+```sh
+cd apps/api && COUNTER_CONFORMANCE_CARD_STEP=1 COUNTER_CONFORMANCE_REPORT=/tmp/counter.json \
+  pnpm exec vitest run src/engine/snapshot/continuationSnapshotConformance.test.ts -t "Counter windows"
+```
+
+In natural play, one Counter window in the 30-match probe could not be captured. A
+play-cost resident watcher (`isResidentCostSourceActive` in `timing/payCost.ts`) and a
+`() => false` callback had no snapshot factory, so no settled anchor existed within the
+64-input limit. That is a capture gap, not a replay mismatch.
+
 **Block and Counter search.** `createLiveSearchPolicy` now overrides
 `chooseBlockResponse` and `chooseCounterResponse`. It asks the level policy for a
 baseline and the Standard policy for the fallback. When the bot owns the open block
@@ -592,9 +625,12 @@ level and style, and the exhaustive matrix has 0 in 37,727 (see
 Standard promotion SPRT remains unverified. Snapshot continuation matches all later
 events and final state over 1,000 seeded randomized Main positions. Continuation
 snapshots match them over 1,338 positions from 150 Standard games, including 78 block,
-7 Counter and 618 mid-effect decision positions (see
-[Snapshot coverage and combat search](#snapshot-coverage-and-combat-search)). Counter
-coverage is thin, and full random-action-trace conformance remains unverified. The 10×
+7 Counter and 618 mid-effect decision positions. Counter fixtures add 596 Counter
+positions from 93 Counter cards: 486 with Blast Digivolve, 38 with Blast DNA
+Digivolve, 10 with a hand Counter effect and 62 with a battle-area Counter effect
+eligible; 164 activated and 432 declined. The default test covers 210 of them (see
+[Snapshot coverage and combat search](#snapshot-coverage-and-combat-search)). Full
+random-action-trace conformance remains unverified. The 10×
 simulation-speed target is not met: restoration is 11–12× faster, but a full
 simulation is only about 2.6× faster (see [Simulation speed](#simulation-speed)). During tuning, Beginner Aggressive offered a BT3-037
 digivolution onto BT4-115, and the engine rejected it as `invalid-evolution`. The
