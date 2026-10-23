@@ -2,6 +2,7 @@ import type { ReplayEngineSnapshot } from "#api/replays/inputs/ReplayEngineSnaps
 import type { GameEngineHooks } from "#api/engine/gameEngine/types";
 import { snapshotGameEngine } from "#api/engine/snapshot/snapshotGameEngine";
 import { restoreGameEngine } from "#api/engine/snapshot/restoreGameEngine";
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { GameState, type Intent, type IntentResult, type Seat, type SequencedServerEvent } from "@aegis/shared";
 import type { DecisionRequest } from "@aegis/shared/protocol/events";
 import { GameEngine } from "../../engine/GameEngine.js";
@@ -74,6 +75,7 @@ const MAX_IDLE_TURNS = 1_000;
  */
 export async function runReplay(record: ReplayRecord, options: RunReplayOptions = {}): Promise<ReplayRun> {
   let state = new GameState();
+  state.gameMode = record.rules.gameMode ?? GameMode.AUTOMATIC.value;
   state.format = record.rules.deckFormat;
   state.unlimited = record.rules.unlimited;
   // The room keeps it in its own recording, so an exported frame carries it as a player's file does.
@@ -123,6 +125,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     // refresh them here so a captured frame has current counts. They are derived from the zone
     // arrays and nothing the engine or the divergence checks reads.
     engine.syncCounts();
+    engine.flushHandAffordances();
     options.onBatch?.(state, closing.events);
     // The room's `stampClose` gives the batch's `batchClosed` its own seq, kept out of the frame.
     eventSeq += 1;
@@ -136,6 +139,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
   };
 
   const replayHooks: GameEngineHooks = {
+    deferHandAffordances: true,
     seed: record.seed,
     randomKey: record.randomKey,
     ...(record.firstSeat !== undefined ? { firstSeat: record.firstSeat } : {}),
@@ -201,15 +205,16 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     const before = divergences.length;
     const diverge = (divergence: Omit<ReplayDivergence, "index" | "inputKind" | "seat" | "intentType">) =>
       divergences.push({ index, inputKind: input.kind, ...seatAndType(input), ...divergence });
+    const positionDivergences: Omit<ReplayDivergence, "index" | "inputKind" | "seat" | "intentType">[] = [];
     if (state.stateVersion !== input.stateVersion)
-      diverge({
+      positionDivergences.push({
         kind: "state-version",
         expected: input.stateVersion,
         actual: state.stateVersion,
         message: `input #${index} (${describe(input)}): stateVersion ${state.stateVersion}, recorded ${input.stateVersion}`,
       });
     if (input.engineEvents !== undefined && emitted !== input.engineEvents)
-      diverge({
+      positionDivergences.push({
         kind: "event-count",
         expected: input.engineEvents,
         actual: emitted,
@@ -217,6 +222,8 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
       });
     try {
       const outcome = apply(input);
+      const rejectedAgain = input.kind === "intent" && input.ok === false && outcome?.ok === false;
+      if (!rejectedAgain) positionDivergences.forEach(diverge);
       if (input.kind === "intent" && outcome !== undefined) {
         if (input.threw)
           diverge({
@@ -239,6 +246,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
         }
       }
     } catch (error) {
+      positionDivergences.forEach(diverge);
       const reason = error instanceof Error ? error.message : String(error);
       if (!(input.kind === "intent" && input.threw))
         diverge({

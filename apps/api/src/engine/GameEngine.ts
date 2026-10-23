@@ -4,6 +4,10 @@ import { SnapshotContinuationRecorder } from "#api/engine/snapshot/SnapshotConti
 import { SnapshotContinuationInputKind } from "#api/engine/snapshot/SnapshotContinuationInputKind";
 import { createInterpreterRuntimeCallbacks } from "#api/engine/effects/interpreter/snapshot/createInterpreterRuntimeCallbacks";
 import type { SeededRandom } from "#api/engine/random/SeededRandom";
+import { restartManualMatch } from "#api/manual/restartManualMatch";
+import { logError } from "#api/logger";
+import { ManualController } from "#api/manual/ManualController";
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getAttackRedirection } from "#api/engine/gameEngine/getAttackRedirection";
 import { ContinuousEffectScope } from "./effects/ContinuousEffectScope.js";
 import { CardKind, EffectTiming, GameState, type CardInstance, type Seat } from "@aegis/shared";
@@ -128,6 +132,7 @@ export type { GameEngineHooks, SeatJoinOptions };
 type ReplaceSnapshotSetParams<T> = { target: Set<T>; values: T[] };
 
 export class GameEngine {
+  readonly manual?: ManualController;
   readonly memory: MemoryGauge;
   readonly turnMachine: TurnStateMachine;
   readonly access: GameStateAccess;
@@ -162,6 +167,7 @@ export class GameEngine {
    * (KB Q2814 / BT2-053). A timing window can resolve several separate bodies.
    */
   windowTokenSeq = 0;
+  securityRemovalEventSeq = 0;
   /** One identity per resolving body, preserving its parent's identity across nested effects. */
   readonly effectBodyTokens: number[] = [];
   /**
@@ -399,6 +405,20 @@ export class GameEngine {
     readonly state: GameState,
     readonly hooks: GameEngineHooks,
   ) {
+    if (state.gameMode === GameMode.MANUAL.value) {
+      this.manual = new ManualController({
+        state,
+        seed: hooks.seed,
+        randomKey: hooks.randomKey,
+        emit: hooks.emit,
+        declareDeckOutLoss: (seat) => this.win.declareLoss(seat, "deckOut"),
+        restart: (firstSeat) => {
+          void restartManualMatch({ engine: this, firstSeat }).catch((error: unknown) =>
+            logError("manual.restart", error),
+          );
+        },
+      });
+    }
     // Every zone move is narrated through `hooks.emit`: the one place that sees a card leave
     // the field. Wrapped before the collaborators below capture `this.hooks.emit` by value.
     this.hooks = {
@@ -524,6 +544,7 @@ export class GameEngine {
       continuousDpSeedState: this.continuousDpSeedState,
       pendingBlitzAttack: () => this.pendingBlitzAttack,
       hasMainPhaseEnded: () => this.mainPhase.hasEnded,
+      deferHandAffordances: this.hooks.deferHandAffordances === true,
       effectEnvironment: (trigger) => effectEnvironment(this, trigger),
       buildEffectContext: (source, trigger) => buildEffectContext(this, source, trigger),
       isNewlyPlayedRushAttacker: (permanentId) => isNewlyPlayedRushAttacker(this, permanentId),
@@ -711,6 +732,7 @@ export class GameEngine {
       permanentSeq: this.permanentSeq,
       instanceSeq: this.instanceSeq,
       battleScopeSequence: this.battleScopeSequence,
+      securityRemovalEventSeq: this.securityRemovalEventSeq,
       matchSetupStarted: this.matchSetupStarted,
       bothReadyFired: this.bothReadyFired,
       readySeats: [...this.readySeats],
@@ -728,6 +750,7 @@ export class GameEngine {
     this.permanentSeq = snapshot.permanentSeq;
     this.instanceSeq = snapshot.instanceSeq;
     this.battleScopeSequence = snapshot.battleScopeSequence;
+    this.securityRemovalEventSeq = snapshot.securityRemovalEventSeq;
     this.matchSetupStarted = snapshot.matchSetupStarted;
     this.bothReadyFired = snapshot.bothReadyFired;
     this.stagedDecks.length = 0;
@@ -789,6 +812,19 @@ export class GameEngine {
       engine: this,
       input: { kind: SnapshotContinuationInputKind.INTENT.value, seat, intent },
     });
+    if (this.manual) {
+      if (intent.type === "manual") {
+        return this.manual.apply(seat, intent);
+      }
+      if (
+        intent.type !== "ready" &&
+        intent.type !== "mulligan" &&
+        intent.type !== "surrender" &&
+        !(intent.type === "respondDecision" && this.state.turnCount === 0)
+      ) {
+        return { ok: false, reason: "unknown-intent" };
+      }
+    }
     return applyIntent(this, seat, intent);
   }
 
@@ -938,6 +974,10 @@ export class GameEngine {
 
   syncCounts(): void {
     return syncCounts(this);
+  }
+
+  flushHandAffordances(): void {
+    this.projection.flushHandAffordances();
   }
 
   handleReconnect(seat: Seat): void {

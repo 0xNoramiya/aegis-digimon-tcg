@@ -48,6 +48,7 @@ const activeFields = {
   ruleTriggerPool: [],
   securityCheckDepth: 1,
   consumedSubTriggerKeys: new Set(["subscription"]),
+  manual: {},
 };
 
 it("accepts settled production Main and rejects every pending engine owner without mutation", async () => {

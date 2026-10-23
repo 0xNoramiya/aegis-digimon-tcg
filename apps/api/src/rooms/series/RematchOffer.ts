@@ -1,12 +1,18 @@
+import { getOfferedRematchModes } from "@aegis/shared/protocol/getOfferedRematchModes";
+import { getRematchMode } from "@aegis/shared/protocol/getRematchMode";
+import { getRematchModeEntry } from "@aegis/shared/protocol/getRematchModeEntry";
+import type { RematchMode } from "@aegis/shared/protocol/RematchMode";
 import { RematchStatus } from "@aegis/shared/protocol/RematchStatus";
 import type { SeriesClientMessage } from "@aegis/shared/protocol/series";
 import type { GameState } from "@aegis/shared/schema/GameState";
 import type { Seat } from "@aegis/shared/schema/enums";
 import { turnOrderChooser, type GameResult } from "#api/rooms/series/seriesRules";
+import type { RematchOpening } from "#api/rooms/series/CasualSeries";
 
 type RematchOfferParams = {
   readState: () => GameState;
-  startSeries: (chooser: Seat) => boolean;
+  startSeries: (opening: RematchOpening) => boolean;
+  afterSeries: boolean;
 };
 
 type OpenParams = {
@@ -26,7 +32,9 @@ export class RematchOffer {
 
   open({ result, departed }: OpenParams): void {
     this.result = result;
-    this.setStatus(departed ? RematchStatus.CLOSED.value : RematchStatus.OPEN.value);
+    const endReason = this.readSeries().endReason;
+    const forfeited = endReason === "forfeit" || endReason === "aborted";
+    this.setStatus(departed || forfeited ? RematchStatus.CLOSED.value : RematchStatus.OPEN.value);
   }
 
   close(): void {
@@ -39,7 +47,7 @@ export class RematchOffer {
   handleMessage(seat: Seat, payload: unknown): void {
     const message = payload as Partial<SeriesClientMessage> | undefined;
     if (message?.action === "offerRematch") {
-      this.offer(seat);
+      this.offer(seat, getRematchMode({ mode: message.mode }));
       return;
     }
     if (message?.action === "answerRematch" && typeof message.accept === "boolean") {
@@ -47,16 +55,21 @@ export class RematchOffer {
     }
   }
 
-  private offer(seat: Seat): void {
+  private offer(seat: Seat, mode: RematchMode): void {
+    if (!getOfferedRematchModes({ afterSeries: this.params.afterSeries }).includes(mode)) {
+      return;
+    }
     const series = this.readSeries();
-    if (series.rematchStatus === RematchStatus.OFFERED.value && series.rematchOfferSeat !== seat) {
+    const answersOpponent = series.rematchStatus === RematchStatus.OFFERED.value && series.rematchOfferSeat !== seat;
+    if (answersOpponent && series.rematchMode === mode) {
       this.accept();
       return;
     }
-    if (series.rematchStatus !== RematchStatus.OPEN.value) {
+    if (series.rematchStatus !== RematchStatus.OPEN.value && !answersOpponent) {
       return;
     }
     series.rematchOfferSeat = seat;
+    series.rematchMode = mode;
     this.setStatus(RematchStatus.OFFERED.value);
   }
 
@@ -77,7 +90,13 @@ export class RematchOffer {
       return;
     }
     this.setStatus(RematchStatus.ACCEPTED.value);
-    if (!this.params.startSeries(turnOrderChooser(this.result, this.firstSeat))) {
+    const mode = getRematchModeEntry({ mode: this.readSeries().rematchMode });
+    const opened = this.params.startSeries({
+      chooser: turnOrderChooser(this.result, this.firstSeat),
+      results: mode.countsFinishedGame ? [this.result] : [],
+      mode: mode.value,
+    });
+    if (!opened) {
       this.setStatus(RematchStatus.CLOSED.value);
     }
   }

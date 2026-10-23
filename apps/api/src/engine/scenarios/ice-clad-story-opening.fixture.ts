@@ -47,8 +47,8 @@ const fixture: ScenarioFixture = {
     1: {
       hand: npcHand,
       security: npcSecurity,
-      breeding: { card: "EX7-016", as: "npc-bulucomon" },
-      eggDeck: ["EX7-002", "EX7-002", "EX7-002", "EX7-002"],
+      breeding: { card: "EX7-016", as: "npc-bulucomon", under: ["EX7-002"] },
+      eggDeck: ["EX7-002", "EX7-002", "EX7-002"],
       battleArea: [
         { card: "EX7-020", as: "npc-paledramon" },
         { card: "EX7-017", as: "npc-snowagumon" },

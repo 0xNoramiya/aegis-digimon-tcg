@@ -76,6 +76,23 @@ browsers that reload a page in a loop, such as one seen on October 15, 2026 at a
 per 10 seconds. Cloudflare's single Free plan rate limiting rule protects `/matchmake/` and
 `/auth/` and cannot also count page loads without lowering that limit.
 
+## Gateway health
+
+Every game WebSocket passes through the gateway's single event loop. If that loop stalls for
+6–10 seconds, both the API ping and the client liveness probe fail, and players drop with
+close code 1006 or 4010. The gateway therefore does no blocking disk reads while it serves
+traffic, and every 10 seconds it writes one JSON line to stdout:
+
+| Field                             | Meaning                                                            |
+| --------------------------------- | ------------------------------------------------------------------ |
+| `loopMaxMs`, `loopP99Ms`          | Worst and 99th-percentile event loop delay in the last 10 seconds. |
+| `webSockets`                      | Game sockets open through this gateway.                            |
+| `throttledPeriods`, `throttledMs` | CPU throttling of the gateway container in the last 10 seconds.    |
+
+Read it with `docker logs <gateway> | grep gateway.health`. A `loopMaxMs` above a few
+seconds at the time of a drop burst points at the gateway; a quiet gateway with healthy API
+logs points at Cloudflare or the players' networks.
+
 ## Card images
 
 The gateway serves card images from `/opt/aegis-rollout/assets/card-images`, at `/assets/card-images/<id>.webp`. The upstream card app (TakaOtaku/Digimon-Card-App) is the source. It keeps its images in a public bucket at `web-garage.takaotaku.de`. Commit `9f666f1` of the upstream repository is a second source.
@@ -83,8 +100,8 @@ The gateway serves card images from `/opt/aegis-rollout/assets/card-images`, at 
 `tools/deploy/card-images.mjs` keeps the mirror current:
 
 - It reads the image ids from the committed card data and downloads only the missing files.
-- It never replaces a file, except a `-Sample` scan once the real image appears.
-- When no origin has an image, it copies the scan from `data/card-images/<id>.webp` in the source checkout as `<id>-Sample.webp`. See [local card scans](../data/card-images/README.md).
+- It never replaces a real image. It deletes a `-Sample` scan once the real image appears.
+- When no origin has an image, it copies the scan from `data/card-images/<id>.webp` in the source checkout as `<id>-Sample.webp`. It rewrites that sample whenever the committed scan changes, so a re-cropped scan reaches production on the next sync. See [local card scans](../data/card-images/README.md).
 - Every `deploy` and `deploy-web` runs it after extracting the web release. A failed sync logs a warning and does not block the release.
 - A daily root cron job on the VPS runs it too, to pick up images upstream publishes between releases. Its log is `/opt/aegis-rollout/logs/card-images.log`.
 

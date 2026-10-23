@@ -27,7 +27,8 @@ import { CardDetailDrawer } from "./CardDetailDrawer";
 import { DeckSleevePicker } from "./DeckSleevePicker";
 import { DeckFormatSelector } from "./DeckFormatSelector";
 import { FilterRail } from "./FilterRail";
-import { sortSearchResults, useCardFilter } from "./cardFilters";
+import { useCardFilter } from "./cardFilters";
+import { sortSearchResults } from "@/screens/sortSearchResults";
 import {
   activeCollectionCards,
   displayCoverCard,

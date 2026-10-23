@@ -47,6 +47,12 @@ function appearanceKey(permanent: Permanent, suspended: boolean): string | undef
   if (permanent.stack.length > 0 || permanent.linked.length > 0) return undefined;
   return JSON.stringify([
     permanent.topCard.cardId,
+    permanent.topCard.artId,
+    permanent.topCard.faceUp,
+    permanent.manualMarker,
+    [...(permanent.manualStatuses ?? [])].sort(),
+    [...permanent.originalColorsOverride].sort(),
+    permanent.securityAttackModifier,
     suspended,
     permanent.currentDP,
     permanent.originalNameOverride,

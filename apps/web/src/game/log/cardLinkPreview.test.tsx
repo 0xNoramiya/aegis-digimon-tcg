@@ -2,9 +2,11 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CardLinkedText } from "@/game/cardLinks";
 import { I18nProvider } from "@/i18n/I18nProvider";
+import { hoverZoomPreference } from "@/design/hoverZoomPreference";
 
 beforeEach(() => {
   vi.useFakeTimers();
+  hoverZoomPreference.setEnabled(true);
   vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
     matches: query === "(hover: hover) and (pointer: fine)",
     media: query,
@@ -19,6 +21,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  hoverZoomPreference.setEnabled(false);
   vi.useRealTimers();
   vi.restoreAllMocks();
 });
@@ -66,6 +69,17 @@ describe("card links in match history", () => {
     fireEvent.click(button);
     expect(open).toHaveBeenCalledWith("ST1-03", undefined);
     expect(screen.queryByTestId("card-zoom-preview")).toBeNull();
+  });
+
+  it("keeps links clickable without a hover preview when the player turns zoom off", () => {
+    hoverZoomPreference.setEnabled(false);
+    const open = vi.fn<(cardId: string, artId?: string) => void>();
+    renderLink(open);
+    fireEvent.mouseEnter(screen.getByRole("button"), { clientX: 200, clientY: 300 });
+    act(() => vi.advanceTimersByTime(150));
+    expect(screen.queryByTestId("card-zoom-preview")).toBeNull();
+    fireEvent.click(screen.getByRole("button"));
+    expect(open).toHaveBeenCalledWith("ST1-03", undefined);
   });
 
   it("keeps touch links clickable without showing a hover preview", () => {

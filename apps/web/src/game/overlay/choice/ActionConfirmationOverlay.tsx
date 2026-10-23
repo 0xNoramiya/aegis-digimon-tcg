@@ -80,7 +80,7 @@ export function ActionConfirmationOverlay({
               {alternateLabel}
             </Button>
           ) : null}
-          <Button full variant="ghost" onClick={onCancel}>
+          <Button full variant="ghost" data-arena-cancel onClick={onCancel}>
             {t("common.cancel")}
           </Button>
         </div>

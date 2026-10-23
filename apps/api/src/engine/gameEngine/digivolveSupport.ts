@@ -416,6 +416,7 @@ export class DigivolveSupport {
     let artsRulePool: PooledRuleDeletion[] = [];
     const result = await this.deps.primitives.digivolveFromInstance(target.permanentId, instance.instanceId, {
       payCost: false,
+      byEffect: false,
       beforeWhenDigivolving: async () => {
         await this.deps.recomputeContinuousEffects();
         artsRulePool = await this.deps.collectRuleProcessMovements();

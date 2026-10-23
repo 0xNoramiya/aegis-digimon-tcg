@@ -21,6 +21,7 @@ it("shows readable English card effects beside a Japanese printing", () => {
 
   const dialog = screen.getByRole("dialog", { name: "Agumon" });
   expect(within(dialog).getByAltText("Agumon").getAttribute("src")).toContain("BT1-010-J.webp");
+  fireEvent.click(within(dialog).getByRole("button", { name: "Show card text" }));
   expect(dialog.textContent).toContain("Reveal 5 cards from the top of your deck");
 });
 

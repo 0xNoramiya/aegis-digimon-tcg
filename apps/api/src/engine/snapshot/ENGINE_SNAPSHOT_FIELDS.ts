@@ -71,6 +71,7 @@ export const ENGINE_SNAPSHOT_FIELDS = new Set([
   "continuousScope",
   "securityDp",
   "battleScopeSequence",
+  "securityRemovalEventSeq",
   "deletionMaxDp",
   "dpDeleteBudget",
   "instanceSeq",
@@ -91,4 +92,5 @@ export const ENGINE_SNAPSHOT_FIELDS = new Set([
   "visibilityNotify",
   "state",
   "hooks",
+  "manual",
 ]);

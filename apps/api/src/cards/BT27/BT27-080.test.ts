@@ -84,6 +84,27 @@ describe("ScourgeChiropmon removal and inherited revival", () => {
     },
   );
 
+  it.each([
+    {
+      label: "no NightChiropmon in the trash",
+      zones: { battleArea: ["BT27-073", "BT26-095"], hand: [{ card: "BT27-080", as: "card" }, "BT26-070"] },
+    },
+    {
+      label: "its only Chiropmon in the breeding area",
+      zones: {
+        battleArea: ["BT26-095"],
+        breeding: "BT27-073",
+        hand: [{ card: "BT27-080", as: "card" }],
+        trash: ["BT26-070"],
+      },
+    },
+  ])("does not offer the hand evolution with $label", async ({ zones }) => {
+    const s = setupEngine({ 0: { ...zones, deck: ["BT1-009", "BT1-009"] } }, { autoDeclineOptional: true });
+    await s.ready();
+    const effects: unknown[] = JSON.parse(s.inst("card").activatableEffectsJson || "[]");
+    expect(effects).toHaveLength(0);
+  });
+
   it("does not offer the hand evolution without Makoto", async () => {
     const s = setupEngine(
       {

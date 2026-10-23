@@ -1,3 +1,8 @@
+import { advancedBattlesPtBR } from "@/i18n/learn/advancedBattles.pt-BR";
+import { rulesLayoutPtBR } from "@/i18n/learn/rulesLayout.pt-BR";
+import { lessonCatalogPtBR } from "@/i18n/learn/lessonCatalog.pt-BR";
+import { newDrillsPtBR } from "@/i18n/learn/newDrills.pt-BR";
+import { manualPtBR } from "@/i18n/manual.pt-BR";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerPtBR } from "@/i18n/providers.pt-BR";
 import { replayVideoPtBR } from "./replayVideo";
@@ -21,8 +26,14 @@ import { seriesPtBR } from "./redesign/series.pt-BR";
 import { rematchPtBR } from "@/i18n/redesign/rematch.pt-BR";
 import { settingsPtBR } from "./redesign/settings.pt-BR";
 import { shellPtBR } from "./redesign/shell.pt-BR";
+import { learnPtBR } from "@/i18n/learn/learn.pt-BR";
+import { learnDrillsPtBR } from "@/i18n/learn/drills.pt-BR";
 
 export const ptBR: Record<keyof typeof en, string> = {
+  ...lessonCatalogPtBR,
+  ...rulesLayoutPtBR,
+  ...advancedBattlesPtBR,
+  ...manualPtBR,
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Excluir este Digimon",
   "overlay.trashTopSecurityCard": "Descartar a carta do topo da sua segurança",
@@ -537,7 +548,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "lobby.randomCommunityPool": "Decks pessoais, famosos e públicos da comunidade",
   "lobby.randomFailed": "Não foi possível sortear um deck. Tente novamente.",
   "lobby.randomDrawing": "Sorteando um deck…",
-  "overlay.viewUsedDeck": "Ver deck utilizado",
+  "overlay.viewUsedDeck": "Seu deck",
   "overlay.usedDeck": "Deck utilizado neste duelo",
   "lobby.randomPool": "{count} decks válidos no sorteio",
   "lobby.randomPoolOne": "1 deck válido no sorteio",
@@ -641,6 +652,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "library.rowColor": "Cor",
   "library.rowType": "Tipo",
   "library.rowPlayCost": "Custo de jogo",
+  "library.rowUseCost": "Custo de uso",
   "library.rowDp": "DP",
   "library.rowTraits": "Traços",
   "library.rowRarity": "Raridade",
@@ -755,8 +767,12 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.keepAwake": "Manter a tela ligada",
   "settings.keepAwakeDesc":
     "Manter a tela ligada enquanto uma partida está aberta, em vez de deixar o aparelho dormir entre os turnos",
-  "settings.actionConfirmations": "Confirmar ações",
-  "settings.actionConfirmationsDesc": "Perguntar antes de jogar, digievoluir ou fazer uma digievolução DNA opcional",
+  "settings.cardConfirmation": "Confirmações de cartas",
+  "settings.cardConfirmationDesc":
+    "Perguntar antes de jogar, usar ou digievoluir uma carta. “Pular cartas que só podem ser jogadas” joga na hora quando a carta não tem outra ação legal. As escolhas de alvo, materiais, custo e modo continuam.",
+  "settings.cardConfirmationAlways": "Sempre perguntar",
+  "settings.cardConfirmationSkipPlayOnly": "Pular cartas que só podem ser jogadas",
+  "settings.cardConfirmationNever": "Nunca perguntar",
   "overlay.moveEffectPrompt": "Mover painel de efeito",
   "overlay.moveEffectPromptHelp": "Arraste para mover ou use as setas. Pressione Home para restaurar a posição.",
   "settings.effectPromptPosition": "Posição dos efeitos",
@@ -779,6 +795,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.organizedFieldDesc": "Ordena os Digimon por nível e agrupa Tamers e Options iguais numa fileira própria",
   "settings.pileCounts": "Mostrar contadores das pilhas",
   "settings.pileCountsDesc": "Mostra os contadores de Ovos, Mão, Deck e Lixo no tabuleiro",
+  "settings.hoverZoom": "Ampliar cartas ao passar o mouse",
+  "settings.hoverZoomDesc": "Mostra uma prévia grande da carta ao lado do ponteiro enquanto ele está sobre a carta",
   "settings.sound": "Efeitos sonoros",
   "settings.soundDesc": "Cliques, seleções e sinais de combate",
   "settings.decisionPing": "Aviso de decisão",
@@ -902,6 +920,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.digiEgg": " · Digi-Egg",
   "game.noCost": "sem custo",
   "game.costsMemory": "custa {count} de memória",
+  "game.useCostsMemory": "custa {count} de memória para usar",
   "game.digivolve": "Digievoluir",
   "game.clickToDigivolve": "clique em um Digimon destacado para digievoluir",
   "game.clickToLink": "clique em um Digimon destacado para vincular",
@@ -1090,6 +1109,9 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.suspendAlly": "Suspender {name} por +{dp} DP",
   "overlay.noAllies": "Nenhum aliado elegível para suspender.",
   "overlay.passAlliance": "Passar",
+  "overlay.confirmBlockTitle": "Confirmar bloqueio",
+  "overlay.confirmBlockDetail": "Suspenda {name} para bloquear este ataque.",
+  "overlay.confirmBlock": "Bloquear",
   "overlay.confirmAllianceTitle": "Confirmar Alliance",
   "overlay.confirmAllianceDetail": "Suspenda {name} para adicionar {dp} DP.",
   "overlay.confirmAlliance": "Usar Alliance",
@@ -1150,6 +1172,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.securityAttackValue": "Ataque à segurança {value}",
   "overlay.transformedBadge": "Conta como {name}",
   "overlay.printedEffect": "Efeito impresso",
+  "overlay.showCardText": "Mostrar texto da carta",
+  "overlay.hideCardText": "Ocultar texto da carta",
   "overlay.grantedEffects": "Efeitos concedidos",
   "library.optionEffect": "Efeito Option",
   "overlay.noPrintedEffect": "Sem efeito impresso",
@@ -1964,4 +1988,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   ...chatPtBR,
   ...seriesPtBR,
   ...rematchPtBR,
+  ...learnPtBR,
+  ...learnDrillsPtBR,
+  ...newDrillsPtBR,
 };

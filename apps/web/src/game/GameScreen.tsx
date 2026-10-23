@@ -1,6 +1,9 @@
 import type { BotSettings } from "@aegis/shared/bot/BotSettings";
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
 import { UsedDeckDialog } from "@/game/UsedDeckDialog";
+import { collectViewerCardArtIds } from "@/screens/cardLanguage/collectViewerCardArtIds";
+import { ViewerCardArtIdsContext } from "@/screens/cardLanguage/ViewerCardArtIdsContext";
 import type { DeckListing } from "@/game/decks";
 import { downloadReplay } from "../replays/files";
 /* The in-game board — the design's letterboxed board layout, driven entirely by
@@ -78,7 +81,9 @@ import { combatAnswers } from "./screen/combatAnswers";
 import { playChoiceAnswers } from "./screen/playChoiceAnswers";
 import type { DropZoneHit, PermanentChrome } from "./screen/types";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import type { SeriesDeckDialogProps } from "@/game/overlay/match/SeriesDeckDialog";
+import type { DeckFormat } from "@aegis/shared/deckFormat";
 import {
   CardKind,
   PRESENTATION_CHANNEL,
@@ -112,7 +117,7 @@ import { isDecisionPingEnabled } from "@/design/decisionPing";
 import { useLowTimeWarning } from "@/game/useLowTimeWarning";
 import { usePresentationAudio, useReadoutAudio } from "./usePresentationAudio";
 import { audioBoardFromPresentedSeats } from "./match/present/presentationAudio";
-import { areActionConfirmationsEnabled } from "../design/actionConfirmation";
+import { cardConfirmationPreference } from "@/game/cardConfirmation/cardConfirmationPreference";
 import { isKeepAwakeEnabled } from "../design/keepAwake";
 import { useScreenWakeLock } from "../design/useScreenWakeLock";
 import { useArenaBoardLook } from "./arenaLook";
@@ -134,6 +139,8 @@ import { openCombatWindow, mirroredCombatWindow } from "./combatWindowModel";
 import { buildInstanceIndex, instancePermanentId } from "./decisionModel";
 import { digivolveBasePermanentIds } from "./digivolveModel";
 import { useMatchLogHistory } from "@/game/log/useMatchLogHistory";
+import { TutorialCoach } from "@/game/tutorial/TutorialCoach";
+import { findTutorialLesson } from "@aegis/shared/tutorial/findTutorialLesson";
 import { getSeatNames } from "@/game/log/getSeatNames";
 import type { ServerEvent } from "@aegis/shared/protocol/events";
 import { useMatchCues } from "./useMatchCues";
@@ -143,6 +150,11 @@ import { TIMINGS } from "./timings";
 import { loadReconnectSession } from "../net/reconnectSession";
 import { pendingFateBadges } from "./pendingFate";
 import { useEffectConfirmationHold } from "./effectConfirmationHold";
+
+export type SeriesDeckPickerParams = Pick<
+  SeriesDeckDialogProps,
+  "format" | "unlimited" | "betaAllowed" | "onChoose" | "onClose"
+>;
 
 const SERIES_HOP_DELAY_MS = 1500;
 
@@ -202,6 +214,7 @@ function GameScreenSession({
   botDeckId,
   botSettings,
   onExit,
+  onStartLesson,
   onRematch,
   onCopyUsedDeck,
   onResetScenario,
@@ -215,6 +228,7 @@ function GameScreenSession({
   presentationPacing,
   onSeriesNext,
   onLeaveForfeitsChange,
+  renderSeriesDeckPicker,
 }: {
   liveConnection: UseRoomResult;
   joinOptions: AegisJoinOptions;
@@ -231,6 +245,7 @@ function GameScreenSession({
   betaBattleMode?: boolean;
   unlimited?: boolean;
   onExit: (screen: Screen) => void;
+  onStartLesson?: (lessonId: string) => void;
   onCopyUsedDeck?: (deck: DeckListing) => void;
   /** Restart a server-backed development scenario from the match controls. */
   onResetScenario?: () => void;
@@ -240,6 +255,7 @@ function GameScreenSession({
     unlimited?: boolean,
     privateHost?: boolean,
     format?: import("@aegis/shared").DeckFormat,
+    gameMode?: GameMode,
   ) => void;
   /** Only shapes what the report dialog says about follow-up questions; reporting needs no account. */
   signedIn?: boolean;
@@ -275,6 +291,7 @@ function GameScreenSession({
    * Must be a stable callback.
    */
   onLeaveForfeitsChange?: (concede: (() => void) | undefined) => void;
+  renderSeriesDeckPicker?: (params: SeriesDeckPickerParams) => ReactNode;
 }) {
   const { t } = useTranslation();
   const [handOrder, setHandOrder] = useState<readonly string[]>([]);
@@ -282,7 +299,7 @@ function GameScreenSession({
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
   );
   const usedDeck = spectating ? undefined : liveConnection.usedDeck;
-  const actionConfirmationsEnabled = areActionConfirmationsEnabled();
+  const cardConfirmationMode = cardConfirmationPreference.useMode();
   const arenaLayout = useArenaLayout();
   const { narrowGameLayout, compactPiles, shortBoard, collapseNotices } = arenaLayout;
   const {
@@ -415,9 +432,14 @@ function GameScreenSession({
     permanentId: string;
   }>();
   const allianceConfirmationSubmittedRef = useRef(false);
+  const [blockConfirmation, setBlockConfirmation] = useState<{
+    windowKey: string;
+    permanentId: string;
+  }>();
+  const blockConfirmationSubmittedRef = useRef(false);
 
   const { drag, dragHover, handleTapRef, handleDropRef, canDragRef, startHandDrag, startPermDrag, cancelDrag } =
-    useDragPlumbing();
+    useDragPlumbing({ manual: state?.gameMode === GameMode.MANUAL.value });
   canDragRef.current = null;
   const playDragStarted = drag?.kind === DragKind.Play && drag.started;
   useEffect(() => {
@@ -586,6 +608,11 @@ function GameScreenSession({
   });
   const you = state?.players[viewerSeat];
   const opp = state?.players[otherSeat(viewerSeat)];
+  const viewerCardArtKey =
+    spectating || !state
+      ? ""
+      : collectViewerCardArtIds({ deck: joinOptions.deck, players: [...state.players], viewerSeat }).join("\n");
+  const viewerCardArtIds = useMemo(() => new Set(viewerCardArtKey.split("\n").filter(Boolean)), [viewerCardArtKey]);
   /**
    * The two boards this screen reads (docs/presentation-queue-plan.md 3.2).
    *
@@ -770,6 +797,15 @@ function GameScreenSession({
       activation.linked === true && activation.site.zone === "field" ? [activation.site.permanentId] : [],
     ),
   );
+
+  if (state?.gameMode === GameMode.MANUAL.value && state.manual.signalSeat !== -1) {
+    if (state.manual.signalPermanentId) {
+      effectLinkedPermanentIds.add(state.manual.signalPermanentId);
+    }
+    if (state.manual.signalTargetPermanentId) {
+      effectLinkedPermanentIds.add(state.manual.signalTargetPermanentId);
+    }
+  }
 
   const arenaLook = useArenaBoardLook({ viewer: you, opponent: opp, matchKey: connectedRoom?.roomId });
 
@@ -1017,7 +1053,7 @@ function GameScreenSession({
     handEntries,
     digivolveRoutesOf,
     mainActionBlocked,
-    actionConfirmationsEnabled,
+    cardConfirmationMode,
     playGameCue,
     lastPlayAttemptRef,
     playAttemptEventSeqRef,
@@ -1046,6 +1082,15 @@ function GameScreenSession({
     allianceConfirmation.windowKey === allianceWindowKey &&
     combatWindows.allianceWindow?.eligibleAllyIds.includes(allianceConfirmation.permanentId)
       ? allianceConfirmation.permanentId
+      : undefined;
+  const blockWindowKey = combatWindows.blockWindow
+    ? `block:${combatWindows.blockWindow.attackerPermanentId}:${openCombatWindowForBarrier?.stateVersion ?? state.stateVersion}`
+    : undefined;
+  const activeBlockConfirmationPermanentId =
+    blockConfirmation &&
+    blockConfirmation.windowKey === blockWindowKey &&
+    combatWindows.blockWindow?.eligibleBlockerIds.includes(blockConfirmation.permanentId)
+      ? blockConfirmation.permanentId
       : undefined;
   const { markCombatWindowAnswered } = combatWindows;
   const counterWindowKey = `${openCombatWindowForBarrier?.key ?? ""}:${openCombatWindowForBarrier?.stateVersion ?? ""}`;
@@ -1109,7 +1154,7 @@ function GameScreenSession({
     !dnaChoosing &&
     !mainActionBlocked &&
     (candidate.kind !== DragKind.Attack || (!handSel && !linkSel)) &&
-    canDragCard({ drag: candidate, you, handEntries });
+    (state.gameMode === GameMode.MANUAL.value || canDragCard({ drag: candidate, you, handEntries }));
   const dragIntentAt = (hit: DropZoneHit | null) => {
     if (drag?.started && hit?.target === "hand-you" && drag.kind === DragKind.Play && canReorderHand(drag.instanceId))
       return "reorder" as const;
@@ -1206,7 +1251,7 @@ function GameScreenSession({
   const revealed = modelRevealedZones({ events, viewerSeat, resultShown: state.gameOver && !cues.resultPending });
 
   const rematch = spectating ? undefined : getRematchView({ series: state.series, viewerSeat });
-  const series = spectating || rematch ? undefined : seriesView(state.series, viewerSeat);
+  const series = spectating || rematch?.stage === "accepted" ? undefined : seriesView(state.series, viewerSeat);
 
   const attackerPerm = selPerm ? you.battleArea.find((p) => p.permanentId === selPerm) : undefined;
   const draggedAttackerPerm =
@@ -1445,7 +1490,8 @@ function GameScreenSession({
       }
     />
   );
-  const overlays = (
+  const tutorialLesson = spectating || replayMode ? undefined : findTutorialLesson(joinOptions.storyBattleId);
+  const matchOverlays = (
     <MatchOverlays
       state={state}
       viewer={you}
@@ -1479,6 +1525,19 @@ function GameScreenSession({
         handInstanceIds: counterHandInstanceIds,
       }}
       combatWindowAnswers={combatWindowAnswers}
+      blockConfirmationPermanentId={activeBlockConfirmationPermanentId}
+      onConfirmBlock={() => {
+        if (!activeBlockConfirmationPermanentId || blockConfirmationSubmittedRef.current) {
+          return;
+        }
+        blockConfirmationSubmittedRef.current = true;
+        combatWindowAnswers.onBlock(activeBlockConfirmationPermanentId);
+        setBlockConfirmation(undefined);
+      }}
+      onCancelBlockConfirmation={() => {
+        blockConfirmationSubmittedRef.current = false;
+        setBlockConfirmation(undefined);
+      }}
       allianceConfirmationPermanentId={activeAllianceConfirmationPermanentId}
       onConfirmAlliance={() => {
         if (!activeAllianceConfirmationPermanentId || allianceConfirmationSubmittedRef.current) return;
@@ -1498,7 +1557,7 @@ function GameScreenSession({
       signedIn={signedIn}
       opponentDropped={!spectating && !vsBot && !opp.connected && !state.gameOver}
       gameOver={
-        !replayMode && (state.gameOver || series?.stage === "over") && !cues.resultPending
+        !replayMode && !tutorialLesson && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
               opponentDeckDialog:
@@ -1548,9 +1607,32 @@ function GameScreenSession({
               rematch: rematch && {
                 view: rematch,
                 opponentName: opp.displayName || t("game.opponent"),
-                onOffer: () => room?.send(SERIES_CHANNEL, { action: "offerRematch" }),
+                onOffer: (mode) => room?.send(SERIES_CHANNEL, { action: "offerRematch", mode }),
                 onAnswer: (accept) => room?.send(SERIES_CHANNEL, { action: "answerRematch", accept }),
                 onChooseTurnOrder: (goFirst) => room?.send(SERIES_CHANNEL, { action: "chooseTurnOrder", goFirst }),
+                onKeepDeck: () => room?.send(SERIES_CHANNEL, { action: "chooseSeriesDeck" }),
+                deckPicker: renderSeriesDeckPicker
+                  ? (onClose) =>
+                      renderSeriesDeckPicker({
+                        format: state.format as DeckFormat,
+                        unlimited: state.unlimited,
+                        betaAllowed: startMode === "beta" || isPrivateMatch,
+                        onChoose: (deck) =>
+                          room?.send(SERIES_CHANNEL, {
+                            action: "chooseSeriesDeck",
+                            deck: {
+                              deckId: deck.id,
+                              deckName: deck.name,
+                              mainDeck: deck.mainDeck,
+                              eggDeck: deck.eggDeck,
+                              mainDeckArts: deck.mainDeckArts,
+                              eggDeckArts: deck.eggDeckArts,
+                              community: deck.community,
+                            },
+                          }),
+                        onClose,
+                      })
+                  : undefined,
               },
               spectatorResult: spectating
                 ? state.winnerSeat < 0
@@ -1598,10 +1680,25 @@ function GameScreenSession({
                   state?.unlimited,
                   isPrivateMatch ? viewerSeat === 0 : undefined,
                   state?.format as import("@aegis/shared").DeckFormat | undefined,
+                  state?.gameMode,
                 )
             : () => onExit("lobby")
       }
     />
+  );
+  const overlays = (
+    <>
+      {matchOverlays}
+      {tutorialLesson && onStartLesson && (!state.gameOver || !cues.resultPending) ? (
+        <TutorialCoach
+          lesson={tutorialLesson}
+          state={state}
+          viewerSeat={viewerSeat}
+          onStartLesson={onStartLesson}
+          onLeave={() => onExit("home")}
+        />
+      ) : null}
+    </>
   );
 
   /** What both battle rows put on a permanent; only the sweep's stagger differs. */
@@ -1807,9 +1904,12 @@ function GameScreenSession({
               ? {
                   ...actions,
                   onYourPerm: (perm) => () => {
-                    if (combatWindows.blockWindow?.eligibleBlockerIds.includes(perm.permanentId))
-                      combatWindowAnswers.onBlock(perm.permanentId);
-                    else setZoomCardId(perm.topCard.cardId);
+                    if (combatWindows.blockWindow?.eligibleBlockerIds.includes(perm.permanentId) && blockWindowKey) {
+                      blockConfirmationSubmittedRef.current = false;
+                      setBlockConfirmation({ windowKey: blockWindowKey, permanentId: perm.permanentId });
+                    } else {
+                      setZoomCardId(perm.topCard.cardId);
+                    }
                   },
                 }
               : combatWindows.allianceWindow
@@ -1865,6 +1965,11 @@ function GameScreenSession({
       onInspectPermanent={{
         viewer: (perm) => {
           cancelDrag();
+          if (state.gameMode === GameMode.MANUAL.value && !spectating) {
+            setHandSel(null);
+            setSelPerm(perm.permanentId);
+            return;
+          }
           actions.showCardMenu(perm.permanentId, Side.Viewer, { preserveSelection: true });
         },
         opponent: (perm) => {
@@ -1878,5 +1983,5 @@ function GameScreenSession({
       }}
     />
   );
-  return board;
+  return <ViewerCardArtIdsContext.Provider value={viewerCardArtIds}>{board}</ViewerCardArtIdsContext.Provider>;
 }

@@ -5,6 +5,7 @@ import { setupScenario } from "#api/engine/testkit/scenario";
 import { createCardStateLookup } from "#api/engine/effects/context";
 import { runWithPreparedCardLocation } from "#api/engine/effects/runWithPreparedCardLocation";
 import { getEffectModule } from "#api/engine/effects/registry";
+import { clearBattleArea, placePermanent } from "#api/engine/state/access";
 import type { EffectContext } from "#api/engine/effects/EffectContext";
 
 function prepareLookupScenario() {
@@ -93,10 +94,10 @@ describe("card location during synchronous effect preparation", () => {
     expect(lookup.isOnBattleArea(id)).toBe(false);
     expect(lookup.isOnBreedingArea?.(id)).toBe(true);
     runWithPreparedCardLocation({ state, execute: () => expect(lookup.isOnBattleArea(id)).toBe(false) });
-    player.battleArea.clear();
+    clearBattleArea(player);
     expect(lookup.permanentOf(id)).toBeUndefined();
     runWithPreparedCardLocation({ state, execute: () => expect(lookup.permanentOf(id)).toBeUndefined() });
-    player.battleArea.push(permanent);
+    placePermanent(player, permanent);
     expect(lookup.permanentOf(id)).toBe(permanent);
   });
 
@@ -126,7 +127,7 @@ describe("card location during synchronous effect preparation", () => {
         expect(outerLookup.permanentOf(id)).toBe(outerPermanent);
       },
     });
-    outer.state.players[0]!.battleArea.clear();
+    clearBattleArea(outer.state.players[0]!);
     expect(outerLookup.permanentOf(id)).toBeUndefined();
   });
 
@@ -162,7 +163,7 @@ describe("card location during synchronous effect preparation", () => {
         },
       }),
     ).toThrow("outer preparation failed");
-    state.players[0]!.battleArea.clear();
+    clearBattleArea(state.players[0]!);
     expect(lookup.permanentOf(id)).toBeUndefined();
   });
 });

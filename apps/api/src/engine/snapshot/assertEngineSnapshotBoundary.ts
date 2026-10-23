@@ -63,6 +63,7 @@ export function assertEngineSnapshotBoundary({ engine }: Params): void {
     mainClosed: !engine.mainPhase.isOpen,
     mainSeatMismatch: engine.mainPhase.seat !== engine.state.turnSeat,
     mainEnded: engine.mainPhase.hasEnded,
+    manual: engine.manual !== undefined,
   };
   const active = Object.entries(pending).filter(([, value]) => value !== false && value !== 0);
   if (active.length !== 0) {

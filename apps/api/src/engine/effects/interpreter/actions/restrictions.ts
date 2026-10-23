@@ -226,8 +226,12 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
       // EX11-070 [All Turns]: "your opponent's effects can't trash this Digimon's stacked cards"
       // (KB Q5943). A persistent lock on the resolved target(s) (the inherited-effect host),
       // consulted at the digivolution-card trash sites. Re-derived each continuous pass (CR-01).
-      const ids = await resolvePermanentTargets(ctx, action.target);
       const duration = toDuration(action.duration);
+      if (action.includeLaterEntrants === true && coversEveryDigimonOfController(action.target)) {
+        for (const seat of seatsForController(ctx, action.target.filter)) ctx.fx.seatStackTrashLock?.(seat, duration);
+        return false;
+      }
+      const ids = await resolvePermanentTargets(ctx, action.target);
       const lock = (id: string): void => ctx.fx.stackTrashLock?.(id, duration);
       for (const id of ids) lock(id);
       if (action.includeLaterEntrants === true) {
@@ -344,4 +348,17 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
       // reports anything the Action union does not cover.
       return false;
   }
+}
+
+type StackTrashLockTarget = Extract<Action, { kind: "StackTrashLock" }>["target"];
+
+function coversEveryDigimonOfController(target: StackTrashLockTarget): boolean {
+  const { controller, kind, ...narrowing } = target.filter;
+  return (
+    target.count === "all" &&
+    controller !== undefined &&
+    kind?.length === 1 &&
+    kind[0] === "Digimon" &&
+    Object.keys(narrowing).length === 0
+  );
 }

@@ -14,6 +14,7 @@ import { buildEffectContext, cardSourceOf } from "./effectContext.js";
 import type { GameEngine } from "../GameEngine.js";
 import { runWithPreparedCardLocation } from "#api/engine/effects/runWithPreparedCardLocation";
 import { nestedTriggerSourceStillResident } from "#api/engine/gameEngine/subTriggers";
+import { applyEntryGrants } from "#api/engine/gameEngine/applyEntryGrants";
 
 /**
  * Re-derive every continuous (persistent / `EffectTiming.None`) effect from a clean
@@ -44,6 +45,7 @@ export async function recomputeContinuousEffects(engine: GameEngine, publish = t
   engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter((pending) =>
     nestedTriggerSourceStillResident(engine, pending),
   );
+  if (publish && engine.continuousScope.getStore() !== true) await applyEntryGrants(engine);
   if (engine.recomputeInFlight !== undefined) {
     if (engine.continuousScope.getStore() === true) return;
     engine.recomputeQueued = true;

@@ -156,6 +156,7 @@ export interface TriggerInfo {
   deletedByDpZeroInstanceIds?: string[];
   /** Security card currently being checked. */
   securityInstanceId?: string;
+  securityRemovalEventId?: number;
   /** Option permanent card instance that was trashed from the battle area. */
   trashedOptionInstanceId?: string;
   /** The checked security card was face-up before the check revealed it. */

@@ -21,6 +21,7 @@ import type {
   SecurityAddRestriction,
   ColorGrant,
   StackTrashLock,
+  SeatStackTrashLock,
   StackCardTrashLock,
   SecurityAttackInversion,
   StackEffectConferral,
@@ -59,6 +60,7 @@ export type ContinuousLedgerState = {
   securityAddRestrictions: SecurityAddRestriction[];
   colorGrants: ColorGrant[];
   stackTrashLocks: StackTrashLock[];
+  seatStackTrashLocks: SeatStackTrashLock[];
   stackCardTrashLocks: StackCardTrashLock[];
   securityAttackInversions: SecurityAttackInversion[];
   stackEffectConferrals: StackEffectConferral[];

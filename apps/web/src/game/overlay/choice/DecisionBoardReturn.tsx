@@ -66,6 +66,7 @@ export function DecisionBoardReturn({
         variant={selection ? "secondary" : undefined}
         icon={Icons.ArrowLeft}
         aria-label={t("overlay.returnToDecision")}
+        data-arena-cancel
         onClick={onReturn}
       >
         <span className="decision-board-return__label">{t("overlay.returnToDecision")}</span>

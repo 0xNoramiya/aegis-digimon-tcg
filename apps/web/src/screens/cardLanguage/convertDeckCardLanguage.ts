@@ -1,4 +1,6 @@
 import { findCardArtForLanguage } from "@aegis/shared/cards/findCardArtForLanguage";
+import { artRegionOf } from "@aegis/shared/cards/artRegionOf";
+import { resolveCardArt } from "@aegis/shared/cards/arts";
 import type { DeckListing } from "@/game/decks";
 import { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
 
@@ -10,6 +12,10 @@ export function convertDeckCardLanguage({ deck, language }: Params) {
   function convertCards(cards: readonly string[], arts: readonly string[] | undefined) {
     return cards.map((cardId, index) => {
       const current = arts?.[index] ?? cardId;
+      const shownArtId = resolveCardArt(cardId, current).artId;
+      if ((artRegionOf(shownArtId)?.value ?? CardImageLanguage.ENGLISH.value) === language) {
+        return current;
+      }
       const printing = findCardArtForLanguage({ cardId, language });
       if (!printing) {
         unavailable += 1;

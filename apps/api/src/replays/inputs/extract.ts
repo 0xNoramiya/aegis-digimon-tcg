@@ -1,3 +1,4 @@
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { serializeScenarioFixture } from "../../engine/scenario/serialize.js";
 import { createReadStream } from "node:fs";
 import { readdir, stat } from "node:fs/promises";
@@ -27,6 +28,7 @@ const SEGMENT = /^api-.*\.jsonl$/;
  * tests then diverge).
  */
 const INTENT_FIELDS: { [T in Intent["type"]]: readonly Exclude<keyof Extract<Intent, { type: T }>, "type">[] } = {
+  manual: ["requestId", "revision", "command"],
   ready: [],
   mulligan: ["keep"],
   playCard: ["instanceId", "useAs", "targetSlot", "digiXros", "assembly"],
@@ -267,6 +269,7 @@ function buildRecord(entries: Entry[], matchId: string): ReplayRecord {
     ...(typeof header.randomKey === "string" ? { randomKey: header.randomKey } : {}),
     ...(firstSeat !== undefined ? { firstSeat } : {}),
     rules: {
+      ...(header.gameMode === GameMode.MANUAL.value ? { gameMode: GameMode.MANUAL.value } : {}),
       deckFormat: (typeof header.deckFormat === "string" ? header.deckFormat : "standard") as DeckFormat,
       unlimited: header.unlimited === true,
       betaBattle: header.betaBattle === true,

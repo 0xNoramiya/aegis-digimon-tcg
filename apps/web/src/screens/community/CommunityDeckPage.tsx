@@ -15,6 +15,8 @@ import { DeckImageButton } from "../DeckImageButton";
 import { deckSections } from "../deckSections";
 import { LikeButton } from "./LikeButton";
 import { DeckReportsPanel } from "./DeckReportsPanel";
+import { DeckReviewPanel } from "./DeckReviewPanel";
+import { HideDeckDialog } from "./HideDeckDialog";
 import { ReportDeckDialog } from "./ReportDeckDialog";
 
 type Load = { status: "loading" } | { status: "missing" } | { status: "ready"; deck: CommunityDeck };
@@ -45,6 +47,7 @@ export function CommunityDeckPage({
   const [reporting, setReporting] = useState(false);
   const [reported, setReported] = useState(false);
   const [moderating, setModerating] = useState(false);
+  const [hiding, setHiding] = useState(false);
   const [moderationFailed, setModerationFailed] = useState(false);
 
   useEffect(() => {
@@ -86,15 +89,16 @@ export function CommunityDeckPage({
   const { deck } = load;
   const ownDeck = deck.author.id === accountId;
   const hidden = deck.status === "hidden";
-  const moderate = () => {
+  const showRestored = () => {
+    setLoad({ status: "ready", deck: { ...deck, status: "public", moderation: undefined } });
+    onNotice(t("community.moderation.restored"));
+  };
+  const restore = () => {
     setModerating(true);
     setModerationFailed(false);
     communityApi
-      .moderate(deck.id, hidden ? "restore" : "hide")
-      .then(({ status }) => {
-        if (status === "public" || status === "hidden") setLoad({ status: "ready", deck: { ...deck, status } });
-        onNotice(t(status === "hidden" ? "community.moderation.hidden" : "community.moderation.restored"));
-      })
+      .moderate(deck.id, { action: "restore" })
+      .then(showRestored)
       .catch(() => setModerationFailed(true))
       .finally(() => setModerating(false));
   };
@@ -161,7 +165,7 @@ export function CommunityDeckPage({
                 variant={hidden ? "secondary" : "danger"}
                 icon={hidden ? Icons.Eye : Icons.Shield}
                 disabled={moderating}
-                onClick={moderate}
+                onClick={hidden ? restore : () => setHiding(true)}
               >
                 {t(hidden ? "community.moderation.restore" : "community.moderation.hide")}
               </Button>
@@ -182,6 +186,29 @@ export function CommunityDeckPage({
         {moderationFailed ? <Alert tone="danger">{t("community.moderation.error")}</Alert> : null}
         {/* Keyed by status: hiding the deck closes its reports on the server, so the panel reloads. */}
         {isAdmin ? <DeckReportsPanel key={deck.status} deckId={deck.id} /> : null}
+        {isAdmin && hidden && deck.moderation ? (
+          <DeckReviewPanel
+            deckId={deck.id}
+            moderation={deck.moderation}
+            onApproved={showRestored}
+            onDeclined={(moderation) => {
+              setLoad({ status: "ready", deck: { ...deck, moderation } });
+              onNotice(t("community.moderation.declined"));
+            }}
+          />
+        ) : null}
+        {hiding ? (
+          <HideDeckDialog
+            deckId={deck.id}
+            deckName={deck.name}
+            onClose={() => setHiding(false)}
+            onHidden={(moderation) => {
+              setHiding(false);
+              setLoad({ status: "ready", deck: { ...deck, status: "hidden", moderation } });
+              onNotice(t("community.moderation.hidden"));
+            }}
+          />
+        ) : null}
         {reporting ? (
           <ReportDeckDialog
             deckId={deck.id}

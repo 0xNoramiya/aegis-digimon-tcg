@@ -240,6 +240,11 @@ export function DecisionCandidateGrid({
                         {picks.indexOf(cand.instanceId) + 1}
                       </span>
                     ) : null}
+                    {selectable && !abstractLabel && max === 1 ? (
+                      <span className="decision-overlay__pick-mark" data-picked={on} aria-hidden="true">
+                        {on ? <Icons.Check size={14} /> : null}
+                      </span>
+                    ) : null}
                     {/* What the effect will do to this card, once it has been
                   chosen. Server truth: `options.targetFate` is projected from
                   the IR action that raised the prompt, so the badge never

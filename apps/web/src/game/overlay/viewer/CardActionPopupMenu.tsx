@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { createPortal } from "react-dom";
@@ -32,6 +34,7 @@ export function CardActionPopupMenu({
   onVortex,
   link,
   effects,
+  cardId,
 }: {
   x: number;
   y: number;
@@ -43,14 +46,18 @@ export function CardActionPopupMenu({
   onVortex?: () => void;
   link?: CardActionLink;
   effects?: CardActionEffect[];
+  cardId?: string;
 }) {
   const { t } = useTranslation();
+  const menuRef = useRef<HTMLDivElement>(null);
+  useArenaInputCancel({ ref: menuRef, onCancel: onClose });
   const translateCardText = useTranslatedCardText();
   return createPortal(
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 9000 }} />
       <div
         className="card-inspector-dialog"
+        ref={menuRef}
         role="dialog"
         aria-modal="true"
         aria-label={t("game.actions")}
@@ -103,8 +110,8 @@ export function CardActionPopupMenu({
             key={effect.label}
             style={item}
             onClick={effect.onActivate}
-            title={translateCardText({ text: effect.label })}
-            aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label })}`}
+            title={translateCardText({ text: effect.label, cardId })}
+            aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId })}`}
             {...hoverBackground("var(--ds-fill)")}
           >
             <span aria-hidden="true">⚡</span> {t("game.activateMainEffect")}

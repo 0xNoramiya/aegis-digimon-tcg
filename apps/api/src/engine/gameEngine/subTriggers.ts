@@ -34,6 +34,7 @@ import { shouldDeferNestedTiming, withTriggeredMutations } from "./windows.js";
 import { buildEffectContext, cardSourceOf } from "./effectContext.js";
 import { drainPendingAttackTriggers, runPendingTimingWindow } from "#api/engine/gameEngine/timing/fire";
 import { ResolutionPlan } from "../decisions/resolutionPlan.js";
+import { applyEntryGrants } from "#api/engine/gameEngine/applyEntryGrants";
 
 /**
  * @param sourceScope Restricts the fire to the event subject's own "when this Digimon is
@@ -46,6 +47,9 @@ export async function fireSubTrigger(
   payload: TriggerInfo = {},
   sourceScope?: SubTriggerSourceScope,
 ): Promise<void> {
+  if (event === "whenSecurityRemoved" && payload.securityRemovalEventId === undefined) {
+    payload = { ...payload, securityRemovalEventId: ++engine.securityRemovalEventSeq };
+  }
   const scopedOut = (sub: SubTriggerSubscription): boolean => {
     if (sourceScope === undefined) return false;
     // A class watcher that merely includes its own host ("one of your [Chessmon]") is not a
@@ -53,6 +57,9 @@ export async function fireSubTrigger(
     const isSelfSource = sub.watchesSelf === true && sub.sourcePermanentId === payload.deletedPermanentId;
     return sourceScope === "selfSourceOnly" ? !isSelfSource : isSelfSource;
   };
+  if (event === "onEnterFieldAnyone" && payload.subjectPermanentId !== undefined) {
+    await applyEntryGrants(engine, [payload.subjectPermanentId]);
+  }
   const subscriptionsFor = (): SubTriggerSubscription[] =>
     engine.subTriggers.subscriptionsFor(event).filter((sub) => !scopedOut(sub));
   const deletedPermanent =
@@ -113,6 +120,33 @@ export async function fireSubTrigger(
     engine.pendingDeletionSubTriggers.push(...armedSubTriggers(engine, subscriptions, payload, contexts));
     return;
   }
+  // The event subject can leave the board before a pending watcher activates. Bind each
+  // context now, at trigger time, so the pending activation keeps the subject snapshot
+  // required by CR §15-4-4 instead of re-running its filter against an already-moved card.
+  const armWithTriggerTimeContexts = (): ArmedSubTrigger[] => {
+    const subscriptions = subscriptionsFor();
+    const contexts = new Map<number, EffectContext>();
+    for (const sub of subscriptions) {
+      const ctx = buildSubTriggerContext(engine, sub, payload);
+      if (ctx !== undefined) contexts.set(sub.id, ctx);
+    }
+    return armedSubTriggers(engine, subscriptions, payload, contexts);
+  };
+  if (engine.digivolveCostSubTriggers !== undefined && event !== "wouldBeReturned" && event !== "onDeletionOf") {
+    engine.digivolveCostSubTriggers.push(...armWithTriggerTimeContexts());
+    return;
+  }
+  if (
+    event === "whenSecurityRemoved" &&
+    engine.mainVerbContinuationsInFlight > 0 &&
+    engine.activeWindowToken === undefined &&
+    engine.effectResolutionDepth === 0 &&
+    !engine.resolvingBarrierSecurityCost &&
+    !engine.flushingDeferredSecurityRemovalTriggers
+  ) {
+    engine.pendingWindowSubTriggers.push(...armWithTriggerTimeContexts());
+    return;
+  }
   // A security card removed while another effect is resolving creates a pending trigger;
   // it does not interrupt that effect. Dynasmon BT6-044 must finish revealing its 6 cards
   // before its Recovery reaction can consume the next deck card (KB Q1430/Q1432).
@@ -136,22 +170,6 @@ export async function fireSubTrigger(
       subscriptions: pending,
       contexts,
     });
-    return;
-  }
-  // The event subject can leave the board before a pending watcher activates. Bind each
-  // context now, at trigger time, so the pending activation keeps the subject snapshot
-  // required by CR §15-4-4 instead of re-running its filter against an already-moved card.
-  const armWithTriggerTimeContexts = (): ArmedSubTrigger[] => {
-    const subscriptions = subscriptionsFor();
-    const contexts = new Map<number, EffectContext>();
-    for (const sub of subscriptions) {
-      const ctx = buildSubTriggerContext(engine, sub, payload);
-      if (ctx !== undefined) contexts.set(sub.id, ctx);
-    }
-    return armedSubTriggers(engine, subscriptions, payload, contexts);
-  };
-  if (engine.digivolveCostSubTriggers !== undefined && event !== "wouldBeReturned" && event !== "onDeletionOf") {
-    engine.digivolveCostSubTriggers.push(...armWithTriggerTimeContexts());
     return;
   }
   // A would-be-returned reaction interrupts the causing effect before its target moves
@@ -755,12 +773,16 @@ export function pendingWindowCollected(engine: GameEngine): CollectedEffect[] {
 }
 
 /** The enclosing window's own armed watchers, without the parked or printed pending halves. */
-export function pendingWindowWatchersCollected(engine: GameEngine): CollectedEffect[] {
+export function pendingWindowWatchersCollected(
+  engine: GameEngine,
+  excluded: ReadonlySet<ArmedSubTrigger> = new Set(),
+): CollectedEffect[] {
   return armedAsPendingCollected(
     engine,
     uniqueOncePerTurnWatcherOccurrences(
       engine.pendingWindowSubTriggers.filter(
         (item) =>
+          !excluded.has(item) &&
           !engine.consumedSubTriggerKeys.has(subTriggerIdentity(item.sub, item.ctx.trigger)) &&
           subTriggerStillPending(engine, item),
       ),
@@ -1023,7 +1045,11 @@ export function playerFacingWatcherClause(sub: SubTriggerSubscription, ctx: Effe
     const clause = soleLinkingClause(box);
     if (clause !== undefined) return clause;
   }
-  return soleWatcherLine(box) ?? `${triggerLabel(sub.event)}: ${definition.nameEn}`;
+  const optionSideLine =
+    sub.isLinkedSource === true || sub.isInheritedSource === true
+      ? undefined
+      : soleWatcherLine(definition.optionEffect);
+  return soleWatcherLine(box) ?? optionSideLine ?? `${triggerLabel(sub.event)}: ${definition.nameEn}`;
 }
 
 /** Present a watcher to the ordering prompt as an ordinary collected effect. */

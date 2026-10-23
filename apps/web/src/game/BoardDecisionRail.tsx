@@ -1,3 +1,4 @@
+import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useMediaQuery } from "@/design/useMediaQuery";
 import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
@@ -120,6 +121,7 @@ export function BoardPromptRail({
   const noticeBand = useNoticeBandPassThrough();
   const focusProps = useEffectPromptFocus(!modal, handSpace);
   usePromptHandSpace(focusProps.ref, !modal, handSpace);
+  useArenaInputCancel({ ref: focusProps.ref, onCancel: onOpenDialog });
   const drag = useDraggableWindow(focusProps.ref, {
     viewportGutter: 16,
     resetKey: `${variant}:${label}:${sourcePermanentId ?? ""}`,

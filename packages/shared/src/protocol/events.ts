@@ -95,6 +95,7 @@ export interface EffectBattleParticipants {
 }
 
 export type ServerEvent =
+  | { kind: "manualAction"; seat: Seat; action: string }
   | { kind: "matchStarted"; firstSeat: Seat }
   | { kind: "phaseChanged"; phase: string; turnSeat: Seat; turnCount: number }
   | {
@@ -577,6 +578,7 @@ export type SequencedServerEvent = ServerEvent & {
  * kind could ship narrating nothing and no test would notice.
  */
 export const SERVER_EVENT_KINDS = [
+  "manualAction",
   "matchStarted",
   "phaseChanged",
   "cardPlayed",
@@ -730,7 +732,7 @@ export interface DecisionRequest {
     distinctCardIds?: boolean; // prevent selecting multiple instances with the same card number
     distinctNames?: boolean; // prevent selecting cards sharing a name, including exact-name aliases
     /** Lets the client present a dedicated interaction without inferring semantics from prompt text. */
-    selectionContext?: "attackSource" | "attackTarget" | "partitionActivation";
+    selectionContext?: "attackSource" | "attackTarget" | "partitionActivation" | "materialSaveActivation";
     orderDestination?: "deckTop" | "deckBottom" | "stackTop" | "stackBottom"; // explains how ordered positions map to the destination
     choices?: string[]; // modal labels for chooseOption
     /** `chooseOption` only: the zone whose ends the "top" and "bottom" choices name. */

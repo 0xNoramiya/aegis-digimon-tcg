@@ -169,7 +169,13 @@ export function createInsteadReplacementInstall({
               expansionCountBefore) > expansionCountBefore
           );
         }
-        return true;
+        const declinedEveryChoice =
+          action.optional !== true &&
+          !isIntrinsicDelay &&
+          replacementCost === undefined &&
+          subCtx.oncePerTurnActivationDeclined === true &&
+          subCtx.oncePerTurnActivationChosen !== true;
+        return !declinedEveryChoice;
       }),
   };
 }

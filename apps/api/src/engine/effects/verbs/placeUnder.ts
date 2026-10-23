@@ -23,7 +23,7 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
     const placed: CardInstance[] = [];
     const securitySources = new Set<Seat>();
     const permanent = access.permanentById(targetPermanentId);
-    if (permanent?.topCard === undefined) {
+    if (permanent?.topCard === undefined || requireCardDefinition(permanent.topCard.cardId).isToken) {
       return { placed, securitySources };
     }
     // Validate the complete physical batch before moving anything. A duplicate can
@@ -112,7 +112,9 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
 
   const placeUnderFromDeck = async (targetPermanentId: string, seat: Seat): Promise<CardInstance | undefined> => {
     const permanent = access.permanentById(targetPermanentId);
-    if (permanent === undefined) return undefined;
+    if (permanent?.topCard === undefined || requireCardDefinition(permanent.topCard.cardId).isToken) {
+      return undefined;
+    }
     const card = takeTop(player(seat), Zone.Deck);
     if (card === undefined) return undefined;
     card.faceUp = false;
@@ -159,13 +161,25 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
       .battleAreaPermanents(perm.controllerSeat)
       .filter((p) => p.topCard !== undefined && requireCardDefinition(p.topCard.cardId).kinds.includes(CardKind.Tamer));
     if (tamers.length === 0) return false;
+    const source = {
+      sourceCardId: perm.topCard.cardId,
+      sourceInstanceId: perm.topCard.instanceId,
+      sourcePermanentId: permanentId,
+      timing: "MaterialSave",
+      effectText: `＜Material Save ${n}＞: When this Digimon would be deleted, you may place up to ${n} of its specified digivolution cards under one of your Tamers.`,
+    };
     const accept = await engine.ask.selectInstances(
       perm.controllerSeat,
       [eligible[0]!.instanceId],
       0,
       1,
       `＜Material Save ${n}＞: place up to ${n} of this Digimon's specified digivolution cards under 1 of your Tamers?`,
-      { selectionGoal: DecisionSelectionGoal.PROTECT.value },
+      {
+        ...source,
+        selectionContext: "materialSaveActivation",
+        visibleInstanceIds: eligible.map((card) => card.instanceId),
+        selectionGoal: DecisionSelectionGoal.PROTECT.value,
+      },
     );
     if (accept.length === 0) return false;
     let tamerId = tamers[0]!.permanentId;
@@ -176,6 +190,7 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
         1,
         1,
         "＜Material Save＞: place the cards under which Tamer?",
+        source,
       );
       const found = tamers.find((t) => t.topCard?.instanceId === chosenTamer[0]);
       if (found !== undefined) tamerId = found.permanentId;
@@ -192,6 +207,7 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
       requiredCount,
       requiredCount,
       `＜Material Save ${n}＞: choose ${requiredCount} specified digivolution card${requiredCount === 1 ? "" : "s"} to place under the Tamer, in order.`,
+      source,
     );
     const eligibleIds = new Set(eligible.map((card) => card.instanceId));
     if (

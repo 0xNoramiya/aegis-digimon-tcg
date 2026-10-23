@@ -428,6 +428,11 @@ re-recorded with the same seed and decks. The first 31 roots use 16-simulation
 MCTS choices; later roots use the rollout heuristic, and the outer game ends by
 security at turn 60. Root 37 (turn 58) with simulation 2 gives the regression
 rollout: five recorded heuristic choices that end in a security win at turn 62.
+Engine rule fixes merged from `develop` later changed the window at root 35. The
+fixture keeps the first 35 roots and takes the rollout-heuristic action at roots
+35 to 39; the outer game still ends by security at turn 60. Root 37 is now at turn
+60, so its simulation 2 rollout forces action 0 as its first choice, records the
+next four heuristic choices, and wins by security at turn 62.
 
 Search is currently applied to settled Main windows; other windows use the
 rollout heuristic. Full engine replay is expensive. Logs report actual completed

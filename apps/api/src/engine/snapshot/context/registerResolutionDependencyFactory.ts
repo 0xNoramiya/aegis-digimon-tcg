@@ -88,6 +88,7 @@ function isDependencySnapshot(value: unknown): value is ResolutionDependencySnap
     (payload.outermost === undefined || typeof payload.outermost === "boolean") &&
     (payload.extraPending === undefined || Array.isArray(payload.extraPending)) &&
     (payload.excludeNestedPending === undefined || payload.excludeNestedPending instanceof Set) &&
+    payload.excludedWindowWatchers instanceof Set &&
     Array.isArray(payload.derivedPending) &&
     payload.announced instanceof Set
   );

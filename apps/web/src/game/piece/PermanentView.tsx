@@ -1,4 +1,7 @@
+import { ManualStatus } from "@aegis/shared/manual/ManualStatus";
+import "@/game/manual/manualFeatures.css";
 import { PermanentDpDeltaHint } from "@/game/piece/PermanentDpDeltaHint";
+import { CardAceBadge } from "@/design/CardAceBadge";
 import { useRef, type CSSProperties } from "react";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
@@ -67,6 +70,7 @@ export function PermanentView({
   onKeyboardActivate,
   onInspect,
   showInspect = false,
+  useSelectedSleeve = true,
 }: {
   perm: Permanent;
   /** Identical permanents drawn as this one card, itself included. */
@@ -125,6 +129,7 @@ export function PermanentView({
   onInspect?: () => void;
   /** Show the magnifier while the board is being used to choose a card or effect. */
   showInspect?: boolean;
+  useSelectedSleeve?: boolean;
 }) {
   const stationaryDeparture =
     heldDeletion || fate?.fate === "delete" || fate?.fate === "trash" || fate?.fate === "effectTarget";
@@ -143,6 +148,7 @@ export function PermanentView({
   const entranceBurst = useRef<number | undefined>(undefined);
   if (landingBurst) entranceBurst.current = landingBurst.key;
   const topId = perm.topCard?.cardId;
+  const faceDown = perm.topCard?.faceUp === false;
   const faceRef = useFieldShatterOrigin(perm.permanentId, perm.topCard?.instanceId ?? perm.permanentId, refCb);
   const arrivalKey = `${fieldIdentity}:${entranceBurst.current ?? "first"}:${pending ? "held" : "shown"}`;
   // A departure hold can release before the presented board removes its face.
@@ -151,8 +157,8 @@ export function PermanentView({
   if (quietedEntrance.current.key !== arrivalKey) quietedEntrance.current = { key: arrivalKey, quiet: quietEntrance };
   else if (quietEntrance) quietedEntrance.current.quiet = true;
   const landingRef = useCardLanding(arrivalKey);
-  if (!topId) return null;
-  const def = getCardDefinition(topId);
+  if (!perm.topCard || (!topId && !faceDown)) return null;
+  const def = topId ? getCardDefinition(topId) : undefined;
   const delta = perm.currentDP - originalDP(perm);
   const hasDpDelta = delta !== 0;
   const activeKeywords = resolvePermanentKeywordEntries({ perm, keywordLabels });
@@ -169,13 +175,27 @@ export function PermanentView({
   // this position currently COUNTS AS after an effect rewrote its original card information.
   const transformation = permanentTransformation(perm);
 
-  const cardName = getTranslatedCardName({ name: transformation?.name || def?.nameEn || topId, translations });
+  const cardName = faceDown
+    ? t("game.faceDownSource")
+    : getTranslatedCardName({ name: transformation?.name || def?.nameEn || topId || "", translations });
+  const statuses = Object.values(ManualStatus).filter((entry) => perm.manualStatuses?.includes(entry.value));
+  const statusLabels = statuses.map((entry) => t(`manual.features.status.${entry.value}`));
+  const annotations = [...statusLabels, perm.manualMarker ?? ""].filter(Boolean).map((label) => ({
+    label,
+    description: t("manual.features.statusHint"),
+  }));
   const activate = onKeyboardActivate ?? onClick;
   const interactive = !!activate || !!onPointerDown;
   return (
     <div
       ref={faceRef}
-      onClick={onClick}
+      onClick={(event) => {
+        if (event.detail === 0 && activate) {
+          activate();
+        } else {
+          onClick?.();
+        }
+      }}
       onPointerDown={onPointerDown}
       onPointerDownCapture={beginInspection}
       onContextMenu={
@@ -202,7 +222,17 @@ export function PermanentView({
       tabIndex={interactive ? 0 : undefined}
       aria-label={
         interactive
-          ? permanentAriaLabel({ perm, heldSuspended, restrictions, fate, cardName, copies, delta, hasDpDelta, t })
+          ? permanentAriaLabel({
+              perm,
+              heldSuspended,
+              restrictions,
+              fate,
+              cardName: [cardName, ...statusLabels, perm.manualMarker].filter(Boolean).join(", "),
+              copies,
+              delta,
+              hasDpDelta,
+              t,
+            })
           : undefined
       }
       className={permanentClassName({
@@ -246,7 +276,12 @@ export function PermanentView({
       }}
     >
       {copies > 1 ? (
-        <PermanentCopyEdges cardId={topId} copies={copies} width={permanentWidth} suspended={isVisuallySuspended} />
+        <PermanentCopyEdges
+          cardId={faceDown ? "" : (topId ?? "")}
+          copies={copies}
+          width={permanentWidth}
+          suspended={isVisuallySuspended}
+        />
       ) : null}
       {selectionOrder !== undefined ? (
         <span
@@ -257,7 +292,7 @@ export function PermanentView({
         </span>
       ) : null}
       <PermanentCardStack stack={perm.stack} width={permanentWidth} />
-      <PermanentLinkedCards linked={perm.linked} width={permanentWidth} />
+      <PermanentLinkedCards linked={perm.linked} width={permanentWidth} useSelectedSleeve={useSelectedSleeve} />
       {/* Re-keying on an accepted arrival remounts the wrapper, which is what
           restarts the CSS entrance: the card sparkles when it reaches the board
           and again on every digivolution. `pending` is part of the signature
@@ -290,6 +325,8 @@ export function PermanentView({
         ) : null}
         <CardMini
           cardId={topId}
+          faceDown={faceDown}
+          useSelectedSleeve={useSelectedSleeve}
           artId={perm.topCard?.artId}
           width={permanentWidth}
           suspended={isVisuallySuspended}
@@ -315,13 +352,15 @@ export function PermanentView({
         {claw ? <ClawSlash key={`claw-${perm.permanentId}`} fixedFieldAnchor /> : null}
         {dpPulse ? <DpPulseParticles key={dpPulse.key} pulse={dpPulse} /> : null}
       </div>
+      <CardAceBadge cardId={topId} />
       {sources ? <PermanentSourceBadge sources={sources} /> : null}
       {copies > 1 ? <PermanentCopiesBadge copies={copies} /> : null}
       {blocker ? <PermanentBlockerBadge /> : null}
       {fate ? <PermanentFateBadge fate={fate} /> : null}
-      {activeKeywords.length > 0 ? (
+      {activeKeywords.length > 0 || annotations.length > 0 ? (
         <PermanentKeywordBadges
           keywords={activeKeywords}
+          annotations={annotations}
           securityAttackModifier={perm.securityAttackModifier}
           cardWidth={permanentWidth}
         />
@@ -333,6 +372,7 @@ export function PermanentView({
         <button
           type="button"
           className="game-permanent__inspect"
+          data-arena-inspect
           aria-label={t("game.inspectCard", { card: cardName })}
           onPointerDown={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}

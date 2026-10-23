@@ -307,7 +307,7 @@ export async function runPlaceUnder(
     if (action.underSelectionRef && ctx.selections?.has(action.underSelectionRef)) {
       destId = ctx.selections.get(action.underSelectionRef);
     } else if (action.underFilter) {
-      const destTarget: Target = { filter: action.underFilter, count: 1 };
+      const destTarget: Target = { filter: { ...action.underFilter, excludeToken: true }, count: 1 };
       // "Other" excludes the cards being moved before the host choice is offered.
       // An empty result (including a chosen immune host) must not retarget the move.
       const destIds = await resolvePermanentTargets(ctx, destTarget, {
@@ -429,7 +429,7 @@ export async function runPlaceUnder(
     if (top === undefined) return;
     let destId: string | undefined;
     if (action.underFilter) {
-      const destTarget: Target = { filter: action.underFilter, count: 1 };
+      const destTarget: Target = { filter: { ...action.underFilter, excludeToken: true }, count: 1 };
       const destIds = await resolvePermanentTargets(ctx, destTarget);
       if (destIds.length === 0) return;
       destId =
@@ -511,7 +511,7 @@ export async function runPlaceUnder(
     }
     if (hostId === undefined) return;
   } else if (action.underFilter) {
-    const destTarget: Target = { filter: action.underFilter, count: 1 };
+    const destTarget: Target = { filter: { ...action.underFilter, excludeToken: true }, count: 1 };
     const destIds = await resolvePermanentTargets(ctx, destTarget);
     if (destIds.length === 0) return;
     hostId =

@@ -1,3 +1,6 @@
+import { getOfferedRematchModes } from "@aegis/shared/protocol/getOfferedRematchModes";
+import { getRematchMode } from "@aegis/shared/protocol/getRematchMode";
+import type { RematchMode } from "@aegis/shared/protocol/RematchMode";
 import { RematchStatus } from "@aegis/shared/protocol/RematchStatus";
 import type { SeriesState } from "@aegis/shared/schema/GameState";
 import type { Seat } from "@aegis/shared/schema/enums";
@@ -7,6 +10,8 @@ export type RematchStage = "open" | "offeredByYou" | "offeredToYou" | "declined"
 
 export interface RematchView {
   stage: RematchStage;
+  mode: RematchMode;
+  modes: RematchMode[];
   series: SeriesView | undefined;
 }
 
@@ -20,7 +25,12 @@ export function getRematchView({ series, viewerSeat }: GetRematchViewParams): Re
     return undefined;
   }
   const stage = getRematchStage(series, viewerSeat);
-  return { stage, series: stage === "accepted" ? seriesView(series, viewerSeat) : undefined };
+  return {
+    stage,
+    mode: getRematchMode({ mode: series.rematchMode }),
+    modes: getOfferedRematchModes({ afterSeries: series.bestOf > 1 }),
+    series: stage === "accepted" ? seriesView(series, viewerSeat) : undefined,
+  };
 }
 
 function getRematchStage(series: SeriesState, viewerSeat: Seat): RematchStage {

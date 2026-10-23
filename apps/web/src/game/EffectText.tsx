@@ -1,6 +1,7 @@
 import { getInspectorMarker } from "@/game/getInspectorMarker";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
-import { getTranslatedCardText } from "@/i18n/getTranslatedCardText";
+import { useResolvedCardText } from "@/i18n/useResolvedCardText";
+import type { CardTextField } from "@/i18n/CardTextField";
 import { resolveTranslatedKeyword } from "@/i18n/resolveTranslatedKeyword";
 import { getTranslatedKeywordReminder } from "@/i18n/getTranslatedKeywordReminder";
 import "./EffectText.css";
@@ -48,13 +49,37 @@ function KeywordMark({ keyword, inspector }: KeywordParams) {
  * Printed timing and keyword markers shared by card details and effect notices.
  * `asciiBrackets` prints the card data's full-width ＜Keyword＞ brackets as <Keyword>.
  */
-type Params = { text: string; asciiBrackets?: boolean; inspector?: boolean; cardId?: string };
+type Params = {
+  text: string;
+  asciiBrackets?: boolean;
+  inspector?: boolean;
+  cardId?: string;
+  field?: CardTextField;
+  surface?: string;
+  allowContext?: boolean;
+  timing?: string;
+};
 
-export function EffectText({ text, asciiBrackets = false, inspector = false, cardId }: Params) {
-  const translations = useCardTranslations({ includePrintedText: true });
-  const lines = inlineInspectorKeywordLines(getTranslatedCardText({ text, translations, cardId }));
+export function EffectText({
+  text,
+  asciiBrackets = false,
+  inspector = false,
+  cardId,
+  field,
+  surface,
+  allowContext = false,
+  timing,
+}: Params) {
+  const result = useResolvedCardText({ text, cardId, field, surface, allowContext, timing });
+  const lines = inlineInspectorKeywordLines(result.text);
   return (
-    <span key={`${asciiBrackets}:${lines}`} className="card-effect-text" data-inspector={inspector || undefined}>
+    <span
+      key={`${asciiBrackets}:${lines}`}
+      className="card-effect-text"
+      data-inspector={inspector || undefined}
+      data-translation-status={result.status}
+      data-translation-source={result.source}
+    >
       {lines.split(/(\[[^\]]+\]|＜[^＞]+＞|<[^<>\r\n]+>|（每回合\d+次）)/g).map((part, index) =>
         /^\[/.test(part) || (inspector && /^（每回合\d+次）$/.test(part)) ? (
           <mark

@@ -162,6 +162,7 @@ export interface SubTriggerSubscription {
    * the body still resolves with its own source and controller.
    */
   orderedByTurnPlayer?: boolean;
+  appliesOnEntry?: boolean;
   /**
    * Produced by a PERSISTENT (static / `[Breeding]` / `EffectTiming.None`) effect that the
    * continuous-recompute pass re-derives every time it runs. The recompute clears these via
@@ -645,8 +646,15 @@ export class SubTriggerRegistry {
   /** Active subscriptions for an event (optionally filtered to a source permanent). */
   subscriptionsFor(event: SubTriggerEventName, sourcePermanentId?: string): SubTriggerSubscription[] {
     return this.subs.filter(
-      (s) => s.event === event && (sourcePermanentId === undefined || s.sourcePermanentId === sourcePermanentId),
+      (s) =>
+        s.event === event &&
+        s.appliesOnEntry !== true &&
+        (sourcePermanentId === undefined || s.sourcePermanentId === sourcePermanentId),
     );
+  }
+
+  entryGrants(): SubTriggerSubscription[] {
+    return this.subs.filter((s) => s.appliesOnEntry === true);
   }
 
   /** Active granted effects anchored to a permanent, for its public inspector. */

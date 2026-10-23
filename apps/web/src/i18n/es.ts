@@ -1,3 +1,8 @@
+import { advancedBattlesEs } from "@/i18n/learn/advancedBattles.es";
+import { rulesLayoutEs } from "@/i18n/learn/rulesLayout.es";
+import { lessonCatalogEs } from "@/i18n/learn/lessonCatalog.es";
+import { battleLessonsEs } from "@/i18n/learn/battleLessons.es";
+import { manualEs } from "@/i18n/manual.es";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEs } from "@/i18n/providers.es";
 import { replayVideoEs } from "./replayVideo";
@@ -17,8 +22,14 @@ import { homeEs } from "./redesign/home.es";
 import { playEs } from "./redesign/play.es";
 import { settingsEs } from "./redesign/settings.es";
 import { shellEs } from "./redesign/shell.es";
+import { learnEs } from "@/i18n/learn/learn.es";
+import { learnDrillsEs } from "@/i18n/learn/drills.es";
 
 export const es: Record<keyof typeof en, string> = {
+  ...lessonCatalogEs,
+  ...rulesLayoutEs,
+  ...advancedBattlesEs,
+  ...manualEs,
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Eliminar este Digimon",
   "overlay.trashTopSecurityCard": "Descartar la carta superior de tu seguridad",
@@ -526,7 +537,7 @@ export const es: Record<keyof typeof en, string> = {
   "lobby.randomCommunityPool": "Decks personales, famosos y públicos de la comunidad",
   "lobby.randomFailed": "No se pudo sortear un deck. Inténtalo de nuevo.",
   "lobby.randomDrawing": "Sorteando un deck…",
-  "overlay.viewUsedDeck": "Ver deck utilizado",
+  "overlay.viewUsedDeck": "Tu deck",
   "overlay.usedDeck": "Deck utilizado en este duelo",
   "lobby.randomPool": "{count} decks válidos en el sorteo",
   "lobby.randomPoolOne": "1 deck válido en el sorteo",
@@ -631,6 +642,7 @@ export const es: Record<keyof typeof en, string> = {
   "library.rowColor": "Color",
   "library.rowType": "Tipo",
   "library.rowPlayCost": "Costo de juego",
+  "library.rowUseCost": "Costo de uso",
   "library.rowDp": "DP",
   "library.rowTraits": "Rasgos",
   "library.rowRarity": "Rareza",
@@ -747,8 +759,12 @@ export const es: Record<keyof typeof en, string> = {
   "settings.keepAwake": "Mantener la pantalla encendida",
   "settings.keepAwakeDesc":
     "Mantener la pantalla encendida mientras hay un combate abierto, en lugar de dejar que el dispositivo se duerma entre turnos",
-  "settings.actionConfirmations": "Confirmar acciones",
-  "settings.actionConfirmationsDesc": "Preguntar antes de jugar, digievolucionar o usar una digievolución DNA opcional",
+  "settings.cardConfirmation": "Confirmaciones de cartas",
+  "settings.cardConfirmationDesc":
+    "Preguntar antes de jugar, usar o digievolucionar una carta. «Omitir cartas solo jugables» juega al instante cuando la carta no tiene otra acción legal. Las elecciones de objetivo, materiales, coste y modo se mantienen.",
+  "settings.cardConfirmationAlways": "Preguntar siempre",
+  "settings.cardConfirmationSkipPlayOnly": "Omitir cartas solo jugables",
+  "settings.cardConfirmationNever": "No preguntar nunca",
   "overlay.moveEffectPrompt": "Mover panel de efecto",
   "overlay.moveEffectPromptHelp": "Arrastra para mover o usa las flechas. Pulsa Inicio para restaurar la posición.",
   "settings.effectPromptPosition": "Posición de los efectos",
@@ -772,6 +788,8 @@ export const es: Record<keyof typeof en, string> = {
   "settings.organizedFieldDesc": "Ordena los Digimon por nivel y agrupa los Tamers y Options iguales en su propia fila",
   "settings.pileCounts": "Mostrar contadores de las pilas",
   "settings.pileCountsDesc": "Muestra los contadores de Huevos, Mano, Deck y Descarte en el tablero",
+  "settings.hoverZoom": "Ampliar cartas al pasar el ratón",
+  "settings.hoverZoomDesc": "Muestra una vista previa grande de la carta junto al puntero mientras está sobre ella",
   "settings.sound": "Efectos de sonido",
   "settings.soundDesc": "Clics, selecciones y señales de combate",
   "settings.decisionPing": "Aviso de decisión",
@@ -890,6 +908,7 @@ export const es: Record<keyof typeof en, string> = {
   "game.digiEgg": " · Digi-Egg",
   "game.noCost": "sin costo",
   "game.costsMemory": "cuesta {count} de memoria",
+  "game.useCostsMemory": "cuesta {count} de memoria para usar",
   "game.digivolve": "Digievolucionar",
   "game.clickToDigivolve": "haz clic en un Digimon resaltado para digievolucionar",
   "game.clickToLink": "haz clic en un Digimon resaltado para vincular",
@@ -1075,6 +1094,9 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.suspendAlly": "Suspender {name} por +{dp} DP",
   "overlay.noAllies": "No hay aliados elegibles para suspender.",
   "overlay.passAlliance": "Pasar",
+  "overlay.confirmBlockTitle": "Confirmar bloqueo",
+  "overlay.confirmBlockDetail": "Suspende {name} para bloquear este ataque.",
+  "overlay.confirmBlock": "Bloquear",
   "overlay.confirmAllianceTitle": "Confirmar Alliance",
   "overlay.confirmAllianceDetail": "Suspende {name} para sumar {dp} DP.",
   "overlay.confirmAlliance": "Usar Alliance",
@@ -1134,6 +1156,8 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.securityAttackValue": "Security Attack {value}",
   "overlay.transformedBadge": "Cuenta como {name}",
   "overlay.printedEffect": "Efecto impreso",
+  "overlay.showCardText": "Mostrar texto de la carta",
+  "overlay.hideCardText": "Ocultar texto de la carta",
   "overlay.grantedEffects": "Efectos otorgados",
   "library.optionEffect": "Efecto de Option",
   "overlay.noPrintedEffect": "Sin efecto impreso",
@@ -2008,7 +2032,7 @@ export const es: Record<keyof typeof en, string> = {
   "community.publish.signIn": "Inicia sesión para publicar tus decks.",
   "community.publish.errorNotLegal": "Este deck no es válido, así que no puede ser público.",
   "community.publish.errorName": "Cambia primero el nombre de este deck. Tiene una palabra que no está permitida.",
-  "community.publish.errorHidden": "Un moderador ocultó este deck tras una denuncia, así que no puede ser público.",
+  "community.publish.errorHidden": "Un moderador ocultó este deck. Corrígelo y solicita una revisión.",
   "community.report.open": "Denunciar deck",
   "community.report.title": "Denunciar {name}",
   "community.report.body":
@@ -2040,6 +2064,26 @@ export const es: Record<keyof typeof en, string> = {
   "community.moderation.hiddenBadge": "Oculto",
   "community.moderation.hiddenOwnerBadge": "Ocultado por un moderador",
   "community.moderation.hiddenOwnerNote": "Denunciado por jugadores. Nadie más lo ve.",
+  "community.moderation.hideTitle": "¿Ocultar {name}?",
+  "community.moderation.hideBody":
+    "Los jugadores dejan de ver este deck. Su dueño ve el motivo y tu nota, y puede corregir el deck y pedir una revisión.",
+  "community.moderation.noteLabel": "Nota para el dueño (opcional)",
+  "community.moderation.hiddenReason": "Oculto por: {reason}.",
+  "community.moderation.ownerNote": "Nota del moderador: {note}",
+  "community.moderation.ownerFixHint": "Corrige el deck y solicita una revisión.",
+  "community.moderation.reviewPendingNote": "Un moderador revisará tus cambios.",
+  "community.moderation.reviewRequestedBadge": "Revisión solicitada",
+  "community.moderation.reviewTitle": "Moderación",
+  "community.moderation.approve": "Aprobar y hacer público",
+  "community.moderation.decline": "Mantener oculto",
+  "community.moderation.declined": "Revisión rechazada. El deck sigue oculto.",
+  "community.review.action": "Solicitar revisión",
+  "community.review.title": "¿Solicitar una revisión de {name}?",
+  "community.review.body":
+    "Corrige tu deck primero. Enviamos tu deck guardado tal como está ahora. Sigue oculto hasta que un moderador lo apruebe.",
+  "community.review.noteLabel": "Nota para el moderador (opcional)",
+  "community.review.errorPending": "Ya solicitaste una revisión. Espera la respuesta de un moderador.",
+  "community.review.errorNotHidden": "Este deck ya no está oculto.",
   "community.publish.errorGeneric": "No se pudo publicar. Inténtalo de nuevo.",
   "chat.open": "Chat",
   "chat.openUnread": "Chat, {count} sin leer",
@@ -2096,16 +2140,31 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.series.opponentChoosing": "{name} está eligiendo quién empieza",
   "overlay.series.startingYou": "Juego {game} · Empiezas tú",
   "overlay.series.startingOpponent": "Juego {game} · Empieza {name}",
+  "overlay.series.startingDrawn": "Juego {game} · Quien empieza se sortea",
   "overlay.series.joining": "Iniciando el siguiente juego…",
   "overlay.series.leave": "Salir de la serie",
-  "overlay.rematch.offer": "Jugar de nuevo con {name} · Al mejor de 3",
-  "overlay.rematch.hint": "Mismos mazos. Quien perdió esta partida elige quién empieza.",
-  "overlay.rematch.incoming": "{name} quiere una revancha",
+  "overlay.rematch.title": "¿Jugar de nuevo con {name}?",
+  "overlay.rematch.finish": "Terminar este al mejor de 3",
+  "overlay.rematch.finishHint": "Cuenta como partida 1 · mismos mazos",
+  "overlay.rematch.new": "Empezar un nuevo al mejor de 3",
+  "overlay.rematch.newHint": "0–0 · cambio de mazo · inicio sorteado",
+  "overlay.rematch.incomingFinish": "{name} quiere terminar este al mejor de 3",
+  "overlay.rematch.incomingNew": "{name} quiere empezar un nuevo al mejor de 3",
   "overlay.rematch.accept": "Aceptar",
   "overlay.rematch.decline": "Rechazar",
   "overlay.rematch.waiting": "Esperando la respuesta de {name}…",
   "overlay.rematch.declined": "La revancha fue rechazada.",
   "overlay.rematch.closed": "La revancha ya no está disponible.",
+  "overlay.rematch.deckTitle": "Elige tu mazo para la partida 1",
+  "overlay.rematch.keepDeck": "Mantener mazo actual",
+  "overlay.rematch.changeDeck": "Cambiar mazo",
+  "overlay.rematch.deckReady": "Tu mazo está confirmado.",
+  "overlay.rematch.opponentPicking": "{name} está eligiendo un mazo…",
+  "overlay.rematch.opponentReady": "{name} está listo.",
+  "overlay.rematch.opponentChanged": "{name} cambió de mazo.",
+  "overlay.rematch.deckAutoKeep": "Se mantiene el mazo actual en {time}",
+  "overlay.rematch.pickDeckTitle": "Elige un mazo para el nuevo al mejor de 3",
+  "overlay.rematch.illegalDeck": "Ese mazo no se puede usar en esta sala.",
   "overlay.series.won": "Serie ganada",
   "overlay.series.lost": "Serie perdida",
   "overlay.series.drawn": "Serie empatada",
@@ -2122,4 +2181,7 @@ export const es: Record<keyof typeof en, string> = {
   ...collectionEs,
   ...settingsEs,
   ...arenaEs,
+  ...learnEs,
+  ...learnDrillsEs,
+  ...battleLessonsEs,
 };

@@ -7,9 +7,6 @@
    match is over, the server reveals the whole stack and every slot shows its card. */
 
 import type { FinalRevealCard } from "@aegis/shared";
-import { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
-import { findCardArtForLanguage } from "@aegis/shared/cards/findCardArtForLanguage";
-import { useCardImageLanguage } from "@/screens/cardLanguage/useCardImageLanguage";
 import { useTranslation } from "../../../i18n";
 import { parseActivatable, type ActivatableEntry } from "../../boardModel";
 import { TrashViewerOverlay } from "../../overlay";
@@ -52,7 +49,6 @@ export function PileViewers({
   onCloseRevealedZone: () => void;
 }) {
   const { t } = useTranslation();
-  const cardLanguage = useCardImageLanguage() ?? CardImageLanguage.ENGLISH.value;
   const trashOwner = trashView === Side.Viewer ? viewer : opponent;
   const securityOwner = securityView === Side.Viewer ? viewer : opponent;
   const securitySide = securityView === Side.Viewer ? "viewer" : "opponent";
@@ -76,16 +72,7 @@ export function PileViewers({
           title={trashView === Side.Viewer ? t("game.yourTrash") : t("game.oppTrash", { name: opponentName })}
           cardIds={trashOwner.trash.map((c) => c.cardId)}
           instanceIds={trashOwner.trash.map((c) => c.instanceId)}
-          artIds={trashOwner.trash.map((card) => {
-            if (trashView === Side.Viewer) {
-              return card.artId;
-            }
-            return (
-              findCardArtForLanguage({ cardId: card.cardId, language: cardLanguage })?.artId ??
-              findCardArtForLanguage({ cardId: card.cardId, language: CardImageLanguage.ENGLISH.value })?.artId ??
-              card.cardId
-            );
-          })}
+          artIds={trashOwner.trash.map((c) => c.artId)}
           effects={trashEffects}
           sheet={sheet}
           onActivateEffect={onActivateTrashEffect}

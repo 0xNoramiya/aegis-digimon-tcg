@@ -83,7 +83,7 @@ function DeckPickerView({
   ownDecks,
   format,
   activeDeckId,
-  randomSelected,
+  randomSelected = false,
   randomPoolSize,
   onSelectRandom,
   onSelectDeck,
@@ -98,16 +98,16 @@ function DeckPickerView({
   ownDecks: OwnDeckEntry[];
   format?: import("@aegis/shared").DeckFormat;
   activeDeckId: string;
-  randomSelected: boolean;
-  randomPoolSize: number | undefined;
-  onSelectRandom: () => void;
+  randomSelected?: boolean;
+  randomPoolSize?: number;
+  onSelectRandom?: () => void;
   onSelectDeck: (id: string) => void;
   onCopyDeck: (deck: DeckListing) => void;
   onUseProviderDeck?: (deck: DeckListing) => void;
-  onEditDeck: (deck: DeckListing) => void;
-  onBuildDeck: () => void;
+  onEditDeck?: (deck: DeckListing) => void;
+  onBuildDeck?: () => void;
   onPickCommunityDeck: (id: string) => void;
-  onOpenCommunityDeck: (id: string) => void;
+  onOpenCommunityDeck?: (id: string) => void;
   accountId: string | undefined;
 }) {
   const { t } = useTranslation();
@@ -166,7 +166,8 @@ function DeckPickerView({
     }))
     .filter((group) => !group.decks || group.decks.length > 0);
   const showCommunity = filter === "community";
-  const showOwn = filter !== "famous" && !showCommunity && !collectionChosen;
+  const showOwn =
+    filter !== "famous" && !showCommunity && !collectionChosen && (ownDecks.length > 0 || onBuildDeck !== undefined);
   const showFamous = filter !== "mine" && !showCommunity;
 
   const filters: { key: DeckFilter; label: string; count?: number }[] = [
@@ -182,16 +183,18 @@ function DeckPickerView({
         <SectionHeading id="deck-picker-title" title={t("lobby.pickDeck")} />
         <div className="deck-picker__intro">
           <p>{t("lobby.pickDeckHint")}</p>
-          <Button
-            className="deck-picker__random-action"
-            variant={randomSelected ? "primary" : "secondary"}
-            icon={randomSelected ? Icons.Check : Icons.Dices}
-            disabled={randomPoolSize === 0}
-            aria-pressed={randomSelected}
-            onClick={onSelectRandom}
-          >
-            {t(randomSelected ? "lobby.randomSelected" : "lobby.randomAction")}
-          </Button>
+          {onSelectRandom ? (
+            <Button
+              className="deck-picker__random-action"
+              variant={randomSelected ? "primary" : "secondary"}
+              icon={randomSelected ? Icons.Check : Icons.Dices}
+              disabled={randomPoolSize === 0}
+              aria-pressed={randomSelected}
+              onClick={onSelectRandom}
+            >
+              {t(randomSelected ? "lobby.randomSelected" : "lobby.randomAction")}
+            </Button>
+          ) : null}
         </div>
       </header>
 
@@ -308,15 +311,17 @@ function DeckPickerView({
                     actions={
                       <>
                         <DeckColorDots deck={deck} />
-                        <IconButton
-                          size="sm"
-                          variant="secondary"
-                          label={t("common.edit")}
-                          title={t("common.edit")}
-                          onClick={() => onEditDeck(deck)}
-                        >
-                          <Icons.FileText size={16} />
-                        </IconButton>
+                        {onEditDeck ? (
+                          <IconButton
+                            size="sm"
+                            variant="secondary"
+                            label={t("common.edit")}
+                            title={t("common.edit")}
+                            onClick={() => onEditDeck(deck)}
+                          >
+                            <Icons.FileText size={16} />
+                          </IconButton>
+                        ) : null}
                       </>
                     }
                   />

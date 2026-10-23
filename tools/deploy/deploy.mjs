@@ -109,16 +109,12 @@ export function buildSlotCompose({ slot, revision, apiEnvironment, network, stat
       depends_on: { redis: { condition: "service_healthy" } },
       networks: { default: { aliases: [`aegis-${slot}-api${index}`] } },
       healthcheck: {
-        test: [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:2567/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
-        ],
-        interval: "5s",
+        test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:2567/ready"],
+        interval: "30s",
         timeout: "3s",
-        retries: 12,
-        start_period: "10s",
+        retries: 3,
+        start_period: "60s",
+        start_interval: "2s",
       },
       logging: { driver: "json-file", options: { "max-size": "20m", "max-file": "3" } },
     };

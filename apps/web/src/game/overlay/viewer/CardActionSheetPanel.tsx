@@ -1,3 +1,4 @@
+import { CardAceBadge } from "@/design/CardAceBadge";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { createPortal } from "react-dom";
@@ -67,6 +68,7 @@ export function CardActionSheetPanel({
   const liveInfo = (
     <>
       <strong>{cardId ? getCardName(cardId) : null}</strong>
+      <CardAceBadge cardId={cardId} />
       <div className="card-action-sheet__stats">
         {def?.level ? <span>Lv.{def.level}</span> : null}
         {dp != null ? (
@@ -159,7 +161,14 @@ export function CardActionSheetPanel({
                   {promote.label}
                 </Button>
               ) : null}
-              <Button size="sm" full variant="ghost" onClick={onClose} autoFocus={!canAttack && !canVortex && !promote}>
+              <Button
+                size="sm"
+                full
+                variant="ghost"
+                data-arena-cancel
+                onClick={onClose}
+                autoFocus={!canAttack && !canVortex && !promote}
+              >
                 {t("common.cancel")}
               </Button>
             </div>

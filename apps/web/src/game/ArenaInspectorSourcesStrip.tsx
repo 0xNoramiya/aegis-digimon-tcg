@@ -42,7 +42,7 @@ export function ArenaInspectorSourcesStrip({ cards, onZoom }: Params) {
             {card.cardId ? (
               <CardFull cardId={card.cardId} artId={card.artId} width={34} zoomOnHover={false} />
             ) : (
-              <CardBack width={34} />
+              <CardBack width={34} useSelectedSleeve={false} />
             )}
           </button>
         ))}

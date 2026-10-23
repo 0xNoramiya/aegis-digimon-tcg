@@ -11,6 +11,7 @@ import { registerEngineSchemaFactories } from "#api/engine/snapshot/schema/regis
 import { registerResolutionEnvironmentFactory } from "#api/engine/snapshot/context/registerResolutionEnvironmentFactory";
 import { registerResolutionDependencyFactory } from "#api/engine/snapshot/context/registerResolutionDependencyFactory";
 import { registerRuntimeEffectFactory } from "#api/engine/snapshot/context/registerRuntimeEffectFactory";
+import { registerTimingLockedEffectFactory } from "#api/engine/snapshot/context/registerTimingLockedEffectFactory";
 import { sourceRuntimeObjectRegistries } from "#api/engine/snapshot/context/sourceRuntimeObjectRegistries";
 import { TimingWindowState } from "#api/engine/effects/resolution/TimingWindowState";
 import { EffectTiming } from "@aegis/shared/schema/enums";
@@ -56,6 +57,7 @@ export function createEngineRuntimeObjects({ engine }: Params): RuntimeObjectReg
     hydrate: ({ value, payload }) => (value as MatchedTriggerHistory).restore(payload),
   });
   registerRuntimeEffectFactory({ objects: registry });
+  registerTimingLockedEffectFactory({ engine, objects: registry });
   registerResolutionDependencyFactory({ engine, objects: registry });
   registerResolutionEnvironmentFactory({ engine, objects: registry });
   registry.registerFactory({

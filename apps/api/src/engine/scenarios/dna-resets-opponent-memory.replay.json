@@ -1475,8 +1475,8 @@
         "vortex": false,
         "attackerPermanentId": "perm-3"
       },
-      "engineEvents": 284,
-      "stateVersion": 208
+      "engineEvents": 282,
+      "stateVersion": 206
     },
     {
       "ok": true,
@@ -1486,8 +1486,8 @@
         "type": "respondAlliance",
         "allyPermanentId": "perm-14"
       },
-      "engineEvents": 287,
-      "stateVersion": 210
+      "engineEvents": 285,
+      "stateVersion": 208
     },
     {
       "ok": true,
@@ -1497,8 +1497,8 @@
         "type": "playCard",
         "instanceId": "s1-28"
       },
-      "engineEvents": 300,
-      "stateVersion": 221
+      "engineEvents": 298,
+      "stateVersion": 219
     },
     {
       "ok": true,
@@ -1512,8 +1512,8 @@
         },
         "decisionId": "dec-41"
       },
-      "engineEvents": 304,
-      "stateVersion": 222
+      "engineEvents": 302,
+      "stateVersion": 220
     },
     {
       "ok": true,
@@ -1527,8 +1527,8 @@
         },
         "decisionId": "dec-42"
       },
-      "engineEvents": 305,
-      "stateVersion": 223
+      "engineEvents": 303,
+      "stateVersion": 221
     },
     {
       "ok": true,
@@ -1542,8 +1542,8 @@
         },
         "decisionId": "dec-43"
       },
-      "engineEvents": 309,
-      "stateVersion": 226
+      "engineEvents": 307,
+      "stateVersion": 224
     }
   ],
   "matchId": "921dc75d-19b6-403c-b146-0d4ff6c983e9",

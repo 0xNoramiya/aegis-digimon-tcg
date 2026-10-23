@@ -1336,3 +1336,26 @@ it.each([false, true, undefined])(
     expect(h.replacementFiredKeys.has("optional-leave-reaction")).toBe(result !== false);
   },
 );
+
+it("does not restore a reset prevention use when activation acceptance is reported again", async () => {
+  const h = harness();
+  const source = putPermanent(h.state, 0, "replacement-source");
+  const key = "replacement-source/prevention";
+  h.subTriggers.subscribeReplacement({
+    event: "wouldLeavePlay",
+    sourcePermanentId: source.permanentId,
+    mode: "prevent",
+    description: "acceptance before source reset",
+    oncePerTurnKey: key,
+    protects: () => true,
+    preventCheck: async (ctx) => {
+      ctx.onActivationChosen?.();
+      expect(h.replacementFiredKeys.has(key)).toBe(true);
+      h.replacementFiredKeys.clear();
+      ctx.onActivationChosen?.();
+      return true;
+    },
+  });
+  expect(await h.consult([source.permanentId])).toEqual(new Set([source.permanentId]));
+  expect(h.replacementFiredKeys.has(key)).toBe(false);
+});

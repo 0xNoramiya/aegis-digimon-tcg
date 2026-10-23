@@ -1,3 +1,4 @@
+import { CardAceBadge } from "@/design/CardAceBadge";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
@@ -78,6 +79,7 @@ export function PermanentDetailInspector({
       <header>
         <div>
           <strong>{getTranslatedCardName({ name: detail.name, translations })}</strong>
+          <CardAceBadge cardId={detail.cardId} />
           {/* The live figure is what the position actually has; the printed one sits
               beside it only when something has moved it. */}
           <span>

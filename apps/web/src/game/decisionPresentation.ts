@@ -20,7 +20,8 @@ export function isFieldCardSelection(
   if (
     options?.assemblyCardId !== undefined ||
     options?.digiXrosCardId !== undefined ||
-    options?.selectionContext === "partitionActivation"
+    options?.selectionContext === "partitionActivation" ||
+    options?.selectionContext === "materialSaveActivation"
   )
     return false;
   const candidates = options?.candidateInstanceIds ?? [];
@@ -69,6 +70,7 @@ export function decisionPresentation({
     if (
       !material &&
       options?.selectionContext !== "partitionActivation" &&
+      options?.selectionContext !== "materialSaveActivation" &&
       options?.selectionContext !== "attackTarget" &&
       candidates.length > 0 &&
       candidates.every((id) => hand.has(id)) &&
@@ -87,7 +89,8 @@ export function isEffectActivationDecision(decision: DecisionRequest): boolean {
   return (
     decision.kind === "optional" ||
     decision.kind === "chooseOption" ||
-    decision.options?.selectionContext === "partitionActivation"
+    decision.options?.selectionContext === "partitionActivation" ||
+    decision.options?.selectionContext === "materialSaveActivation"
   );
 }
 

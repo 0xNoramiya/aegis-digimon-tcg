@@ -110,6 +110,7 @@ export async function fireEnteredByEffectTiming(
   instanceId: string,
   ownerSeat: Seat,
   opts?: {
+    byEffect?: boolean;
     isDnaDigivolve?: boolean;
     digivolvedFromZone?: ZoneRef;
     baseWasDigimon?: boolean;
@@ -124,7 +125,11 @@ export async function fireEnteredByEffectTiming(
 ): Promise<void> {
   const attackerPermanentId = engine.combat?.currentAttackerId;
   const subjectPermanent = findInstance(engine, instanceId)?.permanent;
-  if (subjectPermanent !== undefined) subjectPermanent.enteredByEffect = true;
+  const byEffect = opts?.byEffect !== false;
+  const effectEntryTrigger = byEffect ? { enteredByEffect: ownerSeat } : {};
+  if (subjectPermanent !== undefined) {
+    subjectPermanent.enteredByEffect = byEffect;
+  }
   if (timing === EffectTiming.OnPlay) materializePlayerCustomEffects(engine, subjectPermanent);
   // Effect-driven digivolutions are genuine digivolutions for "digivolved engine turn"
   // conditions (BT1-007 Q871). As with the manual action seam, breeding-area evolutions
@@ -138,7 +143,7 @@ export async function fireEnteredByEffectTiming(
       timing,
       instanceId,
       {
-        enteredByEffect: ownerSeat,
+        ...effectEntryTrigger,
         ...(attackerPermanentId !== undefined ? { attackerPermanentId } : {}),
         ...(opts?.playedFromZone !== undefined ? { playedFromZone: opts.playedFromZone } : {}),
         ...(opts?.digiXrosMaterialCount !== undefined ? { digiXrosMaterialCount: opts.digiXrosMaterialCount } : {}),
@@ -152,7 +157,7 @@ export async function fireEnteredByEffectTiming(
     return;
   }
   const scopedTrigger: TriggerInfo = {
-    enteredByEffect: ownerSeat,
+    ...effectEntryTrigger,
     ...(attackerPermanentId !== undefined ? { attackerPermanentId } : {}),
     ...(opts?.isDnaDigivolve === true ? { isDnaDigivolve: true } : {}),
     ...(opts?.digivolvedFromZone !== undefined ? { digivolvedFromZone: opts.digivolvedFromZone } : {}),
@@ -170,7 +175,7 @@ export async function fireEnteredByEffectTiming(
   const enterFieldTrigger = {
     subjectPermanentId,
     entryCause: "digivolve" as const,
-    enteredByEffect: ownerSeat,
+    ...effectEntryTrigger,
     ...(opts?.isDnaDigivolve === true ? { isDnaDigivolve: true } : {}),
   };
   // Q6671/Q6708: a Tamer base digivolves as a Tamer, so the payload is tagged and the
@@ -185,7 +190,7 @@ export async function fireEnteredByEffectTiming(
     subjectPermanentId,
     digivolvedInstanceId: instanceId,
     ...(subjectPermanent === undefined ? {} : { digivolvedSubject: subjectPermanent.clone() }),
-    enteredByEffect: ownerSeat,
+    ...effectEntryTrigger,
     ...(opts?.previousDigivolutionLevel === undefined
       ? {}
       : { previousDigivolutionLevel: opts.previousDigivolutionLevel }),
@@ -215,9 +220,11 @@ export async function fireEnteredByEffectTiming(
 export function materializePlayerCustomEffects(engine: GameEngine, permanent: Permanent | undefined): void {
   const top = permanent?.topCard;
   if (permanent === undefined || top === undefined) return;
-  for (const grant of engine.continuous.playerCustomEffectsFor(permanent.permanentId, permanent.controllerSeat)) {
+  const permanentId = permanent.permanentId;
+  for (const grant of engine.continuous.playerCustomEffectsOf(permanent.controllerSeat)) {
     engine.continuous.addCustomEffectGrant(top.instanceId, top.ownerSeat, grant.token, grant.duration, {
       activationIdentity: grant.activationIdentity,
+      isActive: () => grant.matches(permanentId),
     });
   }
 }

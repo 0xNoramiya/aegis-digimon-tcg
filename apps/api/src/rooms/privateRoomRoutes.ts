@@ -1,3 +1,4 @@
+import { ROOM_TYPE_MANUAL_PRIVATE } from "@aegis/shared/protocol/messages";
 import type { Express } from "express";
 import { ErrorCode, ServerError, matchMaker } from "colyseus";
 import { ROOM_TYPE_PRIVATE } from "@aegis/shared";
@@ -30,7 +31,11 @@ export function installPrivateRoomRoutes(app: Express): void {
       return;
     }
     // A failed player join must not revoke a running match's spectator code.
-    if (listing.name !== ROOM_TYPE_PRIVATE || listing.clients >= 2 || listing.locked) {
+    if (
+      (listing.name !== ROOM_TYPE_PRIVATE && listing.name !== ROOM_TYPE_MANUAL_PRIVATE) ||
+      listing.clients >= 2 ||
+      listing.locked
+    ) {
       res.status(404).json({ error: "room not available" });
       return;
     }

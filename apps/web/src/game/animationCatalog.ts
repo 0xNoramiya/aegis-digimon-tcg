@@ -254,6 +254,7 @@ type EventPresentation = { families: readonly AnimationFamily[]; changesBoard: b
 
 /** Every engine event has an explicit presentation; administrative closes stay silent. */
 export const EVENT_ANIMATIONS = {
+  manualAction: { families: [], changesBoard: true },
   matchStarted: { families: ["opening"], changesBoard: true },
   phaseChanged: { families: ["phase", "restriction"], changesBoard: true },
   cardPlayed: { families: ["play", "effect"], changesBoard: true },

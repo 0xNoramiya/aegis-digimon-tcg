@@ -4,6 +4,7 @@ import { trackResolutionDependencies } from "#api/engine/effects/resolution/trac
 import type { ResolutionDependencySnapshot } from "#api/engine/effects/resolution/ResolutionDependencySnapshot";
 import {
   conditionalDigiXrosTrashAllowed,
+  hasOtherDigiXrosPlayCosts,
   pendingDigiXrosSelfReduction,
   preparedDigiXrosMaterials,
 } from "./timing/payCost.js";
@@ -108,10 +109,12 @@ export function resolutionDeps(
     outermost: opts.outermost,
     extraPending: opts.extraPending,
     excludeNestedPending: opts.excludeNestedPending,
+    excludedWindowWatchers: new Set(engine.pendingWindowSubTriggers),
     derivedPending: opts.reactionPending ?? [],
     announced: new Set(),
   };
   const excludeNestedPending = runtimeState.excludeNestedPending;
+  const excludedWindowWatchers = runtimeState.excludedWindowWatchers;
   const derivedPending = runtimeState.derivedPending;
   // A single OPT watcher can be published through both the event bus and deletion pool.
   // Preserve distinct non-OPT occurrences; only duplicate OPT identities are collapsed.
@@ -162,6 +165,9 @@ export function resolutionDeps(
                       (pending) =>
                         !excludeNestedPending.has(pending) && nestedTriggerSourceStillResident(engine, pending),
                     )),
+              ...(excludeNestedPending !== undefined && engine.optionResolutionDepth === 0
+                ? pendingWindowWatchersCollected(engine, excludedWindowWatchers)
+                : []),
               ...(engine.optionResolutionDepth > 0 ? [] : parkedEntryCollected(engine)),
               ...(runtimeState.extraPending ?? []),
               ...derivedPending,
@@ -872,6 +878,8 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
       preparedDigiXrosMaterials(engine, instance.instanceId).reservedInstanceIds,
     conditionalTrashAllowed: (instance) => conditionalDigiXrosTrashAllowed(engine, instance),
     pendingSelfReduction: (instance) => pendingDigiXrosSelfReduction(engine, instance),
+    hasBeforePayCost: (instance) => hasOtherDigiXrosPlayCosts(engine, instance),
+    minimumDeferredPlayCost: (instance, baseCost) => minimumDeferredPlayCost(engine, instance, baseCost),
     ruleTrashMaterialCandidates: (playedInstance) => wouldBePlayedRuleTrashMaterials(engine, playedInstance),
     digiXrosExpandedZones: (seat, playedInstanceId) =>
       engine.primitives.digiXrosExpandedZones?.(seat, playedInstanceId) ?? [],

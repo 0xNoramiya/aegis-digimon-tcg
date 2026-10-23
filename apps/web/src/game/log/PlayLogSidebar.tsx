@@ -38,7 +38,7 @@ export function PlayLogSidebar({ turns, viewerSeat, playerNames, onClose, onOpen
           <span>{t("game.matchLog")}</span>
           <h2 id="aegis-play-log-title">{t("feed.logTitle")}</h2>
         </div>
-        <Button size="sm" variant="ghost" aria-label={t("feed.closeLog")} onClick={onClose}>
+        <Button size="sm" variant="ghost" aria-label={t("feed.closeLog")} data-arena-cancel onClick={onClose}>
           {t("common.close")}
         </Button>
       </header>

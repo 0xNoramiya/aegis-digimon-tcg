@@ -15,6 +15,7 @@ import { quotedGrantedClause, soleLinkingClause, triggerLabel } from "../describ
 
 import { resolvePermanentTargets } from "../targeting/permanents.js";
 
+import { Phase } from "@aegis/shared";
 import type { Action } from "@aegis/shared";
 
 import { subscribeLaterEntrants } from "./laterEntrants.js";
@@ -255,12 +256,18 @@ export async function runGainTriggeredEffect(
     if (action.duration === "untilOpponentTurnEnd") {
       expiresOnTurnEndOf = ctx.game.opponentOf(ctx.source.ownerSeat);
     }
+    const grantedAfterOwnersMainPhaseStarted =
+      ctx.game.state.turnSeat === grantedPerm.controllerSeat && ctx.game.state.phase === Phase.Main;
+    const grantedTurnCount = ctx.game.state.turnCount;
     // `startOfYourMainPhase` requires the watcher to fire only during the GRANTED permanent's
     // owner's main phase; the ownerMainPhaseGate in runSubTrigger handles this via isOwnersTurn()
     // on the watcher's context, which is anchored on the GRANTED permanent. Gate is always added
     const ownerMainPhaseGate =
       event === "startOfYourMainPhase"
-        ? (subCtx: EffectContext): boolean => subCtx.source.isOwnersTurn() && subCtx.source.isOnBattleArea()
+        ? (subCtx: EffectContext): boolean =>
+            !(grantedAfterOwnersMainPhaseStarted && subCtx.game.state.turnCount === grantedTurnCount) &&
+            subCtx.source.isOwnersTurn() &&
+            subCtx.source.isOnBattleArea()
         : undefined;
     const ownerTurnEndGate =
       event === "endOfTurn"

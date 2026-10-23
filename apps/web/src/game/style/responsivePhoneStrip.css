@@ -544,15 +544,12 @@
     aspect-ratio: 5 / 7;
     filter: drop-shadow(0 20px 40px rgb(0 0 0 / 55%));
   }
-  .card-zoom > button {
+  .card-zoom[data-printed-text="hidden"] > div:first-child {
+    width: min(92vw, 30rem) !important;
+  }
+  .card-zoom__actions > button {
     min-height: 44px;
     padding: var(--ds-space-2) var(--ds-space-6);
-    color: var(--ds-on-ink);
-    font-size: var(--ds-text-sm);
-    font-weight: 700;
-    border: 1px solid color-mix(in srgb, var(--ds-on-ink) 40%, transparent);
-    border-radius: var(--ds-radius-md);
-    background: color-mix(in srgb, var(--ds-on-ink) 10%, transparent);
   }
   .card-action-sheet__actions {
     display: grid;

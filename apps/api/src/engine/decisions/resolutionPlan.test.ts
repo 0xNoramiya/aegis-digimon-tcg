@@ -124,6 +124,16 @@ describe("ResolutionPlan", () => {
     expect(plan.nextOf(["a", "c"])).toBeUndefined();
   });
 
+  it("keeps answering from an ordered prefix until it runs out or a new key appears", () => {
+    const plan = new ResolutionPlan();
+    plan.adopt(["c", "b"], {}, ["a", "b", "c", "d"]);
+
+    expect(plan.nextOf(["a", "b", "c", "d"])).toBe("c");
+    expect(plan.nextOf(["a", "b", "d"])).toBe("b");
+    expect(plan.nextOf(["a", "d"])).toBeUndefined();
+    expect(plan.nextOf(["a", "b", "e"])).toBeUndefined();
+  });
+
   it("moves a newer answer to the front and keeps the earlier plan for the rest", () => {
     const plan = new ResolutionPlan();
     plan.adopt(["a", "b"], { a: true });
@@ -231,6 +241,23 @@ describe("resolution plan through the stack resolver", () => {
       [key("first"), key("third")],
     ]);
     expect(resolved).toEqual(["second", "third", "first"]);
+  });
+
+  it("resolves a partially ordered window in that order before asking about the rest", async () => {
+    const effects = [pending("first"), pending("second"), pending("third"), pending("fourth")];
+    const { manager, requests } = scriptedSeat((request) => ({
+      kind: "orderTriggers",
+      order: requests.length === 1 ? [key("third"), key("second")] : [...(request.options?.triggerKeys ?? [])],
+    }));
+    const { env, resolved } = envFor(manager, () => effects);
+
+    await resolveTiming(EffectTiming.OnDeletion, env);
+
+    expect(requests.map((request) => request.options?.triggerKeys)).toEqual([
+      [key("first"), key("second"), key("third"), key("fourth")],
+      [key("first"), key("fourth")],
+    ]);
+    expect(resolved).toEqual(["third", "second", "first", "fourth"]);
   });
 
   it("asks yes/no questions for effects the controller left on Ask", async () => {
