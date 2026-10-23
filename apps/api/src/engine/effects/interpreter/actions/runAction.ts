@@ -53,6 +53,8 @@ import { runStaticAction } from "./statics.js";
 import { CardKind, digiXrosRequirementFor } from "@aegis/shared";
 import type { Action, Cost, Target, ZoneRef } from "@aegis/shared";
 import { canDetachPermanentTop, isDetachTopAction } from "../targeting/detachTop.js";
+import { printedPassage } from "#api/engine/decisions/printedPassage";
+import type { DecisionApi } from "#api/engine/effects/context/decisions";
 
 function clearDeleteOutcome(ctx: EffectContext, action: Extract<Action, { kind: "Delete" }>): void {
   ctx.lastDeleteCount = 0;
@@ -1147,7 +1149,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
         predecided === undefined && action.kind === "Modal" ? declinableModalChoices(ctx, action) : undefined;
       let yes: boolean;
       if (modalChoices === undefined) {
-        yes = predecided ?? (await chooser.optional(ctx, describeAction(action)));
+        yes = predecided ?? (await askOptionalWithPrintedCost({ ctx, chooser, action, cost: payableActionCost }));
       } else {
         // An optional modal with a real choice asks it once: the options plus a decline entry.
         const declineIndex = modalChoices.labels.length;
@@ -1627,6 +1629,62 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       unsupported(ctx, action as Action, `unknown action kind "${String((action as { kind?: unknown }).kind)}"`);
       return false;
     }
+  }
+}
+
+function isTrashCostPaidWithoutSelection(ctx: EffectContext, cost: Cost): boolean {
+  const target = cost.target;
+  if (
+    cost.kind !== "trash" ||
+    target === undefined ||
+    typeof target.count !== "number" ||
+    target.upTo === true ||
+    target.forceSelection === true ||
+    target.filter.differentColors === true ||
+    target.totalPlayCostBudget !== undefined
+  ) {
+    return false;
+  }
+  const zones = zoneList((target.from ?? target.filter.zone) as ZoneRef | ZoneRef[] | undefined);
+  if (zones.length === 0) {
+    return false;
+  }
+  return candidateLooseInstances(ctx, target, zones).length === target.count;
+}
+
+type AskOptionalWithPrintedCostParams = {
+  ctx: EffectContext;
+  chooser: DecisionApi;
+  action: Action;
+  cost: Cost | number | undefined;
+};
+
+async function askOptionalWithPrintedCost({
+  ctx,
+  chooser,
+  action,
+  cost,
+}: AskOptionalWithPrintedCostParams): Promise<boolean> {
+  const outerEffectTextPart = ctx.activeEffectTextPart;
+  const outerEffectTextEmphasis = ctx.activeEffectTextEmphasis;
+  const printedCost =
+    action.kind !== "RawUnparsed" &&
+    action.effectTextPart === undefined &&
+    typeof cost === "object" &&
+    cost.raw !== undefined &&
+    ctx.activeEffectText !== undefined &&
+    isTrashCostPaidWithoutSelection(ctx, cost)
+      ? printedPassage(ctx.activeEffectText, cost.raw)
+      : undefined;
+  if (printedCost !== undefined) {
+    ctx.activeEffectTextPart = ctx.activeEffectText;
+    ctx.activeEffectTextEmphasis = printedCost;
+  }
+  try {
+    return await chooser.optional(ctx, describeAction(action));
+  } finally {
+    ctx.activeEffectTextPart = outerEffectTextPart;
+    ctx.activeEffectTextEmphasis = outerEffectTextEmphasis;
   }
 }
 
