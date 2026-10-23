@@ -20,10 +20,20 @@ acknowledges the bot already seated and does not replace its policy or deck.
 | Expert     | Live paired root search with the Standard evaluator as root prior and fallback | 3 simulations, 3 candidates, up to 900 ms    | Style weights in root scoring and leaf evaluation |
 | Master     | Live paired root search with the Standard evaluator as root prior and fallback | 20 simulations, 8 candidates, up to 1,450 ms | Style weights in root scoring and leaf evaluation |
 
-The [holdout evaluation](#holdout-evaluation) shows Master above 0.65 against
-legacy-balanced in every style, but most adjacent levels are closer than the 60–70%
-target: Master is not clearly stronger than Expert, and Standard is not clearly
-stronger than Casual. Expert and Master use a worker-thread search from
+Some styles override these values at one level (`styleOverrides`):
+
+| Level    | Aggressive                                        | Defensive                                     |
+| -------- | ------------------------------------------------- | --------------------------------------------- |
+| Beginner | Level defaults                                    | Memory handover and cross-zero costs restored |
+| Casual   | Level defaults                                    | Temperature 0.9 instead of 1.25               |
+| Standard | Removal and loss restored, security attack at 0.8 | Level defaults                                |
+| Expert   | Security attack at 0.8                            | Removal and loss at 0.75                      |
+| Master   | Security attack at 0.8                            | Removal and loss at 0.75                      |
+
+The [round 3 confirmation](#round-3-calibration) has Master Balanced at 0.73
+(0.69–0.78) against legacy-balanced. Aggressive meets the 60–70% step at every level.
+Balanced misses Casual > Beginner (0.55) and Expert > Standard (0.59). Defensive
+misses Expert > Standard (0.56) and Master > Expert (0.59). Expert and Master use a worker-thread search from
 a settled Main snapshot. Search covers eligible Main actions; the selected action is validated
 by the ordinary engine. Expert and Master also search their own block and Counter
 windows (see [Snapshot coverage and combat search](#snapshot-coverage-and-combat-search)). A timeout, worker
@@ -606,6 +616,178 @@ What the holdout check shows:
 The earlier 32-block holdout run (offset 0) measured the configuration before round 2
 and is superseded. It had Master Balanced at 0.75 (0.67–0.83) against legacy, and
 only Casual > Beginner and Expert > Standard Balanced inside 0.60–0.70.
+
+### Round 3 calibration
+
+Round 3 re-checked the ladder after develop's card and rule fixes were merged, tried
+to widen Standard → Expert → Master, and tuned the styles with `styleOverrides`. The
+Balanced levels, the style weights, the style temperature scales, the leaf
+evaluation, the simulation counts and the candidate limits are unchanged. The 1,450 ms
+decision deadline and the 1,950 ms policy ceiling are unchanged.
+
+All rows use the development pool (training usage) and the simulation-bound method of
+[round 2](#round-2-calibration). Rates are points rates with 95% block-mean intervals.
+The re-check used blocks 10000 to 10063, the screens 11000 to 11063 (32 blocks per
+variant), and the confirmation 64 fresh blocks, 12000 to 12063. The confirmation ran
+on a fresh build of the final source, which also contains the later search restore,
+Assembly and Option rule fixes. All 6,912 confirmation games were valid, with no
+search fallbacks.
+
+**Post-merge re-check.** The Balanced configuration from round 2, rebuilt on the merge
+commit:
+
+| Row                | Round 2          | After the merge  | Change |
+| ------------------ | ---------------- | ---------------- | ------ |
+| Beginner vs legacy | 0.29 (0.23–0.34) | 0.24 (0.19–0.29) | −0.05  |
+| Casual vs legacy   | 0.36 (0.31–0.42) | 0.37 (0.32–0.42) | +0.00  |
+| Standard vs legacy | 0.50 (0.43–0.57) | 0.47 (0.41–0.52) | −0.04  |
+| Expert vs legacy   | 0.59 (0.53–0.65) | 0.60 (0.54–0.66) | +0.01  |
+| Master vs legacy   | 0.66 (0.60–0.73) | 0.69 (0.63–0.74) | +0.02  |
+| Casual > Beginner  | 0.61 (0.56–0.67) | 0.63 (0.57–0.69) | +0.02  |
+| Standard > Casual  | 0.61 (0.55–0.67) | 0.66 (0.60–0.71) | +0.05  |
+| Expert > Standard  | 0.60 (0.54–0.66) | 0.60 (0.54–0.66) | −0.00  |
+| Master > Expert    | 0.63 (0.58–0.69) | 0.58 (0.52–0.64) | −0.05  |
+
+No row moved by more than its interval. Master > Expert (−0.051 against a half-width
+of 0.06) and Beginner (−0.047 against 0.05) came closest.
+
+**Standard → Expert → Master.** No lever widened both steps, so Balanced is
+unchanged:
+
+- **Simulations.** `searchSimulations` is a total rollout budget that sequential
+  halving splits over the candidates. Expert's 3 and 3 is one rollout for each of
+  three candidates. Expert at 2 and 3, or 3 and 2, is one rollout for each of two
+  candidates; both played identical games. They moved Expert > Standard by +0.01 and
+  Master > Expert by −0.03. Master already reaches the decision deadline in
+  production (12 deadline fallbacks in 166 decisions), so it cannot get more
+  simulations.
+- **A weaker Standard.** Removal and loss at 0.65 lowered Standard > Casual from 0.61
+  to 0.52 and did not raise Expert > Standard (0.59). Adding memory handover at 0.75
+  made Standard stronger (Expert > Standard 0.55).
+- **A Master-only leaf.** A leaf with a lethal term and an exposed-security term
+  changed Master Balanced by +0.02 (−0.01 to +0.05) against legacy and by −0.01
+  (−0.05 to +0.03) against Expert over 64 paired blocks.
+- **Candidate limit.** Not screened again; roots average 5.6 actions.
+
+**Style overrides.** Seven style and level pairs changed (see
+[Current policies](#current-policies)). Screen findings:
+
+- Beginner Defensive with its memory handover and cross-zero costs restored, and
+  Casual Defensive at temperature 0.9, raised Defensive Casual > Beginner from 0.52 to
+  0.66 on the same blocks.
+- Standard Aggressive did not respond to removal, loss, security risk or blocker risk
+  scales (within 2 points). Security attack at 0.8, with removal and loss restored,
+  raised it by 8 points but lowered Expert > Standard Aggressive from 0.63 to 0.55.
+  Security attack at 0.8 for Expert Aggressive too restored that step (0.63).
+  Master Aggressive got the same scale to keep Master > Expert Aggressive; it was not
+  screened on its own.
+- Removal and loss at 0.75 raised Expert Defensive by 3 points against legacy and
+  against Standard. Six simulations, `searchStyle: balanced`, and a broader weight
+  set did not help (see also the round 2 screens). The same scales moved Master
+  Defensive by +0.02 against legacy and −0.01 against Expert.
+- Beginner Aggressive: an absolute temperature of 10 or 7 did not raise it. A
+  temperature of 4 or 5 made it stronger, but only together with a lower Casual
+  Aggressive temperature, which pushed Standard > Casual Aggressive below 0.53. It is
+  unchanged.
+
+Adjacent levels, same style on both sides (target 0.60–0.70):
+
+| Step              | Aggressive       | Balanced         | Defensive        |
+| ----------------- | ---------------- | ---------------- | ---------------- |
+| Casual > Beginner | 0.66 (0.61–0.72) | 0.55 (0.50–0.61) | 0.62 (0.56–0.68) |
+| Standard > Casual | 0.69 (0.64–0.74) | 0.63 (0.57–0.69) | 0.66 (0.60–0.72) |
+| Expert > Standard | 0.66 (0.60–0.71) | 0.59 (0.53–0.65) | 0.56 (0.51–0.61) |
+| Master > Expert   | 0.61 (0.55–0.67) | 0.63 (0.57–0.69) | 0.59 (0.54–0.64) |
+
+Against legacy-balanced:
+
+| Level    | Aggressive       | Balanced         | Defensive        |
+| -------- | ---------------- | ---------------- | ---------------- |
+| Beginner | 0.23 (0.18–0.28) | 0.24 (0.19–0.29) | 0.24 (0.19–0.28) |
+| Casual   | 0.40 (0.34–0.47) | 0.35 (0.29–0.41) | 0.41 (0.34–0.47) |
+| Standard | 0.58 (0.53–0.64) | 0.53 (0.46–0.59) | 0.50 (0.44–0.55) |
+| Expert   | 0.65 (0.59–0.71) | 0.59 (0.54–0.65) | 0.53 (0.47–0.58) |
+| Master   | 0.76 (0.71–0.81) | 0.73 (0.69–0.78) | 0.67 (0.62–0.72) |
+
+Style cost, the paired block difference between the style and Balanced, both against
+legacy (target −5 points or better):
+
+| Level    | Aggressive           | Defensive            |
+| -------- | -------------------- | -------------------- |
+| Beginner | −1.6 (−6.7 to +3.5)  | −0.4 (−6.1 to +5.3)  |
+| Casual   | +5.5 (−0.4 to +11.3) | +5.9 (−1.9 to +13.6) |
+| Standard | +5.5 (−1.4 to +12.3) | −3.1 (−10.3 to +4.1) |
+| Expert   | +5.9 (−0.1 to +11.8) | −6.6 (−12.1 to −1.2) |
+| Master   | +2.3 (−3.7 to +8.4)  | −6.2 (−12.9 to +0.4) |
+
+Security attacks per turn (Aggressive, Balanced, Defensive): Beginner 0.36, 0.35,
+0.31; Casual 0.50, 0.43, 0.39; Standard 0.59, 0.51, 0.46; Expert 0.61, 0.53, 0.47;
+Master 0.64, 0.56, 0.52.
+
+**Holdout sanity check.** The changed rows, and the Balanced rows they are compared
+with, ran on the holdout decks (`tools/bot-evolution/holdout-pool.json`) with the same
+simulation-bound build. They used 32 unused seed blocks, 6000 to 6031, outside the
+reserved 0–4095 range. All 2,432 games were valid. Each row has an interval of about
+±8 points, so this is a sanity check, not a confirmation.
+
+| Row                          | Holdout          | Development |
+| ---------------------------- | ---------------- | ----------- |
+| Casual > Beginner Defensive  | 0.68 (0.59–0.77) | 0.62        |
+| Standard > Casual Aggressive | 0.59 (0.50–0.67) | 0.69        |
+| Standard > Casual Defensive  | 0.59 (0.49–0.69) | 0.66        |
+| Expert > Standard Aggressive | 0.70 (0.62–0.77) | 0.66        |
+| Expert > Standard Defensive  | 0.72 (0.64–0.80) | 0.56        |
+| Master > Expert Aggressive   | 0.70 (0.63–0.76) | 0.61        |
+| Master > Expert Defensive    | 0.63 (0.54–0.72) | 0.59        |
+| Master Balanced vs legacy    | 0.84 (0.79–0.90) | 0.73        |
+
+Holdout style cost (points): Beginner Defensive −9.4, Casual Defensive +2.3, Standard
+Aggressive −2.3, Expert Aggressive −8.6, Expert Defensive −9.4, Master Aggressive
+−1.6, Master Defensive −5.5. Expert Balanced scored 0.81 against legacy on these
+blocks, against 0.59 on the development pool, which makes every Expert style cost
+look larger.
+
+The holdout styled Expert and Master rows had 105 `error` fallbacks in 17,421
+searches (0.6%); the Balanced rows had none, and the development confirmation had
+none. The cause is an Assembly material selection (EX13-045, EX13-005) inside a
+rollout: the rollout window offers only "Decline Assembly", but the Standard rollout
+teacher with the scaled weights wants to assemble, so the continuation throws
+"Standard rollout policy selected an action outside the legal rollout window". Expert
+searches one sample per candidate, so one invalid baseline rollout makes the whole
+search fall back to the Standard answer. The same game without the overrides had no
+error. The fallback is safe, but it brings back `error` fallbacks on Assembly decks
+until the rollout Assembly window lists the material choices.
+
+Results against the targets:
+
+| Target                                         | Result | Margin                                            |
+| ---------------------------------------------- | ------ | ------------------------------------------------- |
+| Master Balanced ≥ 0.65, lower bound > 0.60     | Met    | 0.73, lower bound 0.69                            |
+| Aggressive steps 0.60–0.70                     | Met    | Lowest 0.61 (Master > Expert)                     |
+| Balanced Casual > Beginner                     | Missed | 0.55, 5 points short                              |
+| Balanced Standard > Casual, Master > Expert    | Met    | 0.63 and 0.63                                     |
+| Balanced Expert > Standard                     | Missed | 0.59, 1 point short                               |
+| Defensive Casual > Beginner, Standard > Casual | Met    | 0.62 and 0.66                                     |
+| Defensive Expert > Standard                    | Missed | 0.56, 4 points short                              |
+| Defensive Master > Expert                      | Missed | 0.59, 1 point short                               |
+| Style cost ≥ −5 points                         | Missed | Expert Defensive −6.6, Master Defensive −6.2      |
+| Style cost, the other eight                    | Met    | Lowest −3.1 (Standard Defensive)                  |
+| Security attacks ordered at every level        | Met    | Smallest gap 0.01 (Beginner Aggressive, Balanced) |
+
+What this means:
+
+- **Balanced did not change**, so its two misses are measurement spread, not a
+  regression. Balanced Casual > Beginner was 0.61 in round 2 and 0.63 at the
+  re-check; Expert > Standard was 0.60 and 0.60. Treat both as at the 0.60 edge.
+- **Beginner Aggressive and Beginner Defensive** now cost less than 2 points. For
+  Aggressive this comes from Balanced Beginner being weaker after the merge (0.24),
+  not from an override.
+- **Defensive at the top is still compressed.** Expert Defensive cost improved from
+  −15.2 to −6.6 points. Master Defensive did not change (−5.9 to −6.2). Raising
+  Expert Defensive against Standard and against legacy also lowers Master > Expert
+  Defensive. The available overrides cannot widen both steps.
+- **Production latency** is unchanged in principle: no simulation count, candidate
+  limit or budget changed. Weight scales change move choice, not search cost.
 
 ## Seating and experiments
 
