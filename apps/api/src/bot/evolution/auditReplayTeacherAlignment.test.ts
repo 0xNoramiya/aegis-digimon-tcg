@@ -90,7 +90,7 @@ describe("teacher alignment", () => {
   it("accepts identical hand Tamer copies but rejects ties between different cards", () => {
     const entry = buildCase();
     const features = { ...entry.result.context.actions[1]!.features, hatch: 0, playTamer: 1, sourceInHand: 1 };
-    const actions = [
+    const actions: { index: number; features: typeof features; card?: { cardId: string } }[] = [
       entry.result.context.actions[0]!,
       { index: 1, features, card: { cardId: "BT1-085" } },
       { index: 2, features, card: { cardId: "BT1-085" } },
