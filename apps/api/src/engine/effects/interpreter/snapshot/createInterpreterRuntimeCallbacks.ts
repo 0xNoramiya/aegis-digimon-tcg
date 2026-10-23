@@ -2,6 +2,7 @@ import { createCostReplacementCallback } from "#api/engine/effects/interpreter/r
 import { createLeaveReplacementCallback } from "#api/engine/effects/interpreter/replacements/createLeaveReplacementCallback";
 import { createCostModifierCallback } from "#api/engine/effects/interpreter/costModifiers/createCostModifierCallback";
 import { createPermanentFilterMatchCallback } from "#api/engine/effects/interpreter/matching/createPermanentFilterMatchCallback";
+import { createTamerAsDigimonMatchCallback } from "#api/engine/effects/interpreter/matching/createTamerAsDigimonMatchCallback";
 import { createGrantActivityCallback } from "#api/engine/effects/interpreter/matching/createGrantActivityCallback";
 import { createSubTriggerCallback } from "#api/engine/effects/interpreter/subtriggers/createSubTriggerCallback";
 import { EffectActivationCallbackKind } from "#api/engine/effects/EffectActivationCallbackKind";
@@ -23,6 +24,19 @@ export function createInterpreterRuntimeCallbacks(): RuntimeCallbackRegistry {
   registry.registerFactory({
     key: InterpreterCallbackKind.PERMANENT_FILTER_MATCH.value,
     create: createPermanentFilterMatchCallback,
+  });
+  registry.registerFactory({
+    key: InterpreterCallbackKind.TAMER_AS_DIGIMON_MATCH.value,
+    create: createTamerAsDigimonMatchCallback,
+  });
+  registry.registerFactory({
+    key: InterpreterCallbackKind.NO_PERMANENT_MATCH.value,
+    create: (payload) => {
+      if (payload !== null) {
+        throw new Error("Invalid no-permanent match payload");
+      }
+      return () => false;
+    },
   });
   registry.registerFactory({
     key: InterpreterCallbackKind.LEAVE_REPLACEMENT.value,

@@ -1,6 +1,7 @@
 import { EffectTiming, type Permanent, type CardInstance, type Seat, type ZoneRef } from "@aegis/shared";
 import { canActivate, canTrigger } from "../../effects/kernel.js";
 import { effectsOf } from "../../effects/collect.js";
+import { createResidentCostSourceActive } from "#api/engine/gameEngine/timing/createResidentCostSourceActive";
 import {
   applyWouldBePlayedSelfReducer,
   canPayWouldBePlayedSelfReducer,
@@ -207,8 +208,7 @@ export async function fireBeforePayCost(
       };
       if (!canTrigger(effect, residentCtx, engine.tracker)) continue;
       if (!canActivate(effect, residentCtx, engine.tracker)) continue;
-      residentCtx.isResidentCostSourceActive = () =>
-        canTrigger(effect, residentCtx, engine.tracker) && canActivate(effect, residentCtx, engine.tracker);
+      residentCtx.isResidentCostSourceActive = createResidentCostSourceActive({ engine, effect, ctx: residentCtx });
       const beforeDelta = residentCtx.playCostDelta ?? 0;
       await effect.resolve(residentCtx);
       ctx.playCostDelta = residentCtx.playCostDelta;
@@ -235,8 +235,7 @@ export async function fireBeforePayCost(
       };
       if (!canTrigger(effect, residentCtx, engine.tracker)) continue;
       if (!canActivate(effect, residentCtx, engine.tracker)) continue;
-      residentCtx.isResidentCostSourceActive = () =>
-        canTrigger(effect, residentCtx, engine.tracker) && canActivate(effect, residentCtx, engine.tracker);
+      residentCtx.isResidentCostSourceActive = createResidentCostSourceActive({ engine, effect, ctx: residentCtx });
       const beforeDelta = residentCtx.playCostDelta ?? 0;
       await effect.resolve(residentCtx);
       ctx.playCostDelta = residentCtx.playCostDelta;

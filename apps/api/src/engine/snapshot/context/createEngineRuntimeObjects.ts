@@ -9,6 +9,7 @@ import { MatchedTriggerHistory } from "#api/engine/effects/interpreter/subtrigge
 import { registerPrimitiveRuntimeCallbacks } from "#api/engine/effects/verbs/snapshot/registerPrimitiveRuntimeCallbacks";
 import { registerEngineSchemaFactories } from "#api/engine/snapshot/schema/registerEngineSchemaFactories";
 import { registerResolutionEnvironmentFactory } from "#api/engine/snapshot/context/registerResolutionEnvironmentFactory";
+import { registerResidentCostSourceFactory } from "#api/engine/snapshot/context/registerResidentCostSourceFactory";
 import { registerResolutionDependencyFactory } from "#api/engine/snapshot/context/registerResolutionDependencyFactory";
 import { registerRuntimeEffectFactory } from "#api/engine/snapshot/context/registerRuntimeEffectFactory";
 import { registerTimingLockedEffectFactory } from "#api/engine/snapshot/context/registerTimingLockedEffectFactory";
@@ -59,6 +60,7 @@ export function createEngineRuntimeObjects({ engine }: Params): RuntimeObjectReg
   registerRuntimeEffectFactory({ objects: registry });
   registerTimingLockedEffectFactory({ engine, objects: registry });
   registerResolutionDependencyFactory({ engine, objects: registry });
+  registerResidentCostSourceFactory({ engine });
   registerResolutionEnvironmentFactory({ engine, objects: registry });
   registry.registerFactory({
     key: EngineRuntimeObjectKind.TIMING_WINDOW.value,

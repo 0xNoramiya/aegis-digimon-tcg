@@ -20,6 +20,7 @@ import {
   COUNTER_WINDOW_SNAPSHOT_CARDS,
   counterWindowSnapshotFixture,
 } from "#api/engine/scenarios/counter-window-snapshot.fixture";
+import { kingDrasilBreedingSnapshot } from "#api/engine/scenarios/king-drasil-breeding-snapshot.fixture";
 
 type PositionKind = "main" | "block" | "counter" | "decision";
 type CounterKind = "blastDigivolve" | "blastDnaDigivolve" | "handEffect" | "fieldEffect";
@@ -382,4 +383,29 @@ describe("continuation snapshot conformance", () => {
     },
     readCount({ name: "COUNTER_CONFORMANCE_TIMEOUT_MS", fallback: 600_000 }),
   );
+
+  it("takes settled snapshots under a breeding digivolve lock and a breeding play-cost reduction", async () => {
+    const fixture = kingDrasilBreedingSnapshot();
+    const seed = 7;
+    const match = await playRecordedMatch({
+      seed,
+      sampleRate: 1,
+      captured: POSITION_KINDS,
+      start: { fixture },
+      turnLimit: fixture.turnCount + 2,
+    });
+    const playedAt = match.events.findIndex(
+      (event) => event.kind === "cardPlayed" && event.instanceId === "scenario-card:royalKnight",
+    );
+    expect(playedAt).toBeGreaterThanOrEqual(0);
+    expect(match.failures).toEqual(emptyCounts(POSITION_KINDS));
+    const settledAfterPlay = match.positions.filter(
+      (position) =>
+        position.kind === "main" && position.events > playedAt && position.snapshot.continuation === undefined,
+    );
+    expect(settledAfterPlay.length).toBeGreaterThan(0);
+    for (const position of match.positions) {
+      await verifyPosition({ seed, match, position });
+    }
+  });
 });
