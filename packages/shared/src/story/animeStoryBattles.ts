@@ -230,9 +230,9 @@ export const animeStoryBattles: readonly StoryCatalogBattle[] = [
     chapter: "Final",
     title: "Agumon/Masaru e equipe DATS vs. Yggdrasil 7D6",
     playerDeckRefs: ["WMD76"],
-    opponentDeckRef: "WMD49",
+    opponentDeckRef: "WMD65",
     notes:
-      "King Drasil_7D6 nominalmente presente em Eaters; corpo e mecânicas de chefe não são reproduzidos automaticamente. Proxy do encontro final, não lista meta própria de Yggdrasil.",
+      "Royal Knights com quatro Digi-Eggs King Drasil_7D6, Gallantmon, LordKnightmon, Leopardmon e Craniamon, os cavaleiros que servem Yggdrasil no arco final. Corpo e mecânicas de chefe não são reproduzidos automaticamente.",
     sourceUrl: "https://lineup.toei-anim.co.jp/ja/tv/digimon_s/episode/48/",
     canonicalOutcome: "Masaru e Agumon vencem Yggdrasil; ele reconhece a possibilidade de coexistência e adormece.",
   },
@@ -327,9 +327,9 @@ export const animeStoryBattles: readonly StoryCatalogBattle[] = [
     protagonist: "Shoutmon X5",
     opponents: ["Breakdramon", "Matadormon"],
     playerDeckRefs: ["WMD41"],
-    opponentDeckRef: "WMD65",
+    opponentDeckRef: "WMD40",
     notes:
-      "Proxy adversário: Royal Knights com Examon; Breakdramon e Matadormon estão ausentes. Examon não participa canonicamente deste duelo.",
+      "Proxy adversário: Bagra Army, facção a que Breakdramon e Matadormon servem; as duas espécies estão ausentes da receita.",
     sourceUrl: "https://lineup.toei-anim.co.jp/ja/tv/digimon_xw/episode/28/",
     canonicalOutcome: "Xros Heart liberta os pais de Cutemon e derrota os dois adversários.",
   },
@@ -367,9 +367,9 @@ export const animeStoryBattles: readonly StoryCatalogBattle[] = [
     chapter: "Sete Reinos · Vampire Land",
     title: "Shoutmon DX vs. NeoMyotismon Darkness Mode",
     playerDeckRefs: ["WMD41"],
-    opponentDeckRef: "WMD40",
+    opponentDeckRef: "WMD51",
     notes:
-      "T · Sem identidade na receita; substituição editorial, não deck meta desta espécie; referência complementar de 31–90 dias",
+      "T · Receita MaloMyotismon, nome TCG de NeoMyotismon; a forma Darkness Mode não consta da receita; não deck meta desta forma; referência complementar de 31–90 dias",
     sourceUrl: "https://lineup.toei-anim.co.jp/ja/tv/digimon_xw/episode/34/",
     canonicalOutcome: "Shoutmon DX, fortalecido por WhiteLopmon, derrota NeoMyotismon e liberta os absorvidos.",
   },
@@ -696,10 +696,10 @@ export const animeStoryBattles: readonly StoryCatalogBattle[] = [
     campaignId: "digimon-xros-wars-hunters",
     chapter: "Hunters · clímax",
     title: "Arresterdramon Superior Mode, com Brave Snatcher e apoio dos heróis, vs. Quartzmon",
-    playerDeckRefs: ["WMD42"],
+    playerDeckRefs: ["WMD41"],
     opponentDeckRef: "WMD42",
     notes:
-      "T · Sem identidade na receita; substituição editorial, não deck meta desta espécie; jogador também é aproximação; forma fixa não comprovada na receita",
+      "T · Sem identidade na receita; substituição editorial, não deck meta desta espécie; jogador também é aproximação: receita Xros Heart, a mesma dos heróis no restante de Hunters, sem Arresterdramon literal; forma fixa não comprovada na receita",
     sourceUrl: "https://lineup.toei-anim.co.jp/ja/tv/digimon_xw_th/episode/79/",
     canonicalOutcome:
       "Após a destruição inicial de Brave Snatcher, Tagiru e Arresterdramon persistem. Superior Mode repara e incorpora a arma por DigiXros; os aliados impedem o uso dos humanos como escudo e o golpe final destrói as raízes de Quartzmon.",
@@ -741,9 +741,9 @@ export const animeStoryBattles: readonly StoryCatalogBattle[] = [
     protagonist: "MetalGreymon",
     opponents: ["MetalTyrannomon"],
     playerDeckRefs: ["WMD17"],
-    opponentDeckRef: "WMD06",
+    opponentDeckRef: "WMD07",
     notes:
-      "T · Receita DigiLab WMD06 (Metal Empire); presença nominal: nenhum adversário; sem identidade nominal: MetalTyrannomon. Substituição editorial temática, não deck meta dessas espécies. ",
+      "E · Receita DigiLab WMD07 (Machinedramon); presença nominal: MetalTyrannomon. Receita moderna; aliados extras da lista não participam automaticamente do confronto original.",
     sourceUrl: "https://www.toei-anim.co.jp/tv/digimon/episode/summary/10/",
     canonicalOutcome: "Agumon alcança MetalGreymon e supera o perseguidor, permitindo continuar a missão.",
   },
@@ -784,9 +784,9 @@ export const animeStoryBattles: readonly StoryCatalogBattle[] = [
     protagonist: "Omnimon, com apoio dos escolhidos",
     opponents: ["Eyesmon", "Orochimon", "Nidhoggmon"],
     playerDeckRefs: ["WMD17"],
-    opponentDeckRef: "WMD09",
+    opponentDeckRef: "WMD63",
     notes:
-      "T · Receita DigiLab WMD09 (Nightmare Soldiers); presença nominal: nenhum adversário; sem identidade nominal: Eyesmon, Orochimon, Nidhoggmon. Substituição editorial temática, não deck meta dessas espécies. Episódios16–18 consolidados em um encontro; não repetir as três formas como batalhas independentes.",
+      "E · Receita DigiLab WMD63 (Purple Hybrid); presença nominal: Eyesmon: Scatter Mode, Orochimon e Nidhoggmon. Receita moderna; aliados extras da lista não participam automaticamente do confronto original. Episódios16–18 consolidados em um encontro; não repetir as três formas como batalhas independentes.",
     sourceUrl: "https://www.toei-anim.co.jp/tv/digimon/episode/summary/18/",
     canonicalOutcome:
       "As evoluções sucessivas do inimigo culminam em Nidhoggmon; Omnimon impede a destruição de Tóquio.",
@@ -1039,9 +1039,9 @@ export const animeStoryBattles: readonly StoryCatalogBattle[] = [
     protagonist: "Angoramon e Ruli",
     opponents: ["Reppamon"],
     playerDeckRefs: ["WMD45"],
-    opponentDeckRef: "WMD27",
+    opponentDeckRef: "WMD39",
     notes:
-      "T · Receita DigiLab WMD27 (Wind Guardians); presença nominal: nenhum adversário; sem identidade nominal: Reppamon. Substituição editorial temática, não deck meta dessas espécies.  Receita do jogador centrada em Gammamon; Jellymon/Angoramon e suas evoluções são aliados narrativos sem identidade literal nessa receita.",
+      "E · Receita DigiLab WMD39 (Kentaurosmon); presença nominal: Reppamon, com Kudamon e Chirinmon na mesma linha. Receita do jogador centrada em Gammamon; Jellymon/Angoramon e suas evoluções são aliados narrativos sem identidade literal nessa receita.",
     sourceUrl: "https://www.toei-anim.co.jp/tv/digimon_ghost_game/episode/summary/11/",
     canonicalOutcome:
       "Ruli e Angoramon reconciliam-se; o conflito entre as duas consciências de Reppamon é apaziguado.",
@@ -1054,9 +1054,9 @@ export const animeStoryBattles: readonly StoryCatalogBattle[] = [
     protagonist: "GulusGammamon",
     opponents: ["Sealsdramon"],
     playerDeckRefs: ["WMD45"],
-    opponentDeckRef: "WMD06",
+    opponentDeckRef: "WMD42",
     notes:
-      "T · Receita DigiLab WMD06 (Metal Empire); presença nominal: nenhum adversário; sem identidade nominal: Sealsdramon. Substituição editorial temática, não deck meta dessas espécies.  Receita do jogador centrada em Gammamon; Jellymon/Angoramon e suas evoluções são aliados narrativos sem identidade literal nessa receita.",
+      "E · Receita DigiLab WMD42 (ACCEL); presença nominal: Sealsdramon, com Commandramon e Tankdramon na mesma linha. Receita do jogador centrada em Gammamon; Jellymon/Angoramon e suas evoluções são aliados narrativos sem identidade literal nessa receita.",
     sourceUrl: "https://www.toei-anim.co.jp/tv/digimon_ghost_game/episode/summary/13/",
     canonicalOutcome:
       "Após a morte de Bokomon, GulusGammamon mata Sealsdramon e ameaça romper o espaço digital; Hiro o confronta.",

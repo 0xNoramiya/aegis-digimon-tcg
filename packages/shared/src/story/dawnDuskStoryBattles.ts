@@ -168,10 +168,10 @@ export const dawnDuskStoryBattles: readonly StoryCatalogBattle[] = [
     protagonist: "Parceiros do jogador",
     opponents: ["Merukimon"],
     playerDeckRefs: ["WMD66"],
-    opponentDeckRef: "WMD30",
+    opponentDeckRef: "WMD19",
     isOptional: false,
     notes:
-      "T · Receita-fonte WMD30 Devas. Sem correspondência literal: Merukimon; representação temática, não deck meta dessas identidades. Receita moderna; formas e aliados extras da lista não participam automaticamente do confronto original. Mercurimon no jogo; NÃO Mercurymon de Frontier. Contraparte de Spinomon exclusivoDawn; dois Fugamon são preliminares omitidos.",
+      "E · Receita-fonte WMD19 TS Central Town. Presença nominal: Merukimon, com outros Olympos XII. Receita moderna; formas e aliados extras da lista não participam automaticamente do confronto original. Mercurimon no jogo; NÃO Mercurymon de Frontier. Contraparte de Spinomon exclusivoDawn; dois Fugamon são preliminares omitidos.",
     sourceUrl: "https://digimon.fandom.com/wiki/Digimon_World_Dusk_Walkthrough/UQ06",
     canonicalOutcome: "M-D Word obtido.",
     completionGroup: "dawn-dusk:palette-amazon",

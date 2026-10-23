@@ -1,6 +1,9 @@
 import { expect, it } from "vitest";
 import { getStoryCampaignBattles } from "@aegis/shared/story/getStoryCampaignBattles";
 import { animeStoryBattles } from "@aegis/shared/story/animeStoryBattles";
+import { catalogStoryBattles } from "@aegis/shared/story/catalogStoryBattles";
+import { storyCatalogDecks } from "@aegis/shared/story/storyCatalogDecks";
+import { getCardDefinition } from "@aegis/shared/cards/registry";
 
 it.each([
   ["digimon-savers-data-squad", 17, "sv01", "sa06"],
@@ -27,3 +30,15 @@ it("records official episode evidence and distinguishes unknown narrative outcom
   expect(selected.find((battle) => battle.id === "SA02")?.protagonist).toBe("Sleipmon e DATS");
   expect(selected.find((battle) => battle.id === "GG01")?.canonicalOutcome).toMatch(/se rende/);
 });
+
+it.each(["sa06", "cs42"])(
+  "gives the Yggdrasil encounter %s the Royal Knights deck with King Drasil eggs",
+  (battleId) => {
+    const battle = catalogStoryBattles.find((entry) => entry.id === battleId)!;
+    const deck = storyCatalogDecks[battle.opponentDeckRef!];
+    expect(deck.eggs.map(([card]) => getCardDefinition(card)?.nameEn)).toContain("King Drasil_7D6");
+    expect(deck.main.map(([card]) => getCardDefinition(card)?.nameEn)).toEqual(
+      expect.arrayContaining(["Gallantmon", "LordKnightmon", "Leopardmon", "Craniamon"]),
+    );
+  },
+);
