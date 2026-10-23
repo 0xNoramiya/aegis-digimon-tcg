@@ -1,3 +1,4 @@
+import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
 import { UsedDeckDialog } from "@/game/UsedDeckDialog";
@@ -211,6 +212,7 @@ function GameScreenSession({
   seriesGame,
   startMode = "casual",
   botDeckId,
+  botSettings,
   onExit,
   onStartLesson,
   onRematch,
@@ -239,6 +241,7 @@ function GameScreenSession({
   waitForHost?: boolean;
   /** Famous-deck preset the seated bot should play; absent means the server picks at random. */
   botDeckId?: string;
+  botSettings?: BotSettings;
   betaBattleMode?: boolean;
   unlimited?: boolean;
   onExit: (screen: Screen) => void;
@@ -354,14 +357,14 @@ function GameScreenSession({
   useEffect(() => {
     if (!vsBot || botCalledRef.current || !room || status !== "connected") return;
     botCalledRef.current = true;
-    void joinWithBot(room.roomId, botDeckId).catch((botJoinError: unknown) => {
+    void joinWithBot(room.roomId, botDeckId, botSettings).catch((botJoinError: unknown) => {
       console.error("[BOT_JOIN_CLIENT] failed", {
         roomId: room.roomId,
         error: botJoinError instanceof Error ? botJoinError.message : String(botJoinError),
       });
       setBotError(t("game.botConnectionFailedDetail"));
     });
-  }, [vsBot, room, status, botDeckId, t]);
+  }, [vsBot, room, status, botDeckId, botSettings, t]);
 
   const selectionState = useBoardSelection({ state, viewerSeat });
   const {

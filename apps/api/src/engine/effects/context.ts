@@ -1,4 +1,9 @@
+import type { RuntimeObjectRegistry } from "#api/engine/snapshot/RuntimeObjectRegistry";
+import type { RuntimeCallbackRegistry } from "#api/engine/snapshot/RuntimeCallbackRegistry";
+import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRuntimeObjectKind";
 import { isTimingActivationDisabled } from "./timingActivation.js";
+import { createTimingLockedEffect } from "#api/engine/effects/timingLock/createTimingLockedEffect";
+import { preparedCardLocation } from "#api/engine/effects/preparedCardLocation";
 import {
   CardKind,
   EffectTiming,
@@ -75,7 +80,7 @@ export function createCardStateLookup(state: GameState): CardStateLookup {
     indexedRevision = fieldRevision.value;
     return holders;
   };
-  const findPermanent = (
+  const findUncachedPermanent = (
     instanceId: string,
   ): { permanent: Permanent; inBattleArea: boolean; inBreedingArea: boolean } | undefined => {
     const holder = holdersByInstance().get(instanceId);
@@ -85,6 +90,19 @@ export function createCardStateLookup(state: GameState): CardStateLookup {
     // A permanent can be flagged inBreeding while listed in battleArea (a moved-back
     // permanent); treat it as breeding-area, not battle-area, to match source.
     return { permanent, inBattleArea: !permanent.inBreeding, inBreedingArea: permanent.inBreeding };
+  };
+
+  const findPermanent = (instanceId: string) => {
+    if (preparedCardLocation.state !== state) {
+      return findUncachedPermanent(instanceId);
+    }
+    if (preparedCardLocation.instanceId === instanceId) {
+      return preparedCardLocation.location;
+    }
+    const location = findUncachedPermanent(instanceId);
+    preparedCardLocation.instanceId = instanceId;
+    preparedCardLocation.location = location;
+    return location;
   };
 
   const isInTrash = (instanceId: string): boolean =>
@@ -258,7 +276,7 @@ export function createEffectContext(parts: {
   conferralGranterInstanceId?: string;
   discardedStackSourceProof?: import("./EffectContext.js").DiscardedStackSourceProof;
 }): EffectContext {
-  return {
+  const context: EffectContext = {
     source: parts.source,
     sourcePermanentIdAtCreation: parts.source.permanent?.()?.permanentId,
     trigger: parts.trigger,
@@ -273,6 +291,8 @@ export function createEffectContext(parts: {
     conferralGranterInstanceId: parts.conferralGranterInstanceId,
     discardedStackSourceProof: parts.discardedStackSourceProof,
   };
+  parts.game.runtimeObjects?.track({ value: context, key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value });
+  return context;
 }
 
 const refuse = (subsystem: string, verb: string): never => {
@@ -406,6 +426,8 @@ export function unimplementedDecisions(): DecisionApi {
  * the effect-primitives and effect-stack-resolution subsystems).
  */
 export interface EffectEnvironment {
+  runtimeObjects?: RuntimeObjectRegistry;
+  runtimeCallbacks?: RuntimeCallbackRegistry;
   state: GameState;
   fx: Primitives;
   /** Resolve effect verbs from the collected source's controller/owner context. */
@@ -515,7 +537,10 @@ export function gatherTriggeredEffects(
     (permanent, printedName) => effectiveNames(env.continuous, permanent, printedName),
     env.battleOpponentOf,
   );
+  game.runtimeObjects = env.runtimeObjects;
+  game.runtimeCallbacks = env.runtimeCallbacks;
   const lookup = createCardStateLookup(env.state);
+  lookup.runtimeObjects = env.runtimeObjects;
 
   const sources: CardSource[] = printedCandidates.map((instance) => createCardSource(instance, lookup));
 
@@ -700,15 +725,10 @@ function applyTimingEffectDisable(
   }
   return collected.map((collectedEffect) => ({
     ...collectedEffect,
-    effect: {
-      ...collectedEffect.effect,
-      canActivate: (ctx: EffectContext) => {
-        const permanent = collectedEffect.source.permanent();
-        if (permanent !== undefined && isTimingActivationDisabled(env.continuous, permanent.permanentId, mask)) {
-          return false;
-        }
-        return collectedEffect.effect.canActivate(ctx);
-      },
-    },
+    effect: createTimingLockedEffect({
+      payload: { effect: collectedEffect.effect, source: collectedEffect.source, mask },
+      continuous: env.continuous,
+      runtimeObjects: env.runtimeObjects,
+    }),
   }));
 }

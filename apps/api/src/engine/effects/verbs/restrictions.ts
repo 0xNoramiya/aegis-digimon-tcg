@@ -1,3 +1,5 @@
+import { PrimitiveCallbackKind } from "#api/engine/effects/verbs/snapshot/PrimitiveCallbackKind";
+import { createDelayedMemoryBody } from "#api/engine/effects/verbs/snapshot/createDelayedMemoryBody";
 import { EffectDuration, type CardDefinition, type Seat } from "@aegis/shared";
 import type { Primitives } from "../EffectContext.js";
 
@@ -247,7 +249,6 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
     });
   };
 
-  let delayedMemorySequence = 0;
   const delayedGainMemory: NonNullable<Primitives["delayedGainMemory"]> = (seat, amount, activationContext) => {
     // BT1-021 "at the end of your turn, lose 3 memory": a one-shot `endOfTurn` watcher with
     // NO source anchor — per KB Q882/Q883 the delayed loss still fires if the installing
@@ -264,10 +265,12 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
       // a contextless watcher would bypass the pending pool and fire only afterwards.
       activationContext,
       expiresOnTurnEndOf: seat,
-      description: `At end of turn, ${amount >= 0 ? "gain" : "lose"} ${Math.abs(amount)} memory (delayed one-shot #${++delayedMemorySequence}).`,
-      run: async () => {
-        engine.memory.addMemoryForSeat(seat, amount, "gainMemory", { isTamerEffect: false });
-      },
+      description: `At end of turn, ${amount >= 0 ? "gain" : "lose"} ${Math.abs(amount)} memory (delayed one-shot #${++pc.sequences.delayedMemorySequence}).`,
+      run:
+        engine.runtimeCallbacks?.create({
+          key: PrimitiveCallbackKind.DELAYED_MEMORY.value,
+          payload: { seat, amount },
+        }) ?? createDelayedMemoryBody({ memory: engine.memory, seat, amount }),
     });
   };
 

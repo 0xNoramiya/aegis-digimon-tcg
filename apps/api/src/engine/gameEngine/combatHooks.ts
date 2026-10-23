@@ -196,7 +196,7 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
             triggerInfo: effect.triggerInfo ?? attackPayload,
             activationIdentity: attackPayload,
           };
-          engine.nestedTriggerSourceIdentity.set(entry, permanentIdentityOf(entry.source) ?? null);
+          entry.sourceIdentityAtDefer = permanentIdentityOf(entry.source) ?? null;
           engine.pendingNestedTimingEffects.push(entry);
         }
         await fireTimingForPermanent(engine, EffectTiming.OnUseAttack, attacker, attackPayload);
@@ -403,28 +403,33 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
     // ＜Scapegoat＞'s sacrifice choice (both battle-path consumers of combat/controller.ts) —
     // the same generic selectCards decision `ask.selectInstances` uses in primitives.ts, so no
     // bespoke per-keyword protocol intent is needed.
-    selectOptionalInstance: async (seat, candidateInstanceIds, promptText, source) => {
+    selectOptionalInstance: async (seat, candidateInstanceIds, promptText, source, selectionGoal) => {
       if (candidateInstanceIds.length === 0) return undefined;
       const response = await engine.decisions.request({
         seat,
         kind: "selectCards",
         promptText,
         ...source,
-        options: { candidateInstanceIds, min: 0, max: 1 },
+        options: { candidateInstanceIds, min: 0, max: 1, ...(selectionGoal === undefined ? {} : { selectionGoal }) },
       });
       return response.kind === "selectCards" ? response.instanceIds[0] : undefined;
     },
     // ＜Fragment＞'s "choose exactly N, or decline" cost decision (§16-37): the same
     // selectCards decision channel as selectOptionalInstance, but requiring the full count
     // (a partial pick reads as a decline — no partial trash).
-    selectOptionalInstances: async (seat, candidateInstanceIds, count, promptText, source) => {
+    selectOptionalInstances: async (seat, candidateInstanceIds, count, promptText, source, selectionGoal) => {
       if (candidateInstanceIds.length < count) return undefined;
       const response = await engine.decisions.request({
         seat,
         kind: "selectCards",
         promptText,
         ...source,
-        options: { candidateInstanceIds, min: 0, max: count },
+        options: {
+          candidateInstanceIds,
+          min: 0,
+          max: count,
+          ...(selectionGoal === undefined ? {} : { selectionGoal }),
+        },
       });
       if (response.kind !== "selectCards") return undefined;
       return response.instanceIds.length === count ? response.instanceIds : undefined;

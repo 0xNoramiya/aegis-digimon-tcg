@@ -173,7 +173,7 @@ export function parkDeferredSecurityRemovalTriggers(
     const armed = armedSubTriggers(engine, deferred.subscriptions, deferred.payload, deferred.contexts);
     const collected = armedAsPendingCollected(engine, armed);
     for (const entry of collected) {
-      engine.nestedTriggerSourceIdentity.set(entry, permanentIdentityOf(entry.source) ?? null);
+      entry.sourceIdentityAtDefer = permanentIdentityOf(entry.source) ?? null;
     }
     engine.pendingNestedTimingEffects.push(...collected);
   }
@@ -188,7 +188,7 @@ export function parkDeferredSecurityRemovalTriggers(
  */
 export function parkDeferredTimingWindowsForAttack(engine: GameEngine): void {
   for (const entry of collectDeferredTimingPending(engine)) {
-    engine.nestedTriggerSourceIdentity.set(entry, permanentIdentityOf(entry.source) ?? null);
+    entry.sourceIdentityAtDefer = permanentIdentityOf(entry.source) ?? null;
     engine.pendingNestedTimingEffects.push(entry);
   }
 }
@@ -298,7 +298,7 @@ export function deferNestedTimingEffects(
 ): void {
   const collected = collectNestedTimingEffects(engine, timing, trigger, candidateInstances);
   for (const entry of collected) {
-    engine.nestedTriggerSourceIdentity.set(entry, permanentIdentityOf(entry.source) ?? null);
+    entry.sourceIdentityAtDefer = permanentIdentityOf(entry.source) ?? null;
   }
   engine.pendingNestedTimingEffects.push(...collected);
 }

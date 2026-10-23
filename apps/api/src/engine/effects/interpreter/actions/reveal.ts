@@ -1,3 +1,4 @@
+import { getDecisionSelectionGoal } from "#api/engine/effects/interpreter/getDecisionSelectionGoal";
 // Revealing cards and dispatching what the controller takes from them.
 
 import { matchingAlternateDigivolutionRequirement, matchingEvoCost } from "../../../cards/cardData.js";
@@ -437,6 +438,7 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
     // the full reveal when the remaining cards are ordered or later actions resolve.
     const selectionCtx =
       spec.effectTextPart === undefined ? ctx : { ...ctx, activeEffectTextPart: spec.effectTextPart };
+    const selectionGoal = getDecisionSelectionGoal({ action: { ...action, add: [spec] } });
     let matches = plan.eligible.filter((card) => !taken.has(card.instanceId));
     let minimum: number | undefined;
     // By default each slot chooses freely from the cards that remain, and a later slot takes
@@ -478,6 +480,7 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
       const affordable = matches.filter((c) => playCostOf(c) <= budget);
       if (affordable.length > 0) {
         const ids = await ctx.ask.selectCards(selectionCtx, {
+          ...(selectionGoal === undefined ? {} : { selectionGoal }),
           candidates: affordable.map((c) => c.instanceId),
           visible: revealed.map((c) => c.instanceId),
           visibleCards: revealed.map((c) => ({
@@ -514,6 +517,7 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
     // that take every matching card remain forced; optional/up-to slots still allow 0.
     if (matches.length > 0 && (spec.optional || spec.upTo || spec.count !== "all")) {
       const ids = await ctx.ask.selectCards(selectionCtx, {
+        ...(selectionGoal === undefined ? {} : { selectionGoal }),
         candidates: matches.map((c) => c.instanceId),
         visible: revealed.map((c) => c.instanceId),
         visibleCards: revealed.map((c) => ({

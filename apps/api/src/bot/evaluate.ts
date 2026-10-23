@@ -1,5 +1,5 @@
 import { selectAllianceAlly } from "#api/bot/selectAllianceAlly";
-import type { CardDefinition } from "@aegis/shared";
+import { getCompiledCard, type CardDefinition, type Filter } from "@aegis/shared";
 import type { Candidate } from "./candidates.js";
 import type { BotProfile } from "./profiles.js";
 import type { BotUnit, BotView } from "./view.js";
@@ -165,10 +165,17 @@ function scoreAttackPlayer(view: BotView, originalAttacker: BotUnit, profile: Bo
   // Any unsuspended blocker — winning or not — denies that, because a blocked attack never
   // checks security. Each blocker can only intercept once before it suspends, so winning
   // through them needs one attacker per blocker plus one that gets through.
-  if (view.opponentSecurityCount <= 0) return scoreLethalAttempt(view, attacker, profile, originalAttacker);
+  if (view.opponentSecurityCount <= 0 && (attacker.securityAttack ?? 1) > 0) {
+    return scoreLethalAttempt(view, attacker, profile, originalAttacker);
+  }
 
+  // Extra checks cannot finish the game in the same attack after security runs out.
+  // Use the public engine projection rather than reconstructing inherited grants.
+  const checks = Math.min(attacker.securityAttack ?? 1, view.opponentSecurityCount);
+  const risk = securityRiskFactor(view, attacker);
   const unblocked =
-    weights.securityAttack - weights.securityRisk * securityRiskFactor(view, attacker) * bodyValue(originalAttacker);
+    checks * weights.securityAttack -
+    weights.securityRisk * (1 - Math.pow(1 - risk, checks)) * bodyValue(originalAttacker);
   const { chance, outcome } = interception(view, attacker, profile, undefined, originalAttacker);
 
   return (1 - chance) * unblocked + chance * outcome - retaliationExposure(view, originalAttacker, profile);
@@ -255,10 +262,73 @@ function scorePlayTamer(view: BotView, candidate: Candidate, profile: BotProfile
 
 function scorePlayOption(view: BotView, candidate: Candidate, profile: BotProfile): number {
   const { weights } = profile;
+  const removal = candidate.definition && simpleRemovalValue(view, candidate.definition, profile);
+  if (removal !== undefined) return removal - memoryPenalty(view, candidate.cost, profile);
   // Most Options answer something. With nothing on the other side of the table there is
   // usually nothing to answer, so an Option played then is close to a wasted card.
   const usefulness = view.opponentBoard.length > 0 ? 1 : weights.optionIdleDiscount;
   return weights.option * usefulness - memoryPenalty(view, candidate.cost, profile);
+}
+
+/** Conservative estimate for a complete, immediate removal clause with public targets. */
+function simpleRemovalValue(view: BotView, definition: CardDefinition, profile: BotProfile): number | undefined {
+  const main = getCompiledCard(definition.cardId)?.effects.filter((effect) => effect.trigger === "Main");
+  if (main?.length !== 1) return undefined;
+  const effect = main[0]!;
+  if (effect.condition || effect.cost || effect.actions.length !== 1) return undefined;
+  const action = effect.actions[0]!;
+  if (action.kind !== "Delete" && action.kind !== "Return") return undefined;
+  const allowedActionKeys = ["kind", "target", "to", "optional", "raw", "effectTextPart"];
+  if (Object.keys(action).some((key) => !allowedActionKeys.includes(key))) return undefined;
+  const target = action.target;
+  if (Object.keys(target).some((key) => !["filter", "count", "upTo", "minimum", "allowZero"].includes(key)))
+    return undefined;
+  if (target.filter.controller !== "opponent") return undefined;
+  const filter = target.filter;
+  if (!simpleRemovalFilter(filter)) return undefined;
+  const count = target.upTo ? Math.max(1, target.minimum ?? 0) : (target.count ?? 1);
+  if (count !== "all" && (typeof count !== "number" || count < 1)) return undefined;
+  const values = view.opponentBoard
+    .filter((unit) => {
+      if (filter.kind && !filter.kind.some((kind) => unit.definition?.kinds.some((printed) => printed === kind)))
+        return false;
+      if (filter.levels && !filter.levels.includes(unit.level)) return false;
+      if (typeof filter.levelLte === "number" && unit.level > filter.levelLte) return false;
+      if (filter.playCostLte !== undefined && (unit.definition?.playCost ?? Infinity) > filter.playCostLte)
+        return false;
+      if (filter.suspended && !unit.suspended) return false;
+      if (filter.unsuspended && unit.suspended) return false;
+      if (filter.dp) {
+        const value = filter.dp.value!;
+        if (filter.dp.op === "lte" && unit.dp > value) return false;
+        if (filter.dp.op === "gte" && unit.dp < value) return false;
+        if (filter.dp.op === "eq" && unit.dp !== value) return false;
+      }
+      return true;
+    })
+    .map(bodyValue)
+    .sort((left, right) => right - left);
+  // Replacement/protection effects can prevent removal; this is value, not a guarantee.
+  return (
+    values.slice(0, count === "all" ? values.length : count).reduce((sum, value) => sum + value, 0) *
+    profile.weights.removal *
+    0.8
+  );
+}
+
+function simpleRemovalFilter(filter: Filter): boolean {
+  if (
+    Object.keys(filter).some(
+      (key) =>
+        !["controller", "kind", "levels", "levelLte", "playCostLte", "dp", "suspended", "unsuspended"].includes(key),
+    )
+  )
+    return false;
+  if (filter.levelLte !== undefined && typeof filter.levelLte !== "number") return false;
+  return (
+    !filter.dp ||
+    (typeof filter.dp.value === "number" && Object.keys(filter.dp).every((key) => key === "op" || key === "value"))
+  );
 }
 
 /** Score one candidate action. Higher is better; passing the turn is exactly 0. */
@@ -274,6 +344,26 @@ export function scoreCandidate(view: BotView, candidate: Candidate, profile: Bot
         : scoreAttackDigimon(view, candidate.attacker, candidate.target, profile);
     case "digivolve":
       return scoreDigivolve(view, candidate, profile);
+    case "dnaDigivolve": {
+      const definition = candidate.definition;
+      if (definition === undefined || (candidate.materials?.length ?? 0) < 2) {
+        return Number.NEGATIVE_INFINITY;
+      }
+      const readyMaterials = candidate.materials!.filter((unit) => unit.canAttackPlayer).length;
+      return (
+        scorePlayDigimon(view, candidate, profile) +
+        profile.weights.digivolveDraw +
+        Math.max(0, 1 - readyMaterials) * profile.weights.securityAttack
+      );
+    }
+    case "linkCard": {
+      if (candidate.definition === undefined || candidate.base === undefined) {
+        return Number.NEGATIVE_INFINITY;
+      }
+      const bonus = Math.max(0, candidate.definition.linkDp ?? 0) / 1000;
+      const effect = candidate.definition.linkEffect?.trim() ? profile.weights.activate : 0;
+      return profile.weights.dpGain * bonus + effect - memoryPenalty(view, candidate.cost, profile);
+    }
     case "playDigimon":
       return scorePlayDigimon(view, candidate, profile);
     case "playTamer":

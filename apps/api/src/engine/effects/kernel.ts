@@ -1,3 +1,4 @@
+import type { UseTrackerSnapshot } from "#api/engine/effects/UseTrackerSnapshot";
 import { CardKind, type CardDefinition } from "@aegis/shared";
 import type { Effect } from "./Effect.js";
 import type { EffectContext } from "./EffectContext.js";
@@ -23,6 +24,30 @@ import type { EffectContext } from "./EffectContext.js";
  */
 export class UseTracker {
   private readonly counts = new Map<string, number>();
+
+  snapshot(): UseTrackerSnapshot {
+    return Array.from(this.counts, ([key, count]) => [key, count] as const);
+  }
+
+  restore(snapshot: UseTrackerSnapshot): void {
+    const restored = new Map<string, number>();
+    for (const [key, count] of snapshot) {
+      if (
+        typeof key !== "string" ||
+        !key.includes("\0") ||
+        !Number.isSafeInteger(count) ||
+        count < 1 ||
+        restored.has(key)
+      ) {
+        throw new Error("Invalid effect usage snapshot");
+      }
+      restored.set(key, count);
+    }
+    this.counts.clear();
+    for (const [key, count] of restored) {
+      this.counts.set(key, count);
+    }
+  }
 
   private static key(instanceId: string, effectKey: string): string {
     return `${instanceId}\0${effectKey}`;

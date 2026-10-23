@@ -1,3 +1,4 @@
+import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRuntimeObjectKind";
 import { resolveDerivedDuringAttackStep } from "#api/engine/gameEngine/resolveDerivedDuringAttackStep";
 import { buildSubTriggerEffectKey } from "#api/engine/gameEngine/buildSubTriggerEffectKey";
 import { observeEffectActivation } from "../effects/activationPresentation.js";
@@ -636,7 +637,7 @@ export function nestedTriggerSourceStillResident(engine: GameEngine, pending: Co
     rootZoneOfLooseInstance(engine.state, pending.source.instanceId) === "trash" &&
     rootZoneOfLooseInstance(engine.state, deletedHostId) === "trash";
   if (inheritedDeletedSource) return true;
-  const identityAtDefer = engine.nestedTriggerSourceIdentity.get(pending);
+  const identityAtDefer = pending.sourceIdentityAtDefer;
   if (identityAtDefer === undefined || identityAtDefer === null) return true;
   return permanentIdentityOf(pending.source) === identityAtDefer;
 }
@@ -1075,6 +1076,7 @@ export function subTriggerAsCollected(engine: GameEngine, { sub, ctx, occurrence
     ...triggerReasonOf(sub),
     effect: {
       effectKey: buildSubTriggerEffectKey(sub),
+      decisionSummary: sub.decisionSummary,
       activationDeferred: sub.activationDeferred,
       ...(sub.activationContext !== undefined &&
       sub.sourcePermanentId === undefined &&
@@ -1250,6 +1252,9 @@ export function buildSubTriggerContext(
 ): EffectContext | undefined {
   const context = buildSubTriggerSourceContext(engine, sub, payload);
   if (context === undefined) return undefined;
+  context.activeSingleHandCostBenefit = undefined;
+  context.activeDecisionSummary = sub.decisionSummary;
+  context.activeDecisionSelectionGoal = undefined;
   return breedingHidesSubjectFrom(engine, sub.event, payload, context.source) ? undefined : context;
 }
 
@@ -1341,11 +1346,13 @@ export function buildSubTriggerSourceContext(
     return context;
   }
   if (sub.activationContext !== undefined) {
-    return {
+    const context = {
       ...sub.activationContext,
       trigger: payload,
       selections: new Map(),
     };
+    engine.runtimeObjects.track({ value: context, key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value });
+    return context;
   }
   return undefined;
 }
