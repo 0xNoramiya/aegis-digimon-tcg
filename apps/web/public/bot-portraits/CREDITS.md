@@ -1,6 +1,6 @@
 # Bot portraits
 
-Character artwork replaces Digimon Card Game card scans in the lobby and match portraits. Files are local 192 × 192 WebP crops, with paired portraits composed from both characters. Aegis keeps its initials fallback.
+Character artwork replaces Digimon Card Game card scans in the lobby and match portraits. Files are local 192 × 192 WebP crops, with paired portraits composed from both characters. The Aegis default portrait is an original robot variant of the Aegis logo, generated with OpenAI image generation through Codex.
 
 Artwork belongs to its respective Digimon rights holders. Wikimon hosts character artwork from the anime and video games; the Liberator portraits come from the official character site. These images are not covered by the repository’s code license.
 

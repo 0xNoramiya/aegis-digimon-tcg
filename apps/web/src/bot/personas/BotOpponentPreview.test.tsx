@@ -27,6 +27,7 @@ describe("bot character presentation", () => {
       </I18nProvider>,
     );
     expect(screen.getByText("Aegis")).toBeTruthy();
+    expect(view.container.querySelector("img")?.getAttribute("src")).toBe("/bot-portraits/aegis.webp");
     view.rerender(
       <I18nProvider>
         <BotOpponentPreview
