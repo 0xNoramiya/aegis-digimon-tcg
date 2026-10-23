@@ -1,4 +1,5 @@
 import { definitionMatches } from "#api/engine/effects/interpreter/matching/definition";
+import { Zone } from "@aegis/shared/schema/enums";
 // DNA digivolution, App Fusion, and per-level play.
 
 import type { EffectContext } from "../../EffectContext.js";
@@ -144,7 +145,21 @@ export async function runDnaDigivolve(
     const materialsZone = action.materials.filter.zone;
     const materialsAreLoose =
       materialsZone !== undefined && materialsZone !== "battleArea" && materialsZone !== "breeding";
-    materialIds = materialsAreLoose ? [] : await resolvePermanentTargets(ctx, action.materials);
+    if (
+      !materialsAreLoose &&
+      action.materials.count === 2 &&
+      Object.keys(action.materials).every((key) => key === "filter" || key === "count") &&
+      action.looseMaterials === undefined &&
+      !action.materials.isSelf &&
+      !action.materials.filter.isSelfRef &&
+      !action.materials.filter.includesSelf &&
+      action.materials.includeRef === undefined
+    ) {
+      const slot: DnaMaterialSlot = { filter: action.materials.filter, count: 1, zone: Zone.BattleArea };
+      materialIds = await chooseDnaMaterialPair({ ctx, slots: [slot, slot], results: resultPool });
+    } else {
+      materialIds = materialsAreLoose ? [] : await resolvePermanentTargets(ctx, action.materials);
+    }
     looseMaterialIds = materialsAreLoose
       ? await pickLoose(
           ctx,

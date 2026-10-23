@@ -21,6 +21,7 @@ import { canAttemptAttack, runCombatAction } from "./combat.js";
 import { runControlFlowAction } from "./controlFlow.js";
 import { runDigivolutionAction } from "./digivolution.js";
 import { canAttemptDigivolve, canAttemptDigivolveBeforeCost } from "./digivolve.js";
+import { canAttemptDnaDigivolve } from "#api/engine/effects/interpreter/actions/dna";
 import { runGrantStaticAction } from "./grantStatic.js";
 import { canReactivateOwnEffect, runMetaAction } from "./meta.js";
 import { DECLINE_MODAL_CHOICE_LABEL, declinableModalChoices, modalHasAvailableOption } from "./modal.js";
@@ -1120,6 +1121,14 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       !allowsOptionalProcessingCostWithoutTarget(action) &&
       !canAttemptDigivolveBeforeCost(ctx, action)
     ) {
+      return unavailableAction(ctx, action);
+    }
+    if (
+      action.kind === "DnaDigivolve" &&
+      !allowsOptionalProcessingCostWithoutTarget(action) &&
+      !canAttemptDnaDigivolve(ctx, action)
+    ) {
+      ctx.lastDigivolveResult = false;
       return unavailableAction(ctx, action);
     }
     const costUnpayable = payableActionCost !== undefined && !canPayCost(ctx, payableActionCost as Cost);
