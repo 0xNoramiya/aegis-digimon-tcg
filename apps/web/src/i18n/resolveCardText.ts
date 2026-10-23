@@ -61,6 +61,12 @@ export function resolveCardText(params: Params): CardTextResolution {
     };
   }
   const card = cardId ? getCardDefinition(cardId) : undefined;
+  const runtime = /^＜[^＞]+＞:\s*\S/.test(text)
+    ? getDictionaryValue({ dictionary: translations.text, key: normalizePrintedTextKey(text) })
+    : undefined;
+  if (runtime) {
+    return { ...original, text: runtime, source: CardTextSource.DICTIONARY.value };
+  }
   if (field && (!card || !card[field])) {
     return {
       ...original,

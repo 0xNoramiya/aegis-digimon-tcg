@@ -14,6 +14,29 @@ afterEach(cleanup);
 
 it.each([
   {
+    cardId: "AD1-011",
+    timing: "WhenWouldLeaveBattleArea",
+    isInherited: true,
+    expected: "＜分裂＞：可以不支付费用登场指定的进化源卡牌。",
+    description: "＜Partition＞: you may play the specified digivolution cards without paying their costs.",
+    effectTextPart: undefined,
+  },
+  {
+    cardId: "BT16-025",
+    timing: "WhenWouldLeaveBattleArea",
+    isInherited: true,
+    expected: "＜分裂＞：可以不支付费用登场指定的进化源卡牌。",
+    description: "＜Partition＞: you may play the specified digivolution cards without paying their costs.",
+    effectTextPart: undefined,
+  },
+  {
+    cardId: "BT16-025",
+    timing: "WhenWouldLeaveBattleArea",
+    expected: "＜分裂＞：可以不支付费用登场指定的进化源卡牌。",
+    description: "＜Partition＞: you may play the specified digivolution cards without paying their costs.",
+    effectTextPart: undefined,
+  },
+  {
     cardId: "BT10-008",
     timing: "OnPlay",
     expected: "3张卡牌",
