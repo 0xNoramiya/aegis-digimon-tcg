@@ -1,6 +1,7 @@
 import { isDeepStrictEqual } from "node:util";
 import type { Intent } from "@aegis/shared";
 import type { TrainingWindow } from "./policy.js";
+import { isTrainingMaterialSelectionComplete } from "#api/bot/training/isTrainingMaterialSelectionComplete";
 
 /** Map a demonstration onto the unchanged legal action space; unavailable labels stay explicit. */
 export function teacherActionIndex(
@@ -56,7 +57,7 @@ export function teacherActionIndex(
     const response = intent.response;
     if (response.kind !== window.request.kind) return undefined;
     if (response.kind === "selectCards" || response.kind === "chooseTargets" || response.kind === "orderCards") {
-      const order = response.kind === "orderCards" ? response.order : response.instanceIds;
+      const order = response.kind === "orderCards" ? response.order : assemblySelection(window, response.instanceIds);
       if (window.selected.some((id, index) => id !== order[index])) return undefined;
       const next = order[window.selected.length];
       const index = window.actions.findIndex((action) =>
@@ -70,6 +71,14 @@ export function teacherActionIndex(
   const declared = canonicalDeclaration(intent);
   const index = window.actions.findIndex((action) => isDeepStrictEqual(canonicalDeclaration(action.intent), declared));
   return index < 0 ? undefined : index;
+}
+
+function assemblySelection(window: TrainingWindow, selected: readonly string[]): readonly string[] {
+  const options = window.request?.options;
+  if (options?.assemblyCardId === undefined || window.selected.length > 0) return selected;
+  const cards = new Map((options.visibleCards ?? []).map(({ instanceId, cardId }) => [instanceId, { cardId }]));
+  if (selected.some((id) => !cards.has(id))) return selected;
+  return isTrainingMaterialSelectionComplete({ options, cards, selected }) ? selected : [];
 }
 
 /** Clients spell some declarations with defaults the engine treats as absent. */
