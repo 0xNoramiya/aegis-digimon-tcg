@@ -83,20 +83,26 @@ decks, unsnapshottable Main decisions fell from 402 of 1,066 (38%) to 23 (2.2%),
 with no restore failures. The current coverage is in
 [Snapshot coverage and combat search](#snapshot-coverage-and-combat-search).
 
-On the Oracle production host (one CPU, idle priority, host load below 8), 12 games
-per level against legacy-balanced with the final shipped build measured:
+On the Oracle production host (one CPU, idle priority, games started only below host
+load 8), the build after the develop merge, the round 3 overrides and the search error
+fixes measured 12 Balanced games and 4 games per other style for each level, against
+legacy-balanced:
 
-| Level  | Decisions | p50      | p95      | p99      | Maximum  | Search fallbacks     |
-| ------ | --------- | -------- | -------- | -------- | -------- | -------------------- |
-| Expert | 166       | 933 ms   | 1,406 ms | 1,506 ms | 1,510 ms | deadline 2, error 5  |
-| Master | 166       | 1,477 ms | 1,600 ms | 1,644 ms | 1,657 ms | deadline 12, error 0 |
+| Level  | Style      | Decisions | p50      | p95      | p99      | Maximum  | Search fallbacks     |
+| ------ | ---------- | --------- | -------- | -------- | -------- | -------- | -------------------- |
+| Expert | Balanced   | 170       | 940 ms   | 1,459 ms | 1,501 ms | 1,513 ms | deadline 15, error 0 |
+| Expert | Aggressive | 47        | 959 ms   | 1,452 ms | 1,538 ms | 1,538 ms | deadline 9, error 0  |
+| Expert | Defensive  | 71        | 957 ms   | 1,203 ms | 1,476 ms | 1,476 ms | deadline 12, error 0 |
+| Master | Balanced   | 160       | 1,476 ms | 1,568 ms | 1,610 ms | 1,636 ms | deadline 10, error 0 |
+| Master | Aggressive | 51        | 1,486 ms | 1,604 ms | 1,662 ms | 1,662 ms | deadline 7, error 0  |
+| Master | Defensive  | 54        | 1,471 ms | 1,602 ms | 1,655 ms | 1,655 ms | deadline 6, error 0  |
 
-Both are within the 2 s p95 target. Before round 2 and the block and Counter search,
-the same check had Expert p95 1,055 ms (deadline 3, error 8) and Master p95 1,583 ms
-(deadline 7, error 15). Master's `error` fallbacks are gone. Expert's 5 remaining
-`error` fallbacks are explained in [Expert error causes](#expert-error-causes).
-Expert p95 rose, possibly because block and Counter decisions now search too; this
-is not confirmed.
+All 40 games were valid, and every p95 is within the 2 s target. No search ended in an
+`error` fallback; the previous measurement had 5 for Expert and, before round 2, 15
+for Master (see [Expert error causes](#expert-error-causes)). Deadline fallbacks rose
+for Expert: worker errors that arrive after the shared deadline now count as
+`deadline` instead of `error`, and the host load was 6 to 7. A deadline fallback plays
+the Standard answer.
 
 Each simulation samples hidden opponent cards from public archetype catalogs using
 publicly seen cards as evidence. It does not read the opponent's actual decklist.
