@@ -874,7 +874,7 @@ export class AegisRoom extends Room<{
       });
     this.engineHooks = {
       beforeTurn: (turn) => {
-        this.rollbackHistory?.beforeTurn(turn, this.state);
+        this.rollbackHistory?.beforeTurn(turn, this.engine);
         this.refreshRollbackAvailability();
       },
       seed,
@@ -2766,7 +2766,7 @@ export class AegisRoom extends Room<{
         return { ok: false as const, reason: "wrong-phase" as const };
       const actionIndex = this.rollbackHistory?.inputs.length;
       const recorded: ReplayInput = { kind: "intent", seat, intent, ...this.rollbackPlacement() };
-      this.rollbackHistory?.append(recorded, this.state);
+      this.rollbackHistory?.append(recorded, this.engine);
       const started = performance.now();
       const replaySeq = this.nextReplaySeq();
       log("intent.received", {

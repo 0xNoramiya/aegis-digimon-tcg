@@ -1,8 +1,9 @@
 import { createHash } from "node:crypto";
-import type { GameState } from "@aegis/shared/schema/GameState";
+import type { GameEngine } from "#api/engine/GameEngine";
 
-export function rollbackStateFingerprint(state: GameState): string {
-  const json = state.toJSON() as Record<string, unknown>;
+export function rollbackStateFingerprint(engine: Pick<GameEngine, "state" | "flushHandAffordances">): string {
+  engine.flushHandAffordances();
+  const json = engine.state.toJSON() as Record<string, unknown>;
   for (const key of [
     "matchLogId",
     "matchId",

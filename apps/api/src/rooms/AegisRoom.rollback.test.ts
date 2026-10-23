@@ -245,6 +245,38 @@ describe("consensual match rollback", () => {
     expect(room.state.pendingDecision).toBeUndefined();
   });
 
+  it("undoes an answer to a start-of-main-phase effect after a patch refreshed the hand", async () => {
+    const board = structuredClone(fixture);
+    board.board[1] = {
+      hand: ["EX8-047", "BT1-009"],
+      deck: ["BT1-009", "BT1-012", "BT1-013"],
+      eggDeck: ["BT1-001"],
+      security: ["BT1-019"],
+      battleArea: [{ card: "EX11-065", as: "close" }],
+    };
+    const { room, clients } = await start({}, board);
+    await main(room);
+    expect(send(room, 0, { type: "endPhase" })).toEqual({ ok: true });
+    await idle();
+    await main(room);
+    const decision = room.state.pendingDecision!;
+    expect(decision).toMatchObject({ seat: 1, kind: "selectCards" });
+    room.onBeforePatch();
+    const options = JSON.parse(decision.payloadJson) as { candidateInstanceIds: string[] };
+    expect(
+      send(room, 1, {
+        type: "respondDecision",
+        decisionId: decision.decisionId,
+        response: { kind: "selectCards", instanceIds: options.candidateInstanceIds.slice(0, 1) },
+      }),
+    ).toEqual({ ok: true });
+    await idle();
+    await request(room, clients[1]!, RollbackKind.ACTION.value);
+    await answer(room, clients[0]!, true);
+    expect(room.state.rollbackRevision).toBe(1);
+    expect(room.state.pendingDecision?.decisionId).toBe(decision.decisionId);
+  });
+
   it.each([{ allowRollback: false }, { allowRollback: undefined }, { rankedRoom: true }, { tournamentRoom: true }])(
     "enforces disabled and ineligible modes despite a forged request: %j",
     async (options) => {
@@ -359,6 +391,8 @@ describe("consensual match rollback", () => {
       const replay = await runReplay(record, { stopOnDivergence: true });
       try {
         expect(replay.divergences).toEqual([]);
+        engine(room).flushHandAffordances();
+        replay.engine.flushHandAffordances();
         const actual = comparableState(room.state) as Record<string, unknown>;
         const expected = comparableState(replay.state) as Record<string, unknown>;
         for (const key of [
