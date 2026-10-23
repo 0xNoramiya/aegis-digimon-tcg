@@ -147,7 +147,7 @@ export function MatchChatWindow({
                   <EmoteIcon emote={entry.message.emote} size={24} />
                 </span>
               ) : (
-                <span>{entry.message.text}</span>
+                <span>{messageText(entry.message)}</span>
               )}
             </li>
           ))}

@@ -23,6 +23,13 @@ const interfaceMessages = {
   "game.input.reorder": "Enter/A: pindahkan; panah: urutkan; Enter/A: selesai; Esc/B: batalkan",
 
   "bot.identity.label": "Bot",
+  "bot.line.greeting": "Ayo bertarung! Tunjukkan kemampuan terbaik Anda.",
+  "bot.line.bossGreeting": "Anda sudah sejauh ini. Sekarang hadapi kekuatan penuh saya!",
+  "bot.line.bigDigivolve": "Digivolve! Maju, {card}!",
+  "bot.line.pressure": "Security Anda sudah habis. Satu serangan lagi!",
+  "bot.line.lastStand": "Security saya habis... tapi saya belum selesai!",
+  "bot.line.victory": "Pertandingan yang bagus! Berlatihlah dan coba lagi.",
+  "bot.line.defeat": "Kali ini Anda lebih kuat. Pertandingan yang bagus!",
   "home.strategyGuides": "Pelajari cara memainkan deck dengan panduan strategi kami",
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Delete this Digimon",
@@ -70,8 +77,7 @@ const interfaceMessages = {
   "story.ready": "Tersedia",
   "story.signin": "Bermain sebagai tamu. Progres terikat pada browser ini; masuk menggunakan progres akun Anda.",
   "story.progress": "{completed} / {total} pertarungan selesai",
-  "story.error": "Progres tidak dapat dimuat.",
-  "story.retry": "Coba lagi",
+  "story.backToCampaigns": "Kembali ke kampanye",
   "story.source": "Liputan resmi pertarungan",
 
   "roadmap.hub.label": "Bagian komunitas",

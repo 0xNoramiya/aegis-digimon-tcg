@@ -10,6 +10,8 @@ import {
   type ChatSender,
   type Seat,
 } from "@aegis/shared";
+import { BotLine } from "@aegis/shared/bot/BotLine";
+import { LOCALE_STORAGE_KEY } from "@/i18n/locales";
 import { playSound } from "../../design/sound";
 import { I18nProvider } from "../../i18n";
 import type { AegisRoom } from "../../net/client";
@@ -156,6 +158,7 @@ describe("MatchChatWindow", () => {
   });
   afterEach(() => {
     cleanup();
+    localStorage.removeItem(LOCALE_STORAGE_KEY);
   });
 
   const entries: ChatEntry[] = [
@@ -193,6 +196,29 @@ describe("MatchChatWindow", () => {
     expect(history).toContain("Spectator 2");
     expect(history).not.toContain("Change target!");
     expect(screen.getByRole("img", { name: "Change target!" })).toBeTruthy();
+  });
+
+  it.each([
+    ["en", "Digivolve! Go, WarGreymon!"],
+    ["pt-BR", "Digievoluir! Vai, WarGreymon!"],
+  ])("shows a bot line in %s with the digivolved card name", async (locale, text) => {
+    localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    renderWindow({
+      entries: [
+        {
+          id: 2,
+          own: false,
+          sender: player(1),
+          message: {
+            kind: "botLine",
+            line: BotLine.BIG_DIGIVOLVE.value,
+            text: "Digivolve! Go, WarGreymon!",
+            cardId: "BT21-026",
+          },
+        },
+      ],
+    });
+    expect(await screen.findByText(text)).toBeTruthy();
   });
 
   it("expands and shrinks from the title bar", () => {

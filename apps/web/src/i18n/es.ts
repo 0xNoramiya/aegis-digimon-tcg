@@ -71,8 +71,7 @@ export const es: Record<keyof typeof en, string> = {
   "story.signin":
     "Juegas como invitado. El progreso queda vinculado a este navegador; al iniciar sesión se usa el de tu cuenta.",
   "story.progress": "{completed} / {total} batallas completadas",
-  "story.error": "No se pudo cargar tu progreso.",
-  "story.retry": "Reintentar",
+  "story.backToCampaigns": "Volver a las campañas",
   "story.source": "Cobertura oficial de la batalla",
 
   "settings.shareDeckAfterMatch": "Compartir mi deck al finalizar la partida",
@@ -596,6 +595,13 @@ export const es: Record<keyof typeof en, string> = {
   "bot.style.defensive": "Defensivo",
   "lobby.botDeck": "Deck del bot",
   "bot.identity.label": "Bot",
+  "bot.line.greeting": "¡A combatir! Muéstrame lo mejor de ti.",
+  "bot.line.bossGreeting": "Llegaste lejos. ¡Ahora enfrenta todo mi poder!",
+  "bot.line.bigDigivolve": "¡Digievolucionar! ¡Adelante, {card}!",
+  "bot.line.pressure": "Tu seguridad se acabó. ¡Un golpe más!",
+  "bot.line.lastStand": "Sin seguridad... ¡pero aún no he terminado!",
+  "bot.line.victory": "¡Buena partida! Entrena y vuelve a intentarlo.",
+  "bot.line.defeat": "Esta vez fuiste más fuerte. ¡Buena partida!",
   "lobby.botDeckRandom": "Aleatorio",
   "lobby.botDeckRandomSet": "Aleatorio de {set}",
   "lobby.enterQueue": "Entrar en la cola",

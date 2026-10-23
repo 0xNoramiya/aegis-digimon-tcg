@@ -75,8 +75,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "story.signin":
     "Jogando como visitante. O progresso fica vinculado a este navegador; ao entrar, você usa o progresso da sua conta.",
   "story.progress": "{completed} / {total} batalhas concluídas",
-  "story.error": "Não foi possível carregar seu progresso.",
-  "story.retry": "Tentar novamente",
+  "story.backToCampaigns": "Voltar para as campanhas",
   "story.source": "Cobertura oficial da batalha",
 
   "settings.shareDeckAfterMatch": "Compartilhar meu deck após a partida",
@@ -606,6 +605,13 @@ export const ptBR: Record<keyof typeof en, string> = {
   "bot.style.defensive": "Defensivo",
   "lobby.botDeck": "Deck do bot",
   "bot.identity.label": "Bot",
+  "bot.line.greeting": "Vamos duelar! Mostre o seu melhor.",
+  "bot.line.bossGreeting": "Você chegou longe. Agora enfrente toda a minha força!",
+  "bot.line.bigDigivolve": "Digievoluir! Vai, {card}!",
+  "bot.line.pressure": "Sua segurança acabou. Só mais um ataque!",
+  "bot.line.lastStand": "Sem segurança... mas ainda não acabou!",
+  "bot.line.victory": "Boa partida! Treine e tente de novo.",
+  "bot.line.defeat": "Você foi mais forte desta vez. Boa partida!",
   "lobby.botDeckRandom": "Aleatório",
   "lobby.botDeckRandomSet": "Aleatório de {set}",
   "lobby.enterQueue": "Entrar na fila",

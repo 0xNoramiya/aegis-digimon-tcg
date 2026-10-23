@@ -51,3 +51,29 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.game-player-line__avatar .bot-portrait {
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--arena-side, var(--ds-line));
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 40%,
+    color-mix(in srgb, var(--arena-side, var(--ds-ink-accent)) 35%, var(--ds-ink)),
+    var(--ds-ink) 75%
+  );
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--arena-side, var(--ds-ink-accent)) 22%, transparent),
+    0 2px 6px rgb(0 0 0 / 35%);
+}
+
+.game-player-line__avatar .bot-portrait img {
+  transform: scale(1.08);
+}
+
+@media (min-width: 1024px) and (min-height: 760px) {
+  .game-player-line__avatar .bot-portrait {
+    width: 36px;
+    height: 36px;
+  }
+}

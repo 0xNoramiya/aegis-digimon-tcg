@@ -23,6 +23,13 @@ const interfaceMessages = {
   "game.input.reorder": "Enter/A：移动；方向键：排序；Enter/A：完成；Esc/B：撤销",
 
   "bot.identity.label": "机器人",
+  "bot.line.greeting": "来对战吧！拿出你的全部实力。",
+  "bot.line.bossGreeting": "你竟然走到了这里。现在接受我全部的力量吧！",
+  "bot.line.bigDigivolve": "进化！上吧，{card}！",
+  "bot.line.pressure": "你的安防已经没了。再来一击！",
+  "bot.line.lastStand": "安防已经清空……但我还没输！",
+  "bot.line.victory": "打得好！多加练习，再来挑战吧。",
+  "bot.line.defeat": "这次你更强。打得好！",
   "home.strategyGuides": "通过我们的策略指南学习如何使用卡组",
   ...decisionChoicesZhCN,
   "overlay.deleteThisDigimon": "消灭此数码宝贝",
@@ -69,8 +76,7 @@ const interfaceMessages = {
   "story.ready": "可挑战",
   "story.signin": "当前以访客身份游玩，进度保存在本浏览器；登录后改用账号进度。",
   "story.progress": "已完成 {completed} / {total} 场对战",
-  "story.error": "进度读取失败。",
-  "story.retry": "重试",
+  "story.backToCampaigns": "返回战役列表",
   "story.source": "官方对战收录",
 
   "roadmap.hub.label": "社区栏目",

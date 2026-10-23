@@ -18,7 +18,6 @@ export function StoryCatalogScreen({ campaignId, signedIn, onStart }: Params) {
   const text = (value: string) => getTranslatedStoryText({ text: value, locale });
   const [progress, setProgress] = useState<StoryCampaignProgress>();
   const [failed, setFailed] = useState(false);
-  const [revision, setRevision] = useState(0);
   useEffect(() => {
     let active = true;
     setProgress(undefined);
@@ -39,7 +38,8 @@ export function StoryCatalogScreen({ campaignId, signedIn, onStart }: Params) {
     return () => {
       active = false;
     };
-  }, [signedIn, campaignId, revision]);
+  }, [signedIn, campaignId]);
+  const loaded = progress !== undefined || failed;
   const campaign = storyCatalogCampaigns.find((entry) => entry.id === campaignId);
   const battles = getStoryCampaignBattles({ campaignId });
   const completed = battles.filter((battle) => progress?.completed.includes(battle.id)).length;
@@ -53,12 +53,7 @@ export function StoryCatalogScreen({ campaignId, signedIn, onStart }: Params) {
         <progress value={completed} max={battles.length} aria-label={campaign?.title} />
       </div>
       <p>{text("Choose a battle. Your partner is ready for the challenge.")}</p>
-      {failed && (
-        <p role="alert">
-          {t("story.error")} <Button onClick={() => setRevision((value) => value + 1)}>{t("story.retry")}</Button>
-        </p>
-      )}
-      {!progress && !failed && <p role="status">{t("common.loading")}</p>}
+      {!loaded && <p role="status">{t("common.loading")}</p>}
       {progress?.milestones?.includes(`story:${campaignId}`) && <p role="status">{text("Campaign completed")}</p>}
       <p className="story-catalog-list__location">{text("Five-card opening hand · no mulligan")}</p>
       <ol className="story-catalog-list">
@@ -82,7 +77,7 @@ export function StoryCatalogScreen({ campaignId, signedIn, onStart }: Params) {
               </div>
               <div className="story-catalog-list__action">
                 <span>{unlocked ? t(won ? "story.completed" : "story.ready") : t("story.locked")}</span>
-                <Button disabled={!progress || !unlocked} onClick={() => onStart(battle.id)}>
+                <Button disabled={!loaded || !unlocked} onClick={() => onStart(battle.id)}>
                   {won ? t("story.replay") : t("story.start")}
                 </Button>
               </div>

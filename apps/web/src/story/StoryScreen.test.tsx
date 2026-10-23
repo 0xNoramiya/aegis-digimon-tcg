@@ -61,7 +61,7 @@ it("opens every World 2 encounter as a battle without exposing deck lists, sourc
   );
   expect(screen.queryByRole("link")).toBeNull();
   expect(screen.queryByText(/WMD\d|DigiLab|2026-\d/)).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "All campaigns" }));
+  fireEvent.click(screen.getByRole("button", { name: "Back to campaigns" }));
   expect(screen.getByRole("heading", { name: "Choose your story" })).toBeTruthy();
 });
 
@@ -77,23 +77,17 @@ it("preserves the World recruit prerequisites and restores the campaign after a 
   expect(start).toHaveBeenCalledWith("dw1-003");
 });
 
-it("fails closed and retries when authoritative progress cannot be loaded", async () => {
-  request.mockRejectedValueOnce(new Error("offline"));
-  request.mockRejectedValueOnce(new Error("offline"));
-  renderStory("w2-001");
-  expect(await screen.findByRole("alert")).toBeTruthy();
-  expect(
-    screen.getAllByRole("button", { name: "Start battle" }).every((button) => (button as HTMLButtonElement).disabled),
-  ).toBe(true);
-  request.mockResolvedValue({ completed: [], milestones: [] });
-  fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+it("keeps battles without prerequisites playable and shows no error when progress cannot be loaded", async () => {
+  request.mockRejectedValue(new Error("offline"));
+  renderStory("dw1-001");
+  const kunemon = screen.getByRole("heading", { name: "Kunemon" }).closest("li")!;
   await vi.waitFor(() =>
-    expect(
-      screen
-        .getAllByRole("button", { name: "Start battle" })
-        .every((button) => !(button as HTMLButtonElement).disabled),
-    ).toBe(true),
+    expect((within(kunemon).getByRole("button", { name: "Start battle" }) as HTMLButtonElement).disabled).toBe(false),
   );
+  const ogremon = screen.getByRole("heading", { name: "Ogremon I + Agumon ×2" }).closest("li")!;
+  expect((within(ogremon).getByRole("button", { name: "Start battle" }) as HTMLButtonElement).disabled).toBe(true);
+  expect(screen.queryByRole("alert")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Try again" })).toBeNull();
 });
 
 it("preserves Liberator progress, localization and identities without source links", async () => {

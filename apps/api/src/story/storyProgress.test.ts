@@ -13,6 +13,11 @@ import { validateScenarioFixture } from "#api/engine/scenario/fixture";
 import { validateDecklist } from "#api/engine/deckValidation";
 import type { GameEngine } from "#api/engine/GameEngine";
 import { storyBattles } from "@aegis/shared/story/storyBattles";
+import { getStoryBattleDifficulty } from "@aegis/shared/story/getStoryBattleDifficulty";
+import { BotDifficulty } from "@aegis/shared/bot/BotDifficulty";
+import { BotStyle } from "@aegis/shared/bot/BotStyle";
+import { BotLine } from "@aegis/shared/bot/BotLine";
+import { CHAT_CHANNEL, type ChatBroadcast } from "@aegis/shared/protocol/chat";
 
 let accounts: AccountStore;
 const rooms: AegisRoom[] = [];
@@ -203,6 +208,47 @@ describe("story progression", () => {
       expect(room.state.players[1]!.deck.length).toBeGreaterThan(0);
     },
   );
+
+  it("seats the story persona and lets the boss greet and concede through match chat", async () => {
+    const room = createRoom("sa06");
+    const send = vi.fn<(type: string, payload: unknown) => void>();
+    const client = { sessionId: "player", send, view: undefined } as unknown as Client;
+    room.clients.push(client);
+    room.onJoin(client, { displayName: "Player", deck: RED_DECK, storyBattleId: "sa06" });
+    expect(room.addBot()).toBe(true);
+    const persona = room.state.players[1]!.botPersonaId;
+    expect(persona).toMatch(/^digimon:/);
+    expect(room.state.players[1]!.displayName).toBe(storyBattles.find((battle) => battle.id === "sa06")!.opponent);
+    const engine = (room as unknown as { engine: GameEngine }).engine;
+    engine.applyIntent(1, { type: "surrender" });
+    const getLines = () =>
+      send.mock.calls
+        .filter(([type]) => type === CHAT_CHANNEL)
+        .map(([, payload]) => payload as ChatBroadcast)
+        .map(({ sender, message }) => ({ sender, line: message.kind === "botLine" ? message.line : undefined }));
+    await vi.waitFor(() => {
+      expect(getLines()).toEqual([
+        { sender: { kind: "player", seat: 1 }, line: BotLine.BOSS_GREETING.value },
+        { sender: { kind: "player", seat: 1 }, line: BotLine.DEFEAT.value },
+      ]);
+    });
+  });
+
+  it.each(["sv01", "sa06"])("seats the fixed story bot level for %s instead of the lobby level", (battleId) => {
+    const room = createRoom(battleId);
+    const client = { sessionId: "player", send: vi.fn<() => void>(), view: undefined } as unknown as Client;
+    room.clients.push(client);
+    room.onJoin(client, { displayName: "Player", deck: RED_DECK, storyBattleId: battleId });
+    expect(room.addBot({ botDifficulty: BotDifficulty.MASTER.value, botStyle: BotStyle.DEFENSIVE.value })).toBe(true);
+    const difficulty = getStoryBattleDifficulty({ battleId })!;
+    const settings = (room as unknown as { botLevelSettings: ({ difficulty: string; style: string } | undefined)[] })
+      .botLevelSettings[1];
+    expect(settings?.difficulty).toBe(difficulty.botDifficulty);
+    expect(settings?.style).not.toBe(BotStyle.DEFENSIVE.value);
+    if (difficulty.botStyle) {
+      expect(settings?.style).toBe(difficulty.botStyle);
+    }
+  });
 
   it.each(storyBattles.filter((battle) => battle.playable).map((battle) => battle.id))(
     "provides valid fixed decks and board for %s",

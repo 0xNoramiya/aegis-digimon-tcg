@@ -12,6 +12,10 @@
   grid-template-columns: minmax(0, 1fr);
   gap: var(--ds-space-4);
 }
+
+.story-back {
+  justify-self: start;
+}
 .story-header {
   position: relative;
   height: 190px;

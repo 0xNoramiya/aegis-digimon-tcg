@@ -22,6 +22,13 @@ const interfaceMessages = {
   "game.input.reorder": "Enter/A: 移動開始、矢印: 並べ替え、Enter/A: 完了、Esc/B: 元に戻す",
 
   "bot.identity.label": "ボット",
+  "bot.line.greeting": "勝負だ！全力で来い！",
+  "bot.line.bossGreeting": "よくここまで来たな。私の全力を受けてみろ！",
+  "bot.line.bigDigivolve": "進化！行け、{card}！",
+  "bot.line.pressure": "セキュリティはもうない。あと一撃だ！",
+  "bot.line.lastStand": "セキュリティはゼロ……でも、まだ終わらない！",
+  "bot.line.victory": "いい勝負だった！鍛えて、また挑んでこい。",
+  "bot.line.defeat": "今回は君の方が強かった。いい勝負だった！",
   "home.strategyGuides": "戦略ガイドでデッキの使い方を学ぼう",
   ...decisionChoicesEn,
   "decision.choice.playSavedLevelFour": decisionChoicesEn["decision.choice.playSavedLevelFour"].replace(
@@ -74,8 +81,7 @@ const interfaceMessages = {
   "story.signin":
     "ゲストとしてプレイ中です。進行状況はこのブラウザーに紐づき、ログインするとアカウントの進行状況を使用します。",
   "story.progress": "{completed} / {total} バトルクリア",
-  "story.error": "進行状況を読み込めませんでした。",
-  "story.retry": "再試行",
+  "story.backToCampaigns": "キャンペーン一覧に戻る",
   "story.source": "公式バトル解説",
 
   "roadmap.hub.label": "コミュニティのセクション",

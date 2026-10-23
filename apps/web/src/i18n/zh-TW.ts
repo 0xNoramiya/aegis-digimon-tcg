@@ -22,6 +22,13 @@ const interfaceMessages = {
   "game.input.reorder": "Enter/A：移動；方向鍵：排序；Enter/A：完成；Esc/B：復原",
 
   "bot.identity.label": "機器人",
+  "bot.line.greeting": "來對戰吧！拿出你的全部實力。",
+  "bot.line.bossGreeting": "你竟然走到了這裡。現在接受我全部的力量吧！",
+  "bot.line.bigDigivolve": "進化！上吧，{card}！",
+  "bot.line.pressure": "你的安防已經沒了。再來一擊！",
+  "bot.line.lastStand": "安防已經清空……但我還沒輸！",
+  "bot.line.victory": "打得好！多加練習，再來挑戰吧。",
+  "bot.line.defeat": "這次你更強。打得好！",
   "home.strategyGuides": "透過我們的策略指南學習如何使用牌組",
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "消滅此數碼寶貝",
@@ -68,8 +75,7 @@ const interfaceMessages = {
   "story.ready": "可遊玩",
   "story.signin": "正在以訪客身分遊玩。進度與此瀏覽器關聯；登入後使用帳號進度。",
   "story.progress": "已完成 {completed} / {total} 場戰鬥",
-  "story.error": "無法載入進度。",
-  "story.retry": "重試",
+  "story.backToCampaigns": "返回戰役列表",
   "story.source": "官方戰鬥解說",
 
   "roadmap.hub.label": "社群區塊",

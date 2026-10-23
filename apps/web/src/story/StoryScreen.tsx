@@ -33,7 +33,6 @@ export function StoryScreen({ signedIn, onSignIn, onStart, initialBattleId }: Pa
   const [character, setCharacter] = useState("Shoto Kazama");
   const [progress, setProgress] = useState<StoryProgress>();
   const [failed, setFailed] = useState(false);
-  const [revision, setRevision] = useState(0);
   useEffect(() => {
     let active = true;
     setProgress(undefined);
@@ -52,7 +51,8 @@ export function StoryScreen({ signedIn, onSignIn, onStart, initialBattleId }: Pa
     return () => {
       active = false;
     };
-  }, [signedIn, revision]);
+  }, [signedIn]);
+  const loaded = progress !== undefined || failed;
   const battles = liberatorBattles.filter((battle) => !character || battle.character === character);
   const completed = battles.filter((battle) => progress?.completed.includes(battle.id)).length;
   const totalCompleted = liberatorBattles.filter((battle) => progress?.completed.includes(battle.id)).length;
@@ -62,6 +62,15 @@ export function StoryScreen({ signedIn, onSignIn, onStart, initialBattleId }: Pa
         {!campaign && <StoryCampaignLibrary completed={progress?.completed} onSelect={setCampaign} />}
         {campaign && (
           <>
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={Icons.ArrowLeft}
+              className="story-back"
+              onClick={() => setCampaign(undefined)}
+            >
+              {t("story.backToCampaigns")}
+            </Button>
             <header className="story-header" data-catalog={campaign !== StoryCampaignId.LIBERATOR.value || undefined}>
               {campaign === StoryCampaignId.LIBERATOR.value && (
                 <div className="story-header__art" aria-hidden="true">
@@ -85,9 +94,6 @@ export function StoryScreen({ signedIn, onSignIn, onStart, initialBattleId }: Pa
                 <p>{t("story.tagline")}</p>
               </div>
             </header>
-            <Button variant="secondary" onClick={() => setCampaign(undefined)}>
-              {getTranslatedStoryText({ text: "All campaigns", locale })}
-            </Button>
           </>
         )}
         {campaign && campaign !== StoryCampaignId.LIBERATOR.value && (
@@ -148,13 +154,7 @@ export function StoryScreen({ signedIn, onSignIn, onStart, initialBattleId }: Pa
                   </h2>
                   <span>{t("story.progress", { completed, total: battles.length })}</span>
                 </div>
-                {failed && (
-                  <div className="story-notice" role="alert">
-                    {t("story.error")}{" "}
-                    <Button onClick={() => setRevision((value) => value + 1)}>{t("story.retry")}</Button>
-                  </div>
-                )}
-                {!progress && !failed && <p role="status">{t("common.loading")}</p>}
+                {!loaded && <p role="status">{t("common.loading")}</p>}
                 <ol className="story-list">
                   {battles.map((battle, index) => {
                     const won = progress?.completed.includes(battle.id) === true;
@@ -167,7 +167,7 @@ export function StoryScreen({ signedIn, onSignIn, onStart, initialBattleId }: Pa
                         number={index + 1}
                         completed={won}
                         locked={locked}
-                        canStart={!!progress && !locked && battle.playable}
+                        canStart={loaded && !locked && battle.playable}
                         onStart={onStart}
                       />
                     );

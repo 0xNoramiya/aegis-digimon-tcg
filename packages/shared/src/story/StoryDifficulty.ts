@@ -1,3 +1,6 @@
+import { BotDifficulty } from "#shared/bot/BotDifficulty";
+import { BotStyle } from "#shared/bot/BotStyle";
+
 export const StoryDifficulty = {
   INTRO: {
     name: "INTRO",
@@ -5,7 +8,8 @@ export const StoryDifficulty = {
     playerSecurity: 5,
     opponentSecurity: 5,
     opponentLevel: null,
-    isAggressive: false,
+    botDifficulty: BotDifficulty.CASUAL.value,
+    botStyle: null,
   },
   CHALLENGE: {
     name: "CHALLENGE",
@@ -13,15 +17,17 @@ export const StoryDifficulty = {
     playerSecurity: 5,
     opponentSecurity: 5,
     opponentLevel: 3,
-    isAggressive: false,
+    botDifficulty: BotDifficulty.STANDARD.value,
+    botStyle: null,
   },
   ELITE: {
     name: "ELITE",
     value: "elite",
     playerSecurity: 5,
-    opponentSecurity: 6,
+    opponentSecurity: 5,
     opponentLevel: 4,
-    isAggressive: false,
+    botDifficulty: BotDifficulty.STANDARD.value,
+    botStyle: null,
   },
   BOSS: {
     name: "BOSS",
@@ -29,7 +35,8 @@ export const StoryDifficulty = {
     playerSecurity: 4,
     opponentSecurity: 6,
     opponentLevel: 5,
-    isAggressive: true,
+    botDifficulty: BotDifficulty.STANDARD.value,
+    botStyle: BotStyle.AGGRESSIVE.value,
   },
 } as const;
 

@@ -23,6 +23,13 @@ const interfaceMessages = {
   "game.input.reorder": "Entrée/A : déplacer ; flèches : réordonner ; Entrée/A : terminer ; Échap/B : annuler",
 
   "bot.identity.label": "Bot",
+  "bot.line.greeting": "En garde ! Montrez-moi ce que vous valez.",
+  "bot.line.bossGreeting": "Vous êtes allé loin. Affrontez maintenant toute ma puissance !",
+  "bot.line.bigDigivolve": "Digivolver ! Vas-y, {card} !",
+  "bot.line.pressure": "Votre sécurité est vide. Encore un coup !",
+  "bot.line.lastStand": "Plus de sécurité... mais je n'ai pas dit mon dernier mot !",
+  "bot.line.victory": "Belle partie ! Entraînez-vous et réessayez.",
+  "bot.line.defeat": "Vous étiez plus fort cette fois. Belle partie !",
   "home.strategyGuides": "Apprends à jouer un deck avec nos guides stratégiques",
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Delete this Digimon",
@@ -72,8 +79,7 @@ const interfaceMessages = {
   "story.signin":
     "Vous jouez en invité. La progression reste liée à ce navigateur ; la connexion utilise celle de votre compte.",
   "story.progress": "{completed} / {total} combats terminés",
-  "story.error": "Impossible de charger votre progression.",
-  "story.retry": "Réessayer",
+  "story.backToCampaigns": "Retour aux campagnes",
   "story.source": "Compte rendu officiel du combat",
 
   "roadmap.hub.label": "Sections de la communauté",
