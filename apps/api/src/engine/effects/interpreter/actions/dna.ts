@@ -148,6 +148,7 @@ export async function runDnaDigivolve(
     if (
       !materialsAreLoose &&
       action.materials.count === 2 &&
+      candidatePermanents(ctx, action.materials, { includeUnaffectable: true }).length > 2 &&
       Object.keys(action.materials).every((key) => key === "filter" || key === "count") &&
       action.looseMaterials === undefined &&
       !action.materials.isSelf &&
