@@ -634,7 +634,11 @@ export class CombatController {
               const allySuspended = this.suspendInCombat(ally);
               this.hooks.addDpModifier?.(attacker.permanentId, ally.currentDP);
               this.hooks.addSecurityAttack?.(attacker.permanentId);
-              await this.fireSuspended(ally, allySuspended);
+              await this.fireSuspended(ally, allySuspended, {
+                effectSuspendSeat: attackerSeat,
+                byEffectCardId: attacker.topCard.cardId,
+                byEffectKeyword: "Alliance",
+              });
               // Alliance suspends its chosen ally as an effect cost (§16-24), so the
               // effect-suspension bus must observe the actual transition after the keyword's
               // DP/security benefit has been installed. Carry the resolving keyword as the
@@ -1138,7 +1142,11 @@ export class CombatController {
     const allySuspended = this.suspendInCombat(ally);
     this.hooks.addDpModifier?.(attacker.permanentId, ally.currentDP);
     this.hooks.addSecurityAttack?.(attacker.permanentId);
-    await this.fireSuspended(ally, allySuspended);
+    await this.fireSuspended(ally, allySuspended, {
+      effectSuspendSeat: attacker.controllerSeat,
+      byEffectCardId: attacker.topCard.cardId,
+      byEffectKeyword: "Alliance",
+    });
     if (allySuspended) {
       await this.hooks.fireSubTrigger?.("whenEffectSuspends", {
         subjectPermanentId: ally.permanentId,
@@ -1237,9 +1245,17 @@ export class CombatController {
    * suspends the ally and only then adds its DP, and those two are one atomic effect (§16-24).
    * Each call site fires once its own step is complete.
    */
-  private async fireSuspended(permanent: Permanent, didSuspend: boolean): Promise<void> {
+  private async fireSuspended(
+    permanent: Permanent,
+    didSuspend: boolean,
+    cause?: Pick<TriggerInfo, "effectSuspendSeat" | "byEffectCardId" | "byEffectKeyword">,
+  ): Promise<void> {
     if (!didSuspend) return;
-    const trigger = { subjectPermanentId: permanent.permanentId, suspendedPermanentId: permanent.permanentId };
+    const trigger = {
+      subjectPermanentId: permanent.permanentId,
+      suspendedPermanentId: permanent.permanentId,
+      ...cause,
+    };
     const fireTappedWindow = () => this.hooks.fireTiming(EffectTiming.OnTappedAnyone, trigger);
     if (this.hooks.withPendingSuspensionSubTriggers !== undefined) {
       await this.hooks.withPendingSuspensionSubTriggers(trigger, fireTappedWindow);
