@@ -38,6 +38,7 @@ type Params = {
   simulations: number;
   candidateLimit?: number;
   maxDurationMs: number;
+  decisionDeadlineMs?: number;
   getSeenOpponentCards: () => { main: readonly string[]; eggs: readonly string[] };
 };
 
@@ -115,7 +116,7 @@ async function chooseRootAction({
   }
   const deadlineEpochMs = Math.min(
     currentEpochMs() + input.maxDurationMs,
-    decisionStartedAt + LIVE_SEARCH_DECISION_DEADLINE_MS,
+    decisionStartedAt + (input.decisionDeadlineMs ?? LIVE_SEARCH_DECISION_DEADLINE_MS),
   );
   if (deadlineEpochMs - currentEpochMs() < MIN_SEARCH_WINDOW_MS) {
     fallbacks[LiveSearchFallback.DEADLINE.value]++;

@@ -9,6 +9,8 @@ import { BotReference } from "#api/bot/levels/BotReference";
 import { isBotReference } from "#api/bot/levels/isBotReference";
 import { BOT_LEVEL_CONFIGS } from "#api/bot/levels/BOT_LEVEL_CONFIGS";
 import { createLevelBotOptions } from "#api/bot/levels/createLevelBotOptions";
+import { LEVEL_SEARCH_POLICY_TIMEOUT_MS } from "#api/bot/levels/LEVEL_SEARCH_POLICY_TIMEOUT_MS";
+import type { LevelSearchTiming } from "#api/bot/levels/LevelSearchTiming";
 import { prewarmLiveSearchWorkers } from "#api/bot/search/prewarmLiveSearchWorkers";
 import { runBotMatch, type SeatConfig } from "#api/bot/matchHarness";
 import { createEvaluationPolicy } from "#api/bot/policy";
@@ -40,7 +42,9 @@ function parseDeck(input: unknown): Decklist {
   return deck;
 }
 
-export async function runLevelPanelGame(input: unknown) {
+type Options = { searchTiming?: LevelSearchTiming };
+
+export async function runLevelPanelGame(input: unknown, { searchTiming }: Options = {}) {
   if (typeof input !== "object" || input === null) {
     throw new Error("Invalid level panel input");
   }
@@ -91,7 +95,7 @@ export async function runLevelPanelGame(input: unknown) {
           : undefined;
     const policyTimeoutMs =
       assignedDifficulty !== undefined && BOT_LEVEL_CONFIGS[assignedDifficulty].searchSimulations > 0
-        ? 1_950
+        ? (searchTiming?.policyTimeoutMs ?? LEVEL_SEARCH_POLICY_TIMEOUT_MS)
         : undefined;
     return {
       deck,
@@ -101,7 +105,15 @@ export async function runLevelPanelGame(input: unknown) {
       policyFactory: (engine) => {
         const policySeed = seed + current * 7919;
         if (currentSeat === seat) {
-          return createLevelBotOptions({ engine, seat: current, deck, seed: policySeed, difficulty, style }).policy!;
+          return createLevelBotOptions({
+            engine,
+            seat: current,
+            deck,
+            seed: policySeed,
+            difficulty,
+            style,
+            searchTiming,
+          }).policy!;
         }
         if (
           reference === BotReference.SELECTED_LEVEL.value &&
@@ -115,6 +127,7 @@ export async function runLevelPanelGame(input: unknown) {
             seed: policySeed,
             difficulty: referenceDifficulty,
             style: referenceStyle,
+            searchTiming,
           }).policy!;
         }
         if (reference === BotReference.LEGACY_BALANCED.value) {

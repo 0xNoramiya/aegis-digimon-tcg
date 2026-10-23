@@ -12,6 +12,8 @@ import { createLiveSearchPolicy } from "#api/bot/search/createLiveSearchPolicy";
 import { resolveLevelConfig } from "#api/bot/levels/resolveLevelConfig";
 import { createStyledPlannerParameters } from "#api/bot/levels/createStyledPlannerParameters";
 import { createLevelProfile } from "#api/bot/levels/createLevelProfile";
+import { LEVEL_SEARCH_POLICY_TIMEOUT_MS } from "#api/bot/levels/LEVEL_SEARCH_POLICY_TIMEOUT_MS";
+import type { LevelSearchTiming } from "#api/bot/levels/LevelSearchTiming";
 import { createEvaluationPolicy } from "#api/bot/policy";
 import { breedingActions, mainActions, mainActionReady } from "#api/bot/training/actions";
 import type { GameEngine } from "#api/engine/GameEngine";
@@ -23,9 +25,18 @@ type Params = {
   seat: Seat;
   deck: DefaultBotDeck;
   seed: number;
+  searchTiming?: LevelSearchTiming;
 };
 
-export function createLevelBotOptions({ difficulty, style, engine, seat, deck, seed }: Params): BotOptions {
+export function createLevelBotOptions({
+  difficulty,
+  style,
+  engine,
+  seat,
+  deck,
+  seed,
+  searchTiming,
+}: Params): BotOptions {
   const config = resolveLevelConfig({ difficulty, style });
   const profile = createLevelProfile({ difficulty, style });
   const seenCards = createSeenOpponentCardsTracker({ observer: seat });
@@ -80,7 +91,8 @@ export function createLevelBotOptions({ difficulty, style, engine, seat, deck, s
           seed,
           simulations: config.searchSimulations,
           candidateLimit: config.searchCandidateLimit,
-          maxDurationMs: config.searchBudgetMs,
+          maxDurationMs: searchTiming?.searchBudgetMs ?? config.searchBudgetMs,
+          ...(searchTiming === undefined ? {} : { decisionDeadlineMs: searchTiming.decisionDeadlineMs }),
           getSeenOpponentCards: seenCards.snapshot,
         })
       : config.usesResidual
@@ -91,7 +103,9 @@ export function createLevelBotOptions({ difficulty, style, engine, seat, deck, s
     profile,
     seed,
     policy: { ...policy, name: `level:${difficulty}:${style}:${policy.name}` },
-    ...(config.searchSimulations === 0 ? {} : { policyTimeoutMs: 1_950 }),
+    ...(config.searchSimulations === 0
+      ? {}
+      : { policyTimeoutMs: searchTiming?.policyTimeoutMs ?? LEVEL_SEARCH_POLICY_TIMEOUT_MS }),
     minThinkMs: config.minThinkMs,
     maxThinkMs: config.maxThinkMs,
     canChooseMainAction: () => mainActionReady(engine),

@@ -11,6 +11,8 @@ const input = {
   decks: [RED_DECK, BLUE_DECK],
 };
 
+const simulationBoundTiming = { searchBudgetMs: 60_000, decisionDeadlineMs: 60_000, policyTimeoutMs: 120_000 };
+
 describe("headless level panel protocol", () => {
   it("runs a real configured match and returns strength, style and computation measurements", async () => {
     const result = await runLevelPanelGame(input);
@@ -21,11 +23,14 @@ describe("headless level panel protocol", () => {
   });
 
   it.each([42, 43, 44, 5000, 5001])(
-    "finishes an Expert test-deck match without search timeout fallbacks at seed %i",
+    "finishes a simulation-bound Expert test-deck match without search fallbacks at seed %i",
     async (seed) => {
-      const result = await runLevelPanelGame({ ...input, seed, difficulty: "expert", reference: "random-legal" });
+      const result = await runLevelPanelGame(
+        { ...input, seed, difficulty: "expert", reference: "random-legal" },
+        { searchTiming: simulationBoundTiming },
+      );
       expect(result.problem).toBeUndefined();
-      expect(result.searchFallbacks[0]?.deadline).toBe(0);
+      expect(result.searchFallbacks[0]).toEqual({ deadline: 0, capacity: 0, error: 0 });
     },
     60000,
   );

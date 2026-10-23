@@ -50,6 +50,12 @@ ready, so the first simulation does not pay for them. A search that finds no war
 worker returns the Standard answer immediately. The headless level panel waits for
 warm workers before it starts a match.
 
+`runLevelPanelGame` and `createLevelBotOptions` accept an optional `searchTiming`
+(`LevelSearchTiming`) that replaces the search budget, the decision deadline and the
+`BotPlayer` ceiling for every level seat. Tests use it to make search
+simulation-bound, so CPU load cannot cause `deadline` fallbacks. The panel request
+protocol does not expose it; production and panel games keep the shipped timing.
+
 The live search policy counts its Standard-answer fallbacks as `deadline`,
 `capacity` and `error` in `searchFallbacks`. These counts are separate from the
 `BotPlayer` inference fallbacks. They appear in the level panel result and in
