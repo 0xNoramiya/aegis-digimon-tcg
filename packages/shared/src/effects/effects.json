@@ -41727,6 +41727,7 @@
           {
             "kind": "SubTrigger",
             "event": "endOfTurn",
+            "printedClause": "[Pending] At the next end of your opponent’s turn, return it to the hand.",
             "turnScope": "opponentsTurn",
             "once": true,
             "on": { "filter": { "boundRef": "playedHawkmonOrSalamon" }, "count": 1 },
@@ -41808,6 +41809,7 @@
           {
             "kind": "SubTrigger",
             "event": "endOfTurn",
+            "printedClause": "[Pending] At the next end of your opponent’s turn, return it to the hand.",
             "turnScope": "opponentsTurn",
             "once": true,
             "on": { "filter": { "boundRef": "playedVeemonOrWormmon" }, "count": 1 },
@@ -42072,6 +42074,7 @@
           {
             "kind": "SubTrigger",
             "event": "endOfTurn",
+            "printedClause": "[Pending] At the next end of your opponent’s turn, return it to the hand.",
             "turnScope": "opponentsTurn",
             "once": true,
             "on": { "filter": { "boundRef": "playedArmadillomonOrPatamon" }, "count": 1 },
@@ -115203,6 +115206,7 @@
           {
             "kind": "SubTrigger",
             "event": "whenBlocked",
+            "printedClause": "[Granted] [Your Turn] When this Digimon is blocked, gain +3 memory.",
             "on": { "filter": {}, "count": 1, "fromSelectionRef": "atomicInfernoTarget" },
             "sourceFilter": { "isSelfRef": true },
             "actions": [{ "kind": "GainMemory", "amount": 3 }],
@@ -121312,6 +121316,7 @@
             "effectTextPart": "Then, if you have 1 or more security cards, delete that Digimon at the end of the turn.",
             "kind": "SubTrigger",
             "event": "endOfTurn",
+            "printedClause": "[Pending] At the end of the turn, delete that Digimon.",
             "once": true,
             "playerScoped": true,
             "duration": "untilYourTurnEnd",
@@ -121406,6 +121411,7 @@
             "effectTextPart": "Then, if you have 1 or more security cards, delete that Digimon at the end of the turn.",
             "kind": "SubTrigger",
             "event": "endOfTurn",
+            "printedClause": "[Pending] At the end of the turn, delete that Digimon.",
             "once": true,
             "playerScoped": true,
             "duration": "untilYourTurnEnd",
@@ -143078,6 +143084,7 @@
           {
             "kind": "SubTrigger",
             "event": "endOfTurn",
+            "printedClause": "[Pending] At turn end, delete the Digimon this effect played.",
             "on": { "filter": { "boundRef": "playedByThisEffect" }, "count": 1 },
             "actions": [
               {
@@ -162805,6 +162812,7 @@
           {
             "kind": "SubTrigger",
             "event": "endOfOpponentTurn",
+            "printedClause": "[Pending] At the next end of your opponent's turn, delete that Digimon.",
             "once": true,
             "on": { "filter": { "boundRef": "playedByThisEffect" }, "count": 1 },
             "actions": [
@@ -163547,6 +163555,7 @@
           {
             "kind": "SubTrigger",
             "event": "endOfTurn",
+            "printedClause": "[Pending] At the end of the turn, return this Digimon to the hand.",
             "once": true,
             "actions": [
               {
