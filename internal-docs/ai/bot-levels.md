@@ -352,10 +352,18 @@ cd apps/api && COUNTER_CONFORMANCE_CARD_STEP=1 COUNTER_CONFORMANCE_REPORT=/tmp/c
   pnpm exec vitest run src/engine/snapshot/continuationSnapshotConformance.test.ts -t "Counter windows"
 ```
 
-In natural play, one Counter window in the 30-match probe could not be captured. A
-play-cost resident watcher (`isResidentCostSourceActive` in `timing/payCost.ts`) and a
-`() => false` callback had no snapshot factory, so no settled anchor existed within the
-64-input limit. That is a capture gap, not a replay mismatch.
+In natural play, one Counter window in the 30-match probe could not be captured.
+King Drasil_7D6 (BT13-007) in breeding left two kinds of callback without a snapshot
+factory. Its "[Your Turn] All of your Digimon can't digivolve" lock stored a
+`() => false` permanent matcher and a Tamer-as-Digimon matcher in the player
+restriction ledger. Its play-cost reduction stored the breeding resident watcher
+`isResidentCostSourceActive` from `timing/payCost.ts` in a cost replacement. Every
+settled snapshot during the owner's turn failed, so no anchor existed within the
+64-input limit. These callbacks now restore from the `ir-no-permanent-match`,
+`ir-tamer-as-digimon-match` and `resident-cost-source-active` factories. The probe
+match now captures that Counter window and replays it to the end without a mismatch.
+The `king-drasil-breeding-snapshot` fixture covers this path. Its conformance test
+requires settled Main snapshots after the reduced play and no capture failures.
 
 **Block and Counter search.** `createLiveSearchPolicy` now overrides
 `chooseBlockResponse` and `chooseCounterResponse`. It asks the level policy for a
