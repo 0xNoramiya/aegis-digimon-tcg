@@ -18,6 +18,23 @@ it("counts a search failure before the deadline as an error fallback", () => {
   );
 });
 
+it("counts a worker-reported search error that arrives after the shared deadline as a deadline fallback", () => {
+  const error = new LiveSearchFailure({
+    fallback: LiveSearchFallback.ERROR.value,
+    message: "No valid paired samples reached the root: continuationLimit",
+  });
+  expect(getSearchFailureFallback({ error, deadlineEpochMs: currentEpochMs() - 1 })).toBe(
+    LiveSearchFallback.DEADLINE.value,
+  );
+});
+
+it("counts a worker-reported search error before the shared deadline as an error fallback", () => {
+  const error = new LiveSearchFailure({ fallback: LiveSearchFallback.ERROR.value, message: "Hidden sampling changed" });
+  expect(getSearchFailureFallback({ error, deadlineEpochMs: currentEpochMs() + 60_000 })).toBe(
+    LiveSearchFallback.ERROR.value,
+  );
+});
+
 it("keeps the fallback a worker pool failure already names", () => {
   const error = new LiveSearchFailure({ fallback: LiveSearchFallback.CAPACITY.value, message: "full" });
   expect(getSearchFailureFallback({ error, deadlineEpochMs: currentEpochMs() - 1 })).toBe(
