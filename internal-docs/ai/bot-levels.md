@@ -532,8 +532,12 @@ What the holdout check shows:
   does not confirm the lower bound on its own.
 - **Expert Balanced against legacy** is 0.43, against 0.59 on the development pool and
   no higher than Standard. The direct Expert > Standard Balanced step is still 0.60.
-  The cause may be noise, the deck mix, or live deadlines under load. It is an open
-  risk.
+  A simulation-bound re-check on the holdout decks used 64 unused seed blocks (5000 to
+  5063, outside the reserved range), with all 768 games valid. It measured Expert
+  Balanced at 0.55 (0.50–0.61) against legacy, Standard Balanced at 0.47 (0.41–0.53),
+  and Expert > Standard Balanced at 0.56 (0.51–0.61). The 0.43 was mostly noise and
+  deadline fallbacks under load. On the holdout decks, the Balanced Expert step stays
+  above Standard, but at 0.56 it is below the 0.60 target.
 - **Adjacent steps:** only Casual > Beginner Balanced, Expert > Standard Aggressive
   and Master > Expert Balanced have intervals above 0.50. The holdout does not
   contradict the development spacing, and it cannot confirm it.
