@@ -1,6 +1,11 @@
 /* Board display choices for the match dialog. They share their stores with the
    Settings screen, so a change here shows on the board behind the dialog at once. */
 
+import { cardConfirmationModeLabelKey } from "@/game/cardConfirmation/cardConfirmationModeLabelKey";
+import { cardConfirmationModeValues } from "@/game/cardConfirmation/cardConfirmationModeValues";
+import { cardConfirmationPreference } from "@/game/cardConfirmation/cardConfirmationPreference";
+import { isCardConfirmationMode } from "@/game/cardConfirmation/isCardConfirmationMode";
+
 import { EFFECT_PROMPT_POSITIONS, setEffectPromptPosition, useEffectPromptPosition } from "../../effectPromptPosition";
 import { TEXT_SCALES, setTextScale, useTextScale } from "../../../design/textScale";
 import { useId, useState } from "react";
@@ -13,6 +18,8 @@ import { setEffectConfirmationHoldEnabled, useEffectConfirmationHold } from "../
 import { setHandAutoSortEnabled, useHandAutoSort } from "../../handAutoSort";
 import { arenaInputPreference } from "@/game/input/arenaInputPreference";
 import { useArenaInputEnabled } from "@/game/input/useArenaInputEnabled";
+import { hoverZoomPreference } from "@/design/hoverZoomPreference";
+import { useHoverZoomPreference } from "@/design/useHoverZoomPreference";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../../noticeDuration";
 import { EFFECT_SPEEDS, getEffectSpeed, setEffectSpeed, type EffectSpeed } from "../../pacing";
 
@@ -26,6 +33,7 @@ export function ArenaBoardSettings() {
   const { t } = useTranslation();
   const titleId = useId();
   const pileCountsShown = usePileCountsShown();
+  const hoverZoom = useHoverZoomPreference();
   const textScale = useTextScale();
   const handAutoSort = useHandAutoSort();
   const arenaInputEnabled = useArenaInputEnabled();
@@ -33,6 +41,7 @@ export function ArenaBoardSettings() {
   const effectConfirmationHold = useEffectConfirmationHold();
   const effectPromptPosition = useEffectPromptPosition();
   const noticeDuration = useNoticeDuration();
+  const cardConfirmationMode = cardConfirmationPreference.useMode();
   const [effectSpeed, setEffectSpeedChoice] = useState<EffectSpeed>(getEffectSpeed);
   return (
     <section className="game-arena-board-settings" aria-labelledby={titleId}>
@@ -124,6 +133,25 @@ export function ArenaBoardSettings() {
           </select>
           <small id={`${titleId}-notice-duration-desc`}>{t("settings.noticeDurationDesc")}</small>
         </div>
+        <div className="game-arena-settings__row game-arena-board-settings__size">
+          <label htmlFor={`${titleId}-card-confirmation`}>{t("settings.cardConfirmation")}</label>
+          <select
+            id={`${titleId}-card-confirmation`}
+            value={cardConfirmationMode}
+            aria-describedby={`${titleId}-card-confirmation-desc`}
+            onChange={(event) => {
+              const mode = event.target.value;
+              if (isCardConfirmationMode(mode)) cardConfirmationPreference.setMode(mode);
+            }}
+          >
+            {cardConfirmationModeValues.map((mode) => (
+              <option key={mode} value={mode}>
+                {t(cardConfirmationModeLabelKey(mode))}
+              </option>
+            ))}
+          </select>
+          <small id={`${titleId}-card-confirmation-desc`}>{t("settings.cardConfirmationDesc")}</small>
+        </div>
         <div className="game-arena-settings__row">
           <Switch
             checked={effectConfirmationHold}
@@ -162,6 +190,14 @@ export function ArenaBoardSettings() {
             label={t("settings.pileCounts")}
             description={t("settings.pileCountsDesc")}
             onChange={setPileCountsShown}
+          />
+        </div>
+        <div className="game-arena-settings__row">
+          <Switch
+            checked={hoverZoom}
+            label={t("settings.hoverZoom")}
+            description={t("settings.hoverZoomDesc")}
+            onChange={hoverZoomPreference.setEnabled}
           />
         </div>
       </div>

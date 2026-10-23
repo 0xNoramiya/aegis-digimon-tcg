@@ -15,16 +15,9 @@ export const compiled: CompiledCard = {
                 "Add 1 purple or red card with the [Free] trait or 1 card with [Imperialdramon] in its name among them to your hand",
               filter: {
                 controllerDefault: "mine",
-                colors: ["Red", "Purple"],
-                nameOrTrait: [
-                  {
-                    tokens: ["Free"],
-                    match: "trait",
-                  },
-                  {
-                    tokens: ["Imperialdramon"],
-                    match: "name",
-                  },
+                or: [
+                  { colors: ["Red", "Purple"], nameOrTrait: [{ tokens: ["Free"], match: "trait" }] },
+                  { nameOrTrait: [{ tokens: ["Imperialdramon"], match: "name" }] },
                 ],
               },
               count: 1,
@@ -34,16 +27,9 @@ export const compiled: CompiledCard = {
               effectTextPart: "trash 1 such card among them.",
               filter: {
                 controllerDefault: "mine",
-                colors: ["Red", "Purple"],
-                nameOrTrait: [
-                  {
-                    tokens: ["Free"],
-                    match: "trait",
-                  },
-                  {
-                    tokens: ["Imperialdramon"],
-                    match: "name",
-                  },
+                or: [
+                  { colors: ["Red", "Purple"], nameOrTrait: [{ tokens: ["Free"], match: "trait" }] },
+                  { nameOrTrait: [{ tokens: ["Imperialdramon"], match: "name" }] },
                 ],
               },
               count: 1,

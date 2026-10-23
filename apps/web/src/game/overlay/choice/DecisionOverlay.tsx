@@ -1,3 +1,5 @@
+import { getCardTextField } from "@/i18n/getCardTextField";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { EffectText } from "@/game/EffectText";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { isAllowedTargetSelection } from "@/game/screen/model/isAllowedTargetSelection";
@@ -100,6 +102,7 @@ export function DecisionOverlay({
 }) {
   const getCardName = useTranslatedCardName();
   const { t, locale } = useTranslation();
+  const translateCardText = useTranslatedCardText();
   const effectPromptPosition = useEffectPromptPosition();
   const openCard = useCardOpener();
   const wideDialog = useMediaQuery(WIDE_DIALOG_QUERY);
@@ -127,11 +130,16 @@ export function DecisionOverlay({
     isSelect &&
     candidates.length === 1 &&
     abstractTargetLabel({ instanceId: candidates[0]!.instanceId, t }) !== undefined;
-  const partitionCandidate = request.options?.candidateInstanceIds?.[0];
+  const activationCandidate = request.options?.candidateInstanceIds?.[0];
   const isPartitionActivation =
     request.kind === "selectCards" &&
     request.options?.selectionContext === "partitionActivation" &&
-    partitionCandidate !== undefined;
+    activationCandidate !== undefined;
+  const isMaterialSaveActivation =
+    request.kind === "selectCards" &&
+    request.options?.selectionContext === "materialSaveActivation" &&
+    activationCandidate !== undefined;
+  const isKeywordActivation = isPartitionActivation || isMaterialSaveActivation;
   const isOrderCards = request.kind === "orderCards";
   const isOrderTriggers = request.kind === "orderTriggers";
   const isResolutionPlan = isOrderTriggers && request.options?.acceptsResolutionPlan === true;
@@ -155,17 +163,18 @@ export function DecisionOverlay({
     dpOf: (id) => candidates.find((candidate) => candidate.instanceId === id)?.currentDP,
   });
   const withinDPBudget = maxTotalDP === undefined || selectedDP <= maxTotalDP;
+  const hasCandidates = (request.options?.candidateInstanceIds?.length ?? 0) > 0;
   const canConfirm =
+    (picks.length > 0 || !hasCandidates) &&
     picks.length >= min &&
     picks.length <= max &&
     withinPlayCostBudget &&
     withinDPBudget &&
-    ((picks.length === 0 && min === 0) ||
-      isAllowedTargetSelection({
-        allowedTargetCombinations: request.options?.allowedTargetCombinations,
-        picks,
-        complete: true,
-      }));
+    isAllowedTargetSelection({
+      allowedTargetCombinations: request.options?.allowedTargetCombinations,
+      picks,
+      complete: true,
+    });
   // The fate every picked target meets, or nothing when the engine did not
   // project one for the action that raised this prompt.
   const fateBadge = request.options?.targetFate ? pendingFateBadge(request.options.targetFate) : undefined;
@@ -249,7 +258,7 @@ export function DecisionOverlay({
           request.options?.effectTextPart ? sourceEffectText : undefined,
         );
   const promptText =
-    isOptional || (isChoose && declineIndex !== undefined)
+    isOptional || isMaterialSaveActivation || (isChoose && declineIndex !== undefined)
       ? t("overlay.useEffectPrompt")
       : request.options?.selectionContext === "attackTarget"
         ? t("overlay.declareAttack")
@@ -269,8 +278,15 @@ export function DecisionOverlay({
   const emphasis = request.options?.effectTextEmphasis;
   const renderedEffectText = displayedEffectText ? (
     <EffectStepText
+      timing={request.options?.timing}
       text={displayedEffectText}
       emphasis={emphasis}
+      field={getCardTextField({
+        cardId: request.options?.effectTextCardId ?? sourceCardId,
+        timing: request.options?.timing,
+        isInherited: request.options?.isInherited,
+        text: displayedEffectText,
+      })}
       cardId={request.options?.effectTextCardId ?? sourceCardId}
     />
   ) : undefined;
@@ -370,7 +386,12 @@ export function DecisionOverlay({
             <div className="decision-overlay__question">
               <div className="decision-overlay__heading">
                 <h2 className="decision-overlay__title">
-                  {isResolutionPlan ? t("overlay.orderPendingEffects") : promptText}
+                  {isResolutionPlan
+                    ? t("overlay.orderPendingEffects")
+                    : translateCardText({
+                        text: promptText,
+                        cardId: request.options?.effectTextCardId ?? sourceCardId,
+                      })}
                 </h2>
               </div>
               <div className="decision-overlay__clauses">
@@ -379,6 +400,15 @@ export function DecisionOverlay({
                     {locale === "zh-CN" ? (
                       <EffectText
                         text={displayedEffectText}
+                        field={getCardTextField({
+                          cardId: request.options?.effectTextCardId ?? sourceCardId,
+                          timing: request.options?.timing,
+                          isInherited: request.options?.isInherited,
+                          text: displayedEffectText,
+                        })}
+                        surface="decision"
+                        timing={request.options?.timing}
+                        allowContext
                         cardId={request.options?.effectTextCardId ?? sourceCardId}
                       />
                     ) : (
@@ -399,7 +429,7 @@ export function DecisionOverlay({
             {draggableActivation ? <PromptMoveHandle drag={drag} className="decision-overlay__move-handle" /> : null}
           </div>
 
-          {isPartitionActivation ? (
+          {isKeywordActivation ? (
             <DecisionChoiceCards candidates={candidates} wideDialog={wideDialog} />
           ) : isSelect ? (
             <DecisionCandidateGrid
@@ -466,11 +496,11 @@ export function DecisionOverlay({
             <DecisionOptionalFooter onRespond={onRespond} onOpenBoard={() => setIsViewingBoard(true)} />
           ) : null}
 
-          {isPartitionActivation ? (
+          {isKeywordActivation ? (
             <DecisionOptionalFooter
               onRespond={(response) => {
                 if (response.kind !== "optional") return;
-                onRespond({ kind: "selectCards", instanceIds: response.accept ? [partitionCandidate] : [] });
+                onRespond({ kind: "selectCards", instanceIds: response.accept ? [activationCandidate] : [] });
               }}
               onOpenBoard={() => setIsViewingBoard(true)}
             />

@@ -1,8 +1,11 @@
+import { ManualCombatStage } from "#shared/manual/ManualCombatStage";
+import { GameMode } from "#shared/manual/GameMode";
 import { Schema, ArraySchema, type, view } from "@colyseus/schema";
 import { PlayerState } from "./PlayerState.js";
 import { Phase } from "./enums.js";
 import type { Seat } from "./enums.js";
 import { RematchStatus } from "#shared/protocol/RematchStatus";
+import type { RematchMode } from "#shared/protocol/RematchMode";
 import { MATCH_TIMER_START_SECONDS } from "#shared/matchTimer";
 
 /** View tag for decision details that are private to the responding seat. */
@@ -54,7 +57,7 @@ export function combatWindowKey(window: { kind: string; attackerPermanentId: str
   return `${window.kind}:${window.attackerPermanentId || window.permanentId}`;
 }
 
-export type SeriesPhase = "playing" | "choosing" | "starting" | "over";
+export type SeriesPhase = "playing" | "deckSelection" | "choosing" | "starting" | "over";
 export type SeriesEndReason = "" | "won" | "forfeit" | "draw" | "aborted";
 
 /**
@@ -84,6 +87,11 @@ export class SeriesState extends Schema {
   @type("string") endReason: SeriesEndReason = "";
   @type("string") rematchStatus: RematchStatus = RematchStatus.NONE.value;
   @type("int8") rematchOfferSeat = -1;
+  @type("string") rematchMode: RematchMode | "" = "";
+  @type("boolean") deckReady0 = false;
+  @type("boolean") deckReady1 = false;
+  @type("boolean") deckChanged0 = false;
+  @type("boolean") deckChanged1 = false;
 }
 
 /**
@@ -91,6 +99,35 @@ export class SeriesState extends Schema {
  * cursor, both players, and the current pending decision (if any). Mirrors
  * documented behavior.
  */
+export class ManualTable extends Schema {
+  @type("uint32") revision = 0;
+  @type(["string"]) history = new ArraySchema<string>();
+  @type("int8") undoRequester = -1;
+  @type("boolean") canUndo = false;
+  @type("int8") resultRequester = -1;
+  @type("int8") proposedWinner = -1;
+  @type("string") revealedJson = "[]";
+  @type("string") turnPhase: Phase = Phase.Main;
+  @type("string") combatStage: ManualCombatStage = ManualCombatStage.NONE.value;
+  @type("int8") attackerSeat = -1;
+  @type("string") attackerPermanentId = "";
+  @type("string") attackTargetPermanentId = "";
+  @type("string") blockerPermanentId = "";
+  @type("int8") signalSeat = -1;
+  @type("string") signalPermanentId = "";
+  @type("string") signalInstanceId = "";
+  @type("string") signalCardId = "";
+  @type("string") signalArtId = "";
+  @type("string") signalTargetPermanentId = "";
+  @type("int8") signalTargetSeat = -1;
+  @type("uint32") signalRevision = 0;
+  @type("int8") restartRequester = -1;
+  @type("int8") restartFirstSeat = -1;
+  @type("uint32") restartCount = 0;
+  @type("boolean") canHatch = false;
+  @type("boolean") canMoveFromBreeding = false;
+}
+
 export class GameState extends Schema {
   @type("string") matchLogId = "";
   @type("string") matchId = "";
@@ -146,4 +183,6 @@ export class GameState extends Schema {
   @type("boolean") canRollbackTurn = false;
   @type("int8") undoActionSeat = -1;
   @type("int8") rollbackTurnSeat = -1;
+  @type("string") gameMode: GameMode = GameMode.AUTOMATIC.value;
+  @type(ManualTable) manual = new ManualTable();
 }

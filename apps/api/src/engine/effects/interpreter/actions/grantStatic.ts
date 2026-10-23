@@ -1,3 +1,4 @@
+import { createTrackedPermanentFilterMatch } from "#api/engine/effects/interpreter/matching/createTrackedPermanentFilterMatch";
 import { getFieldEffectText } from "#api/engine/effects/interpreter/getFieldEffectText";
 // The GrantStatic action: name, trait, kind, and borrowed-effect grants.
 
@@ -186,7 +187,15 @@ export async function runGrantStaticAction(ctx: EffectContext, action: Action): 
           }
         }
         const isAffectedByGranter = affectabilityBySource(ctx);
-        for (const id of ids) {
+        const matchesTarget = (permanentId: string): boolean => {
+          const permanent = ctx.game.permanentById(permanentId);
+          return permanent !== undefined && permanentMatchesFilter(ctx, permanent, action.target.filter, ctx.source);
+        };
+        const tracksTargetFilter = action.includeLaterEntrants === true;
+        const recipientIds = tracksTargetFilter
+          ? ctx.game.player(ctx.source.ownerSeat).battleArea.map((permanent) => permanent.permanentId)
+          : ids;
+        for (const id of recipientIds) {
           // Anchor the grant on the granted Digimon's TOP-CARD instance (persists into trash) and
           // the granter's seat (the duration-sweep frame), so a granted [On Deletion] fires on the
           // grantee's own deletion exactly like a printed one.
@@ -196,7 +205,9 @@ export async function runGrantStaticAction(ctx: EffectContext, action: Action): 
           for (const token of action.tokens ?? []) {
             if (token === "get -5000DP") continue;
             ctx.fx.grantCustomEffect?.(top.instanceId, ctx.source.ownerSeat, token, grantDuration, {
-              isActive: () => isAffectedByGranter(id),
+              isActive: tracksTargetFilter
+                ? () => isAffectedByGranter(id) && matchesTarget(id)
+                : () => isAffectedByGranter(id),
             });
           }
         }
@@ -212,12 +223,7 @@ export async function runGrantStaticAction(ctx: EffectContext, action: Action): 
               ctx.source.ownerSeat,
               token,
               grantDuration,
-              (permanentId) => {
-                const permanent = ctx.game.permanentById(permanentId);
-                return (
-                  permanent !== undefined && permanentMatchesFilter(ctx, permanent, action.target.filter, ctx.source)
-                );
-              },
+              matchesTarget,
             );
           }
         }
@@ -524,10 +530,7 @@ export async function runGrantStaticAction(ctx: EffectContext, action: Action): 
               seat,
               "beAffected",
               grantDuration,
-              (permanentId) => {
-                const permanent = ctx.game.permanentById(permanentId);
-                return permanent !== undefined && permanentMatchesFilter(ctx, permanent, filter, ctx.source);
-              },
+              createTrackedPermanentFilterMatch({ ctx, filter, sourceKinds: undefined }),
               {
                 sourceCardId: ctx.source.definition.cardId,
                 effectText: getFieldEffectText({ action, ctx }),

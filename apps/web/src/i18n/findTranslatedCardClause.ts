@@ -1,46 +1,18 @@
+import type { CardTextField } from "@/i18n/CardTextField";
+import { getChinesePrintedTimingLabel } from "@/i18n/getChinesePrintedTimingLabel";
 import { getCardDefinition } from "@aegis/shared/cards/registry";
-import { printedModalBullets } from "@aegis/shared/effects/printedClauses";
+import { printedModalBullets, printedModalPreamble } from "@aegis/shared/effects/printedClauses";
 import type { CardTranslationData } from "@/i18n/cardTranslationTypes";
 import { getDictionaryValue } from "@/i18n/getDictionaryValue";
 import { normalizePrintedTextKey } from "@/i18n/normalizePrintedTextKey";
 import { getPrintedClauseGroupTexts } from "@/game/getPrintedClauseGroupTexts";
 import { isEmbeddedPrintedTiming } from "@/game/isEmbeddedPrintedTiming";
 
-type Params = { text: string; translations?: CardTranslationData; cardId?: string };
+type Params = { text: string; translations?: CardTranslationData; cardId?: string; field?: CardTextField };
 type Clause = { text: string; signature: string };
 type ClauseParams = { text: string; source?: boolean };
 
-const timingLabels: Readonly<Record<string, string>> = {
-  "On Play": "登场时",
-  "When Digivolving": "进化时",
-  "When Attacking": "攻击时",
-  "On Deletion": "消灭时",
-  "All Turns": "双方的回合",
-  "Your Turn": "我方的回合",
-  "Opponent's Turn": "对方的回合",
-  "End of Your Turn": "我方的回合结束时",
-  "End of Opponent's Turn": "对方的回合结束时",
-  "End of All Turns": "双方的回合结束时",
-  "Start of Your Turn": "我方的回合开始时",
-  "Start of Opponent's Turn": "对方的回合开始时",
-  "Start of Your Main Phase": "我方的主要阶段开始时",
-  "Start of Main Phase": "主要阶段开始时",
-  "Start of Opponent's Main Phase": "对方的主要阶段开始时",
-  "End of Attack": "攻击结束时",
-  "When Moving": "移动时",
-  "When Linking": "连接时",
-  "Once Per Turn": "每回合1次",
-  Security: "安防",
-  Main: "主要",
-  Counter: "反击",
-  Hand: "手牌",
-  Trash: "废弃区",
-  Breeding: "育成区",
-  养成: "育成区",
-  链接时: "连接时",
-};
-
-export function findTranslatedCardClause({ text, translations, cardId }: Params): string | undefined {
+export function findTranslatedCardClause({ text, translations, cardId, field }: Params): string | undefined {
   if (!cardId || !translations) {
     return undefined;
   }
@@ -49,13 +21,9 @@ export function findTranslatedCardClause({ text, translations, cardId }: Params)
     return undefined;
   }
   const matches = new Set<string>();
-  for (const full of [
-    card.effectText,
-    card.inheritedEffectText,
-    card.securityEffectText,
-    card.optionEffect,
-    card.linkEffect,
-  ]) {
+  for (const full of field
+    ? [card[field]]
+    : [card.effectText, card.inheritedEffectText, card.securityEffectText, card.optionEffect, card.linkEffect]) {
     if (!full) {
       continue;
     }
@@ -81,9 +49,22 @@ export function findTranslatedCardClause({ text, translations, cardId }: Params)
       continue;
     }
     const requestedKey = normalizePrintedTextKey(text);
+    const sourceParts = getPrintedClauseGroupTexts(full);
+    const normalizedTranslated = translated.replace(/[【［]/g, "[").replace(/[】］]/g, "]");
+    const targetParts = getTranslatedParts(normalizedTranslated);
+    const sourcePrefix = sourceParts[0] ? full.slice(0, full.indexOf(sourceParts[0])).trim() : "";
+    const targetPrefix = targetParts[0]
+      ? normalizedTranslated.slice(0, normalizedTranslated.indexOf(targetParts[0])).trim()
+      : "";
+    if (/^[A-Za-z]/.test(sourcePrefix) && targetPrefix && normalizePrintedTextKey(sourcePrefix) === requestedKey) {
+      matches.add(targetPrefix);
+      continue;
+    }
     const requestedClauses = source.filter(
       (clause) =>
         normalizePrintedTextKey(clause.text) === requestedKey ||
+        (printedModalBullets(clause.text).length > 0 &&
+          normalizePrintedTextKey(printedModalPreamble(clause.text)) === requestedKey) ||
         printedModalBullets(clause.text).some((bullet) => normalizePrintedTextKey(bullet) === requestedKey),
     );
     const requested = requestedClauses[0];
@@ -101,10 +82,19 @@ export function findTranslatedCardClause({ text, translations, cardId }: Params)
         continue;
       }
       const sourceBullets = printedModalBullets(requested.text);
-      const targetBullets = printedModalBullets(candidates[0]!.text.replace(/(^|[\r\n])[ \t]*[·•]/g, "$1・"));
+      const targetText = candidates[0]!.text.replace(/(^|[\r\n])[ \t]*[·•]/g, "$1・");
+      const targetBullets = printedModalBullets(targetText);
       const indexes = sourceBullets.flatMap((bullet, index) =>
         normalizePrintedTextKey(bullet) === requestedKey ? [index] : [],
       );
+      if (
+        sourceBullets.length > 0 &&
+        sourceBullets.length === targetBullets.length &&
+        normalizePrintedTextKey(printedModalPreamble(requested.text)) === requestedKey
+      ) {
+        matches.add(printedModalPreamble(targetText));
+        continue;
+      }
       if (indexes.length === 1 && sourceBullets.length === targetBullets.length) {
         matches.add(targetBullets[indexes[0]!]!);
       }
@@ -124,8 +114,8 @@ function getClauses({ text, source = false }: ClauseParams): Clause[] {
       if (clauseText.slice(headerEnd, match.index).trim()) {
         break;
       }
-      const label = getTimingLabel(match[1]!.trim());
-      if (!label) {
+      const label = getChinesePrintedTimingLabel({ label: match[1]!.trim() });
+      if (!label || label === "规则") {
         break;
       }
       labels.push(label);
@@ -140,23 +130,6 @@ function getClauses({ text, source = false }: ClauseParams): Clause[] {
   });
 }
 
-function getTimingLabel(label: string): string | undefined {
-  label = label.replace(/[’‘]/g, "'");
-  const count = label.match(/^(?:(Once|Twice)|(\d+)\s+Times?)\s+Per Turn$/i);
-  if (count) {
-    let value = count[2];
-    if (count[1]) {
-      value = count[1].toLowerCase() === "once" ? "1" : "2";
-    }
-    return `每回合${value}次`;
-  }
-  return (
-    getDictionaryValue({ dictionary: timingLabels, key: label }) ??
-    Object.values(timingLabels).find((value) => value === label) ??
-    (/^每回合\d+次$/.test(label) ? label : undefined)
-  );
-}
-
 function getTranslatedParts(text: string): string[] {
   const groups: { start: number; end: number }[] = [];
   for (const match of text.matchAll(/\[([^\]\r\n]+)\]/g)) {
@@ -166,7 +139,7 @@ function getTranslatedParts(text: string): string[] {
         label,
       );
     const lineStart = !text.slice(text.lastIndexOf("\n", match.index) + 1, match.index).trim();
-    if (!getTimingLabel(label) && !metadata && !lineStart) {
+    if (!getChinesePrintedTimingLabel({ label }) && !metadata && !lineStart) {
       continue;
     }
     if (isEmbeddedPrintedTiming({ text, index: match.index })) {
@@ -180,7 +153,13 @@ function getTranslatedParts(text: string): string[] {
     }
     const previous = groups.at(-1);
     const gap = text.slice(previous?.end ?? 0, match.index).trim();
-    if (getTimingLabel(label) && !metadata && !lineStart && gap && !/[。.!?！？:：;；)）＞>》]$/.test(gap)) {
+    if (
+      getChinesePrintedTimingLabel({ label }) &&
+      !metadata &&
+      !lineStart &&
+      gap &&
+      !/[。.!?！？:：;；)）＞>》]$/.test(gap)
+    ) {
       continue;
     }
     if (previous && !text.slice(previous.end, match.index).trim()) {

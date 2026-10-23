@@ -310,7 +310,7 @@ describe("responsive application state", () => {
     window.history.replaceState(null, "", "/");
   }, 20_000);
 
-  it("stores the action confirmation preference from settings", async () => {
+  it("stores the card confirmation mode from settings", async () => {
     render(
       <I18nProvider>
         <AegisClient
@@ -328,13 +328,16 @@ describe("responsive application state", () => {
       </I18nProvider>,
     );
 
-    const confirmationSwitch = await screen.findByRole("switch", { name: /Confirm actions/ });
-    expect(confirmationSwitch.getAttribute("aria-checked")).toBe("true");
+    const confirmationModes = await screen.findByRole("group", { name: "Card confirmations" });
+    const always = within(confirmationModes).getByRole("button", { name: "Always ask" });
+    const playOnly = within(confirmationModes).getByRole("button", { name: "Skip play-only cards" });
+    expect(always.getAttribute("aria-pressed")).toBe("true");
 
-    fireEvent.click(confirmationSwitch);
+    fireEvent.click(playOnly);
 
-    expect(confirmationSwitch.getAttribute("aria-checked")).toBe("false");
-    expect(localStorage.getItem("aegis.action-confirmation.enabled")).toBe("false");
+    expect(playOnly.getAttribute("aria-pressed")).toBe("true");
+    expect(always.getAttribute("aria-pressed")).toBe("false");
+    expect(localStorage.getItem("aegis.card-confirmation.mode")).toBe("skip-play-only");
   });
 
   it("updates the URL during navigation and follows browser history events", async () => {

@@ -209,6 +209,8 @@ function createContextState(engine: PrimitivesEngine) {
   };
 
   return {
+    sequences: { delayedMemorySequence: 0, stripSequence: 0 },
+    customGrants: new Map<string, { grant: Record<string, unknown>; duration: EffectDuration }[]>(),
     engine,
     state,
     access,

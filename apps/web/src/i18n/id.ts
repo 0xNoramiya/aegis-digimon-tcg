@@ -1,8 +1,16 @@
+import { advancedBattlesId } from "@/i18n/learn/advancedBattles.id";
+import { rulesLayoutId } from "@/i18n/learn/rulesLayout.id";
+import { lessonCatalogId } from "@/i18n/learn/lessonCatalog.id";
+import { battleLessonsId } from "@/i18n/learn/battleLessons.id";
+import { manualEn } from "@/i18n/manual.en";
 import { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 import { providerEn } from "@/i18n/providers.en";
 import { en } from "@/i18n/en";
+import { learnId } from "@/i18n/learn/learn.id";
+import { learnDrillsId } from "@/i18n/learn/drills.id";
 
 const interfaceMessages = {
+  ...manualEn,
   "settings.arenaInput": "Keyboard dan pengontrol",
   "settings.arenaInputDesc":
     "Gerakkan kursor dengan tombol panah atau pengontrol, dan tampilkan tombol untuk setiap aksi.",
@@ -14,12 +22,20 @@ const interfaceMessages = {
   "game.input.scroll": "Gulir",
   "game.input.reorder": "Enter/A: pindahkan; panah: urutkan; Enter/A: selesai; Esc/B: batalkan",
 
+  "bot.identity.label": "Bot",
+  "home.strategyGuides": "Pelajari cara memainkan deck dengan panduan strategi kami",
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Delete this Digimon",
   "overlay.trashTopSecurityCard": en["overlay.trashTopSecurityCard"],
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...learnId,
+  ...learnDrillsId,
+  ...battleLessonsId,
+  ...lessonCatalogId,
+  ...rulesLayoutId,
+  ...advancedBattlesId,
   "settings.cardImageLanguage": "Bahasa gambar kartu",
   "settings.cardImageLanguageDesc":
     "Pilih bahasa default untuk koleksi dan salinan baru yang ditambahkan ke deck. Tombol ini juga mengganti ilustrasi alternatif di deck yang sudah ada. Kartu tanpa bahasa ini tetap memakai gambar saat ini.",
@@ -739,7 +755,7 @@ const interfaceMessages = {
   "lobby.randomCommunityPool": "Deck pribadi, terkenal, dan publik dari komunitas",
   "lobby.randomFailed": "Tidak dapat memilih deck. Coba lagi.",
   "lobby.randomDrawing": "Memilih deck…",
-  "overlay.viewUsedDeck": "Lihat deck yang digunakan",
+  "overlay.viewUsedDeck": "Deck Anda",
   "overlay.usedDeck": "Deck yang digunakan dalam pertandingan ini",
   "lobby.randomPool": "{count} deck legal di pool",
   "lobby.randomPoolOne": "1 deck legal di pool",
@@ -778,6 +794,16 @@ const interfaceMessages = {
   "lobby.playersHuman": "2 (manusia)",
   "lobby.identity": "Identitas",
   "lobby.playVsBot": "Main vs Bot",
+  "bot.difficulty.label": "Difficulty",
+  "bot.difficulty.beginner": "Beginner",
+  "bot.difficulty.casual": "Casual",
+  "bot.difficulty.standard": "Standard",
+  "bot.difficulty.expert": "Expert",
+  "bot.difficulty.master": "Master",
+  "bot.style.label": "Style",
+  "bot.style.balanced": "Balanced",
+  "bot.style.aggressive": "Aggressive",
+  "bot.style.defensive": "Defensive",
   "lobby.botDeck": "Deck bot",
   "lobby.botDeckRandom": "Acak",
   "lobby.botDeckRandomSet": "Acak dari {set}",
@@ -833,6 +859,7 @@ const interfaceMessages = {
   "library.rowColor": "Warna",
   "library.rowType": "Jenis",
   "library.rowPlayCost": "Play cost",
+  "library.rowUseCost": "Use cost",
   "library.rowDp": "DP",
   "library.rowTraits": "Trait",
   "library.rowRarity": "Kelangkaan",
@@ -947,9 +974,12 @@ const interfaceMessages = {
   "settings.keepAwake": "Biarkan layar tetap menyala",
   "settings.keepAwakeDesc":
     "Jaga layar tetap menyala selama pertandingan terbuka, agar perangkat tidak tidur di antara giliran",
-  "settings.actionConfirmations": "Konfirmasi aksi",
-  "settings.actionConfirmationsDesc":
-    "Tanyakan sebelum memainkan kartu, digivolve, atau menggunakan DNA digivolve opsional",
+  "settings.cardConfirmation": "Konfirmasi kartu",
+  "settings.cardConfirmationDesc":
+    "Tanya sebelum memainkan, memakai, atau melakukan digivolve kartu. “Lewati kartu yang hanya bisa dimainkan” langsung memainkan kartu jika tidak ada aksi legal lain. Pilihan target, material, biaya, dan mode tetap muncul.",
+  "settings.cardConfirmationAlways": "Selalu tanya",
+  "settings.cardConfirmationSkipPlayOnly": "Lewati kartu yang hanya bisa dimainkan",
+  "settings.cardConfirmationNever": "Jangan pernah tanya",
   "overlay.moveEffectPrompt": "Pindahkan prompt efek",
   "overlay.moveEffectPromptHelp":
     "Seret untuk memindahkan, atau gunakan tombol panah. Tekan Home untuk mereset posisi.",
@@ -974,6 +1004,8 @@ const interfaceMessages = {
     "Urutkan Digimon berdasarkan level dan kelompokkan Tamer serta Option yang identik dalam barisnya sendiri",
   "settings.pileCounts": "Tampilkan jumlah kartu di tiap pile",
   "settings.pileCountsDesc": "Tampilkan penghitung Digi-Egg, Tangan, Deck, dan Trash di papan",
+  "settings.hoverZoom": "Perbesar kartu saat kursor di atasnya",
+  "settings.hoverZoomDesc": "Tampilkan pratinjau kartu besar di samping kursor saat berada di atas kartu",
   "settings.sound": "Efek suara",
   "settings.soundDesc": "Klik, pilihan, dan efek suara pertarungan",
   "settings.decisionPing": "Ping keputusan",
@@ -1097,6 +1129,7 @@ const interfaceMessages = {
   "game.digiEgg": " · Digi-Egg",
   "game.noCost": "tanpa cost",
   "game.costsMemory": "membutuhkan {count} memory",
+  "game.useCostsMemory": "membutuhkan {count} memory untuk dipakai",
   "game.digivolve": "Digivolve",
   "game.clickToDigivolve": "klik Digimon yang bersinar untuk melakukan digivolve",
   "game.clickToLink": "klik Digimon yang bersinar untuk Link",
@@ -1284,6 +1317,9 @@ const interfaceMessages = {
   "overlay.suspendAlly": "Suspend {name} untuk +{dp} DP",
   "overlay.noAllies": "Tidak ada Digimon lain yang bisa di-suspend.",
   "overlay.passAlliance": "Lewati",
+  "overlay.confirmBlockTitle": "Konfirmasi blok",
+  "overlay.confirmBlockDetail": "Suspend {name} untuk memblokir serangan ini.",
+  "overlay.confirmBlock": "Blokir",
   "overlay.confirmAllianceTitle": "Konfirmasi Alliance",
   "overlay.confirmAllianceDetail": "Suspend {name} untuk menambah {dp} DP.",
   "overlay.confirmAlliance": "Gunakan Alliance",
@@ -1344,6 +1380,8 @@ const interfaceMessages = {
   "overlay.securityAttackValue": "Security Attack {value}",
   "overlay.transformedBadge": "Dihitung sebagai {name}",
   "overlay.printedEffect": "Efek tercetak",
+  "overlay.showCardText": "Tampilkan teks kartu",
+  "overlay.hideCardText": "Sembunyikan teks kartu",
   "overlay.grantedEffects": "Efek yang diberikan",
   "library.optionEffect": "Efek Option",
   "overlay.noPrintedEffect": "Tidak ada efek tercetak",
@@ -2349,8 +2387,7 @@ const interfaceMessages = {
   "community.publish.errorNotLegal": "Deck ini tidak legal, jadi tidak bisa dipublikasikan.",
   "community.publish.errorName":
     "Ganti nama deck ini terlebih dahulu. Namanya mengandung kata yang tidak diperbolehkan.",
-  "community.publish.errorHidden":
-    "Seorang moderator menyembunyikan deck ini setelah ada laporan, sehingga tidak dapat dipublikasikan.",
+  "community.publish.errorHidden": "Moderator menyembunyikan deck ini. Perbaiki, lalu minta peninjauan.",
   "community.report.open": "Laporkan deck",
   "community.report.title": "Laporkan {name}",
   "community.report.body":
@@ -2383,6 +2420,26 @@ const interfaceMessages = {
   "community.moderation.hiddenBadge": "Tersembunyi",
   "community.moderation.hiddenOwnerBadge": "Disembunyikan oleh moderator",
   "community.moderation.hiddenOwnerNote": "Dilaporkan oleh pemain. Orang lain tidak bisa melihatnya.",
+  "community.moderation.hideTitle": "Sembunyikan {name}?",
+  "community.moderation.hideBody":
+    "Pemain tidak lagi melihat deck ini. Pemiliknya melihat alasan dan catatan Anda, dan bisa memperbaiki deck lalu meminta peninjauan.",
+  "community.moderation.noteLabel": "Catatan untuk pemilik (opsional)",
+  "community.moderation.hiddenReason": "Disembunyikan karena: {reason}.",
+  "community.moderation.ownerNote": "Catatan moderator: {note}",
+  "community.moderation.ownerFixHint": "Perbaiki deck, lalu minta peninjauan.",
+  "community.moderation.reviewPendingNote": "Moderator akan meninjau perubahan Anda.",
+  "community.moderation.reviewRequestedBadge": "Peninjauan diminta",
+  "community.moderation.reviewTitle": "Moderasi",
+  "community.moderation.approve": "Setujui dan jadikan publik",
+  "community.moderation.decline": "Tetap sembunyikan",
+  "community.moderation.declined": "Peninjauan ditolak. Deck tetap disembunyikan.",
+  "community.review.action": "Minta peninjauan",
+  "community.review.title": "Minta peninjauan {name}?",
+  "community.review.body":
+    "Perbaiki deck Anda dulu. Kami mengirim deck tersimpan apa adanya sekarang. Deck tetap disembunyikan sampai moderator menyetujuinya.",
+  "community.review.noteLabel": "Catatan untuk moderator (opsional)",
+  "community.review.errorPending": "Anda sudah meminta peninjauan. Tunggu jawaban moderator.",
+  "community.review.errorNotHidden": "Deck ini sudah tidak disembunyikan.",
   "community.publish.errorGeneric": "Tidak bisa dipublikasikan. Coba lagi.",
   "redesign.collection.lede":
     "Jelajahi setiap kartu yang dapat dimainkan di Aegis, beserta efek dan batasnya dalam deck.",
@@ -2495,16 +2552,31 @@ const interfaceMessages = {
   "overlay.series.opponentChoosing": "{name} sedang memilih siapa yang jalan pertama",
   "overlay.series.startingYou": "Game {game} · Anda jalan pertama",
   "overlay.series.startingOpponent": "Game {game} · {name} jalan pertama",
+  "overlay.series.startingDrawn": "Game {game} · Pemain pertama diundi",
   "overlay.series.joining": "Memulai game berikutnya…",
   "overlay.series.leave": "Tinggalkan series",
-  "overlay.rematch.offer": "Main lagi melawan {name} · Best of 3",
-  "overlay.rematch.hint": "Deck yang sama. Yang kalah di game ini memilih siapa yang jalan duluan.",
-  "overlay.rematch.incoming": "{name} ingin rematch",
+  "overlay.rematch.title": "Main lagi melawan {name}?",
+  "overlay.rematch.finish": "Selesaikan Best of 3 ini",
+  "overlay.rematch.finishHint": "Dihitung game 1 · deck sama",
+  "overlay.rematch.new": "Mulai Best of 3 baru",
+  "overlay.rematch.newHint": "0–0 · boleh ganti deck · pemain pertama diundi",
+  "overlay.rematch.incomingFinish": "{name} ingin menyelesaikan Best of 3 ini",
+  "overlay.rematch.incomingNew": "{name} ingin memulai Best of 3 baru",
   "overlay.rematch.accept": "Terima",
   "overlay.rematch.decline": "Tolak",
   "overlay.rematch.waiting": "Menunggu jawaban {name}…",
   "overlay.rematch.declined": "Rematch ditolak.",
   "overlay.rematch.closed": "Rematch sudah tidak tersedia.",
+  "overlay.rematch.deckTitle": "Pilih deck untuk game 1",
+  "overlay.rematch.keepDeck": "Pakai deck saat ini",
+  "overlay.rematch.changeDeck": "Ganti deck",
+  "overlay.rematch.deckReady": "Deck Anda sudah dikunci.",
+  "overlay.rematch.opponentPicking": "{name} sedang memilih deck…",
+  "overlay.rematch.opponentReady": "{name} sudah siap.",
+  "overlay.rematch.opponentChanged": "{name} mengganti deck.",
+  "overlay.rematch.deckAutoKeep": "Deck saat ini dipakai dalam {time}",
+  "overlay.rematch.pickDeckTitle": "Pilih deck untuk Best of 3 baru",
+  "overlay.rematch.illegalDeck": "Deck itu tidak bisa dipakai di room ini.",
   "overlay.series.won": "Menang series",
   "overlay.series.lost": "Kalah series",
   "overlay.series.drawn": "Series berakhir seri",
@@ -2554,4 +2626,8 @@ const interfaceMessages = {
   "releases.reported": "Anda melaporkannya, kami memperbaikinya · #{issue}",
 } satisfies Record<keyof typeof en, string>;
 
-export const id: Record<keyof typeof en, string> = { ...en, ...interfaceMessages };
+export const id: Record<keyof typeof en, string> = {
+  ...manualEn,
+  ...en,
+  ...interfaceMessages,
+};

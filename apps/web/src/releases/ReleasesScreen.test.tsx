@@ -15,7 +15,7 @@ describe("release notes screen", () => {
       </I18nProvider>,
     );
     expect(screen.getByRole("heading", { level: 1, name: "What's new" })).toBeTruthy();
-    expect(screen.getByText("v1.35.2-BETA")).toBeTruthy();
+    expect(screen.getByText("v1.37.0-BETA")).toBeTruthy();
     expect(screen.queryByRole("link", { name: /View details on GitHub/ })).toBeNull();
   });
 
@@ -28,9 +28,7 @@ describe("release notes screen", () => {
     );
     expect(screen.getByRole("heading", { level: 1, name: "O que há de novo" })).toBeTruthy();
     expect(
-      screen.getByText(
-        "Kentaurosmon (X Antibody), menos pausas ao encerrar partidas e correções em efeitos de cartas.",
-      ),
+      screen.getByText("Correções de jogabilidade, regras de cartas, decisões de Material Save e história."),
     ).toBeTruthy();
   });
 });

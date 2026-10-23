@@ -1,4 +1,5 @@
 import type { Seat } from "@aegis/shared";
+import type { DecisionEffectSummary } from "@aegis/shared/protocol/DecisionEffectSummary";
 import type { EffectContext } from "./effectContext.js";
 
 /**
@@ -75,6 +76,7 @@ export type SubTriggerEventName =
 
 /** Args for installing a delayed/triggered sub-effect via the primitives. */
 export interface SubTriggerInstall {
+  decisionSummary?: DecisionEffectSummary;
   event: SubTriggerEventName;
   attackRedirectTargetIds?: (ctx: EffectContext) => string[];
   attackRedirectRequiresSelfSuspend?: boolean;
@@ -89,6 +91,7 @@ export interface SubTriggerInstall {
    * (KB Q5564/Q5566/Q5568). See `SubTriggerSubscription.orderedByTurnPlayer`.
    */
   orderedByTurnPlayer?: boolean;
+  appliesOnEntry?: boolean;
   /** Stable action identity used to avoid duplicate installs while preserving distinct clauses. */
   dedupeKey?: string;
   /** Printed placement class retained so a pending watcher passes the same kernel guard. */
@@ -129,6 +132,7 @@ export interface SubTriggerInstall {
    * Absent => the watcher always competes for ordering.
    */
   canFire?: (ctx: EffectContext) => boolean;
+  hasLegalOutcome?: (ctx: EffectContext) => boolean;
   /**
    * A GRANTED watcher's expiry: the seat whose turn-END drops this subscription
    *. Absent => the watcher lives until its

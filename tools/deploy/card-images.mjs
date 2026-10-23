@@ -1,6 +1,6 @@
 // Mirrors the card images the client requests into the gateway's shared assets directory,
 // so production serves them from /assets/card-images instead of a third-party host.
-// It only adds missing files: an image already present is never re-downloaded or replaced.
+// It never re-downloads or replaces a real image; a sample follows its local scan when that changes.
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -66,7 +66,7 @@ async function download(fetch, name) {
 
 /**
  * Downloads `<id>.webp` for each id. Without it, stores `<id>-Sample.webp` from the local scans
- * or, failing that, from an origin's sample scan.
+ * (rewritten whenever the committed scan changes) or, failing that, from an origin's sample scan.
  * A sample never blocks the real image: the next sync still looks for `<id>.webp`.
  */
 export async function syncCardImages({ source, destination, fetch = globalThis.fetch, concurrency = 16 }) {
@@ -92,19 +92,25 @@ export async function syncCardImages({ source, destination, fetch = globalThis.f
       result.downloaded += 1;
       return;
     }
-    if (existsSync(`${destination}/${id}-Sample.webp`)) {
-      result.present += 1;
-      return;
-    }
+    const sample = `${destination}/${id}-Sample.webp`;
     const local = `${source}/${LOCAL_CARD_IMAGES}/${id}.webp`;
     if (existsSync(local)) {
-      write(`${id}-Sample.webp`, readFileSync(local));
+      const scan = readFileSync(local);
+      if (existsSync(sample) && readFileSync(sample).equals(scan)) {
+        result.present += 1;
+        return;
+      }
+      write(`${id}-Sample.webp`, scan);
       result.downloaded += 1;
       return;
     }
-    const sample = await download(fetch, `${id}-Sample.webp`);
-    if (sample) {
-      write(`${id}-Sample.webp`, sample);
+    if (existsSync(sample)) {
+      result.present += 1;
+      return;
+    }
+    const originSample = await download(fetch, `${id}-Sample.webp`);
+    if (originSample) {
+      write(`${id}-Sample.webp`, originSample);
       result.downloaded += 1;
       return;
     }

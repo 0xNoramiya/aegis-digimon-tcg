@@ -212,3 +212,18 @@ describe("carryGroupKeys", () => {
     expect(carryGroupKeys([group("watch-1", watch)], new Map(), isSuspended)[0]!.key).toBe("watch-1");
   });
 });
+
+it("keeps manually marked support cards distinct instead of hiding their annotations in a group", () => {
+  const plain = permanent("plain", AMI_AIBA);
+  const marked = permanent("marked", AMI_AIBA);
+  marked.manualMarker = "Once per turn used";
+  const status = permanent("status", AMI_AIBA);
+  status.manualStatuses.push("immune");
+  const color = permanent("color", AMI_AIBA);
+  color.originalColorsOverride.push("red");
+  const security = permanent("security", AMI_AIBA);
+  security.securityAttackModifier = 1;
+  const hidden = permanent("hidden", AMI_AIBA);
+  hidden.topCard.faceUp = false;
+  expect(arrangeField([plain, marked, status, color, security, hidden], plainOptions).support).toHaveLength(6);
+});

@@ -1,4 +1,8 @@
+import type { CounterChoice } from "#shared/protocol/CounterChoice";
+import type { SingleHandCostBenefit } from "#shared/protocol/SingleHandCostBenefit";
 import { CardMovePosition } from "#shared/protocol/CardMovePosition";
+import type { DecisionEffectSummary } from "#shared/protocol/DecisionEffectSummary";
+import type { DecisionSelectionGoal } from "#shared/protocol/DecisionSelectionGoal";
 import type { Seat } from "../schema/enums.js";
 import type { AttackTarget } from "./intents.js";
 
@@ -91,6 +95,7 @@ export interface EffectBattleParticipants {
 }
 
 export type ServerEvent =
+  | { kind: "manualAction"; seat: Seat; action: string }
   | { kind: "matchStarted"; firstSeat: Seat }
   | { kind: "phaseChanged"; phase: string; turnSeat: Seat; turnCount: number }
   | {
@@ -171,7 +176,7 @@ export type ServerEvent =
       kind: "counterWindowOpened";
       attackerPermanentId: string;
       defendingSeat: Seat;
-      eligibleCounters: { instanceId: string; effectKey: string; description: string }[];
+      eligibleCounters: CounterChoice[];
     }
   | { kind: "counterResolved"; attackerPermanentId: string; activated: boolean }
   // ＜Alliance＞ (Comprehensive Rules §16-24) is attack-only; there is no block-time variant.
@@ -573,6 +578,7 @@ export type SequencedServerEvent = ServerEvent & {
  * kind could ship narrating nothing and no test would notice.
  */
 export const SERVER_EVENT_KINDS = [
+  "manualAction",
   "matchStarted",
   "phaseChanged",
   "cardPlayed",
@@ -704,6 +710,13 @@ export interface DecisionRequest {
   sourcePermanentId?: string;
   // kind-specific options the UI needs to render the prompt and constrain input:
   options?: {
+    selectionGoal?: DecisionSelectionGoal;
+    effectControllerSeat?: Seat;
+    singleHandCostBenefit?: SingleHandCostBenefit;
+    effectSummary?: DecisionEffectSummary;
+    choiceSummaries?: (DecisionEffectSummary | null)[];
+    triggerSummaries?: (DecisionEffectSummary | null)[];
+    triggerControllerSeats?: Seat[];
     candidateInstanceIds?: string[]; // selectable cards/permanents
     visibleInstanceIds?: string[]; // full display set (e.g. all revealed cards); ids absent from candidateInstanceIds render disabled
     /** Authoritative identities for temporarily revealed cards that may not yet exist in the client's zone index. */
@@ -719,7 +732,7 @@ export interface DecisionRequest {
     distinctCardIds?: boolean; // prevent selecting multiple instances with the same card number
     distinctNames?: boolean; // prevent selecting cards sharing a name, including exact-name aliases
     /** Lets the client present a dedicated interaction without inferring semantics from prompt text. */
-    selectionContext?: "attackSource" | "attackTarget" | "partitionActivation";
+    selectionContext?: "attackSource" | "attackTarget" | "partitionActivation" | "materialSaveActivation";
     orderDestination?: "deckTop" | "deckBottom" | "stackTop" | "stackBottom"; // explains how ordered positions map to the destination
     choices?: string[]; // modal labels for chooseOption
     /** `chooseOption` only: the zone whose ends the "top" and "bottom" choices name. */
@@ -831,6 +844,8 @@ export interface DecisionRequest {
     playCostReductionBlocked?: boolean;
     /** Effect-driven play awaiting the existing DigiXros material picker for this card. */
     digiXrosCardId?: string;
+    /** Already-authorized material groups and quotas for an effect-driven DigiXros picker. */
+    digiXrosMaterialLimits?: { candidateInstanceIds: string[]; max: number }[];
     /** Paid source cards that will enter trash before this DigiXros is placed. */
     digiXrosRuleTrashInstanceIds?: string[];
   };

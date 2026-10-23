@@ -1,4 +1,8 @@
 export const decisionChoicesEn = {
+  "decision.choice.playSavedLevelFour":
+    "Play 1 level 4 or lower Digimon card with ＜Save＞ from under one of your Tamers",
+  "decision.choice.digivolveQuartzmonReduced":
+    "Digivolve into [Quartzmon] in your hand or under one of your Tamers with the cost reduced by 3",
   "decision.choice.dpMinusSix": "1 of your opponent's Digimon gets -6000 DP for the turn",
   "decision.choice.angemonSecurity":
     "Delete 1 of your [Angemon]: place 1 of your opponent's Digimon at the bottom of their security",
@@ -76,6 +80,8 @@ export const decisionChoicesEn = {
   "decision.choice.playDawn": "Play a Glowing Dawn card",
   "decision.choice.playSquad": "Play a DATA SQUAD card",
   "decision.choice.useSquad": "Use a DATA SQUAD Option",
+  "decision.choice.playChronicleTamer": "Play a [Chronicle] Tamer",
+  "decision.choice.useChronicleOption": "Use a [Chronicle] Option",
   "decision.choice.returnDeckTop": "Return to the top of the deck",
   "decision.choice.returnDeckBottom": "Return to the bottom of the deck",
   "decision.choice.declareDigimon": "Declare category: Digimon",

@@ -68,7 +68,6 @@ const fixture: ScenarioFixture = {
       security: ["BT21-097", "BT21-018", "BT21-041", "BT21-071", "BT21-018"],
       deck: [
         "BT21-041",
-        "BT21-018",
         "BT21-041",
         "BT21-041",
         "BT21-018",
@@ -78,7 +77,6 @@ const fixture: ScenarioFixture = {
         "BT21-097",
         "BT21-101",
         "BT21-084",
-        "BT21-009",
         "BT21-059",
         "BT21-023",
         "BT21-101",
@@ -111,7 +109,7 @@ const fixture: ScenarioFixture = {
       battleArea: [],
       breeding: {
         card: "BT21-023",
-        under: ["BT21-005"],
+        under: ["BT21-005", "BT21-009", "BT21-018"],
       },
     },
   },

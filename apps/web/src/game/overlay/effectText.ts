@@ -381,9 +381,8 @@ export function playerFacingEffectClause({
   const boxes = inherited
     ? [definition?.inheritedEffectText]
     : [definition?.effectText, definition?.optionEffect, definition?.securityEffectText, definition?.linkEffect];
-  // A granted effect is not printed on this card, so its description is the only source.
-  const grantedPrefix = description?.trim().match(/^\[Granted\]\s*/)?.[0];
-  const supplied = grantedPrefix ? description!.trim().slice(grantedPrefix.length).trim() : description?.trim();
+  const externalPrefix = description?.trim().match(/^\[(?:Granted|Pending)\]\s*/)?.[0];
+  const supplied = externalPrefix ? description!.trim().slice(externalPrefix.length).trim() : description?.trim();
   const normalize = (text: string) => text.replace(/\s+/g, " ").trim();
   const exactPrintedClause = supplied
     ? boxes.flatMap((text) => text?.split("\n") ?? []).find((line) => normalize(line) === normalize(supplied))
@@ -407,6 +406,13 @@ export function playerFacingEffectClause({
       )
     : [];
   const conditionPrintedClause = conditionMatches.length === 1 ? conditionMatches[0] : undefined;
+  const fragmentMatches =
+    supplied && !/^(?:\[|＜)/.test(supplied)
+      ? boxes
+          .flatMap((text) => effectClausesForTiming(text, effectiveTiming))
+          .filter((candidate) => normalize(candidate).includes(normalize(supplied)))
+      : [];
+  const fragmentPrintedClause = fragmentMatches.length === 1 ? fragmentMatches[0] : undefined;
   // A full card text can start with a keyword preamble (e.g. Use Req.).
   // Keyword activations are standalone or followed by explanatory prose.
   const keywordPrefix = supplied?.match(/^＜[^＞]+＞/)?.[0];
@@ -441,12 +447,13 @@ export function playerFacingEffectClause({
       keywordActivation ||
       matchingKeyword ||
       delayClause ||
+      fragmentPrintedClause ||
       ((exactPrintedClause || containedPrintedClause || conditionPrintedClause) &&
         effectClauseForTiming(
           exactPrintedClause || containedPrintedClause || conditionPrintedClause,
           effectiveTiming,
         ))) ??
-    (effectiveTiming === undefined || grantedPrefix
+    (effectiveTiming === undefined || externalPrefix
       ? undefined
       : resolvedEffectClause(cardId, effectiveTiming, inherited));
   const part = effectTextPart?.trim();
@@ -491,7 +498,7 @@ export function playerFacingEffectClause({
       [clause, timingClause].some((candidate) => candidate && normalize(candidate).includes(normalize(part))))
   )
     return stripTrailingCardRequirements(part);
-  return stripTrailingCardRequirements(clause ?? (grantedPrefix ? supplied : undefined));
+  return stripTrailingCardRequirements(clause ?? (externalPrefix ? supplied : undefined));
 }
 
 /**

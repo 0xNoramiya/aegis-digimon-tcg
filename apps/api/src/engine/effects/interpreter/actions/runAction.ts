@@ -1,3 +1,7 @@
+import { getSingleHandActionCostBenefit } from "#api/engine/effects/interpreter/getSingleHandActionCostBenefit";
+import { getDecisionActionSummary } from "#api/engine/effects/interpreter/getDecisionActionSummary";
+import { getDecisionSelectionGoal } from "#api/engine/effects/interpreter/getDecisionSelectionGoal";
+import { getDecisionEffectSummary } from "#api/engine/effects/interpreter/getDecisionEffectSummary";
 // The per-kind dispatch for every IR action.
 
 import type { EffectContext } from "../../EffectContext.js";
@@ -209,6 +213,12 @@ function looseCostCanProduceDeleteTarget(
  * `abortOnDecline` is set — the caller should stop processing further actions.
  */
 export async function runAction(ctx: EffectContext, action: Action): Promise<boolean> {
+  const outerSingleHandCostBenefit = ctx.activeSingleHandCostBenefit;
+  ctx.activeSingleHandCostBenefit = getSingleHandActionCostBenefit({ action });
+  const outerDecisionSummary = ctx.activeDecisionSummary;
+  const outerDecisionSelectionGoal = ctx.activeDecisionSelectionGoal;
+  ctx.activeDecisionSummary = getDecisionActionSummary({ action });
+  ctx.activeDecisionSelectionGoal = getDecisionSelectionGoal({ action });
   // Display-only provenance: every decision this action raises carries what the
   // action is about to do to the permanents it offers, so the client badges a
   // picked target instead of reading its fate out of printed English. Restored
@@ -256,6 +266,9 @@ export async function runAction(ctx: EffectContext, action: Action): Promise<boo
   try {
     return await runActionInner(ctx, action);
   } finally {
+    ctx.activeSingleHandCostBenefit = outerSingleHandCostBenefit;
+    ctx.activeDecisionSummary = outerDecisionSummary;
+    ctx.activeDecisionSelectionGoal = outerDecisionSelectionGoal;
     ctx.pickingAcceptedOptional = outerPickingAcceptedOptional;
     ctx.selectingOptionalTarget = outerSelectingOptionalTarget;
     ctx.activeTargetFate = outerFate;
@@ -1140,6 +1153,15 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
         const declineIndex = modalChoices.labels.length;
         const pick = await chooser.chooseOption(ctx, [...modalChoices.labels, DECLINE_MODAL_CHOICE_LABEL], {
           declineIndex,
+          choiceSummaries:
+            action.kind === "Modal"
+              ? [
+                  ...modalChoices.optionIndices.map((index) =>
+                    getDecisionEffectSummary({ actions: action.options[index]! }),
+                  ),
+                  null,
+                ]
+              : undefined,
           ...(modalChoices.choiceClauses ? { choiceClauses: [...modalChoices.choiceClauses, ""] } : {}),
         });
         yes = pick !== declineIndex;

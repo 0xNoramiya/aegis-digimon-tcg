@@ -139,6 +139,21 @@ test("stores a local scan as the sample until an origin publishes the real image
   assert.equal(existsSync(`${paths.destination}/BT18-083_P2-Sample.webp`), false);
 });
 
+test("refreshes a sample when its local scan changes", async (t) => {
+  const paths = fixture(t, [{ cardId: "BT27-040" }]);
+  const scan = `${paths.source}/${LOCAL_CARD_IMAGES}/BT27-040.webp`;
+  mkdirSync(`${paths.source}/${LOCAL_CARD_IMAGES}`, { recursive: true });
+  writeFileSync(scan, webp("uncropped"));
+  const { fetch } = fakeFetch({});
+
+  assert.deepEqual(await syncCardImages({ ...paths, fetch }), { present: 0, downloaded: 1, missing: [] });
+  assert.deepEqual(await syncCardImages({ ...paths, fetch }), { present: 1, downloaded: 0, missing: [] });
+
+  writeFileSync(scan, webp("cropped"));
+  assert.deepEqual(await syncCardImages({ ...paths, fetch }), { present: 0, downloaded: 1, missing: [] });
+  assert.equal(readFileSync(`${paths.destination}/BT27-040-Sample.webp`, "utf8").slice(12), "cropped");
+});
+
 test("keeps only local scans the card catalog still references", () => {
   const root = new URL("../..", import.meta.url).pathname;
   const referenced = new Set(cardImageIds(root));

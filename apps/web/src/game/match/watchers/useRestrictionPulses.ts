@@ -1,9 +1,10 @@
-import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
+import { useLayoutEffect, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
 import type { GameState } from "@aegis/shared";
-import type { AnimationQueue } from "../../animationQueue";
+import type { AnimationQueue, AnimationStep } from "@/game/animationQueue";
 import { freezePulses as diffFreezePulses, type FreezeFlags, type FreezePulse } from "../../freezePulse";
 import { TIMINGS } from "../../timings";
 import { CONSEQUENCE_GATE_MAX_MS, waitForGate, type PresentationGate } from "../presentationGate";
+import type { StateSnapshot } from "@/net/presentedState";
 import { readStatusFlags } from "./readStatusFlags";
 
 /**
@@ -24,6 +25,8 @@ export function useRestrictionPulses({
   freezePulseKeyRef,
   causingEffectGateRef,
   setFreezePulses,
+  snapshots,
+  contextOfRevision,
 }: {
   state: GameState | undefined;
   queue: AnimationQueue;
@@ -33,7 +36,10 @@ export function useRestrictionPulses({
   /** The clause that imposed the lock, which is read out before the card jolts. */
   causingEffectGateRef: MutableRefObject<PresentationGate | null>;
   setFreezePulses: Dispatch<SetStateAction<ReadonlyMap<string, FreezePulse>>>;
+  snapshots?: readonly StateSnapshot[];
+  contextOfRevision?: (stateVersion: number) => { gate: PresentationGate | null; origin?: AnimationStep["origin"] };
 }) {
+  const lastStateVersionRef = useRef<number | undefined>(undefined);
   const restrictionSignature = state
     ? [...state.players]
         .flatMap((player) => [...player.battleArea, ...(player.breeding ? [player.breeding] : [])])
@@ -43,46 +49,67 @@ export function useRestrictionPulses({
         })
         .join(",")
     : "";
-  useEffect(() => {
-    if (!state) return;
-    const current = new Map<string, FreezeFlags>();
-    for (const player of state.players) {
-      for (const permanent of player.battleArea) {
-        current.set(permanent.permanentId, readStatusFlags(permanent));
+  useLayoutEffect(() => {
+    if (!state) {
+      lastStateVersionRef.current = undefined;
+      restrictionsByPermanentRef.current = null;
+      return;
+    }
+    const lastVersion = lastStateVersionRef.current;
+    if (lastVersion !== undefined && state.stateVersion < lastVersion) {
+      restrictionsByPermanentRef.current = null;
+    }
+    if (contextOfRevision && restrictionsByPermanentRef.current && lastVersion !== undefined) {
+      for (const snapshot of snapshots ?? []) {
+        if (snapshot.stateVersion > lastVersion && snapshot.stateVersion <= state.stateVersion) {
+          observe(snapshot.state);
+        }
       }
     }
-    const previous = restrictionsByPermanentRef.current;
-    restrictionsByPermanentRef.current = current;
-    if (!previous || queue.getMode() !== "live") return;
-    const pulses = diffFreezePulses({ previous, next: current, nextKey: freezePulseKeyRef.current });
-    if (pulses.length === 0) return;
-    freezePulseKeyRef.current += pulses.length;
-    const causingEffectGate = causingEffectGateRef.current;
-    for (const pulse of pulses) {
-      queue.enqueue({
-        id: `freeze-pulse-${pulse.key}`,
-        track: `freezePulse-${pulse.permanentId}`,
-        replace: true,
-        async run(context) {
-          if (context.mode !== "live") return;
-          await waitForGate(causingEffectGate, context, CONSEQUENCE_GATE_MAX_MS, "restrictionPulse/causingEffect");
-          if (context.cancelled) return;
-          try {
-            setFreezePulses((pulsing) => new Map(pulsing).set(pulse.permanentId, pulse));
-            await context.wait(
-              pulse.kind === "buff" || pulse.kind === "debuff" ? TIMINGS.statusPulse : TIMINGS.freezeShake,
-            );
-          } finally {
-            setFreezePulses((pulsing) => {
-              if (pulsing.get(pulse.permanentId)?.key !== pulse.key) return pulsing;
-              const next = new Map(pulsing);
-              next.delete(pulse.permanentId);
-              return next;
-            });
-          }
-        },
-      });
+    observe(state);
+    lastStateVersionRef.current = state.stateVersion;
+
+    function observe(read: GameState) {
+      const current = new Map<string, FreezeFlags>();
+      for (const player of read.players) {
+        for (const permanent of player.battleArea) {
+          current.set(permanent.permanentId, readStatusFlags(permanent));
+        }
+      }
+      const previous = restrictionsByPermanentRef.current;
+      restrictionsByPermanentRef.current = current;
+      if (!previous || queue.getMode() !== "live") return;
+      const pulses = diffFreezePulses({ previous, next: current, nextKey: freezePulseKeyRef.current });
+      if (pulses.length === 0) return;
+      freezePulseKeyRef.current += pulses.length;
+      const revisionContext = contextOfRevision?.(read.stateVersion);
+      const causingEffectGate = revisionContext ? revisionContext.gate : causingEffectGateRef.current;
+      for (const pulse of pulses) {
+        queue.enqueue({
+          id: `freeze-pulse-${pulse.key}`,
+          ...(revisionContext?.origin ? { origin: revisionContext.origin } : {}),
+          track: `freezePulse-${pulse.permanentId}`,
+          replace: contextOfRevision === undefined,
+          async run(context) {
+            if (context.mode !== "live") return;
+            await waitForGate(causingEffectGate, context, CONSEQUENCE_GATE_MAX_MS, "restrictionPulse/causingEffect");
+            if (context.cancelled) return;
+            try {
+              setFreezePulses((pulsing) => new Map(pulsing).set(pulse.permanentId, pulse));
+              await context.wait(
+                pulse.kind === "buff" || pulse.kind === "debuff" ? TIMINGS.statusPulse : TIMINGS.freezeShake,
+              );
+            } finally {
+              setFreezePulses((pulsing) => {
+                if (pulsing.get(pulse.permanentId)?.key !== pulse.key) return pulsing;
+                const next = new Map(pulsing);
+                next.delete(pulse.permanentId);
+                return next;
+              });
+            }
+          },
+        });
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [restrictionSignature]);
+  }, [restrictionSignature, state?.stateVersion, snapshots]);
 }

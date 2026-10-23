@@ -117,13 +117,14 @@ export function buildPermanentDetail(
   permanent: Permanent,
   { keywordLabels, viewerSeat }: { keywordLabels?: Readonly<Record<string, string>>; viewerSeat?: Seat } = {},
 ): PermanentDetail {
-  const topCardId = permanent.topCard?.cardId ?? "";
+  const topIdentity = permanent.topCard ? readableStackCardIdentity(permanent.topCard, viewerSeat) : { cardId: "" };
+  const topCardId = topIdentity.cardId;
   const cards: StackCard[] = [
     ...(topCardId
       ? [
           {
             cardId: topCardId,
-            ...(permanent.topCard?.artId ? { artId: permanent.topCard.artId } : {}),
+            ...(topIdentity.artId ? { artId: topIdentity.artId } : {}),
             role: "top" as const,
           },
         ]
@@ -137,18 +138,22 @@ export function buildPermanentDetail(
         role: "stack" as const,
       };
     }),
-    ...[...permanent.linked].map((card) => ({
-      cardId: card.cardId,
-      ...(card.artId ? { artId: card.artId } : {}),
-      role: "linked" as const,
-    })),
+    ...[...permanent.linked].map((card) => {
+      const identity = readableStackCardIdentity(card, viewerSeat);
+      return {
+        cardId: identity.cardId,
+        ...(identity.artId ? { artId: identity.artId } : {}),
+        ...(!card.faceUp ? { faceDown: true } : {}),
+        role: "linked" as const,
+      };
+    }),
   ];
   const keywords = [...permanent.keywords];
   const transformation = permanentTransformation(permanent);
   return {
     permanentId: permanent.permanentId,
     cardId: topCardId,
-    ...(permanent.topCard?.artId ? { artId: permanent.topCard.artId } : {}),
+    ...(topIdentity.artId ? { artId: topIdentity.artId } : {}),
     name: getCardDefinition(topCardId)?.nameEn ?? topCardId,
     cards,
     currentDP: permanent.currentDP,

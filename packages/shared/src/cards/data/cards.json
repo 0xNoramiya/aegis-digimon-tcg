@@ -25081,7 +25081,7 @@
     "attributes": ["Virus"],
     "types": ["Magic Warrior", "Witchelny"],
     "effectText": "＜Barrier＞ \n[On Play] [When Digivolving] By trashing the top card of your security stack, change the original DP of 1 Digimon to 6000 until the end of your opponent's turn.",
-    "inheritedEffectText": "[All Turns] [Once Per Turn] When a card is removed from your security stack, unsuspend this Digimon.",
+    "inheritedEffectText": "[All Turns] [Once Per Turn] When a card is removed from your security stack, you may unsuspend this Digimon.",
     "rarity": "U",
     "maxCountInDeck": 4,
     "imageId": "BT18-039"
@@ -38313,7 +38313,7 @@
     "maxCountInDeck": 4,
     "imageId": "BT22-055",
     "linkDp": 2000,
-    "linkRequirement": "[Link] [Appmon] trait: Cost 2",
+    "linkRequirement": "[Link] [Appmon] trait: Cost 1",
     "linkEffect": "＜Blocker＞"
   },
   {
@@ -50081,7 +50081,7 @@
     "maxCountInDeck": 4,
     "imageId": "BT27-084",
     "dualEffect": "Ultimate Thrusting Sword Gran Rozerio",
-    "optionEffect": "[Main] Delete 1 of your opponent's lowest level Digimon. If this effect didn't delete, until your turn ends, all of your Digimon with [Knightmon] in their texts gain ＜Blocker＞, your opponent's Digimon effects don't affect them and they get +3000 DP.",
+    "optionEffect": "[Main] Delete 1 of your opponent's lowest level Digimon. If this effect didn't delete, until your turn ends, all of your Digimon with [Knightmon] in their texts gain ＜Blocker＞, your opponent's Digimon effects don't affect them and they get +3000 DP.\n＜Arts Digivolve＞",
     "optionColorRequirements": ["Purple", "Black"],
     "isDualCard": true
   },
@@ -109692,5 +109692,284 @@
     "rarity": "U",
     "maxCountInDeck": 4,
     "imageId": "BT27-098"
+  },
+  {
+    "cardId": "BT27-099",
+    "set": "BT27",
+    "nameEn": "Surtr Brander",
+    "nameJp": "スルトブランダー",
+    "colors": ["Yellow"],
+    "kinds": ["Option"],
+    "playCost": 3,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["X Antibody", "Royal Knight"],
+    "effectText": "When effects trash this card from the security stack, activate its [Security] effects.\n[Main] 1 of your opponent's Digimon gets -6000 DP for the turn. Then, add your top security card to the hand and place this card as the top security card.",
+    "securityEffectText": "[Security] Place 1 of your opponent's Digimon with the lowest DP as their top security card.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-099"
+  },
+  {
+    "cardId": "BT27-040",
+    "set": "BT27",
+    "nameEn": "Etemon",
+    "nameJp": "エテモン",
+    "colors": ["Yellow"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 8,
+    "dp": 8000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 4,
+        "memoryCost": 4
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Virus"],
+    "types": ["Puppet"],
+    "effectText": "[Digivolve] Lv.4 w/[Sukamon] in name: Cost 3\n[Assembly -3] Lv.4 Digimon card w/[Sukamon] in name\n\n＜Overclock ([Chuumon]/[Sukamon] in name)＞\n[Security] [On Play] [When Digivolving] To 1 of your opponent's Digimon, give -3000 DP for the turn for each of your Digimon with [Chuumon], [Sukamon] or [Etemon] in their names.",
+    "inheritedEffectText": "[All Turns] [Once Per Turn] When any of your other Digimon with [Chuumon], [Sukamon] or [Etemon] in their names are played, ＜De-Digivolve 1＞ 1 of your opponent's Digimon.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-040"
+  },
+  {
+    "cardId": "BT27-067",
+    "set": "BT27",
+    "nameEn": "Artiomon",
+    "nameJp": "アルティオモン/ドゥームバスター",
+    "colors": ["Black", "Red"],
+    "kinds": ["Digimon", "Option"],
+    "playCost": 5,
+    "dp": 12000,
+    "evoCosts": [
+      {
+        "color": "Black",
+        "level": 5,
+        "memoryCost": 4
+      },
+      {
+        "color": "Red",
+        "level": 5,
+        "memoryCost": 4
+      }
+    ],
+    "rarity": "SR",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-067",
+    "level": 6,
+    "forms": ["Mega"],
+    "attributes": ["Vaccine"],
+    "types": ["Beastkin", "Glowing Dawn", "BEATBREAK"],
+    "isDualCard": true,
+    "dualEffect": "Doom Buster",
+    "optionColorRequirements": ["Black"],
+    "effectText": "[Digivolve] Lv.5 w/[Glowing Dawn] trait: Cost 3\n＜Raid＞ ＜Piercing＞ ＜Engage＞\n[All Turns] [Once Per Turn] When this Digimon would leave the battle area, by trashing 2 bottom face-down cards from under any of your Tamers, it doesn't leave.\n[All Turns] [Once Per Turn] When attack targets change or effects trash cards from under your Tamers, you may activate 1 [Main] effect on this card's Option side.",
+    "optionEffect": "＜Use Req. ([Glowing Dawn] trait)＞\n[Main] ＜De-Digivolve 2＞ 1 of your opponent's Digimon. Then, 1 of your Digimon unsuspends and gets +5000 DP until your turn ends.\n＜Arts Digivolve＞"
+  },
+  {
+    "cardId": "BT27-056",
+    "set": "BT27",
+    "nameEn": "Pristimon",
+    "nameJp": "プリスティモン",
+    "colors": ["Black"],
+    "kinds": ["Digimon"],
+    "playCost": 3,
+    "dp": 2000,
+    "evoCosts": [
+      {
+        "color": "Black",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-056",
+    "level": 3,
+    "forms": ["Rookie"],
+    "attributes": ["Vaccine"],
+    "types": ["Puppet", "Glowing Dawn", "BEATBREAK"],
+    "effectText": "[Digivolve] Lv.2 w/[Glowing Dawn] trait: Cost 0\n\n[Your Turn] When this Digimon would digivolve into a black Digimon card with the [BEATBREAK] trait, reduce the cost by 1.",
+    "inheritedEffectText": "＜Reboot＞"
+  },
+  {
+    "cardId": "BT27-058",
+    "set": "BT27",
+    "nameEn": "Wolvermon",
+    "nameJp": "ウルヴァモン",
+    "colors": ["Black"],
+    "kinds": ["Digimon"],
+    "playCost": 4,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Black",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-058",
+    "level": 4,
+    "forms": ["Champion"],
+    "attributes": ["Vaccine"],
+    "types": ["Cyborg", "Glowing Dawn", "BEATBREAK"],
+    "effectText": "[Digivolve] Lv.3 w/[Glowing Dawn] trait: Cost 2\n\n[Security] [When Digivolving] If you have 1 or fewer Tamers, you may play 1 Tamer card with [Reina Sakuya] in its name from your hand without paying the cost.",
+    "inheritedEffectText": "＜Blocker＞"
+  },
+  {
+    "cardId": "BT27-064",
+    "set": "BT27",
+    "nameEn": "Bearcatmon",
+    "nameJp": "ベアキャットモン",
+    "colors": ["Black"],
+    "kinds": ["Digimon"],
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Black",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-064",
+    "level": 5,
+    "forms": ["Ultimate"],
+    "attributes": ["Vaccine"],
+    "types": ["Beastkin", "Glowing Dawn", "BEATBREAK"],
+    "effectText": "[Digivolve] Lv.4 w/[Glowing Dawn] trait: Cost 3\n\n[Hand] [Main] If you have a Tamer with [Reina Sakuya] in its name, by placing 1 [Wolvermon] from your trash as any of your [Pristimon]'s bottom digivolution card, that Digimon digivolves into this card, ignoring level.\n[On Play] [When Digivolving] ＜De-Digivolve 1＞ 1 of your opponent's Digimon. Then, by trashing the bottom face-down card from under any of your Tamers, give 1 of their Digimon \"[Start of Your Main Phase] This Digimon attacks.\" until their turn ends.",
+    "inheritedEffectText": "[All Turns] [Once Per Turn] When attack targets change, if this Digimon has the [Glowing Dawn] trait, by trashing the bottom face-down card from under any of your Tamers, trash your opponent's top security card."
+  },
+  {
+    "cardId": "BT27-008",
+    "set": "BT27",
+    "nameEn": "Ryudamon",
+    "nameJp": "リュウダモン",
+    "colors": ["Red", "Black"],
+    "kinds": ["Digimon"],
+    "playCost": 3,
+    "dp": 2000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 2,
+        "memoryCost": 1
+      },
+      {
+        "color": "Black",
+        "level": 2,
+        "memoryCost": 1
+      }
+    ],
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-008",
+    "level": 3,
+    "forms": ["Rookie"],
+    "attributes": ["Vaccine"],
+    "types": ["Beast", "X Antibody", "Chronicle"],
+    "effectText": "[Digivolve] [Kyokyomon]/Black Lv.2 w/[X Antibody] trait: Cost 0\n\n[Start of Your Main Phase] By trashing 1 card with the [Chronicle] trait from your hand, ＜Draw 1＞ and gain 1 memory.",
+    "inheritedEffectText": "＜Raid＞"
+  },
+  {
+    "cardId": "BT27-009",
+    "set": "BT27",
+    "nameEn": "Ginryumon",
+    "nameJp": "ギンリュウモン",
+    "colors": ["Red", "Black"],
+    "kinds": ["Digimon"],
+    "playCost": 5,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 3,
+        "memoryCost": 3
+      },
+      {
+        "color": "Black",
+        "level": 3,
+        "memoryCost": 3
+      }
+    ],
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-009",
+    "level": 4,
+    "forms": ["Champion"],
+    "attributes": ["Vaccine"],
+    "types": ["Beast Dragon", "X Antibody", "Chronicle"],
+    "effectText": "[Digivolve] [Ryudamon]/Lv.3 w/[Chronicle] trait: Cost 2\n\n[On Play] [When Digivolving] 1 of your Digimon gets +3000 DP until your opponent's turn ends.\n[When Attacking] This Digimon may digivolve into a Digimon card with the [Chronicle] trait in the hand or trash.",
+    "inheritedEffectText": "[Your Turn] This Digimon gets +2000 DP."
+  },
+  {
+    "cardId": "BT27-013",
+    "set": "BT27",
+    "nameEn": "Hisyaryumon",
+    "nameJp": "ヒシャリュウモン",
+    "colors": ["Red", "Black"],
+    "kinds": ["Digimon"],
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 4,
+        "memoryCost": 4
+      },
+      {
+        "color": "Black",
+        "level": 4,
+        "memoryCost": 4
+      }
+    ],
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-013",
+    "level": 5,
+    "forms": ["Ultimate"],
+    "attributes": ["Vaccine"],
+    "types": ["Beast Dragon", "X Antibody", "Chronicle"],
+    "effectText": "[Digivolve] [Ginryumon]/Lv.4 w/[Chronicle] trait: Cost 3\n\n[On Play] [When Digivolving] ＜De-Digivolve 1＞ 1 of your opponent's Digimon. Then, if during an attack, delete 1 of your opponent's Digimon with as much DP as this Digimon or less.\n[Your Turn] When your opponent's security stack is removed from, this Digimon may digivolve into a [Chronicle] trait Digimon card in the hand or trash.",
+    "inheritedEffectText": "[Opponent's Turn] [Once Per Turn] When one of your opponent's Digimon attacks, you may change the attack target to 1 of your [Chronicle] trait Digimon."
+  },
+  {
+    "cardId": "BT27-015",
+    "set": "BT27",
+    "nameEn": "Ouryumon",
+    "nameJp": "オウリュウモン",
+    "colors": ["Red", "Black"],
+    "kinds": ["Digimon"],
+    "playCost": 12,
+    "dp": 12000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 5,
+        "memoryCost": 4
+      },
+      {
+        "color": "Black",
+        "level": 5,
+        "memoryCost": 4
+      }
+    ],
+    "rarity": "SR",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-015",
+    "level": 6,
+    "forms": ["Mega"],
+    "attributes": ["Vaccine"],
+    "types": ["Beast Dragon", "X Antibody", "Chronicle"],
+    "effectText": "[Digivolve] [Hisyaryumon]/Lv.5 w/[Chronicle] trait: Cost 3\n[Assembly -5] Lv.5 × Lv.4 × Lv.3, all w/[Chronicle] trait\n\n＜Piercing＞ ＜Reboot＞ ＜Blocker＞\n[On Play] [When Digivolving] Delete 1 of your opponent's Digimon with as much DP as 1 of your Digimon or less. Then, if during an attack, trash their top security card.\n[All Turns] [Once Per Turn] When security stacks are removed from, you may play or use 1 [Chronicle] trait Tamer or Option card from your hand without paying the cost.",
+    "inheritedEffectText": "[All Turns] [Once Per Turn] When security stacks are removed from, this [Alphamon: Ouryuken] may unsuspend."
   }
 ]

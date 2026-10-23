@@ -1,3 +1,4 @@
+import { GameMode } from "#shared/manual/GameMode";
 import type { GameState } from "./schema/GameState.js";
 import type { Seat } from "./schema/enums.js";
 import type { SequencedServerEvent } from "./protocol/events.js";
@@ -52,6 +53,7 @@ export const MATCH_MODES = [
   "tournament",
   "unlimited",
   "beta",
+  GameMode.MANUAL.value,
 ] as const satisfies readonly ReplaySummary["mode"][];
 /** Longest opponent search `GET /account/matches` accepts, the longest display name. */
 export const MATCH_OPPONENT_SEARCH_MAX = 32;
@@ -111,7 +113,7 @@ export interface ReplayFrame {
 export interface ReplaySummary {
   id: string;
   players: [string, string];
-  mode: "casual" | "private" | "ranked" | "bot" | "tournament" | "unlimited" | "beta";
+  mode: "casual" | "private" | "ranked" | "bot" | "tournament" | "unlimited" | "beta" | typeof GameMode.MANUAL.value;
   startedAt: number;
   finishedAt: number;
   winnerSeat: number;

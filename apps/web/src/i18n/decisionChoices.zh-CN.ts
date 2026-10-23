@@ -1,6 +1,8 @@
 import type { decisionChoicesEn } from "@/i18n/decisionChoices.en";
 
 export const decisionChoicesZhCN = {
+  "decision.choice.playSavedLevelFour": "从我方1名驯兽师下方，登场1张持有＜保存＞的Lv.4以下数码宝贝卡牌",
+  "decision.choice.digivolveQuartzmonReduced": "以进化费用-3，进化成手牌或我方1名驯兽师下方的［晶界兽］",
   "decision.choice.dpMinusSix": "本回合中，对方1只数码宝贝的DP-6000",
   "decision.choice.angemonSecurity": "消灭我方1只“天使兽”，将对方1只数码宝贝置于其安防区最下方",
   "decision.choice.returnOwnTrash": "将我方废弃区所有卡牌放回卡组最下方",
@@ -76,6 +78,8 @@ export const decisionChoicesZhCN = {
   "decision.choice.playDawn": "登场1张拥有“光辉黎明”特征的卡牌",
   "decision.choice.playSquad": "登场1张拥有“拯救队”特征的卡牌",
   "decision.choice.useSquad": "使用1张拥有“拯救队”特征的选项卡牌",
+  "decision.choice.playChronicleTamer": "登场1张拥有“Chronicle”特征的驯兽师",
+  "decision.choice.useChronicleOption": "使用1张拥有“Chronicle”特征的选项卡牌",
   "decision.choice.returnDeckTop": "放回卡组最上方",
   "decision.choice.returnDeckBottom": "放回卡组最下方",
   "decision.choice.declareDigimon": "宣言类别：数码宝贝",

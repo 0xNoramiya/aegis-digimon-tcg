@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import test from "node:test";
 import { parseOfficialCardPrintings } from "./parseOfficialCardPrintings.mjs";
 import { buildOfficialCardTranslations } from "./buildOfficialCardTranslations.mjs";
@@ -76,12 +77,18 @@ test("accounts for every catalog effect with official provenance or an explicit 
         if (!card[field]) continue;
         const value = dictionary[card.cardId]?.[normalizePrintedTextKey(card[field])];
         if (value) {
-          assert.match(
-            report.provenance[card.cardId][field],
-            language === "ja"
-              ? /^(?:https:\/\/digimoncard\.com\/|https:\/\/x\.com\/digimon_tcg\/status\/\d+$)/
-              : /^https:\/\/digimoncard\.co\.kr\//,
-          );
+          const source = report.provenance[card.cardId][field];
+          const japaneseCardImage = `data/card-images/${card.cardId}-J.webp`;
+          if (language === "ja" && source === japaneseCardImage) {
+            assert.ok(existsSync(japaneseCardImage), japaneseCardImage);
+          } else {
+            assert.match(
+              source,
+              language === "ja"
+                ? /^(?:https:\/\/digimoncard\.com\/|https:\/\/x\.com\/digimon_tcg\/status\/\d+$)/
+                : /^https:\/\/digimoncard\.co\.kr\//,
+            );
+          }
           translated++;
         } else {
           assert.ok(missing.has(`${card.cardId}:${field}`), `${language}:${card.cardId}:${field}`);

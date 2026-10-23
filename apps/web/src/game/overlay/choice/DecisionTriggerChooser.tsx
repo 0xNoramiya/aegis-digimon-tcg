@@ -1,5 +1,6 @@
 import { encodeTriggerResolutionPlan } from "@aegis/shared/protocol/encodeTriggerResolutionPlan";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { useState } from "react";
 import { DecisionReorderHandle } from "./DecisionReorderHandle";
 import { reorderDecisionItems, useDecisionReorder } from "./useDecisionReorder";
@@ -71,6 +72,7 @@ export function DecisionTriggerChooser({
 }) {
   const { t } = useTranslation();
   const getCardName = useTranslatedCardName();
+  const translateCardText = useTranslatedCardText();
   const [order, setOrder] = useState<string[]>([]);
   const [presets, setPresets] = useState<Readonly<Record<string, Preset>>>({});
   const triggerKeyLabels = triggerLabels(triggerKeys, t, triggerCardIds, getCardName);
@@ -230,6 +232,7 @@ export function DecisionTriggerChooser({
           const detail = triggerDetails[i];
           const timingLabel = triggerTimingLabels[i];
           const activeClause = entryClauses[i];
+          const reason = triggerReasons?.[i] ? translateCardText({ text: triggerReasons[i], cardId }) : undefined;
           return (
             <div
               key={key}
@@ -259,9 +262,7 @@ export function DecisionTriggerChooser({
               <button
                 type="button"
                 className={`trigger-chooser__option${chosen ? " trigger-chooser__option--chosen" : ""}`}
-                aria-label={[timingLabel, triggerKeyLabels[i], detail?.sourceLabel, triggerReasons?.[i]]
-                  .filter(Boolean)
-                  .join(", ")}
+                aria-label={[timingLabel, triggerKeyLabels[i], detail?.sourceLabel, reason].filter(Boolean).join(", ")}
                 aria-pressed={chosen}
                 onClick={() => toggle(key)}
               >
@@ -282,10 +283,8 @@ export function DecisionTriggerChooser({
                     <span className="trigger-chooser__name">{triggerKeyLabels[i]}</span>
                     <span className="trigger-chooser__id">{cardId}</span>
                     {detail?.sourceLabel ? <span className="trigger-chooser__source">{detail.sourceLabel}</span> : null}
-                    {triggerReasons?.[i] ? (
-                      <span className="trigger-chooser__reason">
-                        {t("overlay.triggerReason", { reason: triggerReasons[i] })}
-                      </span>
+                    {reason ? (
+                      <span className="trigger-chooser__reason">{t("overlay.triggerReason", { reason })}</span>
                     ) : null}
                   </span>
                   {chosen && !acceptsResolutionPlan ? (
@@ -297,7 +296,13 @@ export function DecisionTriggerChooser({
                 {activeClause ? (
                   <span className="trigger-chooser__section">
                     <span className="trigger-chooser__effect-text">
-                      <EffectText text={activeClause} cardId={cardId} />
+                      <EffectText
+                        text={activeClause}
+                        cardId={cardId}
+                        timing={triggerTimings?.[i] || timing}
+                        surface="trigger-order"
+                        allowContext
+                      />
                     </span>
                   </span>
                 ) : null}
@@ -433,7 +438,7 @@ function WaitingTriggerList({ entries, timing }: { entries: readonly WaitingTrig
               </span>
               {clause ? (
                 <span className="trigger-chooser__effect-text">
-                  <EffectText text={clause} cardId={cardId} />
+                  <EffectText text={clause} cardId={cardId} timing={timing} surface="waiting-trigger" allowContext />
                 </span>
               ) : null}
             </span>

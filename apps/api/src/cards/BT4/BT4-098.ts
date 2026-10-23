@@ -29,6 +29,7 @@ export const compiled: CompiledCard = {
         {
           kind: "SubTrigger",
           event: "whenBlocked",
+          printedClause: "[Granted] [Your Turn] When this Digimon is blocked, gain +3 memory.",
           on: { filter: {}, count: 1, fromSelectionRef: "atomicInfernoTarget" },
           sourceFilter: { isSelfRef: true },
           actions: [{ kind: "GainMemory", amount: 3 }],

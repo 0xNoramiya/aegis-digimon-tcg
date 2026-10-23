@@ -107,6 +107,7 @@ export function OpponentBattleRow({
         onClick={onPermanentClick(p)}
         onInspect={() => onPermanentInspect(p)}
         showInspect={chrome.showInspectionControls}
+        useSelectedSleeve={false}
       />
     );
   }

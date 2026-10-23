@@ -7,11 +7,15 @@ import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { isDigimonWorldAvatarId } from "@aegis/shared";
 import { Avatar } from "../../../design/primitives";
+import { useTranslation } from "@/i18n/useTranslation";
 import { useAnchoredTooltip } from "../../useAnchoredTooltip";
+import { botPersonaById } from "@aegis/shared/bot/personas/botPersonaById";
+import { BotPortrait } from "@/bot/personas/BotPortrait";
 
 export function PlayerLine({
   name,
   avatarId,
+  botPersonaId,
   side,
   actingLabel,
   maxLength,
@@ -19,11 +23,14 @@ export function PlayerLine({
 }: {
   name: string;
   avatarId?: string;
+  botPersonaId?: string;
   side: "player" | "opponent";
   actingLabel?: string;
   maxLength?: number;
   timer?: ReactNode;
 }) {
+  const { t } = useTranslation();
+  const persona = botPersonaById(botPersonaId);
   const { tooltipId, open, show, closeSoon, cancelClose } = useAnchoredTooltip<"name">({
     preferAbove: side === "player",
   });
@@ -37,12 +44,17 @@ export function PlayerLine({
       data-acting={actingLabel ? true : undefined}
     >
       <span className="game-player-line__avatar">
-        <Avatar name={name} avatarId={isDigimonWorldAvatarId(avatarId) ? avatarId : null} size={18} />
+        {persona ? (
+          <BotPortrait persona={persona} size={18} />
+        ) : (
+          <Avatar name={name} avatarId={isDigimonWorldAvatarId(avatarId) ? avatarId : null} size={18} />
+        )}
       </span>
       {shortened ? (
         <button
           type="button"
           className="game-player-line__name"
+          data-bot={botPersonaId ? true : undefined}
           aria-label={name}
           aria-describedby={open ? tooltipId : undefined}
           onMouseEnter={(event) => show("name", event.currentTarget)}
@@ -51,10 +63,14 @@ export function PlayerLine({
           onBlur={closeSoon}
           onClick={(event) => show("name", event.currentTarget)}
         >
-          {`${characters.slice(0, maxLength - 1).join("")}…`}
+          <span className="bot-player-name">{`${characters.slice(0, maxLength - 1).join("")}…`}</span>
+          {botPersonaId ? <span className="bot-identity-badge">{t("bot.identity.label")}</span> : null}
         </button>
       ) : (
-        <span className="game-player-line__name">{name}</span>
+        <span className="game-player-line__name" data-bot={botPersonaId ? true : undefined}>
+          <span className="bot-player-name">{name}</span>
+          {botPersonaId ? <span className="bot-identity-badge">{t("bot.identity.label")}</span> : null}
+        </span>
       )}
       {actingLabel ? (
         <span className="game-player-line__acting" data-testid={`${side}-acting`}>

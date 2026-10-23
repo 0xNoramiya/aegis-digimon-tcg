@@ -1,3 +1,11 @@
+import { BotDifficulty } from "@aegis/shared/bot/BotDifficulty";
+import { BotStyle } from "@aegis/shared/bot/BotStyle";
+import type { BotSettings } from "@aegis/shared/bot/BotSettings";
+import { isBotDifficulty } from "@aegis/shared/bot/isBotDifficulty";
+import { isBotStyle } from "@aegis/shared/bot/isBotStyle";
+import { readBotSettings } from "@/bot/readBotSettings";
+import { GameModeSwitch } from "@/screens/GameModeSwitch";
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 
 import { communityApi } from "@/community/client";
@@ -53,12 +61,14 @@ import { MatchTimerSettings } from "./MatchTimerSettings";
 import { loadMatchFormatPreference, saveMatchFormatPreference } from "./matchFormatPreference";
 import "./lobby.css";
 import { lookupPrivateRoom } from "../net/client";
+import { BotOpponentPreview } from "@/bot/personas/BotOpponentPreview";
 import { useLiveMatches } from "./useLiveMatches";
 import { deckHasBetaCards } from "@/screens/deckHasBetaCards";
 import { isBetaCard } from "@/screens/isBetaCard";
 
 /** The private room a finished match returns to. Its host reopens it under the same code. */
 export interface PrivateRoom {
+  gameMode?: GameMode;
   code: string;
   host: boolean;
   unlimited?: boolean;
@@ -195,8 +205,12 @@ export function Lobby({
   onBestOfChange,
   allowRollback = false,
   onAllowRollbackChange,
+  gameMode = GameMode.AUTOMATIC.value,
+  onGameModeChange,
   openMatchSettings = false,
 }: {
+  gameMode?: GameMode;
+  onGameModeChange?: (mode: GameMode) => void;
   openMatchSettings?: boolean;
   allowRollback?: boolean;
   onAllowRollbackChange?: (allow: boolean) => void;
@@ -226,6 +240,8 @@ export function Lobby({
     deckId?: string | DeckListing,
     unlimited?: boolean,
     format?: DeckFormat,
+    botSettings?: BotSettings,
+    gameMode?: GameMode,
   ) => void;
   /** A code carried in by an invite link; opens the private join form with it filled in. */
   invitedRoomCode?: string;
@@ -261,7 +277,18 @@ export function Lobby({
   const [roomCodeInput, setRoomCodeInput] = useState(invitedRoomCode ?? "");
   // "" is the random pool; any other value is a famous-deck preset id the bot will play.
   const [botDeckId, setBotDeckId] = useState("");
-  const [guestRules, setGuestRules] = useState<{ code: string; unlimited: boolean; format?: DeckFormat }>();
+  const [botSettings, setBotSettings] = useState(readBotSettings);
+  useEffect(() => {
+    try {
+      localStorage.setItem("aegis.botSettings", JSON.stringify(botSettings));
+    } catch {}
+  }, [botSettings]);
+  const [guestRules, setGuestRules] = useState<{
+    code: string;
+    unlimited: boolean;
+    format?: DeckFormat;
+    gameMode?: GameMode;
+  }>();
   const [guestLookupFailed, setGuestLookupFailed] = useState(false);
   const guestCode = privateRoom?.code ?? roomCodeInput;
   const privateGuest = mode === "private" && (privateRoom ? !privateRoom.host : privateSub === "join");
@@ -273,7 +300,13 @@ export function Lobby({
     if (guestCode.length === 6) {
       void lookupPrivateRoom(guestCode)
         .then((rules) => {
-          if (!cancelled) setGuestRules({ code: guestCode, unlimited: rules.unlimited, format: rules.format });
+          if (!cancelled)
+            setGuestRules({
+              code: guestCode,
+              unlimited: rules.unlimited,
+              format: rules.format,
+              gameMode: rules.gameMode,
+            });
         })
         .catch(() => {
           if (!cancelled) setGuestLookupFailed(true);
@@ -304,12 +337,31 @@ export function Lobby({
   const banlistLimit = (id: string) => formatCopyLimit(id, format);
   const onStart = useCallback(
     (...args: Parameters<typeof onStartRequested>) => {
+      const selectedMode = privateRoom?.gameMode ?? guestRules?.gameMode ?? gameMode;
+      if (selectedMode === GameMode.MANUAL.value && args[0] !== "bot" && args[0] !== "spectator") {
+        onStartRequested(args[0], args[1], args[2], true, args[4], unlimited, format, undefined, GameMode.MANUAL.value);
+        return;
+      }
       if (args[0] === "ranked") {
         onStartRequested("ranked", args[1], args[2], args[3], args[4], false, "standard");
         return;
       }
       if (args[0] === "spectator") {
         onStartRequested(...args);
+        return;
+      }
+      if (args[0] === "bot") {
+        const requestedFormat = format === "standard" || format === "unlimited" ? args[6] : format;
+        onStartRequested(
+          args[0],
+          args[1],
+          args[2],
+          args[3],
+          args[4],
+          unlimited ? true : args[5],
+          requestedFormat,
+          args[7],
+        );
         return;
       }
       if (unlimited) {
@@ -327,7 +379,7 @@ export function Lobby({
       }
       onStartRequested(args[0], args[1], args[2], args[3], args[4], args[5], format);
     },
-    [onStartRequested, format, unlimited],
+    [onStartRequested, format, unlimited, gameMode, guestRules?.gameMode, privateRoom?.gameMode],
   );
   const randomDrawVersion = useRef(0);
   const matchSetup = useRef<HTMLElement>(null);
@@ -342,10 +394,16 @@ export function Lobby({
   const [viewedDeck, setViewedDeck] = useState<DeckListing | null>(null);
   const [betaQueueChosen, setBetaQueueChosen] = useState(false);
   // Which modes route an unreleased-card deck into the separate beta queue.
+  const manualMatch = (privateRoom?.gameMode ?? guestRules?.gameMode ?? gameMode) === GameMode.MANUAL.value;
   const betaQueueMode = format === "standard" && mode === "casual";
   // Private and bot rooms have no public queue, so they take an unreleased-card deck
   // without the queue routing a public match needs.
-  const betaAllowed = betaQueueMode || mode === "private" || mode === "practice";
+  const betaAllowed =
+    gameMode === GameMode.MANUAL.value ||
+    guestRules?.gameMode === GameMode.MANUAL.value ||
+    betaQueueMode ||
+    mode === "private" ||
+    mode === "practice";
   const userDecks = useMemo(() => {
     return decks
       .map((deck) => ({
@@ -466,6 +524,13 @@ export function Lobby({
   );
   const start = useCallback(
     async (startMode: StartMode, code?: string, requestedBotDeckId?: string, requestedBetaBattleMode?: boolean) => {
+      function submitMatch(...args: Parameters<typeof onStart>): void {
+        if (args[0] === "bot") {
+          onStart(args[0], args[1], args[2], args[3], args[4], args[5], args[6], botSettings);
+          return;
+        }
+        onStart(...args);
+      }
       if (randomSelected) {
         if (randomDrawing) return;
         const drawVersion = ++randomDrawVersion.current;
@@ -496,7 +561,7 @@ export function Lobby({
         }
         const betaBattleMode = betaQueueMode && deckHasBetaCards(drawn) ? true : requestedBetaBattleMode;
         const queueMode = betaBattleMode && startMode === "casual" ? "beta" : startMode;
-        onStart(
+        submitMatch(
           queueMode,
           code,
           requestedBotDeckId,
@@ -509,21 +574,22 @@ export function Lobby({
       const selectedDeckId = active?.id;
       if (!selectedDeckId) return;
       if (unlimited && startMode !== "unlimited") {
-        onStart(startMode, code, requestedBotDeckId, requestedBetaBattleMode, undefined, true);
+        submitMatch(startMode, code, requestedBotDeckId, requestedBetaBattleMode, undefined, true);
       } else if (requestedBetaBattleMode !== undefined) {
-        onStart(startMode, code, requestedBotDeckId, requestedBetaBattleMode);
+        submitMatch(startMode, code, requestedBotDeckId, requestedBetaBattleMode);
       } else if (requestedBotDeckId !== undefined) {
-        onStart(startMode, code, requestedBotDeckId);
+        submitMatch(startMode, code, requestedBotDeckId);
       } else if (code !== undefined) {
-        onStart(startMode, code);
+        submitMatch(startMode, code);
       } else {
-        onStart(startMode);
+        submitMatch(startMode);
       }
     },
     [
       active?.id,
       betaQueueMode,
       onStart,
+      botSettings,
       randomPool,
       randomSelected,
       customBotDeck,
@@ -577,7 +643,7 @@ export function Lobby({
                   onClick: () =>
                     betaEnabled ? setBetaConfirmationOpen(true) : start("beta", undefined, undefined, true),
                 }
-              : RANKED_ENABLED && format === "standard"
+              : gameMode !== GameMode.MANUAL.value && RANKED_ENABLED && format === "standard"
                 ? // RankedStart owns its ranked toggle and button, so it stays in the setup panel.
                   null
                 : {
@@ -633,12 +699,16 @@ export function Lobby({
                     {deckLegal ? <Icons.Check size={13} /> : null}
                     {deckStatus.label}
                   </span>
-                  {bestOf === 3 && (mode === "casual" || (mode === "private" && privateSub === "create")) ? (
+                  {!manualMatch &&
+                  bestOf === 3 &&
+                  (mode === "casual" || (mode === "private" && privateSub === "create")) ? (
                     <span className="lobby-timer-summary">
                       <Icons.Trophy size={13} /> {t("lobby.format.enabled")}
                     </span>
                   ) : null}
-                  {timer.matchTimer && (mode === "casual" || (mode === "private" && privateSub === "create")) ? (
+                  {!manualMatch &&
+                  timer.matchTimer &&
+                  (mode === "casual" || (mode === "private" && privateSub === "create")) ? (
                     <span className="lobby-timer-summary">
                       <Icons.Clock size={13} /> {t("lobby.timer.enabled")}
                     </span>
@@ -744,6 +814,9 @@ export function Lobby({
           <div className="aegis-section-heading">
             <h1 className="aegis-section-heading__title">{t("lobby.title")}</h1>
             <span className="aegis-section-heading__rule" aria-hidden="true" />
+            <Button variant="secondary" icon={Icons.GraduationCap} onClick={() => onNav("learn")}>
+              {t("learn.lobbyButton")}
+            </Button>
             <Button variant="secondary" onClick={() => onNav("story")}>
               {t("story.title")}
             </Button>
@@ -803,15 +876,18 @@ export function Lobby({
           </div>
           <div className="lobby-setup__summary" aria-label={t("redesign.play.setupTitle")}>
             <span>{deckFormatLabel(format, t)}</span>
+            {gameMode === GameMode.MANUAL.value || guestRules?.gameMode === GameMode.MANUAL.value ? (
+              <span>{t("manual.title")}</span>
+            ) : null}
             {!privateGuest && !privateRoom ? (
               <>
                 <span>
                   <Icons.Trophy size={14} />{" "}
-                  {t(vsBot || bestOf === 1 ? "lobby.format.bestOf1" : "lobby.format.bestOf3")}
+                  {t(manualMatch || vsBot || bestOf === 1 ? "lobby.format.bestOf1" : "lobby.format.bestOf3")}
                 </span>
                 <span>
                   <Icons.Clock size={14} />{" "}
-                  {t(!vsBot && timer.matchTimer ? "lobby.timer.enabled" : "redesign.play.timerOff")}
+                  {t(!manualMatch && !vsBot && timer.matchTimer ? "lobby.timer.enabled" : "redesign.play.timerOff")}
                 </span>
               </>
             ) : null}
@@ -901,6 +977,7 @@ export function Lobby({
               ) : null}
             </div>
           </div>
+          {vsBot ? <BotOpponentPreview deck={botPreview} settings={botSettings} /> : null}
           <details className="lobby-advanced">
             <summary>
               <Icons.Settings size={18} className="lobby-advanced__icon" />
@@ -922,8 +999,11 @@ export function Lobby({
                 <div className="lobby-setup__column">
                   {mode === "casual" || vsBot || (mode === "private" && privateSub === "create" && !privateRoom) ? (
                     <div className="lobby-match-rules">
-                      <RollbackSettings enabled={allowRollback} onChange={onAllowRollbackChange ?? (() => {})} />
-                      {!vsBot ? (
+                      {!vsBot ? <GameModeSwitch value={gameMode} onChange={onGameModeChange} /> : null}
+                      {gameMode !== GameMode.MANUAL.value ? (
+                        <RollbackSettings enabled={allowRollback} onChange={onAllowRollbackChange ?? (() => {})} />
+                      ) : null}
+                      {!vsBot && gameMode !== GameMode.MANUAL.value ? (
                         <>
                           <MatchFormatSettings bestOf={bestOf} onChange={changeBestOf} />
                           <MatchTimerSettings options={timer} onChange={changeTimer} privateRoom={mode === "private"} />
@@ -935,6 +1015,42 @@ export function Lobby({
                 <div className="lobby-setup__column">
                   {vsBot ? (
                     <div className="lobby-bot-deck">
+                      <label htmlFor="lobby-bot-difficulty">{t("bot.difficulty.label")}</label>
+                      <select
+                        id="lobby-bot-difficulty"
+                        className="lobby-bot-deck-select"
+                        value={botSettings.botDifficulty}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          if (isBotDifficulty(value)) {
+                            setBotSettings((current) => ({ ...current, botDifficulty: value }));
+                          }
+                        }}
+                      >
+                        {Object.values(BotDifficulty).map((entry) => (
+                          <option key={entry.value} value={entry.value}>
+                            {t(`bot.difficulty.${entry.value}`)}
+                          </option>
+                        ))}
+                      </select>
+                      <label htmlFor="lobby-bot-style">{t("bot.style.label")}</label>
+                      <select
+                        id="lobby-bot-style"
+                        className="lobby-bot-deck-select"
+                        value={botSettings.botStyle}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          if (isBotStyle(value)) {
+                            setBotSettings((current) => ({ ...current, botStyle: value }));
+                          }
+                        }}
+                      >
+                        {Object.values(BotStyle).map((entry) => (
+                          <option key={entry.value} value={entry.value}>
+                            {t(`bot.style.${entry.value}`)}
+                          </option>
+                        ))}
+                      </select>
                       <label htmlFor="lobby-bot-deck">{t("lobby.botDeck")}</label>
                       <select
                         id="lobby-bot-deck"
@@ -970,26 +1086,6 @@ export function Lobby({
                           </optgroup>
                         ))}
                       </select>
-                      {botPreview ? (
-                        <div className="lobby-bot-preview">
-                          <span className="lobby-active-strip__thumb">
-                            <CoverThumb
-                              coverCardId={displayCoverCard(botPreview)}
-                              sigilColor={botPreview.color}
-                              sigilSize={22}
-                            />
-                          </span>
-                          <div className="lobby-bot-preview__copy">
-                            <strong>{botPreview.name}</strong>
-                            <small>
-                              {t("redesign.play.deckCounts", {
-                                main: botPreview.mainDeck.length,
-                                egg: botPreview.eggDeck.length,
-                              })}
-                            </small>
-                          </div>
-                        </div>
-                      ) : null}
                     </div>
                   ) : null}
                   {betaOptional ? (
