@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { GameState } from "@aegis/shared/schema/GameState";
 import type { Intent } from "@aegis/shared/protocol/intents";
 import type { ServerEvent } from "@aegis/shared/protocol/events";
+import type { CounterChoice } from "@aegis/shared/protocol/CounterChoice";
 import type { Seat } from "@aegis/shared/schema/enums";
 import "#api/cards/index";
 import { GameEngine } from "#api/engine/GameEngine";
@@ -14,10 +15,24 @@ import { SeededRandom } from "#api/engine/random/SeededRandom";
 import { BotPlayer } from "#api/bot/BotPlayer";
 import { createEvaluationPolicy, type BotPolicy } from "#api/bot/policy";
 import { evolutionPilotDecks } from "#api/bot/evolution/evolutionPilotDecks";
+import type { ScenarioFixture } from "#api/engine/scenario/types";
+import {
+  COUNTER_WINDOW_SNAPSHOT_CARDS,
+  counterWindowSnapshotFixture,
+} from "#api/engine/scenarios/counter-window-snapshot.fixture";
 
 type PositionKind = "main" | "block" | "counter" | "decision";
+type CounterKind = "blastDigivolve" | "blastDnaDigivolve" | "handEffect" | "fieldEffect";
+type CounterWindow = { eligible: CounterKind[]; answer: CounterKind | "decline" };
 type RecordedInput = { seat: Seat; intent: Intent; events: number };
-type Position = { kind: PositionKind; snapshot: GameEngineSnapshot; events: number; inputs: number };
+type Position = {
+  kind: PositionKind;
+  snapshot: GameEngineSnapshot;
+  events: number;
+  inputs: number;
+  counter?: CounterWindow;
+};
+type Deck = { mainDeck: string[]; eggDeck: string[] };
 type RecordedMatch = {
   events: ServerEvent[];
   inputs: RecordedInput[];
@@ -25,30 +40,66 @@ type RecordedMatch = {
   failures: Record<PositionKind, number>;
   state: GameState;
 };
-type PlayParams = { seed: number; sampleRate: number };
+type MatchStart = { decks: readonly [Deck, Deck] } | { fixture: ScenarioFixture };
+type PlayParams = {
+  seed: number;
+  sampleRate: number;
+  captured: readonly PositionKind[];
+  start: MatchStart;
+  turnLimit: number;
+  declineCounters?: boolean;
+};
 type VerifyParams = { seed: number; match: RecordedMatch; position: Position };
 
 const TURN_LIMIT = 24;
+const COUNTER_FIXTURE_TURNS = 4;
+const EMPTY_DECK: Deck = { mainDeck: [], eggDeck: [] };
 const POSITION_KINDS: readonly PositionKind[] = ["main", "block", "counter", "decision"];
+const COUNTER_KINDS: readonly CounterKind[] = ["blastDigivolve", "blastDnaDigivolve", "handEffect", "fieldEffect"];
 
-function readDecks(): readonly { deck: { mainDeck: string[]; eggDeck: string[] } }[] {
+function readDecks(): readonly { deck: Deck }[] {
   const path = process.env.SNAPSHOT_CONFORMANCE_DECKS;
   if (path === undefined) {
     return evolutionPilotDecks().available;
   }
-  const pool = JSON.parse(readFileSync(path, "utf8")) as { decks: { mainDeck: string[]; eggDeck: string[] }[] };
+  const pool = JSON.parse(readFileSync(path, "utf8")) as { decks: Deck[] };
   return [
     ...pool.decks.map(({ mainDeck, eggDeck }) => ({ deck: { mainDeck, eggDeck } })),
     ...evolutionPilotDecks().available,
   ];
 }
 
+function classifyCounter({
+  state,
+  seat,
+  choice,
+}: {
+  state: GameState;
+  seat: Seat;
+  choice: CounterChoice;
+}): CounterKind {
+  if (choice.effectKey.startsWith("blast-dna-digivolve:")) {
+    return "blastDnaDigivolve";
+  }
+  if (choice.effectKey.startsWith("blast-digivolve:")) {
+    return "blastDigivolve";
+  }
+  const inHand = state.players[seat]?.hand.some((card) => card.instanceId === choice.instanceId) ?? false;
+  return inHand ? "handEffect" : "fieldEffect";
+}
+
 function waitForMacrotask(): Promise<void> {
   return new Promise<void>((resolve) => setImmediate(resolve));
 }
 
-async function playRecordedMatch({ seed, sampleRate }: PlayParams): Promise<RecordedMatch> {
-  const decks = readDecks();
+async function playRecordedMatch({
+  seed,
+  sampleRate,
+  captured,
+  start,
+  turnLimit,
+  declineCounters = false,
+}: PlayParams): Promise<RecordedMatch> {
   const state = new GameState();
   const events: ServerEvent[] = [];
   const inputs: RecordedInput[] = [];
@@ -76,15 +127,21 @@ async function playRecordedMatch({ seed, sampleRate }: PlayParams): Promise<Reco
     },
   });
   engine.snapshotContinuation.enable();
-  const capture = (kind: PositionKind) => {
+  const capture = (kind: PositionKind): Position | undefined => {
+    if (!captured.includes(kind)) {
+      return undefined;
+    }
     if (kind !== "block" && kind !== "counter" && sampler.next() >= sampleRate) {
-      return;
+      return undefined;
     }
     try {
       const snapshot = JSON.parse(JSON.stringify(snapshotGameEngine({ engine, allowContinuation: true })));
-      positions.push({ kind, snapshot, events: events.length, inputs: inputs.length });
+      const position: Position = { kind, snapshot, events: events.length, inputs: inputs.length };
+      positions.push(position);
+      return position;
     } catch {
       failures[kind]++;
+      return undefined;
     }
   };
   const apply = (seat: Seat, intent: Intent) => {
@@ -105,8 +162,24 @@ async function playRecordedMatch({ seed, sampleRate }: PlayParams): Promise<Reco
         return base.chooseBlockResponse(view, context, signal);
       },
       chooseCounterResponse: (view, context, signal) => {
-        capture("counter");
-        return base.chooseCounterResponse(view, context, signal);
+        const position = capture("counter");
+        const answer: Intent = declineCounters
+          ? { type: "respondCounter" }
+          : base.chooseCounterResponse(view, context, signal);
+        if (position !== undefined) {
+          const kindOf = (choice: CounterChoice) => classifyCounter({ state, seat, choice });
+          const chosen =
+            answer.type === "respondCounter"
+              ? context.eligibleCounters.find(
+                  (choice) => choice.instanceId === answer.sourceInstanceId && choice.effectKey === answer.effectKey,
+                )
+              : undefined;
+          position.counter = {
+            eligible: [...new Set(context.eligibleCounters.map(kindOf))],
+            answer: chosen === undefined ? "decline" : kindOf(chosen),
+          };
+        }
+        return answer;
       },
       answerDecision: (view, request, signal) => {
         if (request.kind !== "mulligan") {
@@ -124,15 +197,19 @@ async function playRecordedMatch({ seed, sampleRate }: PlayParams): Promise<Reco
     );
   }
   for (const seat of [0, 1] as const) {
-    const deck = decks[(seed * 3 + seat * 5) % decks.length]!.deck;
+    const deck = "decks" in start ? start.decks[seat] : EMPTY_DECK;
     engine.seatPlayer(seat, `conformance-${seat}`, { displayName: `Seat ${seat}`, deck });
   }
-  engine.startMatch();
+  if ("fixture" in start) {
+    engine.startScenarioFixture(start.fixture);
+  } else {
+    engine.startMatch();
+  }
   let idleTurns = 0;
   let previous = progress;
   while (!state.gameOver) {
     await waitForMacrotask();
-    if (state.turnCount > TURN_LIMIT) {
+    if (state.turnCount > turnLimit) {
       await waitForEngineIdle({ progress: () => progress });
       if (!state.gameOver) {
         apply(0, { type: "surrender" });
@@ -195,6 +272,10 @@ function readCount({ name, fallback }: { name: string; fallback: number }): numb
   return count;
 }
 
+function emptyCounts<Kind extends string>(kinds: readonly Kind[]): Record<Kind, number> {
+  return Object.fromEntries(kinds.map((kind) => [kind, 0])) as Record<Kind, number>;
+}
+
 describe("continuation snapshot conformance", () => {
   it(
     "restores combat-window and mid-effect positions and matches every later event and the final state",
@@ -202,13 +283,21 @@ describe("continuation snapshot conformance", () => {
       const matches = readCount({ name: "SNAPSHOT_CONFORMANCE_MATCHES", fallback: 6 });
       const baseSeed = readCount({ name: "SNAPSHOT_CONFORMANCE_SEED", fallback: 20261032 });
       const sampleRate = Number(process.env.SNAPSHOT_CONFORMANCE_SAMPLE_RATE ?? 0.25);
-      const verified: Record<PositionKind, number> = { main: 0, block: 0, counter: 0, decision: 0 };
-      const continued: Record<PositionKind, number> = { main: 0, block: 0, counter: 0, decision: 0 };
-      const failures: Record<PositionKind, number> = { main: 0, block: 0, counter: 0, decision: 0 };
+      const pool = readDecks();
+      const verified = emptyCounts(POSITION_KINDS);
+      const continued = emptyCounts(POSITION_KINDS);
+      const failures = emptyCounts(POSITION_KINDS);
       const perMatch: { seed: number; kinds: PositionKind[] }[] = [];
       for (let index = 0; index < matches; index++) {
         const seed = baseSeed + index;
-        const match = await playRecordedMatch({ seed, sampleRate });
+        const decks = [0, 1].map((seat) => pool[(seed * 3 + seat * 5) % pool.length]!.deck) as [Deck, Deck];
+        const match = await playRecordedMatch({
+          seed,
+          sampleRate,
+          captured: POSITION_KINDS,
+          start: { decks },
+          turnLimit: TURN_LIMIT,
+        });
         for (const kind of POSITION_KINDS) {
           failures[kind] += match.failures[kind];
         }
@@ -235,5 +324,62 @@ describe("continuation snapshot conformance", () => {
       expect(continued.decision).toBeGreaterThan(0);
     },
     readCount({ name: "SNAPSHOT_CONFORMANCE_TIMEOUT_MS", fallback: 600_000 }),
+  );
+
+  it(
+    "restores Counter windows of every Counter kind and matches every later event and the final state",
+    async () => {
+      const cardStep = readCount({ name: "COUNTER_CONFORMANCE_CARD_STEP", fallback: 3 });
+      const seed = readCount({ name: "COUNTER_CONFORMANCE_SEED", fallback: 20261100 });
+      const cards = Object.values(COUNTER_WINDOW_SNAPSHOT_CARDS).flatMap((group) =>
+        group.filter((_, index) => index % cardStep === 0),
+      );
+      const eligible = emptyCounts(COUNTER_KINDS);
+      const answered = emptyCounts([...COUNTER_KINDS, "decline"] as const);
+      let verified = 0;
+      let continued = 0;
+      let failures = 0;
+      const perFixture: { counterCard: string; declined: boolean; windows: number }[] = [];
+      for (const [index, counterCard] of cards.entries()) {
+        const fixture = counterWindowSnapshotFixture({ counterCard });
+        for (const declineCounters of [false, true]) {
+          const match = await playRecordedMatch({
+            seed: seed + index,
+            sampleRate: 0,
+            captured: ["counter"],
+            start: { fixture },
+            turnLimit: fixture.turnCount + COUNTER_FIXTURE_TURNS,
+            declineCounters,
+          });
+          failures += match.failures.counter;
+          perFixture.push({ counterCard, declined: declineCounters, windows: match.positions.length });
+          for (const position of match.positions) {
+            await verifyPosition({ seed: seed + index, match, position });
+            verified++;
+            if (position.snapshot.continuation !== undefined) {
+              continued++;
+            }
+            for (const kind of position.counter?.eligible ?? []) {
+              eligible[kind]++;
+            }
+            answered[position.counter?.answer ?? "decline"]++;
+          }
+        }
+      }
+      const reportPath = process.env.COUNTER_CONFORMANCE_REPORT;
+      if (reportPath !== undefined) {
+        writeFileSync(
+          reportPath,
+          JSON.stringify({ cardStep, seed, verified, continued, failures, eligible, answered, perFixture }),
+        );
+      }
+      expect(failures).toBe(0);
+      for (const kind of COUNTER_KINDS) {
+        expect(eligible[kind], kind).toBeGreaterThan(0);
+      }
+      expect(answered.decline).toBeGreaterThan(0);
+      expect(verified - answered.decline).toBeGreaterThan(0);
+    },
+    readCount({ name: "COUNTER_CONFORMANCE_TIMEOUT_MS", fallback: 600_000 }),
   );
 });
