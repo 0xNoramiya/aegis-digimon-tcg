@@ -193,7 +193,7 @@ export function mergedPlayOrUseAction(
       ...play.target,
       upTo: play.optional === true,
       minimum: 0,
-      filter: { ...playFilter, kind: ["Digimon", "Tamer", "Option"] },
+      filter: { ...playFilter, kind: [...new Set([...(playFilter.kind ?? ["Digimon", "Tamer"]), "Option" as const])] },
     },
     raw: play.raw ?? use.raw,
   };
