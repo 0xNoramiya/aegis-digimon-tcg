@@ -799,6 +799,9 @@ export async function runReplacement(
         if (delaySource === undefined || delaySource.enterFieldTurnCount === _subCtx.game.state.turnCount) return false;
       }
       const filter = action.sourceFilter ?? action.target?.filter;
+      if (event === "wouldDigivolve" && candidate.inBreeding && !filterReachesBreeding(filter ?? {})) {
+        return false;
+      }
       if (filter !== undefined) {
         if (filter.controller === "mine" && candidate.controllerSeat !== ctx.source.ownerSeat) return false;
         if (filter.controller === "opponent" && candidate.controllerSeat === ctx.source.ownerSeat) return false;
