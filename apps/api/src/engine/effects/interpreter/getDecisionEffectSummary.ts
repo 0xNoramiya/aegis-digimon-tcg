@@ -17,6 +17,7 @@ function getEmptyCounts(): SummaryCounts {
     memoryGain: 0,
     cardsDrawn: 0,
     cardsRecovered: 0,
+    cardsReturnedFromTrash: 0,
     removal: 0,
     plays: 0,
     evolutions: 0,
@@ -56,6 +57,7 @@ function getCounts(actions: readonly Action[], depth: number, budget: { remainin
       "memoryGain",
       "cardsDrawn",
       "cardsRecovered",
+      "cardsReturnedFromTrash",
       "removal",
       "plays",
       "evolutions",
@@ -99,7 +101,7 @@ function getCounts(actions: readonly Action[], depth: number, budget: { remainin
         if (controller === "opponent" && isBoard && !isLooseReturn) {
           result.removal += typeof action.target.count === "number" ? action.target.count : 1;
         } else if (action.kind === "Return" && controller === "mine" && zone === "trash" && action.to === "hand") {
-          result.cardsDrawn += typeof action.target.count === "number" ? action.target.count : 1;
+          result.cardsReturnedFromTrash += typeof action.target.count === "number" ? action.target.count : 1;
           result.uncertain = true;
         } else {
           result.uncertain = true;
@@ -200,6 +202,7 @@ export function getDecisionEffectSummary({ actions, cost }: GetDecisionEffectSum
     "memoryGain",
     "cardsDrawn",
     "cardsRecovered",
+    "cardsReturnedFromTrash",
     "removal",
     "plays",
     "evolutions",

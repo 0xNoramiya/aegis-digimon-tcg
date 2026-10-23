@@ -7,6 +7,7 @@ export function getCostReductionSummary({ amount }: Params): DecisionEffectSumma
     memoryGain: Math.max(0, amount),
     cardsDrawn: 0,
     cardsRecovered: 0,
+    cardsReturnedFromTrash: 0,
     removal: 0,
     plays: 0,
     evolutions: 0,

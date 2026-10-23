@@ -22,7 +22,7 @@ export function scoreDecisionSummary({ summary, profile, view, controllerSeat }:
   const handover = Math.max(0, memoryCost - (freeMemory ?? memoryCost));
   return (
     summary.memoryGain * (1 + weights.memoryHandover) +
-    summary.cardsDrawn * weights.digivolveDraw +
+    (summary.cardsDrawn + summary.cardsReturnedFromTrash) * weights.digivolveDraw +
     summary.cardsRecovered * recoveryValue +
     summary.removal * Math.min(1, removalTargets) * weights.removal * weights.securityAttack +
     summary.plays * weights.playBody * weights.tamer +

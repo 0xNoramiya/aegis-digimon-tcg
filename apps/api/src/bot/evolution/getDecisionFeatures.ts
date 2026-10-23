@@ -64,7 +64,7 @@ export function getDecisionFeatures({ window, index, card, unit, sourceValue, ow
   }
   if (summary !== undefined) {
     output.decisionMemory = getSignedValue(summary.memoryGain);
-    output.decisionDraw = getSignedValue(summary.cardsDrawn);
+    output.decisionDraw = getSignedValue(summary.cardsDrawn + summary.cardsReturnedFromTrash);
     output.decisionRecovery = getSignedValue(summary.cardsRecovered);
     const affectedBoard = sign === 1 ? enemy.board : own.board;
     output.decisionRemoval = getSignedValue(summary.removal * Math.min(1, affectedBoard.length));

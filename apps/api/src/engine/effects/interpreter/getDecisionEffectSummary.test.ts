@@ -3,7 +3,7 @@ import type { Action } from "@aegis/shared/effects/ir/actions/action";
 import { getDecisionEffectSummary } from "#api/engine/effects/interpreter/getDecisionEffectSummary";
 
 describe("decision effect summaries", () => {
-  it("counts a card returned from the controller's trash to hand as an uncertain card gain", () => {
+  it("counts a card returned from the controller's trash to hand apart from draws", () => {
     const actions: Action[] = [
       { kind: "Trash", target: { filter: { controller: "mine", zone: "hand" }, count: 1 }, optional: true },
       {
@@ -12,7 +12,11 @@ describe("decision effect summaries", () => {
         to: "hand",
       },
     ];
-    expect(getDecisionEffectSummary({ actions })).toMatchObject({ cardsDrawn: 1, uncertain: true });
+    expect(getDecisionEffectSummary({ actions })).toMatchObject({
+      cardsDrawn: 0,
+      cardsReturnedFromTrash: 1,
+      uncertain: true,
+    });
   });
 
   it("counts revealed cards added to hand or played as uncertain gains", () => {

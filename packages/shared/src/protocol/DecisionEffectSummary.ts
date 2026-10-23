@@ -2,6 +2,7 @@ export interface DecisionEffectSummary {
   readonly memoryGain: number;
   readonly cardsDrawn: number;
   readonly cardsRecovered: number;
+  readonly cardsReturnedFromTrash: number;
   readonly removal: number;
   readonly plays: number;
   readonly evolutions: number;
