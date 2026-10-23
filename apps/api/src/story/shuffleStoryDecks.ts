@@ -9,11 +9,13 @@ export function shuffleStoryDecks({ fixture, seed }: Params): void {
     const board = fixture.board[seat];
     const rng = makeRng(seatSeed(seed, seat));
     if (board?.deck && catalogStoryBattles.some((battle) => battle.id === fixture.name)) {
-      const cards = [...(board.hand ?? []), ...(Array.isArray(board.security) ? board.security : []), ...board.deck];
+      const hand = board.hand ?? [];
+      const security = Array.isArray(board.security) ? board.security : [];
+      const cards = [...hand, ...security, ...board.deck];
       shuffleInPlace(cards, rng);
-      board.hand = cards.slice(0, 5);
-      board.security = cards.slice(5, 10);
-      board.deck = cards.slice(10);
+      board.hand = cards.slice(0, hand.length);
+      board.security = cards.slice(hand.length, hand.length + security.length);
+      board.deck = cards.slice(hand.length + security.length);
     } else if (board?.deck) {
       shuffleInPlace(board.deck, rng);
     }

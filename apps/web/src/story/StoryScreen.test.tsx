@@ -123,8 +123,10 @@ it("uses official media artwork and presents Back Dimension only once", async ()
 it("opens the expanded Cyber Sleuth campaign with optional challenges identified", async () => {
   renderStory();
   fireEvent.click(screen.getByRole("button", { name: "Explore campaign · Digimon Cyber Sleuth" }));
-  expect(await screen.findAllByRole("button", { name: "Start battle" })).toHaveLength(59);
+  expect(await screen.findAllByRole("button", { name: "Start battle" })).toHaveLength(57);
   expect(screen.getAllByText(/Optional challenge/).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/Introduction/).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/Boss/).length).toBeGreaterThan(0);
   expect(screen.queryByText(/WMD\d|DigiLab|2026-\d/)).toBeNull();
 });
 
@@ -138,12 +140,12 @@ it("opens the Seekers webnovel with eight playable confrontations and official a
 });
 
 it.each([
-  ["Digimon Savers / Data Squad", 18],
+  ["Digimon Savers / Data Squad", 17],
   ["Digimon Xros Wars", 17],
   ["Digimon Xros Wars: Hunters", 16],
   ["Digimon Adventure: (2020)", 16],
   ["Digimon Ghost Game", 16],
-  ["Digimon Beatbreak", 13],
+  ["Digimon Beatbreak", 12],
 ] as const)("opens the expanded anime campaign %s with %s encounters", async (title, count) => {
   renderStory();
   const campaign = screen.getByRole("button", { name: `Explore campaign · ${title}` });

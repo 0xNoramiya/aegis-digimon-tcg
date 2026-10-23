@@ -5,6 +5,7 @@ import { getWorldStoryMilestones } from "@aegis/shared/story/getWorldStoryMilest
 import { getStoryScenario } from "#api/story/getStoryScenario";
 import { getStorySeatDeck } from "#api/story/getStorySeatDeck";
 import { shuffleStoryDecks } from "#api/story/shuffleStoryDecks";
+import { getStoryBattleDifficulty } from "@aegis/shared/story/getStoryBattleDifficulty";
 
 describe("World story progression", () => {
   it("requires all three recruits before Ogremon's first encounter", () => {
@@ -34,10 +35,11 @@ describe("World story progression", () => {
       shuffleStoryDecks({ fixture: next, seed: 2 });
       expect(first).toEqual(repeated);
       expect(first).not.toEqual(next);
+      const difficulty = getStoryBattleDifficulty({ battleId })!;
+      const security = [difficulty.playerSecurity, difficulty.opponentSecurity] as const;
       for (const seat of [0, 1] as const) {
         expect(first.board[seat]!.hand).toHaveLength(5);
-        expect(first.board[seat]!.security).toHaveLength(5);
-        expect(first.board[seat]!.deck).toHaveLength(40);
+        expect(first.board[seat]!.security).toHaveLength(security[seat]);
         const dealt = getStorySeatDeck({ fixture: first, seat });
         const expected = getStorySeatDeck({ fixture: original, seat });
         expect(dealt.mainDeck.sort()).toEqual(expected.mainDeck.sort());

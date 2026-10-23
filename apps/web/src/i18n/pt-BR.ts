@@ -46,6 +46,10 @@ export const ptBR: Record<keyof typeof en, string> = {
 
   "story.title": "Modo história",
   "story.optionalChallenge": "Desafio opcional",
+  "story.difficulty.intro": "Introdução",
+  "story.difficulty.challenge": "Desafio",
+  "story.difficulty.elite": "Elite",
+  "story.difficulty.boss": "Chefe",
   "story.explanationTitle": "O que é o modo história?",
   "story.explanationBody":
     "Uma forma mais divertida de jogar contra bots. Reviva batalhas inspiradas nos jogos, animes e mangás de Digimon, com decks escolhidos para representar os personagens e confrontos de cada história.",

@@ -42,6 +42,10 @@ export const es: Record<keyof typeof en, string> = {
 
   "story.title": "Modo historia",
   "story.optionalChallenge": "Desafío opcional",
+  "story.difficulty.intro": "Introducción",
+  "story.difficulty.challenge": "Desafío",
+  "story.difficulty.elite": "Élite",
+  "story.difficulty.boss": "Jefe",
   "story.explanationTitle": "¿Qué es el modo historia?",
   "story.explanationBody":
     "Una forma más divertida de jugar contra bots. Revive batallas inspiradas en los videojuegos, animes y mangas de Digimon, con mazos elegidos para representar a los personajes y enfrentamientos de cada historia.",

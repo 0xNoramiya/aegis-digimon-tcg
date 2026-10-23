@@ -26,7 +26,7 @@ it("completes Dawn Dusk with one version of each shared event and no optional ch
 it("awards Cyber Sleuth completion without requiring optional cases or postgame", () => {
   const battles = getStoryCampaignBattles({ campaignId: "digimon-cyber-sleuth" });
   const completed = battles.filter((battle) => !battle.isOptional).map((battle) => battle.id);
-  expect(battles).toHaveLength(59);
+  expect(battles).toHaveLength(57);
   expect(battles.some((battle) => battle.id === "cs52")).toBe(false);
   expect(getStoryMilestones({ completed })).toContain("story:digimon-cyber-sleuth");
   expect(getStoryMilestones({ completed: completed.filter((id) => id !== "jo10") })).not.toContain(
@@ -34,7 +34,7 @@ it("awards Cyber Sleuth completion without requiring optional cases or postgame"
   );
   expect(battles.find((battle) => battle.id === "cs09")?.isOptional).toBe(true);
   expect(battles.find((battle) => battle.id === "cs22")?.character).toBe("Nokia");
-  expect(battles.find((battle) => battle.id === "cs34")?.canonicalOutcome).toMatch(/derrota|derrotad|perde/i);
+  expect(battles.some((battle) => battle.id === "cs34" || battle.id === "cs37")).toBe(false);
 });
 
 it("awards narrative chapters without optional cases and keeps optional collections separate", () => {

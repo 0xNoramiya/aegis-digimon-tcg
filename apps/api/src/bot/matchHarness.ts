@@ -1,6 +1,7 @@
 import { GameState, Phase, type Intent, type Seat, type ServerEvent } from "@aegis/shared";
 import { Decoder, Encoder } from "@colyseus/schema";
 import { GameEngine } from "../engine/GameEngine.js";
+import type { ScenarioFixture } from "../engine/scenario/types.js";
 import { BLUE_DECK, RED_DECK, type Decklist } from "../engine/testDecks.js";
 import { BotPlayer } from "./BotPlayer.js";
 import { createEvaluationPolicy, type BotPolicy } from "./policy.js";
@@ -40,6 +41,7 @@ export interface MatchOptions {
   captureEvents?: boolean;
   /** Decode both client projections after each action and check hidden zones. */
   verifyProjections?: boolean;
+  fixture?: ScenarioFixture;
 }
 
 export interface SeatStats {
@@ -257,7 +259,11 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
       }
     };
   }
-  engine.startMatch();
+  if (options.fixture) {
+    engine.startScenarioFixture(options.fixture);
+  } else {
+    engine.startMatch();
+  }
   checkProjections?.();
 
   // Drive the cooperative loop: every bot action is scheduled on the macrotask queue, so

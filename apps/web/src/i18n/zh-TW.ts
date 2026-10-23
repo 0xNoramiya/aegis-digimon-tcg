@@ -35,6 +35,10 @@ const interfaceMessages = {
 
   "story.title": "故事模式",
   "story.optionalChallenge": "可選挑戰",
+  "story.difficulty.intro": "入門",
+  "story.difficulty.challenge": "挑戰",
+  "story.difficulty.elite": "菁英",
+  "story.difficulty.boss": "首領",
   "story.explanationTitle": "什麼是故事模式？",
   "story.explanationBody":
     "一種更有趣的機器人對戰方式。使用為各篇故事的角色和對決精心挑選的牌組，重溫靈感源自數碼寶貝遊戲、動畫和漫畫的戰鬥。",

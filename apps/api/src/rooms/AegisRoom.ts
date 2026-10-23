@@ -1,4 +1,5 @@
 import { canStartStoryBattle } from "@aegis/shared/story/canStartStoryBattle";
+import { getStoryBattleDifficulty } from "@aegis/shared/story/getStoryBattleDifficulty";
 import { getStoryGuestHash } from "#api/story/getStoryGuestHash";
 import { shuffleStoryDecks } from "#api/story/shuffleStoryDecks";
 import { storyBattles } from "@aegis/shared/story/storyBattles";
@@ -1933,8 +1934,12 @@ export class AegisRoom extends Room<{
           })
         : undefined;
     const scenarioPolicy = createFixtureBotPolicy(this.scenarioFixture?.presentation?.opponent);
-    const baseBotOptions: BotOptions | undefined =
+    const scenarioBotOptions: BotOptions | undefined =
       scenarioPolicy === undefined ? modelOptions : { policy: scenarioPolicy };
+    const storyDifficulty = this.storyBattleId ? getStoryBattleDifficulty({ battleId: this.storyBattleId }) : undefined;
+    const baseBotOptions: BotOptions | undefined = storyDifficulty?.isAggressive
+      ? { ...scenarioBotOptions, profile: "aggressive" }
+      : scenarioBotOptions;
     const clientPacesChains = this.clients.some((client) => this.chainPacingClients.has(client.sessionId));
     const botOptions: BotOptions | undefined = clientPacesChains
       ? { ...baseBotOptions, clientPacesChains }

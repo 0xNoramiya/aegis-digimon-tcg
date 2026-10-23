@@ -38,6 +38,10 @@ const interfaceMessages = {
 
   "story.title": "스토리 모드",
   "story.optionalChallenge": "선택 도전",
+  "story.difficulty.intro": "입문",
+  "story.difficulty.challenge": "도전",
+  "story.difficulty.elite": "엘리트",
+  "story.difficulty.boss": "보스",
   "story.explanationTitle": "스토리 모드란?",
   "story.explanationBody":
     "봇과 더욱 재미있게 대전하는 모드입니다. 디지몬 게임, 애니메이션, 만화에서 영감을 받은 배틀을 각 이야기의 캐릭터와 대결을 표현하도록 구성한 덱으로 다시 경험해 보세요.",

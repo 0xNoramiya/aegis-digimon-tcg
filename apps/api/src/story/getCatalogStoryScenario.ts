@@ -1,18 +1,36 @@
-import type { ScenarioFixture } from "#api/engine/scenario/types";
+import type { PermanentSpec, ScenarioFixture } from "#api/engine/scenario/types";
 import type { StoryCatalogDeck } from "@aegis/shared/story/StoryCatalogDeck";
 import { catalogStoryBattles } from "@aegis/shared/story/catalogStoryBattles";
+import { getStoryBattleDifficulty } from "@aegis/shared/story/getStoryBattleDifficulty";
+import { StoryDifficulty } from "@aegis/shared/story/StoryDifficulty";
 import { getStoryScenarioDeck } from "#api/story/getStoryScenarioDeck";
+import { buildStoryOpponentPermanent } from "#api/story/buildStoryOpponentPermanent";
 
 type Params = { battleId: string };
 
-function createSeat(deck: Pick<StoryCatalogDeck, "main" | "eggs">) {
-  const cards = deck.main.flatMap(([card, count]) => Array.from({ length: count }, () => card));
+type SeatParams = {
+  deck: Pick<StoryCatalogDeck, "main" | "eggs">;
+  security: number;
+  level?: number | null;
+  opponent?: string;
+};
+
+const handSize = 5;
+
+function createSeat({ deck, security, level, opponent = "" }: SeatParams) {
+  let cards = deck.main.flatMap(([card, count]) => Array.from({ length: count }, () => card));
+  const battleArea: PermanentSpec[] = [];
+  const built = level ? buildStoryOpponentPermanent({ cards, level, opponent }) : undefined;
+  if (built) {
+    battleArea.push(built.permanent);
+    cards = built.remaining;
+  }
   return {
-    hand: cards.slice(0, 5),
-    security: cards.slice(5, 10),
-    deck: cards.slice(10),
+    hand: cards.slice(0, handSize),
+    security: cards.slice(handSize, handSize + security),
+    deck: cards.slice(handSize + security),
     eggDeck: deck.eggs.flatMap(([card, count]) => Array.from({ length: count }, () => card)),
-    battleArea: [],
+    battleArea,
   };
 }
 
@@ -21,6 +39,7 @@ export function getCatalogStoryScenario({ battleId }: Params): ScenarioFixture |
   if (!battle?.opponentDeckRef || !battle.playerDeckRef) {
     return undefined;
   }
+  const difficulty = getStoryBattleDifficulty({ battleId }) ?? StoryDifficulty.INTRO;
   return {
     name: battle.id,
     memory: 0,
@@ -29,8 +48,13 @@ export function getCatalogStoryScenario({ battleId }: Params): ScenarioFixture |
     isFirstPlayersFirstTurn: true,
     presentation: { timed: false },
     board: {
-      0: createSeat(getStoryScenarioDeck({ ref: battle.playerDeckRef })),
-      1: createSeat(getStoryScenarioDeck({ ref: battle.opponentDeckRef })),
+      0: createSeat({ deck: getStoryScenarioDeck({ ref: battle.playerDeckRef }), security: difficulty.playerSecurity }),
+      1: createSeat({
+        deck: getStoryScenarioDeck({ ref: battle.opponentDeckRef }),
+        security: difficulty.opponentSecurity,
+        level: difficulty.opponentLevel,
+        opponent: battle.opponent,
+      }),
     },
   };
 }

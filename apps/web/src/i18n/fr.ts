@@ -38,6 +38,10 @@ const interfaceMessages = {
 
   "story.title": "Mode histoire",
   "story.optionalChallenge": "Défi facultatif",
+  "story.difficulty.intro": "Introduction",
+  "story.difficulty.challenge": "Défi",
+  "story.difficulty.elite": "Élite",
+  "story.difficulty.boss": "Boss",
   "story.explanationTitle": "Qu’est-ce que le mode histoire ?",
   "story.explanationBody":
     "Une façon plus amusante de jouer contre des bots. Revivez des combats inspirés des jeux, des animés et des mangas Digimon, avec des decks choisis pour représenter les personnages et les affrontements de chaque histoire.",

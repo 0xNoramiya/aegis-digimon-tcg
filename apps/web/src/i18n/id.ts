@@ -37,6 +37,10 @@ const interfaceMessages = {
 
   "story.title": "Mode cerita",
   "story.optionalChallenge": "Tantangan opsional",
+  "story.difficulty.intro": "Pengenalan",
+  "story.difficulty.challenge": "Tantangan",
+  "story.difficulty.elite": "Elit",
+  "story.difficulty.boss": "Bos",
   "story.explanationTitle": "Apa itu mode cerita?",
   "story.explanationBody":
     "Cara yang lebih seru untuk bermain melawan bot. Rasakan kembali pertarungan yang terinspirasi dari game, anime, dan manga Digimon, dengan deck yang dipilih untuk mewakili karakter dan pertarungan dalam setiap cerita.",

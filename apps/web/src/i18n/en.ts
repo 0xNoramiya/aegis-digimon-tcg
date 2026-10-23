@@ -44,6 +44,10 @@ export const en = {
 
   "story.title": "Story mode",
   "story.optionalChallenge": "Optional challenge",
+  "story.difficulty.intro": "Introduction",
+  "story.difficulty.challenge": "Challenge",
+  "story.difficulty.elite": "Elite",
+  "story.difficulty.boss": "Boss",
   "story.explanationTitle": "What is story mode?",
   "story.explanationBody":
     "A more fun way to play against bots. Relive battles inspired by Digimon games, anime and manga, with decks chosen to represent the characters and encounters in each story.",

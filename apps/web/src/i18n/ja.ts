@@ -36,6 +36,10 @@ const interfaceMessages = {
 
   "story.title": "ストーリーモード",
   "story.optionalChallenge": "任意チャレンジ",
+  "story.difficulty.intro": "入門",
+  "story.difficulty.challenge": "挑戦",
+  "story.difficulty.elite": "エリート",
+  "story.difficulty.boss": "ボス",
   "story.explanationTitle": "ストーリーモードとは？",
   "story.explanationBody":
     "ボットとの対戦をもっと楽しくするモードです。デジモンのゲーム・アニメ・漫画をもとにしたバトルを、それぞれの物語のキャラクターや対決を表現するデッキで追体験できます。",

@@ -4,6 +4,7 @@ import { getStoryCampaignBattles } from "@aegis/shared/story/getStoryCampaignBat
 import { storyCampaignArtwork } from "@/story/storyCampaignArtwork";
 import type { StoryCampaignProgress } from "@aegis/shared/story/StoryCampaignProgress";
 import { canStartStoryBattle } from "@aegis/shared/story/canStartStoryBattle";
+import { getStoryBattleDifficulty } from "@aegis/shared/story/getStoryBattleDifficulty";
 import { request } from "@/account/client";
 import { Button } from "@/design/primitives";
 import { useTranslation } from "@/i18n/useTranslation";
@@ -64,6 +65,7 @@ export function StoryCatalogScreen({ campaignId, signedIn, onStart }: Params) {
         {battles.map((battle, index) => {
           const won = progress?.completed.includes(battle.id) === true;
           const unlocked = canStartStoryBattle({ battle, completed: progress?.completed ?? [] });
+          const difficulty = getStoryBattleDifficulty({ battleId: battle.id });
           return (
             <li key={battle.id} data-completed={won || undefined}>
               <div className="story-catalog-list__art">
@@ -72,6 +74,7 @@ export function StoryCatalogScreen({ campaignId, signedIn, onStart }: Params) {
               <div className="story-catalog-list__body">
                 <p className="story-catalog-list__location">
                   {String(index + 1).padStart(2, "0")} · {battle.chapterId}
+                  {difficulty && <> · {t(`story.difficulty.${difficulty.value}`)}</>}
                   {battle.isOptional && <> · {t("story.optionalChallenge")}</>}
                 </p>
                 <h3>{getTranslatedStoryText({ text: battle.title, locale })}</h3>

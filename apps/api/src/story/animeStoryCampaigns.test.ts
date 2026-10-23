@@ -3,12 +3,12 @@ import { getStoryCampaignBattles } from "@aegis/shared/story/getStoryCampaignBat
 import { animeStoryBattles } from "@aegis/shared/story/animeStoryBattles";
 
 it.each([
-  ["digimon-savers-data-squad", 18, "sv01", "sa06"],
+  ["digimon-savers-data-squad", 17, "sv01", "sa06"],
   ["digimon-xros-wars", 17, "xw08", "xw06"],
   ["digimon-xros-wars-hunters", 16, "hu01", "xw07"],
   ["digimon-adventure-2020", 16, "av01", "re03"],
   ["digimon-ghost-game", 16, "gg02", "gg01"],
-  ["digimon-beatbreak", 13, "bb01", "bb13"],
+  ["digimon-beatbreak", 12, "bb01", "bb13"],
 ] as const)("publishes the expanded chronological campaign %s", (campaignId, count, first, last) => {
   const battles = getStoryCampaignBattles({ campaignId });
   expect(battles).toHaveLength(count);

@@ -189,17 +189,20 @@ describe("story progression", () => {
     });
   });
 
-  it.each(storyBattles.map((battle) => battle.id))("starts %s in the real simulator", (battleId) => {
-    const room = createRoom(battleId);
-    const client = { sessionId: "player", send: vi.fn<() => void>(), view: undefined } as unknown as Client;
-    room.clients.push(client);
-    room.onJoin(client, { displayName: "Player", deck: RED_DECK, storyBattleId: battleId });
-    expect(room.addBot()).toBe(true);
-    expect(room.state.players).toHaveLength(2);
-    expect(room.state.gameOver).toBe(false);
-    expect(room.state.players[0]!.deck.length).toBeGreaterThan(0);
-    expect(room.state.players[1]!.deck.length).toBeGreaterThan(0);
-  });
+  it.each(storyBattles.filter((battle) => battle.playable).map((battle) => battle.id))(
+    "starts %s in the real simulator",
+    (battleId) => {
+      const room = createRoom(battleId);
+      const client = { sessionId: "player", send: vi.fn<() => void>(), view: undefined } as unknown as Client;
+      room.clients.push(client);
+      room.onJoin(client, { displayName: "Player", deck: RED_DECK, storyBattleId: battleId });
+      expect(room.addBot()).toBe(true);
+      expect(room.state.players).toHaveLength(2);
+      expect(room.state.gameOver).toBe(false);
+      expect(room.state.players[0]!.deck.length).toBeGreaterThan(0);
+      expect(room.state.players[1]!.deck.length).toBeGreaterThan(0);
+    },
+  );
 
   it.each(storyBattles.filter((battle) => battle.playable).map((battle) => battle.id))(
     "provides valid fixed decks and board for %s",

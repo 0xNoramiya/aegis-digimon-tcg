@@ -35,6 +35,10 @@ const interfaceMessages = {
 
   "story.title": "故事模式",
   "story.optionalChallenge": "可选挑战",
+  "story.difficulty.intro": "入门",
+  "story.difficulty.challenge": "挑战",
+  "story.difficulty.elite": "精英",
+  "story.difficulty.boss": "首领",
   "story.explanationTitle": "什么是故事模式？",
   "story.explanationBody":
     "一种更有趣的机器人对战方式。使用为各篇故事的角色和对决精心挑选的卡组，重温灵感源自数码宝贝游戏、动画和漫画的战斗。",

@@ -18,7 +18,7 @@ Opening corrections preserve playable printed-card lines. Owen uses a red Digi-E
 
 ## Campanhas do universo Digimon
 
-A API integra todos os confrontos do catálogo, além dos 30 encontros Liberator. `catalogStoryBattles` deriva os IDs persistentes em minúsculas e conserva os sete encontros World 1 anteriores com seus pré-requisitos. `getCatalogStoryScenario` configura os dois decks emprestados na API; o deck enviado pelo cliente continua sendo substituído. As partidas do catálogo começam com cinco cartas aleatórias, cinco seguranças, campo vazio e sem mulligan. A seed determina a distribuição e o replay registra o cenário completo. São duelos TCG inspirados nos confrontos, incluindo substituições temáticas já documentadas; a disponibilidade não certifica reprodução literal das equipes, fusões ou derrotas canônicas.
+A API integra todos os confrontos do catálogo, além dos 30 encontros Liberator. `catalogStoryBattles` deriva os IDs persistentes em minúsculas e conserva os sete encontros World 1 anteriores com seus pré-requisitos. `getCatalogStoryScenario` configura os dois decks emprestados na API; o deck enviado pelo cliente continua sendo substituído. As partidas do catálogo começam com cinco cartas aleatórias e sem mulligan; seguranças e campo inicial seguem o nível de dificuldade descrito abaixo. A seed determina a distribuição e o replay registra o cenário completo. São duelos TCG inspirados nos confrontos, incluindo substituições temáticas já documentadas; a disponibilidade não certifica reprodução literal das equipes, fusões ou derrotas canônicas.
 
 As receitas originais e suas fontes permanecem em `storyCatalogDecks`. A interface apresenta somente histórias, confrontos e progresso: remove receitas, fontes, datas e o inventário administrativo. Campanhas com apenas um confronto são omitidas da agregação, sem apagar suas fichas históricas ou alterar IDs já persistidos.
 
@@ -29,7 +29,7 @@ As receitas originais e suas fontes permanecem em `storyCatalogDecks`. A interfa
 
 Não foram removidos limites ou adicionadas exceções às regras do engine. As demais receitas são usadas integralmente. As variantes inteiras, incluindo ovos, são reconstruídas deterministicamente do snapshot e ficam preservadas nos replays.
 
-`GET /story/campaign-progress` mantém a identidade de conta/guest e `no-store`, retornando conclusões, conquistas derivadas por batalha/capítulo/campanha e revisão `story-catalog-v3`. Preserva os IDs das conquistas dos sete encontros World 1, sem duplicar esses capítulos. Repetir uma vitória não acumula recompensa; não há prêmio econômico. Nenhuma migração foi necessária. Merge de guest com conta e dificuldade configurável permanecem fora desta entrega.
+`GET /story/campaign-progress` mantém a identidade de conta/guest e `no-store`, retornando conclusões, conquistas derivadas por batalha/capítulo/campanha e revisão `story-catalog-v3`. Preserva os IDs das conquistas dos sete encontros World 1, sem duplicar esses capítulos. Repetir uma vitória não acumula recompensa; não há prêmio econômico. Nenhuma migração foi necessária. Merge de guest com conta e dificuldade escolhida pelo jogador permanecem fora desta entrega.
 
 A biblioteca tem busca, filtros de mídia, destaque para continuar e cards compactos. O conceito gerado com imagegen está em `.local/story-campaign-redesign.png`; é referência visual, sem conteúdo fictício de progresso usado pelo produto. O código renderiza contagens e progresso reais usando o sistema visual existente. Artes mantêm a atribuição global do produto. A marca de conclusão representa vencer os desafios do catálogo, não comprova seguir a ordem ou o desfecho canônico da obra.
 
@@ -43,7 +43,7 @@ A explicação introdutória do modo história utiliza `story.explanationTitle` 
 
 ## Expansão dos jogos
 
-Dawn/Dusk possui 41 confrontos e Cyber Sleuth 59, incluindo opcionais e pós-jogo. Os IDs JO05–JO11 permanecem. Alternativas das versões Dawn e Dusk compartilham `completionGroup`: uma alternativa basta para a história. `isOptional` exclui desafios extras da exigência de concluir a narrativa e seus capítulos. Capítulos exclusivamente opcionais exigem a coleção completa para sua conquista própria. Os contadores visuais mostram a coleção inteira.
+Dawn/Dusk possui 41 confrontos e Cyber Sleuth 57, incluindo opcionais e pós-jogo. Os IDs JO05–JO11 permanecem. Alternativas das versões Dawn e Dusk compartilham `completionGroup`: uma alternativa basta para a história. `isOptional` exclui desafios extras da exigência de concluir a narrativa e seus capítulos. Capítulos exclusivamente opcionais exigem a coleção completa para sua conquista própria. Os contadores visuais mostram a coleção inteira.
 
 ## Digimon Seekers
 
@@ -51,4 +51,25 @@ Oito confrontos da webnovel oficial, incluindo a Jogress final Fenriloogamon: Ta
 
 ## Ampliação dos animes
 
-Savers tem 18 desafios, Xros Wars 17, Hunters 16, Adventure:2020 16, Ghost Game 16 e Beatbreak 13. São 78 acréscimos; XW05/XW06 são fases de uma única seleção final, com alias para preservar progresso antigo. A biblioteca apresenta 17 campanhas e 443 confrontos após ocultar filmes e especiais, entradas unitárias, Next, V-Tamer e variantes consolidadas. Hunters e Ghost Game usam imagens oficiais próprias. A expansão não renova a data ou a condição competitiva das receitas.
+Savers tem 17 desafios, Xros Wars 17, Hunters 16, Adventure:2020 16, Ghost Game 16 e Beatbreak 12. São 78 acréscimos; XW05/XW06 são fases de uma única seleção final, com alias para preservar progresso antigo. A biblioteca apresenta 17 campanhas e 439 confrontos após ocultar filmes e especiais, entradas unitárias, Next, V-Tamer e variantes consolidadas. Hunters e Ghost Game usam imagens oficiais próprias. A expansão não renova a data ou a condição competitiva das receitas.
+
+## Difficulty ramp
+
+Each catalog battle has a fixed difficulty. `getStoryBattleDifficulty` derives it from the battle's position in its own campaign. Liberator battles keep their hand-built openings and have no difficulty.
+
+| Difficulty   | Applies to                                          | Player security | Opponent security | Opponent starting Digimon         | Bot profile |
+| ------------ | --------------------------------------------------- | --------------- | ----------------- | --------------------------------- | ----------- |
+| Introduction | first 20% of the campaign                           | 5               | 5                 | none                              | balanced    |
+| Challenge    | 20% to 60%                                          | 5               | 5                 | Rookie (level 3)                  | balanced    |
+| Elite        | after 60%, and optional battles before the finale   | 5               | 6                 | Champion (level 4) with its stack | balanced    |
+| Boss         | last required battle, and optional battles after it | 4               | 6                 | Ultimate (level 5) with its stack | aggressive  |
+
+`buildStoryOpponentPermanent` takes the opponent's starting Digimon from the opponent's own deck, so both decks keep all 50 cards. It prefers a card whose name appears in the encounter's opponent, then the highest DP. It stacks the longest legal digivolution line below that card, down to level 3. When the deck has no Digimon at the target level, it uses the next lower level. Decks without any Digimon from level 3 up to the target level start with an empty field. Shuffling keeps each side's security count.
+
+The values come from a bot-vs-bot benchmark: 12 battles per difficulty, 8 seeds each, 96 games per difficulty. The player seat won 53% of Introduction games, 44% of Challenge, 38% of Elite and 22% of Boss. People usually play better than the bot, so human win rates should be higher. Run the benchmark again after changing these values:
+
+```sh
+STORY_BALANCE=1 STORY_BALANCE_SEEDS=8 pnpm --filter @aegis/api exec vitest run src/story/storyDifficultyBalance.test.ts
+```
+
+Four battles in which the protagonist loses in the source story were removed from their campaigns: `sv12`, `cs34`, `cs37` and `bb07`. They are listed in `storyCanonicalDefeatBattleIds`, are not playable, and keep their IDs so earlier progress and replays stay valid.

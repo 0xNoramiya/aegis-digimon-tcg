@@ -40,6 +40,10 @@ const interfaceMessages = {
 
   "story.title": "Modalità storia",
   "story.optionalChallenge": "Sfida facoltativa",
+  "story.difficulty.intro": "Introduzione",
+  "story.difficulty.challenge": "Sfida",
+  "story.difficulty.elite": "Élite",
+  "story.difficulty.boss": "Boss",
   "story.explanationTitle": "Che cos’è la modalità storia?",
   "story.explanationBody":
     "Un modo più divertente di giocare contro i bot. Rivivi battaglie ispirate ai giochi, agli anime e ai manga di Digimon, con mazzi scelti per rappresentare i personaggi e gli scontri di ogni storia.",

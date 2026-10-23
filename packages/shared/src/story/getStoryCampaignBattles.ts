@@ -1,6 +1,7 @@
 import { StoryCampaignId } from "#shared/story/StoryCampaignId";
 import { storyBattles } from "#shared/story/storyBattles";
 import { storyBattleAliases } from "#shared/story/storyBattleAliases";
+import { storyCanonicalDefeatBattleIds } from "#shared/story/storyCanonicalDefeatBattleIds";
 import type { StoryBattle } from "#shared/story/StoryBattle";
 
 type Params = { campaignId: string };
@@ -10,7 +11,8 @@ export function getStoryCampaignBattles({ campaignId }: Params): readonly StoryB
     .filter(
       (battle) =>
         (battle.campaignId ?? StoryCampaignId.LIBERATOR.value) === campaignId &&
-        !Object.hasOwn(storyBattleAliases, battle.id),
+        !Object.hasOwn(storyBattleAliases, battle.id) &&
+        !storyCanonicalDefeatBattleIds.has(battle.id),
     )
     .map((battle) => {
       if (battle.id === "dw1-038") {

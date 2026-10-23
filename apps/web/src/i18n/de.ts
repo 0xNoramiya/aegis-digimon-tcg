@@ -37,6 +37,10 @@ const interfaceMessages = {
 
   "story.title": "Storymodus",
   "story.optionalChallenge": "Optionale Herausforderung",
+  "story.difficulty.intro": "Einführung",
+  "story.difficulty.challenge": "Herausforderung",
+  "story.difficulty.elite": "Elite",
+  "story.difficulty.boss": "Boss",
   "story.explanationTitle": "Was ist der Story-Modus?",
   "story.explanationBody":
     "Eine unterhaltsamere Art, gegen Bots zu spielen. Erlebe Kämpfe aus Digimon-Spielen, -Animes und -Mangas mit Decks, die die Charaktere und Begegnungen der jeweiligen Geschichte widerspiegeln.",

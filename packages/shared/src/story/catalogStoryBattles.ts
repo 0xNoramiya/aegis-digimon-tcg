@@ -3,6 +3,7 @@ import { StoryBattleKind } from "#shared/story/StoryBattleKind";
 import { storyCatalogBattles } from "#shared/story/storyCatalogBattles";
 import { worldStoryBattles } from "#shared/story/worldStoryBattles";
 import { storyCatalogDecks } from "#shared/story/storyCatalogDecks";
+import { storyCanonicalDefeatBattleIds } from "#shared/story/storyCanonicalDefeatBattleIds";
 
 export const catalogStoryBattles: readonly StoryBattle[] = storyCatalogBattles.map((battle) => {
   const existing = worldStoryBattles.find((entry) => entry.id === battle.id.toLowerCase());
@@ -10,8 +11,9 @@ export const catalogStoryBattles: readonly StoryBattle[] = storyCatalogBattles.m
     return existing;
   }
   const participants = battle.title.split(" vs. ");
+  const id = battle.id.toLowerCase();
   return {
-    id: battle.id.toLowerCase(),
+    id,
     kind: StoryBattleKind.NARRATIVE.value,
     title: battle.title,
     character: battle.protagonist ?? participants[0] ?? battle.title,
@@ -26,7 +28,7 @@ export const catalogStoryBattles: readonly StoryBattle[] = storyCatalogBattles.m
     completionGroup: battle.completionGroup,
     playerDeckRef: battle.playerDeckRefs[0],
     opponentDeckRef: battle.opponentDeckRef,
-    playable: true,
+    playable: !storyCanonicalDefeatBattleIds.has(id),
     adapted: true,
     chapters: [],
     sourceUrl: battle.sourceUrl,
