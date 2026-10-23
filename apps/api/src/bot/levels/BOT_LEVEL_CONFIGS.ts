@@ -1,5 +1,14 @@
 import { BotDifficulty } from "@aegis/shared/bot/BotDifficulty";
+import type { BotStyle } from "@aegis/shared/bot/BotStyle";
 import type { WeightScales } from "#api/bot/levels/weakenWeights";
+
+export type LevelStyleOverride = {
+  temperature?: number;
+  weightScales?: WeightScales;
+  searchSimulations?: number;
+  searchCandidateLimit?: number;
+  searchStyle?: BotStyle;
+};
 
 type LevelConfig = {
   temperature: number;
@@ -12,6 +21,7 @@ type LevelConfig = {
   searchBudgetMs: number;
   minThinkMs: number;
   maxThinkMs: number;
+  styleOverrides: Readonly<Partial<Record<BotStyle, LevelStyleOverride>>>;
 };
 
 export const BOT_LEVEL_CONFIGS = {
@@ -26,6 +36,7 @@ export const BOT_LEVEL_CONFIGS = {
     searchBudgetMs: 0,
     minThinkMs: 800,
     maxThinkMs: 1600,
+    styleOverrides: {},
   },
   [BotDifficulty.CASUAL.value]: {
     temperature: 2.5,
@@ -38,6 +49,7 @@ export const BOT_LEVEL_CONFIGS = {
     searchBudgetMs: 0,
     minThinkMs: 1200,
     maxThinkMs: 2200,
+    styleOverrides: {},
   },
   [BotDifficulty.STANDARD.value]: {
     temperature: 0,
@@ -50,6 +62,7 @@ export const BOT_LEVEL_CONFIGS = {
     searchBudgetMs: 0,
     minThinkMs: 2000,
     maxThinkMs: 2800,
+    styleOverrides: {},
   },
   [BotDifficulty.EXPERT.value]: {
     temperature: 0,
@@ -62,6 +75,7 @@ export const BOT_LEVEL_CONFIGS = {
     searchBudgetMs: 900,
     minThinkMs: 2000,
     maxThinkMs: 2800,
+    styleOverrides: {},
   },
   [BotDifficulty.MASTER.value]: {
     temperature: 0,
@@ -74,5 +88,6 @@ export const BOT_LEVEL_CONFIGS = {
     searchBudgetMs: 1_450,
     minThinkMs: 2000,
     maxThinkMs: 2800,
+    styleOverrides: {},
   },
 } as const satisfies Record<BotDifficulty, LevelConfig>;

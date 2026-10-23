@@ -32,6 +32,7 @@ type Params = {
   policy: BotPolicy<Intent | Promise<Intent>>;
   fallbackPolicy: BotPolicy<Intent | Promise<Intent>>;
   profile: BotProfile;
+  searchProfile?: BotProfile;
   program: HeuristicProgram;
   seed: number;
   simulations: number;
@@ -127,7 +128,7 @@ async function chooseRootAction({
     seat: input.seat,
     program: input.program,
     opponentProgram: SEED_RESIDUAL,
-    profile: input.profile,
+    profile: input.searchProfile ?? input.profile,
     simulations: input.simulations,
     candidateLimit: input.candidateLimit ?? PAIRED_ROOT_CANDIDATE_LIMIT,
     deadlineEpochMs,

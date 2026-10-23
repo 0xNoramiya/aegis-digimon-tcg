@@ -9,10 +9,9 @@ import { defaultBotProgram, type DefaultBotDeck } from "#api/bot/defaultBotProgr
 import { createResidualPolicy } from "#api/bot/evolution/residualPolicy";
 import { humanPanelProgram } from "#api/bot/experiment/humanPanelProgram";
 import { createLiveSearchPolicy } from "#api/bot/search/createLiveSearchPolicy";
-import { BOT_LEVEL_CONFIGS } from "#api/bot/levels/BOT_LEVEL_CONFIGS";
+import { resolveLevelConfig } from "#api/bot/levels/resolveLevelConfig";
 import { createStyledPlannerParameters } from "#api/bot/levels/createStyledPlannerParameters";
 import { createLevelProfile } from "#api/bot/levels/createLevelProfile";
-import { levelTemperature } from "#api/bot/levels/levelTemperature";
 import { createEvaluationPolicy } from "#api/bot/policy";
 import { breedingActions, mainActions, mainActionReady } from "#api/bot/training/actions";
 import type { GameEngine } from "#api/engine/GameEngine";
@@ -27,7 +26,7 @@ type Params = {
 };
 
 export function createLevelBotOptions({ difficulty, style, engine, seat, deck, seed }: Params): BotOptions {
-  const config = BOT_LEVEL_CONFIGS[difficulty];
+  const config = resolveLevelConfig({ difficulty, style });
   const profile = createLevelProfile({ difficulty, style });
   const seenCards = createSeenOpponentCardsTracker({ observer: seat });
   const program = defaultBotProgram({ deck }).program;
@@ -52,7 +51,7 @@ export function createLevelBotOptions({ difficulty, style, engine, seat, deck, s
   const configuredPolicy: BotPolicy<Intent | Promise<Intent>> = createEvaluationPolicy({
     profile,
     seed,
-    temperature: levelTemperature({ difficulty, style }),
+    temperature: config.temperature,
     topK: config.topK,
   });
   function withSeenCards(basePolicy: BotPolicy<Intent | Promise<Intent>>) {
@@ -76,6 +75,7 @@ export function createLevelBotOptions({ difficulty, style, engine, seat, deck, s
           policy: config.usesResidual ? seenResidualPolicy : seenStandardPolicy,
           fallbackPolicy: seenStandardPolicy,
           profile,
+          searchProfile: createLevelProfile({ difficulty, style: config.searchStyle }),
           program,
           seed,
           simulations: config.searchSimulations,

@@ -17,7 +17,8 @@
         "searchCandidateLimit": 0,
         "searchBudgetMs": 0,
         "minThinkMs": 800,
-        "maxThinkMs": 1600
+        "maxThinkMs": 1600,
+        "styleOverrides": {}
       },
       "casual": {
         "temperature": 2.5,
@@ -29,7 +30,8 @@
         "searchCandidateLimit": 0,
         "searchBudgetMs": 0,
         "minThinkMs": 1200,
-        "maxThinkMs": 2200
+        "maxThinkMs": 2200,
+        "styleOverrides": {}
       },
       "standard": {
         "temperature": 0,
@@ -44,7 +46,8 @@
         "searchCandidateLimit": 0,
         "searchBudgetMs": 0,
         "minThinkMs": 2000,
-        "maxThinkMs": 2800
+        "maxThinkMs": 2800,
+        "styleOverrides": {}
       },
       "expert": {
         "temperature": 0,
@@ -56,7 +59,8 @@
         "searchCandidateLimit": 3,
         "searchBudgetMs": 900,
         "minThinkMs": 2000,
-        "maxThinkMs": 2800
+        "maxThinkMs": 2800,
+        "styleOverrides": {}
       },
       "master": {
         "temperature": 0,
@@ -68,7 +72,8 @@
         "searchCandidateLimit": 8,
         "searchBudgetMs": 1450,
         "minThinkMs": 2000,
-        "maxThinkMs": 2800
+        "maxThinkMs": 2800,
+        "styleOverrides": {}
       }
     },
     "styleTemperatureScales": {
