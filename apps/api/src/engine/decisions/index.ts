@@ -1,3 +1,4 @@
+import type { DecisionManagerState } from "#api/engine/decisions/DecisionManagerState";
 import { decodeTriggerResolutionPlan } from "@aegis/shared/protocol/decodeTriggerResolutionPlan";
 import {
   type DecisionRequest,
@@ -105,6 +106,32 @@ export class DecisionManager {
     private readonly transport: DecisionTransport,
     private readonly options: DecisionManagerOptions = {},
   ) {}
+
+  getRuntimeState(): DecisionManagerState {
+    this.assertSnapshotBoundary();
+    return { sequence: this.seq };
+  }
+
+  restoreRuntimeState(state: unknown): void {
+    this.assertSnapshotBoundary();
+    if (
+      state === null ||
+      typeof state !== "object" ||
+      !("sequence" in state) ||
+      typeof state.sequence !== "number" ||
+      !Number.isSafeInteger(state.sequence) ||
+      state.sequence < 0
+    ) {
+      throw new Error("Invalid decision sequence state");
+    }
+    this.seq = state.sequence;
+  }
+
+  private assertSnapshotBoundary(): void {
+    if (this.open !== undefined || this.state.pendingDecision !== undefined) {
+      throw new Error("Cannot snapshot or restore an open decision request");
+    }
+  }
 
   /** Is a decision currently awaiting a response? Mirrors `state.pendingDecision !== undefined`. */
   get hasPending(): boolean {

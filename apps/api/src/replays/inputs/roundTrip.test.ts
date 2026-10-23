@@ -19,7 +19,7 @@ function deck(id: string) {
 const MATCHES: (RoomMatchOptions & { name: string; expects: (inputs: ReplayInput[]) => void })[] = [
   {
     name: "a dropped connection and a combat prompt left to time out",
-    seed: 13,
+    seed: 6,
     // Decks with ＜Blocker＞ on both sides, so seat 0 is asked to block and can ignore it.
     humanDeck: deck("bt10-xros-heart"),
     botDeck: deck("bt5-lordknightmon"),

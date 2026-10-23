@@ -345,7 +345,7 @@ describe("AegisRoom ready-gated match start", () => {
     }
     expect(addBot).not.toHaveBeenCalled();
     expect(room.requestBot({ reconnectionToken: "casual-room:private-token", botDeckId: "chosen-deck" })).toBe(200);
-    expect(addBot).toHaveBeenCalledWith("chosen-deck");
+    expect(addBot).toHaveBeenCalledWith({ botDeckId: "chosen-deck", botDifficulty: undefined, botStyle: undefined });
     addBot.mockReturnValue(false);
     expect(room.requestBot({ reconnectionToken: "casual-room:private-token" })).toBe(409);
     human.reconnectionToken = "rotated-token";
@@ -376,16 +376,58 @@ describe("AegisRoom ready-gated match start", () => {
     room.clients.push(human);
     room.onJoin(human, { displayName: "Human", deck: RED_DECK });
 
-    expect(room.addBot()).toBe(true);
+    expect(room.addBot({ botDifficulty: "beginner", botStyle: "defensive" })).toBe(true);
 
     const bot = room.state.players[1];
     const version = room.state.stateVersion;
-    expect(room.addBot()).toBe(true);
+    expect(room.addBot({ botDifficulty: "master", botStyle: "aggressive" })).toBe(true);
     expect(room.state.players[1]).toBe(bot);
     expect(room.state.stateVersion).toBe(version);
     expect(broadcastedEvents(room).filter((e) => e.kind === "matchStarted")).toHaveLength(1);
 
     expect(broadcastedEvents(room).some((e) => e.kind === "matchStarted")).toBe(true);
+  });
+
+  it("logs bot difficulty, style, outcomes and decision latency in completed matches", async () => {
+    const room = makeRoom();
+    room.state.turnCount = 12;
+    const debug = vi.spyOn(room as unknown as { debug: (...args: unknown[]) => void }, "debug");
+    const internals = room as unknown as {
+      botLevelSettings: ({ difficulty: "master"; style: "aggressive" } | undefined)[];
+      bots: (unknown | undefined)[];
+      botExperimentRecord?: { botExperiment: string; botArm: "legacy" };
+      recordRecentResults: (event: Extract<ServerEvent, { kind: "gameOver" }>) => Promise<void>;
+    };
+    internals.botLevelSettings[1] = { difficulty: "master", style: "aggressive" };
+    internals.bots[1] = {
+      policyName: "test-search",
+      policyDecisionLatencySummary: { decisions: 20, p50Ms: 80, p95Ms: 310, maxMs: 410 },
+      inferenceFallbacks: { timeout: 1, error: 0 },
+    };
+    internals.botExperimentRecord = { botExperiment: "standard-rollout", botArm: "legacy" };
+
+    await internals.recordRecentResults({
+      kind: "gameOver",
+      result: { outcome: "win", winnerSeat: 1 },
+      reason: "surrender",
+    });
+
+    expect(debug).toHaveBeenCalledWith(
+      "bot.level.result",
+      expect.objectContaining({
+        seat: 1,
+        botDifficulty: "master",
+        botStyle: "aggressive",
+        botResult: "win",
+        concededByOpponent: true,
+        gameLengthTurns: 12,
+        policyName: "test-search",
+        policyDecisionLatencyMs: { decisions: 20, p50Ms: 80, p95Ms: 310, maxMs: 410 },
+        inferenceFallbacks: { timeout: 1, error: 0 },
+        botExperiment: "standard-rollout",
+        botArm: "legacy",
+      }),
+    );
   });
 
   it("seats an unreleased-product deck in a bot room without a beta flag", async () => {

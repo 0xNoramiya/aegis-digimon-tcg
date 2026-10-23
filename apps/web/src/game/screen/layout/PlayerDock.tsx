@@ -22,6 +22,7 @@ export function PlayerDock({
   timer,
   playerName,
   playerAvatarId,
+  playerBotPersonaId,
   actingLabel,
   breedingDock,
   pileDock,
@@ -60,6 +61,7 @@ export function PlayerDock({
   /** The viewer's name for the line over the tray, when the screen knows it. */
   playerName?: string;
   playerAvatarId?: string;
+  playerBotPersonaId?: string;
   actingLabel?: string;
   /** The raising area, when this screen puts it here rather than in the field. */
   breedingDock: ReactNode;
@@ -110,7 +112,14 @@ export function PlayerDock({
     >
       {breedingDock}
       {playerName ? (
-        <PlayerLine name={playerName} avatarId={playerAvatarId} side="player" timer={timer} actingLabel={actingLabel} />
+        <PlayerLine
+          name={playerName}
+          avatarId={playerAvatarId}
+          botPersonaId={playerBotPersonaId}
+          side="player"
+          timer={timer}
+          actingLabel={actingLabel}
+        />
       ) : null}
       <div
         className="game-hand-dock"

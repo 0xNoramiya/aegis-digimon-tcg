@@ -99,7 +99,7 @@ export class SeriesState extends Schema {
  * cursor, both players, and the current pending decision (if any). Mirrors
  * documented behavior.
  */
-class ManualTable extends Schema {
+export class ManualTable extends Schema {
   @type("uint32") revision = 0;
   @type(["string"]) history = new ArraySchema<string>();
   @type("int8") undoRequester = -1;

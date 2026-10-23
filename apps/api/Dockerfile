@@ -24,6 +24,7 @@ FROM node:26-alpine
 WORKDIR /app
 
 COPY --from=dependencies /app/package.json ./
+COPY --from=dependencies /app/pnpm-lock.yaml ./
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=dependencies /app/packages/shared/package.json ./packages/shared/
 COPY --from=dependencies /app/packages/shared/node_modules ./packages/shared/node_modules

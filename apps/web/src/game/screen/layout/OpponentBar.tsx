@@ -48,6 +48,7 @@ export function OpponentBar({
   handStripRef,
   opponentName,
   opponentAvatarId,
+  opponentBotPersonaId,
   viewerSeat,
   displayedTurnSeat,
   displayedTurnCount,
@@ -82,6 +83,7 @@ export function OpponentBar({
   handStripRef: RefObject<HTMLDivElement | null>;
   opponentName: string;
   opponentAvatarId: string;
+  opponentBotPersonaId?: string;
   viewerSeat: Seat;
   displayedTurnSeat: Seat;
   displayedTurnCount: number;
@@ -155,6 +157,7 @@ export function OpponentBar({
       <PlayerLine
         name={opponentName}
         avatarId={opponentAvatarId}
+        botPersonaId={opponentBotPersonaId}
         side="opponent"
         maxLength={OPPONENT_NAME_MAX_LENGTH}
         timer={timer}

@@ -1,3 +1,5 @@
+import type { RuntimeCallbackRegistry } from "#api/engine/snapshot/RuntimeCallbackRegistry";
+import type { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 import type { ModifierLedger } from "../modifiers.js";
 import type { CollectedEffect } from "../collect.js";
 import type { ContinuousEffectLedger } from "../continuous.js";
@@ -23,6 +25,7 @@ import type {
  */
 
 export interface PrimitivesEngine {
+  readonly runtimeCallbacks?: RuntimeCallbackRegistry;
   /** Replace a used DUAL Option's pending trash with its optional free digivolution. */
   artsDigivolve?(
     seat: Seat,
@@ -434,6 +437,7 @@ export interface SelectionPort {
       selectionContext?: "attackTarget" | "partitionActivation" | "materialSaveActivation";
       /** Preview the full group while a single candidate represents activating the keyword. */
       visibleInstanceIds?: string[];
+      selectionGoal?: DecisionSelectionGoal;
     },
   ): Promise<string[]>;
 }

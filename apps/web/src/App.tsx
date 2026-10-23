@@ -1,3 +1,4 @@
+import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getStoryGuestToken } from "@/story/getStoryGuestToken";
 import { LocalScenarioHelp } from "./dev/LocalScenarioHelp";
@@ -479,6 +480,7 @@ function LoadedAegisClient({
   const [roomCode, setRoomCode] = useState<string>();
   const [privateRoom, setPrivateRoom] = useState<PrivateRoom>();
   const [botDeckId, setBotDeckId] = useState<string>();
+  const [botSettings, setBotSettings] = useState<BotSettings>();
   const [unlimited, setUnlimited] = useState(false);
   const [deckFormat, setDeckFormat] = useState<import("@aegis/shared").DeckFormat>("standard");
   const [betaBattleMode, setBetaBattleMode] = useState(false);
@@ -568,6 +570,7 @@ function LoadedAegisClient({
     requestedDeckId?: string | DeckListing,
     requestedUnlimited?: boolean,
     requestedFormat?: import("@aegis/shared").DeckFormat,
+    requestedBotSettings?: BotSettings,
     requestedGameMode?: GameMode,
   ) => {
     // A lobby start explicitly requests a new match, even if a page
@@ -582,6 +585,7 @@ function LoadedAegisClient({
     }
     setRoomCode(code);
     setBotDeckId(requestedBotDeckId);
+    setBotSettings(requestedBotSettings);
     setBetaBattleMode(requestedBetaBattleMode === true);
     setUnlimited(requestedUnlimited === true);
     setDeckFormat(requestedFormat ?? (mode === "unlimited" || requestedUnlimited ? "unlimited" : "standard"));
@@ -952,6 +956,7 @@ function LoadedAegisClient({
                 roomCode={roomCode}
                 waitForHost={startMode === "private_guest" && privateRoom?.code === roomCode}
                 botDeckId={botDeckId}
+                botSettings={botSettings}
                 betaBattleMode={betaBattleMode}
                 unlimited={unlimited}
                 seriesGame={seriesGame}

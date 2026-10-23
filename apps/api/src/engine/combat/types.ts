@@ -1,3 +1,5 @@
+import type { CounterChoice } from "@aegis/shared/protocol/CounterChoice";
+import type { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 import type { AttackTarget, CardColor, CardInstance, EffectTiming, Seat, ServerEvent } from "@aegis/shared";
 import type { RemovalCause, SubTriggerEventName, TriggerInfo } from "../effects/EffectContext.js";
 import type { ContinuousLegalityReader } from "./legality.js";
@@ -313,6 +315,7 @@ export interface CombatHooks {
     candidateInstanceIds: string[],
     promptText: string,
     source?: DecisionSource,
+    selectionGoal?: DecisionSelectionGoal,
   ) => Promise<string | undefined>;
   /**
    * Ask `seat` to optionally choose exactly `count` of `candidateInstanceIds`, or decline
@@ -326,6 +329,7 @@ export interface CombatHooks {
     count: number,
     promptText: string,
     source?: DecisionSource,
+    selectionGoal?: DecisionSelectionGoal,
   ) => Promise<string[] | undefined>;
   /**
    * Pay ＜Armor Purge＞'s cost on an already-accepted decision: trash this permanent's own
@@ -368,5 +372,5 @@ export interface CombatHooks {
    * blocker" shortcut). Optional so the combat unit tests (minimal hooks) keep the
    * base "nothing eligible" behavior.
    */
-  counterEligible?: (seat: Seat) => { instanceId: string; effectKey: string; description: string }[];
+  counterEligible?: (seat: Seat) => CounterChoice[];
 }

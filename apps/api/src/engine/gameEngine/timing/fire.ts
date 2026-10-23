@@ -1,3 +1,6 @@
+import type { ResolutionCandidateScope } from "#api/engine/effects/resolution/ResolutionCandidateScope";
+import { createResolutionCandidateReader } from "#api/engine/effects/resolution/createResolutionCandidateReader";
+import { ResolutionCandidateKind } from "#api/engine/effects/resolution/ResolutionCandidateKind";
 import { createPendingDeletionEffectReader } from "#api/engine/gameEngine/createPendingDeletionEffectReader";
 import { EffectTiming, Permanent, type CardInstance } from "@aegis/shared";
 import { definitionOf } from "../../cards/cardData.js";
@@ -137,22 +140,15 @@ export async function runTimingWindow(
             ]),
           )
         : undefined;
-    const listWindowCandidates =
-      phaseBoundarySourceLocations === undefined && transientCandidates.length === 0
-        ? undefined
-        : (): CardInstance[] => {
-            const live =
-              phaseBoundarySourceLocations === undefined
-                ? listCandidateInstances(engine)
-                : instancesById(engine, [...phaseBoundarySourceLocations.keys()]).filter(
-                    (instance) =>
-                      candidateSourceLocation(engine, instance.instanceId) ===
-                      phaseBoundarySourceLocations.get(instance.instanceId),
-                  );
-            const candidates = new Map(live.map((instance) => [instance.instanceId, instance] as const));
-            for (const instance of transientCandidates) candidates.set(instance.instanceId, instance);
-            return [...candidates.values()];
-          };
+    let candidateScope: ResolutionCandidateScope = { kind: ResolutionCandidateKind.ALL.value };
+    if (phaseBoundarySourceLocations !== undefined) {
+      candidateScope = { kind: ResolutionCandidateKind.BOUNDARY.value, locations: phaseBoundarySourceLocations };
+    }
+    const listWindowCandidates = createResolutionCandidateReader({
+      engine,
+      scope: candidateScope,
+      transientCandidates,
+    });
     // GRANTED timed triggers fired at the same physical point as the matching window, and
     // therefore simultaneous with the printed effects it collects:
     //   - "[Start of Your Main Phase]" granted onto a permanent (BT23-056); the per-install
@@ -240,11 +236,15 @@ export async function runPendingTimingWindow(engine: GameEngine, pending: readon
         runTiming(
           EffectTiming.OnDestroyedAnyone,
           effectEnvironment(engine, {}),
-          resolutionDeps(engine, () => [], {
-            outermost: wasOutermostWindow,
-            extraPending: pending,
-            excludeNestedPending,
-          }),
+          resolutionDeps(
+            engine,
+            createResolutionCandidateReader({ engine, scope: { kind: ResolutionCandidateKind.NONE.value } }),
+            {
+              outermost: wasOutermostWindow,
+              extraPending: pending,
+              excludeNestedPending,
+            },
+          ),
         ),
       ),
     );
@@ -262,7 +262,11 @@ export async function drainPendingAttackTriggers(engine: GameEngine): Promise<vo
         runTiming(
           EffectTiming.OnUseAttack,
           effectEnvironment(engine, {}),
-          resolutionDeps(engine, () => [], { outermost: true }),
+          resolutionDeps(
+            engine,
+            createResolutionCandidateReader({ engine, scope: { kind: ResolutionCandidateKind.NONE.value } }),
+            { outermost: true },
+          ),
         ),
       ),
     );
@@ -317,7 +321,11 @@ async function drainPendingEffectTriggers(
         runTiming(
           timing,
           effectEnvironment(engine, {}),
-          resolutionDeps(engine, () => [], { outermost: true, extraPending }),
+          resolutionDeps(
+            engine,
+            createResolutionCandidateReader({ engine, scope: { kind: ResolutionCandidateKind.NONE.value } }),
+            { outermost: true, extraPending },
+          ),
         ),
       ),
     );
@@ -365,11 +373,18 @@ export async function fireTimingForInstance(
       runTiming(
         timing,
         effectEnvironment(engine, trigger),
-        resolutionDeps(engine, () => instancesById(engine, [sourceInstanceId]), {
-          outermost: wasOutermostWindow,
-          extraPending: [...extraPending, ...ruleCheckPending],
-          excludeNestedPending: excludedNestedPending,
-        }),
+        resolutionDeps(
+          engine,
+          createResolutionCandidateReader({
+            engine,
+            scope: { kind: ResolutionCandidateKind.INSTANCES.value, instanceIds: [sourceInstanceId] },
+          }),
+          {
+            outermost: wasOutermostWindow,
+            extraPending: [...extraPending, ...ruleCheckPending],
+            excludeNestedPending: excludedNestedPending,
+          },
+        ),
       ),
     );
     if (wasOutermostWindow) {
@@ -436,12 +451,16 @@ export async function fireTimingForPermanent(
         effectEnvironment(engine, trigger),
         resolutionDeps(
           engine,
-          () => {
-            const scoped: CardInstance[] = [];
-            if (engine.access.permanentById(permanent.permanentId) !== permanent) return scoped;
-            collectPermanentInstances(engine, permanent, scoped);
-            return scoped.filter((instance) => subjectInstanceIds.has(instance.instanceId));
-          },
+          createResolutionCandidateReader({
+            engine,
+            permanent,
+            scope: {
+              kind: ResolutionCandidateKind.PERMANENT.value,
+              permanentId: permanent.permanentId,
+              instanceIds: [...subjectInstanceIds],
+              resident: true,
+            },
+          }),
           {
             outermost: wasOutermostWindow,
             extraPending: [...extraPending, ...ruleCheckPending],

@@ -98,6 +98,7 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
   vi.useRealTimers();
+  localStorage.removeItem("aegis.botSettings");
   localStorage.removeItem("aegis:locale");
   localStorage.removeItem("aegis:match-timer");
 });
@@ -416,7 +417,10 @@ describe("famous deck selection", () => {
     fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
 
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(onStart).toHaveBeenCalledWith("bot");
+    expect(onStart).toHaveBeenCalledWith("bot", undefined, undefined, undefined, undefined, undefined, undefined, {
+      botDifficulty: "standard",
+      botStyle: "balanced",
+    });
   });
 
   it("hides the beta queue option when no set is in preview", () => {
@@ -511,7 +515,10 @@ describe("famous deck selection", () => {
     fireEvent.click(screen.getByRole("button", { name: /Practice vs AI/ }));
     fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(onStart).toHaveBeenCalledWith("bot");
+    expect(onStart).toHaveBeenCalledWith("bot", undefined, undefined, undefined, undefined, undefined, undefined, {
+      botDifficulty: "standard",
+      botStyle: "balanced",
+    });
   });
   it("selects provider decks within collections without copying and preserves owner filters", async () => {
     const onUseProviderDeck = vi.fn();
@@ -790,7 +797,10 @@ describe("bot and private Unlimited selection", () => {
     expect(within(botSelect).getByRole("option", { name: deck.name })).toHaveProperty("disabled", false);
     fireEvent.change(botSelect, { target: { value: `mine:${deck.id}` } });
     fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
-    expect(onStart).toHaveBeenCalledWith("bot", undefined, `mine:${deck.id}`, undefined, undefined, true);
+    expect(onStart).toHaveBeenCalledWith("bot", undefined, `mine:${deck.id}`, undefined, undefined, true, undefined, {
+      botDifficulty: "standard",
+      botStyle: "balanced",
+    });
     fireEvent.change(screen.getByRole("combobox", { name: "Rules" }), {
       target: {
         value:
@@ -808,7 +818,10 @@ describe("bot and private Unlimited selection", () => {
     fireEvent.click(screen.getByRole("button", { name: /Practice vs AI/ }));
     expect(screen.getByRole("button", { name: "Play vs Bot" })).toHaveProperty("disabled", false);
     fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
-    expect(onStart).toHaveBeenLastCalledWith("bot", undefined, undefined, undefined, undefined, true);
+    expect(onStart).toHaveBeenLastCalledWith("bot", undefined, undefined, undefined, undefined, true, undefined, {
+      botDifficulty: "standard",
+      botStyle: "balanced",
+    });
     fireEvent.click(screen.getByRole("button", { name: /Quick Match/ }));
     expect(screen.getByRole("combobox", { name: "Rules" })).toHaveProperty("value", "unlimited");
     fireEvent.click(screen.getByRole("button", { name: "Enter queue" }));
@@ -931,7 +944,10 @@ describe("bot and private Unlimited selection", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(onStart).toHaveBeenCalledWith("bot", undefined, undefined, undefined, undefined, true);
+    expect(onStart).toHaveBeenCalledWith("bot", undefined, undefined, undefined, undefined, true, undefined, {
+      botDifficulty: "standard",
+      botStyle: "balanced",
+    });
   });
 
   it("localizes the host's mode in Portuguese", async () => {
@@ -1265,4 +1281,48 @@ describe("live spectating entry points", () => {
     fireEvent.click(locked);
     expect(await screen.findByRole("tooltip")).toBeTruthy();
   });
+});
+
+it("remembers difficulty and style and sends them when starting practice", () => {
+  const onStart = vi.fn();
+  const view = renderConfiguredLobby(
+    <I18nProvider>
+      <Lobby
+        player={{ name: "Tamer", color: "Blue", shards: 0 }}
+        decks={DECKS}
+        activeDeckId={DECKS[0]!.id}
+        onSelectDeck={() => undefined}
+        onCopyDeck={() => undefined}
+        onNav={() => undefined}
+        onStart={onStart}
+      />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: /Practice vs AI/ }));
+  fireEvent.change(screen.getByRole("combobox", { name: "Difficulty" }), { target: { value: "beginner" } });
+  fireEvent.change(screen.getByRole("combobox", { name: "Style" }), { target: { value: "defensive" } });
+  expect(screen.getByText("Beginner · Defensive")).toBeTruthy();
+  expect(JSON.parse(localStorage.getItem("aegis.botSettings")!)).toEqual({
+    botDifficulty: "beginner",
+    botStyle: "defensive",
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
+  expect(onStart.mock.lastCall?.[7]).toEqual({ botDifficulty: "beginner", botStyle: "defensive" });
+  view.unmount();
+  renderConfiguredLobby(
+    <I18nProvider>
+      <Lobby
+        player={{ name: "Tamer", color: "Blue", shards: 0 }}
+        decks={DECKS}
+        activeDeckId={DECKS[0]!.id}
+        onSelectDeck={() => undefined}
+        onCopyDeck={() => undefined}
+        onNav={() => undefined}
+        onStart={onStart}
+      />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: /Practice vs AI/ }));
+  expect(screen.getByRole("combobox", { name: "Difficulty" })).toHaveProperty("value", "beginner");
+  expect(screen.getByRole("combobox", { name: "Style" })).toHaveProperty("value", "defensive");
 });
