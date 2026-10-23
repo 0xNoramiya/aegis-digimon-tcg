@@ -329,7 +329,7 @@ export async function runReplayContinuation(input: Params) {
   let idle = 0;
   let previous = progress;
   try {
-    bots[input.seat]!.resumeAfterRollback();
+    for (const bot of bots) bot.resumeAfterRollback();
     redeliverOpenPrompts();
     while (!state.gameOver && failures.length === 0) {
       input.signal?.throwIfAborted();
