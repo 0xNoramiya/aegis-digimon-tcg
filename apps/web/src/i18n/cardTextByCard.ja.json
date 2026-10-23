@@ -15446,5 +15446,21 @@
   "BT27-067": {
     "[Digivolve]Lv.5w/[GlowingDawn]trait:Cost3<Raid><Piercing><Engage>[AllTurns][OncePerTurn]WhenthisDigimonwouldleavethebattlearea,bytrashing2bottomface-downcardsfromunderanyofyourTamers,itdoesn'tleave.[AllTurns][OncePerTurn]WhenattacktargetschangeoreffectstrashcardsfromunderyourTamers,youmayactivate1[Main]effectonthiscard'sOptionside.": "〔進化〕特徴「グローイングドーン」を持つLv.5:コスト3\n≪突進≫ ≪貫通≫ ≪急襲≫（自分のターン終了時、このデジモンでアタックできる）\n【お互いのターン】［ターン1回］このデジモンがバトルエリアを離れるとき、自分のテイマーの下にある裏向きのカードを下から2枚破棄することで、離れない。\n【お互いのターン】［ターン1回］アタックの対象が変更されたときか、自分のテイマーの下のカードが効果で破棄されたとき、このカードのオプション側の【メイン】効果1つを発揮できる。",
     "<UseReq.([GlowingDawn]trait)>[Main]<De-Digivolve2>1ofyouropponent'sDigimon.Then,1ofyourDigimonunsuspendsandgets+5000DPuntilyourturnends.<ArtsDigivolve>": "≪使用条件《特徴「グローイングドーン」》≫（指定の条件で色条件を満たせる）\n【メイン】相手のデジモン1体を≪退化2≫。その後、自分のデジモン1体をアクティブにし、自分のターン終了まで、DP+5000。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わず進化できる）"
+  },
+  "BT27-008": {
+    "[Digivolve][Kyokyomon]/BlackLv.2w/[XAntibody]trait:Cost0[StartofYourMainPhase]Bytrashing1cardwiththe[Chronicle]traitfromyourhand,<Draw1>andgain1memory.": "〔進化〕「キョキョモン」/特徴「X抗体」を持つ黒のLv.2:コスト0\n\n【自分のメインフェイズ開始時】自分の手札から、特徴「クロニクル」を持つカード1枚を破棄することで、≪1ドロー≫、メモリー+1。",
+    "<Raid>": "≪突進≫（このデジモンがアタックしたとき、アタックの対象を最もDPの高いアクティブ状態の相手のデジモン1体に変更できる）"
+  },
+  "BT27-009": {
+    "[Digivolve][Ryudamon]/Lv.3w/[Chronicle]trait:Cost2[OnPlay][WhenDigivolving]1ofyourDigimongets+3000DPuntilyouropponent'sturnends.[WhenAttacking]ThisDigimonmaydigivolveintoaDigimoncardwiththe[Chronicle]traitinthehandortrash.": "〔進化〕「リュウダモン」/特徴「クロニクル」を持つLv.3:コスト2\n\n【登場時】【進化時】相手のターン終了まで、自分のデジモン1体をDP+3000。\n【アタック時】このデジモンを手札/トラッシュの特徴「クロニクル」を持つデジモンカードに進化できる。",
+    "[YourTurn]ThisDigimongets+2000DP.": "【自分のターン】このデジモンをDP+2000。"
+  },
+  "BT27-013": {
+    "[Digivolve][Ginryumon]/Lv.4w/[Chronicle]trait:Cost3[OnPlay][WhenDigivolving]<De-Digivolve1>1ofyouropponent'sDigimon.Then,ifduringanattack,delete1ofyouropponent'sDigimonwithasmuchDPasthisDigimonorless.[YourTurn]Whenyouropponent'ssecuritystackisremovedfrom,thisDigimonmaydigivolveintoa[Chronicle]traitDigimoncardinthehandortrash.": "〔進化〕「ギンリュウモン」/特徴「クロニクル」を持つLv.4:コスト3\n\n【登場時】【進化時】相手のデジモン1体を≪退化1≫。その後、アタック中なら、このデジモンのDP以下の相手のデジモン1体を消滅させる。\n【自分のターン】相手のセキュリティが減ったとき、このデジモンを手札/トラッシュの特徴「クロニクル」を持つデジモンカードに進化できる。",
+    "[Opponent'sTurn][OncePerTurn]Whenoneofyouropponent'sDigimonattacks,youmaychangetheattacktargetto1ofyour[Chronicle]traitDigimon.": "【相手のターン】［ターン1回］相手のデジモンがアタックしたとき、アタックの対象を特徴「クロニクル」を持つ自分のデジモン1体に変更できる。"
+  },
+  "BT27-015": {
+    "[Digivolve][Hisyaryumon]/Lv.5w/[Chronicle]trait:Cost3[Assembly-5]Lv.5×Lv.4×Lv.3,allw/[Chronicle]trait<Piercing><Reboot><Blocker>[OnPlay][WhenDigivolving]Delete1ofyouropponent'sDigimonwithasmuchDPas1ofyourDigimonorless.Then,ifduringanattack,trashtheirtopsecuritycard.[AllTurns][OncePerTurn]Whensecuritystacksareremovedfrom,youmayplayoruse1[Chronicle]traitTamerorOptioncardfromyourhandwithoutpayingthecost.": "〔進化〕「ヒシャリュウモン」/特徴「クロニクル」を持つLv.5:コスト3\n\nアセンブリ-5:特徴「クロニクル」を持つ、Lv.5×Lv.4×Lv.3\n\n≪貫通≫ ≪再起動≫ ≪ブロッカー≫\n【登場時】【進化時】自分のデジモン1体のDP以下の相手のデジモン1体を消滅させる。その後、アタック中なら、相手のセキュリティを上から1枚破棄する。\n【お互いのターン】［ターン1回］セキュリティが減ったとき、自分の手札から、特徴「クロニクル」を持つテイマーカード/オプションカード1枚をコストを支払わず登場/使用できる。",
+    "[AllTurns][OncePerTurn]Whensecuritystacksareremovedfrom,this[Alphamon:Ouryuken]mayunsuspend.": "【お互いのターン】［ターン1回］セキュリティが減ったとき、この「アルファモン：王竜剣」をアクティブにできる。"
   }
 }

@@ -78,6 +78,8 @@ export const decisionChoicesZhCN = {
   "decision.choice.playDawn": "登场1张拥有“光辉黎明”特征的卡牌",
   "decision.choice.playSquad": "登场1张拥有“拯救队”特征的卡牌",
   "decision.choice.useSquad": "使用1张拥有“拯救队”特征的选项卡牌",
+  "decision.choice.playChronicleTamer": "登场1张拥有“Chronicle”特征的驯兽师",
+  "decision.choice.useChronicleOption": "使用1张拥有“Chronicle”特征的选项卡牌",
   "decision.choice.returnDeckTop": "放回卡组最上方",
   "decision.choice.returnDeckBottom": "放回卡组最下方",
   "decision.choice.declareDigimon": "宣言类别：数码宝贝",

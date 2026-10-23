@@ -1136,7 +1136,7 @@ export function presentServerBatch({
       enqueueDeferredSecurityArrivals,
     });
   }
-  refreshSecurityAttacker({ fresh, securityAttackerRef, setSecurityClash });
+  refreshSecurityAttacker({ fresh, securityAttackerRef, revealOnStageRef, setSecurityClash });
   if (securityCheck?.kind === "securityChecked")
     presentSecurityClose({
       securityCheck,
