@@ -6,12 +6,13 @@ selected deck; an unavailable requested preset cannot assign its persona to the
 replacement. Unknown custom lists use Aegis. Exact catalog matches ignore card
 order but preserve quantities and the egg deck.
 
-Curated Tamers must be featured in the recipe, including another printing of the
-same character. Ulforce also uses Rina in older recipes because BT11-112 directly
-supports the Veedramon line. Other recipes use a principal Digimon portrait instead of an
-invented Tamer relationship. The fallback prioritizes the archetype's printed
-name, then level and play cost. These are presentation associations, not universal
-claims about canonical partners.
+A preset gets its family's character when the recipe features that Tamer, including
+another printing, or contains one of the character's key Digimon. For example, any
+recipe with Galacticmon shows Zenith, and any WarGreymon recipe shows Tai. Key
+Digimon match by name prefix, so `Gallantmon: Crimson Mode` counts for Takato. Other
+recipes use a principal Digimon portrait. The fallback prioritizes the archetype's
+printed name, then level and play cost. These are presentation associations, not
+universal claims about canonical partners.
 
 The committed card catalog supplies names and the following printed associations:
 Rina BT11-112 names Veemon/Veedramon; Tomoro and Kyo ST23-13 names Glowing Dawn;
@@ -26,14 +27,15 @@ support such as Analog Youth or Cool Boy never determines a character identity.
 Variant selection distinguishes Magnamon Vaccine from Armor, Alphamon Cyber
 Sleuth, Phoenixmon Sora/Akiho, Rapidmon Willis/Henry, and GraceNovamon Galaxy.
 Other named associations additionally require the selected recipe to feature that
-character. Old yellow WarGreymon lists without Tai retain a Digimon identity.
+character or one of their key Digimon.
 
 Official references: [Rina](https://world.digimoncard.com/cards/?card_no=BT11-112&search=true),
 [Tomoro and Kyo](https://world.digimoncard.com/cards/?card_no=ST23-13&search=true),
 [Kunlun](https://world.digimoncard.com/cards/?card_no=BT26-104&search=true), and
 [BT26 recipes](https://world.digimoncard.com/products/pack/ver26/) for Chronomon
 and Inori/Jupitermon. Portraits reuse existing card-image resolution and its
-official fallback. Image failures fall back to initials; decorative portraits
+official fallback. Aegis uses a robot variant of the Aegis logo. Image failures
+fall back to initials; decorative portraits
 have empty alternative text beside the visible character name and Bot label.
 
 The public schema carries botPersonaId separately from account avatarId. The

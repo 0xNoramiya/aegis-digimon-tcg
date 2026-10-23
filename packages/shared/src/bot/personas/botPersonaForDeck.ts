@@ -93,6 +93,48 @@ const families: Readonly<Record<string, string>> = {
   Silphymon: "yolei-and-kari",
 };
 
+const keyDigimon: Readonly<Record<string, readonly string[]>> = {
+  "rina-shinomiya": ["UlforceVeedramon"],
+  "takato-matsuki": ["Guilmon", "Growlmon", "WarGrowlmon", "Gallantmon"],
+  "marcus-damon": ["ShineGreymon"],
+  "thomas-norstein": ["MirageGaogamon"],
+  "ai-and-mako": ["Beelzemon"],
+  "rika-nonaka": ["Sakuyamon"],
+  "davis-and-ken": ["Imperialdramon"],
+  "davis-motomiya": ["Flamedramon", "Magnamon"],
+  "tai-kamiya": ["WarGreymon"],
+  "yuuya-kuga": ["BlackWarGreymon"],
+  "matt-ishida": ["MetalGarurumon"],
+  "tai-and-matt": ["Omnimon"],
+  "takuya-kanbara": ["AncientGreymon", "EmperorGreymon"],
+  "koji-minamoto": ["AncientGarurumon", "MagnaGarurumon"],
+  "taiki-kudo": ["Shoutmon"],
+  "tagiru-akashi": ["Arresterdramon"],
+  "mirei-mikagura": ["Mastemon"],
+  analogman: ["Machinedramon"],
+  zenith: ["Galacticmon"],
+  "arata-sanada": ["Diaboromon"],
+  "akihiro-kurata": ["Belphemon"],
+  "sora-takenouchi": ["Phoenixmon"],
+  "hiro-amanokawa": ["Gammamon"],
+  "kazuki-and-itsuki": ["Dantemon", "Rebootmon"],
+  "haru-shinkai": ["Gaiamon"],
+  "joe-kido": ["Zudomon", "Plesiomon"],
+  "izzy-izumi": ["TyrantKabuterimon"],
+  "yolei-and-kari": ["Silphymon"],
+};
+
+function compactName(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function hasKeyDigimon(cards: readonly CardDefinition[], personaId: string): boolean {
+  const keys = (keyDigimon[personaId] ?? []).map(compactName);
+  return cards.some(
+    (card) => card.kinds.includes(CardKind.Digimon) && keys.some((key) => compactName(card.nameEn).startsWith(key)),
+  );
+}
+
 function signature(cards: readonly string[]): string {
   return [...cards].sort().join(",");
 }
@@ -127,29 +169,21 @@ function presetPersona(preset: FamousDeck): BotPersona {
   if (preset.archetype === "GraceNovamon" && cards.has("EX5-064")) personaId = "koh-and-sayo";
   if (preset.archetype === "Millenniummon" && cards.has("EX11-055")) personaId = "chitose-horaiji";
   const persona = botPersonaById(personaId);
+  const definitions = [...cards].map(getCardDefinition).filter((card): card is CardDefinition => card !== undefined);
   const featuresCharacter =
     persona &&
-    [...cards].some((cardId) => {
-      const card = getCardDefinition(cardId);
-      return card?.kinds.includes(CardKind.Tamer) && characterName(card.nameEn) === characterName(persona.displayName);
-    });
+    definitions.some(
+      (card) =>
+        card.kinds.includes(CardKind.Tamer) && characterName(card.nameEn) === characterName(persona.displayName),
+    );
   const supportsDigiPolice =
-    preset.archetype !== "D Brigade" ||
-    [...cards].some((cardId) => getCardDefinition(cardId)?.types?.includes("DigiPolice"));
-  if (persona && (featuresCharacter || preset.archetype === "UlforceVeedramon") && supportsDigiPolice) return persona;
-  const archetype = preset.archetype.toLowerCase().replace(/[^a-z0-9]/g, "");
-  const digimon = [...cards]
-    .map(getCardDefinition)
-    .filter((card): card is CardDefinition => card !== undefined && card.kinds.includes(CardKind.Digimon));
+    preset.archetype !== "D Brigade" || definitions.some((card) => card.types?.includes("DigiPolice"));
+  if (persona && (featuresCharacter || hasKeyDigimon(definitions, persona.id)) && supportsDigiPolice) return persona;
+  const archetype = compactName(preset.archetype);
+  const digimon = definitions.filter((card) => card.kinds.includes(CardKind.Digimon));
   digimon.sort((left, right) => {
-    const leftMatch = left.nameEn
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "")
-      .includes(archetype);
-    const rightMatch = right.nameEn
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "")
-      .includes(archetype);
+    const leftMatch = compactName(left.nameEn).includes(archetype);
+    const rightMatch = compactName(right.nameEn).includes(archetype);
     return (
       Number(rightMatch) - Number(leftMatch) ||
       (right.level ?? 0) - (left.level ?? 0) ||

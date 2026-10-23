@@ -54,9 +54,17 @@ describe("bot identities", () => {
     expect(getCardDefinition(persona.portraitCardId!)?.kinds).toContain(CardKind.Digimon);
   });
 
-  it("does not assign Tai to yellow WarGreymon recipes featuring only T.K.", () => {
-    const deck = ALL_FAMOUS_DECKS.find((entry) => entry.archetype === "Yellow WarGreymon")!;
-    expect(botPersonaForDeck({ deckId: deck.deckId }).id).toMatch(/^digimon:/);
+  it.each([
+    ["Yellow WarGreymon", "tai-kamiya"],
+    ["Blue Zudomon", "joe-kido"],
+    ["Red Shoutmon DX", "taiki-kudo"],
+  ])("gives %s its character through a key Digimon when the recipe has no Tamer", (archetype, id) => {
+    const deck = ALL_FAMOUS_DECKS.find((entry) => entry.archetype === archetype)!;
+    const tamers = deck.decklist.mainDeck.filter((cardId) => getCardDefinition(cardId)?.kinds.includes(CardKind.Tamer));
+    expect(tamers.some((cardId) => getCardDefinition(cardId)?.nameEn.includes(botPersonaById(id)!.displayName))).toBe(
+      false,
+    );
+    expect(botPersonaForDeck({ deckId: deck.deckId }).id).toBe(id);
   });
 
   it("refuses unknown and non-Digimon generated portrait identities", () => {
