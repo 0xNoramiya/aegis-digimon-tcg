@@ -78,6 +78,10 @@ it("counts an error fallback and returns the Standard block answer when the bloc
   const answer = await policy.chooseBlockResponse(buildBotView(setup.state, 0)!, context);
   expect(answer).toEqual({ type: "declareBlock", blockerPermanentId: "standard" });
   expect(policy.searchFallbacks?.()).toEqual({ deadline: 0, capacity: 0, error: 1 });
+  const causes = Object.entries(policy.searchErrors?.() ?? {});
+  expect(causes).toHaveLength(1);
+  expect(causes[0]![0]).toMatch(/^snapshot: /);
+  expect(causes[0]![1]).toBe(1);
   await close();
 });
 

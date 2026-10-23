@@ -19,6 +19,8 @@ import { currentEpochMs } from "#api/bot/search/currentEpochMs";
 import { PAIRED_ROOT_CANDIDATE_LIMIT } from "#api/bot/search/PAIRED_ROOT_CANDIDATE_LIMIT";
 import { LIVE_SEARCH_DECISION_DEADLINE_MS } from "#api/bot/search/LIVE_SEARCH_DECISION_DEADLINE_MS";
 import { getSearchFailureFallback } from "#api/bot/search/getSearchFailureFallback";
+import { getSearchErrorCause } from "#api/bot/search/getSearchErrorCause";
+import { LiveSearchErrorStage } from "#api/bot/search/LiveSearchErrorStage";
 import { LiveSearchFallback, type LiveSearchFallbackCounts } from "#api/bot/search/LiveSearchFallback";
 import { createCombatRootWindow } from "#api/bot/search/createCombatRootWindow";
 import { CombatSearchKind } from "#api/bot/search/CombatSearchKind";
@@ -45,6 +47,8 @@ type Params = {
 type ScoredAction = { action: TrainingAction; score: number };
 
 type RootData = { root: TrainingWindow; priors: number[] };
+
+type SearchErrorCounts = Record<string, number>;
 
 function createRootWindow({
   engine,
@@ -97,6 +101,7 @@ async function chooseRootAction({
   signal,
   decisionStartedAt,
   fallbacks,
+  errors,
 }: {
   input: Params;
   rootData: RootData | undefined;
@@ -105,13 +110,16 @@ async function chooseRootAction({
   signal?: AbortSignal;
   decisionStartedAt: number;
   fallbacks: LiveSearchFallbackCounts;
+  errors: SearchErrorCounts;
 }): Promise<Intent> {
   if (rootData === undefined || signal?.aborted) return fallback;
   let snapshot;
   try {
     snapshot = snapshotGameEngine({ engine: input.engine, allowContinuation: true });
-  } catch {
+  } catch (error) {
     fallbacks[LiveSearchFallback.ERROR.value]++;
+    const cause = getSearchErrorCause({ error, stage: LiveSearchErrorStage.SNAPSHOT.value });
+    errors[cause] = (errors[cause] ?? 0) + 1;
     return fallback;
   }
   const deadlineEpochMs = Math.min(
@@ -143,7 +151,12 @@ async function chooseRootAction({
     return rootData.root.actions[search.action]?.intent ?? fallback;
   } catch (error) {
     if (signal?.aborted) return fallback;
-    fallbacks[getSearchFailureFallback({ error, deadlineEpochMs })]++;
+    const reason = getSearchFailureFallback({ error, deadlineEpochMs });
+    fallbacks[reason]++;
+    if (reason === LiveSearchFallback.ERROR.value) {
+      const cause = getSearchErrorCause({ error, stage: LiveSearchErrorStage.SEARCH.value });
+      errors[cause] = (errors[cause] ?? 0) + 1;
+    }
     return fallback;
   }
 }
@@ -176,6 +189,7 @@ export function createLiveSearchPolicy(input: Params): BotPolicy<Intent | Promis
     [LiveSearchFallback.CAPACITY.value]: 0,
     [LiveSearchFallback.ERROR.value]: 0,
   };
+  const errors: SearchErrorCounts = {};
   input.engine.snapshotContinuation.enable();
   void prewarmLiveSearchWorkers().catch(() => undefined);
   const searchCombat = async ({
@@ -200,6 +214,7 @@ export function createLiveSearchPolicy(input: Params): BotPolicy<Intent | Promis
       signal,
       decisionStartedAt,
       fallbacks,
+      errors,
     });
   };
   return {
@@ -214,6 +229,7 @@ export function createLiveSearchPolicy(input: Params): BotPolicy<Intent | Promis
     },
     getSeenOpponentCards: () => input.getSeenOpponentCards(),
     searchFallbacks: () => ({ ...fallbacks }),
+    searchErrors: () => ({ ...errors }),
     chooseBlockResponse(view, context, signal) {
       const request = { kind: CombatSearchKind.BLOCK.value, view, context } as const;
       return searchCombat({ request, decisionStartedAt: currentEpochMs(), signal });
@@ -250,6 +266,7 @@ export function createLiveSearchPolicy(input: Params): BotPolicy<Intent | Promis
         signal,
         decisionStartedAt,
         fallbacks,
+        errors,
       });
     },
   };

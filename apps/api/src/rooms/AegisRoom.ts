@@ -1237,6 +1237,7 @@ export class AegisRoom extends Room<{
         policyDecisionLatencyMs: bot.policyDecisionLatencySummary,
         inferenceFallbacks: bot.inferenceFallbacks,
         ...(bot.searchFallbacks === undefined ? {} : { searchFallbacks: bot.searchFallbacks }),
+        ...(bot.searchErrors === undefined ? {} : { searchErrors: bot.searchErrors }),
         ...(seat === this.BOT_SEAT && this.botExperimentRecord !== undefined
           ? {
               botExperiment: this.botExperimentRecord.botExperiment,

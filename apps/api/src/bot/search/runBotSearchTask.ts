@@ -61,10 +61,10 @@ export async function runBotSearchTask({ task, signal, onRollout }: Params): Pro
           state: result.state,
           phasesMs: result.phasesMs,
         });
-        return { reward: result.reward, valid };
+        return { reward: result.reward, valid, reason: result.reason };
       } catch (error) {
         if (signal.aborted || !simulationSignal.aborted) throw error;
-        return { reward: 0, valid: false };
+        return { reward: 0, valid: false, reason: "aborted" };
       }
     },
   });

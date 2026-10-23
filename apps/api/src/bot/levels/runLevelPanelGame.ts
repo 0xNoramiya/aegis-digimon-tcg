@@ -174,6 +174,7 @@ export async function runLevelPanelGame(input: unknown, { searchTiming }: Option
     style: measureStyleEvents({ events: result.events! }),
     latencies: result.seats.map((stats) => stats.decisionLatenciesMs),
     searchFallbacks: result.seats.map((stats) => stats.searchFallbacks ?? null),
+    searchErrors: result.seats.map((stats) => stats.searchErrors ?? null),
     ...(valid
       ? {}
       : {

@@ -89,15 +89,15 @@ describe("paired root search", () => {
     expect(search.report.timeBudget?.exhausted).toBe(true);
   });
 
-  it("fails when no paired sample reaches the root", async () => {
+  it("names the invalid rollout reasons when no paired sample reaches the root", async () => {
     await expect(
       searchPairedRoot({
         priors: [0.5, 0.5],
         candidateLimit: 2,
         simulations: 4,
         maxDurationMs: 60_000,
-        simulate: async () => ({ reward: 0, valid: false }),
+        simulate: async () => ({ reward: 0, valid: false, reason: "stalled" }),
       }),
-    ).rejects.toThrow("No valid paired samples reached the root");
+    ).rejects.toThrow("No valid paired samples reached the root: stalled");
   });
 });

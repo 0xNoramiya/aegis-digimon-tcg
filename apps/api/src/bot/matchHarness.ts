@@ -66,6 +66,7 @@ export interface SeatStats {
   decisionLatenciesMs: number[];
   inferenceFallbacks: { timeout: number; error: number };
   searchFallbacks?: LiveSearchFallbackCounts;
+  searchErrors?: Record<string, number>;
 }
 
 export interface MatchResult {
@@ -365,6 +366,8 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
     stats[seat].inferenceFallbacks = { ...bots[seat]!.inferenceFallbacks };
     const searchFallbacks = bots[seat]!.searchFallbacks;
     if (searchFallbacks !== undefined) stats[seat].searchFallbacks = { ...searchFallbacks };
+    const searchErrors = bots[seat]!.searchErrors;
+    if (searchErrors !== undefined) stats[seat].searchErrors = { ...searchErrors };
   }
 
   return {

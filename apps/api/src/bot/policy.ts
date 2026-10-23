@@ -25,6 +25,7 @@ export interface BotPolicy<Result extends Intent | Promise<Intent> = Intent> {
   readonly name: string;
   getSeenOpponentCards?(): { main: readonly string[]; eggs: readonly string[] };
   searchFallbacks?(): Readonly<LiveSearchFallbackCounts>;
+  searchErrors?(): Readonly<Record<string, number>>;
   /** Broadcast events only; private decisions enter through answerDecision. */
   observeEvent?(event: ServerEvent): void;
   /** Called at the start of each of the bot's own turns so per-turn state can reset. */

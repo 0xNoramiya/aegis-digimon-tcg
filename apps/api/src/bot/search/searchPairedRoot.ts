@@ -1,7 +1,7 @@
 import { performance } from "node:perf_hooks";
 import type { SearchReport } from "#api/bot/evolution/mcts";
 
-type SampleResult = { reward: number; valid: boolean };
+type SampleResult = { reward: number; valid: boolean; reason?: string };
 
 type Params = {
   priors: readonly number[];
@@ -55,6 +55,7 @@ export async function searchPairedRoot({
   let sample = 0;
   let attempted = 0;
   let invalid = 0;
+  const invalidReasons = new Set<string>();
   let stopped = false;
   while (!stopped && candidates.length > 1 && attempted + candidates.length <= simulations) {
     const rounds = Math.max(1, Math.ceil(Math.log2(candidates.length)));
@@ -71,6 +72,7 @@ export async function searchPairedRoot({
         const result = await simulate({ action, sample });
         if (!isScorable(result)) {
           invalid++;
+          invalidReasons.add(result.valid ? "unscorable" : (result.reason ?? "invalid"));
           break;
         }
         results.set(action, result.reward);
@@ -96,7 +98,7 @@ export async function searchPairedRoot({
   const scored = samples > 0 ? totals : firstSample;
   const scoredCandidates = candidates.filter((action) => scored.has(action));
   if (candidates.length > 1 && scoredCandidates.length === 0)
-    throw new Error("No valid paired samples reached the root");
+    throw new Error(`No valid paired samples reached the root: ${[...invalidReasons].sort().join(", ")}`);
   const action =
     candidates.length === 1 ? candidates[0]! : bestCandidate({ candidates: scoredCandidates, totals: scored });
   const visits = (index: number) => (samples > 0 ? (counts.get(index) ?? 0) : firstSample.has(index) ? 1 : 0);

@@ -216,6 +216,10 @@ export class BotPlayer {
     return this.policy.searchFallbacks?.();
   }
 
+  get searchErrors(): Readonly<Record<string, number>> | undefined {
+    return this.policy.searchErrors?.();
+  }
+
   get policyDecisionLatencySummary(): {
     decisions: number;
     p50Ms: number | null;
