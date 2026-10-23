@@ -20,6 +20,7 @@ import { informationKey } from "#api/bot/evolution/mcts";
 import { chooseHeuristic, type HeuristicProgram } from "#api/bot/evolution/heuristic";
 import { mainActionReady } from "#api/bot/training/actions";
 import { createAsyncTrainingPolicy, type TrainingWindow } from "#api/bot/training/policy";
+import { teacherActionIndex } from "#api/bot/training/teacher";
 import { evaluateSearchPosition } from "#api/bot/evolution/evaluateSearchPosition";
 import { trainingObservation } from "#api/bot/training/observation";
 import type { SeenOpponentCards } from "#api/bot/evolution/SeenOpponentCards";
@@ -237,11 +238,23 @@ export async function runReplayContinuation(input: Params) {
     }
     return [...root.actions];
   }
+  let rootDeclaration: Intent | undefined;
+  function chooseRootDeclarationStep(window: TrainingWindow): number | undefined {
+    if (rootDeclaration === undefined || window.kind !== "selectCards" || window.request !== undefined) {
+      rootDeclaration = undefined;
+      return undefined;
+    }
+    return teacherActionIndex(window, rootDeclaration, rootDeclaration);
+  }
   function chooseControlled(window: TrainingWindow): number {
     if (!rootChosen && matchesRootWindow(window, root)) {
       rootChosen = true;
-      return input.choose(root);
+      const index = input.choose(root);
+      rootDeclaration = root.actions[index]?.intent;
+      return index;
     }
+    const declarationStep = chooseRootDeclarationStep(window);
+    if (declarationStep !== undefined) return declarationStep;
     if (input.chooseAfterRoot !== undefined) {
       rolloutDecisions++;
       return input.chooseAfterRoot(window);
