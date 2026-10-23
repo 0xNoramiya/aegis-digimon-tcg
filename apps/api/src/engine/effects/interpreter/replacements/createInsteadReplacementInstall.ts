@@ -1,5 +1,6 @@
 import { getCardDefinition } from "@aegis/shared/cards/registry";
 import type { Action } from "@aegis/shared/effects/ir/actions/action";
+import type { Filter } from "@aegis/shared/effects/ir/filters/filter";
 import type { Permanent } from "@aegis/shared/schema/Permanent";
 import type { EffectContext } from "#api/engine/effects/context/effectContext";
 import type { ReplacementInstallInstead } from "#api/engine/effects/context/replacements";
@@ -61,6 +62,9 @@ export function createInsteadReplacementInstall({
         if (delaySource === undefined || delaySource.enterFieldTurnCount === _subCtx.game.state.turnCount) return false;
       }
       const filter = action.sourceFilter ?? action.target?.filter;
+      if (event === "wouldDigivolve" && candidate.inBreeding && !doesFilterReachBreeding(filter ?? {})) {
+        return false;
+      }
       if (filter !== undefined) {
         if (filter.controller === "mine" && candidate.controllerSeat !== ctx.source.ownerSeat) return false;
         if (filter.controller === "opponent" && candidate.controllerSeat === ctx.source.ownerSeat) return false;
@@ -178,4 +182,14 @@ export function createInsteadReplacementInstall({
         return !declinedEveryChoice;
       }),
   };
+}
+
+function doesFilterReachBreeding(filter: Filter): boolean {
+  if (filter.isSelfRef === true) {
+    return true;
+  }
+  if (Array.isArray(filter.zone)) {
+    return filter.zone.includes("breeding");
+  }
+  return filter.zone === "breeding";
 }

@@ -6,6 +6,34 @@ import { runAction } from "./runAction.js";
 import "../../../../cards/index.js";
 
 describe("optional target preflight", () => {
+  it("does not award recovery from an earlier evolution when optional DNA has no legal destination", async () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "ST1-03", as: "source" }], deck: ["ST1-03"] },
+    });
+    await s.ready();
+    const engine = internalsOf(s.engine);
+    const ctx = engine.buildEffectContext(engine.cardSourceOf(s.perm("source").topCard), {});
+    ctx.lastDigivolveResult = true;
+    await runAction(ctx, {
+      kind: "DnaDigivolve",
+      materials: { filter: { controller: "mine", kind: ["Digimon"] }, count: 2 },
+      into: { controller: "mine", zone: "hand", kind: ["Digimon"] },
+      payCost: false,
+      optional: true,
+    });
+    await runAction(ctx, {
+      kind: "SecurityManipulation",
+      op: "addTop",
+      controller: "mine",
+      source: "deck",
+      amount: 1,
+      condition: { kind: "ifThisEffectDigivolved" },
+    });
+    expect(s.state.players[0]!.security).toHaveLength(0);
+    expect(s.state.players[0]!.deck).toHaveLength(1);
+    expect(s.decisions).toHaveLength(0);
+  });
+
   it.each([false, true])(
     "preserves an unpaid optional processing cost without refunding an earlier activation (chosen: %s)",
     async (chosen) => {
