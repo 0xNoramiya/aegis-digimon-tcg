@@ -291,7 +291,7 @@ tools/bot-evolution/.venv/bin/python tools/bot-evolution/matchup_report.py \
 
 The report verifies the pinned proof archive, certificate protocol, accepted fixed
 look and all raw batch counts before writing `matchups.json` and the interactive
-`matchups.html`. Its rows cover the historical 24-deck certificate distribution;
+`matchups.html`. Both are generated and not committed. Its rows cover the historical 24-deck certificate distribution;
 they describe candidate performance against the frozen balanced control rather
 than certifying uplift for every deck. Matchup groups have their own sample sizes,
 and uncertain rows remain inconclusive. Later main integration needs fresh games
