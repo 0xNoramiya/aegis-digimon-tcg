@@ -70,7 +70,7 @@ import {
   pendingWindowWatchersCollected,
   withPendingSubTriggers,
 } from "./subTriggers.js";
-import { collectRuleProcessPending, nextPermanentId, ruleProcess } from "./ruleProcess.js";
+import { collectRuleProcessPending, hasRuleProcessPending, nextPermanentId, ruleProcess } from "./ruleProcess.js";
 import {
   beginResolvingWindow,
   collectDeferredTimingPending,
@@ -690,9 +690,11 @@ export function playCardDeps(engine: GameEngine): PlayCardDeps {
       if (engine.optionResolutionDepth === 1) {
         // The completed Option creates one pending group: entry effects and the
         // rule-check reactions must compete under turn-player priority.
+        const rulesChangedBoard = hasRuleProcessPending(engine);
         const rulePending = await collectRuleProcessPending(engine);
         engine.optionResolutionDepth = 0;
         await drainPendingOptionEntryTriggers(engine, [...rulePending, ...collectDeferredTimingPending(engine)]);
+        if (rulesChangedBoard) await engine.recomputeContinuousEffects();
       } else {
         engine.optionResolutionDepth = Math.max(0, engine.optionResolutionDepth - 1);
       }
