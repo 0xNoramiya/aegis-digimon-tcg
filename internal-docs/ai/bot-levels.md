@@ -59,9 +59,13 @@ protocol does not expose it; production and panel games keep the shipped timing.
 The live search policy counts its Standard-answer fallbacks as `deadline`,
 `capacity` and `error` in `searchFallbacks`. These counts are separate from the
 `BotPlayer` inference fallbacks. They appear in the level panel result and in
-`bot.level.result`. A position where no paired sample reaches a valid cutoff counts
-as `error`. Most `error` fallbacks came from engine snapshots that could not describe
-a runtime callback: the snapshot failed before the search started. Leave-prevention
+`bot.level.result`. Each `error` fallback is also counted under a cause in
+`searchErrors`: the failed stage (`snapshot` or `search`) and the error message, with
+numbers replaced by `#`. A position where no paired sample reaches a valid cutoff
+counts as `error`, and its message names the invalid rollout reasons. A worker error
+that arrives after the shared deadline counts as `deadline`. Most `error` fallbacks
+came from engine snapshots that could not describe a runtime callback: the snapshot
+failed before the search started. Leave-prevention
 and "instead" replacements, digivolve and play cost modifiers, scoped static
 primitives, player-wide filter matchers and Option grant activity now restore from
 callback factories. On a 40-game Standard sweep over the development and DigiLab
@@ -80,7 +84,7 @@ per level against legacy-balanced with the final shipped build measured:
 Both are within the 2 s p95 target. Before round 2 and the block and Counter search,
 the same check had Expert p95 1,055 ms (deadline 3, error 8) and Master p95 1,583 ms
 (deadline 7, error 15). Master's `error` fallbacks are gone. Expert's 5 remaining
-`error` fallbacks fell back to the Standard answer, and their cause is not isolated.
+`error` fallbacks are explained in [Expert error causes](#expert-error-causes).
 Expert p95 rose, possibly because block and Counter decisions now search too; this
 is not confirmed.
 
@@ -392,6 +396,30 @@ deadline. On the slower production host, a deadline that cuts the baseline's fir
 rollout used to throw "No valid paired samples reached the root" and count as
 `error`. That is the likely source of Master's production `error` fallbacks besides
 snapshot failures, but it is not verified in production.
+
+### Expert error causes
+
+Expert runs 3 simulations over 3 candidates, so one round covers every candidate. If
+the baseline's only rollout is invalid, no candidate is scored and the search falls
+back with `error`. Master retries with later samples, which hides the same causes.
+
+A local reproduction of the production check (Expert Balanced against
+legacy-balanced, holdout blocks 0 to 47, the `bench.mjs` seeds, simulation-bound)
+found three causes:
+
+| Cause                                        | Failure                                                                                                                                                                                           | Fix                                                                                            |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Block window after an effect-declared attack | The rollout resumed only the searching seat. The attacker never restarted its Main loop after the block, so every rollout stalled.                                                                | `runReplayContinuation` resumes both bots.                                                     |
+| Option deletes a Digimon at 0 DP             | The rule check that closes an Option resolution deleted the Digimon without a continuous recompute. Attack targets kept the deleted permanent, and hidden sampling then changed the visible root. | The Option resolution recomputes continuous effects after a rule check that changed the board. |
+| Assembly root action                         | The material steps followed the Standard rollout teacher, which wanted another action, so the rollout threw.                                                                                      | The material steps follow the root action's own declaration.                                   |
+
+The first two caused 2 and 1 of 3 `error` fallbacks in 732 decisions. The third
+appeared once in 747 Expert Defensive decisions. After the fixes, 48 games each of
+Balanced (simulation-bound and shipped timing), Defensive and Aggressive had no `error`
+fallback. Regressions: `startOfMainAttackBlockSearch.test.ts`,
+`option-dp-deletion-attack-targets.test.ts` and
+`runReplayContinuation.rootDeclaration.test.ts`. The production host is not yet
+re-measured.
 
 ### Lower-level and style calibration
 
