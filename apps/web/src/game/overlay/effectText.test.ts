@@ -1,6 +1,30 @@
 import { describe, expect, it } from "vitest";
 import { cardEffectClauseForTiming, noticeEffectClause, playerFacingEffectClause } from "./effectText";
 
+it.each([
+  "[Pending] At the end of the turn, delete that Digimon.",
+  "[Pending] At the next end of your opponent's turn, delete that Digimon.",
+  "[Pending] At the end of the turn, return this Digimon to the hand.",
+  "[Pending] At turn end, delete the Digimon this effect played.",
+  "[Granted] [Your Turn] When this Digimon is blocked, gain +3 memory.",
+])("preserves an external consequence over the recipient's optional clause: %s", (description) => {
+  const input = { cardId: "AD1-024", timing: "AllTurns", description };
+  const expected = description.replace(/^\[(?:Pending|Granted)\]\s*/, "");
+  expect(playerFacingEffectClause(input)).toBe(expected);
+  expect(noticeEffectClause(input)).toBe(expected);
+});
+
+it.each(["AD1-024", "AD1-011"])("preserves pending processing on %s without borrowing its printed effect", (cardId) => {
+  const clause = "At the next end of your opponent’s turn, return it to the hand.";
+  const input = {
+    cardId,
+    timing: "StartOfYourMainPhase",
+    description: `[Pending] ${clause}`,
+  };
+  expect(playerFacingEffectClause(input)).toBe(clause);
+  expect(noticeEffectClause(input)).toBe(clause);
+});
+
 describe("printed clause lookup", () => {
   it("stops a clause at a timing printed with a typographic apostrophe (BT13-103 [End of Opponent’s Turn])", () => {
     expect(cardEffectClauseForTiming("BT13-103", "YourTurn")).toBe(

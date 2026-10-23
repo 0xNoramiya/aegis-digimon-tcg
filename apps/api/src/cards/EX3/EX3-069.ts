@@ -57,6 +57,7 @@ const compiled: CompiledCard = {
         {
           kind: "SubTrigger",
           event: endOfOpponentTurn,
+          printedClause: "[Pending] At the next end of your opponent's turn, delete that Digimon.",
           once: true,
           on: {
             filter: {
