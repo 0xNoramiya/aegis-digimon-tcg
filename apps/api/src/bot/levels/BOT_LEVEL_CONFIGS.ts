@@ -1,5 +1,5 @@
 import { BotDifficulty } from "@aegis/shared/bot/BotDifficulty";
-import type { BotStyle } from "@aegis/shared/bot/BotStyle";
+import { BotStyle } from "@aegis/shared/bot/BotStyle";
 import type { WeightScales } from "#api/bot/levels/weakenWeights";
 
 export type LevelStyleOverride = {
@@ -36,7 +36,11 @@ export const BOT_LEVEL_CONFIGS = {
     searchBudgetMs: 0,
     minThinkMs: 800,
     maxThinkMs: 1600,
-    styleOverrides: {},
+    styleOverrides: {
+      [BotStyle.DEFENSIVE.value]: {
+        weightScales: { memoryHandover: 1, crossZero: 1, crossZeroPerReadyAttacker: 1 },
+      },
+    },
   },
   [BotDifficulty.CASUAL.value]: {
     temperature: 2.5,
@@ -49,7 +53,9 @@ export const BOT_LEVEL_CONFIGS = {
     searchBudgetMs: 0,
     minThinkMs: 1200,
     maxThinkMs: 2200,
-    styleOverrides: {},
+    styleOverrides: {
+      [BotStyle.DEFENSIVE.value]: { temperature: 0.9 },
+    },
   },
   [BotDifficulty.STANDARD.value]: {
     temperature: 0,
@@ -62,7 +68,9 @@ export const BOT_LEVEL_CONFIGS = {
     searchBudgetMs: 0,
     minThinkMs: 2000,
     maxThinkMs: 2800,
-    styleOverrides: {},
+    styleOverrides: {
+      [BotStyle.AGGRESSIVE.value]: { weightScales: { removal: 1, loss: 1, securityAttack: 0.8 } },
+    },
   },
   [BotDifficulty.EXPERT.value]: {
     temperature: 0,
@@ -75,7 +83,10 @@ export const BOT_LEVEL_CONFIGS = {
     searchBudgetMs: 900,
     minThinkMs: 2000,
     maxThinkMs: 2800,
-    styleOverrides: {},
+    styleOverrides: {
+      [BotStyle.AGGRESSIVE.value]: { weightScales: { securityAttack: 0.8 } },
+      [BotStyle.DEFENSIVE.value]: { weightScales: { removal: 0.75, loss: 0.75 } },
+    },
   },
   [BotDifficulty.MASTER.value]: {
     temperature: 0,
@@ -88,6 +99,9 @@ export const BOT_LEVEL_CONFIGS = {
     searchBudgetMs: 1_450,
     minThinkMs: 2000,
     maxThinkMs: 2800,
-    styleOverrides: {},
+    styleOverrides: {
+      [BotStyle.AGGRESSIVE.value]: { weightScales: { securityAttack: 0.8 } },
+      [BotStyle.DEFENSIVE.value]: { weightScales: { removal: 0.75, loss: 0.75 } },
+    },
   },
 } as const satisfies Record<BotDifficulty, LevelConfig>;

@@ -3,6 +3,7 @@ import { BotDifficulty } from "@aegis/shared/bot/BotDifficulty";
 import { BotStyle } from "@aegis/shared/bot/BotStyle";
 import { createLevelBotOptions } from "#api/bot/levels/createLevelBotOptions";
 import { BOT_LEVEL_CONFIGS } from "#api/bot/levels/BOT_LEVEL_CONFIGS";
+import { resolveLevelConfig } from "#api/bot/levels/resolveLevelConfig";
 import { weakenWeights } from "#api/bot/levels/weakenWeights";
 import { BOT_PROFILES } from "#api/bot/profiles";
 import { setupEngine } from "#api/engine/testkit/harness";
@@ -30,17 +31,35 @@ describe("independent bot difficulty and style", () => {
         if (typeof profile !== "object") {
           throw new Error("Expected resolved profile");
         }
-        expect(profile.weights.securityAttack).toBe(BOT_PROFILES[style.value].weights.securityAttack);
         const expectedWeights = weakenWeights({
           weights: BOT_PROFILES[style.value].weights,
-          scales: BOT_LEVEL_CONFIGS[difficulty.value].weightScales,
+          scales: resolveLevelConfig({ difficulty: difficulty.value, style: style.value }).weightScales,
         });
         expect(profile.weights).toEqual(expectedWeights);
       });
     }
   }
 
-  it.each(Object.values(BotStyle))("discounts only removal and loss at Standard for $value", (style) => {
+  it.each([BotStyle.BALANCED, BotStyle.DEFENSIVE])(
+    "discounts only removal and loss at Standard for $value",
+    (style) => {
+      const { engine } = setupEngine({});
+      const options = createLevelBotOptions({
+        engine,
+        seat: 0,
+        deck,
+        seed: 42,
+        difficulty: BotDifficulty.STANDARD.value,
+        style: style.value,
+      });
+      const weights = BOT_PROFILES[style.value].weights;
+      expect(options.profile).toMatchObject({
+        weights: { ...weights, removal: weights.removal * 0.75, loss: weights.loss * 0.75 },
+      });
+    },
+  );
+
+  it("keeps Standard Aggressive removal and loss and softens its security attacks", () => {
     const { engine } = setupEngine({});
     const options = createLevelBotOptions({
       engine,
@@ -48,11 +67,11 @@ describe("independent bot difficulty and style", () => {
       deck,
       seed: 42,
       difficulty: BotDifficulty.STANDARD.value,
-      style: style.value,
+      style: BotStyle.AGGRESSIVE.value,
     });
-    const weights = BOT_PROFILES[style.value].weights;
+    const weights = BOT_PROFILES[BotStyle.AGGRESSIVE.value].weights;
     expect(options.profile).toMatchObject({
-      weights: { ...weights, removal: weights.removal * 0.75, loss: weights.loss * 0.75 },
+      weights: { ...weights, securityAttack: weights.securityAttack * 0.8 },
     });
   });
 

@@ -17,6 +17,10 @@ describe("style-scaled level temperature", () => {
     expect(temperature(BotStyle.BALANCED.value)).toBeGreaterThan(temperature(BotStyle.DEFENSIVE.value));
   });
 
+  it("uses an absolute temperature override instead of the style scale", () => {
+    expect(levelTemperature({ difficulty: BotDifficulty.CASUAL.value, style: BotStyle.DEFENSIVE.value })).toBe(0.9);
+  });
+
   it("keeps greedy selection at Standard for every style", () => {
     for (const style of Object.values(BotStyle)) {
       expect(levelTemperature({ difficulty: BotDifficulty.STANDARD.value, style: style.value })).toBe(0);
