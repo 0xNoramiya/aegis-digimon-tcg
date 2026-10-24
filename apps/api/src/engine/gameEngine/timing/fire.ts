@@ -31,6 +31,7 @@ import {
   withTriggeredMutations,
 } from "../windows.js";
 import { effectEnvironment } from "../effectContext.js";
+import { collectPendingBurstDigivolveTrash } from "#api/engine/gameEngine/collectPendingBurstDigivolveTrash";
 
 export async function fireTiming(
   engine: GameEngine,
@@ -149,6 +150,7 @@ export async function runTimingWindow(
       scope: candidateScope,
       transientCandidates,
     });
+    const burstPending = timing === EffectTiming.OnEndTurn ? collectPendingBurstDigivolveTrash(engine) : [];
     // GRANTED timed triggers fired at the same physical point as the matching window, and
     // therefore simultaneous with the printed effects it collects:
     //   - "[Start of Your Main Phase]" granted onto a permanent (BT23-056); the per-install
@@ -177,7 +179,7 @@ export async function runTimingWindow(
             effectEnvironment(engine, trigger),
             resolutionDeps(engine, listWindowCandidates, {
               outermost: wasOutermostWindow,
-              extraPending: [...windowExtraPending, ...ruleCheckPending],
+              extraPending: [...windowExtraPending, ...ruleCheckPending, ...burstPending],
               excludeNestedPending: excludedNestedPending,
             }),
           ),
@@ -203,9 +205,6 @@ export async function runTimingWindow(
       }
     } else {
       await runWindow();
-    }
-    if (timing === EffectTiming.OnEndTurn) {
-      await engine.digivolveSupport.processPendingBurstDigivolveTrash();
     }
     await engine.recomputeContinuousEffects();
   } finally {
