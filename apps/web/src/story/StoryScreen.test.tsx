@@ -80,7 +80,7 @@ it("preserves the World recruit prerequisites and restores the campaign after a 
 it("keeps battles without prerequisites playable and shows no error when progress cannot be loaded", async () => {
   request.mockRejectedValue(new Error("offline"));
   renderStory("dw1-001");
-  const kunemon = screen.getByRole("heading", { name: "Kunemon" }).closest("li")!;
+  const kunemon = (await screen.findByRole("heading", { name: "Kunemon" })).closest("li")!;
   await vi.waitFor(() =>
     expect((within(kunemon).getByRole("button", { name: "Start battle" }) as HTMLButtonElement).disabled).toBe(false),
   );
@@ -95,7 +95,7 @@ it("preserves Liberator progress, localization and identities without source lin
   request.mockResolvedValue({ completed: ["ice-knight"] });
   const start = renderStory("ice-knight");
   expect(screen.getByRole("heading", { level: 1, name: "数码宝贝界放者" })).toBeTruthy();
-  const first = screen.getByRole("heading", { name: "对战收录 [1] VS. 冰之骑士" }).closest("li")!;
+  const first = (await screen.findByRole("heading", { name: "对战收录 [1] VS. 冰之骑士" })).closest("li")!;
   await vi.waitFor(() =>
     expect((within(first).getByRole("button", { name: "再来一局" }) as HTMLButtonElement).disabled).toBe(false),
   );
@@ -106,7 +106,7 @@ it("preserves Liberator progress, localization and identities without source lin
 
 it("uses official media artwork and presents Back Dimension only once", async () => {
   renderStory("dw1-038");
-  expect(screen.getAllByRole("heading", { name: "Partner vs. Machinedramon" })).toHaveLength(1);
+  expect(await screen.findAllByRole("heading", { name: "Partner vs. Machinedramon" })).toHaveLength(1);
   expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(38);
   const images = [...document.querySelectorAll<HTMLImageElement>(".story-catalog-list img")];
   expect(images).toHaveLength(38);

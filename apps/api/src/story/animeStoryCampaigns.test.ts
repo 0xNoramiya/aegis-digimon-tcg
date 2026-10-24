@@ -1,6 +1,11 @@
 import { expect, it } from "vitest";
 import { getStoryCampaignBattles } from "@aegis/shared/story/getStoryCampaignBattles";
-import { animeStoryBattles } from "@aegis/shared/story/animeStoryBattles";
+import { digimonSaversDataSquadStoryBattles } from "@aegis/shared/story/campaigns/digimonSaversDataSquadStoryBattles";
+import { digimonXrosWarsStoryBattles } from "@aegis/shared/story/campaigns/digimonXrosWarsStoryBattles";
+import { digimonXrosWarsHuntersStoryBattles } from "@aegis/shared/story/campaigns/digimonXrosWarsHuntersStoryBattles";
+import { digimonAdventure2020StoryBattles } from "@aegis/shared/story/campaigns/digimonAdventure2020StoryBattles";
+import { digimonGhostGameStoryBattles } from "@aegis/shared/story/campaigns/digimonGhostGameStoryBattles";
+import { digimonBeatbreakStoryBattles } from "@aegis/shared/story/campaigns/digimonBeatbreakStoryBattles";
 import { catalogStoryBattles } from "@aegis/shared/story/catalogStoryBattles";
 import { storyCatalogDecks } from "@aegis/shared/story/storyCatalogDecks";
 import { getCardDefinition } from "@aegis/shared/cards/registry";
@@ -19,6 +24,15 @@ it.each([
   expect(battles.at(-1)?.id).toBe(last);
   expect(battles.every((battle) => battle.playable)).toBe(true);
 });
+
+const animeStoryBattles = [
+  ...digimonSaversDataSquadStoryBattles,
+  ...digimonXrosWarsStoryBattles,
+  ...digimonXrosWarsHuntersStoryBattles,
+  ...digimonAdventure2020StoryBattles,
+  ...digimonGhostGameStoryBattles,
+  ...digimonBeatbreakStoryBattles,
+];
 
 it("records official episode evidence", () => {
   const selected = animeStoryBattles.filter((battle) => battle.id !== "XW05");

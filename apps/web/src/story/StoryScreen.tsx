@@ -4,7 +4,6 @@ import { StoryCatalogScreen } from "@/story/StoryCatalogScreen";
 import { storyCatalogCampaigns } from "@aegis/shared/story/storyCatalogCampaigns";
 import { getStoryGuestToken } from "@/story/getStoryGuestToken";
 import { useEffect, useState } from "react";
-import { storyBattles } from "@aegis/shared/story/storyBattles";
 import type { StoryProgress } from "@aegis/shared/story/StoryBattle";
 import { Button, Eyebrow } from "@/design/primitives";
 import { Icons } from "@/design/icons";
@@ -13,6 +12,8 @@ import { useTranslation } from "@/i18n/useTranslation";
 import { getTranslatedStoryText } from "@/i18n/getTranslatedStoryText";
 import { StoryBattleRow } from "@/story/StoryBattleRow";
 import { storyCharacters } from "@/story/storyCharacters";
+import { findStoryBattleCampaignId } from "@/story/findStoryBattleCampaignId";
+import { useStoryCampaignBattles } from "@/story/useStoryCampaignBattles";
 import "@/story/story.css";
 
 type Params = {
@@ -25,11 +26,12 @@ type Params = {
 export function StoryScreen({ signedIn, onSignIn, onStart, initialBattleId }: Params) {
   const { t, locale } = useTranslation();
   const [campaign, setCampaign] = useState<string | undefined>(() =>
-    initialBattleId
-      ? (storyBattles.find((battle) => battle.id === initialBattleId)?.campaignId ?? StoryCampaignId.LIBERATOR.value)
-      : undefined,
+    initialBattleId ? findStoryBattleCampaignId({ battleId: initialBattleId }) : undefined,
   );
-  const liberatorBattles = storyBattles.filter((battle) => !battle.campaignId);
+  const loadedLiberatorBattles = useStoryCampaignBattles({
+    campaignId: campaign === StoryCampaignId.LIBERATOR.value ? campaign : undefined,
+  });
+  const liberatorBattles = loadedLiberatorBattles ?? [];
   const [character, setCharacter] = useState("Shoto Kazama");
   const [progress, setProgress] = useState<StoryProgress>();
   const [failed, setFailed] = useState(false);
@@ -52,7 +54,7 @@ export function StoryScreen({ signedIn, onSignIn, onStart, initialBattleId }: Pa
       active = false;
     };
   }, [signedIn]);
-  const loaded = progress !== undefined || failed;
+  const loaded = (progress !== undefined || failed) && loadedLiberatorBattles !== undefined;
   const battles = liberatorBattles.filter((battle) => !character || battle.character === character);
   const completed = battles.filter((battle) => progress?.completed.includes(battle.id)).length;
   const totalCompleted = liberatorBattles.filter((battle) => progress?.completed.includes(battle.id)).length;

@@ -1,6 +1,6 @@
 import type { StoryCatalogBattle } from "#shared/story/StoryCatalogBattle";
 
-export const seekersStoryBattles: readonly StoryCatalogBattle[] = [
+export const digimonSeekersStoryBattles: readonly StoryCatalogBattle[] = [
   {
     id: "SK01",
     campaignId: "digimon-seekers",

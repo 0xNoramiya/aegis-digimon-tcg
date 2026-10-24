@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { storyCatalogCampaigns } from "@aegis/shared/story/storyCatalogCampaigns";
-import { getStoryCampaignBattles } from "@aegis/shared/story/getStoryCampaignBattles";
+import { getStoryCampaignDifficulties } from "@aegis/shared/story/getStoryCampaignDifficulties";
 import { storyCampaignArtwork } from "@/story/storyCampaignArtwork";
 import type { StoryCampaignProgress } from "@aegis/shared/story/StoryCampaignProgress";
 import { canStartStoryBattle } from "@aegis/shared/story/canStartStoryBattle";
-import { getStoryBattleDifficulty } from "@aegis/shared/story/getStoryBattleDifficulty";
 import { request } from "@/account/client";
 import { Button } from "@/design/primitives";
 import { useTranslation } from "@/i18n/useTranslation";
 import { getTranslatedStoryText } from "@/i18n/getTranslatedStoryText";
 import { getStoryGuestToken } from "@/story/getStoryGuestToken";
+import { getStoryCampaignBattleIds } from "@/story/getStoryCampaignBattleIds";
+import { useStoryCampaignBattles } from "@/story/useStoryCampaignBattles";
 
 type Params = { campaignId: string; signedIn: boolean; onStart: (battleId: string) => void };
 
@@ -39,28 +40,30 @@ export function StoryCatalogScreen({ campaignId, signedIn, onStart }: Params) {
       active = false;
     };
   }, [signedIn, campaignId]);
-  const loaded = progress !== undefined || failed;
+  const battles = useStoryCampaignBattles({ campaignId });
+  const difficulties = useMemo(() => getStoryCampaignDifficulties(battles ?? []), [battles]);
+  const loaded = (progress !== undefined || failed) && battles !== undefined;
   const campaign = storyCatalogCampaigns.find((entry) => entry.id === campaignId);
-  const battles = getStoryCampaignBattles({ campaignId });
-  const completed = battles.filter((battle) => progress?.completed.includes(battle.id)).length;
+  const battleIds = getStoryCampaignBattleIds({ campaignId });
+  const completed = battleIds.filter((id) => progress?.completed.includes(id)).length;
   return (
     <section className="world-campaign" aria-labelledby="story-catalog-heading">
       <div className="story-catalog-heading">
         <h2 id="story-catalog-heading">{text("Battles")}</h2>
         <p role="status">
-          {completed} / {battles.length} {text("Battles completed")}
+          {completed} / {battleIds.length} {text("Battles completed")}
         </p>
-        <progress value={completed} max={battles.length} aria-label={campaign?.title} />
+        <progress value={completed} max={battleIds.length} aria-label={campaign?.title} />
       </div>
       <p>{text("Choose a battle. Your partner is ready for the challenge.")}</p>
       {!loaded && <p role="status">{t("common.loading")}</p>}
       {progress?.milestones?.includes(`story:${campaignId}`) && <p role="status">{text("Campaign completed")}</p>}
       <p className="story-catalog-list__location">{text("Five-card opening hand · no mulligan")}</p>
       <ol className="story-catalog-list">
-        {battles.map((battle, index) => {
+        {battles?.map((battle, index) => {
           const won = progress?.completed.includes(battle.id) === true;
           const unlocked = canStartStoryBattle({ battle, completed: progress?.completed ?? [] });
-          const difficulty = getStoryBattleDifficulty({ battleId: battle.id });
+          const difficulty = difficulties.get(battle.id);
           return (
             <li key={battle.id} data-completed={won || undefined}>
               <div className="story-catalog-list__art">

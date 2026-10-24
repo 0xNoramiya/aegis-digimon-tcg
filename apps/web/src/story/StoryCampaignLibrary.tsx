@@ -1,9 +1,8 @@
-import { getStoryCampaignBattles } from "@aegis/shared/story/getStoryCampaignBattles";
+import { getStoryCampaignBattleIds } from "@/story/getStoryCampaignBattleIds";
 import { storyCampaignArtwork } from "@/story/storyCampaignArtwork";
 import { useState } from "react";
 import { StoryCampaignId } from "@aegis/shared/story/StoryCampaignId";
 import { storyCatalogCampaigns } from "@aegis/shared/story/storyCatalogCampaigns";
-import { storyBattles } from "@aegis/shared/story/storyBattles";
 import { useTranslation } from "@/i18n/useTranslation";
 import { getTranslatedStoryText } from "@/i18n/getTranslatedStoryText";
 import { Button } from "@/design/primitives";
@@ -13,7 +12,7 @@ type Params = { completed?: readonly string[]; onSelect: (campaign: string) => v
 const campaigns = [
   { id: StoryCampaignId.LIBERATOR.value, title: "Digimon Liberator", medium: "Manga", isHidden: false },
   ...storyCatalogCampaigns,
-].filter((campaign) => !campaign.isHidden && getStoryCampaignBattles({ campaignId: campaign.id }).length > 1);
+].filter((campaign) => !campaign.isHidden && getStoryCampaignBattleIds({ campaignId: campaign.id }).length > 1);
 
 export function StoryCampaignLibrary({ completed, onSelect }: Params) {
   const { locale, t } = useTranslation();
@@ -22,10 +21,10 @@ export function StoryCampaignLibrary({ completed, onSelect }: Params) {
   const [medium, setMedium] = useState("");
   const featured =
     campaigns.find((campaign) =>
-      storyBattles.some((battle) => battle.campaignId === campaign.id && completed?.includes(battle.id)),
+      getStoryCampaignBattleIds({ campaignId: campaign.id }).some((id) => completed?.includes(id)),
     ) ?? campaigns[0]!;
-  const featuredBattles = getStoryCampaignBattles({ campaignId: featured.id });
-  const featuredCompleted = featuredBattles.filter((battle) => completed?.includes(battle.id)).length;
+  const featuredBattles = getStoryCampaignBattleIds({ campaignId: featured.id });
+  const featuredCompleted = featuredBattles.filter((id) => completed?.includes(id)).length;
   const visible = campaigns.filter(
     (campaign) =>
       (!medium || campaign.medium === medium) &&
@@ -83,8 +82,8 @@ export function StoryCampaignLibrary({ completed, onSelect }: Params) {
       </p>
       <div className="story-library__grid">
         {visible.map((campaign) => {
-          const battles = getStoryCampaignBattles({ campaignId: campaign.id });
-          const count = battles.filter((battle) => completed?.includes(battle.id)).length;
+          const battles = getStoryCampaignBattleIds({ campaignId: campaign.id });
+          const count = battles.filter((id) => completed?.includes(id)).length;
           return (
             <article key={campaign.id} className="story-library__card">
               <button
