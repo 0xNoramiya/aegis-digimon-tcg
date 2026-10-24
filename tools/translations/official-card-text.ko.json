@@ -1,7 +1,7 @@
 {
   "fetchedAt": "2026-10-16T13:45:11.694Z",
   "language": "ko",
-  "catalogCards": 4512,
+  "catalogCards": 4516,
   "sourceCards": 3814,
   "translatedCards": 3594,
   "translatedFields": 5485,
@@ -6879,6 +6879,46 @@
     {
       "cardId": "BT27-067",
       "field": "optionEffect",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-008",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-008",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-009",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-009",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-013",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-013",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-015",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-015",
+      "field": "inheritedEffectText",
       "reason": "unavailable-source-card"
     }
   ],

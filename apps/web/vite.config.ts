@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import { configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
@@ -9,10 +9,24 @@ const requestedTestMaxThreads = Number(process.env.TEST_MAX_THREADS ?? 4);
 const testMaxThreads =
   Number.isInteger(requestedTestMaxThreads) && requestedTestMaxThreads > 0 ? requestedTestMaxThreads : 4;
 
+/** Match the gateway's directory-index behavior for generated public guide pages. */
+function strategyGuideDirectories(): Plugin {
+  return {
+    name: "strategy-guide-directories",
+    configureServer(server) {
+      server.middlewares.use((request, _response, next) => {
+        request.url = request.url?.replace(/^(\/strategy-guides\/(?:[a-z0-9-]+\/)?)(?=\?|$)/, "$1index.html");
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    strategyGuideDirectories(),
     motionReferenceAssets(fileURLToPath(new URL("./.motion-reference", import.meta.url)), ["MuhkUzGAeHA"]),
   ],
   resolve: {
@@ -27,6 +41,10 @@ export default defineConfig({
   },
   test: {
     projects: [
+      {
+        extends: true,
+        test: { name: "bot-personas", include: ["src/bot/personas/**/*.test.tsx"], environment: "jsdom" },
+      },
       {
         extends: true,
         test: { name: "card-confirmation", include: ["src/game/cardConfirmation/**/*.test.ts"], environment: "jsdom" },
@@ -75,6 +93,7 @@ export default defineConfig({
             "src/i18n/useCardTranslationState.test.tsx",
             ...configDefaults.exclude,
             "e2e/**",
+            "src/bot/personas/**/*.test.tsx",
             "src/game/cardConfirmation/**/*.test.ts",
             "src/game/input/**/*.test.tsx",
             "src/screens/cardLanguage/**/*.test.tsx",

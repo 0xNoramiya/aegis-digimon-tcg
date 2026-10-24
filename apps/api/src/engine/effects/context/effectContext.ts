@@ -1,15 +1,21 @@
+import type { SingleHandCostBenefit } from "@aegis/shared/protocol/SingleHandCostBenefit";
 import type { Action, ActivateForeignEffectOverrides, CardInstance, Seat, TargetFate } from "@aegis/shared";
 import type { CardSource } from "../CardSource.js";
 import type { DecisionApi } from "./decisions.js";
 import type { GameAccess } from "./gameAccess.js";
 import type { Primitives } from "./primitives/index.js";
 import type { DiscardedStackSourceProof, TriggerInfo } from "./triggers.js";
+import type { DecisionEffectSummary } from "@aegis/shared/protocol/DecisionEffectSummary";
+import type { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 
 /**
  * What canTrigger / canActivate / resolve receive at runtime
  * (card-module contract).
  */
 export interface EffectContext {
+  activeSingleHandCostBenefit?: SingleHandCostBenefit;
+  activeDecisionSummary?: DecisionEffectSummary;
+  activeDecisionSelectionGoal?: DecisionSelectionGoal;
   /** Exact permanent rotated by a compound cost still resolving. */
   pendingRotationHostPermanentId?: string;
   source: CardSource;

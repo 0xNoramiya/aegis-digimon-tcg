@@ -35,37 +35,18 @@ export function StoryBattleRow({ battle, number, completed, locked, canStart, on
         {String(number).padStart(2, "0")}
       </span>
       <div className="story-battle__art" aria-hidden="true">
-        <img src={battle.coverImageUrl} alt="" loading="lazy" />
+        {battle.coverImageUrl ? <img src={battle.coverImageUrl} alt="" loading="lazy" /> : <Icons.BookOpen size={36} />}
       </div>
       <div className="story-battle__body">
         <div className="story-battle__title">
           <h3 id={`story-${battle.id}`}>
             {getTranslatedStoryText({ text: battle.title, locale }).replace(/^Battle Coverage\s*[[(]\d+[\])\]]\s*/, "")}
           </h3>
-          {battle.adapted && (
-            <span className="story-adaptation" title={t("story.adaptationHint")}>
-              {t("story.adaptation")}
-            </span>
-          )}
         </div>
         <p className="story-battle__cast">
           {getTranslatedStoryText({ text: battle.character, locale })} ×{" "}
           {getTranslatedStoryText({ text: battle.opponent, locale })}
         </p>
-        <div className="story-battle__links">
-          {battle.chapters.map((chapter) => (
-            <a key={chapter.url} href={chapter.url} target="_blank" rel="noopener noreferrer">
-              {getTranslatedStoryText({ text: chapter.title, locale })}
-              <Icons.ExternalLink size={13} />
-            </a>
-          ))}
-          {battle.chapters.length === 0 && (
-            <a href={battle.sourceUrl} target="_blank" rel="noopener noreferrer">
-              {t("story.source")}
-              <Icons.ExternalLink size={13} />
-            </a>
-          )}
-        </div>
       </div>
       <div className="story-battle__action">
         <span className="story-battle__status" data-available={canStart || undefined}>

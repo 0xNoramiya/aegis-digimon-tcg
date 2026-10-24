@@ -1,5 +1,38 @@
 [
   {
+    "version": "1.39.0-beta",
+    "releasedAt": "2026-10-24",
+    "summaryKey": "releases.1.39.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.39.0-beta.feature.bots"
+      },
+      {
+        "textKey": "releases.1.39.0-beta.feature.story"
+      },
+      {
+        "textKey": "releases.1.39.0-beta.feature.chronicle"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.39.0-beta.fix.evolution"
+      },
+      {
+        "textKey": "releases.1.39.0-beta.fix.nestedOptions"
+      },
+      {
+        "textKey": "releases.1.39.0-beta.fix.cardTriggers"
+      },
+      {
+        "textKey": "releases.1.39.0-beta.fix.presentation"
+      },
+      {
+        "textKey": "releases.1.39.0-beta.fix.prompts"
+      }
+    ]
+  },
+  {
     "version": "1.38.1-beta",
     "releasedAt": "2026-10-22",
     "summaryKey": "releases.1.38.1-beta.summary",

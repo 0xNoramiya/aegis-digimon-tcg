@@ -1,3 +1,7 @@
+import { getSingleHandActionCostBenefit } from "#api/engine/effects/interpreter/getSingleHandActionCostBenefit";
+import { getDecisionActionSummary } from "#api/engine/effects/interpreter/getDecisionActionSummary";
+import { getDecisionSelectionGoal } from "#api/engine/effects/interpreter/getDecisionSelectionGoal";
+import { getDecisionEffectSummary } from "#api/engine/effects/interpreter/getDecisionEffectSummary";
 // The per-kind dispatch for every IR action.
 
 import type { EffectContext } from "../../EffectContext.js";
@@ -21,6 +25,7 @@ import { canAttemptAttack, runCombatAction } from "./combat.js";
 import { runControlFlowAction } from "./controlFlow.js";
 import { runDigivolutionAction } from "./digivolution.js";
 import { canAttemptDigivolve, canAttemptDigivolveBeforeCost } from "./digivolve.js";
+import { canAttemptDnaDigivolve } from "#api/engine/effects/interpreter/actions/dna";
 import { runGrantStaticAction } from "./grantStatic.js";
 import { canReactivateOwnEffect, runMetaAction } from "./meta.js";
 import { DECLINE_MODAL_CHOICE_LABEL, declinableModalChoices, modalHasAvailableOption } from "./modal.js";
@@ -49,6 +54,8 @@ import { runStaticAction } from "./statics.js";
 import { CardKind, digiXrosRequirementFor } from "@aegis/shared";
 import type { Action, Cost, Target, ZoneRef } from "@aegis/shared";
 import { canDetachPermanentTop, isDetachTopAction } from "../targeting/detachTop.js";
+import { printedPassage } from "#api/engine/decisions/printedPassage";
+import type { DecisionApi } from "#api/engine/effects/context/decisions";
 
 function clearDeleteOutcome(ctx: EffectContext, action: Extract<Action, { kind: "Delete" }>): void {
   ctx.lastDeleteCount = 0;
@@ -209,6 +216,12 @@ function looseCostCanProduceDeleteTarget(
  * `abortOnDecline` is set — the caller should stop processing further actions.
  */
 export async function runAction(ctx: EffectContext, action: Action): Promise<boolean> {
+  const outerSingleHandCostBenefit = ctx.activeSingleHandCostBenefit;
+  ctx.activeSingleHandCostBenefit = getSingleHandActionCostBenefit({ action });
+  const outerDecisionSummary = ctx.activeDecisionSummary;
+  const outerDecisionSelectionGoal = ctx.activeDecisionSelectionGoal;
+  ctx.activeDecisionSummary = getDecisionActionSummary({ action });
+  ctx.activeDecisionSelectionGoal = getDecisionSelectionGoal({ action });
   // Display-only provenance: every decision this action raises carries what the
   // action is about to do to the permanents it offers, so the client badges a
   // picked target instead of reading its fate out of printed English. Restored
@@ -256,6 +269,9 @@ export async function runAction(ctx: EffectContext, action: Action): Promise<boo
   try {
     return await runActionInner(ctx, action);
   } finally {
+    ctx.activeSingleHandCostBenefit = outerSingleHandCostBenefit;
+    ctx.activeDecisionSummary = outerDecisionSummary;
+    ctx.activeDecisionSelectionGoal = outerDecisionSelectionGoal;
     ctx.pickingAcceptedOptional = outerPickingAcceptedOptional;
     ctx.selectingOptionalTarget = outerSelectingOptionalTarget;
     ctx.activeTargetFate = outerFate;
@@ -1122,6 +1138,14 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
     ) {
       return unavailableAction(ctx, action);
     }
+    if (
+      action.kind === "DnaDigivolve" &&
+      !allowsOptionalProcessingCostWithoutTarget(action) &&
+      !canAttemptDnaDigivolve(ctx, action)
+    ) {
+      ctx.lastDigivolveResult = false;
+      return unavailableAction(ctx, action);
+    }
     const costUnpayable = payableActionCost !== undefined && !canPayCost(ctx, payableActionCost as Cost);
     // "By [cost], you may [effect]" pays first and asks afterwards: the leading prompt would make
     // a decline skip the cost too. The pay-then-ask block further down raises the payload prompt
@@ -1134,12 +1158,21 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
         predecided === undefined && action.kind === "Modal" ? declinableModalChoices(ctx, action) : undefined;
       let yes: boolean;
       if (modalChoices === undefined) {
-        yes = predecided ?? (await chooser.optional(ctx, describeAction(action)));
+        yes = predecided ?? (await askOptionalWithPrintedCost({ ctx, chooser, action, cost: payableActionCost }));
       } else {
         // An optional modal with a real choice asks it once: the options plus a decline entry.
         const declineIndex = modalChoices.labels.length;
         const pick = await chooser.chooseOption(ctx, [...modalChoices.labels, DECLINE_MODAL_CHOICE_LABEL], {
           declineIndex,
+          choiceSummaries:
+            action.kind === "Modal"
+              ? [
+                  ...modalChoices.optionIndices.map((index) =>
+                    getDecisionEffectSummary({ actions: action.options[index]! }),
+                  ),
+                  null,
+                ]
+              : undefined,
           ...(modalChoices.choiceClauses ? { choiceClauses: [...modalChoices.choiceClauses, ""] } : {}),
         });
         yes = pick !== declineIndex;
@@ -1605,6 +1638,62 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       unsupported(ctx, action as Action, `unknown action kind "${String((action as { kind?: unknown }).kind)}"`);
       return false;
     }
+  }
+}
+
+function isTrashCostPaidWithoutSelection(ctx: EffectContext, cost: Cost): boolean {
+  const target = cost.target;
+  if (
+    cost.kind !== "trash" ||
+    target === undefined ||
+    typeof target.count !== "number" ||
+    target.upTo === true ||
+    target.forceSelection === true ||
+    target.filter.differentColors === true ||
+    target.totalPlayCostBudget !== undefined
+  ) {
+    return false;
+  }
+  const zones = zoneList((target.from ?? target.filter.zone) as ZoneRef | ZoneRef[] | undefined);
+  if (zones.length === 0) {
+    return false;
+  }
+  return candidateLooseInstances(ctx, target, zones).length === target.count;
+}
+
+type AskOptionalWithPrintedCostParams = {
+  ctx: EffectContext;
+  chooser: DecisionApi;
+  action: Action;
+  cost: Cost | number | undefined;
+};
+
+async function askOptionalWithPrintedCost({
+  ctx,
+  chooser,
+  action,
+  cost,
+}: AskOptionalWithPrintedCostParams): Promise<boolean> {
+  const outerEffectTextPart = ctx.activeEffectTextPart;
+  const outerEffectTextEmphasis = ctx.activeEffectTextEmphasis;
+  const printedCost =
+    action.kind !== "RawUnparsed" &&
+    action.effectTextPart === undefined &&
+    typeof cost === "object" &&
+    cost.raw !== undefined &&
+    ctx.activeEffectText !== undefined &&
+    isTrashCostPaidWithoutSelection(ctx, cost)
+      ? printedPassage(ctx.activeEffectText, cost.raw)
+      : undefined;
+  if (printedCost !== undefined) {
+    ctx.activeEffectTextPart = ctx.activeEffectText;
+    ctx.activeEffectTextEmphasis = printedCost;
+  }
+  try {
+    return await chooser.optional(ctx, describeAction(action));
+  } finally {
+    ctx.activeEffectTextPart = outerEffectTextPart;
+    ctx.activeEffectTextEmphasis = outerEffectTextEmphasis;
   }
 }
 
