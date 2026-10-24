@@ -1,3 +1,4 @@
+import { getStoryBattleDifficulty } from "@aegis/shared/story/getStoryBattleDifficulty";
 import { resolveBotProfile } from "#api/bot/profiles";
 import { BotDifficulty } from "@aegis/shared/bot/BotDifficulty";
 import type { BotStyle } from "@aegis/shared/bot/BotStyle";
@@ -10,6 +11,10 @@ import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getStoryGuestHash } from "#api/story/getStoryGuestHash";
 import { shuffleStoryDecks } from "#api/story/shuffleStoryDecks";
 import { findSoloBattle } from "#api/story/findSoloBattle";
+import { getStoryBotPersona } from "#api/story/getStoryBotPersona";
+import { getBotLine } from "#api/bot/lines/getBotLine";
+import { getCardDefinition } from "@aegis/shared/cards/registry";
+import { StoryDifficulty } from "@aegis/shared/story/StoryDifficulty";
 import type { SoloBattle } from "#api/story/SoloBattle";
 import { StoryProgressStore } from "#api/story/StoryProgressStore";
 import { getStorySeatDeck } from "#api/story/getStorySeatDeck";
@@ -347,6 +352,7 @@ export class AegisRoom extends Room<{
   private presentationLogWindows = new Map<Seat, { start: number; count: number }>();
   /** Keyed by `seat:<n>` for players and by session id for spectators. */
   private lastChatAtBySender = new Map<string, number>();
+  private spokenBotLines = new Set<string>();
   /** The number in each spectator's chat name, given the first time that spectator writes. */
   private spectatorNumbers = new Map<string, number>();
   private spectatorsNumbered = 0;
@@ -581,7 +587,11 @@ export class AegisRoom extends Room<{
       const battle = this.soloBattle;
       const store = new StoryProgressStore(this.accounts());
       const progress = account ? await store.getProgress(account.id) : await store.getGuestProgress(guestHash!);
-      if (!battle || (battle.prerequisiteId && !progress.completed.includes(battle.prerequisiteId))) {
+      const prerequisites = [
+        ...(battle?.prerequisiteIds ?? []),
+        ...(battle?.prerequisiteId ? [battle.prerequisiteId] : []),
+      ];
+      if (!battle || prerequisites.some((id) => !progress.completed.includes(id))) {
         return false;
       }
       this.storyAccountId = account?.id;
@@ -1013,6 +1023,7 @@ export class AegisRoom extends Room<{
         if (event.kind === "securityRevealed") this.openSecurityReveal = event;
         else if (event.kind === "securityChecked") this.openSecurityReveal = undefined;
         for (const bot of this.bots) bot?.onEvent(event);
+        this.speakBotLines(event);
         this.syncCombatWindowTimeout();
       },
     };
@@ -2115,7 +2126,7 @@ export class AegisRoom extends Room<{
   addBot(input: { botDeckId?: string; botDifficulty?: BotDifficulty; botStyle?: BotStyle } | string = {}): boolean {
     const {
       botDeckId,
-      botDifficulty = BotDifficulty.STANDARD.value,
+      botDifficulty: requestedDifficulty = BotDifficulty.STANDARD.value,
       botStyle,
     } = typeof input === "string" ? { botDeckId: input } : input;
     // Ordinary casual rooms remain accepted during the expand/contract rollout so
@@ -2148,9 +2159,16 @@ export class AegisRoom extends Room<{
       return false;
     }
 
-    const style = botStyle ?? defaultStyleForDeck({ deck });
+    const storyDifficulty = this.storyBattleId ? getStoryBattleDifficulty({ battleId: this.storyBattleId }) : undefined;
+    const botDifficulty = storyDifficulty?.botDifficulty ?? requestedDifficulty;
+    const requestedStyle = storyDifficulty ? undefined : botStyle;
+    const style = storyDifficulty?.botStyle ?? requestedStyle ?? defaultStyleForDeck({ deck });
     const humanDeck = this.engine.stagedDecks[0];
-    const persona = botPersonaForDeck({ deckId: botDeckId, deck });
+    const storyPersona =
+      this.storyBattleId && this.scenarioFixture
+        ? getStoryBotPersona({ battleId: this.storyBattleId, fixture: this.scenarioFixture })
+        : undefined;
+    const persona = storyPersona ?? botPersonaForDeck({ deckId: botDeckId, deck });
     const modelOptions =
       this.scenarioFixture === undefined && humanDeck !== undefined
         ? (evolvedBotOptions({
@@ -2823,6 +2841,43 @@ export class AegisRoom extends Room<{
       const receivesSpectatorChat = this.spectatorClients.has(recipient.sessionId) && !receivesPlayerChat;
       if ((sender.kind === "player" && receivesPlayerChat) || (sender.kind === "spectator" && receivesSpectatorChat)) {
         recipient.send(CHAT_CHANNEL, broadcast);
+      }
+    }
+  }
+
+  private speakBotLines(event: ServerEvent): void {
+    if (this.isTournamentRoom) return;
+    if (event.kind === "matchStarted") this.spokenBotLines.clear();
+    const isBoss = this.storyBattleId
+      ? getStoryBattleDifficulty({ battleId: this.storyBattleId })?.value === StoryDifficulty.BOSS.value
+      : false;
+    for (const seat of [0, 1] as const) {
+      if (!this.bots[seat] || !this.state.players[seat]?.botPersonaId) continue;
+      const spoken = getBotLine({
+        event,
+        botSeat: seat,
+        securityCounts: [this.state.players[0]?.security.length ?? 0, this.state.players[1]?.security.length ?? 0],
+        turnCount: this.state.turnCount,
+        isBoss,
+      });
+      if (!spoken || this.spokenBotLines.has(spoken.key)) continue;
+      const cooldownKey = `seat:${seat}`;
+      const now = Date.now();
+      const lastChatAt = this.lastChatAtBySender.get(cooldownKey);
+      if (spoken.line.isRepeatable && lastChatAt !== undefined && now - lastChatAt < CHAT_COOLDOWN_MS) continue;
+      this.spokenBotLines.add(spoken.key);
+      this.lastChatAtBySender.set(cooldownKey, now);
+      const cardName = spoken.cardId ? (getCardDefinition(spoken.cardId)?.nameEn ?? "") : "";
+      const message: ChatMessage = {
+        kind: "botLine",
+        line: spoken.line.value,
+        text: spoken.line.text.replace("{card}", cardName),
+        ...(spoken.cardId ? { cardId: spoken.cardId } : {}),
+      };
+      this.debug("bot.chat", { seat, ...message });
+      const broadcast: ChatBroadcast = { sender: { kind: "player", seat }, message };
+      for (const recipient of this.clients) {
+        if (this.seatByClient.has(recipient.sessionId)) recipient.send(CHAT_CHANNEL, broadcast);
       }
     }
   }

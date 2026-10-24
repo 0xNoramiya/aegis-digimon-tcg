@@ -43,3 +43,14 @@ lobby and game resolve this same ID, preserving the server's display name for
 tournament disambiguation. Narrow player rows use 18-pixel portraits; the lobby
 uses 48-pixel portraits. Unknown legacy persona IDs retain the player name and
 Bot label without loading arbitrary images.
+
+Digimon personas (`digimon:<cardId>`) share one portrait per Digimon name, not per
+printing. `getBotPortraitPath` slugs the persona's display name, so every Agumon
+printing uses `/assets/bot-portraits/digimon/agumon.webp`. Story opponents use
+these portraits when no character persona matches the encounter. A Digimon
+without a portrait file still falls back to initials.
+
+All portraits live in `apps/web/public/assets/bot-portraits`. The web build copies
+them into its `assets` folder, and each deploy copies that folder into the
+gateway's shared `assets` directory, which serves them as the CDN. The gateway
+caches `/assets/` as immutable, so replace a portrait under a new file name.

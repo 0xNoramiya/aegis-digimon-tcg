@@ -1,3 +1,4 @@
+import { getCatalogStoryScenario } from "#api/story/getCatalogStoryScenario";
 import scenario0 from "#api/engine/scenarios/ice-clad-story-opening.fixture";
 import scenario1 from "#api/engine/scenarios/puppets-musketeers-story-opening.fixture";
 import scenario2 from "#api/engine/scenarios/birds-crystal-palace-story-opening.fixture";
@@ -64,6 +65,10 @@ const scenarios: Readonly<Record<string, ScenarioFixture>> = {
 };
 
 export function getStoryScenario(battleId: string): ScenarioFixture | undefined {
+  const world = getCatalogStoryScenario({ battleId });
+  if (world) {
+    return world;
+  }
   if (!Object.hasOwn(scenarios, battleId)) {
     return undefined;
   }

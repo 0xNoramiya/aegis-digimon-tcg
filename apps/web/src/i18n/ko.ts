@@ -22,6 +22,13 @@ const interfaceMessages = {
   "game.input.reorder": "Enter/A: 이동 시작; 방향키: 순서 변경; Enter/A: 완료; Esc/B: 되돌리기",
 
   "bot.identity.label": "봇",
+  "bot.line.greeting": "승부다! 최선을 다해 봐.",
+  "bot.line.bossGreeting": "여기까지 오다니. 이제 내 모든 힘을 상대해라!",
+  "bot.line.bigDigivolve": "진화! 가라, {card}!",
+  "bot.line.pressure": "시큐리티가 다 떨어졌어. 한 방만 더!",
+  "bot.line.lastStand": "시큐리티는 없지만... 아직 끝나지 않았어!",
+  "bot.line.victory": "좋은 승부였어! 연습하고 다시 도전해.",
+  "bot.line.defeat": "이번엔 네가 더 강했어. 좋은 승부였어!",
   "home.strategyGuides": "전략 가이드로 덱 플레이 방법을 배워 보세요",
   ...decisionChoicesEn,
   "decision.choice.playSavedLevelFour": decisionChoicesEn["decision.choice.playSavedLevelFour"].replace(
@@ -57,6 +64,14 @@ const interfaceMessages = {
     "공식 챕터는 원문을 유지합니다. 각색은 시뮬레이터의 카드 규칙으로 미공개 필드, 덱 및 허구의 카드 변경을 재구성합니다.",
 
   "story.title": "스토리 모드",
+  "story.optionalChallenge": "선택 도전",
+  "story.difficulty.intro": "입문",
+  "story.difficulty.challenge": "도전",
+  "story.difficulty.elite": "엘리트",
+  "story.difficulty.boss": "보스",
+  "story.explanationTitle": "스토리 모드란?",
+  "story.explanationBody":
+    "봇과 더욱 재미있게 대전하는 모드입니다. 디지몬 게임, 애니메이션, 만화에서 영감을 받은 배틀을 각 이야기의 캐릭터와 대결을 표현하도록 구성한 덱으로 다시 경험해 보세요.",
   "story.all": "모든 캐릭터",
   "story.character": "캐릭터",
   "story.start": "배틀 시작",
@@ -68,8 +83,7 @@ const interfaceMessages = {
   "story.signin":
     "게스트로 플레이 중입니다. 진행 상황은 이 브라우저에 연결되며, 로그인하면 계정의 진행 상황을 사용합니다.",
   "story.progress": "배틀 {completed} / {total}개 완료",
-  "story.error": "진행 상황을 불러오지 못했습니다.",
-  "story.retry": "다시 시도",
+  "story.backToCampaigns": "캠페인 목록으로",
   "story.source": "공식 배틀 해설",
 
   "roadmap.hub.label": "커뮤니티 섹션",

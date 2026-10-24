@@ -52,6 +52,14 @@ export const es: Record<keyof typeof en, string> = {
     "Los capítulos oficiales conservan su idioma original. Las adaptaciones reconstruyen campos, mazos y cambios ficticios con las reglas impresas del simulador.",
 
   "story.title": "Modo historia",
+  "story.optionalChallenge": "Desafío opcional",
+  "story.difficulty.intro": "Introducción",
+  "story.difficulty.challenge": "Desafío",
+  "story.difficulty.elite": "Élite",
+  "story.difficulty.boss": "Jefe",
+  "story.explanationTitle": "¿Qué es el modo historia?",
+  "story.explanationBody":
+    "Una forma más divertida de jugar contra bots. Revive batallas inspiradas en los videojuegos, animes y mangas de Digimon, con mazos elegidos para representar a los personajes y enfrentamientos de cada historia.",
   "story.all": "Todos los personajes",
   "story.character": "Personaje",
   "story.start": "Iniciar batalla",
@@ -63,8 +71,7 @@ export const es: Record<keyof typeof en, string> = {
   "story.signin":
     "Juegas como invitado. El progreso queda vinculado a este navegador; al iniciar sesión se usa el de tu cuenta.",
   "story.progress": "{completed} / {total} batallas completadas",
-  "story.error": "No se pudo cargar tu progreso.",
-  "story.retry": "Reintentar",
+  "story.backToCampaigns": "Volver a las campañas",
   "story.source": "Cobertura oficial de la batalla",
 
   "settings.shareDeckAfterMatch": "Compartir mi deck al finalizar la partida",
@@ -588,6 +595,13 @@ export const es: Record<keyof typeof en, string> = {
   "bot.style.defensive": "Defensivo",
   "lobby.botDeck": "Deck del bot",
   "bot.identity.label": "Bot",
+  "bot.line.greeting": "¡A combatir! Muéstrame lo mejor de ti.",
+  "bot.line.bossGreeting": "Llegaste lejos. ¡Ahora enfrenta todo mi poder!",
+  "bot.line.bigDigivolve": "¡Digievolucionar! ¡Adelante, {card}!",
+  "bot.line.pressure": "Tu seguridad se acabó. ¡Un golpe más!",
+  "bot.line.lastStand": "Sin seguridad... ¡pero aún no he terminado!",
+  "bot.line.victory": "¡Buena partida! Entrena y vuelve a intentarlo.",
+  "bot.line.defeat": "Esta vez fuiste más fuerte. ¡Buena partida!",
   "lobby.botDeckRandom": "Aleatorio",
   "lobby.botDeckRandomSet": "Aleatorio de {set}",
   "lobby.enterQueue": "Entrar en la cola",

@@ -23,6 +23,13 @@ const interfaceMessages = {
   "game.input.reorder": "Enter/A: bewegen; Pfeile: sortieren; Enter/A: fertig; Esc/B: rückgängig",
 
   "bot.identity.label": "Bot",
+  "bot.line.greeting": "Auf in den Kampf! Zeigen Sie mir Ihr Bestes.",
+  "bot.line.bossGreeting": "Sie sind weit gekommen. Jetzt spüren Sie meine ganze Kraft!",
+  "bot.line.bigDigivolve": "Digitieren! Los, {card}!",
+  "bot.line.pressure": "Ihre Security ist weg. Noch ein Treffer!",
+  "bot.line.lastStand": "Keine Security mehr ... aber ich gebe nicht auf!",
+  "bot.line.victory": "Gutes Spiel! Trainieren Sie und versuchen Sie es erneut.",
+  "bot.line.defeat": "Diesmal waren Sie stärker. Gutes Spiel!",
   "home.strategyGuides": "Lerne mit unseren Strategie-Guides, wie du ein Deck spielst",
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Delete this Digimon",
@@ -52,6 +59,14 @@ const interfaceMessages = {
     "Offizielle Kapitel bleiben in ihrer Originalsprache. Adaptionen ergänzen Felder, Decks und fiktive Kartenänderungen anhand der gedruckten Regeln des Simulators.",
 
   "story.title": "Storymodus",
+  "story.optionalChallenge": "Optionale Herausforderung",
+  "story.difficulty.intro": "Einführung",
+  "story.difficulty.challenge": "Herausforderung",
+  "story.difficulty.elite": "Elite",
+  "story.difficulty.boss": "Boss",
+  "story.explanationTitle": "Was ist der Story-Modus?",
+  "story.explanationBody":
+    "Eine unterhaltsamere Art, gegen Bots zu spielen. Erlebe Kämpfe aus Digimon-Spielen, -Animes und -Mangas mit Decks, die die Charaktere und Begegnungen der jeweiligen Geschichte widerspiegeln.",
   "story.all": "Alle Charaktere",
   "story.character": "Charakter",
   "story.start": "Kampf starten",
@@ -63,8 +78,7 @@ const interfaceMessages = {
   "story.signin":
     "Du spielst als Gast. Der Fortschritt bleibt mit diesem Browser verknüpft; nach der Anmeldung gilt dein Kontofortschritt.",
   "story.progress": "{completed} / {total} Kämpfe abgeschlossen",
-  "story.error": "Dein Fortschritt konnte nicht geladen werden.",
-  "story.retry": "Erneut versuchen",
+  "story.backToCampaigns": "Zurück zu den Kampagnen",
   "story.source": "Offizieller Kampfbericht",
 
   "roadmap.hub.label": "Community-Bereiche",

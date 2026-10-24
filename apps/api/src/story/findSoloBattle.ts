@@ -22,6 +22,7 @@ function findStoryBattle(id: string): SoloBattle | undefined {
     deckName: battle.title,
     opponentName: battle.opponent,
     ...(battle.prerequisiteId ? { prerequisiteId: battle.prerequisiteId } : {}),
+    ...(battle.prerequisiteIds ? { prerequisiteIds: battle.prerequisiteIds } : {}),
     fixture,
     shuffleDecks: true,
   };

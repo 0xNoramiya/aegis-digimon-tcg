@@ -1,4 +1,5 @@
 import type { Seat } from "../schema/enums.js";
+import type { BotLine } from "../bot/BotLine.js";
 
 export const CHAT_CHANNEL = "chat" as const;
 
@@ -21,7 +22,10 @@ export const CHAT_TEXT_MAX_LENGTH = 120;
 /** Minimum gap between two messages from the same sender. The server drops anything sooner. */
 export const CHAT_COOLDOWN_MS = 1500;
 
-export type ChatMessage = { kind: "emote"; emote: MatchEmote } | { kind: "text"; text: string };
+export type ChatMessage =
+  | { kind: "emote"; emote: MatchEmote }
+  | { kind: "text"; text: string }
+  | { kind: "botLine"; line: BotLine; text: string; cardId?: string };
 
 /**
  * A spectator writes under the name it joined with, cleaned up by the server. A name that

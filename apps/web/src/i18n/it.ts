@@ -26,6 +26,13 @@ const interfaceMessages = {
   "game.input.reorder": "Invio/A: sposta; frecce: riordina; Invio/A: termina; Esc/B: annulla",
 
   "bot.identity.label": "Bot",
+  "bot.line.greeting": "Si combatte! Mostrami il tuo meglio.",
+  "bot.line.bossGreeting": "Sei arrivato lontano. Ora affronta tutta la mia forza!",
+  "bot.line.bigDigivolve": "Digievolvi! Vai, {card}!",
+  "bot.line.pressure": "La tua Security è finita. Ancora un colpo!",
+  "bot.line.lastStand": "Niente più Security... ma non ho ancora finito!",
+  "bot.line.victory": "Bella partita! Allenati e riprova.",
+  "bot.line.defeat": "Questa volta sei stato più forte. Bella partita!",
   "home.strategyGuides": "Impara a giocare un mazzo con le nostre guide strategiche",
   ...decisionChoicesEn,
   "overlay.deleteThisDigimon": "Delete this Digimon",
@@ -55,6 +62,14 @@ const interfaceMessages = {
     "I capitoli ufficiali restano nella lingua originale. Gli adattamenti ricostruiscono campi, mazzi e modifiche fittizie usando le regole stampate del simulatore.",
 
   "story.title": "Modalità storia",
+  "story.optionalChallenge": "Sfida facoltativa",
+  "story.difficulty.intro": "Introduzione",
+  "story.difficulty.challenge": "Sfida",
+  "story.difficulty.elite": "Élite",
+  "story.difficulty.boss": "Boss",
+  "story.explanationTitle": "Che cos’è la modalità storia?",
+  "story.explanationBody":
+    "Un modo più divertente di giocare contro i bot. Rivivi battaglie ispirate ai giochi, agli anime e ai manga di Digimon, con mazzi scelti per rappresentare i personaggi e gli scontri di ogni storia.",
   "story.all": "Tutti i personaggi",
   "story.character": "Personaggio",
   "story.start": "Inizia battaglia",
@@ -66,8 +81,7 @@ const interfaceMessages = {
   "story.signin":
     "Giochi come ospite. I progressi restano legati a questo browser; accedendo usi quelli del tuo account.",
   "story.progress": "{completed} / {total} battaglie completate",
-  "story.error": "Impossibile caricare i progressi.",
-  "story.retry": "Riprova",
+  "story.backToCampaigns": "Torna alle campagne",
   "story.source": "Resoconto ufficiale della battaglia",
 
   "settings.shareDeckAfterMatch": "Condividi il mio mazzo dopo la partita",

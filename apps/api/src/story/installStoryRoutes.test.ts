@@ -75,3 +75,51 @@ it("isolates anonymous browser progress and rejects malformed tokens", async () 
   const malformed = await fetch(`${base}/story/progress`, { headers: { Authorization: "StoryGuest made-up" } });
   expect(malformed.status).toBe(401);
 });
+
+it("derives chapter achievements from stored wins and isolates campaign progress by identity", async () => {
+  const store = new StoryProgressStore(accounts);
+  for (const battleId of ["dw1-001", "dw1-002", "dw1-003"]) {
+    await store.recordVictory({ accountId: aliceId, battleId, matchId: battleId });
+  }
+  const response = await fetch(`${base}/story/campaign-progress`, { headers: { authorization: "alice" } });
+  expect(response.headers.get("cache-control")).toBe("no-store");
+  expect(await response.json()).toMatchObject({
+    contentRevision: "story-catalog-v3",
+    milestones: expect.arrayContaining([
+      "battle:ice-knight",
+      "battle:dw1-001",
+      "battle:dw1-002",
+      "battle:dw1-003",
+      "chapter:dw1:native-forest",
+    ]),
+  });
+  const other = await fetch(`${base}/story/campaign-progress?accountId=${aliceId}`, {
+    headers: { authorization: "bob" },
+  });
+  expect(await other.json()).toMatchObject({ completed: [], milestones: [] });
+  expect((await fetch(`${base}/story/campaign-progress`)).status).toBe(401);
+});
+
+it.each(["/story/progress", "/story/campaign-progress"])(
+  "presents historical phase victories as one completed battle through %s",
+  async (path) => {
+    await accounts.pool.query(
+      "INSERT INTO story_battle_completions (account_id, battle_id, match_id, completed_at) VALUES ($1, $2, $3, $4) ON CONFLICT (account_id, battle_id) DO NOTHING",
+      [aliceId, "xw05", "historical-phase", Date.now()],
+    );
+    const token = randomUUID();
+    await accounts.pool.query(
+      "INSERT INTO story_guest_completions (guest_hash, battle_id, match_id, completed_at) VALUES ($1, $2, $3, $4) ON CONFLICT (guest_hash, battle_id) DO NOTHING",
+      [getStoryGuestHash(token)!, "xw05", "historical-guest-phase", Date.now()],
+    );
+    const account = await fetch(`${base}${path}`, { headers: { authorization: "alice" } });
+    expect(await account.json()).toMatchObject({ completed: ["ice-knight", "xw06"] });
+    const guest = await fetch(`${base}${path}`, { headers: { Authorization: `StoryGuest ${token}` } });
+    expect(await guest.json()).toMatchObject({ completed: ["xw06"] });
+    const historical = await accounts.pool.query<{ battle_id: string }>(
+      "SELECT battle_id FROM story_battle_completions WHERE account_id=$1 ORDER BY completed_at, battle_id",
+      [aliceId],
+    );
+    expect(historical.rows.map((row) => row.battle_id)).toContain("xw05");
+  },
+);

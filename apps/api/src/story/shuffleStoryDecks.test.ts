@@ -4,7 +4,7 @@ import { getStoryScenario } from "#api/story/getStoryScenario";
 import { shuffleStoryDecks } from "#api/story/shuffleStoryDecks";
 
 describe("story deck shuffling", () => {
-  it.each(storyBattles.filter((battle) => battle.playable).map((battle) => battle.id))(
+  it.each(storyBattles.filter((battle) => battle.playable && !battle.campaignId).map((battle) => battle.id))(
     "varies both draw piles while preserving the starting scene in %s",
     (battleId) => {
       const original = getStoryScenario(battleId)!;

@@ -6,6 +6,7 @@ export type SoloBattle = {
   deckName: string;
   opponentName: string;
   prerequisiteId?: string;
+  prerequisiteIds?: readonly string[];
   fixture: ScenarioFixture;
   shuffleDecks: boolean;
 };
