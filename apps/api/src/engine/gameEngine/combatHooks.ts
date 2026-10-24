@@ -28,7 +28,7 @@ import {
   takeLeaveReplacementPending,
 } from "#api/engine/gameEngine/windows";
 import { runPendingTimingWindow } from "#api/engine/gameEngine/timing/fire";
-import { collectPermanentInstances, listCandidateInstances } from "#api/engine/gameEngine/ruleProcess";
+import { collectPermanentInstances, listCandidateInstances, ruleProcess } from "#api/engine/gameEngine/ruleProcess";
 import { cardSourceOf, dropPermanentSubscriptions } from "./effectContext.js";
 import { beginBattleScope, endBattleScope, sweepBattleDurations, sweepCombatDurations } from "./turnFlow.js";
 import type { GameEngine } from "../GameEngine.js";
@@ -345,6 +345,16 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
       engine.continuous.addKeywordGrant(permanentId, "SecurityAttack", EffectDuration.UntilEndAttack, 1),
     trashTopSecurityForBarrier: (seat, isAttackBattle) => payBarrierSecurityCost(engine, seat, isAttackBattle),
     sweepEndOfAttack: () => sweepCombatDurations(engine),
+    afterAttackEnded: async () => {
+      if (
+        engine.activeWindowToken !== undefined ||
+        engine.effectResolutionDepth > 0 ||
+        engine.optionResolutionDepth > 0 ||
+        engine.optionMainDepth > 0
+      )
+        return;
+      await ruleProcess(engine);
+    },
     deferEndOfAttack: (trigger) => {
       if (engine.activeWindowToken === undefined) return undefined;
       const endOfAttackWindow = {
