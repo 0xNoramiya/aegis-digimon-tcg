@@ -1,5 +1,6 @@
 import type { AttackRedirection } from "@aegis/shared/schema/AttackRedirection";
 import { getNegamonPlayCandidates } from "#api/engine/gameEngine/getNegamonPlayCandidates";
+import { digivolveValidatorByState } from "#api/engine/gameEngine/digivolveValidatorByState";
 import {
   CardKind,
   dnaDigivolutionRequirementsFor,
@@ -59,6 +60,7 @@ import type { PendingBlitzAttack } from "./blitz.js";
  * factories rather than duplicated here.
  */
 export interface ProjectionDeps {
+  readonly omitHandAffordances?: boolean;
   readonly attackRedirectTargetIds: (attacker: Permanent, targetPermanentId?: string) => AttackRedirection;
   readonly state: GameState;
   readonly access: GameStateAccess;
@@ -72,6 +74,7 @@ export interface ProjectionDeps {
   readonly pendingBlitzAttack: () => PendingBlitzAttack | undefined;
   /** Whether this turn's Main phase has closed while end-of-turn timings still run in Phase.Main. */
   readonly hasMainPhaseEnded: () => boolean;
+  readonly deferHandAffordances: boolean;
   readonly effectEnvironment: (trigger: TriggerInfo) => EffectEnvironment;
   readonly buildEffectContext: (source: CardSource, trigger: TriggerInfo) => EffectContext;
   readonly isNewlyPlayedRushAttacker: (permanentId: string) => boolean;
@@ -102,13 +105,29 @@ function canDeclareAttacks(permanent: Permanent, continuous: ContinuousEffectLed
   return effectiveKinds(continuous, permanent.permanentId, printedKinds).includes(CardKind.Digimon);
 }
 
+function carriesHandAffordance(instance: CardInstance): boolean {
+  return (
+    instance.playableFromHand ||
+    instance.projectedPlayCost !== NO_PROJECTED_COST ||
+    instance.digivolveTargetPermanentIds.length > 0 ||
+    instance.appFusionRoutes.length > 0 ||
+    instance.digivolveRoutes.length > 0 ||
+    instance.dnaDigivolveRoutes.length > 0
+  );
+}
+
 export class BoardProjection {
   private projectedRouteInstances: Set<CardInstance> | undefined;
+  private handAffordancesStale = false;
   private projectedLinkInstances: Set<CardInstance> | undefined;
   private projectedActivatableInstances: Set<CardInstance> | undefined;
   private projectedActivatablePermanents: Set<Permanent> | undefined;
 
-  constructor(private readonly deps: ProjectionDeps) {}
+  constructor(private readonly deps: ProjectionDeps) {
+    digivolveValidatorByState.set(deps.state, (seat, intent) =>
+      validateDigivolve(deps.state, seat, intent, deps.digivolveDeps()),
+    );
+  }
 
   /**
    * A Digimon that just lost "isn't affected by effects" is affected again by an effect it was
@@ -650,9 +669,26 @@ export class BoardProjection {
    * cost reduction is applied from the declaration. Every other rejection still hides it.
    */
   syncHandAffordances(): void {
+    if (this.deps.omitHandAffordances === true) {
+      return;
+    }
+    if (this.deps.deferHandAffordances) {
+      this.handAffordancesStale = true;
+      return;
+    }
+    this.projectHandAffordances();
+  }
+
+  flushHandAffordances(): void {
+    if (!this.handAffordancesStale) return;
+    this.handAffordancesStale = false;
+    this.projectHandAffordances();
+  }
+
+  private projectHandAffordances(): void {
     const seat = this.deps.state.turnSeat;
     const turnPlayer =
-      this.deps.state.phase === Phase.Main && !this.deps.hasMainPhaseEnded()
+      this.deps.state.phase === Phase.Main && !this.deps.state.gameOver && !this.deps.hasMainPhaseEnded()
         ? this.deps.state.players[seat]
         : undefined;
     const active =
@@ -673,14 +709,11 @@ export class BoardProjection {
     // cards whose routes this projection published, even if they moved out of hand.
     const activeHand = active === undefined ? undefined : new Set<CardInstance>(active.player.hand);
     const clearOutsideActiveHand = (instance: CardInstance): void => {
-      if (
-        instance.appFusionRoutes.length === 0 &&
-        instance.digivolveRoutes.length === 0 &&
-        instance.dnaDigivolveRoutes.length === 0
-      ) {
-        return;
-      }
+      if (!carriesHandAffordance(instance)) return;
       if (activeHand?.has(instance)) return;
+      instance.playableFromHand = false;
+      instance.projectedPlayCost = NO_PROJECTED_COST;
+      replaceIfChanged(instance.digivolveTargetPermanentIds, NO_DIGIVOLVE_TARGETS);
       replaceAppFusionRoutesIfChanged(instance.appFusionRoutes, []);
       replaceDigivolveRoutesIfChanged(instance.digivolveRoutes, []);
       replaceDnaDigivolveRoutesIfChanged(instance.dnaDigivolveRoutes, []);
@@ -710,6 +743,7 @@ export class BoardProjection {
     projectedRouteInstances.clear();
     for (const player of this.deps.state.players) {
       for (const instance of player.hand) {
+        projectedRouteInstances.add(instance);
         instance.playCostReductionBlocked = this.deps.continuous.blocksCostReduction(player.seat, "play");
         const definition =
           active !== undefined && player === active.player ? lookupDefinition(instance.cardId) : undefined;
@@ -839,13 +873,6 @@ export class BoardProjection {
         replaceDigivolveRoutesIfChanged(instance.digivolveRoutes, digivolveRoutes);
         replaceDnaDigivolveRoutesIfChanged(instance.dnaDigivolveRoutes, dnaDigivolveRoutes);
         replaceAppFusionRoutesIfChanged(instance.appFusionRoutes, appFusionRoutes);
-        if (
-          instance.appFusionRoutes.length > 0 ||
-          instance.digivolveRoutes.length > 0 ||
-          instance.dnaDigivolveRoutes.length > 0
-        ) {
-          projectedRouteInstances.add(instance);
-        }
       }
     }
     this.projectedRouteInstances = projectedRouteInstances;

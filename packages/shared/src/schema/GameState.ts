@@ -57,7 +57,7 @@ export function combatWindowKey(window: { kind: string; attackerPermanentId: str
   return `${window.kind}:${window.attackerPermanentId || window.permanentId}`;
 }
 
-export type SeriesPhase = "playing" | "choosing" | "starting" | "over";
+export type SeriesPhase = "playing" | "deckSelection" | "choosing" | "starting" | "over";
 export type SeriesEndReason = "" | "won" | "forfeit" | "draw" | "aborted";
 
 /**
@@ -88,6 +88,10 @@ export class SeriesState extends Schema {
   @type("string") rematchStatus: RematchStatus = RematchStatus.NONE.value;
   @type("int8") rematchOfferSeat = -1;
   @type("string") rematchMode: RematchMode | "" = "";
+  @type("boolean") deckReady0 = false;
+  @type("boolean") deckReady1 = false;
+  @type("boolean") deckChanged0 = false;
+  @type("boolean") deckChanged1 = false;
 }
 
 /**
@@ -95,7 +99,7 @@ export class SeriesState extends Schema {
  * cursor, both players, and the current pending decision (if any). Mirrors
  * documented behavior.
  */
-class ManualTable extends Schema {
+export class ManualTable extends Schema {
   @type("uint32") revision = 0;
   @type(["string"]) history = new ArraySchema<string>();
   @type("int8") undoRequester = -1;

@@ -1,5 +1,194 @@
 [
   {
+    "version": "1.39.0-beta",
+    "releasedAt": "2026-10-24",
+    "summaryKey": "releases.1.39.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.39.0-beta.feature.bots"
+      },
+      {
+        "textKey": "releases.1.39.0-beta.feature.story"
+      },
+      {
+        "textKey": "releases.1.39.0-beta.feature.chronicle"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.39.0-beta.fix.evolution"
+      },
+      {
+        "textKey": "releases.1.39.0-beta.fix.nestedOptions"
+      },
+      {
+        "textKey": "releases.1.39.0-beta.fix.cardTriggers"
+      },
+      {
+        "textKey": "releases.1.39.0-beta.fix.presentation"
+      },
+      {
+        "textKey": "releases.1.39.0-beta.fix.prompts"
+      }
+    ]
+  },
+  {
+    "version": "1.38.1-beta",
+    "releasedAt": "2026-10-22",
+    "summaryKey": "releases.1.38.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.38.1-beta.fix.biomon",
+        "issue": 5995
+      },
+      {
+        "textKey": "releases.1.38.1-beta.fix.opponentSleeves"
+      },
+      {
+        "textKey": "releases.1.38.1-beta.fix.engineLookups"
+      }
+    ]
+  },
+  {
+    "version": "1.38.0-beta",
+    "releasedAt": "2026-10-22",
+    "summaryKey": "releases.1.38.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.38.0-beta.feature.artiomon"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.38.0-beta.fix.serverStability"
+      },
+      {
+        "textKey": "releases.1.38.0-beta.fix.zanmetsumon"
+      },
+      {
+        "textKey": "releases.1.38.0-beta.fix.selections"
+      },
+      {
+        "textKey": "releases.1.38.0-beta.fix.timing"
+      },
+      {
+        "textKey": "releases.1.38.0-beta.fix.prompts"
+      },
+      {
+        "textKey": "releases.1.38.0-beta.fix.presentation"
+      },
+      {
+        "textKey": "releases.1.38.0-beta.fix.chinese"
+      }
+    ]
+  },
+  {
+    "version": "1.37.1-beta",
+    "releasedAt": "2026-10-21",
+    "summaryKey": "releases.1.37.1-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.37.1-beta.feature.boardCards"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.37.1-beta.fix.dynasmon",
+        "issue": 5930
+      },
+      {
+        "textKey": "releases.1.37.1-beta.fix.costReactions",
+        "issue": 5933
+      },
+      {
+        "textKey": "releases.1.37.1-beta.fix.faceDown"
+      },
+      {
+        "textKey": "releases.1.37.1-beta.fix.nestedAttack"
+      },
+      {
+        "textKey": "releases.1.37.1-beta.fix.surtr",
+        "issue": 5931
+      },
+      {
+        "textKey": "releases.1.37.1-beta.fix.scans"
+      }
+    ]
+  },
+  {
+    "version": "1.37.0-beta",
+    "releasedAt": "2026-10-21",
+    "summaryKey": "releases.1.37.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.37.0-beta.feature.learn"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.feature.newSeriesDecks"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.feature.cardConfirmations"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.feature.deckReview"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.feature.bt27"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.37.0-beta.fix.ariemon",
+        "issue": 5919
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.recomon",
+        "issue": 5898
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.cardRules"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.lateMainPhaseAttack"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.securityChecks",
+        "issue": 5912
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.galacticmonStory",
+        "issue": 5913
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.blockerConfirm",
+        "issue": 5909
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.targetPrompts",
+        "issue": 5902
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.handEffectDrop"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.optionalLabels"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.cardZoom"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.cardLanguage"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.browserTranslation"
+      },
+      {
+        "textKey": "releases.1.37.0-beta.fix.sleeveNames"
+      }
+    ]
+  },
+  {
     "version": "1.36.0-beta",
     "releasedAt": "2026-10-20",
     "summaryKey": "releases.1.36.0-beta.summary",

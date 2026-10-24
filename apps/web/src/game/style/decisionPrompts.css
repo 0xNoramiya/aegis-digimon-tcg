@@ -200,6 +200,24 @@ body:has(.decision-overlay--selection) .narration-slot {
   font-weight: 800;
   box-shadow: var(--ds-shadow-raise);
 }
+.decision-overlay__pick-mark {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--ds-on-ink);
+  border: 2px solid var(--ds-text-3);
+  border-radius: 999px;
+  background: var(--ds-sheet);
+  box-shadow: var(--ds-shadow-raise);
+}
+.decision-overlay__pick-mark[data-picked="true"] {
+  border-color: var(--ds-sheet);
+  background: var(--battle-amber);
+}
 .decision-overlay__order-row {
   outline: 2px solid var(--battle-amber);
   outline-offset: -2px;

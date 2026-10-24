@@ -19,6 +19,7 @@ import { resolutionDeps } from "./actionDeps.js";
 import { armedSubTriggers, nestedTriggerSourceStillResident, pendingWindowCollected } from "./subTriggers.js";
 import {
   beginResolvingWindow,
+  collectDeferredTimingPending,
   endResolvingWindow,
   flushDeferredSecurityRemovalTriggers,
   flushDeferredTimingWindows,
@@ -76,6 +77,7 @@ export async function engineRunSecurityCheck(
       }),
     prepareCheckTriggers: (info) => {
       const payload: TriggerInfo = {
+        securityRemovalEventId: ++engine.securityRemovalEventSeq,
         attackerPermanentId: info.attackerPermanentId,
         securityInstanceId: info.securityInstanceId,
         removedFromSecuritySeat: info.defenderSeat,
@@ -105,7 +107,7 @@ export async function engineRunSecurityCheck(
           await withTriggeredMutations(engine, async () => {
             // This checkpoint snapshots its printed triggers below. Keep newly derived
             // rule/deletion reactions visible even when those collectors replace env.collect.
-            const reactionPending: CollectedEffect[] = [];
+            const reactionPending: CollectedEffect[] = collectDeferredTimingPending(engine);
             const env = buildResolutionEnv(
               framework,
               resolutionDeps(engine, () => [], { outermost, reactionPending }),

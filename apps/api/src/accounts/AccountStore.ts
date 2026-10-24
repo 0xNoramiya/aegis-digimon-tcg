@@ -18,6 +18,7 @@ import type {
 } from "@aegis/shared";
 import { INITIALS_AVATAR, isDigimonWorldAvatarId, MATCH_HISTORY_LIMIT, resolveCardArt } from "@aegis/shared";
 import { Pool, type PoolClient, type PoolConfig } from "pg";
+import type { BotExperimentRecord } from "#api/bot/experiment/BotExperimentRecord";
 import { migrations } from "../db/migrations/index.js";
 import { type Queryable, runMigrations } from "../db/migrator.js";
 
@@ -94,6 +95,7 @@ export type DeckStat = DeckSnapshot & {
 // that column alone reports the loss as a draw. This says it outright.
 export type MatchOutcomeSeat = "player0" | "player1" | "draw";
 export type MatchRecord = MatchHistoryRecord;
+export type StoredMatchRecord = MatchRecord & Partial<BotExperimentRecord>;
 export type Tournament = {
   format: DeckFormat;
   passwordProtected: boolean;
@@ -861,7 +863,7 @@ export class AccountStore {
    * The room's view of a finished game. It names the replay recording, so it replaces the entry
    * `recordMatch` may have written for the same room first; a second report from the room changes nothing.
    */
-  async recordRecentMatch(accountId: string, roomId: string, record: MatchRecord): Promise<void> {
+  async recordRecentMatch(accountId: string, roomId: string, record: StoredMatchRecord): Promise<void> {
     await this.transaction(async (client) => {
       const owner = await client.query("SELECT id FROM accounts WHERE id=$1 FOR UPDATE", [accountId]);
       if (!owner.rowCount) return;
@@ -910,11 +912,15 @@ export class AccountStore {
     if (filter.result) conditions.push(`record->>'result'=$${params.push(filter.result)}`);
     const where = `FROM account_recent_matches WHERE ${conditions.join(" AND ")}`;
     const total = await this.pool.query<{ total: number }>(`SELECT count(*)::int total ${where}`, params);
-    const rows = await this.pool.query<{ record: MatchRecord }>(
+    const rows = await this.pool.query<{ record: StoredMatchRecord }>(
       `SELECT record ${where} ORDER BY finished_at DESC, room_id DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
       [...params, limit, (page - 1) * limit],
     );
-    return { matches: rows.rows.map((row) => row.record), total: Number(total.rows[0]?.total ?? 0), winRate };
+    return {
+      matches: rows.rows.map((row) => removeBotExperiment(row.record)),
+      total: Number(total.rows[0]?.total ?? 0),
+      winRate,
+    };
   }
 
   async matchSummary(accountId: string): Promise<MatchHistorySummary> {
@@ -1353,13 +1359,26 @@ function resultFor(
   const seat = row.player0_account_id === accountId ? "player0" : "player1";
   return row.outcome === seat ? "win" : "loss";
 }
+function removeBotExperiment({
+  botExperiment: _botExperiment,
+  botArm: _botArm,
+  botArmFallback: _botArmFallback,
+  ...record
+}: StoredMatchRecord): MatchRecord {
+  return record;
+}
 function isUniqueViolation(error: unknown): boolean {
   return (
     typeof error === "object" && error !== null && "code" in error && (error as { code?: unknown }).code === "23505"
   );
 }
 /** Adds a match unless the room already has one, then keeps the newest `MATCH_HISTORY_LIMIT` and every saved replay. */
-async function addToHistory(client: PoolClient, accountId: string, roomId: string, record: MatchRecord): Promise<void> {
+async function addToHistory(
+  client: PoolClient,
+  accountId: string,
+  roomId: string,
+  record: StoredMatchRecord,
+): Promise<void> {
   await client.query(
     "INSERT INTO account_recent_matches (account_id,room_id,match_id,finished_at,record) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (account_id,room_id) DO NOTHING",
     [accountId, roomId, record.id, record.finishedAt, JSON.stringify(record)],

@@ -1,5 +1,6 @@
 import { RankedScreen } from "@/ranked/RankedScreen";
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
+import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getStoryGuestToken } from "@/story/getStoryGuestToken";
 import { LocalScenarioHelp } from "./dev/LocalScenarioHelp";
@@ -34,6 +35,7 @@ import { applyTextScale } from "./design/textScale";
 import { I18nProvider, useTranslation } from "./i18n";
 import { accountApi, type RemoteAccount } from "./account/client";
 import { communityApi } from "./community/client";
+import { SeriesDeckDialog } from "@/game/overlay/match/SeriesDeckDialog";
 import { communityDeckListing } from "./community/communityDeckListing";
 import { usePreferencesSync } from "./account/usePreferencesSync";
 import { setDeckFavorite } from "@/screens/favoriteDecks/setDeckFavorite";
@@ -488,6 +490,7 @@ function LoadedAegisClient({
   const [roomCode, setRoomCode] = useState<string>();
   const [privateRoom, setPrivateRoom] = useState<PrivateRoom>();
   const [botDeckId, setBotDeckId] = useState<string>();
+  const [botSettings, setBotSettings] = useState<BotSettings>();
   const [unlimited, setUnlimited] = useState(false);
   const [deckFormat, setDeckFormat] = useState<import("@aegis/shared").DeckFormat>("standard");
   const [betaBattleMode, setBetaBattleMode] = useState(false);
@@ -578,6 +581,7 @@ function LoadedAegisClient({
     requestedDeckId?: string | DeckListing,
     requestedUnlimited?: boolean,
     requestedFormat?: import("@aegis/shared").DeckFormat,
+    requestedBotSettings?: BotSettings,
     requestedGameMode?: GameMode,
   ) => {
     // A lobby start explicitly requests a new match, even if a page
@@ -593,6 +597,7 @@ function LoadedAegisClient({
     }
     setRoomCode(code);
     setBotDeckId(requestedBotDeckId);
+    setBotSettings(requestedBotSettings);
     setBetaBattleMode(requestedBetaBattleMode === true);
     setUnlimited(requestedUnlimited === true);
     setDeckFormat(requestedFormat ?? (mode === "unlimited" || requestedUnlimited ? "unlimited" : "standard"));
@@ -773,6 +778,7 @@ function LoadedAegisClient({
             {screen === "story" && (
               <StoryScreen
                 key={account?.id ?? "guest"}
+                initialBattleId={storyBattleId}
                 signedIn={!!account}
                 onSignIn={() => navigateScreen("login")}
                 onStart={(battleId) => {
@@ -972,6 +978,22 @@ function LoadedAegisClient({
             {screen === "game" && (
               <GameScreen
                 onCopyUsedDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
+                renderSeriesDeckPicker={(params) => (
+                  <SeriesDeckDialog
+                    {...params}
+                    decks={decks}
+                    activeDeckId={matchDeck?.id ?? ""}
+                    accountId={account?.id}
+                    onCopyDeck={(deck) => saveDeck(copyDeckPreset(deck, decks), false)}
+                    onChoose={(deck) => {
+                      params.onChoose(deck);
+                      if (!availableDecks.some((entry) => entry.id === deck.id)) {
+                        setBorrowedDeck(structuredClone(deck));
+                      }
+                      setMatchDeckId(deck.id);
+                    }}
+                  />
+                )}
                 autoHatchReady={preferencesReady}
                 key={matchNumber}
                 joinOptions={joinOptions}
@@ -982,6 +1004,7 @@ function LoadedAegisClient({
                 roomCode={roomCode}
                 waitForHost={startMode === "private_guest" && privateRoom?.code === roomCode}
                 botDeckId={botDeckId}
+                botSettings={botSettings}
                 betaBattleMode={betaBattleMode}
                 unlimited={unlimited}
                 seriesGame={seriesGame}

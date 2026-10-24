@@ -3,6 +3,7 @@ import { DataType, newDb } from "pg-mem";
 import { afterEach, expect, it, vi } from "vitest";
 import { AccountStore } from "#api/accounts/AccountStore";
 import { deckProviders } from "#api/db/migrations/037-deck-providers";
+import { runMigrations } from "#api/db/migrator";
 import { runProviderSync } from "#api/deckProviders/runProviderSync";
 import { getWeeklySyncPeriod } from "#api/deckProviders/getWeeklySyncPeriod";
 import { digilabProvider } from "#api/deckProviders/providers/digilab";
@@ -23,7 +24,7 @@ async function prepare() {
   }
   const store = new AccountStore(new (db.adapters.createPg().Pool)() as Pool);
   stores.push(store);
-  await deckProviders.up(store.pool);
+  await runMigrations(store.pool, [deckProviders], async () => async () => undefined);
   vi.spyOn(store, "ensureReady").mockResolvedValue(undefined);
   return store;
 }

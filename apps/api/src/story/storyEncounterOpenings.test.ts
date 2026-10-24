@@ -8,7 +8,7 @@ import { setupScenario } from "#api/engine/testkit/scenario";
 import { settle } from "#api/engine/testkit/harness";
 import { advance } from "#api/engine/testkit/advance";
 
-it.each(["BT21-007", "BT21-008"])("lets Owen digivolve %s onto his starting egg", async (rookie) => {
+it.each(["BT21-008", "BT24-008", "EX11-008"])("lets Owen digivolve %s onto his starting egg", async (rookie) => {
   const fixture = getStoryScenario("guardians-deep-owen")!;
   const player = fixture.board[0]!;
   const deck = getStorySeatDeck({ fixture, seat: 0 });
@@ -35,8 +35,8 @@ it.each(["BT21-007", "BT21-008"])("lets Owen digivolve %s onto his starting egg"
 });
 
 it.each([
-  ["BT21-007", "BT14-012", "BT14-014", "BT21-026"],
-  ["BT21-008", "BT21-017", "BT21-025", "BT21-029"],
+  ["BT21-008", "BT21-017", "BT24-016", "BT24-017"],
+  ["BT24-008", "BT24-012", "BT24-016", "EX11-012"],
 ])("gives Owen a playable evolution line beginning with %s", async (...line) => {
   const fixture = getStoryScenario("guardians-deep-owen")!;
   const deck = getStorySeatDeck({ fixture, seat: 0 });

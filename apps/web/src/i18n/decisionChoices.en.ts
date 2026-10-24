@@ -80,6 +80,8 @@ export const decisionChoicesEn = {
   "decision.choice.playDawn": "Play a Glowing Dawn card",
   "decision.choice.playSquad": "Play a DATA SQUAD card",
   "decision.choice.useSquad": "Use a DATA SQUAD Option",
+  "decision.choice.playChronicleTamer": "Play a [Chronicle] Tamer",
+  "decision.choice.useChronicleOption": "Use a [Chronicle] Option",
   "decision.choice.returnDeckTop": "Return to the top of the deck",
   "decision.choice.returnDeckBottom": "Return to the bottom of the deck",
   "decision.choice.declareDigimon": "Declare category: Digimon",

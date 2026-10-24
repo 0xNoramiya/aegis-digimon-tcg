@@ -15,6 +15,7 @@ import {
   PRIVATE_VIEW_TAG,
 } from "@aegis/shared";
 import { setBreeding } from "../state/access.js";
+import { setResolvingOption } from "#api/engine/state/access";
 import { MemoryGauge } from "../MemoryGauge.js";
 import { ModifierLedger } from "./modifiers.js";
 import { SubTriggerRegistry } from "./subtriggers.js";
@@ -76,6 +77,7 @@ function harness(opts?: {
   combat?: CombatPort;
   rngForSeat?: PrimitivesEngine["rngForSeat"];
   onConsultLeave?: () => void;
+  onFireSubTrigger?: PrimitivesEngine["fireSubTrigger"];
 }): Harness {
   const s = setupEngine(opts?.board);
   const state = s.state;
@@ -122,6 +124,7 @@ function harness(opts?: {
     },
     fireSubTrigger: async (event, payload) => {
       subTriggerFires.push({ event, payload });
+      await opts?.onFireSubTrigger?.(event, payload);
     },
     consultLeavePrevention: async (permanentIds, cause, _resolvingSeat, callOpts) => {
       leavePreventionCalls.push({ permanentIds, cause, opts: callOpts });
@@ -3646,6 +3649,7 @@ describe("Primitives completeness guard (no declared-but-unassigned methods)", (
     modifyPlayerDP: true,
     modifySecurityDp: true,
     movePermanentZone: true,
+    orderDnaMaterials: true,
     payActivationCost: true,
     placeAsTopFromEggDeck: true,
     placeOptionAsPermanent: true,
@@ -3688,6 +3692,7 @@ describe("Primitives completeness guard (no declared-but-unassigned methods)", (
     revealCard: true,
     revokeKeyword: true,
     searchDeck: true,
+    seatStackTrashLock: true,
     securityAttackInvert: true,
     securityToHand: true,
     setBaseDP: true,
@@ -3885,6 +3890,103 @@ describe("primitives: resolveCardEffect / useOptionFromHand (BT26 gap fix)", () 
     } finally {
       unregisterCard(FAKE_CARD_ID);
     }
+  });
+
+  it.each(["self-placement", "throwing effect"] as const)(
+    "restores the parent Option after a nested Option with %s and before use notifications",
+    async (outcome) => {
+      const parent = makeInstance(OPTION, 0, true);
+      const notificationParents: string[] = [];
+      const resolvingChildren: string[] = [];
+      const h: Harness = harness({
+        onFireSubTrigger: async (event) => {
+          if (event === "whenOptionUsed") {
+            notificationParents.push(h.state.players[0]!.resolvingOption?.instanceId ?? "");
+          }
+        },
+      });
+      const used = makeInstance(OPTION, 0, true);
+      h.state.players[0]!.hand.push(used);
+      setResolvingOption(h.state.players[0]!, parent);
+      const module: EffectModule = {
+        cardId: OPTION,
+        effectsForTiming: (timing) =>
+          timing === EffectTiming.OnUseOption
+            ? [
+                {
+                  effectKey: `${OPTION}/nested-lifecycle`,
+                  description: "Resolve a nested Option.",
+                  optional: false,
+                  isInherited: false,
+                  isSecurity: false,
+                  isLinked: false,
+                  maxPerTurn: -1,
+                  canTrigger: () => true,
+                  canActivate: () => true,
+                  resolve: async (subCtx) => {
+                    resolvingChildren.push(h.state.players[0]!.resolvingOption?.instanceId ?? "");
+                    if (outcome === "throwing effect") {
+                      throw new Error("nested-option-resolution-failure");
+                    }
+                    await subCtx.fx.placeOptionAsPermanent?.(used.instanceId);
+                  },
+                },
+              ]
+            : [],
+      };
+      const previousModule = unregisterCard(OPTION);
+      registerCard(module);
+      try {
+        const ctx = {
+          source: { ownerSeat: 0, instanceId: parent.instanceId, cardId: OPTION },
+          fx: h.fx,
+        } as unknown as EffectContext;
+        const resolution = await h.fx.useOptionFromHand(ctx, used.instanceId, 8).then(
+          (moved) => ({ moved, error: undefined }),
+          (error: unknown) => ({ moved: undefined, error: error instanceof Error ? error.message : String(error) }),
+        );
+        const player = h.state.players[0]!;
+        expect(resolution.error).toBe(outcome === "throwing effect" ? "nested-option-resolution-failure" : undefined);
+        expect(resolution.moved ?? []).toEqual([]);
+        expect(resolvingChildren).toEqual([used.instanceId]);
+        expect(notificationParents).toEqual([parent.instanceId]);
+        expect(player.resolvingOption?.instanceId).toBe(parent.instanceId);
+        expect(player.hand).toHaveLength(0);
+        expect(player.trash.filter((card) => card.instanceId === used.instanceId)).toHaveLength(
+          outcome === "throwing effect" ? 1 : 0,
+        );
+        expect(player.battleArea.filter((permanent) => permanent.topCard.instanceId === used.instanceId)).toHaveLength(
+          outcome === "self-placement" ? 1 : 0,
+        );
+        expect(
+          [
+            ...player.hand,
+            ...player.trash,
+            ...player.security,
+            ...Array.from(player.battleArea).flatMap((permanent) => [permanent.topCard, ...permanent.stack]),
+          ].filter((card) => card.instanceId === parent.instanceId),
+        ).toHaveLength(0);
+      } finally {
+        unregisterCard(OPTION);
+        if (previousModule !== undefined) {
+          registerCard(previousModule);
+        }
+      }
+    },
+  );
+
+  it("refuses to use the already-resolving physical Option again", async () => {
+    const h = harness();
+    const parent = makeInstance(OPTION, 0, true);
+    setResolvingOption(h.state.players[0]!, parent);
+    const ctx = {
+      source: { ownerSeat: 0, instanceId: parent.instanceId, cardId: OPTION },
+      fx: h.fx,
+    } as unknown as EffectContext;
+    expect(await h.fx.useOptionFromHand(ctx, parent.instanceId, 8)).toEqual([]);
+    expect(h.state.players[0]!.resolvingOption?.instanceId).toBe(parent.instanceId);
+    expect(h.state.players[0]!.trash).toHaveLength(0);
+    expect(h.subTriggerFires).toHaveLength(0);
   });
 });
 

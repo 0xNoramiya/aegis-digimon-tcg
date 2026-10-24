@@ -9,6 +9,7 @@ import { ArenaPermanentInspector } from "@/game/ArenaPermanentInspector";
 import { buildPrintedCardDetail } from "@/game/permanentDetail";
 import { INSPECTOR_SIDE_SOURCES_QUERY } from "@/game/inspectorSourcesLayoutQuery";
 import { Side } from "@/game/side";
+import { setCardSleeveId } from "@/design/sleeve";
 import type { StackCard } from "@/game/overlay/types";
 
 afterEach(() => {
@@ -110,6 +111,13 @@ it.each([true, false])("keeps hidden sources unreadable and unzoomable at wide=%
   expect(document.querySelector(".arena-permanent-inspector__effect--source button")).toBeNull();
   expect(document.querySelector(".arena-permanent-inspector__strip-detail button")).toBeNull();
   expect(onZoom).not.toHaveBeenCalled();
+});
+
+it.each([true, false])("draws hidden sources without the local sleeve at wide=%s", (wide) => {
+  setCardSleeveId("omnimon");
+  renderInspector({ wide, cards: [{ cardId: "", role: "stack", faceDown: true }] });
+  expect(document.querySelector('img[src="/sleeves/omnimon.webp"]')).toBeNull();
+  expect(document.querySelector('img[src="/sleeves/digimon-standard.webp"]')).toBeTruthy();
 });
 
 it.each([true, false])("keeps cards without sources in the existing layout at wide=%s", (wide) => {

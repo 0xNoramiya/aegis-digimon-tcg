@@ -3,6 +3,8 @@ import { Icons } from "@/design/icons";
 import { useTranslation } from "@/i18n/useTranslation";
 import type { RematchView } from "@/game/getRematchView";
 import { SeriesNextGame } from "@/game/overlay/match/SeriesStatus";
+import { SeriesDeckSelection } from "@/game/overlay/match/SeriesDeckSelection";
+import { useId, type ReactNode } from "react";
 import { RematchMode } from "@aegis/shared/protocol/RematchMode";
 import "@/game/overlay/match/seriesStatus.css";
 
@@ -12,28 +14,69 @@ export interface RematchProps {
   onOffer: (mode: RematchMode) => void;
   onAnswer: (accept: boolean) => void;
   onChooseTurnOrder: (goFirst: boolean) => void;
+  onKeepDeck: () => void;
+  deckPicker?: (onClose: () => void) => ReactNode;
 }
 
-export function RematchPanel({ view, opponentName, onOffer, onAnswer, onChooseTurnOrder }: RematchProps) {
+type RematchPanelProps = Omit<RematchProps, "deckPicker"> & {
+  onChangeDeck?: () => void;
+};
+
+export function RematchPanel({
+  view,
+  opponentName,
+  onOffer,
+  onAnswer,
+  onChooseTurnOrder,
+  onKeepDeck,
+  onChangeDeck,
+}: RematchPanelProps) {
   const { t } = useTranslation();
+  const hintId = useId();
+  if (view.stage === "accepted" && view.series?.stage === "deckSelection") {
+    return (
+      <SeriesDeckSelection
+        series={view.series}
+        opponentName={opponentName}
+        onKeepDeck={onKeepDeck}
+        onChangeDeck={onChangeDeck}
+      />
+    );
+  }
   if (view.stage === "accepted" && view.series) {
-    return <SeriesNextGame series={view.series} opponentName={opponentName} onChooseTurnOrder={onChooseTurnOrder} />;
+    return (
+      <>
+        <SeriesNextGame series={view.series} opponentName={opponentName} onChooseTurnOrder={onChooseTurnOrder} />
+        {view.series.stage === "starting" && view.series.opponentDeckChanged ? (
+          <p className="series-next__detail">{t("overlay.rematch.opponentChanged", { name: opponentName })}</p>
+        ) : null}
+      </>
+    );
   }
   if (view.stage === "open") {
     return (
       <div className="series-next">
         <p className="series-next__title">{t("overlay.rematch.title", { name: opponentName })}</p>
-        <div className="series-next__options">
-          {MODE_OPTIONS.map((option) => (
-            <div key={option.mode} className="series-next__option">
-              <Button full variant="secondary" icon={option.icon} onClick={() => onOffer(option.mode)}>
+        <div className="rematch-options">
+          {MODE_OPTIONS.filter((option) => view.modes.includes(option.mode)).map((option) => (
+            <button
+              type="button"
+              key={option.mode}
+              className="rematch-option"
+              aria-labelledby={`${hintId}-${option.mode}-label`}
+              aria-describedby={`${hintId}-${option.mode}`}
+              onClick={() => onOffer(option.mode)}
+            >
+              <span className="rematch-option__label" id={`${hintId}-${option.mode}-label`}>
+                <option.icon size={16} />
                 {t(option.labelKey)}
-              </Button>
-              <p className="series-next__detail">{t(option.hintKey)}</p>
-            </div>
+              </span>
+              <span className="rematch-option__hint" id={`${hintId}-${option.mode}`}>
+                {t(option.hintKey)}
+              </span>
+            </button>
           ))}
         </div>
-        <p className="series-next__detail">{t("overlay.rematch.hint")}</p>
       </div>
     );
   }
@@ -42,9 +85,7 @@ export function RematchPanel({ view, opponentName, onOffer, onAnswer, onChooseTu
     return (
       <div className="series-next" role="status">
         <p className="series-next__title">{t(option.incomingKey, { name: opponentName })}</p>
-        <p className="series-next__detail">
-          {t(option.hintKey)} {t("overlay.rematch.hint")}
-        </p>
+        <p className="series-next__detail">{t(option.hintKey)}</p>
         <div className="game-actions-row">
           <Button full icon={Icons.Check} onClick={() => onAnswer(true)}>
             {t("overlay.rematch.accept")}

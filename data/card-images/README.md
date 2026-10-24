@@ -67,3 +67,16 @@ returned all 7,628 records and no BT27 or EX14 printings on this date. The
 [official Korean card list](https://digimoncard.co.kr/index.php?mid=cardlist)
 did not list either set; its latest listed booster and extra booster were
 BTK-22 and EXK-09. No Chinese or Korean entries were added.
+
+## BT27 Chronicle Ryudamon line, 2026-10-23
+
+These scans are cropped to the card edge (868 x 1213 px, without the white
+image margin) and encoded as WebP with quality 90. They retain the source
+SAMPLE watermark.
+
+| Files                              | Source                                                                             |
+| ---------------------------------- | ---------------------------------------------------------------------------------- |
+| BT27-008, BT27-009, BT27-013       | [Official English reveal](https://x.com/digimon_tcg_EN/status/2113510737171587393) |
+| BT27-015                           | [Official English reveal](https://x.com/digimon_tcg_EN/status/2113608882606223567) |
+| BT27-008-J, BT27-009-J, BT27-013-J | [Official Japanese reveal](https://x.com/digimon_tcg/status/2113510813256593622)   |
+| BT27-015-J                         | [Official Japanese reveal](https://x.com/digimon_tcg/status/2113608952378446317)   |

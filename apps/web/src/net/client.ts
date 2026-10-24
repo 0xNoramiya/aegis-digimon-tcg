@@ -1,4 +1,5 @@
 import { connectRankedMatch } from "@/ranked/connectRankedMatch";
+import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { ROOM_TYPE_MANUAL, ROOM_TYPE_MANUAL_PRIVATE, ROOM_TYPE_TOURNAMENT } from "@aegis/shared/protocol/messages";
 import { Client, type Room } from "@colyseus/sdk";
@@ -244,7 +245,7 @@ export class AegisConnectionRouter {
     return this.remember(reconnected, slot);
   }
 
-  async joinWithBot(roomId: string, botDeckId?: string): Promise<void> {
+  async joinWithBot(roomId: string, botDeckId?: string, botSettings?: BotSettings): Promise<void> {
     const room = this.roomsById.get(roomId)?.deref();
     if (!room) throw new Error("Bot join requires a connected room");
     const knownSlot = this.slotByRoomId.get(roomId);
@@ -254,7 +255,7 @@ export class AegisConnectionRouter {
     const response = await this.fetch(`${http}/bot/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ roomId, botDeckId, reconnectionToken: room.reconnectionToken }),
+      body: JSON.stringify({ roomId, botDeckId, ...botSettings, reconnectionToken: room.reconnectionToken }),
     });
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
@@ -428,14 +429,14 @@ export async function resumeReconnectSession(session: ReconnectSession): Promise
 }
 
 /** Ask the owning server to seat a bot as the second player. */
-export async function joinWithBot(roomId: string, botDeckId?: string): Promise<void> {
-  if (useProductionRouter()) return getProductionRouter().joinWithBot(roomId, botDeckId);
+export async function joinWithBot(roomId: string, botDeckId?: string, botSettings?: BotSettings): Promise<void> {
+  if (useProductionRouter()) return getProductionRouter().joinWithBot(roomId, botDeckId, botSettings);
   const room = legacyRoomsById.get(roomId)?.deref();
   if (!room) throw new Error("Bot join requires a connected room");
   const response = await fetch(`${legacyEndpoint().replace(/^ws/, "http")}/bot/join`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ roomId, botDeckId, reconnectionToken: room.reconnectionToken }),
+    body: JSON.stringify({ roomId, botDeckId, ...botSettings, reconnectionToken: room.reconnectionToken }),
   });
   if (!response.ok) throw new Error(`Bot join failed (${response.status})`);
 }

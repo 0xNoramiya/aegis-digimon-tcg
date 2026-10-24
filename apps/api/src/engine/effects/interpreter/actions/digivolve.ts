@@ -1,3 +1,4 @@
+import { CardKind } from "@aegis/shared/schema/enums";
 // The Digivolve action and its legality preflight.
 
 import {
@@ -342,7 +343,9 @@ export async function runDigivolve(ctx: EffectContext, action: Extract<Action, {
       const filterKinds = action.target.filter.kind;
       if (filterKinds !== undefined) {
         const topDef = ctx.game.definitionOf(breedingPerm.topCard);
-        const matchesKind = filterKinds.some((k) => topDef.kinds.includes(k as never));
+        const matchesKind = topDef.kinds.some(
+          (kind) => filterKinds.includes(kind) || (kind === CardKind.DigiEgg && filterKinds.includes(CardKind.Digimon)),
+        );
         if (!matchesKind) return;
       }
     }

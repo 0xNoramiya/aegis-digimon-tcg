@@ -14,7 +14,7 @@ export function CardArt({ cardId, artId, width }: { cardId: string; artId?: stri
   const [idx, setIdx] = useState(0);
   useEffect(() => setIdx(0), [cardId, artId, urls]);
   const h = Math.round(width * 1.4);
-  if (!def) return <CardBack width={width} label={cardId} />;
+  if (!def) return <CardBack width={width} label={cardId} useSelectedSleeve={false} />;
   if (idx >= urls.length) {
     return (
       <div

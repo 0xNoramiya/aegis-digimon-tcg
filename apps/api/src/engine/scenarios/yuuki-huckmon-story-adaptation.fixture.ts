@@ -53,6 +53,8 @@ const fixture: ScenarioFixture = {
       ],
       eggDeck: ["EX7-006", "EX7-006", "EX7-006", "EX7-006"],
       battleArea: [
+        { card: "LM-032" },
+
         {
           card: "EX7-062",
         },
@@ -66,7 +68,6 @@ const fixture: ScenarioFixture = {
           card: "EX7-065",
         },
       ],
-      delayZone: ["LM-032"],
     },
     "1": {
       hand: ["BT23-006", "BT13-013", "BT6-015", "BT6-009", "BT10-016"],

@@ -1,6 +1,7 @@
 import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
 import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin";
 import { CardKind, Zone, requireCardDefinition, CardInstance, type Seat } from "@aegis/shared";
+import { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 import { pushOnStack, takeTop, unshiftOnStack } from "../../state/access.js";
 import { digiXrosMatches, materialSaveCountOf } from "../../combat/keywords.js";
 import { hostOfLinkedInstance, peekLooseInstance, removeLooseInstance } from "../verbs/looseInstances.js";
@@ -22,7 +23,7 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
     const placed: CardInstance[] = [];
     const securitySources = new Set<Seat>();
     const permanent = access.permanentById(targetPermanentId);
-    if (permanent?.topCard === undefined) {
+    if (permanent?.topCard === undefined || requireCardDefinition(permanent.topCard.cardId).isToken) {
       return { placed, securitySources };
     }
     // Validate the complete physical batch before moving anything. A duplicate can
@@ -111,7 +112,9 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
 
   const placeUnderFromDeck = async (targetPermanentId: string, seat: Seat): Promise<CardInstance | undefined> => {
     const permanent = access.permanentById(targetPermanentId);
-    if (permanent === undefined) return undefined;
+    if (permanent?.topCard === undefined || requireCardDefinition(permanent.topCard.cardId).isToken) {
+      return undefined;
+    }
     const card = takeTop(player(seat), Zone.Deck);
     if (card === undefined) return undefined;
     card.faceUp = false;
@@ -175,6 +178,7 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
         ...source,
         selectionContext: "materialSaveActivation",
         visibleInstanceIds: eligible.map((card) => card.instanceId),
+        selectionGoal: DecisionSelectionGoal.PROTECT.value,
       },
     );
     if (accept.length === 0) return false;

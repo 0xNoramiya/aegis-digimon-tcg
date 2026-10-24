@@ -142,6 +142,7 @@ export class PlayerState extends Schema {
    * resolving face-up is public information, same as the battle area or trash.
    */
   @type(CardInstance) resolvingOption?: CardInstance;
+  @type("string") botPersonaId = "";
   @type("boolean") hideIdentityFromSpectators = false;
   @view(PRIVATE_VIEW_TAG) @type("string") spectatorNamesJson = "[]";
   @view(PRIVATE_VIEW_TAG) @type("uint16") anonymousSpectatorCount = 0;

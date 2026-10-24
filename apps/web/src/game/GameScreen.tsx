@@ -1,3 +1,4 @@
+import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
 import { UsedDeckDialog } from "@/game/UsedDeckDialog";
@@ -80,7 +81,9 @@ import { combatAnswers } from "./screen/combatAnswers";
 import { playChoiceAnswers } from "./screen/playChoiceAnswers";
 import type { DropZoneHit, PermanentChrome } from "./screen/types";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import type { SeriesDeckDialogProps } from "@/game/overlay/match/SeriesDeckDialog";
+import type { DeckFormat } from "@aegis/shared/deckFormat";
 import {
   CardKind,
   PRESENTATION_CHANNEL,
@@ -114,7 +117,7 @@ import { isDecisionPingEnabled } from "@/design/decisionPing";
 import { useLowTimeWarning } from "@/game/useLowTimeWarning";
 import { usePresentationAudio, useReadoutAudio } from "./usePresentationAudio";
 import { audioBoardFromPresentedSeats } from "./match/present/presentationAudio";
-import { areActionConfirmationsEnabled } from "../design/actionConfirmation";
+import { cardConfirmationPreference } from "@/game/cardConfirmation/cardConfirmationPreference";
 import { isKeepAwakeEnabled } from "../design/keepAwake";
 import { useScreenWakeLock } from "../design/useScreenWakeLock";
 import { useArenaBoardLook } from "./arenaLook";
@@ -147,6 +150,11 @@ import { TIMINGS } from "./timings";
 import { loadReconnectSession } from "../net/reconnectSession";
 import { pendingFateBadges } from "./pendingFate";
 import { useEffectConfirmationHold } from "./effectConfirmationHold";
+
+export type SeriesDeckPickerParams = Pick<
+  SeriesDeckDialogProps,
+  "format" | "unlimited" | "betaAllowed" | "onChoose" | "onClose"
+>;
 
 const SERIES_HOP_DELAY_MS = 1500;
 
@@ -204,6 +212,7 @@ function GameScreenSession({
   seriesGame,
   startMode = "casual",
   botDeckId,
+  botSettings,
   onExit,
   onStartLesson,
   onRematch,
@@ -219,6 +228,7 @@ function GameScreenSession({
   presentationPacing,
   onSeriesNext,
   onLeaveForfeitsChange,
+  renderSeriesDeckPicker,
 }: {
   liveConnection: UseRoomResult;
   joinOptions: AegisJoinOptions;
@@ -231,6 +241,7 @@ function GameScreenSession({
   waitForHost?: boolean;
   /** Famous-deck preset the seated bot should play; absent means the server picks at random. */
   botDeckId?: string;
+  botSettings?: BotSettings;
   betaBattleMode?: boolean;
   unlimited?: boolean;
   onExit: (screen: Screen) => void;
@@ -280,6 +291,7 @@ function GameScreenSession({
    * Must be a stable callback.
    */
   onLeaveForfeitsChange?: (concede: (() => void) | undefined) => void;
+  renderSeriesDeckPicker?: (params: SeriesDeckPickerParams) => ReactNode;
 }) {
   const { t } = useTranslation();
   const [handOrder, setHandOrder] = useState<readonly string[]>([]);
@@ -287,7 +299,7 @@ function GameScreenSession({
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
   );
   const usedDeck = spectating ? undefined : liveConnection.usedDeck;
-  const actionConfirmationsEnabled = areActionConfirmationsEnabled();
+  const cardConfirmationMode = cardConfirmationPreference.useMode();
   const arenaLayout = useArenaLayout();
   const { narrowGameLayout, compactPiles, shortBoard, collapseNotices } = arenaLayout;
   const {
@@ -345,14 +357,14 @@ function GameScreenSession({
   useEffect(() => {
     if (!vsBot || botCalledRef.current || !room || status !== "connected") return;
     botCalledRef.current = true;
-    void joinWithBot(room.roomId, botDeckId).catch((botJoinError: unknown) => {
+    void joinWithBot(room.roomId, botDeckId, botSettings).catch((botJoinError: unknown) => {
       console.error("[BOT_JOIN_CLIENT] failed", {
         roomId: room.roomId,
         error: botJoinError instanceof Error ? botJoinError.message : String(botJoinError),
       });
       setBotError(t("game.botConnectionFailedDetail"));
     });
-  }, [vsBot, room, status, botDeckId, t]);
+  }, [vsBot, room, status, botDeckId, botSettings, t]);
 
   const selectionState = useBoardSelection({ state, viewerSeat });
   const {
@@ -420,6 +432,11 @@ function GameScreenSession({
     permanentId: string;
   }>();
   const allianceConfirmationSubmittedRef = useRef(false);
+  const [blockConfirmation, setBlockConfirmation] = useState<{
+    windowKey: string;
+    permanentId: string;
+  }>();
+  const blockConfirmationSubmittedRef = useRef(false);
 
   const { drag, dragHover, handleTapRef, handleDropRef, canDragRef, startHandDrag, startPermDrag, cancelDrag } =
     useDragPlumbing({ manual: state?.gameMode === GameMode.MANUAL.value });
@@ -1036,7 +1053,7 @@ function GameScreenSession({
     handEntries,
     digivolveRoutesOf,
     mainActionBlocked,
-    actionConfirmationsEnabled,
+    cardConfirmationMode,
     playGameCue,
     lastPlayAttemptRef,
     playAttemptEventSeqRef,
@@ -1065,6 +1082,15 @@ function GameScreenSession({
     allianceConfirmation.windowKey === allianceWindowKey &&
     combatWindows.allianceWindow?.eligibleAllyIds.includes(allianceConfirmation.permanentId)
       ? allianceConfirmation.permanentId
+      : undefined;
+  const blockWindowKey = combatWindows.blockWindow
+    ? `block:${combatWindows.blockWindow.attackerPermanentId}:${openCombatWindowForBarrier?.stateVersion ?? state.stateVersion}`
+    : undefined;
+  const activeBlockConfirmationPermanentId =
+    blockConfirmation &&
+    blockConfirmation.windowKey === blockWindowKey &&
+    combatWindows.blockWindow?.eligibleBlockerIds.includes(blockConfirmation.permanentId)
+      ? blockConfirmation.permanentId
       : undefined;
   const { markCombatWindowAnswered } = combatWindows;
   const counterWindowKey = `${openCombatWindowForBarrier?.key ?? ""}:${openCombatWindowForBarrier?.stateVersion ?? ""}`;
@@ -1225,7 +1251,7 @@ function GameScreenSession({
   const revealed = modelRevealedZones({ events, viewerSeat, resultShown: state.gameOver && !cues.resultPending });
 
   const rematch = spectating ? undefined : getRematchView({ series: state.series, viewerSeat });
-  const series = spectating || rematch ? undefined : seriesView(state.series, viewerSeat);
+  const series = spectating || rematch?.stage === "accepted" ? undefined : seriesView(state.series, viewerSeat);
 
   const attackerPerm = selPerm ? you.battleArea.find((p) => p.permanentId === selPerm) : undefined;
   const draggedAttackerPerm =
@@ -1499,6 +1525,19 @@ function GameScreenSession({
         handInstanceIds: counterHandInstanceIds,
       }}
       combatWindowAnswers={combatWindowAnswers}
+      blockConfirmationPermanentId={activeBlockConfirmationPermanentId}
+      onConfirmBlock={() => {
+        if (!activeBlockConfirmationPermanentId || blockConfirmationSubmittedRef.current) {
+          return;
+        }
+        blockConfirmationSubmittedRef.current = true;
+        combatWindowAnswers.onBlock(activeBlockConfirmationPermanentId);
+        setBlockConfirmation(undefined);
+      }}
+      onCancelBlockConfirmation={() => {
+        blockConfirmationSubmittedRef.current = false;
+        setBlockConfirmation(undefined);
+      }}
       allianceConfirmationPermanentId={activeAllianceConfirmationPermanentId}
       onConfirmAlliance={() => {
         if (!activeAllianceConfirmationPermanentId || allianceConfirmationSubmittedRef.current) return;
@@ -1571,6 +1610,29 @@ function GameScreenSession({
                 onOffer: (mode) => room?.send(SERIES_CHANNEL, { action: "offerRematch", mode }),
                 onAnswer: (accept) => room?.send(SERIES_CHANNEL, { action: "answerRematch", accept }),
                 onChooseTurnOrder: (goFirst) => room?.send(SERIES_CHANNEL, { action: "chooseTurnOrder", goFirst }),
+                onKeepDeck: () => room?.send(SERIES_CHANNEL, { action: "chooseSeriesDeck" }),
+                deckPicker: renderSeriesDeckPicker
+                  ? (onClose) =>
+                      renderSeriesDeckPicker({
+                        format: state.format as DeckFormat,
+                        unlimited: state.unlimited,
+                        betaAllowed: startMode === "beta" || isPrivateMatch,
+                        onChoose: (deck) =>
+                          room?.send(SERIES_CHANNEL, {
+                            action: "chooseSeriesDeck",
+                            deck: {
+                              deckId: deck.id,
+                              deckName: deck.name,
+                              mainDeck: deck.mainDeck,
+                              eggDeck: deck.eggDeck,
+                              mainDeckArts: deck.mainDeckArts,
+                              eggDeckArts: deck.eggDeckArts,
+                              community: deck.community,
+                            },
+                          }),
+                        onClose,
+                      })
+                  : undefined,
               },
               spectatorResult: spectating
                 ? state.winnerSeat < 0
@@ -1842,9 +1904,12 @@ function GameScreenSession({
               ? {
                   ...actions,
                   onYourPerm: (perm) => () => {
-                    if (combatWindows.blockWindow?.eligibleBlockerIds.includes(perm.permanentId))
-                      combatWindowAnswers.onBlock(perm.permanentId);
-                    else setZoomCardId(perm.topCard.cardId);
+                    if (combatWindows.blockWindow?.eligibleBlockerIds.includes(perm.permanentId) && blockWindowKey) {
+                      blockConfirmationSubmittedRef.current = false;
+                      setBlockConfirmation({ windowKey: blockWindowKey, permanentId: perm.permanentId });
+                    } else {
+                      setZoomCardId(perm.topCard.cardId);
+                    }
                   },
                 }
               : combatWindows.allianceWindow

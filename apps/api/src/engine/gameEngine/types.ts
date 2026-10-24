@@ -15,6 +15,7 @@ import type {
  * importing Colyseus transport concerns. Supplied by AegisRoom.onCreate.
  */
 export interface GameEngineHooks {
+  omitHandAffordances?: boolean;
   seed: number;
   randomKey?: string;
   beforeTurn?: (turn: number) => Promise<void> | void;
@@ -26,6 +27,7 @@ export interface GameEngineHooks {
   onBothReady?: () => void;
   /** Notifies in-process actors only after an asynchronous action has fully settled. */
   onActionSettled?: (seat: Seat, intentType: Intent["type"]) => void;
+  deferHandAffordances?: boolean;
 }
 
 /**

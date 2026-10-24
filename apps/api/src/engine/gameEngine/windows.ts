@@ -173,7 +173,7 @@ export function parkDeferredSecurityRemovalTriggers(
     const armed = armedSubTriggers(engine, deferred.subscriptions, deferred.payload, deferred.contexts);
     const collected = armedAsPendingCollected(engine, armed);
     for (const entry of collected) {
-      engine.nestedTriggerSourceIdentity.set(entry, permanentIdentityOf(entry.source) ?? null);
+      entry.sourceIdentityAtDefer = permanentIdentityOf(entry.source) ?? null;
     }
     engine.pendingNestedTimingEffects.push(...collected);
   }
@@ -188,7 +188,7 @@ export function parkDeferredSecurityRemovalTriggers(
  */
 export function parkDeferredTimingWindowsForAttack(engine: GameEngine): void {
   for (const entry of collectDeferredTimingPending(engine)) {
-    engine.nestedTriggerSourceIdentity.set(entry, permanentIdentityOf(entry.source) ?? null);
+    entry.sourceIdentityAtDefer = permanentIdentityOf(entry.source) ?? null;
     engine.pendingNestedTimingEffects.push(entry);
   }
 }
@@ -207,9 +207,11 @@ export async function settleBetweenEffects(engine: GameEngine): Promise<void> {
 
 /** Security removal is another reaction of the same completed effect body. */
 function collectDeferredSecurityRemovalPending(engine: GameEngine): CollectedEffect[] {
-  const armed = engine.deferredSecurityRemovalTriggers
-    .splice(0)
-    .flatMap((entry) => armedSubTriggers(engine, entry.subscriptions, entry.payload, entry.contexts));
+  const armed = uniqueOncePerTurnWatcherOccurrences(
+    engine.deferredSecurityRemovalTriggers
+      .splice(0)
+      .flatMap((entry) => armedSubTriggers(engine, entry.subscriptions, entry.payload, entry.contexts)),
+  );
   return armedAsPendingCollected(engine, armed).map((entry, index) => ({
     ...entry,
     effect: {
@@ -296,7 +298,7 @@ export function deferNestedTimingEffects(
 ): void {
   const collected = collectNestedTimingEffects(engine, timing, trigger, candidateInstances);
   for (const entry of collected) {
-    engine.nestedTriggerSourceIdentity.set(entry, permanentIdentityOf(entry.source) ?? null);
+    entry.sourceIdentityAtDefer = permanentIdentityOf(entry.source) ?? null;
   }
   engine.pendingNestedTimingEffects.push(...collected);
 }

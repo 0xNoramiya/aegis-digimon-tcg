@@ -2838,9 +2838,9 @@ describe("EX3-051 Tankdramon decisions", () => {
     expect(screen.getByRole("button", { name: /Commandramon/ }).hasAttribute("disabled")).toBe(false);
     expect(screen.getByRole("button", { name: /Tankdramon/ }).hasAttribute("disabled")).toBe(true);
     expect(screen.getByRole("button", { name: /Hina Kurihara/ }).hasAttribute("disabled")).toBe(true);
-    expect(screen.getByRole("button", { name: "None" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Confirm targets" }).hasAttribute("disabled")).toBe(true);
 
-    fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
+    fireEvent.click(screen.getByRole("button", { name: "None" }));
     expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: [] });
   });
 });

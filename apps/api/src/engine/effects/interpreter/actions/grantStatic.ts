@@ -1,3 +1,4 @@
+import { createTrackedPermanentFilterMatch } from "#api/engine/effects/interpreter/matching/createTrackedPermanentFilterMatch";
 import { getFieldEffectText } from "#api/engine/effects/interpreter/getFieldEffectText";
 // The GrantStatic action: name, trait, kind, and borrowed-effect grants.
 
@@ -529,10 +530,7 @@ export async function runGrantStaticAction(ctx: EffectContext, action: Action): 
               seat,
               "beAffected",
               grantDuration,
-              (permanentId) => {
-                const permanent = ctx.game.permanentById(permanentId);
-                return permanent !== undefined && permanentMatchesFilter(ctx, permanent, filter, ctx.source);
-              },
+              createTrackedPermanentFilterMatch({ ctx, filter, sourceKinds: undefined }),
               {
                 sourceCardId: ctx.source.definition.cardId,
                 effectText: getFieldEffectText({ action, ctx }),

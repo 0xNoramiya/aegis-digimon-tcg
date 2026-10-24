@@ -21,7 +21,7 @@ import { colorsOf } from "../cards/cardData.js";
 import { effectiveColors } from "../effects/continuous.js";
 import { linkMax } from "../effects/mindLink.js";
 import { logError } from "../../logger.js";
-import { makeRng, seatSeed, runSetup, finalizeSecurity, mulliganRedraw, type Decklist } from "../setup.js";
+import { runSetup, finalizeSecurity, mulliganRedraw, makeRng, seatSeed, type Decklist } from "#api/engine/setup";
 import { layScenarioFixture, type ScenarioFixture } from "../scenario/fixture.js";
 import { validateDecklist } from "../deckValidation.js";
 import type { SeatJoinOptions } from "./types.js";
@@ -125,6 +125,7 @@ export async function runMatch(engine: GameEngine): Promise<void> {
     onShuffled: (seat, deck) => engine.hooks.emit({ kind: "deckShuffled", seat, deck }),
   });
   engine.rngForSeat = setup.rngForSeat;
+  engine.randomStreams = [setup.rngForSeat(0).generator, setup.rngForSeat(1).generator];
 
   if (engine.manual) {
     const chooser = firstSeat;
@@ -163,9 +164,13 @@ export async function runMatch(engine: GameEngine): Promise<void> {
 export function startScenarioFixture(engine: GameEngine, fixture: ScenarioFixture): void {
   const decks = collectStagedDecks(engine);
   if (decks === undefined) return;
+  const random = [
+    makeRng(seatSeed(engine.hooks.seed, 0), engine.hooks.randomKey),
+    makeRng(seatSeed(engine.hooks.seed, 1), engine.hooks.randomKey),
+  ];
+  engine.rngForSeat = (seat) => random[seat]!;
+  engine.randomStreams = [random[0]!.generator, random[1]!.generator];
   const references = layScenarioFixture(engine.state, fixture, decks);
-  const rngs = ([0, 1] as const).map((seat) => makeRng(seatSeed(engine.hooks.seed, seat), engine.hooks.randomKey));
-  engine.rngForSeat = (seat) => rngs[seat]!;
   engine.matchSetupStarted = true;
   applyScenarioEffects(engine, fixture, references);
   engine.hooks.emit({ kind: "matchStarted", firstSeat: engine.state.turnSeat });

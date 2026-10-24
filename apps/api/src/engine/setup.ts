@@ -1,3 +1,5 @@
+import { SeededRandom } from "#api/engine/random/SeededRandom";
+import type { StatefulRng } from "#api/engine/random/StatefulRng";
 import { createHash, createHmac } from "node:crypto";
 import { CardInstance, PlayerState, Zone, type GameState, type Seat } from "@aegis/shared";
 import { resolveCardArt } from "@aegis/shared";
@@ -34,21 +36,9 @@ export const SECURITY_STACK_SIZE = 5;
 /** A deterministic PRNG returning floats in [0, 1). */
 export type Rng = () => number;
 
-export function makeRng(seed: number, randomKey?: string): Rng {
-  if (randomKey !== undefined) {
-    let counter = 0;
-    return () => {
-      const digest = createHmac("sha256", randomKey).update(`shuffle:${seed}:${counter++}`).digest();
-      return digest.readUInt32BE(0) / 0x100000000;
-    };
-  }
-  let state = seed >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) | 0;
-    let t = Math.imul(state ^ (state >>> 15), 1 | state);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+export function makeRng(seed: number, randomKey?: string): StatefulRng {
+  const generator = new SeededRandom({ seed, randomKey });
+  return Object.assign(() => generator.next(), { generator });
 }
 
 /**
@@ -278,7 +268,7 @@ export interface SetupInput {
 
 /** Per-seat PRNG used for that seat's shuffles (so a later mulligan reshuffles deterministically). */
 export interface SetupResult {
-  rngForSeat: (seat: Seat) => Rng;
+  rngForSeat: (seat: Seat) => StatefulRng;
 }
 
 /**
@@ -292,7 +282,7 @@ export interface SetupResult {
  * redraw on the same deterministic stream.
  */
 export function runSetup(state: GameState, input: SetupInput): SetupResult {
-  const rngs: Rng[] = [];
+  const rngs: StatefulRng[] = [];
   for (const seat of [0, 1] as const) {
     const cfg = input.seats[seat]!;
     // Reuse the already-seated placeholder PlayerState (preserving its object

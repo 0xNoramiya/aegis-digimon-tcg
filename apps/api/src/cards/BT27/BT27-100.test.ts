@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EffectTiming } from "@aegis/shared/schema/enums";
+import { EffectTiming, type Seat } from "@aegis/shared/schema/enums";
 import { getCardArts } from "@aegis/shared/cards/arts";
 import { setupEngine, settle, settleAcrossTimers } from "#api/engine/testkit/harness";
 import { advance } from "#api/engine/testkit/advance";
@@ -54,7 +54,7 @@ describe("Hjaðningar Waltz", () => {
     expect(s.state.memory).toBe(7);
   });
 
-  it.each([
+  it.each<{ card: string; turnSeat: Seat }>([
     { card: "BT3-075", turnSeat: 0 },
     { card: "BT27-070", turnSeat: 0 },
     { card: "BT3-075", turnSeat: 1 },

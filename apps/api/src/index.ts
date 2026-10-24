@@ -1,5 +1,6 @@
 import { createTournamentDiscordSweep } from "#api/tournaments/discord/createTournamentDiscordSweep";
 import { startRankedMaintenance } from "#api/ranked/startRankedMaintenance";
+import { getEngineCodeFingerprint } from "#api/engine/snapshot/getEngineCodeFingerprint";
 import { startProviderSync } from "#api/deckProviders/startProviderSync";
 import { digilabProvider } from "#api/deckProviders/providers/digilab";
 import { ProviderSnapshotReader } from "#api/deckProviders/ProviderSnapshotReader";
@@ -50,6 +51,8 @@ import {
   discordAvatarSourceFromEnvironment,
 } from "./accounts/discordAvatars.js";
 import { startBotInference, stopBotInference } from "./bot/inferenceRuntime.js";
+
+getEngineCodeFingerprint();
 
 const app = express();
 app.use((req, res, next) => {

@@ -474,6 +474,35 @@ describe("EX13-077 Omnimon: Merciful Mode", () => {
     expect(s.state.players[1]!.deck.map(({ instanceId }) => instanceId)).not.toContain(s.inst("egg").instanceId);
   });
 
+  it("battles without any Tamers when its own Digimon colors meet the threshold", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          hand: [{ card: CARD_ID, as: "merciful" }],
+          battleArea: [{ card: "AD1-001", as: "redDigimon" }],
+          deck: ["BT1-012"],
+          security: ["BT1-090"],
+        },
+        1: {
+          battleArea: [{ card: "BT1-009", as: "opponentDigimon" }],
+          deck: ["BT1-013"],
+          security: ["BT1-014"],
+        },
+      },
+      { autoAcceptOptional: true, autoChooseOption: true, autoSelectCards: true, preferOptionIndex: 0 },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("merciful").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.players[1]!.battleArea.length === 0);
+
+    expect(s.state.players[1]!.trash.map(({ cardId }) => cardId)).toContain("BT1-009");
+    expect(s.perm("merciful").isSuspended).toBe(false);
+    expect(s.state.players[0]!.battleArea.some(({ topCard }) => topCard?.cardId === CARD_ID)).toBe(true);
+  });
+
   it("Q7468: the modal Battle branch immediately performs a normal DP battle", async () => {
     const s = setupEngine(
       {

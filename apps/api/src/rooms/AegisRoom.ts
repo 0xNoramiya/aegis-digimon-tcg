@@ -2,10 +2,23 @@ import { claimAccountRoom } from "#api/ranked/claimAccountRoom";
 import { RankedStore } from "#api/ranked/RankedStore";
 import { RankedRoundClock } from "#api/ranked/RankedRoundClock";
 import { getRankedConfig } from "#api/ranked/getRankedConfig";
+import { getStoryBattleDifficulty } from "@aegis/shared/story/getStoryBattleDifficulty";
+import { resolveBotProfile } from "#api/bot/profiles";
+import { BotDifficulty } from "@aegis/shared/bot/BotDifficulty";
+import type { BotStyle } from "@aegis/shared/bot/BotStyle";
+import { isBotDifficulty } from "@aegis/shared/bot/isBotDifficulty";
+import { isBotStyle } from "@aegis/shared/bot/isBotStyle";
+import { createLevelBotOptions } from "#api/bot/levels/createLevelBotOptions";
+import { defaultStyleForDeck } from "#api/bot/levels/defaultStyleForDeck";
 import { GameMode } from "@aegis/shared/manual/GameMode";
+
 import { getStoryGuestHash } from "#api/story/getStoryGuestHash";
 import { shuffleStoryDecks } from "#api/story/shuffleStoryDecks";
 import { findSoloBattle } from "#api/story/findSoloBattle";
+import { getStoryBotPersona } from "#api/story/getStoryBotPersona";
+import { getBotLine } from "#api/bot/lines/getBotLine";
+import { getCardDefinition } from "@aegis/shared/cards/registry";
+import { StoryDifficulty } from "@aegis/shared/story/StoryDifficulty";
 import type { SoloBattle } from "#api/story/SoloBattle";
 import { StoryProgressStore } from "#api/story/StoryProgressStore";
 import { getStorySeatDeck } from "#api/story/getStorySeatDeck";
@@ -77,7 +90,14 @@ import { createFixtureBotPolicy } from "../engine/scenario/botPolicy.js";
 import { GameEngine, type SeatJoinOptions } from "../engine/GameEngine.js";
 import { finalRevealOf, type VisibilityPort } from "../engine/state/index.js";
 import { BotPlayer, type BotOptions } from "../bot/BotPlayer.js";
+import { botPersonaForDeck } from "@aegis/shared/bot/personas/botPersonaForDeck";
 import { trainedBotOptions } from "../bot/inferenceRuntime.js";
+import { evolvedBotOptions } from "../bot/evolution/livePolicy.js";
+import { getActiveBotExperiment } from "#api/bot/experiment/activeBotExperiment";
+import { assignBotArm } from "#api/bot/experiment/assignBotArm";
+import type { BotExperimentRecord } from "#api/bot/experiment/BotExperimentRecord";
+import { createBotArmOptions } from "#api/bot/experiment/createBotArmOptions";
+import type { DefaultBotDeck } from "#api/bot/defaultBotProgram";
 import { playableBotDeck } from "../engine/botDeck.js";
 import { accountStore } from "../accounts/runtime.js";
 import type { AccountStore, DeckSnapshot, Tournament } from "#api/accounts/AccountStore";
@@ -85,10 +105,16 @@ import { seriesStore } from "../tournaments/runtime.js";
 import type { SeriesStore } from "../tournaments/series/index.js";
 import { createLocalRoomCodeDirectory, type RoomCodeDirectory } from "../cluster/roomCodes.js";
 import { MatchClock, type ClockMode } from "./MatchClock.js";
-import { CasualSeries, type SeriesContinuationOptions, type SeriesRoomPort } from "./series/CasualSeries.js";
+import {
+  CasualSeries,
+  type RematchOpening,
+  type SeriesContinuationOptions,
+  type SeriesRoomPort,
+  type SeriesSeatDeck,
+} from "./series/CasualSeries.js";
+import type { SeriesDeckChoice } from "@aegis/shared/protocol/series";
 import type { SeriesRecord } from "./series/SeriesDirectory.js";
 import { RematchOffer } from "#api/rooms/series/RematchOffer";
-import type { GameResult } from "#api/rooms/series/seriesRules";
 import { REMATCH_BEST_OF } from "@aegis/shared/protocol/RematchStatus";
 import { parsePresentationReport } from "./presentationReport.js";
 import { CONNECTION_REPORT_CHANNEL } from "@aegis/shared/protocol/ConnectionReport";
@@ -335,6 +361,7 @@ export class AegisRoom extends Room<{
   private presentationLogWindows = new Map<Seat, { start: number; count: number }>();
   /** Keyed by `seat:<n>` for players and by session id for spectators. */
   private lastChatAtBySender = new Map<string, number>();
+  private spokenBotLines = new Set<string>();
   /** The number in each spectator's chat name, given the first time that spectator writes. */
   private spectatorNumbers = new Map<string, number>();
   private spectatorsNumbered = 0;
@@ -373,6 +400,8 @@ export class AegisRoom extends Room<{
    * two bots has to run with nobody connected at all, so both seats can be driven at once.
    */
   private bots: (BotPlayer | undefined)[] = [undefined, undefined];
+  private botLevelSettings: ({ difficulty: BotDifficulty; style: BotStyle } | undefined)[] = [undefined, undefined];
+  private botExperimentRecord: BotExperimentRecord | undefined;
   /**
    * Which participant each tournament seat belongs to, recorded when the seat's authorization is
    * redeemed. A bot seat has no client and therefore no `accountByClient` entry, so this is the
@@ -542,7 +571,7 @@ export class AegisRoom extends Room<{
     if ((options.unlimited === true) !== this.isUnlimitedRoom) return false;
     if (options.format !== undefined && !isDeckFormat(options.format)) return false;
     if (!this.isPrivate && deckFormat(options.format, options.unlimited) !== this.state.format) return false;
-    if (options.botDeck && (!this.isBotRoom || !this.validCustomBotDeck(options.botDeck))) return false;
+    if (options.botDeck && (!this.isBotRoom || !this.isLegalRoomDeck(options.botDeck))) return false;
     // A guest of a private room plays whatever the host set; a public joiner must have asked for it.
     if (
       !this.isPrivate &&
@@ -573,7 +602,11 @@ export class AegisRoom extends Room<{
       const battle = this.soloBattle;
       const store = new StoryProgressStore(this.accounts());
       const progress = account ? await store.getProgress(account.id) : await store.getGuestProgress(guestHash!);
-      if (!battle || (battle.prerequisiteId && !progress.completed.includes(battle.prerequisiteId))) {
+      const prerequisites = [
+        ...(battle?.prerequisiteIds ?? []),
+        ...(battle?.prerequisiteId ? [battle.prerequisiteId] : []),
+      ];
+      if (!battle || prerequisites.some((id) => !progress.completed.includes(id))) {
         return false;
       }
       this.storyAccountId = account?.id;
@@ -940,11 +973,11 @@ export class AegisRoom extends Room<{
           timerStartSeconds: options.timerStartSeconds ?? MATCH_TIMER_START_SECONDS,
           ...(this.isPrivate ? { roomCode: this.state.roomCode } : {}),
         });
-      else
-        this.rematchOffer = new RematchOffer({
-          readState: () => this.state,
-          startSeries: (chooser, results) => this.startRematchSeries(chooser, results),
-        });
+      this.rematchOffer = new RematchOffer({
+        readState: () => this.state,
+        startSeries: (opening) => this.startRematchSeries(opening),
+        afterSeries: this.casualSeries !== undefined,
+      });
     }
     this.state.allowRollback = options.allowRollback === true && !this.isRankedRoom && !this.isTournamentRoom;
     if (this.state.allowRollback)
@@ -969,7 +1002,7 @@ export class AegisRoom extends Room<{
           });
           return;
         }
-        this.rollbackHistory?.beforeTurn(turn, this.state);
+        this.rollbackHistory?.beforeTurn(turn, this.engine);
         this.refreshRollbackAvailability();
       },
       seed,
@@ -1025,10 +1058,12 @@ export class AegisRoom extends Room<{
             event.result.outcome === "draw" ? -1 : event.result.winnerSeat,
             this.departingSeat,
           );
-          this.rematchOffer?.open({
-            result: event.result.outcome === "draw" ? -1 : event.result.winnerSeat,
-            departed: this.departingSeat !== undefined,
-          });
+          if (!this.casualSeries || this.casualSeries.over) {
+            this.rematchOffer?.open({
+              result: event.result.outcome === "draw" ? -1 : event.result.winnerSeat,
+              departed: this.departingSeat !== undefined,
+            });
+          }
         }
         if (event.kind === "matchStarted") {
           this.casualSeries?.noteFirstSeat(event.firstSeat);
@@ -1089,6 +1124,7 @@ export class AegisRoom extends Room<{
         if (event.kind === "securityRevealed") this.openSecurityReveal = event;
         else if (event.kind === "securityChecked") this.openSecurityReveal = undefined;
         for (const bot of this.bots) bot?.onEvent(event);
+        this.speakBotLines(event);
         this.syncCombatWindowTimeout();
       },
     };
@@ -1173,7 +1209,7 @@ export class AegisRoom extends Room<{
         if (seat === undefined) {
           return;
         }
-        if (this.casualSeries) {
+        if (this.casualSeries && !this.casualSeries.over) {
           this.casualSeries.handleMessage(seat, payload, this.matchStartRequested);
         } else {
           this.rematchOffer?.handleMessage(seat, payload);
@@ -1235,10 +1271,11 @@ export class AegisRoom extends Room<{
     );
   }
 
-  private startRematchSeries(chooser: Seat, results: GameResult[]): boolean {
-    if (!this.offersSeries() || this.casualSeries || !this.state.gameOver) {
+  private startRematchSeries(opening: RematchOpening): boolean {
+    if (!this.offersSeries() || (this.casualSeries && !this.casualSeries.over) || !this.state.gameOver) {
       return false;
     }
+    this.casualSeries?.dispose();
     this.casualSeries = CasualSeries.rematch(
       this.seriesPort(),
       {
@@ -1250,8 +1287,7 @@ export class AegisRoom extends Room<{
         timerStartSeconds: this.state.timerStartSeconds,
         ...(this.isPrivate ? { roomCode: this.state.roomCode } : {}),
       },
-      chooser,
-      results,
+      opening,
     );
     return true;
   }
@@ -1285,6 +1321,7 @@ export class AegisRoom extends Room<{
           presentationPacing: this.chainPacingClients.has(player.sessionId) ? "sequential" : "current",
         };
       },
+      resolveDeckChoice: (choice) => this.resolveSeriesDeckChoice(choice),
       sendToSeat: (seat, message) =>
         this.clients.find((client) => this.seatByClient.get(client.sessionId) === seat)?.send(SERIES_CHANNEL, message),
       createNextRoom: async (options) => (await matchMaker.createRoom(this.roomName, options)).roomId,
@@ -1292,11 +1329,56 @@ export class AegisRoom extends Room<{
     };
   }
 
+  private getBotResult(event: Extract<import("@aegis/shared").ServerEvent, { kind: "gameOver" }>) {
+    if (event.result.outcome === "draw") {
+      return "draw";
+    }
+    if (event.result.winnerSeat === this.BOT_SEAT) {
+      return "win";
+    }
+    return "loss";
+  }
+
   private async recordRecentResults(
     event: Extract<import("@aegis/shared").ServerEvent, { kind: "gameOver" }>,
   ): Promise<void> {
     if (this.devScenario || this.storyBattleId || this.state.gameMode === GameMode.MANUAL.value) return;
     const finishedAt = Date.now();
+    for (const seat of [0, 1] as const) {
+      const settings = this.botLevelSettings[seat];
+      const bot = this.bots[seat];
+      if (settings === undefined || bot === undefined) continue;
+      const botResult = event.result.outcome === "draw" ? "draw" : event.result.winnerSeat === seat ? "win" : "loss";
+      this.debug("bot.level.result", {
+        seat,
+        botDifficulty: settings.difficulty,
+        botStyle: settings.style,
+        botResult,
+        concededByOpponent: event.reason === "surrender" && botResult === "win",
+        reason: event.reason,
+        gameLengthTurns: this.state.turnCount,
+        policyName: bot.policyName,
+        policyDecisionLatencyMs: bot.policyDecisionLatencySummary,
+        inferenceFallbacks: bot.inferenceFallbacks,
+        ...(bot.searchFallbacks === undefined ? {} : { searchFallbacks: bot.searchFallbacks }),
+        ...(bot.searchErrors === undefined ? {} : { searchErrors: bot.searchErrors }),
+        ...(seat === this.BOT_SEAT && this.botExperimentRecord !== undefined
+          ? {
+              botExperiment: this.botExperimentRecord.botExperiment,
+              botArm: this.botExperimentRecord.botArm,
+            }
+          : {}),
+      });
+    }
+    const experimentRecord = this.botExperimentRecord;
+    if (experimentRecord) {
+      this.debug("bot.experiment.result", {
+        ...experimentRecord,
+        botResult: this.getBotResult(event),
+        reason: event.reason,
+        inferenceFallbacks: this.bots[this.BOT_SEAT]?.inferenceFallbacks,
+      });
+    }
     // Snapshot both identities before I/O: onLeave clears accountByClient synchronously.
     const participants = ([0, 1] as const).flatMap((seat) => {
       const player = this.state.players[seat];
@@ -1320,6 +1402,7 @@ export class AegisRoom extends Room<{
                   : ("loss" as const),
             reason: event.reason,
             finishedAt,
+            ...(experimentRecord && this.bots[seat === 0 ? 1 : 0] ? experimentRecord : {}),
           },
         },
       ];
@@ -1510,7 +1593,21 @@ export class AegisRoom extends Room<{
     const seat: Seat = taken.has(0 as Seat) ? (1 as Seat) : (0 as Seat);
     if (taken.has(seat)) return false;
 
-    this.debug("bot.seated", { seat, deck, botOptions: input.botOptions });
+    const style = resolveBotProfile(input.botOptions?.profile).name;
+    const botOptions = {
+      ...createLevelBotOptions({
+        difficulty: BotDifficulty.STANDARD.value,
+        style,
+        engine: this.engine,
+        seat,
+        deck,
+        seed: input.botOptions?.seed ?? this.engine.hooks.seed + seat * 7919,
+      }),
+      ...input.botOptions,
+      difficulty: BotDifficulty.STANDARD.value,
+    };
+    this.debug("bot.seated", { seat, deck, botDifficulty: BotDifficulty.STANDARD.value, botStyle: style });
+    this.botLevelSettings[seat] = { difficulty: BotDifficulty.STANDARD.value, style };
     this.tournamentSeatHolders[seat] = { participantId };
     this.bots[seat] = new BotPlayer(
       seat,
@@ -1520,9 +1617,9 @@ export class AegisRoom extends Room<{
         this.rebuildClientViews();
         return result;
       },
-      input.botOptions,
+      botOptions,
     );
-    this.withBatch(() =>
+    this.withBatch(() => {
       this.engine.seatPlayer(seat, `bot:${participantId}`, {
         displayName,
         format: this.state.format as DeckFormat,
@@ -1533,8 +1630,9 @@ export class AegisRoom extends Room<{
           mainDeckArts: deck.mainDeckArts?.slice(),
           eggDeckArts: deck.eggDeckArts?.slice(),
         },
-      }),
-    );
+      });
+      this.state.players[seat]!.botPersonaId = botPersonaForDeck({ deck }).id;
+    });
     this.recordReplaySeat(
       seat,
       deck,
@@ -1757,7 +1855,7 @@ export class AegisRoom extends Room<{
       banlistCards: (this.rankedRules ?? this.tournamentRules)?.banlistCards,
     };
     if (options.botDeck) {
-      if (!this.isBotRoom || !this.validCustomBotDeck(options.botDeck))
+      if (!this.isBotRoom || !this.isLegalRoomDeck(options.botDeck))
         throw new ServerError(400, "Illegal custom bot deck");
       this.customBotDeck = {
         mainDeck: [...options.botDeck.mainDeck],
@@ -2087,7 +2185,37 @@ export class AegisRoom extends Room<{
    * Seat a bot as seat 1 and start the match. The room must have exactly one
    * human player already seated. Idempotent: a second call is a no-op.
    */
-  private validCustomBotDeck(deck: SeatJoinOptions["deck"]): boolean {
+  private resolveSeriesDeckChoice(choice: unknown): SeriesSeatDeck | undefined {
+    if (typeof choice !== "object" || choice === null) {
+      return undefined;
+    }
+    const { mainDeck, eggDeck, mainDeckArts, eggDeckArts, deckId, deckName, community } =
+      choice as Partial<SeriesDeckChoice>;
+    const deck = { mainDeck, eggDeck, mainDeckArts, eggDeckArts } as SeatJoinOptions["deck"];
+    if (
+      !this.isLegalRoomDeck(deck) ||
+      !isOptionalCardList(mainDeckArts) ||
+      !isOptionalCardList(eggDeckArts) ||
+      (deckId !== undefined && (typeof deckId !== "string" || deckId.length > 128)) ||
+      typeof deckName !== "string" ||
+      deckName.length > 200
+    ) {
+      return undefined;
+    }
+    return {
+      deck: {
+        mainDeck: [...deck.mainDeck],
+        eggDeck: [...deck.eggDeck],
+        mainDeckArts: mainDeckArts?.slice(),
+        eggDeckArts: eggDeckArts?.slice(),
+      },
+      deckId,
+      deckName,
+      community: validCommunityAttribution(community),
+    };
+  }
+
+  private isLegalRoomDeck(deck: SeatJoinOptions["deck"]): boolean {
     return (
       Array.isArray(deck.mainDeck) &&
       Array.isArray(deck.eggDeck) &&
@@ -2103,7 +2231,23 @@ export class AegisRoom extends Room<{
     );
   }
 
-  requestBot({ reconnectionToken, botDeckId }: { reconnectionToken: string; botDeckId?: string }): number {
+  requestBot({
+    reconnectionToken,
+    botDeckId,
+    botDifficulty,
+    botStyle,
+  }: {
+    reconnectionToken: string;
+    botDeckId?: string;
+    botDifficulty?: BotDifficulty;
+    botStyle?: BotStyle;
+  }): number {
+    if (
+      (botDifficulty !== undefined && !isBotDifficulty(botDifficulty)) ||
+      (botStyle !== undefined && !isBotStyle(botStyle))
+    ) {
+      return 400;
+    }
     const player = this.clients.find(
       (client) =>
         client.reconnectionToken &&
@@ -2111,10 +2255,48 @@ export class AegisRoom extends Room<{
         this.seatByClient.has(client.sessionId),
     );
     if (!player) return 403;
-    return this.addBot(botDeckId) ? 200 : 409;
+    return this.addBot({ botDeckId, botDifficulty, botStyle }) ? 200 : 409;
   }
 
-  addBot(botDeckId?: string): boolean {
+  private assignBotExperimentArm(): BotExperimentRecord | undefined {
+    const experiment = getActiveBotExperiment();
+    if (experiment === undefined || this.devScenario || this.storyBattleId) {
+      return undefined;
+    }
+    return { botExperiment: experiment.id, botArm: assignBotArm({ experiment, matchId: this.state.matchLogId }) };
+  }
+
+  private createPracticeBotOptions(
+    deck: DefaultBotDeck,
+    experimentRecord: BotExperimentRecord | undefined,
+    style: BotStyle,
+  ): BotOptions | undefined {
+    if (experimentRecord === undefined) {
+      return undefined;
+    }
+    return createBotArmOptions({
+      arm: experimentRecord.botArm,
+      style,
+      engine: this.engine,
+      seat: this.BOT_SEAT,
+      deck,
+      onFallback: () => {
+        experimentRecord.botArmFallback = true;
+        this.debug("bot.experiment.fallback", {
+          botExperiment: experimentRecord.botExperiment,
+          botArm: experimentRecord.botArm,
+          turn: this.state.turnCount,
+        });
+      },
+    });
+  }
+
+  addBot(input: { botDeckId?: string; botDifficulty?: BotDifficulty; botStyle?: BotStyle } | string = {}): boolean {
+    const {
+      botDeckId,
+      botDifficulty: requestedDifficulty = BotDifficulty.STANDARD.value,
+      botStyle,
+    } = typeof input === "string" ? { botDeckId: input } : input;
     // Ordinary casual rooms remain accepted during the expand/contract rollout so
     // a tab with the previous web bundle can still start its bot match. New clients
     // create an isolated bot room and therefore never enter the casual queue.
@@ -2145,18 +2327,48 @@ export class AegisRoom extends Room<{
       return false;
     }
 
+    const storyDifficulty = this.storyBattleId ? getStoryBattleDifficulty({ battleId: this.storyBattleId }) : undefined;
+    const botDifficulty = storyDifficulty?.botDifficulty ?? requestedDifficulty;
+    const requestedStyle = storyDifficulty ? undefined : botStyle;
+    const style = storyDifficulty?.botStyle ?? requestedStyle ?? defaultStyleForDeck({ deck });
     const humanDeck = this.engine.stagedDecks[0];
+    const storyPersona =
+      this.storyBattleId && this.scenarioFixture
+        ? getStoryBotPersona({ battleId: this.storyBattleId, fixture: this.scenarioFixture })
+        : undefined;
+    const persona = storyPersona ?? botPersonaForDeck({ deckId: botDeckId, deck });
     const modelOptions =
       this.scenarioFixture === undefined && humanDeck !== undefined
-        ? trainedBotOptions({
+        ? (evolvedBotOptions({
+            engine: this.engine,
+            seat: this.BOT_SEAT,
+            seed: this.engine.hooks.seed,
+            decks: [humanDeck, deck],
+          }) ??
+          trainedBotOptions({
             engine: this.engine,
             seat: this.BOT_SEAT,
             decks: [humanDeck, deck],
-          })
+          }))
         : undefined;
     const scenarioPolicy = createFixtureBotPolicy(this.scenarioFixture?.presentation?.opponent);
+    const experimentRecord =
+      scenarioPolicy === undefined && modelOptions === undefined && botDifficulty === BotDifficulty.STANDARD.value
+        ? this.assignBotExperimentArm()
+        : undefined;
     const baseBotOptions: BotOptions | undefined =
-      scenarioPolicy === undefined ? modelOptions : { policy: scenarioPolicy };
+      scenarioPolicy === undefined
+        ? (modelOptions ??
+          this.createPracticeBotOptions(deck, experimentRecord, style) ??
+          createLevelBotOptions({
+            difficulty: botDifficulty,
+            style,
+            engine: this.engine,
+            seat: this.BOT_SEAT,
+            deck,
+            seed: this.engine.hooks.seed + this.BOT_SEAT * 7919,
+          }))
+        : { policy: scenarioPolicy };
     const clientPacesChains = this.clients.some((client) => this.chainPacingClients.has(client.sessionId));
     const botOptions: BotOptions | undefined = clientPacesChains
       ? { ...baseBotOptions, clientPacesChains }
@@ -2175,22 +2387,32 @@ export class AegisRoom extends Room<{
       },
       botOptions,
     );
+    this.botLevelSettings[this.BOT_SEAT] =
+      scenarioPolicy === undefined && modelOptions === undefined ? { difficulty: botDifficulty, style } : undefined;
 
-    let botDisplayName = modelOptions === undefined ? "Bot" : "BT26 AI";
+    let botDisplayName = persona.displayName;
     if (this.soloBattle) {
       botDisplayName = this.soloBattle.opponentName;
     }
-    this.debug("bot.seated", { seat: this.BOT_SEAT, deck, clientPacesChains });
+    this.debug("bot.seated", {
+      seat: this.BOT_SEAT,
+      deck,
+      clientPacesChains,
+      botDifficulty,
+      botStyle: style,
+      ...(experimentRecord ? { botExperiment: experimentRecord.botExperiment, botArm: experimentRecord.botArm } : {}),
+    });
     try {
-      this.withBatch(() =>
+      this.withBatch(() => {
         this.engine.seatPlayer(this.BOT_SEAT, "bot", {
           displayName: botDisplayName,
           deck,
           betaBattleMode: this.isBetaBattleRoom,
           unlimited: this.isUnlimitedRoom,
           format: this.state.format as DeckFormat,
-        }),
-      );
+        });
+        this.state.players[this.BOT_SEAT]!.botPersonaId = persona.id;
+      });
       this.recordReplaySeat(
         this.BOT_SEAT,
         deck,
@@ -2210,6 +2432,7 @@ export class AegisRoom extends Room<{
       logError("[AegisRoom] addBot failed to seat the bot", error);
       return false;
     }
+    this.botExperimentRecord = experimentRecord;
 
     // The bot never sends its own `ready` intent (it isn't a Colyseus client, so it
     // has no seatByClient entry for applyIntent to route through) — starting the
@@ -2283,6 +2506,7 @@ export class AegisRoom extends Room<{
     if (!this.engine) return;
     // Not a replay input: the counts are derived from the zone arrays, and the replay recomputes them.
     this.engine.syncCounts();
+    this.engine.flushHandAffordances();
     // Refresh every view before the patch is encoded, not only after the three events that
     // happen to name a move. A StateView must still recognise a card as visible at the moment
     // its removal is encoded, or the encoder drops the delete and the client's copy of the
@@ -2405,6 +2629,7 @@ export class AegisRoom extends Room<{
       return;
     }
     if (this.replayRecording && !this.replayFinished) {
+      this.engine.flushHandAffordances();
       this.replayRecording.capture(this.state, batch.events);
       if (this.state.gameOver) {
         this.replayFinished = true;
@@ -2697,6 +2922,7 @@ export class AegisRoom extends Room<{
     const report = parsePresentationReport(payload);
     if (!report) return;
     for (const [botSeat, bot] of this.bots.entries()) if (botSeat !== seat) bot?.onOpponentPresentation(report);
+    if (!report.failed && !report.cancelled) return;
     const now = Date.now();
     let window = this.presentationLogWindows.get(seat);
     if (!window || now - window.start >= 1000) {
@@ -2784,6 +3010,43 @@ export class AegisRoom extends Room<{
       const receivesSpectatorChat = this.spectatorClients.has(recipient.sessionId) && !receivesPlayerChat;
       if ((sender.kind === "player" && receivesPlayerChat) || (sender.kind === "spectator" && receivesSpectatorChat)) {
         recipient.send(CHAT_CHANNEL, broadcast);
+      }
+    }
+  }
+
+  private speakBotLines(event: ServerEvent): void {
+    if (this.isTournamentRoom) return;
+    if (event.kind === "matchStarted") this.spokenBotLines.clear();
+    const isBoss = this.storyBattleId
+      ? getStoryBattleDifficulty({ battleId: this.storyBattleId })?.value === StoryDifficulty.BOSS.value
+      : false;
+    for (const seat of [0, 1] as const) {
+      if (!this.bots[seat] || !this.state.players[seat]?.botPersonaId) continue;
+      const spoken = getBotLine({
+        event,
+        botSeat: seat,
+        securityCounts: [this.state.players[0]?.security.length ?? 0, this.state.players[1]?.security.length ?? 0],
+        turnCount: this.state.turnCount,
+        isBoss,
+      });
+      if (!spoken || this.spokenBotLines.has(spoken.key)) continue;
+      const cooldownKey = `seat:${seat}`;
+      const now = Date.now();
+      const lastChatAt = this.lastChatAtBySender.get(cooldownKey);
+      if (spoken.line.isRepeatable && lastChatAt !== undefined && now - lastChatAt < CHAT_COOLDOWN_MS) continue;
+      this.spokenBotLines.add(spoken.key);
+      this.lastChatAtBySender.set(cooldownKey, now);
+      const cardName = spoken.cardId ? (getCardDefinition(spoken.cardId)?.nameEn ?? "") : "";
+      const message: ChatMessage = {
+        kind: "botLine",
+        line: spoken.line.value,
+        text: spoken.line.text.replace("{card}", cardName),
+        ...(spoken.cardId ? { cardId: spoken.cardId } : {}),
+      };
+      this.debug("bot.chat", { seat, ...message });
+      const broadcast: ChatBroadcast = { sender: { kind: "player", seat }, message };
+      for (const recipient of this.clients) {
+        if (this.seatByClient.has(recipient.sessionId)) recipient.send(CHAT_CHANNEL, broadcast);
       }
     }
   }
@@ -2917,7 +3180,7 @@ export class AegisRoom extends Room<{
         return { ok: false as const, reason: "wrong-phase" as const };
       const actionIndex = this.rollbackHistory?.inputs.length;
       const recorded: ReplayInput = { kind: "intent", seat, intent, ...this.rollbackPlacement() };
-      this.rollbackHistory?.append(recorded, this.state);
+      this.rollbackHistory?.append(recorded, this.engine);
       const started = performance.now();
       const replaySeq = this.nextReplaySeq();
       log("intent.received", {
@@ -2967,6 +3230,7 @@ export class AegisRoom extends Room<{
     const current = () => generation === this.engineGeneration;
     return {
       ...this.engineHooks,
+      deferHandAffordances: true,
       emit: (event) => {
         if (current()) this.engineHooks.emit(event);
       },
@@ -3230,6 +3494,12 @@ export class AegisRoom extends Room<{
     // The engine awaits the matching "respondDecision" intent (correlated by decisionId).
     client?.send(DECISION_CHANNEL, { ...req, stateVersion: this.decisionStateVersion() });
   }
+}
+
+function isOptionalCardList(value: unknown): value is string[] | undefined {
+  return (
+    value === undefined || (Array.isArray(value) && value.length <= 60 && value.every((id) => typeof id === "string"))
+  );
 }
 
 function validCommunityAttribution(value: AegisJoinOptions["community"]): AegisJoinOptions["community"] {

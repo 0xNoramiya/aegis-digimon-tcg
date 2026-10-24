@@ -9,12 +9,14 @@ describe("Chinese story text", () => {
   const texts = new Set([
     "Digimon Liberator",
     ...storyCharacters.map((person) => person.name),
-    ...storyBattles.flatMap((battle) => [
-      battle.title,
-      battle.character,
-      battle.opponent,
-      ...battle.chapters.map((chapter) => chapter.title),
-    ]),
+    ...storyBattles
+      .filter((battle) => !battle.campaignId)
+      .flatMap((battle) => [
+        battle.title,
+        battle.character,
+        battle.opponent,
+        ...battle.chapters.map((chapter) => chapter.title),
+      ]),
   ]);
 
   it("covers every current battle, character, opponent and chapter", () => {

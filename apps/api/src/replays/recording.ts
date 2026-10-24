@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { constants, zstdCompressSync, zstdDecompressSync } from "node:zlib";
+import { copyWithoutSharedBacking } from "#api/replays/copyWithoutSharedBacking";
 import {
   REPLAY_FORMAT_VERSION,
   MAX_REPLAY_BYTES,
@@ -14,6 +16,7 @@ import {
 // Leave room for the file envelope and metadata in the expanded import budget.
 const MAX_RECORDING_BYTES = MAX_REPLAY_BYTES - 64 * 1024;
 const MAX_FRAMES = 5000;
+const FRAME_COMPRESSION = { params: { [constants.ZSTD_c_compressionLevel]: 1 } };
 
 /** Deck order and facedown identities never belong in a replay, even after a game. */
 export function recordingState(state: GameState): GameState {
@@ -72,8 +75,8 @@ export interface ParticipantReplayFile {
 
 export class ReplayRecording {
   readonly id = randomUUID();
-  private serializedFrames: string[] = [];
-  private joinedFrames?: string;
+  private compressedFrames: Uint8Array[] = [];
+  private previousFrame?: Buffer;
   private lastAtMs = 0;
   private bytes = 0;
   private overflow = false;
@@ -86,20 +89,30 @@ export class ReplayRecording {
     if (this.overflow || this.ending) return;
     const atMs = Math.max(this.lastAtMs, now - this.startedAt);
     const recorded = recordingState(state);
-    const serialized = JSON.stringify({ atMs, state: recorded, events: recordingEvents(events) });
-    this.bytes += Buffer.byteLength(serialized);
-    if (this.bytes > MAX_RECORDING_BYTES || this.serializedFrames.length >= MAX_FRAMES) {
-      this.serializedFrames = [];
+    const frame = Buffer.from(JSON.stringify({ atMs, state: recorded, events: recordingEvents(events) }));
+    this.bytes += frame.length;
+    if (this.bytes > MAX_RECORDING_BYTES || this.compressedFrames.length >= MAX_FRAMES) {
+      this.compressedFrames = [];
+      this.previousFrame = undefined;
       this.overflow = true;
       return;
     }
-    this.serializedFrames.push(serialized);
+    this.compressedFrames.push(
+      copyWithoutSharedBacking(
+        zstdCompressSync(
+          frame,
+          this.previousFrame ? { ...FRAME_COMPRESSION, dictionary: this.previousFrame } : FRAME_COMPRESSION,
+        ),
+      ),
+    );
+    this.previousFrame = frame;
     this.lastAtMs = atMs;
-    if (state.gameOver)
-      this.ending = {
-        players: [recorded.players[0]!.displayName, recorded.players[1]!.displayName],
-        winnerSeat: recorded.winnerSeat,
-      };
+    if (!state.gameOver) return;
+    this.previousFrame = undefined;
+    this.ending = {
+      players: [recorded.players[0]!.displayName, recorded.players[1]!.displayName],
+      winnerSeat: recorded.winnerSeat,
+    };
   }
 
   complete(mode: ReplaySummary["mode"], finishedAt = Date.now()): MatchReplay | undefined {
@@ -118,7 +131,6 @@ export class ReplayRecording {
   participantFile(mode: ReplaySummary["mode"], seat: Seat, finishedAt = Date.now()): ParticipantReplayFile | undefined {
     const summary = this.summary(mode, finishedAt);
     if (!summary) return undefined;
-    this.joinedFrames ??= this.serializedFrames.join(",");
     const envelope = JSON.stringify({
       ...summary,
       version: REPLAY_FORMAT_VERSION,
@@ -126,7 +138,7 @@ export class ReplayRecording {
       visibleHandSeats: [0, 1],
       format: "aegis-replay",
     });
-    return { summary, json: `{"frames":[${this.joinedFrames}],${envelope.slice(1)}` };
+    return { summary, json: `{"frames":[${this.serializedFrames().join(",")}],${envelope.slice(1)}` };
   }
 
   get exceededLimit(): boolean {
@@ -134,7 +146,15 @@ export class ReplayRecording {
   }
 
   private get frames(): ReplayFrame[] {
-    return this.serializedFrames.map((frame) => JSON.parse(frame) as ReplayFrame);
+    return this.serializedFrames().map((frame) => JSON.parse(frame) as ReplayFrame);
+  }
+
+  private serializedFrames(): string[] {
+    let previous: Buffer | undefined;
+    return this.compressedFrames.map((compressed) => {
+      previous = zstdDecompressSync(compressed, previous ? { dictionary: previous } : {});
+      return previous.toString();
+    });
   }
 
   private summary(mode: ReplaySummary["mode"], finishedAt: number): ReplaySummary | undefined {
@@ -146,7 +166,7 @@ export class ReplayRecording {
       startedAt: this.startedAt,
       finishedAt: Math.max(this.startedAt, finishedAt),
       winnerSeat: this.ending.winnerSeat,
-      frameCount: this.serializedFrames.length,
+      frameCount: this.compressedFrames.length,
     };
   }
 }
