@@ -1,10 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CommunityDeck } from "@aegis/shared/decks/community";
 import { I18nProvider } from "@/i18n/I18nProvider";
 import { CommunityDeckPage } from "@/screens/community/CommunityDeckPage";
 
-function renderPage(accountId: string, guide: string | null, hidden = false) {
+function renderPage(accountId: string, guide: string | null, hidden = false, mainDeck: string[] = []) {
   const deck: CommunityDeck = {
     id: "public-guide",
     name: "Guide deck",
@@ -20,7 +20,7 @@ function renderPage(accountId: string, guide: string | null, hidden = false) {
     hasGuide: guide !== null,
     guide,
     status: hidden ? "hidden" : "public",
-    mainDeck: [],
+    mainDeck,
     eggDeck: [],
     mainDeckArts: [],
     eggDeckArts: [],
@@ -72,5 +72,17 @@ describe("guide ownership controls", () => {
     renderPage("owner", "## Strategy", true);
     expect(await screen.findByRole("heading", { name: "Strategy" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Edit guide" })).toBeNull();
+  });
+});
+
+describe("decklist card inspection", () => {
+  it("opens a decklist card with its printed text without copying the deck", async () => {
+    renderPage("reader", null, false, ["BT11-088", "BT11-088"]);
+    fireEvent.click(await screen.findByRole("button", { name: "Open Bagramon" }));
+    const detail = screen.getByRole("dialog");
+    expect(detail.textContent).toContain("Bagramon");
+    expect(detail.textContent).toContain("If your opponent has 1 or fewer Digimon in play");
+    fireEvent.click(within(detail).getByRole("button", { name: "Close" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 });

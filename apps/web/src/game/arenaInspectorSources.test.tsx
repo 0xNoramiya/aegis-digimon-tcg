@@ -144,6 +144,21 @@ it.each([true, false])("shows link effects and the missing-effect fallback at wi
   expect(document.querySelector('[data-role="linked"]')?.hasAttribute("data-empty")).toBe(false);
 });
 
+it.each([true, false])("reveals the full printed effect of a source without inheritable text at wide=%s", (wide) => {
+  renderInspector({ wide, cards: [{ cardId: "BT11-088", role: "stack" }] });
+  const source = document.querySelector<HTMLElement>('[data-card-id="BT11-088"]')!;
+  expect(source.hasAttribute("data-empty")).toBe(true);
+  const printed = source.querySelector<HTMLDetailsElement>(".arena-permanent-inspector__source-printed")!;
+  expect(printed.open).toBe(false);
+  expect(within(printed).getByText("Printed effect")).toBeTruthy();
+  expect(printed.textContent).toContain("If your opponent has 1 or fewer Digimon in play");
+});
+
+it.each([true, false])("keeps the printed effect of a face-down source hidden at wide=%s", (wide) => {
+  renderInspector({ wide, cards: [{ cardId: "BT11-088", role: "stack", faceDown: true }] });
+  expect(document.querySelector(".arena-permanent-inspector__source-printed")).toBeNull();
+});
+
 it("resizes the side sources column from its separator and saves the width", () => {
   renderInspector({ wide: true });
   const separator = screen.getByRole("separator", { name: "Drag to resize the sources panel" });
