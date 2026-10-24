@@ -34068,11 +34068,7 @@
         "actions": [
           {
             "kind": "SelectBind",
-            "target": {
-              "filter": { "controller": "opponent", "kind": ["Digimon"], "unsuspended": true },
-              "count": 1,
-              "bindAs": "suspended"
-            }
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1, "bindAs": "suspended" }
           },
           { "kind": "Suspend", "target": { "fromSelectionRef": "suspended", "filter": {}, "count": 1 } },
           {
@@ -34093,11 +34089,7 @@
         "actions": [
           {
             "kind": "SelectBind",
-            "target": {
-              "filter": { "controller": "opponent", "kind": ["Digimon"], "unsuspended": true },
-              "count": 1,
-              "bindAs": "suspended"
-            }
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1, "bindAs": "suspended" }
           },
           { "kind": "Suspend", "target": { "fromSelectionRef": "suspended", "filter": {}, "count": 1 } },
           {
@@ -39150,7 +39142,7 @@
           {
             "kind": "SelectBind",
             "target": {
-              "filter": { "controller": "opponent", "kind": ["Digimon"], "unsuspended": true },
+              "filter": { "controller": "opponent", "kind": ["Digimon"] },
               "count": 1,
               "bindAs": "suspended"
             },
@@ -39188,7 +39180,7 @@
           {
             "kind": "SelectBind",
             "target": {
-              "filter": { "controller": "opponent", "kind": ["Digimon"], "unsuspended": true },
+              "filter": { "controller": "opponent", "kind": ["Digimon"] },
               "count": 1,
               "bindAs": "suspended"
             },
@@ -40374,10 +40366,7 @@
           {
             "effectTextPart": "Then, delete 1 Digimon with a play cost of 3 or less.",
             "kind": "Delete",
-            "target": {
-              "filter": { "controller": "any", "kind": ["Digimon"], "playCostLte": 3 },
-              "count": 1
-            }
+            "target": { "filter": { "controller": "any", "kind": ["Digimon"], "playCostLte": 3 }, "count": 1 }
           }
         ]
       },
@@ -40400,10 +40389,7 @@
           {
             "effectTextPart": "Then, delete 1 Digimon with a play cost of 3 or less.",
             "kind": "Delete",
-            "target": {
-              "filter": { "controller": "any", "kind": ["Digimon"], "playCostLte": 3 },
-              "count": 1
-            }
+            "target": { "filter": { "controller": "any", "kind": ["Digimon"], "playCostLte": 3 }, "count": 1 }
           }
         ]
       },
@@ -41809,9 +41795,9 @@
           {
             "kind": "SubTrigger",
             "event": "endOfTurn",
-            "printedClause": "[Pending] At the next end of your opponent’s turn, return it to the hand.",
             "turnScope": "opponentsTurn",
             "once": true,
+            "printedClause": "[Pending] At the next end of your opponent’s turn, return it to the hand.",
             "on": { "filter": { "boundRef": "playedVeemonOrWormmon" }, "count": 1 },
             "actions": [
               {
