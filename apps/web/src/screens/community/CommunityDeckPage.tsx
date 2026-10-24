@@ -1,6 +1,7 @@
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { DeckGuide } from "@/screens/community/DeckGuide";
 import { DeckGuideEditor } from "@/screens/community/DeckGuideEditor";
+import { CardDetailDrawer } from "@/screens/CardDetailDrawer";
 import { useEffect, useState } from "react";
 import { type CommunityDeck } from "@aegis/shared";
 import { communityApi } from "../../community/client";
@@ -49,6 +50,7 @@ export function CommunityDeckPage({
   const [moderating, setModerating] = useState(false);
   const [hiding, setHiding] = useState(false);
   const [moderationFailed, setModerationFailed] = useState(false);
+  const [inspectedCardId, setInspectedCardId] = useState<string | null>(null);
 
   useEffect(() => {
     let current = true;
@@ -264,7 +266,14 @@ export function CommunityDeckPage({
                 <ul className="community-decklist__cards">
                   {section.entries.map(({ cardId, count }) => (
                     <li key={cardId} className="community-decklist__card">
-                      <CardFull cardId={cardId} width={88} zoomOnHover />
+                      <button
+                        type="button"
+                        className="community-decklist__open"
+                        aria-label={t("feed.openCard", { card: getCardName(cardId) })}
+                        onClick={() => setInspectedCardId((current) => (current === cardId ? null : cardId))}
+                      >
+                        <CardFull cardId={cardId} width={88} selected={inspectedCardId === cardId} zoomOnHover />
+                      </button>
                       <span className="community-decklist__count">×{count}</span>
                       <span className="community-decklist__name">{getCardName(cardId)}</span>
                     </li>
@@ -275,6 +284,7 @@ export function CommunityDeckPage({
           </div>
         </section>
       </div>
+      {inspectedCardId ? <CardDetailDrawer cardId={inspectedCardId} onClose={() => setInspectedCardId(null)} /> : null}
     </div>
   );
 }
