@@ -867,6 +867,7 @@ export class CombatController {
         this.settlementDepth--;
       }
     }
+    if (!this.access.game.gameOver) await this.hooks.afterAttackEnded?.();
   }
 
   /**
