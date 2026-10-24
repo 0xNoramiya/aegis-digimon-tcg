@@ -32846,7 +32846,7 @@
           {
             "kind": "SubTrigger",
             "event": "whenSecurityRemoved",
-            "sourceFilter": { "controller": "opponent" },
+            "sourceFilter": { "controller": "mine" },
             "actions": [
               {
                 "kind": "ModifyDP",
@@ -100847,7 +100847,7 @@
                   "filter": {
                     "controllerDefault": "mine",
                     "kind": ["Digimon"],
-                    "nameOrTrait": [{ "tokens": ["Aegiochusmon", "Jupitermon"], "match": "nameExact" }],
+                    "nameOrTrait": [{ "tokens": ["Aegiochusmon", "Jupitermon"], "match": "name" }],
                     "excludeSelf": false
                   },
                   "count": 1
@@ -105531,6 +105531,7 @@
           {
             "kind": "SubTrigger",
             "event": "whenLinked",
+            "sourceFilter": { "isSelfRef": true },
             "on": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "actions": [
               {
@@ -107031,6 +107032,7 @@
           {
             "kind": "SubTrigger",
             "event": "whenLinked",
+            "sourceFilter": { "isSelfRef": true },
             "on": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "actions": [
               {
