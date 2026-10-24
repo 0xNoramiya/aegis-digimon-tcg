@@ -74838,8 +74838,7 @@
           }
         ],
         "isInherited": true,
-        "frequency": "OncePerTurn",
-        "sharedUseKey": "bt21-044-marcus-security"
+        "frequency": "OncePerTurn"
       }
     ],
     "coverage": "full",
