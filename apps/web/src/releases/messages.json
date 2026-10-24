@@ -1,4 +1,58 @@
 {
+  "releases.1.39.0-beta.summary": {
+    "en": "New story campaigns, bot difficulty levels and play styles, BT27 Chronicle cards, and fixes to card effects and match presentation.",
+    "pt-BR": "Novas campanhas de história, níveis de dificuldade e estilos dos bots, cartas Chronicle de BT27 e correções de efeitos e apresentação das partidas.",
+    "es": "Nuevas campañas de historia, niveles de dificultad y estilos de los bots, cartas Chronicle de BT27 y correcciones de efectos y presentación de las partidas.",
+    "it": "Nuove campagne della storia, livelli di difficoltà e stili dei bot, carte Chronicle di BT27 e correzioni agli effetti e alla presentazione delle partite."
+  },
+  "releases.1.39.0-beta.feature.bots": {
+    "en": "Choose from five bot difficulty levels and three play styles, with characters and portraits matched to their decks.",
+    "pt-BR": "Escolha entre cinco níveis de dificuldade e três estilos de jogo dos bots, com personagens e retratos que combinam com seus decks.",
+    "es": "Elige entre cinco niveles de dificultad y tres estilos de juego de los bots, con personajes y retratos que corresponden a sus mazos.",
+    "it": "Scegli tra cinque livelli di difficoltà e tre stili di gioco dei bot, con personaggi e ritratti abbinati ai loro mazzi."
+  },
+  "releases.1.39.0-beta.feature.story": {
+    "en": "Explore story campaigns across Digimon anime, games and manga, with themed decks, character dialogue and battles that grow harder as you progress.",
+    "pt-BR": "Explore campanhas de história dos animes, jogos e mangás de Digimon, com decks temáticos, diálogos dos personagens e batalhas que ficam mais difíceis conforme você avança.",
+    "es": "Explora campañas de historia de los animes, juegos y mangas de Digimon, con mazos temáticos, diálogos de personajes y batallas que se vuelven más difíciles al avanzar.",
+    "it": "Esplora campagne della storia tratte da anime, giochi e manga di Digimon, con mazzi a tema, dialoghi dei personaggi e battaglie sempre più difficili."
+  },
+  "releases.1.39.0-beta.feature.chronicle": {
+    "en": "BT27 adds the Chronicle Ryudamon line: Ryudamon, Ginryumon, Hisyaryumon and Ouryumon.",
+    "pt-BR": "BT27 adiciona a linha Chronicle de Ryudamon: Ryudamon, Ginryumon, Hisyaryumon e Ouryumon.",
+    "es": "BT27 añade la línea Chronicle de Ryudamon: Ryudamon, Ginryumon, Hisyaryumon y Ouryumon.",
+    "it": "BT27 aggiunge la linea Chronicle di Ryudamon: Ryudamon, Ginryumon, Hisyaryumon e Ouryumon."
+  },
+  "releases.1.39.0-beta.fix.evolution": {
+    "en": "Effect-driven evolution correctly handles Digi-Eggs in the breeding area, legal DNA material choices and unavailable optional DNA evolutions.",
+    "pt-BR": "A evolução por efeitos trata corretamente Digi-Ovos na área de criação, escolhas de materiais legais para DNA e evoluções DNA opcionais sem materiais disponíveis.",
+    "es": "La digievolución por efectos gestiona correctamente los Digi-Huevos en el área de crianza, la selección de materiales legales para ADN y las digievoluciones ADN opcionales sin materiales disponibles.",
+    "it": "La digievoluzione tramite effetti gestisce correttamente i Digi-Uova nell’area di allevamento, la scelta dei materiali legali per DNA e le digievoluzioni DNA facoltative senza materiali disponibili."
+  },
+  "releases.1.39.0-beta.fix.nestedOptions": {
+    "en": "Options used during attacks caused by effects finish resolving correctly, including Murasamemon and Wolvermon combinations.",
+    "pt-BR": "Options usadas durante ataques causados por efeitos terminam de resolver corretamente, incluindo combinações de Murasamemon e Wolvermon.",
+    "es": "Las Options usadas durante ataques causados por efectos terminan de resolverse correctamente, incluidas las combinaciones de Murasamemon y Wolvermon.",
+    "it": "Le Option usate durante attacchi causati da effetti completano correttamente la risoluzione, incluse le combinazioni di Murasamemon e Wolvermon."
+  },
+  "releases.1.39.0-beta.fix.cardTriggers": {
+    "en": "Salamon reacts to your security removal, Temple of Beginnings accepts Holy and Wrath forms, and Logimon and Logamon react only to their own links.",
+    "pt-BR": "Salamon reage à remoção da sua segurança, Temple of Beginnings aceita as formas Holy e Wrath, e Logimon e Logamon reagem apenas aos próprios links.",
+    "es": "Salamon reacciona a la retirada de tu seguridad, Temple of Beginnings acepta las formas Holy y Wrath, y Logimon y Logamon reaccionan solo a sus propios enlaces.",
+    "it": "Salamon reagisce alla rimozione della tua sicurezza, Temple of Beginnings accetta le forme Holy e Wrath, e Logimon e Logamon reagiscono solo ai propri collegamenti."
+  },
+  "releases.1.39.0-beta.fix.presentation": {
+    "en": "Cards in hand remain visible, turn-start draws no longer replay during later effects, and security battles show the attacker after it digivolves.",
+    "pt-BR": "As cartas na mão permanecem visíveis, compras do início do turno não são repetidas durante efeitos posteriores e batalhas de segurança mostram o atacante após ele evoluir.",
+    "es": "Las cartas en la mano permanecen visibles, los robos del inicio del turno ya no se repiten durante efectos posteriores y las batallas de seguridad muestran al atacante después de digievolucionar.",
+    "it": "Le carte in mano restano visibili, le pescate di inizio turno non vengono ripetute durante effetti successivi e le battaglie di sicurezza mostrano l’attaccante dopo la digievoluzione."
+  },
+  "releases.1.39.0-beta.fix.prompts": {
+    "en": "Option-use choices and paid costs are clearer, inherited effect descriptions translate correctly, and rollback restores hand state reliably.",
+    "pt-BR": "As escolhas de uso de Options e os custos pagos estão mais claros, as descrições de efeitos herdados são traduzidas corretamente e o rollback restaura o estado da mão de forma confiável.",
+    "es": "Las elecciones de uso de Options y los costes pagados son más claros, las descripciones de efectos heredados se traducen correctamente y la reversión restaura el estado de la mano de forma fiable.",
+    "it": "Le scelte per usare le Option e i costi pagati sono più chiari, le descrizioni degli effetti ereditati vengono tradotte correttamente e il ripristino ricostruisce correttamente lo stato della mano."
+  },
   "releases.1.38.1-beta.summary": {
     "en": "Fixes for Biomon link effects and opponent card sleeves, plus faster game-state lookups.",
     "pt-BR": "Correções nos efeitos de link de Biomon e nos sleeves das cartas do oponente, além de consultas mais rápidas ao estado do jogo.",
