@@ -1,4 +1,5 @@
 import { Icons } from "@/design/icons";
+import { FriendActionsMenu } from "@/friends/FriendActionsMenu";
 import { FriendDetailPanel } from "@/friends/FriendDetailPanel";
 import { useContext, useState } from "react";
 import { SocialContext } from "@/social/SocialContext";
@@ -101,40 +102,13 @@ export function FriendListItem({ friend, tab, busy, onAction, onMessage, selecte
             {t("friends.unblock")}
           </Button>
         ) : (
-          <details
-            className="friends-more"
-            onKeyDown={(event) => {
-              if (event.key === "Escape") {
-                event.preventDefault();
-                event.currentTarget.open = false;
-                event.currentTarget.querySelector("summary")?.focus();
-              }
-            }}
-          >
-            <summary aria-label={t("friends.more", { name: friend.displayName })}>
-              <Icons.MoreHorizontal size={20} />
-            </summary>
-            <div className="friends-more-actions">
-              {tab === "friends" ? (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  disabled={busy}
-                  onClick={() => void onAction(() => friendsApi.remove(friend.accountId))}
-                >
-                  {t("friends.remove")}
-                </Button>
-              ) : null}
-              <Button
-                size="sm"
-                variant="ghost"
-                disabled={busy}
-                onClick={() => void onAction(() => friendsApi.block(friend.accountId))}
-              >
-                {t("friends.block")}
-              </Button>
-            </div>
-          </details>
+          <FriendActionsMenu
+            accountId={friend.accountId}
+            displayName={friend.displayName}
+            canRemove={tab === "friends"}
+            busy={busy}
+            onAction={onAction}
+          />
         )}
       </div>
     </li>

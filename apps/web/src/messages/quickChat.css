@@ -216,18 +216,6 @@
 .friends-screen-compact .friends-actions > .aegis-button {
   flex: 1;
 }
-.friends-screen-compact .friends-more-actions {
-  position: static;
-  min-width: 0;
-  box-shadow: none;
-}
-.friends-screen-compact .friends-more[open] {
-  flex-basis: 100%;
-}
-.friends-screen-compact .friends-more[open] summary {
-  margin-inline-start: auto;
-}
-
 .friends-add-chevron {
   margin-inline-start: auto;
 }
@@ -240,7 +228,7 @@
 .friends-screen-compact .friends-person {
   padding-inline-end: var(--ds-touch-target);
 }
-.friends-screen-compact .friends-more:not([open]) {
+.friends-screen-compact .friends-more {
   position: absolute;
   inset-inline-end: 0;
   top: var(--ds-space-3);

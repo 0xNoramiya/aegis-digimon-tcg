@@ -154,39 +154,54 @@
   min-height: var(--ds-touch-target);
 }
 .friends-more {
-  position: relative;
-}
-.friends-more summary {
   display: grid;
   place-items: center;
+  flex-shrink: 0;
   width: var(--ds-touch-target);
   height: var(--ds-touch-target);
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--ds-text-2);
   cursor: pointer;
-  list-style: none;
   border-radius: var(--ds-radius-md);
 }
-.friends-more summary::-webkit-details-marker {
-  display: none;
-}
-.friends-more summary:hover {
+.friends-more:hover,
+.friends-more[data-state="open"] {
   background: var(--ds-fill);
 }
 .friends-more-actions {
-  position: absolute;
   z-index: var(--ds-z-sheet);
-  right: 0;
-  top: 100%;
-  display: grid;
   min-width: 12rem;
+  max-width: calc(100vw - var(--ds-space-6));
+  max-height: var(--radix-dropdown-menu-content-available-height);
+  overflow-y: auto;
   padding: var(--ds-space-2);
   border: 1px solid var(--ds-line);
   border-radius: var(--ds-radius-md);
   background: var(--ds-sheet);
+  color: var(--ds-text);
   box-shadow: var(--ds-shadow-overlay);
+  font-family: var(--ds-font-body);
 }
-.friends-more-actions .aegis-button {
-  justify-content: start;
+.friends-more-actions [role="menuitem"] {
+  display: flex;
+  align-items: center;
+  min-height: var(--ds-touch-target);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-sm);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+.friends-more-actions [data-highlighted] {
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+}
+.friends-more-actions [data-disabled] {
+  opacity: 0.5;
+  cursor: default;
 }
 .friends-empty {
   padding: var(--ds-space-8) var(--ds-space-3);

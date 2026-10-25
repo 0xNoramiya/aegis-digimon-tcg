@@ -187,12 +187,11 @@ it("provides friend management, requests and blocks without leaving the floating
   await waitFor(() => expect(request).toHaveBeenCalledWith("/account/blocks/blocked", { method: "DELETE" }));
   fireEvent.click(screen.getByRole("button", { name: /Friends \(/ }));
   await waitFor(() => expect(screen.getByRole("button", { name: "Challenge" }).hasAttribute("disabled")).toBe(false));
-  fireEvent.click(screen.getByLabelText("More actions for Friend"));
-  fireEvent.click(screen.getByRole("button", { name: "Remove friend" }));
+  fireEvent.keyDown(screen.getByLabelText("More actions for Friend"), { key: "ArrowDown" });
+  fireEvent.click(await screen.findByRole("menuitem", { name: "Remove friend" }));
   await waitFor(() => expect(request).toHaveBeenCalledWith("/friends/friend", { method: "DELETE" }));
-  await waitFor(() =>
-    expect(screen.getByRole("button", { name: "Block player" }).hasAttribute("disabled")).toBe(false),
-  );
-  fireEvent.click(screen.getByRole("button", { name: "Block player" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "Challenge" }).hasAttribute("disabled")).toBe(false));
+  fireEvent.keyDown(screen.getByLabelText("More actions for Friend"), { key: "ArrowDown" });
+  fireEvent.click(await screen.findByRole("menuitem", { name: "Block player" }));
   await waitFor(() => expect(request).toHaveBeenCalledWith("/account/blocks/friend", { method: "PUT" }));
 });

@@ -106,6 +106,49 @@ for (const width of [390, 1440]) {
           ),
         ),
       });
+      const more = chat.getByLabel("More actions for Quick Friend");
+      const beforeMore = await more.boundingBox();
+      const beforeScrollHeight = await chat
+        .locator(".friends-screen-compact")
+        .evaluate((element) => element.scrollHeight);
+      await more.click();
+      const afterMore = await more.boundingBox();
+      expect(afterMore!.y).toBeCloseTo(beforeMore!.y, 0);
+      expect(await chat.locator(".friends-screen-compact").evaluate((element) => element.scrollHeight)).toBe(
+        beforeScrollHeight,
+      );
+      const menu = page.getByRole("menu");
+      await expect(menu.getByRole("menuitem", { name: "Remove friend" })).toBeVisible();
+      await expect(menu.getByRole("menuitem", { name: "Block player" })).toBeVisible();
+      const menuRect = await menu.boundingBox();
+      expect(menuRect!.x).toBeGreaterThanOrEqual(0);
+      expect(menuRect!.x + menuRect!.width).toBeLessThanOrEqual(width);
+      expect(menuRect!.y + menuRect!.height).toBeLessThanOrEqual(1000);
+      await page.screenshot({
+        path: fileURLToPath(
+          new URL(
+            `../../../.local/validation/quick-chat-menu-${width}-${dark ? "dark" : "light"}.png`,
+            import.meta.url,
+          ),
+        ),
+      });
+      await page.keyboard.press("Escape");
+      await expect(menu).toHaveCount(0);
+      await expect(more).toBeFocused();
+      await more.press("ArrowDown");
+      await expect(menu.getByRole("menuitem", { name: "Remove friend" })).toBeFocused();
+      await page.getByRole("heading", { name: "Aegis", exact: true }).click();
+      await expect(menu).toHaveCount(0);
+      await expect(more).toBeVisible();
+      await page.setViewportSize({ width, height: 600 });
+      await more.click();
+      await expect(menu).toBeVisible();
+      const shortMenuRect = await menu.boundingBox();
+      expect(shortMenuRect!.y).toBeGreaterThanOrEqual(0);
+      expect(shortMenuRect!.y + shortMenuRect!.height).toBeLessThanOrEqual(600);
+      await page.keyboard.press("Escape");
+      await page.setViewportSize({ width, height: 1000 });
+
       await chat.getByRole("button", { name: "Message", exact: true }).click();
       await expect(chat.getByText("Bora testar os decks?", { exact: true })).toBeVisible();
       await chat.getByRole("button", { name: "Close", exact: true }).click();
