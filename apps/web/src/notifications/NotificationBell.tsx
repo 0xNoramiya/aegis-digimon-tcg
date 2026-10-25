@@ -166,8 +166,10 @@ function NotificationItem({ notification, onSelect }: { notification: AccountNot
   if (notification.kind === "friend_request" || notification.kind === "friend_accepted") {
     return (
       <button className="aegis-notifications__item" data-unread={unread || undefined} onClick={onSelect}>
+        <span className="aegis-notifications__dot" aria-hidden="true" />
         <span className="aegis-notifications__copy">
           <span className="aegis-notifications__headline">
+            {unread ? <span className="aegis-sr-only">{t("notifications.unread")} </span> : null}
             {t(`friends.notification.${notification.kind}`, { name: notification.payload.displayName })}
           </span>
           {when}
