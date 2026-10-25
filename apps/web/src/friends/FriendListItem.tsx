@@ -105,6 +105,7 @@ export function FriendListItem({ friend, tab, busy, onAction, onMessage, selecte
             className="friends-more"
             onKeyDown={(event) => {
               if (event.key === "Escape") {
+                event.preventDefault();
                 event.currentTarget.open = false;
                 event.currentTarget.querySelector("summary")?.focus();
               }

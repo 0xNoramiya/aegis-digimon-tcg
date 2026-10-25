@@ -11,11 +11,13 @@ for (const width of [390, 1440]) {
         localStorage.setItem("aegis:locale", "en");
         localStorage.setItem("aegis:darkMode", String(darkMode));
       }, dark);
-      const api = `http://127.0.0.1:${process.env.AEGIS_E2E_EDGE_PORT ?? 2569}`;
+      const api = process.env.AEGIS_E2E_API_URL ?? `http://127.0.0.1:${process.env.AEGIS_E2E_EDGE_PORT ?? 2569}`;
       await page.route(`${api}/friends`, (route) =>
         route.fulfill({
           json: {
-            friends: [{ accountId: "friend", displayName: "Quick Friend", avatarId: null, avatarUrl: null, since: 1 }],
+            friends: [
+              { accountId: "friend", displayName: "Quick Friend", avatarId: null, avatarUrl: null, since: Date.now() },
+            ],
           },
         }),
       );
@@ -96,7 +98,15 @@ for (const width of [390, 1440]) {
       await expect(input).toHaveValue("Next match?");
       await chat.getByRole("button", { name: "Back to friends", exact: true }).click();
       await expect(chat.getByRole("searchbox", { name: "Find a player", exact: true })).toBeFocused();
-      await chat.getByRole("button", { name: "Chat with Quick Friend", exact: true }).click();
+      await page.screenshot({
+        path: fileURLToPath(
+          new URL(
+            `../../../.local/validation/quick-chat-directory-${width}-${dark ? "dark" : "light"}.png`,
+            import.meta.url,
+          ),
+        ),
+      });
+      await chat.getByRole("button", { name: "Message", exact: true }).click();
       await expect(chat.getByText("Bora testar os decks?", { exact: true })).toBeVisible();
       await chat.getByRole("button", { name: "Close", exact: true }).click();
       await expect(chat.getByRole("button", { name: "Open quick chat", exact: true })).toBeVisible();

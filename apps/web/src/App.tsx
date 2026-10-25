@@ -508,9 +508,13 @@ function LoadedAegisClient({
   const [leaveMatchPromptOpen, setLeaveMatchPromptOpen] = useState(false);
   const concedeMatchRef = useRef<(() => void) | undefined>(undefined);
   const leaveMatchRouteRef = useRef<AppRoute | undefined>(undefined);
+  const leaveMatchActionRef = useRef<(() => void) | undefined>(undefined);
   const setLeaveForfeitsMatch = useCallback((concede: (() => void) | undefined) => {
     concedeMatchRef.current = concede;
-    if (!concede) setLeaveMatchPromptOpen(false);
+    if (!concede) {
+      leaveMatchActionRef.current = undefined;
+      setLeaveMatchPromptOpen(false);
+    }
   }, []);
   const screen = route.screen;
   useEffect(() => {
@@ -542,6 +546,7 @@ function LoadedAegisClient({
           ? { screen: "lobby" }
           : (nextRoute ?? { screen: "home" });
       if (concedeMatchRef.current && resolvedRoute.screen !== "game") {
+        leaveMatchActionRef.current = undefined;
         leaveMatchRouteRef.current = resolvedRoute;
         window.history.pushState(null, "", pathForRoute({ screen: "game" }));
         setLeaveMatchPromptOpen(true);
@@ -557,11 +562,17 @@ function LoadedAegisClient({
 
   const confirmLeaveMatch = () => {
     setLeaveMatchPromptOpen(false);
+    const action = leaveMatchActionRef.current;
+    leaveMatchActionRef.current = undefined;
     concedeMatchRef.current?.();
     const nextRoute = leaveMatchRouteRef.current ?? { screen: "lobby" };
     leaveMatchRouteRef.current = undefined;
     setSeriesGame(undefined);
     clearReconnectSession();
+    if (action) {
+      action();
+      return;
+    }
     window.history.replaceState(null, "", pathForRoute(nextRoute));
     setRoute(nextRoute);
   };
@@ -691,11 +702,22 @@ function LoadedAegisClient({
       startMatch("private_guest", invite.roomCode);
     },
   });
+  function runSocialNavigation(action: () => void) {
+    if (concedeMatchRef.current) {
+      leaveMatchActionRef.current = action;
+      leaveMatchRouteRef.current = undefined;
+      setLeaveMatchPromptOpen(true);
+      return;
+    }
+    action();
+  }
   const challengeFriend = (friend: Friend) => {
-    setInvitedRoomCode(undefined);
-    setPrivateRoom(undefined);
-    setChallengeTarget(friend);
-    navigateScreen("lobby");
+    runSocialNavigation(() => {
+      setInvitedRoomCode(undefined);
+      setPrivateRoom(undefined);
+      setChallengeTarget(friend);
+      navigateScreen("lobby");
+    });
   };
   const inviteCreatedRoom = useCallback(
     (code: string) => {
@@ -721,8 +743,10 @@ function LoadedAegisClient({
         quickChat,
         challenge: challengeFriend,
         watch: (friend) => {
-          startMatch("spectator", friend.roomCode);
-          setSpectatorFriendId(friend.accountId);
+          runSocialNavigation(() => {
+            startMatch("spectator", friend.roomCode);
+            setSpectatorFriendId(friend.accountId);
+          });
         },
       }}
     >
@@ -1099,7 +1123,13 @@ function LoadedAegisClient({
           </ClientErrorBoundary>
         ) : null}
         {leaveMatchPromptOpen ? (
-          <LeaveMatchDialog onConfirm={confirmLeaveMatch} onClose={() => setLeaveMatchPromptOpen(false)} />
+          <LeaveMatchDialog
+            onConfirm={confirmLeaveMatch}
+            onClose={() => {
+              leaveMatchActionRef.current = undefined;
+              setLeaveMatchPromptOpen(false);
+            }}
+          />
         ) : null}
         <QuickChatDock inMatch={screen === "game"} />
         <SocialInvites canAccept={screen !== "game"} />

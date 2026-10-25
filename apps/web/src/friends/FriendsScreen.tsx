@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useId } from "react";
 import { SocialContext } from "@/social/SocialContext";
 import { FriendListItem } from "@/friends/FriendListItem";
 import { useEffect, useState, type FormEvent } from "react";
@@ -14,10 +14,14 @@ import { friendsApi } from "@/friends/friendsApi";
 import { getFriendErrorKey } from "@/friends/getFriendErrorKey";
 import "@/friends/friends.css";
 
-type FriendsScreenParams = { signedIn: boolean; onSignIn: () => void };
+type FriendsScreenParams = { signedIn: boolean; onSignIn: () => void; compact?: boolean };
 type FriendsData = { friends: Friend[]; requests: FriendRequest[]; blocks: Friend[] };
 
-export function FriendsScreen({ signedIn, onSignIn }: FriendsScreenParams) {
+export function FriendsScreen({ signedIn, onSignIn, compact = false }: FriendsScreenParams) {
+  const displayNameId = useId();
+  const Root = compact ? "section" : "main";
+  const AddContainer = compact ? "details" : "div";
+  const AddHeading = compact ? "summary" : "h2";
   const social = useContext(SocialContext);
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
@@ -59,6 +63,7 @@ export function FriendsScreen({ signedIn, onSignIn }: FriendsScreenParams) {
     try {
       await action();
       setRevision((value) => value + 1);
+      social.refresh();
     } catch (error) {
       setNotice(getFriendErrorKey(error));
     } finally {
@@ -92,13 +97,42 @@ export function FriendsScreen({ signedIn, onSignIn }: FriendsScreenParams) {
       return first.displayName.localeCompare(second.displayName);
     });
 
+  const addFriendPanel = (
+    <Panel className="friends-add-panel">
+      <AddContainer className="friends-add-disclosure">
+        <AddHeading>
+          <Icons.Users size={20} />
+          {t("friends.add")}
+          {compact ? <Icons.ChevronDown className="friends-add-chevron" size={18} /> : null}
+        </AddHeading>
+        <form className="friends-form" onSubmit={addFriend}>
+          <div>
+            <Field
+              label={t("friends.displayName")}
+              id={displayNameId}
+              autoComplete="off"
+              maxLength={32}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              required
+            />
+            <Button disabled={busy || !name.trim()} type="submit">
+              {t("friends.add")}
+            </Button>
+          </div>
+        </form>
+        <p>{t("friends.addHint")}</p>
+      </AddContainer>
+    </Panel>
+  );
+
   return (
-    <main className="friends-screen">
+    <Root className={`friends-screen${compact ? " friends-screen-compact" : ""}`}>
       {social.unreadMessages ? (
         <p role="status">{t("friends.message.unread", { count: social.unreadMessages })}</p>
       ) : null}
       {social.error && !social.connected ? <p role="alert">{t("friends.socialFailed")}</p> : null}
-      <header className="friends-header">
+      <header className="friends-header" hidden={compact}>
         <div>
           <h1>{t("friends.title")}</h1>
           <p>{t("friends.description")}</p>
@@ -132,6 +166,7 @@ export function FriendsScreen({ signedIn, onSignIn }: FriendsScreenParams) {
                 placeholder={t("friends.searchHint")}
                 type="search"
               />
+              {compact ? addFriendPanel : null}
               {notice ? <Alert>{t(notice)}</Alert> : null}
               {failed ? (
                 <div role="alert">
@@ -164,34 +199,10 @@ export function FriendsScreen({ signedIn, onSignIn }: FriendsScreenParams) {
                 </section>
               ) : null}
             </section>
-            <aside className="friends-sidebar">
-              <Panel className="friends-add-panel">
-                <h2>
-                  <Icons.Users size={20} />
-                  {t("friends.add")}
-                </h2>{" "}
-                <form className="friends-form" onSubmit={addFriend}>
-                  <div>
-                    <Field
-                      label={t("friends.displayName")}
-                      id="friend-display-name"
-                      autoComplete="off"
-                      maxLength={32}
-                      value={name}
-                      onChange={(event) => setName(event.target.value)}
-                      required
-                    />
-                    <Button disabled={busy || !name.trim()} type="submit">
-                      {t("friends.add")}
-                    </Button>
-                  </div>
-                </form>
-                <p>{t("friends.addHint")}</p>
-              </Panel>
-            </aside>
+            {!compact ? <aside className="friends-sidebar">{addFriendPanel}</aside> : null}
           </div>
         </>
       )}
-    </main>
+    </Root>
   );
 }

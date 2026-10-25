@@ -1,9 +1,9 @@
-import { useContext, useEffect, useId, useRef, useState } from "react";
+import { useContext, useEffect, useId, useRef } from "react";
 import { SocialContext } from "@/social/SocialContext";
 import { DirectMessagePanel } from "@/messages/DirectMessagePanel";
-import { Avatar, Badge, Field, IconButton } from "@/design/primitives";
+import { Avatar, Badge, IconButton } from "@/design/primitives";
 import { Icons } from "@/design/icons";
-import { FriendPresence } from "@/social/FriendPresence";
+import { FriendsScreen } from "@/friends/FriendsScreen";
 import { useTranslation } from "@/i18n/useTranslation";
 import "@/messages/quickChat.css";
 
@@ -16,10 +16,8 @@ export function QuickChatDock({ inMatch = false }: QuickChatDockParams) {
   const root = useRef<HTMLElement>(null);
   const launcher = useRef<HTMLButtonElement>(null);
   const wasExpanded = useRef(false);
-  const [query, setQuery] = useState("");
   useEffect(() => {
     if (!chat?.expanded) {
-      setQuery("");
       if (wasExpanded.current) {
         launcher.current?.focus();
       }
@@ -31,16 +29,13 @@ export function QuickChatDock({ inMatch = false }: QuickChatDockParams) {
       return;
     }
     const frame = requestAnimationFrame(() =>
-      root.current?.querySelector<HTMLInputElement>(".quick-chat-search input")?.focus({ preventScroll: true }),
+      root.current?.querySelector<HTMLInputElement>("input[type=search]")?.focus({ preventScroll: true }),
     );
     return () => cancelAnimationFrame(frame);
   }, [chat?.expanded, chat?.showFriends]);
   if (!chat || !social.accountId) {
     return null;
   }
-  const friends = social.friends.filter((friend) =>
-    friend.displayName.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
-  );
   const unread = social.unreadMessages ?? 0;
   function minimize() {
     chat?.minimize();
@@ -88,44 +83,7 @@ export function QuickChatDock({ inMatch = false }: QuickChatDockParams) {
                 <Icons.X size={18} />
               </IconButton>
             </header>
-            <div className="quick-chat-search">
-              <Field
-                label={t("friends.search")}
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-              />
-            </div>
-            {!social.connected ? (
-              <p className="quick-chat-status" role="status">
-                {t("friends.connecting")}
-              </p>
-            ) : null}
-            <ul className="quick-chat-friends">
-              {friends.map((friend) => (
-                <li key={friend.accountId}>
-                  <button
-                    aria-label={t("friends.message.title", { name: friend.displayName })}
-                    onClick={() => chat.openChat(friend)}
-                  >
-                    <Avatar
-                      name={friend.displayName}
-                      avatarId={friend.avatarId}
-                      avatarUrl={friend.avatarUrl}
-                      size={36}
-                    />
-                    <span>
-                      <strong>{friend.displayName}</strong>
-                      <FriendPresence status={friend.status} />
-                    </span>
-                    <Icons.MessageSquare size={18} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-            {friends.length === 0 ? (
-              <p className="quick-chat-empty">{t(query ? "friends.noResults" : "friends.empty.friends")}</p>
-            ) : null}
+            <FriendsScreen key={social.accountId} signedIn compact onSignIn={() => {}} />
           </section>
         ) : null}
       </div>

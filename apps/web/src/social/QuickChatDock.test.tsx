@@ -6,7 +6,8 @@ import { useQuickChatState } from "@/messages/useQuickChatState";
 import { SocialContext } from "@/social/SocialContext";
 import type { SocialConnection } from "@/social/SocialConnection";
 
-vi.mock("@/account/client", () => ({ request: async () => ({ messages: [] }) }));
+const { request } = vi.hoisted(() => ({ request: vi.fn<(path: string, options?: RequestInit) => Promise<unknown>>() }));
+vi.mock("@/account/client", () => ({ request }));
 const friend = {
   accountId: "friend",
   displayName: "Friend",
@@ -44,6 +45,19 @@ function buildSocial(): SocialConnection {
   };
 }
 beforeEach(() => {
+  request.mockReset();
+  request.mockImplementation(async (path: string) => {
+    if (path === "/friends") {
+      return { friends: [friend] };
+    }
+    if (path === "/friends/requests") {
+      return { requests: [] };
+    }
+    if (path === "/account/blocks") {
+      return { blocks: [] };
+    }
+    return { messages: [] };
+  });
   localStorage.setItem("aegis:locale", "en");
   vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
     callback(0);
@@ -60,7 +74,7 @@ it("opens a conversation from the launcher and preserves its draft when minimize
   render(<QuickChatHarness social={buildSocial()} />);
   fireEvent.click(screen.getByRole("button", { name: "Open quick chat, 2 unread messages" }));
   expect(document.activeElement).toBe(screen.getByRole("searchbox", { name: "Find a player" }));
-  fireEvent.click(screen.getByRole("button", { name: "Chat with Friend" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Message" }));
   const input = await screen.findByRole("textbox", { name: "Message" });
   fireEvent.change(input, { target: { value: "Ready for another match?" } });
   fireEvent.click(screen.getByRole("button", { name: "Minimize chat" }));
@@ -69,7 +83,7 @@ it("opens a conversation from the launcher and preserves its draft when minimize
   expect((screen.getByRole("textbox", { name: "Message" }) as HTMLInputElement).value).toBe("Ready for another match?");
   fireEvent.click(screen.getByRole("button", { name: "Back to friends" }));
   expect(document.activeElement).toBe(screen.getByRole("searchbox", { name: "Find a player" }));
-  fireEvent.click(screen.getByRole("button", { name: "Chat with Friend" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Message" }));
   expect((screen.getByRole("textbox", { name: "Message" }) as HTMLInputElement).value).toBe("Ready for another match?");
 });
 
@@ -114,4 +128,71 @@ it("minimizes on Escape and restores focus to the launcher", async () => {
   const input = await screen.findByRole("textbox", { name: "Message" });
   fireEvent.keyDown(input, { key: "Escape" });
   expect(document.activeElement).toBe(screen.getByRole("button", { name: "Open quick chat, 2 unread messages" }));
+});
+
+it("provides friend management, requests and blocks without leaving the floating dock", async () => {
+  const social = {
+    ...buildSocial(),
+    challenge: vi.fn<(friend: unknown) => void>(),
+    watch: vi.fn<(friend: unknown) => void>(),
+  };
+  social.friends = [{ ...friend, roomCode: "ROOM" }];
+  request.mockImplementation(async (path: string, options?: RequestInit) => {
+    if (!options && path === "/friends") {
+      return { friends: [friend] };
+    }
+    if (!options && path === "/friends/requests") {
+      return {
+        requests: [
+          { ...friend, accountId: "incoming", displayName: "Incoming", direction: "incoming" },
+          { ...friend, accountId: "outgoing", displayName: "Outgoing", direction: "outgoing" },
+        ],
+      };
+    }
+    if (path === "/account/blocks") {
+      return { blocks: [{ ...friend, accountId: "blocked", displayName: "Blocked" }] };
+    }
+    return { accepted: false };
+  });
+  render(<QuickChatHarness social={social} />);
+  fireEvent.click(screen.getByRole("button", { name: "Open quick chat, 2 unread messages" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Challenge" }));
+  expect(social.challenge).toHaveBeenCalledWith(friend);
+  fireEvent.click(screen.getByRole("button", { name: "Watch" }));
+  expect(social.watch).toHaveBeenCalledWith(social.friends[0]);
+  fireEvent.click(screen.getByText("Add friend", { selector: "summary" }));
+  fireEvent.change(screen.getByRole("textbox", { name: "Player display name" }), { target: { value: "New friend" } });
+  fireEvent.click(screen.getByRole("button", { name: "Add friend" }));
+  await waitFor(() =>
+    expect(request).toHaveBeenCalledWith("/friends/requests", {
+      method: "POST",
+      body: JSON.stringify({ displayName: "New friend" }),
+    }),
+  );
+  await waitFor(() => expect(screen.getByRole("button", { name: "Add friend" }).hasAttribute("disabled")).toBe(true));
+  fireEvent.click(screen.getByRole("button", { name: /Requests/ }));
+  fireEvent.click(await screen.findByRole("button", { name: "Accept" }));
+  await waitFor(() => expect(request).toHaveBeenCalledWith("/friends/requests/incoming/accept", { method: "POST" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "Decline" }).hasAttribute("disabled")).toBe(false));
+  fireEvent.click(screen.getByRole("button", { name: "Decline" }));
+  await waitFor(() => expect(request).toHaveBeenCalledWith("/friends/requests/incoming/decline", { method: "POST" }));
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: "Cancel request" }).hasAttribute("disabled")).toBe(false),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Cancel request" }));
+  await waitFor(() => expect(request).toHaveBeenCalledWith("/friends/requests/outgoing", { method: "DELETE" }));
+  fireEvent.click(screen.getByRole("button", { name: /Blocked/ }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "Unblock" }).hasAttribute("disabled")).toBe(false));
+  fireEvent.click(screen.getByRole("button", { name: "Unblock" }));
+  await waitFor(() => expect(request).toHaveBeenCalledWith("/account/blocks/blocked", { method: "DELETE" }));
+  fireEvent.click(screen.getByRole("button", { name: /Friends \(/ }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "Challenge" }).hasAttribute("disabled")).toBe(false));
+  fireEvent.click(screen.getByLabelText("More actions for Friend"));
+  fireEvent.click(screen.getByRole("button", { name: "Remove friend" }));
+  await waitFor(() => expect(request).toHaveBeenCalledWith("/friends/friend", { method: "DELETE" }));
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: "Block player" }).hasAttribute("disabled")).toBe(false),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Block player" }));
+  await waitFor(() => expect(request).toHaveBeenCalledWith("/account/blocks/friend", { method: "PUT" }));
 });

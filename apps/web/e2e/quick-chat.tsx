@@ -26,6 +26,7 @@ const friend = {
   avatarUrl: null,
   since: Date.now(),
   status: "online" as const,
+  roomCode: "ROOM",
 };
 applyDarkMode();
 function QuickChatFixture() {
@@ -68,6 +69,8 @@ function QuickChatFixture() {
     readMessages,
     sendMessage,
     quickChat,
+    challenge: () => {},
+    watch: () => {},
     dismissNotice: () => {},
     invite: () => {},
     answer: () => {},
