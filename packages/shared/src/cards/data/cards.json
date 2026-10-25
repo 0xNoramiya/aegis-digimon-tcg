@@ -110022,5 +110022,83 @@
     "rarity": "C",
     "maxCountInDeck": 4,
     "imageId": "BT27-101"
+  },
+  {
+    "cardId": "BT27-074",
+    "set": "BT27",
+    "nameEn": "Falcomon",
+    "nameJp": "ファルコモン",
+    "colors": ["Purple"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 1000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Vaccine"],
+    "types": ["Avian", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.2 w/[DATA SQUAD] trait: Cost 0\n\n[When Moving] [On Play] By placing 1 card from your hand face down under any of your [Keenan Crier]s, ＜Draw 1＞ and trash 1 card in your hand.",
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] ＜Draw 1＞ and trash 1 card in your hand.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-074"
+  },
+  {
+    "cardId": "BT27-078",
+    "set": "BT27",
+    "nameEn": "Peckmon",
+    "nameJp": "ペックモン",
+    "colors": ["Purple"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 5,
+    "dp": 6000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Vaccine"],
+    "types": ["Avian", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.3 w/[DATA SQUAD] trait: Cost 2\n\n[On Play] [When Digivolving] If you have 1 or fewer Tamers, you may play 1 [Keenan Crier] from your hand without paying the cost.",
+    "inheritedEffectText": "[On Deletion] Your opponent trashes 1 card in their hand.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-078"
+  },
+  {
+    "cardId": "BT27-081",
+    "set": "BT27",
+    "nameEn": "Crowmon",
+    "nameJp": "ヤタガラモン",
+    "colors": ["Purple"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Purple",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Vaccine"],
+    "types": ["Mysterious Bird", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.4 w/[DATA SQUAD] trait: Cost 3\n\n[On Play] [When Digivolving] [When Attacking] [Once Per Turn] If your opponent's hand has 6 or more cards, they trash 1 card in their hand. Then, by trashing 2 bottom face-down cards from under any of your Tamers, you may play or use 1 [DATA SQUAD] trait card with a play or use cost of 5 or less from your hand without paying the cost.",
+    "inheritedEffectText": "[On Deletion] You may play 1 play cost 5 or lower card with [Avian] or [Bird] in any of its traits or the [DATA SQUAD] trait from your trash without paying the cost.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-081"
   }
 ]

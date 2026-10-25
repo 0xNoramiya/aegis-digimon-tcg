@@ -15474,5 +15474,17 @@
   "BT27-101": {
     "Whenthiscardwouldbeused,bytrashingthebottomface-downcardfromunderanyofyourTamers,reducethecostby2.[Main]Byplacing1[Peckmon]and1[Crowmon]fromyourtrashas1ofyour[Falcomon]'sbottomdigivolutioncards,thatDigimonmaydigivolveinto[Ravemon]inthetrash,ignoringdigivolutionrequirementsandwithoutpayingthecost.": "このカードを使用するとき、自分のテイマーの下にある裏向きのカードを下から1枚破棄することで、支払うコスト-2。\n【メイン】自分のトラッシュから、「ペックモン」と「ヤタガラモン」1枚ずつを自分の「ファルコモン」1体の進化元の下に置くことで、そのデジモンをトラッシュの「レイヴモン」に進化条件を無視してコストを支払わず進化できる。",
     "[Security]Youmayplay1[Falcomon]or[KeenanCrier]fromyourhandortrashwithoutpayingthecost.Then,addthiscardtothehand.": "【セキュリティ】自分の手札/トラッシュから、「ファルコモン」/「イクト」1枚をコストを支払わず登場できる。その後、このカードを手札に加える。"
+  },
+  "BT27-074": {
+    "[Digivolve]Lv.2w/[DATASQUAD]trait:Cost0[WhenMoving][OnPlay]Byplacing1cardfromyourhandfacedownunderanyofyour[KeenanCrier]s,<Draw1>andtrash1cardinyourhand.": "〔進化〕特徴「セイバーズ」を持つLv.2:コスト0\n\n【移動時】【登場時】自分の手札1枚を自分の「イクト」の下に裏向きで置くことで、≪1ドロー≫し、自分の手札1枚を破棄する。",
+    "[WhenAttacking][OncePerTurn]<Draw1>andtrash1cardinyourhand.": "【アタック時】［ターン1回］≪1ドロー≫し、自分の手札1枚を破棄する。"
+  },
+  "BT27-078": {
+    "[Digivolve]Lv.3w/[DATASQUAD]trait:Cost2[OnPlay][WhenDigivolving]Ifyouhave1orfewerTamers,youmayplay1[KeenanCrier]fromyourhandwithoutpayingthecost.": "〔進化〕特徴「セイバーズ」を持つLv.3:コスト2\n\n【登場時】【進化時】自分のテイマーが1体以下なら、自分の手札から、「イクト」1枚をコストを支払わず登場できる。",
+    "[OnDeletion]Youropponenttrashes1cardintheirhand.": "【消滅時】相手は自身の手札1枚を破棄する。"
+  },
+  "BT27-081": {
+    "[Digivolve]Lv.4w/[DATASQUAD]trait:Cost3[OnPlay][WhenDigivolving][WhenAttacking][OncePerTurn]Ifyouropponent'shandhas6ormorecards,theytrash1cardintheirhand.Then,bytrashing2bottomface-downcardsfromunderanyofyourTamers,youmayplayoruse1[DATASQUAD]traitcardwithaplayorusecostof5orlessfromyourhandwithoutpayingthecost.": "〔進化〕特徴「セイバーズ」を持つLv.4:コスト3\n\n【登場時】【進化時】【アタック時】［ターン1回］相手の手札が6枚以上なら、相手は自身の手札1枚を破棄する。その後、自分のテイマーの下にある裏向きのカードを下から2枚破棄することで、自分の手札から、特徴「セイバーズ」を持つ登場/使用コスト5以下のカード1枚をコストを支払わず登場/使用できる。",
+    "[OnDeletion]Youmayplay1playcost5orlowercardwith[Avian]or[Bird]inanyofitstraitsorthe[DATASQUAD]traitfromyourtrashwithoutpayingthecost.": "【消滅時】自分のトラッシュから、登場コスト5以下の、特徴に「鳥」を含むか特徴「セイバーズ」を持つカード1枚をコストを支払わず登場できる。"
   }
 }
