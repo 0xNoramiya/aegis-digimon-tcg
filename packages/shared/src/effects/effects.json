@@ -244637,6 +244637,7 @@
         "actions": [
           {
             "kind": "Trash",
+            "effectTextPart": "[When Digivolving] Your opponent trashes any 1 card from their hand or security stack.",
             "target": { "filter": { "controller": "opponent", "zone": ["hand", "security"] }, "count": 1 },
             "chooser": "opponent"
           }
@@ -244648,6 +244649,7 @@
         "actions": [
           {
             "kind": "PlayWithoutCost",
+            "effectTextPart": "[On Deletion] If your opponent's hand has 7 or fewer cards, you may play 1 play cost 7 or lower purple Digimon card with [Avian] or [Bird] in any of its traits from your trash without paying the cost.",
             "target": {
               "filter": {
                 "controller": "mine",
@@ -244669,12 +244671,14 @@
         "actions": [
           {
             "kind": "Trash",
+            "effectTextPart": "[Main] Your opponent trashes cards in their hand so that they have 7 left.",
             "target": { "filter": { "controller": "opponent", "zone": "hand" }, "count": 1, "untilHandSize": 7 },
             "chooser": "opponent",
             "trackCount": "discarded"
           },
           {
             "kind": "Delete",
+            "effectTextPart": "If this effect didn't trash, delete 1 of their Digimon.",
             "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
             "condition": {
               "kind": "not",
@@ -244706,19 +244710,39 @@
           }
         ]
       },
-      { "trigger": "WhenDigivolving", "optional": true, "actions": [{ "kind": "ActivateMain" }] },
-      { "trigger": "WhenAttacking", "optional": true, "actions": [{ "kind": "ActivateMain" }] },
+      {
+        "trigger": "WhenDigivolving",
+        "optional": true,
+        "actions": [
+          {
+            "kind": "ActivateMain",
+            "effectTextPart": "[When Digivolving] [When Attacking] You may activate 1 [Main] effect on this card's Option side."
+          }
+        ]
+      },
+      {
+        "trigger": "WhenAttacking",
+        "optional": true,
+        "actions": [
+          {
+            "kind": "ActivateMain",
+            "effectTextPart": "[When Digivolving] [When Attacking] You may activate 1 [Main] effect on this card's Option side."
+          }
+        ]
+      },
       {
         "trigger": "AllTurns",
         "frequency": "OncePerTurn",
         "actions": [
           {
             "kind": "SubTrigger",
+            "effectTextPart": "[All Turns] [Once Per Turn] When your opponent's hand is trashed from, this Digimon may unsuspend.",
             "event": "whenHandTrashed",
             "handTrashedController": "opponent",
             "actions": [
               {
                 "kind": "Unsuspend",
+                "effectTextPart": "[All Turns] [Once Per Turn] When your opponent's hand is trashed from, this Digimon may unsuspend.",
                 "optional": true,
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true }
               }
@@ -244731,11 +244755,13 @@
         "actions": [
           {
             "kind": "Trash",
+            "effectTextPart": "[Main] Your opponent trashes any 1 card from their hand or security stack.",
             "target": { "filter": { "controller": "opponent", "zone": ["hand", "security"] }, "count": 1 },
             "chooser": "opponent"
           },
           {
             "kind": "Delete",
+            "effectTextPart": "Then, delete 1 of their Digimon with a level as high as the number of cards in their hand or higher.",
             "target": {
               "filter": {
                 "controller": "opponent",

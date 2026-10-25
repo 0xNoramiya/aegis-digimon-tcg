@@ -1,6 +1,13 @@
 import type { CompiledCard } from "@aegis/shared/effects/ir/card";
 import { registerIrCard } from "#api/engine/effects/interpreter";
 
+const activateText = "[When Digivolving] [When Attacking] You may activate 1 [Main] effect on this card's Option side.";
+const unsuspendText =
+  "[All Turns] [Once Per Turn] When your opponent's hand is trashed from, this Digimon may unsuspend.";
+const discardText = "[Main] Your opponent trashes any 1 card from their hand or security stack.";
+const deleteText =
+  "Then, delete 1 of their Digimon with a level as high as the number of cards in their hand or higher.";
+
 export const compiled: CompiledCard = {
   effects: [
     { trigger: "Static", actions: [], keywords: [{ keyword: "Piercing" }, { keyword: "Blocker" }] },
@@ -16,18 +23,24 @@ export const compiled: CompiledCard = {
         },
       ],
     },
-    { trigger: "WhenDigivolving", optional: true, actions: [{ kind: "ActivateMain" }] },
-    { trigger: "WhenAttacking", optional: true, actions: [{ kind: "ActivateMain" }] },
+    { trigger: "WhenDigivolving", optional: true, actions: [{ kind: "ActivateMain", effectTextPart: activateText }] },
+    { trigger: "WhenAttacking", optional: true, actions: [{ kind: "ActivateMain", effectTextPart: activateText }] },
     {
       trigger: "AllTurns",
       frequency: "OncePerTurn",
       actions: [
         {
           kind: "SubTrigger",
+          effectTextPart: unsuspendText,
           event: "whenHandTrashed",
           handTrashedController: "opponent",
           actions: [
-            { kind: "Unsuspend", optional: true, target: { filter: { isSelfRef: true }, count: 1, isSelf: true } },
+            {
+              kind: "Unsuspend",
+              effectTextPart: unsuspendText,
+              optional: true,
+              target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
+            },
           ],
         },
       ],
@@ -37,11 +50,13 @@ export const compiled: CompiledCard = {
       actions: [
         {
           kind: "Trash",
+          effectTextPart: discardText,
           target: { filter: { controller: "opponent", zone: ["hand", "security"] }, count: 1 },
           chooser: "opponent",
         },
         {
           kind: "Delete",
+          effectTextPart: deleteText,
           target: {
             filter: {
               controller: "opponent",

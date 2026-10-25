@@ -23,6 +23,30 @@ describe("Ravemon Burst Mode mourning dance", () => {
     expect(s.state.players[1]!.battleArea).toHaveLength(count === 4 ? 0 : 1);
   });
 
+  it("highlights the discard and then the deletion clause", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: "BT27-085", as: "burst" }], hand: [{ card: "BT27-085", as: "option" }] },
+        1: { hand: ["BT1-009", "BT1-009"], battleArea: [{ card: "BT1-009" }, { card: "BT1-010" }] },
+      },
+      { autoSelectCards: true, autoDeclineOptional: true },
+    );
+    await s.ready();
+    s.state.memory = 10;
+    expect(
+      s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId, useAs: "option" }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.trash.some((c) => c.instanceId === s.inst("option").instanceId));
+    expect(s.decisions.map(({ seat, req }) => [seat, req.kind, req.options?.effectTextEmphasis])).toEqual([
+      [1, "selectCards", "[Main] Your opponent trashes any 1 card from their hand or security stack."],
+      [
+        0,
+        "chooseTargets",
+        "Then, delete 1 of their Digimon with a level as high as the number of cards in their hand or higher.",
+      ],
+    ]);
+  });
+
   it("may unsuspend once per turn only for an opponent hand discard", async () => {
     const s = setupEngine(
       { 0: { battleArea: [{ card: "BT27-085", as: "burst", suspended: true }] }, 1: { hand: ["BT1-009", "BT1-011"] } },

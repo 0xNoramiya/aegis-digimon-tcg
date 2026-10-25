@@ -23,6 +23,28 @@ describe("Ravemon discard and revival", () => {
     expect(s.state.players[1]!.battleArea).toHaveLength(count <= 7 ? 0 : 1);
   });
 
+  it.each([
+    [8, 1, "selectCards", "[Main] Your opponent trashes cards in their hand so that they have 7 left."],
+    [5, 0, "chooseTargets", "If this effect didn't trash, delete 1 of their Digimon."],
+  ])("highlights the resolving clause at %s opponent hand cards", async (count, seat, kind, emphasis) => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: "BT27-083", as: "raven" }], hand: [{ card: "BT27-083", as: "option" }] },
+        1: { hand: Array(count).fill("BT1-009"), battleArea: [{ card: "BT1-009" }, { card: "BT1-010" }] },
+      },
+      { autoSelectCards: true, autoDeclineOptional: true },
+    );
+    await s.ready();
+    s.state.memory = 10;
+    expect(
+      s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId, useAs: "option" }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.trash.some((c) => c.instanceId === s.inst("option").instanceId));
+    expect(s.decisions.map(({ seat, req }) => [seat, req.kind, req.options?.effectTextEmphasis])).toEqual([
+      [seat, kind, emphasis],
+    ]);
+  });
+
   it.each([7, 8])("revives a purple bird only at seven or fewer opponent hand cards (%s)", async (count) => {
     const s = setupEngine(
       {
