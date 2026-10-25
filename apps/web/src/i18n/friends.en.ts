@@ -89,4 +89,10 @@ export const friendsEn = {
   "friends.conversationHint": "Choose a friend to chat, challenge them or watch their match.",
   "friends.more": "More actions for {name}",
   "friends.publicReplay": "Public",
+  "friends.quickChat": "Quick chat",
+  "friends.quickChat.open": "Open quick chat",
+  "friends.quickChat.minimize": "Minimize chat",
+  "friends.quickChat.back": "Back to friends",
+  "friends.quickChat.placeholder": "Type a message…",
+  "friends.quickChat.unread": "Open quick chat, {count} unread messages",
 };

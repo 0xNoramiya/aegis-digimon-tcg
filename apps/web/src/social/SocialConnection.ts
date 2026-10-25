@@ -1,3 +1,4 @@
+import type { QuickChatState } from "@/messages/QuickChatState";
 import type { Friend } from "@aegis/shared/friends/Friend";
 import type { SocialPresence } from "@aegis/shared/social/SocialPresence";
 import type { MatchInvite } from "@aegis/shared/social/MatchInvite";
@@ -5,6 +6,7 @@ import type { MatchInvite } from "@aegis/shared/social/MatchInvite";
 import type { DirectMessage } from "@aegis/shared/messages/DirectMessage";
 
 export type SocialConnection = {
+  quickChat?: QuickChatState;
   messages?: DirectMessage[];
   messageAcknowledgment?: { requestId: string; delivered: boolean };
   messageReceipts?: { accountId: string; friendId: string; at: number }[];

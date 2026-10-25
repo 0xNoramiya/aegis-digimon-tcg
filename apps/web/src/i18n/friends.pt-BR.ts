@@ -89,4 +89,10 @@ export const friendsPtBR = {
   "friends.conversationHint": "Escolha um amigo para conversar, desafiar ou assistir à partida.",
   "friends.more": "Mais ações para {name}",
   "friends.publicReplay": "Público",
+  "friends.quickChat": "Chat rápido",
+  "friends.quickChat.open": "Abrir chat rápido",
+  "friends.quickChat.minimize": "Recolher conversa",
+  "friends.quickChat.back": "Voltar aos amigos",
+  "friends.quickChat.placeholder": "Digite uma mensagem…",
+  "friends.quickChat.unread": "Abrir chat rápido, {count} mensagens não lidas",
 };

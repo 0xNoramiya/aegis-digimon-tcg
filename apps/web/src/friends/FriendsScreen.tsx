@@ -4,8 +4,6 @@ import { FriendListItem } from "@/friends/FriendListItem";
 import { useEffect, useState, type FormEvent } from "react";
 import type { Friend } from "@aegis/shared/friends/Friend";
 import type { FriendRequest } from "@aegis/shared/friends/FriendRequest";
-import { DirectMessagePanel } from "@/messages/DirectMessagePanel";
-import { useMediaQuery } from "@/design/useMediaQuery";
 import { SocialStatus } from "@aegis/shared/social/SocialStatus";
 import { Icons } from "@/design/icons";
 import { Panel, Field, Badge, Alert } from "@/design/primitives";
@@ -23,8 +21,7 @@ export function FriendsScreen({ signedIn, onSignIn }: FriendsScreenParams) {
   const social = useContext(SocialContext);
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
-  const [conversation, setConversation] = useState<Friend>();
-  const wide = useMediaQuery("(min-width: 1100px)");
+  const quickChat = social.quickChat;
   const [tab, setTab] = useState<keyof FriendsData>("friends");
   const [data, setData] = useState<FriendsData>();
   const [name, setName] = useState("");
@@ -159,8 +156,8 @@ export function FriendsScreen({ signedIn, onSignIn }: FriendsScreenParams) {
                         tab={tab}
                         busy={busy}
                         onAction={runAction}
-                        onMessage={setConversation}
-                        selected={conversation?.accountId === friend.accountId}
+                        onMessage={(target) => quickChat?.openChat(target)}
+                        selected={quickChat?.friend?.accountId === friend.accountId && quickChat?.expanded === true}
                       />
                     ))}
                   </ul>
@@ -192,20 +189,6 @@ export function FriendsScreen({ signedIn, onSignIn }: FriendsScreenParams) {
                 <p>{t("friends.addHint")}</p>
               </Panel>
             </aside>
-            {conversation ? (
-              <DirectMessagePanel
-                key={conversation.accountId}
-                friend={conversation}
-                embedded={wide}
-                onClose={() => setConversation(undefined)}
-              />
-            ) : wide ? (
-              <Panel className="friends-conversation-empty">
-                <Icons.MessageSquare size={32} />
-                <h2>{t("friends.conversationTitle")}</h2>
-                <p>{t("friends.conversationHint")}</p>
-              </Panel>
-            ) : null}
           </div>
         </>
       )}

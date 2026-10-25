@@ -1,3 +1,5 @@
+import { QuickChatDock } from "@/messages/QuickChatDock";
+import { useQuickChatState } from "@/messages/useQuickChatState";
 import { SocialNotice } from "@/social/SocialNotice";
 import { SocialContext } from "@/social/SocialContext";
 import { useSocialConnection } from "@/social/useSocialConnection";
@@ -439,6 +441,7 @@ function LoadedAegisClient({
   setDark,
   initialScreen,
 }: ClientProps & { famousDecks: readonly DeckListing[] }) {
+  const quickChat = useQuickChatState({ accountId: account?.id });
   const { t } = useTranslation();
   const effectivePlayer = useMemo<PlayerIdentity>(
     () =>
@@ -715,6 +718,7 @@ function LoadedAegisClient({
     <SocialContext.Provider
       value={{
         ...social,
+        quickChat,
         challenge: challengeFriend,
         watch: (friend) => {
           startMatch("spectator", friend.roomCode);
@@ -1097,6 +1101,7 @@ function LoadedAegisClient({
         {leaveMatchPromptOpen ? (
           <LeaveMatchDialog onConfirm={confirmLeaveMatch} onClose={() => setLeaveMatchPromptOpen(false)} />
         ) : null}
+        <QuickChatDock inMatch={screen === "game"} />
         <SocialInvites canAccept={screen !== "game"} />
         <SocialNotice />
       </Stage>

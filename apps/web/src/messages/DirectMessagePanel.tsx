@@ -11,8 +11,24 @@ import { Button, Dialog, Avatar, IconButton, Field, Alert } from "@/design/primi
 import { useTranslation } from "@/i18n/useTranslation";
 import "@/messages/directMessages.css";
 
-type DirectMessagePanelParams = { friend: Friend; embedded?: boolean; onClose: () => void };
-export function DirectMessagePanel({ friend, onClose, embedded = false }: DirectMessagePanelParams) {
+type DirectMessagePanelParams = {
+  friend: Friend;
+  embedded?: boolean;
+  compact?: boolean;
+  active?: boolean;
+  onMinimize?: () => void;
+  onBack?: () => void;
+  onClose: () => void;
+};
+export function DirectMessagePanel({
+  friend,
+  onClose,
+  embedded = false,
+  compact = false,
+  active = true,
+  onMinimize,
+  onBack,
+}: DirectMessagePanelParams) {
   const social = useContext(SocialContext);
   const { t, locale } = useTranslation();
   const titleId = useId();
@@ -30,33 +46,37 @@ export function DirectMessagePanel({ friend, onClose, embedded = false }: Direct
   const scrollToLatest = useRef(true);
   const readRef = useRef(social.readMessages);
   readRef.current = social.readMessages;
+  const activeRef = useRef(active);
+  activeRef.current = active;
   useEffect(() => {
-    let active = true;
+    let mounted = true;
     setLoading(true);
     void request<{ messages: DirectMessage[] }>(`/messages/${encodeURIComponent(friend.accountId)}`)
       .then((page) => {
-        if (active) {
+        if (mounted) {
           setMessages((current) =>
             [...new Map([...page.messages, ...current].map((message) => [message.id, message])).values()].sort(
               (a, b) => a.createdAt - b.createdAt,
             ),
           );
           setHasOlder(page.messages.length === 50);
-          readRef.current?.(friend.accountId);
+          if (activeRef.current) {
+            readRef.current?.(friend.accountId);
+          }
         }
       })
       .catch(() => {
-        if (active) {
+        if (mounted) {
           setFailed(true);
         }
       })
       .finally(() => {
-        if (active) {
+        if (mounted) {
           setLoading(false);
         }
       });
     return () => {
-      active = false;
+      mounted = false;
     };
   }, [friend.accountId]);
   useEffect(() => {
@@ -71,10 +91,10 @@ export function DirectMessagePanel({ friend, onClose, embedded = false }: Direct
         (a, b) => a.createdAt - b.createdAt,
       ),
     );
-    if (incoming.some((message) => message.recipientId === social.accountId && message.readAt === null)) {
+    if (active && incoming.some((message) => message.recipientId === social.accountId && message.readAt === null)) {
       readRef.current?.(friend.accountId);
     }
-  }, [social.messages, social.accountId, friend.accountId]);
+  }, [social.messages, social.accountId, friend.accountId, active]);
   useEffect(() => {
     setMessages((current) =>
       current.map((message) => {
@@ -156,25 +176,70 @@ export function DirectMessagePanel({ friend, onClose, embedded = false }: Direct
       setFailed(true);
     }
   }
+  useEffect(() => {
+    if (active) {
+      readRef.current?.(friend.accountId);
+    } else {
+      setDetailOpen(false);
+    }
+  }, [active, friend.accountId]);
+  useEffect(() => {
+    if (!active || !compact) {
+      return;
+    }
+    const frame = requestAnimationFrame(() =>
+      document.getElementById(`${titleId}-body`)?.focus({ preventScroll: true }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [active, compact, titleId]);
   const unavailable = social.connected && !social.friends.some((entry) => entry.accountId === friend.accountId);
   const content = (
     <section className="direct-messages" aria-labelledby={titleId}>
       <header className="direct-messages-header">
+        {compact && onBack ? (
+          <IconButton label={t("friends.quickChat.back")} variant="ghost" onClick={onBack}>
+            <Icons.ArrowLeft size={18} />
+          </IconButton>
+        ) : null}
         <Avatar
           name={friend.displayName}
           avatarId={friend.avatarId ?? undefined}
           avatarUrl={friend.avatarUrl ?? undefined}
-          size={40}
+          size={compact ? 32 : 40}
         />
         <div className="direct-messages-person">
-          <h2 id={titleId}>{t("friends.message.title", { name: friend.displayName })}</h2>
-          <FriendPresence
-            status={social.friends.find((entry) => entry.accountId === friend.accountId)?.status ?? null}
-          />
+          {compact ? (
+            <h2 id={titleId} aria-label={friend.displayName}>
+              <button
+                className="quick-chat-profile"
+                aria-label={t("friends.detail")}
+                onClick={() => setDetailOpen(true)}
+              >
+                <span>{friend.displayName}</span>
+                <FriendPresence
+                  status={social.friends.find((entry) => entry.accountId === friend.accountId)?.status ?? null}
+                />
+              </button>
+            </h2>
+          ) : (
+            <>
+              <h2 id={titleId}>{t("friends.message.title", { name: friend.displayName })}</h2>
+              <FriendPresence
+                status={social.friends.find((entry) => entry.accountId === friend.accountId)?.status ?? null}
+              />
+            </>
+          )}
         </div>
-        <IconButton label={t("friends.detail")} variant="ghost" onClick={() => setDetailOpen(true)}>
-          <Icons.User size={20} />
-        </IconButton>
+        {compact ? null : (
+          <IconButton label={t("friends.detail")} variant="ghost" onClick={() => setDetailOpen(true)}>
+            <Icons.User size={20} />
+          </IconButton>
+        )}
+        {onMinimize ? (
+          <IconButton label={t("friends.quickChat.minimize")} variant="ghost" onClick={onMinimize}>
+            <Icons.ChevronDown size={18} />
+          </IconButton>
+        ) : null}
         <IconButton label={t("common.close")} variant="ghost" onClick={onClose}>
           <Icons.X size={20} />
         </IconButton>
@@ -189,10 +254,12 @@ export function DirectMessagePanel({ friend, onClose, embedded = false }: Direct
         </Button>
       ) : null}
       <ol ref={history} className="direct-messages-list" aria-label={t("friends.message.history")} aria-live="polite">
-        {!loading && !messages.length ? <li>{t("friends.message.empty")}</li> : null}
+        {!loading && !messages.length ? <li className="direct-message-empty">{t("friends.message.empty")}</li> : null}
         {messages.map((message) => (
           <li key={message.id} className={message.senderId === social.accountId ? "direct-message-own" : undefined}>
-            <strong>{message.senderId === social.accountId ? t("friends.message.you") : friend.displayName}</strong>
+            {compact ? null : (
+              <strong>{message.senderId === social.accountId ? t("friends.message.you") : friend.displayName}</strong>
+            )}
             <p>{message.body}</p>
             <time dateTime={new Date(message.createdAt).toISOString()}>
               {new Date(message.createdAt).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
@@ -200,14 +267,15 @@ export function DirectMessagePanel({ friend, onClose, embedded = false }: Direct
             {message.senderId === social.accountId ? (
               <small>{t(message.readAt ? "friends.message.read" : "friends.message.sent")}</small>
             ) : (
-              <Button
+              <IconButton
+                label={t(reported.includes(message.id) ? "friends.message.reported" : "friends.message.report")}
                 size="sm"
                 variant="ghost"
                 disabled={reported.includes(message.id)}
                 onClick={() => void reportMessage(message.id)}
               >
-                {t(reported.includes(message.id) ? "friends.message.reported" : "friends.message.report")}
-              </Button>
+                <Icons.Flag size={14} />
+              </IconButton>
             )}
           </li>
         ))}
@@ -221,20 +289,27 @@ export function DirectMessagePanel({ friend, onClose, embedded = false }: Direct
           onChange={(event) => setBody(event.target.value)}
           maxLength={CHAT_TEXT_MAX_LENGTH}
           autoComplete="off"
+          placeholder={compact ? t("friends.quickChat.placeholder") : undefined}
           disabled={unavailable || pending}
         />
         <Button
+          className={compact ? "quick-chat-send" : undefined}
+          aria-label={compact ? t("friends.message.send") : undefined}
           icon={Icons.Send}
           type="submit"
           disabled={unavailable || pending || !social.connected || cooldown || !body.trim()}
         >
-          {t("friends.message.send")}
+          {compact ? null : t("friends.message.send")}
         </Button>
       </form>
     </section>
   );
   if (embedded) {
-    return <aside className="friends-conversation">{content}</aside>;
+    return (
+      <aside className={compact ? "friends-conversation quick-chat-conversation" : "friends-conversation"}>
+        {content}
+      </aside>
+    );
   }
   return (
     <Dialog className="direct-messages-dialog" labelledBy={titleId} onClose={onClose} closeOnBackdrop={false}>
