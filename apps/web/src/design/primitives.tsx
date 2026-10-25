@@ -36,6 +36,7 @@ export interface PlayerIdentity {
 
 /** A screen key in the client router. */
 export type Screen =
+  | "friends"
   | "home"
   | "login"
   | "lobby"

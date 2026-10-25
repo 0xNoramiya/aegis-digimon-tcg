@@ -1596,6 +1596,7 @@ function GameScreenSession({
                     : liveConnection.replayDownload
                       ? undefined
                       : "preparing",
+              friendMatchId: !spectating && !vsBot ? room?.roomId : undefined,
               reason: gameOverReason,
               revealed,
               series: series && {

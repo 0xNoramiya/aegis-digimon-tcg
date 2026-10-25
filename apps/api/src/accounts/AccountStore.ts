@@ -92,7 +92,7 @@ export type DeckStat = DeckSnapshot & {
 // that column alone reports the loss as a draw. This says it outright.
 export type MatchOutcomeSeat = "player0" | "player1" | "draw";
 export type MatchRecord = MatchHistoryRecord;
-export type StoredMatchRecord = MatchRecord & Partial<BotExperimentRecord>;
+export type StoredMatchRecord = MatchRecord & Partial<BotExperimentRecord> & { opponentAccountId?: string };
 export type Tournament = {
   id: string;
   name: string;
@@ -1294,12 +1294,13 @@ function resultFor(
   return row.outcome === seat ? "win" : "loss";
 }
 function removeBotExperiment({
+  opponentAccountId,
   botExperiment: _botExperiment,
   botArm: _botArm,
   botArmFallback: _botArmFallback,
   ...record
 }: StoredMatchRecord): MatchRecord {
-  return record;
+  return { ...record, canAddOpponent: Boolean(opponentAccountId) };
 }
 function isUniqueViolation(error: unknown): boolean {
   return (

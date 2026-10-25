@@ -1,3 +1,4 @@
+import { FriendsScreen } from "@/friends/FriendsScreen";
 import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { GameMode } from "@aegis/shared/manual/GameMode";
 import { getStoryGuestToken } from "@/story/getStoryGuestToken";
@@ -191,6 +192,7 @@ function ScreenFallback() {
 }
 
 const NAV_SCREENS: Screen[] = [
+  "friends",
   "home",
   "lobby",
   "story",
@@ -883,6 +885,8 @@ function LoadedAegisClient({
                 onSuggest={() => setBugReportOpen(true)}
               />
             )}
+
+            {screen === "friends" && <FriendsScreen signedIn={!!account} onSignIn={() => navigateScreen("login")} />}
 
             {screen === "collection" && <Collection />}
 

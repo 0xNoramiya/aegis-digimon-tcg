@@ -54,6 +54,10 @@ export function NotificationBell({
       window.open(notification.payload.link, "_blank", "noopener");
       return;
     }
+    if (notification.kind === "friend_request" || notification.kind === "friend_accepted") {
+      window.location.assign("/friends");
+      return;
+    }
     onOpenFeedback(notification.payload.feedbackId);
   };
 
@@ -156,6 +160,18 @@ function NotificationItem({ notification, onSelect }: { notification: AccountNot
           {when}
         </span>
         <Badge tone="primary">{t("notifications.playtest.badge")}</Badge>
+      </button>
+    );
+  }
+  if (notification.kind === "friend_request" || notification.kind === "friend_accepted") {
+    return (
+      <button className="aegis-notifications__item" data-unread={unread || undefined} onClick={onSelect}>
+        <span className="aegis-notifications__copy">
+          <span className="aegis-notifications__headline">
+            {t(`friends.notification.${notification.kind}`, { name: notification.payload.displayName })}
+          </span>
+          {when}
+        </span>
       </button>
     );
   }

@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesId } from "@/i18n/learn/advancedBattles.id";
 import { rulesLayoutId } from "@/i18n/learn/rulesLayout.id";
 import { lessonCatalogId } from "@/i18n/learn/lessonCatalog.id";
@@ -37,6 +38,7 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   ...learnId,
   ...learnDrillsId,
   ...battleLessonsId,

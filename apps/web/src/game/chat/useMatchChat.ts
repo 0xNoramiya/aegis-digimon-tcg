@@ -15,6 +15,7 @@ export interface ChatEntry extends ChatBroadcast {
 }
 
 export interface MatchChat {
+  roomId?: string;
   /** Oldest first, without whatever the viewer has muted. */
   entries: readonly ChatEntry[];
   /** The newest player message from each seat, for the speech bubbles. */
@@ -85,6 +86,7 @@ export function useMatchChat({
   for (const entry of shown) if (entry.sender.kind === "player") latest[entry.sender.seat] = entry;
 
   return {
+    roomId: room?.roomId,
     entries: shown,
     latest,
     mutedOpponent,

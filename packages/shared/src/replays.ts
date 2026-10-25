@@ -66,6 +66,7 @@ export interface MatchHistoryFilter {
 
 /** One finished match from the account's point of view. */
 export interface MatchHistoryRecord {
+  canAddOpponent?: boolean;
   id: string;
   mode: ReplaySummary["mode"];
   opponentName: string;

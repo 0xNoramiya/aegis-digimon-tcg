@@ -1279,6 +1279,7 @@ export class AegisRoom extends Room<{
             id: this.replayRecording?.id ?? this.roomId,
             mode: this.replayMode(),
             opponentName: opponent?.displayName ?? "Opponent",
+            opponentAccountId: opponent ? this.accountByClient.get(opponent.sessionId) : undefined,
             opponentKind: this.bots[seat === 0 ? 1 : 0] ? ("bot" as const) : ("human" as const),
             ...(isDigimonWorldAvatarId(opponent?.avatarId) ? { opponentAvatarId: opponent.avatarId } : {}),
             result:
@@ -1642,7 +1643,17 @@ export class AegisRoom extends Room<{
     );
   }
 
-  /** Fixed host rules, read by the private-code lookup across processes. */
+  getOpponentAccountId(accountId: string): string | undefined {
+    for (const seat of [0, 1] as const) {
+      const player = this.state.players[seat];
+      const opponent = this.state.players[seat === 0 ? 1 : 0];
+      if (player && opponent && this.accountByClient.get(player.sessionId) === accountId) {
+        return this.accountByClient.get(opponent.sessionId);
+      }
+    }
+    return undefined;
+  }
+
   privateRoomInfo(): { unlimited: boolean; format: DeckFormat; gameMode?: GameMode } {
     return {
       unlimited: this.isUnlimitedRoom,

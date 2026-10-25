@@ -1,3 +1,4 @@
+import { AddFriendButton } from "@/friends/AddFriendButton";
 import { useEffect, useRef, useState } from "react";
 import {
   MATCH_HISTORY_LIMIT,
@@ -377,6 +378,7 @@ function MatchRow({
       <span className="profile-matches__opponent">
         <Avatar name={match.opponentName} avatarId={match.opponentAvatarId} size={32} />
         <strong>{match.opponentName}</strong>
+        {match.canAddOpponent ? <AddFriendButton matchId={match.id} /> : null}
       </span>
       <time className="profile-matches__date" dateTime={finished.toISOString()}>
         {finished.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })}

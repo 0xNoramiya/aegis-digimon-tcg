@@ -1,3 +1,4 @@
+import { friendships } from "#api/db/migrations/041-friendships";
 import { deckProviders } from "#api/db/migrations/037-deck-providers";
 import { storyGuestProgress } from "#api/db/migrations/039-story-guest-progress";
 import { communityDeckModeration } from "#api/db/migrations/040-community-deck-moderation";
@@ -84,4 +85,5 @@ export const migrations: readonly Migration[] = [
   storyProgress,
   storyGuestProgress,
   communityDeckModeration,
+  friendships,
 ];

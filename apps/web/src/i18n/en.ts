@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesEn } from "@/i18n/learn/advancedBattles.en";
 import { rulesLayoutEn } from "@/i18n/learn/rulesLayout.en";
 import { lessonCatalogEn } from "@/i18n/learn/lessonCatalog.en";
@@ -39,6 +40,7 @@ export const en = {
   "overlay.trashTamerBottomCard": "Trash the bottom face-down card from under 1 of your Tamers",
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   "settings.cardImageLanguage": "Card image language",
   "settings.cardImageLanguageDesc":
     "Choose the default language for the collection and new deck copies. The button also replaces artwork, including alternate art, in existing decks. Cards without this language keep their current image.",

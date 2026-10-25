@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, cleanup, fireEvent, render, renderHook, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CHAT_CHANNEL,
@@ -186,6 +186,22 @@ describe("MatchChatWindow", () => {
     );
     return { chat, onClose };
   }
+
+  it("blocks the current opponent on the server before enabling the local mute", async () => {
+    const fetcher = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ blocked: true }));
+    try {
+      const { chat } = renderWindow({ roomId: "active-room" });
+      fireEvent.click(screen.getByRole("button", { name: "Chat settings" }));
+      fireEvent.click(screen.getByRole("button", { name: "Block player" }));
+      await waitFor(() => expect(chat.setMutedOpponent).toHaveBeenCalledWith(true));
+      expect(fetcher).toHaveBeenCalledWith(
+        expect.stringContaining("/account/blocks/opponent"),
+        expect.objectContaining({ method: "POST", body: JSON.stringify({ roomId: "active-room" }) }),
+      );
+    } finally {
+      fetcher.mockRestore();
+    }
+  });
 
   const openPicker = () => fireEvent.click(screen.getByRole("button", { name: "Tamer commands" }));
 

@@ -18,6 +18,7 @@ export interface AppRoute {
 }
 
 export const SCREEN_PATHS: Record<Screen, string> = {
+  friends: "/friends",
   feedback: "/admin/feedback",
   myFeedback: "/feedback",
   home: "/",
@@ -44,6 +45,7 @@ export function routeFromPathname(pathname: string): AppRoute | undefined {
   if (normalized === "/admin/feedback") return { screen: "feedback" };
   const triagedFeedback = /^\/admin\/feedback\/(\d{1,9})$/.exec(normalized)?.[1];
   if (triagedFeedback) return { screen: "feedback", feedbackId: Number(triagedFeedback) };
+  if (normalized === "/friends") return { screen: "friends" };
   if (normalized === "/feedback") return { screen: "myFeedback" };
   const ownFeedback = /^\/feedback\/(\d{1,9})$/.exec(normalized)?.[1];
   if (ownFeedback) return { screen: "myFeedback", feedbackId: Number(ownFeedback) };

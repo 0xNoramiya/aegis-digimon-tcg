@@ -1,3 +1,8 @@
+import { FriendStore } from "#api/friends/FriendStore";
+import { installFriendRoutes } from "#api/friends/installFriendRoutes";
+import { BlockStore } from "#api/blocks/BlockStore";
+import { installBlockRoutes } from "#api/blocks/installBlockRoutes";
+import { resolveRoomOpponent } from "#api/friends/resolveRoomOpponent";
 import { isCardImageLanguage } from "@aegis/shared/cards/isCardImageLanguage";
 import { GAME_MESSAGE_LIMITS } from "@aegis/shared/protocol/gameMessageLimits";
 import { installStoryRoutes } from "#api/story/installStoryRoutes";
@@ -130,6 +135,13 @@ export function installAccountRoutes(
   // The signed-in player's inbox; feedback triage is its first producer. See src/notifications.
   installNotificationRoutes({ app, store: new NotificationStore(store), session: sessionFromRequest });
   installPlaytestRoutes({ app, store: new PlaytestStore(store), session: sessionFromRequest });
+  installFriendRoutes({ app, store: new FriendStore(store), session: sessionFromRequest });
+  installBlockRoutes({
+    app,
+    store: new BlockStore(store),
+    session: sessionFromRequest,
+    resolveOpponent: (roomId, accountId) => resolveRoomOpponent({ roomId, accountId }),
+  });
   installRoadmapRoutes({ app, store: new RoadmapStore(store), session: sessionFromRequest });
   installClientErrorRoutes({ app, session: sessionFromRequest, alerts: createClientErrorAlertsFromEnvironment() });
   // Public decks, likes and copies. See src/community.

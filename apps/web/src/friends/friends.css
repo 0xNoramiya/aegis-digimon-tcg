@@ -1,0 +1,93 @@
+.friends-screen {
+  width: min(100%, 56rem);
+  margin-inline: auto;
+  padding: 1.5rem;
+  color: var(--ds-text);
+}
+.friends-screen h1 {
+  margin-block: 0 0.5rem;
+}
+.friends-screen header p,
+.friends-person small,
+.friends-empty {
+  color: var(--ds-text-2);
+}
+.friends-form {
+  margin-block: 1.5rem;
+}
+.friends-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.friends-form > div,
+.friends-actions,
+.friends-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.friends-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem;
+  color: inherit;
+  background: var(--ds-sheet);
+  border: 1px solid var(--ds-line);
+  border-radius: 0.5rem;
+}
+.friends-tabs {
+  border-bottom: 1px solid var(--ds-line);
+  margin-bottom: 1rem;
+}
+.friends-tabs button {
+  padding: 0.75rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--ds-text-2);
+  cursor: pointer;
+}
+.friends-tabs button[aria-current] {
+  color: var(--ds-text);
+  border-bottom-color: var(--ds-accent);
+}
+.friends-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.friends-list li {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--ds-line);
+}
+.friends-person {
+  display: grid;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 8rem;
+  overflow-wrap: anywhere;
+}
+.friends-actions {
+  justify-content: flex-end;
+}
+.friends-add-action {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.friends-add-action > span {
+  font-size: 0.75rem;
+}
+@media (max-width: 480px) {
+  .friends-screen {
+    padding: 1rem;
+  }
+  .friends-actions {
+    width: 100%;
+  }
+}

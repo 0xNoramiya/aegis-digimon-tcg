@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { getChineseLearnDictionary } from "@/i18n/learn/getChineseLearnDictionary";
 import { advancedBattlesZhCN } from "@/i18n/learn/advancedBattles.zh-CN";
 import { rulesLayoutZhCN } from "@/i18n/learn/rulesLayout.zh-CN";
@@ -37,6 +38,7 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": "丢弃我方1只驯兽师下方最下方的1张背面表示卡牌",
   "overlay.trashTwoTamerBottomCards": "丢弃我方驯兽师下方最下方的2张背面表示卡牌",
   ...providerEn,
+  ...friendsEn,
   ...learnZhCN,
   ...learnDrillsZhCN,
   ...battleLessonsZhCN,

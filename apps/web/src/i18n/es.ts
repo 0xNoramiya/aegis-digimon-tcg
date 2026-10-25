@@ -1,3 +1,4 @@
+import { friendsEs } from "@/i18n/friends.es";
 import { advancedBattlesEs } from "@/i18n/learn/advancedBattles.es";
 import { rulesLayoutEs } from "@/i18n/learn/rulesLayout.es";
 import { lessonCatalogEs } from "@/i18n/learn/lessonCatalog.es";
@@ -36,6 +37,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.trashTamerBottomCard": "Descartar la carta boca abajo del fondo de debajo de 1 de tus Tamers",
   "overlay.trashTwoTamerBottomCards": "Descartar 2 cartas boca abajo del fondo de debajo de tus Tamers",
   ...providerEs,
+  ...friendsEs,
   "settings.cardImageLanguage": "Idioma de las imágenes de cartas",
   "settings.cardImageLanguageDesc":
     "Elige el idioma predeterminado de la Colección y de las nuevas copias añadidas a los mazos. El botón también reemplaza las imágenes alternativas de los mazos existentes. Las cartas sin este idioma conservan su imagen actual.",
