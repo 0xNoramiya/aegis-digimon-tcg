@@ -1,5 +1,29 @@
 [
   {
+    "version": "1.39.1-beta",
+    "releasedAt": "2026-10-24",
+    "summaryKey": "releases.1.39.1-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.39.1-beta.feature.cards"
+      },
+      {
+        "textKey": "releases.1.39.1-beta.feature.inspection"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.39.1-beta.fix.rules"
+      },
+      {
+        "textKey": "releases.1.39.1-beta.fix.rollback"
+      },
+      {
+        "textKey": "releases.1.39.1-beta.fix.presentation"
+      }
+    ]
+  },
+  {
     "version": "1.39.0-beta",
     "releasedAt": "2026-10-24",
     "summaryKey": "releases.1.39.0-beta.summary",
