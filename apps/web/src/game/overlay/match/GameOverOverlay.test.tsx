@@ -442,8 +442,8 @@ describe("adding the opponent after a match", () => {
           />
         </I18nProvider>,
       );
-      fireEvent.click(screen.getByRole("button", { name: "Add friend", exact: true }));
-      await waitFor(() => expect(screen.getByRole("button", { name: "Request sent", exact: true })).toBeTruthy());
+      fireEvent.click(screen.getByRole("button", { name: "Add friend" }));
+      await waitFor(() => expect(screen.getByRole("button", { name: "Request sent" })).toBeTruthy());
       expect(fetcher).toHaveBeenCalledWith(
         expect.stringContaining("/friends/requests"),
         expect.objectContaining({
