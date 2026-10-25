@@ -501,6 +501,31 @@ export async function runRemovalAction(ctx: EffectContext, action: Action, scope
       return false;
     }
     case "Trash": {
+      if (Array.isArray(action.target.filter.zone)) {
+        const zones = action.target.filter.zone;
+        if (zones.every((zone) => zone === "hand" || zone === "security")) {
+          const asker = action.chooser === "opponent" ? requireOpponentAsk(ctx) : ctx.ask;
+          const candidates = candidateLooseInstances(ctx, action.target, zones);
+          const seats = seatsForController(ctx, action.target.filter);
+          const visible = seats.flatMap((seat) => Array.from(ctx.game.player(seat).hand, (card) => card.instanceId));
+          const chosen = await pickLoose(ctx, action.target, candidates, undefined, asker, visible);
+          for (const seat of seats) {
+            const securityIds = chosen.filter((id) =>
+              Array.from(ctx.game.player(seat).security).some((card) => card.instanceId === id),
+            );
+            if (securityIds.length > 0) {
+              await ctx.fx.trashFromSecurity(seat, securityIds.length, { instanceIds: securityIds });
+            }
+            const handIds = chosen.filter((id) =>
+              Array.from(ctx.game.player(seat).hand).some((card) => card.instanceId === id),
+            );
+            if (handIds.length > 0) {
+              await ctx.fx.trash(handIds, { byEffectSeat: ctx.source.ownerSeat });
+            }
+          }
+          return false;
+        }
+      }
       // A hand-zone target is a discard ("trash N card(s) in your/their hand"): resolve
       // loose hand cards and trash the chosen ones. Otherwise it is a field trash (the
       // resolved permanents' top cards).
