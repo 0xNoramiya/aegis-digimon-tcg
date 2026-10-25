@@ -34,6 +34,7 @@ const suspendThenRestrict = (): Action[] => [
     condition: {
       kind: "selfDigivolutionStackHasTrait",
       filter: {
+        kind: ["Tamer"],
         nameOrTrait: [
           {
             tokens: ["DigiPolice"],

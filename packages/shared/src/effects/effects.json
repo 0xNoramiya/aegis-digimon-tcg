@@ -34078,7 +34078,7 @@
             "duration": "untilOpponentTurnEnd",
             "condition": {
               "kind": "selfDigivolutionStackHasTrait",
-              "filter": { "nameOrTrait": [{ "tokens": ["DigiPolice"], "match": "trait" }] },
+              "filter": { "kind": ["Tamer"], "nameOrTrait": [{ "tokens": ["DigiPolice"], "match": "trait" }] },
               "raw": "a Tamer card with the [DigiPolice] trait is in this Digimon's digivolution cards"
             }
           }
@@ -34099,7 +34099,7 @@
             "duration": "untilOpponentTurnEnd",
             "condition": {
               "kind": "selfDigivolutionStackHasTrait",
-              "filter": { "nameOrTrait": [{ "tokens": ["DigiPolice"], "match": "trait" }] },
+              "filter": { "kind": ["Tamer"], "nameOrTrait": [{ "tokens": ["DigiPolice"], "match": "trait" }] },
               "raw": "a Tamer card with the [DigiPolice] trait is in this Digimon's digivolution cards"
             }
           }
@@ -34421,7 +34421,7 @@
                 "optional": true,
                 "condition": {
                   "kind": "selfDigivolutionStackHasTrait",
-                  "filter": { "nameOrTrait": [{ "tokens": ["DigiPolice"], "match": "trait" }] },
+                  "filter": { "kind": ["Tamer"], "nameOrTrait": [{ "tokens": ["DigiPolice"], "match": "trait" }] },
                   "raw": "a Tamer card with the [DigiPolice] trait is in this Digimon's digivolution cards"
                 }
               }
@@ -34534,7 +34534,7 @@
             },
             "condition": {
               "kind": "selfDigivolutionStackHasTrait",
-              "filter": { "nameOrTrait": [{ "tokens": ["SoC"], "match": "trait" }] },
+              "filter": { "kind": ["Tamer"], "nameOrTrait": [{ "tokens": ["SoC"], "match": "trait" }] },
               "raw": "an [SoC] trait Tamer card is in this Digimon's digivolution cards"
             }
           }
@@ -34743,7 +34743,7 @@
             "to": "deckBottom",
             "condition": {
               "kind": "selfDigivolutionStackHasTrait",
-              "filter": { "nameOrTrait": [{ "tokens": ["DigiPolice"], "match": "trait" }] },
+              "filter": { "kind": ["Tamer"], "nameOrTrait": [{ "tokens": ["DigiPolice"], "match": "trait" }] },
               "raw": "a Tamer card with the [DigiPolice] trait is in this Digimon's digivolution cards"
             }
           }
