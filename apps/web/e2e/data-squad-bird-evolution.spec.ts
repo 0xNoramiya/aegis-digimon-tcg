@@ -67,13 +67,24 @@ for (const viewport of [
           ? { instanceId: refs.instanceId("recruitedKeenan"), accept: true }
           : { accept: false },
     );
+    const crowmonHighlights: string[] = [];
     await scenario.evolve("Crowmon", refs.permanentId("line"));
     await scenario.resolveUntil(
       (s) =>
         !s.pendingDecision && s.players[0]!.battleArea.some((p) => p.topCard.instanceId === refs.instanceId("reward")),
-      (d) => {
+      async (d) => {
         if (d.sourceCardId !== "BT27-081") {
           return { accept: false };
+        }
+        if (d.kind !== "orderTriggers") {
+          const viewEffect = scenario.page.getByRole("button", { name: "View effect", exact: true });
+          if (await viewEffect.isVisible()) {
+            await viewEffect.click();
+          }
+          const emphasis = d.options.effectTextEmphasis;
+          expect(emphasis).toBeDefined();
+          await expect(scenario.page.locator(".decision-overlay__effect-step")).toHaveText(emphasis!);
+          crowmonHighlights.push(emphasis!);
         }
         const candidates = d.options.candidateInstanceIds ?? [];
         if (candidates.includes(keenanTop)) {
@@ -85,6 +96,10 @@ for (const viewport of [
         return { accept: true };
       },
     );
+    expect([...new Set(crowmonHighlights)]).toEqual([
+      "Then, by trashing 2 bottom face-down cards from under any of your Tamers,",
+      "you may play or use 1 [DATA SQUAD] trait card with a play or use cost of 5 or less from your hand without paying the cost.",
+    ]);
     const final = await scenario.snapshot();
     expect(final.memory).toBe(initial.memory - 8);
     expect(final.players[1]!.handCount).toBe(5);

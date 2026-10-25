@@ -244474,12 +244474,14 @@
         "actions": [
           {
             "kind": "Trash",
+            "effectTextPart": "[On Play] [When Digivolving] [When Attacking] [Once Per Turn] If your opponent's hand has 6 or more cards, they trash 1 card in their hand.",
             "condition": { "kind": "zoneCount", "seat": "opponent", "zone": "hand", "op": "gte", "value": 6 },
             "target": { "filter": { "controller": "opponent", "zone": "hand" }, "count": 1 },
             "chooser": "opponent"
           },
           {
             "kind": "CostGatedBlock",
+            "effectTextPart": "Then, by trashing 2 bottom face-down cards from under any of your Tamers,",
             "optional": true,
             "abortOnDecline": true,
             "cost": {
@@ -244491,6 +244493,7 @@
             "actions": [
               {
                 "kind": "PlayWithoutCost",
+                "effectTextPart": "you may play or use 1 [DATA SQUAD] trait card with a play or use cost of 5 or less from your hand without paying the cost.",
                 "chooseDualMode": true,
                 "target": {
                   "filter": {
@@ -244516,12 +244519,14 @@
         "actions": [
           {
             "kind": "Trash",
+            "effectTextPart": "[On Play] [When Digivolving] [When Attacking] [Once Per Turn] If your opponent's hand has 6 or more cards, they trash 1 card in their hand.",
             "condition": { "kind": "zoneCount", "seat": "opponent", "zone": "hand", "op": "gte", "value": 6 },
             "target": { "filter": { "controller": "opponent", "zone": "hand" }, "count": 1 },
             "chooser": "opponent"
           },
           {
             "kind": "CostGatedBlock",
+            "effectTextPart": "Then, by trashing 2 bottom face-down cards from under any of your Tamers,",
             "optional": true,
             "abortOnDecline": true,
             "cost": {
@@ -244533,6 +244538,7 @@
             "actions": [
               {
                 "kind": "PlayWithoutCost",
+                "effectTextPart": "you may play or use 1 [DATA SQUAD] trait card with a play or use cost of 5 or less from your hand without paying the cost.",
                 "chooseDualMode": true,
                 "target": {
                   "filter": {
@@ -244558,12 +244564,14 @@
         "actions": [
           {
             "kind": "Trash",
+            "effectTextPart": "[On Play] [When Digivolving] [When Attacking] [Once Per Turn] If your opponent's hand has 6 or more cards, they trash 1 card in their hand.",
             "condition": { "kind": "zoneCount", "seat": "opponent", "zone": "hand", "op": "gte", "value": 6 },
             "target": { "filter": { "controller": "opponent", "zone": "hand" }, "count": 1 },
             "chooser": "opponent"
           },
           {
             "kind": "CostGatedBlock",
+            "effectTextPart": "Then, by trashing 2 bottom face-down cards from under any of your Tamers,",
             "optional": true,
             "abortOnDecline": true,
             "cost": {
@@ -244575,6 +244583,7 @@
             "actions": [
               {
                 "kind": "PlayWithoutCost",
+                "effectTextPart": "you may play or use 1 [DATA SQUAD] trait card with a play or use cost of 5 or less from your hand without paying the cost.",
                 "chooseDualMode": true,
                 "target": {
                   "filter": {
@@ -244599,6 +244608,7 @@
         "actions": [
           {
             "kind": "PlayWithoutCost",
+            "effectTextPart": "[On Deletion] You may play 1 play cost 5 or lower card with [Avian] or [Bird] in any of its traits or the [DATA SQUAD] trait from your trash without paying the cost.",
             "target": {
               "filter": {
                 "controller": "mine",

@@ -5,6 +5,46 @@ import { setupEngine, settle } from "#api/engine/testkit/harness";
 import "#api/cards/index";
 
 describe("Crowmon discard, Tamer payment and inherited revival", () => {
+  it("highlights the discard, Tamer payment and free play as separate printed parts", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT27-081", as: "crowmon" },
+            {
+              card: "BT1-085",
+              under: [
+                { card: "BT1-009", faceUp: false },
+                { card: "BT1-011", faceUp: false },
+              ],
+            },
+          ],
+          hand: ["BT26-094"],
+        },
+        1: { hand: Array<string>(6).fill("BT1-009") },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    await advance(s.engine).fire(EffectTiming.OnPlay, s.perm("crowmon"));
+    const discard =
+      "[On Play] [When Digivolving] [When Attacking] [Once Per Turn] If your opponent's hand has 6 or more cards, they trash 1 card in their hand.";
+    const payment = "Then, by trashing 2 bottom face-down cards from under any of your Tamers,";
+    const play =
+      "you may play or use 1 [DATA SQUAD] trait card with a play or use cost of 5 or less from your hand without paying the cost.";
+    const options = s.decisions.filter((d) => d.req.sourceCardId === "BT27-081").map((d) => d.req.options);
+    expect([...new Set(options.map((option) => option?.effectTextEmphasis))]).toEqual([discard, payment, play]);
+    for (const emphasis of [discard, payment, play]) {
+      expect(options).toContainEqual(
+        expect.objectContaining({
+          timing: "OnPlay",
+          effectText: `${discard} ${payment} ${play}`,
+          effectTextEmphasis: emphasis,
+        }),
+      );
+    }
+  });
+
   it.each([5, 6, 7])("checks the six-card hand boundary at %i independently of the Tamer cost", async (count) => {
     const s = setupEngine(
       { 0: { battleArea: [{ card: "BT27-081", as: "crowmon" }] }, 1: { hand: Array<string>(count).fill("BT1-009") } },
