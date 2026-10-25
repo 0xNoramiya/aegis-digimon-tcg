@@ -104,3 +104,33 @@ describe("social connection event handling", () => {
     expect(transport.leave).toHaveBeenCalledOnce();
   });
 });
+
+it("correlates a message acknowledgment with its originating request", async () => {
+  const hook = await connect("sender");
+  let requestId: string | undefined;
+  act(() => {
+    requestId = hook.result.current.sendMessage?.("recipient", "Hello");
+  });
+  expect(transport.send).toHaveBeenLastCalledWith("social", {
+    kind: "directMessage",
+    friendId: "recipient",
+    body: "Hello",
+    requestId,
+  });
+  act(() =>
+    transport.receive?.({
+      kind: "directMessage",
+      message: {
+        id: "other-tab",
+        senderId: "sender",
+        recipientId: "recipient",
+        body: "Another tab",
+        createdAt: 1,
+        readAt: null,
+      },
+    }),
+  );
+  expect(hook.result.current.messageAcknowledgment).toBeUndefined();
+  act(() => transport.receive?.({ kind: "error", error: "message_unavailable", requestId }));
+  expect(hook.result.current.messageAcknowledgment).toEqual({ requestId, delivered: false });
+});

@@ -1,3 +1,4 @@
+import { canWatchSocialRoom } from "#api/social/canWatchSocialRoom";
 import { randomUUID } from "node:crypto";
 import type { Presence } from "colyseus";
 import type { AccountStore } from "#api/accounts/AccountStore";
@@ -13,11 +14,13 @@ type SocialServiceParams = {
   presence: Presence;
   resolveRoom: (code: string) => Promise<PrivateRoomInfo | undefined>;
   now?: () => number;
+  canWatch?: (params: { code: string; viewerId: string }) => Promise<boolean>;
 };
 type WritePresenceParams = { accountId: string; connectionId: string; status: SocialStatus; roomCode?: string };
 type DeletePresenceParams = { accountId: string; connectionId: string };
 type InviteParams = { senderId: string; recipientId: string; roomCode: string };
 type AnswerInviteParams = { accountId: string; inviteId: string; accept: boolean };
+type VisiblePresenceParams = { viewerId: string; presence: SocialPresence };
 type Lease = { status: SocialStatus; roomCode?: string; expiresAt: number };
 
 export class SocialService {
@@ -85,9 +88,22 @@ export class SocialService {
     return {
       kind: "friendsSnapshot",
       friends: await Promise.all(
-        friends.map(async (friend) => ({ ...friend, ...(await this.readPresence(friend.accountId)) })),
+        friends.map(async (friend) => ({
+          ...friend,
+          ...(await this.visiblePresence({ viewerId: accountId, presence: await this.readPresence(friend.accountId) })),
+        })),
       ),
     };
+  }
+
+  async visiblePresence({ viewerId, presence }: VisiblePresenceParams): Promise<SocialPresence> {
+    if (
+      !presence.roomCode ||
+      (await (this.dependencies.canWatch ?? canWatchSocialRoom)({ code: presence.roomCode, viewerId }))
+    ) {
+      return presence;
+    }
+    return { accountId: presence.accountId, status: presence.status };
   }
 
   async publishChanges(accountIds: readonly string[]): Promise<void> {

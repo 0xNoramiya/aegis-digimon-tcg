@@ -33,7 +33,7 @@ export function ReplayPlayer({
   const clock = useMemo(() => createPlaybackClock(), []);
   const [speed, setSpeed] = useState(1);
   const [showHand, setShowHand] = useState(true);
-  const [viewerSeat, setViewerSeat] = useState<Seat>(replay.viewerSeat);
+  const [viewerSeat, setViewerSeat] = useState<Seat>(replay.viewerSeat === 1 ? 1 : 0);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [recordingMode, setRecordingMode] = useState(false);
@@ -87,7 +87,7 @@ export function ReplayPlayer({
     () =>
       replay.frames.map(
         (entry) =>
-          buildMatchLog(entry.events, replay.viewerSeat, new Map(), t, 1, {
+          buildMatchLog(entry.events, replay.viewerSeat === 1 ? 1 : 0, new Map(), t, 1, {
             0: replay.players[0],
             1: replay.players[1],
           })[0]?.text ?? `${t("replay.turn")} ${entry.state.turnCount} · ${entry.state.phase}`,
@@ -244,7 +244,11 @@ export function ReplayPlayer({
           <span className="replay-player__outcome">{outcome}</span>
         </div>
       </header>
-      <p className="aegis-sr-only">{t("replay.perspective", { name: replay.players[replay.viewerSeat] })}</p>
+      <p className="aegis-sr-only">
+        {t("replay.perspective", {
+          name: replay.viewerSeat === -1 ? t("friends.spectatorReplay") : replay.players[replay.viewerSeat],
+        })}
+      </p>
       <div className="replay-player__body">
         <div className="replay-player__board">
           <GameScreen

@@ -163,6 +163,7 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     joinOptions,
     startMode = "casual",
     roomCode,
+    spectatorFriendId,
     waitForHost,
     betaBattleMode,
     unlimited,
@@ -175,13 +176,13 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
   );
   const matchConfig = useMemo(() => {
-    if (startMode === "spectator") return { mode: "spectator" as const, roomCode };
+    if (startMode === "spectator") return { mode: "spectator" as const, roomCode, spectatorFriendId };
     if (seriesGame) return { mode: "series" as const, seriesGame };
     if (startMode === "casual" || startMode === "unlimited" || startMode === "ranked" || startMode === "beta")
       return undefined;
     if (startMode === "bot") return { mode: "bot" as MatchMode };
     return { mode: startMode, roomCode, waitForHost };
-  }, [startMode, roomCode, waitForHost, seriesGame]);
+  }, [startMode, roomCode, spectatorFriendId, waitForHost, seriesGame]);
   const roomOptions = useMemo(
     () => ({
       ...joinOptions,
@@ -243,6 +244,7 @@ function GameScreenSession({
   identityAvatarUrl?: string | null;
   startMode?: StartMode;
   roomCode?: string;
+  spectatorFriendId?: string;
   onPrivateRoomReady?: (code: string) => void;
   /** A guest returning to a private room waits until the host has reopened it. */
   waitForHost?: boolean;
@@ -1585,16 +1587,13 @@ function GameScreenSession({
                     )
                   : undefined,
               onDownloadReplay:
-                !spectating && liveConnection.replayDownload?.kind === "ready"
+                liveConnection.replayDownload?.kind === "ready"
                   ? () => {
                       if (liveConnection.replayDownload?.kind === "ready")
                         downloadReplay(liveConnection.replayDownload);
                     }
                   : undefined,
-              replayFile:
-                !spectating && liveConnection.replayDownload?.kind === "ready"
-                  ? liveConnection.replayDownload
-                  : undefined,
+              replayFile: liveConnection.replayDownload?.kind === "ready" ? liveConnection.replayDownload : undefined,
               replayStatus:
                 spectating || demoConnection || joinOptions.devScenario
                   ? undefined

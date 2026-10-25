@@ -1,3 +1,4 @@
+import type { SpectatorAccess } from "@aegis/shared/account/SpectatorAccess";
 import type { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
 import type { DeckListing } from "../game/decks";
 import { dominantColor } from "../game/decks";
@@ -36,8 +37,10 @@ export type AccountPreferences = {
   deckView?: "grid" | "list";
   deckSort?: string;
   profileStats?: boolean;
+  shareProfileStats?: boolean;
   shareDeckAfterMatch?: boolean;
   listLiveMatches?: boolean;
+  spectatorAccess?: SpectatorAccess;
   hideIdentityFromSpectators?: boolean;
   favoriteDeckIds?: string[];
 };

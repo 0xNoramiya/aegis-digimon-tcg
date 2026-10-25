@@ -1,0 +1,126 @@
+.friends-conversation {
+  min-width: 0;
+  border: 1px solid var(--ds-line);
+  background: var(--ds-sheet);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+}
+.direct-messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-width: 0;
+  height: min(70dvh, 42rem);
+  padding: var(--ds-space-5);
+}
+.direct-messages h2,
+.direct-messages p {
+  margin: 0;
+}
+.direct-messages-header {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-bottom: var(--ds-space-4);
+  border-bottom: 1px solid var(--ds-line);
+}
+.direct-messages-person {
+  min-width: 0;
+  flex: 1;
+}
+.direct-messages-header h2 {
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-text-lg);
+  overflow-wrap: anywhere;
+  margin-bottom: var(--ds-space-1);
+}
+.direct-messages-toolbar {
+  display: flex;
+  justify-content: end;
+}
+.direct-messages-list {
+  list-style: none;
+  padding: var(--ds-space-2) 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  flex: 1;
+  min-height: 8rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.direct-messages-list li {
+  flex-shrink: 0;
+  align-self: start;
+  max-width: 88%;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-fill);
+  border-radius: var(--ds-radius-lg);
+  overflow-wrap: anywhere;
+}
+.direct-messages-list .direct-message-own {
+  align-self: end;
+  background: var(--ds-accent-soft);
+}
+.direct-messages-list strong {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-2);
+}
+.direct-messages-list p {
+  line-height: var(--ds-leading-body);
+  margin: var(--ds-space-1) 0 var(--ds-space-2);
+  white-space: pre-wrap;
+}
+.direct-messages-list time,
+.direct-messages-list small {
+  display: block;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-3);
+}
+.direct-messages-retention {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-3);
+  text-align: center;
+}
+.direct-messages form {
+  display: flex;
+  align-items: end;
+  gap: var(--ds-space-2);
+  padding-top: var(--ds-space-3);
+  border-top: 1px solid var(--ds-line);
+}
+.direct-messages form .aegis-field {
+  flex: 1;
+  min-width: 0;
+}
+.direct-messages-dialog {
+  --aegis-dialog-pad: 0;
+  width: min(100%, 42rem);
+  overflow: hidden;
+}
+.direct-messages-dialog .direct-messages {
+  height: min(85dvh, 46rem);
+}
+@media (max-width: 599px) {
+  .direct-messages-dialog {
+    align-self: stretch;
+    width: 100%;
+    max-height: calc(100dvh - var(--ds-space-8));
+  }
+  .direct-messages-dialog .direct-messages {
+    height: 100%;
+    padding: var(--ds-space-4);
+    padding-bottom: max(var(--ds-space-4), env(safe-area-inset-bottom));
+  }
+  .direct-messages-header h2 {
+    font-size: var(--ds-text-base);
+  }
+  .direct-messages-list li {
+    max-width: 94%;
+  }
+  .direct-messages form button {
+    min-width: var(--ds-touch-target);
+    padding-inline: var(--ds-space-3);
+  }
+}

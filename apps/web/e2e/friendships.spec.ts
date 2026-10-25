@@ -64,7 +64,7 @@ for (const width of [390, 1440]) {
             localStorage.setItem("aegis:locale", "en");
             localStorage.setItem("aegis:darkMode", String(darkMode));
           }, dark);
-          await page.route("http://127.0.0.1:2569/**", async (route) => {
+          await page.route(`http://127.0.0.1:${process.env.AEGIS_E2E_EDGE_PORT ?? 2569}/**`, async (route) => {
             const request = route.request();
             const url = new URL(request.url());
             const response = await route.fetch({
@@ -76,10 +76,10 @@ for (const width of [390, 1440]) {
           players.push({ page, friends: new FriendsPage(page) });
         }
         const [sender, recipient] = players;
-        await sender.friends.open("http://127.0.0.1:4175/profile");
+        await sender.friends.open("/profile");
         await sender.page.getByRole("button", { name: "Add friend", exact: true }).click();
         await expect(sender.page.getByRole("button", { name: "Request sent", exact: true })).toBeDisabled();
-        await recipient.friends.open("http://127.0.0.1:4175/friends");
+        await recipient.friends.open("/friends");
         await recipient.friends.openRequests();
         await expect(recipient.page.getByRole("region", { name: "Requests", exact: true })).toContainText(
           first.displayName,
@@ -89,10 +89,11 @@ for (const width of [390, 1440]) {
         await expect(recipient.page.getByRole("region", { name: "Friends", exact: true })).toContainText(
           first.displayName,
         );
-        await sender.friends.open("http://127.0.0.1:4175/friends");
+        await sender.friends.open("/friends");
         await expect(sender.page.getByRole("region", { name: "Friends", exact: true })).toContainText(
           second.displayName,
         );
+        await sender.page.getByLabel(/More actions for/).click();
         await sender.page.getByRole("button", { name: "Block player", exact: true }).click();
         await sender.page.getByRole("button", { name: "Blocked (1)", exact: true }).click();
         await expect(sender.page.getByRole("region", { name: "Blocked", exact: true })).toContainText(

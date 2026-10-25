@@ -1,3 +1,4 @@
+import { DirectMessageStore } from "#api/messages/DirectMessageStore";
 import { Room, ServerError, type Client } from "colyseus";
 import { accountStore } from "#api/accounts/runtime";
 import { SocialService } from "#api/social/SocialService";
@@ -15,6 +16,7 @@ export class SocialRoom extends Room {
   private readonly accountByClient = new Map<string, string>();
   private readonly subscriptions = new Map<string, (event: SocialEvent) => void>();
   private readonly refreshLimit = tokenBucketLimiter({ capacity: 5, refillMs: 2000 });
+  private readonly messageLimit = tokenBucketLimiter({ capacity: 5, refillMs: 1500 });
   private readonly limit = tokenBucketLimiter({ capacity: 3, refillMs: 20_000 });
 
   override onCreate(): void {
@@ -52,6 +54,10 @@ export class SocialRoom extends Room {
       await this.presence.subscribe(`social:account:${accountId}`, receive);
     }
     await this.service.writePresence({ accountId, connectionId: client.sessionId, status: SocialStatus.ONLINE.value });
+    client.send("social", {
+      kind: "unreadMessages",
+      count: await new DirectMessageStore(this.service.accounts).unread(accountId),
+    });
     client.send("social", await this.service.snapshot(accountId));
     for (const invite of await this.service.readInvites(accountId)) {
       client.send("social", { kind: "matchInvite", invite });
@@ -90,15 +96,42 @@ export class SocialRoom extends Room {
   }
 
   private async deliver({ accountId, event }: { accountId: string; event: SocialEvent }): Promise<void> {
+    if (
+      event.kind === "directMessage" &&
+      !(await this.service.canInteract(
+        accountId,
+        event.message.senderId === accountId ? event.message.recipientId : event.message.senderId,
+      ))
+    ) {
+      return;
+    }
     if (event.kind === "presenceChanged" && !(await this.service.canInteract(accountId, event.presence.accountId))) {
       return;
     }
+    const unreadCount = ["directMessage", "messagesRead", "friendsChanged"].includes(event.kind)
+      ? await new DirectMessageStore(this.service.accounts).unread(accountId)
+      : undefined;
     for (const client of this.clients) {
       if (this.accountByClient.get(client.sessionId) !== accountId) {
         continue;
       }
-      client.send("social", event);
+      client.send(
+        "social",
+        event.kind === "presenceChanged"
+          ? {
+              ...event,
+              presence: await this.service.visiblePresence({ viewerId: accountId, presence: event.presence }),
+            }
+          : event,
+      );
+      if (unreadCount !== undefined) {
+        client.send("social", { kind: "unreadMessages", count: unreadCount });
+      }
       if (event.kind === "friendsChanged") {
+        client.send("social", {
+          kind: "unreadMessages",
+          count: await new DirectMessageStore(this.service.accounts).unread(accountId),
+        });
         client.send("social", await this.service.snapshot(accountId));
       }
     }
@@ -120,10 +153,53 @@ export class SocialRoom extends Room {
       return;
     }
     const intent = payload as SocialIntent;
+    if (intent.kind === "directMessage" || intent.kind === "readMessages") {
+      if (typeof intent.friendId !== "string" || !/^[0-9a-f-]{36}$/i.test(intent.friendId)) {
+        return;
+      }
+      if (!this.messageLimit(accountId)) {
+        client.send("social", {
+          kind: "error",
+          error: "rate_limited",
+          requestId: intent.kind === "directMessage" ? intent.requestId : undefined,
+        });
+        return;
+      }
+      const store = new DirectMessageStore(this.service.accounts);
+      if (intent.kind === "directMessage") {
+        if (typeof intent.requestId !== "string" || !/^[0-9a-f-]{36}$/i.test(intent.requestId)) {
+          return;
+        }
+        const message = await store.send({ accountId, friendId: intent.friendId, body: intent.body });
+        if (!message) {
+          client.send("social", { kind: "error", error: "message_unavailable", requestId: intent.requestId });
+          return;
+        }
+        client.send("social", { kind: "messageSent", requestId: intent.requestId, message });
+        for (const target of [accountId, intent.friendId]) {
+          await this.service.publish({ accountId: target, event: { kind: "directMessage", message } });
+        }
+      } else if (this.refreshLimit(accountId)) {
+        const at = await store.markRead({ accountId, friendId: intent.friendId });
+        if (at !== undefined) {
+          for (const target of [accountId, intent.friendId]) {
+            await this.service.publish({
+              accountId: target,
+              event: { kind: "messagesRead", accountId, friendId: intent.friendId, at },
+            });
+          }
+        }
+      }
+      return;
+    }
     if (intent.kind === "refresh") {
       if (!this.refreshLimit(accountId)) {
         return;
       }
+      client.send("social", {
+        kind: "unreadMessages",
+        count: await new DirectMessageStore(this.service.accounts).unread(accountId),
+      });
       client.send("social", await this.service.snapshot(accountId));
       for (const invite of await this.service.readInvites(accountId)) {
         client.send("social", { kind: "matchInvite", invite });

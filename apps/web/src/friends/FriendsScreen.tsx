@@ -4,6 +4,11 @@ import { FriendListItem } from "@/friends/FriendListItem";
 import { useEffect, useState, type FormEvent } from "react";
 import type { Friend } from "@aegis/shared/friends/Friend";
 import type { FriendRequest } from "@aegis/shared/friends/FriendRequest";
+import { DirectMessagePanel } from "@/messages/DirectMessagePanel";
+import { useMediaQuery } from "@/design/useMediaQuery";
+import { SocialStatus } from "@aegis/shared/social/SocialStatus";
+import { Icons } from "@/design/icons";
+import { Panel, Field, Badge, Alert } from "@/design/primitives";
 import { Button } from "@/design/primitives";
 import { useTranslation } from "@/i18n/useTranslation";
 import type { TranslationKey } from "@/i18n/translationTypes";
@@ -17,6 +22,9 @@ type FriendsData = { friends: Friend[]; requests: FriendRequest[]; blocks: Frien
 export function FriendsScreen({ signedIn, onSignIn }: FriendsScreenParams) {
   const social = useContext(SocialContext);
   const { t } = useTranslation();
+  const [query, setQuery] = useState("");
+  const [conversation, setConversation] = useState<Friend>();
+  const wide = useMediaQuery("(min-width: 1100px)");
   const [tab, setTab] = useState<keyof FriendsData>("friends");
   const [data, setData] = useState<FriendsData>();
   const [name, setName] = useState("");
@@ -70,64 +78,135 @@ export function FriendsScreen({ signedIn, onSignIn }: FriendsScreenParams) {
     });
   }
 
+  const visibleFriends = (data?.[tab] ?? [])
+    .filter((friend) => friend.displayName.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()))
+    .sort((first, second) => {
+      if (tab === "friends") {
+        const firstStatus = social.friends.find((friend) => friend.accountId === first.accountId)?.status;
+        const secondStatus = social.friends.find((friend) => friend.accountId === second.accountId)?.status;
+        function getPriority(status: typeof firstStatus): number {
+          return Object.values(SocialStatus).find((entry) => entry.value === status)?.priority ?? 0;
+        }
+        const difference = getPriority(secondStatus) - getPriority(firstStatus);
+        if (difference) {
+          return difference;
+        }
+      }
+      return first.displayName.localeCompare(second.displayName);
+    });
+
   return (
     <main className="friends-screen">
-      {signedIn ? <p role="status">{t(social.connected ? "friends.connected" : "friends.connecting")}</p> : null}
-      {social.error ? <p role="alert">{t("friends.socialFailed")}</p> : null}
-      <header>
-        <h1>{t("friends.title")}</h1>
-        <p>{t("friends.description")}</p>
+      {social.unreadMessages ? (
+        <p role="status">{t("friends.message.unread", { count: social.unreadMessages })}</p>
+      ) : null}
+      {social.error && !social.connected ? <p role="alert">{t("friends.socialFailed")}</p> : null}
+      <header className="friends-header">
+        <div>
+          <h1>{t("friends.title")}</h1>
+          <p>{t("friends.description")}</p>
+        </div>
+        {signedIn ? (
+          <span role="status">
+            <Badge tone={social.connected ? "success" : "neutral"}>
+              {t(social.connected ? "friends.connected" : "friends.connecting")}
+            </Badge>
+          </span>
+        ) : null}
       </header>
       {!signedIn ? (
         <Button onClick={onSignIn}>{t("friends.signIn")}</Button>
       ) : (
         <>
-          <form className="friends-form" onSubmit={addFriend}>
-            <label htmlFor="friend-display-name">{t("friends.displayName")}</label>
-            <div>
-              <input
-                id="friend-display-name"
-                autoComplete="off"
-                maxLength={32}
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                required
-              />
-              <Button disabled={busy || !name.trim()} type="submit">
-                {t("friends.add")}
-              </Button>
-            </div>
-          </form>
-          <nav className="friends-tabs" aria-label={t("friends.title")}>
-            {(["friends", "requests", "blocks"] as const).map((key) => (
-              <button key={key} aria-current={tab === key ? "page" : undefined} onClick={() => setTab(key)}>
-                {t(`friends.tab.${key}`)}
-                {data ? ` (${data[key].length})` : ""}
-              </button>
-            ))}
-          </nav>
-          {notice ? <p role="status">{t(notice)}</p> : null}
-          {failed ? (
-            <div role="alert">
-              <p>{t("friends.failed")}</p>
-              <Button onClick={() => setRevision((value) => value + 1)}>{t("friends.retry")}</Button>
-            </div>
-          ) : null}
-          {!data && !failed ? (
-            <p role="status" aria-busy="true">
-              {t("common.loading")}
-            </p>
-          ) : null}
-          {data ? (
-            <section aria-label={t(`friends.tab.${tab}`)} aria-busy={busy}>
-              {data[tab].length === 0 ? <p className="friends-empty">{t(`friends.empty.${tab}`)}</p> : null}
-              <ul className="friends-list">
-                {data[tab].map((friend) => (
-                  <FriendListItem key={friend.accountId} friend={friend} tab={tab} busy={busy} onAction={runAction} />
+          <div className="friends-workspace">
+            <section className="friends-directory">
+              <nav className="friends-tabs" aria-label={t("friends.title")}>
+                {(["friends", "requests", "blocks"] as const).map((key) => (
+                  <button key={key} aria-current={tab === key ? "page" : undefined} onClick={() => setTab(key)}>
+                    {t(`friends.tab.${key}`)}
+                    {data ? ` (${data[key].length})` : ""}
+                  </button>
                 ))}
-              </ul>
+              </nav>
+              <Field
+                label={t("friends.search")}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t("friends.searchHint")}
+                type="search"
+              />
+              {notice ? <Alert>{t(notice)}</Alert> : null}
+              {failed ? (
+                <div role="alert">
+                  <p>{t("friends.failed")}</p>
+                  <Button onClick={() => setRevision((value) => value + 1)}>{t("friends.retry")}</Button>
+                </div>
+              ) : null}
+              {!data && !failed ? (
+                <p role="status" aria-busy="true">
+                  {t("common.loading")}
+                </p>
+              ) : null}
+              {data ? (
+                <section aria-label={t(`friends.tab.${tab}`)} aria-busy={busy}>
+                  {data[tab].length === 0 ? <p className="friends-empty">{t(`friends.empty.${tab}`)}</p> : null}
+                  {query && !visibleFriends.length ? <p className="friends-empty">{t("friends.noResults")}</p> : null}
+                  <ul className="friends-list">
+                    {visibleFriends.map((friend) => (
+                      <FriendListItem
+                        key={friend.accountId}
+                        friend={friend}
+                        tab={tab}
+                        busy={busy}
+                        onAction={runAction}
+                        onMessage={setConversation}
+                        selected={conversation?.accountId === friend.accountId}
+                      />
+                    ))}
+                  </ul>
+                </section>
+              ) : null}
             </section>
-          ) : null}
+            <aside className="friends-sidebar">
+              <Panel className="friends-add-panel">
+                <h2>
+                  <Icons.Users size={20} />
+                  {t("friends.add")}
+                </h2>{" "}
+                <form className="friends-form" onSubmit={addFriend}>
+                  <div>
+                    <Field
+                      label={t("friends.displayName")}
+                      id="friend-display-name"
+                      autoComplete="off"
+                      maxLength={32}
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
+                      required
+                    />
+                    <Button disabled={busy || !name.trim()} type="submit">
+                      {t("friends.add")}
+                    </Button>
+                  </div>
+                </form>
+                <p>{t("friends.addHint")}</p>
+              </Panel>
+            </aside>
+            {conversation ? (
+              <DirectMessagePanel
+                key={conversation.accountId}
+                friend={conversation}
+                embedded={wide}
+                onClose={() => setConversation(undefined)}
+              />
+            ) : wide ? (
+              <Panel className="friends-conversation-empty">
+                <Icons.MessageSquare size={32} />
+                <h2>{t("friends.conversationTitle")}</h2>
+                <p>{t("friends.conversationHint")}</p>
+              </Panel>
+            ) : null}
+          </div>
         </>
       )}
     </main>

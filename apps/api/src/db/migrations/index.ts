@@ -1,3 +1,5 @@
+import { directMessages } from "#api/db/migrations/043-direct-messages";
+import { socialReplays } from "#api/db/migrations/042-social-replays";
 import { friendships } from "#api/db/migrations/041-friendships";
 import { deckProviders } from "#api/db/migrations/037-deck-providers";
 import { storyGuestProgress } from "#api/db/migrations/039-story-guest-progress";
@@ -86,4 +88,6 @@ export const migrations: readonly Migration[] = [
   storyGuestProgress,
   communityDeckModeration,
   friendships,
+  socialReplays,
+  directMessages,
 ];

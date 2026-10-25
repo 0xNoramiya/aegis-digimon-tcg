@@ -1,3 +1,8 @@
+import { SPECTATOR_ACCESS_REVOKED_CLOSE_CODE } from "@aegis/shared/protocol/spectatorAccessRevokedCloseCode";
+import type { SocialEvent } from "@aegis/shared/protocol/social";
+import { SPECTATOR_REPLAY_SEAT } from "@aegis/shared/replays/spectatorReplaySeat";
+import { canSpectatePlayers } from "#api/social/canSpectatePlayers";
+import { SpectatorAccess } from "@aegis/shared/account/SpectatorAccess";
 import { socialRuntime } from "#api/social/socialRuntime";
 import { SocialStatus } from "@aegis/shared/social/SocialStatus";
 import { getStoryBattleDifficulty } from "@aegis/shared/story/getStoryBattleDifficulty";
@@ -367,6 +372,7 @@ export class AegisRoom extends Room<{
   private rollbackSequence = 0;
   private rollbackPending?: { id: string; seat: Seat; target: { index: number; turn?: number } };
   private replayRecording?: ReplayRecording;
+  private readonly spectatorReplayDownloads = new Map<string, Promise<ReplayDownloadMessage>>();
   private replayDownloads = new Map<Seat, Promise<ReplayDownloadMessage>>();
   private replayFinished = false;
   private replayRequestTimes = new WeakMap<Client, number>();
@@ -379,6 +385,7 @@ export class AegisRoom extends Room<{
   /** Clients that pace chains of triggered effects themselves (`presentationPacing: "sequential"`). */
   private chainPacingClients = new Set<string>();
   private initialDeckBySeat = new Map<Seat, UsedDeck>();
+  private readonly spectatorPrivacySubscriptions = new Map<string, (event: SocialEvent) => void>();
   private deckOwnerBySeat = new Map<Seat, string>();
   private opponentDeckRequestTimes = new WeakMap<Client, number>();
   private deckByClient = new Map<string, UsedDeck>();
@@ -525,6 +532,17 @@ export class AegisRoom extends Room<{
           return false;
         }
         this.spectatorIdentities.set(client.sessionId, ticket.account);
+      }
+      const viewerId = this.spectatorIdentities.get(client.sessionId)?.id;
+      if (
+        !(await canSpectatePlayers({
+          accounts: this.accounts(),
+          ownerIds: [this.deckOwnerBySeat.get(0), this.deckOwnerBySeat.get(1)],
+          viewerId,
+        }))
+      ) {
+        this.spectatorIdentities.delete(client.sessionId);
+        return false;
       }
       return true;
     }
@@ -1543,6 +1561,10 @@ export class AegisRoom extends Room<{
   }
 
   override onDispose(): void {
+    for (const [accountId, receive] of this.spectatorPrivacySubscriptions) {
+      void this.presence?.unsubscribe(`social:account:${accountId}`, receive);
+    }
+    this.spectatorPrivacySubscriptions.clear();
     for (const accountId of this.deckOwnerBySeat.values()) {
       void socialRuntime.service?.deletePresence({ accountId, connectionId: this.roomId }).catch(() => undefined);
     }
@@ -1620,12 +1642,23 @@ export class AegisRoom extends Room<{
     }
     this.spectatorPrivacyReady = true;
     if (this.isPrivate || !owners.every((owner) => owner !== undefined)) {
+      this.liveListingStartedAt = undefined;
+      await this.publishRoomRules();
       return;
     }
-    if (!preferences.every((preference) => preference.listLiveMatches !== false) || this.state.gameOver) {
+    if (
+      !preferences.every(
+        (preference) =>
+          preference.listLiveMatches !== false &&
+          (preference.spectatorAccess === undefined || preference.spectatorAccess === SpectatorAccess.EVERYONE.value),
+      ) ||
+      this.state.gameOver
+    ) {
+      this.liveListingStartedAt = undefined;
+      await this.publishRoomRules();
       return;
     }
-    this.liveListingStartedAt = Date.now();
+    this.liveListingStartedAt ??= Date.now();
     await this.publishRoomRules();
   }
 
@@ -1657,6 +1690,7 @@ export class AegisRoom extends Room<{
     if (this.devScenario) {
       return;
     }
+    await this.refreshSpectatorPrivacy();
     for (const accountId of this.deckOwnerBySeat.values()) {
       const connected = this.state.players.some(
         (player) => player.connected && this.accountByClient.get(player.sessionId) === accountId,
@@ -1668,9 +1702,43 @@ export class AegisRoom extends Room<{
           accountId,
           connectionId: this.roomId,
           status: this.matchStartRequested ? SocialStatus.IN_MATCH.value : SocialStatus.IN_LOBBY.value,
+          ...(this.spectatorInfo(this.state.spectatorCode) ? { roomCode: this.state.spectatorCode } : {}),
         });
       }
     }
+  }
+
+  private async refreshSpectatorPrivacy(): Promise<void> {
+    if (!this.matchStartRequested) {
+      return;
+    }
+    await this.listLiveMatchWhenBothPlayersConsent();
+    for (const client of this.clients) {
+      if (!this.spectatorClients.has(client.sessionId)) {
+        continue;
+      }
+      const viewerId = this.spectatorIdentities.get(client.sessionId)?.id;
+      if (
+        !(await canSpectatePlayers({
+          accounts: this.accounts(),
+          ownerIds: [this.deckOwnerBySeat.get(0), this.deckOwnerBySeat.get(1)],
+          viewerId,
+        }))
+      ) {
+        await client.leave(SPECTATOR_ACCESS_REVOKED_CLOSE_CODE);
+      }
+    }
+  }
+
+  async canSpectateAccount(viewerId: string, code: string): Promise<boolean> {
+    return (
+      this.spectatorInfo(code) !== null &&
+      (await canSpectatePlayers({
+        accounts: this.accounts(),
+        ownerIds: [this.deckOwnerBySeat.get(0), this.deckOwnerBySeat.get(1)],
+        viewerId,
+      }))
+    );
   }
 
   getOpponentAccountId(accountId: string): string | undefined {
@@ -1883,10 +1951,20 @@ export class AegisRoom extends Room<{
     const consented = code === CloseCode.CONSENTED;
     if (this.spectatorClients.has(client.sessionId)) {
       try {
-        if (!consented && !this.state.gameOver) {
+        if (!consented && code !== SPECTATOR_ACCESS_REVOKED_CLOSE_CODE && !this.state.gameOver) {
           const reconnected = await this.allowReconnection(client, this.RECONNECT_GRACE_SECONDS);
-          this.assignView(reconnected, undefined);
-          return;
+          const viewerId = this.spectatorIdentities.get(client.sessionId)?.id;
+          if (
+            await canSpectatePlayers({
+              accounts: this.accounts(),
+              ownerIds: [this.deckOwnerBySeat.get(0), this.deckOwnerBySeat.get(1)],
+              viewerId,
+            })
+          ) {
+            this.assignView(reconnected, undefined);
+            return;
+          }
+          await reconnected.leave(SPECTATOR_ACCESS_REVOKED_CLOSE_CODE);
         }
       } catch {
         // Spectator expiry has no effect on either player or the match clock.
@@ -2553,6 +2631,12 @@ export class AegisRoom extends Room<{
   }
 
   private sendReplayDownload(client: Client): void {
+    if (this.spectatorClients.has(client.sessionId)) {
+      void this.sendSpectatorReplay(client).catch((error: unknown) =>
+        this.debugError("spectator replay failed", error),
+      );
+      return;
+    }
     const seat = this.seatByClient.get(client.sessionId);
     if (
       seat === undefined ||
@@ -2583,13 +2667,61 @@ export class AegisRoom extends Room<{
       .catch((error: unknown) => this.debugError("[AegisRoom] failed to export replay", error));
   }
 
+  private async sendSpectatorReplay(client: Client): Promise<void> {
+    const owner = this.spectatorIdentities.get(client.sessionId)?.id;
+    if (!owner || !this.state.gameOver || !this.replayFinished || !this.replayRecording) {
+      return;
+    }
+    if (
+      !(await canSpectatePlayers({
+        accounts: this.accounts(),
+        ownerIds: [this.deckOwnerBySeat.get(0), this.deckOwnerBySeat.get(1)],
+        viewerId: owner,
+      }))
+    ) {
+      return;
+    }
+    const preferences: AccountPreferences[] = await Promise.all(
+      ([0, 1] as const).map(async (seat): Promise<AccountPreferences> => {
+        const id = this.deckOwnerBySeat.get(seat);
+        return id ? this.accounts().preferences(id) : {};
+      }),
+    );
+    const hiddenIdentities = preferences.map((entry) => entry.hideIdentityFromSpectators === true);
+    const key = hiddenIdentities.join(":");
+    let pending = this.spectatorReplayDownloads.get(key);
+    if (!pending) {
+      const file = this.replayRecording.spectatorFile({ mode: this.replayMode(), hiddenIdentities });
+      if (!file) {
+        return;
+      }
+      pending = replayDownload(file, SPECTATOR_REPLAY_SEAT);
+      this.spectatorReplayDownloads.set(key, pending);
+    }
+    const message = await pending;
+    if (
+      message.kind !== "ready" ||
+      !(await canSpectatePlayers({
+        accounts: this.accounts(),
+        ownerIds: [this.deckOwnerBySeat.get(0), this.deckOwnerBySeat.get(1)],
+        viewerId: owner,
+      }))
+    ) {
+      return;
+    }
+    const indexId = await this.replayIndex(SPECTATOR_REPLAY_SEAT, owner, message);
+    if (this.clients.includes(client)) {
+      client.send(REPLAY_CHANNEL, { ...message, ...(indexId ? { indexId } : {}) });
+    }
+  }
+
   protected replays(): Pick<ReplayLibrary, "record"> {
     return replayLibrary;
   }
 
   /** A failed index write still delivers the file; the player can download it or save it to Drive as a guest would. */
   private replayIndex(
-    seat: Seat,
+    seat: Seat | -1,
     owner: string,
     message: Extract<ReplayDownloadMessage, { kind: "ready" }>,
   ): Promise<string | undefined> {
@@ -2753,6 +2885,15 @@ export class AegisRoom extends Room<{
     const owner = player && this.accountByClient.get(player.sessionId);
     if (owner) {
       this.deckOwnerBySeat.set(seat, owner);
+      if (!this.spectatorPrivacySubscriptions.has(owner)) {
+        const receive = (event: SocialEvent) => {
+          if (event.kind === "friendsChanged") {
+            void this.publishSocialPresence().catch(() => undefined);
+          }
+        };
+        this.spectatorPrivacySubscriptions.set(owner, receive);
+        void this.presence?.subscribe(`social:account:${owner}`, receive);
+      }
       void this.publishSocialPresence().catch(() => undefined);
     } else {
       this.deckOwnerBySeat.delete(seat);

@@ -1,3 +1,4 @@
+import { ReplayLibrary } from "../../api/dist/replays/ReplayLibrary.js";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { Server, LocalPresence } from "colyseus";
@@ -22,7 +23,11 @@ export async function startSocialBrowserServer() {
   const presence = new LocalPresence();
   const service = new SocialService({ accounts, presence, resolveRoom: resolveSocialInviteRoom });
   socialRuntime.service = service;
+  const replays = new ReplayLibrary(accounts);
   class GameRoom extends AegisRoom {
+    protected override replays() {
+      return replays;
+    }
     protected override accounts() {
       return accounts;
     }

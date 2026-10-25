@@ -487,6 +487,7 @@ function LoadedAegisClient({
   // A community deck picked to play with. It lives for this session only and is never saved.
   const [borrowedDeck, setBorrowedDeck] = useState<DeckListing>();
   const [roomCode, setRoomCode] = useState<string>();
+  const [spectatorFriendId, setSpectatorFriendId] = useState<string>();
   const [challengeTarget, setChallengeTarget] = useState<Friend>();
   const [privateRoom, setPrivateRoom] = useState<PrivateRoom>();
   const [botDeckId, setBotDeckId] = useState<string>();
@@ -590,6 +591,7 @@ function LoadedAegisClient({
     if (mode !== "private_host" && mode !== "private_guest") setPrivateRoom(undefined);
     setStoryBattleId(undefined);
     setStartMode(mode);
+    setSpectatorFriendId(undefined);
     if (requestedGameMode) {
       setGameMode(requestedGameMode);
     }
@@ -710,7 +712,16 @@ function LoadedAegisClient({
   };
 
   return (
-    <SocialContext.Provider value={{ ...social, challenge: challengeFriend }}>
+    <SocialContext.Provider
+      value={{
+        ...social,
+        challenge: challengeFriend,
+        watch: (friend) => {
+          startMatch("spectator", friend.roomCode);
+          setSpectatorFriendId(friend.accountId);
+        },
+      }}
+    >
       <Stage>
         {screen === "game" ? null : <PixelBackdrop />}
         {showNav ? (
@@ -997,6 +1008,7 @@ function LoadedAegisClient({
                   )}
                   autoHatchReady={preferencesReady}
                   key={matchNumber}
+                  spectatorFriendId={spectatorFriendId}
                   onPrivateRoomReady={inviteCreatedRoom}
                   joinOptions={joinOptions}
                   identityColor={identityColor}

@@ -16,6 +16,10 @@ export function useSocialConnection({
   onNotifications,
   onAccept,
 }: UseSocialConnectionParams): SocialConnection {
+  const [messageAcknowledgment, setMessageAcknowledgment] = useState<SocialConnection["messageAcknowledgment"]>();
+  const [messageReceipts, setMessageReceipts] = useState<NonNullable<SocialConnection["messageReceipts"]>>([]);
+  const [messages, setMessages] = useState<NonNullable<SocialConnection["messages"]>>([]);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const [connected, setConnected] = useState(false);
   const [friends, setFriends] = useState<SocialConnection["friends"]>([]);
   const [invites, setInvites] = useState<MatchInvite[]>([]);
@@ -33,6 +37,10 @@ export function useSocialConnection({
     let retry: ReturnType<typeof setTimeout> | undefined;
     let prune: ReturnType<typeof setInterval> | undefined;
     let attempts = 0;
+    setMessageAcknowledgment(undefined);
+    setMessageReceipts([]);
+    setMessages([]);
+    setUnreadMessages(0);
     setFriends([]);
     setInvites([]);
     setConnected(false);
@@ -56,6 +64,36 @@ export function useSocialConnection({
     function receive(event: SocialEvent) {
       if (stopped) {
         return;
+      }
+      if (event.kind === "messageSent") {
+        setMessageAcknowledgment({ requestId: event.requestId, delivered: true });
+      }
+      if (event.kind === "directMessage" || event.kind === "messageSent") {
+        setMessages((current) =>
+          [...current.filter((message) => message.id !== event.message.id), event.message].slice(-200),
+        );
+      }
+      if (event.kind === "messagesRead") {
+        setMessageReceipts((current) =>
+          [
+            ...current.filter(
+              (receipt) => receipt.accountId !== event.accountId || receipt.friendId !== event.friendId,
+            ),
+            event,
+          ].slice(-400),
+        );
+        setMessages((current) =>
+          current.map((message) =>
+            message.recipientId === event.accountId &&
+            message.senderId === event.friendId &&
+            message.createdAt <= event.at
+              ? { ...message, readAt: event.at }
+              : message,
+          ),
+        );
+      }
+      if (event.kind === "unreadMessages") {
+        setUnreadMessages(event.count);
       }
       if (event.kind === "friendsSnapshot") {
         setFriends(event.friends);
@@ -101,6 +139,9 @@ export function useSocialConnection({
         setInvites((current) => current.filter((entry) => entry.id !== event.inviteId));
       }
       if (event.kind === "error") {
+        if (event.requestId) {
+          setMessageAcknowledgment({ requestId: event.requestId, delivered: false });
+        }
         setError(event.error);
       }
     }
@@ -190,6 +231,20 @@ export function useSocialConnection({
     setError(undefined);
   }, []);
   return {
+    messages,
+    messageAcknowledgment,
+    messageReceipts,
+    unreadMessages,
+    sendMessage: (friendId, body) => {
+      if (!roomRef.current) {
+        setError("disconnected");
+        return undefined;
+      }
+      const requestId = crypto.randomUUID();
+      send({ kind: "directMessage", friendId, body, requestId });
+      return requestId;
+    },
+    readMessages: (friendId) => send({ kind: "readMessages", friendId }),
     accountId,
     connected,
     friends,

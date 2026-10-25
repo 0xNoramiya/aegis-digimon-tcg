@@ -1,3 +1,4 @@
+import { DirectMessageStore } from "#api/messages/DirectMessageStore";
 import { socialRuntime } from "#api/social/socialRuntime";
 import { SocialService } from "#api/social/SocialService";
 import { resolveSocialInviteRoom } from "#api/social/resolveSocialInviteRoom";
@@ -127,6 +128,7 @@ function scheduleReplayCleanup() {
     cleaning = true;
     try {
       await replayLibrary.cleanup();
+      await new DirectMessageStore(accountStore).cleanup();
     } catch (error) {
       logError("[replays] cleanup failed", error);
     } finally {
