@@ -118,30 +118,6 @@ export class DigivolveSupport {
   }
 
   /**
-   * §8-3-2-1 Burst Digivolve's end-of-turn pending processing: for every permanent flagged
-   * `burstDigivolvePendingTrash`, trash its current top card and promote the highest source.
-   * A permanent with no source, or whose current top is not a Digimon, is unchanged. The flag
-   * is cleared unconditionally so it cannot re-fire on a later turn.
-   */
-  async processPendingBurstDigivolveTrash(): Promise<void> {
-    for (const player of this.deps.state.players) {
-      if (player === undefined) continue;
-      for (const perm of player.battleArea) {
-        if (!perm.burstDigivolvePendingTrash) continue;
-        perm.burstDigivolvePendingTrash = false;
-        const currentTop = perm.topCard;
-        if (perm.stack.length === 0 || currentTop === undefined) continue;
-        const def = lookupDefinition(currentTop.cardId);
-        if (def === undefined || !def.kinds.includes(CardKind.Digimon)) continue;
-        // Burst's pending processing removes the Burst card itself and promotes its
-        // former source. Use the stack-aware physical peel without applying De-Digivolve's
-        // keyword restrictions or level floor.
-        await this.deps.primitives.trashStackTops(perm.permanentId, 1);
-      }
-    }
-  }
-
-  /**
    * The cost of a base-granted digivolve path (ST7-03/BT6-060) for digivolving `evolving` onto
    * `base`, or undefined when none applies. The grant lives as a static on the base permanent's
    * `IsExistOnBattleArea`; its own-turn/all-turn gate also applies during Counter) and matches when the

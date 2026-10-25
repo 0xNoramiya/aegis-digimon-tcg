@@ -1469,3 +1469,68 @@ it.each(["current", "sequential"] as const)(
     }
   },
 );
+
+it.each(["dp", "restriction"] as const)(
+  "finishes a resumed effect's %s pulse when its state patch precedes target confirmation",
+  async (change) => {
+    setBasePacing(PACING_BY_STYLE.stacked);
+    const anchors = geometry();
+    const baseline = structuredClone(BOARD);
+    baseline.stateVersion = 0;
+    const unchanged = structuredClone(baseline);
+    unchanged.stateVersion = 1;
+    const changed = structuredClone(baseline);
+    changed.stateVersion = 2;
+    if (change === "dp") {
+      changed.players[0]!.battleArea[1]!.currentDP = 8000;
+    } else {
+      changed.players[0]!.battleArea[1]!.cannotAttack = true;
+    }
+    const expired: GateExpiry[] = [];
+    const stop = observeGateExpiry((expiry) => expired.push(expiry));
+    const steps: PresentationStepEvent[] = [];
+    const view = renderHook(
+      ({ state, fed, question }: { state: GameState; fed: readonly ServerBatch[]; question: boolean }) =>
+        useMatchCues({
+          batches: fed,
+          state,
+          viewerSeat: VIEWER,
+          mulliganOpen: false,
+          anchors,
+          onActionRejected: () => {},
+          presentationPacing: "sequential",
+          decisionPending: question,
+          decisionSourceCardId: question ? "AD1-002" : undefined,
+          devProbe: { onStep: (step) => steps.push(step) },
+        }),
+      { initialProps: { state: baseline, fed: [] as readonly ServerBatch[], question: false } },
+    );
+    try {
+      const first = singleServerBatch([triggered("AD1-002", "src-a", "targeted-effect")], 1);
+      view.rerender({ state: unchanged, fed: [first], question: true });
+      await advance(4000);
+      expect(view.result.current.decisionAnimationsPending).toBe(false);
+      view.rerender({ state: changed, fed: [first], question: false });
+      await advance(16);
+      const results = singleServerBatch(
+        [
+          { kind: "effectTargetsSelected", seat: 0, sourcePermanentId: "perm-a", targetPermanentIds: ["perm-b"] },
+          resolved("AD1-002", "src-a", "targeted-effect"),
+        ],
+        2,
+      );
+      view.rerender({ state: changed, fed: [first, results], question: false });
+      await advance(3000);
+      const prefix = change === "dp" ? "dp-pulse-" : "freeze-pulse-";
+      expect(steps.some((step) => step.step.id.startsWith(prefix) && step.phase === "finished")).toBe(true);
+      expect(steps.some((step) => step.step.id === "effect-unit-resettle-1" && step.phase === "finished")).toBe(true);
+      await advance(7000);
+      expect(expired).toEqual([]);
+      expect(view.result.current.dpPulses.size).toBe(0);
+      expect(view.result.current.freezePulses.size).toBe(0);
+      expect(view.result.current.decisionAnimationsPending).toBe(false);
+    } finally {
+      stop();
+    }
+  },
+);
