@@ -36,15 +36,18 @@ export function FriendListItem({ friend, tab, busy, onAction, onMessage, selecte
       <div className="friends-person">
         {tab === "friends" ? (
           <button className="friends-name" onClick={() => setDetailOpen(true)}>
-            {friend.displayName}
+            <strong>{friend.displayName}</strong>
+            <FriendPresence status={presence?.status ?? null} />
+            <small>{new Date(friend.since).toLocaleDateString(locale)}</small>
           </button>
         ) : (
-          <strong>{friend.displayName}</strong>
+          <>
+            <strong>{friend.displayName}</strong>
+            <small>
+              {direction ? t(`friends.direction.${direction}`) : new Date(friend.since).toLocaleDateString(locale)}
+            </small>
+          </>
         )}
-        {tab === "friends" ? <FriendPresence status={presence?.status ?? null} /> : null}
-        <small>
-          {direction ? t(`friends.direction.${direction}`) : new Date(friend.since).toLocaleDateString(locale)}
-        </small>
       </div>
       {detailOpen ? <FriendDetailPanel accountId={friend.accountId} onClose={() => setDetailOpen(false)} /> : null}
       <div className="friends-actions">

@@ -119,6 +119,10 @@
   font-size: var(--ds-text-xs);
 }
 .friends-name {
+  display: grid;
+  justify-items: start;
+  align-content: center;
+  gap: var(--ds-space-1);
   padding: 0;
   border: 0;
   background: transparent;
@@ -127,6 +131,13 @@
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+}
+.friends-name .friend-presence,
+.friends-name small {
+  font-weight: 400;
+}
+.friends-name strong {
+  line-height: 1.25;
 }
 .friends-name:hover {
   color: var(--ds-accent);
