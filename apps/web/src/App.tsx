@@ -650,6 +650,7 @@ function LoadedAegisClient({
     }),
     [
       storyBattleId,
+      startMode,
       effectivePlayer.name,
       effectivePlayer.avatarId,
       matchDeck,
