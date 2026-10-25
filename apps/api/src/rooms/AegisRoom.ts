@@ -1,3 +1,5 @@
+import { socialRuntime } from "#api/social/socialRuntime";
+import { SocialStatus } from "@aegis/shared/social/SocialStatus";
 import { getStoryBattleDifficulty } from "@aegis/shared/story/getStoryBattleDifficulty";
 import { resolveBotProfile } from "#api/bot/profiles";
 import { BotDifficulty } from "@aegis/shared/bot/BotDifficulty";
@@ -781,6 +783,9 @@ export class AegisRoom extends Room<{
     if (!canCreateRoom() && !continuation)
       throw new ServerError(503, "This game server is draining; retry on the active slot.");
     this.state.matchLogId = randomUUID();
+    this.clock.setInterval(() => {
+      void this.publishSocialPresence().catch(() => undefined);
+    }, 10_000);
     const { seed, randomKey } = getRoomRandomness({ seed: options.seed });
     this.debug("room.created", {
       seed,
@@ -935,6 +940,7 @@ export class AegisRoom extends Room<{
           void saved.catch((error) => this.debugError("[AegisRoom] failed to persist story progress", error));
         }
         if (event.kind === "gameOver") {
+          void this.publishSocialPresence().catch(() => undefined);
           // A completed engine cannot accept replacement players. Locking also
           // guarantees a drawn tournament replay receives a fresh room. A failure here is worth
           // logging and nothing more — the engine is over, so an unlocked room admits nobody who
@@ -965,6 +971,7 @@ export class AegisRoom extends Room<{
           }
         }
         if (event.kind === "matchStarted") {
+          void this.publishSocialPresence().catch(() => undefined);
           this.casualSeries?.noteFirstSeat(event.firstSeat);
           this.rematchOffer?.noteFirstSeat(event.firstSeat);
         }
@@ -1536,6 +1543,9 @@ export class AegisRoom extends Room<{
   }
 
   override onDispose(): void {
+    for (const accountId of this.deckOwnerBySeat.values()) {
+      void socialRuntime.service?.deletePresence({ accountId, connectionId: this.roomId }).catch(() => undefined);
+    }
     for (const bot of this.bots) bot?.dispose();
     this.casualSeries?.dispose();
     // A refused private-code lookup can dispose the room before initialize creates its state.
@@ -1643,6 +1653,26 @@ export class AegisRoom extends Room<{
     );
   }
 
+  private async publishSocialPresence(): Promise<void> {
+    if (this.devScenario) {
+      return;
+    }
+    for (const accountId of this.deckOwnerBySeat.values()) {
+      const connected = this.state.players.some(
+        (player) => player.connected && this.accountByClient.get(player.sessionId) === accountId,
+      );
+      if (this.state.gameOver || !connected) {
+        await socialRuntime.service?.deletePresence({ accountId, connectionId: this.roomId });
+      } else {
+        await socialRuntime.service?.writePresence({
+          accountId,
+          connectionId: this.roomId,
+          status: this.matchStartRequested ? SocialStatus.IN_MATCH.value : SocialStatus.IN_LOBBY.value,
+        });
+      }
+    }
+  }
+
   getOpponentAccountId(accountId: string): string | undefined {
     for (const seat of [0, 1] as const) {
       const player = this.state.players[seat];
@@ -1654,8 +1684,16 @@ export class AegisRoom extends Room<{
     return undefined;
   }
 
-  privateRoomInfo(): { unlimited: boolean; format: DeckFormat; gameMode?: GameMode } {
+  privateRoomInfo(): {
+    unlimited: boolean;
+    format: DeckFormat;
+    gameMode?: GameMode;
+    hostAccountId?: string;
+    waiting: boolean;
+  } {
     return {
+      hostAccountId: this.deckOwnerBySeat.get(0),
+      waiting: !this.matchStartRequested && !this.state.gameOver && this.seatByClient.size === 1,
       unlimited: this.isUnlimitedRoom,
       format: this.state.format as DeckFormat,
       ...(this.state.gameMode === GameMode.MANUAL.value ? { gameMode: this.state.gameMode } : {}),
@@ -2715,6 +2753,7 @@ export class AegisRoom extends Room<{
     const owner = player && this.accountByClient.get(player.sessionId);
     if (owner) {
       this.deckOwnerBySeat.set(seat, owner);
+      void this.publishSocialPresence().catch(() => undefined);
     } else {
       this.deckOwnerBySeat.delete(seat);
     }

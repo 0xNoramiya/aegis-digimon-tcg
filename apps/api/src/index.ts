@@ -1,3 +1,6 @@
+import { socialRuntime } from "#api/social/socialRuntime";
+import { SocialService } from "#api/social/SocialService";
+import { resolveSocialInviteRoom } from "#api/social/resolveSocialInviteRoom";
 import { getEngineCodeFingerprint } from "#api/engine/snapshot/getEngineCodeFingerprint";
 import { startProviderSync } from "#api/deckProviders/startProviderSync";
 import { digilabProvider } from "#api/deckProviders/providers/digilab";
@@ -138,6 +141,11 @@ function scheduleReplayCleanup() {
 scheduleReplayCleanup();
 
 const cluster = createClusterRuntime();
+socialRuntime.service = new SocialService({
+  accounts: accountStore,
+  presence: cluster.presence,
+  resolveRoom: resolveSocialInviteRoom,
+});
 setRoomCodeDirectory(cluster.roomCodes);
 setSeriesDirectory(createSeriesDirectory(cluster.presence, cluster.keyPrefix));
 

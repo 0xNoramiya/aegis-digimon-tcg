@@ -208,7 +208,9 @@ export function Lobby({
   gameMode = GameMode.AUTOMATIC.value,
   onGameModeChange,
   openMatchSettings = false,
+  challengeFriendName,
 }: {
+  challengeFriendName?: string;
   gameMode?: GameMode;
   onGameModeChange?: (mode: GameMode) => void;
   openMatchSettings?: boolean;
@@ -271,7 +273,7 @@ export function Lobby({
       ? deckFormat(privateRoom.format, privateRoom.unlimited)
       : deckFormat(decks.find((deck) => deck.id === activeDeckId)?.format),
   );
-  const [mode, setMode] = useState(invitedRoomCode || privateRoom ? "private" : "casual");
+  const [mode, setMode] = useState(invitedRoomCode || privateRoom || challengeFriendName ? "private" : "casual");
   const [betaConfirmationOpen, setBetaConfirmationOpen] = useState(false);
   const [privateSub, setPrivateSub] = useState<"create" | "join">(invitedRoomCode ? "join" : "create");
   const [roomCodeInput, setRoomCodeInput] = useState(invitedRoomCode ?? "");
@@ -662,6 +664,11 @@ export function Lobby({
 
   return (
     <main className="lobby-page">
+      {challengeFriendName ? (
+        <p className="roadmap-note" role="status">
+          {t("friends.challengeSetup", { name: challengeFriendName })}
+        </p>
+      ) : null}
       <div className="lobby-content aegis-page-sheet">
         {randomError ? <Alert tone="danger">{t("lobby.randomFailed")}</Alert> : null}
         {randomDrawing ? <p role="status">{t("lobby.randomDrawing")}</p> : null}

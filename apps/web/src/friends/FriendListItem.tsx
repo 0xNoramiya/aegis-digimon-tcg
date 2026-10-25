@@ -1,3 +1,6 @@
+import { useContext } from "react";
+import { SocialContext } from "@/social/SocialContext";
+import { FriendPresence } from "@/social/FriendPresence";
 import type { Friend } from "@aegis/shared/friends/Friend";
 import type { FriendRequest } from "@aegis/shared/friends/FriendRequest";
 import { FriendRequestDirection } from "@aegis/shared/friends/FriendRequestDirection";
@@ -14,6 +17,8 @@ type FriendListItemParams = {
 
 export function FriendListItem({ friend, tab, busy, onAction }: FriendListItemParams) {
   const { t, locale } = useTranslation();
+  const social = useContext(SocialContext);
+  const presence = social.friends.find((entry) => entry.accountId === friend.accountId);
   const direction = "direction" in friend ? friend.direction : undefined;
   return (
     <li>
@@ -25,11 +30,17 @@ export function FriendListItem({ friend, tab, busy, onAction }: FriendListItemPa
       />
       <div className="friends-person">
         <strong>{friend.displayName}</strong>
+        {tab === "friends" ? <FriendPresence status={presence?.status ?? null} /> : null}
         <small>
           {direction ? t(`friends.direction.${direction}`) : new Date(friend.since).toLocaleDateString(locale)}
         </small>
       </div>
       <div className="friends-actions">
+        {tab === "friends" && social.challenge ? (
+          <Button size="sm" disabled={busy || !social.connected} onClick={() => social.challenge?.(friend)}>
+            {t("friends.challenge")}
+          </Button>
+        ) : null}
         {tab === "friends" ? (
           <Button
             size="sm"

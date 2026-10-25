@@ -169,3 +169,18 @@ Migration `041-friendships` adds:
 | `account_blocks`  | PK `(blocker_id, blocked_id)`; cascading account FKs; blocked account index | Server enforced blocks in either direction prevent requests and acceptance; blocking removes both friendship and request directions |
 
 New `account_recent_matches.record` values may contain `opponentAccountId` for authenticated human opponents. This field stays server side; history responses replace it with `canAddOpponent`. Legacy records cannot resolve an opponent. Friend mutations lock both account rows in sorted ID order and write notifications in the same transaction.
+
+### Ephemeral social state
+
+The Colyseus cluster presence owns the social keys. LocalPresence is used for a single process and RedisPresence for replicas. No game state is stored here.
+
+| Key                                       | Lifetime and purpose                                                                               |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `social:presence:<accountId>`             | Index of connection leases; refreshed with a 60-second expiry                                      |
+| `social:lease:<accountId>:<connectionId>` | 45-second expiring online/lobby/match lease, renewed every 10 seconds                              |
+| `social:account:<accountId>`              | Pub/sub channel for friends, presence, notifications and invites                                   |
+| `social:invite:<id>`                      | Invite data retained for 120 seconds; valid for 60 seconds and only while its host room is waiting |
+| `social:invites:<accountId>`              | Pending invite index; expired entries are pruned when reading                                      |
+| `social:invite-answer:<id>`               | Atomic first-answer claim, expiring after 120 seconds                                              |
+
+All presence and invite access is authenticated and restricted to current friends without blocks in either direction. Multiple connections keep independent leases.

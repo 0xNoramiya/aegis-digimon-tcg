@@ -1,3 +1,4 @@
+import { installSocialRoutes } from "#api/social/installSocialRoutes";
 import { FriendStore } from "#api/friends/FriendStore";
 import { installFriendRoutes } from "#api/friends/installFriendRoutes";
 import { BlockStore } from "#api/blocks/BlockStore";
@@ -135,6 +136,7 @@ export function installAccountRoutes(
   // The signed-in player's inbox; feedback triage is its first producer. See src/notifications.
   installNotificationRoutes({ app, store: new NotificationStore(store), session: sessionFromRequest });
   installPlaytestRoutes({ app, store: new PlaytestStore(store), session: sessionFromRequest });
+  installSocialRoutes({ app, accounts: store, session: sessionFromRequest });
   installFriendRoutes({ app, store: new FriendStore(store), session: sessionFromRequest });
   installBlockRoutes({
     app,

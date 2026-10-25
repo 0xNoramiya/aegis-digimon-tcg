@@ -1,3 +1,4 @@
+import { publishSocialChange } from "#api/social/publishSocialChange";
 import type { FriendRow } from "#api/friends/FriendRow";
 import { getFriendFromRow } from "#api/friends/getFriendFromRow";
 import type { AccountStore } from "#api/accounts/AccountStore";
@@ -24,7 +25,7 @@ export class BlockStore {
     if (accountId === otherId) {
       return { error: FriendshipError.SELF.value };
     }
-    return runFriendTransaction({
+    const result = await runFriendTransaction<{ error: FriendshipError } | { blocked: true }>({
       accounts: this.accounts,
       accountIds: [accountId, otherId],
       run: async (db) => {
@@ -39,6 +40,8 @@ export class BlockStore {
         return { blocked: true };
       },
     });
+    await publishSocialChange([accountId, otherId]);
+    return result;
   }
 
   async unblock({ accountId, otherId }: BlockPair): Promise<void> {
@@ -49,5 +52,6 @@ export class BlockStore {
         await db.query("DELETE FROM account_blocks WHERE blocker_id=$1 AND blocked_id=$2", [accountId, otherId]);
       },
     });
+    await publishSocialChange([accountId, otherId]);
   }
 }

@@ -1,3 +1,5 @@
+import { useContext } from "react";
+import { SocialContext } from "@/social/SocialContext";
 import { FriendListItem } from "@/friends/FriendListItem";
 import { useEffect, useState, type FormEvent } from "react";
 import type { Friend } from "@aegis/shared/friends/Friend";
@@ -13,6 +15,7 @@ type FriendsScreenParams = { signedIn: boolean; onSignIn: () => void };
 type FriendsData = { friends: Friend[]; requests: FriendRequest[]; blocks: Friend[] };
 
 export function FriendsScreen({ signedIn, onSignIn }: FriendsScreenParams) {
+  const social = useContext(SocialContext);
   const { t } = useTranslation();
   const [tab, setTab] = useState<keyof FriendsData>("friends");
   const [data, setData] = useState<FriendsData>();
@@ -43,7 +46,7 @@ export function FriendsScreen({ signedIn, onSignIn }: FriendsScreenParams) {
     return () => {
       active = false;
     };
-  }, [signedIn, revision]);
+  }, [signedIn, revision, social.revision]);
 
   async function runAction(action: () => Promise<unknown>) {
     setBusy(true);
@@ -69,6 +72,8 @@ export function FriendsScreen({ signedIn, onSignIn }: FriendsScreenParams) {
 
   return (
     <main className="friends-screen">
+      {signedIn ? <p role="status">{t(social.connected ? "friends.connected" : "friends.connecting")}</p> : null}
+      {social.error ? <p role="alert">{t("friends.socialFailed")}</p> : null}
       <header>
         <h1>{t("friends.title")}</h1>
         <p>{t("friends.description")}</p>

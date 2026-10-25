@@ -196,6 +196,12 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     [joinOptions, startMode, betaBattleMode, unlimited, presentationPacing, spectating],
   );
   const liveConnection = useRoom(roomOptions, matchConfig, demoConnection !== undefined);
+  const onPrivateRoomReady = props.onPrivateRoomReady;
+  useEffect(() => {
+    if (startMode === "private_host" && liveConnection.roomCode) {
+      onPrivateRoomReady?.(liveConnection.roomCode);
+    }
+  }, [startMode, liveConnection.roomCode, onPrivateRoomReady]);
   return (
     <GameScreenSession
       key={`${(demoConnection ?? liveConnection).room?.roomId ?? "preview"}:${(demoConnection?.state ?? liveConnection.state)?.rollbackRevision ?? 0}`}
@@ -237,6 +243,7 @@ function GameScreenSession({
   identityAvatarUrl?: string | null;
   startMode?: StartMode;
   roomCode?: string;
+  onPrivateRoomReady?: (code: string) => void;
   /** A guest returning to a private room waits until the host has reopened it. */
   waitForHost?: boolean;
   /** Famous-deck preset the seated bot should play; absent means the server picks at random. */

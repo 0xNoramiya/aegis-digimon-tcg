@@ -1,3 +1,4 @@
+import { publishSocialChange } from "#api/social/publishSocialChange";
 import type { FriendRow } from "#api/friends/FriendRow";
 import { getFriendFromRow } from "#api/friends/getFriendFromRow";
 import type { PoolClient } from "pg";
@@ -73,6 +74,7 @@ export class FriendStore {
         await db.query("DELETE FROM friend_requests WHERE requester_id=$2 AND recipient_id=$1", [accountId, otherId]);
       },
     });
+    await publishSocialChange([accountId, otherId]);
   }
 
   async cancel({ accountId, otherId }: Pair): Promise<void> {
@@ -83,6 +85,7 @@ export class FriendStore {
         await db.query("DELETE FROM friend_requests WHERE requester_id=$1 AND recipient_id=$2", [accountId, otherId]);
       },
     });
+    await publishSocialChange([accountId, otherId]);
   }
 
   async remove({ accountId, otherId }: Pair): Promise<void> {
@@ -96,13 +99,14 @@ export class FriendStore {
         );
       },
     });
+    await publishSocialChange([accountId, otherId]);
   }
 
   private async mutatePair({ accountId, otherId }: Pair, accepting: boolean): Promise<MutationResult> {
     if (accountId === otherId) {
       return { error: FriendshipError.SELF.value };
     }
-    return runFriendTransaction({
+    const result = await runFriendTransaction<MutationResult>({
       accounts: this.accounts,
       accountIds: [accountId, otherId],
       run: async (db) => {
@@ -195,6 +199,10 @@ export class FriendStore {
         return { accepted: false };
       },
     });
+    if (!("error" in result)) {
+      await publishSocialChange([accountId, otherId]);
+    }
+    return result;
   }
 }
 
