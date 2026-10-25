@@ -104,6 +104,7 @@ vi.mock("@/messages/QuickChatDock", () => ({
       avatarUrl: null,
       since: 1,
       roomCode: "ROOM",
+      status: null,
     };
     return (
       <>
