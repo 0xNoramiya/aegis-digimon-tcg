@@ -264,7 +264,17 @@ export async function runCombatAction(ctx: EffectContext, action: Action, scope:
           });
         }
       }
-      return false;
+      if (action.optional === true && action.preserveOncePerTurnOnDecline === true) {
+        if (ids.length > 0) {
+          ctx.onActivationChosen?.();
+          ctx.oncePerTurnActivationChosen = true;
+          ctx.oncePerTurnActivationDeclined = false;
+        } else if (ctx.oncePerTurnActivationChosen !== true) {
+          ctx.oncePerTurnActivationDeclined = true;
+        }
+      }
+      ctx.lastEffectActed = ids.length > 0;
+      return ids.length === 0 && action.abortOnDecline === true;
     }
     case "EndAttack": {
       // "End that attack" (BT23-069): terminate the in-flight attack (transition to

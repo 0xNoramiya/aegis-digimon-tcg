@@ -245,6 +245,8 @@ export function createOptionEffectsVerbs(pc: PrimitivesContext) {
           };
           const optionCtx: EffectContext = {
             ...ctx,
+            presetOptionalAnswer: undefined,
+            pickingAcceptedOptional: false,
             // Using an Option starts that card's own effect, even when a Digimon
             // initiated the use. Do not carry the caller's effect category into it.
             effectSourceKinds: [CardKind.Option],
