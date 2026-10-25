@@ -113,4 +113,27 @@ describe("Ravemon Burst Mode mourning dance", () => {
     await settle(() => s.perm("base").topCard.cardId === "BT27-085");
     expect(s.state.memory).toBe(5);
   });
+
+  it("rejects a purple level six without DATA SQUAD", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT10-082", as: "base" }],
+          hand: [{ card: "BT27-085", as: "burst" }],
+          deck: ["BT1-009"],
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    s.state.memory = 10;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("burst").instanceId,
+      }),
+    ).toMatchObject({ ok: false });
+    expect(s.perm("base").topCard.cardId).toBe("BT10-082");
+  });
 });
