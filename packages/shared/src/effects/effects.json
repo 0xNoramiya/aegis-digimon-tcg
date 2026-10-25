@@ -33672,8 +33672,8 @@
             "kind": "GainMemory",
             "amount": 1,
             "condition": {
-              "kind": "opponentHas",
-              "filter": { "controllerDefault": "opponent", "kind": ["Digimon"], "suspended": true },
+              "kind": "anyHas",
+              "filter": { "kind": ["Digimon"], "suspended": true },
               "raw": "there's a suspended Digimon"
             }
           },
@@ -36554,6 +36554,7 @@
       },
       {
         "trigger": "AllTurns",
+        "keywords": [{ "keyword": "Delay", "raw": "＜Delay＞" }],
         "actions": [
           {
             "kind": "SubTrigger",
@@ -36563,29 +36564,23 @@
               "kind": ["Digimon"],
               "nameOrTrait": [{ "tokens": ["Myotismon"], "match": "nameExact" }]
             },
-            "actions": [{ "kind": "PlaceInBattleAreaSelf" }]
-          }
-        ]
-      },
-      {
-        "trigger": "Main",
-        "keywords": [{ "keyword": "Delay", "raw": "＜Delay＞" }],
-        "actions": [
-          {
-            "effectTextPart": "[Main] By deleting 1 of your Digimon, you may play 1 [Myotismon] from your trash without paying the cost.",
-            "kind": "PlayWithoutCost",
-            "target": {
-              "filter": {
-                "controller": "mine",
-                "kind": ["Digimon"],
-                "nameOrTrait": [{ "tokens": ["VenomMyotismon"], "match": "nameExact" }]
-              },
-              "count": 1
-            },
-            "from": ["trash"],
-            "payCost": false,
-            "optional": true,
-            "requiresDelayArmed": true
+            "actions": [
+              {
+                "effectTextPart": "You may play 1 [VenomMyotismon] from your trash without paying the cost.",
+                "kind": "PlayWithoutCost",
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "kind": ["Digimon"],
+                    "nameOrTrait": [{ "tokens": ["VenomMyotismon"], "match": "nameExact" }]
+                  },
+                  "count": 1
+                },
+                "from": ["trash"],
+                "payCost": false,
+                "optional": true
+              }
+            ]
           }
         ]
       },
@@ -42129,7 +42124,8 @@
             "sourceFilter": {
               "controllerDefault": "mine",
               "zone": "hand",
-              "nameOrTrait": [{ "tokens": ["Arukenimon", "Mummymon"], "match": "name" }]
+              "kind": ["Digimon"],
+              "nameOrTrait": [{ "tokens": ["Arukenimon", "Mummymon"], "match": "nameExact" }]
             },
             "actions": [
               {
