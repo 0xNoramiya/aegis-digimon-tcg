@@ -244332,5 +244332,294 @@
     ],
     "coverage": "full",
     "residual": []
+  },
+  "BT27-074": {
+    "effects": [
+      {
+        "trigger": "WhenMoving",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "abortOnDecline": true,
+            "cost": {
+              "kind": "place",
+              "target": { "filter": { "controller": "mine", "zone": "hand" }, "count": 1, "from": ["hand"] },
+              "destination": "digivolutionStack",
+              "host": {
+                "filter": {
+                  "controller": "mine",
+                  "kind": ["Tamer"],
+                  "nameOrTrait": [{ "tokens": ["Keenan Crier"], "match": "nameExact" }]
+                },
+                "count": 1
+              },
+              "faceDownUnderTamer": true,
+              "raw": "By placing 1 card from your hand face down under any of your [Keenan Crier]s"
+            },
+            "actions": [
+              { "kind": "Draw", "controller": "mine", "amount": 1 },
+              { "kind": "Trash", "target": { "filter": { "controller": "mine", "zone": "hand" }, "count": 1 } }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "abortOnDecline": true,
+            "cost": {
+              "kind": "place",
+              "target": { "filter": { "controller": "mine", "zone": "hand" }, "count": 1, "from": ["hand"] },
+              "destination": "digivolutionStack",
+              "host": {
+                "filter": {
+                  "controller": "mine",
+                  "kind": ["Tamer"],
+                  "nameOrTrait": [{ "tokens": ["Keenan Crier"], "match": "nameExact" }]
+                },
+                "count": 1
+              },
+              "faceDownUnderTamer": true,
+              "raw": "By placing 1 card from your hand face down under any of your [Keenan Crier]s"
+            },
+            "actions": [
+              { "kind": "Draw", "controller": "mine", "amount": 1 },
+              { "kind": "Trash", "target": { "filter": { "controller": "mine", "zone": "hand" }, "count": 1 } }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "WhenAttacking",
+        "isInherited": true,
+        "frequency": "OncePerTurn",
+        "actions": [
+          { "kind": "Draw", "controller": "mine", "amount": 1 },
+          { "kind": "Trash", "target": { "filter": { "controller": "mine", "zone": "hand" }, "count": 1 } }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [{ "level": 2, "traits": ["DATA SQUAD"], "cost": 0, "isAlternate": true }],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-078": {
+    "effects": [
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "condition": { "kind": "youHave", "filter": { "kind": ["Tamer"], "countMax": 1 } },
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Tamer"],
+                "nameOrTrait": [{ "tokens": ["Keenan Crier"], "match": "nameExact" }]
+              },
+              "count": 1
+            },
+            "from": ["hand"],
+            "payCost": false,
+            "optional": true
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "condition": { "kind": "youHave", "filter": { "kind": ["Tamer"], "countMax": 1 } },
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Tamer"],
+                "nameOrTrait": [{ "tokens": ["Keenan Crier"], "match": "nameExact" }]
+              },
+              "count": 1
+            },
+            "from": ["hand"],
+            "payCost": false,
+            "optional": true
+          }
+        ]
+      },
+      {
+        "trigger": "OnDeletion",
+        "isInherited": true,
+        "actions": [
+          {
+            "kind": "Trash",
+            "target": { "filter": { "controller": "opponent", "zone": "hand" }, "count": 1 },
+            "chooser": "opponent"
+          }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [{ "level": 3, "traits": ["DATA SQUAD"], "cost": 2, "isAlternate": true }],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-081": {
+    "effects": [
+      {
+        "trigger": "OnPlay",
+        "frequency": "OncePerTurn",
+        "sharedUseKey": "discardThenPlay",
+        "actions": [
+          {
+            "kind": "Trash",
+            "condition": { "kind": "zoneCount", "seat": "opponent", "zone": "hand", "op": "gte", "value": 6 },
+            "target": { "filter": { "controller": "opponent", "zone": "hand" }, "count": 1 },
+            "chooser": "opponent"
+          },
+          {
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "abortOnDecline": true,
+            "cost": {
+              "kind": "trashBottomFaceDownUnderTamer",
+              "controller": "mine",
+              "count": 2,
+              "raw": "By trashing 2 bottom face-down cards from under any of your Tamers"
+            },
+            "actions": [
+              {
+                "kind": "PlayWithoutCost",
+                "chooseDualMode": true,
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "kind": ["Digimon", "Tamer", "Option"],
+                    "nameOrTrait": [{ "tokens": ["DATA SQUAD"], "match": "trait" }],
+                    "playCostLte": 5
+                  },
+                  "count": 1
+                },
+                "from": ["hand"],
+                "payCost": false,
+                "optional": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "frequency": "OncePerTurn",
+        "sharedUseKey": "discardThenPlay",
+        "actions": [
+          {
+            "kind": "Trash",
+            "condition": { "kind": "zoneCount", "seat": "opponent", "zone": "hand", "op": "gte", "value": 6 },
+            "target": { "filter": { "controller": "opponent", "zone": "hand" }, "count": 1 },
+            "chooser": "opponent"
+          },
+          {
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "abortOnDecline": true,
+            "cost": {
+              "kind": "trashBottomFaceDownUnderTamer",
+              "controller": "mine",
+              "count": 2,
+              "raw": "By trashing 2 bottom face-down cards from under any of your Tamers"
+            },
+            "actions": [
+              {
+                "kind": "PlayWithoutCost",
+                "chooseDualMode": true,
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "kind": ["Digimon", "Tamer", "Option"],
+                    "nameOrTrait": [{ "tokens": ["DATA SQUAD"], "match": "trait" }],
+                    "playCostLte": 5
+                  },
+                  "count": 1
+                },
+                "from": ["hand"],
+                "payCost": false,
+                "optional": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "WhenAttacking",
+        "frequency": "OncePerTurn",
+        "sharedUseKey": "discardThenPlay",
+        "actions": [
+          {
+            "kind": "Trash",
+            "condition": { "kind": "zoneCount", "seat": "opponent", "zone": "hand", "op": "gte", "value": 6 },
+            "target": { "filter": { "controller": "opponent", "zone": "hand" }, "count": 1 },
+            "chooser": "opponent"
+          },
+          {
+            "kind": "CostGatedBlock",
+            "optional": true,
+            "abortOnDecline": true,
+            "cost": {
+              "kind": "trashBottomFaceDownUnderTamer",
+              "controller": "mine",
+              "count": 2,
+              "raw": "By trashing 2 bottom face-down cards from under any of your Tamers"
+            },
+            "actions": [
+              {
+                "kind": "PlayWithoutCost",
+                "chooseDualMode": true,
+                "target": {
+                  "filter": {
+                    "controller": "mine",
+                    "kind": ["Digimon", "Tamer", "Option"],
+                    "nameOrTrait": [{ "tokens": ["DATA SQUAD"], "match": "trait" }],
+                    "playCostLte": 5
+                  },
+                  "count": 1
+                },
+                "from": ["hand"],
+                "payCost": false,
+                "optional": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "OnDeletion",
+        "isInherited": true,
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon", "Tamer"],
+                "playCostLte": 5,
+                "or": [
+                  { "nameOrTrait": [{ "tokens": ["Avian", "Bird"], "match": "traitContains" }] },
+                  { "nameOrTrait": [{ "tokens": ["DATA SQUAD"], "match": "trait" }] }
+                ]
+              },
+              "count": 1
+            },
+            "from": ["trash"],
+            "payCost": false,
+            "optional": true
+          }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [{ "level": 4, "traits": ["DATA SQUAD"], "cost": 3, "isAlternate": true }],
+    "coverage": "full",
+    "residual": []
   }
 }
