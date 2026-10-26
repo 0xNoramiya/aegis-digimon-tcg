@@ -87,9 +87,14 @@ export default defineConfig({
       },
       {
         extends: true,
+        test: { name: "social-ui", include: ["src/social/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: {
           name: "default",
           exclude: [
+            "src/social/**/*.test.tsx",
             "src/i18n/useCardTranslationState.test.tsx",
             ...configDefaults.exclude,
             "e2e/**",

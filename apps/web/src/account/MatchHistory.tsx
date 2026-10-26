@@ -1,3 +1,4 @@
+import { AddFriendButton } from "@/friends/AddFriendButton";
 import type { DeckListing } from "@/game/decks";
 import { MatchOpponentDeckAction } from "@/account/MatchOpponentDeckAction";
 import { useEffect, useRef, useState } from "react";
@@ -315,7 +316,8 @@ export function MatchHistory({
                 match={match}
                 onCopyDeck={onCopyDeck}
                 local={onDevice.get(match.id)}
-                sharing={ready.sharing}
+                sharing={ready.sharing || ready.friendsSharing === true}
+                publicSharing={ready.sharing}
                 onRemoved={(replay) => replayRemoved(match, replay)}
                 onChanged={(replay) => replayChanged(match.id, replay)}
                 onFailure={(key) => setNotice({ key, alert: true })}
@@ -359,6 +361,7 @@ function MatchRow({
   match,
   local,
   sharing,
+  publicSharing,
   onRemoved,
   onChanged,
   onFailure,
@@ -369,6 +372,7 @@ function MatchRow({
   /** This browser's copy, shown when the replay never reached Google Drive. */
   local?: LocalReplay;
   sharing: boolean;
+  publicSharing?: boolean;
   onRemoved: (replay: SavedReplay) => void;
   onChanged: (replay: SavedReplay) => void;
   onFailure: (key: TranslationKey) => void;
@@ -384,6 +388,7 @@ function MatchRow({
       <span className="profile-matches__opponent">
         <Avatar name={match.opponentName} avatarId={match.opponentAvatarId} size={32} />
         <strong>{match.opponentName}</strong>
+        {match.canAddOpponent ? <AddFriendButton matchId={match.id} /> : null}
       </span>
       <time className="profile-matches__date" dateTime={finished.toISOString()}>
         {finished.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })}
@@ -399,6 +404,7 @@ function MatchRow({
             replay={match.replay}
             opponent={match.opponentName}
             sharing={sharing}
+            publicSharing={publicSharing}
             onRemoved={onRemoved}
             onChanged={onChanged}
             onFailure={onFailure}
@@ -417,6 +423,7 @@ function ReplayActions({
   replay,
   opponent,
   sharing,
+  publicSharing,
   onRemoved,
   onChanged,
   onFailure,
@@ -424,6 +431,7 @@ function ReplayActions({
   replay: SavedReplay;
   opponent: string;
   sharing: boolean;
+  publicSharing?: boolean;
   onRemoved: (replay: SavedReplay) => void;
   onChanged: (replay: SavedReplay) => void;
   onFailure: (key: TranslationKey) => void;
@@ -504,7 +512,7 @@ function ReplayActions({
             <Icons.ExternalLink size={16} aria-hidden="true" />
             {t("replay.drive.open")}
           </a>
-          {sharing ? <ReplaySharing replay={replay} onChange={onChanged} /> : null}
+          {sharing ? <ReplaySharing replay={replay} onChange={onChanged} publicSharing={publicSharing} /> : null}
           <button type="button" onClick={() => setConfirming(true)}>
             <Icons.Trash size={16} aria-hidden="true" />
             {t("profile.deleteReplay")}

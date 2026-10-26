@@ -1,3 +1,4 @@
+import { friendsEn } from "@/i18n/friends.en";
 import { advancedBattlesJa } from "@/i18n/learn/advancedBattles.ja";
 import { rulesLayoutJa } from "@/i18n/learn/rulesLayout.ja";
 import { lessonCatalogJa } from "@/i18n/learn/lessonCatalog.ja";
@@ -40,6 +41,7 @@ const interfaceMessages = {
   "overlay.trashTamerBottomCard": en["overlay.trashTamerBottomCard"],
   "overlay.trashTwoTamerBottomCards": "Trash 2 bottom face-down cards from under your Tamers",
   ...providerEn,
+  ...friendsEn,
   ...learnJa,
   ...learnDrillsJa,
   ...battleLessonsJa,
@@ -475,7 +477,8 @@ const interfaceMessages = {
   "notifications.failed": "通知を読み込めませんでした。",
   "notifications.empty": "新しい通知はありません。フィードバックの更新情報がここに表示されます。",
   "notifications.older": "古いものを表示",
-  "notifications.viewAllFeedback": "すべてのフィードバックを見る",
+  "notifications.viewAll": "すべての通知を見る",
+  "notifications.tab.all": "すべて",
   "notifications.unread": "未読:",
   "notifications.feedback.new": "あなたのレポート「{summary}」が再オープンされました",
   "notifications.feedback.triaged": "あなたのレポート「{summary}」がトリアージされました",
@@ -2145,6 +2148,7 @@ const interfaceMessages = {
   "deck.kindDigimon": "デジモン",
   "deck.kindTamer": "テイマー",
   "deck.kindOption": "オプション",
+  "deck.kindDual": "デュアル",
   "deck.artCopyPrompt": "何枚目かを選んでください",
   "deck.artEditingCopy": "{number}枚目を編集中です。イラストを選ぶとすぐに保存されます。",
   "deck.artApplyAll": "すべての同名カードに使う",

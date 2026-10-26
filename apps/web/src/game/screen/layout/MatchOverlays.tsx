@@ -172,6 +172,7 @@ export function MatchOverlays({
         revealed?: RevealedZones;
         series?: SeriesResultProps;
         rematch?: RematchProps;
+        friendMatchId?: string;
       })
     | undefined;
   overlays: ReturnType<typeof useOverlayState>;

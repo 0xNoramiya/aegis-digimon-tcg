@@ -208,7 +208,11 @@ export function Lobby({
   gameMode = GameMode.AUTOMATIC.value,
   onGameModeChange,
   openMatchSettings = false,
+  challengeFriendName,
+  onCancelChallenge,
 }: {
+  challengeFriendName?: string;
+  onCancelChallenge?: () => void;
   gameMode?: GameMode;
   onGameModeChange?: (mode: GameMode) => void;
   openMatchSettings?: boolean;
@@ -271,7 +275,7 @@ export function Lobby({
       ? deckFormat(privateRoom.format, privateRoom.unlimited)
       : deckFormat(decks.find((deck) => deck.id === activeDeckId)?.format),
   );
-  const [mode, setMode] = useState(invitedRoomCode || privateRoom ? "private" : "casual");
+  const [mode, setMode] = useState(invitedRoomCode || privateRoom || challengeFriendName ? "private" : "casual");
   const [betaConfirmationOpen, setBetaConfirmationOpen] = useState(false);
   const [privateSub, setPrivateSub] = useState<"create" | "join">(invitedRoomCode ? "join" : "create");
   const [roomCodeInput, setRoomCodeInput] = useState(invitedRoomCode ?? "");
@@ -663,6 +667,18 @@ export function Lobby({
   return (
     <main className="lobby-page">
       <div className="lobby-content aegis-page-sheet">
+        {challengeFriendName ? (
+          <Alert
+            className="lobby-challenge"
+            tone="info"
+            title={t("friends.challengeBanner.title", { name: challengeFriendName })}
+          >
+            <p>{t("friends.challengeBanner.body", { name: challengeFriendName })}</p>
+            <Button size="sm" variant="ghost" icon={Icons.X} onClick={onCancelChallenge}>
+              {t("friends.challengeBanner.cancel")}
+            </Button>
+          </Alert>
+        ) : null}
         {randomError ? <Alert tone="danger">{t("lobby.randomFailed")}</Alert> : null}
         {randomDrawing ? <p role="status">{t("lobby.randomDrawing")}</p> : null}
         <Panel as="section" className="lobby-active-strip" aria-label={t("lobby.battleDeck")}>
