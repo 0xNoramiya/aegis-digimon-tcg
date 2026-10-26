@@ -15,7 +15,6 @@ const interfaceMessages = {
   "replay.timeline.securityShort": "Security retirée",
   "replay.timeline.events": "Événements de la chronologie",
   "replay.timeline.group": "{count} événements près de l’action {action}",
-  "replay.timeline.detail": "Tour {turn} · Temps de partie {time}",
   "replay.timeline.seek": "Aller à l’action {action}",
 
   ...manualEn,

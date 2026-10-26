@@ -15,7 +15,6 @@ const interfaceMessages = {
   "replay.timeline.securityShort": "安防移除",
   "replay.timeline.events": "時間軸事件",
   "replay.timeline.group": "操作 {action} 附近的 {count} 個事件",
-  "replay.timeline.detail": "回合 {turn} · 比賽時間 {time}",
   "replay.timeline.seek": "跳至操作 {action}",
 
   ...manualEn,

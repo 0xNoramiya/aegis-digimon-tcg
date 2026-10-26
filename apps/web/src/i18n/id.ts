@@ -15,7 +15,6 @@ const interfaceMessages = {
   "replay.timeline.securityShort": "Security dihapus",
   "replay.timeline.events": "Peristiwa linimasa",
   "replay.timeline.group": "{count} peristiwa di dekat aksi {action}",
-  "replay.timeline.detail": "Giliran {turn} · Waktu pertandingan {time}",
   "replay.timeline.seek": "Ke aksi {action}",
 
   ...manualEn,

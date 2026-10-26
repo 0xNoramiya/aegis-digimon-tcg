@@ -15,7 +15,6 @@ const interfaceMessages = {
   "replay.timeline.securityShort": "시큐리티 제거",
   "replay.timeline.events": "타임라인 이벤트",
   "replay.timeline.group": "행동 {action} 근처의 이벤트 {count}개",
-  "replay.timeline.detail": "턴 {turn} · 경기 시간 {time}",
   "replay.timeline.seek": "행동 {action}(으)로 이동",
 
   ...manualEn,

@@ -15,7 +15,6 @@ const interfaceMessages = {
   "replay.timeline.securityShort": "Security entfernt",
   "replay.timeline.events": "Ereignisse der Zeitleiste",
   "replay.timeline.group": "{count} Ereignisse bei Aktion {action}",
-  "replay.timeline.detail": "Zug {turn} · Spielzeit {time}",
   "replay.timeline.seek": "Zu Aktion {action}",
 
   ...manualEn,

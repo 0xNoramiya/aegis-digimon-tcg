@@ -15,7 +15,6 @@ const interfaceMessages = {
   "replay.timeline.securityShort": "セキュリティ減少",
   "replay.timeline.events": "タイムラインのイベント",
   "replay.timeline.group": "アクション {action} 付近の {count} 件のイベント",
-  "replay.timeline.detail": "ターン {turn} · 試合時間 {time}",
   "replay.timeline.seek": "アクション {action} へ移動",
 
   ...manualEn,
