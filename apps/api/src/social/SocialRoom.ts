@@ -54,10 +54,7 @@ export class SocialRoom extends Room {
       await this.presence.subscribe(`social:account:${accountId}`, receive);
     }
     await this.service.writePresence({ accountId, connectionId: client.sessionId, status: SocialStatus.ONLINE.value });
-    client.send("social", {
-      kind: "unreadMessages",
-      count: await new DirectMessageStore(this.service.accounts).unread(accountId),
-    });
+    client.send("social", await this.unreadMessages(accountId));
     client.send("social", await this.service.snapshot(accountId));
     for (const invite of await this.service.readInvites(accountId)) {
       client.send("social", { kind: "matchInvite", invite });
@@ -108,8 +105,8 @@ export class SocialRoom extends Room {
     if (event.kind === "presenceChanged" && !(await this.service.canInteract(accountId, event.presence.accountId))) {
       return;
     }
-    const unreadCount = ["directMessage", "messagesRead", "friendsChanged"].includes(event.kind)
-      ? await new DirectMessageStore(this.service.accounts).unread(accountId)
+    const unread = ["directMessage", "messagesRead", "friendsChanged"].includes(event.kind)
+      ? await this.unreadMessages(accountId)
       : undefined;
     for (const client of this.clients) {
       if (this.accountByClient.get(client.sessionId) !== accountId) {
@@ -124,17 +121,22 @@ export class SocialRoom extends Room {
             }
           : event,
       );
-      if (unreadCount !== undefined) {
-        client.send("social", { kind: "unreadMessages", count: unreadCount });
+      if (unread) {
+        client.send("social", unread);
       }
       if (event.kind === "friendsChanged") {
-        client.send("social", {
-          kind: "unreadMessages",
-          count: await new DirectMessageStore(this.service.accounts).unread(accountId),
-        });
         client.send("social", await this.service.snapshot(accountId));
       }
     }
+  }
+
+  private async unreadMessages(accountId: string): Promise<SocialEvent> {
+    const conversations = await new DirectMessageStore(this.service.accounts).conversations(accountId);
+    return {
+      kind: "unreadMessages",
+      count: conversations.reduce((total, conversation) => total + conversation.unread, 0),
+      conversations,
+    };
   }
 
   private async refreshConnections(): Promise<void> {
@@ -196,10 +198,7 @@ export class SocialRoom extends Room {
       if (!this.refreshLimit(accountId)) {
         return;
       }
-      client.send("social", {
-        kind: "unreadMessages",
-        count: await new DirectMessageStore(this.service.accounts).unread(accountId),
-      });
+      client.send("social", await this.unreadMessages(accountId));
       client.send("social", await this.service.snapshot(accountId));
       for (const invite of await this.service.readInvites(accountId)) {
         client.send("social", { kind: "matchInvite", invite });

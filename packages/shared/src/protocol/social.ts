@@ -3,12 +3,13 @@ import type { SocialPresence } from "#shared/social/SocialPresence";
 import type { MatchInvite } from "#shared/social/MatchInvite";
 
 import type { DirectMessage } from "#shared/messages/DirectMessage";
+import type { ConversationSummary } from "#shared/messages/ConversationSummary";
 
 export type SocialEvent =
   | { kind: "directMessage"; message: DirectMessage }
   | { kind: "messageSent"; requestId: string; message: DirectMessage }
   | { kind: "messagesRead"; accountId: string; friendId: string; at: number }
-  | { kind: "unreadMessages"; count: number }
+  | { kind: "unreadMessages"; count: number; conversations: ConversationSummary[] }
   | { kind: "friendsSnapshot"; friends: (Friend & SocialPresence)[] }
   | { kind: "presenceChanged"; presence: SocialPresence }
   | { kind: "friendsChanged" }

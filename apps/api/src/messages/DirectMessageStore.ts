@@ -4,6 +4,7 @@ import { runFriendTransaction } from "#api/friends/runFriendTransaction";
 import { maskBlockedWords } from "#api/moderation/blockedWords";
 import { CHAT_COOLDOWN_MS, CHAT_TEXT_MAX_LENGTH, normalizeChatText } from "@aegis/shared/protocol/chat";
 import type { DirectMessage } from "@aegis/shared/messages/DirectMessage";
+import type { ConversationSummary } from "@aegis/shared/messages/ConversationSummary";
 import type { PoolClient } from "pg";
 import { FeedbackStore } from "#api/bugs/FeedbackStore";
 
@@ -102,13 +103,24 @@ export class DirectMessageStore {
     });
   }
 
-  async unread(accountId: string): Promise<number> {
+  async conversations(accountId: string): Promise<ConversationSummary[]> {
     await this.accounts.ensureReady();
-    const result = await this.accounts.pool.query(
-      "SELECT COUNT(*) AS count FROM direct_messages m JOIN friendships f ON f.account_id=m.recipient_id AND f.friend_id=m.sender_id LEFT JOIN account_blocks b ON (b.blocker_id=m.sender_id AND b.blocked_id=m.recipient_id) OR (b.blocker_id=m.recipient_id AND b.blocked_id=m.sender_id) WHERE m.recipient_id=$1 AND m.read_at IS NULL AND m.created_at>$2 AND b.blocker_id IS NULL",
-      [accountId, this.now() - RETENTION_MS],
+    const since = this.now() - RETENTION_MS;
+    const latest = await this.accounts.pool.query<MessageRow & { friend_id: string }>(
+      "WITH latest AS (SELECT CASE WHEN sender_id=$1 THEN recipient_id ELSE sender_id END AS friend_id, MAX(created_at) AS created_at FROM direct_messages WHERE (sender_id=$1 OR recipient_id=$1) AND created_at>$2 GROUP BY CASE WHEN sender_id=$1 THEN recipient_id ELSE sender_id END) SELECT m.*, l.friend_id FROM latest l JOIN direct_messages m ON m.created_at=l.created_at AND ((m.sender_id=$1 AND m.recipient_id=l.friend_id) OR (m.recipient_id=$1 AND m.sender_id=l.friend_id)) JOIN friendships f ON f.account_id=$1 AND f.friend_id=l.friend_id LEFT JOIN account_blocks b ON (b.blocker_id=$1 AND b.blocked_id=l.friend_id) OR (b.blocker_id=l.friend_id AND b.blocked_id=$1) WHERE b.blocker_id IS NULL ORDER BY m.id",
+      [accountId, since],
     );
-    return Number(result.rows[0]?.count ?? 0);
+    const unread = await this.accounts.pool.query<{ sender_id: string; count: string }>(
+      "SELECT m.sender_id, COUNT(*) AS count FROM direct_messages m JOIN friendships f ON f.account_id=m.recipient_id AND f.friend_id=m.sender_id LEFT JOIN account_blocks b ON (b.blocker_id=m.sender_id AND b.blocked_id=m.recipient_id) OR (b.blocker_id=m.recipient_id AND b.blocked_id=m.sender_id) WHERE m.recipient_id=$1 AND m.read_at IS NULL AND m.created_at>$2 AND b.blocker_id IS NULL GROUP BY m.sender_id",
+      [accountId, since],
+    );
+    const unreadByFriend = new Map(unread.rows.map((row) => [row.sender_id, Number(row.count)]));
+    const lastByFriend = new Map(latest.rows.map((row) => [row.friend_id, buildMessage(row)]));
+    return [...lastByFriend].map(([friendId, lastMessage]) => ({
+      friendId,
+      unread: unreadByFriend.get(friendId) ?? 0,
+      lastMessage,
+    }));
   }
 
   async report({ accountId, messageId }: ReportParams): Promise<number | undefined> {

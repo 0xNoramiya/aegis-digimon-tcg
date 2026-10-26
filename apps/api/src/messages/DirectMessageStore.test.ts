@@ -32,9 +32,12 @@ describe("private friend conversations", () => {
     const message = await store.send({ accountId: sender.id, friendId: recipient.id, body: "Hello!" });
     expect(message).toMatchObject({ body: "Hello!", readAt: null });
     expect(await store.list({ accountId: recipient.id, friendId: sender.id })).toEqual([message]);
-    expect(await store.unread(recipient.id)).toBe(1);
+    expect(await store.conversations(recipient.id)).toEqual([{ friendId: sender.id, unread: 1, lastMessage: message }]);
     expect(await store.markRead({ accountId: recipient.id, friendId: sender.id })).toBe(now);
-    expect(await store.unread(recipient.id)).toBe(0);
+    expect(await store.conversations(recipient.id)).toMatchObject([{ friendId: sender.id, unread: 0 }]);
+    expect(await store.conversations(sender.id)).toMatchObject([
+      { friendId: recipient.id, unread: 0, lastMessage: { body: "Hello!", readAt: now } },
+    ]);
     expect(await store.list({ accountId: sender.id, friendId: recipient.id })).toMatchObject([{ readAt: now }]);
   });
   it("denies strangers and revokes reads and writes after blocking in either direction", async () => {
@@ -46,7 +49,16 @@ describe("private friend conversations", () => {
     expect(await store.send({ accountId: sender.id, friendId: recipient.id, body: "Hi again" })).toBeUndefined();
     expect(await store.send({ accountId: recipient.id, friendId: sender.id, body: "Hi again" })).toBeUndefined();
     expect(await store.list({ accountId: recipient.id, friendId: sender.id })).toBeUndefined();
-    expect(await store.unread(recipient.id)).toBe(0);
+    expect(await store.conversations(recipient.id)).toEqual([]);
+  });
+  it("summarizes the latest message of each conversation", async () => {
+    await store.send({ accountId: sender.id, friendId: recipient.id, body: "First" });
+    now += CHAT_COOLDOWN_MS;
+    await store.send({ accountId: sender.id, friendId: recipient.id, body: "Second" });
+    now += CHAT_COOLDOWN_MS;
+    const reply = await store.send({ accountId: recipient.id, friendId: sender.id, body: "Reply" });
+    expect(await store.conversations(recipient.id)).toEqual([{ friendId: sender.id, unread: 2, lastMessage: reply }]);
+    expect(await store.conversations(sender.id)).toEqual([{ friendId: recipient.id, unread: 1, lastMessage: reply }]);
   });
   it("normalizes text, bounds length and enforces sender cooldown across store instances", async () => {
     expect(await store.send({ accountId: sender.id, friendId: recipient.id, body: "   " })).toBeUndefined();

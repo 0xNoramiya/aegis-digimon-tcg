@@ -20,6 +20,7 @@ export function useSocialConnection({
   const [messageReceipts, setMessageReceipts] = useState<NonNullable<SocialConnection["messageReceipts"]>>([]);
   const [messages, setMessages] = useState<NonNullable<SocialConnection["messages"]>>([]);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [conversations, setConversations] = useState<NonNullable<SocialConnection["conversations"]>>([]);
   const [connected, setConnected] = useState(false);
   const [friends, setFriends] = useState<SocialConnection["friends"]>([]);
   const [invites, setInvites] = useState<MatchInvite[]>([]);
@@ -94,6 +95,7 @@ export function useSocialConnection({
       }
       if (event.kind === "unreadMessages") {
         setUnreadMessages(event.count);
+        setConversations(event.conversations);
       }
       if (event.kind === "friendsSnapshot") {
         setFriends(event.friends);
@@ -235,6 +237,7 @@ export function useSocialConnection({
     messageAcknowledgment,
     messageReceipts,
     unreadMessages,
+    conversations,
     sendMessage: (friendId, body) => {
       if (!roomRef.current) {
         setError("disconnected");

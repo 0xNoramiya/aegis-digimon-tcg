@@ -4,6 +4,7 @@ import type { SocialPresence } from "@aegis/shared/social/SocialPresence";
 import type { MatchInvite } from "@aegis/shared/social/MatchInvite";
 
 import type { DirectMessage } from "@aegis/shared/messages/DirectMessage";
+import type { ConversationSummary } from "@aegis/shared/messages/ConversationSummary";
 
 export type SocialConnection = {
   quickChat?: QuickChatState;
@@ -11,6 +12,7 @@ export type SocialConnection = {
   messageAcknowledgment?: { requestId: string; delivered: boolean };
   messageReceipts?: { accountId: string; friendId: string; at: number }[];
   unreadMessages?: number;
+  conversations?: ConversationSummary[];
   sendMessage?: (friendId: string, body: string) => string | undefined;
   readMessages?: (friendId: string) => void;
   accountId?: string;
