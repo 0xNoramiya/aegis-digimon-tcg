@@ -13,7 +13,7 @@
   --battle-memory-zero: color-mix(in srgb, var(--ds-on-ink) 22%, var(--arena-track-cell));
   --battle-memory-zero-ink: var(--ds-on-ink);
   --battle-marker: var(--arena-player);
-  --arena-track: color-mix(in srgb, var(--ds-ink) 62%, transparent);
+  --arena-track: color-mix(in srgb, var(--ds-ink) 85%, transparent);
   --arena-track-cell: color-mix(in srgb, var(--ds-on-ink) 10%, var(--ds-ink));
   --arena-plate: color-mix(in srgb, var(--ds-ink) 88%, transparent);
 }
@@ -67,9 +67,8 @@
 .aegis-arena .game-arena-counter {
   color: color-mix(in srgb, var(--arena-side, var(--ds-ink-accent)) 55%, var(--arena-fg));
   border: 1px solid color-mix(in srgb, var(--arena-side, var(--ds-ink-accent)) 45%, transparent);
-  background: var(--arena-zone-fill);
+  background: var(--arena-overlay-fill);
   box-shadow: none;
-  backdrop-filter: blur(3px);
 }
 
 .aegis-arena .game-arena-counter strong {
@@ -201,7 +200,6 @@
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--ds-ink-accent) 25%, transparent),
     0 0 24px color-mix(in srgb, var(--ds-ink) 45%, transparent);
-  backdrop-filter: blur(4px);
 }
 
 .aegis-arena .game-memory-gauge__track::before {
@@ -289,9 +287,8 @@
 .aegis-arena .game-end-turn-orb--waiting,
 .aegis-arena .game-end-turn-orb:disabled {
   color: var(--arena-muted);
-  background: var(--arena-zone-fill);
+  background: var(--arena-overlay-fill);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--arena-side, var(--ds-ink-accent)) 45%, transparent);
-  backdrop-filter: blur(3px);
 }
 
 /* ---- Phase and turn ribbons take each side's color ---- */
@@ -361,6 +358,7 @@ button.game-player-line__name {
 }
 
 .aegis-arena .game-player-line[data-acting] {
+  position: relative;
   border-color: var(--arena-side);
   border-radius: var(--ds-radius-md);
   box-shadow:
@@ -392,15 +390,11 @@ button.game-player-line__name {
 @keyframes arena-acting-pulse {
   0%,
   100% {
-    box-shadow:
-      0 0 0 2px var(--arena-side),
-      0 0 8px color-mix(in srgb, var(--arena-side) 35%, transparent);
+    opacity: 0.25;
   }
 
   50% {
-    box-shadow:
-      0 0 0 2px var(--arena-side),
-      0 0 22px color-mix(in srgb, var(--arena-side) 70%, transparent);
+    opacity: 1;
   }
 }
 
@@ -416,7 +410,13 @@ button.game-player-line__name {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .aegis-arena .game-player-line[data-acting] {
+  .aegis-arena .game-player-line[data-acting]::after {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: 0 0 22px color-mix(in srgb, var(--arena-side) 70%, transparent);
+    content: "";
     animation: arena-acting-pulse 2.4s ease-in-out infinite;
   }
 
@@ -551,8 +551,7 @@ button.game-player-line__name {
     padding: 0.375rem 0.625rem;
     border: 1px dashed color-mix(in srgb, var(--arena-side, var(--ds-ink-accent)) 45%, transparent);
     border-radius: var(--ds-radius-md);
-    background: var(--arena-zone-fill);
-    backdrop-filter: blur(3px);
+    background: var(--arena-overlay-fill);
   }
 
   .aegis-arena .game-board .game-opponent-bar > .game-player-line {
@@ -578,8 +577,7 @@ button.game-player-line__name {
     padding: 0.375rem 0.375rem 0.25rem;
     border: 1px dashed color-mix(in srgb, var(--arena-side, var(--ds-ink-accent)) 45%, transparent);
     border-radius: var(--ds-radius-lg);
-    background: var(--arena-zone-fill);
-    backdrop-filter: blur(3px);
+    background: var(--arena-overlay-fill);
   }
 
   /* Phase rail | gauge | end control. Equal outer columns keep the gauge's zero
@@ -1035,9 +1033,8 @@ button.game-player-line__name {
   .game-hand-sort {
     border-color: color-mix(in srgb, var(--arena-side, var(--ds-accent)) 30%, transparent);
     border-radius: var(--ds-radius-pill);
-    background: var(--arena-zone-fill, var(--ds-sheet));
+    background: var(--arena-overlay-fill, var(--ds-sheet));
     color: var(--arena-fg, var(--ds-text));
-    backdrop-filter: blur(4px);
   }
   .game-hand-sort:has(button:hover:not(:disabled)),
   .game-hand-sort:has(button:active:not(:disabled)) {
@@ -1178,6 +1175,11 @@ button.game-player-line__name {
 }
 
 @media (max-width: 1023px) and (orientation: portrait), (orientation: landscape) and (max-height: 759px) {
+  .aegis-arena .game-player-line[data-acting]::after {
+    content: none;
+    animation: none;
+  }
+
   .aegis-arena .game-player-line[data-acting] {
     border-color: color-mix(in srgb, var(--arena-side) 80%, transparent);
     background: color-mix(in srgb, var(--arena-side) 12%, var(--ds-ink));
