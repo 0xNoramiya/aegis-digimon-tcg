@@ -49,7 +49,6 @@ describe("friendships and requests", () => {
     const notifications = (await accounts.pool.query("SELECT account_id,kind,payload FROM notifications ORDER BY id"))
       .rows;
     expect(notifications).toMatchObject([
-      { account_id: second.id, kind: "friend_request", payload: { accountId: first.id } },
       { account_id: first.id, kind: "friend_accepted", payload: { accountId: second.id } },
     ]);
     expect(await friends.request({ accountId: first.id, displayName: second.displayName })).toEqual({
@@ -94,6 +93,22 @@ describe("friendships and requests", () => {
     await friends.request({ accountId: first.id, displayName: second.displayName });
     await friends.cancel({ accountId: first.id, otherId: second.id });
     expect(await friends.listRequests(first.id)).toEqual([]);
+  });
+
+  it("removes the request notification once the request is declined, cancelled or blocked", async () => {
+    async function requestNotifications() {
+      return (await accounts.pool.query("SELECT account_id FROM notifications WHERE kind='friend_request'")).rows;
+    }
+    await friends.request({ accountId: first.id, displayName: second.displayName });
+    expect(await requestNotifications()).toEqual([{ account_id: second.id }]);
+    await friends.decline({ accountId: second.id, otherId: first.id });
+    expect(await requestNotifications()).toEqual([]);
+    await friends.request({ accountId: first.id, displayName: second.displayName });
+    await friends.cancel({ accountId: first.id, otherId: second.id });
+    expect(await requestNotifications()).toEqual([]);
+    await friends.request({ accountId: first.id, displayName: second.displayName });
+    await blocks.block({ accountId: second.id, otherId: first.id });
+    expect(await requestNotifications()).toEqual([]);
   });
 
   it("rejects self, unknown players and blocks in either direction", async () => {

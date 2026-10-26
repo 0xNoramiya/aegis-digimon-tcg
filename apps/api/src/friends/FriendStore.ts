@@ -9,6 +9,7 @@ import { FriendRequestDirection } from "@aegis/shared/friends/FriendRequestDirec
 import { FriendshipError } from "@aegis/shared/friends/FriendshipError";
 import { friendLimits } from "@aegis/shared/friends/friendLimits";
 import { notify } from "#api/notifications/NotificationStore";
+import { clearFriendRequestNotifications } from "#api/friends/clearFriendRequestNotifications";
 import { runFriendTransaction } from "#api/friends/runFriendTransaction";
 
 type Pair = { accountId: string; otherId: string };
@@ -72,6 +73,7 @@ export class FriendStore {
       accountIds: [accountId, otherId],
       run: async (db) => {
         await db.query("DELETE FROM friend_requests WHERE requester_id=$2 AND recipient_id=$1", [accountId, otherId]);
+        await clearFriendRequestNotifications({ db, accountId, otherId });
       },
     });
     await publishSocialChange([accountId, otherId]);
@@ -83,6 +85,7 @@ export class FriendStore {
       accountIds: [accountId, otherId],
       run: async (db) => {
         await db.query("DELETE FROM friend_requests WHERE requester_id=$1 AND recipient_id=$2", [accountId, otherId]);
+        await clearFriendRequestNotifications({ db, accountId, otherId });
       },
     });
     await publishSocialChange([accountId, otherId]);
@@ -159,6 +162,7 @@ export class FriendStore {
             "DELETE FROM friend_requests WHERE (requester_id=$1 AND recipient_id=$2) OR (requester_id=$2 AND recipient_id=$1)",
             [accountId, otherId],
           );
+          await clearFriendRequestNotifications({ db, accountId, otherId });
           await notify(db, {
             accountId: otherId,
             kind: "friend_accepted",

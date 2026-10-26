@@ -1,4 +1,5 @@
 import type { Queryable } from "#api/db/migrator";
+import { clearFriendRequestNotifications } from "#api/friends/clearFriendRequestNotifications";
 
 type RemoveSocialLinksParams = { db: Queryable; accountId: string; otherId: string };
 
@@ -11,4 +12,5 @@ export async function removeSocialLinks({ db, accountId, otherId }: RemoveSocial
     "DELETE FROM friend_requests WHERE (requester_id=$1 AND recipient_id=$2) OR (requester_id=$2 AND recipient_id=$1)",
     [accountId, otherId],
   );
+  await clearFriendRequestNotifications({ db, accountId, otherId });
 }
