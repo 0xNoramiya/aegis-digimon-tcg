@@ -11,6 +11,13 @@ import { learnFr } from "@/i18n/learn/learn.fr";
 import { learnDrillsFr } from "@/i18n/learn/drills.fr";
 
 const interfaceMessages = {
+  "replay.timeline.turn": "Tour {turn} · {name} · Action {action}",
+  "replay.timeline.security": "{name} : {amount} security retirée(s) · Action {action}",
+  "replay.timeline.securityShort": "Security retirée",
+  "replay.timeline.events": "Événements de la chronologie",
+  "replay.timeline.group": "{count} événements près de l’action {action}",
+  "replay.timeline.seek": "Aller à l’action {action}",
+
   ...manualEn,
   "settings.arenaInput": "Clavier et manette",
   "settings.arenaInputDesc":
