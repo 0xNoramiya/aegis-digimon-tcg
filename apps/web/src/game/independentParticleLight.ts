@@ -4,6 +4,7 @@ import { paintParticleLight } from "./particleLightCanvas";
 import { waitForPaintedAnimation } from "./paintedAnimationClock";
 import type { BurstPalette } from "./showcases";
 import type { RegisterParticleLight } from "./ParticleLightScope";
+import { getParticleLightCanvasSize } from "@/game/getParticleLightCanvasSize";
 
 /** Local presentation ownership, never part of the server's scene payload. */
 export interface ParticleLightOwner {
@@ -72,8 +73,7 @@ export function mountIndependentParticleLight(
     // The positioned frame is stable while its artwork reveals, shakes and exits.
     // After the scene leaves, retain that last position for the remaining light.
     if (!anchor.isConnected) return;
-    const rect = anchor.getBoundingClientRect(),
-      ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = anchor.getBoundingClientRect();
     Object.assign(canvas.style, {
       inset: "auto",
       left: `${rect.left}px`,
@@ -81,8 +81,11 @@ export function mountIndependentParticleLight(
       width: `${rect.width}px`,
       height: `${rect.height}px`,
     });
-    const width = Math.max(1, Math.round(rect.width * ratio)),
-      height = Math.max(1, Math.round(rect.height * ratio));
+    const { width, height } = getParticleLightCanvasSize({
+      width: rect.width,
+      height: rect.height,
+      pixelRatio: window.devicePixelRatio,
+    });
     if (canvas.width !== width || canvas.height !== height) {
       canvas.width = width;
       canvas.height = height;
