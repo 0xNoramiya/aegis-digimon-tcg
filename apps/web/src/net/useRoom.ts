@@ -82,6 +82,8 @@ export interface DecisionSyncState {
   confirmedDecisionId: string | undefined;
 }
 
+const emptyDecisionSync: DecisionSyncState = { decision: undefined, confirmedDecisionId: undefined };
+
 export function acknowledgeDecisionResponse({
   current,
   decisionId,
@@ -229,8 +231,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
   const [events, setEvents] = useState<SequencedServerEvent[]>([]);
   const [rollbackCount, setRollbackCount] = useState(0);
   const [inbox, setInbox] = useState<BatchInbox>(emptyBatchInbox);
-  const [decision, setDecision] = useState<DecisionRequest>();
-  const confirmedDecisionIdRef = useRef<string | undefined>(undefined);
+  const [decisionSync, setDecisionSync] = useState<DecisionSyncState>(emptyDecisionSync);
   const answeredDecisionsRef = useRef(new Map<string, DecisionRequest>());
   const [error, setError] = useState<string>();
   const [opponentDeck, setOpponentDeck] = useState<UsedDeck>();
@@ -247,9 +248,8 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
   useEffect(() => {
     if (disabled) return;
     let cancelled = false;
-    confirmedDecisionIdRef.current = undefined;
     answeredDecisionsRef.current.clear();
-    setDecision(undefined);
+    setDecisionSync(emptyDecisionSync);
     setUsedDeck(undefined);
     setOpponentDeck(undefined);
 
@@ -318,32 +318,26 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         }
         if (next.roomCode) setRoomCode(next.roomCode);
         const pending = next.pendingDecision;
-        setDecision((current) => {
-          const reconciled = reconcileDecisionPatch({
-            current: {
-              decision: current,
-              confirmedDecisionId: confirmedDecisionIdRef.current,
-            },
-            pendingDecisionId: pending?.decisionId,
-          });
-          confirmedDecisionIdRef.current = reconciled.confirmedDecisionId;
+        const pendingMulligan =
+          pending?.kind === "mulligan" && next.players[pending.seat]?.sessionId === room.sessionId
+            ? { decisionId: pending.decisionId, seat: pending.seat, promptText: pending.promptText }
+            : undefined;
+        const pendingDecisionId = pending?.decisionId;
+        setDecisionSync((current) => {
+          const reconciled = reconcileDecisionPatch({ current, pendingDecisionId });
           // A later series game can already be waiting for mulligan before this socket
           // binds its message handler. The synchronized request contains all its inputs.
           if (
             !reconciled.decision &&
-            pending?.kind === "mulligan" &&
-            next.players[pending.seat]?.sessionId === room.sessionId &&
-            !answeredDecisionsRef.current.has(pending.decisionId)
+            pendingMulligan &&
+            !answeredDecisionsRef.current.has(pendingMulligan.decisionId)
           ) {
-            confirmedDecisionIdRef.current = pending.decisionId;
             return {
-              decisionId: pending.decisionId,
-              seat: pending.seat,
-              kind: "mulligan",
-              promptText: pending.promptText,
+              decision: { ...pendingMulligan, kind: "mulligan" },
+              confirmedDecisionId: pendingMulligan.decisionId,
             };
           }
-          return reconciled.decision;
+          return reconciled;
         });
         setVersion((v) => v + 1);
         // Copied here, once per patch: `next` is the one live schema object, so an updater
@@ -360,8 +354,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         resetRoomState(room);
         clearPendingIntents();
         answeredDecisionsRef.current.clear();
-        confirmedDecisionIdRef.current = undefined;
-        setDecision(undefined);
+        setDecisionSync(emptyDecisionSync);
         setEvents([]);
         setRollbackCount((count) => count + 1);
         setInbox(emptyBatchInbox);
@@ -373,10 +366,11 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
           const rejected = answeredDecisionsRef.current.get(event.decisionId);
           answeredDecisionsRef.current.delete(event.decisionId);
           if (rejected && stateRef.current?.pendingDecision?.decisionId === rejected.decisionId) {
-            setDecision((current) => {
-              if (current && current.decisionId !== rejected.decisionId) return current;
-              confirmedDecisionIdRef.current = rejected.decisionId;
-              return rejected;
+            setDecisionSync((current) => {
+              if (current.decision && current.decision.decisionId !== rejected.decisionId) {
+                return current;
+              }
+              return { decision: rejected, confirmedDecisionId: rejected.decisionId };
             });
           }
         }
@@ -389,9 +383,8 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       });
       room.onMessage<DecisionRequest>(DECISION_CHANNEL, (req) => {
         if (answeredDecisionsRef.current.has(req.decisionId)) return;
-        confirmedDecisionIdRef.current =
-          stateRef.current?.pendingDecision?.decisionId === req.decisionId ? req.decisionId : undefined;
-        setDecision(req);
+        const synchronized = stateRef.current?.pendingDecision?.decisionId === req.decisionId;
+        setDecisionSync({ decision: req, confirmedDecisionId: synchronized ? req.decisionId : undefined });
       });
       room.onError((code) => {
         setStatus("error");
@@ -538,14 +531,11 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
   }, [disabled]);
 
   const acknowledgeDecision = useCallback((decisionId: string) => {
-    setDecision((current) => {
-      if (current?.decisionId === decisionId) answeredDecisionsRef.current.set(decisionId, current);
-      const acknowledged = acknowledgeDecisionResponse({
-        current: { decision: current, confirmedDecisionId: confirmedDecisionIdRef.current },
-        decisionId,
-      });
-      confirmedDecisionIdRef.current = acknowledged.confirmedDecisionId;
-      return acknowledged.decision;
+    setDecisionSync((current) => {
+      if (current.decision?.decisionId === decisionId) {
+        answeredDecisionsRef.current.set(decisionId, current.decision);
+      }
+      return acknowledgeDecisionResponse({ current, decisionId });
     });
   }, []);
 
@@ -556,7 +546,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     events,
     batches: inbox.batches,
     rollbackCount,
-    decision,
+    decision: decisionSync.decision,
     acknowledgeDecision,
     error,
     sessionId,
