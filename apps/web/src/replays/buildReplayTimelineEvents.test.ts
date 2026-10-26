@@ -33,6 +33,18 @@ describe("replay timeline events", () => {
     ]);
   });
 
+  it("starts turn markers at the first numbered turn instead of the setup frame", () => {
+    const replay = createReplay([
+      { turn: 0, seat: 1 },
+      { turn: 1, seat: 1 },
+      { turn: 2, seat: 0 },
+    ]);
+    expect(buildReplayTimelineEvents({ replay })).toEqual([
+      { index: 1, kind: "turn", turn: 1, seat: 1, amount: 1 },
+      { index: 2, kind: "turn", turn: 2, seat: 0, amount: 1 },
+    ]);
+  });
+
   it("counts checks once at the reveal and ignores their later routing and resolution", () => {
     const replay = createReplay([
       {},
@@ -54,6 +66,20 @@ describe("replay timeline events", () => {
     ]);
     expect(buildReplayTimelineEvents({ replay }).filter((event) => event.kind === "security")).toEqual([
       { index: 1, kind: "security", turn: 1, seat: 1, amount: 1 },
+    ]);
+  });
+
+  it("counts a reveal once when the security count drops in a later frame", () => {
+    const replay = createReplay([
+      { security: [5, 3] },
+      { security: [5, 3], events: [reveal] },
+      { security: [5, 2], events: [checked] },
+      { security: [5, 2], events: [reveal] },
+      { security: [5, 1], events: [checked] },
+    ]);
+    expect(buildReplayTimelineEvents({ replay }).filter((event) => event.kind === "security")).toEqual([
+      { index: 1, kind: "security", turn: 1, seat: 1, amount: 1 },
+      { index: 3, kind: "security", turn: 1, seat: 1, amount: 1 },
     ]);
   });
 
