@@ -102,3 +102,11 @@ cropped to `(41, 41, 909, 1254)`, producing 868 x 1213 px WebP images at quality
 90 without the white outer margin. The SAMPLE watermark is preserved. The
 existing BT27 local scans were inspected for the same outer margin; none needed
 an additional crop.
+
+## BT27 Chessmon line and Ravemon: Burst Mode, 2026-10-26
+
+The nine user-provided reveal scans supply BT27-004, BT27-036, BT27-039 and
+BT27-041 in English and Japanese, and the Japanese BT27-085 printing. Scans
+are cropped to the card edge and encoded as WebP at quality 90, preserving
+the SAMPLE watermark. The Japanese BT27-085 scan replaces the earlier scan.
+Japanese attachments supply the card-specific Japanese text transcriptions.

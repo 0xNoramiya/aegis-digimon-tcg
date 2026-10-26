@@ -244788,5 +244788,238 @@
     ],
     "coverage": "full",
     "residual": []
+  },
+  "BT27-004": {
+    "effects": [
+      {
+        "trigger": "YourTurn",
+        "isInherited": true,
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "effectTextPart": "[Your Turn] [Once Per Turn] When any of your other Digimon with [Chessmon] in their names are played, this Digimon may digivolve into a Digimon card with [Chessmon] in its name in the hand with the cost reduced by 2.",
+            "event": "whenPlayed",
+            "sourceFilter": {
+              "controller": "mine",
+              "excludeSelf": true,
+              "kind": ["Digimon"],
+              "nameOrTrait": [{ "tokens": ["Chessmon"], "match": "name" }]
+            },
+            "actions": [
+              {
+                "kind": "Digivolve",
+                "effectTextPart": "[Your Turn] [Once Per Turn] When any of your other Digimon with [Chessmon] in their names are played, this Digimon may digivolve into a Digimon card with [Chessmon] in its name in the hand with the cost reduced by 2.",
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                "into": {
+                  "controllerDefault": "mine",
+                  "kind": ["Digimon"],
+                  "nameOrTrait": [{ "tokens": ["Chessmon"], "match": "name" }]
+                },
+                "from": ["hand"],
+                "payCost": true,
+                "reduceCost": 2,
+                "optional": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-036": {
+    "effects": [
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "RevealAdd",
+            "effectTextPart": "[On Play] Reveal the top 3 cards of your deck. Add 1 card with [Chessmon] in its text and 1 [DATA SQUAD] trait card among them to the hand. Return the rest to the bottom of the deck.",
+            "revealCount": 3,
+            "add": [
+              {
+                "effectTextPart": "Add 1 card with [Chessmon] in its text",
+                "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Chessmon"], "match": "text" }] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "effectTextPart": "1 [DATA SQUAD] trait card among them to the hand.",
+                "filter": {
+                  "controllerDefault": "mine",
+                  "nameOrTrait": [{ "tokens": ["DATA SQUAD"], "match": "trait" }]
+                },
+                "count": 1,
+                "to": "hand"
+              }
+            ],
+            "rest": "deckBottom"
+          }
+        ]
+      },
+      {
+        "trigger": "WhenAttacking",
+        "isInherited": true,
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "effectTextPart": "[When Attacking] [Once Per Turn] 1 of your opponent's Digimon gets -2000 DP for the turn.",
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "amount": -2000,
+            "duration": "forTheTurn"
+          }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [
+      { "level": 2, "texts": ["Chessmon"], "cost": 0, "isAlternate": true },
+      { "level": 2, "traits": ["DATA SQUAD"], "cost": 0, "isAlternate": true }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-039": {
+    "effects": [
+      { "trigger": "Static", "actions": [], "keywords": [{ "keyword": "Barrier" }] },
+      {
+        "trigger": "WhenAttacking",
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "effectTextPart": "[When Attacking] [Once Per Turn] You may play 1 Digimon card with [Chessmon] in its name from your hand with the cost reduced by 2.",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["Chessmon"], "match": "name" }]
+              },
+              "count": 1
+            },
+            "from": ["hand"],
+            "payCost": true,
+            "reduceCostBy": 2,
+            "optional": true
+          }
+        ]
+      },
+      {
+        "trigger": "WhenAttacking",
+        "isInherited": true,
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "effectTextPart": "[When Attacking] [Once Per Turn] 1 of your opponent's Digimon gets -2000 DP for the turn.",
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "amount": -2000,
+            "duration": "forTheTurn"
+          }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [
+      { "level": 3, "names": ["Chessmon"], "cost": 2, "isAlternate": true },
+      { "level": 3, "traits": ["DATA SQUAD"], "cost": 2, "isAlternate": true }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-041": {
+    "effects": [
+      { "trigger": "Static", "actions": [], "keywords": [{ "keyword": "Barrier" }, { "keyword": "Ascension" }] },
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "GainKeyword",
+            "effectTextPart": "[On Play] [When Digivolving] Until your opponent's turn ends, give 1 of their Digimon ＜Security A. -1＞",
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "keyword": { "keyword": "SecurityAttack", "amount": -1 },
+            "duration": "untilOpponentTurnEnd"
+          },
+          {
+            "kind": "ModifyDP",
+            "effectTextPart": "and for each of your Digimon with [Chessmon] in their names, -3000 DP.",
+            "target": { "filter": {}, "count": 1, "sameTarget": true },
+            "amount": -3000,
+            "duration": "untilOpponentTurnEnd",
+            "scaling": {
+              "per": 1,
+              "unit": "cards",
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["Chessmon"], "match": "name" }]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "GainKeyword",
+            "effectTextPart": "[On Play] [When Digivolving] Until your opponent's turn ends, give 1 of their Digimon ＜Security A. -1＞",
+            "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+            "keyword": { "keyword": "SecurityAttack", "amount": -1 },
+            "duration": "untilOpponentTurnEnd"
+          },
+          {
+            "kind": "ModifyDP",
+            "effectTextPart": "and for each of your Digimon with [Chessmon] in their names, -3000 DP.",
+            "target": { "filter": {}, "count": 1, "sameTarget": true },
+            "amount": -3000,
+            "duration": "untilOpponentTurnEnd",
+            "scaling": {
+              "per": 1,
+              "unit": "cards",
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "nameOrTrait": [{ "tokens": ["Chessmon"], "match": "name" }]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "AllTurns",
+        "isInherited": true,
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "effectTextPart": "[All Turns] [Once Per Turn] When any of your other Digimon with [Chessmon] in their names are deleted, 1 of your opponent's Digimon gets -5000 DP for the turn.",
+            "event": "onDeletionOf",
+            "sourceFilter": {
+              "controller": "mine",
+              "excludeSelf": true,
+              "kind": ["Digimon"],
+              "nameOrTrait": [{ "tokens": ["Chessmon"], "match": "name" }]
+            },
+            "actions": [
+              {
+                "kind": "ModifyDP",
+                "effectTextPart": "[All Turns] [Once Per Turn] When any of your other Digimon with [Chessmon] in their names are deleted, 1 of your opponent's Digimon gets -5000 DP for the turn.",
+                "target": { "filter": { "controller": "opponent", "kind": ["Digimon"] }, "count": 1 },
+                "amount": -5000,
+                "duration": "forTheTurn"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "digivolutionRequirement": [
+      { "level": 4, "names": ["Chessmon"], "cost": 3, "isAlternate": true },
+      { "level": 4, "traits": ["DATA SQUAD"], "cost": 3, "isAlternate": true }
+    ],
+    "coverage": "full",
+    "residual": []
   }
 }

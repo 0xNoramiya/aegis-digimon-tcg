@@ -110163,5 +110163,118 @@
     "optionEffect": "Use Req. ＜[DATA SQUAD] trait＞\n[Main] Your opponent trashes any 1 card from their hand or security stack. Then, delete 1 of their Digimon with a level as high as the number of cards in their hand or higher.\n＜Arts Digivolve＞",
     "optionColorRequirements": ["Purple"],
     "isDualCard": true
+  },
+  {
+    "cardId": "BT27-004",
+    "set": "BT27",
+    "nameEn": "Kapurimon",
+    "nameJp": "カプリモン",
+    "colors": ["Black"],
+    "kinds": ["DigiEgg"],
+    "level": 2,
+    "playCost": -1,
+    "dp": 0,
+    "evoCosts": [],
+    "forms": ["In-Training"],
+    "attributes": [],
+    "types": ["Lesser", "DATA SQUAD"],
+    "effectText": "",
+    "inheritedEffectText": "[Your Turn] [Once Per Turn] When any of your other Digimon with [Chessmon] in their names are played, this Digimon may digivolve into a Digimon card with [Chessmon] in its name in the hand with the cost reduced by 2.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-004"
+  },
+  {
+    "cardId": "BT27-036",
+    "set": "BT27",
+    "nameEn": "PawnChessmon",
+    "nameJp": "ポーンチェスモン",
+    "colors": ["Yellow", "Black"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 2000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 2,
+        "memoryCost": 0
+      },
+      {
+        "color": "Black",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Virus"],
+    "types": ["Puppet", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.2 w/[Chessmon] in text or w/[DATA SQUAD] trait: Cost 0\n[On Play] Reveal the top 3 cards of your deck. Add 1 card with [Chessmon] in its text and 1 [DATA SQUAD] trait card among them to the hand. Return the rest to the bottom of the deck.",
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] 1 of your opponent's Digimon gets -2000 DP for the turn.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-036"
+  },
+  {
+    "cardId": "BT27-039",
+    "set": "BT27",
+    "nameEn": "KnightChessmon",
+    "nameJp": "ナイトチェスモン",
+    "colors": ["Yellow", "Black"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 4,
+    "dp": 4000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 3,
+        "memoryCost": 2
+      },
+      {
+        "color": "Black",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Virus"],
+    "types": ["Puppet", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.3 w/[Chessmon] in name or w/[DATA SQUAD] trait: Cost 2\n＜Barrier＞\n[When Attacking] [Once Per Turn] You may play 1 Digimon card with [Chessmon] in its name from your hand with the cost reduced by 2.",
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] 1 of your opponent's Digimon gets -2000 DP for the turn.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-039"
+  },
+  {
+    "cardId": "BT27-041",
+    "set": "BT27",
+    "nameEn": "BishopChessmon",
+    "nameJp": "ビショップチェスモン",
+    "colors": ["Yellow", "Black"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Yellow",
+        "level": 4,
+        "memoryCost": 3
+      },
+      {
+        "color": "Black",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Virus"],
+    "types": ["Puppet", "DATA SQUAD"],
+    "effectText": "[Digivolve] Lv.4 w/[Chessmon] in name or w/[DATA SQUAD] trait: Cost 3\n＜Barrier＞ ＜Ascension＞\n[On Play] [When Digivolving] Until your opponent's turn ends, give 1 of their Digimon ＜Security A. -1＞, and for each of your Digimon with [Chessmon] in their names, -3000 DP.",
+    "inheritedEffectText": "[All Turns] [Once Per Turn] When any of your other Digimon with [Chessmon] in their names are deleted, 1 of your opponent's Digimon gets -5000 DP for the turn.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-041"
   }
 ]
